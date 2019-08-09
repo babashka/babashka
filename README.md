@@ -47,12 +47,12 @@ You may also download a binary from [Github](https://github.com/borkdude/babashk
 ## Usage
 
 ``` shellsession
-echo <input> | bb [--raw] '<Clojure form>'
+... | bb [--raw] '<Clojure form>'
 ```
 
-There is one special variable, `*in*` is piped from stdin. When the `--raw` flag
-is provided, `*in*` is a single string or vector of strings. When it is omitted,
-the input is read as EDN.
+There is one special variable, `*in*`, which is the input read from stdin. When
+the `--raw` flag is provided, `*in*` is a single string or vector of
+strings. When it is omitted, the input is read as EDN.
 
 The current version can be printed with:
 
@@ -94,9 +94,12 @@ $ ls | bb --raw '(filterv #f (re-find #r "reflection" %) *in*)'
 
 ## Test
 
-Test the JVM version:
+Test on the JVM:
 
     script/test
+
+Although this tool doesn't offer any benefit when running on the JVM, it is
+convenient for development.
 
 Test the native version:
 
