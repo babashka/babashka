@@ -1,1 +1,2 @@
-{bb/fn babashka.interpreter/read-fn}
+{f babashka.interpreter/read-fn
+ r babashka.interpreter/read-regex}

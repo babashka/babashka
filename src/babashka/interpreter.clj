@@ -77,6 +77,9 @@
                   %3 z
                   (interpret elt x))) form)))
 
+(defn read-regex [form]
+  (re-pattern form))
+
 (defn apply-fn [f in args]
   (let [args (map #(interpret % in) args)]
     (apply f args)))
