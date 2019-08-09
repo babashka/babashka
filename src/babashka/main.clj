@@ -9,6 +9,11 @@
 
 (set! *warn-on-reflection* true)
 
+(defn read-edn [s]
+  (edn/read-string
+   {:readers *data-readers*}
+   s))
+
 (defn- parse-opts [options]
   (let [opts (loop [options options
                     opts-map {}
@@ -22,19 +27,25 @@
                           (update opts-map current-opt conj opt)
                           current-opt))
                  opts-map))
-        version (boolean (get opts "--version"))]
-    {:version version}))
+        version (boolean (get opts "--version"))
+        raw (boolean (get opts "--raw"))]
+    {:version version
+     :raw raw}))
 
 (defn -main
   [& args]
-  (let [{:keys [:version]} (parse-opts args)]
+  (let [{:keys [:version :raw]} (parse-opts args)]
     (cond version
       (println (str/trim (slurp (io/resource "BABASHKA_VERSION"))))
       :else
-      (let [expr (edn/read-string (first args))
+      (let [expr (if raw (second args) (first args))
+            expr (read-edn expr)
             in (slurp *in*)
-            edn (edn/read-string in)]
-        (prn (i/interpret expr edn))))))
+            in (if raw
+                 (str/split in #"\s")
+                 (read-edn (format "[%s]" in)))
+            in (if (= 1 (count in)) (first in) in)]
+        (prn (i/interpret expr in))))))
 
 ;;;; Scratch
 

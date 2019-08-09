@@ -37,13 +37,23 @@ You may also download a binary from [Github](https://github.com/borkdude/babashk
 ## Usage
 
 The first argument to `bb` is the form to be executed. There is one special
-variable, `*in*`.
+variable, `*in*` which is EDN that is piped from stdin.
 
 If the first argument is `--version`, then `bb` will print the version and exit.
+If the first argument is `--raw`, then `bb` will interpret stdin as string input.
 
 Examples:
 
 ``` shellsession
+$ ls | bb --raw '*in*'
+["LICENSE" "README.md" "bb" "doc" "pom.xml" "project.clj" "reflection.json" "resources" "script" "src" "target" "test"]
+
+$ ls | bb --raw '*in*' | bb '(count *in*)'
+11
+
+$ ls | bb --raw '*in*' | bb '(count *in*)'
+11
+
 $ echo 1 | bb '(inc *in*)'
 2
 
@@ -58,6 +68,17 @@ $ echo '[{:foo 1} {:bar 2}]' | bb '(filter :foo *in*)'
 
 $ echo '"babashka"' | bb '(re-find (re-pattern "b.b.*") *in*)'
 "babashka"
+```
+
+Functions are written using the reader tag `#bb/fn`. Currently up to three
+arguments are supported.
+
+``` shellsession
+$ echo '' | bb '(#bb/fn (+ %1 %2) 1 2)'
+3
+
+$ ls | bb --raw '*in*' | bb '(filterv #bb/fn (re-find (re-pattern "reflection") %) *in*)'
+["reflection.json"]
 ```
 
 ## Test
