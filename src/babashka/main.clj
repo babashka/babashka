@@ -28,24 +28,27 @@
                           current-opt))
                  opts-map))
         version (boolean (get opts "--version"))
-        raw (boolean (get opts "--raw"))]
+        raw (boolean (get opts "--raw"))
+        println? (boolean (get opts "--println"))]
     {:version version
-     :raw raw}))
+     :raw raw
+     :println? println?}))
 
 (defn -main
   [& args]
-  (let [{:keys [:version :raw]} (parse-opts args)]
+  (let [{:keys [:version :raw :println?]} (parse-opts args)]
     (cond version
       (println (str/trim (slurp (io/resource "BABASHKA_VERSION"))))
       :else
-      (let [expr (if raw (second args) (first args))
+      (let [expr (last args)
             expr (read-edn expr)
             in (slurp *in*)
             in (if raw
                  (str/split in #"\n")
                  (read-edn (format "[%s]" in)))
             in (if (= 1 (count in)) (first in) in)]
-        (prn (i/interpret expr in))))))
+        ((if println? println prn)
+         (i/interpret expr in))))))
 
 ;;;; Scratch
 

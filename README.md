@@ -48,12 +48,12 @@ You may also download a binary from [Github](https://github.com/borkdude/babashk
 ## Usage
 
 ``` shellsession
-... | bb [--raw] '<Clojure form>'
+... | bb [--raw] [--println] '<Clojure form>'
 ```
 
-There is one special variable, `*in*`, which is the input read from stdin. When
-the `--raw` flag is provided, `*in*` is a single string or vector of
-strings. When it is omitted, the input is read as EDN.
+There is one special variable, `*in*`, which is the input read from stdin. The
+input is read as EDN by default, unless the `--raw` flag is provided. When using
+the `--println` flag, the output is printed using `println` instead of `prn`.
 
 The current version can be printed with:
 
@@ -91,6 +91,22 @@ Regexes are written using the reader tag `#r`.
 ``` shellsession
 $ ls | bb --raw '(filterv #f(re-find #r "reflection" %) *in*)'
 ["reflection.json"]
+```
+
+Shuffle the lines of a file:
+
+``` shellsession
+$ cat /tmp/test.txt
+1 Hello
+2 Clojure
+3 Babashka
+4 Goodbye
+
+$ cat /tmp/test.txt | bb --raw '(shuffle *in*)' | bb --println '(str/join "\n" *in*)'
+3 Babashka
+2 Clojure
+4 Goodbye
+1 Hello
 ```
 
 Find the line numbers where the word Clojure occurs using a case insensitive regex:
