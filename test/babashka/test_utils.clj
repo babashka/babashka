@@ -17,7 +17,7 @@
                        {:in input})))))
 
 (def bb
-  (case (System/getenv "BB_TEST_ENV")
+  (case (System/getenv "BABASHKA_TEST_ENV")
     "jvm" #'bb-jvm
     "native" #'bb-native
     #'bb-jvm))
