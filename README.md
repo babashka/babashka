@@ -46,11 +46,20 @@ You may also download a binary from [Github](https://github.com/borkdude/babashk
 
 ## Usage
 
-The first argument to `bb` is the form to be executed. There is one special
-variable, `*in*` which is EDN that is piped from stdin.
+``` shellsession
+echo <input> | bb [--raw] '<Clojure form>'
+```
 
-If the first argument is `--version`, then `bb` will print the version and exit.
-If the first argument is `--raw`, then `bb` will interpret stdin as string input.
+There is one special variable, `*in*` is piped from stdin. When the `--raw` flag
+is provided, `*in*` is a single string or vector of strings. When it is omitted,
+the input is read as EDN.
+
+The current version can be printed with:
+
+``` shellsession
+bb --version
+0.0.2
+```
 
 Examples:
 
