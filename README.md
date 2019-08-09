@@ -4,26 +4,29 @@
 [![Clojars Project](https://img.shields.io/clojars/v/borkdude/babashka.svg)](https://clojars.org/borkdude/babashka)
 [![cljdoc badge](https://cljdoc.org/badge/borkdude/babashka)](https://cljdoc.org/d/borkdude/babashka/CURRENT)
 
-An extremely limited version of Clojure in Clojure for shell-scripting.
+A pure, fast and limited version of Clojure in Clojure for shell scripting.
 
 Properties:
 
 - pure (no side effects)
+- fast startup time
 - interprets only one form
 - reads from stdin and writes to stdout
 
 ## Status
 
-Experimental, mostly for fun.
+Experimental. Not all Clojure core functions are supported yet, but can be
+easily
+[added](https://github.com/borkdude/babashka/blob/master/src/babashka/interpreter.clj#L10). PRs
+welcome.
+
 
 ## Usage
 
-`bb` supports the following options:
+The first argument to `bb` is the form to be executed. There is one special
+variable, `*in*`.
 
-   - `--version`: if present, prints current version of `bb` and exits.
-
-By default, the first argument to `bb` is the form to be executed. There is one
-special variable, `*in*`.
+If the first argument is `--version`, then `bb` will print the version and exit.
 
 Examples:
 
