@@ -58,7 +58,7 @@ The current version can be printed with:
 
 ``` shellsession
 bb --version
-0.0.2
+0.0.3
 ```
 
 Examples:
