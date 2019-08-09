@@ -69,7 +69,7 @@ $ echo '3' | bb '(#f (+ %1 %2 %3) 1 2 *in*)'
 Regexes are written using the reader tag `#r`.
 
 ``` shellsession
-$ ls | bb --raw '*in*' | bb '(filterv #f (re-find #r "reflection" %) *in*)'
+$ ls | bb --raw '(filterv #f (re-find #r "reflection" %) *in*)'
 ["reflection.json"]
 ```
 
