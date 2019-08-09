@@ -68,8 +68,8 @@ Functions are written using the reader tag `#bb/fn`. Currently up to three
 arguments are supported.
 
 ``` shellsession
-$ echo '' | bb '(#bb/fn (+ %1 %2) 1 2)'
-3
+$ echo '3' | bb '(#bb/fn (+ %1 %2 %3) 1 2 *in*)'
+6
 
 $ ls | bb --raw '*in*' | bb '(filterv #bb/fn (re-find (re-pattern "reflection") %) *in*)'
 ["reflection.json"]
