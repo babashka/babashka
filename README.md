@@ -54,14 +54,8 @@ $ ls | bb --raw '(count *in*)'
 $ echo '[1 1 1 1 2]' | bb '(vec (dedupe *in*))'
 [1 2]
 
-$ echo '[1 1 1 1 2]' | bb '(inc (first *in*))'
-2
-
 $ echo '[{:foo 1} {:bar 2}]' | bb '(filter :foo *in*)'
 ({:foo 1})
-
-$ echo '"babashka"' | bb '(re-find (re-pattern "b.b.*") *in*)'
-"babashka"
 ```
 
 Functions are written using the reader tag `#f`. Currently up to three
