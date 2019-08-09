@@ -20,6 +20,20 @@ easily
 [added](https://github.com/borkdude/babashka/blob/master/src/babashka/interpreter.clj#L10). PRs
 welcome.
 
+## Installation
+
+Linux and macOS binaries are provided via brew.
+
+Install:
+
+    brew install borkdude/brew/babashka
+
+Upgrade:
+
+    brew upgrade babashka
+
+You may also download a binary from [Github](https://github.com/borkdude/babashka/releases).
+
 ## Usage
 
 The first argument to `bb` is the form to be executed. There is one special
