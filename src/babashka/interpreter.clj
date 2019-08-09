@@ -15,7 +15,7 @@
               first float? floats fnil
               identity inc int-array iterate
               juxt
-              filter filterv find
+              filter filterv find frequencies
               last line-seq
               keep keep-indexed keys
               map mapv map-indexed mapcat merge merge-with munge
@@ -32,7 +32,7 @@
               rand-int rand-nth range reduce reduced? remove
               second set seq seq? shuffle simple-symbol? sort sort-by subs
               set/difference set/join
-              str/join str/starts-with? str/ends-with?
+              str/join str/starts-with? str/ends-with? str/split
               zero?))
 
 ;; TODO:
