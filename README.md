@@ -48,14 +48,8 @@ Examples:
 $ ls | bb --raw '*in*'
 ["LICENSE" "README.md" "bb" "doc" "pom.xml" "project.clj" "reflection.json" "resources" "script" "src" "target" "test"]
 
-$ ls | bb --raw '*in*' | bb '(count *in*)'
+$ ls | bb --raw '(count *in*)'
 11
-
-$ ls | bb --raw '*in*' | bb '(count *in*)'
-11
-
-$ echo 1 | bb '(inc *in*)'
-2
 
 $ echo '[1 1 1 1 2]' | bb '(vec (dedupe *in*))'
 [1 2]
