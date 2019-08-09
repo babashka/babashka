@@ -25,8 +25,8 @@ If most of your shell script evolves into Clojure, you might want to turn to:
 
 ## Status
 
-Experimental. Not all Clojure core functions are supported yet, but can be
-easily
+Experimental. Breaking changes are expected to happen at this phase. Not all
+Clojure core functions are supported yet, but can be easily
 [added](https://github.com/borkdude/babashka/blob/master/src/babashka/interpreter.clj#L10). PRs
 welcome.
 
