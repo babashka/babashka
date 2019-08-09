@@ -21,6 +21,7 @@ If most of your shell script evolves into Clojure, you might want to turn to:
 
 - [planck](https://planck-repl.org/)
 - [joker](https://github.com/candid82/joker)
+- [closh](https://github.com/dundalek/closh)
 - [lumo](https://github.com/anmonteiro/lumo)
 
 ## Status
