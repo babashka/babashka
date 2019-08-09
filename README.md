@@ -20,7 +20,6 @@ easily
 [added](https://github.com/borkdude/babashka/blob/master/src/babashka/interpreter.clj#L10). PRs
 welcome.
 
-
 ## Usage
 
 The first argument to `bb` is the form to be executed. There is one special
