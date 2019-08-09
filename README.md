@@ -13,6 +13,16 @@ Properties:
 - interprets only one form
 - reads from stdin and writes to stdout
 
+## Rationale
+
+Most of your script is in bash, but you want a tiny sprinkle of Clojure.
+
+If most of your shell script evolves into Clojure, you might want to turn to:
+
+- [planck](https://planck-repl.org/)
+- [joker](https://github.com/candid82/joker)
+- [lumo](https://github.com/anmonteiro/lumo)
+
 ## Status
 
 Experimental. Not all Clojure core functions are supported yet, but can be
