@@ -1,0 +1,207 @@
+# Clojure CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-clojure/ for more details
+#
+version: 2.1
+jobs:
+  jvm:
+    docker:
+      # specify the version you desire here
+      - image: circleci/clojure:lein-2.8.1
+    working_directory: ~/repo
+    environment:
+      LEIN_ROOT: "true"
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "project.clj" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+      - run:
+          name: Install Clojure
+          command: |
+            wget -nc https://download.clojure.org/install/linux-install-1.10.1.447.sh
+            chmod +x linux-install-1.10.1.447.sh
+            sudo ./linux-install-1.10.1.447.sh
+      - run:
+          name: Run JVM tests
+          command: |
+            script/test
+      # - run:
+      #     name: Run as tools.deps dependency
+      #     command: |
+      #       .circleci/script/tools.deps
+      - run:
+          name: Run as lein command
+          command: |
+            .circleci/script/lein
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: v1-dependencies-{{ checksum "project.clj" }}
+  linux:
+    docker:
+      - image: circleci/clojure:lein-2.8.1
+    working_directory: ~/repo
+    environment:
+      LEIN_ROOT: "true"
+      GRAALVM_HOME: /home/circleci/graalvm-ce-19.1.1
+      BABASHKA_PLATFORM: linux # used in release script
+      BABASHKA_TEST_ENV: native
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - linux-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
+      - run:
+          name: Install Clojure
+          command: |
+            wget https://download.clojure.org/install/linux-install-1.10.1.447.sh
+            chmod +x linux-install-1.10.1.447.sh
+            sudo ./linux-install-1.10.1.447.sh
+      - run:
+          name: Install native dev tools
+          command: |
+            sudo apt-get update
+            sudo apt-get -y install gcc zlib1g-dev
+      - run:
+          name: Download GraalVM
+          command: |
+            cd ~
+            if ! [ -d graalvm-ce-19.1.1 ]; then
+              curl -O -sL https://github.com/oracle/graal/releases/download/vm-19.1.1/graalvm-ce-linux-amd64-19.1.1.tar.gz
+              tar xzf graalvm-ce-linux-amd64-19.1.1.tar.gz
+            fi
+      - run:
+          name: Build binary
+          command: |
+            script/compile
+          no_output_timeout: 30m
+      - run:
+          name: Run tests
+          command: |
+            script/test
+      # - run:
+      #     name: Performance report
+      #     command: |
+      #       .circleci/script/performance
+      - run:
+          name: Release
+          command: |
+            .circleci/script/release
+      - save_cache:
+          paths:
+            - ~/.m2
+            - ~/graalvm-ce-19.1.1
+          key: linux-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
+      - store_artifacts:
+          path: /tmp/release
+          destination: release
+  mac:
+    macos:
+      xcode: "9.0"
+    environment:
+      GRAALVM_HOME: /Users/distiller/graalvm-ce-19.1.1/Contents/Home
+      BABASHKA_PLATFORM: macos # used in release script
+      BABASHKA_TEST_ENV: native
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - mac-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
+      - run:
+          name: Install Clojure
+          command: |
+            .circleci/script/install-clojure /usr/local
+      - run:
+          name: Install Leiningen
+          command: |
+            .circleci/script/install-leiningen
+
+      - run:
+          name: Download GraalVM
+          command: |
+            cd ~
+            ls -la
+            if ! [ -d graalvm-ce-19.1.1 ]; then
+              curl -O -sL https://github.com/oracle/graal/releases/download/vm-19.1.1/graalvm-ce-darwin-amd64-19.1.1.tar.gz
+              tar xzf graalvm-ce-darwin-amd64-19.1.1.tar.gz
+            fi
+      - run:
+          name: Build binary
+          command: |
+            script/compile
+          no_output_timeout: 30m
+      - run:
+          name: Run tests
+          command: |
+            script/test
+      # - run:
+      #     name: Performance report
+      #     command: |
+      #       .circleci/script/performance
+      - run:
+          name: Release
+          command: |
+            .circleci/script/release
+      - save_cache:
+          paths:
+            - ~/.m2
+            - ~/graalvm-ce-19.1.1
+          key: mac-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
+      - store_artifacts:
+          path: /tmp/release
+          destination: release
+  deploy:
+    docker:
+      - image: circleci/clojure:lein-2.8.1
+    working_directory: ~/repo
+    environment:
+      LEIN_ROOT: "true"
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "project.clj" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+      - run: .circleci/script/deploy
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: v1-dependencies-{{ checksum "project.clj" }}
+  # docker:
+  #   docker:
+  #     - image: circleci/buildpack-deps:stretch
+  #   steps:
+  #     - checkout
+  #     - setup_remote_docker:
+  #         docker_layer_caching: true
+  #     - run:
+  #         name: Build Docker image
+  #         command: .circleci/script/docker
+
+workflows:
+  version: 2
+  ci:
+    jobs:
+      - jvm
+      - linux
+      - mac
+      - deploy:
+          filters:
+            branches:
+              only: master
+          requires:
+            - jvm
+            - linux
+            - mac
+      # - docker:
+      #     filters:
+      #       branches:
+      #         only: master
+      #     requires:
+      #       - jvm
+      #       - linux
+      #       - mac

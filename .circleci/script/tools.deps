@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+err=0
+function _trap_error() {
+    local exit_code="$1"
+    if [ "$exit_code" -ne 2 ] && [ "$exit_code" -ne 3 ]; then
+        (( err |= "$exit_code" ))
+    fi
+}
+
+trap '_trap_error $?' ERR
+trap 'exit $err' SIGINT SIGTERM
+
+
+# Run as local root dependency
+rm -rf /tmp/proj
+mkdir -p /tmp/proj
+cd /tmp/proj
+clojure -Sdeps '{:deps {clj-kondo {:local/root "/home/circleci/repo"}}}' \
+        -m clj-kondo.main --lint /home/circleci/repo/src /home/circleci/repo/test
+
+# Run as git dependency
+rm -rf /tmp/proj
+mkdir -p /tmp/proj
+cd /tmp/proj
+
+github_user=${CIRCLE_PR_USERNAME:-borkdude}
+clojure -Sdeps "{:deps {clj-kondo {:git/url \"https://github.com/$github_user/clj-kondo\" :sha \"$CIRCLE_SHA1\"}}}" \
+        -m clj-kondo.main --lint /home/circleci/repo/src /home/circleci/repo/test
+
+exit "$err"

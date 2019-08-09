@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+image_name="borkdude/clj-kondo"
+image_tag=$(cat resources/CLJ_KONDO_VERSION)
+latest_tag="latest"
+
+if [[ $image_tag =~ SNAPSHOT$ ]]; then
+    echo "This is a snapshot version"
+    snapshot="true"
+else
+    echo "This is a non-snapshot version"
+    snapshot="false"
+fi
+
+if [ -z "$CIRCLE_PULL_REQUEST" ] && [ "$CIRCLE_BRANCH" = "master" ]; then
+    echo "Building Docker image $image_name:$image_tag"
+    echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
+    docker build -t "$image_name" .
+    docker tag "$image_name:$latest_tag" "$image_name:$image_tag"
+    # we only update latest when it's not a SNAPSHOT version
+    if [ "false" = "$snapshot" ]; then
+        echo "Pushing image $image_name:$latest_tag"
+        docker push "$image_name:$latest_tag"
+    fi
+    # we update the version tag, even if it's a SNAPSHOT version
+    echo "Pushing image $image_name:$image_tag"
+    docker push "$image_name:$image_tag"
+else
+    echo "Not publishing Docker image"
+fi
+
+exit 0;

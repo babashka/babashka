@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+install_dir=${1:-/tmp/clojure}
+mkdir -p "$install_dir"
+cd /tmp
+curl -O -sL https://download.clojure.org/install/clojure-tools-1.10.1.447.tar.gz
+tar xzf clojure-tools-1.10.1.447.tar.gz
+cd clojure-tools
+clojure_lib_dir="$install_dir/lib/clojure"
+mkdir -p "$clojure_lib_dir/libexec"
+cp ./*.jar "$clojure_lib_dir/libexec"
+cp deps.edn "$clojure_lib_dir"
+cp example-deps.edn "$clojure_lib_dir"
+
+sed -i -e 's@PREFIX@'"$clojure_lib_dir"'@g' clojure
+mkdir -p "$install_dir/bin"
+cp clojure "$install_dir/bin"
+cp clj "$install_dir/bin"
+
+cd /tmp
+rm -rf clojure-tools-1.10.1.447.tar.gz
+rm -rf clojure-tools
+echo "Installed clojure to $install_dir/bin"
