@@ -81,15 +81,29 @@ Functions are written using the reader tag `#f`. Currently up to three
 arguments are supported.
 
 ``` shellsession
-$ echo '3' | bb '(#f (+ %1 %2 %3) 1 2 *in*)'
+$ echo '3' | bb '(#f(+ %1 %2 %3) 1 2 *in*)'
 6
 ```
 
 Regexes are written using the reader tag `#r`.
 
 ``` shellsession
-$ ls | bb --raw '(filterv #f (re-find #r "reflection" %) *in*)'
+$ ls | bb --raw '(filterv #f(re-find #r "reflection" %) *in*)'
 ["reflection.json"]
+```
+
+Find the line numbers where the word Clojure occurs using a case insensitive regex:
+
+``` shellsession
+$ cat /tmp/test.txt
+foo
+Clojure is nice
+bar
+when you're nice to clojure
+
+$ cat /tmp/test.txt | bb --raw '(map-indexed #f[%1 %2] *in*))' | \
+bb '(keep #f(when (re-find #r"(?i)clojure" (second %)) (first %)) *in*)'
+(1 3)
 ```
 
 ## Test

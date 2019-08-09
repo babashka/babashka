@@ -1,19 +1,16 @@
 (ns babashka.interpreter
   {:no-doc true}
   (:refer-clojure :exclude [comparator])
-  (:require [clojure.walk :refer [postwalk]]))
-
-(defn safe-nth [x n]
-  (try (nth x n)
-       (catch Exception _e
-         nil)))
+  (:require [clojure.walk :refer [postwalk]]
+            [clojure.string :as str]
+            [clojure.set :as set]))
 
 (def syms '(= < <= >= + +' - * /
               aget alength apply assoc assoc-in
               bit-set bit-shift-left bit-shift-right bit-xor boolean boolean? booleans boolean-array butlast
               char char? conj cons contains? count
               dec dec' decimal? dedupe dissoc distinct disj drop
-              eduction every?
+              eduction even? every?
               get
               first float? floats fnil
               identity inc int-array iterate
@@ -21,18 +18,22 @@
               filter filterv find
               last line-seq
               keep keep-indexed keys
-              map map-indexed mapcat merge merge-with munge
+              map mapv map-indexed mapcat merge merge-with munge
               name newline not= num
               neg? nth nthrest
+              odd?
               peek pos?
               re-seq re-find re-pattern rest reverse
-              safe-nth set? sequential? some? str
+              set? sequential? some? str
               take take-last take-nth tree-seq type
               unchecked-inc-int unchecked-long unchecked-negate unchecked-remainder-int
               unchecked-subtract-int unsigned-bit-shift-right unchecked-float
               vals vec vector?
               rand-int rand-nth range reduce reduced? remove
-              set seq seq? shuffle simple-symbol? sort sort-by subs))
+              second set seq seq? shuffle simple-symbol? sort sort-by subs
+              set/difference set/join
+              str/join str/starts-with? str/ends-with?
+              zero?))
 
 ;; TODO:
 #_(def all-syms
@@ -59,29 +60,41 @@
     (if-let [f (first expr)]
       (if-let [v (var-lookup f)]
         (apply-fn v in (rest expr))
-        (if (ifn? f)
+        (cond
+          (or (= 'if f) (= 'when f))
+          (let [[_if cond then else] expr]
+            (if (interpret cond in)
+              (interpret then in)
+              (interpret else in)))
+          ;; bb/fn passed as higher order fn, still needs input
+          (-> f meta :bb/fn)
+          (apply-fn (f in) in (rest expr))
+          (ifn? f)
           (apply-fn f in (rest expr))
-          nil))
+          :else nil))
       expr)
-    :else
-    expr))
+    ;; bb/fn passed as higher order fn, still needs input
+    (-> expr meta :bb/fn)
+    (expr in)
+    :else expr))
 
 (defn read-fn [form]
   ^:bb/fn
-  (fn [& [x y z]]
-    (postwalk (fn [elt]
-                (case elt
-                  % x
-                  %1 x
-                  %2 y
-                  %3 z
-                  (interpret elt x))) form)))
+  (fn [in]
+    (fn [& [x y z]]
+      (interpret (postwalk (fn [elt]
+                             (case elt
+                               % x
+                               %1 x
+                               %2 y
+                               %3 z
+                               elt)) form) in))))
 
 (defn read-regex [form]
   (re-pattern form))
 
 (defn apply-fn [f in args]
-  (let [args (map #(interpret % in) args)]
+  (let [args (mapv #(interpret % in) args)]
     (apply f args)))
 
 ;;;; Scratch

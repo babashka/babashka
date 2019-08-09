@@ -42,7 +42,7 @@
             expr (read-edn expr)
             in (slurp *in*)
             in (if raw
-                 (str/split in #"\s")
+                 (str/split in #"\n")
                  (read-edn (format "[%s]" in)))
             in (if (= 1 (count in)) (first in) in)]
         (prn (i/interpret expr in))))))
