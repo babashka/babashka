@@ -159,8 +159,7 @@ $ curl -s https://api.github.com/repos/borkdude/babashka/tags \
 $ curl -s https://api.github.com/repos/borkdude/babashka/releases \
 | jet --from json --keywordize \
 | bb '(-> *in* first :assets)' \
-| bb '(keep #(re-find #"^.*linux.*" (:browser_download_url %)) *in*)' \
-| bb '(first *in*)' \
+| bb '(some #(re-find #"^.*linux.*" (:browser_download_url %)) *in*)' \
 | xargs -n1 curl -sL > /tmp/bb-linux.zip
 ```
 
