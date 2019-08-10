@@ -55,12 +55,7 @@ There is one special variable, `*in*`, which is the input read from stdin. The
 input is read as EDN by default, unless the `--raw` flag is provided. When using
 the `--println` flag, the output is printed using `println` instead of `prn`.
 
-The current version can be printed with:
-
-``` shellsession
-bb --version
-0.0.3
-```
+The current version can be printed with `bb --version`.
 
 Examples:
 
