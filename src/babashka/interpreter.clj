@@ -32,6 +32,29 @@
         (recur threaded (next forms)))
       x)))
 
+(declare interpret)
+
+(defn eval-and
+  "The and macro from clojure.core."
+  [in args]
+  (if (empty? args) true
+      (let [[x & xs] args
+            v (interpret x in)]
+        (if v
+          (if (empty? xs) v
+              (eval-and in xs))
+          v))))
+
+(defn eval-or
+  "The or macro from clojure.core."
+  [in args]
+  (if (empty? args) nil
+      (let [[x & xs] args
+            v (interpret x in)]
+        (if v v
+            (if (empty? xs) v
+                (eval-or in xs))))))
+
 (def syms '(= < <= >= + +' - -' * *' / == aget alength apply assoc assoc-in
               associative? array-map
 
@@ -126,16 +149,19 @@
 
 (define-lookup)
 
+(defn resolve-symbol [expr]
+  (let [n (name expr)]
+    (if (str/starts-with? n "'")
+      (symbol (subs n 1))
+      (or (var-lookup expr)
+          (throw (Exception. (format "Could not resolve symbol: %s." n)))))))
+
 (defn interpret
   [expr in]
   (let [i #(interpret % in)]
     (cond
       (= '*in* expr) in
-      (symbol? expr) (let [n (name expr)]
-                       (if (str/starts-with? n "'")
-                         (symbol (subs n 1))
-                         (or (var-lookup expr)
-                             (throw (Exception. (format "Could not resolve symbol: %s." n))))))
+      (symbol? expr) (resolve-symbol expr)
       (map? expr)
       (zipmap (map i (keys expr))
               (map i (vals expr)))
@@ -145,22 +171,29 @@
       (if-let [f (first expr)]
         (if-let [v (var-lookup f)]
           (apply-fn v i (rest expr))
-          (cond
-            (or (= 'if f) (= 'when f))
+          (case f
+            (if when)
             (let [[_if cond then else] expr]
               (if (interpret cond in)
                 (interpret then in)
                 (interpret else in)))
-            (= '-> f)
+            ->
             (interpret (expand-> (rest expr)) in)
-            (= '->> f)
+            ->>
             (interpret (expand->> (rest expr)) in)
+            and
+            (eval-and in (rest expr))
+            or
+            (eval-or in (rest expr))
+            ;; fallback
             ;; read fn passed as higher order fn, still needs input
-            (-> f meta ::fn)
-            (apply-fn (f in) i (rest expr))
-            (ifn? f)
-            (apply-fn f i (rest expr))
-            :else nil))
+            (cond (-> f meta ::fn)
+                  (apply-fn (f in) i (rest expr))
+                  (symbol? f)
+                  (apply-fn (resolve-symbol f) i (rest expr))
+                  (ifn? f)
+                  (apply-fn f i (rest expr))
+                  :else nil)))
         expr)
       ;; read fn passed as higher order fn, still needs input
       (-> expr meta ::fn)
@@ -189,4 +222,8 @@
 ;;;; Scratch
 
 (comment
+  (interpret '(and *in* 3) 1)
+  (interpret '(and *in* 3 false) 1)
+  (interpret '(or *in* 3) nil)
+  (ifn? 'foo)
   )

@@ -16,6 +16,12 @@
     (is (= 2 (bb 1 '(if (zero? *in*) 1 2))))
     (is (= 1 (bb 0 '(when (zero? *in*) 1))))
     (is (nil? (bb 1 '(when (zero? *in*) 1)))))
+  (testing "and and or"
+    (is (= false (bb 0 '(and false true *in*))))
+    (is (= 0 (bb 0 '(and true true *in*))))
+    (is (= 1 (bb 1 '(or false false *in*))))
+    (is (= false (bb false '(or false false *in*))))
+    (is (= 3 (bb false '(or false false *in* 3)))))
   (testing "fn"
     (is (= 2 (bb 1 "(#(+ 1 %) *in*)")))
     (is (= [1 2 3] (bb 1 "(map #(+ 1 %) [0 1 2])")))
