@@ -153,14 +153,14 @@ $ curl -s https://api.github.com/repos/borkdude/babashka/tags \
 "0.0.4"
 ```
 
-### Download latest OS-specific version of babashka
+### Get latest OS-specific download url from Github
 
 ``` shellsession
 $ curl -s https://api.github.com/repos/borkdude/babashka/releases \
 | jet --from json --keywordize \
 | bb '(-> *in* first :assets)' \
-| bb '(some #(re-find #"^.*linux.*" (:browser_download_url %)) *in*)' \
-| xargs -n1 curl -sL > /tmp/bb-linux.zip
+| bb '(some #(re-find #".*linux.*" (:browser_download_url %)) *in*)'
+"https://github.com/borkdude/babashka/releases/download/v0.0.4/babashka-0.0.4-linux-amd64.zip"
 ```
 
 ## License
