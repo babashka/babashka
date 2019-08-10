@@ -9,6 +9,8 @@
   (edn/read-string (apply test-utils/bb (str input) (map str args))))
 
 (deftest main-test
+  (testing "-io behaves as identity"
+    (= "foo\nbar\n" (test-utils/bb "foo\nbar\n" "-io" "*in*")))
   (testing "if and when"
     (is (= 1 (bb 0 '(if (zero? *in*) 1 2))))
     (is (= 2 (bb 1 '(if (zero? *in*) 1 2))))
@@ -25,7 +27,11 @@
   (testing "->"
     (is (= 4 (bb 1 '(-> *in* inc inc (inc))))))
   (testing "->>"
-    (= 10 (edn/read-string (test-utils/bb "foo\n\baar\baaaaz" "-i" "(->> *in* (map count) (apply max))"))))
+    (is (= 10 (edn/read-string (test-utils/bb "foo\n\baar\baaaaz" "-i" "(->> *in* (map count) (apply max))")))))
+  (testing "creating hash-maps from literals"
+    (is (= {:a 4
+            :b {:a 2}}(bb 1 '{:a (+ 1 2 *in*)
+                              :b {:a (inc *in*)}}))))
   (testing "shuffle the contents of a file"
     (let [in "foo\n Clojure is nice. \nbar\n If you're nice to clojure. "
           in-lines (set (str/split in #"\n"))
