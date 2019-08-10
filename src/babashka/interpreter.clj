@@ -5,20 +5,48 @@
             [clojure.string :as str]
             [clojure.set :as set]))
 
+(defn expand->
+  "The -> macro from clojure.core."
+  [[x & forms]]
+  (loop [x x, forms forms]
+    (if forms
+      (let [form (first forms)
+            threaded (if (seq? form)
+                       (with-meta (concat (list (first form) x)
+                                          (next form))
+                         (meta form))
+                       (list form x))]
+        (recur threaded (next forms)))
+      x)))
+
+(defn expand->>
+  "The ->> macro from clojure.core."
+  [[x & forms]]
+  (loop [x x, forms forms]
+    (if forms
+      (let [form (first forms)
+            threaded (if (seq? form)
+                       (with-meta (concat (cons (first form) (next form))
+                                          (list x))
+                         (meta form))
+                       (list form x))]
+        (recur threaded (next forms)))
+      x)))
+
 (def syms '(= < <= >= + +' - * /
               aget alength apply assoc assoc-in
               bit-set bit-shift-left bit-shift-right bit-xor boolean boolean? booleans boolean-array butlast
               char char? conj cons contains? count
               dec dec' decimal? dedupe dissoc distinct disj drop
               eduction even? every?
-              get
+              get get-in
               first float? floats fnil
               identity inc int-array iterate
               juxt
               filter filterv find frequencies
               last line-seq
               keep keep-indexed keys
-              map mapv map-indexed mapcat merge merge-with munge
+              map map-indexed mapv mapcat max max-key merge merge-with munge
               name newline not= num
               neg? nth nthrest
               odd?
@@ -26,6 +54,7 @@
               re-seq re-find re-pattern rest reverse
               set? sequential? some? str
               take take-last take-nth tree-seq type
+              update update-in
               unchecked-inc-int unchecked-long unchecked-negate unchecked-remainder-int
               unchecked-subtract-int unsigned-bit-shift-right unchecked-float
               vals vec vector?
@@ -56,7 +85,7 @@
   (cond
     (= '*in* expr) in
     (symbol? expr) (var-lookup expr)
-    (list? expr)
+    (seq? expr)
     (if-let [f (first expr)]
       (if-let [v (var-lookup f)]
         (apply-fn v in (rest expr))
@@ -66,6 +95,10 @@
             (if (interpret cond in)
               (interpret then in)
               (interpret else in)))
+          (= '-> f)
+          (interpret (expand-> (rest expr)) in)
+          (= '->> f)
+          (interpret (expand->> (rest expr)) in)
           ;; bb/fn passed as higher order fn, still needs input
           (-> f meta :bb/fn)
           (apply-fn (f in) in (rest expr))

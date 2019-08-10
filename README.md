@@ -51,10 +51,11 @@ You may also download a binary from [Github](https://github.com/borkdude/babashk
 ... | bb [--raw] [--println] '<Clojure form>'
 ```
 
-There is one special variable, `*in*`, which is the input read from stdin. The
-input is read as EDN by default, unless the `-i` flag is provided. The output is
-printed as EDN by default, unless the `-o` flag is provided. To combine `-i` and
-`-o` you can use `-io`.
+There is one special variable, `*in*`, which is the input read from stdin.  The
+input is read as EDN by default, unless the `-i` flag is provided, then the
+input is read as a string split by newlines into a vector.. The output is
+printed as EDN by default, unless the `-o` flag is provided, then the output is
+printed using `println`. To combine `-i` and `-o` you can use `-io`.
 
 The current version can be printed with `bb --version`.
 
@@ -137,6 +138,22 @@ Test the native version:
 You will need leiningen and GraalVM.
 
     script/compile
+
+## Gallery
+
+Here's a gallery of more useful examples. Do you have a useful example? PR
+welcome!
+
+### Fetch latest Github release tag
+
+For converting JSON to EDN, see [jet](https://github.com/borkdude/jet).
+
+``` shellsession
+$ curl -s https://api.github.com/repos/borkdude/clj-kondo/tags \
+| jet --from json --keywordize --to edn \
+| bb '(-> *in* first :name (subs 1))'
+"2019.07.31-alpha"
+```
 
 ## License
 
