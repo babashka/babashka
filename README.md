@@ -45,7 +45,7 @@ You may also download a binary from [Github](https://github.com/borkdude/babashk
 ## Usage
 
 ``` shellsession
-... | bb [--raw] [--println] '<Clojure form>'
+... | bb [-i] [-o] '<Clojure form>'
 ```
 
 There is one special variable, `*in*`, which is the input read from stdin.  The
