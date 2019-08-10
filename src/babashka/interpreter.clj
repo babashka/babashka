@@ -55,7 +55,7 @@
             (if (empty? xs) v
                 (eval-or in xs))))))
 
-(def syms '(= < <= >= + +' - -' * *' / == aget alength apply assoc assoc-in
+(def syms '(= < <= > >= + +' - -' * *' / == aget alength apply assoc assoc-in
               associative? array-map
 
               bit-and-not bit-set bit-shift-left bit-shift-right bit-xor boolean
