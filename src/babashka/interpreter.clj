@@ -109,8 +109,19 @@
               rseq ratio? rationalize random-sample repeat
 
               set? sequential? select-keys simple-keyword? simple-symbol? some?
-              set/difference set/join string? str str/join str/starts-with?
-              str/ends-with? str/split second set seq seq? seque short shuffle
+              string? str
+
+              set/difference set/index set/intersection set/join set/map-invert
+              set/project set/rename set/rename-keys set/select set/subset?
+              set/superset? set/union
+
+              str/blank? str/capitalize str/ends-with? str/escape str/includes?
+              str/index-of str/join str/last-index-of str/lower-case
+              str/re-quote-replacement str/replace str/replace-first str/reverse
+              str/split str/split-lines str/starts-with? str/trim
+              str/trim-newline str/triml str/trimr str/upper-case
+
+              second set seq seq? seque short shuffle
               sort sort-by subs symbol symbol? special-symbol? subvec some-fn
               some split-at split-with sorted-set subseq sorted-set-by
               sorted-map-by sorted-map sorted? simple-ident? sequence seqable?
