@@ -160,6 +160,10 @@
 
 (define-lookup)
 
+(defmacro one-of [x elements]
+  `(let [x# ~x]
+     (case x# (~@elements) x# nil)))
+
 (defn resolve-symbol [expr]
   (let [n (name expr)]
     (if (str/starts-with? n "'")
@@ -180,31 +184,33 @@
       (into (empty expr) (map i expr))
       (seq? expr)
       (if-let [f (first expr)]
-        (if-let [v (var-lookup f)]
-          (apply-fn v i (rest expr))
-          (case f
-            (if when)
-            (let [[_if cond then else] expr]
-              (if (interpret cond in)
-                (interpret then in)
-                (interpret else in)))
-            ->
-            (interpret (expand-> (rest expr)) in)
-            ->>
-            (interpret (expand->> (rest expr)) in)
-            and
-            (eval-and in (rest expr))
-            or
-            (eval-or in (rest expr))
-            ;; fallback
-            ;; read fn passed as higher order fn, still needs input
-            (cond (-> f meta ::fn)
-                  (apply-fn (f in) i (rest expr))
-                  (symbol? f)
-                  (apply-fn (resolve-symbol f) i (rest expr))
-                  (ifn? f)
-                  (apply-fn f i (rest expr))
-                  :else nil)))
+        (let [f (or (one-of f [if when and or -> ->>])
+                    (interpret f in))]
+          (if-let [v (var-lookup f)]
+            (apply-fn v i (rest expr))
+            (case f
+              (if when)
+              (let [[_if cond then else] expr]
+                (if (interpret cond in)
+                  (interpret then in)
+                  (interpret else in)))
+              ->
+              (interpret (expand-> (rest expr)) in)
+              ->>
+              (interpret (expand->> (rest expr)) in)
+              and
+              (eval-and in (rest expr))
+              or
+              (eval-or in (rest expr))
+              ;; fallback
+              ;; read fn passed as higher order fn, still needs input
+              (cond (-> f meta ::fn)
+                    (apply-fn (f in) i (rest expr))
+                    (symbol? f)
+                    (apply-fn (resolve-symbol f) i (rest expr))
+                    (ifn? f)
+                    (apply-fn f i (rest expr))
+                    :else (throw (Exception. (format "Cannot call %s as a function." (pr-str f))))))))
         expr)
       ;; read fn passed as higher order fn, still needs input
       (-> expr meta ::fn)
