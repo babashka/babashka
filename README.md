@@ -16,8 +16,8 @@ Properties:
 ## Rationale
 
 If you're a bash expert, you probably don't need this. But for those of us who
-can use a tiny sprinkle of Clojure on their bash scripts, it may be useful. If
-most of your shell script evolves into Clojure, you might want to turn to:
+can use a tiny sprinkle of Clojure on their shell scripts, it may be useful. If
+most of your script evolves into Clojure, you might want to turn to:
 
 - [planck](https://planck-repl.org/)
 - [joker](https://github.com/candid82/joker)
