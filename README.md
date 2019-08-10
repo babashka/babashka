@@ -75,18 +75,15 @@ $ bb '(filterv :foo *in*)' <<< '[{:foo 1} {:bar 2}]'
 [{:foo 1}]
 ```
 
-Functions are written using the reader tag `#f`. Currently up to three
-arguments are supported.
+Anonymous functions literals are allowed with up to three positional arguments.
 
 ``` shellsession
-$ bb '(#f(+ %1 %2 %3) 1 2 *in*)' <<< 3
+$ bb '(#(+ %1 %2 %3) 1 2 *in*)' <<< 3
 6
 ```
 
-Regexes are written using the reader tag `#r`.
-
 ``` shellsession
-$ ls | bb -i '(filterv #f(re-find #r "reflection" %) *in*)'
+$ ls | bb -i '(filterv #(re-find #"reflection" %) *in*)'
 ["reflection.json"]
 ```
 
@@ -115,8 +112,8 @@ Clojure is nice
 bar
 when you're nice to clojure
 
-$ < /tmp/test.txt bb -i '(map-indexed #f[%1 %2] *in*))' | \
-bb '(keep #f(when (re-find #r"(?i)clojure" (second %)) (first %)) *in*)'
+$ < /tmp/test.txt bb -i '(map-indexed #(vector %1 %2) *in*))' | \
+bb '(keep #f(when (re-find #"(?i)clojure" (second %)) (first %)) *in*)'
 (1 3)
 ```
 

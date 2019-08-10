@@ -46,14 +46,20 @@
       (println (str/trim (slurp (io/resource "BABASHKA_VERSION"))))
       :else
       (let [expr (last args)
-            expr (read-edn expr)
+            expr (read-edn (-> expr
+                               (str/replace "#(" "#f(")
+                               (str/replace "#\"" "#r\"")))
             in (slurp *in*)
             ;; _ (prn in)
             in (if raw-in
                  (str/split in #"\n")
                  (read-edn in))
             ;; _ (prn in)
-            res (i/interpret expr in)]
+            res (try (i/interpret expr in)
+                     (catch Exception e
+                       (binding [*out* *err*]
+                         (println (.getMessage e)))
+                       (System/exit 1)))]
         (if raw-out
           (if (coll? res)
             (doseq [l res]
@@ -64,5 +70,4 @@
 ;;;; Scratch
 
 (comment
-  
   )

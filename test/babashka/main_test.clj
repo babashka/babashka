@@ -17,9 +17,9 @@
     (is (= 1 (bb 0 '(when (zero? *in*) 1))))
     (is (nil? (bb 1 '(when (zero? *in*) 1)))))
   (testing "fn"
-    (is (= 2 (bb 1 "(#f(+ 1 %) *in*)")))
-    (is (= [1 2 3] (bb 1 "(map #f(+ 1 %) [0 1 2])")))
-    (is (bb 1 "(#f (when (odd? *in*) *in*) 1)")))
+    (is (= 2 (bb 1 "(#(+ 1 %) *in*)")))
+    (is (= [1 2 3] (bb 1 "(map #(+ 1 %) [0 1 2])")))
+    (is (bb 1 "(#(when (odd? *in*) *in*) 1)")))
   (testing "map"
     (is (= [1 2 3] (bb 1 '(map inc [0 1 2])))))
   (testing "keep"
@@ -28,10 +28,15 @@
     (is (= 4 (bb 1 '(-> *in* inc inc (inc))))))
   (testing "->>"
     (is (= 10 (edn/read-string (test-utils/bb "foo\n\baar\baaaaz" "-i" "(->> *in* (map count) (apply max))")))))
-  (testing "creating hash-maps from literals"
+  (testing "literals"
     (is (= {:a 4
-            :b {:a 2}}(bb 1 '{:a (+ 1 2 *in*)
-                              :b {:a (inc *in*)}}))))
+            :b {:a 2}
+            :c [1 1]
+            :d #{1 2}}
+           (bb 1 '{:a (+ 1 2 *in*)
+                   :b {:a (inc *in*)}
+                   :c [*in* *in*]
+                   :d #{*in* (inc *in*)}}))))
   (testing "shuffle the contents of a file"
     (let [in "foo\n Clojure is nice. \nbar\n If you're nice to clojure. "
           in-lines (set (str/split in #"\n"))
@@ -45,5 +50,5 @@
            (->
             (bb "foo\n Clojure is nice. \nbar\n If you're nice to clojure. "
                 "-i"
-                "(map-indexed #f[%1 %2] *in*)")
-            (bb "(keep #f(when (re-find #r\"(?i)clojure\" (second %)) (first %)) *in*)"))))))
+                "(map-indexed #(-> [%1 %2]) *in*)")
+            (bb "(keep #f(when (re-find #\"(?i)clojure\" (second %)) (first %)) *in*)"))))))

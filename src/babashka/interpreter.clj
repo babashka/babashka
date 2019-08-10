@@ -42,7 +42,7 @@
               eduction empty? even? every?
               get get-in
               first float? floats fnil
-              hash hash-map
+              hash hash-map hash-set
               identity inc inc' int-array interleave into iterate
               juxt
               filter filterv find format frequencies
@@ -67,7 +67,7 @@
               update update-in
               unchecked-inc-int unchecked-long unchecked-negate unchecked-remainder-int
               unchecked-subtract-int unsigned-bit-shift-right unchecked-float unchecked-add-int
-              vals vary-meta vec vector?
+              vals vary-meta vec vector vector?
               zipmap zero?))
 
 ;; TODO:
@@ -88,38 +88,44 @@
 
 (defn interpret
   [expr in]
-  (cond
-    (= '*in* expr) in
-    (symbol? expr) (var-lookup expr)
-    (map? expr)
-    (let [i #(interpret % in)]
+  (let [i #(interpret % in)]
+    (cond
+      (= '*in* expr) in
+      (symbol? expr) (let [n (name expr)]
+                       (if (str/starts-with? n "'")
+                         (symbol (subs n 1))
+                         (or (var-lookup expr)
+                             (throw (Exception. (format "Could not resolve symbol: %s." n))))))
+      (map? expr)
       (zipmap (map i (keys expr))
-              (map i (vals expr))))
-    (seq? expr)
-    (if-let [f (first expr)]
-      (if-let [v (var-lookup f)]
-        (apply-fn v in (rest expr))
-        (cond
-          (or (= 'if f) (= 'when f))
-          (let [[_if cond then else] expr]
-            (if (interpret cond in)
-              (interpret then in)
-              (interpret else in)))
-          (= '-> f)
-          (interpret (expand-> (rest expr)) in)
-          (= '->> f)
-          (interpret (expand->> (rest expr)) in)
-          ;; bb/fn passed as higher order fn, still needs input
-          (-> f meta ::fn)
-          (apply-fn (f in) in (rest expr))
-          (ifn? f)
-          (apply-fn f in (rest expr))
-          :else nil))
-      expr)
-    ;; bb/fn passed as higher order fn, still needs input
-    (-> expr meta ::fn)
-    (expr in)
-    :else expr))
+              (map i (vals expr)))
+      (or (vector? expr) (set? expr))
+      (into (empty expr) (map i expr))
+      (seq? expr)
+      (if-let [f (first expr)]
+        (if-let [v (var-lookup f)]
+          (apply-fn v in (rest expr))
+          (cond
+            (or (= 'if f) (= 'when f))
+            (let [[_if cond then else] expr]
+              (if (interpret cond in)
+                (interpret then in)
+                (interpret else in)))
+            (= '-> f)
+            (interpret (expand-> (rest expr)) in)
+            (= '->> f)
+            (interpret (expand->> (rest expr)) in)
+            ;; read fn passed as higher order fn, still needs input
+            (-> f meta ::fn)
+            (apply-fn (f in) in (rest expr))
+            (ifn? f)
+            (apply-fn f in (rest expr))
+            :else nil))
+        expr)
+      ;; read fn passed as higher order fn, still needs input
+      (-> expr meta ::fn)
+      (expr in)
+      :else expr)))
 
 (defn read-fn [form]
   ^::fn
