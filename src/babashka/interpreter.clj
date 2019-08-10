@@ -1,6 +1,5 @@
 (ns babashka.interpreter
   {:no-doc true}
-  (:refer-clojure :exclude [comparator])
   (:require [clojure.walk :refer [postwalk]]
             [clojure.string :as str]
             [clojure.set :as set]))
@@ -33,46 +32,87 @@
         (recur threaded (next forms)))
       x)))
 
-(def syms '(= < <= >= + +' - -' * /
-              aget alength apply assoc assoc-in
-              bit-and-not bit-set bit-shift-left bit-shift-right bit-xor boolean boolean?
-              booleans boolean-array bound? butlast
-              cat char char? conj cons contains? count cycle
-              dec dec' decimal? dedupe dissoc distinct disj double drop
-              eduction empty? even? every?
-              get get-in
-              first float? floats fnil
-              hash hash-map hash-set
-              identity inc inc' int-array interleave into iterate
+(def syms '(= < <= >= + +' - -' * *' / == aget alength apply assoc assoc-in
+              associative? array-map
+
+              bit-and-not bit-set bit-shift-left bit-shift-right bit-xor boolean
+              boolean?  booleans boolean-array bound? butlast byte-array bytes
+              bigint bit-test bit-and bounded-count bytes? bit-or bit-flip
+              biginteger bigdec bit-not byte
+
+              cat char char? conj cons contains? count cycle comp concat
+              comparator coll? compare complement char-array constantly
+              char-escape-string chars completing counted? chunk-rest
+              char-name-string class chunk-next
+
+              dec dec' decimal? dedupe dissoc distinct distinct? disj double
+              double? drop drop-last drop-while denominator doubles
+
+              eduction empty empty? even? every? every-pred ensure-reduced
+
+              first float? floats fnil fnext ffirst flatten false? filter
+              filterv find format frequencies float float-array
+
+              get get-in group-by gensym
+
+              hash hash-map hash-set hash-unordered-coll
+
+              ident? identical? identity inc inc' int-array interleave into
+              iterate int int? interpose indexed? integer? ints into-array
+
               juxt
-              filter filterv find format frequencies
-              last line-seq long
-              keep keep-indexed keys
-              map map? map-indexed mapv mapcat max max-key meta merge merge-with min munge
-              name newline nfirst not= num
-              neg? nth nthrest
-              odd?
-              peek pos?
 
-              re-seq re-find re-pattern remove rest repeatedly reverse
-              rand-int rand-nth range reduce reduced? reversible?
+              keep keep-indexed key keys keyword keyword?
 
-              set? sequential? some? str
-              set/difference set/join
-              str/join str/starts-with? str/ends-with? str/split
-              take take-last take-nth take-while tree-seq type
-              second set seq seq? seque short shuffle simple-symbol? sort sort-by subs
-              transduce
+              last line-seq long list list? longs list* long-array
 
-              update update-in
-              unchecked-inc-int unchecked-long unchecked-negate unchecked-remainder-int
-              unchecked-subtract-int unsigned-bit-shift-right unchecked-float unchecked-add-int
-              vals vary-meta vec vector vector?
+              map map? map-indexed map-entry? mapv mapcat max max-key meta merge
+              merge-with min min-key munge mod make-array
+
+              name newline nfirst not not= not-every? num neg? neg-int? nth
+              nthnext nthrest nil? nat-int? number? not-empty not-any? next
+              nnext namespace-munge numerator
+
+              odd? object-array
+
+              peek pop pos? pos-int? partial partition partition-all
+              partition-by
+
+              qualified-ident? qualified-symbol? qualified-keyword? quot
+
+              re-seq re-find re-pattern re-matches rem remove rest repeatedly
+              reverse rand-int rand-nth range reduce reduce-kv reduced reduced?
+              reversible? replicate rsubseq reductions rational? rand replace
+              rseq ratio? rationalize random-sample repeat
+
+              set? sequential? select-keys simple-keyword? simple-symbol? some?
+              set/difference set/join string? str str/join str/starts-with?
+              str/ends-with? str/split second set seq seq? seque short shuffle
+              sort sort-by subs symbol symbol? special-symbol? subvec some-fn
+              some split-at split-with sorted-set subseq sorted-set-by
+              sorted-map-by sorted-map sorted? simple-ident? sequence seqable?
+              shorts
+
+              take take-last take-nth take-while transduce tree-seq type true?
+              to-array
+
+              update update-in uri? uuid? unchecked-inc-int unchecked-long
+              unchecked-negate unchecked-remainder-int unchecked-subtract-int
+              unsigned-bit-shift-right unchecked-float unchecked-add-int
+              unchecked-double unchecked-multiply-int unchecked-int
+              unchecked-multiply unchecked-dec-int unchecked-add unreduced
+              unchecked-divide-int unchecked-subtract unchecked-negate-int
+              unchecked-inc unchecked-char unchecked-byte unchecked-short
+
+              val vals vary-meta vec vector vector?
+
+              xml-seq
+
               zipmap zero?))
 
 ;; TODO:
 #_(def all-syms
-  '#{when-first while if-not when-let if-some biginteger let quot ns-aliases read unchecked-double key longs not= string? uri? aset-double unchecked-multiply-int chunk-rest pcalls *allow-unresolved-vars* remove-all-methods ns-resolve as-> aset-boolean trampoline double? when-not *1 vec *print-meta* when int map-entry? ns-refers rand second vector-of hash-combine > replace int? associative? unchecked-int set-error-handler! inst-ms* keyword? force bound-fn* namespace-munge group-by prn extend unchecked-multiply some->> default-data-readers ->VecSeq even? unchecked-dec Inst tagged-literal? double-array in-ns create-ns re-matcher defn ref bigint extends? promise aset-char rseq ex-cause construct-proxy agent-errors *compile-files* ex-message *math-context* float pr-str concat aset-short set-agent-send-off-executor! ns symbol to-array-2d mod amap pop use VecNode unquote declare dissoc! reductions aset-byte indexed? ref-history-count - assoc! hash-set reduce-kv or cast reset! name ffirst sorted-set counted? byte-array IVecImpl tagged-literal println extend-type macroexpand-1 assoc-in char-name-string bit-test defmethod requiring-resolve EMPTY-NODE time memoize alter-meta! future? zero? simple-keyword? require unchecked-dec-int persistent! nnext add-watch not-every? class? rem agent-error some future-cancelled? memfn neg-int? struct-map drop *data-readers* nth sorted? nil? extend-protocol split-at *e load-reader random-sample cond-> dotimes select-keys bit-and bounded-count update list* reify update-in prefer-method aset-int *clojure-version* ensure-reduced *' instance? with-open mix-collection-hash re-find run! val defonce unchecked-add loaded-libs ->Vec bytes? not with-meta unreduced the-ns record? type identical? unchecked-divide-int ns-name max-key *unchecked-math* defn- *out* file-seq agent ns-map set-validator! ident? defprotocol swap! vals unchecked-subtract tap> *warn-on-reflection* sorted-set-by sync qualified-ident? assert *compile-path* true? release-pending-sends print empty remove-method *in* print-ctor letfn volatile! / read-line reader-conditional? bit-or clear-agent-errors vector proxy-super >= drop-last not-empty distinct partition loop add-classpath bit-flip long-array descendants merge accessor integer? mapv partition-all partition-by numerator object-array with-out-str condp derive load-string special-symbol? ancestors subseq error-handler gensym cond ratio? delay? intern print-simple flatten doubles halt-when with-in-str remove-watch ex-info ifn? some-> nat-int? proxy-name ns-interns all-ns find-protocol-method subvec for binding partial chunked-seq? find-keyword replicate min-key reduced char-escape-string re-matches array-map unchecked-byte with-local-vars ns-imports send-off defmacro every-pred keys rationalize load-file distinct? pos-int? extenders unchecked-short methods odd? ->ArrayChunk float-array *3 alias frequencies read-string proxy rsubseq inc get-method with-redefs uuid? bit-clear filter locking list + split-with aset ->VecNode keyword *ns* destructure *assert* defmulti chars str next hash-map if-let underive ref-max-history Throwable->map false? *print-readably* ints class some-fn case *flush-on-newline* to-array bigdec list? simple-ident? bit-not io! xml-seq VecSeq byte max == *agent* lazy-cat comment parents count supers *fn-loader* ArrayChunk sorted-map-by apply interpose deref assoc rational? transient clojure-version chunk-cons comparator sorted-map send drop-while proxy-call-with-super realized? char-array resolve compare complement *compiler-options* *print-dup* defrecord with-redefs-fn sequence constantly get-proxy-class make-array shorts completing update-proxy unchecked-negate-int hash-unordered-coll repeat unchecked-inc nthnext and create-struct get-validator number? await-for chunk-next print-str not-any? into-array qualified-symbol? init-proxy chunk-buffer seqable? symbol? when-some unchecked-char ->> future-cancel var-get commute coll? get-in fnext denominator bytes gen-and-load-class refer-clojure})
+  '#{when-first while if-not when-let if-some let as-> when-not some->>  or cond-> loop  condp cond  some-> if-let case and when-some  })
 
 (declare var-lookup apply-fn)
 
@@ -104,7 +144,7 @@
       (seq? expr)
       (if-let [f (first expr)]
         (if-let [v (var-lookup f)]
-          (apply-fn v in (rest expr))
+          (apply-fn v i (rest expr))
           (cond
             (or (= 'if f) (= 'when f))
             (let [[_if cond then else] expr]
@@ -117,9 +157,9 @@
             (interpret (expand->> (rest expr)) in)
             ;; read fn passed as higher order fn, still needs input
             (-> f meta ::fn)
-            (apply-fn (f in) in (rest expr))
+            (apply-fn (f in) i (rest expr))
             (ifn? f)
-            (apply-fn f in (rest expr))
+            (apply-fn f i (rest expr))
             :else nil))
         expr)
       ;; read fn passed as higher order fn, still needs input
@@ -142,8 +182,8 @@
 (defn read-regex [form]
   (re-pattern form))
 
-(defn apply-fn [f in args]
-  (let [args (mapv #(interpret % in) args)]
+(defn apply-fn [f i args]
+  (let [args (mapv i args)]
     (apply f args)))
 
 ;;;; Scratch
