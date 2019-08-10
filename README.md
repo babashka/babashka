@@ -71,10 +71,10 @@ $ ls | bb --raw '*in*'
 $ ls | bb --raw '(count *in*)'
 11
 
-$ echo '[1 1 1 1 2]' | bb '(vec (dedupe *in*))'
+$ bb '(vec (dedupe *in*))' <<< '[1 1 1 1 2]'
 [1 2]
 
-$ echo '[{:foo 1} {:bar 2}]' | bb '(filter :foo *in*)'
+$ bb '(filter :foo *in*)' <<< '[{:foo 1} {:bar 2}]'
 ({:foo 1})
 ```
 
@@ -82,7 +82,7 @@ Functions are written using the reader tag `#f`. Currently up to three
 arguments are supported.
 
 ``` shellsession
-$ echo '3' | bb '(#f(+ %1 %2 %3) 1 2 *in*)'
+$ bb '(#f(+ %1 %2 %3) 1 2 *in*)' <<< 3
 6
 ```
 
@@ -102,7 +102,7 @@ $ cat /tmp/test.txt
 3 Babashka
 4 Goodbye
 
-$ cat /tmp/test.txt | bb --raw '(shuffle *in*)' | bb --println '(str/join "\n" *in*)'
+$ < /tmp/test.txt bb --raw '(shuffle *in*)' | bb --println '(str/join "\n" *in*)'
 3 Babashka
 2 Clojure
 4 Goodbye
@@ -118,7 +118,7 @@ Clojure is nice
 bar
 when you're nice to clojure
 
-$ cat /tmp/test.txt | bb --raw '(map-indexed #f[%1 %2] *in*))' | \
+$ < /tmp/test.txt bb --raw '(map-indexed #f[%1 %2] *in*))' | \
 bb '(keep #f(when (re-find #r"(?i)clojure" (second %)) (first %)) *in*)'
 (1 3)
 ```
