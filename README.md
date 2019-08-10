@@ -26,10 +26,7 @@ If most of your shell script evolves into Clojure, you might want to turn to:
 
 ## Status
 
-Experimental. Breaking changes are expected to happen at this phase. Not all
-Clojure core functions are supported yet, but can be easily
-[added](https://github.com/borkdude/babashka/blob/master/src/babashka/interpreter.clj#L10). PRs
-welcome.
+Experimental. Breaking changes are expected to happen at this phase.
 
 ## Installation
 
@@ -51,40 +48,43 @@ You may also download a binary from [Github](https://github.com/borkdude/babashk
 ... | bb [--raw] [--println] '<Clojure form>'
 ```
 
-There is one special variable, `*in*`, which is the input read from stdin. The
-input is read as EDN by default, unless the `--raw` flag is provided. When using
-the `--println` flag, the output is printed using `println` instead of `prn`.
+There is one special variable, `*in*`, which is the input read from stdin.  The
+input is read as EDN by default, unless the `-i` flag is provided, then the
+input is read as a string split by newlines into a vector.. The output is
+printed as EDN by default, unless the `-o` flag is provided, then the output is
+printed using `println`. To combine `-i` and `-o` you can use `-io`.
 
 The current version can be printed with `bb --version`.
+
+Currently only the macros `if`, `when`, `and`, `or`, `->` and `->>` are
+supported.
 
 Examples:
 
 ``` shellsession
-$ ls | bb --raw '*in*'
+$ ls | bb -i '*in*'
 ["LICENSE" "README.md" "bb" "doc" "pom.xml" "project.clj" "reflection.json" "resources" "script" "src" "target" "test"]
 
-$ ls | bb --raw '(count *in*)'
-11
+$ ls | bb -i '(count *in*)'
+12
 
 $ bb '(vec (dedupe *in*))' <<< '[1 1 1 1 2]'
 [1 2]
 
-$ bb '(filter :foo *in*)' <<< '[{:foo 1} {:bar 2}]'
-({:foo 1})
+$ bb '(filterv :foo *in*)' <<< '[{:foo 1} {:bar 2}]'
+[{:foo 1}]
 ```
 
-Functions are written using the reader tag `#f`. Currently up to three
-arguments are supported.
+Anonymous functions literals are allowed with currently up to three positional
+arguments.
 
 ``` shellsession
-$ bb '(#f(+ %1 %2 %3) 1 2 *in*)' <<< 3
+$ bb '(#(+ %1 %2 %3) 1 2 *in*)' <<< 3
 6
 ```
 
-Regexes are written using the reader tag `#r`.
-
 ``` shellsession
-$ ls | bb --raw '(filterv #f(re-find #r "reflection" %) *in*)'
+$ ls | bb -i '(filterv #(re-find #"reflection" %) *in*)'
 ["reflection.json"]
 ```
 
@@ -97,7 +97,7 @@ $ cat /tmp/test.txt
 3 Babashka
 4 Goodbye
 
-$ < /tmp/test.txt bb --raw '(shuffle *in*)' | bb --println '(str/join "\n" *in*)'
+$ < /tmp/test.txt bb -io '(shuffle *in*)'
 3 Babashka
 2 Clojure
 4 Goodbye
@@ -113,8 +113,8 @@ Clojure is nice
 bar
 when you're nice to clojure
 
-$ < /tmp/test.txt bb --raw '(map-indexed #f[%1 %2] *in*))' | \
-bb '(keep #f(when (re-find #r"(?i)clojure" (second %)) (first %)) *in*)'
+$ < /tmp/test.txt bb -i '(map-indexed #(vector %1 %2) *in*))' | \
+bb '(keep #f(when (re-find #"(?i)clojure" (second %)) (first %)) *in*)'
 (1 3)
 ```
 
@@ -136,6 +136,22 @@ Test the native version:
 You will need leiningen and GraalVM.
 
     script/compile
+
+## Gallery
+
+Here's a gallery of more useful examples. Do you have a useful example? PR
+welcome!
+
+### Fetch latest Github release tag
+
+For converting JSON to EDN, see [jet](https://github.com/borkdude/jet).
+
+``` shellsession
+$ curl -s https://api.github.com/repos/borkdude/clj-kondo/tags \
+| jet --from json --keywordize --to edn \
+| bb '(-> *in* first :name (subs 1))'
+"2019.07.31-alpha"
+```
 
 ## License
 

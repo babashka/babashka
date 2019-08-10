@@ -1,43 +1,152 @@
 (ns babashka.interpreter
   {:no-doc true}
-  (:refer-clojure :exclude [comparator])
   (:require [clojure.walk :refer [postwalk]]
             [clojure.string :as str]
             [clojure.set :as set]))
 
-(def syms '(= < <= >= + +' - * /
-              aget alength apply assoc assoc-in
-              bit-set bit-shift-left bit-shift-right bit-xor boolean boolean? booleans boolean-array butlast
-              char char? conj cons contains? count
-              dec dec' decimal? dedupe dissoc distinct disj drop
-              eduction even? every?
-              get
-              first float? floats fnil
-              identity inc int-array iterate
+(defn expand->
+  "The -> macro from clojure.core."
+  [[x & forms]]
+  (loop [x x, forms forms]
+    (if forms
+      (let [form (first forms)
+            threaded (if (seq? form)
+                       (with-meta (concat (list (first form) x)
+                                          (next form))
+                         (meta form))
+                       (list form x))]
+        (recur threaded (next forms)))
+      x)))
+
+(defn expand->>
+  "The ->> macro from clojure.core."
+  [[x & forms]]
+  (loop [x x, forms forms]
+    (if forms
+      (let [form (first forms)
+            threaded (if (seq? form)
+                       (with-meta (concat (cons (first form) (next form))
+                                          (list x))
+                         (meta form))
+                       (list form x))]
+        (recur threaded (next forms)))
+      x)))
+
+(declare interpret)
+
+(defn eval-and
+  "The and macro from clojure.core."
+  [in args]
+  (if (empty? args) true
+      (let [[x & xs] args
+            v (interpret x in)]
+        (if v
+          (if (empty? xs) v
+              (eval-and in xs))
+          v))))
+
+(defn eval-or
+  "The or macro from clojure.core."
+  [in args]
+  (if (empty? args) nil
+      (let [[x & xs] args
+            v (interpret x in)]
+        (if v v
+            (if (empty? xs) v
+                (eval-or in xs))))))
+
+(def syms '(= < <= >= + +' - -' * *' / == aget alength apply assoc assoc-in
+              associative? array-map
+
+              bit-and-not bit-set bit-shift-left bit-shift-right bit-xor boolean
+              boolean?  booleans boolean-array bound? butlast byte-array bytes
+              bigint bit-test bit-and bounded-count bytes? bit-or bit-flip
+              biginteger bigdec bit-not byte
+
+              cat char char? conj cons contains? count cycle comp concat
+              comparator coll? compare complement char-array constantly
+              char-escape-string chars completing counted? chunk-rest
+              char-name-string class chunk-next
+
+              dec dec' decimal? dedupe dissoc distinct distinct? disj double
+              double? drop drop-last drop-while denominator doubles
+
+              eduction empty empty? even? every? every-pred ensure-reduced
+
+              first float? floats fnil fnext ffirst flatten false? filter
+              filterv find format frequencies float float-array
+
+              get get-in group-by gensym
+
+              hash hash-map hash-set hash-unordered-coll
+
+              ident? identical? identity inc inc' int-array interleave into
+              iterate int int? interpose indexed? integer? ints into-array
+
               juxt
-              filter filterv find frequencies
-              last line-seq
-              keep keep-indexed keys
-              map mapv map-indexed mapcat merge merge-with munge
-              name newline not= num
-              neg? nth nthrest
-              odd?
-              peek pos?
-              re-seq re-find re-pattern rest reverse
-              set? sequential? some? str
-              take take-last take-nth tree-seq type
-              unchecked-inc-int unchecked-long unchecked-negate unchecked-remainder-int
-              unchecked-subtract-int unsigned-bit-shift-right unchecked-float
-              vals vec vector?
-              rand-int rand-nth range reduce reduced? remove
-              second set seq seq? shuffle simple-symbol? sort sort-by subs
-              set/difference set/join
-              str/join str/starts-with? str/ends-with? str/split
-              zero?))
+
+              keep keep-indexed key keys keyword keyword?
+
+              last line-seq long list list? longs list* long-array
+
+              map map? map-indexed map-entry? mapv mapcat max max-key meta merge
+              merge-with min min-key munge mod make-array
+
+              name newline nfirst not not= not-every? num neg? neg-int? nth
+              nthnext nthrest nil? nat-int? number? not-empty not-any? next
+              nnext namespace-munge numerator
+
+              odd? object-array
+
+              peek pop pos? pos-int? partial partition partition-all
+              partition-by
+
+              qualified-ident? qualified-symbol? qualified-keyword? quot
+
+              re-seq re-find re-pattern re-matches rem remove rest repeatedly
+              reverse rand-int rand-nth range reduce reduce-kv reduced reduced?
+              reversible? replicate rsubseq reductions rational? rand replace
+              rseq ratio? rationalize random-sample repeat
+
+              set? sequential? select-keys simple-keyword? simple-symbol? some?
+              string? str
+
+              set/difference set/index set/intersection set/join set/map-invert
+              set/project set/rename set/rename-keys set/select set/subset?
+              set/superset? set/union
+
+              str/blank? str/capitalize str/ends-with? str/escape str/includes?
+              str/index-of str/join str/last-index-of str/lower-case
+              str/re-quote-replacement str/replace str/replace-first str/reverse
+              str/split str/split-lines str/starts-with? str/trim
+              str/trim-newline str/triml str/trimr str/upper-case
+
+              second set seq seq? seque short shuffle
+              sort sort-by subs symbol symbol? special-symbol? subvec some-fn
+              some split-at split-with sorted-set subseq sorted-set-by
+              sorted-map-by sorted-map sorted? simple-ident? sequence seqable?
+              shorts
+
+              take take-last take-nth take-while transduce tree-seq type true?
+              to-array
+
+              update update-in uri? uuid? unchecked-inc-int unchecked-long
+              unchecked-negate unchecked-remainder-int unchecked-subtract-int
+              unsigned-bit-shift-right unchecked-float unchecked-add-int
+              unchecked-double unchecked-multiply-int unchecked-int
+              unchecked-multiply unchecked-dec-int unchecked-add unreduced
+              unchecked-divide-int unchecked-subtract unchecked-negate-int
+              unchecked-inc unchecked-char unchecked-byte unchecked-short
+
+              val vals vary-meta vec vector vector?
+
+              xml-seq
+
+              zipmap zero?))
 
 ;; TODO:
 #_(def all-syms
-  '#{when-first while if-not when-let inc' cat StackTraceElement->vec flush take-while vary-meta <= alter -' if-some conj! repeatedly zipmap reset-vals! alter-var-root biginteger remove * re-pattern min pop! chunk-append prn-str with-precision format reversible? shutdown-agents conj bound? transduce lazy-seq *print-length* *file* compare-and-set! *use-context-classloader* await1 let ref-set pop-thread-bindings interleave printf map? -> defstruct *err* assert-same-protocol get doto identity into areduce long double volatile? definline nfirst meta find-protocol-impl bit-and-not *default-data-reader-fn* var? method-sig unchecked-add-int unquote-splicing hash-ordered-coll future reset-meta! Vec cycle fn seque empty? short definterface add-tap filterv hash quot ns-aliases read unchecked-double key longs not= string? uri? aset-double unchecked-multiply-int chunk-rest pcalls *allow-unresolved-vars* remove-all-methods ns-resolve as-> aset-boolean trampoline double? when-not *1 vec *print-meta* when int map-entry? ns-refers rand second vector-of hash-combine > replace int? associative? unchecked-int set-error-handler! inst-ms* keyword? force bound-fn* namespace-munge group-by prn extend unchecked-multiply some->> default-data-readers ->VecSeq even? unchecked-dec Inst tagged-literal? double-array in-ns create-ns re-matcher defn ref bigint extends? promise aset-char rseq ex-cause construct-proxy agent-errors *compile-files* ex-message *math-context* float pr-str concat aset-short set-agent-send-off-executor! ns symbol to-array-2d mod amap pop use VecNode unquote declare dissoc! reductions aset-byte indexed? ref-history-count - assoc! hash-set reduce-kv or cast reset! name ffirst sorted-set counted? byte-array IVecImpl tagged-literal println extend-type macroexpand-1 assoc-in char-name-string bit-test defmethod requiring-resolve EMPTY-NODE time memoize alter-meta! future? zero? simple-keyword? require unchecked-dec-int persistent! nnext add-watch not-every? class? rem agent-error some future-cancelled? memfn neg-int? struct-map drop *data-readers* nth sorted? nil? extend-protocol split-at *e load-reader random-sample cond-> dotimes select-keys bit-and bounded-count update list* reify update-in prefer-method aset-int *clojure-version* ensure-reduced *' instance? with-open mix-collection-hash re-find run! val defonce unchecked-add loaded-libs ->Vec bytes? not with-meta unreduced the-ns record? type identical? unchecked-divide-int ns-name max-key *unchecked-math* defn- *out* file-seq agent ns-map set-validator! ident? defprotocol swap! vals unchecked-subtract tap> *warn-on-reflection* sorted-set-by sync qualified-ident? assert *compile-path* true? release-pending-sends print empty remove-method *in* print-ctor letfn volatile! / read-line reader-conditional? bit-or clear-agent-errors vector proxy-super >= drop-last not-empty distinct partition loop add-classpath bit-flip long-array descendants merge accessor integer? mapv partition-all partition-by numerator object-array with-out-str condp derive load-string special-symbol? ancestors subseq error-handler gensym cond ratio? delay? intern print-simple flatten doubles halt-when with-in-str remove-watch ex-info ifn? some-> nat-int? proxy-name ns-interns all-ns find-protocol-method subvec for binding partial chunked-seq? find-keyword replicate min-key reduced char-escape-string re-matches array-map unchecked-byte with-local-vars ns-imports send-off defmacro every-pred keys rationalize load-file distinct? pos-int? extenders unchecked-short methods odd? ->ArrayChunk float-array *3 alias frequencies read-string proxy rsubseq inc get-method with-redefs uuid? bit-clear filter locking list + split-with aset ->VecNode keyword *ns* destructure *assert* defmulti chars str next hash-map if-let underive ref-max-history Throwable->map false? *print-readably* ints class some-fn case *flush-on-newline* to-array bigdec list? simple-ident? bit-not io! xml-seq VecSeq byte max == *agent* lazy-cat comment parents count supers *fn-loader* ArrayChunk sorted-map-by apply interpose deref assoc rational? transient clojure-version chunk-cons comparator sorted-map send drop-while proxy-call-with-super realized? char-array resolve compare complement *compiler-options* *print-dup* defrecord with-redefs-fn sequence constantly get-proxy-class make-array shorts completing update-proxy unchecked-negate-int hash-unordered-coll repeat unchecked-inc nthnext and create-struct get-validator number? await-for chunk-next print-str not-any? into-array qualified-symbol? init-proxy chunk-buffer seqable? symbol? when-some unchecked-char ->> future-cancel var-get commute coll? get-in fnext denominator bytes gen-and-load-class refer-clojure})
+  '#{when-first while if-not when-let if-some let as-> when-not some->>  or cond-> loop  condp cond  some-> if-let case and when-some  })
 
 (declare var-lookup apply-fn)
 
@@ -51,35 +160,59 @@
 
 (define-lookup)
 
+(defn resolve-symbol [expr]
+  (let [n (name expr)]
+    (if (str/starts-with? n "'")
+      (symbol (subs n 1))
+      (or (var-lookup expr)
+          (throw (Exception. (format "Could not resolve symbol: %s." n)))))))
+
 (defn interpret
   [expr in]
-  (cond
-    (= '*in* expr) in
-    (symbol? expr) (var-lookup expr)
-    (list? expr)
-    (if-let [f (first expr)]
-      (if-let [v (var-lookup f)]
-        (apply-fn v in (rest expr))
-        (cond
-          (or (= 'if f) (= 'when f))
-          (let [[_if cond then else] expr]
-            (if (interpret cond in)
-              (interpret then in)
-              (interpret else in)))
-          ;; bb/fn passed as higher order fn, still needs input
-          (-> f meta :bb/fn)
-          (apply-fn (f in) in (rest expr))
-          (ifn? f)
-          (apply-fn f in (rest expr))
-          :else nil))
-      expr)
-    ;; bb/fn passed as higher order fn, still needs input
-    (-> expr meta :bb/fn)
-    (expr in)
-    :else expr))
+  (let [i #(interpret % in)]
+    (cond
+      (= '*in* expr) in
+      (symbol? expr) (resolve-symbol expr)
+      (map? expr)
+      (zipmap (map i (keys expr))
+              (map i (vals expr)))
+      (or (vector? expr) (set? expr))
+      (into (empty expr) (map i expr))
+      (seq? expr)
+      (if-let [f (first expr)]
+        (if-let [v (var-lookup f)]
+          (apply-fn v i (rest expr))
+          (case f
+            (if when)
+            (let [[_if cond then else] expr]
+              (if (interpret cond in)
+                (interpret then in)
+                (interpret else in)))
+            ->
+            (interpret (expand-> (rest expr)) in)
+            ->>
+            (interpret (expand->> (rest expr)) in)
+            and
+            (eval-and in (rest expr))
+            or
+            (eval-or in (rest expr))
+            ;; fallback
+            ;; read fn passed as higher order fn, still needs input
+            (cond (-> f meta ::fn)
+                  (apply-fn (f in) i (rest expr))
+                  (symbol? f)
+                  (apply-fn (resolve-symbol f) i (rest expr))
+                  (ifn? f)
+                  (apply-fn f i (rest expr))
+                  :else nil)))
+        expr)
+      ;; read fn passed as higher order fn, still needs input
+      (-> expr meta ::fn)
+      (expr in)
+      :else expr)))
 
 (defn read-fn [form]
-  ^:bb/fn
+  ^::fn
   (fn [in]
     (fn [& [x y z]]
       (interpret (postwalk (fn [elt]
@@ -93,11 +226,15 @@
 (defn read-regex [form]
   (re-pattern form))
 
-(defn apply-fn [f in args]
-  (let [args (mapv #(interpret % in) args)]
+(defn apply-fn [f i args]
+  (let [args (mapv i args)]
     (apply f args)))
 
 ;;;; Scratch
 
 (comment
+  (interpret '(and *in* 3) 1)
+  (interpret '(and *in* 3 false) 1)
+  (interpret '(or *in* 3) nil)
+  (ifn? 'foo)
   )
