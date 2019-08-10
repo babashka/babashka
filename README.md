@@ -88,35 +88,7 @@ $ ls | bb -i '(filterv #(re-find #"reflection" %) *in*)'
 ["reflection.json"]
 ```
 
-Shuffle the lines of a file:
-
-``` shellsession
-$ cat /tmp/test.txt
-1 Hello
-2 Clojure
-3 Babashka
-4 Goodbye
-
-$ < /tmp/test.txt bb -io '(shuffle *in*)'
-3 Babashka
-2 Clojure
-4 Goodbye
-1 Hello
-```
-
-Find the line numbers where the word Clojure occurs using a case insensitive regex:
-
-``` shellsession
-$ cat /tmp/test.txt
-foo
-Clojure is nice
-bar
-when you're nice to clojure
-
-$ < /tmp/test.txt bb -i '(map-indexed #(vector %1 %2) *in*))' | \
-bb '(keep #f(when (re-find #"(?i)clojure" (second %)) (first %)) *in*)'
-(1 3)
-```
+More examples can be found in the [gallery](#gallery).
 
 ## Test
 
@@ -141,6 +113,22 @@ You will need leiningen and GraalVM.
 
 Here's a gallery of more useful examples. Do you have a useful example? PR
 welcome!
+
+### Shuffle the lines of a file
+
+``` shellsession
+$ cat /tmp/test.txt
+1 Hello
+2 Clojure
+3 Babashka
+4 Goodbye
+
+$ < /tmp/test.txt bb -io '(shuffle *in*)'
+3 Babashka
+2 Clojure
+4 Goodbye
+1 Hello
+```
 
 ### Fetch latest Github release tag
 
