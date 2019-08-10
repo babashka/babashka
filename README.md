@@ -26,10 +26,7 @@ If most of your shell script evolves into Clojure, you might want to turn to:
 
 ## Status
 
-Experimental. Breaking changes are expected to happen at this phase. Not all
-Clojure core functions are supported yet, but can be easily
-[added](https://github.com/borkdude/babashka/blob/master/src/babashka/interpreter.clj#L10). PRs
-welcome.
+Experimental. Breaking changes are expected to happen at this phase.
 
 ## Installation
 
@@ -59,6 +56,9 @@ printed using `println`. To combine `-i` and `-o` you can use `-io`.
 
 The current version can be printed with `bb --version`.
 
+Currently only the macros `if`, `when`, `and`, `or`, `->` and `->>` are
+supported.
+
 Examples:
 
 ``` shellsession
@@ -75,7 +75,8 @@ $ bb '(filterv :foo *in*)' <<< '[{:foo 1} {:bar 2}]'
 [{:foo 1}]
 ```
 
-Anonymous functions literals are allowed with up to three positional arguments.
+Anonymous functions literals are allowed with currently up to three positional
+arguments.
 
 ``` shellsession
 $ bb '(#(+ %1 %2 %3) 1 2 *in*)' <<< 3
