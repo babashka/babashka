@@ -48,11 +48,11 @@ You may also download a binary from [Github](https://github.com/borkdude/babashk
 ... | bb [-i] [-o] '<Clojure form>'
 ```
 
-There is one special variable, `*in*`, which is the input read from stdin.  The
-input is read as EDN by default, unless the `-i` flag is provided, then the
-input is read as a string split by newlines into a vector.. The output is
-printed as EDN by default, unless the `-o` flag is provided, then the output is
-printed using `println`. To combine `-i` and `-o` you can use `-io`.
+There is one special variable, `*in*`, which is the input read from stdin. The
+input is read as EDN by default. If the `-i` flag is provided, then the input is
+read as a string which is then split on newlines. The output is printed as EDN
+by default, unless the `-o` flag is provided, then the output is turned into
+shell-scripting friendly output. To combine `-i` and `-o` you can use `-io`.
 
 The current version can be printed with `bb --version`.
 
