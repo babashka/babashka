@@ -147,10 +147,21 @@ welcome!
 For converting JSON to EDN, see [jet](https://github.com/borkdude/jet).
 
 ``` shellsession
-$ curl -s https://api.github.com/repos/borkdude/clj-kondo/tags \
+$ curl -s https://api.github.com/repos/borkdude/babashka/tags \
 | jet --from json --keywordize --to edn \
 | bb '(-> *in* first :name (subs 1))'
-"2019.07.31-alpha"
+"0.0.4"
+```
+
+### Download latest linux version of babashka
+
+``` shellsession
+$ curl -s https://api.github.com/repos/borkdude/babashka/releases \
+| jet --from json --keywordize \
+| bb '(-> *in* first :assets)' \
+| bb '(keep #(re-find #"^.*linux.*" (:browser_download_url %)) *in*)' \
+| bb -o '(first *in*)' \
+| xargs -n1 curl -sL > /tmp/bb
 ```
 
 ## License
