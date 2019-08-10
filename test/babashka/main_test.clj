@@ -2,7 +2,8 @@
   (:require
    [clojure.test :as test :refer [deftest is testing]]
    [babashka.test-utils :as test-utils]
-   [clojure.edn :as edn]))
+   [clojure.edn :as edn]
+   [clojure.string :as str]))
 
 (defn bb [input & args]
   (edn/read-string (apply test-utils/bb (str input) (map str args))))
@@ -21,10 +22,18 @@
     (is (= [1 2 3] (bb nil '(map inc [0 1 2])))))
   (testing "keep"
     (is (= [false true false] (bb nil '(keep odd? [0 1 2])))))
-  (testing "..."
+  (testing "shuffle the contents of a file"
+    (let [in "foo\n Clojure is nice. \nbar\n If you're nice to clojure. "
+          in-lines (set (str/split in #"\n"))
+          out (test-utils/bb in
+                             "-io"
+                             (str '(shuffle *in*)))
+          out-lines (set (str/split out #"\n"))]
+      (= in-lines out-lines)))
+  (testing "find occurrences in file by line number"
     (is (= '(1 3)
            (->
             (bb "foo\n Clojure is nice. \nbar\n If you're nice to clojure. "
-                "--raw"
+                "-i"
                 "(map-indexed #f[%1 %2] *in*)")
             (bb "(keep #f(when (re-find #r\"(?i)clojure\" (second %)) (first %)) *in*)"))))))

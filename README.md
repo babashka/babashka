@@ -52,25 +52,26 @@ You may also download a binary from [Github](https://github.com/borkdude/babashk
 ```
 
 There is one special variable, `*in*`, which is the input read from stdin. The
-input is read as EDN by default, unless the `--raw` flag is provided. When using
-the `--println` flag, the output is printed using `println` instead of `prn`.
+input is read as EDN by default, unless the `-i` flag is provided. The output is
+printed as EDN by default, unless the `-o` flag is provided. To combine `-i` and
+`-o` you can use `-io`.
 
 The current version can be printed with `bb --version`.
 
 Examples:
 
 ``` shellsession
-$ ls | bb --raw '*in*'
+$ ls | bb -i '*in*'
 ["LICENSE" "README.md" "bb" "doc" "pom.xml" "project.clj" "reflection.json" "resources" "script" "src" "target" "test"]
 
-$ ls | bb --raw '(count *in*)'
-11
+$ ls | bb -i '(count *in*)'
+12
 
 $ bb '(vec (dedupe *in*))' <<< '[1 1 1 1 2]'
 [1 2]
 
-$ bb '(filter :foo *in*)' <<< '[{:foo 1} {:bar 2}]'
-({:foo 1})
+$ bb '(filterv :foo *in*)' <<< '[{:foo 1} {:bar 2}]'
+[{:foo 1}]
 ```
 
 Functions are written using the reader tag `#f`. Currently up to three
@@ -84,7 +85,7 @@ $ bb '(#f(+ %1 %2 %3) 1 2 *in*)' <<< 3
 Regexes are written using the reader tag `#r`.
 
 ``` shellsession
-$ ls | bb --raw '(filterv #f(re-find #r "reflection" %) *in*)'
+$ ls | bb -i '(filterv #f(re-find #r "reflection" %) *in*)'
 ["reflection.json"]
 ```
 
@@ -97,7 +98,7 @@ $ cat /tmp/test.txt
 3 Babashka
 4 Goodbye
 
-$ < /tmp/test.txt bb --raw '(shuffle *in*)' | bb --println '(str/join "\n" *in*)'
+$ < /tmp/test.txt bb -io '(shuffle *in*)'
 3 Babashka
 2 Clojure
 4 Goodbye
@@ -113,7 +114,7 @@ Clojure is nice
 bar
 when you're nice to clojure
 
-$ < /tmp/test.txt bb --raw '(map-indexed #f[%1 %2] *in*))' | \
+$ < /tmp/test.txt bb -i '(map-indexed #f[%1 %2] *in*))' | \
 bb '(keep #f(when (re-find #r"(?i)clojure" (second %)) (first %)) *in*)'
 (1 3)
 ```

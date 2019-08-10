@@ -19,7 +19,7 @@
                     opts-map {}
                     current-opt nil]
                (if-let [opt (first options)]
-                 (if (starts-with? opt "--")
+                 (if (starts-with? opt "-")
                    (recur (rest options)
                           (assoc opts-map opt [])
                           opt)
@@ -28,27 +28,38 @@
                           current-opt))
                  opts-map))
         version (boolean (get opts "--version"))
-        raw (boolean (get opts "--raw"))
+        raw-in (boolean (or (get opts "--raw")
+                            (get opts "-i")
+                            (get opts "-io")))
+        raw-out (boolean (or (get opts "-o")
+                             (get opts "-io")))
         println? (boolean (get opts "--println"))]
     {:version version
-     :raw raw
+     :raw-in raw-in
+     :raw-out raw-out
      :println? println?}))
 
 (defn -main
   [& args]
-  (let [{:keys [:version :raw :println?]} (parse-opts args)]
+  (let [{:keys [:version :raw-in :raw-out :println?]} (parse-opts args)]
     (cond version
       (println (str/trim (slurp (io/resource "BABASHKA_VERSION"))))
       :else
       (let [expr (last args)
             expr (read-edn expr)
             in (slurp *in*)
-            in (if raw
+            ;; _ (prn in)
+            in (if raw-in
                  (str/split in #"\n")
-                 (read-edn (format "[%s]" in)))
-            in (if (= 1 (count in)) (first in) in)]
-        ((if println? println prn)
-         (i/interpret expr in))))))
+                 (read-edn in))
+            ;; _ (prn in)
+            res (i/interpret expr in)]
+        (if raw-out
+          (if (coll? res)
+            (doseq [l res]
+              (println l))
+            (println res))
+          ((if println? println? prn) res))))))
 
 ;;;; Scratch
 
