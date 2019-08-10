@@ -4,7 +4,7 @@
 [![Clojars Project](https://img.shields.io/clojars/v/borkdude/babashka.svg)](https://clojars.org/borkdude/babashka)
 [![cljdoc badge](https://cljdoc.org/badge/borkdude/babashka)](https://cljdoc.org/d/borkdude/babashka/CURRENT)
 
-A pure, fast and (severely!) limited version of Clojure in Clojure for shell scripting.
+A tiny, pure and fast implementation of Clojure in Clojure for shell scripting.
 
 Properties:
 
