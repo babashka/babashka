@@ -57,4 +57,4 @@
             (bb "foo\n Clojure is nice. \nbar\n If you're nice to clojure. "
                 "-i"
                 "(map-indexed #(-> [%1 %2]) *in*)")
-            (bb "(keep #f(when (re-find #\"(?i)clojure\" (second %)) (first %)) *in*)"))))))
+            (bb "(keep #(when (re-find #\"(?i)clojure\" (second %)) (first %)) *in*)"))))))

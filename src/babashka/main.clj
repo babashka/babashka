@@ -4,7 +4,7 @@
    [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.string :as str :refer [starts-with?]]
-   [babashka.interpreter :as i])
+   [sci.core :as sci])
   (:gen-class))
 
 (set! *warn-on-reflection* true)
@@ -46,16 +46,12 @@
       (println (str/trim (slurp (io/resource "BABASHKA_VERSION"))))
       :else
       (let [expr (last args)
-            expr (read-edn (-> expr
-                               (str/replace "#(" "#f(")
-                               (str/replace "#\"" "#r\"")))
             in (slurp *in*)
-            ;; _ (prn in)
             in (if raw-in
                  (str/split in #"\n")
                  (read-edn in))
             ;; _ (prn in)
-            res (try (i/interpret expr in)
+            res (try (sci/eval-string expr {:bindings {'*in* in}})
                      (catch Exception e
                        (binding [*out* *err*]
                          (println (.getMessage e)))
