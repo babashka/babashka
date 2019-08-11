@@ -30,6 +30,8 @@ Experimental. Breaking changes are expected to happen at this phase.
 
 ## Installation
 
+### Brew
+
 Linux and macOS binaries are provided via brew.
 
 Install:
@@ -39,6 +41,23 @@ Install:
 Upgrade:
 
     brew upgrade babashka
+
+
+### Installer script
+
+Install via the installer script:
+
+``` shellsession
+$ bash <(curl -s https://raw.githubusercontent.com/borkdude/babashka/master/install)
+```
+
+By default this will install into `/usr/local/bin`. To change this, provide the directory name:
+
+``` shellsession
+$ bash <(curl -s https://raw.githubusercontent.com/borkdude/babashka/master/install) /tmp
+```
+
+### Download
 
 You may also download a binary from [Github](https://github.com/borkdude/babashka/releases).
 
