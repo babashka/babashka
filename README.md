@@ -155,8 +155,8 @@ For converting JSON to EDN, see [jet](https://github.com/borkdude/jet).
 
 ``` shellsession
 $ curl -s https://api.github.com/repos/borkdude/babashka/tags |
-  jet --from json --keywordize --to edn |
-  bb '(-> *in* first :name (subs 1))'
+jet --from json --keywordize --to edn |
+bb '(-> *in* first :name (subs 1))'
 "0.0.4"
 ```
 
@@ -164,9 +164,9 @@ $ curl -s https://api.github.com/repos/borkdude/babashka/tags |
 
 ``` shellsession
 $ curl -s https://api.github.com/repos/borkdude/babashka/releases |
-  jet --from json --keywordize |
-  bb '(-> *in* first :assets)' |
-  bb '(some #(re-find #".*linux.*" (:browser_download_url %)) *in*)'
+jet --from json --keywordize |
+bb '(-> *in* first :assets)' |
+bb '(some #(re-find #".*linux.*" (:browser_download_url %)) *in*)'
 "https://github.com/borkdude/babashka/releases/download/v0.0.4/babashka-0.0.4-linux-amd64.zip"
 ```
 
