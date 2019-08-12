@@ -85,7 +85,7 @@ shell-scripting friendly output. To combine `-i` and `-o` you can use `-io`.
 
 The current version can be printed with `bb --version`.
 
-Currently only the macros `if`, `when`, `and`, `or`, `->` and `->>` are
+Currently only the macros `if`, `when`, `and`, `or`, `->`, `->>` and `as->` are
 supported.
 
 Examples:
