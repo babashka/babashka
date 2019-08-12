@@ -4,25 +4,7 @@
 [![Clojars Project](https://img.shields.io/clojars/v/borkdude/babashka.svg)](https://clojars.org/borkdude/babashka)
 [![cljdoc badge](https://cljdoc.org/badge/borkdude/babashka)](https://cljdoc.org/d/borkdude/babashka/CURRENT)
 
-A tiny, pure and fast implementation of Clojure in Clojure for shell scripting.
-
-Properties:
-
-- pure (no side effects)
-- fast startup time
-- interprets only one form
-- reads from stdin and writes to stdout
-
-## Rationale
-
-If you're a bash expert, you probably don't need this. But for those of us who
-can use a tiny sprinkle of Clojure on their shell scripts, it may be useful. If
-most of your script evolves into Clojure, you might want to turn to:
-
-- [planck](https://planck-repl.org/)
-- [joker](https://github.com/candid82/joker)
-- [closh](https://github.com/dundalek/closh)
-- [lumo](https://github.com/anmonteiro/lumo)
+A sprinkle of Clojure for the command line.
 
 ## Quickstart
 
@@ -31,6 +13,25 @@ $ bash <(curl -s https://raw.githubusercontent.com/borkdude/babashka/master/inst
 $ bb '(vec (dedupe *in*))' <<< '[1 1 1 1 2]'
 [1 2]
 ```
+
+## Rationale
+
+If you're a bash expert, you probably don't need this. But for those of us who
+can use a bit of Clojure in their shell scripts, it may be useful.
+
+Properties:
+
+- pure (no side effects)
+- fast startup time
+- interprets only one form
+- reads from stdin and writes to stdout
+
+If most of your script evolves into Clojure, you might want to turn to:
+
+- [planck](https://planck-repl.org/)
+- [joker](https://github.com/candid82/joker)
+- [closh](https://github.com/dundalek/closh)
+- [lumo](https://github.com/anmonteiro/lumo)
 
 ## Status
 
