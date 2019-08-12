@@ -24,6 +24,14 @@ most of your script evolves into Clojure, you might want to turn to:
 - [closh](https://github.com/dundalek/closh)
 - [lumo](https://github.com/anmonteiro/lumo)
 
+## Quickstart
+
+``` shellsession
+$ bash <(curl -s https://raw.githubusercontent.com/borkdude/babashka/master/install)
+$ bb '(vec (dedupe *in*))' <<< '[1 1 1 1 2]'
+[1 2]
+```
+
 ## Status
 
 Experimental. Breaking changes are expected to happen at this phase.
