@@ -21,7 +21,8 @@ can use a bit of Clojure in their shell scripts, it may be useful.
 
 Properties:
 
-- pure (no side effects)
+- interpretation is done by [sci](https://github.com/borkdude/sci) and all limits of sci apply to babashka
+- pure (no side effects allowed)
 - fast startup time
 - interprets only one form
 - reads from stdin and writes to stdout
