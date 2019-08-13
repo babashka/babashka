@@ -1,4 +1,4 @@
-# babashka
+# babaška
 
 [![CircleCI](https://circleci.com/gh/borkdude/babashka/tree/master.svg?style=shield)](https://circleci.com/gh/borkdude/babashka/tree/master)
 [![Clojars Project](https://img.shields.io/clojars/v/borkdude/babashka.svg)](https://clojars.org/borkdude/babashka)
@@ -148,11 +148,11 @@ welcome!
 $ cat /tmp/test.txt
 1 Hello
 2 Clojure
-3 Babashka
+3 Babaška
 4 Goodbye
 
 $ < /tmp/test.txt bb -io '(shuffle *in*)'
-3 Babashka
+3 Babaška
 2 Clojure
 4 Goodbye
 1 Hello
