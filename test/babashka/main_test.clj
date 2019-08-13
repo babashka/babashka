@@ -2,6 +2,7 @@
   (:require
    [clojure.test :as test :refer [deftest is testing]]
    [babashka.test-utils :as test-utils]
+   [babashka.main :as main]
    [clojure.edn :as edn]
    [clojure.string :as str]))
 
@@ -50,7 +51,7 @@
                              "-io"
                              (str '(shuffle *in*)))
           out-lines (set (str/split out #"\n"))]
-      (= in-lines out-lines)))
+      (is (= in-lines out-lines))))
   (testing "find occurrences in file by line number"
     (is (= '(1 3)
            (->
@@ -58,3 +59,7 @@
                 "-i"
                 "(map-indexed #(-> [%1 %2]) *in*)")
             (bb "(keep #(when (re-find #\"(?i)clojure\" (second %)) (first %)) *in*)"))))))
+
+(deftest input-test
+  (testing "bb doesn't wait for input if *in* isn't used"
+    (is (= "2\n" (with-out-str (main/main "(inc 1)"))))))

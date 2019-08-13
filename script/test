@@ -2,7 +2,7 @@
 
 set -eo pipefail
 
-if [ "$JET_TEST_ENV" = "native" ]; then
+if [ "$BABASHKA_TEST_ENV" = "native" ]; then
     lein test
 else
     echo "Testing with Clojure 1.9.0"

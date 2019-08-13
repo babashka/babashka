@@ -17,7 +17,7 @@ $ bb '(vec (dedupe *in*))' <<< '[1 1 1 1 2]'
 ## Rationale
 
 If you're a bash expert, you probably don't need this. But for those of us who
-can use a bit of Clojure in their shell scripts, it may be useful.
+scan use a bit of Clojure in their shell scripts, it may be useful.
 
 Properties:
 
@@ -66,7 +66,7 @@ You may also download a binary from [Github](https://github.com/borkdude/babashk
 ## Usage
 
 ``` shellsession
-... | bb [-i] [-o] '<Clojure form>'
+bb [ --help ] [ -i ] [ -o ] [ -io ] [ --version ] [ expression ]
 ```
 
 There is one special variable, `*in*`, which is the input read from stdin. The
@@ -77,8 +77,14 @@ shell-scripting friendly output. To combine `-i` and `-o` you can use `-io`.
 
 The current version can be printed with `bb --version`.
 
-Currently only the macros `if`, `when`, `and`, `or`, `->`, `->>` and `as->` are
-supported.
+Currently only the following special forms/macros are supported: anonymous
+function literals like `#(%1 %2)`, `quote`, `do`,`if`, `when`, `let`, `and`,
+`or`, `->`, `->>`, `as->`.
+
+The `clojure.core` functions are accessible without a namespace alias. Those in
+`clojure.string` are accessed through the alias `str`, like:
+`str/includes?`. Those in `clojure.set` using the alias `set`, like:
+`set/difference`.
 
 Examples:
 
@@ -107,6 +113,15 @@ $ bb '(#(+ %1 %2 %3) 1 2 *in*)' <<< 3
 ``` shellsession
 $ ls | bb -i '(filterv #(re-find #"reflection" %) *in*)'
 ["reflection.json"]
+```
+
+Shell commands can be executed using `csh` which is an alias for
+`clojure.java.shell/sh`:
+
+``` shellsession
+$ bb '(run! #(csh "touch" (str "/tmp/test/" %)) (range 100))'
+$ ls /tmp/test | bb -i '*in*'
+["0" "1" "10" "11" "12" "13" "14" "15" "16" "17" "18" "19" "2" "20" "21" ...]
 ```
 
 More examples can be found in the [gallery](#gallery).
