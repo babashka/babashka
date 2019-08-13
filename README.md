@@ -17,7 +17,7 @@ $ bb '(vec (dedupe *in*))' <<< '[1 1 1 1 2]'
 ## Rationale
 
 If you're a bash expert, you probably don't need this. But for those of us who
-can use a bit of Clojure in their shell scripts, it may be useful.
+scan use a bit of Clojure in their shell scripts, it may be useful.
 
 Properties:
 
@@ -77,8 +77,9 @@ shell-scripting friendly output. To combine `-i` and `-o` you can use `-io`.
 
 The current version can be printed with `bb --version`.
 
-Currently only the macros `if`, `when`, `and`, `or`, `->`, `->>` and `as->` are
-supported.
+Currently only the following special forms/macros are supported: anonymous
+function literals, `quote`, `if`, `when`, `let`, `and`, `or`, `->`, `->>`,
+`as->`.
 
 Examples:
 
@@ -110,6 +111,26 @@ $ ls | bb -i '(filterv #(re-find #"reflection" %) *in*)'
 ```
 
 More examples can be found in the [gallery](#gallery).
+
+## Shell commands
+
+Shell commands can be executed using `sh`:
+
+``` shellsession
+$ echo . | bb '(sh "ls" "-t" *in*)'
+["README.md" "bb" "script" "reflection.json" "jni-config.json" "project.clj" "resources" "src" "install" "doc" "test" "LICENSE" "pom.xml"]
+```
+
+The following shell commands are directly callable:
+
+`cat`, `cd`, `chown`, `chmod`, `cp`, `find`, `kill`, `ls`, `mkdir`, `mv`, `pwd`,
+`ps`, `rm`, `rmdir`
+
+so you can just write:
+
+``` shellsession
+$ echo . | bb '(ls "-t" *in*)'
+```
 
 ## Test
 

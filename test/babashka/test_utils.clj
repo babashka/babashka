@@ -8,7 +8,7 @@
 (defn bb-jvm [input & args]
   (with-out-str
     (with-in-str input
-      (apply main/-main args))))
+      (apply main/main args))))
 
 (defn bb-native [input & args]
   (let-programs [bb "./bb"]

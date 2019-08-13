@@ -18,7 +18,8 @@ $GRAALVM_HOME/bin/native-image \
   -J-Dclojure.compiler.direct-linking=true \
   "-H:IncludeResources=BABASHKA_VERSION" \
   -H:ReflectionConfigurationFiles=reflection.json \
-  --initialize-at-build-time  \
+  --initialize-at-run-time=java.lang.Math\$RandomNumberGeneratorHolder \
+  --initialize-at-build-time \
   -H:Log=registerResource: \
   --verbose \
   --no-fallback \

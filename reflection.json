@@ -1,9 +1,33 @@
 [
-    {
-        "name": "java.lang.Class",
-        "allDeclaredConstructors": true,
-        "allPublicConstructors": true,
-        "allDeclaredMethods": true,
-        "allPublicMethods": true
-    }
+  {
+    "name": "java.lang.Class",
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true
+  },
+  {
+    "name":"java.io.BufferedReader",
+    "allPublicMethods":true
+  },
+  {
+    "name":"java.lang.Process",
+    "allPublicMethods":true
+  },
+  {
+    "name":"java.lang.ProcessBuilder",
+    "allPublicConstructors":true
+  },
+  {
+    "name":"java.lang.String",
+    "allPublicMethods":true
+  },
+  {
+    "name":"java.lang.UNIXProcess",
+    "allPublicMethods":true
+  },
+  {
+    "name":"java.util.concurrent.LinkedBlockingQueue",
+    "allPublicMethods":true
+  }
 ]
