@@ -66,7 +66,7 @@ You may also download a binary from [Github](https://github.com/borkdude/babashk
 ## Usage
 
 ``` shellsession
-... | bb [-i] [-o] '<Clojure form>'
+bb [ --help ] [ -i ] [ -o ] [ -io ] [ --version ] [ expression ]
 ```
 
 There is one special variable, `*in*`, which is the input read from stdin. The
@@ -78,8 +78,13 @@ shell-scripting friendly output. To combine `-i` and `-o` you can use `-io`.
 The current version can be printed with `bb --version`.
 
 Currently only the following special forms/macros are supported: anonymous
-function literals, `quote`, `if`, `when`, `let`, `and`, `or`, `->`, `->>`,
-`as->`.
+function literals like `#(%1 %2)`, `quote`, `do`,`if`, `when`, `let`, `and`,
+`or`, `->`, `->>`, `as->`.
+
+The `clojure.core` functions are accessible without a namespace alias. Those in
+`clojure.string` are accessed through the alias `str`, like:
+`str/includes?`. Those in `clojure.set` using the alias `set`, like:
+`set/difference`.
 
 Examples:
 
@@ -110,27 +115,16 @@ $ ls | bb -i '(filterv #(re-find #"reflection" %) *in*)'
 ["reflection.json"]
 ```
 
+Shell commands can be executed using `csh` which is an alias for
+`clojure.java.shell/sh`:
+
+``` shellsession
+$ bb '(run! #(csh "touch" (str "/tmp/test/" %)) (range 100))'
+$ ls /tmp/test | bb -i '*in*'
+["0" "1" "10" "11" "12" "13" "14" "15" "16" "17" "18" "19" "2" "20" "21" ...]
+```
+
 More examples can be found in the [gallery](#gallery).
-
-## Shell commands
-
-Shell commands can be executed using `sh`:
-
-``` shellsession
-$ echo . | bb '(sh "ls" "-t" *in*)'
-["README.md" "bb" "script" "reflection.json" "jni-config.json" "project.clj" "resources" "src" "install" "doc" "test" "LICENSE" "pom.xml"]
-```
-
-The following shell commands are directly callable:
-
-`cat`, `cd`, `chown`, `chmod`, `cp`, `find`, `kill`, `ls`, `mkdir`, `mv`, `pwd`,
-`ps`, `rm`, `rmdir`
-
-so you can just write:
-
-``` shellsession
-$ echo . | bb '(ls "-t" *in*)'
-```
 
 ## Test
 
