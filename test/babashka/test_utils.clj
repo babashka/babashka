@@ -7,14 +7,18 @@
 
 (defn bb-jvm [input & args]
   (with-out-str
-    (with-in-str input
-      (apply main/main args))))
+    (if input
+      (with-in-str input
+        (apply main/main args))
+      (apply main/main input args))))
 
 (defn bb-native [input & args]
   (let-programs [bb "./bb"]
     (binding [sh/*throw* false]
-      (apply bb (conj (vec args)
-                       {:in input})))))
+      (if input
+        (apply bb (conj (vec args)
+                        {:in input}))
+        (apply bb input args)))))
 
 (def bb
   (case (System/getenv "BABASHKA_TEST_ENV")

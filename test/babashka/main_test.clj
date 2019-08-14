@@ -63,3 +63,9 @@
 (deftest input-test
   (testing "bb doesn't wait for input if *in* isn't used"
     (is (= "2\n" (with-out-str (main/main "(inc 1)"))))))
+
+(deftest System-test
+  (let [res (bb nil "-f" "test/babashka/scripts/System.bb")]
+    (is (= "bar" (second res)))
+    (doseq [s res]
+      (is (not-empty s)))))
