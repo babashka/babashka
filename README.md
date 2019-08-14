@@ -66,8 +66,10 @@ You may also download a binary from [Github](https://github.com/borkdude/babashk
 ## Usage
 
 ``` shellsession
-bb [ --help ] [ -i ] [ -o ] [ -io ] [ --version ] [ expression ]
+bb [ --help ] [ -i ] [ -o ] [ -io ] [ --version ] [ -f <file> ] [ expression ]
 ```
+
+Type `bb --help` to see a full explanation of the options.
 
 There is one special variable, `*in*`, which is the input read from stdin. The
 input is read as EDN by default. If the `-i` flag is provided, then the input is
@@ -79,12 +81,21 @@ The current version can be printed with `bb --version`.
 
 Currently only the following special forms/macros are supported: anonymous
 function literals like `#(%1 %2)`, `quote`, `do`,`if`, `when`, `let`, `and`,
-`or`, `->`, `->>`, `as->`.
+`or`, `->`, `->>`, `as->`. Anonymous functions literals are allowed with
+currently up to three positional arguments.
 
-The `clojure.core` functions are accessible without a namespace alias. Those in
-`clojure.string` are accessed through the alias `str`, like:
-`str/includes?`. Those in `clojure.set` using the alias `set`, like:
-`set/difference`.
+The `clojure.core` functions are accessible without a namespace alias.
+
+The following Clojure namespaces are required by default and only available
+through the aliases:
+
+- `clojure.string` aliased as `str`
+- `clojure.set` aliased as `set`
+- `clojure.java.shell` aliases as `shell` (only `sh` is available)
+
+From Java the following is available:
+
+- `System`: `getProperty`, `getProperties`, `getenv`
 
 Examples:
 
@@ -102,9 +113,6 @@ $ bb '(filterv :foo *in*)' <<< '[{:foo 1} {:bar 2}]'
 [{:foo 1}]
 ```
 
-Anonymous functions literals are allowed with currently up to three positional
-arguments.
-
 ``` shellsession
 $ bb '(#(+ %1 %2 %3) 1 2 *in*)' <<< 3
 6
@@ -115,16 +123,33 @@ $ ls | bb -i '(filterv #(re-find #"reflection" %) *in*)'
 ["reflection.json"]
 ```
 
-Shell commands can be executed using `csh` which is an alias for
-`clojure.java.shell/sh`:
-
 ``` shellsession
-$ bb '(run! #(csh "touch" (str "/tmp/test/" %)) (range 100))'
+$ bb '(run! #(shell/sh "touch" (str "/tmp/test/" %)) (range 100))'
 $ ls /tmp/test | bb -i '*in*'
 ["0" "1" "10" "11" "12" "13" "14" "15" "16" "17" "18" "19" "2" "20" "21" ...]
 ```
 
 More examples can be found in the [gallery](#gallery).
+
+## Running a file
+
+Babashka expressions may be executed from a file using `-f` or `--file`:
+
+``` shellsession
+bb -f script.clj
+```
+
+Using `bb` with a shebang also works:
+
+``` shellsession
+$ cat script.clj
+#!/usr/bin/env bb -f
+
+(+ 1 2 3)
+
+$ ./script.clj
+6
+```
 
 ## Test
 

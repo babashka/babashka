@@ -3,7 +3,7 @@
   (:require
    [clojure.edn :as edn]
    [clojure.java.io :as io]
-   [clojure.java.shell :as cjs]
+   [clojure.java.shell :as shell]
    [clojure.string :as str :refer [starts-with?]]
    [sci.core :as sci])
   (:gen-class))
@@ -38,12 +38,15 @@
         raw-out (boolean (or (get opts "-o")
                              (get opts "-io")))
         println? (boolean (get opts "--println"))
-        help? (boolean (get opts "--help"))]
+        help? (boolean (get opts "--help"))
+        file (first (or (get opts "-f")
+                        (get opts "--file")))]
     {:version version
      :raw-in raw-in
      :raw-out raw-out
      :println? println?
-     :help? help?}))
+     :help? help?
+     :file file}))
 
 (defn parse-shell-string [s]
   (str/split s #"\n"))
@@ -69,13 +72,46 @@
   -i: read shell input into a list of strings instead of reading EDN.
   -o: write shell output instead of EDN.
   -io: combination of -i and -o.
+  --file or -f: read expression from file instead of argument
 "))
+
+(defn read-file [file]
+  (as-> (slurp file) x
+    ;; remove hashbang
+    (str/replace x #"^#!.*" "")
+    (format "(do %s)" x)))
+
+(defn get-env
+  ([] (System/getenv))
+  ([s] (System/getenv s)))
+
+(defn get-property
+  ([s]
+   (System/getProperty s))
+  ([s d]
+   (System/getProperty s d)))
+
+(defn get-properties []
+  (System/getProperties))
+
+(def bindings
+  {'run! run!
+   'shell/sh shell/sh
+   'csh shell/sh ;; backwards compatibility, deprecated
+   'pmap pmap
+   'print print
+   'pr-str pr-str
+   'prn prn
+   'println println
+   'System/getenv get-env
+   'System/getProperty get-property
+   'System/getProperties get-properties})
 
 (defn main
   [& args]
   (or
    (let [{:keys [:version :raw-in :raw-out :println?
-                 :help?]} (parse-opts args)]
+                 :help? :file]} (parse-opts args)]
      (second
       (cond version
             [(print-version) 0]
@@ -84,19 +120,18 @@
             :else
             (try
               [(let [exprs (drop-while #(str/starts-with? % "-") args)
-                     _ (when (not= (count exprs) 1)
+                     _ (when-not (or (= 1 (count exprs)) file)
                          (throw (Exception. ^String usage-string)))
-                     expr (last args)
+                     expr (if file (read-file file) (last args))
                      in (delay (let [in (slurp *in*)]
                                  (if raw-in
                                    (parse-shell-string in)
                                    (read-edn in))))
                      res (sci/eval-string
                           expr
-                          {:bindings {(with-meta '*in*
-                                        {:sci/deref! true}) in
-                                      'run! run!
-                                      'csh cjs/sh}})]
+                          {:bindings (assoc bindings
+                                            (with-meta '*in*
+                                              {:sci/deref! true}) in)})]
                  (if raw-out
                    (if (coll? res)
                      (doseq [l res]
