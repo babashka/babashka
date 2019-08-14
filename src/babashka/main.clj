@@ -103,6 +103,7 @@
    'pr-str pr-str
    'prn prn
    'println println
+   'edn/read-string edn/read-string
    'System/getenv get-env
    'System/getProperty get-property
    'System/getProperties get-properties})

@@ -91,6 +91,7 @@ through the aliases:
 
 - `clojure.string` aliased as `str`
 - `clojure.set` aliased as `set`
+- `clojure.edn` aliased as `edn` (only `read-string` is available)
 - `clojure.java.shell` aliases as `shell` (only `sh` is available)
 
 From Java the following is available:
