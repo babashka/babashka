@@ -86,11 +86,6 @@ as EDN by default, unless the `-o` flag is provided, then the output is turned
 into shell-scripting friendly output. To combine `-i` and `-o` you can use
 `-io`.
 
-The current version can be printed with `bb --version`.
-
-Babashka supports a subset of Clojure which is interpreted by
-[sci](https://github.com/borkdude/sci).
-
 The `clojure.core` functions are accessible without a namespace alias.
 
 The following Clojure namespaces are required by default and only available
