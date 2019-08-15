@@ -5,7 +5,8 @@
    [clojure.java.io :as io]
    [clojure.java.shell :as shell]
    [clojure.string :as str]
-   [sci.core :as sci])
+   [sci.core :as sci]
+   [sci.impl.fns])
   (:gen-class))
 
 (set! *warn-on-reflection* true)
