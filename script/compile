@@ -1,13 +1,19 @@
 #!/usr/bin/env bash
 
+set -eo pipefail
+
 if [ -z "$GRAALVM_HOME" ]; then
     echo "Please set GRAALVM_HOME"
     exit 1
 fi
 
-"$GRAALVM_HOME/bin/gu" install native-image
+"$GRAALVM_HOME/bin/gu" install native-image || true
 
 BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
+
+( cd /tmp;  git clone https://github.com/borkdude/sci 2> /dev/null || true )
+mkdir -p src/sci
+cp -R /tmp/sci/src/* src
 
 lein with-profiles +clojure-1.10.1 do clean, uberjar
 $GRAALVM_HOME/bin/native-image \
