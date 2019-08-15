@@ -147,7 +147,7 @@ More examples can be found in the [gallery](#gallery).
 
 ## Running a file
 
-Babashka expressions may be executed from a file using `-f` or `--file`:
+Scripts may be executed from a file using `-f` or `--file`:
 
 ``` shellsession
 bb -f download_html.clj
