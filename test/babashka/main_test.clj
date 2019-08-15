@@ -78,4 +78,4 @@
 
 (deftest raw-in-test
   (is (= "[1 2 3\n4 5 6 [\"1 2 3\" \"4 5 6\"]]"
-         (bb "1 2 3\n4 5 6" "-i" "(format \"[%s %s]\" bb/*raw-in* *in*)'"))))
+         (bb "1 2 3\n4 5 6" "-i" "(format \"[%s %s]\" bb/*in* *in*)'"))))
