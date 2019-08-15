@@ -146,7 +146,7 @@ bb -f download_html.clj
 Using `bb` with a shebang also works:
 
 ``` clojure
-#!/usr/bin/env bb -io -f
+#!/usr/bin/env bb -f
 
 (defn get-url [url]
   (println "Fetching url:" url)
