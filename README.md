@@ -17,7 +17,7 @@ $ bb '(vec (dedupe *in*))' <<< '[1 1 1 1 2]'
 ## Rationale
 
 If you're a bash expert, you probably don't need this. But for those of us who
-scan use a bit of Clojure in their shell scripts, it may be useful.
+can use a bit of Clojure in their shell scripts, it may be useful.
 
 Babashka runs as a binary and uses [sci](https://github.com/borkdude/sci) for
 interpreting Clojure, which results in faster startup times:
