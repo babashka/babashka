@@ -71,18 +71,16 @@ bb [ --help ] [ -i ] [ -o ] [ -io ] [ --version ] [ -f <file> ] [ expression ]
 
 Type `bb --help` to see a full explanation of the options.
 
-There is one special variable, `*in*`, which is the input read from stdin. The
-input is read as EDN by default. If the `-i` flag is provided, then the input is
-read as a string which is then split on newlines. The output is printed as EDN
-by default, unless the `-o` flag is provided, then the output is turned into
-shell-scripting friendly output. To combine `-i` and `-o` you can use `-io`.
+The input is read as EDN by default. If the `-i` flag is provided, then the
+input is read as a string which is then split on newlines. The output is printed
+as EDN by default, unless the `-o` flag is provided, then the output is turned
+into shell-scripting friendly output. To combine `-i` and `-o` you can use
+`-io`.
 
 The current version can be printed with `bb --version`.
 
-Currently only the following special forms/macros are supported: anonymous
-function literals like `#(%1 %2)`, `quote`, `do`,`if`, `when`, `let`, `and`,
-`or`, `->`, `->>`, `as->`. Anonymous functions literals are allowed with
-currently up to three positional arguments.
+Babashka supports a subset of Clojure which is interpreted by
+[sci](https://github.com/borkdude/sci).
 
 The `clojure.core` functions are accessible without a namespace alias.
 
@@ -96,7 +94,12 @@ through the aliases:
 
 From Java the following is available:
 
-- `System`: `getProperty`, `getProperties`, `getenv`
+- `System`: `exit`, `getProperty`, `getProperties`, `getenv`
+
+Special vars:
+
+- `*in*`: contains the input read from stdin
+- `*command-line-args*`: contain the command line args
 
 Examples:
 
@@ -143,13 +146,26 @@ bb -f script.clj
 Using `bb` with a shebang also works:
 
 ``` shellsession
-$ cat script.clj
-#!/usr/bin/env bb -f
+#!/usr/bin/env bb -io -f
 
-(+ 1 2 3)
+(defn get-url [url]
+  (println "Fetching url:" url)
+  (let [{:keys [:exit :err :out]} (shell/sh "curl" "-sS" url)]
+    (if (zero? exit) out
+      (do (println "ERROR:" err)
+          (System/exit 1)))))
 
-$ ./script.clj
-6
+(defn write-html [file html]
+  (println "Writing html to" file)
+  (spit file html))
+
+(let [[url file] *command-line-args*]
+  (when (or (empty? url) (empty? file))
+    (println "Usage: <url> <file>")
+    (System/exit 1))
+  (write-html file (get-url url)))
+
+(System/exit 0)
 ```
 
 ## Test

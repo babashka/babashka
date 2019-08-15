@@ -4,7 +4,7 @@
    [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.java.shell :as shell]
-   [clojure.string :as str :refer [starts-with?]]
+   [clojure.string :as str]
    [sci.core :as sci])
   (:gen-class))
 
@@ -20,33 +20,34 @@
 
 (defn- parse-opts [options]
   (let [opts (loop [options options
-                    opts-map {}
-                    current-opt nil]
+                    opts-map {}]
                (if-let [opt (first options)]
-                 (if (starts-with? opt "-")
-                   (recur (rest options)
-                          (assoc opts-map opt [])
-                          opt)
-                   (recur (rest options)
-                          (update opts-map current-opt conj opt)
-                          current-opt))
-                 opts-map))
-        version (boolean (get opts "--version"))
-        raw-in (boolean (or (get opts "--raw")
-                            (get opts "-i")
-                            (get opts "-io")))
-        raw-out (boolean (or (get opts "-o")
-                             (get opts "-io")))
-        println? (boolean (get opts "--println"))
-        help? (boolean (get opts "--help"))
-        file (first (or (get opts "-f")
-                        (get opts "--file")))]
-    {:version version
-     :raw-in raw-in
-     :raw-out raw-out
-     :println? println?
-     :help? help?
-     :file file}))
+                 (case opt
+                   ("--version") {:version true}
+                   ("--help") {:help? true}
+                   ("-i") (recur (rest options)
+                                 (assoc opts-map
+                                        :raw-in true))
+                   ("-o") (recur (rest options)
+                                 (assoc opts-map
+                                        :raw-out true))
+                   ("-io") (recur (rest options)
+                                  (assoc opts-map
+                                         :raw-in true
+                                         :raw-out true))
+                   ("-f" "--file")
+                   (let [options (rest options)]
+                     (recur (rest options)
+                            (assoc opts-map
+                                   :file (first options))))
+                   (if (not (:file opts-map))
+                     (assoc opts-map
+                            :expression opt
+                            :command-line-args (rest options))
+                     (assoc opts-map
+                            :command-line-args options)))
+                 opts-map))]
+    opts))
 
 (defn parse-shell-string [s]
   (str/split s #"\n"))
@@ -54,7 +55,7 @@
 (defn print-version []
   (println (str "babashka v"(str/trim (slurp (io/resource "BABASHKA_VERSION"))))))
 
-(def usage-string "Usage: [ --help ] [ -i ] [ -o ] [ -io ] [ --version ] [ expression ]")
+(def usage-string "Usage: [ --help ] | [ --version ] | [ -i ] [ -o ] [ -io ]  ( expression | -f <fie> )")
 (defn print-usage []
   (println usage-string))
 
@@ -76,10 +77,13 @@
 "))
 
 (defn read-file [file]
-  (as-> (slurp file) x
-    ;; remove hashbang
-    (str/replace x #"^#!.*" "")
-    (format "(do %s)" x)))
+  (let [f (io/file file)]
+    (if (.exists f)
+      (as-> (slurp file) x
+        ;; remove hashbang
+        (str/replace x #"^#!.*" "")
+        (format "(do %s)" x))
+      (throw (Exception. (str "File does not exist: " file))))))
 
 (defn get-env
   ([] (System/getenv))
@@ -94,10 +98,15 @@
 (defn get-properties []
   (System/getProperties))
 
+(defn exit [n]
+  (System/exit n))
+
 (def bindings
   {'run! run!
    'shell/sh shell/sh
    'csh shell/sh ;; backwards compatibility, deprecated
+   'slurp slurp
+   'spit spit
    'pmap pmap
    'print print
    'pr-str pr-str
@@ -106,13 +115,19 @@
    'edn/read-string edn/read-string
    'System/getenv get-env
    'System/getProperty get-property
-   'System/getProperties get-properties})
+   'System/getProperties get-properties
+   'System/exit exit})
 
 (defn main
   [& args]
+  #_(binding [*out* *err*]
+    (prn ">> args" args))
   (or
    (let [{:keys [:version :raw-in :raw-out :println?
-                 :help? :file]} (parse-opts args)]
+                 :help? :file :command-line-args
+                 :expression] :as _opts} (parse-opts args)]
+     #_(binding [*out* *err*]
+       (prn ">>" _opts))
      (second
       (cond version
             [(print-version) 0]
@@ -120,30 +135,30 @@
             [(print-help) 0]
             :else
             (try
-              [(let [exprs (drop-while #(str/starts-with? % "-") args)
-                     _ (when-not (or (= 1 (count exprs)) file)
-                         (throw (Exception. ^String usage-string)))
-                     expr (if file (read-file file) (last args))
-                     in (delay (let [in (slurp *in*)]
-                                 (if raw-in
-                                   (parse-shell-string in)
-                                   (read-edn in))))
-                     res (sci/eval-string
-                          expr
-                          {:bindings (assoc bindings
-                                            (with-meta '*in*
-                                              {:sci/deref! true}) in)})]
-                 (if raw-out
-                   (if (coll? res)
-                     (doseq [l res]
-                       (println l))
-                     (println res))
-                   ((if println? println? prn) res))) 0]
+              [(do (when-not (or expression file)
+                     (throw (Exception. "Missing expression.")))
+                 (let [expr (if file (read-file file) expression)
+                       in (delay (let [in (slurp *in*)]
+                                   (if raw-in
+                                     (parse-shell-string in)
+                                     (read-edn in))))
+                       res (sci/eval-string
+                            expr
+                            {:bindings (assoc bindings
+                                              (with-meta '*in*
+                                                {:sci/deref! true}) in
+                                              '*command-line-args* command-line-args)})]
+                   (if raw-out
+                     (if (coll? res)
+                       (doseq [l res]
+                         (println l))
+                       (println res))
+                     ((if println? println? prn) res)))) 0]
               (catch Exception e
                 (binding [*out* *err*]
-                  (println (str/trim
-                            (or (:stderr (ex-data e))
-                                (.getMessage e))) ))
+                  (when-let [msg (or (:stderr (ex-data e))
+                                     (.getMessage e))]
+                    (println (str/trim msg) )))
                 [nil 1])))))
    1))
 

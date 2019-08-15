@@ -6,19 +6,25 @@
 (set! *warn-on-reflection* true)
 
 (defn bb-jvm [input & args]
-  (with-out-str
-    (if input
-      (with-in-str input
-        (apply main/main args))
-      (apply main/main input args))))
+  (let [sw (java.io.StringWriter.)
+        res (binding [*err* sw]
+              (with-out-str
+                (if input
+                  (with-in-str input
+                    (apply main/main args))
+                  (apply main/main input args))))]
+    (if-let [err ^String  (not-empty (str sw))]
+      (throw (Exception. err)) res)))
 
 (defn bb-native [input & args]
   (let-programs [bb "./bb"]
-    (binding [sh/*throw* false]
-      (if input
-        (apply bb (conj (vec args)
-                        {:in input}))
-        (apply bb input args)))))
+    (try (if input
+           (apply bb (conj (vec args)
+                           {:in input}))
+           (apply bb input args))
+         (catch Exception e
+           (let [err-msg (or (:stderr (ex-data e)) "")]
+             (throw (Exception. ^String err-msg)))))))
 
 (def bb
   (case (System/getenv "BABASHKA_TEST_ENV")

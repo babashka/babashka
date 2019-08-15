@@ -26,7 +26,7 @@
   (testing "fn"
     (is (= 2 (bb 1 "(#(+ 1 %) *in*)")))
     (is (= [1 2 3] (bb 1 "(map #(+ 1 %) [0 1 2])")))
-    (is (bb 1 "(#(when (odd? *in*) *in*) 1)")))
+    (is (= 1 (bb 1 "(#(when (odd? *in*) *in*))"))))
   (testing "map"
     (is (= [1 2 3] (bb 1 '(map inc [0 1 2])))))
   (testing "keep"
@@ -69,3 +69,9 @@
     (is (= "bar" (second res)))
     (doseq [s res]
       (is (not-empty s)))))
+
+(deftest malformed-command-line-args
+  (is (thrown-with-msg? Exception #"File does not exist: non-existing\n"
+                        (bb nil  "-f" "non-existing")))
+  (is (thrown-with-msg? Exception #"Missing expression.\n"
+                        (bb nil))))
