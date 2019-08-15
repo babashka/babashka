@@ -75,7 +75,7 @@ You may also download a binary from [Github](https://github.com/borkdude/babashk
 ## Usage
 
 ``` shellsession
-bb [ --help ] [ -i ] [ -o ] [ -io ] [ --version ] [ -f <file> ] [ expression ]
+bb [ --help ] | [ --version ] | ( [ -i ] [ -o ] | [ -io ] ) ( expression | -f <file> )
 ```
 
 Type `bb --help` to see a full explanation of the options.
