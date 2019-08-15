@@ -145,7 +145,7 @@ bb -f script.clj
 
 Using `bb` with a shebang also works:
 
-``` shellsession
+``` clojure
 #!/usr/bin/env bb -io -f
 
 (defn get-url [url]
