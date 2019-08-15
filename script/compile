@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -eo pipefail
+
 if [ -z "$GRAALVM_HOME" ]; then
     echo "Please set GRAALVM_HOME"
     exit 1
