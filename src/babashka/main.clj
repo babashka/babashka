@@ -13,11 +13,6 @@
 ;; echo '1' | java -agentlib:native-image-agent=config-output-dir=/tmp -jar target/babashka-xxx-standalone.jar '...'
 ;; with the java provided by GraalVM.
 
-(defn read-edn [s]
-  (edn/read-string
-   {:readers *data-readers*}
-   s))
-
 (defn- parse-opts [options]
   (let [opts (loop [options options
                     opts-map {}]
@@ -25,6 +20,9 @@
                  (case opt
                    ("--version") {:version true}
                    ("--help") {:help? true}
+                   ("--stream") (recur (rest options)
+                                       (assoc opts-map
+                                              :stream? true))
                    ("-i") (recur (rest options)
                                  (assoc opts-map
                                         :raw-in true))
@@ -55,7 +53,7 @@
 (defn print-version []
   (println (str "babashka v"(str/trim (slurp (io/resource "BABASHKA_VERSION"))))))
 
-(def usage-string "Usage: bb [ --help ] | [ --version ] | ( [ -i ] [ -o ] | [ -io ] ) ( expression | -f <file> )")
+(def usage-string "Usage: bb [ --help ] | [ --version ] | ( [ -i ] [ -o ] | [ -io ] ) [ --stream ] ( expression | -f <file> )")
 (defn print-usage []
   (println usage-string))
 
@@ -73,7 +71,8 @@
   -i: read shell input into a list of strings instead of reading EDN.
   -o: write shell output instead of EDN.
   -io: combination of -i and -o.
-  --file or -f: read expression from file instead of argument
+  --stream: stream over lines or EDN values from stdin. Combined with -i *in* becomes a single line per iteration.
+  --file or -f: read expressions from file instead of argument wrapped in an implicit do.
 "))
 
 (defn read-file [file]
@@ -118,16 +117,20 @@
    'System/getProperties get-properties
    'System/exit exit})
 
+(defn read-edn []
+  (edn/read {;;:readers *data-readers*
+             :eof ::EOF} *in*))
+
 (defn main
   [& args]
   #_(binding [*out* *err*]
-    (prn ">> args" args))
+      (prn ">> args" args))
   (or
    (let [{:keys [:version :raw-in :raw-out :println?
                  :help? :file :command-line-args
-                 :expression] :as _opts} (parse-opts args)]
+                 :expression :stream?] :as _opts} (parse-opts args)]
      #_(binding [*out* *err*]
-       (prn ">>" _opts))
+         (prn ">>" _opts))
      (second
       (cond version
             [(print-version) 0]
@@ -135,28 +138,36 @@
             [(print-help) 0]
             :else
             (try
-              [(do (when-not (or expression file)
-                     (throw (Exception. "Missing expression.")))
-                 (let [expr (if file (read-file file) expression)
-                       do-in (delay (slurp *in*))
-                       in (delay (let [in @do-in]
-                                   (if raw-in
-                                     (parse-shell-string in)
-                                     (read-edn in))))
-                       res (sci/eval-string
-                            expr
-                            {:bindings (assoc bindings
-                                              (with-meta '*in*
-                                                {:sci/deref! true}) in
-                                              (with-meta 'bb/*in*
-                                                {:sci/deref! true}) do-in
-                                              '*command-line-args* command-line-args)})]
-                   (if raw-out
-                     (if (coll? res)
-                       (doseq [l res]
-                         (println l))
-                       (println res))
-                     ((if println? println? prn) res)))) 0]
+              (let [expr (if file (read-file file) expression)
+                    read-next #(if stream?
+                                 (if raw-in (or (read-line) ::EOF)
+                                     (read-edn))
+                                 (delay (let [in (slurp *in*)]
+                                          (if raw-in
+                                            (parse-shell-string in)
+                                            (edn/read-string in)))))]
+                (loop [in (read-next)]
+                  (if (identical? ::EOF in)
+                    [nil 0] ;; done streaming
+                    (let [res [(do (when-not (or expression file)
+                                     (throw (Exception. "Missing expression.")))
+                                   (let [res (sci/eval-string
+                                              expr
+                                              {:bindings (assoc bindings
+                                                                (with-meta '*in*
+                                                                  (when-not stream? {:sci/deref! true})) in
+                                                                #_(with-meta 'bb/*in*
+                                                                    {:sci/deref! true}) #_do-in
+                                                                '*command-line-args* command-line-args)})]
+                                     (if raw-out
+                                       (if (coll? res)
+                                         (doseq [l res]
+                                           (println l))
+                                         (println res))
+                                       ((if println? println? prn) res)))) 0]]
+                      (if stream?
+                        (recur (read-next))
+                        res)))))
               (catch Exception e
                 (binding [*out* *err*]
                   (when-let [msg (or (:stderr (ex-data e))
