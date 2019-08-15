@@ -7,7 +7,7 @@ if [ -z "$GRAALVM_HOME" ]; then
     exit 1
 fi
 
-"$GRAALVM_HOME/bin/gu" install native-image
+"$GRAALVM_HOME/bin/gu" install native-image || true
 
 BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
 
