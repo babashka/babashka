@@ -138,7 +138,8 @@
               [(do (when-not (or expression file)
                      (throw (Exception. "Missing expression.")))
                  (let [expr (if file (read-file file) expression)
-                       in (delay (let [in (slurp *in*)]
+                       do-in (delay (slurp *in*))
+                       in (delay (let [in @do-in]
                                    (if raw-in
                                      (parse-shell-string in)
                                      (read-edn in))))
@@ -147,6 +148,8 @@
                             {:bindings (assoc bindings
                                               (with-meta '*in*
                                                 {:sci/deref! true}) in
+                                              (with-meta 'bb/*in*
+                                                {:sci/deref! true}) do-in
                                               '*command-line-args* command-line-args)})]
                    (if raw-out
                      (if (coll? res)

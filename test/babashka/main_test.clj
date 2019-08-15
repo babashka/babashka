@@ -70,8 +70,12 @@
     (doseq [s res]
       (is (not-empty s)))))
 
-(deftest malformed-command-line-args
+(deftest malformed-command-line-args-test
   (is (thrown-with-msg? Exception #"File does not exist: non-existing\n"
                         (bb nil  "-f" "non-existing")))
   (is (thrown-with-msg? Exception #"Missing expression.\n"
                         (bb nil))))
+
+(deftest raw-in-test
+  (is (= "[1 2 3\n4 5 6 [\"1 2 3\" \"4 5 6\"]]"
+         (bb "1 2 3\n4 5 6" "-i" "(format \"[%s %s]\" bb/*raw-in* *in*)'"))))
