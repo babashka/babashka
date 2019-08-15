@@ -140,7 +140,7 @@ More examples can be found in the [gallery](#gallery).
 Babashka expressions may be executed from a file using `-f` or `--file`:
 
 ``` shellsession
-bb -f script.clj
+bb -f download_html.clj
 ```
 
 Using `bb` with a shebang also works:
@@ -156,7 +156,7 @@ Using `bb` with a shebang also works:
           (System/exit 1)))))
 
 (defn write-html [file html]
-  (println "Writing html to" file)
+  (println "Writing file:" file)
   (spit file html))
 
 (let [[url file] *command-line-args*]
