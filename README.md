@@ -32,7 +32,7 @@ $ time bb -f ./download_html.clj
 
 A trade off is that [sci](https://github.com/borkdude/sci) implements only a
 subset of Clojure. If you need more, feel free to post an issue or check out
-other Clojure scripting tools
+other Clojure scripting
 [projects](https://github.com/borkdude/babashka#related-projects).
 
 ## Status
