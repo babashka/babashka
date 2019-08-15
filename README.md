@@ -168,6 +168,15 @@ Using `bb` with a shebang also works:
 (System/exit 0)
 ```
 
+``` shellsession
+$ ./download_html.clj
+Usage: <url> <file>
+
+$ ./download_html.clj https://www.clojure.org /tmp/clojure.org.html
+Fetching url: https://www.clojure.org
+Writing file: /tmp/clojure.org.html
+```
+
 ## Test
 
 Test on the JVM:
