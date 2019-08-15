@@ -20,10 +20,10 @@ If you're a bash expert, you probably don't need this. But for those of us who
 scan use a bit of Clojure in their shell scripts, it may be useful.
 
 ``` shellsession
-$ time clj -e "(require '[clojure.java.shell :as shell])" ./script.clj
+$ time clj -e "(require '[clojure.java.shell :as shell])" ./download_html.clj
 2.15s user 0.17s system 242% cpu 0.959 total
 
-$ time bb -f ./script.clj
+$ time bb -f ./download_html.clj
 0.00s user 0.00s system 69% cpu 0.010 total
 ```
 
