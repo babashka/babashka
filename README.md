@@ -23,7 +23,7 @@ Babashka runs as a binary and uses [sci](https://github.com/borkdude/sci) for
 interpreting Clojure, which results in faster startup times:
 
 ``` shellsession
-$ time clj -e "(require '[clojure.java.shell :as shell])" ./download_html.clj
+$ time clojure -e "(require '[clojure.java.shell :as shell])" ./download_html.clj
 2.15s user 0.17s system 242% cpu 0.959 total
 
 $ time bb -f ./download_html.clj
