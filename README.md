@@ -27,7 +27,7 @@ Properties:
 - reads from stdin and writes to stdout
 
 ``` shellsession
-$ time clj -e "(require '[(link: http://clojure.java.shell) clojure.java.shell :as shell])" ./script.clj
+$ time clj -e "(require '[clojure.java.shell :as shell])" ./script.clj
 2.15s user 0.17s system 242% cpu 0.959 total
 
 $ time bb -f ./script.clj
