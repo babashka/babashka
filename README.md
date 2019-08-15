@@ -19,13 +19,6 @@ $ bb '(vec (dedupe *in*))' <<< '[1 1 1 1 2]'
 If you're a bash expert, you probably don't need this. But for those of us who
 scan use a bit of Clojure in their shell scripts, it may be useful.
 
-Properties:
-
-- fast startup time
-- code is interpreted by [sci](https://github.com/borkdude/sci), a small Clojure
-  interpreter
-- reads from stdin and writes to stdout
-
 ``` shellsession
 $ time clj -e "(require '[clojure.java.shell :as shell])" ./script.clj
 2.15s user 0.17s system 242% cpu 0.959 total
