@@ -30,7 +30,7 @@ $ time bb -f ./download_html.clj
 0.00s user 0.00s system 69% cpu 0.010 total
 ```
 
-A trade off is that [sci](https://github.com/borkdude/sci) implements only a
+A trade-off is that [sci](https://github.com/borkdude/sci) implements only a
 subset of Clojure. If you need more, feel free to post an issue or check out
 other Clojure scripting
 [projects](https://github.com/borkdude/babashka#related-projects).
