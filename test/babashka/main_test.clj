@@ -70,8 +70,20 @@
     (doseq [s res]
       (is (not-empty s)))))
 
-(deftest malformed-command-line-args
+(deftest malformed-command-line-args-test
   (is (thrown-with-msg? Exception #"File does not exist: non-existing\n"
                         (bb nil  "-f" "non-existing")))
   (is (thrown-with-msg? Exception #"Missing expression.\n"
                         (bb nil))))
+
+#_(deftest raw-in-test
+  (is (= "[1 2 3\n4 5 6 [\"1 2 3\" \"4 5 6\"]]"
+         (bb "1 2 3\n4 5 6" "-i" "(format \"[%s %s]\" bb/*in* *in*)'"))))
+
+(deftest stream-test
+  (is (= "2\n3\n4\n" (test-utils/bb "1 2 3" "--stream" "(inc *in*)")))
+  (is (= "2\n3\n4\n" (test-utils/bb "{:x 2} {:x 3} {:x 4}" "--stream" "(:x *in*)")))
+  (let [x "foo\n\bar\n"]
+    (is (= x (test-utils/bb x "--stream" "-io" "*in*"))))
+  (let [x "f\n\b\n"]
+    (is (= x (test-utils/bb x "--stream" "-io" "(subs *in* 0 1)")))))

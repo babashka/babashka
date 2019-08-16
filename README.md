@@ -75,7 +75,7 @@ You may also download a binary from [Github](https://github.com/borkdude/babashk
 ## Usage
 
 ``` shellsession
-bb [ --help ] | [ --version ] | ( [ -i ] [ -o ] | [ -io ] ) ( expression | -f <file> )
+bb [ --help ] | [ --version ] | ( [ -i ] [ -o ] | [ -io ] ) [ --stream ] ( expression | -f <file> )
 ```
 
 Type `bb --help` to see a full explanation of the options.
@@ -84,7 +84,8 @@ The input is read as EDN by default. If the `-i` flag is provided, then the
 input is read as a string which is then split on newlines. The output is printed
 as EDN by default, unless the `-o` flag is provided, then the output is turned
 into shell-scripting friendly output. To combine `-i` and `-o` you can use
-`-io`.
+`-io`. When using the `--stream` option the expression is executed for every
+line or EDN value from stdin.
 
 The `clojure.core` functions are accessible without a namespace alias.
 
@@ -102,7 +103,8 @@ From Java the following is available:
 
 Special vars:
 
-- `*in*`: contains the input read from stdin
+- `*in*`: contains the input read from stdin (EDN by default, multiple lines with the `-i` option)
+<!-- - `bb/*in*`: the unprocessed input from stdin -->
 - `*command-line-args*`: contain the command line args
 
 Examples:
