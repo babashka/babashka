@@ -7,9 +7,9 @@
         :url "https://github.com/borkdude/babashka"}
   :license {:name "Eclipse Public License 1.0"
             :url "http://opensource.org/licenses/eclipse-1.0.php"}
-  :source-paths ["src"]
-  :dependencies [[org.clojure/clojure "1.9.0"]
-                 [borkdude/sci "0.0.7"]]
+  :source-paths ["src" "sci/src"]
+  :resource-paths ["resources" "sci/resources"]
+  :dependencies [[org.clojure/clojure "1.9.0"]]
   :profiles {:clojure-1.9.0 {:dependencies [[org.clojure/clojure "1.9.0"]]}
              :clojure-1.10.1 {:dependencies [[org.clojure/clojure "1.10.1"]]}
              :test {:dependencies [[clj-commons/conch "0.9.2"]]}

@@ -12,4 +12,3 @@ pom.xml.asc
 .hg/
 /bb
 .clj-kondo/.cache
-/src/sci

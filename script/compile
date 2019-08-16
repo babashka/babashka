@@ -11,11 +11,11 @@ fi
 
 BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
 
-# We also need to AOT sci, else something didn't work in the Mac build on CircleCI
-# See https://github.com/oracle/graal/issues/1613
-( cd /tmp;  git clone https://github.com/borkdude/sci 2> /dev/null || true )
-mkdir -p src/sci
-cp -R /tmp/sci/src/* src
+# # We also need to AOT sci, else something didn't work in the Mac build on CircleCI
+# # See https://github.com/oracle/graal/issues/1613
+# ( cd /tmp;  git clone https://github.com/borkdude/sci 2> /dev/null || true )
+# mkdir -p src/sci
+# cp -R /tmp/sci/src/* src
 
 lein with-profiles +clojure-1.10.1 do clean, uberjar
 $GRAALVM_HOME/bin/native-image \
