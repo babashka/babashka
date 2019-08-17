@@ -83,9 +83,8 @@
   (is (thrown-with-msg? Exception #"expression"
                         (bb nil))))
 
-#_(deftest raw-in-test
-  (is (= "[1 2 3\n4 5 6 [\"1 2 3\" \"4 5 6\"]]"
-         (bb "1 2 3\n4 5 6" "-i" "(format \"[%s %s]\" bb/*in* *in*)'"))))
+(deftest ssl-test
+  (is (re-find #"doctype html" (slurp "https://www.google.com"))))
 
 (deftest stream-test
   (is (= "2\n3\n4\n" (test-utils/bb "1 2 3" "--stream" "(inc *in*)")))

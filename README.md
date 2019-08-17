@@ -183,6 +183,15 @@ Fetching url: https://www.clojure.org
 Writing file: /tmp/clojure.org.html
 ```
 
+## Enabling SSL
+
+To enable SSL, create a `~/.babashka/lib` directory and copy the SunEC library
+`libsunec.so` (Linux) or `libsunec.dylib` to it. This library comes with GraalVM
+and is located in `jre/lib` inside the distribution. More information about
+GraalVM and SSL can be found
+[here](https://blog.taylorwood.io/2018/10/04/graalvm-https.html) and
+[here](https://quarkus.io/guides/native-and-ssl-guide).
+
 ## Test
 
 Test on the JVM:
