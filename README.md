@@ -183,6 +183,7 @@ Fetching url: https://www.clojure.org
 Writing file: /tmp/clojure.org.html
 ```
 
+<!--
 ## Enabling SSL
 
 If you want to be able to use SSL to e.g. `(slurp "https://www.clojure.org")`
@@ -218,6 +219,7 @@ You can download a distribution of GraalVM for your platform on
 More information about GraalVM and SSL can be found
 [here](https://blog.taylorwood.io/2018/10/04/graalvm-https.html) and
 [here](https://quarkus.io/guides/native-and-ssl-guide).
+-->
 
 ## Test
 
