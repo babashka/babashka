@@ -11,6 +11,7 @@ jobs:
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
+      GRAALVM_HOME: /home/circleci/graalvm-ce-19.2.0-dev
     steps:
       - checkout
       - run:
