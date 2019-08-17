@@ -84,7 +84,13 @@
                         (bb nil))))
 
 (deftest ssl-test
-  (is (re-find #"doctype html" (bb nil "(slurp \"https://www.google.com\")"))))
+  (let [graalvm-home (System/getenv "GRAALVM_HOME")
+        lib-path (format "%1$s/jre/lib:%1$s/jre/amd64/lib" graalvm-home)
+        ;; _ (prn "lib-path" lib-path)
+        resp (bb nil (format "(System/setProperty \"java.library.path\" \"%s\")
+                              (slurp \"https://www.google.com\")"
+                             lib-path))]
+    (is (re-find #"doctype html" resp))))
 
 (deftest stream-test
   (is (= "2\n3\n4\n" (test-utils/bb "1 2 3" "--stream" "(inc *in*)")))
