@@ -1,0 +1,3 @@
+[submodule "sci"]
+	path = sci
+	url = https://github.com/borkdude/sci

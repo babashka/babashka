@@ -23,6 +23,9 @@
                    ("--stream") (recur (rest options)
                                        (assoc opts-map
                                               :stream? true))
+                   ("--time") (recur (rest options)
+                                     (assoc opts-map
+                                            :time? true))
                    ("-i") (recur (rest options)
                                  (assoc opts-map
                                         :raw-in true))
@@ -125,56 +128,62 @@
   [& args]
   #_(binding [*out* *err*]
       (prn ">> args" args))
-  (or
-   (let [{:keys [:version :raw-in :raw-out :println?
-                 :help? :file :command-line-args
-                 :expression :stream?] :as _opts} (parse-opts args)]
-     #_(binding [*out* *err*]
-         (prn ">>" _opts))
-     (second
-      (cond version
-            [(print-version) 0]
-            help?
-            [(print-help) 0]
-            :else
-            (try
-              (let [expr (if file (read-file file) expression)
-                    read-next #(if stream?
-                                 (if raw-in (or (read-line) ::EOF)
-                                     (read-edn))
-                                 (delay (let [in (slurp *in*)]
-                                          (if raw-in
-                                            (parse-shell-string in)
-                                            (edn/read-string in)))))]
-                (loop [in (read-next)]
-                  (if (identical? ::EOF in)
-                    [nil 0] ;; done streaming
-                    (let [res [(do (when-not (or expression file)
-                                     (throw (Exception. "Missing expression.")))
-                                   (let [res (sci/eval-string
-                                              expr
-                                              {:bindings (assoc bindings
-                                                                (with-meta '*in*
-                                                                  (when-not stream? {:sci/deref! true})) in
-                                                                #_(with-meta 'bb/*in*
-                                                                    {:sci/deref! true}) #_do-in
-                                                                '*command-line-args* command-line-args)})]
-                                     (if raw-out
-                                       (if (coll? res)
-                                         (doseq [l res]
-                                           (println l))
-                                         (println res))
-                                       ((if println? println? prn) res)))) 0]]
-                      (if stream?
-                        (recur (read-next))
-                        res)))))
-              (catch Exception e
-                (binding [*out* *err*]
-                  (when-let [msg (or (:stderr (ex-data e))
-                                     (.getMessage e))]
-                    (println (str/trim msg) )))
-                [nil 1])))))
-   1))
+  (let [t0 (System/currentTimeMillis)
+        {:keys [:version :raw-in :raw-out :println?
+                :help? :file :command-line-args
+                :expression :stream? :time?] :as _opts}
+        (parse-opts args)
+        exit-code
+        (or
+         #_(binding [*out* *err*]
+             (prn ">>" _opts))
+         (second
+          (cond version
+                [(print-version) 0]
+                help?
+                [(print-help) 0]
+                :else
+                (try
+                  (let [expr (if file (read-file file) expression)
+                        read-next #(if stream?
+                                     (if raw-in (or (read-line) ::EOF)
+                                         (read-edn))
+                                     (delay (let [in (slurp *in*)]
+                                              (if raw-in
+                                                (parse-shell-string in)
+                                                (edn/read-string in)))))]
+                    (loop [in (read-next)]
+                      (if (identical? ::EOF in)
+                        [nil 0] ;; done streaming
+                        (let [res [(do (when-not (or expression file)
+                                         (throw (Exception. "Missing expression.")))
+                                       (let [res (sci/eval-string
+                                                  expr
+                                                  {:bindings (assoc bindings
+                                                                    (with-meta '*in*
+                                                                      (when-not stream? {:sci/deref! true})) in
+                                                                    #_(with-meta 'bb/*in*
+                                                                        {:sci/deref! true}) #_do-in
+                                                                    '*command-line-args* command-line-args)})]
+                                         (if raw-out
+                                           (if (coll? res)
+                                             (doseq [l res]
+                                               (println l))
+                                             (println res))
+                                           ((if println? println? prn) res)))) 0]]
+                          (if stream?
+                            (recur (read-next))
+                            res)))))
+                  (catch Exception e
+                    (binding [*out* *err*]
+                      (when-let [msg (or (:stderr (ex-data e))
+                                         (.getMessage e))]
+                        (println (str/trim msg) )))
+                    [nil 1]))))
+         1)
+        t1 (System/currentTimeMillis)]
+    (when time? (println "bb took" (str (- t1 t0) "ms.")))
+    exit-code))
 
 (defn -main
   [& args]

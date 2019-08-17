@@ -13,6 +13,11 @@ jobs:
       LEIN_ROOT: "true"
     steps:
       - checkout
+      - run:
+          name: "Pull Submodules"
+          command: |
+            git submodule init
+            git submodule update --remote
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "project.clj" }}
@@ -51,6 +56,11 @@ jobs:
       BABASHKA_TEST_ENV: native
     steps:
       - checkout
+      - run:
+          name: "Pull Submodules"
+          command: |
+            git submodule init
+            git submodule update --remote
       - restore_cache:
           keys:
             - linux-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
@@ -107,6 +117,11 @@ jobs:
       BABASHKA_TEST_ENV: native
     steps:
       - checkout
+      - run:
+          name: "Pull Submodules"
+          command: |
+            git submodule init
+            git submodule update --remote
       - restore_cache:
           keys:
             - mac-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
@@ -161,6 +176,11 @@ jobs:
       LEIN_ROOT: "true"
     steps:
       - checkout
+      - run:
+          name: "Pull Submodules"
+          command: |
+            git submodule init
+            git submodule update --remote
       - restore_cache:
           keys:
           - v1-dependencies-{{ checksum "project.clj" }}
