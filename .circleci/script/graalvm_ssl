@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+mkdir -p ~/.babashka/lib/security
+
+cp $GRAALVM_HOME/jre/lib/libsunec.dylib ~/.babashka/lib || true
+cp $GRAALVM_HOME/jre/lib/libsunec.so ~/.babashka/lib || true
+cp $GRAALVM_HOME/jre/lib/security/cacerts ~/.babashka/lib/security

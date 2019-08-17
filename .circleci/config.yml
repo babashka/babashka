@@ -84,6 +84,10 @@ jobs:
               tar xzf graalvm-ce-linux-amd64-19.2.0-dev-b01.tar.gz
             fi
       - run:
+          name: Install GraalVM SSL libs
+          command: |
+            script/graalvm_ssl
+      - run:
           name: Build binary
           command: |
             script/compile
@@ -133,7 +137,6 @@ jobs:
           name: Install Leiningen
           command: |
             .circleci/script/install-leiningen
-
       - run:
           name: Download GraalVM
           command: |
@@ -143,6 +146,10 @@ jobs:
               curl -O -sL https://github.com/oracle/graal/releases/download/vm-19.2.0-dev-b01/graalvm-ce-darwin-amd64-19.2.0-dev-b01.tar.gz
               tar xzf graalvm-ce-darwin-amd64-19.2.0-dev-b01.tar.gz
             fi
+      - run:
+          name: Install GraalVM SSL libs
+          command: |
+            script/graalvm_ssl
       - run:
           name: Build binary
           command: |

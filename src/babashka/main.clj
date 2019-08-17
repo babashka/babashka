@@ -129,10 +129,13 @@
   #_(binding [*out* *err*]
       (prn ">> args" args))
   (let [home (System/getProperty "user.home")
-        bb-dir (io/file home ".babashka" "lib")
-        bb-dir-path (.getPath bb-dir)
-        lib-path (System/getProperty "java.library.path")]
-    (System/setProperty "java.library.path" (str bb-dir-path ":" lib-path)))
+        bb-lib-dir (io/file home ".babashka" "lib")
+        lib-path (System/getProperty "java.library.path")
+        ca-certs-dir (io/file bb-lib-dir "security")
+        ca-certs (.getPath (io/file ca-certs-dir "cacerts"))]
+    (System/setProperty "java.library.path" (str (.getPath  bb-lib-dir) ":" lib-path))
+    (System/setProperty "javax.net.ssl.trustStore" ca-certs)
+    (System/setProperty "javax.net.ssl.trustAnchors" ca-certs))
   (let [t0 (System/currentTimeMillis)
         {:keys [:version :raw-in :raw-out :println?
                 :help? :file :command-line-args
