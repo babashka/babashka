@@ -85,7 +85,7 @@
 
 (deftest ssl-test
   (let [graalvm-home (System/getenv "GRAALVM_HOME")
-        lib-path (format "%1$s/jre/lib:%1$s/jre/amd64/lib" graalvm-home)
+        lib-path (format "%1$s/jre/lib:%1$s/jre/lib/amd64" graalvm-home)
         _ (prn "lib-path" lib-path)
         resp (bb nil (format "(System/setProperty \"java.library.path\" \"%s\")
                               (slurp \"https://www.google.com\")"
