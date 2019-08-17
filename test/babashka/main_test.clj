@@ -102,6 +102,6 @@
 
 (deftest load-file-test
   (let [tmp (java.io.File/createTempFile "script" ".clj")]
-    (spit tmp "(defn foo [x y] (+ x y))")
-    (is (= "40\n" (test-utils/bb nil (format "(load-file \"%s\") (foo 10 30)"
+    (spit tmp "(defn foo [x y] (+ x y)) (defn bar [x y] (* x y))")
+    (is (= "120\n" (test-utils/bb nil (format "(load-file \"%s\") (bar (foo 10 30) 3)"
                                              (.getPath tmp)))))))

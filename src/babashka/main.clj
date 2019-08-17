@@ -76,7 +76,11 @@
   -io: combination of -i and -o.
   --stream: stream over lines or EDN values from stdin. Combined with -i *in* becomes a single line per iteration.
   --file or -f: read expressions from file instead of argument wrapped in an implicit do.
+  --time: print execution time before exiting.
 "))
+
+(defn wrap-do [s]
+  (format "(do %s)" s))
 
 (defn read-file [file]
   (let [f (io/file file)]
@@ -84,7 +88,7 @@
       (as-> (slurp file) x
         ;; remove shebang
         (str/replace x #"^#!.*" "")
-        (format "(do %s)" x))
+        (wrap-do x))
       (throw (Exception. (str "File does not exist: " file))))))
 
 (defn get-env
@@ -139,7 +143,8 @@
     (System/setProperty "javax.net.ssl.tru stAnchors" ca-certs)))
 
 (defn load-file* [ctx file]
-  (let [s (slurp file)]
+  (let [s (slurp file)
+        s (wrap-do s)]
     (sci/eval-string s ctx)))
 
 (defn main
@@ -164,7 +169,7 @@
                 :else
                 (try
 
-                  (let [expr (if file (read-file file) (format "(do %s)" expression))
+                  (let [expr (if file (read-file file) (wrap-do expression))
                         read-next #(if stream?
                                      (if raw-in (or (read-line) ::EOF)
                                          (read-edn))
