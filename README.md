@@ -227,6 +227,23 @@ Test the native version:
 
 You will need leiningen and GraalVM.
 
+This repo contains a submodule, so you will have clone that too.  If you're
+doing that for the first time:
+
+``` shellsession
+$ git submodule update --init --recursive
+```
+
+and for subsequent updates:
+
+``` shellsession
+$ git submodule update --recursive
+```
+
+To build this project, set `$GRAALVM_HOME` to the GraalVM distribution directory.
+
+Then run:
+
     script/compile
 
 ## Related projects
