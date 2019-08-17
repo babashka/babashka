@@ -26,7 +26,7 @@ $ time clojure -e "(+ 1 2 3)"
 6
 clojure -e "(+ 1 2 3)"  3.29s user 0.32s system 99% cpu 3.638 total
 
-$ time plk -e '(+ 1 2 3)'
+$ time planck -e '(+ 1 2 3)'
 6
 plk -e '(+ 1 2 3)'  1.34s user 0.16s system 127% cpu 1.172 total
 
