@@ -62,7 +62,7 @@
 
 (defn print-help []
   (println (str "babashka v" (str/trim (slurp (io/resource "BABASHKA_VERSION")))))
-  (println (str "sci v" (str/trim (slurp (io/resource "SCI_VERSION")))))
+  ;; (println (str "sci v" (str/trim (slurp (io/resource "SCI_VERSION")))))
   (println)
   (print-usage)
   (println)
@@ -82,7 +82,7 @@
   (let [f (io/file file)]
     (if (.exists f)
       (as-> (slurp file) x
-        ;; remove hashbang
+        ;; remove shebang
         (str/replace x #"^#!.*" "")
         (format "(do %s)" x))
       (throw (Exception. (str "File does not exist: " file))))))
@@ -101,7 +101,7 @@
   (System/getProperties))
 
 (defn exit [n]
-  (System/exit n))
+  (throw (ex-info "" {:bb/exit-code n})))
 
 (def bindings
   {'run! run!
@@ -144,7 +144,8 @@
                 [(print-help) 0]
                 :else
                 (try
-                  (let [expr (if file (read-file file) expression)
+
+                  (let [expr (if file (read-file file) (format "(do %s)" expression))
                         read-next #(if stream?
                                      (if raw-in (or (read-line) ::EOF)
                                          (read-edn))
@@ -156,7 +157,7 @@
                       (if (identical? ::EOF in)
                         [nil 0] ;; done streaming
                         (let [res [(do (when-not (or expression file)
-                                         (throw (Exception. "Missing expression.")))
+                                         (throw (Exception. (str args  "Babashka expected an expression. Type --help to print help."))))
                                        (let [res (sci/eval-string
                                                   expr
                                                   {:bindings (assoc bindings
@@ -176,18 +177,23 @@
                             res)))))
                   (catch Exception e
                     (binding [*out* *err*]
-                      (when-let [msg (or (:stderr (ex-data e))
-                                         (.getMessage e))]
-                        (println (str/trim msg) )))
-                    [nil 1]))))
+                      (let [d (ex-data e)
+                            exit-code (:bb/exit-code d)]
+                        (if exit-code [nil exit-code]
+                            (do (when-let [msg (or (:stderr d )
+                                                  (.getMessage e))]
+                                  (println (str/trim msg)))
+                                [nil 1]))))))))
          1)
         t1 (System/currentTimeMillis)]
-    (when time? (println "bb took" (str (- t1 t0) "ms.")))
+    (when time? (binding [*out* *err*]
+                  (println "bb took" (str (- t1 t0) "ms."))))
     exit-code))
 
 (defn -main
   [& args]
-  (System/exit (apply main args)))
+  (let [exit-code (apply main args)]
+    (System/exit exit-code)))
 
 ;;;; Scratch
 

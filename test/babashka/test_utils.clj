@@ -13,7 +13,7 @@
                   (with-in-str input
                     (apply main/main args))
                   (apply main/main input args))))]
-    (if-let [err ^String  (not-empty (str sw))]
+    (if-let [err ^String (not-empty (str sw))]
       (throw (Exception. err)) res)))
 
 (defn bb-native [input & args]
@@ -23,8 +23,9 @@
                            {:in input}))
            (apply bb input args))
          (catch Exception e
-           (let [err-msg (or (:stderr (ex-data e)) "")]
-             (throw (Exception. ^String err-msg)))))))
+           (let [d (ex-data e)
+                 err-msg (or (:stderr (ex-data e)) "")]
+             (throw (ex-info err-msg d)))))))
 
 (def bb
   (case (System/getenv "BABASHKA_TEST_ENV")
