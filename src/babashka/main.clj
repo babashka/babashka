@@ -62,7 +62,7 @@
 
 (defn print-help []
   (println (str "babashka v" (str/trim (slurp (io/resource "BABASHKA_VERSION")))))
-  (println (str "sci v" (str/trim (slurp (io/resource "SCI_VERSION")))))
+  ;; (println (str "sci v" (str/trim (slurp (io/resource "SCI_VERSION")))))
   (println)
   (print-usage)
   (println)
