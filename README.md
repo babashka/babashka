@@ -19,21 +19,36 @@ $ bb '(vec (dedupe *in*))' <<< '[1 1 1 1 2]'
 If you're a bash expert, you probably don't need this. But for those of us who
 can use a bit of Clojure in their shell scripts, it may be useful.
 
-Babashka runs as a binary and uses [sci](https://github.com/borkdude/sci) for
-interpreting Clojure, which results in faster startup times:
+Babashka runs as a binary which results in faster startup times:
 
 ``` shellsession
-$ time clojure -e "(require '[clojure.java.shell :as shell])" ./download_html.clj
-2.15s user 0.17s system 242% cpu 0.959 total
+$ time clojure -e "(+ 1 2 3)"
+6
+clojure -e "(+ 1 2 3)"  3.29s user 0.32s system 99% cpu 3.638 total
 
-$ time bb -f ./download_html.clj
-0.00s user 0.00s system 69% cpu 0.010 total
+$ time plk -e '(+ 1 2 3)'
+6
+plk -e '(+ 1 2 3)'  1.34s user 0.16s system 127% cpu 1.172 total
+
+$ time bb '(+ 1 2 3)'
+6
+bb '(+ 1 2 3)'  0.01s user 0.01s system 37% cpu 0.046 total
 ```
 
-A trade-off is that [sci](https://github.com/borkdude/sci) implements only a
-subset of Clojure. If you need more, feel free to post an issue or check out
-other Clojure scripting
-[projects](https://github.com/borkdude/babashka#related-projects).
+It uses [sci](https://github.com/borkdude/sci) for interpreting Clojure. A
+trade-off is that [sci](https://github.com/borkdude/sci) implements only a
+subset of Clojure. Also, execution time may be slower than Clojure on the JVM or
+(self-hosted) ClojureScript for more CPU-intensive calculations like:
+
+``` shellsession
+(last (take 1000000 (repeatedly #(+ 1 2 3))))
+```
+
+This would take 5 seconds using babashka, around half a second using self-hosted
+ClojureScript and around 200ms in Clojure on the JVM.
+
+So the sweet spot for babashka is executing tasks from the command line where
+fast startup time is preferred, in the same space where you would use bash.
 
 ## Status
 
@@ -79,13 +94,6 @@ bb [ --help ] | [ --version ] | ( [ -i ] [ -o ] | [ -io ] ) [ --stream ] ( expre
 ```
 
 Type `bb --help` to see a full explanation of the options.
-
-The input is read as EDN by default. If the `-i` flag is provided, then the
-input is read as a string which is then split on newlines. The output is printed
-as EDN by default, unless the `-o` flag is provided, then the output is turned
-into shell-scripting friendly output. To combine `-i` and `-o` you can use
-`-io`. When using the `--stream` option the expression is executed for every
-line or EDN value from stdin.
 
 The `clojure.core` functions are accessible without a namespace alias.
 
