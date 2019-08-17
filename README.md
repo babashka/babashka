@@ -183,6 +183,42 @@ Fetching url: https://www.clojure.org
 Writing file: /tmp/clojure.org.html
 ```
 
+## Enabling SSL
+
+This is a bit tricky, but you only have to do it once. Binaries compiled with
+GraalVM need a runtime dependency called `libsunec.so`. Because I don't know if
+I'm allowed to ship this library with babashka, I have chosen to let the user
+take care of these and put them in a known location. This also allows you to
+include a different `cacerts`.
+
+To enable SSL, create a `~/.babashka/lib` directory and copy the`libsunec.so`
+(Linux) or `libsunec.dylib` (Mac) to it. This library comes with GraalVM and is
+located in `<JAVA_HOME>/jre/lib/<platform>` inside the distribution. Also create a and
+`~/.babashka/lib/security` directory and copy `cacerts` to it which comes
+bundled with GraalVM and is located in
+`<JAVA_HOME>/jre/lib/security`.
+
+As a shell script:
+
+``` shellsession
+mkdir -p ~/.babashka/lib/security
+
+# Linux:
+cp $GRAALVM_HOME/jre/lib/amd64/libsunec.so ~/.babashka/lib
+
+# Mac:
+cp $GRAALVM_HOME/jre/lib/libsunec.dylib ~/.babashka/lib
+
+cp $GRAALVM_HOME/jre/lib/security/cacerts ~/.babashka/lib/security
+```
+
+You can download a distribution of GraalVM for your platform on
+[Github](https://github.com/oracle/graal/releases).
+
+More information about GraalVM and SSL can be found
+[here](https://blog.taylorwood.io/2018/10/04/graalvm-https.html) and
+[here](https://quarkus.io/guides/native-and-ssl-guide).
+
 ## Test
 
 Test on the JVM:

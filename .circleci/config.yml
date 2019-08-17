@@ -11,6 +11,7 @@ jobs:
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
+      GRAALVM_HOME: /home/circleci/graalvm-ce-19.2.0-dev
     steps:
       - checkout
       - run:
@@ -29,6 +30,18 @@ jobs:
             wget -nc https://download.clojure.org/install/linux-install-1.10.1.447.sh
             chmod +x linux-install-1.10.1.447.sh
             sudo ./linux-install-1.10.1.447.sh
+      - run:
+          name: Download GraalVM
+          command: |
+            cd ~
+            if ! [ -d graalvm-ce-19.2.0-dev ]; then
+              curl -O -sL https://github.com/oracle/graal/releases/download/vm-19.2.0-dev-b01/graalvm-ce-linux-amd64-19.2.0-dev-b01.tar.gz
+              tar xzf graalvm-ce-linux-amd64-19.2.0-dev-b01.tar.gz
+            fi
+      - run:
+          name: Install GraalVM SSL libs
+          command: |
+            .circleci/script/graalvm_ssl
       - run:
           name: Run JVM tests
           command: |
@@ -84,6 +97,10 @@ jobs:
               tar xzf graalvm-ce-linux-amd64-19.2.0-dev-b01.tar.gz
             fi
       - run:
+          name: Install GraalVM SSL libs
+          command: |
+            .circleci/script/graalvm_ssl
+      - run:
           name: Build binary
           command: |
             script/compile
@@ -133,7 +150,6 @@ jobs:
           name: Install Leiningen
           command: |
             .circleci/script/install-leiningen
-
       - run:
           name: Download GraalVM
           command: |
@@ -143,6 +159,10 @@ jobs:
               curl -O -sL https://github.com/oracle/graal/releases/download/vm-19.2.0-dev-b01/graalvm-ce-darwin-amd64-19.2.0-dev-b01.tar.gz
               tar xzf graalvm-ce-darwin-amd64-19.2.0-dev-b01.tar.gz
             fi
+      - run:
+          name: Install GraalVM SSL libs
+          command: |
+            .circleci/script/graalvm_ssl
       - run:
           name: Build binary
           command: |

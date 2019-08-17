@@ -30,6 +30,9 @@ $GRAALVM_HOME/bin/native-image \
   --initialize-at-run-time=java.lang.Math\$RandomNumberGeneratorHolder \
   --initialize-at-build-time \
   -H:Log=registerResource: \
+  -H:EnableURLProtocols=http,https \
+  --enable-all-security-services \
+  -H:+JNI \
   --verbose \
   --no-fallback \
   --no-server \

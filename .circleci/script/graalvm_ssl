@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+mkdir -p ~/.babashka/lib/security
+
+echo "GRAAL: $GRAALVM_HOME"
+# Mac:
+cp $GRAALVM_HOME/jre/lib/libsunec.dylib ~/.babashka/lib || true
+# Linux:
+cp $GRAALVM_HOME/jre/lib/amd64/libsunec.so ~/.babashka/lib || true
+
+cp $GRAALVM_HOME/jre/lib/security/cacerts ~/.babashka/lib/security
