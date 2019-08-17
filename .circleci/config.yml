@@ -30,6 +30,10 @@ jobs:
             chmod +x linux-install-1.10.1.447.sh
             sudo ./linux-install-1.10.1.447.sh
       - run:
+          name: Install GraalVM SSL libs
+          command: |
+            .circleci/script/graalvm_ssl
+      - run:
           name: Run JVM tests
           command: |
             script/test
@@ -86,7 +90,7 @@ jobs:
       - run:
           name: Install GraalVM SSL libs
           command: |
-            script/graalvm_ssl
+            .circleci/script/graalvm_ssl
       - run:
           name: Build binary
           command: |
@@ -149,7 +153,7 @@ jobs:
       - run:
           name: Install GraalVM SSL libs
           command: |
-            script/graalvm_ssl
+            .circleci/script/graalvm_ssl
       - run:
           name: Build binary
           command: |
