@@ -12,7 +12,7 @@
                 (if input
                   (with-in-str input
                     (apply main/main args))
-                  (apply main/main input args))))]
+                  (apply main/main args))))]
     (if-let [err ^String (not-empty (str sw))]
       (throw (Exception. err)) res)))
 
@@ -21,7 +21,7 @@
     (try (if input
            (apply bb (conj (vec args)
                            {:in input}))
-           (apply bb input args))
+           (apply bb args))
          (catch Exception e
            (let [d (ex-data e)
                  err-msg (or (:stderr (ex-data e)) "")]

@@ -76,7 +76,11 @@
   -io: combination of -i and -o.
   --stream: stream over lines or EDN values from stdin. Combined with -i *in* becomes a single line per iteration.
   --file or -f: read expressions from file instead of argument wrapped in an implicit do.
+  --time: print execution time before exiting.
 "))
+
+(defn wrap-do [s]
+  (format "(do %s)" s))
 
 (defn read-file [file]
   (let [f (io/file file)]
@@ -84,7 +88,7 @@
       (as-> (slurp file) x
         ;; remove shebang
         (str/replace x #"^#!.*" "")
-        (format "(do %s)" x))
+        (wrap-do x))
       (throw (Exception. (str "File does not exist: " file))))))
 
 (defn get-env
@@ -138,6 +142,11 @@
     (System/setProperty "javax.net.ssl.trustStore" ca-certs)
     (System/setProperty "javax.net.ssl.tru stAnchors" ca-certs)))
 
+(defn load-file* [ctx file]
+  (let [s (slurp file)
+        s (wrap-do s)]
+    (sci/eval-string s ctx)))
+
 (defn main
   [& args]
   #_(binding [*out* *err*]
@@ -147,6 +156,7 @@
                 :help? :file :command-line-args
                 :expression :stream? :time?] :as _opts}
         (parse-opts args)
+        env (atom {})
         exit-code
         (or
          #_(binding [*out* *err*]
@@ -159,7 +169,7 @@
                 :else
                 (try
 
-                  (let [expr (if file (read-file file) (format "(do %s)" expression))
+                  (let [expr (if file (read-file file) (wrap-do expression))
                         read-next #(if stream?
                                      (if raw-in (or (read-line) ::EOF)
                                          (read-edn))
@@ -168,27 +178,30 @@
                                                 (parse-shell-string in)
                                                 (edn/read-string in)))))]
                     (loop [in (read-next)]
-                      (if (identical? ::EOF in)
-                        [nil 0] ;; done streaming
-                        (let [res [(do (when-not (or expression file)
-                                         (throw (Exception. (str args  "Babashka expected an expression. Type --help to print help."))))
-                                       (let [res (sci/eval-string
-                                                  expr
-                                                  {:bindings (assoc bindings
-                                                                    (with-meta '*in*
-                                                                      (when-not stream? {:sci/deref! true})) in
-                                                                    #_(with-meta 'bb/*in*
-                                                                        {:sci/deref! true}) #_do-in
-                                                                    '*command-line-args* command-line-args)})]
-                                         (if raw-out
-                                           (if (coll? res)
-                                             (doseq [l res]
-                                               (println l))
-                                             (println res))
-                                           ((if println? println? prn) res)))) 0]]
-                          (if stream?
-                            (recur (read-next))
-                            res)))))
+                      (let [ctx {:bindings (assoc bindings
+                                                  (with-meta '*in*
+                                                    (when-not stream? {:sci/deref! true})) in
+                                                  #_(with-meta 'bb/*in*
+                                                      {:sci/deref! true}) #_do-in
+                                                  '*command-line-args* command-line-args)
+                                 :env env}
+                            ctx (update ctx :bindings assoc 'load-file #(load-file* ctx %))]
+                        (if (identical? ::EOF in)
+                          [nil 0] ;; done streaming
+                          (let [res [(do (when-not (or expression file)
+                                           (throw (Exception. (str args  "Babashka expected an expression. Type --help to print help."))))
+                                         (let [res (sci/eval-string
+                                                    expr
+                                                    ctx)]
+                                           (if raw-out
+                                             (if (coll? res)
+                                               (doseq [l res]
+                                                 (println l))
+                                               (println res))
+                                             ((if println? println? prn) res)))) 0]]
+                            (if stream?
+                              (recur (read-next))
+                              res))))))
                   (catch Exception e
                     (binding [*out* *err*]
                       (let [d (ex-data e)

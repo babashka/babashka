@@ -86,7 +86,7 @@
 (deftest ssl-test
   (let [graalvm-home (System/getenv "GRAALVM_HOME")
         lib-path (format "%1$s/jre/lib:%1$s/jre/lib/amd64" graalvm-home)
-        _ (prn "lib-path" lib-path)
+        ;; _ (prn "lib-path" lib-path)
         resp (bb nil (format "(System/setProperty \"java.library.path\" \"%s\")
                               (slurp \"https://www.google.com\")"
                              lib-path))]
@@ -99,3 +99,9 @@
     (is (= x (test-utils/bb x "--stream" "-io" "*in*"))))
   (let [x "f\n\b\n"]
     (is (= x (test-utils/bb x "--stream" "-io" "(subs *in* 0 1)")))))
+
+(deftest load-file-test
+  (let [tmp (java.io.File/createTempFile "script" ".clj")]
+    (spit tmp "(defn foo [x y] (+ x y)) (defn bar [x y] (* x y))")
+    (is (= "120\n" (test-utils/bb nil (format "(load-file \"%s\") (bar (foo 10 30) 3)"
+                                             (.getPath tmp)))))))
