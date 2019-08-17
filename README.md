@@ -193,10 +193,10 @@ include a different `cacerts`.
 
 To enable SSL, create a `~/.babashka/lib` directory and copy the`libsunec.so`
 (Linux) or `libsunec.dylib` (Mac) to it. This library comes with GraalVM and is
-located in `<JAVA_HOME>/jre/lib/<platform>` inside the distribution. Also create a and
+located in `<GRAALVM_HOME>/jre/lib/<platform>` inside the distribution. Also create a and
 `~/.babashka/lib/security` directory and copy `cacerts` to it which comes
 bundled with GraalVM and is located in
-`<JAVA_HOME>/jre/lib/security`.
+`<GRAALVM_HOME>/jre/lib/security`.
 
 As a shell script:
 
