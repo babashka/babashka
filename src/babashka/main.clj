@@ -97,6 +97,9 @@
   ([s d]
    (System/getProperty s d)))
 
+(defn set-property [k v]
+  (System/setProperty k v))
+
 (defn get-properties []
   (System/getProperties))
 
@@ -117,6 +120,7 @@
    'edn/read-string edn/read-string
    'System/getenv get-env
    'System/getProperty get-property
+   'System/setProperty set-property
    'System/getProperties get-properties
    'System/exit exit})
 
@@ -124,10 +128,7 @@
   (edn/read {;;:readers *data-readers*
              :eof ::EOF} *in*))
 
-(defn main
-  [& args]
-  #_(binding [*out* *err*]
-      (prn ">> args" args))
+#_(defn set-ssl []
   (let [home (System/getProperty "user.home")
         bb-lib-dir (io/file home ".babashka" "lib")
         lib-path (System/getProperty "java.library.path")
@@ -135,7 +136,12 @@
         ca-certs (.getPath (io/file ca-certs-dir "cacerts"))]
     (System/setProperty "java.library.path" (str (.getPath  bb-lib-dir) ":" lib-path))
     (System/setProperty "javax.net.ssl.trustStore" ca-certs)
-    (System/setProperty "javax.net.ssl.trustAnchors" ca-certs))
+    (System/setProperty "javax.net.ssl.tru stAnchors" ca-certs)))
+
+(defn main
+  [& args]
+  #_(binding [*out* *err*]
+      (prn ">> args" args))
   (let [t0 (System/currentTimeMillis)
         {:keys [:version :raw-in :raw-out :println?
                 :help? :file :command-line-args

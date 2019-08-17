@@ -99,7 +99,7 @@ through the aliases:
 
 From Java the following is available:
 
-- `System`: `exit`, `getProperty`, `getProperties`, `getenv`
+- `System`: `exit`, `getProperty`, `setProperty`, `getProperties`, `getenv`
 
 Special vars:
 
@@ -185,39 +185,30 @@ Writing file: /tmp/clojure.org.html
 
 ## Enabling SSL
 
-If you want to be able to use SSL to e.g. `(slurp "https://www.clojure.org")`
-you will need install a runtime dependency called `libsunec.so`. Because I don't
-know if I'm allowed to ship this library with babashka, I have chosen to let the
-user take care of these and put them in a known location. This also allows you
-to include a different `cacerts`.
+If you want to be able to use SSL to e.g. run `(slurp
+"https://www.clojure.org")` you will need to add the location where
+`libsunec.so` or `libsunec.dylib` is located to the `java.library.path` Java
+property. This library comes with most JVM installations, so you might already
+have it on your machine. It is usually located in `<JAVA_HOME>/jre/lib` or
+`<JAVA_HOME>/jre/<platform>/lib`. It is also bundled with GraalVM.
 
-To enable SSL, create a `~/.babashka/lib` directory and copy the`libsunec.so`
-(Linux) or `libsunec.dylib` (Mac) to it. This library comes with GraalVM and is
-located in `<GRAALVM_HOME>/jre/lib/<platform>` inside the distribution. Also create a and
-`~/.babashka/lib/security` directory and copy `cacerts` to it which comes
-bundled with GraalVM and is located in
-`<GRAALVM_HOME>/jre/lib/security`.
-
-As a shell script:
+Example:
 
 ``` shellsession
-mkdir -p ~/.babashka/lib/security
+$ cat /tmp/https_get.clj
+#!/usr/bin/env bb -f
 
-# Linux:
-cp $GRAALVM_HOME/jre/lib/amd64/libsunec.so ~/.babashka/lib
+(System/setProperty
+ "java.library.path"
+ "/Library/Java/JavaVirtualMachines/adoptopenjdk-8.jdk/Contents/Home/jre/lib")
 
-# Mac:
-cp $GRAALVM_HOME/jre/lib/libsunec.dylib ~/.babashka/lib
-
-cp $GRAALVM_HOME/jre/lib/security/cacerts ~/.babashka/lib/security
+(slurp (first *command-line-args*))
 ```
 
-You can download a distribution of GraalVM for your platform on
-[Github](https://github.com/oracle/graal/releases).
-
-More information about GraalVM and SSL can be found
-[here](https://blog.taylorwood.io/2018/10/04/graalvm-https.html) and
-[here](https://quarkus.io/guides/native-and-ssl-guide).
+``` shellsession
+$ /tmp/https_get.clj https://www.google.com | bb '(subs *in* 0 50)'
+"<!doctype html><html itemscope=\"\" itemtype=\"http:/"
+```
 
 ## Test
 
