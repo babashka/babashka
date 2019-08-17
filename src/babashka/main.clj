@@ -138,6 +138,10 @@
     (System/setProperty "javax.net.ssl.trustStore" ca-certs)
     (System/setProperty "javax.net.ssl.tru stAnchors" ca-certs)))
 
+(defn load-file* [ctx file]
+  (let [s (slurp file)]
+    (sci/eval-string s ctx)))
+
 (defn main
   [& args]
   #_(binding [*out* *err*]
@@ -147,6 +151,7 @@
                 :help? :file :command-line-args
                 :expression :stream? :time?] :as _opts}
         (parse-opts args)
+        env (atom {})
         exit-code
         (or
          #_(binding [*out* *err*]
@@ -168,27 +173,30 @@
                                                 (parse-shell-string in)
                                                 (edn/read-string in)))))]
                     (loop [in (read-next)]
-                      (if (identical? ::EOF in)
-                        [nil 0] ;; done streaming
-                        (let [res [(do (when-not (or expression file)
-                                         (throw (Exception. (str args  "Babashka expected an expression. Type --help to print help."))))
-                                       (let [res (sci/eval-string
-                                                  expr
-                                                  {:bindings (assoc bindings
-                                                                    (with-meta '*in*
-                                                                      (when-not stream? {:sci/deref! true})) in
-                                                                    #_(with-meta 'bb/*in*
-                                                                        {:sci/deref! true}) #_do-in
-                                                                    '*command-line-args* command-line-args)})]
-                                         (if raw-out
-                                           (if (coll? res)
-                                             (doseq [l res]
-                                               (println l))
-                                             (println res))
-                                           ((if println? println? prn) res)))) 0]]
-                          (if stream?
-                            (recur (read-next))
-                            res)))))
+                      (let [ctx {:bindings (assoc bindings
+                                                  (with-meta '*in*
+                                                    (when-not stream? {:sci/deref! true})) in
+                                                  #_(with-meta 'bb/*in*
+                                                      {:sci/deref! true}) #_do-in
+                                                  '*command-line-args* command-line-args)
+                                 :env env}
+                            ctx (update ctx :bindings assoc 'load-file #(load-file* ctx %))]
+                        (if (identical? ::EOF in)
+                          [nil 0] ;; done streaming
+                          (let [res [(do (when-not (or expression file)
+                                           (throw (Exception. (str args  "Babashka expected an expression. Type --help to print help."))))
+                                         (let [res (sci/eval-string
+                                                    expr
+                                                    ctx)]
+                                           (if raw-out
+                                             (if (coll? res)
+                                               (doseq [l res]
+                                                 (println l))
+                                               (println res))
+                                             ((if println? println? prn) res)))) 0]]
+                            (if stream?
+                              (recur (read-next))
+                              res))))))
                   (catch Exception e
                     (binding [*out* *err*]
                       (let [d (ex-data e)
