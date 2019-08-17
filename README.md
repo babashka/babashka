@@ -192,6 +192,9 @@ create a and `~/.babashka/lib/security` directory and copy `cacerts` to it which
 comes bundled with GraalVM and is located in
 `<JAVA_HOME>/jre/lib/<platform>/security`.
 
+You can get a distribution of GraalVM for your platform on
+[Github](https://github.com/oracle/graal/releases).
+
 More
 information about GraalVM and SSL can be found
 [here](https://blog.taylorwood.io/2018/10/04/graalvm-https.html) and
