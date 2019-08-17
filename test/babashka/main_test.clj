@@ -84,7 +84,7 @@
                         (bb nil))))
 
 (deftest ssl-test
-  (is (re-find #"doctype html" (slurp "https://www.google.com"))))
+  (is (re-find #"doctype html" (bb nil "(slurp \"https://www.google.com\")"))))
 
 (deftest stream-test
   (is (= "2\n3\n4\n" (test-utils/bb "1 2 3" "--stream" "(inc *in*)")))
