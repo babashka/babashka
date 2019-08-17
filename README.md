@@ -185,11 +185,11 @@ Writing file: /tmp/clojure.org.html
 
 ## Enabling SSL
 
-This is a bit tricky, but you only have to do it once. Binaries compiled with
-GraalVM need a runtime dependency called `libsunec.so`. Because I don't know if
-I'm allowed to ship this library with babashka, I have chosen to let the user
-take care of these and put them in a known location. This also allows you to
-include a different `cacerts`.
+If you want to be able to use SSL to e.g. `(slurp "https://www.clojure.org")`
+you will need install a runtime dependency called `libsunec.so`. Because I don't
+know if I'm allowed to ship this library with babashka, I have chosen to let the
+user take care of these and put them in a known location. This also allows you
+to include a different `cacerts`.
 
 To enable SSL, create a `~/.babashka/lib` directory and copy the`libsunec.so`
 (Linux) or `libsunec.dylib` (Mac) to it. This library comes with GraalVM and is
