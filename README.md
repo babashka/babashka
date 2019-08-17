@@ -187,10 +187,10 @@ Writing file: /tmp/clojure.org.html
 
 If you want to be able to use SSL to e.g. run `(slurp
 "https://www.clojure.org")` you will need to add the location where
-`libsunec.so` or `libsunec.dylib` is located to the `java.library.path`
+`libsunec.so` or `libsunec.dylib` is located to the `java.library.path` Java
 property. This library comes with most JVM installations, so you might already
-have it on your machine. E.g. for AdoptOpen JDK 8 it is located in
-`<JAVA_HOME>/jre/lib` on my machine.
+have it on your machine. It is usually located in `<JAVA_HOME>/jre/lib` or
+`<JAVA_HOME>/jre/<platform>/lib`. It is also bundled with GraalVM.
 
 Example:
 
