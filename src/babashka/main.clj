@@ -144,6 +144,7 @@
                 [(print-help) 0]
                 :else
                 (try
+
                   (let [expr (if file (read-file file) (format "(do %s)" expression))
                         read-next #(if stream?
                                      (if raw-in (or (read-line) ::EOF)
