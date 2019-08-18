@@ -17,6 +17,7 @@
      [~(with-meta 'x {:tag 'java.io.File}) ~'y]
      (~(symbol (str "." method-name)) ~'x ~'y)))
 
+(gen-wrapper-fn canExecute)
 (gen-wrapper-fn canRead)
 (gen-wrapper-fn canWrite)
 (gen-wrapper-fn delete)
@@ -40,7 +41,7 @@
 (gen-wrapper-fn mkdir)
 (gen-wrapper-fn mkdirs)
 (gen-wrapper-fn-2 renameTo)
-(defn setExecutable
+(defn ^:bb/export setExecutable
   ([^java.io.File f b]
    (.setExecutable f b))
   ([^java.io.File f b ownerOnly]
@@ -48,7 +49,7 @@
 (gen-wrapper-fn-2 setLastModified)
 (gen-wrapper-fn-2 setReadable)
 (gen-wrapper-fn setReadOnly)
-(defn setWritable
+(defn ^:bb/export setWritable
   ([^java.io.File f b]
    (.setWritable f b))
   ([^java.io.File f b ownerOnly]
