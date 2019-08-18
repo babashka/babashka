@@ -95,24 +95,46 @@ You may also download a binary from [Github](https://github.com/borkdude/babashk
 ## Usage
 
 ``` shellsession
-bb [ --help ] | [ --version ] | ( [ -i ] [ -o ] | [ -io ] ) [ --stream ] ( expression | -f <file> )
-```
+$ bb --help
+Usage: bb [ --help ] | [ --version ] | ( [ -i ] [ -o ] | [ -io ] ) [ --stream ] ( expression | -f <file> )
 
-Type `bb --help` to see a full explanation of the options.
+Options:
+
+  --help: print this help text.
+  --version: print the current version of babashka.
+
+  -i: read shell input into a list of strings instead of reading EDN.
+  -o: write shell output instead of EDN.
+  -io: combination of -i and -o.
+  --stream: stream over lines or EDN values from stdin. Combined with -i *in* becomes a single line per iteration.
+  --file or -f: read expressions from file instead of argument wrapped in an implicit do.
+  --time: print execution time before exiting.
+```
 
 The `clojure.core` functions are accessible without a namespace alias.
 
 The following Clojure namespaces are required by default and only available
-through the aliases:
+through the aliases. If not all vars are available, they are enumerated
+explicitly.
 
 - `clojure.string` aliased as `str`
 - `clojure.set` aliased as `set`
-- `clojure.edn` aliased as `edn` (only `read-string` is available)
-- `clojure.java.shell` aliases as `shell` (only `sh` is available)
+- `clojure.edn` aliased as `edn`:
+  - `read-string`
+- `clojure.java.shell` aliases as `shell`:
+  - `sh`
+- `clojure.java.io` aliased as `io`:
+  - `as-relative-path`, `copy`, `delete-file`, `file`
 
 From Java the following is available:
 
 - `System`: `exit`, `getProperty`, `setProperty`, `getProperties`, `getenv`
+- `File`: `.canRead`, `.canWrite`, `.delete`, `.deleteOnExit`, `.exists`,
+  `.getAbsoluteFile`, `.getCanonicalFile`, `.getCanonicalPath`, `.getName`,
+  `.getParent`, `.getParentFile`, `.getPath`, `.isAbsolute`, `.isDirectory`,
+  `.isFile`, `.isHidden`, `.lastModified`, `.length`, `.list`, `.listFiles`,
+  `.mkdir`, `.mkdirs`, `.renameTo`, `.setLastModified`, `.setReadOnly`,
+  `.setReadable`, `.toPath`, `.toURI`.
 
 Special vars:
 

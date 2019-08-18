@@ -5,7 +5,8 @@
    [clojure.java.io :as io]
    [clojure.java.shell :as shell]
    [clojure.string :as str]
-   [sci.core :as sci])
+   [sci.core :as sci]
+   [babashka.impl.File :as File])
   (:gen-class))
 
 (set! *warn-on-reflection* true)
@@ -111,23 +112,35 @@
   (throw (ex-info "" {:bb/exit-code n})))
 
 (def bindings
-  {'run! run!
-   'shell/sh shell/sh
-   'csh shell/sh ;; backwards compatibility, deprecated
-   'namespace namespace
-   'slurp slurp
-   'spit spit
-   'pmap pmap
-   'print print
-   'pr-str pr-str
-   'prn prn
-   'println println
-   'edn/read-string edn/read-string
-   'System/getenv get-env
-   'System/getProperty get-property
-   'System/setProperty set-property
-   'System/getProperties get-properties
-   'System/exit exit})
+  (merge {'run! run!
+          'shell/sh shell/sh
+          'csh shell/sh ;; backwards compatibility, deprecated
+          'namespace namespace
+          'slurp slurp
+          'spit spit
+          'pmap pmap
+          'print print
+          'pr-str pr-str
+          'prn prn
+          'println println
+
+          ;; clojure.java.io
+          'io/as-relative-path io/as-relative-path
+          'io/copy io/copy
+          'io/delete-file io/delete-file
+          'io/file io/file
+          ;; '.canRead File/canRead
+          ;; '.canWrite File/canWrite
+          ;; '.exists File/exists
+          ;; '.delete File/delete
+
+          'edn/read-string edn/read-string
+          'System/getenv get-env
+          'System/getProperty get-property
+          'System/setProperty set-property
+          'System/getProperties get-properties
+          'System/exit exit}
+         File/bindings))
 
 (defn read-edn []
   (edn/read {;;:readers *data-readers*
