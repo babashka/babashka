@@ -162,6 +162,12 @@ Scripts may be executed from a file using `-f` or `--file`:
 bb -f download_html.clj
 ```
 
+Files can also be loaded inline using `load-file`:
+
+``` shellsession
+bb '(load-file "script.clj")'
+```
+
 Using `bb` with a shebang also works:
 
 ``` clojure
