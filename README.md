@@ -53,8 +53,8 @@ So the sweet spot for babashka is executing tasks from the command line where
 fast startup time is preferred, in the same space where you would use bash.
 
 Where it can, babashka calls the regular implementation of Clojure on the JVM
-and proxies common JVM packages like `System`, so writing code in it should be
-familiar if you're already using Clojure on the JVM.
+and proxies common Java packages like `System` and `File`, so writing code in it
+should be familiar if you're already using Clojure on the JVM.
 
 ## Status
 
