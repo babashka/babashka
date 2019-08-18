@@ -19,7 +19,8 @@ $ bb '(vec (dedupe *in*))' <<< '[1 1 1 1 2]'
 If you're a bash expert, you probably don't need this. But for those of us who
 can use a bit of Clojure in their shell scripts, it may be useful.
 
-Babashka runs as a binary which results in faster startup times:
+Babashka runs as a [GraalVM](https://github.com/oracle/graal) binary which
+results in fast startup times:
 
 ``` shellsession
 $ time clojure -e "(+ 1 2 3)"
@@ -49,6 +50,10 @@ ClojureScript and around 200ms in Clojure on the JVM.
 
 So the sweet spot for babashka is executing tasks from the command line where
 fast startup time is preferred, in the same space where you would use bash.
+
+Where it can, babashka calls the regular implementation of Clojure on the JVM
+and proxies common JVM packages like `System`, so writing code in it should be
+familiar if you're already using Clojure on the JVM.
 
 ## Status
 
