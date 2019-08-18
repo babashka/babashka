@@ -202,6 +202,32 @@ Fetching url: https://www.clojure.org
 Writing file: /tmp/clojure.org.html
 ```
 
+## Preloads
+
+The environment variable `BABASHKA_PRELOADS` allows to define code that will be
+available in all subsequent usages of babashka.
+
+``` shellsession
+BABASHKA_PRELOADS='(defn foo [x] (+ x 2))'
+BABASHKA_PRELOADS=$BABASHKA_PRELOADS' (defn bar [x] (* x 2))'
+export BABASHKA_PRELOADS
+```
+
+Note that you can concatenate multiple expressions. Now you can use these functions in babashka:
+
+``` shellsession
+$ bb '(-> (foo *in*) bar)' <<< 1
+6
+```
+
+You can also preload an entire file using `load-file`:
+
+``` shellsession
+export BABASHKA_PRELOADS='(load-file "my_awesome_prelude.clj")'
+```
+
+Note that `*in*` is not available in preloads.
+
 ## Enabling SSL
 
 If you want to be able to use SSL to e.g. run `(slurp
@@ -214,18 +240,8 @@ have it on your machine. It is usually located in `<JAVA_HOME>/jre/lib` or
 Example:
 
 ``` shellsession
-$ cat /tmp/https_get.clj
-#!/usr/bin/env bb -f
-
-(System/setProperty
- "java.library.path"
- "/Library/Java/JavaVirtualMachines/adoptopenjdk-8.jdk/Contents/Home/jre/lib")
-
-(slurp (first *command-line-args*))
-```
-
-``` shellsession
-$ /tmp/https_get.clj https://www.google.com | bb '(subs *in* 0 50)'
+$ export BABASHKA_PRELOADS="(System/setProperty \"java.library.path\" \"$JAVA_HOME/jre/lib\")"
+$ bb '(slurp "https://www.clojure.org")' | bb '(subs *in* 0 50)'
 "<!doctype html><html itemscope=\"\" itemtype=\"http:/"
 ```
 

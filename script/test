@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -eo pipefail
+export BABASHKA_PRELOADS='(defn __bb__foo [] "foo") (defn __bb__bar [] "bar")'
 
 if [ "$BABASHKA_TEST_ENV" = "native" ]; then
     lein test
