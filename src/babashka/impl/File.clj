@@ -1,4 +1,5 @@
 (ns babashka.impl.File
+  {:no-doc true}
   (:refer-clojure :exclude [list])
   (:require [clojure.java.io :as io]
             [clojure.string :as str]))
