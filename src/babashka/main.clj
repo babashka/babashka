@@ -114,6 +114,7 @@
   {'run! run!
    'shell/sh shell/sh
    'csh shell/sh ;; backwards compatibility, deprecated
+   'namespace namespace
    'slurp slurp
    'spit spit
    'pmap pmap
