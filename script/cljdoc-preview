@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+rm -rf /tmp/cljdoc
+mkdir -p /tmp/cljdoc
+version=$(cat resources/BABASHKA_VERSION)
+
+echo "---- cljdoc preview: installing jar in local repo"
+lein install
+
+echo "---- cljdoc preview: ingesting babashka"
+docker run --rm -v "$PWD:/babashka" \
+       -v "$HOME/.m2:/root/.m2" -v /tmp/cljdoc:/app/data --entrypoint "clojure" \
+       cljdoc/cljdoc -A:cli ingest -p borkdude/babashka -v "$version" \
+       --git /babashka
+
+echo "---- cljdoc preview: starting server on port 8000"
+docker run --rm -p 8000:8000 -v /tmp/cljdoc:/app/data cljdoc/cljdoc
+# go directly to http://localhost:8000/d/borkdude/babashka/0.0.10-SNAPSHOT, not via the search
