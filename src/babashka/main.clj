@@ -133,14 +133,14 @@
              :eof ::EOF} *in*))
 
 #_(defn set-ssl []
-  (let [home (System/getProperty "user.home")
-        bb-lib-dir (io/file home ".babashka" "lib")
-        lib-path (System/getProperty "java.library.path")
-        ca-certs-dir (io/file bb-lib-dir "security")
-        ca-certs (.getPath (io/file ca-certs-dir "cacerts"))]
-    (System/setProperty "java.library.path" (str (.getPath  bb-lib-dir) ":" lib-path))
-    (System/setProperty "javax.net.ssl.trustStore" ca-certs)
-    (System/setProperty "javax.net.ssl.tru stAnchors" ca-certs)))
+    (let [home (System/getProperty "user.home")
+          bb-lib-dir (io/file home ".babashka" "lib")
+          lib-path (System/getProperty "java.library.path")
+          ca-certs-dir (io/file bb-lib-dir "security")
+          ca-certs (.getPath (io/file ca-certs-dir "cacerts"))]
+      (System/setProperty "java.library.path" (str (.getPath  bb-lib-dir) ":" lib-path))
+      (System/setProperty "javax.net.ssl.trustStore" ca-certs)
+      (System/setProperty "javax.net.ssl.tru stAnchors" ca-certs)))
 
 (defn load-file* [ctx file]
   (let [s (slurp file)
@@ -156,7 +156,18 @@
                 :help? :file :command-line-args
                 :expression :stream? :time?] :as _opts}
         (parse-opts args)
+        read-next #(if stream?
+                     (if raw-in (or (read-line) ::EOF)
+                         (read-edn))
+                     (delay (let [in (slurp *in*)]
+                              (if raw-in
+                                (parse-shell-string in)
+                                (edn/read-string in)))))
         env (atom {})
+        ctx {:bindings (assoc bindings '*command-line-args* command-line-args)
+             :env env}
+        ctx (update ctx :bindings assoc 'load-file #(load-file* ctx %))
+        _preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim) (wrap-do) (sci/eval-string ctx))
         exit-code
         (or
          #_(binding [*out* *err*]
@@ -168,31 +179,15 @@
                 [(print-help) 0]
                 :else
                 (try
-
-                  (let [expr (if file (read-file file) (wrap-do expression))
-                        read-next #(if stream?
-                                     (if raw-in (or (read-line) ::EOF)
-                                         (read-edn))
-                                     (delay (let [in (slurp *in*)]
-                                              (if raw-in
-                                                (parse-shell-string in)
-                                                (edn/read-string in)))))]
+                  (let [expr (if file (read-file file) (wrap-do expression))]
                     (loop [in (read-next)]
-                      (let [ctx {:bindings (assoc bindings
-                                                  (with-meta '*in*
-                                                    (when-not stream? {:sci/deref! true})) in
-                                                  #_(with-meta 'bb/*in*
-                                                      {:sci/deref! true}) #_do-in
-                                                  '*command-line-args* command-line-args)
-                                 :env env}
-                            ctx (update ctx :bindings assoc 'load-file #(load-file* ctx %))]
+                      (let [ctx (update ctx :bindings assoc (with-meta '*in*
+                                                              (when-not stream? {:sci/deref! true})) in)]
                         (if (identical? ::EOF in)
                           [nil 0] ;; done streaming
                           (let [res [(do (when-not (or expression file)
                                            (throw (Exception. (str args  "Babashka expected an expression. Type --help to print help."))))
-                                         (let [res (sci/eval-string
-                                                    expr
-                                                    ctx)]
+                                         (let [res (sci/eval-string expr ctx)]
                                            (if raw-out
                                              (if (coll? res)
                                                (doseq [l res]
@@ -208,7 +203,7 @@
                             exit-code (:bb/exit-code d)]
                         (if exit-code [nil exit-code]
                             (do (when-let [msg (or (:stderr d )
-                                                  (.getMessage e))]
+                                                   (.getMessage e))]
                                   (println (str/trim msg)))
                                 [nil 1]))))))))
          1)
