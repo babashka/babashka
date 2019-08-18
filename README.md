@@ -21,8 +21,9 @@ $ cat ~/.babashka/prelude.clj
 $ export BABASHKA_PRELOADS="(load-file \"$HOME/.babashka/prelude.clj\")"
 
 ## enjoy!
-$ ls | bb -i '(filter directory? *in*)'
+$ ls | bb --time -i '(filter directory? *in*)'
 ("doc" "resources" "sci" "script" "src" "target" "test")
+bb took 6ms.
 ```
 
 ## Rationale
