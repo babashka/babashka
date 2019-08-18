@@ -9,21 +9,10 @@ A sprinkle of Clojure for the command line.
 ## Quickstart
 
 ``` shellsession
-## install bb
 $ bash <(curl -s https://raw.githubusercontent.com/borkdude/babashka/master/install)
-
-## optional: define some helper functions
-$ cat ~/.babashka/prelude.clj
-(defn directory? [f]
-  (.isDirectory (io/file f)))
-
-## optional: make helper functions available in current shell
-$ export BABASHKA_PRELOADS="(load-file \"$HOME/.babashka/prelude.clj\")"
-
-## enjoy!
-$ ls | bb --time -i '(filter directory? *in*)'
+$ ls | bb --time -i '(filter #(-> % io/file .isDirectory) *in*)'
 ("doc" "resources" "sci" "script" "src" "target" "test")
-bb took 6ms.
+bb took 4ms.
 ```
 
 ## Rationale
