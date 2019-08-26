@@ -80,16 +80,12 @@
   --time: print execution time before exiting.
 "))
 
-(defn wrap-do [s]
-  (format "(do %s)" s))
-
 (defn read-file [file]
   (let [f (io/file file)]
     (if (.exists f)
       (as-> (slurp file) x
         ;; remove shebang
-        (str/replace x #"^#!.*" "")
-        (wrap-do x))
+        (str/replace x #"^#!.*" ""))
       (throw (Exception. (str "File does not exist: " file))))))
 
 (defn get-env
@@ -157,8 +153,7 @@
       (System/setProperty "javax.net.ssl.tru stAnchors" ca-certs)))
 
 (defn load-file* [ctx file]
-  (let [s (slurp file)
-        s (wrap-do s)]
+  (let [s (slurp file)]
     (sci/eval-string s ctx)))
 
 (defn main
@@ -181,7 +176,7 @@
         ctx {:bindings (assoc bindings '*command-line-args* command-line-args)
              :env env}
         ctx (update ctx :bindings assoc 'load-file #(load-file* ctx %))
-        _preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim) (wrap-do) (sci/eval-string ctx))
+        _preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim) (sci/eval-string ctx))
         exit-code
         (or
          #_(binding [*out* *err*]
@@ -193,7 +188,7 @@
                 [(print-help) 0]
                 :else
                 (try
-                  (let [expr (if file (read-file file) (wrap-do expression))]
+                  (let [expr (if file (read-file file) expression)]
                     (loop [in (read-next)]
                       (let [ctx (update ctx :bindings assoc (with-meta '*in*
                                                               (when-not stream? {:sci/deref! true})) in)]
