@@ -1,12 +1,15 @@
 (ns babashka.main
   {:no-doc true}
   (:require
+   [babashka.impl.File :as File]
+   [babashka.impl.PipeSignalHandler :refer [handle-pipe! pipe-signal-received?]]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.java.shell :as shell]
    [clojure.string :as str]
-   [sci.core :as sci]
-   [babashka.impl.File :as File])
+   [sci.core :as sci])
+  (:import [sun.misc Signal]
+           [sun.misc SignalHandler])
   (:gen-class))
 
 (set! *warn-on-reflection* true)
@@ -142,22 +145,13 @@
   (edn/read {;;:readers *data-readers*
              :eof ::EOF} *in*))
 
-#_(defn set-ssl []
-    (let [home (System/getProperty "user.home")
-          bb-lib-dir (io/file home ".babashka" "lib")
-          lib-path (System/getProperty "java.library.path")
-          ca-certs-dir (io/file bb-lib-dir "security")
-          ca-certs (.getPath (io/file ca-certs-dir "cacerts"))]
-      (System/setProperty "java.library.path" (str (.getPath  bb-lib-dir) ":" lib-path))
-      (System/setProperty "javax.net.ssl.trustStore" ca-certs)
-      (System/setProperty "javax.net.ssl.tru stAnchors" ca-certs)))
-
 (defn load-file* [ctx file]
   (let [s (slurp file)]
     (sci/eval-string s ctx)))
 
 (defn main
   [& args]
+  (handle-pipe!)
   #_(binding [*out* *err*]
       (prn ">> args" args))
   (let [t0 (System/currentTimeMillis)
@@ -165,13 +159,15 @@
                 :help? :file :command-line-args
                 :expression :stream? :time?] :as _opts}
         (parse-opts args)
-        read-next #(if stream?
-                     (if raw-in (or (read-line) ::EOF)
-                         (read-edn))
-                     (delay (let [in (slurp *in*)]
-                              (if raw-in
-                                (parse-shell-string in)
-                                (edn/read-string in)))))
+        read-next #(if (pipe-signal-received?)
+                     ::EOF
+                     (if stream?
+                       (if raw-in (or (read-line) ::EOF)
+                           (read-edn))
+                       (delay (let [in (slurp *in*)]
+                                (if raw-in
+                                  (parse-shell-string in)
+                                  (edn/read-string in))))))
         env (atom {})
         ctx {:bindings (assoc bindings '*command-line-args* command-line-args)
              :env env}
@@ -199,7 +195,8 @@
                                          (let [res (sci/eval-string expr ctx)]
                                            (if raw-out
                                              (if (coll? res)
-                                               (doseq [l res]
+                                               (doseq [l res
+                                                       :while (not (pipe-signal-received?))]
                                                  (println l))
                                                (println res))
                                              ((if println? println? prn) res)))) 0]]
