@@ -33,6 +33,9 @@
     "native" #'bb-native
     #'bb-jvm))
 
-(if (= bb #'bb-jvm)
+(def jvm? (= bb #'bb-jvm))
+(def native? (not jvm?))
+
+(if jvm?
   (println "==== Testing JVM version")
   (println "==== Testing native version"))

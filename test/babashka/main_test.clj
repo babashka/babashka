@@ -1,10 +1,11 @@
 (ns babashka.main-test
   (:require
-   [clojure.test :as test :refer [deftest is testing]]
-   [babashka.test-utils :as test-utils]
    [babashka.main :as main]
+   [babashka.test-utils :as test-utils]
    [clojure.edn :as edn]
-   [clojure.string :as str]))
+   [clojure.java.shell :refer [sh]]
+   [clojure.string :as str]
+   [clojure.test :as test :refer [deftest is testing]]))
 
 (defn bb [input & args]
   (edn/read-string (apply test-utils/bb (str input) (map str args))))
@@ -114,3 +115,12 @@
 (deftest io-test
   (is (true? (bb nil "(.exists (io/file \"README.md\"))")))
   (is (true? (bb nil "(.canWrite (io/file \"README.md\"))"))))
+
+(deftest pipe-test
+  (when test-utils/native?
+    (let [out (:out (sh "bash" "-c" "./bb -o '(range)' |
+                         ./bb --stream '(* *in* *in*)' |
+                         head -n10"))
+          out (str/split-lines out)
+          out (map edn/read-string out)]
+      (is (= out (take 10 (map #(* % %) (range))))))))
