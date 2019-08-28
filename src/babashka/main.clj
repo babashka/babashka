@@ -2,7 +2,7 @@
   {:no-doc true}
   (:require
    [babashka.impl.File :as File]
-   [babashka.impl.PipeSignalHandler :refer [handle-pipe! pipe-signal-received?]]
+   [babashka.impl.pipe-signal-handler :refer [handle-pipe! pipe-signal-received?]]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.java.shell :as shell]
