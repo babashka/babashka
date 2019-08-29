@@ -32,14 +32,24 @@
                                             :time? true))
                    ("-i") (recur (rest options)
                                  (assoc opts-map
-                                        :raw-in true))
+                                        :shell-in true))
+                   ("-I") (recur (rest options)
+                                 (assoc opts-map
+                                        :edn-in true))
                    ("-o") (recur (rest options)
                                  (assoc opts-map
-                                        :raw-out true))
+                                        :shell-out true))
+                   ("-O") (recur (rest options)
+                                 (assoc opts-map
+                                        :edn-out true))
                    ("-io") (recur (rest options)
                                   (assoc opts-map
-                                         :raw-in true
-                                         :raw-out true))
+                                         :shell-in true
+                                         :shell-out true))
+                   ("-IO") (recur (rest options)
+                                  (assoc opts-map
+                                         :edn-in true
+                                         :edn-out true))
                    ("-f" "--file")
                    (let [options (rest options)]
                      (recur (rest options)
@@ -54,13 +64,23 @@
                  opts-map))]
     opts))
 
-(defn parse-shell-string [in]
+(defn edn-seq*
+  [^java.io.BufferedReader rdr]
+  (let [edn-val (edn/read {:eof ::EOF} rdr)]
+    (when (not (identical? ::EOF edn-val))
+      (cons edn-val (lazy-seq (edn-seq* rdr))))))
+
+(defn edn-seq
+  [in]
+  (edn-seq* in))
+
+(defn shell-seq [in]
   (line-seq (java.io.BufferedReader. in)))
 
 (defn print-version []
   (println (str "babashka v"(str/trim (slurp (io/resource "BABASHKA_VERSION"))))))
 
-(def usage-string "Usage: bb [ --help ] | [ --version ] | ( [ -i ] [ -o ] | [ -io ] ) [ --stream ] ( expression | -f <file> )")
+(def usage-string "Usage: bb [ --help ] | [ --version ] | [ -i | -I ] [ -o | -O ] [ --stream ] ( expression | -f <file> )")
 (defn print-usage []
   (println usage-string))
 
@@ -75,10 +95,11 @@
   --help: print this help text.
   --version: print the current version of babashka.
 
-  -i: read shell input into a list of strings instead of reading EDN.
-  -o: write shell output instead of EDN.
-  -io: combination of -i and -o.
-  --stream: stream over lines or EDN values from stdin. Combined with -i *in* becomes a single line per iteration.
+  -i: bind *in* to a lazy seq of lines from stdin.
+  -I: bind *in* to a lazy seq of EDN values from stdin.
+  -o: write lines to stdout.
+  -O: write EDN values to stdout.
+  --stream: stream over lines or EDN values from stdin. Combined with -i or -I *in* becomes a single value per iteration.
   --file or -f: read expressions from file instead of argument wrapped in an implicit do.
   --time: print execution time before exiting.
 "))
@@ -155,18 +176,21 @@
   #_(binding [*out* *err*]
       (prn ">> args" args))
   (let [t0 (System/currentTimeMillis)
-        {:keys [:version :raw-in :raw-out :println?
+        {:keys [:version :shell-in :edn-in :shell-out :edn-out
                 :help? :file :command-line-args
                 :expression :stream? :time?] :as _opts}
         (parse-opts args)
         read-next #(if (pipe-signal-received?)
                      ::EOF
                      (if stream?
-                       (if raw-in (or (read-line) ::EOF)
+                       (if shell-in (or (read-line) ::EOF)
                            (read-edn))
-                       (delay (if raw-in
-                                (parse-shell-string *in*)
-                                (edn/read *in*)))))
+                       (delay (cond shell-in
+                                    (shell-seq *in*)
+                                    edn-in
+                                    (edn-seq *in*)
+                                    :else
+                                    (edn/read *in*)))))
         env (atom {})
         ctx {:bindings (assoc bindings '*command-line-args* command-line-args)
              :env env}
@@ -192,13 +216,14 @@
                           (let [res [(do (when-not (or expression file)
                                            (throw (Exception. (str args  "Babashka expected an expression. Type --help to print help."))))
                                          (let [res (sci/eval-string expr ctx)]
-                                           (if raw-out
+                                           (if-let [pr-f (cond shell-out println
+                                                               edn-out prn)]
                                              (if (coll? res)
                                                (doseq [l res
                                                        :while (not (pipe-signal-received?))]
-                                                 (println l))
-                                               (println res))
-                                             ((if println? println? prn) res)))) 0]]
+                                                 (pr-f l))
+                                               (pr-f res))
+                                             (prn res)))) 0]]
                             (if stream?
                               (recur (read-next))
                               res))))))

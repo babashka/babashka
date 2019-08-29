@@ -123,7 +123,13 @@
                          head -n10"))
           out (str/split-lines out)
           out (map edn/read-string out)]
-      (is (= (take 10 (map #(* % %) (range))) out)))))
+      (is (= (take 10 (map #(* % %) (range))) out))))
+  (when test-utils/native?
+    (let [out (:out (sh "bash" "-c" "./bb -O '(repeat \"dude\")' |
+                         ./bb --stream '(str *in* \"rino\")' |
+                         ./bb -I '(take 3 *in*)'"))
+          out (edn/read-string out)]
+      (is (= '("duderino" "duderino" "duderino") out)))))
 
 (deftest lazy-text-in-test
   (when test-utils/native?

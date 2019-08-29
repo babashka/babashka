@@ -97,17 +97,18 @@ You may also download a binary from [Github](https://github.com/borkdude/babashk
 
 ``` shellsession
 $ bb --help
-Usage: bb [ --help ] | [ --version ] | ( [ -i ] [ -o ] | [ -io ] ) [ --stream ] ( expression | -f <file> )
+Usage: bb [ --help ] | [ --version ] | [ -i | -I ] [ -o | -O ] [ --stream ] ( expression | -f <file> )
 
 Options:
 
   --help: print this help text.
   --version: print the current version of babashka.
 
-  -i: read shell input into a list of strings instead of reading EDN.
-  -o: write shell output instead of EDN.
-  -io: combination of -i and -o.
-  --stream: stream over lines or EDN values from stdin. Combined with -i *in* becomes a single line per iteration.
+  -i: bind *in* to a lazy seq of lines from stdin.
+  -I: bind *in* to a lazy seq of EDN values from stdin.
+  -o: write lines to stdout.
+  -O: write EDN values to stdout.
+  --stream: stream over lines or EDN values from stdin. Combined with -i or -I *in* becomes a single value per iteration.
   --file or -f: read expressions from file instead of argument wrapped in an implicit do.
   --time: print execution time before exiting.
 ```
@@ -157,22 +158,19 @@ $ bb '(vec (dedupe *in*))' <<< '[1 1 1 1 2]'
 
 $ bb '(filterv :foo *in*)' <<< '[{:foo 1} {:bar 2}]'
 [{:foo 1}]
-```
 
-``` shellsession
 $ bb '(#(+ %1 %2 %3) 1 2 *in*)' <<< 3
 6
-```
 
-``` shellsession
 $ ls | bb -i '(filterv #(re-find #"reflection" %) *in*)'
 ["reflection.json"]
-```
 
-``` shellsession
 $ bb '(run! #(shell/sh "touch" (str "/tmp/test/" %)) (range 100))'
 $ ls /tmp/test | bb -i '*in*'
 ["0" "1" "10" "11" "12" "13" "14" "15" "16" "17" "18" "19" "2" "20" "21" ...]
+
+$ bb -O '(repeat "dude")' | bb --stream '(str *in* "rino")' | bb -I '(take 3 *in*)'
+("duderino" "duderino" "duderino")
 ```
 
 More examples can be found in the [gallery](#gallery).
