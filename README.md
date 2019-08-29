@@ -140,8 +140,8 @@ From Java the following is available:
 
 Special vars:
 
-- `*in*`: contains the input read from stdin (EDN by default, multiple lines with the `-i` option)
-<!-- - `bb/*in*`: the unprocessed input from stdin -->
+- `*in*`: contains the input read from stdin. EDN by default, multiple lines of
+text with the `-i` option, or multiple EDN values with the `-I` option.
 - `*command-line-args*`: contain the command line args
 
 Examples:
