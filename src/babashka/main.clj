@@ -7,6 +7,7 @@
    [clojure.java.io :as io]
    [clojure.java.shell :as shell]
    [clojure.string :as str]
+   [babashka.impl.socket-repl :as socket-repl]
    [sci.core :as sci])
   (:import [sun.misc Signal]
            [sun.misc SignalHandler])
@@ -55,6 +56,11 @@
                      (recur (rest options)
                             (assoc opts-map
                                    :file (first options))))
+                   ("--repl")
+                   (let [options (rest options)]
+                     (recur (rest options)
+                            (assoc opts-map
+                                   :repl (Integer. ^String (first options)))))
                    (if (not (:file opts-map))
                      (assoc opts-map
                             :expression opt
@@ -178,7 +184,7 @@
   (let [t0 (System/currentTimeMillis)
         {:keys [:version :shell-in :edn-in :shell-out :edn-out
                 :help? :file :command-line-args
-                :expression :stream? :time?] :as _opts}
+                :expression :stream? :time? :repl] :as _opts}
         (parse-opts args)
         read-next #(if (pipe-signal-received?)
                      ::EOF
@@ -205,12 +211,14 @@
                 [(print-version) 0]
                 help?
                 [(print-help) 0]
+                repl [(socket-repl/start-repl! repl) (do @(promise)0)]
                 :else
                 (try
                   (let [expr (if file (read-file file) expression)]
                     (loop [in (read-next)]
                       (let [ctx (update ctx :bindings assoc (with-meta '*in*
-                                                              (when-not stream? {:sci/deref! true})) in)]
+                                                              (when-not stream?
+                                                                {:sci/deref! true})) in)]
                         (if (identical? ::EOF in)
                           [nil 0] ;; done streaming
                           (let [res [(do (when-not (or expression file)
