@@ -158,22 +158,19 @@ $ bb '(vec (dedupe *in*))' <<< '[1 1 1 1 2]'
 
 $ bb '(filterv :foo *in*)' <<< '[{:foo 1} {:bar 2}]'
 [{:foo 1}]
-```
 
-``` shellsession
 $ bb '(#(+ %1 %2 %3) 1 2 *in*)' <<< 3
 6
-```
 
-``` shellsession
 $ ls | bb -i '(filterv #(re-find #"reflection" %) *in*)'
 ["reflection.json"]
-```
 
-``` shellsession
 $ bb '(run! #(shell/sh "touch" (str "/tmp/test/" %)) (range 100))'
 $ ls /tmp/test | bb -i '*in*'
 ["0" "1" "10" "11" "12" "13" "14" "15" "16" "17" "18" "19" "2" "20" "21" ...]
+
+$ bb -O '(repeat "dude")' | bb --stream '(str *in* "rino")' | bb -I '(take 3 *in*)'
+("duderino" "duderino" "duderino")
 ```
 
 More examples can be found in the [gallery](#gallery).
