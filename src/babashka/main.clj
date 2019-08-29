@@ -54,8 +54,8 @@
                  opts-map))]
     opts))
 
-(defn parse-shell-string [s]
-  (str/split s #"\n"))
+(defn parse-shell-string [in]
+  (line-seq (java.io.BufferedReader. in)))
 
 (defn print-version []
   (println (str "babashka v"(str/trim (slurp (io/resource "BABASHKA_VERSION"))))))
@@ -164,10 +164,9 @@
                      (if stream?
                        (if raw-in (or (read-line) ::EOF)
                            (read-edn))
-                       (delay (let [in (slurp *in*)]
-                                (if raw-in
-                                  (parse-shell-string in)
-                                  (edn/read-string in))))))
+                       (delay (if raw-in
+                                (parse-shell-string *in*)
+                                (edn/read *in*)))))
         env (atom {})
         ctx {:bindings (assoc bindings '*command-line-args* command-line-args)
              :env env}
