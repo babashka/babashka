@@ -2,12 +2,18 @@
 
 set -eo pipefail
 
-if [ -z "$GRAALVM_HOME" ]; then
-    echo "Please set GRAALVM_HOME"
-    exit 1
-fi
+NATIVE_IMAGE=`which native-image` || true
 
-"$GRAALVM_HOME/bin/gu" install native-image || true
+if [ -z "$NATIVE_IMAGE" ]; then
+  if [ -z "$GRAALVM_HOME" ]; then
+      echo "Please set GRAALVM_HOME"
+      exit 1
+  fi
+
+  "$GRAALVM_HOME/bin/gu" install native-image || true
+
+  NATIVE_IMAGE="$GRAALVM_HOME/bin/native-image"
+fi
 
 BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
 
@@ -18,7 +24,7 @@ BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
 # cp -R /tmp/sci/src/* src
 
 lein with-profiles +clojure-1.10.1 do clean, uberjar
-$GRAALVM_HOME/bin/native-image \
+$NATIVE_IMAGE \
   -jar target/babashka-$BABASHKA_VERSION-standalone.jar \
   -H:Name=bb \
   -H:+ReportExceptionStackTraces \
