@@ -123,4 +123,10 @@
                          head -n10"))
           out (str/split-lines out)
           out (map edn/read-string out)]
-      (is (= out (take 10 (map #(* % %) (range))))))))
+      (is (= (take 10 (map #(* % %) (range))) out)))))
+
+(deftest lazy-text-in-test
+  (when test-utils/native?
+    (let [out (:out (sh "bash" "-c" "yes | ./bb -i '(take 2 *in*)'"))
+          out (edn/read-string out)]
+      (is (= '("y" "y") out)))))
