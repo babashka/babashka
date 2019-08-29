@@ -3,11 +3,13 @@
             [clojure.main :as m]
             [sci.core :refer [eval-string]]))
 
+(def env (atom {}))
+
 (defn repl
   "REPL with predefined hooks for attachable socket server."
   []
   (m/repl :eval (fn [expr]
-                  (eval-string (str expr)))))
+                  (eval-string (str expr) {:env env}))))
 
 (defn start-repl! [port]
   (prn "REPL!" port)
