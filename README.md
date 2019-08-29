@@ -97,17 +97,18 @@ You may also download a binary from [Github](https://github.com/borkdude/babashk
 
 ``` shellsession
 $ bb --help
-Usage: bb [ --help ] | [ --version ] | ( [ -i ] [ -o ] | [ -io ] ) [ --stream ] ( expression | -f <file> )
+Usage: bb [ --help ] | [ --version ] | [ -i | -I ] [ -o | -O ] [ --stream ] ( expression | -f <file> )
 
 Options:
 
   --help: print this help text.
   --version: print the current version of babashka.
 
-  -i: read shell input into a list of strings instead of reading EDN.
-  -o: write shell output instead of EDN.
-  -io: combination of -i and -o.
-  --stream: stream over lines or EDN values from stdin. Combined with -i *in* becomes a single line per iteration.
+  -i: bind *in* to a lazy seq of lines from stdin.
+  -I: bind *in* to a lazy seq of EDN values from stdin.
+  -o: write lines to stdout.
+  -O: write EDN values to stdout.
+  --stream: stream over lines or EDN values from stdin. Combined with -i or -I *in* becomes a single value per iteration.
   --file or -f: read expressions from file instead of argument wrapped in an implicit do.
   --time: print execution time before exiting.
 ```
