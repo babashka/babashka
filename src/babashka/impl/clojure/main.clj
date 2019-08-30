@@ -101,10 +101,11 @@
              *e nil]
      ~@body))
 
+
 (defn repl-prompt
   "Default :prompt hook for repl"
   []
-  (printf "=> " #_(ns-name *ns*)))
+  (print "bb=> " ))
 
 (defn skip-if-eol
   "If the next character on stream s is a newline, skips it, otherwise
