@@ -23,7 +23,7 @@ BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
 # mkdir -p src/sci
 # cp -R /tmp/sci/src/* src
 
-lein with-profiles +clojure-1.10.1 do clean, uberjar
+lein do clean, uberjar
 $NATIVE_IMAGE \
   -jar target/babashka-$BABASHKA_VERSION-standalone.jar \
   -H:Name=bb \

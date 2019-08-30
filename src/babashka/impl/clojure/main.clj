@@ -146,11 +146,12 @@
   {:added "1.10"}
   ([opts ^LineNumberingPushbackReader reader line-number]
    (let [pre-line (.getLineNumber reader)
-         [pre-read s] (read+string opts reader)
-         {:keys [clojure.core/eval-file line]} (meta pre-read)
-         re-reader (doto (LineNumberingPushbackReader. (StringReader. s))
+         ;; [pre-read s] (read+string opts reader)
+         #_#_re-reader (doto (LineNumberingPushbackReader. (StringReader. s))
                      (.setLineNumber (if (and line (or eval-file (not= pre-line line))) line line-number)))]
-     (read opts re-reader))))
+     ;; (read opts re-reader)
+     ;; TODO: it seems that read is problematic!
+     "foo")))
 
 (defn repl-read
   "Default :read hook for repl. Reads from *in* which must either be an
@@ -416,6 +417,7 @@ by default when a new command-line REPL is started."} repl-requires
                             #(.atLineStart ^LineNumberingPushbackReader *in*)
                             #(identity true))
               prompt      repl-prompt
+              read        repl-read
               flush       flush
               print       prn
               caught      repl-caught}}
@@ -426,7 +428,7 @@ by default when a new command-line REPL is started."} repl-requires
         (fn []
           (try
             (let [input (try
-                          (with-read-known (read request-prompt request-exit))
+                          (read request-prompt request-exit)
                           (catch LispReader$ReaderException e
                             (throw (ex-info nil {:clojure.error/phase :read-source} e))))]
              (or (#{request-prompt request-exit} input)
