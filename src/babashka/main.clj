@@ -56,11 +56,11 @@
                      (recur (rest options)
                             (assoc opts-map
                                    :file (first options))))
-                   ("--repl")
+                   ("--socket-repl")
                    (let [options (rest options)]
                      (recur (rest options)
                             (assoc opts-map
-                                   :repl (Integer. ^String (first options)))))
+                                   :socket-repl (Integer. ^String (first options)))))
                    (if (not (:file opts-map))
                      (assoc opts-map
                             :expression opt
@@ -184,7 +184,7 @@
   (let [t0 (System/currentTimeMillis)
         {:keys [:version :shell-in :edn-in :shell-out :edn-out
                 :help? :file :command-line-args
-                :expression :stream? :time? :repl] :as _opts}
+                :expression :stream? :time? :socket-repl] :as _opts}
         (parse-opts args)
         read-next #(if (pipe-signal-received?)
                      ::EOF
@@ -211,7 +211,7 @@
                 [(print-version) 0]
                 help?
                 [(print-help) 0]
-                repl [(socket-repl/start-repl! repl) (do @(promise)0)]
+                socket-repl [(socket-repl/start-repl! socket-repl ctx) (do @(promise)0)]
                 :else
                 (try
                   (let [expr (if file (read-file file) expression)]

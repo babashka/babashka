@@ -86,8 +86,6 @@
       #_(require (symbol (namespace accept)))
       #_(let [accept-fn (resolve accept)]
           (apply accept-fn args))
-      (prn "ACCEPT" accept)
-      (prn "aRGS" args)
       (apply accept args))
     (catch SocketException _disconnect)
     (finally
@@ -114,7 +112,6 @@
               client-daemon true}} opts
          address (InetAddress/getByName address)  ;; nil returns loopback
         socket (ServerSocket. port 0 address)]
-    (prn "START SERVER" port)
     (locking lock
       (alter-var-root #'servers assoc name {:name name, :socket socket, :sessions {}}))
     (thread
@@ -134,8 +131,7 @@
             (recur (inc client-counter))))
         (finally
           (locking lock
-            (alter-var-root #'servers dissoc name))
-          (prn "finally"))))
+            (alter-var-root #'servers dissoc name)))))
     socket))
 
 (defn stop-server
