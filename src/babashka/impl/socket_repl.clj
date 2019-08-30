@@ -27,6 +27,7 @@
   @(promise))
 
 (defn start-repl! [port sci-opts]
+  (println "Starting socket REPL on port" port)
   (server/start-server
    {:port port
     :name "bb"
