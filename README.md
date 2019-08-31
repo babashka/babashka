@@ -262,7 +262,7 @@ Now you can connect with your favorite socket REPL client:
 
 ``` shellsession
 $ rlwrap nc 127.0.0.1 1666
-Babashka v0.0.14-SNAPSHOT REPL.
+Babashka v0.0.14 REPL.
 Use :repl/quit or :repl/exit to quit the REPL.
 Clojure rocks, Bash reaches.
 
