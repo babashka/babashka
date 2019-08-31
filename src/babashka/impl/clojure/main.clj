@@ -12,7 +12,8 @@
 ;; Originally contributed by Stephen C. Gilardi
 
 (ns ^{:doc "Top-level main function for Clojure REPL and scripts."
-      :author "Stephen C. Gilardi and Rich Hickey"}
+      :author "Stephen C. Gilardi and Rich Hickey"
+      :no-doc true}
     babashka.impl.clojure.main
   (:refer-clojure :exclude [with-bindings])
   (:import (java.io StringReader)

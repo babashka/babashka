@@ -10,7 +10,8 @@
 ;;   You must not remove this notice, or any other, from this software.
 
 (ns ^{:doc "Socket server support"
-      :author "Alex Miller"}
+      :author "Alex Miller"
+      :no-doc true}
     babashka.impl.clojure.core.server
   (:refer-clojure :exclude [locking])
   (:import

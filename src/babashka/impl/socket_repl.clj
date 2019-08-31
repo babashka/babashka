@@ -1,12 +1,12 @@
 (ns babashka.impl.socket-repl
+  {:no-doc true}
   (:require [babashka.impl.clojure.core.server :as server]
             [babashka.impl.clojure.main :as m]
             [sci.core :refer [eval-string]]
             [sci.impl.parser :as parser]
             [sci.impl.toolsreader.v1v3v2.clojure.tools.reader.reader-types :as r]
             [clojure.string :as str]
-            [clojure.java.io :as io])
-  #_(:import [babashka.impl LockFix]))
+            [clojure.java.io :as io]))
 
 (set! *warn-on-reflection* true)
 
@@ -55,9 +55,12 @@
     (println "Babashka socket REPL started at" host+port)
     socket))
 
+(defn stop-repl! []
+  (server/stop-server))
+
 (comment
   (def sock (start-repl! "0.0.0.0:1666" {:env (atom {})}))
   (.accept sock)
   @#'server/servers
-  (server/stop-server "bb")
+  (stop-repl!)
   )
