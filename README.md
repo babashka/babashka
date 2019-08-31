@@ -360,4 +360,5 @@ beverage](https://ko-fi.com/borkdude).
 
 Copyright © 2019 Michiel Borkent
 
-Distributed under the EPL License, same as Clojure. See LICENSE.
+Distributed under the EPL License. This project contains modified Clojure code
+which is licensed under the same EPL License. See LICENSE.

@@ -1,4 +1,5 @@
-;;   Modified / stripped version of core.server.clj for use with babashka on GraalVM.
+;;  Modified / stripped version of clojure.core.server for use with babashka on
+;;  GraalVM.
 ;;
 ;;   Copyright (c) Rich Hickey. All rights reserved.
 ;;   The use and distribution terms for this software are covered by the
