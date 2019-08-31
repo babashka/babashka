@@ -86,7 +86,7 @@
 (defn print-version []
   (println (str "babashka v"(str/trim (slurp (io/resource "BABASHKA_VERSION"))))))
 
-(def usage-string "Usage: bb [ --help ] | [ --version ] | [ -i | -I ] [ -o | -O ] [ --stream ] ( expression | -f <file> | --socket-repl [host:]port )")
+(def usage-string "Usage: bb [ -i | -I ] [ -o | -O ] [ --stream ] ( expression | -f <file> | --socket-repl [host:]port )")
 (defn print-usage []
   (println usage-string))
 
