@@ -9,10 +9,8 @@
             :url "http://opensource.org/licenses/eclipse-1.0.php"}
   :source-paths ["src" "sci/src" "sci/inlined"]
   :resource-paths ["resources" "sci/resources"]
-  :dependencies [[org.clojure/clojure "1.9.0"]]
-  :profiles {:clojure-1.9.0 {:dependencies [[org.clojure/clojure "1.9.0"]]}
-             :clojure-1.10.1 {:dependencies [[org.clojure/clojure "1.10.1"]]}
-             :test {:dependencies [[clj-commons/conch "0.9.2"]]}
+  :dependencies [[org.clojure/clojure "1.10.1"]]
+  :profiles {:test {:dependencies [[clj-commons/conch "0.9.2"]]}
              :uberjar {:global-vars {*assert* false}
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"
                                   "-Dclojure.spec.skip-macros=true"]

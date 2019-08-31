@@ -3,12 +3,4 @@
 set -eo pipefail
 export BABASHKA_PRELOADS='(defn __bb__foo [] "foo") (defn __bb__bar [] "bar")'
 
-if [ "$BABASHKA_TEST_ENV" = "native" ]; then
-    lein test
-else
-    echo "Testing with Clojure 1.9.0"
-    lein with-profiles +clojure-1.9.0 test
-
-    echo "Testing with Clojure 1.10.1"
-    lein with-profiles +clojure-1.10.1 test
-fi
+lein test

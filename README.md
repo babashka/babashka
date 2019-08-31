@@ -249,6 +249,32 @@ export BABASHKA_PRELOADS='(load-file "my_awesome_prelude.clj")'
 
 Note that `*in*` is not available in preloads.
 
+## Socket REPL
+
+Start the socket REPL like this:
+
+``` shellsession
+$ bb --socket-repl 1666
+Babashka socket REPL started at localhost:1666
+```
+
+Now you can connect with your favorite socket REPL client:
+
+``` shellsession
+$ rlwrap nc 127.0.0.1 1666
+Babashka v0.0.14-SNAPSHOT REPL.
+Use :repl/quit or :repl/exit to quit the REPL.
+Clojure rocks, Bash reaches.
+
+bb=> (+ 1 2 3)
+6
+bb=> :repl/quit
+$
+```
+
+A socket REPL client for Emacs is
+[inf-clojure](https://github.com/clojure-emacs/inf-clojure).
+
 ## Enabling SSL
 
 If you want to be able to use SSL to e.g. run `(slurp
@@ -360,4 +386,5 @@ beverage](https://ko-fi.com/borkdude).
 
 Copyright © 2019 Michiel Borkent
 
-Distributed under the EPL License, same as Clojure. See LICENSE.
+Distributed under the EPL License. This project contains modified Clojure code
+which is licensed under the same EPL License. See LICENSE.
