@@ -60,7 +60,7 @@
                    (let [options (rest options)]
                      (recur (rest options)
                             (assoc opts-map
-                                   :socket-repl (Integer. ^String (first options)))))
+                                   :socket-repl (first options))))
                    (if (not (:file opts-map))
                      (assoc opts-map
                             :expression opt
@@ -86,7 +86,7 @@
 (defn print-version []
   (println (str "babashka v"(str/trim (slurp (io/resource "BABASHKA_VERSION"))))))
 
-(def usage-string "Usage: bb [ --help ] | [ --version ] | [ -i | -I ] [ -o | -O ] [ --stream ] ( expression | -f <file> )")
+(def usage-string "Usage: bb [ --help ] | [ --version ] | [ -i | -I ] [ -o | -O ] [ --stream ] ( expression | -f <file> | --socket-repl [host:]port )")
 (defn print-usage []
   (println usage-string))
 
@@ -107,6 +107,7 @@
   -O: write EDN values to stdout.
   --stream: stream over lines or EDN values from stdin. Combined with -i or -I *in* becomes a single value per iteration.
   --file or -f: read expressions from file instead of argument wrapped in an implicit do.
+  --socket-repl: start socket REPL. Specify port (e.g. 1666) or host and port separated by colon (e.g. 127.0.0.1:1666).
   --time: print execution time before exiting.
 "))
 
@@ -211,7 +212,8 @@
                 [(print-version) 0]
                 help?
                 [(print-help) 0]
-                socket-repl [(socket-repl/start-repl! socket-repl ctx) (do @(promise)0)]
+                socket-repl [(do (socket-repl/start-repl! socket-repl ctx)
+                                 @(promise)) 0]
                 :else
                 (try
                   (let [expr (if file (read-file file) expression)]
