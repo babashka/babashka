@@ -24,7 +24,7 @@
                (if-let [opt (first options)]
                  (case opt
                    ("--version") {:version true}
-                   ("--help") {:help? true}
+                   ("--help" "-h" "-?") {:help? true}
                    ("--stream") (recur (rest options)
                                        (assoc opts-map
                                               :stream? true))
@@ -98,7 +98,7 @@
   (println)
   (println "Options:")
   (println "
-  --help: print this help text.
+  --help, -h or -?: print this help text.
   --version: print the current version of babashka.
 
   -i: bind *in* to a lazy seq of lines from stdin.

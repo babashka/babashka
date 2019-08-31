@@ -96,12 +96,11 @@ You may also download a binary from [Github](https://github.com/borkdude/babashk
 ## Usage
 
 ``` shellsession
-$ bb --help
-Usage: bb [ --help ] | [ --version ] | [ -i | -I ] [ -o | -O ] [ --stream ] ( expression | -f <file> )
+Usage: bb [ --help ] | [ --version ] | [ -i | -I ] [ -o | -O ] [ --stream ] ( expression | -f <file> | --socket-repl [host:]port )
 
 Options:
 
-  --help: print this help text.
+  --help, -h or -?: print this help text.
   --version: print the current version of babashka.
 
   -i: bind *in* to a lazy seq of lines from stdin.
@@ -110,6 +109,7 @@ Options:
   -O: write EDN values to stdout.
   --stream: stream over lines or EDN values from stdin. Combined with -i or -I *in* becomes a single value per iteration.
   --file or -f: read expressions from file instead of argument wrapped in an implicit do.
+  --socket-repl: start socket REPL. Specify port (e.g. 1666) or host and port separated by colon (e.g. 127.0.0.1:1666).
   --time: print execution time before exiting.
 ```
 
