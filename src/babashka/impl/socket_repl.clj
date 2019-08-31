@@ -1,12 +1,12 @@
 (ns babashka.impl.socket-repl
-  (:require [babashka.impl.clojure.server :as server]
+  (:require [babashka.impl.clojure.core.server :as server]
             [babashka.impl.clojure.main :as m]
             [sci.core :refer [eval-string]]
             [sci.impl.parser :as parser]
             [sci.impl.toolsreader.v1v3v2.clojure.tools.reader.reader-types :as r]
             [clojure.string :as str]
             [clojure.java.io :as io])
-  (:import [babashka.impl LockFix]))
+  #_(:import [babashka.impl LockFix]))
 
 (set! *warn-on-reflection* true)
 

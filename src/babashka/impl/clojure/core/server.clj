@@ -1,37 +1,25 @@
-                                        ;   Modified / lite version of core.server.clj for use with babashka on GraalVM.
-
-                                        ;   Copyright (c) Rich Hickey. All rights reserved.
-                                        ;   The use and distribution terms for this software are covered by the
-                                        ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-                                        ;   which can be found in the file epl-v10.html at the root of this distribution.
-                                        ;   By using this software in any fashion, you are agreeing to be bound by
-                                        ;   the terms of this license.
-                                        ;   You must not remove this notice, or any other, from this software.
+;;   Modified / stripped version of core.server.clj for use with babashka on GraalVM.
+;;
+;;   Copyright (c) Rich Hickey. All rights reserved.
+;;   The use and distribution terms for this software are covered by the
+;;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
+;;   which can be found in the file epl-v10.html at the root of this distribution.
+;;   By using this software in any fashion, you are agreeing to be bound by
+;;   the terms of this license.
+;;   You must not remove this notice, or any other, from this software.
 
 (ns ^{:doc "Socket server support"
       :author "Alex Miller"}
-    babashka.impl.clojure.server
+    babashka.impl.clojure.core.server
   (:refer-clojure :exclude [locking])
   (:import
    [clojure.lang LineNumberingPushbackReader]
    [java.net InetAddress Socket ServerSocket SocketException]
-   [java.io Reader Writer PrintWriter BufferedWriter BufferedReader InputStreamReader OutputStreamWriter]
-   [java.util.concurrent.locks ReentrantLock]
-   [babashka.impl LockFix]))
+   [java.io Reader Writer PrintWriter BufferedWriter BufferedReader InputStreamReader OutputStreamWriter]))
 
 (set! *warn-on-reflection* true)
 
-#_(defmacro locking ;; patched version of clojure.core/locking to workaround GraalVM unbalanced monitor issue
-  "Executes exprs in an implicit do, while holding the monitor of x.
-  Will release the monitor of x in all circumstances."
-  {:added "1.0"}
-  [x & body]
-  `(let [lockee# ~x]
-     (LockFix/lock lockee# (^{:once true} fn* [] ~@body))))
-
-(def ^:dynamic *session* nil)
-
-(def ^:private servers (atom {}))
+(def server (atom nil))
 
 (defmacro ^:private thread
   [^String name daemon & body]
@@ -49,17 +37,16 @@
     err - err stream
     accept - accept fn symbol to invoke
     args - to pass to accept-fn"
-  [^Socket conn name client-id in out err accept args]
+  [^Socket conn client-id in out err accept args]
   (try
     (binding [*in* in
               *out* out
-              *err* err
-              *session* {:server name :client client-id}]
-      (swap! servers assoc-in [name :sessions client-id] {})
+              *err* err]
+      (swap! server assoc-in [:sessions client-id] {})
       (apply accept args))
     (catch SocketException _disconnect)
     (finally
-      (swap! servers update-in [name :sessions] dissoc client-id)
+      (swap! server update-in [:sessions] dissoc client-id)
       (.close conn))))
 
 (defn start-server
@@ -80,7 +67,7 @@
               client-daemon true}} opts
         address (InetAddress/getByName address)  ;; nil returns loopback
         socket (ServerSocket. port 0 address)]
-    (swap! servers assoc name {:name name, :socket socket, :sessions {}})
+    (reset! server {:name name, :socket socket, :sessions {}})
     (thread
       (str "Clojure Server " name) server-daemon
       (try
@@ -93,23 +80,19 @@
                     client-id (str client-counter)]
                 (thread
                   (str "Clojure Connection " name " " client-id) client-daemon
-                  (accept-connection conn name client-id in out (if bind-err out *err*) accept args)))
+                  (accept-connection conn client-id in out (if bind-err out *err*) accept args)))
               (catch SocketException _disconnect))
             (recur (inc client-counter))))
         (finally
-          (swap! servers dissoc name))))
+          (reset! server nil))))
     socket))
 
 (defn stop-server
   "Stop server with name or use the server-name from *session* if none supplied.
   Returns true if server stopped successfully, nil if not found, or throws if
   there is an error closing the socket."
-  ([]
-   (stop-server (:server *session*)))
-  ([name]
-   (swap! servers
-          (fn [servers]
-            (if-let [server-socket ^ServerSocket (get-in servers [name :socket])]
-              (do (.close server-socket)
-                  (dissoc servers name))
-              servers)))))
+  []
+  (when-let [s @server]
+    (when-let [server-socket ^ServerSocket (get s :socket)]
+      (.close server-socket)))
+  (reset! server nil))
