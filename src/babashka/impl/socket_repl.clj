@@ -24,7 +24,7 @@
                 (println))
      :read (fn [_request-prompt request-exit]
              (if (r/peek-char in) ;; if this is nil, we reached EOF
-               (do (prn "PEEKED" in)
+               (do ;; (prn "PEEKED" in)
                  (let [v (parser/parse-next {} in)]
                    (if (or (identical? :repl/quit v)
                            (identical? :repl/exit v)

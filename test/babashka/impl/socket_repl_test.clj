@@ -16,7 +16,7 @@
     (prn "TEST 2")
     (testing "ctrl-d exits normally, doesn't print nil"
       (is (str/ends-with? (:out (sh "bash" "-c"
-                                   "echo \"(inc 1336)\" | nc 127.0.0.1 1666"))
+                                   "echo \"(inc 1336)\" | nc -q 127.0.0.1 1666"))
                           "1337\nbb=> ")))
     (stop-repl!)))
 
