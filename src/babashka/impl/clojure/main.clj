@@ -106,10 +106,7 @@
         read-eval-print
         (fn []
           (try
-            (let [input (try
-                          (read request-prompt request-exit)
-                          (catch LispReader$ReaderException e
-                            (throw (ex-info nil {:clojure.error/phase :read-source} e))))]
+            (let [input (do #_(prn "READ") (read request-prompt request-exit))]
               (or (#{request-prompt request-exit} input)
                   (let [value (eval input)]
                     (set! *3 *2)
