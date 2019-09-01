@@ -26,18 +26,19 @@
              (if (r/peek-char in) ;; if this is nil, we reached EOF
                (let [v (parser/parse-next {} in)]
                  (if (or (identical? :repl/quit v)
-                         (identical? :repl/exit v))
+                         (identical? :repl/exit v)
+                         (identical? :sci.impl.parser/eof v))
                    request-exit
                    v))
                request-exit))
      :eval (fn [expr]
              (let [ret (eval-string (pr-str expr)
-                                   (update sci-opts
-                                           :bindings
-                                           merge {'*1 *1
-                                                  '*2 *2
-                                                  '*3 *3
-                                                  '*e *e}))]
+                                    (update sci-opts
+                                            :bindings
+                                            merge {'*1 *1
+                                                   '*2 *2
+                                                   '*3 *3
+                                                   '*e *e}))]
                ret))
      :need-prompt (fn [] true))))
 

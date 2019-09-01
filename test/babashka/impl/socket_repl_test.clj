@@ -12,10 +12,10 @@
     (is (str/includes? (:out (sh "bash" "-c"
                                  "echo \"(+ 1 2 3)\n:repl/exit\" | nc 127.0.0.1 1666"))
                        "bb=> 6"))
-    (testing "ctrl-d"
-      (is (str/includes? (:out (sh "bash" "-c"
+    (testing "ctrl-d exits normally, doesn't print nil"
+      (is (str/ends-with? (:out (sh "bash" "-c"
                                    "echo \"(inc 1336)\" | nc 127.0.0.1 1666"))
-                         "1337")))
+                          "1337\nbb=> ")))
     (stop-repl!)))
 
 ;;;; Scratch
