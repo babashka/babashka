@@ -106,7 +106,7 @@
         read-eval-print
         (fn []
           (try
-            (let [input (do #_(prn "READ") (read request-prompt request-exit))]
+            (let [input (read request-prompt request-exit)]
               (or (#{request-prompt request-exit} input)
                   (let [value (eval input)]
                     (set! *3 *2)

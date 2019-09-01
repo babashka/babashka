@@ -7,19 +7,9 @@
    [clojure.string :as str]
    [sci.core :refer [eval-string]]
    [sci.impl.parser :as parser]
-   [sci.impl.toolsreader.v1v3v2.clojure.tools.reader.reader-types :as r]
-   [sci.impl.toolsreader.v1v3v2.clojure.tools.reader.edn :as ednr]))
+   [sci.impl.toolsreader.v1v3v2.clojure.tools.reader.reader-types :as r]))
 
 (set! *warn-on-reflection* true)
-
-(defn skip-newlines
-  [reader]
-  (loop []
-    (let [c (r/read-char reader)]
-      (if (= \newline c)
-        (recur)
-        (do (r/unread reader c)
-            reader)))))
 
 (defn repl
   "REPL with predefined hooks for attachable socket server."
@@ -32,16 +22,13 @@
                 (println "Use :repl/quit or :repl/exit to quit the REPL.")
                 (println "Clojure rocks, Bash reaches.")
                 (println))
-     :read (fn [request-prompt request-exit]
-             (if-let [p (r/peek-char in)]
-               (do #_(prn "PEEKED CHAR" (int p))
-                   (if false #_(= \newline p)
-                     (do (prn "REQ PROMPT")#_(r/read-char in) #_request-prompt)
-                     (let [v (parser/parse-next {} in)]
-                       (if (or (identical? :repl/quit v)
-                               (identical? :repl/exit v))
-                         request-exit
-                         v))))
+     :read (fn [_request-prompt request-exit]
+             (if (r/peek-char in) ;; if this is nil, we reached EOF
+               (let [v (parser/parse-next {} in)]
+                 (if (or (identical? :repl/quit v)
+                         (identical? :repl/exit v))
+                   request-exit
+                   v))
                request-exit))
      :eval (fn [expr]
              (let [ret (eval-string (pr-str expr)
@@ -52,10 +39,7 @@
                                                   '*3 *3
                                                   '*e *e}))]
                ret))
-     :need-prompt (fn [] #_(prn "PK" (r/peek-char *in*))
-                    #_(prn "NEED?" (= \newline (r/peek-char *in*)))
-                    #_(= \newline (r/peek-char *in*))
-                    true))))
+     :need-prompt (fn [] true))))
 
 (defn start-repl! [host+port sci-opts]
   (let [parts (str/split host+port #":")
@@ -78,12 +62,6 @@
 
 (comment
   (def sock (start-repl! "0.0.0.0:1666" {:env (atom {})}))
-  (.accept sock)
   @#'server/servers
   (stop-repl!)
-
-  (let [r (r/indexing-push-back-reader (r/push-back-reader "1\n"))]
-    (parser/parse-next {} r)
-    (r/peek-char r))
-  
   )
