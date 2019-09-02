@@ -377,11 +377,6 @@ bb '(some #(re-find #".*linux.*" (:browser_download_url %)) *in*)'
 "https://github.com/borkdude/babashka/releases/download/v0.0.4/babashka-0.0.4-linux-amd64.zip"
 ```
 
-## Support this project
-
-Do you enjoy this project? Consider buying me a [hot
-beverage](https://ko-fi.com/borkdude).
-
 ## License
 
 Copyright © 2019 Michiel Borkent
