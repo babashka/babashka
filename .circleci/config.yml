@@ -155,10 +155,6 @@ jobs:
           command: |
             .circleci/script/install-clojure /usr/local
       - run:
-          name: Install lsof
-          command: |
-            sudo apt-get install lsof
-      - run:
           name: Install Leiningen
           command: |
             .circleci/script/install-leiningen
