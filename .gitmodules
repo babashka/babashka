@@ -1,3 +1,6 @@
 [submodule "sci"]
 	path = sci
 	url = https://github.com/borkdude/sci
+[submodule "conch"]
+	path = conch
+	url = https://github.com/borkdude/conch

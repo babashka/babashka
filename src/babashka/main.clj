@@ -2,12 +2,13 @@
   {:no-doc true}
   (:require
    [babashka.impl.File :as File]
+   [babashka.impl.conch :refer [conch-bindings]]
    [babashka.impl.pipe-signal-handler :refer [handle-pipe! pipe-signal-received?]]
+   [babashka.impl.socket-repl :as socket-repl]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.java.shell :as shell]
    [clojure.string :as str]
-   [babashka.impl.socket-repl :as socket-repl]
    [sci.core :as sci])
   (:import [sun.misc Signal]
            [sun.misc SignalHandler])
@@ -168,7 +169,8 @@
           'System/setProperty set-property
           'System/getProperties get-properties
           'System/exit exit}
-         File/bindings))
+         File/bindings
+         conch-bindings))
 
 (defn read-edn []
   (edn/read {;;:readers *data-readers*

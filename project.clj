@@ -7,11 +7,10 @@
         :url "https://github.com/borkdude/babashka"}
   :license {:name "Eclipse Public License 1.0"
             :url "http://opensource.org/licenses/eclipse-1.0.php"}
-  :source-paths ["src" "sci/src" "sci/inlined"]
+  :source-paths ["src" "sci/src" "sci/inlined" "conch/src"]
   :resource-paths ["resources" "sci/resources"]
   :dependencies [[org.clojure/clojure "1.10.1"]]
-  :profiles {:test {:dependencies [[clj-commons/conch "0.9.2"]]}
-             :uberjar {:global-vars {*assert* false}
+  :profiles {:uberjar {:global-vars {*assert* false}
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"
                                   "-Dclojure.spec.skip-macros=true"]
                        :main babashka.main
