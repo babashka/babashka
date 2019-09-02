@@ -61,7 +61,8 @@
                      (recur (rest options)
                             (assoc opts-map
                                    :socket-repl (first options))))
-                   (if (not (:file opts-map))
+                   (if (not (or (:file opts-map)
+                                (:socket-repl opts-map)))
                      (assoc opts-map
                             :expression opt
                             :command-line-args (rest options))
@@ -177,6 +178,15 @@
   (let [s (slurp file)]
     (sci/eval-string s ctx)))
 
+(defn start-socket-repl! [address ctx read-next]
+  (let [ctx (update ctx :bindings assoc
+                    (with-meta '*in*
+                      {:sci/deref! true})
+                    (read-next))]
+    (socket-repl/start-repl! address ctx)
+    ;; hang until SIGINT
+    @(promise)))
+
 (defn main
   [& args]
   (handle-pipe!)
@@ -187,17 +197,18 @@
                 :help? :file :command-line-args
                 :expression :stream? :time? :socket-repl] :as _opts}
         (parse-opts args)
-        read-next #(if (pipe-signal-received?)
-                     ::EOF
-                     (if stream?
-                       (if shell-in (or (read-line) ::EOF)
-                           (read-edn))
-                       (delay (cond shell-in
-                                    (shell-seq *in*)
-                                    edn-in
-                                    (edn-seq *in*)
-                                    :else
-                                    (edn/read *in*)))))
+        read-next (fn [*in*]
+                    (if (pipe-signal-received?)
+                      ::EOF
+                      (if stream?
+                        (if shell-in (or (read-line) ::EOF)
+                            (read-edn))
+                        (delay (cond shell-in
+                                     (shell-seq *in*)
+                                     edn-in
+                                     (edn-seq *in*)
+                                     :else
+                                     (edn/read *in*))))))
         env (atom {})
         ctx {:bindings (assoc bindings '*command-line-args* command-line-args)
              :env env}
@@ -212,12 +223,11 @@
                 [(print-version) 0]
                 help?
                 [(print-help) 0]
-                socket-repl [(do (socket-repl/start-repl! socket-repl ctx)
-                                 @(promise)) 0]
+                socket-repl [(start-socket-repl! socket-repl ctx #(read-next *in*)) 0]
                 :else
                 (try
                   (let [expr (if file (read-file file) expression)]
-                    (loop [in (read-next)]
+                    (loop [in (read-next *in*)]
                       (let [ctx (update ctx :bindings assoc (with-meta '*in*
                                                               (when-not stream?
                                                                 {:sci/deref! true})) in)]
@@ -235,7 +245,7 @@
                                                (pr-f res))
                                              (prn res)))) 0]]
                             (if stream?
-                              (recur (read-next))
+                              (recur (read-next *in*))
                               res))))))
                   (catch Exception e
                     (binding [*out* *err*]
