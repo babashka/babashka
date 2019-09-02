@@ -229,8 +229,8 @@
                 :else
                 (try
                   (let [expr (if file (read-file file) expression)]
-                    (loop [in (do (prn "LOOP") (read-next *in*))]
-                      (let [ctx ctx #_(update ctx :bindings assoc (with-meta '*in*
+                    (loop [in (read-next *in*)]
+                      (let [ctx (update ctx :bindings assoc (with-meta '*in*
                                                               (when-not stream?
                                                                 {:sci/deref! true})) in)]
                         (if (identical? ::EOF in)
@@ -255,8 +255,8 @@
                             exit-code (:bb/exit-code d)]
                         (if exit-code [nil exit-code]
                             (do (if-let [msg (not-empty
-                                                (or (:stderr d)
-                                                    (.getMessage e)))]
+                                              (or (:stderr d)
+                                                  (.getMessage e)))]
                                   (println (str/trim (str msg)))
                                   (println "ERROR." e))
                                 [nil 1]))))))))
