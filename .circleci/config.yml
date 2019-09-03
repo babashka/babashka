@@ -13,6 +13,10 @@ jobs:
       LEIN_ROOT: "true"
       GRAALVM_HOME: /home/circleci/graalvm-ce-19.2.0
     steps:
+      - run:
+          name: "Fix weird git submodules issue, see"
+          command: |
+            git reset --hard
       - checkout
       - run:
           name: "Pull Submodules"
