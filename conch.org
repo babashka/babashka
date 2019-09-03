@@ -1,8 +1,15 @@
-* pipe:
+;; * pipe:
 
 (let [ls (conch/proc "ls" ".")
-      grep (conch/proc "grep" "README")]
-  (conch/stream-to ls :out (:in grep))
-  (conch/flush ls)
-  (conch/done grep)
-  (conch/stream-to-string grep :out))
+      grep (conch/proc "grep" "README")
+      _ (conch/stream-to ls :out (:in grep))
+      _ (conch/done grep)
+      out (conch/stream-to-string grep :out)]
+  (println out))
+
+(let [grep (conch/proc "grep" "README")
+      in (str/join "\n" *in*)
+      _ (conch/feed-from-string grep in)
+      _ (conch/done grep)
+      out (conch/stream-to-string grep :out)]
+  out)
