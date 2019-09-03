@@ -163,7 +163,7 @@
 (defn main
   [& args]
   (handle-pipe!)
-  (binding [*out* *err*]
+  #_(binding [*out* *err*]
     (prn "M" (meta (get bindings 'future))))
   (let [t0 (System/currentTimeMillis)
         {:keys [:version :shell-in :edn-in :shell-out :edn-out
