@@ -158,6 +158,7 @@
           'io/copy io/copy
           'io/delete-file io/delete-file
           'io/file io/file
+          'io/reader io/reader
           ;; '.canRead File/canRead
           ;; '.canWrite File/canWrite
           ;; '.exists File/exists
