@@ -1,10 +1,12 @@
 (ns babashka.impl.utils
   (:import [java.net Socket ConnectException]))
 
+(set! *warn-on-reflection* true)
+
 (defn wait-for-it
   ([host port]
    (wait-for-it host port nil))
-  ([host port {:keys [:timeout :pause]}]
+  ([^String host ^long port {:keys [:timeout :pause]}]
    (let [t0 (System/currentTimeMillis)]
      (loop []
        (let [v (try (Socket. host port)
