@@ -257,11 +257,7 @@
                       (let [d (ex-data e)
                             exit-code (:bb/exit-code d)]
                         (if exit-code [nil exit-code]
-                            (do (if-let [msg (not-empty
-                                              (or (:stderr d)
-                                                  (.getMessage e)))]
-                                  (println (str/trim (str msg)))
-                                  (println "ERROR." e))
+                            (do (println e)
                                 [nil 1]))))))))
          1)
         t1 (System/currentTimeMillis)]

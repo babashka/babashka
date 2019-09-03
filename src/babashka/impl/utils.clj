@@ -10,16 +10,18 @@
    (let [t0 (System/currentTimeMillis)]
      (loop []
        (let [v (try (Socket. host port)
+                    (- (System/currentTimeMillis) t0)
                     (catch ConnectException _e
-                      (let [t1 (System/currentTimeMillis)]
-                        (if (and timeout (>= (- t1 t0) timeout))
+                      (let [took (- (System/currentTimeMillis) t0)]
+                        (if (and timeout (>= took timeout))
                           (throw (ex-info
                                   (format "timeout while waiting for %s:%s" host port)
-                                  {}))
+                                  {:took took}))
                           :wait-for-it.impl/try-again))))]
-         (when (identical? :wait-for-it.impl/try-again v)
-           (Thread/sleep (or pause 100))
-           (recur)))))))
+         (if (identical? :wait-for-it.impl/try-again v)
+           (do (Thread/sleep (or pause 100))
+               (recur))
+           v))))))
 
 (def utils-bindings {'utils/wait-for-it wait-for-it})
 
