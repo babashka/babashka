@@ -2,10 +2,13 @@
   {:no-doc true}
   (:require
    [babashka.impl.File :as File]
+   [babashka.impl.System :refer [system-bindings]]
    [babashka.impl.conch :refer [conch-bindings]]
    [babashka.impl.utils :refer [utils-bindings]]
    [babashka.impl.pipe-signal-handler :refer [handle-pipe! pipe-signal-received?]]
    [babashka.impl.socket-repl :as socket-repl]
+   [babashka.impl.clojure.core :refer [core-bindings]]
+   [babashka.impl.clojure.stacktrace :refer [print-stack-trace]]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.java.shell :as shell]
@@ -122,55 +125,20 @@
         (str/replace x #"^#!.*" ""))
       (throw (Exception. (str "File does not exist: " file))))))
 
-(defn get-env
-  ([] (System/getenv))
-  ([s] (System/getenv s)))
 
-(defn get-property
-  ([s]
-   (System/getProperty s))
-  ([s d]
-   (System/getProperty s d)))
-
-(defn set-property [k v]
-  (System/setProperty k v))
-
-(defn get-properties []
-  (System/getProperties))
-
-(defn exit [n]
-  (throw (ex-info "" {:bb/exit-code n})))
 
 (def bindings
-  (merge {'run! run!
-          'shell/sh shell/sh
-          'csh shell/sh ;; backwards compatibility, deprecated
+  (merge {'shell/sh shell/sh
           'namespace namespace
-          'slurp slurp
-          'spit spit
-          'pmap pmap
-          'print print
-          'pr-str pr-str
-          'prn prn
-          'println println
-
           ;; clojure.java.io
           'io/as-relative-path io/as-relative-path
           'io/copy io/copy
           'io/delete-file io/delete-file
           'io/file io/file
           'io/reader io/reader
-          ;; '.canRead File/canRead
-          ;; '.canWrite File/canWrite
-          ;; '.exists File/exists
-          ;; '.delete File/delete
-
-          'edn/read-string edn/read-string
-          'System/getenv get-env
-          'System/getProperty get-property
-          'System/setProperty set-property
-          'System/getProperties get-properties
-          'System/exit exit}
+          'edn/read-string edn/read-string}
+         core-bindings
+         system-bindings
          File/bindings
          conch-bindings
          utils-bindings))
@@ -252,12 +220,13 @@
                             (if stream?
                               (recur (read-next *in*))
                               res))))))
-                  (catch Exception e
+                  (catch Throwable e
                     (binding [*out* *err*]
                       (let [d (ex-data e)
                             exit-code (:bb/exit-code d)]
                         (if exit-code [nil exit-code]
-                            (do (.printStackTrace e)
+                            (do (print-stack-trace e)
+                                (flush)
                                 [nil 1]))))))))
          1)
         t1 (System/currentTimeMillis)]

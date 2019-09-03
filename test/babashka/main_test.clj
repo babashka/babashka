@@ -80,7 +80,7 @@
 
 (deftest malformed-command-line-args-test
   (is (thrown-with-msg? Exception #"File does not exist: non-existing\n"
-                        (bb nil  "-f" "non-existing")))
+                        (bb nil "-f" "non-existing")))
   (is (thrown-with-msg? Exception #"expression"
                         (bb nil))))
 
@@ -136,3 +136,6 @@
     (let [out (:out (sh "bash" "-c" "yes | ./bb -i '(take 2 *in*)'"))
           out (edn/read-string out)]
       (is (= '("y" "y") out)))))
+
+(deftest future-test
+  (is (= 6 (bb nil "@(future (+ 1 2 3))"))))
