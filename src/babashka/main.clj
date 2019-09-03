@@ -257,7 +257,7 @@
                       (let [d (ex-data e)
                             exit-code (:bb/exit-code d)]
                         (if exit-code [nil exit-code]
-                            (do (println e)
+                            (do (.printStackTrace e)
                                 [nil 1]))))))))
          1)
         t1 (System/currentTimeMillis)]

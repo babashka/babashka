@@ -6,8 +6,11 @@
 (defn wait-for-it
   ([host port]
    (wait-for-it host port nil))
-  ([^String host ^long port {:keys [:timeout :pause]}]
-   (let [t0 (System/currentTimeMillis)]
+  ([^String host ^long port {:keys [:timeout :pause] :as opts}]
+   (let [opts (merge {:host host
+                      :port port}
+                     opts)
+         t0 (System/currentTimeMillis)]
      (loop []
        (let [v (try (Socket. host port)
                     (- (System/currentTimeMillis) t0)
@@ -16,12 +19,12 @@
                         (if (and timeout (>= took timeout))
                           (throw (ex-info
                                   (format "timeout while waiting for %s:%s" host port)
-                                  {:took took}))
+                                  (assoc opts :took took)))
                           :wait-for-it.impl/try-again))))]
          (if (identical? :wait-for-it.impl/try-again v)
            (do (Thread/sleep (or pause 100))
                (recur))
-           v))))))
+           (assoc opts :took v)))))))
 
 (def utils-bindings {'utils/wait-for-it wait-for-it})
 
