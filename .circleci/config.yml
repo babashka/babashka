@@ -77,7 +77,7 @@ jobs:
           name: "Pull Submodules"
           command: |
             git submodule init
-            git submodule update --remote
+            git submodule update
       - restore_cache:
           keys:
             - linux-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
@@ -146,7 +146,7 @@ jobs:
           name: "Pull Submodules"
           command: |
             git submodule init
-            git submodule update --remote
+            git submodule update
       - restore_cache:
           keys:
             - mac-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
@@ -208,7 +208,7 @@ jobs:
           name: "Pull Submodules"
           command: |
             git submodule init
-            git submodule update --remote
+            git submodule update
       - restore_cache:
           keys:
           - v1-dependencies-{{ checksum "project.clj" }}
