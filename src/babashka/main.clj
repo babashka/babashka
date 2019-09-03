@@ -3,6 +3,7 @@
   (:require
    [babashka.impl.File :as File]
    [babashka.impl.conch :refer [conch-bindings]]
+   [babashka.impl.utils :refer [utils-bindings]]
    [babashka.impl.pipe-signal-handler :refer [handle-pipe! pipe-signal-received?]]
    [babashka.impl.socket-repl :as socket-repl]
    [clojure.edn :as edn]
@@ -171,7 +172,8 @@
           'System/getProperties get-properties
           'System/exit exit}
          File/bindings
-         conch-bindings))
+         conch-bindings
+         utils-bindings))
 
 (defn read-edn []
   (edn/read {;;:readers *data-readers*
