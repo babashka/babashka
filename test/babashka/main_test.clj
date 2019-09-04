@@ -80,7 +80,7 @@
 
 (deftest malformed-command-line-args-test
   (is (thrown-with-msg? Exception #"File does not exist: non-existing\n"
-                        (bb nil  "-f" "non-existing")))
+                        (bb nil "-f" "non-existing")))
   (is (thrown-with-msg? Exception #"expression"
                         (bb nil))))
 
@@ -136,3 +136,19 @@
     (let [out (:out (sh "bash" "-c" "yes | ./bb -i '(take 2 *in*)'"))
           out (edn/read-string out)]
       (is (= '("y" "y") out)))))
+
+(deftest future-test
+  (is (= 6 (bb nil "@(future (+ 1 2 3))"))))
+
+(deftest conch-test
+  (is (str/includes? (bb nil "(->> (conch/proc \"ls\") (conch/stream-to-string :out))")
+                     "LICENSE")))
+
+(deftest wait-for-it-test
+  (is (thrown-with-msg?
+       Exception
+       #"timeout"
+       (bb nil "(def web-server (conch/proc \"python\" \"-m\" \"SimpleHTTPServer\" \"7171\"))
+                (net/wait-for-it \"127.0.0.1\" 7171)
+                (conch/destroy web-server)
+                (net/wait-for-it \"localhost\" 7172 {:timeout 50})"))))

@@ -1,13 +1,19 @@
 (ns babashka.main
   {:no-doc true}
   (:require
-   [babashka.impl.File :as File]
+   [babashka.impl.File :refer [file-bindings]]
+   [babashka.impl.System :refer [system-bindings]]
+   [babashka.impl.Thread :refer [thread-bindings]]
+   [babashka.impl.clojure.core :refer [core-bindings]]
+   [babashka.impl.clojure.stacktrace :refer [print-stack-trace]]
+   [babashka.impl.conch :refer [conch-bindings]]
    [babashka.impl.pipe-signal-handler :refer [handle-pipe! pipe-signal-received?]]
+   [babashka.impl.socket-repl :as socket-repl]
+   [babashka.net :as net]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.java.shell :as shell]
    [clojure.string :as str]
-   [babashka.impl.socket-repl :as socket-repl]
    [sci.core :as sci])
   (:import [sun.misc Signal]
            [sun.misc SignalHandler])
@@ -120,55 +126,22 @@
         (str/replace x #"^#!.*" ""))
       (throw (Exception. (str "File does not exist: " file))))))
 
-(defn get-env
-  ([] (System/getenv))
-  ([s] (System/getenv s)))
-
-(defn get-property
-  ([s]
-   (System/getProperty s))
-  ([s d]
-   (System/getProperty s d)))
-
-(defn set-property [k v]
-  (System/setProperty k v))
-
-(defn get-properties []
-  (System/getProperties))
-
-(defn exit [n]
-  (throw (ex-info "" {:bb/exit-code n})))
-
 (def bindings
-  (merge {'run! run!
-          'shell/sh shell/sh
-          'csh shell/sh ;; backwards compatibility, deprecated
+  (merge {'shell/sh shell/sh
           'namespace namespace
-          'slurp slurp
-          'spit spit
-          'pmap pmap
-          'print print
-          'pr-str pr-str
-          'prn prn
-          'println println
-
           ;; clojure.java.io
           'io/as-relative-path io/as-relative-path
           'io/copy io/copy
           'io/delete-file io/delete-file
           'io/file io/file
-          ;; '.canRead File/canRead
-          ;; '.canWrite File/canWrite
-          ;; '.exists File/exists
-          ;; '.delete File/delete
-
+          'io/reader io/reader
           'edn/read-string edn/read-string
-          'System/getenv get-env
-          'System/getProperty get-property
-          'System/setProperty set-property
-          'System/getProperties get-properties
-          'System/exit exit}
-         File/bindings))
+          'net/wait-for-it net/wait-for-it}
+         core-bindings
+         system-bindings
+         file-bindings
+         thread-bindings
+         conch-bindings))
 
 (defn read-edn []
   (edn/read {;;:readers *data-readers*
@@ -191,7 +164,7 @@
   [& args]
   (handle-pipe!)
   #_(binding [*out* *err*]
-      (prn ">> args" args))
+    (prn "M" (meta (get bindings 'future))))
   (let [t0 (System/currentTimeMillis)
         {:keys [:version :shell-in :edn-in :shell-out :edn-out
                 :help? :file :command-line-args
@@ -236,25 +209,25 @@
                           (let [res [(do (when-not (or expression file)
                                            (throw (Exception. (str args  "Babashka expected an expression. Type --help to print help."))))
                                          (let [res (sci/eval-string expr ctx)]
-                                           (if-let [pr-f (cond shell-out println
-                                                               edn-out prn)]
-                                             (if (coll? res)
-                                               (doseq [l res
-                                                       :while (not (pipe-signal-received?))]
-                                                 (pr-f l))
-                                               (pr-f res))
-                                             (prn res)))) 0]]
+                                           (if (some? res)
+                                             (if-let [pr-f (cond shell-out println
+                                                                 edn-out prn)]
+                                               (if (coll? res)
+                                                 (doseq [l res
+                                                         :while (not (pipe-signal-received?))]
+                                                   (pr-f l))
+                                                 (pr-f res))
+                                               (prn res))))) 0]]
                             (if stream?
                               (recur (read-next *in*))
                               res))))))
-                  (catch Exception e
+                  (catch Throwable e
                     (binding [*out* *err*]
                       (let [d (ex-data e)
                             exit-code (:bb/exit-code d)]
                         (if exit-code [nil exit-code]
-                            (do (when-let [msg (or (:stderr d )
-                                                   (.getMessage e))]
-                                  (println (str/trim msg)))
+                            (do (print-stack-trace e)
+                                (flush)
                                 [nil 1]))))))))
          1)
         t1 (System/currentTimeMillis)]

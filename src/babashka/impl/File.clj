@@ -57,7 +57,7 @@
 (gen-wrapper-fn toPath)
 (gen-wrapper-fn toURI)
 
-(def bindings
+(def file-bindings
   (reduce (fn [acc [k v]]
             (if (-> v meta :bb/export)
               (assoc acc (symbol (str "." k))

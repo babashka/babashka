@@ -115,7 +115,7 @@ Options:
 
 The `clojure.core` functions are accessible without a namespace alias.
 
-The following Clojure namespaces are required by default and only available
+The following namespaces are required by default and only available
 through the aliases. If not all vars are available, they are enumerated
 explicitly.
 
@@ -127,16 +127,19 @@ explicitly.
   - `sh`
 - `clojure.java.io` aliased as `io`:
   - `as-relative-path`, `copy`, `delete-file`, `file`
+- [`me.raynes.conch.low-level`](https://github.com/clj-commons/conch#low-level-usage)
+  aliased as `conch`
 
 From Java the following is available:
 
-- `System`: `exit`, `getProperty`, `setProperty`, `getProperties`, `getenv`
 - `File`: `.canRead`, `.canWrite`, `.delete`, `.deleteOnExit`, `.exists`,
   `.getAbsoluteFile`, `.getCanonicalFile`, `.getCanonicalPath`, `.getName`,
   `.getParent`, `.getParentFile`, `.getPath`, `.isAbsolute`, `.isDirectory`,
   `.isFile`, `.isHidden`, `.lastModified`, `.length`, `.list`, `.listFiles`,
   `.mkdir`, `.mkdirs`, `.renameTo`, `.setLastModified`, `.setReadOnly`,
   `.setReadable`, `.toPath`, `.toURI`.
+- `System`: `exit`, `getProperty`, `setProperty`, `getProperties`, `getenv`
+- `Thread`: `sleep`
 
 Special vars:
 
@@ -144,7 +147,20 @@ Special vars:
 text with the `-i` option, or multiple EDN values with the `-I` option.
 - `*command-line-args*`: contain the command line args
 
-Examples:
+Additionally, babashka adds the following functions:
+
+- `net/wait-for-it`. Usage:
+
+``` clojure
+(net/wait-for-it "localhost" 8080)
+(net/wait-for-it "localhost" 8080 {:timeout 1000 :pause 1000)
+```
+
+Waits for TCP connection to be available on host and port. Options map supports
+  `:timeout` and `:pause`. If `:timeout` is provided and reached, exception will
+  be thrown. The `:pause` option determines the time waited between retries.
+
+## Examples
 
 ``` shellsession
 $ ls | bb -i '*in*'
@@ -275,6 +291,19 @@ $
 A socket REPL client for Emacs is
 [inf-clojure](https://github.com/clojure-emacs/inf-clojure).
 
+## Spawning and killing a process
+
+You may use the `conch` namespace for this. It maps to
+[`me.raynes.conch.low-level`](https://github.com/clj-commons/conch#low-level-usage).
+
+Example:
+
+``` clojure
+$ bb '
+(def ws (conch/proc "python" "-m" "SimpleHTTPServer" "1777"))
+(net/wait-for-it "localhost" 1777) (conch/destroy ws)'
+```
+
 ## Enabling SSL
 
 If you want to be able to use SSL to e.g. run `(slurp
@@ -381,5 +410,9 @@ bb '(some #(re-find #".*linux.*" (:browser_download_url %)) *in*)'
 
 Copyright © 2019 Michiel Borkent
 
-Distributed under the EPL License. This project contains modified Clojure code
-which is licensed under the same EPL License. See LICENSE.
+Distributed under the EPL License. See LICENSE.
+
+This project contains code from:
+- Clojure, which is licensed under the same EPL License.
+- [conch](https://github.com/clj-commons/conch), which is licensed under the
+same EPL License.

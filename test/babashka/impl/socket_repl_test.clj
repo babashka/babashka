@@ -43,7 +43,7 @@
                                       "echo \"(inc 1336)\" | nc -q 1 127.0.0.1 1666")))
                           "1337\nbb=> ")))
     (testing "*in*"
-      (is (str/includes? (socket-command '*in*)
+      (is (str/includes? (socket-command "*in*")
                          "[1 2 3]")))
     (testing "*command-line-args*"
       (is (str/includes? (socket-command '*command-line-args*)
