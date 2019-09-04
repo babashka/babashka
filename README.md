@@ -129,10 +129,6 @@ explicitly.
   - `as-relative-path`, `copy`, `delete-file`, `file`
 - `me.raynes.conch.low-level` aliased as `conch`
 
-Additionally, babashka adds the following functions:
-
-- `net/wait-for-it`:
-
 From Java the following is available:
 
 - `File`: `.canRead`, `.canWrite`, `.delete`, `.deleteOnExit`, `.exists`,
@@ -149,6 +145,20 @@ Special vars:
 - `*in*`: contains the input read from stdin. EDN by default, multiple lines of
 text with the `-i` option, or multiple EDN values with the `-I` option.
 - `*command-line-args*`: contain the command line args
+
+Additionally, babashka adds the following functions:
+
+- `net/wait-for-it`. Waits for TCP connection to be available on host and
+  port. Options map supports `:timeout` and `:pause`. If `:timeout` is provided
+  and reached, exception will be thrown. The `:pause` option determines the time
+  waited between retries. Usage:
+
+``` clojure
+(net/wait-for-it "localhost" 8080)
+(net/wait-for-it "localhost" 8080 {:timeout 1000 :pause 1000)
+```
+
+- `str/join-lines` which is the same as `#(str/join "\n" %)`
 
 Examples:
 

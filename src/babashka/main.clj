@@ -126,8 +126,6 @@
         (str/replace x #"^#!.*" ""))
       (throw (Exception. (str "File does not exist: " file))))))
 
-
-
 (def bindings
   (merge {'shell/sh shell/sh
           'namespace namespace
