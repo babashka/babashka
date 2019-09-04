@@ -148,7 +148,7 @@
   (is (thrown-with-msg?
        Exception
        #"timeout"
-       (bb nil "(def nc (conch/proc \"nc\" \"-l\" \"127.0.0.1\" \"7171\"))
-                (net/wait-for-it \"127.0.0.1\" 7171 {:timeout 500})
-                (conch/destroy nc)
+       (bb nil "(def web-server (conch/proc \"python\" \"-m\" \"SimpleHTTPServer\" \"7171\"))
+                (net/wait-for-it \"127.0.0.1\" 7171)
+                (conch/destroy web-server)
                 (net/wait-for-it \"localhost\" 7172 {:timeout 50})"))))
