@@ -160,7 +160,7 @@ Waits for TCP connection to be available on host and port. Options map supports
   `:timeout` and `:pause`. If `:timeout` is provided and reached, exception will
   be thrown. The `:pause` option determines the time waited between retries.
 
-Examples:
+## Examples
 
 ``` shellsession
 $ ls | bb -i '*in*'
@@ -291,7 +291,7 @@ $
 A socket REPL client for Emacs is
 [inf-clojure](https://github.com/clojure-emacs/inf-clojure).
 
-## Spawning and killing processes
+## Spawning and killing a process
 
 You may use the `conch` namespace for this. It maps to
 [`me.raynes.conch.low-level`](https://github.com/clj-commons/conch#low-level-usage).
