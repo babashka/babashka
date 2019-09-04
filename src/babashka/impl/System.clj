@@ -1,4 +1,5 @@
-(ns babashka.impl.System)
+(ns babashka.impl.System
+  {:no-doc true})
 
 (defn get-env
   ([] (System/getenv))

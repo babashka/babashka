@@ -148,6 +148,7 @@
   (is (thrown-with-msg?
        Exception
        #"timeout"
-       (bb nil "(def nc (conch/proc \"nc\" \"-l\" \"8080\")) (net/wait-for-it \"localhost\"  8080)
-                (conch/destroy nc) ;; after this, wait-for-it won't be able to reach the port anymore
-                (net/wait-for-it \"localhost\"  8080 {:timeout 1000})"))))
+       (bb nil "(def nc (conch/proc \"nc\" \"-l\" \"127.0.0.1\" \"7171\"))
+                (net/wait-for-it \"127.0.0.1\" 7171 {:timeout 500})
+                (conch/destroy nc)
+                (net/wait-for-it \"localhost\" 7172 {:timeout 50})"))))

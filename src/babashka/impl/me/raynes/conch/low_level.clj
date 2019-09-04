@@ -2,6 +2,7 @@
 
 (ns babashka.impl.me.raynes.conch.low-level
   "A simple but flexible library for shelling out from Clojure."
+  {:no-doc true}
   (:refer-clojure :exclude [flush read-line])
   (:require [clojure.java.io :as io])
   (:import [java.util.concurrent TimeUnit TimeoutException]

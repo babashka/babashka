@@ -1,4 +1,5 @@
 (ns babashka.impl.clojure.core
+  {:no-doc true}
   (:refer-clojure :exclude [future]))
 
 (defn future

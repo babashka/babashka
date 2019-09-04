@@ -1,4 +1,5 @@
-(ns babashka.impl.Thread)
+(ns babashka.impl.Thread
+  {:no-doc true})
 
 (defn sleep
   ([millis] (Thread/sleep millis))

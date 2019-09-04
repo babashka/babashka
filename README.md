@@ -129,6 +129,10 @@ explicitly.
   - `as-relative-path`, `copy`, `delete-file`, `file`
 - `me.raynes.conch.low-level` aliased as `conch`
 
+Additionally, babashka adds the following functions:
+
+- `net/wait-for-it`:
+
 From Java the following is available:
 
 - `File`: `.canRead`, `.canWrite`, `.delete`, `.deleteOnExit`, `.exists`,

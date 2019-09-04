@@ -1,4 +1,5 @@
 (ns babashka.impl.conch
+  {:no-doc true}
   (:require
    [babashka.impl.me.raynes.conch.low-level :as ll]))
 
