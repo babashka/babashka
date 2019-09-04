@@ -149,15 +149,16 @@ text with the `-i` option, or multiple EDN values with the `-I` option.
 
 Additionally, babashka adds the following functions:
 
-- `net/wait-for-it`. Waits for TCP connection to be available on host and
-  port. Options map supports `:timeout` and `:pause`. If `:timeout` is provided
-  and reached, exception will be thrown. The `:pause` option determines the time
-  waited between retries. Usage:
+- `net/wait-for-it`. Usage:
 
 ``` clojure
 (net/wait-for-it "localhost" 8080)
 (net/wait-for-it "localhost" 8080 {:timeout 1000 :pause 1000)
 ```
+
+Waits for TCP connection to be available on host and port. Options map supports
+  `:timeout` and `:pause`. If `:timeout` is provided and reached, exception will
+  be thrown. The `:pause` option determines the time waited between retries.
 
 Examples:
 
