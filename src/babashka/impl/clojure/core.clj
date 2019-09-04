@@ -6,7 +6,13 @@
   `(~'future-call (fn [] ~@body)))
 
 (def core-bindings
-  {'run! run!
+  {;; atoms
+   'atom atom
+   'swap! swap!
+   'reset! reset!
+   'add-watch add-watch
+
+   'run! run!
    'slurp slurp
    'spit spit
    'pmap pmap
