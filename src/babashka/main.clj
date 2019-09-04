@@ -1,14 +1,15 @@
 (ns babashka.main
   {:no-doc true}
   (:require
-   [babashka.impl.File :as File]
+   [babashka.impl.File :refer [file-bindings]]
    [babashka.impl.System :refer [system-bindings]]
-   [babashka.impl.conch :refer [conch-bindings]]
-   [babashka.impl.utils :refer [utils-bindings]]
-   [babashka.impl.pipe-signal-handler :refer [handle-pipe! pipe-signal-received?]]
-   [babashka.impl.socket-repl :as socket-repl]
+   [babashka.impl.Thread :refer [thread-bindings]]
    [babashka.impl.clojure.core :refer [core-bindings]]
    [babashka.impl.clojure.stacktrace :refer [print-stack-trace]]
+   [babashka.impl.conch :refer [conch-bindings]]
+   [babashka.impl.pipe-signal-handler :refer [handle-pipe! pipe-signal-received?]]
+   [babashka.impl.socket-repl :as socket-repl]
+   [babashka.impl.utils :refer [utils-bindings]]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.java.shell :as shell]
@@ -139,7 +140,8 @@
           'edn/read-string edn/read-string}
          core-bindings
          system-bindings
-         File/bindings
+         file-bindings
+         thread-bindings
          conch-bindings
          utils-bindings))
 
@@ -209,14 +211,15 @@
                           (let [res [(do (when-not (or expression file)
                                            (throw (Exception. (str args  "Babashka expected an expression. Type --help to print help."))))
                                          (let [res (sci/eval-string expr ctx)]
-                                           (if-let [pr-f (cond shell-out println
-                                                               edn-out prn)]
-                                             (if (coll? res)
-                                               (doseq [l res
-                                                       :while (not (pipe-signal-received?))]
-                                                 (pr-f l))
-                                               (pr-f res))
-                                             (prn res)))) 0]]
+                                           (when (some? res)
+                                             (if-let [pr-f (cond shell-out println
+                                                                 edn-out prn)]
+                                               (if (coll? res)
+                                                 (doseq [l res
+                                                         :while (not (pipe-signal-received?))]
+                                                   (pr-f l))
+                                                 (pr-f res))
+                                               (prn res))))) 0]]
                             (if stream?
                               (recur (read-next *in*))
                               res))))))
