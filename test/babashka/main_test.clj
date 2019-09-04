@@ -139,3 +139,7 @@
 
 (deftest future-test
   (is (= 6 (bb nil "@(future (+ 1 2 3))"))))
+
+(deftest conch-test
+  (is (str/includes? (bb nil "(->> (conch/proc \"ls\") (conch/stream-to-string :out))")
+                     "LICENSE")))

@@ -10,7 +10,8 @@
   :source-paths ["src" "sci/src" "sci/inlined" "conch/src"]
   :resource-paths ["resources" "sci/resources"]
   :dependencies [[org.clojure/clojure "1.10.1"]]
-  :profiles {:uberjar {:global-vars {*assert* false}
+  :profiles {:test {:dependencies [[clj-commons/conch "0.9.2"]]}
+             :uberjar {:global-vars {*assert* false}
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"
                                   "-Dclojure.spec.skip-macros=true"]
                        :main babashka.main

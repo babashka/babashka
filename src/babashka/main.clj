@@ -211,7 +211,7 @@
                           (let [res [(do (when-not (or expression file)
                                            (throw (Exception. (str args  "Babashka expected an expression. Type --help to print help."))))
                                          (let [res (sci/eval-string expr ctx)]
-                                           (when (some? res)
+                                           (if (some? res)
                                              (if-let [pr-f (cond shell-out println
                                                                  edn-out prn)]
                                                (if (coll? res)

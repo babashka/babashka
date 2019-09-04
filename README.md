@@ -115,7 +115,7 @@ Options:
 
 The `clojure.core` functions are accessible without a namespace alias.
 
-The following Clojure namespaces are required by default and only available
+The following namespaces are required by default and only available
 through the aliases. If not all vars are available, they are enumerated
 explicitly.
 
@@ -127,16 +127,18 @@ explicitly.
   - `sh`
 - `clojure.java.io` aliased as `io`:
   - `as-relative-path`, `copy`, `delete-file`, `file`
+- `me.raynes.conch.low-level` aliased as `conch`
 
 From Java the following is available:
 
-- `System`: `exit`, `getProperty`, `setProperty`, `getProperties`, `getenv`
 - `File`: `.canRead`, `.canWrite`, `.delete`, `.deleteOnExit`, `.exists`,
   `.getAbsoluteFile`, `.getCanonicalFile`, `.getCanonicalPath`, `.getName`,
   `.getParent`, `.getParentFile`, `.getPath`, `.isAbsolute`, `.isDirectory`,
   `.isFile`, `.isHidden`, `.lastModified`, `.length`, `.list`, `.listFiles`,
   `.mkdir`, `.mkdirs`, `.renameTo`, `.setLastModified`, `.setReadOnly`,
   `.setReadable`, `.toPath`, `.toURI`.
+- `System`: `exit`, `getProperty`, `setProperty`, `getProperties`, `getenv`
+- `Thread`: `sleep`
 
 Special vars:
 
@@ -386,5 +388,9 @@ beverage](https://ko-fi.com/borkdude).
 
 Copyright © 2019 Michiel Borkent
 
-Distributed under the EPL License. This project contains modified Clojure code
-which is licensed under the same EPL License. See LICENSE.
+Distributed under the EPL License. See LICENSE.
+
+This project contains code from:
+- Clojure, which is licensed under the same EPL License.
+- [conch](https://github.com/clj-commons/conch), which is licensed under the
+same EPL License.
