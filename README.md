@@ -127,7 +127,8 @@ explicitly.
   - `sh`
 - `clojure.java.io` aliased as `io`:
   - `as-relative-path`, `copy`, `delete-file`, `file`
-- `me.raynes.conch.low-level` aliased as `conch`
+- [`me.raynes.conch.low-level`](https://github.com/clj-commons/conch#low-level-usage)
+  aliased as `conch`
 
 From Java the following is available:
 
@@ -157,8 +158,6 @@ Additionally, babashka adds the following functions:
 (net/wait-for-it "localhost" 8080)
 (net/wait-for-it "localhost" 8080 {:timeout 1000 :pause 1000)
 ```
-
-- `str/join-lines` which is the same as `#(str/join "\n" %)`
 
 Examples:
 
@@ -290,6 +289,19 @@ $
 
 A socket REPL client for Emacs is
 [inf-clojure](https://github.com/clojure-emacs/inf-clojure).
+
+## Spawning and killing processes
+
+You may use the `conch` namespace for this. It maps to
+[`me.raynes.conch.low-level`](https://github.com/clj-commons/conch#low-level-usage).
+
+Example:
+
+``` clojure
+$ bb '
+(def ws (conch/proc "python" "-m" "SimpleHTTPServer" "1777"))
+(net/wait-for-it "localhost" 1777) (conch/destroy ws)'
+```
 
 ## Enabling SSL
 
