@@ -143,3 +143,11 @@
 (deftest conch-test
   (is (str/includes? (bb nil "(->> (conch/proc \"ls\") (conch/stream-to-string :out))")
                      "LICENSE")))
+
+(deftest wait-for-it-test
+  (is (thrown-with-msg?
+       Exception
+       #"timeout"
+       (bb nil "(def nc (conch/proc \"nc\" \"-l\" \"8080\")) (net/wait-for-it \"localhost\"  8080)
+                (conch/destroy nc) ;; after this, wait-for-it won't be able to reach the port anymore
+                (net/wait-for-it \"localhost\"  8080 {:timeout 1000})"))))

@@ -9,7 +9,7 @@
    [babashka.impl.conch :refer [conch-bindings]]
    [babashka.impl.pipe-signal-handler :refer [handle-pipe! pipe-signal-received?]]
    [babashka.impl.socket-repl :as socket-repl]
-   [babashka.impl.utils :refer [utils-bindings]]
+   [babashka.impl.net :refer [net-bindings]]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.java.shell :as shell]
@@ -143,7 +143,7 @@
          file-bindings
          thread-bindings
          conch-bindings
-         utils-bindings))
+         net-bindings))
 
 (defn read-edn []
   (edn/read {;;:readers *data-readers*
