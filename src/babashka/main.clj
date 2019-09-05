@@ -4,6 +4,7 @@
    [babashka.impl.File :refer [file-bindings]]
    [babashka.impl.System :refer [system-bindings]]
    [babashka.impl.Thread :refer [thread-bindings]]
+   [babashka.impl.async :refer [async-bindings]]
    [babashka.impl.clojure.core :refer [core-bindings]]
    [babashka.impl.clojure.stacktrace :refer [print-stack-trace]]
    [babashka.impl.conch :refer [conch-bindings]]
@@ -141,7 +142,8 @@
          system-bindings
          file-bindings
          thread-bindings
-         conch-bindings))
+         conch-bindings
+         async-bindings))
 
 (defn read-edn []
   (edn/read {;;:readers *data-readers*
