@@ -235,6 +235,7 @@
         t1 (System/currentTimeMillis)]
     (when time? (binding [*out* *err*]
                   (println "bb took" (str (- t1 t0) "ms."))))
+    (flush)
     exit-code))
 
 (defn -main

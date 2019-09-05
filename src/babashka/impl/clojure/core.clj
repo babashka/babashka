@@ -18,6 +18,7 @@
    'spit spit
    'pmap pmap
    'print print
+   'flush flush
    'pr-str pr-str
    'prn prn
    'println println
