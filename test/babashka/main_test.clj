@@ -10,6 +10,26 @@
 (defn bb [input & args]
   (edn/read-string (apply test-utils/bb (str input) (map str args))))
 
+(deftest parse-opts-test
+  (is (= {:expression "(println 123)"}
+         (main/parse-opts ["-e" "(println 123)"])))
+
+  (is (= {:expression "(println 123)"}
+         (main/parse-opts ["--eval" "(println 123)"])))
+
+  (testing "distinguish automatically between expression or file name"
+    (is (= {:expression "(println 123)"
+            :command-line-args []}
+           (main/parse-opts ["(println 123)"])))
+
+    (is (= {:file "src/babashka/main.clj"
+            :command-line-args []}
+           (main/parse-opts ["src/babashka/main.clj"])))
+
+    (is (= {:expression "does-not-exist"
+            :command-line-args []}
+           (main/parse-opts ["does-not-exist"])))))
+
 (deftest main-test
   (testing "-io behaves as identity"
     (= "foo\nbar\n" (test-utils/bb "foo\nbar\n" "-io" "*in*")))

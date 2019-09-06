@@ -24,7 +24,7 @@
 ;; echo '1' | java -agentlib:native-image-agent=config-output-dir=/tmp -jar target/babashka-xxx-standalone.jar '...'
 ;; with the java provided by GraalVM.
 
-(defn- parse-opts [options]
+(defn parse-opts [options]
   (let [opts (loop [options options
                     opts-map {}]
                (if-let [opt (first options)]
@@ -67,13 +67,21 @@
                      (recur (rest options)
                             (assoc opts-map
                                    :socket-repl (first options))))
-                   (if (not (or (:file opts-map)
-                                (:socket-repl opts-map)))
+                   ("--eval", "-e")
+                   (let [options (rest options)]
+                     (recur (rest options)
+                            (assoc opts-map :expression (first options))))
+                   (if (some opts-map [:file :socket-repl :expression])
                      (assoc opts-map
-                            :expression opt
-                            :command-line-args (rest options))
-                     (assoc opts-map
-                            :command-line-args options)))
+                            :command-line-args options)
+                     (if (and (not= \( (first (str/trim opt)))
+                              (.exists (io/file opt)))
+                       (assoc opts-map
+                              :file opt
+                              :command-line-args (rest options))
+                       (assoc opts-map
+                              :expression opt
+                              :command-line-args (rest options)))))
                  opts-map))]
     opts))
 
@@ -93,7 +101,7 @@
 (defn print-version []
   (println (str "babashka v"(str/trim (slurp (io/resource "BABASHKA_VERSION"))))))
 
-(def usage-string "Usage: bb [ -i | -I ] [ -o | -O ] [ --stream ] ( expression | -f <file> | --socket-repl [host:]port )")
+(def usage-string "Usage: bb [ -i | -I ] [ -o | -O ] [ --stream ] ( -e <expression> | -f <file> | --socket-repl [host:]port )")
 (defn print-usage []
   (println usage-string))
 
@@ -113,9 +121,12 @@
   -o: write lines to stdout.
   -O: write EDN values to stdout.
   --stream: stream over lines or EDN values from stdin. Combined with -i or -I *in* becomes a single value per iteration.
-  --file or -f: read expressions from file instead of argument wrapped in an implicit do.
+  -e, --eval expression: evaluate an expression
+  -f, --file path: evaluate a file
   --socket-repl: start socket REPL. Specify port (e.g. 1666) or host and port separated by colon (e.g. 127.0.0.1:1666).
   --time: print execution time before exiting.
+
+  If neither -e, -f, or --socket-repl are specified, then the first argument is treated as a file if it exists, or as an expression otherwise.
 "))
 
 (defn read-file [file]
