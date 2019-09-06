@@ -137,7 +137,8 @@
           'io/file io/file
           'io/reader io/reader
           'edn/read-string edn/read-string
-          'net/wait-for-it net/wait-for-it}
+          'net/wait-for-it net/wait-for-it
+          'sig/pipe-signal-received? pipe-signal-received?}
          core-bindings
          system-bindings
          file-bindings
