@@ -102,7 +102,7 @@
   (is (thrown-with-msg? Exception #"File does not exist: non-existing\n"
                         (bb nil "-f" "non-existing")))
   (testing "no arguments prints help"
-    (is (str/includes? (test-utils/bb nil) "Usage:"))))
+    (is (thrown-with-msg? Exception #"Usage:" (test-utils/bb nil) "Usage:"))))
 
 (deftest ssl-test
   (let [graalvm-home (System/getenv "GRAALVM_HOME")

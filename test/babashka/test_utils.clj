@@ -6,15 +6,19 @@
 (set! *warn-on-reflection* true)
 
 (defn bb-jvm [input & args]
-  (let [sw (java.io.StringWriter.)
-        res (binding [*err* sw]
-              (with-out-str
-                (if input
+  (let [es (java.io.StringWriter.)
+        os (java.io.StringWriter.)]
+    (binding [*err* es
+              *out* os]
+      (let [res (if input
                   (with-in-str input
                     (apply main/main args))
-                  (apply main/main args))))]
-    (if-let [err ^String (not-empty (str sw))]
-      (throw (Exception. err)) res)))
+                  (apply main/main args))]
+        (if (zero? res)
+          (str os)
+          (throw (Exception. (str (str *out*)
+                                  "\n\n"
+                                  (str *err*)))))))))
 
 (defn bb-native [input & args]
   (let-programs [bb "./bb"]
