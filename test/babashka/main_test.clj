@@ -102,7 +102,11 @@
   (is (thrown-with-msg? Exception #"File does not exist: non-existing\n"
                         (bb nil "-f" "non-existing")))
   (testing "no arguments prints help"
-    (is (thrown-with-msg? Exception #"Usage:" (test-utils/bb nil) "Usage:"))))
+    (is (str/includes?
+         (try (test-utils/bb nil)
+              (catch clojure.lang.ExceptionInfo e
+                (:stdout (ex-data e))))
+         "Usage:"))))
 
 (deftest ssl-test
   (let [graalvm-home (System/getenv "GRAALVM_HOME")

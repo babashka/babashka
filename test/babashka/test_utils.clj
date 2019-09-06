@@ -16,9 +16,9 @@
                   (apply main/main args))]
         (if (zero? res)
           (str os)
-          (throw (Exception. (str (str *out*)
-                                  "\n\n"
-                                  (str *err*)))))))))
+          (throw (ex-info (str es)
+                          {:stdout (str os)
+                           :stderr (str es)})))))))
 
 (defn bb-native [input & args]
   (let-programs [bb "./bb"]
