@@ -321,7 +321,27 @@ $ bb '(slurp "https://www.clojure.org")' | bb '(subs *in* 0 50)'
 "<!doctype html><html itemscope=\"\" itemtype=\"http:/"
 ```
 
-## Test
+## Developing Babashka
+
+To work on Babashka itself make sure Git submodules are checked out.
+
+``` shellsession
+$ git clone https://github.com/borkdude/babashka --recursive
+```
+
+To update later on:
+
+``` shellsession
+$ git submodule update --recursive
+```
+
+You need [Leiningen](https://leiningen.org/), and for building binaries you need GraalVM.
+
+### REPL
+
+`lein repl` will get you a standard REPL/nREPL connection. To work on tests use `lein with-profiles +test repl`.
+
+### Test
 
 Test on the JVM:
 
@@ -334,22 +354,7 @@ Test the native version:
 
     BABASHKA_TEST_ENV=native script/test
 
-## Build
-
-You will need leiningen and GraalVM.
-
-This repo contains a submodule, so you will have clone that too.  If you're
-doing that for the first time:
-
-``` shellsession
-$ git submodule update --init --recursive
-```
-
-and for subsequent updates:
-
-``` shellsession
-$ git submodule update --recursive
-```
+### Build
 
 To build this project, set `$GRAALVM_HOME` to the GraalVM distribution directory.
 
