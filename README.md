@@ -162,6 +162,20 @@ Waits for TCP connection to be available on host and port. Options map supports
   `:timeout` and `:pause`. If `:timeout` is provided and reached, exception will
   be thrown. The `:pause` option determines the time waited between retries.
 
+- `sig/pipe-signal-received?`. Usage:
+
+``` clojure
+(sig/pipe-signal-received?)
+```
+
+Returns true if `PIPE` signal was received. Example:
+
+``` shellsession
+$ bb '((fn [x] (println x) (when (not (sig/pipe-signal-received?)) (recur (inc x)))) 0)' | head -n2
+1
+2
+```
+
 ## Examples
 
 ``` shellsession
@@ -321,17 +335,6 @@ Example:
 $ export BABASHKA_PRELOADS="(System/setProperty \"java.library.path\" \"$JAVA_HOME/jre/lib\")"
 $ bb '(slurp "https://www.clojure.org")' | bb '(subs *in* 0 50)'
 "<!doctype html><html itemscope=\"\" itemtype=\"http:/"
-```
-
-## Dealing with signals
-
-Checking whether the `PIPE` signal was received can be done with
-`sig/pipe-signal-received?`:
-
-``` shellsession
-$ bb '((fn [x] (println x) (when (not (sig/pipe-signal-received?)) (recur (inc x)))) 0)' | head -n2
-1
-2
 ```
 
 ## Test
