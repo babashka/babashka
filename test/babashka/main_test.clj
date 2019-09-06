@@ -10,6 +10,26 @@
 (defn bb [input & args]
   (edn/read-string (apply test-utils/bb (str input) (map str args))))
 
+(deftest parse-opts-test
+  (is (= {:expression "(println 123)"}
+         (main/parse-opts ["-e" "(println 123)"])))
+
+  (is (= {:expression "(println 123)"}
+         (main/parse-opts ["--eval" "(println 123)"])))
+
+  (testing "distinguish automatically between expression or file name"
+    (is (= {:expression "(println 123)"
+            :command-line-args []}
+           (main/parse-opts ["(println 123)"])))
+
+    (is (= {:file "src/babashka/main.clj"
+            :command-line-args []}
+           (main/parse-opts ["src/babashka/main.clj"])))
+
+    (is (= {:expression "does-not-exist"
+            :command-line-args []}
+           (main/parse-opts ["does-not-exist"])))))
+
 (deftest main-test
   (testing "-io behaves as identity"
     (= "foo\nbar\n" (test-utils/bb "foo\nbar\n" "-io" "*in*")))
@@ -81,8 +101,12 @@
 (deftest malformed-command-line-args-test
   (is (thrown-with-msg? Exception #"File does not exist: non-existing\n"
                         (bb nil "-f" "non-existing")))
-  (is (thrown-with-msg? Exception #"expression"
-                        (bb nil))))
+  (testing "no arguments prints help"
+    (is (str/includes?
+         (try (test-utils/bb nil)
+              (catch clojure.lang.ExceptionInfo e
+                (:stdout (ex-data e))))
+         "Usage:"))))
 
 (deftest ssl-test
   (let [graalvm-home (System/getenv "GRAALVM_HOME")
