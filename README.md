@@ -127,6 +127,8 @@ explicitly.
   - `sh`
 - `clojure.java.io` aliased as `io`:
   - `as-relative-path`, `copy`, `delete-file`, `file`
+- [`clojure.core.async`](https://clojure.github.io/core.async/) aliased as
+  `async` (the `alt` and `go` macros are not available yet)
 - [`me.raynes.conch.low-level`](https://github.com/clj-commons/conch#low-level-usage)
   aliased as `conch`
 
@@ -319,6 +321,17 @@ Example:
 $ export BABASHKA_PRELOADS="(System/setProperty \"java.library.path\" \"$JAVA_HOME/jre/lib\")"
 $ bb '(slurp "https://www.clojure.org")' | bb '(subs *in* 0 50)'
 "<!doctype html><html itemscope=\"\" itemtype=\"http:/"
+```
+
+## Dealing with signals
+
+Checking whether the `PIPE` signal was received can be done with
+`sig/pipe-signal-received?`:
+
+``` shellsession
+$ bb '((fn [x] (println x) (when (not (sig/pipe-signal-received?)) (recur (inc x)))) 0)' | head -n2
+1
+2
 ```
 
 ## Test
