@@ -101,8 +101,12 @@
 (deftest malformed-command-line-args-test
   (is (thrown-with-msg? Exception #"File does not exist: non-existing\n"
                         (bb nil "-f" "non-existing")))
-  (is (thrown-with-msg? Exception #"expression"
-                        (bb nil))))
+  (testing "no arguments prints help"
+    (is (str/includes?
+         (try (test-utils/bb nil)
+              (catch clojure.lang.ExceptionInfo e
+                (:stdout (ex-data e))))
+         "Usage:"))))
 
 (deftest ssl-test
   (let [graalvm-home (System/getenv "GRAALVM_HOME")
