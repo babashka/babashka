@@ -96,7 +96,7 @@ You may also download a binary from [Github](https://github.com/borkdude/babashk
 ## Usage
 
 ``` shellsession
-Usage: bb [ -i | -I ] [ -o | -O ] [ --stream ] ( expression | -f <file> | --socket-repl [host:]port )
+Usage: bb [ -i | -I ] [ -o | -O ] [ --stream ] ( -e <expression> | -f <file> | --socket-repl [<host>:]<port> )
 
 Options:
 
@@ -108,9 +108,13 @@ Options:
   -o: write lines to stdout.
   -O: write EDN values to stdout.
   --stream: stream over lines or EDN values from stdin. Combined with -i or -I *in* becomes a single value per iteration.
-  --file or -f: read expressions from file instead of argument wrapped in an implicit do.
+  -e, --eval <expression>: evaluate an expression
+  -f, --file <path>: evaluate a file
   --socket-repl: start socket REPL. Specify port (e.g. 1666) or host and port separated by colon (e.g. 127.0.0.1:1666).
   --time: print execution time before exiting.
+
+If neither -e, -f, or --socket-repl are specified, then the first argument that is not parsed as a option is treated as a file if it exists, or as an expression otherwise.
+Everything after that is bound to *command-line-args*.
 ```
 
 The `clojure.core` functions are accessible without a namespace alias.
