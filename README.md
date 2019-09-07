@@ -229,7 +229,7 @@ bb '(load-file "script.clj")'
 Using `bb` with a shebang also works:
 
 ``` clojure
-#!/usr/bin/env bb -f
+#!/usr/bin/env bb
 
 (defn get-url [url]
   (println "Fetching url:" url)
@@ -258,6 +258,22 @@ Usage: <url> <file>
 $ ./download_html.clj https://www.clojure.org /tmp/clojure.org.html
 Fetching url: https://www.clojure.org
 Writing file: /tmp/clojure.org.html
+```
+
+If `/usr/bin/env` doesn't work for you, you can use the following workaround:
+
+``` shellsession
+$ cat script.clj
+#!/bin/sh
+
+#_(
+   "exec" "bb" "$0" hello "$@"
+   )
+
+(prn *command-line-args*)
+
+./script.clj 1 2 3
+("hello" "1" "2" "3")
 ```
 
 ## Preloads
