@@ -41,4 +41,4 @@
    'flush flush
    'ex-info ex-info
    'ex-data ex-data
-   })
+   'read-line read-line})
