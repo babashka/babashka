@@ -344,7 +344,7 @@ $ bb '
 ## Async
 
 Apart from `future` for creating threads and the `conch` namespace for creating
-processes, you may use `core.async` to script asynchronously. The following
+processes, you may use the `async` namespace, which maps to `clojure.core.async`,  for asynchronous scripting. The following
 example shows how to get first available value from two different processes:
 
 ``` clojure
