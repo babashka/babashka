@@ -6,6 +6,7 @@
    [babashka.impl.Thread :refer [thread-bindings]]
    [babashka.impl.async :refer [async-bindings]]
    [babashka.impl.clojure.core :refer [core-bindings]]
+   [babashka.impl.clojure.java.io :refer [io-bindings]]
    [babashka.impl.clojure.stacktrace :refer [print-stack-trace]]
    [babashka.impl.conch :refer [conch-bindings]]
    [babashka.impl.pipe-signal-handler :refer [handle-pipe! pipe-signal-received?]]
@@ -142,15 +143,11 @@ Everything after that is bound to *command-line-args*."))
   (merge {'shell/sh shell/sh
           'namespace namespace
           ;; clojure.java.io
-          'io/as-relative-path io/as-relative-path
-          'io/copy io/copy
-          'io/delete-file io/delete-file
-          'io/file io/file
-          'io/reader io/reader
           'edn/read-string edn/read-string
           'net/wait-for-it net/wait-for-it
           'sig/pipe-signal-received? pipe-signal-received?}
          core-bindings
+         io-bindings
          system-bindings
          file-bindings
          thread-bindings
