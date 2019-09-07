@@ -132,7 +132,8 @@ explicitly.
 - `clojure.java.io` aliased as `io`:
   - `as-relative-path`, `copy`, `delete-file`, `file`
 - [`clojure.core.async`](https://clojure.github.io/core.async/) aliased as
-  `async` (the `alt` and `go` macros are not available yet)
+  `async`. The `alt` and `go` macros are not available but `alts!!` does work as
+  it is a function.
 - [`me.raynes.conch.low-level`](https://github.com/clj-commons/conch#low-level-usage)
   aliased as `conch`
 
@@ -322,6 +323,23 @@ Example:
 $ bb '
 (def ws (conch/proc "python" "-m" "SimpleHTTPServer" "1777"))
 (net/wait-for-it "localhost" 1777) (conch/destroy ws)'
+```
+
+## Async
+
+Apart from `future` for creating threads and the `conch` namespace for creating
+processes, you may use `core.async` to script asynchronously. The following
+example shows how to get first available value from two different processes:
+
+``` clojure
+bb '
+(defn async-command [& args]
+  (async/thread (apply shell/sh "bash" "-c" args)))
+
+(-> (async/alts!! [(async-command "sleep 2 && echo process 1")
+                   (async-command "sleep 1 && echo process 2")])
+    first :out str/trim println)'
+process 2
 ```
 
 ## Enabling SSL

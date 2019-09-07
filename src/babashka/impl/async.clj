@@ -31,33 +31,38 @@
    'async/mult async/mult
    'async/offer! async/offer!
    'async/onto-chan async/onto-chan
-   ;; TODO: add more from https://clojure.github.io/core.async/
-   'async/poll! async/poll!
+   'async/partition async/partition
+   'async/partition-by async/partition-by
    'async/pipe async/pipe
    'async/pipeline async/pipeline
+   'async/pipeline-async async/pipeline-async
    'async/pipeline-blocking async/pipeline-blocking
-   'async/pipieline-async async/pipeline-async
-   'async/split async/split
-   'async/reduce async/reduce
-   'async/transduce async/transduce
-   'async/thread-call async/thread-call
-   'async/thread (with-meta thread {:sci/macro true})
-   'async/timeout async/timeout
-   'async/to-chan async/to-chan
-   'async/take! async/take!
-   'async/tap async/tap
-   'async/unblocking-buffer? async/unblocking-buffer?
-   'async/untap async/untap
-   'async/untap-all async/untap-all
-   'async/unmix async/unmix
-   'async/unmix-all async/unmix-all
-   'async/sliding-buffer async/sliding-buffer
-   'async/toggle async/toggle
-   'async/solo-mode async/solo-mode
+   'async/poll! async/poll!
    'async/promise-chan async/promise-chan
    'async/pub async/pub
    'async/put! async/put!
+   'async/reduce async/reduce
+   'async/remove< async/remove<
+   'async/remove> async/remove>
+   'async/sliding-buffer async/sliding-buffer
+   'async/solo-mode async/solo-mode
+   'async/split async/split
    'async/sub async/sub
+   'async/take async/take
+   'async/take! async/take!
+   'async/tap async/tap
+   'async/thread (with-meta thread {:sci/macro true})
+   'async/thread-call async/thread-call
+   'async/timeout async/timeout
+   'async/to-chan async/to-chan
+   'async/toggle async/toggle
+   'async/transduce async/transduce
+   'async/unblocking-buffer? async/unblocking-buffer?
+   'async/unique async/unique
+   'async/unmix async/unmix
+   'async/unmix-all async/unmix-all
    'async/unsub async/unsub
-   'async/unsub-all async/unsub-all})
+   'async/unsub-all async/unsub-all
+   'async/untap async/untap
+   'async/untap-all async/untap-all})
 
