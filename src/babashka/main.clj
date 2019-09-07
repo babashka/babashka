@@ -4,6 +4,7 @@
    [babashka.impl.File :refer [file-bindings]]
    [babashka.impl.System :refer [system-bindings]]
    [babashka.impl.Thread :refer [thread-bindings]]
+   [babashka.impl.async :refer [async-bindings]]
    [babashka.impl.clojure.core :refer [core-bindings]]
    [babashka.impl.clojure.stacktrace :refer [print-stack-trace]]
    [babashka.impl.conch :refer [conch-bindings]]
@@ -147,12 +148,14 @@ Everything after that is bound to *command-line-args*."))
           'io/file io/file
           'io/reader io/reader
           'edn/read-string edn/read-string
-          'net/wait-for-it net/wait-for-it}
+          'net/wait-for-it net/wait-for-it
+          'sig/pipe-signal-received? pipe-signal-received?}
          core-bindings
          system-bindings
          file-bindings
          thread-bindings
-         conch-bindings))
+         conch-bindings
+         async-bindings))
 
 (defn read-edn []
   (edn/read {;;:readers *data-readers*
@@ -244,6 +247,7 @@ Everything after that is bound to *command-line-args*."))
         t1 (System/currentTimeMillis)]
     (when time? (binding [*out* *err*]
                   (println "bb took" (str (- t1 t0) "ms."))))
+    (flush)
     exit-code))
 
 (defn -main

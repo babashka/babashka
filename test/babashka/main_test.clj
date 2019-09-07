@@ -129,7 +129,7 @@
   (let [tmp (java.io.File/createTempFile "script" ".clj")]
     (spit tmp "(defn foo [x y] (+ x y)) (defn bar [x y] (* x y))")
     (is (= "120\n" (test-utils/bb nil (format "(load-file \"%s\") (bar (foo 10 30) 3)"
-                                             (.getPath tmp)))))))
+                                              (.getPath tmp)))))))
 
 (deftest preloads-test
   ;; THIS TEST REQUIRES:
@@ -176,3 +176,12 @@
                 (net/wait-for-it \"127.0.0.1\" 7171)
                 (conch/destroy web-server)
                 (net/wait-for-it \"localhost\" 7172 {:timeout 50})"))))
+
+(deftest async-test
+  (is (= "process 2\n" (test-utils/bb nil "
+   (defn async-command [& args]
+     (async/thread (apply shell/sh \"bash\" \"-c\" args)))
+
+   (-> (async/alts!! [(async-command \"sleep 2 && echo process 1\")
+                      (async-command \"sleep 1 && echo process 2\")])
+     first :out str/trim println)"))))
