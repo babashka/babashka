@@ -21,44 +21,57 @@ If you're a bash expert, you probably don't need this. But for those of us who
 can use a bit of Clojure in their shell scripts, it may be useful.
 
 Babashka runs as a [GraalVM](https://github.com/oracle/graal) binary which
-results in fast startup times:
+results in faster startup time than Clojure on the JVM.
 
-``` shellsession
-$ time clojure -e "(+ 1 2 3)"
-6
-clojure -e "(+ 1 2 3)"  3.29s user 0.32s system 99% cpu 3.638 total
-
-$ time planck -e '(+ 1 2 3)'
-6
-plk -e '(+ 1 2 3)'  1.34s user 0.16s system 127% cpu 1.172 total
-
-$ time bb '(+ 1 2 3)'
-6
-bb '(+ 1 2 3)'  0.01s user 0.01s system 37% cpu 0.046 total
-```
-
-It uses [sci](https://github.com/borkdude/sci) for interpreting Clojure. A
-trade-off is that [sci](https://github.com/borkdude/sci) implements only a
-subset of Clojure. Also, execution time may be slower than Clojure on the JVM or
-(self-hosted) ClojureScript for more CPU-intensive calculations like:
-
-``` shellsession
-(last (take 1000000 (repeatedly #(+ 1 2 3))))
-```
-
-This would take 5 seconds using babashka, around half a second using self-hosted
-ClojureScript and around 200ms in Clojure on the JVM.
-
-So the sweet spot for babashka is executing tasks from the command line where
-fast startup time is preferred, in the same space where you would use bash.
+The sweet spot for babashka is executing short Clojure snippets in the same
+space where you would use bash.
 
 Where it can, babashka calls the regular implementation of Clojure on the JVM
 and proxies common Java packages like `System` and `File`, so writing code in it
 should be familiar if you're already using Clojure on the JVM.
 
+Reasons why babashka may not be the right fit for your use case:
+
+- It uses [sci](https://github.com/borkdude/sci) for interpreting Clojure. Sci
+implements only a subset of Clojure.
+- Execution time of longer running programs may be slower.
+- External libraries are not available (although you may use `load-file` for
+  loading external scripts).
+
 ## Status
 
 Experimental. Breaking changes are expected to happen at this phase.
+
+## Examples
+
+``` shellsession
+$ ls | bb -i '*in*'
+["LICENSE" "README.md" "bb" "doc" "pom.xml" "project.clj" "reflection.json" "resources" "script" "src" "target" "test"]
+
+$ ls | bb -i '(count *in*)'
+12
+
+$ bb '(vec (dedupe *in*))' <<< '[1 1 1 1 2]'
+[1 2]
+
+$ bb '(filterv :foo *in*)' <<< '[{:foo 1} {:bar 2}]'
+[{:foo 1}]
+
+$ bb '(#(+ %1 %2 %3) 1 2 *in*)' <<< 3
+6
+
+$ ls | bb -i '(filterv #(re-find #"reflection" %) *in*)'
+["reflection.json"]
+
+$ bb '(run! #(shell/sh "touch" (str "/tmp/test/" %)) (range 100))'
+$ ls /tmp/test | bb -i '*in*'
+["0" "1" "10" "11" "12" "13" "14" "15" "16" "17" "18" "19" "2" "20" "21" ...]
+
+$ bb -O '(repeat "dude")' | bb --stream '(str *in* "rino")' | bb -I '(take 3 *in*)'
+("duderino" "duderino" "duderino")
+```
+
+More examples can be found in the [gallery](#gallery).
 
 ## Installation
 
@@ -119,9 +132,9 @@ Everything after that is bound to *command-line-args*.
 
 The `clojure.core` functions are accessible without a namespace alias.
 
-The following namespaces are required by default and only available
-through the aliases. If not all vars are available, they are enumerated
-explicitly.
+The following namespaces are required by default and available through the
+pre-defined aliases. You may use `require` + `:as` and/or `:refer` on these
+namespaces. If not all vars are available, they are enumerated explicitly.
 
 - `clojure.string` aliased as `str`
 - `clojure.set` aliased as `set`
@@ -181,37 +194,6 @@ $ bb '((fn [x] (println x) (when (not (sig/pipe-signal-received?)) (recur (inc x
 1
 2
 ```
-
-## Examples
-
-``` shellsession
-$ ls | bb -i '*in*'
-["LICENSE" "README.md" "bb" "doc" "pom.xml" "project.clj" "reflection.json" "resources" "script" "src" "target" "test"]
-
-$ ls | bb -i '(count *in*)'
-12
-
-$ bb '(vec (dedupe *in*))' <<< '[1 1 1 1 2]'
-[1 2]
-
-$ bb '(filterv :foo *in*)' <<< '[{:foo 1} {:bar 2}]'
-[{:foo 1}]
-
-$ bb '(#(+ %1 %2 %3) 1 2 *in*)' <<< 3
-6
-
-$ ls | bb -i '(filterv #(re-find #"reflection" %) *in*)'
-["reflection.json"]
-
-$ bb '(run! #(shell/sh "touch" (str "/tmp/test/" %)) (range 100))'
-$ ls /tmp/test | bb -i '*in*'
-["0" "1" "10" "11" "12" "13" "14" "15" "16" "17" "18" "19" "2" "20" "21" ...]
-
-$ bb -O '(repeat "dude")' | bb --stream '(str *in* "rino")' | bb -I '(take 3 *in*)'
-("duderino" "duderino" "duderino")
-```
-
-More examples can be found in the [gallery](#gallery).
 
 ## Running a file
 
