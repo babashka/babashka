@@ -185,3 +185,6 @@
    (-> (async/alts!! [(async-command \"sleep 2 && echo process 1\")
                       (async-command \"sleep 1 && echo process 2\")])
      first :out str/trim println)"))))
+
+(deftest tools-cli-test
+  (is (= {:file "README.md"} (bb nil "test/babashka/scripts/tools.cli.bb"))))

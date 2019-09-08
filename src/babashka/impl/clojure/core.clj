@@ -7,8 +7,7 @@
   `(~'future-call (fn [] ~@body)))
 
 (def core-bindings
-  {;; atoms
-   'atom atom
+  {'atom atom
    'swap! swap!
    'swap-vals! swap-vals!
    'reset! reset!
@@ -41,4 +40,5 @@
    'flush flush
    'ex-info ex-info
    'ex-data ex-data
-   'read-line read-line})
+   'read-line read-line
+   'namespace namespace})
