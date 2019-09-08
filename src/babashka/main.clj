@@ -4,13 +4,14 @@
    [babashka.impl.File :refer [file-bindings]]
    [babashka.impl.System :refer [system-bindings]]
    [babashka.impl.Thread :refer [thread-bindings]]
-   [babashka.impl.async :refer [async-bindings]]
+   [babashka.impl.async :refer [async-namespace]]
    [babashka.impl.clojure.core :refer [core-bindings]]
-   [babashka.impl.clojure.java.io :refer [io-bindings]]
+   [babashka.impl.clojure.java.io :refer [io-namespace]]
    [babashka.impl.clojure.stacktrace :refer [print-stack-trace]]
-   [babashka.impl.conch :refer [conch-bindings]]
+   [babashka.impl.conch :refer [conch-namespace]]
    [babashka.impl.pipe-signal-handler :refer [handle-pipe! pipe-signal-received?]]
    [babashka.impl.socket-repl :as socket-repl]
+   [babashka.impl.tools.cli :refer [tools-cli-namespace]]
    [babashka.net :as net]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
@@ -140,19 +141,10 @@ Everything after that is bound to *command-line-args*."))
       (throw (Exception. (str "File does not exist: " file))))))
 
 (def bindings
-  (merge {'shell/sh shell/sh
-          'namespace namespace
-          ;; clojure.java.io
-          'edn/read-string edn/read-string
-          'net/wait-for-it net/wait-for-it
-          'sig/pipe-signal-received? pipe-signal-received?}
-         core-bindings
-         io-bindings
+  (merge core-bindings
          system-bindings
          file-bindings
-         thread-bindings
-         conch-bindings
-         async-bindings))
+         thread-bindings))
 
 (defn read-edn []
   (edn/read {;;:readers *data-readers*
@@ -194,7 +186,23 @@ Everything after that is bound to *command-line-args*."))
                                      :else
                                      (edn/read *in*))))))
         env (atom {})
-        ctx {:bindings (assoc bindings '*command-line-args* command-line-args)
+        ctx {:aliases '{tools.cli 'clojure.tools.cli
+                        edn clojure.edn
+                        net babashka.net
+                        sig babashka.signal
+                        shell clojure.java.shell
+                        io clojure.java.io
+                        conch me.raynes.conch.low-level
+                        async clojure.core.async}
+             :namespaces {'clojure.tools.cli tools-cli-namespace
+                          'clojure.edn {'read-string edn/read-string}
+                          'clojure.java.shell {'sh shell/sh}
+                          'babashka.net {'wait-for-it net/wait-for-it}
+                          'babashka.signal {'pipe-signal-received? pipe-signal-received?}
+                          'clojure.java.io io-namespace
+                          'me.raynes.conch.low-level conch-namespace
+                          'clojure.core.async async-namespace}
+             :bindings (assoc bindings '*command-line-args* command-line-args)
              :env env}
         ctx (update ctx :bindings assoc 'load-file #(load-file* ctx %))
         _preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim) (sci/eval-string ctx))
