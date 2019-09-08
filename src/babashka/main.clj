@@ -16,7 +16,8 @@
    [clojure.java.io :as io]
    [clojure.java.shell :as shell]
    [clojure.string :as str]
-   [sci.core :as sci])
+   [sci.core :as sci]
+   [clojure.tools.cli :as tools.cli])
   (:import [sun.misc Signal]
            [sun.misc SignalHandler])
   (:gen-class))
@@ -145,7 +146,11 @@ Everything after that is bound to *command-line-args*."))
           ;; clojure.java.io
           'edn/read-string edn/read-string
           'net/wait-for-it net/wait-for-it
-          'sig/pipe-signal-received? pipe-signal-received?}
+          'sig/pipe-signal-received? pipe-signal-received?
+          'tools.cli/format-lines tools.cli/format-lines
+          'tools.cli/summarize tools.cli/summarize
+          'tools.cli/get-default-options tools.cli/get-default-options
+          'tools.cli/parse-opts tools.cli/parse-opts}
          core-bindings
          io-bindings
          system-bindings

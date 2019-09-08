@@ -136,6 +136,7 @@ explicitly.
   it is a function.
 - [`me.raynes.conch.low-level`](https://github.com/clj-commons/conch#low-level-usage)
   aliased as `conch`
+- [`clojure.tools.cli`](https://github.com/clojure/tools.cli) aliased as `tools.cli`
 
 From Java the following is available:
 
