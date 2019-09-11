@@ -2,6 +2,7 @@
   {:no-doc true}
   (:require
    [babashka.impl.File :refer [file-bindings]]
+   [babashka.impl.Integer :refer [integer-bindings]]
    [babashka.impl.System :refer [system-bindings]]
    [babashka.impl.Thread :refer [thread-bindings]]
    [babashka.impl.async :refer [async-namespace]]
@@ -144,7 +145,8 @@ Everything after that is bound to *command-line-args*."))
   (merge core-bindings
          system-bindings
          file-bindings
-         thread-bindings))
+         thread-bindings
+         integer-bindings))
 
 (defn read-edn []
   (edn/read {;;:readers *data-readers*
