@@ -273,7 +273,6 @@ Babashka ships with `clojure.tools.cli`:
     :default 80
     :parse-fn #(Integer/parseInt %)
     :validate [#(< 0 % 0x10000) "Must be a number between 0 and 65536"]]
-   ;; A non-idempotent option (:default is applied first)
    ["-h" "--help"]])
 
 (:options (parse-opts *command-line-args* cli-options))
