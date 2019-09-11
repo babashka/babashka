@@ -187,4 +187,4 @@
      first :out str/trim println)"))))
 
 (deftest tools-cli-test
-  (is (= {:file "README.md"} (bb nil "test/babashka/scripts/tools.cli.bb"))))
+  (is (= {:result 8080} (bb nil "test/babashka/scripts/tools.cli.bb"))))

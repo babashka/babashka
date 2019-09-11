@@ -153,6 +153,7 @@ namespaces. If not all vars are available, they are enumerated explicitly.
 
 From Java the following is available:
 
+- `Integer`: `Integer/parseInt`
 - `File`: `.canRead`, `.canWrite`, `.delete`, `.deleteOnExit`, `.exists`,
   `.getAbsoluteFile`, `.getCanonicalFile`, `.getCanonicalPath`, `.getName`,
   `.getParent`, `.getParentFile`, `.getPath`, `.isAbsolute`, `.isDirectory`,
@@ -257,6 +258,32 @@ $ cat script.clj
 
 ./script.clj 1 2 3
 ("hello" "1" "2" "3")
+```
+
+## Parsing command line arguments
+
+Babashka ships with `clojure.tools.cli`:
+
+``` clojure
+(require '[clojure.tools.cli :refer [parse-opts]])
+
+(def cli-options
+  ;; An option with a required argument
+  [["-p" "--port PORT" "Port number"
+    :default 80
+    :parse-fn #(Integer/parseInt %)
+    :validate [#(< 0 % 0x10000) "Must be a number between 0 and 65536"]]
+   ;; A non-idempotent option (:default is applied first)
+   ["-h" "--help"]])
+
+(:options (parse-opts *command-line-args* cli-options))
+```
+
+``` shellsession
+$ bb script.clj
+{:port 80}
+$ bb script.clj -h
+{:port 80, :help true}
 ```
 
 ## Preloads
