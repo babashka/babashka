@@ -5,9 +5,9 @@
    [babashka.impl.clojure.main :as m]
    [clojure.java.io :as io]
    [clojure.string :as str]
+   [clojure.tools.reader.reader-types :as r]
    [sci.core :refer [eval-string]]
-   [sci.impl.parser :as parser]
-   [sci.impl.toolsreader.v1v3v2.clojure.tools.reader.reader-types :as r]))
+   [sci.impl.parser :as parser]))
 
 (set! *warn-on-reflection* true)
 
