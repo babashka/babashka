@@ -13,6 +13,7 @@
    [babashka.impl.pipe-signal-handler :refer [handle-pipe! pipe-signal-received?]]
    [babashka.impl.socket-repl :as socket-repl]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
+   [babashka.impl.exceptions :refer [exception-bindings]]
    [babashka.net :as net]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
@@ -146,7 +147,8 @@ Everything after that is bound to *command-line-args*."))
          system-bindings
          file-bindings
          thread-bindings
-         integer-bindings))
+         integer-bindings
+         exception-bindings))
 
 (defn read-edn []
   (edn/read {;;:readers *data-readers*

@@ -188,3 +188,6 @@
 
 (deftest tools-cli-test
   (is (= {:result 8080} (bb nil "test/babashka/scripts/tools.cli.bb"))))
+
+(deftest try-catch-test
+  (is (zero? (bb nil "(try (/ 1 0) (catch ArithmeticException _ 0))"))))
