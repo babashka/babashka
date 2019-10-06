@@ -260,6 +260,31 @@ $ cat script.clj
 ("hello" "1" "2" "3")
 ```
 
+## Differences from Clojure
+
+Babashka is an interpreter, instead of compiling your code to JVM bytecode and
+running that, it uses [sci](https://github.com/borkdude/sci) to interpret your
+code.
+
+Babashka does not have access to a full JVM, it is a native binary backed by a
+limited pre-compiled runtime, plus a Clojure interpreter.
+
+Most things should work exactly as you would expect from Clojure though, in
+particular the data types, both primitive (long, double, String) and composite
+(vector, map, set) are identical. All functions and macros from `clojure.core`
+should work identically, with a few caveats.
+
+The biggest difference is that there are no namespaces and no first class vars,
+just a simple mapping of names to values. Note that you can still define and
+redefine things with `def` / `defn`, but there is no `var` or `alter-var-root`.
+
+- Java classes are not available, except for a subset where we "fake" support
+- Clojure namespaces are not available except for the ones we support explicitly
+- There is no `ns` macro
+- No loading of Maven dependencies
+- `require` does not load any files, it only provides aliases for pre-included
+  namespaces.
+
 ## Parsing command line arguments
 
 Babashka ships with `clojure.tools.cli`:
