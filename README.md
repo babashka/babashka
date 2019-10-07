@@ -37,7 +37,7 @@ implements only a subset of Clojure.
 - External libraries are not available (although you may use `load-file` for
   loading external scripts).
 
-Read more about the differences with Clojure [here](#differences-from-clojure).
+Read more about the differences with Clojure [here](#differences-with-clojure).
 
 ## Status
 
@@ -385,7 +385,7 @@ $ bb '(slurp "https://www.clojure.org")' | bb '(subs *in* 0 50)'
 "<!doctype html><html itemscope=\"\" itemtype=\"http:/"
 ```
 
-## Differences from Clojure
+## Differences with Clojure
 
 Babashka is implemented using the [Small Clojure
 Interpreter](https://github.com/borkdude/sci). This means that a snippet or
@@ -396,7 +396,7 @@ built-in namespaces and functions from Clojure and other useful libraries. The
 data types (numbers, strings, persistent collections) are the
 same. Multi-threading is supported (`pmap`, `future`).
 
-Differences from Clojure:
+Differences with Clojure:
 
 - No user defined namespaces. Since this tool focuses on snippets and small
   scripts, there hasn't been a need to implement it yet.
