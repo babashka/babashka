@@ -417,10 +417,10 @@ Differences from Clojure:
   dependencies. However, you can use `load-file` to load external code from
   disk.
 
-- `require` does not load any files, it only provides a way to create an alias
-  for pre-included namespaces.
+- `require` does not load files; it only provides a way to create a different
+  alias for included namespaces.
 
-- Interpretation comes with overhead. Therefore tight loops may be much slower
+- Interpretation comes with overhead. Therefore tight loops are likely slower
   than in Clojure on the JVM.
 
 - No support for unboxed primitives.
