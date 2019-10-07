@@ -20,10 +20,10 @@ bb took 4ms.
 If you're a bash expert, you probably don't need this. But for those of us who
 can use a bit of Clojure in their shell scripts, it may be useful.
 
-Babashka runs as a [GraalVM](https://github.com/oracle/graal) binary which
+Babashka runs as a [GraalVM](https://github.com/oracle/graal) compiled binary which
 results in faster startup time than Clojure on the JVM.
 
-The sweet spot for babashka is executing short Clojure snippets in the same
+The sweet spot for babashka is executing short Clojure snippets or scripts in the same
 space where you would use bash.
 
 Where it can, babashka calls the regular implementation of Clojure on the JVM
@@ -34,9 +34,10 @@ Reasons why babashka may not be the right fit for your use case:
 
 - It uses [sci](https://github.com/borkdude/sci) for interpreting Clojure. Sci
 implements only a subset of Clojure.
-- Execution time of longer running programs may be slower.
 - External libraries are not available (although you may use `load-file` for
   loading external scripts).
+
+Read more about the differences with Clojure [here](#differences-from-clojure).
 
 ## Status
 
@@ -260,31 +261,6 @@ $ cat script.clj
 ("hello" "1" "2" "3")
 ```
 
-## Differences from Clojure
-
-Babashka is an interpreter, instead of compiling your code to JVM bytecode and
-running that, it uses [sci](https://github.com/borkdude/sci) to interpret your
-code.
-
-Babashka does not have access to a full JVM, it is a native binary backed by a
-limited pre-compiled runtime, plus a Clojure interpreter.
-
-Most things should work exactly as you would expect from Clojure though, in
-particular the data types, both primitive (long, double, String) and composite
-(vector, map, set) are identical. All functions and macros from `clojure.core`
-should work identically, with a few caveats.
-
-The biggest difference is that there are no namespaces and no first class vars,
-just a simple mapping of names to values. Note that you can still define and
-redefine things with `def` / `defn`, but there is no `var` or `alter-var-root`.
-
-- Java classes are not available, except for a subset where we "fake" support
-- Clojure namespaces are not available except for the ones we support explicitly
-- There is no `ns` macro
-- No loading of Maven dependencies
-- `require` does not load any files, it only provides aliases for pre-included
-  namespaces.
-
 ## Parsing command line arguments
 
 Babashka ships with `clojure.tools.cli`:
@@ -408,6 +384,46 @@ $ export BABASHKA_PRELOADS="(System/setProperty \"java.library.path\" \"$JAVA_HO
 $ bb '(slurp "https://www.clojure.org")' | bb '(subs *in* 0 50)'
 "<!doctype html><html itemscope=\"\" itemtype=\"http:/"
 ```
+
+## Differences from Clojure
+
+Babashka is implemented using the [Small Clojure
+Interpreter](https://github.com/borkdude/sci). This means that a snippet or
+script is not compiled to JVM bytecode, but executed form by form by a runtime
+which implements a subset of Clojure. Babashka is compiled to a native binary
+using [GraalVM](https://github.com/oracle/graal). It comes with a selection of
+built-in namespaces and functions from Clojure and other useful libraries. The
+data types (numbers, strings, persistent collections) are the
+same. Multi-threading is supported (`pmap`, `future`).
+
+Differences from Clojure:
+
+- No user defined namespaces. Since this tool focuses on snippets and small
+  scripts, there hasn't been a need to implement it yet.
+
+- There is no `ns` macro for the same reason as above.
+
+- No first class vars. Note that you can define and redefine global values with
+`def` / `defn`, but there is no `var` indirection.
+
+- Java classes and interop are not available, except for explicitly
+  supported ones. For these classes we mimic constructors and interop by having
+  functions like `Exception.` and `.getCanonicalPath`.
+
+- Only the `clojure.core`, `clojure.set` and `clojure.string` namespaces are
+  available from Clojure.
+
+- There is no classpath and no support for loading code from Maven/Clojars
+  dependencies. However, you can use `load-file` to load external code from
+  disk.
+
+- `require` does not load files; it only provides a way to create a different
+  alias for included namespaces.
+
+- Interpretation comes with overhead. Therefore tight loops are likely slower
+  than in Clojure on the JVM.
+
+- No support for unboxed types.
 
 ## Developing Babashka
 
