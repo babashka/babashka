@@ -417,8 +417,8 @@ Differences with Clojure:
   dependencies. However, you can use `load-file` to load external code from
   disk.
 
-- `require` does not load files; it only provides a way to create a different
-  alias for included namespaces.
+- `require` does not load files; it only provides a way to create different
+  aliases for included namespaces, which makes it easier to make scripts portable between the JVM and babashka.
 
 - Interpretation comes with overhead. Therefore tight loops are likely slower
   than in Clojure on the JVM.
