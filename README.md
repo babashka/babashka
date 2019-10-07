@@ -423,7 +423,7 @@ Differences from Clojure:
 - Interpretation comes with overhead. Therefore tight loops are likely slower
   than in Clojure on the JVM.
 
-- No support for unboxed primitives.
+- No support for unboxed types.
 
 ## Developing Babashka
 
