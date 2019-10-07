@@ -403,8 +403,8 @@ Differences from Clojure:
 
 - There is no `ns` macro for the same reason as above.
 
-- No first class vars. Note that you can define and redefine things with `def` /
-`defn`, but there is no `var` indirection.
+- No first class vars. Note that you can define and redefine global values with
+`def` / `defn`, but there is no `var` indirection.
 
 - Java classes and interop are not available, except for those explicitly
   supported. For these classes we mimic constructors and interop by having
