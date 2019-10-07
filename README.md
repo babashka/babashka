@@ -413,8 +413,9 @@ Differences from Clojure:
 - Only the `clojure.core`, `clojure.set` and `clojure.string` namespaces are
   available from Clojure.
 
-- There is no support for loading code from Maven/Clojars dependencies. However,
-  you can use `load-file` to load external code from disk.
+- There is no classpath and no support for loading code from Maven/Clojars
+  dependencies. However, you can use `load-file` to load external code from
+  disk.
 
 - `require` does not load any files, it only provides a way to create an alias
   for pre-included namespaces.
