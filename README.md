@@ -34,7 +34,6 @@ Reasons why babashka may not be the right fit for your use case:
 
 - It uses [sci](https://github.com/borkdude/sci) for interpreting Clojure. Sci
 implements only a subset of Clojure.
-- Execution time of longer running programs may be slower.
 - External libraries are not available (although you may use `load-file` for
   loading external scripts).
 
@@ -388,27 +387,42 @@ $ bb '(slurp "https://www.clojure.org")' | bb '(subs *in* 0 50)'
 
 ## Differences from Clojure
 
-Babashka is implemented using the [Small Clojure Interpreter](https://github.com/borkdude/sci). This means that your snippet or script is not compiled to JVM bytecode, but executed form by form by a runtime which implements a subset of Clojure.
-Most things should work as you would expect from Clojure on the JVM though. The data types (numbers, strings, persistent collections) are the same. Most functions and macros from `clojure.core`, `clojure.set` and `clojure.string` are part of this pre-compiled binary and if should one be missing, it's fairly trivial to add. Multi-threading is supported (`pmap`, `future`). 
+Babashka is implemented using the [Small Clojure
+Interpreter](https://github.com/borkdude/sci). This means that a snippet or
+script is not compiled to JVM bytecode, but executed form by form by a runtime
+which implements a subset of Clojure. Babashka is compiled to a native binary
+using [GraalVM](https://github.com/oracle/graal). It comes with a selection of
+built-in namespaces and functions from Clojure and other useful libraries. The
+data types (numbers, strings, persistent collections) are the
+same. Multi-threading is supported (`pmap`, `future`).
 
 Differences from Clojure:
 
-- No user defined namespaces. Since this tool focuses on snippets and small scripts, there hasn't been a need to implement it yet.
+- No user defined namespaces. Since this tool focuses on snippets and small
+  scripts, there hasn't been a need to implement it yet.
 
 - There is no `ns` macro for the same reason as above.
 
-- No first class vars. Note that you can define and
-redefine things with `def` / `defn`, but there is no `var` indirection.
+- No first class vars. Note that you can define and redefine things with `def` /
+`defn`, but there is no `var` indirection.
 
-- Java classes and interop are not available, except for those explicitly supported. For these classes we mimic constructors and interop by having functions like `Exception.` and `.getCanonicalPath`.
+- Java classes and interop are not available, except for those explicitly
+  supported. For these classes we mimic constructors and interop by having
+  functions like `Exception.` and `.getCanonicalPath`.
 
-- Only the `clojure.core`, `clojure.set` and `clojure.string` namespaces are available from Clojure.
+- Only the `clojure.core`, `clojure.set` and `clojure.string` namespaces are
+  available from Clojure.
 
-- There is no support for loading code from Maven/Clojars dependencies. However, you can use `load-file` to load external code from disk.
+- There is no support for loading code from Maven/Clojars dependencies. However,
+  you can use `load-file` to load external code from disk.
 
-- `require` does not load any files, it only provides a way to create an alias for pre-included namespaces.
+- `require` does not load any files, it only provides a way to create an alias
+  for pre-included namespaces.
 
-Read more about the differences from Clojure in the [sci](https://github.com/borkdude/sci/#feature-parity) README.
+- Interpretation comes with overhead. Therefore tight loops may be much slower
+  than in Clojure on the JVM.
+
+- No support for unboxed primitives.
 
 ## Developing Babashka
 
