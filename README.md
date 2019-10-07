@@ -38,7 +38,7 @@ implements only a subset of Clojure.
 - External libraries are not available (although you may use `load-file` for
   loading external scripts).
 
-Read more about the differences with Clojure [here]().
+Read more about the differences with Clojure [here](#differences-from-clojure).
 
 ## Status
 
@@ -407,6 +407,8 @@ redefine things with `def` / `defn`, but there is no `var` indirection.
 - There is no support for loading code from Maven/Clojars dependencies. However, you can use `load-file` to load external code from disk.
 
 - `require` does not load any files, it only provides a way to create an alias for pre-included namespaces.
+
+Read more about the differences from Clojure in the [sci](https://github.com/borkdude/sci/#feature-parity) README.
 
 ## Developing Babashka
 
