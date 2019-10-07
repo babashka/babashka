@@ -406,8 +406,7 @@ Differences with Clojure:
 - No first class vars. Note that you can define and redefine global values with
 `def` / `defn`, but there is no `var` indirection.
 
-- Java classes and interop are not available, except for explicitly
-  supported ones. For these classes we mimic constructors and interop by having
+- Java classes and interop are not available. For a selection of classes we mimic constructors and interop by having
   functions like `Exception.` and `.getCanonicalPath`.
 
 - Only the `clojure.core`, `clojure.set` and `clojure.string` namespaces are
