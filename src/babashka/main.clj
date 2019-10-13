@@ -14,7 +14,7 @@
    [babashka.impl.socket-repl :as socket-repl]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
    [babashka.impl.exceptions :refer [exception-bindings]]
-   [babashka.net :as net]
+   [babashka.wait :as wait]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.java.shell :as shell]
@@ -192,7 +192,7 @@ Everything after that is bound to *command-line-args*."))
         env (atom {})
         ctx {:aliases '{tools.cli 'clojure.tools.cli
                         edn clojure.edn
-                        net babashka.net
+                        wait babashka.wait
                         sig babashka.signal
                         shell clojure.java.shell
                         io clojure.java.io
@@ -201,7 +201,8 @@ Everything after that is bound to *command-line-args*."))
              :namespaces {'clojure.tools.cli tools-cli-namespace
                           'clojure.edn {'read-string edn/read-string}
                           'clojure.java.shell {'sh shell/sh}
-                          'babashka.net {'wait-for-it net/wait-for-it}
+                          'babashka.wait {'wait-for-port wait/wait-for-port
+                                          'wait-for-path wait/wait-for-path}
                           'babashka.signal {'pipe-signal-received? pipe-signal-received?}
                           'clojure.java.io io-namespace
                           'me.raynes.conch.low-level conch-namespace

@@ -168,14 +168,17 @@
   (is (str/includes? (bb nil "(->> (conch/proc \"ls\") (conch/stream-to-string :out))")
                      "LICENSE")))
 
-(deftest wait-for-it-test
-  (is (thrown-with-msg?
-       Exception
-       #"timeout"
-       (bb nil "(def web-server (conch/proc \"python\" \"-m\" \"SimpleHTTPServer\" \"7171\"))
-                (net/wait-for-it \"127.0.0.1\" 7171)
+(deftest wait-for-port-test
+  (is (= :timed-out
+       (bb nil "(def web-server (conch/proc \"python2\" \"-m\" \"SimpleHTTPServer\" \"7171\"))
+                (wait/wait-for-port \"127.0.0.1\" 7171)
                 (conch/destroy web-server)
-                (net/wait-for-it \"localhost\" 7172 {:timeout 50})"))))
+                (wait/wait-for-port \"localhost\" 7172 {:default :timed-out :timeout 50})"))))
+
+(deftest wait-for-path-test
+  (is (= :timed-out
+       (bb nil "(wait/wait-for-path \"/tmp/babashka-wait-for-path-test.txt\"
+                  {:default :timed-out :timeout 100})"))))
 
 (deftest async-test
   (is (= "process 2\n" (test-utils/bb nil "
