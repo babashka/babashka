@@ -172,16 +172,23 @@ text with the `-i` option, or multiple EDN values with the `-I` option.
 
 Additionally, babashka adds the following functions:
 
-- `net/wait-for-it`. Usage:
+- `wait/wait-for-port`. Usage:
 
 ``` clojure
-(net/wait-for-it "localhost" 8080)
-(net/wait-for-it "localhost" 8080 {:timeout 1000 :pause 1000)
+(wait/wait-for-port "localhost" 8080)
+(wait/wait-for-port "localhost" 8080 {:timeout 1000 :pause 1000})
 ```
 
-Waits for TCP connection to be available on host and port. Options map supports
-  `:timeout` and `:pause`. If `:timeout` is provided and reached, exception will
-  be thrown. The `:pause` option determines the time waited between retries.
+Waits for TCP connection to be available on host and port. Options map supports `:timeout` and `:pause`. If `:timeout` is provided and reached, `:default`'s value (if any) is returned. The `:pause` option determines the time waited between retries.
+
+- `wait/wait-for-path`. Usage:
+
+``` clojure
+(wait/wait-for-path "/tmp/wait-path-test")
+(wait/wait-for-path "/tmp/wait-path-test" {:timeout 1000 :pause 1000})
+```
+
+Waits for file path to be available. Options map supports `:default`, `:timeout` and `:pause`. If `:timeout` is provided and reached, `:default`'s value (if any) is returned. The `:pause` option determines the time waited between retries.
 
 - `sig/pipe-signal-received?`. Usage:
 
