@@ -195,7 +195,8 @@
                              (.delete tfile) ; delete now, but re-create it in a future
                              (future (Thread/sleep 50) (shell/sh \"touch\" tpath))
                              (wait/wait-for-path tpath
-                               {:default :timed-out :timeout 100}))"
+                               {:default :timed-out :timeout 100})
+                             (.delete tfile))"
                     temp-dir-path))))
     (is (= :timed-out
           (bb nil (format "(let [tdir (io/file \"%s\")
