@@ -155,11 +155,12 @@ namespaces. If not all vars are available, they are enumerated explicitly.
 From Java the following is available:
 
 - `Integer`: `Integer/parseInt`
-- `File`: `.canRead`, `.canWrite`, `.delete`, `.deleteOnExit`, `.exists`,
-  `.getAbsoluteFile`, `.getCanonicalFile`, `.getCanonicalPath`, `.getName`,
-  `.getParent`, `.getParentFile`, `.getPath`, `.isAbsolute`, `.isDirectory`,
-  `.isFile`, `.isHidden`, `.lastModified`, `.length`, `.list`, `.listFiles`,
-  `.mkdir`, `.mkdirs`, `.renameTo`, `.setLastModified`, `.setReadOnly`,
+- `File`: `.canRead`, `.canWrite`, `createTempFile`,`.delete`,
+  `.deleteOnExit`, `.exists`, `.getAbsoluteFile`, `.getCanonicalFile`,
+  `.getCanonicalPath`, `.getName`, `.getParent`, `.getParentFile`,
+  `.getPath`, `.isAbsolute`, `.isDirectory`, `.isFile`, `.isHidden`,
+  `.lastModified`, `.length`, `.list`, `.listFiles`, `.mkdir`,
+  `.mkdirs`, `.renameTo`, `.setLastModified`, `.setReadOnly`,
   `.setReadable`, `.toPath`, `.toURI`.
 - `System`: `exit`, `getProperty`, `setProperty`, `getProperties`, `getenv`
 - `Thread`: `sleep`
