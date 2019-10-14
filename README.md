@@ -154,16 +154,21 @@ namespaces. If not all vars are available, they are enumerated explicitly.
 
 From Java the following is available:
 
-- `Integer`: `Integer/parseInt`
-- `File`: `.canRead`, `.canWrite`, `createTempFile`,`.delete`,
-  `.deleteOnExit`, `.exists`, `.getAbsoluteFile`, `.getCanonicalFile`,
-  `.getCanonicalPath`, `.getName`, `.getParent`, `.getParentFile`,
-  `.getPath`, `.isAbsolute`, `.isDirectory`, `.isFile`, `.isHidden`,
-  `.lastModified`, `.length`, `.list`, `.listFiles`, `.mkdir`,
-  `.mkdirs`, `.renameTo`, `.setLastModified`, `.setReadOnly`,
-  `.setReadable`, `.toPath`, `.toURI`.
-- `System`: `exit`, `getProperty`, `setProperty`, `getProperties`, `getenv`
-- `Thread`: `sleep`
+- `Integer`:
+  - static methods: `parseInt`
+- `File`:
+  - static methods: `createTempFile`
+  - instance methods: `.canRead`, `.canWrite`, `.delete`,
+   `.deleteOnExit`, `.exists`, `.getAbsoluteFile`, `.getCanonicalFile`,
+   `.getCanonicalPath`, `.getName`, `.getParent`, `.getParentFile`,
+   `.getPath`, `.isAbsolute`, `.isDirectory`, `.isFile`, `.isHidden`,
+   `.lastModified`, `.length`, `.list`, `.listFiles`, `.mkdir`,
+   `.mkdirs`, `.renameTo`, `.setLastModified`, `.setReadOnly`,
+   `.setReadable`, `.toPath`, `.toURI`.
+- `System`:
+  - static methods: `exit`, `getProperty`, `setProperty`, `getProperties`, `getenv`
+- `Thread`:
+  - static methods: `sleep`
 
 Special vars:
 
