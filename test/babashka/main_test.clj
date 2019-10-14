@@ -168,6 +168,15 @@
   (is (str/includes? (bb nil "(->> (conch/proc \"ls\") (conch/stream-to-string :out))")
                      "LICENSE")))
 
+(deftest create-temp-file-test
+  (let [temp-dir-path (System/getProperty "java.io.tmpdir")]
+    (is (= true
+          (bb nil (format "(let [tdir (io/file \"%s\")
+                                 tfile (createTempFile \"ctf\" \"tmp\" tdir)]
+                             (.deleteOnExit tfile) ; for cleanup
+                             (.exists tfile))"
+                    temp-dir-path))))))
+
 (deftest wait-for-port-test
   (is (= :timed-out
        (bb nil "(def web-server (conch/proc \"python2\" \"-m\" \"SimpleHTTPServer\" \"7171\"))
