@@ -185,9 +185,23 @@
                 (wait/wait-for-port \"localhost\" 7172 {:default :timed-out :timeout 50})"))))
 
 (deftest wait-for-path-test
-  (is (= :timed-out
-       (bb nil "(wait/wait-for-path \"/tmp/babashka-wait-for-path-test.txt\"
-                  {:default :timed-out :timeout 100})"))))
+  (let [temp-dir-path (System/getProperty "java.io.tmpdir")]
+    (is (not= :timed-out
+          (bb nil (format "(let [tdir (io/file \"%s\")
+                                 tfile (createTempFile \"wfp\" \"tmp\" tdir)
+                                 tpath (.getPath tfile)]
+                             (.deleteOnExit tfile) ; for cleanup
+                             (wait/wait-for-path tpath
+                               {:default :timed-out :timeout 100}))"
+                    temp-dir-path))))
+    (is (= :timed-out
+          (bb nil (format "(let [tdir (io/file \"%s\")
+                                 tfile (createTempFile \"wfp-to\" \"tmp\" tdir)
+                                 tpath (.getPath tfile)]
+                             (.delete tfile) ; for timing out test and cleanup
+                             (wait/wait-for-path tpath
+                               {:default :timed-out :timeout 100}))"
+                    temp-dir-path))))))
 
 (deftest async-test
   (is (= "process 2\n" (test-utils/bb nil "
