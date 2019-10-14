@@ -20,6 +20,11 @@
 (gen-wrapper-fn canExecute)
 (gen-wrapper-fn canRead)
 (gen-wrapper-fn canWrite)
+(defn ^:bb/export createTempFile
+  ([^String prefix ^String suffix]
+   (java.io.File/createTempFile prefix suffix))
+  ([^String prefix ^String suffix ^java.io.File dir]
+   (java.io.File/createTempFile prefix suffix dir)))
 (gen-wrapper-fn delete)
 (gen-wrapper-fn deleteOnExit)
 (gen-wrapper-fn exists)
@@ -58,13 +63,16 @@
 (gen-wrapper-fn toURI)
 
 (def file-bindings
-  (reduce (fn [acc [k v]]
-            (if (-> v meta :bb/export)
-              (assoc acc (symbol (str "." k))
-                     @v)
-              acc))
-          {}
-          (ns-publics *ns*)))
+  (-> (reduce (fn [acc [k v]]
+                (if (-> v meta :bb/export)
+                  (assoc acc (symbol (str "." k))
+                    @v)
+                  acc))
+        {}
+        (ns-publics *ns*))
+    ;; static method
+    (dissoc (symbol ".createTempFile"))
+    (assoc (symbol "File/createTempFile") createTempFile)))
 
 (comment
   (canRead (clojure.java.io/file "README.md"))

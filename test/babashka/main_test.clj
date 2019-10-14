@@ -168,14 +168,45 @@
   (is (str/includes? (bb nil "(->> (conch/proc \"ls\") (conch/stream-to-string :out))")
                      "LICENSE")))
 
-(deftest wait-for-it-test
-  (is (thrown-with-msg?
-       Exception
-       #"timeout"
+(deftest create-temp-file-test
+  (let [temp-dir-path (System/getProperty "java.io.tmpdir")]
+    (is (= true
+          (bb nil (format "(let [tdir (io/file \"%s\")
+                                 tfile
+                                 (File/createTempFile \"ctf\" \"tmp\" tdir)]
+                             (.deleteOnExit tfile) ; for cleanup
+                             (.exists tfile))"
+                    temp-dir-path))))))
+
+(deftest wait-for-port-test
+  (is (= :timed-out
        (bb nil "(def web-server (conch/proc \"python\" \"-m\" \"SimpleHTTPServer\" \"7171\"))
-                (net/wait-for-it \"127.0.0.1\" 7171)
+                (wait/wait-for-port \"127.0.0.1\" 7171)
                 (conch/destroy web-server)
-                (net/wait-for-it \"localhost\" 7172 {:timeout 50})"))))
+                (wait/wait-for-port \"localhost\" 7172 {:default :timed-out :timeout 50})"))))
+
+(deftest wait-for-path-test
+  (let [temp-dir-path (System/getProperty "java.io.tmpdir")]
+    (is (not= :timed-out
+          (bb nil (format "(let [tdir (io/file \"%s\")
+                                 tfile
+                                 (File/createTempFile \"wfp\" \"tmp\" tdir)
+                                 tpath (.getPath tfile)]
+                             (.delete tfile) ; delete now, but re-create it in a future
+                             (future (Thread/sleep 50) (shell/sh \"touch\" tpath))
+                             (wait/wait-for-path tpath
+                               {:default :timed-out :timeout 100})
+                             (.delete tfile))"
+                    temp-dir-path))))
+    (is (= :timed-out
+          (bb nil (format "(let [tdir (io/file \"%s\")
+                                 tfile
+                                 (File/createTempFile \"wfp-to\" \"tmp\" tdir)
+                                 tpath (.getPath tfile)]
+                             (.delete tfile) ; for timing out test and cleanup
+                             (wait/wait-for-path tpath
+                               {:default :timed-out :timeout 100}))"
+                    temp-dir-path))))))
 
 (deftest async-test
   (is (= "process 2\n" (test-utils/bb nil "
