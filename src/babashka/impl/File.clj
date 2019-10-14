@@ -72,7 +72,7 @@
         (ns-publics *ns*))
     ;; static method
     (dissoc (symbol ".createTempFile"))
-    (assoc (symbol "createTempFile") createTempFile)))
+    (assoc (symbol "File/createTempFile") createTempFile)))
 
 (comment
   (canRead (clojure.java.io/file "README.md"))

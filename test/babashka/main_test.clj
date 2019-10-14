@@ -172,7 +172,8 @@
   (let [temp-dir-path (System/getProperty "java.io.tmpdir")]
     (is (= true
           (bb nil (format "(let [tdir (io/file \"%s\")
-                                 tfile (createTempFile \"ctf\" \"tmp\" tdir)]
+                                 tfile
+                                 (File/createTempFile \"ctf\" \"tmp\" tdir)]
                              (.deleteOnExit tfile) ; for cleanup
                              (.exists tfile))"
                     temp-dir-path))))))
@@ -188,7 +189,8 @@
   (let [temp-dir-path (System/getProperty "java.io.tmpdir")]
     (is (not= :timed-out
           (bb nil (format "(let [tdir (io/file \"%s\")
-                                 tfile (createTempFile \"wfp\" \"tmp\" tdir)
+                                 tfile
+                                 (File/createTempFile \"wfp\" \"tmp\" tdir)
                                  tpath (.getPath tfile)]
                              (.deleteOnExit tfile) ; for cleanup
                              (wait/wait-for-path tpath
@@ -196,7 +198,8 @@
                     temp-dir-path))))
     (is (= :timed-out
           (bb nil (format "(let [tdir (io/file \"%s\")
-                                 tfile (createTempFile \"wfp-to\" \"tmp\" tdir)
+                                 tfile
+                                 (File/createTempFile \"wfp-to\" \"tmp\" tdir)
                                  tpath (.getPath tfile)]
                              (.delete tfile) ; for timing out test and cleanup
                              (wait/wait-for-path tpath
