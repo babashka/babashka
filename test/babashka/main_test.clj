@@ -180,7 +180,7 @@
 
 (deftest wait-for-port-test
   (is (= :timed-out
-       (bb nil "(def web-server (conch/proc \"python2\" \"-m\" \"SimpleHTTPServer\" \"7171\"))
+       (bb nil "(def web-server (conch/proc \"python\" \"-m\" \"SimpleHTTPServer\" \"7171\"))
                 (wait/wait-for-port \"127.0.0.1\" 7171)
                 (conch/destroy web-server)
                 (wait/wait-for-port \"localhost\" 7172 {:default :timed-out :timeout 50})"))))
@@ -192,7 +192,8 @@
                                  tfile
                                  (File/createTempFile \"wfp\" \"tmp\" tdir)
                                  tpath (.getPath tfile)]
-                             (.deleteOnExit tfile) ; for cleanup
+                             (.delete tfile) ; delete now, but re-create it in a future
+                             (future (Thread/sleep 50) (shell/sh \"touch\" tpath))
                              (wait/wait-for-path tpath
                                {:default :timed-out :timeout 100}))"
                     temp-dir-path))))

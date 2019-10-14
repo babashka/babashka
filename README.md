@@ -459,12 +459,9 @@ You need [Leiningen](https://leiningen.org/), and for building binaries you need
 
 ### Test
 
-Test on the JVM:
+Test on the JVM (for development):
 
     script/test
-
-Although this tool doesn't offer any benefit when running on the JVM, it is
-convenient for development.
 
 Test the native version:
 
