@@ -3,7 +3,7 @@
   (:refer-clojure :exclude [future]))
 
 (defn future
-  [& body]
+  [_ _ & body]
   `(~'future-call (fn [] ~@body)))
 
 (def core-bindings

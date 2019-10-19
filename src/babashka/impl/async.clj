@@ -3,7 +3,7 @@
   (:require [clojure.core.async :as async]))
 
 (defn thread
-  [& body]
+  [_ _ & body]
   `(~'async/thread-call (fn [] ~@body)))
 
 (def async-namespace
