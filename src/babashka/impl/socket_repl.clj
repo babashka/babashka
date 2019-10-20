@@ -6,14 +6,15 @@
    [clojure.java.io :as io]
    [clojure.string :as str]
    [clojure.tools.reader.reader-types :as r]
-   [sci.core :refer [eval-string]]
+   ;; [sci.core :refer [eval-string]]
+   [sci.impl.interpreter :refer [opts->ctx eval-edn-vals]]
    [sci.impl.parser :as parser]))
 
 (set! *warn-on-reflection* true)
 
 (defn repl
   "REPL with predefined hooks for attachable socket server."
-  [sci-opts]
+  [sci-ctx]
   (let [in (r/indexing-push-back-reader (r/push-back-reader *in*))]
     (m/repl
      :init #(do (println "Babashka"
@@ -32,13 +33,13 @@
                    v))
                request-exit))
      :eval (fn [expr]
-             (let [ret (eval-string (pr-str expr)
-                                    (update sci-opts
-                                            :bindings
-                                            merge {'*1 *1
-                                                   '*2 *2
-                                                   '*3 *3
-                                                   '*e *e}))]
+             (let [ret (eval-edn-vals (update-in sci-ctx
+                                                 [:namespaces 'clojure.core]
+                                                 merge {'*1 *1
+                                                        '*2 *2
+                                                        '*3 *3
+                                                        '*e *e})
+                                      [expr])]
                ret))
      :need-prompt (fn [] true))))
 
@@ -49,12 +50,13 @@
                       [(first parts) (Integer. ^String (second parts))])
         host+port (if-not host (str "localhost:" port)
                           host+port)
+        sci-ctx (opts->ctx sci-opts)
         socket (server/start-server
                 {:address host
                  :port port
                  :name "bb"
                  :accept babashka.impl.socket-repl/repl
-                 :args [sci-opts]})]
+                 :args [sci-ctx]})]
     (println "Babashka socket REPL started at" host+port)
     socket))
 
