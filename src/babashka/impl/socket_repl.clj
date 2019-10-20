@@ -6,7 +6,6 @@
    [clojure.java.io :as io]
    [clojure.string :as str]
    [clojure.tools.reader.reader-types :as r]
-   ;; [sci.core :refer [eval-string]]
    [sci.impl.interpreter :refer [opts->ctx eval-edn-vals]]
    [sci.impl.parser :as parser]))
 

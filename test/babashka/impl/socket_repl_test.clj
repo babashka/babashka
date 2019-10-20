@@ -48,6 +48,11 @@
     (testing "*command-line-args*"
       (is (str/includes? (socket-command '*command-line-args*)
                          "\"a\" \"b\" \"c\"")))
+    (testing "&env"
+      (socket-command '(defmacro bindings [] (mapv #(list 'quote %) (keys &env))))
+      (socket-command '(defn bar [x y z] (bindings)))
+      (is (str/includes? (socket-command '(bar 1 2 3))
+                         "[x y z]")))
     (finally
       (if tu/jvm?
         (stop-repl!)
