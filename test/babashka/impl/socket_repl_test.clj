@@ -53,6 +53,12 @@
       (socket-command '(defn bar [x y z] (bindings)))
       (is (str/includes? (socket-command '(bar 1 2 3))
                          "[x y z]")))
+    (testing "reader conditionals"
+      (is (str/includes? (let [ret (sh "bash" "-c"
+                                       (format "echo \"%s\n:repl/exit\" | nc 127.0.0.1 1666"
+                                               "#?(:bb 1337 :clj 8888)"))]
+                           (:out ret))
+                         "1337")))
     (finally
       (if tu/jvm?
         (stop-repl!)

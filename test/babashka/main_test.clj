@@ -222,3 +222,6 @@
 
 (deftest try-catch-test
   (is (zero? (bb nil "(try (/ 1 0) (catch ArithmeticException _ 0))"))))
+
+(deftest reader-conditionals-test
+  (is (= :hello (bb nil "#?(:clj (in-ns 'foo)) (println :hello)"))))
