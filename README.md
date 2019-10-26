@@ -304,7 +304,7 @@ $ bb script.clj -h
 Babashka supports reader conditionals using the `:bb` feature:
 
 ``` clojure
-cat example.clj
+$ cat example.clj
 #?(:clj (in-ns 'foo) :bb (println "babashka doesn't support in-ns yet!"))
 
 $ ./bb example.clj
