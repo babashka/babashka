@@ -299,6 +299,18 @@ $ bb script.clj -h
 {:port 80, :help true}
 ```
 
+## Reader conditionals
+
+Babashka supports reader conditionals using the `:bb` feature:
+
+``` clojure
+cat example.clj
+#?(:clj (in-ns 'foo) :bb (println "babashka doesn't support in-ns yet!"))
+
+$ ./bb example.clj
+babashka doesn't support in-ns yet!
+```
+
 ## Preloads
 
 The environment variable `BABASHKA_PRELOADS` allows to define code that will be

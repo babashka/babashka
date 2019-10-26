@@ -208,7 +208,8 @@ Everything after that is bound to *command-line-args*."))
                           'me.raynes.conch.low-level conch-namespace
                           'clojure.core.async async-namespace}
              :bindings (assoc bindings '*command-line-args* command-line-args)
-             :env env}
+             :env env
+             :features #{:bb}}
         ctx (update ctx :bindings assoc 'load-file #(load-file* ctx %))
         _preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim) (sci/eval-string ctx))
         exit-code
