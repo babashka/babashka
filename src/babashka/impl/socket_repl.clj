@@ -32,12 +32,15 @@
                    v))
                request-exit))
      :eval (fn [expr]
-             (let [ret (eval-edn-vals (update-in sci-ctx
-                                                 [:namespaces 'clojure.core]
-                                                 merge {'*1 *1
-                                                        '*2 *2
-                                                        '*3 *3
-                                                        '*e *e})
+             (let [ret (eval-edn-vals (update sci-ctx
+                                              :env
+                                              (fn [env]
+                                                (swap! env assoc
+                                                       '*1 *1
+                                                       '*2 *2
+                                                       '*3 *3
+                                                       '*e *e)
+                                                env))
                                       [expr])]
                ret))
      :need-prompt (fn [] true))))

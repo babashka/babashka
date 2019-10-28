@@ -12,9 +12,10 @@
    "mac"))
 
 (defn socket-command [expr]
-  (let [ret (sh "bash" "-c"
-                (format "echo \"%s\n:repl/exit\" | nc 127.0.0.1 1666"
-                        (pr-str expr)))]
+  (let [expr (format "echo \"%s\n:repl/exit\" | nc 127.0.0.1 1666"
+                     (pr-str expr))
+        ret (sh "bash" "-c"
+                expr)]
     (:out ret)))
 
 (deftest socket-repl-test
@@ -59,6 +60,11 @@
                                                "#?(:bb 1337 :clj 8888)"))]
                            (:out ret))
                          "1337")))
+    (testing "*1, *2, *3, *e"
+      (is (= 2 (count (re-seq #"1\n" (let [ret (sh "bash" "-c"
+                                                   (format "echo \"%s\n*1\n:repl/exit\" | nc 127.0.0.1 1666"
+                                                           "1"))]
+                                       (:out ret)))))))
     (finally
       (if tu/jvm?
         (stop-repl!)
