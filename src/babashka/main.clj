@@ -6,7 +6,7 @@
    [babashka.impl.System :refer [system-bindings]]
    [babashka.impl.Thread :refer [thread-bindings]]
    [babashka.impl.async :refer [async-namespace]]
-   [babashka.impl.clojure.core :refer [core-bindings]]
+   [babashka.impl.clojure.core :refer [core-extras]]
    [babashka.impl.clojure.java.io :refer [io-namespace]]
    [babashka.impl.clojure.stacktrace :refer [print-stack-trace]]
    [babashka.impl.conch :refer [conch-namespace]]
@@ -143,8 +143,7 @@ Everything after that is bound to *command-line-args*."))
       (throw (Exception. (str "File does not exist: " file))))))
 
 (def bindings
-  (merge core-bindings
-         system-bindings
+  (merge system-bindings
          file-bindings
          thread-bindings
          integer-bindings
@@ -198,7 +197,8 @@ Everything after that is bound to *command-line-args*."))
                         io clojure.java.io
                         conch me.raynes.conch.low-level
                         async clojure.core.async}
-             :namespaces {'clojure.tools.cli tools-cli-namespace
+             :namespaces {'clojure.core core-extras
+                          'clojure.tools.cli tools-cli-namespace
                           'clojure.edn {'read-string edn/read-string}
                           'clojure.java.shell {'sh shell/sh}
                           'babashka.wait {'wait-for-port wait/wait-for-port
