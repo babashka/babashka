@@ -549,6 +549,15 @@ bb '(some #(re-find #".*linux.*" (:browser_download_url %)) *in*)'
 "https://github.com/borkdude/babashka/releases/download/v0.0.4/babashka-0.0.4-linux-amd64.zip"
 ```
 
+### View download statistics from Clojars
+
+``` shellsession
+curl https://clojars.org/stats/all.edn 
+| bb -o '(for [[[group art] counts] *in*] (str (reduce + (vals counts))  " " group "/" art))'
+| sort -rn
+| less
+```
+
 ## Thanks
 
 - [adgoji](https://www.adgoji.com/) for financial support
