@@ -26,14 +26,27 @@ results in faster startup time than Clojure on the JVM.
 The sweet spot for babashka is executing short Clojure snippets or scripts in the same
 space where you would use bash.
 
-Where it can, babashka calls the regular implementation of Clojure on the JVM
-and proxies common Java packages like `System` and `File`, so writing code in it
-should be familiar if you're already using Clojure on the JVM.
+Goals:
+
+* Familiarity and portability.
+
+  Keep migration barriers between bash and Clojure as low as possible by:
+  - Allowing bits of Clojure in bash scripts
+  - Scripts written in babashka should also be able to run on the JVM without major changes. Where it can, babashka calls the regular implementation of Clojure on the JVM
+and proxies common Java packages like `System` and `File`.
+* Multi-threading support similar to Clojure on the JVM
+* Batteries included (clojure.tools.cli, core.async, ...)
+
+Non-goals:
+
+* Performance
+* Provide a mixed Clojure/bash DSL (see portability). 
+* Replace existing shells. Babashka is a tool you can use inside existing shells like bash and it is designed to play well with them. It does not aim to replace them.
 
 Reasons why babashka may not be the right fit for your use case:
 
 - It uses [sci](https://github.com/borkdude/sci) for interpreting Clojure. Sci
-implements only a subset of Clojure.
+implements only a subset of Clojure and is not as performant as compiled code.
 - External libraries are not available (although you may use `load-file` for
   loading external scripts).
 
@@ -535,6 +548,10 @@ bb '(-> *in* first :assets)' |
 bb '(some #(re-find #".*linux.*" (:browser_download_url %)) *in*)'
 "https://github.com/borkdude/babashka/releases/download/v0.0.4/babashka-0.0.4-linux-amd64.zip"
 ```
+
+## Thanks
+
+- [adgoji](https://www.adgoji.com/) for a financial donation
 
 ## License
 
