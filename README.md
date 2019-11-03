@@ -26,7 +26,6 @@ Goals:
 * Familiarity and portability. Keep migration barriers between bash and Clojure as low as possible by:
   - Gradually introducing Clojure expressions to existing bash scripts
   - Scripts written in babashka should also be able to run on the JVM without major changes.
-and proxies common Java packages like `System` and `File`.
 * Multi-threading support similar to Clojure on the JVM
 * Batteries included (clojure.tools.cli, core.async, ...)
 
