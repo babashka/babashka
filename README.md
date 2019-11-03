@@ -551,7 +551,7 @@ bb '(some #(re-find #".*linux.*" (:browser_download_url %)) *in*)'
 
 ## Thanks
 
-- [adgoji](https://www.adgoji.com/) for a financial donation
+- [adgoji](https://www.adgoji.com/) for financial support
 
 ## License
 
