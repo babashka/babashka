@@ -22,6 +22,7 @@ space where you would use bash.
 
 Goals:
 
+* Fast startup / low latency. This is achieved by compiling to native using [GraalVM](https://github.com/oracle/graal).
 * Familiarity and portability.
 
   Keep migration barriers between bash and Clojure as low as possible by:
