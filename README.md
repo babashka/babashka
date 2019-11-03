@@ -25,7 +25,7 @@ Goals:
 * Fast startup / low latency. This is achieved by compiling to native using [GraalVM](https://github.com/oracle/graal).
 * Familiarity and portability. Keep migration barriers between bash and Clojure as low as possible by:
   - Gradually introducing Clojure expressions to existing bash scripts
-  - Scripts written in babashka should also be able to run on the JVM without major changes. Where it can, babashka calls the regular implementation of Clojure on the JVM
+  - Scripts written in babashka should also be able to run on the JVM without major changes.
 and proxies common Java packages like `System` and `File`.
 * Multi-threading support similar to Clojure on the JVM
 * Batteries included (clojure.tools.cli, core.async, ...)
