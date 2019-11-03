@@ -552,7 +552,7 @@ bb '(some #(re-find #".*linux.*" (:browser_download_url %)) *in*)'
 ### View download statistics from Clojars
 
 ``` shellsession
-curl https://clojars.org/stats/all.edn |
+$ curl https://clojars.org/stats/all.edn |
 bb -o '(for [[[group art] counts] *in*] (str (reduce + (vals counts))  " " group "/" art))' |
 sort -rn |
 less
