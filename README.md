@@ -17,13 +17,7 @@ bb took 4ms.
 
 ## Rationale
 
-If you're a bash expert, you probably don't need this. But for those of us who
-can use a bit of Clojure in their shell scripts, it may be useful.
-
-Babashka runs as a [GraalVM](https://github.com/oracle/graal) compiled binary which
-results in faster startup time than Clojure on the JVM.
-
-The sweet spot for babashka is executing short Clojure snippets or scripts in the same
+The sweet spot for babashka is executing Clojure snippets or scripts in the same
 space where you would use bash.
 
 Goals:
