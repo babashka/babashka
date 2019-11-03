@@ -556,6 +556,10 @@ curl https://clojars.org/stats/all.edn |
 bb -o '(for [[[group art] counts] *in*] (str (reduce + (vals counts))  " " group "/" art))' |
 sort -rn |
 less
+14113842 clojure-complete/clojure-complete
+9065525 clj-time/clj-time
+8504122 cheshire/cheshire
+...
 ```
 
 ## Thanks
