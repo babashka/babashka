@@ -4,7 +4,7 @@
 [![Clojars Project](https://img.shields.io/clojars/v/borkdude/babashka.svg)](https://clojars.org/borkdude/babashka)
 [![cljdoc badge](https://cljdoc.org/badge/borkdude/babashka)](https://cljdoc.org/d/borkdude/babashka/CURRENT)
 
-A Clojure [babushka](https://en.wikipedia.org/wiki/Headscarf) for the grey areas of bash.
+A Clojure [babushka](https://en.wikipedia.org/wiki/Headscarf) for the grey areas of Bash.
 
 ## Quickstart
 
@@ -18,11 +18,11 @@ bb took 4ms.
 ## Rationale
 
 The sweet spot for babashka is executing Clojure snippets or scripts in the same
-space where you would use bash.
+space where you would use Bash.
 
 As one user described it:
 
-> I’m quite at home in bash most of the time, but there’s a substantial grey area of things that are too complicated to be simple in bash, but too simple to be worth writing a clj/s script for. Babashka really seems to hit the sweet spot for those cases.
+> I’m quite at home in Bash most of the time, but there’s a substantial grey area of things that are too complicated to be simple in bash, but too simple to be worth writing a clj/s script for. Babashka really seems to hit the sweet spot for those cases.
 
 Goals:
 
