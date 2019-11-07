@@ -4,7 +4,7 @@
 [![Clojars Project](https://img.shields.io/clojars/v/borkdude/babashka.svg)](https://clojars.org/borkdude/babashka)
 [![cljdoc badge](https://cljdoc.org/badge/borkdude/babashka)](https://cljdoc.org/d/borkdude/babashka/CURRENT)
 
-A Clojure babushka for the grey areas of bash.
+A Clojure [babushka](https://en.wikipedia.org/wiki/Headscarf) for the grey areas of bash.
 
 ## Quickstart
 
