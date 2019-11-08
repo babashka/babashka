@@ -508,6 +508,12 @@ Then run:
 Here's a gallery of more useful examples. Do you have a useful example? PR
 welcome!
 
+### Delete a list of files returned by a Unix command
+
+```
+find . | grep conflict | bb -i '(doseq [f *in*] (.delete (io/file f)))'
+```
+
 ### Shuffle the lines of a file
 
 ``` shellsession
