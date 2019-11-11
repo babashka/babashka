@@ -5,7 +5,8 @@
    [clojure.edn :as edn]
    [clojure.java.shell :refer [sh]]
    [clojure.string :as str]
-   [clojure.test :as test :refer [deftest is testing]]))
+   [clojure.test :as test :refer [deftest is testing]]
+   [clojure.java.io :as io]))
 
 (defn bb [input & args]
   (edn/read-string (apply test-utils/bb (str input) (map str args))))
@@ -226,3 +227,8 @@
 (deftest reader-conditionals-test
   (is (= :hello (bb nil "#?(:clj (in-ns 'foo)) (println :hello)")))
   (is (= :hello (bb nil "#?(:bb :hello :default :bye)"))))
+
+(deftest csv-test
+  (is (= '(["Adult" "87727"] ["Elderly" "43914"] ["Child" "33411"] ["Adolescent" "29849"]
+           ["Infant" "15238"] ["Newborn" "10050"] ["In Utero" "1198"])
+         (bb nil (.getPath (io/file "test" "babashka" "scripts" "csv.bb"))))))

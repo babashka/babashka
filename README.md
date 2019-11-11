@@ -160,6 +160,7 @@ namespaces. If not all vars are available, they are enumerated explicitly.
 - [`me.raynes.conch.low-level`](https://github.com/clj-commons/conch#low-level-usage)
   aliased as `conch`
 - [`clojure.tools.cli`](https://github.com/clojure/tools.cli) aliased as `tools.cli`
+- [`clojure.data.csv`](https://github.com/clojure/data.csv) aliased as `csv`
 
 From Java the following is available:
 
