@@ -14,6 +14,7 @@
    [babashka.impl.pipe-signal-handler :refer [handle-pipe! pipe-signal-received?]]
    [babashka.impl.socket-repl :as socket-repl]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
+   [babashka.impl.csv :as csv]
    [babashka.wait :as wait]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
@@ -196,7 +197,8 @@ Everything after that is bound to *command-line-args*."))
                         shell clojure.java.shell
                         io clojure.java.io
                         conch me.raynes.conch.low-level
-                        async clojure.core.async}
+                        async clojure.core.async
+                        csv clojure.data.csv}
              :namespaces {'clojure.core core-extras
                           'clojure.tools.cli tools-cli-namespace
                           'clojure.edn {'read-string edn/read-string}
@@ -206,7 +208,8 @@ Everything after that is bound to *command-line-args*."))
                           'babashka.signal {'pipe-signal-received? pipe-signal-received?}
                           'clojure.java.io io-namespace
                           'me.raynes.conch.low-level conch-namespace
-                          'clojure.core.async async-namespace}
+                          'clojure.core.async async-namespace
+                          'clojure.data.csv csv/csv-namespace}
              :bindings (assoc bindings '*command-line-args* command-line-args)
              :env env
              :features #{:bb}}
