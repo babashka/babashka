@@ -22,7 +22,8 @@
                   "with-open only allows Symbols in bindings"))))
 
 (def core-extras
-  {'future-call future-call
+  {'file-seq file-seq
+   'future-call future-call
    'future (with-meta future {:sci/macro true})
    'future-cancel future-cancel
    'future-cancelled? future-cancelled?
