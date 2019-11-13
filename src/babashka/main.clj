@@ -110,7 +110,7 @@
 (defn print-version []
   (println (str "babashka v"(str/trim (slurp (io/resource "BABASHKA_VERSION"))))))
 
-(def usage-string "Usage: bb [ -i | -I ] [ -o | -O ] [ --stream ] ( -e <expression> | -f <file> | --socket-repl [<host>:]<port> )")
+(def usage-string "Usage: bb [ -i | -I ] [ -o | -O ] [--verbose] [ --stream ] ( -e <expression> | -f <file> | --socket-repl [<host>:]<port> )")
 (defn print-usage []
   (println usage-string))
 
@@ -129,6 +129,7 @@
   -I: bind *in* to a lazy seq of EDN values from stdin.
   -o: write lines to stdout.
   -O: write EDN values to stdout.
+  --verbose: print entire stacktrace in case of exception.
   --stream: stream over lines or EDN values from stdin. Combined with -i or -I *in* becomes a single value per iteration.
   -e, --eval <expression>: evaluate an expression
   -f, --file <path>: evaluate a file
