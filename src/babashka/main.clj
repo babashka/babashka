@@ -37,6 +37,9 @@
                  (case opt
                    ("--version") {:version true}
                    ("--help" "-h" "-?") {:help? true}
+                   ("--verbose")(recur (rest options)
+                                       (assoc opts-map
+                                              :verbose? true))
                    ("--stream") (recur (rest options)
                                        (assoc opts-map
                                               :stream? true))
@@ -171,11 +174,11 @@ Everything after that is bound to *command-line-args*."))
   [& args]
   (handle-pipe!)
   #_(binding [*out* *err*]
-    (prn "M" (meta (get bindings 'future))))
+      (prn "M" (meta (get bindings 'future))))
   (let [t0 (System/currentTimeMillis)
         {:keys [:version :shell-in :edn-in :shell-out :edn-out
                 :help? :file :command-line-args
-                :expression :stream? :time? :socket-repl] :as _opts}
+                :expression :stream? :time? :socket-repl :verbose?] :as _opts}
         (parse-opts args)
         read-next (fn [*in*]
                     (if (pipe-signal-received?)
@@ -254,7 +257,9 @@ Everything after that is bound to *command-line-args*."))
                       (let [d (ex-data e)
                             exit-code (:bb/exit-code d)]
                         (if exit-code [nil exit-code]
-                            (do (print-stack-trace e)
+                            (do (if verbose?
+                                  (print-stack-trace e)
+                                  (println (.getMessage e)))
                                 (flush)
                                 [nil 1]))))))))
          1)

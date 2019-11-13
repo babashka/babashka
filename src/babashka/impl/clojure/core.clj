@@ -6,7 +6,7 @@
   [_ _ & body]
   `(~'future-call (fn [] ~@body)))
 
-(defn close! [^java.io.Closeable x]
+(defn __close!__ [^java.io.Closeable x]
   (.close x))
 
 (defn with-open*
@@ -17,9 +17,20 @@
                               (try
                                 (with-open ~(subvec bindings 2) ~@body)
                                 (finally
-                                  (~'close! ~(bindings 0)))))
+                                  (~'__close!__ ~(bindings 0)))))
     :else (throw (IllegalArgumentException.
                   "with-open only allows Symbols in bindings"))))
+
+(defn __assertion-error__ [^String m]
+  (AssertionError. m))
+
+(defn assert*
+  ([_ _ x]
+   `(when-not ~x
+      (throw (~'__assertion-error__ (str "Assert failed: " (pr-str '~x))))))
+  ([_ _ x message]
+   `(when-not ~x
+      (throw (~'__assertion-error__ (str "Assert failed: " ~message "\n" (pr-str '~x)))))))
 
 (def core-extras
   {'file-seq file-seq
@@ -45,5 +56,7 @@
    'println-str println-str
    'flush flush
    'read-line read-line
-   'close! close!
-   'with-open (with-meta with-open* {:sci/macro true})})
+   '__close!__ __close!__
+   'with-open (with-meta with-open* {:sci/macro true})
+   '__assertion-error__ __assertion-error__
+   'assert (with-meta assert* {:sci/macro true})})

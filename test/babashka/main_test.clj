@@ -232,3 +232,7 @@
   (is (= '(["Adult" "87727"] ["Elderly" "43914"] ["Child" "33411"] ["Adolescent" "29849"]
            ["Infant" "15238"] ["Newborn" "10050"] ["In Utero" "1198"])
          (bb nil (.getPath (io/file "test" "babashka" "scripts" "csv.bb"))))))
+
+(deftest assert-test
+  (is (thrown-with-msg? Exception #"should-be-true"
+                        (bb nil "(def should-be-true false) (assert should-be-true)"))))
