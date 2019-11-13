@@ -3,6 +3,7 @@
   (:require
    [babashka.impl.File :refer [file-bindings]]
    [babashka.impl.Integer :refer [integer-bindings]]
+   [babashka.impl.Pattern :refer [pattern-bindings]]
    [babashka.impl.System :refer [system-bindings]]
    [babashka.impl.Thread :refer [thread-bindings]]
    [babashka.impl.async :refer [async-namespace]]
@@ -10,11 +11,11 @@
    [babashka.impl.clojure.java.io :refer [io-namespace]]
    [babashka.impl.clojure.stacktrace :refer [print-stack-trace]]
    [babashka.impl.conch :refer [conch-namespace]]
+   [babashka.impl.csv :as csv]
    [babashka.impl.exceptions :refer [exception-bindings]]
    [babashka.impl.pipe-signal-handler :refer [handle-pipe! pipe-signal-received?]]
    [babashka.impl.socket-repl :as socket-repl]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
-   [babashka.impl.csv :as csv]
    [babashka.wait :as wait]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
@@ -152,7 +153,8 @@ Everything after that is bound to *command-line-args*."))
          file-bindings
          thread-bindings
          integer-bindings
-         exception-bindings))
+         exception-bindings
+         pattern-bindings))
 
 (defn read-edn []
   (edn/read {;;:readers *data-readers*

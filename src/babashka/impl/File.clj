@@ -20,7 +20,7 @@
 (gen-wrapper-fn canExecute)
 (gen-wrapper-fn canRead)
 (gen-wrapper-fn canWrite)
-(defn ^:bb/export createTempFile
+(defn createTempFile
   ([^String prefix ^String suffix]
    (java.io.File/createTempFile prefix suffix))
   ([^String prefix ^String suffix ^java.io.File dir]
@@ -66,13 +66,13 @@
   (-> (reduce (fn [acc [k v]]
                 (if (-> v meta :bb/export)
                   (assoc acc (symbol (str "." k))
-                    @v)
+                         @v)
                   acc))
-        {}
-        (ns-publics *ns*))
-    ;; static method
-    (dissoc (symbol ".createTempFile"))
-    (assoc (symbol "File/createTempFile") createTempFile)))
+              {}
+              (ns-publics *ns*))
+      ;; static methods
+      (assoc (symbol "File/createTempFile") createTempFile)
+      (assoc (symbol "java.io.File/createTempFile") createTempFile)))
 
 (comment
   (canRead (clojure.java.io/file "README.md"))
@@ -81,10 +81,7 @@
   (renameTo (io/file "/tmp/script2.clj") (io/file "/tmp/script.clj"))
   (.setWritable (io/file "/tmp/script.clj") true true)
   (meta #'toURI)
-  (first bindings)
-  (get bindings '.length)
-  (get bindings '.canWrite)
   (meta #'canWrite)
   ;; for README.md:
-  (str/join ", " (map #(format "`%s`" %) (sort (keys bindings))))
+  (str/join ", " (map #(format "`%s`" %) (sort (keys file-bindings))))
   )

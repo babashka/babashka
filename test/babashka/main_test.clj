@@ -236,3 +236,9 @@
 (deftest assert-test
   (is (thrown-with-msg? Exception #"should-be-true"
                         (bb nil "(def should-be-true false) (assert should-be-true)"))))
+
+(deftest Pattern-test
+  (is (= ["1" "2" "3"]
+         (bb nil "(vec (.split (java.util.regex.Pattern/compile \"f\") \"1f2f3\"))")))
+  (is (= java.util.regex.Pattern/CANON_EQ
+         (bb nil "java.util.regex.Pattern/CANON_EQ"))))

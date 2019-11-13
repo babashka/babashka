@@ -179,6 +179,7 @@ From Java the following is available:
   - static methods: `exit`, `getProperty`, `setProperty`, `getProperties`, `getenv`
 - `Thread`:
   - static methods: `sleep`
+- `java.util.regex.Pattern` (all static and instance methods and constants)
 
 Special vars:
 
