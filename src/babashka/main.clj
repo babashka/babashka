@@ -2,6 +2,8 @@
   {:no-doc true}
   (:require
    [babashka.impl.Integer :refer [integer-bindings]]
+   [babashka.impl.Double :refer [double-bindings]]
+   [babashka.impl.Boolean :refer [boolean-bindings]]
    [babashka.impl.Pattern :refer [pattern-bindings]]
    [babashka.impl.System :refer [system-bindings]]
    [babashka.impl.Thread :refer [thread-bindings]]
@@ -151,6 +153,8 @@ Everything after that is bound to *command-line-args*."))
   (merge system-bindings
          thread-bindings
          integer-bindings
+         double-bindings
+         boolean-bindings
          exception-bindings
          pattern-bindings))
 
@@ -161,6 +165,9 @@ Everything after that is bound to *command-line-args*."))
 (defn load-file* [ctx file]
   (let [s (slurp file)]
     (sci/eval-string s ctx)))
+
+(defn eval* [ctx form]
+  (sci/eval-string (pr-str form) ctx))
 
 (defn start-socket-repl! [address ctx read-next]
   (let [ctx (update ctx :bindings assoc
@@ -216,10 +223,12 @@ Everything after that is bound to *command-line-args*."))
                           'clojure.data.csv csv/csv-namespace}
              :bindings (assoc bindings '*command-line-args* command-line-args)
              :env env
+
              :features #{:bb}
              :classes {'String String
                        'File java.io.File}}
-        ctx (update ctx :bindings assoc 'load-file #(load-file* ctx %))
+        ctx (update ctx :bindings assoc 'eval #(eval* ctx %)
+                                        'load-file #(load-file* ctx %))
         _preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim) (sci/eval-string ctx))
         exit-code
         (or
