@@ -23,6 +23,11 @@
     "allPublicMethods":true
   },
   {
+    "name":"java.lang.Double",
+    "allPublicMethods":true,
+    "allPublicFields": true
+  },
+  {
     "name":"java.io.File",
     "allPublicMethods":true,
     "allPublicFields": true

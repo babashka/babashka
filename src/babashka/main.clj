@@ -225,8 +225,12 @@ Everything after that is bound to *command-line-args*."))
              :env env
 
              :features #{:bb}
-             :classes {'String String
-                       'File java.io.File}}
+             :classes {'java.lang.String String
+                       'String String
+                       'java.io.File java.io.File
+                       'File java.io.File
+                       'Double Double
+                       'java.lang.Double Double}}
         ctx (update ctx :bindings assoc 'eval #(eval* ctx %)
                                         'load-file #(load-file* ctx %))
         _preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim) (sci/eval-string ctx))
