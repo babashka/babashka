@@ -4,6 +4,7 @@
    [babashka.impl.File :refer [file-bindings]]
    [babashka.impl.Integer :refer [integer-bindings]]
    [babashka.impl.Double :refer [double-bindings]]
+   [babashka.impl.Boolean :refer [boolean-bindings]]
    [babashka.impl.Pattern :refer [pattern-bindings]]
    [babashka.impl.System :refer [system-bindings]]
    [babashka.impl.Thread :refer [thread-bindings]]
@@ -155,6 +156,7 @@ Everything after that is bound to *command-line-args*."))
          thread-bindings
          integer-bindings
          double-bindings
+         boolean-bindings
          exception-bindings
          pattern-bindings))
 
