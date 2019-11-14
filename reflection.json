@@ -29,5 +29,9 @@
   {
     "name":"java.util.concurrent.LinkedBlockingQueue",
     "allPublicMethods":true
+  },
+  {
+    "name":"clojure.lang.ExceptionInfo",
+    "allPublicMethods":true
   }
 ]

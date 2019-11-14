@@ -21,6 +21,7 @@
    [clojure.java.io :as io]
    [clojure.java.shell :as shell]
    [clojure.string :as str]
+   [babashka.impl.interop :as interop]
    [sci.core :as sci])
   (:import [sun.misc Signal]
            [sun.misc SignalHandler])
@@ -154,7 +155,8 @@ Everything after that is bound to *command-line-args*."))
          thread-bindings
          integer-bindings
          exception-bindings
-         pattern-bindings))
+         pattern-bindings
+         {'. (with-meta interop/dot-macro {:sci/macro true})}))
 
 (defn read-edn []
   (edn/read {;;:readers *data-readers*
