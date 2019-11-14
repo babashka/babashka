@@ -132,6 +132,11 @@
     (is (= "120\n" (test-utils/bb nil (format "(load-file \"%s\") (bar (foo 10 30) 3)"
                                               (.getPath tmp)))))))
 
+(deftest eval-test
+  (is (= "120\n" (test-utils/bb nil "(eval '(do (defn foo [x y] (+ x y))
+                                                (defn bar [x y] (* x y)) 
+                                                (bar (foo 10 30) 3)))"))))
+
 (deftest preloads-test
   ;; THIS TEST REQUIRES:
   ;; export BABASHKA_PRELOADS='(defn __bb__foo [] "foo") (defn __bb__bar [] "bar")'

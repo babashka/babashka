@@ -167,6 +167,9 @@ Everything after that is bound to *command-line-args*."))
 (defn load-file* [ctx file]
   (let [s (slurp file)]
     (sci/eval-string s ctx)))
+    
+(defn eval* [ctx form]
+  (sci/eval-string (pr-str form) ctx))
 
 (defn start-socket-repl! [address ctx read-next]
   (let [ctx (update ctx :bindings assoc
@@ -223,7 +226,8 @@ Everything after that is bound to *command-line-args*."))
              :bindings (assoc bindings '*command-line-args* command-line-args)
              :env env
              :features #{:bb}}
-        ctx (update ctx :bindings assoc 'load-file #(load-file* ctx %))
+        ctx (update ctx :bindings assoc 'eval #(eval* ctx %) 
+                                        'load-file #(load-file* ctx %))
         _preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim) (sci/eval-string ctx))
         exit-code
         (or
