@@ -1,7 +1,6 @@
 (ns babashka.main
   {:no-doc true}
   (:require
-   [babashka.impl.File :refer [file-bindings]]
    [babashka.impl.Integer :refer [integer-bindings]]
    [babashka.impl.Pattern :refer [pattern-bindings]]
    [babashka.impl.System :refer [system-bindings]]
@@ -21,7 +20,6 @@
    [clojure.java.io :as io]
    [clojure.java.shell :as shell]
    [clojure.string :as str]
-   [babashka.impl.interop :as interop]
    [sci.core :as sci])
   (:import [sun.misc Signal]
            [sun.misc SignalHandler])
@@ -151,12 +149,10 @@ Everything after that is bound to *command-line-args*."))
 
 (def bindings
   (merge system-bindings
-         file-bindings
          thread-bindings
          integer-bindings
          exception-bindings
-         pattern-bindings
-         {'. (with-meta interop/dot-macro {:sci/macro true})}))
+         pattern-bindings))
 
 (defn read-edn []
   (edn/read {;;:readers *data-readers*
@@ -220,7 +216,9 @@ Everything after that is bound to *command-line-args*."))
                           'clojure.data.csv csv/csv-namespace}
              :bindings (assoc bindings '*command-line-args* command-line-args)
              :env env
-             :features #{:bb}}
+             :features #{:bb}
+             :classes {'String String
+                       'File java.io.File}}
         ctx (update ctx :bindings assoc 'load-file #(load-file* ctx %))
         _preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim) (sci/eval-string ctx))
         exit-code
