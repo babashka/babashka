@@ -8,6 +8,7 @@
    [babashka.impl.Pattern :refer [pattern-bindings]]
    [babashka.impl.System :refer [system-bindings]]
    [babashka.impl.Thread :refer [thread-bindings]]
+   [babashka.impl.Writer :refer [writer-bindings]]
    [babashka.impl.async :refer [async-namespace]]
    [babashka.impl.clojure.core :refer [core-extras]]
    [babashka.impl.clojure.java.io :refer [io-namespace]]
@@ -158,7 +159,8 @@ Everything after that is bound to *command-line-args*."))
          double-bindings
          boolean-bindings
          exception-bindings
-         pattern-bindings))
+         pattern-bindings
+         writer-bindings))
 
 (defn read-edn []
   (edn/read {;;:readers *data-readers*
@@ -287,5 +289,5 @@ Everything after that is bound to *command-line-args*."))
 
 ;;;; Scratch
 
-(comment
-  )
+(comment)
+
