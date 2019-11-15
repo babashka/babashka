@@ -76,7 +76,6 @@
     "name":"java.lang.ProcessBuilder",
     "allPublicConstructors":true
   },
-  ,
   {
     "name":"java.lang.String",
     "allPublicMethods":true,
