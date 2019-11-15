@@ -152,10 +152,10 @@ Everything after that is bound to *command-line-args*."))
 (def bindings
   (merge system-bindings
          thread-bindings
-         integer-bindings
-         double-bindings
-         boolean-bindings
-         exception-bindings
+         ;; integer-bindings
+         ;; double-bindings
+         ;; boolean-bindings
+         ;; exception-bindings
          pattern-bindings))
 
 (defn read-edn []
@@ -223,14 +223,19 @@ Everything after that is bound to *command-line-args*."))
                           'clojure.data.csv csv/csv-namespace}
              :bindings (assoc bindings '*command-line-args* command-line-args)
              :env env
-
              :features #{:bb}
              :classes {'java.lang.String String
-                       'String String
                        'java.io.File java.io.File
-                       'File java.io.File
-                       'Double Double
-                       'java.lang.Double Double}}
+                       'java.lang.Boolean Boolean
+                       'java.lang.Double Double
+                       'java.lang.ArithmeticException ArithmeticException
+                       'java.lang.AssertionError AssertionError}
+             :imports '{String java.lang.String
+                        File java.io.File
+                        Boolean java.lang.Boolean
+                        Double java.lang.Double
+                        ArithmeticException java.lang.ArithmeticException
+                        AssertionError java.lang.AssertionError}}
         ctx (update ctx :bindings assoc 'eval #(eval* ctx %)
                                         'load-file #(load-file* ctx %))
         _preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim) (sci/eval-string ctx))

@@ -19,7 +19,7 @@
     "allPublicConstructors":true
   },
   {
-    "name":"java.lang.String",
+    "name":"java.lang.Boolean",
     "allPublicMethods":true,
     "allPublicFields": true,
     "allPublicConstructors": true
@@ -37,9 +37,28 @@
     "allPublicConstructors": true
   },
   {
+    "name":"java.lang.String",
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
+  },
+  {
     "name":"java.io.File",
     "allPublicMethods":true,
-    "allPublicFields": true
+    "allPublicFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name":"java.lang.ArithmeticException",
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name":"java.lang.AssertionError",
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
   },
   {
     "name":"java.lang.UNIXProcess",
