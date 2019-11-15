@@ -172,7 +172,6 @@ Class
 Double
 Exception
 clojure.lang.ExceptionInfo
-java.io.File
 Integer
 java.io.File
 java.util.regex.Pattern
