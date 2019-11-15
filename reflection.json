@@ -1,5 +1,27 @@
 [
   {
+    "name":"java.lang.ArithmeticException",
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name":"java.lang.AssertionError",
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name":"java.lang.Boolean",
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name":"java.io.BufferedReader",
+    "allPublicMethods":true
+  },
+  {
     "name": "java.lang.Class",
     "allDeclaredConstructors": true,
     "allPublicConstructors": true,
@@ -7,8 +29,44 @@
     "allPublicMethods": true
   },
   {
-    "name":"java.io.BufferedReader",
+    "name":"java.lang.Double",
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name":"java.lang.Exception",
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "clojure.lang.ExceptionInfo",
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name":"java.lang.Integer",
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name":"java.io.File",
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name":"java.util.concurrent.LinkedBlockingQueue",
     "allPublicMethods":true
+  },
+  {
+    "name":"java.util.regex.Pattern",
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
   },
   {
     "name":"java.lang.Process",
@@ -20,14 +78,25 @@
   },
   {
     "name":"java.lang.String",
-    "allPublicMethods":true
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
+  }
+  ,
+  {
+    "name":"java.lang.System",
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name":"java.lang.Thread",
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
   },
   {
     "name":"java.lang.UNIXProcess",
-    "allPublicMethods":true
-  },
-  {
-    "name":"java.util.concurrent.LinkedBlockingQueue",
     "allPublicMethods":true
   }
 ]

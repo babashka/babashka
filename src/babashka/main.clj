@@ -1,20 +1,12 @@
 (ns babashka.main
   {:no-doc true}
   (:require
-   [babashka.impl.File :refer [file-bindings]]
-   [babashka.impl.Integer :refer [integer-bindings]]
-   [babashka.impl.Double :refer [double-bindings]]
-   [babashka.impl.Boolean :refer [boolean-bindings]]
-   [babashka.impl.Pattern :refer [pattern-bindings]]
-   [babashka.impl.System :refer [system-bindings]]
-   [babashka.impl.Thread :refer [thread-bindings]]
    [babashka.impl.async :refer [async-namespace]]
    [babashka.impl.clojure.core :refer [core-extras]]
    [babashka.impl.clojure.java.io :refer [io-namespace]]
    [babashka.impl.clojure.stacktrace :refer [print-stack-trace]]
    [babashka.impl.conch :refer [conch-namespace]]
    [babashka.impl.csv :as csv]
-   [babashka.impl.exceptions :refer [exception-bindings]]
    [babashka.impl.pipe-signal-handler :refer [handle-pipe! pipe-signal-received?]]
    [babashka.impl.socket-repl :as socket-repl]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
@@ -150,16 +142,6 @@ Everything after that is bound to *command-line-args*."))
         (str/replace x #"^#!.*" ""))
       (throw (Exception. (str "File does not exist: " file))))))
 
-(def bindings
-  (merge system-bindings
-         file-bindings
-         thread-bindings
-         integer-bindings
-         double-bindings
-         boolean-bindings
-         exception-bindings
-         pattern-bindings))
-
 (defn read-edn []
   (edn/read {;;:readers *data-readers*
              :eof ::EOF} *in*))
@@ -167,7 +149,7 @@ Everything after that is bound to *command-line-args*."))
 (defn load-file* [ctx file]
   (let [s (slurp file)]
     (sci/eval-string s ctx)))
-    
+
 (defn eval* [ctx form]
   (sci/eval-string (pr-str form) ctx))
 
@@ -179,6 +161,9 @@ Everything after that is bound to *command-line-args*."))
     (socket-repl/start-repl! address ctx)
     ;; hang until SIGINT
     @(promise)))
+
+(defn exit [n]
+  (throw (ex-info "" {:bb/exit-code n})))
 
 (defn main
   [& args]
@@ -223,10 +208,36 @@ Everything after that is bound to *command-line-args*."))
                           'me.raynes.conch.low-level conch-namespace
                           'clojure.core.async async-namespace
                           'clojure.data.csv csv/csv-namespace}
-             :bindings (assoc bindings '*command-line-args* command-line-args)
+             :bindings {'*command-line-args* command-line-args
+                        'java.lang.System/exit exit ;; override exit, so we have more control
+                        'System/exit exit}
              :env env
-             :features #{:bb}}
-        ctx (update ctx :bindings assoc 'eval #(eval* ctx %) 
+             :features #{:bb}
+             :classes {'java.lang.ArithmeticException ArithmeticException
+                       'java.lang.AssertionError AssertionError
+                       'java.lang.Boolean Boolean
+                       'java.lang.Class Class
+                       'java.lang.Double Double
+                       'java.lang.Exception Exception
+                       'clojure.lang.ExceptionInfo clojure.lang.ExceptionInfo
+                       'java.lang.Integer Integer
+                       'java.io.File java.io.File
+                       'java.util.regex.Pattern java.util.regex.Pattern
+                       'java.lang.String String
+                       'java.lang.System System
+                       'java.lang.Thread Thread}
+             :imports '{ArithmeticException java.lang.ArithmeticException
+                        AssertionError java.lang.AssertionError
+                        Boolean java.lang.Boolean
+                        Class java.lang.Class
+                        Double java.lang.Double
+                        Exception java.lang.Exception
+                        Integer java.lang.Integer
+                        File java.io.File
+                        String java.lang.String
+                        System java.lang.System
+                        Thread java.lang.Thread}}
+        ctx (update ctx :bindings assoc 'eval #(eval* ctx %)
                                         'load-file #(load-file* ctx %))
         _preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim) (sci/eval-string ctx))
         exit-code
