@@ -20,12 +20,21 @@
   },
   {
     "name":"java.lang.String",
-    "allPublicMethods":true
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
   },
   {
     "name":"java.lang.Double",
     "allPublicMethods":true,
-    "allPublicFields": true
+    "allPublicFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name":"java.lang.Integer",
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
   },
   {
     "name":"java.io.File",
