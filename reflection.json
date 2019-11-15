@@ -1,54 +1,5 @@
 [
   {
-    "name": "java.lang.Class",
-    "allDeclaredConstructors": true,
-    "allPublicConstructors": true,
-    "allDeclaredMethods": true,
-    "allPublicMethods": true
-  },
-  {
-    "name":"java.io.BufferedReader",
-    "allPublicMethods":true
-  },
-  {
-    "name":"java.lang.Process",
-    "allPublicMethods":true
-  },
-  {
-    "name":"java.lang.ProcessBuilder",
-    "allPublicConstructors":true
-  },
-  {
-    "name":"java.lang.Boolean",
-    "allPublicMethods":true,
-    "allPublicFields": true,
-    "allPublicConstructors": true
-  },
-  {
-    "name":"java.lang.Double",
-    "allPublicMethods":true,
-    "allPublicFields": true,
-    "allPublicConstructors": true
-  },
-  {
-    "name":"java.lang.Integer",
-    "allPublicMethods":true,
-    "allPublicFields": true,
-    "allPublicConstructors": true
-  },
-  {
-    "name":"java.lang.String",
-    "allPublicMethods":true,
-    "allPublicFields": true,
-    "allPublicConstructors": true
-  },
-  {
-    "name":"java.io.File",
-    "allPublicMethods":true,
-    "allPublicFields": true,
-    "allPublicConstructors": true
-  },
-  {
     "name":"java.lang.ArithmeticException",
     "allPublicMethods":true,
     "allPublicFields": true,
@@ -61,15 +12,92 @@
     "allPublicConstructors": true
   },
   {
-    "name":"java.lang.UNIXProcess",
+    "name":"java.lang.Boolean",
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name":"java.io.BufferedReader",
     "allPublicMethods":true
+  },
+  {
+    "name": "java.lang.Class",
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true
+  },
+  {
+    "name":"java.lang.Double",
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name":"java.lang.Exception",
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "clojure.lang.ExceptionInfo",
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name":"java.lang.Integer",
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name":"java.io.File",
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
   },
   {
     "name":"java.util.concurrent.LinkedBlockingQueue",
     "allPublicMethods":true
   },
   {
-    "name":"clojure.lang.ExceptionInfo",
+    "name":"java.util.regex.Pattern",
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name":"java.lang.Process",
+    "allPublicMethods":true
+  },
+  {
+    "name":"java.lang.ProcessBuilder",
+    "allPublicConstructors":true
+  },
+  ,
+  {
+    "name":"java.lang.String",
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
+  }
+  ,
+  {
+    "name":"java.lang.System",
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name":"java.lang.Thread",
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name":"java.lang.UNIXProcess",
     "allPublicMethods":true
   }
 ]

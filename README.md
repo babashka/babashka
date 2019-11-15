@@ -36,7 +36,7 @@ Goals:
 Non-goals:
 
 * Performance
-* Provide a mixed Clojure/bash DSL (see portability). 
+* Provide a mixed Clojure/bash DSL (see portability).
 * Replace existing shells. Babashka is a tool you can use inside existing shells like bash and it is designed to play well with them. It does not aim to replace them.
 
 Reasons why babashka may not be the right fit for your use case:
@@ -162,24 +162,26 @@ namespaces. If not all vars are available, they are enumerated explicitly.
 - [`clojure.tools.cli`](https://github.com/clojure/tools.cli) aliased as `tools.cli`
 - [`clojure.data.csv`](https://github.com/clojure/data.csv) aliased as `csv`
 
-From Java the following is available:
+The following Java classes are available:
 
-- `Integer`:
-  - static methods: `parseInt`
-- `File`:
-  - static methods: `createTempFile`
-  - instance methods: `.canRead`, `.canWrite`, `.delete`,
-   `.deleteOnExit`, `.exists`, `.getAbsoluteFile`, `.getCanonicalFile`,
-   `.getCanonicalPath`, `.getName`, `.getParent`, `.getParentFile`,
-   `.getPath`, `.isAbsolute`, `.isDirectory`, `.isFile`, `.isHidden`,
-   `.lastModified`, `.length`, `.list`, `.listFiles`, `.mkdir`,
-   `.mkdirs`, `.renameTo`, `.setLastModified`, `.setReadOnly`,
-   `.setReadable`, `.toPath`, `.toURI`.
-- `System`:
-  - static methods: `exit`, `getProperty`, `setProperty`, `getProperties`, `getenv`
-- `Thread`:
-  - static methods: `sleep`
-- `java.util.regex.Pattern` (all static and instance methods and constants)
+```
+ArithmeticException
+AssertionError
+Boolean
+Class
+Double
+Exception
+clojure.lang.ExceptionInfo
+java.io.File
+Integer
+java.io.File
+java.util.regex.Pattern
+String
+System
+Thread
+```
+
+More classes can be added by request.
 
 Special vars:
 
@@ -442,8 +444,7 @@ Differences with Clojure:
 - No first class vars. Note that you can define and redefine global values with
 `def` / `defn`, but there is no `var` indirection.
 
-- Java classes and interop are not available. For a selection of classes we mimic constructors and interop by having
-  functions like `Exception.` and `.getCanonicalPath`.
+- A subset of Java classes are supported.
 
 - Only the `clojure.core`, `clojure.set` and `clojure.string` namespaces are
   available from Clojure.
