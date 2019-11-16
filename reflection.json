@@ -65,6 +65,12 @@
     "allPublicConstructors": true
   },
   {
+    "name":"clojure.lang.LineNumberingPushbackReader",
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
+  },
+  {
     "name":"java.util.concurrent.LinkedBlockingQueue",
     "allPublicMethods":true
   },
@@ -87,8 +93,19 @@
     "allPublicMethods":true,
     "allPublicFields": true,
     "allPublicConstructors": true
-  }
-  ,
+  },
+  {
+    "name":"java.io.StringReader",
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name":"java.io.StringWriter",
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
+  },
   {
     "name":"java.lang.System",
     "allPublicMethods":true,

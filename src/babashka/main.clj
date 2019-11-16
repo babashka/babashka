@@ -223,8 +223,11 @@ Everything after that is bound to *command-line-args*."))
                        'clojure.lang.ExceptionInfo clojure.lang.ExceptionInfo
                        'java.lang.Integer Integer
                        'java.io.File java.io.File
+                       'clojure.lang.LineNumberingPushbackReader clojure.lang.LineNumberingPushbackReader
                        'java.util.regex.Pattern java.util.regex.Pattern
                        'java.lang.String String
+                       'java.io.StringReader java.io.StringReader
+                       'java.io.StringWriter java.io.StringWriter
                        'java.lang.System System
                        'java.lang.Thread Thread}
              :imports '{ArithmeticException java.lang.ArithmeticException

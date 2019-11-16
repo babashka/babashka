@@ -257,3 +257,15 @@
                        nil)"
                     path))
     (is (= "foobar\nbarfoo\n" (slurp path)))))
+
+(deftest binding-test
+  (is (=  6 (bb nil "(def w (java.io.StringWriter.))
+                 (binding [clojure.core/*out* w]
+                   (println \"hello\"))
+                 (count (str w))"))))
+
+(deftest with-out-str-test
+  (is (= 6 (bb nil "(count (with-out-str (println \"hello\")))"))))
+
+(deftest with-in-str-test
+  (is (= 5 (bb nil "(count (with-in-str \"hello\" (read-line)))"))))
