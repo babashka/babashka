@@ -33,7 +33,9 @@
       (throw (~'__assertion-error__ (str "Assert failed: " ~message "\n" (pr-str '~x)))))))
 
 (def core-extras
-  {'file-seq file-seq
+  {'*in* *in*
+   '*out* *out*
+   'file-seq file-seq
    'future-call future-call
    'future (with-meta future {:sci/macro true})
    'future-cancel future-cancel
