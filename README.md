@@ -164,20 +164,19 @@ namespaces. If not all vars are available, they are enumerated explicitly.
 
 The following Java classes are available:
 
-```
-ArithmeticException
-AssertionError
-Boolean
-Class
-Double
-Exception
-clojure.lang.ExceptionInfo
-Integer
-java.io.File
-java.util.regex.Pattern
-String
-System
-Thread
+- `ArithmeticException`
+- `AssertionError`
+- `Boolean`
+- `Class`
+- `Double`
+- `Exception`
+- `clojure.lang.ExceptionInfo`
+- `Integer`
+- `java.io.File`
+- `java.util.regex.Pattern`
+- `String`
+- `System`
+- `Thread`
 ```
 
 More classes can be added by request.
