@@ -247,3 +247,13 @@
          (bb nil "(vec (.split (java.util.regex.Pattern/compile \"f\") \"1f2f3\"))")))
   (is (= java.util.regex.Pattern/CANON_EQ
          (bb nil "java.util.regex.Pattern/CANON_EQ"))))
+
+(deftest writer-test
+  (let [tmp-file (java.io.File/createTempFile "bbb" "bbb")
+        path (.getPath tmp-file)]
+    (bb nil (format "(with-open [w (io/writer \"%s\")]
+                       (.write w \"foobar\n\")
+                       (.append w \"barfoo\n\")
+                       nil)"
+                    path))
+    (is (= "foobar\nbarfoo\n" (slurp path)))))

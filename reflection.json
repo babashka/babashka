@@ -18,6 +18,12 @@
     "allPublicConstructors": true
   },
   {
+    "name":"java.io.BufferedWriter",
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
+  },
+  {
     "name":"java.io.BufferedReader",
     "allPublicMethods":true
   },

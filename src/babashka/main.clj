@@ -216,6 +216,7 @@ Everything after that is bound to *command-line-args*."))
              :classes {'java.lang.ArithmeticException ArithmeticException
                        'java.lang.AssertionError AssertionError
                        'java.lang.Boolean Boolean
+                       'java.io.BufferedWriter java.io.BufferedWriter
                        'java.lang.Class Class
                        'java.lang.Double Double
                        'java.lang.Exception Exception
