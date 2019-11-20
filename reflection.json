@@ -114,7 +114,7 @@
   },
   {
     "name":"java.lang.Thread",
-    "allPublicMethods":true,
+    "methods": [{"name":"run"},{"name":"toString"},{"name":"isInterrupted"},{"name":"currentThread"},{"name":"getName"},{"name":"join"},{"name":"getThreadGroup"},{"name":"getStackTrace"},{"name":"holdsLock"},{"name":"checkAccess"},{"name":"dumpStack"},{"name":"yield"},{"name":"setPriority"},{"name":"setDaemon"},{"name":"start"},{"name":"sleep"},{"name":"interrupt"},{"name":"interrupted"},{"name":"isAlive"},{"name":"getPriority"},{"name":"setName"},{"name":"activeCount"},{"name":"enumerate"},{"name":"isDaemon"},{"name":"getContextClassLoader"},{"name":"setContextClassLoader"},{"name":"getAllStackTraces"},{"name":"getId"},{"name":"getState"},{"name":"setDefaultUncaughtExceptionHandler"},{"name":"getDefaultUncaughtExceptionHandler"},{"name":"getUncaughtExceptionHandler"},{"name":"setUncaughtExceptionHandler"}],
     "allPublicFields": true,
     "allPublicConstructors": true
   },
