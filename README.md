@@ -404,23 +404,6 @@ bb '
 process 2
 ```
 
-## Enabling SSL
-
-If you want to be able to use SSL to e.g. run `(slurp
-"https://www.clojure.org")` you will need to add the location where
-`libsunec.so` or `libsunec.dylib` is located to the `java.library.path` Java
-property. This library comes with most JVM installations, so you might already
-have it on your machine. It is usually located in `<JAVA_HOME>/jre/lib` or
-`<JAVA_HOME>/jre/<platform>/lib`. It is also bundled with GraalVM.
-
-Example:
-
-``` shellsession
-$ export BABASHKA_PRELOADS="(System/setProperty \"java.library.path\" \"$JAVA_HOME/jre/lib\")"
-$ bb '(slurp "https://www.clojure.org")' | bb '(subs *in* 0 50)'
-"<!doctype html><html itemscope=\"\" itemtype=\"http:/"
-```
-
 ## Differences with Clojure
 
 Babashka is implemented using the [Small Clojure
