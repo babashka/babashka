@@ -11,7 +11,7 @@ jobs:
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
-      GRAALVM_HOME: /home/circleci/graalvm-ce-19.2.0
+      # GRAALVM_HOME: /home/circleci/graalvm-ce-java8-19.3.0
     steps:
       - checkout
       - run:
@@ -34,14 +34,14 @@ jobs:
           name: Install lsof
           command: |
             sudo apt-get install lsof
-      - run:
-          name: Download GraalVM
-          command: |
-            cd ~
-            if ! [ -d graalvm-ce-19.2.0 ]; then
-              curl -O -sL https://github.com/oracle/graal/releases/download/vm-19.2.0/graalvm-ce-linux-amd64-19.2.0.tar.gz
-              tar xzf graalvm-ce-linux-amd64-19.2.0.tar.gz
-            fi
+      # - run:
+      #     name: Download GraalVM
+      #     command: |
+      #       cd ~
+      #       if ! [ -d graalvm-ce-java8-19.3.0 ]; then
+      #         curl -O -sL https://github.com/oracle/graal/releases/download/vm-19.2.0/graalvm-ce-linux-amd64-19.2.0.tar.gz
+      #         tar xzf graalvm-ce-linux-amd64-19.2.0.tar.gz
+      #       fi
       # - run:
       #     name: Install GraalVM SSL libs
       #     command: |
@@ -68,7 +68,7 @@ jobs:
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
-      GRAALVM_HOME: /home/circleci/graalvm-ce-19.2.0
+      GRAALVM_HOME: /home/circleci/graalvm-ce-java8-19.3.0
       BABASHKA_PLATFORM: linux # used in release script
       BABASHKA_TEST_ENV: native
     steps:
@@ -95,14 +95,14 @@ jobs:
           name: Install native dev tools
           command: |
             sudo apt-get update
-            sudo apt-get -y install gcc zlib1g-dev
+            sudo apt-get -y install gcc g++ zlib1g-dev
       - run:
           name: Download GraalVM
           command: |
             cd ~
-            if ! [ -d graalvm-ce-19.2.0 ]; then
-              curl -O -sL https://github.com/oracle/graal/releases/download/vm-19.2.0/graalvm-ce-linux-amd64-19.2.0.tar.gz
-              tar xzf graalvm-ce-linux-amd64-19.2.0.tar.gz
+            if ! [ -d graalvm-ce-java8-19.3.0 ]; then
+              curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-19.3.0/graalvm-ce-java8-linux-amd64-19.3.0.tar.gz
+              tar xzf graalvm-ce-java8-linux-amd64-19.3.0.tar.gz
             fi
       # - run:
       #     name: Install GraalVM SSL libs
@@ -128,7 +128,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-            - ~/graalvm-ce-19.2.0
+            - ~/graalvm-ce-java8-19.3.0
           key: linux-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - store_artifacts:
           path: /tmp/release
@@ -137,7 +137,7 @@ jobs:
     macos:
       xcode: "9.0"
     environment:
-      GRAALVM_HOME: /Users/distiller/graalvm-ce-19.2.0/Contents/Home
+      GRAALVM_HOME: /Users/distiller/graalvm-ce-java8-19.3.0/Contents/Home
       BABASHKA_PLATFORM: macos # used in release script
       BABASHKA_TEST_ENV: native
     steps:
@@ -163,9 +163,9 @@ jobs:
           command: |
             cd ~
             ls -la
-            if ! [ -d graalvm-ce-19.2.0 ]; then
-              curl -O -sL https://github.com/oracle/graal/releases/download/vm-19.2.0/graalvm-ce-darwin-amd64-19.2.0.tar.gz
-              tar xzf graalvm-ce-darwin-amd64-19.2.0.tar.gz
+            if ! [ -d graalvm-ce-java8-19.3.0 ]; then
+              curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-19.3.0/graalvm-ce-java8-darwin-amd64-19.3.0.tar.gz
+              tar xzf graalvm-ce-java8-darwin-amd64-19.3.0.tar.gz
             fi
       # - run:
       #     name: Install GraalVM SSL libs
@@ -191,7 +191,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-            - ~/graalvm-ce-19.2.0
+            - ~/graalvm-ce-java8-19.3.0
           key: mac-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - store_artifacts:
           path: /tmp/release
