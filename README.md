@@ -97,6 +97,12 @@ Upgrade:
 
     brew upgrade babashka
 
+### Arch (Linux)
+
+`babashka` is [available](https://aur.archlinux.org/packages/babashka-bin/) in the [Arch User Repository](https://aur.archlinux.org). It can be installed using your favorite [AUR](https://aur.archlinux.org) helper such as
+[yay](https://github.com/Jguer/yay), [yaourt](https://github.com/archlinuxfr/yaourt), [apacman](https://github.com/oshazard/apacman) and [pacaur](https://github.com/rmarquis/pacaur). Here is an example using `yay`:
+
+    yay -S babashka-bin
 
 ### Installer script
 
