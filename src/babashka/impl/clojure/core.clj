@@ -25,12 +25,14 @@
   (AssertionError. m))
 
 (defn assert*
-  ([_ _ x]
+  ([&form _ x]
    `(when-not ~x
-      (throw (~'__assertion-error__ (str "Assert failed: " (pr-str '~x))))))
-  ([_ _ x message]
+      ~(with-meta `(throw (~'__assertion-error__ (str "Assert failed: " (pr-str '~x))))
+         (meta &form))))
+  ([&form _ x message]
    `(when-not ~x
-      (throw (~'__assertion-error__ (str "Assert failed: " ~message "\n" (pr-str '~x)))))))
+      ~(with-meta `(throw (~'__assertion-error__ (str "Assert failed: " ~message "\n" (pr-str '~x))))
+         (meta &form)))))
 
 (defn binding*
   "This macro only works with symbols that evaluate to vars themselves. See `*in*` and `*out*` below."
