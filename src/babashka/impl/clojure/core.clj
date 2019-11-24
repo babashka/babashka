@@ -21,17 +21,6 @@
     :else (throw (IllegalArgumentException.
                   "with-open only allows Symbols in bindings"))))
 
-(defn __assertion-error__ [^String m]
-  (AssertionError. m))
-
-(defn assert*
-  ([_ _ x]
-   `(when-not ~x
-      (throw (~'__assertion-error__ (str "Assert failed: " (pr-str '~x))))))
-  ([_ _ x message]
-   `(when-not ~x
-      (throw (~'__assertion-error__ (str "Assert failed: " ~message "\n" (pr-str '~x)))))))
-
 (defn binding*
   "This macro only works with symbols that evaluate to vars themselves. See `*in*` and `*out*` below."
   [_ _ bindings & body]
@@ -91,8 +80,6 @@
    'flush flush
    'read-line read-line
    '__close!__ __close!__
-   'with-open (with-meta with-open* {:sci/macro true})
+   'with-open (with-meta with-open* {:sci/macro true}) 
    'with-out-str (with-meta with-out-str* {:sci/macro true})
-   'with-in-str (with-meta with-in-str* {:sci/macro true})
-   '__assertion-error__ __assertion-error__
-   'assert (with-meta assert* {:sci/macro true})})
+   'with-in-str (with-meta with-in-str* {:sci/macro true})})

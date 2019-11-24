@@ -238,7 +238,7 @@
            ["Infant" "15238"] ["Newborn" "10050"] ["In Utero" "1198"])
          (bb nil (.getPath (io/file "test" "babashka" "scripts" "csv.bb"))))))
 
-(deftest assert-test
+(deftest assert-test ;; assert was first implemented in bb but moved to sci later
   (is (thrown-with-msg? Exception #"should-be-true"
                         (bb nil "(def should-be-true false) (assert should-be-true)"))))
 
