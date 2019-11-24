@@ -6,7 +6,7 @@
    [clojure.java.io :as io]
    [clojure.string :as str]
    [clojure.tools.reader.reader-types :as r]
-   [sci.impl.interpreter :refer [opts->ctx eval-edn-vals]]
+   [sci.impl.interpreter :refer [opts->ctx eval-form]]
    [sci.impl.parser :as parser]))
 
 (set! *warn-on-reflection* true)
@@ -24,7 +24,7 @@
                 (println))
      :read (fn [_request-prompt request-exit]
              (if (r/peek-char in) ;; if this is nil, we reached EOF
-               (let [v (parser/parse-next in #{:bb})]
+               (let [v (parser/parse-next in #{:bb} {:current (-> sci-ctx :env deref :current-ns)})]
                  (if (or (identical? :repl/quit v)
                          (identical? :repl/exit v)
                          (identical? :edamame.impl.parser/eof v))
@@ -32,16 +32,16 @@
                    v))
                request-exit))
      :eval (fn [expr]
-             (let [ret (eval-edn-vals (update sci-ctx
-                                              :env
-                                              (fn [env]
-                                                (swap! env assoc
-                                                       '*1 *1
-                                                       '*2 *2
-                                                       '*3 *3
-                                                       '*e *e)
-                                                env))
-                                      [expr])]
+             (let [ret (eval-form (update sci-ctx
+                                          :env
+                                          (fn [env]
+                                            (swap! env assoc
+                                                   '*1 *1
+                                                   '*2 *2
+                                                   '*3 *3
+                                                   '*e *e)
+                                            env))
+                                  expr)]
                ret))
      :need-prompt (fn [] true))))
 
