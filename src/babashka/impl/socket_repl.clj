@@ -35,7 +35,8 @@
              (let [ret (eval-form (update sci-ctx
                                           :env
                                           (fn [env]
-                                            (swap! env assoc
+                                            (swap! env update-in [:namespaces 'clojure.core]
+                                                   assoc
                                                    '*1 *1
                                                    '*2 *2
                                                    '*3 *3

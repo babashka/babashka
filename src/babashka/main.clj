@@ -16,8 +16,6 @@
    [clojure.java.shell :as shell]
    [clojure.string :as str]
    [sci.core :as sci])
-  (:import [sun.misc Signal]
-           [sun.misc SignalHandler])
   (:gen-class))
 
 (set! *warn-on-reflection* true)
@@ -259,9 +257,9 @@ Everything after that is bound to *command-line-args*."))
                   (let [expr (if file (read-file file) expression)]
                     (if expr
                       (loop [in (read-next *in*)]
-                        (let [ctx (update ctx :bindings assoc (with-meta '*in*
-                                                                (when-not stream?
-                                                                  {:sci/deref! true})) in)]
+                        (let [ctx (update-in ctx [:namespaces 'user] assoc (with-meta '*in*
+                                                                             (when-not stream?
+                                                                               {:sci/deref! true})) in)]
                           (if (identical? ::EOF in)
                             [nil 0] ;; done streaming
                             (let [res [(let [res (sci/eval-string expr ctx)]
