@@ -44,7 +44,8 @@
                                             env))
                                   expr)]
                ret))
-     :need-prompt (fn [] true))))
+     :need-prompt (fn [] true)
+     :prompt #(printf "%s=> " (-> sci-ctx :env deref :current-ns)))))
 
 (defn start-repl! [host+port sci-opts]
   (let [parts (str/split host+port #":")
