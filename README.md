@@ -179,12 +179,14 @@ The following Java classes are available:
 - `clojure.lang.ExceptionInfo`
 - `Integer`
 - `java.io.File`
+- `java.nio.Files`
 - `java.util.regex.Pattern`
 - `String`
 - `System`
 - `Thread`
 
-More classes can be added by request.
+More classes can be added by request. See `reflection.json` and the `:classes`
+option in `main.clj`.
 
 Babashka supports `import` : `(import clojure.lang.ExceptionInfo)`.
 

@@ -121,5 +121,45 @@
   {
     "name":"java.lang.UNIXProcess",
     "allPublicMethods":true
+  },
+  {
+    "name":"java.nio.file.Path",
+    "allPublicMethods":true
+  },
+  {
+    "name":"java.nio.file.CopyOption",
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name":"java.nio.file.FileAlreadyExistsException",
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name":"java.nio.file.Files",
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name":"java.nio.file.NoSuchFileException",
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name":"java.nio.file.StandardCopyOption",
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name":"sun.nio.fs.UnixPath",
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
   }
 ]
