@@ -184,6 +184,8 @@ The following Java classes are available:
 - `System`
 - `Thread`
 
+More classes can be added by request.
+
 Babashka supports `import` : `(import clojure.lang.ExceptionInfo)`.
 
 Babashka supports a subset of the `ns` form where you may use `:require` and `:import`:
@@ -196,8 +198,6 @@ Babashka supports a subset of the `ns` form where you may use `:require` and `:i
 
 For the unsupported parts of the ns form, you may use [reader
 conditionals](#reader-conditionals) to maintain compatibility with JVM Clojure.
-
-More classes can be added by request.
 
 Special vars:
 
