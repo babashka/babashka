@@ -435,11 +435,6 @@ same. Multi-threading is supported (`pmap`, `future`).
 
 Differences with Clojure:
 
-- No user defined namespaces. Since this tool focuses on snippets and small
-  scripts, there hasn't been a need to implement it yet.
-
-- There is no `ns` macro for the same reason as above.
-
 - No first class vars. Note that you can define and redefine global values with
 `def` / `defn`, but there is no `var` indirection.
 
@@ -453,7 +448,8 @@ Differences with Clojure:
   disk.
 
 - `require` does not load files; it only provides a way to create different
-  aliases for included namespaces, which makes it easier to make scripts portable between the JVM and babashka.
+  aliases for included namespaces, which makes it easier to make scripts
+  portable between the JVM and babashka.
 
 - Interpretation comes with overhead. Therefore tight loops are likely slower
   than in Clojure on the JVM.
