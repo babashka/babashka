@@ -227,7 +227,13 @@ Everything after that is bound to *command-line-args*."))
                        'java.io.StringReader java.io.StringReader
                        'java.io.StringWriter java.io.StringWriter
                        'java.lang.System System
-                       'java.lang.Thread Thread}
+                       'java.lang.Thread Thread
+                       'sun.nio.fs.UnixPath sun.nio.fs.UnixPath
+                       'java.nio.file.CopyOption java.nio.file.CopyOption
+                       'java.nio.file.FileAlreadyExistsException java.nio.file.FileAlreadyExistsException
+                       'java.nio.file.Files java.nio.file.Files
+                       'java.nio.file.StandardCopyOption java.nio.file.StandardCopyOption
+                       }
              :imports '{ArithmeticException java.lang.ArithmeticException
                         AssertionError java.lang.AssertionError
                         Boolean java.lang.Boolean
