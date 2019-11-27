@@ -195,7 +195,8 @@ Everything after that is bound to *command-line-args*."))
                         conch me.raynes.conch.low-level
                         async clojure.core.async
                         csv clojure.data.csv}
-             :namespaces {'clojure.core core-extras
+             :namespaces {'clojure.core (assoc core-extras
+                                               '*command-line-args* command-line-args)
                           'clojure.tools.cli tools-cli-namespace
                           'clojure.edn {'read-string edn/read-string}
                           'clojure.java.shell {'sh shell/sh}
@@ -206,8 +207,7 @@ Everything after that is bound to *command-line-args*."))
                           'me.raynes.conch.low-level conch-namespace
                           'clojure.core.async async-namespace
                           'clojure.data.csv csv/csv-namespace}
-             :bindings {'*command-line-args* command-line-args
-                        'java.lang.System/exit exit ;; override exit, so we have more control
+             :bindings {'java.lang.System/exit exit ;; override exit, so we have more control
                         'System/exit exit}
              :env env
              :features #{:bb}

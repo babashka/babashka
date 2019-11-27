@@ -564,6 +564,25 @@ less
 ...
 ```
 
+### Portable tree command
+
+``` shellsession
+$ clojure -Sdeps '{:deps {org.clojure/tools.cli {:mvn/version "0.4.2"}}}' examples/tree.clj src
+src
+└── babashka
+    ├── impl
+    │   ├── tools
+    │   │   └── cli.clj
+...
+
+$ examples/tree.clj src
+src
+└── babashka
+    ├── impl
+    │   ├── tools
+    │   │   └── cli.clj
+```
+
 ## Thanks
 
 - [adgoji](https://www.adgoji.com/) for financial support
