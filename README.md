@@ -566,6 +566,8 @@ less
 
 ### Portable tree command
 
+See [examples/tree.clj](https://github.com/borkdude/babashka/blob/8afb87142e0e4da8b6f912cfd7daf9c30b805ab3/examples/tree.clj).
+
 ``` shellsession
 $ clojure -Sdeps '{:deps {org.clojure/tools.cli {:mvn/version "0.4.2"}}}' examples/tree.clj src
 src
