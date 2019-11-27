@@ -134,7 +134,7 @@
 
 (deftest eval-test
   (is (= "120\n" (test-utils/bb nil "(eval '(do (defn foo [x y] (+ x y))
-                                                (defn bar [x y] (* x y)) 
+                                                (defn bar [x y] (* x y))
                                                 (bar (foo 10 30) 3)))"))))
 
 (deftest preloads-test
@@ -177,16 +177,16 @@
 (deftest create-temp-file-test
   (let [temp-dir-path (System/getProperty "java.io.tmpdir")]
     (is (= true
-          (bb nil (format "(let [tdir (io/file \"%s\")
+           (bb nil (format "(let [tdir (io/file \"%s\")
                                  tfile
                                  (File/createTempFile \"ctf\" \"tmp\" tdir)]
                              (.deleteOnExit tfile) ; for cleanup
                              (.exists tfile))"
-                    temp-dir-path))))))
+                           temp-dir-path))))))
 
 (deftest wait-for-port-test
   (is (= :timed-out
-       (bb nil "(def web-server (conch/proc \"python\" \"-m\" \"SimpleHTTPServer\" \"7171\"))
+         (bb nil "(def web-server (conch/proc \"python\" \"-m\" \"SimpleHTTPServer\" \"7171\"))
                 (wait/wait-for-port \"127.0.0.1\" 7171)
                 (conch/destroy web-server)
                 (wait/wait-for-port \"localhost\" 7172 {:default :timed-out :timeout 50})"))))
@@ -194,7 +194,7 @@
 (deftest wait-for-path-test
   (let [temp-dir-path (System/getProperty "java.io.tmpdir")]
     (is (not= :timed-out
-          (bb nil (format "(let [tdir (io/file \"%s\")
+              (bb nil (format "(let [tdir (io/file \"%s\")
                                  tfile
                                  (File/createTempFile \"wfp\" \"tmp\" tdir)
                                  tpath (.getPath tfile)]
@@ -203,16 +203,16 @@
                              (wait/wait-for-path tpath
                                {:default :timed-out :timeout 100})
                              (.delete tfile))"
-                    temp-dir-path))))
+                              temp-dir-path))))
     (is (= :timed-out
-          (bb nil (format "(let [tdir (io/file \"%s\")
+           (bb nil (format "(let [tdir (io/file \"%s\")
                                  tfile
                                  (File/createTempFile \"wfp-to\" \"tmp\" tdir)
                                  tpath (.getPath tfile)]
                              (.delete tfile) ; for timing out test and cleanup
                              (wait/wait-for-path tpath
                                {:default :timed-out :timeout 100}))"
-                    temp-dir-path))))))
+                           temp-dir-path))))))
 
 (deftest async-test
   (is (= "process 2\n" (test-utils/bb nil "
@@ -269,3 +269,22 @@
 
 (deftest with-in-str-test
   (is (= 5 (bb nil "(count (with-in-str \"hello\" (read-line)))"))))
+
+(deftest java-nio-test
+  (let [f (java.io.File/createTempFile "foo" "bar")
+        temp-path (.getPath f)
+        p (.toPath (io/file f))
+        p' (.resolveSibling p "f2")
+        f2 (.toFile p')]
+    (bb nil (format
+             "(let [f (io/file \"%s\")
+                     p (.toPath (io/file f))
+                     p' (.resolveSibling p \"f2\")]
+                (.delete (.toFile p'))
+                (dotimes [_ 2]
+                  (try
+                    (java.nio.file.Files/copy p p' (into-array java.nio.file.CopyOption []))
+                   (catch java.nio.file.FileAlreadyExistsException _
+                     (java.nio.file.Files/copy p p' (into-array [java.nio.file.StandardCopyOption/REPLACE_EXISTING]))))))"
+             temp-path))
+    (is (.exists f2))))
