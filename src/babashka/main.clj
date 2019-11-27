@@ -10,6 +10,7 @@
    [babashka.impl.pipe-signal-handler :refer [handle-pipe! pipe-signal-received?]]
    [babashka.impl.socket-repl :as socket-repl]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
+   [io.aviso.ansi :as ansi]
    [babashka.wait :as wait]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
@@ -206,7 +207,9 @@ Everything after that is bound to *command-line-args*."))
                           'clojure.java.io io-namespace
                           'me.raynes.conch.low-level conch-namespace
                           'clojure.core.async async-namespace
-                          'clojure.data.csv csv/csv-namespace}
+                          'clojure.data.csv csv/csv-namespace
+                          'io.aviso.ansi {'blue ansi/blue
+                                          'red ansi/red}}
              :bindings {'java.lang.System/exit exit ;; override exit, so we have more control
                         'System/exit exit}
              :env env
