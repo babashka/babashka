@@ -145,6 +145,12 @@
     "allPublicConstructors": true
   },
   {
+    "name":"java.nio.file.NoSuchFileException",
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
+  },
+  {
     "name":"java.nio.file.StandardCopyOption",
     "allPublicMethods":true,
     "allPublicFields": true,

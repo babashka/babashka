@@ -232,6 +232,7 @@ Everything after that is bound to *command-line-args*."))
                        'java.nio.file.CopyOption java.nio.file.CopyOption
                        'java.nio.file.FileAlreadyExistsException java.nio.file.FileAlreadyExistsException
                        'java.nio.file.Files java.nio.file.Files
+                       'java.nio.file.NoSuchFileException java.nio.file.NoSuchFileException
                        'java.nio.file.StandardCopyOption java.nio.file.StandardCopyOption
                        }
              :imports '{ArithmeticException java.lang.ArithmeticException
