@@ -514,6 +514,28 @@ welcome!
 find . | grep conflict | bb -i '(doseq [f *in*] (.delete (io/file f)))'
 ```
 
+### Calculate aggregate size of directory
+
+``` clojure
+#!/usr/bin/env bb
+
+(as-> (io/file (or (first *command-line-args*) ".")) $
+  (file-seq $)
+  (map #(.length %) $)
+  (reduce + $)
+  (/ $ (* 1024 1024))
+  (println (str (int $) "M")))
+```
+
+``` shellsession
+$ dir-size
+130M
+
+$ dir-size ~/Dropbox/bin
+233M
+```
+
+
 ### Shuffle the lines of a file
 
 ``` shellsession
