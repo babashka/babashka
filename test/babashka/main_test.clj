@@ -6,10 +6,12 @@
    [clojure.java.shell :refer [sh]]
    [clojure.string :as str]
    [clojure.test :as test :refer [deftest is testing]]
-   [clojure.java.io :as io]))
+   [clojure.java.io :as io]
+   [sci.impl.io :as sio]
+   [sci.impl.vars :as vars]))
 
 (defn bb [input & args]
-  (edn/read-string (apply test-utils/bb (str input) (map str args))))
+  (edn/read-string (apply test-utils/bb (when (some? input) (str input)) (map str args))))
 
 (deftest parse-opts-test
   (is (= {:expression "(println 123)"}
@@ -43,7 +45,7 @@
     (is (= false (bb 0 '(and false true *in*))))
     (is (= 0 (bb 0 '(and true true *in*))))
     (is (= 1 (bb 1 '(or false false *in*))))
-    (is (= false (bb false '(or false false *in*))))
+    (is (= false (bb false '(or false false *in*)))) ;; doesn't pass!
     (is (= 3 (bb false '(or false false *in* 3)))))
   (testing "fn"
     (is (= 2 (bb 1 "(#(+ 1 %) *in*)")))
@@ -93,8 +95,13 @@
       (is (not-empty s))))
   (let [out (java.io.StringWriter.)
         err (java.io.StringWriter.)
-        exit-code (binding [*out* out *err* err]
-                    (main/main "--time" "(println \"Hello world!\") (System/exit 42)"))]
+        thread-bindings {sio/out out
+                         sio/err err}
+        exit-code (try
+                    (vars/push-thread-bindings thread-bindings)
+                    (binding [*out* out *err* err]
+                      (main/main "--time" "(println \"Hello world!\") (System/exit 42)"))
+                    (finally (vars/pop-thread-bindings)))]
     (is (= (str out) "Hello world!\n"))
     (is (re-find #"took" (str err)))
     (is (= 42 exit-code))))
@@ -110,12 +117,7 @@
          "Usage:"))))
 
 (deftest ssl-test
-  (let [graalvm-home (System/getenv "GRAALVM_HOME")
-        lib-path (format "%1$s/jre/lib:%1$s/jre/lib/amd64" graalvm-home)
-        ;; _ (prn "lib-path" lib-path)
-        resp (bb nil (format "(System/setProperty \"java.library.path\" \"%s\")
-                              (slurp \"https://www.google.com\")"
-                             lib-path))]
+  (let [resp (bb nil "(slurp \"https://www.google.com\")")]
     (is (re-find #"doctype html" resp))))
 
 (deftest stream-test
@@ -214,7 +216,7 @@
                                {:default :timed-out :timeout 100}))"
                            temp-dir-path))))))
 
-(deftest async-test
+#_(deftest async-test
   (is (= "process 2\n" (test-utils/bb nil "
    (defn async-command [& args]
      (async/thread (apply shell/sh \"bash\" \"-c\" args)))
