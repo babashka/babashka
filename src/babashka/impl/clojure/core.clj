@@ -1,6 +1,7 @@
 (ns babashka.impl.clojure.core
   {:no-doc true}
-  (:refer-clojure :exclude [future]))
+  (:refer-clojure :exclude [future])
+  (:require [sci.opts :as opts]))
 
 (defn future
   [_ _ & body]
@@ -21,7 +22,7 @@
     :else (throw (IllegalArgumentException.
                   "with-open only allows Symbols in bindings"))))
 
-(defn binding*
+#_(defn binding*
   "This macro only works with symbols that evaluate to vars themselves. See `*in*` and `*out*` below."
   [_ _ bindings & body]
   `(do
@@ -39,47 +40,51 @@
 
 (defn with-out-str*
   [_ _ & body]
+  (prn `(let [s# (java.io.StringWriter.)]
+          (clojure.core/binding [*out* s#]
+            ~@body
+            (str s#))))
   `(let [s# (java.io.StringWriter.)]
-     (binding [*out* s#]
+     (clojure.core/binding [*out* s#]
        ~@body
        (str s#))))
 
 (defn with-in-str*
   [_ _ s & body]
   `(with-open [s# (-> (java.io.StringReader. ~s) clojure.lang.LineNumberingPushbackReader.)]
-     (binding [*in* s#]
+     (clojure.core/binding [*in* s#]
        ~@body)))
 
 (def core-extras
-  {'*in* #'*in*
-   '*out* #'*out*
-   'binding (with-meta binding* {:sci/macro true})
-   'file-seq file-seq
-   'future-call future-call
-   'future (with-meta future {:sci/macro true})
-   'future-cancel future-cancel
-   'future-cancelled? future-cancelled?
-   'future-done? future-done?
-   'future? future?
-   'agent agent
-   'send send
-   'send-off send-off
-   'promise promise
-   'deliver deliver
-   'shutdown-agents shutdown-agents
-   'slurp slurp
-   'spit spit
-   'pmap pmap
-   'pr pr
-   'prn prn
-   'print print
-   'println println
-   'println-str println-str
-   'pop-thread-bindings pop-thread-bindings
-   'push-thread-bindings push-thread-bindings
-   'flush flush
-   'read-line read-line
-   '__close!__ __close!__
-   'with-open (with-meta with-open* {:sci/macro true}) 
-   'with-out-str (with-meta with-out-str* {:sci/macro true})
-   'with-in-str (with-meta with-in-str* {:sci/macro true})})
+  (->
+   {}
+   (opts/with-dynamic-var *in* *in*)
+   (opts/with-dynamic-var *out* *out*)
+   (assoc
+    'file-seq file-seq
+    'future-call future-call
+    'future (with-meta future {:sci/macro true})
+    'future-cancel future-cancel
+    'future-cancelled? future-cancelled?
+    'future-done? future-done?
+    'future? future?
+    'agent agent
+    'send send
+    'send-off send-off
+    'promise promise
+    'deliver deliver
+    'shutdown-agents shutdown-agents
+    'slurp slurp
+    'spit spit
+    'pmap pmap
+    'pr pr
+    'prn prn
+    'print print
+    'println println
+    'println-str println-str
+    'flush flush
+    'read-line read-line
+    '__close!__ __close!__
+    'with-open (with-meta with-open* {:sci/macro true})
+    'with-out-str (with-meta with-out-str* {:sci/macro true})
+    'with-in-str (with-meta with-in-str* {:sci/macro true}))))
