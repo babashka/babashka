@@ -6,7 +6,7 @@
    [clojure.java.io :as io]
    [clojure.string :as str]
    [clojure.tools.reader.reader-types :as r]
-   [sci.opts :refer [initialize]]
+   [sci.impl.opts :refer [init]]
    [sci.impl.interpreter :refer [eval-form]]
    [sci.impl.parser :as parser]))
 
@@ -55,7 +55,7 @@
                       [(first parts) (Integer. ^String (second parts))])
         host+port (if-not host (str "localhost:" port)
                           host+port)
-        sci-ctx (initialize sci-opts)
+        sci-ctx (init sci-opts)
         socket (server/start-server
                 {:address host
                  :port port
