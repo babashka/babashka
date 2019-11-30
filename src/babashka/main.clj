@@ -141,7 +141,6 @@ Everything after that is bound to *command-line-args*."))
       (throw (Exception. (str "File does not exist: " file))))))
 
 (defn read-edn []
-  (spit "/tmp/log.txt" (str ">>>" *in*))
   (edn/read {;;:readers *data-readers*
              :eof ::EOF} *in*))
 

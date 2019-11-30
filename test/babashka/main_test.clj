@@ -45,7 +45,7 @@
     (is (= false (bb 0 '(and false true *in*))))
     (is (= 0 (bb 0 '(and true true *in*))))
     (is (= 1 (bb 1 '(or false false *in*))))
-    (is (= false (bb false '(or false false *in*)))) ;; doesn't pass!
+    (is (= false (bb false '(or false false *in*))))
     (is (= 3 (bb false '(or false false *in* 3)))))
   (testing "fn"
     (is (= 2 (bb 1 "(#(+ 1 %) *in*)")))
@@ -213,7 +213,7 @@
                                {:default :timed-out :timeout 100}))"
                            temp-dir-path))))))
 
-#_(deftest async-test
+(deftest async-test
   (is (= "process 2\n" (test-utils/bb nil "
    (defn async-command [& args]
      (async/thread (apply shell/sh \"bash\" \"-c\" args)))
