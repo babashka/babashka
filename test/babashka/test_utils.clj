@@ -7,21 +7,6 @@
 
 (set! *warn-on-reflection* true)
 
-#_(defn bb-jvm [input & args]
-  (let [es (java.io.StringWriter.)
-        os (java.io.StringWriter.)]
-    (binding [*err* es
-              *out* os]
-      (let [res (if input
-                  (with-in-str input
-                    (apply main/main args))
-                  (apply main/main args))]
-        (if (zero? res)
-          (str os)
-          (throw (ex-info (str es)
-                          {:stdout (str os)
-                           :stderr (str es)})))))))
-
 (defn bb-jvm [input & args]
   (let [os (java.io.StringWriter.)
         es (java.io.StringWriter.)
@@ -29,18 +14,17 @@
         thread-bindings (cond-> {sio/out os
                                  sio/err es}
                           is (assoc sio/in is))]
-    (try (vars/push-thread-bindings thread-bindings)
-         (let [res (binding [*out* os
-                             *err* es]
-                     (if input
-                       (with-in-str input (apply main/main args))
-                       (apply main/main args)))]
-           (if (zero? res)
-             (str os)
-             (throw (ex-info (str es)
-                             {:stdout (str os)
-                              :stderr (str es)}))))
-         (finally (vars/pop-thread-bindings)))))
+    (vars/with-sci-bindings thread-bindings
+      (let [res (binding [*out* os
+                          *err* es]
+                  (if input
+                    (with-in-str input (apply main/main args))
+                    (apply main/main args)))]
+        (if (zero? res)
+          (str os)
+          (throw (ex-info (str es)
+                          {:stdout (str os)
+                           :stderr (str es)})))))))
 
 (defn bb-native [input & args]
   (let-programs [bb "./bb"]

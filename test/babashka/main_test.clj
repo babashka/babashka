@@ -95,13 +95,10 @@
       (is (not-empty s))))
   (let [out (java.io.StringWriter.)
         err (java.io.StringWriter.)
-        thread-bindings {sio/out out
-                         sio/err err}
-        exit-code (try
-                    (vars/push-thread-bindings thread-bindings)
+        exit-code (vars/with-sci-bindings {sio/out out
+                                           sio/err err}
                     (binding [*out* out *err* err]
-                      (main/main "--time" "(println \"Hello world!\") (System/exit 42)"))
-                    (finally (vars/pop-thread-bindings)))]
+                      (main/main "--time" "(println \"Hello world!\") (System/exit 42)")))]
     (is (= (str out) "Hello world!\n"))
     (is (re-find #"took" (str err)))
     (is (= 42 exit-code))))
