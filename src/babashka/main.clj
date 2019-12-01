@@ -215,6 +215,7 @@ Everything after that is bound to *command-line-args*."))
                        'java.lang.AssertionError AssertionError
                        'java.lang.Boolean Boolean
                        'java.io.BufferedWriter java.io.BufferedWriter
+                       'java.io.BufferedReader java.io.BufferedReader
                        'java.lang.Class Class
                        'java.lang.Double Double
                        'java.lang.Exception Exception
