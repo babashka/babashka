@@ -7,8 +7,7 @@
    [clojure.string :as str]
    [clojure.test :as test :refer [deftest is testing]]
    [clojure.java.io :as io]
-   [sci.impl.io :as sio]
-   [sci.impl.vars :as vars]))
+   [sci.core :as sci]))
 
 (defn bb [input & args]
   (edn/read-string (apply test-utils/bb (when (some? input) (str input)) (map str args))))
@@ -98,8 +97,8 @@
       (is (not-empty s))))
   (let [out (java.io.StringWriter.)
         err (java.io.StringWriter.)
-        exit-code (vars/with-sci-bindings {sio/out out
-                                           sio/err err}
+        exit-code (sci/with-bindings {sci/*out* out
+                                      sci/*err* err}
                     (binding [*out* out *err* err]
                       (main/main "--time" "(println \"Hello world!\") (System/exit 42)")))]
     (is (= (str out) "Hello world!\n"))

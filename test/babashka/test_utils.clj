@@ -2,8 +2,7 @@
   (:require
    [babashka.main :as main]
    [me.raynes.conch :refer [let-programs] :as sh]
-   [sci.impl.io :as sio]
-   [sci.impl.vars :as vars]))
+   [sci.core :as sci]))
 
 (set! *warn-on-reflection* true)
 
@@ -11,10 +10,10 @@
   (let [os (java.io.StringWriter.)
         es (java.io.StringWriter.)
         is (when input (java.io.StringReader. input))
-        thread-bindings (cond-> {sio/out os
-                                 sio/err es}
-                          is (assoc sio/in is))]
-    (vars/with-sci-bindings thread-bindings
+        thread-bindings (cond-> {sci/*out* os
+                                 sci/*err* es}
+                          is (assoc sci/*in* is))]
+    (sci/with-bindings thread-bindings
       (let [res (binding [*out* os
                           *err* es]
                   (if input
