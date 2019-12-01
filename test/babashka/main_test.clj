@@ -84,6 +84,9 @@
                 "(map-indexed #(-> [%1 %2]) *in*)")
             (bb "(keep #(when (re-find #\"(?i)clojure\" (second %)) (first %)) *in*)"))))))
 
+(deftest println-test
+  (is (= "hello\n" (test-utils/bb nil "(println \"hello\")"))))
+
 (deftest input-test
   (testing "bb doesn't wait for input if *in* isn't used"
     (is (= "2\n" (with-out-str (main/main "(inc 1)"))))))

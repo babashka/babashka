@@ -22,7 +22,4 @@
    'shutdown-agents shutdown-agents
    'slurp slurp
    'spit spit
-   'pmap pmap
-   ;;'__close!__ __close!__
-   ;; 'with-open (with-meta with-open* {:sci/macro true})
-   })
+   'pmap pmap})
