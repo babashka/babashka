@@ -9,11 +9,12 @@
 (defn bb-jvm [input & args]
   (let [os (java.io.StringWriter.)
         es (java.io.StringWriter.)
-        is (when input (java.io.StringReader. input))
-        thread-bindings (cond-> {sci/*out* os
-                                 sci/*err* es}
-                          is (assoc sci/*in* is))]
-    (sci/with-bindings thread-bindings
+        is (when input
+             (java.io.StringReader. input))
+        bindings-map (cond-> {sci/*out* os
+                              sci/*err* es}
+                       is (assoc sci/*in* is))]
+    (sci/with-redefs bindings-map
       (let [res (binding [*out* os
                           *err* es]
                   (if input

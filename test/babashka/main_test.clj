@@ -289,3 +289,9 @@
                      (java.nio.file.Files/copy p p' (into-array [java.nio.file.StandardCopyOption/REPLACE_EXISTING]))))))"
              temp-path))
     (is (.exists f2))))
+
+(deftest future-print-test
+  (testing "the root binding of sci/*out*"
+    (is (= "hello"  (bb nil "@(future (prn \"hello\"))"))))
+
+  )

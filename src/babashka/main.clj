@@ -163,6 +163,10 @@ Everything after that is bound to *command-line-args*."))
 (defn exit [n]
   (throw (ex-info "" {:bb/exit-code n})))
 
+(sci/set-var-root! sci/*in* *in*)
+(sci/set-var-root! sci/*out* *out*)
+(sci/set-var-root! sci/*err* *err*)
+
 (defn main
   [& args]
   (handle-pipe!)
@@ -247,9 +251,10 @@ Everything after that is bound to *command-line-args*."))
                         String java.lang.String
                         System java.lang.System
                         Thread java.lang.Thread}
-             :in *in*
-             :out *out*
-             :err *err*}
+             ;; :in *in*
+             ;; :out *out*
+             ;; :err *err*
+             }
         ctx (update ctx :bindings assoc 'eval #(eval* ctx %)
                                         'load-file #(load-file* ctx %))
         _preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim) (sci/eval-string ctx))
