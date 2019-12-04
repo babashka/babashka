@@ -250,11 +250,7 @@ Everything after that is bound to *command-line-args*."))
                         File java.io.File
                         String java.lang.String
                         System java.lang.System
-                        Thread java.lang.Thread}
-             ;; :in *in*
-             ;; :out *out*
-             ;; :err *err*
-             }
+                        Thread java.lang.Thread}}
         ctx (update ctx :bindings assoc 'eval #(eval* ctx %)
                                         'load-file #(load-file* ctx %))
         _preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim) (sci/eval-string ctx))
