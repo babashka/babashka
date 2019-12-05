@@ -14,7 +14,7 @@
         bindings-map (cond-> {sci/out os
                               sci/err es}
                        is (assoc sci/in is))]
-    (sci/with-redefs bindings-map
+    (sci/with-bindings bindings-map
       (let [res (binding [*out* os
                           *err* es]
                   (if input
