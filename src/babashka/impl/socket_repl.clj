@@ -6,8 +6,9 @@
    [clojure.java.io :as io]
    [clojure.string :as str]
    [clojure.tools.reader.reader-types :as r]
-   [sci.impl.opts :refer [init]]
+   [sci.core :as sci]
    [sci.impl.interpreter :refer [eval-form]]
+   [sci.impl.opts :refer [init]]
    [sci.impl.parser :as parser]))
 
 (set! *warn-on-reflection* true)
@@ -33,17 +34,20 @@
                    v))
                request-exit))
      :eval (fn [expr]
-             (let [ret (eval-form (update sci-ctx
-                                          :env
-                                          (fn [env]
-                                            (swap! env update-in [:namespaces 'clojure.core]
-                                                   assoc
-                                                   '*1 *1
-                                                   '*2 *2
-                                                   '*3 *3
-                                                   '*e *e)
-                                            env))
-                                  expr)]
+             (let [ret (sci/with-bindings {sci/*in* *in*
+                                           sci/*out* *out*
+                                           sci/*err* *err*}
+                         (eval-form (update sci-ctx
+                                            :env
+                                            (fn [env]
+                                              (swap! env update-in [:namespaces 'clojure.core]
+                                                     assoc
+                                                     '*1 *1
+                                                     '*2 *2
+                                                     '*3 *3
+                                                     '*e *e)
+                                              env))
+                                    expr))]
                ret))
      :need-prompt (fn [] true)
      :prompt #(printf "%s=> " (-> sci-ctx :env deref :current-ns)))))

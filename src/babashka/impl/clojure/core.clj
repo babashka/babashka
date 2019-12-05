@@ -4,7 +4,8 @@
 
 (defn future
   [_ _ & body]
-  `(~'future-call (fn [] ~@body)))
+  `(let [f# (~'binding-conveyor-fn (fn [] ~@body))]
+     (~'future-call f#)))
 
 (def core-extras
   {'file-seq file-seq

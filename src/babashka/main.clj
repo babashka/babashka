@@ -10,12 +10,12 @@
    [babashka.impl.pipe-signal-handler :refer [handle-pipe! pipe-signal-received?]]
    [babashka.impl.socket-repl :as socket-repl]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
+   [babashka.impl.utils :refer [eval-string]]
    [babashka.wait :as wait]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.java.shell :as shell]
-   [clojure.string :as str]
-   [sci.core :as sci])
+   [clojure.string :as str])
   (:gen-class))
 
 (set! *warn-on-reflection* true)
@@ -146,10 +146,10 @@ Everything after that is bound to *command-line-args*."))
 
 (defn load-file* [ctx file]
   (let [s (slurp file)]
-    (sci/eval-string s ctx)))
+    (eval-string s ctx)))
 
 (defn eval* [ctx form]
-  (sci/eval-string (pr-str form) ctx))
+  (eval-string (pr-str form) ctx))
 
 (defn start-socket-repl! [address ctx read-next]
   (let [ctx (update ctx :bindings assoc
@@ -163,9 +163,9 @@ Everything after that is bound to *command-line-args*."))
 (defn exit [n]
   (throw (ex-info "" {:bb/exit-code n})))
 
-(sci/set-var-root! sci/*in* *in*)
-(sci/set-var-root! sci/*out* *out*)
-(sci/set-var-root! sci/*err* *err*)
+;; (sci/set-var-root! sci/*in* *in*)
+;; (sci/set-var-root! sci/*out* *out*)
+;; (sci/set-var-root! sci/*err* *err*)
 
 (defn main
   [& args]
@@ -253,7 +253,7 @@ Everything after that is bound to *command-line-args*."))
                         Thread java.lang.Thread}}
         ctx (update ctx :bindings assoc 'eval #(eval* ctx %)
                                         'load-file #(load-file* ctx %))
-        _preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim) (sci/eval-string ctx))
+        _preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim) (eval-string ctx))
         exit-code
         (or
          #_(binding [*out* *err*]
@@ -274,7 +274,7 @@ Everything after that is bound to *command-line-args*."))
                                                                                {:sci/deref! true})) in)]
                           (if (identical? ::EOF in)
                             [nil 0] ;; done streaming
-                            (let [res [(let [res (sci/eval-string expr ctx)]
+                            (let [res [(let [res (eval-string expr ctx)]
                                          (when (some? res)
                                            (if-let [pr-f (cond shell-out println
                                                                edn-out prn)]
