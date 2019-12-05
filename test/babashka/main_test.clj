@@ -97,8 +97,8 @@
       (is (not-empty s))))
   (let [out (java.io.StringWriter.)
         err (java.io.StringWriter.)
-        exit-code (sci/with-bindings {sci/*out* out
-                                      sci/*err* err}
+        exit-code (sci/with-bindings {sci/out out
+                                      sci/err err}
                     (binding [*out* out *err* err]
                       (main/main "--time" "(println \"Hello world!\") (System/exit 42)")))]
     (is (= (str out) "Hello world!\n"))

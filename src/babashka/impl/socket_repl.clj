@@ -34,9 +34,9 @@
                    v))
                request-exit))
      :eval (fn [expr]
-             (let [ret (sci/with-bindings {sci/*in* *in*
-                                           sci/*out* *out*
-                                           sci/*err* *err*}
+             (let [ret (sci/with-bindings {sci/in *in*
+                                           sci/out *out*
+                                           sci/err *err*}
                          (eval-form (update sci-ctx
                                             :env
                                             (fn [env]
