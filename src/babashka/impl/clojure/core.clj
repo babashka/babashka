@@ -9,5 +9,6 @@
    'send-off send-off
    'promise promise
    'deliver deliver
+   'shutdown-agents shutdown-agents
    'slurp slurp
    'spit spit})
