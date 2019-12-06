@@ -15,7 +15,8 @@
    [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.java.shell :as shell]
-   [clojure.string :as str])
+   [clojure.string :as str]
+   [sci.addons :as addons])
   (:gen-class))
 
 (set! *warn-on-reflection* true)
@@ -252,7 +253,8 @@ Everything after that is bound to *command-line-args*."))
                         System java.lang.System
                         Thread java.lang.Thread}}
         ctx (update ctx :bindings assoc 'eval #(eval* ctx %)
-                                        'load-file #(load-file* ctx %))
+                    'load-file #(load-file* ctx %))
+        ctx (addons/future ctx)
         _preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim) (eval-string ctx))
         exit-code
         (or
