@@ -21,8 +21,7 @@
       (when-let [l (.readLine ^java.io.BufferedReader reader)]
         (binding [*out* sw]
           (println l))
-        (when-not (str/includes? l expected)
-          (recur))))
+        (recur)))
     (let [s (str sw)]
       (is (str/includes? s expected)
           (format "\"%s\" does not contain \"%s\""
@@ -46,15 +45,15 @@
       (while (not (zero? (:exit
                           (sh "bash" "-c"
                               "lsof -t -i:1666"))))))
-    (is (socket-command '(+ 1 2 3) "user=> 6"))
+    (is (socket-command "(+ 1 2 3)" "user=> 6"))
     (testing "*in*"
       (is (socket-command "*in*" "[1 2 3]")))
     (testing "*command-line-args*"
       (is (socket-command '*command-line-args* "\"a\" \"b\" \"c\"")))
     (testing "&env"
-      (socket-command '(defmacro bindings [] (mapv #(list 'quote %) (keys &env))) "")
-      (socket-command '(defn bar [x y z] (bindings)) "")
-      (is (socket-command '(bar 1 2 3) "[x y z]")))
+      (socket-command "(defmacro bindings [] (mapv #(list 'quote %) (keys &env)))" "bindings")
+      (socket-command "(defn bar [x y z] (bindings))" "bar")
+      (is (socket-command "(bar 1 2 3)" "[x y z]")))
     (testing "reader conditionals"
       (is (socket-command "#?(:bb 1337 :clj 8888)" "1337")))
     (testing "*1, *2, *3, *e"
@@ -69,7 +68,8 @@
 
 (comment
   (socket-repl-test)
-  (t/run-tests)
+  (dotimes [_ 1000]
+    (t/run-tests))
   (stop-repl!)
   (start-repl! "0.0.0.0:1666" {:bindings {(with-meta '*in*
                                             {:sci/deref! true})
