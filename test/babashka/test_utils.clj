@@ -1,19 +1,25 @@
 (ns babashka.test-utils
   (:require
    [babashka.main :as main]
-   [me.raynes.conch :refer [let-programs] :as sh]))
+   [me.raynes.conch :refer [let-programs] :as sh]
+   [sci.core :as sci]))
 
 (set! *warn-on-reflection* true)
 
 (defn bb-jvm [input & args]
-  (let [es (java.io.StringWriter.)
-        os (java.io.StringWriter.)]
-    (binding [*err* es
-              *out* os]
-      (let [res (if input
-                  (with-in-str input
-                    (apply main/main args))
-                  (apply main/main args))]
+  (let [os (java.io.StringWriter.)
+        es (java.io.StringWriter.)
+        is (when input
+             (java.io.StringReader. input))
+        bindings-map (cond-> {sci/out os
+                              sci/err es}
+                       is (assoc sci/in is))]
+    (sci/with-bindings bindings-map
+      (let [res (binding [*out* os
+                          *err* es]
+                  (if input
+                    (with-in-str input (apply main/main args))
+                    (apply main/main args)))]
         (if (zero? res)
           (str os)
           (throw (ex-info (str es)

@@ -25,7 +25,9 @@
   },
   {
     "name":"java.io.BufferedReader",
-    "allPublicMethods":true
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
   },
   {
     "name": "java.lang.Class",
