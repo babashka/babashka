@@ -23,7 +23,11 @@
           (println l))
         (when-not (str/includes? l expected)
           (recur))))
-    (str sw)))
+    (let [s (str sw)]
+      (is (str/includes? s expected)
+          (format "\"%s\" does not contain \"%s\""
+                  s expected))
+      s)))
 
 (deftest socket-repl-test
   (try
@@ -65,6 +69,7 @@
 
 (comment
   (socket-repl-test)
+  (t/run-tests)
   (stop-repl!)
   (start-repl! "0.0.0.0:1666" {:bindings {(with-meta '*in*
                                             {:sci/deref! true})
