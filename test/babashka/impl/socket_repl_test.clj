@@ -4,19 +4,38 @@
    [babashka.test-utils :as tu]
    [clojure.java.shell :refer [sh]]
    [clojure.string :as str]
-   [clojure.test :as t :refer [deftest is testing]]))
+   [clojure.test :as t :refer [deftest is testing]]
+   [clojure.java.io :as io]))
+
+(set! *warn-on-reflection* true)
 
 (def mac?
   (str/includes?
    (str/lower-case (System/getProperty "os.name"))
    "mac"))
 
-(defn socket-command [expr]
+(defn socket-command-old [expr]
   (let [expr (format "echo \"%s\n:repl/exit\" | nc 127.0.0.1 1666"
                      (pr-str expr))
         ret (sh "bash" "-c"
                 expr)]
     (:out ret)))
+
+(defn socket-command [expr]
+  (with-open [socket (java.net.Socket. "127.0.0.1" 1666)
+              reader (io/reader socket)
+              sw (java.io.StringWriter.)]
+    (let [writer (io/writer socket)]
+      (.write writer (str expr "\n"))
+      (.flush writer)
+      ;; (.close writer) ;; how to emulate ctrl-D?
+      (.write writer (str ":repl/exit\n"))
+      (loop []
+        (when-let [l (.readLine ^java.io.BufferedReader reader)]
+          (binding [*out* sw]
+            (println l))
+          (recur)))
+      (str sw))))
 
 (deftest socket-repl-test
   (try
@@ -75,4 +94,12 @@
 
 (comment
   (socket-repl-test)
+  (stop-repl!)
+  (start-repl! "0.0.0.0:1666" {:bindings {(with-meta '*in*
+                                            {:sci/deref! true})
+                                          (delay [1 2 3])
+                                          '*command-line-args*
+                                          ["a" "b" "c"]}
+                               :env (atom {})})
+  (socket-command "(+ 1 2 3)")
   )
