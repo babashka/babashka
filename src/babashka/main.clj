@@ -235,6 +235,9 @@ Everything after that is bound to *command-line-args*."))
                        'java.lang.System System
                        'java.lang.Thread Thread
                        'sun.nio.fs.UnixPath sun.nio.fs.UnixPath
+                       'java.nio.file.attribute.FileAttribute java.nio.file.attribute.FileAttribute
+                       'java.nio.file.attribute.PosixFilePermission java.nio.file.attribute.PosixFilePermission
+                       'java.nio.file.attribute.PosixFilePermissions java.nio.file.attribute.PosixFilePermissions
                        'java.nio.file.CopyOption java.nio.file.CopyOption
                        'java.nio.file.FileAlreadyExistsException java.nio.file.FileAlreadyExistsException
                        'java.nio.file.Files java.nio.file.Files
