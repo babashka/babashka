@@ -39,9 +39,7 @@
                        "user=> 6"))
     (testing "ctrl-d exits normally, doesn't print nil"
       (is (str/ends-with? (:out (sh "bash" "-c"
-                                    (if mac? ;; mac doesn't support -q
-                                      "echo \"(inc 1336)\" | nc 127.0.0.1 1666"
-                                      "echo \"(inc 1336)\" | nc -q 1 127.0.0.1 1666")))
+                                    "echo \"(inc 1336)\" | nc 127.0.0.1 1666"))
                           "1337\nuser=> ")))
     (testing "*in*"
       (is (str/includes? (socket-command "*in*")
