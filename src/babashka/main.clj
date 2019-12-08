@@ -309,7 +309,7 @@ Everything after that is bound to *command-line-args*."))
                               (if stream?
                                 (recur (read-next *in*))
                                 res)))))
-                      [(print-help) 1]))
+                      [(start-repl! ctx #(read-next *in*)) 0]))
                   (catch Throwable e
                     (binding [*out* *err*]
                       (let [d (ex-data e)
