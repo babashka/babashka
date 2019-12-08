@@ -80,6 +80,10 @@
                    (let [options (rest options)]
                      (recur (rest options)
                             (assoc opts-map :expression (first options))))
+                   ("--classpath", "-cp")
+                   (let [options (rest options)]
+                     (recur (rest options)
+                            (assoc opts-map :classpath (first options))))
                    (if (some opts-map [:file :socket-repl :expression])
                      (assoc opts-map
                             :command-line-args options)
@@ -192,7 +196,7 @@ Everything after that is bound to *command-line-args*."))
                 :help? :file :command-line-args
                 :expression :stream? :time?
                 :repl :socket-repl
-                :verbose?] :as _opts}
+                :verbose? :classpath] :as _opts}
         (parse-opts args)
         read-next (fn [*in*]
                     (if (pipe-signal-received?)
@@ -270,7 +274,8 @@ Everything after that is bound to *command-line-args*."))
                         File java.io.File
                         String java.lang.String
                         System java.lang.System
-                        Thread java.lang.Thread}}
+                        Thread java.lang.Thread}
+             :classpath classpath}
         ctx (update ctx :bindings assoc 'eval #(eval* ctx %)
                     'load-file #(load-file* ctx %))
         ctx (addons/future ctx)
