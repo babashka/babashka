@@ -49,7 +49,6 @@
      :need-prompt (fn [] true)
      :prompt #(printf "%s=> " (-> sci-ctx :env deref :current-ns)))))
 
-
 (defn start-repl! [ctx]
   (let [sci-ctx (init ctx)]
     (repl sci-ctx)))

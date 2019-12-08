@@ -70,7 +70,7 @@
                    (let [options (rest options)]
                      (recur (rest options)
                             (assoc opts-map
-                                   :repl (first options))))
+                                   :repl true)))
                    ("--socket-repl")
                    (let [options (rest options)]
                      (recur (rest options)
@@ -133,6 +133,7 @@
   --stream: stream over lines or EDN values from stdin. Combined with -i or -I *in* becomes a single value per iteration.
   -e, --eval <expression>: evaluate an expression
   -f, --file <path>: evaluate a file
+  --repl: start REPL
   --socket-repl: start socket REPL. Specify port (e.g. 1666) or host and port separated by colon (e.g. 127.0.0.1:1666).
   --time: print execution time before exiting.
 
@@ -163,9 +164,7 @@ Everything after that is bound to *command-line-args*."))
                     (with-meta '*in*
                       {:sci/deref! true})
                     (read-next))]
-    (repl/start-repl! ctx)
-    ;; hang until SIGINT
-    @(promise)))
+    (repl/start-repl! ctx)))
 
 (defn start-socket-repl! [address ctx read-next]
   (let [ctx (update ctx :bindings assoc
