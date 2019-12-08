@@ -8,6 +8,7 @@
    [babashka.impl.conch :refer [conch-namespace]]
    [babashka.impl.csv :as csv]
    [babashka.impl.pipe-signal-handler :refer [handle-pipe! pipe-signal-received?]]
+   [babashka.impl.repl :as repl]
    [babashka.impl.socket-repl :as socket-repl]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
    [babashka.impl.utils :refer [eval-string]]
@@ -65,6 +66,11 @@
                      (recur (rest options)
                             (assoc opts-map
                                    :file (first options))))
+                   ("--repl")
+                   (let [options (rest options)]
+                     (recur (rest options)
+                            (assoc opts-map
+                                   :repl true)))
                    ("--socket-repl")
                    (let [options (rest options)]
                      (recur (rest options)
@@ -127,6 +133,7 @@
   --stream: stream over lines or EDN values from stdin. Combined with -i or -I *in* becomes a single value per iteration.
   -e, --eval <expression>: evaluate an expression
   -f, --file <path>: evaluate a file
+  --repl: start REPL
   --socket-repl: start socket REPL. Specify port (e.g. 1666) or host and port separated by colon (e.g. 127.0.0.1:1666).
   --time: print execution time before exiting.
 
@@ -152,6 +159,13 @@ Everything after that is bound to *command-line-args*."))
 (defn eval* [ctx form]
   (eval-string (pr-str form) ctx))
 
+(defn start-repl! [ctx read-next]
+  (let [ctx (update ctx :bindings assoc
+                    (with-meta '*in*
+                      {:sci/deref! true})
+                    (read-next))]
+    (repl/start-repl! ctx)))
+
 (defn start-socket-repl! [address ctx read-next]
   (let [ctx (update ctx :bindings assoc
                     (with-meta '*in*
@@ -176,7 +190,9 @@ Everything after that is bound to *command-line-args*."))
   (let [t0 (System/currentTimeMillis)
         {:keys [:version :shell-in :edn-in :shell-out :edn-out
                 :help? :file :command-line-args
-                :expression :stream? :time? :socket-repl :verbose?] :as _opts}
+                :expression :stream? :time?
+                :repl :socket-repl
+                :verbose?] :as _opts}
         (parse-opts args)
         read-next (fn [*in*]
                     (if (pipe-signal-received?)
@@ -268,6 +284,7 @@ Everything after that is bound to *command-line-args*."))
                 [(print-version) 0]
                 help?
                 [(print-help) 0]
+                repl [(start-repl! ctx #(read-next *in*)) 0]
                 socket-repl [(start-socket-repl! socket-repl ctx #(read-next *in*)) 0]
                 :else
                 (try
@@ -292,7 +309,7 @@ Everything after that is bound to *command-line-args*."))
                               (if stream?
                                 (recur (read-next *in*))
                                 res)))))
-                      [(print-help) 1]))
+                      [(start-repl! ctx #(read-next *in*)) 0]))
                   (catch Throwable e
                     (binding [*out* *err*]
                       (let [d (ex-data e)

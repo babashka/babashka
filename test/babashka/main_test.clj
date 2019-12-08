@@ -107,13 +107,7 @@
 
 (deftest malformed-command-line-args-test
   (is (thrown-with-msg? Exception #"File does not exist: non-existing\n"
-                        (bb nil "-f" "non-existing")))
-  (testing "no arguments prints help"
-    (is (str/includes?
-         (try (test-utils/bb nil)
-              (catch clojure.lang.ExceptionInfo e
-                (:stdout (ex-data e))))
-         "Usage:"))))
+                        (bb nil "-f" "non-existing"))))
 
 (deftest ssl-test
   (let [resp (bb nil "(slurp \"https://www.google.com\")")]
