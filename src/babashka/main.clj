@@ -110,12 +110,12 @@
 (defn print-version []
   (println (str "babashka v"(str/trim (slurp (io/resource "BABASHKA_VERSION"))))))
 
-(def usage-string "Usage: bb [ -i | -I ] [ -o | -O ] [--verbose] [ --stream ] ( -e <expression> | -f <file> | --socket-repl [<host>:]<port> )")
+(def usage-string "Usage: bb [ -i | -I ] [ -o | -O ] [--verbose] [ --stream ] ( -e <expression> | -f <file> | --repl | --socket-repl [<host>:]<port> )")
 (defn print-usage []
   (println usage-string))
 
 (defn print-help []
-  (println (str "babashka v" (str/trim (slurp (io/resource "BABASHKA_VERSION")))))
+  (println (str "Babashka v" (str/trim (slurp (io/resource "BABASHKA_VERSION")))))
   ;; (println (str "sci v" (str/trim (slurp (io/resource "SCI_VERSION")))))
   (println)
   (print-usage)
