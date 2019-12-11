@@ -14,3 +14,7 @@
   (is (= "hello from foo\n"
          (tu/bb nil "--classpath" "test/babashka/src_for_classpath_test/foo.jar"
                 "(require '[foo :as f]) (f/foo)"))))
+
+(deftest main-test
+  (is (= "hello from foo\n"
+         (tu/bb nil "--classpath" "test/babashka/src_for_classpath_test" "-m" "my.main" "1" "2" "3" "4"))))

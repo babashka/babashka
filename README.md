@@ -320,10 +320,7 @@ $ cat src/my/namespace.clj
 (defn -main [& _args]
   (println "Hello from my namespace!"))
 
-$ bb --classpath src -e "
-(require '[my.namespace :as nm])
-(nm/run!)
-"
+$ bb --classpath src --main my.namespace
 ```
 
 
