@@ -151,8 +151,9 @@ Everything after that is bound to *command-line-args*.
 The `clojure.core` functions are accessible without a namespace alias.
 
 The following namespaces are required by default and available through the
-pre-defined aliases. You may use `require` + `:as` and/or `:refer` on these
-namespaces. If not all vars are available, they are enumerated explicitly.
+pre-defined aliases in the `user` namespace. You may use `require` + `:as`
+and/or `:refer` on these namespaces. If not all vars are available, they are
+enumerated explicitly.
 
 - `clojure.string` aliased as `str`
 - `clojure.set` aliased as `set`
@@ -169,6 +170,7 @@ namespaces. If not all vars are available, they are enumerated explicitly.
   aliased as `conch`
 - [`clojure.tools.cli`](https://github.com/clojure/tools.cli) aliased as `tools.cli`
 - [`clojure.data.csv`](https://github.com/clojure/data.csv) aliased as `csv`
+- [`cheshire.core`](https://github.com/dakrone/cheshire) aliased as `json`
 
 The following Java classes are available:
 

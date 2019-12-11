@@ -2,6 +2,7 @@
   {:no-doc true}
   (:require
    [babashka.impl.async :refer [async-namespace]]
+   [babashka.impl.cheshire :refer [cheshire-core-namespace]]
    [babashka.impl.clojure.core :refer [core-extras]]
    [babashka.impl.clojure.java.io :refer [io-namespace]]
    [babashka.impl.clojure.stacktrace :refer [print-stack-trace]]
@@ -219,7 +220,8 @@ Everything after that is bound to *command-line-args*."))
                         io clojure.java.io
                         conch me.raynes.conch.low-level
                         async clojure.core.async
-                        csv clojure.data.csv}
+                        csv clojure.data.csv
+                        json cheshire.core}
              :namespaces {'clojure.core (assoc core-extras
                                                '*command-line-args* command-line-args)
                           'clojure.tools.cli tools-cli-namespace
@@ -231,7 +233,8 @@ Everything after that is bound to *command-line-args*."))
                           'clojure.java.io io-namespace
                           'me.raynes.conch.low-level conch-namespace
                           'clojure.core.async async-namespace
-                          'clojure.data.csv csv/csv-namespace}
+                          'clojure.data.csv csv/csv-namespace
+                          'cheshire.core cheshire-core-namespace}
              :bindings {'java.lang.System/exit exit ;; override exit, so we have more control
                         'System/exit exit}
              :env env
