@@ -1,4 +1,5 @@
-(ns my.main)
+(ns my.main
+  (:require [my.impl :as impl]))
 
 (defn -main [& args]
-  args)
+  (impl/impl-fn args))
