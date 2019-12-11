@@ -120,7 +120,10 @@
 (defn print-version []
   (println (str "babashka v"(str/trim (slurp (io/resource "BABASHKA_VERSION"))))))
 
-(def usage-string "Usage: bb [ -i | -I ] [ -o | -O ] [--verbose] [ --stream ] ( -e <expression> | -f <file> | --repl | --socket-repl [<host>:]<port> )")
+(def usage-string "Usage: bb [ -i | -I ] [ -o | -O ] [ --stream ] [--verbose]
+          [ ( --classpath | -cp ) <cp> ] [ ( --main | -m ) <main-namespace> ]
+          ( -e <expression> | -f <file> | --repl | --socket-repl [<host>:]<port> )
+          [ *args ]")
 (defn print-usage []
   (println usage-string))
 
@@ -132,20 +135,21 @@
   (println)
   (println "Options:")
   (println "
-  --help, -h or -?: print this help text.
-  --version: print the current version of babashka.
-
-  -i: bind *in* to a lazy seq of lines from stdin.
-  -I: bind *in* to a lazy seq of EDN values from stdin.
-  -o: write lines to stdout.
-  -O: write EDN values to stdout.
-  --verbose: print entire stacktrace in case of exception.
-  --stream: stream over lines or EDN values from stdin. Combined with -i or -I *in* becomes a single value per iteration.
-  -e, --eval <expression>: evaluate an expression
-  -f, --file <path>: evaluate a file
-  --repl: start REPL
-  --socket-repl: start socket REPL. Specify port (e.g. 1666) or host and port separated by colon (e.g. 127.0.0.1:1666).
-  --time: print execution time before exiting.
+  --help, -h or -?   Print this help text.
+  --version          Print the current version of babashka.
+  -i                 Bind *in* to a lazy seq of lines from stdin.
+  -I                 Bind *in* to a lazy seq of EDN values from stdin.
+  -o                 Write lines to stdout.
+  -O                 Write EDN values to stdout.
+  --verbose          Print entire stacktrace in case of exception.
+  --stream           Stream over lines or EDN values from stdin. Combined with -i or -I *in* becomes a single value per iteration.
+  -e, --eval <expr>  Evaluate an expression.
+  -f, --file <path>  Evaluate a file.
+  -cp, --classpath   Classpath to use.
+  -m, --main <ns>    Call the -main function from namespace with args.
+  --repl             Start REPL
+  --socket-repl      Start socket REPL. Specify port (e.g. 1666) or host and port separated by colon (e.g. 127.0.0.1:1666).
+  --time             Print execution time before exiting.
 
 If neither -e, -f, or --socket-repl are specified, then the first argument that is not parsed as a option is treated as a file if it exists, or as an expression otherwise.
 Everything after that is bound to *command-line-args*."))

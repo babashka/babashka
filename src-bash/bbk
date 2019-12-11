@@ -117,12 +117,12 @@ fi
 
 if "$help"; then
   cat <<-END
-Usage: bbk [dep-opt*] [init-opt*] [main-opt] [arg*]
+Usage: bbk [dep-opt*] [bb-opt*] [arg*]
 
 The bbk script is a runner for Babashka which ultimately constructs and
 invokes a command-line of the form:
 
-bb --classpath classpath [*bb-args] [*args]
+bb --classpath classpath [bb-opt*] [*args]
 
   The dep-opts are used to build the classpath using the clojure tool:
     -Ralias...     Concatenated resolve-deps aliases, ex: -R:bench:1.9
@@ -142,8 +142,10 @@ bb --classpath classpath [*bb-args] [*args]
 
     Additionally, for compatibility with clojure, -Jopt and -Oalias... dep-opts
     are accepted but ignored.
+
+Babashka options:
 END
-  bb -h | tail -n +6
+  bb -h | tail -n +9
   exit 0
 fi
 
