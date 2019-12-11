@@ -1,0 +1,16 @@
+(ns babashka.classpath-test
+  (:require
+   [babashka.test-utils :as tu]
+   [clojure.edn :as edn]
+   [clojure.test :as t :refer [deftest is]]))
+
+(defn bb [input & args]
+  (edn/read-string (apply tu/bb (when (some? input) (str input)) (map str args))))
+
+(deftest classpath-test
+  (is (= :my-script/bb
+         (bb nil "--classpath" "test/babashka/src_for_classpath_test"
+             "(require '[my-script :as ms]) (ms/foo)"))))
+
+
+
