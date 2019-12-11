@@ -309,6 +309,25 @@ $ cat script.clj
 ("hello" "1" "2" "3")
 ```
 
+## Classpath
+
+Babashka accepts a `--classpath` option that will be used to search for
+namespaces and load them:
+
+``` clojure
+$ cat src/my/namespace.clj
+(ns my.namespace)
+(defn run! []
+  (println "Hello from my namespace!"))
+
+$ bb --classpath src -e "
+(require '[my.namespace :as nm])
+(nm/run!)
+"
+```
+
+
+
 ## Parsing command line arguments
 
 Babashka ships with `clojure.tools.cli`:

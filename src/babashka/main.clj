@@ -86,6 +86,10 @@
                    (let [options (rest options)]
                      (recur (rest options)
                             (assoc opts-map :classpath (first options))))
+                   ("--main", "-m")
+                   (let [options (rest options)]
+                     (recur (rest options)
+                            (assoc opts-map :main (first options))))
                    (if (some opts-map [:file :socket-repl :expression])
                      (assoc opts-map
                             :command-line-args options)
@@ -198,7 +202,8 @@ Everything after that is bound to *command-line-args*."))
                 :help? :file :command-line-args
                 :expression :stream? :time?
                 :repl :socket-repl
-                :verbose? :classpath] :as _opts}
+                :verbose? :classpath
+                :main] :as _opts}
         (parse-opts args)
         read-next (fn [*in*]
                     (if (pipe-signal-received?)
@@ -288,6 +293,10 @@ Everything after that is bound to *command-line-args*."))
                     'load-file #(load-file* ctx %))
         ctx (addons/future ctx)
         _preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim) (eval-string ctx))
+        expression (if main
+                     (format "(ns user (:require [%1$s])) (%1$s/-main *command-line-args*)"
+                             main)
+                     expression)
         exit-code
         (or
          #_(binding [*out* *err*]
