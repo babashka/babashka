@@ -10,7 +10,7 @@
 (deftest classpath-test
   (is (= :my-script/bb
          (bb nil "--classpath" "test/babashka/src_for_classpath_test"
-             "(require '[my-script :as ms]) (ms/foo)"))))
-
-
-
+             "(require '[my-script :as ms]) (ms/foo)")))
+  (is (= "hello from foo\n"
+         (tu/bb nil "--classpath" "test/babashka/src_for_classpath_test/foo.jar"
+                "(require '[foo :as f]) (f/foo)"))))
