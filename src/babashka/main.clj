@@ -90,7 +90,7 @@
                    (let [options (rest options)]
                      (recur (rest options)
                             (assoc opts-map :main (first options))))
-                   (if (some opts-map [:file :socket-repl :expression])
+                   (if (some opts-map [:file :socket-repl :expression :main])
                      (assoc opts-map
                             :command-line-args options)
                      (if (and (not= \( (first (str/trim opt)))
@@ -294,7 +294,7 @@ Everything after that is bound to *command-line-args*."))
         ctx (addons/future ctx)
         _preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim) (eval-string ctx))
         expression (if main
-                     (format "(ns user (:require [%1$s])) (%1$s/-main *command-line-args*)"
+                     (format "(ns user (:require [%1$s])) (apply %1$s/-main *command-line-args*)"
                              main)
                      expression)
         exit-code

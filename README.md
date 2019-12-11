@@ -317,7 +317,7 @@ namespaces and load them:
 ``` clojure
 $ cat src/my/namespace.clj
 (ns my.namespace)
-(defn run! []
+(defn -main [& _args]
   (println "Hello from my namespace!"))
 
 $ bb --classpath src -e "
