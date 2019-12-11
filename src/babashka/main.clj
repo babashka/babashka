@@ -13,6 +13,7 @@
    [babashka.impl.socket-repl :as socket-repl]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
    [babashka.impl.utils :refer [eval-string]]
+   [babashka.impl.classpath :as cp]
    [babashka.wait :as wait]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
@@ -212,6 +213,10 @@ Everything after that is bound to *command-line-args*."))
                                      :else
                                      (edn/read *in*))))))
         env (atom {})
+        loader (when classpath (cp/loader classpath))
+        load-fn (when classpath
+                  (fn [{:keys [:namespace]}]
+                    (cp/source-for-namespace loader namespace)))
         ctx {:aliases '{tools.cli 'clojure.tools.cli
                         edn clojure.edn
                         wait babashka.wait
@@ -278,7 +283,7 @@ Everything after that is bound to *command-line-args*."))
                         String java.lang.String
                         System java.lang.System
                         Thread java.lang.Thread}
-             :classpath classpath}
+             :load-fn load-fn}
         ctx (update ctx :bindings assoc 'eval #(eval* ctx %)
                     'load-file #(load-file* ctx %))
         ctx (addons/future ctx)
