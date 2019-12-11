@@ -123,7 +123,7 @@
 (def usage-string "Usage: bb [ -i | -I ] [ -o | -O ] [ --stream ] [--verbose]
           [ ( --classpath | -cp ) <cp> ] [ ( --main | -m ) <main-namespace> ]
           ( -e <expression> | -f <file> | --repl | --socket-repl [<host>:]<port> )
-          [ *args ]")
+          [ arg* ]")
 (defn print-usage []
   (println usage-string))
 
