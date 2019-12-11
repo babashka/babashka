@@ -16,5 +16,5 @@
                 "(require '[foo :as f]) (f/foo)"))))
 
 (deftest main-test
-  (is (= "hello from foo\n"
+  (is (= "(\"1\" \"2\" \"3\" \"4\")\n"
          (tu/bb nil "--classpath" "test-resources/babashka/src_for_classpath_test" "-m" "my.main" "1" "2" "3" "4"))))
