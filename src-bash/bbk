@@ -1,0 +1,219 @@
+#!/usr/bin/env bash
+
+set -e
+
+function join { local d=$1; shift; echo -n "$1"; shift; printf "%s" "${@/#/$d}"; }
+
+# Extract opts
+print_classpath=false
+describe=false
+verbose=false
+force=false
+repro=false
+tree=false
+pom=false
+resolve_tags=false
+help=false
+resolve_aliases=()
+classpath_aliases=()
+main_aliases=()
+all_aliases=()
+while [ $# -gt 0 ]
+do
+  case "$1" in
+    -J*)
+      shift
+      ;;
+    -R*)
+      resolve_aliases+=("${1:2}")
+      shift
+      ;;
+    -C*)
+      classpath_aliases+=("${1:2}")
+      shift
+      ;;
+    -O*)
+      shift
+      ;;
+    -M*)
+      main_aliases+=("${1:2}")
+      shift
+      ;;
+    -A*)
+      all_aliases+=("${1:2}")
+      shift
+      ;;
+    -Sdeps)
+      shift
+      deps_data="${1}"
+      shift
+      ;;
+    -Scp)
+      shift
+      force_cp="${1}"
+      shift
+      ;;
+    -Spath)
+      print_classpath=true
+      shift
+      ;;
+    -Sverbose)
+      verbose=true
+      shift
+      ;;
+    -Sdescribe)
+      describe=true
+      shift
+      ;;
+    -Sforce)
+      force=true
+      shift
+      ;;
+    -Srepro)
+      repro=true
+      shift
+      ;;
+    -Stree)
+      tree=true
+      shift
+      ;;
+    -Spom)
+      pom=true
+      shift
+      ;;
+    -Sresolve-tags)
+      resolve_tags=true
+      shift
+      ;;
+    -S*)
+      echo "Invalid option: $1"
+      exit 1
+      ;;
+    -h|--help|"-?")
+      if [[ ${#main_aliases[@]} -gt 0 ]] || [[ ${#all_aliases[@]} -gt 0 ]]; then
+        break
+      else
+        help=true
+        shift
+      fi
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+# Find clojure executable
+set +e
+CLOJURE_CMD=$(type -p clojure)
+set -e
+if [[ ! -n "$CLOJURE_CMD" ]]; then
+  >&2 echo "Couldn't find 'clojure'."
+  >&2 echo "You can launch Babashka directly using 'bb'."
+  >&2 echo "To use 'bbk', please ensure 'clojure' is installed and on"
+  >&2 echo "your path. See https://clojure.org/guides/getting_started"
+  exit 1
+fi
+
+if "$help"; then
+  cat <<-END
+Usage: bbk [dep-opt*] [bb-opt*] [arg*]
+
+The bbk script is a runner for Babashka which ultimately constructs and
+invokes a command-line of the form:
+
+bb --classpath classpath [bb-opt*] [*args]
+
+  The dep-opts are used to build the classpath using the clojure tool:
+    -Ralias...     Concatenated resolve-deps aliases, ex: -R:bench:1.9
+    -Calias...     Concatenated make-classpath aliases, ex: -C:dev
+    -Malias...     Concatenated main option aliases, ex: -M:test
+    -Aalias...     Concatenated aliases of any kind, ex: -A:dev:mem
+    -Sdeps EDN     Deps data to use as the final deps file
+    -Spath         Compute classpath and echo to stdout only
+    -Scp CP        Do NOT compute or cache classpath, use this one instead
+    -Srepro        Ignore the ~/.clojure/deps.edn config file
+    -Sforce        Force recomputation of the classpath (don't use the cache)
+    -Spom          Generate (or update existing) pom.xml with deps and paths
+    -Stree         Print dependency tree
+    -Sresolve-tags Resolve git coordinate tags to shas and update deps.edn
+    -Sverbose      Print important path info to console
+    -Sdescribe     Print environment and command parsing info as data
+
+    Additionally, for compatibility with clojure, -Jopt and -Oalias... dep-opts
+    are accepted but ignored.
+
+Babashka options:
+END
+  bb -h | tail -n +9
+  exit 0
+fi
+
+# Execute resolve-tags command
+if "$resolve_tags"; then
+  "$CLOJURE_CMD" -Sresolve-tags
+  exit
+fi
+
+clojure_args=()
+if [[ -n "$deps_data" ]]; then
+  clojure_args+=("-Sdeps" "$deps_data")
+fi
+if [[ ${#resolve_aliases[@]} -gt 0 ]]; then
+  clojure_args+=("-R$(join '' ${resolve_aliases[@]})")
+fi
+if [[ ${#classpath_aliases[@]} -gt 0 ]]; then
+  clojure_args+=("-C$(join '' ${classpath_aliases[@]})")
+fi
+if [[ ${#main_aliases[@]} -gt 0 ]]; then
+  clojure_args+=("-M$(join '' ${main_aliases[@]})")
+fi
+if [[ ${#all_aliases[@]} -gt 0 ]]; then
+  clojure_args+=("-A$(join '' ${all_aliases[@]})")
+fi
+if "$repro"; then
+  clojure_args+=("-Srepro")
+fi
+if "$force"; then
+  clojure_args+=("-Sforce")
+fi
+
+if "$pom"; then
+  if "$verbose"; then
+    clojure_args+=("-Sverbose")
+  fi
+  "$CLOJURE_CMD" "${clojure_args[@]}" -Spom
+elif "$describe"; then
+  if "$verbose"; then
+    clojure_args+=("-Sverbose")
+  fi
+  "$CLOJURE_CMD" "${clojure_args[@]}" -Sdescribe
+elif "$tree"; then
+  if "$verbose"; then
+    clojure_args+=("-Sverbose")
+  fi
+  "$CLOJURE_CMD" "${clojure_args[@]}" -Stree
+else
+  set -f
+  if [[ -n "$force_cp" ]]; then
+    cp="$force_cp"
+  else
+    if "$verbose"; then
+      "$CLOJURE_CMD" "${clojure_args[@]}" -Sverbose -e nil
+    fi
+    cp=`"$CLOJURE_CMD" "${clojure_args[@]}" -Spath`
+  fi
+  if "$print_classpath"; then
+    echo $cp
+  else
+    if [[ ${#main_aliases[@]} -gt 0 ]] || [[ ${#all_aliases[@]} -gt 0 ]]; then
+      # Attempt to extract the main cache filename by parsing the output of -Sverbose
+      cp_file=`"$CLOJURE_CMD" "${clojure_args[@]}" -Sverbose -Spath | grep cp_file | cut -d = -f 2 | sed 's/^ *//g'`
+      main_file="${cp_file%.cp}.main"
+    fi
+    if [[ -e "$main_file" ]]; then
+      main_cache_opts=($(cat "$main_file"))
+    fi
+    exec bb --classpath "$cp" "${main_cache_opts[@]}" "$@"
+  fi
+fi

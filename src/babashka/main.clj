@@ -13,6 +13,7 @@
    [babashka.impl.socket-repl :as socket-repl]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
    [babashka.impl.utils :refer [eval-string]]
+   [babashka.impl.classpath :as cp]
    [babashka.wait :as wait]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
@@ -81,7 +82,15 @@
                    (let [options (rest options)]
                      (recur (rest options)
                             (assoc opts-map :expression (first options))))
-                   (if (some opts-map [:file :socket-repl :expression])
+                   ("--classpath", "-cp")
+                   (let [options (rest options)]
+                     (recur (rest options)
+                            (assoc opts-map :classpath (first options))))
+                   ("--main", "-m")
+                   (let [options (rest options)]
+                     (recur (rest options)
+                            (assoc opts-map :main (first options))))
+                   (if (some opts-map [:file :socket-repl :expression :main])
                      (assoc opts-map
                             :command-line-args options)
                      (if (and (not= \( (first (str/trim opt)))
@@ -111,7 +120,10 @@
 (defn print-version []
   (println (str "babashka v"(str/trim (slurp (io/resource "BABASHKA_VERSION"))))))
 
-(def usage-string "Usage: bb [ -i | -I ] [ -o | -O ] [--verbose] [ --stream ] ( -e <expression> | -f <file> | --repl | --socket-repl [<host>:]<port> )")
+(def usage-string "Usage: bb [ -i | -I ] [ -o | -O ] [ --stream ] [--verbose]
+          [ ( --classpath | -cp ) <cp> ] [ ( --main | -m ) <main-namespace> ]
+          ( -e <expression> | -f <file> | --repl | --socket-repl [<host>:]<port> )
+          [ arg* ]")
 (defn print-usage []
   (println usage-string))
 
@@ -123,20 +135,21 @@
   (println)
   (println "Options:")
   (println "
-  --help, -h or -?: print this help text.
-  --version: print the current version of babashka.
-
-  -i: bind *in* to a lazy seq of lines from stdin.
-  -I: bind *in* to a lazy seq of EDN values from stdin.
-  -o: write lines to stdout.
-  -O: write EDN values to stdout.
-  --verbose: print entire stacktrace in case of exception.
-  --stream: stream over lines or EDN values from stdin. Combined with -i or -I *in* becomes a single value per iteration.
-  -e, --eval <expression>: evaluate an expression
-  -f, --file <path>: evaluate a file
-  --repl: start REPL
-  --socket-repl: start socket REPL. Specify port (e.g. 1666) or host and port separated by colon (e.g. 127.0.0.1:1666).
-  --time: print execution time before exiting.
+  --help, -h or -?   Print this help text.
+  --version          Print the current version of babashka.
+  -i                 Bind *in* to a lazy seq of lines from stdin.
+  -I                 Bind *in* to a lazy seq of EDN values from stdin.
+  -o                 Write lines to stdout.
+  -O                 Write EDN values to stdout.
+  --verbose          Print entire stacktrace in case of exception.
+  --stream           Stream over lines or EDN values from stdin. Combined with -i or -I *in* becomes a single value per iteration.
+  -e, --eval <expr>  Evaluate an expression.
+  -f, --file <path>  Evaluate a file.
+  -cp, --classpath   Classpath to use.
+  -m, --main <ns>    Call the -main function from namespace with args.
+  --repl             Start REPL
+  --socket-repl      Start socket REPL. Specify port (e.g. 1666) or host and port separated by colon (e.g. 127.0.0.1:1666).
+  --time             Print execution time before exiting.
 
 If neither -e, -f, or --socket-repl are specified, then the first argument that is not parsed as a option is treated as a file if it exists, or as an expression otherwise.
 Everything after that is bound to *command-line-args*."))
@@ -193,7 +206,8 @@ Everything after that is bound to *command-line-args*."))
                 :help? :file :command-line-args
                 :expression :stream? :time?
                 :repl :socket-repl
-                :verbose?] :as _opts}
+                :verbose? :classpath
+                :main] :as _opts}
         (parse-opts args)
         read-next (fn [*in*]
                     (if (pipe-signal-received?)
@@ -208,6 +222,13 @@ Everything after that is bound to *command-line-args*."))
                                      :else
                                      (edn/read *in*))))))
         env (atom {})
+        classpath (or classpath
+                      (System/getenv "BABASHKA_CLASSPATH"))
+        loader (when classpath
+                 (cp/loader classpath))
+        load-fn (when classpath
+                  (fn [{:keys [:namespace]}]
+                    (cp/source-for-namespace loader namespace)))
         ctx {:aliases '{tools.cli 'clojure.tools.cli
                         edn clojure.edn
                         wait babashka.wait
@@ -273,11 +294,16 @@ Everything after that is bound to *command-line-args*."))
                         File java.io.File
                         String java.lang.String
                         System java.lang.System
-                        Thread java.lang.Thread}}
+                        Thread java.lang.Thread}
+             :load-fn load-fn}
         ctx (update ctx :bindings assoc 'eval #(eval* ctx %)
                     'load-file #(load-file* ctx %))
         ctx (addons/future ctx)
         _preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim) (eval-string ctx))
+        expression (if main
+                     (format "(ns user (:require [%1$s])) (apply %1$s/-main *command-line-args*)"
+                             main)
+                     expression)
         exit-code
         (or
          #_(binding [*out* *err*]

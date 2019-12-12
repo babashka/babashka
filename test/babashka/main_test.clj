@@ -135,7 +135,8 @@
 (deftest preloads-test
   ;; THIS TEST REQUIRES:
   ;; export BABASHKA_PRELOADS='(defn __bb__foo [] "foo") (defn __bb__bar [] "bar")'
-  (is (= "foobar" (bb nil "(str (__bb__foo) (__bb__bar))"))))
+  (when (System/getenv "BABASHKA_PRELOADS_TEST")
+    (is (= "foobar" (bb nil "(str (__bb__foo) (__bb__bar))")))))
 
 (deftest io-test
   (is (true? (bb nil "(.exists (io/file \"README.md\"))")))

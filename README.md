@@ -311,6 +311,83 @@ $ cat script.clj
 ("hello" "1" "2" "3")
 ```
 
+## Preloads
+
+The environment variable `BABASHKA_PRELOADS` allows to define code that will be
+available in all subsequent usages of babashka.
+
+``` shellsession
+BABASHKA_PRELOADS='(defn foo [x] (+ x 2))'
+BABASHKA_PRELOADS=$BABASHKA_PRELOADS' (defn bar [x] (* x 2))'
+export BABASHKA_PRELOADS
+```
+
+Note that you can concatenate multiple expressions. Now you can use these functions in babashka:
+
+``` shellsession
+$ bb '(-> (foo *in*) bar)' <<< 1
+6
+```
+
+You can also preload an entire file using `load-file`:
+
+``` shellsession
+export BABASHKA_PRELOADS='(load-file "my_awesome_prelude.clj")'
+```
+
+Note that `*in*` is not available in preloads.
+
+## Classpath
+
+Babashka accepts a `--classpath` option that will be used to search for
+namespaces and load them:
+
+``` clojure
+$ cat src/my/namespace.clj
+(ns my.namespace)
+(defn -main [& _args]
+  (println "Hello from my namespace!"))
+
+$ bb --classpath src --main my.namespace
+Hello from my namespace!
+```
+
+Note that you can use the `clojure` tool to produce classpaths and download dependencies:
+
+``` shellsession
+$ cat deps.edn
+{:deps
+  {my_gist_script
+    {:git/url "https://gist.github.com/borkdude/263b150607f3ce03630e114611a4ef42"
+     :sha "cfc761d06dfb30bb77166b45d439fe8fe54a31b8"}}}
+
+
+$ CLASSPATH=$(clojure -Spath)
+$ bb --classpath "$CLASSPATH" --main my-gist-script
+Hello from gist script!
+```
+
+The `bbk` shell script is a thin wrapper around the `clojure` tool, so you can
+use Babashka projects in a similar way:
+
+``` shellsession
+$ bbk -m my-gist-script
+Hello from gist script!
+```
+
+The script will call `bb` with the `--classpath` argument as a result of calling
+`clojure`.
+
+If there is no `--classpath` argument, the `BABASHKA_CLASSPATH` environment
+variable will be used if set:
+
+``` shellsession
+$ export BABASHKA_CLASSPATH=$(clojure -Spath)
+$ export BABASHKA_PRELOADS="(require '[my-gist-script])"
+$ bb "(my-gist-script/-main)"
+Hello from gist script!
+```
+
 ## Parsing command line arguments
 
 Babashka ships with `clojure.tools.cli`:
@@ -347,32 +424,6 @@ $ cat example.clj
 $ ./bb example.clj
 babashka doesn't support in-ns yet!
 ```
-
-## Preloads
-
-The environment variable `BABASHKA_PRELOADS` allows to define code that will be
-available in all subsequent usages of babashka.
-
-``` shellsession
-BABASHKA_PRELOADS='(defn foo [x] (+ x 2))'
-BABASHKA_PRELOADS=$BABASHKA_PRELOADS' (defn bar [x] (* x 2))'
-export BABASHKA_PRELOADS
-```
-
-Note that you can concatenate multiple expressions. Now you can use these functions in babashka:
-
-``` shellsession
-$ bb '(-> (foo *in*) bar)' <<< 1
-6
-```
-
-You can also preload an entire file using `load-file`:
-
-``` shellsession
-export BABASHKA_PRELOADS='(load-file "my_awesome_prelude.clj")'
-```
-
-Note that `*in*` is not available in preloads.
 
 ## Socket REPL
 
@@ -448,16 +499,8 @@ Differences with Clojure:
 
 - A subset of Java classes are supported.
 
-- Only the `clojure.core`, `clojure.set` and `clojure.string` namespaces are
-  available from Clojure.
-
-- There is no classpath and no support for loading code from Maven/Clojars
-  dependencies. However, you can use `load-file` to load external code from
-  disk.
-
-- `require` does not load files; it only provides a way to create different
-  aliases for included namespaces, which makes it easier to make scripts
-  portable between the JVM and babashka.
+- Only the `clojure.core`, `clojure.set`, `clojure.string` and `clojure.walk`
+  namespaces are available from Clojure.
 
 - Interpretation comes with overhead. Therefore tight loops are likely slower
   than in Clojure on the JVM.
