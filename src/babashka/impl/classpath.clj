@@ -56,7 +56,7 @@
 ;;;; Scratch
 
 (comment
-  (def l (loader ".:file:///Users/borkdude/.m2/repository/cheshire/cheshire/5.9.0/cheshire-5.9.0.jar"))
-  (source-for-namespace l 'src.sci.core)
+  (def l (loader "src:/Users/borkdude/.m2/repository/cheshire/cheshire/5.9.0/cheshire-5.9.0.jar"))
+  (source-for-namespace l 'babashka.impl.cheshire)
   (source-for-namespace l 'cheshire.core)
   )
