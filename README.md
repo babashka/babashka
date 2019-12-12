@@ -339,7 +339,8 @@ $ bb --classpath "$CLASSPATH" --main my-gist-script
 Hello from gist script!
 ```
 
-The `bbk` shell script is a thin wrapper around the `clojure` tool, so you can use Babashka projects like you're used to with the `clojure` tool:
+The `bbk` shell script is a thin wrapper around the `clojure` tool, so you can
+use Babashka projects in a similar way:
 
 ``` shellsession
 $ bbk -m my-gist-script
