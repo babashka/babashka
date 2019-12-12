@@ -321,9 +321,30 @@ $ cat src/my/namespace.clj
   (println "Hello from my namespace!"))
 
 $ bb --classpath src --main my.namespace
+Hello from my namespace!
 ```
 
+Note that you can use the `clojure` tool to produce classpaths and download dependencies:
 
+``` shellsession
+$ cat deps.edn
+{:deps
+  {my_gist_script
+    {:git/url "https://gist.github.com/borkdude/263b150607f3ce03630e114611a4ef42"
+     :sha "cfc761d06dfb30bb77166b45d439fe8fe54a31b8"}}}
+
+
+$ CLASSPATH=$(clojure -Spath)
+$ bb --classpath "$CLASSPATH" --main my-gist-script
+Hello from gist script!
+```
+
+The `bbk` shell script is a thin wrapper around the `clojure` tool, so you can use Babashka projects like you're used to with the `clojure` tool:
+
+``` shellsession
+$ bbk -m my-gist-script
+Hello from gist script!
+```
 
 ## Parsing command line arguments
 
