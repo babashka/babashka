@@ -2,5 +2,6 @@
 
 set -eo pipefail
 export BABASHKA_PRELOADS='(defn __bb__foo [] "foo") (defn __bb__bar [] "bar")'
+export BABASHKA_CLASSPATH="test-resources/babashka/src_for_classpath_test/env"
 
-lein test
+lein test "$@"

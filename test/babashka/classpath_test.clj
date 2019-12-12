@@ -13,7 +13,9 @@
              "(require '[my-script :as ms]) (ms/foo)")))
   (is (= "hello from foo\n"
          (tu/bb nil "--classpath" "test-resources/babashka/src_for_classpath_test/foo.jar"
-                "(require '[foo :as f]) (f/foo)"))))
+                "(require '[foo :as f]) (f/foo)")))
+  ;; for this test you have to set `BABASHKA_CLASSPATH` to test-resources/babashka/src_for_classpath_test/env
+  (is (= "env!" (bb nil "(require '[env-ns]) (env-ns/foo)"))))
 
 (deftest main-test
   (is (= "(\"1\" \"2\" \"3\" \"4\")\n"
