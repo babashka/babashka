@@ -309,6 +309,32 @@ $ cat script.clj
 ("hello" "1" "2" "3")
 ```
 
+## Preloads
+
+The environment variable `BABASHKA_PRELOADS` allows to define code that will be
+available in all subsequent usages of babashka.
+
+``` shellsession
+BABASHKA_PRELOADS='(defn foo [x] (+ x 2))'
+BABASHKA_PRELOADS=$BABASHKA_PRELOADS' (defn bar [x] (* x 2))'
+export BABASHKA_PRELOADS
+```
+
+Note that you can concatenate multiple expressions. Now you can use these functions in babashka:
+
+``` shellsession
+$ bb '(-> (foo *in*) bar)' <<< 1
+6
+```
+
+You can also preload an entire file using `load-file`:
+
+``` shellsession
+export BABASHKA_PRELOADS='(load-file "my_awesome_prelude.clj")'
+```
+
+Note that `*in*` is not available in preloads.
+
 ## Classpath
 
 Babashka accepts a `--classpath` option that will be used to search for
@@ -344,6 +370,19 @@ use Babashka projects in a similar way:
 
 ``` shellsession
 $ bbk -m my-gist-script
+Hello from gist script!
+```
+
+The script will call `bb` with the `--classpath` argument as a result of calling
+`clojure`.
+
+If there is no `--classpath` argument, the `BABASHKA_CLASSPATH` environment
+variable will be used, if set:
+
+``` shellsession
+export BABASHKA_CLASSPATH=$(clojure -Spath)
+export BABASHKA_PRELOADS="(require '[my-gist-script])"
+$ bb -m my-gist-script
 Hello from gist script!
 ```
 
@@ -383,32 +422,6 @@ $ cat example.clj
 $ ./bb example.clj
 babashka doesn't support in-ns yet!
 ```
-
-## Preloads
-
-The environment variable `BABASHKA_PRELOADS` allows to define code that will be
-available in all subsequent usages of babashka.
-
-``` shellsession
-BABASHKA_PRELOADS='(defn foo [x] (+ x 2))'
-BABASHKA_PRELOADS=$BABASHKA_PRELOADS' (defn bar [x] (* x 2))'
-export BABASHKA_PRELOADS
-```
-
-Note that you can concatenate multiple expressions. Now you can use these functions in babashka:
-
-``` shellsession
-$ bb '(-> (foo *in*) bar)' <<< 1
-6
-```
-
-You can also preload an entire file using `load-file`:
-
-``` shellsession
-export BABASHKA_PRELOADS='(load-file "my_awesome_prelude.clj")'
-```
-
-Note that `*in*` is not available in preloads.
 
 ## Socket REPL
 

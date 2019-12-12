@@ -222,7 +222,10 @@ Everything after that is bound to *command-line-args*."))
                                      :else
                                      (edn/read *in*))))))
         env (atom {})
-        loader (when classpath (cp/loader classpath))
+        classpath (or classpath
+                      (System/getenv "BABASHKA_CLASSPATH"))
+        loader (when classpath
+                 (cp/loader classpath))
         load-fn (when classpath
                   (fn [{:keys [:namespace]}]
                     (cp/source-for-namespace loader namespace)))
