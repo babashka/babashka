@@ -483,16 +483,8 @@ Differences with Clojure:
 
 - A subset of Java classes are supported.
 
-- Only the `clojure.core`, `clojure.set` and `clojure.string` namespaces are
-  available from Clojure.
-
-- There is no classpath and no support for loading code from Maven/Clojars
-  dependencies. However, you can use `load-file` to load external code from
-  disk.
-
-- `require` does not load files; it only provides a way to create different
-  aliases for included namespaces, which makes it easier to make scripts
-  portable between the JVM and babashka.
+- Only the `clojure.core`, `clojure.set`, `clojure.string` and `clojure.walk`
+  namespaces are available from Clojure.
 
 - Interpretation comes with overhead. Therefore tight loops are likely slower
   than in Clojure on the JVM.
