@@ -15,4 +15,4 @@ zip "babashka-$VERSION-$BABASHKA_PLATFORM-amd64.zip" bb bbk
 
 ## cleanup
 
-rm bb
+rm bb bbk
