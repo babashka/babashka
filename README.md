@@ -377,12 +377,12 @@ The script will call `bb` with the `--classpath` argument as a result of calling
 `clojure`.
 
 If there is no `--classpath` argument, the `BABASHKA_CLASSPATH` environment
-variable will be used, if set:
+variable will be used if set:
 
 ``` shellsession
-export BABASHKA_CLASSPATH=$(clojure -Spath)
-export BABASHKA_PRELOADS="(require '[my-gist-script])"
-$ bb -m my-gist-script
+$ export BABASHKA_CLASSPATH=$(clojure -Spath)
+$ export BABASHKA_PRELOADS="(require '[my-gist-script])"
+$ bb "(my-gist-script/-main)"
 Hello from gist script!
 ```
 
