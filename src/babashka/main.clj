@@ -8,6 +8,7 @@
    [babashka.impl.clojure.stacktrace :refer [print-stack-trace]]
    [babashka.impl.conch :refer [conch-namespace]]
    [babashka.impl.csv :as csv]
+   [babashka.impl.xml :as xml]
    [babashka.impl.pipe-signal-handler :refer [handle-pipe! pipe-signal-received?]]
    [babashka.impl.repl :as repl]
    [babashka.impl.socket-repl :as socket-repl]
@@ -251,7 +252,8 @@ Everything after that is bound to *command-line-args*."))
                           'me.raynes.conch.low-level conch-namespace
                           'clojure.core.async async-namespace
                           'clojure.data.csv csv/csv-namespace
-                          'cheshire.core cheshire-core-namespace}
+                          'cheshire.core cheshire-core-namespace
+                          'clojure.data.xml xml/xml-namespace}
              :bindings {'java.lang.System/exit exit ;; override exit, so we have more control
                         'System/exit exit}
              :env env
