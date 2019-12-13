@@ -3,7 +3,7 @@
 rm -rf /tmp/release
 mkdir -p /tmp/release
 cp bb /tmp/release
-cp src-bash/bbk /tmp/release
+# cp src-bash/bbk /tmp/release
 
 VERSION=$(cat resources/BABASHKA_VERSION)
 
@@ -11,8 +11,8 @@ cd /tmp/release
 
 ## release binary as zip archive
 
-zip "babashka-$VERSION-$BABASHKA_PLATFORM-amd64.zip" bb bbk
+zip "babashka-$VERSION-$BABASHKA_PLATFORM-amd64.zip" bb # bbk
 
 ## cleanup
 
-rm bb bbk
+rm bb # bbk
