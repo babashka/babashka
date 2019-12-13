@@ -372,7 +372,7 @@ Hello from gist script!
 ```
 
 If there is no `--classpath` argument, the `BABASHKA_CLASSPATH` environment
-variable will be used if set:
+variable will be used:
 
 ``` shellsession
 $ export BABASHKA_CLASSPATH=$(clojure -Spath)
