@@ -653,6 +653,7 @@ src
 ### List outdated maven dependencies
 
 See [examples/outdated.clj](https://github.com/borkdude/babashka/blob/master/examples/outdated.clj).
+Inspired by an idea from [@seancorfield](https://github.com/seancorfield).
 
 ``` shellsession
 $ cat /tmp/deps.edn
