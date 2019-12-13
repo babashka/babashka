@@ -630,7 +630,7 @@ less
 
 ### Portable tree command
 
-See [examples/tree.clj](https://github.com/borkdude/babashka/blob/8afb87142e0e4da8b6f912cfd7daf9c30b805ab3/examples/tree.clj).
+See [examples/tree.clj](https://github.com/borkdude/babashka/blob/master/examples/tree.clj).
 
 ``` shellsession
 $ clojure -Sdeps '{:deps {org.clojure/tools.cli {:mvn/version "0.4.2"}}}' examples/tree.clj src
@@ -648,6 +648,20 @@ src
     │   ├── tools
     │   │   └── cli.clj
 ...
+```
+
+### List outdated maven dependencies
+
+See [examples/outdated.clj](https://github.com/borkdude/babashka/blob/master/examples/outdated.clj).
+
+``` shellsession
+$ cat /tmp/deps.edn
+{:deps {cheshire {:mvn/version "5.8.1"}
+        clj-http {:mvn/version "3.4.0"}}}
+
+$ examples/outdated.clj /tmp/deps.edn
+clj-http/clj-http can be upgraded from 3.4.0 to 3.10.0
+cheshire/cheshire can be upgraded from 5.8.1 to 5.9.0
 ```
 
 ## Thanks
