@@ -367,17 +367,6 @@ $ bb --classpath "$CLASSPATH" --main my-gist-script
 Hello from gist script!
 ```
 
-The `bbk` shell script is a thin wrapper around the `clojure` tool, so you can
-use Babashka projects in a similar way:
-
-``` shellsession
-$ bbk -m my-gist-script
-Hello from gist script!
-```
-
-The script will call `bb` with the `--classpath` argument as a result of calling
-`clojure`.
-
 If there is no `--classpath` argument, the `BABASHKA_CLASSPATH` environment
 variable will be used if set:
 
