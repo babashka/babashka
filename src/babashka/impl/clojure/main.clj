@@ -138,3 +138,6 @@
             (prompt)
             (flush))
           (recur))))))
+
+(def main-namespace
+  {'repl repl})

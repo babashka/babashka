@@ -5,6 +5,7 @@
    [babashka.impl.cheshire :refer [cheshire-core-namespace]]
    [babashka.impl.clojure.core :refer [core-extras]]
    [babashka.impl.clojure.java.io :refer [io-namespace]]
+   [babashka.impl.clojure.main :refer [main-namespace]]
    [babashka.impl.clojure.stacktrace :refer [print-stack-trace]]
    [babashka.impl.conch :refer [conch-namespace]]
    [babashka.impl.csv :as csv]
@@ -233,6 +234,7 @@ Everything after that is bound to *command-line-args*."))
                         edn clojure.edn
                         wait babashka.wait
                         sig babashka.signal
+                        main clojure.main
                         shell clojure.java.shell
                         io clojure.java.io
                         conch me.raynes.conch.low-level
@@ -241,6 +243,7 @@ Everything after that is bound to *command-line-args*."))
                         json cheshire.core}
              :namespaces {'clojure.core (assoc core-extras
                                                '*command-line-args* command-line-args)
+                          'clojure.main main-namespace
                           'clojure.tools.cli tools-cli-namespace
                           'clojure.edn {'read-string edn/read-string}
                           'clojure.java.shell {'sh shell/sh}
