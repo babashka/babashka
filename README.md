@@ -520,6 +520,10 @@ You need [Leiningen](https://leiningen.org/), and for building binaries you need
 
 `lein repl` will get you a standard REPL/nREPL connection. To work on tests use `lein with-profiles +test repl`.
 
+### Generate reflection.json file
+
+    lein with-profiles +reflection run
+
 ### Test
 
 Test on the JVM (for development):
