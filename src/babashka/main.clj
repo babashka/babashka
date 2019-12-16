@@ -266,6 +266,7 @@ Everything after that is bound to *command-line-args*."))
                         Exception java.lang.Exception
                         Integer java.lang.Integer
                         File java.io.File
+                        ProcessBuilder java.lang.ProcessBuilder
                         String java.lang.String
                         System java.lang.System
                         Thread java.lang.Thread}

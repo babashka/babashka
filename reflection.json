@@ -69,6 +69,16 @@
   "allPublicFields" : true,
   "allPublicConstructors" : true
 }, {
+  "name" : "java.lang.Process",
+  "allPublicMethods" : true,
+  "allPublicFields" : true,
+  "allPublicConstructors" : true
+}, {
+  "name" : "java.lang.ProcessBuilder",
+  "allPublicMethods" : true,
+  "allPublicFields" : true,
+  "allPublicConstructors" : true
+}, {
   "name" : "java.lang.String",
   "allPublicMethods" : true,
   "allPublicFields" : true,
@@ -124,6 +134,11 @@
   "allPublicFields" : true,
   "allPublicConstructors" : true
 }, {
+  "name" : "java.util.concurrent.LinkedBlockingQueue",
+  "allPublicMethods" : true,
+  "allPublicFields" : true,
+  "allPublicConstructors" : true
+}, {
   "name" : "java.util.regex.Pattern",
   "allPublicMethods" : true,
   "allPublicFields" : true,
@@ -133,15 +148,6 @@
   "allPublicMethods" : true,
   "allPublicFields" : true,
   "allPublicConstructors" : true
-}, {
-  "allPublicMethods" : true,
-  "name" : "java.util.concurrent.LinkedBlockingQueue"
-}, {
-  "allPublicConstructors" : true,
-  "name" : "java.lang.Process"
-}, {
-  "allPublicMethods" : true,
-  "name" : "java.lang.UNIXProcess"
 }, {
   "methods" : [ {
     "name" : "activeCount"
