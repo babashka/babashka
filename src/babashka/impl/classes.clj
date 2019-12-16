@@ -13,6 +13,8 @@
                       java.io.BufferedReader
                       java.io.BufferedWriter
                       java.io.File
+                      java.io.InputStream
+                      java.io.OutputStream
                       java.io.StringReader
                       java.io.StringWriter
                       java.lang.ArithmeticException
@@ -26,7 +28,8 @@
                       java.lang.String
                       java.lang.System
                       java.lang.Process
-                      java.lang.UNIXProcess ;; included because of permission check
+                      java.lang.UNIXProcess
+                      java.lang.UNIXProcess$ProcessPipeOutputStream
                       java.lang.ProcessBuilder
                       java.nio.file.CopyOption
                       java.nio.file.FileAlreadyExistsException

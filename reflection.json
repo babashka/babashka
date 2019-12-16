@@ -24,6 +24,16 @@
   "allPublicFields" : true,
   "allPublicConstructors" : true
 }, {
+  "name" : "java.io.InputStream",
+  "allPublicMethods" : true,
+  "allPublicFields" : true,
+  "allPublicConstructors" : true
+}, {
+  "name" : "java.io.OutputStream",
+  "allPublicMethods" : true,
+  "allPublicFields" : true,
+  "allPublicConstructors" : true
+}, {
   "name" : "java.io.StringReader",
   "allPublicMethods" : true,
   "allPublicFields" : true,
@@ -90,6 +100,11 @@
   "allPublicConstructors" : true
 }, {
   "name" : "java.lang.UNIXProcess",
+  "allPublicMethods" : true,
+  "allPublicFields" : true,
+  "allPublicConstructors" : true
+}, {
+  "name" : "java.lang.UNIXProcess$ProcessPipeOutputStream",
   "allPublicMethods" : true,
   "allPublicFields" : true,
   "allPublicConstructors" : true
