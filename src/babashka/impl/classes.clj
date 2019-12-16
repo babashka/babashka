@@ -3,6 +3,28 @@
   (:require
    [cheshire.core :as json]))
 
+;; ;; invoke with: clojure -Sdeps '{:deps {cheshire {:mvn/version "RELEASE"}}}' methods.clj <class>
+;; ;; where <class> is e.g. java.lang.Thread
+
+;; (require '[cheshire.core :as cheshire])
+
+;; (defn public-declared-method? [c m]
+;;   (and (= c (.getDeclaringClass m))
+;;        (not (.getAnnotation m Deprecated))))
+
+;; (defn public-declared-method-names [c]
+;;   (->> (.getMethods c)
+;;        (keep (fn [m]
+;;                (when (public-declared-method? c m)
+;;                  {:name (.getName m)})) )
+;;        (distinct )))
+
+;; (def the-class
+;;   (Class/forName (first *command-line-args*)))
+
+;; (println
+;;  (cheshire/generate-string (public-declared-method-names the-class)))
+
 (def classes
   {:default-classes '[java.lang.ArithmeticException
                       java.lang.AssertionError
