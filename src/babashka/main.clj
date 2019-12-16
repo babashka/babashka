@@ -2,21 +2,25 @@
   {:no-doc true}
   (:require
    [babashka.impl.async :refer [async-namespace]]
+   [babashka.impl.cheshire :refer [cheshire-core-namespace]]
+   [babashka.impl.classpath :as cp]
    [babashka.impl.clojure.core :refer [core-extras]]
    [babashka.impl.clojure.java.io :refer [io-namespace]]
    [babashka.impl.clojure.stacktrace :refer [print-stack-trace]]
    [babashka.impl.conch :refer [conch-namespace]]
    [babashka.impl.csv :as csv]
    [babashka.impl.pipe-signal-handler :refer [handle-pipe! pipe-signal-received?]]
+   [babashka.impl.repl :as repl]
    [babashka.impl.socket-repl :as socket-repl]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
-   [io.aviso.ansi :as ansi]
+   [babashka.impl.utils :refer [eval-string]]
    [babashka.wait :as wait]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.java.shell :as shell]
    [clojure.string :as str]
-   [sci.core :as sci])
+   [io.aviso.ansi :as ansi]
+   [sci.addons :as addons])
   (:gen-class))
 
 (set! *warn-on-reflection* true)
@@ -65,6 +69,11 @@
                      (recur (rest options)
                             (assoc opts-map
                                    :file (first options))))
+                   ("--repl")
+                   (let [options (rest options)]
+                     (recur (rest options)
+                            (assoc opts-map
+                                   :repl true)))
                    ("--socket-repl")
                    (let [options (rest options)]
                      (recur (rest options)
@@ -74,7 +83,15 @@
                    (let [options (rest options)]
                      (recur (rest options)
                             (assoc opts-map :expression (first options))))
-                   (if (some opts-map [:file :socket-repl :expression])
+                   ("--classpath", "-cp")
+                   (let [options (rest options)]
+                     (recur (rest options)
+                            (assoc opts-map :classpath (first options))))
+                   ("--main", "-m")
+                   (let [options (rest options)]
+                     (recur (rest options)
+                            (assoc opts-map :main (first options))))
+                   (if (some opts-map [:file :socket-repl :expression :main])
                      (assoc opts-map
                             :command-line-args options)
                      (if (and (not= \( (first (str/trim opt)))
@@ -104,31 +121,36 @@
 (defn print-version []
   (println (str "babashka v"(str/trim (slurp (io/resource "BABASHKA_VERSION"))))))
 
-(def usage-string "Usage: bb [ -i | -I ] [ -o | -O ] [--verbose] [ --stream ] ( -e <expression> | -f <file> | --socket-repl [<host>:]<port> )")
+(def usage-string "Usage: bb [ -i | -I ] [ -o | -O ] [ --stream ] [--verbose]
+          [ ( --classpath | -cp ) <cp> ] [ ( --main | -m ) <main-namespace> ]
+          ( -e <expression> | -f <file> | --repl | --socket-repl [<host>:]<port> )
+          [ arg* ]")
 (defn print-usage []
   (println usage-string))
 
 (defn print-help []
-  (println (str "babashka v" (str/trim (slurp (io/resource "BABASHKA_VERSION")))))
+  (println (str "Babashka v" (str/trim (slurp (io/resource "BABASHKA_VERSION")))))
   ;; (println (str "sci v" (str/trim (slurp (io/resource "SCI_VERSION")))))
   (println)
   (print-usage)
   (println)
   (println "Options:")
   (println "
-  --help, -h or -?: print this help text.
-  --version: print the current version of babashka.
-
-  -i: bind *in* to a lazy seq of lines from stdin.
-  -I: bind *in* to a lazy seq of EDN values from stdin.
-  -o: write lines to stdout.
-  -O: write EDN values to stdout.
-  --verbose: print entire stacktrace in case of exception.
-  --stream: stream over lines or EDN values from stdin. Combined with -i or -I *in* becomes a single value per iteration.
-  -e, --eval <expression>: evaluate an expression
-  -f, --file <path>: evaluate a file
-  --socket-repl: start socket REPL. Specify port (e.g. 1666) or host and port separated by colon (e.g. 127.0.0.1:1666).
-  --time: print execution time before exiting.
+  --help, -h or -?   Print this help text.
+  --version          Print the current version of babashka.
+  -i                 Bind *in* to a lazy seq of lines from stdin.
+  -I                 Bind *in* to a lazy seq of EDN values from stdin.
+  -o                 Write lines to stdout.
+  -O                 Write EDN values to stdout.
+  --verbose          Print entire stacktrace in case of exception.
+  --stream           Stream over lines or EDN values from stdin. Combined with -i or -I *in* becomes a single value per iteration.
+  -e, --eval <expr>  Evaluate an expression.
+  -f, --file <path>  Evaluate a file.
+  -cp, --classpath   Classpath to use.
+  -m, --main <ns>    Call the -main function from namespace with args.
+  --repl             Start REPL
+  --socket-repl      Start socket REPL. Specify port (e.g. 1666) or host and port separated by colon (e.g. 127.0.0.1:1666).
+  --time             Print execution time before exiting.
 
 If neither -e, -f, or --socket-repl are specified, then the first argument that is not parsed as a option is treated as a file if it exists, or as an expression otherwise.
 Everything after that is bound to *command-line-args*."))
@@ -147,10 +169,17 @@ Everything after that is bound to *command-line-args*."))
 
 (defn load-file* [ctx file]
   (let [s (slurp file)]
-    (sci/eval-string s ctx)))
+    (eval-string s ctx)))
 
 (defn eval* [ctx form]
-  (sci/eval-string (pr-str form) ctx))
+  (eval-string (pr-str form) ctx))
+
+(defn start-repl! [ctx read-next]
+  (let [ctx (update ctx :bindings assoc
+                    (with-meta '*in*
+                      {:sci/deref! true})
+                    (read-next))]
+    (repl/start-repl! ctx)))
 
 (defn start-socket-repl! [address ctx read-next]
   (let [ctx (update ctx :bindings assoc
@@ -164,6 +193,10 @@ Everything after that is bound to *command-line-args*."))
 (defn exit [n]
   (throw (ex-info "" {:bb/exit-code n})))
 
+;; (sci/set-var-root! sci/*in* *in*)
+;; (sci/set-var-root! sci/*out* *out*)
+;; (sci/set-var-root! sci/*err* *err*)
+
 (defn main
   [& args]
   (handle-pipe!)
@@ -172,7 +205,10 @@ Everything after that is bound to *command-line-args*."))
   (let [t0 (System/currentTimeMillis)
         {:keys [:version :shell-in :edn-in :shell-out :edn-out
                 :help? :file :command-line-args
-                :expression :stream? :time? :socket-repl :verbose?] :as _opts}
+                :expression :stream? :time?
+                :repl :socket-repl
+                :verbose? :classpath
+                :main] :as _opts}
         (parse-opts args)
         read-next (fn [*in*]
                     (if (pipe-signal-received?)
@@ -187,6 +223,13 @@ Everything after that is bound to *command-line-args*."))
                                      :else
                                      (edn/read *in*))))))
         env (atom {})
+        classpath (or classpath
+                      (System/getenv "BABASHKA_CLASSPATH"))
+        loader (when classpath
+                 (cp/loader classpath))
+        load-fn (when classpath
+                  (fn [{:keys [:namespace]}]
+                    (cp/source-for-namespace loader namespace)))
         ctx {:aliases '{tools.cli 'clojure.tools.cli
                         edn clojure.edn
                         wait babashka.wait
@@ -195,7 +238,8 @@ Everything after that is bound to *command-line-args*."))
                         io clojure.java.io
                         conch me.raynes.conch.low-level
                         async clojure.core.async
-                        csv clojure.data.csv}
+                        csv clojure.data.csv
+                        json cheshire.core}
              :namespaces {'clojure.core (assoc core-extras
                                                '*command-line-args* command-line-args)
                           'clojure.tools.cli tools-cli-namespace
@@ -208,6 +252,7 @@ Everything after that is bound to *command-line-args*."))
                           'me.raynes.conch.low-level conch-namespace
                           'clojure.core.async async-namespace
                           'clojure.data.csv csv/csv-namespace
+                          'cheshire.core cheshire-core-namespace
                           'io.aviso.ansi {'blue ansi/blue
                                           'red ansi/red}}
              :bindings {'java.lang.System/exit exit ;; override exit, so we have more control
@@ -218,6 +263,7 @@ Everything after that is bound to *command-line-args*."))
                        'java.lang.AssertionError AssertionError
                        'java.lang.Boolean Boolean
                        'java.io.BufferedWriter java.io.BufferedWriter
+                       'java.io.BufferedReader java.io.BufferedReader
                        'java.lang.Class Class
                        'java.lang.Double Double
                        'java.lang.Exception Exception
@@ -232,6 +278,9 @@ Everything after that is bound to *command-line-args*."))
                        'java.lang.System System
                        'java.lang.Thread Thread
                        'sun.nio.fs.UnixPath sun.nio.fs.UnixPath
+                       'java.nio.file.attribute.FileAttribute java.nio.file.attribute.FileAttribute
+                       'java.nio.file.attribute.PosixFilePermission java.nio.file.attribute.PosixFilePermission
+                       'java.nio.file.attribute.PosixFilePermissions java.nio.file.attribute.PosixFilePermissions
                        'java.nio.file.CopyOption java.nio.file.CopyOption
                        'java.nio.file.FileAlreadyExistsException java.nio.file.FileAlreadyExistsException
                        'java.nio.file.Files java.nio.file.Files
@@ -248,10 +297,16 @@ Everything after that is bound to *command-line-args*."))
                         File java.io.File
                         String java.lang.String
                         System java.lang.System
-                        Thread java.lang.Thread}}
+                        Thread java.lang.Thread}
+             :load-fn load-fn}
         ctx (update ctx :bindings assoc 'eval #(eval* ctx %)
-                                        'load-file #(load-file* ctx %))
-        _preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim) (sci/eval-string ctx))
+                    'load-file #(load-file* ctx %))
+        ctx (addons/future ctx)
+        _preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim) (eval-string ctx))
+        expression (if main
+                     (format "(ns user (:require [%1$s])) (apply %1$s/-main *command-line-args*)"
+                             main)
+                     expression)
         exit-code
         (or
          #_(binding [*out* *err*]
@@ -261,6 +316,7 @@ Everything after that is bound to *command-line-args*."))
                 [(print-version) 0]
                 help?
                 [(print-help) 0]
+                repl [(start-repl! ctx #(read-next *in*)) 0]
                 socket-repl [(start-socket-repl! socket-repl ctx #(read-next *in*)) 0]
                 :else
                 (try
@@ -272,7 +328,7 @@ Everything after that is bound to *command-line-args*."))
                                                                                {:sci/deref! true})) in)]
                           (if (identical? ::EOF in)
                             [nil 0] ;; done streaming
-                            (let [res [(let [res (sci/eval-string expr ctx)]
+                            (let [res [(let [res (eval-string expr ctx)]
                                          (when (some? res)
                                            (if-let [pr-f (cond shell-out println
                                                                edn-out prn)]
@@ -285,7 +341,7 @@ Everything after that is bound to *command-line-args*."))
                               (if stream?
                                 (recur (read-next *in*))
                                 res)))))
-                      [(print-help) 1]))
+                      [(start-repl! ctx #(read-next *in*)) 0]))
                   (catch Throwable e
                     (binding [*out* *err*]
                       (let [d (ex-data e)

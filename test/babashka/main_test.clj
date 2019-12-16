@@ -6,10 +6,11 @@
    [clojure.java.shell :refer [sh]]
    [clojure.string :as str]
    [clojure.test :as test :refer [deftest is testing]]
-   [clojure.java.io :as io]))
+   [clojure.java.io :as io]
+   [sci.core :as sci]))
 
 (defn bb [input & args]
-  (edn/read-string (apply test-utils/bb (str input) (map str args))))
+  (edn/read-string (apply test-utils/bb (when (some? input) (str input)) (map str args))))
 
 (deftest parse-opts-test
   (is (= {:expression "(println 123)"}
@@ -82,6 +83,9 @@
                 "(map-indexed #(-> [%1 %2]) *in*)")
             (bb "(keep #(when (re-find #\"(?i)clojure\" (second %)) (first %)) *in*)"))))))
 
+(deftest println-test
+  (is (= "hello\n" (test-utils/bb nil "(println \"hello\")"))))
+
 (deftest input-test
   (testing "bb doesn't wait for input if *in* isn't used"
     (is (= "2\n" (with-out-str (main/main "(inc 1)"))))))
@@ -93,29 +97,20 @@
       (is (not-empty s))))
   (let [out (java.io.StringWriter.)
         err (java.io.StringWriter.)
-        exit-code (binding [*out* out *err* err]
-                    (main/main "--time" "(println \"Hello world!\") (System/exit 42)"))]
+        exit-code (sci/with-bindings {sci/out out
+                                      sci/err err}
+                    (binding [*out* out *err* err]
+                      (main/main "--time" "(println \"Hello world!\") (System/exit 42)")))]
     (is (= (str out) "Hello world!\n"))
     (is (re-find #"took" (str err)))
     (is (= 42 exit-code))))
 
 (deftest malformed-command-line-args-test
   (is (thrown-with-msg? Exception #"File does not exist: non-existing\n"
-                        (bb nil "-f" "non-existing")))
-  (testing "no arguments prints help"
-    (is (str/includes?
-         (try (test-utils/bb nil)
-              (catch clojure.lang.ExceptionInfo e
-                (:stdout (ex-data e))))
-         "Usage:"))))
+                        (bb nil "-f" "non-existing"))))
 
 (deftest ssl-test
-  (let [graalvm-home (System/getenv "GRAALVM_HOME")
-        lib-path (format "%1$s/jre/lib:%1$s/jre/lib/amd64" graalvm-home)
-        ;; _ (prn "lib-path" lib-path)
-        resp (bb nil (format "(System/setProperty \"java.library.path\" \"%s\")
-                              (slurp \"https://www.google.com\")"
-                             lib-path))]
+  (let [resp (bb nil "(slurp \"https://www.google.com\")")]
     (is (re-find #"doctype html" resp))))
 
 (deftest stream-test
@@ -140,7 +135,8 @@
 (deftest preloads-test
   ;; THIS TEST REQUIRES:
   ;; export BABASHKA_PRELOADS='(defn __bb__foo [] "foo") (defn __bb__bar [] "bar")'
-  (is (= "foobar" (bb nil "(str (__bb__foo) (__bb__bar))"))))
+  (when (System/getenv "BABASHKA_PRELOADS_TEST")
+    (is (= "foobar" (bb nil "(str (__bb__foo) (__bb__bar))")))))
 
 (deftest io-test
   (is (true? (bb nil "(.exists (io/file \"README.md\"))")))
@@ -288,3 +284,9 @@
                      (java.nio.file.Files/copy p p' (into-array [java.nio.file.StandardCopyOption/REPLACE_EXISTING]))))))"
              temp-path))
     (is (.exists f2))))
+
+(deftest future-print-test
+  (testing "the root binding of sci/*out*"
+    (is (= "hello"  (bb nil "@(future (prn \"hello\"))"))))
+
+  )

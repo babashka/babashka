@@ -4,7 +4,7 @@
 
 (defn thread
   [_ _ & body]
-  `(~'async/thread-call (fn [] ~@body)))
+  `(~'clojure.core.async/thread-call (fn [] ~@body)))
 
 (def async-namespace
   {'<!! async/<!!

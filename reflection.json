@@ -25,7 +25,9 @@
   },
   {
     "name":"java.io.BufferedReader",
-    "allPublicMethods":true
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
   },
   {
     "name": "java.lang.Class",
@@ -121,6 +123,24 @@
   {
     "name":"java.lang.UNIXProcess",
     "allPublicMethods":true
+  },
+  {
+    "name":"java.nio.file.attribute.FileAttribute",
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name":"java.nio.file.attribute.PosixFilePermission",
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name":"java.nio.file.attribute.PosixFilePermissions",
+    "allPublicMethods":true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
   },
   {
     "name":"java.nio.file.Path",

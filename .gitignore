@@ -13,3 +13,6 @@ pom.xml.asc
 /bb
 .clj-kondo/.cache
 !java/src/babashka/impl/LockFix.class
+!test-resources/babashka/src_for_classpath_test/foo.jar
+.cpcache
+deps.edn

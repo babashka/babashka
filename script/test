@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
 
 set -eo pipefail
-export BABASHKA_PRELOADS='(defn __bb__foo [] "foo") (defn __bb__bar [] "bar")'
+BABASHKA_PRELOADS=""
+BABASHKA_CLASSPATH=""
+lein test "$@"
 
-lein test
+BABASHKA_PRELOADS='(defn __bb__foo [] "foo") (defn __bb__bar [] "bar")'
+BABASHKA_PRELOADS_TEST=true
+lein test :only babashka.main-test/preloads-test
+
+BABASHKA_PRELOADS="(require '[env-ns])"
+BABASHKA_CLASSPATH_TEST=true
+BABASHKA_CLASSPATH="test-resources/babashka/src_for_classpath_test/env"
+lein test :only babashka.classpath-test/classpath-env-test
