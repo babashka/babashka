@@ -3,28 +3,6 @@
   (:require
    [cheshire.core :as json]))
 
-;; ;; invoke with: clojure -Sdeps '{:deps {cheshire {:mvn/version "RELEASE"}}}' methods.clj <class>
-;; ;; where <class> is e.g. java.lang.Thread
-
-;; (require '[cheshire.core :as cheshire])
-
-;; (defn public-declared-method? [c m]
-;;   (and (= c (.getDeclaringClass m))
-;;        (not (.getAnnotation m Deprecated))))
-
-;; (defn public-declared-method-names [c]
-;;   (->> (.getMethods c)
-;;        (keep (fn [m]
-;;                (when (public-declared-method? c m)
-;;                  {:name (.getName m)})) )
-;;        (distinct )))
-
-;; (def the-class
-;;   (Class/forName (first *command-line-args*)))
-
-;; (println
-;;  (cheshire/generate-string (public-declared-method-names the-class)))
-
 (def classes
   {:default-classes '[java.lang.ArithmeticException
                       java.lang.AssertionError
@@ -43,7 +21,6 @@
                       java.io.StringReader
                       java.io.StringWriter
                       java.lang.System
-                      java.lang.Thread
                       sun.nio.fs.UnixPath
                       java.nio.file.attribute.FileAttribute
                       java.nio.file.attribute.PosixFilePermission
@@ -52,14 +29,54 @@
                       java.nio.file.FileAlreadyExistsException
                       java.nio.file.Files
                       java.nio.file.NoSuchFileException
+                      java.nio.file.Path
                       java.nio.file.StandardCopyOption]
    :custom-classes {'java.util.concurrent.LinkedBlockingQueue ;; why?
                     {:allPublicMethods true}
                     'java.lang.Process ;; for conch?
-                    {:allPublicConstructors true}}})
+                    {:allPublicConstructors true}
+                    'java.lang.UNIXProcess ;; for conch?
+                    {:allPublicMethods true}
+                    'java.lang.Thread
+                    ;; generated with `public-declared-method-names`, see in
+                    ;; `comment` below
+                    {:methods [{:name "activeCount"}
+                               {:name "checkAccess"}
+                               {:name "currentThread"}
+                               {:name "dumpStack"}
+                               {:name "enumerate"}
+                               {:name "getAllStackTraces"}
+                               {:name "getContextClassLoader"}
+                               {:name "getDefaultUncaughtExceptionHandler"}
+                               {:name "getId"}
+                               {:name "getName"}
+                               {:name "getPriority"}
+                               {:name "getStackTrace"}
+                               {:name "getState"}
+                               {:name "getThreadGroup"}
+                               {:name "getUncaughtExceptionHandler"}
+                               {:name "holdsLock"}
+                               {:name "interrupt"}
+                               {:name "interrupted"}
+                               {:name "isAlive"}
+                               {:name "isDaemon"}
+                               {:name "isInterrupted"}
+                               {:name "join"}
+                               {:name "run"}
+                               {:name "setContextClassLoader"}
+                               {:name "setDaemon"}
+                               {:name "setDefaultUncaughtExceptionHandler"}
+                               {:name "setName"}
+                               {:name "setPriority"}
+                               {:name "setUncaughtExceptionHandler"}
+                               {:name "sleep"}
+                               {:name "start"}
+                               {:name "toString"}
+                               {:name "yield"}]}}})
 
 (defmacro gen-class-map []
-  (let [classes (:default-classes classes)]
+  (let [classes (concat (:default-classes classes)
+                        (keys (:custom-classes classes)))]
     (apply hash-map
            (for [c classes
                  c [(list 'quote c) c]]
@@ -70,11 +87,32 @@
 (defn generate-reflection-file
   "Generate reflection.json file"
   [& args]
-  (let [entries (vec (for [c (sort (keys class-map))]
+  (let [entries (vec (for [c (sort (:default-classes classes))]
                        {:name (str c)
                         :allPublicMethods true
                         :allPublicFields true
-                        :allPublicConstructors true}))]
+                        :allPublicConstructors true}))
+        custom-entries (for [[k v] (:custom-classes classes)]
+                         (assoc v :name (str k)))
+        all-entries (concat entries custom-entries)]
     (spit (or
            (first args)
-           "reflection2.json") (json/generate-string entries {:pretty true}))))
+           "reflection.json") (json/generate-string all-entries {:pretty true}))))
+
+(comment
+
+  (defn public-declared-method? [c m]
+    (and (= c (.getDeclaringClass m))
+         (not (.getAnnotation m Deprecated))))
+
+  (defn public-declared-method-names [c]
+    (->> (.getMethods c)
+         (keep (fn [m]
+                 (when (public-declared-method? c m)
+                   {:name (.getName m)})) )
+         (distinct)
+         (sort-by :name)
+         (vec)))
+
+  (public-declared-method-names java.lang.Thread)
+  )
