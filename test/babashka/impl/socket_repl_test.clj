@@ -36,7 +36,8 @@
                                               (delay [1 2 3])
                                               '*command-line-args*
                                               ["a" "b" "c"]}
-                                   :env (atom {})})
+                                   :env (atom {})
+                                   :features #{:bb}})
       (future
         (sh "bash" "-c"
             "echo '[1 2 3]' | ./bb --socket-repl 0.0.0.0:1666 a b c")))
