@@ -14,6 +14,7 @@
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
    [babashka.impl.utils :refer [eval-string]]
    [babashka.impl.classpath :as cp]
+   [babashka.impl.classes :as classes]
    [babashka.wait :as wait]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
@@ -256,34 +257,7 @@ Everything after that is bound to *command-line-args*."))
                         'System/exit exit}
              :env env
              :features #{:bb}
-             :classes {'java.lang.ArithmeticException ArithmeticException
-                       'java.lang.AssertionError AssertionError
-                       'java.lang.Boolean Boolean
-                       'java.io.BufferedWriter java.io.BufferedWriter
-                       'java.io.BufferedReader java.io.BufferedReader
-                       'java.lang.Class Class
-                       'java.lang.Double Double
-                       'java.lang.Exception Exception
-                       'clojure.lang.ExceptionInfo clojure.lang.ExceptionInfo
-                       'java.lang.Integer Integer
-                       'java.io.File java.io.File
-                       'clojure.lang.LineNumberingPushbackReader clojure.lang.LineNumberingPushbackReader
-                       'java.util.regex.Pattern java.util.regex.Pattern
-                       'java.lang.String String
-                       'java.io.StringReader java.io.StringReader
-                       'java.io.StringWriter java.io.StringWriter
-                       'java.lang.System System
-                       'java.lang.Thread Thread
-                       'sun.nio.fs.UnixPath sun.nio.fs.UnixPath
-                       'java.nio.file.attribute.FileAttribute java.nio.file.attribute.FileAttribute
-                       'java.nio.file.attribute.PosixFilePermission java.nio.file.attribute.PosixFilePermission
-                       'java.nio.file.attribute.PosixFilePermissions java.nio.file.attribute.PosixFilePermissions
-                       'java.nio.file.CopyOption java.nio.file.CopyOption
-                       'java.nio.file.FileAlreadyExistsException java.nio.file.FileAlreadyExistsException
-                       'java.nio.file.Files java.nio.file.Files
-                       'java.nio.file.NoSuchFileException java.nio.file.NoSuchFileException
-                       'java.nio.file.StandardCopyOption java.nio.file.StandardCopyOption
-                       }
+             :classes classes/class-map
              :imports '{ArithmeticException java.lang.ArithmeticException
                         AssertionError java.lang.AssertionError
                         Boolean java.lang.Boolean

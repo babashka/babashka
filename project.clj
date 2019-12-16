@@ -21,7 +21,8 @@
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"
                                   "-Dclojure.spec.skip-macros=true"]
                        :main babashka.main
-                       :aot :all}}
+                       :aot :all}
+             :reflection {:main babashka.impl.classes/generate-reflection-file}}
   :aliases {"bb" ["run" "-m" "babashka.main"]}
   :deploy-repositories [["clojars" {:url "https://clojars.org/repo"
                                     :username :env/clojars_user
