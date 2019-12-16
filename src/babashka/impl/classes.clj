@@ -1,21 +1,49 @@
 (ns babashka.impl.classes
   {:no-doc true}
   (:require
-   [clojure.edn :as edn]
-   [clojure.java.io :as io]
    [cheshire.core :as json]))
 
+(def classes
+  {:default-classes '[java.lang.ArithmeticException
+                      java.lang.AssertionError
+                      java.lang.Boolean
+                      java.io.BufferedWriter
+                      java.io.BufferedReader
+                      java.lang.Class
+                      java.lang.Double
+                      java.lang.Exception
+                      clojure.lang.ExceptionInfo
+                      java.lang.Integer
+                      java.io.File
+                      clojure.lang.LineNumberingPushbackReader
+                      java.util.regex.Pattern
+                      java.lang.String
+                      java.io.StringReader
+                      java.io.StringWriter
+                      java.lang.System
+                      java.lang.Thread
+                      sun.nio.fs.UnixPath
+                      java.nio.file.attribute.FileAttribute
+                      java.nio.file.attribute.PosixFilePermission
+                      java.nio.file.attribute.PosixFilePermissions
+                      java.nio.file.CopyOption
+                      java.nio.file.FileAlreadyExistsException
+                      java.nio.file.Files
+                      java.nio.file.NoSuchFileException
+                      java.nio.file.StandardCopyOption]
+   :custom-classes {'java.util.concurrent.LinkedBlockingQueue ;; why?
+                    {:allPublicMethods true}
+                    'java.lang.Process ;; for conch?
+                    {:allPublicConstructors true}}})
+
 (defmacro gen-class-map []
-  (let [classes-file (slurp (io/resource "classes.edn"))
-        classes-edn (edn/read-string classes-file)
-        classes (:classes classes-edn)]
+  (let [classes (:default-classes classes)]
     (apply hash-map
            (for [c classes
                  c [(list 'quote c) c]]
              c))))
 
 (def class-map (gen-class-map))
-
 
 (defn generate-reflection-file
   "Generate reflection.json file"
