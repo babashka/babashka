@@ -89,6 +89,11 @@
   "allPublicFields" : true,
   "allPublicConstructors" : true
 }, {
+  "name" : "java.lang.UNIXProcess",
+  "allPublicMethods" : true,
+  "allPublicFields" : true,
+  "allPublicConstructors" : true
+}, {
   "name" : "java.nio.file.CopyOption",
   "allPublicMethods" : true,
   "allPublicFields" : true,

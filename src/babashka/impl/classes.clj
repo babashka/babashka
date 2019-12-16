@@ -3,6 +3,10 @@
   (:require
    [cheshire.core :as json]))
 
+;; TODO: right now we're checking if calling a certain class is allowed by
+;; checking its concrete type presence, but we should really be able to say
+;; something like: all java.lang.Process classes are allowed
+
 (def classes
   {:default-classes '[clojure.lang.ExceptionInfo
                       clojure.lang.LineNumberingPushbackReader
@@ -22,6 +26,7 @@
                       java.lang.String
                       java.lang.System
                       java.lang.Process
+                      java.lang.UNIXProcess ;; included because of permission check
                       java.lang.ProcessBuilder
                       java.nio.file.CopyOption
                       java.nio.file.FileAlreadyExistsException
@@ -33,7 +38,8 @@
                       java.nio.file.attribute.PosixFilePermission
                       java.nio.file.attribute.PosixFilePermissions
                       java.util.regex.Pattern
-                      sun.nio.fs.UnixPath]
+                      sun.nio.fs.UnixPath ;; included because of permission check
+                      ]
    :custom-classes {'java.lang.Thread
                     ;; generated with `public-declared-method-names`, see in
                     ;; `comment` below
