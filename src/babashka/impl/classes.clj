@@ -37,6 +37,7 @@
                       java.nio.file.attribute.FileAttribute
                       java.nio.file.attribute.PosixFilePermission
                       java.nio.file.attribute.PosixFilePermissions
+                      java.time.LocalDate
                       java.util.regex.Pattern
                       sun.nio.fs.UnixPath ;; included because of permission check
                       ]

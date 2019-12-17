@@ -159,6 +159,11 @@
   "allPublicFields" : true,
   "allPublicConstructors" : true
 }, {
+  "name" : "java.time.LocalDate",
+  "allPublicMethods" : true,
+  "allPublicFields" : true,
+  "allPublicConstructors" : true
+}, {
   "name" : "java.util.concurrent.LinkedBlockingQueue",
   "allPublicMethods" : true,
   "allPublicFields" : true,
