@@ -172,8 +172,6 @@ enumerated explicitly.
 - [`clojure.core.async`](https://clojure.github.io/core.async/) aliased as
   `async`. The `alt` and `go` macros are not available but `alts!!` does work as
   it is a function.
-- [`me.raynes.conch.low-level`](https://github.com/clj-commons/conch#low-level-usage)
-  aliased as `conch`
 - [`clojure.tools.cli`](https://github.com/clojure/tools.cli) aliased as `tools.cli`
 - [`clojure.data.csv`](https://github.com/clojure/data.csv) aliased as `csv`
 - [`cheshire.core`](https://github.com/dakrone/cheshire) aliased as `json`
@@ -191,6 +189,7 @@ The following Java classes are available:
 - `java.io.File`
 - `java.nio.Files`
 - `java.util.regex.Pattern`
+- `ProcessBuilder` (see [example](examples/process_builder.clj)).
 - `String`
 - `System`
 - `Thread`
@@ -446,22 +445,27 @@ A socket REPL client for Emacs is
 
 ## Spawning and killing a process
 
-You may use the `conch` namespace for this. It maps to
-[`me.raynes.conch.low-level`](https://github.com/clj-commons/conch#low-level-usage).
+Use the `java.lang.ProcessBuilder` class.
 
 Example:
 
 ``` clojure
-$ bb '
-(def ws (conch/proc "python" "-m" "SimpleHTTPServer" "1777"))
-(net/wait-for-it "localhost" 1777) (conch/destroy ws)'
+user=> (def ws (-> (ProcessBuilder. ["python" "-m" "SimpleHTTPServer" "1777"]) (.start)))
+#'user/ws
+user=> (wait/wait-for-port "localhost" 1777)
+{:host "localhost", :port 1777, :took 2}
+user=> (.destroy ws)
+nil
 ```
+
+Also see this [example](examples/process_builder.clj).
 
 ## Async
 
-Apart from `future` for creating threads and the `conch` namespace for creating
-processes, you may use the `async` namespace, which maps to `clojure.core.async`,  for asynchronous scripting. The following
-example shows how to get first available value from two different processes:
+Apart from `future` and `pmap` for creating threads, you may use the `async`
+namespace, which maps to `clojure.core.async`, for asynchronous scripting. The
+following example shows how to get first available value from two different
+processes:
 
 ``` clojure
 bb '
@@ -681,5 +685,3 @@ Distributed under the EPL License. See LICENSE.
 
 This project contains code from:
 - Clojure, which is licensed under the same EPL License.
-- [conch](https://github.com/clj-commons/conch), which is licensed under the
-same EPL License.

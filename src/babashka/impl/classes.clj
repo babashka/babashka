@@ -4,40 +4,43 @@
    [cheshire.core :as json]))
 
 (def classes
-  {:default-classes '[java.lang.ArithmeticException
+  {:default-classes '[clojure.lang.ExceptionInfo
+                      clojure.lang.LineNumberingPushbackReader
+                      java.io.BufferedReader
+                      java.io.BufferedWriter
+                      java.io.File
+                      java.io.InputStream
+                      java.io.OutputStream
+                      java.io.StringReader
+                      java.io.StringWriter
+                      java.lang.ArithmeticException
                       java.lang.AssertionError
                       java.lang.Boolean
-                      java.io.BufferedWriter
-                      java.io.BufferedReader
                       java.lang.Class
                       java.lang.Double
                       java.lang.Exception
-                      clojure.lang.ExceptionInfo
                       java.lang.Integer
-                      java.io.File
-                      clojure.lang.LineNumberingPushbackReader
-                      java.util.regex.Pattern
+                      java.util.concurrent.LinkedBlockingQueue
                       java.lang.String
-                      java.io.StringReader
-                      java.io.StringWriter
                       java.lang.System
-                      sun.nio.fs.UnixPath
-                      java.nio.file.attribute.FileAttribute
-                      java.nio.file.attribute.PosixFilePermission
-                      java.nio.file.attribute.PosixFilePermissions
+                      java.lang.Process
+                      java.lang.UNIXProcess
+                      java.lang.UNIXProcess$ProcessPipeOutputStream
+                      java.lang.ProcessBuilder
+                      java.lang.ProcessBuilder$Redirect
                       java.nio.file.CopyOption
                       java.nio.file.FileAlreadyExistsException
                       java.nio.file.Files
                       java.nio.file.NoSuchFileException
                       java.nio.file.Path
-                      java.nio.file.StandardCopyOption]
-   :custom-classes {'java.util.concurrent.LinkedBlockingQueue ;; why?
-                    {:allPublicMethods true}
-                    'java.lang.Process ;; for conch?
-                    {:allPublicConstructors true}
-                    'java.lang.UNIXProcess ;; for conch?
-                    {:allPublicMethods true}
-                    'java.lang.Thread
+                      java.nio.file.StandardCopyOption
+                      java.nio.file.attribute.FileAttribute
+                      java.nio.file.attribute.PosixFilePermission
+                      java.nio.file.attribute.PosixFilePermissions
+                      java.util.regex.Pattern
+                      sun.nio.fs.UnixPath ;; included because of permission check
+                      ]
+   :custom-classes {'java.lang.Thread
                     ;; generated with `public-declared-method-names`, see in
                     ;; `comment` below
                     {:methods [{:name "activeCount"}
@@ -84,16 +87,21 @@
 
 (def class-map (gen-class-map))
 
+#_(defn sym->class-name [sym]
+  (-> sym str (str/replace "$" ".")))
+
 (defn generate-reflection-file
   "Generate reflection.json file"
   [& args]
-  (let [entries (vec (for [c (sort (:default-classes classes))]
-                       {:name (str c)
+  (let [entries (vec (for [c (sort (:default-classes classes))
+                           :let [class-name (str c)]]
+                       {:name class-name
                         :allPublicMethods true
                         :allPublicFields true
                         :allPublicConstructors true}))
-        custom-entries (for [[k v] (:custom-classes classes)]
-                         (assoc v :name (str k)))
+        custom-entries (for [[c v] (:custom-classes classes)
+                             :let [class-name (str c)]]
+                         (assoc v :name class-name))
         all-entries (concat entries custom-entries)]
     (spit (or
            (first args)
@@ -114,5 +122,5 @@
          (sort-by :name)
          (vec)))
 
-  (public-declared-method-names java.lang.Thread)
+  (public-declared-method-names java.lang.UNIXProcess)
   )
