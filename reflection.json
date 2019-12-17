@@ -89,6 +89,11 @@
   "allPublicFields" : true,
   "allPublicConstructors" : true
 }, {
+  "name" : "java.lang.ProcessBuilder$Redirect",
+  "allPublicMethods" : true,
+  "allPublicFields" : true,
+  "allPublicConstructors" : true
+}, {
   "name" : "java.lang.String",
   "allPublicMethods" : true,
   "allPublicFields" : true,

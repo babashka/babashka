@@ -166,8 +166,12 @@
 (deftest future-test
   (is (= 6 (bb nil "@(future (+ 1 2 3))"))))
 
-(deftest conch-test
-  (is (str/includes? (bb nil "(->> (conch/proc \"ls\") (conch/stream-to-string :out))")
+(deftest process-builder-test
+  (is (str/includes? (bb nil "
+(def ls (-> (ProcessBuilder. [\"ls\"]) (.start)))
+(def output (.getInputStream ls))
+(.waitFor ls)
+(slurp output)")
                      "LICENSE")))
 
 (deftest create-temp-file-test

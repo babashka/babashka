@@ -3,10 +3,6 @@
   (:require
    [cheshire.core :as json]))
 
-;; TODO: right now we're checking if calling a certain class is allowed by
-;; checking its concrete type presence, but we should really be able to say
-;; something like: all java.lang.Process classes are allowed
-
 (def classes
   {:default-classes '[clojure.lang.ExceptionInfo
                       clojure.lang.LineNumberingPushbackReader
@@ -31,6 +27,7 @@
                       java.lang.UNIXProcess
                       java.lang.UNIXProcess$ProcessPipeOutputStream
                       java.lang.ProcessBuilder
+                      java.lang.ProcessBuilder$Redirect
                       java.nio.file.CopyOption
                       java.nio.file.FileAlreadyExistsException
                       java.nio.file.Files
@@ -90,16 +87,21 @@
 
 (def class-map (gen-class-map))
 
+#_(defn sym->class-name [sym]
+  (-> sym str (str/replace "$" ".")))
+
 (defn generate-reflection-file
   "Generate reflection.json file"
   [& args]
-  (let [entries (vec (for [c (sort (:default-classes classes))]
-                       {:name (str c)
+  (let [entries (vec (for [c (sort (:default-classes classes))
+                           :let [class-name (str c)]]
+                       {:name class-name
                         :allPublicMethods true
                         :allPublicFields true
                         :allPublicConstructors true}))
-        custom-entries (for [[k v] (:custom-classes classes)]
-                         (assoc v :name (str k)))
+        custom-entries (for [[c v] (:custom-classes classes)
+                             :let [class-name (str c)]]
+                         (assoc v :name class-name))
         all-entries (concat entries custom-entries)]
     (spit (or
            (first args)
