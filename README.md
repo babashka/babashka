@@ -673,6 +673,12 @@ clj-http/clj-http can be upgraded from 3.4.0 to 3.10.0
 cheshire/cheshire can be upgraded from 5.8.1 to 5.9.0
 ```
 
+### Convert project.clj to deps.edn
+
+```
+cat project.clj | sed -e 's/#=//g' -e 's/~@//g' -e 's/~//g' | bb '(let [{:keys [dependencies source-paths resource-paths]} (apply hash-map (drop 3 *in*))] {:paths (into source-paths resource-paths) :deps (into {} (for [[d v] dependencies] [d {:mvn/version v}]))} ) ' | jet --pretty > deps.edn
+```
+
 ## Thanks
 
 - [adgoji](https://www.adgoji.com/) for financial support
