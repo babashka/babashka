@@ -189,6 +189,7 @@ The following Java classes are available:
 - `Math`
 - `java.io.File`
 - `java.nio.Files`
+- `java.util.Base64`
 - `java.util.regex.Pattern`
 - `ProcessBuilder` (see [example](examples/process_builder.clj)).
 - `String`
