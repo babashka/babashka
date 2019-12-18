@@ -675,7 +675,7 @@ cheshire/cheshire can be upgraded from 5.8.1 to 5.9.0
 
 ### Convert project.clj to deps.edn
 
-Contributed by [@plexus]((https://github.com/plexus)
+Contributed by [@plexus](https://github.com/plexus).
 
 ``` shellsession
 $ cat project.clj |
