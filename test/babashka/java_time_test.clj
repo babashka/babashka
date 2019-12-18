@@ -11,4 +11,5 @@
   (is (= "2019-12-18" (bb '(str (java.time.LocalDate/of 2019 12 18)))))
   (is (= "2019-12-01" (bb '(str
                             (-> (java.time.LocalDate/of 2019 12 18)
-                                (.minusDays 17)))))))
+                                (.minusDays 17))))))
+  (is (= "MONDAY" (bb '(str java.time.DayOfWeek/MONDAY)))))
