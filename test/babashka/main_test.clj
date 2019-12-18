@@ -297,6 +297,10 @@
 (deftest Math-test
   (is (== 8.0 (bb nil "(Math/pow 2 3)"))))
 
+(deftest Base64-test
+  (is (= "babashka"
+         (bb nil "(String. (.decode (java.util.Base64/getDecoder) (.encode (java.util.Base64/getEncoder) (.getBytes \"babashka\"))))"))))
+
 ;;;; Scratch
 
 (comment
