@@ -186,6 +186,7 @@ The following Java classes are available:
 - `Exception`
 - `clojure.lang.ExceptionInfo`
 - `Integer`
+- `Math`
 - `java.io.File`
 - `java.nio.Files`
 - `java.util.regex.Pattern`
