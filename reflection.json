@@ -79,6 +79,11 @@
   "allPublicFields" : true,
   "allPublicConstructors" : true
 }, {
+  "name" : "java.lang.Math",
+  "allPublicMethods" : true,
+  "allPublicFields" : true,
+  "allPublicConstructors" : true
+}, {
   "name" : "java.lang.Process",
   "allPublicMethods" : true,
   "allPublicFields" : true,
