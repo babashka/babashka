@@ -3,12 +3,11 @@
    [babashka.main :as main]
    [babashka.test-utils :as test-utils]
    [clojure.edn :as edn]
+   [clojure.java.io :as io]
    [clojure.java.shell :refer [sh]]
    [clojure.string :as str]
    [clojure.test :as test :refer [deftest is testing]]
-   [clojure.java.io :as io]
-   [sci.core :as sci]
-   [clojure.test :as t]))
+   [sci.core :as sci]))
 
 (defn bb [input & args]
   (edn/read-string (apply test-utils/bb (when (some? input) (str input)) (map str args))))

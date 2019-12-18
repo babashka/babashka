@@ -37,7 +37,24 @@
                       java.nio.file.attribute.FileAttribute
                       java.nio.file.attribute.PosixFilePermission
                       java.nio.file.attribute.PosixFilePermissions
+                      java.time.Clock
+                      java.time.DateTimeException
+                      java.time.DayOfWeek
+                      java.time.Duration
+                      java.time.Instant
                       java.time.LocalDate
+                      java.time.LocalDateTime
+                      java.time.LocalTime
+                      java.time.Month
+                      java.time.MonthDay
+                      java.time.OffsetDateTime
+                      java.time.OffsetTime
+                      java.time.Period
+                      java.time.Year
+                      java.time.YearMonth
+                      java.time.ZonedDateTime
+                      java.time.ZoneId
+                      java.time.ZoneOffset
                       java.util.regex.Pattern
                       sun.nio.fs.UnixPath ;; included because of permission check
                       ]
