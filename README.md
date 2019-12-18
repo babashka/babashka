@@ -689,6 +689,10 @@ bb '(let [{:keys [dependencies source-paths resource-paths]} (apply hash-map (dr
 jet --pretty > deps.edn
 ```
 
+### Print current time in California
+
+See [examples/pst.clj](https://github.com/borkdude/babashka/blob/master/examples/pst.clj)
+
 ## Thanks
 
 - [adgoji](https://www.adgoji.com/) for financial support
