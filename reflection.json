@@ -254,6 +254,11 @@
   "allPublicFields" : true,
   "allPublicConstructors" : true
 }, {
+  "name" : "java.time.format.DateTimeFormatter",
+  "allPublicMethods" : true,
+  "allPublicFields" : true,
+  "allPublicConstructors" : true
+}, {
   "name" : "java.time.temporal.TemporalAccessor",
   "allPublicMethods" : true,
   "allPublicFields" : true,

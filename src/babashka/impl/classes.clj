@@ -38,6 +38,7 @@
                       java.nio.file.attribute.FileAttribute
                       java.nio.file.attribute.PosixFilePermission
                       java.nio.file.attribute.PosixFilePermissions
+                      java.time.format.DateTimeFormatter
                       java.time.Clock
                       java.time.DateTimeException
                       java.time.DayOfWeek
