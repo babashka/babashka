@@ -625,6 +625,8 @@ bb '(some #(re-find #".*linux.*" (:browser_download_url %)) *in*)'
 
 ### View download statistics from Clojars
 
+Contributed by [@plexus](https://github.com/plexus).
+
 ``` shellsession
 $ curl https://clojars.org/stats/all.edn |
 bb -o '(for [[[group art] counts] *in*] (str (reduce + (vals counts))  " " group "/" art))' |
@@ -674,6 +676,8 @@ cheshire/cheshire can be upgraded from 5.8.1 to 5.9.0
 ```
 
 ### Convert project.clj to deps.edn
+
+Contributed by [@plexus](https://github.com/plexus).
 
 ``` shellsession
 $ cat project.clj |

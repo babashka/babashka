@@ -7,7 +7,8 @@
    [clojure.string :as str]
    [clojure.test :as test :refer [deftest is testing]]
    [clojure.java.io :as io]
-   [sci.core :as sci]))
+   [sci.core :as sci]
+   [clojure.test :as t]))
 
 (defn bb [input & args]
   (edn/read-string (apply test-utils/bb (when (some? input) (str input)) (map str args))))
@@ -189,6 +190,7 @@
          (bb nil "(def ws (-> (ProcessBuilder. [\"python\" \"-m\" \"SimpleHTTPServer\" \"1777\"]) (.start)))
                 (wait/wait-for-port \"127.0.0.1\" 1777)
                 (.destroy ws)
+                (.waitFor ws)
                 (wait/wait-for-port \"localhost\" 1777 {:default :timed-out :timeout 50})"))))
 
 (deftest wait-for-path-test
@@ -291,6 +293,10 @@
 
 (deftest future-print-test
   (testing "the root binding of sci/*out*"
-    (is (= "hello"  (bb nil "@(future (prn \"hello\"))"))))
+    (is (= "hello"  (bb nil "@(future (prn \"hello\"))")))))
 
+;;;; Scratch
+
+(comment
+  (dotimes [i 10] (wait-for-port-test))
   )
