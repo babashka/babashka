@@ -59,6 +59,9 @@
                       java.time.ZoneOffset
                       java.time.temporal.TemporalAccessor
                       java.util.regex.Pattern
+                      java.util.Base64
+                      java.util.Base64$Decoder
+                      java.util.Base64$Encoder
                       sun.nio.fs.UnixPath ;; included because of permission check
                       ]
    :custom-classes {'java.lang.Thread

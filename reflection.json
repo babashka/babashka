@@ -264,6 +264,21 @@
   "allPublicFields" : true,
   "allPublicConstructors" : true
 }, {
+  "name" : "java.util.Base64",
+  "allPublicMethods" : true,
+  "allPublicFields" : true,
+  "allPublicConstructors" : true
+}, {
+  "name" : "java.util.Base64$Decoder",
+  "allPublicMethods" : true,
+  "allPublicFields" : true,
+  "allPublicConstructors" : true
+}, {
+  "name" : "java.util.Base64$Encoder",
+  "allPublicMethods" : true,
+  "allPublicFields" : true,
+  "allPublicConstructors" : true
+}, {
   "name" : "java.util.concurrent.LinkedBlockingQueue",
   "allPublicMethods" : true,
   "allPublicFields" : true,
