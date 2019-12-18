@@ -190,7 +190,14 @@
                 (wait/wait-for-port \"127.0.0.1\" 1777)
                 (.destroy ws)
                 (.waitFor ws)
-                (wait/wait-for-port \"localhost\" 1777 {:default :timed-out :timeout 50})"))))
+                (wait/wait-for-port \"localhost\" 1777 {:default :timed-out :timeout 50})")))
+  (is (int? (bb nil "
+(require '[babashka.wait :as wait])
+(def ws (-> (ProcessBuilder. [\"python\" \"-m\" \"SimpleHTTPServer\" \"1777\"]) (.start)))
+(wait/wait-for-port \"localhost\" 1777)
+(slurp \"http://localhost:1777\")
+(.destroy ws)
+(.waitFor ws)"))))
 
 (deftest wait-for-path-test
   (let [temp-dir-path (System/getProperty "java.io.tmpdir")]
