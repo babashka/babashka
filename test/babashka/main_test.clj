@@ -294,6 +294,9 @@
   (testing "the root binding of sci/*out*"
     (is (= "hello"  (bb nil "@(future (prn \"hello\"))")))))
 
+(deftest Math-test
+  (is (== 8.0 (bb nil "(Math/pow 2 3)"))))
+
 ;;;; Scratch
 
 (comment

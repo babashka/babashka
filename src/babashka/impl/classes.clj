@@ -20,6 +20,7 @@
                       java.lang.Double
                       java.lang.Exception
                       java.lang.Integer
+                      java.lang.Math
                       java.util.concurrent.LinkedBlockingQueue
                       java.lang.String
                       java.lang.System
