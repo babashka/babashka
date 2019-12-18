@@ -55,6 +55,7 @@
                       java.time.ZonedDateTime
                       java.time.ZoneId
                       java.time.ZoneOffset
+                      java.time.temporal.TemporalAccessor
                       java.util.regex.Pattern
                       sun.nio.fs.UnixPath ;; included because of permission check
                       ]
