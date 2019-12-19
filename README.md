@@ -12,7 +12,7 @@ A Clojure [babushka](https://en.wikipedia.org/wiki/Headscarf) for the grey areas
 
 ``` shellsession
 $ bash <(curl -s https://raw.githubusercontent.com/borkdude/babashka/master/install)
-$ ls | bb --time -i '(filter #(-> % io/file .isDirectory) *in*)'
+$ ls | bb --time -i '(filter #(-> % io/file .isDirectory) <input>)'
 ("doc" "resources" "sci" "script" "src" "target" "test")
 bb took 4ms.
 ```
@@ -57,29 +57,29 @@ Experimental. Breaking changes are expected to happen at this phase.
 ## Examples
 
 ``` shellsession
-$ ls | bb -i '*in*'
+$ ls | bb -i '<input>'
 ["LICENSE" "README.md" "bb" "doc" "pom.xml" "project.clj" "reflection.json" "resources" "script" "src" "target" "test"]
 
-$ ls | bb -i '(count *in*)'
+$ ls | bb -i '(count <input>)'
 12
 
-$ bb '(vec (dedupe *in*))' <<< '[1 1 1 1 2]'
+$ bb '(vec (dedupe <input>))' <<< '[1 1 1 1 2]'
 [1 2]
 
-$ bb '(filterv :foo *in*)' <<< '[{:foo 1} {:bar 2}]'
+$ bb '(filterv :foo <input>)' <<< '[{:foo 1} {:bar 2}]'
 [{:foo 1}]
 
-$ bb '(#(+ %1 %2 %3) 1 2 *in*)' <<< 3
+$ bb '(#(+ %1 %2 %3) 1 2 <input>)' <<< 3
 6
 
-$ ls | bb -i '(filterv #(re-find #"reflection" %) *in*)'
+$ ls | bb -i '(filterv #(re-find #"reflection" %) <input>)'
 ["reflection.json"]
 
 $ bb '(run! #(shell/sh "touch" (str "/tmp/test/" %)) (range 100))'
-$ ls /tmp/test | bb -i '*in*'
+$ ls /tmp/test | bb -i '<input>'
 ["0" "1" "10" "11" "12" "13" "14" "15" "16" "17" "18" "19" "2" "20" "21" ...]
 
-$ bb -O '(repeat "dude")' | bb --stream '(str *in* "rino")' | bb -I '(take 3 *in*)'
+$ bb -O '(repeat "dude")' | bb --stream '(str <input> "rino")' | bb -I '(take 3 <input>)'
 ("duderino" "duderino" "duderino")
 ```
 
@@ -136,12 +136,12 @@ Options:
 
   --help, -h or -?   Print this help text.
   --version          Print the current version of babashka.
-  -i                 Bind *in* to a lazy seq of lines from stdin.
-  -I                 Bind *in* to a lazy seq of EDN values from stdin.
+  -i                 Bind <input> to a lazy seq of lines from stdin.
+  -I                 Bind <input> to a lazy seq of EDN values from stdin.
   -o                 Write lines to stdout.
   -O                 Write EDN values to stdout.
   --verbose          Print entire stacktrace in case of exception.
-  --stream           Stream over lines or EDN values from stdin. Combined with -i or -I *in* becomes a single value per iteration.
+  --stream           Stream over lines or EDN values from stdin. Combined with -i or -I <input> becomes a single value per iteration.
   -e, --eval <expr>  Evaluate an expression.
   -f, --file <path>  Evaluate a file.
   -cp, --classpath   Classpath to use.
@@ -214,7 +214,7 @@ conditionals](#reader-conditionals) to maintain compatibility with JVM Clojure.
 
 Special vars:
 
-- `*in*`: contains the input read from stdin. EDN by default, multiple lines of
+- `<input>`: contains the input read from stdin. EDN by default, multiple lines of
 text with the `-i` option, or multiple EDN values with the `-I` option.
 - `*command-line-args*`: contain the command line args
 
@@ -330,7 +330,7 @@ export BABASHKA_PRELOADS
 Note that you can concatenate multiple expressions. Now you can use these functions in babashka:
 
 ``` shellsession
-$ bb '(-> (foo *in*) bar)' <<< 1
+$ bb '(-> (foo <input>) bar)' <<< 1
 6
 ```
 
@@ -340,7 +340,7 @@ You can also preload an entire file using `load-file`:
 export BABASHKA_PRELOADS='(load-file "my_awesome_prelude.clj")'
 ```
 
-Note that `*in*` is not available in preloads.
+Note that `<input>` is not available in preloads.
 
 ## Classpath
 
@@ -563,7 +563,7 @@ welcome!
 ### Delete a list of files returned by a Unix command
 
 ```
-find . | grep conflict | bb -i '(doseq [f *in*] (.delete (io/file f)))'
+find . | grep conflict | bb -i '(doseq [f <input>] (.delete (io/file f)))'
 ```
 
 ### Calculate aggregate size of directory
@@ -597,7 +597,7 @@ $ cat /tmp/test.txt
 3 Babashka
 4 Goodbye
 
-$ < /tmp/test.txt bb -io '(shuffle *in*)'
+$ < /tmp/test.txt bb -io '(shuffle <input>)'
 3 Babashka
 2 Clojure
 4 Goodbye
@@ -611,7 +611,7 @@ For converting JSON to EDN, see [jet](https://github.com/borkdude/jet).
 ``` shellsession
 $ curl -s https://api.github.com/repos/borkdude/babashka/tags |
 jet --from json --keywordize --to edn |
-bb '(-> *in* first :name (subs 1))'
+bb '(-> <input> first :name (subs 1))'
 "0.0.4"
 ```
 
@@ -620,8 +620,8 @@ bb '(-> *in* first :name (subs 1))'
 ``` shellsession
 $ curl -s https://api.github.com/repos/borkdude/babashka/releases |
 jet --from json --keywordize |
-bb '(-> *in* first :assets)' |
-bb '(some #(re-find #".*linux.*" (:browser_download_url %)) *in*)'
+bb '(-> <input> first :assets)' |
+bb '(some #(re-find #".*linux.*" (:browser_download_url %)) <input>)'
 "https://github.com/borkdude/babashka/releases/download/v0.0.4/babashka-0.0.4-linux-amd64.zip"
 ```
 
@@ -631,7 +631,7 @@ Contributed by [@plexus](https://github.com/plexus).
 
 ``` shellsession
 $ curl https://clojars.org/stats/all.edn |
-bb -o '(for [[[group art] counts] *in*] (str (reduce + (vals counts))  " " group "/" art))' |
+bb -o '(for [[[group art] counts] <input>] (str (reduce + (vals counts))  " " group "/" art))' |
 sort -rn |
 less
 14113842 clojure-complete/clojure-complete
@@ -684,7 +684,7 @@ Contributed by [@plexus](https://github.com/plexus).
 ``` shellsession
 $ cat project.clj |
 sed -e 's/#=//g' -e 's/~@//g' -e 's/~//g' |
-bb '(let [{:keys [dependencies source-paths resource-paths]} (apply hash-map (drop 3 *in*))]
+bb '(let [{:keys [dependencies source-paths resource-paths]} (apply hash-map (drop 3 <input>))]
   {:paths (into source-paths resource-paths)
    :deps (into {} (for [[d v] dependencies] [d {:mvn/version v}]))}) ' |
 jet --pretty > deps.edn
