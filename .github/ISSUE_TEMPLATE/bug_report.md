@@ -9,7 +9,7 @@ assignees: ''
 
 **version**
 
-[ Please specify which version of babashka you're using. You can find this with `babashka --version`. The documentation on the master branch may be ahead of the most released version. You can check the docs for your version by going to cljdoc. ]
+[ Please specify which version of babashka you're using. You can find this with `babashka --version`. The documentation on the master branch may be ahead of the most released version. ]
 
 **platform**
 
