@@ -65,9 +65,10 @@
                       sun.nio.fs.UnixPath ;; included because of permission check
                       ]
    :custom-classes {'java.lang.Thread
-                    ;; generated with `public-declared-method-names`, see in
-                    ;; `comment` below
-                    {:methods [{:name "activeCount"}
+                    {:allPublicConstructors true
+                     ;; generated with `public-declared-method-names`, see in
+                     ;; `comment` below
+                     :methods [{:name "activeCount"}
                                {:name "checkAccess"}
                                {:name "currentThread"}
                                {:name "dumpStack"}

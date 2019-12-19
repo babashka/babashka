@@ -2,7 +2,8 @@
   (:require
    [babashka.main :as main]
    [me.raynes.conch :refer [let-programs] :as sh]
-   [sci.core :as sci]))
+   [sci.core :as sci]
+   [sci.impl.vars :as vars]))
 
 (set! *warn-on-reflection* true)
 
@@ -14,17 +15,25 @@
         bindings-map (cond-> {sci/out os
                               sci/err es}
                        is (assoc sci/in is))]
-    (sci/with-bindings bindings-map
-      (let [res (binding [*out* os
-                          *err* es]
-                  (if input
-                    (with-in-str input (apply main/main args))
-                    (apply main/main args)))]
-        (if (zero? res)
-          (str os)
-          (throw (ex-info (str es)
-                          {:stdout (str os)
-                           :stderr (str es)})))))))
+    (try
+      (when input (vars/bindRoot sci/in is))
+      (vars/bindRoot sci/out os)
+      (vars/bindRoot sci/err es)
+      (sci/with-bindings bindings-map
+          (let [res (binding [*out* os
+                              *err* es]
+                      (if input
+                        (with-in-str input (apply main/main args))
+                        (apply main/main args)))]
+            (if (zero? res)
+              (str os)
+              (throw (ex-info (str es)
+                              {:stdout (str os)
+                               :stderr (str es)})))))
+      (finally
+        (when input (vars/bindRoot sci/in *in*))
+        (vars/bindRoot sci/out *out*)
+        (vars/bindRoot sci/err *err*)))))
 
 (defn bb-native [input & args]
   (let-programs [bb "./bb"]
