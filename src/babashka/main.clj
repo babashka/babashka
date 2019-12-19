@@ -241,7 +241,8 @@ Everything after that is bound to *command-line-args*."))
              :namespaces {'clojure.core (assoc core-extras
                                                '*command-line-args* command-line-args)
                           'clojure.tools.cli tools-cli-namespace
-                          'clojure.edn {'read-string edn/read-string}
+                          'clojure.edn {'read edn/read
+                                        'read-string edn/read-string}
                           'clojure.java.shell {'sh shell/sh}
                           'babashka.wait {'wait-for-port wait/wait-for-port
                                           'wait-for-path wait/wait-for-path}
