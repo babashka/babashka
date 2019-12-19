@@ -308,8 +308,11 @@
   (is (= "babashka"
          (bb nil "(String. (.decode (java.util.Base64/getDecoder) (.encode (java.util.Base64/getEncoder) (.getBytes \"babashka\"))))"))))
 
+(deftest Thread-test
+  (is (= "hello" (bb nil "(doto (java.lang.Thread. (fn [] (prn \"hello\"))) (.start) (.join)) nil"))))
+
 ;;;; Scratch
 
 (comment
-  (dotimes [i 10] (wait-for-port-test))
+  (dotimes [_ 10] (wait-for-port-test))
   )

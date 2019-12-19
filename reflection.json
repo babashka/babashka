@@ -294,6 +294,7 @@
   "allPublicFields" : true,
   "allPublicConstructors" : true
 }, {
+  "allPublicConstructors" : true,
   "methods" : [ {
     "name" : "activeCount"
   }, {
