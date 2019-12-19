@@ -137,12 +137,12 @@
   (println "
   --help, -h or -?   Print this help text.
   --version          Print the current version of babashka.
-  -i                 Bind *in* to a lazy seq of lines from stdin.
-  -I                 Bind *in* to a lazy seq of EDN values from stdin.
+  -i                 Bind <stdin> to a lazy seq of lines from stdin.
+  -I                 Bind <stdin> to a lazy seq of EDN values from stdin.
   -o                 Write lines to stdout.
   -O                 Write EDN values to stdout.
   --verbose          Print entire stacktrace in case of exception.
-  --stream           Stream over lines or EDN values from stdin. Combined with -i or -I *in* becomes a single value per iteration.
+  --stream           Stream over lines or EDN values from stdin. Combined with -i or -I <stdin> becomes a single value per iteration.
   -e, --eval <expr>  Evaluate an expression.
   -f, --file <path>  Evaluate a file.
   -cp, --classpath   Classpath to use.
@@ -175,14 +175,14 @@ Everything after that is bound to *command-line-args*."))
 
 (defn start-repl! [ctx read-next]
   (let [ctx (update ctx :bindings assoc
-                    (with-meta '*in*
+                    (with-meta '<stdin>
                       {:sci/deref! true})
                     (read-next))]
     (repl/start-repl! ctx)))
 
 (defn start-socket-repl! [address ctx read-next]
   (let [ctx (update ctx :bindings assoc
-                    (with-meta '*in*
+                    (with-meta '<stdin>
                       {:sci/deref! true})
                     (read-next))]
     (socket-repl/start-repl! address ctx)
@@ -294,7 +294,7 @@ Everything after that is bound to *command-line-args*."))
                   (let [expr (if file (read-file file) expression)]
                     (if expr
                       (loop [in (read-next *in*)]
-                        (let [ctx (update-in ctx [:namespaces 'user] assoc (with-meta '*in*
+                        (let [ctx (update-in ctx [:namespaces 'user] assoc (with-meta '<stdin>
                                                                              (when-not stream?
                                                                                {:sci/deref! true})) in)]
                           (if (identical? ::EOF in)

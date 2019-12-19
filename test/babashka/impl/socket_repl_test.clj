@@ -31,7 +31,7 @@
 (deftest socket-repl-test
   (try
     (if tu/jvm?
-      (start-repl! "0.0.0.0:1666" {:bindings {(with-meta '*in*
+      (start-repl! "0.0.0.0:1666" {:bindings {(with-meta '<stdin>
                                                 {:sci/deref! true})
                                               (delay [1 2 3])
                                               '*command-line-args*
@@ -47,8 +47,8 @@
                           (sh "bash" "-c"
                               "lsof -t -i:1666"))))))
     (is (socket-command "(+ 1 2 3)" "user=> 6"))
-    (testing "*in*"
-      (is (socket-command "*in*" "[1 2 3]")))
+    (testing "<stdin>"
+      (is (socket-command "<stdin>" "[1 2 3]")))
     (testing "*command-line-args*"
       (is (socket-command '*command-line-args* "\"a\" \"b\" \"c\"")))
     (testing "&env"
@@ -72,7 +72,7 @@
   (dotimes [_ 1000]
     (t/run-tests))
   (stop-repl!)
-  (start-repl! "0.0.0.0:1666" {:bindings {(with-meta '*in*
+  (start-repl! "0.0.0.0:1666" {:bindings {(with-meta '<stdin>
                                             {:sci/deref! true})
                                           (delay [1 2 3])
                                           '*command-line-args*

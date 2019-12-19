@@ -34,45 +34,45 @@
 
 (deftest main-test
   (testing "-io behaves as identity"
-    (= "foo\nbar\n" (test-utils/bb "foo\nbar\n" "-io" "*in*")))
+    (= "foo\nbar\n" (test-utils/bb "foo\nbar\n" "-io" "<stdin>")))
   (testing "if and when"
-    (is (= 1 (bb 0 '(if (zero? *in*) 1 2))))
-    (is (= 2 (bb 1 '(if (zero? *in*) 1 2))))
-    (is (= 1 (bb 0 '(when (zero? *in*) 1))))
-    (is (nil? (bb 1 '(when (zero? *in*) 1)))))
+    (is (= 1 (bb 0 '(if (zero? <stdin>) 1 2))))
+    (is (= 2 (bb 1 '(if (zero? <stdin>) 1 2))))
+    (is (= 1 (bb 0 '(when (zero? <stdin>) 1))))
+    (is (nil? (bb 1 '(when (zero? <stdin>) 1)))))
   (testing "and and or"
-    (is (= false (bb 0 '(and false true *in*))))
-    (is (= 0 (bb 0 '(and true true *in*))))
-    (is (= 1 (bb 1 '(or false false *in*))))
-    (is (= false (bb false '(or false false *in*))))
-    (is (= 3 (bb false '(or false false *in* 3)))))
+    (is (= false (bb 0 '(and false true <stdin>))))
+    (is (= 0 (bb 0 '(and true true <stdin>))))
+    (is (= 1 (bb 1 '(or false false <stdin>))))
+    (is (= false (bb false '(or false false <stdin>))))
+    (is (= 3 (bb false '(or false false <stdin> 3)))))
   (testing "fn"
-    (is (= 2 (bb 1 "(#(+ 1 %) *in*)")))
+    (is (= 2 (bb 1 "(#(+ 1 %) <stdin>)")))
     (is (= [1 2 3] (bb 1 "(map #(+ 1 %) [0 1 2])")))
-    (is (= 1 (bb 1 "(#(when (odd? *in*) *in*))"))))
+    (is (= 1 (bb 1 "(#(when (odd? <stdin>) <stdin>))"))))
   (testing "map"
     (is (= [1 2 3] (bb 1 '(map inc [0 1 2])))))
   (testing "keep"
     (is (= [false true false] (bb 1 '(keep odd? [0 1 2])))))
   (testing "->"
-    (is (= 4 (bb 1 '(-> *in* inc inc (inc))))))
+    (is (= 4 (bb 1 '(-> <stdin> inc inc (inc))))))
   (testing "->>"
-    (is (= 10 (edn/read-string (test-utils/bb "foo\n\baar\baaaaz" "-i" "(->> *in* (map count) (apply max))")))))
+    (is (= 10 (edn/read-string (test-utils/bb "foo\n\baar\baaaaz" "-i" "(->> <stdin> (map count) (apply max))")))))
   (testing "literals"
     (is (= {:a 4
             :b {:a 2}
             :c [1 1]
             :d #{1 2}}
-           (bb 1 '{:a (+ 1 2 *in*)
-                   :b {:a (inc *in*)}
-                   :c [*in* *in*]
-                   :d #{*in* (inc *in*)}}))))
+           (bb 1 '{:a (+ 1 2 <stdin>)
+                   :b {:a (inc <stdin>)}
+                   :c [<stdin> <stdin>]
+                   :d #{<stdin> (inc <stdin>)}}))))
   (testing "shuffle the contents of a file"
     (let [in "foo\n Clojure is nice. \nbar\n If you're nice to clojure. "
           in-lines (set (str/split in #"\n"))
           out (test-utils/bb in
                              "-io"
-                             (str '(shuffle *in*)))
+                             (str '(shuffle <stdin>)))
           out-lines (set (str/split out #"\n"))]
       (is (= in-lines out-lines))))
   (testing "find occurrences in file by line number"
@@ -80,14 +80,14 @@
            (->
             (bb "foo\n Clojure is nice. \nbar\n If you're nice to clojure. "
                 "-i"
-                "(map-indexed #(-> [%1 %2]) *in*)")
-            (bb "(keep #(when (re-find #\"(?i)clojure\" (second %)) (first %)) *in*)"))))))
+                "(map-indexed #(-> [%1 %2]) <stdin>)")
+            (bb "(keep #(when (re-find #\"(?i)clojure\" (second %)) (first %)) <stdin>)"))))))
 
 (deftest println-test
   (is (= "hello\n" (test-utils/bb nil "(println \"hello\")"))))
 
 (deftest input-test
-  (testing "bb doesn't wait for input if *in* isn't used"
+  (testing "bb doesn't wait for input if <stdin> isn't used"
     (is (= "2\n" (with-out-str (main/main "(inc 1)"))))))
 
 (deftest System-test
@@ -114,12 +114,12 @@
     (is (re-find #"doctype html" resp))))
 
 (deftest stream-test
-  (is (= "2\n3\n4\n" (test-utils/bb "1 2 3" "--stream" "(inc *in*)")))
-  (is (= "2\n3\n4\n" (test-utils/bb "{:x 2} {:x 3} {:x 4}" "--stream" "(:x *in*)")))
+  (is (= "2\n3\n4\n" (test-utils/bb "1 2 3" "--stream" "(inc <stdin>)")))
+  (is (= "2\n3\n4\n" (test-utils/bb "{:x 2} {:x 3} {:x 4}" "--stream" "(:x <stdin>)")))
   (let [x "foo\n\bar\n"]
-    (is (= x (test-utils/bb x "--stream" "-io" "*in*"))))
+    (is (= x (test-utils/bb x "--stream" "-io" "<stdin>"))))
   (let [x "f\n\b\n"]
-    (is (= x (test-utils/bb x "--stream" "-io" "(subs *in* 0 1)")))))
+    (is (= x (test-utils/bb x "--stream" "-io" "(subs <stdin> 0 1)")))))
 
 (deftest load-file-test
   (let [tmp (java.io.File/createTempFile "script" ".clj")]
@@ -145,21 +145,21 @@
 (deftest pipe-test
   (when test-utils/native?
     (let [out (:out (sh "bash" "-c" "./bb -o '(range)' |
-                         ./bb --stream '(* *in* *in*)' |
+                         ./bb --stream '(* <stdin> <stdin>)' |
                          head -n10"))
           out (str/split-lines out)
           out (map edn/read-string out)]
       (is (= (take 10 (map #(* % %) (range))) out))))
   (when test-utils/native?
     (let [out (:out (sh "bash" "-c" "./bb -O '(repeat \"dude\")' |
-                         ./bb --stream '(str *in* \"rino\")' |
-                         ./bb -I '(take 3 *in*)'"))
+                         ./bb --stream '(str <stdin> \"rino\")' |
+                         ./bb -I '(take 3 <stdin>)'"))
           out (edn/read-string out)]
       (is (= '("duderino" "duderino" "duderino") out)))))
 
 (deftest lazy-text-in-test
   (when test-utils/native?
-    (let [out (:out (sh "bash" "-c" "yes | ./bb -i '(take 2 *in*)'"))
+    (let [out (:out (sh "bash" "-c" "yes | ./bb -i '(take 2 <stdin>)'"))
           out (edn/read-string out)]
       (is (= '("y" "y") out)))))
 
