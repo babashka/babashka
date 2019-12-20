@@ -219,11 +219,35 @@ Babashka supports a subset of the `ns` form where you may use `:require` and `:i
 For the unsupported parts of the ns form, you may use [reader
 conditionals](#reader-conditionals) to maintain compatibility with JVM Clojure.
 
-Special vars:
+### Input and output flags
 
-- `<input>`: contains the input read from stdin. EDN by default, multiple lines of
-text with the `-i` option, or multiple EDN values with the `-I` option.
-- `*command-line-args*`: contain the command line args
+In one-liners the `<input>` value may come in handy. It contains the input read from stdin and reads EDN by default. If you want to read in text, use the `-i` flag, which binds `<input>` to a lazy seq of lines of text. If you want to read multiple EDN values, use the `-I` flag. The `-o` option prints the result as individual lines of text. The `-O` option prints the result as lines of EDN values.
+
+The following table illustrates the combination of options for commands of the form
+
+    echo "{{Input}}" | bb {{Input flags}} {{Output flags}} "<input>"
+
+| Input          | Input flags | Output flag | `<input>`     | Output   |
+|----------------|-------------|-------------|---------------|----------|
+| `{:a 1}`       |             |             | `{:a 1}`      | `{:a 1}` |
+| hello <br> bye | `-i`        |             | `("hello" "bye")` |  `("hello" "bye")` |
+| hello <br> bye | `-i`        |  `-o`       | `("hello" "bye")` |  hello <br> bye  |
+| `{:a 1} {:a 2}` | `-I`        |        | `({:a 1} {:a 2})` |  `({:a 1} {:a 2})`   |
+| `{:a 1}` <br> `{:a 2}` | `-I` |  `-O`      | `({:a 1} {:a 2})` |  `{:a 1}` <br> `{:a 2}`   |
+
+When combined with the `--stream` option, the script is executed for each value in the input:
+
+``` clojure
+$ echo '{:a 1} {:a 2}' | bb --stream '<input>'
+{:a 1}
+{:a 2}
+```
+
+### Command-line arguments
+
+Command-line arguments can be retrieved using `*command-line-args*`.
+
+### Additional functions
 
 Additionally, babashka adds the following functions:
 
