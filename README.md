@@ -500,9 +500,6 @@ same. Multi-threading is supported (`pmap`, `future`).
 
 Differences with Clojure:
 
-- No first class vars. Note that you can define and redefine global values with
-`def` / `defn`, but there is no `var` indirection.
-
 - A subset of Java classes are supported.
 
 - Only the `clojure.core`, `clojure.set`, `clojure.string` and `clojure.walk`
