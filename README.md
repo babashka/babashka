@@ -507,6 +507,14 @@ Differences with Clojure:
 
 - No support for unboxed types.
 
+## Articles mentioning Babashka
+
+- [Advent of Random
+  Hacks](https://lambdaisland.com/blog/2019-12-19-advent-of-parens-19-advent-of-random-hacks)
+  by Arne Brasseur
+- [Clojure in the Shell](https://lambdaisland.com/blog/2019-12-05-advent-of-parens-5-clojure-in-the-shell) by Arne Brasseur
+- [Clojure Tool](https://purelyfunctional.tv/issues/purelyfunctional-tv-newsletter-351-clojure-tool-babashka/) by Eric Normand
+
 ## Developing Babashka
 
 To work on Babashka itself make sure Git submodules are checked out.
