@@ -235,7 +235,7 @@ The following table illustrates the combination of options for commands of the f
 | `{:a 1}` <br> `{:a 2}` | `-I`        |        | `({:a 1} {:a 2})` |  `({:a 1} {:a 2})`   |
 | `{:a 1}` <br> `{:a 2}` | `-I` |  `-O`      | `({:a 1} {:a 2})` |  `{:a 1}` <br> `{:a 2}`   |
 
-When combined with the `--stream` option, the script is executed for each value in the input:
+When combined with the `--stream` option, the expression is executed for each value in the input:
 
 ``` clojure
 $ echo '{:a 1} {:a 2}' | bb --stream '*input*'
