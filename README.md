@@ -1,4 +1,4 @@
-# babashka
+# Babashka
 
 [![CircleCI](https://circleci.com/gh/borkdude/babashka/tree/master.svg?style=shield)](https://circleci.com/gh/borkdude/babashka/tree/master)
 [![Clojars Project](https://img.shields.io/clojars/v/borkdude/babashka.svg)](https://clojars.org/borkdude/babashka)
@@ -52,7 +52,8 @@ Read more about the differences with Clojure [here](#differences-with-clojure).
 
 ## Status
 
-Experimental. Breaking changes are expected to happen at this phase.
+Experimental. Breaking changes are expected to happen at this phase. For a list
+of breaking changes, see [CHANGES.md](changes.md).
 
 ## Examples
 
