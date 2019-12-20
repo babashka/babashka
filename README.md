@@ -18,7 +18,7 @@ A Clojure [babushka](https://en.wikipedia.org/wiki/Headscarf) for the grey areas
 
 ``` shellsession
 $ bash <(curl -s https://raw.githubusercontent.com/borkdude/babashka/master/install)
-$ ls | bb --time -i '(filter #(-> % io/file .isDirectory) <input>)'
+$ ls | bb --time -i '(filter #(-> % io/file .isDirectory) *input*)'
 ("doc" "resources" "sci" "script" "src" "target" "test")
 bb took 4ms.
 ```
@@ -64,29 +64,29 @@ on [CHANGES.md](CHANGES.md) for a list of breaking changes.
 ## Examples
 
 ``` shellsession
-$ ls | bb -i '<input>'
+$ ls | bb -i '*input*'
 ["LICENSE" "README.md" "bb" "doc" "pom.xml" "project.clj" "reflection.json" "resources" "script" "src" "target" "test"]
 
-$ ls | bb -i '(count <input>)'
+$ ls | bb -i '(count *input*)'
 12
 
-$ bb '(vec (dedupe <input>))' <<< '[1 1 1 1 2]'
+$ bb '(vec (dedupe *input*))' <<< '[1 1 1 1 2]'
 [1 2]
 
-$ bb '(filterv :foo <input>)' <<< '[{:foo 1} {:bar 2}]'
+$ bb '(filterv :foo *input*)' <<< '[{:foo 1} {:bar 2}]'
 [{:foo 1}]
 
-$ bb '(#(+ %1 %2 %3) 1 2 <input>)' <<< 3
+$ bb '(#(+ %1 %2 %3) 1 2 *input*)' <<< 3
 6
 
-$ ls | bb -i '(filterv #(re-find #"reflection" %) <input>)'
+$ ls | bb -i '(filterv #(re-find #"reflection" %) *input*)'
 ["reflection.json"]
 
 $ bb '(run! #(shell/sh "touch" (str "/tmp/test/" %)) (range 100))'
-$ ls /tmp/test | bb -i '<input>'
+$ ls /tmp/test | bb -i '*input*'
 ["0" "1" "10" "11" "12" "13" "14" "15" "16" "17" "18" "19" "2" "20" "21" ...]
 
-$ bb -O '(repeat "dude")' | bb --stream '(str <input> "rino")' | bb -I '(take 3 <input>)'
+$ bb -O '(repeat "dude")' | bb --stream '(str *input* "rino")' | bb -I '(take 3 *input*)'
 ("duderino" "duderino" "duderino")
 ```
 
@@ -143,12 +143,12 @@ Options:
 
   --help, -h or -?   Print this help text.
   --version          Print the current version of babashka.
-  -i                 Bind <input> to a lazy seq of lines from stdin.
-  -I                 Bind <input> to a lazy seq of EDN values from stdin.
+  -i                 Bind *input* to a lazy seq of lines from stdin.
+  -I                 Bind *input* to a lazy seq of EDN values from stdin.
   -o                 Write lines to stdout.
   -O                 Write EDN values to stdout.
   --verbose          Print entire stacktrace in case of exception.
-  --stream           Stream over lines or EDN values from stdin. Combined with -i or -I <input> becomes a single value per iteration.
+  --stream           Stream over lines or EDN values from stdin. Combined with -i or -I *input* becomes a single value per iteration.
   -e, --eval <expr>  Evaluate an expression.
   -f, --file <path>  Evaluate a file.
   -cp, --classpath   Classpath to use.
@@ -221,13 +221,13 @@ conditionals](#reader-conditionals) to maintain compatibility with JVM Clojure.
 
 ### Input and output flags
 
-In one-liners the `<input>` value may come in handy. It contains the input read from stdin as EDN by default. If you want to read in text, use the `-i` flag, which binds `<input>` to a lazy seq of lines of text. If you want to read multiple EDN values, use the `-I` flag. The `-o` option prints the result as lines of text. The `-O` option prints the result as lines of EDN values.
+In one-liners the `*input*` value may come in handy. It contains the input read from stdin as EDN by default. If you want to read in text, use the `-i` flag, which binds `*input*` to a lazy seq of lines of text. If you want to read multiple EDN values, use the `-I` flag. The `-o` option prints the result as lines of text. The `-O` option prints the result as lines of EDN values.
 
 The following table illustrates the combination of options for commands of the form
 
-    echo "{{Input}}" | bb {{Input flags}} {{Output flags}} "<input>"
+    echo "{{Input}}" | bb {{Input flags}} {{Output flags}} "*input*"
 
-| Input          | Input flags | Output flag | `<input>`     | Output   |
+| Input          | Input flags | Output flag | `*input*`     | Output   |
 |----------------|-------------|-------------|---------------|----------|
 | `{:a 1}` <br> `{:a 2}` |             |             | `{:a 1}`      | `{:a 1}` |
 | hello <br> bye | `-i`        |             | `("hello" "bye")` |  `("hello" "bye")` |
@@ -238,7 +238,7 @@ The following table illustrates the combination of options for commands of the f
 When combined with the `--stream` option, the script is executed for each value in the input:
 
 ``` clojure
-$ echo '{:a 1} {:a 2}' | bb --stream '<input>'
+$ echo '{:a 1} {:a 2}' | bb --stream '*input*'
 {:a 1}
 {:a 2}
 ```
@@ -361,7 +361,7 @@ export BABASHKA_PRELOADS
 Note that you can concatenate multiple expressions. Now you can use these functions in babashka:
 
 ``` shellsession
-$ bb '(-> (foo <input>) bar)' <<< 1
+$ bb '(-> (foo *input*) bar)' <<< 1
 6
 ```
 
@@ -371,7 +371,7 @@ You can also preload an entire file using `load-file`:
 export BABASHKA_PRELOADS='(load-file "my_awesome_prelude.clj")'
 ```
 
-Note that `<input>` is not available in preloads.
+Note that `*input*` is not available in preloads.
 
 ## Classpath
 
@@ -601,7 +601,7 @@ welcome!
 ### Delete a list of files returned by a Unix command
 
 ```
-find . | grep conflict | bb -i '(doseq [f <input>] (.delete (io/file f)))'
+find . | grep conflict | bb -i '(doseq [f *input*] (.delete (io/file f)))'
 ```
 
 ### Calculate aggregate size of directory
@@ -635,7 +635,7 @@ $ cat /tmp/test.txt
 3 Babashka
 4 Goodbye
 
-$ < /tmp/test.txt bb -io '(shuffle <input>)'
+$ < /tmp/test.txt bb -io '(shuffle *input*)'
 3 Babashka
 2 Clojure
 4 Goodbye
@@ -649,7 +649,7 @@ For converting JSON to EDN, see [jet](https://github.com/borkdude/jet).
 ``` shellsession
 $ curl -s https://api.github.com/repos/borkdude/babashka/tags |
 jet --from json --keywordize --to edn |
-bb '(-> <input> first :name (subs 1))'
+bb '(-> *input* first :name (subs 1))'
 "0.0.4"
 ```
 
@@ -658,8 +658,8 @@ bb '(-> <input> first :name (subs 1))'
 ``` shellsession
 $ curl -s https://api.github.com/repos/borkdude/babashka/releases |
 jet --from json --keywordize |
-bb '(-> <input> first :assets)' |
-bb '(some #(re-find #".*linux.*" (:browser_download_url %)) <input>)'
+bb '(-> *input* first :assets)' |
+bb '(some #(re-find #".*linux.*" (:browser_download_url %)) *input*)'
 "https://github.com/borkdude/babashka/releases/download/v0.0.4/babashka-0.0.4-linux-amd64.zip"
 ```
 
@@ -669,7 +669,7 @@ Contributed by [@plexus](https://github.com/plexus).
 
 ``` shellsession
 $ curl https://clojars.org/stats/all.edn |
-bb -o '(for [[[group art] counts] <input>] (str (reduce + (vals counts))  " " group "/" art))' |
+bb -o '(for [[[group art] counts] *input*] (str (reduce + (vals counts))  " " group "/" art))' |
 sort -rn |
 less
 14113842 clojure-complete/clojure-complete
@@ -722,7 +722,7 @@ Contributed by [@plexus](https://github.com/plexus).
 ``` shellsession
 $ cat project.clj |
 sed -e 's/#=//g' -e 's/~@//g' -e 's/~//g' |
-bb '(let [{:keys [dependencies source-paths resource-paths]} (apply hash-map (drop 3 <input>))]
+bb '(let [{:keys [dependencies source-paths resource-paths]} (apply hash-map (drop 3 *input*))]
   {:paths (into source-paths resource-paths)
    :deps (into {} (for [[d v] dependencies] [d {:mvn/version v}]))}) ' |
 jet --pretty > deps.edn

@@ -7,8 +7,8 @@
 (set! *warn-on-reflection* true)
 
 (defn repl! []
-  (start-repl! {:bindings {(with-meta '<input>
-                             {:sci/deref! true})
+  (start-repl! {:bindings {(with-meta '*input*
+                             {:sci.impl/deref! true})
                            (delay [1 2 3])
                            '*command-line-args*
                            ["a" "b" "c"]}
@@ -27,7 +27,7 @@
   (assert-repl "1\n(dec *1)(+ *2 *2)" "2")
   (assert-repl "1\n(dec *1)(+ *2 *2)" "2")
   (assert-repl "*command-line-args*" "[\"a\" \"b\" \"c\"]")
-  (assert-repl "<input>" "[1 2 3]"))
+  (assert-repl "*input*" "[1 2 3]"))
 
 ;;;; Scratch
 
