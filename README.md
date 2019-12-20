@@ -507,7 +507,9 @@ Differences with Clojure:
 
 - No support for unboxed types.
 
-## Articles mentioning Babashka
+## External resources
+
+### Blogs
 
 - [Advent of Random
   Hacks](https://lambdaisland.com/blog/2019-12-19-advent-of-parens-19-advent-of-random-hacks)
