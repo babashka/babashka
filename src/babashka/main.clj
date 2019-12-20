@@ -19,7 +19,8 @@
    [clojure.java.io :as io]
    [clojure.java.shell :as shell]
    [clojure.string :as str]
-   [sci.addons :as addons])
+   [sci.addons :as addons]
+   [sci.core :as sci])
   (:gen-class))
 
 (set! *warn-on-reflection* true)
@@ -239,7 +240,8 @@ Everything after that is bound to *command-line-args*."))
                         csv clojure.data.csv
                         json cheshire.core}
              :namespaces {'clojure.core (assoc core-extras
-                                               '*command-line-args* command-line-args)
+                                               '*command-line-args*
+                                               (sci/new-dynamic-var '*command-line-args* command-line-args))
                           'clojure.tools.cli tools-cli-namespace
                           'clojure.edn {'read edn/read
                                         'read-string edn/read-string}
