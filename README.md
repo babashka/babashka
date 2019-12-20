@@ -221,7 +221,7 @@ conditionals](#reader-conditionals) to maintain compatibility with JVM Clojure.
 
 ### Input and output flags
 
-In one-liners the `<input>` value may come in handy. It contains the input read from stdin and reads EDN by default. If you want to read in text, use the `-i` flag, which binds `<input>` to a lazy seq of lines of text. If you want to read multiple EDN values, use the `-I` flag. The `-o` option prints the result as individual lines of text. The `-O` option prints the result as lines of EDN values.
+In one-liners the `<input>` value may come in handy. It contains the input read from stdin as EDN by default. If you want to read in text, use the `-i` flag, which binds `<input>` to a lazy seq of lines of text. If you want to read multiple EDN values, use the `-I` flag. The `-o` option prints the result as individual lines of text. The `-O` option prints the result as lines of EDN values.
 
 The following table illustrates the combination of options for commands of the form
 
