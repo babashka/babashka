@@ -52,8 +52,8 @@ Read more about the differences with Clojure [here](#differences-with-clojure).
 
 ## Status
 
-Experimental. Breaking changes are expected to happen at this phase. See see
-[CHANGES.md](CHANGES.md) for a list of breaking changes.
+Experimental. Breaking changes are expected to happen at this phase. Keep an eye
+on [CHANGES.md](CHANGES.md) for a list of breaking changes.
 
 ## Examples
 
