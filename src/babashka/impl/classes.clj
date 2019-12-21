@@ -8,8 +8,11 @@
                       clojure.lang.LineNumberingPushbackReader
                       java.io.BufferedReader
                       java.io.BufferedWriter
+                      java.io.ByteArrayInputStream
+                      java.io.ByteArrayOutputStream
                       java.io.File
                       java.io.InputStream
+                      java.io.IOException
                       java.io.OutputStream
                       java.io.StringReader
                       java.io.StringWriter
@@ -30,8 +33,10 @@
                       java.lang.ProcessBuilder
                       java.lang.ProcessBuilder$Redirect
                       java.net.URI
-                      java.net.URL
                       java.net.HttpURLConnection
+                      java.net.UnknownHostException
+                      java.net.URLEncoder
+                      java.net.URLDecoder
                       java.nio.file.CopyOption
                       java.nio.file.FileAlreadyExistsException
                       java.nio.file.Files
@@ -65,7 +70,14 @@
                       java.util.Base64
                       java.util.Base64$Decoder
                       java.util.Base64$Encoder
+                      java.util.zip.InflaterInputStream
+                      java.util.zip.DeflaterInputStream
+                      java.util.zip.GZIPInputStream
+                      java.util.zip.GZIPOutputStream
+                      javax.xml.bind.DatatypeConverter
                       sun.nio.fs.UnixPath ;; included because of permission check
+                      sun.net.www.protocol.http.HttpURLConnection ;; needed for clj-http.lite
+                      sun.net.www.protocol.http.HttpURLConnection$HttpInputStream ;; needed for clj-http.lite
                       ]
    :custom-classes {'java.lang.Thread
                     {:allPublicConstructors true
@@ -103,7 +115,32 @@
                                {:name "sleep"}
                                {:name "start"}
                                {:name "toString"}
-                               {:name "yield"}]}}})
+                               {:name "yield"}]}
+                    'java.net.URL
+                    {:allPublicConstructors true
+                     :allPublicFields true
+                     ;; generated with `public-declared-method-names`, see in
+                     ;; `comment` below
+                     :methods [{:name "equals"}
+                               {:name "getAuthority"}
+                               {:name "getContent"}
+                               {:name "getDefaultPort"}
+                               {:name "getFile"}
+                               {:name "getHost"}
+                               {:name "getPath"}
+                               {:name "getPort"}
+                               {:name "getProtocol"}
+                               {:name "getQuery"}
+                               {:name "getRef"}
+                               {:name "getUserInfo"}
+                               {:name "hashCode"}
+                               {:name "openConnection"}
+                               {:name "openStream"}
+                               {:name "sameFile"}
+                               ;; not supported: {:name "setURLStreamHandlerFactory"}
+                               {:name "toExternalForm"}
+                               {:name "toString"}
+                               {:name "toURI"}]}}})
 
 (defmacro gen-class-map []
   (let [classes (concat (:default-classes classes)
@@ -151,4 +188,5 @@
          (vec)))
 
   (public-declared-method-names java.lang.UNIXProcess)
+  (public-declared-method-names java.net.URL)
   )

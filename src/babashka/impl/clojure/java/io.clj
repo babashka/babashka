@@ -3,6 +3,7 @@
 
 (def io-namespace
   {'as-relative-path io/as-relative-path
+   'as-url io/as-url
    'copy io/copy
    'delete-file io/delete-file
    'file io/file
