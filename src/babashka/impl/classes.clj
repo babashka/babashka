@@ -25,8 +25,6 @@
                       java.lang.String
                       java.lang.System
                       java.lang.Process
-                      java.lang.UNIXProcess
-                      java.lang.UNIXProcess$ProcessPipeOutputStream
                       java.lang.ProcessBuilder
                       java.lang.ProcessBuilder$Redirect
                       java.nio.file.CopyOption
