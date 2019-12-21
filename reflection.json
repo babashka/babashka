@@ -124,36 +124,6 @@
   "allPublicFields" : true,
   "allPublicConstructors" : true
 }, {
-  "name" : "java.nio.file.NoSuchFileException",
-  "allPublicMethods" : true,
-  "allPublicFields" : true,
-  "allPublicConstructors" : true
-}, {
-  "name" : "java.nio.file.Path",
-  "allPublicMethods" : true,
-  "allPublicFields" : true,
-  "allPublicConstructors" : true
-}, {
-  "name" : "java.nio.file.StandardCopyOption",
-  "allPublicMethods" : true,
-  "allPublicFields" : true,
-  "allPublicConstructors" : true
-}, {
-  "name" : "java.nio.file.attribute.FileAttribute",
-  "allPublicMethods" : true,
-  "allPublicFields" : true,
-  "allPublicConstructors" : true
-}, {
-  "name" : "java.nio.file.attribute.PosixFilePermission",
-  "allPublicMethods" : true,
-  "allPublicFields" : true,
-  "allPublicConstructors" : true
-}, {
-  "name" : "java.nio.file.attribute.PosixFilePermissions",
-  "allPublicMethods" : true,
-  "allPublicFields" : true,
-  "allPublicConstructors" : true
-}, {
   "name" : "java.time.Clock",
   "allPublicMethods" : true,
   "allPublicFields" : true,
