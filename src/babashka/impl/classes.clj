@@ -29,6 +29,9 @@
                       java.lang.UNIXProcess$ProcessPipeOutputStream
                       java.lang.ProcessBuilder
                       java.lang.ProcessBuilder$Redirect
+                      java.net.URI
+                      java.net.URL
+                      java.net.HttpURLConnection
                       java.nio.file.CopyOption
                       java.nio.file.FileAlreadyExistsException
                       java.nio.file.Files
