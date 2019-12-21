@@ -14,7 +14,8 @@
   (getResource [this resource-path]
     (let [f (io/file path resource-path)]
       (when (.exists f)
-        (slurp f)))))
+        {:file (.getCanonicalPath f)
+         :source (slurp f)}))))
 
 (defn path-from-jar
   [^java.io.File jar-file path]
@@ -23,7 +24,8 @@
           entry (some (fn [^JarFile$JarFileEntry x]
                         (let [nm (.getName x)]
                           (when (and (not (.isDirectory x)) (= path nm))
-                            (slurp (.getInputStream jar x))))) entries)]
+                            {:file path
+                             :source (slurp (.getInputStream jar x))}))) entries)]
       entry)))
 
 (deftype JarFileResolver [path]
@@ -58,5 +60,5 @@
 (comment
   (def l (loader "src:/Users/borkdude/.m2/repository/cheshire/cheshire/5.9.0/cheshire-5.9.0.jar"))
   (source-for-namespace l 'babashka.impl.cheshire)
-  (source-for-namespace l 'cheshire.core)
+  (:file (source-for-namespace l 'cheshire.core))
   )

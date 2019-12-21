@@ -20,7 +20,9 @@
    [clojure.java.shell :as shell]
    [clojure.string :as str]
    [sci.addons :as addons]
-   [sci.core :as sci])
+   [sci.core :as sci]
+   [sci.impl.vars :as vars]
+   [sci.impl.namespaces :as sci-namespaces])
   (:gen-class))
 
 (set! *warn-on-reflection* true)
@@ -167,9 +169,11 @@ Everything after that is bound to *command-line-args*."))
   (edn/read {;;:readers *data-readers*
              :eof ::EOF} *in*))
 
-(defn load-file* [ctx file]
-  (let [s (slurp file)]
-    (eval-string s ctx)))
+(defn load-file* [ctx f]
+  (let [f (io/file f)
+        s (slurp f)]
+    (sci/with-bindings {vars/file-var (.getCanonicalPath f)}
+      (eval-string s ctx))))
 
 (defn eval* [ctx form]
   (eval-string (pr-str form) ctx))
@@ -230,6 +234,7 @@ Everything after that is bound to *command-line-args*."))
         load-fn (when classpath
                   (fn [{:keys [:namespace]}]
                     (cp/source-for-namespace loader namespace)))
+        _ (when file (vars/bindRoot vars/file-var (.getCanonicalPath (io/file file))))
         ctx {:aliases '{tools.cli 'clojure.tools.cli
                         edn clojure.edn
                         wait babashka.wait
@@ -241,7 +246,8 @@ Everything after that is bound to *command-line-args*."))
                         json cheshire.core}
              :namespaces {'clojure.core (assoc core-extras
                                                '*command-line-args*
-                                               (sci/new-dynamic-var '*command-line-args* command-line-args))
+                                               (sci/new-dynamic-var '*command-line-args* command-line-args)
+                                               '*file* vars/file-var)
                           'clojure.tools.cli tools-cli-namespace
                           'clojure.edn {'read edn/read
                                         'read-string edn/read-string}
@@ -272,8 +278,9 @@ Everything after that is bound to *command-line-args*."))
                         System java.lang.System
                         Thread java.lang.Thread}
              :load-fn load-fn}
-        ctx (update ctx :bindings assoc 'eval #(eval* ctx %)
-                    'load-file #(load-file* ctx %))
+        ctx (update-in ctx [:namespaces 'clojure.core] assoc
+                       'eval #(eval* ctx %)
+                       'load-file #(load-file* ctx %))
         ctx (addons/future ctx)
         _preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim) (eval-string ctx))
         expression (if main
