@@ -254,7 +254,8 @@ Everything after that is bound to *command-line-args*."))
                           'clojure.data.csv csv/csv-namespace
                           'cheshire.core cheshire-core-namespace}
              :bindings {'java.lang.System/exit exit ;; override exit, so we have more control
-                        'System/exit exit}
+                        'System/exit exit
+                        '$0 (:file _opts)}
              :env env
              :features #{:bb}
              :classes classes/class-map
