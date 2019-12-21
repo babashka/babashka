@@ -245,8 +245,8 @@ $ echo '{:a 1} {:a 2}' | bb --stream '*input*'
 
 ### Current file path
 
-This variable `*file*` contains the full path of the file that is currently
-being executed:
+The var `*file*` contains the full path of the file that is currently being
+executed:
 
 ``` shellsession
 $ cat example.clj
