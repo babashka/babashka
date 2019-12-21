@@ -551,6 +551,7 @@ Differences with Clojure:
 
 ### Blogs
 
+- [Clojure Start Time in 2019](https://stuartsierra.com/2019/12/21/clojure-start-time-in-2019) by Stuart Sierra
 - [Advent of Random
   Hacks](https://lambdaisland.com/blog/2019-12-19-advent-of-parens-19-advent-of-random-hacks)
   by Arne Brasseur
