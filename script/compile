@@ -43,6 +43,7 @@ $NATIVE_IMAGE \
   --verbose \
   --no-fallback \
   --no-server \
+  -H:+PrintAnalysisCallTree \
   "-J-Xmx3g"
 
 lein clean

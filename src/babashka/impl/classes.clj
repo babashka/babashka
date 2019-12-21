@@ -29,8 +29,8 @@
                       ;; java.lang.UNIXProcess$ProcessPipeOutputStream
                       java.lang.ProcessBuilder
                       java.lang.ProcessBuilder$Redirect
-                      java.nio.file.CopyOption
-                      java.nio.file.FileAlreadyExistsException
+                      ;; java.nio.file.CopyOption
+                      ;; java.nio.file.FileAlreadyExistsException
                       java.nio.file.Files
                       ;; java.nio.file.NoSuchFileException
                       ;; java.nio.file.Path
