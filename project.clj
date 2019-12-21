@@ -22,6 +22,8 @@
                                   "-Dclojure.spec.skip-macros=true"]
                        :main babashka.main
                        :aot :all}
+             :compile-java {;; :javac-options ["-Xlint:unchecked"]
+                            :java-source-paths ["src-java"]}
              :reflection {:main babashka.impl.classes/generate-reflection-file}}
   :aliases {"bb" ["run" "-m" "babashka.main"]}
   :deploy-repositories [["clojars" {:url "https://clojars.org/repo"

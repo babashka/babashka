@@ -109,16 +109,6 @@
   "allPublicFields" : true,
   "allPublicConstructors" : true
 }, {
-  "name" : "java.lang.UNIXProcess",
-  "allPublicMethods" : true,
-  "allPublicFields" : true,
-  "allPublicConstructors" : true
-}, {
-  "name" : "java.lang.UNIXProcess$ProcessPipeOutputStream",
-  "allPublicMethods" : true,
-  "allPublicFields" : true,
-  "allPublicConstructors" : true
-}, {
   "name" : "java.nio.file.CopyOption",
   "allPublicMethods" : true,
   "allPublicFields" : true,
@@ -285,11 +275,6 @@
   "allPublicConstructors" : true
 }, {
   "name" : "java.util.regex.Pattern",
-  "allPublicMethods" : true,
-  "allPublicFields" : true,
-  "allPublicConstructors" : true
-}, {
-  "name" : "sun.nio.fs.UnixPath",
   "allPublicMethods" : true,
   "allPublicFields" : true,
   "allPublicConstructors" : true

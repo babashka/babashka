@@ -23,7 +23,8 @@ BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
 # mkdir -p src/sci
 # cp -R /tmp/sci/src/* src
 
-lein do clean, uberjar
+lein with-profiles +compile-java do clean, javac, uberjar
+
 $NATIVE_IMAGE \
   -jar target/babashka-$BABASHKA_VERSION-standalone.jar \
   -H:Name=bb \

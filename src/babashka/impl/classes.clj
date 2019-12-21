@@ -25,8 +25,8 @@
                       java.lang.String
                       java.lang.System
                       java.lang.Process
-                      java.lang.UNIXProcess
-                      java.lang.UNIXProcess$ProcessPipeOutputStream
+                      ;;java.lang.UNIXProcess
+                      ;; java.lang.UNIXProcess$ProcessPipeOutputStream
                       java.lang.ProcessBuilder
                       java.lang.ProcessBuilder$Redirect
                       java.nio.file.CopyOption
@@ -62,7 +62,7 @@
                       java.util.Base64
                       java.util.Base64$Decoder
                       java.util.Base64$Encoder
-                      sun.nio.fs.UnixPath ;; included because of permission check
+                      ;; sun.nio.fs.UnixPath ;; included because of permission check
                       ]
    :custom-classes {'java.lang.Thread
                     {:allPublicConstructors true
@@ -147,5 +147,5 @@
          (sort-by :name)
          (vec)))
 
-  (public-declared-method-names java.lang.UNIXProcess)
+  ;; (public-declared-method-names java.lang.UNIXProcess)
   )
