@@ -243,6 +243,19 @@ $ echo '{:a 1} {:a 2}' | bb --stream '*input*'
 {:a 2}
 ```
 
+### Current file path
+
+This variable `*file*` contains the full path of the file that is currently
+being executed:
+
+``` shellsession
+$ cat example.clj
+(prn *file*)
+
+$ bb example.clj
+"/Users/borkdude/example.clj"
+```
+
 ### Command-line arguments
 
 Command-line arguments can be retrieved using `*command-line-args*`.
