@@ -78,6 +78,7 @@
                       java.util.zip.GZIPOutputStream
                       sun.nio.fs.UnixPath ;; included because of permission check
                       sun.net.www.protocol.https.HttpsURLConnectionImpl ;; needed fo clj-http.lite
+                      sun.net.www.protocol.http.HttpURLConnection ;; needed for clj.http.lite http calls
                       sun.net.www.protocol.http.HttpURLConnection$HttpInputStream ;; needed for clj-http.lite
                       ]
    :custom-classes {'java.lang.Thread
