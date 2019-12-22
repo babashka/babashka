@@ -315,6 +315,10 @@
   (is (= 1 (bb nil "(binding [*command-line-args* 1] *command-line-args*)")))
   (is (= 1 (bb nil "(binding [*input* 1] *input*)"))))
 
+(deftest file-in-error-msg-test
+  (is (thrown-with-msg? Exception #"error.bb"
+                        (bb nil (.getPath (io/file "test" "babashka" "scripts" "error.bb"))))))
+
 ;;;; Scratch
 
 (comment
