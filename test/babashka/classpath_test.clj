@@ -25,3 +25,12 @@
 (deftest main-test
   (is (= "(\"1\" \"2\" \"3\" \"4\")\n"
          (tu/bb nil "--classpath" "test-resources/babashka/src_for_classpath_test" "-m" "my.main" "1" "2" "3" "4"))))
+
+(deftest error-while-loading-test
+  (is (true?
+         (bb nil "--classpath" "test-resources/babashka/src_for_classpath_test"
+                "
+(try
+  (require '[ns-with-error])
+  (catch Exception nil))
+(nil? (resolve 'ns-with-error/x))"))))
