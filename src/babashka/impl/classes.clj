@@ -4,7 +4,8 @@
    [cheshire.core :as json]))
 
 (def classes
-  {:default-classes '[clojure.lang.ExceptionInfo
+  {:default-classes '[clojure.lang.Delay
+                      clojure.lang.ExceptionInfo
                       clojure.lang.LineNumberingPushbackReader
                       java.io.BufferedReader
                       java.io.BufferedWriter
