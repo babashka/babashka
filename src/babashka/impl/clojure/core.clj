@@ -5,6 +5,7 @@
 (def core-extras
   {'file-seq file-seq
    'agent agent
+   'instance? instance? ;; TODO: move to sci
    'send send
    'send-off send-off
    'promise promise

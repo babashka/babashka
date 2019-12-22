@@ -19,7 +19,22 @@
   "allPublicFields" : true,
   "allPublicConstructors" : true
 }, {
+  "name" : "java.io.ByteArrayInputStream",
+  "allPublicMethods" : true,
+  "allPublicFields" : true,
+  "allPublicConstructors" : true
+}, {
+  "name" : "java.io.ByteArrayOutputStream",
+  "allPublicMethods" : true,
+  "allPublicFields" : true,
+  "allPublicConstructors" : true
+}, {
   "name" : "java.io.File",
+  "allPublicMethods" : true,
+  "allPublicFields" : true,
+  "allPublicConstructors" : true
+}, {
+  "name" : "java.io.IOException",
   "allPublicMethods" : true,
   "allPublicFields" : true,
   "allPublicConstructors" : true
@@ -115,6 +130,31 @@
   "allPublicConstructors" : true
 }, {
   "name" : "java.lang.UNIXProcess$ProcessPipeOutputStream",
+  "allPublicMethods" : true,
+  "allPublicFields" : true,
+  "allPublicConstructors" : true
+}, {
+  "name" : "java.net.HttpURLConnection",
+  "allPublicMethods" : true,
+  "allPublicFields" : true,
+  "allPublicConstructors" : true
+}, {
+  "name" : "java.net.URI",
+  "allPublicMethods" : true,
+  "allPublicFields" : true,
+  "allPublicConstructors" : true
+}, {
+  "name" : "java.net.URLDecoder",
+  "allPublicMethods" : true,
+  "allPublicFields" : true,
+  "allPublicConstructors" : true
+}, {
+  "name" : "java.net.URLEncoder",
+  "allPublicMethods" : true,
+  "allPublicFields" : true,
+  "allPublicConstructors" : true
+}, {
+  "name" : "java.net.UnknownHostException",
   "allPublicMethods" : true,
   "allPublicFields" : true,
   "allPublicConstructors" : true
@@ -289,6 +329,41 @@
   "allPublicFields" : true,
   "allPublicConstructors" : true
 }, {
+  "name" : "java.util.zip.DeflaterInputStream",
+  "allPublicMethods" : true,
+  "allPublicFields" : true,
+  "allPublicConstructors" : true
+}, {
+  "name" : "java.util.zip.GZIPInputStream",
+  "allPublicMethods" : true,
+  "allPublicFields" : true,
+  "allPublicConstructors" : true
+}, {
+  "name" : "java.util.zip.GZIPOutputStream",
+  "allPublicMethods" : true,
+  "allPublicFields" : true,
+  "allPublicConstructors" : true
+}, {
+  "name" : "java.util.zip.InflaterInputStream",
+  "allPublicMethods" : true,
+  "allPublicFields" : true,
+  "allPublicConstructors" : true
+}, {
+  "name" : "javax.xml.bind.DatatypeConverter",
+  "allPublicMethods" : true,
+  "allPublicFields" : true,
+  "allPublicConstructors" : true
+}, {
+  "name" : "sun.net.www.protocol.http.HttpURLConnection",
+  "allPublicMethods" : true,
+  "allPublicFields" : true,
+  "allPublicConstructors" : true
+}, {
+  "name" : "sun.net.www.protocol.http.HttpURLConnection$HttpInputStream",
+  "allPublicMethods" : true,
+  "allPublicFields" : true,
+  "allPublicConstructors" : true
+}, {
   "name" : "sun.nio.fs.UnixPath",
   "allPublicMethods" : true,
   "allPublicFields" : true,
@@ -363,4 +438,47 @@
     "name" : "yield"
   } ],
   "name" : "java.lang.Thread"
+}, {
+  "allPublicConstructors" : true,
+  "allPublicFields" : true,
+  "methods" : [ {
+    "name" : "equals"
+  }, {
+    "name" : "getAuthority"
+  }, {
+    "name" : "getContent"
+  }, {
+    "name" : "getDefaultPort"
+  }, {
+    "name" : "getFile"
+  }, {
+    "name" : "getHost"
+  }, {
+    "name" : "getPath"
+  }, {
+    "name" : "getPort"
+  }, {
+    "name" : "getProtocol"
+  }, {
+    "name" : "getQuery"
+  }, {
+    "name" : "getRef"
+  }, {
+    "name" : "getUserInfo"
+  }, {
+    "name" : "hashCode"
+  }, {
+    "name" : "openConnection"
+  }, {
+    "name" : "openStream"
+  }, {
+    "name" : "sameFile"
+  }, {
+    "name" : "toExternalForm"
+  }, {
+    "name" : "toString"
+  }, {
+    "name" : "toURI"
+  } ],
+  "name" : "java.net.URL"
 } ]
