@@ -189,6 +189,11 @@
   "allPublicFields" : true,
   "allPublicConstructors" : true
 }, {
+  "name" : "java.nio.file.Paths",
+  "allPublicMethods" : true,
+  "allPublicFields" : true,
+  "allPublicConstructors" : true
+}, {
   "name" : "java.nio.file.StandardCopyOption",
   "allPublicMethods" : true,
   "allPublicFields" : true,
@@ -354,17 +359,12 @@
   "allPublicFields" : true,
   "allPublicConstructors" : true
 }, {
-  "name" : "javax.xml.bind.DatatypeConverter",
-  "allPublicMethods" : true,
-  "allPublicFields" : true,
-  "allPublicConstructors" : true
-}, {
-  "name" : "sun.net.www.protocol.http.HttpURLConnection",
-  "allPublicMethods" : true,
-  "allPublicFields" : true,
-  "allPublicConstructors" : true
-}, {
   "name" : "sun.net.www.protocol.http.HttpURLConnection$HttpInputStream",
+  "allPublicMethods" : true,
+  "allPublicFields" : true,
+  "allPublicConstructors" : true
+}, {
+  "name" : "sun.net.www.protocol.https.HttpsURLConnectionImpl",
   "allPublicMethods" : true,
   "allPublicFields" : true,
   "allPublicConstructors" : true

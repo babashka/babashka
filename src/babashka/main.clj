@@ -21,8 +21,7 @@
    [clojure.string :as str]
    [sci.addons :as addons]
    [sci.core :as sci]
-   [sci.impl.vars :as vars]
-   [sci.impl.namespaces :as sci-namespaces])
+   [sci.impl.vars :as vars])
   (:gen-class))
 
 (set! *warn-on-reflection* true)
@@ -169,6 +168,8 @@ Everything after that is bound to *command-line-args*."))
   (edn/read {;;:readers *data-readers*
              :eof ::EOF} *in*))
 
+(def reflection-var (sci/new-dynamic-var '*warn-on-reflection* false))
+
 (defn load-file* [ctx f]
   (let [f (io/file f)
         s (slurp f)]
@@ -247,7 +248,8 @@ Everything after that is bound to *command-line-args*."))
              :namespaces {'clojure.core (assoc core-extras
                                                '*command-line-args*
                                                (sci/new-dynamic-var '*command-line-args* command-line-args)
-                                               '*file* vars/file-var)
+                                               '*file* vars/file-var
+                                               '*warn-on-reflection* reflection-var)
                           'clojure.tools.cli tools-cli-namespace
                           'clojure.edn {'read edn/read
                                         'read-string edn/read-string}
@@ -288,52 +290,53 @@ Everything after that is bound to *command-line-args*."))
                              main)
                      expression)
         exit-code
-        (or
-         #_(binding [*out* *err*]
-             (prn ">>" _opts))
-         (second
-          (cond version
-                [(print-version) 0]
-                help?
-                [(print-help) 0]
-                repl [(start-repl! ctx #(read-next *in*)) 0]
-                socket-repl [(start-socket-repl! socket-repl ctx #(read-next *in*)) 0]
-                :else
-                (try
-                  (let [expr (if file (read-file file) expression)]
-                    (if expr
-                      (loop [in (read-next *in*)]
-                        (let [ctx (update-in ctx [:namespaces 'user] assoc (with-meta '*input*
-                                                                             (when-not stream?
-                                                                               {:sci.impl/deref! true}))
-                                             (sci/new-dynamic-var '*input* in))]
-                          (if (identical? ::EOF in)
-                            [nil 0] ;; done streaming
-                            (let [res [(let [res (eval-string expr ctx)]
-                                         (when (some? res)
-                                           (if-let [pr-f (cond shell-out println
-                                                               edn-out prn)]
-                                             (if (coll? res)
-                                               (doseq [l res
-                                                       :while (not (pipe-signal-received?))]
-                                                 (pr-f l))
-                                               (pr-f res))
-                                             (prn res)))) 0]]
-                              (if stream?
-                                (recur (read-next *in*))
-                                res)))))
-                      [(start-repl! ctx #(read-next *in*)) 0]))
-                  (catch Throwable e
-                    (binding [*out* *err*]
-                      (let [d (ex-data e)
-                            exit-code (:bb/exit-code d)]
-                        (if exit-code [nil exit-code]
-                            (do (if verbose?
-                                  (print-stack-trace e)
-                                  (println (.getMessage e)))
-                                (flush)
-                                [nil 1]))))))))
-         1)
+        (sci/with-bindings {reflection-var false}
+          (or
+           #_(binding [*out* *err*]
+               (prn ">>" _opts))
+           (second
+            (cond version
+                  [(print-version) 0]
+                  help?
+                  [(print-help) 0]
+                  repl [(start-repl! ctx #(read-next *in*)) 0]
+                  socket-repl [(start-socket-repl! socket-repl ctx #(read-next *in*)) 0]
+                  :else
+                  (try
+                    (let [expr (if file (read-file file) expression)]
+                      (if expr
+                        (loop [in (read-next *in*)]
+                          (let [ctx (update-in ctx [:namespaces 'user] assoc (with-meta '*input*
+                                                                               (when-not stream?
+                                                                                 {:sci.impl/deref! true}))
+                                               (sci/new-dynamic-var '*input* in))]
+                            (if (identical? ::EOF in)
+                              [nil 0] ;; done streaming
+                              (let [res [(let [res (eval-string expr ctx)]
+                                           (when (some? res)
+                                             (if-let [pr-f (cond shell-out println
+                                                                 edn-out prn)]
+                                               (if (coll? res)
+                                                 (doseq [l res
+                                                         :while (not (pipe-signal-received?))]
+                                                   (pr-f l))
+                                                 (pr-f res))
+                                               (prn res)))) 0]]
+                                (if stream?
+                                  (recur (read-next *in*))
+                                  res)))))
+                        [(start-repl! ctx #(read-next *in*)) 0]))
+                    (catch Throwable e
+                      (binding [*out* *err*]
+                        (let [d (ex-data e)
+                              exit-code (:bb/exit-code d)]
+                          (if exit-code [nil exit-code]
+                              (do (if verbose?
+                                    (print-stack-trace e)
+                                    (println (.getMessage e)))
+                                  (flush)
+                                  [nil 1]))))))))
+           1))
         t1 (System/currentTimeMillis)]
     (when time? (binding [*out* *err*]
                   (println "bb took" (str (- t1 t0) "ms."))))

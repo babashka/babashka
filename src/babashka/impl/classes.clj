@@ -43,6 +43,7 @@
                       java.nio.file.Files
                       java.nio.file.NoSuchFileException
                       java.nio.file.Path
+                      java.nio.file.Paths
                       java.nio.file.StandardCopyOption
                       java.nio.file.attribute.FileAttribute
                       java.nio.file.attribute.PosixFilePermission
@@ -75,9 +76,8 @@
                       java.util.zip.DeflaterInputStream
                       java.util.zip.GZIPInputStream
                       java.util.zip.GZIPOutputStream
-                      javax.xml.bind.DatatypeConverter
                       sun.nio.fs.UnixPath ;; included because of permission check
-                      sun.net.www.protocol.http.HttpURLConnection ;; needed for clj-http.lite
+                      sun.net.www.protocol.https.HttpsURLConnectionImpl ;; needed fo clj-http.lite
                       sun.net.www.protocol.http.HttpURLConnection$HttpInputStream ;; needed for clj-http.lite
                       ]
    :custom-classes {'java.lang.Thread

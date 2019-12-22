@@ -319,6 +319,9 @@
   (is (thrown-with-msg? Exception #"error.bb"
                         (bb nil (.getPath (io/file "test" "babashka" "scripts" "error.bb"))))))
 
+(deftest compatibility-test
+  (is (true? (bb nil "(set! *warn-on-reflection* true)"))))
+
 ;;;; Scratch
 
 (comment
