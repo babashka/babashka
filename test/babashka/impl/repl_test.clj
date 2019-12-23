@@ -2,17 +2,18 @@
   (:require
    [babashka.impl.repl :refer [start-repl!]]
    [clojure.string :as str]
-   [clojure.test :as t :refer [deftest is]]))
+   [clojure.test :as t :refer [deftest is]]
+   [sci.impl.opts :refer [init]]))
 
 (set! *warn-on-reflection* true)
 
 (defn repl! []
-  (start-repl! {:bindings {(with-meta '*input*
-                             {:sci.impl/deref! true})
-                           (delay [1 2 3])
-                           '*command-line-args*
-                           ["a" "b" "c"]}
-                :env (atom {})}))
+  (start-repl! (init {:bindings {(with-meta '*input*
+                                   {:sci.impl/deref! true})
+                                 (delay [1 2 3])
+                                 '*command-line-args*
+                                 ["a" "b" "c"]}
+                      :env (atom {})})))
 
 (defn assert-repl [expr expected]
   (is (str/includes? (with-out-str

@@ -7,7 +7,6 @@
    [clojure.tools.reader.reader-types :as r]
    [sci.core :as sci]
    [sci.impl.interpreter :refer [eval-form]]
-   [sci.impl.opts :refer [init]]
    [sci.impl.parser :as parser]))
 
 (defn repl
@@ -54,7 +53,6 @@
       :prompt (or prompt #(printf "%s=> " (-> sci-ctx :env deref :current-ns)))))))
 
 (defn start-repl!
-  ([ctx] (start-repl! ctx nil))
-  ([ctx opts]
-   (let [sci-ctx (init ctx)]
-     (repl sci-ctx opts))))
+  ([sci-ctx] (start-repl! sci-ctx nil))
+  ([sci-ctx opts]
+   (repl sci-ctx opts)))
