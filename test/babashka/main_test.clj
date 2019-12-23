@@ -171,7 +171,7 @@
   (is (str/includes? (bb nil "
 (def ls (-> (ProcessBuilder. [\"ls\"]) (.start)))
 (def output (.getInputStream ls))
-(.waitFor ls)
+(assert (int? (.waitFor ls)))
 (slurp output)")
                      "LICENSE")))
 
