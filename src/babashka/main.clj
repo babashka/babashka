@@ -179,12 +179,14 @@ Everything after that is bound to *command-line-args*."))
 (defn eval* [ctx form]
   (eval-string (pr-str form) ctx))
 
-(defn start-repl! [ctx read-next]
-  (let [ctx (update ctx :bindings assoc
-                    (with-meta '*input*
-                      {:sci.impl/deref! true})
-                    (sci/new-dynamic-var '*input* (read-next)))]
-    (repl/start-repl! ctx)))
+(defn start-repl!
+  ([ctx read-next] (start-repl! ctx read-next nil))
+  ([ctx read-next opts]
+   (let [ctx (update ctx :bindings assoc
+                     (with-meta '*input*
+                       {:sci.impl/deref! true})
+                     (sci/new-dynamic-var '*input* (read-next)))]
+     (repl/start-repl! ctx opts))))
 
 (defn start-socket-repl! [address ctx read-next]
   (let [ctx (update ctx :bindings assoc
@@ -283,6 +285,10 @@ Everything after that is bound to *command-line-args*."))
         ctx (update-in ctx [:namespaces 'clojure.core] assoc
                        'eval #(eval* ctx %)
                        'load-file #(load-file* ctx %))
+        ctx (assoc-in ctx [:namespaces 'clojure.main 'repl]
+                      (fn [& opts]
+                        (let [opts (apply hash-map opts)]
+                          (start-repl! ctx (fn [] (read-next *in*)) opts))))
         ctx (addons/future ctx)
         _preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim) (eval-string ctx))
         expression (if main
