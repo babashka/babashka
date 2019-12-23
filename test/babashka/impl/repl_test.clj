@@ -3,7 +3,8 @@
    [babashka.impl.repl :refer [start-repl!]]
    [clojure.string :as str]
    [clojure.test :as t :refer [deftest is]]
-   [sci.impl.opts :refer [init]]))
+   [sci.impl.opts :refer [init]]
+   [sci.core :as sci]))
 
 (set! *warn-on-reflection* true)
 
@@ -17,7 +18,7 @@
 
 (defn assert-repl [expr expected]
   (is (str/includes? (with-out-str
-                       (with-in-str (str expr "\n:repl/quit")
+                       (sci/with-in-str (str expr "\n:repl/quit")
                          (repl!))) expected)))
 
 (deftest repl-test
