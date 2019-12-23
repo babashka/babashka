@@ -181,23 +181,10 @@ Everything after that is bound to *command-line-args*."))
 (defn eval* [ctx form]
   (eval-string (pr-str form) ctx))
 
-(defn start-repl!
-  ([ctx read-next] (start-repl! ctx read-next nil))
-  ([ctx read-next opts]
-   (let [ctx (update ctx :bindings assoc
-                     (with-meta '*input*
-                       {:sci.impl/deref! true})
-                     (sci/new-dynamic-var '*input* (read-next)))]
-     (repl/start-repl! ctx opts))))
-
-(defn start-socket-repl! [address ctx read-next]
-  (let [ctx (update ctx :bindings assoc
-                    (with-meta '*input*
-                      {:sci.impl/deref! true})
-                    (sci/new-dynamic-var '*input* (read-next)))]
-    (socket-repl/start-repl! address ctx)
-    ;; hang until SIGINT
-    @(promise)))
+(defn start-socket-repl! [address ctx]
+  (socket-repl/start-repl! address ctx)
+  ;; hang until SIGINT
+  @(promise))
 
 (defn exit [n]
   (throw (ex-info "" {:bb/exit-code n})))
@@ -290,7 +277,7 @@ Everything after that is bound to *command-line-args*."))
         ctx (assoc-in ctx [:namespaces 'clojure.main 'repl]
                       (fn [& opts]
                         (let [opts (apply hash-map opts)]
-                          (start-repl! ctx (fn [] (read-next *in*)) opts))))
+                          (repl/start-repl! ctx opts))))
         ctx (addons/future ctx)
         _preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim) (eval-string ctx))
         expression (if main
@@ -308,8 +295,8 @@ Everything after that is bound to *command-line-args*."))
                   [(print-version) 0]
                   help?
                   [(print-help) 0]
-                  repl [(start-repl! sci-ctx #(read-next *in*)) 0]
-                  socket-repl [(start-socket-repl! socket-repl sci-ctx #(read-next *in*)) 0]
+                  repl [(repl/start-repl! sci-ctx) 0]
+                  socket-repl [(start-socket-repl! socket-repl sci-ctx) 0]
                   :else
                   (try
                     (let [ expr (if file (read-file file) expression)]
@@ -335,7 +322,7 @@ Everything after that is bound to *command-line-args*."))
                                 (if stream?
                                   (recur (read-next *in*))
                                   res)))))
-                        [(start-repl! sci-ctx #(read-next *in*)) 0]))
+                        [(repl/start-repl! sci-ctx) 0]))
                     (catch Throwable e
                       (binding [*out* *err*]
                         (let [d (ex-data e)
