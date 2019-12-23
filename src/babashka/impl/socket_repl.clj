@@ -3,19 +3,17 @@
   (:require
    [babashka.impl.clojure.core.server :as server]
    [babashka.impl.repl :as repl]
-   [clojure.string :as str]
-   [sci.impl.opts :refer [init]]))
+   [clojure.string :as str]))
 
 (set! *warn-on-reflection* true)
 
-(defn start-repl! [host+port sci-opts]
+(defn start-repl! [host+port sci-ctx]
   (let [parts (str/split host+port #":")
         [host port] (if (= 1 (count parts))
                       [nil (Integer. ^String (first parts))]
                       [(first parts) (Integer. ^String (second parts))])
         host+port (if-not host (str "localhost:" port)
                           host+port)
-        sci-ctx (init sci-opts)
         socket (server/start-server
                 {:address host
                  :port port
