@@ -7,8 +7,7 @@
    [clojure.java.shell :refer [sh]]
    [clojure.string :as str]
    [clojure.test :as test :refer [deftest is testing]]
-   [sci.core :as sci]
-   [babashka.test-utils :as tu]))
+   [sci.core :as sci]))
 
 (defn bb [input & args]
   (edn/read-string (apply test-utils/bb (when (some? input) (str input)) (map str args))))
@@ -186,9 +185,9 @@
                            temp-dir-path))))))
 
 (deftest wait-for-port-test
-  (let [server (tu/start-server! 1777)]
+  (let [server (test-utils/start-server! 1777)]
     (is (= 1777 (:port (bb nil "(wait/wait-for-port \"127.0.0.1\" 1777)"))))
-    (tu/stop-server! server)
+    (test-utils/stop-server! server)
     (is (= :timed-out (bb nil "(wait/wait-for-port \"127.0.0.1\" 1777 {:default :timed-out :timeout 50})")))))
 
 (deftest wait-for-path-test
@@ -314,8 +313,15 @@
 (deftest compatibility-test
   (is (true? (bb nil "(set! *warn-on-reflection* true)"))))
 
+(deftest clojure-main-repl-test
+  (is (= "\"> foo!\\nnil\\n> \"\n" (test-utils/bb nil "
+(defn foo [] (println \"foo!\"))
+(with-out-str
+  (with-in-str \"(foo)\"
+    (clojure.main/repl :init (fn []) :prompt (fn [] (print \"> \")))))")))
+
 ;;;; Scratch
 
-(comment
-  (dotimes [_ 10] (wait-for-port-test))
-  )
+  (comment
+    (dotimes [_ 10] (wait-for-port-test))
+    ))
