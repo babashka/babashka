@@ -15,9 +15,7 @@
       :author "Stephen C. Gilardi and Rich Hickey"
       :no-doc true}
     babashka.impl.clojure.main
-  (:refer-clojure :exclude [with-bindings])
-  (:import (java.io StringReader)
-           (clojure.lang LineNumberingPushbackReader LispReader$ReaderException)))
+  (:refer-clojure :exclude [with-bindings]))
 
 (defmacro with-bindings
   "Executes body in the context of thread-local bindings for several vars
@@ -43,18 +41,6 @@
              *3 nil
              *e nil]
      ~@body))
-
-(defn repl-prompt
-  "Default :prompt hook for repl"
-  []
-  (print "bb=> " ))
-
-(defn repl-caught
-  "Default :caught hook for repl"
-  [e]
-  (binding [*out* *err*]
-    (println (.getMessage ^Exception e))
-    (flush)))
 
 (defn repl
   "Generic, reusable, read-eval-print loop. By default, reads from *in*,
@@ -92,14 +78,7 @@
        read, eval, or print throws an exception or error
        default: repl-caught"
   [& options]
-  (let [{:keys [init need-prompt prompt flush read eval print caught]
-         :or {need-prompt (if (instance? LineNumberingPushbackReader *in*)
-                            #(.atLineStart ^LineNumberingPushbackReader *in*)
-                            #(identity true))
-              prompt      repl-prompt
-              flush       flush
-              print       prn
-              caught      repl-caught}}
+  (let [{:keys [init need-prompt prompt flush read eval print caught]}
         (apply hash-map options)
         request-prompt (Object.)
         request-exit (Object.)

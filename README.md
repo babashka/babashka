@@ -175,7 +175,9 @@ enumerated explicitly.
 - `clojure.java.shell` aliases as `shell`:
   - `sh`
 - `clojure.java.io` aliased as `io`:
-  - `as-relative-path`, `copy`, `delete-file`, `file`
+  - `as-relative-path`, `as-url`, `copy`, `delete-file`, `file`, `input-stream`,
+    `make-parents`, `output-stream`, `reader`, `writer`
+- `clojure.main`: `repl`
 - [`clojure.core.async`](https://clojure.github.io/core.async/) aliased as
   `async`. The `alt` and `go` macros are not available but `alts!!` does work as
   it is a function.
