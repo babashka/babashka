@@ -551,6 +551,37 @@ Differences with Clojure:
 
 ## External resources
 
+### Libraries
+
+The following libraries are known to work with Babashka:
+
+#### [clj-http-lite](https://github.com/borkdude/clj-http-lite)
+
+  This fork does not depend on any other libraries. Example:
+
+``` shell
+$ export BABASHKA_CLASSPATH="$(clojure -Sdeps '{:deps {limit-break {:git/url "https://github.com/borkdude/clj-http-lite" :sha "f44ebe45446f0f44f2b73761d102af3da6d0a13e"}}}' -Spath)"
+
+$ bb "(require '[clj-http.lite.client :as client]) (:status (client/get \"https://www.clojure.org\"))"
+200
+```
+
+#### [limit-break](https://github.com/technomancy/limit-break)
+
+   A debug REPL library. Example:
+
+``` shell
+$ export BABASHKA_CLASSPATH="$(clojure -Sdeps '{:deps {limit-break {:git/url "https://github.com/technomancy/limit-break" :sha "050fcfa0ea29fe3340927533a6fa6fffe23bfc2f" :deps/manifest :deps}}}' -Spath)"
+
+$ bb "(require '[limit.break :as lb]) (let [x 1] (lb/break))"
+Babashka v0.0.49 REPL.
+Use :repl/quit or :repl/exit to quit the REPL.
+Clojure rocks, Bash reaches.
+
+break> x
+1
+```
+
 ### Blogs
 
 - [Clojure Start Time in 2019](https://stuartsierra.com/2019/12/21/clojure-start-time-in-2019) by Stuart Sierra
