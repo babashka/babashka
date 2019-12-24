@@ -13,7 +13,7 @@
 (defn repl-caught
   "Default :caught hook for repl"
   [e]
-  (sci/with-bindings {sci/out *err* #_@sci/err}
+  (sci/with-bindings {sci/out @sci/err}
     (sio/println (.getMessage ^Exception e))
     (sio/flush)))
 
