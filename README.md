@@ -551,13 +551,18 @@ Differences with Clojure:
 
 ## External resources
 
-### Libraries
+### Tools and libraries
 
 The following libraries are known to work with Babashka:
 
+#### [deps.clj](https://github.com/borkdude/deps.clj)
+
+A port of the [clojure](https://github.com/clojure/brew-install/) bash script to
+Clojure / babashka.   
+
 #### [clj-http-lite](https://github.com/borkdude/clj-http-lite)
 
-  This fork does not depend on any other libraries. Example:
+This fork does not depend on any other libraries. Example:
 
 ``` shell
 $ export BABASHKA_CLASSPATH="$(clojure -Sdeps '{:deps {limit-break {:git/url "https://github.com/borkdude/clj-http-lite" :sha "f44ebe45446f0f44f2b73761d102af3da6d0a13e"}}}' -Spath)"
@@ -568,7 +573,7 @@ $ bb "(require '[clj-http.lite.client :as client]) (:status (client/get \"https:
 
 #### [limit-break](https://github.com/technomancy/limit-break)
 
-   A debug REPL library. Example:
+A debug REPL library. Example:
 
 ``` shell
 $ export BABASHKA_CLASSPATH="$(clojure -Sdeps '{:deps {limit-break {:git/url "https://github.com/technomancy/limit-break" :sha "050fcfa0ea29fe3340927533a6fa6fffe23bfc2f" :deps/manifest :deps}}}' -Spath)"
