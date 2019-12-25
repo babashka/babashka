@@ -34,77 +34,78 @@
 (defn parse-opts [options]
   (let [opts (loop [options options
                     opts-map {}]
-               (if-let [opt (first options)]
-                 (case opt
-                   ("--version") {:version true}
-                   ("--help" "-h" "-?") {:help? true}
-                   ("--verbose")(recur (rest options)
+               (if options
+                 (let [opt (first options)]
+                   (case opt
+                     ("--version") {:version true}
+                     ("--help" "-h" "-?") {:help? true}
+                     ("--verbose")(recur (next options)
+                                         (assoc opts-map
+                                                :verbose? true))
+                     ("--stream") (recur (next options)
+                                         (assoc opts-map
+                                                :stream? true))
+                     ("--time") (recur (next options)
                                        (assoc opts-map
-                                              :verbose? true))
-                   ("--stream") (recur (rest options)
-                                       (assoc opts-map
-                                              :stream? true))
-                   ("--time") (recur (rest options)
-                                     (assoc opts-map
-                                            :time? true))
-                   ("-i") (recur (rest options)
-                                 (assoc opts-map
-                                        :shell-in true))
-                   ("-I") (recur (rest options)
-                                 (assoc opts-map
-                                        :edn-in true))
-                   ("-o") (recur (rest options)
-                                 (assoc opts-map
-                                        :shell-out true))
-                   ("-O") (recur (rest options)
-                                 (assoc opts-map
-                                        :edn-out true))
-                   ("-io") (recur (rest options)
-                                  (assoc opts-map
-                                         :shell-in true
-                                         :shell-out true))
-                   ("-IO") (recur (rest options)
-                                  (assoc opts-map
-                                         :edn-in true
-                                         :edn-out true))
-                   ("-f" "--file")
-                   (let [options (rest options)]
-                     (recur (rest options)
-                            (assoc opts-map
-                                   :file (first options))))
-                   ("--repl")
-                   (let [options (rest options)]
-                     (recur (rest options)
-                            (assoc opts-map
-                                   :repl true)))
-                   ("--socket-repl")
-                   (let [options (rest options)]
-                     (recur (rest options)
-                            (assoc opts-map
-                                   :socket-repl (first options))))
-                   ("--eval", "-e")
-                   (let [options (rest options)]
-                     (recur (rest options)
-                            (assoc opts-map :expression (first options))))
-                   ("--classpath", "-cp")
-                   (let [options (rest options)]
-                     (recur (rest options)
-                            (assoc opts-map :classpath (first options))))
-                   ("--main", "-m")
-                   (let [options (rest options)]
-                     (recur (rest options)
-                            (assoc opts-map :main (first options))))
-                   (if (some opts-map [:file :socket-repl :expression :main])
-                     (assoc opts-map
-                            :command-line-args options)
-                     (if (and (not= \( (first (str/trim opt)))
-                              (.exists (io/file opt)))
+                                              :time? true))
+                     ("-i") (recur (next options)
+                                   (assoc opts-map
+                                          :shell-in true))
+                     ("-I") (recur (next options)
+                                   (assoc opts-map
+                                          :edn-in true))
+                     ("-o") (recur (next options)
+                                   (assoc opts-map
+                                          :shell-out true))
+                     ("-O") (recur (next options)
+                                   (assoc opts-map
+                                          :edn-out true))
+                     ("-io") (recur (next options)
+                                    (assoc opts-map
+                                           :shell-in true
+                                           :shell-out true))
+                     ("-IO") (recur (next options)
+                                    (assoc opts-map
+                                           :edn-in true
+                                           :edn-out true))
+                     ("-f" "--file")
+                     (let [options (next options)]
+                       (recur (next options)
+                              (assoc opts-map
+                                     :file (first options))))
+                     ("--repl")
+                     (let [options (next options)]
+                       (recur (next options)
+                              (assoc opts-map
+                                     :repl true)))
+                     ("--socket-repl")
+                     (let [options (next options)]
+                       (recur (next options)
+                              (assoc opts-map
+                                     :socket-repl (first options))))
+                     ("--eval", "-e")
+                     (let [options (next options)]
+                       (recur (next options)
+                              (assoc opts-map :expression (first options))))
+                     ("--classpath", "-cp")
+                     (let [options (next options)]
+                       (recur (next options)
+                              (assoc opts-map :classpath (first options))))
+                     ("--main", "-m")
+                     (let [options (next options)]
+                       (recur (next options)
+                              (assoc opts-map :main (first options))))
+                     (if (some opts-map [:file :socket-repl :expression :main])
                        (assoc opts-map
-                              :file opt
-                              :command-line-args (rest options))
-                       (assoc opts-map
-                              :expression opt
-                              :command-line-args (rest options)))))
+                              :command-line-args options)
+                       (if (and (not= \( (first (str/trim opt)))
+                                (.exists (io/file opt)))
+                         (assoc opts-map
+                                :file opt
+                                :command-line-args (next options))
+                         (assoc opts-map
+                                :expression opt
+                                :command-line-args (next options))))))
                  opts-map))]
     opts))
 

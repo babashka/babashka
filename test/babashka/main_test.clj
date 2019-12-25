@@ -21,15 +21,15 @@
 
   (testing "distinguish automatically between expression or file name"
     (is (= {:expression "(println 123)"
-            :command-line-args []}
+            :command-line-args nil}
            (main/parse-opts ["(println 123)"])))
 
     (is (= {:file "src/babashka/main.clj"
-            :command-line-args []}
+            :command-line-args nil}
            (main/parse-opts ["src/babashka/main.clj"])))
 
     (is (= {:expression "does-not-exist"
-            :command-line-args []}
+            :command-line-args nil}
            (main/parse-opts ["does-not-exist"])))))
 
 (deftest main-test
@@ -318,10 +318,14 @@
 (defn foo [] (println \"foo!\"))
 (with-out-str
   (with-in-str \"(foo)\"
-    (clojure.main/repl :init (fn []) :prompt (fn [] (print \"> \")))))")))
+    (clojure.main/repl :init (fn []) :prompt (fn [] (print \"> \")))))"))))
+
+(deftest command-line-args-test
+  (is (true? (bb nil "(nil? *command-line-args*)")))
+  (is (= ["1" "2" "3"] (bb nil "*command-line-args*" "1" "2" "3"))))
 
 ;;;; Scratch
 
-  (comment
-    (dotimes [_ 10] (wait-for-port-test))
-    ))
+(comment
+  (dotimes [_ 10] (wait-for-port-test))
+  )
