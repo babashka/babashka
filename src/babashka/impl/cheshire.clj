@@ -14,5 +14,5 @@
    'parse-smile json/parse-smile
    'parse-stream json/parse-stream
    'parsed-seq json/parsed-seq
-   'parsed-smile-seq json/parses-smile-seq
+   'parsed-smile-seq json/parsed-smile-seq
    'decode-smile json/decode-smile})
