@@ -13,7 +13,6 @@
    [babashka.impl.repl :as repl]
    [babashka.impl.socket-repl :as socket-repl]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
-   [babashka.impl.utils :refer [eval-string]]
    [babashka.wait :as wait]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
@@ -25,6 +24,10 @@
    [sci.impl.vars :as vars]
    [sci.impl.interpreter :refer [eval-string*]])
   (:gen-class))
+
+(sci.impl.vars/bindRoot sci/in *in*)
+(sci.impl.vars/bindRoot sci/out *out*)
+(sci.impl.vars/bindRoot sci/err *err*)
 
 (set! *warn-on-reflection* true)
 ;; To detect problems when generating the image, run:
@@ -133,7 +136,7 @@
 (def usage-string "Usage: bb [ -i | -I ] [ -o | -O ] [ --stream ] [--verbose]
           [ ( --classpath | -cp ) <cp> ] [ ( --main | -m ) <main-namespace> ]
           ( -e <expression> | -f <file> | --repl | --socket-repl [<host>:]<port> )
-          [ arg* ]")
+          [ --uberscript <file> ] [ arg* ]")
 (defn print-usage []
   (println usage-string))
 
@@ -145,21 +148,22 @@
   (println)
   (println "Options:")
   (println "
-  --help, -h or -?   Print this help text.
-  --version          Print the current version of babashka.
-  -i                 Bind *input* to a lazy seq of lines from stdin.
-  -I                 Bind *input* to a lazy seq of EDN values from stdin.
-  -o                 Write lines to stdout.
-  -O                 Write EDN values to stdout.
-  --verbose          Print entire stacktrace in case of exception.
-  --stream           Stream over lines or EDN values from stdin. Combined with -i or -I *input* becomes a single value per iteration.
-  -e, --eval <expr>  Evaluate an expression.
-  -f, --file <path>  Evaluate a file.
-  -cp, --classpath   Classpath to use.
-  -m, --main <ns>    Call the -main function from namespace with args.
-  --repl             Start REPL
-  --socket-repl      Start socket REPL. Specify port (e.g. 1666) or host and port separated by colon (e.g. 127.0.0.1:1666).
-  --time             Print execution time before exiting.
+  --help, -h or -?    Print this help text.
+  --version           Print the current version of babashka.
+  -i                  Bind *input* to a lazy seq of lines from stdin.
+  -I                  Bind *input* to a lazy seq of EDN values from stdin.
+  -o                  Write lines to stdout.
+  -O                  Write EDN values to stdout.
+  --verbose           Print entire stacktrace in case of exception.
+  --stream            Stream over lines or EDN values from stdin. Combined with -i or -I *input* becomes a single value per iteration.
+  -e, --eval <expr>   Evaluate an expression.
+  -f, --file <path>   Evaluate a file.
+  -cp, --classpath    Classpath to use.
+  -m, --main <ns>     Call the -main function from namespace with args.
+  --uberscript <file> Collect preloads, -e, -f and -m and all required namespaces from the classpath into a single executable file.
+  --repl              Start REPL
+  --socket-repl       Start socket REPL. Specify port (e.g. 1666) or host and port separated by colon (e.g. 127.0.0.1:1666).
+  --time              Print execution time before exiting.
 
 If neither -e, -f, or --socket-repl are specified, then the first argument that is not parsed as a option is treated as a file if it exists, or as an expression otherwise.
 Everything after that is bound to *command-line-args*."))

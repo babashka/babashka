@@ -137,25 +137,26 @@ You may also download a binary from [Github](https://github.com/borkdude/babashk
 Usage: bb [ -i | -I ] [ -o | -O ] [ --stream ] [--verbose]
           [ ( --classpath | -cp ) <cp> ] [ ( --main | -m ) <main-namespace> ]
           ( -e <expression> | -f <file> | --repl | --socket-repl [<host>:]<port> )
-          [ arg* ]
+          [ --uberscript <file> ] [ arg* ]
 
 Options:
 
-  --help, -h or -?   Print this help text.
-  --version          Print the current version of babashka.
-  -i                 Bind *input* to a lazy seq of lines from stdin.
-  -I                 Bind *input* to a lazy seq of EDN values from stdin.
-  -o                 Write lines to stdout.
-  -O                 Write EDN values to stdout.
-  --verbose          Print entire stacktrace in case of exception.
-  --stream           Stream over lines or EDN values from stdin. Combined with -i or -I *input* becomes a single value per iteration.
-  -e, --eval <expr>  Evaluate an expression.
-  -f, --file <path>  Evaluate a file.
-  -cp, --classpath   Classpath to use.
-  -m, --main <ns>    Call the -main function from namespace with args.
-  --repl             Start REPL
-  --socket-repl      Start socket REPL. Specify port (e.g. 1666) or host and port separated by colon (e.g. 127.0.0.1:1666).
-  --time             Print execution time before exiting.
+  --help, -h or -?    Print this help text.
+  --version           Print the current version of babashka.
+  -i                  Bind *input* to a lazy seq of lines from stdin.
+  -I                  Bind *input* to a lazy seq of EDN values from stdin.
+  -o                  Write lines to stdout.
+  -O                  Write EDN values to stdout.
+  --verbose           Print entire stacktrace in case of exception.
+  --stream            Stream over lines or EDN values from stdin. Combined with -i or -I *input* becomes a single value per iteration.
+  -e, --eval <expr>   Evaluate an expression.
+  -f, --file <path>   Evaluate a file.
+  -cp, --classpath    Classpath to use.
+  -m, --main <ns>     Call the -main function from namespace with args.
+  --uberscript <file> Collect preloads, -e, -f and -m and all required namespaces from the classpath into a single executable file.
+  --repl              Start REPL
+  --socket-repl       Start socket REPL. Specify port (e.g. 1666) or host and port separated by colon (e.g. 127.0.0.1:1666).
+  --time              Print execution time before exiting.
 
 If neither -e, -f, or --socket-repl are specified, then the first argument that is not parsed as a option is treated as a file if it exists, or as an expression otherwise.
 Everything after that is bound to *command-line-args*.
@@ -408,10 +409,10 @@ Note that you can use the `clojure` tool to produce classpaths and download depe
 ``` shellsession
 $ cat deps.edn
 {:deps
-  {my_gist_script
-    {:git/url "https://gist.github.com/borkdude/263b150607f3ce03630e114611a4ef42"
-     :sha "cfc761d06dfb30bb77166b45d439fe8fe54a31b8"}}}
-
+ {my_gist_script
+  {:git/url "https://gist.github.com/borkdude/263b150607f3ce03630e114611a4ef42"
+   :sha "cfc761d06dfb30bb77166b45d439fe8fe54a31b8"}}
+ :aliases {:my-script {:main-opts ["-m" "my-gist-script"]}}}
 
 $ CLASSPATH=$(clojure -Spath)
 $ bb --classpath "$CLASSPATH" --main my-gist-script
@@ -425,6 +426,36 @@ variable will be used:
 $ export BABASHKA_CLASSPATH=$(clojure -Spath)
 $ export BABASHKA_PRELOADS="(require '[my-gist-script])"
 $ bb "(my-gist-script/-main)"
+Hello from gist script!
+```
+
+Using the [deps.clj](https://github.com/borkdude/deps.clj/) script, you can also
+pass the classpath and main opts to `bb`:
+
+``` shell
+$ deps.clj -A:my-script -Scommand "bb my_script.clj {{main-opts}}"
+Hello from gist script!
+```
+
+## Uberscript
+
+The `--uberscript <file>` option collects the expressions in
+`BABASHKA_PRELOADS`, the command line expression or file, the main entrypoint
+and all required namespaces from the classpath into a single file. This can be
+convenient for debugging purposes and deployment.
+
+Given the `deps.edn` from above:
+
+``` shell
+$ deps.clj -A:my-script -Scommand "bb {{main-opts}} --uberscript my-script.clj"
+
+$ cat my-script.clj
+(ns my-gist-script)
+(defn -main [& args]
+  (println "Hello from gist script!"))(require '[my-gist-script])
+(ns user (:require [my-gist-script])) (apply my-gist-script/-main *command-line-args*)%
+
+$ bb my-script.clj
 Hello from gist script!
 ```
 
