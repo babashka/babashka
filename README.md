@@ -433,7 +433,7 @@ Using the [deps.clj](https://github.com/borkdude/deps.clj/) script, you can also
 pass the classpath and main opts to `bb`:
 
 ``` shell
-$ deps.clj -A:my-script -Scommand "bb my_script.clj {{main-opts}}"
+$ deps.clj -A:my-script -Scommand "bb -cp {{classpath}} {{main-opts}}"
 Hello from gist script!
 ```
 
@@ -447,7 +447,7 @@ convenient for debugging purposes and deployment.
 Given the `deps.edn` from above:
 
 ``` clojure
-$ deps.clj -A:my-script -Scommand "bb {{main-opts}} --uberscript my-script.clj"
+$ deps.clj -A:my-script -Scommand "bb -cp {{classpath}} {{main-opts}} --uberscript my-script.clj"
 
 $ cat my-script.clj
 (ns my-gist-script)
