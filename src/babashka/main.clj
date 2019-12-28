@@ -68,6 +68,10 @@
                                     (assoc opts-map
                                            :edn-in true
                                            :edn-out true))
+                     ("--classpath", "-cp")
+                     (let [options (next options)]
+                       (recur (next options)
+                              (assoc opts-map :classpath (first options))))
                      ("--uberscript")
                      (recur (next options)
                             (assoc opts-map :uberscript (first options)))
