@@ -446,7 +446,7 @@ convenient for debugging purposes and deployment.
 
 Given the `deps.edn` from above:
 
-``` shell
+``` clojure
 $ deps.clj -A:my-script -Scommand "bb {{main-opts}} --uberscript my-script.clj"
 
 $ cat my-script.clj
