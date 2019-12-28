@@ -73,8 +73,10 @@
                        (recur (next options)
                               (assoc opts-map :classpath (first options))))
                      ("--uberscript")
-                     (recur (next options)
-                            (assoc opts-map :uberscript (first options)))
+                     (let [options (next options)]
+                       (recur (next options)
+                              (assoc opts-map
+                                     :uberscript (first options))))
                      ("-f" "--file")
                      (let [options (next options)]
                        (recur (next options)
@@ -180,7 +182,7 @@ Everything after that is bound to *command-line-args*."))
   (let [f (io/file f)
         s (slurp f)]
     (sci/with-bindings {vars/file-var (.getCanonicalPath f)}
-      (eval-string s ctx))))
+      (eval-string* s ctx))))
 
 (defn eval* [ctx form]
   (eval-string (pr-str form) ctx))
@@ -196,6 +198,34 @@ Everything after that is bound to *command-line-args*."))
 ;; (sci/set-var-root! sci/*in* *in*)
 ;; (sci/set-var-root! sci/*out* *out*)
 ;; (sci/set-var-root! sci/*err* *err*)
+
+(def aliases
+  '{tools.cli 'clojure.tools.cli
+    edn clojure.edn
+    wait babashka.wait
+    sig babashka.signal
+    shell clojure.java.shell
+    io clojure.java.io
+    async clojure.core.async
+    csv clojure.data.csv
+    json cheshire.core})
+
+(def namespaces
+  {'clojure.tools.cli tools-cli-namespace
+   'clojure.edn {'read edn/read
+                 'read-string edn/read-string}
+   'clojure.java.shell {'sh shell/sh}
+   'babashka.wait {'wait-for-port wait/wait-for-port
+                   'wait-for-path wait/wait-for-path}
+   'babashka.signal {'pipe-signal-received? pipe-signal-received?}
+   'clojure.java.io io-namespace
+   'clojure.core.async async-namespace
+   'clojure.data.csv csv/csv-namespace
+   'cheshire.core cheshire-core-namespace})
+
+(def bindings
+  {'java.lang.System/exit exit ;; override exit, so we have more control
+   'System/exit exit})
 
 (defn main
   [& args]
@@ -234,33 +264,14 @@ Everything after that is bound to *command-line-args*."))
                       (when uberscript (swap! uberscript-sources conj (:source res)))
                       res)))
         _ (when file (vars/bindRoot vars/file-var (.getCanonicalPath (io/file file))))
-        ctx {:aliases '{tools.cli 'clojure.tools.cli
-                        edn clojure.edn
-                        wait babashka.wait
-                        sig babashka.signal
-                        shell clojure.java.shell
-                        io clojure.java.io
-                        async clojure.core.async
-                        csv clojure.data.csv
-                        json cheshire.core}
-             :namespaces {'clojure.core (assoc core-extras
-                                               '*command-line-args*
-                                               (sci/new-dynamic-var '*command-line-args* command-line-args)
-                                               '*file* vars/file-var
-                                               '*warn-on-reflection* reflection-var)
-                          'clojure.tools.cli tools-cli-namespace
-                          'clojure.edn {'read edn/read
-                                        'read-string edn/read-string}
-                          'clojure.java.shell {'sh shell/sh}
-                          'babashka.wait {'wait-for-port wait/wait-for-port
-                                          'wait-for-path wait/wait-for-path}
-                          'babashka.signal {'pipe-signal-received? pipe-signal-received?}
-                          'clojure.java.io io-namespace
-                          'clojure.core.async async-namespace
-                          'clojure.data.csv csv/csv-namespace
-                          'cheshire.core cheshire-core-namespace}
-             :bindings {'java.lang.System/exit exit ;; override exit, so we have more control
-                        'System/exit exit}
+        ctx {:aliases aliases
+             :namespaces (assoc namespaces 'clojure.core
+                                (assoc core-extras
+                                       '*command-line-args*
+                                       (sci/new-dynamic-var '*command-line-args* command-line-args)
+                                       '*file* vars/file-var
+                                       '*warn-on-reflection* reflection-var))
+             :bindings bindings
              :env env
              :features #{:bb}
              :classes classes/class-map
@@ -277,7 +288,8 @@ Everything after that is bound to *command-line-args*."))
                         String java.lang.String
                         System java.lang.System
                         Thread java.lang.Thread}
-             :load-fn load-fn}
+             :load-fn load-fn
+             :dry-run uberscript}
         ctx (update-in ctx [:namespaces 'clojure.core] assoc
                        'eval #(eval* ctx %)
                        'load-file #(load-file* ctx %))
@@ -286,12 +298,14 @@ Everything after that is bound to *command-line-args*."))
                         (let [opts (apply hash-map opts)]
                           (repl/start-repl! ctx opts))))
         ctx (addons/future ctx)
-        _preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim) (eval-string ctx))
-        expression (if main
-                     (format "(ns user (:require [%1$s])) (apply %1$s/-main *command-line-args*)"
-                             main)
-                     expression)
         sci-ctx (sci-opts/init ctx)
+        preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim))
+        _ (when (and preloads (not uberscript))
+            (eval-string* sci-ctx preloads))
+        expression (cond expression expression
+                         main (format "(ns user (:require [%1$s])) (apply %1$s/-main *command-line-args*)"
+                                      main)
+                         file (read-file file))
         exit-code
         (sci/with-bindings {reflection-var false}
           (or
@@ -304,32 +318,29 @@ Everything after that is bound to *command-line-args*."))
                   [(print-help) 0]
                   repl [(repl/start-repl! sci-ctx) 0]
                   socket-repl [(start-socket-repl! socket-repl sci-ctx) 0]
-                  :else
+                  expression
                   (try
-                    (let [ expr (if file (read-file file) expression)]
-                      (if expr
-                        (loop [in (read-next *in*)]
-                          (let [_ (swap! env update-in [:namespaces 'user]
-                                         assoc (with-meta '*input*
-                                                 (when-not stream?
-                                                   {:sci.impl/deref! true}))
-                                         (sci/new-dynamic-var '*input* in))]
-                            (if (identical? ::EOF in)
-                              [nil 0] ;; done streaming
-                              (let [res [(let [res (eval-string* sci-ctx expr)]
-                                           (when (some? res)
-                                             (if-let [pr-f (cond shell-out println
-                                                                 edn-out prn)]
-                                               (if (coll? res)
-                                                 (doseq [l res
-                                                         :while (not (pipe-signal-received?))]
-                                                   (pr-f l))
-                                                 (pr-f res))
-                                               (prn res)))) 0]]
-                                (if stream?
-                                  (recur (read-next *in*))
-                                  res)))))
-                        [(repl/start-repl! sci-ctx) 0]))
+                    (loop [in (read-next *in*)]
+                      (let [_ (swap! env update-in [:namespaces 'user]
+                                     assoc (with-meta '*input*
+                                             (when-not stream?
+                                               {:sci.impl/deref! true}))
+                                     (sci/new-dynamic-var '*input* in))]
+                        (if (identical? ::EOF in)
+                          [nil 0] ;; done streaming
+                          (let [res [(let [res (eval-string* sci-ctx expression)]
+                                       (when (some? res)
+                                         (if-let [pr-f (cond shell-out println
+                                                             edn-out prn)]
+                                           (if (coll? res)
+                                             (doseq [l res
+                                                     :while (not (pipe-signal-received?))]
+                                               (pr-f l))
+                                             (pr-f res))
+                                           (prn res)))) 0]]
+                            (if stream?
+                              (recur (read-next *in*))
+                              res)))))
                     (catch Throwable e
                       (binding [*out* *err*]
                         (let [d (ex-data e)
@@ -339,18 +350,21 @@ Everything after that is bound to *command-line-args*."))
                                     (print-stack-trace e)
                                     (println (.getMessage e)))
                                   (flush)
-                                  [nil 1]))))))))
+                                  [nil 1]))))))
+                  :else [(repl/start-repl! sci-ctx) 0]))
            1))
         t1 (System/currentTimeMillis)]
     (flush)
+    (when uberscript
+      uberscript
+      (let [uberscript-out uberscript]
+        (spit uberscript-out preloads)
+        (doseq [s @uberscript-sources]
+          (spit uberscript-out s :append true))
+        (spit uberscript-out expression :append true)
+        (spit uberscript-out file :append true)))
     (when time? (binding [*out* *err*]
                   (println "bb took" (str (- t1 t0) "ms."))))
-    (when uberscript
-      (spit "/tmp/uberscript.clj" "") ;; reset file
-      (doseq [s @uberscript-sources]
-        (spit "/tmp/uberscript.clj" s :append true))
-      (spit "/tmp/uberscript.clj" expression :append true)
-      (spit "/tmp/uberscript.clj" file :append true))
     exit-code))
 
 (defn -main
