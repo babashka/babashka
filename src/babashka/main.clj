@@ -315,8 +315,6 @@ Everything after that is bound to *command-line-args*."))
                                (let [opts (apply hash-map opts)]
                                  (repl/start-repl! sci-ctx opts))))))
         preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim))
-        _ (when (and preloads (not uberscript))
-            (eval-string* sci-ctx preloads))
         [expression exit-code]
         (cond expression [expression nil]
               main [(format "(ns user (:require [%1$s])) (apply %1$s/-main *command-line-args*)"
@@ -324,6 +322,9 @@ Everything after that is bound to *command-line-args*."))
               file (try [(read-file file) nil]
                         (catch Exception e
                           (error-handler* e verbose?))))
+        expression (str (when preloads
+                          (str preloads "\n"))
+                        expression)
         exit-code
         (or exit-code
             (sci/with-bindings {reflection-var false}
@@ -369,7 +370,7 @@ Everything after that is bound to *command-line-args*."))
     (when uberscript
       uberscript
       (let [uberscript-out uberscript]
-        (spit uberscript-out preloads)
+        (spit uberscript-out "") ;; reset file
         (doseq [s @uberscript-sources]
           (spit uberscript-out s :append true))
         (spit uberscript-out expression :append true)
