@@ -438,7 +438,7 @@ Hello from gist script!
 The `--uberscript` option collects the expressions in
 `BABASHKA_PRELOADS`, the command line expression or file, the main entrypoint
 and all required namespaces from the classpath into a single file. This can be
-convenient for debugging purposes and deployment.
+convenient for debugging and deployment.
 
 Given the `deps.edn` from above:
 
