@@ -48,7 +48,7 @@ Non-goals:
 * Replace existing shells. Babashka is a tool you can use inside existing shells like bash and it is designed to play well with them. It does not aim to replace them.
 
 Babashka uses [sci](https://github.com/borkdude/sci) for interpreting Clojure. Sci
-implements a subset of Clojure and is not as performant as compiled code. If your script will take longer than a few seconds, using Clojure on the JVM may be a better fit.
+implements a subset of Clojure and is not as performant as compiled code. If your script is more than a one-off command that lasts only a few seconds, using Clojure on the JVM may be a better fit.
 
 Read more about the differences with Clojure [here](#differences-with-clojure).
 
