@@ -452,8 +452,8 @@ $ deps.clj -A:my-script -Scommand "bb -cp {{classpath}} {{main-opts}} --uberscri
 $ cat my-script.clj
 (ns my-gist-script)
 (defn -main [& args]
-  (println "Hello from gist script!"))(require '[my-gist-script])
-(ns user (:require [my-gist-script])) (apply my-gist-script/-main *command-line-args*)%
+  (println "Hello from gist script!"))
+(ns user (:require [my-gist-script])) (apply my-gist-script/-main *command-line-args*)
 
 $ bb my-script.clj
 Hello from gist script!
