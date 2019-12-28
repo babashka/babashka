@@ -68,6 +68,9 @@
                                     (assoc opts-map
                                            :edn-in true
                                            :edn-out true))
+                     ("--uberscript")
+                     (recur (next options)
+                            (assoc opts-map :uberscript (first options)))
                      ("-f" "--file")
                      (let [options (next options)]
                        (recur (next options)
@@ -87,10 +90,6 @@
                      (let [options (next options)]
                        (recur (next options)
                               (assoc opts-map :expression (first options))))
-                     ("--classpath", "-cp")
-                     (let [options (next options)]
-                       (recur (next options)
-                              (assoc opts-map :classpath (first options))))
                      ("--main", "-m")
                      (let [options (next options)]
                        (recur (next options)
@@ -205,7 +204,7 @@ Everything after that is bound to *command-line-args*."))
                 :expression :stream? :time?
                 :repl :socket-repl
                 :verbose? :classpath
-                :main] :as _opts}
+                :main :uberscript] :as _opts}
         (parse-opts args)
         read-next (fn [*in*]
                     (if (pipe-signal-received?)
@@ -219,6 +218,7 @@ Everything after that is bound to *command-line-args*."))
                                      (edn-seq *in*)
                                      :else
                                      (edn/read *in*))))))
+        uberscript-sources (atom ())
         env (atom {})
         classpath (or classpath
                       (System/getenv "BABASHKA_CLASSPATH"))
@@ -226,7 +226,9 @@ Everything after that is bound to *command-line-args*."))
                  (cp/loader classpath))
         load-fn (when classpath
                   (fn [{:keys [:namespace]}]
-                    (cp/source-for-namespace loader namespace)))
+                    (let [res (cp/source-for-namespace loader namespace)]
+                      (when uberscript (swap! uberscript-sources conj (:source res)))
+                      res)))
         _ (when file (vars/bindRoot vars/file-var (.getCanonicalPath (io/file file))))
         ctx {:aliases '{tools.cli 'clojure.tools.cli
                         edn clojure.edn
@@ -336,9 +338,15 @@ Everything after that is bound to *command-line-args*."))
                                   [nil 1]))))))))
            1))
         t1 (System/currentTimeMillis)]
+    (flush)
     (when time? (binding [*out* *err*]
                   (println "bb took" (str (- t1 t0) "ms."))))
-    (flush)
+    (when uberscript
+      (spit "/tmp/uberscript.clj" "") ;; reset file
+      (doseq [s @uberscript-sources]
+        (spit "/tmp/uberscript.clj" s :append true))
+      (spit "/tmp/uberscript.clj" expression :append true)
+      (spit "/tmp/uberscript.clj" file :append true))
     exit-code))
 
 (defn -main
