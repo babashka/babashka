@@ -178,14 +178,14 @@ Everything after that is bound to *command-line-args*."))
 
 (def reflection-var (sci/new-dynamic-var '*warn-on-reflection* false))
 
-(defn load-file* [ctx f]
+(defn load-file* [sci-ctx f]
   (let [f (io/file f)
         s (slurp f)]
     (sci/with-bindings {vars/file-var (.getCanonicalPath f)}
-      (eval-string* s ctx))))
+      (eval-string* sci-ctx s))))
 
-(defn eval* [ctx form]
-  (eval-string (pr-str form) ctx))
+(defn eval* [sci-ctx form]
+  (eval-string* sci-ctx (pr-str form)))
 
 (defn start-socket-repl! [address ctx]
   (socket-repl/start-repl! address ctx)
@@ -226,6 +226,17 @@ Everything after that is bound to *command-line-args*."))
 (def bindings
   {'java.lang.System/exit exit ;; override exit, so we have more control
    'System/exit exit})
+
+(defn error-handler* [^Exception e verbose?]
+  (binding [*out* *err*]
+    (let [d (ex-data e)
+          exit-code (:bb/exit-code d)]
+      (if exit-code [nil exit-code]
+          (do (if verbose?
+                (print-stack-trace e)
+                (println (.getMessage e)))
+              (flush)
+              [nil 1])))))
 
 (defn main
   [& args]
@@ -290,69 +301,69 @@ Everything after that is bound to *command-line-args*."))
                         Thread java.lang.Thread}
              :load-fn load-fn
              :dry-run uberscript}
-        ctx (update-in ctx [:namespaces 'clojure.core] assoc
-                       'eval #(eval* ctx %)
-                       'load-file #(load-file* ctx %))
-        ctx (assoc-in ctx [:namespaces 'clojure.main 'repl]
-                      (fn [& opts]
-                        (let [opts (apply hash-map opts)]
-                          (repl/start-repl! ctx opts))))
         ctx (addons/future ctx)
         sci-ctx (sci-opts/init ctx)
+        _ (swap! (:env sci-ctx)
+                 (fn [env]
+                   (update-in env [:namespaces 'clojure.core] assoc
+                              'eval #(eval* sci-ctx %)
+                              'load-file #(load-file* sci-ctx %))))
+        _ (swap! (:env sci-ctx)
+                 (fn [env]
+                   (assoc-in env [:namespaces 'clojure.main 'repl]
+                             (fn [& opts]
+                               (let [opts (apply hash-map opts)]
+                                 (repl/start-repl! sci-ctx opts))))))
         preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim))
         _ (when (and preloads (not uberscript))
             (eval-string* sci-ctx preloads))
-        expression (cond expression expression
-                         main (format "(ns user (:require [%1$s])) (apply %1$s/-main *command-line-args*)"
-                                      main)
-                         file (read-file file))
+        [expression exit-code]
+        (cond expression [expression nil]
+              main [(format "(ns user (:require [%1$s])) (apply %1$s/-main *command-line-args*)"
+                            main) nil]
+              file (try [(read-file file) nil]
+                        (catch Exception e
+                          (error-handler* e verbose?))))
         exit-code
-        (sci/with-bindings {reflection-var false}
-          (or
-           #_(binding [*out* *err*]
-               (prn ">>" _opts))
-           (second
-            (cond version
-                  [(print-version) 0]
-                  help?
-                  [(print-help) 0]
-                  repl [(repl/start-repl! sci-ctx) 0]
-                  socket-repl [(start-socket-repl! socket-repl sci-ctx) 0]
-                  expression
-                  (try
-                    (loop [in (read-next *in*)]
-                      (let [_ (swap! env update-in [:namespaces 'user]
-                                     assoc (with-meta '*input*
-                                             (when-not stream?
-                                               {:sci.impl/deref! true}))
-                                     (sci/new-dynamic-var '*input* in))]
-                        (if (identical? ::EOF in)
-                          [nil 0] ;; done streaming
-                          (let [res [(let [res (eval-string* sci-ctx expression)]
-                                       (when (some? res)
-                                         (if-let [pr-f (cond shell-out println
-                                                             edn-out prn)]
-                                           (if (coll? res)
-                                             (doseq [l res
-                                                     :while (not (pipe-signal-received?))]
-                                               (pr-f l))
-                                             (pr-f res))
-                                           (prn res)))) 0]]
-                            (if stream?
-                              (recur (read-next *in*))
-                              res)))))
-                    (catch Throwable e
-                      (binding [*out* *err*]
-                        (let [d (ex-data e)
-                              exit-code (:bb/exit-code d)]
-                          (if exit-code [nil exit-code]
-                              (do (if verbose?
-                                    (print-stack-trace e)
-                                    (println (.getMessage e)))
-                                  (flush)
-                                  [nil 1]))))))
-                  :else [(repl/start-repl! sci-ctx) 0]))
-           1))
+        (or exit-code
+            (sci/with-bindings {reflection-var false}
+              (or
+               #_(binding [*out* *err*]
+                   (prn ">>" _opts))
+               (second
+                (cond version
+                      [(print-version) 0]
+                      help?
+                      [(print-help) 0]
+                      repl [(repl/start-repl! sci-ctx) 0]
+                      socket-repl [(start-socket-repl! socket-repl sci-ctx) 0]
+                      expression
+                      (try
+                        (loop [in (read-next *in*)]
+                          (let [_ (swap! env update-in [:namespaces 'user]
+                                         assoc (with-meta '*input*
+                                                 (when-not stream?
+                                                   {:sci.impl/deref! true}))
+                                         (sci/new-dynamic-var '*input* in))]
+                            (if (identical? ::EOF in)
+                              [nil 0] ;; done streaming
+                              (let [res [(let [res (eval-string* sci-ctx expression)]
+                                           (when (some? res)
+                                             (if-let [pr-f (cond shell-out println
+                                                                 edn-out prn)]
+                                               (if (coll? res)
+                                                 (doseq [l res
+                                                         :while (not (pipe-signal-received?))]
+                                                   (pr-f l))
+                                                 (pr-f res))
+                                               (prn res)))) 0]]
+                                (if stream?
+                                  (recur (read-next *in*))
+                                  res)))))
+                        (catch Throwable e
+                          (error-handler* e verbose?)))
+                      :else [(repl/start-repl! sci-ctx) 0]))
+               1)))
         t1 (System/currentTimeMillis)]
     (flush)
     (when uberscript
