@@ -2,7 +2,8 @@
   (:require
    [babashka.test-utils :as tu]
    [clojure.edn :as edn]
-   [clojure.test :as t :refer [deftest is]]))
+   [clojure.test :as t :refer [deftest is]]
+   [clojure.java.io :as io]))
 
 (defn bb [input & args]
   (edn/read-string (apply tu/bb (when (some? input) (str input)) (map str args))))
@@ -41,3 +42,10 @@
   (require '[ns-with-error])
   (catch Exception nil))
 (nil? (resolve 'ns-with-error/x))"))))
+
+(deftest resource-test
+  (let [tmp-file (java.io.File/createTempFile "icon" ".png")]
+    (.deleteOnExit tmp-file)
+    (bb nil "--classpath" "logo" "-e" (format "(io/copy (io/input-stream (io/resource \"icon.png\")) (io/file \"%s\"))" (.getPath tmp-file)))
+    (is (= (.length (io/file "logo" "icon.png"))
+           (.length tmp-file)))))

@@ -275,17 +275,20 @@ Everything after that is bound to *command-line-args*."))
                  (cp/loader classpath))
         load-fn (when classpath
                   (fn [{:keys [:namespace]}]
-                    (let [res (cp/source-for-namespace loader namespace)]
+                    (let [res (cp/source-for-namespace loader namespace nil)]
                       (when uberscript (swap! uberscript-sources conj (:source res)))
                       res)))
         _ (when file (vars/bindRoot vars/file-var (.getCanonicalPath (io/file file))))
         ctx {:aliases aliases
-             :namespaces (assoc namespaces 'clojure.core
-                                (assoc core-extras
-                                       '*command-line-args*
-                                       (sci/new-dynamic-var '*command-line-args* command-line-args)
-                                       '*file* vars/file-var
-                                       '*warn-on-reflection* reflection-var))
+             :namespaces (-> namespaces
+                             (assoc 'clojure.core
+                                    (assoc core-extras
+                                           '*command-line-args*
+                                           (sci/new-dynamic-var '*command-line-args* command-line-args)
+                                           '*file* vars/file-var
+                                           '*warn-on-reflection* reflection-var))
+                             (assoc-in ['clojure.java.io 'resource]
+                                       #(when classpath (cp/getResource loader % {:url? true}))))
              :bindings bindings
              :env env
              :features #{:bb}
