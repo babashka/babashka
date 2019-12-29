@@ -586,7 +586,11 @@ The following libraries are known to work with Babashka:
 #### [deps.clj](https://github.com/borkdude/deps.clj)
 
 A port of the [clojure](https://github.com/clojure/brew-install/) bash script to
-Clojure / babashka.   
+Clojure / babashka.
+
+#### [spartan.test](https://github.com/borkdude/spartan.test/)
+
+A minimal test framework compatible with babashka.
 
 #### [clj-http-lite](https://github.com/borkdude/clj-http-lite)
 
