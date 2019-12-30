@@ -7,6 +7,7 @@
    [babashka.impl.classpath :as cp]
    [babashka.impl.clojure.core :refer [core-extras]]
    [babashka.impl.clojure.java.io :refer [io-namespace]]
+   [babashka.impl.clojure.java.shell :refer [shell-namespace]]
    [babashka.impl.clojure.stacktrace :refer [print-stack-trace]]
    [babashka.impl.csv :as csv]
    [babashka.impl.pipe-signal-handler :refer [handle-pipe! pipe-signal-received?]]
@@ -16,7 +17,6 @@
    [babashka.wait :as wait]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
-   [clojure.java.shell :as shell]
    [clojure.string :as str]
    [sci.addons :as addons]
    [sci.core :as sci]
@@ -218,7 +218,7 @@ Everything after that is bound to *command-line-args*."))
   {'clojure.tools.cli tools-cli-namespace
    'clojure.edn {'read edn/read
                  'read-string edn/read-string}
-   'clojure.java.shell {'sh shell/sh}
+   'clojure.java.shell shell-namespace
    'babashka.wait {'wait-for-port wait/wait-for-port
                    'wait-for-path wait/wait-for-path}
    'babashka.signal {'pipe-signal-received? pipe-signal-received?}

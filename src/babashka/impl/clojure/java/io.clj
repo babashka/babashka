@@ -1,4 +1,5 @@
 (ns babashka.impl.clojure.java.io
+  {:no-doc true}
   (:require [clojure.java.io :as io]))
 
 (def io-namespace
