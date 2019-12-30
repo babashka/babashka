@@ -9,7 +9,7 @@
 A Clojure [babushka](https://en.wikipedia.org/wiki/Headscarf) for the grey areas of Bash.
 
 <blockquote class="twitter-tweet" data-lang="en">
-    <p lang="en" dir="ltr">Really enjoying Babashka. Life's too short to remember how to write Bash code. I feel liberated.<br> Thanks a million <a href="https://github.com/borkdude">@borkdude!</a></p>
+    <p lang="en" dir="ltr">Life's too short to remember how to write Bash code. I feel liberated.</p>
     &mdash;
     <a href="https://github.com/laheadle">@laheadle</a> on Clojurians Slack
 </blockquote>
