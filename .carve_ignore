@@ -3,3 +3,4 @@ babashka.impl.classpath/->JarFileResolver
 babashka.impl.classpath/->Loader
 babashka.impl.classes/generate-reflection-file
 babashka.main/-main
+babashka.impl.clojure.stacktrace/root-cause
