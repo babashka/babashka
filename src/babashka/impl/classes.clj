@@ -41,6 +41,7 @@
                       java.nio.file.CopyOption
                       java.nio.file.FileAlreadyExistsException
                       java.nio.file.Files
+                      java.nio.file.LinkOption
                       java.nio.file.NoSuchFileException
                       java.nio.file.Path
                       java.nio.file.Paths

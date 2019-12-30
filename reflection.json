@@ -179,6 +179,11 @@
   "allPublicFields" : true,
   "allPublicConstructors" : true
 }, {
+  "name" : "java.nio.file.LinkOption",
+  "allPublicMethods" : true,
+  "allPublicFields" : true,
+  "allPublicConstructors" : true
+}, {
   "name" : "java.nio.file.NoSuchFileException",
   "allPublicMethods" : true,
   "allPublicFields" : true,
