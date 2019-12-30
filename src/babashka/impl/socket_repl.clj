@@ -27,7 +27,6 @@
   (server/stop-server))
 
 (comment
-  (def sock (start-repl! "0.0.0.0:1666" {:env (atom {})}))
   @#'server/servers
   (stop-repl!)
   )
