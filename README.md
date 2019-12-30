@@ -169,8 +169,7 @@ enumerated explicitly.
 - `clojure.set` aliased as `set`
 - `clojure.edn` aliased as `edn`:
   - `read-string`
-- `clojure.java.shell` aliases as `shell`:
-  - `sh`
+- `clojure.java.shell` aliases as `shell`
 - `clojure.java.io` aliased as `io`:
   - `as-relative-path`, `as-url`, `copy`, `delete-file`, `file`, `input-stream`,
     `make-parents`, `output-stream`, `reader`, `resource`, `writer`
