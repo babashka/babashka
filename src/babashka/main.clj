@@ -299,6 +299,7 @@ Everything after that is bound to *command-line-args*."))
                         Class java.lang.Class
                         Double java.lang.Double
                         Exception java.lang.Exception
+                        IllegalArgumentException java.lang.IllegalArgumentException
                         Integer java.lang.Integer
                         File java.io.File
                         Math java.lang.Math
