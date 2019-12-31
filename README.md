@@ -181,30 +181,9 @@ enumerated explicitly.
 - [`clojure.data.csv`](https://github.com/clojure/data.csv) aliased as `csv`
 - [`cheshire.core`](https://github.com/dakrone/cheshire) aliased as `json`
 
-The following Java classes are available:
+A selection of java classes are available, see `reflection.json`.
 
-- `ArithmeticException`
-- `AssertionError`
-- `Boolean`
-- `Class`
-- `Double`
-- `Exception`
-- `clojure.lang.ExceptionInfo`
-- `Integer`
-- `Math`
-- `java.io.File`
-- `java.nio.file.Files`
-- `java.util.Base64`
-- `java.util.regex.Pattern`
-- `ProcessBuilder` (see [example](examples/process_builder.clj)).
-- `String`
-- `System`
-- `Thread`
-
-More classes can be added by request. See `reflection.json` and the `:classes`
-option in `main.clj`.
-
-Babashka supports `import` : `(import clojure.lang.ExceptionInfo)`.
+Babashka supports `import`: `(import clojure.lang.ExceptionInfo)`.
 
 Babashka supports a subset of the `ns` form where you may use `:require` and `:import`:
 
