@@ -188,7 +188,11 @@
   (let [server (test-utils/start-server! 1777)]
     (is (= 1777 (:port (bb nil "(wait/wait-for-port \"127.0.0.1\" 1777)"))))
     (test-utils/stop-server! server)
-    (is (= :timed-out (bb nil "(wait/wait-for-port \"127.0.0.1\" 1777 {:default :timed-out :timeout 50})")))))
+    (is (= :timed-out (bb nil "(wait/wait-for-port \"127.0.0.1\" 1777 {:default :timed-out :timeout 50})"))))
+  (let [edn (bb nil (io/file "test" "babashka" "scripts" "socket_server.bb"))]
+    (is (= "127.0.0.1" (:host edn)))
+    (is (=  1777 (:port edn)))
+    (is (number? (:took edn)))))
 
 (deftest wait-for-path-test
   (let [temp-dir-path (System/getProperty "java.io.tmpdir")]
