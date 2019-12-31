@@ -1,6 +1,3 @@
-babashka.impl.classpath/->DirectoryResolver
-babashka.impl.classpath/->JarFileResolver
-babashka.impl.classpath/->Loader
+babashka.impl.clojure.stacktrace/root-cause
 babashka.impl.classes/generate-reflection-file
 babashka.main/-main
-babashka.impl.clojure.stacktrace/root-cause

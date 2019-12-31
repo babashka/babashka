@@ -35,6 +35,8 @@
                       java.lang.ProcessBuilder$Redirect
                       java.net.URI
                       java.net.HttpURLConnection
+                      java.net.ServerSocket
+                      java.net.Socket
                       java.net.UnknownHostException
                       java.net.URLEncoder
                       java.net.URLDecoder

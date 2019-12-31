@@ -144,6 +144,16 @@
   "allPublicFields" : true,
   "allPublicConstructors" : true
 }, {
+  "name" : "java.net.ServerSocket",
+  "allPublicMethods" : true,
+  "allPublicFields" : true,
+  "allPublicConstructors" : true
+}, {
+  "name" : "java.net.Socket",
+  "allPublicMethods" : true,
+  "allPublicFields" : true,
+  "allPublicConstructors" : true
+}, {
   "name" : "java.net.URI",
   "allPublicMethods" : true,
   "allPublicFields" : true,
