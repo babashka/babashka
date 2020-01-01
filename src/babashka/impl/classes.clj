@@ -75,6 +75,7 @@
                       java.util.Base64
                       java.util.Base64$Decoder
                       java.util.Base64$Encoder
+                      java.util.UUID
                       java.util.zip.InflaterInputStream
                       java.util.zip.DeflaterInputStream
                       java.util.zip.GZIPInputStream
