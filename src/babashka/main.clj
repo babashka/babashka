@@ -134,9 +134,10 @@
   (println (str "babashka v"(str/trim (slurp (io/resource "BABASHKA_VERSION"))))))
 
 (def usage-string "Usage: bb [ -i | -I ] [ -o | -O ] [ --stream ] [--verbose]
-          [ ( --classpath | -cp ) <cp> ] [ ( --main | -m ) <main-namespace> ]
-          ( -e <expression> | -f <file> | --repl | --socket-repl [<host>:]<port> )
-          [ --uberscript <file> ] [ arg* ]")
+          [ ( --classpath | -cp ) <cp> ] [ --uberscript <file> ]
+          [ ( --main | -m ) <main-namespace> | -e <expression> | -f <file> |
+            --repl | --socket-repl [<host>:]<port> ]
+          [ arg* ]")
 (defn print-usage []
   (println usage-string))
 
@@ -150,17 +151,19 @@
   (println "
   --help, -h or -?    Print this help text.
   --version           Print the current version of babashka.
+
   -i                  Bind *input* to a lazy seq of lines from stdin.
   -I                  Bind *input* to a lazy seq of EDN values from stdin.
   -o                  Write lines to stdout.
   -O                  Write EDN values to stdout.
   --verbose           Print entire stacktrace in case of exception.
   --stream            Stream over lines or EDN values from stdin. Combined with -i or -I *input* becomes a single value per iteration.
+  --uberscript <file> Collect preloads, -e, -f and -m and all required namespaces from the classpath into a single executable file.
+
   -e, --eval <expr>   Evaluate an expression.
   -f, --file <path>   Evaluate a file.
   -cp, --classpath    Classpath to use.
   -m, --main <ns>     Call the -main function from namespace with args.
-  --uberscript <file> Collect preloads, -e, -f and -m and all required namespaces from the classpath into a single executable file.
   --repl              Start REPL
   --socket-repl       Start socket REPL. Specify port (e.g. 1666) or host and port separated by colon (e.g. 127.0.0.1:1666).
   --time              Print execution time before exiting.
@@ -330,9 +333,13 @@ Everything after that is bound to *command-line-args*."))
               file (try [(read-file file) nil]
                         (catch Exception e
                           (error-handler* e verbose?))))
-        expression (str (when preloads
-                          (str preloads "\n"))
-                        expression)
+        exit-code
+        ;; handle preloads
+        (if exit-code exit-code
+            (do (when preloads (try (eval-string* sci-ctx preloads)
+                                    (catch Throwable e
+                                      (error-handler* e verbose?))))
+                nil))
         exit-code
         (or exit-code
             (sci/with-bindings {reflection-var false}
@@ -346,7 +353,7 @@ Everything after that is bound to *command-line-args*."))
                       [(print-help) 0]
                       repl [(repl/start-repl! sci-ctx) 0]
                       socket-repl [(start-socket-repl! socket-repl sci-ctx) 0]
-                      expression
+                      (not (str/blank? expression))
                       (try
                         (loop [in (read-next *in*)]
                           (let [_ (swap! env update-in [:namespaces 'user]
@@ -371,6 +378,7 @@ Everything after that is bound to *command-line-args*."))
                                   res)))))
                         (catch Throwable e
                           (error-handler* e verbose?)))
+                      uberscript [nil 0]
                       :else [(repl/start-repl! sci-ctx) 0]))
                1)))
         t1 (System/currentTimeMillis)]
@@ -381,8 +389,8 @@ Everything after that is bound to *command-line-args*."))
         (spit uberscript-out "") ;; reset file
         (doseq [s @uberscript-sources]
           (spit uberscript-out s :append true))
-        (spit uberscript-out expression :append true)
-        (spit uberscript-out file :append true)))
+        (spit uberscript-out preloads :append true)
+        (spit uberscript-out expression :append true)))
     (when time? (binding [*out* *err*]
                   (println "bb took" (str (- t1 t0) "ms."))))
     exit-code))
