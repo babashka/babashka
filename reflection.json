@@ -9,6 +9,11 @@
   "allPublicFields" : true,
   "allPublicConstructors" : true
 }, {
+  "name" : "clojure.lang.IObj",
+  "allPublicMethods" : true,
+  "allPublicFields" : true,
+  "allPublicConstructors" : true
+}, {
   "name" : "clojure.lang.LineNumberingPushbackReader",
   "allPublicMethods" : true,
   "allPublicFields" : true,

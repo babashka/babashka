@@ -6,6 +6,7 @@
 (def classes
   {:default-classes '[clojure.lang.Delay
                       clojure.lang.ExceptionInfo
+                      clojure.lang.IObj
                       clojure.lang.LineNumberingPushbackReader
                       java.io.BufferedReader
                       java.io.BufferedWriter
