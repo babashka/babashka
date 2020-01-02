@@ -414,6 +414,11 @@
   "allPublicFields" : true,
   "allPublicConstructors" : true
 }, {
+  "name" : "sun.net.www.http.PosterOutputStream",
+  "allPublicMethods" : true,
+  "allPublicFields" : true,
+  "allPublicConstructors" : true
+}, {
   "name" : "sun.net.www.protocol.http.HttpURLConnection",
   "allPublicMethods" : true,
   "allPublicFields" : true,
