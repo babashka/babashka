@@ -12,4 +12,5 @@
    'deliver deliver
    'shutdown-agents shutdown-agents
    'slurp slurp
-   'spit spit})
+   'spit spit
+   'Throwable->map Throwable->map})
