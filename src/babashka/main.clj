@@ -8,7 +8,7 @@
    [babashka.impl.clojure.core :refer [core-extras]]
    [babashka.impl.clojure.java.io :refer [io-namespace]]
    [babashka.impl.clojure.java.shell :refer [shell-namespace]]
-   [babashka.impl.clojure.stacktrace :refer [print-stack-trace]]
+   [babashka.impl.clojure.stacktrace :refer [stacktrace-namespace print-stack-trace]]
    [babashka.impl.csv :as csv]
    [babashka.impl.pipe-signal-handler :refer [handle-pipe! pipe-signal-received?]]
    [babashka.impl.repl :as repl]
@@ -228,7 +228,8 @@ Everything after that is bound to *command-line-args*."))
    'clojure.java.io io-namespace
    'clojure.core.async async-namespace
    'clojure.data.csv csv/csv-namespace
-   'cheshire.core cheshire-core-namespace})
+   'cheshire.core cheshire-core-namespace
+   'clojure.stacktrace stacktrace-namespace})
 
 (def bindings
   {'java.lang.System/exit exit ;; override exit, so we have more control
