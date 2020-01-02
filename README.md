@@ -575,7 +575,8 @@ A minimal test framework compatible with babashka.
 
 #### [medley](https://github.com/borkdude/medley/)
 
-A fork of [medley](https://github.com/weavejester/medley) made compatible with babashka.
+A fork of [medley](https://github.com/weavejester/medley) made compatible with
+babashka. Requires `bb` >= v0.0.58.
 
 #### [clj-http-lite](https://github.com/borkdude/clj-http-lite)
 
