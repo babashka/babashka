@@ -79,3 +79,10 @@
    (when-let [cause (.getCause tr)]
      (print "Caused by: " )
      (recur cause n))))
+
+(def stacktrace-namespace
+  {'root-cause root-cause
+   'print-trace-element print-trace-element
+   'print-throwable print-throwable
+   'print-stack-trace print-stack-trace
+   'print-cause-trace print-cause-trace})
