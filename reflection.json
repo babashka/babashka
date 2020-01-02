@@ -9,12 +9,27 @@
   "allPublicFields" : true,
   "allPublicConstructors" : true
 }, {
+  "name" : "clojure.lang.IEditableCollection",
+  "allPublicMethods" : true,
+  "allPublicFields" : true,
+  "allPublicConstructors" : true
+}, {
   "name" : "clojure.lang.IObj",
   "allPublicMethods" : true,
   "allPublicFields" : true,
   "allPublicConstructors" : true
 }, {
   "name" : "clojure.lang.LineNumberingPushbackReader",
+  "allPublicMethods" : true,
+  "allPublicFields" : true,
+  "allPublicConstructors" : true
+}, {
+  "name" : "clojure.lang.MapEntry",
+  "allPublicMethods" : true,
+  "allPublicFields" : true,
+  "allPublicConstructors" : true
+}, {
+  "name" : "clojure.lang.PersistentQueue",
   "allPublicMethods" : true,
   "allPublicFields" : true,
   "allPublicConstructors" : true
@@ -130,6 +145,11 @@
   "allPublicConstructors" : true
 }, {
   "name" : "java.lang.System",
+  "allPublicMethods" : true,
+  "allPublicFields" : true,
+  "allPublicConstructors" : true
+}, {
+  "name" : "java.lang.Throwable",
   "allPublicMethods" : true,
   "allPublicFields" : true,
   "allPublicConstructors" : true

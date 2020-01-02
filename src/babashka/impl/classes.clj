@@ -7,7 +7,10 @@
   {:default-classes '[clojure.lang.Delay
                       clojure.lang.ExceptionInfo
                       clojure.lang.IObj
+                      clojure.lang.IEditableCollection
                       clojure.lang.LineNumberingPushbackReader
+                      clojure.lang.MapEntry
+                      clojure.lang.PersistentQueue
                       java.io.BufferedReader
                       java.io.BufferedWriter
                       java.io.ByteArrayInputStream
@@ -29,6 +32,7 @@
                       java.util.concurrent.LinkedBlockingQueue
                       java.lang.String
                       java.lang.System
+                      java.lang.Throwable
                       java.lang.Process
                       java.lang.UNIXProcess
                       java.lang.UNIXProcess$ProcessPipeOutputStream

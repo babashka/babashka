@@ -13,4 +13,5 @@
    'shutdown-agents shutdown-agents
    'slurp slurp
    'spit spit
-   'Throwable->map Throwable->map})
+   'Throwable->map Throwable->map
+   'compare-and-set! compare-and-set!})
