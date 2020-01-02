@@ -416,12 +416,23 @@ $ deps.clj -A:my-script -Scommand "bb -cp {{classpath}} {{main-opts}}"
 Hello from gist script!
 ```
 
-Create this alias for brevity:
+Create these aliases for brevity:
 
 ``` shell
+$ alias bbk='deps.clj -Scommand "bb -cp {{classpath}} {{main-opts}}"'
 $ alias babashka='deps.clj -Scommand "rlwrap bb -cp {{classpath}} {{main-opts}}"'
-$ babashka -A:my-script
+$ bbk -A:my-script
 Hello from gist script!
+$ babashka
+Babashka v0.0.58 REPL.
+Use :repl/quit or :repl/exit to quit the REPL.
+Clojure rocks, Bash reaches.
+
+user=> (require '[my-gist-script :as mgs])
+nil
+user=> (mgs/-main)
+Hello from gist script!
+nil
 ```
 
 ## Uberscript
