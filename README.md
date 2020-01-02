@@ -407,11 +407,23 @@ $ bb "(my-gist-script/-main)"
 Hello from gist script!
 ```
 
+### Deps.clj
+
 Using the [deps.clj](https://github.com/borkdude/deps.clj/) script, you can also
 pass the classpath and main opts to `bb`:
 
 ``` shell
 $ deps.clj -A:my-script -Scommand "bb -cp {{classpath}} {{main-opts}}"
+Hello from gist script!
+```
+
+#### Alias
+
+Create an alias when you need to this often:
+
+``` shell
+$ alias babashka='deps.clj -Scommand "rlwrap bb -cp {{classpath}} {{main-opts}}"'
+$ babashka -A:my-script
 Hello from gist script!
 ```
 
