@@ -180,6 +180,7 @@ enumerated explicitly.
 - [`clojure.core.async`](https://clojure.github.io/core.async/) aliased as
   `async`. The `alt` and `go` macros are not available but `alts!!` does work as
   it is a function.
+- `clojure.stacktrace`
 - [`clojure.tools.cli`](https://github.com/clojure/tools.cli) aliased as `tools.cli`
 - [`clojure.data.csv`](https://github.com/clojure/data.csv) aliased as `csv`
 - [`cheshire.core`](https://github.com/dakrone/cheshire) aliased as `json`
