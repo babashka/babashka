@@ -50,6 +50,7 @@
                       java.nio.file.Paths
                       java.nio.file.StandardCopyOption
                       java.nio.file.attribute.FileAttribute
+                      java.nio.file.attribute.FileTime
                       java.nio.file.attribute.PosixFilePermission
                       java.nio.file.attribute.PosixFilePermissions
                       java.time.format.DateTimeFormatter
@@ -77,6 +78,7 @@
                       java.util.Base64$Decoder
                       java.util.Base64$Encoder
                       java.util.UUID
+                      java.util.concurrent.TimeUnit
                       java.util.zip.InflaterInputStream
                       java.util.zip.DeflaterInputStream
                       java.util.zip.GZIPInputStream
