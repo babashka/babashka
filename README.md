@@ -409,17 +409,14 @@ Hello from gist script!
 
 ### Deps.clj
 
-Using the [deps.clj](https://github.com/borkdude/deps.clj/) script, you can also
-pass the classpath and main opts to `bb`:
+The [`deps.clj`](https://github.com/borkdude/deps.clj/) script can be used to work with `deps.edn`-based projects:
 
 ``` shell
 $ deps.clj -A:my-script -Scommand "bb -cp {{classpath}} {{main-opts}}"
 Hello from gist script!
 ```
 
-#### Alias
-
-Create an alias when you need to this often:
+Create this alias for brevity:
 
 ``` shell
 $ alias babashka='deps.clj -Scommand "rlwrap bb -cp {{classpath}} {{main-opts}}"'
