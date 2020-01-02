@@ -420,7 +420,7 @@ Create these aliases for brevity:
 
 ``` shell
 $ alias bbk='deps.clj -Scommand "bb -cp {{classpath}} {{main-opts}}"'
-$ alias babashka='deps.clj -Scommand "rlwrap bb -cp {{classpath}} {{main-opts}}"'
+$ alias babashka='rlwrap deps.clj -Scommand "bb -cp {{classpath}} {{main-opts}}"'
 $ bbk -A:my-script
 Hello from gist script!
 $ babashka
