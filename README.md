@@ -573,6 +573,10 @@ Clojure / babashka.
 
 A minimal test framework compatible with babashka.
 
+#### [medley](https://github.com/borkdude/medley/)
+
+A fork of [medley](https://github.com/weavejester/medley) made compatible with babashka.
+
 #### [clj-http-lite](https://github.com/borkdude/clj-http-lite)
 
 This fork does not depend on any other libraries. Example:
