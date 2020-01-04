@@ -11,7 +11,7 @@ jobs:
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
-      # GRAALVM_HOME: /home/circleci/graalvm-ce-java8-19.3.0
+      BABASHKA_PLATFORM: linux # could be used in jar name
     steps:
       - checkout
       - run:
@@ -52,7 +52,7 @@ jobs:
             mkdir -p /tmp/release
             lein do clean, uberjar
             VERSION=$(cat resources/BABASHKA_VERSION)
-            cp target/babashka-$VERSION-standalone.jar /tmp/release
+            cp target/babashka-$VERSION-linux-standalone.jar /tmp/release
       - store_artifacts:
           path: /tmp/release
           destination: release
@@ -115,6 +115,7 @@ jobs:
           name: Run tests
           command: |
             script/test
+            script/clj_http_lite_test
       # - run:
       #     name: Performance report
       #     command: |
@@ -178,6 +179,7 @@ jobs:
           name: Run tests
           command: |
             script/test
+            script/clj_http_lite_test
       # - run:
       #     name: Performance report
       #     command: |

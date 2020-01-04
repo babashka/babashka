@@ -307,6 +307,7 @@ Everything after that is bound to *command-line-args*."))
                         Integer java.lang.Integer
                         File java.io.File
                         Math java.lang.Math
+                        Object java.lang.Object
                         ProcessBuilder java.lang.ProcessBuilder
                         String java.lang.String
                         System java.lang.System

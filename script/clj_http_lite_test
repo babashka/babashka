@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+export BABASHKA_CLASSPATH=$(clojure -Sdeps '{:deps {clj-http-lite {:git/url "https://github.com/borkdude/clj-http-lite" :sha "f44ebe45446f0f44f2b73761d102af3da6d0a13e"}}}' -Spath)
+
+./bb -e "
+(require '[clj-http.lite.client :as client])
+
+(prn (:status (client/get \"https://www.clojure.org\")))
+
+(prn (:status (client/get \"https://postman-echo.com/get?foo1=bar1&foo2=bar2\")))
+
+(prn (:status (client/post \"https://postman-echo.com/post\")))
+
+(prn (:status (client/put \"https://postman-echo.com/put\")))
+"
