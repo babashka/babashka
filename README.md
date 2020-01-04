@@ -655,7 +655,16 @@ You need [Leiningen](https://leiningen.org/), and for building binaries you need
 
 `lein repl` will get you a standard REPL/nREPL connection. To work on tests use `lein with-profiles +test repl`.
 
-### Generate reflection.json file
+### Adding classes
+
+Add necessary classes to `babashka/impl/classes.clj`.  For every addition, write
+a unit test, so it's clear why it is added and removing it will break the
+tests. Try to reduce the size of the binary by only adding the necessary parts
+of a class in `:instance-check`, `:constructors`, `:methods`, `:fields` or
+`:custom`.
+
+The `reflection.json` file that is needed for GraalVM compilation is generated
+with:
 
     lein with-profiles +reflection run
 
