@@ -25,9 +25,9 @@
    [sci.impl.interpreter :refer [eval-string*]])
   (:gen-class))
 
-(sci.impl.vars/bindRoot sci/in *in*)
-(sci.impl.vars/bindRoot sci/out *out*)
-(sci.impl.vars/bindRoot sci/err *err*)
+(sci/alter-var-root sci/in (constantly *in*))
+(sci/alter-var-root sci/out (constantly *out*))
+(sci/alter-var-root sci/err (constantly *err*))
 
 (set! *warn-on-reflection* true)
 ;; To detect problems when generating the image, run:
