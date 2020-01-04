@@ -328,6 +328,12 @@
   (is (true? (bb nil "(nil? *command-line-args*)")))
   (is (= ["1" "2" "3"] (bb nil "*command-line-args*" "1" "2" "3"))))
 
+(deftest need-constructors-test
+  (testing "the clojure.lang.Delay constructor works"
+    (is (= 1 (bb nil "@(delay 1)"))))
+  (testing "the clojure.lang.MapEntry constructor works"
+    (is (true? (bb nil "(= (first {1 2}) (clojure.lang.MapEntry. 1 2))")))))
+
 ;;;; Scratch
 
 (comment

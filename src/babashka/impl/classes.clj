@@ -91,19 +91,18 @@
               java.util.zip.GZIPInputStream
               java.util.zip.GZIPOutputStream
               ]
-        :constructors []
+        :constructors [clojure.lang.Delay
+                       clojure.lang.MapEntry
+                       clojure.lang.LineNumberingPushbackReader]
         :methods [borkdude.graal.LockFix ;; support for locking
                   sun.net.www.http.PosterOutputStream ;; support for clj-http-lite
                   sun.net.www.protocol.https.HttpsURLConnectionImpl ;; support for clj-http-lite
                   sun.net.www.protocol.http.HttpURLConnection$HttpInputStream ;; support for clj-http-lite
                   ]
         :fields [clojure.lang.PersistentQueue]
-        :instance-checks [clojure.lang.Delay
-                          clojure.lang.ExceptionInfo
+        :instance-checks [clojure.lang.ExceptionInfo
                           clojure.lang.IObj
-                          clojure.lang.IEditableCollection
-                          clojure.lang.LineNumberingPushbackReader
-                          clojure.lang.MapEntry]
+                          clojure.lang.IEditableCollection]
         :custom {clojure.lang.LineNumberingPushbackReader {:allPublicConstructors true
                                                            :allPublicMethods true}
                  java.lang.Thread
