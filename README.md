@@ -61,7 +61,7 @@ on [CHANGES.md](CHANGES.md) for a list of breaking changes.
 
 ``` shellsession
 $ ls | bb -i '*input*'
-["LICENSE" "README.md" "bb" "doc" "pom.xml" "project.clj" "reflection.json" "resources" "script" "src" "target" "test"]
+["LICENSE" "README.md" "bb" "doc" "pom.xml" "project.clj" "resources" "script" "src" "target" "test"]
 
 $ ls | bb -i '(count *input*)'
 12
@@ -75,8 +75,8 @@ $ bb '(filterv :foo *input*)' <<< '[{:foo 1} {:bar 2}]'
 $ bb '(#(+ %1 %2 %3) 1 2 *input*)' <<< 3
 6
 
-$ ls | bb -i '(filterv #(re-find #"reflection" %) *input*)'
-["reflection.json"]
+$ ls | bb -i '(filterv #(re-find #"README" %) *input*)'
+["README.md"]
 
 $ bb '(run! #(shell/sh "touch" (str "/tmp/test/" %)) (range 100))'
 $ ls /tmp/test | bb -i '*input*'
@@ -185,7 +185,7 @@ enumerated explicitly.
 - [`clojure.data.csv`](https://github.com/clojure/data.csv) aliased as `csv`
 - [`cheshire.core`](https://github.com/dakrone/cheshire) aliased as `json`
 
-A selection of java classes are available, see `reflection.json`.
+A selection of java classes are available, see `babashka/impl/classes.clj`.
 
 Babashka supports `import`: `(import clojure.lang.ExceptionInfo)`.
 
