@@ -13,6 +13,7 @@
                  [org.clojure/tools.reader "1.3.2"]
                  [borkdude/edamame "0.0.10-alpha.2"]
                  [borkdude/graal.locking "0.0.2"]
+                 [borkdude/sci.impl.reflector "0.0.1-SNAPSHOT"]
                  [org.clojure/core.async "0.4.500"]
                  [org.clojure/tools.cli "0.4.2"]
                  [org.clojure/data.csv "0.1.4"]
