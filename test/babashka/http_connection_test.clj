@@ -10,7 +10,7 @@
 (deftest open-connection-test
   (is (= "\"1\"" (str/trim (bb "-e" "
 (require '[cheshire.core :as json])
-(let [conn (.openConnection (java.net.URL. \"https://postman-echo.com/get?foo=1\"))]
+(let [conn ^java.net.HttpURLConnection (.openConnection (java.net.URL. \"https://postman-echo.com/get?foo=1\"))]
   (.setConnectTimeout conn 1000)
   (.setRequestProperty conn \"Content-Type\" \"application/json\") ;; nonsensical, but to test if this method exists
   (.connect conn)
