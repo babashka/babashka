@@ -89,15 +89,11 @@
               java.util.zip.InflaterInputStream
               java.util.zip.DeflaterInputStream
               java.util.zip.GZIPInputStream
-              java.util.zip.GZIPOutputStream
-              ]
+              java.util.zip.GZIPOutputStream]
         :constructors [clojure.lang.Delay
                        clojure.lang.MapEntry
                        clojure.lang.LineNumberingPushbackReader]
         :methods [borkdude.graal.LockFix ;; support for locking
-                  sun.net.www.http.PosterOutputStream ;; support for clj-http-lite
-                  sun.net.www.protocol.https.HttpsURLConnectionImpl ;; support for clj-http-lite
-                  sun.net.www.protocol.http.HttpURLConnection$HttpInputStream ;; support for clj-http-lite
                   ]
         :fields [clojure.lang.PersistentQueue]
         :instance-checks [clojure.lang.ExceptionInfo
