@@ -8,6 +8,7 @@
    [babashka.impl.clojure.core :refer [core-extras]]
    [babashka.impl.clojure.java.io :refer [io-namespace]]
    [babashka.impl.clojure.java.shell :refer [shell-namespace]]
+   [babashka.impl.clojure.main :refer [demunge]]
    [babashka.impl.clojure.stacktrace :refer [stacktrace-namespace print-stack-trace]]
    [babashka.impl.csv :as csv]
    [babashka.impl.pipe-signal-handler :refer [handle-pipe! pipe-signal-received?]]
@@ -20,9 +21,9 @@
    [clojure.string :as str]
    [sci.addons :as addons]
    [sci.core :as sci]
+   [sci.impl.interpreter :refer [eval-string*]]
    [sci.impl.opts :as sci-opts]
-   [sci.impl.vars :as vars]
-   [sci.impl.interpreter :refer [eval-string*]])
+   [sci.impl.vars :as vars])
   (:gen-class))
 
 (sci/alter-var-root sci/in (constantly *in*))
@@ -229,7 +230,9 @@ Everything after that is bound to *command-line-args*."))
    'clojure.core.async async-namespace
    'clojure.data.csv csv/csv-namespace
    'cheshire.core cheshire-core-namespace
-   'clojure.stacktrace stacktrace-namespace})
+   'clojure.stacktrace stacktrace-namespace
+   'clojure.main {'demunge demunge}
+   'clojure.repl {'demunge demunge}})
 
 (def bindings
   {'java.lang.System/exit exit ;; override exit, so we have more control

@@ -17,6 +17,12 @@
     babashka.impl.clojure.main
   (:refer-clojure :exclude [with-bindings]))
 
+(defn demunge
+  "Given a string representation of a fn class,
+  as in a stack trace element, returns a readable version."
+  [fn-name]
+  (clojure.lang.Compiler/demunge fn-name))
+
 (defmacro with-bindings
   "Executes body in the context of thread-local bindings for several vars
   that often need to be set!: *ns* *warn-on-reflection* *math-context*
