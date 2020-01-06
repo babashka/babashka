@@ -832,6 +832,12 @@ jet --pretty > deps.edn
 
 See [examples/pst.clj](https://github.com/borkdude/babashka/blob/master/examples/pst.clj)
 
+### Tiny http server
+
+See [examples/http_server.clj](https://github.com/borkdude/babashka/blob/master/examples/http_server.clj)
+
+Original by [@souenzzo](https://gist.github.com/souenzzo/a959a4c5b8c0c90df76fe33bb7dfe201)
+
 ## Thanks
 
 - [adgoji](https://www.adgoji.com/) for financial support
