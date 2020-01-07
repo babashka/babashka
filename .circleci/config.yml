@@ -115,8 +115,7 @@ jobs:
           name: Run tests
           command: |
             script/test
-            script/clj_http_lite_test
-            script/deps_clj_test
+            script/run_lib_tests
       # - run:
       #     name: Performance report
       #     command: |
@@ -180,8 +179,7 @@ jobs:
           name: Run tests
           command: |
             script/test
-            script/clj_http_lite_test
-            script/deps_clj_test
+            script/run_lib_tests
       # - run:
       #     name: Performance report
       #     command: |
