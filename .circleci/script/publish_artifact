@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+channel="#babashka_circleci_builds"
+text="[$BABASHKA_PLATFORM - $CIRCLE_BRANCH@$CIRCLE_SHA1]: https://$CIRCLE_BUILD_NUM-201467090-gh.circle-artifacts.com/0/release/babashka-0.0.61-SNAPSHOT-$BABASHKA_PLATFORM-amd64.zip"
+curl -X POST -H "Content-Type: application/json" -d '{"username":"borkdude", "channel":'\""$channel\""', "text":'"\"$text\""'}' $SLACK_HOOK_URL
