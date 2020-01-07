@@ -163,7 +163,7 @@
                             {:name "toExternalForm"}
                             {:name "toString"}
                             {:name "toURI"}]}}}
-    unix-like? (->
+    false #_unix-like? (->
                 (update :methods conj 'sun.nio.fs.UnixPath)
                 (update :all conj
                         'java.lang.UNIXProcess
