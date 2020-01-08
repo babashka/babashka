@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+export BABASHKA_CLASSPATH=$(clojure -Sdeps '{:deps {spartan.spec {:git/url "https://github.com/borkdude/spartan.spec" :sha "16f7eec4b6589c77c96c9fcf989f78fffcee7c4c"}}}' -Spath)
+
+./bb -e "
+(require '[spartan.spec :as s])
+(s/explain (s/cat :i int? :s string?) [1 :foo])
+(s/conform (s/cat :i int? :s string?) [1 \"foo\"])
+"

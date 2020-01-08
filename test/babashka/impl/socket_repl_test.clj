@@ -5,7 +5,8 @@
    [clojure.java.shell :refer [sh]]
    [clojure.string :as str]
    [clojure.test :as t :refer [deftest is testing]]
-   [clojure.java.io :as io]))
+   [clojure.java.io :as io]
+   [sci.impl.opts :refer [init]]))
 
 (set! *warn-on-reflection* true)
 
@@ -31,13 +32,10 @@
 (deftest socket-repl-test
   (try
     (if tu/jvm?
-      (start-repl! "0.0.0.0:1666" {:bindings {(with-meta '*input*
-                                                {:sci.impl/deref! true})
-                                              (delay [1 2 3])
-                                              '*command-line-args*
-                                              ["a" "b" "c"]}
-                                   :env (atom {})
-                                   :features #{:bb}})
+      (start-repl! "0.0.0.0:1666" (init {:bindings {'*command-line-args*
+                                                    ["a" "b" "c"]}
+                                         :env (atom {})
+                                         :features #{:bb}}))
       (future
         (sh "bash" "-c"
             "echo '[1 2 3]' | ./bb --socket-repl 0.0.0.0:1666 a b c")))
@@ -47,8 +45,6 @@
                           (sh "bash" "-c"
                               "lsof -t -i:1666"))))))
     (is (socket-command "(+ 1 2 3)" "user=> 6"))
-    (testing "*input*"
-      (is (socket-command "*input*" "[1 2 3]")))
     (testing "*command-line-args*"
       (is (socket-command '*command-line-args* "\"a\" \"b\" \"c\"")))
     (testing "&env"

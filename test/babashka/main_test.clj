@@ -21,15 +21,15 @@
 
   (testing "distinguish automatically between expression or file name"
     (is (= {:expression "(println 123)"
-            :command-line-args []}
+            :command-line-args nil}
            (main/parse-opts ["(println 123)"])))
 
     (is (= {:file "src/babashka/main.clj"
-            :command-line-args []}
+            :command-line-args nil}
            (main/parse-opts ["src/babashka/main.clj"])))
 
     (is (= {:expression "does-not-exist"
-            :command-line-args []}
+            :command-line-args nil}
            (main/parse-opts ["does-not-exist"])))))
 
 (deftest main-test
@@ -169,8 +169,10 @@
 (deftest process-builder-test
   (is (str/includes? (bb nil "
 (def ls (-> (ProcessBuilder. [\"ls\"]) (.start)))
+(def input (.getOutputStream ls))
+(.write (io/writer input) \"hello\") ;; dummy test just to see if this works
 (def output (.getInputStream ls))
-(.waitFor ls)
+(assert (int? (.waitFor ls)))
 (slurp output)")
                      "LICENSE")))
 
@@ -185,19 +187,14 @@
                            temp-dir-path))))))
 
 (deftest wait-for-port-test
-  (is (= :timed-out
-         (bb nil "(def ws (-> (ProcessBuilder. [\"python\" \"-m\" \"SimpleHTTPServer\" \"1777\"]) (.start)))
-                (wait/wait-for-port \"127.0.0.1\" 1777)
-                (.destroy ws)
-                (.waitFor ws)
-                (wait/wait-for-port \"localhost\" 1777 {:default :timed-out :timeout 50})")))
-  (is (int? (bb nil "
-(require '[babashka.wait :as wait])
-(def ws (-> (ProcessBuilder. [\"python\" \"-m\" \"SimpleHTTPServer\" \"1777\"]) (.start)))
-(wait/wait-for-port \"localhost\" 1777)
-(slurp \"http://localhost:1777\")
-(.destroy ws)
-(.waitFor ws)"))))
+  (let [server (test-utils/start-server! 1777)]
+    (is (= 1777 (:port (bb nil "(wait/wait-for-port \"127.0.0.1\" 1777)"))))
+    (test-utils/stop-server! server)
+    (is (= :timed-out (bb nil "(wait/wait-for-port \"127.0.0.1\" 1777 {:default :timed-out :timeout 50})"))))
+  (let [edn (bb nil (io/file "test" "babashka" "scripts" "socket_server.bb"))]
+    (is (= "127.0.0.1" (:host edn)))
+    (is (=  1777 (:port edn)))
+    (is (number? (:took edn)))))
 
 (deftest wait-for-path-test
   (let [temp-dir-path (System/getProperty "java.io.tmpdir")]
@@ -286,8 +283,8 @@
         f2 (.toFile p')]
     (bb nil (format
              "(let [f (io/file \"%s\")
-                     p (.toPath (io/file f))
-                     p' (.resolveSibling p \"f2\")]
+                    p (.toPath (io/file f))
+                    p' (.resolveSibling p \"f2\")]
                 (.delete (.toFile p'))
                 (dotimes [_ 2]
                   (try
@@ -314,6 +311,30 @@
 (deftest dynvar-test
   (is (= 1 (bb nil "(binding [*command-line-args* 1] *command-line-args*)")))
   (is (= 1 (bb nil "(binding [*input* 1] *input*)"))))
+
+(deftest file-in-error-msg-test
+  (is (thrown-with-msg? Exception #"error.bb"
+                        (bb nil (.getPath (io/file "test" "babashka" "scripts" "error.bb"))))))
+
+(deftest compatibility-test
+  (is (true? (bb nil "(set! *warn-on-reflection* true)"))))
+
+(deftest clojure-main-repl-test
+  (is (= "\"> foo!\\nnil\\n> \"\n" (test-utils/bb nil "
+(defn foo [] (println \"foo!\"))
+(with-out-str
+  (with-in-str \"(foo)\"
+    (clojure.main/repl :init (fn []) :prompt (fn [] (print \"> \")))))"))))
+
+(deftest command-line-args-test
+  (is (true? (bb nil "(nil? *command-line-args*)")))
+  (is (= ["1" "2" "3"] (bb nil "*command-line-args*" "1" "2" "3"))))
+
+(deftest need-constructors-test
+  (testing "the clojure.lang.Delay constructor works"
+    (is (= 1 (bb nil "@(delay 1)"))))
+  (testing "the clojure.lang.MapEntry constructor works"
+    (is (true? (bb nil "(= (first {1 2}) (clojure.lang.MapEntry. 1 2))")))))
 
 ;;;; Scratch
 

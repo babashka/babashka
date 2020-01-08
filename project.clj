@@ -8,10 +8,13 @@
   :license {:name "Eclipse Public License 1.0"
             :url "http://opensource.org/licenses/eclipse-1.0.php"}
   :source-paths ["src" "sci/src"]
+  :java-source-paths ["sci/src-java"]
   :resource-paths ["resources" "sci/resources"]
   :dependencies [[org.clojure/clojure "1.10.1"]
                  [org.clojure/tools.reader "1.3.2"]
-                 [borkdude/edamame "0.0.10-alpha.2"]
+                 [borkdude/edamame "0.0.10-alpha.4"]
+                 [borkdude/graal.locking "0.0.2"]
+                 [borkdude/sci.impl.reflector "0.0.1-jdk11"]
                  [org.clojure/core.async "0.4.500"]
                  [org.clojure/tools.cli "0.4.2"]
                  [org.clojure/data.csv "0.1.4"]
@@ -22,8 +25,6 @@
                                   "-Dclojure.spec.skip-macros=true"]
                        :main babashka.main
                        :aot :all}
-             :compile-java {;; :javac-options ["-Xlint:unchecked"]
-                            :java-source-paths ["src-java"]}
              :reflection {:main babashka.impl.classes/generate-reflection-file}}
   :aliases {"bb" ["run" "-m" "babashka.main"]}
   :deploy-repositories [["clojars" {:url "https://clojars.org/repo"

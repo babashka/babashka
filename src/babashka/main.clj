@@ -7,23 +7,28 @@
    [babashka.impl.classpath :as cp]
    [babashka.impl.clojure.core :refer [core-extras]]
    [babashka.impl.clojure.java.io :refer [io-namespace]]
-   [babashka.impl.clojure.stacktrace :refer [print-stack-trace]]
+   [babashka.impl.clojure.java.shell :refer [shell-namespace]]
+   [babashka.impl.clojure.main :refer [demunge]]
+   [babashka.impl.clojure.stacktrace :refer [stacktrace-namespace print-stack-trace]]
    [babashka.impl.csv :as csv]
    [babashka.impl.pipe-signal-handler :refer [handle-pipe! pipe-signal-received?]]
    [babashka.impl.repl :as repl]
    [babashka.impl.socket-repl :as socket-repl]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
-   [babashka.impl.utils :refer [eval-string]]
    [babashka.wait :as wait]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
-   [clojure.java.shell :as shell]
    [clojure.string :as str]
    [sci.addons :as addons]
    [sci.core :as sci]
-   [sci.impl.vars :as vars]
-   [sci.impl.namespaces :as sci-namespaces])
+   [sci.impl.interpreter :refer [eval-string*]]
+   [sci.impl.opts :as sci-opts]
+   [sci.impl.vars :as vars])
   (:gen-class))
+
+(sci/alter-var-root sci/in (constantly *in*))
+(sci/alter-var-root sci/out (constantly *out*))
+(sci/alter-var-root sci/err (constantly *err*))
 
 (set! *warn-on-reflection* true)
 ;; To detect problems when generating the image, run:
@@ -33,77 +38,83 @@
 (defn parse-opts [options]
   (let [opts (loop [options options
                     opts-map {}]
-               (if-let [opt (first options)]
-                 (case opt
-                   ("--version") {:version true}
-                   ("--help" "-h" "-?") {:help? true}
-                   ("--verbose")(recur (rest options)
+               (if options
+                 (let [opt (first options)]
+                   (case opt
+                     ("--version") {:version true}
+                     ("--help" "-h" "-?") {:help? true}
+                     ("--verbose")(recur (next options)
+                                         (assoc opts-map
+                                                :verbose? true))
+                     ("--stream") (recur (next options)
+                                         (assoc opts-map
+                                                :stream? true))
+                     ("--time") (recur (next options)
                                        (assoc opts-map
-                                              :verbose? true))
-                   ("--stream") (recur (rest options)
-                                       (assoc opts-map
-                                              :stream? true))
-                   ("--time") (recur (rest options)
-                                     (assoc opts-map
-                                            :time? true))
-                   ("-i") (recur (rest options)
-                                 (assoc opts-map
-                                        :shell-in true))
-                   ("-I") (recur (rest options)
-                                 (assoc opts-map
-                                        :edn-in true))
-                   ("-o") (recur (rest options)
-                                 (assoc opts-map
-                                        :shell-out true))
-                   ("-O") (recur (rest options)
-                                 (assoc opts-map
-                                        :edn-out true))
-                   ("-io") (recur (rest options)
-                                  (assoc opts-map
-                                         :shell-in true
-                                         :shell-out true))
-                   ("-IO") (recur (rest options)
-                                  (assoc opts-map
-                                         :edn-in true
-                                         :edn-out true))
-                   ("-f" "--file")
-                   (let [options (rest options)]
-                     (recur (rest options)
-                            (assoc opts-map
-                                   :file (first options))))
-                   ("--repl")
-                   (let [options (rest options)]
-                     (recur (rest options)
-                            (assoc opts-map
-                                   :repl true)))
-                   ("--socket-repl")
-                   (let [options (rest options)]
-                     (recur (rest options)
-                            (assoc opts-map
-                                   :socket-repl (first options))))
-                   ("--eval", "-e")
-                   (let [options (rest options)]
-                     (recur (rest options)
-                            (assoc opts-map :expression (first options))))
-                   ("--classpath", "-cp")
-                   (let [options (rest options)]
-                     (recur (rest options)
-                            (assoc opts-map :classpath (first options))))
-                   ("--main", "-m")
-                   (let [options (rest options)]
-                     (recur (rest options)
-                            (assoc opts-map :main (first options))))
-                   (if (some opts-map [:file :socket-repl :expression :main])
-                     (assoc opts-map
-                            :command-line-args options)
-                     (if (and (not= \( (first (str/trim opt)))
-                              (.exists (io/file opt)))
+                                              :time? true))
+                     ("-i") (recur (next options)
+                                   (assoc opts-map
+                                          :shell-in true))
+                     ("-I") (recur (next options)
+                                   (assoc opts-map
+                                          :edn-in true))
+                     ("-o") (recur (next options)
+                                   (assoc opts-map
+                                          :shell-out true))
+                     ("-O") (recur (next options)
+                                   (assoc opts-map
+                                          :edn-out true))
+                     ("-io") (recur (next options)
+                                    (assoc opts-map
+                                           :shell-in true
+                                           :shell-out true))
+                     ("-IO") (recur (next options)
+                                    (assoc opts-map
+                                           :edn-in true
+                                           :edn-out true))
+                     ("--classpath", "-cp")
+                     (let [options (next options)]
+                       (recur (next options)
+                              (assoc opts-map :classpath (first options))))
+                     ("--uberscript")
+                     (let [options (next options)]
+                       (recur (next options)
+                              (assoc opts-map
+                                     :uberscript (first options))))
+                     ("-f" "--file")
+                     (let [options (next options)]
+                       (recur (next options)
+                              (assoc opts-map
+                                     :file (first options))))
+                     ("--repl")
+                     (let [options (next options)]
+                       (recur (next options)
+                              (assoc opts-map
+                                     :repl true)))
+                     ("--socket-repl")
+                     (let [options (next options)]
+                       (recur (next options)
+                              (assoc opts-map
+                                     :socket-repl (first options))))
+                     ("--eval", "-e")
+                     (let [options (next options)]
+                       (recur (next options)
+                              (assoc opts-map :expression (first options))))
+                     ("--main", "-m")
+                     (let [options (next options)]
+                       (recur (next options)
+                              (assoc opts-map :main (first options))))
+                     (if (some opts-map [:file :socket-repl :expression :main])
                        (assoc opts-map
-                              :file opt
-                              :command-line-args (rest options))
-                       (assoc opts-map
-                              :expression opt
-                              :command-line-args (rest options)))))
+                              :command-line-args options)
+                       (if (and (not= \( (first (str/trim opt)))
+                                (.exists (io/file opt)))
+                         (assoc opts-map
+                                :file opt
+                                :command-line-args (next options))
+                         (assoc opts-map
+                                :expression opt
+                                :command-line-args (next options))))))
                  opts-map))]
     opts))
 
@@ -124,8 +135,9 @@
   (println (str "babashka v"(str/trim (slurp (io/resource "BABASHKA_VERSION"))))))
 
 (def usage-string "Usage: bb [ -i | -I ] [ -o | -O ] [ --stream ] [--verbose]
-          [ ( --classpath | -cp ) <cp> ] [ ( --main | -m ) <main-namespace> ]
-          ( -e <expression> | -f <file> | --repl | --socket-repl [<host>:]<port> )
+          [ ( --classpath | -cp ) <cp> ] [ --uberscript <file> ]
+          [ ( --main | -m ) <main-namespace> | -e <expression> | -f <file> |
+            --repl | --socket-repl [<host>:]<port> ]
           [ arg* ]")
 (defn print-usage []
   (println usage-string))
@@ -138,21 +150,24 @@
   (println)
   (println "Options:")
   (println "
-  --help, -h or -?   Print this help text.
-  --version          Print the current version of babashka.
-  -i                 Bind *input* to a lazy seq of lines from stdin.
-  -I                 Bind *input* to a lazy seq of EDN values from stdin.
-  -o                 Write lines to stdout.
-  -O                 Write EDN values to stdout.
-  --verbose          Print entire stacktrace in case of exception.
-  --stream           Stream over lines or EDN values from stdin. Combined with -i or -I *input* becomes a single value per iteration.
-  -e, --eval <expr>  Evaluate an expression.
-  -f, --file <path>  Evaluate a file.
-  -cp, --classpath   Classpath to use.
-  -m, --main <ns>    Call the -main function from namespace with args.
-  --repl             Start REPL
-  --socket-repl      Start socket REPL. Specify port (e.g. 1666) or host and port separated by colon (e.g. 127.0.0.1:1666).
-  --time             Print execution time before exiting.
+  --help, -h or -?    Print this help text.
+  --version           Print the current version of babashka.
+
+  -i                  Bind *input* to a lazy seq of lines from stdin.
+  -I                  Bind *input* to a lazy seq of EDN values from stdin.
+  -o                  Write lines to stdout.
+  -O                  Write EDN values to stdout.
+  --verbose           Print entire stacktrace in case of exception.
+  --stream            Stream over lines or EDN values from stdin. Combined with -i or -I *input* becomes a single value per iteration.
+  --uberscript <file> Collect preloads, -e, -f and -m and all required namespaces from the classpath into a single executable file.
+
+  -e, --eval <expr>   Evaluate an expression.
+  -f, --file <path>   Evaluate a file.
+  -cp, --classpath    Classpath to use.
+  -m, --main <ns>     Call the -main function from namespace with args.
+  --repl              Start REPL
+  --socket-repl       Start socket REPL. Specify port (e.g. 1666) or host and port separated by colon (e.g. 127.0.0.1:1666).
+  --time              Print execution time before exiting.
 
 If neither -e, -f, or --socket-repl are specified, then the first argument that is not parsed as a option is treated as a file if it exists, or as an expression otherwise.
 Everything after that is bound to *command-line-args*."))
@@ -169,30 +184,21 @@ Everything after that is bound to *command-line-args*."))
   (edn/read {;;:readers *data-readers*
              :eof ::EOF} *in*))
 
-(defn load-file* [ctx f]
+(def reflection-var (sci/new-dynamic-var '*warn-on-reflection* false))
+
+(defn load-file* [sci-ctx f]
   (let [f (io/file f)
         s (slurp f)]
     (sci/with-bindings {vars/file-var (.getCanonicalPath f)}
-      (eval-string s ctx))))
+      (eval-string* sci-ctx s))))
 
-(defn eval* [ctx form]
-  (eval-string (pr-str form) ctx))
+(defn eval* [sci-ctx form]
+  (eval-string* sci-ctx (pr-str form)))
 
-(defn start-repl! [ctx read-next]
-  (let [ctx (update ctx :bindings assoc
-                    (with-meta '*input*
-                      {:sci.impl/deref! true})
-                    (sci/new-dynamic-var '*input* (read-next)))]
-    (repl/start-repl! ctx)))
-
-(defn start-socket-repl! [address ctx read-next]
-  (let [ctx (update ctx :bindings assoc
-                    (with-meta '*input*
-                      {:sci.impl/deref! true})
-                    (sci/new-dynamic-var '*input* (read-next)))]
-    (socket-repl/start-repl! address ctx)
-    ;; hang until SIGINT
-    @(promise)))
+(defn start-socket-repl! [address ctx]
+  (socket-repl/start-repl! address ctx)
+  ;; hang until SIGINT
+  @(promise))
 
 (defn exit [n]
   (throw (ex-info "" {:bb/exit-code n})))
@@ -200,6 +206,48 @@ Everything after that is bound to *command-line-args*."))
 ;; (sci/set-var-root! sci/*in* *in*)
 ;; (sci/set-var-root! sci/*out* *out*)
 ;; (sci/set-var-root! sci/*err* *err*)
+
+(def aliases
+  '{tools.cli 'clojure.tools.cli
+    edn clojure.edn
+    wait babashka.wait
+    sig babashka.signal
+    shell clojure.java.shell
+    io clojure.java.io
+    async clojure.core.async
+    csv clojure.data.csv
+    json cheshire.core})
+
+(def namespaces
+  {'clojure.tools.cli tools-cli-namespace
+   'clojure.edn {'read edn/read
+                 'read-string edn/read-string}
+   'clojure.java.shell shell-namespace
+   'babashka.wait {'wait-for-port wait/wait-for-port
+                   'wait-for-path wait/wait-for-path}
+   'babashka.signal {'pipe-signal-received? pipe-signal-received?}
+   'clojure.java.io io-namespace
+   'clojure.core.async async-namespace
+   'clojure.data.csv csv/csv-namespace
+   'cheshire.core cheshire-core-namespace
+   'clojure.stacktrace stacktrace-namespace
+   'clojure.main {'demunge demunge}
+   'clojure.repl {'demunge demunge}})
+
+(def bindings
+  {'java.lang.System/exit exit ;; override exit, so we have more control
+   'System/exit exit})
+
+(defn error-handler* [^Exception e verbose?]
+  (binding [*out* *err*]
+    (let [d (ex-data e)
+          exit-code (:bb/exit-code d)]
+      (if exit-code [nil exit-code]
+          (do (if verbose?
+                (print-stack-trace e)
+                (println (.getMessage e)))
+              (flush)
+              [nil 1])))))
 
 (defn main
   [& args]
@@ -212,7 +260,7 @@ Everything after that is bound to *command-line-args*."))
                 :expression :stream? :time?
                 :repl :socket-repl
                 :verbose? :classpath
-                :main] :as _opts}
+                :main :uberscript] :as _opts}
         (parse-opts args)
         read-next (fn [*in*]
                     (if (pipe-signal-received?)
@@ -226,6 +274,7 @@ Everything after that is bound to *command-line-args*."))
                                      (edn-seq *in*)
                                      :else
                                      (edn/read *in*))))))
+        uberscript-sources (atom ())
         env (atom {})
         classpath (or classpath
                       (System/getenv "BABASHKA_CLASSPATH"))
@@ -233,34 +282,21 @@ Everything after that is bound to *command-line-args*."))
                  (cp/loader classpath))
         load-fn (when classpath
                   (fn [{:keys [:namespace]}]
-                    (cp/source-for-namespace loader namespace)))
+                    (let [res (cp/source-for-namespace loader namespace nil)]
+                      (when uberscript (swap! uberscript-sources conj (:source res)))
+                      res)))
         _ (when file (vars/bindRoot vars/file-var (.getCanonicalPath (io/file file))))
-        ctx {:aliases '{tools.cli 'clojure.tools.cli
-                        edn clojure.edn
-                        wait babashka.wait
-                        sig babashka.signal
-                        shell clojure.java.shell
-                        io clojure.java.io
-                        async clojure.core.async
-                        csv clojure.data.csv
-                        json cheshire.core}
-             :namespaces {'clojure.core (assoc core-extras
-                                               '*command-line-args*
-                                               (sci/new-dynamic-var '*command-line-args* command-line-args)
-                                               '*file* vars/file-var)
-                          'clojure.tools.cli tools-cli-namespace
-                          'clojure.edn {'read edn/read
-                                        'read-string edn/read-string}
-                          'clojure.java.shell {'sh shell/sh}
-                          'babashka.wait {'wait-for-port wait/wait-for-port
-                                          'wait-for-path wait/wait-for-path}
-                          'babashka.signal {'pipe-signal-received? pipe-signal-received?}
-                          'clojure.java.io io-namespace
-                          'clojure.core.async async-namespace
-                          'clojure.data.csv csv/csv-namespace
-                          'cheshire.core cheshire-core-namespace}
-             :bindings {'java.lang.System/exit exit ;; override exit, so we have more control
-                        'System/exit exit}
+        ctx {:aliases aliases
+             :namespaces (-> namespaces
+                             (assoc 'clojure.core
+                                    (assoc core-extras
+                                           '*command-line-args*
+                                           (sci/new-dynamic-var '*command-line-args* command-line-args)
+                                           '*file* vars/file-var
+                                           '*warn-on-reflection* reflection-var))
+                             (assoc-in ['clojure.java.io 'resource]
+                                       #(when classpath (cp/getResource loader % {:url? true}))))
+             :bindings bindings
              :env env
              :features #{:bb}
              :classes classes/class-map
@@ -270,74 +306,98 @@ Everything after that is bound to *command-line-args*."))
                         Class java.lang.Class
                         Double java.lang.Double
                         Exception java.lang.Exception
+                        IllegalArgumentException java.lang.IllegalArgumentException
                         Integer java.lang.Integer
                         File java.io.File
                         Math java.lang.Math
+                        Object java.lang.Object
                         ProcessBuilder java.lang.ProcessBuilder
                         String java.lang.String
                         System java.lang.System
                         Thread java.lang.Thread}
-             :load-fn load-fn}
-        ctx (update-in ctx [:namespaces 'clojure.core] assoc
-                       'eval #(eval* ctx %)
-                       'load-file #(load-file* ctx %))
+             :load-fn load-fn
+             :dry-run uberscript}
         ctx (addons/future ctx)
-        _preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim) (eval-string ctx))
-        expression (if main
-                     (format "(ns user (:require [%1$s])) (apply %1$s/-main *command-line-args*)"
-                             main)
-                     expression)
+        sci-ctx (sci-opts/init ctx)
+        _ (swap! (:env sci-ctx)
+                 (fn [env]
+                   (update-in env [:namespaces 'clojure.core] assoc
+                              'eval #(eval* sci-ctx %)
+                              'load-file #(load-file* sci-ctx %))))
+        _ (swap! (:env sci-ctx)
+                 (fn [env]
+                   (assoc-in env [:namespaces 'clojure.main 'repl]
+                             (fn [& opts]
+                               (let [opts (apply hash-map opts)]
+                                 (repl/start-repl! sci-ctx opts))))))
+        preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim))
+        [expression exit-code]
+        (cond expression [expression nil]
+              main [(format "(ns user (:require [%1$s])) (apply %1$s/-main *command-line-args*)"
+                            main) nil]
+              file (try [(read-file file) nil]
+                        (catch Exception e
+                          (error-handler* e verbose?))))
         exit-code
-        (or
-         #_(binding [*out* *err*]
-             (prn ">>" _opts))
-         (second
-          (cond version
-                [(print-version) 0]
-                help?
-                [(print-help) 0]
-                repl [(start-repl! ctx #(read-next *in*)) 0]
-                socket-repl [(start-socket-repl! socket-repl ctx #(read-next *in*)) 0]
-                :else
-                (try
-                  (let [expr (if file (read-file file) expression)]
-                    (if expr
-                      (loop [in (read-next *in*)]
-                        (let [ctx (update-in ctx [:namespaces 'user] assoc (with-meta '*input*
-                                                                             (when-not stream?
-                                                                               {:sci.impl/deref! true}))
-                                             (sci/new-dynamic-var '*input* in))]
-                          (if (identical? ::EOF in)
-                            [nil 0] ;; done streaming
-                            (let [res [(let [res (eval-string expr ctx)]
-                                         (when (some? res)
-                                           (if-let [pr-f (cond shell-out println
-                                                               edn-out prn)]
-                                             (if (coll? res)
-                                               (doseq [l res
-                                                       :while (not (pipe-signal-received?))]
-                                                 (pr-f l))
-                                               (pr-f res))
-                                             (prn res)))) 0]]
-                              (if stream?
-                                (recur (read-next *in*))
-                                res)))))
-                      [(start-repl! ctx #(read-next *in*)) 0]))
-                  (catch Throwable e
-                    (binding [*out* *err*]
-                      (let [d (ex-data e)
-                            exit-code (:bb/exit-code d)]
-                        (if exit-code [nil exit-code]
-                            (do (if verbose?
-                                  (print-stack-trace e)
-                                  (println (.getMessage e)))
-                                (flush)
-                                [nil 1]))))))))
-         1)
+        ;; handle preloads
+        (if exit-code exit-code
+            (do (when preloads (try (eval-string* sci-ctx preloads)
+                                    (catch Throwable e
+                                      (error-handler* e verbose?))))
+                nil))
+        exit-code
+        (or exit-code
+            (sci/with-bindings {reflection-var false}
+              (or
+               #_(binding [*out* *err*]
+                   (prn ">>" _opts))
+               (second
+                (cond version
+                      [(print-version) 0]
+                      help?
+                      [(print-help) 0]
+                      repl [(repl/start-repl! sci-ctx) 0]
+                      socket-repl [(start-socket-repl! socket-repl sci-ctx) 0]
+                      (not (str/blank? expression))
+                      (try
+                        (loop [in (read-next *in*)]
+                          (let [_ (swap! env update-in [:namespaces 'user]
+                                         assoc (with-meta '*input*
+                                                 (when-not stream?
+                                                   {:sci.impl/deref! true}))
+                                         (sci/new-dynamic-var '*input* in))]
+                            (if (identical? ::EOF in)
+                              [nil 0] ;; done streaming
+                              (let [res [(let [res (eval-string* sci-ctx expression)]
+                                           (when (some? res)
+                                             (if-let [pr-f (cond shell-out println
+                                                                 edn-out prn)]
+                                               (if (coll? res)
+                                                 (doseq [l res
+                                                         :while (not (pipe-signal-received?))]
+                                                   (pr-f l))
+                                                 (pr-f res))
+                                               (prn res)))) 0]]
+                                (if stream?
+                                  (recur (read-next *in*))
+                                  res)))))
+                        (catch Throwable e
+                          (error-handler* e verbose?)))
+                      uberscript [nil 0]
+                      :else [(repl/start-repl! sci-ctx) 0]))
+               1)))
         t1 (System/currentTimeMillis)]
+    (flush)
+    (when uberscript
+      uberscript
+      (let [uberscript-out uberscript]
+        (spit uberscript-out "") ;; reset file
+        (doseq [s @uberscript-sources]
+          (spit uberscript-out s :append true))
+        (spit uberscript-out preloads :append true)
+        (spit uberscript-out expression :append true)))
     (when time? (binding [*out* *err*]
                   (println "bb took" (str (- t1 t0) "ms."))))
-    (flush)
     exit-code))
 
 (defn -main

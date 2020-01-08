@@ -7,11 +7,11 @@ jobs:
   jvm:
     docker:
       # specify the version you desire here
-      - image: circleci/clojure:lein-2.8.1
+      - image: circleci/openjdk-11-lein-2.8.3
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
-      # GRAALVM_HOME: /home/circleci/graalvm-ce-java8-19.3.0
+      BABASHKA_PLATFORM: linux # could be used in jar name
     steps:
       - checkout
       - run:
@@ -34,18 +34,6 @@ jobs:
           name: Install lsof
           command: |
             sudo apt-get install lsof
-      # - run:
-      #     name: Download GraalVM
-      #     command: |
-      #       cd ~
-      #       if ! [ -d graalvm-ce-java8-19.3.0 ]; then
-      #         curl -O -sL https://github.com/oracle/graal/releases/download/vm-19.2.0/graalvm-ce-linux-amd64-19.2.0.tar.gz
-      #         tar xzf graalvm-ce-linux-amd64-19.2.0.tar.gz
-      #       fi
-      # - run:
-      #     name: Install GraalVM SSL libs
-      #     command: |
-      #       .circleci/script/graalvm_ssl
       - run:
           name: Run JVM tests
           command: |
@@ -58,17 +46,27 @@ jobs:
           name: Run as lein command
           command: |
             .circleci/script/lein
+      - run:
+          name: Create uberjar
+          command: |
+            mkdir -p /tmp/release
+            lein do clean, uberjar
+            VERSION=$(cat resources/BABASHKA_VERSION)
+            cp target/babashka-$VERSION-standalone.jar /tmp/release/babashka-$VERSION-standalone.jar
+      - store_artifacts:
+          path: /tmp/release
+          destination: release
       - save_cache:
           paths:
             - ~/.m2
           key: v1-dependencies-{{ checksum "project.clj" }}
   linux:
     docker:
-      - image: circleci/clojure:lein-2.8.1
+      - image: circleci/clojure:openjdk-11-lein-2.8.3
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
-      GRAALVM_HOME: /home/circleci/graalvm-ce-java8-19.3.0
+      GRAALVM_HOME: /home/circleci/graalvm-ce-java11-19.3.0
       BABASHKA_PLATFORM: linux # used in release script
       BABASHKA_TEST_ENV: native
     steps:
@@ -100,9 +98,9 @@ jobs:
           name: Download GraalVM
           command: |
             cd ~
-            if ! [ -d graalvm-ce-java8-19.3.0 ]; then
-              curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-19.3.0/graalvm-ce-java8-linux-amd64-19.3.0.tar.gz
-              tar xzf graalvm-ce-java8-linux-amd64-19.3.0.tar.gz
+            if ! [ -d graalvm-ce-java11-19.3.0 ]; then
+              curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-19.3.0/graalvm-ce-java11-linux-amd64-19.3.0.tar.gz
+              tar xzf graalvm-ce-java11-linux-amd64-19.3.0.tar.gz
             fi
       # - run:
       #     name: Install GraalVM SSL libs
@@ -117,6 +115,7 @@ jobs:
           name: Run tests
           command: |
             script/test
+            script/run_lib_tests
       # - run:
       #     name: Performance report
       #     command: |
@@ -128,16 +127,20 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-            - ~/graalvm-ce-java8-19.3.0
+            - ~/graalvm-ce-java11-19.3.0
           key: linux-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - store_artifacts:
           path: /tmp/release
           destination: release
+      - run:
+          name: Publish artifact link to Slack
+          command: |
+            ./bb .circleci/script/publish_artifact.clj
   mac:
     macos:
       xcode: "9.0"
     environment:
-      GRAALVM_HOME: /Users/distiller/graalvm-ce-java8-19.3.0/Contents/Home
+      GRAALVM_HOME: /Users/distiller/graalvm-ce-java11-19.3.0/Contents/Home
       BABASHKA_PLATFORM: macos # used in release script
       BABASHKA_TEST_ENV: native
     steps:
@@ -163,9 +166,9 @@ jobs:
           command: |
             cd ~
             ls -la
-            if ! [ -d graalvm-ce-java8-19.3.0 ]; then
-              curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-19.3.0/graalvm-ce-java8-darwin-amd64-19.3.0.tar.gz
-              tar xzf graalvm-ce-java8-darwin-amd64-19.3.0.tar.gz
+            if ! [ -d graalvm-ce-java11-19.3.0 ]; then
+              curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-19.3.0/graalvm-ce-java11-darwin-amd64-19.3.0.tar.gz
+              tar xzf graalvm-ce-java11-darwin-amd64-19.3.0.tar.gz
             fi
       # - run:
       #     name: Install GraalVM SSL libs
@@ -180,6 +183,7 @@ jobs:
           name: Run tests
           command: |
             script/test
+            script/run_lib_tests
       # - run:
       #     name: Performance report
       #     command: |
@@ -191,14 +195,18 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-            - ~/graalvm-ce-java8-19.3.0
+            - ~/graalvm-ce-java11-19.3.0
           key: mac-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - store_artifacts:
           path: /tmp/release
           destination: release
+      - run:
+          name: Publish artifact link to Slack
+          command: |
+            ./bb .circleci/script/publish_artifact.clj
   deploy:
     docker:
-      - image: circleci/clojure:lein-2.8.1
+      - image: circleci/clojure:openjdk-11-lein-2.8.3
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"

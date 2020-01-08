@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+curl -sL https://raw.githubusercontent.com/borkdude/deps.clj/master/deps.clj -o deps_test.clj
+chmod +x deps_test.clj
+./bb deps_test.clj -Sdescribe
+rm deps_test.clj
+

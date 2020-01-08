@@ -23,7 +23,8 @@ BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
 # mkdir -p src/sci
 # cp -R /tmp/sci/src/* src
 
-lein with-profiles +compile-java do clean, javac, uberjar
+lein with-profiles +reflection do run
+lein do clean, uberjar
 
 $NATIVE_IMAGE \
   -jar target/babashka-$BABASHKA_VERSION-standalone.jar \
@@ -43,7 +44,6 @@ $NATIVE_IMAGE \
   --verbose \
   --no-fallback \
   --no-server \
-  -H:+PrintAnalysisCallTree \
   "-J-Xmx3g"
 
 lein clean

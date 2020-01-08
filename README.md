@@ -1,4 +1,4 @@
-# Babashka
+<img src="logo/babashka.svg" width="425px">
 
 [![CircleCI](https://circleci.com/gh/borkdude/babashka/tree/master.svg?style=shield)](https://circleci.com/gh/borkdude/babashka/tree/master)
 [![Clojars Project](https://img.shields.io/clojars/v/borkdude/babashka.svg)](https://clojars.org/borkdude/babashka)
@@ -9,7 +9,7 @@
 A Clojure [babushka](https://en.wikipedia.org/wiki/Headscarf) for the grey areas of Bash.
 
 <blockquote class="twitter-tweet" data-lang="en">
-    <p lang="en" dir="ltr">Really enjoying Babashka. Life's too short to remember how to write Bash code. I feel liberated.<br> Thanks a million <a href="https://github.com/borkdude">@borkdude!</a></p>
+    <p lang="en" dir="ltr">Life's too short to remember how to write Bash code. I feel liberated.</p>
     &mdash;
     <a href="https://github.com/laheadle">@laheadle</a> on Clojurians Slack
 </blockquote>
@@ -47,12 +47,8 @@ Non-goals:
 * Provide a mixed Clojure/bash DSL (see portability).
 * Replace existing shells. Babashka is a tool you can use inside existing shells like bash and it is designed to play well with them. It does not aim to replace them.
 
-Reasons why babashka may not be the right fit for your use case:
-
-- It uses [sci](https://github.com/borkdude/sci) for interpreting Clojure. Sci
-implements only a subset of Clojure and is not as performant as compiled code.
-- External libraries are not available (although you may use `load-file` for
-  loading external scripts).
+Babashka uses [sci](https://github.com/borkdude/sci) for interpreting Clojure. Sci
+implements a subset of Clojure and is not as performant as compiled code. If your script is taking more than a few seconds,  Clojure on the JVM may be a better fit.
 
 Read more about the differences with Clojure [here](#differences-with-clojure).
 
@@ -65,7 +61,7 @@ on [CHANGES.md](CHANGES.md) for a list of breaking changes.
 
 ``` shellsession
 $ ls | bb -i '*input*'
-["LICENSE" "README.md" "bb" "doc" "pom.xml" "project.clj" "reflection.json" "resources" "script" "src" "target" "test"]
+["LICENSE" "README.md" "bb" "doc" "pom.xml" "project.clj" "resources" "script" "src" "target" "test"]
 
 $ ls | bb -i '(count *input*)'
 12
@@ -79,8 +75,8 @@ $ bb '(filterv :foo *input*)' <<< '[{:foo 1} {:bar 2}]'
 $ bb '(#(+ %1 %2 %3) 1 2 *input*)' <<< 3
 6
 
-$ ls | bb -i '(filterv #(re-find #"reflection" %) *input*)'
-["reflection.json"]
+$ ls | bb -i '(filterv #(re-find #"README" %) *input*)'
+["README.md"]
 
 $ bb '(run! #(shell/sh "touch" (str "/tmp/test/" %)) (range 100))'
 $ ls /tmp/test | bb -i '*input*'
@@ -135,27 +131,31 @@ You may also download a binary from [Github](https://github.com/borkdude/babashk
 
 ``` shellsession
 Usage: bb [ -i | -I ] [ -o | -O ] [ --stream ] [--verbose]
-          [ ( --classpath | -cp ) <cp> ] [ ( --main | -m ) <main-namespace> ]
-          ( -e <expression> | -f <file> | --repl | --socket-repl [<host>:]<port> )
+          [ ( --classpath | -cp ) <cp> ] [ --uberscript <file> ]
+          [ ( --main | -m ) <main-namespace> | -e <expression> | -f <file> |
+            --repl | --socket-repl [<host>:]<port> ]
           [ arg* ]
 
 Options:
 
-  --help, -h or -?   Print this help text.
-  --version          Print the current version of babashka.
-  -i                 Bind *input* to a lazy seq of lines from stdin.
-  -I                 Bind *input* to a lazy seq of EDN values from stdin.
-  -o                 Write lines to stdout.
-  -O                 Write EDN values to stdout.
-  --verbose          Print entire stacktrace in case of exception.
-  --stream           Stream over lines or EDN values from stdin. Combined with -i or -I *input* becomes a single value per iteration.
-  -e, --eval <expr>  Evaluate an expression.
-  -f, --file <path>  Evaluate a file.
-  -cp, --classpath   Classpath to use.
-  -m, --main <ns>    Call the -main function from namespace with args.
-  --repl             Start REPL
-  --socket-repl      Start socket REPL. Specify port (e.g. 1666) or host and port separated by colon (e.g. 127.0.0.1:1666).
-  --time             Print execution time before exiting.
+  --help, -h or -?    Print this help text.
+  --version           Print the current version of babashka.
+
+  -i                  Bind *input* to a lazy seq of lines from stdin.
+  -I                  Bind *input* to a lazy seq of EDN values from stdin.
+  -o                  Write lines to stdout.
+  -O                  Write EDN values to stdout.
+  --verbose           Print entire stacktrace in case of exception.
+  --stream            Stream over lines or EDN values from stdin. Combined with -i or -I *input* becomes a single value per iteration.
+  --uberscript <file> Collect preloads, -e, -f and -m and all required namespaces from the classpath into a single executable file.
+
+  -e, --eval <expr>   Evaluate an expression.
+  -f, --file <path>   Evaluate a file.
+  -cp, --classpath    Classpath to use.
+  -m, --main <ns>     Call the -main function from namespace with args.
+  --repl              Start REPL
+  --socket-repl       Start socket REPL. Specify port (e.g. 1666) or host and port separated by colon (e.g. 127.0.0.1:1666).
+  --time              Print execution time before exiting.
 
 If neither -e, -f, or --socket-repl are specified, then the first argument that is not parsed as a option is treated as a file if it exists, or as an expression otherwise.
 Everything after that is bound to *command-line-args*.
@@ -172,41 +172,22 @@ enumerated explicitly.
 - `clojure.set` aliased as `set`
 - `clojure.edn` aliased as `edn`:
   - `read-string`
-- `clojure.java.shell` aliases as `shell`:
-  - `sh`
+- `clojure.java.shell` aliases as `shell`
 - `clojure.java.io` aliased as `io`:
-  - `as-relative-path`, `copy`, `delete-file`, `file`
+  - `as-relative-path`, `as-url`, `copy`, `delete-file`, `file`, `input-stream`,
+    `make-parents`, `output-stream`, `reader`, `resource`, `writer`
+- `clojure.main`: `repl`
 - [`clojure.core.async`](https://clojure.github.io/core.async/) aliased as
   `async`. The `alt` and `go` macros are not available but `alts!!` does work as
   it is a function.
+- `clojure.stacktrace`
 - [`clojure.tools.cli`](https://github.com/clojure/tools.cli) aliased as `tools.cli`
 - [`clojure.data.csv`](https://github.com/clojure/data.csv) aliased as `csv`
 - [`cheshire.core`](https://github.com/dakrone/cheshire) aliased as `json`
 
-The following Java classes are available:
+A selection of java classes are available, see `babashka/impl/classes.clj`.
 
-- `ArithmeticException`
-- `AssertionError`
-- `Boolean`
-- `Class`
-- `Double`
-- `Exception`
-- `clojure.lang.ExceptionInfo`
-- `Integer`
-- `Math`
-- `java.io.File`
-- `java.nio.file.Files`
-- `java.util.Base64`
-- `java.util.regex.Pattern`
-- `ProcessBuilder` (see [example](examples/process_builder.clj)).
-- `String`
-- `System`
-- `Thread`
-
-More classes can be added by request. See `reflection.json` and the `:classes`
-option in `main.clj`.
-
-Babashka supports `import` : `(import clojure.lang.ExceptionInfo)`.
+Babashka supports `import`: `(import clojure.lang.ExceptionInfo)`.
 
 Babashka supports a subset of the `ns` form where you may use `:require` and `:import`:
 
@@ -406,10 +387,10 @@ Note that you can use the `clojure` tool to produce classpaths and download depe
 ``` shellsession
 $ cat deps.edn
 {:deps
-  {my_gist_script
-    {:git/url "https://gist.github.com/borkdude/263b150607f3ce03630e114611a4ef42"
-     :sha "cfc761d06dfb30bb77166b45d439fe8fe54a31b8"}}}
-
+ {my_gist_script
+  {:git/url "https://gist.github.com/borkdude/263b150607f3ce03630e114611a4ef42"
+   :sha "cfc761d06dfb30bb77166b45d439fe8fe54a31b8"}}
+ :aliases {:my-script {:main-opts ["-m" "my-gist-script"]}}}
 
 $ CLASSPATH=$(clojure -Spath)
 $ bb --classpath "$CLASSPATH" --main my-gist-script
@@ -423,6 +404,57 @@ variable will be used:
 $ export BABASHKA_CLASSPATH=$(clojure -Spath)
 $ export BABASHKA_PRELOADS="(require '[my-gist-script])"
 $ bb "(my-gist-script/-main)"
+Hello from gist script!
+```
+
+### Deps.clj
+
+The [`deps.clj`](https://github.com/borkdude/deps.clj/) script can be used to work with `deps.edn`-based projects:
+
+``` shell
+$ deps.clj -A:my-script -Scommand "bb -cp {{classpath}} {{main-opts}}"
+Hello from gist script!
+```
+
+Create these aliases for brevity:
+
+``` shell
+$ alias bbk='deps.clj -Scommand "bb -cp {{classpath}} {{main-opts}}"'
+$ alias babashka='rlwrap deps.clj -Scommand "bb -cp {{classpath}} {{main-opts}}"'
+$ bbk -A:my-script
+Hello from gist script!
+$ babashka
+Babashka v0.0.58 REPL.
+Use :repl/quit or :repl/exit to quit the REPL.
+Clojure rocks, Bash reaches.
+
+user=> (require '[my-gist-script :as mgs])
+nil
+user=> (mgs/-main)
+Hello from gist script!
+nil
+```
+
+## Uberscript
+
+The `--uberscript` option collects the expressions in
+`BABASHKA_PRELOADS`, the command line expression or file, the main entrypoint
+and all required namespaces from the classpath into a single file. This can be
+convenient for debugging and deployment.
+
+Given the `deps.edn` from above:
+
+``` clojure
+$ deps.clj -A:my-script -Scommand "bb -cp {{classpath}} {{main-opts}} --uberscript my-script.clj"
+
+$ cat my-script.clj
+(ns my-gist-script)
+(defn -main [& args]
+  (println "Hello from gist script!"))
+(ns user (:require [my-gist-script]))
+(apply my-gist-script/-main *command-line-args*)
+
+$ bb my-script.clj
 Hello from gist script!
 ```
 
@@ -549,8 +581,54 @@ Differences with Clojure:
 
 ## External resources
 
+### Tools and libraries
+
+The following libraries are known to work with Babashka:
+
+#### [deps.clj](https://github.com/borkdude/deps.clj)
+
+A port of the [clojure](https://github.com/clojure/brew-install/) bash script to
+Clojure / babashka.
+
+#### [spartan.test](https://github.com/borkdude/spartan.test/)
+
+A minimal test framework compatible with babashka.
+
+#### [medley](https://github.com/borkdude/medley/)
+
+A fork of [medley](https://github.com/weavejester/medley) made compatible with
+babashka. Requires `bb` >= v0.0.58.
+
+#### [clj-http-lite](https://github.com/borkdude/clj-http-lite)
+
+This fork does not depend on any other libraries. Example:
+
+``` shell
+$ export BABASHKA_CLASSPATH="$(clojure -Sdeps '{:deps {clj-http-lite {:git/url "https://github.com/borkdude/clj-http-lite" :sha "f44ebe45446f0f44f2b73761d102af3da6d0a13e"}}}' -Spath)"
+
+$ bb "(require '[clj-http.lite.client :as client]) (:status (client/get \"https://www.clojure.org\"))"
+200
+```
+
+#### [limit-break](https://github.com/technomancy/limit-break)
+
+A debug REPL library. Example:
+
+``` shell
+$ export BABASHKA_CLASSPATH="$(clojure -Sdeps '{:deps {limit-break {:git/url "https://github.com/technomancy/limit-break" :sha "050fcfa0ea29fe3340927533a6fa6fffe23bfc2f" :deps/manifest :deps}}}' -Spath)"
+
+$ bb "(require '[limit.break :as lb]) (let [x 1] (lb/break))"
+Babashka v0.0.49 REPL.
+Use :repl/quit or :repl/exit to quit the REPL.
+Clojure rocks, Bash reaches.
+
+break> x
+1
+```
+
 ### Blogs
 
+- [Clojure Start Time in 2019](https://stuartsierra.com/2019/12/21/clojure-start-time-in-2019) by Stuart Sierra
 - [Advent of Random
   Hacks](https://lambdaisland.com/blog/2019-12-19-advent-of-parens-19-advent-of-random-hacks)
   by Arne Brasseur
@@ -577,7 +655,16 @@ You need [Leiningen](https://leiningen.org/), and for building binaries you need
 
 `lein repl` will get you a standard REPL/nREPL connection. To work on tests use `lein with-profiles +test repl`.
 
-### Generate reflection.json file
+### Adding classes
+
+Add necessary classes to `babashka/impl/classes.clj`.  For every addition, write
+a unit test, so it's clear why it is added and removing it will break the
+tests. Try to reduce the size of the binary by only adding the necessary parts
+of a class in `:instance-check`, `:constructors`, `:methods`, `:fields` or
+`:custom`.
+
+The `reflection.json` file that is needed for GraalVM compilation is generated
+with:
 
     lein with-profiles +reflection run
 
@@ -744,6 +831,12 @@ jet --pretty > deps.edn
 ### Print current time in California
 
 See [examples/pst.clj](https://github.com/borkdude/babashka/blob/master/examples/pst.clj)
+
+### Tiny http server
+
+See [examples/http_server.clj](https://github.com/borkdude/babashka/blob/master/examples/http_server.clj)
+
+Original by [@souenzzo](https://gist.github.com/souenzzo/a959a4c5b8c0c90df76fe33bb7dfe201)
 
 ## Thanks
 
