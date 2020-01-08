@@ -52,7 +52,7 @@ jobs:
             mkdir -p /tmp/release
             lein do clean, uberjar
             VERSION=$(cat resources/BABASHKA_VERSION)
-            cp target/babashka-$VERSION-standalone.jar /tmp/release/babashka-$VERSION-linux-standalone.jar
+            cp target/babashka-$VERSION-standalone.jar /tmp/release/babashka-$VERSION-standalone.jar
       - store_artifacts:
           path: /tmp/release
           destination: release

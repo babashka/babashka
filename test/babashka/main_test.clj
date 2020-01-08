@@ -169,6 +169,8 @@
 (deftest process-builder-test
   (is (str/includes? (bb nil "
 (def ls (-> (ProcessBuilder. [\"ls\"]) (.start)))
+(def input (.getOutputStream ls))
+(.write (io/writer input) \"hello\") ;; dummy test just to see if this works
 (def output (.getInputStream ls))
 (assert (int? (.waitFor ls)))
 (slurp output)")
@@ -281,8 +283,8 @@
         f2 (.toFile p')]
     (bb nil (format
              "(let [f (io/file \"%s\")
-                     p (.toPath (io/file f))
-                     p' (.resolveSibling p \"f2\")]
+                    p (.toPath (io/file f))
+                    p' (.resolveSibling p \"f2\")]
                 (.delete (.toFile p'))
                 (dotimes [_ 2]
                   (try
