@@ -44,6 +44,6 @@ $NATIVE_IMAGE \
   --verbose \
   --no-fallback \
   --no-server \
-  "-J-Xmx3g"
+  "-J-Xmx3500m"
 
 lein clean
