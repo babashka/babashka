@@ -17,8 +17,8 @@
                      opts)
          t0 (System/currentTimeMillis)]
      (loop []
-       (let [v (try (Socket. host port)
-                    (- (System/currentTimeMillis) t0)
+       (let [v (try (with-open [_ (Socket. host port)]
+                      (- (System/currentTimeMillis) t0))
                     (catch ConnectException _e
                       (let [took (- (System/currentTimeMillis) t0)]
                         (if (and timeout (>= took timeout))

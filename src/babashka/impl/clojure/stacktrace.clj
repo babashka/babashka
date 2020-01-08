@@ -80,9 +80,9 @@
      (print "Caused by: " )
      (recur cause n))))
 
-(defn e
-  "REPL utility.  Prints a brief stack trace for the root cause of the
-  most recent exception."
-  {:added "1.1"}
-  []
-  (print-stack-trace (root-cause *e) 8))
+(def stacktrace-namespace
+  {'root-cause root-cause
+   'print-trace-element print-trace-element
+   'print-throwable print-throwable
+   'print-stack-trace print-stack-trace
+   'print-cause-trace print-cause-trace})

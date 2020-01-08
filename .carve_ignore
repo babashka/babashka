@@ -1,0 +1,3 @@
+babashka.impl.clojure.stacktrace/root-cause
+babashka.impl.classes/generate-reflection-file
+babashka.main/-main

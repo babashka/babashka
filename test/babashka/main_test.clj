@@ -3,10 +3,10 @@
    [babashka.main :as main]
    [babashka.test-utils :as test-utils]
    [clojure.edn :as edn]
+   [clojure.java.io :as io]
    [clojure.java.shell :refer [sh]]
    [clojure.string :as str]
    [clojure.test :as test :refer [deftest is testing]]
-   [clojure.java.io :as io]
    [sci.core :as sci]))
 
 (defn bb [input & args]
@@ -21,58 +21,58 @@
 
   (testing "distinguish automatically between expression or file name"
     (is (= {:expression "(println 123)"
-            :command-line-args []}
+            :command-line-args nil}
            (main/parse-opts ["(println 123)"])))
 
     (is (= {:file "src/babashka/main.clj"
-            :command-line-args []}
+            :command-line-args nil}
            (main/parse-opts ["src/babashka/main.clj"])))
 
     (is (= {:expression "does-not-exist"
-            :command-line-args []}
+            :command-line-args nil}
            (main/parse-opts ["does-not-exist"])))))
 
 (deftest main-test
   (testing "-io behaves as identity"
-    (= "foo\nbar\n" (test-utils/bb "foo\nbar\n" "-io" "*in*")))
+    (= "foo\nbar\n" (test-utils/bb "foo\nbar\n" "-io" "*input*")))
   (testing "if and when"
-    (is (= 1 (bb 0 '(if (zero? *in*) 1 2))))
-    (is (= 2 (bb 1 '(if (zero? *in*) 1 2))))
-    (is (= 1 (bb 0 '(when (zero? *in*) 1))))
-    (is (nil? (bb 1 '(when (zero? *in*) 1)))))
+    (is (= 1 (bb 0 '(if (zero? *input*) 1 2))))
+    (is (= 2 (bb 1 '(if (zero? *input*) 1 2))))
+    (is (= 1 (bb 0 '(when (zero? *input*) 1))))
+    (is (nil? (bb 1 '(when (zero? *input*) 1)))))
   (testing "and and or"
-    (is (= false (bb 0 '(and false true *in*))))
-    (is (= 0 (bb 0 '(and true true *in*))))
-    (is (= 1 (bb 1 '(or false false *in*))))
-    (is (= false (bb false '(or false false *in*))))
-    (is (= 3 (bb false '(or false false *in* 3)))))
+    (is (= false (bb 0 '(and false true *input*))))
+    (is (= 0 (bb 0 '(and true true *input*))))
+    (is (= 1 (bb 1 '(or false false *input*))))
+    (is (= false (bb false '(or false false *input*))))
+    (is (= 3 (bb false '(or false false *input* 3)))))
   (testing "fn"
-    (is (= 2 (bb 1 "(#(+ 1 %) *in*)")))
+    (is (= 2 (bb 1 "(#(+ 1 %) *input*)")))
     (is (= [1 2 3] (bb 1 "(map #(+ 1 %) [0 1 2])")))
-    (is (= 1 (bb 1 "(#(when (odd? *in*) *in*))"))))
+    (is (= 1 (bb 1 "(#(when (odd? *input*) *input*))"))))
   (testing "map"
     (is (= [1 2 3] (bb 1 '(map inc [0 1 2])))))
   (testing "keep"
     (is (= [false true false] (bb 1 '(keep odd? [0 1 2])))))
   (testing "->"
-    (is (= 4 (bb 1 '(-> *in* inc inc (inc))))))
+    (is (= 4 (bb 1 '(-> *input* inc inc (inc))))))
   (testing "->>"
-    (is (= 10 (edn/read-string (test-utils/bb "foo\n\baar\baaaaz" "-i" "(->> *in* (map count) (apply max))")))))
+    (is (= 10 (edn/read-string (test-utils/bb "foo\n\baar\baaaaz" "-i" "(->> *input* (map count) (apply max))")))))
   (testing "literals"
     (is (= {:a 4
             :b {:a 2}
             :c [1 1]
             :d #{1 2}}
-           (bb 1 '{:a (+ 1 2 *in*)
-                   :b {:a (inc *in*)}
-                   :c [*in* *in*]
-                   :d #{*in* (inc *in*)}}))))
+           (bb 1 '{:a (+ 1 2 *input*)
+                   :b {:a (inc *input*)}
+                   :c [*input* *input*]
+                   :d #{*input* (inc *input*)}}))))
   (testing "shuffle the contents of a file"
     (let [in "foo\n Clojure is nice. \nbar\n If you're nice to clojure. "
           in-lines (set (str/split in #"\n"))
           out (test-utils/bb in
                              "-io"
-                             (str '(shuffle *in*)))
+                             (str '(shuffle *input*)))
           out-lines (set (str/split out #"\n"))]
       (is (= in-lines out-lines))))
   (testing "find occurrences in file by line number"
@@ -80,14 +80,14 @@
            (->
             (bb "foo\n Clojure is nice. \nbar\n If you're nice to clojure. "
                 "-i"
-                "(map-indexed #(-> [%1 %2]) *in*)")
-            (bb "(keep #(when (re-find #\"(?i)clojure\" (second %)) (first %)) *in*)"))))))
+                "(map-indexed #(-> [%1 %2]) *input*)")
+            (bb "(keep #(when (re-find #\"(?i)clojure\" (second %)) (first %)) *input*)"))))))
 
 (deftest println-test
   (is (= "hello\n" (test-utils/bb nil "(println \"hello\")"))))
 
 (deftest input-test
-  (testing "bb doesn't wait for input if *in* isn't used"
+  (testing "bb doesn't wait for input if *input* isn't used"
     (is (= "2\n" (with-out-str (main/main "(inc 1)"))))))
 
 (deftest System-test
@@ -114,12 +114,12 @@
     (is (re-find #"doctype html" resp))))
 
 (deftest stream-test
-  (is (= "2\n3\n4\n" (test-utils/bb "1 2 3" "--stream" "(inc *in*)")))
-  (is (= "2\n3\n4\n" (test-utils/bb "{:x 2} {:x 3} {:x 4}" "--stream" "(:x *in*)")))
+  (is (= "2\n3\n4\n" (test-utils/bb "1 2 3" "--stream" "(inc *input*)")))
+  (is (= "2\n3\n4\n" (test-utils/bb "{:x 2} {:x 3} {:x 4}" "--stream" "(:x *input*)")))
   (let [x "foo\n\bar\n"]
-    (is (= x (test-utils/bb x "--stream" "-io" "*in*"))))
+    (is (= x (test-utils/bb x "--stream" "-io" "*input*"))))
   (let [x "f\n\b\n"]
-    (is (= x (test-utils/bb x "--stream" "-io" "(subs *in* 0 1)")))))
+    (is (= x (test-utils/bb x "--stream" "-io" "(subs *input* 0 1)")))))
 
 (deftest load-file-test
   (let [tmp (java.io.File/createTempFile "script" ".clj")]
@@ -145,29 +145,35 @@
 (deftest pipe-test
   (when test-utils/native?
     (let [out (:out (sh "bash" "-c" "./bb -o '(range)' |
-                         ./bb --stream '(* *in* *in*)' |
+                         ./bb --stream '(* *input* *input*)' |
                          head -n10"))
           out (str/split-lines out)
           out (map edn/read-string out)]
       (is (= (take 10 (map #(* % %) (range))) out))))
   (when test-utils/native?
     (let [out (:out (sh "bash" "-c" "./bb -O '(repeat \"dude\")' |
-                         ./bb --stream '(str *in* \"rino\")' |
-                         ./bb -I '(take 3 *in*)'"))
+                         ./bb --stream '(str *input* \"rino\")' |
+                         ./bb -I '(take 3 *input*)'"))
           out (edn/read-string out)]
       (is (= '("duderino" "duderino" "duderino") out)))))
 
 (deftest lazy-text-in-test
   (when test-utils/native?
-    (let [out (:out (sh "bash" "-c" "yes | ./bb -i '(take 2 *in*)'"))
+    (let [out (:out (sh "bash" "-c" "yes | ./bb -i '(take 2 *input*)'"))
           out (edn/read-string out)]
       (is (= '("y" "y") out)))))
 
 (deftest future-test
   (is (= 6 (bb nil "@(future (+ 1 2 3))"))))
 
-(deftest conch-test
-  (is (str/includes? (bb nil "(->> (conch/proc \"ls\") (conch/stream-to-string :out))")
+(deftest process-builder-test
+  (is (str/includes? (bb nil "
+(def ls (-> (ProcessBuilder. [\"ls\"]) (.start)))
+(def input (.getOutputStream ls))
+(.write (io/writer input) \"hello\") ;; dummy test just to see if this works
+(def output (.getInputStream ls))
+(assert (int? (.waitFor ls)))
+(slurp output)")
                      "LICENSE")))
 
 (deftest create-temp-file-test
@@ -181,11 +187,14 @@
                            temp-dir-path))))))
 
 (deftest wait-for-port-test
-  (is (= :timed-out
-         (bb nil "(def web-server (conch/proc \"python\" \"-m\" \"SimpleHTTPServer\" \"7171\"))
-                (wait/wait-for-port \"127.0.0.1\" 7171)
-                (conch/destroy web-server)
-                (wait/wait-for-port \"localhost\" 7172 {:default :timed-out :timeout 50})"))))
+  (let [server (test-utils/start-server! 1777)]
+    (is (= 1777 (:port (bb nil "(wait/wait-for-port \"127.0.0.1\" 1777)"))))
+    (test-utils/stop-server! server)
+    (is (= :timed-out (bb nil "(wait/wait-for-port \"127.0.0.1\" 1777 {:default :timed-out :timeout 50})"))))
+  (let [edn (bb nil (io/file "test" "babashka" "scripts" "socket_server.bb"))]
+    (is (= "127.0.0.1" (:host edn)))
+    (is (=  1777 (:port edn)))
+    (is (number? (:took edn)))))
 
 (deftest wait-for-path-test
   (let [temp-dir-path (System/getProperty "java.io.tmpdir")]
@@ -274,8 +283,8 @@
         f2 (.toFile p')]
     (bb nil (format
              "(let [f (io/file \"%s\")
-                     p (.toPath (io/file f))
-                     p' (.resolveSibling p \"f2\")]
+                    p (.toPath (io/file f))
+                    p' (.resolveSibling p \"f2\")]
                 (.delete (.toFile p'))
                 (dotimes [_ 2]
                   (try
@@ -287,6 +296,48 @@
 
 (deftest future-print-test
   (testing "the root binding of sci/*out*"
-    (is (= "hello"  (bb nil "@(future (prn \"hello\"))"))))
+    (is (= "hello"  (bb nil "@(future (prn \"hello\"))")))))
 
+(deftest Math-test
+  (is (== 8.0 (bb nil "(Math/pow 2 3)"))))
+
+(deftest Base64-test
+  (is (= "babashka"
+         (bb nil "(String. (.decode (java.util.Base64/getDecoder) (.encode (java.util.Base64/getEncoder) (.getBytes \"babashka\"))))"))))
+
+(deftest Thread-test
+  (is (= "hello" (bb nil "(doto (java.lang.Thread. (fn [] (prn \"hello\"))) (.start) (.join)) nil"))))
+
+(deftest dynvar-test
+  (is (= 1 (bb nil "(binding [*command-line-args* 1] *command-line-args*)")))
+  (is (= 1 (bb nil "(binding [*input* 1] *input*)"))))
+
+(deftest file-in-error-msg-test
+  (is (thrown-with-msg? Exception #"error.bb"
+                        (bb nil (.getPath (io/file "test" "babashka" "scripts" "error.bb"))))))
+
+(deftest compatibility-test
+  (is (true? (bb nil "(set! *warn-on-reflection* true)"))))
+
+(deftest clojure-main-repl-test
+  (is (= "\"> foo!\\nnil\\n> \"\n" (test-utils/bb nil "
+(defn foo [] (println \"foo!\"))
+(with-out-str
+  (with-in-str \"(foo)\"
+    (clojure.main/repl :init (fn []) :prompt (fn [] (print \"> \")))))"))))
+
+(deftest command-line-args-test
+  (is (true? (bb nil "(nil? *command-line-args*)")))
+  (is (= ["1" "2" "3"] (bb nil "*command-line-args*" "1" "2" "3"))))
+
+(deftest need-constructors-test
+  (testing "the clojure.lang.Delay constructor works"
+    (is (= 1 (bb nil "@(delay 1)"))))
+  (testing "the clojure.lang.MapEntry constructor works"
+    (is (true? (bb nil "(= (first {1 2}) (clojure.lang.MapEntry. 1 2))")))))
+
+;;;; Scratch
+
+(comment
+  (dotimes [_ 10] (wait-for-port-test))
   )

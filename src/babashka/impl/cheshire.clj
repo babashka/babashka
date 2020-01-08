@@ -11,4 +11,8 @@
    'generate-smile json/generate-smile
    'decode json/decode
    'parse-string json/parse-string
+   'parse-smile json/parse-smile
+   'parse-stream json/parse-stream
+   'parsed-seq json/parsed-seq
+   'parsed-smile-seq json/parsed-smile-seq
    'decode-smile json/decode-smile})

@@ -11,7 +11,7 @@ jobs:
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
-      # GRAALVM_HOME: /home/circleci/graalvm-ce-java8-19.3.0
+      BABASHKA_PLATFORM: linux # could be used in jar name
     steps:
       - checkout
       - run:
@@ -34,18 +34,6 @@ jobs:
           name: Install lsof
           command: |
             sudo apt-get install lsof
-      # - run:
-      #     name: Download GraalVM
-      #     command: |
-      #       cd ~
-      #       if ! [ -d graalvm-ce-java8-19.3.0 ]; then
-      #         curl -O -sL https://github.com/oracle/graal/releases/download/vm-19.2.0/graalvm-ce-linux-amd64-19.2.0.tar.gz
-      #         tar xzf graalvm-ce-linux-amd64-19.2.0.tar.gz
-      #       fi
-      # - run:
-      #     name: Install GraalVM SSL libs
-      #     command: |
-      #       .circleci/script/graalvm_ssl
       - run:
           name: Run JVM tests
           command: |
@@ -58,6 +46,16 @@ jobs:
           name: Run as lein command
           command: |
             .circleci/script/lein
+      - run:
+          name: Create uberjar
+          command: |
+            mkdir -p /tmp/release
+            lein do clean, uberjar
+            VERSION=$(cat resources/BABASHKA_VERSION)
+            cp target/babashka-$VERSION-standalone.jar /tmp/release/babashka-$VERSION-standalone.jar
+      - store_artifacts:
+          path: /tmp/release
+          destination: release
       - save_cache:
           paths:
             - ~/.m2
@@ -117,6 +115,7 @@ jobs:
           name: Run tests
           command: |
             script/test
+            script/run_lib_tests
       # - run:
       #     name: Performance report
       #     command: |
@@ -133,6 +132,10 @@ jobs:
       - store_artifacts:
           path: /tmp/release
           destination: release
+      - run:
+          name: Publish artifact link to Slack
+          command: |
+            ./bb .circleci/script/publish_artifact.clj
   mac:
     macos:
       xcode: "9.0"
@@ -180,6 +183,7 @@ jobs:
           name: Run tests
           command: |
             script/test
+            script/run_lib_tests
       # - run:
       #     name: Performance report
       #     command: |
@@ -196,6 +200,10 @@ jobs:
       - store_artifacts:
           path: /tmp/release
           destination: release
+      - run:
+          name: Publish artifact link to Slack
+          command: |
+            ./bb .circleci/script/publish_artifact.clj
   deploy:
     docker:
       - image: circleci/clojure:lein-2.8.1
