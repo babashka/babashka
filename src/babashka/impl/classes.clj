@@ -161,7 +161,11 @@
                         ;; not supported: {:name "setURLStreamHandlerFactory"}
                         {:name "toExternalForm"}
                         {:name "toString"}
-                        {:name "toURI"}]}}})
+                        {:name "toURI"}]}
+             com.sun.xml.internal.stream.XMLInputFactoryImpl
+             {:methods [{:name "<init>" :parameterTypes []}]}
+             com.sun.xml.internal.stream.XMLOutputFactoryImpl
+             {:methods [{:name "<init>" :parameterTypes []}]}}})
 
 (defmacro gen-class-map []
   (let [classes (concat (:all classes)
