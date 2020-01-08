@@ -217,7 +217,8 @@ Everything after that is bound to *command-line-args*."))
     io clojure.java.io
     async clojure.core.async
     csv clojure.data.csv
-    json cheshire.core})
+    json cheshire.core
+    xml clojure.data.xml})
 
 (def namespaces
   {'clojure.tools.cli tools-cli-namespace

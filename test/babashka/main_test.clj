@@ -337,7 +337,8 @@
     (is (true? (bb nil "(= (first {1 2}) (clojure.lang.MapEntry. 1 2))")))))
 
 (deftest clojure-data-xml-test
-  #_(is (= )))
+  (is (= "<?xml version=\"1.0\" encoding=\"UTF-8\"?><items><item>1</item><item>2</item></items>"
+         (bb nil "(let [xml (xml/parse-str \"<items><item>1</item><item>2</item></items>\")] (xml/emit-str xml))"))))
 
 ;;;; Scratch
 
