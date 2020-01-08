@@ -168,7 +168,7 @@
 
 (deftest process-builder-test
   (is (str/includes? (bb nil "
-(def ^java.lang.Process ls (-> (ProcessBuilder. [\"ls\"]) (.start)))
+(def ls (-> (ProcessBuilder. [\"ls\"]) (.start)))
 (def output (.getInputStream ls))
 (assert (int? (.waitFor ls)))
 (slurp output)")
@@ -281,8 +281,8 @@
         f2 (.toFile p')]
     (bb nil (format
              "(let [f (io/file \"%s\")
-                    ^java.nio.file.Path p (.toPath (io/file f))
-                    ^java.nio.file.Path p' (.resolveSibling p \"f2\")]
+                    p (.toPath (io/file f))
+                    p' (.resolveSibling p \"f2\")]
                 (.delete (.toFile p'))
                 (dotimes [_ 2]
                   (try
