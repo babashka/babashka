@@ -169,6 +169,8 @@
 (deftest process-builder-test
   (is (str/includes? (bb nil "
 (def ls (-> (ProcessBuilder. [\"ls\"]) (.start)))
+(def input (.getOutputStream ls))
+(.write (io/writer input) \"hello\") ;; dummy test just to see if this works
 (def output (.getInputStream ls))
 (assert (int? (.waitFor ls)))
 (slurp output)")
