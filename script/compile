@@ -7,7 +7,7 @@ if [ -z "$GRAALVM_HOME" ]; then
     exit 1
 fi
 
-if [ -z "$BABASHKA_XMX"]; then
+if [ -z "$BABASHKA_XMX" ]; then
     export BABASHKA_XMX="-J-Xmx3g"
 fi
 
