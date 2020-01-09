@@ -594,6 +594,10 @@ Clojure / babashka.
 
 A minimal test framework compatible with babashka.
 
+#### [spartan.spec](https://github.com/borkdude/spartan.spec/)
+
+An babashka-compatible implementation of `clojure.spec.alpha`.
+
 #### [medley](https://github.com/borkdude/medley/)
 
 A fork of [medley](https://github.com/weavejester/medley) made compatible with
