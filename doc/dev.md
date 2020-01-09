@@ -59,3 +59,5 @@ We're only registering the size of the macOS binary (as built on CircleCI).
 Added: `clojure.data.xml`. Growth: 1.8mb / 0.4mb zipped.
 
 2020/01/08, 303ca9e825d76a4a45bc4240a59139d342c13964: 36.9mb / 10.8mb zipped.
+
+Removing cheshire from bb: 36.2mb / 10.5mb zipped.
