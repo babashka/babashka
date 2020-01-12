@@ -241,11 +241,27 @@ $ bb example.clj
 
 Command-line arguments can be retrieved using `*command-line-args*`.
 
-### Additional functions
+### Additional namespaces
 
-Additionally, babashka adds the following functions:
+#### babashka.classpath
 
-- `wait/wait-for-port`. Usage:
+Contains the function `add-classpath` which can be used to add to the classpath
+dynamically:
+
+``` clojure
+(def medley-dep '{:deps {medley {:git/url "https://github.com/borkdude/medley"
+                                 :sha "91adfb5da33f8d23f75f0894da1defe567a625c0"}}})
+(def cp (:out (sh "bb" "clojure" "-Spath" "-Sdeps" (str medley-dep))))
+(add-classpath cp)
+(require '[medley.core :as m])
+(m/index-by :id [{:id 1} {:id 2}]) ;;=> {1 {:id 1}, 2 {:id 2}}
+```
+
+#### babashka.wait
+
+Contains the functions: `wait-for-port` and `wait-for-path`.
+
+Usage of `wait-for-port`:
 
 ``` clojure
 (wait/wait-for-port "localhost" 8080)
@@ -254,16 +270,22 @@ Additionally, babashka adds the following functions:
 
 Waits for TCP connection to be available on host and port. Options map supports `:timeout` and `:pause`. If `:timeout` is provided and reached, `:default`'s value (if any) is returned. The `:pause` option determines the time waited between retries.
 
-- `wait/wait-for-path`. Usage:
+Usage of `wait-for-path`:
 
 ``` clojure
 (wait/wait-for-path "/tmp/wait-path-test")
 (wait/wait-for-path "/tmp/wait-path-test" {:timeout 1000 :pause 1000})
 ```
 
-Waits for file path to be available. Options map supports `:default`, `:timeout` and `:pause`. If `:timeout` is provided and reached, `:default`'s value (if any) is returned. The `:pause` option determines the time waited between retries.
+Waits for file path to be available. Options map supports `:default`, `:timeout`
+and `:pause`. If `:timeout` is provided and reached, `:default`'s value (if any)
+is returned. The `:pause` option determines the time waited between retries.
 
-- `signal/pipe-signal-received?`. Usage:
+Aliased as `wait` in the `user` namespace.
+
+#### babashka.signal
+
+Contains the function `signal/pipe-signal-received?`. Usage:
 
 ``` clojure
 (signal/pipe-signal-received?)
@@ -276,6 +298,8 @@ $ bb '((fn [x] (println x) (when (not (sig/pipe-signal-received?)) (recur (inc x
 1
 2
 ```
+
+Aliased as `signal` in the `user` namespace.
 
 ## Running a file
 
