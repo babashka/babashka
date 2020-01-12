@@ -283,7 +283,7 @@ Waits for file path to be available. Options map supports `:default`, `:timeout`
 and `:pause`. If `:timeout` is provided and reached, `:default`'s value (if any)
 is returned. The `:pause` option determines the time waited between retries.
 
-Aliased as `wait` in the `user` namespace.
+The namespace `babashka.wait` is aliased as `wait` in the `user` namespace.
 
 #### babashka.signal
 
@@ -301,7 +301,7 @@ $ bb '((fn [x] (println x) (when (not (sig/pipe-signal-received?)) (recur (inc x
 2
 ```
 
-Aliased as `signal` in the `user` namespace.
+The namespace `babashka.signal` is aliased as `signal` in the `user` namespace.
 
 ## Running a file
 
