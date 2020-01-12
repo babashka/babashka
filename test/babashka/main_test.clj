@@ -21,6 +21,10 @@
     (is (thrown-with-msg? Exception #"does not exist" (bb nil "foo.clj")))
     (is (thrown-with-msg? Exception #"does not exist" (bb nil "-help")))))
 
+(deftest print-error-test
+  (is (thrown-with-msg? Exception #"java.lang.NullPointerException"
+                        (bb nil "(subs nil 0 0)"))))
+
 (deftest main-test
   (testing "-io behaves as identity"
     (= "foo\nbar\n" (test-utils/bb "foo\nbar\n" "-io" "*input*")))

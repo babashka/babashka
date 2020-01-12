@@ -247,7 +247,9 @@ Everything after that is bound to *command-line-args*."))
       (if exit-code [nil exit-code]
           (do (if verbose?
                 (print-stack-trace e)
-                (println (.getMessage e)))
+                (println (str (.. e getClass getName)
+                              (when-let [m (.getMessage e)]
+                                (str ": " m)) )))
               (flush)
               [nil 1])))))
 
