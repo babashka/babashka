@@ -350,8 +350,6 @@ Everything after that is bound to *command-line-args*."))
             (sci/with-bindings {reflection-var false
                                 vars/current-ns (vars/create-sci-ns ctx 'user)}
               (or
-               #_(binding [*out* *err*]
-                   (prn ">>" _opts))
                (second
                 (cond version
                       [(print-version) 0]
