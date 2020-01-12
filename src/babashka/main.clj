@@ -107,14 +107,16 @@
                      (if (some opts-map [:file :socket-repl :expression :main])
                        (assoc opts-map
                               :command-line-args options)
-                       (if (and (not= \( (first (str/trim opt)))
-                                (.exists (io/file opt)))
-                         (assoc opts-map
-                                :file opt
-                                :command-line-args (next options))
-                         (assoc opts-map
-                                :expression opt
-                                :command-line-args (next options))))))
+                       (let [opt (str/triml opt)
+                             c (.charAt opt 0)]
+                         (case c
+                           (\( \{ \[ \* \@ \#)
+                           (assoc opts-map
+                                  :expression opt
+                                  :command-line-args (next options))
+                           (assoc opts-map
+                                  :file opt
+                                  :command-line-args (next options)))))))
                  opts-map))]
     opts))
 

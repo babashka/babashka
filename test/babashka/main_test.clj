@@ -13,24 +13,13 @@
   (edn/read-string (apply test-utils/bb (when (some? input) (str input)) (map str args))))
 
 (deftest parse-opts-test
-  (is (= {:expression "(println 123)"}
-         (main/parse-opts ["-e" "(println 123)"])))
-
-  (is (= {:expression "(println 123)"}
-         (main/parse-opts ["--eval" "(println 123)"])))
-
+  (is (= 123 (bb nil "(println 123)")))
+  (is (= 123 (bb nil "-e" "(println 123)")))
+  (is (= 123 (bb nil "--eval" "(println 123)")))
   (testing "distinguish automatically between expression or file name"
-    (is (= {:expression "(println 123)"
-            :command-line-args nil}
-           (main/parse-opts ["(println 123)"])))
-
-    (is (= {:file "src/babashka/main.clj"
-            :command-line-args nil}
-           (main/parse-opts ["src/babashka/main.clj"])))
-
-    (is (= {:expression "does-not-exist"
-            :command-line-args nil}
-           (main/parse-opts ["does-not-exist"])))))
+    (is (= {:result 8080} (bb nil "test/babashka/scripts/tools.cli.bb")))
+    (is (thrown-with-msg? Exception #"does not exist" (bb nil "foo.clj")))
+    (is (thrown-with-msg? Exception #"does not exist" (bb nil "-help")))))
 
 (deftest main-test
   (testing "-io behaves as identity"
@@ -250,8 +239,7 @@
 (deftest Pattern-test
   (is (= ["1" "2" "3"]
          (bb nil "(vec (.split (java.util.regex.Pattern/compile \"f\") \"1f2f3\"))")))
-  (is (= java.util.regex.Pattern/CANON_EQ
-         (bb nil "java.util.regex.Pattern/CANON_EQ"))))
+  (is (true? (bb nil "(some? java.util.regex.Pattern/CANON_EQ)"))))
 
 (deftest writer-test
   (let [tmp-file (java.io.File/createTempFile "bbb" "bbb")
