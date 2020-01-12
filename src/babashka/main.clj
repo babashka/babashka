@@ -213,7 +213,7 @@ Everything after that is bound to *command-line-args*."))
   '{tools.cli 'clojure.tools.cli
     edn clojure.edn
     wait babashka.wait
-    sig babashka.signal
+    signal babashka.signal
     shell clojure.java.shell
     io clojure.java.io
     async clojure.core.async

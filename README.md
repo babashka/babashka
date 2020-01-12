@@ -263,10 +263,10 @@ Waits for TCP connection to be available on host and port. Options map supports 
 
 Waits for file path to be available. Options map supports `:default`, `:timeout` and `:pause`. If `:timeout` is provided and reached, `:default`'s value (if any) is returned. The `:pause` option determines the time waited between retries.
 
-- `sig/pipe-signal-received?`. Usage:
+- `signal/pipe-signal-received?`. Usage:
 
 ``` clojure
-(sig/pipe-signal-received?)
+(signal/pipe-signal-received?)
 ```
 
 Returns true if `PIPE` signal was received. Example:
