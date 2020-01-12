@@ -220,6 +220,19 @@ Everything after that is bound to *command-line-args*."))
     csv clojure.data.csv
     json cheshire.core})
 
+(def cp-state (atom {:loader nil
+                     :cp nil}))
+
+(defn add-classpath* [add-to-cp]
+  (swap! cp-state
+         (fn [{:keys [:cp]}]
+           (let [new-cp
+                 (if-not cp add-to-cp
+                         (str cp (System/getProperty "path.separator") add-to-cp))]
+             {:loader (cp/loader new-cp)
+              :cp new-cp})))
+  nil)
+
 (def namespaces
   {'clojure.tools.cli tools-cli-namespace
    'clojure.edn {'read edn/read
@@ -234,7 +247,8 @@ Everything after that is bound to *command-line-args*."))
    'cheshire.core cheshire-core-namespace
    'clojure.stacktrace stacktrace-namespace
    'clojure.main {'demunge demunge}
-   'clojure.repl {'demunge demunge}})
+   'clojure.repl {'demunge demunge}
+   'babashka.classpath {'add-classpath add-classpath*}})
 
 (def bindings
   {'java.lang.System/exit exit ;; override exit, so we have more control
@@ -252,19 +266,6 @@ Everything after that is bound to *command-line-args*."))
                                 (str ": " m)) )))
               (flush)
               [nil 1])))))
-
-(def cp-state (atom {:loader nil
-                     :cp nil}))
-
-(defn add-classpath! [add-to-cp]
-  (swap! cp-state
-         (fn [{:keys [:cp]}]
-           (let [new-cp
-                 (if-not cp add-to-cp
-                         (str cp (System/getProperty "path.separator") add-to-cp))]
-             {:loader (cp/loader new-cp)
-              :cp new-cp})))
-  nil)
 
 (defn main
   [& args]
@@ -296,7 +297,7 @@ Everything after that is bound to *command-line-args*."))
         classpath (or classpath
                       (System/getenv "BABASHKA_CLASSPATH"))
         _ (when classpath
-            (add-classpath! classpath))
+            (add-classpath* classpath))
         load-fn (fn [{:keys [:namespace]}]
                   (when-let [{:keys [:loader]} @cp-state]
                     (let [res (cp/source-for-namespace loader namespace nil)]
@@ -310,8 +311,7 @@ Everything after that is bound to *command-line-args*."))
                                            '*command-line-args*
                                            (sci/new-dynamic-var '*command-line-args* command-line-args)
                                            '*file* vars/file-var
-                                           '*warn-on-reflection* reflection-var
-                                           'add-classpath! add-classpath!))
+                                           '*warn-on-reflection* reflection-var))
                              (assoc-in ['clojure.java.io 'resource]
                                        #(when-let [{:keys [:loader]} @cp-state] (cp/getResource loader % {:url? true}))))
              :bindings bindings
