@@ -253,6 +253,19 @@ Everything after that is bound to *command-line-args*."))
               (flush)
               [nil 1])))))
 
+(def cp-state (atom {:loader nil
+                     :cp nil}))
+
+(defn add-classpath! [add-to-cp]
+  (swap! cp-state
+         (fn [{:keys [:cp]}]
+           (let [new-cp
+                 (if-not cp add-to-cp
+                         (str cp (System/getProperty "path.separator") add-to-cp))]
+             {:loader (cp/loader new-cp)
+              :cp new-cp})))
+  nil)
+
 (defn main
   [& args]
   (handle-pipe!)
@@ -282,10 +295,10 @@ Everything after that is bound to *command-line-args*."))
         env (atom {})
         classpath (or classpath
                       (System/getenv "BABASHKA_CLASSPATH"))
-        loader (when classpath
-                 (cp/loader classpath))
-        load-fn (when classpath
-                  (fn [{:keys [:namespace]}]
+        _ (when classpath
+            (add-classpath! classpath))
+        load-fn (fn [{:keys [:namespace]}]
+                  (when-let [{:keys [:loader]} @cp-state]
                     (let [res (cp/source-for-namespace loader namespace nil)]
                       (when uberscript (swap! uberscript-sources conj (:source res)))
                       res)))
@@ -297,9 +310,10 @@ Everything after that is bound to *command-line-args*."))
                                            '*command-line-args*
                                            (sci/new-dynamic-var '*command-line-args* command-line-args)
                                            '*file* vars/file-var
-                                           '*warn-on-reflection* reflection-var))
+                                           '*warn-on-reflection* reflection-var
+                                           'add-classpath! add-classpath!))
                              (assoc-in ['clojure.java.io 'resource]
-                                       #(when classpath (cp/getResource loader % {:url? true}))))
+                                       #(when-let [{:keys [:loader]} @cp-state] (cp/getResource loader % {:url? true}))))
              :bindings bindings
              :env env
              :features #{:bb}
