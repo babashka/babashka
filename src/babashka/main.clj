@@ -348,7 +348,7 @@ Everything after that is bound to *command-line-args*."))
         exit-code
         (or exit-code
             (sci/with-bindings {reflection-var false
-                                vars/current-ns (vars/create-sci-ns ctx 'user)}
+                                vars/current-ns (vars/->SciNamespace 'user)}
               (or
                (second
                 (cond version
