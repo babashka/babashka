@@ -33,6 +33,8 @@ build_script:
 
     powershell -Command "if (Test-Path('graalvm')) { return } else { Expand-Archive graalvm.zip graalvm }"
 
+    git submodule update --recursive
+
     call script/compile.bat
 
 # - cmd: >-
