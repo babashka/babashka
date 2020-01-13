@@ -11,6 +11,7 @@
    [babashka.impl.clojure.main :refer [demunge]]
    [babashka.impl.clojure.stacktrace :refer [stacktrace-namespace print-stack-trace]]
    [babashka.impl.csv :as csv]
+   ;; see https://github.com/oracle/graal/issues/1784
    #_[babashka.impl.pipe-signal-handler :refer [handle-pipe! pipe-signal-received?]]
    [babashka.impl.repl :as repl]
    [babashka.impl.socket-repl :as socket-repl]
@@ -269,7 +270,7 @@ Everything after that is bound to *command-line-args*."))
 
 (defn main
   [& args]
-  (handle-pipe!)
+  #_(handle-pipe!)
   #_(binding [*out* *err*]
       (prn "M" (meta (get bindings 'future))))
   (let [t0 (System/currentTimeMillis)
