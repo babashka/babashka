@@ -20,9 +20,9 @@ build_script:
 
     call lein self-install
 
-    # set CLJ_KONDO_TEST_ENV=jvm
+# set CLJ_KONDO_TEST_ENV=jvm
 
-    # call script/test.bat
+# call script/test.bat
 
 - cmd: >-
     choco install windows-sdk-7.1
