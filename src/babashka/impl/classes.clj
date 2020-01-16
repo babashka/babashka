@@ -180,8 +180,8 @@
                    java.nio.file.Path
                    (instance? java.lang.Process v)
                    java.lang.Process
-                   (instance? java.io.OutputStream v)
-                   java.io.OutputStream)))))
+                   (instance? java.io.ByteArrayOutputStream v)
+                   java.io.ByteArrayOutputStream)))))
 
 (def class-map (gen-class-map))
 
