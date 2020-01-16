@@ -179,7 +179,10 @@
              (cond (instance? java.nio.file.Path v)
                    java.nio.file.Path
                    (instance? java.lang.Process v)
-                   java.lang.Process)))))
+                   java.lang.Process
+                   ;; added for issue #239 regarding clj-http-lite
+                   (instance? java.io.ByteArrayOutputStream v)
+                   java.io.ByteArrayOutputStream)))))
 
 (def class-map (gen-class-map))
 

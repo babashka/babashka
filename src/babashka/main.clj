@@ -108,8 +108,8 @@
                      (if (some opts-map [:file :socket-repl :expression :main])
                        (assoc opts-map
                               :command-line-args options)
-                       (let [opt (str/triml opt)
-                             c (.charAt opt 0)]
+                       (let [trimmed-opt (str/triml opt)
+                             c (.charAt trimmed-opt 0)]
                          (case c
                            (\( \{ \[ \* \@ \#)
                            (assoc opts-map

@@ -9,4 +9,10 @@
         org.clojure/data.csv {:mvn/version "0.1.4"},
         cheshire {:mvn/version "5.9.0"}}
  :aliases {:main
-           {:main-opts ["-m" "babashka.main"]}}}
+           {:main-opts ["-m" "babashka.main"]}
+           :profile
+           {:extra-deps
+            {com.clojure-goes-fast/clj-async-profiler {:mvn/version "0.4.0"}}
+            :extra-paths ["test"]
+            :jvm-opts ["-Djdk.attach.allowAttachSelf"]
+            :main-opts ["-m" "babashka.profile"]}}}
