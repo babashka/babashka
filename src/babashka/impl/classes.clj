@@ -179,7 +179,9 @@
              (cond (instance? java.nio.file.Path v)
                    java.nio.file.Path
                    (instance? java.lang.Process v)
-                   java.lang.Process)))))
+                   java.lang.Process
+                   (instance? java.io.OutputStream v)
+                   java.io.OutputStream)))))
 
 (def class-map (gen-class-map))
 
