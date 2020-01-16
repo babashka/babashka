@@ -19,5 +19,9 @@ export BABASHKA_CLASSPATH=$(clojure -Sdeps '{:deps {clj-http-lite {:git/url "htt
                  :content-type :json
                  :accept :json})))
 
-(prn (:status (client/put \"https://postman-echo.com/put\")))
+(prn (:status (client/put \"https://postman-echo.com/put\"
+                {:body (json/generate-string {:a 1})
+                 :headers {\"X-Hasura-Role\" \"admin\"}
+                 :content-type :json
+                 :accept :json})))
 "
