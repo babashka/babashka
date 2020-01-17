@@ -8,5 +8,6 @@
 (require '[clj-async-profiler.core :as prof])
 
 (defn -main [& options]
-  (prof/profile (apply main/main options))
+  (prof/profile (dotimes [_ 100]
+                  (apply main/main options)))
   (shutdown-agents))
