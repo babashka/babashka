@@ -420,8 +420,17 @@ Everything after that is bound to *command-line-args*."))
 
 (defn -main
   [& args]
-  (let [exit-code (apply main args)]
-    (System/exit exit-code)))
+  (if-let [dev-opts (System/getenv "BABASHKA_DEV")]
+    (let [{:keys [:n]} (edn/read-string dev-opts)
+          last-iteration (dec n)]
+      (dotimes [i n]
+        (if (< i last-iteration)
+          (with-out-str (apply main args))
+          (do (apply main args)
+              (binding [*out* *err*]
+                (println "ran" n "times"))))))
+    (let [exit-code (apply main args)]
+      (System/exit exit-code))))
 
 ;;;; Scratch
 
