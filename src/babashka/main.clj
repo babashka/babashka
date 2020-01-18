@@ -191,7 +191,7 @@ Everything after that is bound to *command-line-args*."))
 (defn load-file* [sci-ctx f]
   (let [f (io/file f)
         s (slurp f)]
-    (sci/with-bindings {vars/file-var (.getCanonicalPath f)}
+    (sci/with-bindings {vars/current-file (.getCanonicalPath f)}
       (eval-string* sci-ctx s))))
 
 (defn eval* [sci-ctx form]
@@ -303,14 +303,13 @@ Everything after that is bound to *command-line-args*."))
                     (let [res (cp/source-for-namespace loader namespace nil)]
                       (when uberscript (swap! uberscript-sources conj (:source res)))
                       res)))
-        _ (when file (vars/bindRoot vars/file-var (.getCanonicalPath (io/file file))))
+        _ (when file (vars/bindRoot vars/current-file (.getCanonicalPath (io/file file))))
         ctx {:aliases aliases
              :namespaces (-> namespaces
                              (assoc 'clojure.core
                                     (assoc core-extras
                                            '*command-line-args*
                                            (sci/new-dynamic-var '*command-line-args* command-line-args)
-                                           '*file* vars/file-var
                                            '*warn-on-reflection* reflection-var))
                              (assoc-in ['clojure.java.io 'resource]
                                        #(when-let [{:keys [:loader]} @cp-state] (cp/getResource loader % {:url? true}))))
