@@ -220,8 +220,7 @@ Everything after that is bound to *command-line-args*."))
     csv clojure.data.csv
     json cheshire.core})
 
-(def cp-state (atom {:loader nil
-                     :cp nil}))
+(def cp-state (atom nil))
 
 (defn add-classpath* [add-to-cp]
   (swap! cp-state
