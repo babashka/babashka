@@ -55,6 +55,8 @@
       (is (socket-command "#?(:bb 1337 :clj 8888)" "1337")))
     (testing "*1, *2, *3, *e"
       (is (socket-command "1\n*1" "1")))
+    (testing "*ns*"
+      (is (socket-command "(ns foo.bar) (ns-name *ns*)" "foo.bar")))
     (finally
       (if tu/jvm?
         (stop-repl!)
