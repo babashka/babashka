@@ -330,7 +330,8 @@ Everything after that is bound to *command-line-args*."))
                         ProcessBuilder java.lang.ProcessBuilder
                         String java.lang.String
                         System java.lang.System
-                        Thread java.lang.Thread}
+                        Thread java.lang.Thread
+                        Throwable java.lang.Throwable}
              :load-fn load-fn
              :dry-run uberscript}
         ctx (addons/future ctx)
