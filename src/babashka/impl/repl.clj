@@ -7,6 +7,7 @@
    [clojure.tools.reader.reader-types :as r]
    [sci.impl.interpreter :refer [eval-form]]
    [sci.impl.parser :as parser]
+   [sci.impl.vars :as vars]
    [sci.core :as sci]
    [sci.impl.io :as sio]))
 
@@ -58,7 +59,7 @@
                                        expr)]
                     ret)))
       :need-prompt (or need-prompt (fn [] true))
-      :prompt (or prompt #(sio/printf "%s=> " (-> sci-ctx :env deref :current-ns)))
+      :prompt (or prompt #(sio/printf "%s=> " (vars/current-ns-name)))
       :flush (or flush sio/flush)
       :print (or print sio/prn)
       :caught (or caught repl-caught)))))
