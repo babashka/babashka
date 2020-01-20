@@ -8,6 +8,7 @@
 (set! *warn-on-reflection* true)
 
 (defn bb-jvm [input & args]
+  (reset! main/cp-state nil)
   (let [os (java.io.StringWriter.)
         es (java.io.StringWriter.)
         is (when input

@@ -100,21 +100,21 @@
                      ("--eval", "-e")
                      (let [options (next options)]
                        (recur (next options)
-                              (assoc opts-map :expression (first options))))
+                              (update opts-map :expressions (fnil conj []) (first options))))
                      ("--main", "-m")
                      (let [options (next options)]
                        (recur (next options)
                               (assoc opts-map :main (first options))))
-                     (if (some opts-map [:file :socket-repl :expression :main])
+                     (if (some opts-map [:file :socket-repl :expressions :main])
                        (assoc opts-map
                               :command-line-args options)
                        (let [trimmed-opt (str/triml opt)
                              c (.charAt trimmed-opt 0)]
                          (case c
                            (\( \{ \[ \* \@ \#)
-                           (assoc opts-map
-                                  :expression opt
-                                  :command-line-args (next options))
+                           (-> opts-map
+                               (update :expressions (fnil conj []) (first options))
+                               (assoc :command-line-args (next options)))
                            (assoc opts-map
                                   :file opt
                                   :command-line-args (next options)))))))
@@ -192,7 +192,7 @@ Everything after that is bound to *command-line-args*."))
 (defn load-file* [sci-ctx f]
   (let [f (io/file f)
         s (slurp f)]
-    (sci/with-bindings {vars/file-var (.getCanonicalPath f)}
+    (sci/with-bindings {vars/current-file (.getCanonicalPath f)}
       (eval-string* sci-ctx s))))
 
 (defn eval* [sci-ctx form]
@@ -221,8 +221,7 @@ Everything after that is bound to *command-line-args*."))
     csv clojure.data.csv
     json cheshire.core})
 
-(def cp-state (atom {:loader nil
-                     :cp nil}))
+(def cp-state (atom nil))
 
 (defn add-classpath* [add-to-cp]
   (swap! cp-state
@@ -276,7 +275,7 @@ Everything after that is bound to *command-line-args*."))
   (let [t0 (System/currentTimeMillis)
         {:keys [:version :shell-in :edn-in :shell-out :edn-out
                 :help? :file :command-line-args
-                :expression :stream? :time?
+                :expressions :stream? :time?
                 :repl :socket-repl
                 :verbose? :classpath
                 :main :uberscript] :as _opts}
@@ -304,14 +303,13 @@ Everything after that is bound to *command-line-args*."))
                     (let [res (cp/source-for-namespace loader namespace nil)]
                       (when uberscript (swap! uberscript-sources conj (:source res)))
                       res)))
-        _ (when file (vars/bindRoot vars/file-var (.getCanonicalPath (io/file file))))
+        _ (when file (vars/bindRoot vars/current-file (.getCanonicalPath (io/file file))))
         ctx {:aliases aliases
              :namespaces (-> namespaces
                              (assoc 'clojure.core
                                     (assoc core-extras
                                            '*command-line-args*
                                            (sci/new-dynamic-var '*command-line-args* command-line-args)
-                                           '*file* vars/file-var
                                            '*warn-on-reflection* reflection-var))
                              (assoc-in ['clojure.java.io 'resource]
                                        #(when-let [{:keys [:loader]} @cp-state] (cp/getResource loader % {:url? true}))))
@@ -333,7 +331,8 @@ Everything after that is bound to *command-line-args*."))
                         ProcessBuilder java.lang.ProcessBuilder
                         String java.lang.String
                         System java.lang.System
-                        Thread java.lang.Thread}
+                        Thread java.lang.Thread
+                        Throwable java.lang.Throwable}
              :load-fn load-fn
              :dry-run uberscript}
         ctx (addons/future ctx)
@@ -350,13 +349,14 @@ Everything after that is bound to *command-line-args*."))
                                (let [opts (apply hash-map opts)]
                                  (repl/start-repl! sci-ctx opts))))))
         preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim))
-        [expression exit-code]
-        (cond expression [expression nil]
-              main [(format "(ns user (:require [%1$s])) (apply %1$s/-main *command-line-args*)"
-                            main) nil]
-              file (try [(read-file file) nil]
+        [expressions exit-code]
+        (cond expressions [expressions nil]
+              main [[(format "(ns user (:require [%1$s])) (apply %1$s/-main *command-line-args*)"
+                             main)] nil]
+              file (try [[(read-file file)] nil]
                         (catch Exception e
                           (error-handler* e verbose?))))
+        expression (str/join " " expressions) ;; this might mess with the locations...
         exit-code
         ;; handle preloads
         (if exit-code exit-code

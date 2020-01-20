@@ -19,7 +19,8 @@
   (testing "distinguish automatically between expression or file name"
     (is (= {:result 8080} (bb nil "test/babashka/scripts/tools.cli.bb")))
     (is (thrown-with-msg? Exception #"does not exist" (bb nil "foo.clj")))
-    (is (thrown-with-msg? Exception #"does not exist" (bb nil "-help")))))
+    (is (thrown-with-msg? Exception #"does not exist" (bb nil "-help"))))
+  (is (= "1 2 3" (bb nil "-e" "(require '[clojure.string :as str1])" "-e" "(str1/join \" \" [1 2 3])"))))
 
 (deftest print-error-test
   (is (thrown-with-msg? Exception #"java.lang.NullPointerException"
