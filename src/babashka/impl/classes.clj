@@ -21,9 +21,12 @@
           java.io.InputStream
           java.io.IOException
           java.io.OutputStream
+          java.io.PrintWriter
+          java.io.PushbackReader
           java.io.Reader
           java.io.StringReader
           java.io.StringWriter
+          java.io.Writer
           java.lang.ArithmeticException
           java.lang.AssertionError
           java.lang.Boolean
