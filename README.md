@@ -656,6 +656,21 @@ break> x
 1
 ```
 
+#### [clojure-csv](https://github.com/davidsantiago/clojure-csv)
+
+A library for reading and writing CSV files. Note that babashka already comes
+with `clojure.data.csv`, but in case you need this other library, this is how
+you can use it:
+
+``` shell
+export BABASHKA_CLASSPATH="$(clojure -Sdeps '{:deps {clojure-csv {:mvn/version "RELEASE"}}}' -Spath)"
+
+./bb -e "
+(require '[clojure-csv.core :as csv])
+(csv/write-csv (csv/parse-csv \"a,b,c\n1,2,3\"))
+"
+```
+
 ### Blogs
 
 - [Clojure Start Time in 2019](https://stuartsierra.com/2019/12/21/clojure-start-time-in-2019) by Stuart Sierra
