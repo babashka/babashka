@@ -21,6 +21,7 @@
           java.io.InputStream
           java.io.IOException
           java.io.OutputStream
+          java.io.Reader
           java.io.StringReader
           java.io.StringWriter
           java.lang.ArithmeticException
@@ -34,6 +35,7 @@
           java.util.concurrent.LinkedBlockingQueue
           java.lang.Object
           java.lang.String
+          java.lang.StringBuilder
           java.lang.System
           java.lang.Throwable
           java.lang.Process

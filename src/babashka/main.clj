@@ -329,6 +329,7 @@ Everything after that is bound to *command-line-args*."))
                         Object java.lang.Object
                         ProcessBuilder java.lang.ProcessBuilder
                         String java.lang.String
+                        StringBuilder java.lang.StringBuilder
                         System java.lang.System
                         Thread java.lang.Thread
                         Throwable java.lang.Throwable}
