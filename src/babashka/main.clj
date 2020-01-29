@@ -14,6 +14,7 @@
    [babashka.impl.pipe-signal-handler :refer [handle-pipe! pipe-signal-received?]]
    [babashka.impl.repl :as repl]
    [babashka.impl.socket-repl :as socket-repl]
+   [babashka.impl.test :as t]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
    [babashka.wait :as wait]
    [clojure.edn :as edn]
@@ -247,6 +248,7 @@ Everything after that is bound to *command-line-args*."))
    'clojure.stacktrace stacktrace-namespace
    'clojure.main {'demunge demunge}
    'clojure.repl {'demunge demunge}
+   'clojure.test t/clojure-test-namespace
    'babashka.classpath {'add-classpath add-classpath*}})
 
 (def bindings
