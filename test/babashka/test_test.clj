@@ -45,3 +45,18 @@
 :each-before
 :each-after
 :once-after")))))
+
+(deftest with-test
+  (let [output (bb "
+(require '[clojure.test :as t])
+(t/with-test
+  (defn my-function [x y]
+    (+ x y))
+  (t/is (= 4 (my-function 2 2)))
+  (t/is (= 7 (my-function 3 4))))
+(t/run-tests)")]
+    (is (str/includes? output "Ran 1 tests containing 2 assertions."))))
+
+(deftest testing-test
+  (is (str/includes? (bb "(require '[clojure.test :as t]) (t/testing \"foo\" (t/is (= 4 5)))")
+                     "foo")))

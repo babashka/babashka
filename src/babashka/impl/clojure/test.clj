@@ -602,7 +602,7 @@
   but must occur inside a test function (deftest)."
   {:added "1.1"}
   [string & body]
-  `(binding [*testing-contexts* (conj *testing-contexts* ~string)]
+  `(binding [clojure.test/*testing-contexts* (conj clojure.test/*testing-contexts* ~string)]
      ~@body))
 
 
