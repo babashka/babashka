@@ -30,7 +30,10 @@
    'deftest- (macrofy @#'t/deftest-)
    'set-test (macrofy @#'t/set-test)
    ;; fixtures
-   ;; TODO
+   'use-fixtures t/use-fixtures
+   ;;'default-fixture t/default-fixture
+   'compose-fixtures t/compose-fixtures
+   'join-fixtures t/join-fixtures
    ;; running tests: low level
    'test-var t/test-var
    'test-vars t/test-vars

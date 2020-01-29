@@ -27,3 +27,21 @@
     (is (str/includes? output "Testing user"))
     (is (str/includes? output "Testing foobar"))
     (is (str/includes? output "{:test 1, :pass 0, :fail 1, :error 0, :type :summary}"))))
+
+(deftest fixtures-test
+  (let [output (bb "
+(require '[clojure.test :as t])
+(defn once [f] (prn :once-before) (f) (prn :once-after))
+(defn each [f] (prn :each-before) (f) (prn :each-after))
+(t/use-fixtures :once once)
+(t/use-fixtures :each each)
+(t/deftest foo)
+(t/deftest bar)
+(t/run-tests)")]
+    (is (str/includes? output (str/trim "
+:once-before
+:each-before
+:each-after
+:each-before
+:each-after
+:once-after")))))
