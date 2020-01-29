@@ -710,7 +710,6 @@
   with *testing-vars* bound to (conj *testing-vars* v)."
   {:dynamic true, :added "1.1"}
   [v]
-  (prn "V" v (:test (meta v)))
   (when-let [t (:test (meta v))]
     (binding [*testing-vars* (conj *testing-vars* v)]
       (do-report {:type :begin-test-var, :var v})
