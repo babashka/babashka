@@ -21,6 +21,12 @@
    'testing-contexts-str t/testing-contexts-str
    'inc-report-counter t/inc-report-counter
    'do-report t/do-report
+   ;; assertion utilities
+   'function? t/function?
+   'assert-predicate t/assert-predicate
+   'assert-any t/assert-any
+   ;; assertion methods
+   'assert-expr t/assert-expr
    'try-expr (macrofy @#'t/try-expr)
    ;; assertion macros
    'is (macrofy @#'t/is)
