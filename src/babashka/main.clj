@@ -10,6 +10,7 @@
    [babashka.impl.clojure.java.shell :refer [shell-namespace]]
    [babashka.impl.clojure.main :refer [demunge]]
    [babashka.impl.clojure.stacktrace :refer [stacktrace-namespace print-stack-trace]]
+   [babashka.impl.common :as common]
    [babashka.impl.csv :as csv]
    [babashka.impl.pipe-signal-handler :refer [handle-pipe! pipe-signal-received?]]
    [babashka.impl.repl :as repl]
@@ -339,6 +340,7 @@ Everything after that is bound to *command-line-args*."))
              :dry-run uberscript}
         ctx (addons/future ctx)
         sci-ctx (sci-opts/init ctx)
+        _ (vreset! common/ctx sci-ctx)
         _ (swap! (:env sci-ctx)
                  (fn [env]
                    (update-in env [:namespaces 'clojure.core] assoc

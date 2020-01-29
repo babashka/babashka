@@ -232,13 +232,14 @@
    For additional event types, see the examples in the code.
 "}
     babashka.impl.clojure.test
-  (:require [clojure.template :as temp]
-            [babashka.impl.clojure.stacktrace :as stack]
+  (:require [babashka.impl.clojure.stacktrace :as stack]
+            [babashka.impl.common :refer [ctx]]
+            [clojure.string :as str]
+            [clojure.template :as temp]
             [sci.core :as sci]
-            [sci.impl.namespaces :as sci-namespaces]
             [sci.impl.analyzer :as ana]
-            [sci.impl.vars :as vars]
-            [clojure.string :as str]))
+            [sci.impl.namespaces :as sci-namespaces]
+            [sci.impl.vars :as vars]))
 
 ;; Nothing is marked "private" here, so you can rebind things to plug
 ;; in your own testing or reporting frameworks.
@@ -421,9 +422,9 @@
   "Returns true if argument is a function or a symbol that resolves to
   a function (not a macro)."
   {:added "1.1"}
-  [ctx x]
+  [x]
   (if (symbol? x) ;; TODO
-    (when-let [v (second (ana/lookup ctx x false))]
+    (when-let [v (second (ana/lookup @ctx x false))]
       (when-let [value (if (vars/var? v) @v v)]
         (and (fn? value)
              (not (:sci/macro (meta v))))))
@@ -470,22 +471,22 @@
 ;; symbol in the test expression.
 
 (defmulti assert-expr
-  (fn [ctx msg form]
+  (fn [msg form]
     (cond
       (nil? form) :always-fail
       (seq? form) (first form)
       :else :default)))
 
-(defmethod assert-expr :always-fail [ctx msg form]
+(defmethod assert-expr :always-fail [msg form]
   ;; nil test: always fail
   `(clojure.test/do-report {:type :fail, :message ~msg}))
 
-(defmethod assert-expr :default [ctx msg form]
-  (if (and (sequential? form) (function? ctx (first form)))
+(defmethod assert-expr :default [msg form]
+  (if (and (sequential? form) (function? (first form)))
     (assert-predicate msg form)
     (assert-any msg form)))
 
-(defmethod assert-expr 'instance? [ctx msg form]
+(defmethod assert-expr 'instance? [msg form]
   ;; Test if x is an instance of y.
   `(let [klass# ~(nth form 1)
          object# ~(nth form 2)]
@@ -497,7 +498,7 @@
                      :expected '~form, :actual (class object#)}))
        result#)))
 
-(defmethod assert-expr 'thrown? [ctx msg form]
+(defmethod assert-expr 'thrown? [msg form]
   ;; (is (thrown? c expr))
   ;; Asserts that evaluating expr throws an exception of class c.
   ;; Returns the exception thrown.
@@ -511,7 +512,7 @@
                         :expected '~form, :actual e#})
             e#))))
 
-(defmethod assert-expr 'thrown-with-msg? [ctx msg form]
+(defmethod assert-expr 'thrown-with-msg? [msg form]
   ;; (is (thrown-with-msg? c re expr))
   ;; Asserts that evaluating expr throws an exception of class c.
   ;; Also asserts that the message string of the exception matches
@@ -535,8 +536,8 @@
   "Used by the 'is' macro to catch unexpected exceptions.
   You don't call this."
   {:added "1.1"}
-  [ctx msg form]
-  `(try ~(assert-expr ctx msg form)
+  [msg form]
+  `(try ~(assert-expr msg form)
         (catch Throwable t#
           (clojure.test/do-report {:type :error, :message ~msg,
                                    :expected '~form, :actual t#}))))

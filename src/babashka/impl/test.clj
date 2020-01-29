@@ -26,11 +26,9 @@
    'assert-predicate t/assert-predicate
    'assert-any t/assert-any
    ;; assertion methods
-   'assert-expr (contextualize (fn [ctx msg form]
-                                 (t/assert-expr ctx msg form)))
+   'assert-expr t/assert-expr
    'try-expr (with-meta @#'t/try-expr
-               {:sci.impl/op :needs-ctx
-                :sci/macro true})
+               {:sci/macro true})
    ;; assertion macros
    'is (with-meta @#'t/is
          {;; :sci.impl/op :needs-ctx

@@ -2,7 +2,8 @@
   (:require
    [babashka.test-utils :as tu]
    [clojure.string :as str]
-   [clojure.test :as t :refer [deftest is]]))
+   [clojure.test :as t :refer [deftest is]]
+   [clojure.java.io :as io]))
 
 (defn bb [& args]
   (apply tu/bb nil (map str args)))
@@ -64,3 +65,7 @@
 (deftest are-test
   (is (str/includes? (bb "(require '[clojure.test :as t]) (t/are [x y] (= x y) 2 (+ 1 2))")
                      "expected: (= 2 (+ 1 2))")))
+
+(deftest assert-expr-test
+  (is (str/includes? (bb (.getPath (io/file "test-resources" "babashka" "assert_expr.clj")))
+                     "3.14 should be roughly 3.141592653589793")))
