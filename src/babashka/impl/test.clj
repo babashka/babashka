@@ -4,6 +4,9 @@
 (defn macrofy [v]
   (with-meta v {:sci/macro true}))
 
+(defn contextualize [v]
+  (with-meta v {:sci.impl/op :needs-ctx}))
+
 (def clojure-test-namespace
   {'*load-tests* t/load-tests
    '*stack-trace-depth* t/stack-trace-depth
@@ -34,6 +37,6 @@
    'test-all-vars (with-meta t/test-all-vars {:sci.impl/op :needs-ctx})
    'test-ns (with-meta t/test-ns {:sci.impl/op :needs-ctx})
    ;; running tests: high level
-   'run-tests (with-meta t/run-tests {:sci.impl/op :needs-ctx})
-   ;;'run-all-tests t/run-all-tests
+   'run-tests (contextualize t/run-tests)
+   'run-all-tests (contextualize t/run-all-tests)
    'successful? t/successful?})
