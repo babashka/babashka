@@ -235,6 +235,8 @@
   (:require [clojure.template :as temp]
             [babashka.impl.clojure.stacktrace :as stack]
             [sci.core :as sci]
+            [sci.impl.namespaces :as sci-namespaces]
+            [sci.impl.vars :as vars]
             [clojure.string :as str]))
 
 ;; Nothing is marked "private" here, so you can rebind things to plug
@@ -318,7 +320,7 @@
   {:added "1.1"}
   [name]
   (when @report-counters
-    (swap! report-counters update-in [name] (fnil inc 0))))
+    (swap! @report-counters update-in [name] (fnil inc 0))))
 
 ;;; TEST RESULT REPORTING
 
@@ -403,7 +405,7 @@
 
 (defmethod report :begin-test-ns [m]
   (with-test-out-internal
-    (println "\nTesting" (ns-name (:ns m)))))
+    (println "\nTesting" (sci-namespaces/sci-ns-name (:ns m)))))
 
 ;; Ignore these message types:
 (defmethod report :end-test-ns [m])
@@ -721,7 +723,7 @@
                          :expected nil, :actual e})))
       (do-report {:type :end-test-var, :var v}))))
 
-#_(defn test-vars
+(defn test-vars
   "Groups vars by their namespace and runs test-vars on them with
    appropriate fixtures applied."
   {:added "1.6"}
@@ -735,13 +737,13 @@
            (when (:test (meta v))
              (each-fixture-fn (fn [] (test-var v))))))))))
 
-#_(defn test-all-vars
+(defn test-all-vars
   "Calls test-vars on every var interned in the namespace, with fixtures."
   {:added "1.1"}
-  [ns]
-  (test-vars (vals (ns-interns ns))))
+  [ctx ns]
+  (test-vars (vals (sci-namespaces/sci-ns-interns ctx ns))))
 
-#_(defn test-ns
+(defn test-ns
   "If the namespace defines a function named test-ns-hook, calls that.
   Otherwise, calls test-all-vars on the namespace.  'ns' is a
   namespace object or a symbol.
@@ -750,30 +752,31 @@
   *initial-report-counters*.  Returns the final, dereferenced state of
   *report-counters*."
   {:added "1.1"}
-  [ns]
-  (binding [*report-counters* (ref *initial-report-counters*)]
-    (let [ns-obj (the-ns ns)]
+  [ctx ns]
+  (sci/binding [report-counters (atom @initial-report-counters)]
+    (let [ns-obj (sci-namespaces/sci-the-ns ctx ns)]
       (do-report {:type :begin-test-ns, :ns ns-obj})
       ;; If the namespace has a test-ns-hook function, call that:
-      (if-let [v (find-var (symbol (str (ns-name ns-obj)) "test-ns-hook"))]
-        ((var-get v))
-        ;; Otherwise, just test every var in the namespace.
-        (test-all-vars ns-obj))
+      (let [ns-sym (sci-namespaces/sci-ns-name ns-obj)]
+        (if-let [v (get-in @(:env ctx) [:namespaces ns-sym 'test-ns-hook])]
+          (@v)
+          ;; Otherwise, just test every var in the namespace.
+          (test-all-vars ctx ns-obj)))
       (do-report {:type :end-test-ns, :ns ns-obj}))
-    @*report-counters*))
+    @@report-counters))
 
 
 
 ;;; RUNNING TESTS: HIGH-LEVEL FUNCTIONS
 
-#_(defn run-tests
+(defn run-tests
   "Runs all tests in the given namespaces; prints results.
   Defaults to current namespace if none given.  Returns a map
   summarizing test results."
   {:added "1.1"}
-  ([] (run-tests *ns*))
-  ([& namespaces]
-   (let [summary (assoc (apply merge-with + (map test-ns namespaces))
+  ([ctx] (run-tests ctx @vars/current-ns))
+  ([ctx & namespaces]
+   (let [summary (assoc (apply merge-with + (map #(test-ns ctx %) namespaces))
                         :type :summary)]
      (do-report summary)
      summary)))

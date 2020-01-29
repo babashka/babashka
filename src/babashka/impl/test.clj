@@ -31,9 +31,9 @@
    ;; running tests: low level
    'test-var t/test-var
    ;;'test-vars t/test-vars
-   ;;'test-all-vars t/test-all-vars
-   ;;'test-ns t/test-ns
+   'test-all-vars (with-meta t/test-all-vars {:sci.impl/op :needs-ctx})
+   'test-ns (with-meta t/test-ns {:sci.impl/op :needs-ctx})
    ;; running tests: high level
-   ;; 'run-tests t/run-tests
+   'run-tests (with-meta t/run-tests {:sci.impl/op :needs-ctx})
    ;;'run-all-tests t/run-all-tests
    'successful? t/successful?})

@@ -1,10 +1,8 @@
 (ns babashka.test-test
   (:require
    [babashka.test-utils :as tu]
-   [clojure.edn :as edn]
-   [clojure.java.io :as io]
-   [clojure.test :as t :refer [deftest is]]
-   [clojure.string :as str]))
+   [clojure.string :as str]
+   [clojure.test :as t :refer [deftest is]]))
 
 (defn bb [& args]
   (apply tu/bb nil (map str args)))
@@ -13,3 +11,8 @@
   (is (str/includes?
        (bb "(require '[clojure.test :as t]) (t/deftest foo (t/is (= 4 5))) (foo)")
        "expected: (= 4 5)\n  actual: false\n")))
+
+(deftest run-tests-test
+  (let [output (bb "(require '[clojure.test :as t]) (t/deftest foo (t/is (= 4 5))) (t/run-tests)")]
+    (is (str/includes? output "Testing user"))
+    (is (str/includes? output "{:test 1, :pass 0, :fail 1, :error 0, :type :summary}"))))
