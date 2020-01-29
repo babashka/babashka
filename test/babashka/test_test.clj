@@ -10,7 +10,7 @@
 (deftest deftest-test
   (is (str/includes?
        (bb "(require '[clojure.test :as t]) (t/deftest foo (t/is (= 4 5))) (foo)")
-       "expected: (= 4 5)\n  actual: false\n")))
+       "expected: (= 4 5)\n  actual: (not (= 4 5))\n")))
 
 (deftest run-tests-test
   (let [output (bb "(require '[clojure.test :as t]) (t/deftest foo (t/is (= 4 5))) (t/run-tests)")]

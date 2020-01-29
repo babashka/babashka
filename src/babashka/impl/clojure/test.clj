@@ -236,6 +236,7 @@
             [babashka.impl.clojure.stacktrace :as stack]
             [sci.core :as sci]
             [sci.impl.namespaces :as sci-namespaces]
+            [sci.impl.analyzer :as ana]
             [sci.impl.vars :as vars]
             [clojure.string :as str]))
 
@@ -422,8 +423,8 @@
   {:added "1.1"}
   [ctx x]
   (if (symbol? x) ;; TODO
-    false #_(when-let [v (resolve x)]
-      (when-let [value @v]
+    (when-let [v (second (ana/lookup ctx x false))]
+      (when-let [value (if (vars/var? v) @v v)]
         (and (fn? value)
              (not (:sci/macro (meta v))))))
     (fn? x)))

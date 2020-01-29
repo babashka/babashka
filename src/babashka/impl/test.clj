@@ -16,7 +16,7 @@
    '*testing-contexts* t/testing-contexts
    '*test-out* t/test-out
    ;; 'with-test-out (macrofy @#'t/with-test-out)
-   'file-position t/file-position
+   ;; 'file-position t/file-position
    'testing-vars-str t/testing-vars-str
    'testing-contexts-str t/testing-contexts-str
    'inc-report-counter t/inc-report-counter
