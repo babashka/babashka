@@ -70,6 +70,14 @@
                                     (assoc opts-map
                                            :shell-in true
                                            :shell-out true))
+                     ("-iO") (recur (next options)
+                                    (assoc opts-map
+                                           :shell-in true
+                                           :edn-out true))
+                     ("-Io") (recur (next options)
+                                    (assoc opts-map
+                                           :edn-in true
+                                           :shell-out true))
                      ("-IO") (recur (next options)
                                     (assoc opts-map
                                            :edn-in true
