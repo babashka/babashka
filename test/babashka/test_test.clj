@@ -60,3 +60,7 @@
 (deftest testing-test
   (is (str/includes? (bb "(require '[clojure.test :as t]) (t/testing \"foo\" (t/is (= 4 5)))")
                      "foo")))
+
+(deftest are-test
+  (is (str/includes? (bb "(require '[clojure.test :as t]) (t/are [x y] (= x y) 2 (+ 1 2))")
+                     "expected: (= 2 (+ 1 2))")))

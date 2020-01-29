@@ -24,6 +24,7 @@
    'try-expr (macrofy @#'t/try-expr)
    ;; assertion macros
    'is (macrofy @#'t/is)
+   'are (macrofy @#'t/are)
    'testing (macrofy @#'t/testing)
    ;; defining tests
    'with-test (macrofy @#'t/with-test)

@@ -594,7 +594,7 @@
        (and (pos? (count argv))
             (pos? (count args))
             (zero? (mod (count args) (count argv)))))
-    `(temp/do-template ~argv (is ~expr) ~@args)
+    `(temp/do-template ~argv (clojure.test/is ~expr) ~@args)
     (throw (IllegalArgumentException. "The number of args doesn't match are's argv."))))
 
 (defmacro testing
