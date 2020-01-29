@@ -181,6 +181,7 @@ enumerated explicitly.
   `async`. The `alt` and `go` macros are not available but `alts!!` does work as
   it is a function.
 - `clojure.stacktrace`
+- `clojure.test`
 - [`clojure.tools.cli`](https://github.com/clojure/tools.cli) aliased as `tools.cli`
 - [`clojure.data.csv`](https://github.com/clojure/data.csv) aliased as `csv`
 - [`cheshire.core`](https://github.com/dakrone/cheshire) aliased as `json`
@@ -597,8 +598,10 @@ Differences with Clojure:
 
 - A subset of Java classes are supported.
 
-- Only the `clojure.core`, `clojure.set`, `clojure.string` and `clojure.walk`
-  namespaces are available from Clojure.
+- Only the `clojure.core`, `clojure.edn`, `clojue.java.io`,
+  `clojure.java.shell`, `clojure.set`, `clojure.stacktrace`, `clojure.string`,
+  `clojure.template`, `clojure.test` and `clojure.walk` namespaces are available
+  from Clojure.
 
 - Interpretation comes with overhead. Therefore tight loops are likely slower
   than in Clojure on the JVM.
@@ -616,13 +619,26 @@ The following libraries are known to work with Babashka:
 A port of the [clojure](https://github.com/clojure/brew-install/) bash script to
 Clojure / babashka.
 
-#### [spartan.test](https://github.com/borkdude/spartan.test/)
-
-A minimal test framework compatible with babashka.
-
 #### [spartan.spec](https://github.com/borkdude/spartan.spec/)
 
 An babashka-compatible implementation of `clojure.spec.alpha`.
+
+#### [missing.test.assertions](https://github.com/borkdude/missing.test.assertions)
+
+This library checks if no assertions have been made in a test:
+
+``` shell
+$ export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {borkdude/missing.test.assertions {:git/url "https://github.com/borkdude/missing.test.assertions" :sha "603cb01bee72fb17addacc53c34c85612684ad70"}}}')
+
+$ lein bb "(require '[missing.test.assertions] '[clojure.test :as t]) (t/deftest foo) (t/run-tests)"
+
+Testing user
+WARNING: no assertions made in test foo
+
+Ran 1 tests containing 0 assertions.
+0 failures, 0 errors.
+{:test 1, :pass 0, :fail 0, :error 0, :type :summary}
+```
 
 #### [medley](https://github.com/borkdude/medley/)
 
@@ -670,6 +686,12 @@ export BABASHKA_CLASSPATH="$(clojure -Sdeps '{:deps {clojure-csv {:mvn/version "
 (csv/write-csv (csv/parse-csv \"a,b,c\n1,2,3\"))
 "
 ```
+
+#### [spartan.test](https://github.com/borkdude/spartan.test/)
+
+A minimal test framework compatible with babashka. This library is deprecated
+since babashka v0.0.68 which has `clojure.test` built-in.
+
 
 ### Blogs
 
