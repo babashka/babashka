@@ -26,10 +26,15 @@
    'assert-predicate t/assert-predicate
    'assert-any t/assert-any
    ;; assertion methods
-   'assert-expr t/assert-expr
-   'try-expr (macrofy @#'t/try-expr)
+   'assert-expr (contextualize (fn [ctx msg form]
+                                 (t/assert-expr ctx msg form)))
+   'try-expr (with-meta @#'t/try-expr
+               {:sci.impl/op :needs-ctx
+                :sci/macro true})
    ;; assertion macros
-   'is (macrofy @#'t/is)
+   'is (with-meta @#'t/is
+         {;; :sci.impl/op :needs-ctx
+          :sci/macro true})
    'are (macrofy @#'t/are)
    'testing (macrofy @#'t/testing)
    ;; defining tests

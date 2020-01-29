@@ -420,7 +420,7 @@
   "Returns true if argument is a function or a symbol that resolves to
   a function (not a macro)."
   {:added "1.1"}
-  [x]
+  [ctx x]
   (if (symbol? x) ;; TODO
     false #_(when-let [v (resolve x)]
       (when-let [value @v]
@@ -469,22 +469,22 @@
 ;; symbol in the test expression.
 
 (defmulti assert-expr
-  (fn [msg form]
+  (fn [ctx msg form]
     (cond
       (nil? form) :always-fail
       (seq? form) (first form)
       :else :default)))
 
-(defmethod assert-expr :always-fail [msg form]
+(defmethod assert-expr :always-fail [ctx msg form]
   ;; nil test: always fail
   `(clojure.test/do-report {:type :fail, :message ~msg}))
 
-(defmethod assert-expr :default [msg form]
-  (if (and (sequential? form) (function? (first form)))
+(defmethod assert-expr :default [ctx msg form]
+  (if (and (sequential? form) (function? ctx (first form)))
     (assert-predicate msg form)
     (assert-any msg form)))
 
-(defmethod assert-expr 'instance? [msg form]
+(defmethod assert-expr 'instance? [ctx msg form]
   ;; Test if x is an instance of y.
   `(let [klass# ~(nth form 1)
          object# ~(nth form 2)]
@@ -496,7 +496,7 @@
                      :expected '~form, :actual (class object#)}))
        result#)))
 
-(defmethod assert-expr 'thrown? [msg form]
+(defmethod assert-expr 'thrown? [ctx msg form]
   ;; (is (thrown? c expr))
   ;; Asserts that evaluating expr throws an exception of class c.
   ;; Returns the exception thrown.
@@ -510,7 +510,7 @@
                         :expected '~form, :actual e#})
             e#))))
 
-(defmethod assert-expr 'thrown-with-msg? [msg form]
+(defmethod assert-expr 'thrown-with-msg? [ctx msg form]
   ;; (is (thrown-with-msg? c re expr))
   ;; Asserts that evaluating expr throws an exception of class c.
   ;; Also asserts that the message string of the exception matches
@@ -534,8 +534,8 @@
   "Used by the 'is' macro to catch unexpected exceptions.
   You don't call this."
   {:added "1.1"}
-  [msg form]
-  `(try ~(assert-expr msg form)
+  [ctx msg form]
+  `(try ~(assert-expr ctx msg form)
         (catch Throwable t#
           (clojure.test/do-report {:type :error, :message ~msg,
                                    :expected '~form, :actual t#}))))
@@ -561,7 +561,8 @@
   thrown AND that the message on the exception matches (with
   re-find) the regular expression re."
   {:added "1.1"}
-  ([form] `(clojure.test/is ~form nil))
+  ([form]
+   `(clojure.test/is ~form nil))
   ([form msg] `(clojure.test/try-expr ~msg ~form)))
 
 (defmacro are
