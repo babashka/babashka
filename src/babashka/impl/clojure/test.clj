@@ -234,6 +234,7 @@
     babashka.impl.clojure.test
   (:require [clojure.template :as temp]
             [babashka.impl.clojure.stacktrace :as stack]
+            [sci.core :as sci]
             [clojure.string :as str]))
 
 ;; Nothing is marked "private" here, so you can rebind things to plug
@@ -242,39 +243,39 @@
 
 ;;; USER-MODIFIABLE GLOBALS
 
-(defonce ^:dynamic
+(defonce
   ^{:doc "True by default.  If set to false, no test functions will
    be created by deftest, set-test, or with-test.  Use this to omit
-   tests when compiling or loading production code."
-    :added "1.1"}
-  *load-tests* true)
+   tests when compiling or loading production code."}
+  load-tests
+  (sci/new-dynamic-var '*load-tests* true))
 
-(def ^:dynamic
+(def
   ^{:doc "The maximum depth of stack traces to print when an Exception
   is thrown during a test.  Defaults to nil, which means print the
-  complete stack trace."
-    :added "1.1"}
-  *stack-trace-depth* nil)
+  complete stack trace."}
+  stack-trace-depth
+  (sci/new-dynamic-var '*stack-trace-depth* nil))
 
 
 ;;; GLOBALS USED BY THE REPORTING FUNCTIONS
 
-(def ^:dynamic *report-counters* nil)     ; bound to a ref of a map in test-ns
+(def report-counters (sci/new-dynamic-var '*report-counters* nil))     ; bound to a ref of a map in test-ns
 
-(def ^:dynamic *initial-report-counters*  ; used to initialize *report-counters*
-  {:test 0, :pass 0, :fail 0, :error 0})
+(def initial-report-counters  ; used to initialize *report-counters*
+  (sci/new-dynamic-var '*initial-report-counters* {:test 0, :pass 0, :fail 0, :error 0}))
 
-(def ^:dynamic *testing-vars* (list))  ; bound to hierarchy of vars being tested
+(def testing-vars (sci/new-dynamic-var '*testing-vars* (list)))  ; bound to hierarchy of vars being tested
 
-(def ^:dynamic *testing-contexts* (list)) ; bound to hierarchy of "testing" strings
+(def testing-contexts (sci/new-dynamic-var '*testing-contexts* (list))) ; bound to hierarchy of "testing" strings
 
-(def ^:dynamic *test-out* *out*)         ; PrintWriter for test reporting output
+(def test-out (sci/new-dynamic-var '*test-out* sci/out))         ; PrintWriter for test reporting output
 
-(defmacro with-test-out
+(defmacro with-test-out-internal
   "Runs body with *out* bound to the value of *test-out*."
   {:added "1.1"}
   [& body]
-  `(binding [*out* *test-out*]
+  `(sci/binding [sci/out @test-out]
      ~@body))
 
 ;;; UTILITIES FOR REPORTING FUNCTIONS
@@ -301,7 +302,7 @@
     (str
      ;; Uncomment to include namespace in failure report:
      ;;(ns-name (:ns (meta (first *testing-vars*)))) "/ "
-     (reverse (map #(:name (meta %)) *testing-vars*))
+     (reverse (map #(:name (meta %)) @testing-vars))
      " (" file ":" line ")")))
 
 (defn testing-contexts-str
@@ -309,15 +310,15 @@
   strings in *testing-contexts* with spaces."
   {:added "1.1"}
   []
-  (apply str (interpose " " (reverse *testing-contexts*))))
+  (apply str (interpose " " (reverse @testing-contexts))))
 
 (defn inc-report-counter
   "Increments the named counter in *report-counters*, a ref to a map.
   Does nothing if *report-counters* is nil."
   {:added "1.1"}
   [name]
-  (when *report-counters*
-    (dosync (commute *report-counters* update-in [name] (fnil inc 0)))))
+  (when @report-counters
+    (swap! report-counters update-in [name] (fnil inc 0))))
 
 ;;; TEST RESULT REPORTING
 
@@ -332,7 +333,7 @@
     :added "1.1"}
   report :type)
 
-(defn- file-and-line
+#_(defn- file-and-line
   {:deprecated "1.8"}
   [^Throwable exception depth]
   (let [stacktrace (.getStackTrace exception)]
@@ -367,41 +368,41 @@
      m)))
 
 (defmethod report :default [m]
-  (with-test-out (prn m)))
+  (with-test-out-internal (prn m)))
 
 (defmethod report :pass [m]
-  (with-test-out (inc-report-counter :pass)))
+  (with-test-out-internal (inc-report-counter :pass)))
 
 (defmethod report :fail [m]
-  (with-test-out
+  (with-test-out-internal
     (inc-report-counter :fail)
     (println "\nFAIL in" (testing-vars-str m))
-    (when (seq *testing-contexts*) (println (testing-contexts-str)))
+    (when (seq @testing-contexts) (println (testing-contexts-str)))
     (when-let [message (:message m)] (println message))
     (println "expected:" (pr-str (:expected m)))
     (println "  actual:" (pr-str (:actual m)))))
 
 (defmethod report :error [m]
-  (with-test-out
+  (with-test-out-internal
     (inc-report-counter :error)
     (println "\nERROR in" (testing-vars-str m))
-    (when (seq *testing-contexts*) (println (testing-contexts-str)))
+    (when (seq @testing-contexts) (println (testing-contexts-str)))
     (when-let [message (:message m)] (println message))
     (println "expected:" (pr-str (:expected m)))
     (print "  actual: ")
     (let [actual (:actual m)]
       (if (instance? Throwable actual)
-        (stack/print-cause-trace actual *stack-trace-depth*)
+        (stack/print-cause-trace actual @stack-trace-depth)
         (prn actual)))))
 
 (defmethod report :summary [m]
-  (with-test-out
+  (with-test-out-internal
     (println "\nRan" (:test m) "tests containing"
              (+ (:pass m) (:fail m) (:error m)) "assertions.")
     (println (:fail m) "failures," (:error m) "errors.")))
 
 (defmethod report :begin-test-ns [m]
-  (with-test-out
+  (with-test-out-internal
     (println "\nTesting" (ns-name (:ns m)))))
 
 ;; Ignore these message types:
@@ -413,7 +414,7 @@
 
 ;;; UTILITIES FOR ASSERTIONS
 
-(defn get-possibly-unbound-var
+#_(defn get-possibly-unbound-var
   "Like var-get but returns nil if the var is unbound."
   {:added "1.1"}
   [v]
@@ -426,11 +427,11 @@
   a function (not a macro)."
   {:added "1.1"}
   [x]
-  (if (symbol? x)
-    (when-let [v (resolve x)]
-      (when-let [value (get-possibly-unbound-var v)]
+  (if (symbol? x) ;; TODO
+    false #_(when-let [v (resolve x)]
+      (when-let [value @v]
         (and (fn? value)
-             (not (:macro (meta v))))))
+             (not (:sci/macro (meta v))))))
     (fn? x)))
 
 (defn assert-predicate
@@ -614,7 +615,7 @@
   the tests."
   {:added "1.1"}
   [definition & body]
-  (if *load-tests*
+  (if @load-tests
     `(doto ~definition (alter-meta! assoc :test (fn [] ~@body)))
     definition))
 
@@ -632,7 +633,7 @@
   When *load-tests* is false, deftest is ignored."
   {:added "1.1"}
   [name & body]
-  (when *load-tests*
+  (when @load-tests
     `(def ~(vary-meta name assoc :test `(fn [] ~@body))
        (fn [] (clojure.test/test-var (var ~name))))))
 
@@ -640,7 +641,7 @@
   "Like deftest but creates a private var."
   {:added "1.1"}
   [name & body]
-  (when *load-tests*
+  (when @load-tests
     `(def ~(vary-meta name assoc :test `(fn [] ~@body) :private true)
        (fn [] (test-var (var ~name))))))
 
@@ -653,7 +654,7 @@
   When *load-tests* is false, set-test is ignored."
   {:added "1.1"}
   [name & body]
-  (when *load-tests*
+  (when @load-tests
     `(alter-meta! (var ~name) assoc :test (fn [] ~@body))))
 
 
@@ -711,7 +712,7 @@
   {:dynamic true, :added "1.1"}
   [v]
   (when-let [t (:test (meta v))]
-    (binding [*testing-vars* (conj *testing-vars* v)]
+    (sci/binding [testing-vars (conj @testing-vars v)]
       (do-report {:type :begin-test-var, :var v})
       (inc-report-counter :test)
       (try (t)
@@ -720,7 +721,7 @@
                          :expected nil, :actual e})))
       (do-report {:type :end-test-var, :var v}))))
 
-(defn test-vars
+#_(defn test-vars
   "Groups vars by their namespace and runs test-vars on them with
    appropriate fixtures applied."
   {:added "1.6"}
@@ -734,13 +735,13 @@
            (when (:test (meta v))
              (each-fixture-fn (fn [] (test-var v))))))))))
 
-(defn test-all-vars
+#_(defn test-all-vars
   "Calls test-vars on every var interned in the namespace, with fixtures."
   {:added "1.1"}
   [ns]
   (test-vars (vals (ns-interns ns))))
 
-(defn test-ns
+#_(defn test-ns
   "If the namespace defines a function named test-ns-hook, calls that.
   Otherwise, calls test-all-vars on the namespace.  'ns' is a
   namespace object or a symbol.
@@ -765,7 +766,7 @@
 
 ;;; RUNNING TESTS: HIGH-LEVEL FUNCTIONS
 
-(defn run-tests
+#_(defn run-tests
   "Runs all tests in the given namespaces; prints results.
   Defaults to current namespace if none given.  Returns a map
   summarizing test results."
@@ -777,7 +778,7 @@
      (do-report summary)
      summary)))
 
-(defn run-all-tests
+#_(defn run-all-tests
   "Runs all tests in all namespaces; prints results.
   Optional argument is a regular expression; only namespaces with
   names matching the regular expression (with re-matches) will be
