@@ -2,8 +2,8 @@
   (:require
    [babashka.test-utils :as tu]
    [clojure.edn :as edn]
-   [clojure.test :as t :refer [deftest is]]
-   [clojure.java.io :as io]))
+   [clojure.java.io :as io]
+   [clojure.test :as t :refer [deftest is]]))
 
 (defn bb [input & args]
   (edn/read-string (apply tu/bb (when (some? input) (str input)) (map str args))))

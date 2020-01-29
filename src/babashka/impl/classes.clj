@@ -21,8 +21,10 @@
           java.io.InputStream
           java.io.IOException
           java.io.OutputStream
+          java.io.Reader
           java.io.StringReader
           java.io.StringWriter
+          java.io.Writer
           java.lang.ArithmeticException
           java.lang.AssertionError
           java.lang.Boolean
@@ -34,6 +36,7 @@
           java.util.concurrent.LinkedBlockingQueue
           java.lang.Object
           java.lang.String
+          java.lang.StringBuilder
           java.lang.System
           java.lang.Throwable
           java.lang.Process
@@ -91,7 +94,10 @@
           java.util.zip.GZIPOutputStream]
     :constructors [clojure.lang.Delay
                    clojure.lang.MapEntry
-                   clojure.lang.LineNumberingPushbackReader]
+                   clojure.lang.LineNumberingPushbackReader
+                   java.io.EOFException
+                   java.io.PrintWriter
+                   java.io.PushbackReader]
     :methods [borkdude.graal.LockFix ;; support for locking
               ]
     :fields [clojure.lang.PersistentQueue]

@@ -3,4 +3,5 @@
            babashka.impl.Pattern/gen-wrapper-fn clojure.core/def
            babashka.impl.File/gen-wrapper-fn-2 clojure.core/def
            babashka.impl.Pattern/gen-wrapper-fn-2 clojure.core/def
-           babashka.impl.Pattern/gen-constants clojure.core/declare}}
+           babashka.impl.Pattern/gen-constants clojure.core/declare}
+ :linters {:unsorted-namespaces {:level :warning}}}

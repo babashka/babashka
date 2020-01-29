@@ -58,6 +58,12 @@ Keep notes here about how adding libraries and classes to Babashka affects the b
 <!-- 2020/01/08, ..., 38.7mb / 11.3mb zipped -->
 <!-- Added: `clojure.data.xml`. Growth: 1.8mb / ... -->
 
-2020/01/08, 303ca9e825d76a4a45bc4240a59139d342c13964: 36.9mb / 10.8mb zipped.
+2020/01/24, 43eef7075f9dac038d8d28a5ee4e49b6affd9864: 38.3mb, 11.1mb zipped
+Added hierarchies (derive, isa?, etc).
+
+2020/01/23, 485fef7df54d6701936704573468a1ec4c66d221: 37.4mb / 10.9mb zipped
+Added: StringBuilder, java.io.{Reader,Writer,PrinterWriter,PushbackReader}
+
+2020/01/08, 303ca9e825d76a4a45bc4240a59139d342c13964: 36.9mb / 10.8mb zipped
 
 Removing cheshire from bb: 36.2mb / 10.5mb zipped.

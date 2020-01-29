@@ -10,11 +10,13 @@
    [babashka.impl.clojure.java.shell :refer [shell-namespace]]
    [babashka.impl.clojure.main :refer [demunge]]
    [babashka.impl.clojure.stacktrace :refer [stacktrace-namespace print-stack-trace]]
+   [babashka.impl.common :as common]
    [babashka.impl.csv :as csv]
    ;; see https://github.com/oracle/graal/issues/1784
    #_[babashka.impl.pipe-signal-handler :refer [handle-pipe! pipe-signal-received?]]
    [babashka.impl.repl :as repl]
    [babashka.impl.socket-repl :as socket-repl]
+   [babashka.impl.test :as t]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
    [babashka.wait :as wait]
    [clojure.edn :as edn]
@@ -68,6 +70,14 @@
                      ("-io") (recur (next options)
                                     (assoc opts-map
                                            :shell-in true
+                                           :shell-out true))
+                     ("-iO") (recur (next options)
+                                    (assoc opts-map
+                                           :shell-in true
+                                           :edn-out true))
+                     ("-Io") (recur (next options)
+                                    (assoc opts-map
+                                           :edn-in true
                                            :shell-out true))
                      ("-IO") (recur (next options)
                                     (assoc opts-map
@@ -248,6 +258,7 @@ Everything after that is bound to *command-line-args*."))
    'clojure.stacktrace stacktrace-namespace
    'clojure.main {'demunge demunge}
    'clojure.repl {'demunge demunge}
+   'clojure.test t/clojure-test-namespace
    'babashka.classpath {'add-classpath add-classpath*}})
 
 (def bindings
@@ -330,6 +341,7 @@ Everything after that is bound to *command-line-args*."))
                         Object java.lang.Object
                         ProcessBuilder java.lang.ProcessBuilder
                         String java.lang.String
+                        StringBuilder java.lang.StringBuilder
                         System java.lang.System
                         Thread java.lang.Thread
                         Throwable java.lang.Throwable}
@@ -337,6 +349,7 @@ Everything after that is bound to *command-line-args*."))
              :dry-run uberscript}
         ctx (addons/future ctx)
         sci-ctx (sci-opts/init ctx)
+        _ (vreset! common/ctx sci-ctx)
         _ (swap! (:env sci-ctx)
                  (fn [env]
                    (update-in env [:namespaces 'clojure.core] assoc
