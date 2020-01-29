@@ -20,6 +20,7 @@
    'testing-vars-str t/testing-vars-str
    'testing-contexts-str t/testing-contexts-str
    'inc-report-counter t/inc-report-counter
+   'report t/report
    'do-report t/do-report
    ;; assertion utilities
    'function? t/function?
