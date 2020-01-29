@@ -30,7 +30,7 @@
    ;; TODO
    ;; running tests: low level
    'test-var t/test-var
-   ;;'test-vars t/test-vars
+   'test-vars t/test-vars
    'test-all-vars (with-meta t/test-all-vars {:sci.impl/op :needs-ctx})
    'test-ns (with-meta t/test-ns {:sci.impl/op :needs-ctx})
    ;; running tests: high level
