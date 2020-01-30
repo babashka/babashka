@@ -522,6 +522,19 @@ $ ./bb example.clj
 babashka doesn't support in-ns yet!
 ```
 
+## Running tests
+
+Babashka bundles `clojure.test`. To make CI scripts fail you can use a simple
+runner like this:
+
+``` shell
+#!/usr/bin/env bash
+bb -cp "src:test:resources" \
+   -e "(require '[clojure.test :as t] '[borkdude.deps-test])
+       (let [{:keys [:fail :error]} (t/run-tests 'borkdude.deps-test)]
+         (System/exit (+ fail error)))"
+```
+
 ## Socket REPL
 
 Start the socket REPL like this:
