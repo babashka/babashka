@@ -302,7 +302,7 @@
   current assertion."
   {:added "1.1"}
   [m]
-  (let [{:keys [file line]} m]
+  (let [{:keys [:file :line]} (meta (first @testing-vars))]
     (str
      ;; Uncomment to include namespace in failure report:
      ;;(ns-name (:ns (meta (first *testing-vars*)))) "/ "
@@ -337,15 +337,6 @@
     :added "1.1"}
   report :type)
 
-#_(defn- file-and-line
-  {:deprecated "1.8"}
-  [^Throwable exception depth]
-  (let [stacktrace (.getStackTrace exception)]
-    (if (< depth (count stacktrace))
-      (let [^StackTraceElement s (nth stacktrace depth)]
-        {:file (.getFileName s) :line (.getLineNumber s)})
-      {:file nil :line nil})))
-
 (defn- stacktrace-file-and-line
   [stacktrace]
   (if (seq stacktrace)
@@ -362,12 +353,7 @@
   (report
    (case
        (:type m)
-     :fail (merge (stacktrace-file-and-line (drop-while
-                                             #(let [cl-name (.getClassName ^StackTraceElement %)]
-                                                (or (str/starts-with? cl-name "java.lang.")
-                                                    (str/starts-with? cl-name "clojure.test$")
-                                                    (str/starts-with? cl-name "clojure.core$ex_info")))
-                                             (.getStackTrace (Thread/currentThread)))) m)
+     :fail m
      :error (merge (stacktrace-file-and-line (.getStackTrace ^Throwable (:actual m))) m)
      m)))
 
