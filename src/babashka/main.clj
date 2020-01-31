@@ -43,6 +43,7 @@
                (if options
                  (let [opt (first options)]
                    (case opt
+                     ("--") (assoc opts-map :command-line-args (next options))
                      ("--version") {:version true}
                      ("--help" "-h" "-?") {:help? true}
                      ("--verbose")(recur (next options)
