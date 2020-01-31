@@ -44,6 +44,7 @@
                (if options
                  (let [opt (first options)]
                    (case opt
+                     ("--") (assoc opts-map :command-line-args (next options))
                      ("--version") {:version true}
                      ("--help" "-h" "-?") {:help? true}
                      ("--verbose")(recur (next options)
@@ -181,6 +182,7 @@
   --repl              Start REPL
   --socket-repl       Start socket REPL. Specify port (e.g. 1666) or host and port separated by colon (e.g. 127.0.0.1:1666).
   --time              Print execution time before exiting.
+  --                  Stop parsing args and pass everything after -- to *command-line-args*
 
 If neither -e, -f, or --socket-repl are specified, then the first argument that is not parsed as a option is treated as a file if it exists, or as an expression otherwise.
 Everything after that is bound to *command-line-args*."))

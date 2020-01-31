@@ -33,7 +33,7 @@
 (deftest uberscript-test
   (let [tmp-file (java.io.File/createTempFile "uberscript" ".clj")]
     (.deleteOnExit tmp-file)
-    (tu/bb nil "--classpath" "test-resources/babashka/src_for_classpath_test" "-m" "my.main" "--uberscript" (.getPath tmp-file))
+    (is (empty? (tu/bb nil "--classpath" "test-resources/babashka/src_for_classpath_test" "-m" "my.main" "--uberscript" (.getPath tmp-file))))
     (is (= "(\"1\" \"2\" \"3\" \"4\")\n"
            (tu/bb nil "--file" (.getPath tmp-file) "1" "2" "3" "4")))))
 
