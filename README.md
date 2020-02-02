@@ -807,7 +807,8 @@ bb '(-> *input* first :name (subs 1))'
 ``` shell
 $ gitlib.clj nate fs
 {:git/url "https://github.com/nate/fs", :sha "75b9fcd399ac37cb4f9752a4c7a6755f3fbbc000"}
-$ clj -Sdeps "{:deps {fs $(gitlib.clj nate fs)}}" -e "(require '[nate.fs :as fs]) (fs/creation-time \".\")"
+$ clj -Sdeps "{:deps {fs $(gitlib.clj nate fs)}}" \
+  -e "(require '[nate.fs :as fs]) (fs/creation-time \".\")"
 #object[java.nio.file.attribute.FileTime 0x5c748168 "2019-07-05T14:06:26Z"]
 ```
 
