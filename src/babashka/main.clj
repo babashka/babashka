@@ -246,8 +246,6 @@ Everything after that is bound to *command-line-args*."))
 
 (def namespaces
   {'clojure.tools.cli tools-cli-namespace
-   'clojure.edn {'read edn/read
-                 'read-string edn/read-string}
    'clojure.java.shell shell-namespace
    'babashka.wait {'wait-for-port wait/wait-for-port
                    'wait-for-path wait/wait-for-path}
