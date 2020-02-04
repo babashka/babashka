@@ -339,7 +339,7 @@ Everything after that is bound to *command-line-args*."))
                           IllegalArgumentException java.lang.IllegalArgumentException
                           Integer java.lang.Integer
                           File java.io.File
-                          Long java.io.Long
+                          Long java.lang.Long
                           Math java.lang.Math
                           Object java.lang.Object
                           ProcessBuilder java.lang.ProcessBuilder
