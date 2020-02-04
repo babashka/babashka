@@ -1,7 +1,7 @@
 (ns babashka.main
   {:no-doc true}
   (:require
-   [babashka.impl.async :refer [async-namespace]]
+   [babashka.impl.async :refer [async-namespace async-protocols-namespace]]
    [babashka.impl.cheshire :refer [cheshire-core-namespace]]
    [babashka.impl.classes :as classes]
    [babashka.impl.classpath :as cp]
@@ -252,6 +252,7 @@ Everything after that is bound to *command-line-args*."))
    'babashka.signal {'pipe-signal-received? pipe-signal-received?}
    'clojure.java.io io-namespace
    'clojure.core.async async-namespace
+   'clojure.core.async.impl.protocols async-protocols-namespace
    'clojure.data.csv csv/csv-namespace
    'cheshire.core cheshire-core-namespace
    'clojure.stacktrace stacktrace-namespace
