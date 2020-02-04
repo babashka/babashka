@@ -109,6 +109,11 @@ Upgrade:
 
     yay -S babashka-bin
 
+### Windows
+
+On Windows you can install using [scoop](https://scoop.sh/) and the
+[scoop-clojure](https://github.com/littleli/scoop-clojure) bucket.
+
 ### Installer script
 
 Install via the installer script:
@@ -785,14 +790,31 @@ bb '(-> *input* first :name (subs 1))'
 "0.0.4"
 ```
 
-### Get latest OS-specific download url from Github
+### Generate deps.edn entry for a gitlib
 
-``` shellsession
-$ curl -s https://api.github.com/repos/borkdude/babashka/releases |
-jet --from json --keywordize |
-bb '(-> *input* first :assets)' |
-bb '(some #(re-find #".*linux.*" (:browser_download_url %)) *input*)'
-"https://github.com/borkdude/babashka/releases/download/v0.0.4/babashka-0.0.4-linux-amd64.zip"
+``` clojure
+#!/usr/bin/env bb
+
+(require '[clojure.java.shell :refer [sh]]
+         '[clojure.string :as str])
+
+(let [[username project branch] *command-line-args*
+      branch (or branch "master")
+      url (str "https://github.com/" username "/" project)
+      sha (-> (sh "git" "ls-remote" url branch)
+              :out
+              (str/split #"\s")
+              first)]
+  {:git/url url
+   :sha sha})
+```
+
+``` shell
+$ gitlib.clj nate fs
+{:git/url "https://github.com/nate/fs", :sha "75b9fcd399ac37cb4f9752a4c7a6755f3fbbc000"}
+$ clj -Sdeps "{:deps {fs $(gitlib.clj nate fs)}}" \
+  -e "(require '[nate.fs :as fs]) (fs/creation-time \".\")"
+#object[java.nio.file.attribute.FileTime 0x5c748168 "2019-07-05T14:06:26Z"]
 ```
 
 ### View download statistics from Clojars

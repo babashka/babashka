@@ -330,6 +330,12 @@
   (testing "the clojure.lang.MapEntry constructor works"
     (is (true? (bb nil "(= (first {1 2}) (clojure.lang.MapEntry. 1 2))")))))
 
+(deftest uberscript-test
+  (let [tmp-file (java.io.File/createTempFile "uberscript" ".clj")]
+    (.deleteOnExit tmp-file)
+    (is (empty? (bb nil "--uberscript" (.getPath tmp-file) "-e" "(System/exit 1)")))
+    (is (= "(System/exit 1)" (slurp tmp-file)))))
+
 ;;;; Scratch
 
 (comment
