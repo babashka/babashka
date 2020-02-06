@@ -303,7 +303,7 @@ Contains the function `signal/pipe-signal-received?`. Usage:
 Returns true if `PIPE` signal was received. Example:
 
 ``` shellsession
-$ bb '((fn [x] (println x) (when (not (sig/pipe-signal-received?)) (recur (inc x)))) 0)' | head -n2
+$ bb '((fn [x] (println x) (when (not (signal/pipe-signal-received?)) (recur (inc x)))) 0)' | head -n2
 1
 2
 ```
