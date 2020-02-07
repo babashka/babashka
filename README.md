@@ -158,7 +158,7 @@ Options:
   -f, --file <path>   Evaluate a file.
   -cp, --classpath    Classpath to use.
   -m, --main <ns>     Call the -main function from namespace with args.
-  --repl              Start REPL
+  --repl              Start REPL. Use rlwrap for history.
   --socket-repl       Start socket REPL. Specify port (e.g. 1666) or host and port separated by colon (e.g. 127.0.0.1:1666).
   --time              Print execution time before exiting.
   --                  Stop parsing args and pass everything after -- to *command-line-args*
@@ -541,9 +541,21 @@ bb -cp "src:test:resources" \
          (System/exit (+ fail error)))"
 ```
 
-## Socket REPL
+## REPL
 
-Start the socket REPL like this:
+Babashka supports both a REPL and socket REPL. To start the REPL, type:
+
+``` shell
+$ bb --repl
+```
+
+To get history with up and down arrows, use `rlwrap`:
+
+``` shell
+$ rlwrap bb --repl
+```
+
+To start the socket REPL you can do this:
 
 ``` shellsession
 $ bb --socket-repl 1666

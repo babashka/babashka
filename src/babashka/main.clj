@@ -178,7 +178,7 @@
   -f, --file <path>   Evaluate a file.
   -cp, --classpath    Classpath to use.
   -m, --main <ns>     Call the -main function from namespace with args.
-  --repl              Start REPL
+  --repl              Start REPL. Use rlwrap for history.
   --socket-repl       Start socket REPL. Specify port (e.g. 1666) or host and port separated by colon (e.g. 127.0.0.1:1666).
   --time              Print execution time before exiting.
   --                  Stop parsing args and pass everything after -- to *command-line-args*
