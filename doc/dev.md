@@ -43,7 +43,7 @@ Test the native version:
 
 ## Build
 
-To build this project, set `$GRAALVM_HOME` to the GraalVM distribution directory.
+To build this project, set `$GRAALVM_HOME` to the GraalVM distribution directory. Currently we are using GraalVM JDK8.
 
 Then run:
 
