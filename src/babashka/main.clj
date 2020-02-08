@@ -1,7 +1,7 @@
 (ns babashka.main
   {:no-doc true}
   (:require
-   [babashka.impl.async :refer [async-namespace]]
+   [babashka.impl.async :refer [async-namespace async-protocols-namespace]]
    [babashka.impl.cheshire :refer [cheshire-core-namespace]]
    [babashka.impl.classes :as classes]
    [babashka.impl.classpath :as cp]
@@ -179,7 +179,7 @@
   -f, --file <path>   Evaluate a file.
   -cp, --classpath    Classpath to use.
   -m, --main <ns>     Call the -main function from namespace with args.
-  --repl              Start REPL
+  --repl              Start REPL. Use rlwrap for history.
   --socket-repl       Start socket REPL. Specify port (e.g. 1666) or host and port separated by colon (e.g. 127.0.0.1:1666).
   --time              Print execution time before exiting.
   --                  Stop parsing args and pass everything after -- to *command-line-args*
@@ -253,6 +253,7 @@ Everything after that is bound to *command-line-args*."))
    ;; 'babashka.signal {'pipe-signal-received? pipe-signal-received?}
    'clojure.java.io io-namespace
    'clojure.core.async async-namespace
+   'clojure.core.async.impl.protocols async-protocols-namespace
    'clojure.data.csv csv/csv-namespace
    'cheshire.core cheshire-core-namespace
    'clojure.stacktrace stacktrace-namespace
@@ -339,6 +340,7 @@ Everything after that is bound to *command-line-args*."))
                           IllegalArgumentException java.lang.IllegalArgumentException
                           Integer java.lang.Integer
                           File java.io.File
+                          Long java.lang.Long
                           Math java.lang.Math
                           Object java.lang.Object
                           ProcessBuilder java.lang.ProcessBuilder

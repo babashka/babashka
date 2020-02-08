@@ -32,6 +32,7 @@
           java.lang.Double
           java.lang.Exception
           java.lang.Integer
+          java.lang.Long
           java.lang.Math
           java.util.concurrent.LinkedBlockingQueue
           java.lang.Object
