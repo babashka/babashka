@@ -160,6 +160,12 @@
 
 (deftest future-test
   (is (= 6 (bb nil "@(future (+ 1 2 3))"))))
+  
+(deftest promise-test
+  (is (= :timeout (bb nil "(deref (promise) 1 :timeout)")))
+  (is (= :ok (bb nil "(let [x (promise)]
+                        (deliver x :ok)
+                        @x)"))))
 
 (deftest process-builder-test
   (is (str/includes? (bb nil "
