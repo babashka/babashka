@@ -21,8 +21,10 @@
           java.io.InputStream
           java.io.IOException
           java.io.OutputStream
+          java.io.Reader
           java.io.StringReader
           java.io.StringWriter
+          java.io.Writer
           java.lang.ArithmeticException
           java.lang.AssertionError
           java.lang.Boolean
@@ -30,10 +32,12 @@
           java.lang.Double
           java.lang.Exception
           java.lang.Integer
+          java.lang.Long
           java.lang.Math
           java.util.concurrent.LinkedBlockingQueue
           java.lang.Object
           java.lang.String
+          java.lang.StringBuilder
           java.lang.System
           java.lang.Throwable
           java.lang.Process
@@ -91,7 +95,10 @@
           java.util.zip.GZIPOutputStream]
     :constructors [clojure.lang.Delay
                    clojure.lang.MapEntry
-                   clojure.lang.LineNumberingPushbackReader]
+                   clojure.lang.LineNumberingPushbackReader
+                   java.io.EOFException
+                   java.io.PrintWriter
+                   java.io.PushbackReader]
     :methods [borkdude.graal.LockFix ;; support for locking
               ]
     :fields [clojure.lang.PersistentQueue]
@@ -179,7 +186,10 @@
              (cond (instance? java.nio.file.Path v)
                    java.nio.file.Path
                    (instance? java.lang.Process v)
-                   java.lang.Process)))))
+                   java.lang.Process
+                   ;; added for issue #239 regarding clj-http-lite
+                   (instance? java.io.ByteArrayOutputStream v)
+                   java.io.ByteArrayOutputStream)))))
 
 (def class-map (gen-class-map))
 

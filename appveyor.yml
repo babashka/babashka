@@ -1,0 +1,61 @@
+---
+
+version: "v-{build}"
+
+image: Visual Studio 2015
+
+clone_folder: C:\projects\babashka
+
+environment:
+  GRAALVM_HOME: C:\projects\babashka\graalvm\graalvm-ce-java8-19.3.0
+
+cache:
+  - C:\ProgramData\chocolatey\lib -> project.clj, appveyor.yml
+  - '%USERPROFILE%\.m2 -> project.clj'
+  - 'graalvm -> appveyor.yml'
+
+clone_script:
+- ps: >-
+    if(-not $env:APPVEYOR_PULL_REQUEST_NUMBER) {
+      git clone -q --branch=$env:APPVEYOR_REPO_BRANCH https://github.com/$env:APPVEYOR_REPO_NAME.git $env:APPVEYOR_BUILD_FOLDER
+      cd $env:APPVEYOR_BUILD_FOLDER
+      git checkout -qf $env:APPVEYOR_REPO_COMMIT
+    } else {
+      git clone -q https://github.com/$env:APPVEYOR_REPO_NAME.git $env:APPVEYOR_BUILD_FOLDER
+      cd $env:APPVEYOR_BUILD_FOLDER
+      git fetch -q origin +refs/pull/$env:APPVEYOR_PULL_REQUEST_NUMBER/merge:
+      git checkout -qf FETCH_HEAD
+    }
+- cmd: git submodule update --init --recursive
+
+build_script:
+- cmd: >-
+    powershell -Command "(New-Object Net.WebClient).DownloadFile('https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein.bat', 'lein.bat')"
+
+    call lein self-install
+
+# set CLJ_KONDO_TEST_ENV=jvm
+
+# call script/test.bat
+
+- cmd: >-
+    choco install windows-sdk-7.1
+
+    call "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd"
+
+    powershell -Command "if (Test-Path('graalvm')) { return } else { (New-Object Net.WebClient).DownloadFile('https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-19.3.0/graalvm-ce-java8-windows-amd64-19.3.0.zip', 'graalvm.zip') }"
+
+    powershell -Command "if (Test-Path('graalvm')) { return } else { Expand-Archive graalvm.zip graalvm }"
+
+#    call script/compile.bat
+
+# - cmd: >-
+#     lein clean
+
+#     set CLJ_KONDO_TEST_ENV=native
+
+#     call script/test.bat
+
+# artifacts:
+# - path: babashka-*-windows-amd64.zip
+#   name: babashka

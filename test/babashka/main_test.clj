@@ -13,24 +13,19 @@
   (edn/read-string (apply test-utils/bb (when (some? input) (str input)) (map str args))))
 
 (deftest parse-opts-test
-  (is (= {:expression "(println 123)"}
-         (main/parse-opts ["-e" "(println 123)"])))
-
-  (is (= {:expression "(println 123)"}
-         (main/parse-opts ["--eval" "(println 123)"])))
-
+  (is (= 123 (bb nil "(println 123)")))
+  (is (= 123 (bb nil "-e" "(println 123)")))
+  (is (= 123 (bb nil "--eval" "(println 123)")))
   (testing "distinguish automatically between expression or file name"
-    (is (= {:expression "(println 123)"
-            :command-line-args nil}
-           (main/parse-opts ["(println 123)"])))
+    (is (= {:result 8080} (bb nil "test/babashka/scripts/tools.cli.bb")))
+    (is (thrown-with-msg? Exception #"does not exist" (bb nil "foo.clj")))
+    (is (thrown-with-msg? Exception #"does not exist" (bb nil "-help"))))
+  (is (= "1 2 3" (bb nil "-e" "(require '[clojure.string :as str1])" "-e" "(str1/join \" \" [1 2 3])")))
+  (is (= '("-e" "1") (bb nil "-e" "*command-line-args*" "--" "-e" "1"))))
 
-    (is (= {:file "src/babashka/main.clj"
-            :command-line-args nil}
-           (main/parse-opts ["src/babashka/main.clj"])))
-
-    (is (= {:expression "does-not-exist"
-            :command-line-args nil}
-           (main/parse-opts ["does-not-exist"])))))
+(deftest print-error-test
+  (is (thrown-with-msg? Exception #"java.lang.NullPointerException"
+                        (bb nil "(subs nil 0 0)"))))
 
 (deftest main-test
   (testing "-io behaves as identity"
@@ -250,8 +245,7 @@
 (deftest Pattern-test
   (is (= ["1" "2" "3"]
          (bb nil "(vec (.split (java.util.regex.Pattern/compile \"f\") \"1f2f3\"))")))
-  (is (= java.util.regex.Pattern/CANON_EQ
-         (bb nil "java.util.regex.Pattern/CANON_EQ"))))
+  (is (true? (bb nil "(some? java.util.regex.Pattern/CANON_EQ)"))))
 
 (deftest writer-test
   (let [tmp-file (java.io.File/createTempFile "bbb" "bbb")
@@ -335,6 +329,12 @@
     (is (= 1 (bb nil "@(delay 1)"))))
   (testing "the clojure.lang.MapEntry constructor works"
     (is (true? (bb nil "(= (first {1 2}) (clojure.lang.MapEntry. 1 2))")))))
+
+(deftest uberscript-test
+  (let [tmp-file (java.io.File/createTempFile "uberscript" ".clj")]
+    (.deleteOnExit tmp-file)
+    (is (empty? (bb nil "--uberscript" (.getPath tmp-file) "-e" "(System/exit 1)")))
+    (is (= "(System/exit 1)" (slurp tmp-file)))))
 
 ;;;; Scratch
 

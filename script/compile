@@ -7,9 +7,11 @@ if [ -z "$GRAALVM_HOME" ]; then
     exit 1
 fi
 
-"$GRAALVM_HOME/bin/gu" install native-image || true
+if [ -z "$BABASHKA_XMX" ]; then
+    export BABASHKA_XMX="-J-Xmx3g"
+fi
 
-NATIVE_IMAGE="$GRAALVM_HOME/bin/native-image"
+"$GRAALVM_HOME/bin/gu" install native-image || true
 
 BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
 
@@ -24,7 +26,7 @@ export JAVA_HOME=$GRAALVM_HOME
 lein with-profiles +reflection do run
 lein do clean, uberjar
 
-$NATIVE_IMAGE \
+$GRAALVM_HOME/bin/native-image \
   -jar target/babashka-$BABASHKA_VERSION-standalone.jar \
   -H:Name=bb \
   -H:+ReportExceptionStackTraces \
@@ -42,6 +44,6 @@ $NATIVE_IMAGE \
   --verbose \
   --no-fallback \
   --no-server \
-  "-J-Xmx2500m"
+  "$BABASHKA_XMX"
 
 lein clean
