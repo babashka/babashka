@@ -64,7 +64,6 @@
           java.nio.file.attribute.PosixFilePermission
           java.nio.file.attribute.PosixFilePermissions
           java.security.MessageDigest
-          java.security.MessageDigest$Delegate
           java.time.format.DateTimeFormatter
           java.time.Clock
           java.time.DateTimeException
@@ -192,7 +191,9 @@
                    java.lang.Process
                    ;; added for issue #239 regarding clj-http-lite
                    (instance? java.io.ByteArrayOutputStream v)
-                   java.io.ByteArrayOutputStream)))))
+                   java.io.ByteArrayOutputStream
+                   (instance? java.security.MessageDigest v)
+                   java.security.MessageDigest)))))
 
 (def class-map (gen-class-map))
 
