@@ -26,47 +26,24 @@ export JAVA_HOME=$GRAALVM_HOME
 lein with-profiles +reflection do run
 lein do clean, uberjar
 
-if [ "$GRAALVM_STATIC" = "true" ]; then
-    $GRAALVM_HOME/bin/native-image \
-        -jar target/babashka-$BABASHKA_VERSION-standalone.jar \
-        -H:Name=bb \
-        -H:+ReportExceptionStackTraces \
-        -J-Dclojure.spec.skip-macros=true \
-        -J-Dclojure.compiler.direct-linking=true \
-        "-H:IncludeResources=BABASHKA_VERSION" \
-        "-H:IncludeResources=SCI_VERSION" \
-        -H:ReflectionConfigurationFiles=reflection.json \
-        --initialize-at-run-time=java.lang.Math\$RandomNumberGeneratorHolder \
-        --initialize-at-build-time \
-        -H:Log=registerResource: \
-        -H:EnableURLProtocols=http,https \
-        --enable-all-security-services \
-        -H:+JNI \
-        --verbose \
-        --no-fallback \
-        --no-server \
-        "$BABASHKA_XMX" \
-        --static
-else
-    $GRAALVM_HOME/bin/native-image \
-        -jar target/babashka-$BABASHKA_VERSION-standalone.jar \
-        -H:Name=bb \
-        -H:+ReportExceptionStackTraces \
-        -J-Dclojure.spec.skip-macros=true \
-        -J-Dclojure.compiler.direct-linking=true \
-        "-H:IncludeResources=BABASHKA_VERSION" \
-        "-H:IncludeResources=SCI_VERSION" \
-        -H:ReflectionConfigurationFiles=reflection.json \
-        --initialize-at-run-time=java.lang.Math\$RandomNumberGeneratorHolder \
-        --initialize-at-build-time \
-        -H:Log=registerResource: \
-        -H:EnableURLProtocols=http,https \
-        --enable-all-security-services \
-        -H:+JNI \
-        --verbose \
-        --no-fallback \
-        --no-server \
-        "$BABASHKA_XMX"
-fi
+$GRAALVM_HOME/bin/native-image \
+  -jar target/babashka-$BABASHKA_VERSION-standalone.jar \
+  -H:Name=bb \
+  -H:+ReportExceptionStackTraces \
+  -J-Dclojure.spec.skip-macros=true \
+  -J-Dclojure.compiler.direct-linking=true \
+  "-H:IncludeResources=BABASHKA_VERSION" \
+  "-H:IncludeResources=SCI_VERSION" \
+  -H:ReflectionConfigurationFiles=reflection.json \
+  --initialize-at-run-time=java.lang.Math\$RandomNumberGeneratorHolder \
+  --initialize-at-build-time \
+  -H:Log=registerResource: \
+  -H:EnableURLProtocols=http,https \
+  --enable-all-security-services \
+  -H:+JNI \
+  --verbose \
+  --no-fallback \
+  --no-server \
+  "$BABASHKA_XMX"
 
 lein clean

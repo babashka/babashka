@@ -11,7 +11,7 @@ ENV PATH="$PATH:$JAVA_HOME"
 COPY . .
 RUN apt install -y sudo
 RUN ./.circleci/script/install-leiningen
-RUN GRAALVM_STATIC=true ./script/compile
+RUN ./script/compile
 RUN cp bb /usr/local/bin
 
 
