@@ -22,6 +22,6 @@ RUN apk --no-cache add ca-certificates curl
 RUN curl -o /etc/apk/keys/sgerrand.rsa.pub -sL https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub
 RUN curl -sLO https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.29-r0/glibc-2.29-r0.apk
 RUN apk add glibc-2.29-r0.apk
-COPY --from=BASE /usr/local/bin/clj-kondo /usr/local/bin
+COPY --from=BASE /usr/local/bin/bb /usr/local/bin
 ENV LD_LIBRARY_PATH /lib
 CMD ["bb"]
