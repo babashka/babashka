@@ -232,6 +232,11 @@ jobs:
       - image: circleci/buildpack-deps:stretch
     steps:
       - checkout
+      - run:
+          name: "Pull Submodules"
+          command: |
+            git submodule init
+            git submodule update
       - setup_remote_docker
       - run:
           name: Build Docker image
