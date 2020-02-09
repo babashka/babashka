@@ -43,6 +43,7 @@
           java.lang.Process
           java.lang.ProcessBuilder
           java.lang.ProcessBuilder$Redirect
+          java.math.BigInteger
           java.net.URI
           java.net.HttpURLConnection
           java.net.ServerSocket
@@ -62,6 +63,8 @@
           java.nio.file.attribute.FileTime
           java.nio.file.attribute.PosixFilePermission
           java.nio.file.attribute.PosixFilePermissions
+          java.security.MessageDigest
+          java.security.MessageDigest$Delegate
           java.time.format.DateTimeFormatter
           java.time.Clock
           java.time.DateTimeException
