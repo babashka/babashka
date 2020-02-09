@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
-image_name="borkdude/clj-kondo"
-image_tag=$(cat resources/CLJ_KONDO_VERSION)
+set -eo pipefail
+
+image_name="borkdude/babashka"
+image_tag=$(cat resources/BABASHKA_VERSION)
 latest_tag="latest"
 
 if [[ $image_tag =~ SNAPSHOT$ ]]; then
