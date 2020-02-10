@@ -227,16 +227,20 @@ jobs:
           paths:
             - ~/.m2
           key: v1-dependencies-{{ checksum "project.clj" }}
-  # docker:
-  #   docker:
-  #     - image: circleci/buildpack-deps:stretch
-  #   steps:
-  #     - checkout
-  #     - setup_remote_docker:
-  #         docker_layer_caching: true
-  #     - run:
-  #         name: Build Docker image
-  #         command: .circleci/script/docker
+  docker:
+    docker:
+      - image: circleci/buildpack-deps:stretch
+    steps:
+      - checkout
+      - run:
+          name: "Pull Submodules"
+          command: |
+            git submodule init
+            git submodule update
+      - setup_remote_docker
+      - run:
+          name: Build Docker image
+          command: .circleci/script/docker
 
 workflows:
   version: 2
@@ -253,11 +257,11 @@ workflows:
             - jvm
             - linux
             - mac
-      # - docker:
-      #     filters:
-      #       branches:
-      #         only: master
-      #     requires:
-      #       - jvm
-      #       - linux
-      #       - mac
+      - docker:
+          filters:
+            branches:
+              only: master
+          requires:
+            - jvm
+            - linux
+            - mac
