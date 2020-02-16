@@ -342,6 +342,14 @@
     (is (empty? (bb nil "--uberscript" (.getPath tmp-file) "-e" "(System/exit 1)")))
     (is (= "(System/exit 1)" (slurp tmp-file)))))
 
+(deftest unrestricted-access
+  (testing "babashka is allowed to mess with built-in vars"
+    (is (= 1 (bb nil "
+(def inc2 inc) (alter-var-root #'clojure.core/inc (constantly dec))
+(let [res (inc 2)]
+  (alter-var-root #'clojure.core/inc (constantly inc2))
+  res)")))))
+
 ;;;; Scratch
 
 (comment
