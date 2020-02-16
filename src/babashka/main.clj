@@ -219,10 +219,6 @@ Everything after that is bound to *command-line-args*."))
 (defn exit [n]
   (throw (ex-info "" {:bb/exit-code n})))
 
-;; (sci/set-var-root! sci/*in* *in*)
-;; (sci/set-var-root! sci/*out* *out*)
-;; (sci/set-var-root! sci/*err* *err*)
-
 (def aliases
   '{tools.cli 'clojure.tools.cli
     edn clojure.edn
