@@ -718,6 +718,10 @@ export BABASHKA_CLASSPATH="$(clojure -Sdeps '{:deps {clojure-csv {:mvn/version "
 "
 ```
 
+### [regal](https://github.com/borkdude/regal)
+
+Reified regular expressions.
+
 #### [spartan.test](https://github.com/borkdude/spartan.test/)
 
 A minimal test framework compatible with babashka. This library is deprecated
