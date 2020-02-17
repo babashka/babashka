@@ -220,7 +220,7 @@ Everything after that is bound to *command-line-args*."))
   (throw (ex-info "" {:bb/exit-code n})))
 
 (def aliases
-  '{tools.cli 'clojure.tools.cli
+  '{tools.cli clojure.tools.cli
     edn clojure.edn
     wait babashka.wait
     signal babashka.signal
