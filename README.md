@@ -718,7 +718,7 @@ export BABASHKA_CLASSPATH="$(clojure -Sdeps '{:deps {clojure-csv {:mvn/version "
 "
 ```
 
-### [regal](https://github.com/borkdude/regal)
+#### [regal](https://github.com/borkdude/regal)
 
 Reified regular expressions.
 
