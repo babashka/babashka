@@ -283,7 +283,7 @@ Everything after that is bound to *command-line-args*."))
       (prn "M" (meta (get bindings 'future))))
   (binding [*unrestricted* true]
     (sci/binding [reflection-var false
-                  vars/current-ns (vars/->SciNamespace 'user)]
+                  vars/current-ns (vars/->SciNamespace 'user nil)]
       (let [t0 (System/currentTimeMillis)
             {:keys [:version :shell-in :edn-in :shell-out :edn-out
                     :help? :file :command-line-args
