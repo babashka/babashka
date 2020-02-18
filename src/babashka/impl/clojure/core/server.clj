@@ -46,7 +46,7 @@
     (sci/with-bindings {sci/in in
                         sci/out out
                         sci/err err
-                        vars/current-ns (vars/->SciNamespace 'user)}
+                        vars/current-ns (vars/->SciNamespace 'user nil)}
       (swap! server assoc-in [:sessions client-id] {})
       (apply accept args))
     (catch SocketException _disconnect)
