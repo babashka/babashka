@@ -519,14 +519,19 @@ $ bb script.clj -h
 
 ## Reader conditionals
 
-Babashka supports reader conditionals using the `:bb` feature:
+Babashka supports reader conditionals by taking either the `:bb` or `:clj`
+branch, whichever comes first. NOTE: the `:clj` branch behavior was added in
+version 0.0.71, before that version the `:clj` branch was ignored.
 
 ``` clojure
-$ cat example.clj
-#?(:clj (in-ns 'foo) :bb (println "babashka doesn't support in-ns yet!"))
+$ bb "#?(:bb :hello :clj :bye)"
+:hello
 
-$ ./bb example.clj
-babashka doesn't support in-ns yet!
+$ bb "#?(:clj :bye :bb :hello)"
+:bye
+
+$ bb "[1 2 #?@(:bb [] :clj [1])]"
+[1 2]
 ```
 
 ## Running tests

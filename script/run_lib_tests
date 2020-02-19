@@ -6,3 +6,5 @@ script/lib_tests/clj_http_lite_test
 script/lib_tests/deps_clj_test
 script/lib_tests/spartan_spec_test
 script/lib_tests/clojure_csv_test
+script/lib_tests/regal_test
+script/lib_tests/medley_test

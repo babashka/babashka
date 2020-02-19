@@ -329,7 +329,7 @@ Everything after that is bound to *command-line-args*."))
                                            #(when-let [{:keys [:loader]} @cp-state] (cp/getResource loader % {:url? true}))))
                  :bindings bindings
                  :env env
-                 :features #{:bb}
+                 :features #{:bb :clj}
                  :classes classes/class-map
                  :imports '{ArithmeticException java.lang.ArithmeticException
                             AssertionError java.lang.AssertionError

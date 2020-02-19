@@ -236,8 +236,9 @@
   (is (zero? (bb nil "(try (/ 1 0) (catch ArithmeticException _ 0))"))))
 
 (deftest reader-conditionals-test
-  (is (= :hello (bb nil "#?(:clj (in-ns 'foo)) (println :hello)")))
-  (is (= :hello (bb nil "#?(:bb :hello :default :bye)"))))
+  (is (= :hello (bb nil "#?(:bb :hello :default :bye)")))
+  (is (= :hello (bb nil "#?(:clj :hello :bb :bye)")))
+  (is (= [1 2] (bb nil "[1 2 #?@(:bb [] :clj [1])]"))))
 
 (deftest csv-test
   (is (= '(["Adult" "87727"] ["Elderly" "43914"] ["Child" "33411"] ["Adolescent" "29849"]
