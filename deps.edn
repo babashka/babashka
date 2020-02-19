@@ -7,7 +7,8 @@
         org.clojure/core.async {:mvn/version "1.0.567"},
         org.clojure/tools.cli {:mvn/version "0.4.2"},
         org.clojure/data.csv {:mvn/version "1.0.0"},
-        cheshire {:mvn/version "5.10.0"}}
+        cheshire {:mvn/version "5.10.0"}
+        fipp {:mvn/version "0.6.22"}}
  :aliases {:main
            {:main-opts ["-m" "babashka.main"]}
            :profile

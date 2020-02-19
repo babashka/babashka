@@ -21,12 +21,13 @@
    [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.string :as str]
+   [fipp.edn :as fipp]
    [sci.addons :as addons]
    [sci.core :as sci]
    [sci.impl.interpreter :refer [eval-string*]]
    [sci.impl.opts :as sci-opts]
-   [sci.impl.vars :as vars]
-   [sci.impl.unrestrict :refer [*unrestricted*]])
+   [sci.impl.unrestrict :refer [*unrestricted*]]
+   [sci.impl.vars :as vars])
   (:gen-class))
 
 (binding [*unrestricted* true]
@@ -257,7 +258,8 @@ Everything after that is bound to *command-line-args*."))
    'clojure.main {'demunge demunge}
    'clojure.repl {'demunge demunge}
    'clojure.test t/clojure-test-namespace
-   'babashka.classpath {'add-classpath add-classpath*}})
+   'babashka.classpath {'add-classpath add-classpath*}
+   'clojure.pprint {'pprint fipp/pprint}})
 
 (def bindings
   {'java.lang.System/exit exit ;; override exit, so we have more control
