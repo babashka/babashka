@@ -188,6 +188,7 @@ enumerated explicitly.
   it is a function.
 - `clojure.stacktrace`
 - `clojure.test`
+- `clojure.pprint`: `pprint` (currently backed by [fipp](https://github.com/brandonbloom/fipp)'s  `fipp.edn/pprint`)
 - [`clojure.tools.cli`](https://github.com/clojure/tools.cli) aliased as `tools.cli`
 - [`clojure.data.csv`](https://github.com/clojure/data.csv) aliased as `csv`
 - [`cheshire.core`](https://github.com/dakrone/cheshire) aliased as `json`
@@ -518,14 +519,19 @@ $ bb script.clj -h
 
 ## Reader conditionals
 
-Babashka supports reader conditionals using the `:bb` feature:
+Babashka supports reader conditionals by taking either the `:bb` or `:clj`
+branch, whichever comes first. NOTE: the `:clj` branch behavior was added in
+version 0.0.71, before that version the `:clj` branch was ignored.
 
 ``` clojure
-$ cat example.clj
-#?(:clj (in-ns 'foo) :bb (println "babashka doesn't support in-ns yet!"))
+$ bb "#?(:bb :hello :clj :bye)"
+:hello
 
-$ ./bb example.clj
-babashka doesn't support in-ns yet!
+$ bb "#?(:clj :bye :bb :hello)"
+:bye
+
+$ bb "[1 2 #?@(:bb [] :clj [1])]"
+[1 2]
 ```
 
 ## Running tests
@@ -717,6 +723,10 @@ export BABASHKA_CLASSPATH="$(clojure -Sdeps '{:deps {clojure-csv {:mvn/version "
 (csv/write-csv (csv/parse-csv \"a,b,c\n1,2,3\"))
 "
 ```
+
+#### [regal](https://github.com/borkdude/regal)
+
+Reified regular expressions.
 
 #### [spartan.test](https://github.com/borkdude/spartan.test/)
 

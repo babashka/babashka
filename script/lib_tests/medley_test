@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+export BABASHKA_CLASSPATH="$(clojure -Sdeps '{:deps {medley {:git/url "https://github.com/weavejester/medley" :sha "a4e5fb5383f5c0d83cb2d005181a35b76d8a136d"}}}' -Spath)"
+
+if [ "$BABASHKA_TEST_ENV" = "native" ]; then
+    BB_CMD="./bb"
+else
+    BB_CMD="lein bb"
+fi
+
+$BB_CMD "
+(require '[medley.core :refer [index-by random-uuid]])
+(prn (index-by :id [{:id 1} {:id 2}]))
+(prn (random-uuid))
+"

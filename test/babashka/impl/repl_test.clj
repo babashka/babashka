@@ -14,7 +14,7 @@
 (vars/bindRoot sci/err *err*)
 
 (defn repl! []
-  (sci/with-bindings {vars/current-ns (vars/->SciNamespace 'user)}
+  (sci/with-bindings {vars/current-ns (vars/->SciNamespace 'user nil)}
     (start-repl! (init {:bindings {'*command-line-args*
                                    ["a" "b" "c"]}
                         :env (atom {})}))))

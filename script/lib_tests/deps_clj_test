@@ -2,8 +2,14 @@
 
 set -eo pipefail
 
+if [ "$BABASHKA_TEST_ENV" = "native" ]; then
+    BB_CMD="./bb"
+else
+    BB_CMD="lein bb"
+fi
+
 curl -sL https://raw.githubusercontent.com/borkdude/deps.clj/master/deps.clj -o deps_test.clj
 chmod +x deps_test.clj
-./bb deps_test.clj -Sdescribe
+$BB_CMD deps_test.clj -Sdescribe
 rm deps_test.clj
 
