@@ -2,7 +2,7 @@
 
 set -eo pipefail
 
-export BABASHKA_CLASSPATH="$(clojure -Sdeps '{:deps {regal {:git/url "https://github.com/lambdaisland/regal" :sha "e179f20a2ec78d47c8c24257e644ac80a70e33cb"}}}' -Spath)"
+export BABASHKA_CLASSPATH="$(clojure -Sdeps '{:deps {regal {:git/url "https://github.com/lambdaisland/regal" :sha "8d300f8e15f43480801766b7762530b6d412c1e6"}}}' -Spath)"
 
 if [ "$BABASHKA_TEST_ENV" = "native" ]; then
     BB_CMD="./bb"
