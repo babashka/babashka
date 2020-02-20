@@ -947,6 +947,16 @@ See [examples/http_server.clj](https://github.com/borkdude/babashka/blob/master/
 
 Original by [@souenzzo](https://gist.github.com/souenzzo/a959a4c5b8c0c90df76fe33bb7dfe201)
 
+### Print random docstring
+
+``` shell
+$ bb -o "(defmacro random-doc [] (let [sym (-> (ns-publics 'clojure.core) keys rand-nth)] \`(clojure.repl/doc ~sym))) (random-doc)"
+-------------------------
+clojure.core/keyword?
+([x])
+  Return true if x is a Keyword
+```
+
 ## Thanks
 
 - [adgoji](https://www.adgoji.com/) for financial support
