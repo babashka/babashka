@@ -949,12 +949,14 @@ Original by [@souenzzo](https://gist.github.com/souenzzo/a959a4c5b8c0c90df76fe33
 
 ### Print random docstring
 
+See [examples/random_doc.clj](https://github.com/borkdude/babashka/blob/master/examples/random_doc.clj)
+
 ``` shell
-$ bb "(defmacro random-doc [] (let [sym (-> (ns-publics 'clojure.core) keys rand-nth)] \`(clojure.repl/doc ~sym))) (random-doc)"
+$ examples/random_doc.clj
 -------------------------
-clojure.core/keyword?
+clojure.core/ffirst
 ([x])
-  Return true if x is a Keyword
+  Same as (first (first x))
 ```
 
 ## Thanks
