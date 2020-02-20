@@ -950,7 +950,7 @@ Original by [@souenzzo](https://gist.github.com/souenzzo/a959a4c5b8c0c90df76fe33
 ### Print random docstring
 
 ``` shell
-$ bb -o "(defmacro random-doc [] (let [sym (-> (ns-publics 'clojure.core) keys rand-nth)] \`(clojure.repl/doc ~sym))) (random-doc)"
+$ bb "(defmacro random-doc [] (let [sym (-> (ns-publics 'clojure.core) keys rand-nth)] \`(clojure.repl/doc ~sym))) (random-doc)"
 -------------------------
 clojure.core/keyword?
 ([x])
