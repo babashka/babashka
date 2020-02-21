@@ -7,6 +7,7 @@
    [clojure.tools.reader.reader-types :as r]
    [sci.impl.interpreter :refer [eval-form]]
    [sci.impl.parser :as parser]
+   [sci.impl.vars :as vars]
    [sci.core :as sci]
    [sci.impl.io :as sio]))
 
@@ -29,7 +30,8 @@
                                   "REPL.")
                      (sio/println "Use :repl/quit or :repl/exit to quit the REPL.")
                      (sio/println "Clojure rocks, Bash reaches.")
-                     (sio/println)))
+                     (sio/println)
+                     (eval-form sci-ctx '(require '[clojure.repl :refer [dir doc]]))))
       :read (or read
                 (fn [_request-prompt request-exit]
                   ;; (prn "PEEK" @sci/in (r/peek-char @sci/in))
@@ -57,7 +59,7 @@
                                        expr)]
                     ret)))
       :need-prompt (or need-prompt (fn [] true))
-      :prompt (or prompt #(sio/printf "%s=> " (-> sci-ctx :env deref :current-ns)))
+      :prompt (or prompt #(sio/printf "%s=> " (vars/current-ns-name)))
       :flush (or flush sio/flush)
       :print (or print sio/prn)
       :caught (or caught repl-caught)))))

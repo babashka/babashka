@@ -14,9 +14,10 @@
 (vars/bindRoot sci/err *err*)
 
 (defn repl! []
-  (start-repl! (init {:bindings {'*command-line-args*
-                                 ["a" "b" "c"]}
-                      :env (atom {})})))
+  (sci/with-bindings {vars/current-ns (vars/->SciNamespace 'user nil)}
+    (start-repl! (init {:bindings {'*command-line-args*
+                                   ["a" "b" "c"]}
+                        :env (atom {})}))))
 
 (defn assert-repl [expr expected]
   (is (str/includes? (sci/with-out-str

@@ -14,7 +14,8 @@
       :no-doc true}
     babashka.impl.clojure.core.server
   (:refer-clojure :exclude [locking])
-  (:require [sci.core :as sci])
+  (:require [sci.core :as sci]
+            [sci.impl.vars :as vars])
   (:import
    [clojure.lang LineNumberingPushbackReader]
    [java.net InetAddress Socket ServerSocket SocketException]
@@ -44,7 +45,8 @@
   (try
     (sci/with-bindings {sci/in in
                         sci/out out
-                        sci/err err}
+                        sci/err err
+                        vars/current-ns (vars/->SciNamespace 'user nil)}
       (swap! server assoc-in [:sessions client-id] {})
       (apply accept args))
     (catch SocketException _disconnect)

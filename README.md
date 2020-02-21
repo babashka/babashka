@@ -109,6 +109,11 @@ Upgrade:
 
     yay -S babashka-bin
 
+### Windows
+
+On Windows you can install using [scoop](https://scoop.sh/) and the
+[scoop-clojure](https://github.com/littleli/scoop-clojure) bucket.
+
 ### Installer script
 
 Install via the installer script:
@@ -153,9 +158,10 @@ Options:
   -f, --file <path>   Evaluate a file.
   -cp, --classpath    Classpath to use.
   -m, --main <ns>     Call the -main function from namespace with args.
-  --repl              Start REPL
+  --repl              Start REPL. Use rlwrap for history.
   --socket-repl       Start socket REPL. Specify port (e.g. 1666) or host and port separated by colon (e.g. 127.0.0.1:1666).
   --time              Print execution time before exiting.
+  --                  Stop parsing args and pass everything after -- to *command-line-args*
 
 If neither -e, -f, or --socket-repl are specified, then the first argument that is not parsed as a option is treated as a file if it exists, or as an expression otherwise.
 Everything after that is bound to *command-line-args*.
@@ -172,7 +178,7 @@ enumerated explicitly.
 - `clojure.set` aliased as `set`
 - `clojure.edn` aliased as `edn`:
   - `read-string`
-- `clojure.java.shell` aliases as `shell`
+- `clojure.java.shell` aliased as `shell`
 - `clojure.java.io` aliased as `io`:
   - `as-relative-path`, `as-url`, `copy`, `delete-file`, `file`, `input-stream`,
     `make-parents`, `output-stream`, `reader`, `resource`, `writer`
@@ -181,6 +187,8 @@ enumerated explicitly.
   `async`. The `alt` and `go` macros are not available but `alts!!` does work as
   it is a function.
 - `clojure.stacktrace`
+- `clojure.test`
+- `clojure.pprint`: `pprint` (currently backed by [fipp](https://github.com/brandonbloom/fipp)'s  `fipp.edn/pprint`)
 - [`clojure.tools.cli`](https://github.com/clojure/tools.cli) aliased as `tools.cli`
 - [`clojure.data.csv`](https://github.com/clojure/data.csv) aliased as `csv`
 - [`cheshire.core`](https://github.com/dakrone/cheshire) aliased as `json`
@@ -241,11 +249,29 @@ $ bb example.clj
 
 Command-line arguments can be retrieved using `*command-line-args*`.
 
-### Additional functions
+### Additional namespaces
 
-Additionally, babashka adds the following functions:
+#### babashka.classpath
 
-- `wait/wait-for-port`. Usage:
+Contains the function `add-classpath` which can be used to add to the classpath
+dynamically:
+
+``` clojure
+(require '[babashka.classpath :refer [add-classpath]]
+         '[clojure.java.shell :refer [sh]])
+(def medley-dep '{:deps {medley {:git/url "https://github.com/borkdude/medley"
+                                 :sha "91adfb5da33f8d23f75f0894da1defe567a625c0"}}})
+(def cp (:out (sh "clojure" "-Spath" "-Sdeps" (str medley-dep))))
+(add-classpath cp)
+(require '[medley.core :as m])
+(m/index-by :id [{:id 1} {:id 2}]) ;;=> {1 {:id 1}, 2 {:id 2}}
+```
+
+#### babashka.wait
+
+Contains the functions: `wait-for-port` and `wait-for-path`.
+
+Usage of `wait-for-port`:
 
 ``` clojure
 (wait/wait-for-port "localhost" 8080)
@@ -254,28 +280,36 @@ Additionally, babashka adds the following functions:
 
 Waits for TCP connection to be available on host and port. Options map supports `:timeout` and `:pause`. If `:timeout` is provided and reached, `:default`'s value (if any) is returned. The `:pause` option determines the time waited between retries.
 
-- `wait/wait-for-path`. Usage:
+Usage of `wait-for-path`:
 
 ``` clojure
 (wait/wait-for-path "/tmp/wait-path-test")
 (wait/wait-for-path "/tmp/wait-path-test" {:timeout 1000 :pause 1000})
 ```
 
-Waits for file path to be available. Options map supports `:default`, `:timeout` and `:pause`. If `:timeout` is provided and reached, `:default`'s value (if any) is returned. The `:pause` option determines the time waited between retries.
+Waits for file path to be available. Options map supports `:default`, `:timeout`
+and `:pause`. If `:timeout` is provided and reached, `:default`'s value (if any)
+is returned. The `:pause` option determines the time waited between retries.
 
-- `sig/pipe-signal-received?`. Usage:
+The namespace `babashka.wait` is aliased as `wait` in the `user` namespace.
+
+#### babashka.signal
+
+Contains the function `signal/pipe-signal-received?`. Usage:
 
 ``` clojure
-(sig/pipe-signal-received?)
+(signal/pipe-signal-received?)
 ```
 
 Returns true if `PIPE` signal was received. Example:
 
 ``` shellsession
-$ bb '((fn [x] (println x) (when (not (sig/pipe-signal-received?)) (recur (inc x)))) 0)' | head -n2
+$ bb '((fn [x] (println x) (when (not (signal/pipe-signal-received?)) (recur (inc x)))) 0)' | head -n2
 1
 2
 ```
+
+The namespace `babashka.signal` is aliased as `signal` in the `user` namespace.
 
 ## Running a file
 
@@ -485,19 +519,49 @@ $ bb script.clj -h
 
 ## Reader conditionals
 
-Babashka supports reader conditionals using the `:bb` feature:
+Babashka supports reader conditionals by taking either the `:bb` or `:clj`
+branch, whichever comes first. NOTE: the `:clj` branch behavior was added in
+version 0.0.71, before that version the `:clj` branch was ignored.
 
 ``` clojure
-$ cat example.clj
-#?(:clj (in-ns 'foo) :bb (println "babashka doesn't support in-ns yet!"))
+$ bb "#?(:bb :hello :clj :bye)"
+:hello
 
-$ ./bb example.clj
-babashka doesn't support in-ns yet!
+$ bb "#?(:clj :bye :bb :hello)"
+:bye
+
+$ bb "[1 2 #?@(:bb [] :clj [1])]"
+[1 2]
 ```
 
-## Socket REPL
+## Running tests
 
-Start the socket REPL like this:
+Babashka bundles `clojure.test`. To make CI scripts fail you can use a simple
+runner like this:
+
+``` shell
+#!/usr/bin/env bash
+bb -cp "src:test:resources" \
+   -e "(require '[clojure.test :as t] '[borkdude.deps-test])
+       (let [{:keys [:fail :error]} (t/run-tests 'borkdude.deps-test)]
+         (System/exit (+ fail error)))"
+```
+
+## REPL
+
+Babashka supports both a REPL and socket REPL. To start the REPL, type:
+
+``` shell
+$ bb --repl
+```
+
+To get history with up and down arrows, use `rlwrap`:
+
+``` shell
+$ rlwrap bb --repl
+```
+
+To start the socket REPL you can do this:
 
 ``` shellsession
 $ bb --socket-repl 1666
@@ -571,8 +635,10 @@ Differences with Clojure:
 
 - A subset of Java classes are supported.
 
-- Only the `clojure.core`, `clojure.set`, `clojure.string` and `clojure.walk`
-  namespaces are available from Clojure.
+- Only the `clojure.core`, `clojure.edn`, `clojue.java.io`,
+  `clojure.java.shell`, `clojure.set`, `clojure.stacktrace`, `clojure.string`,
+  `clojure.template`, `clojure.test` and `clojure.walk` namespaces are available
+  from Clojure.
 
 - Interpretation comes with overhead. Therefore tight loops are likely slower
   than in Clojure on the JVM.
@@ -590,14 +656,43 @@ The following libraries are known to work with Babashka:
 A port of the [clojure](https://github.com/clojure/brew-install/) bash script to
 Clojure / babashka.
 
-#### [spartan.test](https://github.com/borkdude/spartan.test/)
+#### [spartan.spec](https://github.com/borkdude/spartan.spec/)
 
-A minimal test framework compatible with babashka.
+An babashka-compatible implementation of `clojure.spec.alpha`.
 
-#### [medley](https://github.com/borkdude/medley/)
+#### [missing.test.assertions](https://github.com/borkdude/missing.test.assertions)
 
-A fork of [medley](https://github.com/weavejester/medley) made compatible with
-babashka. Requires `bb` >= v0.0.58.
+This library checks if no assertions have been made in a test:
+
+``` shell
+$ export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {borkdude/missing.test.assertions {:git/url "https://github.com/borkdude/missing.test.assertions" :sha "603cb01bee72fb17addacc53c34c85612684ad70"}}}')
+
+$ lein bb "(require '[missing.test.assertions] '[clojure.test :as t]) (t/deftest foo) (t/run-tests)"
+
+Testing user
+WARNING: no assertions made in test foo
+
+Ran 1 tests containing 0 assertions.
+0 failures, 0 errors.
+{:test 1, :pass 0, :fail 0, :error 0, :type :summary}
+```
+
+#### [medley](https://github.com/weavejester/medley/)
+
+Requires `bb` >= v0.0.71. Latest coordinates checked with with bb:
+
+``` clojure
+{:git/url "https://github.com/weavejester" :sha "a4e5fb5383f5c0d83cb2d005181a35b76d8a136d"}
+```
+
+Example:
+
+``` shell
+$ export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {medley {:git/url "https://github.com/weavejester" :sha "a4e5fb5383f5c0d83cb2d005181a35b76d8a136d"}}}')
+
+$ bb -e "(require '[medley.core :as m]) (m/index-by :id [{:id 1} {:id 2}])"
+{1 {:id 1}, 2 {:id 2}}
+```
 
 #### [clj-http-lite](https://github.com/borkdude/clj-http-lite)
 
@@ -612,7 +707,15 @@ $ bb "(require '[clj-http.lite.client :as client]) (:status (client/get \"https:
 
 #### [limit-break](https://github.com/technomancy/limit-break)
 
-A debug REPL library. Example:
+A debug REPL library.
+
+Latest coordinates checked with with bb:
+
+``` clojure
+{:git/url "https://github.com/technomancy/limit-break" :sha "050fcfa0ea29fe3340927533a6fa6fffe23bfc2f" :deps/manifest :deps}
+```
+
+Example:
 
 ``` shell
 $ export BABASHKA_CLASSPATH="$(clojure -Sdeps '{:deps {limit-break {:git/url "https://github.com/technomancy/limit-break" :sha "050fcfa0ea29fe3340927533a6fa6fffe23bfc2f" :deps/manifest :deps}}}' -Spath)"
@@ -626,8 +729,47 @@ break> x
 1
 ```
 
+#### [clojure-csv](https://github.com/davidsantiago/clojure-csv)
+
+A library for reading and writing CSV files. Note that babashka already comes
+with `clojure.data.csv`, but in case you need this other library, this is how
+you can use it:
+
+``` shell
+export BABASHKA_CLASSPATH="$(clojure -Sdeps '{:deps {clojure-csv {:mvn/version "RELEASE"}}}' -Spath)"
+
+./bb -e "
+(require '[clojure-csv.core :as csv])
+(csv/write-csv (csv/parse-csv \"a,b,c\n1,2,3\"))
+"
+```
+
+#### [regal](https://github.com/lambdaisland/regal)
+
+Requires `bb` >= v0.0.71. Latest coordinates checked with with bb:
+
+``` clojure
+{:git/url "https://github.com/lambdaisland/regal" :sha "8d300f8e15f43480801766b7762530b6d412c1e6"}
+```
+
+Example:
+
+``` shell
+$ export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {regal {:git/url "https://github.com/lambdaisland/regal" :sha "8d300f8e15f43480801766b7762530b6d412c1e6"}}}')
+
+$ bb -e "(require '[lambdaisland.regal :as regal]) (regal/regex [:* \"ab\"])"
+#"(?:\Qab\E)*"
+```
+
+#### [spartan.test](https://github.com/borkdude/spartan.test/)
+
+A minimal test framework compatible with babashka. This library is deprecated
+since babashka v0.0.68 which has `clojure.test` built-in.
+
+
 ### Blogs
 
+- [Babashka: a quick example](https://juxt.pro/blog/posts/babashka.html) by Malcolm Sparks
 - [Clojure Start Time in 2019](https://stuartsierra.com/2019/12/21/clojure-start-time-in-2019) by Stuart Sierra
 - [Advent of Random
   Hacks](https://lambdaisland.com/blog/2019-12-19-advent-of-parens-19-advent-of-random-hacks)
@@ -704,14 +846,31 @@ bb '(-> *input* first :name (subs 1))'
 "0.0.4"
 ```
 
-### Get latest OS-specific download url from Github
+### Generate deps.edn entry for a gitlib
 
-``` shellsession
-$ curl -s https://api.github.com/repos/borkdude/babashka/releases |
-jet --from json --keywordize |
-bb '(-> *input* first :assets)' |
-bb '(some #(re-find #".*linux.*" (:browser_download_url %)) *input*)'
-"https://github.com/borkdude/babashka/releases/download/v0.0.4/babashka-0.0.4-linux-amd64.zip"
+``` clojure
+#!/usr/bin/env bb
+
+(require '[clojure.java.shell :refer [sh]]
+         '[clojure.string :as str])
+
+(let [[username project branch] *command-line-args*
+      branch (or branch "master")
+      url (str "https://github.com/" username "/" project)
+      sha (-> (sh "git" "ls-remote" url branch)
+              :out
+              (str/split #"\s")
+              first)]
+  {:git/url url
+   :sha sha})
+```
+
+``` shell
+$ gitlib.clj nate fs
+{:git/url "https://github.com/nate/fs", :sha "75b9fcd399ac37cb4f9752a4c7a6755f3fbbc000"}
+$ clj -Sdeps "{:deps {fs $(gitlib.clj nate fs)}}" \
+  -e "(require '[nate.fs :as fs]) (fs/creation-time \".\")"
+#object[java.nio.file.attribute.FileTime 0x5c748168 "2019-07-05T14:06:26Z"]
 ```
 
 ### View download statistics from Clojars
@@ -788,6 +947,18 @@ See [examples/pst.clj](https://github.com/borkdude/babashka/blob/master/examples
 See [examples/http_server.clj](https://github.com/borkdude/babashka/blob/master/examples/http_server.clj)
 
 Original by [@souenzzo](https://gist.github.com/souenzzo/a959a4c5b8c0c90df76fe33bb7dfe201)
+
+### Print random docstring
+
+See [examples/random_doc.clj](https://github.com/borkdude/babashka/blob/master/examples/random_doc.clj)
+
+``` shell
+$ examples/random_doc.clj
+-------------------------
+clojure.core/ffirst
+([x])
+  Same as (first (first x))
+```
 
 ## Thanks
 

@@ -1,7 +1,7 @@
 (ns babashka.main
   {:no-doc true}
   (:require
-   [babashka.impl.async :refer [async-namespace]]
+   [babashka.impl.async :refer [async-namespace async-protocols-namespace]]
    [babashka.impl.cheshire :refer [cheshire-core-namespace]]
    [babashka.impl.classes :as classes]
    [babashka.impl.classpath :as cp]
@@ -10,26 +10,31 @@
    [babashka.impl.clojure.java.shell :refer [shell-namespace]]
    [babashka.impl.clojure.main :refer [demunge]]
    [babashka.impl.clojure.stacktrace :refer [stacktrace-namespace print-stack-trace]]
+   [babashka.impl.common :as common]
    [babashka.impl.csv :as csv]
    [babashka.impl.pipe-signal-handler :refer [handle-pipe! pipe-signal-received?]]
    [babashka.impl.repl :as repl]
    [babashka.impl.socket-repl :as socket-repl]
+   [babashka.impl.test :as t]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
    [babashka.impl.xml :as xml]
    [babashka.wait :as wait]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.string :as str]
+   [fipp.edn :as fipp]
    [sci.addons :as addons]
    [sci.core :as sci]
    [sci.impl.interpreter :refer [eval-string*]]
    [sci.impl.opts :as sci-opts]
+   [sci.impl.unrestrict :refer [*unrestricted*]]
    [sci.impl.vars :as vars])
   (:gen-class))
 
-(sci/alter-var-root sci/in (constantly *in*))
-(sci/alter-var-root sci/out (constantly *out*))
-(sci/alter-var-root sci/err (constantly *err*))
+(binding [*unrestricted* true]
+  (sci/alter-var-root sci/in (constantly *in*))
+  (sci/alter-var-root sci/out (constantly *out*))
+  (sci/alter-var-root sci/err (constantly *err*)))
 
 (set! *warn-on-reflection* true)
 ;; To detect problems when generating the image, run:
@@ -42,6 +47,7 @@
                (if options
                  (let [opt (first options)]
                    (case opt
+                     ("--") (assoc opts-map :command-line-args (next options))
                      ("--version") {:version true}
                      ("--help" "-h" "-?") {:help? true}
                      ("--verbose")(recur (next options)
@@ -68,6 +74,14 @@
                      ("-io") (recur (next options)
                                     (assoc opts-map
                                            :shell-in true
+                                           :shell-out true))
+                     ("-iO") (recur (next options)
+                                    (assoc opts-map
+                                           :shell-in true
+                                           :edn-out true))
+                     ("-Io") (recur (next options)
+                                    (assoc opts-map
+                                           :edn-in true
                                            :shell-out true))
                      ("-IO") (recur (next options)
                                     (assoc opts-map
@@ -100,22 +114,24 @@
                      ("--eval", "-e")
                      (let [options (next options)]
                        (recur (next options)
-                              (assoc opts-map :expression (first options))))
+                              (update opts-map :expressions (fnil conj []) (first options))))
                      ("--main", "-m")
                      (let [options (next options)]
                        (recur (next options)
                               (assoc opts-map :main (first options))))
-                     (if (some opts-map [:file :socket-repl :expression :main])
+                     (if (some opts-map [:file :socket-repl :expressions :main])
                        (assoc opts-map
                               :command-line-args options)
-                       (if (and (not= \( (first (str/trim opt)))
-                                (.exists (io/file opt)))
-                         (assoc opts-map
-                                :file opt
-                                :command-line-args (next options))
-                         (assoc opts-map
-                                :expression opt
-                                :command-line-args (next options))))))
+                       (let [trimmed-opt (str/triml opt)
+                             c (.charAt trimmed-opt 0)]
+                         (case c
+                           (\( \{ \[ \* \@ \#)
+                           (-> opts-map
+                               (update :expressions (fnil conj []) (first options))
+                               (assoc :command-line-args (next options)))
+                           (assoc opts-map
+                                  :file opt
+                                  :command-line-args (next options)))))))
                  opts-map))]
     opts))
 
@@ -166,9 +182,10 @@
   -f, --file <path>   Evaluate a file.
   -cp, --classpath    Classpath to use.
   -m, --main <ns>     Call the -main function from namespace with args.
-  --repl              Start REPL
+  --repl              Start REPL. Use rlwrap for history.
   --socket-repl       Start socket REPL. Specify port (e.g. 1666) or host and port separated by colon (e.g. 127.0.0.1:1666).
   --time              Print execution time before exiting.
+  --                  Stop parsing args and pass everything after -- to *command-line-args*
 
 If neither -e, -f, or --socket-repl are specified, then the first argument that is not parsed as a option is treated as a file if it exists, or as an expression otherwise.
 Everything after that is bound to *command-line-args*."))
@@ -190,7 +207,7 @@ Everything after that is bound to *command-line-args*."))
 (defn load-file* [sci-ctx f]
   (let [f (io/file f)
         s (slurp f)]
-    (sci/with-bindings {vars/file-var (.getCanonicalPath f)}
+    (sci/with-bindings {vars/current-file (.getCanonicalPath f)}
       (eval-string* sci-ctx s))))
 
 (defn eval* [sci-ctx form]
@@ -204,15 +221,11 @@ Everything after that is bound to *command-line-args*."))
 (defn exit [n]
   (throw (ex-info "" {:bb/exit-code n})))
 
-;; (sci/set-var-root! sci/*in* *in*)
-;; (sci/set-var-root! sci/*out* *out*)
-;; (sci/set-var-root! sci/*err* *err*)
-
 (def aliases
-  '{tools.cli 'clojure.tools.cli
+  '{tools.cli clojure.tools.cli
     edn clojure.edn
     wait babashka.wait
-    sig babashka.signal
+    signal babashka.signal
     shell clojure.java.shell
     io clojure.java.io
     async clojure.core.async
@@ -220,21 +233,35 @@ Everything after that is bound to *command-line-args*."))
     json cheshire.core
     xml clojure.data.xml})
 
+(def cp-state (atom nil))
+
+(defn add-classpath* [add-to-cp]
+  (swap! cp-state
+         (fn [{:keys [:cp]}]
+           (let [new-cp
+                 (if-not cp add-to-cp
+                         (str cp (System/getProperty "path.separator") add-to-cp))]
+             {:loader (cp/loader new-cp)
+              :cp new-cp})))
+  nil)
+
 (def namespaces
   {'clojure.tools.cli tools-cli-namespace
-   'clojure.edn {'read edn/read
-                 'read-string edn/read-string}
    'clojure.java.shell shell-namespace
    'babashka.wait {'wait-for-port wait/wait-for-port
                    'wait-for-path wait/wait-for-path}
    'babashka.signal {'pipe-signal-received? pipe-signal-received?}
    'clojure.java.io io-namespace
    'clojure.core.async async-namespace
+   'clojure.core.async.impl.protocols async-protocols-namespace
    'clojure.data.csv csv/csv-namespace
    'cheshire.core cheshire-core-namespace
    'clojure.stacktrace stacktrace-namespace
    'clojure.main {'demunge demunge}
    'clojure.repl {'demunge demunge}
+   'clojure.test t/clojure-test-namespace
+   'babashka.classpath {'add-classpath add-classpath*}
+   'clojure.pprint {'pprint fipp/pprint}
    'clojure.data.xml xml/xml-namespace})
 
 (def bindings
@@ -248,7 +275,9 @@ Everything after that is bound to *command-line-args*."))
       (if exit-code [nil exit-code]
           (do (if verbose?
                 (print-stack-trace e)
-                (println (.getMessage e)))
+                (println (str (.. e getClass getName)
+                              (when-let [m (.getMessage e)]
+                                (str ": " m)) )))
               (flush)
               [nil 1])))))
 
@@ -257,156 +286,170 @@ Everything after that is bound to *command-line-args*."))
   (handle-pipe!)
   #_(binding [*out* *err*]
       (prn "M" (meta (get bindings 'future))))
-  (let [t0 (System/currentTimeMillis)
-        {:keys [:version :shell-in :edn-in :shell-out :edn-out
-                :help? :file :command-line-args
-                :expression :stream? :time?
-                :repl :socket-repl
-                :verbose? :classpath
-                :main :uberscript] :as _opts}
-        (parse-opts args)
-        read-next (fn [*in*]
-                    (if (pipe-signal-received?)
-                      ::EOF
-                      (if stream?
-                        (if shell-in (or (read-line) ::EOF)
-                            (read-edn))
-                        (delay (cond shell-in
-                                     (shell-seq *in*)
-                                     edn-in
-                                     (edn-seq *in*)
-                                     :else
-                                     (edn/read *in*))))))
-        uberscript-sources (atom ())
-        env (atom {})
-        classpath (or classpath
-                      (System/getenv "BABASHKA_CLASSPATH"))
-        loader (when classpath
-                 (cp/loader classpath))
-        load-fn (when classpath
-                  (fn [{:keys [:namespace]}]
-                    (let [res (cp/source-for-namespace loader namespace nil)]
-                      (when uberscript (swap! uberscript-sources conj (:source res)))
-                      res)))
-        _ (when file (vars/bindRoot vars/file-var (.getCanonicalPath (io/file file))))
-        ctx {:aliases aliases
-             :namespaces (-> namespaces
-                             (assoc 'clojure.core
-                                    (assoc core-extras
-                                           '*command-line-args*
-                                           (sci/new-dynamic-var '*command-line-args* command-line-args)
-                                           '*file* vars/file-var
-                                           '*warn-on-reflection* reflection-var))
-                             (assoc-in ['clojure.java.io 'resource]
-                                       #(when classpath (cp/getResource loader % {:url? true}))))
-             :bindings bindings
-             :env env
-             :features #{:bb}
-             :classes classes/class-map
-             :imports '{ArithmeticException java.lang.ArithmeticException
-                        AssertionError java.lang.AssertionError
-                        Boolean java.lang.Boolean
-                        Class java.lang.Class
-                        Double java.lang.Double
-                        Exception java.lang.Exception
-                        IllegalArgumentException java.lang.IllegalArgumentException
-                        Integer java.lang.Integer
-                        File java.io.File
-                        Math java.lang.Math
-                        Object java.lang.Object
-                        ProcessBuilder java.lang.ProcessBuilder
-                        String java.lang.String
-                        System java.lang.System
-                        Thread java.lang.Thread}
-             :load-fn load-fn
-             :dry-run uberscript}
-        ctx (addons/future ctx)
-        sci-ctx (sci-opts/init ctx)
-        _ (swap! (:env sci-ctx)
-                 (fn [env]
-                   (update-in env [:namespaces 'clojure.core] assoc
-                              'eval #(eval* sci-ctx %)
-                              'load-file #(load-file* sci-ctx %))))
-        _ (swap! (:env sci-ctx)
-                 (fn [env]
-                   (assoc-in env [:namespaces 'clojure.main 'repl]
-                             (fn [& opts]
-                               (let [opts (apply hash-map opts)]
-                                 (repl/start-repl! sci-ctx opts))))))
-        preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim))
-        [expression exit-code]
-        (cond expression [expression nil]
-              main [(format "(ns user (:require [%1$s])) (apply %1$s/-main *command-line-args*)"
-                            main) nil]
-              file (try [(read-file file) nil]
-                        (catch Exception e
-                          (error-handler* e verbose?))))
-        exit-code
-        ;; handle preloads
-        (if exit-code exit-code
-            (do (when preloads (try (eval-string* sci-ctx preloads)
-                                    (catch Throwable e
-                                      (error-handler* e verbose?))))
-                nil))
-        exit-code
-        (or exit-code
-            (sci/with-bindings {reflection-var false}
-              (or
-               #_(binding [*out* *err*]
-                   (prn ">>" _opts))
-               (second
-                (cond version
-                      [(print-version) 0]
-                      help?
-                      [(print-help) 0]
-                      repl [(repl/start-repl! sci-ctx) 0]
-                      socket-repl [(start-socket-repl! socket-repl sci-ctx) 0]
-                      (not (str/blank? expression))
+  (binding [*unrestricted* true]
+    (sci/binding [reflection-var false
+                  vars/current-ns (vars/->SciNamespace 'user nil)]
+      (let [t0 (System/currentTimeMillis)
+            {:keys [:version :shell-in :edn-in :shell-out :edn-out
+                    :help? :file :command-line-args
+                    :expressions :stream? :time?
+                    :repl :socket-repl
+                    :verbose? :classpath
+                    :main :uberscript] :as _opts}
+            (parse-opts args)
+            read-next (fn [*in*]
+                        (if (pipe-signal-received?)
+                          ::EOF
+                          (if stream?
+                            (if shell-in (or (read-line) ::EOF)
+                                (read-edn))
+                            (delay (cond shell-in
+                                         (shell-seq *in*)
+                                         edn-in
+                                         (edn-seq *in*)
+                                         :else
+                                         (edn/read *in*))))))
+            uberscript-sources (atom ())
+            env (atom {})
+            classpath (or classpath
+                          (System/getenv "BABASHKA_CLASSPATH"))
+            _ (when classpath
+                (add-classpath* classpath))
+            load-fn (fn [{:keys [:namespace]}]
+                      (when-let [{:keys [:loader]} @cp-state]
+                        (let [res (cp/source-for-namespace loader namespace nil)]
+                          (when uberscript (swap! uberscript-sources conj (:source res)))
+                          res)))
+            _ (when file (vars/bindRoot vars/current-file (.getCanonicalPath (io/file file))))
+            ctx {:aliases aliases
+                 :namespaces (-> namespaces
+                                 (assoc 'clojure.core
+                                        (assoc core-extras
+                                               '*command-line-args*
+                                               (sci/new-dynamic-var '*command-line-args* command-line-args)
+                                               '*warn-on-reflection* reflection-var))
+                                 (assoc-in ['clojure.java.io 'resource]
+                                           #(when-let [{:keys [:loader]} @cp-state] (cp/getResource loader % {:url? true}))))
+                 :bindings bindings
+                 :env env
+                 :features #{:bb :clj}
+                 :classes classes/class-map
+                 :imports '{ArithmeticException java.lang.ArithmeticException
+                            AssertionError java.lang.AssertionError
+                            Boolean java.lang.Boolean
+                            Class java.lang.Class
+                            Double java.lang.Double
+                            Exception java.lang.Exception
+                            IllegalArgumentException java.lang.IllegalArgumentException
+                            Integer java.lang.Integer
+                            File java.io.File
+                            Long java.lang.Long
+                            Math java.lang.Math
+                            Object java.lang.Object
+                            ProcessBuilder java.lang.ProcessBuilder
+                            String java.lang.String
+                            StringBuilder java.lang.StringBuilder
+                            System java.lang.System
+                            Thread java.lang.Thread
+                            Throwable java.lang.Throwable}
+                 :load-fn load-fn
+                 :dry-run uberscript}
+            ctx (addons/future ctx)
+            sci-ctx (sci-opts/init ctx)
+            _ (vreset! common/ctx sci-ctx)
+            _ (swap! (:env sci-ctx)
+                     (fn [env]
+                       (update-in env [:namespaces 'clojure.core] assoc
+                                  'eval #(eval* sci-ctx %)
+                                  'load-file #(load-file* sci-ctx %))))
+            _ (swap! (:env sci-ctx)
+                     (fn [env]
+                       (assoc-in env [:namespaces 'clojure.main 'repl]
+                                 (fn [& opts]
+                                   (let [opts (apply hash-map opts)]
+                                     (repl/start-repl! sci-ctx opts))))))
+            preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim))
+            [expressions exit-code]
+            (cond expressions [expressions nil]
+                  main [[(format "(ns user (:require [%1$s])) (apply %1$s/-main *command-line-args*)"
+                                 main)] nil]
+                  file (try [[(read-file file)] nil]
+                            (catch Exception e
+                              (error-handler* e verbose?))))
+            expression (str/join " " expressions) ;; this might mess with the locations...
+            exit-code
+            ;; handle preloads
+            (if exit-code exit-code
+                (do (when preloads
                       (try
-                        (loop [in (read-next *in*)]
-                          (let [_ (swap! env update-in [:namespaces 'user]
-                                         assoc (with-meta '*input*
-                                                 (when-not stream?
-                                                   {:sci.impl/deref! true}))
-                                         (sci/new-dynamic-var '*input* in))]
-                            (if (identical? ::EOF in)
-                              [nil 0] ;; done streaming
-                              (let [res [(let [res (eval-string* sci-ctx expression)]
-                                           (when (some? res)
-                                             (if-let [pr-f (cond shell-out println
-                                                                 edn-out prn)]
-                                               (if (coll? res)
-                                                 (doseq [l res
-                                                         :while (not (pipe-signal-received?))]
-                                                   (pr-f l))
-                                                 (pr-f res))
-                                               (prn res)))) 0]]
-                                (if stream?
-                                  (recur (read-next *in*))
-                                  res)))))
+                        (eval-string* sci-ctx preloads)
                         (catch Throwable e
-                          (error-handler* e verbose?)))
-                      uberscript [nil 0]
-                      :else [(repl/start-repl! sci-ctx) 0]))
-               1)))
-        t1 (System/currentTimeMillis)]
-    (flush)
-    (when uberscript
-      uberscript
-      (let [uberscript-out uberscript]
-        (spit uberscript-out "") ;; reset file
-        (doseq [s @uberscript-sources]
-          (spit uberscript-out s :append true))
-        (spit uberscript-out preloads :append true)
-        (spit uberscript-out expression :append true)))
-    (when time? (binding [*out* *err*]
-                  (println "bb took" (str (- t1 t0) "ms."))))
-    exit-code))
+                          (error-handler* e verbose?))))
+                    nil))
+            exit-code
+            (or exit-code
+                (second
+                 (cond version
+                       [(print-version) 0]
+                       help?
+                       [(print-help) 0]
+                       repl [(repl/start-repl! sci-ctx) 0]
+                       socket-repl [(start-socket-repl! socket-repl sci-ctx) 0]
+                       (not (str/blank? expression))
+                       (try
+                         (loop [in (read-next *in*)]
+                           (let [_ (swap! env update-in [:namespaces 'user]
+                                          assoc (with-meta '*input*
+                                                  (when-not stream?
+                                                    {:sci.impl/deref! true}))
+                                          (sci/new-dynamic-var '*input* in))]
+                             (if (identical? ::EOF in)
+                               [nil 0] ;; done streaming
+                               (let [res [(let [res (eval-string* sci-ctx expression)]
+                                            (when (some? res)
+                                              (if-let [pr-f (cond shell-out println
+                                                                  edn-out prn)]
+                                                (if (coll? res)
+                                                  (doseq [l res
+                                                          :while (not (pipe-signal-received?))]
+                                                    (pr-f l))
+                                                  (pr-f res))
+                                                (prn res)))) 0]]
+                                 (if stream?
+                                   (recur (read-next *in*))
+                                   res)))))
+                         (catch Throwable e
+                           (error-handler* e verbose?)))
+                       uberscript [nil 0]
+                       :else [(repl/start-repl! sci-ctx) 0]))
+                1)
+            t1 (System/currentTimeMillis)]
+        (flush)
+        (when uberscript
+          uberscript
+          (let [uberscript-out uberscript]
+            (spit uberscript-out "") ;; reset file
+            (doseq [s @uberscript-sources]
+              (spit uberscript-out s :append true))
+            (spit uberscript-out preloads :append true)
+            (spit uberscript-out expression :append true)))
+        (when time? (binding [*out* *err*]
+                      (println "bb took" (str (- t1 t0) "ms."))))
+        exit-code))))
 
 (defn -main
   [& args]
-  (let [exit-code (apply main args)]
-    (System/exit exit-code)))
+  (if-let [dev-opts (System/getenv "BABASHKA_DEV")]
+    (let [{:keys [:n]} (edn/read-string dev-opts)
+          last-iteration (dec n)]
+      (dotimes [i n]
+        (if (< i last-iteration)
+          (with-out-str (apply main args))
+          (do (apply main args)
+              (binding [*out* *err*]
+                (println "ran" n "times"))))))
+    (let [exit-code (apply main args)]
+      (System/exit exit-code))))
 
 ;;;; Scratch
 

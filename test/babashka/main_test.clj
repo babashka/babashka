@@ -13,24 +13,19 @@
   (edn/read-string (apply test-utils/bb (when (some? input) (str input)) (map str args))))
 
 (deftest parse-opts-test
-  (is (= {:expression "(println 123)"}
-         (main/parse-opts ["-e" "(println 123)"])))
-
-  (is (= {:expression "(println 123)"}
-         (main/parse-opts ["--eval" "(println 123)"])))
-
+  (is (= 123 (bb nil "(println 123)")))
+  (is (= 123 (bb nil "-e" "(println 123)")))
+  (is (= 123 (bb nil "--eval" "(println 123)")))
   (testing "distinguish automatically between expression or file name"
-    (is (= {:expression "(println 123)"
-            :command-line-args nil}
-           (main/parse-opts ["(println 123)"])))
+    (is (= {:result 8080} (bb nil "test/babashka/scripts/tools.cli.bb")))
+    (is (thrown-with-msg? Exception #"does not exist" (bb nil "foo.clj")))
+    (is (thrown-with-msg? Exception #"does not exist" (bb nil "-help"))))
+  (is (= "1 2 3" (bb nil "-e" "(require '[clojure.string :as str1])" "-e" "(str1/join \" \" [1 2 3])")))
+  (is (= '("-e" "1") (bb nil "-e" "*command-line-args*" "--" "-e" "1"))))
 
-    (is (= {:file "src/babashka/main.clj"
-            :command-line-args nil}
-           (main/parse-opts ["src/babashka/main.clj"])))
-
-    (is (= {:expression "does-not-exist"
-            :command-line-args nil}
-           (main/parse-opts ["does-not-exist"])))))
+(deftest print-error-test
+  (is (thrown-with-msg? Exception #"java.lang.NullPointerException"
+                        (bb nil "(subs nil 0 0)"))))
 
 (deftest main-test
   (testing "-io behaves as identity"
@@ -165,6 +160,12 @@
 
 (deftest future-test
   (is (= 6 (bb nil "@(future (+ 1 2 3))"))))
+  
+(deftest promise-test
+  (is (= :timeout (bb nil "(deref (promise) 1 :timeout)")))
+  (is (= :ok (bb nil "(let [x (promise)]
+                        (deliver x :ok)
+                        @x)"))))
 
 (deftest process-builder-test
   (is (str/includes? (bb nil "
@@ -235,8 +236,9 @@
   (is (zero? (bb nil "(try (/ 1 0) (catch ArithmeticException _ 0))"))))
 
 (deftest reader-conditionals-test
-  (is (= :hello (bb nil "#?(:clj (in-ns 'foo)) (println :hello)")))
-  (is (= :hello (bb nil "#?(:bb :hello :default :bye)"))))
+  (is (= :hello (bb nil "#?(:bb :hello :default :bye)")))
+  (is (= :hello (bb nil "#?(:clj :hello :bb :bye)")))
+  (is (= [1 2] (bb nil "[1 2 #?@(:bb [] :clj [1])]"))))
 
 (deftest csv-test
   (is (= '(["Adult" "87727"] ["Elderly" "43914"] ["Child" "33411"] ["Adolescent" "29849"]
@@ -250,8 +252,7 @@
 (deftest Pattern-test
   (is (= ["1" "2" "3"]
          (bb nil "(vec (.split (java.util.regex.Pattern/compile \"f\") \"1f2f3\"))")))
-  (is (= java.util.regex.Pattern/CANON_EQ
-         (bb nil "java.util.regex.Pattern/CANON_EQ"))))
+  (is (true? (bb nil "(some? java.util.regex.Pattern/CANON_EQ)"))))
 
 (deftest writer-test
   (let [tmp-file (java.io.File/createTempFile "bbb" "bbb")
@@ -339,6 +340,20 @@
 (deftest clojure-data-xml-test
   (is (= "<?xml version=\"1.0\" encoding=\"UTF-8\"?><items><item>1</item><item>2</item></items>"
          (bb nil "(let [xml (xml/parse-str \"<items><item>1</item><item>2</item></items>\")] (xml/emit-str xml))"))))
+
+(deftest uberscript-test
+  (let [tmp-file (java.io.File/createTempFile "uberscript" ".clj")]
+    (.deleteOnExit tmp-file)
+    (is (empty? (bb nil "--uberscript" (.getPath tmp-file) "-e" "(System/exit 1)")))
+    (is (= "(System/exit 1)" (slurp tmp-file)))))
+
+(deftest unrestricted-access
+  (testing "babashka is allowed to mess with built-in vars"
+    (is (= 1 (bb nil "
+(def inc2 inc) (alter-var-root #'clojure.core/inc (constantly dec))
+(let [res (inc 2)]
+  (alter-var-root #'clojure.core/inc (constantly inc2))
+  res)")))))
 
 ;;;; Scratch
 

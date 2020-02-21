@@ -11,15 +11,17 @@
   :resource-paths ["resources" "sci/resources"]
   :dependencies [[org.clojure/clojure "1.10.1"]
                  [org.clojure/tools.reader "1.3.2"]
-                 [borkdude/edamame "0.0.10-alpha.4"]
+                 [borkdude/edamame "0.0.10"]
                  [borkdude/graal.locking "0.0.2"]
                  [borkdude/sci.impl.reflector "0.0.1"]
-                 [org.clojure/core.async "0.4.500"]
+                 [org.clojure/core.async "1.0.567"]
                  [org.clojure/tools.cli "0.4.2"]
-                 [org.clojure/data.csv "0.1.4"]
+                 [org.clojure/data.csv "1.0.0"]
                  [org.clojure/data.xml "0.2.0-alpha6"]
-                 [cheshire "5.9.0"]]
-  :profiles {:test {:dependencies [[clj-commons/conch "0.9.2"]]}
+                 [cheshire "5.10.0"]
+                 [fipp "0.6.22"]]
+  :profiles {:test {:dependencies [[clj-commons/conch "0.9.2"]
+                                   [com.clojure-goes-fast/clj-async-profiler "0.4.0"]]}
              :uberjar {:global-vars {*assert* false}
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"
                                   "-Dclojure.spec.skip-macros=true"]
