@@ -83,6 +83,7 @@
           java.time.ZonedDateTime
           java.time.ZoneId
           java.time.ZoneOffset
+          java.time.temporal.ChronoUnit
           java.time.temporal.TemporalAccessor
           java.util.regex.Pattern
           java.util.Base64
