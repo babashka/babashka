@@ -965,6 +965,9 @@ clojure.core/ffirst
 ## Thanks
 
 - [adgoji](https://www.adgoji.com/) for financial support
+- [Nikita Prokopov](https://github.com/tonsky) for the logo
+- [contributors](https://github.com/borkdude/babashka/graphs/contributors) and
+  other users posting issues with bug reports and ideas
 
 ## License
 
