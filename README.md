@@ -130,7 +130,9 @@ $ bash <(curl -s https://raw.githubusercontent.com/borkdude/babashka/master/inst
 
 ### Download
 
-You may also download a binary from [Github](https://github.com/borkdude/babashka/releases).
+You may also download a binary from
+[Github](https://github.com/borkdude/babashka/releases). For linux there is a
+static binary available which can be used on Alpine.
 
 ## Usage
 
