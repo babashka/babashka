@@ -15,35 +15,34 @@ fi
 
 BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
 
-# # We also need to AOT sci, else something didn't work in the Mac build on CircleCI
-# # See https://github.com/oracle/graal/issues/1613
-# ( cd /tmp;  git clone https://github.com/borkdude/sci 2> /dev/null || true )
-# mkdir -p src/sci
-# cp -R /tmp/sci/src/* src
-
 export JAVA_HOME=$GRAALVM_HOME
 
 lein with-profiles +reflection do run
 lein do clean, uberjar
 
-$GRAALVM_HOME/bin/native-image \
-  -jar target/babashka-$BABASHKA_VERSION-standalone.jar \
-  -H:Name=bb \
-  -H:+ReportExceptionStackTraces \
-  -J-Dclojure.spec.skip-macros=true \
-  -J-Dclojure.compiler.direct-linking=true \
-  "-H:IncludeResources=BABASHKA_VERSION" \
-  "-H:IncludeResources=SCI_VERSION" \
-  -H:ReflectionConfigurationFiles=reflection.json \
-  --initialize-at-run-time=java.lang.Math\$RandomNumberGeneratorHolder \
-  --initialize-at-build-time \
-  -H:Log=registerResource: \
-  -H:EnableURLProtocols=http,https \
-  --enable-all-security-services \
-  -H:+JNI \
-  --verbose \
-  --no-fallback \
-  --no-server \
-  "$BABASHKA_XMX"
+args=( -jar target/babashka-$BABASHKA_VERSION-standalone.jar \
+            -H:Name=bb \
+            -H:+ReportExceptionStackTraces \
+            -J-Dclojure.spec.skip-macros=true \
+            -J-Dclojure.compiler.direct-linking=true \
+            "-H:IncludeResources=BABASHKA_VERSION" \
+            "-H:IncludeResources=SCI_VERSION" \
+            -H:ReflectionConfigurationFiles=reflection.json \
+            --initialize-at-run-time=java.lang.Math\$RandomNumberGeneratorHolder \
+            --initialize-at-build-time \
+            -H:Log=registerResource: \
+            -H:EnableURLProtocols=http,https \
+            --enable-all-security-services \
+            -H:+JNI \
+            --verbose \
+            --no-fallback \
+            --no-server \
+            "$BABASHKA_XMX" )
+
+if [ "$BABASHKA_STATIC" = "true" ]; then
+    args+=("--static")
+fi
+
+$GRAALVM_HOME/bin/native-image "${args[@]}"
 
 lein clean
