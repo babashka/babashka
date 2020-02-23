@@ -44,6 +44,7 @@ $GRAALVM_HOME/bin/native-image \
   --verbose \
   --no-fallback \
   --no-server \
+  --static \
   "$BABASHKA_XMX"
 
 lein clean
