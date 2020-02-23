@@ -57,6 +57,9 @@ Keep notes here about how adding libraries and classes to Babashka affects the b
 
 <!-- 2020/01/08, ..., 38.7mb / 11.3mb zipped -->
 <!-- Added: `clojure.data.xml`. Growth: 1.8mb / ... -->
+2020/02/21, 
+Added java.time.temporal.ChronoUnit
+40651596 - 40598260 = 53kb added.
 
 2020/02/19, e43727955a2cdabd2bb0189c20dd7f9a18156fc9
 Added fipp.edn/pprint

@@ -16,4 +16,8 @@
   (is (= "18-12-2019 16:01:41"
          (bb '(.format
                (java.time.LocalDateTime/parse "2019-12-18T16:01:41.485")
-               (java.time.format.DateTimeFormatter/ofPattern "dd-MM-yyyy HH:mm:ss"))))))
+               (java.time.format.DateTimeFormatter/ofPattern "dd-MM-yyyy HH:mm:ss")))))
+  (is (number? (bb "
+(let [x (java.time.LocalDateTime/parse \"2019-12-18T16:01:41.485\")
+      y (java.time.LocalDateTime/now)]
+  (.between java.time.temporal.ChronoUnit/MINUTES x y))"))))

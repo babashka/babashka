@@ -677,10 +677,22 @@ Ran 1 tests containing 0 assertions.
 {:test 1, :pass 0, :fail 0, :error 0, :type :summary}
 ```
 
-#### [medley](https://github.com/borkdude/medley/)
+#### [medley](https://github.com/weavejester/medley/)
 
-A fork of [medley](https://github.com/weavejester/medley) made compatible with
-babashka. Requires `bb` >= v0.0.58.
+Requires `bb` >= v0.0.71. Latest coordinates checked with with bb:
+
+``` clojure
+{:git/url "https://github.com/weavejester" :sha "a4e5fb5383f5c0d83cb2d005181a35b76d8a136d"}
+```
+
+Example:
+
+``` shell
+$ export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {medley {:git/url "https://github.com/weavejester" :sha "a4e5fb5383f5c0d83cb2d005181a35b76d8a136d"}}}')
+
+$ bb -e "(require '[medley.core :as m]) (m/index-by :id [{:id 1} {:id 2}])"
+{1 {:id 1}, 2 {:id 2}}
+```
 
 #### [clj-http-lite](https://github.com/borkdude/clj-http-lite)
 
@@ -695,7 +707,15 @@ $ bb "(require '[clj-http.lite.client :as client]) (:status (client/get \"https:
 
 #### [limit-break](https://github.com/technomancy/limit-break)
 
-A debug REPL library. Example:
+A debug REPL library.
+
+Latest coordinates checked with with bb:
+
+``` clojure
+{:git/url "https://github.com/technomancy/limit-break" :sha "050fcfa0ea29fe3340927533a6fa6fffe23bfc2f" :deps/manifest :deps}
+```
+
+Example:
 
 ``` shell
 $ export BABASHKA_CLASSPATH="$(clojure -Sdeps '{:deps {limit-break {:git/url "https://github.com/technomancy/limit-break" :sha "050fcfa0ea29fe3340927533a6fa6fffe23bfc2f" :deps/manifest :deps}}}' -Spath)"
@@ -724,9 +744,22 @@ export BABASHKA_CLASSPATH="$(clojure -Sdeps '{:deps {clojure-csv {:mvn/version "
 "
 ```
 
-#### [regal](https://github.com/borkdude/regal)
+#### [regal](https://github.com/lambdaisland/regal)
 
-Reified regular expressions.
+Requires `bb` >= v0.0.71. Latest coordinates checked with with bb:
+
+``` clojure
+{:git/url "https://github.com/lambdaisland/regal" :sha "8d300f8e15f43480801766b7762530b6d412c1e6"}
+```
+
+Example:
+
+``` shell
+$ export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {regal {:git/url "https://github.com/lambdaisland/regal" :sha "8d300f8e15f43480801766b7762530b6d412c1e6"}}}')
+
+$ bb -e "(require '[lambdaisland.regal :as regal]) (regal/regex [:* \"ab\"])"
+#"(?:\Qab\E)*"
+```
 
 #### [spartan.test](https://github.com/borkdude/spartan.test/)
 
@@ -736,6 +769,7 @@ since babashka v0.0.68 which has `clojure.test` built-in.
 
 ### Blogs
 
+- [Babashka: a quick example](https://juxt.pro/blog/posts/babashka.html) by Malcolm Sparks
 - [Clojure Start Time in 2019](https://stuartsierra.com/2019/12/21/clojure-start-time-in-2019) by Stuart Sierra
 - [Advent of Random
   Hacks](https://lambdaisland.com/blog/2019-12-19-advent-of-parens-19-advent-of-random-hacks)
@@ -913,6 +947,18 @@ See [examples/pst.clj](https://github.com/borkdude/babashka/blob/master/examples
 See [examples/http_server.clj](https://github.com/borkdude/babashka/blob/master/examples/http_server.clj)
 
 Original by [@souenzzo](https://gist.github.com/souenzzo/a959a4c5b8c0c90df76fe33bb7dfe201)
+
+### Print random docstring
+
+See [examples/random_doc.clj](https://github.com/borkdude/babashka/blob/master/examples/random_doc.clj)
+
+``` shell
+$ examples/random_doc.clj
+-------------------------
+clojure.core/ffirst
+([x])
+  Same as (first (first x))
+```
 
 ## Thanks
 
