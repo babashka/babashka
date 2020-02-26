@@ -17,7 +17,7 @@
      ret#))
 
 (def core-extras
-  {'file-seq file-seq
+  {'file-seq (copy-core-var file-seq)
    'agent agent
    'instance? instance? ;; TODO: move to sci
    'send send
