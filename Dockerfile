@@ -13,7 +13,8 @@ COPY . .
 RUN ./script/compile
 
 
-FROM scratch
+FROM busybox:musl
 
-COPY --from=BASE /opt/bb /bin/bb
+RUN mkdir -p /usr/local/bin
+COPY --from=BASE /opt/bb /usr/local/bin/bb
 CMD ["bb"]
