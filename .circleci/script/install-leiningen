@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-curl https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein > lein
+cd /tmp
+git clone https://github.com/technomancy/leiningen/tree/f3864bc35d8280a8461b7f6c593b1919a75bef7f
 sudo mkdir -p /usr/local/bin/
-sudo mv lein /usr/local/bin/lein
-sudo chmod a+x /usr/local/bin/lein
+cp leiningen/bin/lein /usr/local/bin
+chmod a+x /usr/local/bin/lein

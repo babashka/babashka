@@ -5,7 +5,7 @@
 version: 2.1
 jobs:
   jvm:
-    docker: 
+    docker:
       # specify the version you desire here
       - image: circleci/clojure:lein-2.8.1
     working_directory: ~/repo
