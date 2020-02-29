@@ -622,6 +622,32 @@ bb '
 process 2
 ```
 
+## HTTP
+
+For making HTTP requests you can use:
+
+- `slurp` for simple `GET` requests
+- [clj-http-lite](https://github.com/borkdude/clj-http-lite) as a library
+- `curl` via `clojure.java.shell`. For an example, see the following
+  subsection.
+
+### HTTP over Unix sockets
+
+This can be useful for talking to Docker:
+
+``` clojure
+(require '[clojure.java.shell :refer [sh]])
+(require '[cheshire.core :as json])
+(-> (sh "curl" "--silent"
+        "--no-buffer" "--unix-socket"
+        "/var/run/docker.sock"
+        "http://localhost/images/json")
+    :out
+    (json/parse-string true)
+    first
+    :RepoTags) ;;=> ["borkdude/babashka:latest"]
+```
+
 ## Differences with Clojure
 
 Babashka is implemented using the [Small Clojure
