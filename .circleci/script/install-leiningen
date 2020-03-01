@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-curl https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein > lein
+curl https://raw.githubusercontent.com/technomancy/leiningen/2.9.1/bin/lein > lein
 sudo mkdir -p /usr/local/bin/
 sudo mv lein /usr/local/bin/lein
 sudo chmod a+x /usr/local/bin/lein

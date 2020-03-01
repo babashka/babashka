@@ -1,7 +1,8 @@
 (ns babashka.impl.clojure.core
   {:no-doc true}
   (:refer-clojure :exclude [future])
-  (:require [borkdude.graal.locking :as locking]))
+  (:require [borkdude.graal.locking :as locking]
+            [sci.impl.namespaces :refer [copy-core-var]]))
 
 (defn locking* [form bindings v f & args]
   (apply @#'locking/locking form bindings v f args))
@@ -16,7 +17,7 @@
      ret#))
 
 (def core-extras
-  {'file-seq file-seq
+  {'file-seq (copy-core-var file-seq)
    'agent agent
    'instance? instance? ;; TODO: move to sci
    'send send
@@ -25,8 +26,8 @@
    'deliver deliver
    'locking (with-meta locking* {:sci/macro true})
    'shutdown-agents shutdown-agents
-   'slurp slurp
-   'spit spit
+   'slurp (copy-core-var slurp)
+   'spit (copy-core-var spit)
    'time (with-meta time* {:sci/macro true})
    'Throwable->map Throwable->map
    'compare-and-set! compare-and-set!})

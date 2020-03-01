@@ -130,7 +130,9 @@ $ bash <(curl -s https://raw.githubusercontent.com/borkdude/babashka/master/inst
 
 ### Download
 
-You may also download a binary from [Github](https://github.com/borkdude/babashka/releases).
+You may also download a binary from
+[Github](https://github.com/borkdude/babashka/releases). For linux there is a
+static binary available which can be used on Alpine.
 
 ## Usage
 
@@ -184,8 +186,7 @@ enumerated explicitly.
     `make-parents`, `output-stream`, `reader`, `resource`, `writer`
 - `clojure.main`: `repl`
 - [`clojure.core.async`](https://clojure.github.io/core.async/) aliased as
-  `async`. The `alt` and `go` macros are not available but `alts!!` does work as
-  it is a function.
+  `async`.
 - `clojure.stacktrace`
 - `clojure.test`
 - `clojure.pprint`: `pprint` (currently backed by [fipp](https://github.com/brandonbloom/fipp)'s  `fipp.edn/pprint`)
@@ -604,10 +605,10 @@ Also see this [example](examples/process_builder.clj).
 
 ## Async
 
-Apart from `future` and `pmap` for creating threads, you may use the `async`
-namespace, which maps to `clojure.core.async`, for asynchronous scripting. The
-following example shows how to get first available value from two different
-processes:
+Apart from `future` and `pmap` for creating threads, you may use the
+`clojure.core.async` namespace for asynchronous
+scripting. The following example shows how to get first available value from two
+different processes:
 
 ``` clojure
 bb '
@@ -618,6 +619,37 @@ bb '
                    (async-command "sleep 1 && echo process 2")])
     first :out str/trim println)'
 process 2
+```
+
+Note: the `go` macro is available for compatibility with JVM programs, but the
+implementation maps to `clojure.core.async/thread` and the single exclamation
+mark operations (`<!`, `>!`, etc.) map to the double exclamation mark operations
+(`<!!`, `>!!`, etc.). It will not `park` threads, like on the JVM.
+
+## HTTP
+
+For making HTTP requests you can use:
+
+- `slurp` for simple `GET` requests
+- [clj-http-lite](https://github.com/borkdude/clj-http-lite) as a library
+- `curl` via `clojure.java.shell`. For an example, see the following
+  subsection.
+
+### HTTP over Unix sockets
+
+This can be useful for talking to Docker:
+
+``` clojure
+(require '[clojure.java.shell :refer [sh]])
+(require '[cheshire.core :as json])
+(-> (sh "curl" "--silent"
+        "--no-buffer" "--unix-socket"
+        "/var/run/docker.sock"
+        "http://localhost/images/json")
+    :out
+    (json/parse-string true)
+    first
+    :RepoTags) ;;=> ["borkdude/babashka:latest"]
 ```
 
 ## Differences with Clojure
@@ -837,13 +869,18 @@ $ < /tmp/test.txt bb -io '(shuffle *input*)'
 
 ### Fetch latest Github release tag
 
-For converting JSON to EDN, see [jet](https://github.com/borkdude/jet).
+``` shell
+(require '[clojure.java.shell :refer [sh]]
+         '[cheshire.core :as json])
 
-``` shellsession
-$ curl -s https://api.github.com/repos/borkdude/babashka/tags |
-jet --from json --keywordize --to edn |
-bb '(-> *input* first :name (subs 1))'
-"0.0.4"
+(defn babashka-latest-version []
+  (-> (sh "curl" "https://api.github.com/repos/borkdude/babashka/tags")
+      :out
+      (json/parse-string true)
+      first
+      :name))
+
+(babashka-latest-version) ;;=> "v0.0.73"
 ```
 
 ### Generate deps.edn entry for a gitlib
@@ -963,6 +1000,9 @@ clojure.core/ffirst
 ## Thanks
 
 - [adgoji](https://www.adgoji.com/) for financial support
+- [Nikita Prokopov](https://github.com/tonsky) for the logo
+- [contributors](https://github.com/borkdude/babashka/graphs/contributors) and
+  other users posting issues with bug reports and ideas
 
 ## License
 
