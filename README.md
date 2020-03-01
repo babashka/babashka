@@ -865,13 +865,18 @@ $ < /tmp/test.txt bb -io '(shuffle *input*)'
 
 ### Fetch latest Github release tag
 
-For converting JSON to EDN, see [jet](https://github.com/borkdude/jet).
+``` shell
+(require '[clojure.java.shell :refer [sh]]
+         '[cheshire.core :as json])
 
-``` shellsession
-$ curl -s https://api.github.com/repos/borkdude/babashka/tags |
-jet --from json --keywordize --to edn |
-bb '(-> *input* first :name (subs 1))'
-"0.0.4"
+(defn babashka-latest-version []
+  (-> (sh "curl" "https://api.github.com/repos/borkdude/babashka/tags")
+      :out
+      (json/parse-string true)
+      first
+      :name))
+
+(babashka-latest-version) ;;=> "v0.0.73"
 ```
 
 ### Generate deps.edn entry for a gitlib
