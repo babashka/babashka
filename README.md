@@ -605,10 +605,9 @@ Also see this [example](examples/process_builder.clj).
 
 ## Async
 
-Apart from `future` and `pmap` for creating threads, you may use the
-`clojure.core.async` namespace for asynchronous
-scripting. The following example shows how to get first available value from two
-different processes:
+In addition to `future`, `pmap`, `promise` and friends, you may use the
+`clojure.core.async` namespace for asynchronous scripting. The following example
+shows how to get first available value from two different processes:
 
 ``` clojure
 bb '
@@ -624,7 +623,7 @@ process 2
 Note: the `go` macro is available for compatibility with JVM programs, but the
 implementation maps to `clojure.core.async/thread` and the single exclamation
 mark operations (`<!`, `>!`, etc.) map to the double exclamation mark operations
-(`<!!`, `>!!`, etc.). It will not `park` threads, like on the JVM.
+(`<!!`, `>!!`, etc.). It will not "park" threads, like on the JVM.
 
 ## HTTP
 
