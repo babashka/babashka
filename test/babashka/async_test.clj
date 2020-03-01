@@ -28,3 +28,8 @@
      (reduce +))))
 
 (async/<!! (get-result-go))")))))
+
+(deftest binding-conveyance-test
+  (is (number? (edn/read-string (test-utils/bb nil "
+(def ^:dynamic x 0)
+(binding [x 10] (async/<!! (async/thread x)))")))))
