@@ -47,15 +47,17 @@ Goals:
 
 Non-goals:
 
-* Performance. Babashka uses [sci](https://github.com/borkdude/sci) for
+* Performance<sup>1<sup>
+* Provide a mixed Clojure/Bash DSL (see portability).
+* Replace existing shells. Babashka is a tool you can use inside existing shells like bash and it is designed to play well with them. It does not aim to replace them.
+
+<sup>1<sup> Babashka uses [sci](https://github.com/borkdude/sci) for
 interpreting Clojure. Sci implements a suffiently large subset of
 Clojure. Interpreting code is in general not as performant as executing compiled
 code. If your script takes more than a few seconds to run, Clojure on the JVM
 may be a better fit, since the startup time penalty of Clojure on the JVM
 outweighs its performance. Read more about the differences with Clojure
 [here](#differences-with-clojure).
-* Provide a mixed Clojure/Bash DSL (see portability).
-* Replace existing shells. Babashka is a tool you can use inside existing shells like bash and it is designed to play well with them. It does not aim to replace them.
 
 ## Status
 
