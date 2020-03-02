@@ -35,10 +35,11 @@ As one user described it:
 Goals:
 
 * Low latency Clojure scripting alternative to JVM Clojure.
-* Easy installation: grab the self-contained binary and run! No JVM needed.
+* Easy installation: grab the self-contained binary and run. No JVM needed.
 * Familiarity and portability:
   - Scripts should be compatible with JVM Clojure as much as possible
-  - Scripts should be platform-independent as much as possible.
+  - Scripts should be platform-independent as much as possible. Babashka offers
+    support for linux, macOS and Windows.
 * Allow interop with commonly used classes like `java.io.File` and `System`
 * Multi-threading support (`pmap`, `future`, `core.async`)
 * Batteries included (tools.cli, cheshire, ...)
@@ -46,17 +47,15 @@ Goals:
 
 Non-goals:
 
-* Performance<sup>1<sup>
+* Performance. Babashka uses [sci](https://github.com/borkdude/sci) for
+interpreting Clojure. Sci implements a suffiently large subset of
+Clojure. Interpreting code is in general not as performant as executing compiled
+code. If your script takes more than a few seconds to run, Clojure on the JVM
+may be a better fit, since the startup time penalty of Clojure on the JVM
+outweighs its performance. Read more about the differences with Clojure
+[here](#differences-with-clojure).
 * Provide a mixed Clojure/Bash DSL (see portability).
 * Replace existing shells. Babashka is a tool you can use inside existing shells like bash and it is designed to play well with them. It does not aim to replace them.
-
-<sup>1<sup> Babashka uses [sci](https://github.com/borkdude/sci) for interpreting
-Clojure. Sci implements a suffiently large subset of Clojure. Interpreting code
-is in general not as performant as executing compiled code. If your script takes
-more than a few seconds to run, Clojure on the JVM may be a better fit, since
-the startup time penalty of Clojure on the JVM outweighs its performance.
-
-Read more about the differences with Clojure [here](#differences-with-clojure).
 
 ## Status
 
