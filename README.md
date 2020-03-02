@@ -59,43 +59,52 @@ $ ls | bb --time -i '(filter #(-> % io/file .isDirectory) *input*)'
 bb took 4ms.
 ```
 
+## Examples
+
+Read the output from a shell command as a lazy seq of strings:
+
+``` shell
+$ ls | bb -i '(take 2 *input*)'
+("CHANGES.md" "Dockerfile")
+```
+
+Read EDN from stdin and write the result to stdout:
+
+``` shell
+$ bb '(vec (dedupe *input*))' <<< '[1 1 1 1 2]'
+[1 2]
+```
+
+Read more about input and output flags
+[here](https://github.com/borkdude/babashka/#input-and-output-flags).
+
+Execute a script. E.g. print the current time in California using the
+`java.time` API:
+
+File `pst.clj`:
+``` clojure
+#!/usr/bin/env bb
+
+(def now (java.time.ZonedDateTime/now))
+(def LA-timezone (java.time.ZoneId/of "America/Los_Angeles"))
+(def LA-time (.withZoneSameInstant now LA-timezone))
+(def pattern (java.time.format.DateTimeFormatter/ofPattern "HH:mm"))
+(println (.format LA-time pattern))
+```
+
+``` shell
+$ pst.clj
+05:17
+```
+
+More examples can be found in the [gallery](#gallery).
+
 ## Status
 
 Functionality regarding `clojure.core` and `java.lang` can be considered stable
 and is unlikely to change. Changes may happen in other parts of babashka,
 although we will try our best to prevent them. Always check the release notes or
 [CHANGES.md](CHANGES.md) before upgrading.
-
-## Examples
-
-``` shellsession
-$ ls | bb -i '*input*'
-["LICENSE" "README.md" "bb" "doc" "pom.xml" "project.clj" "resources" "script" "src" "target" "test"]
-
-$ ls | bb -i '(count *input*)'
-12
-
-$ bb '(vec (dedupe *input*))' <<< '[1 1 1 1 2]'
-[1 2]
-
-$ bb '(filterv :foo *input*)' <<< '[{:foo 1} {:bar 2}]'
-[{:foo 1}]
-
-$ bb '(#(+ %1 %2 %3) 1 2 *input*)' <<< 3
-6
-
-$ ls | bb -i '(filterv #(re-find #"README" %) *input*)'
-["README.md"]
-
-$ bb '(run! #(shell/sh "touch" (str "/tmp/test/" %)) (range 100))'
-$ ls /tmp/test | bb -i '*input*'
-["0" "1" "10" "11" "12" "13" "14" "15" "16" "17" "18" "19" "2" "20" "21" ...]
-
-$ bb -O '(repeat "dude")' | bb --stream '(str *input* "rino")' | bb -I '(take 3 *input*)'
-("duderino" "duderino" "duderino")
-```
-
-More examples can be found in the [gallery](#gallery).
 
 ## Installation
 
