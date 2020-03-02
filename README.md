@@ -64,7 +64,7 @@ bb took 4ms.
 Functionality regarding `clojure.core` and `java.lang` can be considered stable
 and is unlikely to change. Changes may happen in other parts of babashka,
 although we will try our best to prevent them. Keep an eye on
-[CHANGES.md](CHANGES.md) for a list of breaking changes.
+[CHANGES.md](CHANGES.md) before upgrading.
 
 ## Examples
 
