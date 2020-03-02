@@ -14,17 +14,6 @@ A Clojure [babushka](https://en.wikipedia.org/wiki/Headscarf) for the grey areas
     <a href="https://github.com/laheadle">@laheadle</a> on Clojurians Slack
 </blockquote>
 
-## Quickstart
-
-``` shellsession
-$ bash <(curl -s https://raw.githubusercontent.com/borkdude/babashka/master/install)
-$ ls | bb --time -i '(filter #(-> % io/file .isDirectory) *input*)'
-("doc" "resources" "sci" "script" "src" "target" "test")
-bb took 4ms.
-```
-
-## Rationale
-
 The sweet spot for babashka is executing Clojure expressions or scripts in the
 same space where you would use Bash.
 
@@ -58,6 +47,15 @@ code. If your script takes more than a few seconds to run, Clojure on the JVM
 may be a better fit, since the performance of Clojure on the JVM outweighs its
 startup time penalty. Read more about the differences with Clojure
 [here](#differences-with-clojure).
+
+## Quickstart
+
+``` shellsession
+$ bash <(curl -s https://raw.githubusercontent.com/borkdude/babashka/master/install)
+$ ls | bb --time -i '(filter #(-> % io/file .isDirectory) *input*)'
+("doc" "resources" "sci" "script" "src" "target" "test")
+bb took 4ms.
+```
 
 ## Status
 
