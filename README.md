@@ -61,8 +61,10 @@ bb took 4ms.
 
 ## Status
 
-Experimental. Breaking changes are expected to happen at this phase. Keep an eye
-on [CHANGES.md](CHANGES.md) for a list of breaking changes.
+Functionality regarding `clojure.core` and `java.lang` can be considered stable
+and is unlikely to change. Changes may happen in other parts of babashka,
+although we will try our best to prevent them. Keep an eye on
+[CHANGES.md](CHANGES.md) for a list of breaking changes.
 
 ## Examples
 
