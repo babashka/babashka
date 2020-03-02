@@ -59,7 +59,7 @@ $ ls | bb --time -i '(filter #(-> % io/file .isDirectory) *input*)'
 bb took 4ms.
 ```
 
-## Examples
+### Examples
 
 Read the output from a shell command as a lazy seq of strings:
 
