@@ -55,8 +55,8 @@ Non-goals:
 interpreting Clojure. Sci implements a suffiently large subset of
 Clojure. Interpreting code is in general not as performant as executing compiled
 code. If your script takes more than a few seconds to run, Clojure on the JVM
-may be a better fit, since the startup time penalty of Clojure on the JVM
-outweighs its performance. Read more about the differences with Clojure
+may be a better fit, since the performance of Clojure on the JVM outweighs its
+startup time penalty. Read more about the differences with Clojure
 [here](#differences-with-clojure).
 
 ## Status
