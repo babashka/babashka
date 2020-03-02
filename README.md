@@ -21,7 +21,7 @@ As one user described it:
 
 > I’m quite at home in Bash most of the time, but there’s a substantial grey area of things that are too complicated to be simple in bash, but too simple to be worth writing a clj/s script for. Babashka really seems to hit the sweet spot for those cases.
 
-Goals:
+## Goals
 
 * Low latency Clojure scripting alternative to JVM Clojure.
 * Easy installation: grab the self-contained binary and run. No JVM needed.
@@ -34,7 +34,7 @@ Goals:
 * Batteries included (tools.cli, cheshire, ...)
 * Library support via popular tools like the `clojure` CLI
 
-Non-goals:
+## Non-goals
 
 * Performance<sup>1<sup>
 * Provide a mixed Clojure/Bash DSL (see portability).
