@@ -25,8 +25,8 @@ bb took 4ms.
 
 ## Rationale
 
-The sweet spot for babashka is executing Clojure snippets or scripts in the same
-space where you would use Bash.
+The sweet spot for babashka is executing Clojure expressions or scripts in the
+same space where you would use Bash.
 
 As one user described it:
 
@@ -34,21 +34,27 @@ As one user described it:
 
 Goals:
 
-* Fast startup / low latency. This is achieved by compiling to native using [GraalVM](https://github.com/oracle/graal).
-* Familiarity and portability. Keep migration barriers between bash and Clojure as low as possible by:
-  - Gradually introducing Clojure expressions to existing bash scripts
-  - Scripts written in babashka should also be able to run on the JVM without major changes.
-* Multi-threading support similar to Clojure on the JVM
-* Batteries included (clojure.tools.cli, core.async, ...)
+* Low latency Clojure scripting alternative to JVM Clojure.
+* Easy installation: grab the self-contained binary and run! No JVM needed.
+* Familiarity and portability:
+  - Scripts should be compatible with JVM Clojure as much as possible
+  - Scripts should be platform-independent as much as possible.
+* Allow interop with commonly used classes like `java.io.File` and `System`
+* Multi-threading support (`pmap`, `future`, `core.async`)
+* Batteries included (tools.cli, cheshire, ...)
+* Library support via popular tools like the `clojure` CLI
 
 Non-goals:
 
-* Performance
-* Provide a mixed Clojure/bash DSL (see portability).
+* Performance<sup>1<sup>
+* Provide a mixed Clojure/Bash DSL (see portability).
 * Replace existing shells. Babashka is a tool you can use inside existing shells like bash and it is designed to play well with them. It does not aim to replace them.
 
-Babashka uses [sci](https://github.com/borkdude/sci) for interpreting Clojure. Sci
-implements a subset of Clojure and is not as performant as compiled code. If your script is taking more than a few seconds,  Clojure on the JVM may be a better fit.
+<sup>1<sup> Babashka uses [sci](https://github.com/borkdude/sci) for interpreting
+Clojure. Sci implements a suffiently large subset of Clojure. Interpreting code
+is in general not as performant as executing compiled code. If your script takes
+more than a few seconds to run, Clojure on the JVM may be a better fit, since
+the startup time penalty of Clojure on the JVM outweighs its performance.
 
 Read more about the differences with Clojure [here](#differences-with-clojure).
 
@@ -656,23 +662,20 @@ This can be useful for talking to Docker:
 Babashka is implemented using the [Small Clojure
 Interpreter](https://github.com/borkdude/sci). This means that a snippet or
 script is not compiled to JVM bytecode, but executed form by form by a runtime
-which implements a subset of Clojure. Babashka is compiled to a native binary
-using [GraalVM](https://github.com/oracle/graal). It comes with a selection of
-built-in namespaces and functions from Clojure and other useful libraries. The
-data types (numbers, strings, persistent collections) are the
+which implements a sufficiently large subset of Clojure. Babashka is compiled to
+a native binary using [GraalVM](https://github.com/oracle/graal). It comes with
+a selection of built-in namespaces and functions from Clojure and other useful
+libraries. The data types (numbers, strings, persistent collections) are the
 same. Multi-threading is supported (`pmap`, `future`).
 
 Differences with Clojure:
 
-- A subset of Java classes are supported.
-
-- Only the `clojure.core`, `clojure.edn`, `clojue.java.io`,
-  `clojure.java.shell`, `clojure.set`, `clojure.stacktrace`, `clojure.string`,
-  `clojure.template`, `clojure.test` and `clojure.walk` namespaces are available
-  from Clojure.
+- A pre-selected set of Java classes are supported. You cannot add Java classes
+  at runtime.
 
 - Interpretation comes with overhead. Therefore tight loops are likely slower
-  than in Clojure on the JVM.
+  than in Clojure on the JVM. In general interpretation yields slower programs
+  than compiled programs.
 
 - No support for unboxed types.
 
