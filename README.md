@@ -638,8 +638,8 @@ For making HTTP requests you can use:
 
 - `slurp` for simple `GET` requests
 - [clj-http-lite](https://github.com/borkdude/clj-http-lite) as a library
-- `curl` via `clojure.java.shell`. For an example, see the following
-  subsection.
+- `curl` via `clojure.java.shell`. Also see
+  [babashka.curl](https://github.com/borkdude/babashka.curl).
 
 ### HTTP over Unix sockets
 
