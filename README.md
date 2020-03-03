@@ -795,13 +795,13 @@ export BABASHKA_CLASSPATH="$(clojure -Sdeps '{:deps {clojure-csv {:mvn/version "
 Requires `bb` >= v0.0.71. Latest coordinates checked with with bb:
 
 ``` clojure
-{:git/url "https://github.com/lambdaisland/regal" :sha "8d300f8e15f43480801766b7762530b6d412c1e6"}
+{:git/url "https://github.com/lambdaisland/regal" :sha "d4e25e186f7b9705ebb3df6b21c90714d278efb7"}
 ```
 
 Example:
 
 ``` shell
-$ export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {regal {:git/url "https://github.com/lambdaisland/regal" :sha "8d300f8e15f43480801766b7762530b6d412c1e6"}}}')
+$ export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {regal {:git/url "https://github.com/lambdaisland/regal" :sha "d4e25e186f7b9705ebb3df6b21c90714d278efb7"}}}')
 
 $ bb -e "(require '[lambdaisland.regal :as regal]) (regal/regex [:* \"ab\"])"
 #"(?:\Qab\E)*"
