@@ -9,6 +9,7 @@
    [babashka.impl.clojure.java.io :refer [io-namespace]]
    [babashka.impl.clojure.java.shell :refer [shell-namespace]]
    [babashka.impl.clojure.main :refer [demunge]]
+   [babashka.impl.clojure.pprint :refer [pprint-namespace]]
    [babashka.impl.clojure.stacktrace :refer [stacktrace-namespace print-stack-trace]]
    [babashka.impl.common :as common]
    [babashka.impl.csv :as csv]
@@ -21,7 +22,6 @@
    [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.string :as str]
-   [fipp.edn :as fipp]
    [sci.addons :as addons]
    [sci.core :as sci]
    [sci.impl.interpreter :refer [eval-string*]]
@@ -259,7 +259,7 @@ Everything after that is bound to *command-line-args*."))
    'clojure.repl {'demunge demunge}
    'clojure.test t/clojure-test-namespace
    'babashka.classpath {'add-classpath add-classpath*}
-   'clojure.pprint {'pprint fipp/pprint}})
+   'clojure.pprint pprint-namespace})
 
 (def bindings
   {'java.lang.System/exit exit ;; override exit, so we have more control
