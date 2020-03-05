@@ -14,6 +14,42 @@ A Clojure [babushka](https://en.wikipedia.org/wiki/Headscarf) for the grey areas
     <a href="https://github.com/laheadle">@laheadle</a> on Clojurians Slack
 </blockquote>
 
+The sweet spot for babashka is executing Clojure expressions or scripts in the
+same space where you would use Bash.
+
+As one user described it:
+
+> I’m quite at home in Bash most of the time, but there’s a substantial grey area of things that are too complicated to be simple in bash, but too simple to be worth writing a clj/s script for. Babashka really seems to hit the sweet spot for those cases.
+
+## Goals
+
+* Low latency Clojure scripting alternative to JVM Clojure.
+* Easy installation: grab the self-contained binary and run. No JVM needed.
+* Familiarity and portability:
+  - Scripts should be compatible with JVM Clojure as much as possible
+  - Scripts should be platform-independent as much as possible. Babashka offers
+    support for linux, macOS and Windows.
+* Allow interop with commonly used classes like `java.io.File` and `System`
+* Multi-threading support (`pmap`, `future`, `core.async`)
+* Batteries included (tools.cli, cheshire, ...)
+* Library support via popular tools like the `clojure` CLI
+
+Also see the [slides](https://speakerdeck.com/borkdude/babashka-and-the-small-clojure-interpreter-at-clojured-2020) of the Babashka talk at ClojureD 2020 (video coming soon).
+
+## Non-goals
+
+* Performance<sup>1<sup>
+* Provide a mixed Clojure/Bash DSL (see portability).
+* Replace existing shells. Babashka is a tool you can use inside existing shells like bash and it is designed to play well with them. It does not aim to replace them.
+
+<sup>1<sup> Babashka uses [sci](https://github.com/borkdude/sci) for
+interpreting Clojure. Sci implements a suffiently large subset of
+Clojure. Interpreting code is in general not as performant as executing compiled
+code. If your script takes more than a few seconds to run, Clojure on the JVM
+may be a better fit, since the performance of Clojure on the JVM outweighs its
+startup time penalty. Read more about the differences with Clojure
+[here](#differences-with-clojure).
+
 ## Quickstart
 
 ``` shellsession
@@ -23,70 +59,52 @@ $ ls | bb --time -i '(filter #(-> % io/file .isDirectory) *input*)'
 bb took 4ms.
 ```
 
-## Rationale
+### Examples
 
-The sweet spot for babashka is executing Clojure snippets or scripts in the same
-space where you would use Bash.
+Read the output from a shell command as a lazy seq of strings:
 
-As one user described it:
+``` shell
+$ ls | bb -i '(take 2 *input*)'
+("CHANGES.md" "Dockerfile")
+```
 
-> I’m quite at home in Bash most of the time, but there’s a substantial grey area of things that are too complicated to be simple in bash, but too simple to be worth writing a clj/s script for. Babashka really seems to hit the sweet spot for those cases.
+Read EDN from stdin and write the result to stdout:
 
-Goals:
-
-* Fast startup / low latency. This is achieved by compiling to native using [GraalVM](https://github.com/oracle/graal).
-* Familiarity and portability. Keep migration barriers between bash and Clojure as low as possible by:
-  - Gradually introducing Clojure expressions to existing bash scripts
-  - Scripts written in babashka should also be able to run on the JVM without major changes.
-* Multi-threading support similar to Clojure on the JVM
-* Batteries included (clojure.tools.cli, core.async, ...)
-
-Non-goals:
-
-* Performance
-* Provide a mixed Clojure/bash DSL (see portability).
-* Replace existing shells. Babashka is a tool you can use inside existing shells like bash and it is designed to play well with them. It does not aim to replace them.
-
-Babashka uses [sci](https://github.com/borkdude/sci) for interpreting Clojure. Sci
-implements a subset of Clojure and is not as performant as compiled code. If your script is taking more than a few seconds,  Clojure on the JVM may be a better fit.
-
-Read more about the differences with Clojure [here](#differences-with-clojure).
-
-## Status
-
-Experimental. Breaking changes are expected to happen at this phase. Keep an eye
-on [CHANGES.md](CHANGES.md) for a list of breaking changes.
-
-## Examples
-
-``` shellsession
-$ ls | bb -i '*input*'
-["LICENSE" "README.md" "bb" "doc" "pom.xml" "project.clj" "resources" "script" "src" "target" "test"]
-
-$ ls | bb -i '(count *input*)'
-12
-
+``` shell
 $ bb '(vec (dedupe *input*))' <<< '[1 1 1 1 2]'
 [1 2]
+```
 
-$ bb '(filterv :foo *input*)' <<< '[{:foo 1} {:bar 2}]'
-[{:foo 1}]
+Read more about input and output flags
+[here](https://github.com/borkdude/babashka/#input-and-output-flags).
 
-$ bb '(#(+ %1 %2 %3) 1 2 *input*)' <<< 3
-6
+Execute a script. E.g. print the current time in California using the
+`java.time` API:
 
-$ ls | bb -i '(filterv #(re-find #"README" %) *input*)'
-["README.md"]
+File `pst.clj`:
+``` clojure
+#!/usr/bin/env bb
 
-$ bb '(run! #(shell/sh "touch" (str "/tmp/test/" %)) (range 100))'
-$ ls /tmp/test | bb -i '*input*'
-["0" "1" "10" "11" "12" "13" "14" "15" "16" "17" "18" "19" "2" "20" "21" ...]
+(def now (java.time.ZonedDateTime/now))
+(def LA-timezone (java.time.ZoneId/of "America/Los_Angeles"))
+(def LA-time (.withZoneSameInstant now LA-timezone))
+(def pattern (java.time.format.DateTimeFormatter/ofPattern "HH:mm"))
+(println (.format LA-time pattern))
+```
 
-$ bb -O '(repeat "dude")' | bb --stream '(str *input* "rino")' | bb -I '(take 3 *input*)'
-("duderino" "duderino" "duderino")
+``` shell
+$ pst.clj
+05:17
 ```
 
 More examples can be found in the [gallery](#gallery).
+
+## Status
+
+Functionality regarding `clojure.core` and `java.lang` can be considered stable
+and is unlikely to change. Changes may happen in other parts of babashka,
+although we will try our best to prevent them. Always check the release notes or
+[CHANGES.md](CHANGES.md) before upgrading.
 
 ## Installation
 
@@ -605,10 +623,9 @@ Also see this [example](examples/process_builder.clj).
 
 ## Async
 
-Apart from `future` and `pmap` for creating threads, you may use the
-`clojure.core.async` namespace for asynchronous
-scripting. The following example shows how to get first available value from two
-different processes:
+In addition to `future`, `pmap`, `promise` and friends, you may use the
+`clojure.core.async` namespace for asynchronous scripting. The following example
+shows how to get first available value from two different processes:
 
 ``` clojure
 bb '
@@ -624,7 +641,7 @@ process 2
 Note: the `go` macro is available for compatibility with JVM programs, but the
 implementation maps to `clojure.core.async/thread` and the single exclamation
 mark operations (`<!`, `>!`, etc.) map to the double exclamation mark operations
-(`<!!`, `>!!`, etc.). It will not `park` threads, like on the JVM.
+(`<!!`, `>!!`, etc.). It will not "park" threads, like on the JVM.
 
 ## HTTP
 
@@ -632,8 +649,8 @@ For making HTTP requests you can use:
 
 - `slurp` for simple `GET` requests
 - [clj-http-lite](https://github.com/borkdude/clj-http-lite) as a library
-- `curl` via `clojure.java.shell`. For an example, see the following
-  subsection.
+- `curl` via `clojure.java.shell`. Also see
+  [babashka.curl](https://github.com/borkdude/babashka.curl).
 
 ### HTTP over Unix sockets
 
@@ -657,23 +674,20 @@ This can be useful for talking to Docker:
 Babashka is implemented using the [Small Clojure
 Interpreter](https://github.com/borkdude/sci). This means that a snippet or
 script is not compiled to JVM bytecode, but executed form by form by a runtime
-which implements a subset of Clojure. Babashka is compiled to a native binary
-using [GraalVM](https://github.com/oracle/graal). It comes with a selection of
-built-in namespaces and functions from Clojure and other useful libraries. The
-data types (numbers, strings, persistent collections) are the
+which implements a sufficiently large subset of Clojure. Babashka is compiled to
+a native binary using [GraalVM](https://github.com/oracle/graal). It comes with
+a selection of built-in namespaces and functions from Clojure and other useful
+libraries. The data types (numbers, strings, persistent collections) are the
 same. Multi-threading is supported (`pmap`, `future`).
 
 Differences with Clojure:
 
-- A subset of Java classes are supported.
-
-- Only the `clojure.core`, `clojure.edn`, `clojue.java.io`,
-  `clojure.java.shell`, `clojure.set`, `clojure.stacktrace`, `clojure.string`,
-  `clojure.template`, `clojure.test` and `clojure.walk` namespaces are available
-  from Clojure.
+- A pre-selected set of Java classes are supported. You cannot add Java classes
+  at runtime.
 
 - Interpretation comes with overhead. Therefore tight loops are likely slower
-  than in Clojure on the JVM.
+  than in Clojure on the JVM. In general interpretation yields slower programs
+  than compiled programs.
 
 - No support for unboxed types.
 
@@ -781,13 +795,13 @@ export BABASHKA_CLASSPATH="$(clojure -Sdeps '{:deps {clojure-csv {:mvn/version "
 Requires `bb` >= v0.0.71. Latest coordinates checked with with bb:
 
 ``` clojure
-{:git/url "https://github.com/lambdaisland/regal" :sha "8d300f8e15f43480801766b7762530b6d412c1e6"}
+{:git/url "https://github.com/lambdaisland/regal" :sha "d4e25e186f7b9705ebb3df6b21c90714d278efb7"}
 ```
 
 Example:
 
 ``` shell
-$ export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {regal {:git/url "https://github.com/lambdaisland/regal" :sha "8d300f8e15f43480801766b7762530b6d412c1e6"}}}')
+$ export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {regal {:git/url "https://github.com/lambdaisland/regal" :sha "d4e25e186f7b9705ebb3df6b21c90714d278efb7"}}}')
 
 $ bb -e "(require '[lambdaisland.regal :as regal]) (regal/regex [:* \"ab\"])"
 #"(?:\Qab\E)*"
@@ -1006,7 +1020,7 @@ clojure.core/ffirst
 
 ## License
 
-Copyright © 2019 Michiel Borkent
+Copyright © 2019-2020 Michiel Borkent
 
 Distributed under the EPL License. See LICENSE.
 

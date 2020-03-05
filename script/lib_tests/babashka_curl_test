@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+export BABASHKA_CLASSPATH=$(clojure -Sdeps '{:deps {babasha.curl {:git/url "https://github.com/borkdude/babashka.curl" :sha "6a4de335fa0ba75814567e013a286cafcabff8c0"}}}' -Spath)
+
+if [ "$BABASHKA_TEST_ENV" = "native" ]; then
+    BB_CMD="./bb"
+else
+    BB_CMD="lein bb"
+fi
+
+$BB_CMD -e "
+(require '[babashka.curl :as curl])
+
+(prn (subs (curl/get \"https://www.clojure.org\") 0 10))
+
+(prn (subs (curl/get \"https://postman-echo.com/get?foo1=bar1&foo2=bar2\") 0 10))
+
+(prn (subs (curl/post \"https://postman-echo.com/post\") 0 10))
+
+(prn (subs (curl/post \"https://postman-echo.com/post\"
+                {:body (json/generate-string {:a 1})
+                 :headers {\"X-Hasura-Role\" \"admin\"}
+                 :content-type :json
+                 :accept :json}) 0 10))
+
+(prn (subs (curl/put \"https://postman-echo.com/put\"
+                          {:body (json/generate-string {:a 1})
+                 :headers {\"X-Hasura-Role\" \"admin\"}
+                 :content-type :json
+                 :accept :json}) 0 10))
+"

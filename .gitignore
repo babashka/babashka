@@ -16,3 +16,5 @@ pom.xml.asc
 !test-resources/babashka/src_for_classpath_test/foo.jar
 .cpcache
 reflection.json
+/tmp
+/reports
