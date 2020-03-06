@@ -210,9 +210,6 @@ Everything after that is bound to *command-line-args*."))
     (sci/with-bindings {vars/current-file (.getCanonicalPath f)}
       (eval-string* sci-ctx s))))
 
-(defn eval* [sci-ctx form]
-  (eval-form sci-ctx form))
-
 (defn start-socket-repl! [address ctx]
   (socket-repl/start-repl! address ctx)
   ;; hang until SIGINT
@@ -358,7 +355,6 @@ Everything after that is bound to *command-line-args*."))
             _ (swap! (:env sci-ctx)
                      (fn [env]
                        (update-in env [:namespaces 'clojure.core] assoc
-                                  'eval #(eval* sci-ctx %)
                                   'load-file #(load-file* sci-ctx %))))
             _ (swap! (:env sci-ctx)
                      (fn [env]
