@@ -25,7 +25,7 @@
    [clojure.string :as str]
    [sci.addons :as addons]
    [sci.core :as sci]
-   [sci.impl.interpreter :refer [eval-string*]]
+   [sci.impl.interpreter :refer [eval-string* eval-form]]
    [sci.impl.opts :as sci-opts]
    [sci.impl.unrestrict :refer [*unrestricted*]]
    [sci.impl.vars :as vars])
@@ -211,7 +211,7 @@ Everything after that is bound to *command-line-args*."))
       (eval-string* sci-ctx s))))
 
 (defn eval* [sci-ctx form]
-  (eval-string* sci-ctx (pr-str form)))
+  (eval-form sci-ctx form))
 
 (defn start-socket-repl! [address ctx]
   (socket-repl/start-repl! address ctx)

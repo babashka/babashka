@@ -5,11 +5,11 @@
    [clojure.java.io :as io]
    [clojure.string :as str]
    [clojure.tools.reader.reader-types :as r]
-   [sci.impl.interpreter :refer [eval-form]]
-   [sci.impl.parser :as parser]
-   [sci.impl.vars :as vars]
    [sci.core :as sci]
-   [sci.impl.io :as sio]))
+   [sci.impl.interpreter :refer [eval-form]]
+   [sci.impl.io :as sio]
+   [sci.impl.parser :as parser]
+   [sci.impl.vars :as vars]))
 
 (defn repl-caught
   "Default :caught hook for repl"
