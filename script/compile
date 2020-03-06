@@ -17,6 +17,8 @@ BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
 
 export JAVA_HOME=$GRAALVM_HOME
 
+$GRAALVM_HOME/bin/javac -cp $GRAALVM_HOME/jre/lib/svm/builder/svm.jar resources/CutOffCoreServicesDependencies.java
+
 lein with-profiles +reflection do run
 lein do clean, uberjar
 
@@ -37,6 +39,7 @@ args=( -jar target/babashka-$BABASHKA_VERSION-standalone.jar \
             --verbose \
             --no-fallback \
             --no-server \
+            --report-unsupported-elements-at-runtime \
             "$BABASHKA_XMX" )
 
 if [ "$BABASHKA_STATIC" = "true" ]; then
