@@ -2,3 +2,6 @@
 	path = sci
 	url = https://github.com/borkdude/sci
 	branch = master
+[submodule "babashka.curl"]
+	path = babashka.curl
+	url = https://github.com/borkdude/babashka.curl
