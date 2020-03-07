@@ -13,6 +13,7 @@
    [babashka.impl.clojure.stacktrace :refer [stacktrace-namespace]]
    [babashka.impl.common :as common]
    [babashka.impl.csv :as csv]
+   [babashka.impl.curl :refer [curl-namespace]]
    [babashka.impl.pipe-signal-handler :refer [handle-pipe! pipe-signal-received?]]
    [babashka.impl.repl :as repl]
    [babashka.impl.socket-repl :as socket-repl]
@@ -257,7 +258,8 @@ Everything after that is bound to *command-line-args*."))
    'clojure.repl {'demunge demunge}
    'clojure.test t/clojure-test-namespace
    'babashka.classpath {'add-classpath add-classpath*}
-   'clojure.pprint pprint-namespace})
+   'clojure.pprint pprint-namespace
+   'babashka.curl curl-namespace})
 
 (def bindings
   {'java.lang.System/exit exit ;; override exit, so we have more control
