@@ -10,9 +10,10 @@
    [babashka.impl.clojure.java.shell :refer [shell-namespace]]
    [babashka.impl.clojure.main :refer [demunge]]
    [babashka.impl.clojure.pprint :refer [pprint-namespace]]
-   [babashka.impl.clojure.stacktrace :refer [stacktrace-namespace print-stack-trace]]
+   [babashka.impl.clojure.stacktrace :refer [stacktrace-namespace]]
    [babashka.impl.common :as common]
    [babashka.impl.csv :as csv]
+   [babashka.impl.curl :refer [curl-namespace]]
    ;; see https://github.com/oracle/graal/issues/1784
    #_[babashka.impl.pipe-signal-handler :refer [handle-pipe! pipe-signal-received?]]
    [babashka.impl.repl :as repl]
@@ -22,10 +23,11 @@
    [babashka.wait :as wait]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
+   [clojure.stacktrace :refer [print-stack-trace]]
    [clojure.string :as str]
    [sci.addons :as addons]
    [sci.core :as sci]
-   [sci.impl.interpreter :refer [eval-string*]]
+   [sci.impl.interpreter :refer [eval-string* eval-form]]
    [sci.impl.opts :as sci-opts]
    [sci.impl.unrestrict :refer [*unrestricted*]]
    [sci.impl.vars :as vars])
@@ -210,9 +212,6 @@ Everything after that is bound to *command-line-args*."))
     (sci/with-bindings {vars/current-file (.getCanonicalPath f)}
       (eval-string* sci-ctx s))))
 
-(defn eval* [sci-ctx form]
-  (eval-string* sci-ctx (pr-str form)))
-
 (defn start-socket-repl! [address ctx]
   (socket-repl/start-repl! address ctx)
   ;; hang until SIGINT
@@ -230,7 +229,8 @@ Everything after that is bound to *command-line-args*."))
     io clojure.java.io
     async clojure.core.async
     csv clojure.data.csv
-    json cheshire.core})
+    json cheshire.core
+    curl babashka.curl})
 
 (def cp-state (atom nil))
 
@@ -260,7 +260,8 @@ Everything after that is bound to *command-line-args*."))
    'clojure.repl {'demunge demunge}
    'clojure.test t/clojure-test-namespace
    'babashka.classpath {'add-classpath add-classpath*}
-   'clojure.pprint pprint-namespace})
+   'clojure.pprint pprint-namespace
+   'babashka.curl curl-namespace})
 
 (def bindings
   {'java.lang.System/exit exit ;; override exit, so we have more control
@@ -358,7 +359,6 @@ Everything after that is bound to *command-line-args*."))
             _ (swap! (:env sci-ctx)
                      (fn [env]
                        (update-in env [:namespaces 'clojure.core] assoc
-                                  'eval #(eval* sci-ctx %)
                                   'load-file #(load-file* sci-ctx %))))
             _ (swap! (:env sci-ctx)
                      (fn [env]

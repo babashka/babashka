@@ -1,6 +1,6 @@
 (ns babashka.impl.clojure.core
   {:no-doc true}
-  (:refer-clojure :exclude [future])
+  (:refer-clojure :exclude [future read read-string])
   (:require [borkdude.graal.locking :as locking]
             [sci.impl.namespaces :refer [copy-core-var]]))
 
@@ -18,16 +18,15 @@
 
 (def core-extras
   {'file-seq (copy-core-var file-seq)
-   'agent agent
-   'instance? instance? ;; TODO: move to sci
-   'send send
-   'send-off send-off
-   'promise promise
-   'deliver deliver
+   'agent (copy-core-var agent)
+   'send (copy-core-var send)
+   'send-off (copy-core-var send-off)
+   'promise (copy-core-var promise)
+   'deliver (copy-core-var deliver)
    'locking (with-meta locking* {:sci/macro true})
-   'shutdown-agents shutdown-agents
+   'shutdown-agents (copy-core-var shutdown-agents)
    'slurp (copy-core-var slurp)
    'spit (copy-core-var spit)
    'time (with-meta time* {:sci/macro true})
-   'Throwable->map Throwable->map
-   'compare-and-set! compare-and-set!})
+   'Throwable->map (copy-core-var Throwable->map)
+   'compare-and-set! (copy-core-var compare-and-set!)})

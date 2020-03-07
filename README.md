@@ -330,6 +330,12 @@ $ bb '((fn [x] (println x) (when (not (signal/pipe-signal-received?)) (recur (in
 
 The namespace `babashka.signal` is aliased as `signal` in the `user` namespace.
 
+#### babashka.curl
+
+The namespace `babashka.curl` is a tiny wrapper around curl. It's aliased as
+`curl` in the user namespace.  See
+[babashka.curl](https://github.com/borkdude/babashka.curl).
+
 ## Running a file
 
 Scripts may be executed from a file using `-f` or `--file`:
@@ -647,10 +653,10 @@ mark operations (`<!`, `>!`, etc.) map to the double exclamation mark operations
 
 For making HTTP requests you can use:
 
+- [babashka.curl](https://github.com/borkdude/babashka.curl). This library is
+  included with babashka and aliased as `curl` in the user namespace.
 - `slurp` for simple `GET` requests
-- [clj-http-lite](https://github.com/borkdude/clj-http-lite) as a library
-- `curl` via `clojure.java.shell`. Also see
-  [babashka.curl](https://github.com/borkdude/babashka.curl).
+- [clj-http-lite](https://github.com/borkdude/clj-http-lite) as a library.
 
 ### HTTP over Unix sockets
 
