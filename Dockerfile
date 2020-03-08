@@ -15,7 +15,7 @@ RUN ./script/compile
 
 FROM alpine:latest
 
-RUN apk add —no-cache curl
+RUN apk add -U curl
 RUN mkdir -p /usr/local/bin
 COPY --from=BASE /opt/bb /usr/local/bin/bb
 CMD ["bb"]
