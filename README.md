@@ -657,6 +657,8 @@ For making HTTP requests you can use:
   included with babashka and aliased as `curl` in the user namespace.
 - `slurp` for simple `GET` requests
 - [clj-http-lite](https://github.com/borkdude/clj-http-lite) as a library.
+- `clojure.java.shell` or `java.lang.ProcessBuilder` for shelling out to your
+  favorite command line http client
 
 ### HTTP over Unix sockets
 
@@ -813,11 +815,9 @@ $ bb -e "(require '[lambdaisland.regal :as regal]) (regal/regex [:* \"ab\"])"
 #"(?:\Qab\E)*"
 ```
 
-#### [spartan.test](https://github.com/borkdude/spartan.test/)
+#### [4bb](https://github.com/porkostomus/4bb)
 
-A minimal test framework compatible with babashka. This library is deprecated
-since babashka v0.0.68 which has `clojure.test` built-in.
-
+4clojure as a babashka script!
 
 ### Blogs
 
