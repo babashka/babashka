@@ -77,4 +77,10 @@ fi
 
 $GRAALVM_HOME/bin/native-image "${args[@]}"
 
-lein clean
+LEIN=`which lein` || true
+
+if [ -z "$LEIN" ]; then
+  echo "nothing to clean"
+else
+  lein clean
+fi
