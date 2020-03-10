@@ -19,10 +19,13 @@ export JAVA_HOME=$GRAALVM_HOME
 
 $GRAALVM_HOME/bin/javac -cp $GRAALVM_HOME/jre/lib/svm/builder/svm.jar resources/CutOffCoreServicesDependencies.java
 
-lein with-profiles +reflection do run
-lein do clean, uberjar
+if [ -z "$JAR" ]; then
+  lein with-profiles +reflection do run
+  lein do clean, uberjar
+  JAR=${JAR:-"target/babashka-$BABASHKA_VERSION-standalone.jar"}
+fi
 
-args=( -jar target/babashka-$BABASHKA_VERSION-standalone.jar \
+args=( -jar $JAR \
             -H:Name=bb \
             -H:+ReportExceptionStackTraces \
             -J-Dclojure.spec.skip-macros=true \
