@@ -2,16 +2,38 @@
 
 set -eo pipefail
 
-if [ -z "$GRAALVM_HOME" ]; then
-    echo "Please set GRAALVM_HOME"
-    exit 1
+if [ -z "$GU" ]; then
+  if [ -z "$GRAALVM_HOME" ]; then
+      echo "Please set GRAALVM_HOME"
+      exit 1
+  fi
+
+  GU="$GRAALVM_HOME/bin/gu"
+else
+  $GRAALVM_HOME=$(echo $GU | sed -e "s/\/bin\/gu$//")
 fi
 
 if [ -z "$BABASHKA_XMX" ]; then
     export BABASHKA_XMX="-J-Xmx3g"
 fi
 
-"$GRAALVM_HOME/bin/gu" install native-image || true
+NATIVE_IMAGE=`which native-image` || true
+
+if [ -z "$NATIVE_IMAGE" ]; then
+  $GU install native-image || true
+
+  NATIVE_IMAGE=`which native-image` || true
+
+  if [ -z "$NATIVE_IMAGE" ]; then
+    if [ -z "$GRAALVM_HOME" ]; then
+        echo "Please set GRAALVM_HOME"
+        exit 1
+    fi
+    NATIVE_IMAGE="$GRAALVM_HOME/bin/native-image"
+  fi
+fi
+
+## --- THE ACTUAL SCRIPT ---
 
 BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
 
