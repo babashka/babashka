@@ -12,7 +12,7 @@ if [ -z "$GU" ]; then
 
   GU="$GRAALVM_HOME/bin/gu"
 else
-  $GRAALVM_HOME=$(echo $GU | sed -e "s/\/bin\/gu$//")
+  GRAALVM_HOME=`echo $GU | sed -e "s/\/bin\/gu$//"`
 fi
 
 if [ -z "$BABASHKA_XMX" ]; then
