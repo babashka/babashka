@@ -2,6 +2,8 @@
 
 set -eo pipefail
 
+GU=`which gu` || true
+
 if [ -z "$GU" ]; then
   if [ -z "$GRAALVM_HOME" ]; then
       echo "Please set GRAALVM_HOME"
