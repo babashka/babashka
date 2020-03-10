@@ -49,8 +49,10 @@ if [ -z "$JAR" ]; then
   JAR=${JAR:-"target/babashka-$BABASHKA_VERSION-standalone.jar"}
 fi
 
+BINARY_NAME=${BINARY_NAME:-"bb"}
+
 args=( -jar $JAR \
-            -H:Name=bb \
+            -H:Name=$BINARY_NAME \
             -H:+ReportExceptionStackTraces \
             -J-Dclojure.spec.skip-macros=true \
             -J-Dclojure.compiler.direct-linking=true \
