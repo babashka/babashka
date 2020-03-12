@@ -610,6 +610,11 @@ $
 A socket REPL client for Emacs is
 [inf-clojure](https://github.com/clojure-emacs/inf-clojure).
 
+Editor plugins offering auto-completion support when connected to a babashka socket REPL:
+
+- Atom: [chlorine](https://github.com/mauricioszabo/atom-chlorine)
+- Vim: [vim-iced](https://github.com/liquidz/vim-iced)
+
 ## Spawning and killing a process
 
 Use the `java.lang.ProcessBuilder` class.
