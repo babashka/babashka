@@ -2,6 +2,7 @@
   {:no-doc true}
   (:refer-clojure :exclude [future read read-string])
   (:require [borkdude.graal.locking :as locking]
+            [sci.core :as sci]
             [sci.impl.namespaces :refer [copy-core-var]]))
 
 (defn locking* [form bindings v f & args]
@@ -29,4 +30,5 @@
    'spit (copy-core-var spit)
    'time (with-meta time* {:sci/macro true})
    'Throwable->map (copy-core-var Throwable->map)
-   'compare-and-set! (copy-core-var compare-and-set!)})
+   'compare-and-set! (copy-core-var compare-and-set!)
+   '*data-readers* (sci/new-dynamic-var '*data-readers* nil)})
