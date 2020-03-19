@@ -466,6 +466,10 @@ $ bb "(my-gist-script/-main)"
 Hello from gist script!
 ```
 
+Also see the
+[babashka.classpath](https://github.com/borkdude/babashka/#babashkaclasspath)
+namespace which allows dynamically adding to the classpath.
+
 ### Deps.clj
 
 The [`deps.clj`](https://github.com/borkdude/deps.clj/) script can be used to work with `deps.edn`-based projects:
