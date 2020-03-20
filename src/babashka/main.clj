@@ -112,7 +112,8 @@
                      (let [options (next options)]
                        (recur (next options)
                               (assoc opts-map
-                                     :socket-repl (first options))))
+                                     :socket-repl (or (first options)
+                                                      "1666"))))
                      ("--eval", "-e")
                      (let [options (next options)]
                        (recur (next options)
