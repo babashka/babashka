@@ -53,6 +53,9 @@ Then run:
 
 Keep notes here about how adding libraries and classes to Babashka affects the binary size.
 
+2020/03/20 Added transit write, writer, read, reader
+42004796 - 41025212 = 980kb added (305kb zipped).
+
 2020/03/19 Added java.lang.NumberFormatException, java.lang.RuntimeException,
 java.util.MissingResourceException and java.util.Properties to support
 [cprop](https://github.com/tolitius/cprop/).
