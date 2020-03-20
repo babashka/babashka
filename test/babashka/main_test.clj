@@ -118,9 +118,13 @@
 
 (deftest load-file-test
   (let [tmp (java.io.File/createTempFile "script" ".clj")]
-    (spit tmp "(defn foo [x y] (+ x y)) (defn bar [x y] (* x y))")
-    (is (= "120\n" (test-utils/bb nil (format "(load-file \"%s\") (bar (foo 10 30) 3)"
-                                              (.getPath tmp)))))))
+    (spit tmp "(ns foo) (defn foo [x y] (+ x y)) (defn bar [x y] (* x y))")
+    (is (= "120\n" (test-utils/bb nil (format "(load-file \"%s\") (foo/bar (foo/foo 10 30) 3)"
+                                              (.getPath tmp)))))
+    (testing "namespace is restored after load file"
+      (is (= 'start-ns
+             (bb nil (format "(ns start-ns) (load-file \"%s\") (ns-name *ns*)"
+                             (.getPath tmp))))))))
 
 (deftest eval-test
   (is (= "120\n" (test-utils/bb nil "(eval '(do (defn foo [x y] (+ x y))

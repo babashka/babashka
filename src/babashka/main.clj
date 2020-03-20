@@ -29,7 +29,8 @@
    [sci.impl.interpreter :refer [eval-string* eval-form]]
    [sci.impl.opts :as sci-opts]
    [sci.impl.unrestrict :refer [*unrestricted*]]
-   [sci.impl.vars :as vars])
+   [sci.impl.vars :as vars]
+   [sci.impl.types :as sci-types])
   (:gen-class))
 
 (binding [*unrestricted* true]
@@ -207,9 +208,12 @@ Everything after that is bound to *command-line-args*."))
 
 (defn load-file* [sci-ctx f]
   (let [f (io/file f)
-        s (slurp f)]
+        s (slurp f)
+        prev-ns @vars/current-ns]
     (sci/with-bindings {vars/current-file (.getCanonicalPath f)}
-      (eval-string* sci-ctx s))))
+      (try
+        (eval-string* sci-ctx s)
+        (finally (sci-types/setVal vars/current-ns prev-ns))))))
 
 (defn start-socket-repl! [address ctx]
   (socket-repl/start-repl! address ctx)
