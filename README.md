@@ -211,6 +211,7 @@ enumerated explicitly.
 - [`clojure.tools.cli`](https://github.com/clojure/tools.cli) aliased as `tools.cli`
 - [`clojure.data.csv`](https://github.com/clojure/data.csv) aliased as `csv`
 - [`cheshire.core`](https://github.com/dakrone/cheshire) aliased as `json`
+- [`cognitect.transit`](https://github.com/cognitect/transit-clj) aliased as `transit`
 
 A selection of java classes are available, see `babashka/impl/classes.clj`.
 
@@ -466,6 +467,10 @@ $ bb "(my-gist-script/-main)"
 Hello from gist script!
 ```
 
+Also see the
+[babashka.classpath](https://github.com/borkdude/babashka/#babashkaclasspath)
+namespace which allows dynamically adding to the classpath.
+
 ### Deps.clj
 
 The [`deps.clj`](https://github.com/borkdude/deps.clj/) script can be used to work with `deps.edn`-based projects:
@@ -607,8 +612,20 @@ bb=> :repl/quit
 $
 ```
 
-A socket REPL client for Emacs is
-[inf-clojure](https://github.com/clojure-emacs/inf-clojure).
+Editor plugins offering auto-completion support when connected to a babashka socket REPL:
+
+- Emacs: [inf-clojure](https://github.com/clojure-emacs/inf-clojure):
+
+  To connect:
+
+  `M-x inf-clojure-connect localhost 1666`
+
+  Before evaluating from a Clojure buffer:
+
+  `M-x inf-clojure-minor-mode`
+
+- Atom: [chlorine](https://github.com/mauricioszabo/atom-chlorine)
+- Vim: [vim-iced](https://github.com/liquidz/vim-iced)
 
 ## Spawning and killing a process
 
@@ -657,6 +674,8 @@ For making HTTP requests you can use:
   included with babashka and aliased as `curl` in the user namespace.
 - `slurp` for simple `GET` requests
 - [clj-http-lite](https://github.com/borkdude/clj-http-lite) as a library.
+- `clojure.java.shell` or `java.lang.ProcessBuilder` for shelling out to your
+  favorite command line http client
 
 ### HTTP over Unix sockets
 
@@ -813,11 +832,13 @@ $ bb -e "(require '[lambdaisland.regal :as regal]) (regal/regex [:* \"ab\"])"
 #"(?:\Qab\E)*"
 ```
 
-#### [spartan.test](https://github.com/borkdude/spartan.test/)
+#### [4bb](https://github.com/porkostomus/4bb)
 
-A minimal test framework compatible with babashka. This library is deprecated
-since babashka v0.0.68 which has `clojure.test` built-in.
+4clojure as a babashka script!
 
+#### [cprop](https://github.com/tolitius/cprop/)
+
+A clojure configuration libary. Latest test version: `"0.1.16"`.
 
 ### Blogs
 

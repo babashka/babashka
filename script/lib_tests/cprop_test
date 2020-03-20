@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {cprop {:mvn/version "0.1.16"}}}')
+
+if [ "$BABASHKA_TEST_ENV" = "native" ]; then
+    BB_CMD="./bb"
+else
+    BB_CMD="lein bb"
+fi
+
+
+CPROP_ENV="hello" $BB_CMD "
+(require '[cprop.core :refer [load-config]])
+(require '[cprop.source :refer [from-system-props from-env]])
+(println (:cprop-env (from-env)))
+"

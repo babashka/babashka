@@ -20,6 +20,7 @@
    [babashka.impl.socket-repl :as socket-repl]
    [babashka.impl.test :as t]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
+   [babashka.impl.transit :refer [transit-namespace]]
    [babashka.wait :as wait]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
@@ -27,8 +28,9 @@
    [clojure.string :as str]
    [sci.addons :as addons]
    [sci.core :as sci]
-   [sci.impl.interpreter :refer [eval-string* eval-form]]
+   [sci.impl.interpreter :refer [eval-string*]]
    [sci.impl.opts :as sci-opts]
+   [sci.impl.types :as sci-types]
    [sci.impl.unrestrict :refer [*unrestricted*]]
    [sci.impl.vars :as vars])
   (:gen-class))
@@ -112,7 +114,8 @@
                      (let [options (next options)]
                        (recur (next options)
                               (assoc opts-map
-                                     :socket-repl (first options))))
+                                     :socket-repl (or (first options)
+                                                      "1666"))))
                      ("--eval", "-e")
                      (let [options (next options)]
                        (recur (next options)
@@ -208,9 +211,12 @@ Everything after that is bound to *command-line-args*."))
 
 (defn load-file* [sci-ctx f]
   (let [f (io/file f)
-        s (slurp f)]
+        s (slurp f)
+        prev-ns @vars/current-ns]
     (sci/with-bindings {vars/current-file (.getCanonicalPath f)}
-      (eval-string* sci-ctx s))))
+      (try
+        (eval-string* sci-ctx s)
+        (finally (sci-types/setVal vars/current-ns prev-ns))))))
 
 (defn start-socket-repl! [address ctx]
   (socket-repl/start-repl! address ctx)
@@ -230,7 +236,8 @@ Everything after that is bound to *command-line-args*."))
     async clojure.core.async
     csv clojure.data.csv
     json cheshire.core
-    curl babashka.curl})
+    curl babashka.curl
+    transit cognitect.transit})
 
 (def cp-state (atom nil))
 
@@ -261,7 +268,8 @@ Everything after that is bound to *command-line-args*."))
    'clojure.test t/clojure-test-namespace
    'babashka.classpath {'add-classpath add-classpath*}
    'clojure.pprint pprint-namespace
-   'babashka.curl curl-namespace})
+   'babashka.curl curl-namespace
+   'cognitect.transit transit-namespace})
 
 (def bindings
   {'java.lang.System/exit exit ;; override exit, so we have more control
@@ -344,7 +352,9 @@ Everything after that is bound to *command-line-args*."))
                             File java.io.File
                             Long java.lang.Long
                             Math java.lang.Math
+                            NumberFormatException java.lang.NumberFormatException
                             Object java.lang.Object
+                            RuntimeException java.lang.RuntimeException
                             ProcessBuilder java.lang.ProcessBuilder
                             String java.lang.String
                             StringBuilder java.lang.StringBuilder

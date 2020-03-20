@@ -13,8 +13,9 @@ COPY . .
 RUN ./script/compile
 
 
-FROM busybox:musl
+FROM alpine:latest
 
+RUN apk add --no-cache curl
 RUN mkdir -p /usr/local/bin
 COPY --from=BASE /opt/bb /usr/local/bin/bb
 CMD ["bb"]
