@@ -828,6 +828,10 @@ $ bb -e "(require '[lambdaisland.regal :as regal]) (regal/regex [:* \"ab\"])"
 
 4clojure as a babashka script!
 
+#### [cprop](https://github.com/tolitius/cprop/)
+
+A clojure configuration libary. Latest test version: `"0.1.16"`.
+
 ### Blogs
 
 - [Babashka: a quick example](https://juxt.pro/blog/posts/babashka.html) by Malcolm Sparks
