@@ -53,11 +53,12 @@ Then run:
 
 Keep notes here about how adding libraries and classes to Babashka affects the binary size.
 
-<!-- On macOS: -->
+2020/03/19 Added java.lang.NumberFormatException, java.lang.RuntimeException,
+java.util.MissingResourceException and java.util.Properties to support
+[cprop](https://github.com/tolitius/cprop/).
+41025180 - 40729908 = 295kb added.
 
-<!-- 2020/01/08, ..., 38.7mb / 11.3mb zipped -->
-<!-- Added: `clojure.data.xml`. Growth: 1.8mb / ... -->
-2020/02/21, 
+2020/02/21
 Added java.time.temporal.ChronoUnit
 40651596 - 40598260 = 53kb added.
 

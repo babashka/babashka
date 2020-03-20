@@ -343,7 +343,9 @@ Everything after that is bound to *command-line-args*."))
                             File java.io.File
                             Long java.lang.Long
                             Math java.lang.Math
+                            NumberFormatException java.lang.NumberFormatException
                             Object java.lang.Object
+                            RuntimeException java.lang.RuntimeException
                             ProcessBuilder java.lang.ProcessBuilder
                             String java.lang.String
                             StringBuilder java.lang.StringBuilder

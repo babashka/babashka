@@ -33,7 +33,9 @@
           java.lang.Exception
           java.lang.Integer
           java.lang.Long
+          java.lang.NumberFormatException
           java.lang.Math
+          java.lang.RuntimeException
           java.util.concurrent.LinkedBlockingQueue
           java.lang.Object
           java.lang.String
@@ -90,6 +92,8 @@
           java.util.Base64$Decoder
           java.util.Base64$Encoder
           java.util.Date
+          java.util.MissingResourceException
+          java.util.Properties
           java.util.UUID
           java.util.concurrent.TimeUnit
           java.util.zip.InflaterInputStream
