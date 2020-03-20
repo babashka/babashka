@@ -228,7 +228,18 @@
   (is (= {:result 8080} (bb nil "test/babashka/scripts/tools.cli.bb"))))
 
 (deftest try-catch-test
-  (is (zero? (bb nil "(try (/ 1 0) (catch ArithmeticException _ 0))"))))
+  (is (zero? (bb nil "(try (/ 1 0) (catch ArithmeticException _ 0))")))
+  (is (= :got-it (bb nil "
+(defn foo []
+  (throw (java.util.MissingResourceException. \"o noe!\" \"\" \"\")))
+
+(defn bar
+  []
+  (try (foo)
+       (catch java.util.MissingResourceException _
+         :got-it)))
+(bar)
+"))))
 
 (deftest reader-conditionals-test
   (is (= :hello (bb nil "#?(:bb :hello :default :bye)")))
