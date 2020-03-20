@@ -15,6 +15,6 @@ pom.xml.asc
 !java/src/babashka/impl/LockFix.class
 !test-resources/babashka/src_for_classpath_test/foo.jar
 .cpcache
-reflection.json
+*reflection.json
 /tmp
 /reports
