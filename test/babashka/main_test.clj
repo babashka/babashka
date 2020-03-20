@@ -29,7 +29,7 @@
 
 (deftest main-test
   (testing "-io behaves as identity"
-    (= "foo\nbar\n" (test-utils/bb "foo\nbar\n" "-io" "*input*")))
+    (is (= "foo\nbar\n" (test-utils/bb "foo\nbar\n" "-io" "*input*"))))
   (testing "if and when"
     (is (= 1 (bb 0 '(if (zero? *input*) 1 2))))
     (is (= 2 (bb 1 '(if (zero? *input*) 1 2))))
@@ -354,6 +354,9 @@
   (testing "namespaced keyword via alias"
     (is (= :clojure.string/foo
            (bb nil "(ns foo (:require [clojure.string :as str])) (read-string \"::str/foo\")")))))
+
+(deftest available-stream-test
+  (is (= 0 (bb nil "(.available System/in)"))))
 
 ;;;; Scratch
 

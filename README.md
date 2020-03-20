@@ -211,6 +211,7 @@ enumerated explicitly.
 - [`clojure.tools.cli`](https://github.com/clojure/tools.cli) aliased as `tools.cli`
 - [`clojure.data.csv`](https://github.com/clojure/data.csv) aliased as `csv`
 - [`cheshire.core`](https://github.com/dakrone/cheshire) aliased as `json`
+- [`cognitect.transit`](https://github.com/cognitect/transit-clj) aliased as `transit`
 
 A selection of java classes are available, see `babashka/impl/classes.clj`.
 
