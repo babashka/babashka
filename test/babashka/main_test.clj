@@ -355,6 +355,9 @@
     (is (= :clojure.string/foo
            (bb nil "(ns foo (:require [clojure.string :as str])) (read-string \"::str/foo\")")))))
 
+(deftest available-stream-test
+  (is (= 0 (bb nil "(.available System/in)"))))
+
 ;;;; Scratch
 
 (comment

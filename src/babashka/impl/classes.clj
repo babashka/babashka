@@ -198,7 +198,9 @@
                    (instance? java.io.ByteArrayOutputStream v)
                    java.io.ByteArrayOutputStream
                    (instance? java.security.MessageDigest v)
-                   java.security.MessageDigest)))))
+                   java.security.MessageDigest
+                   (instance? java.io.InputStream v)
+                   java.io.InputStream)))))
 
 (def class-map (gen-class-map))
 

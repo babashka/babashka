@@ -235,7 +235,8 @@ Everything after that is bound to *command-line-args*."))
     async clojure.core.async
     csv clojure.data.csv
     json cheshire.core
-    curl babashka.curl})
+    curl babashka.curl
+    transit cognitect.transit})
 
 (def cp-state (atom nil))
 
