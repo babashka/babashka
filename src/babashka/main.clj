@@ -14,7 +14,8 @@
    [babashka.impl.common :as common]
    [babashka.impl.csv :as csv]
    [babashka.impl.curl :refer [curl-namespace]]
-   [babashka.impl.pipe-signal-handler :refer [handle-pipe! pipe-signal-received?]]
+   ;; see https://github.com/oracle/graal/issues/1784
+   #_[babashka.impl.pipe-signal-handler :refer [handle-pipe! pipe-signal-received?]]
    [babashka.impl.repl :as repl]
    [babashka.impl.socket-repl :as socket-repl]
    [babashka.impl.test :as t]
@@ -251,7 +252,7 @@ Everything after that is bound to *command-line-args*."))
    'clojure.java.shell shell-namespace
    'babashka.wait {'wait-for-port wait/wait-for-port
                    'wait-for-path wait/wait-for-path}
-   'babashka.signal {'pipe-signal-received? pipe-signal-received?}
+   ;;'babashka.signal {'pipe-signal-received? pipe-signal-received?}
    'clojure.java.io io-namespace
    'clojure.core.async async-namespace
    'clojure.core.async.impl.protocols async-protocols-namespace
@@ -285,7 +286,7 @@ Everything after that is bound to *command-line-args*."))
 
 (defn main
   [& args]
-  (handle-pipe!)
+  #_(handle-pipe!)
   #_(binding [*out* *err*]
       (prn "M" (meta (get bindings 'future))))
   (binding [*unrestricted* true]
@@ -300,7 +301,7 @@ Everything after that is bound to *command-line-args*."))
                     :main :uberscript] :as _opts}
             (parse-opts args)
             read-next (fn [*in*]
-                        (if (pipe-signal-received?)
+                        (if false #_(pipe-signal-received?)
                           ::EOF
                           (if stream?
                             (if shell-in (or (read-line) ::EOF)
@@ -417,7 +418,7 @@ Everything after that is bound to *command-line-args*."))
                                                                   edn-out prn)]
                                                 (if (coll? res)
                                                   (doseq [l res
-                                                          :while (not (pipe-signal-received?))]
+                                                          :while (not false #_(pipe-signal-received?))]
                                                     (pr-f l))
                                                   (pr-f res))
                                                 (prn res)))) 0]]

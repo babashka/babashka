@@ -1,8 +1,7 @@
 (ns babashka.impl.pipe-signal-handler
   {:no-doc true}
   (:import [sun.misc Signal]
-           [sun.misc SignalHandler])
-  (:require [clojure.string :as str]))
+           [sun.misc SignalHandler]))
 
 (def pipe-state (volatile! nil))
 
@@ -10,11 +9,7 @@
   (identical? :PIPE @pipe-state))
 
 (defn handle-pipe! []
-  (when-not (or (= "true" (System/getenv "BABASHKA_DISABLE_PIPE_HANDLER"))
-                (str/includes?
-                 ;; see https://github.com/oracle/graal/issues/1784
-                 (str/lower-case (System/getProperty "os.name"))
-                 "win"))
+  (when-not (= "true" (System/getenv "BABASHKA_DISABLE_PIPE_HANDLER"))
     (Signal/handle
      (Signal. "PIPE")
      (reify SignalHandler
