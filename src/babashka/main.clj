@@ -289,7 +289,7 @@ Everything after that is bound to *command-line-args*."))
 
 (defn main
   [& args]
-  (when-not (Boolean/valueOf ^String (System/getenv "DISABLE_PIPE_SIGNAL_HANDLING"))
+  (when-not (Boolean/valueOf ^String (System/getenv "BABASHKA_DISABLE_PIPE_HANDLER"))
     (handle-pipe!))
   #_(binding [*out* *err*]
       (prn "M" (meta (get bindings 'future))))
