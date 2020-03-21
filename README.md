@@ -1041,7 +1041,7 @@ clojure.core/ffirst
 ### SHA hash string and print in hex
 
 `sha.clj`:
-```
+``` clojure
 (def hashed (.digest (.getInstance java.security.MessageDigest "SHA-1")
                      (.getBytes "babashka")))
 (doseq [b hashed]
