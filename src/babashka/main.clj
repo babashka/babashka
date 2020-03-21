@@ -202,10 +202,6 @@ Everything after that is bound to *command-line-args*."))
         (str/replace x #"^#!.*" ""))
       (throw (Exception. (str "File does not exist: " file))))))
 
-(defn read-edn []
-  (edn/read {;;:readers *data-readers*
-             :eof ::EOF} *in*))
-
 (def reflection-var (sci/new-dynamic-var '*warn-on-reflection* false))
 
 (defn load-file* [sci-ctx f]
@@ -309,7 +305,8 @@ Everything after that is bound to *command-line-args*."))
                           ::EOF
                           (if stream?
                             (if shell-in (or (read-line) ::EOF)
-                                (read-edn))
+                                (edn/read {;;:readers *data-readers*
+                                           :eof ::EOF} *in*))
                             (delay (cond shell-in
                                          (shell-seq *in*)
                                          edn-in
@@ -366,16 +363,20 @@ Everything after that is bound to *command-line-args*."))
             ctx (addons/future ctx)
             sci-ctx (sci-opts/init ctx)
             _ (vreset! common/ctx sci-ctx)
+            input-var (sci/new-dynamic-var '*input* nil)
             _ (swap! (:env sci-ctx)
                      (fn [env]
-                       (update-in env [:namespaces 'clojure.core] assoc
-                                  'load-file #(load-file* sci-ctx %))))
-            _ (swap! (:env sci-ctx)
-                     (fn [env]
-                       (assoc-in env [:namespaces 'clojure.main 'repl]
-                                 (fn [& opts]
-                                   (let [opts (apply hash-map opts)]
-                                     (repl/start-repl! sci-ctx opts))))))
+                       (update env :namespaces
+                               (fn [namespaces] [:namespaces 'clojure.main 'repl]
+                                 (-> namespaces
+                                     (assoc-in ['clojure.core 'load-file] #(load-file* sci-ctx %))
+                                     (assoc-in ['clojure.main 'repl]
+                                               (fn [& opts]
+                                                 (let [opts (apply hash-map opts)]
+                                                   (repl/start-repl! sci-ctx opts))))
+                                     (assoc-in ['user (with-meta '*input*
+                                                        (when-not stream?
+                                                          {:sci.impl/deref! true}))] input-var))))))
             preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim))
             [expressions exit-code]
             (cond expressions [expressions nil]
@@ -405,15 +406,13 @@ Everything after that is bound to *command-line-args*."))
                        socket-repl [(start-socket-repl! socket-repl sci-ctx) 0]
                        (not (str/blank? expression))
                        (try
-                         (loop [in (read-next *in*)]
-                           (let [_ (swap! env update-in [:namespaces 'user]
-                                          assoc (with-meta '*input*
-                                                  (when-not stream?
-                                                    {:sci.impl/deref! true}))
-                                          (sci/new-dynamic-var '*input* in))]
+                         (loop []
+                           (let [in (read-next *in*)]
                              (if (identical? ::EOF in)
                                [nil 0] ;; done streaming
-                               (let [res [(let [res (eval-string* sci-ctx expression)]
+                               (let [res [(let [res
+                                                (sci/binding [input-var in]
+                                                  (eval-string* sci-ctx expression))]
                                             (when (some? res)
                                               (if-let [pr-f (cond shell-out println
                                                                   edn-out prn)]
@@ -424,7 +423,7 @@ Everything after that is bound to *command-line-args*."))
                                                   (pr-f res))
                                                 (prn res)))) 0]]
                                  (if stream?
-                                   (recur (read-next *in*))
+                                   (recur)
                                    res)))))
                          (catch Throwable e
                            (error-handler* e verbose?)))
