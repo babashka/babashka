@@ -1058,7 +1058,7 @@ clojure.core/ffirst
 ```
 
 ``` shell
-sha1.clj
+$ sha1.clj babashka
 "0AB318BE3A646EEB1E592781CBFE4AE59701EDDF"
 ```
 
