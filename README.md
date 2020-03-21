@@ -844,6 +844,24 @@ $ bb -e "(require '[lambdaisland.regal :as regal]) (regal/regex [:* \"ab\"])"
 
 A clojure configuration libary. Latest test version: `"0.1.16"`.
 
+#### [comb](https://github.com/weavejester/comb)
+
+Simple templating system for Clojure. Latest tested version: `"0.1.1"`.
+
+``` clojure
+$ export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {comb {:mvn/version "0.1.1"}}}')
+$ rlwrap bb
+...
+user=> (require '[comb.template :as template])
+user=> (template/eval "<% (dotimes [x 3] %>foo<% ) %>")
+"foofoofoo"
+user=> (template/eval "Hello <%= name %>" {:name "Alice"})
+"Hello Alice"
+user=> (def hello (template/fn [name] "Hello <%= name %>"))
+user=> (hello "Alice")
+"Hello Alice"
+```
+
 ### Blogs
 
 - [Babashka: a quick example](https://juxt.pro/blog/posts/babashka.html) by Malcolm Sparks
