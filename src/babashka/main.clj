@@ -20,6 +20,7 @@
    [babashka.impl.test :as t]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
    [babashka.impl.transit :refer [transit-namespace]]
+   [babashka.impl.template :as template]
    [babashka.wait :as wait]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
@@ -236,7 +237,8 @@ Everything after that is bound to *command-line-args*."))
     csv clojure.data.csv
     json cheshire.core
     curl babashka.curl
-    transit cognitect.transit})
+    transit cognitect.transit
+    template comb.template})
 
 (def cp-state (atom nil))
 
@@ -268,7 +270,8 @@ Everything after that is bound to *command-line-args*."))
    'babashka.classpath {'add-classpath add-classpath*}
    'clojure.pprint pprint-namespace
    'babashka.curl curl-namespace
-   'cognitect.transit transit-namespace})
+   'cognitect.transit transit-namespace
+   'comb.template template/template-namespace})
 
 (def bindings
   {'java.lang.System/exit exit ;; override exit, so we have more control
