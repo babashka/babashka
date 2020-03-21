@@ -152,6 +152,10 @@ You may also download a binary from
 [Github](https://github.com/borkdude/babashka/releases). For linux there is a
 static binary available which can be used on Alpine.
 
+## Docker
+
+Check out the image on [Docker hub](https://hub.docker.com/r/borkdude/babashka/).
+
 ## Usage
 
 ``` shellsession
@@ -1060,6 +1064,26 @@ clojure.core/ffirst
 ``` shell
 $ sha1.clj babashka
 "0AB318BE3A646EEB1E592781CBFE4AE59701EDDF"
+```
+
+### Package script as Docker image
+
+`Dockerfile`:
+``` dockerfile
+FROM borkdude/babashka
+RUN echo $'\
+(println "Your command line args:" *command-line-args*)\
+'\
+>> script.clj
+
+ENTRYPOINT ["bb", "script.clj"]
+```
+
+``` shell
+$ docker build . -t script
+...
+$ docker run --rm script 1 2 3
+Your command line args: (1 2 3)
 ```
 
 ## Thanks
