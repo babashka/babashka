@@ -289,7 +289,8 @@ Everything after that is bound to *command-line-args*."))
 
 (defn main
   [& args]
-  (handle-pipe!)
+  (when-not (Boolean/valueOf ^String (System/getenv "DISABLE_PIPE_SIGNAL_HANDLING"))
+    (handle-pipe!))
   #_(binding [*out* *err*]
       (prn "M" (meta (get bindings 'future))))
   (binding [*unrestricted* true]

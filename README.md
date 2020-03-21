@@ -1104,6 +1104,10 @@ $ docker run --rm script 1 2 3
 Your command line args: (1 2 3)
 ```
 
+## Package babashka script as a AWS Lambda
+
+AWS Lambda runtime doesn't support signals, therefore babashka has to disable handling of the SIGPIPE. This can be done by setting `DISABLE_PIPE_SIGNAL_HANDLING` to `true`.
+
 ## Thanks
 
 - [adgoji](https://www.adgoji.com/) for financial support
