@@ -152,6 +152,10 @@ You may also download a binary from
 [Github](https://github.com/borkdude/babashka/releases). For linux there is a
 static binary available which can be used on Alpine.
 
+## Docker
+
+Check out the image on [Docker hub](https://hub.docker.com/r/borkdude/babashka/).
+
 ## Usage
 
 ``` shellsession
@@ -840,6 +844,24 @@ $ bb -e "(require '[lambdaisland.regal :as regal]) (regal/regex [:* \"ab\"])"
 
 A clojure configuration libary. Latest test version: `"0.1.16"`.
 
+#### [comb](https://github.com/weavejester/comb)
+
+Simple templating system for Clojure. Latest tested version: `"0.1.1"`.
+
+``` clojure
+$ export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {comb {:mvn/version "0.1.1"}}}')
+$ rlwrap bb
+...
+user=> (require '[comb.template :as template])
+user=> (template/eval "<% (dotimes [x 3] %>foo<% ) %>")
+"foofoofoo"
+user=> (template/eval "Hello <%= name %>" {:name "Alice"})
+"Hello Alice"
+user=> (def hello (template/fn [name] "Hello <%= name %>"))
+user=> (hello "Alice")
+"Hello Alice"
+```
+
 ### Blogs
 
 - [Babashka: a quick example](https://juxt.pro/blog/posts/babashka.html) by Malcolm Sparks
@@ -1037,6 +1059,54 @@ clojure.core/ffirst
 ([x])
   Same as (first (first x))
 ```
+
+### Cryptographic hash
+
+`sha1.clj`:
+``` clojure
+#!/usr/bin/env bb
+
+(defn sha1
+  [s]
+  (let [hashed (.digest (.getInstance java.security.MessageDigest "SHA-1")
+                        (.getBytes s))
+        sw (java.io.StringWriter.)]
+    (binding [*out* sw]
+      (doseq [byte hashed]
+        (print (format "%02X" byte))))
+    (str sw)))
+
+(sha1 (first *command-line-args*))
+```
+
+``` shell
+$ sha1.clj babashka
+"0AB318BE3A646EEB1E592781CBFE4AE59701EDDF"
+```
+
+### Package script as Docker image
+
+`Dockerfile`:
+``` dockerfile
+FROM borkdude/babashka
+RUN echo $'\
+(println "Your command line args:" *command-line-args*)\
+'\
+>> script.clj
+
+ENTRYPOINT ["bb", "script.clj"]
+```
+
+``` shell
+$ docker build . -t script
+...
+$ docker run --rm script 1 2 3
+Your command line args: (1 2 3)
+```
+
+## Package babashka script as a AWS Lambda
+
+AWS Lambda runtime doesn't support signals, therefore babashka has to disable handling of the SIGPIPE. This can be done by setting `BABASHKA_DISABLE_PIPE_HANDLER` to `true`.
 
 ## Thanks
 
