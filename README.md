@@ -1038,6 +1038,21 @@ clojure.core/ffirst
   Same as (first (first x))
 ```
 
+### SHA hash string and print in hex
+
+`sha.clj`:
+```
+(def hashed (.digest (.getInstance java.security.MessageDigest "SHA-1")
+                     (.getBytes "babashka")))
+(doseq [b hashed]
+  (print (format "%02X" b)))
+```
+
+``` shell
+bb sha.clj
+0AB318BE3A646EEB1E592781CBFE4AE59701EDDF
+```
+
 ## Thanks
 
 - [adgoji](https://www.adgoji.com/) for financial support
