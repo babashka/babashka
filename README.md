@@ -1040,17 +1040,26 @@ clojure.core/ffirst
 
 ### SHA hash string and print in hex
 
-`sha.clj`:
+`sha1.clj`:
 ``` clojure
-(def hashed (.digest (.getInstance java.security.MessageDigest "SHA-1")
-                     (.getBytes "babashka")))
-(doseq [b hashed]
-  (print (format "%02X" b)))
+#!/usr/bin/env bb
+
+(defn sha1
+  [s]
+  (let [hashed (.digest (.getInstance java.security.MessageDigest "SHA-1")
+                        (.getBytes s))
+        sw (java.io.StringWriter.)]
+    (binding [*out* sw]
+      (doseq [byte hashed]
+        (print (format "%02X" byte))))
+    (str sw)))
+
+(sha1 (first *command-line-args*))
 ```
 
 ``` shell
-bb sha.clj
-0AB318BE3A646EEB1E592781CBFE4AE59701EDDF
+sha1.clj
+"0AB318BE3A646EEB1E592781CBFE4AE59701EDDF"
 ```
 
 ## Thanks
