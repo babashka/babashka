@@ -1038,7 +1038,7 @@ clojure.core/ffirst
   Same as (first (first x))
 ```
 
-### SHA hash string and print in hex
+### Cryptographic hash
 
 `sha1.clj`:
 ``` clojure
