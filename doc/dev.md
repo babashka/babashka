@@ -53,6 +53,9 @@ Then run:
 
 Keep notes here about how adding libraries and classes to Babashka affects the binary size.
 
+2020/03/22 Added java.io.FileReader
+42025276 - 42008876 = 16kb added.
+
 2020/03/20 Added transit write, writer, read, reader
 42004796 - 41025212 = 980kb added (305kb zipped).
 
