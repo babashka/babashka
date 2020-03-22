@@ -371,7 +371,7 @@
 
 (deftest file-reader-test
   (when (str/includes? (str/lower-case (System/getProperty "os.name")) "linux")
-    (let [v (some? (bb nil "(slurp (io/reader (java.io.FileReader. \"/proc/loadavg\")))"))]
+    (let [v (bb nil "(slurp (io/reader (java.io.FileReader. \"/proc/loadavg\")))")]
       (prn "output:" v)
       (is v))))
 
