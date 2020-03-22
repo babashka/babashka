@@ -1,7 +1,7 @@
 (ns babashka.impl.nrepl-server
   {:no-doc true}
   (:refer-clojure :exclude [send])
-  (:require [bencode.core :refer [write-bencode read-bencode]]
+  (:require [babashka.impl.bencode.core :refer [write-bencode read-bencode]]
             [clojure.stacktrace :as stacktrace]
             [clojure.string :as str]
             [sci.impl.interpreter :as sci]
@@ -12,7 +12,7 @@
 (set! *warn-on-reflection* true)
 
 (def port 1667)
-(def debug? true)
+(def debug? false)
 
 (defn response-for [old-msg msg]
   (let [session (get old-msg :session "none")
@@ -53,7 +53,7 @@
       (update :op keyword)))
 
 (defn session-loop [ctx ^InputStream is os id ns]
-  (println "Reading!" id (.available is))
+  (when debug? (println "Reading!" id (.available is)))
   (when-let [msg (try (read-bencode is)
                       (catch EOFException _
                         (println "Client closed connection.")))]
@@ -104,5 +104,5 @@
                       [(first parts) (Integer. ^String (second parts))])
         host+port (if-not address (str "localhost:" port)
                           host+port)]
-    (println "Starting nREPL at " host+port)
+    (println "Starting nREPL at" host+port)
     (listen ctx (new ServerSocket port 0 address))))
