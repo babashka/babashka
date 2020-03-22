@@ -2,7 +2,6 @@
   {:no-doc true}
   (:require
    [babashka.impl.clojure.main :as m]
-   [babashka.impl.nrepl-server :as nrepl-server]
    [clojure.java.io :as io]
    [clojure.string :as str]
    [clojure.tools.reader.reader-types :as r]
@@ -68,7 +67,6 @@
 (defn start-repl!
   ([sci-ctx] (start-repl! sci-ctx nil))
   ([sci-ctx opts]
-   #_(nrepl-server/start-server sci-ctx 1667)
    (repl sci-ctx opts)))
 
 ;;;; Scratch

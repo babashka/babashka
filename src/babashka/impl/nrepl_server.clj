@@ -3,6 +3,7 @@
   (:refer-clojure :exclude [send])
   (:require [bencode.core :refer [write-bencode read-bencode]]
             [clojure.stacktrace :as stacktrace]
+            [clojure.string :as str]
             [sci.impl.interpreter :as sci]
             [sci.impl.vars :as vars])
   (:import [java.net ServerSocket] [java.io PushbackInputStream EOFException]))
@@ -93,6 +94,10 @@
       (session-loop ctx in out "pre-init" *ns*))
     #_(recur listener)))
 
-(defn start-server [ctx port]
-  (println "Starting nREPL on port" port)
-  (future (listen ctx (new ServerSocket port))))
+(defn start-server! [ctx host+port]
+  (let [parts (str/split host+port #":")
+        [address port] (if (= 1 (count parts))
+                      [nil (Integer. ^String (first parts))]
+                      [(first parts) (Integer. ^String (second parts))])]
+    (println "Starting nREPL " port)
+    (listen ctx (new ServerSocket port 0 address))))

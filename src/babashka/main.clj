@@ -31,7 +31,8 @@
    [sci.impl.opts :as sci-opts]
    [sci.impl.types :as sci-types]
    [sci.impl.unrestrict :refer [*unrestricted*]]
-   [sci.impl.vars :as vars])
+   [sci.impl.vars :as vars]
+   [babashka.impl.nrepl-server :as nrepl-server])
   (:gen-class))
 
 (binding [*unrestricted* true]
@@ -115,6 +116,12 @@
                               (assoc opts-map
                                      :socket-repl (or (first options)
                                                       "1666"))))
+                     ("--nrepl")
+                     (let [options (next options)]
+                       (recur (next options)
+                              (assoc opts-map
+                                     :nrepl (or (first options)
+                                                      "1667"))))
                      ("--eval", "-e")
                      (let [options (next options)]
                        (recur (next options)
@@ -218,6 +225,11 @@ Everything after that is bound to *command-line-args*."))
   ;; hang until SIGINT
   @(promise))
 
+(defn start-nrepl! [address ctx]
+  (nrepl-server/start-server! ctx address)
+  ;; hang until SIGINT
+  #_@(promise))
+
 (defn exit [n]
   (throw (ex-info "" {:bb/exit-code n})))
 
@@ -295,7 +307,7 @@ Everything after that is bound to *command-line-args*."))
             {:keys [:version :shell-in :edn-in :shell-out :edn-out
                     :help? :file :command-line-args
                     :expressions :stream? :time?
-                    :repl :socket-repl
+                    :repl :socket-repl :nrepl
                     :verbose? :classpath
                     :main :uberscript] :as _opts}
             (parse-opts args)
@@ -403,6 +415,7 @@ Everything after that is bound to *command-line-args*."))
                        [(print-help) 0]
                        repl [(repl/start-repl! sci-ctx) 0]
                        socket-repl [(start-socket-repl! socket-repl sci-ctx) 0]
+                       nrepl [(start-nrepl! nrepl sci-ctx) 0]
                        (not (str/blank? expression))
                        (try
                          (loop []
