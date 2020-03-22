@@ -21,6 +21,7 @@
           java.io.InputStream
           java.io.IOException
           java.io.OutputStream
+          java.io.FileReader
           java.io.Reader
           java.io.StringReader
           java.io.StringWriter

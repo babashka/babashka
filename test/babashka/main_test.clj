@@ -369,6 +369,12 @@
 (deftest available-stream-test
   (is (= 0 (bb nil "(.available System/in)"))))
 
+(deftest file-reader-test
+  (when (str/includes? (str/lower-case (System/getProperty "os.name")) "linux")
+    (let [v (bb nil "(slurp (io/reader (java.io.FileReader. \"/proc/loadavg\")))")]
+      (prn "output:" v)
+      (is v))))
+
 ;;;; Scratch
 
 (comment
