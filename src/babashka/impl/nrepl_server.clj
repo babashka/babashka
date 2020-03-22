@@ -6,7 +6,10 @@
             [clojure.string :as str]
             [sci.impl.interpreter :as sci]
             [sci.impl.vars :as vars])
-  (:import [java.net ServerSocket] [java.io PushbackInputStream EOFException]))
+  (:import [java.net ServerSocket]
+           [java.io OutputStream InputStream PushbackInputStream EOFException]))
+
+(set! *warn-on-reflection* true)
 
 (def port 1667)
 (def debug? true)
@@ -18,7 +21,7 @@
         m (assoc m "id" id)]
     m))
 
-(defn send [os msg]
+(defn send [^OutputStream os msg]
   (when debug? (println "Sending" msg))
   (write-bencode os msg)
   (.flush os))
@@ -45,11 +48,11 @@
 (defn read-msg [msg]
   (-> (zipmap (map keyword (keys msg))
               (map #(if (instance? (Class/forName "[B") %)
-                      (String. %)
+                      (String. ^{:tag "[B"} %)
                       %) (vals msg)))
       (update :op keyword)))
 
-(defn session-loop [ctx is os id ns]
+(defn session-loop [ctx ^InputStream is os id ns]
   (println "Reading!" id (.available is))
   (when-let [msg (try (read-bencode is)
                       (catch EOFException _
@@ -82,7 +85,7 @@
         (when debug?
           (println "Unhandled message" msg))))))
 
-(defn listen [ctx listener]
+(defn listen [ctx ^ServerSocket listener]
   (when debug? (println "Listening"))
   (let [client-socket (.accept listener)
         in (.getInputStream client-socket)
@@ -98,6 +101,8 @@
   (let [parts (str/split host+port #":")
         [address port] (if (= 1 (count parts))
                       [nil (Integer. ^String (first parts))]
-                      [(first parts) (Integer. ^String (second parts))])]
-    (println "Starting nREPL " port)
+                      [(first parts) (Integer. ^String (second parts))])
+        host+port (if-not address (str "localhost:" port)
+                          host+port)]
+    (println "Starting nREPL at " host+port)
     (listen ctx (new ServerSocket port 0 address))))
