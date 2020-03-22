@@ -47,8 +47,8 @@
 
 (defn read-msg [msg]
   (-> (zipmap (map keyword (keys msg))
-              (map #(if (instance? (Class/forName "[B") %)
-                      (String. ^{:tag "[B"} %)
+              (map #(if (bytes? %)
+                      (String. (bytes %))
                       %) (vals msg)))
       (update :op keyword)))
 
