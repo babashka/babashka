@@ -5,7 +5,8 @@
             [clojure.stacktrace :as stacktrace]
             [clojure.string :as str]
             [sci.impl.interpreter :as sci]
-            [sci.impl.vars :as vars])
+            [sci.impl.vars :as vars]
+            [clojure.java.io :as io])
   (:import [java.net ServerSocket]
            [java.io OutputStream InputStream PushbackInputStream EOFException]))
 
@@ -103,6 +104,9 @@
                       [nil (Integer. ^String (first parts))]
                       [(first parts) (Integer. ^String (second parts))])
         host+port (if-not address (str "localhost:" port)
-                          host+port)]
+                          host+port)
+        port-file (io/file ".nrepl-port")
+        _ (.deleteOnExit port-file)]
     (println "Starting nREPL at" host+port)
+    (spit port-file port)
     (listen ctx (new ServerSocket port 0 address))))
