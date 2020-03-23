@@ -14,7 +14,6 @@
    [babashka.impl.common :as common]
    [babashka.impl.csv :as csv]
    [babashka.impl.curl :refer [curl-namespace]]
-   [babashka.impl.nrepl-server :as nrepl-server]
    [babashka.impl.pipe-signal-handler :refer [handle-pipe! pipe-signal-received?]]
    [babashka.impl.repl :as repl]
    [babashka.impl.socket-repl :as socket-repl]
@@ -32,7 +31,8 @@
    [sci.impl.opts :as sci-opts]
    [sci.impl.types :as sci-types]
    [sci.impl.unrestrict :refer [*unrestricted*]]
-   [sci.impl.vars :as vars])
+   [sci.impl.vars :as vars]
+   [babashka.impl.nrepl-server :as nrepl-server])
   (:gen-class))
 
 (binding [*unrestricted* true]
@@ -454,7 +454,6 @@ Everything after that is bound to *command-line-args*."))
             (spit uberscript-out expression :append true)))
         (when time? (binding [*out* *err*]
                       (println "bb took" (str (- t1 t0) "ms."))))
-        (when nrepl (.delete (io/file ".nrepl-port")))
         exit-code))))
 
 (defn -main
