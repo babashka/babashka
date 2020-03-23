@@ -59,7 +59,7 @@
                       (catch EOFException _
                         (println "Client closed connection.")))]
     (let [msg (read-msg msg)]
-      ;; (when dev? (prn "Received" msg))
+      (when dev? (prn "Received" msg))
       (case (get msg :op)
         :clone (do
                  (when dev? (println "Cloning!"))
@@ -74,7 +74,7 @@
                                         "aux" {}
                                         "ops" (zipmap #{"clone", "describe", "eval"}
                                                       (repeat {}))
-                                        "versions" {"nrepl" {"major" "0"
+                                        "versions" {} #_{"nrepl" {"major" "0"
                                                              "minor" "4"
                                                              "incremental" "0"
                                                              "qualifier" ""}
@@ -83,6 +83,13 @@
                                                      (zipmap (map name (keys *clojure-version*))
                                                              (vals *clojure-version*))}}}))
             (recur ctx is os id ns))
+        :out-subscribe
+        (do
+          (when dev? (println "dude"))
+          ;; TODO: implement
+          (send os (response-for msg {"status" #{"done"}}))
+          ;;{:op :out-subscribe, :session 6e3499ae-64cc-46b6-9a4a-357026a76768, :id 5}
+          )
         (when dev?
           (println "Unhandled message" msg))))))
 

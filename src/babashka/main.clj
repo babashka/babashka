@@ -8,7 +8,7 @@
    [babashka.impl.clojure.core :refer [core-extras]]
    [babashka.impl.clojure.java.io :refer [io-namespace]]
    [babashka.impl.clojure.java.shell :refer [shell-namespace]]
-   [babashka.impl.clojure.main :refer [demunge]]
+   [babashka.impl.clojure.main :as clojure-main :refer [demunge]]
    [babashka.impl.clojure.pprint :refer [pprint-namespace]]
    [babashka.impl.clojure.stacktrace :refer [stacktrace-namespace]]
    [babashka.impl.common :as common]
@@ -270,7 +270,8 @@ Everything after that is bound to *command-line-args*."))
    'clojure.data.csv csv/csv-namespace
    'cheshire.core cheshire-core-namespace
    'clojure.stacktrace stacktrace-namespace
-   'clojure.main {'demunge demunge}
+   'clojure.main {'demunge demunge
+                  'repl-requires clojure-main/repl-requires}
    'clojure.repl {'demunge demunge}
    'clojure.test t/clojure-test-namespace
    'babashka.classpath {'add-classpath add-classpath*}
