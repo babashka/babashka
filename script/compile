@@ -8,7 +8,7 @@ if [ -z "$GRAALVM_HOME" ]; then
 fi
 
 if [ -z "$BABASHKA_XMX" ]; then
-    export BABASHKA_XMX="-J-Xmx4g"
+    export BABASHKA_XMX="-J-Xmx3g"
 fi
 
 "$GRAALVM_HOME/bin/gu" install native-image || true
