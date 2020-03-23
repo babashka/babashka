@@ -49,7 +49,13 @@ To build this project, set `$GRAALVM_HOME` to the GraalVM distribution directory
 
 Then run:
 
-    script/compile
+    $ script/compile
+
+To tweak maximum heap size:
+
+```
+$ BABASHKA_XMX="-J-Xmx4g" script/compile
+```
 
 ## Binary size
 
