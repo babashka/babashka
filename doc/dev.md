@@ -1,5 +1,7 @@
 # Developing Babashka
 
+## Clone repository
+
 To work on Babashka itself make sure Git submodules are checked out.
 
 ``` shellsession
