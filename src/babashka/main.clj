@@ -459,7 +459,8 @@ Everything after that is bound to *command-line-args*."))
 (defn -main
   [& args]
   (if-let [dev-opts (System/getenv "BABASHKA_DEV")]
-    (let [{:keys [:n]} (edn/read-string dev-opts)
+    (let [{:keys [:n]} (if (= "true" dev-opts) {:n 1}
+                           (edn/read-string dev-opts))
           last-iteration (dec n)]
       (dotimes [i n]
         (if (< i last-iteration)

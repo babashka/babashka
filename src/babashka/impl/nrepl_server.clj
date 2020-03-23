@@ -1,18 +1,19 @@
 (ns babashka.impl.nrepl-server
   {:no-doc true}
-  (:refer-clojure :exclude [send])
+  (:refer-clojure :exclude [send future])
   (:require [babashka.impl.bencode.core :refer [write-bencode read-bencode]]
             [clojure.stacktrace :as stacktrace]
             [clojure.string :as str]
+            [sci.core :refer [future]]
             [sci.impl.interpreter :as sci]
             [sci.impl.vars :as vars])
-  (:import [java.net ServerSocket]
-           [java.io OutputStream InputStream PushbackInputStream EOFException]))
+  (:import [java.io OutputStream InputStream PushbackInputStream EOFException]
+           [java.net ServerSocket]))
 
 (set! *warn-on-reflection* true)
 
 (def port 1667)
-(def debug? false)
+(def dev? (= "true" (System/getenv "BABASHKA_DEV")))
 
 (defn response-for [old-msg msg]
   (let [session (get old-msg :session "none")
@@ -22,12 +23,12 @@
     m))
 
 (defn send [^OutputStream os msg]
-  (when debug? (println "Sending" msg))
+  (when dev? (println "Sending" msg))
   (write-bencode os msg)
   (.flush os))
 
 (defn send-exception [os msg ex]
-  (when debug? (prn "sending ex" (with-out-str (stacktrace/print-throwable ex))))
+  (when dev? (prn "sending ex" (with-out-str (stacktrace/print-throwable ex))))
   (send os (response-for msg {"ex" (with-out-str (stacktrace/print-throwable ex))
                               "status" #{"done"}})))
 
@@ -53,15 +54,15 @@
       (update :op keyword)))
 
 (defn session-loop [ctx ^InputStream is os id ns]
-  (when debug? (println "Reading!" id (.available is)))
+  (when dev? (println "Reading!" id (.available is)))
   (when-let [msg (try (read-bencode is)
                       (catch EOFException _
                         (println "Client closed connection.")))]
     (let [msg (read-msg msg)]
-      ;; (when debug? (prn "Received" msg))
+      ;; (when dev? (prn "Received" msg))
       (case (get msg :op)
         :clone (do
-                 (when debug? (println "Cloning!"))
+                 (when dev? (println "Cloning!"))
                  (register-session ctx is os ns msg session-loop))
         :eval (do
                 (try (eval-msg ctx os msg ns)
@@ -82,20 +83,18 @@
                                                      (zipmap (map name (keys *clojure-version*))
                                                              (vals *clojure-version*))}}}))
             (recur ctx is os id ns))
-        (when debug?
+        (when dev?
           (println "Unhandled message" msg))))))
 
 (defn listen [ctx ^ServerSocket listener]
-  (when debug? (println "Listening"))
+  (when dev? (println "Listening"))
   (let [client-socket (.accept listener)
         in (.getInputStream client-socket)
         in (PushbackInputStream. in)
         out (.getOutputStream client-socket)]
-    (when debug? (println "Connected."))
-    ;; TODO: run this in a future, but for debugging this is better
-    (binding [*print-length* 20]
-      (session-loop ctx in out "pre-init" *ns*))
-    #_(recur listener)))
+    (when dev? (println "Connected."))
+    (future (session-loop ctx in out "pre-init" *ns*))
+    (recur ctx listener)))
 
 (defn start-server! [ctx host+port]
   (let [parts (str/split host+port #":")
