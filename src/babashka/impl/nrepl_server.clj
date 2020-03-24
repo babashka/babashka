@@ -1,10 +1,10 @@
 (ns babashka.impl.nrepl-server
   {:no-doc true}
-  (:refer-clojure :exclude [send future])
+  (:refer-clojure :exclude [send future binding])
   (:require [babashka.impl.bencode.core :refer [write-bencode read-bencode]]
             [clojure.stacktrace :as stacktrace]
             [clojure.string :as str]
-            [sci.core :refer [future]]
+            [sci.core :refer [future binding]]
             [sci.impl.interpreter :as sci]
             [sci.impl.vars :as vars])
   (:import [java.io OutputStream InputStream PushbackInputStream EOFException]
@@ -100,7 +100,11 @@
         in (PushbackInputStream. in)
         out (.getOutputStream client-socket)]
     (when dev? (println "Connected."))
-    (future (session-loop ctx in out "pre-init" *ns*))
+    (future
+      (binding
+          ;; allow *ns* to be set! inside future
+          [vars/current-ns (vars/->SciNamespace 'user nil)]
+        (session-loop ctx in out "pre-init" *ns*)))
     (recur ctx listener)))
 
 (defn start-server! [ctx host+port]
