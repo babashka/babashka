@@ -27,9 +27,10 @@
   (write-bencode os msg)
   (.flush os))
 
-(defn send-exception [os msg ex]
+(defn send-exception [os msg ^Throwable ex]
   (when dev? (prn "sending ex" (with-out-str (stacktrace/print-throwable ex))))
-  (send os (response-for msg {"ex" (with-out-str (stacktrace/print-throwable ex))
+  (send os (response-for msg {"ex" (.getName (.getClass ex))
+                              "err" (with-out-str (stacktrace/print-throwable ex))
                               "status" #{"done"}})))
 
 (defn eval-msg [ctx o msg]
