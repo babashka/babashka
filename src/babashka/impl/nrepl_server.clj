@@ -41,11 +41,6 @@
                                "value" (pr-str value)}))
     (send o (response-for msg {"status" #{"done"}}))))
 
-(defn register-session [ctx i o ns msg session-loop]
-  (let [id (str (java.util.UUID/randomUUID))]
-    (send o (response-for msg {"new-session" id "status" #{"done"}}))
-    (session-loop ctx i o id ns)))
-
 (defn read-msg [msg]
   (-> (zipmap (map keyword (keys msg))
               (map #(if (bytes? %)
@@ -63,7 +58,9 @@
       (case (get msg :op)
         :clone (do
                  (when dev? (println "Cloning!"))
-                 (register-session ctx is os ns msg session-loop))
+                 (let [id (str (java.util.UUID/randomUUID))]
+                   (send os (response-for msg {"new-session" id "status" #{"done"}}))
+                   (recur ctx is os id ns)))
         :eval (do
                 (try (eval-msg ctx os msg ns)
                      (catch Exception exn
@@ -83,6 +80,7 @@
                                                      (zipmap (map name (keys *clojure-version*))
                                                              (vals *clojure-version*))}}}))
             (recur ctx is os id ns))
+        ;; fallback
         (do (when dev?
               (println "Unhandled message" msg))
             (send os (response-for msg {"status" #{"error" "unknown-op" "done"}}))
