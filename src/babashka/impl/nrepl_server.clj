@@ -32,13 +32,13 @@
   (send os (response-for msg {"ex" (with-out-str (stacktrace/print-throwable ex))
                               "status" #{"done"}})))
 
-(defn eval-msg [ctx o msg ns]
+(defn eval-msg [ctx o msg]
   (let [code-str (get msg :code)
-        value (if (= :nil code-str)
+        value (if (nil? code-str)
                nil
                (sci/eval-string* ctx code-str))]
-    (send o (response-for msg {"ns" (vars/current-ns-name)
-                               "value" (pr-str value)}))
+    (send o (response-for msg (cond-> {"ns" (vars/current-ns-name)}
+                                value (assoc "value" (pr-str value)))))
     (send o (response-for msg {"status" #{"done"}}))))
 
 (defn read-msg [msg]
@@ -48,7 +48,7 @@
                       %) (vals msg)))
       (update :op keyword)))
 
-(defn session-loop [ctx ^InputStream is os id ns]
+(defn session-loop [ctx ^InputStream is os id]
   (when dev? (println "Reading!" id (.available is)))
   (when-let [msg (try (read-bencode is)
                       (catch EOFException _
@@ -60,12 +60,12 @@
                  (when dev? (println "Cloning!"))
                  (let [id (str (java.util.UUID/randomUUID))]
                    (send os (response-for msg {"new-session" id "status" #{"done"}}))
-                   (recur ctx is os id ns)))
+                   (recur ctx is os id)))
         :eval (do
-                (try (eval-msg ctx os msg ns)
+                (try (eval-msg ctx os msg)
                      (catch Exception exn
                        (send-exception os msg exn)))
-                (recur ctx is os id ns))
+                (recur ctx is os id))
         :describe
         (do (send os (response-for msg {"status" #{"done"}
                                         "aux" {}
@@ -79,12 +79,12 @@
                                                     {"*clojure-version*"
                                                      (zipmap (map name (keys *clojure-version*))
                                                              (vals *clojure-version*))}}}))
-            (recur ctx is os id ns))
+            (recur ctx is os id))
         ;; fallback
         (do (when dev?
               (println "Unhandled message" msg))
             (send os (response-for msg {"status" #{"error" "unknown-op" "done"}}))
-            (recur ctx is os id ns))))))
+            (recur ctx is os id))))))
 
 (defn listen [ctx ^ServerSocket listener]
   (when dev? (println "Listening"))
@@ -97,7 +97,7 @@
       (binding
           ;; allow *ns* to be set! inside future
           [vars/current-ns (vars/->SciNamespace 'user nil)]
-        (session-loop ctx in out "pre-init" *ns*)))
+        (session-loop ctx in out "pre-init")))
     (recur ctx listener)))
 
 (defn start-server! [ctx host+port]
