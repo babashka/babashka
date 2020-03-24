@@ -4,10 +4,10 @@
   (:require [babashka.impl.bencode.core :refer [write-bencode read-bencode]]
             [clojure.stacktrace :as stacktrace]
             [clojure.string :as str]
-            [sci.core :refer [future binding]]
-            [sci.impl.interpreter :as sci]
+            [sci.core :as sci]
+            [sci.impl.interpreter :refer [eval-string*]]
             [sci.impl.vars :as vars])
-  (:import [java.io OutputStream InputStream PushbackInputStream EOFException]
+  (:import [java.io StringWriter OutputStream InputStream PushbackInputStream EOFException]
            [java.net ServerSocket]))
 
 (set! *warn-on-reflection* true)
@@ -34,11 +34,16 @@
 
 (defn eval-msg [ctx o msg]
   (let [code-str (get msg :code)
-        value (if (nil? code-str)
-               nil
-               (sci/eval-string* ctx code-str))]
+        sw (StringWriter.)
+        value (if (str/blank? code-str)
+               ::nil
+               (sci/binding [sci/out sw] (eval-string* ctx code-str)))
+        out-str (not-empty (str sw))]
+    (when dev? (println "out str:" out-str))
     (send o (response-for msg (cond-> {"ns" (vars/current-ns-name)}
-                                value (assoc "value" (pr-str value)))))
+                                out-str (assoc "value" out-str))))
+    (send o (response-for msg (cond-> {"ns" (vars/current-ns-name)}
+                                (not (identical? value ::nil)) (assoc "value" (pr-str value)))))
     (send o (response-for msg {"status" #{"done"}}))))
 
 (defn read-msg [msg]
@@ -93,8 +98,8 @@
         in (PushbackInputStream. in)
         out (.getOutputStream client-socket)]
     (when dev? (println "Connected."))
-    (future
-      (binding
+    (sci/future
+      (sci/binding
           ;; allow *ns* to be set! inside future
           [vars/current-ns (vars/->SciNamespace 'user nil)]
         (session-loop ctx in out "pre-init")))
