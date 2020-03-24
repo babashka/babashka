@@ -83,16 +83,9 @@
                                                      (zipmap (map name (keys *clojure-version*))
                                                              (vals *clojure-version*))}}}))
             (recur ctx is os id ns))
-        :out-subscribe
-        (do
-          (when dev? (println "dude"))
-          ;; TODO: implement
-          (send os (response-for msg {"status" #{"done"}}))
-          ;;{:op :out-subscribe, :session 6e3499ae-64cc-46b6-9a4a-357026a76768, :id 5}
-          )
         (do (when dev?
               (println "Unhandled message" msg))
-            (send os (response-for msg {"status" #{"done"}})))))))
+            (send os (response-for msg {"status" #{"error" "unknown-op" "done"}})))))))
 
 (defn listen [ctx ^ServerSocket listener]
   (when dev? (println "Listening"))
