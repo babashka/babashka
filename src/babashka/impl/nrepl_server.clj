@@ -90,8 +90,9 @@
           (send os (response-for msg {"status" #{"done"}}))
           ;;{:op :out-subscribe, :session 6e3499ae-64cc-46b6-9a4a-357026a76768, :id 5}
           )
-        (when dev?
-          (println "Unhandled message" msg))))))
+        (do (when dev?
+              (println "Unhandled message" msg))
+            (send os (response-for msg {"status" #{"done"}})))))))
 
 (defn listen [ctx ^ServerSocket listener]
   (when dev? (println "Listening"))
