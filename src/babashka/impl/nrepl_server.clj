@@ -85,7 +85,8 @@
             (recur ctx is os id ns))
         (do (when dev?
               (println "Unhandled message" msg))
-            (send os (response-for msg {"status" #{"error" "unknown-op" "done"}})))))))
+            (send os (response-for msg {"status" #{"error" "unknown-op" "done"}}))
+            (recur ctx is os id ns))))))
 
 (defn listen [ctx ^ServerSocket listener]
   (when dev? (println "Listening"))
