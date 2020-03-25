@@ -2,7 +2,6 @@
   {:no-doc true}
   (:refer-clojure :exclude [send future binding])
   (:require [babashka.impl.bencode.core :refer [write-bencode read-bencode]]
-            [clojure.stacktrace :as stacktrace]
             [clojure.string :as str]
             [sci.core :as sci]
             [sci.impl.interpreter :refer [eval-string*]]
@@ -23,15 +22,28 @@
     m))
 
 (defn send [^OutputStream os msg]
-  (when dev? (println "Sending" msg))
+  (when dev? (prn "Sending" msg))
   (write-bencode os msg)
   (.flush os))
 
+
+;; err:"Execution error (ArithmeticException) at user/eval11906 (form-init7923941828443507176.clj:1).
+;; Divide by zero
+;; "
+;; id:"9"
+;; session:"e15078b4-14b4-4f01-87e6-71f77d233e38"
+
+
 (defn send-exception [os msg ^Throwable ex]
-  (when dev? (prn "sending ex" (with-out-str (stacktrace/print-throwable ex))))
-  (send os (response-for msg {"ex" (.getName (.getClass ex))
-                              "err" (with-out-str (stacktrace/print-throwable ex))
-                              "status" #{"done"}})))
+  (let [ex-map (Throwable->map ex)
+        ex-name (-> ex-map :via first :type)
+        cause (:cause ex-map)]
+    (when dev? (prn "sending ex" ex-name))
+    (send os (response-for msg {"err" (str ex-name ": " cause "\n")}))
+    #_(send os (response-for msg {"ex" (str "class " )
+                                  "err" (with-out-str (stacktrace/print-throwable ex))
+                                  "status" #{"done"}}))
+    (send os (response-for msg {"status" #{"done"}}))))
 
 (defn eval-msg [ctx o msg]
   (let [code-str (get msg :code)
