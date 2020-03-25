@@ -114,7 +114,8 @@
     (sci/future
       (sci/binding
           ;; allow *ns* to be set! inside future
-          [vars/current-ns (vars/->SciNamespace 'user nil)]
+          [vars/current-ns (vars/->SciNamespace 'user nil)
+           sci/print-length @sci/print-length]
         (session-loop ctx in out "pre-init")))
     (recur ctx listener)))
 
