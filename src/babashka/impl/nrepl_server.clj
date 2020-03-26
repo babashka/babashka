@@ -40,9 +40,9 @@
         cause (:cause ex-map)]
     (when @dev? (prn "sending ex" ex-name))
     (send os (response-for msg {"err" (str ex-name ": " cause "\n")}))
-    #_(send os (response-for msg {"ex" (str "class " )
-                                  "err" (with-out-str (stacktrace/print-throwable ex))
-                                  "status" #{"done"}}))
+    (send os (response-for msg {"ex" (str "class " ex-name)
+                                "root-ex" (str "class " ex-name)
+                                "status" #{"eval-error"}}))
     (send os (response-for msg {"status" #{"done"}}))))
 
 (defn eval-msg [ctx o msg]
