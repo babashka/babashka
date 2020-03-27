@@ -5,7 +5,7 @@
 
 (let [os-name (System/getProperty "os.name")
       os-name (str/lower-case os-name)
-      os (cond (str/includes? os-name "nix") "linux"
+      os (cond (str/includes? os-name "linux") "linux"
                (str/includes? os-name "mac") "macos"
                (str/includes? os-name "win") "windows")
       tmp-dir (System/getProperty "java.io.tmpdir")
