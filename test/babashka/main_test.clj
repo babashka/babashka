@@ -375,6 +375,9 @@
       (prn "output:" v)
       (is v))))
 
+(deftest download-and-extract-test
+  (is (= 6 (bb nil (io/file "test" "babashka" "scripts" "download_and_extract_zip.bb")))))
+
 ;;;; Scratch
 
 (comment
