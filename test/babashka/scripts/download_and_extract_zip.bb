@@ -22,10 +22,10 @@
                               ^"[Ljava.nio.file.CopyOption;"
                               (into-array java.nio.file.CopyOption []))
     (.setExecutable bb-file true)
-    (print (:out (sh (.getPath bb-file) "(+ 1 2 3)")))
-    (flush)
-    (.delete bb-file)
-    (.delete zip-file)))
+    (let [out (:out (sh (.getPath bb-file) "(+ 1 2 3)"))]
+      (.delete bb-file)
+      (.delete zip-file)
+      (println out))))
 
 
 
