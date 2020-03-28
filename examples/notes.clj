@@ -5,7 +5,7 @@
          '[clojure.java.shell :refer [sh]]
          '[clojure.string :as str])
 
-(def debug? false)
+(def debug? true)
 
 (def notes-file (io/file (System/getProperty "user.home") ".notes" "notes.txt"))
 (io/make-parents notes-file)
@@ -36,20 +36,45 @@
         (str/join " " (map html v))
         :else (str v)))
 
+(defn write-response [out status headers content]
+  (let [headers (not-empty (str/join "\r\n" headers))
+        response (str "HTTP/1.1 " status "\r\n"
+                      (when headers (str headers "\r\n"))
+                      "Content-Length: " (if content (count content)
+                                             0)
+                      (when content
+                        (str "\r\n\r\n" content)))]
+    (when debug? (prn response))
+    (binding [*out* out]
+      (print response)
+      (flush))))
+
 ;; the home page
-(defn home []
-  (str
-   "<!DOCTYPE html>\n"
-   (html
-    [:html
-     [:head
-      [:title "Notes"]]
-     [:body
-      [:h1 "Notes"]
-      [:pre (slurp notes-file)]
-      [:form {:action "/" :method "post"}
-       [:input {:type "text" :name "note"}]
-       [:input {:type "submit" :value "Submit"}]]]])))
+(defn home [out]
+  (let [body (str
+              "<!DOCTYPE html>\n"
+              (html
+               [:html
+                [:head
+                 [:title "Notes"]]
+                [:body
+                 [:h1 "Notes"]
+                 [:pre (slurp notes-file)]
+                 [:form {:action "/" :method "post"}
+                  [:input {:type "text" :name "note"}]
+                  [:input {:type "submit" :value "Submit"}]]]]))]
+    (write-response out "200 OK" nil body)))
+
+(defn basic-auth [out]
+  (write-response out "401 Unauthorized"
+                  ["WWW-Authenticate: Basic realm \"notes\""]
+                  nil))
+
+#_(defn authorized? [headers]
+  true)
+
+(def sessions
+  (atom {}))
 
 ;; run the server
 (with-open [server-socket (let [s (new ServerSocket 8080)]
@@ -60,28 +85,27 @@
     (let [out (io/writer (.getOutputStream client-socket))
           is (.getInputStream client-socket)
           in (io/reader is)
-          response (loop [headers []]
-                     (let [line (.readLine in)]
-                       (if (str/blank? line)
-                         headers
-                         (recur (conj headers line)))))
-          data (let [sb (StringBuilder.)]
-                 (loop []
-                   (when (.ready in)
-                     (.append sb (char (.read in)))
-                     (recur)))
-                 (-> (str sb)
-                     (java.net.URLDecoder/decode)))
+          [req & headers :as response]
+          (loop [headers []]
+            (let [line (.readLine in)]
+              (if (str/blank? line)
+                headers
+                (recur (conj headers line)))))
+          form-data (let [sb (StringBuilder.)]
+                      (loop []
+                        (when (.ready in)
+                          (.append sb (char (.read in)))
+                          (recur)))
+                      (-> (str sb)
+                          (java.net.URLDecoder/decode)))
           _ (when debug? (println (str/join "\n" response)))
-          _ (when-not (str/blank? data)
-              (when debug? (println data))
-              (let [note (str/replace data "note=" "")]
+          _ (when-not (str/blank? form-data)
+              (when debug? (println form-data))
+              (let [note (str/replace form-data "note=" "")]
                 (spit notes-file (str note "\n") :append true)))
-          _ (when debug? (println))
-          body (home)]
-      (.write out (format "HTTP/1.1 %s OK\r\nContent-Length: %s\r\n\r\n%s"
-                          200
-                          (count body)
-                          body))
-      (.flush out))
+          _ (when debug? (println))]
+      (basic-auth out)
+      #_(home out) #_(cond false #_(not (authorized? headers))
+            (basic-auth out)
+            :else (home out)))
     (recur)))
