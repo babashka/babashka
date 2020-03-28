@@ -36,10 +36,11 @@
         (str/join " " (map html v))
         :else (str v)))
 
-(defn write-response [out status headers content]
-  (let [headers (not-empty (str/join "\r\n" headers))
+(defn write-response [out session-id status headers content]
+  (let [cookie-header (str "Set-Cookie: notes-id=" session-id)
+        headers (str/join "\r\n" (conj headers cookie-header))
         response (str "HTTP/1.1 " status "\r\n"
-                      (when headers (str headers "\r\n"))
+                      (str headers "\r\n")
                       "Content-Length: " (if content (count content)
                                              0)
                       "\r\n\r\n"
@@ -51,7 +52,7 @@
       (flush))))
 
 ;; the home page
-(defn home [out]
+(defn home [out session-id]
   (let [body (str
               "<!DOCTYPE html>\n"
               (html
@@ -64,19 +65,33 @@
                  [:form {:action "/" :method "post"}
                   [:input {:type "text" :name "note"}]
                   [:input {:type "submit" :value "Submit"}]]]]))]
-    (write-response out "200 OK" nil body)))
+    (write-response out session-id "200 OK" nil body)))
 
-(defn basic-auth [out]
-  (write-response out
+(defn basic-auth-response [out session-id]
+  (write-response out session-id
                   "401 Unauthorized"
                   ["WWW-Authenticate: Basic realm=\"notes\""]
                   nil))
 
-(def sessions
-  (atom {}))
+(defn get-session-id [headers]
+  (if-let [cookie-header (first (filter #(str/starts-with? % "Cookie: ") headers))]
+    (let [parts (str/split cookie-header #"; ")]
+      (if-let [notes-id (first (filter #(str/starts-with? % "notes-id") parts))]
+        (str/replace notes-id "notes-id=" "")
+        (java.util.UUID/randomUUID)))
+    (java.util.UUID/randomUUID)))
 
-(defn authorized? [headers]
-  true)
+(defn basic-auth-header [headers]
+  (some #(str/starts-with? % "Basic-Auth: ") headers))
+
+(def authenticated-sessions
+  (atom #{}))
+
+(defn authenticate [session-id headers]
+  (or (contains? @authenticated-sessions session-id)
+      (when (some #(= % "Authorization: Basic YWRtaW46YWRtaW4=") headers)
+        (swap! authenticated-sessions conj session-id)
+        true)))
 
 ;; run the server
 (with-open [server-socket (let [s (new ServerSocket 8080)]
@@ -93,6 +108,7 @@
               (if (str/blank? line)
                 headers
                 (recur (conj headers line)))))
+          session-id (get-session-id headers)
           form-data (let [sb (StringBuilder.)]
                       (loop []
                         (when (.ready in)
@@ -106,8 +122,7 @@
               (let [note (str/replace form-data "note=" "")]
                 (spit notes-file (str note "\n") :append true)))
           _ (when debug? (println))]
-      (basic-auth out)
-      #_(home out) #_(cond false #_(not (authorized? headers))
-            (basic-auth out)
-            :else (home out)))
+      (cond (not (authenticate session-id headers))
+            (basic-auth-response out session-id)
+            :else (home out session-id)))
     (recur)))
