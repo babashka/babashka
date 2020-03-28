@@ -6,6 +6,10 @@
          '[clojure.string :as str])
 
 (def debug? true)
+(def user "admin")
+(def password "admin")
+(def base64 (-> (.getEncoder java.util.Base64)
+                (.encodeToString (.getBytes (str user ":" password)))))
 
 (def notes-file (io/file (System/getProperty "user.home") ".notes" "notes.txt"))
 (io/make-parents notes-file)
@@ -46,13 +50,13 @@
                       "\r\n\r\n"
                       (when content
                         (str content)))]
-    (when debug? (prn response))
+    (when debug? (println response))
     (binding [*out* out]
       (print response)
       (flush))))
 
 ;; the home page
-(defn home [out session-id]
+(defn home-response [out session-id]
   (let [body (str
               "<!DOCTYPE html>\n"
               (html
@@ -73,13 +77,21 @@
                   ["WWW-Authenticate: Basic realm=\"notes\""]
                   nil))
 
+(def known-sessions
+  (atom #{}))
+
+(defn new-session! []
+  (let [uuid (str (java.util.UUID/randomUUID))]
+    (swap! known-sessions conj uuid)
+    uuid))
+
 (defn get-session-id [headers]
   (if-let [cookie-header (first (filter #(str/starts-with? % "Cookie: ") headers))]
     (let [parts (str/split cookie-header #"; ")]
       (if-let [notes-id (first (filter #(str/starts-with? % "notes-id") parts))]
         (str/replace notes-id "notes-id=" "")
-        (java.util.UUID/randomUUID)))
-    (java.util.UUID/randomUUID)))
+        (new-session!)))
+    (new-session!)))
 
 (defn basic-auth-header [headers]
   (some #(str/starts-with? % "Basic-Auth: ") headers))
@@ -87,9 +99,9 @@
 (def authenticated-sessions
   (atom #{}))
 
-(defn authenticate [session-id headers]
+(defn authenticate! [session-id headers]
   (or (contains? @authenticated-sessions session-id)
-      (when (some #(= % "Authorization: Basic YWRtaW46YWRtaW4=") headers)
+      (when (some #(= % (str "Authorization: Basic " base64)) headers)
         (swap! authenticated-sessions conj session-id)
         true)))
 
@@ -102,7 +114,7 @@
     (let [out (io/writer (.getOutputStream client-socket))
           is (.getInputStream client-socket)
           in (io/reader is)
-          [req & headers :as response]
+          [_req & headers :as response]
           (loop [headers []]
             (let [line (.readLine in)]
               (if (str/blank? line)
@@ -122,7 +134,12 @@
               (let [note (str/replace form-data "note=" "")]
                 (spit notes-file (str note "\n") :append true)))
           _ (when debug? (println))]
-      (cond (not (authenticate session-id headers))
-            (basic-auth-response out session-id)
-            :else (home out session-id)))
+      (cond
+        ;; if we didn't see this session before, we want the user to re-authenticate
+        (not (contains? @known-sessions session-id))
+        (let [uuid (new-session!)]
+          (basic-auth-response out uuid))
+        (not (authenticate! session-id headers))
+        (basic-auth-response out session-id)
+        :else (home-response out session-id)))
     (recur)))
