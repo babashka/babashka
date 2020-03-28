@@ -1137,6 +1137,8 @@ See
 is a variation on the
 [http-server](https://github.com/borkdude/babashka/#tiny-http-server) example.
 
+<img src="assets/notes-example.png">
+
 ## Thanks
 
 - [adgoji](https://www.adgoji.com/) for financial support
