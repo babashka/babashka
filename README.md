@@ -1130,6 +1130,13 @@ Your command line args: (1 2 3)
               (into-array CopyOption [])))
 ```
 
+### Notes webapp
+
+See
+[examples/notes.clj](https://github.com/borkdude/babashka/blob/master/examples/notes.clj). This
+is a variation on the
+[http-server](https://github.com/borkdude/babashka/#tiny-http-server) example.
+
 ## Thanks
 
 - [adgoji](https://www.adgoji.com/) for financial support
