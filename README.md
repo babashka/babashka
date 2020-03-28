@@ -862,6 +862,12 @@ user=> (hello "Alice")
 "Hello Alice"
 ```
 
+## Package babashka script as a AWS Lambda
+
+AWS Lambda runtime doesn't support signals, therefore babashka has to disable
+handling of the SIGPIPE. This can be done by setting
+`BABASHKA_DISABLE_PIPE_SIGNAL_HANDLER` to `true`.
+
 ### Blogs
 
 - [Babashka: a quick example](https://juxt.pro/blog/posts/babashka.html) by Malcolm Sparks
@@ -1104,11 +1110,23 @@ $ docker run --rm script 1 2 3
 Your command line args: (1 2 3)
 ```
 
-## Package babashka script as a AWS Lambda
+### Extract single file from zip
 
-AWS Lambda runtime doesn't support signals, therefore babashka has to disable
-handling of the SIGPIPE. This can be done by setting
-`BABASHKA_DISABLE_PIPE_SIGNAL_HANDLER` to `true`.
+``` clojure
+;; given the following zip file created as follows:
+;; $ echo 'contents' > file
+;; $ zip zipfile.zip file
+;; $ rm file
+;; we extract the single file from the zip using java.nio:
+
+(import '[java.nio.file Files FileSystems CopyOption])
+(let [zip-file (io/file "zipfile.zip")
+      file (io/file "file")
+      fs (FileSystems/newFileSystem (.toPath zip-file) nil)
+      file-in-zip (.getPath fs "file" (into-array String []))]
+  (Files/copy file-in-zip (.toPath file)
+              (into-array CopyOption [])))
+```
 
 ## Thanks
 
