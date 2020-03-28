@@ -1130,14 +1130,14 @@ Your command line args: (1 2 3)
               (into-array CopyOption [])))
 ```
 
-### Notes webapp
+### Note taking app
 
 See
 [examples/notes.clj](https://github.com/borkdude/babashka/blob/master/examples/notes.clj). This
 is a variation on the
 [http-server](https://github.com/borkdude/babashka/#tiny-http-server) example.
 
-<img src="assets/notes-example.png">
+<img src="assets/notes-example.png" width="400px">
 
 ## Thanks
 
