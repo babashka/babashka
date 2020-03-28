@@ -13,7 +13,8 @@
 ;;                     (identical? os :mac)))
 
 (def classes
-  '{:all [java.io.BufferedReader
+  '{:all [clojure.lang.ExceptionInfo
+          java.io.BufferedReader
           java.io.BufferedWriter
           java.io.ByteArrayInputStream
           java.io.ByteArrayOutputStream
@@ -112,8 +113,7 @@
     :methods [borkdude.graal.LockFix ;; support for locking
               ]
     :fields [clojure.lang.PersistentQueue]
-    :instance-checks [clojure.lang.ExceptionInfo
-                      clojure.lang.IObj
+    :instance-checks [clojure.lang.IObj
                       clojure.lang.IEditableCollection]
     :custom {clojure.lang.LineNumberingPushbackReader {:allPublicConstructors true
                                                        :allPublicMethods true}
