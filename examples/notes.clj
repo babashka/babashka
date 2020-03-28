@@ -41,14 +41,15 @@
   (str
    "<!DOCTYPE html>\n"
    (html
-    (list [:head
-           [:title "Notes"]]
-          [:body
-           [:h1 "Notes"]
-           [:pre (slurp notes-file)]]
-          [:form {:action "/" :method "post"}
-           [:input {:type "text" :name "note"}]
-           [:input {:type "submit" :value "Submit"}]]))))
+    [:html
+     [:head
+      [:title "Notes"]]
+     [:body
+      [:h1 "Notes"]
+      [:pre (slurp notes-file)]
+      [:form {:action "/" :method "post"}
+       [:input {:type "text" :name "note"}]
+       [:input {:type "submit" :value "Submit"}]]]])))
 
 ;; run the server
 (with-open [server-socket (let [s (new ServerSocket 8080)]
