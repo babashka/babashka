@@ -1113,11 +1113,13 @@ Your command line args: (1 2 3)
 ### Extract single file from zip
 
 ``` clojure
-;; given the following zip file created as follows:
+;; Given the following:
+
 ;; $ echo 'contents' > file
 ;; $ zip zipfile.zip file
 ;; $ rm file
-;; we extract the single file from the zip using java.nio:
+
+;; we extract the single file from the zip archive using java.nio:
 
 (import '[java.nio.file Files FileSystems CopyOption])
 (let [zip-file (io/file "zipfile.zip")
