@@ -42,8 +42,9 @@
                       (when headers (str headers "\r\n"))
                       "Content-Length: " (if content (count content)
                                              0)
+                      "\r\n\r\n"
                       (when content
-                        (str "\r\n\r\n" content)))]
+                        (str content)))]
     (when debug? (prn response))
     (binding [*out* out]
       (print response)
@@ -66,15 +67,16 @@
     (write-response out "200 OK" nil body)))
 
 (defn basic-auth [out]
-  (write-response out "401 Unauthorized"
-                  ["WWW-Authenticate: Basic realm \"notes\""]
+  (write-response out
+                  "401 Unauthorized"
+                  ["WWW-Authenticate: Basic realm=\"notes\""]
                   nil))
-
-#_(defn authorized? [headers]
-  true)
 
 (def sessions
   (atom {}))
+
+(defn authorized? [headers]
+  true)
 
 ;; run the server
 (with-open [server-socket (let [s (new ServerSocket 8080)]
