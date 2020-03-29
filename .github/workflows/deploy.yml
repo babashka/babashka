@@ -131,7 +131,7 @@ jobs:
 
       - name: Babashka version
         run: |
-          VERSION=$(cat resources/BABASHKA_VERSION)
+          export VERSION=$(cat resources/BABASHKA_VERSION)
           echo "##[set-output name=version;]"
 
       - uses: actions/upload-artifact@v1
