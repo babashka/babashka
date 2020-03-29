@@ -46,6 +46,7 @@ jobs:
           lein do clean, uberjar
 
       - name: Babashka version
+        id: babashka-version
         run: |
           VERSION=$(cat resources/BABASHKA_VERSION)
           echo "##[set-output name=version;]"
@@ -130,6 +131,7 @@ jobs:
           BABASHKA_TEST_ENV=native script/run_lib_tests
 
       - name: Babashka version
+        id: babashka-version
         run: |
           export VERSION=$(cat resources/BABASHKA_VERSION)
           echo "##[set-output name=version;]"
