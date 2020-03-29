@@ -2,7 +2,6 @@
 
 (import (java.net ServerSocket))
 (require '[clojure.java.io :as io]
-         '[clojure.java.shell :refer [sh]]
          '[clojure.string :as str])
 
 (def debug? true)
@@ -16,12 +15,6 @@
 
 ;; ensure notes file exists
 (spit notes-file "" :append true)
-
-;; we wait for the server to accept connections and then open a browser
-(def accepting (promise))
-(future
-  @accepting
-  (sh "open" "http://localhost:8080"))
 
 ;; hiccup-like
 (defn html [v]
@@ -107,7 +100,7 @@
 
 ;; run the server
 (with-open [server-socket (let [s (new ServerSocket 8080)]
-                            (deliver accepting true)
+                            (println "Server started on port 8080.")
                             s)
             client-socket (.accept server-socket)]
   (loop []
