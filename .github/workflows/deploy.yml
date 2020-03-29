@@ -20,6 +20,16 @@ jobs:
         with:
           fetch-depth: 1
           submodules: 'true'
+
+      - name: Cache deps
+        uses: actions/cache@v1
+        id: cache-deps
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('project.clj') }}
+          restore-keys: |
+                ${{ runner.os }}-maven-
+
       - name: Run tests
         run: |
           script/test
@@ -95,23 +105,44 @@ jobs:
       - name: Parse Ref
         id: parse-ref
         run: |
-          export VERSION="$(echo $GITHUB_SHA | head -c 7)" 
+          export VERSION="$(echo $GITHUB_SHA | head -c 7)"
           export BASE=babashka-${VERSION}
           echo "##[set-output name=base;]${BASE}"
           echo "##[set-output name=name;]${BASE}-linux"
+      - name: Cache deps
+        uses: actions/cache@v1
+        id: cache-deps
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('project.clj') }}
+          restore-keys: |
+                ${{ runner.os }}-maven-
+
+      - name: Cache GraalVM
+        uses: actions/cache@v1
+        id: cache-graalvm
+        with:
+          path: ~/graalvm-ce-java8-19.3.1
+          key: ${{ runner.os }}-graalvm-19.3.1
+          restore-keys: |
+                ${{ runner.os }}-graalvm-19.3.1
+
+      - name: Download GraalVM
+        run: |
+          cd ~
+          if ! [ -d graalvm-ce-java8-19.3.1 ]; then
+            curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-19.3.1/graalvm-ce-java8-linux-amd64-19.3.1.tar.gz
+            tar xzf graalvm-ce-java8-linux-amd64-19.3.1.tar.gz
+          fi
 
       # Look up at releases here https://github.com/graalvm/graalvm-ce-builds/releases
-      - name: Prepare GraalVM
-        uses: DeLaGuardo/setup-graalvm@2.0
-        with:
-          graalvm-version: "19.3.1.java8"
+
       - name: Build Linux native image
         run: |
-          echo "native image at $(which gu)" 
-          export GRAALVM_DEBUG=1 # Seems to work (not ideal, can give runtime errors)
           export JAR=${{ steps.parse-ref.outputs.base }}-standalone.jar
           export BINARY_NAME=${{ steps.parse-ref.outputs.name }}
           export BABASHKA_XMX="-J-Xmx6g"
+          export $GRAALVM_HOME=~/graalvm-ce-java8-19.3.1
           script/compile
 
       - name: Test binary
