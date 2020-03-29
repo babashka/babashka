@@ -10,8 +10,6 @@ on: [push
    ]
 
 jobs:
-  # Initial task to compile a JAR, store as a pipeline artifact to be used by
-  # downstream builders.
 
   jvm:
     # ubuntu 18.04 comes with lein + java8 installed
@@ -211,12 +209,12 @@ jobs:
 
       - name: Test binary
         run: |
+          ./bb '(+ 1 2 3)'
           BABASHKA_TEST_ENV=native script/test
 
       - name: Install clojure
         run: |
-          script/install-clojure ~
-          export PATH=/tmp/bin:$PATH
+          sudo script/install-clojure
 
       - name: Test libraries
         run: |
