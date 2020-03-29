@@ -137,7 +137,6 @@ jobs:
       - name: Install clojure
         run: |
           sudo script/install-clojure /usr/local
-          export PATH=/tmp/bin:$PATH
 
       - name: Test libraries
         run: |
@@ -280,7 +279,7 @@ jobs:
 
       - name: Test binary
         run: |
-          script/install-leiningen
+          sudo script/install-leiningen
           BABASHKA_TEST_ENV=native script/test
 
       - name: Install clojure
