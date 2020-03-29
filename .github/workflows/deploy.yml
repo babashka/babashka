@@ -10,7 +10,10 @@ on: [push
    ]
 
 jobs:
+  # Initial task to compile a JAR, store as a pipeline artifact to be used by
+  # downstream builders.
   uberjar:
+    # ubuntu 18.04 comes with lein + java8 installed
     runs-on: ubuntu-18.04
     steps:
       - name: Git checkout
@@ -24,7 +27,6 @@ jobs:
           export VERSION="$(echo $GITHUB_SHA | head -c 7)"
           echo "##[set-output name=version;]${VERSION}"
           echo "##[set-output name=name;]babashka-${VERSION}"
-          echo "$(java -version)"
       - name: Cache deps
         uses: actions/cache@v1
         id: cache-deps
@@ -58,8 +60,6 @@ jobs:
           name: reflection.json
           path: reflection.json
 
-  # Initial task to compile a JAR, store as a pipeline artifact to be used by
-  # downstream builders.
   native-image-linux:
     needs: [uberjar]
     runs-on: ubuntu-18.04
@@ -116,7 +116,7 @@ jobs:
 
   # Use GraalVM on macOS to convert JAR to a native macOS binary
   native-image-mac:
-    needs: [uberjar, native-image-linux] # Make it wait for a succesful Linux build as that one runs faster (because of a queue somewhere?). Is also more expensive.
+    needs: [uberjar]
     runs-on: macOS-latest
     steps:
       - name: Git checkout
