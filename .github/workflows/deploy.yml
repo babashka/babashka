@@ -151,7 +151,9 @@ jobs:
           BABASHKA_TEST_ENV=native script/test
 
       - name: Test libraries
+
         run: |
+          script/install-clojure /usr/local
           BABASHKA_TEST_ENV=native script/run_lib_tests
 
       - run: tar -cvzf ${{ steps.parse-ref.outputs.name }}.tgz ./${{ steps.parse-ref.outputs.name }}

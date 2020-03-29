@@ -218,7 +218,7 @@ jobs:
       - run:
           name: Install Clojure
           command: |
-            .circleci/script/install-clojure /usr/local
+            script/install-clojure /usr/local
       - run:
           name: Install Leiningen
           command: |
