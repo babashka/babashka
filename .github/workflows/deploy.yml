@@ -44,7 +44,7 @@ jobs:
       - name: Test libraries
         run: |
           sudo script/install-clojure
-          BABASHKA_TEST_ENV=native script/run_lib_tests
+          script/run_lib_tests
 
       - name: Build uberjar
         run: |
