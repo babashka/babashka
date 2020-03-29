@@ -139,8 +139,8 @@ jobs:
 
       - name: Build Linux native image
         run: |
-          export JAR=${{ steps.parse-ref.outputs.base }}-standalone.jar
-          export BINARY_NAME=${{ steps.parse-ref.outputs.name }}
+          export BABASHKA_JAR=${{ steps.parse-ref.outputs.base }}-standalone.jar
+          export BABASHKA_BINARY=${{ steps.parse-ref.outputs.name }}
           export BABASHKA_XMX="-J-Xmx6g"
           export GRAALVM_HOME="$HOME/graalvm-ce-java8-19.3.1"
           script/compile
@@ -205,8 +205,8 @@ jobs:
 
       - name: Build Mac native image
         run: |
-          export JAR=${{ steps.parse-ref.outputs.base }}-standalone.jar
-          export BINARY_NAME=${{ steps.parse-ref.outputs.name }}
+          export BABASHKA_JAR=${{ steps.parse-ref.outputs.base }}-standalone.jar
+          export BABASHKA_BINARY=${{ steps.parse-ref.outputs.name }}
           export BABASHKA_XMX="-J-Xmx6g"
           export GRAALVM_HOME="$HOME/graalvm-ce-java8-19.3.1/Contents/Home"
           script/compile

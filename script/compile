@@ -13,24 +13,21 @@ fi
 
 $GRAALVM_HOME/bin/gu install native-image
 
-## --- THE ACTUAL SCRIPT ---
-
 BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
 
 export JAVA_HOME=$GRAALVM_HOME
 
 $GRAALVM_HOME/bin/javac -cp $GRAALVM_HOME/jre/lib/svm/builder/svm.jar resources/CutOffCoreServicesDependencies.java
 
-if [ -z "$JAR" ]; then
-  lein with-profiles +reflection do run
-  lein do clean, uberjar
-  JAR=${JAR:-"target/babashka-$BABASHKA_VERSION-standalone.jar"}
+if [ -z "$BABASHKA_JAR" ]; then
+  lein with-profiles +reflection do run, clean, uberjar
+  BABASHKA_JAR=${BABASHKA_JAR:-"target/babashka-$BABASHKA_VERSION-standalone.jar"}
 fi
 
-BINARY_NAME=${BINARY_NAME:-"bb"}
+BABASHKA_BINARY=${BABASHKA_BINARY:-"bb"}
 
-args=( -jar $JAR \
-            -H:Name=$BINARY_NAME \
+args=( -jar $BABASHKA_JAR \
+            -H:Name=$BABASHKA_BINARY \
             -H:+ReportExceptionStackTraces \
             -J-Dclojure.spec.skip-macros=true \
             -J-Dclojure.compiler.direct-linking=true \
@@ -55,10 +52,6 @@ fi
 
 $GRAALVM_HOME/bin/native-image "${args[@]}"
 
-LEIN=`which lein` || true
-
-if [ -z "$LEIN" ]; then
-  echo "nothing to clean"
-else
-  lein clean
+if [ ! -z "$(command -v lein)" ]; then
+    lein clean
 fi
