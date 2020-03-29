@@ -58,8 +58,8 @@ jobs:
 
       - uses: actions/upload-artifact@v1
         with:
-          name: reflection.json
-          path: babashka-${{ steps.babashka-version.outputs.version }}-reflection.json
+          name: babashka-${{ steps.babashka-version.outputs.version }}-reflection.json
+          path: reflection.json
 
   linux:
     needs: [jvm]
