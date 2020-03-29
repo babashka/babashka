@@ -24,7 +24,7 @@ jobs:
           export VERSION="$(echo $GITHUB_SHA | head -c 7)"
           echo "##[set-output name=version;]${VERSION}"
           echo "##[set-output name=name;]babashka-${VERSION}"
-
+          echo "$(java -version)"
       - name: Cache deps
         uses: actions/cache@v1
         id: cache-deps
