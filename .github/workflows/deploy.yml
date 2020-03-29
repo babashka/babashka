@@ -66,16 +66,12 @@ jobs:
       - name: Build into uberjar
         run: |
           echo ${{ steps.parse-ref.outputs.version }} > resources/BABASHKA_VERSION
-          lein uberjar
+          lein do reflection, uberjar
 
       - uses: actions/upload-artifact@v1
         with:
           path: target/${{ steps.parse-ref.outputs.name }}-standalone.jar
           name: jar
-
-      - name: reflection.json
-        run: |
-          lein with-profiles +reflection run
 
       - uses: actions/upload-artifact@v1
         with:
