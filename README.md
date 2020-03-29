@@ -14,14 +14,16 @@ A Clojure [babushka](https://en.wikipedia.org/wiki/Headscarf) for the grey areas
     <a href="https://github.com/laheadle">@laheadle</a> on Clojurians Slack
 </blockquote>
 
-The sweet spot for babashka is executing Clojure expressions or scripts in the
-same space where you would use Bash.
+## Introduction
+
+The main idea behind babashka is to leverage Clojure in places where you would
+be using bash otherwise.
 
 As one user described it:
 
 > I’m quite at home in Bash most of the time, but there’s a substantial grey area of things that are too complicated to be simple in bash, but too simple to be worth writing a clj/s script for. Babashka really seems to hit the sweet spot for those cases.
 
-## Goals
+### Goals
 
 * Low latency Clojure scripting alternative to JVM Clojure.
 * Easy installation: grab the self-contained binary and run. No JVM needed.
@@ -36,7 +38,7 @@ As one user described it:
 
 Also see the [slides](https://speakerdeck.com/borkdude/babashka-and-the-small-clojure-interpreter-at-clojured-2020) of the Babashka talk at ClojureD 2020 (video coming soon).
 
-## Non-goals
+### Non-goals
 
 * Performance<sup>1<sup>
 * Provide a mixed Clojure/Bash DSL (see portability).
@@ -50,7 +52,10 @@ may be a better fit, since the performance of Clojure on the JVM outweighs its
 startup time penalty. Read more about the differences with Clojure
 [here](#differences-with-clojure).
 
-Watch the talk:
+
+### Talk
+
+To get an overview of babashka, you can watch this talk:
 
 [![Babashka at ClojureD 2020](https://img.youtube.com/vi/Nw8aN-nrdEk/0.jpg)](https://www.youtube.com/watch?v=Nw8aN-nrdEk)
 
