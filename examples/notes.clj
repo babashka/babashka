@@ -11,11 +11,11 @@
                 (.encodeToString (.getBytes (str user ":" password)))))
 
 (def notes-file (io/file (System/getProperty "user.home") ".notes" "notes.txt"))
-(io/make-parents notes-file)
 (def file-lock (Object.))
 
 (defn write-note! [note]
   (locking file-lock
+    (io/make-parents notes-file)
     (spit notes-file (str note "\n") :append true)))
 
 ;; hiccup-like
