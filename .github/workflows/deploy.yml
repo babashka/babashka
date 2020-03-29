@@ -48,8 +48,8 @@ jobs:
       - name: Babashka version
         id: babashka-version
         run: |
-          VERSION=$(cat resources/BABASHKA_VERSION)
-          echo "##[set-output name=version;]"
+          export BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
+          echo "##[set-output name=version;]${BABASHKA_VERSION}"
 
       - uses: actions/upload-artifact@v1
         with:
