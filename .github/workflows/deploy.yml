@@ -40,7 +40,7 @@ jobs:
         run: |
           script/test
 
-      - name: Build into uberjar
+      - name: Build uberjar
         run: |
           lein with-profiles +reflection do run
           lein do clean, uberjar
@@ -111,12 +111,15 @@ jobs:
             tar xzf graalvm-ce-java8-linux-amd64-19.3.1.tar.gz
           fi
 
-      # Look up at releases here https://github.com/graalvm/graalvm-ce-builds/releases
+      - name: Babashka version
+        id: babashka-version
+        run: |
+          export VERSION=$(cat resources/BABASHKA_VERSION)
+          echo "##[set-output name=version;]"
 
       - name: Build Linux native image
         run: |
-          export BABASHKA_JAR=${{ steps.parse-ref.outputs.base }}-standalone.jar
-          export BABASHKA_BINARY=${{ steps.parse-ref.outputs.name }}
+          export BABASHKA_JAR=${{ steps.babashka-version.outputs.version }}-standalone.jar
           export BABASHKA_XMX="-J-Xmx6g"
           export GRAALVM_HOME="$HOME/graalvm-ce-java8-19.3.1"
           script/compile
@@ -134,23 +137,11 @@ jobs:
         run: |
           BABASHKA_TEST_ENV=native script/run_lib_tests
 
-      - name: Babashka version
-        id: babashka-version
-        run: |
-          export VERSION=$(cat resources/BABASHKA_VERSION)
-          echo "##[set-output name=version;]"
-
-      - uses: actions/upload-artifact@v1
-        with:
-          path: target/babashka-${{ steps.babashka-version.outputs.version }}-standalone.jar
-          name: babashka-${{ steps.babashka-version.outputs.version }}-standalone.jar
-
       - uses: actions/upload-artifact@v1
         with:
           path: bb
           name: babashka-${{ steps.babashka-version.outputs.version }}-linux-amd64.zip
 
-  # Use GraalVM on macOS to convert JAR to a native macOS binary
   mac:
     needs: [jvm]
     runs-on: macOS-latest
@@ -170,14 +161,6 @@ jobs:
         with:
           name: reflection.json
           path: .
-
-      - name: Parse Ref
-        id: parse-ref
-        run: |
-          export VERSION="$(echo $GITHUB_SHA | head -c 7)" 
-          export BASE=babashka-${VERSION}
-          echo "##[set-output name=base;]${BASE}"
-          echo "##[set-output name=name;]${BASE}-mac"
 
       - name: Cache GraalVM
         uses: actions/cache@v1
@@ -199,7 +182,6 @@ jobs:
       - name: Build Mac native image
         run: |
           export BABASHKA_JAR=${{ steps.parse-ref.outputs.base }}-standalone.jar
-          export BABASHKA_BINARY=${{ steps.parse-ref.outputs.name }}
           export BABASHKA_XMX="-J-Xmx6g"
           export GRAALVM_HOME="$HOME/graalvm-ce-java8-19.3.1/Contents/Home"
           script/compile
