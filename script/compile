@@ -20,7 +20,8 @@ export JAVA_HOME=$GRAALVM_HOME
 $GRAALVM_HOME/bin/javac -cp $GRAALVM_HOME/jre/lib/svm/builder/svm.jar resources/CutOffCoreServicesDependencies.java
 
 if [ -z "$BABASHKA_JAR" ]; then
-  lein with-profiles +reflection do run, clean, uberjar
+   lein with-profiles +reflection do run
+   lein do clean, uberjar
   BABASHKA_JAR=${BABASHKA_JAR:-"target/babashka-$BABASHKA_VERSION-standalone.jar"}
 fi
 
