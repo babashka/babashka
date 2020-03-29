@@ -36,14 +36,14 @@ jobs:
         run: |
           lein deps
 
-      - name: Install clojure
-        run: |
-          sudo script/install-clojure /usr/local
-          export PATH=/tmp/bin:$PATH
-
       - name: Run tests
         run: |
           script/test
+
+      - name: Test libraries
+        run: |
+          sudo script/install-clojure
+          BABASHKA_TEST_ENV=native script/run_lib_tests
 
       - name: Build uberjar
         run: |
@@ -282,12 +282,9 @@ jobs:
           sudo script/install-leiningen
           BABASHKA_TEST_ENV=native script/test
 
-      - name: Install clojure
-        run: |
-          script/install-clojure
-
       - name: Test libraries
         run: |
+          sudo script/install-clojure
           BABASHKA_TEST_ENV=native script/run_lib_tests
 
       - uses: actions/upload-artifact@v1
