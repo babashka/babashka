@@ -51,15 +51,19 @@ jobs:
           export BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
           echo "##[set-output name=version;]${BABASHKA_VERSION}"
 
-      - uses: actions/upload-artifact@v1
-        with:
-          path: target/babashka-${{ steps.babashka-version.outputs.version }}-standalone.jar
-          name: babashka-${{ steps.babashka-version.outputs.version }}-standalone.jar
+      - name: Reflection artifact
+        run: |
+          cp reflection.json babashka-${{ steps.babashka-version.outputs.version }}-reflection.json
 
       - uses: actions/upload-artifact@v1
         with:
-          name: babashka-${{ steps.babashka-version.outputs.version }}-reflection.json
-          path: reflection.json
+          name: jar
+          path: target/babashka-${{ steps.babashka-version.outputs.version }}-standalone.jar
+
+      - uses: actions/upload-artifact@v1
+        with:
+          name: reflection
+          path: babashka-${{ steps.babashka-version.outputs.version }}-reflection.json
 
   linux:
     needs: [jvm]
