@@ -12,6 +12,18 @@ on: [push
 jobs:
   # Initial task to compile a JAR, store as a pipeline artifact to be used by
   # downstream builders.
+  test-jvm:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+          submodules: 'true'
+      - name: Run tests
+        run: |
+          script/test
+
   uberjar:
     # ubuntu 18.04 comes with lein + java8 installed
     runs-on: ubuntu-18.04
