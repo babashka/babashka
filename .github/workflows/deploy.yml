@@ -179,21 +179,33 @@ jobs:
             tar xzf graalvm-ce-java8-darwin-amd64-19.3.1.tar.gz
           fi
 
-      - name: Build Mac native image
+      - name: Babashka version
+        id: babashka-version
         run: |
-          export BABASHKA_JAR=${{ steps.parse-ref.outputs.base }}-standalone.jar
+          export VERSION=$(cat resources/BABASHKA_VERSION)
+          echo "##[set-output name=version;]"
+
+      - name: Build macOS native image
+        run: |
+          export BABASHKA_JAR=${{ steps.babashka-version.outputs.version }}-standalone.jar
           export BABASHKA_XMX="-J-Xmx6g"
           export GRAALVM_HOME="$HOME/graalvm-ce-java8-19.3.1/Contents/Home"
           script/compile
 
       - name: Test binary
         run: |
-          export BINARY=./${{ steps.parse-ref.outputs.name }}
-          $BINARY -e '(println "OK")'
+          BABASHKA_TEST_ENV=native script/test
 
-      - run: tar -cvzf ${{ steps.parse-ref.outputs.name }}.tgz ./${{ steps.parse-ref.outputs.name }}
+      - name: Install clojure
+        run: |
+          script/install-clojure ~
+          export PATH=/tmp/bin:$PATH
+
+      - name: Test libraries
+        run: |
+          BABASHKA_TEST_ENV=native script/run_lib_tests
 
       - uses: actions/upload-artifact@v1
         with:
-          path: ${{ steps.parse-ref.outputs.name }}.tgz
-          name: binary-mac
+          path: bb
+          name: babashka-${{ steps.babashka-version.outputs.version }}-macos-amd64.zip
