@@ -38,6 +38,7 @@ jobs:
 
       - name: Run tests
         run: |
+          sudo update-ca-certificates
           curl https://raw.githubusercontent.com/technomancy/leiningen/2.9.1/bin/lein > lein
           sudo mkdir -p /usr/local/bin/
           sudo mv lein /usr/local/bin/lein
