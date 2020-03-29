@@ -872,6 +872,15 @@ user=> (hello "Alice")
 "Hello Alice"
 ```
 
+#### [babashka lambda layer](https://github.com/dainiusjocas/babashka-lambda-layer)
+
+Babashka Lambda runtime packaged as a Lambda layer.
+
+#### [Release on push Github action](https://github.com/rymndhng/release-on-push-action)
+
+Github Action to create a git tag + release when pushed to master. Written in
+babashka.
+
 ## Package babashka script as a AWS Lambda
 
 AWS Lambda runtime doesn't support signals, therefore babashka has to disable
