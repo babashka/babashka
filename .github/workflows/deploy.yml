@@ -136,7 +136,8 @@ jobs:
       - name: Test libraries
 
         run: |
-          script/install-clojure /usr/local
+          script/install-clojure /tmp
+          export PATH=/tmp/bin:$PATH
           BABASHKA_TEST_ENV=native script/run_lib_tests
 
       - run: tar -cvzf ${{ steps.parse-ref.outputs.name }}.tgz ./${{ steps.parse-ref.outputs.name }}
