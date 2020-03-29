@@ -38,11 +38,6 @@ jobs:
 
       - name: Run tests
         run: |
-          curl https://raw.githubusercontent.com/technomancy/leiningen/2.9.1/bin/lein > lein
-          sudo mkdir -p /usr/local/bin/
-          sudo mv lein /usr/local/bin/lein
-          sudo chmod a+x /usr/local/bin/lein
-          sudo lein self-install
           script/test
 
       - name: Build uberjar
@@ -201,11 +196,7 @@ jobs:
 
       - name: Test binary
         run: |
-          curl https://raw.githubusercontent.com/technomancy/leiningen/2.9.1/bin/lein > lein
-          sudo mkdir -p /usr/local/bin/
-          sudo mv lein /usr/local/bin/lein
-          sudo chmod a+x /usr/local/bin/lein
-
+          script/install-leiningen
           BABASHKA_TEST_ENV=native script/test
 
       - name: Install clojure
