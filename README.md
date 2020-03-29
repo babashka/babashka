@@ -50,6 +50,11 @@ may be a better fit, since the performance of Clojure on the JVM outweighs its
 startup time penalty. Read more about the differences with Clojure
 [here](#differences-with-clojure).
 
+Watch the talk:
+
+[![Babashka at ClojureD 2020](https://img.youtube.com/vi/Nw8aN-nrdEk/0.jpg)](https://www.youtube.com/watch?v=Nw8aN-nrdEk)
+
+
 ## Quickstart
 
 ``` shellsession
