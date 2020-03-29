@@ -13,8 +13,13 @@
 (def notes-file (io/file (System/getProperty "user.home") ".notes" "notes.txt"))
 (io/make-parents notes-file)
 
+(def file-lock (Object.))
 ;; ensure notes file exists
 (spit notes-file "" :append true)
+
+(defn write-note! [note]
+  (locking file-lock
+    (spit notes-file (str note "\n") :append true)))
 
 ;; hiccup-like
 (defn html [v]
@@ -101,38 +106,40 @@
 ;; run the server
 (with-open [server-socket (let [s (new ServerSocket 8080)]
                             (println "Server started on port 8080.")
-                            s)
-            client-socket (.accept server-socket)]
+                            s)]
   (loop []
-    (let [out (io/writer (.getOutputStream client-socket))
-          is (.getInputStream client-socket)
-          in (io/reader is)
-          [_req & headers :as response]
-          (loop [headers []]
-            (let [line (.readLine in)]
-              (if (str/blank? line)
-                headers
-                (recur (conj headers line)))))
-          session-id (get-session-id headers)
-          form-data (let [sb (StringBuilder.)]
-                      (loop []
-                        (when (.ready in)
-                          (.append sb (char (.read in)))
-                          (recur)))
-                      (-> (str sb)
-                          (java.net.URLDecoder/decode)))
-          _ (when debug? (println (str/join "\n" response)))
-          _ (when-not (str/blank? form-data)
-              (when debug? (println form-data))
-              (let [note (str/replace form-data "note=" "")]
-                (spit notes-file (str note "\n") :append true)))
-          _ (when debug? (println))]
-      (cond
-        ;; if we didn't see this session before, we want the user to re-authenticate
-        (not (contains? @known-sessions session-id))
-        (let [uuid (new-session!)]
-          (basic-auth-response out uuid))
-        (not (authenticate! session-id headers))
-        (basic-auth-response out session-id)
-        :else (home-response out session-id)))
+    (let [client-socket (.accept server-socket)]
+      (future
+        (with-open [conn client-socket]
+          (let [out (io/writer (.getOutputStream conn))
+                is (.getInputStream conn)
+                in (io/reader is)
+                [_req & headers :as response]
+                (loop [headers []]
+                  (let [line (.readLine in)]
+                    (if (str/blank? line)
+                      headers
+                      (recur (conj headers line)))))
+                session-id (get-session-id headers)
+                form-data (let [sb (StringBuilder.)]
+                            (loop []
+                              (when (.ready in)
+                                (.append sb (char (.read in)))
+                                (recur)))
+                            (-> (str sb)
+                                (java.net.URLDecoder/decode)))
+                _ (when debug? (println (str/join "\n" response)))
+                _ (when-not (str/blank? form-data)
+                    (when debug? (println form-data))
+                    (let [note (str/replace form-data "note=" "")]
+                      (write-note! note)))
+                _ (when debug? (println))]
+            (cond
+              ;; if we didn't see this session before, we want the user to re-authenticate
+              (not (contains? @known-sessions session-id))
+              (let [uuid (new-session!)]
+                (basic-auth-response out uuid))
+              (not (authenticate! session-id headers))
+              (basic-auth-response out session-id)
+              :else (home-response out session-id))))))
     (recur)))
