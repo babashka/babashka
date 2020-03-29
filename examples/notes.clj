@@ -12,10 +12,9 @@
 
 (def notes-file (io/file (System/getProperty "user.home") ".notes" "notes.txt"))
 (io/make-parents notes-file)
-
+;; ensure file exists
+(.createNewFile notes-file)
 (def file-lock (Object.))
-;; ensure notes file exists
-(spit notes-file "" :append true)
 
 (defn write-note! [note]
   (locking file-lock
