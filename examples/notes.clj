@@ -109,36 +109,41 @@
   (loop []
     (let [client-socket (.accept server-socket)]
       (future
-        (with-open [conn client-socket]
-          (let [out (io/writer (.getOutputStream conn))
-                is (.getInputStream conn)
-                in (io/reader is)
-                [_req & headers :as response]
-                (loop [headers []]
-                  (let [line (.readLine in)]
-                    (if (str/blank? line)
-                      headers
-                      (recur (conj headers line)))))
-                session-id (get-session-id headers)
-                form-data (let [sb (StringBuilder.)]
-                            (loop []
-                              (when (.ready in)
-                                (.append sb (char (.read in)))
-                                (recur)))
-                            (-> (str sb)
-                                (java.net.URLDecoder/decode)))
-                _ (when debug? (println (str/join "\n" response)))
-                _ (when-not (str/blank? form-data)
-                    (when debug? (println form-data))
-                    (let [note (str/replace form-data "note=" "")]
-                      (write-note! note)))
-                _ (when debug? (println))]
-            (cond
-              ;; if we didn't see this session before, we want the user to re-authenticate
-              (not (contains? @known-sessions session-id))
-              (let [uuid (new-session!)]
-                (basic-auth-response out uuid))
-              (not (authenticate! session-id headers))
-              (basic-auth-response out session-id)
-              :else (home-response out session-id))))))
+        (try
+          (/ 1 0)
+          (with-open [conn client-socket]
+            (let [out (io/writer (.getOutputStream conn))
+                  is (.getInputStream conn)
+                  in (io/reader is)
+                  [_req & headers :as response]
+                  (loop [headers []]
+                    (let [line (.readLine in)]
+                      (if (str/blank? line)
+                        headers
+                        (recur (conj headers line)))))
+                  session-id (get-session-id headers)
+                  form-data (let [sb (StringBuilder.)]
+                              (loop []
+                                (when (.ready in)
+                                  (.append sb (char (.read in)))
+                                  (recur)))
+                              (-> (str sb)
+                                  (java.net.URLDecoder/decode)))
+                  _ (when debug? (println (str/join "\n" response)))
+                  _ (when-not (str/blank? form-data)
+                      (when debug? (println form-data))
+                      (let [note (str/replace form-data "note=" "")]
+                        (write-note! note)))
+                  _ (when debug? (println))]
+              (cond
+                ;; if we didn't see this session before, we want the user to re-authenticate
+                (not (contains? @known-sessions session-id))
+                (let [uuid (new-session!)]
+                  (basic-auth-response out uuid))
+                (not (authenticate! session-id headers))
+                (basic-auth-response out session-id)
+                :else (home-response out session-id))))
+          (catch Throwable t
+            (binding [*err* *out*]
+              (println t))))))
     (recur)))
