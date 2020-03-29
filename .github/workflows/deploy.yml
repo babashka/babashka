@@ -143,6 +143,85 @@ jobs:
           path: bb
           name: babashka-${{ steps.babashka-version.outputs.version }}-linux-amd64.zip
 
+  linux-static:
+    needs: [jvm]
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+          submodules: 'true'
+
+      - uses: actions/download-artifact@v1
+        with:
+          name: jar
+          path: .
+
+      - uses: actions/download-artifact@v1
+        with:
+          name: reflection.json
+          path: .
+
+      - name: Cache deps
+        uses: actions/cache@v1
+        id: cache-deps
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('project.clj') }}
+          restore-keys: |
+                ${{ runner.os }}-maven-
+
+      - name: Cache GraalVM
+        uses: actions/cache@v1
+        id: cache-graalvm
+        with:
+          path: ~/graalvm-ce-java8-19.3.1
+          key: ${{ runner.os }}-graalvm-19.3.1
+          restore-keys: |
+                ${{ runner.os }}-graalvm-19.3.1
+
+      - name: Download GraalVM
+        run: |
+          cd ~
+          if ! [ -d graalvm-ce-java8-19.3.1 ]; then
+            curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-19.3.1/graalvm-ce-java8-linux-amd64-19.3.1.tar.gz
+            tar xzf graalvm-ce-java8-linux-amd64-19.3.1.tar.gz
+          fi
+
+      - name: Babashka version
+        id: babashka-version
+        run: |
+          BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
+          echo "##[set-output name=version;]${BABASHKA_VERSION}"
+
+      - name: Build Linux native image
+        run: |
+          export BABASHKA_JAR=babashka-${{ steps.babashka-version.outputs.version }}-standalone.jar
+          export BABASHKA_XMX="-J-Xmx6g"
+          export GRAALVM_HOME="$HOME/graalvm-ce-java8-19.3.1"
+          export BABASHKA_STATIC=true
+          cp babashka-${{ steps.babashka-version.outputs.version }}-reflection.json reflection.json
+          script/compile
+
+      - name: Test binary
+        run: |
+          BABASHKA_TEST_ENV=native script/test
+
+      - name: Install clojure
+        run: |
+          script/install-clojure ~
+          export PATH=/tmp/bin:$PATH
+
+      - name: Test libraries
+        run: |
+          BABASHKA_TEST_ENV=native script/run_lib_tests
+
+      - uses: actions/upload-artifact@v1
+        with:
+          path: bb
+          name: babashka-${{ steps.babashka-version.outputs.version }}-linux-static-amd64.zip
+
   mac:
     needs: [jvm]
     runs-on: macOS-latest
