@@ -186,20 +186,29 @@ jobs:
           echo "##[set-output name=base;]${BASE}"
           echo "##[set-output name=name;]${BASE}-mac"
 
-      # Look up at releases here https://github.com/graalvm/graalvm-ce-builds/releases
-      - name: Prepare GraalVM
-        uses: DeLaGuardo/setup-graalvm@2.0
+      - name: Cache GraalVM
+        uses: actions/cache@v1
+        id: cache-graalvm
         with:
-          graalvm-version: "19.3.1.java8"
-          # graalvm-version: "19.3.1.java8"
+          path: ~/graalvm-ce-java8-19.3.1
+          key: ${{ runner.os }}-graalvm-19.3.1
+          restore-keys: |
+                ${{ runner.os }}-graalvm-19.3.1
+
+      - name: Download GraalVM
+        run: |
+          cd ~
+          if ! [ -d graalvm-ce-java8-19.3.1 ]; then
+            curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-19.3.1/graalvm-ce-java8-darwin-amd64-19.3.1.tar.gz
+            tar xzf graalvm-ce-java8-linux-amd64-19.3.1.tar.gz
+          fi
 
       - name: Build Mac native image
         run: |
-          echo "native image at $(which gu)"
-          export GRAALVM_DEBUG=1 # Seems to work (not ideal, can give runtime errors)
           export JAR=${{ steps.parse-ref.outputs.base }}-standalone.jar
           export BINARY_NAME=${{ steps.parse-ref.outputs.name }}
           export BABASHKA_XMX="-J-Xmx6g"
+          export GRAALVM_HOME="$HOME/graalvm-ce-java8-19.3.1/Contents/Home"
           script/compile
 
       - name: Test binary
