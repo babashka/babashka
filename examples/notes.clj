@@ -12,8 +12,6 @@
 
 (def notes-file (io/file (System/getProperty "user.home") ".notes" "notes.txt"))
 (io/make-parents notes-file)
-;; ensure file exists
-(.createNewFile notes-file)
 (def file-lock (Object.))
 
 (defn write-note! [note]
@@ -62,7 +60,8 @@
                  [:title "Notes"]]
                 [:body
                  [:h1 "Notes"]
-                 [:pre (slurp notes-file)]
+                 [:pre (when (.exists notes-file)
+                         (slurp notes-file))]
                  [:form {:action "/" :method "post"}
                   [:input {:type "text" :name "note"}]
                   [:input {:type "submit" :value "Submit"}]]]]))]
