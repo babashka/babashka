@@ -114,7 +114,7 @@ jobs:
       - name: Babashka version
         id: babashka-version
         run: |
-          export BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
+          BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
           echo "##[set-output name=version;]${BABASHKA_VERSION}"
 
       - name: Build Linux native image
@@ -182,7 +182,7 @@ jobs:
       - name: Babashka version
         id: babashka-version
         run: |
-          export BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
+          BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
           echo "##[set-output name=version;]${BABASHKA_VERSION}"
 
       - name: Build macOS native image
