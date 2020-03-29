@@ -109,9 +109,8 @@
   (loop []
     (let [client-socket (.accept server-socket)]
       (future
-        (try
-          (/ 1 0)
-          (with-open [conn client-socket]
+        (with-open [conn client-socket]
+          (try
             (let [out (io/writer (.getOutputStream conn))
                   is (.getInputStream conn)
                   in (io/reader is)
@@ -142,8 +141,8 @@
                   (basic-auth-response out uuid))
                 (not (authenticate! session-id headers))
                 (basic-auth-response out session-id)
-                :else (home-response out session-id))))
-          (catch Throwable t
-            (binding [*err* *out*]
-              (println t))))))
+                :else (home-response out session-id)))
+            (catch Throwable t
+              (binding [*err* *out*]
+                (println t)))))))
     (recur)))
