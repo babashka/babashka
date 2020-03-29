@@ -22,6 +22,7 @@ jobs:
         with:
           fetch-depth: 1
           submodules: 'true'
+ 
       - name: Cache deps
         uses: actions/cache@v1
         id: cache-deps
@@ -291,3 +292,25 @@ jobs:
         with:
           path: bb
           name: babashka-${{ steps.babashka-version.outputs.version }}-macos-amd64.zip
+
+  deploy:
+    needs: [jvm, linux, linux-static, mac]
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+          submodules: 'true'
+
+     - name: Cache deps
+        uses: actions/cache@v1
+        id: cache-deps
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('project.clj') }}
+          restore-keys: |
+                ${{ runner.os }}-maven-
+    - name: deploy to clojars
+      run: |
+        .circleci/script/deploy
