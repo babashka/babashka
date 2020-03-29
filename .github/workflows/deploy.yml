@@ -48,7 +48,7 @@ jobs:
       - name: Babashka version
         id: babashka-version
         run: |
-          export BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
+          BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
           echo "##[set-output name=version;]${BABASHKA_VERSION}"
 
       - name: Reflection artifact
@@ -114,8 +114,8 @@ jobs:
       - name: Babashka version
         id: babashka-version
         run: |
-          export VERSION=$(cat resources/BABASHKA_VERSION)
-          echo "##[set-output name=version;]"
+          export BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
+          echo "##[set-output name=version;]${BABASHKA_VERSION}"
 
       - name: Build Linux native image
         run: |
@@ -182,8 +182,8 @@ jobs:
       - name: Babashka version
         id: babashka-version
         run: |
-          export VERSION=$(cat resources/BABASHKA_VERSION)
-          echo "##[set-output name=version;]"
+          export BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
+          echo "##[set-output name=version;]${BABASHKA_VERSION}"
 
       - name: Build macOS native image
         run: |
