@@ -12,6 +12,7 @@ on: [push
 jobs:
 
   scratch:
+    runs-on: ubuntu-18.04
     steps:
       - name: Inspect
         run: |
