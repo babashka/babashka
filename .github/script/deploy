@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+if [ -z "$GITHUB_HEAD_REF" ] # && [ "${GITHUB_REF##*/}" = "master" ]
+then
+    echo "Deploying to clojars: ${GITHUB_REF##*/}"
+    lein deploy clojars
+fi
+
+exit 0;

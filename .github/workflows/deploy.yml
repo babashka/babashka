@@ -311,4 +311,4 @@ jobs:
                 ${{ runner.os }}-maven-
       - name: deploy to clojars
         run: |
-          .circleci/script/deploy
+          .github/script/deploy
