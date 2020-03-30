@@ -21,6 +21,9 @@ jobs:
           submodules: 'true'
 
       - name: Scratch
+        env:
+          CLOJARS_USER: "${{ secrets.CLOJARS_USER }}"
+          CLOJARS_PASS: "${{ secrets.CLOJARS_PASS }}"
         run: |
           .github/script/deploy
 

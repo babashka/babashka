@@ -2,9 +2,6 @@
 
 if [ -z "$GITHUB_HEAD_REF" ] # && [ "${GITHUB_REF##*/}" = "master" ]
 then
-    echo "Deploying to clojars: ${GITHUB_REF##*/}"
-    export CLOJARS_USER="${{ secrets.CLOJARS_USER }}"
-    export CLOJARS_PASS="${{ secrets.CLOJARS_PASS }}"
     lein deploy clojars
 fi
 
