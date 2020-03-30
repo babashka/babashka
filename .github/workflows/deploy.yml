@@ -14,9 +14,14 @@ jobs:
   scratch:
     runs-on: ubuntu-18.04
     steps:
-      - name: Inspect
+      - name: Git checkout
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+          submodules: 'true'
+
+      - name: Scratch
         run: |
-          echo "${GITHUB_REF##*/}"
           .github/script/deploy
 
   jvm:
