@@ -17,6 +17,7 @@ jobs:
       - name: Inspect
         run: |
           echo "${GITHUB_REF##*/}"
+          .github/script/deploy
 
   jvm:
     # ubuntu 18.04 comes with lein + java8 installed
