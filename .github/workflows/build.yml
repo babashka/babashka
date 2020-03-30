@@ -1,13 +1,8 @@
-name: deploy
-
-# on:
-#   push:
-#     tags:
-#       - "*.*.*"
+name: build
 
 on: [push
-   # , pull_request
-   ]
+    , pull_request
+    ]
 
 jobs:
 
@@ -23,13 +18,6 @@ jobs:
       - name: Scratch
         run: |
           echo "Scratch"
-
-      - name: Docker build
-        env:
-          DOCKERHUB_USER: "${{ secrets.DOCKERHUB_USER }}"
-          DOCKERHUB_PASS: "${{ secrets.DOCKERHUB_PASS }}"
-        run: |
-          .github/script/docker
 
   jvm:
     # ubuntu 18.04 comes with lein + java8 installed
@@ -313,6 +301,7 @@ jobs:
 
   deploy:
     needs: [jvm, linux, linux-static, mac]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-18.04
     steps:
       - name: Git checkout
@@ -336,3 +325,21 @@ jobs:
           CLOJARS_PASS: "${{ secrets.CLOJARS_PASS }}"
         run: |
           .github/script/deploy
+
+  docker:
+    needs: [jvm, linux, linux-static, mac]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+          submodules: 'true'
+
+      - name: Docker build
+        env:
+          DOCKERHUB_USER: "${{ secrets.DOCKERHUB_USER }}"
+          DOCKERHUB_PASS: "${{ secrets.DOCKERHUB_PASS }}"
+        run: |
+          .github/script/docker
