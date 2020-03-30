@@ -11,6 +11,12 @@ on: [push
 
 jobs:
 
+  scratch:
+    steps:
+      - name: Inspect
+        run: |
+          echo "${GITHUB_REF##*/}"
+
   jvm:
     # ubuntu 18.04 comes with lein + java8 installed
     runs-on: ubuntu-18.04
