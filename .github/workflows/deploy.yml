@@ -25,22 +25,11 @@ jobs:
           echo "Scratch"
 
       - name: Docker build
-        id: docker
-        uses: docker/build-push-action@v1
-        with:
-          repository: borkdude/babashka
-          tags: v1
-      # ‐ name: login
-      #   uses: docker/login-action@v1
-      #   with:
-      #     registry: myregistry
-      #     username: ${{ DOCKER_USERNAME }}
-      #     password: ${{ DOCKER_PASSWORD }}
-      # ‐ name: push
-      #   uses: docker/push-action@v1
-      #   with:
-      #     registry: myregistry
-      #     tags: ${{ outputs.build.tags }}
+        env:
+          DOCKERHUB_USER: "${{ secrets.DOCKERHUB_USER }}"
+          DOCKERHUB_PASS: "${{ secrets.DOCKERHUB_PASS }}"
+        run: |
+          .github/script/docker
 
   jvm:
     # ubuntu 18.04 comes with lein + java8 installed
