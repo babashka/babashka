@@ -21,11 +21,8 @@ jobs:
           submodules: 'true'
 
       - name: Scratch
-        env:
-          CLOJARS_USER: "${{ secrets.CLOJARS_USER }}"
-          CLOJARS_PASS: "${{ secrets.CLOJARS_PASS }}"
         run: |
-          .github/script/deploy
+          echo "Scratch"
 
   jvm:
     # ubuntu 18.04 comes with lein + java8 installed
@@ -325,6 +322,10 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('project.clj') }}
           restore-keys: |
                 ${{ runner.os }}-maven-
-      - name: deploy to clojars
+
+      - name: Deploy
+        env:
+          CLOJARS_USER: "${{ secrets.CLOJARS_USER }}"
+          CLOJARS_PASS: "${{ secrets.CLOJARS_PASS }}"
         run: |
           .github/script/deploy
