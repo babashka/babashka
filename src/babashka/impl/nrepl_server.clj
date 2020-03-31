@@ -22,7 +22,7 @@
     m))
 
 (defn send [^OutputStream os msg]
-  (when @dev? (prn "Sending" msg))
+  ;;(when @dev? (prn "Sending" msg))
   (write-bencode os msg)
   (.flush os))
 
@@ -51,7 +51,14 @@
         value (if (str/blank? code-str)
                ::nil
                (sci/binding [sci/out sw] (eval-string* ctx code-str)))
-        out-str (not-empty (str sw))]
+        out-str (not-empty (str sw))
+        env (:env ctx)]
+    (swap! env update-in [:namespaces 'clojure.core]
+           (fn [core]
+             (assoc core
+                    '*1 value
+                    '*2 (get core '*1)
+                    '*3 (get core '*2))))
     (when @dev? (println "out str:" out-str))
     (send o (response-for msg (cond-> {"ns" (vars/current-ns-name)}
                                 out-str (assoc "value" out-str))))
@@ -81,8 +88,11 @@
                    (recur ctx is os id)))
         :eval (do
                 (try (eval-msg ctx os msg)
-                     (catch Exception exn
-                       (send-exception os msg exn)))
+                     (catch Exception ex
+                       (swap! (:env ctx) update-in [:namespaces 'clojure.core]
+                              (fn [core]
+                                (assoc core '*e ex)))
+                       (send-exception os msg ex)))
                 (recur ctx is os id))
         :describe
         (do (send os (response-for msg {"status" #{"done"}
