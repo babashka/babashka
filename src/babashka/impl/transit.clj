@@ -3,6 +3,7 @@
             [sci.impl.namespaces :refer [copy-var]]
             [sci.impl.vars :as vars]))
 
+
 (def tns (vars/->SciNamespace 'cognitect.transit nil))
 
 (def transit-namespace

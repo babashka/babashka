@@ -2,6 +2,7 @@
   {:no-doc true}
   (:require
    [babashka.impl.async :refer [async-namespace async-protocols-namespace]]
+   [babashka.impl.bencode :refer [bencode-namespace]]
    [babashka.impl.cheshire :refer [cheshire-core-namespace]]
    [babashka.impl.classes :as classes]
    [babashka.impl.classpath :as cp]
@@ -244,7 +245,8 @@ Everything after that is bound to *command-line-args*."))
     csv clojure.data.csv
     json cheshire.core
     curl babashka.curl
-    transit cognitect.transit})
+    transit cognitect.transit
+    bencode bencode.core})
 
 (def cp-state (atom nil))
 
@@ -277,7 +279,8 @@ Everything after that is bound to *command-line-args*."))
    'babashka.classpath {'add-classpath add-classpath*}
    'clojure.pprint pprint-namespace
    'babashka.curl curl-namespace
-   'cognitect.transit transit-namespace})
+   'cognitect.transit transit-namespace
+   'bencode.core bencode-namespace})
 
 (def bindings
   {'java.lang.System/exit exit ;; override exit, so we have more control
