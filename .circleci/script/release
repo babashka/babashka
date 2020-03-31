@@ -8,6 +8,8 @@ cp bb /tmp/release
 VERSION=$(cat resources/BABASHKA_VERSION)
 
 cd /tmp/release
+mkdir -p /tmp/bb_size
+./bb '(spit "/tmp/bb_size/size" (.length (io/file "bb")))'
 
 ## release binary as zip archive
 

@@ -14,14 +14,16 @@ A Clojure [babushka](https://en.wikipedia.org/wiki/Headscarf) for the grey areas
     <a href="https://github.com/laheadle">@laheadle</a> on Clojurians Slack
 </blockquote>
 
-The sweet spot for babashka is executing Clojure expressions or scripts in the
-same space where you would use Bash.
+## Introduction
+
+The main idea behind babashka is to leverage Clojure in places where you would
+be using bash otherwise.
 
 As one user described it:
 
 > I’m quite at home in Bash most of the time, but there’s a substantial grey area of things that are too complicated to be simple in bash, but too simple to be worth writing a clj/s script for. Babashka really seems to hit the sweet spot for those cases.
 
-## Goals
+### Goals
 
 * Low latency Clojure scripting alternative to JVM Clojure.
 * Easy installation: grab the self-contained binary and run. No JVM needed.
@@ -36,7 +38,7 @@ As one user described it:
 
 Also see the [slides](https://speakerdeck.com/borkdude/babashka-and-the-small-clojure-interpreter-at-clojured-2020) of the Babashka talk at ClojureD 2020 (video coming soon).
 
-## Non-goals
+### Non-goals
 
 * Performance<sup>1<sup>
 * Provide a mixed Clojure/Bash DSL (see portability).
@@ -49,6 +51,14 @@ code. If your script takes more than a few seconds to run, Clojure on the JVM
 may be a better fit, since the performance of Clojure on the JVM outweighs its
 startup time penalty. Read more about the differences with Clojure
 [here](#differences-with-clojure).
+
+
+### Talk
+
+To get an overview of babashka, you can watch this talk:
+
+[![Babashka at ClojureD 2020](https://img.youtube.com/vi/Nw8aN-nrdEk/0.jpg)](https://www.youtube.com/watch?v=Nw8aN-nrdEk)
+
 
 ## Quickstart
 
@@ -862,6 +872,21 @@ user=> (hello "Alice")
 "Hello Alice"
 ```
 
+#### [babashka lambda layer](https://github.com/dainiusjocas/babashka-lambda-layer)
+
+Babashka Lambda runtime packaged as a Lambda layer.
+
+#### [Release on push Github action](https://github.com/rymndhng/release-on-push-action)
+
+Github Action to create a git tag + release when pushed to master. Written in
+babashka.
+
+## Package babashka script as a AWS Lambda
+
+AWS Lambda runtime doesn't support signals, therefore babashka has to disable
+handling of the SIGPIPE. This can be done by setting
+`BABASHKA_DISABLE_PIPE_SIGNAL_HANDLER` to `true`.
+
 ### Blogs
 
 - [Babashka: a quick example](https://juxt.pro/blog/posts/babashka.html) by Malcolm Sparks
@@ -1104,11 +1129,35 @@ $ docker run --rm script 1 2 3
 Your command line args: (1 2 3)
 ```
 
-## Package babashka script as a AWS Lambda
+### Extract single file from zip
 
-AWS Lambda runtime doesn't support signals, therefore babashka has to disable
-handling of the SIGPIPE. This can be done by setting
-`BABASHKA_DISABLE_PIPE_SIGNAL_HANDLER` to `true`.
+``` clojure
+;; Given the following:
+
+;; $ echo 'contents' > file
+;; $ zip zipfile.zip file
+;; $ rm file
+
+;; we extract the single file from the zip archive using java.nio:
+
+(import '[java.nio.file Files FileSystems CopyOption])
+(let [zip-file (io/file "zipfile.zip")
+      file (io/file "file")
+      fs (FileSystems/newFileSystem (.toPath zip-file) nil)
+      file-in-zip (.getPath fs "file" (into-array String []))]
+  (Files/copy file-in-zip (.toPath file)
+              (into-array CopyOption [])))
+```
+
+### Note taking app
+
+See
+[examples/notes.clj](https://github.com/borkdude/babashka/blob/master/examples/notes.clj). This
+is a variation on the
+[http-server](https://github.com/borkdude/babashka/#tiny-http-server)
+example. If you get prompted with a login, use `admin`/`admin`.
+
+<img src="assets/notes-example.png" width="400px">
 
 ## Thanks
 

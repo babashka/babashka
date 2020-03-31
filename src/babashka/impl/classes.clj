@@ -13,7 +13,8 @@
 ;;                     (identical? os :mac)))
 
 (def classes
-  '{:all [java.io.BufferedReader
+  '{:all [clojure.lang.ExceptionInfo
+          java.io.BufferedReader
           java.io.BufferedWriter
           java.io.ByteArrayInputStream
           java.io.ByteArrayOutputStream
@@ -56,6 +57,8 @@
           java.net.URLDecoder
           java.nio.file.CopyOption
           java.nio.file.FileAlreadyExistsException
+          java.nio.file.FileSystem
+          java.nio.file.FileSystems
           java.nio.file.Files
           java.nio.file.LinkOption
           java.nio.file.NoSuchFileException
@@ -110,8 +113,7 @@
     :methods [borkdude.graal.LockFix ;; support for locking
               ]
     :fields [clojure.lang.PersistentQueue]
-    :instance-checks [clojure.lang.ExceptionInfo
-                      clojure.lang.IObj
+    :instance-checks [clojure.lang.IObj
                       clojure.lang.IEditableCollection]
     :custom {clojure.lang.LineNumberingPushbackReader {:allPublicConstructors true
                                                        :allPublicMethods true}
@@ -201,7 +203,9 @@
                    (instance? java.security.MessageDigest v)
                    java.security.MessageDigest
                    (instance? java.io.InputStream v)
-                   java.io.InputStream)))))
+                   java.io.InputStream
+                   (instance? java.nio.file.FileSystem v)
+                   java.nio.file.FileSystem)))))
 
 (def class-map (gen-class-map))
 
