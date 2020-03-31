@@ -1063,6 +1063,8 @@ bb '(let [{:keys [dependencies source-paths resource-paths]} (apply hash-map (dr
 jet --pretty > deps.edn
 ```
 
+A script with the same goal can be found [here](https://gist.github.com/swlkr/3f346c66410e5c60c59530c4413a248e#gistcomment-3232605).
+
 ### Print current time in California
 
 See [examples/pst.clj](https://github.com/borkdude/babashka/blob/master/examples/pst.clj)
