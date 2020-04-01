@@ -60,8 +60,8 @@
                     '*2 (get core '*1)
                     '*3 (get core '*2))))
     (when @dev? (println "out str:" out-str))
-    (send o (response-for msg (cond-> {"ns" (vars/current-ns-name)}
-                                out-str (assoc "value" out-str))))
+    (when out-str
+      (send o (response-for msg {"out" out-str})))
     (send o (response-for msg (cond-> {"ns" (vars/current-ns-name)}
                                 (not (identical? value ::nil)) (assoc "value" (pr-str value)))))
     (send o (response-for msg {"status" #{"done"}}))))
