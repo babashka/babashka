@@ -38,7 +38,7 @@
   (let [ex-map (Throwable->map ex)
         ex-name (-> ex-map :via first :type)
         cause (:cause ex-map)]
-    (when @dev? (prn "sending ex" ex-name))
+    (when @dev? (prn "sending exception" ex-map))
     (send os (response-for msg {"err" (str ex-name ": " cause "\n")}))
     (send os (response-for msg {"ex" (str "class " ex-name)
                                 "root-ex" (str "class " ex-name)
