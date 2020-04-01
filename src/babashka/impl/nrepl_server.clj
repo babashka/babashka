@@ -79,32 +79,49 @@
          [(namespace sym) (name sym)])
        syms))
 
-#_(defn match? [alias-map query-ns query-name sym-ns sym-name]
-  (if query-ns
-    (when-let [matching-ns (or
-                            (when (= sym-ns query-ns) ))])
-    (if (or ))))
+(defn match [alias->ns ns->alias query-ns query-name sym-ns sym-name]
+  (let [name-pat (re-pattern query-name)]
+    (if query-ns
+      (if-let [matching-ns (when (and query-ns sym-ns (= sym-ns query-ns))
+                             query-ns)]
+        (when (re-find name-pat sym-name)
+          [matching-ns sym-name])
+        (when-let [matching-alias (when (and query-ns sym-ns
+                                             (= sym-ns (when-let [v (get alias->ns (symbol query-ns))]
+                                                         (str v))))
+                                  query-ns)]
+          (when (re-find name-pat sym-name)
+            [matching-alias sym-name])))
+      (if (re-find name-pat sym-name)
+        [sym-ns sym-name]
+        (when sym-ns
+          (if (re-find name-pat sym-ns)
+            [sym-ns sym-name]
+            (when-let [v (get ns->alias (symbol sym-ns))]
+              (let [alias-str (str v)]
+                (when (re-find name-pat alias-str)
+                  [alias-str sym-name])))))))))
 
 (defn complete [ctx o msg]
   (try (let [;; ns (:ns msg)
              ;;ns-sym (symbol ns)
              query (:symbol msg)
              from-current-ns (fully-qualified-syms ctx (eval-string* ctx "(ns-name *ns*)"))
-             alias-map (eval-string* ctx "(let [m (ns-aliases *ns*)] (zipmap (keys m) (map ns-name (vals m))))")
+             alias->ns (eval-string* ctx "(let [m (ns-aliases *ns*)] (zipmap (keys m) (map ns-name (vals m))))")
+             ns->alias (zipmap (vals alias->ns) (keys alias->ns))
+             _ (prn "alias->ns" alias->ns)
+             _ (prn "ns->alias" ns->alias)
              aliases (eval-string* ctx "(keys (ns-aliases *ns*))")
              from-aliases-nss (mapcat (fn [alias] (fully-qualified-syms ctx alias)) aliases)
              svs (sym-vecs (concat from-current-ns from-aliases-nss))
              parts (str/split query #"/")
-             [query-ns-str query-name-str] (if (= 1 (count parts))
-                                             [nil (first parts)]
-                                             parts)
-             pat (re-pattern (str query))
-             completions (filter (fn [[namespace name]]
-                                   (or
-                                    ;; Java classes have no namespace
-                                    (when namespace
-                                      (re-find pat namespace))
-                                    (re-find pat name))) svs)
+             [query-ns query-name] (if (= 1 (count parts))
+                                     [nil (first parts)]
+                                     parts)
+             completions (keep (fn [[sym-ns sym-name]]
+                                   (match alias->ns ns->alias query-ns query-name sym-ns sym-name))
+                               svs)
+             _ (prn "completions" completions)
              completions (mapv (fn [[namespace name]]
                                  {"candidate" (str name) "ns" (str namespace) #_"type" #_"function"})
                                completions)]
