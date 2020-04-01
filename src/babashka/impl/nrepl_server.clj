@@ -80,6 +80,8 @@
        syms))
 
 (defn match [alias->ns ns->alias query-ns query-name sym-ns sym-name]
+  #_(when (and sym-ns (not= "clojure.core" sym-ns))
+    (prn query-ns query-name sym-ns sym-name))
   (let [name-pat (re-pattern query-name)]
     (if query-ns
       (if-let [matching-ns (when (and query-ns sym-ns (= sym-ns query-ns))
@@ -89,7 +91,7 @@
         (when-let [matching-alias (when (and query-ns sym-ns
                                              (= sym-ns (when-let [v (get alias->ns (symbol query-ns))]
                                                          (str v))))
-                                  query-ns)]
+                                    query-ns)]
           (when (re-find name-pat sym-name)
             [matching-alias sym-name])))
       (if (re-find name-pat sym-name)
@@ -109,28 +111,31 @@
              from-current-ns (fully-qualified-syms ctx (eval-string* ctx "(ns-name *ns*)"))
              alias->ns (eval-string* ctx "(let [m (ns-aliases *ns*)] (zipmap (keys m) (map ns-name (vals m))))")
              ns->alias (zipmap (vals alias->ns) (keys alias->ns))
-             _ (prn "alias->ns" alias->ns)
-             _ (prn "ns->alias" ns->alias)
-             aliases (eval-string* ctx "(keys (ns-aliases *ns*))")
-             from-aliases-nss (mapcat (fn [alias] (fully-qualified-syms ctx alias)) aliases)
-             svs (sym-vecs (concat from-current-ns from-aliases-nss))
+             from-aliased-nss (doall (mapcat
+                                      (fn [alias]
+                                        (let [ns (get alias->ns alias)
+                                              syms (eval-string* ctx (format "(keys (ns-publics '%s))" ns))]
+                                          (map (fn [sym]
+                                                 [(str ns) (str sym)])
+                                               syms)))
+                                      (keys alias->ns)))
+             svs (concat (sym-vecs from-current-ns) from-aliased-nss)
              parts (str/split query #"/")
              [query-ns query-name] (if (= 1 (count parts))
                                      [nil (first parts)]
                                      parts)
-             completions (keep (fn [[sym-ns sym-name]]
-                                   (match alias->ns ns->alias query-ns query-name sym-ns sym-name))
-                               svs)
-             _ (prn "completions" completions)
+             completions (doall (keep (fn [[sym-ns sym-name]]
+                                        (match alias->ns ns->alias query-ns query-name sym-ns sym-name))
+                                      svs))
              completions (mapv (fn [[namespace name]]
                                  {"candidate" (str name) "ns" (str namespace) #_"type" #_"function"})
                                completions)]
          (send o (response-for msg {"completions" completions
-                                    "status" #{"done"}})))
+                                      "status" #{"done"}})))
        (catch Throwable e
          (println e)
          (send o (response-for msg {"completions" []
-                                    "status" #{"done"}})))))
+                                      "status" #{"done"}})))))
 
 (defn read-msg [msg]
   (-> (zipmap (map keyword (keys msg))
@@ -216,5 +221,6 @@
                          [(first parts) (Integer. ^String (second parts))])
         host+port (if-not address (str "localhost:" port)
                           host+port)]
+    #_(complete ctx nil {:symbol "json"})
     (println "Starting nREPL at" host+port)
     (listen ctx (new ServerSocket port 0 address))))
