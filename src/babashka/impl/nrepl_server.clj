@@ -79,7 +79,7 @@
          [(namespace sym) (name sym)])
        syms))
 
-(defn match? [alias-map query-ns query-name sym-ns sym-name]
+#_(defn match? [alias-map query-ns query-name sym-ns sym-name]
   (if query-ns
     (when-let [matching-ns (or
                             (when (= sym-ns query-ns) ))])
