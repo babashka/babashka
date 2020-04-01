@@ -3,6 +3,7 @@
   (:refer-clojure :exclude [send future binding])
   (:require [babashka.impl.bencode.core :refer [write-bencode read-bencode]]
             [clojure.string :as str]
+            [clojure.template :refer [apply-template]]
             [sci.core :as sci]
             [sci.impl.interpreter :refer [eval-string*]]
             [sci.impl.vars :as vars])
@@ -66,11 +67,53 @@
                                 (not (identical? value ::nil)) (assoc "value" (pr-str value)))))
     (send o (response-for msg {"status" #{"done"}}))))
 
+(defn fully-qualified-syms [ctx ns-sym]
+  (let [syms (eval-string* ctx (format "(keys (ns-map '%s))" ns-sym))
+        sym-strs (map #(str "`" %) syms)
+        sym-expr (str "[" (str/join " " sym-strs) "]")
+        syms (eval-string* ctx sym-expr)]
+    syms))
+
+(defn sym-vecs [syms]
+  (map (fn [sym]
+         [(namespace sym) (name sym)])
+       syms))
+
+(defn match? [alias-map query-ns query-name sym-ns sym-name]
+  (if query-ns
+    (when-let [matching-ns (or
+                            (when (= sym-ns query-ns) ))])
+    (if (or ))))
+
 (defn complete [ctx o msg]
-  (let [ns (:ns msg)
-        symbol (:symbol msg)]
-    (send o (response-for msg {"completions" [{"candidate" "assoc" "ns" "clojure.core" "type" "function"}]
-                               "status" #{"done"}}))))
+  (try (let [;; ns (:ns msg)
+             ;;ns-sym (symbol ns)
+             query (:symbol msg)
+             from-current-ns (fully-qualified-syms ctx (eval-string* ctx "(ns-name *ns*)"))
+             alias-map (eval-string* ctx "(let [m (ns-aliases *ns*)] (zipmap (keys m) (map ns-name (vals m))))")
+             aliases (eval-string* ctx "(keys (ns-aliases *ns*))")
+             from-aliases-nss (mapcat (fn [alias] (fully-qualified-syms ctx alias)) aliases)
+             svs (sym-vecs (concat from-current-ns from-aliases-nss))
+             parts (str/split query #"/")
+             [query-ns-str query-name-str] (if (= 1 (count parts))
+                                             [nil (first parts)]
+                                             parts)
+             pat (re-pattern (str query))
+             completions (filter (fn [[namespace name]]
+                                   (or
+                                    ;; Java classes have no namespace
+                                    (when namespace
+                                      (re-find pat namespace))
+                                    (re-find pat name))) svs)
+             completions (mapv (fn [[namespace name]]
+                                 {"candidate" (str name) "ns" (str namespace) #_"type" #_"function"})
+                               completions)]
+         (send o (response-for msg {"completions" completions
+                                    "status" #{"done"}})))
+       (catch Throwable e
+         (println e)
+         (send o (response-for msg {"completions" []
+                                    "status" #{"done"}})))))
 
 (defn read-msg [msg]
   (-> (zipmap (map keyword (keys msg))
