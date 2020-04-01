@@ -66,6 +66,12 @@
                                 (not (identical? value ::nil)) (assoc "value" (pr-str value)))))
     (send o (response-for msg {"status" #{"done"}}))))
 
+(defn complete [ctx o msg]
+  (let [ns (:ns msg)
+        symbol (:symbol msg)]
+    (send o (response-for msg {"completions" [{"candidate" "assoc" "ns" "clojure.core" "type" "function"}]
+                               "status" #{"done"}}))))
+
 (defn read-msg [msg]
   (-> (zipmap (map keyword (keys msg))
               (map #(if (bytes? %)
@@ -104,6 +110,9 @@
                                        (assoc core '*e ex)))
                               (send-exception os msg ex))))
                      (recur ctx is os id))
+        :complete (do
+                    (complete ctx os msg)
+                    (recur ctx is os id))
         :describe
         (do (send os (response-for msg {"status" #{"done"}
                                         "aux" {}
