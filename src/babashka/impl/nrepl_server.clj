@@ -49,8 +49,8 @@
   (let [code-str (get msg :code)
         sw (StringWriter.)
         value (if (str/blank? code-str)
-               ::nil
-               (sci/binding [sci/out sw] (eval-string* ctx code-str)))
+                ::nil
+                (sci/binding [sci/out sw] (eval-string* ctx code-str)))
         out-str (not-empty (str sw))
         env (:env ctx)]
     (swap! env update-in [:namespaces 'clojure.core]
@@ -94,19 +94,29 @@
                                 (assoc core '*e ex)))
                        (send-exception os msg ex)))
                 (recur ctx is os id))
+        :load-file (do
+                     (let [file (:file msg)
+                           msg (assoc msg :code file)]
+                       (try (eval-msg ctx os msg)
+                            (catch Exception ex
+                              (swap! (:env ctx) update-in [:namespaces 'clojure.core]
+                                     (fn [core]
+                                       (assoc core '*e ex)))
+                              (send-exception os msg ex))))
+                     (recur ctx is os id))
         :describe
         (do (send os (response-for msg {"status" #{"done"}
                                         "aux" {}
                                         "ops" (zipmap #{"clone", "describe", "eval"}
                                                       (repeat {}))
                                         "versions" {} #_{"nrepl" {"major" "0"
-                                                             "minor" "4"
-                                                             "incremental" "0"
-                                                             "qualifier" ""}
-                                                    "clojure"
-                                                    {"*clojure-version*"
-                                                     (zipmap (map name (keys *clojure-version*))
-                                                             (vals *clojure-version*))}}}))
+                                                                  "minor" "4"
+                                                                  "incremental" "0"
+                                                                  "qualifier" ""}
+                                                         "clojure"
+                                                         {"*clojure-version*"
+                                                          (zipmap (map name (keys *clojure-version*))
+                                                                  (vals *clojure-version*))}}}))
             (recur ctx is os id))
         ;; fallback
         (do (when @dev?
@@ -133,8 +143,8 @@
   (vreset! dev? (= "true" (System/getenv "BABASHKA_DEV")))
   (let [parts (str/split host+port #":")
         [address port] (if (= 1 (count parts))
-                      [nil (Integer. ^String (first parts))]
-                      [(first parts) (Integer. ^String (second parts))])
+                         [nil (Integer. ^String (first parts))]
+                         [(first parts) (Integer. ^String (second parts))])
         host+port (if-not address (str "localhost:" port)
                           host+port)]
     (println "Starting nREPL at" host+port)
