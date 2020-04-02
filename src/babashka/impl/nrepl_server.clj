@@ -73,14 +73,9 @@
         syms (eval-string* ctx sym-expr)]
     syms))
 
-(defn sym-vecs [syms]
-  (map (fn [sym]
-         [(namespace sym) (name sym)])
-       syms))
-
-(defn match [_alias->ns ns->alias query sym-ns sym-name]
+(defn match [_alias->ns ns->alias query [sym-ns sym-name qualifier]]
   (let [pat (re-pattern query)]
-    (or (when (re-find pat sym-name)
+    (or (when (and (identical? :unqualified qualifier) (re-find pat sym-name))
           [sym-ns sym-name])
         (when sym-ns
           (or (when (re-find pat (str sym-ns "/" sym-name))
@@ -93,6 +88,9 @@
              ;;ns-sym (symbol ns)
              query (:symbol msg)
              from-current-ns (fully-qualified-syms ctx (eval-string* ctx "(ns-name *ns*)"))
+             from-current-ns (map (fn [sym]
+                                    [(namespace sym) (name sym) :unqualified])
+                                  from-current-ns)
              alias->ns (eval-string* ctx "(let [m (ns-aliases *ns*)] (zipmap (keys m) (map ns-name (vals m))))")
              ns->alias (zipmap (vals alias->ns) (keys alias->ns))
              from-aliased-nss (doall (mapcat
@@ -100,12 +98,12 @@
                                         (let [ns (get alias->ns alias)
                                               syms (eval-string* ctx (format "(keys (ns-publics '%s))" ns))]
                                           (map (fn [sym]
-                                                 [(str ns) (str sym)])
+                                                 [(str ns) (str sym) :qualified])
                                                syms)))
                                       (keys alias->ns)))
-             svs (concat (sym-vecs from-current-ns) from-aliased-nss)
-             completions (keep (fn [[sym-ns sym-name]]
-                                 (match alias->ns ns->alias query sym-ns sym-name))
+             svs (concat from-current-ns from-aliased-nss)
+             completions (keep (fn [entry]
+                                 (match alias->ns ns->alias query entry))
                                svs)
              completions (mapv (fn [[namespace name]]
                                  {"candidate" (str name) "ns" (str namespace) #_"type" #_"function"})
