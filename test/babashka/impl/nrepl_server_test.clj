@@ -38,9 +38,8 @@
       (while (not (zero? (:exit
                           (sh "bash" "-c"
                               "lsof -t -i:1667"))))))
-    #_(with-open [s (java.net.Socket. "localhost" 1667)]
-        s)
-    ;; this opening of the socket makes the rest of the tests fail...
+    ;; this line makes the rest of the tests fail, why?
+    ;; (.close (java.net.Socket. "localhost" 1667))
     (is (nrepl-command "(+ 1 2 3)" "6"))
     (prn "duuude")
     (finally
