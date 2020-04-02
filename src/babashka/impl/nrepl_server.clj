@@ -197,7 +197,8 @@
 
 (defn stop-server! []
   (when-let [s @server]
-    (.close ^ServerSocket s)))
+    (.close ^ServerSocket s)
+    (reset! server nil)))
 
 (defn start-server! [ctx host+port]
   (vreset! dev? (= "true" (System/getenv "BABASHKA_DEV")))
