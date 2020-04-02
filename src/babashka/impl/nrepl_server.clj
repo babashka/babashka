@@ -3,7 +3,6 @@
   (:refer-clojure :exclude [send future binding])
   (:require [babashka.impl.bencode.core :refer [write-bencode read-bencode]]
             [clojure.string :as str]
-            [clojure.template :refer [apply-template]]
             [sci.core :as sci]
             [sci.impl.interpreter :refer [eval-string*]]
             [sci.impl.vars :as vars])
@@ -79,30 +78,15 @@
          [(namespace sym) (name sym)])
        syms))
 
-(defn match [alias->ns ns->alias query-ns query-name sym-ns sym-name]
-  #_(when (and sym-ns (not= "clojure.core" sym-ns))
-    (prn query-ns query-name sym-ns sym-name))
-  (let [name-pat (re-pattern query-name)]
-    (if query-ns
-      (if-let [matching-ns (when (and query-ns sym-ns (= sym-ns query-ns))
-                             query-ns)]
-        (when (re-find name-pat sym-name)
-          [matching-ns sym-name])
-        (when-let [matching-alias (when (and query-ns sym-ns
-                                             (= sym-ns (when-let [v (get alias->ns (symbol query-ns))]
-                                                         (str v))))
-                                    query-ns)]
-          (when (re-find name-pat sym-name)
-            [matching-alias sym-name])))
-      (if (re-find name-pat sym-name)
-        [sym-ns sym-name]
+(defn match [_alias->ns ns->alias query sym-ns sym-name]
+  (let [pat (re-pattern query)]
+    (or (when (re-find pat sym-name)
+          [sym-ns sym-name])
         (when sym-ns
-          (if (re-find name-pat sym-ns)
-            [sym-ns sym-name]
-            (when-let [v (get ns->alias (symbol sym-ns))]
-              (let [alias-str (str v)]
-                (when (re-find name-pat alias-str)
-                  [alias-str sym-name])))))))))
+          (or (when (re-find pat (str sym-ns "/" sym-name))
+                [sym-ns (str sym-ns "/" sym-name)])
+              (when (re-find pat (str (get ns->alias (symbol sym-ns)) "/" sym-name))
+                [sym-ns (str (get ns->alias (symbol sym-ns)) "/" sym-name)]))))))
 
 (defn complete [ctx o msg]
   (try (let [;; ns (:ns msg)
@@ -120,16 +104,13 @@
                                                syms)))
                                       (keys alias->ns)))
              svs (concat (sym-vecs from-current-ns) from-aliased-nss)
-             parts (str/split query #"/")
-             [query-ns query-name] (if (= 1 (count parts))
-                                     [nil (first parts)]
-                                     parts)
-             completions (doall (keep (fn [[sym-ns sym-name]]
-                                        (match alias->ns ns->alias query-ns query-name sym-ns sym-name))
-                                      svs))
+             completions (keep (fn [[sym-ns sym-name]]
+                                 (match alias->ns ns->alias query sym-ns sym-name))
+                               svs)
              completions (mapv (fn [[namespace name]]
                                  {"candidate" (str name) "ns" (str namespace) #_"type" #_"function"})
                                completions)]
+         (when @dev? (prn "completions" completions))
          (send o (response-for msg {"completions" completions
                                       "status" #{"done"}})))
        (catch Throwable e
