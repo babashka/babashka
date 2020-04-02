@@ -3,7 +3,6 @@
    [babashka.impl.bencode.core :as bencode]
    [babashka.impl.nrepl-server :refer [start-server! stop-server!]]
    [babashka.test-utils :as tu]
-   [babashka.wait :as wait]
    [clojure.java.shell :refer [sh]]
    [clojure.string :as str]
    [clojure.test :as t :refer [deftest is]]
@@ -11,8 +10,15 @@
 
 (set! *warn-on-reflection* true)
 
+(defn try-connect ^java.net.Socket [host port max-attempts]
+  (when (pos? max-attempts)
+    (try (java.net.Socket. ^String host ^long port)
+         (catch Exception _
+           (Thread/sleep 500)
+           (try-connect host port (dec max-attempts))))))
+
 (defn nrepl-command [expr expected]
-  (with-open [socket (java.net.Socket. "127.0.0.1" 1667)
+  (with-open [socket (try-connect "127.0.0.1" 1667 5)
               in (.getInputStream socket)
               in (java.io.PushbackInputStream. in)
               os (.getOutputStream socket)]
@@ -41,7 +47,6 @@
     ;; this line makes the rest of the tests fail, why?
     ;; (.close (java.net.Socket. "localhost" 1667))
     (is (nrepl-command "(+ 1 2 3)" "6"))
-    (prn "duuude")
     (finally
       (if tu/jvm?
         (stop-server!)
