@@ -192,14 +192,24 @@
         (session-loop ctx in out "pre-init")))
     (recur ctx listener)))
 
+
+(def server (atom nil))
+
+(defn stop-server! []
+  (when-let [s @server]
+    (.close ^ServerSocket s)))
+
 (defn start-server! [ctx host+port]
   (vreset! dev? (= "true" (System/getenv "BABASHKA_DEV")))
   (let [parts (str/split host+port #":")
         [address port] (if (= 1 (count parts))
                          [nil (Integer. ^String (first parts))]
-                         [(first parts) (Integer. ^String (second parts))])
+                         [(java.net.InetAddress/getByName (first parts))
+                          (Integer. ^String (second parts))])
         host+port (if-not address (str "localhost:" port)
                           host+port)]
     #_(complete ctx nil {:symbol "json"})
-    (println "Starting nREPL at" host+port)
-    (listen ctx (new ServerSocket port 0 address))))
+    (println "Starting nREPL server at" host+port)
+    (let [socket-server (new ServerSocket port 0 address)]
+      (reset! server socket-server)
+      (listen ctx socket-server))))

@@ -2,10 +2,10 @@
   (:require
    [babashka.impl.socket-repl :refer [start-repl! stop-repl!]]
    [babashka.test-utils :as tu]
+   [clojure.java.io :as io]
    [clojure.java.shell :refer [sh]]
    [clojure.string :as str]
    [clojure.test :as t :refer [deftest is testing]]
-   [clojure.java.io :as io]
    [sci.impl.opts :refer [init]]))
 
 (set! *warn-on-reflection* true)
