@@ -3,18 +3,12 @@
    [babashka.impl.bencode.core :as bencode]
    [babashka.impl.nrepl-server :refer [start-server! stop-server!]]
    [babashka.test-utils :as tu]
+   [babashka.wait :as wait]
    [clojure.java.shell :refer [sh]]
    [clojure.test :as t :refer [deftest is testing]]
    [sci.impl.opts :refer [init]]))
 
 (set! *warn-on-reflection* true)
-
-(defn try-connect ^java.net.Socket [host port max-attempts]
-  (when (pos? max-attempts)
-    (try (java.net.Socket. ^String host ^long port)
-         (catch Exception _
-           (Thread/sleep 500)
-           (try-connect host port (dec max-attempts))))))
 
 (defn bytes->str [x]
   (if (bytes? x) (String. (bytes x))
@@ -40,7 +34,7 @@
         (recur)))))
 
 (defn nrepl-test []
-  (with-open [socket (try-connect "127.0.0.1" 1667 5)
+  (with-open [socket (java.net.Socket. "127.0.0.1" 1667)
               in (.getInputStream socket)
               in (java.io.PushbackInputStream. in)
               os (.getOutputStream socket)]
@@ -87,6 +81,7 @@
       (future
         (prn (sh "bash" "-c"
                  "./bb --nrepl-server 0.0.0.0:1667"))))
+    (babashka.wait/wait-for-port "localhost" 1667)
     (nrepl-test)
     (finally
       (if tu/jvm?
