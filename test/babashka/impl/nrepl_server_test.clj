@@ -53,26 +53,26 @@
       (testing "load-file"
         (bencode/write-bencode os {"op" "load-file" "file" "(ns foo) (defn foo [] :foo)" "session" session "id" 2})
         (read-reply in session 2)
-        (bencode/write-bencode os {"op" "eval" "code" "(foo)" "session" session "id" 3})
+        (bencode/write-bencode os {"op" "eval" "code" "(foo)" "ns" "foo" "session" session "id" 3})
         (is (= ":foo" (:value (read-reply in session 3)))))
       (testing "complete"
         (testing "completions for fo"
-          (bencode/write-bencode os {"op" "complete" "symbol" "fo" "session" session "id" 4})
+          (bencode/write-bencode os {"op" "complete"
+                                     "symbol" "fo"
+                                     "session" session
+                                     "id" 4
+                                     "ns" "foo"})
           (let [reply (read-reply in session 4)
                 completions (:completions reply)
                 completions (mapv read-msg completions)
                 completions (into #{} (map (juxt :ns :candidate)) completions)]
             (is (contains? completions ["foo" "foo"]))
             (is (contains? completions ["clojure.core" "format"]))))
-        (testing "completions for namespace"
-          (bencode/write-bencode os {"op" "complete" "symbol" "cheshire." "session" session "id" 5})
-          (let [reply (read-reply in session 5)
-                completions (:completions reply)
-                completions (mapv read-msg completions)]
-            ;; TODO:
-            (prn completions)))
         (testing "completions for quux should be empty"
-          (bencode/write-bencode os {"op" "complete" "symbol" "quux" "session" session "id" 6})
+          (bencode/write-bencode os {"op" "complete"
+                                     "symbol" "quux"
+                                     "session" session "id" 6
+                                     "ns" "foo"})
           (let [reply (read-reply in session 6)
                 completions (:completions reply)]
             (is (empty? completions)))
@@ -83,8 +83,13 @@
                   completions (:completions reply)
                   completions (mapv read-msg completions)
                   completions (into #{} (map (juxt :ns :candidate)) completions)]
-              (is (contains? completions ["cheshire.core" "quux/generate-string"])))))))))
-
+              (is (contains? completions ["cheshire.core" "quux/generate-string"]))))))
+      #_(testing "interrupt"
+        (bencode/write-bencode os {"op" "eval" "code" "(range)" "session" session "id" 9})
+        (Thread/sleep 1000)
+        (bencode/write-bencode os {"op" "interrupt" "session" session "id" 9})
+        (prn (read-reply in session 9))))))
+ 
 #_#_versions   (dict
             clojure (dict
                      incremental    0

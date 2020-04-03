@@ -5,6 +5,7 @@
             [clojure.string :as str]
             [sci.core :as sci]
             [sci.impl.interpreter :refer [eval-string*]]
+            [sci.impl.utils :as sci-utils]
             [sci.impl.vars :as vars])
   (:import [java.io StringWriter OutputStream InputStream PushbackInputStream EOFException]
            [java.net ServerSocket]))
@@ -26,14 +27,6 @@
   (write-bencode os msg)
   (.flush os))
 
-
-;; err:"Execution error (ArithmeticException) at user/eval11906 (form-init7923941828443507176.clj:1).
-;; Divide by zero
-;; "
-;; id:"9"
-;; session:"e15078b4-14b4-4f01-87e6-71f77d233e38"
-
-
 (defn send-exception [os msg ^Throwable ex]
   (let [ex-map (Throwable->map ex)
         ex-name (-> ex-map :via first :type)
@@ -45,26 +38,44 @@
                                 "status" #{"eval-error"}}))
     (send os (response-for msg {"status" #{"done"}}))))
 
-(defn eval-msg [ctx o msg]
-  (let [code-str (get msg :code)
-        sw (StringWriter.)
-        value (if (str/blank? code-str)
-                ::nil
-                (sci/binding [sci/out sw] (eval-string* ctx code-str)))
-        out-str (not-empty (str sw))
-        env (:env ctx)]
-    (swap! env update-in [:namespaces 'clojure.core]
-           (fn [core]
-             (assoc core
-                    '*1 value
-                    '*2 (get core '*1)
-                    '*3 (get core '*2))))
-    (when @dev? (println "out str:" out-str))
-    (when out-str
-      (send o (response-for msg {"out" out-str})))
-    (send o (response-for msg (cond-> {"ns" (vars/current-ns-name)}
-                                (not (identical? value ::nil)) (assoc "value" (pr-str value)))))
-    (send o (response-for msg {"status" #{"done"}}))))
+(defn eval-msg [ctx o msg threads]
+  (sci/future
+    (try
+      (let [ns-str (get msg :ns)
+            sci-ns (if ns-str
+                     (sci-utils/namespace-object (:env ctx) (symbol ns-str) nil false)
+                     (sci-utils/namespace-object (:env ctx) 'user nil false))]
+        (sci/binding [vars/current-ns sci-ns
+                      sci/print-length @sci/print-length]
+          (let [session (get msg :session "none")
+                id (get msg :id "unknown")]
+            (when @dev? (println "Registering thread for" (str session "-" id)))
+            (swap! threads assoc [session id] (Thread/currentThread))
+            (let [code-str (get msg :code)
+                  sw (StringWriter.)
+                  value (if (str/blank? code-str)
+                          ::nil
+                          (sci/binding [sci/out sw
+                                        vars/current-ns @vars/current-ns] (eval-string* ctx code-str)))
+                  out-str (not-empty (str sw))
+                  env (:env ctx)]
+              (swap! env update-in [:namespaces 'clojure.core]
+                     (fn [core]
+                       (assoc core
+                              '*1 value
+                              '*2 (get core '*1)
+                              '*3 (get core '*2))))
+              (when @dev? (println "out str:" out-str))
+              (when out-str
+                (send o (response-for msg {"out" out-str})))
+              (send o (response-for msg (cond-> {"ns" (vars/current-ns-name)}
+                                          (not (identical? value ::nil)) (assoc "value" (pr-str value)))))
+              (send o (response-for msg {"status" #{"done"}}))))))
+      (catch Exception ex
+        (swap! (:env ctx) update-in [:namespaces 'clojure.core]
+               (fn [core]
+                 (assoc core '*e ex)))
+        (send-exception o msg ex)))))
 
 (defn fully-qualified-syms [ctx ns-sym]
   (let [syms (eval-string* ctx (format "(keys (ns-map '%s))" ns-sym))
@@ -84,37 +95,51 @@
                 [sym-ns (str (get ns->alias (symbol sym-ns)) "/" sym-name)]))))))
 
 (defn complete [ctx o msg]
-  (try (let [;; ns (:ns msg)
-             ;;ns-sym (symbol ns)
-             query (:symbol msg)
-             from-current-ns (fully-qualified-syms ctx (eval-string* ctx "(ns-name *ns*)"))
-             from-current-ns (map (fn [sym]
-                                    [(namespace sym) (name sym) :unqualified])
-                                  from-current-ns)
-             alias->ns (eval-string* ctx "(let [m (ns-aliases *ns*)] (zipmap (keys m) (map ns-name (vals m))))")
-             ns->alias (zipmap (vals alias->ns) (keys alias->ns))
-             from-aliased-nss (doall (mapcat
-                                      (fn [alias]
-                                        (let [ns (get alias->ns alias)
-                                              syms (eval-string* ctx (format "(keys (ns-publics '%s))" ns))]
-                                          (map (fn [sym]
-                                                 [(str ns) (str sym) :qualified])
-                                               syms)))
-                                      (keys alias->ns)))
-             svs (concat from-current-ns from-aliased-nss)
-             completions (keep (fn [entry]
-                                 (match alias->ns ns->alias query entry))
-                               svs)
-             completions (mapv (fn [[namespace name]]
-                                 {"candidate" (str name) "ns" (str namespace) #_"type" #_"function"})
-                               completions)]
-         (when @dev? (prn "completions" completions))
-         (send o (response-for msg {"completions" completions
-                                      "status" #{"done"}})))
+  (try
+    (let [ns-str (get msg :ns)
+          sci-ns (if ns-str
+                   (sci-utils/namespace-object (:env ctx) (symbol ns-str) nil false)
+                   (sci-utils/namespace-object (:env ctx) 'user nil false))]
+      (sci/binding [vars/current-ns sci-ns]
+        (let [
+              ;;ns-sym (symbol ns)
+              query (:symbol msg)
+              from-current-ns (fully-qualified-syms ctx (eval-string* ctx "(ns-name *ns*)"))
+              from-current-ns (map (fn [sym]
+                                     [(namespace sym) (name sym) :unqualified])
+                                   from-current-ns)
+              alias->ns (eval-string* ctx "(let [m (ns-aliases *ns*)] (zipmap (keys m) (map ns-name (vals m))))")
+              ns->alias (zipmap (vals alias->ns) (keys alias->ns))
+              from-aliased-nss (doall (mapcat
+                                       (fn [alias]
+                                         (let [ns (get alias->ns alias)
+                                               syms (eval-string* ctx (format "(keys (ns-publics '%s))" ns))]
+                                           (map (fn [sym]
+                                                  [(str ns) (str sym) :qualified])
+                                                syms)))
+                                       (keys alias->ns)))
+              svs (concat from-current-ns from-aliased-nss)
+              completions (keep (fn [entry]
+                                  (match alias->ns ns->alias query entry))
+                                svs)
+              completions (mapv (fn [[namespace name]]
+                                  {"candidate" (str name) "ns" (str namespace) #_"type" #_"function"})
+                                completions)]
+          (when @dev? (prn "completions" completions))
+          (send o (response-for msg {"completions" completions
+                                     "status" #{"done"}})))))
        (catch Throwable e
          (println e)
          (send o (response-for msg {"completions" []
-                                      "status" #{"done"}})))))
+                                    "status" #{"done"}})))))
+
+(defn interrupt [_ctx msg os threads]
+  (let [session (get msg :session "none")
+        id (get msg :id "unknown")]
+    (when-let [t (get @threads [session id])]
+      (when @dev? (println "Killing thread" (str session "-" id)))
+      (.stop ^java.lang.Thread t))
+    (send os (response-for msg {"status" #{"done"}}))))
 
 (defn read-msg [msg]
   (-> (zipmap (map keyword (keys msg))
@@ -123,7 +148,7 @@
                       %) (vals msg)))
       (update :op keyword)))
 
-(defn session-loop [ctx ^InputStream is os id]
+(defn session-loop [ctx ^InputStream is os id threads]
   (when @dev? (println "Reading!" id (.available is)))
   (when-let [msg (try (read-bencode is)
                       (catch EOFException _
@@ -135,28 +160,20 @@
                  (when @dev? (println "Cloning!"))
                  (let [id (str (java.util.UUID/randomUUID))]
                    (send os (response-for msg {"new-session" id "status" #{"done"}}))
-                   (recur ctx is os id)))
+                   (recur ctx is os id threads)))
         :eval (do
-                (try (eval-msg ctx os msg)
-                     (catch Exception ex
-                       (swap! (:env ctx) update-in [:namespaces 'clojure.core]
-                              (fn [core]
-                                (assoc core '*e ex)))
-                       (send-exception os msg ex)))
-                (recur ctx is os id))
-        :load-file (do
-                     (let [file (:file msg)
-                           msg (assoc msg :code file)]
-                       (try (eval-msg ctx os msg)
-                            (catch Exception ex
-                              (swap! (:env ctx) update-in [:namespaces 'clojure.core]
-                                     (fn [core]
-                                       (assoc core '*e ex)))
-                              (send-exception os msg ex))))
-                     (recur ctx is os id))
+                (eval-msg ctx os msg threads)
+                (recur ctx is os id threads))
+        :load-file (let [file (:file msg)
+                         msg (assoc msg :code file)]
+                     (eval-msg ctx os msg threads)
+                     (recur ctx is os id threads))
         :complete (do
                     (complete ctx os msg)
-                    (recur ctx is os id))
+                    (recur ctx is os id threads))
+        :interrupt (do
+                     (interrupt ctx os msg threads)
+                     (recur ctx is os id threads))
         :describe
         (do (send os (response-for msg {"status" #{"done"}
                                         "aux" {}
@@ -170,26 +187,27 @@
                                                          {"*clojure-version*"
                                                           (zipmap (map name (keys *clojure-version*))
                                                                   (vals *clojure-version*))}}}))
-            (recur ctx is os id))
+            (recur ctx is os id threads))
         ;; fallback
         (do (when @dev?
               (println "Unhandled message" msg))
             (send os (response-for msg {"status" #{"error" "unknown-op" "done"}}))
-            (recur ctx is os id))))))
+            (recur ctx is os id threads))))))
 
 (defn listen [ctx ^ServerSocket listener]
   (when @dev? (println "Listening"))
   (let [client-socket (.accept listener)
         in (.getInputStream client-socket)
         in (PushbackInputStream. in)
-        out (.getOutputStream client-socket)]
+        out (.getOutputStream client-socket)
+        threads (atom {})]
     (when @dev? (println "Connected."))
     (sci/future
       (sci/binding
           ;; allow *ns* to be set! inside future
           [vars/current-ns (vars/->SciNamespace 'user nil)
            sci/print-length @sci/print-length]
-        (session-loop ctx in out "pre-init")))
+        (session-loop ctx in out "pre-init" threads)))
     (recur ctx listener)))
 
 
