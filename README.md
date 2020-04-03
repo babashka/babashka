@@ -36,7 +36,7 @@ As one user described it:
 * Batteries included (tools.cli, cheshire, ...)
 * Library support via popular tools like the `clojure` CLI
 
-Also see the [slides](https://speakerdeck.com/borkdude/babashka-and-the-small-clojure-interpreter-at-clojured-2020) of the Babashka talk at ClojureD 2020 (video coming soon).
+Also see the [slides](https://speakerdeck.com/borkdude/babashka-and-the-small-clojure-interpreter-at-clojured-2020) of the Babashka talk at ClojureD 2020 ([video](https://www.youtube.com/watch?v=Nw8aN-nrdEk)).
 
 ### Non-goals
 
