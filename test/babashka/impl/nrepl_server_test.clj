@@ -7,7 +7,8 @@
    [cheshire.core :as cheshire]
    [clojure.java.shell :refer [sh]]
    [clojure.test :as t :refer [deftest is testing]]
-   [sci.impl.opts :refer [init]]))
+   [sci.impl.opts :refer [init]])
+  (:import [java.lang ProcessBuilder$Redirect]))
 
 (set! *warn-on-reflection* true)
 
@@ -84,46 +85,34 @@
                   completions (mapv read-msg completions)
                   completions (into #{} (map (juxt :ns :candidate)) completions)]
               (is (contains? completions ["cheshire.core" "quux/generate-string"]))))))
-      (testing "interrupt"
-        (bencode/write-bencode os {"op" "eval" "code" "(range)" "session" session "id" 9})
-        (Thread/sleep 1000)
-        (bencode/write-bencode os {"op" "interrupt" "session" session "interrupt-id" 9 "id" 10})
-        (is (contains? (set (:status (read-reply in session 10))) "done"))))))
-
-#_#_versions   (dict
-            clojure (dict
-                     incremental    0
-                     major          1
-                     minor          10
-                     version-string "1.10.0")
-            java    (dict
-                     incremental    "1"
-                     major          "10"
-                     minor          "0"
-                     version-string "10.0.1")
-            nrepl   (dict
-                     incremental    0
-                     major          0
-                     minor          7
-                     version-string "0.7.0-beta1"))
+      #_(testing "interrupt" ;; .stop doesn't work on Thread in GraalVM, this is why we can't have this yet
+          (bencode/write-bencode os {"op" "eval" "code" "(range)" "session" session "id" 9})
+          (Thread/sleep 1000)
+          (bencode/write-bencode os {"op" "interrupt" "session" session "interrupt-id" 9 "id" 10})
+          (is (contains? (set (:status (read-reply in session 10))) "done"))))))
 
 (deftest nrepl-server-test
-  (try
-    (if tu/jvm?
-      (future
-        (start-server!
-         (init {:namespaces {'cheshire.core {'generate-string cheshire/generate-string}}
-                :features #{:bb}}) "0.0.0.0:1667"))
-      (future
-        (prn (sh "bash" "-c"
-                 "./bb --nrepl-server 0.0.0.0:1667"))))
-    (babashka.wait/wait-for-port "localhost" 1667)
-    (nrepl-test)
-    (finally
+  (let [proc-state (atom nil)]
+    (try
       (if tu/jvm?
-        (stop-server!)
-        (sh "bash" "-c"
-            "kill -9 $(lsof -t -i:1667)")))))
+        (future
+          (start-server!
+           (init {:namespaces {'cheshire.core {'generate-string cheshire/generate-string}}
+                  :features #{:bb}}) "0.0.0.0:1667"))
+        (let [pb (ProcessBuilder. ["./bb" "--nrepl-server" "0.0.0.0:1667"])
+              _ (.redirectError pb ProcessBuilder$Redirect/INHERIT)
+              ;; _ (.redirectOutput pb ProcessBuilder$Redirect/INHERIT)
+              ;; env (.environment pb)
+              ;; _ (.put env "BABASHKA_DEV" "true")
+              proc (.start pb)]
+          (reset! proc-state proc)))
+      (babashka.wait/wait-for-port "localhost" 1667)
+      (nrepl-test)
+      (finally
+        (if tu/jvm?
+          (stop-server!)
+          (when-let [proc @proc-state]
+            (.destroy ^Process proc)))))))
 
 ;;;; Scratch
 
