@@ -61,6 +61,23 @@
         (bencode/write-bencode os {"op" "eval" "code" "(foo)" "session" session "id" 3})
         (is (= ":foo" (:value (read-reply in session 3))))))))
 
+#_#_versions   (dict
+            clojure (dict
+                     incremental    0
+                     major          1
+                     minor          10
+                     version-string "1.10.0")
+            java    (dict
+                     incremental    "1"
+                     major          "10"
+                     minor          "0"
+                     version-string "10.0.1")
+            nrepl   (dict
+                     incremental    0
+                     major          0
+                     minor          7
+                     version-string "0.7.0-beta1"))
+
 (deftest nrepl-server-test
   (try
     (if tu/jvm?
