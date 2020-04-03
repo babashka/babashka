@@ -64,16 +64,22 @@
                 completions (into #{} (map (juxt :ns :candidate)) completions)]
             (is (contains? completions ["foo" "foo"]))
             (is (contains? completions ["clojure.core" "format"]))))
-        (testing "completions for quux should be empty"
-          (bencode/write-bencode os {"op" "complete" "symbol" "quux" "session" session "id" 5})
+        (testing "completions for namespace"
+          (bencode/write-bencode os {"op" "complete" "symbol" "cheshire." "session" session "id" 5})
           (let [reply (read-reply in session 5)
+                completions (:completions reply)
+                completions (mapv read-msg completions)]
+            ;; TODO:
+            (prn completions)))
+        (testing "completions for quux should be empty"
+          (bencode/write-bencode os {"op" "complete" "symbol" "quux" "session" session "id" 6})
+          (let [reply (read-reply in session 6)
                 completions (:completions reply)]
             (is (empty? completions)))
           (testing "unless quux is an alias"
-            (bencode/write-bencode os {"op" "eval" "code" "(require '[cheshire.core :as quux])" "session" session "id" 6})
-            (prn (read-reply in session 6))
-            (bencode/write-bencode os {"op" "complete" "symbol" "quux" "session" session "id" 7})
-            (let [reply (read-reply in session 7)
+            (bencode/write-bencode os {"op" "eval" "code" "(require '[cheshire.core :as quux])" "session" session "id" 7})
+            (bencode/write-bencode os {"op" "complete" "symbol" "quux" "session" session "id" 8})
+            (let [reply (read-reply in session 8)
                   completions (:completions reply)
                   completions (mapv read-msg completions)
                   completions (into #{} (map (juxt :ns :candidate)) completions)]
