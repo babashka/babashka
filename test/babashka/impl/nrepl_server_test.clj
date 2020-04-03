@@ -4,6 +4,7 @@
    [babashka.impl.nrepl-server :refer [start-server! stop-server!]]
    [babashka.test-utils :as tu]
    [babashka.wait :as wait]
+   [cheshire.core :as cheshire]
    [clojure.java.shell :refer [sh]]
    [clojure.test :as t :refer [deftest is testing]]
    [sci.impl.opts :refer [init]]))
@@ -53,7 +54,30 @@
         (bencode/write-bencode os {"op" "load-file" "file" "(ns foo) (defn foo [] :foo)" "session" session "id" 2})
         (read-reply in session 2)
         (bencode/write-bencode os {"op" "eval" "code" "(foo)" "session" session "id" 3})
-        (is (= ":foo" (:value (read-reply in session 3))))))))
+        (is (= ":foo" (:value (read-reply in session 3)))))
+      (testing "complete"
+        (testing "completions for fo"
+          (bencode/write-bencode os {"op" "complete" "symbol" "fo" "session" session "id" 4})
+          (let [reply (read-reply in session 4)
+                completions (:completions reply)
+                completions (mapv read-msg completions)
+                completions (into #{} (map (juxt :ns :candidate)) completions)]
+            (is (contains? completions ["foo" "foo"]))
+            (is (contains? completions ["clojure.core" "format"]))))
+        (testing "completions for quux should be empty"
+          (bencode/write-bencode os {"op" "complete" "symbol" "quux" "session" session "id" 5})
+          (let [reply (read-reply in session 5)
+                completions (:completions reply)]
+            (is (empty? completions)))
+          (testing "unless quux is an alias"
+            (bencode/write-bencode os {"op" "eval" "code" "(require '[cheshire.core :as quux])" "session" session "id" 6})
+            (prn (read-reply in session 6))
+            (bencode/write-bencode os {"op" "complete" "symbol" "quux" "session" session "id" 7})
+            (let [reply (read-reply in session 7)
+                  completions (:completions reply)
+                  completions (mapv read-msg completions)
+                  completions (into #{} (map (juxt :ns :candidate)) completions)]
+              (is (contains? completions ["cheshire.core" "quux/generate-string"])))))))))
 
 #_#_versions   (dict
             clojure (dict
@@ -76,8 +100,9 @@
   (try
     (if tu/jvm?
       (future
-        (start-server! (init {:env (atom {})
-                              :features #{:bb}}) "0.0.0.0:1667"))
+        (start-server!
+         (init {:namespaces {'cheshire.core {'generate-string cheshire/generate-string}}
+                :features #{:bb}}) "0.0.0.0:1667"))
       (future
         (prn (sh "bash" "-c"
                  "./bb --nrepl-server 0.0.0.0:1667"))))
