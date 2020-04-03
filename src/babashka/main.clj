@@ -166,7 +166,7 @@
 (def usage-string "Usage: bb [ -i | -I ] [ -o | -O ] [ --stream ] [--verbose]
           [ ( --classpath | -cp ) <cp> ] [ --uberscript <file> ]
           [ ( --main | -m ) <main-namespace> | -e <expression> | -f <file> |
-            --repl | --socket-repl [<host>:]<port> ]
+            --repl | --socket-repl [<host>:]<port> | --nrepl-server [<host>:]<port> ]
           [ arg* ]")
 (defn print-usage []
   (println usage-string))

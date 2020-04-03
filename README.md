@@ -172,7 +172,7 @@ Check out the image on [Docker hub](https://hub.docker.com/r/borkdude/babashka/)
 Usage: bb [ -i | -I ] [ -o | -O ] [ --stream ] [--verbose]
           [ ( --classpath | -cp ) <cp> ] [ --uberscript <file> ]
           [ ( --main | -m ) <main-namespace> | -e <expression> | -f <file> |
-            --repl | --socket-repl [<host>:]<port> ]
+            --repl | --socket-repl [<host>:]<port> | --nrepl-server [<host>:]<port> ]
           [ arg* ]
 
 Options:
@@ -194,6 +194,7 @@ Options:
   -m, --main <ns>     Call the -main function from namespace with args.
   --repl              Start REPL. Use rlwrap for history.
   --socket-repl       Start socket REPL. Specify port (e.g. 1666) or host and port separated by colon (e.g. 127.0.0.1:1666).
+  --nrepl-server      Start nREPL server. Specify port (e.g. 1667) or host and port separated by colon (e.g. 127.0.0.1:1667).
   --time              Print execution time before exiting.
   --                  Stop parsing args and pass everything after -- to *command-line-args*
 
