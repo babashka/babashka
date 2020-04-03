@@ -204,6 +204,8 @@
                    java.security.MessageDigest
                    (instance? java.io.InputStream v)
                    java.io.InputStream
+                   (instance? java.io.OutputStream v)
+                   java.io.OutputStream
                    (instance? java.nio.file.FileSystem v)
                    java.nio.file.FileSystem)))))
 
