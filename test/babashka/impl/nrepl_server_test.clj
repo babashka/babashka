@@ -32,19 +32,17 @@
               res)]
     res))
 
-(defn nrepl-command [expr expected]
+(defn nrepl-test []
   (with-open [socket (try-connect "127.0.0.1" 1667 5)
               in (.getInputStream socket)
               in (java.io.PushbackInputStream. in)
               os (.getOutputStream socket)]
     (bencode/write-bencode os {"op" "clone"})
     (let [session (:new-session (read-msg (bencode/read-bencode in)))]
-      (bencode/write-bencode os {"op" "eval" "code" expr "session" session "id" 1})
+      (bencode/write-bencode os {"op" "eval" "code" "(+ 1 2 3)" "session" session "id" 1})
       (let [msg (read-msg (bencode/read-bencode in))
             value (:value msg)]
-        (is (str/includes? value expected)
-            (format "\"%s\" does not contain \"%s\""
-                    value expected))))))
+        (is (str/includes? value "6"))))))
 
 (deftest nrepl-server-test
   (try
@@ -55,14 +53,7 @@
       (future
         (prn (sh "bash" "-c"
                  "./bb --nrepl-server 0.0.0.0:1667"))))
-    (Thread/sleep 2000)
-    (when tu/native?
-      (while (not (zero? (:exit
-                          (sh "bash" "-c"
-                              "lsof -t -i:1667"))))))
-    ;; this line makes the rest of the tests fail, why?
-    ;; (.close (java.net.Socket. "localhost" 1667))
-    (is (nrepl-command "(+ 1 2 3)" "6"))
+    (nrepl-test)
     (finally
       (if tu/jvm?
         (stop-server!)
