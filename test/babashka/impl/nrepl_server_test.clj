@@ -4,8 +4,7 @@
    [babashka.impl.nrepl-server :refer [start-server! stop-server!]]
    [babashka.test-utils :as tu]
    [clojure.java.shell :refer [sh]]
-   [clojure.string :as str]
-   [clojure.test :as t :refer [deftest is]]
+   [clojure.test :as t :refer [deftest is testing]]
    [sci.impl.opts :refer [init]]))
 
 (set! *warn-on-reflection* true)
@@ -32,6 +31,14 @@
               res)]
     res))
 
+(defn read-reply [in session id]
+  (loop []
+    (let [msg (read-msg (bencode/read-bencode in))]
+      (if (and (= (:session msg) session)
+               (= (:id msg) id))
+        msg
+        (recur)))))
+
 (defn nrepl-test []
   (with-open [socket (try-connect "127.0.0.1" 1667 5)
               in (.getInputStream socket)
@@ -39,10 +46,20 @@
               os (.getOutputStream socket)]
     (bencode/write-bencode os {"op" "clone"})
     (let [session (:new-session (read-msg (bencode/read-bencode in)))]
-      (bencode/write-bencode os {"op" "eval" "code" "(+ 1 2 3)" "session" session "id" 1})
-      (let [msg (read-msg (bencode/read-bencode in))
-            value (:value msg)]
-        (is (str/includes? value "6"))))))
+      (testing "session"
+        (is session))
+      (testing "eval"
+        (bencode/write-bencode os {"op" "eval" "code" "(+ 1 2 3)" "session" session "id" 1})
+        (let [msg (read-reply in session 1)
+              id (:id msg)
+              value (:value msg)]
+          (is (= 1 id))
+          (is (= value "6"))))
+      (testing "load-file"
+        (bencode/write-bencode os {"op" "load-file" "file" "(ns foo) (defn foo [] :foo)" "session" session "id" 2})
+        (read-reply in session 2)
+        (bencode/write-bencode os {"op" "eval" "code" "(foo)" "session" session "id" 3})
+        (is (= ":foo" (:value (read-reply in session 3))))))))
 
 (deftest nrepl-server-test
   (try
