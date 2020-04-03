@@ -133,9 +133,9 @@
          (send o (response-for msg {"completions" []
                                     "status" #{"done"}})))))
 
-(defn interrupt [_ctx msg os threads]
+(defn interrupt [_ctx os msg threads]
   (let [session (get msg :session "none")
-        id (get msg :id "unknown")]
+        id (get msg :interrupt-id)]
     (when-let [t (get @threads [session id])]
       (when @dev? (println "Killing thread" (str session "-" id)))
       (.stop ^java.lang.Thread t))

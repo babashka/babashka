@@ -84,12 +84,12 @@
                   completions (mapv read-msg completions)
                   completions (into #{} (map (juxt :ns :candidate)) completions)]
               (is (contains? completions ["cheshire.core" "quux/generate-string"]))))))
-      #_(testing "interrupt"
+      (testing "interrupt"
         (bencode/write-bencode os {"op" "eval" "code" "(range)" "session" session "id" 9})
         (Thread/sleep 1000)
-        (bencode/write-bencode os {"op" "interrupt" "session" session "id" 9})
-        (prn (read-reply in session 9))))))
- 
+        (bencode/write-bencode os {"op" "interrupt" "session" session "interrupt-id" 9 "id" 10})
+        (is (contains? (set (:status (read-reply in session 10))) "done"))))))
+
 #_#_versions   (dict
             clojure (dict
                      incremental    0
