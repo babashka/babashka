@@ -17,18 +17,34 @@
            (Thread/sleep 500)
            (try-connect host port (dec max-attempts))))))
 
+(defn bytes->str [x]
+  (if (bytes? x) (String. (bytes x))
+      (str x)))
+
+(defn read-msg [msg]
+  (let [res (zipmap (map keyword (keys msg))
+                    (map #(if (bytes? %)
+                            (String. (bytes %))
+                            %)
+                         (vals msg)))
+        res (if-let [status (:status res)]
+              (assoc res :status (mapv bytes->str status))
+              res)]
+    res))
+
 (defn nrepl-command [expr expected]
   (with-open [socket (try-connect "127.0.0.1" 1667 5)
               in (.getInputStream socket)
               in (java.io.PushbackInputStream. in)
               os (.getOutputStream socket)]
-    (bencode/write-bencode os {"op" "eval" "code" expr})
-    (let [msg (bencode/read-bencode in)
-          value (bytes (get msg "value"))
-          s (String. value)]
-      (is (str/includes? s expected)
-          (format "\"%s\" does not contain \"%s\""
-                  s expected)))))
+    (bencode/write-bencode os {"op" "clone"})
+    (let [session (:new-session (read-msg (bencode/read-bencode in)))]
+      (bencode/write-bencode os {"op" "eval" "code" expr "session" session "id" 1})
+      (let [msg (read-msg (bencode/read-bencode in))
+            value (:value msg)]
+        (is (str/includes? value expected)
+            (format "\"%s\" does not contain \"%s\""
+                    value expected))))))
 
 (deftest nrepl-server-test
   (try
