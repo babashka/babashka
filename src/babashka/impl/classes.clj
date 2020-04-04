@@ -23,6 +23,7 @@
           java.io.IOException
           java.io.OutputStream
           java.io.FileReader
+          java.io.PushbackInputStream
           java.io.Reader
           java.io.StringReader
           java.io.StringWriter

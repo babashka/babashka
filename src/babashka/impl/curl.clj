@@ -1,12 +1,16 @@
 (ns babashka.impl.curl
   {:no-doc true}
-  (:require [babashka.curl :as curl]))
+  (:require [babashka.curl :as curl]
+            [sci.impl.namespaces :refer [copy-var]]
+            [sci.impl.vars :as vars]))
+
+(def tns (vars/->SciNamespace 'babashka.curl nil))
 
 (def curl-namespace
-  {'request curl/request
-   'get curl/get
-   'patch curl/patch
-   'post curl/post
-   'put curl/put
-   'head curl/head
-   'curl-command curl/curl-command})
+  {'request (copy-var curl/request tns)
+   'get (copy-var curl/get tns)
+   'patch (copy-var curl/patch tns)
+   'post (copy-var curl/post tns)
+   'put (copy-var curl/put tns)
+   'head (copy-var curl/head tns)
+   'curl-command (copy-var curl/curl-command tns)})
