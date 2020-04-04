@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+set -eou pipefail
+
+export BABASHKA_CLASSPATH=$(clojure -Sdeps '{:deps {borkdude/bencode {:git/url "https://github.com/borkdude/bencode" :sha "fc2bd007fee318cb04fdb9e0844e69d42cacaf36" :deps/manifest :deps}}}' -Spath)
+
+ENV=${BABASHKA_TEST_ENV:-}
+
+if [  "$ENV" = "native" ]; then
+    BB_CMD="./bb"
+else
+    BB_CMD="lein bb"
+fi
+
+$BB_CMD -e "
+(require '[bencode.core :as bencode] :reload-all)
+(with-open [os (java.io.ByteArrayOutputStream.)] (bencode/write-bencode os {\"greeting\" \"Good morning\"}) (str os))
+"

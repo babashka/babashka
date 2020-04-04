@@ -357,6 +357,7 @@ Everything after that is bound to *command-line-args*."))
                  :imports '{ArithmeticException java.lang.ArithmeticException
                             AssertionError java.lang.AssertionError
                             Boolean java.lang.Boolean
+                            Byte java.lang.Byte
                             Class java.lang.Class
                             Double java.lang.Double
                             Exception java.lang.Exception

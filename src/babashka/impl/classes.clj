@@ -31,6 +31,7 @@
           java.lang.ArithmeticException
           java.lang.AssertionError
           java.lang.Boolean
+          java.lang.Byte
           java.lang.Class
           java.lang.Double
           java.lang.Exception
