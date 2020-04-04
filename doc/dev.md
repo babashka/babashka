@@ -1,5 +1,9 @@
 # Developing Babashka
 
+You need [lein](https://leiningen.org/) for running JVM tests and/or producing uberjars. For building binaries you need GraalVM. Currently we use java8-19.3.1.
+
+## Clone repository
+
 To work on Babashka itself make sure Git submodules are checked out.
 
 ``` shellsession
@@ -11,8 +15,6 @@ To update later on:
 ``` shellsession
 $ git submodule update --recursive
 ```
-
-You need [Leiningen](https://leiningen.org/), and for building binaries you need GraalVM.
 
 ## REPL
 
@@ -47,11 +49,23 @@ To build this project, set `$GRAALVM_HOME` to the GraalVM distribution directory
 
 Then run:
 
-    script/compile
+    $ script/compile
+
+To tweak maximum heap size:
+
+```
+$ BABASHKA_XMX="-J-Xmx4g" script/compile
+```
 
 ## Binary size
 
 Keep notes here about how adding libraries and classes to Babashka affects the binary size.
+
+2020/03/28 Added java.nio.file.FileSystem(s) to support extracting zip files
+42562284 - 42021244 = 541kb added.
+
+2020/03/22 Added java.io.FileReader
+42025276 - 42008876 = 16kb added.
 
 2020/03/20 Added transit write, writer, read, reader
 42004796 - 41025212 = 980kb added (305kb zipped).

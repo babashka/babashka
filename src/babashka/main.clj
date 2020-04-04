@@ -2,18 +2,20 @@
   {:no-doc true}
   (:require
    [babashka.impl.async :refer [async-namespace async-protocols-namespace]]
+   [babashka.impl.bencode :refer [bencode-namespace]]
    [babashka.impl.cheshire :refer [cheshire-core-namespace]]
    [babashka.impl.classes :as classes]
    [babashka.impl.classpath :as cp]
    [babashka.impl.clojure.core :refer [core-extras]]
    [babashka.impl.clojure.java.io :refer [io-namespace]]
    [babashka.impl.clojure.java.shell :refer [shell-namespace]]
-   [babashka.impl.clojure.main :refer [demunge]]
+   [babashka.impl.clojure.main :as clojure-main :refer [demunge]]
    [babashka.impl.clojure.pprint :refer [pprint-namespace]]
    [babashka.impl.clojure.stacktrace :refer [stacktrace-namespace]]
    [babashka.impl.common :as common]
    [babashka.impl.csv :as csv]
    [babashka.impl.curl :refer [curl-namespace]]
+   [babashka.impl.nrepl-server :as nrepl-server]
    ;; see https://github.com/oracle/graal/issues/1784
    #_[babashka.impl.pipe-signal-handler :refer [handle-pipe! pipe-signal-received?]]
    [babashka.impl.repl :as repl]
@@ -116,6 +118,12 @@
                               (assoc opts-map
                                      :socket-repl (or (first options)
                                                       "1666"))))
+                     ("--nrepl-server")
+                     (let [options (next options)]
+                       (recur (next options)
+                              (assoc opts-map
+                                     :nrepl (or (first options)
+                                                      "1667"))))
                      ("--eval", "-e")
                      (let [options (next options)]
                        (recur (next options)
@@ -159,7 +167,7 @@
 (def usage-string "Usage: bb [ -i | -I ] [ -o | -O ] [ --stream ] [--verbose]
           [ ( --classpath | -cp ) <cp> ] [ --uberscript <file> ]
           [ ( --main | -m ) <main-namespace> | -e <expression> | -f <file> |
-            --repl | --socket-repl [<host>:]<port> ]
+            --repl | --socket-repl [<host>:]<port> | --nrepl-server [<host>:]<port> ]
           [ arg* ]")
 (defn print-usage []
   (println usage-string))
@@ -189,6 +197,7 @@
   -m, --main <ns>     Call the -main function from namespace with args.
   --repl              Start REPL. Use rlwrap for history.
   --socket-repl       Start socket REPL. Specify port (e.g. 1666) or host and port separated by colon (e.g. 127.0.0.1:1666).
+  --nrepl-server      Start nREPL server. Specify port (e.g. 1667) or host and port separated by colon (e.g. 127.0.0.1:1667).
   --time              Print execution time before exiting.
   --                  Stop parsing args and pass everything after -- to *command-line-args*
 
@@ -219,6 +228,11 @@ Everything after that is bound to *command-line-args*."))
   ;; hang until SIGINT
   @(promise))
 
+(defn start-nrepl! [address ctx]
+  (nrepl-server/start-server! ctx address)
+  ;; hang until SIGINT
+  #_@(promise))
+
 (defn exit [n]
   (throw (ex-info "" {:bb/exit-code n})))
 
@@ -233,7 +247,8 @@ Everything after that is bound to *command-line-args*."))
     csv clojure.data.csv
     json cheshire.core
     curl babashka.curl
-    transit cognitect.transit})
+    transit cognitect.transit
+    bencode bencode.core})
 
 (def cp-state (atom nil))
 
@@ -259,13 +274,15 @@ Everything after that is bound to *command-line-args*."))
    'clojure.data.csv csv/csv-namespace
    'cheshire.core cheshire-core-namespace
    'clojure.stacktrace stacktrace-namespace
-   'clojure.main {'demunge demunge}
+   'clojure.main {'demunge demunge
+                  'repl-requires clojure-main/repl-requires}
    'clojure.repl {'demunge demunge}
    'clojure.test t/clojure-test-namespace
    'babashka.classpath {'add-classpath add-classpath*}
    'clojure.pprint pprint-namespace
    'babashka.curl curl-namespace
-   'cognitect.transit transit-namespace})
+   'cognitect.transit transit-namespace
+   'bencode.core bencode-namespace})
 
 (def bindings
   {'java.lang.System/exit exit ;; override exit, so we have more control
@@ -296,7 +313,7 @@ Everything after that is bound to *command-line-args*."))
             {:keys [:version :shell-in :edn-in :shell-out :edn-out
                     :help? :file :command-line-args
                     :expressions :stream? :time?
-                    :repl :socket-repl
+                    :repl :socket-repl :nrepl
                     :verbose? :classpath
                     :main :uberscript] :as _opts}
             (parse-opts args)
@@ -341,6 +358,7 @@ Everything after that is bound to *command-line-args*."))
                  :imports '{ArithmeticException java.lang.ArithmeticException
                             AssertionError java.lang.AssertionError
                             Boolean java.lang.Boolean
+                            Byte java.lang.Byte
                             Class java.lang.Class
                             Double java.lang.Double
                             Exception java.lang.Exception
@@ -404,6 +422,7 @@ Everything after that is bound to *command-line-args*."))
                        [(print-help) 0]
                        repl [(repl/start-repl! sci-ctx) 0]
                        socket-repl [(start-socket-repl! socket-repl sci-ctx) 0]
+                       nrepl [(start-nrepl! nrepl sci-ctx) 0]
                        (not (str/blank? expression))
                        (try
                          (loop []
@@ -447,7 +466,8 @@ Everything after that is bound to *command-line-args*."))
 (defn -main
   [& args]
   (if-let [dev-opts (System/getenv "BABASHKA_DEV")]
-    (let [{:keys [:n]} (edn/read-string dev-opts)
+    (let [{:keys [:n]} (if (= "true" dev-opts) {:n 1}
+                           (edn/read-string dev-opts))
           last-iteration (dec n)]
       (dotimes [i n]
         (if (< i last-iteration)

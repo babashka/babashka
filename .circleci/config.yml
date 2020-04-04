@@ -67,7 +67,7 @@ jobs:
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
-      GRAALVM_HOME: /home/circleci/graalvm-ce-java8-19.3.0
+      GRAALVM_HOME: /home/circleci/graalvm-ce-java8-19.3.1
       BABASHKA_PLATFORM: linux # used in release script
       BABASHKA_TEST_ENV: native
     steps:
@@ -99,9 +99,9 @@ jobs:
           name: Download GraalVM
           command: |
             cd ~
-            if ! [ -d graalvm-ce-java8-19.3.0 ]; then
-              curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-19.3.0/graalvm-ce-java8-linux-amd64-19.3.0.tar.gz
-              tar xzf graalvm-ce-java8-linux-amd64-19.3.0.tar.gz
+            if ! [ -d graalvm-ce-java8-19.3.1 ]; then
+              curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-19.3.1/graalvm-ce-java8-linux-amd64-19.3.1.tar.gz
+              tar xzf graalvm-ce-java8-linux-amd64-19.3.1.tar.gz
             fi
       - run:
           name: Build binary
@@ -120,7 +120,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-            - ~/graalvm-ce-java8-19.3.0
+            - ~/graalvm-ce-java8-19.3.1
           key: linux-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - store_artifacts:
           path: /tmp/release
@@ -135,7 +135,7 @@ jobs:
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
-      GRAALVM_HOME: /home/circleci/graalvm-ce-java8-19.3.0
+      GRAALVM_HOME: /home/circleci/graalvm-ce-java8-19.3.1
       BABASHKA_PLATFORM: linux-static # used in release script
       BABASHKA_TEST_ENV: native
       BABASHKA_STATIC: true
@@ -168,9 +168,9 @@ jobs:
           name: Download GraalVM
           command: |
             cd ~
-            if ! [ -d graalvm-ce-java8-19.3.0 ]; then
-              curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-19.3.0/graalvm-ce-java8-linux-amd64-19.3.0.tar.gz
-              tar xzf graalvm-ce-java8-linux-amd64-19.3.0.tar.gz
+            if ! [ -d graalvm-ce-java8-19.3.1 ]; then
+              curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-19.3.1/graalvm-ce-java8-linux-amd64-19.3.1.tar.gz
+              tar xzf graalvm-ce-java8-linux-amd64-19.3.1.tar.gz
             fi
       - run:
           name: Build binary
@@ -189,7 +189,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-            - ~/graalvm-ce-java8-19.3.0
+            - ~/graalvm-ce-java8-19.3.1
           key: linux-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - store_artifacts:
           path: /tmp/release
@@ -202,7 +202,7 @@ jobs:
     macos:
       xcode: "9.0"
     environment:
-      GRAALVM_HOME: /Users/distiller/graalvm-ce-java8-19.3.0/Contents/Home
+      GRAALVM_HOME: /Users/distiller/graalvm-ce-java8-19.3.1/Contents/Home
       BABASHKA_PLATFORM: macos # used in release script
       BABASHKA_TEST_ENV: native
     steps:
@@ -218,19 +218,19 @@ jobs:
       - run:
           name: Install Clojure
           command: |
-            .circleci/script/install-clojure /usr/local
+            script/install-clojure /usr/local
       - run:
           name: Install Leiningen
           command: |
-            .circleci/script/install-leiningen
+            script/install-leiningen
       - run:
           name: Download GraalVM
           command: |
             cd ~
             ls -la
-            if ! [ -d graalvm-ce-java8-19.3.0 ]; then
-              curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-19.3.0/graalvm-ce-java8-darwin-amd64-19.3.0.tar.gz
-              tar xzf graalvm-ce-java8-darwin-amd64-19.3.0.tar.gz
+            if ! [ -d graalvm-ce-java8-19.3.1 ]; then
+              curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-19.3.1/graalvm-ce-java8-darwin-amd64-19.3.1.tar.gz
+              tar xzf graalvm-ce-java8-darwin-amd64-19.3.1.tar.gz
             fi
       - run:
           name: Build binary
@@ -249,7 +249,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-            - ~/graalvm-ce-java8-19.3.0
+            - ~/graalvm-ce-java8-19.3.1
           key: mac-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - store_artifacts:
           path: /tmp/release

@@ -19,7 +19,8 @@
                  [org.clojure/data.csv "1.0.0"]
                  [cheshire "5.10.0"]
                  [fipp "0.6.22"]
-                 [com.cognitect/transit-clj "1.0.324"]]
+                 [com.cognitect/transit-clj "1.0.324"]
+                 #_[nrepl/bencode "1.0.0"]]
   :profiles {:test {:dependencies [[clj-commons/conch "0.9.2"]
                                    [com.clojure-goes-fast/clj-async-profiler "0.4.0"]]}
              :uberjar {:global-vars {*assert* false}

@@ -1,0 +1,345 @@
+name: build
+
+on: [push
+    , pull_request
+    ]
+
+jobs:
+
+  scratch:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+          submodules: 'true'
+
+      - name: Scratch
+        run: |
+          echo "Scratch"
+
+  jvm:
+    # ubuntu 18.04 comes with lein + java8 installed
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+          submodules: 'true'
+ 
+      - name: Cache deps
+        uses: actions/cache@v1
+        id: cache-deps
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('project.clj') }}
+          restore-keys: |
+                ${{ runner.os }}-maven-
+
+      - name: Fetch deps
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+        run: |
+          lein deps
+
+      - name: Run tests
+        run: |
+          script/test
+
+      - name: Test libraries
+        run: |
+          sudo script/install-clojure
+          script/run_lib_tests
+
+      - name: Build uberjar
+        run: |
+          lein with-profiles +reflection do run
+          lein do clean, uberjar
+
+      - name: Babashka version
+        id: babashka-version
+        run: |
+          BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
+          echo "##[set-output name=version;]${BABASHKA_VERSION}"
+
+      - name: Reflection artifact
+        run: |
+          cp reflection.json babashka-${{ steps.babashka-version.outputs.version }}-reflection.json
+
+      - uses: actions/upload-artifact@v1
+        with:
+          name: jar
+          path: target/babashka-${{ steps.babashka-version.outputs.version }}-standalone.jar
+
+      - uses: actions/upload-artifact@v1
+        with:
+          name: reflection.json
+          path: babashka-${{ steps.babashka-version.outputs.version }}-reflection.json
+
+  linux:
+    needs: [jvm]
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+          submodules: 'true'
+
+      - uses: actions/download-artifact@v1
+        with:
+          name: jar
+          path: .
+
+      - uses: actions/download-artifact@v1
+        with:
+          name: reflection.json
+          path: .
+
+      - name: Cache deps
+        uses: actions/cache@v1
+        id: cache-deps
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('project.clj') }}
+          restore-keys: |
+                ${{ runner.os }}-maven-
+
+      - name: Cache GraalVM
+        uses: actions/cache@v1
+        id: cache-graalvm
+        with:
+          path: ~/graalvm-ce-java8-19.3.1
+          key: ${{ runner.os }}-graalvm-19.3.1
+          restore-keys: |
+                ${{ runner.os }}-graalvm-19.3.1
+
+      - name: Download GraalVM
+        run: |
+          cd ~
+          if ! [ -d graalvm-ce-java8-19.3.1 ]; then
+            curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-19.3.1/graalvm-ce-java8-linux-amd64-19.3.1.tar.gz
+            tar xzf graalvm-ce-java8-linux-amd64-19.3.1.tar.gz
+          fi
+
+      - name: Babashka version
+        id: babashka-version
+        run: |
+          BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
+          echo "##[set-output name=version;]${BABASHKA_VERSION}"
+
+      - name: Build Linux native image
+        run: |
+          export BABASHKA_JAR=babashka-${{ steps.babashka-version.outputs.version }}-standalone.jar
+          export BABASHKA_XMX="-J-Xmx6g"
+          export GRAALVM_HOME="$HOME/graalvm-ce-java8-19.3.1"
+          cp babashka-${{ steps.babashka-version.outputs.version }}-reflection.json reflection.json
+          script/compile
+
+      - name: Test binary
+        run: |
+          BABASHKA_TEST_ENV=native script/test
+
+      - name: Install clojure
+        run: |
+          sudo script/install-clojure /usr/local
+
+      - name: Test libraries
+        run: |
+          BABASHKA_TEST_ENV=native script/run_lib_tests
+
+      - uses: actions/upload-artifact@v1
+        with:
+          path: bb
+          name: babashka-${{ steps.babashka-version.outputs.version }}-linux-amd64.zip
+
+  linux-static:
+    needs: [jvm]
+    runs-on: ubuntu-16.04
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+          submodules: 'true'
+
+      - uses: actions/download-artifact@v1
+        with:
+          name: jar
+          path: .
+
+      - uses: actions/download-artifact@v1
+        with:
+          name: reflection.json
+          path: .
+
+      - name: Cache deps
+        uses: actions/cache@v1
+        id: cache-deps
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('project.clj') }}
+          restore-keys: |
+                ${{ runner.os }}-maven-
+
+      - name: Cache GraalVM
+        uses: actions/cache@v1
+        id: cache-graalvm
+        with:
+          path: ~/graalvm-ce-java8-19.3.1
+          key: ${{ runner.os }}-graalvm-19.3.1
+          restore-keys: |
+                ${{ runner.os }}-graalvm-19.3.1
+
+      - name: Download GraalVM
+        run: |
+          cd ~
+          if ! [ -d graalvm-ce-java8-19.3.1 ]; then
+            curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-19.3.1/graalvm-ce-java8-linux-amd64-19.3.1.tar.gz
+            tar xzf graalvm-ce-java8-linux-amd64-19.3.1.tar.gz
+          fi
+
+      - name: Babashka version
+        id: babashka-version
+        run: |
+          BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
+          echo "##[set-output name=version;]${BABASHKA_VERSION}"
+
+      - name: Build Linux native image
+        run: |
+          export BABASHKA_JAR=babashka-${{ steps.babashka-version.outputs.version }}-standalone.jar
+          export BABASHKA_XMX="-J-Xmx6g"
+          export GRAALVM_HOME="$HOME/graalvm-ce-java8-19.3.1"
+          export BABASHKA_STATIC=true
+          cp babashka-${{ steps.babashka-version.outputs.version }}-reflection.json reflection.json
+          script/compile
+
+      - name: Test binary
+        run: |
+          ./bb '(+ 1 2 3)'
+          BABASHKA_TEST_ENV=native script/test
+
+      - name: Install clojure
+        run: |
+          sudo script/install-clojure
+
+      - name: Test libraries
+        run: |
+          BABASHKA_TEST_ENV=native script/run_lib_tests
+
+      - uses: actions/upload-artifact@v1
+        with:
+          path: bb
+          name: babashka-${{ steps.babashka-version.outputs.version }}-linux-static-amd64.zip
+
+  mac:
+    needs: [jvm]
+    runs-on: macOS-latest
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+          submodules: 'true'
+
+      - uses: actions/download-artifact@v1
+        with:
+          name: jar
+          path: .
+
+      - uses: actions/download-artifact@v1
+        with:
+          name: reflection.json
+          path: .
+
+      - name: Cache GraalVM
+        uses: actions/cache@v1
+        id: cache-graalvm
+        with:
+          path: ~/graalvm-ce-java8-19.3.1
+          key: ${{ runner.os }}-graalvm-19.3.1
+          restore-keys: |
+                ${{ runner.os }}-graalvm-19.3.1
+
+      - name: Download GraalVM
+        run: |
+          cd ~
+          if ! [ -d graalvm-ce-java8-19.3.1 ]; then
+            curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-19.3.1/graalvm-ce-java8-darwin-amd64-19.3.1.tar.gz
+            tar xzf graalvm-ce-java8-darwin-amd64-19.3.1.tar.gz
+          fi
+
+      - name: Babashka version
+        id: babashka-version
+        run: |
+          BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
+          echo "##[set-output name=version;]${BABASHKA_VERSION}"
+
+      - name: Build macOS native image
+        run: |
+          export BABASHKA_JAR=babashka-${{ steps.babashka-version.outputs.version }}-standalone.jar
+          export BABASHKA_XMX="-J-Xmx6g"
+          export GRAALVM_HOME="$HOME/graalvm-ce-java8-19.3.1/Contents/Home"
+          cp babashka-${{ steps.babashka-version.outputs.version }}-reflection.json reflection.json
+          script/compile
+
+      - name: Test binary
+        run: |
+          sudo script/install-leiningen
+          BABASHKA_TEST_ENV=native script/test
+
+      - name: Test libraries
+        run: |
+          sudo script/install-clojure
+          BABASHKA_TEST_ENV=native script/run_lib_tests
+
+      - uses: actions/upload-artifact@v1
+        with:
+          path: bb
+          name: babashka-${{ steps.babashka-version.outputs.version }}-macos-amd64.zip
+
+  deploy:
+    needs: [jvm, linux, linux-static, mac]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+          submodules: 'true'
+
+      - name: Cache deps
+        uses: actions/cache@v1
+        id: cache-deps
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('project.clj') }}
+          restore-keys: |
+                ${{ runner.os }}-maven-
+
+      - name: Deploy
+        env:
+          CLOJARS_USER: "${{ secrets.CLOJARS_USER }}"
+          CLOJARS_PASS: "${{ secrets.CLOJARS_PASS }}"
+        run: |
+          .github/script/deploy
+
+  docker:
+    needs: [jvm, linux, linux-static, mac]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+          submodules: 'true'
+
+      - name: Docker build
+        env:
+          DOCKERHUB_USER: "${{ secrets.DOCKERHUB_USER }}"
+          DOCKERHUB_PASS: "${{ secrets.DOCKERHUB_PASS }}"
+        run: |
+          .github/script/docker

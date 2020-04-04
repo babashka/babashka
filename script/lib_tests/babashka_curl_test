@@ -11,23 +11,23 @@ else
 fi
 
 $BB_CMD -e "
-(require '[babashka.curl :as curl])
+(require '[babashka.curl :as curl] :reload-all)
 
-(prn (subs (curl/get \"https://www.clojure.org\") 0 10))
+(prn (:status (curl/get \"https://www.clojure.org\")))
 
-(prn (subs (curl/get \"https://postman-echo.com/get?foo1=bar1&foo2=bar2\") 0 10))
+(prn (:status (curl/get \"https://postman-echo.com/get?foo1=bar1&foo2=bar2\")))
 
-(prn (subs (curl/post \"https://postman-echo.com/post\") 0 10))
+(prn (:status (curl/post \"https://postman-echo.com/post\")))
 
-(prn (subs (curl/post \"https://postman-echo.com/post\"
-                {:body (json/generate-string {:a 1})
+(prn (:status (curl/post \"https://postman-echo.com/post\"
+                 {:body (json/generate-string {:a 1})
                  :headers {\"X-Hasura-Role\" \"admin\"}
                  :content-type :json
-                 :accept :json}) 0 10))
+                 :accept :json})))
 
-(prn (subs (curl/put \"https://postman-echo.com/put\"
+(prn (:status (curl/put \"https://postman-echo.com/put\"
                           {:body (json/generate-string {:a 1})
                  :headers {\"X-Hasura-Role\" \"admin\"}
                  :content-type :json
-                 :accept :json}) 0 10))
+                 :accept :json})))
 "

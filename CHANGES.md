@@ -2,6 +2,11 @@
 
 ## Breaking changes
 
+## v0.0.79
+- [babashka.curl#9](https://github.com/borkdude/babashka.curl/issues/9):
+  BREAKING! Functions in `babashka.curl` like `get`, `post`, etc. now always
+  return a map with `:status`, `:body`, and `:headers`.
+
 ## v0.0.71
 - #267 Change behavior of reader conditionals: the `:clj` branch is taken when
   it occurs before a `:bb` branch.

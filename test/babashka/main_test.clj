@@ -369,6 +369,18 @@
 (deftest available-stream-test
   (is (= 0 (bb nil "(.available System/in)"))))
 
+(deftest file-reader-test
+  (when (str/includes? (str/lower-case (System/getProperty "os.name")) "linux")
+    (let [v (bb nil "(slurp (io/reader (java.io.FileReader. \"/proc/loadavg\")))")]
+      (prn "output:" v)
+      (is v))))
+
+(deftest download-and-extract-test
+  (is (= 6 (bb nil (io/file "test" "babashka" "scripts" "download_and_extract_zip.bb")))))
+
+(deftest get-message-on-exception-info-test
+  (is "foo" (bb nil "(try (throw (ex-info \"foo\" {})) (catch Exception e (.getMessage e)))")))
+
 ;;;; Scratch
 
 (comment

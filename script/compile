@@ -2,16 +2,16 @@
 
 set -eo pipefail
 
+if [ -z "$BABASHKA_XMX" ]; then
+    export BABASHKA_XMX="-J-Xmx3g"
+fi
+
 if [ -z "$GRAALVM_HOME" ]; then
     echo "Please set GRAALVM_HOME"
     exit 1
 fi
 
-if [ -z "$BABASHKA_XMX" ]; then
-    export BABASHKA_XMX="-J-Xmx3g"
-fi
-
-"$GRAALVM_HOME/bin/gu" install native-image || true
+$GRAALVM_HOME/bin/gu install native-image
 
 BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
 
@@ -19,11 +19,16 @@ export JAVA_HOME=$GRAALVM_HOME
 
 $GRAALVM_HOME/bin/javac -cp $GRAALVM_HOME/jre/lib/svm/builder/svm.jar resources/CutOffCoreServicesDependencies.java
 
-lein with-profiles +reflection do run
-lein do clean, uberjar
+if [ -z "$BABASHKA_JAR" ]; then
+   lein with-profiles +reflection do run
+   lein do clean, uberjar
+  BABASHKA_JAR=${BABASHKA_JAR:-"target/babashka-$BABASHKA_VERSION-standalone.jar"}
+fi
 
-args=( -jar target/babashka-$BABASHKA_VERSION-standalone.jar \
-            -H:Name=bb \
+BABASHKA_BINARY=${BABASHKA_BINARY:-"bb"}
+
+args=( -jar $BABASHKA_JAR \
+            -H:Name=$BABASHKA_BINARY \
             -H:+ReportExceptionStackTraces \
             -J-Dclojure.spec.skip-macros=true \
             -J-Dclojure.compiler.direct-linking=true \
@@ -48,4 +53,6 @@ fi
 
 $GRAALVM_HOME/bin/native-image "${args[@]}"
 
-lein clean
+if [ ! -z "$(command -v lein)" ]; then
+    lein clean
+fi
