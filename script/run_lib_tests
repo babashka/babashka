@@ -11,4 +11,3 @@ script/lib_tests/medley_test
 script/lib_tests/babashka_curl_test
 script/lib_tests/cprop_test
 script/lib_tests/comb_test
-script/lib_tests/bencode_test
