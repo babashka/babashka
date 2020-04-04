@@ -18,7 +18,7 @@ set PATH=%PATH%;%GRAALVM_HOME%\bin
 set /P BABASHKA_VERSION=< resources\BABASHKA_VERSION
 echo Building Babashka %BABASHKA_VERSION%
 
-call lein bb (+ 1 2 3)
+call lein bb "(+ 1 2 3)"
 
 call lein with-profiles +reflection do run
 if %errorlevel% neq 0 exit /b %errorlevel%
@@ -46,7 +46,7 @@ call %GRAALVM_HOME%\bin\native-image.cmd ^
 
 if %errorlevel% neq 0 exit /b %errorlevel%
 
-call bb (+ 1 2 3)
+call bb "(+ 1 2 3)"
 
 echo Creating zip archive
 jar -cMf babashka-%BABASHKA_VERSION%-windows-amd64.zip bb.exe
