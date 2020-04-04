@@ -88,10 +88,10 @@
     (or (when (and (identical? :unqualified qualifier) (re-find pat sym-name))
           [sym-ns sym-name])
         (when sym-ns
-          (or (when (re-find pat (str sym-ns "/" sym-name))
-                [sym-ns (str sym-ns "/" sym-name)])
-              (when (re-find pat (str (get ns->alias (symbol sym-ns)) "/" sym-name))
-                [sym-ns (str (get ns->alias (symbol sym-ns)) "/" sym-name)]))))))
+          (or (when (re-find pat (str (get ns->alias (symbol sym-ns)) "/" sym-name))
+                [sym-ns (str (get ns->alias (symbol sym-ns)) "/" sym-name)])
+              (when (re-find pat (str sym-ns "/" sym-name))
+                [sym-ns (str sym-ns "/" sym-name)]))))))
 
 (defn complete [ctx o msg]
   (try

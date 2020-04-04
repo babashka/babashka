@@ -2,10 +2,10 @@
   (:require
    [babashka.impl.bencode.core :as bencode]
    [babashka.impl.nrepl-server :refer [start-server! stop-server!]]
+   [babashka.main :as main]
    [babashka.test-utils :as tu]
    [babashka.wait :as wait]
    [cheshire.core :as cheshire]
-   [clojure.java.shell :refer [sh]]
    [clojure.test :as t :refer [deftest is testing]]
    [sci.impl.opts :refer [init]])
   (:import [java.lang ProcessBuilder$Redirect]))
@@ -41,29 +41,31 @@
               in (java.io.PushbackInputStream. in)
               os (.getOutputStream socket)]
     (bencode/write-bencode os {"op" "clone"})
-    (let [session (:new-session (read-msg (bencode/read-bencode in)))]
+    (let [session (:new-session (read-msg (bencode/read-bencode in)))
+          id (atom 0)
+          new-id! #(swap! id inc)]
       (testing "session"
         (is session))
       (testing "eval"
-        (bencode/write-bencode os {"op" "eval" "code" "(+ 1 2 3)" "session" session "id" 1})
-        (let [msg (read-reply in session 1)
+        (bencode/write-bencode os {"op" "eval" "code" "(+ 1 2 3)" "session" session "id" (new-id!)})
+        (let [msg (read-reply in session @id)
               id (:id msg)
               value (:value msg)]
           (is (= 1 id))
           (is (= value "6"))))
       (testing "load-file"
-        (bencode/write-bencode os {"op" "load-file" "file" "(ns foo) (defn foo [] :foo)" "session" session "id" 2})
-        (read-reply in session 2)
-        (bencode/write-bencode os {"op" "eval" "code" "(foo)" "ns" "foo" "session" session "id" 3})
-        (is (= ":foo" (:value (read-reply in session 3)))))
+        (bencode/write-bencode os {"op" "load-file" "file" "(ns foo) (defn foo [] :foo)" "session" session "id" (new-id!)})
+        (read-reply in session @id)
+        (bencode/write-bencode os {"op" "eval" "code" "(foo)" "ns" "foo" "session" session "id" (new-id!)})
+        (is (= ":foo" (:value (read-reply in session @id)))))
       (testing "complete"
         (testing "completions for fo"
           (bencode/write-bencode os {"op" "complete"
                                      "symbol" "fo"
                                      "session" session
-                                     "id" 4
+                                     "id" (new-id!)
                                      "ns" "foo"})
-          (let [reply (read-reply in session 4)
+          (let [reply (read-reply in session @id)
                 completions (:completions reply)
                 completions (mapv read-msg completions)
                 completions (into #{} (map (juxt :ns :candidate)) completions)]
@@ -72,19 +74,29 @@
         (testing "completions for quux should be empty"
           (bencode/write-bencode os {"op" "complete"
                                      "symbol" "quux"
-                                     "session" session "id" 6
+                                     "session" session "id" (new-id!)
                                      "ns" "foo"})
-          (let [reply (read-reply in session 6)
+          (let [reply (read-reply in session @id)
                 completions (:completions reply)]
             (is (empty? completions)))
           (testing "unless quux is an alias"
-            (bencode/write-bencode os {"op" "eval" "code" "(require '[cheshire.core :as quux])" "session" session "id" 7})
-            (bencode/write-bencode os {"op" "complete" "symbol" "quux" "session" session "id" 8})
-            (let [reply (read-reply in session 8)
+            (bencode/write-bencode os {"op" "eval" "code" "(require '[cheshire.core :as quux])" "session" session "id" (new-id!)})
+            (read-reply in session @id)
+            (bencode/write-bencode os {"op" "complete" "symbol" "quux" "session" session "id" (new-id!)})
+            (let [reply (read-reply in session @id)
                   completions (:completions reply)
                   completions (mapv read-msg completions)
                   completions (into #{} (map (juxt :ns :candidate)) completions)]
-              (is (contains? completions ["cheshire.core" "quux/generate-string"]))))))
+              (is (contains? completions ["cheshire.core" "quux/generate-string"])))))
+        (testing "completions for clojure.test"
+          (bencode/write-bencode os {"op" "eval" "code" "(require '[clojure.test :as test])" "session" session "id" (new-id!)})
+          (read-reply in session @id)
+          (bencode/write-bencode os {"op" "complete" "symbol" "test" "session" session "id" (new-id!)})
+          (let [reply (read-reply in session @id)
+                completions (:completions reply)
+                completions (mapv read-msg completions)
+                completions (into #{} (map (juxt :ns :candidate)) completions)]
+            (is (contains? completions ["clojure.test" "test/deftest"])))))
       #_(testing "interrupt" ;; .stop doesn't work on Thread in GraalVM, this is why we can't have this yet
           (bencode/write-bencode os {"op" "eval" "code" "(range)" "session" session "id" 9})
           (Thread/sleep 1000)
@@ -97,7 +109,7 @@
       (if tu/jvm?
         (future
           (start-server!
-           (init {:namespaces {'cheshire.core {'generate-string cheshire/generate-string}}
+           (init {:namespaces main/namespaces
                   :features #{:bb}}) "0.0.0.0:1667"))
         (let [pb (ProcessBuilder. ["./bb" "--nrepl-server" "0.0.0.0:1667"])
               _ (.redirectError pb ProcessBuilder$Redirect/INHERIT)
