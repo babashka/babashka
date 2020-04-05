@@ -710,6 +710,26 @@ This can be useful for talking to Docker:
     :RepoTags) ;;=> ["borkdude/babashka:latest"]
 ```
 
+## Bencode
+
+Babashka comes with the [nrepl/bencode](https://github.com/nrepl/bencode)
+library which allows you to read and write bencode messages to a socket. A
+simple example which gets the Clojure version from an nREPL server started with
+`lein repl`:
+
+``` clojure
+(ns nrepl-client
+  (:require [bencode.core :as b]))
+
+(let [s (java.net.Socket. "localhost" 65274)
+      out (.getOutputStream s)
+      in (java.io.PushbackInputStream. (.getInputStream s))
+      _ (b/write-bencode out {"op" "describe"})
+      clojure-version (get-in (b/read-bencode in) ["versions" "clojure" "version-string"])]
+  (String. clojure-version "UTF-8")) ;;=> "1.10.0"
+```
+
+
 ## Differences with Clojure
 
 Babashka is implemented using the [Small Clojure
