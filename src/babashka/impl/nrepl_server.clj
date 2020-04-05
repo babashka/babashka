@@ -41,11 +41,10 @@
 (defn eval-msg [ctx o msg #_threads]
   (try
     (let [ns-str (get msg :ns)
+          sci-ns (when ns-str (sci-utils/namespace-object (:env ctx) (symbol ns-str) nil false))
           sw (StringWriter.)]
       (sci/with-bindings (cond-> {sci/out sw}
-                           ns-str
-                           (assoc vars/current-ns
-                                  (sci-utils/namespace-object (:env ctx) (symbol ns-str) nil false)))
+                           sci-ns (assoc vars/current-ns sci-ns))
         (when @dev? (println "current ns" (vars/current-ns-name)))
         (let [session (get msg :session "none")
               id (get msg :id "unknown")]
