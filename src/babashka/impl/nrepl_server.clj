@@ -41,21 +41,20 @@
 (defn eval-msg [ctx o msg #_threads]
   (try
     (let [ns-str (get msg :ns)
-          sci-ns (if ns-str
-                   (sci-utils/namespace-object (:env ctx) (symbol ns-str) nil false)
-                   (sci-utils/namespace-object (:env ctx) 'user nil false))]
-      (sci/binding [vars/current-ns sci-ns
-                    sci/print-length @sci/print-length]
+          sw (StringWriter.)]
+      (sci/with-bindings (cond-> {sci/out sw}
+                           ns-str
+                           (assoc vars/current-ns
+                                  (sci-utils/namespace-object (:env ctx) (symbol ns-str) nil false)))
+        (when @dev? (println "current ns" (vars/current-ns-name)))
         (let [session (get msg :session "none")
               id (get msg :id "unknown")]
           (when @dev? (println "Registering thread for" (str session "-" id)))
           ;; (swap! threads assoc [session id] (Thread/currentThread))
           (let [code-str (get msg :code)
-                sw (StringWriter.)
                 value (if (str/blank? code-str)
                         ::nil
-                        (sci/binding [sci/out sw
-                                      vars/current-ns @vars/current-ns] (eval-string* ctx code-str)))
+                        (eval-string* ctx code-str))
                 out-str (not-empty (str sw))
                 env (:env ctx)]
             (swap! env update-in [:namespaces 'clojure.core]
@@ -96,13 +95,10 @@
 (defn complete [ctx o msg]
   (try
     (let [ns-str (get msg :ns)
-          sci-ns (if ns-str
-                   (sci-utils/namespace-object (:env ctx) (symbol ns-str) nil false)
-                   (sci-utils/namespace-object (:env ctx) 'user nil false))]
-      (sci/binding [vars/current-ns sci-ns]
-        (let [
-              ;;ns-sym (symbol ns)
-              query (:symbol msg)
+          sci-ns (when ns-str
+                   (sci-utils/namespace-object (:env ctx) (symbol ns-str) nil false))]
+      (sci/binding [vars/current-ns (or sci-ns @vars/current-ns)]
+        (let [query (:symbol msg)
               from-current-ns (fully-qualified-syms ctx (eval-string* ctx "(ns-name *ns*)"))
               from-current-ns (map (fn [sym]
                                      [(namespace sym) (name sym) :unqualified])
@@ -179,7 +175,7 @@
         :describe
         (do (send os (response-for msg {"status" #{"done"}
                                         "aux" {}
-                                        "ops" (zipmap #{"clone", "describe", "eval"}
+                                        "ops" (zipmap #{"clone" "eval" "load-file" "complete" "describe"}
                                                       (repeat {}))
                                         "versions" {} #_{"nrepl" {"major" "0"
                                                                   "minor" "4"

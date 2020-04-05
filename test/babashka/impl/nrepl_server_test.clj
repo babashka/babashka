@@ -52,7 +52,23 @@
               id (:id msg)
               value (:value msg)]
           (is (= 1 id))
-          (is (= value "6"))))
+          (is (= value "6")))
+        (testing "creating a namespace and evaluating something in it"
+          (bencode/write-bencode os {"op" "eval"
+                                     "code" "(ns ns0) (defn foo [] :foo0) (ns ns1) (defn foo [] :foo1)"
+                                     "session" session
+                                     "id" (new-id!)})
+          (read-reply in session @id)
+          (testing "not providing the ns key evaluates in the last defined namespace"
+            (bencode/write-bencode os {"op" "eval" "code" "(foo)" "session" session "id" (new-id!)})
+            (is (= ":foo1" (:value (read-reply in session @id)))))
+          (testing "explicitly providing the ns key evaluates in that namespace"
+            (bencode/write-bencode os {"op" "eval"
+                                       "code" "(foo)"
+                                       "session" session
+                                       "id" (new-id!)
+                                       "ns" "ns0"})
+            (is (= ":foo0" (:value (read-reply in session @id)))))))
       (testing "load-file"
         (bencode/write-bencode os {"op" "load-file" "file" "(ns foo) (defn foo [] :foo)" "session" session "id" (new-id!)})
         (read-reply in session @id)
