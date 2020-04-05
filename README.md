@@ -1166,7 +1166,7 @@ example. If you get prompted with a login, use `admin`/`admin`.
 ## Thanks
 
 - [adgoji](https://www.adgoji.com/) for financial support
-- [CircleCI](https://circleci.com/) for providing free access to their 8GB memory tier
+- [CircleCI](https://circleci.com/) for CI and additional support
 - [Nikita Prokopov](https://github.com/tonsky) for the logo
 - [contributors](https://github.com/borkdude/babashka/graphs/contributors) and
   other users posting issues with bug reports and ideas
