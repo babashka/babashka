@@ -69,13 +69,14 @@
                                        "id" (new-id!)
                                        "ns" "ns0"})
             (is (= ":foo0" (:value (read-reply in session @id)))))
-          (testing "providing an ns value of a non-existing namespace falls back the last defined namespace"
+          (testing "providing an ns value of a non-existing namespace creates the namespace"
             (bencode/write-bencode os {"op" "eval"
-                                       "code" "(foo)"
+                                       "code" "(ns-name *ns*)"
                                        "session" session
                                        "id" (new-id!)
                                        "ns" "unicorn"})
-            (is (= ":foo1" (:value (read-reply in session @id)))))))
+            (let [reply (read-reply in session @id)]
+              (is (= "unicorn" (:value reply)))))))
       (testing "load-file"
         (bencode/write-bencode os {"op" "load-file" "file" "(ns foo) (defn foo [] :foo)" "session" session "id" (new-id!)})
         (read-reply in session @id)

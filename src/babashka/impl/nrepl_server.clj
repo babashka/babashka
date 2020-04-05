@@ -41,7 +41,7 @@
 (defn eval-msg [ctx o msg #_threads]
   (try
     (let [ns-str (get msg :ns)
-          sci-ns (when ns-str (sci-utils/namespace-object (:env ctx) (symbol ns-str) nil false))
+          sci-ns (when ns-str (sci-utils/namespace-object (:env ctx) (symbol ns-str) true nil))
           sw (StringWriter.)]
       (sci/with-bindings (cond-> {sci/out sw}
                            sci-ns (assoc vars/current-ns sci-ns))
