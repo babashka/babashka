@@ -12,6 +12,7 @@ jobs:
     environment:
       LEIN_ROOT: "true"
       BABASHKA_PLATFORM: linux # could be used in jar name
+    resource_class: large
     steps:
       - checkout
       - run:
@@ -70,6 +71,8 @@ jobs:
       GRAALVM_HOME: /home/circleci/graalvm-ce-java8-19.3.1
       BABASHKA_PLATFORM: linux # used in release script
       BABASHKA_TEST_ENV: native
+      BABASHKA_XMX: "-J-Xmx7g"
+    resource_class: large
     steps:
       - checkout
       - run:
@@ -139,6 +142,8 @@ jobs:
       BABASHKA_PLATFORM: linux-static # used in release script
       BABASHKA_TEST_ENV: native
       BABASHKA_STATIC: true
+      BABASHKA_XMX: "-J-Xmx7g"
+    resource_class: large
     steps:
       - checkout
       - run:
@@ -205,6 +210,8 @@ jobs:
       GRAALVM_HOME: /Users/distiller/graalvm-ce-java8-19.3.1/Contents/Home
       BABASHKA_PLATFORM: macos # used in release script
       BABASHKA_TEST_ENV: native
+      BABASHKA_XMX: "-J-Xmx7g"
+    resource_class: large
     steps:
       - checkout
       - run:
@@ -259,6 +266,7 @@ jobs:
           command: |
             ./bb .circleci/script/publish_artifact.clj
   deploy:
+    resource_class: large
     docker:
       - image: circleci/clojure:lein-2.8.1
     working_directory: ~/repo
@@ -282,6 +290,7 @@ jobs:
             - ~/.m2
           key: v1-dependencies-{{ checksum "project.clj" }}
   docker:
+    resource_class: large
     docker:
       - image: circleci/buildpack-deps:stretch
     steps:
