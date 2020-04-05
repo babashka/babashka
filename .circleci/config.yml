@@ -71,7 +71,7 @@ jobs:
       GRAALVM_HOME: /home/circleci/graalvm-ce-java8-19.3.1
       BABASHKA_PLATFORM: linux # used in release script
       BABASHKA_TEST_ENV: native
-      BABASHKA_XMX: "-J-Xmx7gb"
+      BABASHKA_XMX: "-J-Xmx7g"
     resource_class: large
     steps:
       - checkout
@@ -142,7 +142,7 @@ jobs:
       BABASHKA_PLATFORM: linux-static # used in release script
       BABASHKA_TEST_ENV: native
       BABASHKA_STATIC: true
-      BABASHKA_XMX: "-J-Xmx7gb"
+      BABASHKA_XMX: "-J-Xmx7g"
     resource_class: large
     steps:
       - checkout
@@ -210,7 +210,7 @@ jobs:
       GRAALVM_HOME: /Users/distiller/graalvm-ce-java8-19.3.1/Contents/Home
       BABASHKA_PLATFORM: macos # used in release script
       BABASHKA_TEST_ENV: native
-      BABASHKA_XMX: "-J-Xmx7gb"
+      BABASHKA_XMX: "-J-Xmx7g"
     resource_class: large
     steps:
       - checkout
