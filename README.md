@@ -897,6 +897,10 @@ user=> (hello "Alice")
 "Hello Alice"
 ```
 
+#### [nubank/docopt](https://github.com/nubank/docopt.clj#babashka)
+
+Docopt implementation in Clojure, compatible with babashka.
+
 #### [babashka lambda layer](https://github.com/dainiusjocas/babashka-lambda-layer)
 
 Babashka Lambda runtime packaged as a Lambda layer.
