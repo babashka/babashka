@@ -725,13 +725,12 @@ with `lein repl`:
   (let [s (java.net.Socket. "localhost" port)
         out (.getOutputStream s)
         in (java.io.PushbackInputStream. (.getInputStream s))
-        _ (b/write-bencode out {"op" "eval" "code" (pr-str expr)})
-        value (get (b/read-bencode in) "value")]
-    (read-string value)))
+        _ (b/write-bencode out {"op" "eval" "code" expr})
+        bytes (get (b/read-bencode in) "value")]
+    (String. bytes)))
 
-(nrepl-eval 65274 '(+ 1 2 3)) ;;=> 6
+(nrepl-eval 52054 "(+ 1 2 3)") ;;=> "6"
 ```
-
 
 ## Differences with Clojure
 
