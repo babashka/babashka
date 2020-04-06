@@ -36,8 +36,6 @@ As one user described it:
 * Batteries included (tools.cli, cheshire, ...)
 * Library support via popular tools like the `clojure` CLI
 
-Also see the [slides](https://speakerdeck.com/borkdude/babashka-and-the-small-clojure-interpreter-at-clojured-2020) of the Babashka talk at ClojureD 2020 ([video](https://www.youtube.com/watch?v=Nw8aN-nrdEk)).
-
 ### Non-goals
 
 * Performance<sup>1<sup>
@@ -57,8 +55,7 @@ startup time penalty. Read more about the differences with Clojure
 
 To get an overview of babashka, you can watch this talk:
 
-[![Babashka at ClojureD 2020](https://img.youtube.com/vi/Nw8aN-nrdEk/0.jpg)](https://www.youtube.com/watch?v=Nw8aN-nrdEk)
-
+[![Babashka at ClojureD 2020](https://img.youtube.com/vi/Nw8aN-nrdEk/0.jpg)](https://www.youtube.com/watch?v=Nw8aN-nrdEk) ([slides](https://speakerdeck.com/borkdude/babashka-and-the-small-clojure-interpreter-at-clojured-2020)).
 
 ## Quickstart
 
@@ -915,8 +912,10 @@ AWS Lambda runtime doesn't support signals, therefore babashka has to disable
 handling of the SIGPIPE. This can be done by setting
 `BABASHKA_DISABLE_PIPE_SIGNAL_HANDLER` to `true`.
 
-### Blogs
+### Articles, podcasts and videos
 
+- [ClojureScript podcast](https://soundcloud.com/user-959992602/s3-e5-babashka-with-michiel-borkent)
+- [Babashka talk at ClojureD](https://www.youtube.com/watch?v=Nw8aN-nrdEk) ([slides](https://speakerdeck.com/borkdude/babashka-and-the-small-clojure-interpreter-at-clojured-2020))
 - [Babashka: a quick example](https://juxt.pro/blog/posts/babashka.html) by Malcolm Sparks
 - [Clojure Start Time in 2019](https://stuartsierra.com/2019/12/21/clojure-start-time-in-2019) by Stuart Sierra
 - [Advent of Random
