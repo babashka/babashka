@@ -912,7 +912,7 @@ AWS Lambda runtime doesn't support signals, therefore babashka has to disable
 handling of the SIGPIPE. This can be done by setting
 `BABASHKA_DISABLE_PIPE_SIGNAL_HANDLER` to `true`.
 
-### Articles, podcasts and videos
+## Articles, podcasts and videos
 
 - [ClojureScript podcast](https://soundcloud.com/user-959992602/s3-e5-babashka-with-michiel-borkent) with Jacek Schae interviewing Michiel Borkent
 - [Babashka talk at ClojureD](https://www.youtube.com/watch?v=Nw8aN-nrdEk) ([slides](https://speakerdeck.com/borkdude/babashka-and-the-small-clojure-interpreter-at-clojured-2020)) by Michiel Borkent
