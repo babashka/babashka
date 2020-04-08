@@ -7,15 +7,15 @@
 
 (def shutdown-hooks (atom {}))
 
-(defn add-sigint-handler! [k f]
+(defn add-interrupt-handler! [k f]
   (swap! shutdown-hooks assoc k f))
 
 (defn handle-sigint! []
   (let [rt (Runtime/getRuntime)]
     (.addShutdownHook rt
                       (Thread. (fn []
-                                 (doseq [[_k f] @shutdown-hooks]
-                                   (f)))))
+                                 (doseq [[k f] @shutdown-hooks]
+                                   (f k)))))
     (Signal/handle
      (Signal. "INT")
      (reify SignalHandler

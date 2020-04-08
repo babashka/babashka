@@ -268,7 +268,7 @@ Everything after that is bound to *command-line-args*."))
    'babashka.wait {'wait-for-port wait/wait-for-port
                    'wait-for-path wait/wait-for-path}
    'babashka.signal {'pipe-signal-received? pipe-signal-received?
-                     'add-sigint-handler! sigint-handler/add-sigint-handler!}
+                     'add-interrupt-handler! sigint-handler/add-interrupt-handler!}
    'clojure.java.io io-namespace
    'clojure.core.async async-namespace
    'clojure.core.async.impl.protocols async-protocols-namespace
