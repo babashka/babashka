@@ -1,4 +1,4 @@
-(ns babashka.interrupt-handler-test
+(ns babashka.shutdown-hook-test
   {:no-doc true}
   (:import [java.nio.charset Charset])
   (:require [babashka.test-utils :as tu]
@@ -13,10 +13,12 @@
      (.toString bout))))
 
 (deftest interrupt-handler-test
-  (let [script (.getPath (io/file "test" "babashka" "scripts" "interrupt_handler.bb"))
+  (let [script "(-> (Runtime/getRuntime) (.addShutdownHook (Thread. #(println \"bye\"))))"
         pb (ProcessBuilder. (if tu/jvm?
-                              ["lein" "bb" script]
-                              ["./bb" script]))
+                              ["lein" "bb" "-e" script]
+                              ["./bb" "-e" script]))
         process (.start pb)
         output (.getInputStream process)]
-    (is (= "bye1 :quit\nbye2 :quit2\n"  (stream-to-string output)))))
+    (when-let [s (not-empty (stream-to-string (.getErrorStream process)))]
+      (prn "ERROR:" s))
+    (is (= "bye\n"  (stream-to-string output)))))

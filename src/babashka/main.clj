@@ -267,8 +267,7 @@ Everything after that is bound to *command-line-args*."))
    'clojure.java.shell shell-namespace
    'babashka.wait {'wait-for-port wait/wait-for-port
                    'wait-for-path wait/wait-for-path}
-   'babashka.signal {'pipe-signal-received? pipe-signal-received?
-                     'add-interrupt-handler! sigint-handler/add-interrupt-handler!}
+   'babashka.signal {'pipe-signal-received? pipe-signal-received?}
    'clojure.java.io io-namespace
    'clojure.core.async async-namespace
    'clojure.core.async.impl.protocols async-protocols-namespace
@@ -371,6 +370,7 @@ Everything after that is bound to *command-line-args*."))
                             Math java.lang.Math
                             NumberFormatException java.lang.NumberFormatException
                             Object java.lang.Object
+                            Runtime java.lang.Runtime
                             RuntimeException java.lang.RuntimeException
                             ProcessBuilder java.lang.ProcessBuilder
                             String java.lang.String
