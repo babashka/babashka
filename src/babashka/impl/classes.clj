@@ -39,6 +39,7 @@
           java.lang.Long
           java.lang.NumberFormatException
           java.lang.Math
+          java.lang.Runtime
           java.lang.RuntimeException
           java.util.concurrent.LinkedBlockingQueue
           java.lang.Object

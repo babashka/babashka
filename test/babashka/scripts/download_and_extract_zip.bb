@@ -11,7 +11,9 @@
       tmp-dir (System/getProperty "java.io.tmpdir")
       zip-file (io/file tmp-dir "bb-0.0.78.zip")
       source (URL. (format "https://github.com/borkdude/babashka/releases/download/v0.0.78/babashka-0.0.78-%s-amd64.zip" os))
-      conn ^HttpURLConnection (.openConnection ^URL source)]
+      conn ^HttpURLConnection (.openConnection ^URL source)
+      _ (.setConnectTimeout conn 2000)
+      _ (.setReadTimeout conn 2000)]
   (.connect conn)
   (with-open [is (.getInputStream conn)]
     (io/copy is zip-file))
@@ -26,6 +28,3 @@
       (.delete bb-file)
       (.delete zip-file)
       (println out))))
-
-
-
