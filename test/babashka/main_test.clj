@@ -9,8 +9,9 @@
    [clojure.test :as test :refer [deftest is testing]]
    [sci.core :as sci]))
 
-#_(defmethod clojure.test/report :begin-test-var [m]
-    (println (-> m :var meta :name)))
+(defmethod clojure.test/report :begin-test-var [m]
+  (println "===" (-> m :var meta :name))
+  (println))
 
 (defn bb [input & args]
   (edn/read-string (apply test-utils/bb (when (some? input) (str input)) (map str args))))
@@ -144,7 +145,7 @@
   (is (true? (bb nil "(.exists (io/file \"README.md\"))")))
   (is (true? (bb nil "(.canWrite (io/file \"README.md\"))"))))
 
-(deftest pipe-test
+#_(deftest pipe-test
   (when test-utils/native?
     (let [out (:out (sh "bash" "-c" "./bb -o '(range)' |
                          ./bb --stream '(* *input* *input*)' |
