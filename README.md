@@ -769,6 +769,17 @@ This can be useful for talking to Docker:
     :RepoTags) ;;=> ["borkdude/babashka:latest"]
 ```
 
+## Shutdown hook
+
+Adding a shutdown hook allows you to execute some code before the script exits.
+
+``` clojure
+$ bb -e '(-> (Runtime/getRuntime) (.addShutdownHook (Thread. #(println "bye"))))'
+bye
+```
+
+This also works when the script is interrupted with ctrl-c.
+
 ## Bencode
 
 Babashka comes with the [nrepl/bencode](https://github.com/nrepl/bencode)
