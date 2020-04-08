@@ -9,8 +9,9 @@
    [clojure.test :as test :refer [deftest is testing]]
    [sci.core :as sci]))
 
-#_(defmethod clojure.test/report :begin-test-var [m]
-    (println (-> m :var meta :name)))
+(defmethod clojure.test/report :begin-test-var [m]
+  (println "===" (-> m :var meta :name))
+  (println))
 
 (defn bb [input & args]
   (edn/read-string (apply test-utils/bb (when (some? input) (str input)) (map str args))))
