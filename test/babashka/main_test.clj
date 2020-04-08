@@ -9,6 +9,9 @@
    [clojure.test :as test :refer [deftest is testing]]
    [sci.core :as sci]))
 
+#_(defmethod clojure.test/report :begin-test-var [m]
+    (println (-> m :var meta :name)))
+
 (defn bb [input & args]
   (edn/read-string (apply test-utils/bb (when (some? input) (str input)) (map str args))))
 
@@ -164,7 +167,7 @@
 
 (deftest future-test
   (is (= 6 (bb nil "@(future (+ 1 2 3))"))))
-  
+
 (deftest promise-test
   (is (= :timeout (bb nil "(deref (promise) 1 :timeout)")))
   (is (= :ok (bb nil "(let [x (promise)]
@@ -376,7 +379,9 @@
       (is v))))
 
 (deftest download-and-extract-test
-  (is (= 6 (bb nil (io/file "test" "babashka" "scripts" "download_and_extract_zip.bb")))))
+  (is (try (= 6 (bb nil (io/file "test" "babashka" "scripts" "download_and_extract_zip.bb")))
+           (catch Exception e
+             (is (str/includes? (str e) "timed out"))))))
 
 (deftest get-message-on-exception-info-test
   (is "foo" (bb nil "(try (throw (ex-info \"foo\" {})) (catch Exception e (.getMessage e)))")))

@@ -19,6 +19,7 @@
    ;; see https://github.com/oracle/graal/issues/1784
    #_[babashka.impl.pipe-signal-handler :refer [handle-pipe! pipe-signal-received?]]
    [babashka.impl.repl :as repl]
+   [babashka.impl.sigint-handler :as sigint-handler]
    [babashka.impl.socket-repl :as socket-repl]
    [babashka.impl.test :as t]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
@@ -304,6 +305,7 @@ Everything after that is bound to *command-line-args*."))
 (defn main
   [& args]
   #_(handle-pipe!)
+  (sigint-handler/handle-sigint!)
   #_(binding [*out* *err*]
       (prn "M" (meta (get bindings 'future))))
   (binding [*unrestricted* true]
@@ -369,6 +371,7 @@ Everything after that is bound to *command-line-args*."))
                             Math java.lang.Math
                             NumberFormatException java.lang.NumberFormatException
                             Object java.lang.Object
+                            Runtime java.lang.Runtime
                             RuntimeException java.lang.RuntimeException
                             ProcessBuilder java.lang.ProcessBuilder
                             String java.lang.String
