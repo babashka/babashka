@@ -979,6 +979,10 @@ Babashka Lambda runtime packaged as a Lambda layer.
 Github Action to create a git tag + release when pushed to master. Written in
 babashka.
 
+#### [justone/bb-scripts](https://github.com/justone/bb-scripts)
+
+A collection of scripts developed by [https://github.com/justone](@justone).
+
 ## Package babashka script as a AWS Lambda
 
 AWS Lambda runtime doesn't support signals, therefore babashka has to disable
@@ -987,6 +991,7 @@ handling of the SIGPIPE. This can be done by setting
 
 ## Articles, podcasts and videos
 
+- [Dutch Clojure Meetup: implementing an nREPL server for babashka](https://youtu.be/0YmZYnwyHHc)
 - [ClojureScript podcast](https://soundcloud.com/user-959992602/s3-e5-babashka-with-michiel-borkent) with Jacek Schae interviewing Michiel Borkent
 - [Babashka talk at ClojureD](https://www.youtube.com/watch?v=Nw8aN-nrdEk) ([slides](https://speakerdeck.com/borkdude/babashka-and-the-small-clojure-interpreter-at-clojured-2020)) by Michiel Borkent
 - [Babashka: a quick example](https://juxt.pro/blog/posts/babashka.html) by Malcolm Sparks
