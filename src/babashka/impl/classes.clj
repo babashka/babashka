@@ -25,6 +25,7 @@
           java.io.FileReader
           java.io.PushbackInputStream
           java.io.Reader
+          java.io.SequenceInputStream
           java.io.StringReader
           java.io.StringWriter
           java.io.Writer
