@@ -12,7 +12,7 @@
      (io/copy in bout :encoding enc)
      (.toString bout))))
 
-(deftest interrupt-handler-test
+(deftest shutdown-hook-test
   (let [script "(-> (Runtime/getRuntime) (.addShutdownHook (Thread. #(println \"bye\"))))"
         pb (ProcessBuilder. (if tu/jvm?
                               ["lein" "bb" "-e" script]
