@@ -387,8 +387,14 @@
 (deftest get-message-on-exception-info-test
   (is "foo" (bb nil "(try (throw (ex-info \"foo\" {})) (catch Exception e (.getMessage e)))")))
 
+(deftest pushback-reader-test
+  (is (= "foo" (bb nil "
+(require '[clojure.java.io :as io])
+(let [pb (java.io.PushbackInputStream. (java.io.ByteArrayInputStream. (.getBytes \"foo\")))]
+  (.unread pb (.read pb))
+  (slurp pb))"))))
+
 ;;;; Scratch
 
 (comment
-  (dotimes [_ 10] (wait-for-port-test))
-  )
+  (dotimes [_ 10] (wait-for-port-test)))
