@@ -13,6 +13,7 @@
      (.toString bout))))
 
 #_(deftest shutdown-hook-test
+
   (let [script "(-> (Runtime/getRuntime) (.addShutdownHook (Thread. #(println \"bye\"))))"
         pb (ProcessBuilder. (if tu/jvm?
                               ["lein" "bb" "-e" script]
