@@ -3,8 +3,10 @@
   (:refer-clojure :exclude [send future binding])
   (:require [babashka.impl.bencode.core :refer [write-bencode read-bencode]]
             [clojure.string :as str]
+            [clojure.tools.reader.reader-types :as r]
             [sci.core :as sci]
-            [sci.impl.interpreter :refer [eval-string*]]
+            [sci.impl.interpreter :refer [eval-string* eval-form]]
+            [sci.impl.parser :as p]
             [sci.impl.utils :as sci-utils]
             [sci.impl.vars :as vars])
   (:import [java.io StringWriter OutputStream InputStream PushbackInputStream EOFException BufferedOutputStream]
@@ -38,30 +40,35 @@
 
 (defn eval-msg [ctx o msg]
   (try
-    (let [ns-str (get msg :ns)
-          sci-ns (when ns-str (sci-utils/namespace-object (:env ctx) (symbol ns-str) true nil))
-          sw (StringWriter.)]
-      (sci/with-bindings (cond-> {sci/out sw}
+    (let [code-str (get msg :code)
+          reader (r/indexing-push-back-reader (r/string-push-back-reader code-str))
+          ns-str (get msg :ns)
+          sci-ns (when ns-str (sci-utils/namespace-object (:env ctx) (symbol ns-str) true nil))]
+      (when @dev? (println "current ns" (vars/current-ns-name)))
+      (sci/with-bindings (cond-> {}
                            sci-ns (assoc vars/current-ns sci-ns))
-        (when @dev? (println "current ns" (vars/current-ns-name)))
-        (let [code-str (get msg :code)
-              value (if (str/blank? code-str)
-                      ::nil
-                      (eval-string* ctx code-str))
-              out-str (not-empty (str sw))
-              env (:env ctx)]
-          (swap! env update-in [:namespaces 'clojure.core]
-                 (fn [core]
-                   (assoc core
-                          '*1 value
-                          '*2 (get core '*1)
-                          '*3 (get core '*2))))
-          (when @dev? (println "out str:" out-str))
-          (when out-str
-            (send o (response-for msg {"out" out-str})))
-          (send o (response-for msg (cond-> {"ns" (vars/current-ns-name)}
-                                      (not (identical? value ::nil)) (assoc "value" (pr-str value)))))
-          (send o (response-for msg {"status" #{"done"}})))))
+        (loop []
+          (let [sw (StringWriter.)
+                form (p/parse-next ctx reader)
+                value (if (identical? :edamame.impl.parser/eof form) ::nil
+                          (sci/with-bindings {sci/out sw}
+                            (eval-form ctx form)))
+                out-str (not-empty (str sw))
+                env (:env ctx)]
+            (swap! env update-in [:namespaces 'clojure.core]
+                   (fn [core]
+                     (assoc core
+                            '*1 value
+                            '*2 (get core '*1)
+                            '*3 (get core '*2))))
+            (when @dev? (println "out str:" out-str))
+            (when out-str
+              (send o (response-for msg {"out" out-str})))
+            (send o (response-for msg (cond-> {"ns" (vars/current-ns-name)}
+                                        (not (identical? value ::nil)) (assoc "value" (pr-str value)))))
+            (when (not (identical? ::nil value))
+              (recur)))))
+      (send o (response-for msg {"status" #{"done"}})))
     (catch Exception ex
       (swap! (:env ctx) update-in [:namespaces 'clojure.core]
              assoc '*e ex)

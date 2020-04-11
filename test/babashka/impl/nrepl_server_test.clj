@@ -76,7 +76,15 @@
                                        "id" (new-id!)
                                        "ns" "unicorn"})
             (let [reply (read-reply in session @id)]
-              (is (= "unicorn" (:value reply)))))))
+              (is (= "unicorn" (:value reply))))))
+        (testing "multiple top level expressions results in two value replies"
+          (bencode/write-bencode os {"op" "eval"
+                                     "code" "(+ 1 2 3) (+ 1 2 3)"
+                                     "session" session
+                                     "id" (new-id!)})
+          (let [reply-1 (read-reply in session @id)
+                reply-2 (read-reply in session @id)]
+            (is (= "6" (:value reply-1) (:value reply-2))))))
       (testing "load-file"
         (bencode/write-bencode os {"op" "load-file" "file" "(ns foo) (defn foo [] :foo)" "session" session "id" (new-id!)})
         (read-reply in session @id)
