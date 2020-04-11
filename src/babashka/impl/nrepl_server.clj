@@ -7,7 +7,7 @@
             [sci.impl.interpreter :refer [eval-string*]]
             [sci.impl.utils :as sci-utils]
             [sci.impl.vars :as vars])
-  (:import [java.io StringWriter OutputStream InputStream PushbackInputStream EOFException]
+  (:import [java.io StringWriter OutputStream InputStream PushbackInputStream EOFException BufferedOutputStream]
            [java.net ServerSocket]))
 
 (set! *warn-on-reflection* true)
@@ -166,7 +166,8 @@
   (let [client-socket (.accept listener)
         in (.getInputStream client-socket)
         in (PushbackInputStream. in)
-        out (.getOutputStream client-socket)]
+        out (.getOutputStream client-socket)
+        out (BufferedOutputStream. out)]
     (when @dev? (println "Connected."))
     (sci/future
       (sci/binding
