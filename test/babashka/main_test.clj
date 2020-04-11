@@ -395,6 +395,13 @@
   (.unread pb (.read pb))
   (slurp pb))"))))
 
+(deftest delete-on-exit-test
+  (when test-utils/native?
+    (let [f (java.io.File/createTempFile "foo" "bar")
+          p (.getPath f)]
+      (bb nil (format "(.deleteOnExit (io/file \"%s\"))" p))
+      (is (false? (.exists f))))))
+
 ;;;; Scratch
 
 (comment
