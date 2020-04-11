@@ -247,6 +247,7 @@
 
 (deftest reader-conditionals-test
   (is (= :hello (bb nil "#?(:bb :hello :default :bye)")))
+  (is (= :hello (bb nil "#? (:bb :hello :default :bye)")))
   (is (= :hello (bb nil "#?(:clj :hello :bb :bye)")))
   (is (= [1 2] (bb nil "[1 2 #?@(:bb [] :clj [1])]"))))
 
