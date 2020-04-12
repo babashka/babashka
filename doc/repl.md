@@ -20,14 +20,14 @@ $ rlwrap bb --repl
 
 To start the socket REPL you can do this:
 
-``` shellsession
+``` shell
 $ bb --socket-repl 1666
 Babashka socket REPL started at localhost:1666
 ```
 
 Now you can connect with your favorite socket REPL client:
 
-``` shellsession
+``` shell
 $ rlwrap nc 127.0.0.1 1666
 Babashka v0.0.14 REPL.
 Use :repl/quit or :repl/exit to quit the REPL.
