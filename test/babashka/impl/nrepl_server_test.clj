@@ -137,28 +137,36 @@
                 completions (mapv read-msg completions)
                 completions (into #{} (map (juxt :ns :candidate)) completions)]
             (is (contains? completions ["clojure.test" "test/deftest"])))))
-      (testing "ls-sessions"
+      (testing "close + ls-sessions"
         (bencode/write-bencode os {"op" "ls-sessions" "session" session "id" (new-id!)})
         (let [reply (read-reply in session @id)
               sessions (set (:sessions reply))]
           (is (contains? sessions session))
-          (bencode/write-bencode os {"op" "clone" "session" session "id" (new-id!)})
-          (let [new-session (:new-session (read-reply in session @id))]
+          (let [new-sessions (loop [i 0
+                                    sessions #{}]
+                               (bencode/write-bencode os {"op" "clone" "session" session "id" (new-id!)})
+                               (let [new-session (:new-session (read-reply in session @id))
+                                     sessions (conj sessions new-session)]
+                                 (if (= i 4)
+                                   sessions
+                                   (recur (inc i) sessions))))]
             (bencode/write-bencode os {"op" "ls-sessions" "session" session "id" (new-id!)})
             (let [reply (read-reply in session @id)
                   sessions (set (:sessions reply))]
+              (is (= 6 (count sessions)))
               (is (contains? sessions session))
-              (is (contains? sessions new-session)))
-            (testing "close"
-              (bencode/write-bencode os {"op" "close" "session" new-session "id" (new-id!)})
-              (let [reply (read-reply in new-session @id)]
-                (is (contains? (set (:status reply)) "session-closed"))))
-            (testing "session not listen in ls-sessions after close"
-              (bencode/write-bencode os {"op" "ls-sessions" "session" session "id" (new-id!)})
-              (let [reply (read-reply in session @id)
-                    sessions (set (:sessions reply))]
-                (is (contains? sessions session))
-                (is (not (contains? sessions new-session))))))))
+              (is (= new-sessions (disj sessions session)))
+              (testing "close"
+                (doseq [close-session (disj sessions session)]
+                  (bencode/write-bencode os {"op" "close" "session" close-session "id" (new-id!)})
+                  (let [reply (read-reply in close-session @id)]
+                    (is (contains? (set (:status reply)) "session-closed")))))
+              (testing "session not listen in ls-sessions after close"
+                (bencode/write-bencode os {"op" "ls-sessions" "session" session "id" (new-id!)})
+                (let [reply (read-reply in session @id)
+                      sessions (set (:sessions reply))]
+                  (is (contains? sessions session))
+                  (is (not (some #(contains? sessions %) new-sessions)))))))))
       (testing "output"
         (bencode/write-bencode os {"op" "eval" "code" "(dotimes [i 3] (println \"Hello\"))"
                                    "session" session "id" (new-id!)})

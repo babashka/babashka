@@ -101,8 +101,9 @@
          (send o (response-for msg {"completions" []
                                     "status" #{"done"}})))))
 
-(defn close-session [ctx msg _is os id]
-  (swap! (:sessions ctx) disj id)
+(defn close-session [ctx msg _is os]
+  (let [session (:session msg)]
+    (swap! (:sessions ctx) disj session))
   (send os (response-for msg {"status" #{"done" "session-closed"}})))
 
 (defn ls-sessions [ctx msg os]
@@ -146,7 +147,7 @@
                                         "ops" (zipmap #{"clone" "eval" "load-file" "complete" "describe"}
                                                       (repeat {}))}))
             (recur ctx is os id))
-        :close (do (close-session ctx msg is os id)
+        :close (do (close-session ctx msg is os)
                    (recur ctx is os id))
         :ls-sessions (do (ls-sessions ctx msg os)
                          (recur ctx is os id))
