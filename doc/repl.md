@@ -39,7 +39,7 @@ bb=> :repl/quit
 $
 ```
 
-Editor plugins known to work with a babashka socket REPL:
+Editor plugins and tools known to work with a babashka socket REPL:
 
 - Emacs: [inf-clojure](https://github.com/clojure-emacs/inf-clojure):
 
@@ -78,7 +78,7 @@ user=> (+ 1 2 3)
 user=>
 ```
 
-Editor plugins known to work with the babashka nREPL server:
+Editor plugins and tools known to work with the babashka nREPL server:
 
   - Emacs: [CIDER](https://docs.cider.mx/cider-nrepl/)
   - `lein repl :connect`
