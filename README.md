@@ -1156,7 +1156,7 @@ clojure.core/ffirst
 
 (defn sha1
   [s]
-  (let [hashed (.digest (.getInstance java.security.MessageDigest "SHA-1")
+  (let [hashed (.digest (java.security.MessageDigest/getInstance "SHA-1")
                         (.getBytes s))
         sw (java.io.StringWriter.)]
     (binding [*out* sw]
