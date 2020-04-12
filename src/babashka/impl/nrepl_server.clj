@@ -127,6 +127,15 @@
          (send o (response-for msg {"completions" []
                                     "status" #{"done"}})))))
 
+(defn close-session [ctx msg _is os id]
+  (swap! (:sessions ctx) disj id)
+  (send os (response-for msg {"status" #{"done" "session-closed"}})))
+
+(defn ls-sessions [ctx msg os]
+  (let [sessions @(:sessions ctx)]
+    (send os (response-for msg {"sessions" sessions
+                                "status" #{"done"}}))))
+
 (defn read-msg [msg]
   (-> (zipmap (map keyword (keys msg))
               (map #(if (bytes? %)
@@ -145,6 +154,7 @@
         :clone (do
                  (when @dev? (println "Cloning!"))
                  (let [id (str (java.util.UUID/randomUUID))]
+                   (swap! (:sessions ctx) (fnil conj #{}) id)
                    (send os (response-for msg {"new-session" id "status" #{"done"}}))
                    (recur ctx is os id)))
         :eval (do
@@ -162,6 +172,10 @@
                                         "ops" (zipmap #{"clone" "eval" "load-file" "complete" "describe"}
                                                       (repeat {}))}))
             (recur ctx is os id))
+        :close (do (close-session ctx msg is os id)
+                   (recur ctx is os id))
+        :ls-sessions (do (ls-sessions ctx msg os)
+                         (recur ctx is os id))
         ;; fallback
         (do (when @dev?
               (println "Unhandled message" msg))
@@ -193,7 +207,8 @@
 
 (defn start-server! [ctx host+port]
   (vreset! dev? (= "true" (System/getenv "BABASHKA_DEV")))
-  (let [parts (str/split host+port #":")
+  (let [ctx (assoc ctx :sessions (atom #{}))
+        parts (str/split host+port #":")
         [address port] (if (= 1 (count parts))
                          [nil (Integer. ^String (first parts))]
                          [(java.net.InetAddress/getByName (first parts))

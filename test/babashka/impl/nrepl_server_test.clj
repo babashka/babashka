@@ -5,10 +5,11 @@
    [babashka.main :as main]
    [babashka.test-utils :as tu]
    [babashka.wait :as wait]
-   [cheshire.core :as cheshire]
    [clojure.test :as t :refer [deftest is testing]]
    [sci.impl.opts :refer [init]])
   (:import [java.lang ProcessBuilder$Redirect]))
+
+(def debug? false)
 
 (set! *warn-on-reflection* true)
 
@@ -24,6 +25,9 @@
                          (vals msg)))
         res (if-let [status (:status res)]
               (assoc res :status (mapv bytes->str status))
+              res)
+        res (if-let [status (:sessions res)]
+              (assoc res :sessions (mapv bytes->str status))
               res)]
     res))
 
@@ -32,8 +36,12 @@
     (let [msg (read-msg (bencode/read-bencode in))]
       (if (and (= (:session msg) session)
                (= (:id msg) id))
-        msg
-        (recur)))))
+        (do
+          (when debug? (prn "received" msg))
+          msg)
+        (do
+          (when debug? (prn "skipping over msg" msg))
+          (recur))))))
 
 (defn nrepl-test []
   (with-open [socket (java.net.Socket. "127.0.0.1" 1667)
@@ -129,11 +137,28 @@
                 completions (mapv read-msg completions)
                 completions (into #{} (map (juxt :ns :candidate)) completions)]
             (is (contains? completions ["clojure.test" "test/deftest"])))))
-      #_(testing "interrupt" ;; .stop doesn't work on Thread in GraalVM, this is why we can't have this yet
-          (bencode/write-bencode os {"op" "eval" "code" "(range)" "session" session "id" 9})
-          (Thread/sleep 1000)
-          (bencode/write-bencode os {"op" "interrupt" "session" session "interrupt-id" 9 "id" 10})
-          (is (contains? (set (:status (read-reply in session 10))) "done"))))))
+      (testing "ls-sessions"
+        (bencode/write-bencode os {"op" "ls-sessions" "session" session "id" (new-id!)})
+        (let [reply (read-reply in session @id)
+              sessions (set (:sessions reply))]
+          (is (contains? sessions session))
+          (bencode/write-bencode os {"op" "clone" "session" session "id" (new-id!)})
+          (let [new-session (:new-session (read-reply in session @id))]
+            (bencode/write-bencode os {"op" "ls-sessions" "session" session "id" (new-id!)})
+            (let [reply (read-reply in session @id)
+                  sessions (set (:sessions reply))]
+              (is (contains? sessions session))
+              (is (contains? sessions new-session)))
+            (testing "close"
+              (bencode/write-bencode os {"op" "close" "session" new-session "id" (new-id!)})
+              (let [reply (read-reply in new-session @id)]
+                (is (contains? (set (:status reply)) "session-closed"))))
+            (testing "session not listen in ls-sessions after close"
+              (bencode/write-bencode os {"op" "ls-sessions" "session" session "id" (new-id!)})
+              (let [reply (read-reply in session @id)
+                    sessions (set (:sessions reply))]
+                (is (contains? sessions session))
+                (is (not (contains? sessions new-session)))))))))))
 
 (deftest nrepl-server-test
   (let [proc-state (atom nil)]
