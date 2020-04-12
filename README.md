@@ -1222,6 +1222,15 @@ example. If you get prompted with a login, use `admin`/`admin`.
 
 <img src="assets/notes-example.png" width="400px">
 
+### which
+
+The `which` command re-implemented in Clojure. Prints the canonical file name.
+
+``` shell
+$ examples/which.clj rg
+/usr/local/Cellar/ripgrep/11.0.1/bin/rg
+```
+
 ## Thanks
 
 - [adgoji](https://www.adgoji.com/) for financial support
