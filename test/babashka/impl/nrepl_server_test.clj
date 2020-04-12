@@ -158,7 +158,13 @@
               (let [reply (read-reply in session @id)
                     sessions (set (:sessions reply))]
                 (is (contains? sessions session))
-                (is (not (contains? sessions new-session)))))))))))
+                (is (not (contains? sessions new-session))))))))
+      (testing "output"
+        (bencode/write-bencode os {"op" "eval" "code" "(dotimes [i 3] (println \"Hello\"))"
+                                   "session" session "id" (new-id!)})
+        (dotimes [_ 3]
+          (let [reply (read-reply in session @id)]
+            (is (= "Hello\n" (:out reply)))))))))
 
 (deftest nrepl-server-test
   (let [proc-state (atom nil)]

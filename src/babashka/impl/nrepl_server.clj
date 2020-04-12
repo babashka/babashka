@@ -1,7 +1,9 @@
 (ns babashka.impl.nrepl-server
   {:no-doc true}
   (:refer-clojure :exclude [send future binding])
-  (:require [babashka.impl.bencode.core :refer [write-bencode read-bencode]]
+  (:require [babashka.impl.bencode.core :refer [read-bencode]]
+            [babashka.impl.nrepl-server.utils :refer [dev? response-for send send-exception
+                                                      replying-print-writer]]
             [clojure.string :as str]
             [clojure.tools.reader.reader-types :as r]
             [sci.core :as sci]
@@ -9,34 +11,10 @@
             [sci.impl.parser :as p]
             [sci.impl.utils :as sci-utils]
             [sci.impl.vars :as vars])
-  (:import [java.io StringWriter OutputStream InputStream PushbackInputStream EOFException BufferedOutputStream]
+  (:import [java.io InputStream PushbackInputStream EOFException BufferedOutputStream]
            [java.net ServerSocket]))
 
 (set! *warn-on-reflection* true)
-
-(def port 1667)
-(def dev? (volatile! nil))
-
-(defn response-for [old-msg msg]
-  (let [session (get old-msg :session "none")
-        id (get old-msg :id "unknown")]
-    (assoc msg "session" session "id" id)))
-
-(defn send [^OutputStream os msg]
-  ;;(when @dev? (prn "Sending" msg))
-  (write-bencode os msg)
-  (.flush os))
-
-(defn send-exception [os msg ^Throwable ex]
-  (let [ex-map (Throwable->map ex)
-        ex-name (-> ex-map :via first :type)
-        cause (:cause ex-map)]
-    (when @dev? (prn "sending exception" ex-map))
-    (send os (response-for msg {"err" (str ex-name ": " cause "\n")}))
-    (send os (response-for msg {"ex" (str "class " ex-name)
-                                "root-ex" (str "class " ex-name)
-                                "status" #{"eval-error"}}))
-    (send os (response-for msg {"status" #{"done"}}))))
 
 (defn eval-msg [ctx o msg]
   (try
@@ -48,12 +26,11 @@
       (sci/with-bindings (cond-> {}
                            sci-ns (assoc vars/current-ns sci-ns))
         (loop []
-          (let [sw (StringWriter.)
+          (let [pw (replying-print-writer o msg)
                 form (p/parse-next ctx reader)
                 value (if (identical? :edamame.impl.parser/eof form) ::nil
-                          (sci/with-bindings {sci/out sw}
+                          (sci/with-bindings {sci/out pw}
                             (eval-form ctx form)))
-                out-str (not-empty (str sw))
                 env (:env ctx)]
             (swap! env update-in [:namespaces 'clojure.core]
                    (fn [core]
@@ -61,9 +38,6 @@
                             '*1 value
                             '*2 (get core '*1)
                             '*3 (get core '*2))))
-            (when @dev? (println "out str:" out-str))
-            (when out-str
-              (send o (response-for msg {"out" out-str})))
             (send o (response-for msg (cond-> {"ns" (vars/current-ns-name)}
                                         (not (identical? value ::nil)) (assoc "value" (pr-str value)))))
             (when (not (identical? ::nil value))
