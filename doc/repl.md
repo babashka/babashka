@@ -89,8 +89,8 @@ Editor plugins known to work with the babashka nREPL server:
 The babashka nREPL server does not write an `.nrepl-port` file at startup, but
 you can easily write a script that launches the server and writes the file:
 
- ``` clojure
- #!/usr/bin/env bb
+``` clojure
+#!/usr/bin/env bb
 
 (import [java.net ServerSocket]
         [java.io File]
@@ -107,7 +107,7 @@ you can easily write a script that launches the server and writes the file:
   (spit ".nrepl-port" nrepl-port)
   (.deleteOnExit (File. ".nrepl-port"))
   (.waitFor proc))
- ```
+```
 
 ### Debugging the nREPL server
 
