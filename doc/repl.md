@@ -87,8 +87,7 @@ Editor plugins known to work with the babashka nREPL server:
   - (Neo)Vim: [vim-iced](https://github.com/liquidz/vim-iced), [conjure](https://github.com/Olical/conjure), [fireplace](https://github.com/tpope/vim-fireplace)
 
 The babashka nREPL server does not write an `.nrepl-port` file at startup, but
-you can easily write a script that launches the server and write the file
-yourself:
+you can easily write a script that launches the server and writes the file:
 
  ``` clojure
  #!/usr/bin/env bb
