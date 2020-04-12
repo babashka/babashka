@@ -1224,7 +1224,11 @@ example. If you get prompted with a login, use `admin`/`admin`.
 
 ### which
 
-The `which` command re-implemented in Clojure. Prints the canonical file name.
+The `which` command re-implemented in Clojure.
+
+See
+[examples/which.clj](https://github.com/borkdude/babashka/blob/master/examples/which.clj).
+Prints the canonical file name.
 
 ``` shell
 $ examples/which.clj rg
