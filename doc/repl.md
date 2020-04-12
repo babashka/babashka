@@ -70,7 +70,7 @@ $ bb --nrepl-server 1667
 
 Then connect with your favorite nREPL client:
 
-``` shell
+``` clojure
 $ lein repl :connect 1667
 Connecting to nREPL at 127.0.0.1:1667
 user=> (+ 1 2 3)
