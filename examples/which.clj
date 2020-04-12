@@ -2,7 +2,7 @@
 
 (require '[clojure.java.io :as io])
 
-(defn where [executable]
+(defn which [executable]
   (let [path (System/getenv "PATH")
         paths (.split path (System/getProperty "path.separator"))]
     (loop [paths paths]
@@ -14,4 +14,4 @@
             (recur (rest paths))))))))
 
 (when-let [executable (first *command-line-args*)]
-  (println (where executable)))
+  (println (which executable)))
