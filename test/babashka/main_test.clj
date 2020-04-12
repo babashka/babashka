@@ -247,6 +247,7 @@
 
 (deftest reader-conditionals-test
   (is (= :hello (bb nil "#?(:bb :hello :default :bye)")))
+  (is (= :hello (bb nil "#? (:bb :hello :default :bye)")))
   (is (= :hello (bb nil "#?(:clj :hello :bb :bye)")))
   (is (= [1 2] (bb nil "[1 2 #?@(:bb [] :clj [1])]"))))
 
@@ -393,6 +394,13 @@
 (let [pb (java.io.PushbackInputStream. (java.io.ByteArrayInputStream. (.getBytes \"foo\")))]
   (.unread pb (.read pb))
   (slurp pb))"))))
+
+(deftest delete-on-exit-test
+  (when test-utils/native?
+    (let [f (java.io.File/createTempFile "foo" "bar")
+          p (.getPath f)]
+      (bb nil (format "(.deleteOnExit (io/file \"%s\"))" p))
+      (is (false? (.exists f))))))
 
 ;;;; Scratch
 

@@ -1,67 +1,48 @@
 (ns babashka.impl.nrepl-server
   {:no-doc true}
   (:refer-clojure :exclude [send future binding])
-  (:require [babashka.impl.bencode.core :refer [write-bencode read-bencode]]
+  (:require [babashka.impl.bencode.core :refer [read-bencode]]
+            [babashka.impl.nrepl-server.utils :refer [dev? response-for send send-exception
+                                                      replying-print-writer]]
             [clojure.string :as str]
+            [clojure.tools.reader.reader-types :as r]
             [sci.core :as sci]
-            [sci.impl.interpreter :refer [eval-string*]]
+            [sci.impl.interpreter :refer [eval-string* eval-form]]
+            [sci.impl.parser :as p]
             [sci.impl.utils :as sci-utils]
             [sci.impl.vars :as vars])
-  (:import [java.io StringWriter OutputStream InputStream PushbackInputStream EOFException BufferedOutputStream]
+  (:import [java.io InputStream PushbackInputStream EOFException BufferedOutputStream]
            [java.net ServerSocket]))
 
 (set! *warn-on-reflection* true)
 
-(def port 1667)
-(def dev? (volatile! nil))
-
-(defn response-for [old-msg msg]
-  (let [session (get old-msg :session "none")
-        id (get old-msg :id "unknown")]
-    (assoc msg "session" session "id" id)))
-
-(defn send [^OutputStream os msg]
-  ;;(when @dev? (prn "Sending" msg))
-  (write-bencode os msg)
-  (.flush os))
-
-(defn send-exception [os msg ^Throwable ex]
-  (let [ex-map (Throwable->map ex)
-        ex-name (-> ex-map :via first :type)
-        cause (:cause ex-map)]
-    (when @dev? (prn "sending exception" ex-map))
-    (send os (response-for msg {"err" (str ex-name ": " cause "\n")}))
-    (send os (response-for msg {"ex" (str "class " ex-name)
-                                "root-ex" (str "class " ex-name)
-                                "status" #{"eval-error"}}))
-    (send os (response-for msg {"status" #{"done"}}))))
-
 (defn eval-msg [ctx o msg]
   (try
-    (let [ns-str (get msg :ns)
-          sci-ns (when ns-str (sci-utils/namespace-object (:env ctx) (symbol ns-str) true nil))
-          sw (StringWriter.)]
-      (sci/with-bindings (cond-> {sci/out sw}
+    (let [code-str (get msg :code)
+          reader (r/indexing-push-back-reader (r/string-push-back-reader code-str))
+          ns-str (get msg :ns)
+          sci-ns (when ns-str (sci-utils/namespace-object (:env ctx) (symbol ns-str) true nil))]
+      (when @dev? (println "current ns" (vars/current-ns-name)))
+      (sci/with-bindings (cond-> {}
                            sci-ns (assoc vars/current-ns sci-ns))
-        (when @dev? (println "current ns" (vars/current-ns-name)))
-        (let [code-str (get msg :code)
-              value (if (str/blank? code-str)
-                      ::nil
-                      (eval-string* ctx code-str))
-              out-str (not-empty (str sw))
-              env (:env ctx)]
-          (swap! env update-in [:namespaces 'clojure.core]
-                 (fn [core]
-                   (assoc core
-                          '*1 value
-                          '*2 (get core '*1)
-                          '*3 (get core '*2))))
-          (when @dev? (println "out str:" out-str))
-          (when out-str
-            (send o (response-for msg {"out" out-str})))
-          (send o (response-for msg (cond-> {"ns" (vars/current-ns-name)}
-                                      (not (identical? value ::nil)) (assoc "value" (pr-str value)))))
-          (send o (response-for msg {"status" #{"done"}})))))
+        (loop []
+          (let [pw (replying-print-writer o msg)
+                form (p/parse-next ctx reader)
+                value (if (identical? :edamame.impl.parser/eof form) ::nil
+                          (sci/with-bindings {sci/out pw}
+                            (eval-form ctx form)))
+                env (:env ctx)]
+            (swap! env update-in [:namespaces 'clojure.core]
+                   (fn [core]
+                     (assoc core
+                            '*1 value
+                            '*2 (get core '*1)
+                            '*3 (get core '*2))))
+            (send o (response-for msg (cond-> {"ns" (vars/current-ns-name)}
+                                        (not (identical? value ::nil)) (assoc "value" (pr-str value)))))
+            (when (not (identical? ::nil value))
+              (recur)))))
+      (send o (response-for msg {"status" #{"done"}})))
     (catch Exception ex
       (swap! (:env ctx) update-in [:namespaces 'clojure.core]
              assoc '*e ex)
@@ -120,6 +101,16 @@
          (send o (response-for msg {"completions" []
                                     "status" #{"done"}})))))
 
+(defn close-session [ctx msg _is os]
+  (let [session (:session msg)]
+    (swap! (:sessions ctx) disj session))
+  (send os (response-for msg {"status" #{"done" "session-closed"}})))
+
+(defn ls-sessions [ctx msg os]
+  (let [sessions @(:sessions ctx)]
+    (send os (response-for msg {"sessions" sessions
+                                "status" #{"done"}}))))
+
 (defn read-msg [msg]
   (-> (zipmap (map keyword (keys msg))
               (map #(if (bytes? %)
@@ -138,8 +129,11 @@
         :clone (do
                  (when @dev? (println "Cloning!"))
                  (let [id (str (java.util.UUID/randomUUID))]
+                   (swap! (:sessions ctx) (fnil conj #{}) id)
                    (send os (response-for msg {"new-session" id "status" #{"done"}}))
                    (recur ctx is os id)))
+        :close (do (close-session ctx msg is os)
+                   (recur ctx is os id))
         :eval (do
                 (eval-msg ctx os msg)
                 (recur ctx is os id))
@@ -152,9 +146,12 @@
                     (recur ctx is os id))
         :describe
         (do (send os (response-for msg {"status" #{"done"}
-                                        "ops" (zipmap #{"clone" "eval" "load-file" "complete" "describe"}
+                                        "ops" (zipmap #{"clone" "close" "eval" "load-file"
+                                                        "complete" "describe" "ls-sessions"}
                                                       (repeat {}))}))
             (recur ctx is os id))
+        :ls-sessions (do (ls-sessions ctx msg os)
+                         (recur ctx is os id))
         ;; fallback
         (do (when @dev?
               (println "Unhandled message" msg))
@@ -186,14 +183,16 @@
 
 (defn start-server! [ctx host+port]
   (vreset! dev? (= "true" (System/getenv "BABASHKA_DEV")))
-  (let [parts (str/split host+port #":")
+  (let [ctx (assoc ctx :sessions (atom #{}))
+        parts (str/split host+port #":")
         [address port] (if (= 1 (count parts))
                          [nil (Integer. ^String (first parts))]
                          [(java.net.InetAddress/getByName (first parts))
                           (Integer. ^String (second parts))])
         host+port (if-not address (str "localhost:" port)
-                          host+port)]
-    (println "Starting nREPL server at" host+port)
-    (let [socket-server (new ServerSocket port 0 address)]
-      (reset! server socket-server)
-      (listen ctx socket-server))))
+                          host+port)
+        socket-server (new ServerSocket port 0 address)]
+    (println "Started nREPL server at" host+port)
+    (println "For more info visit https://github.com/borkdude/babashka/blob/master/doc/repl.md#nrepl.")
+    (reset! server socket-server)
+    (listen ctx socket-server)))

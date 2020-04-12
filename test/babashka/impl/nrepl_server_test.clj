@@ -5,10 +5,11 @@
    [babashka.main :as main]
    [babashka.test-utils :as tu]
    [babashka.wait :as wait]
-   [cheshire.core :as cheshire]
    [clojure.test :as t :refer [deftest is testing]]
    [sci.impl.opts :refer [init]])
   (:import [java.lang ProcessBuilder$Redirect]))
+
+(def debug? false)
 
 (set! *warn-on-reflection* true)
 
@@ -24,6 +25,9 @@
                          (vals msg)))
         res (if-let [status (:status res)]
               (assoc res :status (mapv bytes->str status))
+              res)
+        res (if-let [status (:sessions res)]
+              (assoc res :sessions (mapv bytes->str status))
               res)]
     res))
 
@@ -32,8 +36,12 @@
     (let [msg (read-msg (bencode/read-bencode in))]
       (if (and (= (:session msg) session)
                (= (:id msg) id))
-        msg
-        (recur)))))
+        (do
+          (when debug? (prn "received" msg))
+          msg)
+        (do
+          (when debug? (prn "skipping over msg" msg))
+          (recur))))))
 
 (defn nrepl-test []
   (with-open [socket (java.net.Socket. "127.0.0.1" 1667)
@@ -76,7 +84,15 @@
                                        "id" (new-id!)
                                        "ns" "unicorn"})
             (let [reply (read-reply in session @id)]
-              (is (= "unicorn" (:value reply)))))))
+              (is (= "unicorn" (:value reply))))))
+        (testing "multiple top level expressions results in two value replies"
+          (bencode/write-bencode os {"op" "eval"
+                                     "code" "(+ 1 2 3) (+ 1 2 3)"
+                                     "session" session
+                                     "id" (new-id!)})
+          (let [reply-1 (read-reply in session @id)
+                reply-2 (read-reply in session @id)]
+            (is (= "6" (:value reply-1) (:value reply-2))))))
       (testing "load-file"
         (bencode/write-bencode os {"op" "load-file" "file" "(ns foo) (defn foo [] :foo)" "session" session "id" (new-id!)})
         (read-reply in session @id)
@@ -121,11 +137,42 @@
                 completions (mapv read-msg completions)
                 completions (into #{} (map (juxt :ns :candidate)) completions)]
             (is (contains? completions ["clojure.test" "test/deftest"])))))
-      #_(testing "interrupt" ;; .stop doesn't work on Thread in GraalVM, this is why we can't have this yet
-          (bencode/write-bencode os {"op" "eval" "code" "(range)" "session" session "id" 9})
-          (Thread/sleep 1000)
-          (bencode/write-bencode os {"op" "interrupt" "session" session "interrupt-id" 9 "id" 10})
-          (is (contains? (set (:status (read-reply in session 10))) "done"))))))
+      (testing "close + ls-sessions"
+        (bencode/write-bencode os {"op" "ls-sessions" "session" session "id" (new-id!)})
+        (let [reply (read-reply in session @id)
+              sessions (set (:sessions reply))]
+          (is (contains? sessions session))
+          (let [new-sessions (loop [i 0
+                                    sessions #{}]
+                               (bencode/write-bencode os {"op" "clone" "session" session "id" (new-id!)})
+                               (let [new-session (:new-session (read-reply in session @id))
+                                     sessions (conj sessions new-session)]
+                                 (if (= i 4)
+                                   sessions
+                                   (recur (inc i) sessions))))]
+            (bencode/write-bencode os {"op" "ls-sessions" "session" session "id" (new-id!)})
+            (let [reply (read-reply in session @id)
+                  sessions (set (:sessions reply))]
+              (is (= 6 (count sessions)))
+              (is (contains? sessions session))
+              (is (= new-sessions (disj sessions session)))
+              (testing "close"
+                (doseq [close-session (disj sessions session)]
+                  (bencode/write-bencode os {"op" "close" "session" close-session "id" (new-id!)})
+                  (let [reply (read-reply in close-session @id)]
+                    (is (contains? (set (:status reply)) "session-closed")))))
+              (testing "session not listen in ls-sessions after close"
+                (bencode/write-bencode os {"op" "ls-sessions" "session" session "id" (new-id!)})
+                (let [reply (read-reply in session @id)
+                      sessions (set (:sessions reply))]
+                  (is (contains? sessions session))
+                  (is (not (some #(contains? sessions %) new-sessions)))))))))
+      (testing "output"
+        (bencode/write-bencode os {"op" "eval" "code" "(dotimes [i 3] (println \"Hello\"))"
+                                   "session" session "id" (new-id!)})
+        (dotimes [_ 3]
+          (let [reply (read-reply in session @id)]
+            (is (= "Hello\n" (:out reply)))))))))
 
 (deftest nrepl-server-test
   (let [proc-state (atom nil)]

@@ -415,6 +415,11 @@ $ cat script.clj
 ("hello" "1" "2" "3")
 ```
 
+## [Running a REPL](doc/repl.md)
+
+Babashka offers a REPL, a socket REPL and an nREPL server. Look
+[here](doc/repl.md) for more information.
+
 ## Preloads
 
 The environment variable `BABASHKA_PRELOADS` allows to define code that will be
@@ -652,56 +657,6 @@ bb -cp "src:test:resources" \
        (let [{:keys [:fail :error]} (t/run-tests 'borkdude.deps-test)]
          (System/exit (+ fail error)))"
 ```
-
-## REPL
-
-Babashka supports both a REPL and socket REPL. To start the REPL, type:
-
-``` shell
-$ bb --repl
-```
-
-To get history with up and down arrows, use `rlwrap`:
-
-``` shell
-$ rlwrap bb --repl
-```
-
-To start the socket REPL you can do this:
-
-``` shellsession
-$ bb --socket-repl 1666
-Babashka socket REPL started at localhost:1666
-```
-
-Now you can connect with your favorite socket REPL client:
-
-``` shellsession
-$ rlwrap nc 127.0.0.1 1666
-Babashka v0.0.14 REPL.
-Use :repl/quit or :repl/exit to quit the REPL.
-Clojure rocks, Bash reaches.
-
-bb=> (+ 1 2 3)
-6
-bb=> :repl/quit
-$
-```
-
-Editor plugins offering auto-completion support when connected to a babashka socket REPL:
-
-- Emacs: [inf-clojure](https://github.com/clojure-emacs/inf-clojure):
-
-  To connect:
-
-  `M-x inf-clojure-connect localhost 1666`
-
-  Before evaluating from a Clojure buffer:
-
-  `M-x inf-clojure-minor-mode`
-
-- Atom: [chlorine](https://github.com/mauricioszabo/atom-chlorine)
-- Vim: [vim-iced](https://github.com/liquidz/vim-iced)
 
 ## Spawning and killing a process
 
