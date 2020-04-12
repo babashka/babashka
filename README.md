@@ -415,6 +415,11 @@ $ cat script.clj
 ("hello" "1" "2" "3")
 ```
 
+## [Running a REPL](doc/repl.md)
+
+Babashka offers a REPL, a socket REPL and an nREPL server. Look
+[here](doc/repl.md) for more information.
+
 ## Preloads
 
 The environment variable `BABASHKA_PRELOADS` allows to define code that will be
@@ -652,8 +657,6 @@ bb -cp "src:test:resources" \
        (let [{:keys [:fail :error]} (t/run-tests 'borkdude.deps-test)]
          (System/exit (+ fail error)))"
 ```
-
-## [REPL](doc/repl.md)
 
 ## Spawning and killing a process
 

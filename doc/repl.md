@@ -1,4 +1,4 @@
-# REPLs
+# Running a REPL
 
 Babashka supports running a REPL, a socket REPL and an nREPL server.
 
