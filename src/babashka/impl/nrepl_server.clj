@@ -132,6 +132,8 @@
                    (swap! (:sessions ctx) (fnil conj #{}) id)
                    (send os (response-for msg {"new-session" id "status" #{"done"}}))
                    (recur ctx is os id)))
+        :close (do (close-session ctx msg is os)
+                   (recur ctx is os id))
         :eval (do
                 (eval-msg ctx os msg)
                 (recur ctx is os id))
@@ -144,11 +146,10 @@
                     (recur ctx is os id))
         :describe
         (do (send os (response-for msg {"status" #{"done"}
-                                        "ops" (zipmap #{"clone" "eval" "load-file" "complete" "describe"}
+                                        "ops" (zipmap #{"clone" "close" "eval" "load-file"
+                                                        "complete" "describe" "ls-sessions"}
                                                       (repeat {}))}))
             (recur ctx is os id))
-        :close (do (close-session ctx msg is os)
-                   (recur ctx is os id))
         :ls-sessions (do (ls-sessions ctx msg os)
                          (recur ctx is os id))
         ;; fallback
