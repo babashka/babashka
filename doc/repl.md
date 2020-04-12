@@ -109,3 +109,21 @@ yourself:
   (.deleteOnExit (File. ".nrepl-port"))
   (.waitFor proc))
  ```
+
+### Debugging the nREPL server
+
+To debug the nREPL server from the binary you can run:
+
+``` shell
+$ BABASHKA_DEV=true bb --nrepl-server 1667
+```
+
+This will print all the incoming messages.
+
+To debug the nREPL server from source:
+
+``` clojure
+$ git clone https://github.com/borkdude/babashka --recursive
+$ cd babashka
+$ BABASHKA_DEV=true clojure -A:main --nrepl-server 1667
+```
