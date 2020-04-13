@@ -318,6 +318,7 @@ Everything after that is bound to *command-line-args*."))
                     :verbose? :classpath
                     :main :uberscript] :as _opts}
             (parse-opts args)
+            _ (when main (System/setProperty "babashka.main" main))
             read-next (fn [*in*]
                         (if (pipe-signal-received?)
                           ::EOF

@@ -3,7 +3,8 @@
    [babashka.test-utils :as tu]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
-   [clojure.test :as t :refer [deftest is]]))
+   [clojure.test :as t :refer [deftest is testing]]
+   [clojure.string :as str]))
 
 (defn bb [input & args]
   (edn/read-string (apply tu/bb (when (some? input) (str input)) (map str args))))
@@ -28,7 +29,10 @@
 
 (deftest main-test
   (is (= "(\"1\" \"2\" \"3\" \"4\")\n"
-         (tu/bb nil "--classpath" "test-resources/babashka/src_for_classpath_test" "-m" "my.main" "1" "2" "3" "4"))))
+         (tu/bb nil "--classpath" "test-resources/babashka/src_for_classpath_test" "-m" "my.main" "1" "2" "3" "4")))
+  (testing "system property"
+    (is (= "\"my.main2\""
+           (str/trim (tu/bb nil "--classpath" "test-resources/babashka/src_for_classpath_test" "-m" "my.main2"))))))
 
 (deftest uberscript-test
   (let [tmp-file (java.io.File/createTempFile "uberscript" ".clj")]
