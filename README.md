@@ -940,7 +940,7 @@ babashka.
 
 #### [justone/bb-scripts](https://github.com/justone/bb-scripts)
 
-A collection of scripts developed by [https://github.com/justone](@justone).
+A collection of scripts developed by [@justone](https://github.com/justone).
 
 #### [nativity](https://github.com/MnRA/nativity)
 
