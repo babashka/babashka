@@ -781,7 +781,7 @@ Differences with Clojure:
   than in Clojure on the JVM. In general interpretation yields slower programs
   than compiled programs.
 
-- No support for unboxed types.
+- No `defprotocol`, `defrecord` and unboxed math.
 
 ## External resources
 
@@ -941,6 +941,10 @@ babashka.
 #### [justone/bb-scripts](https://github.com/justone/bb-scripts)
 
 A collection of scripts developed by [https://github.com/justone](@justone).
+
+#### [nativity](https://github.com/MnRA/nativity)
+
+Turn babashka scripts into binaries using GraalVM `native-image`.
 
 ## Package babashka script as a AWS Lambda
 
