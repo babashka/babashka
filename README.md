@@ -1156,7 +1156,7 @@ clojure.core/ffirst
 
 (defn sha1
   [s]
-  (let [hashed (.digest (.getInstance java.security.MessageDigest "SHA-1")
+  (let [hashed (.digest (java.security.MessageDigest/getInstance "SHA-1")
                         (.getBytes s))
         sw (java.io.StringWriter.)]
     (binding [*out* sw]
@@ -1221,6 +1221,17 @@ is a variation on the
 example. If you get prompted with a login, use `admin`/`admin`.
 
 <img src="assets/notes-example.png" width="400px">
+
+### which
+
+The `which` command re-implemented in Clojure. See
+[examples/which.clj](https://github.com/borkdude/babashka/blob/master/examples/which.clj).
+Prints the canonical file name.
+
+``` shell
+$ examples/which.clj rg
+/usr/local/Cellar/ripgrep/11.0.1/bin/rg
+```
 
 ## Thanks
 

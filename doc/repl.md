@@ -39,7 +39,7 @@ bb=> :repl/quit
 $
 ```
 
-Editor plugins known to work with a babashka socket REPL:
+Editor plugins and tools known to work with a babashka socket REPL:
 
 - Emacs: [inf-clojure](https://github.com/clojure-emacs/inf-clojure):
 
@@ -78,7 +78,7 @@ user=> (+ 1 2 3)
 user=>
 ```
 
-Editor plugins known to work with the babashka nREPL server:
+Editor plugins and tools known to work with the babashka nREPL server:
 
   - Emacs: [CIDER](https://docs.cider.mx/cider-nrepl/)
   - `lein repl :connect`
@@ -87,11 +87,10 @@ Editor plugins known to work with the babashka nREPL server:
   - (Neo)Vim: [vim-iced](https://github.com/liquidz/vim-iced), [conjure](https://github.com/Olical/conjure), [fireplace](https://github.com/tpope/vim-fireplace)
 
 The babashka nREPL server does not write an `.nrepl-port` file at startup, but
-you can easily write a script that launches the server and write the file
-yourself:
+you can easily write a script that launches the server and writes the file:
 
- ``` clojure
- #!/usr/bin/env bb
+``` clojure
+#!/usr/bin/env bb
 
 (import [java.net ServerSocket]
         [java.io File]
@@ -108,7 +107,7 @@ yourself:
   (spit ".nrepl-port" nrepl-port)
   (.deleteOnExit (File. ".nrepl-port"))
   (.waitFor proc))
- ```
+```
 
 ### Debugging the nREPL server
 
