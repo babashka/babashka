@@ -35,7 +35,7 @@
                      (sio/println "Use :repl/quit or :repl/exit to quit the REPL.")
                      (sio/println "Clojure rocks, Bash reaches.")
                      (sio/println)
-                     (eval-form sci-ctx '(require '[clojure.repl :refer [dir doc]]))))
+                     (eval-form sci-ctx '(use 'clojure.repl))))
       :read (or read
                 (fn [_request-prompt request-exit]
                   ;; (prn "PEEK" @sci/in (r/peek-char @sci/in))
