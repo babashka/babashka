@@ -508,7 +508,7 @@ $ bb "(my-gist-script/-main)"
 Hello from gist script!
 ```
 
-When invoking `bb` with a main function the expression `(System/getProperty
+When invoking `bb` with a main function, the expression `(System/getProperty
 "babashka.main")` will return the name of the main function.
 
 Also see the
