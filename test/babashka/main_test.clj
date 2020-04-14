@@ -402,6 +402,13 @@
       (bb nil (format "(.deleteOnExit (io/file \"%s\"))" p))
       (is (false? (.exists f))))))
 
+(deftest statsd-client-test
+  (is (= :success (bb nil "
+(load-file (io/file \"test-resources\" \"babashka\" \"statsd.clj\"))
+(require '[statsd-client :as c])
+(c/increment :foo)
+:success"))))
+
 ;;;; Scratch
 
 (comment
