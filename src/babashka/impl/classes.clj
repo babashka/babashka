@@ -53,11 +53,14 @@
           java.lang.ProcessBuilder
           java.lang.ProcessBuilder$Redirect
           java.math.BigInteger
-          java.net.URI
+          java.net.DatagramSocket
+          java.net.DatagramPacket
           java.net.HttpURLConnection
+          java.net.InetAddress
           java.net.ServerSocket
           java.net.Socket
           java.net.UnknownHostException
+          java.net.URI
           java.net.URLEncoder
           java.net.URLDecoder
           java.nio.file.CopyOption
