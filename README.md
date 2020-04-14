@@ -946,6 +946,11 @@ A collection of scripts developed by [@justone](https://github.com/justone).
 
 Turn babashka scripts into binaries using GraalVM `native-image`.
 
+#### [arrangement](https://github.com/greglook/clj-arrangement)
+
+A micro-library which provides a total-ordering comparator for Clojure
+values. Tested with version `1.2.0`.
+
 ## Package babashka script as a AWS Lambda
 
 AWS Lambda runtime doesn't support signals, therefore babashka has to disable
