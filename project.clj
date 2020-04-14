@@ -13,7 +13,7 @@
   :resource-paths ["resources" "sci/resources"]
   :dependencies [[org.clojure/clojure "1.10.2-alpha1"]
                  [org.clojure/tools.reader "1.3.2"]
-                 [borkdude/edamame "0.0.11-alpha.7"]
+                 [borkdude/edamame "0.0.11-alpha.8"]
                  [borkdude/graal.locking "0.0.2"]
                  [borkdude/sci.impl.reflector "0.0.1"]
                  [org.clojure/core.async "1.0.567"]
