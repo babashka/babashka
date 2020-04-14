@@ -61,6 +61,7 @@
           java.net.Socket
           java.net.UnknownHostException
           java.net.URI
+          ;; java.net.URL, see below
           java.net.URLEncoder
           java.net.URLDecoder
           java.nio.file.CopyOption
