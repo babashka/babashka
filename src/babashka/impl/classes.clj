@@ -33,6 +33,7 @@
           java.lang.AssertionError
           java.lang.Boolean
           java.lang.Byte
+          java.lang.Comparable
           java.lang.Class
           java.lang.Double
           java.lang.Exception
