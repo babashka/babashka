@@ -28,6 +28,7 @@
    [clojure.java.io :as io]
    [clojure.stacktrace :refer [print-stack-trace]]
    [clojure.string :as str]
+   [babashka.impl.yaml :refer [yaml-namespace]]
    [sci.addons :as addons]
    [sci.core :as sci]
    [sci.impl.interpreter :refer [eval-string*]]
@@ -246,6 +247,7 @@ Everything after that is bound to *command-line-args*."))
     async clojure.core.async
     csv clojure.data.csv
     json cheshire.core
+    yaml clj-yaml.core
     curl babashka.curl
     transit cognitect.transit
     bencode bencode.core})
@@ -279,6 +281,7 @@ Everything after that is bound to *command-line-args*."))
    'clojure.repl {'demunge demunge}
    'clojure.test t/clojure-test-namespace
    'babashka.classpath {'add-classpath add-classpath*}
+   'clj-yaml.core yaml-namespace
    'clojure.pprint pprint-namespace
    'babashka.curl curl-namespace
    'cognitect.transit transit-namespace

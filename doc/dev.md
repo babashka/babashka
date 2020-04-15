@@ -61,6 +61,9 @@ $ BABASHKA_XMX="-J-Xmx4g" script/compile
 
 Keep notes here about how adding libraries and classes to Babashka affects the binary size.
 
+2020/03/29 Added clj-yaml for parsing and generating yaml.
+45196996 - 42626884 = 2570kb added.
+
 2020/03/28 Added java.nio.file.FileSystem(s) to support extracting zip files
 42562284 - 42021244 = 541kb added.
 

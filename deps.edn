@@ -9,9 +9,8 @@
         org.clojure/data.csv {:mvn/version "1.0.0"},
         cheshire {:mvn/version "5.10.0"}
         fipp {:mvn/version "0.6.22"}
-        com.cognitect/transit-clj {:mvn/version "1.0.324"}
-        ;; nrepl/bencode {:mvn/version "1.0.0"}
-        }
+        clj-commons/clj-yaml {:mvn/version "0.7.1"}
+        com.cognitect/transit-clj {:mvn/version "1.0.324"}}
  :aliases {:main
            {:main-opts ["-m" "babashka.main"]}
            :profile

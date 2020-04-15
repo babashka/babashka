@@ -225,7 +225,8 @@ enumerated explicitly.
 - [`clojure.data.csv`](https://github.com/clojure/data.csv) aliased as `csv`
 - [`cheshire.core`](https://github.com/dakrone/cheshire) aliased as `json`
 - [`cognitect.transit`](https://github.com/cognitect/transit-clj) aliased as `transit`
-- [`bencode.core`](https://github.com/nrepl/bencode) aliased as `bencode`: `read-bencode`, `write-bencode`.
+- [`clj-yaml.core`](https://github.com/clj-commons/clj-yaml) alias as `yaml`
+- [`bencode.core`](https://github.com/nrepl/bencode) aliased as `bencode`: `read-bencode`, `write-bencode`
 
 A selection of java classes are available, see `babashka/impl/classes.clj`.
 
