@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+export BABASHKA_CLASSPATH=$(clojure -Sdeps '{:deps {mvxcvi/arrangement {:mvn/version "1.2.0"}}}' -Spath)
+
+if [ "$BABASHKA_TEST_ENV" = "native" ]; then
+    BB_CMD="./bb"
+else
+    BB_CMD="lein bb"
+fi
+
+$BB_CMD -e "(require '[arrangement.core :as order]) (sort order/rank ['a false 2 :b nil 3.14159 \"c\" true \d [3 2] #{:one :two} [3 1 2] #{:three}])"

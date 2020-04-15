@@ -35,19 +35,15 @@
                      (sio/println "Use :repl/quit or :repl/exit to quit the REPL.")
                      (sio/println "Clojure rocks, Bash reaches.")
                      (sio/println)
-                     (eval-form sci-ctx '(require '[clojure.repl :refer [dir doc]]))))
+                     (eval-form sci-ctx '(use 'clojure.repl))))
       :read (or read
                 (fn [_request-prompt request-exit]
-                  ;; (prn "PEEK" @sci/in (r/peek-char @sci/in))
-                  ;; (prn "PEEK" @sci/in (r/peek-char @sci/in)) this works fine
-                  (if (r/peek-char in) ;; if this is nil, we reached EOF
-                    (let [v (parser/parse-next sci-ctx in)]
-                      (if (or (identical? :repl/quit v)
-                              (identical? :repl/exit v)
-                              (identical? :edamame.impl.parser/eof v))
-                        request-exit
-                        v))
-                    request-exit)))
+                  (let [v (parser/parse-next sci-ctx in)]
+                    (if (or (identical? :repl/quit v)
+                            (identical? :repl/exit v)
+                            (identical? :edamame.impl.parser/eof v))
+                      request-exit
+                      v))))
       :eval (or eval
                 (fn [expr]
                   (let [ret (eval-form (update sci-ctx

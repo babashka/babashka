@@ -225,7 +225,8 @@ enumerated explicitly.
 - [`clojure.data.csv`](https://github.com/clojure/data.csv) aliased as `csv`
 - [`cheshire.core`](https://github.com/dakrone/cheshire) aliased as `json`
 - [`cognitect.transit`](https://github.com/cognitect/transit-clj) aliased as `transit`
-- [`bencode.core`](https://github.com/nrepl/bencode) aliased as `bencode`: `read-bencode`, `write-bencode`.
+- [`clj-yaml.core`](https://github.com/clj-commons/clj-yaml) alias as `yaml`
+- [`bencode.core`](https://github.com/nrepl/bencode) aliased as `bencode`: `read-bencode`, `write-bencode`
 
 A selection of java classes are available, see `babashka/impl/classes.clj`.
 
@@ -508,6 +509,9 @@ $ bb "(my-gist-script/-main)"
 Hello from gist script!
 ```
 
+When invoking `bb` with a main function, the expression `(System/getProperty
+"babashka.main")` will return the name of the main function.
+
 Also see the
 [babashka.classpath](https://github.com/borkdude/babashka/#babashkaclasspath)
 namespace which allows dynamically adding to the classpath.
@@ -778,7 +782,7 @@ Differences with Clojure:
   than in Clojure on the JVM. In general interpretation yields slower programs
   than compiled programs.
 
-- No support for unboxed types.
+- No `defprotocol`, `defrecord` and unboxed math.
 
 ## External resources
 
@@ -937,7 +941,16 @@ babashka.
 
 #### [justone/bb-scripts](https://github.com/justone/bb-scripts)
 
-A collection of scripts developed by [https://github.com/justone](@justone).
+A collection of scripts developed by [@justone](https://github.com/justone).
+
+#### [nativity](https://github.com/MnRA/nativity)
+
+Turn babashka scripts into binaries using GraalVM `native-image`.
+
+#### [arrangement](https://github.com/greglook/clj-arrangement)
+
+A micro-library which provides a total-ordering comparator for Clojure
+values. Tested with version `1.2.0`.
 
 ## Package babashka script as a AWS Lambda
 

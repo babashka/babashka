@@ -1,7 +1,7 @@
 {:paths ["src" "sci/src" "babashka.curl/src" "resources" "sci/resources"],
  :deps {org.clojure/clojure {:mvn/version "1.10.2-alpha1"},
         org.clojure/tools.reader {:mvn/version "1.3.2"},
-        borkdude/edamame {:mvn/version "0.0.11-alpha.6"},
+        borkdude/edamame {:mvn/version "0.0.11-alpha.8"},
         borkdude/graal.locking {:mvn/version "0.0.2"},
         borkdude/sci.impl.reflector {:mvn/version "0.0.1"}
         org.clojure/core.async {:mvn/version "1.0.567"},
@@ -9,9 +9,8 @@
         org.clojure/data.csv {:mvn/version "1.0.0"},
         cheshire {:mvn/version "5.10.0"}
         fipp {:mvn/version "0.6.22"}
-        com.cognitect/transit-clj {:mvn/version "1.0.324"}
-        ;; nrepl/bencode {:mvn/version "1.0.0"}
-        }
+        clj-commons/clj-yaml {:mvn/version "0.7.1"}
+        com.cognitect/transit-clj {:mvn/version "1.0.324"}}
  :aliases {:main
            {:main-opts ["-m" "babashka.main"]}
            :profile
