@@ -7,5 +7,7 @@
 (def yns (vars/->SciNamespace 'clj-yaml.core nil))
 
 (def yaml-namespace
-  {'generate-string (copy-var yaml/generate-string yns)
+  {'mark (copy-var yaml/mark yns)
+   'unmark (copy-var yaml/unmark yns)
+   'generate-string (copy-var yaml/generate-string yns)
    'parse-string (copy-var yaml/parse-string yns)})

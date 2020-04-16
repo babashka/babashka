@@ -112,7 +112,9 @@
           java.util.zip.InflaterInputStream
           java.util.zip.DeflaterInputStream
           java.util.zip.GZIPInputStream
-          java.util.zip.GZIPOutputStream]
+          java.util.zip.GZIPOutputStream
+          org.yaml.snakeyaml.error.YAMLException
+          ]
     :constructors [clojure.lang.Delay
                    clojure.lang.MapEntry
                    clojure.lang.LineNumberingPushbackReader
