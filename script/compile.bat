@@ -27,6 +27,7 @@ call lein do clean, uberjar
 if %errorlevel% neq 0 exit /b %errorlevel%
 
 Rem the --no-server option is not supported in GraalVM Windows.
+Rem -H:EnableURLProtocols=jar,http,https is also not supported.
 
 call %GRAALVM_HOME%\bin\native-image.cmd ^
   "-jar" "target/babashka-%BABASHKA_VERSION%-standalone.jar" ^
@@ -40,8 +41,6 @@ call %GRAALVM_HOME%\bin\native-image.cmd ^
   "--initialize-at-run-time=java.lang.Math$RandomNumberGeneratorHolder" ^
   "--initialize-at-build-time"  ^
   "-H:Log=registerResource:" ^
-  rem "The following doesn't work on Windows:" ^
-  rem "-H:EnableURLProtocols=jar,http,https" ^
   "--no-fallback" ^
   "--verbose" ^
   "%BABASHKA_XMX%"
