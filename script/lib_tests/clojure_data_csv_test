@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+if [ "$BABASHKA_TEST_ENV" = "native" ]; then
+    BB_CMD="./bb"
+else
+    BB_CMD="lein bb"
+fi
+
+$BB_CMD -cp test-resources/lib_tests -e "
+(require '[clojure.java.io :as io])
+(require '[clojure.data.csv-test])
+(require '[clojure.test :as t])
+(let [{:keys [:test :pass :fail :error]} (t/run-tests 'clojure.data.csv-test)]
+  (when-not (pos? test)
+    (System/exit 1))
+  (System/exit (+ fail error)))
+"

@@ -8,13 +8,9 @@ else
     BB_CMD="lein bb"
 fi
 
-$BB_CMD -e "
+$BB_CMD -cp test-resources/lib_tests -e "
 (require '[clojure.java.io :as io])
-(def test-file (io/file (System/getProperty \"java.io.tmpdir\") \"core_test.clj\"))
-(io/copy
-  (io/input-stream \"https://raw.githubusercontent.com/clj-commons/clj-yaml/master/test/clj_yaml/core_test.clj\")
-  test-file)
-(load-file test-file)
+(require '[clj-yaml.core-test])
 (require '[clojure.test :as t])
 (let [{:keys [:test :pass :fail :error]} (t/run-tests 'clj-yaml.core-test)]
   (when-not (pos? test)
