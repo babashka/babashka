@@ -402,18 +402,10 @@
       (bb nil (format "(.deleteOnExit (io/file \"%s\"))" p))
       (is (false? (.exists f))))))
 
-
 (deftest yaml-test
   (is (str/starts-with?
        (bb nil "(yaml/generate-string [{:name \"John Smith\", :age 33} {:name \"Mary Smith\", :age 27}])")
        "-")))
-
-(deftest statsd-client-test
-  (is (= :success (bb nil "
-(load-file (io/file \"test-resources\" \"babashka\" \"statsd.clj\"))
-(require '[statsd-client :as c])
-(c/increment :foo)
-:success"))))
 
 ;;;; Scratch
 
