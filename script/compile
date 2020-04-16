@@ -38,7 +38,7 @@ args=( -jar $BABASHKA_JAR \
             --initialize-at-run-time=java.lang.Math\$RandomNumberGeneratorHolder \
             --initialize-at-build-time \
             -H:Log=registerResource: \
-            -H:EnableURLProtocols=http,https \
+            -H:EnableURLProtocols=jar,http,https \
             --enable-all-security-services \
             -H:+JNI \
             --verbose \
