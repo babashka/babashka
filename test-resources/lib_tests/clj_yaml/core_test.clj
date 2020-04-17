@@ -171,6 +171,7 @@ the-bin: !!binary 0101")
            (generate-string data :dumper-options {:flow-style :flow})))))
 
 ;; TODO: this test is failing in GraalVM
+;; Could be related to https://github.com/oracle/graal/issues/2234
 #_(deftest parse-time
   (testing "clj-time parses timestamps with more than millisecond precision correctly."
     (let [timestamp "2001-11-23 15:02:31.123456 -04:00"
