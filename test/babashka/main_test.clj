@@ -122,6 +122,7 @@
 
 (deftest load-file-test
   (let [tmp (java.io.File/createTempFile "script" ".clj")]
+    (.deleteOnExit tmp)
     (spit tmp "(ns foo) (defn foo [x y] (+ x y)) (defn bar [x y] (* x y))")
     (is (= "120\n" (test-utils/bb nil (format "(load-file \"%s\") (foo/bar (foo/foo 10 30) 3)"
                                               (.getPath tmp)))))
@@ -129,6 +130,31 @@
       (is (= 'start-ns
              (bb nil (format "(ns start-ns) (load-file \"%s\") (ns-name *ns*)"
                              (.getPath tmp))))))))
+
+(deftest repl-source-test
+  (let [tmp (java.io.File/createTempFile "lib" ".clj")
+        name (str/replace (.getName tmp) ".clj" "")
+        dir (.getParent tmp)]
+    (.deleteOnExit tmp)
+    (testing "print source from loaded file"
+      (spit tmp (format "
+(ns %s)
+
+(defn foo [x y]
+  (+ x y))" name))
+      (is (= "(defn foo [x y]\n  (+ x y))\n"
+             (bb nil (format "
+(load-file \"%s\")
+(require '[clojure.repl :refer [source]])
+(with-out-str (source %s/foo))"
+                             (.getPath tmp)
+                             name)))))
+    (testing "print source from file on classpath"
+      (is (= "(defn foo [x y]\n  (+ x y))\n"
+             (bb nil
+                 "-cp" dir
+                 "-e" (format "(require '[clojure.repl :refer [source]] '[%s])" name)
+                 "-e" (format "(with-out-str (source %s/foo))" name)))))))
 
 (deftest eval-test
   (is (= "120\n" (test-utils/bb nil "(eval '(do (defn foo [x y] (+ x y))

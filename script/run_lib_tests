@@ -12,3 +12,5 @@ script/lib_tests/babashka_curl_test
 script/lib_tests/cprop_test
 script/lib_tests/comb_test
 script/lib_tests/arrangement_test
+script/lib_tests/clj_yaml_test
+script/lib_tests/clojure_data_csv_test
