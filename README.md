@@ -1,10 +1,8 @@
 <img src="logo/babashka.svg" width="425px">
 
 [![CircleCI](https://circleci.com/gh/borkdude/babashka/tree/master.svg?style=shield)](https://circleci.com/gh/borkdude/babashka/tree/master)
-[![Financial Contributors on Open Collective](https://opencollective.com/babashka/all/badge.svg?label=financial+contributors)](https://opencollective.com/babashka) [![Clojars Project](https://img.shields.io/clojars/v/borkdude/babashka.svg)](https://clojars.org/borkdude/babashka)
 [![project chat](https://img.shields.io/badge/slack-join_chat-brightgreen.svg)](https://app.slack.com/client/T03RZGPFR/CLX41ASCS)
-
-<!-- [![cljdoc badge](https://cljdoc.org/badge/borkdude/babashka)](https://cljdoc.org/d/borkdude/babashka/CURRENT) -->
+[![Financial Contributors on Open Collective](https://opencollective.com/babashka/all/badge.svg?label=financial+contributors)](https://opencollective.com/babashka) [![Clojars Project](https://img.shields.io/clojars/v/borkdude/babashka.svg)](https://clojars.org/borkdude/babashka)
 
 A Clojure [babushka](https://en.wikipedia.org/wiki/Headscarf) for the grey areas of Bash.
 
@@ -1258,7 +1256,7 @@ $ examples/which.clj rg
 
 ### Code Contributors
 
-This project exists thanks to all the people who contribute. [[Contribute](CONTRIBUTING.md)].
+This project exists thanks to all the people who contribute. [[Contribute](doc/dev.md)].
 <a href="https://github.com/borkdude/babashka/graphs/contributors"><img src="https://opencollective.com/babashka/contributors.svg?width=890&button=false" /></a>
 
 ### Financial Contributors
