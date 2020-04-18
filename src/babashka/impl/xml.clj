@@ -4,7 +4,7 @@
             [sci.impl.namespaces :refer [copy-var]]
             [sci.impl.vars :as vars]))
 
-(def xns (vars/->SciNamespace 'clojure.data.xml))
+(def xns (vars/->SciNamespace 'clojure.data.xml nil))
 
 (def xml-namespace
   {'parse-str (copy-var xml/parse-str xns)
