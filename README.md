@@ -221,6 +221,7 @@ enumerated explicitly.
 - `clojure.pprint`: `pprint` (currently backed by [fipp](https://github.com/brandonbloom/fipp)'s  `fipp.edn/pprint`)
 - [`clojure.tools.cli`](https://github.com/clojure/tools.cli) aliased as `tools.cli`
 - [`clojure.data.csv`](https://github.com/clojure/data.csv) aliased as `csv`
+- [`clojure.data.xml`](https://github.com/clojure/data.xml) aliased as `xml`
 - [`cheshire.core`](https://github.com/dakrone/cheshire) aliased as `json`
 - [`cognitect.transit`](https://github.com/cognitect/transit-clj) aliased as `transit`
 - [`clj-yaml.core`](https://github.com/clj-commons/clj-yaml) alias as `yaml`
@@ -1248,7 +1249,7 @@ $ examples/which.clj rg
 ### pom.xml version
 
 A script to retrieve the version from a `pom.xml` file. See
-[examples/pom_version.clj](https://github.com/borkdude/babashka/blob/master/examples/pom_version.clj). Written by [@wilkerlucio](https://github.com/wilkerlucio).
+[examples/pom_version.clj](examples/pom_version.clj). Written by [@wilkerlucio](https://github.com/wilkerlucio).
 
 ## Thanks
 
