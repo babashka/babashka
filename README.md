@@ -417,7 +417,8 @@ $ cat script.clj
 ## [Running a REPL](doc/repl.md)
 
 Babashka offers a REPL, a socket REPL and an nREPL server. Look
-[here](doc/repl.md) for more information.
+[here](doc/repl.md) for more information on how to use and integrate them with
+your editor.
 
 ## Preloads
 
