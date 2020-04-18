@@ -1245,6 +1245,11 @@ $ examples/which.clj rg
 /usr/local/Cellar/ripgrep/11.0.1/bin/rg
 ```
 
+### pom.xml version
+
+A script to retrieve the version from a `pom.xml` file. See
+[examples/pom_version.clj](https://github.com/borkdude/babashka/blob/master/examples/pom_version.clj). Written by [@wilkerlucio](https://github.com/wilkerlucio).
+
 ## Thanks
 
 - [adgoji](https://www.adgoji.com/) for financial support
