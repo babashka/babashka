@@ -12,6 +12,7 @@ jobs:
     environment:
       LEIN_ROOT: "true"
       BABASHKA_PLATFORM: linux # could be used in jar name
+    resource_class: large
     steps:
       - checkout
       - run:
@@ -38,6 +39,7 @@ jobs:
           name: Run JVM tests
           command: |
             script/test
+            script/run_lib_tests
       # - run:
       #     name: Run as tools.deps dependency
       #     command: |
@@ -66,9 +68,15 @@ jobs:
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
+<<<<<<< HEAD
       GRAALVM_HOME: /home/circleci/graalvm-ce-java11-19.3.0.2
+=======
+      GRAALVM_HOME: /home/circleci/graalvm-ce-java8-19.3.1
+>>>>>>> master
       BABASHKA_PLATFORM: linux # used in release script
       BABASHKA_TEST_ENV: native
+      BABASHKA_XMX: "-J-Xmx7g"
+    resource_class: large
     steps:
       - checkout
       - run:
@@ -98,14 +106,16 @@ jobs:
           name: Download GraalVM
           command: |
             cd ~
+<<<<<<< HEAD
             if ! [ -d graalvm-ce-java11-19.3.0.2 ]; then
               curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-19.3.0.2/graalvm-ce-java11-linux-amd64-19.3.0.2.tar.gz
               tar xzf graalvm-ce-java11-linux-amd64-19.3.0.2.tar.gz
+=======
+            if ! [ -d graalvm-ce-java8-19.3.1 ]; then
+              curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-19.3.1/graalvm-ce-java8-linux-amd64-19.3.1.tar.gz
+              tar xzf graalvm-ce-java8-linux-amd64-19.3.1.tar.gz
+>>>>>>> master
             fi
-      # - run:
-      #     name: Install GraalVM SSL libs
-      #     command: |
-      #       .circleci/script/graalvm_ssl
       - run:
           name: Build binary
           command: |
@@ -116,10 +126,6 @@ jobs:
           command: |
             script/test
             script/run_lib_tests
-      # - run:
-      #     name: Performance report
-      #     command: |
-      #       .circleci/script/performance
       - run:
           name: Release
           command: |
@@ -127,7 +133,82 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
+<<<<<<< HEAD
             - ~/graalvm-ce-java11-19.3.0.2
+=======
+            - ~/graalvm-ce-java8-19.3.1
+          key: linux-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
+      - store_artifacts:
+          path: /tmp/release
+          destination: release
+      - run:
+          name: Publish artifact link to Slack
+          command: |
+            ./bb .circleci/script/publish_artifact.clj
+  linux-static:
+    docker:
+      - image: circleci/clojure:lein-2.8.1
+    working_directory: ~/repo
+    environment:
+      LEIN_ROOT: "true"
+      GRAALVM_HOME: /home/circleci/graalvm-ce-java8-19.3.1
+      BABASHKA_PLATFORM: linux-static # used in release script
+      BABASHKA_TEST_ENV: native
+      BABASHKA_STATIC: true
+      BABASHKA_XMX: "-J-Xmx7g"
+    resource_class: large
+    steps:
+      - checkout
+      - run:
+          name: "Pull Submodules"
+          command: |
+            git submodule init
+            git submodule update
+      - restore_cache:
+          keys:
+            - linux-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
+      - run:
+          name: Install Clojure
+          command: |
+            wget https://download.clojure.org/install/linux-install-1.10.1.447.sh
+            chmod +x linux-install-1.10.1.447.sh
+            sudo ./linux-install-1.10.1.447.sh
+      - run:
+          name: Install lsof
+          command: |
+            sudo apt-get install lsof
+      - run:
+          name: Install native dev tools
+          command: |
+            sudo apt-get update
+            sudo apt-get -y install gcc g++ zlib1g-dev
+      - run:
+          name: Download GraalVM
+          command: |
+            cd ~
+            if ! [ -d graalvm-ce-java8-19.3.1 ]; then
+              curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-19.3.1/graalvm-ce-java8-linux-amd64-19.3.1.tar.gz
+              tar xzf graalvm-ce-java8-linux-amd64-19.3.1.tar.gz
+            fi
+      - run:
+          name: Build binary
+          command: |
+            script/compile
+          no_output_timeout: 30m
+      - run:
+          name: Run tests
+          command: |
+            script/test
+            script/run_lib_tests
+      - run:
+          name: Release
+          command: |
+            .circleci/script/release
+      - save_cache:
+          paths:
+            - ~/.m2
+            - ~/graalvm-ce-java8-19.3.1
+>>>>>>> master
           key: linux-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - store_artifacts:
           path: /tmp/release
@@ -140,9 +221,15 @@ jobs:
     macos:
       xcode: "9.0"
     environment:
+<<<<<<< HEAD
       GRAALVM_HOME: /Users/distiller/graalvm-ce-java11-19.3.0.2/Contents/Home
+=======
+      GRAALVM_HOME: /Users/distiller/graalvm-ce-java8-19.3.1/Contents/Home
+>>>>>>> master
       BABASHKA_PLATFORM: macos # used in release script
       BABASHKA_TEST_ENV: native
+      BABASHKA_XMX: "-J-Xmx7g"
+    resource_class: large
     steps:
       - checkout
       - run:
@@ -156,24 +243,26 @@ jobs:
       - run:
           name: Install Clojure
           command: |
-            .circleci/script/install-clojure /usr/local
+            script/install-clojure /usr/local
       - run:
           name: Install Leiningen
           command: |
-            .circleci/script/install-leiningen
+            script/install-leiningen
       - run:
           name: Download GraalVM
           command: |
             cd ~
             ls -la
+<<<<<<< HEAD
             if ! [ -d graalvm-ce-java11-19.3.0.2 ]; then
               curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-19.3.0.2/graalvm-ce-java11-darwin-amd64-19.3.0.2.tar.gz
               tar xzf graalvm-ce-java11-darwin-amd64-19.3.0.2.tar.gz
+=======
+            if ! [ -d graalvm-ce-java8-19.3.1 ]; then
+              curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-19.3.1/graalvm-ce-java8-darwin-amd64-19.3.1.tar.gz
+              tar xzf graalvm-ce-java8-darwin-amd64-19.3.1.tar.gz
+>>>>>>> master
             fi
-      # - run:
-      #     name: Install GraalVM SSL libs
-      #     command: |
-      #       .circleci/script/graalvm_ssl
       - run:
           name: Build binary
           command: |
@@ -184,10 +273,6 @@ jobs:
           command: |
             script/test
             script/run_lib_tests
-      # - run:
-      #     name: Performance report
-      #     command: |
-      #       .circleci/script/performance
       - run:
           name: Release
           command: |
@@ -195,7 +280,11 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
+<<<<<<< HEAD
             - ~/graalvm-ce-java11-19.3.0.2
+=======
+            - ~/graalvm-ce-java8-19.3.1
+>>>>>>> master
           key: mac-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - store_artifacts:
           path: /tmp/release
@@ -205,6 +294,7 @@ jobs:
           command: |
             ./bb .circleci/script/publish_artifact.clj
   deploy:
+    resource_class: large
     docker:
       - image: circleci/clojure:openjdk-11-lein-2.9.1
     working_directory: ~/repo
@@ -227,16 +317,21 @@ jobs:
           paths:
             - ~/.m2
           key: v1-dependencies-{{ checksum "project.clj" }}
-  # docker:
-  #   docker:
-  #     - image: circleci/buildpack-deps:stretch
-  #   steps:
-  #     - checkout
-  #     - setup_remote_docker:
-  #         docker_layer_caching: true
-  #     - run:
-  #         name: Build Docker image
-  #         command: .circleci/script/docker
+  docker:
+    resource_class: large
+    docker:
+      - image: circleci/buildpack-deps:stretch
+    steps:
+      - checkout
+      - run:
+          name: "Pull Submodules"
+          command: |
+            git submodule init
+            git submodule update
+      - setup_remote_docker
+      - run:
+          name: Build Docker image
+          command: .circleci/script/docker
 
 workflows:
   version: 2
@@ -244,6 +339,7 @@ workflows:
     jobs:
       - jvm
       - linux
+      - linux-static
       - mac
       - deploy:
           filters:
@@ -252,12 +348,14 @@ workflows:
           requires:
             - jvm
             - linux
+            - linux-static
             - mac
-      # - docker:
-      #     filters:
-      #       branches:
-      #         only: master
-      #     requires:
-      #       - jvm
-      #       - linux
-      #       - mac
+      - docker:
+          filters:
+            branches:
+              only: master
+          requires:
+            - jvm
+            - linux
+            - linux-static
+            - mac

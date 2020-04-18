@@ -4,7 +4,13 @@ set -eo pipefail
 
 export BABASHKA_CLASSPATH=$(clojure -Sdeps '{:deps {clj-http-lite {:git/url "https://github.com/borkdude/clj-http-lite" :sha "f44ebe45446f0f44f2b73761d102af3da6d0a13e"}}}' -Spath)
 
-./bb -e "
+if [ "$BABASHKA_TEST_ENV" = "native" ]; then
+    BB_CMD="./bb"
+else
+    BB_CMD="lein bb"
+fi
+
+$BB_CMD -e "
 (require '[clj-http.lite.client :as client])
 
 (prn (:status (client/get \"https://www.clojure.org\")))

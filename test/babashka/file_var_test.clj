@@ -1,8 +1,8 @@
 (ns babashka.file-var-test
   (:require
    [babashka.test-utils :as tu]
-   [clojure.test :as t :refer [deftest is]]
-   [clojure.string :as str]))
+   [clojure.string :as str]
+   [clojure.test :as t :refer [deftest is]]))
 
 (defn bb [input & args]
   (apply tu/bb (when (some? input) (str input)) (map str args)))

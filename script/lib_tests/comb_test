@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {comb {:mvn/version "0.1.1"}}}')
+
+if [ "$BABASHKA_TEST_ENV" = "native" ]; then
+    BB_CMD="./bb"
+else
+    BB_CMD="lein bb"
+fi
+
+
+$BB_CMD '
+(ns foo (:require [comb.template :as template]))
+(prn (template/eval "<% (dotimes [x 3] %>foo<% ) %>"))
+(prn (template/eval "Hello <%= name %>" {:name "Alice"}))
+(def hello
+  (template/fn [name] "Hello <%= name %>"))
+(prn (hello "Alice"))
+'

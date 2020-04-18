@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+curl https://raw.githubusercontent.com/technomancy/leiningen/2.9.1/bin/lein > lein
+mkdir -p /usr/local/bin/
+mv lein /usr/local/bin/lein
+chmod a+x /usr/local/bin/lein
+lein self-install

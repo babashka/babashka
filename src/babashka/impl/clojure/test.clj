@@ -1,10 +1,10 @@
-                                        ;   Copyright (c) Rich Hickey. All rights reserved.
-                                        ;   The use and distribution terms for this software are covered by the
-                                        ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-                                        ;   which can be found in the file epl-v10.html at the root of this distribution.
-                                        ;   By using this software in any fashion, you are agreeing to be bound by
-                                        ;   the terms of this license.
-                                        ;   You must not remove this notice, or any other, from this software.
+;;   Copyright (c) Rich Hickey. All rights reserved.
+;;   The use and distribution terms for this software are covered by the
+;;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
+;;   which can be found in the file epl-v10.html at the root of this distribution.
+;;   By using this software in any fashion, you are agreeing to be bound by
+;;   the terms of this license.
+;;   You must not remove this notice, or any other, from this software.
 
 ;;; test.clj: test framework for Clojure
 
@@ -232,9 +232,8 @@
    For additional event types, see the examples in the code.
 "}
     babashka.impl.clojure.test
-  (:require [babashka.impl.clojure.stacktrace :as stack]
-            [babashka.impl.common :refer [ctx]]
-            [clojure.string :as str]
+  (:require [babashka.impl.common :refer [ctx]]
+            [clojure.stacktrace :as stack]
             [clojure.template :as temp]
             [sci.core :as sci]
             [sci.impl.analyzer :as ana]
@@ -430,9 +429,9 @@
            result# (apply ~pred values#)]
        (if result#
          (clojure.test/do-report {:type :pass, :message ~msg,
-                     :expected '~form, :actual (cons ~pred values#)})
+                                  :expected '~form, :actual (cons ~pred values#)})
          (clojure.test/do-report {:type :fail, :message ~msg,
-                     :expected '~form, :actual (list '~'not (cons '~pred values#))}))
+                                  :expected '~form, :actual (list '~'not (cons '~pred values#))}))
        result#)))
 
 (defn assert-any
@@ -443,9 +442,9 @@
   `(let [value# ~form]
      (if value#
        (clojure.test/do-report {:type :pass, :message ~msg,
-                   :expected '~form, :actual value#})
+                                :expected '~form, :actual value#})
        (clojure.test/do-report {:type :fail, :message ~msg,
-                   :expected '~form, :actual value#}))
+                                :expected '~form, :actual value#}))
      value#))
 
 
@@ -479,9 +478,9 @@
      (let [result# (instance? klass# object#)]
        (if result#
          (clojure.test/do-report {:type :pass, :message ~msg,
-                     :expected '~form, :actual (class object#)})
+                                  :expected '~form, :actual (class object#)})
          (clojure.test/do-report {:type :fail, :message ~msg,
-                     :expected '~form, :actual (class object#)}))
+                                  :expected '~form, :actual (class object#)}))
        result#)))
 
 (defmethod assert-expr 'thrown? [msg form]
@@ -492,10 +491,10 @@
         body (nthnext form 2)]
     `(try ~@body
           (clojure.test/do-report {:type :fail, :message ~msg,
-                      :expected '~form, :actual nil})
+                                   :expected '~form, :actual nil})
           (catch ~klass e#
             (clojure.test/do-report {:type :pass, :message ~msg,
-                        :expected '~form, :actual e#})
+                                     :expected '~form, :actual e#})
             e#))))
 
 (defmethod assert-expr 'thrown-with-msg? [msg form]
@@ -512,7 +511,7 @@
             (let [m# (.getMessage e#)]
               (if (re-find ~re m#)
                 (clojure.test/do-report {:type :pass, :message ~msg,
-                            :expected '~form, :actual e#})
+                                         :expected '~form, :actual e#})
                 (clojure.test/do-report {:type :fail, :message ~msg,
                                          :expected '~form, :actual e#})))
             e#))))
