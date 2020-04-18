@@ -16,7 +16,6 @@
                  [borkdude/edamame "0.0.11-alpha.9"]
                  [borkdude/graal.locking "0.0.2"]
                  [borkdude/sci.impl.reflector "0.0.1-jdk11"]
-                 [borkdude/sci.impl.reflector "0.0.1"]
                  [org.clojure/core.async "1.0.567"]
                  [org.clojure/tools.cli "0.4.2"]
                  [org.clojure/data.csv "1.0.0"]
@@ -31,6 +30,7 @@
                                   "-Dclojure.spec.skip-macros=true"]
                        :main babashka.main
                        :aot :all}
+             :native-image {:dependencies [[borkdude/clj-reflector-graal-java11-fix "0.0.1-graalvm-20.0.0-alpha.2"]]}
              :reflection {:main babashka.impl.classes/generate-reflection-file}}
   :aliases {"bb" ["run" "-m" "babashka.main"]}
   :deploy-repositories [["clojars" {:url "https://clojars.org/repo"

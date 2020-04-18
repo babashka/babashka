@@ -21,7 +21,7 @@ SVM_JAR=$(find "$GRAALVM_HOME" | grep svm.jar)
 $GRAALVM_HOME/bin/javac -cp "$SVM_JAR" resources/CutOffCoreServicesDependencies.java
 
 if [ -z "$BABASHKA_JAR" ]; then
-   lein with-profiles +reflection do run
+   lein with-profiles +reflection,+native-image do run
    lein do clean, uberjar
   BABASHKA_JAR=${BABASHKA_JAR:-"target/babashka-$BABASHKA_VERSION-standalone.jar"}
 fi
