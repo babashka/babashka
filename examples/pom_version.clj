@@ -14,9 +14,14 @@
 (defn pom-version
   ([] (pom-version "pom.xml"))
   ([path]
-   (->> (xml-seq (xml/parse-str (slurp path)))
-        (filter #(tag-name? % "version"))
-        first
-        tag-content-str)))
+   (->>
+    (slurp path)
+    (xml/parse-str)
+    (xml-seq )
+    (filter #(tag-name? % "version"))
+    first
+    tag-content-str)))
 
-(pom-version)
+(if-let [arg (first *command-line-args*)]
+  (pom-version arg)
+  (pom-version))
