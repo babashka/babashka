@@ -62,6 +62,9 @@ $ BABASHKA_XMX="-J-Xmx4g" script/compile
 Keep notes here about how adding libraries and classes to Babashka affects the binary size.
 We're registering the size of the macOS binary (as built on CircleCI).
 
+2020/04/18 Added clojure.data.xml
+47808572 - 45923028 = 1886kb added.
+
 2020/03/29 Added clj-yaml for parsing and generating yaml.
 45196996 - 42626884 = 2570kb added.
 
