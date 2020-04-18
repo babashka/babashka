@@ -2,7 +2,7 @@
 
 set -eo pipefail
 
-export BABASHKA_CLASSPATH="$(clojure -Sdeps '{:deps {regal {:git/url "https://github.com/lambdaisland/regal" :sha "8d300f8e15f43480801766b7762530b6d412c1e6"}}}' -Spath)"
+export BABASHKA_CLASSPATH="$(clojure -Sdeps '{:deps {regal {:git/url "https://github.com/lambdaisland/regal" :sha "b059fdb06d5586a9a04c27e7b011c467ad8546db"}}}' -Spath)"
 
 if [ "$BABASHKA_TEST_ENV" = "native" ]; then
     BB_CMD="./bb"
@@ -10,4 +10,13 @@ else
     BB_CMD="lein bb"
 fi
 
-$BB_CMD "(require '[lambdaisland.regal :as re]) (re/regex [:range \a \z])"
+$BB_CMD "
+(require '[lambdaisland.regal :as regal])
+(def r [:cat
+        [:+ [:class [\a \z]]]
+        \"=\"
+        [:+ [:not \=]]])
+
+(prn (regal/regex r))
+(prn (re-matches (regal/regex r) \"foo=bar\"))
+"

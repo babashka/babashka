@@ -9,6 +9,10 @@
    [clojure.test :as test :refer [deftest is testing]]
    [sci.core :as sci]))
 
+(defmethod clojure.test/report :begin-test-var [m]
+  (println "===" (-> m :var meta :name))
+  (println))
+
 (defn bb [input & args]
   (edn/read-string (apply test-utils/bb (when (some? input) (str input)) (map str args))))
 
@@ -29,7 +33,7 @@
 
 (deftest main-test
   (testing "-io behaves as identity"
-    (= "foo\nbar\n" (test-utils/bb "foo\nbar\n" "-io" "*input*")))
+    (is (= "foo\nbar\n" (test-utils/bb "foo\nbar\n" "-io" "*input*"))))
   (testing "if and when"
     (is (= 1 (bb 0 '(if (zero? *input*) 1 2))))
     (is (= 2 (bb 1 '(if (zero? *input*) 1 2))))
@@ -118,9 +122,39 @@
 
 (deftest load-file-test
   (let [tmp (java.io.File/createTempFile "script" ".clj")]
-    (spit tmp "(defn foo [x y] (+ x y)) (defn bar [x y] (* x y))")
-    (is (= "120\n" (test-utils/bb nil (format "(load-file \"%s\") (bar (foo 10 30) 3)"
-                                              (.getPath tmp)))))))
+    (.deleteOnExit tmp)
+    (spit tmp "(ns foo) (defn foo [x y] (+ x y)) (defn bar [x y] (* x y))")
+    (is (= "120\n" (test-utils/bb nil (format "(load-file \"%s\") (foo/bar (foo/foo 10 30) 3)"
+                                              (.getPath tmp)))))
+    (testing "namespace is restored after load file"
+      (is (= 'start-ns
+             (bb nil (format "(ns start-ns) (load-file \"%s\") (ns-name *ns*)"
+                             (.getPath tmp))))))))
+
+(deftest repl-source-test
+  (let [tmp (java.io.File/createTempFile "lib" ".clj")
+        name (str/replace (.getName tmp) ".clj" "")
+        dir (.getParent tmp)]
+    (.deleteOnExit tmp)
+    (testing "print source from loaded file"
+      (spit tmp (format "
+(ns %s)
+
+(defn foo [x y]
+  (+ x y))" name))
+      (is (= "(defn foo [x y]\n  (+ x y))\n"
+             (bb nil (format "
+(load-file \"%s\")
+(require '[clojure.repl :refer [source]])
+(with-out-str (source %s/foo))"
+                             (.getPath tmp)
+                             name)))))
+    (testing "print source from file on classpath"
+      (is (= "(defn foo [x y]\n  (+ x y))\n"
+             (bb nil
+                 "-cp" dir
+                 "-e" (format "(require '[clojure.repl :refer [source]] '[%s])" name)
+                 "-e" (format "(with-out-str (source %s/foo))" name)))))))
 
 (deftest eval-test
   (is (= "120\n" (test-utils/bb nil "(eval '(do (defn foo [x y] (+ x y))
@@ -160,7 +194,7 @@
 
 (deftest future-test
   (is (= 6 (bb nil "@(future (+ 1 2 3))"))))
-  
+
 (deftest promise-test
   (is (= :timeout (bb nil "(deref (promise) 1 :timeout)")))
   (is (= :ok (bb nil "(let [x (promise)]
@@ -220,23 +254,26 @@
                                {:default :timed-out :timeout 100}))"
                            temp-dir-path))))))
 
-(deftest async-test
-  (is (= "process 2\n" (test-utils/bb nil "
-   (defn async-command [& args]
-     (async/thread (apply shell/sh \"bash\" \"-c\" args)))
-
-   (-> (async/alts!! [(async-command \"sleep 2 && echo process 1\")
-                      (async-command \"sleep 1 && echo process 2\")])
-     first :out str/trim println)"))))
-
 (deftest tools-cli-test
   (is (= {:result 8080} (bb nil "test/babashka/scripts/tools.cli.bb"))))
 
 (deftest try-catch-test
-  (is (zero? (bb nil "(try (/ 1 0) (catch ArithmeticException _ 0))"))))
+  (is (zero? (bb nil "(try (/ 1 0) (catch ArithmeticException _ 0))")))
+  (is (= :got-it (bb nil "
+(defn foo []
+  (throw (java.util.MissingResourceException. \"o noe!\" \"\" \"\")))
+
+(defn bar
+  []
+  (try (foo)
+       (catch java.util.MissingResourceException _
+         :got-it)))
+(bar)
+"))))
 
 (deftest reader-conditionals-test
   (is (= :hello (bb nil "#?(:bb :hello :default :bye)")))
+  (is (= :hello (bb nil "#? (:bb :hello :default :bye)")))
   (is (= :hello (bb nil "#?(:clj :hello :bb :bye)")))
   (is (= [1 2] (bb nil "[1 2 #?@(:bb [] :clj [1])]"))))
 
@@ -355,8 +392,52 @@
   (alter-var-root #'clojure.core/inc (constantly inc2))
   res)")))))
 
+(deftest pprint-test
+  (testing "writer"
+    (is (string? (bb nil "(let [sw (java.io.StringWriter.)] (clojure.pprint/pprint (range 10) sw) (str sw))")))))
+
+(deftest read-string-test
+  (testing "namespaced keyword via alias"
+    (is (= :clojure.string/foo
+           (bb nil "(ns foo (:require [clojure.string :as str])) (read-string \"::str/foo\")")))))
+
+(deftest available-stream-test
+  (is (= 0 (bb nil "(.available System/in)"))))
+
+(deftest file-reader-test
+  (when (str/includes? (str/lower-case (System/getProperty "os.name")) "linux")
+    (let [v (bb nil "(slurp (io/reader (java.io.FileReader. \"/proc/loadavg\")))")]
+      (prn "output:" v)
+      (is v))))
+
+(deftest download-and-extract-test
+  (is (try (= 6 (bb nil (io/file "test" "babashka" "scripts" "download_and_extract_zip.bb")))
+           (catch Exception e
+             (is (str/includes? (str e) "timed out"))))))
+
+(deftest get-message-on-exception-info-test
+  (is "foo" (bb nil "(try (throw (ex-info \"foo\" {})) (catch Exception e (.getMessage e)))")))
+
+(deftest pushback-reader-test
+  (is (= "foo" (bb nil "
+(require '[clojure.java.io :as io])
+(let [pb (java.io.PushbackInputStream. (java.io.ByteArrayInputStream. (.getBytes \"foo\")))]
+  (.unread pb (.read pb))
+  (slurp pb))"))))
+
+(deftest delete-on-exit-test
+  (when test-utils/native?
+    (let [f (java.io.File/createTempFile "foo" "bar")
+          p (.getPath f)]
+      (bb nil (format "(.deleteOnExit (io/file \"%s\"))" p))
+      (is (false? (.exists f))))))
+
+(deftest yaml-test
+  (is (str/starts-with?
+       (bb nil "(yaml/generate-string [{:name \"John Smith\", :age 33} {:name \"Mary Smith\", :age 27}])")
+       "-")))
+
 ;;;; Scratch
 
 (comment
-  (dotimes [_ 10] (wait-for-port-test))
-  )
+  (dotimes [_ 10] (wait-for-port-test)))

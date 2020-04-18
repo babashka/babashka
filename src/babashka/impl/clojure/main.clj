@@ -48,6 +48,11 @@
              *e nil]
      ~@body))
 
+(def ^{:doc "A sequence of lib specs that are applied to `require`
+by default when a new command-line REPL is started."} repl-requires
+  '[[clojure.repl :refer (dir doc)]
+    [clojure.pprint :refer (pprint)]])
+
 (defn repl
   "Generic, reusable, read-eval-print loop. By default, reads from *in*,
   writes to *out*, and prints exception summaries to *err*. If you use the

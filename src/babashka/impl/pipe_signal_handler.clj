@@ -9,8 +9,9 @@
   (identical? :PIPE @pipe-state))
 
 (defn handle-pipe! []
-  (Signal/handle
-   (Signal. "PIPE")
-   (reify SignalHandler
-     (handle [_ _]
-       (vreset! pipe-state :PIPE)))))
+  (when-not (= "true" (System/getenv "BABASHKA_DISABLE_PIPE_SIGNAL_HANDLER"))
+    (Signal/handle
+     (Signal. "PIPE")
+     (reify SignalHandler
+       (handle [_ _]
+         (vreset! pipe-state :PIPE))))))

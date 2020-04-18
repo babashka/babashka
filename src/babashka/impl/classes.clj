@@ -1,19 +1,11 @@
 (ns babashka.impl.classes
   {:no-doc true}
   (:require
-   [cheshire.core :as json]
-   #_[clojure.string :as str]))
-
-;; (def os-name (str/lower-case (System/getProperty "os.name")))
-;; (def os (cond (str/includes? os-name "mac") :mac
-;;               (or (str/includes? os-name "nix")
-;;                   (str/includes? os-name "nux")) :linux
-;;               (str/includes? os-name "win") :windows))
-;; (def unix-like? (or (identical? os :linux)
-;;                     (identical? os :mac)))
+   [cheshire.core :as json]))
 
 (def classes
-  '{:all [java.io.BufferedReader
+  `{:all [clojure.lang.ExceptionInfo
+          java.io.BufferedReader
           java.io.BufferedWriter
           java.io.ByteArrayInputStream
           java.io.ByteArrayOutputStream
@@ -21,19 +13,27 @@
           java.io.InputStream
           java.io.IOException
           java.io.OutputStream
+          java.io.FileReader
+          java.io.PushbackInputStream
           java.io.Reader
+          java.io.SequenceInputStream
           java.io.StringReader
           java.io.StringWriter
           java.io.Writer
           java.lang.ArithmeticException
           java.lang.AssertionError
           java.lang.Boolean
+          java.lang.Byte
+          java.lang.Comparable
           java.lang.Class
           java.lang.Double
           java.lang.Exception
           java.lang.Integer
           java.lang.Long
+          java.lang.NumberFormatException
           java.lang.Math
+          java.lang.Runtime
+          java.lang.RuntimeException
           java.util.concurrent.LinkedBlockingQueue
           java.lang.Object
           java.lang.String
@@ -44,15 +44,21 @@
           java.lang.ProcessBuilder
           java.lang.ProcessBuilder$Redirect
           java.math.BigInteger
-          java.net.URI
+          java.net.DatagramSocket
+          java.net.DatagramPacket
           java.net.HttpURLConnection
+          java.net.InetAddress
           java.net.ServerSocket
           java.net.Socket
           java.net.UnknownHostException
+          java.net.URI
+          ;; java.net.URL, see below
           java.net.URLEncoder
           java.net.URLDecoder
           java.nio.file.CopyOption
           java.nio.file.FileAlreadyExistsException
+          java.nio.file.FileSystem
+          java.nio.file.FileSystems
           java.nio.file.Files
           java.nio.file.LinkOption
           java.nio.file.NoSuchFileException
@@ -83,18 +89,24 @@
           java.time.ZonedDateTime
           java.time.ZoneId
           java.time.ZoneOffset
+          java.time.temporal.ChronoUnit
           java.time.temporal.TemporalAccessor
           java.util.regex.Pattern
           java.util.Base64
           java.util.Base64$Decoder
           java.util.Base64$Encoder
           java.util.Date
+          java.util.MissingResourceException
+          java.util.Properties
           java.util.UUID
           java.util.concurrent.TimeUnit
           java.util.zip.InflaterInputStream
           java.util.zip.DeflaterInputStream
           java.util.zip.GZIPInputStream
-          java.util.zip.GZIPOutputStream]
+          java.util.zip.GZIPOutputStream
+          org.yaml.snakeyaml.error.YAMLException
+          ~(symbol "[B")
+          ]
     :constructors [clojure.lang.Delay
                    clojure.lang.MapEntry
                    clojure.lang.LineNumberingPushbackReader
@@ -104,8 +116,7 @@
     :methods [borkdude.graal.LockFix ;; support for locking
               ]
     :fields [clojure.lang.PersistentQueue]
-    :instance-checks [clojure.lang.ExceptionInfo
-                      clojure.lang.IObj
+    :instance-checks [clojure.lang.IObj
                       clojure.lang.IEditableCollection]
     :custom {clojure.lang.LineNumberingPushbackReader {:allPublicConstructors true
                                                        :allPublicMethods true}
@@ -197,7 +208,13 @@
                    (instance? java.io.ByteArrayOutputStream v)
                    java.io.ByteArrayOutputStream
                    (instance? java.security.MessageDigest v)
-                   java.security.MessageDigest)))))
+                   java.security.MessageDigest
+                   (instance? java.io.InputStream v)
+                   java.io.InputStream
+                   (instance? java.io.OutputStream v)
+                   java.io.OutputStream
+                   (instance? java.nio.file.FileSystem v)
+                   java.nio.file.FileSystem)))))
 
 (def class-map (gen-class-map))
 

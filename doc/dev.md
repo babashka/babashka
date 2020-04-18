@@ -1,5 +1,9 @@
 # Developing Babashka
 
+You need [lein](https://leiningen.org/) for running JVM tests and/or producing uberjars. For building binaries you need GraalVM. Currently we use java8-19.3.1.
+
+## Clone repository
+
 To work on Babashka itself make sure Git submodules are checked out.
 
 ``` shellsession
@@ -11,8 +15,6 @@ To update later on:
 ``` shellsession
 $ git submodule update --recursive
 ```
-
-You need [Leiningen](https://leiningen.org/), and for building binaries you need GraalVM.
 
 ## REPL
 
@@ -47,16 +49,40 @@ To build this project, set `$GRAALVM_HOME` to the GraalVM distribution directory
 
 Then run:
 
-    script/compile
+    $ script/compile
+
+To tweak maximum heap size:
+
+```
+$ BABASHKA_XMX="-J-Xmx4g" script/compile
+```
 
 ## Binary size
 
 Keep notes here about how adding libraries and classes to Babashka affects the binary size.
+We're registering the size of the macOS binary (as built on CircleCI).
 
-We're only registering the size of the macOS binary (as built on CircleCI).
+2020/03/29 Added clj-yaml for parsing and generating yaml.
+45196996 - 42626884 = 2570kb added.
 
-2020/01/08, ..., 38.7mb / 11.3mb zipped
-Added: `clojure.data.xml`. Growth: 1.8mb / 0.4mb zipped.
+2020/03/28 Added java.nio.file.FileSystem(s) to support extracting zip files
+42562284 - 42021244 = 541kb added.
+
+2020/03/22 Added java.io.FileReader
+42025276 - 42008876 = 16kb added.
+
+2020/03/20 Added transit write, writer, read, reader
+42004796 - 41025212 = 980kb added (305kb zipped).
+
+2020/03/19 Added java.lang.NumberFormatException, java.lang.RuntimeException,
+java.util.MissingResourceException and java.util.Properties to support
+[cprop](https://github.com/tolitius/cprop/).
+41025180 - 40729908 = 295kb added.
+
+2020/02/21
+Added java.time.temporal.ChronoUnit
+40651596 - 40598260 = 53kb added.
+>>>>>>> master
 
 2020/02/19, e43727955a2cdabd2bb0189c20dd7f9a18156fc9
 Added fipp.edn/pprint
