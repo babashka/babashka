@@ -17,7 +17,8 @@ BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
 
 export JAVA_HOME=$GRAALVM_HOME
 
-$GRAALVM_HOME/bin/javac -cp $GRAALVM_HOME/jre/lib/svm/builder/svm.jar resources/CutOffCoreServicesDependencies.java
+SVM_JAR=$(find "$GRAALVM_HOME" | grep svm.jar)
+$GRAALVM_HOME/bin/javac -cp "$SVM_JAR" resources/CutOffCoreServicesDependencies.java
 
 if [ -z "$BABASHKA_JAR" ]; then
    lein with-profiles +reflection do run
