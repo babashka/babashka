@@ -60,7 +60,7 @@ To get an overview of babashka, you can watch this talk ([slides](https://speake
 ``` shellsession
 $ curl -s https://raw.githubusercontent.com/borkdude/babashka/master/install -o install-babashka
 $ chmod +x install-babashka && ./install-babashka
-$ ls | bb --time -i '(filter #(-> % io/file .isDirectory) *input*)'
+$ ls | bb -i '(filter #(-> % io/file .isDirectory) *input*)'
 ("doc" "resources" "sci" "script" "src" "target" "test")
 bb took 4ms.
 ```
