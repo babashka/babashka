@@ -368,11 +368,16 @@
   (is (true? (bb nil "(nil? *command-line-args*)")))
   (is (= ["1" "2" "3"] (bb nil "*command-line-args*" "1" "2" "3"))))
 
-(deftest need-constructors-test
+(deftest constructors-test
   (testing "the clojure.lang.Delay constructor works"
     (is (= 1 (bb nil "@(delay 1)"))))
   (testing "the clojure.lang.MapEntry constructor works"
     (is (true? (bb nil "(= (first {1 2}) (clojure.lang.MapEntry. 1 2))")))))
+
+(deftest clojure-data-xml-test
+  (is (= "<?xml version=\"1.0\" encoding=\"UTF-8\"?><items><item>1</item><item>2</item></items>"
+         (bb nil "(let [xml (xml/parse-str \"<items><item>1</item><item>2</item></items>\")] (xml/emit-str xml))")))
+  (is (= "0.0.87-SNAPSHOT" (bb nil "examples/pom_version.clj" (.getPath (io/file "test-resources" "pom.xml"))))))
 
 (deftest uberscript-test
   (let [tmp-file (java.io.File/createTempFile "uberscript" ".clj")]

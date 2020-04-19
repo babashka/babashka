@@ -1,10 +1,8 @@
 <img src="logo/babashka.svg" width="425px">
 
 [![CircleCI](https://circleci.com/gh/borkdude/babashka/tree/master.svg?style=shield)](https://circleci.com/gh/borkdude/babashka/tree/master)
-[![Clojars Project](https://img.shields.io/clojars/v/borkdude/babashka.svg)](https://clojars.org/borkdude/babashka)
 [![project chat](https://img.shields.io/badge/slack-join_chat-brightgreen.svg)](https://app.slack.com/client/T03RZGPFR/CLX41ASCS)
-
-<!-- [![cljdoc badge](https://cljdoc.org/badge/borkdude/babashka)](https://cljdoc.org/d/borkdude/babashka/CURRENT) -->
+[![Financial Contributors on Open Collective](https://opencollective.com/babashka/all/badge.svg?label=financial+contributors)](https://opencollective.com/babashka) [![Clojars Project](https://img.shields.io/clojars/v/borkdude/babashka.svg)](https://clojars.org/borkdude/babashka)
 
 A Clojure [babushka](https://en.wikipedia.org/wiki/Headscarf) for the grey areas of Bash.
 
@@ -223,6 +221,7 @@ enumerated explicitly.
 - `clojure.pprint`: `pprint` (currently backed by [fipp](https://github.com/brandonbloom/fipp)'s  `fipp.edn/pprint`)
 - [`clojure.tools.cli`](https://github.com/clojure/tools.cli) aliased as `tools.cli`
 - [`clojure.data.csv`](https://github.com/clojure/data.csv) aliased as `csv`
+- [`clojure.data.xml`](https://github.com/clojure/data.xml) aliased as `xml`
 - [`cheshire.core`](https://github.com/dakrone/cheshire) aliased as `json`
 - [`cognitect.transit`](https://github.com/cognitect/transit-clj) aliased as `transit`
 - [`clj-yaml.core`](https://github.com/clj-commons/clj-yaml) alias as `yaml`
@@ -419,7 +418,8 @@ $ cat script.clj
 ## [Running a REPL](doc/repl.md)
 
 Babashka offers a REPL, a socket REPL and an nREPL server. Look
-[here](doc/repl.md) for more information.
+[here](doc/repl.md) for more information on how to use and integrate them with
+your editor.
 
 ## Preloads
 
@@ -1246,6 +1246,11 @@ $ examples/which.clj rg
 /usr/local/Cellar/ripgrep/11.0.1/bin/rg
 ```
 
+### pom.xml version
+
+A script to retrieve the version from a `pom.xml` file. See
+[examples/pom_version.clj](examples/pom_version.clj). Written by [@wilkerlucio](https://github.com/wilkerlucio).
+
 ## Thanks
 
 - [adgoji](https://www.adgoji.com/) for financial support
@@ -1253,6 +1258,36 @@ $ examples/which.clj rg
 - [Nikita Prokopov](https://github.com/tonsky) for the logo
 - [contributors](https://github.com/borkdude/babashka/graphs/contributors) and
   other users posting issues with bug reports and ideas
+
+## Contributors
+
+### Code Contributors
+
+This project exists thanks to all the people who contribute. [[Contribute](doc/dev.md)].
+<a href="https://github.com/borkdude/babashka/graphs/contributors"><img src="https://opencollective.com/babashka/contributors.svg?width=890&button=false" /></a>
+
+### Financial Contributors
+
+Become a financial contributor and help us sustain our community. [[Contribute](https://opencollective.com/babashka/contribute)]
+
+#### Individuals
+
+<a href="https://opencollective.com/babashka"><img src="https://opencollective.com/babashka/individuals.svg?width=890"></a>
+
+#### Organizations
+
+Support this project with your organization. Your logo will show up here with a link to your website. [[Contribute](https://opencollective.com/babashka/contribute)]
+
+<a href="https://opencollective.com/babashka/organization/0/website"><img src="https://opencollective.com/babashka/organization/0/avatar.svg"></a>
+<a href="https://opencollective.com/babashka/organization/1/website"><img src="https://opencollective.com/babashka/organization/1/avatar.svg"></a>
+<a href="https://opencollective.com/babashka/organization/2/website"><img src="https://opencollective.com/babashka/organization/2/avatar.svg"></a>
+<a href="https://opencollective.com/babashka/organization/3/website"><img src="https://opencollective.com/babashka/organization/3/avatar.svg"></a>
+<a href="https://opencollective.com/babashka/organization/4/website"><img src="https://opencollective.com/babashka/organization/4/avatar.svg"></a>
+<a href="https://opencollective.com/babashka/organization/5/website"><img src="https://opencollective.com/babashka/organization/5/avatar.svg"></a>
+<a href="https://opencollective.com/babashka/organization/6/website"><img src="https://opencollective.com/babashka/organization/6/avatar.svg"></a>
+<a href="https://opencollective.com/babashka/organization/7/website"><img src="https://opencollective.com/babashka/organization/7/avatar.svg"></a>
+<a href="https://opencollective.com/babashka/organization/8/website"><img src="https://opencollective.com/babashka/organization/8/avatar.svg"></a>
+<a href="https://opencollective.com/babashka/organization/9/website"><img src="https://opencollective.com/babashka/organization/9/avatar.svg"></a>
 
 ## License
 

@@ -31,4 +31,5 @@
    'time (with-meta time* {:sci/macro true})
    'Throwable->map (copy-core-var Throwable->map)
    'compare-and-set! (copy-core-var compare-and-set!)
-   '*data-readers* (sci/new-dynamic-var '*data-readers* nil)})
+   '*data-readers* (sci/new-dynamic-var '*data-readers* nil)
+   'xml-seq (copy-core-var xml-seq)})
