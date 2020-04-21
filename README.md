@@ -952,6 +952,14 @@ Turn babashka scripts into binaries using GraalVM `native-image`.
 A micro-library which provides a total-ordering comparator for Clojure
 values. Tested with version `1.2.0`.
 
+#### [clojure.math.combinatorics)(https://github.com/clojure/math.combinatorics)
+
+``` clojure
+$ bb --classpath "$(clojure -Spath -Sdeps '{:deps {org.clojure/math.combinatorics {:mvn/version "0.1.6"}}}')" \
+     -e "(use 'clojure.math.combinatorics) (permutations [:a :b])"
+((:a :b) (:b :a))
+```
+
 ## Package babashka script as a AWS Lambda
 
 AWS Lambda runtime doesn't support signals, therefore babashka has to disable
