@@ -1,6 +1,6 @@
-(require '[cheshire.core :refer [generate-string]]
+(require '[babashka.curl :as curl]
+         '[cheshire.core :refer [generate-string]]
          '[clojure.java.io :as io]
-         '[clojure.java.shell :refer [sh]]
          '[clojure.string :as str])
 
 (def channel "#babashka_circleci_builds")
@@ -13,7 +13,8 @@
     (let [json (generate-string {:username "borkdude"
                                  :channel channel
                                  :text text})]
-      (sh "curl" "-X" "POST" "-H" "Content-Type: application/json" "-d" json slack-hook-url))))
+      (curl/post slack-hook-url {:headers {"content-type" "application/json"}
+                                 :body json}))))
 
 (def release-text (format "[%s - %s@%s]: https://%s-201467090-gh.circle-artifacts.com/0/release/babashka-%s-%s-amd64.zip"
                           (System/getenv "BABASHKA_PLATFORM")

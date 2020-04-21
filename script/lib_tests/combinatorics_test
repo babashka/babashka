@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+export BABASHKA_CLASSPATH=$(clojure -Sdeps '{:deps {org.clojure/math.combinatorics {:mvn/version "0.1.6"}}}' -Spath)
+
+if [ "$BABASHKA_TEST_ENV" = "native" ]; then
+    BB_CMD="./bb"
+else
+    BB_CMD="lein bb"
+fi
+
+$BB_CMD -cp "test-resources/lib_tests:$BABASHKA_CLASSPATH" -e "
+(require '[clojure.math.test-combinatorics])
+(require '[clojure.test :as t])
+(let [{:keys [:test :pass :fail :error]} (t/run-tests 'clojure.math.test-combinatorics)]
+  (when-not (pos? test)
+    (System/exit 1))
+  (System/exit (+ fail error)))
+"
