@@ -22,8 +22,8 @@
    [babashka.impl.socket-repl :as socket-repl]
    [babashka.impl.test :as t]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
-   [babashka.impl.xml :as xml]
    [babashka.impl.transit :refer [transit-namespace]]
+   [babashka.impl.xml :as xml]
    [babashka.impl.yaml :refer [yaml-namespace]]
    [babashka.wait :as wait]
    [clojure.edn :as edn]
@@ -115,17 +115,25 @@
                               (assoc opts-map
                                      :repl true)))
                      ("--socket-repl")
-                     (let [options (next options)]
-                       (recur (next options)
+                     (let [options (next options)
+                           opt (first options)
+                           opt (when-not (str/starts-with? opt "-")
+                                 opt)
+                           options (if opt (next options)
+                                       options)]
+                       (recur options
                               (assoc opts-map
-                                     :socket-repl (or (first options)
-                                                      "1666"))))
+                                     :socket-repl (or opt "1666"))))
                      ("--nrepl-server")
-                     (let [options (next options)]
-                       (recur (next options)
+                     (let [options (next options)
+                           opt (first options)
+                           opt (when-not (str/starts-with? opt "-")
+                                 opt)
+                           options (if opt (next options)
+                                       options)]
+                       (recur options
                               (assoc opts-map
-                                     :nrepl (or (first options)
-                                                      "1667"))))
+                                     :nrepl (or opt "1667"))))
                      ("--eval", "-e")
                      (let [options (next options)]
                        (recur (next options)
