@@ -288,7 +288,6 @@ Everything after that is bound to *command-line-args*."))
    'clojure.stacktrace stacktrace-namespace
    'clojure.main {'demunge demunge
                   'repl-requires clojure-main/repl-requires}
-   'clojure.repl {'demunge demunge}
    'clojure.test t/clojure-test-namespace
    'babashka.classpath {'add-classpath add-classpath*}
    'clojure.data.xml xml/xml-namespace
