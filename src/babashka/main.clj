@@ -34,7 +34,6 @@
    [sci.core :as sci]
    [sci.impl.interpreter :refer [eval-string*]]
    [sci.impl.opts :as sci-opts]
-   [sci.impl.types :as sci-types]
    [sci.impl.unrestrict :refer [*unrestricted*]]
    [sci.impl.vars :as vars])
   (:gen-class))
@@ -227,8 +226,8 @@ Everything after that is bound to *command-line-args*."))
 (defn load-file* [sci-ctx f]
   (let [f (io/file f)
         s (slurp f)]
-    (sci/with-bindings {vars/current-ns @vars/current-ns
-                        vars/current-file (.getCanonicalPath f)}
+    (sci/with-bindings {sci/ns @sci/ns
+                        sci/file (.getCanonicalPath f)}
       (eval-string* sci-ctx s))))
 
 (defn start-socket-repl! [address ctx]
@@ -320,7 +319,7 @@ Everything after that is bound to *command-line-args*."))
       (prn "M" (meta (get bindings 'future))))
   (binding [*unrestricted* true]
     (sci/binding [reflection-var false
-                  vars/current-ns (vars/->SciNamespace 'user nil)]
+                  sci/ns (vars/->SciNamespace 'user nil)]
       (let [t0 (System/currentTimeMillis)
             {:keys [:version :shell-in :edn-in :shell-out :edn-out
                     :help? :file :command-line-args
@@ -354,7 +353,7 @@ Everything after that is bound to *command-line-args*."))
                         (let [res (cp/source-for-namespace loader namespace nil)]
                           (when uberscript (swap! uberscript-sources conj (:source res)))
                           res)))
-            _ (when file (vars/bindRoot vars/current-file (.getCanonicalPath (io/file file))))
+            _ (when file (vars/bindRoot sci/file (.getCanonicalPath (io/file file))))
             ctx {:aliases aliases
                  :namespaces (-> namespaces
                                  (assoc 'clojure.core
