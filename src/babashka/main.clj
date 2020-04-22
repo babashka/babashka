@@ -226,12 +226,10 @@ Everything after that is bound to *command-line-args*."))
 
 (defn load-file* [sci-ctx f]
   (let [f (io/file f)
-        s (slurp f)
-        prev-ns @vars/current-ns]
-    (sci/with-bindings {vars/current-file (.getCanonicalPath f)}
-      (try
-        (eval-string* sci-ctx s)
-        (finally (sci-types/setVal vars/current-ns prev-ns))))))
+        s (slurp f)]
+    (sci/with-bindings {vars/current-ns @vars/current-ns
+                        vars/current-file (.getCanonicalPath f)}
+      (eval-string* sci-ctx s))))
 
 (defn start-socket-repl! [address ctx]
   (socket-repl/start-repl! address ctx)
