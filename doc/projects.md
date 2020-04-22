@@ -7,6 +7,8 @@ The following projects are known to work with babashka.
 A port of the [clojure](https://github.com/clojure/brew-install/) bash script to
 Clojure / babashka.
 
+Also see [deps.clj documentation](../doc/deps.clj.md).
+
 #### [spartan.spec](https://github.com/borkdude/spartan.spec/)
 
 An babashka-compatible implementation of `clojure.spec.alpha`.
