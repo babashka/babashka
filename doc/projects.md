@@ -1,19 +1,19 @@
-### Projects
+## Projects
 
 The following projects are known to work with babashka.
 
-#### [deps.clj](https://github.com/borkdude/deps.clj)
+### [deps.clj](https://github.com/borkdude/deps.clj)
 
 A port of the [clojure](https://github.com/clojure/brew-install/) bash script to
 Clojure / babashka.
 
 Also see [deps.clj documentation](../doc/deps.clj.md).
 
-#### [spartan.spec](https://github.com/borkdude/spartan.spec/)
+### [spartan.spec](https://github.com/borkdude/spartan.spec/)
 
 An babashka-compatible implementation of `clojure.spec.alpha`.
 
-#### [missing.test.assertions](https://github.com/borkdude/missing.test.assertions)
+### [missing.test.assertions](https://github.com/borkdude/missing.test.assertions)
 
 This library checks if no assertions have been made in a test:
 
@@ -30,7 +30,7 @@ Ran 1 tests containing 0 assertions.
 {:test 1, :pass 0, :fail 0, :error 0, :type :summary}
 ```
 
-#### [medley](https://github.com/weavejester/medley/)
+### [medley](https://github.com/weavejester/medley/)
 
 Requires `bb` >= v0.0.71. Latest coordinates checked with with bb:
 
@@ -47,7 +47,7 @@ $ bb -e "(require '[medley.core :as m]) (m/index-by :id [{:id 1} {:id 2}])"
 {1 {:id 1}, 2 {:id 2}}
 ```
 
-#### [clj-http-lite](https://github.com/borkdude/clj-http-lite)
+### [clj-http-lite](https://github.com/borkdude/clj-http-lite)
 
 This fork does not depend on any other libraries. Example:
 
@@ -58,7 +58,7 @@ $ bb "(require '[clj-http.lite.client :as client]) (:status (client/get \"https:
 200
 ```
 
-#### [limit-break](https://github.com/technomancy/limit-break)
+### [limit-break](https://github.com/technomancy/limit-break)
 
 A debug REPL library.
 
@@ -82,7 +82,7 @@ break> x
 1
 ```
 
-#### [clojure-csv](https://github.com/davidsantiago/clojure-csv)
+### [clojure-csv](https://github.com/davidsantiago/clojure-csv)
 
 A library for reading and writing CSV files. Note that babashka already comes
 with `clojure.data.csv`, but in case you need this other library, this is how
@@ -97,7 +97,7 @@ export BABASHKA_CLASSPATH="$(clojure -Sdeps '{:deps {clojure-csv {:mvn/version "
 "
 ```
 
-#### [regal](https://github.com/lambdaisland/regal)
+### [regal](https://github.com/lambdaisland/regal)
 
 Requires `bb` >= v0.0.71. Latest coordinates checked with with bb:
 
@@ -114,15 +114,15 @@ $ bb -e "(require '[lambdaisland.regal :as regal]) (regal/regex [:* \"ab\"])"
 #"(?:\Qab\E)*"
 ```
 
-#### [4bb](https://github.com/porkostomus/4bb)
+### [4bb](https://github.com/porkostomus/4bb)
 
 4clojure as a babashka script!
 
-#### [cprop](https://github.com/tolitius/cprop/)
+### [cprop](https://github.com/tolitius/cprop/)
 
 A clojure configuration libary. Latest test version: `"0.1.16"`.
 
-#### [comb](https://github.com/weavejester/comb)
+### [comb](https://github.com/weavejester/comb)
 
 Simple templating system for Clojure. Latest tested version: `"0.1.1"`.
 
@@ -140,33 +140,33 @@ user=> (hello "Alice")
 "Hello Alice"
 ```
 
-#### [nubank/docopt](https://github.com/nubank/docopt.clj#babashka)
+### [nubank/docopt](https://github.com/nubank/docopt.clj#babashka)
 
 Docopt implementation in Clojure, compatible with babashka.
 
-#### [babashka lambda layer](https://github.com/dainiusjocas/babashka-lambda-layer)
+### [babashka lambda layer](https://github.com/dainiusjocas/babashka-lambda-layer)
 
 Babashka Lambda runtime packaged as a Lambda layer.
 
-#### [Release on push Github action](https://github.com/rymndhng/release-on-push-action)
+### [Release on push Github action](https://github.com/rymndhng/release-on-push-action)
 
 Github Action to create a git tag + release when pushed to master. Written in
 babashka.
 
-#### [justone/bb-scripts](https://github.com/justone/bb-scripts)
+### [justone/bb-scripts](https://github.com/justone/bb-scripts)
 
 A collection of scripts developed by [@justone](https://github.com/justone).
 
-#### [nativity](https://github.com/MnRA/nativity)
+### [nativity](https://github.com/MnRA/nativity)
 
 Turn babashka scripts into binaries using GraalVM `native-image`.
 
-#### [arrangement](https://github.com/greglook/clj-arrangement)
+### [arrangement](https://github.com/greglook/clj-arrangement)
 
 A micro-library which provides a total-ordering comparator for Clojure
 values. Tested with version `1.2.0`.
 
-#### [clojure.math.combinatorics](https://github.com/clojure/math.combinatorics)
+### [clojure.math.combinatorics](https://github.com/clojure/math.combinatorics)
 
 ``` clojure
 $ bb --classpath "$(clojure -Spath -Sdeps '{:deps {org.clojure/math.combinatorics {:mvn/version "0.1.6"}}}')" \
@@ -174,7 +174,7 @@ $ bb --classpath "$(clojure -Spath -Sdeps '{:deps {org.clojure/math.combinatoric
 ((:a :b) (:b :a))
 ```
 
-#### [testdoc](https://github.com/liquidz/testdoc)
+### [testdoc](https://github.com/liquidz/testdoc)
 
 Yet another doctest implementation in Clojure.
 
