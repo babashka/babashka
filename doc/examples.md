@@ -250,7 +250,7 @@ is a variation on the
 [http-server](https://github.com/borkdude/babashka/#tiny-http-server)
 example. If you get prompted with a login, use `admin`/`admin`.
 
-<img src="assets/notes-example.png" width="400px">
+<img src="../assets/notes-example.png" width="400px">
 
 ### which
 
