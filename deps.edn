@@ -11,7 +11,9 @@
         org.clojure/data.xml {:mvn/version "0.2.0-alpha6"}
         fipp {:mvn/version "0.6.22"}
         clj-commons/clj-yaml {:mvn/version "0.7.1"}
-        com.cognitect/transit-clj {:mvn/version "1.0.324"}}
+        com.cognitect/transit-clj {:mvn/version "1.0.324"}
+        seancorfield/next.jdbc {:mvn/version "1.0.424"}
+        org.postgresql/postgresql {:mvn/version "42.2.5"}}
  :aliases {:main
            {:main-opts ["-m" "babashka.main"]}
            :profile
