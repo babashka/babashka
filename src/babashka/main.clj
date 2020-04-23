@@ -259,7 +259,7 @@ Everything after that is bound to *command-line-args*."))
     curl babashka.curl
     transit cognitect.transit
     bencode bencode.core
-    jdbc clojure.java.jdbc})
+    jdbc next.jdbc})
 
 (def cp-state (atom nil))
 
@@ -295,7 +295,7 @@ Everything after that is bound to *command-line-args*."))
    'babashka.curl curl-namespace
    'cognitect.transit transit-namespace
    'bencode.core bencode-namespace
-   'clojure.java.jdbc jdbc/jdbc-namespace})
+   'next.jdbc jdbc/njdbc-namespace})
 
 (def bindings
   {'java.lang.System/exit exit ;; override exit, so we have more control
