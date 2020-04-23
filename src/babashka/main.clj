@@ -15,6 +15,7 @@
    [babashka.impl.common :as common]
    [babashka.impl.csv :as csv]
    [babashka.impl.curl :refer [curl-namespace]]
+   [babashka.impl.jdbc :as jdbc]
    [babashka.impl.nrepl-server :as nrepl-server]
    [babashka.impl.pipe-signal-handler :refer [handle-pipe! pipe-signal-received?]]
    [babashka.impl.repl :as repl]
@@ -257,7 +258,8 @@ Everything after that is bound to *command-line-args*."))
     yaml clj-yaml.core
     curl babashka.curl
     transit cognitect.transit
-    bencode bencode.core})
+    bencode bencode.core
+    jdbc clojure.java.jdbc})
 
 (def cp-state (atom nil))
 
@@ -292,7 +294,8 @@ Everything after that is bound to *command-line-args*."))
    'clojure.pprint pprint-namespace
    'babashka.curl curl-namespace
    'cognitect.transit transit-namespace
-   'bencode.core bencode-namespace})
+   'bencode.core bencode-namespace
+   'clojure.java.jdbc jdbc/jdbc-namesapce})
 
 (def bindings
   {'java.lang.System/exit exit ;; override exit, so we have more control
