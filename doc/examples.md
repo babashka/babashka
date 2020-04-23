@@ -267,3 +267,8 @@ $ examples/which.clj rg
 
 A script to retrieve the version from a `pom.xml` file. See
 [examples/pom_version.clj](examples/pom_version.clj). Written by [@wilkerlucio](https://github.com/wilkerlucio).
+
+### Whatsapp frequencies
+
+Show frequencies of messages by user in Whatsapp group chats.
+See [examples/whatsapp_frequencies.clj](examples/whatsapp_frequencies.clj)
