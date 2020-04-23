@@ -369,9 +369,11 @@ Everything after that is bound to *command-line-args*."))
                  :classes classes/class-map
                  :imports '{ArithmeticException java.lang.ArithmeticException
                             AssertionError java.lang.AssertionError
+                            BigDecimal java.math.BigDecimal
                             Boolean java.lang.Boolean
                             Byte java.lang.Byte
                             Class java.lang.Class
+                            ClassNotFoundException java.lang.ClassNotFoundException
                             Double java.lang.Double
                             Exception java.lang.Exception
                             IllegalArgumentException java.lang.IllegalArgumentException
