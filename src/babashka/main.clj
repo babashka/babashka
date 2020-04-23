@@ -295,7 +295,7 @@ Everything after that is bound to *command-line-args*."))
    'babashka.curl curl-namespace
    'cognitect.transit transit-namespace
    'bencode.core bencode-namespace
-   'clojure.java.jdbc jdbc/jdbc-namesapce})
+   'clojure.java.jdbc jdbc/jdbc-namespace})
 
 (def bindings
   {'java.lang.System/exit exit ;; override exit, so we have more control
