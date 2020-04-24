@@ -226,6 +226,7 @@ enumerated explicitly.
 - [`cognitect.transit`](https://github.com/cognitect/transit-clj) aliased as `transit`
 - [`clj-yaml.core`](https://github.com/clj-commons/clj-yaml) alias as `yaml`
 - [`bencode.core`](https://github.com/nrepl/bencode) aliased as `bencode`: `read-bencode`, `write-bencode`
+- [`next.jdbc`](https://github.com/seancorfield/next-jdbc) aliased as `jdbc`
 
 A selection of java classes are available, see `babashka/impl/classes.clj`.
 
