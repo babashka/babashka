@@ -411,7 +411,7 @@ The namespace `babashka.curl` is a tiny wrapper around curl. It's aliased as
 
 A note on style. Babashka recommends the following:
 
-- Only use `*input*` and aliases without require in bash one-liners.
+- Only use `*input*` and aliases without an explicit require in bash one-liners.
 
   Do this:
 
@@ -437,11 +437,11 @@ A note on style. Babashka recommends the following:
   (-> (io/reader *in*) line-seq first (str/includes? "m"))
   ```
 
-Some reasons for this:
+  Some reasons for this:
 
-- Linters like clj-kondo work better with code that uses namespace forms, explicit requires, and known Clojure constructs
-- Editor tooling works better with namespace forms (sorting requires, etc).
-- Writing compatible code gives you the option to run the same script with `clojure`
+  - Linters like clj-kondo work better with code that uses namespace forms, explicit requires, and known Clojure constructs
+  - Editor tooling works better with namespace forms (sorting requires, etc).
+  - Writing compatible code gives you the option to run the same script with `clojure`
 
 ## [Running a REPL](doc/repl.md)
 
