@@ -20,7 +20,9 @@
   ([lines]
    (chats-by-user lines parse-line))
   ([lines keep-fn]
-   (->> (frequencies (keep keep-fn lines))
+   (->> lines
+        (keep keep-fn)
+        frequencies
         (sort-by second >)
         (map (fn [[name amount]]
                {:name   name
