@@ -40,6 +40,7 @@ call %GRAALVM_HOME%\bin\native-image.cmd ^
   "-H:ReflectionConfigurationFiles=reflection.json" ^
   "--initialize-at-run-time=java.lang.Math$RandomNumberGeneratorHolder" ^
   "--initialize-at-build-time"  ^
+  "--initialize-at-run-time=org.postgresql.sspi.SSPIClient" ^
   "-H:Log=registerResource:" ^
   "--no-fallback" ^
   "--verbose" ^
