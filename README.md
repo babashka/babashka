@@ -412,36 +412,37 @@ The namespace `babashka.curl` is a tiny wrapper around curl. It's aliased as
 A note on style. Babashka recommends the following:
 
 - Only use `*input*` and aliases without an explicit require in bash one-liners.
+- Use an explicit namespace form in scripts.
 
-  Do this:
+Do this:
 
-  ```
-  $ ls | bb -i '(-> *input* first (str/includes? "m"))'
-  true
-  ```
+``` shell
+$ ls | bb -i '(-> *input* first (str/includes? "m"))'
+true
+```
 
-  But not this:
+But not this:
 
-  script.clj:
-  ```
-  (-> *input* first (str/includes? "m"))
-  ```
+script.clj:
+``` clojure
+(-> *input* first (str/includes? "m"))
+```
 
-  Rather do this:
+Rather do this:
 
-  script.clj:
-  ```
-  (ns script
-    (:require [clojure.java.io :as io]
-              [clojure.string :as str]))
+script.clj:
+``` clojure
+(ns script
+  (:require [clojure.java.io :as io]
+            [clojure.string :as str]))
   (-> (io/reader *in*) line-seq first (str/includes? "m"))
-  ```
+```
 
-  Some reasons for this:
+Some reasons for this:
 
-  - Linters like clj-kondo work better with code that uses namespace forms, explicit requires, and known Clojure constructs
-  - Editor tooling works better with namespace forms (sorting requires, etc).
-  - Writing compatible code gives you the option to run the same script with `clojure`
+- Linters like clj-kondo work better with code that uses namespace forms, explicit requires, and known Clojure constructs
+- Editor tooling works better with namespace forms (sorting requires, etc).
+- Writing compatible code gives you the option to run the same script with `clojure`
 
 ## [Running a REPL](doc/repl.md)
 
