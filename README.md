@@ -242,6 +242,62 @@ Babashka supports a subset of the `ns` form where you may use `:require` and `:i
 For the unsupported parts of the ns form, you may use [reader
 conditionals](#reader-conditionals) to maintain compatibility with JVM Clojure.
 
+### Running a script
+
+Scripts may be executed from a file using `-f` or `--file`:
+
+``` shellsession
+bb -f download_html.clj
+```
+
+Using `bb` with a shebang also works:
+
+``` clojure
+#!/usr/bin/env bb
+
+(defn get-url [url]
+  (println "Fetching url:" url)
+  (let [{:keys [:exit :err :out]} (shell/sh "curl" "-sS" url)]
+    (if (zero? exit) out
+      (do (println "ERROR:" err)
+          (System/exit 1)))))
+
+(defn write-html [file html]
+  (println "Writing file:" file)
+  (spit file html))
+
+(let [[url file] *command-line-args*]
+  (when (or (empty? url) (empty? file))
+    (println "Usage: <url> <file>")
+    (System/exit 1))
+  (write-html file (get-url url)))
+```
+
+``` shellsession
+$ ./download_html.clj
+Usage: <url> <file>
+
+$ ./download_html.clj https://www.clojure.org /tmp/clojure.org.html
+Fetching url: https://www.clojure.org
+Writing file: /tmp/clojure.org.html
+```
+
+If `/usr/bin/env` doesn't work for you, you can use the following workaround:
+
+``` shellsession
+$ cat script.clj
+#!/bin/sh
+
+#_(
+   "exec" "bb" "$0" hello "$@"
+   )
+
+(prn *command-line-args*)
+
+./script.clj 1 2 3
+("hello" "1" "2" "3")
+```
+
 ### Input and output flags
 
 In one-liners the `*input*` value may come in handy. It contains the input read from stdin as EDN by default. If you want to read in text, use the `-i` flag, which binds `*input*` to a lazy seq of lines of text. If you want to read multiple EDN values, use the `-I` flag. The `-o` option prints the result as lines of text. The `-O` option prints the result as lines of EDN values.
@@ -350,68 +406,6 @@ The namespace `babashka.signal` is aliased as `signal` in the `user` namespace.
 The namespace `babashka.curl` is a tiny wrapper around curl. It's aliased as
 `curl` in the user namespace.  See
 [babashka.curl](https://github.com/borkdude/babashka.curl).
-
-## Running a script
-
-Scripts may be executed from a file using `-f` or `--file`:
-
-``` shellsession
-bb -f download_html.clj
-```
-
-Files can also be loaded inline using `load-file`:
-
-``` shellsession
-bb '(load-file "script.clj")'
-```
-
-Using `bb` with a shebang also works:
-
-``` clojure
-#!/usr/bin/env bb
-
-(defn get-url [url]
-  (println "Fetching url:" url)
-  (let [{:keys [:exit :err :out]} (shell/sh "curl" "-sS" url)]
-    (if (zero? exit) out
-      (do (println "ERROR:" err)
-          (System/exit 1)))))
-
-(defn write-html [file html]
-  (println "Writing file:" file)
-  (spit file html))
-
-(let [[url file] *command-line-args*]
-  (when (or (empty? url) (empty? file))
-    (println "Usage: <url> <file>")
-    (System/exit 1))
-  (write-html file (get-url url)))
-```
-
-``` shellsession
-$ ./download_html.clj
-Usage: <url> <file>
-
-$ ./download_html.clj https://www.clojure.org /tmp/clojure.org.html
-Fetching url: https://www.clojure.org
-Writing file: /tmp/clojure.org.html
-```
-
-If `/usr/bin/env` doesn't work for you, you can use the following workaround:
-
-``` shellsession
-$ cat script.clj
-#!/bin/sh
-
-#_(
-   "exec" "bb" "$0" hello "$@"
-   )
-
-(prn *command-line-args*)
-
-./script.clj 1 2 3
-("hello" "1" "2" "3")
-```
 
 ## Style
 
