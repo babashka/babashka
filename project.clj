@@ -16,8 +16,8 @@
                  [borkdude/edamame "0.0.11-alpha.9"]
                  [borkdude/graal.locking "0.0.2"]
                  [borkdude/sci.impl.reflector "0.0.1"]
-                 [org.clojure/core.async "1.0.567"]
-                 [org.clojure/tools.cli "0.4.2"]
+                 [org.clojure/core.async "1.1.587"]
+                 [org.clojure/tools.cli "1.0.194"]
                  [org.clojure/data.csv "1.0.0"]
                  [org.clojure/data.xml "0.2.0-alpha6"]
                  [cheshire "5.10.0"]
@@ -25,9 +25,9 @@
                  [clj-commons/clj-yaml "0.7.1"]
                  [com.cognitect/transit-clj "1.0.324"]
                  [seancorfield/next.jdbc "1.0.424"]
-                 [org.postgresql/postgresql "42.2.5"]]
+                 [org.postgresql/postgresql "42.2.12"]]
   :profiles {:test {:dependencies [[clj-commons/conch "0.9.2"]
-                                   [com.clojure-goes-fast/clj-async-profiler "0.4.0"]]}
+                                   [com.clojure-goes-fast/clj-async-profiler "0.4.1"]]}
              :uberjar {:global-vars {*assert* false}
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"
                                   "-Dclojure.spec.skip-macros=true"]

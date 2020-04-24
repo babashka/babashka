@@ -4,8 +4,8 @@
         borkdude/edamame {:mvn/version "0.0.11-alpha.9"},
         borkdude/graal.locking {:mvn/version "0.0.2"},
         borkdude/sci.impl.reflector {:mvn/version "0.0.1"}
-        org.clojure/core.async {:mvn/version "1.0.567"},
-        org.clojure/tools.cli {:mvn/version "0.4.2"},
+        org.clojure/core.async {:mvn/version "1.1.587"},
+        org.clojure/tools.cli {:mvn/version "1.0.194"},
         org.clojure/data.csv {:mvn/version "1.0.0"},
         cheshire {:mvn/version "5.10.0"}
         org.clojure/data.xml {:mvn/version "0.2.0-alpha6"}
@@ -13,12 +13,12 @@
         clj-commons/clj-yaml {:mvn/version "0.7.1"}
         com.cognitect/transit-clj {:mvn/version "1.0.324"}
         seancorfield/next.jdbc {:mvn/version "1.0.424"}
-        org.postgresql/postgresql {:mvn/version "42.2.5"}}
+        org.postgresql/postgresql {:mvn/version "42.2.12"}}
  :aliases {:main
            {:main-opts ["-m" "babashka.main"]}
            :profile
            {:extra-deps
-            {com.clojure-goes-fast/clj-async-profiler {:mvn/version "0.4.0"}}
+            {com.clojure-goes-fast/clj-async-profiler {:mvn/version "0.4.1"}}
             :extra-paths ["test"]
             :jvm-opts ["-Djdk.attach.allowAttachSelf"]
             :main-opts ["-m" "babashka.profile"]}}}
