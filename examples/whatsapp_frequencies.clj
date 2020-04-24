@@ -1,6 +1,6 @@
 ;; USAGE: in whatsapp group chat, export your chat _without_ media, and store somewhere.
 ;; Then
-;; $ cat chatfile.txt | bb -i -f whatsapp_counter.clj
+;; $ cat chatfile.txt | bb -i -f whatsapp_frequencies.clj
 
 (ns whatsapp-frequencies
   {:author "Marten Sytema"}
