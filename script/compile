@@ -46,6 +46,7 @@ args=( -jar $BABASHKA_JAR \
             --no-fallback \
             --no-server \
             --report-unsupported-elements-at-runtime \
+            "--initialize-at-run-time=org.postgresql.sspi.SSPIClient" \
             "$BABASHKA_XMX" )
 
 if [ "$BABASHKA_STATIC" = "true" ]; then

@@ -103,7 +103,7 @@ $ pst.clj
 05:17
 ```
 
-More examples can be found in the [gallery](#gallery).
+More examples can be found [here](doc/examples.md).
 
 ## Status
 
@@ -242,6 +242,62 @@ Babashka supports a subset of the `ns` form where you may use `:require` and `:i
 For the unsupported parts of the ns form, you may use [reader
 conditionals](#reader-conditionals) to maintain compatibility with JVM Clojure.
 
+### Running a script
+
+Scripts may be executed from a file using `-f` or `--file`:
+
+``` shellsession
+bb -f download_html.clj
+```
+
+Using `bb` with a shebang also works:
+
+``` clojure
+#!/usr/bin/env bb
+
+(defn get-url [url]
+  (println "Fetching url:" url)
+  (let [{:keys [:exit :err :out]} (shell/sh "curl" "-sS" url)]
+    (if (zero? exit) out
+      (do (println "ERROR:" err)
+          (System/exit 1)))))
+
+(defn write-html [file html]
+  (println "Writing file:" file)
+  (spit file html))
+
+(let [[url file] *command-line-args*]
+  (when (or (empty? url) (empty? file))
+    (println "Usage: <url> <file>")
+    (System/exit 1))
+  (write-html file (get-url url)))
+```
+
+``` shellsession
+$ ./download_html.clj
+Usage: <url> <file>
+
+$ ./download_html.clj https://www.clojure.org /tmp/clojure.org.html
+Fetching url: https://www.clojure.org
+Writing file: /tmp/clojure.org.html
+```
+
+If `/usr/bin/env` doesn't work for you, you can use the following workaround:
+
+``` shellsession
+$ cat script.clj
+#!/bin/sh
+
+#_(
+   "exec" "bb" "$0" hello "$@"
+   )
+
+(prn *command-line-args*)
+
+./script.clj 1 2 3
+("hello" "1" "2" "3")
+```
+
 ### Input and output flags
 
 In one-liners the `*input*` value may come in handy. It contains the input read from stdin as EDN by default. If you want to read in text, use the `-i` flag, which binds `*input*` to a lazy seq of lines of text. If you want to read multiple EDN values, use the `-I` flag. The `-o` option prints the result as lines of text. The `-O` option prints the result as lines of EDN values.
@@ -351,69 +407,42 @@ The namespace `babashka.curl` is a tiny wrapper around curl. It's aliased as
 `curl` in the user namespace.  See
 [babashka.curl](https://github.com/borkdude/babashka.curl).
 
-## Running a file
+## Style
 
-Scripts may be executed from a file using `-f` or `--file`:
+A note on style. Babashka recommends the following:
 
-``` shellsession
-bb -f download_html.clj
+- Only use `*input*` and aliases without an explicit require in bash one-liners.
+- Use an explicit namespace form in scripts.
+
+Do this:
+
+``` shell
+$ ls | bb -i '(-> *input* first (str/includes? "m"))'
+true
 ```
 
-Files can also be loaded inline using `load-file`:
+But not this:
 
-``` shellsession
-bb '(load-file "script.clj")'
-```
-
-Using `bb` with a shebang also works:
-
+script.clj:
 ``` clojure
-#!/usr/bin/env bb
-
-(defn get-url [url]
-  (println "Fetching url:" url)
-  (let [{:keys [:exit :err :out]} (shell/sh "curl" "-sS" url)]
-    (if (zero? exit) out
-      (do (println "ERROR:" err)
-          (System/exit 1)))))
-
-(defn write-html [file html]
-  (println "Writing file:" file)
-  (spit file html))
-
-(let [[url file] *command-line-args*]
-  (when (or (empty? url) (empty? file))
-    (println "Usage: <url> <file>")
-    (System/exit 1))
-  (write-html file (get-url url)))
-
-(System/exit 0)
+(-> *input* first (str/includes? "m"))
 ```
 
-``` shellsession
-$ ./download_html.clj
-Usage: <url> <file>
+Rather do this:
 
-$ ./download_html.clj https://www.clojure.org /tmp/clojure.org.html
-Fetching url: https://www.clojure.org
-Writing file: /tmp/clojure.org.html
+script.clj:
+``` clojure
+(ns script
+  (:require [clojure.java.io :as io]
+            [clojure.string :as str]))
+  (-> (io/reader *in*) line-seq first (str/includes? "m"))
 ```
 
-If `/usr/bin/env` doesn't work for you, you can use the following workaround:
+Some reasons for this:
 
-``` shellsession
-$ cat script.clj
-#!/bin/sh
-
-#_(
-   "exec" "bb" "$0" hello "$@"
-   )
-
-(prn *command-line-args*)
-
-./script.clj 1 2 3
-("hello" "1" "2" "3")
-```
+- Linters like clj-kondo work better with code that uses namespace forms, explicit requires, and known Clojure constructs
+- Editor tooling works better with namespace forms (sorting requires, etc).
+- Writing compatible code gives you the option to run the same script with `clojure`
 
 ## [Running a REPL](doc/repl.md)
 
@@ -516,73 +545,7 @@ Also see the
 [babashka.classpath](https://github.com/borkdude/babashka/#babashkaclasspath)
 namespace which allows dynamically adding to the classpath.
 
-### Deps.clj
-
-The [`deps.clj`](https://github.com/borkdude/deps.clj/) script can be used to work with `deps.edn`-based projects:
-
-``` shell
-$ deps.clj -A:my-script -Scommand "bb -cp {{classpath}} {{main-opts}}"
-Hello from gist script!
-```
-
-Create these aliases for brevity:
-
-``` shell
-$ alias bbk='deps.clj -Scommand "bb -cp {{classpath}} {{main-opts}}"'
-$ alias babashka='rlwrap deps.clj -Scommand "bb -cp {{classpath}} {{main-opts}}"'
-$ bbk -A:my-script
-Hello from gist script!
-$ babashka
-Babashka v0.0.58 REPL.
-Use :repl/quit or :repl/exit to quit the REPL.
-Clojure rocks, Bash reaches.
-
-user=> (require '[my-gist-script :as mgs])
-nil
-user=> (mgs/-main)
-Hello from gist script!
-nil
-```
-
-You can also use for example `deps.clj` to produce the classpath for a
-`babashka` REPL:
-
-```shellsession
-$ cat script/start-repl.sh
-#!/bin/sh -e
-git_root=$(git rev-parse --show-toplevel)
-export BABASHKA_CLASSPATH=$("$git_root"/script/deps.clj -Spath)
-bb --socket-repl 1666
-$ ./script/start-repl.sh
-Babashka socket REPL started at localhost:1666
-```
-
-Now, given that your `deps.edn` and source tree looks something like
-
-```shellsession
-$ cat deps.edn
-{:paths ["src" "test"]
- :deps  {}}
-$ tree -L 3
-├── deps.edn
-├── README
-├── script
-│   ├── deps.clj
-│   └── start-repl.sh
-├── src
-│   └── project_namespace
-│       ├── main.clj
-│       └── utilities.clj
-└── test
-    └── project_namespace
-        ├── test_main.clj
-        └── test_utilities.clj
-
-```
-
-you should now be able to `(require '[multi-machine-rsync.utilities :as util])`
-in your REPL and the source code in `/src/multi_machine_rsync/utilities.clj`
-will be evaluated and made available through the symbol `util`.
+See [deps.clj](doc/deps.clj.md) for a babashka script that replaces the `clojure` bash script.
 
 ## Uberscript
 
@@ -784,173 +747,9 @@ Differences with Clojure:
 
 - No `defprotocol`, `defrecord` and unboxed math.
 
-## External resources
+## [Projects](doc/projects.md)
 
-### Tools and libraries
-
-The following libraries are known to work with Babashka:
-
-#### [deps.clj](https://github.com/borkdude/deps.clj)
-
-A port of the [clojure](https://github.com/clojure/brew-install/) bash script to
-Clojure / babashka.
-
-#### [spartan.spec](https://github.com/borkdude/spartan.spec/)
-
-An babashka-compatible implementation of `clojure.spec.alpha`.
-
-#### [missing.test.assertions](https://github.com/borkdude/missing.test.assertions)
-
-This library checks if no assertions have been made in a test:
-
-``` shell
-$ export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {borkdude/missing.test.assertions {:git/url "https://github.com/borkdude/missing.test.assertions" :sha "603cb01bee72fb17addacc53c34c85612684ad70"}}}')
-
-$ lein bb "(require '[missing.test.assertions] '[clojure.test :as t]) (t/deftest foo) (t/run-tests)"
-
-Testing user
-WARNING: no assertions made in test foo
-
-Ran 1 tests containing 0 assertions.
-0 failures, 0 errors.
-{:test 1, :pass 0, :fail 0, :error 0, :type :summary}
-```
-
-#### [medley](https://github.com/weavejester/medley/)
-
-Requires `bb` >= v0.0.71. Latest coordinates checked with with bb:
-
-``` clojure
-{:git/url "https://github.com/weavejester/medley" :sha "a4e5fb5383f5c0d83cb2d005181a35b76d8a136d"}
-```
-
-Example:
-
-``` shell
-$ export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {medley {:git/url "https://github.com/weavejester/medley" :sha "a4e5fb5383f5c0d83cb2d005181a35b76d8a136d"}}}')
-
-$ bb -e "(require '[medley.core :as m]) (m/index-by :id [{:id 1} {:id 2}])"
-{1 {:id 1}, 2 {:id 2}}
-```
-
-#### [clj-http-lite](https://github.com/borkdude/clj-http-lite)
-
-This fork does not depend on any other libraries. Example:
-
-``` shell
-$ export BABASHKA_CLASSPATH="$(clojure -Sdeps '{:deps {clj-http-lite {:git/url "https://github.com/borkdude/clj-http-lite" :sha "f44ebe45446f0f44f2b73761d102af3da6d0a13e"}}}' -Spath)"
-
-$ bb "(require '[clj-http.lite.client :as client]) (:status (client/get \"https://www.clojure.org\"))"
-200
-```
-
-#### [limit-break](https://github.com/technomancy/limit-break)
-
-A debug REPL library.
-
-Latest coordinates checked with with bb:
-
-``` clojure
-{:git/url "https://github.com/technomancy/limit-break" :sha "050fcfa0ea29fe3340927533a6fa6fffe23bfc2f" :deps/manifest :deps}
-```
-
-Example:
-
-``` shell
-$ export BABASHKA_CLASSPATH="$(clojure -Sdeps '{:deps {limit-break {:git/url "https://github.com/technomancy/limit-break" :sha "050fcfa0ea29fe3340927533a6fa6fffe23bfc2f" :deps/manifest :deps}}}' -Spath)"
-
-$ bb "(require '[limit.break :as lb]) (let [x 1] (lb/break))"
-Babashka v0.0.49 REPL.
-Use :repl/quit or :repl/exit to quit the REPL.
-Clojure rocks, Bash reaches.
-
-break> x
-1
-```
-
-#### [clojure-csv](https://github.com/davidsantiago/clojure-csv)
-
-A library for reading and writing CSV files. Note that babashka already comes
-with `clojure.data.csv`, but in case you need this other library, this is how
-you can use it:
-
-``` shell
-export BABASHKA_CLASSPATH="$(clojure -Sdeps '{:deps {clojure-csv {:mvn/version "RELEASE"}}}' -Spath)"
-
-./bb -e "
-(require '[clojure-csv.core :as csv])
-(csv/write-csv (csv/parse-csv \"a,b,c\n1,2,3\"))
-"
-```
-
-#### [regal](https://github.com/lambdaisland/regal)
-
-Requires `bb` >= v0.0.71. Latest coordinates checked with with bb:
-
-``` clojure
-{:git/url "https://github.com/lambdaisland/regal" :sha "d4e25e186f7b9705ebb3df6b21c90714d278efb7"}
-```
-
-Example:
-
-``` shell
-$ export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {regal {:git/url "https://github.com/lambdaisland/regal" :sha "d4e25e186f7b9705ebb3df6b21c90714d278efb7"}}}')
-
-$ bb -e "(require '[lambdaisland.regal :as regal]) (regal/regex [:* \"ab\"])"
-#"(?:\Qab\E)*"
-```
-
-#### [4bb](https://github.com/porkostomus/4bb)
-
-4clojure as a babashka script!
-
-#### [cprop](https://github.com/tolitius/cprop/)
-
-A clojure configuration libary. Latest test version: `"0.1.16"`.
-
-#### [comb](https://github.com/weavejester/comb)
-
-Simple templating system for Clojure. Latest tested version: `"0.1.1"`.
-
-``` clojure
-$ export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {comb {:mvn/version "0.1.1"}}}')
-$ rlwrap bb
-...
-user=> (require '[comb.template :as template])
-user=> (template/eval "<% (dotimes [x 3] %>foo<% ) %>")
-"foofoofoo"
-user=> (template/eval "Hello <%= name %>" {:name "Alice"})
-"Hello Alice"
-user=> (def hello (template/fn [name] "Hello <%= name %>"))
-user=> (hello "Alice")
-"Hello Alice"
-```
-
-#### [nubank/docopt](https://github.com/nubank/docopt.clj#babashka)
-
-Docopt implementation in Clojure, compatible with babashka.
-
-#### [babashka lambda layer](https://github.com/dainiusjocas/babashka-lambda-layer)
-
-Babashka Lambda runtime packaged as a Lambda layer.
-
-#### [Release on push Github action](https://github.com/rymndhng/release-on-push-action)
-
-Github Action to create a git tag + release when pushed to master. Written in
-babashka.
-
-#### [justone/bb-scripts](https://github.com/justone/bb-scripts)
-
-A collection of scripts developed by [@justone](https://github.com/justone).
-
-#### [nativity](https://github.com/MnRA/nativity)
-
-Turn babashka scripts into binaries using GraalVM `native-image`.
-
-#### [arrangement](https://github.com/greglook/clj-arrangement)
-
-A micro-library which provides a total-ordering comparator for Clojure
-values. Tested with version `1.2.0`.
+A list of projects (scripts, libraries and tools) known to work with babashka.
 
 ## Package babashka script as a AWS Lambda
 
@@ -980,276 +779,9 @@ handling of the SIGPIPE. This can be done by setting
 - [closh](https://github.com/dundalek/closh)
 - [lumo](https://github.com/anmonteiro/lumo)
 
-## Gallery
+## [Examples](doc/examples.md)
 
-Here's a gallery of more useful examples. Do you have a useful example? PR
-welcome!
-
-### Delete a list of files returned by a Unix command
-
-```
-find . | grep conflict | bb -i '(doseq [f *input*] (.delete (io/file f)))'
-```
-
-### Calculate aggregate size of directory
-
-``` clojure
-#!/usr/bin/env bb
-
-(as-> (io/file (or (first *command-line-args*) ".")) $
-  (file-seq $)
-  (map #(.length %) $)
-  (reduce + $)
-  (/ $ (* 1024 1024))
-  (println (str (int $) "M")))
-```
-
-``` shellsession
-$ dir-size
-130M
-
-$ dir-size ~/Dropbox/bin
-233M
-```
-
-
-### Shuffle the lines of a file
-
-``` shellsession
-$ cat /tmp/test.txt
-1 Hello
-2 Clojure
-3 Babashka
-4 Goodbye
-
-$ < /tmp/test.txt bb -io '(shuffle *input*)'
-3 Babashka
-2 Clojure
-4 Goodbye
-1 Hello
-```
-
-### Fetch latest Github release tag
-
-``` shell
-(require '[clojure.java.shell :refer [sh]]
-         '[cheshire.core :as json])
-
-(defn babashka-latest-version []
-  (-> (sh "curl" "https://api.github.com/repos/borkdude/babashka/tags")
-      :out
-      (json/parse-string true)
-      first
-      :name))
-
-(babashka-latest-version) ;;=> "v0.0.73"
-```
-
-### Generate deps.edn entry for a gitlib
-
-``` clojure
-#!/usr/bin/env bb
-
-(require '[clojure.java.shell :refer [sh]]
-         '[clojure.string :as str])
-
-(let [[username project branch] *command-line-args*
-      branch (or branch "master")
-      url (str "https://github.com/" username "/" project)
-      sha (-> (sh "git" "ls-remote" url branch)
-              :out
-              (str/split #"\s")
-              first)]
-  {:git/url url
-   :sha sha})
-```
-
-``` shell
-$ gitlib.clj nate fs
-{:git/url "https://github.com/nate/fs", :sha "75b9fcd399ac37cb4f9752a4c7a6755f3fbbc000"}
-$ clj -Sdeps "{:deps {fs $(gitlib.clj nate fs)}}" \
-  -e "(require '[nate.fs :as fs]) (fs/creation-time \".\")"
-#object[java.nio.file.attribute.FileTime 0x5c748168 "2019-07-05T14:06:26Z"]
-```
-
-### View download statistics from Clojars
-
-Contributed by [@plexus](https://github.com/plexus).
-
-``` shellsession
-$ curl https://clojars.org/stats/all.edn |
-bb -o '(for [[[group art] counts] *input*] (str (reduce + (vals counts))  " " group "/" art))' |
-sort -rn |
-less
-14113842 clojure-complete/clojure-complete
-9065525 clj-time/clj-time
-8504122 cheshire/cheshire
-...
-```
-
-### Portable tree command
-
-See [examples/tree.clj](https://github.com/borkdude/babashka/blob/master/examples/tree.clj).
-
-``` shellsession
-$ clojure -Sdeps '{:deps {org.clojure/tools.cli {:mvn/version "0.4.2"}}}' examples/tree.clj src
-src
-└── babashka
-    ├── impl
-    │   ├── tools
-    │   │   └── cli.clj
-...
-
-$ examples/tree.clj src
-src
-└── babashka
-    ├── impl
-    │   ├── tools
-    │   │   └── cli.clj
-...
-```
-
-### List outdated maven dependencies
-
-See [examples/outdated.clj](https://github.com/borkdude/babashka/blob/master/examples/outdated.clj).
-Inspired by an idea from [@seancorfield](https://github.com/seancorfield).
-
-``` shellsession
-$ cat /tmp/deps.edn
-{:deps {cheshire {:mvn/version "5.8.1"}
-        clj-http {:mvn/version "3.4.0"}}}
-
-$ examples/outdated.clj /tmp/deps.edn
-clj-http/clj-http can be upgraded from 3.4.0 to 3.10.0
-cheshire/cheshire can be upgraded from 5.8.1 to 5.9.0
-```
-
-### Convert project.clj to deps.edn
-
-Contributed by [@plexus](https://github.com/plexus).
-
-``` shellsession
-$ cat project.clj |
-sed -e 's/#=//g' -e 's/~@//g' -e 's/~//g' |
-bb '(let [{:keys [dependencies source-paths resource-paths]} (apply hash-map (drop 3 *input*))]
-  {:paths (into source-paths resource-paths)
-   :deps (into {} (for [[d v] dependencies] [d {:mvn/version v}]))}) ' |
-jet --pretty > deps.edn
-```
-
-A script with the same goal can be found [here](https://gist.github.com/swlkr/3f346c66410e5c60c59530c4413a248e#gistcomment-3232605).
-
-### Print current time in California
-
-See [examples/pst.clj](https://github.com/borkdude/babashka/blob/master/examples/pst.clj)
-
-### Tiny http server
-
-See [examples/http_server.clj](https://github.com/borkdude/babashka/blob/master/examples/http_server.clj)
-
-Original by [@souenzzo](https://gist.github.com/souenzzo/a959a4c5b8c0c90df76fe33bb7dfe201)
-
-### Print random docstring
-
-See [examples/random_doc.clj](https://github.com/borkdude/babashka/blob/master/examples/random_doc.clj)
-
-``` shell
-$ examples/random_doc.clj
--------------------------
-clojure.core/ffirst
-([x])
-  Same as (first (first x))
-```
-
-### Cryptographic hash
-
-`sha1.clj`:
-``` clojure
-#!/usr/bin/env bb
-
-(defn sha1
-  [s]
-  (let [hashed (.digest (java.security.MessageDigest/getInstance "SHA-1")
-                        (.getBytes s))
-        sw (java.io.StringWriter.)]
-    (binding [*out* sw]
-      (doseq [byte hashed]
-        (print (format "%02X" byte))))
-    (str sw)))
-
-(sha1 (first *command-line-args*))
-```
-
-``` shell
-$ sha1.clj babashka
-"0AB318BE3A646EEB1E592781CBFE4AE59701EDDF"
-```
-
-### Package script as Docker image
-
-`Dockerfile`:
-``` dockerfile
-FROM borkdude/babashka
-RUN echo $'\
-(println "Your command line args:" *command-line-args*)\
-'\
->> script.clj
-
-ENTRYPOINT ["bb", "script.clj"]
-```
-
-``` shell
-$ docker build . -t script
-...
-$ docker run --rm script 1 2 3
-Your command line args: (1 2 3)
-```
-
-### Extract single file from zip
-
-``` clojure
-;; Given the following:
-
-;; $ echo 'contents' > file
-;; $ zip zipfile.zip file
-;; $ rm file
-
-;; we extract the single file from the zip archive using java.nio:
-
-(import '[java.nio.file Files FileSystems CopyOption])
-(let [zip-file (io/file "zipfile.zip")
-      file (io/file "file")
-      fs (FileSystems/newFileSystem (.toPath zip-file) nil)
-      file-in-zip (.getPath fs "file" (into-array String []))]
-  (Files/copy file-in-zip (.toPath file)
-              (into-array CopyOption [])))
-```
-
-### Note taking app
-
-See
-[examples/notes.clj](https://github.com/borkdude/babashka/blob/master/examples/notes.clj). This
-is a variation on the
-[http-server](https://github.com/borkdude/babashka/#tiny-http-server)
-example. If you get prompted with a login, use `admin`/`admin`.
-
-<img src="assets/notes-example.png" width="400px">
-
-### which
-
-The `which` command re-implemented in Clojure. See
-[examples/which.clj](https://github.com/borkdude/babashka/blob/master/examples/which.clj).
-Prints the canonical file name.
-
-``` shell
-$ examples/which.clj rg
-/usr/local/Cellar/ripgrep/11.0.1/bin/rg
-```
-
-### pom.xml version
-
-A script to retrieve the version from a `pom.xml` file. See
-[examples/pom_version.clj](examples/pom_version.clj). Written by [@wilkerlucio](https://github.com/wilkerlucio).
+A collection of example scripts.
 
 ## Thanks
 

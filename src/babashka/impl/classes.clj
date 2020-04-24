@@ -26,6 +26,7 @@
           java.lang.Byte
           java.lang.Comparable
           java.lang.Class
+          java.lang.ClassNotFoundException
           java.lang.Double
           java.lang.Exception
           java.lang.Integer
@@ -43,6 +44,7 @@
           java.lang.Process
           java.lang.ProcessBuilder
           java.lang.ProcessBuilder$Redirect
+          java.math.BigDecimal
           java.math.BigInteger
           java.net.DatagramSocket
           java.net.DatagramPacket

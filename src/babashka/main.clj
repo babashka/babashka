@@ -15,6 +15,7 @@
    [babashka.impl.common :as common]
    [babashka.impl.csv :as csv]
    [babashka.impl.curl :refer [curl-namespace]]
+   [babashka.impl.jdbc :as jdbc]
    [babashka.impl.nrepl-server :as nrepl-server]
    ;; see https://github.com/oracle/graal/issues/1784
    #_[babashka.impl.pipe-signal-handler :refer [handle-pipe! pipe-signal-received?]]
@@ -24,8 +25,8 @@
    [babashka.impl.socket-repl :as socket-repl]
    [babashka.impl.test :as t]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
-   [babashka.impl.xml :as xml]
    [babashka.impl.transit :refer [transit-namespace]]
+   [babashka.impl.xml :as xml]
    [babashka.impl.yaml :refer [yaml-namespace]]
    [babashka.wait :as wait]
    [clojure.edn :as edn]
@@ -36,7 +37,6 @@
    [sci.core :as sci]
    [sci.impl.interpreter :refer [eval-string*]]
    [sci.impl.opts :as sci-opts]
-   [sci.impl.types :as sci-types]
    [sci.impl.unrestrict :refer [*unrestricted*]]
    [sci.impl.vars :as vars])
   (:gen-class))
@@ -117,17 +117,25 @@
                               (assoc opts-map
                                      :repl true)))
                      ("--socket-repl")
-                     (let [options (next options)]
-                       (recur (next options)
+                     (let [options (next options)
+                           opt (first options)
+                           opt (when-not (str/starts-with? opt "-")
+                                 opt)
+                           options (if opt (next options)
+                                       options)]
+                       (recur options
                               (assoc opts-map
-                                     :socket-repl (or (first options)
-                                                      "1666"))))
+                                     :socket-repl (or opt "1666"))))
                      ("--nrepl-server")
-                     (let [options (next options)]
-                       (recur (next options)
+                     (let [options (next options)
+                           opt (first options)
+                           opt (when-not (str/starts-with? opt "-")
+                                 opt)
+                           options (if opt (next options)
+                                       options)]
+                       (recur options
                               (assoc opts-map
-                                     :nrepl (or (first options)
-                                                      "1667"))))
+                                     :nrepl (or opt "1667"))))
                      ("--eval", "-e")
                      (let [options (next options)]
                        (recur (next options)
@@ -220,12 +228,10 @@ Everything after that is bound to *command-line-args*."))
 
 (defn load-file* [sci-ctx f]
   (let [f (io/file f)
-        s (slurp f)
-        prev-ns @vars/current-ns]
-    (sci/with-bindings {vars/current-file (.getCanonicalPath f)}
-      (try
-        (eval-string* sci-ctx s)
-        (finally (sci-types/setVal vars/current-ns prev-ns))))))
+        s (slurp f)]
+    (sci/with-bindings {sci/ns @sci/ns
+                        sci/file (.getCanonicalPath f)}
+      (eval-string* sci-ctx s))))
 
 (defn start-socket-repl! [address ctx]
   (socket-repl/start-repl! address ctx)
@@ -254,7 +260,8 @@ Everything after that is bound to *command-line-args*."))
     yaml clj-yaml.core
     curl babashka.curl
     transit cognitect.transit
-    bencode bencode.core})
+    bencode bencode.core
+    jdbc next.jdbc})
 
 (def cp-state (atom nil))
 
@@ -282,7 +289,6 @@ Everything after that is bound to *command-line-args*."))
    'clojure.stacktrace stacktrace-namespace
    'clojure.main {'demunge demunge
                   'repl-requires clojure-main/repl-requires}
-   'clojure.repl {'demunge demunge}
    'clojure.test t/clojure-test-namespace
    'babashka.classpath {'add-classpath add-classpath*}
    'clojure.data.xml xml/xml-namespace
@@ -290,7 +296,8 @@ Everything after that is bound to *command-line-args*."))
    'clojure.pprint pprint-namespace
    'babashka.curl curl-namespace
    'cognitect.transit transit-namespace
-   'bencode.core bencode-namespace})
+   'bencode.core bencode-namespace
+   'next.jdbc jdbc/njdbc-namespace})
 
 (def bindings
   {'java.lang.System/exit exit ;; override exit, so we have more control
@@ -317,7 +324,7 @@ Everything after that is bound to *command-line-args*."))
       (prn "M" (meta (get bindings 'future))))
   (binding [*unrestricted* true]
     (sci/binding [reflection-var false
-                  vars/current-ns (vars/->SciNamespace 'user nil)]
+                  sci/ns (vars/->SciNamespace 'user nil)]
       (let [t0 (System/currentTimeMillis)
             {:keys [:version :shell-in :edn-in :shell-out :edn-out
                     :help? :file :command-line-args
@@ -351,7 +358,7 @@ Everything after that is bound to *command-line-args*."))
                         (let [res (cp/source-for-namespace loader namespace nil)]
                           (when uberscript (swap! uberscript-sources conj (:source res)))
                           res)))
-            _ (when file (vars/bindRoot vars/current-file (.getCanonicalPath (io/file file))))
+            _ (when file (vars/bindRoot sci/file (.getCanonicalPath (io/file file))))
             ctx {:aliases aliases
                  :namespaces (-> namespaces
                                  (assoc 'clojure.core
@@ -367,9 +374,11 @@ Everything after that is bound to *command-line-args*."))
                  :classes classes/class-map
                  :imports '{ArithmeticException java.lang.ArithmeticException
                             AssertionError java.lang.AssertionError
+                            BigDecimal java.math.BigDecimal
                             Boolean java.lang.Boolean
                             Byte java.lang.Byte
                             Class java.lang.Class
+                            ClassNotFoundException java.lang.ClassNotFoundException
                             Double java.lang.Double
                             Exception java.lang.Exception
                             IllegalArgumentException java.lang.IllegalArgumentException

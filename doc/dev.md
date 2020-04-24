@@ -62,6 +62,12 @@ $ BABASHKA_XMX="-J-Xmx4g" script/compile
 Keep notes here about how adding libraries and classes to Babashka affects the binary size.
 We're registering the size of the macOS binary (as built on CircleCI).
 
+2020/04/23 Added `next.jdbc` and postgres JDBC driver:
+(- 51019836 48099780) = 2920kb added
+
+2020/04/23 Added BigDecimal
+(- 48103868 47857732) = 246kb added
+
 2020/04/18 Added clojure.data.xml
 47808572 - 45923028 = 1886kb added.
 
