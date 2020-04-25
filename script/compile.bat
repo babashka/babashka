@@ -9,7 +9,7 @@ if "%GRAALVM_HOME%"=="" (
 )
 
 if "%BABASHKA_XMX%"=="" (
-    set BABASHKA_XMX="-J-Xmx3g"
+    set BABASHKA_XMX="-J-Xmx4500m"
 )
 
 set JAVA_HOME=%GRAALVM_HOME%
