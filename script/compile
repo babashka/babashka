@@ -3,7 +3,7 @@
 set -eo pipefail
 
 if [ -z "$BABASHKA_XMX" ]; then
-    export BABASHKA_XMX="-J-Xmx3g"
+    export BABASHKA_XMX="-J-Xmx4500m"
 fi
 
 if [ -z "$GRAALVM_HOME" ]; then
