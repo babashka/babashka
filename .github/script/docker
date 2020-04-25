@@ -19,7 +19,7 @@ if [ -z "$GITHUB_HEAD_REF" ] && [ "${GITHUB_REF##*/}" = "master" ]
 then
     echo "Building Docker image $image_name:$image_tag"
     echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
-    docker build -t "$image_name" .
+    docker build -t "$image_name" --build-arg BABASHKA_XMX="-J-Xmx6300m" .
     docker tag "$image_name:$latest_tag" "$image_name:$image_tag"
     # we only update latest when it's not a SNAPSHOT version
     if [ "false" = "$snapshot" ]; then
