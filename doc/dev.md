@@ -55,8 +55,8 @@ Findings from various experiments with JDBC drivers in babashka:
   to make the driver compatible with Graal. The driver is part of `bb` since
   `v0.0.89`.
 - Sqlite: I feel like I'm close to a working solution, but it hangs. It adds
-  20MB to the binary. But since it has a nice CLI we can also shell out to it
-  (there's en example in the examples dir). We could also build a
+  20MB to the binary. Since sqlite has a nice CLI we could also just shell out
+  to it (there's an example in the examples dir). We could also build a
   `babashka.sqlite` namespace around the CLI maybe similar to
   `babashka.curl`. See [#385](https://github.com/borkdude/babashka/issues/385)
   for details.
