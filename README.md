@@ -771,6 +771,8 @@ handling of the SIGPIPE. This can be done by setting
 - [Clojure in the Shell](https://lambdaisland.com/blog/2019-12-05-advent-of-parens-5-clojure-in-the-shell) by Arne Brasseur
 - [Clojure Tool](https://purelyfunctional.tv/issues/purelyfunctional-tv-newsletter-351-clojure-tool-babashka/) by Eric Normand
 
+## [Building babashka](doc/build.md)
+
 ## [Developing Babashka](doc/dev.md)
 
 ## Related projects

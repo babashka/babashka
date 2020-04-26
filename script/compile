@@ -20,9 +20,17 @@ export JAVA_HOME=$GRAALVM_HOME
 SVM_JAR=$(find "$GRAALVM_HOME" | grep svm.jar)
 $GRAALVM_HOME/bin/javac -cp "$SVM_JAR" resources/CutOffCoreServicesDependencies.java
 
+
+BABASHKA_LEIN_PROFILES=""
+
+if [ "$BABASHKA_FEATURE_HSQLDB" = "true" ]
+then
+    BABASHKA_LEIN_PROFILES="+feature/hsqldb"
+fi
+
 if [ -z "$BABASHKA_JAR" ]; then
-   lein with-profiles +reflection do run
-   lein do clean, uberjar
+   lein with-profiles "+reflection,$BABASHKA_LEIN_PROFILES" do run
+   lein with-profiles "$BABASHKA_LEIN_PROFILES" do clean, uberjar
   BABASHKA_JAR=${BABASHKA_JAR:-"target/babashka-$BABASHKA_VERSION-standalone.jar"}
 fi
 
@@ -51,6 +59,10 @@ args=( -jar $BABASHKA_JAR \
 
 if [ "$BABASHKA_STATIC" = "true" ]; then
     args+=("--static")
+fi
+
+if [ "$BABASHKA_FEATURE_HSQLDB" = "true" ]; then
+    args+=("-H:IncludeResources=org/hsqldb/.*\.properties", "-H:IncludeResources=org/hsqldb/.*\.sql")
 fi
 
 $GRAALVM_HOME/bin/native-image "${args[@]}"

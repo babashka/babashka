@@ -272,3 +272,25 @@ A script to retrieve the version from a `pom.xml` file. See
 
 Show frequencies of messages by user in Whatsapp group chats.
 See [examples/whatsapp_frequencies.clj](examples/whatsapp_frequencies.clj)
+
+### Find unused vars
+
+[This](../examples/hsqldb_unused_vars.clj) script invokes clj-kondo, stores
+returned data in an in memory HSQLDB database and prints the result of a query
+which finds unused vars.
+
+``` shell
+$ bb examples/hsqldb_unused_vars.clj src
+
+|                   :VARS/NS |               :VARS/NAME |                     :VARS/FILENAME | :VARS/ROW | :VARS/COL |
+|----------------------------+--------------------------+------------------------------------+-----------+-----------|
+| babashka.impl.bencode.core |           read-netstring | src/babashka/impl/bencode/core.clj |       162 |         1 |
+| babashka.impl.bencode.core |          write-netstring | src/babashka/impl/bencode/core.clj |       201 |         1 |
+|      babashka.impl.classes | generate-reflection-file |      src/babashka/impl/classes.clj |       230 |         1 |
+|    babashka.impl.classpath |      ->DirectoryResolver |    src/babashka/impl/classpath.clj |        12 |         1 |
+|    babashka.impl.classpath |        ->JarFileResolver |    src/babashka/impl/classpath.clj |        37 |         1 |
+|    babashka.impl.classpath |                 ->Loader |    src/babashka/impl/classpath.clj |        47 |         1 |
+| babashka.impl.clojure.test |            file-position | src/babashka/impl/clojure/test.clj |       286 |         1 |
+| babashka.impl.nrepl-server |             stop-server! | src/babashka/impl/nrepl_server.clj |       179 |         1 |
+|              babashka.main |                    -main |              src/babashka/main.clj |       485 |         1 |
+```

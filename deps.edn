@@ -13,7 +13,8 @@
         clj-commons/clj-yaml {:mvn/version "0.7.1"}
         com.cognitect/transit-clj {:mvn/version "1.0.324"}
         seancorfield/next.jdbc {:mvn/version "1.0.424"}
-        org.postgresql/postgresql {:mvn/version "42.2.12"}}
+        org.postgresql/postgresql {:mvn/version "42.2.12"}
+        org.hsqldb/hsqldb {:mvn/version "2.4.0"}}
  :aliases {:main
            {:main-opts ["-m" "babashka.main"]}
            :profile
