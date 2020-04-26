@@ -101,7 +101,6 @@ java.util.MissingResourceException and java.util.Properties to support
 2020/02/21
 Added java.time.temporal.ChronoUnit
 40651596 - 40598260 = 53kb added.
->>>>>>> master
 
 2020/02/19, e43727955a2cdabd2bb0189c20dd7f9a18156fc9
 Added fipp.edn/pprint
