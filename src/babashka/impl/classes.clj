@@ -186,7 +186,20 @@
           java.util.zip.GZIPOutputStream
           org.yaml.snakeyaml.error.YAMLException
           ~(symbol "[B")
-          ~@(when features/hsqldb? [`org.hsqldb.jdbcDriver])]
+          ~@(when features/hsqldb? [`org.hsqldb.jdbcDriver])
+          ;; mysql
+          com.mysql.cj.jdbc.Driver
+          com.mysql.cj.exceptions.CJException
+          com.mysql.cj.conf.url.SingleConnectionUrl
+          com.mysql.cj.log.StandardLogger
+          com.mysql.cj.protocol.StandardSocketFactory
+          com.mysql.cj.protocol.SocksProxySocketFactory
+          com.mysql.cj.protocol.NamedPipeSocketFactory
+          com.mysql.cj.protocol.AsyncSocketFactory
+          com.mysql.cj.conf.url.FailoverConnectionUrl
+          com.mysql.cj.conf.url.FailoverDnsSrvConnectionUrl
+          java.sql.SQLSyntaxErrorException
+          ]
     :constructors [clojure.lang.Delay
                    clojure.lang.MapEntry
                    clojure.lang.LineNumberingPushbackReader

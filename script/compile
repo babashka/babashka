@@ -19,7 +19,7 @@ export JAVA_HOME=$GRAALVM_HOME
 
 SVM_JAR=$(find "$GRAALVM_HOME" | grep svm.jar)
 $GRAALVM_HOME/bin/javac -cp "$SVM_JAR" resources/CutOffCoreServicesDependencies.java
-
+$GRAALVM_HOME/bin/javac -cp "$(lein classpath):$SVM_JAR" resources/AbandonedConnectionCleanupThreadSubstitutions.java
 
 BABASHKA_LEIN_PROFILES=""
 
@@ -67,6 +67,6 @@ fi
 
 $GRAALVM_HOME/bin/native-image "${args[@]}"
 
-if [ ! -z "$(command -v lein)" ]; then
-    lein clean
-fi
+# if [ ! -z "$(command -v lein)" ]; then
+#     lein clean
+# fi
