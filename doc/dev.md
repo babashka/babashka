@@ -49,10 +49,11 @@ See [build.md](build.md).
 
 ## JDBC
 
-Findings from various experiments with JDBC support in babashka:
+Findings from various experiments with JDBC drivers in babashka:
 
 - Postgres: adds 3MB to the binary. It seems the maintainers have put in effort
-  to make the driver compatible with Graal.
+  to make the driver compatible with Graal. The driver is part of `bb` since
+  `v0.0.89`.
 - Sqlite: I feel like I'm close to a working solution, but it hangs. It adds
   20MB to the binary. But since it has a nice CLI we can also shell out to it
   (there's en example in the examples dir). We could also build a
