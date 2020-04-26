@@ -67,10 +67,11 @@ The compile script for Windows is `script/compile.bat`.
 To compile babashka with `HyperSQL`/`hsqldb` support, set
 `BABASHKA_FEATURE_HSQLDB` to `true`:
 
-
 ``` shell
 $ BABASHKA_FEATURE_HSQLDB=true script/compile
 ```
+
+Check out this [example](examples.md#find-unused-vars).
 
 If you think this feature should be enabled in the distributed version of `bb`,
 vote with a thumbs up on [this](https://github.com/borkdude/babashka/issues/382)
