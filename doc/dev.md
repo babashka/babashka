@@ -69,8 +69,8 @@ Findings from various experiments with JDBC drivers in babashka:
   [#387](https://github.com/borkdude/babashka/issues/387).
 
 To progress work on sqlite and mySQL, I need a working Clojure example. If you
-want to contribute, consider making a an example CLI that puts something in a
-mysql db and reads something from it.
+want to contribute, consider making a an example Clojure GraalVM CLI that puts
+something in a sqlite / mysql DB and reads something from it.
 
 ## Binary size
 
