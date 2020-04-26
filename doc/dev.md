@@ -47,6 +47,25 @@ Test the native version:
 
 See [build.md](build.md).
 
+## JDBC
+
+Findings from various experiments with JDBC support in babashka:
+
+- Postgres: adds 3MB to the binary. It seems the maintainers have put in effort
+  to make the driver compatible with Graal.
+- Sqlite: I feel like I'm close to a working solution, but it hangs. It adds
+  20MB to the binary. But since it has a nice CLI we can also shell out to it
+  (there's en example in the examples dir). We could also build a
+  babashka.sqlite namespace around the CLI maybe similar to babashka.curl.
+- Hsqldb: easy to get going with graalvm. Adds 10 MB to the binary. It's under a
+  feature flag right now. But with enough interest, I could make it part of the
+  standard distribution. Derby and H2 are known to not work with GraalVM, so far
+  this is the "best" embedded option from a Graal perspective.
+- MySQL / MariaDB: can't get those to work yet. Work in progress in issues #385
+  and #387. I need a working Clojure example. If you want to contribute,
+  consider making a an example CLI that puts something in a mysql db and reads
+  something from it.
+
 ## Binary size
 
 Keep notes here about how adding libraries and classes to Babashka affects the binary size.
