@@ -38,6 +38,7 @@ jobs:
       - run:
           name: Run JVM tests
           command: |
+            script/postgres_test
             script/test
             script/run_lib_tests
       # - run:
