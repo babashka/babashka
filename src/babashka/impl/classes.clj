@@ -69,11 +69,11 @@
                    ;; not supported: {:name "setURLStreamHandlerFactory"}
                    {:name "toExternalForm"}
                    {:name "toString"}
-                   {:name "toURI"}]}
-        com.sun.xml.internal.stream.XMLInputFactoryImpl
-        {:methods [{:name "<init>" :parameterTypes []}]}
-        com.sun.xml.internal.stream.XMLOutputFactoryImpl
-        {:methods [{:name "<init>" :parameterTypes []}]}}
+                   {:name "toURI"}]}}
+    features/xml? (assoc `com.sun.xml.internal.stream.XMLInputFactoryImpl
+                         {:methods [{:name "<init>" :parameterTypes []}]}
+                         `com.sun.xml.internal.stream.XMLOutputFactoryImpl
+                         {:methods [{:name "<init>" :parameterTypes []}]})
     features/hsqldb? (assoc `org.hsqldb.dbinfo.DatabaseInformationFull
                             {:methods [{:name "<init>"
                                         :parameterTypes ["org.hsqldb.Database"]}]}
