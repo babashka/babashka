@@ -61,10 +61,11 @@ Findings from various experiments with JDBC drivers in babashka:
   `babashka.curl`. See [#385](https://github.com/borkdude/babashka/issues/385)
   for details.
 - HSQLDB: easy to get going with Graalvm. Adds 10 MB to the binary. It's under a
-  feature flag right now on master. See [build.md](build.md) for details. But
-  with enough interest, I could make it part of the standard distribution. Derby
+  feature flag right now on master. See [build.md](build.md) for details. Derby
   and H2 are known to not work with GraalVM, so far this is the "best" embedded
-  option from a Graal perspective.
+  option from a Graal perspective.  Setting the -Xmx value for Docker to 4500m
+  got it to crash. 4800m did work, but it took 17 minutes (compared to 10
+  minutes without this feature).
 - MySQL / MariaDB: can't get those to work yet. Work in progress in issue
   [#387](https://github.com/borkdude/babashka/issues/387).
 
