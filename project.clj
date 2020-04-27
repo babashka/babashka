@@ -38,7 +38,7 @@
                        :main babashka.main
                        :aot :all}
              :reflection {:main babashka.impl.classes/generate-reflection-file}}
-  :aliases {"bb" ["run" "-m" "babashka.main"]}
+  :aliases {"bb" ["with-profiles" "+feature/xml,+feature/hsqldb"  "run" "-m" "babashka.main"]}
   :deploy-repositories [["clojars" {:url "https://clojars.org/repo"
                                     :username :env/clojars_user
                                     :password :env/clojars_pass
