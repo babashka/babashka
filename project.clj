@@ -28,8 +28,10 @@
   :profiles {:feature/xml {:source-paths ["src-xml"]
                            :dependencies [[org.clojure/data.xml "0.2.0-alpha6"]]}
              :feature/hsqldb {:dependencies [[org.hsqldb/hsqldb "2.4.0"]]}
-             :test {:dependencies [[clj-commons/conch "0.9.2"]
-                                   [com.clojure-goes-fast/clj-async-profiler "0.4.1"]]}
+             :test [:feature/xml
+                    :feature/hsqldb
+                    {:dependencies [[clj-commons/conch "0.9.2"]
+                                    [com.clojure-goes-fast/clj-async-profiler "0.4.1"]]}]
              :uberjar {:global-vars {*assert* false}
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"
                                   "-Dclojure.spec.skip-macros=true"]
