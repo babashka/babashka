@@ -135,6 +135,7 @@
           ;; java.net.URL, see below
           java.net.URLEncoder
           java.net.URLDecoder
+          java.nio.file.OpenOption
           java.nio.file.CopyOption
           java.nio.file.FileAlreadyExistsException
           java.nio.file.FileSystem
