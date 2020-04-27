@@ -31,7 +31,7 @@ As one user described it:
     support for linux, macOS and Windows.
 * Allow interop with commonly used classes like `java.io.File` and `System`
 * Multi-threading support (`pmap`, `future`, `core.async`)
-* Connectivity: talk UDP, TCP, HTTP, JDBC
+* Connectivity: talk UDP, TCP, HTTP, [JDBC](#JDBC)
 * Support for various data formats: JSON, XML, YAML, CSV, bencode
 * Batteries included (tools.cli, cheshire, ...)
 * Library support via popular tools like the `clojure` CLI
@@ -705,6 +705,18 @@ bye
 ```
 
 This also works when the script is interrupted with ctrl-c.
+
+## JDBC
+
+Babashka includes the [`next.jdbc`](https://github.com/seancorfield/next-jdbc)
+library along with a driver for [PostgresQL](https://www.postgresql.org/). See
+this [test](test-resources/babashka/postgres_test.clj) how to use it.
+
+[HSQLDB](http://hsqldb.org/) is also
+supported, but not part of the standard `bb` distribution. See
+[doc/build.md](doc/build.md) for details.
+
+Support for other drivers is still [research in progress](doc/dev.md#jdbc).
 
 ## Bencode
 
