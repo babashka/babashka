@@ -31,6 +31,8 @@ As one user described it:
     support for linux, macOS and Windows.
 * Allow interop with commonly used classes like `java.io.File` and `System`
 * Multi-threading support (`pmap`, `future`, `core.async`)
+* Connectivity: talk UDP, TCP, HTTP, JDBC
+* Support for various data formats: JSON, XML, YAML, CSV, bencode
 * Batteries included (tools.cli, cheshire, ...)
 * Library support via popular tools like the `clojure` CLI
 
