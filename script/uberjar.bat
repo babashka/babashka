@@ -1,4 +1,4 @@
-@echo off
+@echo on
 
 if "%GRAALVM_HOME%"=="" (
 echo Please set GRAALVM_HOME
@@ -11,7 +11,6 @@ set PATH=%PATH%;%GRAALVM_HOME%\bin
 if "%BABASHKA_FEATURE_HSQLDB%"=="true"
 (set BABASHKA_LEIN_PROFILES="+feature/hsqldb")
 else (set BABASHKA_LEIN_PROFILES="-feature/hsqldb")
-
 
 if not "%BABASHKA_FEATURE_XML%"=="false"
 (set BABASHKA_LEIN_PROFILES="%BABASHKA_LEIN_PROFILES%,+feature/xml")
