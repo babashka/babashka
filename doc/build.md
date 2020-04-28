@@ -38,16 +38,12 @@ $ git submodule update --recursive
 
 ## Build
 
-Run the `compile` script:
-
-``` shell
-$ script/compile
-```
+First run `script/uberjar` to create the `.jar` file. Then run `script/compile`.
 
 To configure maximum heap size you can use:
 
 ```
-$ BABASHKA_XMX="-J-Xmx4g" script/compile
+$ BABASHKA_XMX="-J-Xmx4800m" script/compile
 ```
 
 ## Windows

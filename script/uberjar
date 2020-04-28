@@ -21,5 +21,4 @@ fi
 if [ -z "$BABASHKA_JAR" ]; then
    lein with-profiles "+reflection,$BABASHKA_LEIN_PROFILES" do run
    lein with-profiles "+uberjar,$BABASHKA_LEIN_PROFILES" do clean, uberjar
-  BABASHKA_JAR=${BABASHKA_JAR:-"target/babashka-$BABASHKA_VERSION-standalone.jar"}
 fi

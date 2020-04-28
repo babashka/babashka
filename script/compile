@@ -11,6 +11,14 @@ if [ -z "$GRAALVM_HOME" ]; then
     exit 1
 fi
 
+BABASHKA_JAR=${BABASHKA_JAR:-"target/babashka-$BABASHKA_VERSION-standalone.jar"}
+
+if [[ ! -f "$BABASHKA_JAR" ]]
+then
+    echo "Please run script/uberjar first."
+    exit 1
+fi
+
 $GRAALVM_HOME/bin/gu install native-image
 
 BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
@@ -35,12 +43,6 @@ then
     BABASHKA_LEIN_PROFILES+=",+feature/xml"
 else
     BABASHKA_LEIN_PROFILES+=",-feature/xml"
-fi
-
-if [ -z "$BABASHKA_JAR" ]; then
-   lein with-profiles "+reflection,$BABASHKA_LEIN_PROFILES" do run
-   lein with-profiles "+uberjar,$BABASHKA_LEIN_PROFILES" do clean, uberjar
-  BABASHKA_JAR=${BABASHKA_JAR:-"target/babashka-$BABASHKA_VERSION-standalone.jar"}
 fi
 
 BABASHKA_BINARY=${BABASHKA_BINARY:-"bb"}
