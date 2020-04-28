@@ -18,14 +18,6 @@ set PATH=%PATH%;%GRAALVM_HOME%\bin
 set /P BABASHKA_VERSION=< resources\BABASHKA_VERSION
 echo Building Babashka %BABASHKA_VERSION%
 
-call lein bb "(+ 1 2 3)"
-
-call lein with-profiles +reflection do run
-if %errorlevel% neq 0 exit /b %errorlevel%
-
-call lein do clean, uberjar
-if %errorlevel% neq 0 exit /b %errorlevel%
-
 Rem the --no-server option is not supported in GraalVM Windows.
 Rem -H:EnableURLProtocols=jar,http,https is also not supported.
 
