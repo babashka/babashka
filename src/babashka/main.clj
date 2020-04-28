@@ -38,10 +38,9 @@
   (:gen-class))
 
 (def windows?
-  (some-> (System/getenv "os.name")
+  (some-> (System/getProperty "os.name")
           (str/lower-case)
-          (str/index-of "win")
-          pos?))
+          (str/index-of "win")))
 
 (if-not windows?
   (do ;; see https://github.com/oracle/graal/issues/1784
