@@ -18,9 +18,7 @@
    [babashka.impl.features :as features]
    [babashka.impl.jdbc :as jdbc]
    [babashka.impl.nrepl-server :as nrepl-server]
-   [babashka.impl.pipe-signal-handler :refer [handle-pipe! pipe-signal-received?]]
    [babashka.impl.repl :as repl]
-   [babashka.impl.sigint-handler :as sigint-handler]
    [babashka.impl.socket-repl :as socket-repl]
    [babashka.impl.test :as t]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
@@ -37,6 +35,26 @@
    [sci.impl.unrestrict :refer [*unrestricted*]]
    [sci.impl.vars :as vars])
   (:gen-class))
+
+(def windows?
+  (some-> (System/getProperty "os.name")
+          (str/lower-case)
+          (str/index-of "win")))
+
+(if-not windows?
+  (do ;; see https://github.com/oracle/graal/issues/1784
+    (require 'babashka.impl.pipe-signal-handler)
+    (let [handle-pipe! (resolve 'babashka.impl.pipe-signal-handler/handle-pipe!)]
+      (def handle-pipe! @handle-pipe!))
+    (let [pipe-signal-received? (resolve 'babashka.impl.pipe-signal-handler/pipe-signal-received?)]
+      (def pipe-signal-received? @pipe-signal-received?))
+    ;; JVM_FindSignal called:  Unimplemented
+    (require 'babashka.impl.sigint-handler)
+    (def handle-sigint! @(resolve 'babashka.impl.sigint-handler/handle-sigint!)))
+  (do
+    (def handle-pipe! (constantly nil))
+    (def pipe-signal-received? (constantly false))
+    (def handle-sigint! (constantly nil))))
 
 (when features/xml?
   (require '[babashka.impl.xml]))
@@ -285,7 +303,7 @@ Everything after that is bound to *command-line-args*."))
        'clojure.java.shell shell-namespace
        'babashka.wait {'wait-for-port wait/wait-for-port
                        'wait-for-path wait/wait-for-path}
-       'babashka.signal {'pipe-signal-received? pipe-signal-received?}
+       ;;'babashka.signal {'pipe-signal-received? pipe-signal-received?}
        'clojure.java.io io-namespace
        'clojure.core.async async-namespace
        'clojure.core.async.impl.protocols async-protocols-namespace
@@ -325,9 +343,7 @@ Everything after that is bound to *command-line-args*."))
 (defn main
   [& args]
   (handle-pipe!)
-  (sigint-handler/handle-sigint!)
-  #_(binding [*out* *err*]
-      (prn "M" (meta (get bindings 'future))))
+  (handle-sigint!)
   (binding [*unrestricted* true]
     (sci/binding [reflection-var false
                   sci/ns (vars/->SciNamespace 'user nil)]
