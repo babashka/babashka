@@ -54,8 +54,7 @@ jobs:
 
       - name: Build uberjar
         run: |
-          lein with-profiles +reflection do run
-          lein do clean, uberjar
+          script/uberjar
 
       - name: Babashka version
         id: babashka-version

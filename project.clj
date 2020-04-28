@@ -19,23 +19,26 @@
                  [org.clojure/core.async "1.1.587"]
                  [org.clojure/tools.cli "1.0.194"]
                  [org.clojure/data.csv "1.0.0"]
-                 [org.clojure/data.xml "0.2.0-alpha6"]
                  [cheshire "5.10.0"]
                  [fipp "0.6.22"]
                  [clj-commons/clj-yaml "0.7.1"]
                  [com.cognitect/transit-clj "1.0.324"]
                  [seancorfield/next.jdbc "1.0.424"]
                  [org.postgresql/postgresql "42.2.12"]]
-  :profiles {:feature/hsqldb {:dependencies [[org.hsqldb/hsqldb "2.4.0"]]}
-             :test {:dependencies [[clj-commons/conch "0.9.2"]
-                                   [com.clojure-goes-fast/clj-async-profiler "0.4.1"]]}
+  :profiles {:feature/xml {:source-paths ["src-xml"]
+                           :dependencies [[org.clojure/data.xml "0.2.0-alpha6"]]}
+             :feature/hsqldb {:dependencies [[org.hsqldb/hsqldb "2.4.0"]]}
+             :test [:feature/xml
+                    :feature/hsqldb
+                    {:dependencies [[clj-commons/conch "0.9.2"]
+                                    [com.clojure-goes-fast/clj-async-profiler "0.4.1"]]}]
              :uberjar {:global-vars {*assert* false}
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"
                                   "-Dclojure.spec.skip-macros=true"]
                        :main babashka.main
                        :aot :all}
              :reflection {:main babashka.impl.classes/generate-reflection-file}}
-  :aliases {"bb" ["run" "-m" "babashka.main"]}
+  :aliases {"bb" ["with-profiles" "+feature/xml,+feature/hsqldb"  "run" "-m" "babashka.main"]}
   :deploy-repositories [["clojars" {:url "https://clojars.org/repo"
                                     :username :env/clojars_user
                                     :password :env/clojars_pass
