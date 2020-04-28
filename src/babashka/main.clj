@@ -18,11 +18,7 @@
    [babashka.impl.features :as features]
    [babashka.impl.jdbc :as jdbc]
    [babashka.impl.nrepl-server :as nrepl-server]
-   ;; see https://github.com/oracle/graal/issues/1784
-   #_[babashka.impl.pipe-signal-handler :refer [handle-pipe! pipe-signal-received?]]
    [babashka.impl.repl :as repl]
-   ;; JVM_FindSignal called:  Unimplemented
-   #_[babashka.impl.sigint-handler :as sigint-handler]
    [babashka.impl.socket-repl :as socket-repl]
    [babashka.impl.test :as t]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
@@ -40,6 +36,27 @@
    [sci.impl.unrestrict :refer [*unrestricted*]]
    [sci.impl.vars :as vars])
   (:gen-class))
+
+(def windows?
+  (some-> (System/getenv "os.name")
+          (str/lower-case)
+          (str/index-of "win")
+          pos?))
+
+(if-not windows?
+  (do ;; see https://github.com/oracle/graal/issues/1784
+    (require 'babashka.impl.pipe-signal-handler)
+    (let [handle-pipe! (resolve 'babashka.impl.pipe-signal-handler/handle-pipe!)]
+      (def handle-pipe! @handle-pipe!))
+    (let [pipe-signal-received? (resolve 'babashka.impl.pipe-signal-handler/pipe-signal-received?)]
+      (def pipe-signal-received? @pipe-signal-received?))
+    ;; JVM_FindSignal called:  Unimplemented
+    (require 'babashka.impl.sigint-handler)
+    (def handle-sigint! @(resolve 'babashka.impl.sigint-handler/handle-sigint!)))
+  (do
+    (def handle-pipe! (constantly nil))
+    (def pipe-signal-received? (constantly false))
+    (def handle-sigint! (constantly nil))))
 
 (when features/xml?
   (require '[babashka.impl.xml]))
@@ -324,10 +341,8 @@ Everything after that is bound to *command-line-args*."))
 
 (defn main
   [& args]
-  #_(handle-pipe!)
-  #_(sigint-handler/handle-sigint!)
-  #_(binding [*out* *err*]
-      (prn "M" (meta (get bindings 'future))))
+  (handle-pipe!)
+  (handle-sigint!)
   (binding [*unrestricted* true]
     (sci/binding [reflection-var false
                   sci/ns (vars/->SciNamespace 'user nil)]
@@ -341,7 +356,7 @@ Everything after that is bound to *command-line-args*."))
             (parse-opts args)
             _ (when main (System/setProperty "babashka.main" main))
             read-next (fn [*in*]
-                        (if false #_(pipe-signal-received?)
+                        (if (pipe-signal-received?)
                           ::EOF
                           (if stream?
                             (if shell-in (or (read-line) ::EOF)
@@ -463,7 +478,7 @@ Everything after that is bound to *command-line-args*."))
                                                                   edn-out prn)]
                                                 (if (coll? res)
                                                   (doseq [l res
-                                                          :while (not false #_(pipe-signal-received?))]
+                                                          :while (not (pipe-signal-received?))]
                                                     (pr-f l))
                                                   (pr-f res))
                                                 (prn res)))) 0]]
