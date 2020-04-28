@@ -41,6 +41,8 @@ else
     BABASHKA_LEIN_PROFILES+="-feature/hsqldb"
 fi
 
+BABASHKA_FEATURE_XML=${BABASHKA_FEATURE_XML:-}
+
 if [ "$BABASHKA_FEATURE_XML" != "false" ]
 then
     BABASHKA_LEIN_PROFILES+=",+feature/xml"
