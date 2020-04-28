@@ -19,3 +19,4 @@ pom.xml.asc
 *reflection.json
 /tmp
 /reports
+*.dylib
