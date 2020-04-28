@@ -179,7 +179,7 @@
   (is (true? (bb nil "(.exists (io/file \"README.md\"))")))
   (is (true? (bb nil "(.canWrite (io/file \"README.md\"))"))))
 
-(deftest pipe-test
+#_(deftest pipe-test
   (when test-utils/native?
     (let [out (:out (sh "bash" "-c" "./bb -o '(range)' |
                          ./bb --stream '(* *input* *input*)' |
