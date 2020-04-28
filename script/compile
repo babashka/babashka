@@ -84,7 +84,3 @@ if [ "$BABASHKA_FEATURE_HSQLDB" = "true" ]; then
 fi
 
 $GRAALVM_HOME/bin/native-image "${args[@]}"
-
-if [ ! -z "$(command -v lein)" ]; then
-    lein clean
-fi
