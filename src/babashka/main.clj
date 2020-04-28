@@ -17,6 +17,7 @@
    [babashka.impl.curl :refer [curl-namespace]]
    [babashka.impl.features :as features]
    [babashka.impl.jdbc :as jdbc]
+   [babashka.impl.modules :as modules]
    [babashka.impl.nrepl-server :as nrepl-server]
    [babashka.impl.repl :as repl]
    [babashka.impl.socket-repl :as socket-repl]
@@ -319,7 +320,8 @@ Everything after that is bound to *command-line-args*."))
        'cognitect.transit transit-namespace
        'bencode.core bencode-namespace
        'next.jdbc jdbc/njdbc-namespace
-       'next.jdbc.sql jdbc/next-sql-namespace}
+       'next.jdbc.sql jdbc/next-sql-namespace
+       'babashka.modules modules/modules-namespace}
     features/xml? (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace))
     features/yaml? (assoc 'clj-yaml.core @(resolve 'babashka.impl.yaml/yaml-namespace))))
 
