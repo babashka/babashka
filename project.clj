@@ -21,14 +21,16 @@
                  [org.clojure/data.csv "1.0.0"]
                  [cheshire "5.10.0"]
                  [fipp "0.6.22"]
-                 [clj-commons/clj-yaml "0.7.1"]
                  [com.cognitect/transit-clj "1.0.324"]
                  [seancorfield/next.jdbc "1.0.424"]
                  [org.postgresql/postgresql "42.2.12"]]
   :profiles {:feature/xml {:source-paths ["src-xml"]
                            :dependencies [[org.clojure/data.xml "0.2.0-alpha6"]]}
+             :feature/yaml {:source-paths ["src-yaml"]
+                            :dependencies [[clj-commons/clj-yaml "0.7.1"]]}
              :feature/hsqldb {:dependencies [[org.hsqldb/hsqldb "2.4.0"]]}
              :test [:feature/xml
+                    :feature/yaml
                     :feature/hsqldb
                     {:dependencies [[clj-commons/conch "0.9.2"]
                                     [com.clojure-goes-fast/clj-async-profiler "0.4.1"]]}]

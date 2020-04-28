@@ -18,6 +18,14 @@ else
     BABASHKA_LEIN_PROFILES+=",-feature/xml"
 fi
 
+if [ "$BABASHKA_FEATURE_YAML" != "false" ]
+then
+    BABASHKA_LEIN_PROFILES+=",+feature/yaml"
+else
+    BABASHKA_LEIN_PROFILES+=",-feature/yaml"
+fi
+
+
 if [ -z "$BABASHKA_JAR" ]; then
    lein with-profiles "+reflection,$BABASHKA_LEIN_PROFILES" do run
    lein with-profiles "+uberjar,$BABASHKA_LEIN_PROFILES" do clean, uberjar
