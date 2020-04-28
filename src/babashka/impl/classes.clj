@@ -1,7 +1,85 @@
 (ns babashka.impl.classes
   {:no-doc true}
   (:require
+   [babashka.impl.features :as features]
    [cheshire.core :as json]))
+
+(def custom-map
+  (cond->
+      `{clojure.lang.LineNumberingPushbackReader {:allPublicConstructors true
+                                                  :allPublicMethods true}
+        java.lang.Thread
+        {:allPublicConstructors true
+         ;; generated with `public-declared-method-names`, see in
+         ;; `comment` below
+         :methods [{:name "activeCount"}
+                   {:name "checkAccess"}
+                   {:name "currentThread"}
+                   {:name "dumpStack"}
+                   {:name "enumerate"}
+                   {:name "getAllStackTraces"}
+                   {:name "getContextClassLoader"}
+                   {:name "getDefaultUncaughtExceptionHandler"}
+                   {:name "getId"}
+                   {:name "getName"}
+                   {:name "getPriority"}
+                   {:name "getStackTrace"}
+                   {:name "getState"}
+                   {:name "getThreadGroup"}
+                   {:name "getUncaughtExceptionHandler"}
+                   {:name "holdsLock"}
+                   {:name "interrupt"}
+                   {:name "interrupted"}
+                   {:name "isAlive"}
+                   {:name "isDaemon"}
+                   {:name "isInterrupted"}
+                   {:name "join"}
+                   {:name "run"}
+                   {:name "setContextClassLoader"}
+                   {:name "setDaemon"}
+                   {:name "setDefaultUncaughtExceptionHandler"}
+                   {:name "setName"}
+                   {:name "setPriority"}
+                   {:name "setUncaughtExceptionHandler"}
+                   {:name "sleep"}
+                   {:name "start"}
+                   {:name "toString"}
+                   {:name "yield"}]}
+        java.net.URL
+        {:allPublicConstructors true
+         :allPublicFields true
+         ;; generated with `public-declared-method-names`, see in
+         ;; `comment` below
+         :methods [{:name "equals"}
+                   {:name "getAuthority"}
+                   {:name "getContent"}
+                   {:name "getDefaultPort"}
+                   {:name "getFile"}
+                   {:name "getHost"}
+                   {:name "getPath"}
+                   {:name "getPort"}
+                   {:name "getProtocol"}
+                   {:name "getQuery"}
+                   {:name "getRef"}
+                   {:name "getUserInfo"}
+                   {:name "hashCode"}
+                   {:name "openConnection"}
+                   {:name "openStream"}
+                   {:name "sameFile"}
+                   ;; not supported: {:name "setURLStreamHandlerFactory"}
+                   {:name "toExternalForm"}
+                   {:name "toString"}
+                   {:name "toURI"}]}}
+    features/xml? (assoc `com.sun.xml.internal.stream.XMLInputFactoryImpl
+                         {:methods [{:name "<init>" :parameterTypes []}]}
+                         `com.sun.xml.internal.stream.XMLOutputFactoryImpl
+                         {:methods [{:name "<init>" :parameterTypes []}]})
+    features/hsqldb? (assoc `org.hsqldb.dbinfo.DatabaseInformationFull
+                            {:methods [{:name "<init>"
+                                        :parameterTypes ["org.hsqldb.Database"]}]}
+                            `java.util.ResourceBundle
+                            {:methods [{:name "getBundle"
+                                        :parameterTypes ["java.lang.String","java.util.Locale","java.lang.ClassLoader"]}]})))
 
 (def classes
   `{:all [clojure.lang.ExceptionInfo
@@ -57,6 +135,7 @@
           ;; java.net.URL, see below
           java.net.URLEncoder
           java.net.URLDecoder
+          java.nio.file.OpenOption
           java.nio.file.CopyOption
           java.nio.file.FileAlreadyExistsException
           java.nio.file.FileSystem
@@ -108,7 +187,7 @@
           java.util.zip.GZIPOutputStream
           org.yaml.snakeyaml.error.YAMLException
           ~(symbol "[B")
-          ]
+          ~@(when features/hsqldb? [`org.hsqldb.jdbcDriver])]
     :constructors [clojure.lang.Delay
                    clojure.lang.MapEntry
                    clojure.lang.LineNumberingPushbackReader
@@ -120,74 +199,7 @@
     :fields [clojure.lang.PersistentQueue]
     :instance-checks [clojure.lang.IObj
                       clojure.lang.IEditableCollection]
-    :custom {clojure.lang.LineNumberingPushbackReader {:allPublicConstructors true
-                                                       :allPublicMethods true}
-             java.lang.Thread
-             {:allPublicConstructors true
-              ;; generated with `public-declared-method-names`, see in
-              ;; `comment` below
-              :methods [{:name "activeCount"}
-                        {:name "checkAccess"}
-                        {:name "currentThread"}
-                        {:name "dumpStack"}
-                        {:name "enumerate"}
-                        {:name "getAllStackTraces"}
-                        {:name "getContextClassLoader"}
-                        {:name "getDefaultUncaughtExceptionHandler"}
-                        {:name "getId"}
-                        {:name "getName"}
-                        {:name "getPriority"}
-                        {:name "getStackTrace"}
-                        {:name "getState"}
-                        {:name "getThreadGroup"}
-                        {:name "getUncaughtExceptionHandler"}
-                        {:name "holdsLock"}
-                        {:name "interrupt"}
-                        {:name "interrupted"}
-                        {:name "isAlive"}
-                        {:name "isDaemon"}
-                        {:name "isInterrupted"}
-                        {:name "join"}
-                        {:name "run"}
-                        {:name "setContextClassLoader"}
-                        {:name "setDaemon"}
-                        {:name "setDefaultUncaughtExceptionHandler"}
-                        {:name "setName"}
-                        {:name "setPriority"}
-                        {:name "setUncaughtExceptionHandler"}
-                        {:name "sleep"}
-                        {:name "start"}
-                        {:name "toString"}
-                        {:name "yield"}]}
-             java.net.URL
-             {:allPublicConstructors true
-              :allPublicFields true
-              ;; generated with `public-declared-method-names`, see in
-              ;; `comment` below
-              :methods [{:name "equals"}
-                        {:name "getAuthority"}
-                        {:name "getContent"}
-                        {:name "getDefaultPort"}
-                        {:name "getFile"}
-                        {:name "getHost"}
-                        {:name "getPath"}
-                        {:name "getPort"}
-                        {:name "getProtocol"}
-                        {:name "getQuery"}
-                        {:name "getRef"}
-                        {:name "getUserInfo"}
-                        {:name "hashCode"}
-                        {:name "openConnection"}
-                        {:name "openStream"}
-                        {:name "sameFile"}
-                        ;; not supported: {:name "setURLStreamHandlerFactory"}
-                        {:name "toExternalForm"}
-                        {:name "toString"}
-                        {:name "toURI"}]}
-             com.sun.xml.internal.stream.XMLInputFactoryImpl
-             {:methods [{:name "<init>" :parameterTypes []}]}
-             com.sun.xml.internal.stream.XMLOutputFactoryImpl
-             {:methods [{:name "<init>" :parameterTypes []}]}}})
+    :custom ~custom-map})
 
 (defmacro gen-class-map []
   (let [classes (concat (:all classes)

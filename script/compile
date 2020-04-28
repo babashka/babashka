@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -eo pipefail
+set -eou pipefail
 
 if [ -z "$BABASHKA_XMX" ]; then
     export BABASHKA_XMX="-J-Xmx4500m"
@@ -11,19 +11,43 @@ if [ -z "$GRAALVM_HOME" ]; then
     exit 1
 fi
 
+BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
+
+BABASHKA_JAR=${BABASHKA_JAR:-"target/babashka-$BABASHKA_VERSION-standalone.jar"}
+
+if [[ ! -f "$BABASHKA_JAR" ]]
+then
+    echo "Please run script/uberjar first."
+    exit 1
+fi
+
 $GRAALVM_HOME/bin/gu install native-image
 
-BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
 
 export JAVA_HOME=$GRAALVM_HOME
 
 SVM_JAR=$(find "$GRAALVM_HOME" | grep svm.jar)
 $GRAALVM_HOME/bin/javac -cp "$SVM_JAR" resources/CutOffCoreServicesDependencies.java
 
-if [ -z "$BABASHKA_JAR" ]; then
-   lein with-profiles +reflection do run
-   lein do clean, uberjar
-  BABASHKA_JAR=${BABASHKA_JAR:-"target/babashka-$BABASHKA_VERSION-standalone.jar"}
+
+BABASHKA_LEIN_PROFILES=""
+
+BABASHKA_FEATURE_HSQLDB=${BABASHKA_FEATURE_HSQLDB:-}
+
+if [ "$BABASHKA_FEATURE_HSQLDB" = "true" ]
+then
+    BABASHKA_LEIN_PROFILES+="+feature/hsqldb"
+else
+    BABASHKA_LEIN_PROFILES+="-feature/hsqldb"
+fi
+
+BABASHKA_FEATURE_XML=${BABASHKA_FEATURE_XML:-}
+
+if [ "$BABASHKA_FEATURE_XML" != "false" ]
+then
+    BABASHKA_LEIN_PROFILES+=",+feature/xml"
+else
+    BABASHKA_LEIN_PROFILES+=",-feature/xml"
 fi
 
 BABASHKA_BINARY=${BABASHKA_BINARY:-"bb"}
@@ -49,8 +73,14 @@ args=( -jar $BABASHKA_JAR \
             "--initialize-at-run-time=org.postgresql.sspi.SSPIClient" \
             "$BABASHKA_XMX" )
 
+BABASHKA_STATIC=${BABASHKA_STATIC:-}
+
 if [ "$BABASHKA_STATIC" = "true" ]; then
     args+=("--static")
+fi
+
+if [ "$BABASHKA_FEATURE_HSQLDB" = "true" ]; then
+    args+=("-H:IncludeResources=org/hsqldb/.*\.properties", "-H:IncludeResources=org/hsqldb/.*\.sql")
 fi
 
 $GRAALVM_HOME/bin/native-image "${args[@]}"

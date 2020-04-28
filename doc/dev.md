@@ -45,17 +45,33 @@ Test the native version:
 
 ## Build
 
-To build this project, set `$GRAALVM_HOME` to the GraalVM distribution directory. Currently we are using GraalVM JDK8.
+See [build.md](build.md).
 
-Then run:
+## JDBC
 
-    $ script/compile
+Findings from various experiments with JDBC drivers in babashka:
 
-To tweak maximum heap size:
+- Postgres: adds 3MB to the binary. It seems the maintainers have put in effort
+  to make the driver compatible with Graal. The driver is part of `bb` since
+  `v0.0.89`.
+- Sqlite: I feel like I'm close to a working solution, but it hangs. It adds
+  20MB to the binary. Since sqlite has a nice CLI we could also just shell out
+  to it (there's an example in the examples dir). We could also build a
+  `babashka.sqlite` namespace around the CLI maybe similar to
+  `babashka.curl`. See [#385](https://github.com/borkdude/babashka/issues/385)
+  for details.
+- HSQLDB: easy to get going with Graalvm. Adds 10 MB to the binary. It's under a
+  feature flag right now on master. See [build.md](build.md) for details. Derby
+  and H2 are known to not work with GraalVM, so far this is the "best" embedded
+  option from a Graal perspective.  Setting the -Xmx value for Docker to 4500m
+  got it to crash. 4800m did work, but it took 17 minutes (compared to 10
+  minutes without this feature).
+- MySQL / MariaDB: can't get those to work yet. Work in progress in issue
+  [#387](https://github.com/borkdude/babashka/issues/387).
 
-```
-$ BABASHKA_XMX="-J-Xmx4g" script/compile
-```
+To progress work on sqlite and mySQL, I need a working Clojure example. If you
+want to contribute, consider making a an example Clojure GraalVM CLI that puts
+something in a sqlite / mysql DB and reads something from it.
 
 ## Binary size
 
@@ -91,7 +107,6 @@ java.util.MissingResourceException and java.util.Properties to support
 2020/02/21
 Added java.time.temporal.ChronoUnit
 40651596 - 40598260 = 53kb added.
->>>>>>> master
 
 2020/02/19, e43727955a2cdabd2bb0189c20dd7f9a18156fc9
 Added fipp.edn/pprint

@@ -1,6 +1,7 @@
 (ns babashka.impl.jdbc
   {:no-doc true}
   (:require [next.jdbc :as njdbc]
+            [next.jdbc.sql :as sql]
             [sci.impl.namespaces :refer [copy-var]]
             [sci.impl.vars :as vars]))
 
@@ -29,3 +30,8 @@
    'transact (copy-var njdbc/transact next-ns)
    'with-transaction (with-meta with-transaction
                        {:sci/macro true})})
+
+(def sns (vars/->SciNamespace 'next.jdbc.sql nil))
+
+(def next-sql-namespace
+  {'insert-multi! (copy-var sql/insert-multi! sns)})

@@ -4,7 +4,7 @@
             [sci.impl.namespaces :refer [copy-var]]
             [sci.impl.vars :as vars]))
 
-(def tns (vars/->SciNamespace 'clojure.data.xml nil))
+(def tns (vars/->SciNamespace 'cheshire.core nil))
 
 (def cheshire-core-namespace
   {'encode (copy-var json/encode tns)
