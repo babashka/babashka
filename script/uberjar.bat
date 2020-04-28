@@ -5,8 +5,8 @@ echo Please set GRAALVM_HOME
 exit /b
 )
 
-set JAVA_HOME=%GRAALVM_HOME%
-set PATH=%PATH%;%GRAALVM_HOME%\bin
+set JAVA_HOME="%GRAALVM_HOME%"
+set PATH="PATH%;%GRAALVM_HOME%\bin"
 
 if "%BABASHKA_FEATURE_HSQLDB%"=="true"
 (set BABASHKA_LEIN_PROFILES="+feature/hsqldb")
