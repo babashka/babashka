@@ -8,12 +8,10 @@ exit /b
 set JAVA_HOME="%GRAALVM_HOME%"
 set PATH="%PATH%;%GRAALVM_HOME%\bin"
 
-if "%BABASHKA_FEATURE_HSQLDB%"=="true"
-(set BABASHKA_LEIN_PROFILES="+feature/hsqldb")
+if "%BABASHKA_FEATURE_HSQLDB%"=="true" (set BABASHKA_LEIN_PROFILES="+feature/hsqldb")
 else (set BABASHKA_LEIN_PROFILES="-feature/hsqldb")
 
-if not "%BABASHKA_FEATURE_XML%"=="false"
-(set BABASHKA_LEIN_PROFILES="%BABASHKA_LEIN_PROFILES%,+feature/xml")
+if not "%BABASHKA_FEATURE_XML%"=="false" (set BABASHKA_LEIN_PROFILES="%BABASHKA_LEIN_PROFILES%,+feature/xml")
 else (set BABASHKA_LEIN_PROFILES="%BABASHKA_LEIN_PROFILES%,-feature/xml")
 
 call lein with-profiles "%BABASHKA_LEIN_PROFILES%" bb "(+ 1 2 3)"
