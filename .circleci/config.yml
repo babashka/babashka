@@ -52,7 +52,7 @@ jobs:
           name: Create uberjar
           command: |
             mkdir -p /tmp/release
-            lein do clean, uberjar
+            script/uberjar
             VERSION=$(cat resources/BABASHKA_VERSION)
             cp target/babashka-$VERSION-standalone.jar /tmp/release/babashka-$VERSION-standalone.jar
       - store_artifacts:

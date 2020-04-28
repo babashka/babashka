@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+BABASHKA_LEIN_PROFILES=""
+
+if [ "$BABASHKA_FEATURE_HSQLDB" = "true" ]
+then
+    BABASHKA_LEIN_PROFILES+="+feature/hsqldb"
+else
+    BABASHKA_LEIN_PROFILES+="-feature/hsqldb"
+fi
+
+if [ "$BABASHKA_FEATURE_XML" != "false" ]
+then
+    BABASHKA_LEIN_PROFILES+=",+feature/xml"
+else
+    BABASHKA_LEIN_PROFILES+=",-feature/xml"
+fi
+
+if [ -z "$BABASHKA_JAR" ]; then
+   lein with-profiles "+reflection,$BABASHKA_LEIN_PROFILES" do run
+   lein with-profiles "+uberjar,$BABASHKA_LEIN_PROFILES" do clean, uberjar
+  BABASHKA_JAR=${BABASHKA_JAR:-"target/babashka-$BABASHKA_VERSION-standalone.jar"}
+fi
