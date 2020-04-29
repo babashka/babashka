@@ -16,7 +16,6 @@
    [babashka.impl.csv :as csv]
    [babashka.impl.curl :refer [curl-namespace]]
    [babashka.impl.features :as features]
-   [babashka.impl.jdbc :as jdbc]
    [babashka.impl.nrepl-server :as nrepl-server]
    [babashka.impl.repl :as repl]
    [babashka.impl.socket-repl :as socket-repl]
@@ -61,6 +60,9 @@
 
 (when features/yaml?
   (require '[babashka.impl.yaml]))
+
+(when features/jdbc?
+  (require '[babashka.impl.jdbc]))
 
 (binding [*unrestricted* true]
   (sci/alter-var-root sci/in (constantly *in*))
@@ -280,10 +282,10 @@ Everything after that is bound to *command-line-args*."))
         json cheshire.core
         curl babashka.curl
         transit cognitect.transit
-        bencode bencode.core
-        jdbc next.jdbc}
+        bencode bencode.core}
     features/xml? (assoc 'xml 'clojure.data.xml)
-    features/yaml? (assoc 'yaml 'clj-yaml.core)))
+    features/yaml? (assoc 'yaml 'clj-yaml.core)
+    features/jdbc? (assoc 'jdbc 'next.jdbc)))
 
 (def cp-state (atom nil))
 
@@ -317,11 +319,11 @@ Everything after that is bound to *command-line-args*."))
        'clojure.pprint pprint-namespace
        'babashka.curl curl-namespace
        'cognitect.transit transit-namespace
-       'bencode.core bencode-namespace
-       'next.jdbc jdbc/njdbc-namespace
-       'next.jdbc.sql jdbc/next-sql-namespace}
+       'bencode.core bencode-namespace}
     features/xml? (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace))
-    features/yaml? (assoc 'clj-yaml.core @(resolve 'babashka.impl.yaml/yaml-namespace))))
+    features/yaml? (assoc 'clj-yaml.core @(resolve 'babashka.impl.yaml/yaml-namespace))
+    features/jdbc? (assoc 'next.jdbc @(resolve 'babashka.impl.jdbc/njdbc-namespace)
+                          'next.jdbc.sql @(resolve 'babashka.impl.jdbc/next-sql-namespace))))
 
 (def bindings
   {'java.lang.System/exit exit ;; override exit, so we have more control
