@@ -179,15 +179,17 @@
   (is (true? (bb nil "(.exists (io/file \"README.md\"))")))
   (is (true? (bb nil "(.canWrite (io/file \"README.md\"))"))))
 
-#_(deftest pipe-test
-  (when test-utils/native?
+(deftest pipe-test
+  (when (and test-utils/native?
+             (not main/windows?))
     (let [out (:out (sh "bash" "-c" "./bb -o '(range)' |
                          ./bb --stream '(* *input* *input*)' |
                          head -n10"))
           out (str/split-lines out)
           out (map edn/read-string out)]
       (is (= (take 10 (map #(* % %) (range))) out))))
-  (when test-utils/native?
+  (when (and test-utils/native?
+             (not main/windows?))
     (let [out (:out (sh "bash" "-c" "./bb -O '(repeat \"dude\")' |
                          ./bb --stream '(str *input* \"rino\")' |
                          ./bb -I '(take 3 *input*)'"))
