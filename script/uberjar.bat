@@ -11,21 +11,21 @@ set PATH=%PATH%;%GRAALVM_HOME%\bin
 set BABASHKA_LEIN_PROFILES=+uberjar
 
 if "%BABASHKA_FEATURE_JDBC%"=="true" (
-  set BABASHKA_LEIN_PROFILES=,+feature/jdbc
+  set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/jdbc
 ) else (
-  set BABASHKA_LEIN_PROFILES=,-feature/jdbc
+  set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/jdbc
 )
 
 if "%BABASHKA_FEATURE_POSTGRESQL%"=="true" (
-  set BABASHKA_LEIN_PROFILES=,+feature/postgresql
+  set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/postgresql
 ) else (
-  set BABASHKA_LEIN_PROFILES=,-feature/postgresql
+  set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/postgresql
 )
 
 if "%BABASHKA_FEATURE_HSQLDB%"=="true" (
-  set BABASHKA_LEIN_PROFILES=,+feature/hsqldb
+  set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/hsqldb
 ) else (
-  set BABASHKA_LEIN_PROFILES=,-feature/hsqldb
+  set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/hsqldb
 )
 
 if not "%BABASHKA_FEATURE_XML%"=="false" (
@@ -35,9 +35,9 @@ if not "%BABASHKA_FEATURE_XML%"=="false" (
 )
 
 if not "%BABASHKA_FEATURE_YAML%"=="false" (
-set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/yaml
+  set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/yaml
 ) else (
-set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/yaml
+  set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/yaml
 )
 
 call lein with-profiles %BABASHKA_LEIN_PROFILES% bb "(+ 1 2 3)"
