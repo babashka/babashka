@@ -8,9 +8,9 @@ if "%GRAALVM_HOME%"=="" (
 set JAVA_HOME=%GRAALVM_HOME%
 set PATH=%PATH%;%GRAALVM_HOME%\bin
 
-set BABASHKA_LEIN_PROFILES="+uberjar"
+set BABASHKA_LEIN_PROFILES=+uberjar
 
-if "%BABASHKA_FEATURE_JDBC%"=="true"
+if "%BABASHKA_FEATURE_JDBC%"=="true" (
   set BABASHKA_LEIN_PROFILES=,+feature/jdbc
 ) else (
   set BABASHKA_LEIN_PROFILES=,-feature/jdbc
