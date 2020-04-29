@@ -17,7 +17,8 @@
   (while
       (not
        (try (jdbc/execute! db ["select version()"])
-            (catch Exception _
+            (catch Exception e
+              (prn (ex-message e))
               (Thread/sleep 100))))))
 
 (deftest create-table-test
