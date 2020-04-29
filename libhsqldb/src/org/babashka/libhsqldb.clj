@@ -1,4 +1,4 @@
-(ns org.babashka.lib-hsqldb
+(ns org.babashka.libhsqldb
   (:require [next.jdbc :as jdbc]
             [sci.core :as sci])
   (:gen-class

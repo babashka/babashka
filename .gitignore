@@ -20,3 +20,5 @@ pom.xml.asc
 /tmp
 /reports
 *.dylib
+*.log
+org_babashka*.h
