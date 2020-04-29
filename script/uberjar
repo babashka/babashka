@@ -4,6 +4,13 @@ set -eo pipefail
 
 BABASHKA_LEIN_PROFILES="+uberjar"
 
+if [ "$BABASHKA_FEATURE_JDBC" = "true" ]
+then
+    BABASHKA_LEIN_PROFILES+=",+feature/jdbc"
+else
+    BABASHKA_LEIN_PROFILES+=",-feature/jdbc"
+fi
+
 if [ "$BABASHKA_FEATURE_POSTGRESQL" = "true" ]
 then
     BABASHKA_LEIN_PROFILES+=",+feature/postgresql"
