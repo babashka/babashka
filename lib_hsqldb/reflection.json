@@ -1,0 +1,7 @@
+[ {
+  "name" : "org.hsqldb.jdbcDriver",
+  "allPublicMethods" : true,
+  "allPublicFields" : true,
+  "allPublicConstructors" : true
+}
+]
