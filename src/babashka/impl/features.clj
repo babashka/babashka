@@ -2,8 +2,9 @@
   {:no-doc true})
 
 ;; included by default
-(def yaml? (not= "false" (System/getenv "BABASHKA_FEATURE_YAML")))
-(def xml? (not= "false" (System/getenv "BABASHKA_FEATURE_XML")))
+(def yaml?       (not= "false" (System/getenv "BABASHKA_FEATURE_YAML")))
+(def xml?        (not= "false" (System/getenv "BABASHKA_FEATURE_XML")))
+(def core-async? (not= "false" (System/getenv "BABASHKA_FEATURE_CORE_ASYNC")))
 
 ;; excluded by default
 (def jdbc? (= "true" (System/getenv "BABASHKA_FEATURE_JDBC")))

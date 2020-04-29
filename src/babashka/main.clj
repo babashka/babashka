@@ -1,7 +1,6 @@
 (ns babashka.main
   {:no-doc true}
   (:require
-   [babashka.impl.async :refer [async-namespace async-protocols-namespace]]
    [babashka.impl.bencode :refer [bencode-namespace]]
    [babashka.impl.cheshire :refer [cheshire-core-namespace]]
    [babashka.impl.classes :as classes]
@@ -63,6 +62,9 @@
 
 (when features/jdbc?
   (require '[babashka.impl.jdbc]))
+
+(when features/core-async?
+  (require '[babashka.impl.async]))
 
 (binding [*unrestricted* true]
   (sci/alter-var-root sci/in (constantly *in*))
@@ -277,15 +279,15 @@ Everything after that is bound to *command-line-args*."))
         signal babashka.signal
         shell clojure.java.shell
         io clojure.java.io
-        async clojure.core.async
         csv clojure.data.csv
         json cheshire.core
         curl babashka.curl
         transit cognitect.transit
         bencode bencode.core}
-    features/xml? (assoc 'xml 'clojure.data.xml)
-    features/yaml? (assoc 'yaml 'clj-yaml.core)
-    features/jdbc? (assoc 'jdbc 'next.jdbc)))
+    features/xml?        (assoc 'xml 'clojure.data.xml)
+    features/yaml?       (assoc 'yaml 'clj-yaml.core)
+    features/jdbc?       (assoc 'jdbc 'next.jdbc)
+    features/core-async? (assoc 'async 'clojure.core.async)))
 
 (def cp-state (atom nil))
 
@@ -307,8 +309,6 @@ Everything after that is bound to *command-line-args*."))
                        'wait-for-path wait/wait-for-path}
        ;;'babashka.signal {'pipe-signal-received? pipe-signal-received?}
        'clojure.java.io io-namespace
-       'clojure.core.async async-namespace
-       'clojure.core.async.impl.protocols async-protocols-namespace
        'clojure.data.csv csv/csv-namespace
        'cheshire.core cheshire-core-namespace
        'clojure.stacktrace stacktrace-namespace
@@ -320,10 +320,12 @@ Everything after that is bound to *command-line-args*."))
        'babashka.curl curl-namespace
        'cognitect.transit transit-namespace
        'bencode.core bencode-namespace}
-    features/xml? (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace))
+    features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace))
     features/yaml? (assoc 'clj-yaml.core @(resolve 'babashka.impl.yaml/yaml-namespace))
     features/jdbc? (assoc 'next.jdbc @(resolve 'babashka.impl.jdbc/njdbc-namespace)
-                          'next.jdbc.sql @(resolve 'babashka.impl.jdbc/next-sql-namespace))))
+                          'next.jdbc.sql @(resolve 'babashka.impl.jdbc/next-sql-namespace))
+    features/core-async? (assoc 'clojure.core.async @(resolve 'babashka.impl.async/async-namespace)
+                                'clojure.core.async.impl.protocols @(resolve 'babashka.impl.async/async-protocols-namespace))))
 
 (def bindings
   {'java.lang.System/exit exit ;; override exit, so we have more control
