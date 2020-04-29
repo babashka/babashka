@@ -1,6 +1,6 @@
 package org.babashka;
 
-public class LibHsqlDb {
+public final class LibHsqlDb {
     private static native String evalString(long isolateThreadId);
     private static native long createIsolate();
     private static native void tearDownIsolate(long id);
