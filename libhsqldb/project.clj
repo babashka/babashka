@@ -6,7 +6,6 @@
   :license {:name "Eclipse Public License 1.0"
             :url "http://opensource.org/licenses/eclipse-1.0.php"}
   :source-paths ["src" "../sci/src"]
-  :java-source-paths ["src-java"]
   :resource-paths ["resources"]
   :dependencies [[org.clojure/clojure "1.10.2-alpha1"]
                  [borkdude/edamame "0.0.11-alpha.9"]

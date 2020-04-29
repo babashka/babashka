@@ -19,7 +19,7 @@ $GRAALVM_HOME/bin/javac -cp $JAR:$SVM_JAR src/org/babashka/LibHsqlDb.java
 $GRAALVM_HOME/bin/native-image \
   -jar $JAR \
   -cp src \
-  -H:Name=libhsqldb.babaska.org \
+  -H:Name=libhsqldb.babashka.org \
   --shared \
   -H:+ReportExceptionStackTraces \
   -J-Dclojure.spec.skip-macros=true \
