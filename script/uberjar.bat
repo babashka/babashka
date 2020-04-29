@@ -16,7 +16,7 @@ if "%BABASHKA_FEATURE_JDBC%"=="true" (
   set BABASHKA_LEIN_PROFILES=,-feature/jdbc
 )
 
-if "%BABASHKA_FEATURE_POSTGRESQL%"=="true"
+if "%BABASHKA_FEATURE_POSTGRESQL%"=="true" (
   set BABASHKA_LEIN_PROFILES=,+feature/postgresql
 ) else (
   set BABASHKA_LEIN_PROFILES=,-feature/postgresql
