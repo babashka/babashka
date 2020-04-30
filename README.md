@@ -234,7 +234,7 @@ enumerated explicitly.
 - [`cognitect.transit`](https://github.com/cognitect/transit-clj) aliased as `transit`
 - [`clj-yaml.core`](https://github.com/clj-commons/clj-yaml) alias as `yaml`
 - [`bencode.core`](https://github.com/nrepl/bencode) aliased as `bencode`: `read-bencode`, `write-bencode`
-- [`next.jdbc`](https://github.com/seancorfield/next-jdbc) aliased as `jdbc`
+- [`next.jdbc`](https://github.com/seancorfield/next-jdbc) aliased as `jdbc` (available under feature flag)
 
 A selection of java classes are available, see `babashka/impl/classes.clj`.
 
@@ -714,15 +714,16 @@ This also works when the script is interrupted with ctrl-c.
 
 ## JDBC
 
-Babashka includes the [`next.jdbc`](https://github.com/seancorfield/next-jdbc)
-library along with a driver for [PostgresQL](https://www.postgresql.org/). See
-this [test](test-resources/babashka/postgres_test.clj) how to use it.
+Babashka supports the [`next.jdbc`](https://github.com/seancorfield/next-jdbc)
+library along with drivers for [PostgresQL](https://www.postgresql.org/) and
+[HSQLDB](http://hsqldb.org/). These features are not part of the standard `bb`
+distribution. See [doc/build.md](doc/build.md) for details on how to build
+babashka with these features. See this
+[test](test-resources/babashka/postgres_test.clj) for an example how to use
+this.
 
-[HSQLDB](http://hsqldb.org/) is also
-supported, but not part of the standard `bb` distribution. See
-[doc/build.md](doc/build.md) for details.
-
-Support for other drivers is still [research in progress](doc/dev.md#jdbc).
+Interacting with `psql`, `mysql` and the `sqlite` CLIs can be achieved by
+shelling out. See the [examples](examples) directory.
 
 ## Bencode
 
