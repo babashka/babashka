@@ -20,7 +20,7 @@ public final class LibHsqlDb {
         //System.out.println("debug: " + expr);
         //System.out.flush();;
         //String result = "hello from lib"; // org.babashka.libhsqldb.evalString(expr);
-        CTypeConversion.CCharPointerHolder holder = CTypeConversion.toCString(result);
+        CTypeConversion.CCharPointerHolder holder = CTypeConversion.toCString(new String("from lib"));
         CCharPointer value = holder.get();
         return value;
     }
