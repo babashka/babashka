@@ -18,8 +18,7 @@
                  [borkdude/sci.impl.reflector "0.0.1"]
                  [org.clojure/tools.cli "1.0.194"]
                  [cheshire "5.10.0"]
-                 [fipp "0.6.22"]
-                 [com.cognitect/transit-clj "1.0.324"]]
+                 [fipp "0.6.22"]]
   :profiles {:feature/xml  {:source-paths ["feature-xml"]
                             :dependencies [[org.clojure/data.xml "0.2.0-alpha6"]]}
              :feature/yaml {:source-paths ["feature-yaml"]
@@ -32,12 +31,15 @@
                                   :dependencies [[org.clojure/core.async "1.1.587"]]}
              :feature/csv {:source-paths ["feature-csv"]
                            :dependencies [[org.clojure/data.csv "1.0.0"]]}
+             :feature/transit {:source-paths ["feature-transit"]
+                               :dependencies [[com.cognitect/transit-clj "1.0.324"]]}
              :test [:feature/xml
                     :feature/yaml
                     :feature/postgresql
                     :feature/hsqldb
                     :feature/core-async
                     :feature/csv
+                    :feature/transit
                     {:dependencies [[clj-commons/conch "0.9.2"]
                                     [com.clojure-goes-fast/clj-async-profiler "0.4.1"]]}]
              :uberjar {:global-vars {*assert* false}

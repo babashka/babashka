@@ -6,6 +6,7 @@
 (def xml?        (not= "false" (System/getenv "BABASHKA_FEATURE_XML")))
 (def core-async? (not= "false" (System/getenv "BABASHKA_FEATURE_CORE_ASYNC")))
 (def csv?        (not= "false" (System/getenv "BABASHKA_FEATURE_CSV")))
+(def transit?    (not= "false" (System/getenv "BABASHKA_FEATURE_TRANSIT")))
 
 ;; excluded by default
 (def jdbc? (= "true" (System/getenv "BABASHKA_FEATURE_JDBC")))

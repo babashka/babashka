@@ -52,6 +52,12 @@ if not "%BABASHKA_FEATURE_CSV%"=="false" (
   set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/csv
 )
 
+if not "%BABASHKA_FEATURE_TRANSIT%"=="false" (
+  set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/transit
+) else (
+  set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/transit
+)
+
 call lein with-profiles %BABASHKA_LEIN_PROFILES% bb "(+ 1 2 3)"
 
 call lein with-profiles %BABASHKA_LEIN_PROFILES%,+reflection,-uberjar do run
