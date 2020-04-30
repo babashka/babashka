@@ -17,7 +17,6 @@
                  [borkdude/graal.locking "0.0.2"]
                  [borkdude/sci.impl.reflector "0.0.1"]
                  [org.clojure/tools.cli "1.0.194"]
-                 [org.clojure/data.csv "1.0.0"]
                  [cheshire "5.10.0"]
                  [fipp "0.6.22"]
                  [com.cognitect/transit-clj "1.0.324"]]
@@ -31,11 +30,14 @@
              :feature/hsqldb [:feature/jdbc {:dependencies [[org.hsqldb/hsqldb "2.4.0"]]}]
              :feature/core-async {:source-paths ["feature-core-async"]
                                   :dependencies [[org.clojure/core.async "1.1.587"]]}
+             :feature/csv {:source-paths ["feature-csv"]
+                           :dependencies [[org.clojure/data.csv "1.0.0"]]}
              :test [:feature/xml
                     :feature/yaml
                     :feature/postgresql
                     :feature/hsqldb
                     :feature/core-async
+                    :feature/csv
                     {:dependencies [[clj-commons/conch "0.9.2"]
                                     [com.clojure-goes-fast/clj-async-profiler "0.4.1"]]}]
              :uberjar {:global-vars {*assert* false}
