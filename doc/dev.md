@@ -20,6 +20,22 @@ $ git submodule update --recursive
 
 `lein repl` will get you a standard REPL/nREPL connection. To work on tests use `lein with-profiles +test repl`.
 
+## Adding libraries and classes
+
+When adding libraries to babashka, consider these evaluation criteria:
+
+- Would adding the library or class extend the reach of babashka to more
+  libraries in the Clojure eco-system?
+- Is the library or class useful for general purpose scripting?
+- Could the functionality be met by shelling out to another CLI or be written as
+  a small layer over an existing CLI (like `babashka.curl`) instead?
+
+If none of the criteria are met, but adding a feature is still useful to a
+particular company or niche audience, it can still be added when hidden behind a
+feature flag. This is the case for `next.jdbc` and the `PostgresQL` and `HSQLDB`
+database drivers. Companies interested in these features can compile an instance
+of babashka themselves, instead of using the standard distributed version.
+
 ### Adding classes
 
 Add necessary classes to `babashka/impl/classes.clj`.  For every addition, write
