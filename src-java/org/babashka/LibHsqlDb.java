@@ -43,8 +43,10 @@ public final class LibHsqlDb {
         System.out.println("y");
         System.out.flush();
         CCharPointer c = evalString(isolate);
-        String x = toJavaString(c);
-        //System.out.println("x: " + x);
+        System.out.println("z");
+        System.out.flush();
+        String res = toJavaString(c);
+        System.out.println("res: " + res);
         System.out.flush();
         //tearDownIsolate(isolate);
         //return x;
