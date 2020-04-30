@@ -2,6 +2,18 @@
 
 set -eo pipefail
 
+if [ "$BABASHKA_LEAN" = "true" ]
+then
+    export BABASHKA_FEATURE_JDBC=false
+    export BABASHKA_FEATURE_POSTGRESQL=false
+    export BABASHKA_FEATURE_HSQLDB=false
+    export BABASHKA_FEATURE_XML=false
+    export BABASHKA_FEATURE_YAML=false
+    export BABASHKA_FEATURE_CORE_ASYNC=false
+    export BABASHKA_FEATURE_CSV=false
+    export BABAHSKA_FEATURE_TRANSIT=false
+fi
+
 BABASHKA_LEIN_PROFILES="+uberjar"
 
 if [ "$BABASHKA_FEATURE_JDBC" = "true" ]

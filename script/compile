@@ -29,26 +29,7 @@ export JAVA_HOME=$GRAALVM_HOME
 SVM_JAR=$(find "$GRAALVM_HOME" | grep svm.jar)
 $GRAALVM_HOME/bin/javac -cp "$SVM_JAR" resources/CutOffCoreServicesDependencies.java
 
-
-BABASHKA_LEIN_PROFILES=""
-
 BABASHKA_FEATURE_HSQLDB=${BABASHKA_FEATURE_HSQLDB:-}
-
-if [ "$BABASHKA_FEATURE_HSQLDB" = "true" ]
-then
-    BABASHKA_LEIN_PROFILES+="+feature/hsqldb"
-else
-    BABASHKA_LEIN_PROFILES+="-feature/hsqldb"
-fi
-
-BABASHKA_FEATURE_XML=${BABASHKA_FEATURE_XML:-}
-
-if [ "$BABASHKA_FEATURE_XML" != "false" ]
-then
-    BABASHKA_LEIN_PROFILES+=",+feature/xml"
-else
-    BABASHKA_LEIN_PROFILES+=",-feature/xml"
-fi
 
 BABASHKA_BINARY=${BABASHKA_BINARY:-"bb"}
 
@@ -79,8 +60,22 @@ if [ "$BABASHKA_STATIC" = "true" ]; then
     args+=("--static")
 fi
 
+BABASHKA_FEATURE_HSQLDB=${BABASHKA_FEATURE_HSQLDB:-}
+
 if [ "$BABASHKA_FEATURE_HSQLDB" = "true" ]; then
     args+=("-H:IncludeResources=org/hsqldb/.*\.properties", "-H:IncludeResources=org/hsqldb/.*\.sql")
+fi
+
+if [ "$BABASHKA_LEAN" = "true" ]
+then
+    export BABASHKA_FEATURE_JDBC=false
+    export BABASHKA_FEATURE_POSTGRESQL=false
+    export BABASHKA_FEATURE_HSQLDB=false
+    export BABASHKA_FEATURE_XML=false
+    export BABASHKA_FEATURE_YAML=false
+    export BABASHKA_FEATURE_CORE_ASYNC=false
+    export BABASHKA_FEATURE_CSV=false
+    export BABAHSKA_FEATURE_TRANSIT=false
 fi
 
 $GRAALVM_HOME/bin/native-image "${args[@]}"
