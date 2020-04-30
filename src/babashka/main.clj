@@ -70,10 +70,9 @@
 (when features/transit?
   (require '[babashka.impl.transit]))
 
-(binding [*unrestricted* true]
-  (sci/alter-var-root sci/in (constantly *in*))
-  (sci/alter-var-root sci/out (constantly *out*))
-  (sci/alter-var-root sci/err (constantly *err*)))
+(sci/alter-var-root sci/in (constantly *in*))
+(sci/alter-var-root sci/out (constantly *out*))
+(sci/alter-var-root sci/err (constantly *err*))
 
 (set! *warn-on-reflection* true)
 ;; To detect problems when generating the image, run:
@@ -148,7 +147,7 @@
                      ("--socket-repl")
                      (let [options (next options)
                            opt (first options)
-                           opt (when-not (str/starts-with? opt "-")
+                           opt (when (and opt (not (str/starts-with? opt "-")))
                                  opt)
                            options (if opt (next options)
                                        options)]
@@ -158,7 +157,7 @@
                      ("--nrepl-server")
                      (let [options (next options)
                            opt (first options)
-                           opt (when-not (str/starts-with? opt "-")
+                           opt (when (and opt (not (str/starts-with? opt "-")))
                                  opt)
                            options (if opt (next options)
                                        options)]

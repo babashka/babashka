@@ -17,6 +17,10 @@
   (edn/read-string (apply test-utils/bb (when (some? input) (str input)) (map str args))))
 
 (deftest parse-opts-test
+  (is (= {:nrepl "1667"}
+         (main/parse-opts ["--nrepl-server"])))
+  (is (= {:socket-repl "1666"}
+         (main/parse-opts ["--socket-repl"])))
   (is (= {:nrepl "1667", :classpath "src"}
          (main/parse-opts ["--nrepl-server" "-cp" "src"])))
   (is (= {:socket-repl "1666", :expressions ["123"]}
