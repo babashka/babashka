@@ -223,7 +223,6 @@ In- and output flags:
   -I                  Bind *input* to a lazy seq of EDN values from stdin.
   -o                  Write lines to stdout.
   -O                  Write EDN values to stdout.
-  --verbose           Print entire stacktrace in case of exception.
   --stream            Stream over lines or EDN values from stdin. Combined with -i or -I *input* becomes a single value per iteration.
 
 Uberscript:
@@ -236,6 +235,7 @@ Evaluation:
   -f, --file <path>   Evaluate a file.
   -cp, --classpath    Classpath to use.
   -m, --main <ns>     Call the -main function from namespace with args.
+  --verbose           Print entire stacktrace in case of exception.
 
 REPL:
 
