@@ -22,7 +22,8 @@ $ git submodule update --recursive
 
 ## Adding libraries and classes
 
-When adding libraries to babashka, consider these evaluation criteria:
+When adding libraries and classes to babashka, consider these evaluation
+criteria:
 
 - The library or class is useful for general purpose scripting or accomplishing
   small devops tasks.
