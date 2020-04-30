@@ -19,7 +19,6 @@
    [babashka.impl.socket-repl :as socket-repl]
    [babashka.impl.test :as t]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
-   [babashka.impl.transit :refer [transit-namespace]]
    [babashka.wait :as wait]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
@@ -67,6 +66,9 @@
 
 (when features/csv?
   (require '[babashka.impl.csv]))
+
+(when features/transit?
+  (require '[babashka.impl.transit]))
 
 (binding [*unrestricted* true]
   (sci/alter-var-root sci/in (constantly *in*))
@@ -283,13 +285,13 @@ Everything after that is bound to *command-line-args*."))
         io clojure.java.io
         json cheshire.core
         curl babashka.curl
-        transit cognitect.transit
         bencode bencode.core}
     features/xml?        (assoc 'xml 'clojure.data.xml)
     features/yaml?       (assoc 'yaml 'clj-yaml.core)
     features/jdbc?       (assoc 'jdbc 'next.jdbc)
     features/core-async? (assoc 'async 'clojure.core.async)
-    features/csv?        (assoc 'csv 'clojure.data.csv)))
+    features/csv?        (assoc 'csv 'clojure.data.csv)
+    features/transit?    (assoc 'transit 'cognitect.transit)))
 
 (def cp-state (atom nil))
 
@@ -319,7 +321,6 @@ Everything after that is bound to *command-line-args*."))
        'babashka.classpath {'add-classpath add-classpath*}
        'clojure.pprint pprint-namespace
        'babashka.curl curl-namespace
-       'cognitect.transit transit-namespace
        'bencode.core bencode-namespace}
     features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace))
     features/yaml? (assoc 'clj-yaml.core @(resolve 'babashka.impl.yaml/yaml-namespace))
@@ -327,7 +328,8 @@ Everything after that is bound to *command-line-args*."))
                           'next.jdbc.sql @(resolve 'babashka.impl.jdbc/next-sql-namespace))
     features/core-async? (assoc 'clojure.core.async @(resolve 'babashka.impl.async/async-namespace)
                                 'clojure.core.async.impl.protocols @(resolve 'babashka.impl.async/async-protocols-namespace))
-    features/csv?  (assoc 'clojure.data.csv @(resolve 'babashka.impl.csv/csv-namespace))))
+    features/csv?  (assoc 'clojure.data.csv @(resolve 'babashka.impl.csv/csv-namespace))
+    features/transit? (assoc 'cognitect.transit @(resolve 'babashka.impl.transit/transit-namespace))))
 
 (def bindings
   {'java.lang.System/exit exit ;; override exit, so we have more control
