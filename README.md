@@ -167,16 +167,17 @@ Check out the image on [Docker hub](https://hub.docker.com/r/borkdude/babashka/)
 ## Usage
 
 ``` shellsession
-Usage: bb [ -i | -I ] [ -o | -O ] [ --stream ] [--verbose]
-          [ ( --classpath | -cp ) <cp> ] [ --uberscript <file> ]
-          [ ( --main | -m ) <main-namespace> | -e <expression> | -f <file> |
-            --repl | --socket-repl [<host>:]<port> | --nrepl-server [<host>:]<port> ]
-          [ arg* ]
+Babashka v0.0.90
 
-Options:
+Options must appear in the order of groups mentioned below.
+
+Help:
 
   --help, -h or -?    Print this help text.
   --version           Print the current version of babashka.
+  --describe          Print an EDN map with information about this version of babashka.
+
+In- and output flags:
 
   -i                  Bind *input* to a lazy seq of lines from stdin.
   -I                  Bind *input* to a lazy seq of EDN values from stdin.
@@ -184,20 +185,25 @@ Options:
   -O                  Write EDN values to stdout.
   --verbose           Print entire stacktrace in case of exception.
   --stream            Stream over lines or EDN values from stdin. Combined with -i or -I *input* becomes a single value per iteration.
+
+Uberscript:
+
   --uberscript <file> Collect preloads, -e, -f and -m and all required namespaces from the classpath into a single executable file.
+
+Evaluation:
 
   -e, --eval <expr>   Evaluate an expression.
   -f, --file <path>   Evaluate a file.
   -cp, --classpath    Classpath to use.
   -m, --main <ns>     Call the -main function from namespace with args.
+
+REPL:
+
   --repl              Start REPL. Use rlwrap for history.
   --socket-repl       Start socket REPL. Specify port (e.g. 1666) or host and port separated by colon (e.g. 127.0.0.1:1666).
   --nrepl-server      Start nREPL server. Specify port (e.g. 1667) or host and port separated by colon (e.g. 127.0.0.1:1667).
-  --time              Print execution time before exiting.
-  --                  Stop parsing args and pass everything after -- to *command-line-args*
 
-If neither -e, -f, or --socket-repl are specified, then the first argument that is not parsed as a option is treated as a file if it exists, or as an expression otherwise.
-Everything after that is bound to *command-line-args*.
+If neither -e, -f, or --socket-repl are specified, then the first argument that is not parsed as a option is treated as a file if it exists, or as an expression otherwise. Everything after that is bound to *command-line-args*. Use -- to separate script command lin args from bb command line args.
 ```
 
 The `clojure.core` functions are accessible without a namespace alias.

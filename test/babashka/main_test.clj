@@ -37,7 +37,10 @@
     (is (thrown-with-msg? Exception #"does not exist" (bb nil "foo.clj")))
     (is (thrown-with-msg? Exception #"does not exist" (bb nil "-help"))))
   (is (= "1 2 3" (bb nil "-e" "(require '[clojure.string :as str1])" "-e" "(str1/join \" \" [1 2 3])")))
-  (is (= '("-e" "1") (bb nil "-e" "*command-line-args*" "--" "-e" "1"))))
+  (is (= '("-e" "1") (bb nil "-e" "*command-line-args*" "--" "-e" "1")))
+  (let [v (bb nil "--describe")]
+    (is (:babashka/version v))
+    (is (:feature/xml v))))
 
 (deftest print-error-test
   (is (thrown-with-msg? Exception #"java.lang.NullPointerException"
@@ -111,9 +114,8 @@
         exit-code (sci/with-bindings {sci/out out
                                       sci/err err}
                     (binding [*out* out *err* err]
-                      (main/main "--time" "(println \"Hello world!\") (System/exit 42)")))]
+                      (main/main "(println \"Hello world!\") (System/exit 42)")))]
     (is (= (str out) "Hello world!\n"))
-    (is (re-find #"took" (str err)))
     (is (= 42 exit-code))))
 
 (deftest malformed-command-line-args-test
