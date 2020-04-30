@@ -35,8 +35,7 @@ If not all of the criteria are met, but adding a feature is still useful to a
 particular company or niche audience, adding it behind a feature flag is still a
 possibility. This is currently the case for `next.jdbc` and the `PostgresQL` and
 `HSQLDB` database drivers. Companies interested in these features can compile an
-instance of babashka themselves, instead of using the standard distributed
-version.
+instance of babashka for their internal use.
 
 ### Adding classes
 
