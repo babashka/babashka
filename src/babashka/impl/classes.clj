@@ -151,27 +151,28 @@
           java.nio.file.attribute.PosixFilePermission
           java.nio.file.attribute.PosixFilePermissions
           java.security.MessageDigest
-          java.time.format.DateTimeFormatter
-          java.time.Clock
-          java.time.DateTimeException
-          java.time.DayOfWeek
-          java.time.Duration
-          java.time.Instant
-          java.time.LocalDate
-          java.time.LocalDateTime
-          java.time.LocalTime
-          java.time.Month
-          java.time.MonthDay
-          java.time.OffsetDateTime
-          java.time.OffsetTime
-          java.time.Period
-          java.time.Year
-          java.time.YearMonth
-          java.time.ZonedDateTime
-          java.time.ZoneId
-          java.time.ZoneOffset
-          java.time.temporal.ChronoUnit
-          java.time.temporal.TemporalAccessor
+          ~@(when features/java-time?
+              '[java.time.format.DateTimeFormatter
+                java.time.Clock
+                java.time.DateTimeException
+                java.time.DayOfWeek
+                java.time.Duration
+                java.time.Instant
+                java.time.LocalDate
+                java.time.LocalDateTime
+                java.time.LocalTime
+                java.time.Month
+                java.time.MonthDay
+                java.time.OffsetDateTime
+                java.time.OffsetTime
+                java.time.Period
+                java.time.Year
+                java.time.YearMonth
+                java.time.ZonedDateTime
+                java.time.ZoneId
+                java.time.ZoneOffset
+                java.time.temporal.ChronoUnit
+                java.time.temporal.TemporalAccessor])
           java.util.regex.Pattern
           java.util.Base64
           java.util.Base64$Decoder
@@ -186,8 +187,8 @@
           java.util.zip.GZIPInputStream
           java.util.zip.GZIPOutputStream
           ~(symbol "[B")
-          ~@(when features/yaml? [`org.yaml.snakeyaml.error.YAMLException])
-          ~@(when features/hsqldb? [`org.hsqldb.jdbcDriver])]
+          ~@(when features/yaml? '[org.yaml.snakeyaml.error.YAMLException])
+          ~@(when features/hsqldb? '[org.hsqldb.jdbcDriver])]
     :constructors [clojure.lang.Delay
                    clojure.lang.MapEntry
                    clojure.lang.LineNumberingPushbackReader
