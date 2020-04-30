@@ -135,21 +135,22 @@
           ;; java.net.URL, see below
           java.net.URLEncoder
           java.net.URLDecoder
-          java.nio.file.OpenOption
-          java.nio.file.CopyOption
-          java.nio.file.FileAlreadyExistsException
-          java.nio.file.FileSystem
-          java.nio.file.FileSystems
-          java.nio.file.Files
-          java.nio.file.LinkOption
-          java.nio.file.NoSuchFileException
-          java.nio.file.Path
-          java.nio.file.Paths
-          java.nio.file.StandardCopyOption
-          java.nio.file.attribute.FileAttribute
-          java.nio.file.attribute.FileTime
-          java.nio.file.attribute.PosixFilePermission
-          java.nio.file.attribute.PosixFilePermissions
+          ~@(when features/java-nio?
+              '[java.nio.file.OpenOption
+                java.nio.file.CopyOption
+                java.nio.file.FileAlreadyExistsException
+                java.nio.file.FileSystem
+                java.nio.file.FileSystems
+                java.nio.file.Files
+                java.nio.file.LinkOption
+                java.nio.file.NoSuchFileException
+                java.nio.file.Path
+                java.nio.file.Paths
+                java.nio.file.StandardCopyOption
+                java.nio.file.attribute.FileAttribute
+                java.nio.file.attribute.FileTime
+                java.nio.file.attribute.PosixFilePermission
+                java.nio.file.attribute.PosixFilePermissions])
           java.security.MessageDigest
           ~@(when features/java-time?
               '[java.time.format.DateTimeFormatter

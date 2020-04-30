@@ -12,7 +12,8 @@ then
     export BABASHKA_FEATURE_CORE_ASYNC=false
     export BABASHKA_FEATURE_CSV=false
     export BABAHSKA_FEATURE_TRANSIT=false
-    export BABAHSKA_FEATURE_JAVA_TIME=false
+    export BABASHKA_FEATURE_JAVA_TIME=false
+    export BABASHKA_FEATURE_JAVA_NIO=false
 fi
 
 BABASHKA_LEIN_PROFILES="+uberjar"
