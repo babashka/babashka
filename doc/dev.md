@@ -25,7 +25,7 @@ $ git submodule update --recursive
 When adding libraries to babashka, consider these evaluation criteria:
 
 - The library or class is useful for general purpose scripting or accomplishing
-  small devops tasks that would otherwise require a full JVM version of Clojure.
+  small devops tasks.
 - Adding the library or class would make babashka more compatible with Clojure
   libraries relevant to scripting or small devops tasks.
 - The functionality can't be met by shelling out to another CLI or can't be
