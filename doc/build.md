@@ -104,6 +104,3 @@ $ export BABASHKA_FEATURE_POSTGRESQL=true
 $ script/uberjar
 $ script/compile
 ```
-
-Check out this [example](examples.md#find-unused-vars).
-
