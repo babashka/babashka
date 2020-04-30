@@ -31,11 +31,12 @@ When adding libraries to babashka, consider these evaluation criteria:
 - The functionality can't be met by shelling out to another CLI or can't be
   written as a small layer over an existing CLI (like `babashka.curl`) instead.
 
-If none of the criteria are met, but adding a feature is still useful to a
-particular company or niche audience, it can still be added when hidden behind a
-feature flag. This is the case for `next.jdbc` and the `PostgresQL` and `HSQLDB`
-database drivers. Companies interested in these features can compile an instance
-of babashka themselves, instead of using the standard distributed version.
+If not all of the criteria are met, but adding a feature is still useful to a
+particular company or niche audience, adding it behind a feature flag is still a
+possibility. This is currently the case for `next.jdbc` and the `PostgresQL` and
+`HSQLDB` database drivers. Companies interested in these features can compile an
+instance of babashka themselves, instead of using the standard distributed
+version.
 
 ### Adding classes
 
