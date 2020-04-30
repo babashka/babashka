@@ -46,9 +46,7 @@ of a class in `:instance-check`, `:constructors`, `:methods`, `:fields` or
 `:custom`.
 
 The `reflection.json` file that is needed for GraalVM compilation is generated
-with:
-
-    lein with-profiles +reflection run
+as part of `script/uberjar`.
 
 ## Test
 
