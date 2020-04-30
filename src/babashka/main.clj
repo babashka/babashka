@@ -12,7 +12,6 @@
    [babashka.impl.clojure.pprint :refer [pprint-namespace]]
    [babashka.impl.clojure.stacktrace :refer [stacktrace-namespace]]
    [babashka.impl.common :as common]
-   [babashka.impl.csv :as csv]
    [babashka.impl.curl :refer [curl-namespace]]
    [babashka.impl.features :as features]
    [babashka.impl.nrepl-server :as nrepl-server]
@@ -65,6 +64,9 @@
 
 (when features/core-async?
   (require '[babashka.impl.async]))
+
+(when features/csv?
+  (require '[babashka.impl.csv]))
 
 (binding [*unrestricted* true]
   (sci/alter-var-root sci/in (constantly *in*))
@@ -279,7 +281,6 @@ Everything after that is bound to *command-line-args*."))
         signal babashka.signal
         shell clojure.java.shell
         io clojure.java.io
-        csv clojure.data.csv
         json cheshire.core
         curl babashka.curl
         transit cognitect.transit
@@ -287,7 +288,8 @@ Everything after that is bound to *command-line-args*."))
     features/xml?        (assoc 'xml 'clojure.data.xml)
     features/yaml?       (assoc 'yaml 'clj-yaml.core)
     features/jdbc?       (assoc 'jdbc 'next.jdbc)
-    features/core-async? (assoc 'async 'clojure.core.async)))
+    features/core-async? (assoc 'async 'clojure.core.async)
+    features/csv?        (assoc 'csv 'clojure.data.csv)))
 
 (def cp-state (atom nil))
 
@@ -309,7 +311,6 @@ Everything after that is bound to *command-line-args*."))
                        'wait-for-path wait/wait-for-path}
        ;;'babashka.signal {'pipe-signal-received? pipe-signal-received?}
        'clojure.java.io io-namespace
-       'clojure.data.csv csv/csv-namespace
        'cheshire.core cheshire-core-namespace
        'clojure.stacktrace stacktrace-namespace
        'clojure.main {'demunge demunge
@@ -325,7 +326,8 @@ Everything after that is bound to *command-line-args*."))
     features/jdbc? (assoc 'next.jdbc @(resolve 'babashka.impl.jdbc/njdbc-namespace)
                           'next.jdbc.sql @(resolve 'babashka.impl.jdbc/next-sql-namespace))
     features/core-async? (assoc 'clojure.core.async @(resolve 'babashka.impl.async/async-namespace)
-                                'clojure.core.async.impl.protocols @(resolve 'babashka.impl.async/async-protocols-namespace))))
+                                'clojure.core.async.impl.protocols @(resolve 'babashka.impl.async/async-protocols-namespace))
+    features/csv?  (assoc 'clojure.data.csv @(resolve 'babashka.impl.csv/csv-namespace))))
 
 (def bindings
   {'java.lang.System/exit exit ;; override exit, so we have more control
