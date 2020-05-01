@@ -4,9 +4,9 @@
 
 ## v0.0.90
 
-- The `next.jdbc` and PostgresQL driver are no longer part of the standardly
-  distributed `bb` binary. This is now available behind a feature flag. See See
-  [feature flag
+- The `next.jdbc` and PostgresQL driver, introduced in `v0.0.89`, are no longer
+  part of the standardly distributed `bb` binary. This is now available behind a
+  feature flag. See See [feature flag
   documentation](https://github.com/borkdude/babashka/blob/master/doc/build.md#feature-flags).
 
 - [borkdude/babashka.curl#16](https://github.com/borkdude/babashka.curl/issues/16):
