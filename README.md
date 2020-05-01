@@ -796,6 +796,32 @@ handling of the SIGPIPE. This can be done by setting
 
 ## [Developing Babashka](doc/dev.md)
 
+## Including new libraries or classes
+
+Before new libraries or classes go into the standardly distributed babashka
+binary, these evaluation criteria are considered:
+
+- The library or class is useful for general purpose scripting or accomplishing
+  small devops tasks.
+- Adding the library or class would make babashka more compatible with Clojure
+  libraries relevant to scripting or small devops tasks.
+- The functionality can't be met by shelling out to another CLI or can't be
+  written as a small layer over an existing CLI (like `babashka.curl`) instead.
+
+If not all of the criteria are met, but adding a feature is still useful to a
+particular company or niche, adding it behind a feature flag is still a
+possibility. This is currently the case for `next.jdbc` and the `PostgresQL` and
+`HSQLDB` database drivers. Companies interested in these features can compile an
+instance of babashka for their internal use. Companies are also free to make
+forks of babashka and include their own internal librries. Or if their
+customized babashka is interesting to share with the world, they are free to
+distribute it using a different binary name (like `bb-sql`, `bb-docker`,
+`bb-yourcompany`, etc.). See the [feature flag
+documentation](doc/build.md#feature-flags) and the implementation of the
+existing feature flags ([example
+commit](https://github.com/borkdude/babashka/commit/02c7c51ad4b2b1ab9aa95c26a74448b138fe6659))
+how to customize babashka.
+
 ## Related projects
 
 - [planck](https://planck-repl.org/)
