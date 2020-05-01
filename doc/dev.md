@@ -76,6 +76,8 @@ something in a sqlite / mysql DB and reads something from it.
 Keep notes here about how adding libraries and classes to Babashka affects the binary size.
 We're registering the size of the macOS binary (as built on CircleCI).
 
+2020/05/01 Removed `next.jdbc` and postgres JDBC driver: 48304980
+
 2020/04/23 Added `next.jdbc` and postgres JDBC driver:
 (- 51019836 48099780) = 2920kb added
 
