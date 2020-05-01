@@ -11,7 +11,7 @@
 
 - [borkdude/babashka.curl#16](https://github.com/borkdude/babashka.curl/issues/16):
   Exceptional status codes or nonzero `curl` exit codes will throw exceptions by
-  default.
+  default. You can opt out with `:throw false`.
 
 ## v0.0.79
 - [babashka.curl#9](https://github.com/borkdude/babashka.curl/issues/9):
