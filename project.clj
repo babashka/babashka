@@ -33,6 +33,8 @@
                            :dependencies [[org.clojure/data.csv "1.0.0"]]}
              :feature/transit {:source-paths ["feature-transit"]
                                :dependencies [[com.cognitect/transit-clj "1.0.324"]]}
+             :feature/datascript {:source-paths ["feature-datascript"]
+                                  :dependencies [[datascript "0.18.11"]]}
              :test [:feature/xml
                     :feature/yaml
                     :feature/postgresql
@@ -40,6 +42,7 @@
                     :feature/core-async
                     :feature/csv
                     :feature/transit
+                    :feature/datascript
                     {:dependencies [[clj-commons/conch "0.9.2"]
                                     [com.clojure-goes-fast/clj-async-profiler "0.4.1"]]}]
              :uberjar {:global-vars {*assert* false}
