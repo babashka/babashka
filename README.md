@@ -813,14 +813,12 @@ particular company or niche, adding it behind a feature flag is still a
 possibility. This is currently the case for `next.jdbc` and the `PostgresQL` and
 `HSQLDB` database drivers. Companies interested in these features can compile an
 instance of babashka for their internal use. Companies are also free to make
-forks of babashka and include their own internal librries. Or if their
-customized babashka is interesting to share with the world, they are free to
-distribute it using a different binary name (like `bb-sql`, `bb-docker`,
-`bb-yourcompany`, etc.). See the [feature flag
-documentation](doc/build.md#feature-flags) and the implementation of the
-existing feature flags ([example
-commit](https://github.com/borkdude/babashka/commit/02c7c51ad4b2b1ab9aa95c26a74448b138fe6659))
-how to customize babashka.
+forks of babashka and include their own internal libraries. Iff their customized
+babashka is interesting to share with the world, they are free to distribute it
+using a different binary name (like `bb-sql`, `bb-docker`, `bb-yourcompany`,
+etc.). See the [feature flag documentation](doc/build.md#feature-flags) and the
+implementation of the existing feature flags ([example
+commit](https://github.com/borkdude/babashka/commit/02c7c51ad4b2b1ab9aa95c26a74448b138fe6659)).
 
 ## Related projects
 
