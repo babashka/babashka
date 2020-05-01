@@ -8,7 +8,10 @@
   distributed `bb` binary. This is now available behind a feature flag. See See
   [feature flag
   documentation](https://github.com/borkdude/babashka/blob/master/doc/build.md#feature-flags).
-- borkdude/babashka.curl#16: throw on certain status codes and non-zero codes. Opt out with `:throw false`.
+
+- [borkdude/babashka.curl#16](https://github.com/borkdude/babashka.curl/issues/16):
+  Exceptional status codes or nonzero `curl` exit codes will throw exceptions by
+  default.
 
 ## v0.0.79
 - [babashka.curl#9](https://github.com/borkdude/babashka.curl/issues/9):
