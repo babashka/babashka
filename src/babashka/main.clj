@@ -70,6 +70,9 @@
 (when features/transit?
   (require '[babashka.impl.transit]))
 
+(when features/datascript?
+  (require '[babashka.impl.datascript]))
+
 (sci/alter-var-root sci/in (constantly *in*))
 (sci/alter-var-root sci/out (constantly *out*))
 (sci/alter-var-root sci/err (constantly *err*))
@@ -354,7 +357,8 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
     features/core-async? (assoc 'clojure.core.async @(resolve 'babashka.impl.async/async-namespace)
                                 'clojure.core.async.impl.protocols @(resolve 'babashka.impl.async/async-protocols-namespace))
     features/csv?  (assoc 'clojure.data.csv @(resolve 'babashka.impl.csv/csv-namespace))
-    features/transit? (assoc 'cognitect.transit @(resolve 'babashka.impl.transit/transit-namespace))))
+    features/transit? (assoc 'cognitect.transit @(resolve 'babashka.impl.transit/transit-namespace))
+    features/datascript? (assoc 'datascript.core @(resolve 'babashka.impl.datascript/datascript-namespace))))
 
 (def bindings
   {'java.lang.System/exit exit ;; override exit, so we have more control
