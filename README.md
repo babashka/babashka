@@ -813,7 +813,7 @@ particular company or niche, adding it behind a feature flag is still a
 possibility. This is currently the case for `next.jdbc` and the `PostgresQL` and
 `HSQLDB` database drivers. Companies interested in these features can compile an
 instance of babashka for their internal use. Companies are also free to make
-forks of babashka and include their own internal libraries. Iff their customized
+forks of babashka and include their own internal libraries. If their customized
 babashka is interesting to share with the world, they are free to distribute it
 using a different binary name (like `bb-sql`, `bb-docker`, `bb-yourcompany`,
 etc.). See the [feature flag documentation](doc/build.md#feature-flags) and the
