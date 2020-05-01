@@ -411,7 +411,16 @@
 
 (deftest pprint-test
   (testing "writer"
-    (is (string? (bb nil "(let [sw (java.io.StringWriter.)] (clojure.pprint/pprint (range 10) sw) (str sw))")))))
+    (is (string? (bb nil "(let [sw (java.io.StringWriter.)] (clojure.pprint/pprint (range 10) sw) (str sw))"))))
+  (testing "*print-right-margin*"
+    (is (= "(0\n 1\n 2\n 3\n 4\n 5\n 6\n 7\n 8\n 9)\n" (bb nil "
+(let [sw (java.io.StringWriter.)]
+  (binding [clojure.pprint/*print-right-margin* 5]
+    (clojure.pprint/pprint (range 10) sw)) (str sw))")))
+    (is (= "(0 1 2 3 4 5 6 7 8 9)\n" (bb nil "
+(let [sw (java.io.StringWriter.)]
+  (binding [clojure.pprint/*print-right-margin* 50]
+    (clojure.pprint/pprint (range 10) sw)) (str sw))")))))
 
 (deftest read-string-test
   (testing "namespaced keyword via alias"
