@@ -801,10 +801,9 @@ handling of the SIGPIPE. This can be done by setting
 Before new libraries or classes go into the standardly distributed babashka
 binary, these evaluation criteria are considered:
 
-- The library or class is useful for general purpose scripting or accomplishing
-  small devops tasks.
+- The library or class is useful for general purpose scripting.
 - Adding the library or class would make babashka more compatible with Clojure
-  libraries relevant to scripting or small devops tasks.
+  libraries relevant to scripting.
 - The functionality can't be met by shelling out to another CLI or can't be
   written as a small layer over an existing CLI (like `babashka.curl`) instead.
 
