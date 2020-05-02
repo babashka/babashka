@@ -769,7 +769,7 @@ Differences with Clojure:
 
 - No `defprotocol`, `defrecord` and unboxed math.
 
-## [Projects](doc/projects.md)
+## [Libraries and projects](doc/libraries.md)
 
 A list of projects (scripts, libraries and tools) known to work with babashka.
 

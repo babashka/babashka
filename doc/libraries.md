@@ -1,8 +1,19 @@
-# Projects
+# Libraries and projects
 
 The following libraries and projects are known to work with babashka.
 
 ## Libraries
+
+### [clj-http-lite](https://github.com/borkdude/clj-http-lite)
+
+A fork of a fork of `clj-http-lite`. Example:
+
+``` shell
+$ export BABASHKA_CLASSPATH="$(clojure -Sdeps '{:deps {clj-http-lite {:git/url "https://github.com/borkdude/clj-http-lite" :sha "f44ebe45446f0f44f2b73761d102af3da6d0a13e"}}}' -Spath)"
+
+$ bb "(require '[clj-http.lite.client :as client]) (:status (client/get \"https://www.clojure.org\"))"
+200
+```
 
 ### [spartan.spec](https://github.com/borkdude/spartan.spec/)
 
@@ -40,17 +51,6 @@ $ export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {medley {:git/url "h
 
 $ bb -e "(require '[medley.core :as m]) (m/index-by :id [{:id 1} {:id 2}])"
 {1 {:id 1}, 2 {:id 2}}
-```
-
-### [clj-http-lite](https://github.com/borkdude/clj-http-lite)
-
-This fork does not depend on any other libraries. Example:
-
-``` shell
-$ export BABASHKA_CLASSPATH="$(clojure -Sdeps '{:deps {clj-http-lite {:git/url "https://github.com/borkdude/clj-http-lite" :sha "f44ebe45446f0f44f2b73761d102af3da6d0a13e"}}}' -Spath)"
-
-$ bb "(require '[clj-http.lite.client :as client]) (:status (client/get \"https://www.clojure.org\"))"
-200
 ```
 
 ### [limit-break](https://github.com/technomancy/limit-break)
