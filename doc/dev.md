@@ -20,7 +20,7 @@ $ git submodule update --recursive
 
 `lein repl` will get you a standard REPL/nREPL connection. To work on tests use `lein with-profiles +test repl`.
 
-### Adding classes
+## Adding classes
 
 Add necessary classes to `babashka/impl/classes.clj`.  For every addition, write
 a unit test, so it's clear why it is added and removing it will break the
@@ -29,9 +29,7 @@ of a class in `:instance-check`, `:constructors`, `:methods`, `:fields` or
 `:custom`.
 
 The `reflection.json` file that is needed for GraalVM compilation is generated
-with:
-
-    lein with-profiles +reflection run
+as part of `script/uberjar`.
 
 ## Test
 
@@ -77,6 +75,8 @@ something in a sqlite / mysql DB and reads something from it.
 
 Keep notes here about how adding libraries and classes to Babashka affects the binary size.
 We're registering the size of the macOS binary (as built on CircleCI).
+
+2020/05/01 Removed `next.jdbc` and postgres JDBC driver: 48304980
 
 2020/04/23 Added `next.jdbc` and postgres JDBC driver:
 (- 51019836 48099780) = 2920kb added

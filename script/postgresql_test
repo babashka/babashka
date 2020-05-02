@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+set -eu
+
+trap 'docker rm -f babashka-postgres' EXIT
+
+docker run --name babashka-postgres -p 54322:5432 -e POSTGRES_PASSWORD=mysecretpassword -d postgres
+
+BABASHKA_TEST_ENV=${BABASHKA_TEST_ENV:-}
+
+if [ "$BABASHKA_TEST_ENV" = "native" ]; then
+    BB_CMD="./bb"
+else
+    BB_CMD="lein with-profiles +feature/jdbc,+feature/postgresql bb"
+fi
+
+
+BABASHKA_FEATURE_JDBC=true \
+                     BABASHKA_FEATURE_POSTGRESQL=true \
+                     $BB_CMD -f test-resources/babashka/postgresql_test.clj

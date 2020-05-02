@@ -21,14 +21,23 @@ public final class LibHsqlDb {
     }
 
     public static UnsignedWord strlen(CCharPointer str) {
+        System.out.println("determining string length");
+        System.out.flush();
+
         UnsignedWord n = WordFactory.zero();
+        System.out.println("reading");
+        System.out.flush();
         while (((Pointer) str).readByte(n) != 0) {
+            System.out.println("reading");
+            System.out.flush();
             n = n.add(1);
         }
         return n;
     }
 
     public static String toJavaString(CCharPointer cString) {
+        System.out.println("before null check");
+        System.out.flush();
         if (cString.isNull()) {
             return null;
         } else {

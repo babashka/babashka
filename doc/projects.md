@@ -197,3 +197,7 @@ FAIL in (footest) (:1)
 expected: :foox
   actual: :foo
 ```
+
+### [cldwalker/bb-clis](https://github.com/cldwalker/bb-clis)
+
+A collection of scripts developed by [@cldwalker](https://github.com/cldwalker).

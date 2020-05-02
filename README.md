@@ -31,7 +31,7 @@ As one user described it:
     support for linux, macOS and Windows.
 * Allow interop with commonly used classes like `java.io.File` and `System`
 * Multi-threading support (`pmap`, `future`, `core.async`)
-* Connectivity: talk UDP, TCP, HTTP, [JDBC](#JDBC)
+* Connectivity: talk UDP, TCP, HTTP (and optionally: [JDBC](#JDBC))
 * Support for various data formats: JSON, XML, YAML, CSV, bencode
 * Batteries included (tools.cli, cheshire, ...)
 * Library support via popular tools like the `clojure` CLI
@@ -167,37 +167,43 @@ Check out the image on [Docker hub](https://hub.docker.com/r/borkdude/babashka/)
 ## Usage
 
 ``` shellsession
-Usage: bb [ -i | -I ] [ -o | -O ] [ --stream ] [--verbose]
-          [ ( --classpath | -cp ) <cp> ] [ --uberscript <file> ]
-          [ ( --main | -m ) <main-namespace> | -e <expression> | -f <file> |
-            --repl | --socket-repl [<host>:]<port> | --nrepl-server [<host>:]<port> ]
-          [ arg* ]
+Babashka v0.0.90
 
-Options:
+Options must appear in the order of groups mentioned below.
+
+Help:
 
   --help, -h or -?    Print this help text.
   --version           Print the current version of babashka.
+  --describe          Print an EDN map with information about this version of babashka.
+
+In- and output flags:
 
   -i                  Bind *input* to a lazy seq of lines from stdin.
   -I                  Bind *input* to a lazy seq of EDN values from stdin.
   -o                  Write lines to stdout.
   -O                  Write EDN values to stdout.
-  --verbose           Print entire stacktrace in case of exception.
   --stream            Stream over lines or EDN values from stdin. Combined with -i or -I *input* becomes a single value per iteration.
+
+Uberscript:
+
   --uberscript <file> Collect preloads, -e, -f and -m and all required namespaces from the classpath into a single executable file.
+
+Evaluation:
 
   -e, --eval <expr>   Evaluate an expression.
   -f, --file <path>   Evaluate a file.
   -cp, --classpath    Classpath to use.
   -m, --main <ns>     Call the -main function from namespace with args.
+  --verbose           Print entire stacktrace in case of exception.
+
+REPL:
+
   --repl              Start REPL. Use rlwrap for history.
   --socket-repl       Start socket REPL. Specify port (e.g. 1666) or host and port separated by colon (e.g. 127.0.0.1:1666).
   --nrepl-server      Start nREPL server. Specify port (e.g. 1667) or host and port separated by colon (e.g. 127.0.0.1:1667).
-  --time              Print execution time before exiting.
-  --                  Stop parsing args and pass everything after -- to *command-line-args*
 
-If neither -e, -f, or --socket-repl are specified, then the first argument that is not parsed as a option is treated as a file if it exists, or as an expression otherwise.
-Everything after that is bound to *command-line-args*.
+If neither -e, -f, or --socket-repl are specified, then the first argument that is not parsed as a option is treated as a file if it exists, or as an expression otherwise. Everything after that is bound to *command-line-args*. Use -- to separate script command lin args from bb command line args.
 ```
 
 The `clojure.core` functions are accessible without a namespace alias.
@@ -228,7 +234,7 @@ enumerated explicitly.
 - [`cognitect.transit`](https://github.com/cognitect/transit-clj) aliased as `transit`
 - [`clj-yaml.core`](https://github.com/clj-commons/clj-yaml) alias as `yaml`
 - [`bencode.core`](https://github.com/nrepl/bencode) aliased as `bencode`: `read-bencode`, `write-bencode`
-- [`next.jdbc`](https://github.com/seancorfield/next-jdbc) aliased as `jdbc`
+- [`next.jdbc`](https://github.com/seancorfield/next-jdbc) aliased as `jdbc` (available under feature flag)
 
 A selection of java classes are available, see `babashka/impl/classes.clj`.
 
@@ -708,15 +714,16 @@ This also works when the script is interrupted with ctrl-c.
 
 ## JDBC
 
-Babashka includes the [`next.jdbc`](https://github.com/seancorfield/next-jdbc)
-library along with a driver for [PostgresQL](https://www.postgresql.org/). See
-this [test](test-resources/babashka/postgres_test.clj) how to use it.
+Babashka supports the [`next.jdbc`](https://github.com/seancorfield/next-jdbc)
+library along with drivers for [PostgresQL](https://www.postgresql.org/) and
+[HSQLDB](http://hsqldb.org/). These features are not part of the standard `bb`
+distribution. See [doc/build.md](doc/build.md) for details on how to build
+babashka with these features. See this
+[test](test-resources/babashka/postgres_test.clj) for an example how to use
+this.
 
-[HSQLDB](http://hsqldb.org/) is also
-supported, but not part of the standard `bb` distribution. See
-[doc/build.md](doc/build.md) for details.
-
-Support for other drivers is still [research in progress](doc/dev.md#jdbc).
+Interacting with `psql`, `mysql` and the `sqlite` CLIs can be achieved by
+shelling out. See the [examples](examples) directory.
 
 ## Bencode
 
@@ -788,6 +795,30 @@ handling of the SIGPIPE. This can be done by setting
 ## [Building babashka](doc/build.md)
 
 ## [Developing Babashka](doc/dev.md)
+
+## Including new libraries or classes
+
+Before new libraries or classes go into the standardly distributed babashka
+binary, these evaluation criteria are considered:
+
+- The library or class is useful for general purpose scripting.
+- Adding the library or class would make babashka more compatible with Clojure
+  libraries relevant to scripting.
+- The library cannot be interpreted by with babashka using `--classpath`.
+- The functionality can't be met by shelling out to another CLI or can't be
+  written as a small layer over an existing CLI (like `babashka.curl`) instead.
+
+If not all of the criteria are met, but adding a feature is still useful to a
+particular company or niche, adding it behind a feature flag is still a
+possibility. This is currently the case for `next.jdbc` and the `PostgresQL` and
+`HSQLDB` database drivers. Companies interested in these features can compile an
+instance of babashka for their internal use. Companies are also free to make
+forks of babashka and include their own internal libraries. If their customized
+babashka is interesting to share with the world, they are free to distribute it
+using a different binary name (like `bb-sql`, `bb-docker`, `bb-yourcompany`,
+etc.). See the [feature flag documentation](doc/build.md#feature-flags) and the
+implementation of the existing feature flags ([example
+commit](https://github.com/borkdude/babashka/commit/02c7c51ad4b2b1ab9aa95c26a74448b138fe6659)).
 
 ## Related projects
 

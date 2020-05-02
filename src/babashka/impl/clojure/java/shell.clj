@@ -1,10 +1,14 @@
 (ns babashka.impl.clojure.java.shell
   {:no-doc true}
   (:require [clojure.java.shell :as shell]
-            [sci.core :as sci]))
+            [sci.core :as sci]
+            [sci.impl.namespaces :refer [copy-var]]
+            [sci.impl.vars :as vars]))
 
-(def sh-dir (sci/new-dynamic-var '*sh-dir* nil))
-(def sh-env (sci/new-dynamic-var '*sh-env* nil))
+(def shell-ns (vars/->SciNamespace 'clojure.java.shell nil))
+
+(def sh-dir (sci/new-dynamic-var '*sh-dir* nil {:ns shell-ns}))
+(def sh-env (sci/new-dynamic-var '*sh-env* nil {:ns shell-ns}))
 
 (defn with-sh-dir*
   [_ _ dir & forms]
@@ -32,6 +36,8 @@
   (let [args (parse-args args)]
     (apply shell/sh args)))
 
+(alter-meta! #'sh (constantly (meta #'shell/sh)))
+
 (def shell-namespace
   {'*sh-dir* sh-dir
    '*sh-env* sh-env
@@ -39,4 +45,4 @@
                   {:sci/macro true})
    'with-sh-env (with-meta with-sh-env*
                   {:sci/macro true})
-   'sh sh})
+   'sh (copy-var sh shell-ns)})
