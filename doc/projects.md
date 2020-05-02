@@ -1,13 +1,8 @@
-## Projects
+# Projects
 
-The following projects are known to work with babashka.
+The following libraries and projects are known to work with babashka.
 
-### [deps.clj](https://github.com/borkdude/deps.clj)
-
-A port of the [clojure](https://github.com/clojure/brew-install/) bash script to
-Clojure / babashka.
-
-Also see [deps.clj documentation](../doc/deps.clj.md).
+## Libraries
 
 ### [spartan.spec](https://github.com/borkdude/spartan.spec/)
 
@@ -114,10 +109,6 @@ $ bb -e "(require '[lambdaisland.regal :as regal]) (regal/regex [:* \"ab\"])"
 #"(?:\Qab\E)*"
 ```
 
-### [4bb](https://github.com/porkostomus/4bb)
-
-4clojure as a babashka script!
-
 ### [cprop](https://github.com/tolitius/cprop/)
 
 A clojure configuration libary. Latest test version: `"0.1.16"`.
@@ -143,23 +134,6 @@ user=> (hello "Alice")
 ### [nubank/docopt](https://github.com/nubank/docopt.clj#babashka)
 
 Docopt implementation in Clojure, compatible with babashka.
-
-### [babashka lambda layer](https://github.com/dainiusjocas/babashka-lambda-layer)
-
-Babashka Lambda runtime packaged as a Lambda layer.
-
-### [Release on push Github action](https://github.com/rymndhng/release-on-push-action)
-
-Github Action to create a git tag + release when pushed to master. Written in
-babashka.
-
-### [justone/bb-scripts](https://github.com/justone/bb-scripts)
-
-A collection of scripts developed by [@justone](https://github.com/justone).
-
-### [nativity](https://github.com/MnRA/nativity)
-
-Turn babashka scripts into binaries using GraalVM `native-image`.
 
 ### [arrangement](https://github.com/greglook/clj-arrangement)
 
@@ -197,6 +171,51 @@ FAIL in (footest) (:1)
 expected: :foox
   actual: :foo
 ```
+
+### [doric](https://github.com/joegallo/doric)
+
+Library for printing tables.
+
+``` clojure
+$ export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {doric {:mvn/version "0.9.0"}}}')
+$ bb "(use 'doric.core) (println (table [:a :b :c] [{:a 1 :b 2 :c 3} {:a 4 :b 5 :c 6}]))"
+|---+---+---|
+| A | B | C |
+|---+---+---|
+| 1 | 2 | 3 |
+| 4 | 5 | 6 |
+|---+---+---|
+```
+
+## Projects
+
+### [deps.clj](https://github.com/borkdude/deps.clj)
+
+A port of the [clojure](https://github.com/clojure/brew-install/) bash script to
+Clojure / babashka.
+
+Also see [deps.clj documentation](../doc/deps.clj.md).
+
+### [4bb](https://github.com/porkostomus/4bb)
+
+4clojure as a babashka script!
+
+### [babashka lambda layer](https://github.com/dainiusjocas/babashka-lambda-layer)
+
+Babashka Lambda runtime packaged as a Lambda layer.
+
+### [Release on push Github action](https://github.com/rymndhng/release-on-push-action)
+
+Github Action to create a git tag + release when pushed to master. Written in
+babashka.
+
+### [justone/bb-scripts](https://github.com/justone/bb-scripts)
+
+A collection of scripts developed by [@justone](https://github.com/justone).
+
+### [nativity](https://github.com/MnRA/nativity)
+
+Turn babashka scripts into binaries using GraalVM `native-image`.
 
 ### [cldwalker/bb-clis](https://github.com/cldwalker/bb-clis)
 
