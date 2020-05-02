@@ -220,3 +220,11 @@ Turn babashka scripts into binaries using GraalVM `native-image`.
 ### [cldwalker/bb-clis](https://github.com/cldwalker/bb-clis)
 
 A collection of scripts developed by [@cldwalker](https://github.com/cldwalker).
+
+### [krell template](https://github.com/ampersanda/krell-template-runner)
+
+Babashka scfript for creating React Native (Krell) project
+
+### [wee-httpd](https://github.com/bherrmann7/bb-common/blob/master/wee_httpd.bb)
+
+A wee multi-threaded web server
