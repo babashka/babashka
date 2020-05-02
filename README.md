@@ -804,6 +804,7 @@ binary, these evaluation criteria are considered:
 - The library or class is useful for general purpose scripting.
 - Adding the library or class would make babashka more compatible with Clojure
   libraries relevant to scripting.
+- The library cannot be interpreted by with babashka using `--classpath`.
 - The functionality can't be met by shelling out to another CLI or can't be
   written as a small layer over an existing CLI (like `babashka.curl`) instead.
 
