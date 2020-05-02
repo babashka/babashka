@@ -54,6 +54,9 @@ public final class LibHsqlDb {
         CCharPointer c = evalString(isolate);
         System.out.println("z");
         System.out.flush();
+        System.out.println("c");
+        System.out.println(c);
+        System.out.flush();
         String res = toJavaString(c);
         System.out.println("res: " + res);
         System.out.flush();
