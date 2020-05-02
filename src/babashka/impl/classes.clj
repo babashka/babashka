@@ -102,9 +102,10 @@
           java.lang.AssertionError
           java.lang.Boolean
           java.lang.Byte
-          java.lang.Comparable
+          java.lang.Character
           java.lang.Class
           java.lang.ClassNotFoundException
+          java.lang.Comparable
           java.lang.Double
           java.lang.Exception
           java.lang.Integer
