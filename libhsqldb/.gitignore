@@ -16,7 +16,5 @@ pom.xml.asc
 !test-resources/babashka/src_for_classpath_test/foo.jar
 !test-resources/pom.xml
 .cpcache
-*.dylib
 !reflection.json
-graal*.h
-libhsqldb*.h
+hsqldb-babashka-plugin
