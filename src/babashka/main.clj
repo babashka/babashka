@@ -437,6 +437,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                             BigDecimal java.math.BigDecimal
                             Boolean java.lang.Boolean
                             Byte java.lang.Byte
+                            Character java.lang.Character
                             Class java.lang.Class
                             ClassNotFoundException java.lang.ClassNotFoundException
                             Double java.lang.Double
