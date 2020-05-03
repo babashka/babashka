@@ -41,7 +41,8 @@
               op (read-string op)
               op (keyword op)]
           (case op
-            :describe (write {"format" "edn"})
+            :describe (do (write {"format" "edn"})
+                          (recur))
             :invoke (let [var (-> (get message "var")
                                   read-string
                                   symbol)
@@ -50,4 +51,5 @@
                           args (edn/read-string args)]
                       (write {"value" (pr-str (apply (lookup var) args))})
                       (recur))
-            :namespaces (write {"namespaces" (pr-str {'hsqldb.jdbc {}})})))))))
+            :namespaces (do (write {"namespaces" (pr-str {'hsqldb.jdbc {}})})
+                            (recur))))))))
