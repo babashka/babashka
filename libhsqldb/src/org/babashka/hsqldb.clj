@@ -22,7 +22,8 @@
   {'hsqldb.jdbc/execute! jdbc/execute!})
 
 (defn write [v]
-  (bencode/write-bencode System/out v))
+  (bencode/write-bencode System/out v)
+  (.flush System/out))
 
 (defn read-string [^"[B" v]
   (String. v))
