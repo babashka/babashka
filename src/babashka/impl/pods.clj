@@ -89,7 +89,9 @@
                                        (map bytes->string (vals var)))
                            var (-> var
                                    (update :namespace symbol)
-                                   (update :name symbol))]
+                                   (update :name symbol)
+                                   (update :macro #(Boolean/parseBoolean %))
+                                   (update :async #(Boolean/parseBoolean %)))]
                        var))
                    vars)
          env (:env ctx)]
@@ -103,8 +105,8 @@
                                                async? (:async v)]
                                            (assoc-in acc [ns name]
                                                      (fn [& args]
-                                                       ;; (prn "calling" ns name args)
-                                                       (invoke pod sym args async?)))))
+                                                       (let [res (invoke pod sym args async?)]
+                                                         res)))))
                                        namespaces
                                        vars)]
                 (assoc env :namespaces namespaces))))
