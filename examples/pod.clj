@@ -52,11 +52,6 @@
                                                {"value" (pr-str (apply + args))
                                                 "id" id
                                                 "status" ["done"]})
-                        pod.test-post/do-twice-macro
-                        (write
-                         {"value" (pr-str `(do ~@args ~@args))
-                          "id" id
-                          "status" ["done"]})
                         pod.test-pod/range-stream
                         (let [rng (apply range args)]
                           (doseq [v rng]
@@ -73,7 +68,7 @@
   (case f
     "--run-as-pod" (run-pod)
     ;; else
-    (do (pods/load-pod ["lein" "bb" "examples/pod.clj" "--run-as-pod"])
+    (do (pods/load-pod ["bb" "examples/pod.clj" "--run-as-pod"])
         (require '[pod.test-pod])
         (prn ((resolve 'pod.test-pod/add-sync) 1 2 3))
         (let [chan ((resolve 'pod.test-pod/range-stream) 1 10)]

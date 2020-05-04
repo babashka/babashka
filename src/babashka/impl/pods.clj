@@ -90,7 +90,6 @@
                            var (-> var
                                    (update :namespace symbol)
                                    (update :name symbol)
-                                   (update :macro #(Boolean/parseBoolean %))
                                    (update :async #(Boolean/parseBoolean %)))]
                        var))
                    vars)
@@ -102,11 +101,11 @@
                                          (let [ns (:namespace v)
                                                name (:name v)
                                                sym (symbol (str ns) (str name))
-                                               async? (:async v)]
-                                           (assoc-in acc [ns name]
-                                                     (fn [& args]
-                                                       (let [res (invoke pod sym args async?)]
-                                                         res)))))
+                                               async? (:async v)
+                                               f (fn [& args]
+                                                   (let [res (invoke pod sym args async?)]
+                                                     res))]
+                                           (assoc-in acc [ns name] f)))
                                        namespaces
                                        vars)]
                 (assoc env :namespaces namespaces))))
