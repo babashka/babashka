@@ -59,22 +59,26 @@
          reply (read stdout)
          format (-> (get reply "format") bytes->string keyword)
          pod (assoc pod :format format)
-         vars (->> (get reply "vars")
-                   (map bytes->string)
-                   (map symbol))
+         vars (get reply "vars")
+         vars (map (fn [var]
+                     (-> (zipmap (map keyword (keys var))
+                                 (map bytes->string (vals var)))
+                         (update :namespace symbol)
+                         (update :name symbol)))
+                   vars)
          env (:env ctx)]
      (swap! env
             (fn [env]
               (let [namespaces (:namespaces env)
                     namespaces (reduce (fn [acc v]
-                                         (let [ns (namespace v)
-                                               ns (symbol ns)
-                                               name (name v)
-                                               name (symbol name)]
+                                         (let [ns (:namespace v)
+                                               name (:name v)
+                                               sym (symbol (str ns) (str name))]
                                            (prn ns name)
                                            (assoc-in acc [ns name]
                                                      (fn [& args]
-                                                       (invoke pod v args)))))
+                                                       ;; (prn "calling" ns name args)
+                                                       (invoke pod sym args)))))
                                        namespaces
                                        vars)]
                 (assoc env :namespaces namespaces))))

@@ -19,7 +19,7 @@
 (def stdin (PushbackInputStream. System/in))
 
 (def lookup
-  {'hsqldb.jdbc/execute! jdbc/execute!})
+  {'pod.hsqldb/execute! jdbc/execute!})
 
 (defn write [v]
   (bencode/write-bencode System/out v)
@@ -42,7 +42,8 @@
               op (keyword op)]
           (case op
             :describe (do (write {"format" "edn"
-                                  "vars" ["hsqldb.jdbc/execute!"]})
+                                  "vars" [{"namespace" "pod.hsqldb"
+                                           "name" "execute!"}]})
                           (recur))
             :invoke (let [var (-> (get message "var")
                                   read-string
