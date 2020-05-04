@@ -21,24 +21,52 @@
 (defn bytes->string [^"[B" bytes]
   (String. bytes))
 
+(def waiters (atom {}))
+
+(defn deliver-value [waiter value done?]
+  (if (instance? clojure.lang.IDeref waiter)
+    (deliver waiter value)
+    :core-async-todo))
+
+(defn processor [pod]
+  (let [stdout (:stdout pod)
+        format (:format pod)
+        read-fn (case format
+                  :edn edn/read-string
+                  :json #(cheshire/parse-string % true))]
+    (loop []
+      (println "reading")
+      (try
+        (let [reply (read stdout)
+              _ (prn "reply" reply)
+              id    (get reply "id")
+              _ (prn "id" id)
+              id    (bytes->string id)
+              value (get reply "value")
+              value (bytes->string value)
+              value (read-fn value)
+              _ (prn "val" value)
+              status (get reply "status")
+              status (set (map (comp keyword bytes->string) status))
+              done? (contains? status :done)
+              waiter (get @waiters id)]
+          (deliver-value waiter value done?))
+        (catch Exception e (prn e))))))
+
 (defn invoke [pod pod-var args]
   (let [stream (:stdin pod)
         format (:format pod)
         write-fn (case format
                    :edn pr-str
                    :json cheshire/generate-string)
-        stdout (:stdout pod)
-        _ (write stream {"op" "invoke"
+        id (str (java.util.UUID/randomUUID))
+        prom (promise)
+        _ (swap! waiters assoc id prom)
+        _ (write stream {"id" id
+                         "op" "invoke"
                          "var" (str pod-var)
-                         "args" (write-fn args)})
-        reply (read stdout)
-        value (get reply "value")
-        value (bytes->string value)
-        read-fn (case format
-                  :edn edn/read-string
-                  :json #(cheshire/parse-string % true))
-        value (read-fn value)]
-    value))
+                         "args" (write-fn args)})]
+    @prom))
 
 (defn load-pod
   ([ctx pod-spec] (load-pod ctx pod-spec nil))
@@ -82,6 +110,8 @@
                                        namespaces
                                        vars)]
                 (assoc env :namespaces namespaces))))
+     (println "spinning up worker")
+     (future (processor pod))
      vars)))
 
 (def pods-namespace

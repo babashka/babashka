@@ -48,8 +48,12 @@
             :invoke (let [var (-> (get message "var")
                                   read-string
                                   symbol)
+                          id (-> (get message "id")
+                                 read-string)
                           args (get message "args")
                           args (read-string args)
                           args (edn/read-string args)]
-                      (write {"value" (pr-str (apply (lookup var) args))})
+                      (write {"value" (pr-str (apply (lookup var) args))
+                              "id" id
+                              "status" ["done"]})
                       (recur))))))))
