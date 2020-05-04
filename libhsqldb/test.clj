@@ -11,6 +11,9 @@
 (defn read [stream]
   (bencode/read-bencode stream))
 
+(defn bytes->string [^"[B" bytes]
+  (String. bytes))
+
 (defn query [stream q]
   (write stream {"op" "invoke"
                  "var" "hsqldb.jdbc/execute!"
@@ -26,7 +29,8 @@
       stdout (java.io.PushbackInputStream. stdout)]
   (write stdin {"op" "describe"})
   (let [reply (read stdout)]
-    (println "format:" (String. (get reply "format")))) ;;=> edn
+    (println "format:" (String. (get reply "format")))
+    (println "vars:" (mapv bytes->string (get reply "vars")))) ;;=> edn
 
   (query stdin ["create table foo ( foo int );"])
   (let [reply (read stdout)]

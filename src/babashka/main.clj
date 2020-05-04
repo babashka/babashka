@@ -14,7 +14,7 @@
    [babashka.impl.common :as common]
    [babashka.impl.curl :refer [curl-namespace]]
    [babashka.impl.features :as features]
-   [babashka.impl.modules :as modules]
+   [babashka.impl.pods :as pods]
    [babashka.impl.nrepl-server :as nrepl-server]
    [babashka.impl.repl :as repl]
    [babashka.impl.socket-repl :as socket-repl]
@@ -350,7 +350,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
        'babashka.classpath {'add-classpath add-classpath*}
        'clojure.pprint pprint-namespace
        'babashka.curl curl-namespace
-       'babashka.modules modules/modules-namespace
+       'babashka.pods pods/pods-namespace
        'bencode.core bencode-namespace}
     features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace))
     features/yaml? (assoc 'clj-yaml.core @(resolve 'babashka.impl.yaml/yaml-namespace))
