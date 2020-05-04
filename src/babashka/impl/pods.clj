@@ -13,8 +13,9 @@
       (.addShutdownHook (Thread. f))))
 
 (defn write [^java.io.OutputStream stream v]
-  (bencode/write-bencode stream v)
-  (.flush stream))
+  (locking stream
+    (bencode/write-bencode stream v)
+    (.flush stream)))
 
 (defn read [stream]
   (bencode/read-bencode stream))
