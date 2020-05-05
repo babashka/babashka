@@ -9,7 +9,7 @@
   (:import [java.io PushbackInputStream])
   (:gen-class))
 
-(def debug? true)
+(def debug? false)
 
 (defn debug [& args]
   (when debug?
