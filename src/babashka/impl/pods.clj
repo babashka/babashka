@@ -30,8 +30,8 @@
         read-fn (case format
                   :edn edn/read-string
                   :json #(cheshire/parse-string % true))]
-    (loop []
-      (try
+    (try
+      (loop []
         (let [reply (read stdout)
               id    (get reply "id")
               id    (bytes->string id)
@@ -42,10 +42,10 @@
               status (set (map (comp keyword bytes->string) status))
               done? (contains? status :done)
               chan (get @chans id)]
-          (when value (async/>!! chan value))
+          (when value (async/put! chan value))
           (when done? (async/close! chan)))
-        (catch Exception e (prn e)))
-      (recur))))
+        (recur))
+      (catch Exception e (prn e)))))
 
 (defn invoke [pod pod-var args async?]
   (let [stream (:stdin pod)

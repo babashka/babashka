@@ -4,9 +4,17 @@
             [bencode.core :as bencode]
             [cheshire.core :as cheshire]
             [clojure.core.async :as async]
-            [clojure.edn :as edn])
+            [clojure.edn :as edn]
+            [clojure.java.io :as io])
   (:import [java.io PushbackInputStream])
   (:gen-class))
+
+(def debug? true)
+
+(defn debug [& args]
+  (when debug?
+    (binding [*out* (io/writer "/tmp/log.txt" :append true)]
+      (apply println args))))
 
 (def stdin (PushbackInputStream. System/in))
 
@@ -53,6 +61,7 @@
               :invoke (let [var (-> (get message "var")
                                     read-string
                                     symbol)
+                            _ (debug "var" var)
                             id (-> (get message "id")
                                    read-string)
                             args (get message "args")
@@ -82,18 +91,24 @@
 
 (let [cli-args (set *command-line-args*)]
   (if (contains? cli-args "--run-as-pod")
-    (run-pod cli-args)
+    (do (debug "running pod with cli args" cli-args)
+        (run-pod cli-args))
     (let [native? (contains? cli-args "--native")]
       (pods/load-pod (if native?
-                       ["./bb" "test-resources/pod.clj" "--run-as-pod"]
-                       ["lein" "bb" "test-resources/pod.clj" "--run-as-pod"]))
+                       (into ["./bb" "test-resources/pod.clj" "--run-as-pod"] cli-args)
+                       (into ["lein" "bb" "test-resources/pod.clj" "--run-as-pod"] cli-args)))
       (require '[pod.test-pod])
       (if (contains? cli-args "--json")
-        (prn ((resolve 'pod.test-pod/assoc) {:a 1} :b 2))
         (do
+          (debug "Running JSON test")
+          (prn ((resolve 'pod.test-pod/assoc) {:a 1} :b 2)))
+        (do
+          (debug "Running synchronous add test")
           (prn ((resolve 'pod.test-pod/add-sync) 1 2 3))
+          (debug "Running async stream test")
           (let [chan ((resolve 'pod.test-pod/range-stream) 1 10)]
             (loop []
               (when-let [x (async/<!! chan)]
+                (debug "Received" x)
                 (prn x)
                 (recur)))))))))
