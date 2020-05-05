@@ -35,12 +35,20 @@
         (let [reply (read stdout)
               id    (get reply "id")
               id    (bytes->string id)
-              value (get reply "value")
-              value (when value (bytes->string value))
-              value (when value (read-fn value))
+              value? (contains? reply "value")
+              value (when value? (get reply "value"))
+              value (when value? (bytes->string value))
+              value (when value? (read-fn value))
               status (get reply "status")
               status (set (map (comp keyword bytes->string) status))
               done? (contains? status :done)
+              value (if (and (not value?) (contains? status :error))
+                      (let [^String message
+                            (or  (some-> (get reply "error")
+                                         bytes->string)
+                                 "")]
+                        (Exception. message))
+                      value)
               chan (get @chans id)]
           (when value (async/put! chan value))
           (when done? (async/close! chan)))
@@ -61,8 +69,11 @@
                          "op" "invoke"
                          "var" (str pod-var)
                          "args" (write-fn args)})]
-    (if async? chan
-        (async/<!! chan))))
+    (if async? chan ;; TODO: https://blog.jakubholy.net/2019/core-async-error-handling/
+        (let [v (async/<!! chan)]
+          (if (instance? Exception v)
+            (throw v)
+            v)))))
 
 (defn load-pod
   ([ctx pod-spec] (load-pod ctx pod-spec nil))

@@ -56,7 +56,9 @@
                                              "name" "range-stream"
                                              "async" "true"}
                                             {"namespace" "pod.test-pod"
-                                             "name" "assoc"}]})
+                                             "name" "assoc"}
+                                            {"namespace" "pod.test-pod"
+                                             "name" "error"}]})
                             (recur))
               :invoke (let [var (-> (get message "var")
                                     read-string
@@ -86,6 +88,11 @@
                           (write
                            {"value" (write-fn (apply assoc args))
                             "status" ["done"]
+                            "id" id})
+                          pod.test-pod/error
+                          (write
+                           {"error" "An error happened"
+                            "status" ["done" "error"]
                             "id" id}))
                         (recur)))))))))
 
@@ -111,4 +118,7 @@
               (when-let [x (async/<!! chan)]
                 (debug "Received" x)
                 (prn x)
-                (recur)))))))))
+                (recur))))
+          (debug "Running error test")
+          (prn (try ((resolve 'pod.test-pod/error) 1 2 3)
+                    (catch Exception e (ex-message e)))))))))
