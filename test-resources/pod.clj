@@ -5,8 +5,7 @@
             [cheshire.core :as cheshire]
             [clojure.core.async :as async]
             [clojure.edn :as edn]
-            [clojure.java.io :as io]
-            [clojure.string :as str])
+            [clojure.java.io :as io])
   (:import [java.io PushbackInputStream])
   (:gen-class))
 
@@ -59,7 +58,11 @@
                                             {"namespace" "pod.test-pod"
                                              "name" "assoc"}
                                             {"namespace" "pod.test-pod"
-                                             "name" "error"}]})
+                                             "name" "error"}
+                                            {"namespace" "pod.test-pod"
+                                             "name" "print"}
+                                            {"namespace" "pod.test-pod"
+                                             "name" "print-err"}]})
                             (recur))
               :invoke (let [var (-> (get message "var")
                                     read-string
@@ -95,7 +98,21 @@
                            {"ex-data" (write-fn {:args args})
                             "ex-message" (str "Illegal arguments")
                             "status" ["done" "error"]
-                            "id" id}))
+                            "id" id})
+                          pod.test-pod/print
+                          (do (write
+                               {"out" (pr-str args)
+                                "id" id})
+                              (write
+                               {"status" ["done"]
+                                "id" id}))
+                          pod.test-pod/print-err
+                          (do (write
+                               {"err" (pr-str args)
+                                "id" id})
+                              (write
+                               {"status" ["done"]
+                                "id" id})))
                         (recur)))))))))
 
 (let [cli-args (set *command-line-args*)]
@@ -121,7 +138,11 @@
                 (debug "Received" x)
                 (prn x)
                 (recur))))
-          (debug "Running error test")
+          (debug "Running exception test")
           (prn (try ((resolve 'pod.test-pod/error) 1 2 3)
                     (catch clojure.lang.ExceptionInfo e
-                      (str (ex-message e) " / " (ex-data e))))))))))
+                      (str (ex-message e) " / " (ex-data e)))))
+          (debug "Running print test")
+          ((resolve 'pod.test-pod/print) "hello" "print" "this" "debugging" "message")
+          (debug "Running print-err test")
+          ((resolve 'pod.test-pod/print-err) "hello" "print" "this" "error"))))))

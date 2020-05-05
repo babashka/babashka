@@ -7,24 +7,25 @@
 
 (set! *warn-on-reflection* true)
 
-(defn bb-jvm [input & args]
+(defn bb-jvm [input-or-opts & args]
   (reset! main/cp-state nil)
   (let [os (java.io.StringWriter.)
-        es (java.io.StringWriter.)
-        is (when input
-             (java.io.StringReader. input))
+        es (if-let [err (:err input-or-opts)]
+             err (java.io.StringWriter.))
+        is (when (string? input-or-opts)
+             (java.io.StringReader. input-or-opts))
         bindings-map (cond-> {sci/out os
                               sci/err es}
                        is (assoc sci/in is))]
     (try
-      (when input (vars/bindRoot sci/in is))
+      (when (string? input-or-opts) (vars/bindRoot sci/in is))
       (vars/bindRoot sci/out os)
       (vars/bindRoot sci/err es)
       (sci/with-bindings bindings-map
           (let [res (binding [*out* os
                               *err* es]
-                      (if input
-                        (with-in-str input (apply main/main args))
+                      (if (string? input-or-opts)
+                        (with-in-str input-or-opts (apply main/main args))
                         (apply main/main args)))]
             (if (zero? res)
               (str os)
@@ -32,7 +33,7 @@
                               {:stdout (str os)
                                :stderr (str es)})))))
       (finally
-        (when input (vars/bindRoot sci/in *in*))
+        (when (string? input-or-opts) (vars/bindRoot sci/in *in*))
         (vars/bindRoot sci/out *out*)
         (vars/bindRoot sci/err *err*)))))
 

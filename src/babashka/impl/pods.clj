@@ -25,7 +25,7 @@
 (defn bytes->string [^"[B" bytes]
   (String. bytes))
 
-(defn processor [ctx pod]
+(defn processor [_ctx pod]
   (let [stdout (:stdout pod)
         format (:format pod)
         chans (:chans pod)
@@ -37,14 +37,16 @@
         (let [reply (read stdout)
               id    (get reply "id")
               id    (bytes->string id)
-              value? (contains? reply "value")
-              value (when value? (get reply "value"))
-              value (when value? (bytes->string value))
-              value (when value? (read-fn value))
+              value* (find reply "value")
+              value (some-> value*
+                            second
+                            bytes->string
+                            read-fn)
               status (get reply "status")
               status (set (map (comp keyword bytes->string) status))
               done? (contains? status :done)
-              value (if (and (not value?) (contains? status :error))
+              error? (contains? status :error)
+              value (if error?
                       (let [message (or (some-> (get reply "ex-message")
                                                 bytes->string)
                                         "")
@@ -54,11 +56,21 @@
                                      {})]
                         (ex-info message data))
                       value)
-              chan (get @chans id)]
-          (when value (async/put! chan value))
-          (when done? (async/close! chan)))
+              chan (get @chans id)
+              out (some-> (get reply "out")
+                          bytes->string)
+              err (some-> (get reply "err")
+                          bytes->string)]
+          (when (or value* error?) (async/put! chan value))
+          (when (or done? error?) (async/close! chan))
+          (when out (binding [*out* @sci/out]
+                      (println out)))
+          (when err (binding [*out* @sci/err]
+                      (println err))))
         (recur))
-      (catch Exception e (prn e)))))
+      (catch Exception e
+        (binding [*out* @sci/err]
+          (prn e))))))
 
 (defn invoke [pod pod-var args async?]
   (let [stream (:stdin pod)
@@ -76,7 +88,7 @@
                          "args" (write-fn args)})]
     (if async? chan ;; TODO: https://blog.jakubholy.net/2019/core-async-error-handling/
         (let [v (async/<!! chan)]
-          (if (instance? Exception v)
+          (if (instance? Throwable v)
             (throw v)
             v)))))
 
