@@ -5,7 +5,8 @@
             [cheshire.core :as cheshire]
             [clojure.core.async :as async]
             [clojure.edn :as edn]
-            [clojure.java.io :as io])
+            [clojure.java.io :as io]
+            [clojure.string :as str])
   (:import [java.io PushbackInputStream])
   (:gen-class))
 
@@ -91,7 +92,8 @@
                             "id" id})
                           pod.test-pod/error
                           (write
-                           {"error" "An error happened"
+                           {"ex-data" (write-fn {:args args})
+                            "ex-message" (str "Illegal arguments")
                             "status" ["done" "error"]
                             "id" id}))
                         (recur)))))))))
@@ -121,4 +123,5 @@
                 (recur))))
           (debug "Running error test")
           (prn (try ((resolve 'pod.test-pod/error) 1 2 3)
-                    (catch Exception e (ex-message e)))))))))
+                    (catch clojure.lang.ExceptionInfo e
+                      (str (ex-message e) " / " (ex-data e))))))))))

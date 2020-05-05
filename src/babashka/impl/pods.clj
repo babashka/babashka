@@ -4,7 +4,9 @@
   (:require [babashka.impl.bencode.core :as bencode]
             [cheshire.core :as cheshire]
             [clojure.core.async :as async]
-            [clojure.edn :as edn]))
+            [clojure.edn :as edn]
+            [sci.core :as sci]
+            [sci.impl.namespaces :refer [sci-resolve]]))
 
 (set! *warn-on-reflection* true)
 
@@ -23,7 +25,7 @@
 (defn bytes->string [^"[B" bytes]
   (String. bytes))
 
-(defn processor [pod]
+(defn processor [ctx pod]
   (let [stdout (:stdout pod)
         format (:format pod)
         chans (:chans pod)
@@ -43,11 +45,14 @@
               status (set (map (comp keyword bytes->string) status))
               done? (contains? status :done)
               value (if (and (not value?) (contains? status :error))
-                      (let [^String message
-                            (or  (some-> (get reply "error")
-                                         bytes->string)
-                                 "")]
-                        (Exception. message))
+                      (let [message (or (some-> (get reply "ex-message")
+                                                bytes->string)
+                                        "")
+                            data (or (some-> (get reply "ex-data")
+                                             bytes->string
+                                             read-fn)
+                                     {})]
+                        (ex-info message data))
                       value)
               chan (get @chans id)]
           (when value (async/put! chan value))
@@ -121,7 +126,7 @@
                                        namespaces
                                        vars)]
                 (assoc env :namespaces namespaces))))
-     (future (processor pod))
+     (sci/future (processor ctx pod))
      vars)))
 
 (def pods-namespace

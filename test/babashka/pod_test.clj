@@ -5,7 +5,7 @@
 
 (deftest pod-test
   (let [native? tu/native?]
-    (is (= "6\n1\n2\n3\n4\n5\n6\n7\n8\n9\n\"An error happened\"\n"
+    (is (= "6\n1\n2\n3\n4\n5\n6\n7\n8\n9\n\"Illegal arguments / {:args (1 2 3)}\"\n"
            (apply tu/bb nil (cond-> ["-f" "test-resources/pod.clj"]
                               native?
                               (conj "--native")))))
