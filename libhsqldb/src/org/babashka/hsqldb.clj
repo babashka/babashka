@@ -42,8 +42,8 @@
               op (keyword op)]
           (case op
             :describe (do (write {"format" "edn"
-                                  "vars" [{"namespace" "pod.hsqldb"
-                                           "name" "execute!"}]})
+                                  "namespaces" [{"name" "pod.hsqldb"
+                                                 "vars" [{"name" "execute!"}]}]})
                           (recur))
             :invoke (let [var (-> (get message "var")
                                   read-string
