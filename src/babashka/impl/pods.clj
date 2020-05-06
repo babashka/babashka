@@ -34,7 +34,7 @@
         chans (:chans pod)
         read-fn (case format
                   :edn edn/read-string
-                  :json #(cheshire/parse-string % true))]
+                  :json #(cheshire/parse-string-strict % true))]
     (try
       (loop []
         (let [reply (read stdout)
