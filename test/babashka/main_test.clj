@@ -17,6 +17,10 @@
   (edn/read-string (apply test-utils/bb (when (some? input) (str input)) (map str args))))
 
 (deftest parse-opts-test
+  (is (= {:nrepl "1667"}
+         (main/parse-opts ["--nrepl-server"])))
+  (is (= {:socket-repl "1666"}
+         (main/parse-opts ["--socket-repl"])))
   (is (= {:nrepl "1667", :classpath "src"}
          (main/parse-opts ["--nrepl-server" "-cp" "src"])))
   (is (= {:socket-repl "1666", :expressions ["123"]}
@@ -33,7 +37,10 @@
     (is (thrown-with-msg? Exception #"does not exist" (bb nil "foo.clj")))
     (is (thrown-with-msg? Exception #"does not exist" (bb nil "-help"))))
   (is (= "1 2 3" (bb nil "-e" "(require '[clojure.string :as str1])" "-e" "(str1/join \" \" [1 2 3])")))
-  (is (= '("-e" "1") (bb nil "-e" "*command-line-args*" "--" "-e" "1"))))
+  (is (= '("-e" "1") (bb nil "-e" "*command-line-args*" "--" "-e" "1")))
+  (let [v (bb nil "--describe")]
+    (is (:babashka/version v))
+    (is (:feature/xml v))))
 
 (deftest print-error-test
   (is (thrown-with-msg? Exception #"java.lang.NullPointerException"
@@ -107,9 +114,8 @@
         exit-code (sci/with-bindings {sci/out out
                                       sci/err err}
                     (binding [*out* out *err* err]
-                      (main/main "--time" "(println \"Hello world!\") (System/exit 42)")))]
+                      (main/main "(println \"Hello world!\") (System/exit 42)")))]
     (is (= (str out) "Hello world!\n"))
-    (is (re-find #"took" (str err)))
     (is (= 42 exit-code))))
 
 (deftest malformed-command-line-args-test
@@ -405,7 +411,16 @@
 
 (deftest pprint-test
   (testing "writer"
-    (is (string? (bb nil "(let [sw (java.io.StringWriter.)] (clojure.pprint/pprint (range 10) sw) (str sw))")))))
+    (is (string? (bb nil "(let [sw (java.io.StringWriter.)] (clojure.pprint/pprint (range 10) sw) (str sw))"))))
+  (testing "*print-right-margin*"
+    (is (= "(0\n 1\n 2\n 3\n 4\n 5\n 6\n 7\n 8\n 9)\n" (bb nil "
+(let [sw (java.io.StringWriter.)]
+  (binding [clojure.pprint/*print-right-margin* 5]
+    (clojure.pprint/pprint (range 10) sw)) (str sw))")))
+    (is (= "(0 1 2 3 4 5 6 7 8 9)\n" (bb nil "
+(let [sw (java.io.StringWriter.)]
+  (binding [clojure.pprint/*print-right-margin* 50]
+    (clojure.pprint/pprint (range 10) sw)) (str sw))")))))
 
 (deftest read-string-test
   (testing "namespaced keyword via alias"

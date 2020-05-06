@@ -38,12 +38,17 @@ $ git submodule update --recursive
 
 ## Build
 
-First run `script/uberjar` to create the `.jar` file. Then run `script/compile`.
+Run the `uberjar` and `compile` script:
+
+``` shell
+$ script/uberjar
+$ script/compile
+```
 
 To configure maximum heap size you can use:
 
 ```
-$ BABASHKA_XMX="-J-Xmx4800m" script/compile
+$ export BABASHKA_XMX="-J-Xmx4800m"
 ```
 
 ## Windows
@@ -54,21 +59,49 @@ To compile on Windows you need to check out the `windows` branch:
 $ git checkout windows
 ```
 
-The compile script for Windows is `script/compile.bat`.
+Then run `script\uberjar.bat` followed by `script\compile.bat`.
 
-## Optional features
+## Feature flags
+
+Babashka supports the following feature flags:
+
+| Name   |  Description                                 | Default  |
+|--------|----------------------------------------------|----------|
+| `BABASHKA_FEATURE_CORE_ASYNC` | Includes the [clojure.core.async](https://github.com/clojure/core.async) library | `true` |
+| `BABASHKA_FEATURE_CSV` | Includes the [clojure.data.csv](https://github.com/clojure/data.csv) library | `true` |
+| `BABASHKA_FEATURE_JAVA_NIO` | Includes commonly used classes from the `java.nio` package | `true` |
+| `BABASHKA_FEATURE_JAVA_TIME` | Includes commonly used classes from the `java.time` package | `true` |
+| `BABASHKA_FEATURE_TRANSIT` | Includes the [transit-clj](https://github.com/cognitect/transit-clj) library | `true` |
+| `BABASHKA_FEATURE_XML` | Includes the [clojure.data.xml](https://github.com/clojure/data.xml) library | `true` |
+| `BABASHKA_FEATURE_YAML` | Includes the [clj-yaml](https://github.com/clj-commons/clj-yaml) library | `true` |
+| `BABASHKA_FEATURE_JDBC` | Includes the [next.jdbc](https://github.com/seancorfield/next-jdbc) library | `false`    |
+| `BABASHKA_FEATURE_POSTGRESQL` | Includes the [PostgresSQL](https://jdbc.postgresql.org/) JDBC driver |  `false` |
+| `BABASHKA_FEATURE_HSQLDB` | Includes the [HSQLDB](http://www.hsqldb.org/) JDBC driver | `false` |
+| `BABASHKA_FEATURE_DATASCRIPT` | Includes [datascript](https://github.com/tonsky/datascript) | `false` |
+
+To disable all of the above features, you can set `BABASHKA_LEAN` to `true`.
 
 ### HyperSQL
 
-To compile babashka with `HyperSQL`/`hsqldb` support, set
-`BABASHKA_FEATURE_HSQLDB` to `true`:
+To compile babashka with the `next.jdbc` library and the embedded HyperSQL
+database:
 
 ``` shell
-$ BABASHKA_FEATURE_HSQLDB=true script/compile
+$ export BABASHKA_FEATURE_JDBC=true
+$ export BABASHKA_FEATURE_HSQLDB=true
+$ script/uberjar
+$ script/compile
 ```
 
 Check out this [example](examples.md#find-unused-vars).
 
-If you think this feature should be enabled in the distributed version of `bb`,
-vote with a thumbs up on [this](https://github.com/borkdude/babashka/issues/382)
-issue.
+### PostgresQL
+
+To compile babashka with the `next.jdbc` library and a PostgresQL driver:
+
+``` shell
+$ export BABASHKA_FEATURE_JDBC=true
+$ export BABASHKA_FEATURE_POSTGRESQL=true
+$ script/uberjar
+$ script/compile
+```

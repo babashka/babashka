@@ -10,6 +10,7 @@
   :source-paths ["src" "sci/src" "babashka.curl/src"]
   ;; for debugging Reflector.java code:
   ;; :java-source-paths ["sci/reflector/src-java"]
+  :java-source-paths ["src-java"]
   :resource-paths ["resources" "sci/resources"]
   :dependencies [[org.clojure/clojure "1.10.2-alpha1"]
                  [org.clojure/tools.reader "1.3.2"]
@@ -17,10 +18,8 @@
                  [borkdude/graal.locking "0.0.2"]
                  [borkdude/sci.impl.reflector "0.0.1"]
                  [org.clojure/tools.cli "1.0.194"]
-                 [org.clojure/data.csv "1.0.0"]
                  [cheshire "5.10.0"]
-                 [fipp "0.6.22"]
-                 [com.cognitect/transit-clj "1.0.324"]]
+                 [fipp "0.6.22"]]
   :profiles {:feature/xml  {:source-paths ["feature-xml"]
                             :dependencies [[org.clojure/data.xml "0.2.0-alpha6"]]}
              :feature/yaml {:source-paths ["feature-yaml"]
@@ -31,11 +30,20 @@
              :feature/hsqldb [:feature/jdbc {:dependencies [[org.hsqldb/hsqldb "2.4.0"]]}]
              :feature/core-async {:source-paths ["feature-core-async"]
                                   :dependencies [[org.clojure/core.async "1.1.587"]]}
+             :feature/csv {:source-paths ["feature-csv"]
+                           :dependencies [[org.clojure/data.csv "1.0.0"]]}
+             :feature/transit {:source-paths ["feature-transit"]
+                               :dependencies [[com.cognitect/transit-clj "1.0.324"]]}
+             :feature/datascript {:source-paths ["feature-datascript"]
+                                  :dependencies [[datascript "0.18.11"]]}
              :test [:feature/xml
                     :feature/yaml
                     :feature/postgresql
                     :feature/hsqldb
                     :feature/core-async
+                    :feature/csv
+                    :feature/transit
+                    :feature/datascript
                     {:dependencies [[clj-commons/conch "0.9.2"]
                                     [com.clojure-goes-fast/clj-async-profiler "0.4.1"]]}]
              :uberjar {:global-vars {*assert* false}

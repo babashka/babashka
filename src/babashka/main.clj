@@ -12,15 +12,14 @@
    [babashka.impl.clojure.pprint :refer [pprint-namespace]]
    [babashka.impl.clojure.stacktrace :refer [stacktrace-namespace]]
    [babashka.impl.common :as common]
-   [babashka.impl.csv :as csv]
    [babashka.impl.curl :refer [curl-namespace]]
    [babashka.impl.features :as features]
    [babashka.impl.nrepl-server :as nrepl-server]
+   [babashka.impl.pods :as pods]
    [babashka.impl.repl :as repl]
    [babashka.impl.socket-repl :as socket-repl]
    [babashka.impl.test :as t]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
-   [babashka.impl.transit :refer [transit-namespace]]
    [babashka.wait :as wait]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
@@ -66,10 +65,18 @@
 (when features/core-async?
   (require '[babashka.impl.async]))
 
-(binding [*unrestricted* true]
-  (sci/alter-var-root sci/in (constantly *in*))
-  (sci/alter-var-root sci/out (constantly *out*))
-  (sci/alter-var-root sci/err (constantly *err*)))
+(when features/csv?
+  (require '[babashka.impl.csv]))
+
+(when features/transit?
+  (require '[babashka.impl.transit]))
+
+(when features/datascript?
+  (require '[babashka.impl.datascript]))
+
+(sci/alter-var-root sci/in (constantly *in*))
+(sci/alter-var-root sci/out (constantly *out*))
+(sci/alter-var-root sci/err (constantly *err*))
 
 (set! *warn-on-reflection* true)
 ;; To detect problems when generating the image, run:
@@ -88,12 +95,12 @@
                      ("--verbose")(recur (next options)
                                          (assoc opts-map
                                                 :verbose? true))
+                     ("--describe") (recur (next options)
+                                           (assoc opts-map
+                                                  :describe? true))
                      ("--stream") (recur (next options)
                                          (assoc opts-map
                                                 :stream? true))
-                     ("--time") (recur (next options)
-                                       (assoc opts-map
-                                              :time? true))
                      ("-i") (recur (next options)
                                    (assoc opts-map
                                           :shell-in true))
@@ -144,7 +151,7 @@
                      ("--socket-repl")
                      (let [options (next options)
                            opt (first options)
-                           opt (when-not (str/starts-with? opt "-")
+                           opt (when (and opt (not (str/starts-with? opt "-")))
                                  opt)
                            options (if opt (next options)
                                        options)]
@@ -154,7 +161,7 @@
                      ("--nrepl-server")
                      (let [options (next options)
                            opt (first options)
-                           opt (when-not (str/starts-with? opt "-")
+                           opt (when (and opt (not (str/starts-with? opt "-")))
                                  opt)
                            options (if opt (next options)
                                        options)]
@@ -201,45 +208,71 @@
 (defn print-version []
   (println (str "babashka v"(str/trim (slurp (io/resource "BABASHKA_VERSION"))))))
 
-(def usage-string "Usage: bb [ -i | -I ] [ -o | -O ] [ --stream ] [--verbose]
-          [ ( --classpath | -cp ) <cp> ] [ --uberscript <file> ]
-          [ ( --main | -m ) <main-namespace> | -e <expression> | -f <file> |
-            --repl | --socket-repl [<host>:]<port> | --nrepl-server [<host>:]<port> ]
-          [ arg* ]")
-(defn print-usage []
-  (println usage-string))
 
 (defn print-help []
   (println (str "Babashka v" (str/trim (slurp (io/resource "BABASHKA_VERSION")))))
   ;; (println (str "sci v" (str/trim (slurp (io/resource "SCI_VERSION")))))
   (println)
-  (print-usage)
-  (println)
-  (println "Options:")
+  (println "Options must appear in the order of groups mentioned below.")
   (println "
+Help:
+
   --help, -h or -?    Print this help text.
   --version           Print the current version of babashka.
+  --describe          Print an EDN map with information about this version of babashka.
+
+In- and output flags:
 
   -i                  Bind *input* to a lazy seq of lines from stdin.
   -I                  Bind *input* to a lazy seq of EDN values from stdin.
   -o                  Write lines to stdout.
   -O                  Write EDN values to stdout.
-  --verbose           Print entire stacktrace in case of exception.
   --stream            Stream over lines or EDN values from stdin. Combined with -i or -I *input* becomes a single value per iteration.
+
+Uberscript:
+
   --uberscript <file> Collect preloads, -e, -f and -m and all required namespaces from the classpath into a single executable file.
+
+Evaluation:
 
   -e, --eval <expr>   Evaluate an expression.
   -f, --file <path>   Evaluate a file.
   -cp, --classpath    Classpath to use.
   -m, --main <ns>     Call the -main function from namespace with args.
+  --verbose           Print entire stacktrace in case of exception.
+
+REPL:
+
   --repl              Start REPL. Use rlwrap for history.
   --socket-repl       Start socket REPL. Specify port (e.g. 1666) or host and port separated by colon (e.g. 127.0.0.1:1666).
   --nrepl-server      Start nREPL server. Specify port (e.g. 1667) or host and port separated by colon (e.g. 127.0.0.1:1667).
-  --time              Print execution time before exiting.
-  --                  Stop parsing args and pass everything after -- to *command-line-args*
 
-If neither -e, -f, or --socket-repl are specified, then the first argument that is not parsed as a option is treated as a file if it exists, or as an expression otherwise.
-Everything after that is bound to *command-line-args*."))
+If neither -e, -f, or --socket-repl are specified, then the first argument that is not parsed as a option is treated as a file if it exists, or as an expression otherwise. Everything after that is bound to *command-line-args*. Use -- to separate script command lin args from bb command line args."))
+
+(defn print-describe []
+  (println
+   (format
+    (str/trim "
+{:babashka/version   \"%s\"
+ :feature/core-async %s
+ :feature/csv        %s
+ :feature/java-nio   %s
+ :feature/java-time  %s
+ :feature/xml        %s
+ :feature/yaml       %s
+ :feature/jdbc       %s
+ :feature/postgresql %s
+ :feature/hsqldb     %s}")
+    (str/trim (slurp (io/resource "BABASHKA_VERSION")))
+    features/core-async?
+    features/csv?
+    features/java-nio?
+    features/java-time?
+    features/xml?
+    features/yaml?
+    features/jdbc?
+    features/postgresql?
+    features/hsqldb?)))
 
 (defn read-file [file]
   (let [f (io/file file)]
@@ -279,15 +312,15 @@ Everything after that is bound to *command-line-args*."))
         signal babashka.signal
         shell clojure.java.shell
         io clojure.java.io
-        csv clojure.data.csv
         json cheshire.core
         curl babashka.curl
-        transit cognitect.transit
         bencode bencode.core}
     features/xml?        (assoc 'xml 'clojure.data.xml)
     features/yaml?       (assoc 'yaml 'clj-yaml.core)
     features/jdbc?       (assoc 'jdbc 'next.jdbc)
-    features/core-async? (assoc 'async 'clojure.core.async)))
+    features/core-async? (assoc 'async 'clojure.core.async)
+    features/csv?        (assoc 'csv 'clojure.data.csv)
+    features/transit?    (assoc 'transit 'cognitect.transit)))
 
 (def cp-state (atom nil))
 
@@ -309,7 +342,6 @@ Everything after that is bound to *command-line-args*."))
                        'wait-for-path wait/wait-for-path}
        ;;'babashka.signal {'pipe-signal-received? pipe-signal-received?}
        'clojure.java.io io-namespace
-       'clojure.data.csv csv/csv-namespace
        'cheshire.core cheshire-core-namespace
        'clojure.stacktrace stacktrace-namespace
        'clojure.main {'demunge demunge
@@ -318,14 +350,17 @@ Everything after that is bound to *command-line-args*."))
        'babashka.classpath {'add-classpath add-classpath*}
        'clojure.pprint pprint-namespace
        'babashka.curl curl-namespace
-       'cognitect.transit transit-namespace
+       'babashka.pods pods/pods-namespace
        'bencode.core bencode-namespace}
     features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace))
     features/yaml? (assoc 'clj-yaml.core @(resolve 'babashka.impl.yaml/yaml-namespace))
     features/jdbc? (assoc 'next.jdbc @(resolve 'babashka.impl.jdbc/njdbc-namespace)
                           'next.jdbc.sql @(resolve 'babashka.impl.jdbc/next-sql-namespace))
     features/core-async? (assoc 'clojure.core.async @(resolve 'babashka.impl.async/async-namespace)
-                                'clojure.core.async.impl.protocols @(resolve 'babashka.impl.async/async-protocols-namespace))))
+                                'clojure.core.async.impl.protocols @(resolve 'babashka.impl.async/async-protocols-namespace))
+    features/csv?  (assoc 'clojure.data.csv @(resolve 'babashka.impl.csv/csv-namespace))
+    features/transit? (assoc 'cognitect.transit @(resolve 'babashka.impl.transit/transit-namespace))
+    features/datascript? (assoc 'datascript.core @(resolve 'babashka.impl.datascript/datascript-namespace))))
 
 (def bindings
   {'java.lang.System/exit exit ;; override exit, so we have more control
@@ -351,13 +386,12 @@ Everything after that is bound to *command-line-args*."))
   (binding [*unrestricted* true]
     (sci/binding [reflection-var false
                   sci/ns (vars/->SciNamespace 'user nil)]
-      (let [t0 (System/currentTimeMillis)
-            {:keys [:version :shell-in :edn-in :shell-out :edn-out
+      (let [{:keys [:version :shell-in :edn-in :shell-out :edn-out
                     :help? :file :command-line-args
-                    :expressions :stream? :time?
+                    :expressions :stream?
                     :repl :socket-repl :nrepl
                     :verbose? :classpath
-                    :main :uberscript] :as _opts}
+                    :main :uberscript :describe?] :as _opts}
             (parse-opts args)
             _ (when main (System/setProperty "babashka.main" main))
             read-next (fn [*in*]
@@ -403,6 +437,7 @@ Everything after that is bound to *command-line-args*."))
                             BigDecimal java.math.BigDecimal
                             Boolean java.lang.Boolean
                             Byte java.lang.Byte
+                            Character java.lang.Character
                             Class java.lang.Class
                             ClassNotFoundException java.lang.ClassNotFoundException
                             Double java.lang.Double
@@ -466,6 +501,8 @@ Everything after that is bound to *command-line-args*."))
                        [(print-version) 0]
                        help?
                        [(print-help) 0]
+                       describe?
+                       [(print-describe) 0]
                        repl [(repl/start-repl! sci-ctx) 0]
                        socket-repl [(start-socket-repl! socket-repl sci-ctx) 0]
                        nrepl [(start-nrepl! nrepl sci-ctx) 0]
@@ -494,8 +531,7 @@ Everything after that is bound to *command-line-args*."))
                            (error-handler* e verbose?)))
                        uberscript [nil 0]
                        :else [(repl/start-repl! sci-ctx) 0]))
-                1)
-            t1 (System/currentTimeMillis)]
+                1)]
         (flush)
         (when uberscript
           uberscript
@@ -505,8 +541,6 @@ Everything after that is bound to *command-line-args*."))
               (spit uberscript-out s :append true))
             (spit uberscript-out preloads :append true)
             (spit uberscript-out expression :append true)))
-        (when time? (binding [*out* *err*]
-                      (println "bb took" (str (- t1 t0) "ms."))))
         exit-code))))
 
 (defn -main
