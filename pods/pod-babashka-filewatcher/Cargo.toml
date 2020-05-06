@@ -1,5 +1,5 @@
 [package]
-name = "foo"
+name = "pod-babashka-filewatcher"
 version = "0.1.0"
 authors = ["Michiel Borkent <michielborkent@gmail.com>"]
 edition = "2018"

@@ -25,15 +25,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "foo"
-version = "0.1.0"
-dependencies = [
- "json",
- "log",
- "notify",
-]
-
-[[package]]
 name = "fsevent"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -204,6 +195,15 @@ dependencies = [
  "mio-extras",
  "walkdir",
  "winapi 0.3.8",
+]
+
+[[package]]
+name = "pod-babashka-filewatcher"
+version = "0.1.0"
+dependencies = [
+ "json",
+ "log",
+ "notify",
 ]
 
 [[package]]
