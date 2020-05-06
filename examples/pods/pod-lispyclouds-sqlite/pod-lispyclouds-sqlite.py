@@ -30,7 +30,7 @@ def main():
             write(
                 {
                     "format": "json",
-                    "namespaces": [{"name": "pod.lispy-clouds.sqlite",
+                    "namespaces": [{"name": "pod.lispyclouds.sqlite",
                                     "vars": [{"name": "execute!"}]}]}
             )
         elif op == "invoke":
@@ -43,7 +43,7 @@ def main():
 
             result = None
 
-            if var == "pod.lispy-clouds.sqlite/execute!":
+            if var == "pod.lispyclouds.sqlite/execute!":
                 try:
                     result = c.execute(*args)
                 except Exception as e:

@@ -12,7 +12,7 @@ Then run as pod:
 
 ``` clojure
 (babashka.pods/load-pod ["./pod-lispyclouds-sqlite.py"])
-(require '[pod.lispy-clouds.sqlite :as sqlite])
+(require '[pod.lispyclouds.sqlite :as sqlite])
 (sqlite/execute! "create table if not exists foo ( int foo )")
 (sqlite/execute! "delete from foo")
 (sqlite/execute! "insert into foo values (1), (2)")
