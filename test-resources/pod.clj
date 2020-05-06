@@ -52,19 +52,16 @@
               :describe (do (write {"format" (if (= format :json)
                                                "json"
                                                "edn")
-                                    "vars" [{"namespace" "pod.test-pod"
-                                             "name" "add-sync"}
-                                            {"namespace" "pod.test-pod"
-                                             "name" "range-stream"
-                                             "async" "true"}
-                                            {"namespace" "pod.test-pod"
-                                             "name" "assoc"}
-                                            {"namespace" "pod.test-pod"
-                                             "name" "error"}
-                                            {"namespace" "pod.test-pod"
-                                             "name" "print"}
-                                            {"namespace" "pod.test-pod"
-                                             "name" "print-err"}]})
+                                    "namespaces"
+                                    [{"name" "pod.test-pod"
+                                      "vars" [{"name" "add-sync"}
+                                              {"name" "range-stream"
+                                               "async" "true"}
+                                              {"name" "assoc"}
+                                              {"name" "error"}
+                                              {"name" "print"}
+                                              {"name" "print-err"}
+                                              ]}]})
                             (recur))
               :invoke (let [var (-> (get message "var")
                                     read-string

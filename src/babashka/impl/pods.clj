@@ -5,8 +5,7 @@
             [cheshire.core :as cheshire]
             [clojure.core.async :as async]
             [clojure.edn :as edn]
-            [sci.core :as sci]
-            [sci.impl.namespaces :refer [sci-resolve]]))
+            [sci.core :as sci]))
 
 (set! *warn-on-reflection* true)
 
@@ -24,6 +23,10 @@
 
 (defn bytes->string [^"[B" bytes]
   (String. bytes))
+
+(defn get-string [m k]
+  (-> (get m k)
+      bytes->string))
 
 (defn processor [_ctx pod]
   (let [stdout (:stdout pod)
@@ -112,34 +115,38 @@
               :stdout stdout
               :chans (atom {})
               :format format}
-         vars (get reply "vars")
-         vars (map (fn [var]
-                     (let [var (zipmap (map keyword (keys var))
-                                       (map bytes->string (vals var)))
-                           var (-> var
-                                   (update :namespace symbol)
-                                   (update :name symbol)
-                                   (update :async #(Boolean/parseBoolean %)))]
-                       var))
-                   vars)
+         pod-namespaces (get reply "namespaces")
+         vars-fn (fn [ns-name-str vars]
+                   (reduce
+                    (fn [m var]
+                      (let [name (get-string var "name")
+                            async? (some-> (get var "async")
+                                           bytes->string
+                                           #(Boolean/parseBoolean %))
+                            name-sym (symbol name)
+                            sym (symbol ns-name-str name)]
+                        (assoc m name-sym (fn [& args]
+                                            (let [res (invoke pod sym args async?)]
+                                              res)))))
+                    {}
+                    vars))
          env (:env ctx)]
      (swap! env
             (fn [env]
               (let [namespaces (:namespaces env)
-                    namespaces (reduce (fn [acc v]
-                                         (let [ns (:namespace v)
-                                               name (:name v)
-                                               sym (symbol (str ns) (str name))
-                                               async? (:async v)
-                                               f (fn [& args]
-                                                   (let [res (invoke pod sym args async?)]
-                                                     res))]
-                                           (assoc-in acc [ns name] f)))
-                                       namespaces
-                                       vars)]
+                    namespaces
+                    (reduce (fn [namespaces namespace]
+                              (let [name-str (-> namespace (get "name") bytes->string)
+                                    name-sym (symbol name-str)
+                                    vars (get namespace "vars")
+                                    vars (vars-fn name-str vars)]
+                                (assoc namespaces name-sym vars)))
+                            namespaces
+                            pod-namespaces)]
                 (assoc env :namespaces namespaces))))
      (sci/future (processor ctx pod))
-     vars)))
+     ;; TODO: we could return the entire describe map here
+     nil)))
 
 (def pods-namespace
   {'load-pod (with-meta load-pod
