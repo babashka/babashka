@@ -1,0 +1,15 @@
+[ {
+  "name" : "org.hsqldb.jdbcDriver"
+},
+  {
+    "methods" : [{"name":"<init>", "parameterTypes":[ "org.hsqldb.Database"]} ],
+    "name" : "org.hsqldb.dbinfo.DatabaseInformationFull"
+  },
+  {
+    "methods" : [ {
+      "name" : "getBundle",
+      "parameterTypes" : [ "java.lang.String", "java.util.Locale", "java.lang.ClassLoader" ]
+    } ],
+    "name" : "java.util.ResourceBundle"
+  }
+]
