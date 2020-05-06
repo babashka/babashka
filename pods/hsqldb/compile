@@ -16,7 +16,7 @@ lein do clean, uberjar
 
 $GRAALVM_HOME/bin/native-image \
   -jar $JAR \
-  -H:Name=hsqldb-babashka-plugin \
+  -H:Name=pod-babashka-hsqldb \
   -H:+ReportExceptionStackTraces \
   -J-Dclojure.spec.skip-macros=true \
   -J-Dclojure.compiler.direct-linking=true \
