@@ -56,7 +56,8 @@ def main():
 
             conn.commit()
             conn.close()
-
+        elif op == "shutdown":
+            sys.exit(0)
 
 if __name__ == "__main__":
     main()

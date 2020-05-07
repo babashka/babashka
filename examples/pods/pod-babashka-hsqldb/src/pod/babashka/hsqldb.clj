@@ -46,4 +46,5 @@
                       (write {"value" (pr-str (apply (lookup var) args))
                               "id" id
                               "status" ["done"]})
-                      (recur))))))))
+                      (recur))
+            :shutdown (System/exit 0)))))))
