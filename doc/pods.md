@@ -27,15 +27,15 @@ Currently the following pods are available:
 
 Eductional examples of pods can be found [here](examples/pods):
 
-- [pod-babashka-hsqldb](examples/pods/pod-babashka-hsqldb): a pod that allows
+- [pod-babashka-hsqldb](../examples/pods/pod-babashka-hsqldb): a pod that allows
   you to create and fire queries at a [HSQLDB](http://www.hsqldb.org/)
   database. Implemented in Clojure.
 
-- [pod-lispyclouds-sqlite](examples/pods/pod-lispyclouds-sqlite): a pod that
+- [pod-lispyclouds-sqlite](../examples/pods/pod-lispyclouds-sqlite): a pod that
   allows you to create and fire queries at a [sqlite](https://www.sqlite.org/)
   database. Implemented in Python.
 
-- [pod-babashka-filewatcher](examples/pods/pod-babashka-filewatcher): a
+- [pod-babashka-filewatcher](../examples/pods/pod-babashka-filewatcher): a
   filewatcher pod. Implemented in Rust.
 
 ### Naming
@@ -51,7 +51,7 @@ what your pod is about.
 
 Examples:
 
-- [pod-lispyclouds-sqlite](examples/pods/pod-lispyclouds-sqlite): a pod to
+- [pod-lispyclouds-sqlite](../examples/pods/pod-lispyclouds-sqlite): a pod to
   communicate with [sqlite](https://www.sqlite.org/), provided by
   [@lispyclouds](https://github.com/lispyclouds).
 
