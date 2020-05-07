@@ -21,6 +21,11 @@ Currently the following pods are available:
   that allows you to create and fire queries at a
   [HSQLDB](http://www.hsqldb.org/) database.
 
+The name pod is inspired by [boot's pod
+feature](https://github.com/boot-clj/boot/wiki/Pods). It means _underneath_ or
+_below_ in Polish and Russian. In Romanian it means bridge
+([source](https://en.wiktionary.org/wiki/pod)).
+
 ## Implementing your own pod
 
 ### Examples
