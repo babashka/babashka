@@ -75,6 +75,9 @@
         (binding [*out* @sci/err]
           (prn e))))))
 
+(defn next-id []
+  (str (java.util.UUID/randomUUID)))
+
 (defn invoke [pod pod-var args async?]
   (let [stream (:stdin pod)
         format (:format pod)
@@ -82,7 +85,7 @@
         write-fn (case format
                    :edn pr-str
                    :json cheshire/generate-string)
-        id (str (java.util.UUID/randomUUID))
+        id (next-id)
         chan (async/chan)
         _ (swap! chans assoc id chan)
         _ (write stream {"id" id
@@ -105,8 +108,13 @@
          stdin (.getOutputStream p)
          stdout (.getInputStream p)
          stdout (java.io.PushbackInputStream. stdout)
-         _ (add-shutdown-hook! #(.destroy p))
-         _ (write stdin {"op" "describe"})
+         _ (add-shutdown-hook!
+            (fn []
+              (write stdin {"op" "shutdown"
+                            "id" (next-id)})
+              (.waitFor p)))
+         _ (write stdin {"op" "describe"
+                         "id" (next-id)})
          reply (read stdout)
          format (-> (get reply "format") bytes->string keyword)
          pod {:process p

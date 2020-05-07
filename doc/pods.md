@@ -178,6 +178,12 @@ message related to the request with `id` `1d17f8fe-4f70-48bf-b6a9-dc004e52d056`.
 
 Now you know most there is to know about the pod protocol!
 
+#### shutdown
+
+When babashka is about to exit, it sends a `{"op" "shutdown"}` message and waits
+for the pod process to end. This gives the pod a chance to clean up resources
+before it exits.
+
 #### out and err
 
 Pods may send messages with an `out` and `err` string value. Babashka prints

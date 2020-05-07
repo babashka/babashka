@@ -111,7 +111,8 @@
                               (write
                                {"status" ["done"]
                                 "id" id})))
-                        (recur)))))))))
+                        (recur))
+              :shutdown (System/exit 0))))))))
 
 (let [cli-args (set *command-line-args*)]
   (if (contains? cli-args "--run-as-pod")
