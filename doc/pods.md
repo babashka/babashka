@@ -190,7 +190,8 @@ Now you know most there is to know about the pod protocol!
 When babashka is about to exit, it sends an `{"op" "shutdown"}` message, if the
 pod has declared that it supports it in the `describe` response. Then it waits
 for the pod process to end. This gives the pod a chance to clean up resources
-before it exits.
+before it exits. If the pod does not support the `shutdown` op, the pod process
+is killed by babashka.
 
 #### out and err
 
