@@ -16,11 +16,12 @@
 
 (defn query [stream q]
   (write stream {"op" "invoke"
-                 "var" "hsqldb.jdbc/execute!"
+                 "id" "1"
+                 "var" "pod.babashka.hsqldb/execute!"
                  "args" (pr-str ["jdbc:hsqldb:mem:testdb;sql.syntax_mys=true" q])}))
 
-(let [pb (ProcessBuilder. #_["lein" "run" "-m" "org.babashka.hsqldb"]
-                          ["./hsqldb-babashka-plugin"])
+(let [pb (ProcessBuilder. #_["lein" "run" "-m" "pod.babashka.hsqldb"]
+                          ["./pod-babashka-hsqldb"])
       _ (.redirectErrorStream pb true)
       ;; _ (.redirectOutput pb ProcessBuilder$Redirect/INHERIT)
       p (.start pb)
@@ -29,8 +30,7 @@
       stdout (java.io.PushbackInputStream. stdout)]
   (write stdin {"op" "describe"})
   (let [reply (read stdout)]
-    (println "format:" (String. (get reply "format")))
-    (println "vars:" (mapv bytes->string (get reply "vars")))) ;;=> edn
+    (println "format:" (String. (get reply "format")))) ;;=> edn
 
   (query stdin ["create table foo ( foo int );"])
   (let [reply (read stdout)]
