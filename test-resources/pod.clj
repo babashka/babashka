@@ -60,7 +60,8 @@
                                               {"name" "assoc"}
                                               {"name" "error"}
                                               {"name" "print"}
-                                              {"name" "print-err"}]}]})
+                                              {"name" "print-err"}]}]
+                                    "ops" {"shutdown" {}}})
                             (recur))
               :invoke (let [var (-> (get message "var")
                                     read-string

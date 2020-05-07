@@ -105,10 +105,6 @@ fn handle_incoming(val: bc::Value) {
                 _ => panic!(var)
             };
         },
-        "shutdown" => {
-            // TODO: clean up stuff?
-            std::process::exit(0);
-        }
         _ => panic!(op)
     }
 }

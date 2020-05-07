@@ -108,21 +108,25 @@
          stdin (.getOutputStream p)
          stdout (.getInputStream p)
          stdout (java.io.PushbackInputStream. stdout)
-         _ (add-shutdown-hook!
-            (fn []
-              (write stdin {"op" "shutdown"
-                            "id" (next-id)})
-              (.waitFor p)))
          _ (write stdin {"op" "describe"
                          "id" (next-id)})
          reply (read stdout)
          format (-> (get reply "format") bytes->string keyword)
+         ops (some->> (get reply "ops") keys (map keyword) set)
          pod {:process p
               :pod-spec pod-spec
               :stdin stdin
               :stdout stdout
               :chans (atom {})
-              :format format}
+              :format format
+              :ops ops}
+         _ (add-shutdown-hook!
+            (fn []
+              (if (contains? ops :shutdown)
+                (do (write stdin {"op" "shutdown"
+                                  "id" (next-id)})
+                    (.waitFor p))
+                (.destroy p))))
          pod-namespaces (get reply "namespaces")
          vars-fn (fn [ns-name-str vars]
                    (reduce

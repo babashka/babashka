@@ -121,7 +121,8 @@ The pod should reply to this request with a message in the vein of:
 {"format" "json"
  "namespaces"
  [{"name" "pod.lispyclouds.sqlite"
-   "vars" [{"name" "execute!"}]}]}
+   "vars" [{"name" "execute!"}]}]
+ "ops" {"shutdown" {}}}
 ```
 
 In this reply, the pod declares that payloads will be encoded and decoded using
@@ -132,6 +133,12 @@ The pod encodes the above map to bencode and writes it to stdoud. Babashka reads
 this message from the pod's stdout.
 
 Upon receiving this message, babashka creates these namespaces and vars.
+
+The optional `ops` value communicates which ops the pod supports, beyond
+`describe` and `invoke`. It is a map of op names and option maps. In the above
+example the pod declares that it supports the `shutdown` op. Since the
+`shutdown` op does not need any additional options right now, the value is an
+empty map.
 
 As a babashka user, you can load the pod with:
 
@@ -180,7 +187,8 @@ Now you know most there is to know about the pod protocol!
 
 #### shutdown
 
-When babashka is about to exit, it sends a `{"op" "shutdown"}` message and waits
+When babashka is about to exit, it sends an `{"op" "shutdown"}` message, if the
+pod has declared that it supports it in the `describe` response. Then it waits
 for the pod process to end. This gives the pod a chance to clean up resources
 before it exits.
 

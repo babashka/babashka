@@ -33,7 +33,8 @@
           (case op
             :describe (do (write {"format" "edn"
                                   "namespaces" [{"name" "pod.babashka.hsqldb"
-                                                 "vars" [{"name" "execute!"}]}]})
+                                                 "vars" [{"name" "execute!"}]}]
+                                  "ops" {"shutdown" {}}})
                           (recur))
             :invoke (let [var (-> (get message "var")
                                   read-string
