@@ -135,7 +135,7 @@ this message from the pod's stdout.
 Upon receiving this message, babashka creates these namespaces and vars.
 
 The optional `ops` value communicates which ops the pod supports, beyond
-`describe` and `invoke`. It is a map of op names and option maps. In the above
+`describe` and `invoke`. It is a map of op names to option maps. In the above
 example the pod declares that it supports the `shutdown` op. Since the
 `shutdown` op does not need any additional options right now, the value is an
 empty map.
