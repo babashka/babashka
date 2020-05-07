@@ -1,15 +1,15 @@
 # Pods
 
-Pods are standalone programs that can expose namespaces with functions to
+Pods are standalone programs that can expose namespaces with vars to
 babashka. Pods can be created independently from babashka. Any program can be
-invoked as a pod, as long as it implements a protocol, the so called _pod
-protocol_. The pod protocol is influenced by and built upon battle tested
-technologies: the [nREPL](https://nrepl.org/) and
-[LSP](https://microsoft.github.io/language-server-protocol/) protocols,
-[bencode](https://en.wikipedia.org/wiki/Bencode),
-[JSON](https://www.json.org/json-en.html),
-[EDN](https://github.com/edn-format/edn) and composition of UNIX command line
-tools in via good old stdin and stdout.
+invoked as a pod as long as it implements the _pod protocol_. This protocol is
+influenced by and built upon battle-tested technologies:
+
+- the [nREPL](https://nrepl.org/) and [LSP](https://microsoft.github.io/language-server-protocol/) protocols,
+- [bencode](https://en.wikipedia.org/wiki/Bencode),
+- [JSON](https://www.json.org/json-en.html),
+- [EDN](https://github.com/edn-format/edn)
+- composition of UNIX command line tools in via good old stdin and stdout.
 
 Pods are a brand new way to extend babashka and you should consider the protocol
 alpha for now. Breaking changes may occur as we discover better ways of doing
