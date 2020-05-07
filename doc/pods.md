@@ -23,7 +23,7 @@ Currently the following pods are available:
 
 The name pod is inspired by [boot's pod
 feature](https://github.com/boot-clj/boot/wiki/Pods). It means _underneath_ or
-_below_ in Polish and Russian. In Romanian it means bridge
+_below_ in Polish and Russian. In Romanian it means _bridge_
 ([source](https://en.wiktionary.org/wiki/pod)).
 
 ## Implementing your own pod
