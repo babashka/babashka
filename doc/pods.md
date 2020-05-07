@@ -186,3 +186,27 @@ these messages to `*out*` and `*err*`. Stderr from the pod is redirected to
 Responses may contain an `ex-message` string and `ex-data` payload string (JSON
 or EDN) along with an `"error"` value in `status`. This will cause babashka to
 throw an `ex-info` with the associated values.
+
+#### async
+
+Pods may implement async functions that return one or more values at any time in
+the future. This must be declared as part of the `describe` response:
+
+``` clojure
+{"format" "json"
+ "namespaces"
+ [{"name" "pod.babashka.filewatcher"
+   "vars" [{"name" "watch" "async" "true"}]}]}
+```
+
+When calling this function from babashka, the return value is a `core.async`
+channel on which the values will be received:
+
+``` clojure
+(pods/load-pod "target/release/pod-babashka-filewatcher")
+(def chan (pod.babashka.filewatcher/watch "/tmp"))
+(require '[clojure.core.async :as async])
+(loop [] (prn (async/<!! chan)) (recur))
+;;=> ["changed" "/tmp"]
+;;=> ["changed" "/tmp"]
+```
