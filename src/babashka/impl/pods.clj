@@ -100,7 +100,7 @@
   ([ctx pod-spec _opts]
    (let [pod-spec (if (string? pod-spec) [pod-spec] pod-spec)
          pb (ProcessBuilder. ^java.util.List pod-spec)
-         _ (.redirectErrorStream pb true)
+         _ (.redirectError pb java.lang.ProcessBuilder$Redirect/INHERIT)
          p (.start pb)
          stdin (.getOutputStream p)
          stdout (.getInputStream p)
