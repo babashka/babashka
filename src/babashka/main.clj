@@ -340,7 +340,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
        'clojure.java.shell shell-namespace
        'babashka.wait {'wait-for-port wait/wait-for-port
                        'wait-for-path wait/wait-for-path}
-       ;;'babashka.signal {'pipe-signal-received? pipe-signal-received?}
+       'babashka.signal {'pipe-signal-received? pipe-signal-received?}
        'clojure.java.io io-namespace
        'cheshire.core cheshire-core-namespace
        'clojure.stacktrace stacktrace-namespace
