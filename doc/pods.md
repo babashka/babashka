@@ -15,7 +15,7 @@ Pods are a brand new way to extend babashka and you should consider the protocol
 alpha. Breaking changes may occur at this phase. Pods were introduced in
 babashka version `0.0.92`.
 
-Pods you can try today:
+Currently the following pods are available:
 
 - [pod-babashka-hsqldb](https://github.com/borkdude/pod-babashka-hsqldb): a pod
   that allows you to create and fire queries at a
