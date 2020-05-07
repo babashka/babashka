@@ -36,19 +36,18 @@ Eductional examples of pods can be found [here](examples/pods):
   database. Implemented in Python.
 
 - [pod-babashka-filewatcher](examples/pods/pod-babashka-filewatcher): a
-  filewatcher pod. It exposes one function `pod-babashka-filewatcher/watch` and
-  return a `core.async` channel to listen for change events for a file
-  path. Implemented in Rust.
+  filewatcher pod. Implemented in Rust.
 
 ### Naming
 
-When choosing a name for your pod, considering the following naming scheme:
+When choosing a name for your pod, we suggest the following naming scheme:
 
 ```
 pod-<user-id>-<pod-name>
 ```
 
-where `<user-id>` is your Github, Gitlab, etc. handle and `<pod-name>` describes the intent of your pod.
+where `<user-id>` is your Github or Gitlab handle and `<pod-name>` describes
+what your pod is about.
 
 Examples:
 
@@ -84,11 +83,14 @@ Bencode is chosen as the message format because it is a light-weight format
 which can be implemented in 200-300 lines of code in most languages. If pods are
 implemented in Clojure, they only need to depend on the
 [bencode](https://github.com/nrepl/bencode) library and use `pr-str` and
-`edn/read-string` for encoding and decoding payloads. Then why not use EDN as
-the message format?  Assuming EDN (or JSON for that matter) as the message and
-payload format for all pods is too constraining: other languages might already
-have built-in JSON support and there might not be a good EDN library available.
-More payload formats might be added in the future (e.g. transit).
+`edn/read-string` for encoding and decoding payloads.
+
+Why isn't EDN or JSON chosen as the message format instead of bencode, you may
+ask.  Assuming EDN or JSON as the message and payload format for all pods is too
+constraining: other languages might already have built-in JSON support and there
+might not be a good EDN library available. So we use bencode as the first
+encoding and choose one of multiple richer encodings on top of this. More
+payload formats might be added in the future (e.g. transit).
 
 When calling the `babashka.pods/load-pod` function, babashka will start the pod
 and leave the pod running throughout the duration of a babashka script.
@@ -121,20 +123,26 @@ In this reply, the pod declares that payloads will be encoded and decoded using
 JSON. It also declares that the pod exposes one namespace,
 `pod.lispyclouds.sqlite` with one var `execute!`.
 
+The pod encodes the above map to bencode and writes it to stdoud. Babashka reads
+this message from the pod's stdout.
+
 Upon receiving this message, babashka creates these namespaces and vars.
 
-The user can load your pod with:
+As a babashka user, you can load the pod with:
 
 ``` clojure
 (require '[babashka.pods :as pods])
 (pods/load-pod "pod-lispyclouds-sqlite")
 (some? (find-ns 'pod.lispyclouds.sqlite)) ;;=> true
+;; yay, the namespace exists!
+
+;; let's give the namespace an alias
 (require '[pod.lispyclouds.sqlite :as sql])
 ```
 
 #### invoke
 
-When invoking var that is related to the pod, let's call it a _proxy var_,
+When invoking a var that is related to the pod, let's call it a _proxy var_,
 babashka reaches out to the pod with the arguments encoded in JSON or EDN. The
 pod will then respond with a return value encoded in JSON or EDN. Babashka will
 then decode the return value and present the user with that.
@@ -156,12 +164,12 @@ An example response from the pod could look like:
 ``` clojure
 {"id" "1d17f8fe-4f70-48bf-b6a9-dc004e52d056"
  "value" "[[1] [2]]"
- "status" "[\"done\"]"
+ "status" "[\"done\"]"}
 ```
 
-Here, the `value` payload is the return value payload. The field `status`
-contains `"done"` so babashka knows that this is the last message related to the
-request with `id` `1d17f8fe-4f70-48bf-b6a9-dc004e52d056`.
+Here, the `value` payload is the return value of the function invocation. The
+field `status` contains `"done"`. This tells babashka that this is the last
+message related to the request with `id` `1d17f8fe-4f70-48bf-b6a9-dc004e52d056`.
 
 Now you know most there is to know about the pod protocol!
 
@@ -187,10 +195,20 @@ Responses may contain an `ex-message` string and `ex-data` payload string (JSON
 or EDN) along with an `"error"` value in `status`. This will cause babashka to
 throw an `ex-info` with the associated values.
 
+Example:
+
+``` clojure
+{"id" "1d17f8fe-4f70-48bf-b6a9-dc004e52d056"
+ "ex-message" "Illegal input"
+ "ex-data" "{\"input\": 10}
+ "status" "[\"done\", \"error\"]"}
+```
+
 #### async
 
-Pods may implement async functions that return one or more values at any time in
-the future. This must be declared as part of the `describe` response:
+Pods may implement async functions that return one or more values at a later
+time in the future. Async functions must be declared as such as part of the
+`describe` response message:
 
 ``` clojure
 {"format" "json"
