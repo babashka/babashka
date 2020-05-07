@@ -463,6 +463,9 @@
        (bb nil "(yaml/generate-string [{:name \"John Smith\", :age 33} {:name \"Mary Smith\", :age 27}])")
        "-")))
 
+(deftest arrays-copy-of-test
+  (is (= "foo" (bb nil "(String. (java.util.Arrays/copyOf (.getBytes \"foo\") 3))"))))
+
 ;;;; Scratch
 
 (comment

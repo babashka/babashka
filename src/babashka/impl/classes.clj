@@ -69,7 +69,9 @@
                    ;; not supported: {:name "setURLStreamHandlerFactory"}
                    {:name "toExternalForm"}
                    {:name "toString"}
-                   {:name "toURI"}]}}
+                   {:name "toURI"}]}
+        java.util.Arrays
+        {:methods [{:name "copyOf"}]}}
     features/xml? (assoc `com.sun.xml.internal.stream.XMLInputFactoryImpl
                          {:methods [{:name "<init>" :parameterTypes []}]}
                          `com.sun.xml.internal.stream.XMLOutputFactoryImpl
