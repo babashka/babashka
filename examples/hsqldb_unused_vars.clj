@@ -16,11 +16,14 @@
 
 (ns hsqldb-unused-vars
   (:require
+   [babashka.pods :as pods]
    [clojure.edn :as edn]
    [clojure.java.shell :refer [sh]]
-   [clojure.pprint :refer [print-table]]
-   [next.jdbc :as jdbc]
-   [next.jdbc.sql :as sql]))
+   [clojure.pprint :refer [print-table]]))
+
+(pods/load-pod "pod-babashka-hsqldb")
+(require '[pod.babashka.hsqldb :as jdbc]
+         '[pod.babashka.hsqldb.sql :as sql])
 
 (def db "jdbc:hsqldb:mem:testdb;sql.syntax_mys=true")
 

@@ -30,11 +30,8 @@ _below_ in Polish and Russian. In Romanian it means _bridge_
 
 ### Examples
 
-Eductional examples of pods can be found [here](../examples/pods):
-
-- [pod-babashka-hsqldb](../examples/pods/pod-babashka-hsqldb): a pod that allows
-  you to create and fire queries at a [HSQLDB](http://www.hsqldb.org/)
-  database. Implemented in Clojure.
+Beyond the already available pods mentioned above, eductional examples of pods
+can be found [here](../examples/pods):
 
 - [pod-lispyclouds-sqlite](../examples/pods/pod-lispyclouds-sqlite): a pod that
   allows you to create and fire queries at a [sqlite](https://www.sqlite.org/)
