@@ -277,7 +277,8 @@ See [examples/whatsapp_frequencies.clj](examples/whatsapp_frequencies.clj)
 
 [This](../examples/hsqldb_unused_vars.clj) script invokes clj-kondo, stores
 returned data in an in memory HSQLDB database and prints the result of a query
-which finds unused vars.
+which finds unused vars. It uses
+[pod-babashka-hsqldb](https://github.com/borkdude/pod-babashka-hsqldb).
 
 ``` shell
 $ bb examples/hsqldb_unused_vars.clj src
