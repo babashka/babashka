@@ -17,6 +17,8 @@ babashka version `0.0.92`.
 
 Currently the following pods are available:
 
+- [clj-kondo](https://github.com/borkdude/clj-kondo/#babashka-pod): a Clojure
+  linter
 - [pod-babashka-hsqldb](https://github.com/borkdude/pod-babashka-hsqldb): a pod
   that allows you to create and fire queries at a
   [HSQLDB](http://www.hsqldb.org/) database.
