@@ -1,10 +1,10 @@
 (ns babashka.impl.nrepl-server-test
   (:require
-   [babashka.impl.bencode.core :as bencode]
    [babashka.impl.nrepl-server :refer [start-server! stop-server!]]
    [babashka.main :as main]
    [babashka.test-utils :as tu]
    [babashka.wait :as wait]
+   [bencode.core :as bencode]
    [clojure.test :as t :refer [deftest is testing]]
    [sci.impl.opts :refer [init]])
   (:import [java.lang ProcessBuilder$Redirect]))

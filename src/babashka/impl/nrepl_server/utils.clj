@@ -1,7 +1,7 @@
 (ns babashka.impl.nrepl-server.utils
   {:no-doc true}
   (:refer-clojure :exclude [send])
-  (:require [babashka.impl.bencode.core :refer [write-bencode]])
+  (:require [bencode.core :refer [write-bencode]])
   (:import [java.io Writer PrintWriter StringWriter OutputStream BufferedWriter]))
 
 (set! *warn-on-reflection* true)

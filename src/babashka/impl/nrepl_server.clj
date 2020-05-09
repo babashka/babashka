@@ -1,9 +1,9 @@
 (ns babashka.impl.nrepl-server
   {:no-doc true}
   (:refer-clojure :exclude [send future binding])
-  (:require [babashka.impl.bencode.core :refer [read-bencode]]
-            [babashka.impl.nrepl-server.utils :refer [dev? response-for send send-exception
+  (:require [babashka.impl.nrepl-server.utils :refer [dev? response-for send send-exception
                                                       replying-print-writer]]
+            [bencode.core :refer [read-bencode]]
             [clojure.string :as str]
             [clojure.tools.reader.reader-types :as r]
             [sci.core :as sci]

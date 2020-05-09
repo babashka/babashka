@@ -7,7 +7,7 @@
         :url "https://github.com/borkdude/babashka"}
   :license {:name "Eclipse Public License 1.0"
             :url "http://opensource.org/licenses/eclipse-1.0.php"}
-  :source-paths ["src" "sci/src" "babashka.curl/src"]
+  :source-paths ["src" "sci/src" "babashka.curl/src" "babashka.pods/src"]
   ;; for debugging Reflector.java code:
   ;; :java-source-paths ["sci/reflector/src-java"]
   :java-source-paths ["src-java"]
@@ -19,7 +19,8 @@
                  [borkdude/sci.impl.reflector "0.0.1"]
                  [org.clojure/tools.cli "1.0.194"]
                  [cheshire "5.10.0"]
-                 [fipp "0.6.22"]]
+                 [fipp "0.6.22"]
+                 [nrepl/bencode "1.1.0"]]
   :profiles {:feature/xml  {:source-paths ["feature-xml"]
                             :dependencies [[org.clojure/data.xml "0.2.0-alpha6"]]}
              :feature/yaml {:source-paths ["feature-yaml"]

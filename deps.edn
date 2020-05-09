@@ -1,7 +1,8 @@
 {:paths ["src" "feature-xml" "feature-core-async"
          "feature-yaml" "feature-csv" "feature-transit"
          "feature-java-time" "feature-java-nio"
-         "sci/src" "babashka.curl/src" "resources" "sci/resources"],
+         "sci/src" "babashka.curl/src" "babashka.pods/src"
+         "resources" "sci/resources"],
  :deps {org.clojure/clojure {:mvn/version "1.10.2-alpha1"},
         org.clojure/tools.reader {:mvn/version "1.3.2"},
         borkdude/edamame {:mvn/version "0.0.11-alpha.9"},
@@ -15,6 +16,7 @@
         fipp {:mvn/version "0.6.22"}
         clj-commons/clj-yaml {:mvn/version "0.7.1"}
         com.cognitect/transit-clj {:mvn/version "1.0.324"}
+        nrepl/bencode {:mvn/version "1.1.0"}
         seancorfield/next.jdbc {:mvn/version "1.0.424"}
         org.postgresql/postgresql {:mvn/version "42.2.12"}
         org.hsqldb/hsqldb {:mvn/version "2.4.0"}

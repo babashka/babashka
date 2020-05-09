@@ -47,8 +47,6 @@
                 op (read-string op)
                 op (keyword op)]
             (case op
-              ;; TODO:
-              ;; group by namespace
               :describe (do (write {"format" (if (= format :json)
                                                "json"
                                                "edn")
