@@ -246,10 +246,10 @@ channel on which the values will be received:
 ;;=> ["changed" "/tmp"]
 ```
 
-#### RUN_AS_BABASHKA_POD
+#### Environment
 
-Babashka will set the `RUN_AS_BABASHKA_POD` environment variable to `true` when
-invoking the pod. This can be used to determine if the program should behave as
-a pod or not.
+Babashka will set the `BABASHKA_POD` environment variable to `true` when
+invoking the pod. This can be used by the invoked program to determine whether
+it should behave as a pod or not.
 
 Added in v0.0.94.
