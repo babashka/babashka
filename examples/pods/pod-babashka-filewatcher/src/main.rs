@@ -1,8 +1,7 @@
 // see https://github.com/jasilven/redbush/blob/master/src/nrepl/mod.rs
 
-mod bencode;
-use bencode::{Value};
-use bencode as bc;
+use bencode_rs::{Value};
+use bencode_rs as bc;
 
 use notify::{Watcher, RecursiveMode, watcher};
 use std::sync::mpsc::channel;
