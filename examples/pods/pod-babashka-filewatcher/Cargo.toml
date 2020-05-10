@@ -9,5 +9,6 @@ edition = "2018"
 [dependencies]
 notify = "4.0.12"
 json = "0.12.4"
+serde_json = "1.0"
 log = "0.4"
 bencode_rs = { git = "https://github.com/jasilven/bencode_rs", tag = "v0.1.0" }

@@ -3,7 +3,9 @@
 use bencode_rs::{Value};
 use bencode_rs as bc;
 
-use notify::{Watcher, RecursiveMode, watcher};
+use notify::{Watcher, RecursiveMode, watcher, DebouncedEvent};
+use DebouncedEvent as ev;
+
 use std::sync::mpsc::channel;
 use std::time::Duration;
 
@@ -11,7 +13,10 @@ use std::collections::HashMap;
 use std::io;
 use std::io::{Write, BufReader};
 
+use std::thread;
+
 use json;
+use serde_json as jsons;
 
 fn get_string(val: &bc::Value, key: &str) -> Option<String> {
     match val {
@@ -31,7 +36,7 @@ fn insert(mut m: HashMap<Value,Value>, k: &str, v: &str) -> HashMap<Value,Value>
     m
 }
 
-fn describe() {
+fn write_describe_map() {
     let namespace = HashMap::new();
     let mut namespace = insert(namespace, "name", "pod.babashka.filewatcher");
     let mut vars = Vec::new();
@@ -53,11 +58,53 @@ fn describe() {
     handle.flush().unwrap();
 }
 
-fn path_changed(id: &str, path: &str) {
+fn write_path_change(id: &str, _path: &str, event: DebouncedEvent) {
     let reply = HashMap::new();
     let reply = insert(reply, "id", id);
-    let value = vec!["changed", path];
-    let value = json::stringify(value);
+
+    let value = {
+        match event {
+            ev::Chmod(p) => jsons::json!({
+                "type": "chmod",
+                "path": p
+            }),
+            ev::Create(p) => jsons::json!({
+                "type": "create",
+                "path": p
+            }),
+            ev::Remove(p) => jsons::json!({
+                "type": "remove",
+                "path": p
+            }),
+            ev::Rename(p1,p2) => jsons::json!({
+                "type": "rename",
+                "path": p1,
+                "dest": p2,
+            }),
+            ev::Write(p) => jsons::json!({
+                "type": "write",
+                "path": p
+            }),
+            ev::NoticeRemove(p) => jsons::json!({
+                "type": "notice/remove",
+                "path": p
+            }),
+            ev::NoticeWrite(p) => jsons::json!({
+                "type": "notice/write",
+                "path": p
+            }),
+            ev::Rescan => jsons::json!({
+                "type": "rescan",
+            }),
+            ev::Error(err,p) => jsons::json!({
+                "path": p,
+                "type": "error",
+                "error": format!("{}", err),
+            }),
+        }
+    };
+
+    let value = value.to_string();
     let mut reply = insert(reply, "value", &value);
     let status = vec![Value::from("status")];
     reply.insert(Value::from("status"),Value::List(status));
@@ -68,27 +115,27 @@ fn path_changed(id: &str, path: &str) {
     handle.flush().unwrap();
 }
 
-fn watch(id: &str, path: &str) {
-    let (tx, rx) = channel();
-    let mut watcher = watcher(tx, Duration::from_secs(2)).unwrap();
-    watcher.watch(path, RecursiveMode::Recursive).unwrap();
-    loop {
-        match rx.recv() {
-            Ok(_) => {
-                path_changed(id, path);
-            },
-            Err(e) => panic!("watch error: {:?}", e),
+fn watch(id: String, path: String) {
+    thread::spawn(move || {
+        let (tx, rx) = channel();
+        let mut watcher = watcher(tx, Duration::from_secs(2)).unwrap();
+        watcher.watch(&path, RecursiveMode::Recursive).unwrap();
+        loop {
+            match rx.recv() {
+                Ok(v) => {
+                    write_path_change(&id, &path, v);
+                },
+                Err(e) => panic!("watch error: {}", e),
+            }
         }
-    }
-
+    });
 }
 
 fn handle_incoming(val: bc::Value) {
     let op = get_string(&val, "op").unwrap();
     match &op[..] {
         "describe" => {
-            describe()
-
+            write_describe_map()
         },
         "invoke" => {
             let var = get_string(&val, "var").unwrap();
@@ -97,14 +144,14 @@ fn handle_incoming(val: bc::Value) {
                     let args = get_string(&val, "args").unwrap();
                     let args = json::parse(&args).unwrap();
                     let path = &args[0];
-                    let path = path.as_str().unwrap();
+                    let path = path.as_str().unwrap().to_owned();
                     let id = get_string(&val, "id").unwrap();
-                    watch(&id, path);
+                    watch(id, path);
                 },
-                _ => panic!(var)
+                _ => panic!("Unknown var: {}", var)
             };
         },
-        _ => panic!(op)
+        _ => panic!("Unknown op: {}", op)
     }
 }
 
@@ -115,22 +162,16 @@ fn main() {
         let mut reader = BufReader::new(io::stdin());
         let val = bc::parse_bencode(&mut reader);
         match val {
-            Ok(res) => {
-                match res {
-                    Some(val) => {
-                        handle_incoming(val)
-                    }
-                    None => {
-
-                    }
-                }
-
+            Ok(Some(val)) => {
+                handle_incoming(val)
+            },
+            Ok(None) => {
+                return
             }
             Err(bc::BencodeError::Eof()) => {
                 return
             },
-            Err(v) => panic!("{}", v)
+            Err(e) => panic!("Error: {}", e)
         }
-
     }
 }
