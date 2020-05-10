@@ -19,7 +19,7 @@ Currently the following pods are available:
 
 - [clj-kondo](https://github.com/borkdude/clj-kondo/#babashka-pod): a Clojure
   linter
-- [pod-babashka-filewatcher](https://github.com/babashka/pod-babashka-hsqldb): a
+- [pod-babashka-filewatcher](https://github.com/babashka/pod-babashka-filewatcher): a
   filewatcher pod based on Rust notify.
 - [pod-babashka-hsqldb](https://github.com/babashka/pod-babashka-hsqldb): a pod
   that allows you to create and fire queries at a
