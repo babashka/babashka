@@ -94,6 +94,7 @@
           java.io.IOException
           java.io.OutputStream
           java.io.FileReader
+          java.io.InputStreamReader
           java.io.PushbackInputStream
           java.io.Reader
           java.io.SequenceInputStream
@@ -116,7 +117,6 @@
           java.lang.Math
           java.lang.Runtime
           java.lang.RuntimeException
-          java.util.concurrent.LinkedBlockingQueue
           java.lang.Object
           java.lang.String
           java.lang.StringBuilder
@@ -177,6 +177,9 @@
                 java.time.ZoneOffset
                 java.time.temporal.ChronoUnit
                 java.time.temporal.TemporalAccessor])
+          java.util.concurrent.LinkedBlockingQueue
+          java.util.jar.JarFile
+          java.util.jar.JarEntry
           java.util.regex.Pattern
           java.util.Base64
           java.util.Base64$Decoder
