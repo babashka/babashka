@@ -451,6 +451,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                             Object java.lang.Object
                             Runtime java.lang.Runtime
                             RuntimeException java.lang.RuntimeException
+                            Process        java.lang.Process
                             ProcessBuilder java.lang.ProcessBuilder
                             String java.lang.String
                             StringBuilder java.lang.StringBuilder
