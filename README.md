@@ -420,8 +420,9 @@ The namespace `babashka.curl` is a tiny wrapper around curl. It's aliased as
 
 A note on style. Babashka recommends the following:
 
-- Only use `*input*` and aliases without an explicit require in bash one-liners.
-- Use an explicit namespace form in scripts.
+### Explicit requires
+
+Use an explicit namespace form in scripts, unless you're writing one-liners.
 
 Do this:
 
