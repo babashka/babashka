@@ -27,8 +27,6 @@
    [clojure.string :as str]
    [sci.addons :as addons]
    [sci.core :as sci]
-   [sci.impl.interpreter :refer [eval-string*]]
-   [sci.impl.opts :as sci-opts]
    [sci.impl.unrestrict :refer [*unrestricted*]]
    [sci.impl.vars :as vars])
   (:gen-class))
@@ -284,12 +282,15 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
 
 (def reflection-var (sci/new-dynamic-var '*warn-on-reflection* false))
 
-(defn load-file* [sci-ctx f]
-  (let [f (io/file f)
-        s (slurp f)]
-    (sci/with-bindings {sci/ns @sci/ns
-                        sci/file (.getCanonicalPath f)}
-      (eval-string* sci-ctx s))))
+(def load-file*
+  (with-meta
+    (fn [sci-ctx f]
+      (let [f (io/file f)
+            s (slurp f)]
+        (sci/with-bindings {sci/ns @sci/ns
+                            sci/file (.getCanonicalPath f)}
+          (sci/eval-string* sci-ctx s))))
+    {:sci.impl/op :needs-ctx}))
 
 (defn start-socket-repl! [address ctx]
   (socket-repl/start-repl! address ctx)
@@ -379,6 +380,36 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
               (flush)
               [nil 1])))))
 
+(def imports
+  '{ArithmeticException java.lang.ArithmeticException
+    AssertionError java.lang.AssertionError
+    BigDecimal java.math.BigDecimal
+    Boolean java.lang.Boolean
+    Byte java.lang.Byte
+    Character java.lang.Character
+    Class java.lang.Class
+    ClassNotFoundException java.lang.ClassNotFoundException
+    Double java.lang.Double
+    Exception java.lang.Exception
+    IllegalArgumentException java.lang.IllegalArgumentException
+    Integer java.lang.Integer
+    File java.io.File
+    Long java.lang.Long
+    Math java.lang.Math
+    NumberFormatException java.lang.NumberFormatException
+    Object java.lang.Object
+    Runtime java.lang.Runtime
+    RuntimeException java.lang.RuntimeException
+    Process        java.lang.Process
+    ProcessBuilder java.lang.ProcessBuilder
+    String java.lang.String
+    StringBuilder java.lang.StringBuilder
+    System java.lang.System
+    Thread java.lang.Thread
+    Throwable java.lang.Throwable})
+
+(def input-var (sci/new-dynamic-var '*input* nil))
+
 (defn main
   [& args]
   (handle-pipe!)
@@ -419,64 +450,35 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                           (when uberscript (swap! uberscript-sources conj (:source res)))
                           res)))
             _ (when file (vars/bindRoot sci/file (.getCanonicalPath (io/file file))))
-            ctx {:aliases aliases
-                 :namespaces (-> namespaces
-                                 (assoc 'clojure.core
-                                        (assoc core-extras
-                                               '*command-line-args*
-                                               (sci/new-dynamic-var '*command-line-args* command-line-args)
-                                               '*warn-on-reflection* reflection-var))
-                                 (assoc-in ['clojure.java.io 'resource]
-                                           #(when-let [{:keys [:loader]} @cp-state] (cp/getResource loader % {:url? true}))))
-                 :bindings bindings
-                 :env env
-                 :features #{:bb :clj}
-                 :classes classes/class-map
-                 :imports '{ArithmeticException java.lang.ArithmeticException
-                            AssertionError java.lang.AssertionError
-                            BigDecimal java.math.BigDecimal
-                            Boolean java.lang.Boolean
-                            Byte java.lang.Byte
-                            Character java.lang.Character
-                            Class java.lang.Class
-                            ClassNotFoundException java.lang.ClassNotFoundException
-                            Double java.lang.Double
-                            Exception java.lang.Exception
-                            IllegalArgumentException java.lang.IllegalArgumentException
-                            Integer java.lang.Integer
-                            File java.io.File
-                            Long java.lang.Long
-                            Math java.lang.Math
-                            NumberFormatException java.lang.NumberFormatException
-                            Object java.lang.Object
-                            Runtime java.lang.Runtime
-                            RuntimeException java.lang.RuntimeException
-                            Process        java.lang.Process
-                            ProcessBuilder java.lang.ProcessBuilder
-                            String java.lang.String
-                            StringBuilder java.lang.StringBuilder
-                            System java.lang.System
-                            Thread java.lang.Thread
-                            Throwable java.lang.Throwable}
-                 :load-fn load-fn
-                 :dry-run uberscript}
-            ctx (addons/future ctx)
-            sci-ctx (sci-opts/init ctx)
+            ;; TODO: pull more of these values to compile time
+            opts {:aliases aliases
+                  :namespaces (-> namespaces
+                                  (assoc 'clojure.core
+                                         (assoc core-extras
+                                                '*command-line-args*
+                                                (sci/new-dynamic-var '*command-line-args* command-line-args)
+                                                '*warn-on-reflection* reflection-var
+                                                'load-file load-file*))
+                                  (assoc-in ['clojure.java.io 'resource]
+                                            #(when-let [{:keys [:loader]} @cp-state] (cp/getResource loader % {:url? true})))
+                                  (assoc-in ['user (with-meta '*input*
+                                                     (when-not stream?
+                                                       {:sci.impl/deref! true}))] input-var)
+                                  (assoc-in ['clojure.main 'repl]
+                                            ^{:sci.impl/op :needs-ctx}
+                                            (fn [ctx & opts]
+                                              (let [opts (apply hash-map opts)]
+                                                (repl/start-repl! ctx opts)))))
+                  :bindings bindings
+                  :env env
+                  :features #{:bb :clj}
+                  :classes classes/class-map
+                  :imports imports
+                  :load-fn load-fn
+                  :dry-run uberscript}
+            opts (addons/future opts)
+            sci-ctx (sci/init opts)
             _ (vreset! common/ctx sci-ctx)
-            input-var (sci/new-dynamic-var '*input* nil)
-            _ (swap! (:env sci-ctx)
-                     (fn [env]
-                       (update env :namespaces
-                               (fn [namespaces] [:namespaces 'clojure.main 'repl]
-                                 (-> namespaces
-                                     (assoc-in ['clojure.core 'load-file] #(load-file* sci-ctx %))
-                                     (assoc-in ['clojure.main 'repl]
-                                               (fn [& opts]
-                                                 (let [opts (apply hash-map opts)]
-                                                   (repl/start-repl! sci-ctx opts))))
-                                     (assoc-in ['user (with-meta '*input*
-                                                        (when-not stream?
-                                                          {:sci.impl/deref! true}))] input-var))))))
             preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim))
             [expressions exit-code]
             (cond expressions [expressions nil]
@@ -491,7 +493,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
             (if exit-code exit-code
                 (do (when preloads
                       (try
-                        (eval-string* sci-ctx preloads)
+                        (sci/eval-string* sci-ctx preloads)
                         (catch Throwable e
                           (error-handler* e verbose?))))
                     nil))
@@ -515,7 +517,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                                [nil 0] ;; done streaming
                                (let [res [(let [res
                                                 (sci/binding [input-var in]
-                                                  (eval-string* sci-ctx expression))]
+                                                  (sci/eval-string* sci-ctx expression))]
                                             (when (some? res)
                                               (if-let [pr-f (cond shell-out println
                                                                   edn-out prn)]
