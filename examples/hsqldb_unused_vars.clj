@@ -18,12 +18,14 @@
   (:require
    [babashka.pods :as pods]
    [clojure.edn :as edn]
-   [clojure.java.shell :refer [sh]]
    [clojure.pprint :refer [print-table]]))
 
 (pods/load-pod "pod-babashka-hsqldb")
 (require '[pod.babashka.hsqldb :as jdbc]
          '[pod.babashka.hsqldb.sql :as sql])
+
+(pods/load-pod "clj-kondo")
+(require '[pod.borkdude.clj-kondo :as clj-kondo])
 
 (def db "jdbc:hsqldb:mem:testdb;sql.syntax_mys=true")
 
@@ -69,10 +71,9 @@
                           var-usages)))
 
 (defn analysis->db [paths]
-  (let [out (:out (apply sh "clj-kondo"
-                         "--config" "{:output {:analysis true :format :edn}}"
-                         "--lint" paths))
-        analysis (:analysis (edn/read-string out))
+  (let [out (clj-kondo/run! {:lint paths
+                             :config {:output {:analysis true}}})
+        analysis (:analysis out)
         {:keys [:var-definitions :var-usages]} analysis]
     (insert-vars! var-definitions)
     (insert-var-usages! var-usages)))
