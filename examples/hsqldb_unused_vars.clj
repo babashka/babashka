@@ -71,9 +71,9 @@
                           var-usages)))
 
 (defn analysis->db [paths]
-  (let [out (clj-kondo/run! {:lint paths
+  (let [results (clj-kondo/run! {:lint paths
                              :config {:output {:analysis true}}})
-        analysis (:analysis out)
+        analysis (:analysis results)
         {:keys [:var-definitions :var-usages]} analysis]
     (insert-vars! var-definitions)
     (insert-var-usages! var-usages)))
