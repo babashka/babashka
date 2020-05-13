@@ -1,7 +1,7 @@
 (ns babashka.impl.nrepl-server-test
   (:require
    [babashka.main :as main]
-   [babashka.nrepl.server :refer [start-server! stop-server!]]
+   [babashka.nrepl.server :refer [start-server! stop-server! parse-opt]]
    [babashka.test-utils :as tu]
    [babashka.wait :as wait]
    [bencode.core :as bencode]
@@ -181,7 +181,8 @@
       (if tu/jvm?
         (let [server (start-server!
                      (init {:namespaces main/namespaces
-                            :features #{:bb}}) "0.0.0.0:1668")]
+                            :features #{:bb}})
+                     (parse-opt "0.0.0.0:1668"))]
           (reset! server-state server))
         (let [pb (ProcessBuilder. ["./bb" "--nrepl-server" "0.0.0.0:1668"])
               _ (.redirectError pb ProcessBuilder$Redirect/INHERIT)
