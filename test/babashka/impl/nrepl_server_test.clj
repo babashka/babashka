@@ -44,7 +44,7 @@
           (recur))))))
 
 (defn nrepl-test []
-  (with-open [socket (java.net.Socket. "127.0.0.1" 1667)
+  (with-open [socket (java.net.Socket. "127.0.0.1" 1668)
               in (.getInputStream socket)
               in (java.io.PushbackInputStream. in)
               os (.getOutputStream socket)]
