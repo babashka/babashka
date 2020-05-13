@@ -7,7 +7,8 @@
         :url "https://github.com/borkdude/babashka"}
   :license {:name "Eclipse Public License 1.0"
             :url "http://opensource.org/licenses/eclipse-1.0.php"}
-  :source-paths ["src" "sci/src" "babashka.curl/src" "babashka.pods/src"]
+  :source-paths ["src" "sci/src" "babashka.curl/src" "babashka.pods/src"
+                 "babashka.nrepl/src"]
   ;; for debugging Reflector.java code:
   ;; :java-source-paths ["sci/reflector/src-java"]
   :java-source-paths ["src-java"]
