@@ -181,16 +181,16 @@
       (if tu/jvm?
         (let [server (start-server!
                      (init {:namespaces main/namespaces
-                            :features #{:bb}}) "0.0.0.0:1667")]
+                            :features #{:bb}}) "0.0.0.0:1668")]
           (reset! server-state server))
-        (let [pb (ProcessBuilder. ["./bb" "--nrepl-server" "0.0.0.0:1667"])
+        (let [pb (ProcessBuilder. ["./bb" "--nrepl-server" "0.0.0.0:1668"])
               _ (.redirectError pb ProcessBuilder$Redirect/INHERIT)
               ;; _ (.redirectOutput pb ProcessBuilder$Redirect/INHERIT)
               ;; env (.environment pb)
               ;; _ (.put env "BABASHKA_DEV" "true")
               proc (.start pb)]
           (reset! proc-state proc)))
-      (babashka.wait/wait-for-port "localhost" 1667)
+      (babashka.wait/wait-for-port "localhost" 1668)
       (nrepl-test)
       (finally
         (if tu/jvm?
