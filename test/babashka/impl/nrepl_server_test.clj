@@ -1,7 +1,7 @@
 (ns babashka.impl.nrepl-server-test
   (:require
-   [babashka.impl.nrepl-server :refer [start-server! stop-server!]]
    [babashka.main :as main]
+   [babashka.nrepl.server :refer [start-server! stop-server!]]
    [babashka.test-utils :as tu]
    [babashka.wait :as wait]
    [bencode.core :as bencode]
@@ -175,13 +175,14 @@
             (is (= "Hello\n" (:out reply)))))))))
 
 (deftest nrepl-server-test
-  (let [proc-state (atom nil)]
+  (let [proc-state (atom nil)
+        server-state (atom nil)]
     (try
       (if tu/jvm?
-        (future
-          (start-server!
-           (init {:namespaces main/namespaces
-                  :features #{:bb}}) "0.0.0.0:1667"))
+        (let [server (start-server!
+                     (init {:namespaces main/namespaces
+                            :features #{:bb}}) "0.0.0.0:1667")]
+          (reset! server-state server))
         (let [pb (ProcessBuilder. ["./bb" "--nrepl-server" "0.0.0.0:1667"])
               _ (.redirectError pb ProcessBuilder$Redirect/INHERIT)
               ;; _ (.redirectOutput pb ProcessBuilder$Redirect/INHERIT)
@@ -193,7 +194,7 @@
       (nrepl-test)
       (finally
         (if tu/jvm?
-          (stop-server!)
+          (stop-server! @server-state)
           (when-let [proc @proc-state]
             (.destroy ^Process proc)))))))
 

@@ -14,12 +14,12 @@
    [babashka.impl.common :as common]
    [babashka.impl.curl :refer [curl-namespace]]
    [babashka.impl.features :as features]
-   [babashka.impl.nrepl-server :as nrepl-server]
    [babashka.impl.pods :as pods]
    [babashka.impl.repl :as repl]
    [babashka.impl.socket-repl :as socket-repl]
    [babashka.impl.test :as t]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
+   [babashka.nrepl.server :as nrepl-server]
    [babashka.wait :as wait]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
@@ -300,7 +300,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
 (defn start-nrepl! [address ctx]
   (nrepl-server/start-server! ctx address)
   ;; hang until SIGINT
-  #_@(promise))
+  @(promise))
 
 (defn exit [n]
   (throw (ex-info "" {:bb/exit-code n})))

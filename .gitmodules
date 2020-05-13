@@ -8,3 +8,6 @@
 [submodule "babashka.pods"]
 	path = babashka.pods
 	url = https://github.com/babashka/babashka.pods
+[submodule "babashka.nrepl"]
+	path = babashka.nrepl
+	url = https://github.com/babashka/babashka.nrepl
