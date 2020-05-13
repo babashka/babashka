@@ -454,6 +454,9 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                         (let [res (cp/source-for-namespace loader namespace nil)]
                           (when uberscript (swap! uberscript-sources conj (:source res)))
                           res)))
+            data-readers (delay (time (when-let [{:keys [:loader]} @cp-state]
+                                        (prn (cp/getResources loader "data_readers.clj" nil)))))
+            _ (prn @data-readers)
             _ (when file (vars/bindRoot sci/file (.getCanonicalPath (io/file file))))
             ;; TODO: pull more of these values to compile time
             opts {:aliases aliases

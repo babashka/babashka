@@ -7,7 +7,8 @@
 (set! *warn-on-reflection* true)
 
 (defprotocol IResourceResolver
-  (getResource [this path opts]))
+  (getResource [this path opts])
+  (getResources [this path opts]))
 
 (deftype DirectoryResolver [path]
   IResourceResolver
@@ -18,26 +19,33 @@
           (java.net.URL. (str "file:"
                               (.getCanonicalPath f)))
           {:file (.getCanonicalPath f)
-           :source (slurp f)})))))
+           :source (slurp f)}))))
+  (getResources [this resource-path opts]
+    (if-let [r (getResource this resource-path opts)]
+      [r] [])))
 
-(defn path-from-jar
-  [^java.io.File jar-file path {:keys [:url?]}]
-  (with-open [jar (JarFile. jar-file)]
-    (let [entries (enumeration-seq (.entries jar))
-          entry (some (fn [^JarFile$JarFileEntry x]
-                        (let [nm (.getName x)]
-                          (when (and (not (.isDirectory x)) (= path nm))
-                            (if url?
-                              (java.net.URL.
-                               (str "jar:file:" (.getCanonicalPath jar-file) "!/" path))
-                              {:file path
-                               :source (slurp (.getInputStream jar x))})))) entries)]
-      entry)))
+(defn- paths-from-jar
+  ([^java.io.File jar-file path opts]
+   (paths-from-jar jar-file path opts some))
+  ([^java.io.File jar-file path {:keys [:url?]} f]
+   (with-open [jar (JarFile. jar-file)]
+     (let [entries (enumeration-seq (.entries jar))
+           entry (f (fn [^JarFile$JarFileEntry x]
+                      (let [nm (.getName x)]
+                        (when (and (not (.isDirectory x)) (= path nm))
+                          (if url?
+                            (java.net.URL.
+                             (str "jar:file:" (.getCanonicalPath jar-file) "!/" path))
+                            {:file path
+                             :source (slurp (.getInputStream jar x))})))) entries)]
+       entry))))
 
 (deftype JarFileResolver [path]
   IResourceResolver
   (getResource [this resource-path opts]
-    (path-from-jar path resource-path opts)))
+    (paths-from-jar path resource-path opts))
+  (getResources [this resource-path opts]
+    (paths-from-jar path resource-path keep)))
 
 (defn part->entry [part]
   (if (str/ends-with? part ".jar")
@@ -47,7 +55,9 @@
 (deftype Loader [entries]
   IResourceResolver
   (getResource [this resource-path opts]
-    (some #(getResource % resource-path opts) entries)))
+    (some #(getResource % resource-path opts) entries))
+  (getResources [this resource-path opts]
+    (keep #(getResource % resource-path opts) entries)))
 
 (defn loader [^String classpath]
   (let [parts (.split classpath (System/getProperty "path.separator"))
