@@ -298,9 +298,12 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
   @(promise))
 
 (defn start-nrepl! [address ctx]
-  (nrepl-server/start-server! ctx (nrepl-server/parse-opt address))
-  (binding [*out* *err*]
-    (println "For more info visit https://github.com/borkdude/babashka/blob/master/doc/repl.md#nrepl."))
+  (let [dev? (= "true" (System/getenv "BABASHKA_DEV"))
+        nrepl-opts (nrepl-server/parse-opt address)
+        nrepl-opts (assoc nrepl-opts :debug dev?)]
+    (nrepl-server/start-server! ctx nrepl-opts)
+    (binding [*out* *err*]
+      (println "For more info visit https://github.com/borkdude/babashka/blob/master/doc/repl.md#nrepl.")))
   ;; hang until SIGINT
   @(promise))
 
