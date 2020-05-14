@@ -4,7 +4,7 @@
             [sci.impl.namespaces :refer [copy-var]]
             [sci.impl.vars :as vars]))
 
-(def zip-ns (vars/->SciNamespace 'clojure.tools.cli nil))
+(def zip-ns (vars/->SciNamespace 'clojure.zip nil))
 
 (def zip-namespace
   {'zipper       (copy-var zip/zipper zip-ns)
