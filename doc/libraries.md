@@ -187,6 +187,36 @@ $ bb "(use 'doric.core) (println (table [:a :b :c] [{:a 1 :b 2 :c 3} {:a 4 :b 5 
 |---+---+---|
 ```
 
+### [clojure.data.zip](https://github.com/clojure/data.zip)
+
+Utilities for clojure.zip, among other things a more fluent way to work 
+with xml. 
+
+Small sample:
+``` clojure
+$ export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {org.clojure/data.zip {:mvn/version "1.0.0"}}}')
+
+$ cat data_zip_xml.clj
+(require '[clojure.data.xml :as xml])
+(require '[clojure.zip :as zip])
+(require '[clojure.data.zip.xml :refer [text attr attr= xml-> xml1-> text=]])
+
+(def data (str "<root>"
+               "  <character type=\"person\" name=\"alice\" />"
+               "  <character type=\"animal\" name=\"march hare\" />"
+               "</root>"))
+
+(let [xml  (-> data java.io.StringReader. xml/parse zip/xml-zip)]
+  (prn :alice-is-a (xml1-> xml :character [(attr= :name "alice")] (attr :type)))
+  (prn :animal-is-called (xml1-> xml :character [(attr= :type "animal")] (attr :name))))
+
+$ bb data_zip_xml.clj
+:alice-is-a "person"
+:animal-is-called "march hare"
+```
+(see for exaple [this article](https://blog.korny.info/2014/03/08/xml-for-fun-and-profit.html#datazip-for-zipper-awesomeness)
+for more on clojure.data.zip).
+
 ## Projects
 
 ### [deps.clj](https://github.com/borkdude/deps.clj)
