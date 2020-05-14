@@ -7,55 +7,39 @@
 (set! *warn-on-reflection* true)
 
 (defprotocol IResourceResolver
-  (getResource [this path opts])
-  (getResources [this path opts]))
+  (getResource [this paths opts])
+  (getResources [this paths opts]))
 
 (deftype DirectoryResolver [path]
   IResourceResolver
-  (getResource [this resource-path {:keys [:url?]}]
-    (if (vector? resource-path)
-      (some
-       (fn [resource-path]
-         (let [f (io/file path resource-path)]
-           (when (.exists f)
-             (if url?
-               (java.net.URL. (str "file:"
-                                   (.getCanonicalPath f)))
-               {:file (.getCanonicalPath f)
-                :source (slurp f)}))))
-       resource-path)
-      (let [f (io/file path resource-path)]
-        (when (.exists f)
-          (if url?
-            (java.net.URL. (str "file:"
-                                (.getCanonicalPath f)))
-            {:file (.getCanonicalPath f)
-             :source (slurp f)}))))))
+  (getResource [this resource-paths {:keys [:url?]}]
+    (some
+     (fn [resource-path]
+       (let [f (io/file path resource-path)]
+         (when (.exists f)
+           (if url?
+             (java.net.URL. (str "file:"
+                                 (.getCanonicalPath f)))
+             {:file (.getCanonicalPath f)
+              :source (slurp f)}))))
+     resource-paths)))
 
 (defn path-from-jar
-  [^java.io.File jar-file path {:keys [:url?]}]
-  (if (vector? path)
-    (with-open [jar (JarFile. jar-file)]
-      (some (fn [path]
-              (when-let [entry (.getEntry jar path)]
-                (if url?
-                  (java.net.URL.
-                   (str "jar:file:" (.getCanonicalPath jar-file) "!/" path))
-                  {:file path
-                   :source (slurp (.getInputStream jar entry))})))
-            path))
-    (with-open [jar (JarFile. jar-file)]
-      (when-let [entry (.getEntry jar path)]
-        (if url?
-          (java.net.URL.
-           (str "jar:file:" (.getCanonicalPath jar-file) "!/" path))
-          {:file path
-           :source (slurp (.getInputStream jar entry))})))))
+  [^java.io.File jar-file resource-paths {:keys [:url?]}]
+  (with-open [jar (JarFile. jar-file)]
+    (some (fn [path]
+            (when-let [entry (.getEntry jar path)]
+              (if url?
+                (java.net.URL.
+                 (str "jar:file:" (.getCanonicalPath jar-file) "!/" path))
+                {:file path
+                 :source (slurp (.getInputStream jar entry))})))
+          resource-paths)))
 
-(deftype JarFileResolver [path]
+(deftype JarFileResolver [jar-file]
   IResourceResolver
-  (getResource [this resource-path opts]
-    (path-from-jar path resource-path opts)))
+  (getResource [this resource-paths opts]
+    (path-from-jar jar-file resource-paths opts)))
 
 (defn part->entry [part]
   (if (str/ends-with? part ".jar")
@@ -64,10 +48,10 @@
 
 (deftype Loader [entries]
   IResourceResolver
-  (getResource [this resource-path opts]
-    (some #(getResource % resource-path opts) entries))
-  (getResources [this resource-path opts]
-    (keep #(getResource % resource-path opts) entries)))
+  (getResource [this resource-paths opts]
+    (some #(getResource % resource-paths opts) entries))
+  (getResources [this resource-paths opts]
+    (keep #(getResource % resource-paths opts) entries)))
 
 (defn loader [^String classpath]
   (let [parts (.split classpath (System/getProperty "path.separator"))
@@ -77,9 +61,9 @@
 (defn source-for-namespace [loader namespace opts]
   (let [ns-str (name namespace)
         ^String ns-str (munge ns-str)
-        path (.replace ns-str "." (System/getProperty "file.separator"))
-        paths (mapv #(str path %) [".bb" ".clj" ".cljc"])]
-    (getResource loader paths opts)))
+        base-path (.replace ns-str "." (System/getProperty "file.separator"))
+        resource-paths (mapv #(str base-path %) [".bb" ".clj" ".cljc"])]
+    (getResource loader resource-paths opts)))
 
 ;;;; Scratch
 
