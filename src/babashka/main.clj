@@ -11,6 +11,7 @@
    [babashka.impl.clojure.main :as clojure-main :refer [demunge]]
    [babashka.impl.clojure.pprint :refer [pprint-namespace]]
    [babashka.impl.clojure.stacktrace :refer [stacktrace-namespace]]
+   [babashka.impl.clojure.zip :refer [zip-namespace]]
    [babashka.impl.common :as common]
    [babashka.impl.curl :refer [curl-namespace]]
    [babashka.impl.features :as features]
@@ -350,6 +351,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
        'clojure.java.io io-namespace
        'cheshire.core cheshire-core-namespace
        'clojure.stacktrace stacktrace-namespace
+       'clojure.zip zip-namespace
        'clojure.main {'demunge demunge
                       'repl-requires clojure-main/repl-requires}
        'clojure.test t/clojure-test-namespace
