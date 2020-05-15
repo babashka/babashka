@@ -5,7 +5,7 @@
    [babashka.impl.cheshire :refer [cheshire-core-namespace]]
    [babashka.impl.classes :as classes]
    [babashka.impl.classpath :as cp]
-   [babashka.impl.clojure.core :refer [core-extras]]
+   [babashka.impl.clojure.core :as core :refer [core-extras]]
    [babashka.impl.clojure.java.io :refer [io-namespace]]
    [babashka.impl.clojure.java.shell :refer [shell-namespace]]
    [babashka.impl.clojure.main :as clojure-main :refer [demunge]]
@@ -423,7 +423,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
   (handle-sigint!)
   (binding [*unrestricted* true]
     (sci/binding [reflection-var false
-                  sci/ns (vars/->SciNamespace 'user nil)]
+                  core/data-readers @core/data-readers]
       (let [{:keys [:version :shell-in :edn-in :shell-out :edn-out
                     :help? :file :command-line-args
                     :expressions :stream?
