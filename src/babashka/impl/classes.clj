@@ -115,16 +115,16 @@
           java.lang.Long
           java.lang.NumberFormatException
           java.lang.Math
+          java.lang.Object
+          java.lang.Process
+          java.lang.ProcessBuilder
+          java.lang.ProcessBuilder$Redirect
           java.lang.Runtime
           java.lang.RuntimeException
-          java.lang.Object
           java.lang.String
           java.lang.StringBuilder
           java.lang.System
           java.lang.Throwable
-          java.lang.Process
-          java.lang.ProcessBuilder
-          java.lang.ProcessBuilder$Redirect
           java.math.BigDecimal
           java.math.BigInteger
           java.net.DatagramSocket

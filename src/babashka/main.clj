@@ -396,6 +396,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
     Character java.lang.Character
     Class java.lang.Class
     ClassNotFoundException java.lang.ClassNotFoundException
+    Comparable java.lang.Comparable
     Double java.lang.Double
     Exception java.lang.Exception
     IllegalArgumentException java.lang.IllegalArgumentException
