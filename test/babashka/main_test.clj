@@ -466,6 +466,9 @@
 (deftest arrays-copy-of-test
   (is (= "foo" (bb nil "(String. (java.util.Arrays/copyOf (.getBytes \"foo\") 3))"))))
 
+(deftest data-readers-test
+  (is (= 2 (bb nil "(set! *data-readers* {'t/tag inc}) #t/tag 1"))))
+
 ;;;; Scratch
 
 (comment

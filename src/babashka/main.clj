@@ -456,12 +456,6 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                         (let [res (cp/source-for-namespace loader namespace nil)]
                           (when uberscript (swap! uberscript-sources conj (:source res)))
                           res)))
-            data-readers (delay (time (when-let [{:keys [:loader]} @cp-state]
-                                        (prn (cp/getResources
-                                              loader
-                                              ["data_readers.clj"
-                                               "data-readers.cljc"] nil)))))
-            ;;_ (prn @data-readers)
             _ (when file (vars/bindRoot sci/file (.getCanonicalPath (io/file file))))
             ;; TODO: pull more of these values to compile time
             opts {:aliases aliases
@@ -490,7 +484,8 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                   :classes classes/class-map
                   :imports imports
                   :load-fn load-fn
-                  :dry-run uberscript}
+                  :dry-run uberscript
+                  :readers core/data-readers}
             opts (addons/future opts)
             sci-ctx (sci/init opts)
             _ (vreset! common/ctx sci-ctx)
