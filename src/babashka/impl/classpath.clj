@@ -19,8 +19,7 @@
          (when (.exists f)
            (if url?
              ;; manual conversion, faster than going through .toURI
-             (java.net.URL. (str "file:"
-                                 (.getCanonicalPath f)))
+             (java.net.URL. "file" nil (.getCanonicalPath f))
              {:file (.getCanonicalPath f)
               :source (slurp f)}))))
      resource-paths)))
@@ -32,8 +31,8 @@
             (when-let [entry (.getEntry jar path)]
               (if url?
                 ;; manual conversion, faster than going through .toURI
-                (java.net.URL.
-                 (str "jar:file:" (.getCanonicalPath jar-file) "!/" path))
+                (java.net.URL. "jar" nil
+                 (str "file:" (.getCanonicalPath jar-file) "!/" path))
                 {:file path
                  :source (slurp (.getInputStream jar entry))})))
           resource-paths)))
