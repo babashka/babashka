@@ -17,6 +17,8 @@
      (prn (str "Elapsed time: " (/ (double (- (. System (nanoTime)) start#)) 1000000.0) " msecs"))
      ret#))
 
+(def data-readers (sci/new-dynamic-var '*data-readers* nil))
+
 (def core-extras
   {'file-seq (copy-core-var file-seq)
    'agent (copy-core-var agent)
@@ -31,5 +33,5 @@
    'time (with-meta time* {:sci/macro true})
    'Throwable->map (copy-core-var Throwable->map)
    'compare-and-set! (copy-core-var compare-and-set!)
-   '*data-readers* (sci/new-dynamic-var '*data-readers* nil)
+   '*data-readers* data-readers
    'xml-seq (copy-core-var xml-seq)})
