@@ -180,6 +180,7 @@
           java.util.concurrent.LinkedBlockingQueue
           java.util.jar.JarFile
           java.util.jar.JarEntry
+          java.util.jar.JarFile$JarFileEntry
           java.util.regex.Pattern
           java.util.Base64
           java.util.Base64$Decoder
