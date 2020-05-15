@@ -43,6 +43,12 @@ can be found [here](../examples/pods):
   allows you to create and fire queries at a [sqlite](https://www.sqlite.org/)
   database. Implemented in Python.
 
+### Libraries
+
+If you are looking for libraries to deal with bencode, JSON or EDN, take a look
+at the existing pods or [nREPL](https://nrepl.org/nrepl/beyond_clojure.html)
+implementations for various languages.
+
 ### Naming
 
 When choosing a name for your pod, we suggest the following naming scheme:
