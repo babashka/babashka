@@ -24,7 +24,7 @@ Currently the following pods are available:
 - [pod-babashka-hsqldb](https://github.com/babashka/pod-babashka-hsqldb): a pod
   that allows you to create and fire queries at a
   [HSQLDB](http://www.hsqldb.org/) database.
-  - [pod-jaydeesimon-jsoup](https://github.com/jaydeesimon/pod-jaydeesimon-jsoup):
+- [pod-jaydeesimon-jsoup](https://github.com/jaydeesimon/pod-jaydeesimon-jsoup):
     a pod for parsing HTML using CSS queries backed by Jsoup.
 
 The name pod is inspired by [boot's pod
