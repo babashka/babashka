@@ -26,6 +26,8 @@ Currently the following pods are available:
   [HSQLDB](http://www.hsqldb.org/) database.
 - [pod-jaydeesimon-jsoup](https://github.com/jaydeesimon/pod-jaydeesimon-jsoup):
     a pod for parsing HTML using CSS queries backed by Jsoup.
+- [pod-lispyclouds-docker](https://github.com/lispyclouds/pod-lispyclouds-docker):
+  A pod for interacting with docker
 
 The name pod is inspired by [boot's pod
 feature](https://github.com/boot-clj/boot/wiki/Pods). It means _underneath_ or
