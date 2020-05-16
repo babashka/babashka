@@ -557,6 +557,19 @@ namespace which allows dynamically adding to the classpath.
 
 See [deps.clj](doc/deps.clj.md) for a babashka script that replaces the `clojure` bash script.
 
+## Data readers
+
+Data readers can be enabled by setting `*data-readers*` to a hashmap of symbols
+to functions or vars:
+
+``` clojure
+$ bb "(set! *data-readers* {'t/tag inc}) #t/tag 1"
+2
+```
+
+To preserve good startup time, babashka does not scan the classpath for
+`data_readers.clj` files.
+
 ## Uberscript
 
 The `--uberscript` option collects the expressions in
