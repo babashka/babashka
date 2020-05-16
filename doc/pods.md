@@ -232,8 +232,6 @@ Example:
 
 #### async
 
-Note: the async operation is very experimental and will likely change to a callback based implementation instead of using `core.async`.
-
 Pods may implement async functions that return one or more values at a later
 time in the future. Async functions must be declared as such as part of the
 `describe` response message:
