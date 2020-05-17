@@ -293,3 +293,5 @@ In the pod client:
 :foo
 nil
 ```
+
+Added in v0.0.96.
