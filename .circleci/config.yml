@@ -40,6 +40,7 @@ jobs:
           command: |
             script/test
             script/run_lib_tests
+            script/postgresql_test
       # - run:
       #     name: Run as tools.deps dependency
       #     command: |
