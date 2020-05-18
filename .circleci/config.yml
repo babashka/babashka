@@ -12,6 +12,8 @@ jobs:
     environment:
       LEIN_ROOT: "true"
       BABASHKA_PLATFORM: linux # could be used in jar name
+      BABASHKA_FEATURE_JVM: "true"
+      BABASHKA_FEATURE_POSTGRESQL: "true"
     resource_class: large
     steps:
       - checkout
@@ -40,7 +42,6 @@ jobs:
           command: |
             script/test
             script/run_lib_tests
-            script/postgresql_test
       # - run:
       #     name: Run as tools.deps dependency
       #     command: |
