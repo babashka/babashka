@@ -16,8 +16,6 @@
 (defn pg-feature-flag? []
   (= (System/getenv "BABASHKA_FEATURE_POSTGRESQL") "true"))
 
-(println jdbc-feature-flag? pg-feature-flag?)
-
 (deftest postgresql-test
   (when (= "embedded-postgres" (:dbtype db))
     (if (and tu/jvm? (jdbc-feature-flag?) (pg-feature-flag?))
@@ -33,10 +31,11 @@
                             "-e" "(load-file (io/file \"test-resources\" \"babashka\" \"embedded_pg_tests.clj\"))"
                             "-e" "(require '[embedded-pg-tests :as em-pg])"
                             "-e" "(def db {:dbtype \"postgres\" :port 54322 :user \"postgres\" :dbname \"postgres\"})"
+                            "-e" "(def expected-query-res [{:foo/foo \"foo\"} {:foo/foo \"bar\"} {:foo/foo \"baz\"}])"
                             "-e" "(em-pg/wait-for-postgres db)"
                             "-e" "(em-pg/create-table-test db)"
                             "-e" "(em-pg/insert-test db)"
-                            "-e" "(em-pg/query-test db)")]
+                            "-e" "(is (= expected-query-res (em-pg/query-test db)))")]
         (is (= bb-tests "true\n"))
         (.close pg-db-instance))
       (println "Did not run the pg-tests. Turn on the feature flags to run these tests."))))
