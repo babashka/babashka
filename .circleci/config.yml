@@ -38,6 +38,8 @@ jobs:
       - run:
           name: Run JVM tests
           command: |
+            export BABASHKA_FEATURE_JDBC=true
+            export BABASHKA_FEATURE_POSTGRESQL=true
             script/test
             script/run_lib_tests
       # - run:
