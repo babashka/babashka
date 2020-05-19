@@ -217,6 +217,25 @@ $ bb data_zip_xml.clj
 (see for exaple [this article](https://blog.korny.info/2014/03/08/xml-for-fun-and-profit.html#datazip-for-zipper-awesomeness)
 for more on clojure.data.zip).
 
+### [clj-psql](https://github.com/DarinDouglass/clj-psql)
+
+A small Clojure wrapper for interacting with `psql`.
+
+```clojure
+user> (psql/query conn "select name, subject from grades where grade = 100")
+   => ({:name "Bobby Tables", :subject "Math"}
+       {:name "Suzy Butterbean", :subject "Math"})
+```
+
+### [babashka-compatible hiccup scripts](https://github.com/lambdaisland/open-source/blob/2cfde3dfb460e72f047bf94e6f5ec7f519c6d7a0/src/lioss/hiccup.clj)
+
+There's also [subshell](https://github.com/lambdaisland/open-source/blob/master/src/lioss/subshell.clj)
+which is like sh/sh, but it inherits stdin/stdout/stderr, so that the user sees in real time what the subprocess is doing, and can possibly interact with it. More like how shelling out in a bash script works.
+
+### [babashka-test-action](https://github.com/marketplace/actions/babashka-test-action)
+
+Github Action to run clojure.test by Babashka.
+
 ## Projects
 
 ### [deps.clj](https://github.com/borkdude/deps.clj)
@@ -253,8 +272,16 @@ A collection of scripts developed by [@cldwalker](https://github.com/cldwalker).
 
 ### [krell template](https://github.com/ampersanda/krell-template-runner)
 
-Babashka scfript for creating React Native (Krell) project
+Babashka script for creating React Native (Krell) project
 
 ### [wee-httpd](https://github.com/bherrmann7/bb-common/blob/master/wee_httpd.bb)
 
 A wee multi-threaded web server
+
+### [covid19-babashka](https://github.com/agrison/covid19-babashka)
+
+A babashka script to obtain covid-19 related information. 
+
+### [bb-spotify](https://github.com/kolharsam/bb-spotify)
+
+Contol your spotify player using babashka.
