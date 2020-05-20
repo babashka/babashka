@@ -56,7 +56,7 @@
                                                "code" "
 (defn range-stream [val-cb done-cb & args]
  (babashka.pods/invoke \"pod.test-pod\" 'pod.test-pod/range-stream* args
-   {:handlers {:success #(val-cb (:value %)) :done (fn [m] (done-cb m))}})
+   {:handlers {:success val-cb :done done-cb}})
  nil)"}
                                               {"name" "assoc"}
                                               {"name" "error"}
@@ -135,7 +135,7 @@
           (debug "Running async range test")
           (let [prom (promise)]
             ((resolve 'pod.test-pod/range-stream)
-             prn (fn [_] (deliver prom :ok)) 1 10)
+             prn (fn [] (deliver prom :ok)) 1 10)
             @prom)
           (debug "Running exception test")
           (prn (try ((resolve 'pod.test-pod/error) 1 2 3)
