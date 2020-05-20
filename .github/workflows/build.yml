@@ -109,17 +109,17 @@ jobs:
         uses: actions/cache@v1
         id: cache-graalvm
         with:
-          path: ~/graalvm-ce-java8-19.3.1
-          key: ${{ runner.os }}-graalvm-19.3.1
+          path: ~/graalvm-ce-java8-19.3.2
+          key: ${{ runner.os }}-graalvm-19.3.2
           restore-keys: |
-                ${{ runner.os }}-graalvm-19.3.1
+                ${{ runner.os }}-graalvm-19.3.2
 
       - name: Download GraalVM
         run: |
           cd ~
-          if ! [ -d graalvm-ce-java8-19.3.1 ]; then
-            curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-19.3.1/graalvm-ce-java8-linux-amd64-19.3.1.tar.gz
-            tar xzf graalvm-ce-java8-linux-amd64-19.3.1.tar.gz
+          if ! [ -d graalvm-ce-java8-19.3.2 ]; then
+            curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-19.3.2/graalvm-ce-java8-linux-amd64-19.3.2.tar.gz
+            tar xzf graalvm-ce-java8-linux-amd64-19.3.2.tar.gz
           fi
 
       - name: Babashka version
@@ -132,7 +132,7 @@ jobs:
         run: |
           export BABASHKA_JAR=babashka-${{ steps.babashka-version.outputs.version }}-standalone.jar
           export BABASHKA_XMX="-J-Xmx6g"
-          export GRAALVM_HOME="$HOME/graalvm-ce-java8-19.3.1"
+          export GRAALVM_HOME="$HOME/graalvm-ce-java8-19.3.2"
           cp babashka-${{ steps.babashka-version.outputs.version }}-reflection.json reflection.json
           script/compile
 
@@ -186,17 +186,17 @@ jobs:
         uses: actions/cache@v1
         id: cache-graalvm
         with:
-          path: ~/graalvm-ce-java8-19.3.1
-          key: ${{ runner.os }}-graalvm-19.3.1
+          path: ~/graalvm-ce-java8-19.3.2
+          key: ${{ runner.os }}-graalvm-19.3.2
           restore-keys: |
-                ${{ runner.os }}-graalvm-19.3.1
+                ${{ runner.os }}-graalvm-19.3.2
 
       - name: Download GraalVM
         run: |
           cd ~
-          if ! [ -d graalvm-ce-java8-19.3.1 ]; then
-            curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-19.3.1/graalvm-ce-java8-linux-amd64-19.3.1.tar.gz
-            tar xzf graalvm-ce-java8-linux-amd64-19.3.1.tar.gz
+          if ! [ -d graalvm-ce-java8-19.3.2 ]; then
+            curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-19.3.2/graalvm-ce-java8-linux-amd64-19.3.2.tar.gz
+            tar xzf graalvm-ce-java8-linux-amd64-19.3.2.tar.gz
           fi
 
       - name: Babashka version
@@ -209,7 +209,7 @@ jobs:
         run: |
           export BABASHKA_JAR=babashka-${{ steps.babashka-version.outputs.version }}-standalone.jar
           export BABASHKA_XMX="-J-Xmx6g"
-          export GRAALVM_HOME="$HOME/graalvm-ce-java8-19.3.1"
+          export GRAALVM_HOME="$HOME/graalvm-ce-java8-19.3.2"
           export BABASHKA_STATIC=true
           cp babashka-${{ steps.babashka-version.outputs.version }}-reflection.json reflection.json
           script/compile
@@ -256,17 +256,17 @@ jobs:
         uses: actions/cache@v1
         id: cache-graalvm
         with:
-          path: ~/graalvm-ce-java8-19.3.1
-          key: ${{ runner.os }}-graalvm-19.3.1
+          path: ~/graalvm-ce-java8-19.3.2
+          key: ${{ runner.os }}-graalvm-19.3.2
           restore-keys: |
-                ${{ runner.os }}-graalvm-19.3.1
+                ${{ runner.os }}-graalvm-19.3.2
 
       - name: Download GraalVM
         run: |
           cd ~
-          if ! [ -d graalvm-ce-java8-19.3.1 ]; then
-            curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-19.3.1/graalvm-ce-java8-darwin-amd64-19.3.1.tar.gz
-            tar xzf graalvm-ce-java8-darwin-amd64-19.3.1.tar.gz
+          if ! [ -d graalvm-ce-java8-19.3.2 ]; then
+            curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-19.3.2/graalvm-ce-java8-darwin-amd64-19.3.2.tar.gz
+            tar xzf graalvm-ce-java8-darwin-amd64-19.3.2.tar.gz
           fi
 
       - name: Babashka version
@@ -279,7 +279,7 @@ jobs:
         run: |
           export BABASHKA_JAR=babashka-${{ steps.babashka-version.outputs.version }}-standalone.jar
           export BABASHKA_XMX="-J-Xmx6g"
-          export GRAALVM_HOME="$HOME/graalvm-ce-java8-19.3.1/Contents/Home"
+          export GRAALVM_HOME="$HOME/graalvm-ce-java8-19.3.2/Contents/Home"
           cp babashka-${{ steps.babashka-version.outputs.version }}-reflection.json reflection.json
           script/compile
 
