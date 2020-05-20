@@ -3,7 +3,6 @@
   (:require [babashka.pods :as pods]
             [bencode.core :as bencode]
             [cheshire.core :as cheshire]
-            [clojure.core.async :as async]
             [clojure.edn :as edn]
             [clojure.java.io :as io])
   (:import [java.io PushbackInputStream])
@@ -54,7 +53,11 @@
                                     [{"name" "pod.test-pod"
                                       "vars" [{"name" "add-sync"}
                                               {"name" "range-stream"
-                                               "async" "true"}
+                                               "code" "
+(defn range-stream [val-cb done-cb & args]
+ (babashka.pods/invoke \"pod.test-pod\" 'pod.test-pod/range-stream* args
+   {:handlers {:success #(val-cb (:value %)) :done (fn [m] (done-cb m))}})
+ nil)"}
                                               {"name" "assoc"}
                                               {"name" "error"}
                                               {"name" "print"}
@@ -75,7 +78,7 @@
                                                  {"value" (write-fn (apply + args))
                                                   "id" id
                                                   "status" ["done"]})
-                          pod.test-pod/range-stream
+                          pod.test-pod/range-stream*
                           (let [rng (apply range args)]
                             (doseq [v rng]
                               (write
@@ -129,13 +132,11 @@
         (do
           (debug "Running synchronous add test")
           (prn ((resolve 'pod.test-pod/add-sync) 1 2 3))
-          (debug "Running async stream test")
-          (let [chan ((resolve 'pod.test-pod/range-stream) 1 10)]
-            (loop []
-              (when-let [x (async/<!! chan)]
-                (debug "Received" x)
-                (prn x)
-                (recur))))
+          (debug "Running async range test")
+          (let [prom (promise)]
+            ((resolve 'pod.test-pod/range-stream)
+             prn (fn [_] (deliver prom :ok)) 1 10)
+            @prom)
           (debug "Running exception test")
           (prn (try ((resolve 'pod.test-pod/error) 1 2 3)
                     (catch clojure.lang.ExceptionInfo e
