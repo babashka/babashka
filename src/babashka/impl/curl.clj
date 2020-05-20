@@ -12,4 +12,5 @@
    'patch (copy-var curl/patch tns)
    'post (copy-var curl/post tns)
    'put (copy-var curl/put tns)
-   'head (copy-var curl/head tns)})
+   'head (copy-var curl/head tns)
+   'delete (copy-var curl/delete tns)})
