@@ -38,6 +38,8 @@ jobs:
       - run:
           name: Run JVM tests
           command: |
+            export BABASHKA_FEATURE_JDBC=true
+            export BABASHKA_FEATURE_POSTGRESQL=true
             script/test
             script/run_lib_tests
       # - run:
@@ -52,7 +54,7 @@ jobs:
           name: Create uberjar
           command: |
             mkdir -p /tmp/release
-            lein do clean, uberjar
+            script/uberjar
             VERSION=$(cat resources/BABASHKA_VERSION)
             cp target/babashka-$VERSION-standalone.jar /tmp/release/babashka-$VERSION-standalone.jar
       - store_artifacts:
@@ -110,6 +112,7 @@ jobs:
       - run:
           name: Build binary
           command: |
+            script/uberjar
             script/compile
           no_output_timeout: 30m
       - run:
@@ -181,6 +184,7 @@ jobs:
       - run:
           name: Build binary
           command: |
+            script/uberjar
             script/compile
           no_output_timeout: 30m
       - run:
@@ -244,6 +248,7 @@ jobs:
       - run:
           name: Build binary
           command: |
+            script/uberjar
             script/compile
           no_output_timeout: 30m
       - run:

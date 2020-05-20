@@ -1,10 +1,10 @@
 (ns babashka.impl.nrepl-server-test
   (:require
-   [babashka.impl.bencode.core :as bencode]
-   [babashka.impl.nrepl-server :refer [start-server! stop-server!]]
    [babashka.main :as main]
+   [babashka.nrepl.server :refer [start-server! stop-server! parse-opt]]
    [babashka.test-utils :as tu]
    [babashka.wait :as wait]
+   [bencode.core :as bencode]
    [clojure.test :as t :refer [deftest is testing]]
    [sci.impl.opts :refer [init]])
   (:import [java.lang ProcessBuilder$Redirect]))
@@ -44,7 +44,7 @@
           (recur))))))
 
 (defn nrepl-test []
-  (with-open [socket (java.net.Socket. "127.0.0.1" 1667)
+  (with-open [socket (java.net.Socket. "127.0.0.1" 1668)
               in (.getInputStream socket)
               in (java.io.PushbackInputStream. in)
               os (.getOutputStream socket)]
@@ -175,25 +175,27 @@
             (is (= "Hello\n" (:out reply)))))))))
 
 (deftest nrepl-server-test
-  (let [proc-state (atom nil)]
+  (let [proc-state (atom nil)
+        server-state (atom nil)]
     (try
       (if tu/jvm?
-        (future
-          (start-server!
-           (init {:namespaces main/namespaces
-                  :features #{:bb}}) "0.0.0.0:1667"))
-        (let [pb (ProcessBuilder. ["./bb" "--nrepl-server" "0.0.0.0:1667"])
+        (let [server (start-server!
+                     (init {:namespaces main/namespaces
+                            :features #{:bb}})
+                     (parse-opt "0.0.0.0:1668"))]
+          (reset! server-state server))
+        (let [pb (ProcessBuilder. ["./bb" "--nrepl-server" "0.0.0.0:1668"])
               _ (.redirectError pb ProcessBuilder$Redirect/INHERIT)
               ;; _ (.redirectOutput pb ProcessBuilder$Redirect/INHERIT)
               ;; env (.environment pb)
               ;; _ (.put env "BABASHKA_DEV" "true")
               proc (.start pb)]
           (reset! proc-state proc)))
-      (babashka.wait/wait-for-port "localhost" 1667)
+      (babashka.wait/wait-for-port "localhost" 1668)
       (nrepl-test)
       (finally
         (if tu/jvm?
-          (stop-server!)
+          (stop-server! @server-state)
           (when-let [proc @proc-state]
             (.destroy ^Process proc)))))))
 

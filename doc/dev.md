@@ -20,7 +20,7 @@ $ git submodule update --recursive
 
 `lein repl` will get you a standard REPL/nREPL connection. To work on tests use `lein with-profiles +test repl`.
 
-### Adding classes
+## Adding classes
 
 Add necessary classes to `babashka/impl/classes.clj`.  For every addition, write
 a unit test, so it's clear why it is added and removing it will break the
@@ -29,9 +29,7 @@ of a class in `:instance-check`, `:constructors`, `:methods`, `:fields` or
 `:custom`.
 
 The `reflection.json` file that is needed for GraalVM compilation is generated
-with:
-
-    lein with-profiles +reflection run
+as part of `script/uberjar`.
 
 ## Test
 
@@ -45,21 +43,49 @@ Test the native version:
 
 ## Build
 
-To build this project, set `$GRAALVM_HOME` to the GraalVM distribution directory. Currently we are using GraalVM JDK8.
+See [build.md](build.md).
 
-Then run:
+## JDBC
 
-    $ script/compile
+Findings from various experiments with JDBC drivers in babashka:
 
-To tweak maximum heap size:
+- Postgres: adds 3MB to the binary. It seems the maintainers have put in effort
+  to make the driver compatible with Graal. The driver is part of `bb` since
+  `v0.0.89`.
+- Sqlite: I feel like I'm close to a working solution, but it hangs. It adds
+  20MB to the binary. Since sqlite has a nice CLI we could also just shell out
+  to it (there's an example in the examples dir). We could also build a
+  `babashka.sqlite` namespace around the CLI maybe similar to
+  `babashka.curl`. See [#385](https://github.com/borkdude/babashka/issues/385)
+  for details.
+- HSQLDB: easy to get going with Graalvm. Adds 10 MB to the binary. It's under a
+  feature flag right now on master. See [build.md](build.md) for details. Derby
+  and H2 are known to not work with GraalVM, so far this is the "best" embedded
+  option from a Graal perspective.  Setting the -Xmx value for Docker to 4500m
+  got it to crash. 4800m did work, but it took 17 minutes (compared to 10
+  minutes without this feature).
+- MySQL / MariaDB: can't get those to work yet. Work in progress in issue
+  [#387](https://github.com/borkdude/babashka/issues/387).
 
-```
-$ BABASHKA_XMX="-J-Xmx4g" script/compile
-```
+To progress work on sqlite and mySQL, I need a working Clojure example. If you
+want to contribute, consider making a an example Clojure GraalVM CLI that puts
+something in a sqlite / mysql DB and reads something from it.
 
 ## Binary size
 
 Keep notes here about how adding libraries and classes to Babashka affects the binary size.
+We're registering the size of the macOS binary (as built on CircleCI).
+
+2020/05/01 Removed `next.jdbc` and postgres JDBC driver: 48304980
+
+2020/04/23 Added `next.jdbc` and postgres JDBC driver:
+(- 51019836 48099780) = 2920kb added
+
+2020/04/23 Added BigDecimal
+(- 48103868 47857732) = 246kb added
+
+2020/04/18 Added clojure.data.xml
+47808572 - 45923028 = 1886kb added.
 
 2020/03/29 Added clj-yaml for parsing and generating yaml.
 45196996 - 42626884 = 2570kb added.

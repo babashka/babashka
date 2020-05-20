@@ -17,6 +17,18 @@
   (edn/read-string (apply test-utils/bb (when (some? input) (str input)) (map str args))))
 
 (deftest parse-opts-test
+  (is (= {:nrepl "1667"}
+         (main/parse-opts ["--nrepl-server"])))
+  (is (= {:socket-repl "1666"}
+         (main/parse-opts ["--socket-repl"])))
+  (is (= {:nrepl "1667", :classpath "src"}
+         (main/parse-opts ["--nrepl-server" "-cp" "src"])))
+  (is (= {:socket-repl "1666", :expressions ["123"]}
+         (main/parse-opts ["--socket-repl" "-e" "123"])))
+  (is (= {:socket-repl "1666", :expressions ["123"]}
+         (main/parse-opts ["--socket-repl" "1666" "-e" "123"])))
+  (is (= {:nrepl "1666", :expressions ["123"]}
+         (main/parse-opts ["--nrepl-server" "1666" "-e" "123"])))
   (is (= 123 (bb nil "(println 123)")))
   (is (= 123 (bb nil "-e" "(println 123)")))
   (is (= 123 (bb nil "--eval" "(println 123)")))
@@ -25,7 +37,10 @@
     (is (thrown-with-msg? Exception #"does not exist" (bb nil "foo.clj")))
     (is (thrown-with-msg? Exception #"does not exist" (bb nil "-help"))))
   (is (= "1 2 3" (bb nil "-e" "(require '[clojure.string :as str1])" "-e" "(str1/join \" \" [1 2 3])")))
-  (is (= '("-e" "1") (bb nil "-e" "*command-line-args*" "--" "-e" "1"))))
+  (is (= '("-e" "1") (bb nil "-e" "*command-line-args*" "--" "-e" "1")))
+  (let [v (bb nil "--describe")]
+    (is (:babashka/version v))
+    (is (:feature/xml v))))
 
 (deftest print-error-test
   (is (thrown-with-msg? Exception #"java.lang.NullPointerException"
@@ -99,9 +114,8 @@
         exit-code (sci/with-bindings {sci/out out
                                       sci/err err}
                     (binding [*out* out *err* err]
-                      (main/main "--time" "(println \"Hello world!\") (System/exit 42)")))]
+                      (main/main "(println \"Hello world!\") (System/exit 42)")))]
     (is (= (str out) "Hello world!\n"))
-    (is (re-find #"took" (str err)))
     (is (= 42 exit-code))))
 
 (deftest malformed-command-line-args-test
@@ -172,14 +186,16 @@
   (is (true? (bb nil "(.canWrite (io/file \"README.md\"))"))))
 
 (deftest pipe-test
-  (when test-utils/native?
+  (when (and test-utils/native?
+             (not main/windows?))
     (let [out (:out (sh "bash" "-c" "./bb -o '(range)' |
                          ./bb --stream '(* *input* *input*)' |
                          head -n10"))
           out (str/split-lines out)
           out (map edn/read-string out)]
       (is (= (take 10 (map #(* % %) (range))) out))))
-  (when test-utils/native?
+  (when (and test-utils/native?
+             (not main/windows?))
     (let [out (:out (sh "bash" "-c" "./bb -O '(repeat \"dude\")' |
                          ./bb --stream '(str *input* \"rino\")' |
                          ./bb -I '(take 3 *input*)'"))
@@ -368,11 +384,16 @@
   (is (true? (bb nil "(nil? *command-line-args*)")))
   (is (= ["1" "2" "3"] (bb nil "*command-line-args*" "1" "2" "3"))))
 
-(deftest need-constructors-test
+(deftest constructors-test
   (testing "the clojure.lang.Delay constructor works"
     (is (= 1 (bb nil "@(delay 1)"))))
   (testing "the clojure.lang.MapEntry constructor works"
     (is (true? (bb nil "(= (first {1 2}) (clojure.lang.MapEntry. 1 2))")))))
+
+(deftest clojure-data-xml-test
+  (is (= "<?xml version=\"1.0\" encoding=\"UTF-8\"?><items><item>1</item><item>2</item></items>"
+         (bb nil "(let [xml (xml/parse-str \"<items><item>1</item><item>2</item></items>\")] (xml/emit-str xml))")))
+  (is (= "0.0.87-SNAPSHOT" (bb nil "examples/pom_version.clj" (.getPath (io/file "test-resources" "pom.xml"))))))
 
 (deftest uberscript-test
   (let [tmp-file (java.io.File/createTempFile "uberscript" ".clj")]
@@ -390,7 +411,16 @@
 
 (deftest pprint-test
   (testing "writer"
-    (is (string? (bb nil "(let [sw (java.io.StringWriter.)] (clojure.pprint/pprint (range 10) sw) (str sw))")))))
+    (is (string? (bb nil "(let [sw (java.io.StringWriter.)] (clojure.pprint/pprint (range 10) sw) (str sw))"))))
+  (testing "*print-right-margin*"
+    (is (= "(0\n 1\n 2\n 3\n 4\n 5\n 6\n 7\n 8\n 9)\n" (bb nil "
+(let [sw (java.io.StringWriter.)]
+  (binding [clojure.pprint/*print-right-margin* 5]
+    (clojure.pprint/pprint (range 10) sw)) (str sw))")))
+    (is (= "(0 1 2 3 4 5 6 7 8 9)\n" (bb nil "
+(let [sw (java.io.StringWriter.)]
+  (binding [clojure.pprint/*print-right-margin* 50]
+    (clojure.pprint/pprint (range 10) sw)) (str sw))")))))
 
 (deftest read-string-test
   (testing "namespaced keyword via alias"
@@ -432,6 +462,12 @@
   (is (str/starts-with?
        (bb nil "(yaml/generate-string [{:name \"John Smith\", :age 33} {:name \"Mary Smith\", :age 27}])")
        "-")))
+
+(deftest arrays-copy-of-test
+  (is (= "foo" (bb nil "(String. (java.util.Arrays/copyOf (.getBytes \"foo\") 3))"))))
+
+(deftest data-readers-test
+  (is (= 2 (bb nil "(set! *data-readers* {'t/tag inc}) #t/tag 1"))))
 
 ;;;; Scratch
 

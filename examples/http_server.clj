@@ -1,5 +1,9 @@
 #!/usr/bin/env bb
 
+;; This example creates a file serving web server
+;; It accepts a single connection from a browser and serves content to the connected browser
+;; after the connection times out, this script will serve no more.
+
 (import (java.net ServerSocket))
 (require '[clojure.string :as string]
          '[clojure.java.io :as io])

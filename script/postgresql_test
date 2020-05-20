@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+BABASHKA_FEATURE_JDBC=true
+BABASHKA_FEATURE_POSTGRESQL=true
+lein test :only babashka.postgresql-test

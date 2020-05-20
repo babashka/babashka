@@ -1,6 +1,6 @@
 (ns babashka.impl.bencode
   {:no-doc true}
-  (:require [babashka.impl.bencode.core :as bencode]
+  (:require [bencode.core :as bencode]
             [sci.impl.namespaces :refer [copy-var]]
             [sci.impl.vars :as vars]))
 

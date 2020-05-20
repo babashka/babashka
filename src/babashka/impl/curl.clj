@@ -12,5 +12,4 @@
    'patch (copy-var curl/patch tns)
    'post (copy-var curl/post tns)
    'put (copy-var curl/put tns)
-   'head (copy-var curl/head tns)
-   'curl-command (copy-var curl/curl-command tns)})
+   'head (copy-var curl/head tns)})

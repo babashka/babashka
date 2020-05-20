@@ -1,59 +1,84 @@
 #!/usr/bin/env bash
 
-set -eo pipefail
+set -eou pipefail
 
-if [ -z "$BABASHKA_XMX" ]; then
-    export BABASHKA_XMX="-J-Xmx3g"
-fi
+BABASHKA_XMX=${BABASHKA_XMX:-"-J-Xmx4500m"}
 
 if [ -z "$GRAALVM_HOME" ]; then
     echo "Please set GRAALVM_HOME"
     exit 1
 fi
 
-"$GRAALVM_HOME/bin/gu" install native-image || true
-
 BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
+
+BABASHKA_JAR=${BABASHKA_JAR:-"target/babashka-$BABASHKA_VERSION-standalone.jar"}
+
+if [[ ! -f "$BABASHKA_JAR" ]]
+then
+    echo "Please run script/uberjar first."
+    exit 1
+fi
+
+"$GRAALVM_HOME/bin/gu" install native-image
 
 export JAVA_HOME=$GRAALVM_HOME
 
 SVM_JAR=$(find "$GRAALVM_HOME" | grep svm.jar)
-$GRAALVM_HOME/bin/javac -cp "$SVM_JAR" resources/CutOffCoreServicesDependencies.java
+"$GRAALVM_HOME/bin/javac" -cp "$SVM_JAR" resources/CutOffCoreServicesDependencies.java
 
 if [ -z "$BABASHKA_JAR" ]; then
-   lein with-profiles +reflection,+native-image do run
-   lein do clean, uberjar
-  BABASHKA_JAR=${BABASHKA_JAR:-"target/babashka-$BABASHKA_VERSION-standalone.jar"}
+    lein with-profiles +reflection,+native-image "do" run
+    lein "do" clean, uberjar
+    BABASHKA_JAR=${BABASHKA_JAR:-"target/babashka-$BABASHKA_VERSION-standalone.jar"}
 fi
 
 BABASHKA_BINARY=${BABASHKA_BINARY:-"bb"}
 
-args=( -jar $BABASHKA_JAR \
-            -H:Name=$BABASHKA_BINARY \
-            -H:+ReportExceptionStackTraces \
-            -J-Dclojure.spec.skip-macros=true \
-            -J-Dclojure.compiler.direct-linking=true \
-            "-H:IncludeResources=BABASHKA_VERSION" \
-            "-H:IncludeResources=SCI_VERSION" \
-            -H:ReflectionConfigurationFiles=reflection.json \
-            --initialize-at-run-time=java.lang.Math\$RandomNumberGeneratorHolder \
-            --initialize-at-build-time \
-            -H:Log=registerResource: \
-            -H:EnableURLProtocols=http,https \
-            --enable-all-security-services \
-            -H:+JNI \
-            --verbose \
-            --no-fallback \
-            --no-server \
-            --report-unsupported-elements-at-runtime \
-            "$BABASHKA_XMX" )
+args=( "-jar" "$BABASHKA_JAR"
+       "-H:Name=$BABASHKA_BINARY"
+       "-H:+ReportExceptionStackTraces"
+       "-J-Dclojure.spec.skip-macros=true"
+       "-J-Dclojure.compiler.direct-linking=true"
+       "-H:IncludeResources=BABASHKA_VERSION"
+       "-H:IncludeResources=SCI_VERSION"
+       "-H:ReflectionConfigurationFiles=reflection.json"
+       "--initialize-at-run-time=java.lang.Math\$RandomNumberGeneratorHolder"
+       "--initialize-at-build-time"
+       "-H:Log=registerResource:"
+       "-H:EnableURLProtocols=http,https"
+       "--enable-all-security-services"
+       "-H:+JNI"
+       "--verbose"
+       "--no-fallback"
+       "--no-server"
+       "--report-unsupported-elements-at-runtime"
+       "--initialize-at-run-time=org.postgresql.sspi.SSPIClient"
+       "$BABASHKA_XMX" )
+
+BABASHKA_STATIC=${BABASHKA_STATIC:-}
 
 if [ "$BABASHKA_STATIC" = "true" ]; then
     args+=("--static")
 fi
 
-$GRAALVM_HOME/bin/native-image "${args[@]}"
+BABASHKA_FEATURE_HSQLDB=${BABASHKA_FEATURE_HSQLDB:-}
 
-if [ ! -z "$(command -v lein)" ]; then
-    lein clean
+if [ "$BABASHKA_FEATURE_HSQLDB" = "true" ]; then
+    args+=("-H:IncludeResources=org/hsqldb/.*\.properties" "-H:IncludeResources=org/hsqldb/.*\.sql")
 fi
+
+BABASHKA_LEAN=${BABASHKA_LEAN:-}
+
+if [ "$BABASHKA_LEAN" = "true" ]
+then
+    export BABASHKA_FEATURE_JDBC=false
+    export BABASHKA_FEATURE_POSTGRESQL=false
+    export BABASHKA_FEATURE_HSQLDB=false
+    export BABASHKA_FEATURE_XML=false
+    export BABASHKA_FEATURE_YAML=false
+    export BABASHKA_FEATURE_CORE_ASYNC=false
+    export BABASHKA_FEATURE_CSV=false
+    export BABAHSKA_FEATURE_TRANSIT=false
+fi
+
+"$GRAALVM_HOME/bin/native-image" "${args[@]}"

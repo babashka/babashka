@@ -14,8 +14,8 @@ ENV BABASHKA_STATIC="true"
 ENV BABASHKA_XMX=$BABASHKA_XMX
 
 COPY . .
+RUN ./script/uberjar
 RUN ./script/compile
-
 
 FROM alpine:latest
 
