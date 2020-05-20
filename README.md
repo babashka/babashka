@@ -787,9 +787,10 @@ Differences with Clojure:
 
 A list of projects (scripts, libraries and tools) known to work with babashka.
 
-## [Pods](doc/pods.md)
+## Pods
 
-Pods are a way of extending babashka using other programs.
+Pods are a way of extending babashka using other programs. Documentation is
+available in the [library repo](https://github.com/babashka/babashka.pods).
 
 ## Package babashka script as a AWS Lambda
 
