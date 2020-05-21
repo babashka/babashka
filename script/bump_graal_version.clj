@@ -14,8 +14,7 @@
 ;; Currently we use GraalVM java8-19.3.2
 
 (ns bump-graal-version
-  (:require [clojure.java.shell :as shell]
-            [clojure.string :as str]))
+  (:require [clojure.string :as str]))
 
 (defn display-help []
   (println (->> [""
@@ -34,6 +33,8 @@
    ".circleci/config.yml"
    "appveyor.yml"])
 
+;; We might have to keep changing this every time
+;; the version is bumped
 (def current-version "19.3.2")
 
 (def valid-bumps ["19.3.2", "20.1.0"])
@@ -42,24 +43,19 @@
   [version]
   (some #(= % version) valid-bumps))
 
-(defn run-shell
-  [sed-instr file]
-  ;; the empty string is added after -i so that
-  ;; a backup file isn't generated.
-  ;; this is issue specific to macOS
-  (shell/sh "sed" "-i" "" "-e" sed-instr file))
+(defn replace-version
+  [file new-version]
+  (let [file-contents (slurp file)]
+    (str/replace file-contents current-version new-version)))
 
 (defn bump-version
   [new-version]
-  (let [sed-instr (str "s/" current-version "/" new-version "/g")
-        runfn (partial run-shell sed-instr)]
     (doseq [file files-to-edit]
-      (let [exec-res (runfn file)
-            exit-res (:exit exec-res)
-            err-res (:err exec-res)]
-        (if (zero? exit-res)
-          (println "Updated file: " file)
-          (println "There was an error updating: " file "\n" err-res))))))
+      (let [exec-res (replace-version file new-version)]
+        (try (spit file exec-res)
+          (catch Exception e (str "There was an error: " (.getMessage e)))
+             (finally
+               (println "Done with : " file))))))
 
 (defn exec-script []
   (let [arg *command-line-args*
