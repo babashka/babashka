@@ -246,6 +246,7 @@ jobs:
       - run:
           name: Build binary
           command: |
+            export PATH=$GRAALVM_HOME/bin:$PATH
             script/uberjar
             script/compile
           no_output_timeout: 30m
