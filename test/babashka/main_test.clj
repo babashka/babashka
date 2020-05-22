@@ -14,7 +14,8 @@
   (println))
 
 (defn bb [input & args]
-  (edn/read-string (apply test-utils/bb (when (some? input) (str input)) (map str args))))
+  (edn/read-string
+   (apply test-utils/bb (when (some? input) (str input)) (map str args))))
 
 (deftest parse-opts-test
   (is (= {:nrepl "1667"}
@@ -468,6 +469,9 @@
 
 (deftest data-readers-test
   (is (= 2 (bb nil "(set! *data-readers* {'t/tag inc}) #t/tag 1"))))
+
+(deftest ordered-test
+  #_(is (= (ordered-map :a 1 :b 2) (bb nil "(flatland.ordered.map/ordered-map :a 1 :b 2)"))))
 
 ;;;; Scratch
 
