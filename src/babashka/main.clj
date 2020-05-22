@@ -15,6 +15,7 @@
    [babashka.impl.common :as common]
    [babashka.impl.curl :refer [curl-namespace]]
    [babashka.impl.features :as features]
+   [babashka.impl.ordered :refer [ordered-map-ns]]
    [babashka.impl.pods :as pods]
    [babashka.impl.repl :as repl]
    [babashka.impl.socket-repl :as socket-repl]
@@ -359,7 +360,8 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
        'clojure.pprint pprint-namespace
        'babashka.curl curl-namespace
        'babashka.pods pods/pods-namespace
-       'bencode.core bencode-namespace}
+       'bencode.core bencode-namespace
+       'flatland.ordered.map ordered-map-ns}
     features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace))
     features/yaml? (assoc 'clj-yaml.core @(resolve 'babashka.impl.yaml/yaml-namespace))
     features/jdbc? (assoc 'next.jdbc @(resolve 'babashka.impl.jdbc/njdbc-namespace)
