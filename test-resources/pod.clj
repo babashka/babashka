@@ -46,24 +46,27 @@
                 op (read-string op)
                 op (keyword op)]
             (case op
-              :describe (do (write {"format" (if (= format :json)
-                                               "json"
-                                               "edn")
-                                    "namespaces"
-                                    [{"name" "pod.test-pod"
-                                      "vars" [{"name" "add-sync"}
-                                              {"name" "range-stream"
-                                               "code" "
+              :describe
+              (do (write {"format" (if (= format :json)
+                                     "json"
+                                     "edn")
+                          "readers" {"ordered/map" "flatland.ordered.map/ordered-map"}
+                          "namespaces"
+                          [{"name" "pod.test-pod"
+                            "vars" [{"name" "add-sync"}
+                                    {"name" "range-stream"
+                                     "code" "
 (defn range-stream [val-cb done-cb & args]
  (babashka.pods/invoke \"pod.test-pod\" 'pod.test-pod/range-stream* args
    {:handlers {:success val-cb :done done-cb}})
  nil)"}
-                                              {"name" "assoc"}
-                                              {"name" "error"}
-                                              {"name" "print"}
-                                              {"name" "print-err"}]}]
-                                    "ops" {"shutdown" {}}})
-                            (recur))
+                                    {"name" "assoc"}
+                                    {"name" "error"}
+                                    {"name" "print"}
+                                    {"name" "print-err"}
+                                    {"name" "ordered-map"}]}]
+                          "ops" {"shutdown" {}}})
+                  (recur))
               :invoke (let [var (-> (get message "var")
                                     read-string
                                     symbol)
@@ -112,7 +115,12 @@
                                 "id" id})
                               (write
                                {"status" ["done"]
-                                "id" id})))
+                                "id" id}))
+                          pod.test-pod/ordered-map
+                          (write
+                           {"value" "#ordered/map([:a 1] [:b 2])"
+                            "status" ["done"]
+                            "id" id}))
                         (recur))
               :shutdown (System/exit 0))))))))
 
@@ -144,4 +152,8 @@
           (debug "Running print test")
           ((resolve 'pod.test-pod/print) "hello" "print" "this" "debugging" "message")
           (debug "Running print-err test")
-          ((resolve 'pod.test-pod/print-err) "hello" "print" "this" "error"))))))
+          ((resolve 'pod.test-pod/print-err) "hello" "print" "this" "error")
+          (debug "Running reader test")
+          (require '[flatland.ordered.map :refer [ordered-map]])
+          (prn (= ((resolve 'flatland.ordered.map/ordered-map) :a 1 :b 2)
+                  ((resolve 'pod.test-pod/ordered-map)))))))))

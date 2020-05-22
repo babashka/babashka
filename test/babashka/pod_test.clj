@@ -11,7 +11,7 @@
                      native?
                      (conj "--native")))
         err (str sw)]
-    (is (= "6\n1\n2\n3\n4\n5\n6\n7\n8\n9\n\"Illegal arguments / {:args (1 2 3)}\"\n(\"hello\" \"print\" \"this\" \"debugging\" \"message\")\n" res))
+    (is (= "6\n1\n2\n3\n4\n5\n6\n7\n8\n9\n\"Illegal arguments / {:args (1 2 3)}\"\n(\"hello\" \"print\" \"this\" \"debugging\" \"message\")\ntrue\n" res))
     (when-not tu/native?
       (is (= "(\"hello\" \"print\" \"this\" \"error\")\n" err)))
     (is (= {:a 1 :b 2}
