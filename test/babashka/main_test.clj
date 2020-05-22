@@ -7,6 +7,7 @@
    [clojure.java.shell :refer [sh]]
    [clojure.string :as str]
    [clojure.test :as test :refer [deftest is testing]]
+   [flatland.ordered.map :refer [ordered-map]]
    [sci.core :as sci]))
 
 (defmethod clojure.test/report :begin-test-var [m]
@@ -14,7 +15,10 @@
   (println))
 
 (defn bb [input & args]
-  (edn/read-string (apply test-utils/bb (when (some? input) (str input)) (map str args))))
+  (edn/read-string
+   {:readers *data-readers*
+    :eof nil}
+   (apply test-utils/bb (when (some? input) (str input)) (map str args))))
 
 (deftest parse-opts-test
   (is (= {:nrepl "1667"}
@@ -468,6 +472,9 @@
 
 (deftest data-readers-test
   (is (= 2 (bb nil "(set! *data-readers* {'t/tag inc}) #t/tag 1"))))
+
+(deftest ordered-test
+  (is (= (ordered-map :a 1 :b 2) (bb nil "(flatland.ordered.map/ordered-map :a 1 :b 2)"))))
 
 ;;;; Scratch
 

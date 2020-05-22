@@ -5,4 +5,6 @@
 
 (def pods-namespace
   {'load-pod (with-meta pods/load-pod
-               {:sci.impl/op :needs-ctx})})
+               {:sci.impl/op :needs-ctx})
+   'invoke pods/invoke
+   'unload-pod pods/unload-pod})

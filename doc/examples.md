@@ -266,12 +266,12 @@ $ examples/which.clj rg
 ### pom.xml version
 
 A script to retrieve the version from a `pom.xml` file. See
-[examples/pom_version.clj](examples/pom_version.clj). Written by [@wilkerlucio](https://github.com/wilkerlucio).
+[examples/pom_version.clj](../examples/pom_version.clj). Written by [@wilkerlucio](https://github.com/wilkerlucio).
 
 ### Whatsapp frequencies
 
 Show frequencies of messages by user in Whatsapp group chats.
-See [examples/whatsapp_frequencies.clj](examples/whatsapp_frequencies.clj)
+See [examples/whatsapp_frequencies.clj](../examples/whatsapp_frequencies.clj)
 
 ### Find unused vars
 
@@ -294,4 +294,16 @@ $ bb examples/hsqldb_unused_vars.clj src
 | babashka.impl.clojure.test |            file-position | src/babashka/impl/clojure/test.clj |       286 |         1 |
 | babashka.impl.nrepl-server |             stop-server! | src/babashka/impl/nrepl_server.clj |       179 |         1 |
 |              babashka.main |                    -main |              src/babashka/main.clj |       485 |         1 |
+```
+
+### List contents of jar file
+
+For the code see [examples/ls_jar.clj](../examples/ls_jar.clj).
+
+``` shell
+$ ls_jar.clj borkdude/sci 0.0.13-alpha.24
+META-INF/MANIFEST.MF
+META-INF/maven/borkdude/sci/pom.xml
+META-INF/leiningen/borkdude/sci/project.clj
+...
 ```
