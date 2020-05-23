@@ -158,6 +158,7 @@ jobs:
 
       - name: Test binary
         run: |
+          export GRAALVM_HOME="$HOME/graalvm-ce-java11-20.1.0"
           BABASHKA_TEST_ENV=native script/test
 
       - name: Install clojure
@@ -166,6 +167,7 @@ jobs:
 
       - name: Test libraries
         run: |
+          export GRAALVM_HOME="$HOME/graalvm-ce-java11-20.1.0"
           BABASHKA_TEST_ENV=native script/run_lib_tests
 
       - uses: actions/upload-artifact@v1
@@ -237,6 +239,7 @@ jobs:
       - name: Test binary
         run: |
           ./bb '(+ 1 2 3)'
+          export GRAALVM_HOME="$HOME/graalvm-ce-java11-20.1.0"
           BABASHKA_TEST_ENV=native script/test
 
       - name: Install clojure
@@ -245,6 +248,7 @@ jobs:
 
       - name: Test libraries
         run: |
+          export GRAALVM_HOME="$HOME/graalvm-ce-java11-20.1.0"
           BABASHKA_TEST_ENV=native script/run_lib_tests
 
       - uses: actions/upload-artifact@v1
@@ -305,11 +309,13 @@ jobs:
 
       - name: Test binary
         run: |
+          export GRAALVM_HOME="$HOME/graalvm-ce-java11-20.1.0/Contents/Home"
           sudo script/install-leiningen
           BABASHKA_TEST_ENV=native script/test
 
       - name: Test libraries
         run: |
+          export GRAALVM_HOME="$HOME/graalvm-ce-java11-20.1.0/Contents/Home"
           sudo script/install-clojure
           BABASHKA_TEST_ENV=native script/run_lib_tests
 
