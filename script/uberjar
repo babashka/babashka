@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 
+if [ "$GRAALVM_HOME" != "" ]
+then
+    export JAVA_HOME=$GRAALVM_HOME
+    export PATH=$GRAALVM_HOME/bin:$PATH
+fi
+
+java -version
+
 set -eo pipefail
 
 if [ "$BABASHKA_LEAN" = "true" ]
