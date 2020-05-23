@@ -1,6 +1,6 @@
 # Developing Babashka
 
-You need [lein](https://leiningen.org/) for running JVM tests and/or producing uberjars. For building binaries you need GraalVM. Currently we use java8-19.3.1.
+You need [lein](https://leiningen.org/) for running JVM tests and/or producing uberjars. For building binaries you need GraalVM. Currently we use java11-20.1.0.
 
 ## Clone repository
 
