@@ -379,11 +379,16 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
 (defn error-handler* [^Exception e verbose?]
   (binding [*out* *err*]
     (let [d (ex-data e)
-          exit-code (:bb/exit-code d)]
+          exit-code (:bb/exit-code d)
+          sci-error? (identical? :sci/error (:type d))
+          ex-name (when sci-error?
+                    (some-> ^Throwable (ex-cause e)
+                            .getClass .getName))]
       (if exit-code [nil exit-code]
           (do (if verbose?
                 (print-stack-trace e)
-                (println (str (.. e getClass getName)
+                (println (str (or ex-name
+                                  (.. e getClass getName))
                               (when-let [m (.getMessage e)]
                                 (str ": " m)) )))
               (flush)

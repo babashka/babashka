@@ -17,10 +17,15 @@
   "Default :caught hook for repl"
   [^Throwable e]
   (sci/with-bindings {sci/out @sci/err}
-    (sio/println (str (.. e getClass getName)
-                      (when-let [m (.getMessage e)]
-                        (str ": " m)) ))
-    (sio/flush)))
+    (let [d (ex-data e)
+          sci-error? (identical? :sci/error (:type d))
+          ex-name (when sci-error?
+                    (some-> ^Throwable (ex-cause e)
+                            .getClass .getName))]
+      (sio/println (str ex-name
+                        (when-let [m (.getMessage e)]
+                          (str ": " m)) ))
+      (sio/flush))))
 
 (defn repl
   "REPL with predefined hooks for attachable socket server."
