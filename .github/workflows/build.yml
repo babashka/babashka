@@ -38,6 +38,23 @@ jobs:
           restore-keys: |
                 ${{ runner.os }}-maven-
 
+      - name: Cache GraalVM
+        uses: actions/cache@v1
+        id: cache-graalvm
+        with:
+          path: ~/graalvm-ce-java11-20.1.0
+          key: ${{ runner.os }}-graalvm-20.1.0
+          restore-keys: |
+                ${{ runner.os }}-graalvm-20.1.0
+
+      - name: Download GraalVM
+        run: |
+          cd ~
+          if ! [ -d graalvm-ce-java11-20.1.0 ]; then
+            curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-20.1.0/graalvm-ce-java11-linux-amd64-20.1.0.tar.gz
+            tar xzf graalvm-ce-java11-linux-amd64-20.1.0.tar.gz
+          fi
+
       - name: Fetch deps
         if: steps.cache-deps.outputs.cache-hit != 'true'
         run: |
@@ -45,15 +62,18 @@ jobs:
 
       - name: Run tests
         run: |
+          export GRAALVM_HOME="$HOME/graalvm-ce-java11-20.1.0"
           script/test
 
       - name: Test libraries
         run: |
+          export GRAALVM_HOME="$HOME/graalvm-ce-java11-20.1.0"
           sudo script/install-clojure
           script/run_lib_tests
 
       - name: Build uberjar
         run: |
+          export GRAALVM_HOME="$HOME/graalvm-ce-java11-20.1.0"
           script/uberjar
 
       - name: Babashka version
