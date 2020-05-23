@@ -6,7 +6,7 @@ if "%GRAALVM_HOME%"=="" (
 )
 
 set JAVA_HOME=%GRAALVM_HOME%
-set PATH=%PATH%;%GRAALVM_HOME%\bin
+set PATH=%GRAALVM_HOME%\bin;%PATH%
 
 set BABASHKA_LEIN_PROFILES=+uberjar
 

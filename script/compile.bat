@@ -13,7 +13,7 @@ if "%BABASHKA_XMX%"=="" (
 )
 
 set JAVA_HOME=%GRAALVM_HOME%
-set PATH=%PATH%;%GRAALVM_HOME%\bin
+set PATH=%GRAALVM_HOME%\bin;%PATH%
 
 set /P BABASHKA_VERSION=< resources\BABASHKA_VERSION
 echo Building Babashka %BABASHKA_VERSION%
