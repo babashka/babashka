@@ -72,10 +72,6 @@
                    {:name "toURI"}]}
         java.util.Arrays
         {:methods [{:name "copyOf"}]}}
-    features/xml? (assoc `com.sun.xml.internal.stream.XMLInputFactoryImpl
-                         {:methods [{:name "<init>" :parameterTypes []}]}
-                         `com.sun.xml.internal.stream.XMLOutputFactoryImpl
-                         {:methods [{:name "<init>" :parameterTypes []}]})
     features/hsqldb? (assoc `org.hsqldb.dbinfo.DatabaseInformationFull
                             {:methods [{:name "<init>"
                                         :parameterTypes ["org.hsqldb.Database"]}]}
@@ -285,6 +281,6 @@
          (sort-by :name)
          (vec)))
 
-  (public-declared-method-names java.lang.UNIXProcess)
   (public-declared-method-names java.net.URL)
+  (public-declared-method-names java.util.Properties)
   )

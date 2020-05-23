@@ -7,7 +7,7 @@ jobs:
   jvm:
     docker:
       # specify the version you desire here
-      - image: circleci/clojure:lein-2.8.1
+      - image: circleci/clojure:lein-2.9.1
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
@@ -66,14 +66,14 @@ jobs:
           key: v1-dependencies-{{ checksum "project.clj" }}
   linux:
     docker:
-      - image: circleci/clojure:lein-2.8.1
+      - image: circleci/clojure:lein-2.9.1
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
-      GRAALVM_HOME: /home/circleci/graalvm-ce-java8-19.3.2
+      GRAALVM_HOME: /home/circleci/graalvm-ce-java11-20.1.0
       BABASHKA_PLATFORM: linux # used in release script
       BABASHKA_TEST_ENV: native
-      BABASHKA_XMX: "-J-Xmx7g"
+      BABASHKA_XMX: "-J-Xmx6500m"
     resource_class: large
     steps:
       - checkout
@@ -104,9 +104,9 @@ jobs:
           name: Download GraalVM
           command: |
             cd ~
-            if ! [ -d graalvm-ce-java8-19.3.2 ]; then
-              curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-19.3.2/graalvm-ce-java8-linux-amd64-19.3.2.tar.gz
-              tar xzf graalvm-ce-java8-linux-amd64-19.3.2.tar.gz
+            if ! [ -d graalvm-ce-java11-20.1.0 ]; then
+              curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-20.1.0/graalvm-ce-java11-linux-amd64-20.1.0.tar.gz
+              tar xzf graalvm-ce-java11-linux-amd64-20.1.0.tar.gz
             fi
       - run:
           name: Build binary
@@ -126,7 +126,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-            - ~/graalvm-ce-java8-19.3.2
+            - ~/graalvm-ce-java11-20.1.0
           key: linux-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - store_artifacts:
           path: /tmp/release
@@ -137,15 +137,15 @@ jobs:
             ./bb .circleci/script/publish_artifact.clj
   linux-static:
     docker:
-      - image: circleci/clojure:lein-2.8.1
+      - image: circleci/clojure:lein-2.9.1
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
-      GRAALVM_HOME: /home/circleci/graalvm-ce-java8-19.3.2
+      GRAALVM_HOME: /home/circleci/graalvm-ce-java11-20.1.0
       BABASHKA_PLATFORM: linux-static # used in release script
       BABASHKA_TEST_ENV: native
       BABASHKA_STATIC: true
-      BABASHKA_XMX: "-J-Xmx7g"
+      BABASHKA_XMX: "-J-Xmx6500m"
     resource_class: large
     steps:
       - checkout
@@ -176,9 +176,9 @@ jobs:
           name: Download GraalVM
           command: |
             cd ~
-            if ! [ -d graalvm-ce-java8-19.3.2 ]; then
-              curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-19.3.2/graalvm-ce-java8-linux-amd64-19.3.2.tar.gz
-              tar xzf graalvm-ce-java8-linux-amd64-19.3.2.tar.gz
+            if ! [ -d graalvm-ce-java11-20.1.0 ]; then
+              curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-20.1.0/graalvm-ce-java11-linux-amd64-20.1.0.tar.gz
+              tar xzf graalvm-ce-java11-linux-amd64-20.1.0.tar.gz
             fi
       - run:
           name: Build binary
@@ -198,7 +198,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-            - ~/graalvm-ce-java8-19.3.2
+            - ~/graalvm-ce-java11-20.1.0
           key: linux-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - store_artifacts:
           path: /tmp/release
@@ -211,10 +211,10 @@ jobs:
     macos:
       xcode: "9.0"
     environment:
-      GRAALVM_HOME: /Users/distiller/graalvm-ce-java8-19.3.2/Contents/Home
+      GRAALVM_HOME: /Users/distiller/graalvm-ce-java11-20.1.0/Contents/Home
       BABASHKA_PLATFORM: macos # used in release script
       BABASHKA_TEST_ENV: native
-      BABASHKA_XMX: "-J-Xmx7g"
+      BABASHKA_XMX: "-J-Xmx6500m"
     resource_class: large
     steps:
       - checkout
@@ -239,19 +239,21 @@ jobs:
           command: |
             cd ~
             ls -la
-            if ! [ -d graalvm-ce-java8-19.3.2 ]; then
-              curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-19.3.2/graalvm-ce-java8-darwin-amd64-19.3.2.tar.gz
-              tar xzf graalvm-ce-java8-darwin-amd64-19.3.2.tar.gz
+            if ! [ -d graalvm-ce-java11-20.1.0 ]; then
+              curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-20.1.0/graalvm-ce-java11-darwin-amd64-20.1.0.tar.gz
+              tar xzf graalvm-ce-java11-darwin-amd64-20.1.0.tar.gz
             fi
       - run:
           name: Build binary
           command: |
+            export PATH=$GRAALVM_HOME/bin:$PATH
             script/uberjar
             script/compile
           no_output_timeout: 30m
       - run:
           name: Run tests
           command: |
+            export PATH=$GRAALVM_HOME/bin:$PATH
             script/test
             script/run_lib_tests
       - run:
@@ -261,7 +263,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-            - ~/graalvm-ce-java8-19.3.2
+            - ~/graalvm-ce-java11-20.1.0
           key: mac-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - store_artifacts:
           path: /tmp/release
@@ -273,7 +275,7 @@ jobs:
   deploy:
     resource_class: large
     docker:
-      - image: circleci/clojure:lein-2.8.1
+      - image: circleci/clojure:lein-2.9.1
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"

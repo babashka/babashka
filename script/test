@@ -1,18 +1,26 @@
 #!/usr/bin/env bash
 
+if [ "$GRAALVM_HOME" != "" ]
+then
+  export JAVA_HOME=$GRAALVM_HOME
+  export PATH=$GRAALVM_HOME/bin:$PATH
+fi
+
+java -version
+
 set -eo pipefail
 BABASHKA_PRELOADS=""
 BABASHKA_CLASSPATH=""
 echo "running tests part 1"
 lein test "$@"
 
-BABASHKA_PRELOADS='(defn __bb__foo [] "foo") (defn __bb__bar [] "bar")'
-BABASHKA_PRELOADS_TEST=true
+export BABASHKA_PRELOADS='(defn __bb__foo [] "foo") (defn __bb__bar [] "bar")'
+export BABASHKA_PRELOADS_TEST=true
 echo "running tests part 2"
 lein test :only babashka.main-test/preloads-test
 
-BABASHKA_PRELOADS="(require '[env-ns])"
-BABASHKA_CLASSPATH_TEST=true
-BABASHKA_CLASSPATH="test-resources/babashka/src_for_classpath_test/env"
+export BABASHKA_PRELOADS="(require '[env-ns])"
+export BABASHKA_CLASSPATH_TEST=true
+export BABASHKA_CLASSPATH="test-resources/babashka/src_for_classpath_test/env"
 echo "running tests part 3"
 lein test :only babashka.classpath-test/classpath-env-test

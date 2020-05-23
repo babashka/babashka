@@ -6,7 +6,7 @@ if "%GRAALVM_HOME%"=="" (
 )
 
 set JAVA_HOME=%GRAALVM_HOME%
-set PATH=%PATH%;%GRAALVM_HOME%\bin
+set PATH=%GRAALVM_HOME%\bin;%PATH%
 
 set BABASHKA_LEIN_PROFILES=+uberjar
 
@@ -69,5 +69,5 @@ call lein with-profiles %BABASHKA_LEIN_PROFILES% bb "(+ 1 2 3)"
 call lein with-profiles %BABASHKA_LEIN_PROFILES%,+reflection,-uberjar do run
 if %errorlevel% neq 0 exit /b %errorlevel%
 
-call lein with-profiles "%BABASHKA_LEIN_PROFILES%" do clean, uberjar
+call lein with-profiles "%BABASHKA_LEIN_PROFILES%,+native-image" do clean, uberjar
 if %errorlevel% neq 0 exit /b %errorlevel%

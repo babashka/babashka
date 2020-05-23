@@ -22,11 +22,16 @@ fi
 "$GRAALVM_HOME/bin/gu" install native-image
 
 export JAVA_HOME=$GRAALVM_HOME
+export PATH=$GRAALVM_HOME/bin:$PATH
 
 SVM_JAR=$(find "$GRAALVM_HOME" | grep svm.jar)
 "$GRAALVM_HOME/bin/javac" -cp "$SVM_JAR" resources/CutOffCoreServicesDependencies.java
 
-BABASHKA_FEATURE_HSQLDB=${BABASHKA_FEATURE_HSQLDB:-}
+if [ -z "$BABASHKA_JAR" ]; then
+    lein with-profiles +reflection,+native-image "do" run
+    lein "do" clean, uberjar
+    BABASHKA_JAR=${BABASHKA_JAR:-"target/babashka-$BABASHKA_VERSION-standalone.jar"}
+fi
 
 BABASHKA_BINARY=${BABASHKA_BINARY:-"bb"}
 

@@ -1,16 +1,16 @@
 #!/usr/bin/env bb
 
 ;; NOTE
-;; 
+;;
 ;; For more information on the current scene on support for
 ;; particular GraalVM versions, look here: https://www.graalvm.org/downloads/
-;; 
+;;
 ;; There are 4 CE(Community Editions) being supported by GraalVM
 ;; GraalVM Community Edition 20.1.0 based on OpenJDK 8u252
 ;; GraalVM Community Edition 20.1.0 based on OpenJDK 11.0.7
 ;; GraalVM Community Edition 19.3.2 based on OpenJDK 8u252
 ;; GraalVM Community Edition 19.3.2 based on OpenJDK 11.0.7
-;; 
+;;
 ;; Currently we use GraalVM java8-19.3.2
 
 (ns bump-graal-version
@@ -43,9 +43,9 @@
 
 ;; We might have to keep changing these from
 ;; time to time whenever the version is bumped
-;; 
-;; OR 
-;; 
+;;
+;; OR
+;;
 ;; We could have them as environment variables
 (def current-graal-version "19.3.2")
 (def current-java-version "java8")
@@ -71,12 +71,12 @@
 
 (defn bump-current
   [current new]
-    (doseq [file files-to-edit]
-      (let [exec-res (replace-current file current new)]
-        (try (spit file exec-res)
-          (catch Exception e (str "There was an error: " (.getMessage e)))
-             (finally
-               (println "Done with : " file))))))
+  (doseq [file files-to-edit]
+    (let [exec-res (replace-current file current new)]
+      (try (spit file exec-res)
+           (catch Exception e (str "There was an error: " (.getMessage e)))
+           (finally
+             (println "Done with : " file))))))
 
 (defn show-error
   [err-version]

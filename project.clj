@@ -17,11 +17,11 @@
                  [org.clojure/tools.reader "1.3.2"]
                  [borkdude/edamame "0.0.11-alpha.12"]
                  [borkdude/graal.locking "0.0.2"]
-                 [borkdude/sci.impl.reflector "0.0.1"]
                  [org.clojure/tools.cli "1.0.194"]
                  [cheshire "5.10.0"]
                  [fipp "0.6.22"]
-                 [nrepl/bencode "1.1.0"]]
+                 [nrepl/bencode "1.1.0"]
+                 [borkdude/sci.impl.reflector "0.0.1-java11"]]
   :profiles {:feature/xml  {:source-paths ["feature-xml"]
                             :dependencies [[org.clojure/data.xml "0.2.0-alpha6"]]}
              :feature/yaml {:source-paths ["feature-yaml"]
@@ -54,6 +54,7 @@
                                   "-Dclojure.spec.skip-macros=true"]
                        :main babashka.main
                        :aot :all}
+             :native-image {:dependencies [[borkdude/clj-reflector-graal-java11-fix "0.0.1-graalvm-20.1.0"]]}
              :reflection {:main babashka.impl.classes/generate-reflection-file}}
   :aliases {"bb" ["with-profile" "test"  "run" "-m" "babashka.main"]}
   :deploy-repositories [["clojars" {:url "https://clojars.org/repo"
