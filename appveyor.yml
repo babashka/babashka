@@ -39,8 +39,9 @@ build_script:
 
 # call script/test.bat
 
+# see https://github.com/quarkusio/quarkus/pull/7663
+
 - cmd: >-
-    # see https://github.com/quarkusio/quarkus/pull/7663
     choco install visualstudio2017community --version 15.9.17.0 --no-progress --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.ARM64 --add Microsoft.VisualStudio.Component.VC.CMake.Project"
 
     call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
