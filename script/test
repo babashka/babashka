@@ -6,6 +6,8 @@ then
   export PATH=$GRAALVM_HOME/bin:$PATH
 fi
 
+java -version
+
 set -eo pipefail
 BABASHKA_PRELOADS=""
 BABASHKA_CLASSPATH=""
