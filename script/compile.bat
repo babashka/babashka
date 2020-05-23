@@ -21,6 +21,8 @@ echo Building Babashka %BABASHKA_VERSION%
 Rem the --no-server option is not supported in GraalVM Windows.
 Rem -H:EnableURLProtocols=jar,http,https is also not supported.
 
+call %GRAALVM_HOME%\bin\gu.cmd install native-image
+
 call %GRAALVM_HOME%\bin\native-image.cmd ^
   "-jar" "target/babashka-%BABASHKA_VERSION%-standalone.jar" ^
   "-H:Name=bb" ^
