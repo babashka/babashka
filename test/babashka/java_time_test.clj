@@ -20,4 +20,7 @@
   (is (number? (bb "
 (let [x (java.time.LocalDateTime/parse \"2019-12-18T16:01:41.485\")
       y (java.time.LocalDateTime/now)]
-  (.between java.time.temporal.ChronoUnit/MINUTES x y))"))))
+  (.between java.time.temporal.ChronoUnit/MINUTES x y))")))
+  (when test-utils/native?
+    (is (= "GMT+03:00"
+           (bb "(System/setProperty \"user.timezone\" \"GMT+3\") (.getId (java.time.ZoneId/systemDefault))")))))
