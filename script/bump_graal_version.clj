@@ -37,7 +37,8 @@
                 (str/join \newline))))
 
 (def files-to-edit
-  [".github/workflows/build.yml"
+  ["Dockerfile"
+   ".github/workflows/build.yml"
    ".circleci/config.yml"
    "appveyor.yml"])
 
@@ -47,8 +48,8 @@
 ;; OR
 ;;
 ;; We could have them as environment variables
-(def current-graal-version "19.3.2")
-(def current-java-version "java8")
+(def current-graal-version "20.1.0")
+(def current-java-version "java11")
 (def valid-graal-bumps ["19.3.2" "20.1.0"])
 (def valid-java-bumps ["java8" "java11"])
 
