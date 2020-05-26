@@ -346,7 +346,11 @@ $ bb example.clj
 
 ### Command-line arguments
 
-Command-line arguments can be retrieved using `*command-line-args*`.
+Command-line arguments can be retrieved using `*command-line-args*`. If you want
+to parse command line arguments, you may use the built-in `clojure.tools.cli`
+namespace or use the
+[nubank/docopt](https://github.com/borkdude/babashka/blob/master/doc/libraries.md#nubankdocopt)
+library.
 
 ### Additional namespaces
 
