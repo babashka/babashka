@@ -2,6 +2,12 @@
 
 The following libraries and projects are known to work with babashka.
 
+Table of contents:
+
+- [Libraries](#libraries)
+- [Pods](#pods)
+- [Projects](#projects)
+
 ## Libraries
 
 ### [clj-http-lite](https://github.com/borkdude/clj-http-lite)
@@ -232,11 +238,29 @@ user> (psql/query conn "select name, subject from grades where grade = 100")
 There's also [subshell](https://github.com/lambdaisland/open-source/blob/master/src/lioss/subshell.clj)
 which is like sh/sh, but it inherits stdin/stdout/stderr, so that the user sees in real time what the subprocess is doing, and can possibly interact with it. More like how shelling out in a bash script works.
 
+## Pods
+
+- [babashka-sql-pods](https://github.com/babashka/babashka-sql-pods): pods for
+  interacting with SQL databases
+- [bootleg](https://github.com/retrogradeorbit/bootleg): static HTML website
+  generation
+- [clj-kondo](https://github.com/borkdude/clj-kondo/#babashka-pod): a Clojure
+  linter
+- [pod-babashka-filewatcher](https://github.com/babashka/pod-babashka-filewatcher): a
+  filewatcher pod based on Rust notify
+- [pod-janet-peg](https://github.com/sogaiu/pod-janet-peg): a pod for
+  calling [Janet](https://github.com/janet-lang/janet)'s PEG
+  functionality
+- [pod-jaydeesimon-jsoup](https://github.com/jaydeesimon/pod-jaydeesimon-jsoup):
+    a pod for parsing HTML using CSS queries backed by Jsoup
+- [pod-lispyclouds-docker](https://github.com/lispyclouds/pod-lispyclouds-docker):
+  A pod for interacting with docker
+
+## Projects
+
 ### [babashka-test-action](https://github.com/marketplace/actions/babashka-test-action)
 
 Github Action to run clojure.test by Babashka.
-
-## Projects
 
 ### [deps.clj](https://github.com/borkdude/deps.clj)
 
