@@ -241,7 +241,7 @@ which is like sh/sh, but it inherits stdin/stdout/stderr, so that the user sees 
 ## Pods
 
 [Babashka pods](https://github.com/babashka/babashka.pods) are programs that can
-be used as Clojure libraries by bababshka.
+be used as Clojure libraries by babashka.
 
 - [babashka-sql-pods](https://github.com/babashka/babashka-sql-pods): pods for
   interacting with SQL databases
