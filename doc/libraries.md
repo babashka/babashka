@@ -10,12 +10,12 @@ Table of contents:
 
 ## Libraries
 
-### [clj-http-lite](https://github.com/borkdude/clj-http-lite)
+### [clj-http-lite](https://github.com/babashka/clj-http-lite)
 
 A fork of a fork of `clj-http-lite`. Example:
 
 ``` shell
-$ export BABASHKA_CLASSPATH="$(clojure -Sdeps '{:deps {clj-http-lite {:git/url "https://github.com/borkdude/clj-http-lite" :sha "f44ebe45446f0f44f2b73761d102af3da6d0a13e"}}}' -Spath)"
+$ export BABASHKA_CLASSPATH="$(clojure -Sdeps '{:deps {clj-http-lite {:git/url "https://github.com/babashka/clj-http-lite" :sha "f44ebe45446f0f44f2b73761d102af3da6d0a13e"}}}' -Spath)"
 
 $ bb "(require '[clj-http.lite.client :as client]) (:status (client/get \"https://www.clojure.org\"))"
 200
