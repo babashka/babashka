@@ -787,14 +787,15 @@ Differences with Clojure:
 
 - No `defprotocol`, `defrecord` and unboxed math.
 
-## [Libraries and projects](doc/libraries.md)
+## [Libraries, pods and projects](doc/libraries.md)
 
-A list of projects (scripts, libraries and tools) known to work with babashka.
+A list of projects (scripts, libraries, pods and tools) known to work with babashka.
 
 ## Pods
 
-Pods are a way of extending babashka using other programs. Documentation is
-available in the [library repo](https://github.com/babashka/babashka.pods).
+Pods are programs that can be used as a Clojure library by
+babashka. Documentation is available in the [library
+repo](https://github.com/babashka/babashka.pods).
 
 ## Package babashka script as a AWS Lambda
 
