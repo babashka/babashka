@@ -311,6 +311,8 @@ $ cat script.clj
 
 In one-liners the `*input*` value may come in handy. It contains the input read from stdin as EDN by default. If you want to read in text, use the `-i` flag, which binds `*input*` to a lazy seq of lines of text. If you want to read multiple EDN values, use the `-I` flag. The `-o` option prints the result as lines of text. The `-O` option prints the result as lines of EDN values.
 
+> **Note:** `*input*` is only available in the `user` namespace, on other namespaces use `*in*`.
+
 The following table illustrates the combination of options for commands of the form
 
     echo "{{Input}}" | bb {{Input flags}} {{Output flags}} "*input*"
