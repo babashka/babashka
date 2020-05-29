@@ -426,7 +426,8 @@ A note on style. Babashka recommends the following:
 
 ### Explicit requires
 
-Use an explicit namespace form in scripts, unless you're writing one-liners.
+Use explicit requires with namespace aliases in scripts, unless you're writing
+one-liners.
 
 Do this:
 
