@@ -109,6 +109,7 @@
           java.lang.Exception
           java.lang.Integer
           java.lang.Long
+          java.lang.Number
           java.lang.NumberFormatException
           java.lang.Math
           java.lang.Object
@@ -152,7 +153,7 @@
                 java.nio.file.attribute.PosixFilePermissions])
           java.security.MessageDigest
           ~@(when features/java-time?
-              '[java.time.format.DateTimeFormatter
+              `[java.time.format.DateTimeFormatter
                 java.time.Clock
                 java.time.DateTimeException
                 java.time.DayOfWeek
@@ -172,8 +173,19 @@
                 java.time.ZonedDateTime
                 java.time.ZoneId
                 java.time.ZoneOffset
+                java.time.format.DateTimeFormatterBuilder
+                java.time.format.DecimalStyle
+                java.time.format.ResolverStyle
+                java.time.format.SignStyle
+                java.time.temporal.ChronoField
                 java.time.temporal.ChronoUnit
-                java.time.temporal.TemporalAccessor])
+                java.time.temporal.IsoFields
+                java.time.temporal.TemporalField
+                ~(symbol "[Ljava.time.temporal.TemporalField;")
+                java.time.format.TextStyle
+                java.time.temporal.Temporal
+                java.time.temporal.TemporalAccessor
+                java.time.temporal.TemporalAdjuster])
           java.util.concurrent.LinkedBlockingQueue
           java.util.jar.JarFile
           java.util.jar.JarEntry
@@ -185,6 +197,7 @@
           java.util.Date
           java.util.MissingResourceException
           java.util.Properties
+          java.util.Set
           java.util.UUID
           java.util.concurrent.TimeUnit
           java.util.zip.InflaterInputStream

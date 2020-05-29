@@ -411,6 +411,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
     File java.io.File
     Long java.lang.Long
     Math java.lang.Math
+    Number java.lang.Number
     NumberFormatException java.lang.NumberFormatException
     Object java.lang.Object
     Runtime java.lang.Runtime

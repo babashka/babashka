@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+if [ "$BABASHKA_TEST_ENV" = "native" ]; then
+    BB_CMD="./bb"
+else
+    BB_CMD="lein bb"
+fi
+
+export BABASHKA_CLASSPATH
+BABASHKA_CLASSPATH="$(clojure -Sdeps '{:deps {cljc.java-time {:git/url "https://github.com/henryw374/cljc.java-time.git" :sha "e3d184b78e933322b3fcaa6ca66cbb8f42a6b35c"}}}' -Spath)"
+
+$BB_CMD -cp "$BABASHKA_CLASSPATH:test-resources/lib_tests" -e "
+(require '[clojure.java.io :as io])
+(require '[cljc.java-time-test])
+(require '[clojure.test :as t])
+(let [{:keys [:test :pass :fail :error]} (t/run-tests 'cljc.java-time-test)]
+  (when-not (pos? test)
+    (System/exit 1))
+  (System/exit (+ fail error)))
+"
