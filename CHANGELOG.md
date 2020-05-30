@@ -1,4 +1,23 @@
-# Changes
+# Changelog
+
+For a list of breaking changes, check [here](#breaking-changes)
+
+## v0.1.0 (unreleased)
+
+- Add more `java.time` classes. This makes babashka fully compatible with the
+  [cljc.java-time](https://github.com/henryw374/cljc.java-time) library.
+
+- Add `java.lang.Float` class
+
+- Support alternative interop form: `(. Integer -SIZE) ;;=> 32`
+
+- #454: syntax check on amount of arguments to `def`
+
+## Prior to v0.1.0
+
+Details about releases prior to v0.1.0 can be found
+[here](https://github.com/borkdude/babashka/releases).
+
 
 ## Breaking changes
 
