@@ -7,6 +7,7 @@ on: [push
 jobs:
 
   scratch:
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
     runs-on: ubuntu-18.04
     steps:
       - name: Git checkout
@@ -20,6 +21,7 @@ jobs:
           echo "Scratch"
 
   jvm:
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
     # ubuntu 18.04 comes with lein + java8 installed
     runs-on: ubuntu-18.04
     steps:
@@ -97,6 +99,7 @@ jobs:
           path: babashka-${{ steps.babashka-version.outputs.version }}-reflection.json
 
   linux:
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
     needs: [jvm]
     runs-on: ubuntu-18.04
     steps:
@@ -176,6 +179,7 @@ jobs:
           name: babashka-${{ steps.babashka-version.outputs.version }}-linux-amd64.zip
 
   linux-static:
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
     needs: [jvm]
     runs-on: ubuntu-16.04
     steps:
@@ -257,6 +261,7 @@ jobs:
           name: babashka-${{ steps.babashka-version.outputs.version }}-linux-static-amd64.zip
 
   mac:
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
     needs: [jvm]
     runs-on: macOS-latest
     steps:
@@ -325,6 +330,7 @@ jobs:
           name: babashka-${{ steps.babashka-version.outputs.version }}-macos-amd64.zip
 
   deploy:
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
     needs: [jvm, linux, linux-static, mac]
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-18.04
@@ -352,6 +358,7 @@ jobs:
           .github/script/deploy
 
   docker:
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
     needs: [jvm, linux, linux-static, mac]
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-18.04
