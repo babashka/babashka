@@ -350,7 +350,10 @@
                    (catch java.nio.file.FileAlreadyExistsException _
                      (java.nio.file.Files/copy p p' (into-array [java.nio.file.StandardCopyOption/REPLACE_EXISTING]))))))"
              temp-path))
-    (is (.exists f2))))
+    (is (.exists f2))
+    (let [v (bb nil "-f" (.getPath (io/file "test" "babashka" "scripts" "glob.bb")))]
+      (is (vector? v))
+      (is (.exists (io/file (first v)))))))
 
 (deftest future-print-test
   (testing "the root binding of sci/*out*"

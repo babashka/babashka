@@ -146,6 +146,7 @@
                 java.nio.file.LinkOption
                 java.nio.file.NoSuchFileException
                 java.nio.file.Path
+                java.nio.file.PathMatcher
                 java.nio.file.Paths
                 java.nio.file.StandardCopyOption
                 java.nio.file.attribute.FileAttribute
@@ -248,7 +249,9 @@
                    (instance? java.io.OutputStream v)
                    java.io.OutputStream
                    (instance? java.nio.file.FileSystem v)
-                   java.nio.file.FileSystem)))))
+                   java.nio.file.FileSystem
+                   (instance? java.nio.file.PathMatcher v)
+                   java.nio.file.PathMatcher)))))
 
 (def class-map (gen-class-map))
 

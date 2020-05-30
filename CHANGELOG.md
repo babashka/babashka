@@ -18,7 +18,6 @@ For a list of breaking changes, check [here](#breaking-changes)
 Details about releases prior to v0.1.0 can be found
 [here](https://github.com/borkdude/babashka/releases).
 
-
 ## Breaking changes
 
 ### v0.0.90
