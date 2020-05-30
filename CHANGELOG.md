@@ -21,7 +21,7 @@ Details about releases prior to v0.1.0 can be found
 
 ## Breaking changes
 
-## v0.0.90
+### v0.0.90
 
 - The `next.jdbc` and PostgresQL driver, introduced in `v0.0.89`, are no longer
   part of the standardly distributed `bb` binary. This is now available behind a
@@ -32,19 +32,19 @@ Details about releases prior to v0.1.0 can be found
   Exceptional status codes or nonzero `curl` exit codes will throw exceptions by
   default. You can opt out with `:throw false`.
 
-## v0.0.79
+### v0.0.79
 - [babashka.curl#9](https://github.com/borkdude/babashka.curl/issues/9):
   Functions in `babashka.curl` like `get`, `post`, etc. now always
   return a map with `:status`, `:body`, and `:headers`.
 
-## v0.0.71
+### v0.0.71
 - #267 Change behavior of reader conditionals: the `:clj` branch is taken when
   it occurs before a `:bb` branch.
 
-## v0.0.44 - 0.0.45
+### v0.0.44 - 0.0.45
 - #173: Rename `*in*` to `*input*` (in the `user` namespace). The reason for
   this is that it shadowed `clojure.core/*in*` when used unqualified.
 
-## v0.0.43
+### v0.0.43
 - #160: Add support for `java.lang.ProcessBuilder`. See docs. This replaces the
   `conch` namespace.
