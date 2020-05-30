@@ -107,6 +107,7 @@
           java.lang.Comparable
           java.lang.Double
           java.lang.Exception
+          java.lang.Float
           java.lang.Integer
           java.lang.Long
           java.lang.Number
