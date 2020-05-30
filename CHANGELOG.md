@@ -6,13 +6,9 @@ For a list of breaking changes, check [here](#breaking-changes)
 
 - Add more `java.time` classes. This makes babashka fully compatible with the
   [cljc.java-time](https://github.com/henryw374/cljc.java-time) library.
-
 - Add `java.lang.Float` class
-
 - Add `java.nio.file.PathMatcher` class
-
 - Support alternative interop form: `(. Integer -SIZE) ;;=> 32`
-
 - #454: syntax check on amount of arguments to `def`
 
 ## Prior to v0.1.0
@@ -28,7 +24,6 @@ Details about releases prior to v0.1.0 can be found
   part of the standardly distributed `bb` binary. This is now available behind a
   feature flag. See [feature flag
   documentation](https://github.com/borkdude/babashka/blob/master/doc/build.md#feature-flags).
-
 - [borkdude/babashka.curl#16](https://github.com/borkdude/babashka.curl/issues/16):
   Exceptional status codes or nonzero `curl` exit codes will throw exceptions by
   default. You can opt out with `:throw false`.
