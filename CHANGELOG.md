@@ -9,6 +9,8 @@ For a list of breaking changes, check [here](#breaking-changes)
 
 - Add `java.lang.Float` class
 
+- Add `java.nio.file.PathMatcher` class
+
 - Support alternative interop form: `(. Integer -SIZE) ;;=> 32`
 
 - #454: syntax check on amount of arguments to `def`
