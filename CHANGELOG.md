@@ -9,7 +9,7 @@ For a list of breaking changes, check [here](#breaking-changes)
 - Add `java.lang.Float` class
 - Add `java.nio.file.PathMatcher` class
 - Support alternative interop form: `(. Integer -SIZE) ;;=> 32`
-- #454: syntax check on amount of arguments to `def`
+- [#454](https://github.com/borkdude/babashka/issues/454): syntax check on amount of arguments to `def`
 
 ## Prior to v0.1.0
 
@@ -34,13 +34,13 @@ Details about releases prior to v0.1.0 can be found
   return a map with `:status`, `:body`, and `:headers`.
 
 ### v0.0.71
-- #267 Change behavior of reader conditionals: the `:clj` branch is taken when
+- [#267](https://github.com/borkdude/babashka/issues/267) Change behavior of reader conditionals: the `:clj` branch is taken when
   it occurs before a `:bb` branch.
 
 ### v0.0.44 - 0.0.45
-- #173: Rename `*in*` to `*input*` (in the `user` namespace). The reason for
+- [#173](https://github.com/borkdude/babashka/issues/173): Rename `*in*` to `*input*` (in the `user` namespace). The reason for
   this is that it shadowed `clojure.core/*in*` when used unqualified.
 
 ### v0.0.43
-- #160: Add support for `java.lang.ProcessBuilder`. See docs. This replaces the
+- [#160](https://github.com/borkdude/babashka/issues/160): Add support for `java.lang.ProcessBuilder`. See docs. This replaces the
   `conch` namespace.
