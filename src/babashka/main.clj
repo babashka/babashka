@@ -409,6 +409,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
     IllegalArgumentException java.lang.IllegalArgumentException
     Integer java.lang.Integer
     File java.io.File
+    Float java.lang.Float
     Long java.lang.Long
     Math java.lang.Math
     Number java.lang.Number
