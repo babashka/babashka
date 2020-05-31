@@ -6,6 +6,7 @@
    [babashka.impl.classes :as classes]
    [babashka.impl.classpath :as cp]
    [babashka.impl.clojure.core :as core :refer [core-extras]]
+   [babashka.impl.clojure.data :as data]
    [babashka.impl.clojure.java.io :refer [io-namespace]]
    [babashka.impl.clojure.java.shell :refer [shell-namespace]]
    [babashka.impl.clojure.main :as clojure-main :refer [demunge]]
@@ -351,6 +352,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
        'babashka.signal {'pipe-signal-received? pipe-signal-received?}
        'clojure.java.io io-namespace
        'cheshire.core cheshire-core-namespace
+       'clojure.data data/data-namespace
        'clojure.stacktrace stacktrace-namespace
        'clojure.zip zip-namespace
        'clojure.main {'demunge demunge
