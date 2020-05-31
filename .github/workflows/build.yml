@@ -330,9 +330,8 @@ jobs:
           name: babashka-${{ steps.babashka-version.outputs.version }}-macos-amd64.zip
 
   deploy:
-    if: "!contains(github.event.head_commit.message, 'skip ci')"
+    if: "!contains(github.event.head_commit.message, 'skip ci') and github.event_name == 'push' && github.ref == 'refs/heads/master'"
     needs: [jvm, linux, linux-static, mac]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-18.04
     steps:
       - name: Git checkout
@@ -358,9 +357,8 @@ jobs:
           .github/script/deploy
 
   docker:
-    if: "!contains(github.event.head_commit.message, 'skip ci')"
+    if: "!contains(github.event.head_commit.message, 'skip ci') and github.event_name == 'push' && github.ref == 'refs/heads/master'"
     needs: [jvm, linux, linux-static, mac]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-18.04
     steps:
       - name: Git checkout
