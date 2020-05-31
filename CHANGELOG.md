@@ -10,6 +10,7 @@ For a list of breaking changes, check [here](#breaking-changes)
 - Add `java.nio.file.PathMatcher` class
 - Support alternative interop form: `(. Integer -SIZE) ;;=> 32`
 - [#454](https://github.com/borkdude/babashka/issues/454): syntax check on amount of arguments to `def`
+- [#458](https://github.com/borkdude/babashka/issues/458): add `clojure.data` namespace
 
 ## Prior to v0.1.0
 
