@@ -479,6 +479,9 @@
 (deftest ordered-test
   (is (= (ordered-map :a 1 :b 2) (bb nil "(flatland.ordered.map/ordered-map :a 1 :b 2)"))))
 
+(deftest data-diff-test
+  (is (= [[nil 1] [nil 2] [1 nil 2]] (bb nil "(require '[clojure.data :as d]) (d/diff [1 1 2] [1 2 2])"))))
+
 ;;;; Scratch
 
 (comment
