@@ -312,3 +312,9 @@ A babashka script to obtain covid-19 related information.
 ### [bb-spotify](https://github.com/kolharsam/bb-spotify)
 
 Contol your spotify player using babashka.
+
+### [lambdaisland/open-source](https://github.com/lambdaisland/open-source)
+
+[Internal
+tooling[(https://github.com/borkdude/babashka/issues/457#issuecomment-636739415)
+used by Lambda Island projects.
