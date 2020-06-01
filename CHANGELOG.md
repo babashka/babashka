@@ -2,7 +2,11 @@
 
 For a list of breaking changes, check [here](#breaking-changes)
 
-## v0.1.0 (unreleased)
+## v0.1.1 (unreleased)
+
+## v0.1.0
+
+Thanks [@martinklepsch](https://github.com/martinklepsch) and [@cldwalker](https://github.com/cldwalker) for contributing to this release.
 
 - Add more `java.time` classes. This makes babashka fully compatible with the
   [cljc.java-time](https://github.com/henryw374/cljc.java-time) library.
