@@ -351,7 +351,7 @@
                      (java.nio.file.Files/copy p p' (into-array [java.nio.file.StandardCopyOption/REPLACE_EXISTING]))))))"
              temp-path))
     (is (.exists f2))
-    (let [v (bb nil "-f" (.getPath (io/file "test" "babashka" "scripts" "glob.bb")))]
+    (let [v (bb nil "-f" (.getPath (io/file "test-resources" "babashka" "glob.clj")))]
       (is (vector? v))
       (is (.exists (io/file (first v)))))))
 

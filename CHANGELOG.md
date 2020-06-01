@@ -12,7 +12,7 @@ Thanks [@martinklepsch](https://github.com/martinklepsch) and [@cldwalker](https
   [cljc.java-time](https://github.com/henryw374/cljc.java-time) library.
 - Add `java.lang.Float` class
 - Add `java.nio.file.PathMatcher` class. This allows one to implement a
-  [glob](test/babashka/scripts/glob.bb) function.
+  [glob](test-resources/babashka/glob.clj) function.
 - Support alternative interop form: `(. Integer -SIZE) ;;=> 32`
 - [#454](https://github.com/borkdude/babashka/issues/454): syntax check on amount of arguments to `def`
 - [#458](https://github.com/borkdude/babashka/issues/458): add `clojure.data` namespace
