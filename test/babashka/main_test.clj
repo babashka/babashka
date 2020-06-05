@@ -223,7 +223,10 @@
 
 (deftest process-builder-test
   (is (str/includes? (bb nil "
-(def ls (-> (ProcessBuilder. [\"ls\"]) (.start)))
+(def pb (ProcessBuilder. [\"ls\"]))
+(def env (.environment pb))
+(.put env \"FOO\" \"BAR\") ;; test for issue 460
+(def ls (-> pb (.start)))
 (def input (.getOutputStream ls))
 (.write (io/writer input) \"hello\") ;; dummy test just to see if this works
 (def output (.getInputStream ls))

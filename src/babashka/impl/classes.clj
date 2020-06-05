@@ -197,6 +197,7 @@
           java.util.Base64$Decoder
           java.util.Base64$Encoder
           java.util.Date
+          java.util.Map
           java.util.MissingResourceException
           java.util.Properties
           java.util.Set
@@ -235,19 +236,24 @@
                    c))]
     (assoc m :public-class
            (fn [v]
-             (cond (instance? java.nio.file.Path v)
-                   java.nio.file.Path
-                   (instance? java.lang.Process v)
+             (cond (instance? java.lang.Process v)
                    java.lang.Process
+                   ;; added for calling .put on .environment from ProcessBuilder
+                   (instance? java.util.Map v)
+                   java.util.Map
                    ;; added for issue #239 regarding clj-http-lite
                    (instance? java.io.ByteArrayOutputStream v)
                    java.io.ByteArrayOutputStream
                    (instance? java.security.MessageDigest v)
                    java.security.MessageDigest
+                   ;; streams
                    (instance? java.io.InputStream v)
                    java.io.InputStream
                    (instance? java.io.OutputStream v)
                    java.io.OutputStream
+                   ;; java nio
+                   (instance? java.nio.file.Path v)
+                   java.nio.file.Path
                    (instance? java.nio.file.FileSystem v)
                    java.nio.file.FileSystem
                    (instance? java.nio.file.PathMatcher v)
