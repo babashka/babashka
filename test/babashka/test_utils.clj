@@ -1,11 +1,17 @@
 (ns babashka.test-utils
   (:require
    [babashka.main :as main]
+   [clojure.string :as str]
    [me.raynes.conch :refer [let-programs] :as sh]
    [sci.core :as sci]
    [sci.impl.vars :as vars]))
 
 (set! *warn-on-reflection* true)
+
+(defn normalize [s]
+  (if main/windows?
+    (str/replace s "\r\n" "\n")
+    s))
 
 (defn bb-jvm [input-or-opts & args]
   (reset! main/cp-state nil)
@@ -28,7 +34,7 @@
                         (with-in-str input-or-opts (apply main/main args))
                         (apply main/main args)))]
             (if (zero? res)
-              (str os)
+              (normalize (str os))
               (throw (ex-info (str es)
                               {:stdout (str os)
                                :stderr (str es)})))))
@@ -39,10 +45,11 @@
 
 (defn bb-native [input & args]
   (let-programs [bb "./bb"]
-    (try (if input
-           (apply bb (conj (vec args)
-                           {:in input}))
-           (apply bb args))
+    (try (normalize
+          (if input
+            (apply bb (conj (vec args)
+                            {:in input}))
+            (apply bb args)))
          (catch Exception e
            (let [d (ex-data e)
                  err-msg (or (:stderr (ex-data e)) "")]
