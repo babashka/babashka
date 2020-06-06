@@ -12,5 +12,6 @@ echo %PATH%
 
 where java
 java -version
+dir %GRAALVM_HOME%\bin
 
 call lein do clean, test
