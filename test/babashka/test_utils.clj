@@ -10,7 +10,12 @@
 
 (defn normalize [s]
   (if main/windows?
-    (str/replace s "\r\n" "\n")
+    (let [new-s (str/replace s "\r\n" "\n")]
+      (when (not= s new-s)
+        (.println System/out "Normalizing output for Windows:")
+        (.println System/out s)
+        (.println System/out new-s))
+      new-s)
     s))
 
 (defn bb-jvm [input-or-opts & args]
