@@ -1,6 +1,7 @@
 (ns babashka.impl.repl-test
   (:require
    [babashka.impl.repl :refer [start-repl!]]
+   [babashka.test-utils :as tu]
    [clojure.string :as str]
    [clojure.test :as t :refer [deftest is]]
    [sci.core :as sci]
@@ -20,18 +21,20 @@
                         :env (atom {})}))))
 
 (defn assert-repl [expr expected]
-  (is (str/includes? (sci/with-out-str
-                       (sci/with-in-str (str expr "\n:repl/quit")
-                         (repl!))) expected)))
+  (is (str/includes? (tu/normalize
+                      (sci/with-out-str
+                        (sci/with-in-str (str expr "\n:repl/quit")
+                          (repl!)))) expected)))
 
 (defn assert-repl-error [expr expected]
   (is (str/includes?
-       (let [sw (java.io.StringWriter.)]
-         (sci/binding [sci/out (java.io.StringWriter.)
-                       sci/err sw]
-           (sci/with-in-str (str expr "\n:repl/quit")
-             (repl!)))
-         (str sw)) expected)))
+       (tu/normalize
+        (let [sw (java.io.StringWriter.)]
+          (sci/binding [sci/out (java.io.StringWriter.)
+                        sci/err sw]
+            (sci/with-in-str (str expr "\n:repl/quit")
+              (repl!)))
+          (str sw))) expected)))
 
 (deftest repl-test
   (assert-repl "1" "1")
