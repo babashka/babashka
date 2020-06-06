@@ -13,4 +13,4 @@ echo %PATH%
 where java
 java -version
 
-lein do clean, test
+call lein do clean, test
