@@ -131,7 +131,7 @@
     (is (= 42 exit-code))))
 
 (deftest malformed-command-line-args-test
-  (is (thrown-with-msg? Exception #"File does not exist: non-existing\n"
+  (is (thrown-with-msg? Exception #"File does not exist: non-existing"
                         (bb nil "-f" "non-existing"))))
 
 (deftest ssl-test
