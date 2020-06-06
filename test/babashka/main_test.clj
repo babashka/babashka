@@ -169,10 +169,11 @@
                              name)))))
     (testing "print source from file on classpath"
       (is (= "(defn foo [x y]\n  (+ x y))\n"
-             (bb nil
-                 "-cp" dir
-                 "-e" (format "(require '[clojure.repl :refer [source]] '[%s])" name)
-                 "-e" (format "(with-out-str (source %s/foo))" name)))))))
+             (test-utils/normalize
+              (bb nil
+                  "-cp" dir
+                  "-e" (format "(require '[clojure.repl :refer [source]] '[%s])" name)
+                  "-e" (format "(with-out-str (source %s/foo))" name))))))))
 
 (deftest eval-test
   (is (= "120\n" (test-utils/bb nil "(eval '(do (defn foo [x y] (+ x y))
