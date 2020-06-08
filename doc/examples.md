@@ -307,3 +307,7 @@ META-INF/maven/borkdude/sci/pom.xml
 META-INF/leiningen/borkdude/sci/project.clj
 ...
 ```
+
+### Invoke vim inside a script
+
+See [examples/vim.clj](../examples/vim.clj).
