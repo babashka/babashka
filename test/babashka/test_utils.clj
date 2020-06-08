@@ -45,18 +45,15 @@
 
 (defn bb-native [input & args]
   (let-programs [bb "./bb"]
-    (let [args (if main/windows?
-                 (mapv #(str/replace % "\"" "\\\"") args)
-                 args)]
-      (try (normalize
-            (if input
-              (apply bb (conj (vec args)
-                              {:in input}))
-              (apply bb args)))
-           (catch Exception e
-             (let [d (ex-data e)
-                   err-msg (or (:stderr (ex-data e)) "")]
-               (throw (ex-info err-msg d))))))))
+    (try (normalize
+          (if input
+            (apply bb (conj (vec args)
+                            {:in input}))
+            (apply bb args)))
+         (catch Exception e
+           (let [d (ex-data e)
+                 err-msg (or (:stderr (ex-data e)) "")]
+             (throw (ex-info err-msg d)))))))
 
 (def bb
   (case (System/getenv "BABASHKA_TEST_ENV")
