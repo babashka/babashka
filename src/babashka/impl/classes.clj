@@ -85,6 +85,7 @@
           java.io.BufferedWriter
           java.io.ByteArrayInputStream
           java.io.ByteArrayOutputStream
+          java.io.Console
           java.io.File
           java.io.InputStream
           java.io.IOException
