@@ -803,8 +803,8 @@ repo](https://github.com/babashka/babashka.pods).
 ## Package babashka script as a AWS Lambda
 
 AWS Lambda runtime doesn't support signals, therefore babashka has to disable
-handling of the SIGPIPE. This can be done by setting
-`BABASHKA_DISABLE_PIPE_SIGNAL_HANDLER` to `true`.
+handling of SIGINT and SIGPIPE. This can be done by setting
+`BABASHKA_DISABLE_SIGNAL_HANDLERS` to `true`.
 
 ## Articles, podcasts and videos
 
