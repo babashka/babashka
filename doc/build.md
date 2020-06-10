@@ -3,22 +3,22 @@
 ## Prerequisites
 
 - Install [lein](https://leiningen.org/) for producing uberjars
-- Download [GraalVM](https://www.graalvm.org/downloads/). Currently we use *java8-19.3.1*.
+- Download [GraalVM](https://www.graalvm.org/downloads/). Currently we use *java11-20.1.0*.
 - Set `$GRAALVM_HOME` to the GraalVM distribution directory. On macOS this can look like:
 
   ``` shell
-  export GRAALVM_HOME=~/Downloads/graalvm-ce-java8-19.3.1/Contents/Home
+  export GRAALVM_HOME=~/Downloads/graalvm-ce-java11-20.1.0/Contents/Home
   ```
 
   On linux:
 
   ``` shell
-  export GRAALVM_HOME=~/Downloads/graalvm-ce-java8-19.3.1
+  export GRAALVM_HOME=~/Downloads/graalvm-ce-java11-20.1.0
   ```
 
   On Windows:
   ```
-  set GRAALVM_HOME=C:\Users\IEUser\Downloads\graalvm-ce-java8-19.3.1
+  set GRAALVM_HOME=C:\Users\IEUser\Downloads\graalvm-ce-java11-20.1.0
   ```
 
 ## Clone repository
