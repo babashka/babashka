@@ -5,12 +5,12 @@
 
 (let [changelog (slurp "CHANGELOG.md")
       replaced (str/replace changelog
-                            #"#(\d+)(:? )"
+                            #" #(\d+)"
                             (fn [[_ issue after]]
-                              (format "[#%s](https://github.com/borkdude/babashka/issues/%s)%s"
+                              (format " [#%s](https://github.com/borkdude/babashka/issues/%s)%s"
                                       issue issue after)))
       replaced (str/replace replaced
-                            #"@(\w+)([, .])"
+                            #"@(\w+)([, .\)])"
                             (fn [[_ name after]]
                               (format "[@%s](https://github.com/%s)%s"
                                       name name after)))]

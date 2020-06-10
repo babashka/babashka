@@ -2,9 +2,26 @@
 
 For a list of breaking changes, check [here](#breaking-changes)
 
-## v0.1.1 (unreleased)
+## v0.1.1 (2020-06-10)
 
-## v0.1.0
+Thanks [@Chowlz](https://github.com/Chowlz) and
+[@mharju](https://github.com/mharju) for contributing to this release.
+
+This release brings compatibility with the
+[camel-snake-kebab](https://github.com/clj-commons/camel-snake-kebab) and
+[aero](https://github.com/juxt/aero/) libraries due to the introduction of
+`defprotocol`, `defrecord` and other enhancements.
+
+- Fix interop with result of `.enviroment` method on `ProcessBuilder` [#460](https://github.com/borkdude/babashka/issues/460)null
+- Disable signal handlers via environment variable for AWS Lambda [#462](https://github.com/borkdude/babashka/issues/462) ([@Chowlz](https://github.com/Chowlz))
+- babashka.curl: fix double quote escaping issue on Windows
+- Add `java.io.Console`
+- Add initial support for `defprotocol` and `defrecord`
+- Add `default-data-readers`
+- Fix resolving var in syntazx-quote from other namespace brought in via `:refer`
+- `io/resource` should return `nil` for non-relative paths instead of throwing
+
+## v0.1.0 (2020-06-01)
 
 Thanks [@martinklepsch](https://github.com/martinklepsch) and [@cldwalker](https://github.com/cldwalker) for contributing to this release.
 
