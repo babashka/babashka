@@ -11,7 +11,7 @@
 ;; GraalVM Community Edition 19.3.2 based on OpenJDK 8u252
 ;; GraalVM Community Edition 19.3.2 based on OpenJDK 11.0.7
 ;;
-;; Currently we use GraalVM java8-19.3.2
+;; Currently we use GraalVM java11-20.1.0
 
 (ns bump-graal-version
   (:require [clojure.string :as str]
