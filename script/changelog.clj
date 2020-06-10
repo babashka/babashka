@@ -8,7 +8,7 @@
                             #" #(\d+)"
                             (fn [[_ issue after]]
                               (format " [#%s](https://github.com/borkdude/babashka/issues/%s)%s"
-                                      issue issue after)))
+                                      issue issue (str after))))
       replaced (str/replace replaced
                             #"@(\w+)([, .\)])"
                             (fn [[_ name after]]

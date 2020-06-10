@@ -12,12 +12,17 @@ This release brings compatibility with the
 [aero](https://github.com/juxt/aero/) libraries due to the introduction of
 `defprotocol`, `defrecord` and other enhancements.
 
-- Fix interop with result of `.enviroment` method on `ProcessBuilder` [#460](https://github.com/borkdude/babashka/issues/460)null
-- Disable signal handlers via environment variable for AWS Lambda [#462](https://github.com/borkdude/babashka/issues/462) ([@Chowlz](https://github.com/Chowlz))
-- babashka.curl: fix double quote escaping issue on Windows
+### New
+
 - Add `java.io.Console`
 - Add initial support for `defprotocol` and `defrecord`
 - Add `default-data-readers`
+
+### Enhancements / fixes
+
+- Fix interop with result of `.enviroment` method on `ProcessBuilder` [#460](https://github.com/borkdude/babashka/issues/460)
+- Disable signal handlers via environment variable for AWS Lambda [#462](https://github.com/borkdude/babashka/issues/462) ([@Chowlz](https://github.com/Chowlz)). See [README.md](https://github.com/borkdude/babashka#package-babashka-script-as-a-aws-lambda).
+- babashka.curl: fix double quote escaping issue on Windows
 - Fix resolving var in syntazx-quote from other namespace brought in via `:refer`
 - `io/resource` should return `nil` for non-relative paths instead of throwing
 
