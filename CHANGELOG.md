@@ -14,7 +14,7 @@ This release brings compatibility with the
 
 ### New
 
-- Add `java.io.Console`
+- Add `java.io.Console`. This is useful for letting users type in passwords.
 - Add initial support for `defprotocol` and `defrecord`
 - Add `default-data-readers`
 
