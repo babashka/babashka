@@ -222,8 +222,10 @@
     :fields [clojure.lang.PersistentQueue]
     :instance-checks [clojure.lang.IObj
                       clojure.lang.IEditableCollection
+                      clojure.lang.IMapEntry
                       clojure.lang.IPersistentMap
                       clojure.lang.IPersistentVector
+                      clojure.lang.IRecord
                       clojure.lang.ISeq
                       clojure.lang.Named
                       clojure.lang.Keyword
