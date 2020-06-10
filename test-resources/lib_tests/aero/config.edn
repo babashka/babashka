@@ -1,0 +1,36 @@
+{:greeting "Hello World!"
+ :flavor #myflavor :favorite
+ :dumb-term #join ["Terminal is " #env TERM]
+ :smart-term #join ["Terminal is " #or [#env NONE "smart"]]
+ :dumb-term-envf #envf ["Terminal is %s" TERM]
+ :flavor-string #join ["My favorite flavor is " #or [#env TERM "flaa"] " " #myflavor :favorite]
+ :test ^:ref [:greeting]
+ :remote #include "included.edn"
+ :test-nested ^:ref [:test]
+ :port #profile {:dev 8000
+                 :prod 80}
+ :True-boolean #boolean "True"
+ :true-boolean #boolean "true"
+ :false-boolean #boolean "false"
+ :trivial-false-boolean #boolean "OTHER"
+ :nil-false-boolean #boolean ""
+ :long #long "1234"
+ :double #double "4567.8"
+ :keyword #keyword "foo/bar"
+ :already-a-keyword #keyword :foo/bar
+ :env-keyword #keyword #or [#env KEYWORD "abc"]
+ :dummy #or [#env "DUMMY" "dummy"]
+ :triple-or #or [#env "DUMMY" #prop "DUMMY" "dummy"]
+ :prop #prop "DUMMY"
+ :network-call #expensive-network-call 7
+ :test-read-str #read-edn "[:foo :bar :baz]"
+ :test-read-env #read-edn #prop DUMMY_READ
+
+ :referencing-network-call ^:ref [:network-call]
+
+ :key-part :b
+ :refer-me {:a {:b {1234 :sentinel}}}
+ :complex-ref #ref [:refer-me :a #ref [:key-part] #ref [:long]]
+
+ :falsey-user-return #user {#{#env "USER"} nil
+                            :default 10}}
