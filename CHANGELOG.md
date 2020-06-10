@@ -23,7 +23,7 @@ This release brings compatibility with the
 - Fix interop with result of `.enviroment` method on `ProcessBuilder` [#460](https://github.com/borkdude/babashka/issues/460)
 - Disable signal handlers via environment variable for AWS Lambda [#462](https://github.com/borkdude/babashka/issues/462) ([@Chowlz](https://github.com/Chowlz)). See [README.md](https://github.com/borkdude/babashka#package-babashka-script-as-a-aws-lambda).
 - babashka.curl: fix double quote escaping issue on Windows
-- Fix resolving var in syntazx-quote from other namespace brought in via `:refer`
+- Fix resolving var in syntax-quote from other namespace brought in via `:refer`
 - `io/resource` should return `nil` for non-relative paths instead of throwing
 
 ## v0.1.0 (2020-06-01)
