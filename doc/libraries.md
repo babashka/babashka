@@ -233,10 +233,13 @@ user> (psql/query conn "select name, subject from grades where grade = 100")
        {:name "Suzy Butterbean", :subject "Math"})
 ```
 
-### [babashka-compatible hiccup scripts](https://github.com/lambdaisland/open-source/blob/2cfde3dfb460e72f047bf94e6f5ec7f519c6d7a0/src/lioss/hiccup.clj)
+### [camel-snake-kebab](https://github.com/clj-commons/camel-snake-kebab)
 
-There's also [subshell](https://github.com/lambdaisland/open-source/blob/master/src/lioss/subshell.clj)
-which is like sh/sh, but it inherits stdin/stdout/stderr, so that the user sees in real time what the subprocess is doing, and can possibly interact with it. More like how shelling out in a bash script works.
+A library for word case conversions https://clj-commons.org/camel-snake-k…
+
+### [aero](https://github.com/juxt/aero/)
+
+A small library for explicit, intentful configuration.
 
 ## Pods
 
@@ -317,4 +320,11 @@ Contol your spotify player using babashka.
 
 [Internal
 tooling](https://github.com/borkdude/babashka/issues/457#issuecomment-636739415)
-used by Lambda Island projects.
+used by Lambda Island projects. Noteworthy: a [babashka-compatible hiccup
+script](https://github.com/lambdaisland/open-source/blob/2cfde3dfb460e72f047bf94e6f5ec7f519c6d7a0/src/lioss/hiccup.clj). 
+
+There's also
+[subshell](https://github.com/lambdaisland/open-source/blob/master/src/lioss/subshell.clj)
+which is like sh/sh, but it inherits stdin/stdout/stderr, so that the user sees
+in real time what the subprocess is doing, and can possibly interact with
+it. More like how shelling out in a bash script works.
