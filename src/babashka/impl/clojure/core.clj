@@ -34,4 +34,5 @@
    'Throwable->map (copy-core-var Throwable->map)
    'compare-and-set! (copy-core-var compare-and-set!)
    '*data-readers* data-readers
+   'default-data-readers default-data-readers
    'xml-seq (copy-core-var xml-seq)})
