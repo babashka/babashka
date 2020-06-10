@@ -481,7 +481,9 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                                   (assoc-in ['clojure.java.io 'resource]
                                             (fn [path]
                                               (when-let [{:keys [:loader]} @cp-state]
-                                                (cp/getResource loader [path] {:url? true}))))
+                                                (try (cp/getResource loader [path] {:url? true})
+                                                     ;; non-relative paths don't work
+                                                     (catch Exception _e nil)))))
                                   (assoc-in ['user (with-meta '*input*
                                                      (when-not stream?
                                                        {:sci.impl/deref! true}))] input-var)

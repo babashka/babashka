@@ -55,4 +55,6 @@
     (.deleteOnExit tmp-file)
     (bb nil "--classpath" "logo" "-e" (format "(io/copy (io/input-stream (io/resource \"icon.png\")) (io/file \"%s\"))" (.getPath tmp-file)))
     (is (= (.length (io/file "logo" "icon.png"))
-           (.length tmp-file)))))
+           (.length tmp-file))))
+  (testing "No exception on absolute path"
+    (is (nil? (bb nil "(io/resource \"/tmp\")")))))
