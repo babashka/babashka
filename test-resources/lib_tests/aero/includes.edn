@@ -1,0 +1,6 @@
+#include #profile {:relative "sub/includes.edn"
+                   :relative-abs #join [#env "PWD" "/test-resources/lib_tests/aero/sub/includes.edn"]
+                   :resource "aero/sub/includes.edn"
+                   :file "test-resources/lib_tests/aero/sub/includes.edn"
+                   :file-does-not-exist "goodluck.edn"
+                   :map :sub-includes}

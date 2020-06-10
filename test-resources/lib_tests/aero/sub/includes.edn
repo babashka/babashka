@@ -1,0 +1,5 @@
+#include #profile {:relative "../valid.edn"
+                   :relative-abs "../valid.edn"
+                   :resource "aero/valid.edn"
+                   :file "test-resources/lib_tests/aero/valid.edn"
+                   :map :valid-file}
