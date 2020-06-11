@@ -254,6 +254,7 @@ be used as Clojure libraries by babashka.
   linter
 - [pod-babashka-filewatcher](https://github.com/babashka/pod-babashka-filewatcher): a
   filewatcher pod based on Rust notify
+- [pod-babashka-parcera](https://github.com/babashka/pod-babashka-parcera): pod around the parcera Clojure parser
 - [pod-janet-peg](https://github.com/sogaiu/pod-janet-peg): a pod for
   calling [Janet](https://github.com/janet-lang/janet)'s PEG
   functionality
