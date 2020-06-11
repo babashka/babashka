@@ -62,7 +62,9 @@
 (defn source-for-namespace [loader namespace opts]
   (let [ns-str (name namespace)
         ^String ns-str (munge ns-str)
-        base-path (.replace ns-str "." (System/getProperty "file.separator"))
+        ;; do NOT pick the platform specific file separator here, since that doesn't work for searching in .jar files
+        ;; (io/file "foo" "bar/baz") does work on Windows, despite the forward slash
+        base-path (.replace ns-str "." "/")
         resource-paths (mapv #(str base-path %) [".bb" ".clj" ".cljc"])]
     (getResource loader resource-paths opts)))
 
