@@ -788,7 +788,7 @@ Differences with Clojure:
   than in Clojure on the JVM. In general interpretation yields slower programs
   than compiled programs.
 
-- No `defprotocol`, `defrecord` and unboxed math.
+- No `deftype`, `definterface` and unboxed math.
 
 ## [Libraries, pods and projects](doc/libraries.md)
 
