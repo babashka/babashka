@@ -120,6 +120,7 @@
           java.lang.ProcessBuilder$Redirect
           java.lang.Runtime
           java.lang.RuntimeException
+          java.lang.Short
           java.lang.String
           java.lang.StringBuilder
           java.lang.System
@@ -193,6 +194,7 @@
           java.util.jar.JarFile
           java.util.jar.JarEntry
           java.util.jar.JarFile$JarFileEntry
+          java.util.Random
           java.util.regex.Pattern
           java.util.Base64
           java.util.Base64$Decoder
