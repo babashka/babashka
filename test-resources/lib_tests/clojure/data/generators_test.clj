@@ -2,9 +2,6 @@
   (:require [clojure.data.generators :as gen]
             [clojure.test :refer (deftest is)]))
 
-;; TODO add *print-level* to Sci https://github.com/borkdude/sci/issues/351
-(def ^:dynamic *print-level* nil)
-
 (defn print-read-roundtrip
   [o]
   (binding [*print-length* nil
