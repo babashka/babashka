@@ -837,6 +837,8 @@ binary, these evaluation criteria are considered:
 - The library cannot be interpreted by with babashka using `--classpath`.
 - The functionality can't be met by shelling out to another CLI or can't be
   written as a small layer over an existing CLI (like `babashka.curl`) instead.
+- The library cannot be implemented a
+  [pod](https://github.com/babashka/babashka.pods).
 
 If not all of the criteria are met, but adding a feature is still useful to a
 particular company or niche, adding it behind a feature flag is still a
