@@ -2,8 +2,7 @@
   (:require [clojure.data.generators :as gen]
             [clojure.test :refer (deftest is)]))
 
-;; REVIEW needed to add these vars. Missing in Babashka?
-(def ^:dynamic *print-length* nil)
+;; TODO add *print-level* to Sci https://github.com/borkdude/sci/issues/351
 (def ^:dynamic *print-level* nil)
 
 (defn print-read-roundtrip
