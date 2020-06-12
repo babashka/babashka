@@ -80,7 +80,8 @@
                                         :parameterTypes ["java.lang.String","java.util.Locale","java.lang.ClassLoader"]}]})))
 
 (def classes
-  `{:all [clojure.lang.ExceptionInfo
+  `{:all [clojure.lang.BigInt
+          clojure.lang.ExceptionInfo
           java.io.BufferedReader
           java.io.BufferedWriter
           java.io.ByteArrayInputStream
