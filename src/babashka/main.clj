@@ -206,12 +206,14 @@
 (defn shell-seq [in]
   (line-seq (java.io.BufferedReader. in)))
 
+(def version (str/trim (slurp (io/resource "BABASHKA_VERSION"))))
+
 (defn print-version []
-  (println (str "babashka v"(str/trim (slurp (io/resource "BABASHKA_VERSION"))))))
+  (println (str "babashka v" version)))
 
 
 (defn print-help []
-  (println (str "Babashka v" (str/trim (slurp (io/resource "BABASHKA_VERSION")))))
+  (println (str "Babashka v" version))
   ;; (println (str "sci v" (str/trim (slurp (io/resource "SCI_VERSION")))))
   (println)
   (println "Options must appear in the order of groups mentioned below.")
@@ -264,7 +266,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
  :feature/jdbc       %s
  :feature/postgresql %s
  :feature/hsqldb     %s}")
-    (str/trim (slurp (io/resource "BABASHKA_VERSION")))
+    version
     features/core-async?
     features/csv?
     features/java-nio?
@@ -303,7 +305,9 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
 (defn start-nrepl! [address ctx]
   (let [dev? (= "true" (System/getenv "BABASHKA_DEV"))
         nrepl-opts (nrepl-server/parse-opt address)
-        nrepl-opts (assoc nrepl-opts :debug dev?)]
+        nrepl-opts (assoc nrepl-opts
+                          :debug dev?
+                          :describe {"versions" {"babashka" version}})]
     (nrepl-server/start-server! ctx nrepl-opts)
     (binding [*out* *err*]
       (println "For more info visit https://github.com/borkdude/babashka/blob/master/doc/repl.md#nrepl.")))

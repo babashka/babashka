@@ -54,12 +54,20 @@
           new-id! #(swap! id inc)]
       (testing "session"
         (is session))
+      (testing "describe"
+        (bencode/write-bencode os {"op" "describe" "session" session "id" (new-id!)})
+        (let [msg (read-reply in session @id)
+              id (:id msg)
+              versions (:versions msg)
+              babashka-version (bytes->str (get versions "babashka"))]
+          (is (= 1 id))
+          (is (= main/version babashka-version))))
       (testing "eval"
         (bencode/write-bencode os {"op" "eval" "code" "(+ 1 2 3)" "session" session "id" (new-id!)})
         (let [msg (read-reply in session @id)
               id (:id msg)
               value (:value msg)]
-          (is (= 1 id))
+          (is (= 2 id))
           (is (= value "6")))
         (testing "creating a namespace and evaluating something in it"
           (bencode/write-bencode os {"op" "eval"
@@ -179,10 +187,13 @@
         server-state (atom nil)]
     (try
       (if tu/jvm?
-        (let [server (start-server!
+        (let [nrepl-opts (parse-opt "0.0.0.0:1668")
+              nrepl-opts (assoc nrepl-opts
+                                :describe {"versions" {"babashka" main/version}})
+              server (start-server!
                      (init {:namespaces main/namespaces
                             :features #{:bb}})
-                     (parse-opt "0.0.0.0:1668"))]
+                     nrepl-opts)]
           (reset! server-state server))
         (let [pb (ProcessBuilder. ["./bb" "--nrepl-server" "0.0.0.0:1668"])
               _ (.redirectError pb ProcessBuilder$Redirect/INHERIT)
