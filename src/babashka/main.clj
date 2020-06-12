@@ -400,6 +400,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
   '{ArithmeticException java.lang.ArithmeticException
     AssertionError java.lang.AssertionError
     BigDecimal java.math.BigDecimal
+    BigInteger java.math.BigInteger
     Boolean java.lang.Boolean
     Byte java.lang.Byte
     Character java.lang.Character
@@ -421,6 +422,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
     RuntimeException java.lang.RuntimeException
     Process        java.lang.Process
     ProcessBuilder java.lang.ProcessBuilder
+    Short java.lang.Short
     String java.lang.String
     StringBuilder java.lang.StringBuilder
     System java.lang.System
