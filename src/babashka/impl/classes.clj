@@ -201,6 +201,7 @@
           java.util.Base64$Decoder
           java.util.Base64$Encoder
           java.util.Date
+          java.util.Locale
           java.util.Map
           java.util.MissingResourceException
           java.util.Properties
@@ -227,12 +228,14 @@
                       clojure.lang.IEditableCollection
                       clojure.lang.IMapEntry
                       clojure.lang.IPersistentMap
+                      clojure.lang.IPersistentSet
                       clojure.lang.IPersistentVector
                       clojure.lang.IRecord
                       clojure.lang.ISeq
                       clojure.lang.Named
                       clojure.lang.Keyword
-                      clojure.lang.Symbol]
+                      clojure.lang.Symbol
+                      clojure.lang.Sequential]
     :custom ~custom-map})
 
 (defmacro gen-class-map []

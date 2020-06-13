@@ -27,3 +27,4 @@ script/lib_tests/cljc_java_time_test
 script/lib_tests/camel_snake_kebab_test
 script/lib_tests/aero_test
 script/lib_tests/clojure_data_generators_test
+script/lib_tests/honeysql_test
