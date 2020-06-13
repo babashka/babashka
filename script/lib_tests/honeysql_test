@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+if [ "$BABASHKA_TEST_ENV" = "native" ]; then
+    BB_CMD="./bb"
+else
+    BB_CMD="lein bb"
+fi
+
+export BABASHKA_CLASSPATH
+BABASHKA_CLASSPATH=$(clojure -Sdeps '{:deps {honeysql {:mvn/version "1.0.444"}}}' -Spath)
+
+$BB_CMD -cp "$BABASHKA_CLASSPATH:test-resources/lib_tests" -e "
+(require '[honeysql.core-test])
+(require '[honeysql.format-test])
+(require '[clojure.test :as t])
+
+(let [{:keys [:test :pass :fail :error]}
+  (t/run-tests 'honeysql.core-test 'honeysql.format-test)]
+  (when-not (pos? test)
+    (System/exit 1))
+  (System/exit (+ fail error)))
+"
