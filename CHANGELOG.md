@@ -2,7 +2,7 @@
 
 For a list of breaking changes, check [here](#breaking-changes)
 
-## v0.1.2 (unreleased)
+## v0.1.2 (2020-06-14)
 
 Thanks [@jeroenvandijk](https://github.com/jeroenvandijk) for contributing to this release.
 
