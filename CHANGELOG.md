@@ -2,6 +2,19 @@
 
 For a list of breaking changes, check [here](#breaking-changes)
 
+## v0.1.2 (unreleased)
+
+Thanks @jeroenvandijk for contributing to this release.
+
+- Support `:extend-via-metadata` option in protocols
+- Fix classpath issue for Windows #496
+- Add `double-array`, `short-array` and `clojure.lang.BigInt` for compatibility with
+  [clojure.data.generators](https://github.com/clojure/data.generators)
+- Add support for `*print-level*`
+- Add version info in `:describe` message of babashka.nrepl #471
+- Add compatibility for [honeysql](https://github.com/seancorfield/honeysql)
+  (most notable change: support `import` for records)
+
 ## v0.1.1 (2020-06-10)
 
 Thanks [@Chowlz](https://github.com/Chowlz) and
