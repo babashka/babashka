@@ -241,6 +241,14 @@ A library for word case conversions https://clj-commons.org/camel-snake-k…
 
 A small library for explicit, intentful configuration.
 
+### [clojure.data.generators](https://github.com/clojure/data.generators)
+
+Random data generators
+
+### [honeysql](https://github.com/seancorfield/honeysql)
+
+Turn Clojure data structures into SQL
+
 ## Pods
 
 [Babashka pods](https://github.com/babashka/babashka.pods) are programs that can
