@@ -80,7 +80,7 @@ user=>
 
 Editor plugins and tools known to work with the babashka nREPL server:
 
-  - Emacs: [CIDER](https://docs.cider.mx/cider-nrepl/)
+  - Emacs: [CIDER](https://docs.cider.mx/cider/platforms/babashka.html)
   - `lein repl :connect`
   - VSCode: [Calva](http://calva.io/)
   - Atom: [Chlorine](https://github.com/mauricioszabo/atom-chlorine)
