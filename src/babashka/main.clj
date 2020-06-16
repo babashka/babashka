@@ -13,6 +13,7 @@
    [babashka.impl.clojure.stacktrace :refer [stacktrace-namespace]]
    [babashka.impl.clojure.zip :refer [zip-namespace]]
    [babashka.impl.common :as common]
+   [babashka.impl.clojure.spec.alpha :refer [spec-namespace]]
    [babashka.impl.curl :refer [curl-namespace]]
    [babashka.impl.data :as data]
    [babashka.impl.features :as features]
@@ -367,7 +368,8 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
        'babashka.curl curl-namespace
        'babashka.pods pods/pods-namespace
        'bencode.core bencode-namespace
-       'flatland.ordered.map ordered-map-ns}
+       'flatland.ordered.map ordered-map-ns
+       'clojure.spec.alpha spec-namespace}
     features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace))
     features/yaml? (assoc 'clj-yaml.core @(resolve 'babashka.impl.yaml/yaml-namespace))
     features/jdbc? (assoc 'next.jdbc @(resolve 'babashka.impl.jdbc/njdbc-namespace)
