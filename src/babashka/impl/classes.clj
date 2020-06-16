@@ -185,6 +185,8 @@
                 java.time.temporal.ChronoField
                 java.time.temporal.ChronoUnit
                 java.time.temporal.IsoFields
+                java.time.temporal.TemporalAdjusters
+                java.time.temporal.TemporalAmount
                 java.time.temporal.TemporalField
                 ~(symbol "[Ljava.time.temporal.TemporalField;")
                 java.time.format.TextStyle
