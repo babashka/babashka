@@ -1,5 +1,9 @@
 (ns babashka.impl.test
-  (:require  [babashka.impl.clojure.test :as t]))
+  (:require  [babashka.impl.clojure.test :as t]
+             [sci.core :as sci]
+             #_[sci.impl.namespaces :refer [copy-var]]))
+
+(def tns (sci/create-ns 'clojure.test nil))
 
 (defn macrofy [v]
   (with-meta v {:sci/macro true}))
@@ -20,7 +24,8 @@
    'testing-vars-str t/testing-vars-str
    'testing-contexts-str t/testing-contexts-str
    'inc-report-counter t/inc-report-counter
-   'report t/report
+   'report (sci/new-dynamic-var 'report t/report (assoc (meta t/report)
+                                                        :ns tns))
    'do-report t/do-report
    ;; assertion utilities
    'function? t/function?
