@@ -31,4 +31,28 @@
             :jvm-opts ["-Djdk.attach.allowAttachSelf"]
             :main-opts ["-m" "babashka.profile"]}
            :lib-tests
-           {:extra-deps {minimallist {:mvn/version "0.0.1"}}}}}
+           {:extra-deps {clj-http-lite
+                         {:git/url "https://github.com/babashka/clj-http-lite"
+                          :sha "f44ebe45446f0f44f2b73761d102af3da6d0a13e"}
+                         spartan.spec {:git/url "https://github.com/borkdude/spartan.spec"
+                                       :sha "16f7eec4b6589c77c96c9fcf989f78fffcee7c4c"}
+                         regal {:git/url "https://github.com/lambdaisland/regal"
+                                :sha "b059fdb06d5586a9a04c27e7b011c467ad8546db"}
+                         medley {:git/url "https://github.com/weavejester/medley"
+                                 :sha "a4e5fb5383f5c0d83cb2d005181a35b76d8a136d"}
+                         babasha.curl {:local/root "babashka.curl"}
+                         cprop {:mvn/version "0.1.16"}
+                         comb {:mvn/version "0.1.1"}
+                         mvxcvi/arrangement {:mvn/version "1.2.0"}
+                         org.clojure/data.zip {:mvn/version "1.0.0"}
+                         clojure-csv {:mvn/version "2.0.2"}
+                         org.clojure/math.combinatorics {:mvn/version "0.1.6"}
+                         doric {:mvn/version "0.9.0"}
+                         cljc.java-time
+                         {:git/url "https://github.com/henryw374/cljc.java-time.git"
+                          :sha "e3d184b78e933322b3fcaa6ca66cbb8f42a6b35c"}
+                         camel-snake-kebab {:mvn/version "0.4.1"}
+                         aero {:mvn/version "1.1.6"}
+                         org.clojure/data.generators {:mvn/version "1.0.0"}
+                         honeysql {:mvn/version "1.0.444"}
+                         minimallist {:mvn/version "0.0.1"}}}}}
