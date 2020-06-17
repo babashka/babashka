@@ -70,5 +70,6 @@
   (is (str/includes? (bb (.getPath (io/file "test-resources" "babashka" "assert_expr.clj")))
                      "3.14 should be roughly 3.141592653589793")))
 
-(deftest rebind-report-test
-  (is (bb "(binding [clojure.test/report (constantly true)] nil)")))
+(deftest rebind-vars-test
+  (is (bb "(binding [clojure.test/report (constantly true)] nil)"))
+  (is (bb "(binding [clojure.test/test-var (constantly true)] nil)")))

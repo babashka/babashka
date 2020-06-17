@@ -1,7 +1,6 @@
 (ns babashka.impl.test
   (:require  [babashka.impl.clojure.test :as t]
-             [sci.core :as sci]
-             #_[sci.impl.namespaces :refer [copy-var]]))
+             [sci.core :as sci]))
 
 (def tns (sci/create-ns 'clojure.test nil))
 
@@ -24,8 +23,7 @@
    'testing-vars-str t/testing-vars-str
    'testing-contexts-str t/testing-contexts-str
    'inc-report-counter t/inc-report-counter
-   'report (sci/new-dynamic-var 'report t/report (assoc (meta t/report)
-                                                        :ns tns))
+   'report (sci/copy-var t/report tns)
    'do-report t/do-report
    ;; assertion utilities
    'function? t/function?
@@ -51,7 +49,7 @@
    'compose-fixtures t/compose-fixtures
    'join-fixtures t/join-fixtures
    ;; running tests: low level
-   'test-var t/test-var
+   'test-var (sci/copy-var t/test-var tns)
    'test-vars t/test-vars
    'test-all-vars (with-meta t/test-all-vars {:sci.impl/op :needs-ctx})
    'test-ns (with-meta t/test-ns {:sci.impl/op :needs-ctx})
