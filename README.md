@@ -23,7 +23,7 @@ As one user described it:
 
 ### Goals
 
-* Low latency Clojure scripting alternative to JVM Clojure.
+* Fast startup times compared to JVM Clojure.
 * Easy installation: grab the self-contained binary and run. No JVM needed.
 * Familiarity and portability:
   - Scripts should be compatible with JVM Clojure as much as possible
