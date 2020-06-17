@@ -29,4 +29,6 @@
             {com.clojure-goes-fast/clj-async-profiler {:mvn/version "0.4.1"}}
             :extra-paths ["test"]
             :jvm-opts ["-Djdk.attach.allowAttachSelf"]
-            :main-opts ["-m" "babashka.profile"]}}}
+            :main-opts ["-m" "babashka.profile"]}
+           :lib-tests
+           {:extra-deps {minimallist {:mvn/version "0.0.1"}}}}}
