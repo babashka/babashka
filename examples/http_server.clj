@@ -34,18 +34,20 @@
                            (string/join (if attrs? (rest body) body))
                            (name tag))))
           body (cond
-                 (not (.exists f)) ""
-                 (.isFile f) (slurp f)
-                 (.isDirectory f) (format "<!DOCTYPE html>\n%s"
-                                          (html :html
-                                                (html :head
-                                                      (html :title path))
-                                                (html :body
-                                                      (html :h1 path)
-                                                      (html :tt
-                                                            (apply html :pre
-                                                                   (for [i (.list f)]
-                                                                     (html :div (html :a {:href (format "\"%s\"" i)} i)))))))))]
+                (not (.exists f)) (str path " not exist")
+                (.isFile f) (slurp f)
+                (.isDirectory f) (format "<!DOCTYPE html>\n%s"
+                                         (html :html
+                                               (html :head
+                                                     (html :title path))
+                                               (html :body
+                                                     (html :h1 path)
+                                                     (html :tt
+                                                           (apply html :pre
+                                                                  (for [i (.list f)]
+                                                                   (html :div
+                                                                         (html :a {:href (str (if (> (count path) 1) path) "/" i)} i))
+                                                                   )))))))]
       (prn path)
       (.write out (format "HTTP/1.1 %s OK\r\nContent-Length: %s\r\n\r\n%s"
                           status
