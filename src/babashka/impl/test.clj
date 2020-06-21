@@ -2,8 +2,6 @@
   (:require  [babashka.impl.clojure.test :as t]
              [sci.core :as sci]))
 
-(def tns (sci/create-ns 'clojure.test nil))
-
 (defn macrofy [v]
   (with-meta v {:sci/macro true}))
 
@@ -23,7 +21,7 @@
    'testing-vars-str t/testing-vars-str
    'testing-contexts-str t/testing-contexts-str
    'inc-report-counter t/inc-report-counter
-   'report (sci/copy-var t/report tns)
+   'report t/report
    'do-report t/do-report
    ;; assertion utilities
    'function? t/function?
@@ -49,7 +47,7 @@
    'compose-fixtures t/compose-fixtures
    'join-fixtures t/join-fixtures
    ;; running tests: low level
-   'test-var (sci/copy-var t/test-var tns)
+   'test-var t/test-var
    'test-vars t/test-vars
    'test-all-vars (with-meta t/test-all-vars {:sci.impl/op :needs-ctx})
    'test-ns (with-meta t/test-ns {:sci.impl/op :needs-ctx})

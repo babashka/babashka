@@ -334,7 +334,11 @@
    arguments for 'report'."
     :dynamic true
     :added "1.1"}
-  report :type)
+  report-impl :type)
+
+(def tns (sci/create-ns 'clojure.test nil))
+
+(def report (sci/copy-var report-impl tns))
 
 (defn- stacktrace-file-and-line
   [stacktrace]
@@ -349,20 +353,20 @@
    to pass test results to report."
   {:added "1.2"}
   [m]
-  (report
+  (report ;; this calls the sci var which can be rebound
    (case
        (:type m)
      :fail m
      :error (merge (stacktrace-file-and-line (.getStackTrace ^Throwable (:actual m))) m)
      m)))
 
-(defmethod report :default [m]
+(defmethod report-impl :default [m]
   (with-test-out-internal (prn m)))
 
-(defmethod report :pass [m]
+(defmethod report-impl :pass [m]
   (with-test-out-internal (inc-report-counter :pass)))
 
-(defmethod report :fail [m]
+(defmethod report-impl :fail [m]
   (with-test-out-internal
     (inc-report-counter :fail)
     (println "\nFAIL in" (testing-vars-str m))
@@ -371,7 +375,7 @@
     (println "expected:" (pr-str (:expected m)))
     (println "  actual:" (pr-str (:actual m)))))
 
-(defmethod report :error [m]
+(defmethod report-impl :error [m]
   (with-test-out-internal
     (inc-report-counter :error)
     (println "\nERROR in" (testing-vars-str m))
@@ -384,20 +388,20 @@
         (stack/print-cause-trace actual @stack-trace-depth)
         (prn actual)))))
 
-(defmethod report :summary [m]
+(defmethod report-impl :summary [m]
   (with-test-out-internal
     (println "\nRan" (:test m) "tests containing"
              (+ (:pass m) (:fail m) (:error m)) "assertions.")
     (println (:fail m) "failures," (:error m) "errors.")))
 
-(defmethod report :begin-test-ns [m]
+(defmethod report-impl :begin-test-ns [m]
   (with-test-out-internal
     (println "\nTesting" (sci-namespaces/sci-ns-name (:ns m)))))
 
 ;; Ignore these message types:
-(defmethod report :end-test-ns [m])
-(defmethod report :begin-test-var [m])
-(defmethod report :end-test-var [m])
+(defmethod report-impl :end-test-ns [m])
+(defmethod report-impl :begin-test-var [m])
+(defmethod report-impl :end-test-var [m])
 
 
 
@@ -690,7 +694,7 @@
 
 ;;; RUNNING TESTS: LOW-LEVEL FUNCTIONS
 
-(defn test-var
+(defn test-var-impl
   "If v has a function in its :test metadata, calls that function,
   with *testing-vars* bound to (conj *testing-vars* v)."
   {:dynamic true, :added "1.1"}
@@ -704,6 +708,8 @@
              (do-report {:type :error, :message "Uncaught exception, not in assertion."
                          :expected nil, :actual e})))
       (do-report {:type :end-test-var, :var v}))))
+
+(def test-var (sci/copy-var test-var-impl tns))
 
 (defn test-vars
   "Groups vars by their namespace and runs test-vars on them with
@@ -720,7 +726,8 @@
        (fn []
          (doseq [v vars]
            (when (:test (meta v))
-             (each-fixture-fn (fn [] (test-var v))))))))))
+             (each-fixture-fn (fn [] (test-var ;; this calls the sci var which can be rebound
+                                      v))))))))))
 
 (defn test-all-vars
   "Calls test-vars on every var interned in the namespace, with fixtures."
