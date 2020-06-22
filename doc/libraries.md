@@ -258,6 +258,8 @@ be used as Clojure libraries by babashka.
   interacting with SQL databases
 - [bootleg](https://github.com/retrogradeorbit/bootleg): static HTML website
   generation
+- [brisk](https://github.com/justone/brisk): Freeze and thaw with Nippy at the
+  command line
 - [clj-kondo](https://github.com/borkdude/clj-kondo/#babashka-pod): a Clojure
   linter
 - [pod-babashka-filewatcher](https://github.com/babashka/pod-babashka-filewatcher): a
