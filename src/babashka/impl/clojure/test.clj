@@ -234,6 +234,7 @@
     babashka.impl.clojure.test
   (:require [babashka.impl.common :refer [ctx]]
             [clojure.stacktrace :as stack]
+            [clojure.string :as str]
             [clojure.template :as temp]
             [sci.core :as sci]
             [sci.impl.analyzer :as ana]
@@ -340,24 +341,17 @@
 
 (def report (sci/copy-var report-impl tns))
 
-(defn- stacktrace-file-and-line
-  [stacktrace]
-  (if (seq stacktrace)
-    (let [^StackTraceElement s (first stacktrace)]
-      {:file (.getFileName s) :line (.getLineNumber s)})
-    {:file nil :line nil}))
-
 (defn do-report
   "Add file and line information to a test result and call report.
    If you are writing a custom assert-expr method, call this function
    to pass test results to report."
   {:added "1.2"}
   [m]
-  (report ;; this calls the sci var which can be rebound
+  (report
    (case
        (:type m)
      :fail m
-     :error (merge (stacktrace-file-and-line (.getStackTrace ^Throwable (:actual m))) m)
+     :error m
      m)))
 
 (defmethod report-impl :default [m]
@@ -435,6 +429,8 @@
          (clojure.test/do-report {:type :pass, :message ~msg,
                                   :expected '~form, :actual (cons ~pred values#)})
          (clojure.test/do-report {:type :fail, :message ~msg,
+                                  :file clojure.core/*file*
+                                  :line ~(:line (meta form))
                                   :expected '~form, :actual (list '~'not (cons '~pred values#))}))
        result#)))
 
@@ -448,6 +444,8 @@
        (clojure.test/do-report {:type :pass, :message ~msg,
                                 :expected '~form, :actual value#})
        (clojure.test/do-report {:type :fail, :message ~msg,
+                                :file clojure.core/*file*
+                                :line ~(:line (meta form))
                                 :expected '~form, :actual value#}))
      value#))
 
@@ -468,7 +466,9 @@
 
 (defmethod assert-expr :always-fail [msg form]
   ;; nil test: always fail
-  `(clojure.test/do-report {:type :fail, :message ~msg}))
+  `(clojure.test/do-report {:type :fail, :message ~msg
+                            :file clojure.core/*file*
+                            :line ~(:line (meta form))}))
 
 (defmethod assert-expr :default [msg form]
   (if (and (sequential? form) (function? (first form)))
@@ -484,6 +484,8 @@
          (clojure.test/do-report {:type :pass, :message ~msg,
                                   :expected '~form, :actual (class object#)})
          (clojure.test/do-report {:type :fail, :message ~msg,
+                                  :file clojure.core/*file*
+                                  :line ~(:line (meta form))
                                   :expected '~form, :actual (class object#)}))
        result#)))
 
@@ -495,6 +497,8 @@
         body (nthnext form 2)]
     `(try ~@body
           (clojure.test/do-report {:type :fail, :message ~msg,
+                                   :file clojure.core/*file*
+                                   :line ~(:line (meta form))
                                    :expected '~form, :actual nil})
           (catch ~klass e#
             (clojure.test/do-report {:type :pass, :message ~msg,
@@ -516,7 +520,9 @@
               (if (re-find ~re m#)
                 (clojure.test/do-report {:type :pass, :message ~msg,
                                          :expected '~form, :actual e#})
-                (clojure.test/do-report {:type :fail, :message ~msg,
+                (clojure.test/do-report {:file clojure.core/*file*
+                                         :line ~(:line (meta form))
+                                         :type :fail, :message ~msg,
                                          :expected '~form, :actual e#})))
             e#))))
 
@@ -528,7 +534,9 @@
   [msg form]
   `(try ~(assert-expr msg form)
         (catch Throwable t#
-          (clojure.test/do-report {:type :error, :message ~msg,
+          (clojure.test/do-report {:file clojure.core/*file*
+                                   :line ~(:line (meta form))
+                                   :type :error, :message ~msg,
                                    :expected '~form, :actual t#}))))
 
 
