@@ -18,7 +18,7 @@
     (case os
       :mac (sh "/usr/bin/open" url)
       :linux (sh "/usr/bin/xdg-open" url)
-      :windows (sh "start" url))))
+      :windows (sh "cmd" "/C" "start" url))))
 
 (def browse-namespace
   {'browse-url browse-url})
