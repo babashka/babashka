@@ -223,10 +223,14 @@
                    java.io.EOFException
                    java.io.PrintWriter
                    java.io.PushbackReader]
-    :methods [borkdude.graal.LockFix ;; support for locking
-              ]
+    :methods [borkdude.graal.LockFix] ;; support for locking
+
     :fields [clojure.lang.PersistentQueue]
     :instance-checks [clojure.lang.IObj
+                      clojure.lang.IFn
+                      clojure.lang.IPending
+                      clojure.lang.IDeref
+                      clojure.lang.IAtom
                       clojure.lang.IEditableCollection
                       clojure.lang.IMapEntry
                       clojure.lang.IPersistentMap
@@ -317,11 +321,10 @@
     (->> (.getMethods c)
          (keep (fn [m]
                  (when (public-declared-method? c m)
-                   {:name (.getName m)})) )
+                   {:name (.getName m)})))
          (distinct)
          (sort-by :name)
          (vec)))
 
   (public-declared-method-names java.net.URL)
-  (public-declared-method-names java.util.Properties)
-  )
+  (public-declared-method-names java.util.Properties))
