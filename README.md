@@ -564,6 +564,13 @@ namespace which allows dynamically adding to the classpath.
 
 See [deps.clj](doc/deps.clj.md) for a babashka script that replaces the `clojure` bash script.
 
+## System properties
+
+Babashka sets the following system properties:
+
+- `babashka.version`: the version string, e.g. `"1.2.0"`
+- `babashka.main`: the `--main` argument
+
 ## Data readers
 
 Data readers can be enabled by setting `*data-readers*` to a hashmap of symbols
