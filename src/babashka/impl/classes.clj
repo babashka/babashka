@@ -128,6 +128,7 @@
           java.lang.Throwable
           java.math.BigDecimal
           java.math.BigInteger
+          java.net.ConnectException
           java.net.DatagramSocket
           java.net.DatagramPacket
           java.net.HttpURLConnection
