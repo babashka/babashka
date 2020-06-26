@@ -444,14 +444,17 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
   (binding [*unrestricted* true]
     (sci/binding [reflection-var false
                   core/data-readers @core/data-readers]
-      (let [{:keys [:version :shell-in :edn-in :shell-out :edn-out
+      (let [{version-opt :version
+             :keys [:shell-in :edn-in :shell-out :edn-out
                     :help? :file :command-line-args
                     :expressions :stream?
                     :repl :socket-repl :nrepl
                     :verbose? :classpath
                     :main :uberscript :describe?] :as _opts}
             (parse-opts args)
-            _ (when main (System/setProperty "babashka.main" main))
+            _ (do ;; set properties
+                (when main (System/setProperty "babashka.main" main))
+                (System/setProperty "babashka.version" version))
             read-next (fn [*in*]
                         (if (pipe-signal-received?)
                           ::EOF
@@ -532,7 +535,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
             exit-code
             (or exit-code
                 (second
-                 (cond version
+                 (cond version-opt
                        [(print-version) 0]
                        help?
                        [(print-help) 0]

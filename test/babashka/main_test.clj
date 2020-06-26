@@ -485,6 +485,10 @@
 (deftest data-diff-test
   (is (= [[nil 1] [nil 2] [1 nil 2]] (bb nil "(require '[clojure.data :as d]) (d/diff [1 1 2] [1 2 2])"))))
 
+(deftest version-test
+  (is (= "true\ntrue\nfalse\n"
+         (test-utils/bb nil (.getPath (io/file "test-resources" "babashka" "version.clj"))))))
+
 ;;;; Scratch
 
 (comment
