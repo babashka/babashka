@@ -544,7 +544,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                        repl [(repl/start-repl! sci-ctx) 0]
                        socket-repl [(start-socket-repl! socket-repl sci-ctx) 0]
                        nrepl [(start-nrepl! nrepl sci-ctx) 0]
-                       (not (str/blank? expression))
+                       expressions
                        (try
                          (loop []
                            (let [in (read-next *in*)]
