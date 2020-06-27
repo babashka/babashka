@@ -10,4 +10,4 @@
 
 (prn (compare-version [0 1 2])) ;; true
 (prn (compare-version [0 1 3])) ;; true
-(prn (compare-version [0 1 4])) ;; false
+(prn (compare-version [100 1 4])) ;; false
