@@ -1,6 +1,6 @@
 (ns babashka.run-all-libtests
-  (:require [clojure.test :as t]
-            [clojure.java.io :as io]))
+  (:require [clojure.java.io :as io]
+            [clojure.test :as t]))
 
 (def status (atom {}))
 
@@ -16,23 +16,25 @@
 (require '[clj-http.lite.client :as client])
 (require '[cheshire.core :as json])
 
-(prn (:status (client/get "https://www.clojure.org")))
+(prn (:status (client/get "https://www.clojure.org" {:throw-exceptions false})))
 
-(prn (:status (client/get "https://postman-echo.com/get?foo1=bar1&foo2=bar2")))
+(prn (:status (client/get "https://postman-echo.com/get?foo1=bar1&foo2=bar2" {:throw-exceptions false})))
 
-(prn (:status (client/post "https://postman-echo.com/post")))
+(prn (:status (client/post "https://postman-echo.com/post" {:throw-exceptions false})))
 
 (prn (:status (client/post "https://postman-echo.com/post"
                            {:body (json/generate-string {:a 1})
                             :headers {"X-Hasura-Role" "admin"}
                             :content-type :json
-                            :accept :json})))
+                            :accept :json
+                            :throw-exceptions false})))
 
 (prn (:status (client/put "https://postman-echo.com/put"
                           {:body (json/generate-string {:a 1})
                            :headers {"X-Hasura-Role" "admin"}
                            :content-type :json
-                           :accept :json})))
+                           :accept :json
+                           :throw-exceptions false})))
 
 ;;;; spartan.spec
 
