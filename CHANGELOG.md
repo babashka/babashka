@@ -16,7 +16,7 @@ Thanks [@llacom](https://github.com/llacom), [@AndreTheHunter](https://github.co
 - Add `java.net.ConnectException` class
 - Add `babashka.file` system property to support `__name__ = "__main__"` pattern
 
-### Fixes / enhancements
+### Fixed
 
 - Make `clojure.test/report` a dynamic var [#482](https://github.com/borkdude/babashka/issues/482), [#491](https://github.com/borkdude/babashka/issues/491)
 - Make `clojure.test/test-var` a dynamic var
