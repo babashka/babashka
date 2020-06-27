@@ -1,4 +1,5 @@
 (ns babashka.main-test
+  {:clj-kondo/config '{:linters {:unresolved-symbol {:exclude [working?]}}}}
   (:require
    [babashka.main :as main]
    [babashka.test-utils :as test-utils]
@@ -488,6 +489,19 @@
 (deftest version-test
   (is (= "true\ntrue\nfalse\n"
          (test-utils/bb nil (.getPath (io/file "test-resources" "babashka" "version.clj"))))))
+
+
+(defmethod clojure.test/assert-expr 'working? [msg form]
+  (let [body (next form)]
+    `(do ~@body
+         (clojure.test/do-report {:type :pass, :message ~msg,
+                                  :expected :success, :actual :success}))))
+
+(deftest empty-expressions-test
+  (testing "bb executes the empty file and doesn't start a REPL"
+    (is (working? (test-utils/bb nil (.getPath (io/file "test-resources" "babashka" "empty.clj"))))))
+  (testing "bb executes the empty expression and doesn't start a REPL"
+    (is (working? (test-utils/bb nil "-e" "")))))
 
 ;;;; Scratch
 
