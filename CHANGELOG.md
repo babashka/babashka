@@ -14,7 +14,7 @@ Thanks [@llacom](https://github.com/llacom), [@AndreTheHunter](https://github.co
 - Add classes for cli-matic library ([@AndreTheHunter](https://github.com/AndreTheHunter))
 - Add `babashka.version` system property [#479](https://github.com/borkdude/babashka/issues/479)
 - Add `java.net.ConnectException` class
-- Add `babashka.file` system property to support `__name__ = "__main__"` pattern (see [docs](https://github.com/borkdude/babashka#__name__--__main__-pattern)).
+- Add `babashka.file` system property to support `__name__ = "__main__"` pattern (see [docs](https://github.com/borkdude/babashka#__name__--__main__-pattern)) [#478](https://github.com/borkdude/babashka/issues/478).
 
 ### Fixed
 
