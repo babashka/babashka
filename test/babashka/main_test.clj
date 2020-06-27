@@ -486,10 +486,9 @@
 (deftest data-diff-test
   (is (= [[nil 1] [nil 2] [1 nil 2]] (bb nil "(require '[clojure.data :as d]) (d/diff [1 1 2] [1 2 2])"))))
 
-(deftest version-test
+(deftest version-property-test
   (is (= "true\ntrue\nfalse\n"
          (test-utils/bb nil (.getPath (io/file "test-resources" "babashka" "version.clj"))))))
-
 
 (defmethod clojure.test/assert-expr 'working? [msg form]
   (let [body (next form)]
@@ -502,6 +501,12 @@
     (is (working? (test-utils/bb nil (.getPath (io/file "test-resources" "babashka" "empty.clj"))))))
   (testing "bb executes the empty expression and doesn't start a REPL"
     (is (working? (test-utils/bb nil "-e" "")))))
+
+(deftest file-property-test
+  (is (= "true\nfalse\n"
+         (test-utils/bb nil (.getPath (io/file "test-resources" "babashka" "file_property1.clj")))))
+  (is (= "true\n"
+         (test-utils/bb nil (.getPath (io/file "test-resources" "babashka" "file_property2.clj"))))))
 
 ;;;; Scratch
 

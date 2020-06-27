@@ -479,7 +479,10 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                         (let [res (cp/source-for-namespace loader namespace nil)]
                           (when uberscript (swap! uberscript-sources conj (:source res)))
                           res)))
-            _ (when file (vars/bindRoot sci/file (.getCanonicalPath (io/file file))))
+            _ (when file
+                (let [canonical-path (.getCanonicalPath (io/file file))]
+                  (vars/bindRoot sci/file canonical-path)
+                  (System/setProperty "babashka.file" canonical-path)))
             ;; TODO: pull more of these values to compile time
             opts {:aliases aliases
                   :namespaces (-> namespaces
