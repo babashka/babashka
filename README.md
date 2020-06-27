@@ -570,6 +570,14 @@ Babashka sets the following system properties:
 
 - `babashka.version`: the version string, e.g. `"1.2.0"`
 - `babashka.main`: the `--main` argument
+- `babashka.file`: the `--file` argument (normalized using `.getCanonicalPath`)
+
+## __name__ = "__main__" pattern
+
+In Python scripts there is a well-known pattern to check if the current file was
+the file invoked from the command line: `__name__ = "__main__" pattern`. In
+babashka this pattern can be implemented using `(= *file* (System/getProperty
+"babashka.file")`.
 
 ## Data readers
 
