@@ -2,6 +2,29 @@
 
 For a list of breaking changes, check [here](#breaking-changes)
 
+## v0.1.3 (2020-06-27)
+
+Thanks [@llacom](https://github.com/llacom), [@AndreTheHunter](https://github.com/AndreTheHunter), [@xingzheone](https://github.com/xingzheone) for contributing to this release.
+
+### New
+
+- Add eldoc support in babashka.nrepl ([@borkdude](https://github.com/borkdude) and [@llacom](https://github.com/llacom))
+- Add `java.time.temporal.{TemportalAdjuster, TemporalAmount}` classes
+- Add `clojure.java.browse/browse-url` [#495](https://github.com/borkdude/babashka/issues/495)
+- Add classes for cli-matic library ([@AndreTheHunter](https://github.com/AndreTheHunter))
+- Add `babashka.version` system property [#479](https://github.com/borkdude/babashka/issues/479)
+- Add `java.net.ConnectException` class
+- Add `babashka.file` system property to support `__name__ = "__main__"` pattern
+
+### Fixes / enhancements
+
+- Make `clojure.test/report` a dynamic var [#482](https://github.com/borkdude/babashka/issues/482), [#491](https://github.com/borkdude/babashka/issues/491)
+- Make `clojure.test/test-var` a dynamic var
+- Allow arbitrary Clojure code in tagged literals (previously only EDN was allowed)
+- Fix http-server example ([@xingzheone](https://github.com/xingzheone))
+- Fix bug in `alter-var-root`: it used thread-local binding in updating root value
+- Fix for invoking `bb -f file.clj` when `file.clj` was empty
+
 ## v0.1.2 (2020-06-14)
 
 Thanks [@jeroenvandijk](https://github.com/jeroenvandijk) for contributing to this release.
