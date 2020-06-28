@@ -227,6 +227,7 @@ enumerated explicitly.
 - `clojure.stacktrace`
 - `clojure.test`
 - `clojure.pprint`: `pprint` (currently backed by [fipp](https://github.com/brandonbloom/fipp)'s  `fipp.edn/pprint`)
+- `clojure.zip`
 - [`clojure.tools.cli`](https://github.com/clojure/tools.cli) aliased as `tools.cli`
 - [`clojure.data.csv`](https://github.com/clojure/data.csv) aliased as `csv`
 - [`clojure.data.xml`](https://github.com/clojure/data.xml) aliased as `xml`
