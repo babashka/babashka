@@ -23,18 +23,13 @@ As one user described it:
 
 ### Goals
 
-* Fast starting Clojure scripting alternative for JVM Clojure
-* Easy installation: grab the self-contained binary and run. No JVM needed.
-* Familiarity and portability:
-  - Scripts should be compatible with JVM Clojure as much as possible
-  - Scripts should be platform-independent as much as possible. Babashka offers
-    support for linux, macOS and Windows.
-* Allow interop with commonly used classes like `java.io.File` and `System`
-* Multi-threading support (`pmap`, `future`, `core.async`)
-* Connectivity: talk UDP, TCP, HTTP (and optionally: [JDBC](#JDBC))
-* Support for various data formats: JSON, XML, YAML, CSV, bencode
-* Batteries included (tools.cli, cheshire, ...)
-* Library support via popular tools like the `clojure` CLI
+* **Fast starting** Clojure scripting alternative for JVM Clojure
+* **Easy installation:** grab the self-contained binary and run. No JVM needed.
+* **Familiar:** targeted at JVM Clojure users
+* **Cross-platform:**: supports linux, macOS and Windows
+* **Interop** with commonly used classes (`System`, `File`, `java.time.*`, `java.nio.*`)
+* **Multi-threading** support (`pmap`, `future`)
+* **Batteries included** (tools.cli, cheshire, ...)
 
 ### Non-goals
 
