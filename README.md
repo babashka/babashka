@@ -26,7 +26,7 @@ As one user described it:
 * **Fast starting** Clojure scripting alternative for JVM Clojure
 * **Easy installation:** grab the self-contained binary and run. No JVM needed.
 * **Familiar:** targeted at JVM Clojure users
-* **Cross-platform:**: supports linux, macOS and Windows
+* **Cross-platform:** supports linux, macOS and Windows
 * **Interop** with commonly used classes (`System`, `File`, `java.time.*`, `java.nio.*`)
 * **Multi-threading** support (`pmap`, `future`)
 * **Batteries included** (tools.cli, cheshire, ...)
