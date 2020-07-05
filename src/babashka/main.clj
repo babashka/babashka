@@ -17,7 +17,6 @@
    [babashka.impl.curl :refer [curl-namespace]]
    [babashka.impl.data :as data]
    [babashka.impl.features :as features]
-   [babashka.impl.ordered :refer [ordered-map-ns]]
    [babashka.impl.pods :as pods]
    [babashka.impl.repl :as repl]
    [babashka.impl.socket-repl :as socket-repl]
@@ -59,7 +58,8 @@
   (require '[babashka.impl.xml]))
 
 (when features/yaml?
-  (require '[babashka.impl.yaml]))
+  (require '[babashka.impl.yaml]
+           '[babashka.impl.ordered]))
 
 (when features/jdbc?
   (require '[babashka.impl.jdbc]))
@@ -368,10 +368,10 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
        'babashka.curl curl-namespace
        'babashka.pods pods/pods-namespace
        'bencode.core bencode-namespace
-       'flatland.ordered.map ordered-map-ns
        'clojure.java.browse browse-namespace}
     features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace))
-    features/yaml? (assoc 'clj-yaml.core @(resolve 'babashka.impl.yaml/yaml-namespace))
+    features/yaml? (assoc 'clj-yaml.core @(resolve 'babashka.impl.yaml/yaml-namespace)
+                          'flatland.ordered.map @(resolve 'babashka.impl.ordered/ordered-map-ns))
     features/jdbc? (assoc 'next.jdbc @(resolve 'babashka.impl.jdbc/njdbc-namespace)
                           'next.jdbc.sql @(resolve 'babashka.impl.jdbc/next-sql-namespace))
     features/core-async? (assoc 'clojure.core.async @(resolve 'babashka.impl.async/async-namespace)
