@@ -93,7 +93,7 @@ $ script/uberjar
 $ script/compile
 ```
 
-Check out this [example](examples.md#find-unused-vars).
+Note: there is now a [pod](https://github.com/babashka/babashka-sql-pods) for working with HyperSQL.
 
 ### PostgresQL
 
@@ -105,3 +105,5 @@ $ export BABASHKA_FEATURE_POSTGRESQL=true
 $ script/uberjar
 $ script/compile
 ```
+
+Note: there is now a [pod](https://github.com/babashka/babashka-sql-pods) for working with PostgreSQL.
