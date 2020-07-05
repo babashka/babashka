@@ -45,11 +45,14 @@ $ script/uberjar
 $ script/compile
 ```
 
-To configure maximum heap size you can use:
+To configure max heap size you can use:
 
 ```
-$ export BABASHKA_XMX="-J-Xmx4800m"
+$ export BABASHKA_XMX="-J-Xmx6500m"
 ```
+
+Note: setting the max heap size to a low value can cause the build to crash or
+take long to complete.
 
 ## Windows
 
