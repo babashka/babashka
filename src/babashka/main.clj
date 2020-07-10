@@ -386,8 +386,8 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                                 'clojure.core.async.impl.protocols @(resolve 'babashka.impl.async/async-protocols-namespace))
     features/csv?  (assoc 'clojure.data.csv @(resolve 'babashka.impl.csv/csv-namespace))
     features/transit? (assoc 'cognitect.transit @(resolve 'babashka.impl.transit/transit-namespace))
-    features/datascript? (assoc 'datascript.core @(resolve 'babashka.impl.datascript/datascript-namespace)))
-    features/datomic-client? (assoc 'datomic.client.api @(resolve 'babashka.impl.datomic-client/client-namespace)))
+    features/datascript? (assoc 'datascript.core @(resolve 'babashka.impl.datascript/datascript-namespace))
+    features/datomic-client? (assoc 'datomic.client.api @(resolve 'babashka.impl.datomic-client/client-namespace))))
 
 (def bindings
   {'java.lang.System/exit exit ;; override exit, so we have more control

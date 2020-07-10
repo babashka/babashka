@@ -19,10 +19,44 @@
 (def db 
   (d/db conn))
 
+
+(println "- transact \n")
+(let [data [{:db/id "temp-foo" :test/name :foo}]
+      tx-res (d/transact conn {:tx-data data})]
+  (println (:tempids tx-res))
+  (d/pull
+    (:db-after tx-res)
+    {:eid (get (:tempids tx-res) "temp-foo")
+     :selector '[*]}))
+(println "\n")
+
+(println "- query \n")
 (println
-  (pr-str
-    (ffirst
-      (d/q
-        '[:find (pull ?e [:user/firstname :user/lastname]) 
-          :where [?e :user/username "bingo"]]
-        db))))
+  (ffirst
+    (d/q
+      '[:find (pull ?e [:user/username :user/firstname]) 
+        :where [?e :user/username "bingo"]]
+      db)))
+(println "\n")
+
+
+(println "- tx-range \n")
+(println
+  (doseq [tx
+          (d/tx-range
+            conn
+            {:limit 10
+             :start nil
+             :end nil})]
+    (println (:id tx))))
+(println "\n")
+
+(println "- index range \n")
+(println 
+  (take 10
+        (d/index-range
+          (d/db conn)
+          {:attrid :network/name})))
+(println "\n")
+
+
