@@ -54,13 +54,6 @@
     (def pipe-signal-received? (constantly false))
     (def handle-sigint! (constantly nil))))
 
-;; TODO
-;; flag
-(require '[babashka.impl.datomic-client])
-
-(System/setProperty 
-  "java.library.path"
-  (str (System/getenv "GRAALVM_HOME") "/lib"))
 
 (when features/xml?
   (require '[babashka.impl.xml]))
@@ -83,6 +76,12 @@
 
 (when features/datascript?
   (require '[babashka.impl.datascript]))
+
+(when features/datomic-client?
+  (require '[babashka.impl.datomic-client])
+  (System/setProperty 
+    "java.library.path"
+    (str (System/getenv "GRAALVM_HOME") "/lib")))
 
 (sci/alter-var-root sci/in (constantly *in*))
 (sci/alter-var-root sci/out (constantly *out*))
@@ -336,15 +335,14 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
         io clojure.java.io
         json cheshire.core
         curl babashka.curl
-        bencode bencode.core
-        ;; TODO flag
-        datomic-client datomic.client.api }
+        bencode bencode.core}
     features/xml?        (assoc 'xml 'clojure.data.xml)
     features/yaml?       (assoc 'yaml 'clj-yaml.core)
     features/jdbc?       (assoc 'jdbc 'next.jdbc)
     features/core-async? (assoc 'async 'clojure.core.async)
     features/csv?        (assoc 'csv 'clojure.data.csv)
-    features/transit?    (assoc 'transit 'cognitect.transit)))
+    features/transit?    (assoc 'transit 'cognitect.transit)
+    features/datomic-client? (assoc 'datomic-client 'datomic.client.api)))
 
 (def cp-state (atom nil))
 
@@ -386,11 +384,10 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                           'next.jdbc.sql @(resolve 'babashka.impl.jdbc/next-sql-namespace))
     features/core-async? (assoc 'clojure.core.async @(resolve 'babashka.impl.async/async-namespace)
                                 'clojure.core.async.impl.protocols @(resolve 'babashka.impl.async/async-protocols-namespace))
-    ;; TODO flag
-    true (assoc 'datomic.client.api @(resolve 'babashka.impl.datomic-client/client-namespace))
     features/csv?  (assoc 'clojure.data.csv @(resolve 'babashka.impl.csv/csv-namespace))
     features/transit? (assoc 'cognitect.transit @(resolve 'babashka.impl.transit/transit-namespace))
-    features/datascript? (assoc 'datascript.core @(resolve 'babashka.impl.datascript/datascript-namespace))))
+    features/datascript? (assoc 'datascript.core @(resolve 'babashka.impl.datascript/datascript-namespace)))
+    features/datomic-client? (assoc 'datomic.client.api @(resolve 'babashka.impl.datomic-client/client-namespace)))
 
 (def bindings
   {'java.lang.System/exit exit ;; override exit, so we have more control
