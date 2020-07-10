@@ -140,6 +140,17 @@
           ;; java.net.URL, see below
           java.net.URLEncoder
           java.net.URLDecoder
+          ;;
+          java.nio.HeapByteBuffer
+          ~(symbol "[Ljava.nio.HeapByteBuffer;")
+          org.msgpack.template.builder.TemplateBuilderChain
+          org.msgpack.template.builder.FieldEntry
+          org.msgpack.template.builder.JavassistTemplateBuilder
+          org.msgpack.template.ListTemplate
+          org.msgpack.template.SetTemplate
+          org.msgpack.template.CollectionTemplate
+          org.msgpack.template.MapTemplate
+          ;;
           ~@(when features/java-nio?
               '[java.nio.file.OpenOption
                 java.nio.file.CopyOption

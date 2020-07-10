@@ -1,6 +1,10 @@
 (ns client-test
   (:require [datomic.client.api :as d]))
 
+(System/setProperty
+  "java.home" 
+  (System/getenv "GRAALVM_HOME"))
+
 (def client
   (d/client
    {:server-type :peer-server

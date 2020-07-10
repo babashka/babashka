@@ -58,6 +58,10 @@
 ;; flag
 (require '[babashka.impl.datomic-client])
 
+(System/setProperty 
+  "java.library.path"
+  (str (System/getenv "GRAALVM_HOME") "/lib"))
+
 (when features/xml?
   (require '[babashka.impl.xml]))
 
