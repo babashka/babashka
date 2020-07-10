@@ -8,7 +8,8 @@
   :license {:name "Eclipse Public License 1.0"
             :url "http://opensource.org/licenses/eclipse-1.0.php"}
   :source-paths ["src" "sci/src" "babashka.curl/src" "babashka.pods/src"
-                 "babashka.nrepl/src"]
+                 "babashka.nrepl/src"
+                 "feature-datomic-client"]
   ;; for debugging Reflector.java code:
   ;; :java-source-paths ["sci/reflector/src-java"]
   :java-source-paths ["src-java"]
@@ -21,7 +22,8 @@
                  [cheshire "5.10.0"]
                  [fipp "0.6.22"]
                  [nrepl/bencode "1.1.0"]
-                 [borkdude/sci.impl.reflector "0.0.1-java11"]]
+                 [borkdude/sci.impl.reflector "0.0.1-java11"]
+                 [com.datomic/client-pro "0.9.57"]]
   :profiles {:feature/xml  {:source-paths ["feature-xml"]
                             :dependencies [[org.clojure/data.xml "0.2.0-alpha6"]]}
              :feature/yaml {:source-paths ["feature-yaml"]

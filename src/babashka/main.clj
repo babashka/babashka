@@ -54,6 +54,10 @@
     (def pipe-signal-received? (constantly false))
     (def handle-sigint! (constantly nil))))
 
+;; TODO
+;; flag
+(require '[babashka.impl.datomic-client])
+
 (when features/xml?
   (require '[babashka.impl.xml]))
 
@@ -328,7 +332,9 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
         io clojure.java.io
         json cheshire.core
         curl babashka.curl
-        bencode bencode.core}
+        bencode bencode.core
+        ;; TODO flag
+        datomic-client datomic.client.api }
     features/xml?        (assoc 'xml 'clojure.data.xml)
     features/yaml?       (assoc 'yaml 'clj-yaml.core)
     features/jdbc?       (assoc 'jdbc 'next.jdbc)
@@ -376,6 +382,8 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                           'next.jdbc.sql @(resolve 'babashka.impl.jdbc/next-sql-namespace))
     features/core-async? (assoc 'clojure.core.async @(resolve 'babashka.impl.async/async-namespace)
                                 'clojure.core.async.impl.protocols @(resolve 'babashka.impl.async/async-protocols-namespace))
+    ;; TODO flag
+    true (assoc 'datomic.client.api @(resolve 'babashka.impl.datomic-client/client-namespace))
     features/csv?  (assoc 'clojure.data.csv @(resolve 'babashka.impl.csv/csv-namespace))
     features/transit? (assoc 'cognitect.transit @(resolve 'babashka.impl.transit/transit-namespace))
     features/datascript? (assoc 'datascript.core @(resolve 'babashka.impl.datascript/datascript-namespace))))
