@@ -568,11 +568,11 @@ Babashka sets the following system properties:
 - `babashka.main`: the `--main` argument
 - `babashka.file`: the `--file` argument (normalized using `.getCanonicalPath`)
 
-## `__name__ = "__main__"` pattern
+## `__name__ == "__main__"` pattern
 
 In Python scripts there is a well-known pattern to check if the current file was
 the file invoked from the command line, or loaded from another file: the
-`__name__ = "__main__"` pattern. In babashka this pattern can be implemented with:
+`__name__ == "__main__"` pattern. In babashka this pattern can be implemented with:
 
 ``` clojure
 (= *file* (System/getProperty "babashka.file")
