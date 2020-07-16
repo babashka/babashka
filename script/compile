@@ -24,7 +24,7 @@ fi
 export JAVA_HOME=$GRAALVM_HOME
 export PATH=$GRAALVM_HOME/bin:$PATH
 
-SVM_JAR=$(find "$GRAALVM_HOME" | grep svm.jar)
+SVM_JAR=$(find -L "$GRAALVM_HOME" | grep svm.jar)
 "$GRAALVM_HOME/bin/javac" -cp "$SVM_JAR" resources/CutOffCoreServicesDependencies.java
 
 if [ -z "$BABASHKA_JAR" ]; then
