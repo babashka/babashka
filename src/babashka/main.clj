@@ -479,10 +479,10 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                         (let [res (cp/source-for-namespace loader namespace nil)]
                           (when uberscript (swap! uberscript-sources conj (:source res)))
                           res)))
-            _ (when file
-                (let [canonical-path (.getCanonicalPath (io/file file))]
-                  (vars/bindRoot sci/file canonical-path)
-                  (System/setProperty "babashka.file" canonical-path)))
+            canonical-path (when file
+                             (let [canonical-path (.getCanonicalPath (io/file file))]
+                               (System/setProperty "babashka.file" canonical-path)
+                               canonical-path))
             ;; TODO: pull more of these values to compile time
             opts {:aliases aliases
                   :namespaces (-> namespaces
@@ -548,28 +548,29 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                        socket-repl [(start-socket-repl! socket-repl sci-ctx) 0]
                        nrepl [(start-nrepl! nrepl sci-ctx) 0]
                        expressions
-                       (try
-                         (loop []
-                           (let [in (read-next *in*)]
-                             (if (identical? ::EOF in)
-                               [nil 0] ;; done streaming
-                               (let [res [(let [res
-                                                (sci/binding [input-var in]
-                                                  (sci/eval-string* sci-ctx expression))]
-                                            (when (some? res)
-                                              (if-let [pr-f (cond shell-out println
-                                                                  edn-out prn)]
-                                                (if (coll? res)
-                                                  (doseq [l res
-                                                          :while (not (pipe-signal-received?))]
-                                                    (pr-f l))
-                                                  (pr-f res))
-                                                (prn res)))) 0]]
-                                 (if stream?
-                                   (recur)
-                                   res)))))
-                         (catch Throwable e
-                           (error-handler* e verbose?)))
+                       (sci/binding [sci/file canonical-path]
+                         (try
+                           (loop []
+                             (let [in (read-next *in*)]
+                               (if (identical? ::EOF in)
+                                 [nil 0] ;; done streaming
+                                 (let [res [(let [res
+                                                  (sci/binding [input-var in]
+                                                    (sci/eval-string* sci-ctx expression))]
+                                              (when (some? res)
+                                                (if-let [pr-f (cond shell-out println
+                                                                    edn-out prn)]
+                                                  (if (coll? res)
+                                                    (doseq [l res
+                                                            :while (not (pipe-signal-received?))]
+                                                      (pr-f l))
+                                                    (pr-f res))
+                                                  (prn res)))) 0]]
+                                   (if stream?
+                                     (recur)
+                                     res)))))
+                           (catch Throwable e
+                             (error-handler* e verbose?))))
                        uberscript [nil 0]
                        :else [(repl/start-repl! sci-ctx) 0]))
                 1)]
