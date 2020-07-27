@@ -782,6 +782,18 @@ with `lein repl`:
 (nrepl-eval 52054 "(+ 1 2 3)") ;;=> "6"
 ```
 
+## Printing returned values
+
+Babashka doesn't print a returned `nil` as lots of scripts end in something side-effecting.
+
+``` shell
+$ bb '(:a {:a 5}'
+5
+$ bb '(:b {:a 5}'
+$
+```
+If you really want to print the nil, you can use `(prn ..)` instead.
+
 ## Differences with Clojure
 
 Babashka is implemented using the [Small Clojure
