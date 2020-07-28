@@ -140,13 +140,15 @@ On Windows you can install using [scoop](https://scoop.sh/) and the
 Install via the installer script:
 
 ``` shellsession
-$ bash <(curl -s https://raw.githubusercontent.com/borkdude/babashka/master/install)
+$ curl -s https://raw.githubusercontent.com/borkdude/babashka/master/install -o install-babashka
+$ chmod +x install-babashka && sudo ./install-babashka
 ```
 
 By default this will install into `/usr/local/bin`. To change this, provide the directory name:
 
 ``` shellsession
-$ bash <(curl -s https://raw.githubusercontent.com/borkdude/babashka/master/install) /tmp
+$ curl -s https://raw.githubusercontent.com/borkdude/babashka/master/install -o install-babashka
+$ chmod +x install-babashka && ./install-babashka /tmp
 ```
 
 ### Download
