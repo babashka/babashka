@@ -7,13 +7,20 @@
    [clojure.java.io :as io]
    [clojure.java.shell :refer [sh]]
    [clojure.string :as str]
-   [clojure.test :as test :refer [deftest is testing]]
+   [clojure.test :as test :refer [deftest is testing *report-counters*]]
    [flatland.ordered.map :refer [ordered-map]]
    [sci.core :as sci]))
 
 (defmethod clojure.test/report :begin-test-var [m]
   (println "===" (-> m :var meta :name))
   (println))
+
+(defmethod clojure.test/report :end-test-var [m]
+  (let [{:keys [:fail :error]} @*report-counters*]
+    (when (and (= "true" (System/getenv "BABASHKA_FAIL_FAST"))
+               (or (pos? fail) (pos? error)))
+      (println "=== Failing fast")
+      (System/exit 1))))
 
 (defn bb [input & args]
   (edn/read-string
