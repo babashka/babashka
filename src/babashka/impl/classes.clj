@@ -198,6 +198,7 @@
           java.util.jar.JarFile
           java.util.jar.JarEntry
           java.util.jar.JarFile$JarFileEntry
+          java.util.stream.Stream
           java.util.Random
           java.util.regex.Pattern
           java.util.Base64
@@ -279,7 +280,9 @@
                    (instance? java.nio.file.FileSystem v)
                    java.nio.file.FileSystem
                    (instance? java.nio.file.PathMatcher v)
-                   java.nio.file.PathMatcher)))))
+                   java.nio.file.PathMatcher
+                   (instance? java.util.stream.Stream v)
+                   java.util.stream.Stream)))))
 
 (def class-map (gen-class-map))
 
