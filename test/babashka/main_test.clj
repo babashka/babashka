@@ -241,11 +241,12 @@
 (assert (int? (.waitFor ls)))
 (slurp output)")
                      "LICENSE"))
-  (when test-utils/native?
-    (let [output (test-utils/bb nil (io/file "test" "babashka" "scripts" "child.bb"))
-          parsed (edn/read-string (format "[%s]" output))]
-      (is (every? number? parsed))
-      (is (= 3 (count parsed))))))
+  (testing "bb is able to kill subprocesses created by ProcessBuilder"
+    (when test-utils/native?
+      (let [output (test-utils/bb nil (io/file "test" "babashka" "scripts" "child.bb"))
+            parsed (edn/read-string (format "[%s]" output))]
+        (is (every? number? parsed))
+        (is (= 3 (count parsed)))))))
 
 (deftest create-temp-file-test
   (let [temp-dir-path (System/getProperty "java.io.tmpdir")]
