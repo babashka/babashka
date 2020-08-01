@@ -240,7 +240,12 @@
 (def output (.getInputStream ls))
 (assert (int? (.waitFor ls)))
 (slurp output)")
-                     "LICENSE")))
+                     "LICENSE"))
+  (when test-utils/native?
+    (let [output (test-utils/bb nil (io/file "test" "babashka" "scripts" "child.bb"))
+          parsed (edn/read-string (format "[%s]" output))]
+      (is (every? number? parsed))
+      (is (= 3 (count parsed))))))
 
 (deftest create-temp-file-test
   (let [temp-dir-path (System/getProperty "java.io.tmpdir")]

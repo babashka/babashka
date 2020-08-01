@@ -206,6 +206,7 @@
           java.util.Base64$Decoder
           java.util.Base64$Encoder
           java.util.Date
+          java.util.List
           java.util.Locale
           java.util.Map
           java.util.MissingResourceException
