@@ -243,7 +243,7 @@
                      "LICENSE"))
   (testing "bb is able to kill subprocesses created by ProcessBuilder"
     (when test-utils/native?
-      (let [output (test-utils/bb nil (io/file "test" "babashka" "scripts" "child.bb"))
+      (let [output (test-utils/bb nil (io/file "test" "babashka" "scripts" "kill_child_processes.bb"))
             parsed (edn/read-string (format "[%s]" output))]
         (is (every? number? parsed))
         (is (= 3 (count parsed)))))))

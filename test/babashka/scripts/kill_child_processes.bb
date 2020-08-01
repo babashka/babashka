@@ -2,10 +2,13 @@
 
 (set! *warn-on-reflection* true)
 
-(defn handles [^java.lang.ProcessHandle x]
-  (distinct (cons x (mapcat handles (iterator-seq (.iterator (.descendants x)))))))
+(defn child-process-handles [^java.lang.ProcessHandle x]
+  (distinct
+   (cons x
+         (mapcat child-process-handles
+                 (iterator-seq (.iterator (.descendants x)))))))
 
-(defn run [& args]
+(defn start-spawning [& args]
   (let [depth (or (System/getenv "DEPTH") "0")
         depth (Integer/parseInt depth)]
     (when-not (= 4 depth)
@@ -20,7 +23,7 @@
             (run! (fn [^java.lang.ProcessHandle handle]
                     (do (prn (.pid handle))
                         (.destroy handle)))
-                  (handles (.toHandle proc))))
+                  (child-process-handles (.toHandle proc))))
           (Thread/sleep 100000000))))))
 
-(run "./bb" *file*)
+(start-spawning "./bb" *file*)
