@@ -206,7 +206,6 @@
           java.util.Base64$Decoder
           java.util.Base64$Encoder
           java.util.Date
-          java.util.List
           java.util.Locale
           java.util.Map
           java.util.MissingResourceException
@@ -245,7 +244,8 @@
                       clojure.lang.Named
                       clojure.lang.Keyword
                       clojure.lang.Symbol
-                      clojure.lang.Sequential]
+                      clojure.lang.Sequential
+                      java.util.List]
     :custom ~custom-map})
 
 (defmacro gen-class-map []
