@@ -7,13 +7,20 @@
    [clojure.java.io :as io]
    [clojure.java.shell :refer [sh]]
    [clojure.string :as str]
-   [clojure.test :as test :refer [deftest is testing]]
+   [clojure.test :as test :refer [deftest is testing *report-counters*]]
    [flatland.ordered.map :refer [ordered-map]]
    [sci.core :as sci]))
 
 (defmethod clojure.test/report :begin-test-var [m]
   (println "===" (-> m :var meta :name))
   (println))
+
+(defmethod clojure.test/report :end-test-var [m]
+  (let [{:keys [:fail :error]} @*report-counters*]
+    (when (and (= "true" (System/getenv "BABASHKA_FAIL_FAST"))
+               (or (pos? fail) (pos? error)))
+      (println "=== Failing fast")
+      (System/exit 1))))
 
 (defn bb [input & args]
   (edn/read-string
@@ -233,7 +240,13 @@
 (def output (.getInputStream ls))
 (assert (int? (.waitFor ls)))
 (slurp output)")
-                     "LICENSE")))
+                     "LICENSE"))
+  (testing "bb is able to kill subprocesses created by ProcessBuilder"
+    (when test-utils/native?
+      (let [output (test-utils/bb nil (io/file "test" "babashka" "scripts" "kill_child_processes.bb"))
+            parsed (edn/read-string (format "[%s]" output))]
+        (is (every? number? parsed))
+        (is (= 3 (count parsed)))))))
 
 (deftest create-temp-file-test
   (let [temp-dir-path (System/getProperty "java.io.tmpdir")]

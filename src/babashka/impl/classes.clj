@@ -117,6 +117,7 @@
           java.lang.Math
           java.lang.Object
           java.lang.Process
+          java.lang.ProcessHandle
           java.lang.ProcessBuilder
           java.lang.ProcessBuilder$Redirect
           java.lang.Runtime
@@ -198,6 +199,7 @@
           java.util.jar.JarFile
           java.util.jar.JarEntry
           java.util.jar.JarFile$JarFileEntry
+          java.util.stream.Stream
           java.util.Random
           java.util.regex.Pattern
           java.util.Base64
@@ -242,7 +244,8 @@
                       clojure.lang.Named
                       clojure.lang.Keyword
                       clojure.lang.Symbol
-                      clojure.lang.Sequential]
+                      clojure.lang.Sequential
+                      java.util.List]
     :custom ~custom-map})
 
 (defmacro gen-class-map []
@@ -260,6 +263,8 @@
            (fn [v]
              (cond (instance? java.lang.Process v)
                    java.lang.Process
+                   (instance? java.lang.ProcessHandle v)
+                   java.lang.ProcessHandle
                    ;; added for calling .put on .environment from ProcessBuilder
                    (instance? java.util.Map v)
                    java.util.Map
@@ -279,7 +284,9 @@
                    (instance? java.nio.file.FileSystem v)
                    java.nio.file.FileSystem
                    (instance? java.nio.file.PathMatcher v)
-                   java.nio.file.PathMatcher)))))
+                   java.nio.file.PathMatcher
+                   (instance? java.util.stream.Stream v)
+                   java.util.stream.Stream)))))
 
 (def class-map (gen-class-map))
 

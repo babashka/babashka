@@ -56,7 +56,7 @@ To get an overview of babashka, you can watch this talk ([slides](https://speake
 
 ``` shellsession
 $ curl -s https://raw.githubusercontent.com/borkdude/babashka/master/install -o install-babashka
-$ chmod +x install-babashka && ./install-babashka
+$ chmod +x install-babashka && sudo ./install-babashka
 $ ls | bb -i '(filter #(-> % io/file .isDirectory) *input*)'
 ("doc" "resources" "sci" "script" "src" "target" "test")
 bb took 4ms.
@@ -140,13 +140,15 @@ On Windows you can install using [scoop](https://scoop.sh/) and the
 Install via the installer script:
 
 ``` shellsession
-$ bash <(curl -s https://raw.githubusercontent.com/borkdude/babashka/master/install)
+$ curl -s https://raw.githubusercontent.com/borkdude/babashka/master/install -o install-babashka
+$ chmod +x install-babashka && sudo ./install-babashka
 ```
 
 By default this will install into `/usr/local/bin`. To change this, provide the directory name:
 
 ``` shellsession
-$ bash <(curl -s https://raw.githubusercontent.com/borkdude/babashka/master/install) /tmp
+$ curl -s https://raw.githubusercontent.com/borkdude/babashka/master/install -o install-babashka
+$ chmod +x install-babashka && ./install-babashka /tmp
 ```
 
 ### Download
@@ -781,6 +783,18 @@ with `lein repl`:
 
 (nrepl-eval 52054 "(+ 1 2 3)") ;;=> "6"
 ```
+
+## Printing returned values
+
+Babashka doesn't print a returned `nil` as lots of scripts end in something side-effecting.
+
+``` shell
+$ bb '(:a {:a 5}'
+5
+$ bb '(:b {:a 5}'
+$
+```
+If you really want to print the nil, you can use `(prn ..)` instead.
 
 ## Differences with Clojure
 
