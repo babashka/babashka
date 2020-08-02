@@ -524,14 +524,13 @@
 (deftest file-location-test
   (is (thrown-with-msg?
        Exception #"file_location2.clj"
-       (test-utils/bb nil (.getPath (io/file "test-resources" "babashka" "file_location1.clj")))))
-  )
+       (test-utils/bb nil (.getPath (io/file "test-resources" "babashka" "file_location1.clj"))))))
 
-(deftest preloads-test
-  ;; THIS TEST REQUIRES:
-  ;; export BABASHKA_PRELOADS='(defn __bb__foo [] "foo") (defn __bb__bar [] "bar")'
+(deftest preloads-file-location-test
   (when (System/getenv "BABASHKA_PRELOADS_TEST")
-    (is (= "foobar" (bb nil "(str (__bb__foo) (__bb__bar))")))))
+    (is (thrown-with-msg?
+         Exception #"at BABASHKA_PRELOADS"
+         (test-utils/bb nil (.getPath (io/file "test-resources" "babashka" "file_location_preloads.clj")))))))
 
 ;;;; Scratch
 

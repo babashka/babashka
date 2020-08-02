@@ -530,10 +530,11 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
             ;; handle preloads
             (if exit-code exit-code
                 (do (when preloads
-                      (try
-                        (sci/eval-string* sci-ctx preloads)
-                        (catch Throwable e
-                          (error-handler* e verbose?))))
+                      (sci/binding [sci/file "BABASHKA_PRELOADS"]
+                        (try
+                          (sci/eval-string* sci-ctx preloads)
+                          (catch Throwable e
+                            (error-handler* e verbose?)))))
                     nil))
             exit-code
             (or exit-code
