@@ -55,4 +55,5 @@
                          aero {:mvn/version "1.1.6"}
                          org.clojure/data.generators {:mvn/version "1.0.0"}
                          honeysql {:mvn/version "1.0.444"}
-                         minimallist {:mvn/version "0.0.1"}}}}}
+                         minimallist {:mvn/version "0.0.1"}
+                         circleci/bond {:mvn/version "0.4.0"}}}}}
