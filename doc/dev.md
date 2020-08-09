@@ -41,6 +41,16 @@ Test the native version:
 
     BABASHKA_TEST_ENV=native script/test
 
+## Tests for Libraries
+
+Babashka runs tests of libraries that are compatible with it through
+`script/run_lib_tests`. To add tests for a new library, do the following:
+
+* Add an entry for the library in `deps.edn` under the `:lib-tests` alias.
+* Create a directory for the library in `test-resources/lib_tests/` and copy its tests to there.
+* Add an entry in `run_all_libtests.clj` to run the added test namespaces.
+
+
 ## Build
 
 See [build.md](build.md).
