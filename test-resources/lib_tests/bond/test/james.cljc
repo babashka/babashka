@@ -1,6 +1,7 @@
 (ns bond.test.james
   "Copy of https://github.com/circleci/bond/blob/6e044e6b4ea034c2e7b7c0f835976770341a5f7b/test/bond/test/james.cljc
-with :include-macros removed because it's not supported by bb"
+with :include-macros removed because it's not supported by bb. Also modified spy-logs-args-and-results to
+  throw exception that bb throws."
   (:require #?(:clj [clojure.test :refer (deftest is testing)])
             [bond.james :as bond]
             [bond.test.target :as target])
@@ -14,7 +15,7 @@ with :include-macros removed because it's not supported by bb"
             {:args [2] :return 4}]
            (bond/calls target/foo)))
     ;; cljs doesn't throw ArityException
-    #?(:clj (let [exception (is (thrown? clojure.lang.ArityException (target/foo 3 4)))]
+    #?(:clj (let [exception (is (thrown? Exception (target/foo 3 4)))]
               (is (= {:args [3 4] :throw exception}
                      (-> target/foo bond/calls last)))))))
 
