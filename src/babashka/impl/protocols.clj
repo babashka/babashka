@@ -10,7 +10,13 @@
     ((get methods 'datafy) x)))
 
 (defmethod datafy :default [x]
+  ;; TODO: implement extend via metadata
   (d/datafy x))
+
+
+;; TODO: finish
+(defmulti nav types/type-impl)
+
 
 ;; TODO: Navigable
 
