@@ -31,7 +31,7 @@
 
 (defn datafy [])
 
-#_(defn nav
+(defn nav
   "Returns (possibly transformed) v in the context of coll and k (a
   key/index or nil). Callers should attempt to provide the key/index
   context k for Indexed/Associative/ILookup colls if possible, but not
@@ -40,7 +40,7 @@
   [coll k v]
     (p/nav coll k v))
 
-(defn nav [])
+#_(defn nav [])
 
 (defn- sortmap [m]
   (into (sorted-map) m))
