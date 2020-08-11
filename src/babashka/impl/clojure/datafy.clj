@@ -14,7 +14,7 @@
 
 (set! *warn-on-reflection* true)
 
-#_(defn datafy
+(defn datafy
   "Attempts to return x as data.
   datafy will return the value of clojure.core.protocols/datafy. If
   the value has been transformed and the result supports
@@ -23,13 +23,11 @@
   class of x, as a symbol."
   [x]
   (let [v (p/datafy x)]
-    (if (identical? v x)
+    #_(if (identical? v x)
       v
       (if (instance? clojure.lang.IObj v)
         (vary-meta v assoc ::obj x ::class (-> x class .getName symbol))
         v))))
-
-(defn datafy [])
 
 (defn nav
   "Returns (possibly transformed) v in the context of coll and k (a
@@ -38,18 +36,15 @@
   to fabricate one e.g. for sequences (pass nil). nav returns the
   value of clojure.core.protocols/nav."
   [coll k v]
-    (p/nav coll k v))
-
-#_(defn nav [])
+    #_(p/nav coll k v))
 
 (defn- sortmap [m]
-  (into (sorted-map) m))
+  #_(into (sorted-map) m))
 
-(extend-protocol p/Datafiable
+#_(extend-protocol p/Datafiable
   Throwable
   (datafy [x]
           (Throwable->map x))
-  
   clojure.lang.IRef
   (datafy [r]
           (with-meta [(deref r)] (meta r)))
