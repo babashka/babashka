@@ -23,7 +23,7 @@
   class of x, as a symbol."
   [x]
   (let [v (p/datafy x)]
-    #_(if (identical? v x)
+    (if (identical? v x)
       v
       (if (instance? clojure.lang.IObj v)
         (vary-meta v assoc ::obj x ::class (-> x class .getName symbol))
@@ -36,12 +36,12 @@
   to fabricate one e.g. for sequences (pass nil). nav returns the
   value of clojure.core.protocols/nav."
   [coll k v]
-    #_(p/nav coll k v))
+    (p/nav coll k v))
 
 (defn- sortmap [m]
   #_(into (sorted-map) m))
 
-#_(extend-protocol p/Datafiable
+(extend-protocol p/Datafiable
   Throwable
   (datafy [x]
           (Throwable->map x))
@@ -49,15 +49,15 @@
   (datafy [r]
           (with-meta [(deref r)] (meta r)))
 
-  clojure.lang.Namespace
-  (datafy [n]
-          (with-meta {:name (.getName n)
-                      :publics (-> n ns-publics sortmap)
-                      :imports (-> n ns-imports sortmap)
-                      :interns (-> n ns-interns sortmap)}
-            (meta n)))
+  #_clojure.lang.Namespace
+  #_(datafy [n]
+      (with-meta {:name (.getName n)
+                  :publics (-> n ns-publics sortmap)
+                  :imports (-> n ns-imports sortmap)
+                  :interns (-> n ns-interns sortmap)}
+        (meta n)))
 
-  java.lang.Class
+  #_#_java.lang.Class
   (datafy [c]
           (let [{:keys [members] :as ret} ((requiring-resolve 'clojure.reflect/reflect) c)] ;; this could be problematic
             (assoc ret :name (-> c .getName symbol) :members (->> members (group-by :name) sortmap)))))
