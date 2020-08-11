@@ -178,6 +178,9 @@
 
 (test-namespaces 'minimallist.core-test)
 
+;;;; bond
+(test-namespaces 'bond.test.james)
+
 ;;;; final exit code
 
 (let [{:keys [:test :fail :error] :as m} @status]
