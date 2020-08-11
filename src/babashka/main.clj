@@ -499,7 +499,9 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                                               (when-let [{:keys [:loader]} @cp-state]
                                                 (try (cp/getResource loader [path] {:url? true})
                                                      ;; non-relative paths don't work
-                                                     (catch Exception _e nil)))))
+                                                     (catch Exception e
+                                                       (prn e)
+                                                       nil)))))
                                   (assoc-in ['user (with-meta '*input*
                                                      (when-not stream?
                                                        {:sci.impl/deref! true}))] input-var)
