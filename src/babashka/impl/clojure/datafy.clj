@@ -10,7 +10,8 @@
 
 (ns ^{:doc "Functions to turn objects into data. Alpha, subject to change"}
   babashka.impl.clojure.datafy
-  (:require [clojure.core.protocols :as p]))
+  (:require [clojure.core.protocols :as p]
+            [clojure.reflect]))
 
 (set! *warn-on-reflection* true)
 
@@ -49,15 +50,15 @@
   (datafy [r]
           (with-meta [(deref r)] (meta r)))
 
-  #_clojure.lang.Namespace
-  #_(datafy [n]
-      (with-meta {:name (.getName n)
+  clojure.lang.Namespace
+  (datafy [n]
+      #_(with-meta {:name (.getName n)
                   :publics (-> n ns-publics sortmap)
                   :imports (-> n ns-imports sortmap)
                   :interns (-> n ns-interns sortmap)}
         (meta n)))
 
-  #_#_java.lang.Class
+  java.lang.Class
   (datafy [c]
-          (let [{:keys [members] :as ret} ((requiring-resolve 'clojure.reflect/reflect) c)] ;; this could be problematic
-            (assoc ret :name (-> c .getName symbol) :members (->> members (group-by :name) sortmap)))))
+    (let [{:keys [members] :as ret} (clojure.reflect/reflect c)]
+      (assoc ret :name (-> c .getName symbol) :members (->> members (group-by :name) sortmap)))))
