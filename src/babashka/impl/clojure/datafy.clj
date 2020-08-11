@@ -11,7 +11,10 @@
 (ns ^{:doc "Functions to turn objects into data. Alpha, subject to change"}
   babashka.impl.clojure.datafy
   (:require [clojure.core.protocols :as p]
-            [clojure.reflect]))
+            [clojure.reflect] ;; we load clojure.reflect, which load
+                              ;; clojure.datafy, so we are the last ones to
+                              ;; override the implementations for Datafiable
+            ))
 
 (set! *warn-on-reflection* true)
 
