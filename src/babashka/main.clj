@@ -19,6 +19,7 @@
    [babashka.impl.datafy :refer [datafy-namespace]]
    [babashka.impl.features :as features]
    [babashka.impl.pods :as pods]
+   [babashka.impl.protocols :refer [protocols-namespace]]
    [babashka.impl.repl :as repl]
    [babashka.impl.socket-repl :as socket-repl]
    [babashka.impl.test :as t]
@@ -370,7 +371,8 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
        'babashka.pods pods/pods-namespace
        'bencode.core bencode-namespace
        'clojure.java.browse browse-namespace
-       'clojure.datafy datafy-namespace}
+       'clojure.datafy datafy-namespace
+       'clojure.core.protocols protocols-namespace}
     features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace))
     features/yaml? (assoc 'clj-yaml.core @(resolve 'babashka.impl.yaml/yaml-namespace)
                           'flatland.ordered.map @(resolve 'babashka.impl.ordered/ordered-map-ns))
