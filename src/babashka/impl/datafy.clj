@@ -4,7 +4,11 @@
   (:require [clojure.core.protocols :as p]
             [clojure.datafy :as datafy]
             [clojure.reflect]
-            [sci.core :refer [create-ns copy-var]]))
+            [sci.core :refer [create-ns copy-var]]
+            [sci.impl.namespaces :refer [sci-ns-name sci-ns-publics sci-ns-imports sci-ns-interns]]
+            [sci.impl.vars]
+            [babashka.impl.common :refer [ctx]])
+  (:import [sci.impl.vars SciNamespace]))
 
 (defn- sortmap [m]
   (into (sorted-map) m))
@@ -25,6 +29,15 @@
     ;; Statically use clojure.reflect instead of leaning on requiring-resolve
     (let [{:keys [members] :as ret} (clojure.reflect/reflect c)]
       (assoc ret :name (-> c .getName symbol) :members (->> members (group-by :name) sortmap)))))
+
+(extend-protocol p/Datafiable
+  SciNamespace
+  (datafy [n]
+    (with-meta {:name (sci-ns-name n)
+                :publics (->> n (sci-ns-publics @ctx) sortmap)
+                :imports (->> n (sci-ns-imports @ctx) sortmap)
+                :interns (->> n (sci-ns-interns @ctx) sortmap)}
+      (meta n))))
 
 (def datafy-ns (create-ns 'clojure.data nil))
 
