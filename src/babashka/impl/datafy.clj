@@ -1,13 +1,12 @@
 (ns babashka.impl.datafy
   {:no-doc true}
-  (:refer-clojure :exclude [create-ns])
-  (:require [clojure.core.protocols :as p]
+  (:require [babashka.impl.common :refer [ctx]]
+            [clojure.core.protocols :as p]
             [clojure.datafy :as datafy]
             [clojure.reflect]
-            [sci.core :refer [create-ns copy-var]]
+            [sci.core :as sci :refer [copy-var]]
             [sci.impl.namespaces :refer [sci-ns-name sci-ns-publics sci-ns-imports sci-ns-interns]]
-            [sci.impl.vars]
-            [babashka.impl.common :refer [ctx]])
+            [sci.impl.vars])
   (:import [sci.impl.vars SciNamespace]))
 
 (defn- sortmap [m]
@@ -39,7 +38,7 @@
                 :interns (->> n (sci-ns-interns @ctx) sortmap)}
       (meta n))))
 
-(def datafy-ns (create-ns 'clojure.data nil))
+(def datafy-ns (sci/create-ns 'clojure.datafy nil))
 
 (def datafy-namespace
   {'datafy (copy-var datafy/datafy datafy-ns)
