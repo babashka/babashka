@@ -44,4 +44,4 @@
 
 (def datafy-namespace
   {'datafy (copy-var protocols/datafy datafy-ns)
-   'nav (copy-var datafy/nav datafy-ns)})
+   'nav (copy-var protocols/nav datafy-ns)})
