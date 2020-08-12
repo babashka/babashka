@@ -4,7 +4,6 @@
   (:require [babashka.impl.common :refer [ctx]]
             [babashka.impl.protocols :as protocols]
             [clojure.core.protocols :as p]
-            [clojure.datafy :as datafy]
             [clojure.reflect]
             [sci.core :refer [create-ns copy-var]]
             [sci.impl.namespaces :refer [sci-ns-name sci-ns-publics sci-ns-imports sci-ns-interns]]

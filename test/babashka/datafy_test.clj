@@ -21,6 +21,14 @@
 
 (d/datafy 1)
 "))))
+  (testing "implement datafy via metadata"
+    (is (= {:datafied []} (bb "
+(require '[clojure.datafy :as d]
+         '[clojure.core.protocols :as p])
+
+(def x (with-meta [] {`p/datafy (fn [this] {:datafied this})}))
+(d/datafy x)
+"))))
   (testing "default implementation of nav works"
     (is (= 1 (bb "(require '[clojure.datafy :as d]) (d/nav {:a 1} :a 1)"))))
   (testing "custom implementation of nav works"
@@ -28,7 +36,6 @@
 (require '[clojure.datafy :as d]
          '[clojure.core.protocols :as p])
 
-;; this is a bad implementation, just for testing
 (extend-type String
   p/Navigable
   (nav [coll k v]
@@ -36,8 +43,14 @@
 
 (d/nav \"foo\" 0 nil)
 "))))
-  (testing "TODO: metadata impl of datafy")
-  (testing "TODO: metadata impl of nav"))
+  (testing "implement nav via metadata"
+    (is (= {:nav [[] :k :v]} (bb "
+(require '[clojure.datafy :as d]
+         '[clojure.core.protocols :as p])
+
+(def x (with-meta [] {`p/nav (fn [this k v] {:nav [this k v]})}))
+(d/nav x :k :v)
+")))))
 
 ;;;; Scratch
 (comment
