@@ -57,4 +57,9 @@
     (is (= (.length (io/file "logo" "icon.png"))
            (.length tmp-file))))
   (testing "No exception on absolute path"
-    (is (nil? (bb nil "(io/resource \"/tmp\")")))))
+    (is (nil? (bb nil "(io/resource \"/tmp\")"))))
+  (testing "Reading a resource from a .jar file"
+    (is (= "true"
+           (str/trim
+            (tu/bb nil "--classpath" "test-resources/babashka/src_for_classpath_test/foo.jar"
+                   "(pos? (count (slurp (io/resource \"foo.clj\")))) "))))))
