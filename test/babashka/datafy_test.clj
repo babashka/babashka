@@ -29,6 +29,15 @@
 (def x (with-meta [] {`p/datafy (fn [this] {:datafied this})}))
 (d/datafy x)
 "))))
+  (testing "reify Datafiable"
+    (let [prog "
+(require '[clojure.datafy :as d]
+         '[clojure.core.protocols :as p])
+
+(def x (reify p/Datafiable (datafy [_] [:data])))
+(d/datafy x)"]
+      (is (= [:data] (bb prog)))))
+  
   (testing "default implementation of nav works"
     (is (= 1 (bb "(require '[clojure.datafy :as d]) (d/nav {:a 1} :a 1)"))))
   (testing "custom implementation of nav works"
@@ -50,7 +59,15 @@
 
 (def x (with-meta [] {`p/nav (fn [this k v] {:nav [this k v]})}))
 (d/nav x :k :v)
-")))))
+"))))
+  (testing "reify Navigable"
+    (let [prog "
+(require '[clojure.datafy :as d]
+         '[clojure.core.protocols :as p])
+
+(def x (reify p/Navigable (nav [_ _ _] [:data])))
+(d/nav x nil nil)"]
+      (is (= [:data] (bb prog))))))
 
 ;;;; Scratch
 (comment
