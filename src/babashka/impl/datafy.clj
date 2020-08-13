@@ -4,8 +4,11 @@
   (:require [babashka.impl.common :refer [ctx]]
             [babashka.impl.protocols :as protocols]
             [clojure.core.protocols :as p]
+            [clojure.datafy] ;; ensure datafy is loaded, we're going to override
+                             ;; its clojure.lang.Namespace implementation for
+                             ;; datafy
             [clojure.reflect]
-            [sci.core :refer [create-ns copy-var]]
+            [sci.core :as sci :refer [copy-var]]
             [sci.impl.namespaces :refer [sci-ns-name sci-ns-publics sci-ns-imports sci-ns-interns]]
             [sci.impl.vars])
   (:import [sci.impl.vars SciNamespace]))
@@ -39,7 +42,7 @@
                 :interns (->> n (sci-ns-interns @ctx) sortmap)}
       (meta n))))
 
-(def datafy-ns (create-ns 'clojure.data nil))
+(def datafy-ns (sci/create-ns 'clojure.datafy nil))
 
 (def datafy-namespace
   {'datafy (copy-var protocols/datafy datafy-ns)
