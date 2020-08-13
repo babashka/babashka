@@ -28,4 +28,4 @@ org_babashka*.h
 /bb.lib
 /bb.pdb
 /bb.stripped.pdb
-.calva
+/.calva

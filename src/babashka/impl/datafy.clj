@@ -1,8 +1,12 @@
 (ns babashka.impl.datafy
   {:no-doc true}
+  (:refer-clojure :exclude [create-ns])
   (:require [babashka.impl.common :refer [ctx]]
+            [babashka.impl.protocols :as protocols]
             [clojure.core.protocols :as p]
-            [clojure.datafy :as datafy]
+            [clojure.datafy] ;; ensure datafy is loaded, we're going to override
+                             ;; its clojure.lang.Namespace implementation for
+                             ;; datafy
             [clojure.reflect]
             [sci.core :as sci :refer [copy-var]]
             [sci.impl.namespaces :refer [sci-ns-name sci-ns-publics sci-ns-imports sci-ns-interns]]
@@ -41,5 +45,5 @@
 (def datafy-ns (sci/create-ns 'clojure.datafy nil))
 
 (def datafy-namespace
-  {'datafy (copy-var datafy/datafy datafy-ns)
-   'nav (copy-var datafy/nav datafy-ns)})
+  {'datafy (copy-var protocols/datafy datafy-ns)
+   'nav (copy-var protocols/nav datafy-ns)})
