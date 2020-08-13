@@ -836,6 +836,7 @@ handling of SIGINT and SIGPIPE. This can be done by setting
 
 ## Articles, podcasts and videos
 
+- [Babashka and GraalVM; taking Clojure to new places](https://youtu.be/3EUMA6bd-xQ), a talk by Michiel Borkent at [Clojure/NYC](https://www.meetup.com/Clojure-NYC/).
 - [Import a CSV into Kafka, using Babashka](https://blog.davemartin.me/posts/import-a-csv-into-kafka-using-babashka/) by Dave Martin
 - [Learning about babashka](https://amontalenti.com/2020/07/11/babashka) by Andrew Montalenti
 - [Babashka Pods](https://www.youtube.com/watch?v=3Q4GUiUIrzg&feature=emb_logo) presentation by Michiel Borkent at the [Dutch Clojure Meetup](http://meetup.com/The-Dutch-Clojure-Meetup).
