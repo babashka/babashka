@@ -235,7 +235,7 @@ user> (psql/query conn "select name, subject from grades where grade = 100")
 
 ### [camel-snake-kebab](https://github.com/clj-commons/camel-snake-kebab)
 
-A library for word case conversions https://clj-commons.org/camel-snake-k…
+A library for word case conversions.
 
 ### [aero](https://github.com/juxt/aero/)
 
