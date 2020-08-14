@@ -19,6 +19,6 @@
     (is (str/ends-with? f4 "file_var.bb")))
   (testing "file var uses absolute path"
     (is (str/includes?
-         (bb nil (io/file ".." "babashka" "test"
+         (bb nil (io/file "test" ".." "test"
                           "babashka" "scripts" "simple_file_var.bb"))
          ".."))))

@@ -1,1 +1,1 @@
-*file*
+[*file* (System/getProperty "babashka.file")]
