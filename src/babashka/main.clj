@@ -16,8 +16,10 @@
    [babashka.impl.common :as common]
    [babashka.impl.curl :refer [curl-namespace]]
    [babashka.impl.data :as data]
+   [babashka.impl.datafy :refer [datafy-namespace]]
    [babashka.impl.features :as features]
    [babashka.impl.pods :as pods]
+   [babashka.impl.protocols :refer [protocols-namespace]]
    [babashka.impl.repl :as repl]
    [babashka.impl.socket-repl :as socket-repl]
    [babashka.impl.test :as t]
@@ -294,7 +296,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
       (let [f (io/file f)
             s (slurp f)]
         (sci/with-bindings {sci/ns @sci/ns
-                            sci/file (.getCanonicalPath f)}
+                            sci/file (.getAbsolutePath f)}
           (sci/eval-string* sci-ctx s))))
     {:sci.impl/op :needs-ctx}))
 
@@ -308,7 +310,8 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
         nrepl-opts (nrepl-server/parse-opt address)
         nrepl-opts (assoc nrepl-opts
                           :debug dev?
-                          :describe {"versions" {"babashka" version}})]
+                          :describe {"versions" {"babashka" version}}
+                          :thread-bind [reflection-var])]
     (nrepl-server/start-server! ctx nrepl-opts)
     (binding [*out* *err*]
       (println "For more info visit https://github.com/borkdude/babashka/blob/master/doc/repl.md#nrepl.")))
@@ -368,7 +371,9 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
        'babashka.curl curl-namespace
        'babashka.pods pods/pods-namespace
        'bencode.core bencode-namespace
-       'clojure.java.browse browse-namespace}
+       'clojure.java.browse browse-namespace
+       'clojure.datafy datafy-namespace
+       'clojure.core.protocols protocols-namespace}
     features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace))
     features/yaml? (assoc 'clj-yaml.core @(resolve 'babashka.impl.yaml/yaml-namespace)
                           'flatland.ordered.map @(resolve 'babashka.impl.ordered/ordered-map-ns))
@@ -479,10 +484,11 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                         (let [res (cp/source-for-namespace loader namespace nil)]
                           (when uberscript (swap! uberscript-sources conj (:source res)))
                           res)))
-            canonical-path (when file
-                             (let [canonical-path (.getCanonicalPath (io/file file))]
-                               (System/setProperty "babashka.file" canonical-path)
-                               canonical-path))
+            abs-path (when file
+                       (let [abs-path (.getAbsolutePath (io/file file))]
+                         (vars/bindRoot sci/file abs-path)
+                         (System/setProperty "babashka.file" abs-path)
+                         abs-path))
             ;; TODO: pull more of these values to compile time
             opts {:aliases aliases
                   :namespaces (-> namespaces
@@ -495,9 +501,8 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                                   (assoc-in ['clojure.java.io 'resource]
                                             (fn [path]
                                               (when-let [{:keys [:loader]} @cp-state]
-                                                (try (cp/getResource loader [path] {:url? true})
-                                                     ;; non-relative paths don't work
-                                                     (catch Exception _e nil)))))
+                                                (if (str/starts-with? path "/") nil ;; non-relative paths always return nil
+                                                    (cp/getResource loader [path] {:url? true})))))
                                   (assoc-in ['user (with-meta '*input*
                                                      (when-not stream?
                                                        {:sci.impl/deref! true}))] input-var)
@@ -549,7 +554,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                        socket-repl [(start-socket-repl! socket-repl sci-ctx) 0]
                        nrepl [(start-nrepl! nrepl sci-ctx) 0]
                        expressions
-                       (sci/binding [sci/file canonical-path]
+                       (sci/binding [sci/file abs-path]
                          (try
                            (loop []
                              (let [in (read-next *in*)]

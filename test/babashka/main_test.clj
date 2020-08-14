@@ -519,7 +519,13 @@
   (is (= "true\nfalse\n"
          (test-utils/bb nil (.getPath (io/file "test-resources" "babashka" "file_property1.clj")))))
   (is (= "true\n"
-         (test-utils/bb nil (.getPath (io/file "test-resources" "babashka" "file_property2.clj"))))))
+         (test-utils/bb nil (.getPath (io/file "test-resources" "babashka" "file_property2.clj")))))
+  (is (apply =
+             (bb nil (.getPath (io/file "test" "babashka" "scripts" "simple_file_var.bb")))))
+  (let [res (bb nil (.getPath (io/file "test" ".." "test" "babashka"
+                                       "scripts" "simple_file_var.bb")))]
+    (is (apply = res))
+    (is (str/includes? (first res) ".."))))
 
 (deftest file-location-test
   (is (thrown-with-msg?

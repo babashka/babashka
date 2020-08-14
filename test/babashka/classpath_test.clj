@@ -3,8 +3,8 @@
    [babashka.test-utils :as tu]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
-   [clojure.test :as t :refer [deftest is testing]]
-   [clojure.string :as str]))
+   [clojure.string :as str]
+   [clojure.test :as t :refer [deftest is testing]]))
 
 (defn bb [input & args]
   (edn/read-string (apply tu/bb (when (some? input) (str input)) (map str args))))
@@ -57,4 +57,9 @@
     (is (= (.length (io/file "logo" "icon.png"))
            (.length tmp-file))))
   (testing "No exception on absolute path"
-    (is (nil? (bb nil "(io/resource \"/tmp\")")))))
+    (is (nil? (bb nil "(io/resource \"/tmp\")"))))
+  (testing "Reading a resource from a .jar file"
+    (is (= "true"
+           (str/trim
+            (tu/bb nil "--classpath" "test-resources/babashka/src_for_classpath_test/foo.jar"
+                   "(pos? (count (slurp (io/resource \"foo.clj\")))) "))))))
