@@ -568,7 +568,7 @@ Babashka sets the following system properties:
 
 - `babashka.version`: the version string, e.g. `"1.2.0"`
 - `babashka.main`: the `--main` argument
-- `babashka.file`: the `--file` argument (normalized using `.getCanonicalPath`)
+- `babashka.file`: the `--file` argument (normalized using `.getAbsolutePath`)
 
 ## `__name__ == "__main__"` pattern
 

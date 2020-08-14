@@ -296,7 +296,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
       (let [f (io/file f)
             s (slurp f)]
         (sci/with-bindings {sci/ns @sci/ns
-                            sci/file (.getCanonicalPath f)}
+                            sci/file (.getAbsolutePath f)}
           (sci/eval-string* sci-ctx s))))
     {:sci.impl/op :needs-ctx}))
 
@@ -484,9 +484,9 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                           (when uberscript (swap! uberscript-sources conj (:source res)))
                           res)))
             _ (when file
-                (let [canonical-path (.getCanonicalPath (io/file file))]
-                  (vars/bindRoot sci/file canonical-path)
-                  (System/setProperty "babashka.file" canonical-path)))
+                (let [abs-path (.getAbsolutePath (io/file file))]
+                  (vars/bindRoot sci/file abs-path)
+                  (System/setProperty "babashka.file" abs-path)))
             ;; TODO: pull more of these values to compile time
             opts {:aliases aliases
                   :namespaces (-> namespaces
