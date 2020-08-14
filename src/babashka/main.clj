@@ -310,7 +310,8 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
         nrepl-opts (nrepl-server/parse-opt address)
         nrepl-opts (assoc nrepl-opts
                           :debug dev?
-                          :describe {"versions" {"babashka" version}})]
+                          :describe {"versions" {"babashka" version}}
+                          :thread-bind [reflection-var])]
     (nrepl-server/start-server! ctx nrepl-opts)
     (binding [*out* *err*]
       (println "For more info visit https://github.com/borkdude/babashka/blob/master/doc/repl.md#nrepl.")))
