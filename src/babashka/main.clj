@@ -32,6 +32,7 @@
    [clojure.string :as str]
    [sci.addons :as addons]
    [sci.core :as sci]
+   [sci.impl.callstack :as cs]
    [sci.impl.unrestrict :refer [*unrestricted*]]
    [sci.impl.vars :as vars])
   (:gen-class))
@@ -398,9 +399,19 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                     (some-> ^Throwable (ex-cause e)
                             .getClass .getName))]
       (if exit-code [nil exit-code]
-          (do (if verbose?
-                (print-stack-trace e)
-                (println (str (or ex-name
+          (do
+            (println (str (or ex-name
+                              (.. e getClass getName))
+                          (when-let [m (.getMessage e)]
+                            (str ": " m)) ))
+            (println "Stacktrace:")
+            (-> (ex-data e) :callstack
+                cs/stacktrace
+                cs/print-stacktrace)
+            (when verbose?
+              (println "Exception:")
+              (print-stack-trace e)
+              #_(println (str (or ex-name
                                   (.. e getClass getName))
                               (when-let [m (.getMessage e)]
                                 (str ": " m)) )))
