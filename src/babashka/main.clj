@@ -32,6 +32,7 @@
    [clojure.string :as str]
    [sci.addons :as addons]
    [sci.core :as sci]
+   [sci.impl.namespaces :as sci-namespaces]
    [sci.impl.unrestrict :refer [*unrestricted*]]
    [sci.impl.vars :as vars])
   (:gen-class))
@@ -479,11 +480,18 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                           (System/getenv "BABASHKA_CLASSPATH"))
             _ (when classpath
                 (add-classpath* classpath))
-            load-fn (fn [{:keys [:namespace]}]
-                      (when-let [{:keys [:loader]} @cp-state]
-                        (let [res (cp/source-for-namespace loader namespace nil)]
-                          (when uberscript (swap! uberscript-sources conj (:source res)))
-                          res)))
+            load-fn (fn [{:keys [:namespace :reload]}]
+                      (when-let [{:keys [:loader]}
+                                  @cp-state]
+                        (if ;; ignore built-in namespaces when uberscripting, unless with :reload
+                            (and uberscript
+                                 (not reload)
+                                 (or (contains? namespaces namespace)
+                                     (contains? sci-namespaces/namespaces namespace)))
+                          ""
+                          (let [res (cp/source-for-namespace loader namespace nil)]
+                            (when uberscript (swap! uberscript-sources conj (:source res)))
+                            res))))
             _ (when file
                 (let [abs-path (.getAbsolutePath (io/file file))]
                   (vars/bindRoot sci/file abs-path)
@@ -516,8 +524,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                   :classes classes/class-map
                   :imports imports
                   :load-fn load-fn
-                  :dry-run uberscript
-                  :reload true
+                  :uberscript uberscript
                   :readers core/data-readers}
             opts (addons/future opts)
             sci-ctx (sci/init opts)
