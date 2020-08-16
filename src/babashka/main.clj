@@ -579,7 +579,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                        repl [(repl/start-repl! sci-ctx) 0]
                        socket-repl [(start-socket-repl! socket-repl sci-ctx) 0]
                        nrepl [(start-nrepl! nrepl sci-ctx) 0]
-                       (or uberscript uberjar) [nil 0]
+                       uberjar [nil 0]
                        expressions
                        (try
                          (loop []
@@ -603,11 +603,11 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                                    res)))))
                          (catch Throwable e
                            (error-handler* e verbose?)))
+                       uberscript [nil 0]
                        :else [(repl/start-repl! sci-ctx) 0]))
                 1)]
         (flush)
         (when uberscript
-          uberscript
           (let [uberscript-out uberscript]
             (spit uberscript-out "") ;; reset file
             (doseq [s (dedupe @uberscript-sources)]
