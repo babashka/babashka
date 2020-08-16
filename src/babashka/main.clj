@@ -30,6 +30,7 @@
    [clojure.java.io :as io]
    [clojure.stacktrace :refer [print-stack-trace]]
    [clojure.string :as str]
+   [hf.depstar.uberjar :as uberjar]
    [sci.addons :as addons]
    [sci.core :as sci]
    [sci.impl.namespaces :as sci-namespaces]
@@ -143,6 +144,11 @@
                        (recur (next options)
                               (assoc opts-map
                                      :uberscript (first options))))
+                     ("--uberjar")
+                     (let [options (next options)]
+                       (recur (next options)
+                              (assoc opts-map
+                                     :uberjar (first options))))
                      ("-f" "--file")
                      (let [options (next options)]
                        (recur (next options)
@@ -462,7 +468,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                     :repl :socket-repl :nrepl
                     :verbose? :classpath
                     :main :uberscript :describe?
-                    :jar] :as _opts}
+                    :jar :uberjar] :as _opts}
             (parse-opts args)
             _ (do ;; set properties
                 (when main (System/setProperty "babashka.main" main))
@@ -596,7 +602,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                                    res)))))
                          (catch Throwable e
                            (error-handler* e verbose?)))
-                       uberscript [nil 0]
+                       (or uberscript uberjar) [nil 0]
                        :else [(repl/start-repl! sci-ctx) 0]))
                 1)]
         (flush)
@@ -608,6 +614,17 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
               (spit uberscript-out s :append true))
             (spit uberscript-out preloads :append true)
             (spit uberscript-out expression :append true)))
+        (prn {:dest uberjar
+              :jar :uber
+              :classpath classpath
+              :main-class main
+              :no-pom true
+              :verbose true})
+        (when uberjar
+          (uberjar/run {:dest uberjar
+                        :jar :uber
+                        :classpath classpath
+                        :main-class main}))
         exit-code))))
 
 (defn -main
