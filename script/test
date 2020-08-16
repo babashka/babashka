@@ -9,8 +9,10 @@ fi
 java -version
 
 set -eo pipefail
-BABASHKA_PRELOADS=""
-BABASHKA_CLASSPATH=""
+unset BABASHKA_PRELOADS
+unset BABASHKA_CLASSPATH
+unset BABASHKA_PRELOADS_TEST
+
 echo "running tests part 1"
 lein test "$@"
 
