@@ -517,6 +517,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                   :imports imports
                   :load-fn load-fn
                   :dry-run uberscript
+                  :reload true
                   :readers core/data-readers}
             opts (addons/future opts)
             sci-ctx (sci/init opts)
@@ -582,7 +583,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
           uberscript
           (let [uberscript-out uberscript]
             (spit uberscript-out "") ;; reset file
-            (doseq [s @uberscript-sources]
+            (doseq [s (dedupe @uberscript-sources)]
               (spit uberscript-out s :append true))
             (spit uberscript-out preloads :append true)
             (spit uberscript-out expression :append true)))
