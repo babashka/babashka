@@ -506,7 +506,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                   (System/setProperty "babashka.file" abs-path)))
             main (if (and jar (not main))
                    (when-let [res (cp/getResource
-                                   (:loader @cp-state)
+                                   (cp/loader jar)
                                    ["META-INF/MANIFEST.MF"] {:url? true})]
                      (cp/main-ns res))
                    main)
