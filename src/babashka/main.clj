@@ -614,12 +614,6 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
               (spit uberscript-out s :append true))
             (spit uberscript-out preloads :append true)
             (spit uberscript-out expression :append true)))
-        (prn {:dest uberjar
-              :jar :uber
-              :classpath classpath
-              :main-class main
-              :no-pom true
-              :verbose true})
         (when uberjar
           (uberjar/run {:dest uberjar
                         :jar :uber
