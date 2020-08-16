@@ -1,8 +1,9 @@
 (ns babashka.impl.classpath
   {:no-doc true}
-  (:require [clojure.java.io :as io]
+  (:require [babashka.impl.clojure.main :refer [demunge]]
+            [clojure.java.io :as io]
             [clojure.string :as str])
-  (:import [java.util.jar JarFile]))
+  (:import [java.util.jar JarFile Manifest]))
 
 (set! *warn-on-reflection* true)
 
@@ -67,6 +68,12 @@
         base-path (.replace ns-str "." "/")
         resource-paths (mapv #(str base-path %) [".bb" ".clj" ".cljc"])]
     (getResource loader resource-paths opts)))
+
+(defn main-ns [manifest-resource]
+  (some-> (Manifest. (io/input-stream manifest-resource))
+          (.getMainAttributes)
+          (.getValue "Main-Class")
+          (demunge)))
 
 ;;;; Scratch
 

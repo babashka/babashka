@@ -148,6 +148,11 @@
                        (recur (next options)
                               (assoc opts-map
                                      :file (first options))))
+                     ("--jar" "-jar")
+                     (let [options (next options)]
+                       (recur (next options)
+                              (assoc opts-map
+                                     :jar (first options))))
                      ("--repl")
                      (let [options (next options)]
                        (recur (next options)
@@ -456,7 +461,8 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                     :expressions :stream?
                     :repl :socket-repl :nrepl
                     :verbose? :classpath
-                    :main :uberscript :describe?] :as _opts}
+                    :main :uberscript :describe?
+                    :jar] :as _opts}
             (parse-opts args)
             _ (do ;; set properties
                 (when main (System/setProperty "babashka.main" main))
@@ -480,6 +486,8 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                           (System/getenv "BABASHKA_CLASSPATH"))
             _ (when classpath
                 (add-classpath* classpath))
+            _ (when jar
+                (add-classpath* jar))
             load-fn (fn [{:keys [:namespace :reload]}]
                       (when-let [{:keys [:loader]}
                                   @cp-state]
@@ -496,6 +504,12 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                 (let [abs-path (.getAbsolutePath (io/file file))]
                   (vars/bindRoot sci/file abs-path)
                   (System/setProperty "babashka.file" abs-path)))
+            main (if (and jar (not main))
+                   (when-let [res (cp/getResource
+                                   (:loader @cp-state)
+                                   ["META-INF/MANIFEST.MF"] {:url? true})]
+                     (cp/main-ns res))
+                   main)
             ;; TODO: pull more of these values to compile time
             opts {:aliases aliases
                   :namespaces (-> namespaces
