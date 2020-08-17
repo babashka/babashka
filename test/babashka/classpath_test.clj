@@ -42,7 +42,6 @@
            (tu/bb nil "--file" (.getPath tmp-file) "1" "2" "3" "4")))
     (testing "order of namespaces is correct"
       (tu/bb nil "--classpath" "test-resources/babashka/uberscript/src" "-m" "my.main" "--uberscript" (.getPath tmp-file))
-      (prn (slurp (.getPath tmp-file)))
       (is (= "(\"1\" \"2\" \"3\" \"4\")\n"
              (tu/bb nil "--file" (.getPath tmp-file) "1" "2" "3" "4"))))))
 

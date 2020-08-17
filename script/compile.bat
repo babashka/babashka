@@ -35,6 +35,9 @@ call %GRAALVM_HOME%\bin\native-image.cmd ^
   "--initialize-at-run-time=java.lang.Math$RandomNumberGeneratorHolder" ^
   "--initialize-at-build-time"  ^
   "--initialize-at-run-time=org.postgresql.sspi.SSPIClient" ^
+  "-H:EnableURLProtocols=http,https,jar" ^
+  "--enable-all-security-services" ^
+  "-H:+JNI" ^
   "-H:Log=registerResource:" ^
   "--no-fallback" ^
   "--verbose" ^
