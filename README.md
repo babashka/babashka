@@ -616,7 +616,7 @@ $ bb my-script.clj
 Hello from gist script!
 ```
 
-Caveat: building uberscripts works by running top-level `ns` forms and `require`
+Caveat: building uberscripts works by running top-level `ns` and `require`
 forms. The rest of the code is not evaluated. Code that relies on dynamic
 requires may not work in an uberscript.
 
