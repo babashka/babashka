@@ -1,4 +1,4 @@
 (ns my.impl2
-  (:require [my.impl :as impl]))
+  (:require [my.impl1 :as impl1]))
 
-(def impl-fn impl/impl-fn)
+(def impl-fn impl1/impl-fn)

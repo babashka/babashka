@@ -1,4 +1,4 @@
-(ns my.impl
+(ns my.impl1
   (:require [clojure.string]))
 
 (defn impl-fn
