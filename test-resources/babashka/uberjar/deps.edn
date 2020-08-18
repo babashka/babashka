@@ -1,0 +1,3 @@
+{:aliases {:babashka {:classpath-overrides {org.clojure/clojure ""
+                                            org.clojure/spec.alpha ""
+                                            org.clojure/core.specs.alpha ""}}}}
