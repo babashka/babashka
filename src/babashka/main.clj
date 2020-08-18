@@ -258,7 +258,7 @@ Evaluation:
   -f, --file <path>   Evaluate a file.
   -cp, --classpath    Classpath to use.
   -m, --main <ns>     Call the -main function from namespace with args.
-  --verbose           Print entire stacktrace in case of exception.
+  --verbose           Print debug information and entire stacktrace in case of exception.
 
 REPL:
 
