@@ -616,9 +616,23 @@ $ bb my-script.clj
 Hello from gist script!
 ```
 
-Caveat: building uberscripts works by running top-level `ns` and `require`
-forms. The rest of the code is not evaluated. Code that relies on dynamic
-requires may not work in an uberscript.
+Caveats:
+
+- *Dynamic requires*. Building uberscripts works by running top-level `ns` and
+`require` forms. The rest of the code is not evaluated. Code that relies on
+dynamic requires may not work in an uberscript.
+- *Resources*. The usage of `io/resource` assumes a classpath, so when this is
+  used in your uberscript, you still have to set a classpath and bring the
+  resources along.
+
+If any of the above is problematic for your project, using an uberjar is a good
+alternative.
+
+## Uberjar
+
+Babashka can create uberjars from a given classpath and optionally a main
+method.
+
 
 ## Parsing command line arguments
 
