@@ -192,7 +192,7 @@
                      (let [options (next options)]
                        (recur (next options)
                               (assoc opts-map :main (first options))))
-                     (if (some opts-map [:file :socket-repl :expressions :main])
+                     (if (some opts-map [:file :jar :socket-repl :expressions :main])
                        (assoc opts-map
                               :command-line-args options)
                        (let [trimmed-opt (str/triml opt)
@@ -203,7 +203,8 @@
                                (update :expressions (fnil conj []) (first options))
                                (assoc :command-line-args (next options)))
                            (assoc opts-map
-                                  :file opt
+                                  (if (str/ends-with? opt ".jar")
+                                    :jar :file) opt
                                   :command-line-args (next options)))))))
                  opts-map))]
     opts))
