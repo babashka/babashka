@@ -619,7 +619,8 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
           (uberjar/run {:dest uberjar
                         :jar :uber
                         :classpath classpath
-                        :main-class main}))
+                        :main-class main
+                        :verbose verbose?}))
         exit-code))))
 
 (defn -main
