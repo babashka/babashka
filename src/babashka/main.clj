@@ -30,9 +30,11 @@
    [clojure.java.io :as io]
    [clojure.stacktrace :refer [print-stack-trace]]
    [clojure.string :as str]
+   [hf.depstar.uberjar :as uberjar]
    [sci.addons :as addons]
    [sci.core :as sci]
    [sci.impl.callstack :as cs]
+   [sci.impl.namespaces :as sci-namespaces]
    [sci.impl.unrestrict :refer [*unrestricted*]]
    [sci.impl.vars :as vars])
   (:gen-class))
@@ -143,11 +145,21 @@
                        (recur (next options)
                               (assoc opts-map
                                      :uberscript (first options))))
+                     ("--uberjar")
+                     (let [options (next options)]
+                       (recur (next options)
+                              (assoc opts-map
+                                     :uberjar (first options))))
                      ("-f" "--file")
                      (let [options (next options)]
                        (recur (next options)
                               (assoc opts-map
                                      :file (first options))))
+                     ("--jar" "-jar")
+                     (let [options (next options)]
+                       (recur (next options)
+                              (assoc opts-map
+                                     :jar (first options))))
                      ("--repl")
                      (let [options (next options)]
                        (recur (next options)
@@ -181,7 +193,7 @@
                      (let [options (next options)]
                        (recur (next options)
                               (assoc opts-map :main (first options))))
-                     (if (some opts-map [:file :socket-repl :expressions :main])
+                     (if (some opts-map [:file :jar :socket-repl :expressions :main])
                        (assoc opts-map
                               :command-line-args options)
                        (let [trimmed-opt (str/triml opt)
@@ -192,7 +204,8 @@
                                (update :expressions (fnil conj []) (first options))
                                (assoc :command-line-args (next options)))
                            (assoc opts-map
-                                  :file opt
+                                  (if (str/ends-with? opt ".jar")
+                                    :jar :file) opt
                                   :command-line-args (next options)))))))
                  opts-map))]
     opts))
@@ -246,7 +259,7 @@ Evaluation:
   -f, --file <path>   Evaluate a file.
   -cp, --classpath    Classpath to use.
   -m, --main <ns>     Call the -main function from namespace with args.
-  --verbose           Print entire stacktrace in case of exception.
+  --verbose           Print debug information and entire stacktrace in case of exception.
 
 REPL:
 
@@ -466,7 +479,8 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                     :expressions :stream?
                     :repl :socket-repl :nrepl
                     :verbose? :classpath
-                    :main :uberscript :describe?] :as _opts}
+                    :main :uberscript :describe?
+                    :jar :uberjar] :as _opts}
             (parse-opts args)
             _ (do ;; set properties
                 (when main (System/setProperty "babashka.main" main))
@@ -490,16 +504,32 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                           (System/getenv "BABASHKA_CLASSPATH"))
             _ (when classpath
                 (add-classpath* classpath))
-            load-fn (fn [{:keys [:namespace]}]
-                      (when-let [{:keys [:loader]} @cp-state]
-                        (let [res (cp/source-for-namespace loader namespace nil)]
-                          (when uberscript (swap! uberscript-sources conj (:source res)))
-                          res)))
             abs-path (when file
                        (let [abs-path (.getAbsolutePath (io/file file))]
                          (vars/bindRoot sci/file abs-path)
                          (System/setProperty "babashka.file" abs-path)
                          abs-path))
+            _ (when jar
+                (add-classpath* jar))
+            load-fn (fn [{:keys [:namespace :reload]}]
+                      (when-let [{:keys [:loader]}
+                                  @cp-state]
+                        (if ;; ignore built-in namespaces when uberscripting, unless with :reload
+                            (and uberscript
+                                 (not reload)
+                                 (or (contains? namespaces namespace)
+                                     (contains? sci-namespaces/namespaces namespace)))
+                          ""
+                          (let [res (cp/source-for-namespace loader namespace nil)]
+                            (when uberscript (swap! uberscript-sources conj (:source res)))
+                            res))))
+            main (if (and jar (not main))
+                   (when-let [res (cp/getResource
+                                   (cp/loader jar)
+                                   ["META-INF/MANIFEST.MF"] {:url? true})]
+                     (cp/main-ns res))
+                   main)
+
             ;; TODO: pull more of these values to compile time
             opts {:aliases aliases
                   :namespaces (-> namespaces
@@ -528,7 +558,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                   :classes classes/class-map
                   :imports imports
                   :load-fn load-fn
-                  :dry-run uberscript
+                  :uberscript uberscript
                   :readers core/data-readers}
             opts (addons/future opts)
             sci-ctx (sci/init opts)
@@ -564,6 +594,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                        repl [(repl/start-repl! sci-ctx) 0]
                        socket-repl [(start-socket-repl! socket-repl sci-ctx) 0]
                        nrepl [(start-nrepl! nrepl sci-ctx) 0]
+                       uberjar [nil 0]
                        expressions
                        (sci/binding [sci/file abs-path]
                          (try
@@ -593,13 +624,18 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                 1)]
         (flush)
         (when uberscript
-          uberscript
           (let [uberscript-out uberscript]
             (spit uberscript-out "") ;; reset file
-            (doseq [s @uberscript-sources]
+            (doseq [s (distinct @uberscript-sources)]
               (spit uberscript-out s :append true))
             (spit uberscript-out preloads :append true)
             (spit uberscript-out expression :append true)))
+        (when uberjar
+          (uberjar/run {:dest uberjar
+                        :jar :uber
+                        :classpath classpath
+                        :main-class main
+                        :verbose verbose?}))
         exit-code))))
 
 (defn -main

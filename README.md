@@ -107,7 +107,7 @@ More examples can be found [here](doc/examples.md).
 Functionality regarding `clojure.core` and `java.lang` can be considered stable
 and is unlikely to change. Changes may happen in other parts of babashka,
 although we will try our best to prevent them. Always check the release notes or
-[CHANGES.md](CHANGES.md) before upgrading.
+[CHANGELOG.md](CHANGELOG.md) before upgrading.
 
 ## Installation
 
@@ -562,6 +562,97 @@ namespace which allows dynamically adding to the classpath.
 
 See [deps.clj](doc/deps.clj.md) for a babashka script that replaces the `clojure` bash script.
 
+## Uberscript
+
+The `--uberscript` option collects the expressions in
+`BABASHKA_PRELOADS`, the command line expression or file, the main entrypoint
+and all required namespaces from the classpath into a single file. This can be
+convenient for debugging and deployment.
+
+Given the `deps.edn` from above:
+
+``` clojure
+$ deps.clj -A:my-script -Scommand "bb -cp {{classpath}} {{main-opts}} --uberscript my-script.clj"
+
+$ cat my-script.clj
+(ns my-gist-script)
+(defn -main [& args]
+  (println "Hello from gist script!"))
+(ns user (:require [my-gist-script]))
+(apply my-gist-script/-main *command-line-args*)
+
+$ bb my-script.clj
+Hello from gist script!
+```
+
+Caveats:
+
+- *Dynamic requires*. Building uberscripts works by running top-level `ns` and
+`require` forms. The rest of the code is not evaluated. Code that relies on
+dynamic requires may not work in an uberscript.
+- *Resources*. The usage of `io/resource` assumes a classpath, so when this is
+  used in your uberscript, you still have to set a classpath and bring the
+  resources along.
+
+If any of the above is problematic for your project, using an uberjar (see
+below) is a good alternative.
+
+## Uberjar
+
+Babashka can create uberjars from a given classpath and optionally a main
+method:
+
+``` clojure
+$ cat src/foo.clj
+(ns foo (:gen-class)) (defn -main [& args] (prn :hello))
+$ bb -cp $(clojure -Spath) -m foo --uberjar foo.jar
+$ bb foo.jar
+:hello
+```
+
+When producing a classpath using the `clojure` or `deps.clj` tool, Clojure
+itself, spec and the core specs will be on the classpath and will therefore be
+included in your uberjar, which makes it bigger than necessary:
+
+``` shell
+$ ls -lh foo.jar
+-rw-r--r--  1 borkdude  staff   4.5M Aug 19 17:04 foo.jar
+```
+
+To exclude these dependencies, you can use the following `:classpath-overrides`
+in your `deps.edn`:
+
+``` clojure
+{:aliases {:remove-clojure {:classpath-overrides {org.clojure/clojure nil
+                                                  org.clojure/spec.alpha nil
+                                                  org.clojure/core.specs.alpha nil}}}}
+```
+
+``` clojure
+$ rm foo.jar
+$ bb -cp $(clojure -A:remove-clojure -Spath) -m foo --uberjar foo.jar
+$ bb foo.jar
+:hello
+$ ls -lh foo.jar
+-rw-r--r--  1 borkdude  staff   871B Aug 19 17:07 foo.jar
+```
+
+If you want your uberjar to be compatible with the JVM, you'll need to compile
+the main namespace. Babashka does not do compilation, so we use Clojure on the
+JVM for that part:
+
+``` clojure
+$ rm foo.jar
+$ mkdir classes
+$ clojure -e "(require 'foo) (compile 'foo)"
+foo
+$ bb -cp $(clojure -Spath):classes -m foo --uberjar foo.jar
+$ bb foo.jar
+:hello
+$ java -jar foo.jar
+:hello
+```
+
 ## System properties
 
 Babashka sets the following system properties:
@@ -592,29 +683,6 @@ $ bb "(set! *data-readers* {'t/tag inc}) #t/tag 1"
 
 To preserve good startup time, babashka does not scan the classpath for
 `data_readers.clj` files.
-
-## Uberscript
-
-The `--uberscript` option collects the expressions in
-`BABASHKA_PRELOADS`, the command line expression or file, the main entrypoint
-and all required namespaces from the classpath into a single file. This can be
-convenient for debugging and deployment.
-
-Given the `deps.edn` from above:
-
-``` clojure
-$ deps.clj -A:my-script -Scommand "bb -cp {{classpath}} {{main-opts}} --uberscript my-script.clj"
-
-$ cat my-script.clj
-(ns my-gist-script)
-(defn -main [& args]
-  (println "Hello from gist script!"))
-(ns user (:require [my-gist-script]))
-(apply my-gist-script/-main *command-line-args*)
-
-$ bb my-script.clj
-Hello from gist script!
-```
 
 ## Parsing command line arguments
 
