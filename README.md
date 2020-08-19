@@ -602,7 +602,7 @@ below) is a good alternative.
 Babashka can create uberjars from a given classpath and optionally a main
 method:
 
-``` shell
+``` clojure
 $ cat src/foo.clj
 (ns foo (:gen-class)) (defn -main [& args] (prn :hello))
 $ bb -cp $(clojure -Spath):classes -m foo --uberjar foo.jar
@@ -628,7 +628,7 @@ in your `deps.edn`:
                                                   org.clojure/core.specs.alpha nil}}}}
 ```
 
-``` shell
+``` clojure
 $ rm foo.jar
 $ bb -cp $(clojure -A:remove-clojure -Spath) -m foo --uberjar foo.jar
 $ bb foo.jar
@@ -641,7 +641,7 @@ If you want your uberjar to be compatible with the JVM, you'll need to compile
 the main namespace. Babashka does not do compilation, so we use Clojure on the
 JVM for that part:
 
-``` shell
+``` clojure
 $ rm foo.jar
 $ mkdir classes
 $ clojure -e "(require 'foo) (compile 'foo)"
