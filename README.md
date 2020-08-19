@@ -107,7 +107,7 @@ More examples can be found [here](doc/examples.md).
 Functionality regarding `clojure.core` and `java.lang` can be considered stable
 and is unlikely to change. Changes may happen in other parts of babashka,
 although we will try our best to prevent them. Always check the release notes or
-[CHANGES.md](CHANGES.md) before upgrading.
+[CHANGELOG.md](CHANGELOG.md) before upgrading.
 
 ## Installation
 
