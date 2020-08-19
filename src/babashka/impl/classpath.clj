@@ -70,10 +70,11 @@
     (getResource loader resource-paths opts)))
 
 (defn main-ns [manifest-resource]
-  (some-> (Manifest. (io/input-stream manifest-resource))
-          (.getMainAttributes)
-          (.getValue "Main-Class")
-          (demunge)))
+  (with-open [is (io/input-stream manifest-resource)]
+    (some-> (Manifest. is)
+            (.getMainAttributes)
+            (.getValue "Main-Class")
+            (demunge))))
 
 ;;;; Scratch
 
