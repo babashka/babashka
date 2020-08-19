@@ -603,9 +603,11 @@ Babashka can create uberjars from a given classpath and optionally a main
 method:
 
 ``` shell
-$ bb -cp $(clojure -Spath) -m my-gist-script --uberjar my-project.jar
-$ bb my-project.jar
-Hello from gist script!
+$ cat src/foo.clj
+(ns foo (:gen-class)) (defn -main [& args] (prn :hello))
+$ bb -cp $(clojure -Spath):classes -m foo --uberjar foo.jar
+$ bb foo.jar
+:hello
 ```
 
 When producing a classpath using the `clojure` or `deps.clj` tool, Clojure
@@ -613,32 +615,42 @@ itself, spec and the core specs will be on the classpath and will therefore be
 included in your uberjar, which makes it bigger than necessary:
 
 ``` shell
-$ ls -lh my-project.jar
--rw-r--r--  1 borkdude  staff   4.5M Aug 19 14:45 my-project.jar
+$ ls -lh foo.jar
+-rw-r--r--  1 borkdude  staff   4.5M Aug 19 17:04 foo.jar
 ```
 
 To exclude these dependencies, you can use the following `:classpath-overrides`
 in your `deps.edn`:
 
 ``` clojure
-{:deps
- {my_gist_script
-  {:git/url "https://gist.github.com/borkdude/263b150607f3ce03630e114611a4ef42"
-   :sha "cfc761d06dfb30bb77166b45d439fe8fe54a31b8"}}
- :aliases {:my-script {:main-opts ["-m" "my-gist-script"]}
-           :remove-clojure {:classpath-overrides {org.clojure/clojure nil
+{:aliases {:remove-clojure {:classpath-overrides {org.clojure/clojure nil
                                                   org.clojure/spec.alpha nil
                                                   org.clojure/core.specs.alpha nil}}}}
-
 ```
 
 ``` shell
-$ bb -cp $(clojure -A:remove-clojure -Spath) -m my-gist-script --uberjar my-bb-project.jar
-$ bb my-project.jar
-Hello from gist script!
-$ ls -lat *.jar
--rw-r--r--  1 borkdude  staff  4682045 Aug 19 14:55 my-project.jar
--rw-r--r--  1 borkdude  staff     7880 Aug 19 14:55 my-bb-project.jar
+$ rm foo.jar
+$ bb -cp $(clojure -A:remove-clojure -Spath) -m foo --uberjar foo.jar
+$ bb foo.jar
+:hello
+$ ls -lh foo.jar
+-rw-r--r--  1 borkdude  staff   871B Aug 19 17:07 foo.jar
+```
+
+If you want your uberjar to be compatible with the JVM, you'll need to compile
+the main namespace. Babashka does not do compilation, so we use Clojure on the
+JVM for that part:
+
+``` shell
+$ rm foo.jar
+$ mkdir classes
+$ clojure -e "(require 'foo) (compile 'foo)"
+foo
+$ bb -cp $(clojure -Spath):classes -m foo --uberjar foo.jar
+$ bb foo.jar
+:hello
+$ java -jar foo.jar
+:hello
 ```
 
 ## System properties
