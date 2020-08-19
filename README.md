@@ -605,7 +605,7 @@ method:
 ``` clojure
 $ cat src/foo.clj
 (ns foo (:gen-class)) (defn -main [& args] (prn :hello))
-$ bb -cp $(clojure -Spath):classes -m foo --uberjar foo.jar
+$ bb -cp $(clojure -Spath) -m foo --uberjar foo.jar
 $ bb foo.jar
 :hello
 ```
