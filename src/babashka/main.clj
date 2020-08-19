@@ -418,6 +418,43 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
       (println "...")
       (cs/print-stacktrace snd))))
 
+(defn get-line [data]
+  ;; FIXME make this Sci api more consistent
+  (or (:line data)
+      (:row data)))
+
+(defn get-column [data]
+  ;; FIXME make this Sci api more consistent
+  (or (:column data)
+      (:col data)))
+
+(defn rich-error [ex]
+  (let [data (ex-data ex)]
+    (when-let [file (:file data)]
+      (let [content (slurp file)
+            matching-line (dec (get-line data))
+            start-line (max (- matching-line 4) 0)
+            end-line (+ matching-line 6)
+            [before after :as snippet-lines] (->>
+                                              (clojure.string/split-lines content)
+                                              (map-indexed list)
+                                              (drop start-line)
+                                              (take (- end-line start-line))
+                                              (split-at (inc (- matching-line start-line))))
+
+            snippet-lines (concat before [[nil (str (clojure.string/join "" (repeat (dec (get-column data)) " "))
+                                                    (str "^--- " (ex-message ex)))]] after)]
+
+        ;; Inspired by https://github.com/bhauman/lein-figwheel/blob/7145c120c762a62da563c680f1b376ab538a6a64/support/src/figwheel/client/heads_up.cljs#L175
+        (clojure.string/join "\n" (map (fn [[idx line]]
+                                         (if idx
+                                           (let [line-number (inc idx)]
+                                             (str (format "%6d: " line-number) line))
+                                           (str (clojure.string/join (repeat 8 " ")) line)))
+                                       snippet-lines)))))
+ )
+
+
 (defn error-handler* [^Exception e verbose?]
   (binding [*out* *err*]
     (let [d (ex-data e)
@@ -432,6 +469,9 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                               (.. e getClass getName))
                           (when-let [m (.getMessage e)]
                             (str ": " m)) ))
+            (when sci-error?
+              (println (rich-error e)))
+
             (some->
              (ex-data e) :callstack
              cs/stacktrace
