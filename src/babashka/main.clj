@@ -403,6 +403,20 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
   {'java.lang.System/exit exit ;; override exit, so we have more control
    'System/exit exit})
 
+(defn print-stacktrace
+  [stacktrace verbose?]
+  (let [segments (if verbose? [stacktrace]
+                     (let [stack-count (count stacktrace)]
+                       (if (<= stack-count 10)
+                         [stacktrace]
+                         [(take 5 stacktrace)
+                          (drop (- stack-count 5) stacktrace)])))
+        [fst snd] segments]
+    (cs/print-stacktrace fst)
+    (when snd
+      (println "...")
+      (cs/print-stacktrace snd))))
+
 (defn error-handler* [^Exception e verbose?]
   (binding [*out* *err*]
     (let [d (ex-data e)
@@ -420,7 +434,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
             (println "Stacktrace:")
             (-> (ex-data e) :callstack
                 cs/stacktrace
-                cs/print-stacktrace)
+                (print-stacktrace verbose?))
             (when verbose?
               (println "Exception:")
               (print-stack-trace e)
