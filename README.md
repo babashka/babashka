@@ -562,37 +562,6 @@ namespace which allows dynamically adding to the classpath.
 
 See [deps.clj](doc/deps.clj.md) for a babashka script that replaces the `clojure` bash script.
 
-## System properties
-
-Babashka sets the following system properties:
-
-- `babashka.version`: the version string, e.g. `"1.2.0"`
-- `babashka.main`: the `--main` argument
-- `babashka.file`: the `--file` argument (normalized using `.getAbsolutePath`)
-
-## `__name__ == "__main__"` pattern
-
-In Python scripts there is a well-known pattern to check if the current file was
-the file invoked from the command line, or loaded from another file: the
-`__name__ == "__main__"` pattern. In babashka this pattern can be implemented with:
-
-``` clojure
-(= *file* (System/getProperty "babashka.file")
-```
-
-## Data readers
-
-Data readers can be enabled by setting `*data-readers*` to a hashmap of symbols
-to functions or vars:
-
-``` clojure
-$ bb "(set! *data-readers* {'t/tag inc}) #t/tag 1"
-2
-```
-
-To preserve good startup time, babashka does not scan the classpath for
-`data_readers.clj` files.
-
 ## Uberscript
 
 The `--uberscript` option collects the expressions in
@@ -625,14 +594,50 @@ dynamic requires may not work in an uberscript.
   used in your uberscript, you still have to set a classpath and bring the
   resources along.
 
-If any of the above is problematic for your project, using an uberjar is a good
-alternative.
+If any of the above is problematic for your project, using an uberjar (see
+below) is a good alternative.
 
 ## Uberjar
 
 Babashka can create uberjars from a given classpath and optionally a main
-method.
+method:
 
+``` shell
+$ bb -cp $(clojure -Spath) -m my-gist-script --uberjar my-project.jar
+$ bb my-project.jar
+Hello from gist script!
+```
+
+## System properties
+
+Babashka sets the following system properties:
+
+- `babashka.version`: the version string, e.g. `"1.2.0"`
+- `babashka.main`: the `--main` argument
+- `babashka.file`: the `--file` argument (normalized using `.getAbsolutePath`)
+
+## `__name__ == "__main__"` pattern
+
+In Python scripts there is a well-known pattern to check if the current file was
+the file invoked from the command line, or loaded from another file: the
+`__name__ == "__main__"` pattern. In babashka this pattern can be implemented with:
+
+``` clojure
+(= *file* (System/getProperty "babashka.file")
+```
+
+## Data readers
+
+Data readers can be enabled by setting `*data-readers*` to a hashmap of symbols
+to functions or vars:
+
+``` clojure
+$ bb "(set! *data-readers* {'t/tag inc}) #t/tag 1"
+2
+```
+
+To preserve good startup time, babashka does not scan the classpath for
+`data_readers.clj` files.
 
 ## Parsing command line arguments
 
