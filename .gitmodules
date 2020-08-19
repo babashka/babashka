@@ -13,4 +13,4 @@
 	url = https://github.com/babashka/babashka.nrepl
 [submodule "depstar"]
 	path = depstar
-	url = https://github.com/borkdude/depstar
+	url = https://github.com/babashka/depstar
