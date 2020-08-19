@@ -412,6 +412,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                          [(take 5 stacktrace)
                           (drop (- stack-count 5) stacktrace)])))
         [fst snd] segments]
+    (println "Stacktrace:")
     (cs/print-stacktrace fst)
     (when snd
       (println "...")
@@ -431,10 +432,10 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                               (.. e getClass getName))
                           (when-let [m (.getMessage e)]
                             (str ": " m)) ))
-            (println "Stacktrace:")
-            (-> (ex-data e) :callstack
-                cs/stacktrace
-                (print-stacktrace verbose?))
+            (some->
+             (ex-data e) :callstack
+             cs/stacktrace
+             (print-stacktrace verbose?))
             (when verbose?
               (println "Exception:")
               (print-stack-trace e)
