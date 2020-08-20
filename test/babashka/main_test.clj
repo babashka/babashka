@@ -535,7 +535,7 @@
 (deftest preloads-file-location-test
   (when (System/getenv "BABASHKA_PRELOADS_TEST")
     (is (thrown-with-msg?
-         Exception #"at BABASHKA_PRELOADS"
+         Exception #"preloads"
          (test-utils/bb nil (.getPath (io/file "test-resources" "babashka" "file_location_preloads.clj")))))))
 
 ;;;; Scratch
