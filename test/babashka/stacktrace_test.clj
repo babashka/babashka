@@ -9,10 +9,8 @@
   (try (tu/bb nil (.getPath (io/file "test" "babashka" "scripts" "divide_by_zero.bb")))
        (catch Exception e
          (let [msg (ex-message e)
-               _ (println msg)
-               lines (filterv #(str/starts-with? % "  ")
-                              (str/split-lines msg))
-               _ (prn lines)
+               lines (str/split-lines msg)
+               lines (drop-while #(not (str/includes? % "clojure.core//")) lines)
                matches [#"clojure\.core/"
                         #"user/foo .*divide_by_zero.bb:2:3"
                         #"user/foo .*divide_by_zero.bb:1:1"

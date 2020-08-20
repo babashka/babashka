@@ -404,7 +404,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
    'System/exit exit})
 
 (defn print-stacktrace
-  [stacktrace verbose?]
+  [stacktrace {:keys [:verbose?]}]
   (let [segments (if verbose? [stacktrace]
                      (let [stack-count (count stacktrace)]
                        (if (<= stack-count 10)
@@ -428,20 +428,21 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
   (or (:column data)
       (:col data)))
 
-(defn rich-error [ex]
+(defn rich-error [ex opts]
   (let [data (ex-data ex)]
     (when-let [file (:file data)]
-      (let [content (slurp file)
+      (let [content (if (= "<expr>" file)
+                      (:expression opts)
+                      (slurp file))
             matching-line (dec (get-line data))
             start-line (max (- matching-line 4) 0)
             end-line (+ matching-line 6)
-            [before after :as snippet-lines] (->>
-                                              (clojure.string/split-lines content)
-                                              (map-indexed list)
-                                              (drop start-line)
-                                              (take (- end-line start-line))
-                                              (split-at (inc (- matching-line start-line))))
-
+            [before after] (->>
+                            (clojure.string/split-lines content)
+                            (map-indexed list)
+                            (drop start-line)
+                            (take (- end-line start-line))
+                            (split-at (inc (- matching-line start-line))))
             snippet-lines (concat before [[nil (str (clojure.string/join "" (repeat (dec (get-column data)) " "))
                                                     (str "^--- " (ex-message ex)))]] after)]
 
@@ -455,7 +456,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
  )
 
 
-(defn error-handler* [^Exception e verbose?]
+(defn error-handler* [^Exception e opts]
   (binding [*out* *err*]
     (let [d (ex-data e)
           exit-code (:bb/exit-code d)
@@ -470,13 +471,13 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                           (when-let [m (.getMessage e)]
                             (str ": " m)) ))
             (when sci-error?
-              (println (rich-error e)))
+              (println (rich-error e opts)))
 
             (some->
              (ex-data e) :callstack
              cs/stacktrace
-             (print-stacktrace verbose?))
-            (when verbose?
+             (print-stacktrace opts))
+            (when (:verbose? opts)
               (println "Exception:")
               (print-stack-trace e)
               #_(println (str (or ex-name
@@ -625,7 +626,8 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                                  main)] nil]
                   file (try [[(read-file file)] nil]
                             (catch Exception e
-                              (error-handler* e verbose?))))
+                              (error-handler* e {:expression expressions
+                                                 :verbose? verbose?}))))
             expression (str/join " " expressions) ;; this might mess with the locations...
             exit-code
             ;; handle preloads
@@ -635,7 +637,8 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                         (try
                           (sci/eval-string* sci-ctx preloads)
                           (catch Throwable e
-                            (error-handler* e verbose?)))))
+                            (error-handler* e {:expression expression
+                                               :verbose? verbose?})))))
                     nil))
             exit-code
             (or exit-code
@@ -658,7 +661,8 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                                (if (identical? ::EOF in)
                                  [nil 0] ;; done streaming
                                  (let [res [(let [res
-                                                  (sci/binding [input-var in]
+                                                  (sci/binding [sci/file (or @sci/file "<expr>")
+                                                                input-var in]
                                                     (sci/eval-string* sci-ctx expression))]
                                               (when (some? res)
                                                 (if-let [pr-f (cond shell-out println
@@ -673,7 +677,8 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                                      (recur)
                                      res)))))
                            (catch Throwable e
-                             (error-handler* e verbose?))))
+                             (error-handler* e {:expression expression
+                                                :verbose? verbose?}))))
                        uberscript [nil 0]
                        :else [(repl/start-repl! sci-ctx) 0]))
                 1)]
