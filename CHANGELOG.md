@@ -7,6 +7,23 @@ For a list of breaking changes, check [here](#breaking-changes)
 Go from:
 https://github.com/borkdude/babashka/commits/master?after=7049b1b0bd582b717094703bcf299fb6363bb142+69&branch=master
 
+### New
+
+- Add `add-tap`,`tap>`, `remove-tap`, `class?`, `iterator-seq`, `remove-watch`
+- Add `java.lang.ProcessHandle` and better support for killing subprocesses via
+  Java interop. See [test script](https://github.com/borkdude/babashka/blob/7049b1b0bd582b717094703bcf299fb6363bb142/test/babashka/scripts/kill_child_processes.bb).
+- Add `clojure.lang.ArityException` and tests to support https://github.com/circleci/bond library #524 (@cldwalker).
+- Expose more transit vars #525 (@djblue)
+- Add support for `clojure.datafy`, `Datafiable` and `Navigable` #468
+
+### Fixed
+
+- Eval metadata on var created with defn (borkdude/sci#361)
+- Metadata fn on defn f fails if calling defn f (borkdude/sci#363)
+- Allow re-binding of core vars in with-redefs (borkdude/sci#375)
+- Fix reading resources from jar files #528
+- `:file` in metadata has absolute paths instead of canonical ones, to preserve symlink #532
+
 ## v0.1.3 (2020-06-27)
 
 Thanks [@llacom](https://github.com/llacom), [@AndreTheHunter](https://github.com/AndreTheHunter), [@xingzheone](https://github.com/xingzheone) for contributing to this release.
