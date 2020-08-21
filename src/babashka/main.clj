@@ -403,8 +403,8 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
   {'java.lang.System/exit exit ;; override exit, so we have more control
    'System/exit exit})
 
-(defn ruler []
-  (println (apply str (repeat 80 \-))))
+(defn ruler [title]
+  (println (apply str "----- " title " " (repeat (- 80 7 (count title)) \-))))
 
 (defn split-stacktrace [stacktrace verbose?]
   (if verbose? [stacktrace]
@@ -465,19 +465,25 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                             .getClass .getName))]
       (if exit-code [nil exit-code]
           (do
-            (ruler)
+            (ruler "Error")
+            #_(println)
             (println (str (or ex-name
                               (.. e getClass getName))
                           (when-let [m (.getMessage e)]
                             (str ": " m)) ))
-            (ruler)
+            (println)
+            (ruler "Context")
+            #_(println)
             (when sci-error?
               (println (rich-error e opts)))
-            (ruler)
+            (println)
+            (ruler "Stack trace")
+            #_(println)
             (some->
              (ex-data e) :callstack
              cs/stacktrace
              (print-stacktrace opts))
+            (println)
             (when (:verbose? opts)
               (println "Exception:")
               (print-stack-trace e)
