@@ -403,20 +403,28 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
   {'java.lang.System/exit exit ;; override exit, so we have more control
    'System/exit exit})
 
+(defn ruler []
+  (println (apply str (repeat 80 \-))))
+
+(defn split-stacktrace [stacktrace verbose?]
+  (if verbose? [stacktrace]
+      (let [stack-count (count stacktrace)]
+        (if (<= stack-count 10)
+          [stacktrace]
+          [(take 5 stacktrace)
+           (drop (- stack-count 5) stacktrace)]))))
+
 (defn print-stacktrace
   [stacktrace {:keys [:verbose?]}]
-  (let [segments (if verbose? [stacktrace]
-                     (let [stack-count (count stacktrace)]
-                       (if (<= stack-count 10)
-                         [stacktrace]
-                         [(take 5 stacktrace)
-                          (drop (- stack-count 5) stacktrace)])))
-        [fst snd] segments]
-    (println "Stacktrace:")
-    (cs/print-stacktrace fst)
+  (let [segments (split-stacktrace stacktrace verbose?)
+        [fst snd] segments
+        stacktrace (concat fst snd)
+        stacktrace (cs/format-stacktrace stacktrace)
+        [fst snd] (if snd [(take 5 stacktrace) (drop 5 stacktrace)] [fst])]
+    (run! println fst)
     (when snd
       (println "...")
-      (cs/print-stacktrace snd))))
+      (run! println snd))))
 
 (defn rich-error [ex opts]
   (let [{:keys [:file :line :column]} (ex-data ex)]
@@ -457,13 +465,15 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                             .getClass .getName))]
       (if exit-code [nil exit-code]
           (do
+            (ruler)
             (println (str (or ex-name
                               (.. e getClass getName))
                           (when-let [m (.getMessage e)]
                             (str ": " m)) ))
+            (ruler)
             (when sci-error?
               (println (rich-error e opts)))
-
+            (ruler)
             (some->
              (ex-data e) :callstack
              cs/stacktrace
