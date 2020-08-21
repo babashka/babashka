@@ -2,6 +2,32 @@
 
 For a list of breaking changes, check [here](#breaking-changes)
 
+## Unreleased
+
+Go from:
+https://github.com/borkdude/babashka/commits/master?after=7049b1b0bd582b717094703bcf299fb6363bb142+69&branch=master
+
+### New
+
+- Add `add-tap`,`tap>`, `remove-tap`, `class?`, `iterator-seq`, `remove-watch`, `realized?`
+- Add `java.lang.ProcessHandle` and better support for killing subprocesses via
+  Java interop. See [test script](https://github.com/borkdude/babashka/blob/7049b1b0bd582b717094703bcf299fb6363bb142/test/babashka/scripts/kill_child_processes.bb).
+- Add `clojure.lang.ArityException` and tests to support https://github.com/circleci/bond library [#524](https://github.com/borkdude/babashka/issues/524) ([@cldwalker](https://github.com/cldwalker)).
+- Expose more transit vars [#525](https://github.com/borkdude/babashka/issues/525) ([@djblue](https://github.com/djblue))
+- Add support for `clojure.datafy`, `Datafiable` and `Navigable` [#468](https://github.com/borkdude/babashka/issues/468)
+- Add support for building and running uberjars [#536](https://github.com/borkdude/babashka/issues/536)
+
+### Fixed
+
+- Eval metadata on var created with defn [borkdude/sci#36](https://github.com/borkdude/sci/issues/36)
+- Metadata fn on defn f fails if calling defn f [borkdude/sci#363](https://github.com/borkdude/sci/issues/363)
+- Allow re-binding of core vars in with-redefs [borkdude/sci#375](https://github.com/borkdude/sci/issues/375)
+- Fix reading resources from jar files [#528](https://github.com/borkdude/babashka/issues/528)
+- `:file` in metadata has absolute paths instead of canonical ones, to preserve symlink [#532](https://github.com/borkdude/babashka/issues/532)
+- Fix `false` dynamic binding value (which was read as `nil`) [borkdude/sci#379](https://github.com/borkdude/sci/issues/379)
+- Fix setting of `*warn-on-reflection*` in nREPL session [babashka/babashka.nrepl#25](https://github.com/babashka/babashka.nrepl/issues/25)
+- Fix order of namespaces in uberscript [#535](https://github.com/borkdude/babashka/issues/535)
+
 ## v0.1.3 (2020-06-27)
 
 Thanks [@llacom](https://github.com/llacom), [@AndreTheHunter](https://github.com/AndreTheHunter), [@xingzheone](https://github.com/xingzheone) for contributing to this release.
