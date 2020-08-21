@@ -447,13 +447,16 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                               (take (- end-line start-line))
                               (split-at (inc (- matching-line start-line))))
               snippet-lines (concat before [[nil (str (clojure.string/join "" (repeat (dec column) " "))
-                                                      (str "^--- " (ex-message ex)))]] after)]
-          (clojure.string/join "\n" (map (fn [[idx line]]
-                                           (if idx
-                                             (let [line-number (inc idx)]
-                                               (str (format "%6d: " line-number) line))
-                                             (str (clojure.string/join (repeat 8 " ")) line)))
-                                         snippet-lines)))))))
+                                                      (str "^--- " (ex-message ex)))]] after)
+              indices (map first snippet-lines)
+              max-size (reduce max 0 (map (comp count str) indices))
+              snippet-lines (map (fn [[idx line]]
+                                   (if idx
+                                     (let [line-number (inc idx)]
+                                       (str (format (str "%" max-size "d: ") line-number) line))
+                                     (str (clojure.string/join (repeat 8 " ")) line)))
+                                 snippet-lines)]
+          (clojure.string/join "\n" snippet-lines))))))
 
 (defn error-handler* [^Exception e opts]
   (binding [*out* *err*]
@@ -472,25 +475,24 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                           (when-let [m (.getMessage e)]
                             (str ": " m)) ))
             (println)
-            (ruler "Context")
-            #_(println)
+            (when-let [ec (when sci-error?
+                            (rich-error e opts))]
+              (ruler "Context")
+              (println ec)
+              (println))
+
             (when sci-error?
-              (println (rich-error e opts)))
-            (println)
-            (ruler "Stack trace")
-            #_(println)
-            (some->
-             (ex-data e) :callstack
-             cs/stacktrace
-             (print-stacktrace opts))
-            (println)
+              (when-let [st (let [st (with-out-str (some->
+                                                    (ex-data e) :callstack
+                                                    cs/stacktrace
+                                                    (print-stacktrace opts)))]
+                              (when-not (str/blank? st) st))]
+                (ruler "Stack trace")
+                (println st)
+                (println)))
             (when (:verbose? opts)
-              (println "Exception:")
-              (print-stack-trace e)
-              #_(println (str (or ex-name
-                                  (.. e getClass getName))
-                              (when-let [m (.getMessage e)]
-                                (str ": " m)) )))
+              (ruler "Exception")
+              (print-stack-trace e))
               (flush)
               [nil 1])))))
 
