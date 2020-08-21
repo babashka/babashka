@@ -15,6 +15,11 @@
                               (format " [borkdude/sci#%s](https://github.com/borkdude/sci/issues/%s)%s"
                                       issue issue (str after))))
       replaced (str/replace replaced
+                            #" babashka/babashka.nrepl#(\d+)"
+                            (fn [[_ issue after]]
+                              (format " [babashka/babashka.nrepl#%s](https://github.com/babashka/babashka.nrepl/issues/%s)%s"
+                                      issue issue (str after))))
+      replaced (str/replace replaced
                             #"@(\w+)([, .\)])"
                             (fn [[_ name after]]
                               (format "[@%s](https://github.com/%s)%s"
