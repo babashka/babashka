@@ -426,7 +426,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
       (println "...")
       (run! println snd))))
 
-(defn rich-error [ex opts]
+(defn error-context [ex opts]
   (let [{:keys [:file :line :column]} (ex-data ex)]
     (when file
       (when-let [content (case file
@@ -476,11 +476,10 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                             (str ": " m)) ))
             (println)
             (when-let [ec (when sci-error?
-                            (rich-error e opts))]
+                            (error-context e opts))]
               (ruler "Context")
               (println ec)
               (println))
-
             (when sci-error?
               (when-let [st (let [st (with-out-str (some->
                                                     (ex-data e) :callstack
@@ -489,7 +488,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                               (when-not (str/blank? st) st))]
                 (ruler "Stack trace")
                 (println st)
-                (println)))
+                #_(println)))
             (when (:verbose? opts)
               (ruler "Exception")
               (print-stack-trace e))
