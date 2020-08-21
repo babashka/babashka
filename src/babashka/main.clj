@@ -446,15 +446,17 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                               (drop start-line)
                               (take (- end-line start-line))
                               (split-at (inc (- matching-line start-line))))
-              snippet-lines (concat before [[nil (str (clojure.string/join "" (repeat (dec column) " "))
-                                                      (str "^--- " (ex-message ex)))]] after)
+              snippet-lines (concat before
+                                    [[nil (str (clojure.string/join "" (repeat (dec column) " "))
+                                               (str "^--- " (ex-message ex)))]]
+                                    after)
               indices (map first snippet-lines)
               max-size (reduce max 0 (map (comp count str) indices))
               snippet-lines (map (fn [[idx line]]
                                    (if idx
                                      (let [line-number (inc idx)]
                                        (str (format (str "%" max-size "d: ") line-number) line))
-                                     (str (clojure.string/join (repeat 8 " ")) line)))
+                                     (str (clojure.string/join (repeat (+ max-size 2) " ")) line)))
                                  snippet-lines)]
           (clojure.string/join "\n" snippet-lines))))))
 
