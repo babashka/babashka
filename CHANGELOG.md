@@ -17,7 +17,7 @@ For a list of breaking changes, check [here](#breaking-changes)
 ### Fixed
 
 - Eval metadata on var created with `defn` [borkdude/sci#36](https://github.com/borkdude/sci/issues/36)
-- Metadata fn on `defn` `f` fails if calling `defn` `f` [borkdude/sci#363](https://github.com/borkdude/sci/issues/363)
+- Metadata fn on var fails if calling the var itself [borkdude/sci#363](https://github.com/borkdude/sci/issues/363)
 - Allow re-binding of core vars in with-redefs [borkdude/sci#375](https://github.com/borkdude/sci/issues/375)
 - Fix reading resources from jar files [#528](https://github.com/borkdude/babashka/issues/528)
 - Switch from canonical to absolute paths in `:file` field on var metadata
