@@ -4,9 +4,6 @@ For a list of breaking changes, check [here](#breaking-changes)
 
 ## Unreleased
 
-Go from:
-https://github.com/borkdude/babashka/commits/master?after=7049b1b0bd582b717094703bcf299fb6363bb142+69&branch=master
-
 ### New
 
 - Add `add-tap`,`tap>`, `remove-tap`, `class?`, `iterator-seq`, `remove-watch`, `realized?`
