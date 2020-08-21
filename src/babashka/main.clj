@@ -418,19 +418,9 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
       (println "...")
       (cs/print-stacktrace snd))))
 
-(defn get-line [data]
-  ;; FIXME make this Sci api more consistent
-  (or (:line data)
-      (:row data)))
-
-(defn get-column [data]
-  ;; FIXME make this Sci api more consistent
-  (or (:column data)
-      (:col data)))
-
 (defn rich-error [ex opts]
-  (let [data (ex-data ex)]
-    (when-let [file (:file data)]
+  (let [{:keys [:file :line :column]} (ex-data ex)]
+    (when file
       (when-let [content (case file
                            "<expr>" (:expression opts)
                            "<preloads>" (:preloads opts)
@@ -439,7 +429,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                                  (and (not (.isAbsolute f))
                                       (when-let [loader (:loader opts)]
                                         (:source (cp/getResource loader [file] nil)))))))]
-        (let [matching-line (dec (get-line data))
+        (let [matching-line (dec line)
               start-line (max (- matching-line 4) 0)
               end-line (+ matching-line 6)
               [before after] (->>
@@ -448,7 +438,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                               (drop start-line)
                               (take (- end-line start-line))
                               (split-at (inc (- matching-line start-line))))
-              snippet-lines (concat before [[nil (str (clojure.string/join "" (repeat (dec (get-column data)) " "))
+              snippet-lines (concat before [[nil (str (clojure.string/join "" (repeat (dec column) " "))
                                                       (str "^--- " (ex-message ex)))]] after)]
           (clojure.string/join "\n" (map (fn [[idx line]]
                                            (if idx
