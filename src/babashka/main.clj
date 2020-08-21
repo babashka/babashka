@@ -416,11 +416,9 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
 
 (defn print-stacktrace
   [stacktrace {:keys [:verbose?]}]
-  (let [segments (split-stacktrace stacktrace verbose?)
-        [fst snd] segments
-        stacktrace (concat fst snd)
-        stacktrace (cs/format-stacktrace stacktrace)
-        [fst snd] (if snd [(take 5 stacktrace) (drop 5 stacktrace)] [fst])]
+  (let [stacktrace (cs/format-stacktrace stacktrace)
+        segments (split-stacktrace stacktrace verbose?)
+        [fst snd] segments]
     (run! println fst)
     (when snd
       (println "...")
