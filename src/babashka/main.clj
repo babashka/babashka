@@ -458,6 +458,19 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                                  snippet-lines)]
           (clojure.string/join "\n" snippet-lines))))))
 
+(defn right-pad [s n]
+  (let [n (- n (count s))]
+    (str s (str/join (repeat n " ")))))
+
+(defn print-locals [locals]
+  (let [max-name-length (reduce max 0 (map (comp count str)
+                                           (keys locals)))
+        max-name-length (+ max-name-length 2)]
+    (binding [*print-length* 10
+              *print-level* 2]
+      (doseq [[k v] locals]
+        (println (str (right-pad (str k ": ") max-name-length) v))))))
+
 (defn error-handler* [^Exception e opts]
   (binding [*out* *err*]
     (let [d (ex-data e)
@@ -480,9 +493,9 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
               (ruler "Context")
               (println ec)
               (println))
-            (when-let [locals (:locals d)]
+            (when-let [locals (not-empty (:locals d))]
               (ruler "Locals")
-              (prn locals)
+              (print-locals locals)
               (println))
             (when sci-error?
               (when-let [st (let [st (with-out-str (some->
