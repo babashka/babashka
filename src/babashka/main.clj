@@ -480,9 +480,13 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
               (ruler "Context")
               (println ec)
               (println))
+            (when-let [locals (:locals d)]
+              (ruler "Locals")
+              (prn locals)
+              (println))
             (when sci-error?
               (when-let [st (let [st (with-out-str (some->
-                                                    (ex-data e) :callstack
+                                                    d :callstack
                                                     cs/stacktrace
                                                     (print-stacktrace opts)))]
                               (when-not (str/blank? st) st))]
