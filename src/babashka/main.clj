@@ -487,6 +487,10 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                               (.. e getClass getName))
                           (when-let [m (.getMessage e)]
                             (str ": " m)) ))
+            (let [{:keys [:file :line :column]} d]
+              (when line
+                (println (str "at " (when file (str file ":"))
+                              line ":" column""))))
             (println)
             (when-let [ec (when sci-error?
                             (error-context e opts))]
