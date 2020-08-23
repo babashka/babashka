@@ -475,17 +475,20 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
   (binding [*out* *err*]
     (let [d (ex-data e)
           exit-code (:bb/exit-code d)
-          sci-error? (identical? :sci/error (:type d))
+          sci-error? (isa? (:type d) :sci/error)
           ex-name (when sci-error?
                     (some-> ^Throwable (ex-cause e)
                             .getClass .getName))]
       (if exit-code [nil exit-code]
           (do
             (ruler "Error")
-            (println "Type:" (or ex-name
-                                 (.. e getClass getName)))
+            (println "Type:    " (or
+                                  ex-name
+                                  (.. e getClass getName))
+                     (when-let [t (:type d)]
+                       (str " / " t)))
             (when-let [m (.getMessage e)]
-              (println (str "Message: " m)))
+              (println (str "Message:  " m)))
             (let [{:keys [:file :line :column]} d]
               (when line
                 (println (str "Location: "
