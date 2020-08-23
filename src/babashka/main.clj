@@ -482,14 +482,14 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
       (if exit-code [nil exit-code]
           (do
             (ruler "Error")
-            #_(println)
-            (println (str (or ex-name
-                              (.. e getClass getName))
-                          (when-let [m (.getMessage e)]
-                            (str ": " m)) ))
+            (println "Type:" (or ex-name
+                                 (.. e getClass getName)))
+            (when-let [m (.getMessage e)]
+              (println (str "Message: " m)))
             (let [{:keys [:file :line :column]} d]
               (when line
-                (println (str "at " (when file (str file ":"))
+                (println (str "Location: "
+                              (when file (str file ":"))
                               line ":" column""))))
             (println)
             (when-let [ec (when sci-error?
