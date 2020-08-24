@@ -15,7 +15,7 @@
   :resource-paths ["resources" "sci/resources"]
   :dependencies [[org.clojure/clojure "1.10.2-alpha1"]
                  [org.clojure/tools.reader "1.3.2"]
-                 [borkdude/edamame "0.0.11-alpha.13"]
+                 [borkdude/edamame "0.0.11-alpha.14"]
                  [borkdude/graal.locking "0.0.2"]
                  [org.clojure/tools.cli "1.0.194"]
                  [cheshire "5.10.0"]

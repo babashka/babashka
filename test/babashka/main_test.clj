@@ -527,6 +527,17 @@
     (is (apply = res))
     (is (str/includes? (first res) ".."))))
 
+(deftest file-location-test
+  (is (thrown-with-msg?
+       Exception #"file_location2.clj"
+       (test-utils/bb nil (.getPath (io/file "test-resources" "babashka" "file_location1.clj"))))))
+
+(deftest preloads-file-location-test
+  (when (System/getenv "BABASHKA_PRELOADS_TEST")
+    (is (thrown-with-msg?
+         Exception #"preloads"
+         (test-utils/bb nil (.getPath (io/file "test-resources" "babashka" "file_location_preloads.clj")))))))
+
 ;;;; Scratch
 
 (comment

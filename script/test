@@ -9,8 +9,10 @@ fi
 java -version
 
 set -eo pipefail
-BABASHKA_PRELOADS=""
-BABASHKA_CLASSPATH=""
+unset BABASHKA_PRELOADS
+unset BABASHKA_CLASSPATH
+unset BABASHKA_PRELOADS_TEST
+
 echo "running tests part 1"
 lein test "$@"
 
@@ -19,8 +21,13 @@ export BABASHKA_PRELOADS_TEST=true
 echo "running tests part 2"
 lein test :only babashka.main-test/preloads-test
 
+export BABASHKA_PRELOADS='(defn ithrow [] (/ 1 0))'
+export BABASHKA_PRELOADS_TEST=true
+echo "running tests part 3"
+lein test :only babashka.main-test/preloads-file-location-test
+
 export BABASHKA_PRELOADS="(require '[env-ns])"
 export BABASHKA_CLASSPATH_TEST=true
 export BABASHKA_CLASSPATH="test-resources/babashka/src_for_classpath_test/env"
-echo "running tests part 3"
+echo "running tests part 4"
 lein test :only babashka.classpath-test/classpath-env-test

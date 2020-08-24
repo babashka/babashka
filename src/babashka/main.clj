@@ -33,6 +33,7 @@
    [hf.depstar.uberjar :as uberjar]
    [sci.addons :as addons]
    [sci.core :as sci]
+   [sci.impl.callstack :as cs]
    [sci.impl.namespaces :as sci-namespaces]
    [sci.impl.unrestrict :refer [*unrestricted*]]
    [sci.impl.vars :as vars])
@@ -402,21 +403,120 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
   {'java.lang.System/exit exit ;; override exit, so we have more control
    'System/exit exit})
 
-(defn error-handler* [^Exception e verbose?]
+(defn ruler [title]
+  (println (apply str "----- " title " " (repeat (- 80 7 (count title)) \-))))
+
+(defn split-stacktrace [stacktrace verbose?]
+  (if verbose? [stacktrace]
+      (let [stack-count (count stacktrace)]
+        (if (<= stack-count 10)
+          [stacktrace]
+          [(take 5 stacktrace)
+           (drop (- stack-count 5) stacktrace)]))))
+
+(defn print-stacktrace
+  [stacktrace {:keys [:verbose?]}]
+  (let [stacktrace (cs/format-stacktrace stacktrace)
+        segments (split-stacktrace stacktrace verbose?)
+        [fst snd] segments]
+    (run! println fst)
+    (when snd
+      (println "...")
+      (run! println snd))))
+
+(defn error-context [ex opts]
+  (let [{:keys [:file :line :column]} (ex-data ex)]
+    (when file
+      (when-let [content (case file
+                           "<expr>" (:expression opts)
+                           "<preloads>" (:preloads opts)
+                           (let [f (io/file file)]
+                             (or (when (.exists f) (slurp f))
+                                 (and (not (.isAbsolute f))
+                                      (when-let [loader (:loader opts)]
+                                        (:source (cp/getResource loader [file] nil)))))))]
+        (let [matching-line (dec line)
+              start-line (max (- matching-line 4) 0)
+              end-line (+ matching-line 6)
+              [before after] (->>
+                              (clojure.string/split-lines content)
+                              (map-indexed list)
+                              (drop start-line)
+                              (take (- end-line start-line))
+                              (split-at (inc (- matching-line start-line))))
+              snippet-lines (concat before
+                                    [[nil (str (clojure.string/join "" (repeat (dec column) " "))
+                                               (str "^--- " (ex-message ex)))]]
+                                    after)
+              indices (map first snippet-lines)
+              max-size (reduce max 0 (map (comp count str) indices))
+              snippet-lines (map (fn [[idx line]]
+                                   (if idx
+                                     (let [line-number (inc idx)]
+                                       (str (format (str "%" max-size "d: ") line-number) line))
+                                     (str (clojure.string/join (repeat (+ max-size 2) " ")) line)))
+                                 snippet-lines)]
+          (clojure.string/join "\n" snippet-lines))))))
+
+(defn right-pad [s n]
+  (let [n (- n (count s))]
+    (str s (str/join (repeat n " ")))))
+
+(defn print-locals [locals]
+  (let [max-name-length (reduce max 0 (map (comp count str)
+                                           (keys locals)))
+        max-name-length (+ max-name-length 2)]
+    (binding [*print-length* 10
+              *print-level* 2]
+      (doseq [[k v] locals]
+        (println (str (right-pad (str k ": ") max-name-length) v))))))
+
+(defn error-handler* [^Exception e opts]
   (binding [*out* *err*]
     (let [d (ex-data e)
           exit-code (:bb/exit-code d)
-          sci-error? (identical? :sci/error (:type d))
+          sci-error? (isa? (:type d) :sci/error)
           ex-name (when sci-error?
                     (some-> ^Throwable (ex-cause e)
                             .getClass .getName))]
       (if exit-code [nil exit-code]
-          (do (if verbose?
-                (print-stack-trace e)
-                (println (str (or ex-name
+          (do
+            (ruler "Error")
+            (println "Type:    " (or
+                                  ex-name
                                   (.. e getClass getName))
-                              (when-let [m (.getMessage e)]
-                                (str ": " m)) )))
+                     (when-let [t (:type d)]
+                       (str " / " t)))
+            (when-let [m (.getMessage e)]
+              (println (str "Message:  " m)))
+            (let [{:keys [:file :line :column]} d]
+              (when line
+                (println (str "Location: "
+                              (when file (str file ":"))
+                              line ":" column""))))
+            (println)
+            (when-let [ec (when sci-error?
+                            (error-context e opts))]
+              (ruler "Context")
+              (println ec)
+              (println))
+            (when-let [locals (not-empty (:locals d))]
+              (ruler "Locals")
+              (print-locals locals)
+              (println))
+            (when sci-error?
+              (when-let
+                  [st (let [st (with-out-str
+                                 (some->
+                                  d :callstack
+                                  cs/stacktrace
+                                  (print-stacktrace opts)))]
+                        (when-not (str/blank? st) st))]
+                (ruler "Stack trace")
+                (println st)))
+            (when (:verbose? opts)
+              (ruler "Exception")
+              (print-stack-trace e))
               (flush)
               [nil 1])))))
 
@@ -493,6 +593,11 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                           (System/getenv "BABASHKA_CLASSPATH"))
             _ (when classpath
                 (add-classpath* classpath))
+            abs-path (when file
+                       (let [abs-path (.getAbsolutePath (io/file file))]
+                         (vars/bindRoot sci/file abs-path)
+                         (System/setProperty "babashka.file" abs-path)
+                         abs-path))
             _ (when jar
                 (add-classpath* jar))
             load-fn (fn [{:keys [:namespace :reload]}]
@@ -507,16 +612,13 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                           (let [res (cp/source-for-namespace loader namespace nil)]
                             (when uberscript (swap! uberscript-sources conj (:source res)))
                             res))))
-            _ (when file
-                (let [abs-path (.getAbsolutePath (io/file file))]
-                  (vars/bindRoot sci/file abs-path)
-                  (System/setProperty "babashka.file" abs-path)))
             main (if (and jar (not main))
                    (when-let [res (cp/getResource
                                    (cp/loader jar)
                                    ["META-INF/MANIFEST.MF"] {:url? true})]
                      (cp/main-ns res))
                    main)
+
             ;; TODO: pull more of these values to compile time
             opts {:aliases aliases
                   :namespaces (-> namespaces
@@ -557,16 +659,23 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                                  main)] nil]
                   file (try [[(read-file file)] nil]
                             (catch Exception e
-                              (error-handler* e verbose?))))
+                              (error-handler* e {:expression expressions
+                                                 :verbose? verbose?
+                                                 :preloads preloads
+                                                 :loader (:loader @cp-state)}))))
             expression (str/join " " expressions) ;; this might mess with the locations...
             exit-code
             ;; handle preloads
             (if exit-code exit-code
                 (do (when preloads
-                      (try
-                        (sci/eval-string* sci-ctx preloads)
-                        (catch Throwable e
-                          (error-handler* e verbose?))))
+                      (sci/binding [sci/file "<preloads>"]
+                        (try
+                          (sci/eval-string* sci-ctx preloads)
+                          (catch Throwable e
+                            (error-handler* e {:expression expression
+                                               :verbose? verbose?
+                                               :preloads preloads
+                                               :loader (:loader @cp-state)})))))
                     nil))
             exit-code
             (or exit-code
@@ -582,28 +691,33 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                        nrepl [(start-nrepl! nrepl sci-ctx) 0]
                        uberjar [nil 0]
                        expressions
-                       (try
-                         (loop []
-                           (let [in (read-next *in*)]
-                             (if (identical? ::EOF in)
-                               [nil 0] ;; done streaming
-                               (let [res [(let [res
-                                                (sci/binding [input-var in]
-                                                  (sci/eval-string* sci-ctx expression))]
-                                            (when (some? res)
-                                              (if-let [pr-f (cond shell-out println
-                                                                  edn-out prn)]
-                                                (if (coll? res)
-                                                  (doseq [l res
-                                                          :while (not (pipe-signal-received?))]
-                                                    (pr-f l))
-                                                  (pr-f res))
-                                                (prn res)))) 0]]
-                                 (if stream?
-                                   (recur)
-                                   res)))))
-                         (catch Throwable e
-                           (error-handler* e verbose?)))
+                       (sci/binding [sci/file abs-path]
+                         (try
+                           (loop []
+                             (let [in (read-next *in*)]
+                               (if (identical? ::EOF in)
+                                 [nil 0] ;; done streaming
+                                 (let [res [(let [res
+                                                  (sci/binding [sci/file (or @sci/file "<expr>")
+                                                                input-var in]
+                                                    (sci/eval-string* sci-ctx expression))]
+                                              (when (some? res)
+                                                (if-let [pr-f (cond shell-out println
+                                                                    edn-out prn)]
+                                                  (if (coll? res)
+                                                    (doseq [l res
+                                                            :while (not (pipe-signal-received?))]
+                                                      (pr-f l))
+                                                    (pr-f res))
+                                                  (prn res)))) 0]]
+                                   (if stream?
+                                     (recur)
+                                     res)))))
+                           (catch Throwable e
+                             (error-handler* e {:expression expression
+                                                :verbose? verbose?
+                                                :preloads preloads
+                                                :loader (:loader @cp-state)}))))
                        uberscript [nil 0]
                        :else [(repl/start-repl! sci-ctx) 0]))
                 1)]

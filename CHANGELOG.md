@@ -4,7 +4,7 @@ For a list of breaking changes, check [here](#breaking-changes)
 
 ## Unreleased
 
-<!-- TODO: credits  -->
+Thanks to <TODO> for contributing to this release.
 
 ### New
 
@@ -15,12 +15,14 @@ For a list of breaking changes, check [here](#breaking-changes)
 - Expose more transit vars [#525](https://github.com/borkdude/babashka/issues/525) ([@djblue](https://github.com/djblue))
 - Add support for `clojure.datafy`, `Datafiable` and `Navigable` [#468](https://github.com/borkdude/babashka/issues/468)
 - Add support for building and running uberjars [#536](https://github.com/borkdude/babashka/issues/536)
+- Print locals and stack trace on exception [#543](https://github.com/borkdude/babashka/issues/543)
 
 ### Fixed
 
 - Eval metadata on var created with `defn` [borkdude/sci#36](https://github.com/borkdude/sci/issues/36)
 - Metadata fn on var fails if calling the var itself [borkdude/sci#363](https://github.com/borkdude/sci/issues/363)
 - Allow re-binding of core vars in with-redefs [borkdude/sci#375](https://github.com/borkdude/sci/issues/375)
+- Babashka shows wrong filename when error is from required ns [#508](https://github.com/borkdude/babashka/issues/508)
 - Fix reading resources from jar files [#528](https://github.com/borkdude/babashka/issues/528)
 - Switch from canonical to absolute paths in `:file` field on var metadata
   [#532](https://github.com/borkdude/babashka/issues/532)
