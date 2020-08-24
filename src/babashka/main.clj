@@ -505,14 +505,15 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
               (print-locals locals)
               (println))
             (when sci-error?
-              (when-let [st (let [st (with-out-str (some->
-                                                    d :callstack
-                                                    cs/stacktrace
-                                                    (print-stacktrace opts)))]
-                              (when-not (str/blank? st) st))]
+              (when-let
+                  [st (let [st (with-out-str
+                                 (some->
+                                  d :callstack
+                                  cs/stacktrace
+                                  (print-stacktrace opts)))]
+                        (when-not (str/blank? st) st))]
                 (ruler "Stack trace")
-                (println st)
-                #_(println)))
+                (println st)))
             (when (:verbose? opts)
               (ruler "Exception")
               (print-stack-trace e))
