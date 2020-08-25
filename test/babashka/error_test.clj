@@ -79,4 +79,18 @@ Location: <expr>:1:1
    ^--- No matching field found: x for class java.io.File
 
 ----- Stack trace --------------------------------------------------------------
-user - <expr>:1:1"))))
+user - <expr>:1:1"))
+    (let [output (try (tu/bb nil "-e" "(File/x)")
+                      (catch Exception e (ex-message e)))]
+      (is (str/includes? output
+                         "----- Error --------------------------------------------------------------------
+Type:     java.lang.IllegalArgumentException
+Message:  No matching method x found taking 0 args
+Location: <expr>:1:1
+
+----- Context ------------------------------------------------------------------
+1: (File/x)
+   ^--- No matching method x found taking 0 args
+
+----- Stack trace --------------------------------------------------------------
+user - <expr>:1:1")))))
