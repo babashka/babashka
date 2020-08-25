@@ -31,3 +31,6 @@ export BABASHKA_CLASSPATH_TEST=true
 export BABASHKA_CLASSPATH="test-resources/babashka/src_for_classpath_test/env"
 echo "running tests part 4"
 lein test :only babashka.classpath-test/classpath-env-test
+
+export BABASHKA_POD_TEST=true
+lein test :only babashka.pod-test

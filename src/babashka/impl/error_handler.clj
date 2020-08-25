@@ -72,7 +72,9 @@
     (binding [*print-length* 10
               *print-level* 2]
       (doseq [[k v] locals]
-        (println (str (right-pad (str k ": ") max-name-length) v))))))
+        (print (str (right-pad (str k ": ") max-name-length)))
+        ;; print nil as nil
+        (prn v)))))
 
 (defn error-handler [^Exception e opts]
   (binding [*out* *err*]
@@ -81,7 +83,10 @@
           sci-error? (isa? (:type d) :sci/error)
           ex-name (when sci-error?
                     (some-> ^Throwable (ex-cause e)
-                            .getClass .getName))]
+                            .getClass .getName))
+          stacktrace (some->
+                      d :callstack
+                      cs/stacktrace)]
       (if exit-code [nil exit-code]
           (do
             (ruler "Error")
@@ -95,7 +100,7 @@
                 (println (str "Location: "
                               (when file (str file ":"))
                               line ":" column""))))
-            (when-let [phase (:phase d)]
+            (when-let [phase (cs/phase e stacktrace)]
               (println "Phase:   " phase))
             (println)
             (when-let [ec (when sci-error?
@@ -110,10 +115,8 @@
             (when sci-error?
               (when-let
                   [st (let [st (with-out-str
-                                 (some->
-                                  d :callstack
-                                  cs/stacktrace
-                                  (print-stacktrace opts)))]
+                                 (when stacktrace
+                                   (print-stacktrace stacktrace opts)))]
                         (when-not (str/blank? st) st))]
                 (ruler "Stack trace")
                 (println st)))
