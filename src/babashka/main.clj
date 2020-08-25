@@ -18,7 +18,7 @@
    [babashka.impl.curl :refer [curl-namespace]]
    [babashka.impl.data :as data]
    [babashka.impl.datafy :refer [datafy-namespace]]
-   [babashka.impl.error :refer [error-handler]]
+   [babashka.impl.error-handler :refer [error-handler]]
    [babashka.impl.features :as features]
    [babashka.impl.pods :as pods]
    [babashka.impl.protocols :refer [protocols-namespace]]

@@ -1,4 +1,4 @@
-(ns babashka.impl.error
+(ns babashka.impl.error-handler
   (:refer-clojure :exclude [error-handler])
   (:require [babashka.impl.classpath :as cp]
             [clojure.java.io :as io]
@@ -87,9 +87,7 @@
             (ruler "Error")
             (println "Type:    " (or
                                   ex-name
-                                  (.. e getClass getName))
-                     (when-let [t (:type d)]
-                       (str " / " t)))
+                                  (.. e getClass getName)))
             (when-let [m (.getMessage e)]
               (println (str "Message:  " m)))
             (let [{:keys [:file :line :column]} d]
@@ -97,6 +95,8 @@
                 (println (str "Location: "
                               (when file (str file ":"))
                               line ":" column""))))
+            (when-let [phase (:phase d)]
+              (println "Phase:   " phase))
             (println)
             (when-let [ec (when sci-error?
                             (error-context e opts))]
