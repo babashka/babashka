@@ -53,7 +53,7 @@ user           - <expr>:3:1"))))
   (let [output (try (tu/bb nil "-cp" (.getPath (io/file "test-resources" "divide_by_zero.jar")) "-e" "(require 'foo)")
                     (catch Exception e (ex-message e)))]
     (is (str/includes? output "----- Error --------------------------------------------------------------------
-Type:     java.lang.ArithmeticException  / :sci/error
+Type:     java.lang.ArithmeticException
 Message:  Divide by zero
 Location: foo.clj:1:10
 
