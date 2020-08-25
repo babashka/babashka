@@ -64,3 +64,19 @@ Location: foo.clj:1:10
 ----- Stack trace --------------------------------------------------------------
 clojure.core// - <built-in>
 foo            - foo.clj:1:10"))))
+
+(deftest static-call-test
+  (let [output (try (tu/bb nil "-e" "File/x")
+                    (catch Exception e (ex-message e)))]
+    (is (str/includes? output
+                       "----- Error --------------------------------------------------------------------
+Type:     java.lang.IllegalArgumentException
+Message:  No matching field found: x for class java.io.File
+Location: <expr>:1:1
+
+----- Context ------------------------------------------------------------------
+1: File/x
+   ^--- No matching field found: x for class java.io.File
+
+----- Stack trace --------------------------------------------------------------
+user - <expr>:1:1"))))
