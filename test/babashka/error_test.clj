@@ -5,6 +5,21 @@
    [clojure.string :as str]
    [clojure.test :as t :refer [deftest is]]))
 
+(defn multiline-equals [s1 s2]
+  (let [lines-s1 (str/split-lines s1)
+        lines-s2 (str/split-lines s2)
+        max-lines (max (count lines-s1) (count lines-s2))]
+    (run! (fn [i]
+            (let [l1 (get lines-s1 i)
+                  l2 (get lines-s2 i)]
+              (if (and l1 l2)
+                (is (= l1 l2)
+                    (format "Lines did not match.\nLine: %s\nLeft:  %s\nRight: %s"
+                            i (pr-str l1) (pr-str l2)))
+                (is false (format "Out of lines at line: %s.\nLeft:  %s\nRight: %s"
+                                  i (pr-str l1) (pr-str l2))))))
+          (range max-lines))))
+
 (deftest stacktrace-from-script-test
   (try (tu/bb nil (.getPath (io/file "test" "babashka" "scripts" "divide_by_zero.bb")))
        (catch Exception e
@@ -94,3 +109,28 @@ Location: <expr>:1:1
 
 ----- Stack trace --------------------------------------------------------------
 user - <expr>:1:1")))))
+
+
+(deftest error-while-macroexpanding-test
+  (let [output (try (tu/bb nil "-e"  "(defmacro foo [x] (subs nil 1) `(do ~x ~x)) (foo 1)")
+                    (catch Exception e (ex-message e)))]
+    (multiline-equals output
+                      "----- Error --------------------------------------------------------------------
+Type:     java.lang.NullPointerException
+Location: <expr>:1:19
+Phase:    macroexpand
+
+----- Context ------------------------------------------------------------------
+1: (defmacro foo [x] (subs nil 1) `(do ~x ~x)) (foo 1)
+                     ^--- 
+
+----- Locals -------------------------------------------------------------------
+&form: (foo 1)
+&env:  {}
+x:     1
+
+----- Stack trace --------------------------------------------------------------
+clojure.core/subs - <built-in>
+user/foo          - <expr>:1:19
+user/foo          - <expr>:1:1
+user              - <expr>:1:45")))
