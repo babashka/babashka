@@ -134,3 +134,18 @@ clojure.core/subs - <built-in>
 user/foo          - <expr>:1:19
 user/foo          - <expr>:1:1
 user              - <expr>:1:45")))
+
+(deftest error-in-macroexpansion-test
+  (let [output (try (tu/bb nil "-e"  "(defmacro foo [x & xs] `(do (subs nil 1) ~x)) (foo 1)")
+                    (catch Exception e (ex-message e)))]
+    (multiline-equals output
+                      "----- Error --------------------------------------------------------------------
+Type:     java.lang.NullPointerException
+Location: <expr>:1:47
+
+----- Context ------------------------------------------------------------------
+1: (defmacro foo [x & xs] `(do (subs nil 1) ~x)) (foo 1)
+                                                 ^--- 
+
+----- Stack trace --------------------------------------------------------------
+clojure.core/subs - <built-in>")))
