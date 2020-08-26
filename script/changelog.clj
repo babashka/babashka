@@ -20,7 +20,7 @@
                               (format " [babashka/babashka.nrepl#%s](https://github.com/babashka/babashka.nrepl/issues/%s)%s"
                                       issue issue (str after))))
       replaced (str/replace replaced
-                            #"@(\w+)([, .\)])"
+                            #"@([a-zA-Z0-9-_]+)([, \.)])"
                             (fn [[_ name after]]
                               (format "[@%s](https://github.com/%s)%s"
                                       name name after)))]
