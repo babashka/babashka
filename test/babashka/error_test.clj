@@ -3,7 +3,7 @@
    [babashka.test-utils :as tu]
    [clojure.java.io :as io]
    [clojure.string :as str]
-   [clojure.test :as t :refer [deftest is]]))
+   [clojure.test :as t :refer [deftest is testing]]))
 
 (defn multiline-equals [s1 s2]
   (let [lines-s1 (str/split-lines s1)
@@ -148,4 +148,22 @@ Location: <expr>:1:47
                                                  ^--- 
 
 ----- Stack trace --------------------------------------------------------------
-clojure.core/subs - <built-in>")))
+clojure.core/subs - <built-in>"))
+  (testing "calling a var inside macroexpansion"
+    (let [output (try (tu/bb nil "-e"  "(defn quux [] (subs nil 1)) (defmacro foo [x & xs] `(do (quux) ~x)) (defn bar [] (foo 1)) (bar)")
+                      (catch Exception e (ex-message e)))]
+      (multiline-equals output
+                        "----- Error --------------------------------------------------------------------
+Type:     java.lang.NullPointerException
+Location: <expr>:1:15
+
+----- Context ------------------------------------------------------------------
+1: (defn quux [] (subs nil 1)) (defmacro foo [x & xs] `(do (quux) ~x)) (defn bar [] (foo 1)) (bar)
+                 ^--- 
+
+----- Stack trace --------------------------------------------------------------
+clojure.core/subs - <built-in>
+user/quux         - <expr>:1:15
+user/quux         - <expr>:1:1
+user/bar          - <expr>:1:69
+user              - <expr>:1:91"))))
