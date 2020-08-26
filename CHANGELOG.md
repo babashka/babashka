@@ -4,7 +4,9 @@ For a list of breaking changes, check [here](#breaking-changes)
 
 ## Unreleased
 
-Thanks to <TODO> for contributing to this release.
+Thanks to [@cldwalker](https://github.com/cldwalker), [@dehli](https://github.com/dehli), [@djblue](https://github.com/djblue), [@GomoSDG](https://github.com/GomoSDG), [@grahamcarlyle](https://github.com/grahamcarlyle), @j-cr,
+[@jeroenvandijk](https://github.com/jeroenvandijk), [@justone](https://github.com/justone), [@kwrooijen](https://github.com/kwrooijen), [@lread](https://github.com/lread), @patrick-galvin and [@wodin](https://github.com/wodin) for
+contributing to this release.
 
 ### New
 
@@ -29,6 +31,7 @@ Thanks to <TODO> for contributing to this release.
 - Fix `false` dynamic binding value (which was read as `nil`) [borkdude/sci#379](https://github.com/borkdude/sci/issues/379)
 - Fix setting of `*warn-on-reflection*` in nREPL session [babashka/babashka.nrepl#25](https://github.com/babashka/babashka.nrepl/issues/25)
 - Fix order of namespaces in uberscript [#535](https://github.com/borkdude/babashka/issues/535)
+- Fix protocols with multiple methods on defrecords [borkdude/sci#367](https://github.com/borkdude/sci/issues/367) (@patrick-galvin)
 
 ## v0.1.3 (2020-06-27)
 
