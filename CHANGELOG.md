@@ -16,8 +16,8 @@ contributing to this release.
 - Add `clojure.lang.ArityException` and tests to support https://github.com/circleci/bond library [#524](https://github.com/borkdude/babashka/issues/524) ([@cldwalker](https://github.com/cldwalker)).
 - Expose more transit vars [#525](https://github.com/borkdude/babashka/issues/525) ([@djblue](https://github.com/djblue))
 - Add support for `clojure.datafy`, `Datafiable` and `Navigable` [#468](https://github.com/borkdude/babashka/issues/468)
-- Add support for building and running uberjars [#536](https://github.com/borkdude/babashka/issues/536)
-- Print locals and stack trace on exception [#543](https://github.com/borkdude/babashka/issues/543)
+- Add support for building and running uberjars [#536](https://github.com/borkdude/babashka/issues/536). See [docs](https://github.com/borkdude/babashka#uberjar).
+- Print context, locals and stack trace on exception [#543](https://github.com/borkdude/babashka/issues/543)
 
 ### Fixed
 
