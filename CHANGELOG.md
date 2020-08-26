@@ -35,7 +35,7 @@ contributing to this release.
 
 ## v0.1.3 (2020-06-27)
 
-Thanks [@llacom](https://github.com/llacom), [@AndreTheHunter](https://github.com/AndreTheHunter), [@xingzheone](https://github.com/xingzheone) for contributing to this release.
+Thanks [@llacom](https://github.com/llacom), [@AndreTheHunter](https://github.com/AndreTheHunter)and [@xingzheone](https://github.com/xingzheone) for contributing to this release.
 
 ### New
 
