@@ -182,6 +182,7 @@
                 java.time.ZoneId
                 java.time.ZoneOffset
                 java.time.format.DateTimeFormatterBuilder
+                java.time.format.DateTimeParseException
                 java.time.format.DecimalStyle
                 java.time.format.ResolverStyle
                 java.time.format.SignStyle
