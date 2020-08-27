@@ -15,6 +15,7 @@ contributing to this release.
 - Print context, locals and stack trace on exception [#543](https://github.com/borkdude/babashka/issues/543).
 - Expose more transit vars [#525](https://github.com/borkdude/babashka/issues/525) ([@djblue](https://github.com/djblue))
 - Add `add-tap`,`tap>`, `remove-tap`, `class?`, `iterator-seq`, `remove-watch`, `realized?`
+- Add `clojure.walk/macroexpand-all`
 - Add `java.lang.ProcessHandle` and better support for killing subprocesses via
   Java interop. See [test script](https://github.com/borkdude/babashka/blob/7049b1b0bd582b717094703bcf299fb6363bb142/test/babashka/scripts/kill_child_processes.bb).
 - Add `clojure.lang.ArityException` and tests to support the [circleci/bond](https://github.com/circleci/bond) library [#524](https://github.com/borkdude/babashka/issues/524) ([@cldwalker](https://github.com/cldwalker)).
