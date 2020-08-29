@@ -24,7 +24,8 @@
    [babashka.impl.protocols :refer [protocols-namespace]]
    [babashka.impl.repl :as repl]
    [babashka.impl.socket-repl :as socket-repl]
-   [babashka.impl.spec :refer [spec-namespace]]
+   [babashka.impl.spec :refer [spec-namespace
+                               gen-namespace]]
    [babashka.impl.test :as t]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
    [babashka.nrepl.server :as nrepl-server]
@@ -389,7 +390,8 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
        'clojure.java.browse browse-namespace
        'clojure.datafy datafy-namespace
        'clojure.core.protocols protocols-namespace
-       'clojure.spec.alpha spec-namespace}
+       'clojure.spec.alpha spec-namespace
+       'clojure.spec.gen.alpha gen-namespace}
     features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace))
     features/yaml? (assoc 'clj-yaml.core @(resolve 'babashka.impl.yaml/yaml-namespace)
                           'flatland.ordered.map @(resolve 'babashka.impl.ordered/ordered-map-ns))

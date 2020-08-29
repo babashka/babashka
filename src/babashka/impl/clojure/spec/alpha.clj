@@ -16,7 +16,6 @@
     babashka.impl.clojure.spec.alpha
   (:refer-clojure :exclude [+ * and assert or cat def keys merge])
   (:require [babashka.impl.clojure.spec.gen.alpha :as gen]
-            [clojure.string :as str]
             [clojure.walk :as walk]))
 
 (alias 'c 'clojure.core)
@@ -1620,7 +1619,6 @@
 
 (defn- re-gen [p overrides path rmap f]
   ;;(prn {:op op :ks ks :forms forms})
-  ;; generates > 100MB binary!
   (let [origp p
         {:keys [::op ps ks p1 p2 forms splice ret id ::gfn] :as p} (reg-resolve! p)
         rmap (if id (inck rmap id) rmap)
@@ -1629,7 +1627,6 @@
                             ;;(prn {:k k :path path :rmap rmap :op op :id id})
                             (when-not (c/and rmap id k (recur-limit? rmap id path k))
                               (if id
-                                ;; it seems gen/delay triggers it!
                                 (gen/delay (re-gen p overrides (if k (conj path k) path) rmap (c/or f p)))
                                 (re-gen p overrides (if k (conj path k) path) rmap (c/or f p)))))]
                   (map gen ps (c/or (seq ks) (repeat nil)) (c/or (seq forms) (repeat nil)))))]
@@ -1722,8 +1719,8 @@
       (if gfn
         (gfn)
         (re-gen re overrides path rmap (op-describe re))))
-    (with-gen* [_ gfn] #_(regex-spec-impl re gfn))
-    (describe* [_] #_(op-describe re))))
+    (with-gen* [_ gfn] (regex-spec-impl re gfn))
+    (describe* [_] (op-describe re))))
 
 ;;;;;;;;;;;;;;;;; HOFs ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

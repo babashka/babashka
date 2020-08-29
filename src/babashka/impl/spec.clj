@@ -1,12 +1,14 @@
 (ns babashka.impl.spec
   {:no-doc true}
   (:require [babashka.impl.clojure.spec.alpha :as s]
+            [babashka.impl.clojure.spec.gen.alpha :as gen]
             [clojure.core :as c]
             [sci.core :as sci]
             [sci.impl.namespaces :refer [copy-var]]
             [sci.impl.vars :as vars]))
 
 (def tns (vars/->SciNamespace 'clojure.spec.alpha nil))
+(def gns (vars/->SciNamespace 'clojure.spec.gen.alpha nil))
 
 (defn- ns-qualify
   "Qualify symbol s by resolving it or using the current *ns*."
@@ -29,7 +31,11 @@
   {'def (sci/new-macro-var 'def def)
    'def-impl (copy-var s/def-impl tns)
    'valid? (copy-var s/valid? tns)
+   'gen (copy-var s/gen tns)
    #_#_'explain-data (copy-var s/explain-data tns)})
+
+(def gen-namespace
+  {'generate (copy-var gen/generate gns)})
 
 ;; def-impl
 ;; -> spec? ;; OK

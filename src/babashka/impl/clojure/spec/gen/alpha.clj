@@ -9,29 +9,19 @@
 (ns babashka.impl.clojure.spec.gen.alpha
     (:refer-clojure :exclude [boolean bytes cat hash-map list map not-empty set vector
                               char double int keyword symbol string uuid delay shuffle])
-    (:require [clojure.test.check.generators]))
+    (:require [clojure.test.check]
+              [clojure.test.check.generators]
+              [clojure.test.check.properties]))
 
 (alias 'c 'clojure.core)
 
-(defn- dynaload
-  [s]
-  #_(let [ns (namespace s)]
-    (assert ns)
-    (locking2 dynalock
-      (require (c/symbol ns)))
-    (let [v (resolve s)]
-      (if v
-        @v
-        (throw (RuntimeException. (str "Var " s " is not on the classpath")))))))
-
-(def ^:private quick-check-ref
-     (c/delay (dynaload 'clojure.test.check/quick-check)))
+(def ^:private quick-check-ref (c/delay clojure.test.check/quick-check))
 (defn quick-check
   [& args]
   (apply @quick-check-ref args))
 
 (def ^:private for-all*-ref
-     (c/delay (dynaload 'clojure.test.check.properties/for-all*)))
+     (c/delay (clojure.test.check.properties/for-all*)))
 (defn for-all*
   "Dynamically loaded clojure.test.check.properties/for-all*."
   [& args]
@@ -64,20 +54,12 @@
   [& body]
   `(delay-impl (c/delay ~@body)))
 
-(defn gen-for-name
-  "Dynamically loads test.check generator named s."
-  [s]
-  (let [g (dynaload s)]
-    (if (generator? g)
-      g
-      (throw (RuntimeException. (str "Var " s " is not a generator"))))))
-
 (defmacro ^:skip-wiki lazy-combinator
   "Implementation macro, do not call directly."
   [s]
   (let [fqn (c/symbol "clojure.test.check.generators" (name s))
         doc (str "Lazy loaded version of " fqn)]
-    `(let [g# (c/delay (dynaload '~fqn))]
+    `(let [g# (c/delay ~fqn)]
        (defn ~s
          ~doc
          [& ~'args]
@@ -100,7 +82,7 @@
   [s]
   (let [fqn (c/symbol "clojure.test.check.generators" (name s))
         doc (str "Fn returning " fqn)]
-    `(let [g# (c/delay (dynaload '~fqn))]
+    `(let [g# (c/delay ~fqn)]
        (defn ~s
          ~doc
          [& ~'args]
