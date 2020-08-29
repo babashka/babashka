@@ -322,8 +322,9 @@
 (defn res [form]
   (cond
     (keyword? form) form
-    ;; TODO: insert sci resolve here
-    (symbol? form) (c/or (-> form resolve ->sym) form)
+    (symbol? form) (c/or
+                    ;; TODO: insert sci resolve here
+                    #_(-> form resolve ->sym) form)
    (sequential? form) (walk/postwalk #(if (symbol? %) (res %) %) (unfn form))
    :else form))
 
