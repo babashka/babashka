@@ -336,7 +336,7 @@
     (swap! registry-ref dissoc k)
     (let [spec (if (c/or (spec? spec) (regex? spec) (get @registry-ref spec))
                  spec
-                 #_(spec-impl form spec nil nil))]
+                 (spec-impl form spec nil nil))]
       (swap! registry-ref assoc k (with-name spec k))))
   k)
 
@@ -920,32 +920,35 @@
   ([form pred gfn cpred? unc]
      (cond
       (spec? pred) (cond-> pred gfn (with-gen gfn))
+      ;; this triggers it to be 103MB!
       (regex? pred) (regex-spec-impl pred gfn)
-      (ident? pred) (cond-> (the-spec pred) gfn (with-gen gfn))
-      :else
-      (reify
-       Specize
-       (specize* [s] s)
-       (specize* [s _] s)
+      ;; (ident? pred) (cond-> (the-spec pred) gfn (with-gen gfn))
+      ;; :else
+      ;; (reify
+      ;;  Specize
+      ;;  (specize* [s] s)
+      ;;  (specize* [s _] s)
        
-       Spec
-       (conform* [_ x] (let [ret (pred x)]
-                         (if cpred?
-                           ret
-                           (if ret x ::invalid))))
-       (unform* [_ x] (if cpred?
-                        (if unc
-                          (unc x)
-                          (throw (IllegalStateException. "no unform fn for conformer")))
-                        x))
-       (explain* [_ path via in x]
-                 (when (invalid? (dt pred x form cpred?))
-                   [{:path path :pred form :val x :via via :in in}]))
-       (gen* [_ _ _ _] (if gfn
-                         (gfn)
-                         (gen/gen-for-pred pred)))
-       (with-gen* [_ gfn] (spec-impl form pred gfn cpred? unc))
-       (describe* [_] form)))))
+      ;;  Spec
+      ;;  (conform* [_ x] (let [ret (pred x)]
+      ;;                    (if cpred?
+      ;;                      ret
+      ;;                      (if ret x ::invalid))))
+      ;;  (unform* [_ x] (if cpred?
+      ;;                   (if unc
+      ;;                     (unc x)
+      ;;                     (throw (IllegalStateException. "no unform fn for conformer")))
+      ;;                   x))
+      ;;  (explain* [_ path via in x]
+      ;;            (when (invalid? (dt pred x form cpred?))
+      ;;              [{:path path :pred form :val x :via via :in in}]))
+      ;;  (gen* [_ _ _ _] (if gfn
+      ;;                    (gfn)
+      ;;                    (gen/gen-for-pred pred)))
+      ;;  (with-gen* [_ gfn] (spec-impl form pred gfn cpred? unc))
+      ;;   (describe* [_] form))
+      )
+   ))
 
 (defn ^:skip-wiki multi-spec-impl
   "Do not call this directly, use 'multi-spec'"
@@ -1620,7 +1623,8 @@
 
 (defn- re-gen [p overrides path rmap f]
   ;;(prn {:op op :ks ks :forms forms})
-  (let [origp p
+  ;; generates > 100MB binary!
+  #_(let [origp p
         {:keys [::op ps ks p1 p2 forms splice ret id ::gfn] :as p} (reg-resolve! p)
         rmap (if id (inck rmap id) rmap)
         ggens (fn [ps ks forms]
@@ -1711,7 +1715,7 @@
              (if (c/or (nil? x) (sequential? x))
                (re-conform re (seq x))
                ::invalid))
-   (unform* [_ x] (op-unform re x))
+   (unform* [_ x] (op-unform re x)) ;; so far OK
    (explain* [_ path via in x]
              (if (c/or (nil? x) (sequential? x))
                (re-explain path via in re (seq x))
@@ -1720,8 +1724,8 @@
          (if gfn
            (gfn)
            (re-gen re overrides path rmap (op-describe re))))
-   (with-gen* [_ gfn] (regex-spec-impl re gfn))
-   (describe* [_] (op-describe re))))
+   (with-gen* [_ gfn] #_(regex-spec-impl re gfn))
+   (describe* [_] #_(op-describe re))))
 
 ;;;;;;;;;;;;;;;;; HOFs ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
