@@ -13,6 +13,7 @@
    [babashka.impl.clojure.main :as clojure-main :refer [demunge]]
    [babashka.impl.clojure.pprint :refer [pprint-namespace]]
    [babashka.impl.clojure.stacktrace :refer [stacktrace-namespace]]
+   [babashka.impl.clojure.test.check] ;; ensure load before babashka.impl.clojure.spec.alpha!
    [babashka.impl.clojure.zip :refer [zip-namespace]]
    [babashka.impl.common :as common]
    [babashka.impl.curl :refer [curl-namespace]]
