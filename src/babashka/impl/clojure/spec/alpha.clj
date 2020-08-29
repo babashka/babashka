@@ -336,7 +336,7 @@
     (swap! registry-ref dissoc k)
     (let [spec (if (c/or (spec? spec) (regex? spec) (get @registry-ref spec))
                  spec
-                 (spec-impl form spec nil nil))]
+                 #_(spec-impl form spec nil nil))]
       (swap! registry-ref assoc k (with-name spec k))))
   k)
 

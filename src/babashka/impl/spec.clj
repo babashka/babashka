@@ -28,4 +28,10 @@
 (def spec-namespace
   {'def (sci/new-macro-var 'def def)
    'def-impl (copy-var s/def-impl tns)
-   'explain-data (copy-var s/explain-data tns)})
+   #_#_'explain-data (copy-var s/explain-data tns)})
+
+;; def-impl
+;; -> spec? ;; OK
+;;    regex?
+;;    spec-impl
+;;    with-name
