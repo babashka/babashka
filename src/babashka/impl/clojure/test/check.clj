@@ -10,7 +10,7 @@
         (proxy [ThreadLocal] []
           (initialValue []
             (delay
-              (first (split (swap! a #(second (split (deref %)))))))))]
+              (first (r/split (swap! a #(second (split (deref %)))))))))]
     (fn []
       (let [rng @(.get thread-local)
             [rng1 rng2] (r/split rng)]
