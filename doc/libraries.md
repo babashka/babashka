@@ -195,8 +195,8 @@ $ bb "(use 'doric.core) (println (table [:a :b :c] [{:a 1 :b 2 :c 3} {:a 4 :b 5 
 
 ### [clojure.data.zip](https://github.com/clojure/data.zip)
 
-Utilities for clojure.zip, among other things a more fluent way to work 
-with xml. 
+Utilities for clojure.zip, among other things a more fluent way to work
+with xml.
 
 Small sample:
 ``` clojure
@@ -235,7 +235,7 @@ user> (psql/query conn "select name, subject from grades where grade = 100")
 
 ### [camel-snake-kebab](https://github.com/clj-commons/camel-snake-kebab)
 
-A library for word case conversions https://clj-commons.org/camel-snake-k…
+A library for word case conversions.
 
 ### [aero](https://github.com/juxt/aero/)
 
@@ -249,6 +249,10 @@ Random data generators
 
 Turn Clojure data structures into SQL
 
+### [bond](https://github.com/circleci/bond)
+
+Spying and stubbing library, primarily intended for tests.
+
 ## Pods
 
 [Babashka pods](https://github.com/babashka/babashka.pods) are programs that can
@@ -258,6 +262,8 @@ be used as Clojure libraries by babashka.
   interacting with SQL databases
 - [bootleg](https://github.com/retrogradeorbit/bootleg): static HTML website
   generation
+- [brisk](https://github.com/justone/brisk): Freeze and thaw with Nippy at the
+  command line
 - [clj-kondo](https://github.com/borkdude/clj-kondo/#babashka-pod): a Clojure
   linter
 - [pod-babashka-filewatcher](https://github.com/babashka/pod-babashka-filewatcher): a
@@ -270,6 +276,7 @@ be used as Clojure libraries by babashka.
     a pod for parsing HTML using CSS queries backed by Jsoup
 - [pod-lispyclouds-docker](https://github.com/lispyclouds/pod-lispyclouds-docker):
   A pod for interacting with docker
+- [tabl](https://github.com/justone/tabl): Make tables from data in your terminal
 
 ## Projects
 
@@ -319,7 +326,7 @@ A wee multi-threaded web server
 
 ### [covid19-babashka](https://github.com/agrison/covid19-babashka)
 
-A babashka script to obtain covid-19 related information. 
+A babashka script to obtain covid-19 related information.
 
 ### [bb-spotify](https://github.com/kolharsam/bb-spotify)
 
@@ -330,7 +337,7 @@ Contol your spotify player using babashka.
 [Internal
 tooling](https://github.com/borkdude/babashka/issues/457#issuecomment-636739415)
 used by Lambda Island projects. Noteworthy: a [babashka-compatible hiccup
-script](https://github.com/lambdaisland/open-source/blob/2cfde3dfb460e72f047bf94e6f5ec7f519c6d7a0/src/lioss/hiccup.clj). 
+script](https://github.com/lambdaisland/open-source/blob/2cfde3dfb460e72f047bf94e6f5ec7f519c6d7a0/src/lioss/hiccup.clj).
 
 There's also
 [subshell](https://github.com/lambdaisland/open-source/blob/master/src/lioss/subshell.clj)

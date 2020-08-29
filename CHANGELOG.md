@@ -2,6 +2,65 @@
 
 For a list of breaking changes, check [here](#breaking-changes)
 
+## v0.2.0 (2020-08-28)
+
+Thanks to [@cldwalker](https://github.com/cldwalker), [@dehli](https://github.com/dehli), [@djblue](https://github.com/djblue), [@GomoSDG](https://github.com/GomoSDG), [@grahamcarlyle](https://github.com/grahamcarlyle), [@j-cr](https://github.com/j-cr),
+[@jeroenvandijk](https://github.com/jeroenvandijk), [@justone](https://github.com/justone), [@kwrooijen](https://github.com/kwrooijen), [@lread](https://github.com/lread), [@patrick-galvin](https://github.com/patrick-galvin) and [@wodin](https://github.com/wodin) for
+contributing to this release. Thanks to [Clojurists Together](https://www.clojuriststogether.org/) for sponsoring this release.
+
+### New
+
+- Add support for `clojure.datafy`, `Datafiable` and `Navigable` [#468](https://github.com/borkdude/babashka/issues/468). To play with the new `clojure.datafy` support, you can use [portal](https://github.com/djblue/portal):
+  ``` clojure
+  $ bb -cp `clj -Spath -Sdeps '{:deps {djblue/portal {:mvn/version "0.4.0"}}}'`
+  ```
+- Add support for building and running uberjars [#536](https://github.com/borkdude/babashka/issues/536). See [docs](https://github.com/borkdude/babashka#uberjar).
+- Print context, locals and stack trace on exception [#543](https://github.com/borkdude/babashka/issues/543).
+- Expose more transit vars [#525](https://github.com/borkdude/babashka/issues/525) ([@djblue](https://github.com/djblue))
+- Add `add-tap`,`tap>`, `remove-tap`, `class?`, `iterator-seq`, `remove-watch`, `realized?`
+- Add `clojure.walk/macroexpand-all`
+- Add `java.lang.ProcessHandle` and better support for killing subprocesses via
+  Java interop. See [test script](https://github.com/borkdude/babashka/blob/7049b1b0bd582b717094703bcf299fb6363bb142/test/babashka/scripts/kill_child_processes.bb).
+- Add `clojure.lang.ArityException` and tests to support the [circleci/bond](https://github.com/circleci/bond) library [#524](https://github.com/borkdude/babashka/issues/524) ([@cldwalker](https://github.com/cldwalker)).
+- Add `java.time.format.DateTimeParseException`
+
+### Fixed
+
+- Fix order of namespaces in uberscript [#535](https://github.com/borkdude/babashka/issues/535)
+- Fix reading resources from jar files [#528](https://github.com/borkdude/babashka/issues/528)
+- Switch from canonical to absolute paths in `:file` field on var metadata
+  [#532](https://github.com/borkdude/babashka/issues/532)
+- Babashka shows wrong filename when error is from required ns [#508](https://github.com/borkdude/babashka/issues/508)
+- Eval metadata on var created with `defn` [borkdude/sci#36](https://github.com/borkdude/sci/issues/36)
+- Metadata fn on var fails if calling the var itself [borkdude/sci#363](https://github.com/borkdude/sci/issues/363)
+- Allow re-binding of core vars in with-redefs [borkdude/sci#375](https://github.com/borkdude/sci/issues/375)
+- Fix `false` dynamic binding value (which was read as `nil`) [borkdude/sci#379](https://github.com/borkdude/sci/issues/379)
+- Fix setting of `*warn-on-reflection*` in nREPL session [babashka/babashka.nrepl#25](https://github.com/babashka/babashka.nrepl/issues/25)
+- Fix protocols with multiple methods on defrecords [borkdude/sci#367](https://github.com/borkdude/sci/issues/367) ([@patrick-galvin](https://github.com/patrick-galvin))
+
+## v0.1.3 (2020-06-27)
+
+Thanks [@llacom](https://github.com/llacom), [@AndreTheHunter](https://github.com/AndreTheHunter)and [@xingzheone](https://github.com/xingzheone) for contributing to this release.
+
+### New
+
+- Add eldoc support in babashka.nrepl ([@borkdude](https://github.com/borkdude) and [@llacom](https://github.com/llacom))
+- Add `java.time.temporal.{TemportalAdjuster, TemporalAmount}` classes
+- Add `clojure.java.browse/browse-url` [#495](https://github.com/borkdude/babashka/issues/495)
+- Add classes for cli-matic library ([@AndreTheHunter](https://github.com/AndreTheHunter))
+- Add `babashka.version` system property [#479](https://github.com/borkdude/babashka/issues/479)
+- Add `java.net.ConnectException` class
+- Add `babashka.file` system property to support `__name__ = "__main__"` pattern (see [docs](https://github.com/borkdude/babashka#__name__--__main__-pattern)) [#478](https://github.com/borkdude/babashka/issues/478).
+
+### Fixed
+
+- Make `clojure.test/report` a dynamic var [#482](https://github.com/borkdude/babashka/issues/482), [#491](https://github.com/borkdude/babashka/issues/491)
+- Make `clojure.test/test-var` a dynamic var
+- Allow arbitrary Clojure code in tagged literals (previously only EDN was allowed)
+- Fix http-server example ([@xingzheone](https://github.com/xingzheone))
+- Fix bug in `alter-var-root`: it used thread-local binding in updating root value
+- Fix for invoking `bb -f file.clj` when `file.clj` was empty
+
 ## v0.1.2 (2020-06-14)
 
 Thanks [@jeroenvandijk](https://github.com/jeroenvandijk) for contributing to this release.

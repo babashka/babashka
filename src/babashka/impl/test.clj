@@ -1,5 +1,6 @@
 (ns babashka.impl.test
-  (:require  [babashka.impl.clojure.test :as t]))
+  (:require  [babashka.impl.clojure.test :as t]
+             [sci.core :as sci]))
 
 (defn macrofy [v]
   (with-meta v {:sci/macro true}))

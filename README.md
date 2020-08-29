@@ -23,18 +23,13 @@ As one user described it:
 
 ### Goals
 
-* Low latency Clojure scripting alternative to JVM Clojure.
-* Easy installation: grab the self-contained binary and run. No JVM needed.
-* Familiarity and portability:
-  - Scripts should be compatible with JVM Clojure as much as possible
-  - Scripts should be platform-independent as much as possible. Babashka offers
-    support for linux, macOS and Windows.
-* Allow interop with commonly used classes like `java.io.File` and `System`
-* Multi-threading support (`pmap`, `future`, `core.async`)
-* Connectivity: talk UDP, TCP, HTTP (and optionally: [JDBC](#JDBC))
-* Support for various data formats: JSON, XML, YAML, CSV, bencode
-* Batteries included (tools.cli, cheshire, ...)
-* Library support via popular tools like the `clojure` CLI
+* **Fast starting** Clojure scripting alternative for JVM Clojure
+* **Easy installation:** grab the self-contained binary and run. No JVM needed.
+* **Familiar:** targeted at JVM Clojure users
+* **Cross-platform:** supports linux, macOS and Windows
+* **Interop** with commonly used classes (`System`, `File`, `java.time.*`, `java.nio.*`)
+* **Multi-threading** support (`pmap`, `future`)
+* **Batteries included** (tools.cli, cheshire, ...)
 
 ### Non-goals
 
@@ -61,7 +56,7 @@ To get an overview of babashka, you can watch this talk ([slides](https://speake
 
 ``` shellsession
 $ curl -s https://raw.githubusercontent.com/borkdude/babashka/master/install -o install-babashka
-$ chmod +x install-babashka && ./install-babashka
+$ chmod +x install-babashka && sudo ./install-babashka
 $ ls | bb -i '(filter #(-> % io/file .isDirectory) *input*)'
 ("doc" "resources" "sci" "script" "src" "target" "test")
 bb took 4ms.
@@ -112,7 +107,7 @@ More examples can be found [here](doc/examples.md).
 Functionality regarding `clojure.core` and `java.lang` can be considered stable
 and is unlikely to change. Changes may happen in other parts of babashka,
 although we will try our best to prevent them. Always check the release notes or
-[CHANGES.md](CHANGES.md) before upgrading.
+[CHANGELOG.md](CHANGELOG.md) before upgrading.
 
 ## Installation
 
@@ -145,13 +140,15 @@ On Windows you can install using [scoop](https://scoop.sh/) and the
 Install via the installer script:
 
 ``` shellsession
-$ bash <(curl -s https://raw.githubusercontent.com/borkdude/babashka/master/install)
+$ curl -s https://raw.githubusercontent.com/borkdude/babashka/master/install -o install-babashka
+$ chmod +x install-babashka && sudo ./install-babashka
 ```
 
 By default this will install into `/usr/local/bin`. To change this, provide the directory name:
 
 ``` shellsession
-$ bash <(curl -s https://raw.githubusercontent.com/borkdude/babashka/master/install) /tmp
+$ curl -s https://raw.githubusercontent.com/borkdude/babashka/master/install -o install-babashka
+$ chmod +x install-babashka && ./install-babashka /tmp
 ```
 
 ### Download
@@ -203,7 +200,7 @@ REPL:
   --socket-repl       Start socket REPL. Specify port (e.g. 1666) or host and port separated by colon (e.g. 127.0.0.1:1666).
   --nrepl-server      Start nREPL server. Specify port (e.g. 1667) or host and port separated by colon (e.g. 127.0.0.1:1667).
 
-If neither -e, -f, or --socket-repl are specified, then the first argument that is not parsed as a option is treated as a file if it exists, or as an expression otherwise. Everything after that is bound to *command-line-args*. Use -- to separate script command lin args from bb command line args.
+If neither -e, -f, or --socket-repl are specified, then the first argument that is not parsed as a option is treated as a file if it exists, or as an expression otherwise. Everything after that is bound to *command-line-args*. Use -- to separate script command line args from bb command line args.
 ```
 
 The `clojure.core` functions are accessible without a namespace alias.
@@ -227,6 +224,7 @@ enumerated explicitly.
 - `clojure.stacktrace`
 - `clojure.test`
 - `clojure.pprint`: `pprint` (currently backed by [fipp](https://github.com/brandonbloom/fipp)'s  `fipp.edn/pprint`)
+- `clojure.zip`
 - [`clojure.tools.cli`](https://github.com/clojure/tools.cli) aliased as `tools.cli`
 - [`clojure.data.csv`](https://github.com/clojure/data.csv) aliased as `csv`
 - [`clojure.data.xml`](https://github.com/clojure/data.xml) aliased as `xml`
@@ -363,10 +361,12 @@ dynamically:
 
 ``` clojure
 (require '[babashka.classpath :refer [add-classpath]]
-         '[clojure.java.shell :refer [sh]])
+         '[clojure.java.shell :refer [sh]]
+         '[clojure.string :as str])
+
 (def medley-dep '{:deps {medley {:git/url "https://github.com/borkdude/medley"
                                  :sha "91adfb5da33f8d23f75f0894da1defe567a625c0"}}})
-(def cp (:out (sh "clojure" "-Spath" "-Sdeps" (str medley-dep))))
+(def cp (-> (sh "clojure" "-Spath" "-Sdeps" (str medley-dep)) :out str/trim))
 (add-classpath cp)
 (require '[medley.core :as m])
 (m/index-by :id [{:id 1} {:id 2}]) ;;=> {1 {:id 1}, 2 {:id 2}}
@@ -564,19 +564,6 @@ namespace which allows dynamically adding to the classpath.
 
 See [deps.clj](doc/deps.clj.md) for a babashka script that replaces the `clojure` bash script.
 
-## Data readers
-
-Data readers can be enabled by setting `*data-readers*` to a hashmap of symbols
-to functions or vars:
-
-``` clojure
-$ bb "(set! *data-readers* {'t/tag inc}) #t/tag 1"
-2
-```
-
-To preserve good startup time, babashka does not scan the classpath for
-`data_readers.clj` files.
-
 ## Uberscript
 
 The `--uberscript` option collects the expressions in
@@ -599,6 +586,105 @@ $ cat my-script.clj
 $ bb my-script.clj
 Hello from gist script!
 ```
+
+Caveats:
+
+- *Dynamic requires*. Building uberscripts works by running top-level `ns` and
+`require` forms. The rest of the code is not evaluated. Code that relies on
+dynamic requires may not work in an uberscript.
+- *Resources*. The usage of `io/resource` assumes a classpath, so when this is
+  used in your uberscript, you still have to set a classpath and bring the
+  resources along.
+
+If any of the above is problematic for your project, using an uberjar (see
+below) is a good alternative.
+
+## Uberjar
+
+Babashka can create uberjars from a given classpath and optionally a main
+method:
+
+``` clojure
+$ cat src/foo.clj
+(ns foo (:gen-class)) (defn -main [& args] (prn :hello))
+$ bb -cp $(clojure -Spath) -m foo --uberjar foo.jar
+$ bb foo.jar
+:hello
+```
+
+When producing a classpath using the `clojure` or `deps.clj` tool, Clojure
+itself, spec and the core specs will be on the classpath and will therefore be
+included in your uberjar, which makes it bigger than necessary:
+
+``` shell
+$ ls -lh foo.jar
+-rw-r--r--  1 borkdude  staff   4.5M Aug 19 17:04 foo.jar
+```
+
+To exclude these dependencies, you can use the following `:classpath-overrides`
+in your `deps.edn`:
+
+``` clojure
+{:aliases {:remove-clojure {:classpath-overrides {org.clojure/clojure nil
+                                                  org.clojure/spec.alpha nil
+                                                  org.clojure/core.specs.alpha nil}}}}
+```
+
+``` clojure
+$ rm foo.jar
+$ bb -cp $(clojure -A:remove-clojure -Spath) -m foo --uberjar foo.jar
+$ bb foo.jar
+:hello
+$ ls -lh foo.jar
+-rw-r--r--  1 borkdude  staff   871B Aug 19 17:07 foo.jar
+```
+
+If you want your uberjar to be compatible with the JVM, you'll need to compile
+the main namespace. Babashka does not do compilation, so we use Clojure on the
+JVM for that part:
+
+``` clojure
+$ rm foo.jar
+$ mkdir classes
+$ clojure -e "(require 'foo) (compile 'foo)"
+foo
+$ bb -cp $(clojure -Spath):classes -m foo --uberjar foo.jar
+$ bb foo.jar
+:hello
+$ java -jar foo.jar
+:hello
+```
+
+## System properties
+
+Babashka sets the following system properties:
+
+- `babashka.version`: the version string, e.g. `"1.2.0"`
+- `babashka.main`: the `--main` argument
+- `babashka.file`: the `--file` argument (normalized using `.getAbsolutePath`)
+
+## `__name__ == "__main__"` pattern
+
+In Python scripts there is a well-known pattern to check if the current file was
+the file invoked from the command line, or loaded from another file: the
+`__name__ == "__main__"` pattern. In babashka this pattern can be implemented with:
+
+``` clojure
+(= *file* (System/getProperty "babashka.file")
+```
+
+## Data readers
+
+Data readers can be enabled by setting `*data-readers*` to a hashmap of symbols
+to functions or vars:
+
+``` clojure
+$ bb "(set! *data-readers* {'t/tag inc}) #t/tag 1"
+2
+```
+
+To preserve good startup time, babashka does not scan the classpath for
+`data_readers.clj` files.
 
 ## Parsing command line arguments
 
@@ -768,6 +854,18 @@ with `lein repl`:
 (nrepl-eval 52054 "(+ 1 2 3)") ;;=> "6"
 ```
 
+## Printing returned values
+
+Babashka doesn't print a returned `nil` as lots of scripts end in something side-effecting.
+
+``` shell
+$ bb '(:a {:a 5}'
+5
+$ bb '(:b {:a 5}'
+$
+```
+If you really want to print the nil, you can use `(prn ..)` instead.
+
 ## Differences with Clojure
 
 Babashka is implemented using the [Small Clojure
@@ -808,8 +906,11 @@ handling of SIGINT and SIGPIPE. This can be done by setting
 
 ## Articles, podcasts and videos
 
+- [Babashka and GraalVM; taking Clojure to new places](https://youtu.be/3EUMA6bd-xQ), a talk by Michiel Borkent at [Clojure/NYC](https://www.meetup.com/Clojure-NYC/).
+- [Import a CSV into Kafka, using Babashka](https://blog.davemartin.me/posts/import-a-csv-into-kafka-using-babashka/) by Dave Martin
+- [Learning about babashka](https://amontalenti.com/2020/07/11/babashka) by Andrew Montalenti
 - [Babashka Pods](https://www.youtube.com/watch?v=3Q4GUiUIrzg&feature=emb_logo) presentation by Michiel Borkent at the [Dutch Clojure Meetup](http://meetup.com/The-Dutch-Clojure-Meetup).
-- [AWS Logs using Babashka](https://tech.toyokumo.co.jp/entry/aws_logs_babashka) a blog published by [toyokumo](https://toyokumo.co.jp/).
+- [AWS Logs using Babashka](https://tech.toyokumo.co.jp/entry/aws_logs_babashka), a blog published by [Toyokumo](https://toyokumo.co.jp/).
 - [The REPL podcast](https://www.therepl.net/episodes/36/) Michiel Borkent talks about [clj-kondo](https://github.com/borkdude/clj-kondo), [Jet](https://github.com/borkdude/jet), Babashka, and [GraalVM](https://github.com/oracle/graal) with Daniel Compton.
 - [Implementing an nREPL server for babashka](https://youtu.be/0YmZYnwyHHc): impromptu presentation by Michiel Borkent at the online [Dutch Clojure Meetup](http://meetup.com/The-Dutch-Clojure-Meetup)
 - [ClojureScript podcast](https://soundcloud.com/user-959992602/s3-e5-babashka-with-michiel-borkent) with Jacek Schae interviewing Michiel Borkent

@@ -3,8 +3,8 @@
    [babashka.test-utils :as tu]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
-   [clojure.test :as t :refer [deftest is testing]]
-   [clojure.string :as str]))
+   [clojure.string :as str]
+   [clojure.test :as t :refer [deftest is testing]]))
 
 (defn bb [input & args]
   (edn/read-string (apply tu/bb (when (some? input) (str input)) (map str args))))
@@ -16,7 +16,7 @@
   (is (= "hello from foo\n"
          (tu/bb nil "--classpath" "test-resources/babashka/src_for_classpath_test/foo.jar"
                 "(require '[foo :as f]) (f/foo)")))
-  (is (thrown-with-msg? Exception #"not require"
+  (is (thrown-with-msg? Exception #"not find"
          (tu/bb nil
                 "(require '[foo :as f])"))))
 
@@ -34,13 +34,6 @@
     (is (= "\"my.main2\""
            (str/trim (tu/bb nil "--classpath" "test-resources/babashka/src_for_classpath_test" "-m" "my.main2"))))))
 
-(deftest uberscript-test
-  (let [tmp-file (java.io.File/createTempFile "uberscript" ".clj")]
-    (.deleteOnExit tmp-file)
-    (is (empty? (tu/bb nil "--classpath" "test-resources/babashka/src_for_classpath_test" "-m" "my.main" "--uberscript" (.getPath tmp-file))))
-    (is (= "(\"1\" \"2\" \"3\" \"4\")\n"
-           (tu/bb nil "--file" (.getPath tmp-file) "1" "2" "3" "4")))))
-
 (deftest error-while-loading-test
   (is (true?
          (bb nil "--classpath" "test-resources/babashka/src_for_classpath_test"
@@ -57,4 +50,9 @@
     (is (= (.length (io/file "logo" "icon.png"))
            (.length tmp-file))))
   (testing "No exception on absolute path"
-    (is (nil? (bb nil "(io/resource \"/tmp\")")))))
+    (is (nil? (bb nil "(io/resource \"/tmp\")"))))
+  (testing "Reading a resource from a .jar file"
+    (is (= "true"
+           (str/trim
+            (tu/bb nil "--classpath" "test-resources/babashka/src_for_classpath_test/foo.jar"
+                   "(pos? (count (slurp (io/resource \"foo.clj\")))) "))))))

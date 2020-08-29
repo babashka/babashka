@@ -22,3 +22,11 @@ pom.xml.asc
 *.dylib
 *.log
 org_babashka*.h
+/babashka-0.1.4-SNAPSHOT-windows-amd64.zip
+/bb.exe
+/bb.exp
+/bb.lib
+/bb.pdb
+/bb.stripped.pdb
+/.calva
+!test-resources/divide_by_zero.jar

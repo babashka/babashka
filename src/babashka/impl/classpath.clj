@@ -1,8 +1,9 @@
 (ns babashka.impl.classpath
   {:no-doc true}
-  (:require [clojure.java.io :as io]
+  (:require [babashka.impl.clojure.main :refer [demunge]]
+            [clojure.java.io :as io]
             [clojure.string :as str])
-  (:import [java.util.jar JarFile]))
+  (:import [java.util.jar JarFile Manifest]))
 
 (set! *warn-on-reflection* true)
 
@@ -19,8 +20,8 @@
          (when (.exists f)
            (if url?
              ;; manual conversion, faster than going through .toURI
-             (java.net.URL. "file" nil (.getCanonicalPath f))
-             {:file (.getCanonicalPath f)
+             (java.net.URL. "file" nil (.getAbsolutePath f))
+             {:file (.getAbsolutePath f)
               :source (slurp f)}))))
      resource-paths)))
 
@@ -32,7 +33,7 @@
               (if url?
                 ;; manual conversion, faster than going through .toURI
                 (java.net.URL. "jar" nil
-                 (str "file:" (.getCanonicalPath jar-file) "!/" path))
+                 (str "file:" (.getAbsolutePath jar-file) "!/" path))
                 {:file path
                  :source (slurp (.getInputStream jar entry))})))
           resource-paths)))
@@ -67,6 +68,13 @@
         base-path (.replace ns-str "." "/")
         resource-paths (mapv #(str base-path %) [".bb" ".clj" ".cljc"])]
     (getResource loader resource-paths opts)))
+
+(defn main-ns [manifest-resource]
+  (with-open [is (io/input-stream manifest-resource)]
+    (some-> (Manifest. is)
+            (.getMainAttributes)
+            (.getValue "Main-Class")
+            (demunge))))
 
 ;;;; Scratch
 

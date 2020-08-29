@@ -234,6 +234,7 @@
     babashka.impl.clojure.test
   (:require [babashka.impl.common :refer [ctx]]
             [clojure.stacktrace :as stack]
+            [clojure.string :as str]
             [clojure.template :as temp]
             [sci.core :as sci]
             [sci.impl.analyzer :as ana]
@@ -334,14 +335,11 @@
    arguments for 'report'."
     :dynamic true
     :added "1.1"}
-  report :type)
+  report-impl :type)
 
-(defn- stacktrace-file-and-line
-  [stacktrace]
-  (if (seq stacktrace)
-    (let [^StackTraceElement s (first stacktrace)]
-      {:file (.getFileName s) :line (.getLineNumber s)})
-    {:file nil :line nil}))
+(def tns (sci/create-ns 'clojure.test nil))
+
+(def report (sci/copy-var report-impl tns))
 
 (defn do-report
   "Add file and line information to a test result and call report.
@@ -353,16 +351,16 @@
    (case
        (:type m)
      :fail m
-     :error (merge (stacktrace-file-and-line (.getStackTrace ^Throwable (:actual m))) m)
+     :error m
      m)))
 
-(defmethod report :default [m]
+(defmethod report-impl :default [m]
   (with-test-out-internal (prn m)))
 
-(defmethod report :pass [m]
+(defmethod report-impl :pass [m]
   (with-test-out-internal (inc-report-counter :pass)))
 
-(defmethod report :fail [m]
+(defmethod report-impl :fail [m]
   (with-test-out-internal
     (inc-report-counter :fail)
     (println "\nFAIL in" (testing-vars-str m))
@@ -371,7 +369,7 @@
     (println "expected:" (pr-str (:expected m)))
     (println "  actual:" (pr-str (:actual m)))))
 
-(defmethod report :error [m]
+(defmethod report-impl :error [m]
   (with-test-out-internal
     (inc-report-counter :error)
     (println "\nERROR in" (testing-vars-str m))
@@ -384,20 +382,20 @@
         (stack/print-cause-trace actual @stack-trace-depth)
         (prn actual)))))
 
-(defmethod report :summary [m]
+(defmethod report-impl :summary [m]
   (with-test-out-internal
     (println "\nRan" (:test m) "tests containing"
              (+ (:pass m) (:fail m) (:error m)) "assertions.")
     (println (:fail m) "failures," (:error m) "errors.")))
 
-(defmethod report :begin-test-ns [m]
+(defmethod report-impl :begin-test-ns [m]
   (with-test-out-internal
     (println "\nTesting" (sci-namespaces/sci-ns-name (:ns m)))))
 
 ;; Ignore these message types:
-(defmethod report :end-test-ns [m])
-(defmethod report :begin-test-var [m])
-(defmethod report :end-test-var [m])
+(defmethod report-impl :end-test-ns [m])
+(defmethod report-impl :begin-test-var [m])
+(defmethod report-impl :end-test-var [m])
 
 
 
@@ -431,6 +429,8 @@
          (clojure.test/do-report {:type :pass, :message ~msg,
                                   :expected '~form, :actual (cons ~pred values#)})
          (clojure.test/do-report {:type :fail, :message ~msg,
+                                  :file clojure.core/*file*
+                                  :line ~(:line (meta form))
                                   :expected '~form, :actual (list '~'not (cons '~pred values#))}))
        result#)))
 
@@ -444,6 +444,8 @@
        (clojure.test/do-report {:type :pass, :message ~msg,
                                 :expected '~form, :actual value#})
        (clojure.test/do-report {:type :fail, :message ~msg,
+                                :file clojure.core/*file*
+                                :line ~(:line (meta form))
                                 :expected '~form, :actual value#}))
      value#))
 
@@ -464,7 +466,9 @@
 
 (defmethod assert-expr :always-fail [msg form]
   ;; nil test: always fail
-  `(clojure.test/do-report {:type :fail, :message ~msg}))
+  `(clojure.test/do-report {:type :fail, :message ~msg
+                            :file clojure.core/*file*
+                            :line ~(:line (meta form))}))
 
 (defmethod assert-expr :default [msg form]
   (if (and (sequential? form) (function? (first form)))
@@ -480,6 +484,8 @@
          (clojure.test/do-report {:type :pass, :message ~msg,
                                   :expected '~form, :actual (class object#)})
          (clojure.test/do-report {:type :fail, :message ~msg,
+                                  :file clojure.core/*file*
+                                  :line ~(:line (meta form))
                                   :expected '~form, :actual (class object#)}))
        result#)))
 
@@ -491,6 +497,8 @@
         body (nthnext form 2)]
     `(try ~@body
           (clojure.test/do-report {:type :fail, :message ~msg,
+                                   :file clojure.core/*file*
+                                   :line ~(:line (meta form))
                                    :expected '~form, :actual nil})
           (catch ~klass e#
             (clojure.test/do-report {:type :pass, :message ~msg,
@@ -512,7 +520,9 @@
               (if (re-find ~re m#)
                 (clojure.test/do-report {:type :pass, :message ~msg,
                                          :expected '~form, :actual e#})
-                (clojure.test/do-report {:type :fail, :message ~msg,
+                (clojure.test/do-report {:file clojure.core/*file*
+                                         :line ~(:line (meta form))
+                                         :type :fail, :message ~msg,
                                          :expected '~form, :actual e#})))
             e#))))
 
@@ -524,7 +534,9 @@
   [msg form]
   `(try ~(assert-expr msg form)
         (catch Throwable t#
-          (clojure.test/do-report {:type :error, :message ~msg,
+          (clojure.test/do-report {:file clojure.core/*file*
+                                   :line ~(:line (meta form))
+                                   :type :error, :message ~msg,
                                    :expected '~form, :actual t#}))))
 
 
@@ -690,7 +702,7 @@
 
 ;;; RUNNING TESTS: LOW-LEVEL FUNCTIONS
 
-(defn test-var
+(defn test-var-impl
   "If v has a function in its :test metadata, calls that function,
   with *testing-vars* bound to (conj *testing-vars* v)."
   {:dynamic true, :added "1.1"}
@@ -704,6 +716,8 @@
              (do-report {:type :error, :message "Uncaught exception, not in assertion."
                          :expected nil, :actual e})))
       (do-report {:type :end-test-var, :var v}))))
+
+(def test-var (sci/copy-var test-var-impl tns))
 
 (defn test-vars
   "Groups vars by their namespace and runs test-vars on them with
@@ -720,7 +734,8 @@
        (fn []
          (doseq [v vars]
            (when (:test (meta v))
-             (each-fixture-fn (fn [] (test-var v))))))))))
+             (each-fixture-fn (fn [] (test-var ;; this calls the sci var which can be rebound
+                                      v))))))))))
 
 (defn test-all-vars
   "Calls test-vars on every var interned in the namespace, with fixtures."

@@ -8,14 +8,14 @@
   :license {:name "Eclipse Public License 1.0"
             :url "http://opensource.org/licenses/eclipse-1.0.php"}
   :source-paths ["src" "sci/src" "babashka.curl/src" "babashka.pods/src"
-                 "babashka.nrepl/src"]
+                 "babashka.nrepl/src" "depstar/src"]
   ;; for debugging Reflector.java code:
   ;; :java-source-paths ["sci/reflector/src-java"]
   :java-source-paths ["src-java"]
   :resource-paths ["resources" "sci/resources"]
   :dependencies [[org.clojure/clojure "1.10.2-alpha1"]
                  [org.clojure/tools.reader "1.3.2"]
-                 [borkdude/edamame "0.0.11-alpha.12"]
+                 [borkdude/edamame "0.0.11-alpha.14"]
                  [borkdude/graal.locking "0.0.2"]
                  [org.clojure/tools.cli "1.0.194"]
                  [cheshire "5.10.0"]

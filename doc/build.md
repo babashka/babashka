@@ -45,11 +45,14 @@ $ script/uberjar
 $ script/compile
 ```
 
-To configure maximum heap size you can use:
+To configure max heap size you can use:
 
 ```
-$ export BABASHKA_XMX="-J-Xmx4800m"
+$ export BABASHKA_XMX="-J-Xmx6500m"
 ```
+
+Note: setting the max heap size to a low value can cause the build to crash or
+take long to complete.
 
 ## Windows
 
@@ -93,7 +96,7 @@ $ script/uberjar
 $ script/compile
 ```
 
-Check out this [example](examples.md#find-unused-vars).
+Note: there is now a [pod](https://github.com/babashka/babashka-sql-pods) for working with HyperSQL.
 
 ### PostgresQL
 
@@ -105,3 +108,5 @@ $ export BABASHKA_FEATURE_POSTGRESQL=true
 $ script/uberjar
 $ script/compile
 ```
+
+Note: there is now a [pod](https://github.com/babashka/babashka-sql-pods) for working with PostgreSQL.
