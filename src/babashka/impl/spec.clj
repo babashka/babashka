@@ -28,6 +28,7 @@
 (def spec-namespace
   {'def (sci/new-macro-var 'def def)
    'def-impl (copy-var s/def-impl tns)
+   'valid? (copy-var s/valid? tns)
    #_#_'explain-data (copy-var s/explain-data tns)})
 
 ;; def-impl
