@@ -25,10 +25,7 @@
   (let [k (if (symbol? k) (ns-qualify k) k)]
     `(clojure.spec.alpha/def-impl '~k '~(#'s/res spec-form) ~spec-form)))
 
-(def spec-namespace
+(c/def spec-namespace
   {'def (sci/new-macro-var 'def def)
    'def-impl (copy-var s/def-impl tns)
    'explain-data (copy-var s/explain-data tns)})
-
-
-
