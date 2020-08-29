@@ -8,25 +8,10 @@
 
 (ns babashka.impl.clojure.spec.gen.alpha
     (:refer-clojure :exclude [boolean bytes cat hash-map list map not-empty set vector
-                              char double int keyword symbol string uuid delay shuffle]))
+                              char double int keyword symbol string uuid delay shuffle])
+    (:require [clojure.test.check.generators]))
 
 (alias 'c 'clojure.core)
-
-(defonce ^:private dynalock (Object.))
-
-(defmacro ^:private locking2
-  "Executes exprs in an implicit do, while holding the monitor of x.
-  Will release the monitor of x in all circumstances."
-  {:added "1.0"}
-  [x & body]
-  `(let [lockee# ~x]
-     (try
-       (let [locklocal# lockee#]
-         (monitor-enter locklocal#)
-         (try
-           ~@body
-           (finally
-            (monitor-exit locklocal#)))))))
 
 (defn- dynaload
   [s]
@@ -52,19 +37,19 @@
   [& args]
   (apply @for-all*-ref args))
 
-(let [g? (c/delay (dynaload 'clojure.test.check.generators/generator?))
-      g (c/delay (dynaload 'clojure.test.check.generators/generate))
-      mkg (c/delay (dynaload 'clojure.test.check.generators/->Generator))]
+(let [g? clojure.test.check.generators/generator?
+      g clojure.test.check.generators/generate
+      mkg clojure.test.check.generators/->Generator]
   (defn- generator?
     [x]
-    (@g? x))
+    (g? x))
   (defn- generator
     [gfn]
-    (@mkg gfn))
+    (mkg gfn))
   (defn generate
     "Generate a single value using generator."
     [generator]
-    (@g generator)))
+    (g generator)))
 
 (defn ^:skip-wiki delay-impl
   [gfnd]

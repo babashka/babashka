@@ -1,10 +1,10 @@
-                                        ;   Copyright (c) Rich Hickey. All rights reserved.
-                                        ;   The use and distribution terms for this software are covered by the
-                                        ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-                                        ;   which can be found in the file epl-v10.html at the root of this distribution.
-                                        ;   By using this software in any fashion, you are agreeing to be bound by
-                                        ;   the terms of this license.
-                                        ;   You must not remove this notice, or any other, from this software.
+;;   Copyright (c) Rich Hickey. All rights reserved.
+;;   The use and distribution terms for this software are covered by the
+;;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
+;;   which can be found in the file epl-v10.html at the root of this distribution.
+;;   By using this software in any fashion, you are agreeing to be bound by
+;;   the terms of this license.
+;;   You must not remove this notice, or any other, from this software.
 
 (ns
     ^{:doc "The spec library specifies the structure of data or functions and provides
@@ -15,9 +15,9 @@
   Guide: https://clojure.org/guides/spec"}
     babashka.impl.clojure.spec.alpha
   (:refer-clojure :exclude [+ * and assert or cat def keys merge])
-  (:require [clojure.walk :as walk]
-            [babashka.impl.clojure.spec.gen.alpha :as gen]
-            [clojure.string :as str]))
+  (:require [babashka.impl.clojure.spec.gen.alpha :as gen]
+            [clojure.string :as str]
+            [clojure.walk :as walk]))
 
 (alias 'c 'clojure.core)
 
@@ -920,7 +920,6 @@
   ([form pred gfn cpred? unc]
    (cond
      (spec? pred) (cond-> pred gfn (with-gen gfn))
-     ;; this triggers it to be 103MB!
      (regex? pred) (regex-spec-impl pred gfn)
      (ident? pred) (cond-> (the-spec pred) gfn (with-gen gfn))
      :else
@@ -946,9 +945,7 @@
                         (gfn)
                         (gen/gen-for-pred pred)))
       (with-gen* [_ gfn] (spec-impl form pred gfn cpred? unc))
-       (describe* [_] form))
-     )
-   ))
+       (describe* [_] form)))))
 
 (defn ^:skip-wiki multi-spec-impl
   "Do not call this directly, use 'multi-spec'"
