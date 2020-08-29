@@ -9,12 +9,11 @@
         thread-local
         (proxy [ThreadLocal] []
           (initialValue []
-            (delay
-              (first (r/split (swap! a #(second (r/split (deref %)))))))))]
+            (first (r/split (swap! a #(second (r/split (force %))))))))]
     (fn []
-      (let [rng @(.get thread-local)
+      (let [rng (force (.get thread-local))
             [rng1 rng2] (r/split rng)]
-        (.set thread-local (delay rng2))
+        (.set thread-local rng2)
         rng1))))
 
 (defn make-random
