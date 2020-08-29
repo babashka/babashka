@@ -11,7 +11,7 @@
           (initialValue []
             (first (r/split (swap! a #(second (r/split (force %))))))))]
     (fn []
-      (let [rng (force (.get thread-local))
+      (let [rng (.get thread-local)
             [rng1 rng2] (r/split rng)]
         (.set thread-local rng2)
         rng1))))
