@@ -26,6 +26,7 @@
    [babashka.impl.repl :as repl]
    [babashka.impl.socket-repl :as socket-repl]
    [babashka.impl.spec :refer [spec-namespace
+                               test-namespace
                                gen-namespace]]
    [babashka.impl.test :as t]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
@@ -392,6 +393,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
        'clojure.datafy datafy-namespace
        'clojure.core.protocols protocols-namespace
        'clojure.spec.alpha spec-namespace
+       'clojure.spec.test.alpha test-namespace
        'clojure.spec.gen.alpha gen-namespace}
     features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace))
     features/yaml? (assoc 'clj-yaml.core @(resolve 'babashka.impl.yaml/yaml-namespace)

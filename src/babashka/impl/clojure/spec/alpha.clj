@@ -339,12 +339,15 @@
       (swap! registry-ref assoc k (with-name spec k))))
   k)
 
-(defn- ns-qualify
+(defn ns-qualify
   "Qualify symbol s by resolving it or using the current *ns*."
   [s]
   (if-let [ns-sym (some-> s namespace symbol)]
-    (c/or (some-> (get (ns-aliases *ns*) ns-sym) str (symbol (name s)))
+    (c/or (some->
+           ;; TODO: use sci ns-aliases
+           (get (ns-aliases *ns*) ns-sym) str (symbol (name s)))
           s)
+    ;; TODO: use sci current-ns!
     (symbol (str (.name *ns*)) (str s))))
 
 (defmacro def
@@ -383,7 +386,7 @@
   Returns a spec."
   [form & {:keys [gen]}]
   (when form
-    `(spec-impl '~(res form) ~form ~gen nil)))
+    `(clojure.spec.alpha/spec-impl '~(res form) ~form ~gen nil)))
 
 (defmacro multi-spec
   "Takes the name of a spec/predicate-returning multimethod and a
@@ -690,9 +693,10 @@
   that returns a test.check generator."
 
   [& {:keys [args ret fn gen] :or {ret `any?}}]
-  `(fspec-impl (spec ~args) '~(res args)
-               (spec ~ret) '~(res ret)
-               (spec ~fn) '~(res fn) ~gen))
+  `(clojure.spec.alpha/fspec-impl
+    (clojure.spec.alpha/spec ~args) '~(res args)
+    (clojure.spec.alpha/spec ~ret) '~(res ret)
+    (clojure.spec.alpha/spec ~fn) '~(res fn) ~gen))
 
 (defmacro tuple
   "takes one or more preds and returns a spec for a tuple, a vector

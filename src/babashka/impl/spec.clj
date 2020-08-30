@@ -2,11 +2,13 @@
   {:no-doc true}
   (:require [babashka.impl.clojure.spec.alpha :as s]
             [babashka.impl.clojure.spec.gen.alpha :as gen]
+            [babashka.impl.clojure.spec.test.alpha :as test]
             [clojure.core :as c]
             [sci.core :as sci :refer [copy-var]]
             [sci.impl.vars :as vars]))
 
-(def tns (vars/->SciNamespace 'clojure.spec.alpha nil))
+(def sns (vars/->SciNamespace 'clojure.spec.alpha nil))
+(def tns (vars/->SciNamespace 'clojure.spec.test.alpha nil))
 (def gns (vars/->SciNamespace 'clojure.spec.gen.alpha nil))
 
 (defn- ns-qualify
@@ -27,13 +29,23 @@
     `(clojure.spec.alpha/def-impl '~k '~(s/res spec-form) ~spec-form)))
 
 (def spec-namespace
-  {'def (sci/copy-var s/def tns)
-   'def-impl (copy-var s/def-impl tns)
-   'valid? (copy-var s/valid? tns)
-   'gen (copy-var s/gen tns)
-   'cat (copy-var s/cat tns)
-   'cat-impl (copy-var s/cat-impl tns)
-   #_#_'explain-data (copy-var s/explain-data tns)})
+  {'def (sci/copy-var s/def sns)
+   'def-impl (copy-var s/def-impl sns)
+   'valid? (copy-var s/valid? sns)
+   'gen (copy-var s/gen sns)
+   'cat (copy-var s/cat sns)
+   'cat-impl (copy-var s/cat-impl sns)
+   'fdef (copy-var s/fdef sns)
+   'fspec (copy-var s/fspec sns)
+   'fspec-impl (copy-var s/fspec-impl sns)
+   ;; 372
+   'spec (copy-var s/spec sns)
+   'spec-impl (copy-var s/spec-impl sns)
+   #_#_'explain-data (copy-var s/explain-data sns)})
+
+(def test-namespace
+  {'instrument (copy-var test/instrument tns)
+   'unstrument (copy-var test/unstrument tns)})
 
 (def gen-namespace
   {'generate (copy-var gen/generate gns)})
