@@ -354,7 +354,7 @@
   the registry for k."
   [k spec-form]
   (let [k (if (symbol? k) (ns-qualify k) k)]
-    `(def-impl '~k '~(res spec-form) ~spec-form)))
+    `(clojure.spec.alpha/def-impl '~k '~(res spec-form) ~spec-form)))
 
 (defn registry
   "returns the registry map, prefer 'get-spec' to lookup a spec by name"
@@ -656,7 +656,7 @@
         pf (mapv res pred-forms)]
     ;;(prn key-pred-forms)
     (c/assert (c/and (even? (count key-pred-forms)) (every? keyword? keys)) "cat expects k1 p1 k2 p2..., where ks are keywords")
-    `(cat-impl ~keys ~pred-forms '~pf)))
+    `(clojure.spec.alpha/cat-impl ~keys ~pred-forms '~pf)))
 
 (defmacro &
   "takes a regex op re, and predicates. Returns a regex-op that consumes

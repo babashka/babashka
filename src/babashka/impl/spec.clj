@@ -3,8 +3,7 @@
   (:require [babashka.impl.clojure.spec.alpha :as s]
             [babashka.impl.clojure.spec.gen.alpha :as gen]
             [clojure.core :as c]
-            [sci.core :as sci]
-            [sci.impl.namespaces :refer [copy-var]]
+            [sci.core :as sci :refer [copy-var]]
             [sci.impl.vars :as vars]))
 
 (def tns (vars/->SciNamespace 'clojure.spec.alpha nil))
@@ -28,10 +27,12 @@
     `(clojure.spec.alpha/def-impl '~k '~(s/res spec-form) ~spec-form)))
 
 (def spec-namespace
-  {'def (sci/new-macro-var 'def def)
+  {'def (sci/copy-var s/def tns)
    'def-impl (copy-var s/def-impl tns)
    'valid? (copy-var s/valid? tns)
    'gen (copy-var s/gen tns)
+   'cat (copy-var s/cat tns)
+   'cat-impl (copy-var s/cat-impl tns)
    #_#_'explain-data (copy-var s/explain-data tns)})
 
 (def gen-namespace
