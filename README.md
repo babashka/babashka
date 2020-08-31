@@ -33,18 +33,19 @@ As one user described it:
 
 ### Non-goals
 
-* Performance<sup>1<sup>
+* Performance
 * Provide a mixed Clojure/Bash DSL (see portability).
 * Replace existing shells. Babashka is a tool you can use inside existing shells like bash and it is designed to play well with them. It does not aim to replace them.
 
-<sup>1<sup> Babashka uses [sci](https://github.com/borkdude/sci) for
-interpreting Clojure. Sci implements a suffiently large subset of
-Clojure. Interpreting code is in general not as performant as executing compiled
-code. If your script takes more than a few seconds to run, Clojure on the JVM
-may be a better fit, since the performance of Clojure on the JVM outweighs its
-startup time penalty. Read more about the differences with Clojure
-[here](#differences-with-clojure).
+### Managing expectations
 
+Babashka uses [sci](https://github.com/borkdude/sci) for interpreting
+Clojure. Sci implements a suffiently large subset of Clojure. Interpreting code
+is in general not as performant as executing compiled code. If your script takes
+more than a few seconds to run or has lots of loops, Clojure on the JVM may be a
+better fit, since the performance of Clojure on the JVM outweighs its startup
+time penalty. Read more about the differences with Clojure
+[here](#differences-with-clojure).
 
 ### Talk
 
@@ -758,7 +759,7 @@ nil
 
 Also see this [example](examples/process_builder.clj).
 
-## Async
+## Core.async
 
 In addition to `future`, `pmap`, `promise` and friends, you may use the
 `clojure.core.async` namespace for asynchronous scripting. The following example
@@ -775,10 +776,28 @@ bb '
 process 2
 ```
 
-Note: the `go` macro is available for compatibility with JVM programs, but the
-implementation maps to `clojure.core.async/thread` and the single exclamation
-mark operations (`<!`, `>!`, etc.) map to the double exclamation mark operations
-(`<!!`, `>!!`, etc.). It will not "park" threads, like on the JVM.
+Caveat: currently the `go` macro is available for compatibility with JVM
+programs, but the implementation maps to `clojure.core.async/thread` and the
+single exclamation mark operations (`<!`, `>!`, etc.) map to the double
+exclamation mark operations (`<!!`, `>!!`, etc.). It will not "park" threads,
+like on the JVM.
+
+Examples like the following may still work, but will take a lot more system
+resources than on the JVM and will break down for some high value of `n`:
+
+``` clojure
+(require '[clojure.core.async :as async])
+
+(def n 1000)
+
+(let [cs (repeatedly n async/chan)
+      begin (System/currentTimeMillis)]
+  (doseq [c cs] (async/go (async/>! c "hi")))
+  (dotimes [_ n]
+    (let [[v _] (async/alts!! cs)]
+      (assert (= "hi" v))))
+  (println "Read" n "msgs in" (- (System/currentTimeMillis) begin) "ms"))
+```
 
 ## HTTP
 
@@ -887,6 +906,13 @@ Differences with Clojure:
   than compiled programs.
 
 - No `deftype`, `definterface` and unboxed math.
+
+- `defprotocol` and `defrecord` are implemented using multimethods and regular
+  maps. Ostensibly they work the same, but under the hood there are no Java
+  classes that correspond to them.
+
+- The `clojure.core.async/go` macro is not (yet) supported. For compatibility it
+  currently maps to `clojure.core.async/thread`. More info [here](#core-async).
 
 ## [Libraries, pods and projects](doc/libraries.md)
 
