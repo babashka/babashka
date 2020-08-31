@@ -912,7 +912,7 @@ Differences with Clojure:
   classes that correspond to them.
 
 - The `clojure.core.async/go` macro is not (yet) supported. For compatibility it
-  currently maps to `clojure.core.async/thread`. More info [here](#core-async).
+  currently maps to `clojure.core.async/thread`. More info [here](#coreasync).
 
 ## [Libraries, pods and projects](doc/libraries.md)
 
