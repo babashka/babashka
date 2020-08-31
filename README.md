@@ -901,9 +901,9 @@ Differences with Clojure:
 - A pre-selected set of Java classes are supported. You cannot add Java classes
   at runtime.
 
-- Interpretation comes with overhead. Therefore tight loops are likely slower
-  than in Clojure on the JVM. In general interpretation yields slower programs
-  than compiled programs.
+- Interpretation comes with overhead. Therefore loops are slower than in Clojure
+  on the JVM. In general interpretation yields slower programs than compiled
+  programs.
 
 - No `deftype`, `definterface` and unboxed math.
 
