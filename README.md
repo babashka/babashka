@@ -204,14 +204,13 @@ REPL:
 If neither -e, -f, or --socket-repl are specified, then the first argument that is not parsed as a option is treated as a file if it exists, or as an expression otherwise. Everything after that is bound to *command-line-args*. Use -- to separate script command line args from bb command line args.
 ```
 
-The `clojure.core` functions are accessible without a namespace alias.
-
 ### Built-in namespaces
 
 The following namespaces are required by default. Some are available through
 pre-defined aliases in the `user` namespace, which can be handy for
 one-liners. You may use `require` + `:as` and/or `:refer` on these
 namespaces. If not all vars are available, they are enumerated explicitly.
+The `clojure.core` functions are accessible without a namespace alias.
 
 - `babashka.curl` (see [here](#babashkanamespaces))
 - `clojure.data`
@@ -241,6 +240,10 @@ namespaces. If not all vars are available, they are enumerated explicitly.
 - [`clj-yaml.core`](https://github.com/clj-commons/clj-yaml) alias as `yaml`
 - [`bencode.core`](https://github.com/nrepl/bencode) aliased as `bencode`: `read-bencode`, `write-bencode`
 - [`next.jdbc`](https://github.com/seancorfield/next-jdbc) aliased as `jdbc` (available under feature flag)
+
+See the
+[libraries](https://github.com/borkdude/babashka/blob/master/doc/libraries.md)
+page for libraries that are not built-in, but which you can load via the classpath.
 
 A selection of java classes are available, see `babashka/impl/classes.clj`.
 
