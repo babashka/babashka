@@ -253,6 +253,14 @@ Turn Clojure data structures into SQL
 
 Spying and stubbing library, primarily intended for tests.
 
+### [portal](https://github.com/djblue/portal/)
+
+A clojure tool to navigate through your data. This example will launch a browser to view your `deps.edn`:
+
+``` clojure
+$ cat deps.edn | bb -cp `clojure -Spath -Sdeps '{:deps {djblue/portal {:mvn/version "0.4.1"}}}'` -m portal.main edn
+```
+
 ## Pods
 
 [Babashka pods](https://github.com/babashka/babashka.pods) are programs that can
