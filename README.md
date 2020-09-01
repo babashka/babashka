@@ -851,15 +851,15 @@ This also works when the script is interrupted with ctrl-c.
 Babashka supports the [`next.jdbc`](https://github.com/seancorfield/next-jdbc)
 library along with drivers for [PostgresQL](https://www.postgresql.org/) and
 [HSQLDB](http://hsqldb.org/). These features are not part of the standard `bb`
-distribution. See [doc/build.md](doc/build.md) for details on how to build
-babashka with these features. See this
+distribution but available via feature flags. See [doc/build.md](doc/build.md)
+for details on how to build babashka with these features. See this
 [test](test-resources/babashka/postgres_test.clj) for an example how to use
 this.
 
 Interacting with `psql`, `mysql` and the `sqlite` CLIs can be achieved by
 shelling out. See the [examples](examples) directory.
 
-## Bencode
+## Communicating with an nREPL server
 
 Babashka comes with the [nrepl/bencode](https://github.com/nrepl/bencode)
 library which allows you to read and write bencode messages to a socket. A
@@ -891,6 +891,7 @@ $ bb '(:a {:a 5}'
 $ bb '(:b {:a 5}'
 $
 ```
+
 If you really want to print the nil, you can use `(prn ..)` instead.
 
 ## Differences with Clojure
@@ -940,9 +941,10 @@ handling of SIGINT and SIGPIPE. This can be done by setting
 
 ## Articles, podcasts and videos
 
+- [Using Clojure in Command Line with Babashka](https://www.karimarttila.fi/clojure/2020/09/01/using-clojure-in-command-line-with-babashka.html), a blog article by Kari Marttilla.
 - [Babashka and GraalVM; taking Clojure to new places](https://youtu.be/3EUMA6bd-xQ), a talk by Michiel Borkent at [Clojure/NYC](https://www.meetup.com/Clojure-NYC/).
 - [Import a CSV into Kafka, using Babashka](https://blog.davemartin.me/posts/import-a-csv-into-kafka-using-babashka/) by Dave Martin
-- [Learning about babashka](https://amontalenti.com/2020/07/11/babashka) by Andrew Montalenti
+- [Learning about babashka](https://amontalenti.com/2020/07/11/babashka), a blog article by Andrew Montalenti
 - [Babashka Pods](https://www.youtube.com/watch?v=3Q4GUiUIrzg&feature=emb_logo) presentation by Michiel Borkent at the [Dutch Clojure Meetup](http://meetup.com/The-Dutch-Clojure-Meetup).
 - [AWS Logs using Babashka](https://tech.toyokumo.co.jp/entry/aws_logs_babashka), a blog published by [Toyokumo](https://toyokumo.co.jp/).
 - [The REPL podcast](https://www.therepl.net/episodes/36/) Michiel Borkent talks about [clj-kondo](https://github.com/borkdude/clj-kondo), [Jet](https://github.com/borkdude/jet), Babashka, and [GraalVM](https://github.com/oracle/graal) with Daniel Compton.
