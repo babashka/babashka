@@ -204,13 +204,12 @@ REPL:
 If neither -e, -f, or --socket-repl are specified, then the first argument that is not parsed as a option is treated as a file if it exists, or as an expression otherwise. Everything after that is bound to *command-line-args*. Use -- to separate script command line args from bb command line args.
 ```
 
-### Built-in namespaces
+### Built-in libraries
 
-The following namespaces are required by default. Some are available through
-pre-defined aliases in the `user` namespace, which can be handy for
-one-liners. You may use `require` + `:as` and/or `:refer` on these
-namespaces. If not all vars are available, they are enumerated explicitly.
-The `clojure.core` functions are accessible without a namespace alias.
+In addition to `clojure.core`, the following namespaces are available. Some are
+available through pre-defined aliases in the `user` namespace, which can be
+handy for one-liners. If not all vars are available, they are enumerated
+explicitly.
 
 - `babashka.curl` (see [here](#babashkanamespaces))
 - `clojure.data`
@@ -245,20 +244,11 @@ See the
 [libraries](https://github.com/borkdude/babashka/blob/master/doc/libraries.md)
 page for libraries that are not built-in, but which you can load via the classpath.
 
-A selection of java classes are available, see `babashka/impl/classes.clj`.
+See the [build](https://github.com/borkdude/babashka/blob/master/doc/build.md)
+page for namespaces that can be enabled via feature flags, if you want to
+compile babashka yourself.
 
-Babashka supports `import`: `(import clojure.lang.ExceptionInfo)`.
-
-Babashka supports a subset of the `ns` form where you may use `:require` and `:import`:
-
-``` shellsession
-(ns foo
-  (:require [clojure.string :as str])
-  (:import clojure.lang.ExceptionInfo))
-```
-
-For the unsupported parts of the ns form, you may use [reader
-conditionals](#reader-conditionals) to maintain compatibility with JVM Clojure.
+A selection of Java classes are available, see `babashka/impl/classes.clj`.
 
 ### Running a script
 
