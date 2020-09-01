@@ -204,7 +204,7 @@ REPL:
 If neither -e, -f, or --socket-repl are specified, then the first argument that is not parsed as a option is treated as a file if it exists, or as an expression otherwise. Everything after that is bound to *command-line-args*. Use -- to separate script command line args from bb command line args.
 ```
 
-### Built-in libraries
+### Built-in namespaces
 
 In addition to `clojure.core`, the following namespaces are available. Some are
 available through pre-defined aliases in the `user` namespace, which can be
