@@ -23,7 +23,7 @@
         org.postgresql/postgresql {:mvn/version "42.2.12"}
         org.hsqldb/hsqldb {:mvn/version "2.4.0"}
         datascript/datascript {:mvn/version "0.18.11"}
-        http-kit {:mvn/version "2.5.0-alpha2"}}
+        http-kit/http-kit {:mvn/version "2.5.0-alpha2"}}
  :aliases {:main
            {:main-opts ["-m" "babashka.main"]}
            :profile
