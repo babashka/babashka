@@ -209,44 +209,49 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
 In addition to `clojure.core`, the following namespaces are available. Some are
 available through pre-defined aliases in the `user` namespace, which can be
 handy for one-liners. If not all vars are available, they are enumerated
-explicitly.
+explicitly. If some important var is missing, an issue or PR is welcome.
 
-- `babashka.curl` (see [here](#babashkanamespaces))
+From Clojure:
+
+- `clojure.core`
+- `clojure.core.protocols`: `Datafiable`, `Navigable`
 - `clojure.data`
-- `clojure.string` aliased as `str`
-- `clojure.set` aliased as `set`
-- `clojure.edn` aliased as `edn`:
-  - `read-string`
 - `clojure.datafy`
+- `clojure.edn` aliased as `edn`
 - `clojure.java.browse`
-- `clojure.java.shell` aliased as `shell`
 - `clojure.java.io` aliased as `io`:
   - `as-relative-path`, `as-url`, `copy`, `delete-file`, `file`, `input-stream`,
     `make-parents`, `output-stream`, `reader`, `resource`, `writer`
-- `clojure.main`: `repl`
-- [`clojure.core.async`](https://clojure.github.io/core.async/) aliased as
-  `async`.
+- `clojure.java.shell` aliased as `shell`
+- `clojure.main`: `demunge`, `repl`, `repl-requires`
+- `clojure.pprint`: `pprint` (currently backed by [fipp](https://github.com/brandonbloom/fipp)'s  `fipp.edn/pprint`)
+- `clojure.set` aliased as `set`
+- `clojure.string` aliased as `str`
 - `clojure.stacktrace`
 - `clojure.test`
-- `clojure.pprint`: `pprint` (currently backed by [fipp](https://github.com/brandonbloom/fipp)'s  `fipp.edn/pprint`)
 - `clojure.zip`
-- `clojure.core.protocols`: `Datafiable`, `Navigable`
-- [`clojure.tools.cli`](https://github.com/clojure/tools.cli) aliased as `tools.cli`
+
+Additional libraries:
+
+- [`babashka.curl`](https://github.com/borkdude/babashka.curl)
+- [`bencode.core`](https://github.com/nrepl/bencode) aliased as `bencode`: `read-bencode`, `write-bencode`
+- [`cheshire.core`](https://github.com/dakrone/cheshire) aliased as `json`
+- [`clojure.core.async`](https://clojure.github.io/core.async/) aliased as
+  `async`. Also see [docs](https://github.com/borkdude/babashka#coreasync).
 - [`clojure.data.csv`](https://github.com/clojure/data.csv) aliased as `csv`
 - [`clojure.data.xml`](https://github.com/clojure/data.xml) aliased as `xml`
-- [`cheshire.core`](https://github.com/dakrone/cheshire) aliased as `json`
-- [`cognitect.transit`](https://github.com/cognitect/transit-clj) aliased as `transit`
+- [`clojure.tools.cli`](https://github.com/clojure/tools.cli) aliased as `tools.cli`
 - [`clj-yaml.core`](https://github.com/clj-commons/clj-yaml) alias as `yaml`
-- [`bencode.core`](https://github.com/nrepl/bencode) aliased as `bencode`: `read-bencode`, `write-bencode`
-- [`next.jdbc`](https://github.com/seancorfield/next-jdbc) aliased as `jdbc` (available under feature flag)
+- [`cognitect.transit`](https://github.com/cognitect/transit-clj) aliased as `transit`
 
 See the
 [libraries](https://github.com/borkdude/babashka/blob/master/doc/libraries.md)
-page for libraries that are not built-in, but which you can load via the classpath.
+page for libraries that are not built-in, but which you can load from source via
+the `--classpath` option.
 
 See the [build](https://github.com/borkdude/babashka/blob/master/doc/build.md)
-page for namespaces that can be enabled via feature flags, if you want to
-compile babashka yourself.
+page for built-in libraries that can be enabled via feature flags, if you want
+to compile babashka yourself.
 
 A selection of Java classes are available, see `babashka/impl/classes.clj`.
 
@@ -349,7 +354,9 @@ $ bb example.clj
 
 Command-line arguments can be retrieved using `*command-line-args*`. If you want
 to parse command line arguments, you may use the built-in `clojure.tools.cli`
-namespace or use the
+namespace (see
+[docs](https://github.com/borkdude/babashka#parsing-command-line-arguments)) or
+use the
 [nubank/docopt](https://github.com/borkdude/babashka/blob/master/doc/libraries.md#nubankdocopt)
 library.
 
@@ -497,7 +504,7 @@ Note that `*input*` is not available in preloads.
 ## Classpath
 
 Babashka accepts a `--classpath` option that will be used to search for
-namespaces and load them:
+namespaces when requiring them:
 
 ``` clojure
 $ cat src/my/namespace.clj
@@ -509,7 +516,7 @@ $ bb --classpath src --main my.namespace
 Hello from my namespace!
 ```
 
-So if you have a larger script with a classic Clojure project layout like
+If you have a larger script with a classic Clojure project layout like
 
 ```shellsession
 $ tree -L 3
@@ -524,7 +531,8 @@ $ tree -L 3
         ├── test_main.clj
         └── test_utilities.clj
 ```
-Then you can tell Babashka to include both the `src` and `test`
+
+then you can tell babashka to include both the `src` and `test`
 folders in the classpath and start a socket REPL by running:
 
 ```shellsession
