@@ -2,10 +2,10 @@
   {:no-doc true}
   (:require #_[org.httpkit.server :as srv]
             [org.httpkit.client :as client]
-            #_[org.httpkit.sni-client :as sni-client]
+            [org.httpkit.sni-client :as sni-client]
             [sci.core :as sci :refer [copy-var]]))
 
-#_(alter-var-root #'org.httpkit.client/*default-client* (fn [_] sni-client/default-client))
+(alter-var-root #'org.httpkit.client/*default-client* (fn [_] sni-client/default-client))
 
 (def sns (sci/create-ns 'org.httpkit.server nil))
 (def cns (sci/create-ns 'org.httpkit.client nil))
