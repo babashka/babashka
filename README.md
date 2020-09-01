@@ -206,15 +206,21 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
 
 The `clojure.core` functions are accessible without a namespace alias.
 
-The following namespaces are required by default and available through the
-pre-defined aliases in the `user` namespace. You may use `require` + `:as`
-and/or `:refer` on these namespaces. If not all vars are available, they are
-enumerated explicitly.
+### Built-in namespaces
 
+The following namespaces are required by default. Some are available through
+pre-defined aliases in the `user` namespace, which can be handy for
+one-liners. You may use `require` + `:as` and/or `:refer` on these
+namespaces. If not all vars are available, they are enumerated explicitly.
+
+- `babashka.curl` (see [here](#babashkanamespaces))
+- `clojure.data`
 - `clojure.string` aliased as `str`
 - `clojure.set` aliased as `set`
 - `clojure.edn` aliased as `edn`:
   - `read-string`
+- `clojure.datafy`
+- `clojure.java.browse`
 - `clojure.java.shell` aliased as `shell`
 - `clojure.java.io` aliased as `io`:
   - `as-relative-path`, `as-url`, `copy`, `delete-file`, `file`, `input-stream`,
@@ -226,6 +232,7 @@ enumerated explicitly.
 - `clojure.test`
 - `clojure.pprint`: `pprint` (currently backed by [fipp](https://github.com/brandonbloom/fipp)'s  `fipp.edn/pprint`)
 - `clojure.zip`
+- `clojure.core.protocols`: `Datafiable`, `Navigable`
 - [`clojure.tools.cli`](https://github.com/clojure/tools.cli) aliased as `tools.cli`
 - [`clojure.data.csv`](https://github.com/clojure/data.csv) aliased as `csv`
 - [`clojure.data.xml`](https://github.com/clojure/data.xml) aliased as `xml`
@@ -353,7 +360,7 @@ namespace or use the
 [nubank/docopt](https://github.com/borkdude/babashka/blob/master/doc/libraries.md#nubankdocopt)
 library.
 
-### Additional namespaces
+### Babashka namespaces
 
 #### babashka.classpath
 
