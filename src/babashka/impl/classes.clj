@@ -160,6 +160,7 @@
                 java.nio.file.attribute.PosixFilePermission
                 java.nio.file.attribute.PosixFilePermissions])
           java.security.MessageDigest
+          java.security.DigestInputStream
           ~@(when features/java-time?
               `[java.time.format.DateTimeFormatter
                 java.time.Clock
