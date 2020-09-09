@@ -181,6 +181,12 @@
 ;;;; bond
 (test-namespaces 'bond.test.james)
 
+;;;; version-clj
+(test-namespaces 'version-clj.compare-test
+                 'version-clj.core-test
+                 'version-clj.split-test
+                 'version-clj.via-use-test)
+
 ;;;; final exit code
 
 (let [{:keys [:test :fail :error] :as m} @status]
