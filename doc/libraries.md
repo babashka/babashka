@@ -269,15 +269,15 @@ Analysis and comparison of artifact version numbers.
 > export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {version-clj/version-clj {:mvn/version "0.1.2"}}}')
 > bb --repl
 ...
-user=> (use 'version-clj.core)
+user=> (require '[version-clj.core :as ver])
 nil
-user=> (version->seq "1.0.0-SNAPSHOT")
+user=> (ver/version->seq "1.0.0-SNAPSHOT")
 [(1 0 0) ["snapshot"]]
-user=> (version-compare "1.2.3" "1.0.0")
+user=> (ver/version-compare "1.2.3" "1.0.0")
 1
-user=> (version-compare "1.0.0-SNAPSHOT" "1.0.0")
+user=> (ver/version-compare "1.0.0-SNAPSHOT" "1.0.0")
 -1
-user=> (version-compare "1.0" "1.0.0")
+user=> (ver/version-compare "1.0" "1.0.0")
 0
 ```
 
