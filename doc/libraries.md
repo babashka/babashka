@@ -261,6 +261,26 @@ A clojure tool to navigate through your data. This example will launch a browser
 $ cat deps.edn | bb -cp `clojure -Spath -Sdeps '{:deps {djblue/portal {:mvn/version "0.4.1"}}}'` -m portal.main edn
 ```
 
+### [version-clj](https://github.com/xsc/version-clj)
+
+Analysis and comparison of artifact version numbers.
+
+``` clojure
+> export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {version-clj/version-clj {:mvn/version "0.1.2"}}}')
+> bb --repl
+...
+user=> (require '[version-clj.core :as ver])
+nil
+user=> (ver/version->seq "1.0.0-SNAPSHOT")
+[(1 0 0) ["snapshot"]]
+user=> (ver/version-compare "1.2.3" "1.0.0")
+1
+user=> (ver/version-compare "1.0.0-SNAPSHOT" "1.0.0")
+-1
+user=> (ver/version-compare "1.0" "1.0.0")
+0
+```
+
 ## Pods
 
 [Babashka pods](https://github.com/babashka/babashka.pods) are programs that can
