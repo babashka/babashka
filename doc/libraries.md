@@ -372,3 +372,7 @@ There's also
 which is like sh/sh, but it inherits stdin/stdout/stderr, so that the user sees
 in real time what the subprocess is doing, and can possibly interact with
 it. More like how shelling out in a bash script works.
+
+### [dharrigan/spotifyd-notification](https://github.com/dharrigan/spotifyd-notification)
+
+An example of using babashka to show spotifyd notifications via dunst.
