@@ -41,9 +41,9 @@ As one user described it:
 ### Managing expectations
 
 Babashka uses [sci](https://github.com/borkdude/sci) for interpreting
-Clojure. Sci implements a suffiently large subset of Clojure. Interpreting code
-is in general not as performant as executing compiled code. If your script takes
-more than a few seconds to run or has lots of loops, Clojure on the JVM may be a
+Clojure. Sci implements a substantial subset of Clojure. Interpreting code is in
+general not as performant as executing compiled code. If your script takes more
+than a few seconds to run or has lots of loops, Clojure on the JVM may be a
 better fit, since the performance of Clojure on the JVM outweighs its startup
 time penalty. Read more about the differences with Clojure
 [here](#differences-with-clojure).
@@ -900,7 +900,7 @@ If you really want to print the nil, you can use `(prn ..)` instead.
 Babashka is implemented using the [Small Clojure
 Interpreter](https://github.com/borkdude/sci). This means that a snippet or
 script is not compiled to JVM bytecode, but executed form by form by a runtime
-which implements a sufficiently large subset of Clojure. Babashka is compiled to
+which implements a substantial subset of Clojure. Babashka is compiled to
 a native binary using [GraalVM](https://github.com/oracle/graal). It comes with
 a selection of built-in namespaces and functions from Clojure and other useful
 libraries. The data types (numbers, strings, persistent collections) are the
