@@ -60,9 +60,7 @@ $ export BABASHKA_XMX="-J-Xmx6500m"
 Note: setting the max heap size to a low value can cause the build to crash or
 take long to complete.
 
-## Windows
-
-Run `script\uberjar.bat` followed by `script\compile.bat`.
+To build on Windows, run `script\uberjar.bat` followed by `script\compile.bat`.
 
 ## Feature flags
 
