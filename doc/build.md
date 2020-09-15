@@ -56,13 +56,7 @@ take long to complete.
 
 ## Windows
 
-To compile on Windows you need to check out the `windows` branch:
-
-``` shell
-$ git checkout windows
-```
-
-Then run `script\uberjar.bat` followed by `script\compile.bat`.
+Run `script\uberjar.bat` followed by `script\compile.bat`.
 
 ## Feature flags
 
