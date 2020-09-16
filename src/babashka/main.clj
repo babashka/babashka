@@ -444,7 +444,8 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
   (handle-sigint!)
   (binding [*unrestricted* true]
     (sci/binding [reflection-var false
-                  core/data-readers @core/data-readers]
+                  core/data-readers @core/data-readers
+                  sci/ns @sci/ns]
       (let [{version-opt :version
              :keys [:shell-in :edn-in :shell-out :edn-out
                     :help? :file :command-line-args

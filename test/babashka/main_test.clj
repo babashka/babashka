@@ -538,6 +538,11 @@
          Exception #"preloads"
          (test-utils/bb nil (.getPath (io/file "test-resources" "babashka" "file_location_preloads.clj")))))))
 
+(deftest repl-test
+  (is (str/includes? (test-utils/bb "(ns foo) ::foo" "--repl") ":foo/foo"))
+  (is (str/includes? (test-utils/bb "[*warn-on-reflection* (set! *warn-on-reflection* true) *warn-on-reflection*]")
+                     "[false true true]")))
+
 ;;;; Scratch
 
 (comment
