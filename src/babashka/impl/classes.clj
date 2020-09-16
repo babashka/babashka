@@ -236,8 +236,8 @@
     :instance-checks [clojure.lang.IObj
                       clojure.lang.IFn
                       clojure.lang.IPending
-                      clojure.lang.IDeref
-                      clojure.lang.IAtom
+                      ;; clojure.lang.IDeref
+                      ;; clojure.lang.IAtom
                       clojure.lang.IEditableCollection
                       clojure.lang.IMapEntry
                       clojure.lang.IPersistentMap
