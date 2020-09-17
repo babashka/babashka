@@ -18,11 +18,11 @@ with C++" workload is recommended.
   export GRAALVM_HOME=~/Downloads/graalvm-ce-java11-20.1.0
   ```
 
-  On Windows, from the Visual Studio 2019 Developer Command Prompt or `cmd.exe` (not Powershell):
+  On Windows, from the [Visual Studio 2019 x64 Native Tools Command Prompt](https://github.com/oracle/graal/issues/2116#issuecomment-590470806) or `cmd.exe` (not Powershell):
   ```
   set GRAALVM_HOME=%USERPROFILE%\Downloads\graalvm-ce-java11-20.1.0
   ```
-  If you are not running from the Developer Command Prompt, you will need to set additional environment variables using:
+  If you are not running from the x64 Native Tools Command Prompt, you will need to set additional environment variables using:
   ```
   call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
   ```
