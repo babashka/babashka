@@ -15,7 +15,7 @@
   :resource-paths ["resources" "sci/resources"]
   :dependencies [[org.clojure/clojure "1.10.2-alpha1"]
                  [org.clojure/tools.reader "1.3.2"]
-                 [borkdude/edamame "0.0.11-alpha.14"]
+                 [borkdude/edamame "0.0.11-alpha.15"]
                  [borkdude/graal.locking "0.0.2"]
                  [org.clojure/tools.cli "1.0.194"]
                  [cheshire "5.10.0"]
@@ -26,7 +26,7 @@
   :profiles {:feature/xml  {:source-paths ["feature-xml"]
                             :dependencies [[org.clojure/data.xml "0.2.0-alpha6"]]}
              :feature/yaml {:source-paths ["feature-yaml"]
-                            :dependencies [[clj-commons/clj-yaml "0.7.1"]]}
+                            :dependencies [[clj-commons/clj-yaml "0.7.2"]]}
              :feature/jdbc {:source-paths ["feature-jdbc"]
                             :dependencies [[seancorfield/next.jdbc "1.0.424"]]}
              :feature/postgresql [:feature/jdbc {:dependencies [[org.postgresql/postgresql "42.2.12"]]}]

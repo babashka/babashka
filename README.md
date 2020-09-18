@@ -3,6 +3,7 @@
 [![CircleCI](https://circleci.com/gh/borkdude/babashka/tree/master.svg?style=shield)](https://circleci.com/gh/borkdude/babashka/tree/master)
 [![project chat](https://img.shields.io/badge/slack-join_chat-brightgreen.svg)](https://app.slack.com/client/T03RZGPFR/CLX41ASCS)
 [![Financial Contributors on Open Collective](https://opencollective.com/babashka/all/badge.svg?label=financial+contributors)](https://opencollective.com/babashka) [![Clojars Project](https://img.shields.io/clojars/v/borkdude/babashka.svg)](https://clojars.org/borkdude/babashka)
+[![twitter](https://img.shields.io/badge/twitter-%23babashka-blue)](https://twitter.com/search?q=%23babashka&src=typed_query&f=live)
 
 A Clojure [babushka](https://en.wikipedia.org/wiki/Headscarf) for the grey areas of Bash.
 
@@ -40,9 +41,9 @@ As one user described it:
 ### Managing expectations
 
 Babashka uses [sci](https://github.com/borkdude/sci) for interpreting
-Clojure. Sci implements a suffiently large subset of Clojure. Interpreting code
-is in general not as performant as executing compiled code. If your script takes
-more than a few seconds to run or has lots of loops, Clojure on the JVM may be a
+Clojure. Sci implements a substantial subset of Clojure. Interpreting code is in
+general not as performant as executing compiled code. If your script takes more
+than a few seconds to run or has lots of loops, Clojure on the JVM may be a
 better fit, since the performance of Clojure on the JVM outweighs its startup
 time penalty. Read more about the differences with Clojure
 [here](#differences-with-clojure).
@@ -204,51 +205,56 @@ REPL:
 If neither -e, -f, or --socket-repl are specified, then the first argument that is not parsed as a option is treated as a file if it exists, or as an expression otherwise. Everything after that is bound to *command-line-args*. Use -- to separate script command line args from bb command line args.
 ```
 
-The `clojure.core` functions are accessible without a namespace alias.
+### Built-in namespaces
 
-The following namespaces are required by default and available through the
-pre-defined aliases in the `user` namespace. You may use `require` + `:as`
-and/or `:refer` on these namespaces. If not all vars are available, they are
-enumerated explicitly.
+In addition to `clojure.core`, the following namespaces are available. Some are
+available through pre-defined aliases in the `user` namespace, which can be
+handy for one-liners. If not all vars are available, they are enumerated
+explicitly. If some important var is missing, an issue or PR is welcome.
 
-- `clojure.string` aliased as `str`
-- `clojure.set` aliased as `set`
-- `clojure.edn` aliased as `edn`:
-  - `read-string`
-- `clojure.java.shell` aliased as `shell`
+From Clojure:
+
+- `clojure.core`
+- `clojure.core.protocols`: `Datafiable`, `Navigable`
+- `clojure.data`
+- `clojure.datafy`
+- `clojure.edn` aliased as `edn`
+- `clojure.java.browse`
 - `clojure.java.io` aliased as `io`:
   - `as-relative-path`, `as-url`, `copy`, `delete-file`, `file`, `input-stream`,
     `make-parents`, `output-stream`, `reader`, `resource`, `writer`
-- `clojure.main`: `repl`
-- [`clojure.core.async`](https://clojure.github.io/core.async/) aliased as
-  `async`.
+- `clojure.java.shell` aliased as `shell`
+- `clojure.main`: `demunge`, `repl`, `repl-requires`
+- `clojure.pprint`: `pprint` (currently backed by [fipp](https://github.com/brandonbloom/fipp)'s  `fipp.edn/pprint`)
+- `clojure.set` aliased as `set`
+- `clojure.string` aliased as `str`
 - `clojure.stacktrace`
 - `clojure.test`
-- `clojure.pprint`: `pprint` (currently backed by [fipp](https://github.com/brandonbloom/fipp)'s  `fipp.edn/pprint`)
 - `clojure.zip`
-- [`clojure.tools.cli`](https://github.com/clojure/tools.cli) aliased as `tools.cli`
+
+Additional libraries:
+
+- [`babashka.curl`](https://github.com/borkdude/babashka.curl)
+- [`bencode.core`](https://github.com/nrepl/bencode) aliased as `bencode`: `read-bencode`, `write-bencode`
+- [`cheshire.core`](https://github.com/dakrone/cheshire) aliased as `json`
+- [`clojure.core.async`](https://clojure.github.io/core.async/) aliased as
+  `async`. Also see [docs](https://github.com/borkdude/babashka#coreasync).
 - [`clojure.data.csv`](https://github.com/clojure/data.csv) aliased as `csv`
 - [`clojure.data.xml`](https://github.com/clojure/data.xml) aliased as `xml`
-- [`cheshire.core`](https://github.com/dakrone/cheshire) aliased as `json`
-- [`cognitect.transit`](https://github.com/cognitect/transit-clj) aliased as `transit`
+- [`clojure.tools.cli`](https://github.com/clojure/tools.cli) aliased as `tools.cli`
 - [`clj-yaml.core`](https://github.com/clj-commons/clj-yaml) alias as `yaml`
-- [`bencode.core`](https://github.com/nrepl/bencode) aliased as `bencode`: `read-bencode`, `write-bencode`
-- [`next.jdbc`](https://github.com/seancorfield/next-jdbc) aliased as `jdbc` (available under feature flag)
+- [`cognitect.transit`](https://github.com/cognitect/transit-clj) aliased as `transit`
 
-A selection of java classes are available, see `babashka/impl/classes.clj`.
+See the
+[libraries](https://github.com/borkdude/babashka/blob/master/doc/libraries.md)
+page for libraries that are not built-in, but which you can load from source via
+the `--classpath` option.
 
-Babashka supports `import`: `(import clojure.lang.ExceptionInfo)`.
+See the [build](https://github.com/borkdude/babashka/blob/master/doc/build.md)
+page for built-in libraries that can be enabled via feature flags, if you want
+to compile babashka yourself.
 
-Babashka supports a subset of the `ns` form where you may use `:require` and `:import`:
-
-``` shellsession
-(ns foo
-  (:require [clojure.string :as str])
-  (:import clojure.lang.ExceptionInfo))
-```
-
-For the unsupported parts of the ns form, you may use [reader
-conditionals](#reader-conditionals) to maintain compatibility with JVM Clojure.
+A selection of Java classes are available, see `babashka/impl/classes.clj`.
 
 ### Running a script
 
@@ -349,11 +355,13 @@ $ bb example.clj
 
 Command-line arguments can be retrieved using `*command-line-args*`. If you want
 to parse command line arguments, you may use the built-in `clojure.tools.cli`
-namespace or use the
+namespace (see
+[docs](https://github.com/borkdude/babashka#parsing-command-line-arguments)) or
+use the
 [nubank/docopt](https://github.com/borkdude/babashka/blob/master/doc/libraries.md#nubankdocopt)
 library.
 
-### Additional namespaces
+### Babashka namespaces
 
 #### babashka.classpath
 
@@ -497,7 +505,7 @@ Note that `*input*` is not available in preloads.
 ## Classpath
 
 Babashka accepts a `--classpath` option that will be used to search for
-namespaces and load them:
+namespaces when requiring them:
 
 ``` clojure
 $ cat src/my/namespace.clj
@@ -509,7 +517,7 @@ $ bb --classpath src --main my.namespace
 Hello from my namespace!
 ```
 
-So if you have a larger script with a classic Clojure project layout like
+If you have a larger script with a classic Clojure project layout like
 
 ```shellsession
 $ tree -L 3
@@ -524,7 +532,8 @@ $ tree -L 3
         ├── test_main.clj
         └── test_utilities.clj
 ```
-Then you can tell Babashka to include both the `src` and `test`
+
+then you can tell babashka to include both the `src` and `test`
 folders in the classpath and start a socket REPL by running:
 
 ```shellsession
@@ -843,15 +852,15 @@ This also works when the script is interrupted with ctrl-c.
 Babashka supports the [`next.jdbc`](https://github.com/seancorfield/next-jdbc)
 library along with drivers for [PostgresQL](https://www.postgresql.org/) and
 [HSQLDB](http://hsqldb.org/). These features are not part of the standard `bb`
-distribution. See [doc/build.md](doc/build.md) for details on how to build
-babashka with these features. See this
+distribution but available via feature flags. See [doc/build.md](doc/build.md)
+for details on how to build babashka with these features. See this
 [test](test-resources/babashka/postgres_test.clj) for an example how to use
 this.
 
 Interacting with `psql`, `mysql` and the `sqlite` CLIs can be achieved by
 shelling out. See the [examples](examples) directory.
 
-## Bencode
+## Communicating with an nREPL server
 
 Babashka comes with the [nrepl/bencode](https://github.com/nrepl/bencode)
 library which allows you to read and write bencode messages to a socket. A
@@ -883,6 +892,7 @@ $ bb '(:a {:a 5}'
 $ bb '(:b {:a 5}'
 $
 ```
+
 If you really want to print the nil, you can use `(prn ..)` instead.
 
 ## Differences with Clojure
@@ -890,7 +900,7 @@ If you really want to print the nil, you can use `(prn ..)` instead.
 Babashka is implemented using the [Small Clojure
 Interpreter](https://github.com/borkdude/sci). This means that a snippet or
 script is not compiled to JVM bytecode, but executed form by form by a runtime
-which implements a sufficiently large subset of Clojure. Babashka is compiled to
+which implements a substantial subset of Clojure. Babashka is compiled to
 a native binary using [GraalVM](https://github.com/oracle/graal). It comes with
 a selection of built-in namespaces and functions from Clojure and other useful
 libraries. The data types (numbers, strings, persistent collections) are the
@@ -932,9 +942,10 @@ handling of SIGINT and SIGPIPE. This can be done by setting
 
 ## Articles, podcasts and videos
 
+- [Using Clojure in Command Line with Babashka](http://www.karimarttila.fi/clojure/2020/09/01/using-clojure-in-command-line-with-babashka.html), a blog article by Kari Marttila.
 - [Babashka and GraalVM; taking Clojure to new places](https://youtu.be/3EUMA6bd-xQ), a talk by Michiel Borkent at [Clojure/NYC](https://www.meetup.com/Clojure-NYC/).
 - [Import a CSV into Kafka, using Babashka](https://blog.davemartin.me/posts/import-a-csv-into-kafka-using-babashka/) by Dave Martin
-- [Learning about babashka](https://amontalenti.com/2020/07/11/babashka) by Andrew Montalenti
+- [Learning about babashka](https://amontalenti.com/2020/07/11/babashka), a blog article by Andrew Montalenti
 - [Babashka Pods](https://www.youtube.com/watch?v=3Q4GUiUIrzg&feature=emb_logo) presentation by Michiel Borkent at the [Dutch Clojure Meetup](http://meetup.com/The-Dutch-Clojure-Meetup).
 - [AWS Logs using Babashka](https://tech.toyokumo.co.jp/entry/aws_logs_babashka), a blog published by [Toyokumo](https://toyokumo.co.jp/).
 - [The REPL podcast](https://www.therepl.net/episodes/36/) Michiel Borkent talks about [clj-kondo](https://github.com/borkdude/clj-kondo), [Jet](https://github.com/borkdude/jet), Babashka, and [GraalVM](https://github.com/oracle/graal) with Daniel Compton.

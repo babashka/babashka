@@ -148,6 +148,7 @@
                 java.nio.file.FileAlreadyExistsException
                 java.nio.file.FileSystem
                 java.nio.file.FileSystems
+                java.nio.file.FileVisitOption
                 java.nio.file.Files
                 java.nio.file.LinkOption
                 java.nio.file.NoSuchFileException
@@ -160,6 +161,7 @@
                 java.nio.file.attribute.PosixFilePermission
                 java.nio.file.attribute.PosixFilePermissions])
           java.security.MessageDigest
+          java.security.DigestInputStream
           ~@(when features/java-time?
               `[java.time.format.DateTimeFormatter
                 java.time.Clock
@@ -234,8 +236,8 @@
     :instance-checks [clojure.lang.IObj
                       clojure.lang.IFn
                       clojure.lang.IPending
-                      clojure.lang.IDeref
-                      clojure.lang.IAtom
+                      ;; clojure.lang.IDeref
+                      ;; clojure.lang.IAtom
                       clojure.lang.IEditableCollection
                       clojure.lang.IMapEntry
                       clojure.lang.IPersistentMap

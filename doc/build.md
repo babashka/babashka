@@ -4,6 +4,8 @@
 
 - Install [lein](https://leiningen.org/) for producing uberjars
 - Download [GraalVM](https://www.graalvm.org/downloads/). Currently we use *java11-20.1.0*.
+- For Windows, installing Visual Studio 2019 with the "Desktop development
+with C++" workload is recommended.
 - Set `$GRAALVM_HOME` to the GraalVM distribution directory. On macOS this can look like:
 
   ``` shell
@@ -16,9 +18,13 @@
   export GRAALVM_HOME=~/Downloads/graalvm-ce-java11-20.1.0
   ```
 
-  On Windows:
+  On Windows, from the [Visual Studio 2019 x64 Native Tools Command Prompt](https://github.com/oracle/graal/issues/2116#issuecomment-590470806) or `cmd.exe` (not Powershell):
   ```
-  set GRAALVM_HOME=C:\Users\IEUser\Downloads\graalvm-ce-java11-20.1.0
+  set GRAALVM_HOME=%USERPROFILE%\Downloads\graalvm-ce-java11-20.1.0
+  ```
+  If you are not running from the x64 Native Tools Command Prompt, you will need to set additional environment variables using:
+  ```
+  call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
   ```
 
 ## Clone repository
@@ -56,13 +62,7 @@ take long to complete.
 
 ## Windows
 
-To compile on Windows you need to check out the `windows` branch:
-
-``` shell
-$ git checkout windows
-```
-
-Then run `script\uberjar.bat` followed by `script\compile.bat`.
+Run `script\uberjar.bat` followed by `script\compile.bat`.
 
 ## Feature flags
 

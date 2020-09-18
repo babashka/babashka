@@ -253,6 +253,34 @@ Turn Clojure data structures into SQL
 
 Spying and stubbing library, primarily intended for tests.
 
+### [portal](https://github.com/djblue/portal/)
+
+A clojure tool to navigate through your data. This example will launch a browser to view your `deps.edn`:
+
+``` clojure
+$ cat deps.edn | bb -cp `clojure -Spath -Sdeps '{:deps {djblue/portal {:mvn/version "0.4.1"}}}'` -m portal.main edn
+```
+
+### [version-clj](https://github.com/xsc/version-clj)
+
+Analysis and comparison of artifact version numbers.
+
+``` clojure
+> export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {version-clj/version-clj {:mvn/version "0.1.2"}}}')
+> bb --repl
+...
+user=> (require '[version-clj.core :as ver])
+nil
+user=> (ver/version->seq "1.0.0-SNAPSHOT")
+[(1 0 0) ["snapshot"]]
+user=> (ver/version-compare "1.2.3" "1.0.0")
+1
+user=> (ver/version-compare "1.0.0-SNAPSHOT" "1.0.0")
+-1
+user=> (ver/version-compare "1.0" "1.0.0")
+0
+```
+
 ## Pods
 
 [Babashka pods](https://github.com/babashka/babashka.pods) are programs that can
@@ -344,3 +372,7 @@ There's also
 which is like sh/sh, but it inherits stdin/stdout/stderr, so that the user sees
 in real time what the subprocess is doing, and can possibly interact with
 it. More like how shelling out in a bash script works.
+
+### [dharrigan/spotifyd-notification](https://github.com/dharrigan/spotifyd-notification)
+
+An example of using babashka to show spotifyd notifications via dunst.
