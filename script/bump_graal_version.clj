@@ -41,7 +41,8 @@
    "doc/dev.md"
    ".github/workflows/build.yml"
    ".circleci/config.yml"
-   "appveyor.yml"])
+   "appveyor.yml"
+   "project.clj"])
 
 ;; We might have to keep changing these from
 ;; time to time whenever the version is bumped
