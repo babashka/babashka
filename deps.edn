@@ -1,6 +1,7 @@
 {:paths ["src" "feature-xml" "feature-core-async"
          "feature-yaml" "feature-csv" "feature-transit"
          "feature-java-time" "feature-java-nio"
+         "feature-httpkit-client"
          "sci/src" "babashka.curl/src" "babashka.pods/src"
          "babashka.nrepl/src"
          "depstar/src"
@@ -22,7 +23,8 @@
         seancorfield/next.jdbc {:mvn/version "1.0.424"}
         org.postgresql/postgresql {:mvn/version "42.2.12"}
         org.hsqldb/hsqldb {:mvn/version "2.4.0"}
-        datascript/datascript {:mvn/version "0.18.11"}}
+        datascript/datascript {:mvn/version "0.18.11"}
+        http-kit/http-kit {:mvn/version "2.5.0"}}
  :aliases {:main
            {:main-opts ["-m" "babashka.main"]}
            :profile

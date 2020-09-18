@@ -81,6 +81,9 @@
 (when features/datascript?
   (require '[babashka.impl.datascript]))
 
+(when features/httpkit-client?
+  (require '[babashka.impl.httpkit-client]))
+
 (sci/alter-var-root sci/in (constantly *in*))
 (sci/alter-var-root sci/out (constantly *out*))
 (sci/alter-var-root sci/err (constantly *err*))
@@ -282,7 +285,8 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
  :feature/yaml       %s
  :feature/jdbc       %s
  :feature/postgresql %s
- :feature/hsqldb     %s}")
+ :feature/hsqldb     %s
+ :feature/httpkit-client %s}")
     version
     features/core-async?
     features/csv?
@@ -292,7 +296,8 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
     features/yaml?
     features/jdbc?
     features/postgresql?
-    features/hsqldb?)))
+    features/hsqldb?
+    features/httpkit-client?)))
 
 (defn read-file [file]
   (let [f (io/file file)]
@@ -397,7 +402,8 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                                 'clojure.core.async.impl.protocols @(resolve 'babashka.impl.async/async-protocols-namespace))
     features/csv?  (assoc 'clojure.data.csv @(resolve 'babashka.impl.csv/csv-namespace))
     features/transit? (assoc 'cognitect.transit @(resolve 'babashka.impl.transit/transit-namespace))
-    features/datascript? (assoc 'datascript.core @(resolve 'babashka.impl.datascript/datascript-namespace))))
+    features/datascript? (assoc 'datascript.core @(resolve 'babashka.impl.datascript/datascript-namespace))
+    features/httpkit-client? (assoc 'org.httpkit.client @(resolve 'babashka.impl.httpkit-client/httpkit-client-namespace))))
 
 (def bindings
   {'java.lang.System/exit exit ;; override exit, so we have more control

@@ -82,6 +82,7 @@ then
     export BABAHSKA_FEATURE_TRANSIT=false
     export BABASHKA_FEATURE_JAVA_TIME=false
     export BABASHKA_FEATURE_JAVA_NIO=false
+    export BABASHKA_FEATURE_HTTPKIT_CLIENT=false
 fi
 
 "$GRAALVM_HOME/bin/native-image" "${args[@]}"
