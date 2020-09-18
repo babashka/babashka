@@ -4,7 +4,8 @@
             [org.httpkit.sni-client :as sni-client]
             [sci.core :as sci :refer [copy-var]]))
 
-(alter-var-root #'org.httpkit.client/*default-client* (fn [_] sni-client/default-client))
+(def ssl-client @sni-client/default-client)
+(alter-var-root #'org.httpkit.client/*default-client* (fn [_] (delay ssl-client)))
 
 (def sns (sci/create-ns 'org.httpkit.server nil))
 (def cns (sci/create-ns 'org.httpkit.client nil))
