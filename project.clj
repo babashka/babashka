@@ -21,8 +21,7 @@
                  [cheshire "5.10.0"]
                  [fipp "0.6.22"]
                  [nrepl/bencode "1.1.0"]
-                 [borkdude/sci.impl.reflector "0.0.1-java11"]
-                 [http-kit "2.5.0-alpha2"]]
+                 [borkdude/sci.impl.reflector "0.0.1-java11"]]
   :profiles {:feature/xml  {:source-paths ["feature-xml"]
                             :dependencies [[org.clojure/data.xml "0.2.0-alpha6"]]}
              :feature/yaml {:source-paths ["feature-yaml"]
@@ -39,6 +38,10 @@
                                :dependencies [[com.cognitect/transit-clj "1.0.324"]]}
              :feature/datascript {:source-paths ["feature-datascript"]
                                   :dependencies [[datascript "0.18.11"]]}
+             :feature/httpkit-client {:source-paths ["feature-httpkit-client"]
+                                      :dependencies [[http-kit "2.5.0"]]}
+             :feature/httpkit-server {:source-paths ["feature-httpkit-server"]
+                                      :dependencies [[http-kit "2.5.0"]]}
              :test [:feature/xml
                     :feature/yaml
                     :feature/postgresql
@@ -47,6 +50,8 @@
                     :feature/csv
                     :feature/transit
                     :feature/datascript
+                    :feature/httpkit-client
+                    :feature/httpkit-server
                     {:dependencies [[clj-commons/conch "0.9.2"]
                                     [com.clojure-goes-fast/clj-async-profiler "0.4.1"]
                                     [com.opentable.components/otj-pg-embedded "0.13.3"]]}]
