@@ -209,7 +209,7 @@ jobs:
             ./bb .circleci/script/publish_artifact.clj
   mac:
     macos:
-      xcode: "9.4.1"
+      xcode: "12.0.0"
     environment:
       GRAALVM_HOME: /Users/distiller/graalvm-ce-java11-20.2.0/Contents/Home
       BABASHKA_PLATFORM: macos # used in release script
