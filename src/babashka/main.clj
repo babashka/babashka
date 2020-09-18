@@ -20,8 +20,6 @@
    [babashka.impl.datafy :refer [datafy-namespace]]
    [babashka.impl.error-handler :refer [error-handler]]
    [babashka.impl.features :as features]
-   [babashka.impl.http-kit :refer [http-kit-server-namespace
-                                   http-kit-client-namespace]]
    [babashka.impl.pods :as pods]
    [babashka.impl.protocols :refer [protocols-namespace]]
    [babashka.impl.repl :as repl]
@@ -287,7 +285,8 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
  :feature/yaml       %s
  :feature/jdbc       %s
  :feature/postgresql %s
- :feature/hsqldb     %s}")
+ :feature/hsqldb     %s
+ :feature/httpkit-client %s}")
     version
     features/core-async?
     features/csv?
@@ -297,7 +296,8 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
     features/yaml?
     features/jdbc?
     features/postgresql?
-    features/hsqldb?)))
+    features/hsqldb?
+    features/httpkit-client?)))
 
 (defn read-file [file]
   (let [f (io/file file)]
@@ -392,9 +392,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
        'bencode.core bencode-namespace
        'clojure.java.browse browse-namespace
        'clojure.datafy datafy-namespace
-       'clojure.core.protocols protocols-namespace
-       'org.httpkit.server http-kit-server-namespace
-       }
+       'clojure.core.protocols protocols-namespace}
     features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace))
     features/yaml? (assoc 'clj-yaml.core @(resolve 'babashka.impl.yaml/yaml-namespace)
                           'flatland.ordered.map @(resolve 'babashka.impl.ordered/ordered-map-ns))
@@ -405,7 +403,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
     features/csv?  (assoc 'clojure.data.csv @(resolve 'babashka.impl.csv/csv-namespace))
     features/transit? (assoc 'cognitect.transit @(resolve 'babashka.impl.transit/transit-namespace))
     features/datascript? (assoc 'datascript.core @(resolve 'babashka.impl.datascript/datascript-namespace))
-    features/httpkit-client? (assoc ''org.httpkit.client@(resolve 'babashka.impl.httpkit-client/httpkit-client-namespace))))
+    features/httpkit-client? (assoc 'org.httpkit.client @(resolve 'babashka.impl.httpkit-client/httpkit-client-namespace))))
 
 (def bindings
   {'java.lang.System/exit exit ;; override exit, so we have more control
