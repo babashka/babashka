@@ -1,16 +1,21 @@
 (ns babashka.impl.httpkit-client
-  {:no-doc true}
-  (:require [org.httpkit.client :as client]
+  {:no-doc true
+   :clj-kondo/config '{:lint-as {babashka.impl.httpkit-client/defreq clojure.core/declare}}}
+  (:refer-clojure :exclude [get])
+  (:require [clojure.string :as str]
+            [org.httpkit.client :as client]
             [org.httpkit.sni-client :as sni-client]
             [sci.core :as sci :refer [copy-var]]))
 
 (def sni-client (delay (client/make-client {:ssl-configurer sni-client/ssl-configurer})))
 
-(def sns (sci/create-ns 'org.httpkit.server nil))
+;; (def sns (sci/create-ns 'org.httpkit.server nil))
 (def cns (sci/create-ns 'org.httpkit.client nil))
 
 (def default-client (sci/new-dynamic-var '*default-client* sni-client {:ns cns}))
+(alter-var-root #'client/*default-client* (constantly sni-client))
 
+;; TODO: get etc will not see this binding of default client. But do we actually need this?
 (defn request
   ([req]
    (binding [client/*default-client* @default-client]
@@ -19,26 +24,52 @@
    (binding [client/*default-client* @default-client]
      (client/request req cb))))
 
+(defmacro ^:private defreq [method]
+  `(defn ~method
+     ~(str "Issues an async HTTP " (str/upper-case method) " request. "
+           "See `request` for details.")
+     ~'{:arglists '([url & [opts callback]] [url & [callback]])}
+     ~'[url & [s1 s2]]
+     (if (or (instance? clojure.lang.MultiFn ~'s1) (fn? ~'s1) (keyword? ~'s1))
+       (request {:url ~'url :method ~(keyword method)} ~'s1)
+       (request (merge ~'s1 {:url ~'url :method ~(keyword method)}) ~'s2))))
+
+(defreq get)
+(defreq delete)
+(defreq head)
+(defreq post)
+(defreq put)
+(defreq options)
+(defreq patch)
+(defreq propfind)
+(defreq proppatch)
+(defreq lock)
+(defreq unlock)
+(defreq report)
+(defreq acl)
+(defreq copy)
+(defreq move)
+
 (def httpkit-client-namespace
   {'request   (sci/new-var 'request request {:doc (:doc (meta #'client/request))
                                                     :ns cns})
-   'get       (copy-var client/get cns)
-   'options   (copy-var client/options cns)
-   'put       (copy-var client/put cns)
-   'lock      (copy-var client/lock cns)
-   'report    (copy-var client/report cns)
-   'proppatch (copy-var client/proppatch cns)
-   'copy      (copy-var client/copy cns)
-   'patch     (copy-var client/patch cns)
+   'get       (copy-var get cns)
+   'options   (copy-var options cns)
+   'put       (copy-var put cns)
+   'lock      (copy-var lock cns)
+   'report    (copy-var report cns)
+   'proppatch (copy-var proppatch cns)
+   'copy      (copy-var copy cns)
+   'patch     (copy-var patch cns)
    'make-ssl-engine (copy-var client/make-ssl-engine cns)
-   'move      (copy-var client/move cns)
-   'delete    (copy-var client/delete cns)
+   'move      (copy-var move cns)
+   'delete    (copy-var delete cns)
    'make-client (copy-var client/make-client cns)
-   'head      (copy-var client/head cns)
-   'propfind  (copy-var client/propfind cns)
+   'head      (copy-var head cns)
+   'propfind  (copy-var propfind cns)
    'max-body-filter (copy-var client/max-body-filter cns)
-   'post      (copy-var client/post cns)
-   'acl       (copy-var client/acl cns)
-   'unlock    (copy-var client/unlock cns)
+   'post      (copy-var post cns)
+   'acl       (copy-var acl cns)
+   'unlock    (copy-var unlock cns)
    'default-client (copy-var client/default-client cns)
    '*default-client* default-client})

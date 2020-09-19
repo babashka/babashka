@@ -1,21 +1,29 @@
 (ns httpkit.client-test
-  (:require [org.httpkit.client :as client]
-            [cheshire.core :as json]
+  (:require [cheshire.core :as json]
             [clojure.java.io :as io]
             [clojure.string :as str]
-            [clojure.test :refer [deftest is testing]])
+            #_:clj-kondo/ignore
+            [clojure.test :refer [deftest is testing #_*report-counters*]]
+            [org.httpkit.client :as client])
   (:import (clojure.lang ExceptionInfo)))
 
 (defmethod clojure.test/report :begin-test-var [m]
   (println "===" (-> m :var meta :name))
   (println))
 
+#_(defmethod clojure.test/report :end-test-var [_m]
+  (let [{:keys [:fail :error]} @*report-counters*]
+    (when (and (= "true" (System/getenv "BABASHKA_FAIL_FAST"))
+               (or (pos? fail) (pos? error)))
+      (println "=== Failing fast")
+      (System/exit 1))))
+
 (deftest get-test
   (is (str/includes? (:status @(client/get "https://postman-echo.com/get"))
                      "200"))
   (is (= "https://postman-echo.com/get"
          (-> @(client/get "https://postman-echo.com/get"
-                       {:headers {"Accept" "application/json"}})
+                          {:headers {"Accept" "application/json"}})
              :body
              (json/parse-string true)
              :url)))
@@ -26,95 +34,91 @@
                (json/parse-string true)
                :args)))))
 
-(comment
-  (deftest delete-test
-    (is (= 200 (:status (client/delete "https://postman-echo.com/delete")))))
+(deftest delete-test
+  (is (= 200 (:status @(client/delete "https://postman-echo.com/delete")))))
 
-  (deftest head-test
-    (is (= 200 (:status (client/head "https://postman-echo.com/head")))))
+(deftest head-test
+  (is (= 200 (:status @(client/head "https://postman-echo.com/head")))))
 
-  (deftest post-test
-    (is (subs (:body (client/post "https://postman-echo.com/post"))
-              0 10))
+(deftest post-test
+  #_(is (str/includes?
+       (:body @(client/post "https://postman-echo.com/post"
+                           {:body (json/generate-string {:foo "From Clojure"})}))
+       "From Clojure"))
+  #_(testing "file body"
+    (is (str/includes?
+         (:body @(client/post "https://postman-echo.com/post"
+                             {:body (io/file "README.md")}))
+         "babashka.curl")))
+  #_(testing "JSON body"
+    (let [response @(client/post "https://postman-echo.com/post"
+                                {:headers {"Content-Type" "application/json"}
+                                 :body (json/generate-string {:a "foo"})})
+          body (:body response)
+          body (json/parse-string body true)
+          json (:json body)]
+      (is (= {:a "foo"} json))))
+  #_(testing "stream body"
     (is (str/includes?
          (:body (client/post "https://postman-echo.com/post"
-                             {:body "From Clojure"}))
-         "From Clojure"))
-    (testing "file body"
-      (is (str/includes?
-           (:body (client/post "https://postman-echo.com/post"
-                               {:body (io/file "README.md")}))
-           "babashka.curl")))
-    (testing "JSON body"
-      (let [response (client/post "https://postman-echo.com/post"
-                                  {:headers {"Content-Type" "application/json"}
-                                   :body (json/generate-string {:a "foo"})})
-            body (:body response)
-            body (json/parse-string body true)
-            json (:json body)]
-        (is (= {:a "foo"} json))))
-    (testing "stream body"
-      (is (str/includes?
-           (:body (client/post "https://postman-echo.com/post"
-                               {:body (io/input-stream "README.md")}))
-           "babashka.curl")))
-    (testing "form-params"
-      (let [body (:body (client/post "https://postman-echo.com/post"
-                                     {:form-params {"name" "Michiel Borkent"}}))]
-        (is (str/includes? body "Michiel Borkent"))
-        (is (str/starts-with? body "{")))
-      (testing "form-params from file"
-        (let [tmp-file (java.io.File/createTempFile "foo" "bar")
-              _ (spit tmp-file "Michiel Borkent")
-              _ (.deleteOnExit tmp-file)
-              body (:body (client/post "https://postman-echo.com/post"
-                                       {:form-params {"file" (io/file tmp-file)
-                                                      "filename" (.getPath tmp-file)}}))]
-          (is (str/includes? body "foo"))
-          (is (str/starts-with? body "{"))))))
+                             {:body (io/input-stream "README.md")}))
+         "babashka.curl")))
+  #_(testing "form-params"
+    (let [body (:body @(client/post "https://postman-echo.com/post"
+                                   {:form-params {"name" "Michiel Borkent"}}))]
+      (is (str/includes? body "Michiel Borkent"))
+      (is (str/starts-with? body "{")))
+    (testing "form-params from file"
+      (let [tmp-file (java.io.File/createTempFile "foo" "bar")
+            _ (spit tmp-file "Michiel Borkent")
+            _ (.deleteOnExit tmp-file)
+            body (:body (client/post "https://postman-echo.com/post"
+                                     {:form-params {"file" (io/file tmp-file)
+                                                    "filename" (.getPath tmp-file)}}))]
+        (is (str/includes? body "foo"))
+        (is (str/starts-with? body "{"))))))
 
-  (deftest patch-test
-    (is (str/includes?
-         (:body (client/patch "https://postman-echo.com/patch"
-                              {:body "hello"}))
-         "hello")))
+;; TODO; doesn't work with httpkit client, see https://github.com/http-kit/http-kit/issues/448
+#_(deftest patch-test
+  (is (str/includes?
+       (:body @(client/patch "https://postman-echo.com/patch"
+                             {:body "hello"}))
+       "hello")))
 
-  (deftest basic-auth-test
-    (is (re-find #"authenticated.*true"
-                 (:body
-                  (client/get "https://postman-echo.com/basic-auth"
-                              {:basic-auth ["postman" "password"]})))))
+(deftest basic-auth-test
+  (is (re-find #"authenticated.*true"
+               (:body
+                @(client/get "https://postman-echo.com/basic-auth"
+                             {:basic-auth ["postman" "password"]})))))
 
-  (deftest get-response-object-test
-    (let [response (client/get "https://httpstat.us/200")]
+(deftest get-response-object-test
+  (let [response @(client/get "https://httpstat.us/200")]
+    (is (map? response))
+    (is (= 200 (:status response)))
+    (is (string? (get-in response [:headers :server]))))
+
+  (testing "response object as stream"
+    (let [response @(client/get "https://httpstat.us/200" {:as :stream})]
       (is (map? response))
       (is (= 200 (:status response)))
-      (is (= "200 OK" (:body response)))
-      (is (string? (get-in response [:headers "server"]))))
+      (is (instance? java.io.InputStream (:body response)))))
 
-    (testing "response object as stream"
-      (let [response (client/get "https://httpstat.us/200" {:as :stream})]
-        (is (map? response))
-        (is (= 200 (:status response)))
-        (is (instance? java.io.InputStream (:body response)))
-        (is (= "200 OK" (slurp (:body response))))))
-
-    (comment
+  (comment
       ;; disabled because of https://github.com/postmanlabs/httpbin/issues/617
-      (testing "response object with following redirect"
-        (let [response (client/get "https://httpbin.org/redirect-to?url=https://www.httpbin.org")]
-          (is (map? response))
-          (is (= 200 (:status response)))))
+    (testing "response object with following redirect"
+      (let [response (client/get "https://httpbin.org/redirect-to?url=https://www.httpbin.org")]
+        (is (map? response))
+        (is (= 200 (:status response)))))
 
-      (testing "response object without fully following redirects"
-        (let [response (client/get "https://httpbin.org/redirect-to?url=https://www.httpbin.org"
-                                   {:raw-args ["--max-redirs" "0"]
-                                    :throw false})]
-          (is (map? response))
-          (is (= 302 (:status response)))
-          (is (= "" (:body response)))
-          (is (= "https://www.httpbin.org" (get-in response [:headers "location"])))
-          (is (empty? (:redirects response))))))))
+    (testing "response object without fully following redirects"
+      (let [response (client/get "https://httpbin.org/redirect-to?url=https://www.httpbin.org"
+                                 {:raw-args ["--max-redirs" "0"]
+                                  :throw false})]
+        (is (map? response))
+        (is (= 302 (:status response)))
+        (is (= "" (:body response)))
+        (is (= "https://www.httpbin.org" (get-in response [:headers "location"])))
+        (is (empty? (:redirects response)))))))
 
 (comment
   (deftest accept-header-test
@@ -169,8 +173,8 @@
     (let [server (java.net.ServerSocket. 1668)
           port (.getLocalPort server)]
       (future (try (with-open
-                     [socket (.accept server)
-                      out (io/writer (.getOutputStream socket))]
+                    [socket (.accept server)
+                     out (io/writer (.getOutputStream socket))]
                      (binding [*out* out]
                        (println "HTTP/1.1 200 OK")
                        (println "Content-Type: text/event-stream")

@@ -11,181 +11,181 @@
     (swap! status (fn [status]
                     (merge-with + status (dissoc m :type))))))
 
-;; ;;;; clj-http-lite
+;;;; clj-http-lite
 
-;; (require '[clj-http.lite.client :as client])
-;; (require '[cheshire.core :as json])
+(require '[clj-http.lite.client :as client])
+(require '[cheshire.core :as json])
 
-;; (prn (:status (client/get "https://www.clojure.org" {:throw-exceptions false})))
+(prn (:status (client/get "https://www.clojure.org" {:throw-exceptions false})))
 
-;; (prn (:status (client/get "https://postman-echo.com/get?foo1=bar1&foo2=bar2" {:throw-exceptions false})))
+(prn (:status (client/get "https://postman-echo.com/get?foo1=bar1&foo2=bar2" {:throw-exceptions false})))
 
-;; (prn (:status (client/post "https://postman-echo.com/post" {:throw-exceptions false})))
+(prn (:status (client/post "https://postman-echo.com/post" {:throw-exceptions false})))
 
-;; (prn (:status (client/post "https://postman-echo.com/post"
-;;                            {:body (json/generate-string {:a 1})
-;;                             :headers {"X-Hasura-Role" "admin"}
-;;                             :content-type :json
-;;                             :accept :json
-;;                             :throw-exceptions false})))
+(prn (:status (client/post "https://postman-echo.com/post"
+                           {:body (json/generate-string {:a 1})
+                            :headers {"X-Hasura-Role" "admin"}
+                            :content-type :json
+                            :accept :json
+                            :throw-exceptions false})))
 
-;; (prn (:status (client/put "https://postman-echo.com/put"
-;;                           {:body (json/generate-string {:a 1})
-;;                            :headers {"X-Hasura-Role" "admin"}
-;;                            :content-type :json
-;;                            :accept :json
-;;                            :throw-exceptions false})))
+(prn (:status (client/put "https://postman-echo.com/put"
+                          {:body (json/generate-string {:a 1})
+                           :headers {"X-Hasura-Role" "admin"}
+                           :content-type :json
+                           :accept :json
+                           :throw-exceptions false})))
 
-;; ;;;; spartan.spec
+;;;; spartan.spec
 
-;; (time (require '[spartan.spec :as s]))
-;; (require '[spartan.spec :as s])
-;; (time (s/explain (s/cat :i int? :s string?) [1 :foo]))
-;; (time (s/conform (s/cat :i int? :s string?) [1 "foo"]))
+(time (require '[spartan.spec :as s]))
+(require '[spartan.spec :as s])
+(time (s/explain (s/cat :i int? :s string?) [1 :foo]))
+(time (s/conform (s/cat :i int? :s string?) [1 "foo"]))
 
-;; ;;;; regal
+;;;; regal
 
-;; (require '[lambdaisland.regal :as regal])
-;; (def r [:cat
-;;         [:+ [:class [\a \z]]]
-;;         "="
-;;         [:+ [:not \=]]])
+(require '[lambdaisland.regal :as regal])
+(def r [:cat
+        [:+ [:class [\a \z]]]
+        "="
+        [:+ [:not \=]]])
 
-;; (prn (regal/regex r))
-;; (prn (re-matches (regal/regex r) "foo=bar"))
+(prn (regal/regex r))
+(prn (re-matches (regal/regex r) "foo=bar"))
 
-;; ;;;; medley
+;;;; medley
 
-;; (require '[medley.core :refer [index-by random-uuid]])
-;; (prn (index-by :id [{:id 1} {:id 2}]))
-;; (prn (random-uuid))
+(require '[medley.core :refer [index-by random-uuid]])
+(prn (index-by :id [{:id 1} {:id 2}]))
+(prn (random-uuid))
 
-;; ;;;; babashka.curl
+;;;; babashka.curl
 
-;; (require '[babashka.curl :as curl] :reload-all)
+(require '[babashka.curl :as curl] :reload-all)
 
-;; (prn (:status (curl/get "https://www.clojure.org")))
+(prn (:status (curl/get "https://www.clojure.org")))
 
-;; (prn (:status (curl/get "https://postman-echo.com/get?foo1=bar1&foo2=bar2")))
+(prn (:status (curl/get "https://postman-echo.com/get?foo1=bar1&foo2=bar2")))
 
-;; (prn (:status (curl/post "https://postman-echo.com/post")))
+(prn (:status (curl/post "https://postman-echo.com/post")))
 
-;; (prn (:status (curl/post "https://postman-echo.com/post"
-;;                          {:body (json/generate-string {:a 1})
-;;                           :headers {"X-Hasura-Role" "admin"}
-;;                           :content-type :json
-;;                           :accept :json})))
+(prn (:status (curl/post "https://postman-echo.com/post"
+                         {:body (json/generate-string {:a 1})
+                          :headers {"X-Hasura-Role" "admin"}
+                          :content-type :json
+                          :accept :json})))
 
-;; (prn (:status (curl/put "https://postman-echo.com/put"
-;;                         {:body (json/generate-string {:a 1})
-;;                          :headers {"X-Hasura-Role" "admin"}
-;;                          :content-type :json
-;;                          :accept :json})))
+(prn (:status (curl/put "https://postman-echo.com/put"
+                        {:body (json/generate-string {:a 1})
+                         :headers {"X-Hasura-Role" "admin"}
+                         :content-type :json
+                         :accept :json})))
 
 
-;; ;;;; cprop
+;;;; cprop
 
-;; (require '[cprop.core])
-;; (require '[cprop.source :refer [from-env]])
-;; (println (:cprop-env (from-env)))
+(require '[cprop.core])
+(require '[cprop.source :refer [from-env]])
+(println (:cprop-env (from-env)))
 
-;; ;;;; comb
+;;;; comb
 
-;; (require '[comb.template :as template])
-;; (prn (template/eval "<% (dotimes [x 3] %>foo<% ) %>"))
-;; (prn (template/eval "Hello <%= name %>" {:name "Alice"}))
-;; (def hello
-;;   (template/fn [name] "Hello <%= name %>"))
-;; (prn (hello "Alice"))
+(require '[comb.template :as template])
+(prn (template/eval "<% (dotimes [x 3] %>foo<% ) %>"))
+(prn (template/eval "Hello <%= name %>" {:name "Alice"}))
+(def hello
+  (template/fn [name] "Hello <%= name %>"))
+(prn (hello "Alice"))
 
-;; ;;;; arrangement
+;;;; arrangement
 
-;; (require '[arrangement.core :as order])
-;; (prn (sort order/rank ['a false 2 :b nil 3.14159
-;;                        "c" true \d [3 2] #{:one :two}
-;;                        [3 1 2] #{:three}]))
+(require '[arrangement.core :as order])
+(prn (sort order/rank ['a false 2 :b nil 3.14159
+                       "c" true \d [3 2] #{:one :two}
+                       [3 1 2] #{:three}]))
 
-;; ;;;; clj-yaml
+;;;; clj-yaml
 
-;; (test-namespaces 'clj-yaml.core-test)
+(test-namespaces 'clj-yaml.core-test)
 
-;; ;;;; clojure-csv
+;;;; clojure-csv
 
-;; (require '[clojure-csv.core :as csv])
-;; ;; TODO: convert to test
-;; (prn (csv/write-csv (csv/parse-csv "a,b,c\n1,2,3")))
+(require '[clojure-csv.core :as csv])
+;; TODO: convert to test
+(prn (csv/write-csv (csv/parse-csv "a,b,c\n1,2,3")))
 
-;; ;;;; clojure.data.zip
+;;;; clojure.data.zip
 
-;; (require '[clojure.data.xml :as xml])
-;; (require '[clojure.zip :as zip])
-;; (require '[clojure.data.zip.xml :refer [attr attr= xml1->]])
+(require '[clojure.data.xml :as xml])
+(require '[clojure.zip :as zip])
+(require '[clojure.data.zip.xml :refer [attr attr= xml1->]])
 
-;; (def data (str "<root>"
-;;                "  <character type=\"person\" name=\"alice\" />"
-;;                "  <character type=\"animal\" name=\"march hare\" />"
-;;                "</root>"))
+(def data (str "<root>"
+               "  <character type=\"person\" name=\"alice\" />"
+               "  <character type=\"animal\" name=\"march hare\" />"
+               "</root>"))
 
-;; ;; TODO: convert to test
-;; (let [xml   (zip/xml-zip (xml/parse (java.io.StringReader. data)))]
-;;                                         ;(prn :xml xml)
-;;   (prn :alice-is-a (xml1-> xml :character [(attr= :name "alice")] (attr :type)))
-;;   (prn :animal-is-called (xml1-> xml :character [(attr= :type "animal")] (attr :name))))
+;; TODO: convert to test
+(let [xml   (zip/xml-zip (xml/parse (java.io.StringReader. data)))]
+                                        ;(prn :xml xml)
+  (prn :alice-is-a (xml1-> xml :character [(attr= :name "alice")] (attr :type)))
+  (prn :animal-is-called (xml1-> xml :character [(attr= :type "animal")] (attr :name))))
 
-;; ;;;; clojure.data.csv
+;;;; clojure.data.csv
 
-;; (test-namespaces 'clojure.data.csv-test)
+(test-namespaces 'clojure.data.csv-test)
 
-;; ;;;; clojure.math.combinatorics
+;;;; clojure.math.combinatorics
 
-;; (test-namespaces 'clojure.math.test-combinatorics)
+(test-namespaces 'clojure.math.test-combinatorics)
 
-;; ;;;; deps.clj
+;;;; deps.clj
 
-;; (spit "deps_test.clj"
-;;       (:body (curl/get "https://raw.githubusercontent.com/borkdude/deps.clj/master/deps.clj")))
+(spit "deps_test.clj"
+      (:body (curl/get "https://raw.githubusercontent.com/borkdude/deps.clj/master/deps.clj")))
 
-;; (binding [*command-line-args* ["-Sdescribe"]]
-;;   (load-file "deps_test.clj"))
+(binding [*command-line-args* ["-Sdescribe"]]
+  (load-file "deps_test.clj"))
 
-;; (.delete (io/file "deps_test.clj"))
+(.delete (io/file "deps_test.clj"))
 
-;; ;;;; doric
+;;;; doric
 
-;; (test-namespaces 'doric.test.core)
+(test-namespaces 'doric.test.core)
 
-;; ;;;; cljc-java-time
+;;;; cljc-java-time
 
-;; (test-namespaces 'cljc.java-time-test)
+(test-namespaces 'cljc.java-time-test)
 
-;; ;;;; camel-snake-kebab
+;;;; camel-snake-kebab
 
-;; (test-namespaces 'camel-snake-kebab.core-test)
+(test-namespaces 'camel-snake-kebab.core-test)
 
-;; ;;;; aero
+;;;; aero
 
-;; (test-namespaces 'aero.core-test)
+(test-namespaces 'aero.core-test)
 
-;; ;;;; clojure.data.generators
+;;;; clojure.data.generators
 
-;; (test-namespaces 'clojure.data.generators-test)
+(test-namespaces 'clojure.data.generators-test)
 
-;; ;;;; honeysql
+;;;; honeysql
 
-;; (test-namespaces 'honeysql.core-test 'honeysql.format-test)
+(test-namespaces 'honeysql.core-test 'honeysql.format-test)
 
-;; ;;;; minimallist
+;;;; minimallist
 
-;; (test-namespaces 'minimallist.core-test)
+(test-namespaces 'minimallist.core-test)
 
-;; ;;;; bond
-;; (test-namespaces 'bond.test.james)
+;;;; bond
+(test-namespaces 'bond.test.james)
 
-;; ;;;; version-clj
-;; (test-namespaces 'version-clj.compare-test
-;;                  'version-clj.core-test
-;;                  'version-clj.split-test
-;;                  'version-clj.via-use-test)
+;;;; version-clj
+(test-namespaces 'version-clj.compare-test
+                 'version-clj.core-test
+                 'version-clj.split-test
+                 'version-clj.via-use-test)
 
 ;;;; httpkit client
 
