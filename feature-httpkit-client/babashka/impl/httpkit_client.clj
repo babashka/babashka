@@ -52,7 +52,8 @@
 
 (def httpkit-client-namespace
   {'request   (sci/new-var 'request request {:doc (:doc (meta #'client/request))
-                                                    :ns cns})
+                                             :name 'request
+                                             :ns cns})
    'get       (copy-var get cns)
    'options   (copy-var options cns)
    'put       (copy-var put cns)
