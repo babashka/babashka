@@ -9,7 +9,7 @@
 
 (def sni-client (delay (client/make-client {:ssl-configurer sni-client/ssl-configurer})))
 
-;; (def sns (sci/create-ns 'org.httpkit.server nil))
+(def sns (sci/create-ns 'org.httpkit.server nil))
 (def cns (sci/create-ns 'org.httpkit.client nil))
 
 (def default-client (sci/new-dynamic-var '*default-client* sni-client {:ns cns}))
@@ -73,3 +73,7 @@
    'unlock    (copy-var unlock cns)
    'default-client (copy-var client/default-client cns)
    '*default-client* default-client})
+
+(def sni-client-namespace
+  {'ssl-configurer (copy-var sni-client/ssl-configurer sns)
+   'default-client (sci/new-var 'sni-client sni-client {:ns sns})})
