@@ -15,7 +15,6 @@
 (def default-client (sci/new-dynamic-var '*default-client* sni-client {:ns cns}))
 (alter-var-root #'client/*default-client* (constantly sni-client))
 
-;; TODO: get etc will not see this binding of default client. But do we actually need this?
 (defn request
   ([req]
    (binding [client/*default-client* @default-client]
