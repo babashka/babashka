@@ -403,7 +403,8 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
     features/csv?  (assoc 'clojure.data.csv @(resolve 'babashka.impl.csv/csv-namespace))
     features/transit? (assoc 'cognitect.transit @(resolve 'babashka.impl.transit/transit-namespace))
     features/datascript? (assoc 'datascript.core @(resolve 'babashka.impl.datascript/datascript-namespace))
-    features/httpkit-client? (assoc 'org.httpkit.client @(resolve 'babashka.impl.httpkit-client/httpkit-client-namespace))))
+    features/httpkit-client? (assoc 'org.httpkit.client @(resolve 'babashka.impl.httpkit-client/httpkit-client-namespace)
+                                    'org.httpkit.sni-client @(resolve 'babashka.impl.httpkit-client/sni-client-namespace))))
 
 (def bindings
   {'java.lang.System/exit exit ;; override exit, so we have more control

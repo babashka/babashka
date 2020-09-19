@@ -187,6 +187,10 @@
                  'version-clj.split-test
                  'version-clj.via-use-test)
 
+;;;; httpkit client
+
+(test-namespaces 'httpkit.client-test)
+
 ;;;; final exit code
 
 (let [{:keys [:test :fail :error] :as m} @status]
