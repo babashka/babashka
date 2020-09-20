@@ -8,4 +8,4 @@ then
     export PATH=$GRAALVM_HOME/bin:$PATH
 fi
 
-script/lib_tests/run_all_libtests
+script/lib_tests/run_all_libtests "$@"
