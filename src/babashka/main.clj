@@ -85,7 +85,7 @@
   (require '[babashka.impl.httpkit-client]))
 
 (when features/httpkit-server?
-  (require '[babashka.impl.httpkit-client]))
+  (require '[babashka.impl.httpkit-server]))
 
 (sci/alter-var-root sci/in (constantly *in*))
 (sci/alter-var-root sci/out (constantly *out*))
