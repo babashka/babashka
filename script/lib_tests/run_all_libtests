@@ -12,4 +12,4 @@ export BABASHKA_CLASSPATH
 BABASHKA_CLASSPATH=$(clojure -A:lib-tests -Spath)
 
 $BB_CMD -cp "$BABASHKA_CLASSPATH:test-resources/lib_tests" \
-        -f "test-resources/lib_tests/babashka/run_all_libtests.clj"
+        -f "test-resources/lib_tests/babashka/run_all_libtests.clj" "$@"

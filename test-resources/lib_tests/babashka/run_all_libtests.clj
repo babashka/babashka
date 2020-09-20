@@ -2,14 +2,20 @@
   (:require [clojure.java.io :as io]
             [clojure.test :as t]))
 
+(def ns-args (set (map symbol *command-line-args*)))
+
 (def status (atom {}))
 
 (defn test-namespaces [& namespaces]
-  (doseq [ns namespaces]
-    (require ns))
-  (let [m (apply t/run-tests namespaces)]
-    (swap! status (fn [status]
-                    (merge-with + status (dissoc m :type))))))
+  (let [namespaces (if (seq ns-args)
+                     (keep ns-args namespaces)
+                     namespaces)]
+    (prn namespaces)
+    (doseq [ns namespaces]
+      (require ns))
+    (let [m (apply t/run-tests namespaces)]
+      (swap! status (fn [status]
+                      (merge-with + status (dissoc m :type)))))))
 
 ;;;; clj-http-lite
 
