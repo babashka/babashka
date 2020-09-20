@@ -11,7 +11,7 @@ This namespace will remain available under a feature flag, see https://github.co
 (def sns (sci/create-ns 'org.httpkit.server
                         {:sci.impl/required-fn (fn [_]
                                                  (when-not (= "false" (System/getProperty "babashka.httpkit-server.warning"))
-                                                   (binding [*out* *err*]
+                                                   (binding [*out* @sci/err]
                                                      (println warning))))}))
 
 (def httpkit-server-namespace
