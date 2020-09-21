@@ -87,6 +87,9 @@
 (when features/httpkit-server?
   (require '[babashka.impl.httpkit-server]))
 
+(when features/ring?
+  (require '[babashka.impl.ring-middleware-defaults]))
+
 (sci/alter-var-root sci/in (constantly *in*))
 (sci/alter-var-root sci/out (constantly *out*))
 (sci/alter-var-root sci/err (constantly *err*))
@@ -408,7 +411,8 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
     features/datascript? (assoc 'datascript.core @(resolve 'babashka.impl.datascript/datascript-namespace))
     features/httpkit-client? (assoc 'org.httpkit.client @(resolve 'babashka.impl.httpkit-client/httpkit-client-namespace)
                                     'org.httpkit.sni-client @(resolve 'babashka.impl.httpkit-client/sni-client-namespace))
-    features/httpkit-server? (assoc 'org.httpkit.server @(resolve 'babashka.impl.httpkit-server/httpkit-server-namespace))))
+    features/httpkit-server? (assoc 'org.httpkit.server @(resolve 'babashka.impl.httpkit-server/httpkit-server-namespace))
+    features/ring? (assoc 'ring.middleware.defaults @(resolve 'babashka.impl.ring-middleware-defaults/ring-middleware-defaults-namespace))))
 
 (def bindings
   {'java.lang.System/exit exit ;; override exit, so we have more control
