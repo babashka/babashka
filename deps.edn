@@ -1,7 +1,7 @@
 {:paths ["src" "feature-xml" "feature-core-async"
          "feature-yaml" "feature-csv" "feature-transit"
          "feature-java-time" "feature-java-nio"
-         "feature-httpkit-client"
+         "feature-httpkit-client" "feature-httpkit-server"
          "sci/src" "babashka.curl/src" "babashka.pods/src"
          "babashka.nrepl/src"
          "depstar/src"
