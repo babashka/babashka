@@ -244,6 +244,8 @@ Additional libraries:
 - [`clojure.tools.cli`](https://github.com/clojure/tools.cli) aliased as `tools.cli`
 - [`clj-yaml.core`](https://github.com/clj-commons/clj-yaml) alias as `yaml`
 - [`cognitect.transit`](https://github.com/cognitect/transit-clj) aliased as `transit`
+- [`org.httpkit.client`](https://github.com/http-kit/http-kit)
+- [`org.httpkit.server`](https://github.com/http-kit/http-kit) (experimental)
 
 See the
 [libraries](https://github.com/borkdude/babashka/blob/master/doc/libraries.md)
