@@ -334,12 +334,15 @@
   ([path options]
    (let [path      (-> (str "/" path)  (.replace "//" "/"))
          root+path (-> (str (:root options) path) (.replaceAll "^/" ""))
+         ;; babashka patch
+         io-resource-fn  (or (get-in options [:static :io-resource-fn]) io/resource)
          load      #(if-let [loader (:loader options)]
-                      (io/resource % loader)
-                      (io/resource %))]
+                      (io-resource-fn % loader)
+                      (io-resource-fn %))]
      (if-not (directory-transversal? root+path)
        (if-let [resource (load root+path)]
          (let [response (url-response resource)]
            (if (or (not (instance? File (:body response)))
-                   (safe-file-resource? response options))
+                   ;; babashka patch
+                   true #_(safe-file-resource? response options))
              response)))))))

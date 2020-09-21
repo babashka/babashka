@@ -105,7 +105,7 @@
       (wrap wrap-params           (get-in config [:params :urlencoded] false))
       (wrap wrap-cookies          (get-in config [:cookies] false))
       (wrap wrap-absolute-redirects (get-in config [:responses :absolute-redirects] false))
-      (wrap-multi wrap-resource   (get-in config [:static :resources] false))
+      (wrap-multi #(wrap-resource %1 %2 config) (get-in config [:static :resources] false))
       (wrap-multi wrap-file       (get-in config [:static :files] false))
       (wrap wrap-content-type     (get-in config [:responses :content-types] false))
       (wrap wrap-default-charset  (get-in config [:responses :default-charset] false))
