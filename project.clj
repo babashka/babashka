@@ -43,7 +43,8 @@
              :feature/httpkit-server {:source-paths ["feature-httpkit-server"]
                                       :dependencies [[http-kit "2.5.0"]]}
              :feature/ring {:source-paths ["feature-ring"]
-                            :dependencies [[ring "0.0.0"]]}
+                            :dependencies [[ring/ring-core "1.8.1"]
+                                           [ring/ring-defaults "0.3.2"]]}
              :test [:feature/xml
                     :feature/yaml
                     :feature/postgresql

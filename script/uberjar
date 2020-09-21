@@ -24,6 +24,7 @@ then
     export BABASHKA_FEATURE_JAVA_NIO=false
     export BABASHKA_FEATURE_HTTPKIT_CLIENT=false
     export BABASHKA_FEATURE_HTTPKIT_SERVER=false
+    export BABASHKA_FEATURE_RING=false
 fi
 
 BABASHKA_LEIN_PROFILES="+uberjar"
@@ -103,6 +104,13 @@ then
     BABASHKA_LEIN_PROFILES+=",+feature/httpkit-server"
 else
     BABASHKA_LEIN_PROFILES+=",-feature/httpkit-server"
+fi
+
+if [ "$BABASHKA_FEATURE_RING" = "true" ]
+then
+    BABASHKA_LEIN_PROFILES+=",+feature/ring"
+else
+    BABASHKA_LEIN_PROFILES+=",-feature/ring"
 fi
 
 if [ -z "$BABASHKA_JAR" ]; then
