@@ -5,6 +5,9 @@ if "%GRAALVM_HOME%"=="" (
   exit /b
 )
 
+set BASHKA_FEATURE_RING="true"
+set BASHKA_FEATURE_REITIT="true"
+
 set JAVA_HOME=%GRAALVM_HOME%
 set PATH=%GRAALVM_HOME%\bin;%PATH%
 
