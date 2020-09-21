@@ -8,57 +8,26 @@
 
 (defn test-namespaces [& namespaces]
   (let [namespaces (if (seq ns-args)
-                     (keep ns-args namespaces)
+                     (seq (keep ns-args namespaces))
                      namespaces)]
-    (prn namespaces)
-    (doseq [ns namespaces]
-      (require ns))
-    (let [m (apply t/run-tests namespaces)]
-      (swap! status (fn [status]
-                      (merge-with + status (dissoc m :type)))))))
+    (when namespaces
+      (doseq [ns namespaces]
+        (require ns))
+      (let [m (apply t/run-tests namespaces)]
+        (swap! status (fn [status]
+                        (merge-with + status (dissoc m :type))))))))
 
 ;;;; clj-http-lite
 
-(require '[clj-http.lite.client :as client])
-(require '[cheshire.core :as json])
-
-(prn (:status (client/get "https://www.clojure.org" {:throw-exceptions false})))
-
-(prn (:status (client/get "https://postman-echo.com/get?foo1=bar1&foo2=bar2" {:throw-exceptions false})))
-
-(prn (:status (client/post "https://postman-echo.com/post" {:throw-exceptions false})))
-
-(prn (:status (client/post "https://postman-echo.com/post"
-                           {:body (json/generate-string {:a 1})
-                            :headers {"X-Hasura-Role" "admin"}
-                            :content-type :json
-                            :accept :json
-                            :throw-exceptions false})))
-
-(prn (:status (client/put "https://postman-echo.com/put"
-                          {:body (json/generate-string {:a 1})
-                           :headers {"X-Hasura-Role" "admin"}
-                           :content-type :json
-                           :accept :json
-                           :throw-exceptions false})))
+(test-namespaces 'clj-http.lite.client-test)
 
 ;;;; spartan.spec
 
-(time (require '[spartan.spec :as s]))
-(require '[spartan.spec :as s])
-(time (s/explain (s/cat :i int? :s string?) [1 :foo]))
-(time (s/conform (s/cat :i int? :s string?) [1 "foo"]))
+(test-namespaces 'spartan.spec-test)
 
 ;;;; regal
 
-(require '[lambdaisland.regal :as regal])
-(def r [:cat
-        [:+ [:class [\a \z]]]
-        "="
-        [:+ [:not \=]]])
-
-(prn (regal/regex r))
-(prn (re-matches (regal/regex r) "foo=bar"))
+(test-namespaces 'babashka.lambdaisland.regal-test)
 
 ;;;; medley
 
@@ -68,34 +37,19 @@
 
 ;;;; babashka.curl
 
-(require '[babashka.curl :as curl] :reload-all)
-
-(prn (:status (curl/get "https://www.clojure.org")))
-
-(prn (:status (curl/get "https://postman-echo.com/get?foo1=bar1&foo2=bar2")))
-
-(prn (:status (curl/post "https://postman-echo.com/post")))
-
-(prn (:status (curl/post "https://postman-echo.com/post"
-                         {:body (json/generate-string {:a 1})
-                          :headers {"X-Hasura-Role" "admin"}
-                          :content-type :json
-                          :accept :json})))
-
-(prn (:status (curl/put "https://postman-echo.com/put"
-                        {:body (json/generate-string {:a 1})
-                         :headers {"X-Hasura-Role" "admin"}
-                         :content-type :json
-                         :accept :json})))
-
+(test-namespaces 'babashka.curl-test)
 
 ;;;; cprop
+
+;; TODO: port to test-namespaces
 
 (require '[cprop.core])
 (require '[cprop.source :refer [from-env]])
 (println (:cprop-env (from-env)))
 
 ;;;; comb
+
+;; TODO: port to test-namespaces
 
 (require '[comb.template :as template])
 (prn (template/eval "<% (dotimes [x 3] %>foo<% ) %>"))
@@ -105,6 +59,8 @@
 (prn (hello "Alice"))
 
 ;;;; arrangement
+
+;; TODO: port to test-namespaces
 
 (require '[arrangement.core :as order])
 (prn (sort order/rank ['a false 2 :b nil 3.14159
@@ -117,11 +73,15 @@
 
 ;;;; clojure-csv
 
+;; TODO: port to test-namespaces
+
 (require '[clojure-csv.core :as csv])
 ;; TODO: convert to test
 (prn (csv/write-csv (csv/parse-csv "a,b,c\n1,2,3")))
 
 ;;;; clojure.data.zip
+
+;; TODO: port to test-namespaces
 
 (require '[clojure.data.xml :as xml])
 (require '[clojure.zip :as zip])
@@ -148,6 +108,9 @@
 
 ;;;; deps.clj
 
+;; TODO: port to test-namespaces
+
+(require '[babashka.curl :as curl])
 (spit "deps_test.clj"
       (:body (curl/get "https://raw.githubusercontent.com/borkdude/deps.clj/master/deps.clj")))
 

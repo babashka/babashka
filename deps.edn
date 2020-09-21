@@ -40,7 +40,7 @@
                          borkdude/spartan.spec {:git/url "https://github.com/borkdude/spartan.spec"
                                        :sha "16f7eec4b6589c77c96c9fcf989f78fffcee7c4c"}
                          lambdaisland/regal {:git/url "https://github.com/lambdaisland/regal"
-                                :sha "b059fdb06d5586a9a04c27e7b011c467ad8546db"}
+                                             :sha "f902d2c43121f9e1c48603d6eb99f5900eb6a9f6"}
                          weavejester/medley {:git/url "https://github.com/weavejester/medley"
                                              :sha "a4e5fb5383f5c0d83cb2d005181a35b76d8a136d"}
                          babashka/babasha.curl {:local/root "babashka.curl"}
