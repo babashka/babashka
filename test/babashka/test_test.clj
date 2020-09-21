@@ -1,9 +1,10 @@
 (ns babashka.test-test
   (:require
    [babashka.test-utils :as tu]
+   [clojure.edn :as edn]
+   [clojure.java.io :as io]
    [clojure.string :as str]
-   [clojure.test :as t :refer [deftest is]]
-   [clojure.java.io :as io]))
+   [clojure.test :as t :refer [deftest is]]))
 
 (defn bb [& args]
   (apply tu/bb nil (map str args)))
@@ -69,3 +70,16 @@
 (deftest assert-expr-test
   (is (str/includes? (bb (.getPath (io/file "test-resources" "babashka" "assert_expr.clj")))
                      "3.14 should be roughly 3.141592653589793")))
+
+(deftest rebind-vars-test
+  (is (bb "(binding [clojure.test/report (constantly true)] nil)"))
+  (is (bb "(binding [clojure.test/test-var (constantly true)] nil)")))
+
+(deftest rebind-report-test
+  (let [[m1 m2 m3]
+        (edn/read-string (format "[%s]" (bb (io/file "test-resources" "babashka" "test_report.clj"))))]
+    (is (= m1 '{:type :begin-test-var, :var bar}))
+    (is (str/includes? (:file m2) "test_report.clj"))
+    (is (= (:message m2) "1 is not equal to 2"))
+    (is (= (:line m2) 6))
+    (is (= m3 '{:type :end-test-var, :var bar}))))

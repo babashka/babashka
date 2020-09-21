@@ -80,12 +80,16 @@
                                         :parameterTypes ["java.lang.String","java.util.Locale","java.lang.ClassLoader"]}]})))
 
 (def classes
-  `{:all [clojure.lang.ExceptionInfo
+  `{:all [clojure.lang.ArityException
+          clojure.lang.BigInt
+          clojure.lang.ExceptionInfo
           java.io.BufferedReader
           java.io.BufferedWriter
           java.io.ByteArrayInputStream
           java.io.ByteArrayOutputStream
+          java.io.Console
           java.io.File
+          java.io.FileNotFoundException
           java.io.InputStream
           java.io.IOException
           java.io.OutputStream
@@ -115,16 +119,19 @@
           java.lang.Math
           java.lang.Object
           java.lang.Process
+          java.lang.ProcessHandle
           java.lang.ProcessBuilder
           java.lang.ProcessBuilder$Redirect
           java.lang.Runtime
           java.lang.RuntimeException
+          java.lang.Short
           java.lang.String
           java.lang.StringBuilder
           java.lang.System
           java.lang.Throwable
           java.math.BigDecimal
           java.math.BigInteger
+          java.net.ConnectException
           java.net.DatagramSocket
           java.net.DatagramPacket
           java.net.HttpURLConnection
@@ -142,6 +149,7 @@
                 java.nio.file.FileAlreadyExistsException
                 java.nio.file.FileSystem
                 java.nio.file.FileSystems
+                java.nio.file.FileVisitOption
                 java.nio.file.Files
                 java.nio.file.LinkOption
                 java.nio.file.NoSuchFileException
@@ -154,6 +162,7 @@
                 java.nio.file.attribute.PosixFilePermission
                 java.nio.file.attribute.PosixFilePermissions])
           java.security.MessageDigest
+          java.security.DigestInputStream
           ~@(when features/java-time?
               `[java.time.format.DateTimeFormatter
                 java.time.Clock
@@ -176,12 +185,15 @@
                 java.time.ZoneId
                 java.time.ZoneOffset
                 java.time.format.DateTimeFormatterBuilder
+                java.time.format.DateTimeParseException
                 java.time.format.DecimalStyle
                 java.time.format.ResolverStyle
                 java.time.format.SignStyle
                 java.time.temporal.ChronoField
                 java.time.temporal.ChronoUnit
                 java.time.temporal.IsoFields
+                java.time.temporal.TemporalAdjusters
+                java.time.temporal.TemporalAmount
                 java.time.temporal.TemporalField
                 ~(symbol "[Ljava.time.temporal.TemporalField;")
                 java.time.format.TextStyle
@@ -192,11 +204,14 @@
           java.util.jar.JarFile
           java.util.jar.JarEntry
           java.util.jar.JarFile$JarFileEntry
+          java.util.stream.Stream
+          java.util.Random
           java.util.regex.Pattern
           java.util.Base64
           java.util.Base64$Decoder
           java.util.Base64$Encoder
           java.util.Date
+          java.util.Locale
           java.util.Map
           java.util.MissingResourceException
           java.util.Properties
@@ -216,11 +231,26 @@
                    java.io.EOFException
                    java.io.PrintWriter
                    java.io.PushbackReader]
-    :methods [borkdude.graal.LockFix ;; support for locking
-              ]
+    :methods [borkdude.graal.LockFix] ;; support for locking
+
     :fields [clojure.lang.PersistentQueue]
     :instance-checks [clojure.lang.IObj
-                      clojure.lang.IEditableCollection]
+                      clojure.lang.IFn
+                      clojure.lang.IPending
+                      ;; clojure.lang.IDeref
+                      ;; clojure.lang.IAtom
+                      clojure.lang.IEditableCollection
+                      clojure.lang.IMapEntry
+                      clojure.lang.IPersistentMap
+                      clojure.lang.IPersistentSet
+                      clojure.lang.IPersistentVector
+                      clojure.lang.IRecord
+                      clojure.lang.ISeq
+                      clojure.lang.Named
+                      clojure.lang.Keyword
+                      clojure.lang.Symbol
+                      clojure.lang.Sequential
+                      java.util.List]
     :custom ~custom-map})
 
 (defmacro gen-class-map []
@@ -238,6 +268,8 @@
            (fn [v]
              (cond (instance? java.lang.Process v)
                    java.lang.Process
+                   (instance? java.lang.ProcessHandle v)
+                   java.lang.ProcessHandle
                    ;; added for calling .put on .environment from ProcessBuilder
                    (instance? java.util.Map v)
                    java.util.Map
@@ -257,7 +289,9 @@
                    (instance? java.nio.file.FileSystem v)
                    java.nio.file.FileSystem
                    (instance? java.nio.file.PathMatcher v)
-                   java.nio.file.PathMatcher)))))
+                   java.nio.file.PathMatcher
+                   (instance? java.util.stream.Stream v)
+                   java.util.stream.Stream)))))
 
 (def class-map (gen-class-map))
 
@@ -300,11 +334,10 @@
     (->> (.getMethods c)
          (keep (fn [m]
                  (when (public-declared-method? c m)
-                   {:name (.getName m)})) )
+                   {:name (.getName m)})))
          (distinct)
          (sort-by :name)
          (vec)))
 
   (public-declared-method-names java.net.URL)
-  (public-declared-method-names java.util.Properties)
-  )
+  (public-declared-method-names java.util.Properties))

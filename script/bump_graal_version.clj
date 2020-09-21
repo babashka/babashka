@@ -11,7 +11,7 @@
 ;; GraalVM Community Edition 19.3.2 based on OpenJDK 8u252
 ;; GraalVM Community Edition 19.3.2 based on OpenJDK 11.0.7
 ;;
-;; Currently we use GraalVM java8-19.3.2
+;; Currently we use GraalVM java11-20.1.0
 
 (ns bump-graal-version
   (:require [clojure.string :as str]
@@ -41,7 +41,8 @@
    "doc/dev.md"
    ".github/workflows/build.yml"
    ".circleci/config.yml"
-   "appveyor.yml"])
+   "appveyor.yml"
+   "project.clj"])
 
 ;; We might have to keep changing these from
 ;; time to time whenever the version is bumped
@@ -51,7 +52,7 @@
 ;; We could have them as environment variables
 (def current-graal-version "20.1.0")
 (def current-java-version "java11")
-(def valid-graal-bumps ["19.3.2" "20.1.0"])
+(def valid-graal-bumps ["19.3.2" "20.1.0" "20.2.0"])
 (def valid-java-bumps ["java8" "java11"])
 
 (def cl-options

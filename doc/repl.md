@@ -80,7 +80,7 @@ user=>
 
 Editor plugins and tools known to work with the babashka nREPL server:
 
-  - Emacs: [CIDER](https://docs.cider.mx/cider-nrepl/)
+  - Emacs: [CIDER](https://docs.cider.mx/cider/platforms/babashka.html)
   - `lein repl :connect`
   - VSCode: [Calva](http://calva.io/)
   - Atom: [Chlorine](https://github.com/mauricioszabo/atom-chlorine)
@@ -99,7 +99,9 @@ you can easily write a script that launches the server and writes the file:
 (require '[babashka.wait :as wait])
 
 (let [nrepl-port (with-open [sock (ServerSocket. 0)] (.getLocalPort sock))
-      pb (doto (ProcessBuilder. (into ["bb" "--nrepl-server" (str nrepl-port)]
+      cp (str/join File/pathSeparatorChar ["src" "test"])
+      pb (doto (ProcessBuilder. (into ["bb" "--nrepl-server" (str nrepl-port)
+                                       "--classpath" cp]
                                       *command-line-args*))
            (.redirectOutput ProcessBuilder$Redirect/INHERIT))
       proc (.start pb)]

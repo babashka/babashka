@@ -32,6 +32,9 @@
    'spit (copy-core-var spit)
    'time (with-meta time* {:sci/macro true})
    'Throwable->map (copy-core-var Throwable->map)
-   'compare-and-set! (copy-core-var compare-and-set!)
+   'tap> (copy-core-var tap>)
+   'add-tap (copy-core-var add-tap)
+   'remove-tap (copy-core-var remove-tap)
    '*data-readers* data-readers
+   'default-data-readers default-data-readers
    'xml-seq (copy-core-var xml-seq)})

@@ -24,7 +24,7 @@ fi
 export JAVA_HOME=$GRAALVM_HOME
 export PATH=$GRAALVM_HOME/bin:$PATH
 
-SVM_JAR=$(find "$GRAALVM_HOME" | grep svm.jar)
+SVM_JAR=$(find -L "$GRAALVM_HOME" | grep svm.jar)
 "$GRAALVM_HOME/bin/javac" -cp "$SVM_JAR" resources/CutOffCoreServicesDependencies.java
 
 if [ -z "$BABASHKA_JAR" ]; then
@@ -46,7 +46,7 @@ args=( "-jar" "$BABASHKA_JAR"
        "--initialize-at-run-time=java.lang.Math\$RandomNumberGeneratorHolder"
        "--initialize-at-build-time"
        "-H:Log=registerResource:"
-       "-H:EnableURLProtocols=http,https"
+       "-H:EnableURLProtocols=http,https,jar"
        "--enable-all-security-services"
        "-H:+JNI"
        "--verbose"
@@ -80,6 +80,10 @@ then
     export BABASHKA_FEATURE_CORE_ASYNC=false
     export BABASHKA_FEATURE_CSV=false
     export BABAHSKA_FEATURE_TRANSIT=false
+    export BABASHKA_FEATURE_JAVA_TIME=false
+    export BABASHKA_FEATURE_JAVA_NIO=false
+    export BABASHKA_FEATURE_HTTPKIT_CLIENT=false
+    export BABASHKA_FEATURE_HTTPKIT_SERVER=false
 fi
 
 "$GRAALVM_HOME/bin/native-image" "${args[@]}"

@@ -17,7 +17,6 @@
 (ns hsqldb-unused-vars
   (:require
    [babashka.pods :as pods]
-   [clojure.edn :as edn]
    [clojure.pprint :refer [print-table]]))
 
 (pods/load-pod "pod-babashka-hsqldb")

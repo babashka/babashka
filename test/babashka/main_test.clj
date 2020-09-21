@@ -1,4 +1,5 @@
 (ns babashka.main-test
+  {:clj-kondo/config '{:linters {:unresolved-symbol {:exclude [working?]}}}}
   (:require
    [babashka.main :as main]
    [babashka.test-utils :as test-utils]
@@ -6,13 +7,20 @@
    [clojure.java.io :as io]
    [clojure.java.shell :refer [sh]]
    [clojure.string :as str]
-   [clojure.test :as test :refer [deftest is testing]]
+   [clojure.test :as test :refer [deftest is testing *report-counters*]]
    [flatland.ordered.map :refer [ordered-map]]
    [sci.core :as sci]))
 
 (defmethod clojure.test/report :begin-test-var [m]
   (println "===" (-> m :var meta :name))
   (println))
+
+(defmethod clojure.test/report :end-test-var [m]
+  (let [{:keys [:fail :error]} @*report-counters*]
+    (when (and (= "true" (System/getenv "BABASHKA_FAIL_FAST"))
+               (or (pos? fail) (pos? error)))
+      (println "=== Failing fast")
+      (System/exit 1))))
 
 (defn bb [input & args]
   (edn/read-string
@@ -233,7 +241,13 @@
 (def output (.getInputStream ls))
 (assert (int? (.waitFor ls)))
 (slurp output)")
-                     "LICENSE")))
+                     "LICENSE"))
+  (testing "bb is able to kill subprocesses created by ProcessBuilder"
+    (when test-utils/native?
+      (let [output (test-utils/bb nil (io/file "test" "babashka" "scripts" "kill_child_processes.bb"))
+            parsed (edn/read-string (format "[%s]" output))]
+        (is (every? number? parsed))
+        (is (= 3 (count parsed)))))))
 
 (deftest create-temp-file-test
   (let [temp-dir-path (System/getProperty "java.io.tmpdir")]
@@ -485,6 +499,50 @@
 
 (deftest data-diff-test
   (is (= [[nil 1] [nil 2] [1 nil 2]] (bb nil "(require '[clojure.data :as d]) (d/diff [1 1 2] [1 2 2])"))))
+
+(deftest version-property-test
+  (is (= "true\ntrue\nfalse\n"
+         (test-utils/bb nil (.getPath (io/file "test-resources" "babashka" "version.clj"))))))
+
+(defmethod clojure.test/assert-expr 'working? [msg form]
+  (let [body (next form)]
+    `(do ~@body
+         (clojure.test/do-report {:type :pass, :message ~msg,
+                                  :expected :success, :actual :success}))))
+
+(deftest empty-expressions-test
+  (testing "bb executes the empty file and doesn't start a REPL"
+    (is (working? (test-utils/bb nil (.getPath (io/file "test-resources" "babashka" "empty.clj"))))))
+  (testing "bb executes the empty expression and doesn't start a REPL"
+    (is (working? (test-utils/bb nil "-e" "")))))
+
+(deftest file-property-test
+  (is (= "true\nfalse\n"
+         (test-utils/bb nil (.getPath (io/file "test-resources" "babashka" "file_property1.clj")))))
+  (is (= "true\n"
+         (test-utils/bb nil (.getPath (io/file "test-resources" "babashka" "file_property2.clj")))))
+  (is (apply =
+             (bb nil (.getPath (io/file "test" "babashka" "scripts" "simple_file_var.bb")))))
+  (let [res (bb nil (.getPath (io/file "test" ".." "test" "babashka"
+                                       "scripts" "simple_file_var.bb")))]
+    (is (apply = res))
+    (is (str/includes? (first res) ".."))))
+
+(deftest file-location-test
+  (is (thrown-with-msg?
+       Exception #"file_location2.clj"
+       (test-utils/bb nil (.getPath (io/file "test-resources" "babashka" "file_location1.clj"))))))
+
+(deftest preloads-file-location-test
+  (when (System/getenv "BABASHKA_PRELOADS_TEST")
+    (is (thrown-with-msg?
+         Exception #"preloads"
+         (test-utils/bb nil (.getPath (io/file "test-resources" "babashka" "file_location_preloads.clj")))))))
+
+(deftest repl-test
+  (is (str/includes? (test-utils/bb "(ns foo) ::foo" "--repl") ":foo/foo"))
+  (is (str/includes? (test-utils/bb "[*warn-on-reflection* (set! *warn-on-reflection* true) *warn-on-reflection*]")
+                     "[false true true]")))
 
 ;;;; Scratch
 

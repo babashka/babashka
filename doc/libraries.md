@@ -195,8 +195,8 @@ $ bb "(use 'doric.core) (println (table [:a :b :c] [{:a 1 :b 2 :c 3} {:a 4 :b 5 
 
 ### [clojure.data.zip](https://github.com/clojure/data.zip)
 
-Utilities for clojure.zip, among other things a more fluent way to work 
-with xml. 
+Utilities for clojure.zip, among other things a more fluent way to work
+with xml.
 
 Small sample:
 ``` clojure
@@ -233,10 +233,53 @@ user> (psql/query conn "select name, subject from grades where grade = 100")
        {:name "Suzy Butterbean", :subject "Math"})
 ```
 
-### [babashka-compatible hiccup scripts](https://github.com/lambdaisland/open-source/blob/2cfde3dfb460e72f047bf94e6f5ec7f519c6d7a0/src/lioss/hiccup.clj)
+### [camel-snake-kebab](https://github.com/clj-commons/camel-snake-kebab)
 
-There's also [subshell](https://github.com/lambdaisland/open-source/blob/master/src/lioss/subshell.clj)
-which is like sh/sh, but it inherits stdin/stdout/stderr, so that the user sees in real time what the subprocess is doing, and can possibly interact with it. More like how shelling out in a bash script works.
+A library for word case conversions.
+
+### [aero](https://github.com/juxt/aero/)
+
+A small library for explicit, intentful configuration.
+
+### [clojure.data.generators](https://github.com/clojure/data.generators)
+
+Random data generators
+
+### [honeysql](https://github.com/seancorfield/honeysql)
+
+Turn Clojure data structures into SQL
+
+### [bond](https://github.com/circleci/bond)
+
+Spying and stubbing library, primarily intended for tests.
+
+### [portal](https://github.com/djblue/portal/)
+
+A clojure tool to navigate through your data. This example will launch a browser to view your `deps.edn`:
+
+``` clojure
+$ cat deps.edn | bb -cp `clojure -Spath -Sdeps '{:deps {djblue/portal {:mvn/version "0.4.1"}}}'` -m portal.main edn
+```
+
+### [version-clj](https://github.com/xsc/version-clj)
+
+Analysis and comparison of artifact version numbers.
+
+``` clojure
+> export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {version-clj/version-clj {:mvn/version "0.1.2"}}}')
+> bb --repl
+...
+user=> (require '[version-clj.core :as ver])
+nil
+user=> (ver/version->seq "1.0.0-SNAPSHOT")
+[(1 0 0) ["snapshot"]]
+user=> (ver/version-compare "1.2.3" "1.0.0")
+1
+user=> (ver/version-compare "1.0.0-SNAPSHOT" "1.0.0")
+-1
+user=> (ver/version-compare "1.0" "1.0.0")
+0
+```
 
 ## Pods
 
@@ -247,10 +290,13 @@ be used as Clojure libraries by babashka.
   interacting with SQL databases
 - [bootleg](https://github.com/retrogradeorbit/bootleg): static HTML website
   generation
+- [brisk](https://github.com/justone/brisk): Freeze and thaw with Nippy at the
+  command line
 - [clj-kondo](https://github.com/borkdude/clj-kondo/#babashka-pod): a Clojure
   linter
 - [pod-babashka-filewatcher](https://github.com/babashka/pod-babashka-filewatcher): a
   filewatcher pod based on Rust notify
+- [pod-babashka-parcera](https://github.com/babashka/pod-babashka-parcera): pod around the parcera Clojure parser
 - [pod-janet-peg](https://github.com/sogaiu/pod-janet-peg): a pod for
   calling [Janet](https://github.com/janet-lang/janet)'s PEG
   functionality
@@ -258,6 +304,7 @@ be used as Clojure libraries by babashka.
     a pod for parsing HTML using CSS queries backed by Jsoup
 - [pod-lispyclouds-docker](https://github.com/lispyclouds/pod-lispyclouds-docker):
   A pod for interacting with docker
+- [tabl](https://github.com/justone/tabl): Make tables from data in your terminal
 
 ## Projects
 
@@ -307,7 +354,7 @@ A wee multi-threaded web server
 
 ### [covid19-babashka](https://github.com/agrison/covid19-babashka)
 
-A babashka script to obtain covid-19 related information. 
+A babashka script to obtain covid-19 related information.
 
 ### [bb-spotify](https://github.com/kolharsam/bb-spotify)
 
@@ -317,4 +364,15 @@ Contol your spotify player using babashka.
 
 [Internal
 tooling](https://github.com/borkdude/babashka/issues/457#issuecomment-636739415)
-used by Lambda Island projects.
+used by Lambda Island projects. Noteworthy: a [babashka-compatible hiccup
+script](https://github.com/lambdaisland/open-source/blob/2cfde3dfb460e72f047bf94e6f5ec7f519c6d7a0/src/lioss/hiccup.clj).
+
+There's also
+[subshell](https://github.com/lambdaisland/open-source/blob/master/src/lioss/subshell.clj)
+which is like sh/sh, but it inherits stdin/stdout/stderr, so that the user sees
+in real time what the subprocess is doing, and can possibly interact with
+it. More like how shelling out in a bash script works.
+
+### [dharrigan/spotifyd-notification](https://github.com/dharrigan/spotifyd-notification)
+
+An example of using babashka to show spotifyd notifications via dunst.

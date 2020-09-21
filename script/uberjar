@@ -22,6 +22,8 @@ then
     export BABAHSKA_FEATURE_TRANSIT=false
     export BABASHKA_FEATURE_JAVA_TIME=false
     export BABASHKA_FEATURE_JAVA_NIO=false
+    export BABASHKA_FEATURE_HTTPKIT_CLIENT=false
+    export BABASHKA_FEATURE_HTTPKIT_SERVER=false
 fi
 
 BABASHKA_LEIN_PROFILES="+uberjar"
@@ -87,6 +89,20 @@ then
     BABASHKA_LEIN_PROFILES+=",+feature/datascript"
 else
     BABASHKA_LEIN_PROFILES+=",-feature/datascript"
+fi
+
+if [ "$BABASHKA_FEATURE_HTTPKIT_CLIENT" != "false" ]
+then
+    BABASHKA_LEIN_PROFILES+=",+feature/httpkit-client"
+else
+    BABASHKA_LEIN_PROFILES+=",-feature/httpkit-client"
+fi
+
+if [ "$BABASHKA_FEATURE_HTTPKIT_SERVER" != "false" ]
+then
+    BABASHKA_LEIN_PROFILES+=",+feature/httpkit-server"
+else
+    BABASHKA_LEIN_PROFILES+=",-feature/httpkit-server"
 fi
 
 if [ -z "$BABASHKA_JAR" ]; then
