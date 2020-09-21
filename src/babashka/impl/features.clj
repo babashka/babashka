@@ -17,4 +17,4 @@
 (def postgresql? (= "true" (System/getenv "BABASHKA_FEATURE_POSTGRESQL")))
 (def hsqldb? (= "true" (System/getenv "BABASHKA_FEATURE_HSQLDB")))
 (def datascript? (= "true" (System/getenv "BABASHKA_FEATURE_DATASCRIPT")))
-(def ring? (= "true" System/getenv "BABASHKA_FEATURE_RING"))
+(def ring? (= "true" (System/getenv "BABASHKA_FEATURE_RING")))

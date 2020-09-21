@@ -2,6 +2,7 @@
          "feature-yaml" "feature-csv" "feature-transit"
          "feature-java-time" "feature-java-nio"
          "feature-httpkit-client" "feature-httpkit-server"
+         "feature-ring"
          "sci/src" "babashka.curl/src" "babashka.pods/src"
          "babashka.nrepl/src"
          "depstar/src"
