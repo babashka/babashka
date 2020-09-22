@@ -57,6 +57,8 @@
                     :feature/datascript
                     :feature/httpkit-client
                     :feature/httpkit-server
+                    :feature/ring
+                    :feature/reitit
                     {:dependencies [[clj-commons/conch "0.9.2"]
                                     [com.clojure-goes-fast/clj-async-profiler "0.4.1"]
                                     [com.opentable.components/otj-pg-embedded "0.13.3"]]}]
