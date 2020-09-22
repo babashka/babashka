@@ -29,7 +29,7 @@
 
 (defn error-context [ex opts]
   (let [{:keys [:file :line :column]} (ex-data ex)]
-    (when file
+    (when (and file line)
       (when-let [content (case file
                            "<expr>" (:expression opts)
                            "<preloads>" (:preloads opts)
