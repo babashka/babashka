@@ -211,6 +211,7 @@ jobs:
     macos:
       xcode: "12.0.0"
     environment:
+      MACOSX_DEPLOYMENT_TARGET: 10.11
       GRAALVM_HOME: /Users/distiller/graalvm-ce-java11-20.2.0/Contents/Home
       BABASHKA_PLATFORM: macos # used in release script
       BABASHKA_TEST_ENV: native
