@@ -4,7 +4,7 @@ For a list of breaking changes, check [here](#breaking-changes)
 
 ## v0.2.1 (SNAPSHOT)
 
-Thanks to [@RickMoynihan](https://github.com/RickMoynihan), [@joinr](https://github.com/joinr), [@djblue](https://github.com/djblue), @lread
+Thanks to [@RickMoynihan](https://github.com/RickMoynihan), [@joinr](https://github.com/joinr), [@djblue](https://github.com/djblue), [@lread](https://github.com/lread), [@teodorlu](https://github.com/teodorlu) for contributing to this release. Thanks to [Clojurists Together](https://www.clojuriststogether.org/) for sponsoring this release.
 
 ### New
 
@@ -14,6 +14,8 @@ Thanks to [@RickMoynihan](https://github.com/RickMoynihan), [@joinr](https://git
 - Support YAML roundtrip through `*input*` [#583](https://github.com/borkdude/babashka/issues/583)
 - Support implementing `IDeref`, `IAtom` and `IAtom2` on records [sci#401](https://github.com/borkdude/sci/issues/401)
 - Support `clojure.core/find-var` [sci#420](https://github.com/borkdude/sci/issues/420) @RickMoynihan
+- Compat / Add lib-tests for version-clj
+
 
 ### Fixed / enhanced
 
