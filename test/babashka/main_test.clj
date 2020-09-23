@@ -58,7 +58,7 @@
   (is (thrown-with-msg? Exception #"java.lang.NullPointerException"
                         (bb nil "(subs nil 0 0)"))))
 
-(deftest main-test
+(deftest input-test
   (testing "-io behaves as identity"
     (is (= "foo\nbar\n" (test-utils/bb "foo\nbar\n" "-io" "*input*"))))
   (testing "if and when"
@@ -107,14 +107,15 @@
             (bb "foo\n Clojure is nice. \nbar\n If you're nice to clojure. "
                 "-i"
                 "(map-indexed #(-> [%1 %2]) *input*)")
-            (bb "(keep #(when (re-find #\"(?i)clojure\" (second %)) (first %)) *input*)"))))))
+            (bb "(keep #(when (re-find #\"(?i)clojure\" (second %)) (first %)) *input*)")))))
+  (testing "ordered/map data reader works"
+    (is (= "localhost" (bb "#ordered/map ([:test \"localhost\"])"
+                           "(:test *input*)"))))
+  (testing "bb doesn't wait for input if *input* isn't used"
+    (is (= "2\n" (with-out-str (main/main "(inc 1)"))))))
 
 (deftest println-test
   (is (= "hello\n" (test-utils/bb nil "(println \"hello\")"))))
-
-(deftest input-test
-  (testing "bb doesn't wait for input if *input* isn't used"
-    (is (= "2\n" (with-out-str (main/main "(inc 1)"))))))
 
 (deftest System-test
   (let [res (bb nil "-f" "test/babashka/scripts/System.bb")]

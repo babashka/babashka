@@ -216,19 +216,6 @@
                  opts-map))]
     opts))
 
-(defn edn-seq*
-  [^java.io.BufferedReader rdr]
-  (let [edn-val (edn/read {:eof ::EOF} rdr)]
-    (when (not (identical? ::EOF edn-val))
-      (cons edn-val (lazy-seq (edn-seq* rdr))))))
-
-(defn edn-seq
-  [in]
-  (edn-seq* in))
-
-(defn shell-seq [in]
-  (line-seq (java.io.BufferedReader. in)))
-
 (def version (str/trim (slurp (io/resource "BABASHKA_VERSION"))))
 
 (defn print-version []
@@ -448,6 +435,22 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
     Throwable java.lang.Throwable})
 
 (def input-var (sci/new-dynamic-var '*input* nil))
+(def edn-readers (cond-> {}
+                   features/yaml?
+                   (assoc 'ordered/map @(resolve 'flatland.ordered.map/ordered-map))))
+
+(defn edn-seq*
+  [^java.io.BufferedReader rdr]
+  (let [edn-val (edn/read {:eof ::EOF :readers edn-readers} rdr)]
+    (when (not (identical? ::EOF edn-val))
+      (cons edn-val (lazy-seq (edn-seq* rdr))))))
+
+(defn edn-seq
+  [in]
+  (edn-seq* in))
+
+(defn shell-seq [in]
+  (line-seq (java.io.BufferedReader. in)))
 
 (defn main
   [& args]
@@ -474,14 +477,14 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                           ::EOF
                           (if stream?
                             (if shell-in (or (read-line) ::EOF)
-                                (edn/read {;;:readers *data-readers*
+                                (edn/read {:readers edn-readers
                                            :eof ::EOF} *in*))
                             (delay (cond shell-in
                                          (shell-seq *in*)
                                          edn-in
                                          (edn-seq *in*)
                                          :else
-                                         (edn/read *in*))))))
+                                         (edn/read {:readers edn-readers} *in*))))))
             uberscript-sources (atom ())
             env (atom {})
             classpath (or classpath
