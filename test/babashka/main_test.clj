@@ -541,7 +541,11 @@
 (deftest repl-test
   (is (str/includes? (test-utils/bb "(ns foo) ::foo" "--repl") ":foo/foo"))
   (is (str/includes? (test-utils/bb "[*warn-on-reflection* (set! *warn-on-reflection* true) *warn-on-reflection*]")
-                     "[false true true]")))
+                     "[false true true]"))
+  (let [sw (java.io.StringWriter.)]
+    (sci/with-bindings {sci/err sw}
+      (test-utils/bb {:in "x" :err sw} "--repl"))
+    (is (str/includes? (str sw) "Could not resolve symbol: x [at <repl>:1:1]"))))
 
 ;;;; Scratch
 

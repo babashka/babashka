@@ -12,8 +12,10 @@
   (let [os (java.io.StringWriter.)
         es (if-let [err (:err input-or-opts)]
              err (java.io.StringWriter.))
-        is (when (string? input-or-opts)
-             (java.io.StringReader. input-or-opts))
+        in (if (string? input-or-opts)
+             input-or-opts (:in input-or-opts))
+        is (when in
+             (java.io.StringReader. in))
         bindings-map (cond-> {sci/out os
                               sci/err es}
                        is (assoc sci/in is))]
