@@ -27,7 +27,7 @@ Thanks to [@RickMoynihan](https://github.com/RickMoynihan), [@joinr](https://git
 
 ### Fixed / enhanced
 
-- Fix location printing in REPL (`--repl`) [#577](https://github.com/borkdude/babashka/issues/577)
+- Fix location printing in REPL (`--repl`) [#598](https://github.com/borkdude/babashka/issues/589)
 - Babashka.curl sends form params incorrectly as multipart [babashka.curl#25](https://github.com/borkdude/babashka.curl/issues/25)
 - Update Windows build instructions [#574](https://github.com/borkdude/babashka/issues/574)
 - Set minimum macOS version in build explicitly [#588](https://github.com/borkdude/babashka/pull/588)
