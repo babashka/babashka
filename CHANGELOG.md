@@ -4,6 +4,12 @@ For a list of breaking changes, check [here](#breaking-changes)
 
 ## v0.2.1 (SNAPSHOT)
 
+Pre-release binaries:
+
+- [Linux](https://11913-201467090-gh.circle-artifacts.com/0/release/babashka-0.2.1-SNAPSHOT-linux-amd64.zip)
+- [macOS](https://11914-201467090-gh.circle-artifacts.com/0/release/babashka-0.2.1-SNAPSHOT-macos-amd64.zip)
+- [Windows](https://ci.appveyor.com/api/buildjobs/wjhyh3acqi14dbex/artifacts/babashka-0.2.1-SNAPSHOT-windows-amd64.zip)
+
 Thanks to [@RickMoynihan](https://github.com/RickMoynihan), [@joinr](https://github.com/joinr), [@djblue](https://github.com/djblue), [@lread](https://github.com/lread), [@teodorlu](https://github.com/teodorlu) for contributing to this release. Thanks to [Clojurists Together](https://www.clojuriststogether.org/) for sponsoring this release.
 
 ### New
