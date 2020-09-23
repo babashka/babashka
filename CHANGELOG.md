@@ -14,11 +14,10 @@ Thanks to [@RickMoynihan](https://github.com/RickMoynihan), [@joinr](https://git
   be considered experimental and may stay or be removed in a future version of
   babashka, depending on feedback from the community. See [example](examples/httpkit_server.clj)
 - Add `java.io.FileNotFoundException`, `java.security.DigestInputStream`, `java.nio.file.FileVisitOption` classes
-- Support YAML roundtrip through `*input*` [#583](https://github.com/borkdude/babashka/issues/583)
 - Support implementing `IDeref`, `IAtom` and `IAtom2` on records [sci#401](https://github.com/borkdude/sci/issues/401)
-- Support `clojure.core/find-var` [sci#420](https://github.com/borkdude/sci/issues/420) @RickMoynihan
 - Support compatibility with [version-clj](https://github.com/xsc/version-clj) [#565](https://github.com/borkdude/babashka/issues/565) [@lread](https://github.com/lread) and [@borkdude](https://github.com/borkdude)
-
+- Support YAML roundtrip through `*input*` [#583](https://github.com/borkdude/babashka/issues/583)
+- Support `clojure.core/find-var` [sci#420](https://github.com/borkdude/sci/issues/420) [@RickMoynihan](https://github.com/RickMoynihan)
 
 ### Fixed / enhanced
 
