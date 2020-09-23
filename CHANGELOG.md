@@ -9,12 +9,15 @@ Thanks to [@RickMoynihan](https://github.com/RickMoynihan), [@joinr](https://git
 ### New
 
 - Include `org.httpkit.client`, a high performance async http client [#561](https://github.com/borkdude/babashka/issues/561)
-- Include `org.httpkit.server`, an HTTP server [#556](https://github.com/borkdude/babashka/issues/556). This namespace should be considered experimental and may be removed in a future version of babashka, depending on feedback from the community.
+- Include `org.httpkit.server`, an HTTP server
+  [#556](https://github.com/borkdude/babashka/issues/556). This namespace should
+  be considered experimental and may stay or be removed in a future version of
+  babashka, depending on feedback from the community. See [example](examples/httpkit_server.clj)
 - Add `java.io.FileNotFoundException`, `java.security.DigestInputStream`, `java.nio.file.FileVisitOption` classes
 - Support YAML roundtrip through `*input*` [#583](https://github.com/borkdude/babashka/issues/583)
 - Support implementing `IDeref`, `IAtom` and `IAtom2` on records [sci#401](https://github.com/borkdude/sci/issues/401)
 - Support `clojure.core/find-var` [sci#420](https://github.com/borkdude/sci/issues/420) @RickMoynihan
-- Compat / Add lib-tests for version-clj
+- Support compatibility with [version-clj](https://github.com/xsc/version-clj) [#565](https://github.com/borkdude/babashka/issues/565) [@lread](https://github.com/lread) and [@borkdude](https://github.com/borkdude)
 
 
 ### Fixed / enhanced
@@ -30,8 +33,7 @@ Thanks to [@RickMoynihan](https://github.com/RickMoynihan), [@joinr](https://git
 - Constructor call not recognized in protocol impl [sci#419](https://github.com/borkdude/sci/issues/419)
 - Improve handling of top-level do in macro expansion [sci#421](https://github.com/borkdude/sci/issues/421)
 - Performance improvements suggested by [@joinr](https://github.com/joinr) [sci#415](https://github.com/borkdude/sci/issues/415)
-- https://github.com/borkdude/sci/issues/398
-- https://github.com/borkdude/babashka/issues/565
+- Throw when trying to redefine referred var [sci#398](https://github.com/borkdude/sci/issues/398)
 
 ## v0.2.0 (2020-08-28)
 
