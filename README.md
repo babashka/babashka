@@ -815,7 +815,11 @@ resources than on the JVM and will break down for some high value of `n`:
 For making HTTP requests you can use:
 
 - [babashka.curl](https://github.com/borkdude/babashka.curl). This library is
-  included with babashka and aliased as `curl` in the user namespace.
+  included with babashka and aliased as `curl` in the user namespace. The
+  interface is similar to that of
+  [clj-http](https://github.com/dakrone/clj-http) but it will shell out to
+  `curl` to make requests.
+- [org.httpkit.client](https://github.com/http-kit/http-kit)
 - `slurp` for simple `GET` requests
 - [clj-http-lite](https://github.com/borkdude/clj-http-lite) as a library.
 - `clojure.java.shell` or `java.lang.ProcessBuilder` for shelling out to your
