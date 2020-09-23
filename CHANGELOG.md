@@ -2,6 +2,44 @@
 
 For a list of breaking changes, check [here](#breaking-changes)
 
+## v0.2.1 (SNAPSHOT)
+
+Pre-release binaries:
+
+- [Linux](https://11913-201467090-gh.circle-artifacts.com/0/release/babashka-0.2.1-SNAPSHOT-linux-amd64.zip)
+- [macOS](https://11914-201467090-gh.circle-artifacts.com/0/release/babashka-0.2.1-SNAPSHOT-macos-amd64.zip)
+- [Windows](https://ci.appveyor.com/api/buildjobs/wjhyh3acqi14dbex/artifacts/babashka-0.2.1-SNAPSHOT-windows-amd64.zip)
+
+Thanks to [@RickMoynihan](https://github.com/RickMoynihan), [@joinr](https://github.com/joinr), [@djblue](https://github.com/djblue), [@lread](https://github.com/lread), [@teodorlu](https://github.com/teodorlu) for contributing to this release. Thanks to [Clojurists Together](https://www.clojuriststogether.org/) for sponsoring this release.
+
+### New
+
+- Include `org.httpkit.client`, a high performance async http client [#561](https://github.com/borkdude/babashka/issues/561)
+- Include `org.httpkit.server`, an HTTP server
+  [#556](https://github.com/borkdude/babashka/issues/556). This namespace should
+  be considered experimental and may stay or be removed in a future version of
+  babashka, depending on feedback from the community. See [example](examples/httpkit_server.clj)
+- Add `java.io.FileNotFoundException`, `java.security.DigestInputStream`, `java.nio.file.FileVisitOption` classes
+- Support implementing `IDeref`, `IAtom` and `IAtom2` on records [sci#401](https://github.com/borkdude/sci/issues/401)
+- Support compatibility with [version-clj](https://github.com/xsc/version-clj) [#565](https://github.com/borkdude/babashka/issues/565) [@lread](https://github.com/lread) and [@borkdude](https://github.com/borkdude)
+- Support YAML roundtrip through `*input*` [#583](https://github.com/borkdude/babashka/issues/583)
+- Support `clojure.core/find-var` [sci#420](https://github.com/borkdude/sci/issues/420) [@RickMoynihan](https://github.com/RickMoynihan)
+
+### Fixed / enhanced
+
+- Fix location printing in REPL (`--repl`) [#577](https://github.com/borkdude/babashka/issues/577)
+- Babashka.curl sends form params incorrectly as multipart [babashka.curl#25](https://github.com/borkdude/babashka.curl/issues/25)
+- Update Windows build instructions [#574](https://github.com/borkdude/babashka/issues/574)
+- Set minimum macOS version in build explicitly [#588](https://github.com/borkdude/babashka/pull/588)
+- Fix NPE in error handling logic [#587](https://github.com/borkdude/babashka/issues/587)
+- Fix namespace switch in REPL (`--repl`) [#564](https://github.com/borkdude/babashka/issues/564)
+- Fix location of errors in REPL (`--repl`) [#589](https://github.com/borkdude/babashka/issues/589)
+- Support multi-arity methods in `defprotocol` [sci#406](https://github.com/borkdude/sci/issues/406)
+- Constructor call not recognized in protocol impl [sci#419](https://github.com/borkdude/sci/issues/419)
+- Improve handling of top-level do in macro expansion [sci#421](https://github.com/borkdude/sci/issues/421)
+- Performance improvements suggested by [@joinr](https://github.com/joinr) [sci#415](https://github.com/borkdude/sci/issues/415)
+- Throw when trying to redefine referred var [sci#398](https://github.com/borkdude/sci/issues/398)
+
 ## v0.2.0 (2020-08-28)
 
 Thanks to [@cldwalker](https://github.com/cldwalker), [@dehli](https://github.com/dehli), [@djblue](https://github.com/djblue), [@GomoSDG](https://github.com/GomoSDG), [@grahamcarlyle](https://github.com/grahamcarlyle), [@j-cr](https://github.com/j-cr),

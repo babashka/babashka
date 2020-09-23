@@ -3,21 +3,22 @@
 ;; This example creates a file serving web server
 ;; It accepts a single connection from a browser and serves content to the connected browser
 ;; after the connection times out, this script will serve no more.
+;; Also see notes.clj for another web app example.
 
 (import (java.net ServerSocket))
-(require '[clojure.string :as string]
-         '[clojure.java.io :as io])
+(require '[clojure.java.io :as io]
+         '[clojure.string :as string])
 
 (with-open [server-socket (new ServerSocket 8080)
             client-socket (.accept server-socket)]
   (loop []
     (let [out (io/writer (.getOutputStream client-socket))
           in (io/reader (.getInputStream client-socket))
-          [req-line & headers] (loop [headers []]
-                                 (let [line (.readLine in)]
-                                   (if (string/blank? line)
-                                     headers
-                                     (recur (conj headers line)))))
+          [req-line & _headers] (loop [headers []]
+                                  (let [line (.readLine in)]
+                                    (if (string/blank? line)
+                                      headers
+                                      (recur (conj headers line)))))
           [_ _ path _] (re-find #"([^\s]+)\s([^\s]+)\s([^\s]+)" req-line)
           f (io/file (format "./%s" path))
           status (if (.exists f)
@@ -46,9 +47,10 @@
                                                             (apply html :pre
                                                                    (for [i (.list f)]
                                                                      (html :div
-                                                                           (html :a
-                                                                                 {:href (str (if (> (count path) 1) path) "/" i)} i)
-                                                                           ))))))))]
+                                                                           (html
+                                                                            :a
+                                                                            {:href
+                                                                             (str (when (> (count path) 1) path) "/" i)} i)))))))))]
       (prn path)
       (.write out (format "HTTP/1.1 %s OK\r\nContent-Length: %s\r\n\r\n%s"
                           status
