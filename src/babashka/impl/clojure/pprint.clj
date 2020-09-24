@@ -53,9 +53,11 @@
    (binding [pprint2/*print-right-margin* @print-right-margin]
      (pprint2/pprint s writer))))
 
+(defmacro wrap [])
+
 (def pprint-namespace
   {'pprint (copy-var pprint pprint-ns)
    'print-table (copy-var pprint2/print-table pprint-ns)
-   ;; TODO:
    '*print-right-margin* print-right-margin
+   'cl-format (copy-var pprint2/cl-format pprint-ns)
    })
