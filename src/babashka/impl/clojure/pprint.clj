@@ -44,9 +44,18 @@
          (doseq [row rows]
            (println (fmt-row "| " " | " " |" row))))))))
 
+(defn pprint
+  ;; TODO docstring
+  ([s]
+   (binding [pprint2/*print-right-margin* @print-right-margin]
+     (pprint2/pprint s)))
+  ([s writer]
+   (binding [pprint2/*print-right-margin* @print-right-margin]
+     (pprint2/pprint s writer))))
+
 (def pprint-namespace
-  {'pprint (copy-var pprint2/pprint pprint-ns)
+  {'pprint (copy-var pprint pprint-ns)
    'print-table (copy-var pprint2/print-table pprint-ns)
    ;; TODO:
-   ;; '*print-right-margin* print-right-margin
+   '*print-right-margin* print-right-margin
    })
