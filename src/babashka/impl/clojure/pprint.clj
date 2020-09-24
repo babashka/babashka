@@ -1,6 +1,7 @@
 (ns babashka.impl.clojure.pprint
   {:no-doc true}
-  (:require [fipp.edn :as fipp]
+  (:require #_[fipp.edn :as fipp]
+            [babashka.impl.clojure.pprint2 :as pprint2]
             [sci.core :as sci]
             [sci.impl.namespaces :refer [copy-var]]
             [sci.impl.vars :as vars]))
@@ -9,7 +10,7 @@
 
 (def print-right-margin (sci/new-dynamic-var 'print-right-margin 70 {:ns pprint-ns}))
 
-(defn pprint
+#_(defn pprint
   "Substitution for clojure.pprint backed by fipp.edn/pprint."
   ([edn]
    (pprint edn @sci/out))
@@ -17,7 +18,7 @@
    (fipp/pprint edn {:writer writer
                      :width @print-right-margin})))
 
-(defn print-table
+#_(defn print-table
   "Prints a collection of maps in a textual table. Prints table headings
    ks, and then a line of output for each row, corresponding to the keys
    in ks. If ks are not specified, use the keys of the first item in rows."
@@ -44,6 +45,8 @@
            (println (fmt-row "| " " | " " |" row))))))))
 
 (def pprint-namespace
-  {'pprint (copy-var pprint pprint-ns)
-   'print-table (copy-var print-table pprint-ns)
-   '*print-right-margin* print-right-margin})
+  {'pprint (copy-var pprint2/pprint pprint-ns)
+   'print-table (copy-var pprint2/print-table pprint-ns)
+   ;; TODO:
+   ;; '*print-right-margin* print-right-margin
+   })
