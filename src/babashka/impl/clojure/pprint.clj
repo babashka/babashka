@@ -12,10 +12,9 @@
 ;; Author: Tom Faulhaber
 ;; April 3, 2009
 
-#_:clj-kondo/ignore
 (ns
- ^{:author "Tom Faulhaber"
-   :doc "A Pretty Printer for Clojure
+    ^{:author "Tom Faulhaber"
+      :doc "A Pretty Printer for Clojure
 
 clojure.pprint implements a flexible system for printing structured data
 in a pleasing, easy-to-understand format. Basic use of the pretty printer is
@@ -35,22 +34,22 @@ a more powerful alternative to Clojure's standard format function.
 
 See documentation for pprint and cl-format for more information or
 complete documentation on the Clojure web site on GitHub."
-   :added "1.2"}
- babashka.impl.clojure.pprint
+      :added "1.2"}
+    babashka.impl.clojure.pprint
   (:refer-clojure :exclude (deftype))
-  (:use [clojure.walk :only [walk]]))
+  (:require [clojure.walk :refer [walk]]))
 
 (set! *warn-on-reflection* true)
 
 ;;; utilities.clj -- part of the pretty printer for Clojure
 
 ;;   Copyright (c) Rich Hickey. All rights reserved.
-                                        ;;   The use and distribution terms for this software are covered by the
-                                        ;;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-                                        ;;   which can be found in the file epl-v10.html at the root of this distribution.
-                                        ;;   By using this software in any fashion, you are agreeing to be bound by
-                                        ;;   the terms of this license.
-                                        ;;   You must not remove this notice, or any other, from this software.
+;;   The use and distribution terms for this software are covered by the
+;;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
+;;   which can be found in the file epl-v10.html at the root of this distribution.
+;;   By using this software in any fashion, you are agreeing to be bound by
+;;   the terms of this license.
+;;   You must not remove this notice, or any other, from this software.
 
 ;; Author: Tom Faulhaber
 ;; April 3, 2009
@@ -138,13 +137,13 @@ complete documentation on the Clojure web site on GitHub."
 ;;; column_writer.clj -- part of the pretty printer for Clojure
 
 
-                                        ;   Copyright (c) Rich Hickey. All rights reserved.
-                                        ;   The use and distribution terms for this software are covered by the
-                                        ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-                                        ;   which can be found in the file epl-v10.html at the root of this distribution.
-                                        ;   By using this software in any fashion, you are agreeing to be bound by
-                                        ;   the terms of this license.
-                                        ;   You must not remove this notice, or any other, from this software.
+;;   Copyright (c) Rich Hickey. All rights reserved.
+;;   The use and distribution terms for this software are covered by the
+;;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
+;;   which can be found in the file epl-v10.html at the root of this distribution.
+;;   By using this software in any fashion, you are agreeing to be bound by
+;;   the terms of this license.
+;;   You must not remove this notice, or any other, from this software.
 
 ;; Author: Tom Faulhaber
 ;; April 3, 2009
@@ -209,13 +208,13 @@ complete documentation on the Clojure web site on GitHub."
 
 ;;; pretty_writer.clj -- part of the pretty printer for Clojure
 
-                                        ;   Copyright (c) Rich Hickey. All rights reserved.
-                                        ;   The use and distribution terms for this software are covered by the
-                                        ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-                                        ;   which can be found in the file epl-v10.html at the root of this distribution.
-                                        ;   By using this software in any fashion, you are agreeing to be bound by
-                                        ;   the terms of this license.
-                                        ;   You must not remove this notice, or any other, from this software.
+;;   Copyright (c) Rich Hickey. All rights reserved.
+;;   The use and distribution terms for this software are covered by the
+;;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
+;;   which can be found in the file epl-v10.html at the root of this distribution.
+;;   By using this software in any fashion, you are agreeing to be bound by
+;;   the terms of this license.
+;;   You must not remove this notice, or any other, from this software.
 
 ;; Author: Tom Faulhaber
 ;; April 3, 2009
@@ -709,13 +708,13 @@ complete documentation on the Clojure web site on GitHub."
 
 ;;; pprint_base.clj -- part of the pretty printer for Clojure
 
-                                        ;   Copyright (c) Rich Hickey. All rights reserved.
-                                        ;   The use and distribution terms for this software are covered by the
-                                        ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-                                        ;   which can be found in the file epl-v10.html at the root of this distribution.
-                                        ;   By using this software in any fashion, you are agreeing to be bound by
-                                        ;   the terms of this license.
-                                        ;   You must not remove this notice, or any other, from this software.
+;;   Copyright (c) Rich Hickey. All rights reserved.
+;;   The use and distribution terms for this software are covered by the
+;;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
+;;   which can be found in the file epl-v10.html at the root of this distribution.
+;;   By using this software in any fashion, you are agreeing to be bound by
+;;   the terms of this license.
+;;   You must not remove this notice, or any other, from this software.
 
 ;; Author: Tom Faulhaber
 ;; April 3, 2009
@@ -849,6 +848,7 @@ radix specifier is in the form #XXr where XX is the decimal value of *print-base
          (finally
            (. clojure.lang.Var (popThreadBindings)))))))
 
+;; We avoid find-var for better GraalVM compilation
 (defn- table-ize [table m]
   (apply hash-map (mapcat
                    #(when-let [v (get table (key %))]
@@ -1113,13 +1113,13 @@ nil
 
 ;;; cl_format.clj -- part of the pretty printer for Clojure
 
-                                        ;   Copyright (c) Rich Hickey. All rights reserved.
-                                        ;   The use and distribution terms for this software are covered by the
-                                        ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-                                        ;   which can be found in the file epl-v10.html at the root of this distribution.
-                                        ;   By using this software in any fashion, you are agreeing to be bound by
-                                        ;   the terms of this license.
-                                        ;   You must not remove this notice, or any other, from this software.
+;;   Copyright (c) Rich Hickey. All rights reserved.
+;;   The use and distribution terms for this software are covered by the
+;;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
+;;   which can be found in the file epl-v10.html at the root of this distribution.
+;;   By using this software in any fashion, you are agreeing to be bound by
+;;   the terms of this license.
+;;   You must not remove this notice, or any other, from this software.
 
 ;; Author: Tom Faulhaber
 ;; April 3, 2009
@@ -1188,7 +1188,7 @@ nil
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defstruct ^{:private true}
- arg-navigator :seq :rest :pos)
+  arg-navigator :seq :rest :pos)
 
 (defn -init-navigator-impl
   "Create a new arg-navigator from the sequence with the position set to 0"
@@ -1232,7 +1232,7 @@ nil
       (struct arg-navigator (:seq navigator) (drop position (:rest navigator)) newpos))))
 
 (defstruct ^{:private true}
- compiled-directive :func :def :params :offset)
+  compiled-directive :func :def :params :offset)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; When looking at the parameter list, we may need to manipulate
@@ -2639,7 +2639,7 @@ nil
      choice-conditional))
 
   (\; [:min-remaining [nil Integer] :max-columns [nil Integer]]
-      #{:colon} {:separator true} nil)
+   #{:colon} {:separator true} nil)
 
   (\] [] #{} {} nil)
 
@@ -2671,27 +2671,27 @@ nil
 
   ;; TODO: detect errors in cases where colon not allowed
   (\^ [:arg1 [nil Integer] :arg2 [nil Integer] :arg3 [nil Integer]]
-      #{:colon} {}
-      (fn [params navigator offsets]
-        (let [arg1 (:arg1 params)
-              arg2 (:arg2 params)
-              arg3 (:arg3 params)
-              exit (if (:colon params) :colon-up-arrow :up-arrow)]
-          (cond
-            (and arg1 arg2 arg3)
-            (if (<= arg1 arg2 arg3) [exit navigator] navigator)
+   #{:colon} {}
+   (fn [params navigator offsets]
+     (let [arg1 (:arg1 params)
+           arg2 (:arg2 params)
+           arg3 (:arg3 params)
+           exit (if (:colon params) :colon-up-arrow :up-arrow)]
+       (cond
+         (and arg1 arg2 arg3)
+         (if (<= arg1 arg2 arg3) [exit navigator] navigator)
 
-            (and arg1 arg2)
-            (if (= arg1 arg2) [exit navigator] navigator)
+         (and arg1 arg2)
+         (if (= arg1 arg2) [exit navigator] navigator)
 
-            arg1
-            (if (= arg1 0) [exit navigator] navigator)
+         arg1
+         (if (= arg1 0) [exit navigator] navigator)
 
-            true     ; TODO: handle looking up the arglist stack for info
-            (if (if (:colon params)
-                  (empty? (:rest (:base-args params)))
-                  (empty? (:rest navigator)))
-              [exit navigator] navigator)))))
+         true     ; TODO: handle looking up the arglist stack for info
+         (if (if (:colon params)
+               (empty? (:rest (:base-args params)))
+               (empty? (:rest navigator)))
+           [exit navigator] navigator)))))
 
   (\W
    []
@@ -3061,13 +3061,13 @@ nil
 
 ;; dispatch.clj -- part of the pretty printer for Clojure
 
-                                        ;   Copyright (c) Rich Hickey. All rights reserved.
-                                        ;   The use and distribution terms for this software are covered by the
-                                        ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-                                        ;   which can be found in the file epl-v10.html at the root of this distribution.
-                                        ;   By using this software in any fashion, you are agreeing to be bound by
-                                        ;   the terms of this license.
-                                        ;   You must not remove this notice, or any other, from this software.
+;;   Copyright (c) Rich Hickey. All rights reserved.
+;;   The use and distribution terms for this software are covered by the
+;;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
+;;   which can be found in the file epl-v10.html at the root of this distribution.
+;;   By using this software in any fashion, you are agreeing to be bound by
+;;   the terms of this license.
+;;   You must not remove this notice, or any other, from this software.
 
 ;; Author: Tom Faulhaber
 ;; April 3, 2009
@@ -3599,13 +3599,13 @@ nil
           (pprint-simple-code-list writer alis))))))
 nil
 
-                                        ;   Copyright (c) Rich Hickey. All rights reserved.
-                                        ;   The use and distribution terms for this software are covered by the
-                                        ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-                                        ;   which can be found in the file epl-v10.html at the root of this distribution.
-                                        ;   By using this software in any fashion, you are agreeing to be bound by
-                                        ;   the terms of this license.
-                                        ;   You must not remove this notice, or any other, from this software.
+;;   Copyright (c) Rich Hickey. All rights reserved.
+;;   The use and distribution terms for this software are covered by the
+;;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
+;;   which can be found in the file epl-v10.html at the root of this distribution.
+;;   By using this software in any fashion, you are agreeing to be bound by
+;;   the terms of this license.
+;;   You must not remove this notice, or any other, from this software.
 
 (defn print-table
   "Prints a collection of maps in a textual table. Prints table headings
@@ -3632,13 +3632,3 @@ nil
        (doseq [row rows]
          (println (fmt-row "| " " | " " |" row))))))
   ([rows] (print-table (keys (first rows)) rows)))
-
-;; (load "pprint/utilities")
-;; (load "pprint/column_writer")
-;; (load "pprint/pretty_writer")
-;; (load "pprint/pprint_base")
-;; (load "pprint/cl_format")
-;; (load "pprint/dispatch")
-;; (load "pprint/print_table")
-
-;; nil
