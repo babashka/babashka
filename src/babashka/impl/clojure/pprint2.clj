@@ -1,21 +1,21 @@
 ;;; babashka.pprint: clojure.pprint adapted for GraalVM
 ;;; pprint.clj -- Pretty printer and Common Lisp compatible format function (cl-format) for Clojure
 
-                                        ;   Copyright (c) Rich Hickey. All rights reserved.
-                                        ;   The use and distribution terms for this software are covered by the
-                                        ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-                                        ;   which can be found in the file epl-v10.html at the root of this distribution.
-                                        ;   By using this software in any fashion, you are agreeing to be bound by
-                                        ;   the terms of this license.
-                                        ;   You must not remove this notice, or any other, from this software.
+;;   Copyright (c) Rich Hickey. All rights reserved.
+;;   The use and distribution terms for this software are covered by the
+;;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
+;;   which can be found in the file epl-v10.html at the root of this distribution.
+;;   By using this software in any fashion, you are agreeing to be bound by
+;;   the terms of this license.
+;;   You must not remove this notice, or any other, from this software.
 
 ;; Author: Tom Faulhaber
 ;; April 3, 2009
 
 #_:clj-kondo/ignore
 (ns
-    ^{:author "Tom Faulhaber",
-      :doc "A Pretty Printer for Clojure
+ ^{:author "Tom Faulhaber"
+   :doc "A Pretty Printer for Clojure
 
 clojure.pprint implements a flexible system for printing structured data
 in a pleasing, easy-to-understand format. Basic use of the pretty printer is
@@ -34,9 +34,9 @@ cl-format, it supports very concise custom dispatch. It also provides
 a more powerful alternative to Clojure's standard format function.
 
 See documentation for pprint and cl-format for more information or
-complete documentation on the Clojure web site on GitHub.",
-      :added "1.2"}
-    babashka.impl.clojure.pprint2
+complete documentation on the Clojure web site on GitHub."
+   :added "1.2"}
+ babashka.impl.clojure.pprint2
   (:refer-clojure :exclude (deftype))
   (:use [clojure.walk :only [walk]]))
 
@@ -740,39 +740,39 @@ complete documentation on the Clojure web site on GitHub.",
 
 (defonce ^:dynamic ; If folks have added stuff here, don't overwrite
   ^{:doc "The pretty print dispatch function. Use with-pprint-dispatch or set-pprint-dispatch
-to modify.",
+to modify."
     :added "1.2"}
   *print-pprint-dispatch* nil)
 
 (def ^:dynamic
   ^{:doc "Pretty printing will try to avoid anything going beyond this column.
 Set it to nil to have pprint let the line be arbitrarily long. This will ignore all
-non-mandatory newlines.",
+non-mandatory newlines."
     :added "1.2"}
   *print-right-margin* 72)
 
 (def ^:dynamic
   ^{:doc "The column at which to enter miser style. Depending on the dispatch table,
 miser style add newlines in more places to try to keep lines short allowing for further
-levels of nesting.",
+levels of nesting."
     :added "1.2"}
   *print-miser-width* 40)
 
 ;;; TODO implement output limiting
 (def ^:dynamic
-  ^{:private true,
+  ^{:private true
     :doc "Maximum number of lines to print in a pretty print instance (N.B. This is not yet used)"}
   *print-lines* nil)
 
 ;;; TODO: implement circle and shared
 (def ^:dynamic
-  ^{:private true,
+  ^{:private true
     :doc "Mark circular structures (N.B. This is not yet used)"}
   *print-circle* nil)
 
 ;;; TODO: should we just use *print-dup* here?
 (def ^:dynamic
-  ^{:private true,
+  ^{:private true
     :doc "Mark repeated structures rather than repeat them (N.B. This is not yet used)"}
   *print-shared* nil)
 
@@ -803,9 +803,9 @@ radix specifier is in the form #XXr where XX is the decimal value of *print-base
 ;; structure
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def  ^:dynamic ^{ :private true } *current-level* 0)
+(def  ^:dynamic ^{:private true} *current-level* 0)
 
-(def ^:dynamic ^{ :private true } *current-length* nil)
+(def ^:dynamic ^{:private true} *current-length* nil)
 
 ;; TODO: add variables for length, lines.
 
@@ -824,21 +824,21 @@ radix specifier is in the form #XXr where XX is the decimal value of *print-base
 
 (def ^{:private true} write-option-table
   {;:array            *print-array*
-   :base             #'babashka.pprint/*print-base*
+   :base             #'babashka.impl.clojure.pprint2/*print-base*
    ;;:case             *print-case*,
-   :circle           #'babashka.pprint/*print-circle*
+   :circle           #'babashka.impl.clojure.pprint2/*print-circle*
    ;;:escape           *print-escape*,
    ;;:gensym           *print-gensym*,
    :length            #'clojure.core/*print-length*
    :level             #'clojure.core/*print-level*
-   :lines             #'babashka.pprint/*print-lines*
-   :miser-width       #'babashka.pprint/*print-miser-width*
-   :dispatch          #'babashka.pprint/*print-pprint-dispatch*
-   :pretty            #'babashka.pprint/*print-pretty*
-   :radix             #'babashka.pprint/*print-radix*
+   :lines             #'babashka.impl.clojure.pprint2/*print-lines*
+   :miser-width       #'babashka.impl.clojure.pprint2/*print-miser-width*
+   :dispatch          #'babashka.impl.clojure.pprint2/*print-pprint-dispatch*
+   :pretty            #'babashka.impl.clojure.pprint2/*print-pretty*
+   :radix             #'babashka.impl.clojure.pprint2/*print-radix*
    :readably          #'clojure.core/*print-readably*
-   :right-margin      #'babashka.pprint/*print-right-margin*
-   :suppress-namespaces #'babashka.pprint/*print-suppress-namespaces*})
+   :right-margin      #'babashka.impl.clojure.pprint2/*print-right-margin*
+   :suppress-namespaces #'babashka.impl.clojure.pprint2/*print-suppress-namespaces*})
 
 (defmacro ^{:private true} binding-map [amap & body]
   (let []
@@ -1020,17 +1020,17 @@ radix specifier is in the form #XXr where XX is the decimal value of *print-base
   {:added "1.2", :arglists '[[options* body]]}
   [& args]
   (let [[options body] (parse-lb-options #{:prefix :per-line-prefix :suffix} args)]
-    `(do (if (#'babashka.pprint/level-exceeded)
+    `(do (if (#'babashka.impl.clojure.pprint2/level-exceeded)
            (.write ^java.io.Writer *out* "#")
            (do
-             (push-thread-bindings {#'babashka.pprint/*current-level*
-                                    (inc (var-get #'babashka.pprint/*current-level*))
-                                    #'babashka.pprint/*current-length* 0})
+             (push-thread-bindings {#'babashka.impl.clojure.pprint2/*current-level*
+                                    (inc (var-get #'babashka.impl.clojure.pprint2/*current-level*))
+                                    #'babashka.impl.clojure.pprint2/*current-length* 0})
              (try
-               (#'babashka.pprint/start-block *out*
+               (#'babashka.impl.clojure.pprint2/start-block *out*
                                               ~(:prefix options) ~(:per-line-prefix options) ~(:suffix options))
                ~@body
-               (#'babashka.pprint/end-block *out*)
+               (#'babashka.impl.clojure.pprint2/end-block *out*)
                (finally
                  (pop-thread-bindings)))))
          nil)))
@@ -1164,7 +1164,7 @@ nil
   and in the Common Lisp HyperSpec at
   http://www.lispworks.com/documentation/HyperSpec/Body/22_c.htm
   "
-  {:added "1.2",
+  {:added "1.2"
    :see-also [["http://www.cs.cmu.edu/afs/cs.cmu.edu/project/ai-repository/ai/html/cltl/clm/node200.html#SECTION002633000000000000000"
                "Common Lisp the Language"]
               ["http://www.lispworks.com/documentation/HyperSpec/Body/22_c.htm"
@@ -1188,7 +1188,7 @@ nil
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defstruct ^{:private true}
-  arg-navigator :seq :rest :pos )
+ arg-navigator :seq :rest :pos)
 
 (defn -init-navigator-impl
   "Create a new arg-navigator from the sequence with the position set to 0"
@@ -1198,16 +1198,16 @@ nil
     (struct arg-navigator s s 0)))
 
 ;; TODO call format-error with offset
-(defn- next-arg [ navigator ]
-  (let [ rst (:rest navigator) ]
+(defn- next-arg [navigator]
+  (let [rst (:rest navigator)]
     (if rst
-      [(first rst) (struct arg-navigator (:seq navigator ) (next rst) (inc (:pos navigator)))]
+      [(first rst) (struct arg-navigator (:seq navigator) (next rst) (inc (:pos navigator)))]
       (throw (new Exception  "Not enough arguments for format definition")))))
 
 (defn- next-arg-or-nil [navigator]
   (let [rst (:rest navigator)]
     (if rst
-      [(first rst) (struct arg-navigator (:seq navigator ) (next rst) (inc (:pos navigator)))]
+      [(first rst) (struct arg-navigator (:seq navigator) (next rst) (inc (:pos navigator)))]
       [nil navigator])))
 
 ;; Get an argument off the arg list and compile it if it's not already compiled
@@ -1232,7 +1232,7 @@ nil
       (struct arg-navigator (:seq navigator) (drop position (:rest navigator)) newpos))))
 
 (defstruct ^{:private true}
-  compiled-directive :func :def :params :offset)
+ compiled-directive :func :def :params :offset)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; When looking at the parameter list, we may need to manipulate
@@ -1245,7 +1245,7 @@ nil
 (defn- realize-parameter [[param [raw-val offset]] navigator]
   (let [[real-param new-navigator]
         (cond
-          (contains? #{ :at :colon } param) ;pass flags through unchanged - this really isn't necessary
+          (contains? #{:at :colon} param) ;pass flags through unchanged - this really isn't necessary
           [raw-val navigator]
 
           (= raw-val :parameter-from-args)
@@ -1291,7 +1291,7 @@ nil
     :else nil))
 
 (defn- format-ascii [print-func params arg-navigator offsets]
-  (let [ [arg arg-navigator] (next-arg arg-navigator)
+  (let [[arg arg-navigator] (next-arg arg-navigator)
         ^String base-output (or (format-simple-number arg) (print-func arg))
         base-width (.length base-output)
         min-width (+ base-width (:minpad params))
@@ -1299,7 +1299,7 @@ nil
                 min-width
                 (+ min-width
                    (* (+ (quot (- (:mincol params) min-width 1)
-                               (:colinc params) )
+                               (:colinc params))
                          1)
                       (:colinc params))))
         chars (apply str (repeat (- width base-width) (:padchar params)))]
@@ -1483,9 +1483,9 @@ nil
             (print (str (if (neg? arg) "minus ") full-str)))
           (format-integer ;; for numbers > 10^63, we fall back on ~D
            10
-           { :mincol 0, :padchar \space, :commachar \, :commainterval 3, :colon true}
+           {:mincol 0, :padchar \space, :commachar \, :commainterval 3, :colon true}
            (-init-navigator-impl [arg])
-           { :mincol 0, :padchar 0, :commachar 0 :commainterval 0}))))
+           {:mincol 0, :padchar 0, :commachar 0 :commainterval 0}))))
     navigator))
 
 (defn- format-simple-ordinal
@@ -1529,9 +1529,9 @@ nil
                           :else tail-str))))
           (do (format-integer ;; for numbers > 10^63, we fall back on ~D
                10
-               { :mincol 0, :padchar \space, :commachar \, :commainterval 3, :colon true}
+               {:mincol 0, :padchar \space, :commachar \, :commainterval 3, :colon true}
                (-init-navigator-impl [arg])
-               { :mincol 0, :padchar 0, :commachar 0 :commainterval 0})
+               {:mincol 0, :padchar 0, :commachar 0 :commainterval 0})
               (let [low-two-digits (rem arg 100)
                     not-teens (or (< 11 low-two-digits) (> 19 low-two-digits))
                     low-digit (rem low-two-digits 10)]
@@ -1549,17 +1549,17 @@ nil
 
 (def ^{:private true}
   old-roman-table
-  [[ "I" "II" "III" "IIII" "V" "VI" "VII" "VIII" "VIIII"]
-   [ "X" "XX" "XXX" "XXXX" "L" "LX" "LXX" "LXXX" "LXXXX"]
-   [ "C" "CC" "CCC" "CCCC" "D" "DC" "DCC" "DCCC" "DCCCC"]
-   [ "M" "MM" "MMM"]])
+  [["I" "II" "III" "IIII" "V" "VI" "VII" "VIII" "VIIII"]
+   ["X" "XX" "XXX" "XXXX" "L" "LX" "LXX" "LXXX" "LXXXX"]
+   ["C" "CC" "CCC" "CCCC" "D" "DC" "DCC" "DCCC" "DCCCC"]
+   ["M" "MM" "MMM"]])
 
 (def ^{:private true}
   new-roman-table
-  [[ "I" "II" "III" "IV" "V" "VI" "VII" "VIII" "IX"]
-   [ "X" "XX" "XXX" "XL" "L" "LX" "LXX" "LXXX" "XC"]
-   [ "C" "CC" "CCC" "CD" "D" "DC" "DCC" "DCCC" "CM"]
-   [ "M" "MM" "MMM"]])
+  [["I" "II" "III" "IV" "V" "VI" "VII" "VIII" "IX"]
+   ["X" "XX" "XXX" "XL" "L" "LX" "LXX" "LXXX" "XC"]
+   ["C" "CC" "CCC" "CD" "D" "DC" "DCC" "DCCC" "CM"]
+   ["M" "MM" "MMM"]])
 
 (defn- format-roman
   "Format a roman numeral using the specified look-up table"
@@ -1580,9 +1580,9 @@ nil
                      (next digits))))))
       (format-integer ;; for anything <= 0 or > 3999, we fall back on ~D
        10
-       { :mincol 0, :padchar \space, :commachar \, :commainterval 3, :colon true}
+       {:mincol 0, :padchar \space, :commachar \, :commainterval 3, :colon true}
        (-init-navigator-impl [arg])
-       { :mincol 0, :padchar 0, :commachar 0 :commainterval 0}))
+       {:mincol 0, :padchar 0, :commachar 0 :commainterval 0}))
     navigator))
 
 (defn- format-old-roman [params navigator offsets]
@@ -1596,7 +1596,7 @@ nil
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def ^{:private true}
-  special-chars { 8 "Backspace", 9 "Tab",  10 "Newline", 13 "Return", 32 "Space"})
+  special-chars {8 "Backspace", 9 "Tab",  10 "Newline", 13 "Return", 32 "Space"})
 
 (defn- pretty-character [params navigator offsets]
   (let [[c navigator] (next-arg navigator)
@@ -1881,7 +1881,7 @@ nil
                 (print (str
                         (apply str
                                (repeat
-                                (- w full-len (if append-zero 1 0) )
+                                (- w full-len (if append-zero 1 0))
                                 (:padchar params)))
                         (if add-sign (if (neg? arg) \- \+))
                         (if prepend-zero "0")
@@ -1915,8 +1915,8 @@ nil
         d (if d d (max (count mantissa) (min n 7)))
         dd (- d n)]
     (if (<= 0 dd d)
-      (let [navigator (fixed-float {:w ww, :d dd, :k 0,
-                                    :overflowchar (:overflowchar params),
+      (let [navigator (fixed-float {:w ww, :d dd, :k 0
+                                    :overflowchar (:overflowchar params)
                                     :padchar (:padchar params), :at (:at params)}
                                    navigator offsets)]
         (print (apply str (repeat ee \space)))
@@ -2071,8 +2071,7 @@ nil
         param-clause (first (:clauses params))
         [clause navigator] (if (empty? param-clause)
                              (get-format-arg navigator)
-                             [param-clause navigator])
-        ]
+                             [param-clause navigator])]
     (loop [count 0
            navigator navigator]
       (if (or (and (empty? (:rest navigator))
@@ -2428,59 +2427,59 @@ nil
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; We start with a couple of helpers
-(defn- process-directive-table-element [ [ char params flags bracket-info & generator-fn ] ]
-  [char,
-   {:directive char,
-    :params `(array-map ~@params),
-    :flags flags,
-    :bracket-info bracket-info,
-    :generator-fn (concat '(fn [ params offset]) generator-fn) }])
+(defn- process-directive-table-element [[char params flags bracket-info & generator-fn]]
+  [char
+   {:directive char
+    :params `(array-map ~@params)
+    :flags flags
+    :bracket-info bracket-info
+    :generator-fn (concat '(fn [params offset]) generator-fn)}])
 
 (defmacro ^{:private true}
   defdirectives
-  [ & directives ]
+  [& directives]
   `(def ^{:private true}
      directive-table (hash-map ~@(mapcat process-directive-table-element directives))))
 
 (defdirectives
   (\A
-   [ :mincol [0 Integer] :colinc [1 Integer] :minpad [0 Integer] :padchar [\space Character] ]
-   #{ :at :colon :both} {}
+   [:mincol [0 Integer] :colinc [1 Integer] :minpad [0 Integer] :padchar [\space Character]]
+   #{:at :colon :both} {}
    #(format-ascii print-str %1 %2 %3))
 
   (\S
-   [ :mincol [0 Integer] :colinc [1 Integer] :minpad [0 Integer] :padchar [\space Character] ]
-   #{ :at :colon :both} {}
+   [:mincol [0 Integer] :colinc [1 Integer] :minpad [0 Integer] :padchar [\space Character]]
+   #{:at :colon :both} {}
    #(format-ascii pr-str %1 %2 %3))
 
   (\D
-   [ :mincol [0 Integer] :padchar [\space Character] :commachar [\, Character]
-    :commainterval [ 3 Integer]]
-   #{ :at :colon :both } {}
+   [:mincol [0 Integer] :padchar [\space Character] :commachar [\, Character]
+    :commainterval [3 Integer]]
+   #{:at :colon :both} {}
    #(format-integer 10 %1 %2 %3))
 
   (\B
-   [ :mincol [0 Integer] :padchar [\space Character] :commachar [\, Character]
-    :commainterval [ 3 Integer]]
-   #{ :at :colon :both } {}
+   [:mincol [0 Integer] :padchar [\space Character] :commachar [\, Character]
+    :commainterval [3 Integer]]
+   #{:at :colon :both} {}
    #(format-integer 2 %1 %2 %3))
 
   (\O
-   [ :mincol [0 Integer] :padchar [\space Character] :commachar [\, Character]
-    :commainterval [ 3 Integer]]
-   #{ :at :colon :both } {}
+   [:mincol [0 Integer] :padchar [\space Character] :commachar [\, Character]
+    :commainterval [3 Integer]]
+   #{:at :colon :both} {}
    #(format-integer 8 %1 %2 %3))
 
   (\X
-   [ :mincol [0 Integer] :padchar [\space Character] :commachar [\, Character]
-    :commainterval [ 3 Integer]]
-   #{ :at :colon :both } {}
+   [:mincol [0 Integer] :padchar [\space Character] :commachar [\, Character]
+    :commainterval [3 Integer]]
+   #{:at :colon :both} {}
    #(format-integer 16 %1 %2 %3))
 
   (\R
    [:base [nil Integer] :mincol [0 Integer] :padchar [\space Character] :commachar [\, Character]
-    :commainterval [ 3 Integer]]
-   #{ :at :colon :both } {}
+    :commainterval [3 Integer]]
+   #{:at :colon :both} {}
    (do
      (cond                          ; ~R is overloaded with bizareness
        (first (:base params))     #(format-integer (:base %1) %1 %2 %3)
@@ -2490,8 +2489,8 @@ nil
        true                       #(format-cardinal-english %1 %2 %3))))
 
   (\P
-   [ ]
-   #{ :at :colon :both } {}
+   []
+   #{:at :colon :both} {}
    (fn [params navigator offsets]
      (let [navigator (if (:colon params) (relative-reposition navigator -1) navigator)
            strs (if (:at params) ["y" "ies"] ["" "s"])
@@ -2501,48 +2500,48 @@ nil
 
   (\C
    [:char-format [nil Character]]
-   #{ :at :colon :both } {}
+   #{:at :colon :both} {}
    (cond
      (:colon params) pretty-character
      (:at params) readable-character
      :else plain-character))
 
   (\F
-   [ :w [nil Integer] :d [nil Integer] :k [0 Integer] :overflowchar [nil Character]
-    :padchar [\space Character] ]
-   #{ :at } {}
+   [:w [nil Integer] :d [nil Integer] :k [0 Integer] :overflowchar [nil Character]
+    :padchar [\space Character]]
+   #{:at} {}
    fixed-float)
 
   (\E
-   [ :w [nil Integer] :d [nil Integer] :e [nil Integer] :k [1 Integer]
+   [:w [nil Integer] :d [nil Integer] :e [nil Integer] :k [1 Integer]
     :overflowchar [nil Character] :padchar [\space Character]
-    :exponentchar [nil Character] ]
-   #{ :at } {}
+    :exponentchar [nil Character]]
+   #{:at} {}
    exponential-float)
 
   (\G
-   [ :w [nil Integer] :d [nil Integer] :e [nil Integer] :k [1 Integer]
+   [:w [nil Integer] :d [nil Integer] :e [nil Integer] :k [1 Integer]
     :overflowchar [nil Character] :padchar [\space Character]
-    :exponentchar [nil Character] ]
-   #{ :at } {}
+    :exponentchar [nil Character]]
+   #{:at} {}
    general-float)
 
   (\$
-   [ :d [2 Integer] :n [1 Integer] :w [0 Integer] :padchar [\space Character]]
-   #{ :at :colon :both} {}
+   [:d [2 Integer] :n [1 Integer] :w [0 Integer] :padchar [\space Character]]
+   #{:at :colon :both} {}
    dollar-float)
 
   (\%
-   [ :count [1 Integer] ]
-   #{ } {}
+   [:count [1 Integer]]
+   #{} {}
    (fn [params arg-navigator offsets]
      (dotimes [i (:count params)]
        (prn))
      arg-navigator))
 
   (\&
-   [ :count [1 Integer] ]
-   #{ :pretty } {}
+   [:count [1 Integer]]
+   #{:pretty} {}
    (fn [params arg-navigator offsets]
      (let [cnt (:count params)]
        (if (pos? cnt) (fresh-line))
@@ -2551,23 +2550,23 @@ nil
      arg-navigator))
 
   (\|
-   [ :count [1 Integer] ]
-   #{ } {}
+   [:count [1 Integer]]
+   #{} {}
    (fn [params arg-navigator offsets]
      (dotimes [i (:count params)]
        (print \formfeed))
      arg-navigator))
 
   (\~
-   [ :n [1 Integer] ]
-   #{ } {}
+   [:n [1 Integer]]
+   #{} {}
    (fn [params arg-navigator offsets]
      (let [n (:n params)]
        (print (apply str (repeat n \~)))
        arg-navigator)))
 
   (\newline ;; Whitespace supression is handled in the compilation loop
-   [ ]
+   []
    #{:colon :at} {}
    (fn [params arg-navigator offsets]
      (if (:at params)
@@ -2575,15 +2574,15 @@ nil
      arg-navigator))
 
   (\T
-   [ :colnum [1 Integer] :colinc [1 Integer] ]
-   #{ :at :pretty } {}
+   [:colnum [1 Integer] :colinc [1 Integer]]
+   #{:at :pretty} {}
    (if (:at params)
      #(relative-tabulation %1 %2 %3)
      #(absolute-tabulation %1 %2 %3)))
 
   (\*
-   [ :n [nil Integer] ]
-   #{ :colon :at } {}
+   [:n [nil Integer]]
+   #{:colon :at} {}
    (if (:at params)
      (fn [params navigator offsets]
        (let [n (or (:n params) 0)] ; ~@* has a default n = 0
@@ -2593,8 +2592,8 @@ nil
          (relative-reposition navigator (if (:colon params) (- n) n))))))
 
   (\?
-   [ ]
-   #{ :at } {}
+   []
+   #{:at} {}
    (if (:at params)
      (fn [params navigator offsets]     ; args from main arg list
        (let [[subformat navigator] (get-format-arg navigator)]
@@ -2608,8 +2607,8 @@ nil
 
 
   (\(
-   [ ]
-   #{ :colon :at :both} { :right \), :allows-separator nil, :else nil }
+   []
+   #{:colon :at :both} {:right \), :allows-separator nil, :else nil}
    (let [mod-case-writer (cond
                            (and (:at params) (:colon params))
                            upcase-writer
@@ -2627,8 +2626,8 @@ nil
   (\) [] #{} {} nil)
 
   (\[
-   [ :selector [nil Integer] ]
-   #{ :colon :at } { :right \], :allows-separator true, :else :last }
+   [:selector [nil Integer]]
+   #{:colon :at} {:right \], :allows-separator true, :else :last}
    (cond
      (:colon params)
      boolean-conditional
@@ -2640,13 +2639,13 @@ nil
      choice-conditional))
 
   (\; [:min-remaining [nil Integer] :max-columns [nil Integer]]
-   #{ :colon } { :separator true } nil)
+      #{:colon} {:separator true} nil)
 
   (\] [] #{} {} nil)
 
   (\{
-   [ :max-iterations [nil Integer] ]
-   #{ :colon :at :both} { :right \}, :allows-separator false }
+   [:max-iterations [nil Integer]]
+   #{:colon :at :both} {:right \}, :allows-separator false}
    (cond
      (and (:at params) (:colon params))
      iterate-main-sublists
@@ -2665,34 +2664,34 @@ nil
 
   (\<
    [:mincol [0 Integer] :colinc [1 Integer] :minpad [0 Integer] :padchar [\space Character]]
-   #{:colon :at :both :pretty} { :right \>, :allows-separator true, :else :first }
+   #{:colon :at :both :pretty} {:right \>, :allows-separator true, :else :first}
    logical-block-or-justify)
 
   (\> [] #{:colon} {} nil)
 
   ;; TODO: detect errors in cases where colon not allowed
   (\^ [:arg1 [nil Integer] :arg2 [nil Integer] :arg3 [nil Integer]]
-   #{:colon} {}
-   (fn [params navigator offsets]
-     (let [arg1 (:arg1 params)
-           arg2 (:arg2 params)
-           arg3 (:arg3 params)
-           exit (if (:colon params) :colon-up-arrow :up-arrow)]
-       (cond
-         (and arg1 arg2 arg3)
-         (if (<= arg1 arg2 arg3) [exit navigator] navigator)
+      #{:colon} {}
+      (fn [params navigator offsets]
+        (let [arg1 (:arg1 params)
+              arg2 (:arg2 params)
+              arg3 (:arg3 params)
+              exit (if (:colon params) :colon-up-arrow :up-arrow)]
+          (cond
+            (and arg1 arg2 arg3)
+            (if (<= arg1 arg2 arg3) [exit navigator] navigator)
 
-         (and arg1 arg2)
-         (if (= arg1 arg2) [exit navigator] navigator)
+            (and arg1 arg2)
+            (if (= arg1 arg2) [exit navigator] navigator)
 
-         arg1
-         (if (= arg1 0) [exit navigator] navigator)
+            arg1
+            (if (= arg1 0) [exit navigator] navigator)
 
-         true     ; TODO: handle looking up the arglist stack for info
-         (if (if (:colon params)
-               (empty? (:rest (:base-args params)))
-               (empty? (:rest navigator)))
-           [exit navigator] navigator)))))
+            true     ; TODO: handle looking up the arglist stack for info
+            (if (if (:colon params)
+                  (empty? (:rest (:base-args params)))
+                  (empty? (:rest navigator)))
+              [exit navigator] navigator)))))
 
   (\W
    []
@@ -2720,8 +2719,7 @@ nil
   (\I
    [:n [0 Integer]]
    #{:colon} {}
-   set-indent)
-  )
+   set-indent))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Code to manage the parameters and flags associated with each
@@ -2731,7 +2729,7 @@ nil
 (def ^{:private true}
   param-pattern #"^([vV]|#|('.)|([+-]?\d+)|(?=,))")
 (def ^{:private true}
-  special-params #{ :parameter-from-args :remaining-arg-count })
+  special-params #{:parameter-from-args :remaining-arg-count})
 
 (defn- extract-param [[s offset saw-comma]]
   (let [m (re-matcher param-pattern s)
@@ -2741,11 +2739,11 @@ nil
             remainder (subs s (.end m))
             new-offset (+ offset (.end m))]
         (if (not (= \, (nth remainder 0)))
-          [ [token-str offset] [remainder new-offset false]]
-          [ [token-str offset] [(subs remainder 1) (inc new-offset) true]]))
+          [[token-str offset] [remainder new-offset false]]
+          [[token-str offset] [(subs remainder 1) (inc new-offset) true]]))
       (if saw-comma
         (format-error "Badly formed parameters in format directive" offset)
-        [ nil [s offset]]))))
+        [nil [s offset]]))))
 
 
 (defn- extract-params [s offset]
@@ -2764,7 +2762,7 @@ nil
    offset])
 
 (def ^{:private true}
-  flag-defs { \: :colon, \@ :at })
+  flag-defs {\: :colon, \@ :at})
 
 (defn- extract-flags [s offset]
   (consume
@@ -2815,7 +2813,7 @@ nil
              (format-error (str "Parameter " (name (first %2))
                                 " has bad type in directive \"" (:directive def) "\": "
                                 (class val))
-                           (second %1))) )
+                           (second %1))))
         params (:params def)))
 
   (merge                                ; create the result map
@@ -2831,7 +2829,7 @@ nil
         def (get directive-table (Character/toUpperCase ^Character directive)
                  (fn [& args]
                    ;; fallback
-                     ))
+                   ))
         params (if def (map-params def (map translate-param raw-params) flags offset))]
     (if (not directive)
       (format-error "Format string ended in the middle of a directive" offset))
@@ -2848,7 +2846,7 @@ nil
        [remainder offset])]))
 
 (defn- compile-raw-string [s offset]
-  (struct compiled-directive (fn [_ a _] (print s) a) nil { :string s } offset))
+  (struct compiled-directive (fn [_ a _] (print s) a) nil {:string s} offset))
 
 (defn- right-bracket [this] (:right (:bracket-info (:def this))))
 (defn- separator? [this] (:separator (:bracket-info (:def this))))
@@ -2880,7 +2878,7 @@ nil
            (process-bracket this remainder)
 
            (= (:right bracket-info) (:directive (:def this)))
-           [ nil [:right-bracket (:params this) nil remainder]]
+           [nil [:right-bracket (:params this) nil remainder]]
 
            (else-separator? this)
            [nil [:else nil (:params this) remainder]]
@@ -2922,9 +2920,9 @@ nil
             true         ; if the ~:; is in the last position, the else clause
                                         ; is next, this was a regular clause
             (if (= :first (:else bracket-info))
-              [true [(merge-with concat clause-map { :else [clause] :else-params else-params})
+              [true [(merge-with concat clause-map {:else [clause] :else-params else-params})
                      false remainder]]
-              [true [(merge-with concat clause-map { :clauses [clause] })
+              [true [(merge-with concat clause-map {:clauses [clause]})
                      true remainder]]))
 
           (= type :separator)
@@ -2937,9 +2935,9 @@ nil
                           offset)
 
             true
-            [true [(merge-with concat clause-map { :clauses [clause] })
+            [true [(merge-with concat clause-map {:clauses [clause]})
                    false remainder]]))))
-    [{ :clauses [] } false remainder])))
+    [{:clauses []} false remainder])))
 
 (defn- process-nesting
   "Take a linearly compiled format and process the bracket directives to give it
@@ -2960,7 +2958,7 @@ nil
   "Compiles format-str into a compiled format which can be used as an argument
   to cl-format just like a plain format string. Use this function for improved
   performance when you're using the same format string repeatedly"
-  [format-str ]
+  [format-str]
                                         ;  (prlabel compiling format-str)
   (binding [*format-str* format-str]
     (process-nesting
@@ -3104,7 +3102,7 @@ nil
 ;;; :keyword, \char, or ""). The notable exception is #() which is special-cased.
 
 (def ^{:private true} reader-macros
-  {'quote "'", 'clojure.core/deref "@",
+  {'quote "'", 'clojure.core/deref "@"
    'var "#'", 'clojure.core/unquote "~"})
 
 (defn- pprint-reader-macro [alis]
@@ -3174,7 +3172,7 @@ nil
 (def ^{:private true} pprint-set (formatter-out "~<#{~;~@{~w~^ ~:_~}~;}~:>"))
 
 (def ^{:private true}
-  type-map {"core$future_call" "Future",
+  type-map {"core$future_call" "Future"
             "core$promise" "Promise"})
 
 (defn- map-ref-type
@@ -3484,19 +3482,18 @@ nil
 (def ^:dynamic ^{:private true} *code-table*
   (two-forms
    (add-core-ns
-    {'def pprint-hold-first, 'defonce pprint-hold-first,
-     'defn pprint-defn, 'defn- pprint-defn, 'defmacro pprint-defn, 'fn pprint-defn,
-     'let pprint-let, 'loop pprint-let, 'binding pprint-let,
-     'with-local-vars pprint-let, 'with-open pprint-let, 'when-let pprint-let,
-     'if-let pprint-let, 'doseq pprint-let, 'dotimes pprint-let,
-     'when-first pprint-let,
-     'if pprint-if, 'if-not pprint-if, 'when pprint-if, 'when-not pprint-if,
-     'cond pprint-cond, 'condp pprint-condp,
-     'fn* pprint-anon-func,
-     '. pprint-hold-first, '.. pprint-hold-first, '-> pprint-hold-first,
-     'locking pprint-hold-first, 'struct pprint-hold-first,
-     'struct-map pprint-hold-first, 'ns pprint-ns
-     })))
+    {'def pprint-hold-first, 'defonce pprint-hold-first
+     'defn pprint-defn, 'defn- pprint-defn, 'defmacro pprint-defn, 'fn pprint-defn
+     'let pprint-let, 'loop pprint-let, 'binding pprint-let
+     'with-local-vars pprint-let, 'with-open pprint-let, 'when-let pprint-let
+     'if-let pprint-let, 'doseq pprint-let, 'dotimes pprint-let
+     'when-first pprint-let
+     'if pprint-if, 'if-not pprint-if, 'when pprint-if, 'when-not pprint-if
+     'cond pprint-cond, 'condp pprint-condp
+     'fn* pprint-anon-func
+     '. pprint-hold-first, '.. pprint-hold-first, '-> pprint-hold-first
+     'locking pprint-hold-first, 'struct pprint-hold-first
+     'struct-map pprint-hold-first, 'ns pprint-ns})))
 
 (defn- pprint-code-list [alis]
   (if-not (pprint-reader-macro alis)
@@ -3599,8 +3596,7 @@ nil
                                   (cond
                                     (vector? (first stuff)) (single-defn stuff (or doc-str attr-map))
                                     :else (multi-defn stuff (or doc-str attr-map)))))
-          (pprint-simple-code-list writer alis)))))
-  )
+          (pprint-simple-code-list writer alis))))))
 nil
 
                                         ;   Copyright (c) Rich Hickey. All rights reserved.
@@ -3610,8 +3606,6 @@ nil
                                         ;   By using this software in any fashion, you are agreeing to be bound by
                                         ;   the terms of this license.
                                         ;   You must not remove this notice, or any other, from this software.
-
-(in-ns 'babashka.pprint)
 
 (defn print-table
   "Prints a collection of maps in a textual table. Prints table headings
