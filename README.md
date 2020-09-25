@@ -893,9 +893,9 @@ with `lein repl`:
 Babashka doesn't print a returned `nil` as lots of scripts end in something side-effecting.
 
 ``` shell
-$ bb '(:a {:a 5}'
+$ bb '(:a {:a 5})'
 5
-$ bb '(:b {:a 5}'
+$ bb '(:b {:a 5})'
 $
 ```
 
