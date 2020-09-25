@@ -14,7 +14,11 @@ print_help() {
     exit 1
 }
 
-while [[ $# -gt 0 ]]
+if [[ $# -eq 1 ]]; then
+   install_dir=${1:-}
+fi
+
+while [[ $# -gt 1 ]]
 do
     key="$1"
     if [[ -z "${2:-}" ]]; then
