@@ -152,20 +152,22 @@ On Windows you can install using [scoop](https://scoop.sh/) and the
 
 Install via the installer script:
 
-``` shellsession
+``` shell
 $ curl -sLO https://raw.githubusercontent.com/borkdude/babashka/master/install
-$ chmod +x install && sudo ./install
+$ chmod +x install
+$ ./install
 ```
 
-By default this will install into `/usr/local/bin`. To change this, provide the directory name:
+By default this will install into `/usr/local/bin` (you may need `sudo` for
+this). To change this, provide the directory name:
 
-``` shellsession
+``` shell
 $ ./install --dir /tmp
 ```
 
 To install a specific version, the script also supports `--version`:
 
-``` shellsession
+``` shell
 $ ./install --dir /tmp --version 0.2.1
 ```
 
