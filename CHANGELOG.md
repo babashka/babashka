@@ -2,15 +2,9 @@
 
 For a list of breaking changes, check [here](#breaking-changes)
 
-## v0.2.1 (SNAPSHOT)
+## v0.2.1 (2020-09-25)
 
-Pre-release binaries:
-
-- [Linux](https://11913-201467090-gh.circle-artifacts.com/0/release/babashka-0.2.1-SNAPSHOT-linux-amd64.zip)
-- [macOS](https://11914-201467090-gh.circle-artifacts.com/0/release/babashka-0.2.1-SNAPSHOT-macos-amd64.zip)
-- [Windows](https://ci.appveyor.com/api/buildjobs/wjhyh3acqi14dbex/artifacts/babashka-0.2.1-SNAPSHOT-windows-amd64.zip)
-
-Thanks to [@RickMoynihan](https://github.com/RickMoynihan), [@joinr](https://github.com/joinr), [@djblue](https://github.com/djblue), [@lread](https://github.com/lread), [@teodorlu](https://github.com/teodorlu) for contributing to this release. Thanks to [Clojurists Together](https://www.clojuriststogether.org/) for sponsoring this release.
+Thanks to [@RickMoynihan](https://github.com/RickMoynihan), [@joinr](https://github.com/joinr), [@djblue](https://github.com/djblue), [@lread](https://github.com/lread), [@teodorlu](https://github.com/teodorlu) and [@zoren](https://github.com/zoren) for contributing to this release. Thanks to [Clojurists Together](https://www.clojuriststogether.org/) for sponsoring this release.
 
 ### New
 
@@ -24,6 +18,7 @@ Thanks to [@RickMoynihan](https://github.com/RickMoynihan), [@joinr](https://git
 - Support compatibility with [version-clj](https://github.com/xsc/version-clj) [#565](https://github.com/borkdude/babashka/issues/565) [@lread](https://github.com/lread) and [@borkdude](https://github.com/borkdude)
 - Support YAML roundtrip through `*input*` [#583](https://github.com/borkdude/babashka/issues/583)
 - Support `clojure.core/find-var` [sci#420](https://github.com/borkdude/sci/issues/420) [@RickMoynihan](https://github.com/RickMoynihan)
+- Support `clojure.pprint/cl-format` [#571](https://github.com/borkdude/babashka/issues/571)
 
 ### Fixed / enhanced
 
@@ -39,6 +34,7 @@ Thanks to [@RickMoynihan](https://github.com/RickMoynihan), [@joinr](https://git
 - Improve handling of top-level do in macro expansion [sci#421](https://github.com/borkdude/sci/issues/421)
 - Performance improvements suggested by [@joinr](https://github.com/joinr) [sci#415](https://github.com/borkdude/sci/issues/415)
 - Throw when trying to redefine referred var [sci#398](https://github.com/borkdude/sci/issues/398)
+- `pprint` is now backed by `clojure.pprint/pprint` instead of fipp [#571](https://github.com/borkdude/babashka/issues/571)
 
 ## v0.2.0 (2020-08-28)
 
