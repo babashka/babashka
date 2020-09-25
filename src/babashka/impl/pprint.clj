@@ -19,7 +19,7 @@
 
 (alter-var-root #'pprint/table-ize (constantly new-table-ize))
 
-(alter-meta! #'pprint/write-options-table dissoc :private)
+(alter-meta! #'pprint/write-option-table dissoc :private)
 (alter-meta! #'pprint/with-pretty-writer dissoc :private)
 (alter-meta! #'pprint/pretty-writer? dissoc :private)
 (alter-meta! #'pprint/make-pretty-writer dissoc :private)
