@@ -3,7 +3,7 @@
 set -euo pipefail
 
 version=""
-default_install_dir="/tmp/bb"
+default_install_dir="/usr/local/bin"
 install_dir=$default_install_dir
 
 print_help() {
