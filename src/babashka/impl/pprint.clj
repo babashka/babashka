@@ -19,6 +19,7 @@
 
 (alter-var-root #'pprint/table-ize (constantly new-table-ize))
 
+(alter-meta! #'pprint/write-options-table dissoc :private)
 (alter-meta! #'pprint/with-pretty-writer dissoc :private)
 (alter-meta! #'pprint/pretty-writer? dissoc :private)
 (alter-meta! #'pprint/make-pretty-writer dissoc :private)
@@ -26,7 +27,7 @@
 (def new-write
   (fn [object & kw-args]
     (let [options (merge {:stream true} (apply hash-map kw-args))]
-      (with-bindings (new-table-ize @#'pprint/write-option-table options)
+      (with-bindings (new-table-ize pprint/write-option-table options)
         (with-bindings
           (if (or (not (= pprint/*print-base* 10)) pprint/*print-radix*)
             {#'pr @#'pprint/pr-with-base} {})
