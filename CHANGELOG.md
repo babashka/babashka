@@ -4,7 +4,7 @@ For a list of breaking changes, check [here](#breaking-changes)
 
 ## v0.2.1 (2020-09-25)
 
-Thanks to [@RickMoynihan](https://github.com/RickMoynihan), [@joinr](https://github.com/joinr), [@djblue](https://github.com/djblue), [@lread](https://github.com/lread), [@teodorlu](https://github.com/teodorlu) and [@zoren](https://github.com/zoren) for contributing to this release. Thanks to [Clojurists Together](https://www.clojuriststogether.org/) for sponsoring this release.
+Thanks to [@RickMoynihan](https://github.com/RickMoynihan), [@joinr](https://github.com/joinr), [@djblue](https://github.com/djblue), [@lread](https://github.com/lread), [@teodorlu](https://github.com/teodorlu), [@tzzh](https://github.com/tzzh) and [@zoren](https://github.com/zoren) for contributing to this release. Thanks to [Clojurists Together](https://www.clojuriststogether.org/) for sponsoring this release.
 
 ### New
 
@@ -19,6 +19,7 @@ Thanks to [@RickMoynihan](https://github.com/RickMoynihan), [@joinr](https://git
 - Support YAML roundtrip through `*input*` [#583](https://github.com/borkdude/babashka/issues/583)
 - Support `clojure.core/find-var` [sci#420](https://github.com/borkdude/sci/issues/420) [@RickMoynihan](https://github.com/RickMoynihan)
 - Support `clojure.pprint/cl-format` [#571](https://github.com/borkdude/babashka/issues/571)
+- [AWS pod](https://github.com/tzzh/pod-tzzh-aws)
 
 ### Fixed / enhanced
 
