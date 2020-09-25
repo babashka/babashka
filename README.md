@@ -56,9 +56,20 @@ To get an overview of babashka, you can watch this talk ([slides](https://speake
 
 ## Quickstart
 
+For installation options check [Installation](https://github.com/borkdude/babashka#installation).
+For quick installation use:
+
+``` shell
+$ bash <(curl -s https://raw.githubusercontent.com/borkdude/babashka/master/install)
+```
+
+or grab a binary from [Github
+releases](https://github.com/borkdude/babashka/releases) yourself and place it
+anywhere on the path.
+
+Then you're ready to go:
+
 ``` shellsession
-$ curl -s https://raw.githubusercontent.com/borkdude/babashka/master/install -o install-babashka
-$ chmod +x install-babashka && sudo ./install-babashka
 $ ls | bb -i '(filter #(-> % io/file .isDirectory) *input*)'
 ("doc" "resources" "sci" "script" "src" "target" "test")
 bb took 4ms.
@@ -142,18 +153,23 @@ On Windows you can install using [scoop](https://scoop.sh/) and the
 Install via the installer script:
 
 ``` shellsession
-$ curl -s https://raw.githubusercontent.com/borkdude/babashka/master/install -o install-babashka
-$ chmod +x install-babashka && sudo ./install-babashka
+$ curl -sLO https://raw.githubusercontent.com/borkdude/babashka/master/install
+$ chmod +x install && sudo ./install
 ```
 
 By default this will install into `/usr/local/bin`. To change this, provide the directory name:
 
 ``` shellsession
-$ curl -s https://raw.githubusercontent.com/borkdude/babashka/master/install -o install-babashka
-$ chmod +x install-babashka && ./install-babashka /tmp
+$ ./install --dir /tmp
 ```
 
-### Download
+To install a specific version, the script also supports `--version`:
+
+``` shellsession
+$ ./install --dir /tmp --version 0.2.1
+```
+
+### Github releases
 
 You may also download a binary from
 [Github](https://github.com/borkdude/babashka/releases). For linux there is a
