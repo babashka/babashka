@@ -225,7 +225,7 @@ From Clojure:
     `make-parents`, `output-stream`, `reader`, `resource`, `writer`
 - `clojure.java.shell` aliased as `shell`
 - `clojure.main`: `demunge`, `repl`, `repl-requires`
-- `clojure.pprint`: `pprint` (currently backed by [fipp](https://github.com/brandonbloom/fipp)'s  `fipp.edn/pprint`)
+- `clojure.pprint`: `pprint`, `cl-format`
 - `clojure.set` aliased as `set`
 - `clojure.string` aliased as `str`
 - `clojure.stacktrace`
