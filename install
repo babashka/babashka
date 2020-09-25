@@ -2,37 +2,65 @@
 
 set -euo pipefail
 
+version=""
+default_install_dir="/usr/local/bin"
+install_dir=$default_install_dir
+
 print_help() {
-    echo "Installs latest version of babashka. Installation directory defaults to /usr/local/bin."
+    echo "Installs latest (or specific) version of babashka. Installation directory defaults to /usr/local/bin."
     echo -e
     echo "Usage:"
-    echo "installer.sh [<dir>]"
+    echo "install [--dir <dir>] [--version <version>]"
     exit 1
 }
 
-default_install_dir="/usr/local/bin"
-install_dir=$default_install_dir
-install_dir_opt=${1:-}
-if [ "$install_dir_opt" ]; then
-    install_dir="$install_dir_opt"
+if [[ $# -eq 1 ]]; then
+   install_dir=${1:-}
 fi
+
+while [[ $# -gt 1 ]]
+do
+    key="$1"
+    if [[ -z "${2:-}" ]]; then
+        print_help
+    fi
+
+    case $key in
+        --dir)
+            install_dir="$2"
+            shift
+            shift
+            ;;
+        --version)
+            version="$2"
+            shift
+            shift
+            ;;
+        *)    # unknown option
+            print_help
+            shift
+            ;;
+    esac
+done
 
 download_dir=/tmp
 
-latest_release="$(curl -sL https://raw.githubusercontent.com/borkdude/babashka/master/resources/BABASHKA_RELEASED_VERSION)"
+if [[ "$version" == "" ]]; then
+  version="$(curl -sL https://raw.githubusercontent.com/borkdude/babashka/master/resources/BABASHKA_RELEASED_VERSION)"
+fi
 
 case "$(uname -s)" in
     Linux*)     platform=linux;;
     Darwin*)    platform=macos;;
 esac
 
-download_url="https://github.com/borkdude/babashka/releases/download/v$latest_release/babashka-$latest_release-$platform-amd64.zip"
+download_url="https://github.com/borkdude/babashka/releases/download/v$version/babashka-$version-$platform-amd64.zip"
 
 cd "$download_dir"
 echo -e "Downloading $download_url."
-curl -o "babashka-$latest_release-$platform-amd64.zip" -sL "https://github.com/borkdude/babashka/releases/download/v$latest_release/babashka-$latest_release-$platform-amd64.zip"
-unzip -qqo "babashka-$latest_release-$platform-amd64.zip"
-rm "babashka-$latest_release-$platform-amd64.zip"
+curl -o "babashka-$version-$platform-amd64.zip" -sL "https://github.com/borkdude/babashka/releases/download/v$version/babashka-$version-$platform-amd64.zip"
+unzip -qqo "babashka-$version-$platform-amd64.zip"
+rm "babashka-$version-$platform-amd64.zip"
 
 cd "$install_dir"
 if [ -f babashka ]; then
