@@ -89,7 +89,9 @@
 
 (when features/ring?
   (require '[babashka.impl.ring-middleware-defaults]
-           '[babashka.impl.ring-util-response]))
+           '[babashka.impl.ring-util-response]
+           '[babashka.impl.ring-middleware-content-type]
+           '[babashka.impl.ring-middleware-webjars]))
 
 (when features/reitit?
   (require '[babashka.impl.reitit-ring]))
@@ -417,7 +419,9 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                                     'org.httpkit.sni-client @(resolve 'babashka.impl.httpkit-client/sni-client-namespace))
     features/httpkit-server? (assoc 'org.httpkit.server @(resolve 'babashka.impl.httpkit-server/httpkit-server-namespace))
     features/ring? (-> (assoc 'ring.middleware.defaults @(resolve 'babashka.impl.ring-middleware-defaults/ring-middleware-defaults-namespace))
-                       (assoc 'ring.util.response @(resolve 'babashka.impl.ring-util-response/ring-util-response-namespace)))
+                       (assoc 'ring.util.response @(resolve 'babashka.impl.ring-util-response/ring-util-response-namespace))
+                       (assoc 'ring.middleware.content-type @(resolve 'babashka.impl.ring-middleware-content-type/ring-middleware-content-type-namespace))
+                       (assoc 'ring.middleware.webjars @(resolve 'babashka.impl.ring-middleware-webjars/ring-middleware-webjars-namespace)))
     features/reitit? (assoc 'reitit.ring @(resolve 'babashka.impl.reitit-ring/reitit-ring-namespace))))
 
 (def bindings

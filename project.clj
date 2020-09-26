@@ -44,7 +44,8 @@
                                       :dependencies [[http-kit "2.5.0"]]}
              :feature/ring {:source-paths ["feature-ring"]
                             :dependencies [[ring/ring-core "1.8.1"]
-                                           [ring/ring-defaults "0.3.2"]]}
+                                           [ring/ring-defaults "0.3.2"]
+                                           [ring-webjars "0.2.0"]]}
              :feature/reitit {:source-paths ["feature-reitit"]
                               :dependencies [[metosin/reitit "0.5.5"]]}
              :test [:feature/xml

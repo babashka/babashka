@@ -9,4 +9,5 @@
    'ring-handler (copy-var ring/ring-handler rns)
    'router (copy-var ring/router rns)
    'routes (copy-var ring/routes rns)
-   'create-resource-handler (copy-var ring/create-resource-handler rns)})
+   'create-resource-handler (copy-var ring/create-resource-handler rns)
+   'create-default-handler (copy-var ring/create-default-handler rns)})
