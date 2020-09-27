@@ -7,5 +7,6 @@
 (def ring-util-http-response-namespace
   {:obj hns
    'ok (copy-var http-response/ok hns)
+   'content-type (copy-var http-response/content-type hns)
    'bad-request (copy-var http-response/bad-request hns)
    'internal-server-error (copy-var http-response/internal-server-error hns)})
