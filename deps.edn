@@ -2,7 +2,7 @@
          "feature-yaml" "feature-csv" "feature-transit"
          "feature-java-time" "feature-java-nio"
          "feature-httpkit-client" "feature-httpkit-server"
-         "feature-ring" "feature-reitit"
+         "feature-ring" "feature-reitit" "feature-selmer"
          "sci/src" "babashka.curl/src" "babashka.pods/src"
          "babashka.nrepl/src"
          "depstar/src"
@@ -31,8 +31,8 @@
         ring-webjars {:mvn/version"0.2.0"}
         metosin/reitit {:mvn/version "0.5.5"}
         metosin/muuntaja {:mvn/version "0.6.7"}
-        metosin/ring-http-response {:mvn/version "0.9.1"}}
-
+        metosin/ring-http-response {:mvn/version "0.9.1"}
+        selmer {:mvn/version "1.12.29"}}
  :aliases {:main
            {:main-opts ["-m" "babashka.main"]}
            :profile

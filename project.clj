@@ -50,6 +50,9 @@
                               :dependencies [[metosin/reitit "0.5.5"]
                                              [metosin/muuntaja "0.6.7"]
                                              [metosin/ring-http-response "0.9.1"]]}
+             :feature/selmer {:source-paths ["feature-selmer"]
+                              :dependencies [[selmer "1.12.29"]]}
+
              :test [:feature/xml
                     :feature/yaml
                     :feature/postgresql
@@ -62,6 +65,7 @@
                     :feature/httpkit-server
                     :feature/ring
                     :feature/reitit
+                    :feature/selmer
                     {:dependencies [[clj-commons/conch "0.9.2"]
                                     [com.clojure-goes-fast/clj-async-profiler "0.4.1"]
                                     [com.opentable.components/otj-pg-embedded "0.13.3"]]}]

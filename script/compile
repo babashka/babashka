@@ -86,6 +86,7 @@ then
     export BABASHKA_FEATURE_HTTPKIT_SERVER=false
     export BABASHKA_FEATURE_RING=false
     export BABASHKA_FEATURE_REITIT=false
+    export BABASHKA_FEATURE_SELMER=false
 fi
 
 "$GRAALVM_HOME/bin/native-image" "${args[@]}"

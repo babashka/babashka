@@ -7,6 +7,7 @@ if "%GRAALVM_HOME%"=="" (
 
 set BABASHKA_FEATURE_RING=true
 set BABASHKA_FEATURE_REITIT=true
+set BABASHKA_FEATURE_SELMER=true
 
 set JAVA_HOME=%GRAALVM_HOME%
 set PATH=%GRAALVM_HOME%\bin;%PATH%
@@ -89,6 +90,12 @@ if "%BABASHKA_FEATURE_REITIT%"=="true" (
   set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/reitit
 ) else (
   set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/reitit
+)
+
+if "%BABASHKA_FEATURE_SELMER%"=="true" (
+  set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/selmer
+) else (
+  set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/selmer
 )
 
 call lein with-profiles %BABASHKA_LEIN_PROFILES% bb "(+ 1 2 3)"

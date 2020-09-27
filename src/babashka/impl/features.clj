@@ -19,3 +19,4 @@
 (def datascript? (= "true" (System/getenv "BABASHKA_FEATURE_DATASCRIPT")))
 (def ring? (= "true" (System/getenv "BABASHKA_FEATURE_RING")))
 (def reitit? (= "true" (System/getenv "BABASHKA_FEATURE_REITIT")))
+(def selmer? (= "true" (System/getenv "BABASHKA_FEATURE_SELMER")))

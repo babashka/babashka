@@ -100,6 +100,9 @@
            '[babashka.impl.muuntaja-core]
            '[babashka.impl.muuntaja-middleware]))
 
+(when features/selmer?
+  (require '[babashka.impl.selmer-parser]))
+
 (sci/alter-var-root sci/in (constantly *in*))
 (sci/alter-var-root sci/out (constantly *out*))
 (sci/alter-var-root sci/err (constantly *err*))
@@ -432,8 +435,9 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
     features/reitit? (-> (assoc 'reitit.ring @(resolve 'babashka.impl.reitit-ring/reitit-ring-namespace))
                          (assoc 'ring.util.http-response @(resolve 'babashka.impl.ring-util-http-response/ring-util-http-response-namespace))
                          (assoc 'muuntaja.core @(resolve 'babashka.impl.muuntaja-core/muuntaja-core-namespace))
-                         (assoc 'muuntaja.middleware @(resolve 'babashka.impl.muuntaja-middleware/muuntaja-middleware-namespace))
-                         )))
+                         (assoc 'muuntaja.middleware @(resolve 'babashka.impl.muuntaja-middleware/muuntaja-middleware-namespace)))
+
+    features/selmer? (assoc 'selmer.parser @(resolve 'babashka.impl.selmer-parser/selmer-parser-namespace))))
 
 (def bindings
   {'java.lang.System/exit exit ;; override exit, so we have more control
