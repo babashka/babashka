@@ -97,6 +97,7 @@
 
 (when features/reitit?
   (require '[babashka.impl.reitit-ring]
+           '[babashka.impl.ring-util-http-response]
            '[babashka.impl.muuntaja-core]
            '[babashka.impl.muuntaja-middleware]))
 
@@ -431,6 +432,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                        (assoc 'ring.middleware.anti-forgery @(resolve 'babashka.impl.ring-middleware-anti-forgery/ring-middleware-anti-forgery-namespace)))
 
     features/reitit? (-> (assoc 'reitit.ring @(resolve 'babashka.impl.reitit-ring/reitit-ring-namespace))
+                         (assoc 'ring.util.http-response @(resolve 'babashka.impl.ring-util-http-response/ring-util-http-response-namespace))
                          (assoc 'muuntaja.core @(resolve 'babashka.impl.muuntaja-core/muuntaja-core-namespace))
                          (assoc 'muuntaja.middleware @(resolve 'babashka.impl.muuntaja-middleware/muuntaja-middleware-namespace))
                          )))

@@ -31,7 +31,9 @@
         ring/ring-defaults {:mvn/version "0.3.2"}
         ring-webjars {:mvn/version"0.2.0"}
         metosin/reitit {:mvn/version "0.5.5"}
-        metosin/muuntaja {:mvn/version "0.6.7"}}
+        metosin/muuntaja {:mvn/version "0.6.7"}
+        metosin/ring-http-response {:mvn/version "0.9.1"}}
+
  :aliases {:main
            {:main-opts ["-m" "babashka.main"]}
            :profile

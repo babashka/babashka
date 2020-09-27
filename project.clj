@@ -49,7 +49,8 @@
                                            [ring-webjars "0.2.0"]]}
              :feature/reitit {:source-paths ["feature-reitit"]
                               :dependencies [[metosin/reitit "0.5.5"]
-                                             [metosin/muuntaja "0.6.7"]]}
+                                             [metosin/muuntaja "0.6.7"]
+                                             [metosin/ring-http-response "0.9.1"]]}
              :test [:feature/xml
                     :feature/yaml
                     :feature/postgresql
