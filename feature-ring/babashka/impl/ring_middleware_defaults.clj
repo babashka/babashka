@@ -11,4 +11,5 @@
 (def ring-middleware-defaults-namespace
   {:obj dns
    'wrap-defaults (copy-var defaults/wrap-defaults dns)
-   'api-defaults (copy-var defaults/api-defaults dns)})
+   'api-defaults (copy-var defaults/api-defaults dns)
+   'site-defaults (copy-var defaults/site-defaults dns)})
