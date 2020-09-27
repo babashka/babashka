@@ -27,9 +27,11 @@
         datascript/datascript {:mvn/version "0.18.11"}
         http-kit/http-kit {:mvn/version "2.5.0"}
         ring/ring-core {:mvn/version "1.8.1"}
+        ring/ring-devel {:mvn/version "1.8.1"}
         ring/ring-defaults {:mvn/version "0.3.2"}
         ring-webjars {:mvn/version"0.2.0"}
-        metosin/reitit {:mvn/version "0.5.5"}}
+        metosin/reitit {:mvn/version "0.5.5"}
+        metosin/muuntaja {:mvn/version "0.6.7"}}
  :aliases {:main
            {:main-opts ["-m" "babashka.main"]}
            :profile
