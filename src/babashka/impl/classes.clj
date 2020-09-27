@@ -222,6 +222,7 @@
           java.util.zip.DeflaterInputStream
           java.util.zip.GZIPInputStream
           java.util.zip.GZIPOutputStream
+          java.util.zip.ZipInputStream
           ~(symbol "[B")
           ~@(when features/yaml? '[org.yaml.snakeyaml.error.YAMLException])
           ~@(when features/hsqldb? '[org.hsqldb.jdbcDriver])]
