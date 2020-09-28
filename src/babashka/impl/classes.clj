@@ -206,6 +206,7 @@
           java.util.jar.JarFile$JarFileEntry
           java.util.stream.Stream
           java.util.Random
+          java.util.regex.Matcher
           java.util.regex.Pattern
           java.util.Base64
           java.util.Base64$Decoder
