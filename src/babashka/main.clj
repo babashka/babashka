@@ -22,6 +22,7 @@
    [babashka.impl.pods :as pods]
    [babashka.impl.pprint :refer [pprint-namespace]]
    [babashka.impl.protocols :refer [protocols-namespace]]
+   [babashka.impl.reify :refer [reify-opts]]
    [babashka.impl.repl :as repl]
    [babashka.impl.socket-repl :as socket-repl]
    [babashka.impl.test :as t]
@@ -433,17 +434,6 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
     System java.lang.System
     Thread java.lang.Thread
     Throwable java.lang.Throwable})
-
-(def reify-opts
-  {'java.nio.file.FileVisitor
-   (fn [{:keys [:methods]}]
-     {:object (reify java.nio.file.FileVisitor
-                (preVisitDirectory [this p attrs]
-                  ((get methods 'preVisitDirectory) this p attrs))
-                (postVisitDirectory [this p attrs]
-                  ((get methods 'postVisitDirectory) this p attrs))
-                (visitFile [this p attrs]
-                  ((get methods 'visitFile) this p attrs)))})})
 
 (def input-var (sci/new-dynamic-var '*input* nil))
 (def edn-readers (cond-> {}
