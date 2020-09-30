@@ -2,6 +2,21 @@
 
 For a list of breaking changes, check [here](#breaking-changes)
 
+## v0.2.2 (2020-09-30)
+
+This is a patch release for
+[babashka/babashka.pods#20](https://github.com/babashka/babashka.pods/issues/20),
+but it also introduces new support around `reify`.
+
+### New
+
+- Support `java.io.file.FileVisitor` and `java.io.FilenameFilter` with `reify` [#600](https://github.com/borkdude/babashka/issues/600). Nice side effect: this makes babashka compatible with the [fs](https://github.com/clj-commons/fs) library.
+- Add classes `java.util.zip.ZipInputStream` and `java.util.zip.ZipEntry`. This makes babashka compatible with [glam](https://github.com/borkdude/glam), a work in progress package manager.
+
+### Fixed
+
+- Ensure ns map exists for namespaces used only "code" vars [babashka/babashka.pods#20](https://github.com/babashka/babashka.pods/issues/20). This fixes compatibility with [bootleg](https://github.com/retrogradeorbit/bootleg).
+
 ## v0.2.1 (2020-09-25)
 
 Thanks to [@RickMoynihan](https://github.com/RickMoynihan), [@joinr](https://github.com/joinr), [@djblue](https://github.com/djblue), [@lread](https://github.com/lread), [@teodorlu](https://github.com/teodorlu), [@tzzh](https://github.com/tzzh) and [@zoren](https://github.com/zoren) for contributing to this release. Thanks to [Clojurists Together](https://www.clojuriststogether.org/) for sponsoring this release.
