@@ -15,4 +15,9 @@
    (fn [{:keys [:methods]}]
      {:obj (reify java.io.FileFilter
              (accept [this f]
-               ((get methods 'accept) this f)))})})
+               ((get methods 'accept) this f)))})
+   'java.io.FilenameFilter
+   (fn [{:keys [:methods]}]
+     {:obj (reify java.io.FilenameFilter
+             (accept [this f s]
+               ((get methods 'accept) this f s)))})})

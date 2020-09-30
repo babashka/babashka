@@ -90,6 +90,7 @@
           java.io.Console
           java.io.File
           java.io.FileFilter
+          java.io.FilenameFilter
           java.io.FileNotFoundException
           java.io.InputStream
           java.io.IOException
