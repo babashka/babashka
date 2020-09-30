@@ -434,6 +434,17 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
     Thread java.lang.Thread
     Throwable java.lang.Throwable})
 
+(def reify-opts
+  {'java.nio.file.FileVisitor
+   (fn [{:keys [:methods]}]
+     {:object (reify java.nio.file.FileVisitor
+                (preVisitDirectory [this p attrs]
+                  ((get methods 'preVisitDirectory) this p attrs))
+                (postVisitDirectory [this p attrs]
+                  ((get methods 'postVisitDirectory) this p attrs))
+                (visitFile [this p attrs]
+                  ((get methods 'visitFile) this p attrs)))})})
+
 (def input-var (sci/new-dynamic-var '*input* nil))
 (def edn-readers (cond-> {}
                    features/yaml?
@@ -500,7 +511,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                 (add-classpath* jar))
             load-fn (fn [{:keys [:namespace :reload]}]
                       (when-let [{:keys [:loader]}
-                                  @cp-state]
+                                 @cp-state]
                         (if ;; ignore built-in namespaces when uberscripting, unless with :reload
                             (and uberscript
                                  (not reload)
@@ -546,7 +557,8 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                   :imports imports
                   :load-fn load-fn
                   :uberscript uberscript
-                  :readers core/data-readers}
+                  :readers core/data-readers
+                  :reify reify-opts}
             opts (addons/future opts)
             sci-ctx (sci/init opts)
             _ (vreset! common/ctx sci-ctx)
@@ -558,9 +570,9 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                   file (try [[(read-file file)] nil]
                             (catch Exception e
                               (error-handler e {:expression expressions
-                                                 :verbose? verbose?
-                                                 :preloads preloads
-                                                 :loader (:loader @cp-state)}))))
+                                                :verbose? verbose?
+                                                :preloads preloads
+                                                :loader (:loader @cp-state)}))))
             expression (str/join " " expressions) ;; this might mess with the locations...
             exit-code
             ;; handle preloads
@@ -571,9 +583,9 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                           (sci/eval-string* sci-ctx preloads)
                           (catch Throwable e
                             (error-handler e {:expression expression
-                                               :verbose? verbose?
-                                               :preloads preloads
-                                               :loader (:loader @cp-state)})))))
+                                              :verbose? verbose?
+                                              :preloads preloads
+                                              :loader (:loader @cp-state)})))))
                     nil))
             exit-code
             (or exit-code
@@ -613,9 +625,9 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                                      res)))))
                            (catch Throwable e
                              (error-handler e {:expression expression
-                                                :verbose? verbose?
-                                                :preloads preloads
-                                                :loader (:loader @cp-state)}))))
+                                               :verbose? verbose?
+                                               :preloads preloads
+                                               :loader (:loader @cp-state)}))))
                        uberscript [nil 0]
                        :else [(repl/start-repl! sci-ctx) 0]))
                 1)]

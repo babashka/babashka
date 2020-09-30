@@ -149,7 +149,9 @@
                 java.nio.file.FileAlreadyExistsException
                 java.nio.file.FileSystem
                 java.nio.file.FileSystems
+                java.nio.file.FileVisitor
                 java.nio.file.FileVisitOption
+                java.nio.file.FileVisitResult
                 java.nio.file.Files
                 java.nio.file.LinkOption
                 java.nio.file.NoSuchFileException
