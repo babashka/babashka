@@ -308,7 +308,8 @@ jobs:
           command: |
             git submodule init
             git submodule update
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: 19.03.12
       - run:
           name: Build Docker image
           command: .circleci/script/docker
