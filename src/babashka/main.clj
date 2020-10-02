@@ -90,6 +90,7 @@
 (when features/ring?
   (require '[babashka.impl.ring-middleware-defaults]
            '[babashka.impl.ring-util-response]
+           '[babashka.impl.ring-util-request]
            '[babashka.impl.ring-middleware-content-type]
            '[babashka.impl.ring-middleware-webjars]
            '[babashka.impl.ring-middleware-anti-forgery]))
@@ -428,6 +429,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
 
     features/ring? (-> (assoc 'ring.middleware.defaults @(resolve 'babashka.impl.ring-middleware-defaults/ring-middleware-defaults-namespace))
                        (assoc 'ring.util.response @(resolve 'babashka.impl.ring-util-response/ring-util-response-namespace))
+                       (assoc 'ring.util.request @(resolve 'babashka.impl.ring-util-request/ring-util-request-namespace))
                        (assoc 'ring.middleware.content-type @(resolve 'babashka.impl.ring-middleware-content-type/ring-middleware-content-type-namespace))
                        (assoc 'ring.middleware.webjars @(resolve 'babashka.impl.ring-middleware-webjars/ring-middleware-webjars-namespace))
                        (assoc 'ring.middleware.anti-forgery @(resolve 'babashka.impl.ring-middleware-anti-forgery/ring-middleware-anti-forgery-namespace)))
