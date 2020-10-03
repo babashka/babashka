@@ -601,20 +601,41 @@ The `--uberscript` option collects the expressions in
 and all required namespaces from the classpath into a single file. This can be
 convenient for debugging and deployment.
 
-Given the `deps.edn` from above:
+Here is an example that uses a function from the [clj-commons/fs](https://github.com/clj-commons/fs) library.
+
+Let's first set the classpath:
 
 ``` clojure
-$ deps.clj -A:my-script -Scommand "bb -cp {{classpath}} {{main-opts}} --uberscript my-script.clj"
+$ export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {clj-commons/fs {:mvn/version "1.5.2"}}}')
+```
 
-$ cat my-script.clj
-(ns my-gist-script)
-(defn -main [& args]
-  (println "Hello from gist script!"))
-(ns user (:require [my-gist-script]))
-(apply my-gist-script/-main *command-line-args*)
+Write a little script, say `glob.clj`:
 
-$ bb my-script.clj
-Hello from gist script!
+``` shellsession
+(ns foo (:require [me.raynes.fs :as fs])) (run! (comp println str) (fs/glob (first *command-line-args*)))'
+```
+
+Now we can execute the script which uses the library:
+
+``` shellsession
+$ time bb glob.clj *.md
+/Users/borkdude/Dropbox/dev/clojure/carve/README.md
+bb glob.clj *.md   0.03s  user 0.02s system 70% cpu 0.064 total
+```
+
+Producing an uberscript with all required code:
+
+``` shellsession
+$ bb -f glob.clj --uberscript glob-uberscript.clj
+```
+
+To prove that we don't need the classpath anymore:
+
+``` shellsession
+$ unset BABASHKA_CLASSPATH
+$ time bb glob.clj *.md
+/Users/borkdude/Dropbox/dev/clojure/carve/README.md
+bb glob-uberscript.clj *.md   0.03s  user 0.02s system 93% cpu 0.049 total
 ```
 
 Caveats:
@@ -626,8 +647,29 @@ dynamic requires may not work in an uberscript.
   used in your uberscript, you still have to set a classpath and bring the
   resources along.
 
-If any of the above is problematic for your project, using an uberjar (see
-below) is a good alternative.
+If any of the above is problematic for your project, using an
+[uberjar](#uberjar) is a good alternative.
+
+### Carve
+
+Uberscripts can be optimized by cutting out unused vars with
+[carve](https://github.com/borkdude/carve).
+
+``` shellsession
+$ wc -l glob-uberscript.clj
+     607 glob-uberscript.clj
+$ clojure -M:carve --opts '{:paths ["glob-uberscript.clj"] :aggressive true :silent true}'
+$ wc -l glob-uberscript.clj
+     172 glob-uberscript.clj
+```
+
+Note that the uberscript became 72% shorter. This has a beneficial effect on run time length:
+
+``` shellsession
+$ time bb glob-uberscript.clj *.md
+/Users/borkdude/Dropbox/dev/clojure/carve/README.md
+bb glob-uberscript.clj *.md   0.02s  user 0.01s system 93% cpu 0.032 total
+```
 
 ## Uberjar
 
