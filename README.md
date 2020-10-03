@@ -635,7 +635,7 @@ To prove that we don't need the classpath anymore:
 
 ``` shellsession
 $ unset BABASHKA_CLASSPATH
-$ time bb glob.clj *.md
+$ time bb glob-uberscript.clj *.md
 /Users/borkdude/Dropbox/dev/clojure/carve/README.md
 bb glob-uberscript.clj *.md   0.03s  user 0.02s system 93% cpu 0.049 total
 ```
