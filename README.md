@@ -620,9 +620,9 @@ Write a little script, say `glob.clj`:
 Now we can execute the script which uses the library:
 
 ``` shellsession
-$ time bb glob.clj *.md
+$ time bb glob.clj '*.md'
 /Users/borkdude/Dropbox/dev/clojure/carve/README.md
-bb glob.clj *.md   0.03s  user 0.02s system 70% cpu 0.064 total
+bb glob.clj '*.md'   0.03s  user 0.02s system 70% cpu 0.064 total
 ```
 
 Producing an uberscript with all required code:
@@ -635,9 +635,9 @@ To prove that we don't need the classpath anymore:
 
 ``` shellsession
 $ unset BABASHKA_CLASSPATH
-$ time bb glob-uberscript.clj *.md
+$ time bb glob-uberscript.clj '*.md'
 /Users/borkdude/Dropbox/dev/clojure/carve/README.md
-bb glob-uberscript.clj *.md   0.03s  user 0.02s system 93% cpu 0.049 total
+bb glob-uberscript.clj '*.md'   0.03s  user 0.02s system 93% cpu 0.049 total
 ```
 
 Caveats:
@@ -668,9 +668,9 @@ $ wc -l glob-uberscript.clj
 Note that the uberscript became 72% shorter. This has a beneficial effect on run time length:
 
 ``` shellsession
-$ time bb glob-uberscript.clj *.md
+$ time bb glob-uberscript.clj '*.md'
 /Users/borkdude/Dropbox/dev/clojure/carve/README.md
-bb glob-uberscript.clj *.md   0.02s  user 0.01s system 93% cpu 0.032 total
+bb glob-uberscript.clj '*.md'   0.02s  user 0.01s system 93% cpu 0.032 total
 ```
 
 ## Uberjar
