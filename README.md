@@ -665,7 +665,7 @@ $ wc -l glob-uberscript.clj
      172 glob-uberscript.clj
 ```
 
-Note that the uberscript became 72% shorter. This has a beneficial effect on run time length:
+Note that the uberscript became 72% shorter. This has a beneficial effect on execution time:
 
 ``` shellsession
 $ time bb glob-uberscript.clj '*.md'
