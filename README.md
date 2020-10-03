@@ -612,7 +612,9 @@ $ export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {clj-commons/fs {:mv
 Write a little script, say `glob.clj`:
 
 ``` shellsession
-(ns foo (:require [me.raynes.fs :as fs])) (run! (comp println str) (fs/glob (first *command-line-args*)))'
+(ns foo (:require [me.raynes.fs :as fs]))
+(run! (comp println str)
+      (fs/glob (first *command-line-args*)))
 ```
 
 Now we can execute the script which uses the library:
