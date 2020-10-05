@@ -398,10 +398,6 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                                     'org.httpkit.sni-client @(resolve 'babashka.impl.httpkit-client/sni-client-namespace))
     features/httpkit-server? (assoc 'org.httpkit.server @(resolve 'babashka.impl.httpkit-server/httpkit-server-namespace))))
 
-(def bindings
-  {'java.lang.System/exit exit ;; override exit, so we have more control
-   'System/exit exit})
-
 (def imports
   '{ArithmeticException java.lang.ArithmeticException
     AssertionError java.lang.AssertionError
@@ -540,7 +536,6 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                                             (fn [ctx & opts]
                                               (let [opts (apply hash-map opts)]
                                                 (repl/start-repl! ctx opts)))))
-                  :bindings bindings
                   :env env
                   :features #{:bb :clj}
                   :classes classes/class-map

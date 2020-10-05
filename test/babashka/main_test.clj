@@ -121,15 +121,7 @@
   (let [res (bb nil "-f" "test/babashka/scripts/System.bb")]
     (is (= "bar" (second res)))
     (doseq [s res]
-      (is (not-empty s))))
-  (let [out (java.io.StringWriter.)
-        err (java.io.StringWriter.)
-        exit-code (sci/with-bindings {sci/out out
-                                      sci/err err}
-                    (binding [*out* out *err* err]
-                      (main/main "(println \"Hello world!\") (System/exit 42)")))]
-    (is (= (str out) "Hello world!\n"))
-    (is (= 42 exit-code))))
+      (is (not-empty s)))))
 
 (deftest malformed-command-line-args-test
   (is (thrown-with-msg? Exception #"File does not exist: non-existing\n"
