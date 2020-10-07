@@ -19,7 +19,6 @@
                  [borkdude/graal.locking "0.0.2"]
                  [org.clojure/tools.cli "1.0.194"]
                  [cheshire "5.10.0"]
-                 [fipp "0.6.22"]
                  [nrepl/bencode "1.1.0"]
                  [borkdude/sci.impl.reflector "0.0.1-java11"]]
   :profiles {:feature/xml  {:source-paths ["feature-xml"]

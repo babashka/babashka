@@ -89,6 +89,8 @@
           java.io.ByteArrayOutputStream
           java.io.Console
           java.io.File
+          java.io.FileFilter
+          java.io.FilenameFilter
           java.io.FileNotFoundException
           java.io.InputStream
           java.io.IOException
@@ -149,7 +151,9 @@
                 java.nio.file.FileAlreadyExistsException
                 java.nio.file.FileSystem
                 java.nio.file.FileSystems
+                java.nio.file.FileVisitor
                 java.nio.file.FileVisitOption
+                java.nio.file.FileVisitResult
                 java.nio.file.Files
                 java.nio.file.LinkOption
                 java.nio.file.NoSuchFileException
@@ -206,6 +210,7 @@
           java.util.jar.JarFile$JarFileEntry
           java.util.stream.Stream
           java.util.Random
+          ;; java.util.regex.Matcher
           java.util.regex.Pattern
           java.util.Base64
           java.util.Base64$Decoder
@@ -222,6 +227,8 @@
           java.util.zip.DeflaterInputStream
           java.util.zip.GZIPInputStream
           java.util.zip.GZIPOutputStream
+          java.util.zip.ZipInputStream
+          java.util.zip.ZipEntry
           ~(symbol "[B")
           ~@(when features/yaml? '[org.yaml.snakeyaml.error.YAMLException])
           ~@(when features/hsqldb? '[org.hsqldb.jdbcDriver])]

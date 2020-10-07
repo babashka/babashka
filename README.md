@@ -56,9 +56,20 @@ To get an overview of babashka, you can watch this talk ([slides](https://speake
 
 ## Quickstart
 
+For installation options check [Installation](https://github.com/borkdude/babashka#installation).
+For quick installation use:
+
+``` shell
+$ bash <(curl -s https://raw.githubusercontent.com/borkdude/babashka/master/install)
+```
+
+or grab a binary from [Github
+releases](https://github.com/borkdude/babashka/releases) yourself and place it
+anywhere on the path.
+
+Then you're ready to go:
+
 ``` shellsession
-$ curl -s https://raw.githubusercontent.com/borkdude/babashka/master/install -o install-babashka
-$ chmod +x install-babashka && sudo ./install-babashka
 $ ls | bb -i '(filter #(-> % io/file .isDirectory) *input*)'
 ("doc" "resources" "sci" "script" "src" "target" "test")
 bb took 4ms.
@@ -141,19 +152,26 @@ On Windows you can install using [scoop](https://scoop.sh/) and the
 
 Install via the installer script:
 
-``` shellsession
-$ curl -s https://raw.githubusercontent.com/borkdude/babashka/master/install -o install-babashka
-$ chmod +x install-babashka && sudo ./install-babashka
+``` shell
+$ curl -sLO https://raw.githubusercontent.com/borkdude/babashka/master/install
+$ chmod +x install
+$ ./install
 ```
 
-By default this will install into `/usr/local/bin`. To change this, provide the directory name:
+By default this will install into `/usr/local/bin` (you may need `sudo` for
+this). To change this, provide the directory name:
 
-``` shellsession
-$ curl -s https://raw.githubusercontent.com/borkdude/babashka/master/install -o install-babashka
-$ chmod +x install-babashka && ./install-babashka /tmp
+``` shell
+$ ./install --dir /tmp
 ```
 
-### Download
+To install a specific version, the script also supports `--version`:
+
+``` shell
+$ ./install --dir /tmp --version 0.2.1
+```
+
+### Github releases
 
 You may also download a binary from
 [Github](https://github.com/borkdude/babashka/releases). For linux there is a
@@ -225,7 +243,7 @@ From Clojure:
     `make-parents`, `output-stream`, `reader`, `resource`, `writer`
 - `clojure.java.shell` aliased as `shell`
 - `clojure.main`: `demunge`, `repl`, `repl-requires`
-- `clojure.pprint`: `pprint` (currently backed by [fipp](https://github.com/brandonbloom/fipp)'s  `fipp.edn/pprint`)
+- `clojure.pprint`: `pprint`, `cl-format`
 - `clojure.set` aliased as `set`
 - `clojure.string` aliased as `str`
 - `clojure.stacktrace`
@@ -583,20 +601,43 @@ The `--uberscript` option collects the expressions in
 and all required namespaces from the classpath into a single file. This can be
 convenient for debugging and deployment.
 
-Given the `deps.edn` from above:
+Here is an example that uses a function from the [clj-commons/fs](https://github.com/clj-commons/fs) library.
+
+Let's first set the classpath:
 
 ``` clojure
-$ deps.clj -A:my-script -Scommand "bb -cp {{classpath}} {{main-opts}} --uberscript my-script.clj"
+$ export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {clj-commons/fs {:mvn/version "1.5.2"}}}')
+```
 
-$ cat my-script.clj
-(ns my-gist-script)
-(defn -main [& args]
-  (println "Hello from gist script!"))
-(ns user (:require [my-gist-script]))
-(apply my-gist-script/-main *command-line-args*)
+Write a little script, say `glob.clj`:
 
-$ bb my-script.clj
-Hello from gist script!
+``` clojure
+(ns foo (:require [me.raynes.fs :as fs]))
+(run! (comp println str)
+      (fs/glob (first *command-line-args*)))
+```
+
+Now we can execute the script which uses the library:
+
+``` shellsession
+$ time bb glob.clj '*.md'
+/Users/borkdude/Dropbox/dev/clojure/carve/README.md
+bb glob.clj '*.md'   0.03s  user 0.02s system 70% cpu 0.064 total
+```
+
+Producing an uberscript with all required code:
+
+``` shellsession
+$ bb -f glob.clj --uberscript glob-uberscript.clj
+```
+
+To prove that we don't need the classpath anymore:
+
+``` shellsession
+$ unset BABASHKA_CLASSPATH
+$ time bb glob-uberscript.clj '*.md'
+/Users/borkdude/Dropbox/dev/clojure/carve/README.md
+bb glob-uberscript.clj '*.md'   0.03s  user 0.02s system 93% cpu 0.049 total
 ```
 
 Caveats:
@@ -608,8 +649,29 @@ dynamic requires may not work in an uberscript.
   used in your uberscript, you still have to set a classpath and bring the
   resources along.
 
-If any of the above is problematic for your project, using an uberjar (see
-below) is a good alternative.
+If any of the above is problematic for your project, using an
+[uberjar](#uberjar) is a good alternative.
+
+### Carve
+
+Uberscripts can be optimized by cutting out unused vars with
+[carve](https://github.com/borkdude/carve).
+
+``` shellsession
+$ wc -l glob-uberscript.clj
+     607 glob-uberscript.clj
+$ clojure -M:carve --opts '{:paths ["glob-uberscript.clj"] :aggressive true :silent true}'
+$ wc -l glob-uberscript.clj
+     172 glob-uberscript.clj
+```
+
+Note that the uberscript became 72% shorter. This has a beneficial effect on execution time:
+
+``` shellsession
+$ time bb glob-uberscript.clj '*.md'
+/Users/borkdude/Dropbox/dev/clojure/carve/README.md
+bb glob-uberscript.clj '*.md'   0.02s  user 0.01s system 93% cpu 0.032 total
+```
 
 ## Uberjar
 
@@ -815,7 +877,11 @@ resources than on the JVM and will break down for some high value of `n`:
 For making HTTP requests you can use:
 
 - [babashka.curl](https://github.com/borkdude/babashka.curl). This library is
-  included with babashka and aliased as `curl` in the user namespace.
+  included with babashka and aliased as `curl` in the user namespace. The
+  interface is similar to that of
+  [clj-http](https://github.com/dakrone/clj-http) but it will shell out to
+  `curl` to make requests.
+- [org.httpkit.client](https://github.com/http-kit/http-kit)
 - `slurp` for simple `GET` requests
 - [clj-http-lite](https://github.com/borkdude/clj-http-lite) as a library.
 - `clojure.java.shell` or `java.lang.ProcessBuilder` for shelling out to your
@@ -889,9 +955,9 @@ with `lein repl`:
 Babashka doesn't print a returned `nil` as lots of scripts end in something side-effecting.
 
 ``` shell
-$ bb '(:a {:a 5}'
+$ bb '(:a {:a 5})'
 5
-$ bb '(:b {:a 5}'
+$ bb '(:b {:a 5})'
 $
 ```
 
@@ -922,6 +988,8 @@ Differences with Clojure:
 - `defprotocol` and `defrecord` are implemented using multimethods and regular
   maps. Ostensibly they work the same, but under the hood there are no Java
   classes that correspond to them.
+
+- Currently `reify` works only for one class at a time
 
 - The `clojure.core.async/go` macro is not (yet) supported. For compatibility it
   currently maps to `clojure.core.async/thread`. More info [here](#coreasync).

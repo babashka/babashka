@@ -136,19 +136,21 @@ user/foo          - <expr>:1:1
 user              - <expr>:1:45")))
 
 (deftest error-in-macroexpansion-test
-  (let [output (try (tu/bb nil "-e"  "(defmacro foo [x & xs] `(do (subs nil 1) ~x)) (foo 1)")
+  (let [output (try (tu/bb nil "-e"  "(defmacro foo [x] `(subs nil ~x)) (foo 1)")
                     (catch Exception e (ex-message e)))]
     (multiline-equals output
                       "----- Error --------------------------------------------------------------------
 Type:     java.lang.NullPointerException
-Location: <expr>:1:47
+Location: <expr>:1:35
 
 ----- Context ------------------------------------------------------------------
-1: (defmacro foo [x & xs] `(do (subs nil 1) ~x)) (foo 1)
-                                                 ^--- 
+1: (defmacro foo [x] `(subs nil ~x)) (foo 1)
+                                     ^--- 
 
 ----- Stack trace --------------------------------------------------------------
-clojure.core/subs - <built-in>"))
+clojure.core/subs - <built-in>
+user              - <expr>:1:35
+"))
   (testing "calling a var inside macroexpansion"
     (let [output (try (tu/bb nil "-e"  "(defn quux [] (subs nil 1)) (defmacro foo [x & xs] `(do (quux) ~x)) (defn bar [] (foo 1)) (bar)")
                       (catch Exception e (ex-message e)))]

@@ -17,14 +17,25 @@
   "Default :caught hook for repl"
   [^Throwable e]
   (sci/with-bindings {sci/out @sci/err}
-    (let [d (ex-data e)
+    (let [{:keys [:file :line :column] :as d} (ex-data e)
           sci-error? (identical? :sci/error (:type d))
           ex-name (when sci-error?
                     (some-> ^Throwable (ex-cause e)
-                            .getClass .getName))]
+                            .getClass .getName))
+          ex-message (when-let [m (.getMessage e)]
+                       (when-not (str/blank? m)
+                         m))]
       (sio/println (str ex-name
-                        (when-let [m (.getMessage e)]
-                          (str ": " m)) ))
+                        (when ex-message
+                          (str (when ex-name ": ")
+                               ex-message))
+                        (when file
+                          (str
+                           (when (or ex-name ex-message)
+                             " ")
+                           "[at " file
+                           (when line
+                             (str ":" line ":" column))"]"))))
       (sio/flush))))
 
 (defn repl
@@ -51,18 +62,19 @@
                       v))))
       :eval (or eval
                 (fn [expr]
-                  (let [ret (eval-form (update sci-ctx
-                                               :env
-                                               (fn [env]
-                                                 (swap! env update-in [:namespaces 'clojure.core]
-                                                        assoc
-                                                        '*1 *1
-                                                        '*2 *2
-                                                        '*3 *3
-                                                        '*e *e)
-                                                 env))
-                                       expr)]
-                    ret)))
+                  (sci/with-bindings {sci/file "<repl>"}
+                    (let [ret (eval-form (update sci-ctx
+                                                 :env
+                                                 (fn [env]
+                                                   (swap! env update-in [:namespaces 'clojure.core]
+                                                          assoc
+                                                          '*1 *1
+                                                          '*2 *2
+                                                          '*3 *3
+                                                          '*e *e)
+                                                   env))
+                                         expr)]
+                      ret))))
       :need-prompt (or need-prompt (fn [] true))
       :prompt (or prompt #(sio/printf "%s=> " (vars/current-ns-name)))
       :flush (or flush sio/flush)

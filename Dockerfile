@@ -10,16 +10,13 @@ RUN tar -xzf graalvm-ce-java11-linux-amd64-20.2.0.tar.gz
 ENV GRAALVM_HOME="/opt/graalvm-ce-java11-20.2.0"
 ENV JAVA_HOME="/opt/graalvm-ce-java11-20.2.0/bin"
 ENV PATH="$JAVA_HOME:$PATH"
-ENV BABASHKA_STATIC="true"
 ENV BABASHKA_XMX=$BABASHKA_XMX
 
 COPY . .
 RUN ./script/uberjar
 RUN ./script/compile
 
-FROM alpine:latest
-
-RUN apk add --no-cache curl
+FROM ubuntu:latest
 RUN mkdir -p /usr/local/bin
 COPY --from=BASE /opt/bb /usr/local/bin/bb
 CMD ["bb"]

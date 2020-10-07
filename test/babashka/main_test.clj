@@ -58,7 +58,7 @@
   (is (thrown-with-msg? Exception #"java.lang.NullPointerException"
                         (bb nil "(subs nil 0 0)"))))
 
-(deftest main-test
+(deftest input-test
   (testing "-io behaves as identity"
     (is (= "foo\nbar\n" (test-utils/bb "foo\nbar\n" "-io" "*input*"))))
   (testing "if and when"
@@ -107,28 +107,21 @@
             (bb "foo\n Clojure is nice. \nbar\n If you're nice to clojure. "
                 "-i"
                 "(map-indexed #(-> [%1 %2]) *input*)")
-            (bb "(keep #(when (re-find #\"(?i)clojure\" (second %)) (first %)) *input*)"))))))
+            (bb "(keep #(when (re-find #\"(?i)clojure\" (second %)) (first %)) *input*)")))))
+  (testing "ordered/map data reader works"
+    (is (= "localhost" (bb "#ordered/map ([:test \"localhost\"])"
+                           "(:test *input*)"))))
+  (testing "bb doesn't wait for input if *input* isn't used"
+    (is (= "2\n" (with-out-str (main/main "(inc 1)"))))))
 
 (deftest println-test
   (is (= "hello\n" (test-utils/bb nil "(println \"hello\")"))))
-
-(deftest input-test
-  (testing "bb doesn't wait for input if *input* isn't used"
-    (is (= "2\n" (with-out-str (main/main "(inc 1)"))))))
 
 (deftest System-test
   (let [res (bb nil "-f" "test/babashka/scripts/System.bb")]
     (is (= "bar" (second res)))
     (doseq [s res]
-      (is (not-empty s))))
-  (let [out (java.io.StringWriter.)
-        err (java.io.StringWriter.)
-        exit-code (sci/with-bindings {sci/out out
-                                      sci/err err}
-                    (binding [*out* out *err* err]
-                      (main/main "(println \"Hello world!\") (System/exit 42)")))]
-    (is (= (str out) "Hello world!\n"))
-    (is (= 42 exit-code))))
+      (is (not-empty s)))))
 
 (deftest malformed-command-line-args-test
   (is (thrown-with-msg? Exception #"File does not exist: non-existing\n"
@@ -541,7 +534,12 @@
 (deftest repl-test
   (is (str/includes? (test-utils/bb "(ns foo) ::foo" "--repl") ":foo/foo"))
   (is (str/includes? (test-utils/bb "[*warn-on-reflection* (set! *warn-on-reflection* true) *warn-on-reflection*]")
-                     "[false true true]")))
+                     "[false true true]"))
+  (when-not test-utils/native?
+    (let [sw (java.io.StringWriter.)]
+      (sci/with-bindings {sci/err sw}
+        (test-utils/bb {:in "x" :err sw} "--repl"))
+      (is (str/includes? (str sw) "Could not resolve symbol: x [at <repl>:1:1]")))))
 
 ;;;; Scratch
 
