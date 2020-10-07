@@ -11,7 +11,6 @@
    [babashka.impl.clojure.java.io :refer [io-namespace]]
    [babashka.impl.clojure.java.shell :refer [shell-namespace]]
    [babashka.impl.clojure.main :as clojure-main :refer [demunge]]
-   [babashka.impl.clojure.pprint :refer [pprint-namespace]]
    [babashka.impl.clojure.stacktrace :refer [stacktrace-namespace]]
    [babashka.impl.clojure.zip :refer [zip-namespace]]
    [babashka.impl.common :as common]
@@ -21,7 +20,9 @@
    [babashka.impl.error-handler :refer [error-handler]]
    [babashka.impl.features :as features]
    [babashka.impl.pods :as pods]
+   [babashka.impl.pprint :refer [pprint-namespace]]
    [babashka.impl.protocols :refer [protocols-namespace]]
+   [babashka.impl.reify :refer [reify-opts]]
    [babashka.impl.repl :as repl]
    [babashka.impl.socket-repl :as socket-repl]
    [babashka.impl.test :as t]
@@ -216,19 +217,6 @@
                  opts-map))]
     opts))
 
-(defn edn-seq*
-  [^java.io.BufferedReader rdr]
-  (let [edn-val (edn/read {:eof ::EOF} rdr)]
-    (when (not (identical? ::EOF edn-val))
-      (cons edn-val (lazy-seq (edn-seq* rdr))))))
-
-(defn edn-seq
-  [in]
-  (edn-seq* in))
-
-(defn shell-seq [in]
-  (line-seq (java.io.BufferedReader. in)))
-
 (def version (str/trim (slurp (io/resource "BABASHKA_VERSION"))))
 
 (defn print-version []
@@ -410,10 +398,6 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                                     'org.httpkit.sni-client @(resolve 'babashka.impl.httpkit-client/sni-client-namespace))
     features/httpkit-server? (assoc 'org.httpkit.server @(resolve 'babashka.impl.httpkit-server/httpkit-server-namespace))))
 
-(def bindings
-  {'java.lang.System/exit exit ;; override exit, so we have more control
-   'System/exit exit})
-
 (def imports
   '{ArithmeticException java.lang.ArithmeticException
     AssertionError java.lang.AssertionError
@@ -448,6 +432,22 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
     Throwable java.lang.Throwable})
 
 (def input-var (sci/new-dynamic-var '*input* nil))
+(def edn-readers (cond-> {}
+                   features/yaml?
+                   (assoc 'ordered/map @(resolve 'flatland.ordered.map/ordered-map))))
+
+(defn edn-seq*
+  [^java.io.BufferedReader rdr]
+  (let [edn-val (edn/read {:eof ::EOF :readers edn-readers} rdr)]
+    (when (not (identical? ::EOF edn-val))
+      (cons edn-val (lazy-seq (edn-seq* rdr))))))
+
+(defn edn-seq
+  [in]
+  (edn-seq* in))
+
+(defn shell-seq [in]
+  (line-seq (java.io.BufferedReader. in)))
 
 (defn main
   [& args]
@@ -474,14 +474,14 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                           ::EOF
                           (if stream?
                             (if shell-in (or (read-line) ::EOF)
-                                (edn/read {;;:readers *data-readers*
+                                (edn/read {:readers edn-readers
                                            :eof ::EOF} *in*))
                             (delay (cond shell-in
                                          (shell-seq *in*)
                                          edn-in
                                          (edn-seq *in*)
                                          :else
-                                         (edn/read *in*))))))
+                                         (edn/read {:readers edn-readers} *in*))))))
             uberscript-sources (atom ())
             env (atom {})
             classpath (or classpath
@@ -497,7 +497,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                 (add-classpath* jar))
             load-fn (fn [{:keys [:namespace :reload]}]
                       (when-let [{:keys [:loader]}
-                                  @cp-state]
+                                 @cp-state]
                         (if ;; ignore built-in namespaces when uberscripting, unless with :reload
                             (and uberscript
                                  (not reload)
@@ -536,14 +536,14 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                                             (fn [ctx & opts]
                                               (let [opts (apply hash-map opts)]
                                                 (repl/start-repl! ctx opts)))))
-                  :bindings bindings
                   :env env
                   :features #{:bb :clj}
                   :classes classes/class-map
                   :imports imports
                   :load-fn load-fn
                   :uberscript uberscript
-                  :readers core/data-readers}
+                  :readers core/data-readers
+                  :reify reify-opts}
             opts (addons/future opts)
             sci-ctx (sci/init opts)
             _ (vreset! common/ctx sci-ctx)
@@ -555,9 +555,9 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                   file (try [[(read-file file)] nil]
                             (catch Exception e
                               (error-handler e {:expression expressions
-                                                 :verbose? verbose?
-                                                 :preloads preloads
-                                                 :loader (:loader @cp-state)}))))
+                                                :verbose? verbose?
+                                                :preloads preloads
+                                                :loader (:loader @cp-state)}))))
             expression (str/join " " expressions) ;; this might mess with the locations...
             exit-code
             ;; handle preloads
@@ -568,9 +568,9 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                           (sci/eval-string* sci-ctx preloads)
                           (catch Throwable e
                             (error-handler e {:expression expression
-                                               :verbose? verbose?
-                                               :preloads preloads
-                                               :loader (:loader @cp-state)})))))
+                                              :verbose? verbose?
+                                              :preloads preloads
+                                              :loader (:loader @cp-state)})))))
                     nil))
             exit-code
             (or exit-code
@@ -610,9 +610,9 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                                      res)))))
                            (catch Throwable e
                              (error-handler e {:expression expression
-                                                :verbose? verbose?
-                                                :preloads preloads
-                                                :loader (:loader @cp-state)}))))
+                                               :verbose? verbose?
+                                               :preloads preloads
+                                               :loader (:loader @cp-state)}))))
                        uberscript [nil 0]
                        :else [(repl/start-repl! sci-ctx) 0]))
                 1)]
