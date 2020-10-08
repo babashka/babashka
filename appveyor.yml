@@ -60,5 +60,5 @@ build_script:
 #     call script/test.bat
 
 artifacts:
-- path: babashka-*-windows-amd64.zip
-  name: babashka
+- path: babashka-web-*-windows-amd64.zip
+  name: babashka-web
