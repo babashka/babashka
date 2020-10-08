@@ -41,7 +41,11 @@
                                       :dependencies [[http-kit "2.5.0"]]}
              :feature/httpkit-server {:source-paths ["feature-httpkit-server"]
                                       :dependencies [[http-kit "2.5.0"]]}
+             :feature/lanterna {:source-paths ["feature-lanterna"]
+                                :dependencies [[babashka/clojure-lanterna "0.9.7"]]}
+
              :test [:feature/xml
+                    :feature/lanterna
                     :feature/yaml
                     :feature/postgresql
                     :feature/hsqldb

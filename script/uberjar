@@ -105,6 +105,13 @@ else
     BABASHKA_LEIN_PROFILES+=",-feature/httpkit-server"
 fi
 
+if [ "$BABASHKA_FEATURE_LANTERNA" = "true" ]
+then
+    BABASHKA_LEIN_PROFILES+=",+feature/lanterna"
+else
+    BABASHKA_LEIN_PROFILES+=",-feature/lanterna"
+fi
+
 if [ -z "$BABASHKA_JAR" ]; then
     lein with-profiles "$BABASHKA_LEIN_PROFILES,+reflection,-uberjar" do run
     lein with-profiles "$BABASHKA_LEIN_PROFILES" do clean, uberjar
