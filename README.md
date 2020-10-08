@@ -1,5 +1,3 @@
-Note: the relevant branch of this fork is `guestbook2`
-
 <img src="logo/babashka.svg" width="425px">
 
 [![CircleCI](https://circleci.com/gh/borkdude/babashka/tree/master.svg?style=shield)](https://circleci.com/gh/borkdude/babashka/tree/master)
