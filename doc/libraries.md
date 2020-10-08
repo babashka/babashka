@@ -305,6 +305,7 @@ be used as Clojure libraries by babashka.
 - [pod-lispyclouds-docker](https://github.com/lispyclouds/pod-lispyclouds-docker):
   A pod for interacting with docker
 - [pod-tzzh-aws](https://github.com/tzzh/pod-tzzh-aws): pod for interacting with AWS
+- [pod-tzzh-kafka](https://github.com/tzzh/pod-tzzh-kafka): pod for interacting with Kafka
 - [pod-tzzh-mail](https://github.com/tzzh/pod-tzzh-mail): pod for sending mail
 - [tabl](https://github.com/justone/tabl): Make tables from data in your terminal
 
