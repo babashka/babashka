@@ -25,7 +25,7 @@ call %GRAALVM_HOME%\bin\gu.cmd install native-image
 
 call %GRAALVM_HOME%\bin\native-image.cmd ^
   "-jar" "target/babashka-%BABASHKA_VERSION%-standalone.jar" ^
-  "-H:Name=bb" ^
+  "-H:Name=bb-web" ^
   "-H:+ReportExceptionStackTraces" ^
   "-J-Dclojure.spec.skip-macros=true" ^
   "-J-Dclojure.compiler.direct-linking=true" ^
@@ -45,7 +45,7 @@ call %GRAALVM_HOME%\bin\native-image.cmd ^
 
 if %errorlevel% neq 0 exit /b %errorlevel%
 
-call bb "(+ 1 2 3)"
+call bb-web "(+ 1 2 3)"
 
 echo Creating zip archive
-jar -cMf babashka-%BABASHKA_VERSION%-windows-amd64.zip bb.exe
+jar -cMf babashka-web-%BABASHKA_VERSION%-windows-amd64.zip bb-web.exe
