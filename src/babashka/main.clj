@@ -402,8 +402,9 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
     features/httpkit-client? (assoc 'org.httpkit.client @(resolve 'babashka.impl.httpkit-client/httpkit-client-namespace)
                                     'org.httpkit.sni-client @(resolve 'babashka.impl.httpkit-client/sni-client-namespace))
     features/httpkit-server? (assoc 'org.httpkit.server @(resolve 'babashka.impl.httpkit-server/httpkit-server-namespace))
-    features/lanterna?  (assoc 'lanterna.screen @(resolve 'babashka.impl.lanterna/lanterna-screen-namespace)
-                                 'lanterna.terminal @(resolve 'babashka.impl.lanterna/lanterna-terminal-namespace))))
+    features/lanterna? (assoc 'lanterna.screen @(resolve 'babashka.impl.lanterna/lanterna-screen-namespace)
+                              'lanterna.terminal @(resolve 'babashka.impl.lanterna/lanterna-terminal-namespace)
+                              'lanterna.constants @(resolve 'babashka.impl.lanterna/lanterna-constants-namespace))))
 
 (def imports
   '{ArithmeticException java.lang.ArithmeticException
