@@ -379,3 +379,7 @@ it. More like how shelling out in a bash script works.
 ### [dharrigan/spotifyd-notification](https://github.com/dharrigan/spotifyd-notification)
 
 An example of using babashka to show spotifyd notifications via dunst.
+
+### [nextjournal/ssh-github-auth](https://github.com/nextjournal/ssh-github-auth)
+
+A babashka script which uses github auth to fetch SSH public keys. It can be useful to ensure only a certain team of people can access machines with SSH.
