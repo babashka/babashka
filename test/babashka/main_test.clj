@@ -437,7 +437,9 @@
     (is (= "(0 1 2 3 4 5 6 7 8 9)\n" (bb nil "
 (let [sw (java.io.StringWriter.)]
   (binding [clojure.pprint/*print-right-margin* 50]
-    (clojure.pprint/pprint (range 10) sw)) (str sw))")))))
+    (clojure.pprint/pprint (range 10) sw)) (str sw))"))))
+  (testing "print-table writes to sci/out"
+    (is (str/includes? (test-utils/bb "(with-out-str (clojure.pprint/print-table [{:a 1} {:a 2}]))") "----"))))
 
 (deftest read-string-test
   (testing "namespaced keyword via alias"

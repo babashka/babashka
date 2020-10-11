@@ -72,7 +72,7 @@
 
 (def pprint-namespace
   {'pprint (copy-var pprint pprint-ns)
-   'print-table (copy-var pprint/print-table pprint-ns)
+   'print-table (copy-var print-table pprint-ns)
    '*print-right-margin* print-right-margin
    'cl-format (copy-var pprint/cl-format pprint-ns)
    })
