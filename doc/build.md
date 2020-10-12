@@ -113,4 +113,14 @@ $ script/uberjar
 $ script/compile
 ```
 
+### Lanterna
+
+To compile babashka with the [babashka/clojure-lanterna](https://github.com/babashka/clojure-lanterna) library:
+
+``` shell
+$ export BABASHKA_FEATURE_LANTERNA=true
+$ script/uberjar
+$ script/compile
+```
+
 Note: there is now a [pod](https://github.com/babashka/babashka-sql-pods) for working with PostgreSQL.
