@@ -89,6 +89,10 @@ Note that httpkit server is currently experimental, the feature flag could be to
 
 To disable all of the above features, you can set `BABASHKA_LEAN` to `true`.
 
+Here is an [example
+commit](https://github.com/borkdude/babashka/commit/13f65f05aeff891678e88965d9fbd146bfa87f4e)
+that can be used as a checklist when you want to create a new feature flag.
+
 ### HyperSQL
 
 To compile babashka with the `next.jdbc` library and the embedded HyperSQL
@@ -114,6 +118,8 @@ $ script/uberjar
 $ script/compile
 ```
 
+Note: there is now a [pod](https://github.com/babashka/babashka-sql-pods) for working with PostgreSQL.
+
 ### Lanterna
 
 To compile babashka with the [babashka/clojure-lanterna](https://github.com/babashka/clojure-lanterna) library:
@@ -124,4 +130,16 @@ $ script/uberjar
 $ script/compile
 ```
 
-Note: there is now a [pod](https://github.com/babashka/babashka-sql-pods) for working with PostgreSQL.
+Example program:
+
+``` clojure
+(require '[lanterna.terminal :as terminal])
+
+(def terminal (terminal/text-terminal))
+
+(terminal/start terminal)
+(terminal/put-string terminal "Hello TUI Babashka!" 10 5)
+(terminal/flush terminal)
+
+(read-line)
+```
