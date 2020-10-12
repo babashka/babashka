@@ -83,6 +83,7 @@ Babashka supports the following feature flags:
 | `BABASHKA_FEATURE_POSTGRESQL` | Includes the [PostgresSQL](https://jdbc.postgresql.org/) JDBC driver |  `false` |
 | `BABASHKA_FEATURE_HSQLDB` | Includes the [HSQLDB](http://www.hsqldb.org/) JDBC driver | `false` |
 | `BABASHKA_FEATURE_DATASCRIPT` | Includes [datascript](https://github.com/tonsky/datascript) | `false` |
+| `BABASHKA_FEATURE_LANTERNA` | Includes [clojure-lanterna](https://github.com/babashka/clojure-lanterna) | `false` |
 
 Note that httpkit server is currently experimental, the feature flag could be toggled to `false` in a future release.
 
@@ -109,6 +110,16 @@ To compile babashka with the `next.jdbc` library and a PostgresQL driver:
 ``` shell
 $ export BABASHKA_FEATURE_JDBC=true
 $ export BABASHKA_FEATURE_POSTGRESQL=true
+$ script/uberjar
+$ script/compile
+```
+
+### Lanterna
+
+To compile babashka with the [babashka/clojure-lanterna](https://github.com/babashka/clojure-lanterna) library:
+
+``` shell
+$ export BABASHKA_FEATURE_LANTERNA=true
 $ script/uberjar
 $ script/compile
 ```

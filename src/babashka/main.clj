@@ -88,6 +88,9 @@
 (when features/httpkit-server?
   (require '[babashka.impl.httpkit-server]))
 
+(when features/lanterna?
+  (require '[babashka.impl.lanterna]))
+
 (sci/alter-var-root sci/in (constantly *in*))
 (sci/alter-var-root sci/out (constantly *out*))
 (sci/alter-var-root sci/err (constantly *err*))
@@ -277,7 +280,8 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
  :feature/jdbc       %s
  :feature/postgresql %s
  :feature/hsqldb     %s
- :feature/httpkit-client %s}")
+ :feature/httpkit-client %s
+ :feature/lanterna %s}")
     version
     features/core-async?
     features/csv?
@@ -288,7 +292,8 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
     features/jdbc?
     features/postgresql?
     features/hsqldb?
-    features/httpkit-client?)))
+    features/httpkit-client?
+    features/lanterna?)))
 
 (defn read-file [file]
   (let [f (io/file file)]
@@ -396,7 +401,10 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
     features/datascript? (assoc 'datascript.core @(resolve 'babashka.impl.datascript/datascript-namespace))
     features/httpkit-client? (assoc 'org.httpkit.client @(resolve 'babashka.impl.httpkit-client/httpkit-client-namespace)
                                     'org.httpkit.sni-client @(resolve 'babashka.impl.httpkit-client/sni-client-namespace))
-    features/httpkit-server? (assoc 'org.httpkit.server @(resolve 'babashka.impl.httpkit-server/httpkit-server-namespace))))
+    features/httpkit-server? (assoc 'org.httpkit.server @(resolve 'babashka.impl.httpkit-server/httpkit-server-namespace))
+    features/lanterna? (assoc 'lanterna.screen @(resolve 'babashka.impl.lanterna/lanterna-screen-namespace)
+                              'lanterna.terminal @(resolve 'babashka.impl.lanterna/lanterna-terminal-namespace)
+                              'lanterna.constants @(resolve 'babashka.impl.lanterna/lanterna-constants-namespace))))
 
 (def imports
   '{ArithmeticException java.lang.ArithmeticException
