@@ -1,6 +1,6 @@
 #!/usr/bin/env bb
 
-(ns pom-version
+(ns get-pom-version
   {:author "Wilker Lucio"}
   (:require [clojure.data.xml :as xml]
             [clojure.string :as str]))
@@ -17,7 +17,7 @@
    (->>
     (slurp path)
     (xml/parse-str)
-    (xml-seq )
+    (xml-seq)
     (filter #(tag-name? % "version"))
     first
     tag-content-str)))
