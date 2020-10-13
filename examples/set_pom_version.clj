@@ -22,8 +22,10 @@
 (def xml (xml/parse-str (slurp pom-xml)))
 
 (defn update-version [elt]
-  (if (= :version (:tag elt))
-    (assoc elt :content version)
+  (if-let [t (:tag elt)]
+    (if (= "version" (name t))
+      (assoc elt :content version)
+      elt)
     elt))
 
 (println
