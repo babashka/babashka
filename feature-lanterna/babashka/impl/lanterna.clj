@@ -4,17 +4,16 @@
    [lanterna.constants]
    [lanterna.screen]
    [lanterna.terminal]
-   [sci.impl.namespaces :refer [copy-var]]
-   [sci.impl.vars :as vars]))
+   [sci.core :as sci :refer [copy-var]]))
 
-(def tns (vars/->SciNamespace 'lanterna.terminal nil))
-(def sns (vars/->SciNamespace 'lanterna.screen nil))
-(def cns (vars/->SciNamespace 'lanterna.screen nil))
+(def tns (sci/create-ns 'lanterna.terminal nil))
+(def sns (sci/create-ns 'lanterna.screen nil))
+(def cns (sci/create-ns 'lanterna.screen nil))
 
 (def lanterna-terminal-namespace
   {'add-resize-listener (copy-var lanterna.terminal/add-resize-listener tns)
    'remove-resize-listener (copy-var lanterna.terminal/remove-resize-listener tns)
-   'text-terminal (copy-var lanterna.terminal/text-terminal tns)
+   'get-terminal (copy-var lanterna.terminal/get-terminal tns)
    'start (copy-var lanterna.terminal/start tns)
    'stop (copy-var lanterna.terminal/stop tns)
    'get-size (copy-var lanterna.terminal/get-size tns)

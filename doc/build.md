@@ -135,7 +135,7 @@ Example program:
 ``` clojure
 (require '[lanterna.terminal :as terminal])
 
-(def terminal (terminal/text-terminal))
+(def terminal (terminal/get-terminal))
 
 (terminal/start terminal)
 (terminal/put-string terminal "Hello TUI Babashka!" 10 5)

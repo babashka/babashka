@@ -2,6 +2,7 @@
          "feature-yaml" "feature-csv" "feature-transit"
          "feature-java-time" "feature-java-nio"
          "feature-httpkit-client" "feature-httpkit-server"
+         "feature-lanterna"
          "sci/src" "babashka.curl/src" "babashka.pods/src"
          "babashka.nrepl/src"
          "depstar/src"
@@ -23,7 +24,8 @@
         org.postgresql/postgresql {:mvn/version "42.2.12"}
         org.hsqldb/hsqldb {:mvn/version "2.4.0"}
         datascript/datascript {:mvn/version "0.18.11"}
-        http-kit/http-kit {:mvn/version "2.5.0"}}
+        http-kit/http-kit {:mvn/version "2.5.0"}
+        babashka/clojure-lanterna {:mvn/version "0.9.8-SNAPSHOT"}}
  :aliases {:main
            {:main-opts ["-m" "babashka.main"]}
            :profile
