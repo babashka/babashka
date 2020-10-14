@@ -17,6 +17,7 @@ RUN ./script/uberjar
 RUN ./script/compile
 
 FROM ubuntu:latest
-RUN mkdir -p /usr/local/bin
+RUN apt-get update && apt-get install -y curl \
+        && mkdir -p /usr/local/bin
 COPY --from=BASE /opt/bb /usr/local/bin/bb
 CMD ["bb"]
