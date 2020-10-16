@@ -287,7 +287,7 @@ user=> (ver/version-compare "1.0" "1.0.0")
 be used as Clojure libraries by babashka.
 
 - [babashka-sql-pods](https://github.com/babashka/babashka-sql-pods): pods for
-  interacting with SQL databases
+  interacting with SQL databases (PostgreSQL and HSQLDB)
 - [bootleg](https://github.com/retrogradeorbit/bootleg): static HTML website
   generation
 - [brisk](https://github.com/justone/brisk): Freeze and thaw with Nippy at the
@@ -307,6 +307,7 @@ be used as Clojure libraries by babashka.
 - [pod-tzzh-aws](https://github.com/tzzh/pod-tzzh-aws): pod for interacting with AWS
 - [pod-tzzh-kafka](https://github.com/tzzh/pod-tzzh-kafka): pod for interacting with Kafka
 - [pod-tzzh-mail](https://github.com/tzzh/pod-tzzh-mail): pod for sending mail
+- [pod.xledger.sql-server](https://github.com/xledger/pod_sql_server): pod for interacting with SQL Server
 - [tabl](https://github.com/justone/tabl): Make tables from data in your terminal
 
 ## Projects
