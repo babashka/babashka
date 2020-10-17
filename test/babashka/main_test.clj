@@ -15,7 +15,7 @@
   (println "===" (-> m :var meta :name))
   (println))
 
-(defmethod clojure.test/report :end-test-var [m]
+(defmethod clojure.test/report :end-test-var [_m]
   (let [{:keys [:fail :error]} @*report-counters*]
     (when (and (= "true" (System/getenv "BABASHKA_FAIL_FAST"))
                (or (pos? fail) (pos? error)))
