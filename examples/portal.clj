@@ -12,21 +12,11 @@
 (def cp (str/trim (:out (sh "clojure" "-Spath" "-Sdeps" "{:deps {djblue/portal {:mvn/version \"0.6.1\"}}}"))))
 (cp/add-classpath cp)
 
-(require '[portal.api :as p])
-
-(.addShutdownHook (Runtime/getRuntime)
-                  (Thread. (fn [] (p/close))))
-
-(p/open)
-(p/tap)
-
 (def file (first *command-line-args*))
 (when-not file
   (binding [*out* *err*]
-    "Usage: portal.clj <file.(edn|json|xml|yaml)>"))
-
-(def extension (last (str/split file #"\.")))
-(def contents (slurp file))
+    "Usage: portal.clj <file.(edn|json|xml|yaml)>")
+  (System/exit 1))
 
 (defn xml->hiccup [xml]
   (if-let [t (:tag xml)]
@@ -37,6 +27,8 @@
       (into elt (map xml->hiccup (:content xml))))
     xml))
 
+(def extension (last (str/split file #"\.")))
+(def contents (slurp file))
 (def data  (case extension
              ("edn")
              (edn/read-string contents)
@@ -50,7 +42,14 @@
                                 :namespace-aware false)
                  (xml->hiccup))))
 
+(require '[portal.api :as p])
+
+(.addShutdownHook (Runtime/getRuntime)
+                  (Thread. (fn [] (p/close))))
+
+(p/open)
+(p/tap)
+
 (tap> data)
 
 @(promise)
-
