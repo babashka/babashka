@@ -320,7 +320,7 @@ This script uses [djblue/portal](https://github.com/djblue/portal/) for inspecti
 Examples usage:
 
 ``` shell
-$ examples/yaml_inspector.clj ~/git/clojure/pom.xml
+$ examples/portal.clj ~/git/clojure/pom.xml
 ```
 
 See [portal.clj](portal.clj).
