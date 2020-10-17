@@ -266,7 +266,7 @@ $ examples/which.clj rg
 ### pom.xml version
 
 A script to retrieve the version from a `pom.xml` file. See
-[examples/pom_version.clj](../examples/pom_version.clj). Written by [@wilkerlucio](https://github.com/wilkerlucio).
+[examples/get_pom_version.clj](../examples/get_pom_version.clj). Written by [@wilkerlucio](https://github.com/wilkerlucio).
 
 ### Whatsapp frequencies
 
@@ -311,3 +311,9 @@ META-INF/leiningen/borkdude/sci/project.clj
 ### Invoke vim inside a script
 
 See [examples/vim.clj](../examples/vim.clj).
+
+### YAML inspector
+
+This script uses [djblue/portal](https://github.com/djblue/portal/) for viewing a YAML file piped to stdin.
+
+See [examples/yaml_inspector.clj](../examples/yaml_inspector.clj).
