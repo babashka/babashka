@@ -3,7 +3,7 @@
   (:require [clojure.java.io :as io]
             [sci.core :as sci :refer [copy-var]]
             [sci.impl.types :as types])
-  (:import [java.io File FileInputStream]))
+  (:import [java.io File ]))
 
 ;;;; datafy
 

@@ -75,4 +75,6 @@
    'print-table (copy-var print-table pprint-ns)
    '*print-right-margin* print-right-margin
    'cl-format (copy-var pprint/cl-format pprint-ns)
+   ;; we alter-var-root-ed write above, so this should copy the right function
+   'write (copy-var pprint/write pprint-ns)
    })
