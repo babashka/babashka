@@ -12,7 +12,7 @@
 ;;   <version>1.0.1</version>
 ;; </project>
 
-(ns set-pom-version
+(ns pom-version-set
   {:author "Michiel Borkent"}
   (:require [clojure.data.xml :as xml]))
 

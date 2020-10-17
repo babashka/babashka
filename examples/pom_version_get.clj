@@ -1,6 +1,6 @@
 #!/usr/bin/env bb
 
-(ns get-pom-version
+(ns pom-version-get
   {:author "Wilker Lucio"}
   (:require [clojure.data.xml :as xml]
             [clojure.string :as str]))
