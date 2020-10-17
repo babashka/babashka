@@ -15,7 +15,7 @@
 (def file (first *command-line-args*))
 (when-not file
   (binding [*out* *err*]
-    "Usage: portal.clj <file.(edn|json|xml|yaml)>")
+    (println "Usage: portal.clj <file.(edn|json|xml|yaml)>"))
   (System/exit 1))
 
 (defn xml->hiccup [xml]
