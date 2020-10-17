@@ -313,8 +313,14 @@ META-INF/leiningen/borkdude/sci/project.clj
 
 See [examples/vim.clj](examples/vim.clj).
 
-### YAML inspector
+### Portal
 
-This script uses [djblue/portal](https://github.com/djblue/portal/) for viewing a YAML file piped to stdin.
+This script uses [djblue/portal](https://github.com/djblue/portal/) for inspecting EDN, JSON, XML or YAML files.
 
-See [examples/yaml_inspector.clj](yaml_inspector.clj).
+Examples usage:
+
+``` shell
+$ examples/yaml_inspector.clj ~/git/clojure/pom.xml
+```
+
+See [portal.clj](portal.clj).
