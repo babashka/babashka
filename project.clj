@@ -20,7 +20,8 @@
                  [org.clojure/tools.cli "1.0.194"]
                  [cheshire "5.10.0"]
                  [nrepl/bencode "1.1.0"]
-                 [borkdude/sci.impl.reflector "0.0.1-java11"]]
+                 [borkdude/sci.impl.reflector "0.0.1-java11"]
+                 [org.clojure/math.combinatorics "0.1.6"]]
   :profiles {:feature/xml  {:source-paths ["feature-xml"]
                             :dependencies [[org.clojure/data.xml "0.2.0-alpha6"]]}
              :feature/yaml {:source-paths ["feature-yaml"]
