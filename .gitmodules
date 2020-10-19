@@ -14,3 +14,6 @@
 [submodule "depstar"]
 	path = depstar
 	url = https://github.com/babashka/depstar
+[submodule "process"]
+	path = process
+	url = https://github.com/babashka/process
