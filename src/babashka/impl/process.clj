@@ -14,7 +14,7 @@
     (apply process/process args)))
 
 (defn pb [& args]
-  (binding [process/*escape-fn* @escape-fn
+  (binding [process/*default-escape-fn* @escape-fn
             process/*default-shutdown-hook* @shutdown-hook]
     (apply process/pb args)))
 
