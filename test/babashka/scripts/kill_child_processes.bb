@@ -1,17 +1,14 @@
+(ns killing-me-softly
+  (:refer-clojure :exclude [descendants]))
+
 (import 'java.util.List)
 
 (set! *warn-on-reflection* true)
 
-(defn child-process-handles [^java.lang.ProcessHandle x]
-  (distinct
-   (cons x
-         (mapcat child-process-handles
-                 (iterator-seq (.iterator (.descendants x)))))))
-
 (defn start-spawning [& args]
   (let [depth (or (System/getenv "DEPTH") "0")
         depth (Integer/parseInt depth)]
-    (when-not (= 4 depth)
+    (when-not (= 4 depth) ;; process at depth 4 dies immediately
       (let [pb (doto (ProcessBuilder. ^List args)
                  (.inheritIO))
             _ (.put (.environment pb) "DEPTH"
@@ -21,9 +18,10 @@
           (do
             (Thread/sleep 500)
             (run! (fn [^java.lang.ProcessHandle handle]
-                    (do (prn (.pid handle))
-                        (.destroy handle)))
-                  (child-process-handles (.toHandle proc))))
+                    (prn (.pid handle))
+                    (.destroy handle))
+                  (let [handle (.toHandle proc)]
+                    (cons handle (iterator-seq (.iterator (.descendants handle)))))))
           (Thread/sleep 100000000))))))
 
 (start-spawning "./bb" *file*)
