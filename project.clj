@@ -7,7 +7,7 @@
         :url "https://github.com/borkdude/babashka"}
   :license {:name "Eclipse Public License 1.0"
             :url "http://opensource.org/licenses/eclipse-1.0.php"}
-  :source-paths ["src" "sci/src" "babashka.curl/src" "babashka.pods/src"
+  :source-paths ["src" "sci/src" "babashka.curl/src" "pods/src"
                  "babashka.nrepl/src" "depstar/src" "process/src"]
   ;; for debugging Reflector.java code:
   ;; :java-source-paths ["sci/reflector/src-java"]
@@ -28,7 +28,7 @@
                             :dependencies [[clj-commons/clj-yaml "0.7.2"]]}
              :feature/jdbc {:source-paths ["feature-jdbc"]
                             :dependencies [[seancorfield/next.jdbc "1.0.424"]]}
-             :feature/postgresql [:feature/jdbc {:dependencies [[org.postgresql/postgresql "42.2.12"]]}]
+             :feature/postgresql [:feature/jdbc {:dependencies [[org.postgresql/postgresql "42.2.18"]]}]
              :feature/hsqldb [:feature/jdbc {:dependencies [[org.hsqldb/hsqldb "2.4.0"]]}]
              :feature/core-async {:source-paths ["feature-core-async"]
                                   :dependencies [[org.clojure/core.async "1.1.587"]]}
