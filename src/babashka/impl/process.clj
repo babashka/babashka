@@ -5,17 +5,14 @@
 
 (def tns (sci/create-ns 'babashka.process nil))
 
-(def escape-fn (sci/copy-var process/*default-escape-fn* tns))
-(def shutdown-hook (sci/copy-var process/*default-shutdown-hook* tns))
+(def defaults (sci/copy-var process/*defaults* tns))
 
 (defn process [& args]
-  (binding [process/*default-escape-fn* @escape-fn
-            process/*default-shutdown-hook* @shutdown-hook]
+  (binding [process/*defaults* @defaults]
     (apply process/process args)))
 
 (defn pb [& args]
-  (binding [process/*default-escape-fn* @escape-fn
-            process/*default-shutdown-hook* @shutdown-hook]
+  (binding [process/*defaults* @defaults]
     (apply process/pb args)))
 
 (def process-namespace
@@ -25,5 +22,5 @@
    'start       (copy-var process/start tns)
    'pipeline    (copy-var process/pipeline tns)
    '$           (copy-var process/$ tns)
-   '*default-escape-fn* escape-fn
-   '*default-shutdown-hook* shutdown-hook})
+   '*defaults*  defaults
+   'default-shutdown-hook (copy-var process/default-shutdown-hook tns)})
