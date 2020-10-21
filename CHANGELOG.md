@@ -9,7 +9,7 @@ Thanks to [@tzzh](https://github.com/tzzh), [@Heliosmaster](https://github.com/H
 ### New
 
 - [babashka/process](https://github.com/babashka/process): a Clojure library for working with `java.lang.Process`
-- [pod-tzzh-mail](https://github.com/tzzh/pod-tzzh-mail): a pod for sending mail by @tzzh
+- [pod-tzzh-mail](https://github.com/tzzh/pod-tzzh-mail): a pod for sending mail by [@tzzh](https://github.com/tzzh)
 - [pod-babashka-lanterna](https://github.com/babashka/pod-babashka-lanterna): a pod for creating TUI apps
 - Add `lazy-cat` [#605](https://github.com/borkdude/babashka/issues/605)
 - Support error output in babashka.nrepl
