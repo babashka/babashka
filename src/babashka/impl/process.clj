@@ -23,4 +23,5 @@
    'pipeline    (copy-var process/pipeline tns)
    '$           (copy-var process/$ tns)
    '*defaults*  defaults
-   'default-shutdown-hook (copy-var process/default-shutdown-hook tns)})
+   'destroy     (copy-var process/destroy tns)
+   'destroy-tree (copy-var process/destroy-tree tns)})
