@@ -13,8 +13,8 @@
   ;; :java-source-paths ["sci/reflector/src-java"]
   :java-source-paths ["src-java"]
   :resource-paths ["resources" "sci/resources"]
-  :dependencies [[org.clojure/clojure "1.10.2-alpha1"]
-                 [org.clojure/tools.reader "1.3.2"]
+  :dependencies [[org.clojure/clojure "1.10.2-alpha2"]
+                 [org.clojure/tools.reader "1.3.3"]
                  [borkdude/edamame "0.0.11-alpha.15"]
                  [borkdude/graal.locking "0.0.2"]
                  [org.clojure/tools.cli "1.0.194"]
@@ -27,17 +27,17 @@
              :feature/yaml {:source-paths ["feature-yaml"]
                             :dependencies [[clj-commons/clj-yaml "0.7.2"]]}
              :feature/jdbc {:source-paths ["feature-jdbc"]
-                            :dependencies [[seancorfield/next.jdbc "1.0.424"]]}
+                            :dependencies [[seancorfield/next.jdbc "1.1.610"]]}
              :feature/postgresql [:feature/jdbc {:dependencies [[org.postgresql/postgresql "42.2.18"]]}]
-             :feature/hsqldb [:feature/jdbc {:dependencies [[org.hsqldb/hsqldb "2.4.0"]]}]
+             :feature/hsqldb [:feature/jdbc {:dependencies [[org.hsqldb/hsqldb "2.5.1"]]}]
              :feature/core-async {:source-paths ["feature-core-async"]
-                                  :dependencies [[org.clojure/core.async "1.1.587"]]}
+                                  :dependencies [[org.clojure/core.async "1.3.610"]]}
              :feature/csv {:source-paths ["feature-csv"]
                            :dependencies [[org.clojure/data.csv "1.0.0"]]}
              :feature/transit {:source-paths ["feature-transit"]
                                :dependencies [[com.cognitect/transit-clj "1.0.324"]]}
              :feature/datascript {:source-paths ["feature-datascript"]
-                                  :dependencies [[datascript "0.18.11"]]}
+                                  :dependencies [[datascript "1.0.1"]]}
              :feature/httpkit-client {:source-paths ["feature-httpkit-client"]
                                       :dependencies [[http-kit "2.5.0"]]}
              :feature/httpkit-server {:source-paths ["feature-httpkit-server"]
