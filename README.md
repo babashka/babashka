@@ -184,7 +184,7 @@ Check out the image on [Docker hub](https://hub.docker.com/r/borkdude/babashka/)
 ## Usage
 
 ``` shellsession
-Babashka v0.0.90
+Babashka v0.2.3
 
 Options must appear in the order of groups mentioned below.
 
@@ -212,7 +212,7 @@ Evaluation:
   -f, --file <path>   Evaluate a file.
   -cp, --classpath    Classpath to use.
   -m, --main <ns>     Call the -main function from namespace with args.
-  --verbose           Print entire stacktrace in case of exception.
+  --verbose           Print debug information and entire stacktrace in case of exception.
 
 REPL:
 
@@ -253,6 +253,7 @@ From Clojure:
 Additional libraries:
 
 - [`babashka.curl`](https://github.com/borkdude/babashka.curl)
+- [`babashka/process`](https://github.com/babashka/process)
 - [`bencode.core`](https://github.com/nrepl/bencode) aliased as `bencode`: `read-bencode`, `write-bencode`
 - [`cheshire.core`](https://github.com/dakrone/cheshire) aliased as `json`
 - [`clojure.core.async`](https://clojure.github.io/core.async/) aliased as

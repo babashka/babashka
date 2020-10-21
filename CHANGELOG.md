@@ -2,6 +2,43 @@
 
 For a list of breaking changes, check [here](#breaking-changes)
 
+## v0.2.3 (2020-10-21)
+
+Thanks to [@tzzh](https://github.com/tzzh), [@Heliosmaster](https://github.com/Heliosmaster) and [@kwrooijen](https://github.com/kwrooijen) for contributing to this release. Thanks to [Clojurists Together](https://www.clojuriststogether.org/) for sponsoring this release.
+
+### New
+
+- [babashka/process](https://github.com/babashka/process): a Clojure library for working with `java.lang.Process`
+- [pod-tzzh-mail](https://github.com/tzzh/pod-tzzh-mail): a pod for sending mail by @tzzh
+- Add `lazy-cat` [#605](https://github.com/borkdude/babashka/issues/605)
+- Support error output in babashka.nrepl
+  [babashka.nrepl#28](https://github.com/babashka/babashka.nrepl/issues/28)
+  ([@tzzh](https://github.com/tzzh))
+- Add lanterna [feature flag](https://github.com/borkdude/babashka/commit/13f65f05aeff891678e88965d9fbd146bfa87f4e) ([@kwrooijen](https://github.com/kwrooijen))
+- Add socket support to pods [babashka/pods#2](https://github.com/babashka/pods/issues/2)
+- Add `curl` to borkdude/babashka Docker image to support `babashka.curl` ([@hansbugge](https://github.com/hansbugge))
+- Add `transit+json` format support to pods [babashka/pods#21](https://github.com/babashka/pods/issues/21)
+- Add `bound?` [borkdude/sci#430](https://github.com/borkdude/sci/issues/430)
+- Add [portal](https://github.com/borkdude/babashka/tree/master/examples#portal) example
+- Add `*print-namespace-maps*` [borkdude/sci#428](https://github.com/borkdude/sci/issues/428)
+- Support `clojure.java.io/Coercions` protocol [#601](https://github.com/borkdude/babashka/issues/601)
+- Add `clojure.pprint/write` [#607](https://github.com/borkdude/babashka/issues/607)
+
+### Fixed
+
+- `pprint/print-table` should write to `sci/out` [#611](https://github.com/borkdude/babashka/issues/611)
+- `System/exit` doesn't work in REPL [#605](https://github.com/borkdude/babashka/issues/606)
+- `pprint/print-table` should write to sci/out [#611](https://github.com/borkdude/babashka/issues/606)
+- Fix pod destroy function [#615](https://github.com/borkdude/babashka/issues/615)
+- Bind `*file*` in nREPL server [babashka/babashka.nrepl#31](https://github.com/babashka/babashka.nrepl/issues/31)
+- Support `map->` constructor on defrecords [borkdude/sci#431](https://github.com/borkdude/sci/issues/431)
+- Import should return class [#610](https://github.com/borkdude/babashka/issues/610)
+
+### Changed
+
+- The [Docker image](https://hub.docker.com/r/borkdude/babashka/) is now based
+  on Ubuntu instead of Alpine.
+
 ## v0.2.2 (2020-09-30)
 
 This is a patch release for
@@ -173,6 +210,10 @@ Details about releases prior to v0.1.0 can be found
 [here](https://github.com/borkdude/babashka/releases).
 
 ## Breaking changes
+
+### v0.2.3
+
+- The [Docker image](https://hub.docker.com/r/borkdude/babashka/) is now based on Ubuntu instead of Alpine.
 
 ### v0.0.90
 
