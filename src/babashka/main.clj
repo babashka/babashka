@@ -34,12 +34,12 @@
    [clojure.java.io :as io]
    [clojure.string :as str]
    [hf.depstar.uberjar :as uberjar]
+   [puget.printer :as puget]
    [sci.addons :as addons]
    [sci.core :as sci]
    [sci.impl.namespaces :as sci-namespaces]
    [sci.impl.unrestrict :refer [*unrestricted*]]
-   [sci.impl.vars :as vars]
-   [puget.printer :as puget])
+   [sci.impl.vars :as vars])
   (:gen-class))
 
 (def windows?
@@ -205,6 +205,16 @@
                      (let [options (next options)]
                        (recur (next options)
                               (assoc opts-map :main (first options))))
+                     "--puget"
+                     (let [options (next options)
+                           opt (first options)
+                           opt (when (and opt (not (str/starts-with? opt "-")))
+                                 opt)
+                           options (if opt (next options)
+                                       options)]
+                       (recur options
+                              (assoc opts-map
+                                     :puget (or opt true))))
                      (if (some opts-map [:file :jar :socket-repl :expressions :main])
                        (assoc opts-map
                               :command-line-args options)
@@ -475,7 +485,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                     :repl :socket-repl :nrepl
                     :verbose? :classpath
                     :main :uberscript :describe?
-                    :jar :uberjar] :as _opts}
+                    :jar :uberjar] :as cmd-line-opts}
             (parse-opts args)
             _ (do ;; set properties
                 (when main (System/setProperty "babashka.main" main))
@@ -615,7 +625,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                                                             :while (not (pipe-signal-received?))]
                                                       (pr-f l))
                                                     (pr-f res))
-                                                  (#_prn puget/cprint res)))) 0]]
+                                                  ((if (:puget cmd-line-opts) puget/cprint prn) res)))) 0]]
                                    (if stream?
                                      (recur)
                                      res)))))
