@@ -24,6 +24,7 @@ Thanks to [@tzzh](https://github.com/tzzh), [@Heliosmaster](https://github.com/H
 - Add `*print-namespace-maps*` [borkdude/sci#428](https://github.com/borkdude/sci/issues/428)
 - Support `clojure.java.io/Coercions` protocol [#601](https://github.com/borkdude/babashka/issues/601)
 - Add `clojure.pprint/write` [#607](https://github.com/borkdude/babashka/issues/607)
+- Add pretty-printer vars from `cheshire.core` [#619](https://github.com/borkdude/babashka/issues/619)
 
 ### Fixed
 
