@@ -38,7 +38,8 @@
    [sci.core :as sci]
    [sci.impl.namespaces :as sci-namespaces]
    [sci.impl.unrestrict :refer [*unrestricted*]]
-   [sci.impl.vars :as vars])
+   [sci.impl.vars :as vars]
+   [puget.printer :as puget])
   (:gen-class))
 
 (def windows?
@@ -614,7 +615,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                                                             :while (not (pipe-signal-received?))]
                                                       (pr-f l))
                                                     (pr-f res))
-                                                  (prn res)))) 0]]
+                                                  (#_prn puget/cprint res)))) 0]]
                                    (if stream?
                                      (recur)
                                      res)))))
