@@ -249,8 +249,6 @@ is a variation on the
 [http-server](https://github.com/borkdude/babashka/#tiny-http-server)
 example. If you get prompted with a login, use `admin`/`admin`.
 
-<img src="../assets/notes-example.png" width="400px">
-
 ## which
 
 The `which` command re-implemented in Clojure. See
@@ -317,10 +315,22 @@ See [examples/vim.clj](examples/vim.clj).
 
 This script uses [djblue/portal](https://github.com/djblue/portal/) for inspecting EDN, JSON, XML or YAML files.
 
-Examples usage:
+Example usage:
 
 ``` shell
 $ examples/portal.clj ~/git/clojure/pom.xml
 ```
 
 See [portal.clj](portal.clj).
+
+### Image viewer
+
+Opens browser window and lets user navigate through images of all sub-directories.
+
+Example usage:
+
+``` shell
+$ examples/image_viewer.clj
+```
+
+See [image_viewer.clj](image_viewer.clj).
