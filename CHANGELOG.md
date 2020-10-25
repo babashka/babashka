@@ -11,6 +11,7 @@ Thanks to [@tzzh](https://github.com/tzzh), [@Heliosmaster](https://github.com/H
 - [babashka/process](https://github.com/babashka/process): a Clojure library for working with `java.lang.Process`
 - [pod-tzzh-mail](https://github.com/tzzh/pod-tzzh-mail): a pod for sending mail by [@tzzh](https://github.com/tzzh)
 - [pod-babashka-lanterna](https://github.com/babashka/pod-babashka-lanterna): a pod for creating TUI apps
+- [pod.xledger.sql-server](https://github.com/xledger/pod_sql_server): a pod for interacting with SQL Server
 - Add `lazy-cat` [#605](https://github.com/borkdude/babashka/issues/605)
 - Support error output in babashka.nrepl
   [babashka.nrepl#28](https://github.com/babashka/babashka.nrepl/issues/28)
