@@ -31,7 +31,6 @@ Thanks to [@tzzh](https://github.com/tzzh), [@Heliosmaster](https://github.com/H
 
 - `pprint/print-table` should write to `sci/out` [#611](https://github.com/borkdude/babashka/issues/611)
 - `System/exit` doesn't work in REPL [#605](https://github.com/borkdude/babashka/issues/606)
-- `pprint/print-table` should write to sci/out [#611](https://github.com/borkdude/babashka/issues/606)
 - Fix pod destroy function [#615](https://github.com/borkdude/babashka/issues/615)
 - Bind `*file*` in nREPL server [babashka/babashka.nrepl#31](https://github.com/babashka/babashka.nrepl/issues/31)
 - Support `map->` constructor on defrecords [borkdude/sci#431](https://github.com/borkdude/sci/issues/431)
