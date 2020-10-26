@@ -309,7 +309,7 @@ META-INF/leiningen/borkdude/sci/project.clj
 
 ### Invoke vim inside a script
 
-See [examples/vim.clj](examples/vim.clj).
+See [examples/vim.clj](vim.clj).
 
 ### Portal
 
