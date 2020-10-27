@@ -1,5 +1,7 @@
 (ns babashka.impl.uberscript
-  (:require [sci.core :as sci]))
+  (:require [clojure.java.io :as io]
+            [clojure.string :as str]
+            [sci.core :as sci]))
 
 (defn rewrite-ns
   "Rewrites ns form :require clauses into symbols + :reload only."
@@ -24,42 +26,47 @@
     (loop []
       (let [next-form (sci/parse-next *ctx* source-reader)]
         (when-not (= ::sci/eof next-form)
-          (if (and (seq? next-form)
-                   (= 'ns (first  next-form)))
-            (let [ns (rewrite-ns next-form)]
-              (prn :ns ns)
-              (sci/eval-form *ctx* ns))
+          (if (seq? next-form)
+            (let [form (cond (= 'ns (first  next-form))
+                             (rewrite-ns next-form))]
+              (sci/eval-form *ctx* form))
             ;; look for more ns forms
             (recur)))))))
 
-(defn uberscript [init-expr skip-namespaces resource-fn]
-  (let [uberscript-sources (atom ())
+(defn find-source [namespace extensions resource-fn]
+  (let [base (str/replace namespace "." "/")]
+    (some (fn [ext] (some-> (str base "." ext)
+                            resource-fn
+                            slurp))
+          extensions)))
+
+(defn uberscript [init-expr {:keys [:skip-namespaces :extensions :resource-fn
+                                    :out]
+                             :or {extensions ["clj" "cljc"]
+                                  resource-fn io/resource
+                                  out *out*}}]
+  (let [uberscript-sources (atom (list init-expr))
         load-fn (fn [{:keys [:namespace]}]
-                  (when resource-fn
-                    (if (contains? skip-namespaces namespace)
-                      ""
-                      (let [res (resource-fn namespace)]
-                        (swap! uberscript-sources conj res)
-                        res))))
+                  (if (contains? skip-namespaces namespace)
+                    ""
+                    (when-let [res (find-source namespace extensions resource-fn)]
+                      (swap! uberscript-sources conj res)
+                      res)))
         ctx (sci/init {:load-fn load-fn
                        :features #{:bb :clj}})]
     ;; establish a thread-local bindings to allow set!
     (sci/with-bindings {sci/ns @sci/ns}
       (binding [*ctx* ctx]
         (process-source init-expr))
-      (prn (count @uberscript-sources)))))
+      (io/copy (str/join "\n" (distinct @uberscript-sources)) out))))
 
 ;;;; Scratch
 
-(comment #_do
-  (require '[clojure.java.io :as io])
-  (require '[clojure.string :as str])
-
+(comment
+  ;;do
   (defn test-uberscript []
     (uberscript "(ns foo (:require [clojure.string] :reload))"
-                #{}
-                (fn [ns] (some-> (str (str/replace ns "." "/") ".clj" )
-                                 (io/resource)
-                                 slurp))))
+                {:out (io/file "/tmp/uberscript.clj")
+                 :extensions ["bb" "clj" "cljc"]}))
 
   (test-uberscript))
