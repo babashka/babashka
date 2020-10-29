@@ -884,7 +884,7 @@ For making HTTP requests you can use:
   `curl` to make requests.
 - [org.httpkit.client](https://github.com/http-kit/http-kit)
 - `slurp` for simple `GET` requests
-- [clj-http-lite](https://github.com/borkdude/clj-http-lite) as a library.
+- [clj-http-lite](https://github.com/babashka/clj-http-lite) as a library.
 - `clojure.java.shell` or `java.lang.ProcessBuilder` for shelling out to your
   favorite command line http client
 
