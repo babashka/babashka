@@ -4,8 +4,15 @@
   (:require [clojure.java.browse :as browse]
             [clojure.java.io :as io]
             [clojure.string :as str]
+            [clojure.tools.cli :refer [parse-opts]]
             [org.httpkit.server :as server])
   (:import [java.net URLDecoder URLEncoder]))
+
+(def cli-options [["-p" "--port PORT" "Port for HTTP server" :default 8090 :parse-fn #(Integer/parseInt %)]
+                  ["-d" "--dir DIR" "Directory to scan for images" :default "."]])
+(def opts (:options (parse-opts *command-line-args* cli-options)))
+(def port (:port opts))
+(def dir (:dir opts))
 
 (def images
   (filter #(and (.isFile %)
@@ -14,7 +21,7 @@
                                   last
                                   str/lower-case)]
                   (contains? #{"jpg" "jpeg" "png" "gif" "svg"} ext)))
-          (file-seq (io/file "."))))
+          (file-seq (io/file dir))))
 
 (def image-count (count images))
 
@@ -53,16 +60,22 @@ Navigation: use left/right arrow keys
 
 (server/run-server
  (fn [{:keys [:uri]}]
-   (if (str/starts-with? uri "/assets")
-     ;; serve the file
-     (let [f (io/file (-> (str/replace uri "assets" "")
-                          (URLDecoder/decode)))]
-       {:body f})
-     ;; serve html
-     (let [n (-> (str/replace uri "/" "")
-                 (Integer/parseInt))]
-       (page n)))))
+   (cond
+    ;; serve the file
+    (str/starts-with? uri "/assets")
+      (let [f (io/file (-> (str/replace uri "assets" "")
+                            (URLDecoder/decode)))]
+        {:body f})
+    ;; serve html
+    (re-matches #"/[0-9]+" uri)
+      (let [n (-> (str/replace uri "/" "")
+                  (Integer/parseInt))]
+        (page n))
+    ;; favicon.ico, etc
+    :else
+      {:status 404}))
+ {:port port})
 
-(browse/browse-url "http://localhost:8090/0")
+(browse/browse-url (format "http://localhost:%s/0" port))
 
 @(promise)
