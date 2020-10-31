@@ -21,4 +21,6 @@
    'parse-stream-strict (copy-var json/parse-stream-strict tns)
    'parsed-seq (copy-var json/parsed-seq tns)
    'parsed-smile-seq (copy-var json/parsed-smile-seq tns)
-   'decode-smile (copy-var json/decode-smile tns)})
+   'decode-smile (copy-var json/decode-smile tns)
+   'default-pretty-print-options (copy-var json/default-pretty-print-options tns)
+   'create-pretty-printer (copy-var json/create-pretty-printer tns)})

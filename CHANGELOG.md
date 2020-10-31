@@ -2,6 +2,100 @@
 
 For a list of breaking changes, check [here](#breaking-changes)
 
+## v0.2.3 (2020-10-21)
+
+Thanks to [@tzzh](https://github.com/tzzh), [@Heliosmaster](https://github.com/Heliosmaster), [@lispyclouds](https://github.com/lispyclouds) and [@kwrooijen](https://github.com/kwrooijen) for contributing to this release. Thanks to [Clojurists Together](https://www.clojuriststogether.org/) for sponsoring this release. Thanks to [Adgoji](https://github.com/AdGoji) and other sponsors on [OpenCollective](https://opencollective.com/babashka) and [Github](https://github.com/sponsors/borkdude) for their ongoing support.
+
+### New
+
+- [babashka/process](https://github.com/babashka/process): a Clojure library for working with `java.lang.Process`
+- [pod-tzzh-mail](https://github.com/tzzh/pod-tzzh-mail): a pod for sending mail by [@tzzh](https://github.com/tzzh)
+- [pod-babashka-lanterna](https://github.com/babashka/pod-babashka-lanterna): a pod for creating TUI apps
+- [pod.xledger.sql-server](https://github.com/xledger/pod_sql_server): a pod for interacting with SQL Server
+- Add `lazy-cat` [#605](https://github.com/borkdude/babashka/issues/605)
+- Support error output in babashka.nrepl
+  [babashka.nrepl#28](https://github.com/babashka/babashka.nrepl/issues/28)
+  ([@tzzh](https://github.com/tzzh))
+- Add lanterna [feature flag](https://github.com/borkdude/babashka/commit/13f65f05aeff891678e88965d9fbd146bfa87f4e) ([@kwrooijen](https://github.com/kwrooijen))
+- Add socket support to pods [babashka/pods#2](https://github.com/babashka/pods/issues/2)
+- Add `curl` to borkdude/babashka Docker image to support `babashka.curl` ([@hansbugge](https://github.com/hansbugge))
+- Add `transit+json` format support to pods [babashka/pods#21](https://github.com/babashka/pods/issues/21)
+- Add `bound?` [borkdude/sci#430](https://github.com/borkdude/sci/issues/430)
+- Add [portal](https://github.com/borkdude/babashka/tree/master/examples#portal) example
+- Add `*print-namespace-maps*` [borkdude/sci#428](https://github.com/borkdude/sci/issues/428)
+- Support `clojure.java.io/Coercions` protocol [#601](https://github.com/borkdude/babashka/issues/601)
+- Add `clojure.pprint/write` [#607](https://github.com/borkdude/babashka/issues/607)
+- Add pretty-printer vars from `cheshire.core` [#619](https://github.com/borkdude/babashka/issues/619)
+
+### Fixed
+
+- `pprint/print-table` should write to `sci/out` [#611](https://github.com/borkdude/babashka/issues/611)
+- `System/exit` doesn't work in REPL [#605](https://github.com/borkdude/babashka/issues/606)
+- Fix pod destroy function [#615](https://github.com/borkdude/babashka/issues/615)
+- Bind `*file*` in nREPL server [babashka/babashka.nrepl#31](https://github.com/babashka/babashka.nrepl/issues/31)
+- Support `map->` constructor on defrecords [borkdude/sci#431](https://github.com/borkdude/sci/issues/431)
+- Import should return class [#610](https://github.com/borkdude/babashka/issues/610)
+
+### Changed
+
+- The [Docker image](https://hub.docker.com/r/borkdude/babashka/) is now based
+  on Ubuntu instead of Alpine.
+
+## v0.2.2 (2020-09-30)
+
+This is a patch release for
+[babashka/babashka.pods#20](https://github.com/babashka/babashka.pods/issues/20),
+but it also introduces new support around `reify`.
+
+### New
+
+- Support `java.nio.file.FileVisitor` and `java.io.FilenameFilter` with `reify` [#600](https://github.com/borkdude/babashka/issues/600). Nice side effect: this makes babashka compatible with the [fs](https://github.com/clj-commons/fs) library:
+    ``` clojure
+    $ export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {clj-commons/fs {:mvn/version "1.5.2"}}}')
+    $ bb -e '(ns foo (:require [me.raynes.fs :as fs])) (map str (fs/glob "*.md"))'
+    ("/Users/borkdude/Dropbox/dev/clojure/glam/README.md")
+    ```
+- Add classes `java.util.zip.ZipInputStream` and `java.util.zip.ZipEntry`. This makes babashka compatible with [glam](https://github.com/borkdude/glam), a work in progress package manager.
+
+### Fixed
+
+- Ensure ns map exists for namespaces used only "code" vars [babashka/babashka.pods#20](https://github.com/babashka/babashka.pods/issues/20). This fixes compatibility with [bootleg](https://github.com/retrogradeorbit/bootleg).
+
+## v0.2.1 (2020-09-25)
+
+Thanks to [@RickMoynihan](https://github.com/RickMoynihan), [@joinr](https://github.com/joinr), [@djblue](https://github.com/djblue), [@lread](https://github.com/lread), [@teodorlu](https://github.com/teodorlu), [@tzzh](https://github.com/tzzh) and [@zoren](https://github.com/zoren) for contributing to this release. Thanks to [Clojurists Together](https://www.clojuriststogether.org/) for sponsoring this release.
+
+### New
+
+- Include `org.httpkit.client`, a high performance async http client [#561](https://github.com/borkdude/babashka/issues/561)
+- Include `org.httpkit.server`, an HTTP server
+  [#556](https://github.com/borkdude/babashka/issues/556). This namespace should
+  be considered experimental and may stay or be removed in a future version of
+  babashka, depending on feedback from the community. See [example](examples/httpkit_server.clj)
+- Add `java.io.FileNotFoundException`, `java.security.DigestInputStream`, `java.nio.file.FileVisitOption` classes
+- Support implementing `IDeref`, `IAtom` and `IAtom2` on records [sci#401](https://github.com/borkdude/sci/issues/401)
+- Support compatibility with [version-clj](https://github.com/xsc/version-clj) [#565](https://github.com/borkdude/babashka/issues/565) [@lread](https://github.com/lread) and [@borkdude](https://github.com/borkdude)
+- Support YAML roundtrip through `*input*` [#583](https://github.com/borkdude/babashka/issues/583)
+- Support `clojure.core/find-var` [sci#420](https://github.com/borkdude/sci/issues/420) [@RickMoynihan](https://github.com/RickMoynihan)
+- Support `clojure.pprint/cl-format` [#571](https://github.com/borkdude/babashka/issues/571)
+- [AWS pod](https://github.com/tzzh/pod-tzzh-aws)
+
+### Fixed / enhanced
+
+- Fix location printing in REPL (`--repl`) [#598](https://github.com/borkdude/babashka/issues/589)
+- Babashka.curl sends form params incorrectly as multipart [babashka.curl#25](https://github.com/borkdude/babashka.curl/issues/25)
+- Update Windows build instructions [#574](https://github.com/borkdude/babashka/issues/574)
+- Set minimum macOS version in build explicitly [#588](https://github.com/borkdude/babashka/pull/588)
+- Fix NPE in error handling logic [#587](https://github.com/borkdude/babashka/issues/587)
+- Fix namespace switch in REPL (`--repl`) [#564](https://github.com/borkdude/babashka/issues/564)
+- Fix location of errors in REPL (`--repl`) [#589](https://github.com/borkdude/babashka/issues/589)
+- Support multi-arity methods in `defprotocol` [sci#406](https://github.com/borkdude/sci/issues/406)
+- Constructor call not recognized in protocol impl [sci#419](https://github.com/borkdude/sci/issues/419)
+- Improve handling of top-level do in macro expansion [sci#421](https://github.com/borkdude/sci/issues/421)
+- Performance improvements suggested by [@joinr](https://github.com/joinr) [sci#415](https://github.com/borkdude/sci/issues/415)
+- Throw when trying to redefine referred var [sci#398](https://github.com/borkdude/sci/issues/398)
+- `pprint` is now backed by `clojure.pprint/pprint` instead of fipp [#571](https://github.com/borkdude/babashka/issues/571)
+
 ## v0.2.0 (2020-08-28)
 
 Thanks to [@cldwalker](https://github.com/cldwalker), [@dehli](https://github.com/dehli), [@djblue](https://github.com/djblue), [@GomoSDG](https://github.com/GomoSDG), [@grahamcarlyle](https://github.com/grahamcarlyle), [@j-cr](https://github.com/j-cr),
@@ -118,6 +212,10 @@ Details about releases prior to v0.1.0 can be found
 [here](https://github.com/borkdude/babashka/releases).
 
 ## Breaking changes
+
+### v0.2.3
+
+- The [Docker image](https://hub.docker.com/r/borkdude/babashka/) is now based on Ubuntu instead of Alpine.
 
 ### v0.0.90
 

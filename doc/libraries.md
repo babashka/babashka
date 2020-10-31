@@ -253,13 +253,41 @@ Turn Clojure data structures into SQL
 
 Spying and stubbing library, primarily intended for tests.
 
+### [portal](https://github.com/djblue/portal/)
+
+A clojure tool to navigate through your data. This example will launch a browser to view your `deps.edn`:
+
+``` clojure
+$ cat deps.edn | bb -cp `clojure -Spath -Sdeps '{:deps {djblue/portal {:mvn/version "0.4.1"}}}'` -m portal.main edn
+```
+
+### [version-clj](https://github.com/xsc/version-clj)
+
+Analysis and comparison of artifact version numbers.
+
+``` clojure
+> export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {version-clj/version-clj {:mvn/version "0.1.2"}}}')
+> bb --repl
+...
+user=> (require '[version-clj.core :as ver])
+nil
+user=> (ver/version->seq "1.0.0-SNAPSHOT")
+[(1 0 0) ["snapshot"]]
+user=> (ver/version-compare "1.2.3" "1.0.0")
+1
+user=> (ver/version-compare "1.0.0-SNAPSHOT" "1.0.0")
+-1
+user=> (ver/version-compare "1.0" "1.0.0")
+0
+```
+
 ## Pods
 
 [Babashka pods](https://github.com/babashka/babashka.pods) are programs that can
 be used as Clojure libraries by babashka.
 
 - [babashka-sql-pods](https://github.com/babashka/babashka-sql-pods): pods for
-  interacting with SQL databases
+  interacting with SQL databases (PostgreSQL and HSQLDB)
 - [bootleg](https://github.com/retrogradeorbit/bootleg): static HTML website
   generation
 - [brisk](https://github.com/justone/brisk): Freeze and thaw with Nippy at the
@@ -268,6 +296,9 @@ be used as Clojure libraries by babashka.
   linter
 - [pod-babashka-filewatcher](https://github.com/babashka/pod-babashka-filewatcher): a
   filewatcher pod based on Rust notify
+- [pod-babashka-lanterna](https://github.com/babashka/pod-babashka-lanterna): a
+  pod for making TUIs based on
+  [clojure-lanterna](https://github.com/babashka/clojure-lanterna)
 - [pod-babashka-parcera](https://github.com/babashka/pod-babashka-parcera): pod around the parcera Clojure parser
 - [pod-janet-peg](https://github.com/sogaiu/pod-janet-peg): a pod for
   calling [Janet](https://github.com/janet-lang/janet)'s PEG
@@ -276,6 +307,10 @@ be used as Clojure libraries by babashka.
     a pod for parsing HTML using CSS queries backed by Jsoup
 - [pod-lispyclouds-docker](https://github.com/lispyclouds/pod-lispyclouds-docker):
   A pod for interacting with docker
+- [pod-tzzh-aws](https://github.com/tzzh/pod-tzzh-aws): pod for interacting with AWS
+- [pod-tzzh-kafka](https://github.com/tzzh/pod-tzzh-kafka): pod for interacting with Kafka
+- [pod-tzzh-mail](https://github.com/tzzh/pod-tzzh-mail): pod for sending mail
+- [pod.xledger.sql-server](https://github.com/xledger/pod_sql_server): pod for interacting with SQL Server
 - [tabl](https://github.com/justone/tabl): Make tables from data in your terminal
 
 ## Projects
@@ -344,3 +379,11 @@ There's also
 which is like sh/sh, but it inherits stdin/stdout/stderr, so that the user sees
 in real time what the subprocess is doing, and can possibly interact with
 it. More like how shelling out in a bash script works.
+
+### [dharrigan/spotifyd-notification](https://github.com/dharrigan/spotifyd-notification)
+
+An example of using babashka to show spotifyd notifications via dunst.
+
+### [nextjournal/ssh-github-auth](https://github.com/nextjournal/ssh-github-auth)
+
+A babashka script which uses github auth to fetch SSH public keys. It can be useful to ensure only a certain team of people can access machines with SSH.

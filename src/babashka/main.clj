@@ -11,7 +11,6 @@
    [babashka.impl.clojure.java.io :refer [io-namespace]]
    [babashka.impl.clojure.java.shell :refer [shell-namespace]]
    [babashka.impl.clojure.main :as clojure-main :refer [demunge]]
-   [babashka.impl.clojure.pprint :refer [pprint-namespace]]
    [babashka.impl.clojure.stacktrace :refer [stacktrace-namespace]]
    [babashka.impl.clojure.test.check] ;; ensure load before babashka.impl.clojure.spec.alpha!
    [babashka.impl.clojure.zip :refer [zip-namespace]]
@@ -22,7 +21,10 @@
    [babashka.impl.error-handler :refer [error-handler]]
    [babashka.impl.features :as features]
    [babashka.impl.pods :as pods]
+   [babashka.impl.pprint :refer [pprint-namespace]]
+   [babashka.impl.process :refer [process-namespace]]
    [babashka.impl.protocols :refer [protocols-namespace]]
+   [babashka.impl.reify :refer [reify-opts]]
    [babashka.impl.repl :as repl]
    [babashka.impl.socket-repl :as socket-repl]
    [babashka.impl.spec :refer [spec-namespace
@@ -83,6 +85,15 @@
 
 (when features/datascript?
   (require '[babashka.impl.datascript]))
+
+(when features/httpkit-client?
+  (require '[babashka.impl.httpkit-client]))
+
+(when features/httpkit-server?
+  (require '[babashka.impl.httpkit-server]))
+
+(when features/lanterna?
+  (require '[babashka.impl.lanterna]))
 
 (sci/alter-var-root sci/in (constantly *in*))
 (sci/alter-var-root sci/out (constantly *out*))
@@ -213,19 +224,6 @@
                  opts-map))]
     opts))
 
-(defn edn-seq*
-  [^java.io.BufferedReader rdr]
-  (let [edn-val (edn/read {:eof ::EOF} rdr)]
-    (when (not (identical? ::EOF edn-val))
-      (cons edn-val (lazy-seq (edn-seq* rdr))))))
-
-(defn edn-seq
-  [in]
-  (edn-seq* in))
-
-(defn shell-seq [in]
-  (line-seq (java.io.BufferedReader. in)))
-
 (def version (str/trim (slurp (io/resource "BABASHKA_VERSION"))))
 
 (defn print-version []
@@ -285,7 +283,9 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
  :feature/yaml       %s
  :feature/jdbc       %s
  :feature/postgresql %s
- :feature/hsqldb     %s}")
+ :feature/hsqldb     %s
+ :feature/httpkit-client %s
+ :feature/lanterna %s}")
     version
     features/core-async?
     features/csv?
@@ -295,7 +295,9 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
     features/yaml?
     features/jdbc?
     features/postgresql?
-    features/hsqldb?)))
+    features/hsqldb?
+    features/httpkit-client?
+    features/lanterna?)))
 
 (defn read-file [file]
   (let [f (io/file file)]
@@ -392,7 +394,9 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
        'clojure.datafy datafy-namespace
        'clojure.core.protocols protocols-namespace
        'clojure.spec.alpha spec-namespace
-       'clojure.spec.gen.alpha gen-namespace}
+       'clojure.spec.gen.alpha gen-namespace
+       'babashka.process process-namespace}
+
     features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace))
     features/yaml? (assoc 'clj-yaml.core @(resolve 'babashka.impl.yaml/yaml-namespace)
                           'flatland.ordered.map @(resolve 'babashka.impl.ordered/ordered-map-ns))
@@ -402,11 +406,13 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                                 'clojure.core.async.impl.protocols @(resolve 'babashka.impl.async/async-protocols-namespace))
     features/csv?  (assoc 'clojure.data.csv @(resolve 'babashka.impl.csv/csv-namespace))
     features/transit? (assoc 'cognitect.transit @(resolve 'babashka.impl.transit/transit-namespace))
-    features/datascript? (assoc 'datascript.core @(resolve 'babashka.impl.datascript/datascript-namespace))))
-
-(def bindings
-  {'java.lang.System/exit exit ;; override exit, so we have more control
-   'System/exit exit})
+    features/datascript? (assoc 'datascript.core @(resolve 'babashka.impl.datascript/datascript-namespace))
+    features/httpkit-client? (assoc 'org.httpkit.client @(resolve 'babashka.impl.httpkit-client/httpkit-client-namespace)
+                                    'org.httpkit.sni-client @(resolve 'babashka.impl.httpkit-client/sni-client-namespace))
+    features/httpkit-server? (assoc 'org.httpkit.server @(resolve 'babashka.impl.httpkit-server/httpkit-server-namespace))
+    features/lanterna? (assoc 'lanterna.screen @(resolve 'babashka.impl.lanterna/lanterna-screen-namespace)
+                              'lanterna.terminal @(resolve 'babashka.impl.lanterna/lanterna-terminal-namespace)
+                              'lanterna.constants @(resolve 'babashka.impl.lanterna/lanterna-constants-namespace))))
 
 (def imports
   '{ArithmeticException java.lang.ArithmeticException
@@ -442,6 +448,22 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
     Throwable java.lang.Throwable})
 
 (def input-var (sci/new-dynamic-var '*input* nil))
+(def edn-readers (cond-> {}
+                   features/yaml?
+                   (assoc 'ordered/map @(resolve 'flatland.ordered.map/ordered-map))))
+
+(defn edn-seq*
+  [^java.io.BufferedReader rdr]
+  (let [edn-val (edn/read {:eof ::EOF :readers edn-readers} rdr)]
+    (when (not (identical? ::EOF edn-val))
+      (cons edn-val (lazy-seq (edn-seq* rdr))))))
+
+(defn edn-seq
+  [in]
+  (edn-seq* in))
+
+(defn shell-seq [in]
+  (line-seq (java.io.BufferedReader. in)))
 
 (defn main
   [& args]
@@ -449,7 +471,8 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
   (handle-sigint!)
   (binding [*unrestricted* true]
     (sci/binding [reflection-var false
-                  core/data-readers @core/data-readers]
+                  core/data-readers @core/data-readers
+                  sci/ns @sci/ns]
       (let [{version-opt :version
              :keys [:shell-in :edn-in :shell-out :edn-out
                     :help? :file :command-line-args
@@ -467,14 +490,14 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                           ::EOF
                           (if stream?
                             (if shell-in (or (read-line) ::EOF)
-                                (edn/read {;;:readers *data-readers*
+                                (edn/read {:readers edn-readers
                                            :eof ::EOF} *in*))
                             (delay (cond shell-in
                                          (shell-seq *in*)
                                          edn-in
                                          (edn-seq *in*)
                                          :else
-                                         (edn/read *in*))))))
+                                         (edn/read {:readers edn-readers} *in*))))))
             uberscript-sources (atom ())
             env (atom {})
             classpath (or classpath
@@ -529,14 +552,14 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                                             (fn [ctx & opts]
                                               (let [opts (apply hash-map opts)]
                                                 (repl/start-repl! ctx opts)))))
-                  :bindings bindings
                   :env env
                   :features #{:bb :clj}
                   :classes classes/class-map
                   :imports imports
                   :load-fn load-fn
                   :uberscript uberscript
-                  :readers core/data-readers}
+                  :readers core/data-readers
+                  :reify reify-opts}
             opts (addons/future opts)
             sci-ctx (sci/init opts)
             _ (vreset! common/ctx sci-ctx)

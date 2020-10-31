@@ -15,7 +15,7 @@
   (println "===" (-> m :var meta :name))
   (println))
 
-(defmethod clojure.test/report :end-test-var [m]
+(defmethod clojure.test/report :end-test-var [_m]
   (let [{:keys [:fail :error]} @*report-counters*]
     (when (and (= "true" (System/getenv "BABASHKA_FAIL_FAST"))
                (or (pos? fail) (pos? error)))
@@ -58,7 +58,7 @@
   (is (thrown-with-msg? Exception #"java.lang.NullPointerException"
                         (bb nil "(subs nil 0 0)"))))
 
-(deftest main-test
+(deftest input-test
   (testing "-io behaves as identity"
     (is (= "foo\nbar\n" (test-utils/bb "foo\nbar\n" "-io" "*input*"))))
   (testing "if and when"
@@ -107,28 +107,21 @@
             (bb "foo\n Clojure is nice. \nbar\n If you're nice to clojure. "
                 "-i"
                 "(map-indexed #(-> [%1 %2]) *input*)")
-            (bb "(keep #(when (re-find #\"(?i)clojure\" (second %)) (first %)) *input*)"))))))
+            (bb "(keep #(when (re-find #\"(?i)clojure\" (second %)) (first %)) *input*)")))))
+  (testing "ordered/map data reader works"
+    (is (= "localhost" (bb "#ordered/map ([:test \"localhost\"])"
+                           "(:test *input*)"))))
+  (testing "bb doesn't wait for input if *input* isn't used"
+    (is (= "2\n" (with-out-str (main/main "(inc 1)"))))))
 
 (deftest println-test
   (is (= "hello\n" (test-utils/bb nil "(println \"hello\")"))))
-
-(deftest input-test
-  (testing "bb doesn't wait for input if *input* isn't used"
-    (is (= "2\n" (with-out-str (main/main "(inc 1)"))))))
 
 (deftest System-test
   (let [res (bb nil "-f" "test/babashka/scripts/System.bb")]
     (is (= "bar" (second res)))
     (doseq [s res]
-      (is (not-empty s))))
-  (let [out (java.io.StringWriter.)
-        err (java.io.StringWriter.)
-        exit-code (sci/with-bindings {sci/out out
-                                      sci/err err}
-                    (binding [*out* out *err* err]
-                      (main/main "(println \"Hello world!\") (System/exit 42)")))]
-    (is (= (str out) "Hello world!\n"))
-    (is (= 42 exit-code))))
+      (is (not-empty s)))))
 
 (deftest malformed-command-line-args-test
   (is (thrown-with-msg? Exception #"File does not exist: non-existing\n"
@@ -370,7 +363,16 @@
     (is (.exists f2))
     (let [v (bb nil "-f" (.getPath (io/file "test-resources" "babashka" "glob.clj")))]
       (is (vector? v))
-      (is (.exists (io/file (first v)))))))
+      (is (.exists (io/file (first v))))))
+  (testing "reify can handle multiple classes at once"
+    (is (true? (bb nil "
+(def filter-obj (reify java.io.FileFilter
+                  (accept [this f] (prn (.getPath f)) true)
+                  java.io.FilenameFilter
+                  (accept [this f name] (prn name) true)))
+(def s1 (with-out-str (.listFiles (clojure.java.io/file \".\") filter-obj)))
+(def s2 (with-out-str (.list (clojure.java.io/file \".\") filter-obj)))
+(and (pos? (count s1)) (pos? (count s2)))")))))
 
 (deftest future-print-test
   (testing "the root binding of sci/*out*"
@@ -417,7 +419,7 @@
 (deftest clojure-data-xml-test
   (is (= "<?xml version=\"1.0\" encoding=\"UTF-8\"?><items><item>1</item><item>2</item></items>"
          (bb nil "(let [xml (xml/parse-str \"<items><item>1</item><item>2</item></items>\")] (xml/emit-str xml))")))
-  (is (= "0.0.87-SNAPSHOT" (bb nil "examples/pom_version.clj" (.getPath (io/file "test-resources" "pom.xml"))))))
+  (is (= "0.0.87-SNAPSHOT" (bb nil "examples/pom_version_get.clj" (.getPath (io/file "test-resources" "pom.xml"))))))
 
 (deftest uberscript-test
   (let [tmp-file (java.io.File/createTempFile "uberscript" ".clj")]
@@ -444,7 +446,9 @@
     (is (= "(0 1 2 3 4 5 6 7 8 9)\n" (bb nil "
 (let [sw (java.io.StringWriter.)]
   (binding [clojure.pprint/*print-right-margin* 50]
-    (clojure.pprint/pprint (range 10) sw)) (str sw))")))))
+    (clojure.pprint/pprint (range 10) sw)) (str sw))"))))
+  (testing "print-table writes to sci/out"
+    (is (str/includes? (test-utils/bb "(with-out-str (clojure.pprint/print-table [{:a 1} {:a 2}]))") "----"))))
 
 (deftest read-string-test
   (testing "namespaced keyword via alias"
@@ -537,6 +541,16 @@
     (is (thrown-with-msg?
          Exception #"preloads"
          (test-utils/bb nil (.getPath (io/file "test-resources" "babashka" "file_location_preloads.clj")))))))
+
+(deftest repl-test
+  (is (str/includes? (test-utils/bb "(ns foo) ::foo" "--repl") ":foo/foo"))
+  (is (str/includes? (test-utils/bb "[*warn-on-reflection* (set! *warn-on-reflection* true) *warn-on-reflection*]")
+                     "[false true true]"))
+  (when-not test-utils/native?
+    (let [sw (java.io.StringWriter.)]
+      (sci/with-bindings {sci/err sw}
+        (test-utils/bb {:in "x" :err sw} "--repl"))
+      (is (str/includes? (str sw) "Could not resolve symbol: x [at <repl>:1:1]")))))
 
 ;;;; Scratch
 

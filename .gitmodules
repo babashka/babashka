@@ -5,12 +5,15 @@
 [submodule "babashka.curl"]
 	path = babashka.curl
 	url = https://github.com/borkdude/babashka.curl
-[submodule "babashka.pods"]
-	path = babashka.pods
-	url = https://github.com/babashka/babashka.pods
 [submodule "babashka.nrepl"]
 	path = babashka.nrepl
 	url = https://github.com/babashka/babashka.nrepl
 [submodule "depstar"]
 	path = depstar
 	url = https://github.com/babashka/depstar
+[submodule "process"]
+	path = process
+	url = https://github.com/babashka/process
+[submodule "pods"]
+	path = pods
+	url = https://github.com/babashka/pods
