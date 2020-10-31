@@ -11,8 +11,8 @@
   (:require
    [babashka.impl.clojure.spec.alpha :as s]
    [babashka.impl.clojure.spec.gen.alpha :as gen]
-   [clojure.string :as str]
-   [fipp.edn :as pp]))
+   [babashka.impl.pprint :as pp]
+   [clojure.string :as str]))
 
 (in-ns 'clojure.spec.test.check)
 (in-ns 'babashka.impl.clojure.spec.test.alpha)
