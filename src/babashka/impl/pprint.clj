@@ -5,10 +5,11 @@
             [sci.impl.namespaces :refer [copy-var]]
             [sci.impl.vars :as vars]))
 
-(alter-var-root #'pprint/write-option-table
-                (fn [m]
-                  (zipmap (keys m)
-                          (map find-var (vals m)))))
+(defonce patch-option-table
+  (alter-var-root #'pprint/write-option-table
+                  (fn [m]
+                    (zipmap (keys m)
+                            (map find-var (vals m))))))
 
 (def new-table-ize
   (fn [t m]
