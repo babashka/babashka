@@ -77,4 +77,5 @@
    'cl-format (copy-var pprint/cl-format pprint-ns)
    ;; we alter-var-root-ed write above, so this should copy the right function
    'write (copy-var pprint/write pprint-ns)
+   'simple-dispatch (copy-var pprint/simple-dispatch pprint-ns)
    })
