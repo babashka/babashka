@@ -19,6 +19,8 @@
    [babashka.impl.datafy :refer [datafy-namespace]]
    [babashka.impl.error-handler :refer [error-handler]]
    [babashka.impl.features :as features]
+   [babashka.impl.http-client :as http-client]
+   [babashka.impl.jetty :as jetty]
    [babashka.impl.pods :as pods]
    [babashka.impl.pprint :refer [pprint-namespace]]
    [babashka.impl.process :refer [process-namespace]]
@@ -29,7 +31,6 @@
    [babashka.impl.test :as t]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
    [babashka.nrepl.server :as nrepl-server]
-   [babashka.impl.http-client :as http-client]
    [babashka.wait :as wait]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
@@ -392,7 +393,8 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
        'clojure.datafy datafy-namespace
        'clojure.core.protocols protocols-namespace
        'babashka.process process-namespace
-       'babashka.http-client http-client/http-client-namespace}
+       'babashka.http-client http-client/http-client-namespace
+       'ring.adapter.jetty jetty/jetty-namespace}
     features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace))
     features/yaml? (assoc 'clj-yaml.core @(resolve 'babashka.impl.yaml/yaml-namespace)
                           'flatland.ordered.map @(resolve 'babashka.impl.ordered/ordered-map-ns))
