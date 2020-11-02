@@ -1,7 +1,7 @@
 {:paths ["src" "feature-xml" "feature-core-async"
          "feature-yaml" "feature-csv" "feature-transit"
          "feature-java-time" "feature-java-nio"
-         "feature-httpkit-client" "feature-httpkit-server"
+         ;;"feature-httpkit-client" "feature-httpkit-server"
          "feature-lanterna"
          "sci/src" "babashka.curl/src" "pods/src"
          "babashka.nrepl/src"
@@ -24,7 +24,7 @@
         org.postgresql/postgresql {:mvn/version "42.2.18"}
         org.hsqldb/hsqldb {:mvn/version "2.5.1"}
         datascript/datascript {:mvn/version "1.0.1"}
-        http-kit/http-kit {:mvn/version "2.5.0"}
+        ;;http-kit/http-kit {:mvn/version "2.5.0"}
         babashka/clojure-lanterna {:mvn/version "0.9.8-SNAPSHOT"}
         org.clojure/math.combinatorics {:mvn/version "0.1.6"}
         ring/ring-core {:mvn/version "1.8.1"}

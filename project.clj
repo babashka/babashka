@@ -40,10 +40,10 @@
                                :dependencies [[com.cognitect/transit-clj "1.0.324"]]}
              :feature/datascript {:source-paths ["feature-datascript"]
                                   :dependencies [[datascript "1.0.1"]]}
-             :feature/httpkit-client {:source-paths ["feature-httpkit-client"]
-                                      :dependencies [[http-kit "2.5.0"]]}
-             :feature/httpkit-server {:source-paths ["feature-httpkit-server"]
-                                      :dependencies [[http-kit "2.5.0"]]}
+             ;; :feature/httpkit-client {:source-paths ["feature-httpkit-client"]
+             ;;                          :dependencies [[http-kit "2.5.0"]]}
+             ;; :feature/httpkit-server {:source-paths ["feature-httpkit-server"]
+             ;;                          :dependencies [[http-kit "2.5.0"]]}
              :feature/lanterna {:source-paths ["feature-lanterna"]
                                 :dependencies [[babashka/clojure-lanterna "0.9.8-SNAPSHOT"]]}
 
@@ -56,8 +56,8 @@
                     :feature/csv
                     :feature/transit
                     :feature/datascript
-                    :feature/httpkit-client
-                    :feature/httpkit-server
+                    ;; :feature/httpkit-client
+                    ;; :feature/httpkit-server
                     {:dependencies [[clj-commons/conch "0.9.2"]
                                     [com.clojure-goes-fast/clj-async-profiler "0.4.1"]
                                     [com.opentable.components/otj-pg-embedded "0.13.3"]]}]

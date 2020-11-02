@@ -156,9 +156,9 @@
                  'version-clj.split-test
                  'version-clj.via-use-test)
 
-;;;; httpkit client
+;; ;;;; httpkit client
 
-(test-namespaces 'httpkit.client-test)
+;; (test-namespaces 'httpkit.client-test)
 
 ;;;; final exit code
 
