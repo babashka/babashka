@@ -85,10 +85,10 @@
 (when features/datascript?
   (require '[babashka.impl.datascript]))
 
-(when features/httpkit-client?
+#_(when features/httpkit-client?
   (require '[babashka.impl.httpkit-client]))
 
-(when features/httpkit-server?
+#_(when features/httpkit-server?
   (require '[babashka.impl.httpkit-server]))
 
 (when features/lanterna?
@@ -405,9 +405,9 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
     features/csv?  (assoc 'clojure.data.csv @(resolve 'babashka.impl.csv/csv-namespace))
     features/transit? (assoc 'cognitect.transit @(resolve 'babashka.impl.transit/transit-namespace))
     features/datascript? (assoc 'datascript.core @(resolve 'babashka.impl.datascript/datascript-namespace))
-    features/httpkit-client? (assoc 'org.httpkit.client @(resolve 'babashka.impl.httpkit-client/httpkit-client-namespace)
-                                    'org.httpkit.sni-client @(resolve 'babashka.impl.httpkit-client/sni-client-namespace))
-    features/httpkit-server? (assoc 'org.httpkit.server @(resolve 'babashka.impl.httpkit-server/httpkit-server-namespace))
+    ;; features/httpkit-client? (assoc 'org.httpkit.client @(resolve 'babashka.impl.httpkit-client/httpkit-client-namespace)
+    ;;                                'org.httpkit.sni-client @(resolve 'babashka.impl.httpkit-client/sni-client-namespace))
+    ;; features/httpkit-server? (assoc 'org.httpkit.server @(resolve 'babashka.impl.httpkit-server/httpkit-server-namespace))
     features/lanterna? (assoc 'lanterna.screen @(resolve 'babashka.impl.lanterna/lanterna-screen-namespace)
                               'lanterna.terminal @(resolve 'babashka.impl.lanterna/lanterna-terminal-namespace)
                               'lanterna.constants @(resolve 'babashka.impl.lanterna/lanterna-constants-namespace))))
