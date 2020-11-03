@@ -297,8 +297,8 @@
                    java.nio.file.FileSystem
                    (instance? java.nio.file.PathMatcher v)
                    java.nio.file.PathMatcher
-                   (instance? java.util.stream.Stream v)
-                   java.util.stream.Stream)))))
+                   (instance? java.util.stream.BaseStream v)
+                   java.util.stream.BaseStream)))))
 
 (def class-map (gen-class-map))
 
