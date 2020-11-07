@@ -335,8 +335,8 @@ $ cat script.clj
 
 ### Input and output flags
 
-See [io-flags.md](doc/io-flags.md) for detailed documentation about input and
-output flags.
+See [io-flags.md](doc/io-flags.md) for detailed documentation about `*input*`
+and the associated flags.
 
 ### Current file path
 
