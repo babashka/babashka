@@ -335,29 +335,8 @@ $ cat script.clj
 
 ### Input and output flags
 
-In one-liners the `*input*` value may come in handy. It contains the input read from stdin as EDN by default. If you want to read in text, use the `-i` flag, which binds `*input*` to a lazy seq of lines of text. If you want to read multiple EDN values, use the `-I` flag. The `-o` option prints the result as lines of text. The `-O` option prints the result as lines of EDN values.
-
-> **Note:** `*input*` is only available in the `user` namespace, on other namespaces use `*in*`.
-
-The following table illustrates the combination of options for commands of the form
-
-    echo "{{Input}}" | bb {{Input flags}} {{Output flags}} "*input*"
-
-| Input          | Input flags | Output flag | `*input*`     | Output   |
-|----------------|-------------|-------------|---------------|----------|
-| `{:a 1}` <br> `{:a 2}` |             |             | `{:a 1}`      | `{:a 1}` |
-| hello <br> bye | `-i`        |             | `("hello" "bye")` |  `("hello" "bye")` |
-| hello <br> bye | `-i`        |  `-o`       | `("hello" "bye")` |  hello <br> bye  |
-| `{:a 1}` <br> `{:a 2}` | `-I`        |        | `({:a 1} {:a 2})` |  `({:a 1} {:a 2})`   |
-| `{:a 1}` <br> `{:a 2}` | `-I` |  `-O`      | `({:a 1} {:a 2})` |  `{:a 1}` <br> `{:a 2}`   |
-
-When combined with the `--stream` option, the expression is executed for each value in the input:
-
-``` clojure
-$ echo '{:a 1} {:a 2}' | bb --stream '*input*'
-{:a 1}
-{:a 2}
-```
+See [io-flags.md](doc/io-flags.md) for detailed documentation about input and
+output flags.
 
 ### Current file path
 
