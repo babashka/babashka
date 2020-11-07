@@ -91,8 +91,7 @@ $ bb '(vec (dedupe *input*))' <<< '[1 1 1 1 2]'
 [1 2]
 ```
 
-Read more about input and output flags
-[here](https://github.com/borkdude/babashka/#input-and-output-flags).
+Read more about input and output flags [here](doc/io-flags.md).
 
 Execute a script. E.g. print the current time in California using the
 `java.time` API:
