@@ -869,9 +869,9 @@ For making HTTP requests you can use:
 ### Choosing the right client
 
 If memory usage is a concern and you are downloading big files, choose
-`babashka.curl` with `:as :stream` over `org.httpkit.client` since httpkit holds
-the entire response in memory at once. Let's download a 200mb file with 10mb
-heap size:
+`babashka.curl` with `:as :stream` over `org.httpkit.client` since http-kit
+holds the entire response in memory at once. Let's download a 200mb file with
+10mb heap size:
 
 ``` shell
 $ time bb -Xmx10m -e '(io/copy (:body (curl/get "http://ipv4.download.thinkbroadband.com/200MB.zip" {:as :stream})) (io/file "/tmp/200mb.zip"))'
