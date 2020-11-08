@@ -863,8 +863,33 @@ For making HTTP requests you can use:
 - [org.httpkit.client](https://github.com/http-kit/http-kit)
 - `slurp` for simple `GET` requests
 - [clj-http-lite](https://github.com/babashka/clj-http-lite) as a library.
-- `clojure.java.shell` or `java.lang.ProcessBuilder` for shelling out to your
+- `clojure.java.shell` or `babashka.process` for shelling out to your
   favorite command line http client
+
+### Choosing the right client
+
+If memory usage is a concern and you are downloading big files, choose
+`babashka.curl` with `:as :stream` over `org.httpkit.client` since httpkit holds
+the entire response in memory at once:
+
+``` shell
+$ time bb -e '(io/copy (:body (curl/get "http://ipv4.download.thinkbroadband.com/200MB.zip" {:as :stream})) (io/file "/tmp/200mb.zip"))'
+...
+max memory:                20064 MB
+
+$ time bb -e '(io/copy (:body @(org.httpkit.client/get "http://ipv4.download.thinkbroadband.com/200MB.zip" {:as :stream})) (io/file "/tmp/200mb.zip"))'
+bb -e    0.87s  user 1.26s system 23% cpu 9.150 total
+max memory:                686584 MB
+```
+
+If your script creates many requests with relatively small payloads, choose
+`org.httpkit.client` over `babashka.curl` since `babashka.curl` creates an OS
+process to shell out to curl for each request.
+
+In the future babashka (1.0.0?) may come with an HTTP client based on the JVM 11
+`java.net.http` package that ticks all the boxes (async, HTTP/2, websockets,
+multi-part file uploads, sane memory usage) and is a suitable replacement for
+all of the above options.
 
 ### HTTP over Unix sockets
 
