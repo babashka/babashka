@@ -870,16 +870,21 @@ For making HTTP requests you can use:
 
 If memory usage is a concern and you are downloading big files, choose
 `babashka.curl` with `:as :stream` over `org.httpkit.client` since httpkit holds
-the entire response in memory at once:
+the entire response in memory at once. Let's download a 200mb file with 10mb
+heap size:
 
 ``` shell
-$ time bb -e '(io/copy (:body (curl/get "http://ipv4.download.thinkbroadband.com/200MB.zip" {:as :stream})) (io/file "/tmp/200mb.zip"))'
-...
-max memory:                20064 MB
+$ time bb -Xmx10m -e '(io/copy (:body (curl/get "http://ipv4.download.thinkbroadband.com/200MB.zip" {:as :stream})) (io/file "/tmp/200mb.zip"))'
+```
 
-$ time bb -e '(io/copy (:body @(org.httpkit.client/get "http://ipv4.download.thinkbroadband.com/200MB.zip" {:as :stream})) (io/file "/tmp/200mb.zip"))'
-bb -e    0.87s  user 1.26s system 23% cpu 9.150 total
-max memory:                686584 MB
+With `babashka.curl` this forks fine. However with `org.httpkit.client` that
+won't work. Not even 190mb of heap will do:
+
+``` shell
+
+$ time bb -Xmx190m -e '(io/copy (:body @(org.httpkit.client/get "http://ipv4.download.thinkbroadband.com/200MB.zip" {:as :stream})) (io/file "/tmp/200mb.zip"))'
+Sun Nov 08 23:01:46 CET 2020 [client-loop] ERROR - select exception, should not happen
+java.lang.OutOfMemoryError: Array allocation too large.
 ```
 
 If your script creates many requests with relatively small payloads, choose
@@ -889,7 +894,8 @@ process to shell out to curl for each request.
 In the future babashka (1.0.0?) may come with an HTTP client based on the JVM 11
 `java.net.http` package that ticks all the boxes (async, HTTP/2, websockets,
 multi-part file uploads, sane memory usage) and is a suitable replacement for
-all of the above options.
+all of the above options. If you know about a GraalVM-friendly feature-complete
+well-maintained library, please reach out!
 
 ### HTTP over Unix sockets
 
