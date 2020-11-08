@@ -874,7 +874,7 @@ holds the entire response in memory at once. Let's download a 200mb file with
 10mb heap size:
 
 ``` shell
-$ time bb -Xmx10m -e '(io/copy (:body (curl/get "http://ipv4.download.thinkbroadband.com/200MB.zip" {:as :stream})) (io/file "/tmp/200mb.zip"))'
+$ bb -Xmx10m -e '(io/copy (:body (curl/get "http://ipv4.download.thinkbroadband.com/200MB.zip" {:as :stream})) (io/file "/tmp/200mb.zip"))'
 ```
 
 With `babashka.curl` this forks fine. However with `org.httpkit.client` that
@@ -882,7 +882,7 @@ won't work. Not even 190mb of heap will do:
 
 ``` shell
 
-$ time bb -Xmx190m -e '(io/copy (:body @(org.httpkit.client/get "http://ipv4.download.thinkbroadband.com/200MB.zip" {:as :stream})) (io/file "/tmp/200mb.zip"))'
+$ bb -Xmx190m -e '(io/copy (:body @(org.httpkit.client/get "http://ipv4.download.thinkbroadband.com/200MB.zip" {:as :stream})) (io/file "/tmp/200mb.zip"))'
 Sun Nov 08 23:01:46 CET 2020 [client-loop] ERROR - select exception, should not happen
 java.lang.OutOfMemoryError: Array allocation too large.
 ```
