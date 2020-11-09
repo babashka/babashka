@@ -887,8 +887,8 @@ java.lang.OutOfMemoryError: Array allocation too large.
 ```
 
 If your script creates many requests with relatively small payloads, choose
-`org.httpkit.client` over `babashka.curl` since `babashka.curl` creates an OS
-process to shell out to curl for each request.
+`org.httpkit.client` over `babashka.curl` since `babashka.curl` creates a `curl`
+process for each request.
 
 In the future babashka (1.0.0?) may come with an HTTP client based on the JVM 11
 `java.net.http` package that ticks all the boxes (async, HTTP/2, websockets,
