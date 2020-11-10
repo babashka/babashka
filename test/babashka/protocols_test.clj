@@ -1,10 +1,10 @@
 (ns babashka.protocols-test
   (:require  [babashka.test-utils :refer [bb]]
+             [clojure.edn :as edn]
              [clojure.test :as t :refer [deftest is]]))
 
 (deftest safe-datafy
-  (is (bb
-       "
+  (is (apply = 100000 (map count (edn/read-string (bb nil "
 (ns safe-datafy
   (:require [clojure.core.protocols :as p]
             [clojure.datafy :as df]))
@@ -17,6 +17,8 @@
     (vary-meta merge (meta s) {:nextjournal.seq/truncated? true})))
 
 (extend-protocol p/Datafiable
+  clojure.lang.Cons
+  (df/datafy [s] (infinite-sequence-chunking s))
   clojure.lang.LazySeq
   (df/datafy [s] (infinite-sequence-chunking s))
   clojure.lang.Iterate
@@ -35,5 +37,6 @@
       (vary-meta (fn [m] (merge (dissoc m :clojure.datafy/class :clojure.datafy/obj)
                                 (meta x)))))))
 
-[(safe-datafy (range))
- (safe-datafy (repeat 1))]")))
+[(doall (safe-datafy (range)))
+ (doall (safe-datafy (repeat 1)))
+ (doall (safe-datafy (cons -1 (range))))]"))))))
