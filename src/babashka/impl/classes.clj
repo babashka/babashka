@@ -241,7 +241,8 @@
     :methods [borkdude.graal.LockFix] ;; support for locking
 
     :fields [clojure.lang.PersistentQueue]
-    :instance-checks [clojure.lang.IObj
+    :instance-checks [clojure.lang.Cycle
+                      clojure.lang.IObj
                       clojure.lang.IFn
                       clojure.lang.IPending
                       ;; clojure.lang.IDeref
@@ -252,9 +253,13 @@
                       clojure.lang.IPersistentSet
                       clojure.lang.IPersistentVector
                       clojure.lang.IRecord
+                      clojure.lang.IRef
                       clojure.lang.ISeq
+                      clojure.lang.Iterate
+                      clojure.lang.LazySeq
                       clojure.lang.Named
                       clojure.lang.Keyword
+                      clojure.lang.Repeat
                       clojure.lang.Symbol
                       clojure.lang.Sequential
                       java.util.List]
