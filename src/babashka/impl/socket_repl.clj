@@ -15,6 +15,7 @@
         host+port (if-not host (str "localhost:" port)
                           host+port)
         socket (server/start-server
+                sci-ctx
                 {:address host
                  :port port
                  :name "bb"
