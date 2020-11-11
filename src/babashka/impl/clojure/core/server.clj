@@ -101,3 +101,77 @@
     (when-let [server-socket ^ServerSocket (get s :socket)]
       (.close server-socket)))
   (reset! server nil))
+
+(defn- ex->data
+  [ex phase]
+  (assoc (Throwable->map ex) :phase phase))
+
+(defn prepl
+  "a REPL with structured output (for programs)
+  reads forms to eval from in-reader (a LineNumberingPushbackReader)
+  Closing the input or passing the form :repl/quit will cause it to return
+  Calls out-fn with data, one of:
+  {:tag :ret
+   :val val ;;eval result
+   :ns ns-name-string
+   :ms long ;;eval time in milliseconds
+   :form string ;;iff successfully read
+   :clojure.error/phase (:execution et al per clojure.main/ex-triage) ;;iff error occurred
+  }
+  {:tag :out
+   :val string} ;chars from during-eval *out*
+  {:tag :err
+   :val string} ;chars from during-eval *err*
+  {:tag :tap
+   :val val} ;values from tap>
+  You might get more than one :out or :err per eval, but exactly one :ret
+  tap output can happen at any time (i.e. between evals)
+  If during eval an attempt is made to read *in* it will read from in-reader unless :stdin is supplied
+  Alpha, subject to change."
+  {:added "1.10"}
+  [ctx in-reader out-fn & {:keys [stdin]}]
+  (let [EOF (Object.)
+        tapfn #(out-fn {:tag :tap :val %1})]
+    (sci/with-bindings {sci/in (or stdin in-reader)
+                        sci/out (PrintWriter-on #(out-fn {:tag :out :val %1}) nil)
+                        sci/err (PrintWriter-on #(out-fn {:tag :err :val %1}) nil)
+                        vars/current-ns (vars/->SciNamespace 'user nil)}
+      (try
+        (add-tap tapfn)
+        (loop []
+          (when (try
+                  (let [[form s] [(sci/parse-next ctx in-reader {:eof EOF}) ""]]
+                    (try
+                      (when-not (identical? form EOF)
+                        (let [start (System/nanoTime)
+                              ret (sci/eval-form ctx form)
+                              ms (quot (- (System/nanoTime) start) 1000000)]
+                          (when-not (= :repl/quit ret)
+                            ;; TODO
+                            ;; (set! *3 *2)
+                            ;; (set! *2 *1)
+                            ;; (set! *1 ret)
+                            (out-fn {:tag :ret
+                                     :val (if (instance? Throwable ret)
+                                            (Throwable->map ret)
+                                            ret)
+                                     :ns (str (vars/current-ns-name))
+                                     :ms ms
+                                     :form s})
+                            true)))
+                      (catch Throwable ex
+                        (prn (ex-message ex))
+                        (set! *e ex)
+                        (out-fn {:tag :ret :val (ex->data ex (or (-> ex ex-data :clojure.error/phase) :execution))
+                                 :ns (str (.name *ns*)) :form s
+                                 :exception true})
+                        true)))
+                  (catch Throwable ex
+                    (set! *e ex)
+                    (out-fn {:tag :ret :val (ex->data ex :read-source)
+                             :ns (str (.name *ns*))
+                             :exception true})
+                    true))
+            (recur)))
+        (finally
+          (remove-tap tapfn))))))

@@ -13,6 +13,7 @@
    [babashka.impl.clojure.main :as clojure-main :refer [demunge]]
    [babashka.impl.clojure.stacktrace :refer [stacktrace-namespace]]
    [babashka.impl.clojure.zip :refer [zip-namespace]]
+   [babashka.impl.clojure.core.server :as server]
    [babashka.impl.common :as common]
    [babashka.impl.curl :refer [curl-namespace]]
    [babashka.impl.data :as data]
@@ -367,6 +368,11 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
               :cp new-cp})))
   nil)
 
+(def clojure-core-server
+  {'prepl ^{:sci.impl/op :needs-ctx} (fn [& args]
+                                       ;; (prn (count args))
+                                       (apply server/prepl args))})
+
 (def namespaces
   (cond->
       {'clojure.tools.cli tools-cli-namespace
@@ -380,7 +386,10 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
        'clojure.stacktrace stacktrace-namespace
        'clojure.zip zip-namespace
        'clojure.main {'demunge demunge
-                      'repl-requires clojure-main/repl-requires}
+                      'repl-requires clojure-main/repl-requires
+                      'repl ^{:sci.impl/op :needs-ctx} (fn [ctx & opts]
+                                                         (let [opts (apply hash-map opts)]
+                                                           (repl/start-repl! ctx opts)))}
        'clojure.test t/clojure-test-namespace
        'babashka.classpath {'add-classpath add-classpath*}
        'clojure.pprint pprint-namespace
@@ -390,6 +399,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
        'clojure.java.browse browse-namespace
        'clojure.datafy datafy-namespace
        'clojure.core.protocols protocols-namespace
+       'clojure.core.server clojure-core-server
        'babashka.process process-namespace}
     features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace))
     features/yaml? (assoc 'clj-yaml.core @(resolve 'babashka.impl.yaml/yaml-namespace)
@@ -540,12 +550,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                                                     (cp/getResource loader [path] {:url? true})))))
                                   (assoc-in ['user (with-meta '*input*
                                                      (when-not stream?
-                                                       {:sci.impl/deref! true}))] input-var)
-                                  (assoc-in ['clojure.main 'repl]
-                                            ^{:sci.impl/op :needs-ctx}
-                                            (fn [ctx & opts]
-                                              (let [opts (apply hash-map opts)]
-                                                (repl/start-repl! ctx opts)))))
+                                                       {:sci.impl/deref! true}))] input-var))
                   :env env
                   :features #{:bb :clj}
                   :classes classes/class-map
