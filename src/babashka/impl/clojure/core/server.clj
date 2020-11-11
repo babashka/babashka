@@ -131,7 +131,8 @@
   {:added "1.10"}
   [ctx in-reader out-fn & {:keys [stdin]}]
   (let [EOF (Object.)
-        tapfn #(out-fn {:tag :tap :val %1})]
+        tapfn #(out-fn {:tag :tap :val %1})
+        reader (sci/reader in-reader)]
     (sci/with-bindings {sci/in (or stdin in-reader)
                         sci/out (PrintWriter-on #(out-fn {:tag :out :val %1}) nil)
                         sci/err (PrintWriter-on #(out-fn {:tag :err :val %1}) nil)
@@ -140,7 +141,7 @@
         (add-tap tapfn)
         (loop []
           (when (try
-                  (let [[form s] [(sci/parse-next ctx in-reader {:eof EOF}) ""]]
+                  (let [[form s] [(sci/parse-next ctx reader {:eof EOF}) ""]]
                     (try
                       (when-not (identical? form EOF)
                         (let [start (System/nanoTime)
