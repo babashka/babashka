@@ -13,9 +13,9 @@
       :author "Alex Miller"
       :no-doc true}
     babashka.impl.clojure.core.server
-  (:refer-clojure :exclude [locking])
   (:require [sci.core :as sci]
-            [sci.impl.vars :as vars])
+            [sci.impl.vars :as vars]
+            [sci.impl.parser :as p])
   (:import
    [clojure.lang LineNumberingPushbackReader]
    [java.net InetAddress Socket ServerSocket SocketException]
@@ -31,6 +31,15 @@
      (.setDaemon ~daemon)
      (.start)))
 
+(defn- resolve-fn [ctx valf]
+  (if (symbol? valf)
+    (let [fully-qualified (p/fully-qualify ctx valf)]
+      (or (some-> ctx :env deref :namespaces
+                  (get (symbol (namespace fully-qualified)))
+                  (get (symbol (name fully-qualified))))
+          (throw (Exception. (str "can't resolve: " valf)))))
+    valf))
+
 (defn- accept-connection
   "Start accept function, to be invoked on a client thread, given:
     conn - client socket
@@ -41,18 +50,22 @@
     err - err stream
     accept - accept fn symbol to invoke
     args - to pass to accept-fn"
-  [^Socket conn client-id in out err accept args]
-  (try
-    (sci/with-bindings {sci/in in
-                        sci/out out
-                        sci/err err
-                        vars/current-ns (vars/->SciNamespace 'user nil)}
-      (swap! server assoc-in [:sessions client-id] {})
-      (apply accept args))
-    (catch SocketException _disconnect)
-    (finally
-      (swap! server update-in [:sessions] dissoc client-id)
-      (.close conn))))
+  [ctx ^Socket conn client-id in out err accept args]
+  (let [accept (resolve-fn ctx accept)]
+    (try
+      #_(binding [*out* out]
+        (println "hello")) ;; this works, netcat sees it
+      (sci/with-bindings {sci/in in
+                          sci/out out
+                          sci/err err
+                          vars/current-ns (vars/->SciNamespace 'user nil)}
+
+        (swap! server assoc-in [:sessions client-id] {})
+        (apply accept args))
+      (catch SocketException _disconnect)
+      (finally
+        (swap! server update-in [:sessions] dissoc client-id)
+        (.close conn)))))
 
 (defn start-server
   "Start a socket server given the specified opts:
@@ -65,7 +78,7 @@
     :server-daemon Is server thread a daemon?, defaults to true
     :client-daemon Are client threads daemons?, defaults to true
    Returns server socket."
-  [opts]
+  [ctx opts]
   (let [{:keys [address port name accept args bind-err server-daemon client-daemon]
          :or {bind-err true
               server-daemon true
@@ -85,7 +98,7 @@
                     client-id (str client-counter)]
                 (thread
                   (str "Clojure Connection " name " " client-id) client-daemon
-                  (accept-connection conn client-id in out (if bind-err out *err*) accept args)))
+                  (accept-connection ctx conn client-id in out (if bind-err out *err*) accept args)))
               (catch SocketException _disconnect))
             (recur (inc client-counter))))
         (finally
@@ -138,7 +151,7 @@
                         sci/err (PrintWriter-on #(out-fn {:tag :err :val %1}) nil)
                         vars/current-ns (vars/->SciNamespace 'user nil)}
       (try
-        (add-tap tapfn)
+        (add-tap tapfn) ;; TODO: should this be sci's tap?
         (loop []
           (when (try
                   (let [[form s] [(sci/parse-next ctx reader {:eof EOF}) ""]]
@@ -162,7 +175,7 @@
                             true)))
                       (catch Throwable ex
                         (prn (ex-message ex))
-                        (set! *e ex)
+                        ;; TODO: (set! *e ex)
                         (out-fn {:tag :ret :val (ex->data ex (or (-> ex ex-data :clojure.error/phase) :execution))
                                  :ns (str (.name *ns*)) :form s
                                  :exception true})
@@ -176,3 +189,29 @@
             (recur)))
         (finally
           (remove-tap tapfn))))))
+
+(defn io-prepl
+  "prepl bound to *in* and *out*, suitable for use with e.g. server/repl (socket-repl).
+  :ret and :tap vals will be processed by valf, a fn of one argument
+  or a symbol naming same (default pr-str)
+  Alpha, subject to change."
+  {:added "1.10"}
+  [ctx & {:keys [valf] :or {valf pr-str}}]
+  (let [valf (resolve-fn ctx valf)
+        out @sci/out
+        lock (Object.)]
+    #_(binding [*out* out]
+      (println "still good?")) ;; this also prints to netcat
+    (prepl ctx @sci/in
+           (fn [m]
+             (binding [*out* out *flush-on-newline* true, *print-readably* true]
+               ;; we're binding *out* to the out, which was the original
+               ;; sci/out, because we're using Clojure's regular prn below
+               (locking lock
+                 (prn (if (#{:ret :tap} (:tag m))
+                        (try
+                          (assoc m :val (valf (:val m)))
+                          (catch Throwable ex
+                            (assoc m :val (ex->data ex :print-eval-result)
+                                   :exception true)))
+                        m))))))))

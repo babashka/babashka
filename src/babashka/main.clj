@@ -368,10 +368,16 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
               :cp new-cp})))
   nil)
 
+
+;;(def ^:private server-ns-obj (sci/create-ns 'clojure.core.server nil))
+
 (def clojure-core-server
   {'prepl ^{:sci.impl/op :needs-ctx} (fn [& args]
-                                       ;; (prn (count args))
-                                       (apply server/prepl args))})
+                                       (apply server/prepl args))
+   'io-prepl ^{:sci.impl/op :needs-ctx} (fn [& args]
+                                          (apply server/io-prepl args))
+   'start-server ^{:sci.impl/op :needs-ctx} (fn [& args]
+                                              (apply server/start-server args))})
 
 (def namespaces
   (cond->
