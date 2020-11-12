@@ -97,7 +97,6 @@
           java.io.OutputStream
           java.io.FileReader
           java.io.InputStreamReader
-          java.io.PrintStream
           java.io.PushbackInputStream
           java.io.Reader
           java.io.SequenceInputStream
