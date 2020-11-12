@@ -282,6 +282,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
  :feature/jdbc       %s
  :feature/postgresql %s
  :feature/hsqldb     %s
+ :feature/oracledb   %s
  :feature/httpkit-client %s
  :feature/lanterna %s}")
     version
@@ -294,6 +295,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
     features/jdbc?
     features/postgresql?
     features/hsqldb?
+    features/oracledb?
     features/httpkit-client?
     features/lanterna?)))
 
@@ -670,5 +672,5 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
 
 ;;;; Scratch
 
-(comment
-  )
+(comment)
+

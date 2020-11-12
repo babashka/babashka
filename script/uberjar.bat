@@ -28,6 +28,12 @@ if "%BABASHKA_FEATURE_HSQLDB%"=="true" (
   set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/hsqldb
 )
 
+if "%BABASHKA_FEATURE_ORACLEDB%"=="true" (
+  set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/oracledb
+) else (
+  set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/oracledb
+)
+
 if not "%BABASHKA_FEATURE_XML%"=="false" (
   set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/xml
 ) else (

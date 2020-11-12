@@ -75,6 +75,7 @@ then
     export BABASHKA_FEATURE_JDBC=false
     export BABASHKA_FEATURE_POSTGRESQL=false
     export BABASHKA_FEATURE_HSQLDB=false
+    export BABASHKA_FEATURE_ORACLEDB=false
     export BABASHKA_FEATURE_XML=false
     export BABASHKA_FEATURE_YAML=false
     export BABASHKA_FEATURE_CORE_ASYNC=false
