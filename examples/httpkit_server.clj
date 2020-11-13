@@ -1,5 +1,3 @@
-(System/setProperty "babashka.httpkit-server.warning" "false")
-
 (ns examples.httpkit-server
   (:require [clojure.pprint :refer [pprint]]
             [org.httpkit.server :as server]))
