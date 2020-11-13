@@ -145,7 +145,8 @@
   [ctx in-reader out-fn & {:keys [stdin]}]
   (let [EOF (Object.)
         tapfn #(out-fn {:tag :tap :val %1})
-        reader (sci/reader in-reader)]
+        ;; this was a workaround for TRDR-63
+        #_#_reader (sci/reader in-reader)]
     (sci/with-bindings {sci/in (or stdin in-reader)
                         sci/out (PrintWriter-on #(out-fn {:tag :out :val %1}) nil)
                         sci/err (PrintWriter-on #(out-fn {:tag :err :val %1}) nil)
@@ -154,7 +155,7 @@
         (add-tap tapfn) ;; TODO: should this be sci's tap?
         (loop []
           (when (try
-                  (let [[form s] [(sci/parse-next ctx reader {:eof EOF}) ""]]
+                  (let [[form s] [(sci/parse-next ctx in-reader {:eof EOF}) ""]]
                     (try
                       (when-not (identical? form EOF)
                         (let [start (System/nanoTime)
