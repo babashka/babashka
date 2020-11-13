@@ -334,3 +334,14 @@ $ examples/image_viewer.clj
 ```
 
 See [image_viewer.clj](image_viewer.clj).
+
+### Torrent viewer
+
+Shows the content of a torrent file. Note that pieces' content is hidden.
+
+Example usage:
+``` shell
+$ examples/torrent-viewer.clj file.torrent
+```
+
+See [torrent-viewer.clj](torrent-viewer.clj).
