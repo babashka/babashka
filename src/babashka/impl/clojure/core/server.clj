@@ -14,12 +14,12 @@
       :no-doc true}
     babashka.impl.clojure.core.server
   (:require [sci.core :as sci]
-            [sci.impl.vars :as vars]
-            [sci.impl.parser :as p])
+            [sci.impl.parser :as p]
+            [sci.impl.vars :as vars])
   (:import
    [clojure.lang LineNumberingPushbackReader]
-   [java.net InetAddress Socket ServerSocket SocketException]
-   [java.io BufferedWriter InputStreamReader OutputStreamWriter]))
+   [java.io BufferedWriter InputStreamReader OutputStreamWriter]
+   [java.net InetAddress Socket ServerSocket SocketException]))
 
 (set! *warn-on-reflection* true)
 
@@ -145,7 +145,7 @@
   [ctx in-reader out-fn & {:keys [stdin]}]
   (let [EOF (Object.)
         tapfn #(out-fn {:tag :tap :val %1})
-        ;; this was a workaround for TRDR-63
+        ;; this was a workaround for TRDR63
         #_#_reader (sci/reader in-reader)]
     (sci/with-bindings {sci/in (or stdin in-reader)
                         sci/out (PrintWriter-on #(out-fn {:tag :out :val %1}) nil)

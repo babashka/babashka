@@ -555,6 +555,10 @@
 (deftest java-stream-test
   (is (every? number? (bb nil "(take 2 (iterator-seq (.iterator (.doubles (java.util.Random.)))))"))))
 
+(deftest read+string-test
+  (is (= '[:user/foo "::foo"]
+         (bb nil "(read+string (clojure.lang.LineNumberingPushbackReader. (java.io.StringReader. \"::foo\")))"))))
+
 ;;;; Scratch
 
 (comment
