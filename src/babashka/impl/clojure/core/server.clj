@@ -155,6 +155,7 @@
         (add-tap tapfn) ;; TODO: should this be sci's tap?
         (loop []
           (when (try
+                  ;; TODO: read+string
                   (let [[form s] [(sci/parse-next ctx in-reader {:eof EOF}) ""]]
                     (try
                       (when-not (identical? form EOF)
