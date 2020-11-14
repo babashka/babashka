@@ -13,7 +13,8 @@
       :author "Alex Miller"
       :no-doc true}
     babashka.impl.clojure.core.server
-  (:require [sci.core :as sci]
+  (:require [babashka.impl.clojure.core :as core]
+            [sci.core :as sci]
             [sci.impl.parser :as p]
             [sci.impl.vars :as vars])
   (:import
@@ -152,11 +153,11 @@
                         sci/err (PrintWriter-on #(out-fn {:tag :err :val %1}) nil)
                         vars/current-ns (vars/->SciNamespace 'user nil)}
       (try
-        (add-tap tapfn) ;; TODO: should this be sci's tap?
+        ;; babashka uses Clojure's global tap system so this should be ok
+        (add-tap tapfn)
         (loop []
           (when (try
-                  ;; TODO: read+string
-                  (let [[form s] [(sci/parse-next ctx in-reader {:eof EOF}) ""]]
+                  (let [[form s] (core/read+string ctx in-reader false EOF)]
                     (try
                       (when-not (identical? form EOF)
                         (let [start (System/nanoTime)
@@ -202,8 +203,6 @@
   (let [valf (resolve-fn ctx valf)
         out @sci/out
         lock (Object.)]
-    #_(binding [*out* out]
-      (println "still good?")) ;; this also prints to netcat
     (prepl ctx @sci/in
            (fn [m]
              (binding [*out* out *flush-on-newline* true, *print-readably* true]
