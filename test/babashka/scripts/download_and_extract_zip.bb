@@ -15,11 +15,11 @@
       _ (.setConnectTimeout conn 2000)
       _ (.setReadTimeout conn 2000)]
   (.connect conn)
-  (binding [*out* (io/writer System/out)]
+  (binding [*out* (io/writer System/err)]
     (prn :before))
   (with-open [is (.getInputStream conn)]
     (io/copy is zip-file))
-  (binding [*out* (io/writer System/out)]
+  (binding [*out* (io/writer System/err)]
     (prn :after))
   (let [bb-file (io/file tmp-dir "bb-extracted")
         fs (java.nio.file.FileSystems/newFileSystem (.toPath zip-file) nil)
