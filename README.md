@@ -112,7 +112,7 @@ $ pst.clj
 05:17
 ```
 
-More examples can be found [here](doc/examples.md).
+More examples can be found [here](examples/README.md).
 
 ## Status
 
@@ -1076,9 +1076,8 @@ commit](https://github.com/borkdude/babashka/commit/02c7c51ad4b2b1ab9aa95c26a744
 - [closh](https://github.com/dundalek/closh)
 - [lumo](https://github.com/anmonteiro/lumo)
 
-## [Examples](doc/examples.md)
-
-A collection of example scripts.
+## Examples
+[A collection of example scripts](examples/README.md).
 
 ## Thanks
 
