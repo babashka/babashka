@@ -1,0 +1,26 @@
+#_
+{:datomic
+ {:url "datomic:sql://?jdbc:postgresql://localhost:5432/datomic?user=datomic&password=datomic"}
+ :source
+ {:account
+  {:rabbit
+   {:host "127.0.0.1"
+    :port 5672
+    :vhost "/z-broker"
+    :username "guest"
+    :password "guest"}}}
+ :answer 42}
+
+{:datomic {:url "CHANGE ME"}
+ :aws {:access-key "AND ME"
+       :secret-key "ME TOO"
+       :region "FILL ME IN AS WELL"
+       :visiblity-timeout-sec 30
+       :max-conn 50
+       :queue "cprop-dev"}
+ :io {:http {:pool {:socket-timeout 600000
+                    :conn-timeout :I-SHOULD-BE-A-NUMBER
+                    :conn-req-timeout 600000
+                    :max-total 200
+                    :max-per-route :ME-ALSO}}}
+ :other-things ["I am a vector and also like to place the substitute game"]}
