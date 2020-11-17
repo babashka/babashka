@@ -348,7 +348,7 @@ See [torrent-viewer.clj](torrent-viewer.clj).
 
 ### [cprop.clj](cprop.clj)
 
-This script uses [tolitius/cprop](https://github.com/tolitius/cprop) library. 
+This script uses [tolitius/cprop](https://github.com/tolitius/cprop) library.
 
 See [cprop.clj](cprop.clj)
 
@@ -368,4 +368,16 @@ Example usage:
 
 ``` shell
 $ cat src/babashka/main.clj | bb examples/fzf.clj
+```
+
+### [rofi](rofi.clj)
+
+Invoke [rofi](https://github.com/davatorium/rofi), a type-to-filter menu on linux, from babashka.
+
+See [rofi.clj](rofi.clj)
+
+Example usage:
+
+``` shell
+$ cat src/babashka/main.clj | bb examples/rofi.clj
 ```
