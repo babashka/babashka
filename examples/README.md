@@ -355,5 +355,17 @@ See [cprop.clj](cprop.clj)
 Example usage:
 
 ```shell
-cd ./examples && chmod +x cprop.clj && ./cprop.clj
+$ ( cd examples && bb cprop.clj )
+```
+
+### [fzf](fzf.clj)
+
+Invoke [fzf](https://github.com/junegunn/fzf), a command line fuzzy finder, from babashka.
+
+See [fzf.clj](fzf.clj)
+
+Example usage:
+
+``` shell
+$ cat src/babashka/main.clj | bb examples/fzf.clj
 ```
