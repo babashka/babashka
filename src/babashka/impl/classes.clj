@@ -93,8 +93,10 @@
           java.io.FilenameFilter
           java.io.FileNotFoundException
           java.io.InputStream
+          java.io.PipedInputStream
           java.io.IOException
           java.io.OutputStream
+          java.io.PipedOutputStream
           java.io.FileReader
           java.io.InputStreamReader
           java.io.PushbackInputStream
