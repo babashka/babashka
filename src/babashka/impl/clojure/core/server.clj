@@ -59,8 +59,7 @@
       (sci/with-bindings {sci/in in
                           sci/out out
                           sci/err err
-                          vars/current-ns (vars/->SciNamespace 'user nil)}
-
+                          sci/ns (sci/create-ns 'user nil)}
         (swap! server assoc-in [:sessions client-id] {})
         (apply accept args))
       (catch SocketException _disconnect)
@@ -145,13 +144,12 @@
   {:added "1.10"}
   [ctx in-reader out-fn & {:keys [stdin]}]
   (let [EOF (Object.)
-        tapfn #(out-fn {:tag :tap :val %1})
-        ;; this was a workaround for TRDR63
-        #_#_reader (sci/reader in-reader)]
+        tapfn #(out-fn {:tag :tap :val %1})]
     (sci/with-bindings {sci/in (or stdin in-reader)
                         sci/out (PrintWriter-on #(out-fn {:tag :out :val %1}) nil)
                         sci/err (PrintWriter-on #(out-fn {:tag :err :val %1}) nil)
-                        vars/current-ns (vars/->SciNamespace 'user nil)}
+                        sci/ns (sci/create-ns 'user nil)
+                        sci/print-length @sci/print-length}
       (try
         ;; babashka uses Clojure's global tap system so this should be ok
         (add-tap tapfn)
@@ -161,13 +159,23 @@
                     (try
                       (when-not (identical? form EOF)
                         (let [start (System/nanoTime)
-                              ret (sci/eval-form ctx form)
+                              ctx (update ctx
+                                          :env
+                                          (fn [env]
+                                            (swap! env update-in [:namespaces 'clojure.core]
+                                                   assoc
+                                                   '*1 *1
+                                                   '*2 *2
+                                                   '*3 *3
+                                                   '*e *e)
+                                            env))
+                              ret (sci/with-bindings {}
+                                    (sci/eval-form ctx form))
                               ms (quot (- (System/nanoTime) start) 1000000)]
                           (when-not (= :repl/quit ret)
-                            ;; TODO
-                            ;; (set! *3 *2)
-                            ;; (set! *2 *1)
-                            ;; (set! *1 ret)
+                            (set! *3 *2)
+                            (set! *2 *1)
+                            (set! *1 ret)
                             (out-fn {:tag :ret
                                      :val (if (instance? Throwable ret)
                                             (Throwable->map ret)
@@ -178,7 +186,7 @@
                             true)))
                       (catch Throwable ex
                         (prn (ex-message ex))
-                        ;; TODO: (set! *e ex)
+                        (set! *e ex)
                         (out-fn {:tag :ret :val (ex->data ex (or (-> ex ex-data :clojure.error/phase) :execution))
                                  :ns (str (.name *ns*)) :form s
                                  :exception true})
