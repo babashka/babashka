@@ -283,7 +283,7 @@ which finds unused vars. It uses
 $ bb examples/hsqldb_unused_vars.clj src
 
 |                   :VARS/NS |               :VARS/NAME |                     :VARS/FILENAME | :VARS/ROW | :VARS/COL |
-|----------------------------+--------------------------+------------------------------------+-----------+-----------|
+|----------------------------|--------------------------|------------------------------------|-----------|-----------|
 | babashka.impl.bencode.core |           read-netstring | src/babashka/impl/bencode/core.clj |       162 |         1 |
 | babashka.impl.bencode.core |          write-netstring | src/babashka/impl/bencode/core.clj |       201 |         1 |
 |      babashka.impl.classes | generate-reflection-file |      src/babashka/impl/classes.clj |       230 |         1 |
@@ -345,3 +345,27 @@ $ examples/torrent-viewer.clj file.torrent
 ```
 
 See [torrent-viewer.clj](torrent-viewer.clj).
+
+### [cprop.clj](cprop.clj)
+
+This script uses [tolitius/cprop](https://github.com/tolitius/cprop) library. 
+
+See [cprop.clj](cprop.clj)
+
+Example usage:
+
+```shell
+$ ( cd examples && bb cprop.clj )
+```
+
+### [fzf](fzf.clj)
+
+Invoke [fzf](https://github.com/junegunn/fzf), a command line fuzzy finder, from babashka.
+
+See [fzf.clj](fzf.clj)
+
+Example usage:
+
+``` shell
+$ cat src/babashka/main.clj | bb examples/fzf.clj
+```
