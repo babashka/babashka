@@ -32,7 +32,6 @@ call %GRAALVM_HOME%\bin\native-image.cmd ^
   "-H:IncludeResources=BABASHKA_VERSION" ^
   "-H:IncludeResources=SCI_VERSION" ^
   "-H:ReflectionConfigurationFiles=reflection.json" ^
-  "--initialize-at-run-time=java.lang.Math$RandomNumberGeneratorHolder" ^
   "--initialize-at-build-time"  ^
   "--initialize-at-run-time=org.postgresql.sspi.SSPIClient" ^
   "-H:EnableURLProtocols=http,https,jar" ^
