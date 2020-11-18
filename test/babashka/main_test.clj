@@ -465,7 +465,10 @@
       (is v))))
 
 (deftest download-and-extract-test
-  (is (try (= 6 (bb nil (io/file "test" "babashka" "scripts" "download_and_extract_zip.bb")))
+  ;; Disabled because Github throttles bandwidth and this makes for a very slow test.
+  ;; TODO: refactor into individual unit tests
+  ;; One for downloading a small file and one for unzipping.
+  #_(is (try (= 6 (bb nil (io/file "test" "babashka" "scripts" "download_and_extract_zip.bb")))
            (catch Exception e
              (is (str/includes? (str e) "timed out"))))))
 

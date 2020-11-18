@@ -1,12 +1,13 @@
 (ns babashka.impl.test
-  (:require  [babashka.impl.clojure.test :as t]
-             [sci.core :as sci]))
+  (:require [babashka.impl.clojure.test :as t]
+            [babashka.impl.common :refer [ctx]]))
 
 (defn macrofy [v]
   (with-meta v {:sci/macro true}))
 
-(defn contextualize [v]
-  (with-meta v {:sci.impl/op :needs-ctx}))
+(defn contextualize [f]
+  (fn [& args]
+    (apply f @ctx args)))
 
 (def clojure-test-namespace
   {'*load-tests* t/load-tests
@@ -33,8 +34,7 @@
                {:sci/macro true})
    ;; assertion macros
    'is (with-meta @#'t/is
-         {;; :sci.impl/op :needs-ctx
-          :sci/macro true})
+         {:sci/macro true})
    'are (macrofy @#'t/are)
    'testing (macrofy @#'t/testing)
    ;; defining tests
@@ -49,8 +49,8 @@
    ;; running tests: low level
    'test-var t/test-var
    'test-vars t/test-vars
-   'test-all-vars (with-meta t/test-all-vars {:sci.impl/op :needs-ctx})
-   'test-ns (with-meta t/test-ns {:sci.impl/op :needs-ctx})
+   'test-all-vars (contextualize t/test-all-vars)
+   'test-ns (contextualize t/test-ns)
    ;; running tests: high level
    'run-tests (contextualize t/run-tests)
    'run-all-tests (contextualize t/run-all-tests)
