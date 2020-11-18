@@ -250,9 +250,10 @@
                       ;; clojure.lang.IAtom
                       clojure.lang.IEditableCollection
                       clojure.lang.IMapEntry
+                      clojure.lang.IPersistentCollection
                       clojure.lang.IPersistentMap
                       clojure.lang.IPersistentSet
-                      clojure.lang.PersistentSet
+                      ;;clojure.lang.PersistentHashSet ;; temp for meander
                       clojure.lang.IPersistentVector
                       clojure.lang.IRecord
                       clojure.lang.IRef
