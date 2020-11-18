@@ -14,6 +14,7 @@
       :no-doc true}
     babashka.impl.clojure.core.server
   (:require [babashka.impl.clojure.core :as core]
+            [babashka.impl.clojure.main :as m]
             [sci.core :as sci]
             [sci.impl.parser :as p]
             [sci.impl.vars :as vars])
@@ -145,10 +146,7 @@
   [ctx in-reader out-fn & {:keys [stdin]}]
   (let [EOF (Object.)
         tapfn #(out-fn {:tag :tap :val %1})]
-    (binding [*1 nil
-              *2 nil
-              *3 nil
-              *e nil]
+    (m/with-bindings
       (sci/with-bindings {sci/in (or stdin in-reader)
                           sci/out (PrintWriter-on #(out-fn {:tag :out :val %1}) nil)
                           sci/err (PrintWriter-on #(out-fn {:tag :err :val %1}) nil)
