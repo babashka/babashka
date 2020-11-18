@@ -558,6 +558,16 @@
 (deftest java-stream-test
   (is (every? number? (bb nil "(take 2 (iterator-seq (.iterator (.doubles (java.util.Random.)))))"))))
 
+(deftest iterable-test
+  (is (true? (bb nil "
+(defn iter [coll]
+  (if (instance? java.lang.Iterable coll)
+    (.iterator ^java.lang.Iterable coll)
+    (let [s (or (seq coll) [])]
+      (.iterator ^java.lang.Iterable s))))
+
+(= [1 2 3] (iterator-seq (iter [1 2 3])))"))))
+
 ;;;; Scratch
 
 (comment
