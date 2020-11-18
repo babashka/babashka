@@ -145,61 +145,65 @@
   [ctx in-reader out-fn & {:keys [stdin]}]
   (let [EOF (Object.)
         tapfn #(out-fn {:tag :tap :val %1})]
-    (sci/with-bindings {sci/in (or stdin in-reader)
-                        sci/out (PrintWriter-on #(out-fn {:tag :out :val %1}) nil)
-                        sci/err (PrintWriter-on #(out-fn {:tag :err :val %1}) nil)
-                        sci/ns (sci/create-ns 'user nil)
-                        sci/print-length @sci/print-length}
-      (try
-        ;; babashka uses Clojure's global tap system so this should be ok
-        (add-tap tapfn)
-        (loop []
-          (when (try
-                  (let [[form s] (core/read+string ctx in-reader false EOF)]
-                    (try
-                      (when-not (identical? form EOF)
-                        (let [start (System/nanoTime)
-                              ctx (update ctx
-                                          :env
-                                          (fn [env]
-                                            (swap! env update-in [:namespaces 'clojure.core]
-                                                   assoc
-                                                   '*1 *1
-                                                   '*2 *2
-                                                   '*3 *3
-                                                   '*e *e)
-                                            env))
-                              ret (sci/with-bindings {}
-                                    (sci/eval-form ctx form))
-                              ms (quot (- (System/nanoTime) start) 1000000)]
-                          (when-not (= :repl/quit ret)
-                            (set! *3 *2)
-                            (set! *2 *1)
-                            (set! *1 ret)
-                            (out-fn {:tag :ret
-                                     :val (if (instance? Throwable ret)
-                                            (Throwable->map ret)
-                                            ret)
-                                     :ns (str (vars/current-ns-name))
-                                     :ms ms
-                                     :form s})
-                            true)))
-                      (catch Throwable ex
-                        (prn (ex-message ex))
-                        (set! *e ex)
-                        (out-fn {:tag :ret :val (ex->data ex (or (-> ex ex-data :clojure.error/phase) :execution))
-                                 :ns (str (.name *ns*)) :form s
-                                 :exception true})
-                        true)))
-                  (catch Throwable ex
-                    (set! *e ex)
-                    (out-fn {:tag :ret :val (ex->data ex :read-source)
-                             :ns (str (.name *ns*))
-                             :exception true})
-                    true))
-            (recur)))
-        (finally
-          (remove-tap tapfn))))))
+    (binding [*1 nil
+              *2 nil
+              *3 nil
+              *e nil]
+      (sci/with-bindings {sci/in (or stdin in-reader)
+                          sci/out (PrintWriter-on #(out-fn {:tag :out :val %1}) nil)
+                          sci/err (PrintWriter-on #(out-fn {:tag :err :val %1}) nil)
+                          sci/ns (sci/create-ns 'user nil)
+                          sci/print-length @sci/print-length}
+        (try
+          ;; babashka uses Clojure's global tap system so this should be ok
+          (add-tap tapfn)
+          (loop []
+            (when (try
+                    (let [[form s] (core/read+string ctx in-reader false EOF)]
+                      (try
+                        (when-not (identical? form EOF)
+                          (let [start (System/nanoTime)
+                                ctx (update ctx
+                                            :env
+                                            (fn [env]
+                                              (swap! env update-in [:namespaces 'clojure.core]
+                                                     assoc
+                                                     '*1 *1
+                                                     '*2 *2
+                                                     '*3 *3
+                                                     '*e *e)
+                                              env))
+                                ret (sci/with-bindings {}
+                                      (sci/eval-form ctx form))
+                                ms (quot (- (System/nanoTime) start) 1000000)]
+                            (when-not (= :repl/quit ret)
+                              (set! *3 *2)
+                              (set! *2 *1)
+                              (set! *1 ret)
+                              (out-fn {:tag :ret
+                                       :val (if (instance? Throwable ret)
+                                              (Throwable->map ret)
+                                              ret)
+                                       :ns (str (vars/current-ns-name))
+                                       :ms ms
+                                       :form s})
+                              true)))
+                        (catch Throwable ex
+                          (prn (ex-message ex))
+                          (set! *e ex)
+                          (out-fn {:tag :ret :val (ex->data ex (or (-> ex ex-data :clojure.error/phase) :execution))
+                                   :ns (str (.name *ns*)) :form s
+                                   :exception true})
+                          true)))
+                    (catch Throwable ex
+                      (set! *e ex)
+                      (out-fn {:tag :ret :val (ex->data ex :read-source)
+                               :ns (str (.name *ns*))
+                               :exception true})
+                      true))
+              (recur)))
+          (finally
+            (remove-tap tapfn)))))))
 
 (defn io-prepl
   "prepl bound to *in* and *out*, suitable for use with e.g. server/repl (socket-repl).
