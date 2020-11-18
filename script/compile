@@ -36,8 +36,6 @@ fi
 
 BABASHKA_BINARY=${BABASHKA_BINARY:-"bb"}
 
-#        "-H:+PrintAnalysisCallTree"
-
 args=( "-jar" "$BABASHKA_JAR"
        "-H:Name=$BABASHKA_BINARY"
        "-H:+ReportExceptionStackTraces"
@@ -47,6 +45,7 @@ args=( "-jar" "$BABASHKA_JAR"
        "-H:IncludeResources=SCI_VERSION"
        "-H:ReflectionConfigurationFiles=reflection.json"
        "--initialize-at-build-time"
+       "-H:+PrintAnalysisCallTree"
        "-H:Log=registerResource:"
        "-H:EnableURLProtocols=http,https,jar"
        "--enable-all-security-services"
@@ -56,6 +55,8 @@ args=( "-jar" "$BABASHKA_JAR"
        "--no-server"
        "--report-unsupported-elements-at-runtime"
        "--initialize-at-run-time=org.postgresql.sspi.SSPIClient"
+       "--native-image-info"
+       "--verbose"
        "$BABASHKA_XMX" )
 
 BABASHKA_STATIC=${BABASHKA_STATIC:-}
