@@ -151,7 +151,8 @@
                           sci/out (PrintWriter-on #(out-fn {:tag :out :val %1}) nil)
                           sci/err (PrintWriter-on #(out-fn {:tag :err :val %1}) nil)
                           sci/ns (sci/create-ns 'user nil)
-                          sci/print-length @sci/print-length}
+                          sci/print-length @sci/print-length
+                          sci/print-meta @sci/print-meta}
         (try
           ;; babashka uses Clojure's global tap system so this should be ok
           (add-tap tapfn)
