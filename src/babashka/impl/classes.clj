@@ -252,6 +252,7 @@
                       clojure.lang.IMapEntry
                       clojure.lang.IPersistentMap
                       clojure.lang.IPersistentSet
+                      clojure.lang.PersistentSet
                       clojure.lang.IPersistentVector
                       clojure.lang.IRecord
                       clojure.lang.IRef
@@ -263,6 +264,7 @@
                       clojure.lang.Repeat
                       clojure.lang.Symbol
                       clojure.lang.Sequential
+                      clojure.lang.Seqable
                       java.util.List]
     :custom ~custom-map})
 
