@@ -26,6 +26,7 @@ export PATH=$GRAALVM_HOME/bin:$PATH
 
 SVM_JAR=$(find -L "$GRAALVM_HOME" | grep svm.jar)
 "$GRAALVM_HOME/bin/javac" -cp "$SVM_JAR" resources/CutOffCoreServicesDependencies.java
+"$GRAALVM_HOME/bin/javac" -cp "$SVM_JAR" resources/CutOffSunAwtWwwContentAudioAiff.java
 
 if [ -z "$BABASHKA_JAR" ]; then
     lein with-profiles +reflection,+native-image "do" run
@@ -34,6 +35,8 @@ if [ -z "$BABASHKA_JAR" ]; then
 fi
 
 BABASHKA_BINARY=${BABASHKA_BINARY:-"bb"}
+
+#        "-H:+PrintAnalysisCallTree"
 
 args=( "-jar" "$BABASHKA_JAR"
        "-H:Name=$BABASHKA_BINARY"
