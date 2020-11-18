@@ -62,18 +62,12 @@
                       v))))
       :eval (or eval
                 (fn [expr]
-                  (sci/with-bindings {sci/file "<repl>"}
-                    (let [ret (eval-form (update sci-ctx
-                                                 :env
-                                                 (fn [env]
-                                                   (swap! env update-in [:namespaces 'clojure.core]
-                                                          assoc
-                                                          '*1 *1
-                                                          '*2 *2
-                                                          '*3 *3
-                                                          '*e *e)
-                                                   env))
-                                         expr)]
+                  (sci/with-bindings {sci/file "<repl>"
+                                      sci/*1 *1
+                                      sci/*2 *2
+                                      sci/*3 *3
+                                      sci/*e *e}
+                    (let [ret (eval-form sci-ctx expr)]
                       ret))))
       :need-prompt (or need-prompt (fn [] true))
       :prompt (or prompt #(sio/printf "%s=> " (vars/current-ns-name)))
