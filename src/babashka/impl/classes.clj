@@ -115,6 +115,7 @@
           java.lang.Exception
           java.lang.Float
           java.lang.Integer
+          ;; java.lang.Iterable ;; meander
           java.lang.Long
           java.lang.Number
           java.lang.NumberFormatException
