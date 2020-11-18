@@ -465,7 +465,10 @@
       (is v))))
 
 (deftest download-and-extract-test
-  (is (try (= 6 (bb nil (io/file "test" "babashka" "scripts" "download_and_extract_zip.bb")))
+  ;; Disabled because Github throttles bandwidth and this makes for a very slow test.
+  ;; TODO: refactor into individual unit tests
+  ;; One for downloading a small file and one for unzipping.
+  #_(is (try (= 6 (bb nil (io/file "test" "babashka" "scripts" "download_and_extract_zip.bb")))
            (catch Exception e
              (is (str/includes? (str e) "timed out"))))))
 
@@ -558,6 +561,16 @@
 (deftest read+string-test
   (is (= '[:user/foo "::foo"]
          (bb nil "(read+string (clojure.lang.LineNumberingPushbackReader. (java.io.StringReader. \"::foo\")))"))))
+
+(deftest iterable-test
+  (is (true? (bb nil "
+(defn iter [coll]
+  (if (instance? java.lang.Iterable coll)
+    (.iterator ^java.lang.Iterable coll)
+    (let [s (or (seq coll) [])]
+      (.iterator ^java.lang.Iterable s))))
+
+(= [1 2 3] (iterator-seq (iter [1 2 3])))"))))
 
 ;;;; Scratch
 

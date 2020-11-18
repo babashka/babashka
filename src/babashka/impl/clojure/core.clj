@@ -1,7 +1,8 @@
 (ns babashka.impl.clojure.core
   {:no-doc true}
   (:refer-clojure :exclude [future read+string])
-  (:require [borkdude.graal.locking :as locking]
+  (:require [babashka.impl.common :as common]
+            [borkdude.graal.locking :as locking]
             [clojure.string :as str]
             [sci.core :as sci]
             [sci.impl.namespaces :refer [copy-core-var]]))
@@ -57,5 +58,5 @@
    '*data-readers* data-readers
    'default-data-readers default-data-readers
    'xml-seq (copy-core-var xml-seq)
-   'read+string (with-meta read+string
-                  {:sci.impl/op :needs-ctx})})
+   'read+string (fn [& args]
+                  (apply read+string @common/ctx args))})

@@ -7,13 +7,13 @@
    [babashka.impl.classes :as classes]
    [babashka.impl.classpath :as cp]
    [babashka.impl.clojure.core :as core :refer [core-extras]]
+   [babashka.impl.clojure.core.server :as server]
    [babashka.impl.clojure.java.browse :refer [browse-namespace]]
    [babashka.impl.clojure.java.io :refer [io-namespace]]
    [babashka.impl.clojure.java.shell :refer [shell-namespace]]
    [babashka.impl.clojure.main :as clojure-main :refer [demunge]]
    [babashka.impl.clojure.stacktrace :refer [stacktrace-namespace]]
    [babashka.impl.clojure.zip :refer [zip-namespace]]
-   [babashka.impl.clojure.core.server :as server]
    [babashka.impl.common :as common]
    [babashka.impl.curl :refer [curl-namespace]]
    [babashka.impl.data :as data]
@@ -309,15 +309,12 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
 
 (def reflection-var (sci/new-dynamic-var '*warn-on-reflection* false))
 
-(def load-file*
-  (with-meta
-    (fn [sci-ctx f]
-      (let [f (io/file f)
-            s (slurp f)]
-        (sci/with-bindings {sci/ns @sci/ns
-                            sci/file (.getAbsolutePath f)}
-          (sci/eval-string* sci-ctx s))))
-    {:sci.impl/op :needs-ctx}))
+(defn load-file* [f]
+  (let [f (io/file f)
+        s (slurp f)]
+    (sci/with-bindings {sci/ns @sci/ns
+                        sci/file (.getAbsolutePath f)}
+      (sci/eval-string* @common/ctx s))))
 
 (defn start-socket-repl! [address ctx]
   (socket-repl/start-repl! address ctx)
@@ -374,12 +371,12 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
 ;;(def ^:private server-ns-obj (sci/create-ns 'clojure.core.server nil))
 
 (def clojure-core-server
-  {'prepl ^{:sci.impl/op :needs-ctx} (fn [& args]
-                                       (apply server/prepl args))
-   'io-prepl ^{:sci.impl/op :needs-ctx} (fn [& args]
-                                          (apply server/io-prepl args))
-   'start-server ^{:sci.impl/op :needs-ctx} (fn [& args]
-                                              (apply server/start-server args))})
+  {'prepl (fn [& args]
+            (apply server/prepl @common/ctx args))
+   'io-prepl (fn [& args]
+               (apply server/io-prepl @common/ctx args))
+   'start-server (fn [& args]
+                   (apply server/start-server @common/ctx args))})
 
 (def namespaces
   (cond->
@@ -395,9 +392,9 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
        'clojure.zip zip-namespace
        'clojure.main {'demunge demunge
                       'repl-requires clojure-main/repl-requires
-                      'repl ^{:sci.impl/op :needs-ctx} (fn [ctx & opts]
-                                                         (let [opts (apply hash-map opts)]
-                                                           (repl/start-repl! ctx opts)))}
+                      'repl (fn [& opts]
+                              (let [opts (apply hash-map opts)]
+                                (repl/start-repl! @common/ctx opts)))}
        'clojure.test t/clojure-test-namespace
        'babashka.classpath {'add-classpath add-classpath*}
        'clojure.pprint pprint-namespace
