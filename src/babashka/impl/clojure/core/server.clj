@@ -152,7 +152,11 @@
                           sci/err (PrintWriter-on #(out-fn {:tag :err :val %1}) nil)
                           sci/ns (sci/create-ns 'user nil)
                           sci/print-length @sci/print-length
-                          sci/print-meta @sci/print-meta}
+                          sci/print-meta @sci/print-meta
+                          sci/*1 nil
+                          sci/*2 nil
+                          sci/*3 nil
+                          sci/*e nil}
         (try
           ;; babashka uses Clojure's global tap system so this should be ok
           (add-tap tapfn)
@@ -162,17 +166,10 @@
                       (try
                         (when-not (identical? form EOF)
                           (let [start (System/nanoTime)
-                                ctx (update ctx
-                                            :env
-                                            (fn [env]
-                                              (swap! env update-in [:namespaces 'clojure.core]
-                                                     assoc
-                                                     '*1 *1
-                                                     '*2 *2
-                                                     '*3 *3
-                                                     '*e *e)
-                                              env))
-                                ret (sci/with-bindings {}
+                                ret (sci/with-bindings {sci/*1 *1
+                                                        sci/*2 *2
+                                                        sci/*3 *3
+                                                        sci/*e *e}
                                       (sci/eval-form ctx form))
                                 ms (quot (- (System/nanoTime) start) 1000000)]
                             (when-not (= :repl/quit ret)
