@@ -40,6 +40,7 @@ call %GRAALVM_HOME%\bin\native-image.cmd ^
   "-H:Log=registerResource:" ^
   "--no-fallback" ^
   "--verbose" ^
+  "-H:ServiceLoaderFeatureExcludeServices=javax.sound.sampled.spi.AudioFileReader,javax.sound.midi.spi.MidiFileReader,javax.sound.sampled.spi.MixerProvider,javax.sound.sampled.spi.FormatConversionProvider,javax.sound.sampled.spi.AudioFileWriter,javax.sound.midi.spi.MidiDeviceProvider,javax.sound.midi.spi.SoundbankReader,javax.sound.midi.spi.MidiFileWriter" ^
   "%BABASHKA_XMX%"
 
 if %errorlevel% neq 0 exit /b %errorlevel%
