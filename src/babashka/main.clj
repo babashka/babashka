@@ -308,15 +308,12 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
 
 (def reflection-var (sci/new-dynamic-var '*warn-on-reflection* false))
 
-(def load-file*
-  (with-meta
-    (fn [sci-ctx f]
-      (let [f (io/file f)
-            s (slurp f)]
-        (sci/with-bindings {sci/ns @sci/ns
-                            sci/file (.getAbsolutePath f)}
-          (sci/eval-string* sci-ctx s))))
-    {:sci.impl/op :needs-ctx}))
+(defn load-file* [f]
+  (let [f (io/file f)
+        s (slurp f)]
+    (sci/with-bindings {sci/ns @sci/ns
+                        sci/file (.getAbsolutePath f)}
+      (sci/eval-string* @common/ctx s))))
 
 (defn start-socket-repl! [address ctx]
   (socket-repl/start-repl! address ctx)
@@ -425,6 +422,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
     Exception java.lang.Exception
     IllegalArgumentException java.lang.IllegalArgumentException
     Integer java.lang.Integer
+    Iterable java.lang.Iterable
     File java.io.File
     Float java.lang.Float
     Long java.lang.Long
@@ -544,10 +542,9 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                                                      (when-not stream?
                                                        {:sci.impl/deref! true}))] input-var)
                                   (assoc-in ['clojure.main 'repl]
-                                            ^{:sci.impl/op :needs-ctx}
-                                            (fn [ctx & opts]
+                                            (fn [& opts]
                                               (let [opts (apply hash-map opts)]
-                                                (repl/start-repl! ctx opts)))))
+                                                (repl/start-repl! @common/ctx opts)))))
                   :env env
                   :features #{:bb :clj}
                   :classes classes/class-map

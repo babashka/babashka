@@ -115,6 +115,7 @@
           java.lang.Exception
           java.lang.Float
           java.lang.Integer
+          java.lang.Iterable
           java.lang.Long
           java.lang.Number
           java.lang.NumberFormatException
@@ -250,8 +251,10 @@
                       ;; clojure.lang.IAtom
                       clojure.lang.IEditableCollection
                       clojure.lang.IMapEntry
+                      clojure.lang.IPersistentCollection
                       clojure.lang.IPersistentMap
                       clojure.lang.IPersistentSet
+                      ;;clojure.lang.PersistentHashSet ;; temp for meander
                       clojure.lang.IPersistentVector
                       clojure.lang.IRecord
                       clojure.lang.IRef
@@ -263,6 +266,7 @@
                       clojure.lang.Repeat
                       clojure.lang.Symbol
                       clojure.lang.Sequential
+                      clojure.lang.Seqable
                       java.util.List]
     :custom ~custom-map})
 
