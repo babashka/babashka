@@ -18,7 +18,7 @@ for future development.
   [gist](https://gist.github.com/MrGung/81bee21eb52cb9307f336705d5ab08ad) by
   Steffen Glückselig.
 - [Matchete](https://github.com/xapix-io/matchete), a pattern matching library,
-  works with babashka, see
+  works with babashka. See
   [example](https://github.com/borkdude/babashka/issues/631).
 
 ## 2020-10
