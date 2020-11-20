@@ -44,8 +44,8 @@ and 0.2.2 released.
 
 - Code Quality report for Clojure projects in Gitlab using babashka and clj-kondo. See [gist](https://gist.github.com/hansbugge/4be701d771057e8ef6bbbb0912656355). By Hans Bugge.
 - [pod-tzzh-aws](https://github.com/tzzh/pod-tzzh-aws): a pod to interact with AWS.
-- [spotifyd-notification](https://github.com/dharrigan/spotifyd-notification):
-  an example of using Babashka to show spotifyd notifications by David Harrigan.
+- [spotifyd-notification](https://github.com/dharrigan/spotifyd-notification) by
+  David Harrigan.
 
 ## 2020-08
 
