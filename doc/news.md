@@ -11,13 +11,13 @@ This month there is a babashka [survey](https://nl.surveymonkey.com/r/H2HK3RC)
 where you can leave feedback about babashka. This will be used for future
 development.
 
-- Nate Jones published his [presentation](https://youtu.be/RogyxI-GaGQ) at the
-  LA Clojure meetup from April.
-- Nicolas Ha published a [Github action](https://github.com/turtlequeue/setup-babashka) for babashka.
-- Jakub Holy added a [feature flag](https://github.com/borkdude/babashka/blob/master/doc/build.md#feature-flags) to support the Oracle database.
-- Aleksandr Zhuravlёv posted a [gist](https://gist.github.com/zelark/49ffbc0cd701c9299e35421ac2e3d5ab)
-  that shows how to build a torrent viewer.
-- Steffen Glückselig posted a [gist](https://gist.github.com/MrGung/81bee21eb52cb9307f336705d5ab08ad) that shows how to clone all repositories from a Gitlab group
+- LA Clojure Meetup [presentation](https://youtu.be/RogyxI-GaGQ) by Nate Jones. Recorded in April 2020.
+- Github action](https://github.com/turtlequeue/setup-babashka) for babashka by Nicolas Ha.
+- Oracle DB [feature flag](https://github.com/borkdude/babashka/blob/master/doc/build.md#feature-flags) by Jakub Holy added.
+- Torrent viewer[gist](https://gist.github.com/zelark/49ffbc0cd701c9299e35421ac2e3d5ab) by Aleksandr Zhuravlёv.
+- Clone all repositories from a Gitlab group:
+  [gist](https://gist.github.com/MrGung/81bee21eb52cb9307f336705d5ab08ad) by
+  Steffen Glückselig.
 - [Matchete](https://github.com/xapix-io/matchete), a pattern matching library,
   works with babashka, see
   [example](https://github.com/borkdude/babashka/issues/631)
