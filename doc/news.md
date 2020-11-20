@@ -24,10 +24,12 @@ development.
 
 ## 2020-10
 
+Babashka 0.2.3 released. See [release
+notes](https://github.com/borkdude/babashka/blob/master/CHANGELOG.md#v023-2020-10-21).
+
 - [Malcolm Sparks](https://twitter.com/malcolmsparks/status/1320274099952848896) posted a
   [script](https://gist.github.com/malcolmsparks/61418b6bbcd0962536add1ccb07033b5) that
   sorts his photo collection.
-- Babashka 0.2.3 released. See [release notes](https://github.com/borkdude/babashka/blob/master/CHANGELOG.md#v023-2020-10-21).
 - [Image viewer](https://github.com/borkdude/babashka/tree/master/examples#image-viewer) example
 - SQL Server [pod](https://github.com/xledger/pod_sql_server) by Isak Sky
 - [SSH Auth Github](https://github.com/nextjournal/ssh-auth-github) by
