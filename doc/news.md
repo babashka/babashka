@@ -1,7 +1,7 @@
 # News
 
-This page keeps track of interesting developments around babashka. Feel free to
-make a PR if you have anything to add. Also see
+This page keeps track of babashka-related new items. Feel free to make a PR if
+you have anything to add. Also see
 [#babashka](https://twitter.com/hashtag/babashka?src=hashtag_click&f=live) on
 Twitter.
 
