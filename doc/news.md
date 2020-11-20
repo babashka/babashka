@@ -32,8 +32,7 @@ notes](https://github.com/borkdude/babashka/blob/master/CHANGELOG.md#v023-2020-1
 - [Image viewer](https://github.com/borkdude/babashka/tree/master/examples#image-viewer) example
 - SQL Server [pod](https://github.com/xledger/pod_sql_server) by Isak Sky
 - [SSH Auth Github](https://github.com/nextjournal/ssh-auth-github) by
-  NextJournal. A script that retrieves public keys from a specific team under a
-  specific organization on Github.
+  NextJournal.
 - [pod-tzzh-mail](https://github.com/tzzh/pod-tzzh-mail): a pod to send mail.
 - NextJournal [replaces bash with a babashka script](https://twitter.com/kommen/status/1311574776834666496)
 
