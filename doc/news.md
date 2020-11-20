@@ -20,7 +20,7 @@ development.
   Steffen Glückselig.
 - [Matchete](https://github.com/xapix-io/matchete), a pattern matching library,
   works with babashka, see
-  [example](https://github.com/borkdude/babashka/issues/631)
+  [example](https://github.com/borkdude/babashka/issues/631).
 
 ## 2020-10
 
