@@ -7,9 +7,8 @@ Twitter.
 
 ## 2020-11
 
-This month there is a babashka [survey](https://nl.surveymonkey.com/r/H2HK3RC)
-where you can leave feedback about babashka. This will be used for future
-development.
+Babashka [survey](https://nl.surveymonkey.com/r/H2HK3RC). Feedback will be used
+for future development.
 
 - LA Clojure Meetup [presentation](https://youtu.be/RogyxI-GaGQ) by Nate Jones. Recorded in April 2020.
 - [Github action](https://github.com/turtlequeue/setup-babashka) for babashka by Nicolas Ha.
