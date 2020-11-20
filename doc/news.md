@@ -13,7 +13,7 @@ for future development.
 - LA Clojure Meetup [presentation](https://youtu.be/RogyxI-GaGQ) by Nate Jones. Recorded in April 2020.
 - [Github action](https://github.com/turtlequeue/setup-babashka) for babashka by Nicolas Ha.
 - Oracle DB [feature flag](https://github.com/borkdude/babashka/blob/master/doc/build.md#feature-flags) by Jakub Holy added.
-- Torrent viewer[gist](https://gist.github.com/zelark/49ffbc0cd701c9299e35421ac2e3d5ab) by Aleksandr Zhuravlёv.
+- Torrent viewer [gist](https://gist.github.com/zelark/49ffbc0cd701c9299e35421ac2e3d5ab) by Aleksandr Zhuravlёv.
 - Clone all repositories from a Gitlab group:
   [gist](https://gist.github.com/MrGung/81bee21eb52cb9307f336705d5ab08ad) by
   Steffen Glückselig.
