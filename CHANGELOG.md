@@ -2,6 +2,33 @@
 
 For a list of breaking changes, check [here](#breaking-changes)
 
+## v0.2.4-SNAPSHOT (unreleased)
+
+Thanks to the community for taking the time to create issues, discussions and
+code contributions. Thanks to sponsors on
+[OpenCollective](https://opencollective.com/babashka) and
+[Github](https://github.com/sponsors/borkdude) for continued financial support.
+
+### New
+
+- Expose `pprint/simple-dispatch` [#627](https://github.com/borkdude/babashka/issues/627)
+- Support nested libspecs [borkdude/sci#399](https://github.com/borkdude/sci/issues/399)
+- Add OracleDB feature flag [#638](https://github.com/borkdude/babashka/issues/638) ([@holyjak](https://github.com/holyjak))
+- Docker build documentation improvements [#643](https://github.com/borkdude/babashka/issues/643) ([@holyjak](https://github.com/holyjak))
+- Implement `get-thread-bindings`, `var-get` and `var-set`
+
+### Fixed
+
+- Can't call symbol literal as function [#622](https://github.com/borkdude/babashka/issues/622)
+- `:or` in destructuring broken for `false` case
+- Support aliases in protocol fns [borkdude/sci#440](https://github.com/borkdude/sci/issues/440)
+- Preserver reader metadata [#654](https://github.com/borkdude/babashka/issues/654)
+
+### Changed
+
+- Remove cheshire smile functions [#658](https://github.com/borkdude/babashka/issues/658)
+- `babashka.curl` now calls curl with `--compressed` by default [borkdude/babashka.curl#28](https://github.com/borkdude/babashka.curl)
+
 ## v0.2.3 (2020-10-21)
 
 Thanks to [@tzzh](https://github.com/tzzh), [@Heliosmaster](https://github.com/Heliosmaster), [@lispyclouds](https://github.com/lispyclouds) and [@kwrooijen](https://github.com/kwrooijen) for contributing to this release. Thanks to [Clojurists Together](https://www.clojuriststogether.org/) for sponsoring this release. Thanks to [Adgoji](https://github.com/AdGoji) and other sponsors on [OpenCollective](https://opencollective.com/babashka) and [Github](https://github.com/sponsors/borkdude) for their ongoing support.
@@ -212,6 +239,10 @@ Details about releases prior to v0.1.0 can be found
 [here](https://github.com/borkdude/babashka/releases).
 
 ## Breaking changes
+
+### v0.2.4
+
+- Remove cheshire smile functions [#658](https://github.com/borkdude/babashka/issues/658)
 
 ### v0.2.3
 
