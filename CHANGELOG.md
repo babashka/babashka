@@ -1,6 +1,6 @@
 # Changelog
 
-For a list of breaking changes, check [here](#breaking-changes)
+For a list of breaking changes, check [here](#breaking-changes).
 
 ## v0.2.4-SNAPSHOT (unreleased)
 
