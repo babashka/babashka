@@ -17,7 +17,8 @@ A Clojure [babushka](https://en.wikipedia.org/wiki/Headscarf) for the grey areas
 
 Please participate in the [babashka survey](https://nl.surveymonkey.com/r/H2HK3RC)!
 
-It only takes a few minutes to fill out. The survey will run until December 1. I'll publish the results afterwards.
+It only takes a few minutes to fill out. The survey will run until December 1.
+I'll publish the results afterwards.
 
 ## Introduction
 
