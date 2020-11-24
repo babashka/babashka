@@ -180,6 +180,10 @@ static binary available which can be used on Alpine.
 
 Check out the image on [Docker hub](https://hub.docker.com/r/borkdude/babashka/).
 
+## News
+
+Check out the [news](doc/news.md) page to keep track of babashka-related news items.
+
 ## Usage
 
 ``` shellsession
