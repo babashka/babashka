@@ -94,6 +94,33 @@
         (sh "bash" "-c"
             "kill -9 $(lsof -t -i:1666)")))))
 
+(deftest socket-prepl-test
+  ;; TODO
+  #_(try
+    (if tu/jvm?
+      (let [ctx (init {:bindings {'*command-line-args*
+                                  ["a" "b" "c"]}
+                       :env (atom {})
+                       :namespaces {'clojure.core.server clojure-core-server}
+                       :features #{:bb}})]
+        (vreset! common/ctx ctx)
+        (start-repl! "{:address \"0.0.0.0\" :accept clojure.core.server/io-prepl :port 1666}"
+                     ctx))
+      (future
+        (sh "bash" "-c"
+            "./bb --socket-repl {:address \"0.0.0.0\" :accept clojure.core.server/io-prepl :port 1666}")))
+    ;; wait for server to be available
+    (when tu/native?
+      (while (not (zero? (:exit
+                          (sh "bash" "-c"
+                              "lsof -t -i:1666"))))))
+    (is (socket-command "(+ 1 2 3)" (str {:tag :ret, :val "6", :ns "user", :ms 0, :form "(+ 1 2 3)"})))
+    (finally
+      (if tu/jvm?
+        (stop-repl!)
+        (sh "bash" "-c"
+            "kill -9 $(lsof -t -i:1666)")))))
+
 ;;;; Scratch
 
 (comment
