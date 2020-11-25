@@ -56,8 +56,6 @@
   [ctx ^Socket conn client-id in out err accept args]
   (let [accept (resolve-fn ctx accept)]
     (try
-      #_(binding [*out* out]
-        (println "hello")) ;; this works, netcat sees it
       (sci/with-bindings {sci/in in
                           sci/out out
                           sci/err err
@@ -80,7 +78,7 @@
     :server-daemon Is server thread a daemon?, defaults to true
     :client-daemon Are client threads daemons?, defaults to true
    Returns server socket."
-  [ctx opts]
+  ^ServerSocket [ctx opts]
   (let [{:keys [address port name accept args bind-err server-daemon client-daemon]
          :or {bind-err true
               server-daemon true

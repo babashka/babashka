@@ -1,6 +1,8 @@
 (ns babashka.impl.socket-repl-test
   (:require
+   [babashka.impl.common :as common]
    [babashka.impl.socket-repl :refer [start-repl! stop-repl!]]
+   [babashka.main :refer [clojure-core-server]]
    [babashka.test-utils :as tu]
    [clojure.java.io :as io]
    [clojure.java.shell :refer [sh]]
@@ -32,10 +34,13 @@
 (deftest socket-repl-test
   (try
     (if tu/jvm?
-      (start-repl! "0.0.0.0:1666" (init {:bindings {'*command-line-args*
-                                                    ["a" "b" "c"]}
-                                         :env (atom {})
-                                         :features #{:bb}}))
+      (let [ctx (init {:bindings {'*command-line-args*
+                                  ["a" "b" "c"]}
+                       :env (atom {})
+                       :namespaces {'clojure.core.server clojure-core-server}
+                       :features #{:bb}})]
+        (vreset! common/ctx ctx)
+        (start-repl! "0.0.0.0:1666" ctx))
       (future
         (sh "bash" "-c"
             "echo '[1 2 3]' | ./bb --socket-repl 0.0.0.0:1666 a b c")))
@@ -57,6 +62,32 @@
       (is (socket-command "1\n*1" "1")))
     (testing "*ns*"
       (is (socket-command "(ns foo.bar) (ns-name *ns*)" "foo.bar")))
+    (finally
+      (if tu/jvm?
+        (stop-repl!)
+        (sh "bash" "-c"
+            "kill -9 $(lsof -t -i:1666)")))))
+
+(deftest socket-repl-opts-test
+  (try
+    (if tu/jvm?
+      (let [ctx (init {:bindings {'*command-line-args*
+                                  ["a" "b" "c"]}
+                       :env (atom {})
+                       :namespaces {'clojure.core.server clojure-core-server}
+                       :features #{:bb}})]
+        (vreset! common/ctx ctx)
+        (start-repl! "{:address \"0.0.0.0\" :accept clojure.core.server/repl :port 1666}"
+                     ctx))
+      (future
+        (sh "bash" "-c"
+            "./bb --socket-repl {:address \"0.0.0.0\" :accept clojure.core.server/repl :port 1666}")))
+    ;; wait for server to be available
+    (when tu/native?
+      (while (not (zero? (:exit
+                          (sh "bash" "-c"
+                              "lsof -t -i:1666"))))))
+    (is (socket-command "(+ 1 2 3)" "user=> 6"))
     (finally
       (if tu/jvm?
         (stop-repl!)

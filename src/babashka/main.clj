@@ -317,9 +317,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
       (sci/eval-string* @common/ctx s))))
 
 (defn start-socket-repl! [address ctx]
-  (socket-repl/start-repl! address ctx)
-  ;; hang until SIGINT
-  @(promise))
+  (socket-repl/start-repl! address ctx))
 
 (defn start-nrepl! [address ctx]
   (let [dev? (= "true" (System/getenv "BABASHKA_DEV"))
@@ -371,7 +369,8 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
 ;;(def ^:private server-ns-obj (sci/create-ns 'clojure.core.server nil))
 
 (def clojure-core-server
-  {'prepl (fn [& args]
+  {'repl socket-repl/repl
+   'prepl (fn [& args]
             (apply server/prepl @common/ctx args))
    'io-prepl (fn [& args]
                (apply server/io-prepl @common/ctx args))
@@ -594,6 +593,10 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                                               :preloads preloads
                                               :loader (:loader @cp-state)})))))
                     nil))
+            ;; socket REPL is start asynchronously. when no other args are
+            ;; provided, a normal REPL will be started as well, which causes the
+            ;; process to wait until SIGINT
+            _ (when socket-repl (start-socket-repl! socket-repl sci-ctx))
             exit-code
             (or exit-code
                 (second
@@ -604,7 +607,6 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                        describe?
                        [(print-describe) 0]
                        repl [(repl/start-repl! sci-ctx) 0]
-                       socket-repl [(start-socket-repl! socket-repl sci-ctx) 0]
                        nrepl [(start-nrepl! nrepl sci-ctx) 0]
                        uberjar [nil 0]
                        expressions
