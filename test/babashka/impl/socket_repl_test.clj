@@ -19,16 +19,19 @@
               writer (io/writer socket)]
     (binding [*out* writer]
       (println (str expr))
-      (println ":repl/exit\n"))
+      (println ":repl/quit\n"))
     (loop []
       (when-let [l (.readLine ^java.io.BufferedReader reader)]
+        ;; (prn :l l)
         (binding [*out* sw]
           (println l))
         (recur)))
     (let [s (str sw)]
-      (is (str/includes? s expected)
-          (format "\"%s\" does not contain \"%s\""
-                  s expected))
+      (if (fn? expected)
+        (is (expected s))
+        (is (str/includes? s expected)
+            (format "\"%s\" does not contain \"%s\""
+                    s expected)))
       s)))
 
 (deftest socket-repl-test
@@ -95,8 +98,7 @@
             "kill -9 $(lsof -t -i:1666)")))))
 
 (deftest socket-prepl-test
-  ;; TODO
-  #_(try
+  (try
     (if tu/jvm?
       (let [ctx (init {:bindings {'*command-line-args*
                                   ["a" "b" "c"]}
@@ -114,7 +116,10 @@
       (while (not (zero? (:exit
                           (sh "bash" "-c"
                               "lsof -t -i:1666"))))))
-    (is (socket-command "(+ 1 2 3)" (str {:tag :ret, :val "6", :ns "user", :ms 0, :form "(+ 1 2 3)"})))
+    (is (socket-command "(+ 1 2 3)" (fn [s]
+                                      (and (str/includes? s ":val \"6\"")
+                                           (str/includes? s ":ns \"user\"")
+                                           (str/includes? s ":form \"(+ 1 2 3)\"")))))
     (finally
       (if tu/jvm?
         (stop-repl!)
