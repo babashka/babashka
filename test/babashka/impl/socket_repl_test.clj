@@ -84,7 +84,7 @@
                      ctx))
       (future
         (sh "bash" "-c"
-            "./bb --socket-repl {:address \"0.0.0.0\" :accept clojure.core.server/repl :port 1666}")))
+            "./bb --socket-repl '{:address \"0.0.0.0\" :accept clojure.core.server/repl :port 1666}'")))
     ;; wait for server to be available
     (when tu/native?
       (while (not (zero? (:exit
@@ -110,7 +110,7 @@
                      ctx))
       (future
         (sh "bash" "-c"
-            "./bb --socket-repl {:address \"0.0.0.0\" :accept clojure.core.server/io-prepl :port 1666}")))
+            "./bb --socket-repl '{:address \"0.0.0.0\" :accept clojure.core.server/io-prepl :port 1666}'")))
     ;; wait for server to be available
     (when tu/native?
       (while (not (zero? (:exit
