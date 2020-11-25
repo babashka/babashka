@@ -492,6 +492,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                     :main :uberscript :describe?
                     :jar :uberjar] :as _opts}
             (parse-opts args)
+            _ (when verbose? (vreset! common/verbose? true))
             _ (do ;; set properties
                 (when main (System/setProperty "babashka.main" main))
                 (System/setProperty "babashka.version" version))

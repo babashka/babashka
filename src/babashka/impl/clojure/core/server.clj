@@ -15,6 +15,7 @@
     babashka.impl.clojure.core.server
   (:require [babashka.impl.clojure.core :as core]
             [babashka.impl.clojure.main :as m]
+            [babashka.impl.common :refer [verbose?]]
             [sci.core :as sci]
             [sci.impl.parser :as p]
             [sci.impl.vars :as vars])
@@ -118,7 +119,11 @@
 
 (defn- ex->data
   [ex phase]
-  (assoc (Throwable->map ex) :phase phase))
+  (let [ex (assoc (Throwable->map ex) :phase phase)
+        ex (if (not @verbose?)
+             (update ex :trace #(vec (take 100 %)))
+             ex)]
+    ex))
 
 (defn prepl
   "a REPL with structured output (for programs)
