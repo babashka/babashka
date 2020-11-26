@@ -15,7 +15,11 @@
 (set! *warn-on-reflection* true)
 
 (defn socket-command [expr expected]
-  (with-open [socket (java.net.Socket. "127.0.0.1" 1666)
+  (with-open [^java.net.Socket socket
+              (try (java.net.Socket. "127.0.0.1" 1666)
+                   (catch java.net.ConnectException _
+                     (Thread/sleep 200)
+                     (java.net.Socket. "127.0.0.1" 1666)))
               reader (io/reader socket)
               sw (java.io.StringWriter.)
               writer (io/writer socket)]
