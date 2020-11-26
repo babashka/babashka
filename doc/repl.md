@@ -39,6 +39,12 @@ bb=> :repl/quit
 $
 ```
 
+The `--socket-repl` option takes options similar to the `clojure.server.repl` Java property option in Clojure:
+
+``` clojure
+$ bb --socket-repl '{:address "0.0.0.0" :accept clojure.core.server/repl :port 1666}'
+```
+
 Editor plugins and tools known to work with a babashka socket REPL:
 
 - Emacs: [inf-clojure](https://github.com/clojure-emacs/inf-clojure):
@@ -59,6 +65,21 @@ Editor plugins and tools known to work with a babashka socket REPL:
   [tubular](https://github.com/mfikes/tubular). For more info, look
   [here](https://cursive-ide.com/userguide/repl.html#repl-types).
 
+## pREPL
+
+Launching a prepl can be done as follows:
+
+``` clojure
+$ bb --socket-repl '{:address "0.0.0.0" :accept clojure.core.server/io-prepl :port 1666}'
+```
+
+or programmatically:
+
+``` clojure
+$ bb -e '(clojure.core.server/io-prepl)'
+(+ 1 2 3)
+{:tag :ret, :val "6", :ns "user", :ms 0, :form "(+ 1 2 3)"}
+```
 
 ## nREPL
 
