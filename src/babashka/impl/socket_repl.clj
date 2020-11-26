@@ -39,7 +39,7 @@
     socket))
 
 (defn stop-repl! []
-  (server/stop-server))
+  (server/stop-servers))
 
 (comment
   @#'server/servers
