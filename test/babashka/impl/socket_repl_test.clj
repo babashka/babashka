@@ -9,6 +9,7 @@
    [clojure.java.io :as io]
    [clojure.java.shell :refer [sh]]
    [clojure.string :as str]
+   [clojure.edn :as edn]
    [clojure.test :as t :refer [deftest is testing]]
    [sci.impl.opts :refer [init]]))
 
@@ -105,9 +106,10 @@
                    (p/process ["./bb" "--socket-repl" "{:address \"0.0.0.0\" :accept clojure.core.server/io-prepl :port 1666}"]))
           (w/wait-for-port "localhost" 1666)))
     (is (socket-command "(+ 1 2 3)" (fn [s]
-                                      (and (str/includes? s ":val \"6\"")
-                                           (str/includes? s ":ns \"user\"")
-                                           (str/includes? s ":form \"(+ 1 2 3)\"")))))
+                                      (let [m (edn/read-string s)]
+                                        (and (= "6" (:val m))
+                                             (= "user" (:ns m))
+                                             (= "(+ 1 2 3)" (:form m)))))))
     (finally
       (if tu/jvm?
         (stop-repl!)

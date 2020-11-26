@@ -22,11 +22,25 @@
   (:import
    [clojure.lang LineNumberingPushbackReader]
    [java.io BufferedWriter InputStreamReader OutputStreamWriter]
-   [java.net InetAddress Socket ServerSocket SocketException]))
+   [java.net InetAddress Socket ServerSocket SocketException]
+   [java.util.concurrent.locks ReentrantLock]))
 
 (set! *warn-on-reflection* true)
 
-(def server (atom nil))
+(def ^:dynamic *session* nil)
+
+;; lock protects servers
+(defonce ^:private lock (ReentrantLock.))
+(defonce ^:private servers {})
+
+(defmacro ^:private with-lock
+  [lock-expr & body]
+  `(let [lockee# ~(with-meta lock-expr {:tag 'java.util.concurrent.locks.ReentrantLock})]
+     (.lock lockee#)
+     (try
+       ~@body
+       (finally
+         (.unlock lockee#)))))
 
 (defmacro ^:private thread
   [^String name daemon & body]
@@ -56,15 +70,18 @@
   [ctx ^Socket conn client-id in out err accept args]
   (let [accept (resolve-fn ctx accept)]
     (try
-      (sci/with-bindings {sci/in in
-                          sci/out out
-                          sci/err err
-                          sci/ns (sci/create-ns 'user nil)}
-        (swap! server assoc-in [:sessions client-id] {})
-        (apply accept args))
+      (binding [*session* {:server name :client client-id}]
+        (sci/with-bindings {sci/in in
+                            sci/out out
+                            sci/err err
+                            sci/ns (sci/create-ns 'user nil)}
+          (with-lock lock
+            (alter-var-root #'servers assoc-in [name :sessions client-id] {}))
+          (apply accept args)))
       (catch SocketException _disconnect)
       (finally
-        (swap! server update-in [:sessions] dissoc client-id)
+        (with-lock lock
+          (alter-var-root #'servers update-in [name :sessions] dissoc client-id))
         (.close conn)))))
 
 (defn start-server
@@ -85,7 +102,8 @@
               client-daemon true}} opts
         address (InetAddress/getByName address)  ;; nil returns loopback
         socket (ServerSocket. port 0 address)]
-    (reset! server {:name name, :socket socket, :sessions {}})
+    (with-lock lock
+      (alter-var-root #'servers assoc name {:name name, :socket socket, :sessions {}}))
     (thread
       (str "Clojure Server " name) server-daemon
       (try
@@ -102,18 +120,30 @@
               (catch SocketException _disconnect))
             (recur (inc client-counter))))
         (finally
-          (reset! server nil))))
+          (with-lock lock
+            (alter-var-root #'servers dissoc name)))))
     socket))
 
 (defn stop-server
   "Stop server with name or use the server-name from *session* if none supplied.
   Returns true if server stopped successfully, nil if not found, or throws if
   there is an error closing the socket."
+  ([]
+   (stop-server (:server *session*)))
+  ([name]
+   (with-lock lock
+     (let [server-socket ^ServerSocket (get-in servers [name :socket])]
+       (when server-socket
+         (alter-var-root #'servers dissoc name)
+         (.close server-socket)
+         true)))))
+
+(defn stop-servers
+  "Stop all servers ignores all errors, and returns nil."
   []
-  (when-let [s @server]
-    (when-let [server-socket ^ServerSocket (get s :socket)]
-      (.close server-socket)))
-  (reset! server nil))
+  (with-lock lock
+    (doseq [name (keys servers)]
+      (future (stop-server name)))))
 
 (defn- ex->data
   [ex phase]
