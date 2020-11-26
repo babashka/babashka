@@ -4,25 +4,32 @@ For a list of breaking changes, check [here](#breaking-changes).
 
 ## v0.2.4-SNAPSHOT (unreleased)
 
-Thanks to the community for taking the time to create issues, discussions and
-code contributions. Thanks to sponsors on
+Thanks to [Nextjournal](https://nextjournal.com/) for funding work on
+prepl. Thanks to the community for taking the time to create issues, discussions
+and code contributions. Thanks to sponsors on
 [OpenCollective](https://opencollective.com/babashka) and
 [Github](https://github.com/sponsors/borkdude) for continued financial support.
 
 ### New
 
+- pREPL implementation [#664](https://github.com/borkdude/babashka/issues/664). See [docs](https://github.com/borkdude/babashka/blob/master/doc/repl.md#prepl).
 - Expose `pprint/simple-dispatch` [#627](https://github.com/borkdude/babashka/issues/627)
 - Support nested libspecs [borkdude/sci#399](https://github.com/borkdude/sci/issues/399)
 - Add OracleDB feature flag [#638](https://github.com/borkdude/babashka/issues/638) ([@holyjak](https://github.com/holyjak))
 - Docker build documentation improvements [#643](https://github.com/borkdude/babashka/issues/643) ([@holyjak](https://github.com/holyjak))
 - Implement `get-thread-bindings`, `var-get` and `var-set`
 
-### Fixed
+### Fixed / enhanced
 
 - Can't call symbol literal as function [#622](https://github.com/borkdude/babashka/issues/622)
 - `:or` in destructuring broken for `false` case
 - Support aliases in protocol fns [borkdude/sci#440](https://github.com/borkdude/sci/issues/440)
-- Preserver reader metadata [#654](https://github.com/borkdude/babashka/issues/654)
+- Reader metadata preservation and evaluation fixes [#654](https://github.com/borkdude/babashka/issues/654), [borkdude/sci#447](https://github.com/borkdude/sci/issues/447), [borkdude/sci#448](https://github.com/borkdude/sci/issues/448)
+- Optimization for constant colls [borkdude/sci#452](https://github.com/borkdude/sci/issues/452)
+- `ns-unmap` doesn't work for imported classes [borkdude/sci#432](https://github.com/borkdude/sci/issues/432)
+- Fix parsing of trailing uneval in reader conditional
+  [borkdude/edamame#65](https://github.com/borkdude/edamame/issues/65)
+- `symbol` works on sci var [borkdude/sci#453](https://github.com/borkdude/sci/issues/453)
 
 ### Changed
 
