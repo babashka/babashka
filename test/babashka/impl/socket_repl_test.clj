@@ -20,24 +20,24 @@
               reader (io/reader socket)
               sw (java.io.StringWriter.)
               writer (io/writer socket)]
-    (binding [*out* writer]
-      (println (str expr))
-      (println ":repl/quit\n"))
+    (binding [*out* writer] 
+      (println (str expr "\n")))
     (loop []
       (when-let [l (try (.readLine ^java.io.BufferedReader reader)
                         (catch java.net.SocketException _ nil))]
         ;; (prn :l l)
         (binding [*out* sw]
           (println l))
-        (recur)))
-    (let [s (str sw)]
-      (if (fn? expected)
-        (is (expected s))
-        (is (str/includes? s expected)
-            (format "\"%s\" does not contain \"%s\""
-                    s expected)))
-      s)))
-
+        (let [s (str sw)]
+          ;; (prn :s s :expected expected (str/includes? s expected))
+          (if (if (fn? expected)
+                (expected s)
+                (str/includes? s expected))
+            (is true)
+            (recur)))))
+    (binding [*out* writer]
+      (println ":repl/quit\n"))
+    :success))
 
 (def server-process (volatile! nil))
 
@@ -49,8 +49,9 @@
         (vreset! common/ctx ctx)
         (start-repl! "0.0.0.0:1666" ctx))
       (do (vreset! server-process
-                   (p/process ["./bb" "--socket-repl" "0.0.0.0:1666"]))
+                   (p/process ["./bb" "--socket-repl" "localhost:1666"]))
           (w/wait-for-port "localhost" 1666)))
+    (Thread/sleep 50)
     (is (socket-command "(+ 1 2 3)" "user=> 6"))
     (testing "&env"
       (socket-command "(defmacro bindings [] (mapv #(list 'quote %) (keys &env)))" "bindings")
@@ -76,12 +77,12 @@
                        :namespaces {'clojure.core.server clojure-core-server}
                        :features #{:bb}})]
         (vreset! common/ctx ctx)
-        (start-repl! "{:address \"0.0.0.0\" :accept clojure.core.server/repl :port 1666}"
+        (start-repl! "{:address \"localhost\" :accept clojure.core.server/repl :port 1666}"
                      ctx))
       (do (vreset! server-process
-                   (p/process ["./bb" "--socket-repl" "{:address \"0.0.0.0\" :accept clojure.core.server/repl :port 1666}"]))
-          (w/wait-for-port "localhost" 1666))
-      )
+                   (p/process ["./bb" "--socket-repl" "{:address \"localhost\" :accept clojure.core.server/repl :port 1666}"]))
+          (w/wait-for-port "localhost" 1666)))
+    (Thread/sleep 50)
     (is (socket-command "(+ 1 2 3)" "user=> 6"))
     (finally
       (if tu/jvm?
@@ -97,11 +98,12 @@
                        :namespaces {'clojure.core.server clojure-core-server}
                        :features #{:bb}})]
         (vreset! common/ctx ctx)
-        (start-repl! "{:address \"0.0.0.0\" :accept clojure.core.server/io-prepl :port 1666}"
+        (start-repl! "{:address \"localhost\" :accept clojure.core.server/io-prepl :port 1666}"
                      ctx))
       (do (vreset! server-process
-                   (p/process ["./bb" "--socket-repl" "{:address \"0.0.0.0\" :accept clojure.core.server/io-prepl :port 1666}"]))
+                   (p/process ["./bb" "--socket-repl" "{:address \"localhost\" :accept clojure.core.server/io-prepl :port 1666}"]))
           (w/wait-for-port "localhost" 1666)))
+    (Thread/sleep 50)
     (is (socket-command "(+ 1 2 3)" (fn [s]
                                       (let [m (edn/read-string s)]
                                         (and (= "6" (:val m))
