@@ -24,7 +24,8 @@
       (println (str expr))
       (println ":repl/quit\n"))
     (loop []
-      (when-let [l (.readLine ^java.io.BufferedReader reader)]
+      (when-let [l (try (.readLine ^java.io.BufferedReader reader)
+                        (catch java.net.SocketException _ nil))]
         ;; (prn :l l)
         (binding [*out* sw]
           (println l))
