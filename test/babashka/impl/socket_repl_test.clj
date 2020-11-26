@@ -3,6 +3,8 @@
    [babashka.impl.common :as common]
    [babashka.impl.socket-repl :refer [start-repl! stop-repl!]]
    [babashka.main :refer [clojure-core-server]]
+   [babashka.process :as p]
+   [babashka.wait :as w]
    [babashka.test-utils :as tu]
    [clojure.java.io :as io]
    [clojure.java.shell :refer [sh]]
@@ -34,27 +36,20 @@
                     s expected)))
       s)))
 
+
+(def server-process (volatile! nil))
+
 (deftest socket-repl-test
   (try
     (if tu/jvm?
-      (let [ctx (init {:bindings {'*command-line-args*
-                                  ["a" "b" "c"]}
-                       :env (atom {})
-                       :namespaces {'clojure.core.server clojure-core-server}
+      (let [ctx (init {:namespaces {'clojure.core.server clojure-core-server}
                        :features #{:bb}})]
         (vreset! common/ctx ctx)
         (start-repl! "0.0.0.0:1666" ctx))
-      (future
-        (sh "bash" "-c"
-            "echo '[1 2 3]' | ./bb --socket-repl 0.0.0.0:1666 a b c")))
-    ;; wait for server to be available
-    (when tu/native?
-      (while (not (zero? (:exit
-                          (sh "bash" "-c"
-                              "lsof -t -i:1666"))))))
+      (do (vreset! server-process
+                   (p/process ["./bb" "--socket-repl" "0.0.0.0:1666"]))
+          (w/wait-for-port "localhost" 1666)))
     (is (socket-command "(+ 1 2 3)" "user=> 6"))
-    (testing "*command-line-args*"
-      (is (socket-command '*command-line-args* "\"a\" \"b\" \"c\"")))
     (testing "&env"
       (socket-command "(defmacro bindings [] (mapv #(list 'quote %) (keys &env)))" "bindings")
       (socket-command "(defn bar [x y z] (bindings))" "bar")
@@ -68,8 +63,7 @@
     (finally
       (if tu/jvm?
         (stop-repl!)
-        (sh "bash" "-c"
-            "kill -9 $(lsof -t -i:1666)")))))
+        (p/destroy-tree @server-process)))))
 
 (deftest socket-repl-opts-test
   (try
@@ -82,20 +76,15 @@
         (vreset! common/ctx ctx)
         (start-repl! "{:address \"0.0.0.0\" :accept clojure.core.server/repl :port 1666}"
                      ctx))
-      (future
-        (sh "bash" "-c"
-            "./bb --socket-repl '{:address \"0.0.0.0\" :accept clojure.core.server/repl :port 1666}'")))
-    ;; wait for server to be available
-    (when tu/native?
-      (while (not (zero? (:exit
-                          (sh "bash" "-c"
-                              "lsof -t -i:1666"))))))
+      (do (vreset! server-process
+                   (p/process ["./bb" "--socket-repl" "{:address \"0.0.0.0\" :accept clojure.core.server/repl :port 1666}"]))
+          (w/wait-for-port "localhost" 1666))
+      )
     (is (socket-command "(+ 1 2 3)" "user=> 6"))
     (finally
       (if tu/jvm?
         (stop-repl!)
-        (sh "bash" "-c"
-            "kill -9 $(lsof -t -i:1666)")))))
+        (p/destroy-tree @server-process)))))
 
 (deftest socket-prepl-test
   (try
@@ -108,14 +97,9 @@
         (vreset! common/ctx ctx)
         (start-repl! "{:address \"0.0.0.0\" :accept clojure.core.server/io-prepl :port 1666}"
                      ctx))
-      (future
-        (sh "bash" "-c"
-            "./bb --socket-repl '{:address \"0.0.0.0\" :accept clojure.core.server/io-prepl :port 1666}'")))
-    ;; wait for server to be available
-    (when tu/native?
-      (while (not (zero? (:exit
-                          (sh "bash" "-c"
-                              "lsof -t -i:1666"))))))
+      (do (vreset! server-process
+                   (p/process ["./bb" "--socket-repl" "{:address \"0.0.0.0\" :accept clojure.core.server/io-prepl :port 1666}"]))
+          (w/wait-for-port "localhost" 1666)))
     (is (socket-command "(+ 1 2 3)" (fn [s]
                                       (and (str/includes? s ":val \"6\"")
                                            (str/includes? s ":ns \"user\"")
@@ -123,8 +107,7 @@
     (finally
       (if tu/jvm?
         (stop-repl!)
-        (sh "bash" "-c"
-            "kill -9 $(lsof -t -i:1666)")))))
+        (p/destroy-tree @server-process)))))
 
 ;;;; Scratch
 
