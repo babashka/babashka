@@ -39,6 +39,7 @@
     socket))
 
 (defn stop-repl! []
+  ;; This is only used by tests where we run one server at a time.
   (server/stop-servers))
 
 (comment
