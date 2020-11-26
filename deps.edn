@@ -36,7 +36,8 @@
             :jvm-opts ["-Djdk.attach.allowAttachSelf"]
             :main-opts ["-m" "babashka.profile"]}
            :lib-tests
-           {:extra-deps {babashka/clj-http-lite
+           {:extra-paths ["process/src" "process/test"]
+            :extra-deps {babashka/clj-http-lite
                          {:git/url "https://github.com/babashka/clj-http-lite"
                           :sha "f44ebe45446f0f44f2b73761d102af3da6d0a13e"}
                          borkdude/spartan.spec {:git/url "https://github.com/borkdude/spartan.spec"
