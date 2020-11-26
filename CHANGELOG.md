@@ -18,6 +18,7 @@ and code contributions. Thanks to sponsors on
 - Add OracleDB feature flag [#638](https://github.com/borkdude/babashka/issues/638) ([@holyjak](https://github.com/holyjak))
 - Docker build documentation improvements [#643](https://github.com/borkdude/babashka/issues/643) ([@holyjak](https://github.com/holyjak))
 - Implement `get-thread-bindings`, `var-get` and `var-set`
+- Print used port when starting nREPL server ([@plexus](https://github.com/plexus))
 
 ### Fixed / enhanced
 
