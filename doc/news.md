@@ -10,6 +10,9 @@ Twitter.
 Babashka [survey](https://nl.surveymonkey.com/r/H2HK3RC). Feedback will be used
 for future development.
 
+- NextJournal released a babashka [notebook environment](http://nextjournal.com/try/babashka?cm6=1).
+- [Interdep](https://github.com/rejoice-cljc/interdep) manages interdependent
+  dependencies using Clojure's tools.deps and babashka.
 - LA Clojure Meetup [presentation](https://youtu.be/RogyxI-GaGQ) by Nate Jones. Recorded in April 2020.
 - [Github action](https://github.com/turtlequeue/setup-babashka) for babashka by Nicolas Ha.
 - Oracle DB [feature flag](https://github.com/borkdude/babashka/blob/master/doc/build.md#feature-flags) by Jakub Holy added.

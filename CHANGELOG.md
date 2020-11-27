@@ -12,7 +12,12 @@ and code contributions. Thanks to sponsors on
 
 ### New
 
-- pREPL implementation [#664](https://github.com/borkdude/babashka/issues/664). See [docs](https://github.com/borkdude/babashka/blob/master/doc/repl.md#prepl).
+- pREPL implementation
+  [#664](https://github.com/borkdude/babashka/issues/664). See
+  [docs](https://github.com/borkdude/babashka/blob/master/doc/repl.md#prepl).
+  The pREPL is used by NextJournal to expose a babashka [notebook
+  environment](http://nextjournal.com/try/babashka?cm6=1).
+- [News page](doc/news.md) where you can follow the latest developments around babashka.
 - Expose `pprint/simple-dispatch` [#627](https://github.com/borkdude/babashka/issues/627)
 - Support nested libspecs [borkdude/sci#399](https://github.com/borkdude/sci/issues/399)
 - Add OracleDB feature flag [#638](https://github.com/borkdude/babashka/issues/638) ([@holyjak](https://github.com/holyjak))
