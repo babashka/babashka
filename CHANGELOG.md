@@ -2,7 +2,7 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
-## v0.2.4-SNAPSHOT (unreleased)
+## v0.2.4
 
 Thanks to [Nextjournal](https://nextjournal.com/) for funding work on
 prepl. Thanks to the community for taking the time to create issues, discussions

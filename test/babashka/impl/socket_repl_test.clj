@@ -4,12 +4,11 @@
    [babashka.impl.socket-repl :refer [start-repl! stop-repl!]]
    [babashka.main :refer [clojure-core-server]]
    [babashka.process :as p]
-   [babashka.wait :as w]
    [babashka.test-utils :as tu]
-   [clojure.java.io :as io]
-   [clojure.java.shell :refer [sh]]
-   [clojure.string :as str]
+   [babashka.wait :as w]
    [clojure.edn :as edn]
+   [clojure.java.io :as io]
+   [clojure.string :as str]
    [clojure.test :as t :refer [deftest is testing]]
    [sci.impl.opts :refer [init]]))
 
@@ -65,7 +64,8 @@
       (is (socket-command "(ns foo.bar) (ns-name *ns*)" "foo.bar")))
     (finally
       (if tu/jvm?
-        (stop-repl!)
+        (do (stop-repl!)
+            (Thread/sleep 100))
         (p/destroy-tree @server-process)))))
 
 (deftest socket-repl-opts-test
@@ -86,7 +86,8 @@
     (is (socket-command "(+ 1 2 3)" "user=> 6"))
     (finally
       (if tu/jvm?
-        (stop-repl!)
+        (do (stop-repl!)
+            (Thread/sleep 100))
         (p/destroy-tree @server-process)))))
 
 (deftest socket-prepl-test
@@ -111,7 +112,8 @@
                                              (= "(+ 1 2 3)" (:form m)))))))
     (finally
       (if tu/jvm?
-        (stop-repl!)
+        (do (stop-repl!)
+            (Thread/sleep 100))
         (p/destroy-tree @server-process)))))
 
 ;;;; Scratch
