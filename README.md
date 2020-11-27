@@ -121,6 +121,9 @@ $ pst.clj
 
 More examples can be found [here](examples/README.md).
 
+You can try babashka online with Nextjournal's babashka [notebook
+environment](http://nextjournal.com/try/babashka?cm6=1).
+
 ## Status
 
 Functionality regarding `clojure.core` and `java.lang` can be considered stable
