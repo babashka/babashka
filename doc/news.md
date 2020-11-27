@@ -10,6 +10,8 @@ Twitter.
 Babashka [survey](https://nl.surveymonkey.com/r/H2HK3RC). Feedback will be used
 for future development.
 
+- [Stash](https://github.com/rorokimdim/stash): a CLI for encrypted text storage
+  written in Haskell, accessible as pod from babashka and Python!
 - NextJournal released a babashka [notebook environment](http://nextjournal.com/try/babashka?cm6=1).
 - [Interdep](https://github.com/rejoice-cljc/interdep) manages interdependent
   dependencies using Clojure's tools.deps and babashka.

@@ -280,7 +280,7 @@ Additional libraries:
 - [`org.httpkit.server`](https://github.com/http-kit/http-kit) (experimental)
 
 See the
-[libraries](https://github.com/borkdude/babashka/blob/master/doc/libraries.md)
+[projects](https://github.com/borkdude/babashka/blob/master/doc/projects.md)
 page for libraries that are not built-in, but which you can load from source via
 the `--classpath` option.
 
@@ -371,7 +371,7 @@ to parse command line arguments, you may use the built-in `clojure.tools.cli`
 namespace (see
 [docs](https://github.com/borkdude/babashka#parsing-command-line-arguments)) or
 use the
-[nubank/docopt](https://github.com/borkdude/babashka/blob/master/doc/libraries.md#nubankdocopt)
+[nubank/docopt](https://github.com/borkdude/babashka/blob/master/doc/projects.md#nubankdocopt)
 library.
 
 ### Babashka namespaces
@@ -1017,7 +1017,7 @@ Differences with Clojure:
 - The `clojure.core.async/go` macro is not (yet) supported. For compatibility it
   currently maps to `clojure.core.async/thread`. More info [here](#coreasync).
 
-## [Libraries, pods and projects](doc/libraries.md)
+## [Libraries, pods and projects](doc/projects.md)
 
 A list of projects (scripts, libraries, pods and tools) known to work with babashka.
 
