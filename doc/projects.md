@@ -8,6 +8,9 @@ Table of contents:
 - [Pods](#pods)
 - [Projects](#projects)
 
+Also keep an eye on the [news](news.md) page for new projects, gists and other
+developments around babashka.
+
 ## Libraries
 
 ### [clj-http-lite](https://github.com/babashka/clj-http-lite)
@@ -281,6 +284,18 @@ user=> (ver/version-compare "1.0" "1.0.0")
 0
 ```
 
+### [matchete](https://github.com/xapix-io/matchete.git)
+
+Pattern matching library:
+
+``` clojure
+$ rlwrap bb -cp "$(clojure -Spath -Sdeps '{:deps {io.xapix/matchete {:mvn/version "1.2.0"}}}')"
+user=> (require '[matchete.core :as mc])
+nil
+user=> (mc/matches '{?k 1} {:x 1 :y 1})"
+({?k :y} {?k :x})
+```
+
 ## Pods
 
 [Babashka pods](https://github.com/babashka/babashka.pods) are programs that can
@@ -396,3 +411,7 @@ Github Action to install Babashka in your workflows. Useful to run bb scripts in
 ### [interdep](https://github.com/rejoice-cljc/interdep)
 
 Manage interdependent dependencies using Clojure's tools.deps and babashka.
+
+### [sha-words](https://github.com/ordnungswidrig/sha-words)
+
+A clojure program to turn a sha hash into list of nouns in a predictable jar.

@@ -10,6 +10,8 @@ Twitter.
 Babashka [survey](https://nl.surveymonkey.com/r/H2HK3RC). Feedback will be used
 for future development.
 
+- [sha-words](https://github.com/ordnungswidrig/sha-words): A clojure program to
+  turn a sha hash into list of nouns in a predictable jar.
 - [Stash](https://github.com/rorokimdim/stash): a CLI for encrypted text storage
   written in Haskell, accessible as pod from babashka and Python!
 - NextJournal released a babashka [notebook environment](http://nextjournal.com/try/babashka?cm6=1).
