@@ -45,7 +45,7 @@ As one user described it:
 * Provide a mixed Clojure/Bash DSL (see portability).
 * Replace existing shells. Babashka is a tool you can use inside existing shells like bash and it is designed to play well with them. It does not aim to replace them.
 
-### Managing expectations
+### Setting expectations
 
 Babashka uses [sci](https://github.com/borkdude/sci) for interpreting
 Clojure. Sci implements a substantial subset of Clojure. Interpreting code is in
