@@ -51,8 +51,8 @@ Babashka uses [sci](https://github.com/borkdude/sci) for interpreting
 Clojure. Sci implements a substantial subset of Clojure. Interpreting code is in
 general not as performant as executing compiled code. If your script takes more
 than a few seconds to run or has lots of loops, Clojure on the JVM may be a
-better fit, since the performance of Clojure on the JVM outweighs its startup
-time penalty. Read more about the differences with Clojure
+better fit as the performance on JVM is going to outweigh its
+startup time penalty. Read more about the differences with Clojure
 [here](#differences-with-clojure).
 
 ### Talk
