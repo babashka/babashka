@@ -303,12 +303,11 @@ Using `bb` with a shebang also works:
 ``` clojure
 #!/usr/bin/env bb
 
+(require '[babashka.curl :as curl])
+
 (defn get-url [url]
-  (println "Fetching url:" url)
-  (let [{:keys [:exit :err :out]} (shell/sh "curl" "-sS" url)]
-    (if (zero? exit) out
-      (do (println "ERROR:" err)
-          (System/exit 1)))))
+  (println "Downloading url:" url)
+  (curl/get url))
 
 (defn write-html [file html]
   (println "Writing file:" file)
