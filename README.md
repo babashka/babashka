@@ -191,6 +191,10 @@ You may also download a binary from
 [Github](https://github.com/borkdude/babashka/releases). For linux there is a
 static binary available which can be used on Alpine.
 
+## Docker
+
+Check out the image on [Docker hub](https://hub.docker.com/r/borkdude/babashka/).
+
 ## [News](doc/news.md)
 
 Check out the [news](doc/news.md) page to keep track of babashka-related news items.
@@ -203,15 +207,13 @@ Go [here](https://book.babashka.org/#built-in-namespaces) to see the full list o
 
 A list of projects (scripts, libraries, pods and tools) known to work with babashka.
 
-## Pods
+## [Pods](https://github.com/babashka/babashka.pods)
 
 Pods are programs that can be used as a Clojure library by
 babashka. Documentation is available in the [pod library
 repo](https://github.com/babashka/babashka.pods).
 
-## Docker
-
-Check out the image on [Docker hub](https://hub.docker.com/r/borkdude/babashka/).
+A list of available pods can be found [here](doc/projects#pods).
 
 ## Differences with Clojure
 
@@ -307,9 +309,6 @@ commit](https://github.com/borkdude/babashka/commit/02c7c51ad4b2b1ab9aa95c26a744
 - [joker](https://github.com/candid82/joker)
 - [closh](https://github.com/dundalek/closh)
 - [lumo](https://github.com/anmonteiro/lumo)
-
-## Examples
-[A collection of example scripts](examples/README.md).
 
 ## Thanks
 
