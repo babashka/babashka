@@ -191,22 +191,22 @@ You may also download a binary from
 [Github](https://github.com/borkdude/babashka/releases). For linux there is a
 static binary available which can be used on Alpine.
 
-## News
+## [News](doc/news.md)
 
 Check out the [news](doc/news.md) page to keep track of babashka-related news items.
 
-## Built-in namespaces
+## [Built-in namespaces](https://book.babashka.org/#built-in-namespaces)
 
 Go [here](https://book.babashka.org/#built-in-namespaces) to see the full list of built-in namespaces.
 
-## [Libraries, pods and projects](doc/projects.md)
+## [Projects](doc/projects.md)
 
 A list of projects (scripts, libraries, pods and tools) known to work with babashka.
 
 ## Pods
 
 Pods are programs that can be used as a Clojure library by
-babashka. Documentation is available in the [library
+babashka. Documentation is available in the [pod library
 repo](https://github.com/babashka/babashka.pods).
 
 ## Docker
