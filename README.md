@@ -82,7 +82,12 @@ $ ls | bb -i '(filter #(-> % io/file .isDirectory) *input*)'
 bb took 4ms.
 ```
 
-### Examples
+## Babashka book
+
+Read the [babashka book](https://book.babashka.org) to learn more about how to
+get the most out of babashka.
+
+## Examples
 
 Read the output from a shell command as a lazy seq of strings:
 
@@ -193,14 +198,6 @@ Check out the image on [Docker hub](https://hub.docker.com/r/borkdude/babashka/)
 ## News
 
 Check out the [news](doc/news.md) page to keep track of babashka-related news items.
-
-## Babashka book
-
-See the [babashka book](https://book.babashka.org) for more details on how to
-use babashka.
-
-## Usage
-
 
 ## Differences with Clojure
 
