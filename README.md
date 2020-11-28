@@ -238,8 +238,57 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
 
 ### Built-in namespaces
 
-See the [built-in namespaces](https://book.babashka.org/#_built_in_namespaces)
-section in babashka book.
+In addition to `clojure.core`, the following namespaces are available. Some are
+available through pre-defined aliases in the `user` namespace, which can be
+handy for one-liners. If not all vars are available, they are enumerated
+explicitly. If some important var is missing, an issue or PR is welcome.
+
+From Clojure:
+
+- `clojure.core`
+- `clojure.core.protocols`: `Datafiable`, `Navigable`
+- `clojure.data`
+- `clojure.datafy`
+- `clojure.edn` aliased as `edn`
+- `clojure.java.browse`
+- `clojure.java.io` aliased as `io`:
+  - `as-relative-path`, `as-url`, `copy`, `delete-file`, `file`, `input-stream`,
+    `make-parents`, `output-stream`, `reader`, `resource`, `writer`
+- `clojure.java.shell` aliased as `shell`
+- `clojure.main`: `demunge`, `repl`, `repl-requires`
+- `clojure.pprint`: `pprint`, `cl-format`
+- `clojure.set` aliased as `set`
+- `clojure.string` aliased as `str`
+- `clojure.stacktrace`
+- `clojure.test`
+- `clojure.zip`
+
+Additional libraries:
+
+- [`babashka.curl`](https://github.com/borkdude/babashka.curl)
+- [`babashka/process`](https://github.com/babashka/process)
+- [`bencode.core`](https://github.com/nrepl/bencode) aliased as `bencode`: `read-bencode`, `write-bencode`
+- [`cheshire.core`](https://github.com/dakrone/cheshire) aliased as `json`
+- [`clojure.core.async`](https://clojure.github.io/core.async/) aliased as
+  `async`. Also see [docs](https://github.com/borkdude/babashka#coreasync).
+- [`clojure.data.csv`](https://github.com/clojure/data.csv) aliased as `csv`
+- [`clojure.data.xml`](https://github.com/clojure/data.xml) aliased as `xml`
+- [`clojure.tools.cli`](https://github.com/clojure/tools.cli) aliased as `tools.cli`
+- [`clj-yaml.core`](https://github.com/clj-commons/clj-yaml) alias as `yaml`
+- [`cognitect.transit`](https://github.com/cognitect/transit-clj) aliased as `transit`
+- [`org.httpkit.client`](https://github.com/http-kit/http-kit)
+- [`org.httpkit.server`](https://github.com/http-kit/http-kit) (experimental)
+
+See the
+[projects](https://github.com/borkdude/babashka/blob/master/doc/projects.md)
+page for libraries that are not built-in, but which you can load from source via
+the `--classpath` option.
+
+See the [build](https://github.com/borkdude/babashka/blob/master/doc/build.md)
+page for built-in libraries that can be enabled via feature flags, if you want
+to compile babashka yourself.
+
+A selection of Java classes are available, see `babashka/impl/classes.clj`.
 
 ### Running a script
 
