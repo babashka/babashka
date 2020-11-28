@@ -312,15 +312,18 @@ commit](https://github.com/borkdude/babashka/commit/02c7c51ad4b2b1ab9aa95c26a744
 - [closh](https://github.com/dundalek/closh)
 - [lumo](https://github.com/anmonteiro/lumo)
 
-## Thanks
+## Contributors
 
-- [adgoji](https://www.adgoji.com/) for financial support
+Thanks to all the people that contributed to babashka:
+
+- [Adgoji](https://www.adgoji.com/) for financial support
 - [CircleCI](https://circleci.com/) for CI and additional support
 - [Nikita Prokopov](https://github.com/tonsky) for the logo
-- [contributors](https://github.com/borkdude/babashka/graphs/contributors) and
+- [Contributors](https://github.com/borkdude/babashka/graphs/contributors) and
   other users posting issues with bug reports and ideas
-
-## Contributors
+- [Github sponsors](https://github.com/sponsors/borkdude)
+- [OpenCollective sponsors](https://opencollective.com/babashka)
+- [Clojurists Together](https://www.clojuriststogether.org/)
 
 ### Code Contributors
 
