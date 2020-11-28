@@ -1084,6 +1084,12 @@ etc.). See the [feature flag documentation](doc/build.md#feature-flags) and the
 implementation of the existing feature flags ([example
 commit](https://github.com/borkdude/babashka/commit/02c7c51ad4b2b1ab9aa95c26a74448b138fe6659)).
 
+## Babashka book
+
+In the future we will migrate examples from this README to the babashka
+[book](https://book.babashka.org/). This is work in progress and you are welcome
+to contribute.
+
 ## Related projects
 
 - [planck](https://planck-repl.org/)
