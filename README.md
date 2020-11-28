@@ -84,8 +84,8 @@ bb took 4ms.
 
 ## Babashka book
 
-Read the [babashka book](https://book.babashka.org) to learn more about how to
-get the most out of babashka.
+The [babashka book](https://book.babashka.org) contains detailed information
+about how to get the most out of babashka scripting.
 
 ## Examples
 
@@ -125,6 +125,8 @@ $ pst.clj
 ```
 
 More examples can be found [here](examples/README.md).
+
+## Try online
 
 You can try babashka online with Nextjournal's babashka [notebook
 environment](http://nextjournal.com/try/babashka?cm6=1).
