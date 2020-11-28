@@ -191,13 +191,27 @@ You may also download a binary from
 [Github](https://github.com/borkdude/babashka/releases). For linux there is a
 static binary available which can be used on Alpine.
 
-## Docker
-
-Check out the image on [Docker hub](https://hub.docker.com/r/borkdude/babashka/).
-
 ## News
 
 Check out the [news](doc/news.md) page to keep track of babashka-related news items.
+
+## Built-in namespaces
+
+Go [here](https://book.babashka.org/#built-in-namespaces) to see the full list of built-in namespaces.
+
+## [Libraries, pods and projects](doc/projects.md)
+
+A list of projects (scripts, libraries, pods and tools) known to work with babashka.
+
+## Pods
+
+Pods are programs that can be used as a Clojure library by
+babashka. Documentation is available in the [library
+repo](https://github.com/babashka/babashka.pods).
+
+## Docker
+
+Check out the image on [Docker hub](https://hub.docker.com/r/borkdude/babashka/).
 
 ## Differences with Clojure
 
@@ -229,16 +243,6 @@ Differences with Clojure:
 
 - The `clojure.core.async/go` macro is not (yet) supported. For compatibility it
   currently maps to `clojure.core.async/thread`. More info [here](#coreasync).
-
-## [Libraries, pods and projects](doc/projects.md)
-
-A list of projects (scripts, libraries, pods and tools) known to work with babashka.
-
-## Pods
-
-Pods are programs that can be used as a Clojure library by
-babashka. Documentation is available in the [library
-repo](https://github.com/babashka/babashka.pods).
 
 ## Package babashka script as a AWS Lambda
 
