@@ -106,6 +106,7 @@
 
 (when features/selmer?
   (require '[babashka.impl.selmer-parser]))
+
 (when features/lanterna?
   (require '[babashka.impl.lanterna]))
 

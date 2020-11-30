@@ -132,6 +132,8 @@ then
     BABASHKA_LEIN_PROFILES+=",+feature/selmer"
 else
     BABASHKA_LEIN_PROFILES+=",-feature/selmer"
+fi
+
 if [ "$BABASHKA_FEATURE_LANTERNA" = "true" ]
 then
     BABASHKA_LEIN_PROFILES+=",+feature/lanterna"
