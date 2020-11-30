@@ -1,7 +1,9 @@
 (ns babashka.impl.clojure.core
   {:no-doc true}
-  (:refer-clojure :exclude [future read read-string])
-  (:require [borkdude.graal.locking :as locking]
+  (:refer-clojure :exclude [future read+string])
+  (:require [babashka.impl.common :as common]
+            [borkdude.graal.locking :as locking]
+            [clojure.string :as str]
             [sci.core :as sci]
             [sci.impl.namespaces :refer [copy-core-var]]))
 
@@ -18,6 +20,24 @@
      ret#))
 
 (def data-readers (sci/new-dynamic-var '*data-readers* nil))
+
+(defn read+string
+  "Added for compatibility. Must be used with
+  clojure.lang.LineNumberingPushbackReader. Does not support all of
+  the options from the original yet."
+  ([sci-ctx]
+   (read+string sci-ctx @sci/in))
+  ([sci-ctx stream]
+   (read+string sci-ctx stream true nil))
+  ([sci-ctx stream eof-error? eof-value]
+   (read+string sci-ctx stream eof-error? eof-value false))
+  ([sci-ctx ^clojure.lang.LineNumberingPushbackReader stream _eof-error? eof-value _recursive?]
+   (let [_ (.captureString stream)
+         v (sci/parse-next sci-ctx stream {:eof eof-value})
+         s (str/trim (.getString stream))]
+     [(if (identical? :sci.core/eof v)
+        eof-value
+        v) s])))
 
 (def core-extras
   {'file-seq (copy-core-var file-seq)
@@ -37,4 +57,6 @@
    'remove-tap (copy-core-var remove-tap)
    '*data-readers* data-readers
    'default-data-readers default-data-readers
-   'xml-seq (copy-core-var xml-seq)})
+   'xml-seq (copy-core-var xml-seq)
+   'read+string (fn [& args]
+                  (apply read+string @common/ctx args))})

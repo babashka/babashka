@@ -60,6 +60,24 @@ $ export BABASHKA_XMX="-J-Xmx6500m"
 Note: setting the max heap size to a low value can cause the build to crash or
 take long to complete.
 
+### Alternative: Build inside Docker
+
+To build a Linux version of babashka, you can use `docker build`, enabling the 
+desired features via `--build-arg` like this:
+
+```shell
+docker build --build-arg BABASHKA_FEATURE_JDBC=true --target BASE -t bb-builder .
+container_id=$(docker create bb-builder)
+docker cp $container_id:/opt/bb bb # copy to ./bb on the host file system
+docker rm $container_id
+``` 
+
+NOTE: If you get _Error: Image build request failed with exit status 137_ then
+check whether Docker is allowed to use enough memory (e.g. in Docker Desktop
+preferences). If it is, then increase the memory GraalVM can use, for example
+by adding `--build-arg BABASHKA_XMX="-J-Xmx8g"` 
+(or whatever Docker has available, bigger than the default).
+
 ## Windows
 
 Run `script\uberjar.bat` followed by `script\compile.bat`.
@@ -82,11 +100,17 @@ Babashka supports the following feature flags:
 | `BABASHKA_FEATURE_JDBC` | Includes the [next.jdbc](https://github.com/seancorfield/next-jdbc) library | `false`    |
 | `BABASHKA_FEATURE_POSTGRESQL` | Includes the [PostgresSQL](https://jdbc.postgresql.org/) JDBC driver |  `false` |
 | `BABASHKA_FEATURE_HSQLDB` | Includes the [HSQLDB](http://www.hsqldb.org/) JDBC driver | `false` |
+| `BABASHKA_FEATURE_ORACLEDB` | Includes the [Oracle](https://www.oracle.com/database/technologies/appdev/jdbc.html) JDBC driver | `false` |
 | `BABASHKA_FEATURE_DATASCRIPT` | Includes [datascript](https://github.com/tonsky/datascript) | `false` |
+| `BABASHKA_FEATURE_LANTERNA` | Includes [clojure-lanterna](https://github.com/babashka/clojure-lanterna) | `false` |
 
 Note that httpkit server is currently experimental, the feature flag could be toggled to `false` in a future release.
 
 To disable all of the above features, you can set `BABASHKA_LEAN` to `true`.
+
+Here is an [example
+commit](https://github.com/borkdude/babashka/commit/13f65f05aeff891678e88965d9fbd146bfa87f4e)
+that can be used as a checklist when you want to create a new feature flag.
 
 ### HyperSQL
 
@@ -114,3 +138,27 @@ $ script/compile
 ```
 
 Note: there is now a [pod](https://github.com/babashka/babashka-sql-pods) for working with PostgreSQL.
+
+### Lanterna
+
+To compile babashka with the [babashka/clojure-lanterna](https://github.com/babashka/clojure-lanterna) library:
+
+``` shell
+$ export BABASHKA_FEATURE_LANTERNA=true
+$ script/uberjar
+$ script/compile
+```
+
+Example program:
+
+``` clojure
+(require '[lanterna.terminal :as terminal])
+
+(def terminal (terminal/get-terminal))
+
+(terminal/start terminal)
+(terminal/put-string terminal "Hello TUI Babashka!" 10 5)
+(terminal/flush terminal)
+
+(read-line)
+```

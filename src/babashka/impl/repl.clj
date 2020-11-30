@@ -45,13 +45,15 @@
    (let [in (r/indexing-push-back-reader (r/push-back-reader @sci/in))]
      (m/repl
       :init (or init
-                #(do (sio/println "Babashka"
-                                  (str "v" (str/trim (slurp (io/resource "BABASHKA_VERSION"))))
-                                  "REPL.")
-                     (sio/println "Use :repl/quit or :repl/exit to quit the REPL.")
-                     (sio/println "Clojure rocks, Bash reaches.")
-                     (sio/println)
-                     (eval-form sci-ctx '(use 'clojure.repl))))
+                (fn []
+                  (sci/with-bindings {sci/out @sci/err}
+                    (sio/println "Babashka"
+                                 (str "v" (str/trim (slurp (io/resource "BABASHKA_VERSION"))))
+                                 "REPL.")
+                    (sio/println "Use :repl/quit or :repl/exit to quit the REPL.")
+                    (sio/println "Clojure rocks, Bash reaches.")
+                    (sio/println))
+                  (eval-form sci-ctx '(use 'clojure.repl))))
       :read (or read
                 (fn [_request-prompt request-exit]
                   (let [v (parser/parse-next sci-ctx in)]
@@ -62,18 +64,12 @@
                       v))))
       :eval (or eval
                 (fn [expr]
-                  (sci/with-bindings {sci/file "<repl>"}
-                    (let [ret (eval-form (update sci-ctx
-                                                 :env
-                                                 (fn [env]
-                                                   (swap! env update-in [:namespaces 'clojure.core]
-                                                          assoc
-                                                          '*1 *1
-                                                          '*2 *2
-                                                          '*3 *3
-                                                          '*e *e)
-                                                   env))
-                                         expr)]
+                  (sci/with-bindings {sci/file "<repl>"
+                                      sci/*1 *1
+                                      sci/*2 *2
+                                      sci/*3 *3
+                                      sci/*e *e}
+                    (let [ret (eval-form sci-ctx expr)]
                       ret))))
       :need-prompt (or need-prompt (fn [] true))
       :prompt (or prompt #(sio/printf "%s=> " (vars/current-ns-name)))

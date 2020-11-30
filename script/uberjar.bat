@@ -28,6 +28,12 @@ if "%BABASHKA_FEATURE_HSQLDB%"=="true" (
   set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/hsqldb
 )
 
+if "%BABASHKA_FEATURE_ORACLEDB%"=="true" (
+  set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/oracledb
+) else (
+  set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/oracledb
+)
+
 if not "%BABASHKA_FEATURE_XML%"=="false" (
   set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/xml
 ) else (
@@ -74,6 +80,12 @@ if not "%BABASHKA_FEATURE_HTTPKIT_SERVER%"=="false" (
 set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/httpkit-server
 ) else (
 set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/httpkit-server
+)
+
+if "%BABASHKA_FEATURE_LANTERNA%"=="true" (
+  set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/lanterna
+) else (
+  set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/lanterna
 )
 
 call lein with-profiles %BABASHKA_LEIN_PROFILES% bb "(+ 1 2 3)"
