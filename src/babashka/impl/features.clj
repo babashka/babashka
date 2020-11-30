@@ -15,8 +15,10 @@
 ;; excluded by default
 (def jdbc? (= "true" (System/getenv "BABASHKA_FEATURE_JDBC")))
 (def postgresql? (= "true" (System/getenv "BABASHKA_FEATURE_POSTGRESQL")))
+(def oracledb? (= "true" (System/getenv "BABASHKA_FEATURE_ORACLEDB")))
 (def hsqldb? (= "true" (System/getenv "BABASHKA_FEATURE_HSQLDB")))
 (def datascript? (= "true" (System/getenv "BABASHKA_FEATURE_DATASCRIPT")))
 (def ring? (= "true" (System/getenv "BABASHKA_FEATURE_RING")))
 (def reitit? (= "true" (System/getenv "BABASHKA_FEATURE_REITIT")))
 (def selmer? (= "true" (System/getenv "BABASHKA_FEATURE_SELMER")))
+(def lanterna? (= "true" (System/getenv "BABASHKA_FEATURE_LANTERNA")))

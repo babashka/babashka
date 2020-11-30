@@ -1,6 +1,85 @@
 # Changelog
 
-For a list of breaking changes, check [here](#breaking-changes)
+For a list of breaking changes, check [here](#breaking-changes).
+
+## v0.2.4
+
+Thanks to [Nextjournal](https://nextjournal.com/) for funding work on
+prepl. Thanks to the community for taking the time to create issues, discussions
+and code contributions. Thanks to sponsors on
+[OpenCollective](https://opencollective.com/babashka) and
+[Github](https://github.com/sponsors/borkdude) for continued financial support.
+
+### New
+
+- pREPL implementation
+  [#664](https://github.com/borkdude/babashka/issues/664). See
+  [docs](https://github.com/borkdude/babashka/blob/master/doc/repl.md#prepl).
+  The pREPL is used by NextJournal to expose a babashka [notebook
+  environment](http://nextjournal.com/try/babashka?cm6=1).
+- [News page](doc/news.md) where you can follow the latest developments around babashka.
+- Expose `pprint/simple-dispatch` [#627](https://github.com/borkdude/babashka/issues/627)
+- Support nested libspecs [borkdude/sci#399](https://github.com/borkdude/sci/issues/399)
+- Add OracleDB feature flag [#638](https://github.com/borkdude/babashka/issues/638) ([@holyjak](https://github.com/holyjak))
+- Docker build documentation improvements [#643](https://github.com/borkdude/babashka/issues/643) ([@holyjak](https://github.com/holyjak))
+- Implement `get-thread-bindings`, `var-get` and `var-set`
+- Print used port when starting nREPL server ([@plexus](https://github.com/plexus))
+
+### Fixed / enhanced
+
+- Can't call symbol literal as function [#622](https://github.com/borkdude/babashka/issues/622)
+- `:or` in destructuring broken for `false` case
+- Support aliases in protocol fns [borkdude/sci#440](https://github.com/borkdude/sci/issues/440)
+- Reader metadata preservation and evaluation fixes [#654](https://github.com/borkdude/babashka/issues/654), [borkdude/sci#447](https://github.com/borkdude/sci/issues/447), [borkdude/sci#448](https://github.com/borkdude/sci/issues/448)
+- Optimization for constant colls [borkdude/sci#452](https://github.com/borkdude/sci/issues/452)
+- `ns-unmap` doesn't work for imported classes [borkdude/sci#432](https://github.com/borkdude/sci/issues/432)
+- Fix parsing of trailing uneval in reader conditional
+  [borkdude/edamame#65](https://github.com/borkdude/edamame/issues/65)
+- `symbol` works on sci var [borkdude/sci#453](https://github.com/borkdude/sci/issues/453)
+
+### Changed
+
+- Remove cheshire smile functions [#658](https://github.com/borkdude/babashka/issues/658)
+- `babashka.curl` now calls curl with `--compressed` by default [borkdude/babashka.curl#28](https://github.com/borkdude/babashka.curl)
+
+## v0.2.3 (2020-10-21)
+
+Thanks to [@tzzh](https://github.com/tzzh), [@Heliosmaster](https://github.com/Heliosmaster), [@lispyclouds](https://github.com/lispyclouds) and [@kwrooijen](https://github.com/kwrooijen) for contributing to this release. Thanks to [Clojurists Together](https://www.clojuriststogether.org/) for sponsoring this release. Thanks to [Adgoji](https://github.com/AdGoji) and other sponsors on [OpenCollective](https://opencollective.com/babashka) and [Github](https://github.com/sponsors/borkdude) for their ongoing support.
+
+### New
+
+- [babashka/process](https://github.com/babashka/process): a Clojure library for working with `java.lang.Process`
+- [pod-tzzh-mail](https://github.com/tzzh/pod-tzzh-mail): a pod for sending mail by [@tzzh](https://github.com/tzzh)
+- [pod-babashka-lanterna](https://github.com/babashka/pod-babashka-lanterna): a pod for creating TUI apps
+- [pod.xledger.sql-server](https://github.com/xledger/pod_sql_server): a pod for interacting with SQL Server
+- Add `lazy-cat` [#605](https://github.com/borkdude/babashka/issues/605)
+- Support error output in babashka.nrepl
+  [babashka.nrepl#28](https://github.com/babashka/babashka.nrepl/issues/28)
+  ([@tzzh](https://github.com/tzzh))
+- Add lanterna [feature flag](https://github.com/borkdude/babashka/commit/13f65f05aeff891678e88965d9fbd146bfa87f4e) ([@kwrooijen](https://github.com/kwrooijen))
+- Add socket support to pods [babashka/pods#2](https://github.com/babashka/pods/issues/2)
+- Add `curl` to borkdude/babashka Docker image to support `babashka.curl` ([@hansbugge](https://github.com/hansbugge))
+- Add `transit+json` format support to pods [babashka/pods#21](https://github.com/babashka/pods/issues/21)
+- Add `bound?` [borkdude/sci#430](https://github.com/borkdude/sci/issues/430)
+- Add [portal](https://github.com/borkdude/babashka/tree/master/examples#portal) example
+- Add `*print-namespace-maps*` [borkdude/sci#428](https://github.com/borkdude/sci/issues/428)
+- Support `clojure.java.io/Coercions` protocol [#601](https://github.com/borkdude/babashka/issues/601)
+- Add `clojure.pprint/write` [#607](https://github.com/borkdude/babashka/issues/607)
+- Add pretty-printer vars from `cheshire.core` [#619](https://github.com/borkdude/babashka/issues/619)
+
+### Fixed
+
+- `pprint/print-table` should write to `sci/out` [#611](https://github.com/borkdude/babashka/issues/611)
+- `System/exit` doesn't work in REPL [#605](https://github.com/borkdude/babashka/issues/606)
+- Fix pod destroy function [#615](https://github.com/borkdude/babashka/issues/615)
+- Bind `*file*` in nREPL server [babashka/babashka.nrepl#31](https://github.com/babashka/babashka.nrepl/issues/31)
+- Support `map->` constructor on defrecords [borkdude/sci#431](https://github.com/borkdude/sci/issues/431)
+- Import should return class [#610](https://github.com/borkdude/babashka/issues/610)
+
+### Changed
+
+- The [Docker image](https://hub.docker.com/r/borkdude/babashka/) is now based
+  on Ubuntu instead of Alpine.
 
 ## v0.2.2 (2020-09-30)
 
@@ -173,6 +252,14 @@ Details about releases prior to v0.1.0 can be found
 [here](https://github.com/borkdude/babashka/releases).
 
 ## Breaking changes
+
+### v0.2.4
+
+- Remove cheshire smile functions [#658](https://github.com/borkdude/babashka/issues/658)
+
+### v0.2.3
+
+- The [Docker image](https://hub.docker.com/r/borkdude/babashka/) is now based on Ubuntu instead of Alpine.
 
 ### v0.0.90
 

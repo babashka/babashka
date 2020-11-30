@@ -15,8 +15,7 @@
 
 (defn repl! []
   (start-repl! (init {:bindings {'*command-line-args*
-                                 ["a" "b" "c"]}
-                      :env (atom {})})))
+                                 ["a" "b" "c"]}})))
 
 (defn assert-repl [expr expected]
   (is (str/includes? (sci/with-out-str

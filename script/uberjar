@@ -12,21 +12,19 @@ set -eo pipefail
 
 if [ "$BABASHKA_LEAN" = "true" ]
 then
-    export BABASHKA_FEATURE_JDBC=false
-    export BABASHKA_FEATURE_POSTGRESQL=false
-    export BABASHKA_FEATURE_HSQLDB=false
-    export BABASHKA_FEATURE_XML=false
-    export BABASHKA_FEATURE_YAML=false
-    export BABASHKA_FEATURE_CORE_ASYNC=false
-    export BABASHKA_FEATURE_CSV=false
-    export BABAHSKA_FEATURE_TRANSIT=false
-    export BABASHKA_FEATURE_JAVA_TIME=false
-    export BABASHKA_FEATURE_JAVA_NIO=false
-    export BABASHKA_FEATURE_HTTPKIT_CLIENT=false
-    export BABASHKA_FEATURE_HTTPKIT_SERVER=false
-    export BABASHKA_FEATURE_RING=false
-    export BABASHKA_FEATURE_REITIT=false
-    export BABASHKA_FEATURE_SELMER=false
+    # Remove all the default features, unless explicitly set to true:
+    export BABASHKA_FEATURE_XML="${BABASHKA_FEATURE_XML:-false}"
+    export BABASHKA_FEATURE_YAML="${BABASHKA_FEATURE_YAML:-false}"
+    export BABASHKA_FEATURE_CORE_ASYNC="${BABASHKA_FEATURE_CORE_ASYNC:-false}"
+    export BABASHKA_FEATURE_CSV="${BABASHKA_FEATURE_CSV:-false}"
+    export BABAHSKA_FEATURE_TRANSIT="${BABAHSKA_FEATURE_TRANSIT:-false}"
+    export BABASHKA_FEATURE_JAVA_TIME="${BABASHKA_FEATURE_JAVA_TIME:-false}"
+    export BABASHKA_FEATURE_JAVA_NIO="${BABASHKA_FEATURE_JAVA_NIO:-false}"
+    export BABASHKA_FEATURE_HTTPKIT_CLIENT="${BABASHKA_FEATURE_HTTPKIT_CLIENT:-false}"
+    export BABASHKA_FEATURE_HTTPKIT_SERVER="${BABASHKA_FEATURE_HTTPKIT_SERVER:-false}"
+    export BABASHKA_FEATURE_RING="${BABASHKA_FEATURE_RING:-false}"
+    export BABASHKA_FEATURE_REITIT="${BABASHKA_FEATURE_REITIT:-false}"
+    export BABASHKA_FEATURE_SELMER="${BABASHKA_FEATURE_SELMER:-false}"
 fi
 
 BABASHKA_LEIN_PROFILES="+uberjar"
@@ -50,6 +48,13 @@ then
     BABASHKA_LEIN_PROFILES+=",+feature/hsqldb"
 else
     BABASHKA_LEIN_PROFILES+=",-feature/hsqldb"
+fi
+
+if [ "$BABASHKA_FEATURE_ORACLEDB" = "true" ]
+then
+    BABASHKA_LEIN_PROFILES+=",+feature/oracledb"
+else
+    BABASHKA_LEIN_PROFILES+=",-feature/oracledb"
 fi
 
 if [ "$BABASHKA_FEATURE_XML" != "false" ]
@@ -127,6 +132,11 @@ then
     BABASHKA_LEIN_PROFILES+=",+feature/selmer"
 else
     BABASHKA_LEIN_PROFILES+=",-feature/selmer"
+if [ "$BABASHKA_FEATURE_LANTERNA" = "true" ]
+then
+    BABASHKA_LEIN_PROFILES+=",+feature/lanterna"
+else
+    BABASHKA_LEIN_PROFILES+=",-feature/lanterna"
 fi
 
 if [ -z "$BABASHKA_JAR" ]; then

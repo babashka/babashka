@@ -115,6 +115,7 @@
           java.lang.Exception
           java.lang.Float
           java.lang.Integer
+          java.lang.Iterable
           java.lang.Long
           java.lang.Number
           java.lang.NumberFormatException
@@ -241,22 +242,31 @@
     :methods [borkdude.graal.LockFix] ;; support for locking
 
     :fields [clojure.lang.PersistentQueue]
-    :instance-checks [clojure.lang.IObj
+    :instance-checks [clojure.lang.Cons
+                      clojure.lang.Cycle
+                      clojure.lang.IObj
                       clojure.lang.IFn
                       clojure.lang.IPending
                       ;; clojure.lang.IDeref
                       ;; clojure.lang.IAtom
                       clojure.lang.IEditableCollection
                       clojure.lang.IMapEntry
+                      clojure.lang.IPersistentCollection
                       clojure.lang.IPersistentMap
                       clojure.lang.IPersistentSet
+                      ;;clojure.lang.PersistentHashSet ;; temp for meander
                       clojure.lang.IPersistentVector
                       clojure.lang.IRecord
+                      clojure.lang.IRef
                       clojure.lang.ISeq
+                      clojure.lang.Iterate
+                      clojure.lang.LazySeq
                       clojure.lang.Named
                       clojure.lang.Keyword
+                      clojure.lang.Repeat
                       clojure.lang.Symbol
                       clojure.lang.Sequential
+                      clojure.lang.Seqable
                       java.util.List]
     :custom ~custom-map})
 
@@ -297,8 +307,8 @@
                    java.nio.file.FileSystem
                    (instance? java.nio.file.PathMatcher v)
                    java.nio.file.PathMatcher
-                   (instance? java.util.stream.Stream v)
-                   java.util.stream.Stream)))))
+                   (instance? java.util.stream.BaseStream v)
+                   java.util.stream.BaseStream)))))
 
 (def class-map (gen-class-map))
 
