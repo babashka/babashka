@@ -10,6 +10,10 @@ Twitter.
 Babashka [survey](https://nl.surveymonkey.com/r/H2HK3RC). Feedback will be used
 for future development.
 
+Babashka 0.2.4 released. See [release
+notes](https://github.com/borkdude/babashka/blob/master/CHANGELOG.md#v024).
+
+- [Gaiwan.co](https://github.com/lambdaisland/gaiwan_co#tech-stack) are building their static HTML with babashka and [bootleg](https://github.com/retrogradeorbit/bootleg#babashka-pod-usage).
 - [sha-words](https://github.com/ordnungswidrig/sha-words): A clojure program to
   turn a sha hash into list of nouns in a predictable jar.
 - [Stash](https://github.com/rorokimdim/stash): a CLI for encrypted text storage
