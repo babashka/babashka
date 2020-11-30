@@ -5,4 +5,9 @@ This fork of [babashka](https://github.com/borkdude/babashka) includes the follo
 - [Muuntaja](https://github.com/metosin/muuntaja) data encoding
 - [Selmer](https://github.com/yogthos/Selmer) html templating
 
-See [here](https://github.com/kloimhardt/bb-web#lumius-guestbook-rich-back-end) for an example.
+See the [bb-web](https://github.com/kloimhardt/bb-web#lumius-guestbook-rich-back-end) repository for an example.
+
+A binary for MS-Windows is provided in each release.
+
+To build binaries for any platform, follow the [build instructions](https://github.com/borkdude/babashka/blob/master/doc/build.md). Make sure to have the shell environment variables `BABASHKA_FEATURE_RING`, `BABASHKA_FEATURE_REITIT`, `BABASHKA_FEATURE_SELMER` set to `true` (in bash via the `export` command).
+
