@@ -11,3 +11,4 @@ A binary for MS-Windows is provided in the release artefacts. Install also via [
 
 To build binaries for any platform, follow the [build instructions](https://github.com/borkdude/babashka/blob/master/doc/build.md). Make sure to have the shell environment variables `BABASHKA_FEATURE_RING`, `BABASHKA_FEATURE_REITIT`, `BABASHKA_FEATURE_SELMER` set to `true` (in bash via the `export` command).
 
+
