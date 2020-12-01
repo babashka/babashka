@@ -1,4 +1,4 @@
-This is a fork of [babashka](https://github.com/borkdude/babashka) which adds the following features:
+This is a fork of [babashka](https://github.com/borkdude/babashka) which adds the following 4 features:
 
 - [Ring](https://github.com/ring-clojure/ring) middleware
 - [Reitit](https://github.com/metosin/reitit) routing
