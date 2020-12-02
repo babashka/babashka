@@ -13,13 +13,6 @@ A Clojure [babushka](https://en.wikipedia.org/wiki/Headscarf) for the grey areas
     <a href="https://github.com/laheadle">@laheadle</a> on Clojurians Slack
 </blockquote>
 
-## Survey
-
-Please participate in the [babashka survey](https://nl.surveymonkey.com/r/H2HK3RC)!
-
-It only takes a few minutes to fill out. The survey will run until December 1.
-I'll publish the results afterwards.
-
 ## Introduction
 
 The main idea behind babashka is to leverage Clojure in places where you would
