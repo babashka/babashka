@@ -7,13 +7,14 @@ Twitter.
 
 ## 2020-12
 
-This month brings you a talk about [babashka and sci
+A new babashka talk: [Babashka and sci
 internals](https://youtu.be/pgNp4Lk3gf0). Also see
 [slides](https://speakerdeck.com/borkdude/babashka-and-sci-internals-at-london-clojurians-december-2020)
-and [REPL session](https://gist.github.com/borkdude/66a4d844668e12ae1a8277af10d6cc4b).
+and [REPL
+session](https://gist.github.com/borkdude/66a4d844668e12ae1a8277af10d6cc4b).
 
 The data from the babashka survey is now available
-[here](https://nl.surveymonkey.com/results/SM-8W8V36DZ7/). An summary will
+[here](https://nl.surveymonkey.com/results/SM-8W8V36DZ7/). A summary will
 follow later.
 
 ## 2020-11
