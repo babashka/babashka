@@ -5,6 +5,17 @@ you have anything to add. Also see
 [#babashka](https://twitter.com/hashtag/babashka?src=hashtag_click&f=live) on
 Twitter.
 
+## 2020-12
+
+This month brings you a talk about [babashka and sci
+internals](https://youtu.be/pgNp4Lk3gf0). Also see
+[slides](https://speakerdeck.com/borkdude/babashka-and-sci-internals-at-london-clojurians-december-2020)
+and [REPL session](https://gist.github.com/borkdude/66a4d844668e12ae1a8277af10d6cc4b).
+
+The data from the babashka survey is now available
+[here](https://nl.surveymonkey.com/results/SM-8W8V36DZ7/). An summary will
+follow later.
+
 ## 2020-11
 
 Babashka [survey](https://nl.surveymonkey.com/r/H2HK3RC). Feedback will be used
