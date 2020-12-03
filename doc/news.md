@@ -17,6 +17,10 @@ The data from the babashka survey is now available
 [here](https://nl.surveymonkey.com/results/SM-8W8V36DZ7/). A summary will
 follow later.
 
+- [weavejester/progrock](https://github.com/weavejester/progrock) is a library
+  for printing progress bars in pure Clojure. It happens to run fine with
+  babashka.
+
 ## 2020-11
 
 Babashka [survey](https://nl.surveymonkey.com/r/H2HK3RC). Feedback will be used
