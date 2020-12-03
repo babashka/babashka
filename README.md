@@ -38,22 +38,6 @@ As one user described it:
 * Provide a mixed Clojure/Bash DSL (see portability).
 * Replace existing shells. Babashka is a tool you can use inside existing shells like bash and it is designed to play well with them. It does not aim to replace them.
 
-### Setting expectations
-
-Babashka uses [sci](https://github.com/borkdude/sci) for interpreting
-Clojure. Sci implements a substantial subset of Clojure. Interpreting code is in
-general not as performant as executing compiled code. If your script takes more
-than a few seconds to run or has lots of loops, Clojure on the JVM may be a
-better fit as the performance on JVM is going to outweigh its
-startup time penalty. Read more about the differences with Clojure
-[here](#differences-with-clojure).
-
-### Talk
-
-To get an overview of babashka, you can watch this talk ([slides](https://speakerdeck.com/borkdude/babashka-and-the-small-clojure-interpreter-at-clojured-2020)):
-
-[![Babashka at ClojureD 2020](https://img.youtube.com/vi/Nw8aN-nrdEk/0.jpg)](https://www.youtube.com/watch?v=Nw8aN-nrdEk)
-
 ## Quickstart
 
 For installation options check [Installation](https://github.com/borkdude/babashka#installation).
@@ -74,6 +58,33 @@ $ ls | bb -i '(filter #(-> % io/file .isDirectory) *input*)'
 ("doc" "resources" "sci" "script" "src" "target" "test")
 bb took 4ms.
 ```
+
+### Babashka users
+
+Are you using babashka in your company or personal projects? Let us know [here](https://github.com/borkdude/babashka/issues/254).
+
+### Setting expectations
+
+Babashka uses [sci](https://github.com/borkdude/sci) for interpreting
+Clojure. Sci implements a substantial subset of Clojure. Interpreting code is in
+general not as performant as executing compiled code. If your script takes more
+than a few seconds to run or has lots of loops, Clojure on the JVM may be a
+better fit as the performance on JVM is going to outweigh its
+startup time penalty. Read more about the differences with Clojure
+[here](#differences-with-clojure).
+
+## Status
+
+Functionality regarding `clojure.core` and `java.lang` can be considered stable
+and is unlikely to change. Changes may happen in other parts of babashka,
+although we will try our best to prevent them. Always check the release notes or
+[CHANGELOG.md](CHANGELOG.md) before upgrading.
+
+### Talk
+
+To get an overview of babashka, you can watch this talk ([slides](https://speakerdeck.com/borkdude/babashka-and-the-small-clojure-interpreter-at-clojured-2020)):
+
+[![Babashka at ClojureD 2020](https://img.youtube.com/vi/Nw8aN-nrdEk/0.jpg)](https://www.youtube.com/watch?v=Nw8aN-nrdEk)
 
 ## Babashka book
 
@@ -123,13 +134,6 @@ More examples can be found [here](examples/README.md).
 
 You can try babashka online with Nextjournal's babashka [notebook
 environment](http://nextjournal.com/try/babashka?cm6=1).
-
-## Status
-
-Functionality regarding `clojure.core` and `java.lang` can be considered stable
-and is unlikely to change. Changes may happen in other parts of babashka,
-although we will try our best to prevent them. Always check the release notes or
-[CHANGELOG.md](CHANGELOG.md) before upgrading.
 
 ## Installation
 
