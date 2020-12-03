@@ -572,6 +572,10 @@
 
 (= [1 2 3] (iterator-seq (iter [1 2 3])))"))))
 
+(deftest var-print-method-test
+  (when test-utils/native?
+    (is (bb nil "(defmethod print-method sci.lang.IVar [o w] (.write w (str :foo (symbol o)))) (def x 1) (= \":foouser/x\" (pr-str #'x))"))))
+
 ;;;; Scratch
 
 (comment
