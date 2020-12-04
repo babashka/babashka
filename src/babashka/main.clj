@@ -365,6 +365,8 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
               :cp new-cp})))
   nil)
 
+(defn classpath []
+  (:cp @cp-state))
 
 ;;(def ^:private server-ns-obj (sci/create-ns 'clojure.core.server nil))
 
@@ -395,7 +397,8 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                               (let [opts (apply hash-map opts)]
                                 (repl/start-repl! @common/ctx opts)))}
        'clojure.test t/clojure-test-namespace
-       'babashka.classpath {'add-classpath add-classpath*}
+       'babashka.classpath {'add-classpath add-classpath*
+                            'classpath classpath}
        'clojure.pprint pprint-namespace
        'babashka.curl curl-namespace
        'babashka.pods pods/pods-namespace
@@ -674,4 +677,3 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
 ;;;; Scratch
 
 (comment)
-
