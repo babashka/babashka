@@ -32,7 +32,6 @@ call %GRAALVM_HOME%\bin\native-image.cmd ^
   "-H:IncludeResources=BABASHKA_VERSION" ^
   "-H:IncludeResources=SCI_VERSION" ^
   "-H:ReflectionConfigurationFiles=reflection.json" ^
-  "--initialize-at-run-time=java.lang.Math$RandomNumberGeneratorHolder" ^
   "--initialize-at-build-time"  ^
   "--initialize-at-run-time=org.postgresql.sspi.SSPIClient" ^
   "-H:EnableURLProtocols=http,https,jar" ^
@@ -41,6 +40,14 @@ call %GRAALVM_HOME%\bin\native-image.cmd ^
   "-H:Log=registerResource:" ^
   "--no-fallback" ^
   "--verbose" ^
+  "-H:ServiceLoaderFeatureExcludeServices=javax.sound.sampled.spi.AudioFileReader" ^
+  "-H:ServiceLoaderFeatureExcludeServices=javax.sound.midi.spi.MidiFileReader" ^
+  "-H:ServiceLoaderFeatureExcludeServices=javax.sound.sampled.spi.MixerProvider" ^
+  "-H:ServiceLoaderFeatureExcludeServices=javax.sound.sampled.spi.FormatConversionProvider" ^
+  "-H:ServiceLoaderFeatureExcludeServices=javax.sound.sampled.spi.AudioFileWriter" ^
+  "-H:ServiceLoaderFeatureExcludeServices=javax.sound.midi.spi.MidiDeviceProvider" ^
+  "-H:ServiceLoaderFeatureExcludeServices=javax.sound.midi.spi.SoundbankReader" ^
+  "-H:ServiceLoaderFeatureExcludeServices=javax.sound.midi.spi.MidiFileWriter" ^
   "%BABASHKA_XMX%"
 
 if %errorlevel% neq 0 exit /b %errorlevel%
