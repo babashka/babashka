@@ -7,6 +7,7 @@
    [babashka.impl.classes :as classes]
    [babashka.impl.classpath :as cp]
    [babashka.impl.clojure.core :as core :refer [core-extras]]
+   [babashka.impl.clojure.core.server :as server]
    [babashka.impl.clojure.java.browse :refer [browse-namespace]]
    [babashka.impl.clojure.java.io :refer [io-namespace]]
    [babashka.impl.clojure.java.shell :refer [shell-namespace]]
@@ -316,9 +317,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
       (sci/eval-string* @common/ctx s))))
 
 (defn start-socket-repl! [address ctx]
-  (socket-repl/start-repl! address ctx)
-  ;; hang until SIGINT
-  @(promise))
+  (socket-repl/start-repl! address ctx))
 
 (defn start-nrepl! [address ctx]
   (let [dev? (= "true" (System/getenv "BABASHKA_DEV"))
@@ -366,6 +365,18 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
               :cp new-cp})))
   nil)
 
+
+;;(def ^:private server-ns-obj (sci/create-ns 'clojure.core.server nil))
+
+(def clojure-core-server
+  {'repl socket-repl/repl
+   'prepl (fn [& args]
+            (apply server/prepl @common/ctx args))
+   'io-prepl (fn [& args]
+               (apply server/io-prepl @common/ctx args))
+   'start-server (fn [& args]
+                   (apply server/start-server @common/ctx args))})
+
 (def namespaces
   (cond->
       {'clojure.tools.cli tools-cli-namespace
@@ -379,7 +390,10 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
        'clojure.stacktrace stacktrace-namespace
        'clojure.zip zip-namespace
        'clojure.main {'demunge demunge
-                      'repl-requires clojure-main/repl-requires}
+                      'repl-requires clojure-main/repl-requires
+                      'repl (fn [& opts]
+                              (let [opts (apply hash-map opts)]
+                                (repl/start-repl! @common/ctx opts)))}
        'clojure.test t/clojure-test-namespace
        'babashka.classpath {'add-classpath add-classpath*}
        'clojure.pprint pprint-namespace
@@ -389,6 +403,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
        'clojure.java.browse browse-namespace
        'clojure.datafy datafy-namespace
        'clojure.core.protocols protocols-namespace
+       'clojure.core.server clojure-core-server
        'babashka.process process-namespace}
     features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace))
     features/yaml? (assoc 'clj-yaml.core @(resolve 'babashka.impl.yaml/yaml-namespace)
@@ -476,6 +491,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                     :main :uberscript :describe?
                     :jar :uberjar] :as _opts}
             (parse-opts args)
+            _ (when verbose? (vreset! common/verbose? true))
             _ (do ;; set properties
                 (when main (System/setProperty "babashka.main" main))
                 (System/setProperty "babashka.version" version))
@@ -540,11 +556,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                                                     (cp/getResource loader [path] {:url? true})))))
                                   (assoc-in ['user (with-meta '*input*
                                                      (when-not stream?
-                                                       {:sci.impl/deref! true}))] input-var)
-                                  (assoc-in ['clojure.main 'repl]
-                                            (fn [& opts]
-                                              (let [opts (apply hash-map opts)]
-                                                (repl/start-repl! @common/ctx opts)))))
+                                                       {:sci.impl/deref! true}))] input-var))
                   :env env
                   :features #{:bb :clj}
                   :classes classes/class-map
@@ -581,6 +593,10 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                                               :preloads preloads
                                               :loader (:loader @cp-state)})))))
                     nil))
+            ;; socket REPL is start asynchronously. when no other args are
+            ;; provided, a normal REPL will be started as well, which causes the
+            ;; process to wait until SIGINT
+            _ (when socket-repl (start-socket-repl! socket-repl sci-ctx))
             exit-code
             (or exit-code
                 (second
@@ -591,7 +607,6 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                        describe?
                        [(print-describe) 0]
                        repl [(repl/start-repl! sci-ctx) 0]
-                       socket-repl [(start-socket-repl! socket-repl sci-ctx) 0]
                        nrepl [(start-nrepl! nrepl sci-ctx) 0]
                        uberjar [nil 0]
                        expressions

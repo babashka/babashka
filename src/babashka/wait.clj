@@ -1,6 +1,6 @@
 (ns babashka.wait
   (:require [clojure.java.io :as io])
-  (:import [java.net Socket ConnectException]))
+  (:import [java.net Socket SocketException]))
 
 (set! *warn-on-reflection* true)
 
@@ -19,7 +19,7 @@
      (loop []
        (let [v (try (.close (Socket. host port))
                     (- (System/currentTimeMillis) t0)
-                    (catch ConnectException _e
+                    (catch SocketException _e
                       (let [took (- (System/currentTimeMillis) t0)]
                         (if (and timeout (>= took timeout))
                           :wait-for-port.impl/timed-out

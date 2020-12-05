@@ -558,6 +558,10 @@
 (deftest java-stream-test
   (is (every? number? (bb nil "(take 2 (iterator-seq (.iterator (.doubles (java.util.Random.)))))"))))
 
+(deftest read+string-test
+  (is (= '[:user/foo "::foo"]
+         (bb nil "(read+string (clojure.lang.LineNumberingPushbackReader. (java.io.StringReader. \"::foo\")))"))))
+
 (deftest iterable-test
   (is (true? (bb nil "
 (defn iter [coll]
@@ -567,6 +571,10 @@
       (.iterator ^java.lang.Iterable s))))
 
 (= [1 2 3] (iterator-seq (iter [1 2 3])))"))))
+
+(deftest var-print-method-test
+  (when test-utils/native?
+    (is (bb nil "(defmethod print-method sci.lang.IVar [o w] (.write w (str :foo (symbol o)))) (def x 1) (= \":foouser/x\" (pr-str #'x))"))))
 
 ;;;; Scratch
 

@@ -39,6 +39,7 @@
 (def files-to-edit
   ["Dockerfile"
    "doc/dev.md"
+   "doc/build.md"
    ".github/workflows/build.yml"
    ".circleci/config.yml"
    "appveyor.yml"
