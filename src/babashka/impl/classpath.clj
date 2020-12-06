@@ -13,7 +13,7 @@
 
 (deftype DirectoryResolver [path]
   IResourceResolver
-  (getResource [this resource-paths {:keys [:url?]}]
+  (getResource [_ resource-paths {:keys [:url?]}]
     (some
      (fn [resource-path]
        (let [f (io/file path resource-path)]
@@ -40,7 +40,7 @@
 
 (deftype JarFileResolver [jar-file]
   IResourceResolver
-  (getResource [this resource-paths opts]
+  (getResource [_ resource-paths opts]
     (path-from-jar jar-file resource-paths opts)))
 
 (defn part->entry [part]
@@ -50,9 +50,9 @@
 
 (deftype Loader [entries]
   IResourceResolver
-  (getResource [this resource-paths opts]
+  (getResource [_ resource-paths opts]
     (some #(getResource % resource-paths opts) entries))
-  (getResources [this resource-paths opts]
+  (getResources [_ resource-paths opts]
     (keep #(getResource % resource-paths opts) entries)))
 
 (defn loader [^String classpath]
