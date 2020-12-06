@@ -1,8 +1,10 @@
 (ns babashka.impl.classpath
   {:no-doc true}
+  (:refer-clojure :exclude [add-classpath])
   (:require [babashka.impl.clojure.main :refer [demunge]]
             [clojure.java.io :as io]
-            [clojure.string :as str])
+            [clojure.string :as str]
+            [sci.core :as sci])
   (:import [java.util.jar JarFile Manifest]))
 
 (set! *warn-on-reflection* true)
@@ -75,6 +77,39 @@
             (.getMainAttributes)
             (.getValue "Main-Class")
             (demunge))))
+
+(def cp-state (atom nil))
+
+(defn add-classpath
+  "Adds extra-classpath, a string as for example returned by clojure
+  -Spath, to the current classpath."
+  [extra-classpath]
+  (swap! cp-state
+         (fn [{:keys [:cp]}]
+           (let [new-cp
+                 (if-not cp extra-classpath
+                         (str cp (System/getProperty "path.separator") extra-classpath))]
+             {:loader (loader new-cp)
+              :cp new-cp})))
+  nil)
+
+(defn split-classpath
+  "Returns the classpath as a seq of strings, split by the platform
+  specific path separator."
+  ([^String cp] (vec (.split cp (System/getProperty "path.separator")))))
+
+(defn get-classpath
+  "Returns the current classpath as set by --classpath, BABASHKA_CLASSPATH and add-classpath."
+  []
+  (:cp @cp-state))
+
+(def cns (sci/create-ns 'babashka.classpath nil))
+
+(def classpath-namespace
+  {:obj cns
+   'add-classpath (sci/copy-var add-classpath cns)
+   'split-classpath (sci/copy-var split-classpath cns)
+   'get-classpath (sci/copy-var get-classpath cns)})
 
 ;;;; Scratch
 

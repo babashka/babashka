@@ -26,7 +26,10 @@
              "(require '[babashka.classpath :as cp]) (cp/get-classpath)")))
   (is (= "test-resources:foobar"
          (bb nil "--classpath" "test-resources"
-             "(require '[babashka.classpath :as cp]) (cp/add-classpath \"foobar\") (cp/get-classpath)"))))
+             "(require '[babashka.classpath :as cp]) (cp/add-classpath \"foobar\") (cp/get-classpath)")))
+  (is (= ["foo" "bar"]
+         (bb nil "--classpath" "foo:bar"
+             "(require '[babashka.classpath :as cp]) (cp/split-classpath (cp/get-classpath))"))))
 
 (deftest classpath-env-test
   ;; for this test you have to set `BABASHKA_CLASSPATH` to test-resources/babashka/src_for_classpath_test/env

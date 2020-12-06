@@ -1,5 +1,6 @@
 (ns babashka.test-utils
   (:require
+   [babashka.impl.classpath :as cp]
    [babashka.main :as main]
    [me.raynes.conch :refer [let-programs] :as sh]
    [sci.core :as sci]
@@ -8,7 +9,7 @@
 (set! *warn-on-reflection* true)
 
 (defn bb-jvm [input-or-opts & args]
-  (reset! main/cp-state nil)
+  (reset! cp/cp-state nil)
   (let [os (java.io.StringWriter.)
         es (if-let [err (:err input-or-opts)]
              err (java.io.StringWriter.))
