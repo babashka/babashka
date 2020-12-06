@@ -14,8 +14,8 @@ and [REPL
 session](https://gist.github.com/borkdude/66a4d844668e12ae1a8277af10d6cc4b).
 
 The data from the babashka survey is now available
-[here](https://nl.surveymonkey.com/results/SM-8W8V36DZ7/). A summary will
-follow later.
+[here](https://nl.surveymonkey.com/results/SM-8W8V36DZ7/). I have provided a
+summary [here](surveys/2020-11.md).
 
 - [weavejester/progrock](https://github.com/weavejester/progrock) is a babashka-compatible library
   for printing progress bars.
