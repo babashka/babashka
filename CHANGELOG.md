@@ -2,6 +2,16 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
+## Unreleased
+
+### New
+
+- Add `get-classpath` and `split-classpath` to `babashka.classpath` namespace. #670
+
+### Fixed / enhanced
+
+- Add syntax checks to `binding` macro #666
+
 ## v0.2.4
 
 Thanks to [Nextjournal](https://nextjournal.com/) for funding work on
