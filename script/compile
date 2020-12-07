@@ -1,0 +1,98 @@
+#!/usr/bin/env bash
+
+set -eou pipefail
+
+BABASHKA_XMX=${BABASHKA_XMX:-"-J-Xmx4500m"}
+
+if [ -z "$GRAALVM_HOME" ]; then
+    echo "Please set GRAALVM_HOME"
+    exit 1
+fi
+
+BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
+
+BABASHKA_JAR=${BABASHKA_JAR:-"target/babashka-$BABASHKA_VERSION-standalone.jar"}
+
+if [[ ! -f "$BABASHKA_JAR" ]]
+then
+    echo "Please run script/uberjar first."
+    exit 1
+fi
+
+"$GRAALVM_HOME/bin/gu" install native-image
+
+export JAVA_HOME=$GRAALVM_HOME
+export PATH=$GRAALVM_HOME/bin:$PATH
+
+SVM_JAR=$(find -L "$GRAALVM_HOME" | grep svm.jar)
+"$GRAALVM_HOME/bin/javac" -cp "$SVM_JAR" resources/CutOffCoreServicesDependencies.java
+"$GRAALVM_HOME/bin/javac" -cp "$SVM_JAR" resources/CutOffSunAwtWwwContentAudioAiff.java
+
+if [ -z "$BABASHKA_JAR" ]; then
+    lein with-profiles +reflection,+native-image "do" run
+    lein "do" clean, uberjar
+    BABASHKA_JAR=${BABASHKA_JAR:-"target/babashka-$BABASHKA_VERSION-standalone.jar"}
+fi
+
+BABASHKA_BINARY=${BABASHKA_BINARY:-"bb"}
+
+args=( "-jar" "$BABASHKA_JAR"
+       "-H:Name=$BABASHKA_BINARY"
+       "-H:+ReportExceptionStackTraces"
+       "-J-Dclojure.spec.skip-macros=true"
+       "-J-Dclojure.compiler.direct-linking=true"
+       "-H:IncludeResources=BABASHKA_VERSION"
+       "-H:IncludeResources=SCI_VERSION"
+       "-H:ReflectionConfigurationFiles=reflection.json"
+       "--initialize-at-build-time"
+       # "-H:+PrintAnalysisCallTree"
+       "-H:Log=registerResource:"
+       "-H:EnableURLProtocols=http,https,jar"
+       "--enable-all-security-services"
+       "-H:+JNI"
+       "--verbose"
+       "--no-fallback"
+       "--no-server"
+       "--report-unsupported-elements-at-runtime"
+       "--initialize-at-run-time=org.postgresql.sspi.SSPIClient"
+       "--native-image-info"
+       "--verbose"
+       "-H:ServiceLoaderFeatureExcludeServices=javax.sound.sampled.spi.AudioFileReader"
+       "-H:ServiceLoaderFeatureExcludeServices=javax.sound.midi.spi.MidiFileReader"
+       "-H:ServiceLoaderFeatureExcludeServices=javax.sound.sampled.spi.MixerProvider"
+       "-H:ServiceLoaderFeatureExcludeServices=javax.sound.sampled.spi.FormatConversionProvider"
+       "-H:ServiceLoaderFeatureExcludeServices=javax.sound.sampled.spi.AudioFileWriter"
+       "-H:ServiceLoaderFeatureExcludeServices=javax.sound.midi.spi.MidiDeviceProvider"
+       "-H:ServiceLoaderFeatureExcludeServices=javax.sound.midi.spi.SoundbankReader"
+       "-H:ServiceLoaderFeatureExcludeServices=javax.sound.midi.spi.MidiFileWriter"
+       "$BABASHKA_XMX" )
+
+BABASHKA_STATIC=${BABASHKA_STATIC:-}
+
+if [ "$BABASHKA_STATIC" = "true" ]; then
+    args+=("--static")
+fi
+
+BABASHKA_FEATURE_HSQLDB=${BABASHKA_FEATURE_HSQLDB:-}
+
+if [ "$BABASHKA_FEATURE_HSQLDB" = "true" ]; then
+    args+=("-H:IncludeResources=org/hsqldb/.*\.properties" "-H:IncludeResources=org/hsqldb/.*\.sql")
+fi
+
+BABASHKA_LEAN=${BABASHKA_LEAN:-}
+
+if [ "$BABASHKA_LEAN" = "true" ]
+then
+    # Remove all the default features, unless explicitly set to true:
+    export BABASHKA_FEATURE_XML="${BABASHKA_FEATURE_XML:-false}"
+    export BABASHKA_FEATURE_YAML="${BABASHKA_FEATURE_YAML:-false}"
+    export BABASHKA_FEATURE_CORE_ASYNC="${BABASHKA_FEATURE_CORE_ASYNC:-false}"
+    export BABASHKA_FEATURE_CSV="${BABASHKA_FEATURE_CSV:-false}"
+    export BABAHSKA_FEATURE_TRANSIT="${BABAHSKA_FEATURE_TRANSIT:-false}"
+    export BABASHKA_FEATURE_JAVA_TIME="${BABASHKA_FEATURE_JAVA_TIME:-false}"
+    export BABASHKA_FEATURE_JAVA_NIO="${BABASHKA_FEATURE_JAVA_NIO:-false}"
+    export BABASHKA_FEATURE_HTTPKIT_CLIENT="${BABASHKA_FEATURE_HTTPKIT_CLIENT:-false}"
+    export BABASHKA_FEATURE_HTTPKIT_SERVER="${BABASHKA_FEATURE_HTTPKIT_SERVER:-false}"
+fi
+
+"$GRAALVM_HOME/bin/native-image" "${args[@]}"
