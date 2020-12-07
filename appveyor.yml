@@ -7,7 +7,7 @@ image: Visual Studio 2017
 clone_folder: C:\projects\babashka
 
 environment:
-  GRAALVM_HOME: C:\projects\babashka\graalvm\graalvm-ce-java11-20.3.0
+  GRAALVM_HOME: C:\projects\babashka\graalvm\graalvm-ce-java11-20.2.0
   BABASHKA_XMX: "-J-Xmx5g"
 
 cache:
@@ -44,7 +44,7 @@ build_script:
 - cmd: >-
     call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
 
-    powershell -Command "if (Test-Path('graalvm')) { return } else { (New-Object Net.WebClient).DownloadFile('https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-20.3.0/graalvm-ce-java11-windows-amd64-20.3.0.zip', 'graalvm.zip') }"
+    powershell -Command "if (Test-Path('graalvm')) { return } else { (New-Object Net.WebClient).DownloadFile('https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-20.2.0/graalvm-ce-java11-windows-amd64-20.2.0.zip', 'graalvm.zip') }"
 
     powershell -Command "if (Test-Path('graalvm')) { return } else { Expand-Archive graalvm.zip graalvm }"
 
