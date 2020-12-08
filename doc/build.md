@@ -3,7 +3,7 @@
 ## Prerequisites
 
 - Install [lein](https://leiningen.org/) for producing uberjars
-- Download [GraalVM](https://www.graalvm.org/downloads/). Currently we use *java11-20.1.0*.
+- Download [GraalVM](https://www.graalvm.org/downloads/). Currently we use *java11-20.3.0*.
 - For Windows, installing Visual Studio 2019 with the "Desktop development
 with C++" workload is recommended.
 - Set `$GRAALVM_HOME` to the GraalVM distribution directory. On macOS this can look like:

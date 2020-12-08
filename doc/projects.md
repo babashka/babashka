@@ -296,6 +296,12 @@ user=> (mc/matches '{?k 1} {:x 1 :y 1})"
 ({?k :y} {?k :x})
 ```
 
+### [progrock](https://github.com/weavejester/progrock)
+
+A functional Clojure progress bar for the command line.
+
+Tested version: 0.1.2.
+
 ## Pods
 
 [Babashka pods](https://github.com/babashka/babashka.pods) are programs that can

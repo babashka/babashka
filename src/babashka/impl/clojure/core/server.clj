@@ -185,6 +185,7 @@
                           sci/err (PrintWriter-on #(out-fn {:tag :err :val %1}) nil)
                           sci/ns (sci/create-ns 'user nil)
                           sci/print-length @sci/print-length
+                          sci/print-level @sci/print-level
                           sci/print-meta @sci/print-meta
                           sci/*1 nil
                           sci/*2 nil
