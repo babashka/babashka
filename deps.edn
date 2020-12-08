@@ -6,6 +6,7 @@
          "sci/src" "babashka.curl/src" "pods/src"
          "babashka.nrepl/src"
          "depstar/src" "process/src"
+         "deps.clj/src"
          "resources" "sci/resources"],
  :deps {org.clojure/clojure {:mvn/version "1.10.2-alpha2"},
         org.clojure/tools.reader {:mvn/version "1.3.3"},

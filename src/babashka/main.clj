@@ -18,6 +18,7 @@
    [babashka.impl.curl :refer [curl-namespace]]
    [babashka.impl.data :as data]
    [babashka.impl.datafy :refer [datafy-namespace]]
+   [babashka.impl.deps :refer [deps-namespace]]
    [babashka.impl.error-handler :refer [error-handler]]
    [babashka.impl.features :as features]
    [babashka.impl.pods :as pods]
@@ -391,7 +392,8 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
        'clojure.datafy datafy-namespace
        'clojure.core.protocols protocols-namespace
        'clojure.core.server clojure-core-server
-       'babashka.process process-namespace}
+       'babashka.process process-namespace
+       'babashka.deps deps-namespace}
     features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace))
     features/yaml? (assoc 'clj-yaml.core @(resolve 'babashka.impl.yaml/yaml-namespace)
                           'flatland.ordered.map @(resolve 'babashka.impl.ordered/ordered-map-ns))

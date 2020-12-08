@@ -17,3 +17,6 @@
 [submodule "pods"]
 	path = pods
 	url = https://github.com/babashka/pods
+[submodule "deps.clj"]
+	path = deps.clj
+	url = https://github.com/borkdude/deps.clj
