@@ -56,6 +56,7 @@
                               :dependencies [[selmer "1.12.29"]]}
              :feature/lanterna {:source-paths ["feature-lanterna"]
                                 :dependencies [[babashka/clojure-lanterna "0.9.8-SNAPSHOT"]]}
+
              :test [:feature/xml
                     :feature/lanterna
                     :feature/yaml
