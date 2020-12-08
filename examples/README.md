@@ -381,3 +381,15 @@ Example usage:
 ``` shell
 $ cat src/babashka/main.clj | bb examples/rofi.clj
 ```
+
+### [digitalocean-ping.clj](digitalocean-ping.clj)
+
+The script allows to define which DigitalOcean cloud datacenter (region) has best network performance (ping latency).
+
+See [digitalocean-ping.clj](digitalocean-ping.clj)
+
+Example usage:
+
+``` shell
+$ bb digitalocean-ping.clj
+```
