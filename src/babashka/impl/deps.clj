@@ -45,6 +45,10 @@
   "Starts a java process like you would normally do with the clojure
   CLI. Accepts the same arguments as the clojure CLI. If you want to
   have the equivalent of clj on linux and macOS, run bb with rlwrap."
+  ;; TBD: currently this waits for the Clojure process to end and returns its
+  ;; exit code.  I.e. this is the final step of our bb script. That's probably
+  ;; usually what you want to do. We could have a variant called clojure* which
+  ;; gives you more control, but for now this seems fine?
   [& args]
   (apply deps/-main args))
 
