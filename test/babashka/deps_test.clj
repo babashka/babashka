@@ -26,11 +26,10 @@
 (dep/transitive-dependencies g1 :d)
 "))))
 
-;; TODO: clojure should return a babashka.process process
-(deftest clojure-test (is (bb "
+(deftest clojure-test (is (true? (bb "
 (require '[babashka.deps :as deps])
-(require '[babashka.process :as p])
-
-(p/check (deps/clojure \"-M\" \"-e\" \"(+ 1 2 3)\"))
-"
-)))
+(require '[clojure.string :as str])
+(str/includes?
+  (with-out-str (babashka.deps/clojure \"-Stree\"))
+  \"org.clojure/clojure\")
+"))))

@@ -71,12 +71,18 @@
   ;; usually what you want to do. We could have a variant called clojure* which
   ;; gives you more control, but for now this seems fine?
   [& args]
-  (apply deps/-main args))
+  (binding [*in* @sci/in
+            *out* @sci/out
+            *err* @sci/err]
+    (apply deps/-main args)))
+
+;; TODO:
+;; (uberjar {:out "final.jar" :main 'foo.bar})
+;; (uberscript {:out "final.clj" :main 'foo.bar})
 
 (def deps-namespace
   {'add-deps (sci/copy-var add-deps dns)
    'clojure (sci/copy-var clojure dns)
-   ;; undocumented
    'merge-deps (sci/copy-var merge-deps dns)
    ;; undocumented
    'merge-defaults (sci/copy-var merge-default-deps dns)})
