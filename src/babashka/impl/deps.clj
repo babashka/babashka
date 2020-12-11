@@ -23,6 +23,27 @@
   [deps-edn-maps]
   (apply merge-with merge-or-replace (remove nil? deps-edn-maps)))
 
+(defn- merge-defaults [deps defaults]
+  (let [overriden (select-keys deps (keys defaults))
+        overriden-deps (keys overriden)
+        defaults (select-keys defaults overriden-deps)]
+    (merge deps defaults)))
+
+(defn merge-default-deps [deps-map defaults]
+  (let [paths (into [[:deps]]
+                    (map (fn [alias]
+                           [:aliases alias])
+                         (keys (:aliases deps-map))))]
+    (reduce
+     (fn [acc path]
+       (update-in acc path merge-defaults defaults))
+     deps-map
+     paths)))
+
+#_(merge-default-deps '{:deps {medley/medley nil}
+                      :aliases {:foo {medley/medley nil}}}
+                    '{medley/medley {:mvn/version "1.3.0"}})
+
 ;;;; end merge edn files
 
 ;; We are optimizing for the 1-file script with deps scenario where people can
@@ -55,4 +76,7 @@
 (def deps-namespace
   {'add-deps (sci/copy-var add-deps dns)
    'clojure (sci/copy-var clojure dns)
-   'merge-deps (sci/copy-var merge-deps dns)})
+   ;; undocumented
+   'merge-deps (sci/copy-var merge-deps dns)
+   ;; undocumented
+   'merge-defaults (sci/copy-var merge-default-deps dns)})
