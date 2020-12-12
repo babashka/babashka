@@ -346,7 +346,8 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
         io clojure.java.io
         json cheshire.core
         curl babashka.curl
-        bencode bencode.core}
+        bencode bencode.core
+        deps babashka.deps}
     features/xml?        (assoc 'xml 'clojure.data.xml)
     features/yaml?       (assoc 'yaml 'clj-yaml.core)
     features/jdbc?       (assoc 'jdbc 'next.jdbc)
