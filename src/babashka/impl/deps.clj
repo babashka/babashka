@@ -76,7 +76,8 @@
 
   which can be overriden with opts.
 
-  Prints to *out* for --help, -Spath, -Sdescribe and -Stree.
+  Returns `nil` and prints to *out* for --help, -Spath, -Sdescribe and
+  -Stree.
 
   Examples:
 
