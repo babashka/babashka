@@ -83,19 +83,25 @@
   ;; exit code.  I.e. this is the final step of our bb script. That's probably
   ;; usually what you want to do. We could have a variant called clojure* which
   ;; gives you more control, but for now this seems fine?
+  ([] (clojure []))
   ([args] (clojure args nil))
   ([args opts]
-   (binding [*in* @sci/in
-             *out* @sci/out
-             *err* @sci/err
-             deps/*process-fn* (fn
-                                 ([cmd] (p/process cmd opts))
-                                 ([cmd _] (p/process cmd opts)))
-             deps/*exit-fn* (fn
-                              ([_])
-                              ([_exit-code msg]
-                               (throw (Exception. msg))))]
-     (apply deps/-main args))))
+   (let [opts (merge {:in :inherit
+                      :out :inherit
+                      :err :inherit
+                      :shutdown p/destroy-tree}
+                     opts)]
+     (binding [*in* @sci/in
+               *out* @sci/out
+               *err* @sci/err
+               deps/*process-fn* (fn
+                                   ([cmd] (p/process cmd opts))
+                                   ([cmd _] (p/process cmd opts)))
+               deps/*exit-fn* (fn
+                                ([_])
+                                ([_exit-code msg]
+                                 (throw (Exception. msg))))]
+       (apply deps/-main args)))))
 
 ;; (-> (clojure ["-Sdeps" edn "-M:foo"] {:out :inherit}) p/check)
 

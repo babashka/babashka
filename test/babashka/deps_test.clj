@@ -50,7 +50,10 @@ true
     (p/check)
     :out)
 ")))
-  (is (thrown-with-msg? Exception #"Option changed" (bb "
+  (when-not test-utils/native?
+    (is (thrown-with-msg? Exception #"Option changed" (bb "
 (require '[babashka.deps :as deps])
 (babashka.deps/clojure [\"-Sresolve-tags\"])
 "))))
+  (is (true? (bb "
+(= 5 (:exit @(babashka.deps/clojure [] {:in \"(System/exit 5)\" :out :string})))"))))
