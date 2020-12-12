@@ -63,30 +63,32 @@
          cp (with-out-str (apply deps/-main args))]
      (cp/add-classpath cp))))
 
-(defn- proc->Process [^java.lang.Process proc cmd prev]
-  (let [stdin  (.getOutputStream proc)
-        stdout (.getInputStream proc)
-        stderr (.getErrorStream proc)]
-    (p/->Process proc
-                 nil
-                 stdin
-                 stdout
-                 stderr
-                 prev
-                 cmd)))
-
 (defn clojure
-  "Starts a java process like you would normally do with the clojure
-  CLI. Accepts the same arguments as the clojure CLI. If you want to
-  have the equivalent of clj on linux and macOS, run bb with rlwrap."
-  ;; TBD: currently this waits for the Clojure process to end and returns its
-  ;; exit code.  I.e. this is the final step of our bb script. That's probably
-  ;; usually what you want to do. We could have a variant called clojure* which
-  ;; gives you more control, but for now this seems fine?
+  "Starts clojure similar to CLI. Use `rlwrap bb` for `clj`-like invocation.
+  Invokes java process with babashka.process/process for `-M`, `-X`
+  and `-A` invocations and returns it. Default options passed to
+  babashka.process/process are:
+
+  {:in  :inherit
+   :out :inherit
+   :err :inherit
+   :shutdown p/destroy-tree}
+
+  which can be overriden with opts.
+
+  Prints to *out* for --help, -Spath, -Sdescribe and -Stree.
+
+  Examples:
+
+  (-> (clojure '[-M -e (+ 1 2 3)] {:out :string}) deref :out) returns
+  \"6\n\".
+
+  (-> @(clojure) :exit) starts a clojure REPL, waits for it
+  to finish and returns the exit code from the process."
   ([] (clojure []))
   ([args] (clojure args nil))
   ([args opts]
-   (let [opts (merge {:in :inherit
+   (let [opts (merge {:in  :inherit
                       :out :inherit
                       :err :inherit
                       :shutdown p/destroy-tree}
@@ -101,7 +103,7 @@
                                 ([_])
                                 ([_exit-code msg]
                                  (throw (Exception. msg))))]
-       (apply deps/-main args)))))
+       (apply deps/-main (map str args))))))
 
 ;; (-> (clojure ["-Sdeps" edn "-M:foo"] {:out :inherit}) p/check)
 
