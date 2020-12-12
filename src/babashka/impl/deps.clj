@@ -91,7 +91,10 @@
              deps/*process-fn* (fn
                                  ([cmd] (p/process cmd opts))
                                  ([cmd _] (p/process cmd opts)))
-             deps/*exit-fn* identity]
+             deps/*exit-fn* (fn
+                              ([_])
+                              ([_exit-code msg]
+                               (throw (Exception. msg))))]
      (apply deps/-main args))))
 
 ;; (-> (clojure ["-Sdeps" edn "-M:foo"] {:out :inherit}) p/check)

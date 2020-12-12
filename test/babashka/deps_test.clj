@@ -49,4 +49,8 @@ true
 (-> (babashka.deps/clojure [\"-M\" \"-e\" \"(+ 1 2 3)\"] {:out :string})
     (p/check)
     :out)
+")))
+  (is (thrown-with-msg? Exception #"Option changed" (bb "
+(require '[babashka.deps :as deps])
+(babashka.deps/clojure [\"-Sresolve-tags\"])
 "))))
