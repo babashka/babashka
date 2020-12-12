@@ -65,8 +65,8 @@
 
 (defn clojure
   "Starts clojure similar to CLI. Use `rlwrap bb` for `clj`-like invocation.
-  Invokes java process with babashka.process/process for `-M`, `-X`
-  and `-A` invocations and returns it. Default options passed to
+  Invokes java with babashka.process/process for `-M`, `-X` and `-A`
+  and returns the associated record. Default options passed to
   babashka.process/process are:
 
   {:in  :inherit
