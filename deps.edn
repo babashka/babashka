@@ -27,7 +27,7 @@
         metosin/reitit {:mvn/version "0.5.5"}
         metosin/muuntaja {:mvn/version "0.6.7"}
         metosin/ring-http-response {:mvn/version "0.9.1"}
-        selmer {:mvn/version "1.12.29"}}
+        selmer {:mvn/version "1.12.29"}
         seancorfield/next.jdbc {:mvn/version "1.1.610"}
         org.postgresql/postgresql {:mvn/version "42.2.18"}
         org.hsqldb/hsqldb {:mvn/version "2.5.1"}
