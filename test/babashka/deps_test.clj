@@ -2,7 +2,7 @@
   (:require
    [babashka.test-utils :as test-utils]
    [clojure.edn :as edn]
-   [clojure.test :as test :refer [deftest is]]))
+   [clojure.test :as test :refer [deftest is testing]]))
 
 (defn bb [& args]
   (edn/read-string
@@ -26,10 +26,27 @@
 (dep/transitive-dependencies g1 :d)
 "))))
 
-(deftest clojure-test (is (true? (bb "
+(deftest clojure-test
+  (testing "-Stree prints to *out*"
+    (is (true? (bb "
 (require '[babashka.deps :as deps])
 (require '[clojure.string :as str])
 (str/includes?
-  (with-out-str (babashka.deps/clojure \"-Stree\"))
+  (with-out-str (babashka.deps/clojure [\"-Stree\"]))
   \"org.clojure/clojure\")
+"))))
+  (testing "-P does not exit babashka script"
+    (is (true? (bb "
+(require '[babashka.deps :as deps])
+(require '[clojure.string :as str])
+(babashka.deps/clojure [\"-P\"])
+true
+"))))
+  (is (= "6\n" (bb "
+(require '[babashka.deps :as deps])
+(require '[babashka.process :as p])
+
+(-> (babashka.deps/clojure [\"-M\" \"-e\" \"(+ 1 2 3)\"] {:out :string})
+    (p/check)
+    :out)
 "))))
