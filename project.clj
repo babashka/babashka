@@ -44,6 +44,16 @@
                                       :dependencies [[http-kit "2.5.0"]]}
              :feature/httpkit-server {:source-paths ["feature-httpkit-server"]
                                       :dependencies [[http-kit "2.5.0"]]}
+             :feature/ring {:source-paths ["feature-ring"]
+                            :dependencies [[ring/ring-core "1.8.1"]
+                                           [ring/ring-defaults "0.3.2"]
+                                           [ring-webjars "0.2.0"]]}
+             :feature/reitit {:source-paths ["feature-reitit"]
+                              :dependencies [[metosin/reitit "0.5.5"]
+                                             [metosin/muuntaja "0.6.7"]
+                                             [metosin/ring-http-response "0.9.1"]]}
+             :feature/selmer {:source-paths ["feature-selmer"]
+                              :dependencies [[selmer "1.12.29"]]}
              :feature/lanterna {:source-paths ["feature-lanterna"]
                                 :dependencies [[babashka/clojure-lanterna "0.9.8-SNAPSHOT"]]}
 
@@ -58,6 +68,9 @@
                     :feature/datascript
                     :feature/httpkit-client
                     :feature/httpkit-server
+                    :feature/ring
+                    :feature/reitit
+                    :feature/selmer
                     {:dependencies [[clj-commons/conch "0.9.2"]
                                     [com.clojure-goes-fast/clj-async-profiler "0.4.1"]
                                     [com.opentable.components/otj-pg-embedded "0.13.3"]]}]

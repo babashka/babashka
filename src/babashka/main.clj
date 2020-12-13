@@ -90,6 +90,23 @@
 (when features/httpkit-server?
   (require '[babashka.impl.httpkit-server]))
 
+(when features/ring?
+  (require '[babashka.impl.ring-middleware-defaults]
+           '[babashka.impl.ring-util-response]
+           '[babashka.impl.ring-util-request]
+           '[babashka.impl.ring-middleware-content-type]
+           '[babashka.impl.ring-middleware-webjars]
+           '[babashka.impl.ring-middleware-anti-forgery]))
+
+(when features/reitit?
+  (require '[babashka.impl.reitit-ring]
+           '[babashka.impl.ring-util-http-response]
+           '[babashka.impl.muuntaja-core]
+           '[babashka.impl.muuntaja-middleware]))
+
+(when features/selmer?
+  (require '[babashka.impl.selmer-parser]))
+
 (when features/lanterna?
   (require '[babashka.impl.lanterna]))
 
@@ -405,6 +422,21 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
     features/httpkit-client? (assoc 'org.httpkit.client @(resolve 'babashka.impl.httpkit-client/httpkit-client-namespace)
                                     'org.httpkit.sni-client @(resolve 'babashka.impl.httpkit-client/sni-client-namespace))
     features/httpkit-server? (assoc 'org.httpkit.server @(resolve 'babashka.impl.httpkit-server/httpkit-server-namespace))
+
+    features/ring? (-> (assoc 'ring.middleware.defaults @(resolve 'babashka.impl.ring-middleware-defaults/ring-middleware-defaults-namespace))
+                       (assoc 'ring.util.response @(resolve 'babashka.impl.ring-util-response/ring-util-response-namespace))
+                       (assoc 'ring.util.request @(resolve 'babashka.impl.ring-util-request/ring-util-request-namespace))
+                       (assoc 'ring.middleware.content-type @(resolve 'babashka.impl.ring-middleware-content-type/ring-middleware-content-type-namespace))
+                       (assoc 'ring.middleware.webjars @(resolve 'babashka.impl.ring-middleware-webjars/ring-middleware-webjars-namespace))
+                       (assoc 'ring.middleware.anti-forgery @(resolve 'babashka.impl.ring-middleware-anti-forgery/ring-middleware-anti-forgery-namespace)))
+
+    features/reitit? (-> (assoc 'reitit.ring @(resolve 'babashka.impl.reitit-ring/reitit-ring-namespace))
+                         (assoc 'ring.util.http-response @(resolve 'babashka.impl.ring-util-http-response/ring-util-http-response-namespace))
+                         (assoc 'muuntaja.core @(resolve 'babashka.impl.muuntaja-core/muuntaja-core-namespace))
+                         (assoc 'muuntaja.middleware @(resolve 'babashka.impl.muuntaja-middleware/muuntaja-middleware-namespace)))
+
+    features/selmer? (assoc 'selmer.parser @(resolve 'babashka.impl.selmer-parser/selmer-parser-namespace))
+
     features/lanterna? (assoc 'lanterna.screen @(resolve 'babashka.impl.lanterna/lanterna-screen-namespace)
                               'lanterna.terminal @(resolve 'babashka.impl.lanterna/lanterna-terminal-namespace)
                               'lanterna.constants @(resolve 'babashka.impl.lanterna/lanterna-constants-namespace))))

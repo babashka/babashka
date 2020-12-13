@@ -110,6 +110,27 @@ else
     BABASHKA_LEIN_PROFILES+=",-feature/httpkit-server"
 fi
 
+if [ "$BABASHKA_FEATURE_RING" = "true" ]
+then
+    BABASHKA_LEIN_PROFILES+=",+feature/ring"
+else
+    BABASHKA_LEIN_PROFILES+=",-feature/ring"
+fi
+
+if [ "$BABASHKA_FEATURE_REITIT" = "true" ]
+then
+    BABASHKA_LEIN_PROFILES+=",+feature/reitit"
+else
+    BABASHKA_LEIN_PROFILES+=",-feature/reitit"
+fi
+
+if [ "$BABASHKA_FEATURE_SELMER" = "true" ]
+then
+    BABASHKA_LEIN_PROFILES+=",+feature/selmer"
+else
+    BABASHKA_LEIN_PROFILES+=",-feature/selmer"
+fi
+
 if [ "$BABASHKA_FEATURE_LANTERNA" = "true" ]
 then
     BABASHKA_LEIN_PROFILES+=",+feature/lanterna"
