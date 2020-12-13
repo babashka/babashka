@@ -7,7 +7,8 @@ For a list of breaking changes, check [here](#breaking-changes).
 ### New
 
 - Add `get-classpath` and `split-classpath` to `babashka.classpath`
-  namespace. [#670](https://github.com/borkdude/babashka/issues/670)
+  namespace. [#670](https://github.com/borkdude/babashka/issues/670). See
+  [docs](https://book.babashka.org/master.html#babashka_classpath).
 - Expose `add-deps` in `babashka.deps`
   [#677](https://github.com/borkdude/babashka/issues/677). See
   [docs](https://book.babashka.org/master.html#_add_deps).
