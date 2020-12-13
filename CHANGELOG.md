@@ -21,6 +21,7 @@ For a list of breaking changes, check [here](#breaking-changes).
 ### Fixed / enhanced
 
 - Add syntax checks to `binding` macro [#666](https://github.com/borkdude/babashka/issues/666)
+- Upgrade to GraalVM 20.3.0 [#653](https://github.com/borkdude/babashka/issues/653)
 
 ## v0.2.4
 
