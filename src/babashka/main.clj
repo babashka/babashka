@@ -485,9 +485,8 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                     :jar :uberjar :clojure] :as opts}
             (parse-opts args)
             _ (when clojure
-                (let [res (deps/clojure (:opts opts))]
-                  (when res
-                    (process/check res))
+                (if-let [proc (deps/clojure (:opts opts))]
+                  (-> @proc :exit (System/exit))
                   (System/exit 0)))
             _ (when verbose? (vreset! common/verbose? true))
             _ (do ;; set properties
