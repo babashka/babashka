@@ -111,8 +111,8 @@
                  (let [opt (first options)]
                    (case opt
                      ("--") (assoc opts-map :command-line-args (next options))
-                     ("clojure") (assoc opts-map :clojure true
-                                        :opts (rest options))
+                     ("--clojure") (assoc opts-map :clojure true
+                                          :opts (rest options))
                      ("--version") {:version true}
                      ("--help" "-h" "-?") {:help? true}
                      ("--verbose")(recur (next options)
@@ -244,18 +244,6 @@ Help:
   --version           Print the current version of babashka.
   --describe          Print an EDN map with information about this version of babashka.
 
-In- and output flags:
-
-  -i                  Bind *input* to a lazy seq of lines from stdin.
-  -I                  Bind *input* to a lazy seq of EDN values from stdin.
-  -o                  Write lines to stdout.
-  -O                  Write EDN values to stdout.
-  --stream            Stream over lines or EDN values from stdin. Combined with -i or -I *input* becomes a single value per iteration.
-
-Uberscript:
-
-  --uberscript <file> Collect preloads, -e, -f and -m and all required namespaces from the classpath into a single executable file.
-
 Evaluation:
 
   -e, --eval <expr>   Evaluate an expression.
@@ -270,7 +258,31 @@ REPL:
   --socket-repl       Start socket REPL. Specify port (e.g. 1666) or host and port separated by colon (e.g. 127.0.0.1:1666).
   --nrepl-server      Start nREPL server. Specify port (e.g. 1667) or host and port separated by colon (e.g. 127.0.0.1:1667).
 
-If neither -e, -f, or --socket-repl are specified, then the first argument that is not parsed as a option is treated as a file if it exists, or as an expression otherwise. Everything after that is bound to *command-line-args*. Use -- to separate script command line args from bb command line args."))
+In- and output flags:
+
+  -i                  Bind *input* to a lazy seq of lines from stdin.
+  -I                  Bind *input* to a lazy seq of EDN values from stdin.
+  -o                  Write lines to stdout.
+  -O                  Write EDN values to stdout.
+  --stream            Stream over lines or EDN values from stdin. Combined with -i or -I *input* becomes a single value per iteration.
+
+Uberscript:
+
+  --uberscript <file> Collect preloads, -e, -f and -m and all required namespaces from the classpath into a single file.
+
+Uberjar:
+
+  --uberjar    <jar>  Similar to --uberscript but creates jar file.
+
+Clojure:
+
+  --clojure [args...] Invokes clojure. Takes same args as the official clojure CLI.
+
+If the first argument is not any of the above options, then it treated as a file if it exists, or as an expression otherwise.
+Everything after that is bound to *command-line-args*.
+
+Use -- to separate script command line args from bb command line args.
+"))
 
 (defn print-describe []
   (println
