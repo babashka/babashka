@@ -4,6 +4,10 @@ For a list of breaking changes, check [here](#breaking-changes).
 
 ## v0.2.5
 
+This release adds a new `babashka.deps` namespace which offers [tools.deps
+integration](https://clojure.org/guides/deps_and_cli). See
+[docs](https://book.babashka.org/#babashkadeps).
+
 ### New
 
 - Add `get-classpath` and `split-classpath` to `babashka.classpath`
