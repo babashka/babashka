@@ -8,15 +8,15 @@ For a list of breaking changes, check [here](#breaking-changes).
 
 - Add `get-classpath` and `split-classpath` to `babashka.classpath`
   namespace. [#670](https://github.com/borkdude/babashka/issues/670). See
-  [docs](https://book.babashka.org/master.html#babashka_classpath).
+  [docs](https://book.babashka.org/#babashka_classpath).
 - Expose `add-deps` in `babashka.deps`
   [#677](https://github.com/borkdude/babashka/issues/677). See
-  [docs](https://book.babashka.org/master.html#_add_deps).
+  [docs](https://book.babashka.org/#_add_deps).
 - Expose `clojure` in `babashka.deps`
   [#678](https://github.com/borkdude/babashka/issues/678). See
-  [docs](https://book.babashka.org/master.html#_clojure).
+  [docs](https://book.babashka.org/#_clojure).
 - Implement `--clojure` option to invoke a JVM clojure process similar to the
-  official Clojure CLI.
+  official Clojure CLI. See [docs](https://book.babashka.org/#_invoking_clojure).
 
 ### Fixed / enhanced
 
