@@ -1,11 +1,11 @@
 (ns babashka.impl.deps
   (:require [babashka.impl.classpath :as cp]
+            [babashka.process :as p]
             [borkdude.deps :as deps]
             [clojure.string :as str]
-            [sci.core :as sci]
-            [babashka.process :as p]))
+            [sci.core :as sci]))
 
-(def dns (sci/create-ns 'dns nil))
+(def dns (sci/create-ns 'babashka.deps nil))
 
 ;;;; merge deps.edn files
 
