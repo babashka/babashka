@@ -6,11 +6,20 @@ For a list of breaking changes, check [here](#breaking-changes).
 
 ### New
 
-- Add `get-classpath` and `split-classpath` to `babashka.classpath` namespace. #670
+- Add `get-classpath` and `split-classpath` to `babashka.classpath`
+  namespace. [#670](https://github.com/borkdude/babashka/issues/670)
+- Expose `add-deps` in `babashka.deps`
+  [#677](https://github.com/borkdude/babashka/issues/677). See
+  [docs](https://book.babashka.org/master.html#_add_deps).
+- Expose `clojure` in `babashka.deps`
+  [#678](https://github.com/borkdude/babashka/issues/678). See
+  [docs](https://book.babashka.org/master.html#_clojure).
+- Implement `--clojure` option to invoke a JVM clojure process similar to the
+  official Clojure CLI.
 
 ### Fixed / enhanced
 
-- Add syntax checks to `binding` macro #666
+- Add syntax checks to `binding` macro [#666](https://github.com/borkdude/babashka/issues/666)
 
 ## v0.2.4
 
