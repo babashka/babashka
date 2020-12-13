@@ -18,7 +18,7 @@
    [babashka.impl.curl :refer [curl-namespace]]
    [babashka.impl.data :as data]
    [babashka.impl.datafy :refer [datafy-namespace]]
-   [babashka.impl.deps :refer [deps-namespace]]
+   [babashka.impl.deps :as deps :refer [deps-namespace]]
    [babashka.impl.error-handler :refer [error-handler]]
    [babashka.impl.features :as features]
    [babashka.impl.pods :as pods]
@@ -31,6 +31,7 @@
    [babashka.impl.test :as t]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
    [babashka.nrepl.server :as nrepl-server]
+   [babashka.process :as process]
    [babashka.wait :as wait]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
@@ -110,6 +111,8 @@
                  (let [opt (first options)]
                    (case opt
                      ("--") (assoc opts-map :command-line-args (next options))
+                     ("clojure") (assoc opts-map :clojure true
+                                        :opts (rest options))
                      ("--version") {:version true}
                      ("--help" "-h" "-?") {:help? true}
                      ("--verbose")(recur (next options)
@@ -479,8 +482,13 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                     :repl :socket-repl :nrepl
                     :verbose? :classpath
                     :main :uberscript :describe?
-                    :jar :uberjar] :as _opts}
+                    :jar :uberjar :clojure] :as opts}
             (parse-opts args)
+            _ (when clojure
+                (let [res (deps/clojure (:opts opts))]
+                  (when res
+                    (process/check res))
+                  (System/exit 0)))
             _ (when verbose? (vreset! common/verbose? true))
             _ (do ;; set properties
                 (when main (System/setProperty "babashka.main" main))
