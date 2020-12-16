@@ -234,11 +234,10 @@
     babashka.impl.clojure.test
   (:require [babashka.impl.common :refer [ctx]]
             [clojure.stacktrace :as stack]
-            [clojure.string :as str]
             [clojure.template :as temp]
             [sci.core :as sci]
-            [sci.impl.analyzer :as ana]
             [sci.impl.namespaces :as sci-namespaces]
+            [sci.impl.resolve :as resolve]
             [sci.impl.vars :as vars]))
 
 ;; Nothing is marked "private" here, so you can rebind things to plug
@@ -407,7 +406,7 @@
   {:added "1.1"}
   [x]
   (if (symbol? x) ;; TODO
-    (when-let [v (second (ana/lookup @ctx x false))]
+    (when-let [v (second (resolve/lookup @ctx x false))]
       (when-let [value (if (vars/var? v) @v v)]
         (and (fn? value)
              (not (:sci/macro (meta v))))))
