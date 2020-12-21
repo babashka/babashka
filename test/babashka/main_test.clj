@@ -429,10 +429,10 @@
 
 (deftest unrestricted-access
   (testing "babashka is allowed to mess with built-in vars"
-    (is (= 1 (bb nil "
-(def inc2 inc) (alter-var-root #'clojure.core/inc (constantly dec))
-(let [res (inc 2)]
-  (alter-var-root #'clojure.core/inc (constantly inc2))
+    (is (= {} (bb nil "
+(def assoc2 assoc) (alter-var-root #'clojure.core/assoc (constantly dissoc))
+(let [res (assoc {:a 1} :a 2)]
+  (alter-var-root #'clojure.core/assoc (constantly assoc2))
   res)")))))
 
 (deftest pprint-test
