@@ -13,12 +13,16 @@ internals](https://youtu.be/pgNp4Lk3gf0). Also see
 and [REPL
 session](https://gist.github.com/borkdude/66a4d844668e12ae1a8277af10d6cc4b).
 
+Babashka 0.2.5 released. See [release
+notes](https://github.com/borkdude/babashka/blob/master/CHANGELOG.md#v025).
+
 The data from the babashka survey is now available
 [here](https://nl.surveymonkey.com/results/SM-8W8V36DZ7/). I have provided a
 summary [here](surveys/2020-11.md).
 
 - [weavejester/progrock](https://github.com/weavejester/progrock) is a babashka-compatible library
   for printing progress bars.
+- a [maze animation](https://gist.github.com/mmzsource/e8c383f69244ebefde058004fee72a8a) babashka script by [mmz](https://gist.github.com/mmzsource)
 
 ## 2020-11
 
