@@ -85,4 +85,4 @@ then
     mv -f "$download_dir/bb" "$PWD/bb"
 fi
 
-echo "Successfully installed bb in $install_dir."
+echo "Successfully installed bb in $install_dir"
