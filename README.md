@@ -175,13 +175,20 @@ By default this will install into `/usr/local/bin` (you may need `sudo` for
 this). To change this, provide the directory name:
 
 ``` shell
-$ ./install --dir /tmp
+$ ./install --dir .
 ```
 
 To install a specific version, the script also supports `--version`:
 
 ``` shell
-$ ./install --dir /tmp --version 0.2.1
+$ ./install --dir . --version 0.2.5
+```
+
+To force the download of the zip archive to a different directory than `/tmp`
+use the `--download-dir` argument:
+
+``` shell
+$ ./install --dir . --version 0.2.5 --download-dir .
 ```
 
 ### Github releases
