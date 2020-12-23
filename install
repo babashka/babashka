@@ -5,12 +5,19 @@ set -euo pipefail
 version=""
 default_install_dir="/usr/local/bin"
 install_dir=$default_install_dir
+default_download_dir="/tmp"
+download_dir=$default_download_dir
 
 print_help() {
     echo "Installs latest (or specific) version of babashka. Installation directory defaults to /usr/local/bin."
     echo -e
     echo "Usage:"
-    echo "install [--dir <dir>] [--version <version>]"
+    echo "install [--dir <dir>] [--download-dir <download-dir>] [--version <version>]"
+    echo -e
+    echo "Defaults:"
+    echo " * Installation directory: ${default_install_dir}"
+    echo " * Download directory: ${default_download_dir}"
+    echo " * Version: <Latest release on github>"
     exit 1
 }
 
@@ -31,6 +38,11 @@ do
             shift
             shift
             ;;
+        --download-dir)
+            download_dir="$2"
+            shift
+            shift
+            ;;
         --version)
             version="$2"
             shift
@@ -43,8 +55,6 @@ do
     esac
 done
 
-download_dir=/tmp
-
 if [[ "$version" == "" ]]; then
   version="$(curl -sL https://raw.githubusercontent.com/borkdude/babashka/master/resources/BABASHKA_RELEASED_VERSION)"
 fi
@@ -56,17 +66,23 @@ esac
 
 download_url="https://github.com/borkdude/babashka/releases/download/v$version/babashka-$version-$platform-amd64.zip"
 
+mkdir -p "$download_dir"
 cd "$download_dir"
-echo -e "Downloading $download_url."
+echo -e "Downloading $download_url to $download_dir"
+rm -rf "babashka-$version-$platform-amd64.zip"
+rm -rf "bb"
 curl -o "babashka-$version-$platform-amd64.zip" -sL "https://github.com/borkdude/babashka/releases/download/v$version/babashka-$version-$platform-amd64.zip"
 unzip -qqo "babashka-$version-$platform-amd64.zip"
 rm "babashka-$version-$platform-amd64.zip"
 
-cd "$install_dir"
-if [ -f babashka ]; then
-    echo "Moving $install_dir/bb to $install_dir/bb.old"
+if [ "$download_dir" != "$install_dir" ]
+then
+    mkdir -p "$install_dir"
+    cd "$install_dir"
+    if [ -f bb ]; then
+        echo "Moving $install_dir/bb to $install_dir/bb.old"
+    fi
+    mv -f "$download_dir/bb" "$PWD/bb"
 fi
-
-mv -f "$download_dir/bb" "$PWD/bb"
 
 echo "Successfully installed bb in $install_dir."
