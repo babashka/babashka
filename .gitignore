@@ -31,3 +31,4 @@ org_babashka*.h
 /.calva
 !test-resources/divide_by_zero.jar
 .envrc
+.lsp
