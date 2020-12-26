@@ -260,6 +260,7 @@ handling of SIGINT and SIGPIPE. This can be done by setting
 
 ## Articles, podcasts and videos
 
+- [Exporter for passwordstore.org](https://www.ieugen.ro/posts/2020/2020-12-26-export-passwords-with-babashka/) by Eugen Stan
 - [Babashka and sci internals](https://youtu.be/pgNp4Lk3gf0), a talk by Michiel Borkent at the [London Clojurians Meetup](https://www.meetup.com/London-Clojurians).
 - [Writing Clojure on the Command Line with Babashka](https://youtu.be/RogyxI-GaGQ), a talk by Nate Jones.
 - [Using Clojure in Command Line with Babashka](http://www.karimarttila.fi/clojure/2020/09/01/using-clojure-in-command-line-with-babashka.html), a blog article by Kari Marttila.
@@ -279,7 +280,6 @@ handling of SIGINT and SIGPIPE. This can be done by setting
   by Arne Brasseur
 - [Clojure in the Shell](https://lambdaisland.com/blog/2019-12-05-advent-of-parens-5-clojure-in-the-shell) by Arne Brasseur
 - [Clojure Tool](https://purelyfunctional.tv/issues/purelyfunctional-tv-newsletter-351-clojure-tool-babashka/) by Eric Normand
-- [Exporter for passwordstore.org](https://www.ieugen.ro/posts/2020/2020-12-26-export-passwords-with-babashka/) by Eugen Stan
 
 ## [Building babashka](doc/build.md)
 
