@@ -279,6 +279,7 @@ handling of SIGINT and SIGPIPE. This can be done by setting
   by Arne Brasseur
 - [Clojure in the Shell](https://lambdaisland.com/blog/2019-12-05-advent-of-parens-5-clojure-in-the-shell) by Arne Brasseur
 - [Clojure Tool](https://purelyfunctional.tv/issues/purelyfunctional-tv-newsletter-351-clojure-tool-babashka/) by Eric Normand
+- [Exporter for passwordstore.org](https://www.ieugen.ro/posts/2020/2020-12-26-export-passwords-with-babashka/) by Eugen Stan
 
 ## [Building babashka](doc/build.md)
 
