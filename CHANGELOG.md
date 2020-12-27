@@ -2,6 +2,19 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
+## Unreleased
+
+### New
+
+- Implement [pod registry](https://github.com/babashka/pod-registry) to obtain
+  pods when used in script. [#690](https://github.com/borkdude/babashka/issues/690)
+
+### Fixed / enhanced
+
+- Auto-resolved map fix [#684](https://github.com/borkdude/babashka/issues/684)
+- Handle whitespace after read-cond splice
+- Several performance improvements
+
 ## v0.2.5
 
 This release adds a new `babashka.deps` namespace which offers [tools.deps
