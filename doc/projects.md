@@ -2,11 +2,53 @@
 
 The following libraries and projects are known to work with babashka.
 
-Table of contents:
-
-- [Libraries](#libraries)
-- [Pods](#pods)
 - [Projects](#projects)
+  - [Libraries](#libraries)
+    - [clj-http-lite](#clj-http-lite)
+    - [spartan.spec](#spartanspec)
+    - [missing.test.assertions](#missingtestassertions)
+    - [medley](#medley)
+    - [limit-break](#limit-break)
+    - [clojure-csv](#clojure-csv)
+    - [regal](#regal)
+    - [cprop](#cprop)
+    - [comb](#comb)
+    - [nubank/docopt](#nubankdocopt)
+    - [arrangement](#arrangement)
+    - [clojure.math.combinatorics](#clojuremathcombinatorics)
+    - [testdoc](#testdoc)
+    - [doric](#doric)
+    - [clojure.data.zip](#clojuredatazip)
+    - [clj-psql](#clj-psql)
+    - [camel-snake-kebab](#camel-snake-kebab)
+    - [aero](#aero)
+    - [clojure.data.generators](#clojuredatagenerators)
+    - [honeysql](#honeysql)
+    - [bond](#bond)
+    - [portal](#portal)
+    - [version-clj](#version-clj)
+    - [matchete](#matchete)
+    - [progrock](#progrock)
+  - [Pods](#pods)
+  - [Projects](#projects-1)
+    - [babashka-test-action](#babashka-test-action)
+    - [deps.clj](#depsclj)
+    - [4bb](#4bb)
+    - [babashka lambda layer](#babashka-lambda-layer)
+    - [Release on push Github action](#release-on-push-github-action)
+    - [justone/bb-scripts](#justonebb-scripts)
+    - [nativity](#nativity)
+    - [cldwalker/bb-clis](#cldwalkerbb-clis)
+    - [krell template](#krell-template)
+    - [wee-httpd](#wee-httpd)
+    - [covid19-babashka](#covid19-babashka)
+    - [bb-spotify](#bb-spotify)
+    - [lambdaisland/open-source](#lambdaislandopen-source)
+    - [dharrigan/spotifyd-notification](#dharriganspotifyd-notification)
+    - [nextjournal/ssh-github-auth](#nextjournalssh-github-auth)
+    - [turtlequeue/setup-babashka](#turtlequeuesetup-babashka)
+    - [interdep](#interdep)
+    - [sha-words](#sha-words)
 
 Also keep an eye on the [news](news.md) page for new projects, gists and other
 developments around babashka.
@@ -305,7 +347,7 @@ Tested version: 0.1.2.
 ## Pods
 
 [Babashka pods](https://github.com/babashka/babashka.pods) are programs that can
-be used as Clojure libraries by babashka.
+be used as Clojure libraries by babashka. Also see [pod-registry](https://github.com/babashka/pod-registry) for an easy way to obtain pods (supported since bb 0.2.6).
 
 - [babashka-sql-pods](https://github.com/babashka/babashka-sql-pods): pods for
   interacting with SQL databases (PostgreSQL and HSQLDB).
