@@ -20,9 +20,10 @@ The data from the babashka survey is now available
 [here](https://nl.surveymonkey.com/results/SM-8W8V36DZ7/). I have provided a
 summary [here](surveys/2020-11.md).
 
+- Blog article: [exporter for passwordstore.org](https://www.ieugen.ro/posts/2020/2020-12-26-export-passwords-with-babashka/) by Eugen Stan
 - [weavejester/progrock](https://github.com/weavejester/progrock) is a babashka-compatible library
   for printing progress bars.
-- a [maze animation](https://gist.github.com/mmzsource/e8c383f69244ebefde058004fee72a8a) babashka script by [mmz](https://gist.github.com/mmzsource)
+- A [maze animation](https://gist.github.com/mmzsource/e8c383f69244ebefde058004fee72a8a) babashka script by [mmz](https://gist.github.com/mmzsource)
 
 ## 2020-11
 
