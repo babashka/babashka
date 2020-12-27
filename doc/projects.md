@@ -358,6 +358,8 @@ be used as Clojure libraries by babashka. Also see [pod-registry](https://github
 - [clj-kondo](https://github.com/borkdude/clj-kondo/#babashka-pod): a Clojure
   linter.
 - [stash](https://github.com/rorokimdim/stash): encrypted text storage.
+- [pod-babashka-etaoin](https://github.com/babashka/pod-babashka-etaoin): a pod
+  wrapping Etaoin, a pure Clojure webdriver protocol implementation.
 - [pod-babashka-filewatcher](https://github.com/babashka/pod-babashka-filewatcher): a
   filewatcher pod based on Rust notify.
 - [pod-babashka-lanterna](https://github.com/babashka/pod-babashka-lanterna): a
