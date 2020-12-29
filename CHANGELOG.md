@@ -11,13 +11,19 @@ For a list of breaking changes, check [here](#breaking-changes).
   script. [#690](https://github.com/borkdude/babashka/issues/690)
 - [Buddy pod](https://github.com/babashka/pod-babashka-buddy)
 - [Etaoin pod 0.0.1 release](https://github.com/babashka/pod-babashka-etaoin)
-- [Fswatcher pod](https://github.com/babashka/pod-babashka-fswatcher)
+- [Filewatcher pod 0.0.1 release](https://github.com/babashka/pod-babashka-filewatcher)
+- [Fswatcher pod](https://github.com/babashka/pod-babashka-fswatcher) ([@lispyclouds](https://github.com/lispyclouds))
 
 ### Fixed / enhanced
 
 - Auto-resolved map fix [#684](https://github.com/borkdude/babashka/issues/684)
 - Handle whitespace after read-cond splice
 - Several performance improvements
+
+### Thanks
+
+Special thanks to [@lispyclouds](https://github.com/lispyclouds) for hammocking
+on the pod registry and working on the new fswatcher pod.
 
 ## v0.2.5
 
