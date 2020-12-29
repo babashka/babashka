@@ -15,7 +15,7 @@ For a list of breaking changes, check [here](#breaking-changes).
 - Implement [pod registry](https://github.com/babashka/pod-registry) to
   automatically obtain pods when used in
   script. [#690](https://github.com/borkdude/babashka/issues/690)
-- [Buddy pod](https://github.com/babashka/pod-babashka-buddy)
+- [Buddy pod](https://github.com/babashka/pod-babashka-buddy) [#656](https://github.com/borkdude/babashka/issues/656)
 - [Etaoin pod 0.0.1 release](https://github.com/babashka/pod-babashka-etaoin)
 - [Filewatcher pod 0.0.1 release](https://github.com/babashka/pod-babashka-filewatcher)
 - [Fswatcher pod](https://github.com/babashka/pod-babashka-fswatcher) ([@lispyclouds](https://github.com/lispyclouds))
