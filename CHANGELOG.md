@@ -2,12 +2,16 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
-## Unreleased
+## v0.2.6
 
 ### New
 
-- Implement [pod registry](https://github.com/babashka/pod-registry) to obtain
-  pods when used in script. [#690](https://github.com/borkdude/babashka/issues/690)
+- Implement [pod registry](https://github.com/babashka/pod-registry) to
+  automatically obtain pods when used in
+  script. [#690](https://github.com/borkdude/babashka/issues/690)
+- [Buddy pod](https://github.com/babashka/pod-babashka-buddy)
+- [Etaoin pod 0.0.1 release](https://github.com/babashka/pod-babashka-etaoin)
+- [Fswatcher pod](https://github.com/babashka/pod-babashka-fswatcher)
 
 ### Fixed / enhanced
 

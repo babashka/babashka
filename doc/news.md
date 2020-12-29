@@ -13,6 +13,9 @@ internals](https://youtu.be/pgNp4Lk3gf0). Also see
 and [REPL
 session](https://gist.github.com/borkdude/66a4d844668e12ae1a8277af10d6cc4b).
 
+Babashka 0.2.6 released. See [release
+notes](https://github.com/borkdude/babashka/blob/master/CHANGELOG.md#v026).
+
 Babashka 0.2.5 released. See [release
 notes](https://github.com/borkdude/babashka/blob/master/CHANGELOG.md#v025).
 
