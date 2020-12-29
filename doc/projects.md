@@ -29,6 +29,7 @@ The following libraries and projects are known to work with babashka.
     - [version-clj](#version-clj)
     - [matchete](#matchete)
     - [progrock](#progrock)
+    - [clj-commons/fs](#clj-commonsfs)
   - [Pods](#pods)
   - [Projects](#projects-1)
     - [babashka-test-action](#babashka-test-action)
@@ -339,6 +340,20 @@ user=> (mc/matches '{?k 1} {:x 1 :y 1})"
 A functional Clojure progress bar for the command line.
 
 Tested version: 0.1.2.
+
+### [clj-commons/fs](https://github.com/clj-commons/fs)
+
+File system utilities for Clojure.
+
+``` clojure
+(require '[babashka.deps :as deps])
+
+(deps/add-deps '{:deps {clj-commons/fs {:mvn/version "1.5.2"}}})
+
+(require '[me.raynes.fs :as fs])
+
+(fs/link? "/tmp") ;; true
+```
 
 ## Pods
 
