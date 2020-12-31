@@ -19,7 +19,9 @@ notes](https://github.com/borkdude/babashka/blob/master/CHANGELOG.md#v026).
 Babashka 0.2.5 released. See [release
 notes](https://github.com/borkdude/babashka/blob/master/CHANGELOG.md#v025).
 
-The data from the babashka survey is now available
+- First release of the [sqlite pod](https://github.com/babashka/pod-babashka-sqlite3)
+- First release of the [buddy pod](https://github.com/babashka/pod-babashka-buddy)
+- The data from the babashka survey is now available
 [here](https://nl.surveymonkey.com/results/SM-8W8V36DZ7/). I have provided a
 summary [here](surveys/2020-11.md).
 

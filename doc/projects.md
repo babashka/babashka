@@ -358,37 +358,17 @@ File system utilities for Clojure.
 ## Pods
 
 [Babashka pods](https://github.com/babashka/babashka.pods) are programs that can
-be used as Clojure libraries by babashka. Also see [pod-registry](https://github.com/babashka/pod-registry) for an easy way to obtain pods (supported since bb 0.2.6).
+be used as Clojure libraries by babashka. See
+[pod-registry](https://github.com/babashka/pod-registry) for an overview of available pods.
 
-- [babashka-sql-pods](https://github.com/babashka/babashka-sql-pods): pods for
-  interacting with SQL databases (PostgreSQL and HSQLDB).
-- [bootleg](https://github.com/retrogradeorbit/bootleg): static HTML website
-  generation.
-- [brisk](https://github.com/justone/brisk): Freeze and thaw with Nippy at the
-  command line.
-- [clj-kondo](https://github.com/borkdude/clj-kondo/#babashka-pod): a Clojure
-  linter.
-- [stash](https://github.com/rorokimdim/stash): encrypted text storage.
-- [pod-babashka-etaoin](https://github.com/babashka/pod-babashka-etaoin): a pod
-  wrapping Etaoin, a pure Clojure webdriver protocol implementation.
-- [pod-babashka-filewatcher](https://github.com/babashka/pod-babashka-filewatcher): a
-  filewatcher pod based on Rust notify.
-- [pod-babashka-lanterna](https://github.com/babashka/pod-babashka-lanterna): a
-  pod for making TUIs based on
-  [clojure-lanterna](https://github.com/babashka/clojure-lanterna).
-- [pod-babashka-parcera](https://github.com/babashka/pod-babashka-parcera): pod around the parcera Clojure parser.
+Pods not available in the pod registry:
+
 - [pod-janet-peg](https://github.com/sogaiu/pod-janet-peg): a pod for
   calling [Janet](https://github.com/janet-lang/janet)'s PEG
   functionality.
 - [pod-jaydeesimon-jsoup](https://github.com/jaydeesimon/pod-jaydeesimon-jsoup):
     a pod for parsing HTML using CSS queries backed by Jsoup.
-- [pod-lispyclouds-docker](https://github.com/lispyclouds/pod-lispyclouds-docker):
-  A pod for interacting with docker.
-- [pod-tzzh-aws](https://github.com/tzzh/pod-tzzh-aws): pod for interacting with AWS.
-- [pod-tzzh-kafka](https://github.com/tzzh/pod-tzzh-kafka): pod for interacting with Kafka.
-- [pod-tzzh-mail](https://github.com/tzzh/pod-tzzh-mail): pod for sending mail.
 - [pod.xledger.sql-server](https://github.com/xledger/pod_sql_server): pod for interacting with SQL Server.
-- [tabl](https://github.com/justone/tabl): Make tables from data in your terminal.
 
 ## Projects
 
