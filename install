@@ -56,7 +56,7 @@ do
 done
 
 if [[ "$version" == "" ]]; then
-  version="$(curl -sL https://raw.githubusercontent.com/borkdude/babashka/master/resources/BABASHKA_RELEASED_VERSION)"
+  version="$(curl -sL https://raw.githubusercontent.com/babashka/babashka/master/resources/BABASHKA_RELEASED_VERSION)"
 fi
 
 case "$(uname -s)" in
@@ -64,14 +64,14 @@ case "$(uname -s)" in
     Darwin*)    platform=macos;;
 esac
 
-download_url="https://github.com/borkdude/babashka/releases/download/v$version/babashka-$version-$platform-amd64.zip"
+download_url="https://github.com/babashka/babashka/releases/download/v$version/babashka-$version-$platform-amd64.zip"
 
 mkdir -p "$download_dir"
 cd "$download_dir"
 echo -e "Downloading $download_url to $download_dir"
 rm -rf "babashka-$version-$platform-amd64.zip"
 rm -rf "bb"
-curl -o "babashka-$version-$platform-amd64.zip" -sL "https://github.com/borkdude/babashka/releases/download/v$version/babashka-$version-$platform-amd64.zip"
+curl -o "babashka-$version-$platform-amd64.zip" -sL "https://github.com/babashka/babashka/releases/download/v$version/babashka-$version-$platform-amd64.zip"
 unzip -qqo "babashka-$version-$platform-amd64.zip"
 rm "babashka-$version-$platform-amd64.zip"
 

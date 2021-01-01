@@ -1,8 +1,8 @@
 <img src="logo/babashka.svg" width="425px">
 
-[![CircleCI](https://circleci.com/gh/borkdude/babashka/tree/master.svg?style=shield)](https://circleci.com/gh/borkdude/babashka/tree/master)
+[![CircleCI](https://circleci.com/gh/babashka/babashka/tree/master.svg?style=shield)](https://circleci.com/gh/babashka/babashka/tree/master)
 [![project chat](https://img.shields.io/badge/slack-join_chat-brightgreen.svg)](https://app.slack.com/client/T03RZGPFR/CLX41ASCS)
-[![Financial Contributors on Open Collective](https://opencollective.com/babashka/all/badge.svg?label=financial+contributors)](https://opencollective.com/babashka) [![Clojars Project](https://img.shields.io/clojars/v/borkdude/babashka.svg)](https://clojars.org/borkdude/babashka)
+[![Financial Contributors on Open Collective](https://opencollective.com/babashka/all/badge.svg?label=financial+contributors)](https://opencollective.com/babashka) [![Clojars Project](https://img.shields.io/clojars/v/babashka/babashka.svg)](https://clojars.org/babashka/babashka)
 [![twitter](https://img.shields.io/badge/twitter-%23babashka-blue)](https://twitter.com/search?q=%23babashka&src=typed_query&f=live)
 
 A Clojure [babushka](https://en.wikipedia.org/wiki/Headscarf) for the grey areas of Bash.
@@ -40,15 +40,15 @@ As one user described it:
 
 ## Quickstart
 
-For installation options check [Installation](https://github.com/borkdude/babashka#installation).
+For installation options check [Installation](https://github.com/babashka/babashka#installation).
 For quick installation use:
 
 ``` shell
-$ bash <(curl -s https://raw.githubusercontent.com/borkdude/babashka/master/install)
+$ bash <(curl -s https://raw.githubusercontent.com/babashka/babashka/master/install)
 ```
 
 or grab a binary from [Github
-releases](https://github.com/borkdude/babashka/releases) yourself and place it
+releases](https://github.com/babashka/babashka/releases) yourself and place it
 anywhere on the path.
 
 Then you're ready to go:
@@ -61,7 +61,7 @@ bb took 4ms.
 
 ### Babashka users
 
-Are you using babashka in your company or personal projects? Let us know [here](https://github.com/borkdude/babashka/issues/254).
+Are you using babashka in your company or personal projects? Let us know [here](https://github.com/babashka/babashka/issues/254).
 
 ### Setting expectations
 
@@ -166,7 +166,7 @@ On Windows you can install using [scoop](https://scoop.sh/) and the
 Install via the installer script:
 
 ``` shell
-$ curl -sLO https://raw.githubusercontent.com/borkdude/babashka/master/install
+$ curl -sLO https://raw.githubusercontent.com/babashka/babashka/master/install
 $ chmod +x install
 $ ./install
 ```
@@ -194,12 +194,12 @@ $ ./install --dir . --version 0.2.5 --download-dir .
 ### Github releases
 
 You may also download a binary from
-[Github](https://github.com/borkdude/babashka/releases). For linux there is a
+[Github](https://github.com/babashka/babashka/releases). For linux there is a
 static binary available which can be used on Alpine.
 
 ## Docker
 
-Check out the image on [Docker hub](https://hub.docker.com/r/borkdude/babashka/).
+Check out the image on [Docker hub](https://hub.docker.com/r/babashka/babashka/).
 
 ## [News](doc/news.md)
 
@@ -272,7 +272,7 @@ handling of SIGINT and SIGPIPE. This can be done by setting
 - [The REPL podcast](https://www.therepl.net/episodes/36/) Michiel Borkent talks about [clj-kondo](https://github.com/borkdude/clj-kondo), [Jet](https://github.com/borkdude/jet), Babashka, and [GraalVM](https://github.com/oracle/graal) with Daniel Compton.
 - [Implementing an nREPL server for babashka](https://youtu.be/0YmZYnwyHHc): impromptu presentation by Michiel Borkent at the online [Dutch Clojure Meetup](http://meetup.com/The-Dutch-Clojure-Meetup)
 - [ClojureScript podcast](https://soundcloud.com/user-959992602/s3-e5-babashka-with-michiel-borkent) with Jacek Schae interviewing Michiel Borkent
-- [Babashka talk at ClojureD](https://www.youtube.com/watch?v=Nw8aN-nrdEk) ([slides](https://speakerdeck.com/borkdude/babashka-and-the-small-clojure-interpreter-at-clojured-2020)) by Michiel Borkent
+- [Babashka talk at ClojureD](https://www.youtube.com/watch?v=Nw8aN-nrdEk) ([slides](https://speakerdeck.com/babashka/babashka-and-the-small-clojure-interpreter-at-clojured-2020)) by Michiel Borkent
 - [Babashka: a quick example](https://juxt.pro/blog/posts/babashka.html) by Malcolm Sparks
 - [Clojure Start Time in 2019](https://stuartsierra.com/2019/12/21/clojure-start-time-in-2019) by Stuart Sierra
 - [Advent of Random
@@ -309,7 +309,7 @@ babashka is interesting to share with the world, they are free to distribute it
 using a different binary name (like `bb-sql`, `bb-docker`, `bb-yourcompany`,
 etc.). See the [feature flag documentation](doc/build.md#feature-flags) and the
 implementation of the existing feature flags ([example
-commit](https://github.com/borkdude/babashka/commit/02c7c51ad4b2b1ab9aa95c26a74448b138fe6659)).
+commit](https://github.com/babashka/babashka/commit/02c7c51ad4b2b1ab9aa95c26a74448b138fe6659)).
 
 ## Related projects
 
@@ -325,7 +325,7 @@ Thanks to all the people that contributed to babashka:
 - [Adgoji](https://www.adgoji.com/) for financial support
 - [CircleCI](https://circleci.com/) for CI and additional support
 - [Nikita Prokopov](https://github.com/tonsky) for the logo
-- [Contributors](https://github.com/borkdude/babashka/graphs/contributors) and
+- [Contributors](https://github.com/babashka/babashka/graphs/contributors) and
   other users posting issues with bug reports and ideas
 - [Github sponsors](https://github.com/sponsors/borkdude)
 - [OpenCollective sponsors](https://opencollective.com/babashka)
@@ -334,7 +334,7 @@ Thanks to all the people that contributed to babashka:
 ### Code Contributors
 
 This project exists thanks to all the people who contribute. [[Contribute](doc/dev.md)].
-<a href="https://github.com/borkdude/babashka/graphs/contributors"><img src="https://opencollective.com/babashka/contributors.svg?width=890&button=false" /></a>
+<a href="https://github.com/babashka/babashka/graphs/contributors"><img src="https://opencollective.com/babashka/contributors.svg?width=890&button=false" /></a>
 
 ### Financial Contributors
 

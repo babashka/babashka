@@ -33,7 +33,7 @@ NOTE: the babashka repository contains submodules. You need to use the
 `--recursive` flag to clone these submodules along with the main repo.
 
 ``` shellsession
-$ git clone https://github.com/borkdude/babashka --recursive
+$ git clone https://github.com/babashka/babashka --recursive
 ```
 
 To update later on:
@@ -109,7 +109,7 @@ Note that httpkit server is currently experimental, the feature flag could be to
 To disable all of the above features, you can set `BABASHKA_LEAN` to `true`.
 
 Here is an [example
-commit](https://github.com/borkdude/babashka/commit/13f65f05aeff891678e88965d9fbd146bfa87f4e)
+commit](https://github.com/babashka/babashka/commit/13f65f05aeff891678e88965d9fbd146bfa87f4e)
 that can be used as a checklist when you want to create a new feature flag.
 
 ### HyperSQL

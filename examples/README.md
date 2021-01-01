@@ -52,7 +52,7 @@ $ < /tmp/test.txt bb -io '(shuffle *input*)'
          '[cheshire.core :as json])
 
 (defn babashka-latest-version []
-  (-> (sh "curl" "https://api.github.com/repos/borkdude/babashka/tags")
+  (-> (sh "curl" "https://api.github.com/repos/babashka/babashka/tags")
       :out
       (json/parse-string true)
       first
@@ -105,7 +105,7 @@ less
 
 ## Portable tree command
 
-See [examples/tree.clj](https://github.com/borkdude/babashka/blob/master/examples/tree.clj).
+See [examples/tree.clj](https://github.com/babashka/babashka/blob/master/examples/tree.clj).
 
 ``` shellsession
 $ clojure -Sdeps '{:deps {org.clojure/tools.cli {:mvn/version "0.4.2"}}}' examples/tree.clj src
@@ -127,7 +127,7 @@ src
 
 ## List outdated maven dependencies
 
-See [examples/outdated.clj](https://github.com/borkdude/babashka/blob/master/examples/outdated.clj).
+See [examples/outdated.clj](https://github.com/babashka/babashka/blob/master/examples/outdated.clj).
 Inspired by an idea from [@seancorfield](https://github.com/seancorfield).
 
 ``` shellsession
@@ -157,17 +157,17 @@ A script with the same goal can be found [here](https://gist.github.com/swlkr/3f
 
 ## Print current time in California
 
-See [examples/pst.clj](https://github.com/borkdude/babashka/blob/master/examples/pst.clj)
+See [examples/pst.clj](https://github.com/babashka/babashka/blob/master/examples/pst.clj)
 
 ## Tiny http server
 
-See [examples/http_server.clj](https://github.com/borkdude/babashka/blob/master/examples/http_server.clj)
+See [examples/http_server.clj](https://github.com/babashka/babashka/blob/master/examples/http_server.clj)
 
 Original by [@souenzzo](https://gist.github.com/souenzzo/a959a4c5b8c0c90df76fe33bb7dfe201)
 
 ## Print random docstring
 
-See [examples/random_doc.clj](https://github.com/borkdude/babashka/blob/master/examples/random_doc.clj)
+See [examples/random_doc.clj](https://github.com/babashka/babashka/blob/master/examples/random_doc.clj)
 
 ``` shell
 $ examples/random_doc.clj
@@ -205,7 +205,7 @@ $ sha1.clj babashka
 
 `Dockerfile`:
 ``` dockerfile
-FROM borkdude/babashka
+FROM babashka/babashka
 RUN echo $'\
 (println "Your command line args:" *command-line-args*)\
 '\
@@ -244,15 +244,15 @@ Your command line args: (1 2 3)
 ## Note taking app
 
 See
-[examples/notes.clj](https://github.com/borkdude/babashka/blob/master/examples/notes.clj). This
+[examples/notes.clj](https://github.com/babashka/babashka/blob/master/examples/notes.clj). This
 is a variation on the
-[http-server](https://github.com/borkdude/babashka/#tiny-http-server)
+[http-server](https://github.com/babashka/babashka/#tiny-http-server)
 example. If you get prompted with a login, use `admin`/`admin`.
 
 ## which
 
 The `which` command re-implemented in Clojure. See
-[examples/which.clj](https://github.com/borkdude/babashka/blob/master/examples/which.clj).
+[examples/which.clj](https://github.com/babashka/babashka/blob/master/examples/which.clj).
 Prints the canonical file name.
 
 ``` shell

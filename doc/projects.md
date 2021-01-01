@@ -427,7 +427,7 @@ Contol your spotify player using babashka.
 ### [lambdaisland/open-source](https://github.com/lambdaisland/open-source)
 
 [Internal
-tooling](https://github.com/borkdude/babashka/issues/457#issuecomment-636739415)
+tooling](https://github.com/babashka/babashka/issues/457#issuecomment-636739415)
 used by Lambda Island projects. Noteworthy: a [babashka-compatible hiccup
 script](https://github.com/lambdaisland/open-source/blob/2cfde3dfb460e72f047bf94e6f5ec7f519c6d7a0/src/lioss/hiccup.clj).
 

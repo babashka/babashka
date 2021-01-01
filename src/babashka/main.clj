@@ -344,7 +344,7 @@ Use -- to separate script command line args from bb command line args.
                           :thread-bind [reflection-var])]
     (nrepl-server/start-server! ctx nrepl-opts)
     (binding [*out* *err*]
-      (println "For more info visit https://github.com/borkdude/babashka/blob/master/doc/repl.md#nrepl.")))
+      (println "For more info visit https://github.com/babashka/babashka/blob/master/doc/repl.md#nrepl.")))
   ;; hang until SIGINT
   @(promise))
 

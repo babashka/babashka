@@ -1,10 +1,10 @@
-(defproject borkdude/babashka
+(defproject babashka/babashka
   #=(clojure.string/trim
      #=(slurp "resources/BABASHKA_VERSION"))
   :description "babashka"
-  :url "https://github.com/borkdude/babashka"
+  :url "https://github.com/babashka/babashka"
   :scm {:name "git"
-        :url "https://github.com/borkdude/babashka"}
+        :url "https://github.com/babashka/babashka"}
   :license {:name "Eclipse Public License 1.0"
             :url "http://opensource.org/licenses/eclipse-1.0.php"}
   :source-paths ["src" "sci/src" "babashka.curl/src" "pods/src"
