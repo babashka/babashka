@@ -348,9 +348,6 @@ Use -- to separate script command line args from bb command line args.
   ;; hang until SIGINT
   @(promise))
 
-(defn exit [n]
-  (throw (ex-info "" {:bb/exit-code n})))
-
 (def aliases
   (cond->
       '{tools.cli clojure.tools.cli

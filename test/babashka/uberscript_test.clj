@@ -4,9 +4,6 @@
    [clojure.edn :as edn]
    [clojure.test :as t :refer [deftest is testing]]))
 
-(defn bb [input & args]
-  (edn/read-string (apply tu/bb (when (some? input) (str input)) (map str args))))
-
 (deftest uberscript-test
   (let [tmp-file (java.io.File/createTempFile "uberscript" ".clj")]
     (.deleteOnExit tmp-file)
