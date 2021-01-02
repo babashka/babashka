@@ -119,6 +119,10 @@ jobs:
           command: |
             script/test
             script/run_lib_tests
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - bb
       - run:
           name: Release
           command: |
@@ -144,7 +148,7 @@ jobs:
       GRAALVM_HOME: /home/circleci/graalvm-ce-java11-20.3.0
       BABASHKA_PLATFORM: linux-static # used in release script
       BABASHKA_TEST_ENV: native
-      BABASHKA_STATIC: true
+      BABASHKA_STATIC: "true"
       BABASHKA_XMX: "-J-Xmx6500m"
     resource_class: large
     steps:
@@ -303,6 +307,8 @@ jobs:
       - image: circleci/buildpack-deps:stretch
     steps:
       - checkout
+      - attach_workspace:
+          at: ./
       - run:
           name: "Pull Submodules"
           command: |
@@ -336,7 +342,4 @@ workflows:
             branches:
               only: master
           requires:
-            - jvm
             - linux
-            - linux-static
-            - mac
