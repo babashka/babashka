@@ -340,6 +340,6 @@ workflows:
       - docker:
           filters:
             branches:
-              only: master
+              only: ci # TODD: Revert to master before merge
           requires:
             - linux
