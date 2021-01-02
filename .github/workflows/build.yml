@@ -1,8 +1,9 @@
 name: build
 
-on: [push
-    , pull_request
-    ]
+on:
+  push:
+    branches:
+      - master
 
 jobs:
 
@@ -364,7 +365,7 @@ jobs:
           .github/script/deploy
 
   docker:
-    if: "!contains(github.event.head_commit.message, 'skip ci') && github.event_name == 'push' && github.ref == 'refs/heads/ci'" # TODO: Revert to master berfore merge
+    if: "!contains(github.event.head_commit.message, 'skip ci') && github.event_name == 'push' && github.ref == 'refs/heads/master'"
     needs: [linux]
     runs-on: ubuntu-18.04
     steps:
