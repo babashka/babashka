@@ -1,0 +1,4 @@
+babashka.impl.pipe-signal-handler/pipe-signal-received?
+babashka.impl.pipe-signal-handler/handle-pipe!
+babashka.impl.sigint-handler/handle-sigint!
+babashka.impl.classes/generate-reflection-file
