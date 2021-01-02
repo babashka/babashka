@@ -30,7 +30,7 @@ jobs:
         with:
           fetch-depth: 1
           submodules: 'true'
- 
+
       - name: Cache deps
         uses: actions/cache@v1
         id: cache-deps
@@ -164,6 +164,13 @@ jobs:
           export GRAALVM_HOME="$HOME/graalvm-ce-java11-20.3.0"
           BABASHKA_TEST_ENV=native script/test
 
+      - name: Save binary
+        uses: actions/upload-artifact@v2
+        with:
+          name: bb-linux-binary
+          path: |
+            bb
+
       - name: Install clojure
         run: |
           sudo script/install-clojure /usr/local
@@ -263,7 +270,7 @@ jobs:
   mac:
     if: "!contains(github.event.head_commit.message, 'skip ci')"
     needs: [jvm]
-    runs-on: macOS-latest
+    runs-on: macos-latest
     steps:
       - name: Git checkout
         uses: actions/checkout@v1
@@ -366,6 +373,12 @@ jobs:
         with:
           fetch-depth: 1
           submodules: 'true'
+
+      - name: Download linux binary
+        uses: actions/download-artifact@v2
+        with:
+          name: bb-linux-binary
+          path: bb
 
       - name: Docker build
         env:
