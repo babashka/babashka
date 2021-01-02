@@ -122,7 +122,7 @@ jobs:
       - persist_to_workspace:
           root: ./
           paths:
-            - bb
+            - bb-binary
       - run:
           name: Release
           command: |
@@ -309,6 +309,9 @@ jobs:
       - checkout
       - attach_workspace:
           at: ./
+      - run:
+          name: Move binary to root
+          command: mv bb-binary/bb bb
       - run:
           name: "Pull Submodules"
           command: |
