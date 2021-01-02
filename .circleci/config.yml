@@ -119,14 +119,14 @@ jobs:
           command: |
             script/test
             script/run_lib_tests
-      - persist_to_workspace:
-          root: ./
-          paths:
-            - bb-binary
       - run:
           name: Release
           command: |
             .circleci/script/release
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+            - release
       - save_cache:
           paths:
             - ~/.m2
@@ -308,10 +308,10 @@ jobs:
     steps:
       - checkout
       - attach_workspace:
-          at: ./
+          at: /tmp
       - run:
-          name: Move binary to root
-          command: mv bb-binary/bb bb
+          name: Unzip binary to root
+          command: unzip /tmp/release/*.zip
       - run:
           name: "Pull Submodules"
           command: |
