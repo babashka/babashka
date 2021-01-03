@@ -165,13 +165,6 @@ jobs:
           export GRAALVM_HOME="$HOME/graalvm-ce-java11-20.3.0"
           BABASHKA_TEST_ENV=native script/test
 
-      - name: Save binary
-        uses: actions/upload-artifact@v2
-        with:
-          name: bb-linux-binary
-          path: |
-            bb
-
       - name: Install clojure
         run: |
           sudo script/install-clojure /usr/local
@@ -181,7 +174,8 @@ jobs:
           export GRAALVM_HOME="$HOME/graalvm-ce-java11-20.3.0"
           BABASHKA_TEST_ENV=native script/run_lib_tests
 
-      - uses: actions/upload-artifact@v1
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
         with:
           path: bb
           name: babashka-${{ steps.babashka-version.outputs.version }}-linux-amd64.zip
@@ -263,7 +257,8 @@ jobs:
           export GRAALVM_HOME="$HOME/graalvm-ce-java11-20.3.0"
           BABASHKA_TEST_ENV=native script/run_lib_tests
 
-      - uses: actions/upload-artifact@v1
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
         with:
           path: bb
           name: babashka-${{ steps.babashka-version.outputs.version }}-linux-static-amd64.zip
@@ -377,11 +372,26 @@ jobs:
           fetch-depth: 1
           submodules: 'true'
 
+      - name: Babashka version
+        id: babashka-version
+        run: |
+          BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
+          echo "##[set-output name=version;]${BABASHKA_VERSION}"
+
+      - name: Make release dir
+        run: mkdir -p /tmp/release
+
       - name: Download linux binary
         uses: actions/download-artifact@v2
         with:
-          name: bb-linux-binary
-          path: bb
+          name: babashka-${{ steps.babashka-version.outputs.version }}-linux-amd64.zip
+          path: /tmp/release
+
+      - name: Download static linux binary
+        uses: actions/download-artifact@v2
+        with:
+          name: babashka-${{ steps.babashka-version.outputs.version }}-linux-static-amd64.zip
+          path: /tmp/release
 
       - name: Docker build
         env:
