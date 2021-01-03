@@ -21,20 +21,26 @@ if [ -z "$CIRCLE_PULL_REQUEST" ] && [ "$CIRCLE_BRANCH" = "master" ]; then
     docker build -t "$image_name" -f Dockerfile.ci .
     docker tag "$image_name:$latest_tag" "$image_name:$image_tag"
     rm -f bb
-    unzip "/tmp/release/babashka-${image_tag}-linux-static-amd64.zip"
-    docker build -t "$image_name:alpine" -f Dockerfile.alpine .
-    docker tag "$image_name:alpine" "$image_name:$image_tag-alpine"
+    if [[ $snapshot == "false" ]]; then
+        unzip "/tmp/release/babashka-${image_tag}-linux-static-amd64.zip"
+        docker build -t "$image_name:alpine" -f Dockerfile.alpine .
+        docker tag "$image_name:alpine" "$image_name:$image_tag-alpine"
+    fi
     # we only update latest when it's not a SNAPSHOT version
     if [ "false" = "$snapshot" ]; then
         echo "Pushing image $image_name:$latest_tag"
         docker push "$image_name:$latest_tag"
-        echo "Pushing image $image_name:alpine"
-        docker push "$image_name:alpine"
+        if [[ $snapshot == "false" ]]; then
+            echo "Pushing image $image_name:alpine"
+            docker push "$image_name:alpine"
+        fi
     fi
     # we update the version tag, even if it's a SNAPSHOT version
     echo "Pushing image $image_name:$image_tag"
     docker push "$image_name:$image_tag"
-    docker push "$image_name:$image_tag-alpine"
+    if [[ $snapshot == "false" ]]; then
+        docker push "$image_name:$image_tag-alpine"
+    fi
 else
     echo "Not publishing Docker image"
 fi
