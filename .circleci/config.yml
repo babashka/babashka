@@ -153,6 +153,8 @@ jobs:
     resource_class: large
     steps:
       - checkout
+      - attach_workspace:
+          at: /tmp
       - run:
           name: "Pull Submodules"
           command: |
@@ -207,6 +209,10 @@ jobs:
           name: Release
           command: |
             .circleci/script/release
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+            - release
       - save_cache:
           paths:
             - ~/.m2
@@ -310,21 +316,12 @@ jobs:
             - ~/.m2
           key: v1-dependencies-{{ checksum "project.clj" }}
   docker:
-    resource_class: large
     docker:
       - image: circleci/buildpack-deps:stretch
     steps:
       - checkout
       - attach_workspace:
           at: /tmp
-      - run:
-          name: Unzip binary to root
-          command: unzip /tmp/release/*.zip
-      - run:
-          name: "Pull Submodules"
-          command: |
-            git submodule init
-            git submodule update
       - setup_remote_docker:
           version: 19.03.12
       - run:
@@ -354,3 +351,4 @@ workflows:
               only: master
           requires:
             - linux
+            - linux-static
