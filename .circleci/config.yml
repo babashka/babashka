@@ -158,6 +158,15 @@ jobs:
           command: |
             git submodule init
             git submodule update
+      - run:
+          name: "Short circuit on SNAPSHOT"
+          command: |
+            cat resources/BABASHKA_VERSION | grep SNAPSHOT
+            status=$?
+            if test $status -eq 0
+            then
+              circleci task halt
+            fi
       - restore_cache:
           keys:
             - linux-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
