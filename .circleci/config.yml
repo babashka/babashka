@@ -161,9 +161,8 @@ jobs:
       - run:
           name: "Short circuit on SNAPSHOT"
           command: |
-            cat resources/BABASHKA_VERSION | grep SNAPSHOT
-            status=$?
-            if test $status -eq 0
+            VERSION=$(cat resources/BABASHKA_VERSION)
+            if [[ "$VERSION" == *-SNAPSHOT ]]
             then
               circleci task halt
             fi
