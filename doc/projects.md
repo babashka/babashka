@@ -2,7 +2,55 @@
 
 The following libraries and projects are known to work with babashka.
 
-- [Projects](#projects)
+- [Projects](#projects)- [Projects](#projects)
+  - [Libraries](#libraries)
+    - [clj-http-lite](#clj-http-lite)
+    - [spartan.spec](#spartanspec)
+    - [missing.test.assertions](#missingtestassertions)
+    - [medley](#medley)
+    - [limit-break](#limit-break)
+    - [clojure-csv](#clojure-csv)
+    - [regal](#regal)
+    - [cprop](#cprop)
+    - [comb](#comb)
+    - [nubank/docopt](#nubankdocopt)
+    - [arrangement](#arrangement)
+    - [clojure.math.combinatorics](#clojuremathcombinatorics)
+    - [testdoc](#testdoc)
+    - [doric](#doric)
+    - [clojure.data.zip](#clojuredatazip)
+    - [clj-psql](#clj-psql)
+    - [camel-snake-kebab](#camel-snake-kebab)
+    - [aero](#aero)
+    - [clojure.data.generators](#clojuredatagenerators)
+    - [honeysql](#honeysql)
+    - [bond](#bond)
+    - [portal](#portal)
+    - [version-clj](#version-clj)
+    - [matchete](#matchete)
+    - [progrock](#progrock)
+    - [clj-commons/fs](#clj-commonsfs)
+    - [cljc.java-time](#cljcjava-time)
+  - [Pods](#pods)
+  - [Projects](#projects-1)
+    - [babashka-test-action](#babashka-test-action)
+    - [deps.clj](#depsclj)
+    - [4bb](#4bb)
+    - [babashka lambda layer](#babashka-lambda-layer)
+    - [Release on push Github action](#release-on-push-github-action)
+    - [justone/bb-scripts](#justonebb-scripts)
+    - [nativity](#nativity)
+    - [cldwalker/bb-clis](#cldwalkerbb-clis)
+    - [krell template](#krell-template)
+    - [wee-httpd](#wee-httpd)
+    - [covid19-babashka](#covid19-babashka)
+    - [bb-spotify](#bb-spotify)
+    - [lambdaisland/open-source](#lambdaislandopen-source)
+    - [dharrigan/spotifyd-notification](#dharriganspotifyd-notification)
+    - [nextjournal/ssh-github-auth](#nextjournalssh-github-auth)
+    - [turtlequeue/setup-babashka](#turtlequeuesetup-babashka)
+    - [interdep](#interdep)
+    - [sha-words](#sha-words)
   - [Libraries](#libraries)
     - [clj-http-lite](#clj-http-lite)
     - [spartan.spec](#spartanspec)
@@ -353,6 +401,20 @@ File system utilities for Clojure.
 (require '[me.raynes.fs :as fs])
 
 (fs/link? "/tmp") ;; true
+```
+
+### [cljc.java-time](https://github.com/henryw374/cljc.java-time)
+
+``` clojure
+(require '[babashka.deps :as deps])
+
+(deps/add-deps '{:deps {cljc.java-time/cljc.java-time {:mvn/version "0.1.12"}}})
+
+(require  '[cljc.java-time.local-date :as ld])
+
+(def a-date (ld/parse "2019-01-01"))
+
+(ld/plus-days a-date 99)
 ```
 
 ## Pods
