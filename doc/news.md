@@ -5,6 +5,10 @@ you have anything to add. Also see
 [#babashka](https://twitter.com/hashtag/babashka?src=hashtag_click&f=live) on
 Twitter.
 
+## 2021-01
+
+- First release of the [aws pod](https://github.com/babashka/pod-babashka-aws)
+
 ## 2020-12
 
 A new babashka talk: [Babashka and sci
