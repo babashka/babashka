@@ -8,6 +8,7 @@ Twitter.
 ## 2021-01
 
 - First release of the [aws pod](https://github.com/babashka/pod-babashka-aws)
+- A [script](https://gist.github.com/borkdude/ba372c8cee311e31020b04063d88e1be) to print API breakage warnings
 
 ## 2020-12
 
