@@ -53,7 +53,7 @@
                     (sio/println "Use :repl/quit or :repl/exit to quit the REPL.")
                     (sio/println "Clojure rocks, Bash reaches.")
                     (sio/println))
-                  (eval-form sci-ctx '(use 'clojure.repl))))
+                  (eval-form sci-ctx `(apply require (quote ~m/repl-requires)))))
       :read (or read
                 (fn [_request-prompt request-exit]
                   (let [v (parser/parse-next sci-ctx in)]

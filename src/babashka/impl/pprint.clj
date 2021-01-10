@@ -2,7 +2,6 @@
   {:no-doc true}
   (:require [clojure.pprint :as pprint]
             [sci.core :as sci]
-            [sci.impl.namespaces :refer [copy-var]]
             [sci.impl.vars :as vars]))
 
 (alter-var-root #'pprint/write-option-table
@@ -71,11 +70,12 @@
      (pprint/pprint s writer))))
 
 (def pprint-namespace
-  {'pprint (copy-var pprint pprint-ns)
-   'print-table (copy-var print-table pprint-ns)
+  {'pp (sci/copy-var pprint/pp pprint-ns)
+   'pprint (sci/copy-var pprint pprint-ns)
+   'print-table (sci/copy-var print-table pprint-ns)
    '*print-right-margin* print-right-margin
-   'cl-format (copy-var pprint/cl-format pprint-ns)
+   'cl-format (sci/copy-var pprint/cl-format pprint-ns)
    ;; we alter-var-root-ed write above, so this should copy the right function
-   'write (copy-var pprint/write pprint-ns)
-   'simple-dispatch (copy-var pprint/simple-dispatch pprint-ns)
+   'write (sci/copy-var pprint/write pprint-ns)
+   'simple-dispatch (sci/copy-var pprint/simple-dispatch pprint-ns)
    })
