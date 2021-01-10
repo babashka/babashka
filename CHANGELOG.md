@@ -12,6 +12,7 @@ For a list of breaking changes, check [here](#breaking-changes).
 
 - Fix issue with unzipping nested directory [babashka/pod-registry#4](https://github.com/babashka/pod-registry/issues/4)
 - Test cannot be defined conditionally [#705](https://github.com/babashka/babashka/issues/705)
+- Add `--download-dir` option to install script [#688](https://github.com/babashka/babashka/issues/688)
 
 ## v0.2.6
 
