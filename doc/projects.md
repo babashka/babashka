@@ -2,7 +2,7 @@
 
 The following libraries and projects are known to work with babashka.
 
-- [Projects](#projects)- [Projects](#projects)
+- [Projects](#projects)
   - [Libraries](#libraries)
     - [clj-http-lite](#clj-http-lite)
     - [spartan.spec](#spartanspec)
@@ -31,53 +31,7 @@ The following libraries and projects are known to work with babashka.
     - [progrock](#progrock)
     - [clj-commons/fs](#clj-commonsfs)
     - [cljc.java-time](#cljcjava-time)
-  - [Pods](#pods)
-  - [Projects](#projects-1)
-    - [babashka-test-action](#babashka-test-action)
-    - [deps.clj](#depsclj)
-    - [4bb](#4bb)
-    - [babashka lambda layer](#babashka-lambda-layer)
-    - [Release on push Github action](#release-on-push-github-action)
-    - [justone/bb-scripts](#justonebb-scripts)
-    - [nativity](#nativity)
-    - [cldwalker/bb-clis](#cldwalkerbb-clis)
-    - [krell template](#krell-template)
-    - [wee-httpd](#wee-httpd)
-    - [covid19-babashka](#covid19-babashka)
-    - [bb-spotify](#bb-spotify)
-    - [lambdaisland/open-source](#lambdaislandopen-source)
-    - [dharrigan/spotifyd-notification](#dharriganspotifyd-notification)
-    - [nextjournal/ssh-github-auth](#nextjournalssh-github-auth)
-    - [turtlequeue/setup-babashka](#turtlequeuesetup-babashka)
-    - [interdep](#interdep)
-    - [sha-words](#sha-words)
-  - [Libraries](#libraries)
-    - [clj-http-lite](#clj-http-lite)
-    - [spartan.spec](#spartanspec)
-    - [missing.test.assertions](#missingtestassertions)
-    - [medley](#medley)
-    - [limit-break](#limit-break)
-    - [clojure-csv](#clojure-csv)
-    - [regal](#regal)
-    - [cprop](#cprop)
-    - [comb](#comb)
-    - [nubank/docopt](#nubankdocopt)
-    - [arrangement](#arrangement)
-    - [clojure.math.combinatorics](#clojuremathcombinatorics)
-    - [testdoc](#testdoc)
-    - [doric](#doric)
-    - [clojure.data.zip](#clojuredatazip)
-    - [clj-psql](#clj-psql)
-    - [camel-snake-kebab](#camel-snake-kebab)
-    - [aero](#aero)
-    - [clojure.data.generators](#clojuredatagenerators)
-    - [honeysql](#honeysql)
-    - [bond](#bond)
-    - [portal](#portal)
-    - [version-clj](#version-clj)
-    - [matchete](#matchete)
-    - [progrock](#progrock)
-    - [clj-commons/fs](#clj-commonsfs)
+    - [environ](#environ)
   - [Pods](#pods)
   - [Projects](#projects-1)
     - [babashka-test-action](#babashka-test-action)
@@ -415,6 +369,20 @@ File system utilities for Clojure.
 (def a-date (ld/parse "2019-01-01"))
 
 (ld/plus-days a-date 99)
+```
+
+### [environ](https://github.com/weavejester/environ)
+
+Library for managing environment variables in Clojure.
+
+``` clojure
+(require '[babashka.deps :as deps])
+
+(babashka.deps/add-deps '{:deps {environ/environ {:mvn/version "1.2.0"}}})
+
+(require '[environ.core :refer [env]])
+
+(prn (:path env))
 ```
 
 ## Pods

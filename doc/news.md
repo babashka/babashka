@@ -10,6 +10,7 @@ Twitter.
 - First release of the [aws pod](https://github.com/babashka/pod-babashka-aws).
 - A [script](https://gist.github.com/borkdude/ba372c8cee311e31020b04063d88e1be) to print API breakage warnings.
 - A [script](https://gist.github.com/lgouger/2262e2d2503306f2595e48a7888f4e73) to lazily page through AWS results using the new [aws pod](https://github.com/babashka/pod-babashka-aws).
+- [Environ](https://github.com/weavejester/environ) works with babashka.
 
 ## 2020-12
 
