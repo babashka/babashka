@@ -31,7 +31,6 @@
    [babashka.impl.test :as t]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
    [babashka.nrepl.server :as nrepl-server]
-   [babashka.process :as process]
    [babashka.wait :as wait]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
@@ -94,6 +93,9 @@
 
 (when features/lanterna?
   (require '[babashka.impl.lanterna]))
+
+(when features/core-match?
+  (require '[babashka.impl.match]))
 
 (sci/alter-var-root sci/in (constantly *in*))
 (sci/alter-var-root sci/out (constantly *out*))
@@ -300,7 +302,8 @@ Use -- to separate script command line args from bb command line args.
  :feature/hsqldb     %s
  :feature/oracledb   %s
  :feature/httpkit-client %s
- :feature/lanterna %s}")
+ :feature/lanterna %s
+ :feature/core-async %s}")
     version
     features/core-async?
     features/csv?
@@ -313,7 +316,8 @@ Use -- to separate script command line args from bb command line args.
     features/hsqldb?
     features/oracledb?
     features/httpkit-client?
-    features/lanterna?)))
+    features/lanterna?
+    features/core-match?)))
 
 (defn read-file [file]
   (let [f (io/file file)]
@@ -422,7 +426,8 @@ Use -- to separate script command line args from bb command line args.
     features/httpkit-server? (assoc 'org.httpkit.server @(resolve 'babashka.impl.httpkit-server/httpkit-server-namespace))
     features/lanterna? (assoc 'lanterna.screen @(resolve 'babashka.impl.lanterna/lanterna-screen-namespace)
                               'lanterna.terminal @(resolve 'babashka.impl.lanterna/lanterna-terminal-namespace)
-                              'lanterna.constants @(resolve 'babashka.impl.lanterna/lanterna-constants-namespace))))
+                              'lanterna.constants @(resolve 'babashka.impl.lanterna/lanterna-constants-namespace))
+    features/core-match? (assoc 'clojure.core.match @(resolve 'babashka.impl.match/core-match-namespace))))
 
 (def imports
   '{ArithmeticException java.lang.ArithmeticException
