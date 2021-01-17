@@ -1,6 +1,7 @@
 (ns babashka.impl.match
   {:no-doc true}
   (:require [clojure.core.match :as match]
+            [clojure.core.match.array] ;; side effecting
             [sci.core :as sci :refer [copy-var]]))
 
 (def mns (sci/create-ns 'clojure.core.match nil))
