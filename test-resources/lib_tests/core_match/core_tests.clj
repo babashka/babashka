@@ -9,13 +9,7 @@
 (ns core-match.core-tests
   (:refer-clojure :exclude [compile])
   (:require [clojure.core.match :as match :refer [match defpred]]
-            [clojure.test :as t :refer [deftest is]])
-  #_(:use clojure.core.match
-        clojure.core.match.array
-        clojure.core.match.debug
-        clojure.core.match.protocols
-        clojure.core.match.regex)
-  #_(:use [clojure.test]))
+            [clojure.test :as t :refer [deftest is]]))
 
 (set! *warn-on-reflection* true)
 
@@ -86,7 +80,6 @@
              :else [])
            :a2))))
 
-;; TODO: depends on val-at*
 (deftest map-pattern-match-1
   (is (= (let [x {:a 1 :b 1}]
            (match [x]
@@ -182,8 +175,7 @@
 
 
 (deftest map-pattern-match-only-1
-  ;; TODO: fails
-  #_(is (= (let [x {:a 1 :b 2}]
+  (is (= (let [x {:a 1 :b 2}]
            (match [x]
              [({:a _ :b 2} :only [:a :b])] :a0
              [{:a 1 :c _}] :a1
@@ -679,13 +671,6 @@
            :else 2)
          1)))
 
-(macroexpand '(match [x]
-                     [({:a _ :b _ :c _ :d _} :only [:a :b :c :d])] :a-1
-                     [({:a _ :b 2} :only [:a :b])] :a0
-                     [{:a 1 :c _}] :a1
-                     [{:c 3 :d _ :e 4}] :a2
-                     :else []))
-
 (deftest map-pattern-match-only-2
   (is (= (let [x {:a 1 :b 2 :c 10 :d 30}]
            (match [x]
@@ -696,8 +681,7 @@
              :else []))
         :a-1)))
 
-;; FAIL
-#_(deftest map-pattern-match-only-3
+(deftest map-pattern-match-only-3
   (is (and (= (let [m {:a 1}]
                 (match [m]
                   [({:a 1} :only [:a])] :a0
