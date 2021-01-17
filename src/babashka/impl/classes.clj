@@ -233,6 +233,7 @@
           java.util.zip.ZipEntry
           ~(symbol "[B")
           ~(symbol "[I")
+          ~(symbol "[Ljava.lang.Object;")
           ~@(when features/yaml? '[org.yaml.snakeyaml.error.YAMLException])
           ~@(when features/hsqldb? '[org.hsqldb.jdbcDriver])]
     :constructors [clojure.lang.Delay
