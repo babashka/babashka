@@ -252,6 +252,7 @@
                       ;; clojure.lang.IAtom
                       clojure.lang.IEditableCollection
                       clojure.lang.IMapEntry
+                      clojure.lang.ILookup
                       clojure.lang.IPersistentCollection
                       clojure.lang.IPersistentMap
                       clojure.lang.IPersistentSet
