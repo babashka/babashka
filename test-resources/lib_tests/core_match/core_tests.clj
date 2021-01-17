@@ -310,8 +310,7 @@
             :else :a4))
         :a2)))
 
-;; FAILS
-#_(deftest unequal-equal-tests
+(deftest unequal-equal-tests
   (is (=
         (match ["foo" "bar"]
           [#".*" #"baz"] :a1
@@ -505,8 +504,7 @@
              :else :a2))
         :a1)))
 
-;; FAILS:
-#_(deftest basic-regex
+(deftest basic-regex
   (is (= (match ["asdf"]
            [#"asdf"] 1
            :else 2)
@@ -681,8 +679,7 @@
            :else 2)
          1)))
 
-;; FAIL
-#_(deftest map-pattern-match-only-2
+(deftest map-pattern-match-only-2
   (is (= (let [x {:a 1 :b 2 :c 10 :d 30}]
            (match [x]
              [({:a _ :b _ :c _ :d _} :only [:a :b :c :d])] :a-1
