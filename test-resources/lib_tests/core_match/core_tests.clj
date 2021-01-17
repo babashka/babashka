@@ -679,6 +679,13 @@
            :else 2)
          1)))
 
+(macroexpand '(match [x]
+                     [({:a _ :b _ :c _ :d _} :only [:a :b :c :d])] :a-1
+                     [({:a _ :b 2} :only [:a :b])] :a0
+                     [{:a 1 :c _}] :a1
+                     [{:c 3 :d _ :e 4}] :a2
+                     :else []))
+
 (deftest map-pattern-match-only-2
   (is (= (let [x {:a 1 :b 2 :c 10 :d 30}]
            (match [x]
