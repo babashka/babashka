@@ -303,7 +303,7 @@ Use -- to separate script command line args from bb command line args.
  :feature/oracledb   %s
  :feature/httpkit-client %s
  :feature/lanterna %s
- :feature/core-async %s}")
+ :feature/core-match %s}")
     version
     features/core-async?
     features/csv?

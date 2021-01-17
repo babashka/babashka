@@ -7,4 +7,6 @@
 
 (def core-match-namespace
   {'match (copy-var match/match mns)
-   'backtrack (copy-var match/backtrack mns)})
+   'backtrack (copy-var match/backtrack mns)
+   'val-at*   (copy-var match/val-at* mns)
+   'defpred   (copy-var match/defpred mns)})
