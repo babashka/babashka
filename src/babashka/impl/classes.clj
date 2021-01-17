@@ -114,6 +114,7 @@
           java.lang.Double
           java.lang.Exception
           java.lang.Float
+          java.lang.IllegalArgumentException
           java.lang.Integer
           java.lang.Iterable
           java.lang.Long
