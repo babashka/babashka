@@ -232,6 +232,7 @@
           java.util.zip.ZipInputStream
           java.util.zip.ZipEntry
           ~(symbol "[B")
+          ~(symbol "[I")
           ~@(when features/yaml? '[org.yaml.snakeyaml.error.YAMLException])
           ~@(when features/hsqldb? '[org.hsqldb.jdbcDriver])]
     :constructors [clojure.lang.Delay
