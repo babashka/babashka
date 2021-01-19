@@ -232,8 +232,9 @@
           java.util.zip.ZipInputStream
           java.util.zip.ZipEntry
           ~(symbol "[B")
-          ~(symbol "[I")
-          ~(symbol "[Ljava.lang.Object;")
+          ;; the following two add 1 mb to linux binary but for macOS almost nothing...:
+          ;; ~(symbol "[I")
+          ;; ~(symbol "[Ljava.lang.Object;")
           ~@(when features/yaml? '[org.yaml.snakeyaml.error.YAMLException])
           ~@(when features/hsqldb? '[org.hsqldb.jdbcDriver])]
     :constructors [clojure.lang.Delay
