@@ -10,3 +10,7 @@ public final class CutOffObjectStreamClass {
 @Delete
 final class Target_java_io_ObjectStreamClass {
 }
+
+@TargetClass(className = "java.io.ObjectInputFilter")
+@Delete
+final class Target_java_io_ObjectInputFilter {
