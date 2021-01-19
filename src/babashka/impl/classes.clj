@@ -114,7 +114,8 @@
           java.lang.Double
           java.lang.Exception
           java.lang.Float
-          java.lang.IllegalArgumentException
+          ;; this adds 1 MB to the linux binary... why?
+          ;; java.lang.IllegalArgumentException
           java.lang.Integer
           java.lang.Iterable
           java.lang.Long
@@ -232,9 +233,8 @@
           java.util.zip.ZipInputStream
           java.util.zip.ZipEntry
           ~(symbol "[B")
-          ;; the following two add 1 mb to linux binary but for macOS almost nothing...:
-          ;; ~(symbol "[I")
-          ;; ~(symbol "[Ljava.lang.Object;")
+          ~(symbol "[I")
+          ~(symbol "[Ljava.lang.Object;")
           ~@(when features/yaml? '[org.yaml.snakeyaml.error.YAMLException])
           ~@(when features/hsqldb? '[org.hsqldb.jdbcDriver])]
     :constructors [clojure.lang.Delay
