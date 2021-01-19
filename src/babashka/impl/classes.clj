@@ -114,6 +114,7 @@
           java.lang.Double
           java.lang.Exception
           java.lang.Float
+          java.lang.IllegalArgumentException
           java.lang.Integer
           java.lang.Iterable
           java.lang.Long
@@ -231,6 +232,8 @@
           java.util.zip.ZipInputStream
           java.util.zip.ZipEntry
           ~(symbol "[B")
+          ~(symbol "[I")
+          ~(symbol "[Ljava.lang.Object;")
           ~@(when features/yaml? '[org.yaml.snakeyaml.error.YAMLException])
           ~@(when features/hsqldb? '[org.hsqldb.jdbcDriver])]
     :constructors [clojure.lang.Delay
@@ -251,6 +254,7 @@
                       ;; clojure.lang.IAtom
                       clojure.lang.IEditableCollection
                       clojure.lang.IMapEntry
+                      clojure.lang.ILookup
                       clojure.lang.IPersistentCollection
                       clojure.lang.IPersistentMap
                       clojure.lang.IPersistentSet
