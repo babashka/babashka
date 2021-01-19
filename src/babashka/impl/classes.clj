@@ -231,9 +231,6 @@
           java.util.zip.GZIPOutputStream
           java.util.zip.ZipInputStream
           java.util.zip.ZipEntry
-          ~(symbol "[B")
-          ~(symbol "[I")
-          ~(symbol "[Ljava.lang.Object;")
           ~@(when features/yaml? '[org.yaml.snakeyaml.error.YAMLException])
           ~@(when features/hsqldb? '[org.hsqldb.jdbcDriver])]
     :constructors [clojure.lang.Delay
@@ -271,7 +268,10 @@
                       clojure.lang.Symbol
                       clojure.lang.Sequential
                       clojure.lang.Seqable
-                      java.util.List]
+                      java.util.List
+                      (Class/forName "[B")
+                      (Class/forName "[I")
+                      (Class/forName "[Ljava.lang.Object;")]
     :custom ~custom-map})
 
 (defmacro gen-class-map []
