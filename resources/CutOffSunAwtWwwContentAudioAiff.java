@@ -19,7 +19,7 @@ public final class CutOffSunAwtWwwContentAudioAiff {
 // java.net.ContentHandler.getContent ->
 // java.net.URLConnection.getContent()
 
-// @Platforms(Platform.DARWIN.class)
+@Platforms(Platform.DARWIN.class)
 @TargetClass(className = "sun.awt.www.content.audio.aiff")
 @Delete
 final class Target_sun_awt_www_content_audio_aiff {
