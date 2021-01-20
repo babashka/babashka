@@ -6,8 +6,8 @@ For a list of breaking changes, check [here](#breaking-changes).
 
 ### New
 
-- Add Alpine Docker images #699 (@lispyclouds)
-- Add `pp` from `clojure.pprint` #707
+- Add Alpine [Docker images](https://hub.docker.com/repository/registry-1.docker.io/babashka/babashka/tags?page=1&ordering=last_updated) [#699](https://github.com/babashka/babashka/issues/699) ([@lispyclouds](https://github.com/lispyclouds))
+- Add `pp` from `clojure.pprint` [#707](https://github.com/babashka/babashka/issues/707)
 
 ### Fixed / enhancd
 
@@ -15,9 +15,9 @@ For a list of breaking changes, check [here](#breaking-changes).
 - Test cannot be defined conditionally [#705](https://github.com/babashka/babashka/issues/705)
 - Add `--download-dir` option to install script [#688](https://github.com/babashka/babashka/issues/688)
 - `(instance? clojure.lang.Fn x)` now works
-- (.keySet {:a 1}) returns nil #711
+- (.keySet {:a 1}) returns nil [#711](https://github.com/babashka/babashka/issues/711)
 - Various performance enhancements
-- Babashka.curl: allow keywords as header names [#32](https://github.com/babashka/babashka.curl/pull/32) (@xificurC)
+- Babashka.curl: allow keywords as header names [#32](https://github.com/babashka/babashka.curl/pull/32) ([@xificurC](https://github.com/xificurC))
 
 ## v0.2.6
 
