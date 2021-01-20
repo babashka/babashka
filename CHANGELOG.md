@@ -2,10 +2,11 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
-## Unreleased
+## v0.2.7
 
 ### New
 
+- Add Alpine Docker images #699 (@lispyclouds)
 - Add `pp` from `clojure.pprint` #707
 
 ### Fixed / enhancd
@@ -13,6 +14,10 @@ For a list of breaking changes, check [here](#breaking-changes).
 - Fix issue with unzipping nested directory [babashka/pod-registry#4](https://github.com/babashka/pod-registry/issues/4)
 - Test cannot be defined conditionally [#705](https://github.com/babashka/babashka/issues/705)
 - Add `--download-dir` option to install script [#688](https://github.com/babashka/babashka/issues/688)
+- `(instance? clojure.lang.Fn x)` now works
+- (.keySet {:a 1}) returns nil #711
+- Various performance enhancements
+- Babashka.curl: allow keywords as header names [#32](https://github.com/babashka/babashka.curl/pull/32) (@xificurC)
 
 ## v0.2.6
 
