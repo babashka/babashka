@@ -268,6 +268,7 @@
                       clojure.lang.LazySeq
                       clojure.lang.Named
                       clojure.lang.Keyword
+                      clojure.lang.Ratio
                       clojure.lang.Repeat
                       clojure.lang.Symbol
                       clojure.lang.Sequential
