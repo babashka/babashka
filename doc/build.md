@@ -97,6 +97,7 @@ Babashka supports the following feature flags:
 | `BABASHKA_FEATURE_YAML` | Includes the [clj-yaml](https://github.com/clj-commons/clj-yaml) library | `true` |
 | `BABASHKA_FEATURE_HTTPKIT_CLIENT` | Includes the [http-kit](https://github.com/http-kit/http-kit) client library | `true` |
 | `BABASHKA_FEATURE_HTTPKIT_SERVER` | Includes the [http-kit](https://github.com/http-kit/http-kit) server library | `true` |
+| `BABASHKA_FEATURE_CORE_MATCH` | Includes the [clojure.core.match](https://github.com/clojure/core.match) library | `true` |
 | `BABASHKA_FEATURE_JDBC` | Includes the [next.jdbc](https://github.com/seancorfield/next-jdbc) library | `false`    |
 | `BABASHKA_FEATURE_POSTGRESQL` | Includes the [PostgresSQL](https://jdbc.postgresql.org/) JDBC driver |  `false` |
 | `BABASHKA_FEATURE_HSQLDB` | Includes the [HSQLDB](http://www.hsqldb.org/) JDBC driver | `false` |
