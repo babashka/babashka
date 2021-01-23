@@ -28,6 +28,7 @@ rm -rf resources/*.class
 SVM_JAR=$(find -L "$GRAALVM_HOME" | grep svm.jar)
 "$GRAALVM_HOME/bin/javac" -cp "$SVM_JAR" resources/CutOffCoreServicesDependencies.java
 "$GRAALVM_HOME/bin/javac" -cp "$SVM_JAR" resources/CutOffSunAwtWwwContentAudioAiff.java
+# "$GRAALVM_HOME/bin/javac" -cp "$SVM_JAR" resources/CutOffMisc.java
 
 if [ -z "$BABASHKA_JAR" ]; then
     lein with-profiles +reflection,+native-image "do" run
@@ -47,6 +48,8 @@ args=( "-jar" "$BABASHKA_JAR"
        "-H:ReflectionConfigurationFiles=reflection.json"
        "--initialize-at-build-time"
        # "-H:+PrintAnalysisCallTree"
+       # "-H:+DashboardAll"
+       # "-H:DashboardDump=dashboard"
        "-H:Log=registerResource:"
        "-H:EnableURLProtocols=http,https,jar"
        "--enable-all-security-services"
