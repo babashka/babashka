@@ -46,6 +46,8 @@
                                       :dependencies [[http-kit "2.5.0"]]}
              :feature/lanterna {:source-paths ["feature-lanterna"]
                                 :dependencies [[babashka/clojure-lanterna "0.9.8-SNAPSHOT"]]}
+             :feature/core-match {:source-paths ["feature-core-match"]
+                                  :dependencies [[org.clojure/core.match "1.0.0"]]}
 
              :test [:feature/xml
                     :feature/lanterna
@@ -58,6 +60,7 @@
                     :feature/datascript
                     :feature/httpkit-client
                     :feature/httpkit-server
+                    :feature/core-match
                     {:dependencies [[clj-commons/conch "0.9.2"]
                                     [com.clojure-goes-fast/clj-async-profiler "0.4.1"]
                                     [com.opentable.components/otj-pg-embedded "0.13.3"]]}]

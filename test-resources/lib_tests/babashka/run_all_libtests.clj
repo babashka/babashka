@@ -169,6 +169,8 @@
 (require '[babashka.process] :reload)
 (test-namespaces 'babashka.process-test)
 
+(test-namespaces 'core-match.core-tests)
+
 ;;;; final exit code
 
 (let [{:keys [:test :fail :error] :as m} @status]
