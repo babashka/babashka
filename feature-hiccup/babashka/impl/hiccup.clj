@@ -9,11 +9,17 @@
 (def hns2 (sci/create-ns 'hiccup2.core nil))
 (def uns (sci/create-ns 'hiccup.util nil))
 
+(defn html [x]
+  (hiccup/html x))
+
 (def hiccup-namespace
-  {'html (copy-var hiccup/html hns)})
+  {'html (copy-var html hns)})
+
+(defn html2 [x]
+  (hiccup2/html x))
 
 (def hiccup2-namespace
-  {'html (copy-var hiccup2/html hns2)})
+  {'html (copy-var html2 hns2)})
 
 (def hiccup-util-namespace
   {'*html-mode* (copy-var util/*html-mode* uns)
