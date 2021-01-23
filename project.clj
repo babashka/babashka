@@ -48,7 +48,8 @@
                                 :dependencies [[babashka/clojure-lanterna "0.9.8-SNAPSHOT"]]}
              :feature/core-match {:source-paths ["feature-core-match"]
                                   :dependencies [[org.clojure/core.match "1.0.0"]]}
-
+             :feature/hiccup {:source-paths ["feature-hiccup"]
+                              :dependencies [[hiccup/hiccup "2.0.0-alpha2"]]}
              :test [:feature/xml
                     :feature/lanterna
                     :feature/yaml
@@ -61,6 +62,7 @@
                     :feature/httpkit-client
                     :feature/httpkit-server
                     :feature/core-match
+                    :feature/hiccup
                     {:dependencies [[clj-commons/conch "0.9.2"]
                                     [com.clojure-goes-fast/clj-async-profiler "0.4.1"]
                                     [com.opentable.components/otj-pg-embedded "0.13.3"]]}]

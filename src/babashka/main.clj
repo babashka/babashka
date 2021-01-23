@@ -97,6 +97,9 @@
 (when features/core-match?
   (require '[babashka.impl.match]))
 
+(when features/hiccup?
+  (require '[babashka.impl.hiccup]))
+
 (sci/alter-var-root sci/in (constantly *in*))
 (sci/alter-var-root sci/out (constantly *out*))
 (sci/alter-var-root sci/err (constantly *err*))
@@ -303,7 +306,8 @@ Use -- to separate script command line args from bb command line args.
  :feature/oracledb   %s
  :feature/httpkit-client %s
  :feature/lanterna %s
- :feature/core-match %s}")
+ :feature/core-match %s
+ :feature/hiccup     %s}")
     version
     features/core-async?
     features/csv?
@@ -317,7 +321,8 @@ Use -- to separate script command line args from bb command line args.
     features/oracledb?
     features/httpkit-client?
     features/lanterna?
-    features/core-match?)))
+    features/core-match?
+    features/hiccup?)))
 
 (defn read-file [file]
   (let [f (io/file file)]
@@ -427,7 +432,11 @@ Use -- to separate script command line args from bb command line args.
     features/lanterna? (assoc 'lanterna.screen @(resolve 'babashka.impl.lanterna/lanterna-screen-namespace)
                               'lanterna.terminal @(resolve 'babashka.impl.lanterna/lanterna-terminal-namespace)
                               'lanterna.constants @(resolve 'babashka.impl.lanterna/lanterna-constants-namespace))
-    features/core-match? (assoc 'clojure.core.match @(resolve 'babashka.impl.match/core-match-namespace))))
+    features/core-match? (assoc 'clojure.core.match @(resolve 'babashka.impl.match/core-match-namespace))
+    features/hiccup? (-> (assoc 'hiccup.core @(resolve 'babashka.impl.hiccup/hiccup-namespace))
+                         (assoc 'hiccup2.core @(resolve 'babashka.impl.hiccup/hiccup2-namespace))
+                         (assoc 'hiccup.util @(resolve 'babashka.impl.hiccup/hiccup-util-namespace))
+                         (assoc 'hiccup.compiler @(resolve 'babashka.impl.hiccup/hiccup-compiler-namespace)))))
 
 (def imports
   '{ArithmeticException java.lang.ArithmeticException
