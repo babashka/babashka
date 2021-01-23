@@ -114,8 +114,7 @@
           java.lang.Double
           java.lang.Exception
           java.lang.Float
-          ;; this adds 1 MB to the linux binary... why?
-          ;; java.lang.IllegalArgumentException
+          java.lang.IllegalArgumentException
           java.lang.Integer
           java.lang.Iterable
           java.lang.Long
