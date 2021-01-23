@@ -45,15 +45,15 @@
   ;; {:deprecated "2.0"}
   [options & content]
   (if (map? options)
-    `(str (hiccup2 ~(assoc options :escape-strings? false) ~@content))
-    `(str (hiccup2 {:escape-strings? false} ~options ~@content))))
+    `(str (hiccup2.core/html ~(assoc options :escape-strings? false) ~@content))
+    `(str (hiccup2.core.html {:escape-strings? false} ~options ~@content))))
 
 (def ^{:added "2.0"} raw
   "Short alias for [[hiccup.util/raw-string]]."
   util/raw-string)
 
 (def hiccup-namespace
-  {'html nil #_(copy-var babashka.impl.hiccup/html-1 hns)})
+  {'html (copy-var html-1 hns)})
 
 (def hiccup2-namespace
   {'html (copy-var html-2 hns2)})
