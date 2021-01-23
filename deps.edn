@@ -4,6 +4,7 @@
          "feature-httpkit-client" "feature-httpkit-server"
          "feature-lanterna"
          "feature-core-match"
+         "feature-hiccup"
          "sci/src" "babashka.curl/src" "pods/src"
          "babashka.nrepl/src"
          "depstar/src" "process/src"
