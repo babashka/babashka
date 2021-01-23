@@ -27,12 +27,11 @@
   (if (map? options)
     (let [mode            (:mode options :xhtml)
           escape-strings? (:escape-strings? options true)]
-      ;; (prn :escape-string-opts escape-strings?)
       `(binding
            [util/*html-mode* ~mode
             util/*escape-strings?* ~escape-strings?]
-         (util/raw-string (compiler/render-html ~@content))))
-    `(util/raw-string (compiler/render-html ~@(cons options content)))))
+         (util/raw-string (compiler/render-html (list ~@content)))))
+    `(util/raw-string (compiler/render-html (list ~@(cons options content))))))
 
 (defmacro html-1
   "Render Clojure data structures to a string of HTML. Strings are **not**
@@ -46,7 +45,7 @@
   [options & content]
   (if (map? options)
     `(str (hiccup2.core/html ~(assoc options :escape-strings? false) ~@content))
-    `(str (hiccup2.core.html {:escape-strings? false} ~options ~@content))))
+    `(str (hiccup2.core/html {:escape-strings? false} ~options ~@content))))
 
 (def ^{:added "2.0"} raw
   "Short alias for [[hiccup.util/raw-string]]."
