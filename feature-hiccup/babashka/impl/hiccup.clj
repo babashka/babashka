@@ -7,8 +7,9 @@
 (def hns (sci/create-ns 'hiccup.core nil))
 (def hns2 (sci/create-ns 'hiccup2.core nil))
 (def uns (sci/create-ns 'hiccup.util nil))
+(def cns (sci/create-ns 'hiccup.compiler nil))
 
-(defn html-2
+(defmacro html-2
   "Render Clojure data structures to a compiled representation of HTML. To turn
   the representation into a string, use clojure.core/str. Strings inside the
   macro are automatically HTML-escaped. To insert a string without it being
@@ -22,16 +23,18 @@
   : True if strings should be escaped (defaults to true)."
   {:added "2.0"}
   [options & content]
+  ;; (prn :escape-strings util/*escape-strings?*)
   (if (map? options)
     (let [mode            (:mode options :xhtml)
           escape-strings? (:escape-strings? options true)]
-      (binding [util/*html-mode* mode
-                util/*escape-strings?* escape-strings?]
-        (util/raw-string (compiler/render-html content))
-        (util/raw-string (compiler/render-html content))))
-    (util/raw-string (compiler/render-html (cons options content)))))
+      ;; (prn :escape-string-opts escape-strings?)
+      `(binding
+           [util/*html-mode* ~mode
+            util/*escape-strings?* ~escape-strings?]
+         (util/raw-string (compiler/render-html ~@content))))
+    `(util/raw-string (compiler/render-html ~@(cons options content)))))
 
-(defn html-1
+(defmacro html-1
   "Render Clojure data structures to a string of HTML. Strings are **not**
   automatically escaped, but must be manually escaped with the [[h]] function.
   A literal option map may be specified as the first argument. It accepts the
@@ -42,20 +45,31 @@
   ;; {:deprecated "2.0"}
   [options & content]
   (if (map? options)
-    (str (apply html-2 (assoc options :escape-strings? false) content))
-    (str (apply html-2 {:escape-strings? false} options content))))
+    `(str (hiccup2 ~(assoc options :escape-strings? false) ~@content))
+    `(str (hiccup2 {:escape-strings? false} ~options ~@content))))
 
 (def ^{:added "2.0"} raw
   "Short alias for [[hiccup.util/raw-string]]."
   util/raw-string)
 
 (def hiccup-namespace
-  {'html (copy-var babashka.impl.hiccup/html-1 hns)})
+  {'html nil #_(copy-var babashka.impl.hiccup/html-1 hns)})
 
 (def hiccup2-namespace
   {'html (copy-var html-2 hns2)})
 
+(def html-mode (copy-var util/*html-mode* uns))
+(def escape-strings? (copy-var util/*escape-strings?* uns))
+
 (def hiccup-util-namespace
-  {'*html-mode* (copy-var util/*html-mode* uns)
-   '*escape-strings?* (copy-var util/*escape-strings?* uns)
+  {'*html-mode* html-mode
+   '*escape-strings?* escape-strings?
    'raw-string (copy-var util/raw-string uns)})
+
+(defn render-html [& contents]
+  (binding [util/*html-mode* @html-mode
+            util/*escape-strings?* @escape-strings?]
+    (apply compiler/render-html contents)))
+
+(def hiccup-compiler-namespace
+  {'render-html (copy-var render-html cns)})

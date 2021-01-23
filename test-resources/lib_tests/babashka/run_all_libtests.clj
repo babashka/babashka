@@ -171,8 +171,8 @@
 
 (test-namespaces 'core-match.core-tests)
 
-(test-namespaces 'hiccup.core-tests)
-(test-namespaces 'hiccup2.core-tests)
+(test-namespaces 'hiccup.core-test)
+(test-namespaces 'hiccup2.core-test)
 
 ;;;; final exit code
 

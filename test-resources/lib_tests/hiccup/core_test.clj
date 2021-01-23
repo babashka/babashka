@@ -78,7 +78,8 @@
            "<div class=\"foo bar\">baz</div>"))
     (is (= (html [:div#bar.foo {:id "baq"} "baz"])
            "<div class=\"foo\" id=\"baq\">baz</div>")))
-  (testing "tag with vector class"
+  ;; Not released yet
+  #_(testing "tag with vector class"
     (is (= (html [:div.foo {:class ["bar"]} "baz"])
            "<div class=\"foo bar\">baz</div>"))
     (is (= (html [:div.foo {:class [:bar]} "baz"])

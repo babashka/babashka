@@ -435,7 +435,8 @@ Use -- to separate script command line args from bb command line args.
     features/core-match? (assoc 'clojure.core.match @(resolve 'babashka.impl.match/core-match-namespace))
     features/hiccup? (-> (assoc 'hiccup.core @(resolve 'babashka.impl.hiccup/hiccup-namespace))
                          (assoc 'hiccup2.core @(resolve 'babashka.impl.hiccup/hiccup2-namespace))
-                         (assoc 'hiccup.util @(resolve 'babashka.impl.hiccup/hiccup-util-namespace)))))
+                         (assoc 'hiccup.util @(resolve 'babashka.impl.hiccup/hiccup-util-namespace))
+                         (assoc 'hiccup.compiler @(resolve 'babashka.impl.hiccup/hiccup-compiler-namespace)))))
 
 (def imports
   '{ArithmeticException java.lang.ArithmeticException
