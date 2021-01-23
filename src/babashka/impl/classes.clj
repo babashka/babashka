@@ -248,6 +248,7 @@
     :instance-checks [clojure.lang.Cons
                       clojure.lang.Cycle
                       clojure.lang.IObj
+                      clojure.lang.Fn ;; to distinguish fns from maps, etc.
                       clojure.lang.IFn
                       clojure.lang.IPending
                       ;; clojure.lang.IDeref
