@@ -27,8 +27,9 @@
           escape-strings? (:escape-strings? options true)]
       (binding [util/*html-mode* mode
                 util/*escape-strings?* escape-strings?]
-         (util/raw-string (apply compiler/compile-html-with-bindings content))))
-    (util/raw-string (apply compiler/compile-html-with-bindings options content))))
+        (util/raw-string (compiler/render-html content))
+        (util/raw-string (compiler/render-html content))))
+    (util/raw-string (compiler/render-html (cons options content)))))
 
 (defn html-1
   "Render Clojure data structures to a string of HTML. Strings are **not**
