@@ -6,9 +6,9 @@ For a list of breaking changes, check [here](#breaking-changes).
 
 ### New
 
-- Include [clojure.core.match](https://github.com/clojure/core.match) #594
-- Include [hiccup](https://github.com/weavejester/hiccup) #646
-- Include [clojure.test.check](https://github.com/clojure/test.check) #487. Included namespaces:
+- Include [clojure.core.match](https://github.com/clojure/core.match) [#594](https://github.com/babashka/babashka/issues/594)
+- Include [hiccup](https://github.com/weavejester/hiccup) [#646](https://github.com/babashka/babashka/issues/646)
+- Include [clojure.test.check](https://github.com/clojure/test.check) [#487](https://github.com/babashka/babashka/issues/487). Included namespaces:
   - clojure.test.check
   - clojure.test.check.generators
   - clojure.test.check.properties
