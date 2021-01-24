@@ -82,6 +82,11 @@ by adding `--build-arg BABASHKA_XMX="-J-Xmx8g"`
 
 Run `script\uberjar.bat` followed by `script\compile.bat`.
 
+## Static
+
+To compile babashka as a static binary for linux, set the `BABASHKA_STATIC`
+environment variable to `true`.
+
 ## Feature flags
 
 Babashka supports the following feature flags:
