@@ -5,6 +5,8 @@
          "feature-lanterna"
          "feature-core-match"
          "feature-hiccup"
+         "feature-test-check"
+         "feature-spec-alpha"
          "sci/src" "babashka.curl/src" "pods/src"
          "babashka.nrepl/src"
          "depstar/src" "process/src"
