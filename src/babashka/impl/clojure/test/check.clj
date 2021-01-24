@@ -1,6 +1,7 @@
 (ns babashka.impl.clojure.test.check
   {:no-doc true}
-  (:require [clojure.test.check.random :as r]))
+  (:require [clojure.test.check.random :as r]
+            [sci.core :as sci]))
 
 (def next-rng
   "Returns a random-number generator. Successive calls should return
@@ -24,3 +25,11 @@
 
 (alter-var-root #'r/next-rng (constantly next-rng))
 (alter-var-root #'r/make-random (constantly make-random))
+
+(require '[clojure.test.check.generators :as gen])
+
+(def gen-ns (sci/create-ns 'clojure.test.check.generators nil))
+
+(def generators-namespace
+  {'choose (sci/copy-var gen/choose gen-ns)
+   'sample (sci/copy-var gen/sample gen-ns)})

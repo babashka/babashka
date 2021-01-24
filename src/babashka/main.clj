@@ -13,7 +13,8 @@
    [babashka.impl.clojure.java.shell :refer [shell-namespace]]
    [babashka.impl.clojure.main :as clojure-main :refer [demunge]]
    [babashka.impl.clojure.stacktrace :refer [stacktrace-namespace]]
-   [babashka.impl.clojure.test.check] ;; ensure load before babashka.impl.clojure.spec.alpha!
+   ;; ensure load before babashka.impl.clojure.spec.alpha!
+   [babashka.impl.clojure.test.check :as test-check]
    [babashka.impl.clojure.zip :refer [zip-namespace]]
    [babashka.impl.common :as common]
    [babashka.impl.curl :refer [curl-namespace]]
@@ -417,6 +418,7 @@ Use -- to separate script command line args from bb command line args.
        'clojure.java.browse browse-namespace
        'clojure.datafy datafy-namespace
        'clojure.core.protocols protocols-namespace
+       'clojure.test.check.generators test-check/generators-namespace
        ;; spec
        'clojure.spec.alpha spec-namespace
        'clojure.spec.gen.alpha gen-namespace
