@@ -13,7 +13,7 @@ For a list of breaking changes, check [here](#breaking-changes).
   - clojure.test.check.generators
   - clojure.test.check.properties
 
-### Fixed enhanced
+### Fixed / enhanced
 
 - Fix symbol resolution in syntax quote when overwriting core var
 - Performance enhancements
