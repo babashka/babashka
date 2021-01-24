@@ -2,6 +2,22 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
+## v0.2.8
+
+### New
+
+- Include [clojure.core.match](https://github.com/clojure/core.match) #594
+- Include [hiccup](https://github.com/weavejester/hiccup) #646
+- Include [clojure.test.check](https://github.com/clojure/test.check) #487. Included namespaces:
+  - clojure.test.check
+  - clojure.test.check.generators
+  - clojure.test.check.properties
+
+### Fixed enhanced
+
+- Fix symbol resolution in syntax quote when overwriting core var
+- Performance enhancements
+
 ## v0.2.7
 
 ### New
