@@ -270,7 +270,9 @@ Use -- to separate script command line args from bb command line args.
  :feature/httpkit-client %s
  :feature/lanterna %s
  :feature/core-match %s
- :feature/hiccup     %s}")
+ :feature/hiccup     %s
+ :feature/test-check %s
+ :feature/spec-alpha %s}")
     version
     features/core-async?
     features/csv?
@@ -285,7 +287,9 @@ Use -- to separate script command line args from bb command line args.
     features/httpkit-client?
     features/lanterna?
     features/core-match?
-    features/hiccup?)))
+    features/hiccup?
+    features/test-check?
+    features/spec-alpha?)))
 
 (defn read-file [file]
   (let [f (io/file file)]
