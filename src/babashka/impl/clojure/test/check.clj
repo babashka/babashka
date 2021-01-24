@@ -1,19 +1,19 @@
 (ns babashka.impl.clojure.test.check
   {:no-doc true}
-  (:require [clojure.test.check.random :as r]
+  (:require [clojure.test.check.random :as random]
             [sci.core :as sci]))
 
 (def next-rng
   "Returns a random-number generator. Successive calls should return
   independent results."
-  (let [a (atom (delay (r/make-java-util-splittable-random (System/currentTimeMillis))))
+  (let [a (atom (delay (random/make-java-util-splittable-random (System/currentTimeMillis))))
         thread-local
         (proxy [ThreadLocal] []
           (initialValue []
-            (first (r/split (swap! a #(second (r/split (force %))))))))]
+            (first (random/split (swap! a #(second (random/split (force %))))))))]
     (fn []
       (let [rng (.get thread-local)
-            [rng1 rng2] (r/split rng)]
+            [rng1 rng2] (random/split rng)]
         (.set thread-local rng2)
         rng1))))
 
@@ -21,10 +21,23 @@
   "Given an optional Long seed, returns an object that satisfies the
   IRandom protocol."
   ([] (next-rng))
-  ([seed] (r/make-java-util-splittable-random seed)))
+  ([seed] (random/make-java-util-splittable-random seed)))
 
-(alter-var-root #'r/next-rng (constantly next-rng))
-(alter-var-root #'r/make-random (constantly make-random))
+(alter-var-root #'random/next-rng (constantly next-rng))
+(alter-var-root #'random/make-random (constantly make-random))
+
+(def r-ns (sci/create-ns 'clojure.test.check.random nil))
+
+#_(doseq [k (sort (keys (ns-publics 'clojure.test.check.random)))]
+    (println (str "'" k) (format "(sci/copy-var random/%s r-ns)" k)))
+
+(def random-namespace
+  {'make-java-util-splittable-random (sci/copy-var random/make-java-util-splittable-random r-ns)
+   'make-random (sci/copy-var random/make-random r-ns)
+   'rand-double (sci/copy-var random/rand-double r-ns)
+   'rand-long (sci/copy-var random/rand-long r-ns)
+   'split (sci/copy-var random/split r-ns)
+   'split-n (sci/copy-var random/split-n r-ns)})
 
 (require '[clojure.test.check.generators :as gen])
 
@@ -114,3 +127,51 @@
    'vector (sci/copy-var gen/vector gen-ns)
    'vector-distinct (sci/copy-var gen/vector-distinct gen-ns)
    'vector-distinct-by (sci/copy-var gen/vector-distinct-by gen-ns)})
+
+(require '[clojure.test.check.rose-tree :as rose-tree])
+
+(def rose-ns (sci/create-ns 'clojure.test.check.rose-tree nil))
+
+#_(doseq [k (sort (keys (ns-publics 'clojure.test.check.rose-tree)))]
+    (println (str "'" k) (format "(sci/copy-var rose-tree/%s rose-ns)" k)))
+
+(def rose-tree-namespace
+  {'->RoseTree (sci/copy-var rose-tree/->RoseTree rose-ns)
+   'bind (sci/copy-var rose-tree/bind rose-ns)
+   'children (sci/copy-var rose-tree/children rose-ns)
+   'collapse (sci/copy-var rose-tree/collapse rose-ns)
+   'filter (sci/copy-var rose-tree/filter rose-ns)
+   'fmap (sci/copy-var rose-tree/fmap rose-ns)
+   'join (sci/copy-var rose-tree/join rose-ns)
+   'make-rose (sci/copy-var rose-tree/make-rose rose-ns)
+   'permutations (sci/copy-var rose-tree/permutations rose-ns)
+   'pure (sci/copy-var rose-tree/pure rose-ns)
+   'remove (sci/copy-var rose-tree/remove rose-ns)
+   'root (sci/copy-var rose-tree/root rose-ns)
+   'seq (sci/copy-var rose-tree/seq rose-ns)
+   'shrink (sci/copy-var rose-tree/shrink rose-ns)
+   'shrink-vector (sci/copy-var rose-tree/shrink-vector rose-ns)
+   'zip (sci/copy-var rose-tree/zip rose-ns)})
+
+(require '[clojure.test.check.properties :as properties])
+
+(def p-ns (sci/create-ns 'clojure.test.check.properties nil))
+
+#_(doseq [k (sort (keys (ns-publics 'clojure.test.check.properties)))]
+    (println (str "'" k) (format "(sci/copy-var properties/%s p-ns)" k)))
+
+(def properties-namespace
+  {'->ErrorResult (sci/copy-var properties/->ErrorResult p-ns)
+   'for-all (sci/copy-var properties/for-all p-ns)
+   'for-all* (sci/copy-var properties/for-all* p-ns)
+   'map->ErrorResult (sci/copy-var properties/map->ErrorResult p-ns)})
+
+(require '[clojure.test.check :as tc])
+
+(def tc-ns (sci/create-ns 'clojure.test.check nil))
+
+#_(doseq [k (sort (keys (ns-publics 'clojure.test.check)))]
+    (println (str "'" k) (format "(sci/copy-var tc/%s p-ns)" k)))
+
+(def test-check-namespace
+  {'quick-check (sci/copy-var tc/quick-check p-ns)})

@@ -418,7 +418,12 @@ Use -- to separate script command line args from bb command line args.
        'clojure.java.browse browse-namespace
        'clojure.datafy datafy-namespace
        'clojure.core.protocols protocols-namespace
+       ;; test.check
+       'clojure.test.check.random test-check/random-namespace
        'clojure.test.check.generators test-check/generators-namespace
+       'clojure.test.check.rose-tree test-check/rose-tree-namespace
+       'clojure.test.check.properties test-check/properties-namespace
+       'clojure.test.check test-check/test-check-namespace
        ;; spec
        'clojure.spec.alpha spec-namespace
        'clojure.spec.gen.alpha gen-namespace
