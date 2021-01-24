@@ -5,9 +5,6 @@
    [clojure.string :as str]
    [clojure.test :as t :refer [deftest is testing]]))
 
-(defn bb [input & args]
-  (edn/read-string (apply tu/bb (when (some? input) (str input)) (map str args))))
-
 (deftest uberjar-test
   (let [tmp-file (java.io.File/createTempFile "uber" ".jar")
         path (.getPath tmp-file)]

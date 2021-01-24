@@ -429,10 +429,10 @@
 
 (deftest unrestricted-access
   (testing "babashka is allowed to mess with built-in vars"
-    (is (= 1 (bb nil "
-(def inc2 inc) (alter-var-root #'clojure.core/inc (constantly dec))
-(let [res (inc 2)]
-  (alter-var-root #'clojure.core/inc (constantly inc2))
+    (is (= {} (bb nil "
+(def assoc2 assoc) (alter-var-root #'clojure.core/assoc (constantly dissoc))
+(let [res (assoc {:a 1} :a 2)]
+  (alter-var-root #'clojure.core/assoc (constantly assoc2))
   res)")))))
 
 (deftest pprint-test
@@ -465,7 +465,10 @@
       (is v))))
 
 (deftest download-and-extract-test
-  (is (try (= 6 (bb nil (io/file "test" "babashka" "scripts" "download_and_extract_zip.bb")))
+  ;; Disabled because Github throttles bandwidth and this makes for a very slow test.
+  ;; TODO: refactor into individual unit tests
+  ;; One for downloading a small file and one for unzipping.
+  #_(is (try (= 6 (bb nil (io/file "test" "babashka" "scripts" "download_and_extract_zip.bb")))
            (catch Exception e
              (is (str/includes? (str e) "timed out"))))))
 
@@ -551,6 +554,27 @@
       (sci/with-bindings {sci/err sw}
         (test-utils/bb {:in "x" :err sw} "--repl"))
       (is (str/includes? (str sw) "Could not resolve symbol: x [at <repl>:1:1]")))))
+
+(deftest java-stream-test
+  (is (every? number? (bb nil "(take 2 (iterator-seq (.iterator (.doubles (java.util.Random.)))))"))))
+
+(deftest read+string-test
+  (is (= '[:user/foo "::foo"]
+         (bb nil "(read+string (clojure.lang.LineNumberingPushbackReader. (java.io.StringReader. \"::foo\")))"))))
+
+(deftest iterable-test
+  (is (true? (bb nil "
+(defn iter [coll]
+  (if (instance? java.lang.Iterable coll)
+    (.iterator ^java.lang.Iterable coll)
+    (let [s (or (seq coll) [])]
+      (.iterator ^java.lang.Iterable s))))
+
+(= [1 2 3] (iterator-seq (iter [1 2 3])))"))))
+
+(deftest var-print-method-test
+  (when test-utils/native?
+    (is (bb nil "(defmethod print-method sci.lang.IVar [o w] (.write w (str :foo (symbol o)))) (def x 1) (= \":foouser/x\" (pr-str #'x))"))))
 
 ;;;; Scratch
 

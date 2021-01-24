@@ -234,11 +234,10 @@
     babashka.impl.clojure.test
   (:require [babashka.impl.common :refer [ctx]]
             [clojure.stacktrace :as stack]
-            [clojure.string :as str]
             [clojure.template :as temp]
             [sci.core :as sci]
-            [sci.impl.analyzer :as ana]
             [sci.impl.namespaces :as sci-namespaces]
+            [sci.impl.resolve :as resolve]
             [sci.impl.vars :as vars]))
 
 ;; Nothing is marked "private" here, so you can rebind things to plug
@@ -283,18 +282,6 @@
      ~@body))
 
 ;;; UTILITIES FOR REPORTING FUNCTIONS
-
-(defn file-position
-  "Returns a vector [filename line-number] for the nth call up the
-  stack.
-
-  Deprecated in 1.2: The information needed for test reporting is
-  now on :file and :line keys in the result map."
-  {:added "1.1"
-   :deprecated "1.2"}
-  [n]
-  (let [^StackTraceElement s (nth (.getStackTrace (new java.lang.Throwable)) n)]
-    [(.getFileName s) (.getLineNumber s)]))
 
 (defn testing-vars-str
   "Returns a string representation of the current test.  Renders names
@@ -407,7 +394,7 @@
   {:added "1.1"}
   [x]
   (if (symbol? x) ;; TODO
-    (when-let [v (second (ana/lookup @ctx x false))]
+    (when-let [v (second (resolve/lookup @ctx x false))]
       (when-let [value (if (vars/var? v) @v v)]
         (and (fn? value)
              (not (:sci/macro (meta v))))))

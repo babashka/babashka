@@ -4,7 +4,7 @@
 	branch = master
 [submodule "babashka.curl"]
 	path = babashka.curl
-	url = https://github.com/borkdude/babashka.curl
+	url = https://github.com/babashka/babashka.curl
 [submodule "babashka.nrepl"]
 	path = babashka.nrepl
 	url = https://github.com/babashka/babashka.nrepl
@@ -17,3 +17,6 @@
 [submodule "pods"]
 	path = pods
 	url = https://github.com/babashka/pods
+[submodule "deps.clj"]
+	path = deps.clj
+	url = https://github.com/borkdude/deps.clj

@@ -1,5 +1,6 @@
 (ns babashka.impl.repl-test
   (:require
+   [babashka.impl.pprint :refer [pprint-namespace]]
    [babashka.impl.repl :refer [start-repl!]]
    [clojure.string :as str]
    [clojure.test :as t :refer [deftest is]]
@@ -16,7 +17,7 @@
 (defn repl! []
   (start-repl! (init {:bindings {'*command-line-args*
                                  ["a" "b" "c"]}
-                      :env (atom {})})))
+                      :namespaces {'clojure.pprint pprint-namespace}})))
 
 (defn assert-repl [expr expected]
   (is (str/includes? (sci/with-out-str

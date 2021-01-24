@@ -5,8 +5,9 @@
    [babashka.impl.bencode :refer [bencode-namespace]]
    [babashka.impl.cheshire :refer [cheshire-core-namespace]]
    [babashka.impl.classes :as classes]
-   [babashka.impl.classpath :as cp]
+   [babashka.impl.classpath :as cp :refer [classpath-namespace]]
    [babashka.impl.clojure.core :as core :refer [core-extras]]
+   [babashka.impl.clojure.core.server :as server]
    [babashka.impl.clojure.java.browse :refer [browse-namespace]]
    [babashka.impl.clojure.java.io :refer [io-namespace]]
    [babashka.impl.clojure.java.shell :refer [shell-namespace]]
@@ -18,6 +19,7 @@
    [babashka.impl.curl :refer [curl-namespace]]
    [babashka.impl.data :as data]
    [babashka.impl.datafy :refer [datafy-namespace]]
+   [babashka.impl.deps :as deps :refer [deps-namespace]]
    [babashka.impl.error-handler :refer [error-handler]]
    [babashka.impl.features :as features]
    [babashka.impl.pods :as pods]
@@ -96,6 +98,12 @@
 (when features/lanterna?
   (require '[babashka.impl.lanterna]))
 
+(when features/core-match?
+  (require '[babashka.impl.match]))
+
+(when features/hiccup?
+  (require '[babashka.impl.hiccup]))
+
 (sci/alter-var-root sci/in (constantly *in*))
 (sci/alter-var-root sci/out (constantly *out*))
 (sci/alter-var-root sci/err (constantly *err*))
@@ -112,6 +120,8 @@
                  (let [opt (first options)]
                    (case opt
                      ("--") (assoc opts-map :command-line-args (next options))
+                     ("--clojure") (assoc opts-map :clojure true
+                                          :opts (rest options))
                      ("--version") {:version true}
                      ("--help" "-h" "-?") {:help? true}
                      ("--verbose")(recur (next options)
@@ -243,18 +253,6 @@ Help:
   --version           Print the current version of babashka.
   --describe          Print an EDN map with information about this version of babashka.
 
-In- and output flags:
-
-  -i                  Bind *input* to a lazy seq of lines from stdin.
-  -I                  Bind *input* to a lazy seq of EDN values from stdin.
-  -o                  Write lines to stdout.
-  -O                  Write EDN values to stdout.
-  --stream            Stream over lines or EDN values from stdin. Combined with -i or -I *input* becomes a single value per iteration.
-
-Uberscript:
-
-  --uberscript <file> Collect preloads, -e, -f and -m and all required namespaces from the classpath into a single executable file.
-
 Evaluation:
 
   -e, --eval <expr>   Evaluate an expression.
@@ -269,7 +267,31 @@ REPL:
   --socket-repl       Start socket REPL. Specify port (e.g. 1666) or host and port separated by colon (e.g. 127.0.0.1:1666).
   --nrepl-server      Start nREPL server. Specify port (e.g. 1667) or host and port separated by colon (e.g. 127.0.0.1:1667).
 
-If neither -e, -f, or --socket-repl are specified, then the first argument that is not parsed as a option is treated as a file if it exists, or as an expression otherwise. Everything after that is bound to *command-line-args*. Use -- to separate script command line args from bb command line args."))
+In- and output flags:
+
+  -i                  Bind *input* to a lazy seq of lines from stdin.
+  -I                  Bind *input* to a lazy seq of EDN values from stdin.
+  -o                  Write lines to stdout.
+  -O                  Write EDN values to stdout.
+  --stream            Stream over lines or EDN values from stdin. Combined with -i or -I *input* becomes a single value per iteration.
+
+Uberscript:
+
+  --uberscript <file> Collect preloads, -e, -f and -m and all required namespaces from the classpath into a single file.
+
+Uberjar:
+
+  --uberjar    <jar>  Similar to --uberscript but creates jar file.
+
+Clojure:
+
+  --clojure [args...] Invokes clojure. Takes same args as the official clojure CLI.
+
+If the first argument is not any of the above options, then it treated as a file if it exists, or as an expression otherwise.
+Everything after that is bound to *command-line-args*.
+
+Use -- to separate script command line args from bb command line args.
+"))
 
 (defn print-describe []
   (println
@@ -285,8 +307,11 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
  :feature/jdbc       %s
  :feature/postgresql %s
  :feature/hsqldb     %s
+ :feature/oracledb   %s
  :feature/httpkit-client %s
- :feature/lanterna %s}")
+ :feature/lanterna %s
+ :feature/core-match %s
+ :feature/hiccup     %s}")
     version
     features/core-async?
     features/csv?
@@ -297,8 +322,11 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
     features/jdbc?
     features/postgresql?
     features/hsqldb?
+    features/oracledb?
     features/httpkit-client?
-    features/lanterna?)))
+    features/lanterna?
+    features/core-match?
+    features/hiccup?)))
 
 (defn read-file [file]
   (let [f (io/file file)]
@@ -310,20 +338,15 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
 
 (def reflection-var (sci/new-dynamic-var '*warn-on-reflection* false))
 
-(def load-file*
-  (with-meta
-    (fn [sci-ctx f]
-      (let [f (io/file f)
-            s (slurp f)]
-        (sci/with-bindings {sci/ns @sci/ns
-                            sci/file (.getAbsolutePath f)}
-          (sci/eval-string* sci-ctx s))))
-    {:sci.impl/op :needs-ctx}))
+(defn load-file* [f]
+  (let [f (io/file f)
+        s (slurp f)]
+    (sci/with-bindings {sci/ns @sci/ns
+                        sci/file (.getAbsolutePath f)}
+      (sci/eval-string* @common/ctx s))))
 
 (defn start-socket-repl! [address ctx]
-  (socket-repl/start-repl! address ctx)
-  ;; hang until SIGINT
-  @(promise))
+  (socket-repl/start-repl! address ctx))
 
 (defn start-nrepl! [address ctx]
   (let [dev? (= "true" (System/getenv "BABASHKA_DEV"))
@@ -334,12 +357,9 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                           :thread-bind [reflection-var])]
     (nrepl-server/start-server! ctx nrepl-opts)
     (binding [*out* *err*]
-      (println "For more info visit https://github.com/borkdude/babashka/blob/master/doc/repl.md#nrepl.")))
+      (println "For more info visit https://github.com/babashka/babashka/blob/master/doc/repl.md#nrepl.")))
   ;; hang until SIGINT
   @(promise))
-
-(defn exit [n]
-  (throw (ex-info "" {:bb/exit-code n})))
 
 (def aliases
   (cond->
@@ -351,7 +371,8 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
         io clojure.java.io
         json cheshire.core
         curl babashka.curl
-        bencode bencode.core}
+        bencode bencode.core
+        deps babashka.deps}
     features/xml?        (assoc 'xml 'clojure.data.xml)
     features/yaml?       (assoc 'yaml 'clj-yaml.core)
     features/jdbc?       (assoc 'jdbc 'next.jdbc)
@@ -359,17 +380,16 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
     features/csv?        (assoc 'csv 'clojure.data.csv)
     features/transit?    (assoc 'transit 'cognitect.transit)))
 
-(def cp-state (atom nil))
+;;(def ^:private server-ns-obj (sci/create-ns 'clojure.core.server nil))
 
-(defn add-classpath* [add-to-cp]
-  (swap! cp-state
-         (fn [{:keys [:cp]}]
-           (let [new-cp
-                 (if-not cp add-to-cp
-                         (str cp (System/getProperty "path.separator") add-to-cp))]
-             {:loader (cp/loader new-cp)
-              :cp new-cp})))
-  nil)
+(def clojure-core-server
+  {'repl socket-repl/repl
+   'prepl (fn [& args]
+            (apply server/prepl @common/ctx args))
+   'io-prepl (fn [& args]
+               (apply server/io-prepl @common/ctx args))
+   'start-server (fn [& args]
+                   (apply server/start-server @common/ctx args))})
 
 (def namespaces
   (cond->
@@ -384,9 +404,12 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
        'clojure.stacktrace stacktrace-namespace
        'clojure.zip zip-namespace
        'clojure.main {'demunge demunge
-                      'repl-requires clojure-main/repl-requires}
+                      'repl-requires clojure-main/repl-requires
+                      'repl (fn [& opts]
+                              (let [opts (apply hash-map opts)]
+                                (repl/start-repl! @common/ctx opts)))}
        'clojure.test t/clojure-test-namespace
-       'babashka.classpath {'add-classpath add-classpath*}
+       'babashka.classpath classpath-namespace
        'clojure.pprint pprint-namespace
        'babashka.curl curl-namespace
        'babashka.pods pods/pods-namespace
@@ -399,7 +422,9 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
        'clojure.spec.gen.alpha gen-namespace
        'clojure.spec.test.alpha test-namespace
        ;; end spec
-       'babashka.process process-namespace}
+       'babashka.process process-namespace
+       'clojure.core.server clojure-core-server
+       'babashka.deps deps-namespace}
     features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace))
     features/yaml? (assoc 'clj-yaml.core @(resolve 'babashka.impl.yaml/yaml-namespace)
                           'flatland.ordered.map @(resolve 'babashka.impl.ordered/ordered-map-ns))
@@ -415,7 +440,12 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
     features/httpkit-server? (assoc 'org.httpkit.server @(resolve 'babashka.impl.httpkit-server/httpkit-server-namespace))
     features/lanterna? (assoc 'lanterna.screen @(resolve 'babashka.impl.lanterna/lanterna-screen-namespace)
                               'lanterna.terminal @(resolve 'babashka.impl.lanterna/lanterna-terminal-namespace)
-                              'lanterna.constants @(resolve 'babashka.impl.lanterna/lanterna-constants-namespace))))
+                              'lanterna.constants @(resolve 'babashka.impl.lanterna/lanterna-constants-namespace))
+    features/core-match? (assoc 'clojure.core.match @(resolve 'babashka.impl.match/core-match-namespace))
+    features/hiccup? (-> (assoc 'hiccup.core @(resolve 'babashka.impl.hiccup/hiccup-namespace))
+                         (assoc 'hiccup2.core @(resolve 'babashka.impl.hiccup/hiccup2-namespace))
+                         (assoc 'hiccup.util @(resolve 'babashka.impl.hiccup/hiccup-util-namespace))
+                         (assoc 'hiccup.compiler @(resolve 'babashka.impl.hiccup/hiccup-compiler-namespace)))))
 
 (def imports
   '{ArithmeticException java.lang.ArithmeticException
@@ -432,6 +462,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
     Exception java.lang.Exception
     IllegalArgumentException java.lang.IllegalArgumentException
     Integer java.lang.Integer
+    Iterable java.lang.Iterable
     File java.io.File
     Float java.lang.Float
     Long java.lang.Long
@@ -483,8 +514,13 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                     :repl :socket-repl :nrepl
                     :verbose? :classpath
                     :main :uberscript :describe?
-                    :jar :uberjar] :as _opts}
+                    :jar :uberjar :clojure] :as opts}
             (parse-opts args)
+            _ (when clojure
+                (if-let [proc (deps/clojure (:opts opts))]
+                  (-> @proc :exit (System/exit))
+                  (System/exit 0)))
+            _ (when verbose? (vreset! common/verbose? true))
             _ (do ;; set properties
                 (when main (System/setProperty "babashka.main" main))
                 (System/setProperty "babashka.version" version))
@@ -506,17 +542,17 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
             classpath (or classpath
                           (System/getenv "BABASHKA_CLASSPATH"))
             _ (when classpath
-                (add-classpath* classpath))
+                (cp/add-classpath classpath))
             abs-path (when file
                        (let [abs-path (.getAbsolutePath (io/file file))]
                          (vars/bindRoot sci/file abs-path)
                          (System/setProperty "babashka.file" abs-path)
                          abs-path))
             _ (when jar
-                (add-classpath* jar))
+                (cp/add-classpath jar))
             load-fn (fn [{:keys [:namespace :reload]}]
                       (when-let [{:keys [:loader]}
-                                 @cp-state]
+                                 @cp/cp-state]
                         (if ;; ignore built-in namespaces when uberscripting, unless with :reload
                             (and uberscript
                                  (not reload)
@@ -544,17 +580,12 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                                                 'load-file load-file*))
                                   (assoc-in ['clojure.java.io 'resource]
                                             (fn [path]
-                                              (when-let [{:keys [:loader]} @cp-state]
+                                              (when-let [{:keys [:loader]} @cp/cp-state]
                                                 (if (str/starts-with? path "/") nil ;; non-relative paths always return nil
                                                     (cp/getResource loader [path] {:url? true})))))
                                   (assoc-in ['user (with-meta '*input*
                                                      (when-not stream?
-                                                       {:sci.impl/deref! true}))] input-var)
-                                  (assoc-in ['clojure.main 'repl]
-                                            ^{:sci.impl/op :needs-ctx}
-                                            (fn [ctx & opts]
-                                              (let [opts (apply hash-map opts)]
-                                                (repl/start-repl! ctx opts)))))
+                                                       {:sci.impl/deref! true}))] input-var))
                   :env env
                   :features #{:bb :clj}
                   :classes classes/class-map
@@ -576,7 +607,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                               (error-handler e {:expression expressions
                                                 :verbose? verbose?
                                                 :preloads preloads
-                                                :loader (:loader @cp-state)}))))
+                                                :loader (:loader @cp/cp-state)}))))
             expression (str/join " " expressions) ;; this might mess with the locations...
             exit-code
             ;; handle preloads
@@ -589,8 +620,12 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                             (error-handler e {:expression expression
                                               :verbose? verbose?
                                               :preloads preloads
-                                              :loader (:loader @cp-state)})))))
+                                              :loader (:loader @cp/cp-state)})))))
                     nil))
+            ;; socket REPL is start asynchronously. when no other args are
+            ;; provided, a normal REPL will be started as well, which causes the
+            ;; process to wait until SIGINT
+            _ (when socket-repl (start-socket-repl! socket-repl sci-ctx))
             exit-code
             (or exit-code
                 (second
@@ -601,7 +636,6 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                        describe?
                        [(print-describe) 0]
                        repl [(repl/start-repl! sci-ctx) 0]
-                       socket-repl [(start-socket-repl! socket-repl sci-ctx) 0]
                        nrepl [(start-nrepl! nrepl sci-ctx) 0]
                        uberjar [nil 0]
                        expressions
@@ -631,7 +665,7 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
                              (error-handler e {:expression expression
                                                :verbose? verbose?
                                                :preloads preloads
-                                               :loader (:loader @cp-state)}))))
+                                               :loader (:loader @cp/cp-state)}))))
                        uberscript [nil 0]
                        :else [(repl/start-repl! sci-ctx) 0]))
                 1)]
@@ -668,5 +702,4 @@ If neither -e, -f, or --socket-repl are specified, then the first argument that 
 
 ;;;; Scratch
 
-(comment
-  )
+(comment)

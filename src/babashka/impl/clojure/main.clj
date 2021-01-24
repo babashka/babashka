@@ -50,8 +50,8 @@
 
 (def ^{:doc "A sequence of lib specs that are applied to `require`
 by default when a new command-line REPL is started."} repl-requires
-  '[[clojure.repl :refer (dir doc)]
-    [clojure.pprint :refer (pprint)]])
+  '[[clojure.repl :refer (source apropos pst dir doc find-doc)]
+    [clojure.pprint :refer (pp pprint)]])
 
 (defn repl
   "Generic, reusable, read-eval-print loop. By default, reads from *in*,

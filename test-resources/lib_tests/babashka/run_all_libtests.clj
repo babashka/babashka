@@ -160,6 +160,20 @@
 
 (test-namespaces 'httpkit.client-test)
 
+;;;; babashka.process
+
+;; test built-in babashka.process
+(test-namespaces 'babashka.process-test)
+
+;; test babashka.process from source
+(require '[babashka.process] :reload)
+(test-namespaces 'babashka.process-test)
+
+(test-namespaces 'core-match.core-tests)
+
+(test-namespaces 'hiccup.core-test)
+(test-namespaces 'hiccup2.core-test)
+
 ;;;; final exit code
 
 (let [{:keys [:test :fail :error] :as m} @status]

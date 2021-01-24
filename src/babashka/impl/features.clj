@@ -11,10 +11,13 @@
 (def java-nio?       (not= "false" (System/getenv "BABASHKA_FEATURE_JAVA_NIO")))
 (def httpkit-client? (not= "false" (System/getenv "BABASHKA_FEATURE_HTTPKIT_CLIENT")))
 (def httpkit-server? (not= "false" (System/getenv "BABASHKA_FEATURE_HTTPKIT_SERVER")))
+(def core-match?     (not= "false" (System/getenv "BABASHKA_FEATURE_CORE_MATCH")))
+(def hiccup?         (not= "false" (System/getenv "BABASHKA_FEATURE_HICCUP")))
 
 ;; excluded by default
 (def jdbc? (= "true" (System/getenv "BABASHKA_FEATURE_JDBC")))
 (def postgresql? (= "true" (System/getenv "BABASHKA_FEATURE_POSTGRESQL")))
+(def oracledb? (= "true" (System/getenv "BABASHKA_FEATURE_ORACLEDB")))
 (def hsqldb? (= "true" (System/getenv "BABASHKA_FEATURE_HSQLDB")))
 (def datascript? (= "true" (System/getenv "BABASHKA_FEATURE_DATASCRIPT")))
 (def lanterna? (= "true" (System/getenv "BABASHKA_FEATURE_LANTERNA")))

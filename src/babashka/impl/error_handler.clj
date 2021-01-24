@@ -85,7 +85,7 @@
                     (some-> ^Throwable (ex-cause e)
                             .getClass .getName))
           stacktrace (some->
-                      d :callstack
+                      d :sci.impl/callstack
                       cs/stacktrace)]
       (if exit-code [nil exit-code]
           (do

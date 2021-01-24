@@ -1,21 +1,21 @@
-(defproject borkdude/babashka
+(defproject babashka/babashka
   #=(clojure.string/trim
      #=(slurp "resources/BABASHKA_VERSION"))
   :description "babashka"
-  :url "https://github.com/borkdude/babashka"
+  :url "https://github.com/babashka/babashka"
   :scm {:name "git"
-        :url "https://github.com/borkdude/babashka"}
+        :url "https://github.com/babashka/babashka"}
   :license {:name "Eclipse Public License 1.0"
             :url "http://opensource.org/licenses/eclipse-1.0.php"}
   :source-paths ["src" "sci/src" "babashka.curl/src" "pods/src"
-                 "babashka.nrepl/src" "depstar/src" "process/src"]
+                 "babashka.nrepl/src" "depstar/src" "process/src"
+                 "deps.clj/src" "deps.clj/resources"]
   ;; for debugging Reflector.java code:
   ;; :java-source-paths ["sci/reflector/src-java"]
   :java-source-paths ["src-java"]
   :resource-paths ["resources" "sci/resources"]
   :dependencies [[org.clojure/clojure "1.10.2-alpha2"]
-                 [org.clojure/tools.reader "1.3.3"]
-                 [borkdude/edamame "0.0.11-alpha.15"]
+                 [borkdude/edamame "0.0.11-alpha.28"]
                  [borkdude/graal.locking "0.0.2"]
                  [org.clojure/tools.cli "1.0.194"]
                  [cheshire "5.10.0"]
@@ -30,6 +30,8 @@
              :feature/jdbc {:source-paths ["feature-jdbc"]
                             :dependencies [[seancorfield/next.jdbc "1.1.610"]]}
              :feature/postgresql [:feature/jdbc {:dependencies [[org.postgresql/postgresql "42.2.18"]]}]
+             ;:feature/oracledb [:feature/jdbc {:dependencies [[com.oracle.database.jdbc/ojdbc8 "19.8.0.0"]]}]
+             :feature/oracledb [:feature/jdbc {:dependencies [[io.helidon.integrations.db/ojdbc "2.1.0"]]}] ; ojdbc10 + GraalVM config, by Oracle
              :feature/hsqldb [:feature/jdbc {:dependencies [[org.hsqldb/hsqldb "2.5.1"]]}]
              :feature/core-async {:source-paths ["feature-core-async"]
                                   :dependencies [[org.clojure/core.async "1.3.610"]]}
@@ -45,7 +47,10 @@
                                       :dependencies [[http-kit "2.5.0"]]}
              :feature/lanterna {:source-paths ["feature-lanterna"]
                                 :dependencies [[babashka/clojure-lanterna "0.9.8-SNAPSHOT"]]}
-
+             :feature/core-match {:source-paths ["feature-core-match"]
+                                  :dependencies [[org.clojure/core.match "1.0.0"]]}
+             :feature/hiccup {:source-paths ["feature-hiccup"]
+                              :dependencies [[hiccup/hiccup "2.0.0-alpha2"]]}
              :test [:feature/xml
                     :feature/lanterna
                     :feature/yaml
@@ -57,6 +62,8 @@
                     :feature/datascript
                     :feature/httpkit-client
                     :feature/httpkit-server
+                    :feature/core-match
+                    :feature/hiccup
                     {:dependencies [[clj-commons/conch "0.9.2"]
                                     [com.clojure-goes-fast/clj-async-profiler "0.4.1"]
                                     [com.opentable.components/otj-pg-embedded "0.13.3"]]}]
@@ -65,7 +72,7 @@
                                   "-Dclojure.spec.skip-macros=true"]
                        :main babashka.main
                        :aot :all}
-             :native-image {:dependencies [[borkdude/clj-reflector-graal-java11-fix "0.0.1-graalvm-20.2.0"]]}
+             :native-image {:dependencies [[borkdude/clj-reflector-graal-java11-fix "0.0.1-graalvm-20.3.0"]]}
              :reflection {:main babashka.impl.classes/generate-reflection-file}}
   :aliases {"bb" ["with-profile" "test"  "run" "-m" "babashka.main"]}
   :deploy-repositories [["clojars" {:url "https://clojars.org/repo"
