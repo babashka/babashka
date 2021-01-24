@@ -25,7 +25,7 @@ For a list of breaking changes, check [here](#breaking-changes).
 - Add Alpine [Docker images](https://hub.docker.com/repository/registry-1.docker.io/babashka/babashka/tags?page=1&ordering=last_updated) [#699](https://github.com/babashka/babashka/issues/699) ([@lispyclouds](https://github.com/lispyclouds))
 - Add `pp` from `clojure.pprint` [#707](https://github.com/babashka/babashka/issues/707)
 
-### Fixed / enhancd
+### Fixed / enhanced
 
 - Fix issue with unzipping nested directory [babashka/pod-registry#4](https://github.com/babashka/pod-registry/issues/4)
 - Test cannot be defined conditionally [#705](https://github.com/babashka/babashka/issues/705)
