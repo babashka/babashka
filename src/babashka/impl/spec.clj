@@ -28,6 +28,8 @@
   (let [k (if (symbol? k) (ns-qualify k) k)]
     `(clojure.spec.alpha/def-impl '~k '~(s/res spec-form) ~spec-form)))
 
+;; TODO: fix error in clj-kondo: def is a special form which should always be resolved as the special form
+#_:clj-kondo/ignore
 (def spec-namespace
   {'def (sci/copy-var s/def sns)
    'def-impl (copy-var s/def-impl sns)
@@ -43,10 +45,12 @@
    'spec-impl (copy-var s/spec-impl sns)
    #_#_'explain-data (copy-var s/explain-data sns)})
 
+#_:clj-kondo/ignore
 (def test-namespace
   {'instrument (copy-var test/instrument tns)
    'unstrument (copy-var test/unstrument tns)})
 
+#_:clj-kondo/ignore
 (def gen-namespace
   {'generate (copy-var gen/generate gns)})
 
