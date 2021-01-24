@@ -21,6 +21,7 @@
                  [cheshire "5.10.0"]
                  [nrepl/bencode "1.1.0"]
                  [borkdude/sci.impl.reflector "0.0.1-java11"]
+                 [org.clojure/test.check "1.1.0"]
                  [org.clojure/math.combinatorics "0.1.6"]]
   :profiles {:feature/xml  {:source-paths ["feature-xml"]
                             :dependencies [[org.clojure/data.xml "0.2.0-alpha6"]]}
@@ -50,6 +51,8 @@
                                   :dependencies [[org.clojure/core.match "1.0.0"]]}
              :feature/hiccup {:source-paths ["feature-hiccup"]
                               :dependencies [[hiccup/hiccup "2.0.0-alpha2"]]}
+             :feature/test-check {:source-paths ["feature-test-check"]}
+             :feature/spec-alpha {:source-paths ["feature-spec-alpha"]}
              :test [:feature/xml
                     :feature/lanterna
                     :feature/yaml
@@ -63,6 +66,8 @@
                     :feature/httpkit-server
                     :feature/core-match
                     :feature/hiccup
+                    :feature/test-check
+                    :feature/spec-alpha
                     {:dependencies [[clj-commons/conch "0.9.2"]
                                     [com.clojure-goes-fast/clj-async-profiler "0.4.1"]
                                     [com.opentable.components/otj-pg-embedded "0.13.3"]]}]

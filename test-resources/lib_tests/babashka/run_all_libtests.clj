@@ -174,6 +174,8 @@
 (test-namespaces 'hiccup.core-test)
 (test-namespaces 'hiccup2.core-test)
 
+(test-namespaces 'test-check.smoke-test)
+
 ;;;; final exit code
 
 (let [{:keys [:test :fail :error] :as m} @status]

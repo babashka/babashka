@@ -5,6 +5,8 @@
          "feature-lanterna"
          "feature-core-match"
          "feature-hiccup"
+         "feature-test-check"
+         "feature-spec-alpha"
          "sci/src" "babashka.curl/src" "pods/src"
          "babashka.nrepl/src"
          "depstar/src" "process/src"
@@ -21,6 +23,7 @@
         org.clojure/data.xml {:mvn/version "0.2.0-alpha6"}
         clj-commons/clj-yaml {:mvn/version "0.7.2"}
         com.cognitect/transit-clj {:mvn/version "1.0.324"}
+        org.clojure/test.check {:mvn/version "1.1.0"}
         nrepl/bencode {:mvn/version "1.1.0"}
         seancorfield/next.jdbc {:mvn/version "1.1.610"}
         org.postgresql/postgresql {:mvn/version "42.2.18"}

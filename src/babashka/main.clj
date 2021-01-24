@@ -63,43 +63,6 @@
     (def pipe-signal-received? (constantly false))
     (def handle-sigint! (constantly nil))))
 
-(when features/xml?
-  (require '[babashka.impl.xml]))
-
-(when features/yaml?
-  (require '[babashka.impl.yaml]
-           '[babashka.impl.ordered]))
-
-(when features/jdbc?
-  (require '[babashka.impl.jdbc]))
-
-(when features/core-async?
-  (require '[babashka.impl.async]))
-
-(when features/csv?
-  (require '[babashka.impl.csv]))
-
-(when features/transit?
-  (require '[babashka.impl.transit]))
-
-(when features/datascript?
-  (require '[babashka.impl.datascript]))
-
-(when features/httpkit-client?
-  (require '[babashka.impl.httpkit-client]))
-
-(when features/httpkit-server?
-  (require '[babashka.impl.httpkit-server]))
-
-(when features/lanterna?
-  (require '[babashka.impl.lanterna]))
-
-(when features/core-match?
-  (require '[babashka.impl.match]))
-
-(when features/hiccup?
-  (require '[babashka.impl.hiccup]))
-
 (sci/alter-var-root sci/in (constantly *in*))
 (sci/alter-var-root sci/out (constantly *out*))
 (sci/alter-var-root sci/err (constantly *err*))
@@ -307,7 +270,9 @@ Use -- to separate script command line args from bb command line args.
  :feature/httpkit-client %s
  :feature/lanterna %s
  :feature/core-match %s
- :feature/hiccup     %s}")
+ :feature/hiccup     %s
+ :feature/test-check %s
+ :feature/spec-alpha %s}")
     version
     features/core-async?
     features/csv?
@@ -322,7 +287,9 @@ Use -- to separate script command line args from bb command line args.
     features/httpkit-client?
     features/lanterna?
     features/core-match?
-    features/hiccup?)))
+    features/hiccup?
+    features/test-check?
+    features/spec-alpha?)))
 
 (defn read-file [file]
   (let [f (io/file file)]
@@ -413,8 +380,8 @@ Use -- to separate script command line args from bb command line args.
        'clojure.java.browse browse-namespace
        'clojure.datafy datafy-namespace
        'clojure.core.protocols protocols-namespace
-       'clojure.core.server clojure-core-server
        'babashka.process process-namespace
+       'clojure.core.server clojure-core-server
        'babashka.deps deps-namespace}
     features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace))
     features/yaml? (assoc 'clj-yaml.core @(resolve 'babashka.impl.yaml/yaml-namespace)
@@ -436,7 +403,22 @@ Use -- to separate script command line args from bb command line args.
     features/hiccup? (-> (assoc 'hiccup.core @(resolve 'babashka.impl.hiccup/hiccup-namespace))
                          (assoc 'hiccup2.core @(resolve 'babashka.impl.hiccup/hiccup2-namespace))
                          (assoc 'hiccup.util @(resolve 'babashka.impl.hiccup/hiccup-util-namespace))
-                         (assoc 'hiccup.compiler @(resolve 'babashka.impl.hiccup/hiccup-compiler-namespace)))))
+                         (assoc 'hiccup.compiler @(resolve 'babashka.impl.hiccup/hiccup-compiler-namespace)))
+    ;; ensure load before babashka.impl.clojure.spec.alpha for random patch!
+    features/test-check? (assoc 'clojure.test.check.random
+                                @(resolve 'babashka.impl.clojure.test.check/random-namespace)
+                                'clojure.test.check.generators
+                                @(resolve 'babashka.impl.clojure.test.check/generators-namespace)
+                                'clojure.test.check.rose-tree
+                                @(resolve 'babashka.impl.clojure.test.check/rose-tree-namespace)
+                                'clojure.test.check.properties
+                                @(resolve 'babashka.impl.clojure.test.check/properties-namespace)
+                                'clojure.test.check
+                                @(resolve 'babashka.impl.clojure.test.check/test-check-namespace))
+    features/spec-alpha? (-> (assoc        ;; spec
+                              'clojure.spec.alpha @(resolve 'babashka.impl.spec/spec-namespace)
+                              'clojure.spec.gen.alpha @(resolve 'babashka.impl.spec/gen-namespace)
+                              'clojure.spec.test.alpha @(resolve 'babashka.impl.spec/test-namespace)))))
 
 (def imports
   '{ArithmeticException java.lang.ArithmeticException

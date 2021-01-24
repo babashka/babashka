@@ -100,6 +100,18 @@ set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/hiccup
 set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/hiccup
 )
 
+if not "%BABASHKA_FEATURE_TEST_CHECK%"=="false" (
+set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/test-check
+) else (
+set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/test-check
+)
+
+if "%BABASHKA_FEATURE_SPEC_ALPHA%"=="true" (
+set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/spec-alpha
+) else (
+set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/spec-alpha
+)
+
 call lein with-profiles %BABASHKA_LEIN_PROFILES% bb "(+ 1 2 3)"
 
 call lein with-profiles %BABASHKA_LEIN_PROFILES%,+reflection,-uberjar do run
