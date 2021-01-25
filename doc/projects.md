@@ -281,6 +281,16 @@ user> (psql/query conn "select name, subject from grades where grade = 100")
 
 A library for word case conversions.
 
+``` clojure
+(require '[babashka.deps :as deps])
+
+(deps/add-deps '{:deps {camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.2"}}})
+
+(require '[camel-snake-kebab.core :as csk])
+
+(csk/->camelCase 'flux-capacitor) ;;=> 'fluxCapacitor
+```
+
 ### [aero](https://github.com/juxt/aero/)
 
 A small library for explicit, intentful configuration.
