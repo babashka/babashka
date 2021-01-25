@@ -307,11 +307,11 @@ META-INF/leiningen/borkdude/sci/project.clj
 ...
 ```
 
-### Invoke vim inside a script
+## Invoke vim inside a script
 
 See [examples/vim.clj](vim.clj).
 
-### Portal
+## Portal
 
 This script uses [djblue/portal](https://github.com/djblue/portal/) for inspecting EDN, JSON, XML or YAML files.
 
@@ -323,7 +323,7 @@ $ examples/portal.clj ~/git/clojure/pom.xml
 
 See [portal.clj](portal.clj).
 
-### Image viewer
+## Image viewer
 
 Opens browser window and lets user navigate through images of all sub-directories.
 
@@ -335,7 +335,7 @@ $ examples/image_viewer.clj
 
 See [image_viewer.clj](image_viewer.clj).
 
-### Torrent viewer
+## Torrent viewer
 
 Shows the content of a torrent file. Note that pieces' content is hidden.
 
@@ -346,7 +346,7 @@ $ examples/torrent-viewer.clj file.torrent
 
 See [torrent-viewer.clj](torrent-viewer.clj).
 
-### [cprop.clj](cprop.clj)
+## [cprop.clj](cprop.clj)
 
 This script uses [tolitius/cprop](https://github.com/tolitius/cprop) library.
 
@@ -358,7 +358,7 @@ Example usage:
 $ ( cd examples && bb cprop.clj )
 ```
 
-### [fzf](fzf.clj)
+## [fzf](fzf.clj)
 
 Invoke [fzf](https://github.com/junegunn/fzf), a command line fuzzy finder, from babashka.
 
@@ -370,7 +370,7 @@ Example usage:
 $ cat src/babashka/main.clj | bb examples/fzf.clj
 ```
 
-### [rofi](rofi.clj)
+## [rofi](rofi.clj)
 
 Invoke [rofi](https://github.com/davatorium/rofi), a type-to-filter menu on linux, from babashka.
 
@@ -382,7 +382,7 @@ Example usage:
 $ cat src/babashka/main.clj | bb examples/rofi.clj
 ```
 
-### [digitalocean-ping.clj](digitalocean-ping.clj)
+## [digitalocean-ping.clj](digitalocean-ping.clj)
 
 The script allows to define which DigitalOcean cloud datacenter (region) has best network performance (ping latency).
 
