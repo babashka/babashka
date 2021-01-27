@@ -2,6 +2,18 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
+## Unreleased
+
+### Enhancements / fixes
+
+Sci:
+
+- Fix error reporting in case of arity error [#518](https://github.com/babashka/babashka/issues/518)
+- Shadowing record field names in protocol functions [#513](https://github.com/babashka/babashka/issues/513)
+- Fix destructuring in protocol method for record [#512](https://github.com/babashka/babashka/issues/512)
+- Faster processing of maps, sets and vectors [#482](https://github.com/babashka/babashka/issues/482)
+- Prioritize current namespace vars in syntax quote [#509](https://github.com/babashka/babashka/issues/509)
+
 ## v0.2.8
 
 ### New
