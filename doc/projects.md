@@ -312,8 +312,12 @@ Spying and stubbing library, primarily intended for tests.
 A clojure tool to navigate through your data. This example will launch a browser to view your `deps.edn`:
 
 ``` clojure
-$ cat deps.edn | bb -cp `clojure -Spath -Sdeps '{:deps {djblue/portal {:mvn/version "0.4.1"}}}'` -m portal.main edn
+$ cat deps.edn | bb -e "(babashka.deps/add-deps '{:deps {djblue/portal {:mvn/version \"0.9.0\"}}})" \
+                    -e "(require 'portal.main)" \
+                    -e '(portal.main/-main "edn")'
 ```
+
+Also see [examples](https://github.com/babashka/babashka/tree/master/examples#portal).
 
 ### [version-clj](https://github.com/xsc/version-clj)
 
