@@ -77,8 +77,8 @@
            (match [x]
              [([1 z 4] :seq)] z
              [([_ _ _] :seq)] :a2
-             :else [])
-           :a2))))
+             :else []))
+         :a2)))
 
 (deftest map-pattern-match-1
   (is (= (let [x {:a 1 :b 1}]
