@@ -8,13 +8,13 @@
   :license {:name "Eclipse Public License 1.0"
             :url "http://opensource.org/licenses/eclipse-1.0.php"}
   :source-paths ["src" "sci/src" "babashka.curl/src" "pods/src"
-                 "babashka.nrepl/src" "depstar/src" "process/src"
-                 "deps.clj/src" "deps.clj/resources"]
+                 "fs/src" "babashka.nrepl/src" "depstar/src"
+                 "process/src" "deps.clj/src" "deps.clj/resources"]
   ;; for debugging Reflector.java code:
   ;; :java-source-paths ["sci/reflector/src-java"]
   :java-source-paths ["src-java"]
   :resource-paths ["resources" "sci/resources"]
-  :dependencies [[org.clojure/clojure "1.10.2-alpha2"]
+  :dependencies [[org.clojure/clojure "1.10.2"]
                  [borkdude/edamame "0.0.11-alpha.28"]
                  [borkdude/graal.locking "0.0.2"]
                  [org.clojure/tools.cli "1.0.194"]

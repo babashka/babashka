@@ -21,6 +21,7 @@
    [babashka.impl.deps :as deps :refer [deps-namespace]]
    [babashka.impl.error-handler :refer [error-handler]]
    [babashka.impl.features :as features]
+   [babashka.impl.fs :refer [fs-namespace]]
    [babashka.impl.pods :as pods]
    [babashka.impl.pprint :refer [pprint-namespace]]
    [babashka.impl.process :refer [process-namespace]]
@@ -382,7 +383,8 @@ Use -- to separate script command line args from bb command line args.
        'clojure.core.protocols protocols-namespace
        'babashka.process process-namespace
        'clojure.core.server clojure-core-server
-       'babashka.deps deps-namespace}
+       'babashka.deps deps-namespace
+       'babashka.fs fs-namespace}
     features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace))
     features/yaml? (assoc 'clj-yaml.core @(resolve 'babashka.impl.yaml/yaml-namespace)
                           'flatland.ordered.map @(resolve 'babashka.impl.ordered/ordered-map-ns))
