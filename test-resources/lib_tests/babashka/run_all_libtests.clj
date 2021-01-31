@@ -176,6 +176,12 @@
 
 (test-namespaces 'test-check.smoke-test)
 
+(test-namespaces 'babashka.fs-test)
+
+;; test fs once again, but now from source
+(require '[babashka.fs] :reload)
+(test-namespaces 'babashka.fs-test)
+
 ;;;; final exit code
 
 (let [{:keys [:test :fail :error] :as m} @status]

@@ -37,3 +37,7 @@ lein test :only babashka.pod-test
 
 export BABASHKA_SOCKET_REPL_TEST=true
 lein test :only babashka.impl.socket-repl-test
+
+unset BABASHKA_PRELOADS
+unset BABASHKA_CLASSPATH
+unset BABASHKA_PRELOADS_TEST
