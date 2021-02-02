@@ -14,6 +14,7 @@
          "resources" "sci/resources"],
  :deps {org.clojure/clojure {:mvn/version "1.10.2-alpha2"},
         borkdude/sci {:local/root "sci"}
+        babashka/babasha.curl {:local/root "babashka.curl"}
         borkdude/graal.locking {:mvn/version "0.0.2"},
         org.clojure/core.async {:mvn/version "1.3.610"},
         org.clojure/tools.cli {:mvn/version "1.0.194"},
@@ -52,7 +53,6 @@
                                              :sha "f902d2c43121f9e1c48603d6eb99f5900eb6a9f6"}
                          weavejester/medley {:git/url "https://github.com/weavejester/medley"
                                              :sha "a4e5fb5383f5c0d83cb2d005181a35b76d8a136d"}
-                         babashka/babasha.curl {:local/root "babashka.curl"}
                          cprop/cprop {:mvn/version "0.1.16"}
                          comb/comb {:mvn/version "0.1.1"}
                          mvxcvi/arrangement {:mvn/version "1.2.0"}
