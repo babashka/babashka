@@ -13,6 +13,8 @@ Sci:
 - Fix destructuring in protocol method for record [#512](https://github.com/babashka/babashka/issues/512)
 - Faster processing of maps, sets and vectors [#482](https://github.com/babashka/babashka/issues/482)
 - Prioritize current namespace vars in syntax quote [#509](https://github.com/babashka/babashka/issues/509)
+- Fix ns-publics to not include refers [#520](https://github.com/borkdude/sci/issues/520)
+- Add `refer-clojure` macro [#519](https://github.com/borkdude/sci/issues/519)
 
 ## v0.2.8
 
