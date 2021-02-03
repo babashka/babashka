@@ -176,6 +176,8 @@
 
 (test-namespaces 'test-check.smoke-test)
 
+(test-namespaces 'gaka.core-test)
+
 ;;;; final exit code
 
 (let [{:keys [:test :fail :error] :as m} @status]

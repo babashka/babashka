@@ -399,6 +399,41 @@ Library for managing environment variables in Clojure.
 (prn (:path env))
 ```
 
+### [gaka](https://github.com/cdaddr/gaka)
+
+``` clojure
+(ns script
+  (:require [babashka.deps :as deps]))
+
+(deps/add-deps '{:deps {gaka/gaka {:mvn/version "0.3.0"}}})
+
+(require '[gaka.core :as gaka])
+
+(def rules [:div#foo
+            :margin "0px"
+            [:span.bar
+             :color "black"
+             :font-weight "bold"
+             [:a:hover
+              :text-decoration "none"]]])
+
+(println (gaka/css rules))
+```
+
+Output:
+
+``` css
+div#foo {
+  margin: 0px;}
+
+  div#foo span.bar {
+    color: black;
+    font-weight: bold;}
+
+    div#foo span.bar a:hover {
+      text-decoration: none;}
+```
+
 ## Pods
 
 [Babashka pods](https://github.com/babashka/babashka.pods) are programs that can
