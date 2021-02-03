@@ -1,10 +1,10 @@
 (ns gaka.core-test
-  (:require [clojure.test :refer [deftest is #_are]]
+  (:require [clojure.test :refer [deftest is are]]
             [gaka.core :refer [css compile* inline-css render-rule]]
             ))
 
 (defmacro =? [& body]
-  `(clojure.test/are [x# y#] (= x# y#)
+  `(are [x# y#] (= x# y#)
         ~@body))
 
 (deftest test-flatten
@@ -26,7 +26,7 @@
    (=? (flatten-maps [1 2 {3 4}])
        [1 2 3 4])
 
-   #_(=? (flatten-maps [1 {2 3 4 5} 6])
+   (=? (flatten-maps [1 {2 3 4 5} 6])
        [1 2 3 4 5 6])
 
    (=? (flatten-keyvals [1 '(2 {3 4} 5)])

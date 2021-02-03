@@ -1,16 +1,17 @@
 (ns babashka.impl.test
   (:require [babashka.impl.clojure.test :as t]
-            [babashka.impl.common :refer [ctx]]))
-
-(defn macrofy [v]
-  (with-meta v {:sci/macro true}))
+            [babashka.impl.common :refer [ctx]]
+            [sci.core :as sci]))
 
 (defn contextualize [f]
   (fn [& args]
     (apply f @ctx args)))
 
+(def tns t/tns)
+
 (def clojure-test-namespace
-  {'*load-tests* t/load-tests
+  {:obj tns
+   '*load-tests* t/load-tests
    '*stack-trace-depth* t/stack-trace-depth
    '*report-counters* t/report-counters
    '*initial-report-counters* t/initial-report-counters
@@ -30,18 +31,16 @@
    'assert-any t/assert-any
    ;; assertion methods
    'assert-expr t/assert-expr
-   'try-expr (with-meta @#'t/try-expr
-               {:sci/macro true})
+   'try-expr (sci/copy-var t/try-expr tns)
    ;; assertion macros
-   'is (with-meta @#'t/is
-         {:sci/macro true})
-   'are (macrofy @#'t/are)
-   'testing (macrofy @#'t/testing)
+   'is (sci/copy-var t/is tns)
+   'are (sci/copy-var t/are tns)
+   'testing (sci/copy-var t/testing tns)
    ;; defining tests
-   'with-test (macrofy @#'t/with-test)
-   'deftest (macrofy @#'t/deftest)
-   'deftest- (macrofy @#'t/deftest-)
-   'set-test (macrofy @#'t/set-test)
+   'with-test (sci/copy-var t/with-test tns)
+   'deftest (sci/copy-var t/deftest tns)
+   'deftest- (sci/copy-var t/deftest- tns)
+   'set-test (sci/copy-var t/set-test tns)
    ;; fixtures
    'use-fixtures t/use-fixtures
    'compose-fixtures t/compose-fixtures
