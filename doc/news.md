@@ -14,6 +14,8 @@ Twitter.
 
 Babashka [0.2.8](https://github.com/babashka/babashka/blob/master/CHANGELOG.md#v028) released. This includes new libraries: hiccup, core.match and clojure.test.check.
 
+On 27th of February, Michiel (a.k.a. @borkdude) will do a talk about babashka at the [2021 GraalVM workshop](https://graalworkshop.github.io/2021/).
+
 - First release of the [aws pod](https://github.com/babashka/pod-babashka-aws).
 - A [script](https://gist.github.com/borkdude/ba372c8cee311e31020b04063d88e1be) to print API breakage warnings.
 - A [script](https://gist.github.com/lgouger/2262e2d2503306f2595e48a7888f4e73) to lazily page through AWS results using the new [aws pod](https://github.com/babashka/pod-babashka-aws).
