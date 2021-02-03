@@ -15,6 +15,7 @@ Sci:
 - Prioritize current namespace vars in syntax quote [#509](https://github.com/babashka/babashka/issues/509)
 - Fix ns-publics to not include refers [#520](https://github.com/borkdude/sci/issues/520)
 - Add `refer-clojure` macro [#519](https://github.com/borkdude/sci/issues/519)
+- Syntax quote resolves referred var incorrectly [#526](https://github.com/borkdude/sci/issues/526)
 
 ## v0.2.8
 
