@@ -8,7 +8,8 @@ Twitter.
 ## 2021-02
 
 - [Automating Video Edits with Clojure and ffmpeg](https://youtu.be/Tmgy57R9HZM) by Adam James
-- [gaka](https://github.com/cdaddr/gaka), a CSS-generating library that works with babashka.
+- [Gaka](https://github.com/cdaddr/gaka), a CSS-generating library that works with babashka.
+- [Elisp](https://gist.github.com/llacom/f391f41cbf4de91739b52bf8bb1a6d54) and cider commands to spawn a babashka repl and connect to it
 
 ## 2021-01
 
