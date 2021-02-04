@@ -44,7 +44,7 @@ For installation options check [Installation](https://github.com/babashka/babash
 For quick installation use:
 
 ``` shell
-$ bash <(curl -s https://raw.githubusercontent.com/babashka/babashka/master/install)
+$ bash < <(curl -s https://raw.githubusercontent.com/babashka/babashka/master/install)
 ```
 
 or grab a binary from [Github
