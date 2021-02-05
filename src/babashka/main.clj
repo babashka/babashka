@@ -21,6 +21,7 @@
    [babashka.impl.deps :as deps :refer [deps-namespace]]
    [babashka.impl.error-handler :refer [error-handler]]
    [babashka.impl.features :as features]
+   [babashka.impl.fs :refer [fs-namespace]]
    [babashka.impl.pods :as pods]
    [babashka.impl.pprint :refer [pprint-namespace]]
    [babashka.impl.process :refer [process-namespace]]
@@ -334,6 +335,7 @@ Use -- to separate script command line args from bb command line args.
         io clojure.java.io
         json cheshire.core
         curl babashka.curl
+        fs babashka.fs
         bencode bencode.core
         deps babashka.deps}
     features/xml?        (assoc 'xml 'clojure.data.xml)
@@ -375,6 +377,7 @@ Use -- to separate script command line args from bb command line args.
        'babashka.classpath classpath-namespace
        'clojure.pprint pprint-namespace
        'babashka.curl curl-namespace
+       'babashka.fs fs-namespace
        'babashka.pods pods/pods-namespace
        'bencode.core bencode-namespace
        'clojure.java.browse browse-namespace
