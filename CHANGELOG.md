@@ -4,6 +4,10 @@ For a list of breaking changes, check [here](#breaking-changes).
 
 ## Unreleased
 
+### New
+
+- Include [babashka.fs](https://github.com/babashka/fs)
+
 ### Enhancements / fixes
 
 Babashka.nrepl:
