@@ -6,6 +6,10 @@ For a list of breaking changes, check [here](#breaking-changes).
 
 ### Enhancements / fixes
 
+Babashka.nrepl:
+
+- Implement pprint support [#18](https://github.com/babashka/babashka.nrepl/issues/18) ([@kolharsam](https://github.com/kolharsam), [@grazfather](https://github.com/grazfather), [@bbatsov](https://github.com/bbatsov))
+
 Sci:
 
 - Fix error reporting in case of arity error [#518](https://github.com/babashka/babashka/issues/518)
