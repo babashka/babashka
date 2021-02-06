@@ -70,17 +70,22 @@ docker build --build-arg BABASHKA_FEATURE_JDBC=true --target BASE -t bb-builder 
 container_id=$(docker create bb-builder)
 docker cp $container_id:/opt/bb bb # copy to ./bb on the host file system
 docker rm $container_id
-``` 
+```
 
 NOTE: If you get _Error: Image build request failed with exit status 137_ then
 check whether Docker is allowed to use enough memory (e.g. in Docker Desktop
 preferences). If it is, then increase the memory GraalVM can use, for example
-by adding `--build-arg BABASHKA_XMX="-J-Xmx8g"` 
+by adding `--build-arg BABASHKA_XMX="-J-Xmx8g"`
 (or whatever Docker has available, bigger than the default).
 
 ## Windows
 
 Run `script\uberjar.bat` followed by `script\compile.bat`.
+
+## Static
+
+To compile babashka as a static binary for linux, set the `BABASHKA_STATIC`
+environment variable to `true`.
 
 ## Feature flags
 
@@ -97,6 +102,10 @@ Babashka supports the following feature flags:
 | `BABASHKA_FEATURE_YAML` | Includes the [clj-yaml](https://github.com/clj-commons/clj-yaml) library | `true` |
 | `BABASHKA_FEATURE_HTTPKIT_CLIENT` | Includes the [http-kit](https://github.com/http-kit/http-kit) client library | `true` |
 | `BABASHKA_FEATURE_HTTPKIT_SERVER` | Includes the [http-kit](https://github.com/http-kit/http-kit) server library | `true` |
+| `BABASHKA_FEATURE_CORE_MATCH` | Includes the [clojure.core.match](https://github.com/clojure/core.match) library | `true` |
+| `BABASHKA_FEATURE_HICCUP` | Includes the [hiccup](https://github.com/weavejester/hiccup) library | `true` |
+| `BABASHKA_FEATURE_TEST_CHECK` | Includes the [clojure.test.check](https://github.com/clojure/test.check) library | `true` |
+| `BABASHKA_FEATURE_SPEC_ALPHA` | Includes the [clojure.spec.alpha](https://github.com/clojure/spec.alpha) library (WIP) | `false` |
 | `BABASHKA_FEATURE_JDBC` | Includes the [next.jdbc](https://github.com/seancorfield/next-jdbc) library | `false`    |
 | `BABASHKA_FEATURE_POSTGRESQL` | Includes the [PostgresSQL](https://jdbc.postgresql.org/) JDBC driver |  `false` |
 | `BABASHKA_FEATURE_HSQLDB` | Includes the [HSQLDB](http://www.hsqldb.org/) JDBC driver | `false` |

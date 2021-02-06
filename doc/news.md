@@ -5,12 +5,27 @@ you have anything to add. Also see
 [#babashka](https://twitter.com/hashtag/babashka?src=hashtag_click&f=live) on
 Twitter.
 
+## 2021-02
+
+- [Automating Video Edits with Clojure and ffmpeg](https://youtu.be/Tmgy57R9HZM) by Adam James
+- [Gaka](https://github.com/cdaddr/gaka), a CSS-generating library that works with babashka.
+- [Elisp](https://gist.github.com/llacom/f391f41cbf4de91739b52bf8bb1a6d54) and cider commands to spawn a babashka repl and connect to it
+
 ## 2021-01
+
+Babashka [0.2.8](https://github.com/babashka/babashka/blob/master/CHANGELOG.md#v028) released. This includes new libraries: hiccup, core.match and clojure.test.check.
+
+On 27th of February, Michiel (a.k.a. @borkdude) will do a talk about babashka at the [2021 GraalVM workshop](https://graalworkshop.github.io/2021/).
 
 - First release of the [aws pod](https://github.com/babashka/pod-babashka-aws).
 - A [script](https://gist.github.com/borkdude/ba372c8cee311e31020b04063d88e1be) to print API breakage warnings.
 - A [script](https://gist.github.com/lgouger/2262e2d2503306f2595e48a7888f4e73) to lazily page through AWS results using the new [aws pod](https://github.com/babashka/pod-babashka-aws).
 - [Environ](https://github.com/weavejester/environ) works with babashka.
+- [Expound](https://github.com/bhb/expound) now works with [spartan.spec](https://github.com/borkdude/spartan.spec/blob/master/examples/expound.clj)
+- A basic [logger](https://gist.github.com/borkdude/c97da85da67c7bcc5671765aef5a89ad) that works in babashka scripts
+- A basic [router](https://gist.github.com/borkdude/1627f39d072ea05557a324faf5054cf3) based on core.match
+- A minimal [Github GraphQL client](https://gist.github.com/lagenorhynque/c1419487965c0fa3cf34862852825483)
+- New developments around babashka on [Raspberry Pi](https://github.com/babashka/babashka/issues/241#issuecomment-763976749)
 
 ## 2020-12
 

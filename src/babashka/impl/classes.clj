@@ -114,8 +114,7 @@
           java.lang.Double
           java.lang.Exception
           java.lang.Float
-          ;; this adds 1 MB to the linux binary... why?
-          ;; java.lang.IllegalArgumentException
+          java.lang.IllegalArgumentException
           java.lang.Integer
           java.lang.Iterable
           java.lang.Long
@@ -151,6 +150,7 @@
           ~@(when features/java-nio?
               '[java.nio.file.OpenOption
                 java.nio.file.CopyOption
+                java.nio.file.DirectoryNotEmptyException
                 java.nio.file.FileAlreadyExistsException
                 java.nio.file.FileSystem
                 java.nio.file.FileSystems
@@ -269,6 +269,7 @@
                       clojure.lang.LazySeq
                       clojure.lang.Named
                       clojure.lang.Keyword
+                      clojure.lang.Ratio
                       clojure.lang.Repeat
                       clojure.lang.Symbol
                       clojure.lang.Sequential
@@ -318,9 +319,7 @@
 
 (def class-map (gen-class-map))
 
-(defn generate-reflection-file
-  "Generate reflection.json file"
-  [& args]
+(defn reflection-file-entries []
   (let [entries (vec (for [c (sort (:all classes))
                            :let [class-name (str c)]]
                        {:name class-name
@@ -343,24 +342,42 @@
                              :let [class-name (str c)]]
                          (assoc v :name class-name))
         all-entries (concat entries constructors methods fields custom-entries)]
+    all-entries))
+
+(defn generate-reflection-file
+  "Generate reflection.json file"
+  [& args]
+  (let [all-entries (reflection-file-entries)]
     (spit (or
            (first args)
            "reflection.json") (json/generate-string all-entries {:pretty true}))))
 
+(defn public-declared-method? [c m]
+  (and (= c (.getDeclaringClass m))
+       (not (.getAnnotation m Deprecated))))
+
+(defn public-declared-method-names [c]
+  (->> (.getMethods c)
+       (keep (fn [m]
+               (when (public-declared-method? c m)
+                 {:class c
+                  :name (.getName m)})))
+       (distinct)
+       (sort-by :name)
+       (vec)))
+
+(defn all-methods []
+  (->> (reflection-file-entries)
+       (map :name)
+       (map #(Class/forName %))
+       (mapcat public-declared-method-names)))
+
 (comment
-
-  (defn public-declared-method? [c m]
-    (and (= c (.getDeclaringClass m))
-         (not (.getAnnotation m Deprecated))))
-
-  (defn public-declared-method-names [c]
-    (->> (.getMethods c)
-         (keep (fn [m]
-                 (when (public-declared-method? c m)
-                   {:name (.getName m)})))
-         (distinct)
-         (sort-by :name)
-         (vec)))
-
   (public-declared-method-names java.net.URL)
-  (public-declared-method-names java.util.Properties))
+  (public-declared-method-names java.util.Properties)
+
+  (->> (reflection-file-entries)
+       (map :name)
+       (map #(Class/forName %)))
+
+  )

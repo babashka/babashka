@@ -2,6 +2,44 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
+## Unreleased
+
+### New
+
+- Include [babashka.fs](https://github.com/babashka/fs)
+
+### Enhancements / fixes
+
+Babashka.nrepl:
+
+- Implement pprint support [#18](https://github.com/babashka/babashka.nrepl/issues/18) ([@kolharsam](https://github.com/kolharsam), [@grazfather](https://github.com/grazfather), [@bbatsov](https://github.com/bbatsov))
+
+Sci:
+
+- Fix error reporting in case of arity error [#518](https://github.com/babashka/babashka/issues/518)
+- Shadowing record field names in protocol functions [#513](https://github.com/babashka/babashka/issues/513)
+- Fix destructuring in protocol method for record [#512](https://github.com/babashka/babashka/issues/512)
+- Faster processing of maps, sets and vectors [#482](https://github.com/babashka/babashka/issues/482)
+- Prioritize current namespace vars in syntax quote [#509](https://github.com/babashka/babashka/issues/509)
+- Fix ns-publics to not include refers [#520](https://github.com/borkdude/sci/issues/520)
+- Add `refer-clojure` macro [#519](https://github.com/borkdude/sci/issues/519)
+
+## v0.2.8
+
+### New
+
+- Include [clojure.core.match](https://github.com/clojure/core.match) [#594](https://github.com/babashka/babashka/issues/594)
+- Include [hiccup](https://github.com/weavejester/hiccup) [#646](https://github.com/babashka/babashka/issues/646)
+- Include [clojure.test.check](https://github.com/clojure/test.check) [#487](https://github.com/babashka/babashka/issues/487). Included namespaces:
+  - clojure.test.check
+  - clojure.test.check.generators
+  - clojure.test.check.properties
+
+### Fixed / enhanced
+
+- Fix symbol resolution in syntax quote when overwriting core var
+- Performance enhancements
+
 ## v0.2.7
 
 ### New
@@ -9,7 +47,7 @@ For a list of breaking changes, check [here](#breaking-changes).
 - Add Alpine [Docker images](https://hub.docker.com/repository/registry-1.docker.io/babashka/babashka/tags?page=1&ordering=last_updated) [#699](https://github.com/babashka/babashka/issues/699) ([@lispyclouds](https://github.com/lispyclouds))
 - Add `pp` from `clojure.pprint` [#707](https://github.com/babashka/babashka/issues/707)
 
-### Fixed / enhancd
+### Fixed / enhanced
 
 - Fix issue with unzipping nested directory [babashka/pod-registry#4](https://github.com/babashka/pod-registry/issues/4)
 - Test cannot be defined conditionally [#705](https://github.com/babashka/babashka/issues/705)

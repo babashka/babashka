@@ -281,6 +281,16 @@ user> (psql/query conn "select name, subject from grades where grade = 100")
 
 A library for word case conversions.
 
+``` clojure
+(require '[babashka.deps :as deps])
+
+(deps/add-deps '{:deps {camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.2"}}})
+
+(require '[camel-snake-kebab.core :as csk])
+
+(csk/->camelCase 'flux-capacitor) ;;=> 'fluxCapacitor
+```
+
 ### [aero](https://github.com/juxt/aero/)
 
 A small library for explicit, intentful configuration.
@@ -302,8 +312,12 @@ Spying and stubbing library, primarily intended for tests.
 A clojure tool to navigate through your data. This example will launch a browser to view your `deps.edn`:
 
 ``` clojure
-$ cat deps.edn | bb -cp `clojure -Spath -Sdeps '{:deps {djblue/portal {:mvn/version "0.4.1"}}}'` -m portal.main edn
+$ cat deps.edn | bb -e "(babashka.deps/add-deps '{:deps {djblue/portal {:mvn/version \"0.9.0\"}}})" \
+                    -e "(require 'portal.main)" \
+                    -e '(portal.main/-main "edn")'
 ```
+
+Also see [examples](https://github.com/babashka/babashka/tree/master/examples#portal).
 
 ### [version-clj](https://github.com/xsc/version-clj)
 
@@ -383,6 +397,41 @@ Library for managing environment variables in Clojure.
 (require '[environ.core :refer [env]])
 
 (prn (:path env))
+```
+
+### [gaka](https://github.com/cdaddr/gaka)
+
+``` clojure
+(ns script
+  (:require [babashka.deps :as deps]))
+
+(deps/add-deps '{:deps {gaka/gaka {:mvn/version "0.3.0"}}})
+
+(require '[gaka.core :as gaka])
+
+(def rules [:div#foo
+            :margin "0px"
+            [:span.bar
+             :color "black"
+             :font-weight "bold"
+             [:a:hover
+              :text-decoration "none"]]])
+
+(println (gaka/css rules))
+```
+
+Output:
+
+``` css
+div#foo {
+  margin: 0px;}
+
+  div#foo span.bar {
+    color: black;
+    font-weight: bold;}
+
+    div#foo span.bar a:hover {
+      text-decoration: none;}
 ```
 
 ## Pods

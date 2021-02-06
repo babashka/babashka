@@ -1,16 +1,20 @@
 #!/usr/bin/env bb
 
 (ns portal
-  (:require [babashka.classpath :as cp]
+  (:require [babashka.deps :as deps]
             [cheshire.core :as json]
             [clj-yaml.core :as yaml]
             [clojure.data.xml :as xml]
             [clojure.edn :as edn]
-            [clojure.java.shell :refer [sh]]
             [clojure.string :as str]))
 
-(def cp (str/trim (:out (sh "clojure" "-Spath" "-Sdeps" "{:deps {djblue/portal {:mvn/version \"0.6.1\"}}}"))))
-(cp/add-classpath cp)
+(deps/add-deps '{:deps {djblue/portal {:mvn/version "0.9.0"}}})
+
+(require '[portal.api :as p])
+
+(.addShutdownHook (Runtime/getRuntime)
+                  (Thread. (fn [] (p/close))))
+
 
 (def file (first *command-line-args*))
 (when-not file
@@ -41,11 +45,6 @@
                                 :skip-whitespace true
                                 :namespace-aware false)
                  (xml->hiccup))))
-
-(require '[portal.api :as p])
-
-(.addShutdownHook (Runtime/getRuntime)
-                  (Thread. (fn [] (p/close))))
 
 (p/open)
 (p/tap)

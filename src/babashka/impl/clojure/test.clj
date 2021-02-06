@@ -243,6 +243,7 @@
 ;; Nothing is marked "private" here, so you can rebind things to plug
 ;; in your own testing or reporting frameworks.
 
+(def tns (sci/create-ns 'clojure.test nil))
 
 ;;; USER-MODIFIABLE GLOBALS
 
@@ -251,28 +252,28 @@
    be created by deftest, set-test, or with-test.  Use this to omit
    tests when compiling or loading production code."}
   load-tests
-  (sci/new-dynamic-var '*load-tests* true))
+  (sci/new-dynamic-var '*load-tests* true {:ns tns}))
 
 (def
   ^{:doc "The maximum depth of stack traces to print when an Exception
   is thrown during a test.  Defaults to nil, which means print the
   complete stack trace."}
   stack-trace-depth
-  (sci/new-dynamic-var '*stack-trace-depth* nil))
+  (sci/new-dynamic-var '*stack-trace-depth* nil {:ns tns}))
 
 
 ;;; GLOBALS USED BY THE REPORTING FUNCTIONS
 
-(def report-counters (sci/new-dynamic-var '*report-counters* nil))     ; bound to a ref of a map in test-ns
+(def report-counters (sci/new-dynamic-var '*report-counters* nil {:ns tns}))     ; bound to a ref of a map in test-ns
 
 (def initial-report-counters  ; used to initialize *report-counters*
-  (sci/new-dynamic-var '*initial-report-counters* {:test 0, :pass 0, :fail 0, :error 0}))
+  (sci/new-dynamic-var '*initial-report-counters* {:test 0, :pass 0, :fail 0, :error 0} {:ns tns}))
 
-(def testing-vars (sci/new-dynamic-var '*testing-vars* (list)))  ; bound to hierarchy of vars being tested
+(def testing-vars (sci/new-dynamic-var '*testing-vars* (list) {:ns tns}))  ; bound to hierarchy of vars being tested
 
-(def testing-contexts (sci/new-dynamic-var '*testing-contexts* (list))) ; bound to hierarchy of "testing" strings
+(def testing-contexts (sci/new-dynamic-var '*testing-contexts* (list) {:ns tns})) ; bound to hierarchy of "testing" strings
 
-(def test-out (sci/new-dynamic-var '*test-out* sci/out))         ; PrintWriter for test reporting output
+(def test-out (sci/new-dynamic-var '*test-out* sci/out {:ns tns}))         ; PrintWriter for test reporting output
 
 (defmacro with-test-out-internal
   "Runs body with *out* bound to the value of *test-out*."
@@ -323,8 +324,6 @@
     :dynamic true
     :added "1.1"}
   report-impl :type)
-
-(def tns (sci/create-ns 'clojure.test nil))
 
 (def report (sci/copy-var report-impl tns))
 

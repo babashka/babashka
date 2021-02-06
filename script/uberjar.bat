@@ -88,6 +88,30 @@ if "%BABASHKA_FEATURE_LANTERNA%"=="true" (
   set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/lanterna
 )
 
+if not "%BABASHKA_FEATURE_CORE_MATCH%"=="false" (
+set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/core-match
+) else (
+set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/core-match
+)
+
+if not "%BABASHKA_FEATURE_HICCUP%"=="false" (
+set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/hiccup
+) else (
+set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/hiccup
+)
+
+if not "%BABASHKA_FEATURE_TEST_CHECK%"=="false" (
+set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/test-check
+) else (
+set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/test-check
+)
+
+if "%BABASHKA_FEATURE_SPEC_ALPHA%"=="true" (
+set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/spec-alpha
+) else (
+set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/spec-alpha
+)
+
 call lein with-profiles %BABASHKA_LEIN_PROFILES% bb "(+ 1 2 3)"
 
 call lein with-profiles %BABASHKA_LEIN_PROFILES%,+reflection,-uberjar do run
