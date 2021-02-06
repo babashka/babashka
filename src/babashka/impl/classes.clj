@@ -150,6 +150,7 @@
           ~@(when features/java-nio?
               '[java.nio.file.OpenOption
                 java.nio.file.CopyOption
+                java.nio.file.DirectoryNotEmptyException
                 java.nio.file.FileAlreadyExistsException
                 java.nio.file.FileSystem
                 java.nio.file.FileSystems
