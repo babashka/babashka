@@ -4,8 +4,9 @@
 
 (def fns (sci/create-ns 'babashka.fs nil))
 
-#_(doseq [k (sort (keys (ns-publics 'babashka.fs)))]
-    (println (str "'" k) (format "(sci/copy-var fs/%s fns)" k)))
+#_(do (require '[babashka.fs])
+      (doseq [k (sort (keys (ns-publics 'babashka.fs)))]
+        (println (str "'" k) (format "(sci/copy-var fs/%s fns)" k))))
 
 (def fs-namespace
   {'absolute? (sci/copy-var fs/absolute? fns)
@@ -25,6 +26,8 @@
    'delete-tree (sci/copy-var fs/delete-tree fns)
    'directory-stream (sci/copy-var fs/directory-stream fns)
    'directory? (sci/copy-var fs/directory? fns)
+   'ends-with? (sci/copy-var fs/ends-with? fns)
+   'exec-paths (sci/copy-var fs/exec-paths fns)
    'executable? (sci/copy-var fs/executable? fns)
    'exists? (sci/copy-var fs/exists? fns)
    'file (sci/copy-var fs/file fns)
@@ -38,6 +41,7 @@
    'instant->file-time (sci/copy-var fs/instant->file-time fns)
    'last-modified-time (sci/copy-var fs/last-modified-time fns)
    'list-dir (sci/copy-var fs/list-dir fns)
+   'list-dirs (sci/copy-var fs/list-dirs fns)
    'millis->file-time (sci/copy-var fs/millis->file-time fns)
    'move (sci/copy-var fs/move fns)
    'normalize (sci/copy-var fs/normalize fns)
@@ -59,6 +63,9 @@
    'set-last-modified-time (sci/copy-var fs/set-last-modified-time fns)
    'set-posix-file-permissions (sci/copy-var fs/set-posix-file-permissions fns)
    'size (sci/copy-var fs/size fns)
+   'starts-with? (sci/copy-var fs/starts-with? fns)
    'str->posix (sci/copy-var fs/str->posix fns)
+   'temp-dir (sci/copy-var fs/temp-dir fns)
    'walk-file-tree (sci/copy-var fs/walk-file-tree fns)
+   'which (sci/copy-var fs/which fns)
    'writable? (sci/copy-var fs/writable? fns)})
