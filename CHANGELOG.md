@@ -2,13 +2,15 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
-## Unreleased
+## 0.2.9
 
 ### New
 
 - Include [babashka.fs](https://github.com/babashka/fs)
 
 ### Enhancements / fixes
+
+- Upgrade to GraalVM 21.0.0 [#712](https://github.com/babashka/babashka/issues/712)
 
 Babashka.nrepl:
 
