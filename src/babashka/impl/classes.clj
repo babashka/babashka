@@ -71,7 +71,10 @@
                    {:name "toString"}
                    {:name "toURI"}]}
         java.util.Arrays
-        {:methods [{:name "copyOf"}]}}
+        {:methods [{:name "copyOf"}]}
+        ;; this fixes clojure.lang.Reflector for Java 11
+        java.lang.reflect.AccessibleObject
+        {:methods [{:name "canAccess"}]}}
     features/hsqldb? (assoc `org.hsqldb.dbinfo.DatabaseInformationFull
                             {:methods [{:name "<init>"
                                         :parameterTypes ["org.hsqldb.Database"]}]}
