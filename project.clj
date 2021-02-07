@@ -20,7 +20,7 @@
                  [org.clojure/tools.cli "1.0.194"]
                  [cheshire "5.10.0"]
                  [nrepl/bencode "1.1.0"]
-                 [borkdude/sci.impl.reflector "0.0.1-java11"]
+                 [borkdude/sci.impl.reflector "0.0.1"]
                  [org.clojure/test.check "1.1.0"]
                  [org.clojure/math.combinatorics "0.1.6"]]
   :profiles {:feature/xml  {:source-paths ["feature-xml"]
@@ -76,7 +76,6 @@
                                   "-Dclojure.spec.skip-macros=true"]
                        :main babashka.main
                        :aot :all}
-             :native-image {:dependencies [[borkdude/clj-reflector-graal-java11-fix "0.0.1-graalvm-20.3.0"]]}
              :reflection {:main babashka.impl.classes/generate-reflection-file}}
   :aliases {"bb" ["with-profile" "test"  "run" "-m" "babashka.main"]}
   :deploy-repositories [["clojars" {:url "https://clojars.org/repo"

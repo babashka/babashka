@@ -48,6 +48,7 @@ call %GRAALVM_HOME%\bin\native-image.cmd ^
   "-H:ServiceLoaderFeatureExcludeServices=javax.sound.midi.spi.MidiDeviceProvider" ^
   "-H:ServiceLoaderFeatureExcludeServices=javax.sound.midi.spi.SoundbankReader" ^
   "-H:ServiceLoaderFeatureExcludeServices=javax.sound.midi.spi.MidiFileWriter" ^
+  "-H:ServiceLoaderFeatureExcludeServices=java.awt.Toolkit" ^
   "%BABASHKA_XMX%"
 
 if %errorlevel% neq 0 exit /b %errorlevel%

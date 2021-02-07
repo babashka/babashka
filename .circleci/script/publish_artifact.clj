@@ -3,7 +3,7 @@
          '[clojure.java.io :as io]
          '[clojure.string :as str])
 
-(def channel "#babashka_circleci_builds")
+(def channel "#babashka-circleci-builds")
 #_(def channel "#_test")
 (def babashka-version (str/trim (slurp (io/file "resources" "BABASHKA_VERSION"))))
 (def slack-hook-url (System/getenv "SLACK_HOOK_URL"))
