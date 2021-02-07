@@ -32,6 +32,7 @@ The following libraries and projects are known to work with babashka.
     - [clj-commons/fs](#clj-commonsfs)
     - [cljc.java-time](#cljcjava-time)
     - [environ](#environ)
+    - [gaka](#gaka)
   - [Pods](#pods)
   - [Projects](#projects-1)
     - [babashka-test-action](#babashka-test-action)
