@@ -14,6 +14,7 @@
 (def core-match?     (not= "false" (System/getenv "BABASHKA_FEATURE_CORE_MATCH")))
 (def hiccup?         (not= "false" (System/getenv "BABASHKA_FEATURE_HICCUP")))
 (def test-check?     (not= "false" (System/getenv "BABASHKA_FEATURE_TEST_CHECK")))
+(def camel-snake-kebab? (not= "false" (System/getenv "BABASHKA_FEATURE_CAMEL_SNAKE_KEBAB")))
 
 ;; excluded by default
 (def jdbc? (= "true" (System/getenv "BABASHKA_FEATURE_JDBC")))
@@ -66,3 +67,6 @@
 
 (when spec-alpha?
   (require '[babashka.impl.spec]))
+
+(when camel-snake-kebab?
+  (require '[babashka.impl.csk]))

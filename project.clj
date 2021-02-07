@@ -53,6 +53,8 @@
                               :dependencies [[hiccup/hiccup "2.0.0-alpha2"]]}
              :feature/test-check {:source-paths ["feature-test-check"]}
              :feature/spec-alpha {:source-paths ["feature-spec-alpha"]}
+             :feature/camel-snake-kebab  {:source-paths ["feature-camel-snake-kebab"]
+                                          :dependencies [[camel-snake-kebab "0.4.2"]]}
              :test [:feature/xml
                     :feature/lanterna
                     :feature/yaml
@@ -68,6 +70,7 @@
                     :feature/hiccup
                     :feature/test-check
                     :feature/spec-alpha
+                    :feature/camel-snake-kebab
                     {:dependencies [[clj-commons/conch "0.9.2"]
                                     [com.clojure-goes-fast/clj-async-profiler "0.4.1"]
                                     [com.opentable.components/otj-pg-embedded "0.13.3"]]}]

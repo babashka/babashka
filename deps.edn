@@ -7,6 +7,7 @@
          "feature-hiccup"
          "feature-test-check"
          "feature-spec-alpha"
+         "feature-camel-snake-kebab"
          "pods/src"
          "babashka.nrepl/src"
          "depstar/src" "process/src"
@@ -34,7 +35,8 @@
         babashka/clojure-lanterna {:mvn/version "0.9.8-SNAPSHOT"}
         org.clojure/math.combinatorics {:mvn/version "0.1.6"}
         org.clojure/core.match {:mvn/version "1.0.0"}
-        hiccup/hiccup {:mvn/version "2.0.0-alpha2"}}
+        hiccup/hiccup {:mvn/version "2.0.0-alpha2"}
+        camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.2"}}
  :aliases {:main
            {:main-opts ["-m" "babashka.main"]}
            :profile

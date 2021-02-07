@@ -421,7 +421,9 @@ Use -- to separate script command line args from bb command line args.
     features/spec-alpha? (-> (assoc        ;; spec
                               'clojure.spec.alpha @(resolve 'babashka.impl.spec/spec-namespace)
                               'clojure.spec.gen.alpha @(resolve 'babashka.impl.spec/gen-namespace)
-                              'clojure.spec.test.alpha @(resolve 'babashka.impl.spec/test-namespace)))))
+                              'clojure.spec.test.alpha @(resolve 'babashka.impl.spec/test-namespace)))
+    features/camel-snake-kebab? (-> (assoc
+                                     'camel-snake-kebab.core @(resolve 'babashka.impl.csk/csk-namespace)))))
 
 (def imports
   '{ArithmeticException java.lang.ArithmeticException
