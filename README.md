@@ -260,6 +260,7 @@ handling of SIGINT and SIGPIPE. This can be done by setting
 
 ## Articles, podcasts and videos
 
+- [Clojure like its PHP](https://eccentric-j.com/blog/clojure-like-its-php.html) by Jay Zawrotny (eccentric-j)
 - [Automating Video Edits with Clojure and ffmpeg](https://youtu.be/Tmgy57R9HZM) by Adam James
 - [Exporter for passwordstore.org](https://www.ieugen.ro/posts/2020/2020-12-26-export-passwords-with-babashka/) by Eugen Stan
 - [Babashka and sci internals](https://youtu.be/pgNp4Lk3gf0), a talk by Michiel Borkent at the [London Clojurians Meetup](https://www.meetup.com/London-Clojurians).

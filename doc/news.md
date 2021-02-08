@@ -7,12 +7,13 @@ Twitter.
 
 ## 2021-02
 
-Babashka 0.2.9 released
+- Babashka 0.2.9 released
+- [babashka.fs](https://github.com/babashka/fs): utility library for dealing with files (based on java.nio). Bundled with bb 0.2.9.
 
+- [Clojure like its PHP](https://eccentric-j.com/blog/clojure-like-its-php.html): run babashka scripts as CGI scripts
 - [Automating Video Edits with Clojure and ffmpeg](https://youtu.be/Tmgy57R9HZM) by Adam James
 - [Gaka](https://github.com/cdaddr/gaka), a CSS-generating library that works with babashka.
 - [Elisp](https://gist.github.com/llacom/f391f41cbf4de91739b52bf8bb1a6d54) and cider commands to spawn a babashka repl and connect to it
-- [babashka.fs](https://github.com/babashka/fs): utility library for dealing with files (based on java.nio). Bundled with bb 0.2.9.
 
 ## 2021-01
 
