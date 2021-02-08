@@ -13,6 +13,7 @@ Twitter.
 - [Clojure like its PHP](https://eccentric-j.com/blog/clojure-like-its-php.html): run babashka scripts as CGI scripts
 - [Automating Video Edits with Clojure and ffmpeg](https://youtu.be/Tmgy57R9HZM) by Adam James
 - [Gaka](https://github.com/cdaddr/gaka), a CSS-generating library that works with babashka.
+- [Deploy babashka script to AWS Lambda](https://www.jocas.lt/blog/post/babashka-aws-lambda/) by Dainius Jocas.
 - [Elisp](https://gist.github.com/llacom/f391f41cbf4de91739b52bf8bb1a6d54) and cider commands to spawn a babashka repl and connect to it
 
 ## 2021-01
