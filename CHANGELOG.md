@@ -2,11 +2,12 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
-## Unreleased
+## 0.2.10
 
 Sci:
 
 - Priorize referred vars over vars in current ns [#527](https://github.com/borkdude/sci/issues/527)
+- If with falsy literal returns nil [#529](https://github.com/borkdude/sci/issues/529)
 
 ## 0.2.9
 
