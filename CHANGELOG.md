@@ -2,6 +2,12 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
+## Unreleased
+
+Sci:
+
+- Priorize referred vars over vars in current ns [#527](https://github.com/borkdude/sci/issues/527)
+
 ## 0.2.9
 
 ### New
