@@ -15,6 +15,10 @@ Twitter.
 - [Gaka](https://github.com/cdaddr/gaka), a CSS-generating library that works with babashka.
 - [Deploy babashka script to AWS Lambda](https://www.jocas.lt/blog/post/babashka-aws-lambda/) by Dainius Jocas.
 - [Elisp](https://gist.github.com/llacom/f391f41cbf4de91739b52bf8bb1a6d54) and cider commands to spawn a babashka repl and connect to it
+- [klein](https://gist.github.com/borkdude/c34e8e44eb5b4a6ca735bf8a86ff64fa), a
+lein imitation script built on deps.edn
+
+#clojure
 
 ## 2021-01
 
