@@ -1,15 +1,23 @@
 (ns babashka.impl.fs
   (:require [babashka.fs :as fs]
+            [clojure.string :as str]
             [sci.core :as sci]))
 
 (def fns (sci/create-ns 'babashka.fs nil))
 
-#_(do (require '[babashka.fs])
-      (doseq [k (sort (keys (ns-publics 'babashka.fs)))]
-        (println (str "'" k) (format "(sci/copy-var fs/%s fns)" k))))
+(def current-file (fs/file (fs/absolutize (fs/path "src" *file*))))
+
+(defn update-vars []
+  (let [output (with-out-str (doseq [k (sort (keys (ns-publics 'babashka.fs)))]
+                                 (println (str "   '" k) (format "(sci/copy-var fs/%s fns)" k))))
+        this-file (slurp current-file)
+        new-file (str/replace this-file #"(?m);; placeholder\n[\s\S]*;; end placeholder"
+                              (str ";; placeholder\n" output "    ;; end placeholder"))]
+    (spit current-file new-file)))
 
 (def fs-namespace
-  {'absolute? (sci/copy-var fs/absolute? fns)
+  {;; placeholder
+   'absolute? (sci/copy-var fs/absolute? fns)
    'absolutize (sci/copy-var fs/absolutize fns)
    'components (sci/copy-var fs/components fns)
    'copy (sci/copy-var fs/copy fns)
@@ -62,10 +70,13 @@
    'set-last-modified-time (sci/copy-var fs/set-last-modified-time fns)
    'set-posix-file-permissions (sci/copy-var fs/set-posix-file-permissions fns)
    'size (sci/copy-var fs/size fns)
+   'split-paths (sci/copy-var fs/split-paths fns)
    'starts-with? (sci/copy-var fs/starts-with? fns)
    'str->posix (sci/copy-var fs/str->posix fns)
    'sym-link? (sci/copy-var fs/sym-link? fns)
    'temp-dir (sci/copy-var fs/temp-dir fns)
    'walk-file-tree (sci/copy-var fs/walk-file-tree fns)
    'which (sci/copy-var fs/which fns)
-   'writable? (sci/copy-var fs/writable? fns)})
+   'writable? (sci/copy-var fs/writable? fns)
+    ;; end placeholder
+   })
