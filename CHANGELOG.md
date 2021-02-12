@@ -2,6 +2,12 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
+## Unreleased
+
+Babashka.nrepl:
+
+- Fix printing in lazy value [#36](https://github.com/babashka/babashka.nrepl/issues/36)
+
 ## 0.2.10
 
 Sci:
