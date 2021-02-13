@@ -33,6 +33,7 @@ The following libraries and projects are known to work with babashka.
     - [cljc.java-time](#cljcjava-time)
     - [environ](#environ)
     - [gaka](#gaka)
+    - [failjure](#failjure)
   - [Pods](#pods)
   - [Projects](#projects-1)
     - [babashka-test-action](#babashka-test-action)
@@ -433,6 +434,20 @@ div#foo {
 
     div#foo span.bar a:hover {
       text-decoration: none;}
+```
+
+### [failjure](https://github.com/adambard/failjure)
+
+Working with failed computations in Clojure.
+
+``` clojure
+(require '[babashka.deps :as deps])
+
+(deps/add-deps '{:deps {failjure/failjure {:mvn/version "2.1.1"}}})
+
+(require '[failjure.core :as f])
+
+(f/fail "foo")
 ```
 
 ## Pods
