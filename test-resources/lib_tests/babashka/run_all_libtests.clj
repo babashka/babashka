@@ -178,6 +178,8 @@
 
 (test-namespaces 'gaka.core-test)
 
+(test-namespaces 'failjure.test-core)
+
 ;;;; final exit code
 
 (let [{:keys [:test :fail :error] :as m} @status]
