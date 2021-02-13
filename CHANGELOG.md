@@ -4,6 +4,10 @@ For a list of breaking changes, check [here](#breaking-changes).
 
 ## Unreleased
 
+Sci:
+
+- Detect cyclic load dependencies [#531](https://github.com/babashka/babashka/issues/531)
+
 Babashka.nrepl:
 
 - Fix printing in lazy value [#36](https://github.com/babashka/babashka.nrepl/issues/36)
