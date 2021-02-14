@@ -161,6 +161,17 @@ Upgrade:
 On Windows you can install using [scoop](https://scoop.sh/) and the
 [scoop-clojure](https://github.com/littleli/scoop-clojure) bucket.
 
+Or just follow these concrete steps:
+``` powershell
+# Note: if you get an error you might need to change the execution policy (i.e. enable Powershell) with
+# Set-ExecutionPolicy RemoteSigned -scope CurrentUser
+Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
+
+scoop bucket add scoop-clojure https://github.com/littleli/scoop-clojure
+scoop bucket add extras
+scoop install babashka
+```
+
 ### Installer script
 
 Install via the installer script:
