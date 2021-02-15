@@ -50,7 +50,8 @@
 
 (def pprint-ns (vars/->SciNamespace 'clojure.pprint nil))
 
-(def print-right-margin (sci/new-dynamic-var 'print-right-margin 70 {:ns pprint-ns}))
+(def print-right-margin
+  (sci/new-dynamic-var 'print-right-margin pprint/*print-right-margin* {:ns pprint-ns}))
 
 (defn print-table
   "Prints a collection of maps in a textual table. Prints table headings
