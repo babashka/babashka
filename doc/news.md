@@ -18,6 +18,7 @@ Twitter.
 - [klein](https://gist.github.com/borkdude/c34e8e44eb5b4a6ca735bf8a86ff64fa), a
 lein imitation script built on deps.edn
 - [failjure](https://github.com/adambard/failjure) works with babashka.
+- A [script](https://gist.github.com/borkdude/58f099b2694d206e6eec18daedc5077b) to solve our mono-repo problem with deps.edn at work.
 
 ## 2021-01
 
