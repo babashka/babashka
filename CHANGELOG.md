@@ -4,9 +4,18 @@ For a list of breaking changes, check [here](#breaking-changes).
 
 ## Unreleased
 
+### Enhancements / fixes
+
+- Use default `*print-right-margin*` value from `clojure.pprint`
+
 Sci:
 
 - Detect cyclic load dependencies [#531](https://github.com/babashka/babashka/issues/531)
+- Pick fn arity independent of written order [#532](https://github.com/babashka/babashka/issues/532) ([@GreshamDanielStephens](https://github.com/GreshamDanielStephens))
+
+Babashka.fs:
+
+- Add `create-link` and `split-paths`
 
 Babashka.nrepl:
 
