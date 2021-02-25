@@ -273,7 +273,8 @@ Use -- to separate script command line args from bb command line args.
  :feature/core-match %s
  :feature/hiccup     %s
  :feature/test-check %s
- :feature/spec-alpha %s}")
+ :feature/spec-alpha %s
+ :feature/malli      %s}")
     version
     features/core-async?
     features/csv?
@@ -290,7 +291,8 @@ Use -- to separate script command line args from bb command line args.
     features/core-match?
     features/hiccup?
     features/test-check?
-    features/spec-alpha?)))
+    features/spec-alpha?
+    features/malli?)))
 
 (defn read-file [file]
   (let [f (io/file file)]
@@ -421,7 +423,9 @@ Use -- to separate script command line args from bb command line args.
     features/spec-alpha? (-> (assoc        ;; spec
                               'clojure.spec.alpha @(resolve 'babashka.impl.spec/spec-namespace)
                               'clojure.spec.gen.alpha @(resolve 'babashka.impl.spec/gen-namespace)
-                              'clojure.spec.test.alpha @(resolve 'babashka.impl.spec/test-namespace)))))
+                              'clojure.spec.test.alpha @(resolve 'babashka.impl.spec/test-namespace)))
+    features/malli? (assoc 'malli.core
+                           @(resolve 'babashka.impl.malli/malli-namespace))))
 
 (def imports
   '{ArithmeticException java.lang.ArithmeticException
