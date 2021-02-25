@@ -54,7 +54,7 @@
              :feature/test-check {:source-paths ["feature-test-check"]}
              :feature/spec-alpha {:source-paths ["feature-spec-alpha"]}
              :feature/malli {:source-paths ["feature-malli"]
-                             :dependencies [[metosin/malli "0.2.1"]]}
+                             :dependencies [[metosin/malli "0.3.0-SNAPSHOT"]]}
              :test [:feature/xml
                     :feature/lanterna
                     :feature/yaml

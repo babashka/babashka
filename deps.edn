@@ -36,7 +36,7 @@
         org.clojure/math.combinatorics {:mvn/version "0.1.6"}
         org.clojure/core.match {:mvn/version "1.0.0"}
         hiccup/hiccup {:mvn/version "2.0.0-alpha2"}
-        metosin/malli {:mvn/version "0.2.1"}}
+        metosin/malli {:mvn/version "0.3.0-SNAPSHOT"}}
  :aliases {:main
            {:main-opts ["-m" "babashka.main"]}
            :profile
