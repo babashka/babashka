@@ -393,3 +393,7 @@ Example usage:
 ``` shell
 $ bb digitalocean-ping.clj
 ```
+
+## [download-aliases.clj](download-aliases.clj)
+
+Download deps for all aliases in a deps.edn project.
