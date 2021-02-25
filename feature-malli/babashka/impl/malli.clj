@@ -14,6 +14,7 @@
    'validator (copy-var m/validator mns)
    'explain (copy-var m/explain mns)
    'decoder (copy-var m/decoder mns)
+   'decode (copy-var m/decode mns)
    })
 
 (def malli-transform-namespace
