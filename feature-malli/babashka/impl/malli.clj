@@ -12,6 +12,7 @@
   {'validate (copy-var m/validate mns)
    'validator (copy-var m/validator mns)
    'explain (copy-var m/explain mns)
+   'decoder (copy-var m/decoder mns)
    })
 
 (def malli-error-namespace
