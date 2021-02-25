@@ -75,7 +75,8 @@
                                     [com.opentable.components/otj-pg-embedded "0.13.3"]]}]
              :uberjar {:global-vars {*assert* false}
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"
-                                  "-Dclojure.spec.skip-macros=true"]
+                                  "-Dclojure.spec.skip-macros=true"
+                                  "-Dborkdude.dynaload.aot=true"]
                        :main babashka.main
                        :aot :all}
              :reflection {:main babashka.impl.classes/generate-reflection-file}}
