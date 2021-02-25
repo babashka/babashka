@@ -2,6 +2,7 @@
   {:no-doc true}
   (:require [malli.core :as m]
             [malli.error :as me]
+            [malli.transform :as mt]
             [sci.core :as sci :refer [copy-var]]))
 
 (def mns (sci/create-ns 'malli.core nil))
@@ -16,7 +17,7 @@
    })
 
 (def malli-transform-namespace
-  {'string-transformer (copy-var me/string-transformer tns)
+  {'string-transformer (copy-var mt/string-transformer tns)
    })
 
 (def malli-error-namespace
