@@ -14,6 +14,7 @@ Sci:
 - Pick fn arity independent of written order [#532](https://github.com/babashka/babashka/issues/532) ([@GreshamDanielStephens](https://github.com/GreshamDanielStephens))
 - `(instance? clojure.lang.IAtom 1)` returns `true` [#537](https://github.com/borkdude/sci/issues/537)
 - Add `dissoc!`(@wilkerlucio)
+- Add `force`
 - Fix `ns-unmap` on referred var [#539](https://github.com/borkdude/sci/issues/539)
 
 Babashka.fs:
