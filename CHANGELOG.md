@@ -8,6 +8,7 @@ For a list of breaking changes, check [here](#breaking-changes).
 
 - Use default `*print-right-margin*` value from `clojure.pprint`
 - Upgrade httpkit to 2.5.3 [#738](https://github.com/babashka/babashka/issues/738)
+- Add several classes to be used with `defprotocol` (`PersistentVector`, `PersistentHashSet`, ...)
 
 Sci:
 
