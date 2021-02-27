@@ -249,21 +249,21 @@
     :methods [borkdude.graal.LockFix] ;; support for locking
 
     :fields [clojure.lang.PersistentQueue]
-    :instance-checks [clojure.lang.Cons
+    :instance-checks [clojure.lang.Atom
+                      clojure.lang.Cons
                       clojure.lang.Cycle
                       clojure.lang.IObj
                       clojure.lang.Fn ;; to distinguish fns from maps, etc.
                       clojure.lang.IFn
                       clojure.lang.IPending
-                      ;; clojure.lang.IDeref
-                      ;; clojure.lang.IAtom
+                      ;; clojure.lang.IDeref ;; implemented as protocol in sci
+                      ;; clojure.lang.IAtom  ;; implemented as protocol in sci
                       clojure.lang.IEditableCollection
                       clojure.lang.IMapEntry
                       clojure.lang.ILookup
                       clojure.lang.IPersistentCollection
                       clojure.lang.IPersistentMap
                       clojure.lang.IPersistentSet
-                      ;;clojure.lang.PersistentHashSet ;; temp for meander
                       clojure.lang.IPersistentVector
                       clojure.lang.IRecord
                       clojure.lang.IRef
@@ -272,11 +272,21 @@
                       clojure.lang.LazySeq
                       clojure.lang.Named
                       clojure.lang.Keyword
+                      clojure.lang.PersistentArrayMap
+                      clojure.lang.PersistentHashMap
+                      clojure.lang.PersistentHashSet
+                      clojure.lang.PersistentList
+                      clojure.lang.PersistentQueue
+                      clojure.lang.PersistentStructMap
+                      clojure.lang.PersistentTreeMap
+                      clojure.lang.PersistentTreeSet
+                      clojure.lang.PersistentVector
                       clojure.lang.Ratio
                       clojure.lang.Repeat
                       clojure.lang.Symbol
                       clojure.lang.Sequential
                       clojure.lang.Seqable
+                      clojure.lang.Volatile
                       java.util.List]
     :custom ~custom-map})
 
