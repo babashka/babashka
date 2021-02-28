@@ -27,6 +27,7 @@ Babashka.fs:
 Babashka.nrepl:
 
 - Fix printing in lazy value [#36](https://github.com/babashka/babashka.nrepl/issues/36)
+- Update link in nREPL server message [#37](https://github.com/babashka/babashka.nrepl/issues/37)
 
 ## 0.2.10
 
