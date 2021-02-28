@@ -14,8 +14,8 @@ For a list of breaking changes, check [here](#breaking-changes).
 
 Sci:
 
-- Detect cyclic load dependencies [#531](https://github.com/babashka/babashka/issues/531)
-- Pick fn arity independent of written order [#532](https://github.com/babashka/babashka/issues/532) ([@GreshamDanielStephens](https://github.com/GreshamDanielStephens))
+- Detect cyclic load dependencies [#531](https://github.com/borkdude/sci/issues/531)
+- Pick fn arity independent of written order [#532](https://github.com/borkdude/sci/issues/532) ([@GreshamDanielStephens](https://github.com/GreshamDanielStephens))
 - `(instance? clojure.lang.IAtom 1)` returns `true` [#537](https://github.com/borkdude/sci/issues/537)
 - Add `dissoc!`([@wilkerlucio](https://github.com/wilkerlucio))
 - Add `force`
@@ -53,11 +53,11 @@ Babashka.nrepl:
 
 Sci:
 
-- Fix error reporting in case of arity error [#518](https://github.com/babashka/babashka/issues/518)
-- Shadowing record field names in protocol functions [#513](https://github.com/babashka/babashka/issues/513)
-- Fix destructuring in protocol method for record [#512](https://github.com/babashka/babashka/issues/512)
-- Faster processing of maps, sets and vectors [#482](https://github.com/babashka/babashka/issues/482)
-- Prioritize current namespace vars in syntax quote [#509](https://github.com/babashka/babashka/issues/509)
+- Fix error reporting in case of arity error [#518](https://github.com/borkdude/sci/issues/518)
+- Shadowing record field names in protocol functions [#513](https://github.com/borkdude/sci/issues/513)
+- Fix destructuring in protocol method for record [#512](https://github.com/borkdude/sci/issues/512)
+- Faster processing of maps, sets and vectors [#482](https://github.com/borkdude/sci/issues/482)
+- Prioritize current namespace vars in syntax quote [#509](https://github.com/borkdude/sci/issues/509)
 - Fix ns-publics to not include refers [#520](https://github.com/borkdude/sci/issues/520)
 - Add `refer-clojure` macro [#519](https://github.com/borkdude/sci/issues/519)
 
