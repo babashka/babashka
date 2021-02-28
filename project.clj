@@ -17,7 +17,7 @@
   :dependencies [[org.clojure/clojure "1.10.2"]
                  [borkdude/edamame "0.0.11-alpha.29"]
                  [borkdude/graal.locking "0.0.2"]
-                 [org.clojure/tools.cli "1.0.194"]
+                 [org.clojure/tools.cli "1.0.206"]
                  [cheshire "5.10.0"]
                  [nrepl/bencode "1.1.0"]
                  [borkdude/sci.impl.reflector "0.0.1"]
