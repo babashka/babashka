@@ -2,7 +2,7 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
-## Unreleased
+## 0.2.11
 
 ### Enhancements / fixes
 
@@ -10,6 +10,7 @@ For a list of breaking changes, check [here](#breaking-changes).
 - Upgrade httpkit to 2.5.3 [#738](https://github.com/babashka/babashka/issues/738)
 - Upgrade tools.cli to 1.0.206
 - Add several classes to be used with `defprotocol` (`PersistentVector`, `PersistentHashSet`, ...)
+- Support reifying `clojure.lang.IFn` and `clojure.lang.ILookup`
 
 Sci:
 
