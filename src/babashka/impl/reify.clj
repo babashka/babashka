@@ -37,4 +37,6 @@
                                postVisitDirectory [this p attrs]
                                visitFile [this p attrs]}
     java.io.FileFilter {accept [this f]}
-    java.io.FilenameFilter {accept [this f s]}}))
+    java.io.FilenameFilter {accept [this f s]}
+    clojure.lang.ILookup {valAt [this k]}
+    clojure.lang.IFn {invoke [this k]}}))
