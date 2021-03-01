@@ -2,6 +2,12 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
+## 0.2.12
+
+### Enhancements / fixes
+
+- Fix false positive cyclic dep problem with doric lib [#741](https://github.com/babashka/babashka/issues/741)
+
 ## 0.2.11
 
 ### Enhancements / fixes
