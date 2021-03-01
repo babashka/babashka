@@ -6,10 +6,12 @@
 
 (def status (atom {}))
 
+(defn test-namespace? [ns]
+  (or (empty? ns-args)
+      (contains? ns-args ns)))
+
 (defn test-namespaces [& namespaces]
-  (let [namespaces (if (seq ns-args)
-                     (seq (keep ns-args namespaces))
-                     namespaces)]
+  (let [namespaces (seq (filter test-namespace? namespaces))]
     (when namespaces
       (doseq [ns namespaces]
         (require ns))
@@ -121,7 +123,14 @@
 
 ;;;; doric
 
-(test-namespaces 'doric.test.core)
+(defn test-doric-cyclic-dep-problem
+  []
+  (require '[doric.core :as d])
+  ((resolve 'doric.core/table) [:a :b] [{:a 1 :b 2}]))
+
+(when (test-namespace? 'doric.test.core)
+  (test-doric-cyclic-dep-problem)
+  (test-namespaces 'doric.test.core))
 
 ;;;; cljc-java-time
 
