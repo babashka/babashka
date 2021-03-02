@@ -66,6 +66,7 @@ esac
 
 download_url="https://github.com/babashka/babashka/releases/download/v$version/babashka-$version-$platform-amd64.zip"
 
+(
 mkdir -p "$download_dir"
 cd "$download_dir"
 echo -e "Downloading $download_url to $download_dir"
@@ -86,3 +87,4 @@ then
 fi
 
 echo "Successfully installed bb in $install_dir"
+)
