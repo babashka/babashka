@@ -39,7 +39,7 @@ $ git clone https://github.com/babashka/babashka --recursive
 To update later on:
 
 ``` shellsession
-$ git submodule update --recursive
+$ git submodule update --init --recursive
 ```
 
 ## Build
