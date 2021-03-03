@@ -34,6 +34,7 @@ The following libraries and projects are known to work with babashka.
     - [environ](#environ)
     - [gaka](#gaka)
     - [failjure](#failjure)
+    - [pretty](#pretty)
   - [Pods](#pods)
   - [Projects](#projects-1)
     - [babashka-test-action](#babashka-test-action)
@@ -448,6 +449,24 @@ Working with failed computations in Clojure.
 (require '[failjure.core :as f])
 
 (f/fail "foo")
+```
+
+### [pretty](https://github.com/AvisoNovate/pretty)
+
+The `io.aviso.ansi` namespace provides ANSI font and background color support.
+
+``` clojure
+(require '[babashka.deps :as deps])
+
+(deps/add-deps
+ '{:deps {io.aviso/pretty {:mvn/version "0.1.36"}}})
+
+(require '[io.aviso.ansi :as ansi])
+
+(println
+ (str "The following text will be "
+      ansi/bold-red-font "bold and red "
+      ansi/reset-font "but this text will not."))
 ```
 
 ## Pods
