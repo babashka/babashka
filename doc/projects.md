@@ -35,6 +35,7 @@ The following libraries and projects are known to work with babashka.
     - [gaka](#gaka)
     - [failjure](#failjure)
     - [pretty](#pretty)
+    - [clojure-term-colors](#clojure-term-colors)
   - [Pods](#pods)
   - [Projects](#projects-1)
     - [babashka-test-action](#babashka-test-action)
@@ -467,6 +468,24 @@ The `io.aviso.ansi` namespace provides ANSI font and background color support.
  (str "The following text will be "
       ansi/bold-red-font "bold and red "
       ansi/reset-font "but this text will not."))
+```
+
+### [clojure-term-colors](https://github.com/trhura/clojure-term-colors)
+
+Clojure ASCII color formatting for terminal output.
+
+``` clojure
+(require '[babashka.deps :as deps])
+
+(deps/add-deps
+ '{:deps {clojure-term-colors/clojure-term-colors {:mvn/version "0.1.0"}}})
+
+(require '[clojure.term.colors :as c])
+
+(println
+ (c/yellow "Yellow")
+ (c/red "Red")
+ "No color")
 ```
 
 ## Pods
