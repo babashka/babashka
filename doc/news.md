@@ -30,7 +30,6 @@ lein imitation script built on deps.edn
 - [Single-script vega-lite plotter](https://gist.github.com/vdikan/6b6063d6e1b00a3cd79bc7b3ce3853d6/)
 - [Find vars with the clj-kondo pod](https://gist.github.com/borkdude/841d85d5ad04c517337166b3928697bd). Also see [video](https://youtu.be/TvBmtGS0KJE).
 - [Another setup babashka Github action](https://github.com/marketplace/actions/setup-babashka)
-- [Babashka AWS Lambda
 - [AWS Lambda + babashka + minimal container image](https://gist.github.com/lukaszkorecki/a1fe27bf08f9b98e9def9da4bcb3264e)
 - [football script](https://gist.github.com/mmzsource/a732950aa43d19c5a9b63bbb7f20b7eb)
 - [ffclj](https://github.com/luissantos/ffclj): Clojure ffmpeg wrapper
