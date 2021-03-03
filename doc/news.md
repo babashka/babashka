@@ -5,10 +5,18 @@ you have anything to add. Also see
 [#babashka](https://twitter.com/hashtag/babashka?src=hashtag_click&f=live) on
 Twitter.
 
+## 2021-03
+
+- A `python -m http.server` [replacement in babashka](https://gist.github.com/holyjak/36c6284c047ffb7573e8a34399de27d8)
+- A [PR](https://github.com/ring-clojure/ring-codec/issues/26) to make `ring-codec` compatible with babashka
+- The [stuartsierra/component](https://github.com/stuartsierra/component) library [seems to work with babashka](https://github.com/babashka/babashka/issues/742)
+
 ## 2021-02
 
-- Babashka 0.2.9 released
+- Babashka 0.2.9 - 0.2.12 released
 - [babashka.fs](https://github.com/babashka/fs): utility library for dealing with files (based on java.nio). Bundled with bb 0.2.9.
+- New [Youtube channel](https://www.youtube.com/channel/UCRCl_R1ihLJt7IOgICdb9Lw) with babashka related videos
+- MS SQL support for the [babashka sql pods](https://github.com/babashka/babashka-sql-pods/)
 
 - [Clojure like its PHP](https://eccentric-j.com/blog/clojure-like-its-php.html): run babashka scripts as CGI scripts
 - [Automating Video Edits with Clojure and ffmpeg](https://youtu.be/Tmgy57R9HZM) by Adam James
@@ -19,12 +27,21 @@ Twitter.
 lein imitation script built on deps.edn
 - [failjure](https://github.com/adambard/failjure) works with babashka.
 - A [script](https://gist.github.com/borkdude/58f099b2694d206e6eec18daedc5077b) to solve our mono-repo problem with deps.edn at work.
+- [Single-script vega-lite plotter](https://gist.github.com/vdikan/6b6063d6e1b00a3cd79bc7b3ce3853d6/)
+- [Find vars with the clj-kondo pod](https://gist.github.com/borkdude/841d85d5ad04c517337166b3928697bd). Also see [video](https://youtu.be/TvBmtGS0KJE).
+- [Another setup babashka Github action](https://github.com/marketplace/actions/setup-babashka)
+- [Babashka AWS Lambda
+- [AWS Lambda + babashka + minimal container image](https://gist.github.com/lukaszkorecki/a1fe27bf08f9b98e9def9da4bcb3264e)
+- [football script](https://gist.github.com/mmzsource/a732950aa43d19c5a9b63bbb7f20b7eb)
+- [ffclj](https://github.com/luissantos/ffclj): Clojure ffmpeg wrapper
+- [clj-lineart](https://github.com/eccentric-j/clj-lineart): Generative line art from a clojure-cgi script
+- [bunpack](https://github.com/robertfw/bunpack): remembers how to unpack things, so you don't have to
+- A script to download deps for [all `deps.edn` aliases](https://github.com/babashka/babashka/blob/master/examples/download-aliases.clj)
 
 ## 2021-01
 
-Babashka [0.2.8](https://github.com/babashka/babashka/blob/master/CHANGELOG.md#v028) released. This includes new libraries: hiccup, core.match and clojure.test.check.
-
-On 27th of February, Michiel (a.k.a. @borkdude) will do a talk about babashka at the [2021 GraalVM workshop](https://graalworkshop.github.io/2021/).
+- Babashka [0.2.8](https://github.com/babashka/babashka/blob/master/CHANGELOG.md#v028) released. This includes new libraries: hiccup, core.match and clojure.test.check.
+- On 27th of February, Michiel (a.k.a. @borkdude) will do a talk about babashka at the [2021 GraalVM workshop](https://graalworkshop.github.io/2021/).
 
 - First release of the [aws pod](https://github.com/babashka/pod-babashka-aws).
 - A [script](https://gist.github.com/borkdude/ba372c8cee311e31020b04063d88e1be) to print API breakage warnings.
@@ -38,16 +55,16 @@ On 27th of February, Michiel (a.k.a. @borkdude) will do a talk about babashka at
 
 ## 2020-12
 
-A new babashka talk: [Babashka and sci
+- A new babashka talk: [Babashka and sci
 internals](https://youtu.be/pgNp4Lk3gf0). Also see
 [slides](https://speakerdeck.com/babashka/babashka-and-sci-internals-at-london-clojurians-december-2020)
 and [REPL
 session](https://gist.github.com/borkdude/66a4d844668e12ae1a8277af10d6cc4b).
 
-Babashka 0.2.6 released. See [release
+- Babashka 0.2.6 released. See [release
 notes](https://github.com/babashka/babashka/blob/master/CHANGELOG.md#v026).
 
-Babashka 0.2.5 released. See [release
+- Babashka 0.2.5 released. See [release
 notes](https://github.com/babashka/babashka/blob/master/CHANGELOG.md#v025).
 
 - First release of the [sqlite pod](https://github.com/babashka/pod-babashka-sqlite3)
