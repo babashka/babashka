@@ -2,6 +2,12 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
+## Unreleased
+
+Babashka.fs:
+
+- Globbing is always recursive but should not be [#18](https://github.com/babashka/fs/issues/18)
+
 ## 0.2.12
 
 ### Enhancements / fixes
