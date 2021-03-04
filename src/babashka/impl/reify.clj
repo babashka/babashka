@@ -11,17 +11,11 @@
   (let [subsets (rest (combo/subsets (seq methods)))]
     (reduce (fn [opts classes]
               (assoc opts
-                     (set (cons (list 'quote 'sci.impl.types.IReified)
-                                (map (fn [[class _]]
-                                       (list 'quote class))
-                                     classes)))
+                     (set (map (fn [[class _]]
+                                 (list 'quote class))
+                               classes))
                      (list 'fn ['methods]
                            (list* 'reify
-                                  'sci.impl.types.IReified
-                                  '(getMethods [this]
-                                               ((get-in methods '[sci.impl.types.IReified getMethods]) this))
-                                  '(getInterfaces [this]
-                                                  ((get-in methods '[sci.impl.types.IReified getInterfaces]) this))
                                   (mapcat
                                    (fn [[clazz methods]]
                                      (cons clazz
