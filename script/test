@@ -14,7 +14,7 @@ unset BABASHKA_CLASSPATH
 unset BABASHKA_PRELOADS_TEST
 
 echo "running tests part 1"
-lein test "$@"
+lein "do" clean, test "$@"
 
 export BABASHKA_PRELOADS='(defn __bb__foo [] "foo") (defn __bb__bar [] "bar")'
 export BABASHKA_PRELOADS_TEST=true
