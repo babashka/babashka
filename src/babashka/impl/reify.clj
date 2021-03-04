@@ -17,6 +17,11 @@
                                      classes)))
                      (list 'fn ['methods]
                            (list* 'reify
+                                  'sci.impl.types.IReified
+                                  '(getMethods [this]
+                                               ((get-in methods '[sci.impl.types.IReified getMethods]) this))
+                                  '(getInterfaces [this]
+                                                  ((get-in methods '[sci.impl.types.IReified getInterfaces]) this))
                                   (mapcat
                                    (fn [[clazz methods]]
                                      (cons clazz
@@ -41,7 +46,9 @@
 #_:clj-kondo/ignore
 (def reify-opts
   (gen-reify-combos
-   {java.nio.file.FileVisitor {preVisitDirectory [[this p attrs]]
+   {sci.impl.types.IReified {getMethods [[this]]
+                             getInterfaces [[this]]}
+    java.nio.file.FileVisitor {preVisitDirectory [[this p attrs]]
                                postVisitDirectory [[this p attrs]]
                                visitFile [[this p attrs]]}
     java.io.FileFilter {accept [[this f]]}
