@@ -1,6 +1,7 @@
 (ns babashka.impl.reify
   {:no-doc true}
-  (:require [clojure.math.combinatorics :as combo]))
+  (:require [clojure.math.combinatorics :as combo]
+            [sci.impl.types]))
 
 (set! *warn-on-reflection* false)
 
@@ -10,9 +11,10 @@
   (let [subsets (rest (combo/subsets (seq methods)))]
     (reduce (fn [opts classes]
               (assoc opts
-                     (set (map (fn [[class _]]
-                                 (list 'quote class))
-                               classes))
+                     (set (cons (list 'quote 'sci.impl.types.IReified)
+                                (map (fn [[class _]]
+                                       (list 'quote class))
+                                     classes)))
                      (list 'fn ['methods]
                            (list* 'reify
                                   (mapcat
