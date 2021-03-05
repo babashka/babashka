@@ -10,6 +10,7 @@ Twitter.
 - A `python -m http.server` [replacement in babashka](https://gist.github.com/holyjak/36c6284c047ffb7573e8a34399de27d8)
 - A [PR](https://github.com/ring-clojure/ring-codec/issues/26) to make `ring-codec` compatible with babashka
 - The [stuartsierra/component](https://github.com/stuartsierra/component) library [seems to work with babashka](https://github.com/babashka/babashka/issues/742)
+- [pathom3](https://pathom3.wsscode.com/docs/tutorials/babashka/) works with babashka!
 
 ## 2021-02
 
