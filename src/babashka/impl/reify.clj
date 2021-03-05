@@ -25,8 +25,7 @@
                                                (fn [arity]
                                                  (list meth arity
                                                        (list*
-                                                        (list 'get-in 'methods
-                                                              [(list 'quote clazz) (list 'quote meth)])
+                                                        (list 'get 'methods (list 'quote meth))
                                                         arity)))
                                                arities))
                                             methods)))
