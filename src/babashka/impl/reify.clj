@@ -25,7 +25,7 @@
                        (cond-> (set (map #(list 'quote %)
                                          (map first classes)))
                          protocols?
-                         (conj (list 'quote 'sci.impl.IReified)))
+                         (conj (list 'quote 'sci.impl.types.IReified)))
                        (list 'fn ['interfaces 'methods 'protocols]
                              (concat prelude
                                      (mapcat
