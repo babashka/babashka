@@ -252,6 +252,7 @@
     :instance-checks [clojure.lang.Associative
                       clojure.lang.Atom
                       clojure.lang.Cons
+                      clojure.lang.Counted
                       clojure.lang.Cycle
                       clojure.lang.IObj
                       clojure.lang.Fn ;; to distinguish fns from maps, etc.

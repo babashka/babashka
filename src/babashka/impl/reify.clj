@@ -74,6 +74,9 @@
       entryAt     [[this k]]
       assoc       [[this k v]]}
 
+     clojure.lang.Counted
+     {count [[this]]}
+
      clojure.lang.ILookup
      {valAt [[this k] [this k default]]}
 
