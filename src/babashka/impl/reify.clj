@@ -109,4 +109,7 @@
      {count [[this]]
       cons  [[this x]]
       empty [[this]]
-      equiv [[this x]]}}))
+      equiv [[this x]]}
+
+     clojure.lang.Seqable
+     {seq [[this]]}}))
