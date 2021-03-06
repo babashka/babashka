@@ -1,6 +1,7 @@
 (ns babashka.impl.reify
   {:no-doc true}
-  (:require [clojure.math.combinatorics :as combo]))
+  (:require [clojure.math.combinatorics :as combo]
+            [sci.impl.types]))
 
 (set! *warn-on-reflection* false)
 
@@ -8,33 +9,51 @@
   "Generates pre-compiled reify combinations"
   [methods]
   (let [subsets (rest (combo/subsets (seq methods)))]
-    (reduce (fn [opts classes]
-              (assoc opts
-                     (set (map (fn [[class _]]
-                                 (list 'quote class))
-                               classes))
-                     (list 'fn ['methods]
-                           (list* 'reify
-                                  (mapcat
-                                   (fn [[clazz methods]]
-                                     (cons clazz
-                                           (mapcat
-                                            (fn [[meth arities]]
-                                              (map
-                                               (fn [arity]
-                                                 (list meth arity
-                                                       (list*
-                                                        (list 'get-in 'methods
-                                                              [(list 'quote clazz) (list 'quote meth)])
-                                                        arity)))
-                                               arities))
-                                            methods)))
-                                   classes)))))
+    (reduce (fn [opts [classes protocols?]]
+              (let [prelude '[reify]
+                    prelude (if protocols?
+                              (conj prelude
+                                    'sci.impl.types.IReified
+                                    '(getInterfaces [this]
+                                                    interfaces)
+                                    '(getMethods [this]
+                                                 methods)
+                                    '(getProtocols [this]
+                                                   protocols))
+                              prelude)]
+                (assoc opts
+                       (cond-> (set (map #(list 'quote %)
+                                         (map first classes)))
+                         protocols?
+                         (conj (list 'quote 'sci.impl.types.IReified)))
+                       (list 'fn ['interfaces 'methods 'protocols]
+                             (concat prelude
+                                     (mapcat
+                                      (fn [[clazz methods]]
+                                        (cons clazz
+                                              (mapcat
+                                               (fn [[meth arities]]
+                                                 (map
+                                                  (fn [arity]
+                                                    (list meth arity
+                                                          (list*
+                                                           (list 'get 'methods (list 'quote meth))
+                                                           arity)))
+                                                  arities))
+                                               methods)))
+                                      classes))))))
             {}
-            subsets)))
+            (concat (map (fn [subset bool]
+                           [subset bool])
+                         subsets
+                         (repeat true))
+                    (map (fn [subset bool]
+                           [subset bool])
+                         subsets
+                         (repeat false))))))
 
 #_(prn (macroexpand '(gen-reify-combos
-                    {java.io.FileFilter {accept [[this f]]}})))
+                      {java.io.FileFilter {accept [[this f]]}})))
 
 #_:clj-kondo/ignore
 (def reify-opts
