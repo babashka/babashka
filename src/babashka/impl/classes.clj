@@ -262,6 +262,7 @@
                       ;; clojure.lang.IAtom  ;; implemented as protocol in sci
                       clojure.lang.IEditableCollection
                       clojure.lang.IMapEntry
+                      clojure.lang.IMeta
                       clojure.lang.ILookup
                       clojure.lang.IPersistentCollection
                       clojure.lang.IPersistentMap

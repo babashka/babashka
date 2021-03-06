@@ -80,6 +80,9 @@
      clojure.lang.ILookup
      {valAt [[this k] [this k default]]}
 
+     clojure.lang.IMeta
+     {meta [[this]]}
+
      clojure.lang.IFn
      {applyTo [[this arglist]]
       invoke  [[this]
