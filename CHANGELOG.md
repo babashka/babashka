@@ -4,6 +4,11 @@ For a list of breaking changes, check [here](#breaking-changes).
 
 ## Unreleased
 
+Sci:
+
+- Allow combinations of interfaces and protocols in `reify` [#540](https://github.com/borkdude/sci/issues/540)
+  ([@GreshamDanielStephens](https://github.com/GreshamDanielStephens))
+
 Babashka.fs:
 
 - Globbing is always recursive but should not be [#18](https://github.com/babashka/fs/issues/18)
