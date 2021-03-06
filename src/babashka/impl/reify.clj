@@ -23,25 +23,25 @@
                               prelude)]
                 (assoc opts
                        (cond-> (set (map #(list 'quote %)
-                                         classes))
+                                         (map first classes)))
                          protocols?
                          (conj (list 'quote 'sci.impl.IReified)))
                        (list 'fn ['interfaces 'methods 'protocols]
                              (concat prelude
                                      (mapcat
-                                     (fn [[clazz methods]]
-                                       (cons clazz
-                                             (mapcat
-                                              (fn [[meth arities]]
-                                                (map
-                                                 (fn [arity]
-                                                   (list meth arity
-                                                         (list*
-                                                          (list 'get 'methods (list 'quote meth))
-                                                          arity)))
-                                                 arities))
-                                              methods)))
-                                     classes))))))
+                                      (fn [[clazz methods]]
+                                        (cons clazz
+                                              (mapcat
+                                               (fn [[meth arities]]
+                                                 (map
+                                                  (fn [arity]
+                                                    (list meth arity
+                                                          (list*
+                                                           (list 'get 'methods (list 'quote meth))
+                                                           arity)))
+                                                  arities))
+                                               methods)))
+                                      classes))))))
             {}
             (concat (map (fn [subset bool]
                            [subset bool])
@@ -53,7 +53,7 @@
                          (repeat false))))))
 
 #_(prn (macroexpand '(gen-reify-combos
-                    {java.io.FileFilter {accept [[this f]]}})))
+                      {java.io.FileFilter {accept [[this f]]}})))
 
 #_:clj-kondo/ignore
 (def reify-opts
