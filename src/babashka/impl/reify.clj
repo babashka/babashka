@@ -69,6 +69,11 @@
      java.io.FilenameFilter
      {accept [[this f s]]}
 
+     clojure.lang.Associative
+     {containsKey [[this k]]
+      entryAt     [[this k]]
+      assoc       [[this k v]]}
+
      clojure.lang.ILookup
      {valAt [[this k] [this k default]]}
 

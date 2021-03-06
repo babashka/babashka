@@ -249,7 +249,8 @@
     :methods [borkdude.graal.LockFix] ;; support for locking
 
     :fields [clojure.lang.PersistentQueue]
-    :instance-checks [clojure.lang.Atom
+    :instance-checks [clojure.lang.Associative
+                      clojure.lang.Atom
                       clojure.lang.Cons
                       clojure.lang.Cycle
                       clojure.lang.IObj
