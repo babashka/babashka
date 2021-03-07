@@ -16,7 +16,7 @@
                               methods)
                  '(getProtocols [this]
                                 protocols)]]
-    (list 'fn ['interfaces 'methods 'protocols]
+    (list 'fn [{:keys '[interfaces methods protocols]}]
           (concat prelude
                   (mapcat (fn [[clazz methods]]
                             (cons clazz
