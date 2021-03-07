@@ -93,5 +93,22 @@
       empty [[this]]
       equiv [[this x]]}
 
+     clojure.lang.IReduce
+     {reduce [[this f]]}
+
+     clojure.lang.IReduceInit
+     {reduce [[this f initial]]}
+
+     clojure.lang.IKVReduce
+     {kvreduce [[this f initial]]}
+
+     clojure.lang.IPersistentMap
+     {assocEx [[this k v]]
+      without [[this k]]}
+
      clojure.lang.Seqable
-     {seq [[this]]}}))
+     {seq [[this]]}
+
+     java.util.Iterator
+     {hasNext [[this]]
+      next    [[this]]}}))

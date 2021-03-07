@@ -269,6 +269,9 @@
                       clojure.lang.IPersistentSet
                       clojure.lang.IPersistentVector
                       clojure.lang.IRecord
+                      clojure.lang.IReduce
+                      clojure.lang.IReduceInit
+                      clojure.lang.IKVReduce
                       clojure.lang.IRef
                       clojure.lang.ISeq
                       clojure.lang.Iterate
@@ -290,7 +293,8 @@
                       clojure.lang.Sequential
                       clojure.lang.Seqable
                       clojure.lang.Volatile
-                      java.util.List]
+                      java.util.List
+                      java.util.Iterator]
     :custom ~custom-map})
 
 (defmacro gen-class-map []
