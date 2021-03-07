@@ -8,55 +8,32 @@
 (defmacro gen-reify-combos
   "Generates pre-compiled reify combinations"
   [methods]
-  (let [subsets (rest (combo/subsets (seq methods)))]
-    (reduce (fn [opts [classes protocols?]]
-              (let [prelude '[reify]
-                    prelude (if protocols?
-                              (conj prelude
-                                    'sci.impl.types.IReified
-                                    '(getInterfaces [this]
-                                                    interfaces)
-                                    '(getMethods [this]
-                                                 methods)
-                                    '(getProtocols [this]
-                                                   protocols))
-                              prelude)]
-                (assoc opts
-                       (cond-> (set (map #(list 'quote %)
-                                         (map first classes)))
-                         protocols?
-                         (conj (list 'quote 'sci.impl.types.IReified)))
-                       (list 'fn ['interfaces 'methods 'protocols]
-                             (concat prelude
-                                     (mapcat
-                                      (fn [[clazz methods]]
-                                        (cons clazz
-                                              (mapcat
-                                               (fn [[meth arities]]
-                                                 (map
-                                                  (fn [arity]
-                                                    (list meth arity
-                                                          (list*
-                                                           (list 'get 'methods (list 'quote meth))
-                                                           arity)))
-                                                  arities))
-                                               methods)))
-                                      classes))))))
-            {}
-            (concat (map (fn [subset bool]
-                           [subset bool])
-                         subsets
-                         (repeat true))
-                    (map (fn [subset bool]
-                           [subset bool])
-                         subsets
-                         (repeat false))))))
-
-#_(prn (macroexpand '(gen-reify-combos
-                      {java.io.FileFilter {accept [[this f]]}})))
+  (let [prelude ['reify
+                 'sci.impl.types.IReified
+                 '(getInterfaces [this]
+                                 interfaces)
+                 '(getMethods [this]
+                              methods)
+                 '(getProtocols [this]
+                                protocols)]]
+    (list 'fn ['interfaces 'methods 'protocols]
+          (concat prelude
+                  (mapcat (fn [[clazz methods]]
+                            (cons clazz
+                                  (mapcat
+                                   (fn [[meth arities]]
+                                     (map
+                                      (fn [arity]
+                                        (list meth arity
+                                              (list*
+                                               (list 'get 'methods (list 'quote meth))
+                                               arity)))
+                                      arities))
+                                   methods)))
+                          methods)))))
 
 #_:clj-kondo/ignore
-(def reify-opts
+(def reify-fn
   (gen-reify-combos
    {java.nio.file.FileVisitor {preVisitDirectory [[this p attrs]]
                                postVisitDirectory [[this p attrs]]
