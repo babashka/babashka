@@ -1,62 +1,47 @@
 (ns babashka.impl.reify
   {:no-doc true}
-  (:require [clojure.math.combinatorics :as combo]
-            [sci.impl.types]))
+  (:require [sci.impl.types]))
 
 (set! *warn-on-reflection* false)
 
 (defmacro gen-reify-combos
   "Generates pre-compiled reify combinations"
   [methods]
-  (let [subsets (rest (combo/subsets (seq methods)))]
-    (reduce (fn [opts [classes protocols?]]
-              (let [prelude '[reify]
-                    prelude (if protocols?
-                              (conj prelude
-                                    'sci.impl.types.IReified
-                                    '(getInterfaces [this]
-                                                    interfaces)
-                                    '(getMethods [this]
-                                                 methods)
-                                    '(getProtocols [this]
-                                                   protocols))
-                              prelude)]
-                (assoc opts
-                       (cond-> (set (map #(list 'quote %)
-                                         (map first classes)))
-                         protocols?
-                         (conj (list 'quote 'sci.impl.types.IReified)))
-                       (list 'fn ['interfaces 'methods 'protocols]
-                             (concat prelude
-                                     (mapcat
-                                      (fn [[clazz methods]]
-                                        (cons clazz
-                                              (mapcat
-                                               (fn [[meth arities]]
-                                                 (map
-                                                  (fn [arity]
-                                                    (list meth arity
-                                                          (list*
-                                                           (list 'get 'methods (list 'quote meth))
-                                                           arity)))
-                                                  arities))
-                                               methods)))
-                                      classes))))))
-            {}
-            (concat (map (fn [subset bool]
-                           [subset bool])
-                         subsets
-                         (repeat true))
-                    (map (fn [subset bool]
-                           [subset bool])
-                         subsets
-                         (repeat false))))))
-
-#_(prn (macroexpand '(gen-reify-combos
-                      {java.io.FileFilter {accept [[this f]]}})))
+  (let [prelude ['reify
+                 'sci.impl.types.IReified
+                 '(getInterfaces [this]
+                                 interfaces)
+                 '(getMethods [this]
+                              methods)
+                 '(getProtocols [this]
+                                protocols)
+                 'java.lang.Object
+                 '(toString [this]
+                            (if-let [m (get methods 'toString)]
+                              (m this)
+                              (str (.. this getClass getName)
+                                   "@" (Integer/toHexString (.hashCode this)))))]]
+    (list 'fn [{:keys '[interfaces methods protocols]}]
+          (concat prelude
+                  (mapcat (fn [[clazz methods]]
+                            (cons
+                             clazz
+                             (mapcat
+                              (fn [[meth arities]]
+                                (map
+                                 (fn [arity]
+                                   (list meth arity
+                                         (list*
+                                          (list 'or (list 'get 'methods (list 'quote meth))
+                                                `(throw (new Exception (str "Not implemented: "
+                                                                            ~(str meth)))))
+                                          arity)))
+                                 arities))
+                                   methods)))
+                          methods)))))
 
 #_:clj-kondo/ignore
-(def reify-opts
+(def reify-fn
   (gen-reify-combos
     {java.nio.file.FileVisitor
      {preVisitDirectory  [[this p attrs]]

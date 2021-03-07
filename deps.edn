@@ -32,10 +32,9 @@
         datascript/datascript {:mvn/version "1.0.1"}
         http-kit/http-kit {:mvn/version "2.5.3"}
         babashka/clojure-lanterna {:mvn/version "0.9.8-SNAPSHOT"}
-        org.clojure/math.combinatorics {:mvn/version "0.1.6"}
         org.clojure/core.match {:mvn/version "1.0.0"}
         hiccup/hiccup {:mvn/version "2.0.0-alpha2"}}
- :aliases {:main
+ :aliases {:babashka/dev
            {:main-opts ["-m" "babashka.main"]}
            :profile
            {:extra-deps
