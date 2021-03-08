@@ -4,14 +4,6 @@ For a list of breaking changes, check [here](#breaking-changes).
 
 ## Unreleased
 
-<!--
-
-TODO:
-
-Check --data-binary with string POST data, e.g. JSON with weird chars...
-
--->
-
 Babashka.curl:
 
 - [#35](https://github.com/babashka/babashka.curl/issues/35): use
@@ -28,6 +20,7 @@ Sci:
 
 - Allow combinations of interfaces and protocols in `reify` [#540](https://github.com/borkdude/sci/issues/540)
   ([@GreshamDanielStephens](https://github.com/GreshamDanielStephens))
+- Fix metadata on non-constant map literal expression [#546](https://github.com/borkdude/sci/issues/546)
 
 ## 0.2.12
 
