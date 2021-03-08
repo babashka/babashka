@@ -11,6 +11,9 @@ Sci:
 
 Babashka.fs:
 
+- Add `create-link` and `split-paths` ([@eamonnsullivan](https://github.com/eamonnsullivan))
+- Add `split-ext` and `extension` ([@kiramclean](https://github.com/kiramclean))
+- Add `regular-file?`([@tekacs](https://github.com/tekacs))
 - Globbing is always recursive but should not be [#18](https://github.com/babashka/fs/issues/18)
 
 ## 0.2.12
@@ -37,10 +40,6 @@ Sci:
 - Add `dissoc!`([@wilkerlucio](https://github.com/wilkerlucio))
 - Add `force`
 - Fix `ns-unmap` on referred var [#539](https://github.com/borkdude/sci/issues/539)
-
-Babashka.fs:
-
-- Add `create-link` and `split-paths`
 
 Babashka.nrepl:
 
