@@ -109,6 +109,10 @@
      clojure.lang.Seqable
      {seq [[this]]}
 
+     java.lang.Iterable
+     {iterator [[this]]
+      forEach  [[this action]]}
+
      java.util.Iterator
      {hasNext [[this]]
       next    [[this]]}}))
