@@ -4,10 +4,10 @@ For a list of breaking changes, check [here](#breaking-changes).
 
 ## Unreleased
 
-Sci:
+Babashka.curl:
 
-- Allow combinations of interfaces and protocols in `reify` [#540](https://github.com/borkdude/sci/issues/540)
-  ([@GreshamDanielStephens](https://github.com/GreshamDanielStephens))
+- [#35](https://github.com/babashka/babashka.curl/issues/35): use
+  `--data-binary` when sending files or streams
 
 Babashka.fs:
 
@@ -15,6 +15,11 @@ Babashka.fs:
 - Add `split-ext` and `extension` ([@kiramclean](https://github.com/kiramclean))
 - Add `regular-file?`([@tekacs](https://github.com/tekacs))
 - Globbing is always recursive but should not be [#18](https://github.com/babashka/fs/issues/18)
+
+Sci:
+
+- Allow combinations of interfaces and protocols in `reify` [#540](https://github.com/borkdude/sci/issues/540)
+  ([@GreshamDanielStephens](https://github.com/GreshamDanielStephens))
 
 ## 0.2.12
 
