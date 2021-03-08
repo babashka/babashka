@@ -86,7 +86,6 @@
   `{:all [clojure.lang.ArityException
           clojure.lang.BigInt
           clojure.lang.ExceptionInfo
-          clojure.lang.RT
           java.io.BufferedReader
           java.io.BufferedWriter
           java.io.ByteArrayInputStream
