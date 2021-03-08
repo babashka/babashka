@@ -102,9 +102,19 @@
      clojure.lang.IKVReduce
      {kvreduce [[this f initial]]}
 
+     clojure.lang.Indexed
+     {nth [[this n] [this n not-found]]}
+
      clojure.lang.IPersistentMap
      {assocEx [[this k v]]
       without [[this k]]}
+
+     clojure.lang.IPersistentStack
+     {peek [[this]]
+      pop  [[this]]}
+
+     clojure.lang.Reversible
+     {rseq [[this]]}
 
      clojure.lang.Seqable
      {seq [[this]]}

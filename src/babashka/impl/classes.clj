@@ -268,6 +268,7 @@
                       clojure.lang.IPersistentCollection
                       clojure.lang.IPersistentMap
                       clojure.lang.IPersistentSet
+                      clojure.lang.IPersistentStack
                       clojure.lang.IPersistentVector
                       clojure.lang.IRecord
                       clojure.lang.IReduce
@@ -275,6 +276,7 @@
                       clojure.lang.IKVReduce
                       clojure.lang.IRef
                       clojure.lang.ISeq
+                      clojure.lang.Indexed
                       clojure.lang.Iterate
                       clojure.lang.LazySeq
                       clojure.lang.Named
@@ -290,6 +292,7 @@
                       clojure.lang.PersistentVector
                       clojure.lang.Ratio
                       clojure.lang.Repeat
+                      clojure.lang.Reversible
                       clojure.lang.Symbol
                       clojure.lang.Sequential
                       clojure.lang.Seqable
