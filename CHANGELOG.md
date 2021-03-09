@@ -6,8 +6,7 @@ For a list of breaking changes, check [here](#breaking-changes).
 
 Babashka.curl:
 
-- [#35](https://github.com/babashka/babashka.curl/issues/35): use
-  `--data-binary` when sending files or streams
+- Use `--data-binary` when sending files or streams [#35](https://github.com/babashka/babashka.curl/issues/35)
 
 Babashka.fs:
 
