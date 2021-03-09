@@ -1,5 +1,10 @@
 #!/usr/bin/env bb
 
+;; Note that babashka comes with org.httpkit.server now, so you don't need to
+;; build an http server from scratch anymore like we do here. We should update
+;; this script to the built-in webserver. Whoever reads this is welcome to
+;; submit a PR.
+
 (import (java.net ServerSocket))
 (require '[clojure.java.io :as io]
          '[clojure.string :as str])

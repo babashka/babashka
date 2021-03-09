@@ -1,9 +1,12 @@
 #!/usr/bin/env bb
 
-;; This example creates a file serving web server
+;; This example creates a file serving web server from scratch.
 ;; It accepts a single connection from a browser and serves content to the connected browser
 ;; after the connection times out, this script will serve no more.
 ;; Also see notes.clj for another web app example.
+
+;; Note that babashka comes with org.httpkit.server now, so you don't need to
+;; build an http server from scratch anymore. We leave this script here for educational purposes.
 
 (import (java.net ServerSocket))
 (require '[clojure.java.io :as io]
