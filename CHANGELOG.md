@@ -4,6 +4,10 @@ For a list of breaking changes, check [here](#breaking-changes).
 
 ## v0.2.13
 
+### Enhancements / fixes
+
+- Add more interfaces to be used with `reify` ([@wilkerlucio](https://github.com/wilkerlucio)) (mostly to support smart maps with [pathom3](https://github.com/wilkerlucio/pathom3))
+
 Babashka.curl:
 
 - Use `--data-binary` when sending files or streams [#35](https://github.com/babashka/babashka.curl/issues/35)
