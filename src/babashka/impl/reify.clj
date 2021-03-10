@@ -62,6 +62,10 @@
      clojure.lang.ILookup
      {valAt [[this k] [this k default]]}
 
+     java.util.Map$Entry
+     {getKey [[this]]
+      getValue [[this]]}
+
      clojure.lang.IFn
      {applyTo [[this arglist]]
       invoke  [[this]

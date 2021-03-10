@@ -118,6 +118,7 @@
           java.lang.Exception
           java.lang.Float
           java.lang.IllegalArgumentException
+          java.lang.IndexOutOfBoundsException
           java.lang.Integer
           java.lang.Iterable
           java.lang.Long
@@ -297,7 +298,8 @@
                       clojure.lang.Seqable
                       clojure.lang.Volatile
                       java.util.List
-                      java.util.Iterator]
+                      java.util.Iterator
+                      java.util.Map$Entry]
     :custom ~custom-map})
 
 (defmacro gen-class-map []
