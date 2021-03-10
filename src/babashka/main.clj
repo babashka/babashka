@@ -436,6 +436,7 @@ Use -- to separate script command line args from bb command line args.
     Comparable java.lang.Comparable
     Double java.lang.Double
     Exception java.lang.Exception
+    IndexOutOfBoundsException java.lang.IndexOutOfBoundsException
     IllegalArgumentException java.lang.IllegalArgumentException
     Integer java.lang.Integer
     Iterable java.lang.Iterable

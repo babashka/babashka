@@ -118,6 +118,7 @@
           java.lang.Exception
           java.lang.Float
           java.lang.IllegalArgumentException
+          java.lang.IndexOutOfBoundsException
           java.lang.Integer
           java.lang.Iterable
           java.lang.Long
@@ -261,6 +262,7 @@
                       ;; clojure.lang.IDeref ;; implemented as protocol in sci
                       ;; clojure.lang.IAtom  ;; implemented as protocol in sci
                       clojure.lang.IEditableCollection
+                      clojure.lang.IHashEq
                       clojure.lang.IMapEntry
                       clojure.lang.IMeta
                       clojure.lang.ILookup
@@ -297,7 +299,8 @@
                       clojure.lang.Seqable
                       clojure.lang.Volatile
                       java.util.List
-                      java.util.Iterator]
+                      java.util.Iterator
+                      java.util.Map$Entry]
     :custom ~custom-map})
 
 (defmacro gen-class-map []
