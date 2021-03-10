@@ -62,9 +62,6 @@
      clojure.lang.ILookup
      {valAt [[this k] [this k default]]}
 
-     clojure.lang.IHashEq
-     {hasheq [[this]]}
-
      java.util.Map$Entry
      {getKey [[this]]
       getValue [[this]]}
