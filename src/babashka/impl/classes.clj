@@ -252,7 +252,8 @@
     :methods [borkdude.graal.LockFix] ;; support for locking
 
     :fields [clojure.lang.PersistentQueue]
-    :instance-checks [clojure.lang.Associative
+    :instance-checks [clojure.lang.APersistentMap ;; for proxy
+                      clojure.lang.Associative
                       clojure.lang.Atom
                       clojure.lang.Cons
                       clojure.lang.Counted

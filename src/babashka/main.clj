@@ -26,6 +26,7 @@
    [babashka.impl.pprint :refer [pprint-namespace]]
    [babashka.impl.process :refer [process-namespace]]
    [babashka.impl.protocols :refer [protocols-namespace]]
+   [babashka.impl.proxy :refer [proxy-fn]]
    [babashka.impl.reify :refer [reify-fn]]
    [babashka.impl.repl :as repl]
    [babashka.impl.socket-repl :as socket-repl]
@@ -570,7 +571,8 @@ Use -- to separate script command line args from bb command line args.
                   :load-fn load-fn
                   :uberscript uberscript
                   :readers core/data-readers
-                  :reify-fn reify-fn}
+                  :reify-fn reify-fn
+                  :proxy-fn proxy-fn}
             opts (addons/future opts)
             sci-ctx (sci/init opts)
             _ (vreset! common/ctx sci-ctx)
