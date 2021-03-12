@@ -4,9 +4,15 @@ For a list of breaking changes, check [here](#breaking-changes).
 
 ## Unreleased
 
+### TODO
+
+- Roll back `reify` changes in v0.2.13. See [sci#549](https://github.com/borkdude/sci/issues/549).
+- Add support for arm64 binaries
+
 ### Enhancements / fixes
 
 - Fix `print-method` when writing to stdout [#667](https://github.com/babashka/babashka/issues/667)
+- Fix interop with `System/out` [#754](https://github.com/babashka/babashka/issues/754)
 
 ## v0.2.13
 
