@@ -2,6 +2,12 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
+## Unreleased
+
+### Enhancements / fixes
+
+- Fix `print-method` when writing to stdout [#667](https://github.com/babashka/babashka/issues/667)
+
 ## v0.2.13
 
 ### Enhancements / fixes
