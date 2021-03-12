@@ -253,6 +253,7 @@
 
     :fields [clojure.lang.PersistentQueue]
     :instance-checks [clojure.lang.APersistentMap ;; for proxy
+                      clojure.lang.AMapEntry ;; for proxy
                       clojure.lang.Associative
                       clojure.lang.Atom
                       clojure.lang.Cons
