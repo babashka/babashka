@@ -12,12 +12,8 @@
   (case (.getName ^Class class)
     "clojure.lang.APersistentMap"
     (proxy [clojure.lang.APersistentMap] []
-      (iterator [] (if-let [m (get methods 'iterator)]
-                     (m)
-                     (proxy-super iterator))) ;; TODO: should we call proxy-super as a fallback always?
-      (containsKey [k] (if-let [m (get methods 'containsKey)]
-                         (m k)
-                         (proxy-super containsKey k)))
+      (iterator [] ((method-or-bust methods 'iterator)))
+      (containsKey [k] ((method-or-bust methods 'containsKey) k))
       (entryAt [k] ((method-or-bust methods 'entryAt) k))
       (valAt
         ([k] ((method-or-bust methods 'valAt) k))
