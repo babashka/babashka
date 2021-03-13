@@ -15,6 +15,10 @@ For a list of breaking changes, check [here](#breaking-changes).
 - Narrow `reify` to just one class. See discussion in [sci#549](https://github.com/borkdude/sci/issues/549)
 - Add preliminary support for `proxy` (for pathom3 smart maps) [sci#550](https://github.com/borkdude/sci/issues/550).
 
+Babashka.fs:
+
+- Fix globbing on Windows
+- Fix Windows tests
 
 ## v0.2.13
 
