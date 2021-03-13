@@ -63,6 +63,8 @@
         (seq m)
         (meta (with-meta m {:a 1}))
         (d/datafy m)
+        (instance? clojure.lang.APersistentMap m)
+        (instance? java.io.FilenameFilter m)
         ,])))
 
 (require 'clojure.pprint)
@@ -72,5 +74,7 @@
           5 3 5 false
           '([:a 1] [:b 2] [:c 3])
           {:a 1}
-          {:datafied true}]
+          {:datafied true}
+          true
+          false]
          (bb (with-out-str (clojure.pprint/pprint code))))))
