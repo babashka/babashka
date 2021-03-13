@@ -21,14 +21,14 @@
      (defn proxy-deref-map
        {:added "1.0"}
        [m]
-       (proxy [clojure.lang.APersistentMap]
+       (proxy [clojure.lang.APersistentMap clojure.lang.IMeta clojure.lang.IObj]
            []
          (iterator []
            ::TODO)
          (containsKey [k] (contains? m k))
          (entryAt [k] (when (contains? m k) (proxy [clojure.lang.AMapEntry] []
                                               (key [] k)
-                                              (val [] (auto-deref(get m k))))))
+                                              (val [] (auto-deref (get m k))))))
          (valAt ([k] (auto-deref (get m k)))
            ([k default] (auto-deref (get m k default))))
          (cons [v] (proxy-deref-map (conj m v)))
@@ -37,7 +37,9 @@
          (without [k] (proxy-deref-map (dissoc m k)))
          (seq [] (map (fn [[k v]](proxy [clojure.lang.AMapEntry] []
                                    (key [] k)
-                                   (val [] (auto-deref (get m k))))) m))))
+                                   (val [] (auto-deref (get m k))))) m))
+         (withMeta [md] (proxy-deref-map (with-meta m md)))
+         (meta [] (meta m))))
      (let [m (proxy-deref-map
               {:a (delay 1)
                :b (delay 2)
@@ -54,10 +56,13 @@
             :d)
         (-> (dissoc m :a)
             (contains? :a))
-        (seq m)])))
+        (seq m)
+        (meta (with-meta m {:a 1}))
+        ])))
 
 (deftest APersistentMap-proxy-test
   (is (= [1 2 3 true [:c 3]
           5 3 5 false
-          '([:a 1] [:b 2] [:c 3])]
+          '([:a 1] [:b 2] [:c 3])
+          {:a 1}]
          (bb code))))

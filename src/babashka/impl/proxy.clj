@@ -10,43 +10,47 @@
 
 (defn method-or [methods k default]
   (or (get methods k)
-      default))
+      (constantly default)))
 
-(defn proxy-fn [{:keys [class methods]}]
-  (case (.getName ^Class class)
-    "clojure.lang.APersistentMap"
-    (proxy [clojure.lang.APersistentMap clojure.lang.IMeta clojure.lang.IObj] []
-      (iterator [] ((method-or-bust methods 'iterator) this))
-      (containsKey [k] ((method-or-bust methods 'containsKey) this k))
-      (entryAt [k] ((method-or-bust methods 'entryAt) this k))
-      (valAt
-        ([k] ((method-or-bust methods 'valAt) this k))
-        ([k default] ((method-or-bust methods 'valAt) this k default)))
-      (cons [v]
-        (if-let [m (get methods 'cons)]
-          (m this v)
-          (proxy-super cons v)))
-      (count [] ((method-or-bust methods 'count) this))
-      (assoc [k v] ((method-or-bust methods 'assoc) this k v))
-      (without [k] ((method-or-bust methods 'without) this k))
-      (seq [] ((method-or-bust methods 'seq) this))
+(defn class-name [^Class clazz]
+  (.getName clazz))
 
-      (equiv [other]
-        (if-let [m (get methods 'equiv)]
-          (m this other)
-          (proxy-super equiv other)))
-      (empty [] ((method-or-bust methods 'empty) this))
+(defn proxy-fn [{:keys [class interfaces methods]}]
+  (let [interfaces (set (map class-name interfaces))]
+    (case [(class-name class) interfaces ]
+      ["clojure.lang.APersistentMap" #{"clojure.lang.IMeta" "clojure.lang.IObj"}]
+      (proxy [clojure.lang.APersistentMap clojure.lang.IMeta clojure.lang.IObj] []
+        (iterator [] ((method-or-bust methods 'iterator) this))
+        (containsKey [k] ((method-or-bust methods 'containsKey) this k))
+        (entryAt [k] ((method-or-bust methods 'entryAt) this k))
+        (valAt
+          ([k] ((method-or-bust methods 'valAt) this k))
+          ([k default] ((method-or-bust methods 'valAt) this k default)))
+        (cons [v]
+          (if-let [m (get methods 'cons)]
+            (m this v)
+            (proxy-super cons v)))
+        (count [] ((method-or-bust methods 'count) this))
+        (assoc [k v] ((method-or-bust methods 'assoc) this k v))
+        (without [k] ((method-or-bust methods 'without) this k))
+        (seq [] ((method-or-bust methods 'seq) this))
 
-      (meta [] ((method-or methods 'meta nil) this))
-      (withMeta [meta] ((method-or methods 'withMeta this) this meta))
+        (equiv [other]
+          (if-let [m (get methods 'equiv)]
+            (m this other)
+            (proxy-super equiv other)))
+        (empty [] ((method-or-bust methods 'empty) this))
 
-      (toString []
-        (if-let [m (get methods 'toString)]
-          (m this)
-          (proxy-super toString))))
-    "clojure.lang.AMapEntry"
-    (proxy [clojure.lang.AMapEntry] []
-      (key [] ((method-or-bust methods 'key) this))
-      (val [] ((method-or-bust methods 'val) this))
-      (getKey [] ((method-or-bust methods 'getKey) this))
-      (getValue [] ((method-or-bust methods 'getValue) this)))))
+        (meta [] ((method-or-bust methods 'meta) this))
+        (withMeta [meta] ((method-or-bust methods 'withMeta) this meta))
+
+        (toString []
+          (if-let [m (get methods 'toString)]
+            (m this)
+            (proxy-super toString))))
+      ["clojure.lang.AMapEntry" #{}]
+      (proxy [clojure.lang.AMapEntry] []
+        (key [] ((method-or-bust methods 'key) this))
+        (val [] ((method-or-bust methods 'val) this))
+        (getKey [] ((method-or-bust methods 'getKey) this))
+        (getValue [] ((method-or-bust methods 'getValue) this))))))
