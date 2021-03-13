@@ -14,6 +14,7 @@
 (defn proxy-fn [{:keys [class interfaces protocols methods]}]
   (let [interfaces (set (map class-name interfaces))]
     (case [(class-name class) interfaces ]
+      ;; This combination is used by pathom3
       ["clojure.lang.APersistentMap" #{"clojure.lang.IMeta" "clojure.lang.IObj"}]
       (proxy [clojure.lang.APersistentMap clojure.lang.IMeta clojure.lang.IObj sci.impl.types.IReified] []
         (getInterfaces []
