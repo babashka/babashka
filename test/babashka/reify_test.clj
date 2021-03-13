@@ -2,8 +2,7 @@
   (:require
    [babashka.test-utils :as test-utils]
    [clojure.edn :as edn]
-   [clojure.test :as test :refer [deftest is testing]]
-   [clojure.string :as str]))
+   [clojure.test :as test :refer [deftest is testing]]))
 
 (defn bb [input & args]
   (edn/read-string
@@ -12,15 +11,15 @@
    (apply test-utils/bb (when (some? input) (str input)) (map str args))))
 
 (deftest file-filter-test
-  (testing "reify can handle multiple classes at once"
-    (is (true? (bb nil "
+  (is (true? (bb nil "
 (def filter-obj (reify java.io.FileFilter
-                  (accept [this f] (prn (.getPath f)) true)
-                  java.io.FilenameFilter
+                  (accept [this f] (prn (.getPath f)) true)))
+(def filename-filter-obj
+                 (reify java.io.FilenameFilter
                   (accept [this f name] (prn name) true)))
 (def s1 (with-out-str (.listFiles (clojure.java.io/file \".\") filter-obj)))
-(def s2 (with-out-str (.list (clojure.java.io/file \".\") filter-obj)))
-(and (pos? (count s1)) (pos? (count s2)))")))))
+(def s2 (with-out-str (.listFiles (clojure.java.io/file \".\") filename-filter-obj)))
+(and (pos? (count s1)) (pos? (count s2)))"))))
 
 (deftest reify-multiple-arities-test
   (testing "ILookup"
@@ -65,9 +64,4 @@
 (def m (reify Object
   (toString [_] (str :foo))))
 (hash m)
-"))))
-  (testing "toString still works when not overriding it"
-    (is (bb nil "
-(def m (reify Object))
-(str m)
-"))))
+")))))
