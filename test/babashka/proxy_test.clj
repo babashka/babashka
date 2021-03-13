@@ -12,6 +12,8 @@
 
 (def code
   '(do
+     (require '[clojure.core.protocols])
+     (require '[clojure.datafy :as d])
      (defn auto-deref
        "If value implements IDeref, deref it, otherwise return original."
        [x]
@@ -21,7 +23,7 @@
      (defn proxy-deref-map
        {:added "1.0"}
        [m]
-       (proxy [clojure.lang.APersistentMap clojure.lang.IMeta clojure.lang.IObj]
+       (proxy [clojure.lang.APersistentMap clojure.lang.IMeta clojure.lang.IObj clojure.core.protocols.Datafiable]
            []
          (iterator []
            ::TODO)
@@ -39,7 +41,9 @@
                                    (key [] k)
                                    (val [] (auto-deref (get m k))))) m))
          (withMeta [md] (proxy-deref-map (with-meta m md)))
-         (meta [] (meta m))))
+         (meta [] (meta m))
+
+         (datafy [] {:datafied true})))
      (let [m (proxy-deref-map
               {:a (delay 1)
                :b (delay 2)
@@ -58,11 +62,15 @@
             (contains? :a))
         (seq m)
         (meta (with-meta m {:a 1}))
-        ])))
+        (d/datafy m)
+        ,])))
+
+(require 'clojure.pprint)
 
 (deftest APersistentMap-proxy-test
   (is (= [1 2 3 true [:c 3]
           5 3 5 false
           '([:a 1] [:b 2] [:c 3])
-          {:a 1}]
-         (bb code))))
+          {:a 1}
+          {:datafied true}]
+         (bb (with-out-str (clojure.pprint/pprint code))))))
