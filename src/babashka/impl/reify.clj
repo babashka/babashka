@@ -27,41 +27,39 @@
                    (getProtocols [this]
                      protocols))]
     (list 'fn [{:keys '[interfaces methods protocols]}]
-          `(cond ~'(empty? interfaces) ~prelude
-                 ~'(> (count interfaces)
-                      1)
-                 (throw (new Exception "Babashka currently does not support reifying more than one interface."))
+          `(cond ~'(empty? interfaces) ~prelude ~'(> (count interfaces)
+                 1) (throw (new Exception "Babashka currently does not support reifying more than one interface."))
                  :else
-                 (case (.getName ~(with-meta '(first interfaces)
-                                    {:tag 'Class}))
-                   ~@(mapcat
-                      (fn [[clazz methods]]
-                        (list
-                         (str clazz)
-                         (concat prelude
-                                 (cons clazz
-                                       (mapcat
-                                        (fn [[meth arities]]
-                                          (map
-                                           (fn [arity]
-                                             (list meth arity
-                                                   (list*
-                                                    (list 'or (list 'get 'methods (list 'quote meth))
-                                                          `(throw (new Exception (str "Not implemented: "
-                                                                                      ~(str meth)))))
-                                                    arity)))
-                                           arities))
-                                        methods)))))
-                      methods)))))
+             (case (.getName ~(with-meta '(first interfaces)
+                                {:tag 'Class}))
+               ~@(mapcat
+                  (fn [[clazz methods]]
+                    (list
+                     (str clazz)
+                     (concat prelude
+                             (cons clazz
+                                   (mapcat
+                                    (fn [[meth arities]]
+                                      (map
+                                       (fn [arity]
+                                         (list meth arity
+                                               (list*
+                                                (list 'or (list 'get 'methods (list 'quote meth))
+                                                      `(throw (new Exception (str "Not implemented: "
+                                                                                  ~(str meth)))))
+                                                arity)))
+                                       arities))
+                                    methods)))))
+                  methods))))))
 
-  ;; (require 'clojure.pprint)
-  ;; (clojure.pprint/pprint
-  ;;  (macroexpand '(gen-reify-combos {java.nio.file.FileVisitor
-  ;;                                   {preVisitDirectory  [[this p attrs]]
-  ;;                                    postVisitDirectory [[this p attrs]]
-  ;;                                    visitFile          [[this p attrs]]}})))
+;; (require 'clojure.pprint)
+;; (clojure.pprint/pprint
+;;  (macroexpand '(gen-reify-combos {java.nio.file.FileVisitor
+;;                                   {preVisitDirectory  [[this p attrs]]
+;;                                    postVisitDirectory [[this p attrs]]
+;;                                    visitFile          [[this p attrs]]}})))
 
-  #_:clj-kondo/ignore)
+#_:clj-kondo/ignore
 (def reify-fn
   (gen-reify-combos
    {java.lang.Object
