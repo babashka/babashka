@@ -8,10 +8,6 @@
   (or (get methods k)
       (throw (UnsupportedOperationException. "Method not implemented: " k))))
 
-(defn method-or [methods k default]
-  (or (get methods k)
-      (constantly default)))
-
 (defn class-name [^Class clazz]
   (.getName clazz))
 
