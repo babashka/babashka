@@ -6,7 +6,7 @@
 
 (defn method-or-bust [methods k]
   (or (get methods k)
-      (throw (UnsupportedOperationException. "Method not implemented: " k))))
+      (throw (UnsupportedOperationException. (str "Method not implemented: " k)))))
 
 (defn class-name [^Class clazz]
   (.getName clazz))
@@ -27,7 +27,8 @@
         (containsKey [k] ((method-or-bust methods 'containsKey) this k))
         (entryAt [k] ((method-or-bust methods 'entryAt) this k))
         (valAt
-          ([k] ((method-or-bust methods 'valAt) this k))
+          ([k]
+           ((method-or-bust methods 'valAt) this k))
           ([k default] ((method-or-bust methods 'valAt) this k default)))
         (cons [v]
           (if-let [m (get methods 'cons)]
