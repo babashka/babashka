@@ -14,6 +14,7 @@ For a list of breaking changes, check [here](#breaking-changes).
 - Fix interop with `System/out` [#754](https://github.com/babashka/babashka/issues/754)
 - Narrow `reify` to just one class. See discussion in [sci#549](https://github.com/borkdude/sci/issues/549)
 - Add preliminary support for `proxy` (for pathom3 smart maps) [sci#550](https://github.com/borkdude/sci/issues/550).
+- Support [version-clj](https://github.com/xsc/version-clj) v2.0.1 by adding `java.util.regex.Matcher` to the reflection config
 
 Babashka.fs:
 
