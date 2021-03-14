@@ -8,6 +8,7 @@
   (cond->
       `{clojure.lang.LineNumberingPushbackReader {:allPublicConstructors true
                                                   :allPublicMethods true}
+
         java.lang.Thread
         {:allPublicConstructors true
          ;; generated with `public-declared-method-names`, see in
@@ -72,6 +73,10 @@
                    {:name "toURI"}]}
         java.util.Arrays
         {:methods [{:name "copyOf"}]}
+        java.util.regex.Matcher
+        {:methods [{:name "find"}
+                   {:name "start"}
+                   {:name "end"}]}
         ;; this fixes clojure.lang.Reflector for Java 11
         java.lang.reflect.AccessibleObject
         {:methods [{:name "canAccess"}]}}
@@ -219,7 +224,6 @@
           java.util.jar.JarFile$JarFileEntry
           java.util.stream.Stream
           java.util.Random
-          java.util.regex.Matcher
           java.util.regex.Pattern
           java.util.Base64
           java.util.Base64$Decoder
