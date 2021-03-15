@@ -255,7 +255,7 @@ jobs:
             fi
       - restore_cache:
           keys:
-            - linux-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
+            - linux-aarch64-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - run:
           name: Install Leiningen
           command: |
@@ -306,7 +306,7 @@ jobs:
           paths:
             - ~/.m2
             - ~/graalvm-ce-java11-21.0.0
-          key: linux-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
+          key: linux-aarch64-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - store_artifacts:
           path: /tmp/release
           destination: release
