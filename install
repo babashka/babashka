@@ -64,6 +64,11 @@ case "$(uname -s)" in
     Darwin*)    platform=macos;;
 esac
 
+case "$(uname -m)" in
+    aarch64)   arch=aarch64;;
+esac
+arch=${arch:-amd64}
+
 # Ugly ugly conversion of version to a comparable number
 IFS='.' read -ra VER <<< "$version"
 vernum=$(printf "%03d%03d%03d" "${VER[0]}" "${VER[1]}" "${VER[2]}")
@@ -76,16 +81,16 @@ else
   util="$(which tar) -zxf"
 fi
 
-download_url="https://github.com/babashka/babashka/releases/download/v$version/babashka-$version-$platform-amd64.zip"
+download_url="https://github.com/babashka/babashka/releases/download/v$version/babashka-$version-$platform-$arch.zip"
 
 mkdir -p "$download_dir"
 cd "$download_dir"
 echo -e "Downloading $download_url to $download_dir"
-rm -rf "babashka-$version-$platform-amd64."$ext
+rm -rf "babashka-$version-$platform-$arch."$ext
 rm -rf "bb"
-curl -o "babashka-$version-$platform-amd64."$ext -sL "https://github.com/babashka/babashka/releases/download/v$version/babashka-$version-$platform-amd64."$ext
-$util "babashka-$version-$platform-amd64."$ext
-rm "babashka-$version-$platform-amd64."$ext
+curl -o "babashka-$version-$platform-$arch."$ext -sL "https://github.com/babashka/babashka/releases/download/v$version/babashka-$version-$platform-$arch."$ext
+$util "babashka-$version-$platform-$arch."$ext
+rm "babashka-$version-$platform-$arch."$ext
 
 if [ "$download_dir" != "$install_dir" ]
 then
