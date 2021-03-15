@@ -2,7 +2,7 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
-## Unreleased
+## 0.3.0
 
 ### New
 
@@ -13,18 +13,20 @@ For a list of breaking changes, check [here](#breaking-changes).
 - Fix `print-method` when writing to stdout [#667](https://github.com/babashka/babashka/issues/667)
 - Fix interop with `System/out` [#754](https://github.com/babashka/babashka/issues/754)
 - Support [version-clj](https://github.com/xsc/version-clj) v2.0.1 by adding `java.util.regex.Matcher` to the reflection config
+- Distribute linux and macOS archives as `tar.gz`. The reason is that `unzip` is
+  not pre-installed on most unix-y systems. ([@grazfather](https://github.com/grazfather))
 
 Babashka.fs:
 
 - Fix globbing on Windows
 - Fix Windows tests
-- Fix issue with copy-tree when dest dir doesn't exist yet
+- Fix issue with `copy-tree` when dest dir doesn't exist yet
 
 Sci:
 
 - Support `:reload-all` [#552](https://github.com/borkdude/sci/issues/552)
 - Narrow `reify` to just one class. See discussion in [sci#549](https://github.com/borkdude/sci/issues/549)
-- Add preliminary support for `proxy` (for pathom3 smart maps) [sci#550](https://github.com/borkdude/sci/issues/550).
+- Add preliminary support for `proxy` (mainly to support pathom3 smart maps) [sci#550](https://github.com/borkdude/sci/issues/550).
 
 ## v0.2.13
 
