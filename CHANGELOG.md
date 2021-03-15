@@ -22,11 +22,19 @@ Babashka.fs:
 - Fix Windows tests
 - Fix issue with `copy-tree` when dest dir doesn't exist yet
 
+Thanks [@lread](https://github.com/lread) for his help on fixing issues with Windows.
+
 Sci:
 
 - Support `:reload-all` [#552](https://github.com/borkdude/sci/issues/552)
-- Narrow `reify` to just one class. See discussion in [sci#549](https://github.com/borkdude/sci/issues/549)
-- Add preliminary support for `proxy` (mainly to support pathom3 smart maps) [sci#550](https://github.com/borkdude/sci/issues/550).
+- Narrow `reify` to just one class. See discussion in
+  [sci#549](https://github.com/borkdude/sci/issues/549).
+- Add preliminary support for `proxy` (mainly to support pathom3 smart maps)
+  [sci#550](https://github.com/borkdude/sci/issues/550).
+
+Thanks to [@wilkerlucio](https://github.com/wilkerlucio) and
+  [@GreshamDanielStephens](https://github.com/GreshamDanielStephens) for their
+  help and discussions.
 
 ## v0.2.13
 
