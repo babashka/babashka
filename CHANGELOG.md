@@ -7,6 +7,7 @@ For a list of breaking changes, check [here](#breaking-changes).
 ### TODO
 
 - Add support for arm64 binaries
+- :reload-all https://github.com/borkdude/sci/issues/552
 
 ### Enhancements / fixes
 
