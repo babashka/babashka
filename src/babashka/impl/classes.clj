@@ -92,7 +92,6 @@
           java.io.ByteArrayOutputStream
           java.io.Console
           java.io.File
-          java.io.FileInputStream
           java.io.FileFilter
           java.io.FilenameFilter
           java.io.FileNotFoundException

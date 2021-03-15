@@ -71,7 +71,10 @@
                          circleci/bond {:mvn/version "0.4.0"}
                          version-clj/version-clj {:mvn/version "2.0.1"}
                          gaka/gaka {:mvn/version "0.3.0"}
-                         failjure/failjure {:mvn/version "2.1.1"}}}
+                         failjure/failjure {:mvn/version "2.1.1"}}
+            :classpath-overrides {org.clojure/clojure nil
+                                  org.clojure/spec.alpha nil
+                                  org.clojure/core.specs.alpha nil}}
            :clj-nvd
            {:extra-deps {clj-nvd/clj-nvd {:git/url "https://github.com/miikka/clj-nvd.git"
                                           :sha "f2ec98699e057a379baf170cb49cf7ad76874a70"}}
