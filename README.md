@@ -13,8 +13,9 @@
 
 ## Introduction
 
-Babashka is a native Clojure interpreter for scripting. Its main goal is to
-leverage Clojure in places where you would be using bash otherwise.
+Babashka is a native Clojure interpreter for scripting with fast startup. Its
+main goal is to leverage Clojure in places where you would be using bash
+otherwise.
 
 As one user described it:
 
