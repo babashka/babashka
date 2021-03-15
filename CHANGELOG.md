@@ -21,7 +21,7 @@ Babashka.fs:
 
 - Fix globbing on Windows
 - Fix Windows tests
-- Create dest dir if needed in copy-tree
+- Fix issue with copy-tree when dest dir doesn't exist yet
 
 ## v0.2.13
 
