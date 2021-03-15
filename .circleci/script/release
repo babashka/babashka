@@ -13,7 +13,9 @@ mkdir -p /tmp/bb_size
 
 ## release binary as tar.gz archive
 
-tar zcvf "babashka-$VERSION-$BABASHKA_PLATFORM-amd64.tar.gz" bb # bbk
+arch=${BABASHKA_ARCH:amd64}
+
+tar zcvf "babashka-$VERSION-$BABASHKA_PLATFORM-$arch.tar.gz" bb # bbk
 
 ## cleanup
 
