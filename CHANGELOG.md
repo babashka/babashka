@@ -9,7 +9,7 @@ For a list of breaking changes, check [here](#breaking-changes).
 - Linux support for AArch64 [#241](https://github.com/babashka/babashka/issues/241). This means you can now run babashka on Raspberry Pi 64bit and Chromebooks with ARM 64-bit processors!
 
 A major thanks to [CircleCI](https://circleci.com/) for enabling AArch64 support
-in the babashka organization.
+in the babashka organization and [GraalVM](http://graalvm.org/) for supporting this platform.
 
 ### Enhancements / fixes
 
