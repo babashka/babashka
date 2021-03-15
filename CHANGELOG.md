@@ -4,11 +4,6 @@ For a list of breaking changes, check [here](#breaking-changes).
 
 ## Unreleased
 
-### TODO
-
-- Add support for arm64 binaries
-- :reload-all https://github.com/borkdude/sci/issues/552
-
 ### New
 
 - Linux support for AArch64 [#241](https://github.com/babashka/babashka/issues/241). This means you can now run babashka on Raspberry Pi 64bit and Chromebooks with ARM 64-bit processors!
@@ -17,8 +12,6 @@ For a list of breaking changes, check [here](#breaking-changes).
 
 - Fix `print-method` when writing to stdout [#667](https://github.com/babashka/babashka/issues/667)
 - Fix interop with `System/out` [#754](https://github.com/babashka/babashka/issues/754)
-- Narrow `reify` to just one class. See discussion in [sci#549](https://github.com/borkdude/sci/issues/549)
-- Add preliminary support for `proxy` (for pathom3 smart maps) [sci#550](https://github.com/borkdude/sci/issues/550).
 - Support [version-clj](https://github.com/xsc/version-clj) v2.0.1 by adding `java.util.regex.Matcher` to the reflection config
 
 Babashka.fs:
@@ -26,6 +19,12 @@ Babashka.fs:
 - Fix globbing on Windows
 - Fix Windows tests
 - Fix issue with copy-tree when dest dir doesn't exist yet
+
+Sci:
+
+- Support `:reload-all` [#552](https://github.com/borkdude/sci/issues/552)
+- Narrow `reify` to just one class. See discussion in [sci#549](https://github.com/borkdude/sci/issues/549)
+- Add preliminary support for `proxy` (for pathom3 smart maps) [sci#550](https://github.com/borkdude/sci/issues/550).
 
 ## v0.2.13
 
