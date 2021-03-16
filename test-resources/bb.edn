@@ -1,7 +1,9 @@
-{:tasks {:eval-plus   {:babashka/args [-e (+ 1 2 3)]}
+{:paths ["script"]
+ :tasks {:bash        {:babashka/invoke {:fn cool-script/bash}}
+         :eval-plus   {:babashka/args [-e (apply + (map (fn [i]
+                                                          (Integer/parseInt i))
+                                                        *command-line-args*))]}
          :tree        {:babashka/args [:clojure -Stree]}
-         :count-files {:babashka/process {:args [bash -c "ls | wc -l"]
-                                          ,,,}}
-         :all         {:babashka/args [:do :eval-plus
-                                       :do :tree
-                                       :do :count-files]}}}
+         :all         {:babashka/args [:do :eval-plus 1 2 3
+                                       :__ :tree
+                                       :__ :bash "ls | wc -l"]}}}

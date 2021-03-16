@@ -471,11 +471,11 @@ Use -- to separate script command line args from bb command line args.
                               (assoc opts-map :main (first options))))
                      (":do")
                      (let [options (next options)
-                           options (into [] (comp (partition-by #(= % ":do"))
+                           options (into [] (comp (partition-by #(= % ":__"))
                                                   (take-nth 2))
                                          options)
                            parsed (map parse-opts options)]
-                       (assoc opts-map :do parsed))
+                       {:do parsed})
                      ;; fallback
                      (if (some opts-map [:file :jar :socket-repl :expressions :main])
                        (assoc opts-map
