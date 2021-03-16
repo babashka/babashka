@@ -371,7 +371,8 @@ Use -- to separate script command line args from bb command line args.
                     :repl :socket-repl :nrepl
                     :verbose? :classpath
                     :main :uberscript :describe?
-                    :jar :uberjar :clojure :task] :as opts}
+                    :jar :uberjar :clojure :task
+                    :exit-code] :as opts}
             (cli/parse-opts args)
             _ (when clojure
                 (if-let [proc (deps/clojure (:opts opts))]
@@ -457,15 +458,16 @@ Use -- to separate script command line args from bb command line args.
             _ (vreset! common/ctx sci-ctx)
             preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim))
             [expressions exit-code]
-            (cond expressions [expressions nil]
-                  main [[(format "(ns user (:require [%1$s])) (apply %1$s/-main *command-line-args*)"
-                                 main)] nil]
-                  file (try [[(read-file file)] nil]
-                            (catch Exception e
-                              (error-handler e {:expression expressions
-                                                :verbose? verbose?
-                                                :preloads preloads
-                                                :loader (:loader @cp/cp-state)}))))
+            (if exit-code [nil exit-code]
+                (cond expressions [expressions nil]
+                      main [[(format "(ns user (:require [%1$s])) (apply %1$s/-main *command-line-args*)"
+                                     main)] nil]
+                      file (try [[(read-file file)] nil]
+                                (catch Exception e
+                                  (error-handler e {:expression expressions
+                                                    :verbose? verbose?
+                                                    :preloads preloads
+                                                    :loader (:loader @cp/cp-state)})))))
             expression (str/join " " expressions) ;; this might mess with the locations...
             exit-code
             ;; handle preloads

@@ -1,1 +1,2 @@
-{:tasks {:eval-plus {:babashka/args ["-e" "(+ 1 2 3)"]}}}
+{:tasks {:eval-plus {:babashka/args ["-e" "(+ 1 2 3)"]}
+         :tree      {:babashka/args [":clojure" "-Stree"]}}}

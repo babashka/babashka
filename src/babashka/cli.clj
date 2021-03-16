@@ -5,8 +5,12 @@
 
 (declare resolve-task)
 
+(defn error [msg exit]
+  (binding [*out* *err*]
+    (println msg)
+    {:exit-code exit}))
+
 (defn parse-opts [options]
-  (prn :options options)
   (let [opts (loop [options options
                     opts-map {}]
                (if options
@@ -129,7 +133,7 @@
                                     :command-line-args (next options))
                              (if (str/starts-with? opt ":")
                                (resolve-task opt {:command-line-args (next options)})
-                               (throw (Exception. (str "File does not exist: " opt))))))))))
+                               (error (str "File does not exist: " opt) 1))))))))
                  opts-map))]
     opts))
 
@@ -142,5 +146,5 @@
           (let [cmd-line-args (get task :babashka/args)]
             ;; this is for invoking babashka itself with command-line-args
             (parse-opts (seq (concat cmd-line-args command-line-args))))
-          (throw (Exception. (str "No such task: " task)))))
-      (throw (Exception. (str "File does not exist: " task))))))
+          (error (str "No such task: " task) 1)))
+      (error (str "File does not exist: " task) 1))))
