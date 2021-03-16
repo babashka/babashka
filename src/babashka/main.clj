@@ -2,6 +2,7 @@
   {:no-doc true}
   (:refer-clojure :exclude [error-handler])
   (:require
+   [babashka.fs :as fs]
    [babashka.impl.bencode :refer [bencode-namespace]]
    [babashka.impl.cheshire :refer [cheshire-core-namespace]]
    [babashka.impl.classes :as classes]
@@ -179,6 +180,7 @@
                      (let [options (next options)]
                        (recur (next options)
                               (assoc opts-map :main (first options))))
+                     ;; fallback
                      (if (some opts-map [:file :jar :socket-repl :expressions :main])
                        (assoc opts-map
                               :command-line-args options)
@@ -189,10 +191,12 @@
                            (-> opts-map
                                (update :expressions (fnil conj []) (first options))
                                (assoc :command-line-args (next options)))
-                           (assoc opts-map
-                                  (if (str/ends-with? opt ".jar")
-                                    :jar :file) opt
-                                  :command-line-args (next options)))))))
+                           (if (fs/exists? opt)
+                             (assoc opts-map
+                                    (if (str/ends-with? opt ".jar")
+                                      :jar :file) opt
+                                    :command-line-args (next options))
+                             (throw (Exception. (str "File does not exist: " opt)))))))))
                  opts-map))]
     opts))
 
