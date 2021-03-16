@@ -1,0 +1,1 @@
+{:tasks {:eval-plus {:babashka/args ["-e" "(+ 1 2 3)"]}}}
