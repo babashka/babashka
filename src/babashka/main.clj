@@ -2,7 +2,7 @@
   {:no-doc true}
   (:refer-clojure :exclude [error-handler])
   (:require
-   [babashka.cli :as cli]
+   [babashka.fs :as fs]
    [babashka.impl.bencode :refer [bencode-namespace]]
    [babashka.impl.cheshire :refer [cheshire-core-namespace]]
    [babashka.impl.classes :as classes]
@@ -34,6 +34,7 @@
    [babashka.impl.test :as t]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
    [babashka.nrepl.server :as nrepl-server]
+   [babashka.process :as p]
    [babashka.wait :as wait]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
@@ -356,10 +357,164 @@ Use -- to separate script command line args from bb command line args.
 (defn shell-seq [in]
   (line-seq (java.io.BufferedReader. in)))
 
-(defn main
-  [& args]
-  (handle-pipe!)
-  (handle-sigint!)
+(declare resolve-task)
+
+(defn error [msg exit]
+  (binding [*out* *err*]
+    (println msg)
+    {:exit-code exit}))
+
+(defn parse-opts [options]
+  (let [opts (loop [options options
+                    opts-map {}]
+               (if options
+                 (let [opt (first options)]
+                   (case opt
+                     ("--") (assoc opts-map :command-line-args (next options))
+                     ("--clojure" ":clojure") (assoc opts-map :clojure true
+                                          :opts (rest options))
+                     ("--version" ":version") {:version true}
+                     ("--help" "-h" "-?") {:help? true}
+                     ("--verbose")(recur (next options)
+                                         (assoc opts-map
+                                                :verbose? true))
+                     ("--describe" ":describe") (recur (next options)
+                                           (assoc opts-map
+                                                  :describe? true))
+                     ("--stream") (recur (next options)
+                                         (assoc opts-map
+                                                :stream? true))
+                     ("-i") (recur (next options)
+                                   (assoc opts-map
+                                          :shell-in true))
+                     ("-I") (recur (next options)
+                                   (assoc opts-map
+                                          :edn-in true))
+                     ("-o") (recur (next options)
+                                   (assoc opts-map
+                                          :shell-out true))
+                     ("-O") (recur (next options)
+                                   (assoc opts-map
+                                          :edn-out true))
+                     ("-io") (recur (next options)
+                                    (assoc opts-map
+                                           :shell-in true
+                                           :shell-out true))
+                     ("-iO") (recur (next options)
+                                    (assoc opts-map
+                                           :shell-in true
+                                           :edn-out true))
+                     ("-Io") (recur (next options)
+                                    (assoc opts-map
+                                           :edn-in true
+                                           :shell-out true))
+                     ("-IO") (recur (next options)
+                                    (assoc opts-map
+                                           :edn-in true
+                                           :edn-out true))
+                     ("--classpath", "-cp")
+                     (let [options (next options)]
+                       (recur (next options)
+                              (assoc opts-map :classpath (first options))))
+                     ("--uberscript" ":uberscript")
+                     (let [options (next options)]
+                       (recur (next options)
+                              (assoc opts-map
+                                     :uberscript (first options))))
+                     ("--uberjar" ":uberjar")
+                     (let [options (next options)]
+                       (recur (next options)
+                              (assoc opts-map
+                                     :uberjar (first options))))
+                     ("-f" "--file")
+                     (let [options (next options)]
+                       (recur (next options)
+                              (assoc opts-map
+                                     :file (first options))))
+                     ("--jar" "-jar")
+                     (let [options (next options)]
+                       (recur (next options)
+                              (assoc opts-map
+                                     :jar (first options))))
+                     ("--repl" ":repl")
+                     (let [options (next options)]
+                       (recur (next options)
+                              (assoc opts-map
+                                     :repl true)))
+                     ("--socket-repl" ":socket-repl")
+                     (let [options (next options)
+                           opt (first options)
+                           opt (when (and opt (not (str/starts-with? opt "-")))
+                                 opt)
+                           options (if opt (next options)
+                                       options)]
+                       (recur options
+                              (assoc opts-map
+                                     :socket-repl (or opt "1666"))))
+                     ("--nrepl-server" ":nrepl-server")
+                     (let [options (next options)
+                           opt (first options)
+                           opt (when (and opt (not (str/starts-with? opt "-")))
+                                 opt)
+                           options (if opt (next options)
+                                       options)]
+                       (recur options
+                              (assoc opts-map
+                                     :nrepl (or opt "1667"))))
+                     ("--eval", "-e")
+                     (let [options (next options)]
+                       (recur (next options)
+                              (update opts-map :expressions (fnil conj []) (first options))))
+                     ("--main", "-m")
+                     (let [options (next options)]
+                       (recur (next options)
+                              (assoc opts-map :main (first options))))
+                     (":do")
+                     (let [options (next options)
+                           options (into [] (comp (partition-by #(= % ","))
+                                                  (take-nth 2))
+                                         options)
+                           parsed (map parse-opts options)]
+                       (assoc opts-map :do parsed))
+                     ;; fallback
+                     (if (some opts-map [:file :jar :socket-repl :expressions :main])
+                       (assoc opts-map
+                              :command-line-args options)
+                       (let [trimmed-opt (str/triml opt)
+                             c (.charAt trimmed-opt 0)]
+                         (case c
+                           (\( \{ \[ \* \@ \#)
+                           (-> opts-map
+                               (update :expressions (fnil conj []) (first options))
+                               (assoc :command-line-args (next options)))
+                           (if (fs/exists? opt)
+                             (assoc opts-map
+                                    (if (str/ends-with? opt ".jar")
+                                      :jar :file) opt
+                                    :command-line-args (next options))
+                             (if (str/starts-with? opt ":")
+                               (resolve-task opt {:command-line-args (next options)})
+                               (error (str "File does not exist: " opt) 1))))))))
+                 opts-map))]
+    opts))
+
+(defn resolve-task [task {:keys [:command-line-args]}]
+  (let [bb-edn-file (or (System/getenv "BABASHKA_EDN")
+                        "bb.edn")]
+    (if (fs/exists? bb-edn-file)
+      (let [bb-edn (edn/read-string (slurp bb-edn-file))]
+        (if-let [task (get-in bb-edn [:tasks (keyword (subs task 1))])]
+          (let [cmd-line-args (get task :babashka/args)
+                proc (get task :babashka/process)]
+            ;; this is for invoking babashka itself with command-line-args
+            (cond cmd-line-args
+                  (parse-opts (seq (map str (concat cmd-line-args command-line-args))))
+                  proc (do (-> proc (p/process {:inherit true}) p/check)
+                           {:exit-code 0})))
+          (error (str "No such task: " task) 1)))
+      (error (str "File does not exist: " task) 1))))
+
+(defn exec [opts]
   (binding [*unrestricted* true]
     (sci/binding [reflection-var false
                   core/data-readers @core/data-readers
@@ -371,9 +526,9 @@ Use -- to separate script command line args from bb command line args.
                     :repl :socket-repl :nrepl
                     :verbose? :classpath
                     :main :uberscript :describe?
-                    :jar :uberjar :clojure :task
+                    :jar :uberjar :clojure
                     :exit-code] :as opts}
-            (cli/parse-opts args)
+            opts
             _ (when clojure
                 (if-let [proc (deps/clojure (:opts opts))]
                   (-> @proc :exit (System/exit))
@@ -545,8 +700,22 @@ Use -- to separate script command line args from bb command line args.
                         :verbose verbose?}))
         exit-code))))
 
+(defn main [& args]
+  (let [opts (parse-opts args)]
+    (if-let [do-opts (:do opts)]
+      (reduce (fn [_ opts]
+                (let [ret (exec opts)]
+                  (if (pos? ret)
+                    (reduced ret)
+                    ret)))
+              0
+              do-opts)
+      (exec opts))))
+
 (defn -main
   [& args]
+  (handle-pipe!)
+  (handle-sigint!)
   (if-let [dev-opts (System/getenv "BABASHKA_DEV")]
     (let [{:keys [:n]} (if (= "true" dev-opts) {:n 1}
                            (edn/read-string dev-opts))

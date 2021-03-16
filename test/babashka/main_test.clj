@@ -1,7 +1,6 @@
 (ns babashka.main-test
   {:clj-kondo/config '{:linters {:unresolved-symbol {:exclude [working?]}}}}
   (:require
-   [babashka.cli :as cli]
    [babashka.main :as main]
    [babashka.test-utils :as test-utils]
    [clojure.edn :as edn]
@@ -31,17 +30,17 @@
 
 (deftest parse-opts-test
   (is (= {:nrepl "1667"}
-         (cli/parse-opts ["--nrepl-server"])))
+         (main/parse-opts ["--nrepl-server"])))
   (is (= {:socket-repl "1666"}
-         (cli/parse-opts ["--socket-repl"])))
+         (main/parse-opts ["--socket-repl"])))
   (is (= {:nrepl "1667", :classpath "src"}
-         (cli/parse-opts ["--nrepl-server" "-cp" "src"])))
+         (main/parse-opts ["--nrepl-server" "-cp" "src"])))
   (is (= {:socket-repl "1666", :expressions ["123"]}
-         (cli/parse-opts ["--socket-repl" "-e" "123"])))
+         (main/parse-opts ["--socket-repl" "-e" "123"])))
   (is (= {:socket-repl "1666", :expressions ["123"]}
-         (cli/parse-opts ["--socket-repl" "1666" "-e" "123"])))
+         (main/parse-opts ["--socket-repl" "1666" "-e" "123"])))
   (is (= {:nrepl "1666", :expressions ["123"]}
-         (cli/parse-opts ["--nrepl-server" "1666" "-e" "123"])))
+         (main/parse-opts ["--nrepl-server" "1666" "-e" "123"])))
   (is (= 123 (bb nil "(println 123)")))
   (is (= 123 (bb nil "-e" "(println 123)")))
   (is (= 123 (bb nil "--eval" "(println 123)")))
