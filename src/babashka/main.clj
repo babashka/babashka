@@ -510,7 +510,7 @@ Use -- to separate script command line args from bb command line args.
             (cond cmd-line-args
                   (parse-opts (seq (map str (concat cmd-line-args command-line-args))))
                   proc {:exec (fn []
-                                (-> proc (p/process {:inherit true}) p/check)
+                                (-> (:args proc) (p/process {:inherit true}) p/check)
                                 0)}))
           (error (str "No such task: " task) 1)))
       (error (str "File does not exist: " task) 1))))
