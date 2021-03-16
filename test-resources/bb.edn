@@ -1,2 +1,3 @@
-{:tasks {:eval-plus {:babashka/args ["-e" "(+ 1 2 3)"]}
-         :tree      {:babashka/args [":clojure" "-Stree"]}}}
+{:tasks {:eval-plus   {:babashka/args ["-e" "(+ 1 2 3)"]}
+         :tree        {:babashka/args [":clojure" "-Stree"]}
+         :count-files {:babashka/process ["bash" "-c" "ls | wc -l"] }}}

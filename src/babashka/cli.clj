@@ -1,5 +1,6 @@
 (ns babashka.cli
   (:require [babashka.fs :as fs]
+            [babashka.process :as p]
             [clojure.edn :as edn]
             [clojure.string :as str]))
 
@@ -143,8 +144,12 @@
     (if (fs/exists? bb-edn-file)
       (let [bb-edn (edn/read-string (slurp bb-edn-file))]
         (if-let [task (get-in bb-edn [:tasks (keyword (subs task 1))])]
-          (let [cmd-line-args (get task :babashka/args)]
+          (let [cmd-line-args (get task :babashka/args)
+                proc (get task :babashka/process)]
             ;; this is for invoking babashka itself with command-line-args
-            (parse-opts (seq (concat cmd-line-args command-line-args))))
+            (cond cmd-line-args
+                  (parse-opts (seq (concat cmd-line-args command-line-args)))
+                  proc (do (-> proc (p/process {:inherit true}) p/check)
+                           {:exit-code 0})))
           (error (str "No such task: " task) 1)))
       (error (str "File does not exist: " task) 1))))

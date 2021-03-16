@@ -527,7 +527,7 @@ Use -- to separate script command line args from bb command line args.
                                                :preloads preloads
                                                :loader (:loader @cp/cp-state)}))))
                        uberscript [nil 0]
-                       (not task) [(repl/start-repl! sci-ctx) 0]))
+                       :else [(repl/start-repl! sci-ctx) 0]))
                 1)]
         (flush)
         (when uberscript
