@@ -148,7 +148,7 @@
                 proc (get task :babashka/process)]
             ;; this is for invoking babashka itself with command-line-args
             (cond cmd-line-args
-                  (parse-opts (seq (concat cmd-line-args command-line-args)))
+                  (parse-opts (seq (map str (concat cmd-line-args command-line-args))))
                   proc (do (-> proc (p/process {:inherit true}) p/check)
                            {:exit-code 0})))
           (error (str "No such task: " task) 1)))
