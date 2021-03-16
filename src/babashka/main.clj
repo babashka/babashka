@@ -81,14 +81,14 @@
                  (let [opt (first options)]
                    (case opt
                      ("--") (assoc opts-map :command-line-args (next options))
-                     ("--clojure") (assoc opts-map :clojure true
+                     ("--clojure" ":clojure") (assoc opts-map :clojure true
                                           :opts (rest options))
-                     ("--version") {:version true}
+                     ("--version" ":version") {:version true}
                      ("--help" "-h" "-?") {:help? true}
                      ("--verbose")(recur (next options)
                                          (assoc opts-map
                                                 :verbose? true))
-                     ("--describe") (recur (next options)
+                     ("--describe" ":describe") (recur (next options)
                                            (assoc opts-map
                                                   :describe? true))
                      ("--stream") (recur (next options)
@@ -126,12 +126,12 @@
                      (let [options (next options)]
                        (recur (next options)
                               (assoc opts-map :classpath (first options))))
-                     ("--uberscript")
+                     ("--uberscript" ":uberscript")
                      (let [options (next options)]
                        (recur (next options)
                               (assoc opts-map
                                      :uberscript (first options))))
-                     ("--uberjar")
+                     ("--uberjar" ":uberjar")
                      (let [options (next options)]
                        (recur (next options)
                               (assoc opts-map
@@ -146,12 +146,12 @@
                        (recur (next options)
                               (assoc opts-map
                                      :jar (first options))))
-                     ("--repl")
+                     ("--repl" ":repl")
                      (let [options (next options)]
                        (recur (next options)
                               (assoc opts-map
                                      :repl true)))
-                     ("--socket-repl")
+                     ("--socket-repl" ":socket-repl")
                      (let [options (next options)
                            opt (first options)
                            opt (when (and opt (not (str/starts-with? opt "-")))
@@ -161,7 +161,7 @@
                        (recur options
                               (assoc opts-map
                                      :socket-repl (or opt "1666"))))
-                     ("--nrepl-server")
+                     ("--nrepl-server" ":nrepl-server")
                      (let [options (next options)
                            opt (first options)
                            opt (when (and opt (not (str/starts-with? opt "-")))
