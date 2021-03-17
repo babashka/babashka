@@ -1,8 +1,8 @@
 {:paths ["test-resources/bb-edn"]
  :tasks {:count-files {:task/type :shell
                        :args ["bash" "-c" "ls | wc -l"]}
-         :bash        {:task/type :fn
-                       :var user/bash}
+         :bash        {:task/type :babashka
+                       :args [:invoke user/bash]}
          :eval-plus   {:task/type :babashka
                        :args [-e (apply + (map (fn [i]
                                                  (Integer/parseInt i))

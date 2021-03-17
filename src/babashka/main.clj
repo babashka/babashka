@@ -474,6 +474,13 @@ Use -- to separate script command line args from bb command line args.
                                          options)
                            parsed (map parse-opts options)]
                        {:do parsed})
+                     (":invoke")
+                     {:exec-src
+                      (pr-str `(do (if-let [f (requiring-resolve (symbol (first *command-line-args*)))]
+                                     (apply f (rest *command-line-args*))
+                                     (throw (Exception. (str "Var not found: " (first *command-line-args*)
+                                                             " " (babashka.classpath/get-classpath)))))))
+                      :command-line-args (next options)}
                      ;; fallback
                      (if (some opts-map [:file :jar :socket-repl :expressions :main])
                        (assoc opts-map
@@ -517,15 +524,7 @@ Use -- to separate script command line args from bb command line args.
                    [nil
                     (-> (p/process args {:inherit true})
                         p/check
-                        :exit)])})
-        :fn
-        (let [var (get task :var)
-              var-sym (symbol var)]
-          {:exec-src (pr-str `(do (if-let [f (requiring-resolve '~var-sym)]
-                                    (apply f *command-line-args*)
-                                    (throw (Exception. (str "Var not found: " '~var-sym
-                                                            " " (babashka.classpath/get-classpath)))))))
-           :command-line-args command-line-args}))
+                        :exit)])}))
       (error (str "No such task: " task) 1))
     (error (str "File does not exist: " task) 1)))
 
