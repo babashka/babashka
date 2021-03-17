@@ -10,6 +10,7 @@
 
 (defn bb-jvm [input-or-opts & args]
   (reset! cp/cp-state nil)
+  (reset! main/env {})
   (let [os (java.io.StringWriter.)
         es (if-let [err (:err input-or-opts)]
              err (java.io.StringWriter.))
@@ -30,6 +31,7 @@
                       (if (string? input-or-opts)
                         (with-in-str input-or-opts (apply main/main args))
                         (apply main/main args)))]
+            ;; (prn :err (str es))
             (if (zero? res)
               (str os)
               (throw (ex-info (str es)

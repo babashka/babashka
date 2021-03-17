@@ -362,7 +362,7 @@ Use -- to separate script command line args from bb command line args.
 (defn error [msg exit]
   (binding [*out* *err*]
     (println msg)
-    {:exec (fn [] exit)}))
+    {:exec (fn [] [nil exit])}))
 
 (defn parse-opts [options]
   (let [opts (loop [options options
@@ -515,7 +515,10 @@ Use -- to separate script command line args from bb command line args.
         :shell
         (let [args (get task :args)]
           {:exec (fn []
-                   (p/process args {:inherit true}) p/check)})
+                   [nil
+                    (-> (p/process args {:inherit true})
+                        p/check
+                        :exit)])})
         :fn
         (let [var (get task :var)
               var-sym (symbol var)]
@@ -708,7 +711,7 @@ Use -- to separate script command line args from bb command line args.
                                                :verbose? verbose?
                                                :preloads preloads
                                                :loader (:loader @cp/cp-state)}))))
-                       exec-fn [(exec-fn) 0]
+                       exec-fn (exec-fn)
                        exec-src [(sci/binding [sci/file (or @sci/file "<task: >")]
                                    (sci/eval-string* sci-ctx exec-src))
                                  0]
