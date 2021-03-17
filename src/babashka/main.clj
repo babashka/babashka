@@ -372,7 +372,7 @@ Use -- to separate script command line args from bb command line args.
                    (case opt
                      ("--") (assoc opts-map :command-line-args (next options))
                      ("--clojure" ":clojure") (assoc opts-map :clojure true
-                                          :opts (rest options))
+                                                     :command-line-args (rest options))
                      ("--version" ":version") {:version true}
                      ("--help" "-h" "-?") {:help? true}
                      ("--verbose")(recur (next options)
@@ -513,7 +513,8 @@ Use -- to separate script command line args from bb command line args.
         (let [cmd-line-args (get task :args)]
           (parse-opts (seq (map str (concat cmd-line-args command-line-args)))))
         :shell
-        (let [args (get task :args)]
+        (let [args (get task :args)
+              args (into (vec args) command-line-args)]
           {:exec (fn []
                    [nil
                     (-> (p/process args {:inherit true})
@@ -715,7 +716,7 @@ Use -- to separate script command line args from bb command line args.
                        exec-src [(sci/binding [sci/file (or @sci/file "<task: >")]
                                    (sci/eval-string* sci-ctx exec-src))
                                  0]
-                       clojure [nil (if-let [proc (deps/clojure (:opts opts))]
+                       clojure [nil (if-let [proc (deps/clojure command-line-args)]
                                       (-> @proc :exit)
                                       0)]
                        uberscript [nil 0]
