@@ -20,6 +20,8 @@
      ret#))
 
 (def data-readers (sci/new-dynamic-var '*data-readers* nil))
+(def command-line-args (sci/new-dynamic-var '*command-line-args* nil))
+(def warn-on-reflection (sci/new-dynamic-var '*warn-on-reflection* false))
 
 (defn read+string
   "Added for compatibility. Must be used with
@@ -59,4 +61,6 @@
    'default-data-readers default-data-readers
    'xml-seq (copy-core-var xml-seq)
    'read+string (fn [& args]
-                  (apply read+string @common/ctx args))})
+                  (apply read+string @common/ctx args))
+   '*command-line-args* command-line-args
+   '*warn-on-reflection* warn-on-reflection})

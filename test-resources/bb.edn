@@ -9,6 +9,9 @@
                                                *command-line-args*))]}
          :tree        {:task/type :babashka
                        :args [:clojure -Stree]}
+         :do-bash     {:task/type :babashka
+                       :args [:do :bash "ls | wc -l"
+                              :__ :eval-plus 1 2 3]}
          :all         {:task/type :babashka
                        :args [:do :count-files
                               :__ :bash "ls | wc -l"

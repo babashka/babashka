@@ -181,8 +181,6 @@ Use -- to separate script command line args from bb command line args.
         (str/replace x #"^#!.*" ""))
       (throw (Exception. (str "File does not exist: " file))))))
 
-(def reflection-var (sci/new-dynamic-var '*warn-on-reflection* false))
-
 (defn load-file* [f]
   (let [f (io/file f)
         s (slurp f)]
@@ -199,7 +197,7 @@ Use -- to separate script command line args from bb command line args.
         nrepl-opts (assoc nrepl-opts
                           :debug dev?
                           :describe {"versions" {"babashka" version}}
-                          :thread-bind [reflection-var])]
+                          :thread-bind [core/warn-on-reflection])]
     (nrepl-server/start-server! ctx nrepl-opts)
     (binding [*out* *err*]
       (println "For more info visit: https://book.babashka.org/#_nrepl")))
@@ -539,7 +537,7 @@ Use -- to separate script command line args from bb command line args.
 
 (defn exec [opts]
   (binding [*unrestricted* true]
-    (sci/binding [reflection-var false
+    (sci/binding [core/warn-on-reflection @core/warn-on-reflection
                   core/data-readers @core/data-readers
                   sci/ns @sci/ns]
       (let [{version-opt :version
@@ -600,15 +598,11 @@ Use -- to separate script command line args from bb command line args.
                                    ["META-INF/MANIFEST.MF"] {:url? true})]
                      (cp/main-ns res))
                    main)
-
             ;; TODO: pull more of these values to compile time
             opts {:aliases aliases
                   :namespaces (-> namespaces
                                   (assoc 'clojure.core
                                          (assoc core-extras
-                                                '*command-line-args*
-                                                (sci/new-dynamic-var '*command-line-args* command-line-args)
-                                                '*warn-on-reflection* reflection-var
                                                 'load-file load-file*))
                                   (assoc-in ['clojure.java.io 'resource]
                                             (fn [path]
@@ -693,7 +687,8 @@ Use -- to separate script command line args from bb command line args.
                                  [nil 0] ;; done streaming
                                  (let [res [(let [res
                                                   (sci/binding [sci/file (or @sci/file "<expr>")
-                                                                input-var in]
+                                                                input-var in
+                                                                core/command-line-args command-line-args]
                                                     (sci/eval-string* sci-ctx expression))]
                                               (when (some? res)
                                                 (if-let [pr-f (cond shell-out println
@@ -742,7 +737,6 @@ Use -- to separate script command line args from bb command line args.
   (let [opts (parse-opts args)]
     (if-let [do-opts (:do opts)]
       (reduce (fn [_ opts]
-;;                (prn :opts opts)
                 (let [ret (exec opts)]
                   (if (pos? ret)
                     (reduced ret)
