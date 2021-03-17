@@ -476,10 +476,10 @@ Use -- to separate script command line args from bb command line args.
                        {:do parsed})
                      (":invoke")
                      {:exec-src
-                      (pr-str `(do (if-let [f (requiring-resolve (symbol (first *command-line-args*)))]
-                                     (apply f (rest *command-line-args*))
-                                     (throw (Exception. (str "Var not found: " (first *command-line-args*)
-                                                             " " (babashka.classpath/get-classpath)))))))
+                      (pr-str '(if-let [f (requiring-resolve (symbol (first *command-line-args*)))]
+                                 (apply f (rest *command-line-args*))
+                                 (throw (Exception. (str "Var not found: " (first *command-line-args*)
+                                                         " " (babashka.classpath/get-classpath))))))
                       :command-line-args (next options)}
                      ;; fallback
                      (if (some opts-map [:file :jar :socket-repl :expressions :main])
@@ -707,9 +707,11 @@ Use -- to separate script command line args from bb command line args.
                                                :preloads preloads
                                                :loader (:loader @cp/cp-state)}))))
                        exec-fn (exec-fn)
-                       exec-src [(sci/binding [sci/file (or @sci/file "<task>")
-                                               core/command-line-args command-line-args]
-                                   (sci/eval-string* sci-ctx exec-src))
+                       exec-src [(let [res (sci/binding [sci/file (or @sci/file "<task>")
+                                                         core/command-line-args command-line-args]
+                                             (sci/eval-string* sci-ctx exec-src))]
+                                   (when (some? res)
+                                     (prn res)))
                                  0]
                        clojure [nil (if-let [proc (deps/clojure command-line-args)]
                                       (-> @proc :exit)
