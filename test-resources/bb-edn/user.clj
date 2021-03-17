@@ -6,4 +6,5 @@
   ;; (prn :cmd  *command-line-args*)
   (-> (p/process ["bash" "-c" (str/join " " args)]
                  {:inherit true})
-      p/check))
+      p/check)
+  nil)
