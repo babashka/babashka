@@ -515,14 +515,23 @@ Use -- to separate script command line args from bb command line args.
         :shell
         (let [args (get task :args)]
           {:exec (fn []
-                   (p/process args {:inherit true}) p/check
-                   0)}))
+                   (p/process args {:inherit true}) p/check)})
+        :fn
+        (let [var (get task :var)
+              var-sym (symbol var)]
+          {:exec-src (pr-str `(do (if-let [f (requiring-resolve '~var-sym)]
+                                    (apply f *command-line-args*)
+                                    (throw (Exception. (str "Var not found: " '~var-sym
+                                                            " " (babashka.classpath/get-classpath)))))))
+           :command-line-args command-line-args}))
       (error (str "No such task: " task) 1))
     (error (str "File does not exist: " task) 1)))
 
 (def should-load-inits?
   "if true, then we should still load preloads and user.clj"
   (volatile! true))
+
+(def env (atom {}))
 
 (defn exec [opts]
   (binding [*unrestricted* true]
@@ -536,7 +545,8 @@ Use -- to separate script command line args from bb command line args.
                     :repl :socket-repl :nrepl
                     :verbose? :classpath
                     :main :uberscript :describe?
-                    :jar :uberjar :clojure]
+                    :jar :uberjar :clojure
+                    :exec-src]
              exec-fn :exec}
             opts
             _ (when verbose? (vreset! common/verbose? true))
@@ -557,7 +567,6 @@ Use -- to separate script command line args from bb command line args.
                                          :else
                                          (edn/read {:readers edn-readers} *in*))))))
             uberscript-sources (atom ())
-            env (atom {})
             classpath (or classpath
                           (System/getenv "BABASHKA_CLASSPATH"))
             _ (when classpath
@@ -699,10 +708,13 @@ Use -- to separate script command line args from bb command line args.
                                                :verbose? verbose?
                                                :preloads preloads
                                                :loader (:loader @cp/cp-state)}))))
-                       exec-fn [nil (exec-fn)]
-                       clojure (if-let [proc (deps/clojure (:opts opts))]
-                                 (-> @proc :exit)
-                                 0)
+                       exec-fn [(exec-fn) 0]
+                       exec-src [(sci/binding [sci/file (or @sci/file "<task: >")]
+                                   (sci/eval-string* sci-ctx exec-src))
+                                 0]
+                       clojure [nil (if-let [proc (deps/clojure (:opts opts))]
+                                      (-> @proc :exit)
+                                      0)]
                        uberscript [nil 0]
                        :else [(repl/start-repl! sci-ctx) 0]))
                 1)]
