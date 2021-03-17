@@ -362,7 +362,7 @@ Use -- to separate script command line args from bb command line args.
 (defn error [msg exit]
   (binding [*out* *err*]
     (println msg)
-    {:exit-code exit}))
+    {:exec (fn [] exit)}))
 
 (defn parse-opts [options]
   (let [opts (loop [options options
@@ -498,208 +498,229 @@ Use -- to separate script command line args from bb command line args.
                  opts-map))]
     opts))
 
+(def bb-edn
+  (delay
+    (let [bb-edn-file (or (System/getenv "BABASHKA_EDN")
+                          "bb.edn")]
+      (when (fs/exists? bb-edn-file)
+        (edn/read-string (slurp bb-edn-file))))))
+
 (defn resolve-task [task {:keys [:command-line-args]}]
-  (let [bb-edn-file (or (System/getenv "BABASHKA_EDN")
-                        "bb.edn")]
-    (if (fs/exists? bb-edn-file)
-      (let [bb-edn (edn/read-string (slurp bb-edn-file))]
-        (if-let [task (get-in bb-edn [:tasks (keyword (subs task 1))])]
-          (let [cmd-line-args (get task :babashka/args)
-                proc (get task :babashka/process)]
-            ;; this is for invoking babashka itself with command-line-args
-            (cond cmd-line-args
-                  (parse-opts (seq (map str (concat cmd-line-args command-line-args))))
-                  proc {:exec (fn []
-                                (-> (:args proc) (p/process {:inherit true}) p/check)
-                                0)}))
-          (error (str "No such task: " task) 1)))
-      (error (str "File does not exist: " task) 1))))
+  (if @bb-edn
+    (if-let [task (get-in @bb-edn [:tasks (keyword (subs task 1))])]
+      (case (:task/type task)
+        :babashka
+        (let [cmd-line-args (get task :args)]
+          (parse-opts (seq (map str (concat cmd-line-args command-line-args)))))
+        :shell
+        (let [args (get task :args)]
+          {:exec (fn []
+                   (p/process args {:inherit true}) p/check
+                   0)}))
+      (error (str "No such task: " task) 1))
+    (error (str "File does not exist: " task) 1)))
+
+(def should-load-inits?
+  "if true, then we should still load preloads and user.clj"
+  (volatile! true))
 
 (defn exec [opts]
   (binding [*unrestricted* true]
     (sci/binding [reflection-var false
                   core/data-readers @core/data-readers
                   sci/ns @sci/ns]
-      (if-let [f (:exec opts)]
-        (f)
-        (if (:clojure opts)
-          (if-let [proc (deps/clojure (:opts opts))]
-            (-> @proc :exit)
-            0)
-          (let [{version-opt :version
-                 :keys [:shell-in :edn-in :shell-out :edn-out
-                        :help? :file :command-line-args
-                        :expressions :stream?
-                        :repl :socket-repl :nrepl
-                        :verbose? :classpath
-                        :main :uberscript :describe?
-                        :jar :uberjar]}
-                opts
-                _ (when verbose? (vreset! common/verbose? true))
-                _ (do ;; set properties
-                    (when main (System/setProperty "babashka.main" main))
-                    (System/setProperty "babashka.version" version))
-                read-next (fn [*in*]
-                            (if (pipe-signal-received?)
-                              ::EOF
-                              (if stream?
-                                (if shell-in (or (read-line) ::EOF)
-                                    (edn/read {:readers edn-readers
-                                               :eof ::EOF} *in*))
-                                (delay (cond shell-in
-                                             (shell-seq *in*)
-                                             edn-in
-                                             (edn-seq *in*)
-                                             :else
-                                             (edn/read {:readers edn-readers} *in*))))))
-                uberscript-sources (atom ())
-                env (atom {})
-                classpath (or classpath
-                              (System/getenv "BABASHKA_CLASSPATH"))
-                _ (when classpath
-                    (cp/add-classpath classpath))
-                abs-path (when file
-                           (let [abs-path (.getAbsolutePath (io/file file))]
-                             (vars/bindRoot sci/file abs-path)
-                             (System/setProperty "babashka.file" abs-path)
-                             abs-path))
-                _ (when jar
-                    (cp/add-classpath jar))
-                load-fn (fn [{:keys [:namespace :reload]}]
-                          (when-let [{:keys [:loader]}
-                                     @cp/cp-state]
-                            (if ;; ignore built-in namespaces when uberscripting, unless with :reload
-                                (and uberscript
-                                     (not reload)
-                                     (or (contains? namespaces namespace)
-                                         (contains? sci-namespaces/namespaces namespace)))
-                              ""
-                              (let [res (cp/source-for-namespace loader namespace nil)]
-                                (when uberscript (swap! uberscript-sources conj (:source res)))
-                                res))))
-                main (if (and jar (not main))
-                       (when-let [res (cp/getResource
-                                       (cp/loader jar)
-                                       ["META-INF/MANIFEST.MF"] {:url? true})]
-                         (cp/main-ns res))
-                       main)
+      (let [{version-opt :version
+             :keys [:shell-in :edn-in :shell-out :edn-out
+                    :help? :file :command-line-args
+                    :expressions :stream?
+                    :repl :socket-repl :nrepl
+                    :verbose? :classpath
+                    :main :uberscript :describe?
+                    :jar :uberjar :clojure]
+             exec-fn :exec}
+            opts
+            _ (when verbose? (vreset! common/verbose? true))
+            _ (do ;; set properties
+                (when main (System/setProperty "babashka.main" main))
+                (System/setProperty "babashka.version" version))
+            read-next (fn [*in*]
+                        (if (pipe-signal-received?)
+                          ::EOF
+                          (if stream?
+                            (if shell-in (or (read-line) ::EOF)
+                                (edn/read {:readers edn-readers
+                                           :eof ::EOF} *in*))
+                            (delay (cond shell-in
+                                         (shell-seq *in*)
+                                         edn-in
+                                         (edn-seq *in*)
+                                         :else
+                                         (edn/read {:readers edn-readers} *in*))))))
+            uberscript-sources (atom ())
+            env (atom {})
+            classpath (or classpath
+                          (System/getenv "BABASHKA_CLASSPATH"))
+            _ (when classpath
+                (cp/add-classpath classpath))
+            abs-path (when file
+                       (let [abs-path (.getAbsolutePath (io/file file))]
+                         (vars/bindRoot sci/file abs-path)
+                         (System/setProperty "babashka.file" abs-path)
+                         abs-path))
+            _ (when jar
+                (cp/add-classpath jar))
+            load-fn (fn [{:keys [:namespace :reload]}]
+                      (when-let [{:keys [:loader]}
+                                 @cp/cp-state]
+                        (if ;; ignore built-in namespaces when uberscripting, unless with :reload
+                            (and uberscript
+                                 (not reload)
+                                 (or (contains? namespaces namespace)
+                                     (contains? sci-namespaces/namespaces namespace)))
+                          ""
+                          (let [res (cp/source-for-namespace loader namespace nil)]
+                            (when uberscript (swap! uberscript-sources conj (:source res)))
+                            res))))
+            main (if (and jar (not main))
+                   (when-let [res (cp/getResource
+                                   (cp/loader jar)
+                                   ["META-INF/MANIFEST.MF"] {:url? true})]
+                     (cp/main-ns res))
+                   main)
 
-                ;; TODO: pull more of these values to compile time
-                opts {:aliases aliases
-                      :namespaces (-> namespaces
-                                      (assoc 'clojure.core
-                                             (assoc core-extras
-                                                    '*command-line-args*
-                                                    (sci/new-dynamic-var '*command-line-args* command-line-args)
-                                                    '*warn-on-reflection* reflection-var
-                                                    'load-file load-file*))
-                                      (assoc-in ['clojure.java.io 'resource]
-                                                (fn [path]
-                                                  (when-let [{:keys [:loader]} @cp/cp-state]
-                                                    (if (str/starts-with? path "/") nil ;; non-relative paths always return nil
-                                                        (cp/getResource loader [path] {:url? true})))))
-                                      (assoc-in ['user (with-meta '*input*
-                                                         (when-not stream?
-                                                           {:sci.impl/deref! true}))] input-var))
-                      :env env
-                      :features #{:bb :clj}
-                      :classes classes/class-map
-                      :imports imports
-                      :load-fn load-fn
-                      :uberscript uberscript
-                      :readers core/data-readers
-                      :reify-fn reify-fn
-                      :proxy-fn proxy-fn}
-                opts (addons/future opts)
-                sci-ctx (sci/init opts)
-                _ (vreset! common/ctx sci-ctx)
-                preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim))
-                [expressions exit-code]
-                (cond expressions [expressions nil]
-                      main [[(format "(ns user (:require [%1$s])) (apply %1$s/-main *command-line-args*)"
-                                     main)] nil]
-                      file (try [[(read-file file)] nil]
-                                (catch Exception e
-                                  (error-handler e {:expression expressions
-                                                    :verbose? verbose?
-                                                    :preloads preloads
-                                                    :loader (:loader @cp/cp-state)}))))
-                expression (str/join " " expressions) ;; this might mess with the locations...
-                exit-code
-                ;; handle preloads
-                (if exit-code exit-code
-                    (do (when preloads
-                          (sci/binding [sci/file "<preloads>"]
+            ;; TODO: pull more of these values to compile time
+            opts {:aliases aliases
+                  :namespaces (-> namespaces
+                                  (assoc 'clojure.core
+                                         (assoc core-extras
+                                                '*command-line-args*
+                                                (sci/new-dynamic-var '*command-line-args* command-line-args)
+                                                '*warn-on-reflection* reflection-var
+                                                'load-file load-file*))
+                                  (assoc-in ['clojure.java.io 'resource]
+                                            (fn [path]
+                                              (when-let [{:keys [:loader]} @cp/cp-state]
+                                                (if (str/starts-with? path "/") nil ;; non-relative paths always return nil
+                                                    (cp/getResource loader [path] {:url? true})))))
+                                  (assoc-in ['user (with-meta '*input*
+                                                     (when-not stream?
+                                                       {:sci.impl/deref! true}))] input-var))
+                  :env env
+                  :features #{:bb :clj}
+                  :classes classes/class-map
+                  :imports imports
+                  :load-fn load-fn
+                  :uberscript uberscript
+                  :readers core/data-readers
+                  :reify-fn reify-fn
+                  :proxy-fn proxy-fn}
+            opts (addons/future opts)
+            sci-ctx (sci/init opts)
+            _ (vreset! common/ctx sci-ctx)
+            preloads (when @should-load-inits? (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim)))
+            [expressions exit-code]
+            (cond expressions [expressions nil]
+                  main [[(format "(ns user (:require [%1$s])) (apply %1$s/-main *command-line-args*)"
+                                 main)] nil]
+                  file (try [[(read-file file)] nil]
+                            (catch Exception e
+                              (error-handler e {:expression expressions
+                                                :verbose? verbose?
+                                                :preloads preloads
+                                                :loader (:loader @cp/cp-state)}))))
+            expression (str/join " " expressions) ;; this might mess with the locations...
+            exit-code
+            ;; handle preloads
+            (if exit-code exit-code
+                (do (when @should-load-inits?
+                      (when preloads
+                        (sci/binding [sci/file "<preloads>"]
+                          (try
+                            (sci/eval-string* sci-ctx preloads)
+                            (catch Throwable e
+                              (error-handler e {:expression expression
+                                                :verbose? verbose?
+                                                :preloads preloads
+                                                :loader (:loader @cp/cp-state)})))))
+                      (when @cp/cp-state
+                        (when-let [{:keys [:file :source]}
+                                   (cp/source-for-namespace (:loader @cp/cp-state) "user" nil)]
+                          (sci/binding [sci/file file]
                             (try
-                              (sci/eval-string* sci-ctx preloads)
+                              (sci/eval-string* sci-ctx source)
                               (catch Throwable e
                                 (error-handler e {:expression expression
                                                   :verbose? verbose?
                                                   :preloads preloads
-                                                  :loader (:loader @cp/cp-state)})))))
-                        nil))
-                ;; socket REPL is start asynchronously. when no other args are
-                ;; provided, a normal REPL will be started as well, which causes the
-                ;; process to wait until SIGINT
-                _ (when socket-repl (start-socket-repl! socket-repl sci-ctx))
-                exit-code
-                (or exit-code
-                    (second
-                     (cond version-opt
-                           [(print-version) 0]
-                           help?
-                           [(print-help) 0]
-                           describe?
-                           [(print-describe) 0]
-                           repl [(repl/start-repl! sci-ctx) 0]
-                           nrepl [(start-nrepl! nrepl sci-ctx) 0]
-                           uberjar [nil 0]
-                           expressions
-                           (sci/binding [sci/file abs-path]
-                             (try
-                               (loop []
-                                 (let [in (read-next *in*)]
-                                   (if (identical? ::EOF in)
-                                     [nil 0] ;; done streaming
-                                     (let [res [(let [res
-                                                      (sci/binding [sci/file (or @sci/file "<expr>")
-                                                                    input-var in]
-                                                        (sci/eval-string* sci-ctx expression))]
-                                                  (when (some? res)
-                                                    (if-let [pr-f (cond shell-out println
-                                                                        edn-out prn)]
-                                                      (if (coll? res)
-                                                        (doseq [l res
-                                                                :while (not (pipe-signal-received?))]
-                                                          (pr-f l))
-                                                        (pr-f res))
-                                                      (prn res)))) 0]]
-                                       (if stream?
-                                         (recur)
-                                         res)))))
-                               (catch Throwable e
-                                 (error-handler e {:expression expression
-                                                   :verbose? verbose?
-                                                   :preloads preloads
-                                                   :loader (:loader @cp/cp-state)}))))
-                           uberscript [nil 0]
-                           :else [(repl/start-repl! sci-ctx) 0]))
-                    1)]
-            (flush)
-            (when uberscript
-              (let [uberscript-out uberscript]
-                (spit uberscript-out "") ;; reset file
-                (doseq [s (distinct @uberscript-sources)]
-                  (spit uberscript-out s :append true))
-                (spit uberscript-out preloads :append true)
-                (spit uberscript-out expression :append true)))
-            (when uberjar
-              (uberjar/run {:dest uberjar
-                            :jar :uber
-                            :classpath classpath
-                            :main-class main
-                            :verbose verbose?}))
-            exit-code))))))
+                                                  :loader (:loader @cp/cp-state)}))))))
+                      (vreset! should-load-inits? false))
+                    nil))
+            ;; socket REPL is start asynchronously. when no other args are
+            ;; provided, a normal REPL will be started as well, which causes the
+            ;; process to wait until SIGINT
+            _ (when socket-repl (start-socket-repl! socket-repl sci-ctx))
+            exit-code
+            (or exit-code
+                (second
+                 (cond version-opt
+                       [(print-version) 0]
+                       help?
+                       [(print-help) 0]
+                       describe?
+                       [(print-describe) 0]
+                       repl [(repl/start-repl! sci-ctx) 0]
+                       nrepl [(start-nrepl! nrepl sci-ctx) 0]
+                       uberjar [nil 0]
+                       expressions
+                       (sci/binding [sci/file abs-path]
+                         (try
+                           (loop []
+                             (let [in (read-next *in*)]
+                               (if (identical? ::EOF in)
+                                 [nil 0] ;; done streaming
+                                 (let [res [(let [res
+                                                  (sci/binding [sci/file (or @sci/file "<expr>")
+                                                                input-var in]
+                                                    (sci/eval-string* sci-ctx expression))]
+                                              (when (some? res)
+                                                (if-let [pr-f (cond shell-out println
+                                                                    edn-out prn)]
+                                                  (if (coll? res)
+                                                    (doseq [l res
+                                                            :while (not (pipe-signal-received?))]
+                                                      (pr-f l))
+                                                    (pr-f res))
+                                                  (prn res)))) 0]]
+                                   (if stream?
+                                     (recur)
+                                     res)))))
+                           (catch Throwable e
+                             (error-handler e {:expression expression
+                                               :verbose? verbose?
+                                               :preloads preloads
+                                               :loader (:loader @cp/cp-state)}))))
+                       exec-fn [nil (exec-fn)]
+                       clojure (if-let [proc (deps/clojure (:opts opts))]
+                                 (-> @proc :exit)
+                                 0)
+                       uberscript [nil 0]
+                       :else [(repl/start-repl! sci-ctx) 0]))
+                1)]
+        (flush)
+        (when uberscript
+          (let [uberscript-out uberscript]
+            (spit uberscript-out "") ;; reset file
+            (doseq [s (distinct @uberscript-sources)]
+              (spit uberscript-out s :append true))
+            (spit uberscript-out preloads :append true)
+            (spit uberscript-out expression :append true)))
+        (when uberjar
+          (uberjar/run {:dest uberjar
+                        :jar :uber
+                        :classpath classpath
+                        :main-class main
+                        :verbose verbose?}))
+        exit-code))))
 
 (defn main [& args]
   (let [opts (parse-opts args)]
@@ -718,6 +739,9 @@ Use -- to separate script command line args from bb command line args.
   [& args]
   (handle-pipe!)
   (handle-sigint!)
+  (when-let [bb-edn @bb-edn]
+    (when-let [paths (:paths bb-edn)]
+      (cp/add-classpath (str/join cp/path-sep paths))))
   (if-let [dev-opts (System/getenv "BABASHKA_DEV")]
     (let [{:keys [:n]} (if (= "true" dev-opts) {:n 1}
                            (edn/read-string dev-opts))
