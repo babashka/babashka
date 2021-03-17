@@ -708,7 +708,8 @@ Use -- to separate script command line args from bb command line args.
                                                :preloads preloads
                                                :loader (:loader @cp/cp-state)}))))
                        exec-fn (exec-fn)
-                       exec-src [(sci/binding [sci/file (or @sci/file "<task: >")]
+                       exec-src [(sci/binding [sci/file (or @sci/file "<task>")
+                                               core/command-line-args command-line-args]
                                    (sci/eval-string* sci-ctx exec-src))
                                  0]
                        clojure [nil (if-let [proc (deps/clojure command-line-args)]
