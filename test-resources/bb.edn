@@ -18,15 +18,24 @@
                               :__ :eval-plus 1 2 3
                               :__ :describe]}
          ;;;;
-         :failing-shell {:task/type :babashka
-                         ;; we are executing a shell task, yet we are continueing despite the error code
-                         :args [-e (-> (do (deref (babashka.process/process ["ls" "foobar"] {:inherit true}))
-                                           (deref (babashka.process/process ["echo" "done"] {:inherit true}))
-                                           nil))]}
+         :never-failing-shell
+         {:task/type :babashka
+          ;; we are executing a shell task, yet we are continueing despite the error code
+          :args [-e (-> (do (deref (babashka.process/process ["ls" "foobar"] {:inherit true}))
+                            (deref (babashka.process/process ["echo" "done"] {:inherit true}))
+                            nil))]}
          :print-hello {:task/type :babashka
                        :args [-e (println :hello)]}
+
+         :always-failing-shell
+         {:task/type :babashka
+          ;; we are executing a shell task, yet we are continueing despite the error code
+          :args [-e (babashka.process/check (babashka.process/process ["ls" "foobar"] {:inherit true}))]}
+         :composed-never-failing {:task/type :babashka
+                                  :args [:do :never-failing-shell
+                                         :__ :print-hello]}
          :composed-failing {:task/type :babashka
-                            :args [:do :failing-shell
+                            :args [:do :always-failing-shell
                                    :__ :print-hello]}
          ,}
  }
