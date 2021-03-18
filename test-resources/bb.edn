@@ -16,4 +16,17 @@
                        :args [:do :count-files
                               :__ :bash "ls | wc -l"
                               :__ :eval-plus 1 2 3
-                              :__ :describe]}}}
+                              :__ :describe]}
+         ;;;;
+         :failing-shell {:task/type :babashka
+                         ;; we are executing a shell task, yet we are continueing despite the error code
+                         :args [-e (-> (do (deref (babashka.process/process ["ls" "foobar"] {:inherit true}))
+                                           (deref (babashka.process/process ["echo" "done"] {:inherit true}))
+                                           nil))]}
+         :print-hello {:task/type :babashka
+                       :args [-e (println :hello)]}
+         :composed-failing {:task/type :babashka
+                            :args [:do :failing-shell
+                                   :__ :print-hello]}
+         ,}
+ }

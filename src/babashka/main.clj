@@ -524,7 +524,8 @@ Use -- to separate script command line args from bb command line args.
                    [nil
                     (-> (p/process args {:inherit true})
                         p/check
-                        :exit)])}))
+                        :exit)])})
+        (error (str "No such task: " (:task/type task)) 1))
       (error (str "No such task: " task) 1))
     (error (str "File does not exist: " task) 1)))
 
