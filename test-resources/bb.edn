@@ -37,5 +37,14 @@
          :composed-failing {:task/type :babashka
                             :args [:do :always-failing-shell
                                    :__ :print-hello]}
-         ,}
+         ,
+
+         ;;;; context (not implemented)
+         :put-answer-in-ctx {:type/task :babashka
+                             :args [:eval-plus 1 2 3]
+                             :out [:answer]}
+         :print-answer {:type/task :babashka
+                        :in {:sum [:answer]}
+                        :args [-e (println $sum)]}
+         }
  }
