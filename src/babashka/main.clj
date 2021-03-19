@@ -753,10 +753,7 @@ Use -- to separate script command line args from bb command line args.
   (handle-pipe!)
   (handle-sigint!)
   (when-let [bb-edn @bb-edn]
-    (when-let [paths (:paths bb-edn)]
-      (cp/add-classpath (str/join cp/path-sep paths)))
-    (when-let [deps (:deps bb-edn)]
-      (deps/add-deps {:deps deps})))
+    (deps/add-deps bb-edn))
   (if-let [dev-opts (System/getenv "BABASHKA_DEV")]
     (let [{:keys [:n]} (if (= "true" dev-opts) {:n 1}
                            (edn/read-string dev-opts))
