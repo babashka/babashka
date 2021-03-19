@@ -63,8 +63,7 @@
                                                     org.clojure/spec.alpha ""
                                                     org.clojure/core.specs.alpha ""}})
          args ["-Spath" "-Sdeps" (str deps-map)]
-         args (cond-> args
-                aliases (conj (str "-A:" (str/join ":" (cons ":org.babashka/defaults" aliases)))))
+         args (conj args (str "-A:" (str/join ":" (cons ":org.babashka/defaults" aliases))))
          cp (with-out-str (apply deps/-main args))]
      (cp/add-classpath cp))))
 
