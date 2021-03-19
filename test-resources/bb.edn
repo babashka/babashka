@@ -1,4 +1,7 @@
-{:paths ["test-resources/bb-edn"]
+{:paths ["test-resources/bb-edn"] ;; no-brainer to support this
+ :deps {medley/medley {:mvn/version "1.3.0"}} ;; no-brainer to support this
+
+ ;; here comes the part that is currently uncertain
  :tasks {:count-files {:task/type :shell
                        :args ["bash" "-c" "ls | wc -l"]}
          :bash        {:task/type :babashka
@@ -40,6 +43,8 @@
          ,
 
          ;;;; context (not implemented)
+         ;; the problem with this is the DSL nature which is very opiniated and
+         ;; maybe not so nice to learn for people who only want to write Clojure
          :put-answer-in-ctx {:type/task :babashka
                              :args [:eval-plus 1 2 3]
                              :out [:answer]}
