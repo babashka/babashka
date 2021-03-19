@@ -57,13 +57,14 @@
   then used to resolve dependencies in babashka."
   ([deps-map] (add-deps deps-map nil))
   ([deps-map {:keys [:aliases]}]
-   (let [deps-map (assoc-in deps-map [:aliases :org.babashka/remove-clojure]
-                            '{:classpath-overrides {org.clojure/clojure ""
+   (let [deps-map (assoc-in deps-map [:aliases :org.babashka/defaults]
+                            '{:replace-paths [] ;; babashka sets paths manually
+                              :classpath-overrides {org.clojure/clojure ""
                                                     org.clojure/spec.alpha ""
                                                     org.clojure/core.specs.alpha ""}})
          args ["-Spath" "-Sdeps" (str deps-map)]
          args (cond-> args
-                aliases (conj (str "-A:" (str/join ":" (cons ":org.babashka/remove-clojure" aliases)))))
+                aliases (conj (str "-A:" (str/join ":" (cons ":org.babashka/defaults" aliases)))))
          cp (with-out-str (apply deps/-main args))]
      (cp/add-classpath cp))))
 
