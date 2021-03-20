@@ -48,7 +48,7 @@
         (let [res (bb :all)]
           (is (= 6 res)))
         (is (not (fs/exists? temp-file))))))
-  (testing ":or-do"
+  (testing ":and-do failing"
     (with-config {:tasks {:div-by-zero {:task/type :babashka
                                         :args ["-e" "(/ 1 0)"]}
                           :sum {:task/type :babashka
@@ -56,4 +56,12 @@
                           :all {:task/type :babashka
                                 :args [:do :div-by-zero :and-do :sum]}}}
       (is (thrown-with-msg? Exception #"Divide"
-                            (bb :all))))))
+                            (bb :all)))))
+  (testing ":or-do succeeding"
+    (with-config {:tasks {:div-by-zero {:task/type :babashka
+                                        :args ["-e" "(/ 1 0)"]}
+                          :sum {:task/type :babashka
+                                :args ["-e" "(+ 1 2 3)"]}
+                          :all {:task/type :babashka
+                                :args [:do :div-by-zero :or-do :sum]}}}
+      (is (= 6 (bb :all))))))
