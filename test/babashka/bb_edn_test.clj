@@ -4,7 +4,7 @@
    [babashka.fs :as fs]
    [babashka.test-utils :as test-utils]
    [clojure.edn :as edn]
-   [clojure.test :as test :refer [deftest is]]))
+   [clojure.test :as test :refer [deftest is testing]]))
 
 (defn bb [& args]
   (edn/read-string
@@ -35,15 +35,25 @@
       (is (not (fs/exists? temp-file))))))
 
 (deftest do-task-test
-  (let [temp-dir (fs/create-temp-dir)
-        temp-file (fs/create-file (fs/path temp-dir "temp-file.txt"))]
-    (with-config {:tasks {:clean {:task/type :shell
-                                  :args ["rm" (str temp-file)]}
+  (testing ":and-do"
+    (let [temp-dir (fs/create-temp-dir)
+          temp-file (fs/create-file (fs/path temp-dir "temp-file.txt"))]
+      (with-config {:tasks {:clean {:task/type :shell
+                                    :args ["rm" (str temp-file)]}
+                            :sum {:task/type :babashka
+                                  :args ["-e" "(+ 1 2 3)"]}
+                            :all {:task/type :babashka
+                                  :args [:do :clean :and-do :sum]}}}
+        (is (fs/exists? temp-file))
+        (let [res (bb :all)]
+          (is (= 6 res)))
+        (is (not (fs/exists? temp-file))))))
+  (testing ":or-do"
+    (with-config {:tasks {:div-by-zero {:task/type :babashka
+                                        :args ["-e" "(/ 1 0)"]}
                           :sum {:task/type :babashka
                                 :args ["-e" "(+ 1 2 3)"]}
                           :all {:task/type :babashka
-                                :args [:do :clean :and-do :sum]}}}
-      (is (fs/exists? temp-file))
-      (let [res (bb :all)]
-        (is (= 6 res)))
-      (is (not (fs/exists? temp-file))))))
+                                :args [:do :div-by-zero :and-do :sum]}}}
+      (is (thrown-with-msg? Exception #"Divide"
+                            (bb :all))))))
