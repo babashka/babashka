@@ -57,7 +57,15 @@
                                 :args [:do :div-by-zero :and-do :sum]}}}
       (is (thrown-with-msg? Exception #"Divide"
                             (bb :all)))))
-  (testing ":or-do succeeding"
+  (testing ":or-do short-cutting"
+    (with-config {:tasks {:sum-1 {:task/type :babashka
+                                :args ["-e" "(+ 1 2 3)"]}
+                          :sum-2 {:task/type :babashka
+                                  :args ["-e" "(+ 4 5 6)"]}
+                          :all {:task/type :babashka
+                                :args [:do :sum-1 :or-do :sum-2]}}}
+      (is (= 6 (bb :all)))))
+  (testing ":or-do succeeding after failing"
     (with-config {:tasks {:div-by-zero {:task/type :babashka
                                         :args ["-e" "(/ 1 0)"]}
                           :sum {:task/type :babashka

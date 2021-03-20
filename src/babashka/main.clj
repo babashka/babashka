@@ -738,12 +738,13 @@ Use -- to separate script command line args from bb command line args.
   (let [opts (parse-opts args)]
     (if-let [do-opts (:do opts)]
       (reduce (fn [prev-exit opts]
-                (if (and (pos? prev-exit)
-                         (not= [":or-do"] opts))
-                  (reduced prev-exit)
-                  (if (or (= [":and-do"] opts)
-                          (= [":or-do"] opts))
-                    0
+                (if (pos? prev-exit)
+                  (case opts
+                    [":or-do"] 0
+                    (reduced prev-exit))
+                  (case opts
+                    [":or-do"] (reduced prev-exit) ;; short-cutting
+                    [":and-do"] 0 ;; skipping, returning 0
                     (exec (parse-opts opts)))))
               0
               do-opts)
