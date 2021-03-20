@@ -48,6 +48,21 @@
         (let [res (bb :all)]
           (is (= 6 res)))
         (is (not (fs/exists? temp-file))))))
+  (testing ":do always continuing"
+    (with-config {:tasks {:sum-1 {:task/type :babashka
+                                  :args ["-e" "(do (+ 4 5 6) nil)"]}
+                          :sum-2 {:task/type :babashka
+                                  :args ["-e" "(+ 1 2 3)"]}
+                          :all {:task/type :babashka
+                                :args [:do :sum-1 :do :sum-2]}}}
+      (is (= 6 (bb :all))))
+    (with-config {:tasks {:div-by-zero {:task/type :babashka
+                                        :args ["-e" "(/ 1 0)"]}
+                          :sum {:task/type :babashka
+                                :args ["-e" "(+ 1 2 3)"]}
+                          :all {:task/type :babashka
+                                :args [:do :div-by-zero :do :sum]}}}
+      (is (= 6 (bb :all)))))
   (testing ":and-do failing"
     (with-config {:tasks {:div-by-zero {:task/type :babashka
                                         :args ["-e" "(/ 1 0)"]}

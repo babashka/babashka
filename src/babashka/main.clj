@@ -481,8 +481,10 @@ Use -- to separate script command line args from bb command line args.
                                   (assoc opts-map :main (first options))))
                          (":do")
                          (let [options (next options)
-                               options (into [] (comp (partition-by #(or (= % ":and-do")
-                                                                         (= % ":or-do"))))
+                               options (into [] (comp (partition-by #(or
+                                                                      (= % ":do")
+                                                                      (= % ":and-do")
+                                                                      (= % ":or-do"))))
                                              options)]
                            {:do options})
                          (":invoke")
@@ -738,13 +740,15 @@ Use -- to separate script command line args from bb command line args.
   (let [opts (parse-opts args)]
     (if-let [do-opts (:do opts)]
       (reduce (fn [prev-exit opts]
+                ;; (prn :prev prev-exit)
+                ;; (prn :opts opts)
                 (if (pos? prev-exit)
                   (case opts
-                    [":or-do"] 0
+                    ([":do"] [":or-do"]) 0 ;; skipping, returning 0
                     (reduced prev-exit))
                   (case opts
                     [":or-do"] (reduced prev-exit) ;; short-cutting
-                    [":and-do"] 0 ;; skipping, returning 0
+                    ([":do"] [":and-do"]) 0 ;; skipping, returning 0
                     (exec (parse-opts opts)))))
               0
               do-opts)
