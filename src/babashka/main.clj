@@ -650,8 +650,15 @@ Use -- to separate script command line args from bb command line args.
             preloads (when @should-load-inits? (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim)))
             [expressions exit-code]
             (cond expressions [expressions nil]
-                  main [[(format "(ns user (:require [%1$s])) (apply %1$s/-main *command-line-args*)"
-                                 main)] nil]
+                  main
+                  (let [sym (symbol main)
+                        ns? (namespace sym)
+                        ns (or ns? sym)
+                        var-name (if ns?
+                                   (name sym)
+                                   "-main")]
+                    [[(format "(ns user (:require [%1$s])) (apply %1$s/%2$s *command-line-args*)"
+                              ns var-name)] nil])
                   file (try [[(read-file file)] nil]
                             (catch Exception e
                               (error-handler e {:expression expressions

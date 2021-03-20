@@ -59,7 +59,7 @@
   ([deps-map {:keys [:aliases]}]
    (when-let [paths (:paths deps-map)]
      (cp/add-classpath (str/join cp/path-sep paths)))
-   (when-let [deps-map (not-empty (dissoc deps-map :paths))]
+   (when-let [deps-map (not-empty (dissoc deps-map :paths :tasks))]
      (let [deps-map (assoc-in deps-map [:aliases :org.babashka/defaults]
                               '{:replace-paths [] ;; babashka sets paths manually
                                 :classpath-overrides {org.clojure/clojure ""
