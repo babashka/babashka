@@ -19,7 +19,13 @@
      (binding [test-utils/*bb-edn-path* (str bb-edn-file#)]
        ~@body)))
 
-(deftest foobar-test
+(deftest babashka-task-test
+  (with-config {:tasks {:sum {:task/type :babashka
+                              :args ["-e" "(+ 1 2 3)"]}}}
+    (let [res (bb :sum)]
+      (is (= 6 res)))))
+
+(deftest shell-task-test
   (let [temp-dir (fs/create-temp-dir)
         temp-file (fs/create-file (fs/path temp-dir "temp-file.txt"))]
     (with-config {:tasks {:clean {:task/type :shell
@@ -27,4 +33,3 @@
       (is (fs/exists? temp-file))
       (bb :clean)
       (is (not (fs/exists? temp-file))))))
-
