@@ -1,4 +1,0 @@
-{:paths ["test-resources/task_scripts"]
- :tasks {:main-task {:task/type :main
-                     :main tasks ;; this calls tasks/-main
-                     :args [1 2 3]}}}

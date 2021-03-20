@@ -783,8 +783,9 @@ Use -- to separate script command line args from bb command line args.
                         "bb.edn")]
     (when (fs/exists? bb-edn-file)
       (let [edn (edn/read-string (slurp bb-edn-file))]
-        (reset! bb-edn edn)
-        (deps/add-deps edn))))
+        (reset! bb-edn edn)))
+    ;; we mutate the atom from tests as well, so despite the above it can contain a bb.edn
+    (when-let [bb-edn @bb-edn] (deps/add-deps bb-edn)))
   (let [opts (parse-opts args)]
     (if-let [do-opts (:do opts)]
       (reduce (fn [prev-exit opts]
