@@ -84,7 +84,7 @@
 (def bb-edn
   (atom nil))
 
-(defn print-help [command-line-args]
+(defn print-help [ctx command-line-args]
   (if (empty? command-line-args)
     (do
       (println (str "Babashka v" version))
@@ -141,10 +141,18 @@ Use -- to separate script command line args from bb command line args.
     (let [k (first command-line-args)
           k (keyword (subs k 1))
           task (get-in @bb-edn [:tasks k])
+          main (:main task)
           help-text (:task/help task)]
       (if help-text
         [(println help-text) 0]
-        [(println "No help found for task:" k) 1])
+        (if main
+          (let [main (if (simple-symbol? main)
+                       (symbol (str main) "-main")
+                       main)]
+            (if-let [doc (sci/eval-string* ctx (format "(some-> (requiring-resolve '%s) meta :doc)" main))]
+              [(println doc) 0]
+              [(println "No help found for task:" k) 1]))
+          [(println "No help found for task:" k) 1]))
       ,)) ;; end if
   ,) ;; end defn
 
@@ -550,6 +558,10 @@ Use -- to separate script command line args from bb command line args.
                 (-> (p/process args {:inherit true})
                     p/check
                     :exit)])})
+    :main
+    (let [main-arg (:main task)
+          cmd-line-args (:args task)]
+      (parse-opts (seq (map str (concat ["--main" main-arg] cmd-line-args command-line-args)))))
     (error (str "No such task: " (:task/type task)) 1)))
 
 (def should-load-inits?
@@ -701,7 +713,7 @@ Use -- to separate script command line args from bb command line args.
                 (second
                  (cond version-opt
                        [(print-version) 0]
-                       help (print-help command-line-args)
+                       help (print-help sci-ctx command-line-args)
                        tasks (print-tasks tasks)
                        describe?
                        [(print-describe) 0]
@@ -767,6 +779,12 @@ Use -- to separate script command line args from bb command line args.
         exit-code))))
 
 (defn main [& args]
+  (let [bb-edn-file (or (System/getenv "BABASHKA_EDN")
+                        "bb.edn")]
+    (when (fs/exists? bb-edn-file)
+      (let [edn (edn/read-string (slurp bb-edn-file))]
+        (reset! bb-edn edn)
+        (deps/add-deps edn))))
   (let [opts (parse-opts args)]
     (if-let [do-opts (:do opts)]
       (reduce (fn [prev-exit opts]
@@ -788,12 +806,6 @@ Use -- to separate script command line args from bb command line args.
   [& args]
   (handle-pipe!)
   (handle-sigint!)
-  (let [bb-edn-file (or (System/getenv "BABASHKA_EDN")
-                        "bb.edn")]
-    (when (fs/exists? bb-edn-file)
-      (let [edn (edn/read-string (slurp bb-edn-file))]
-        (reset! bb-edn edn)
-        (deps/add-deps edn))))
   (if-let [dev-opts (System/getenv "BABASHKA_DEV")]
     (let [{:keys [:n]} (if (= "true" dev-opts) {:n 1}
                            (edn/read-string dev-opts))

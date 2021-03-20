@@ -4,8 +4,8 @@
    [babashka.fs :as fs]
    [babashka.test-utils :as test-utils]
    [clojure.edn :as edn]
-   [clojure.test :as test :refer [deftest is testing]]
-   [clojure.string :as str]))
+   [clojure.string :as str]
+   [clojure.test :as test :refer [deftest is testing]]))
 
 (defn bb [& args]
   (edn/read-string
@@ -75,7 +75,7 @@
                             (bb :all)))))
   (testing ":or-do short-cutting"
     (with-config {:tasks {:sum-1 {:task/type :babashka
-                                :args ["-e" "(+ 1 2 3)"]}
+                                  :args ["-e" "(+ 1 2 3)"]}
                           :sum-2 {:task/type :babashka
                                   :args ["-e" "(+ 4 5 6)"]}
                           :all {:task/type :babashka
@@ -90,7 +90,7 @@
                                 :args [:do :div-by-zero :or-do :sum]}}}
       (is (= 6 (bb :all))))))
 
-(deftest priotize-user-task-test
+(deftest prioritize-user-task-test
   (is (map? (bb :describe)))
   (with-config {:tasks {:describe {:task/type :babashka
                                    :args ["-e" "(+ 1 2 3)"]}}}
@@ -109,8 +109,8 @@ Addition is a pretty advanced topic.  Let us start with the identity element
 
 (deftest list-tasks-test
   (with-config {:tasks {:cool-task-1 {:task/type :babashka
-                                    :args ["-e" "(+ 1 2 3)"]
-                                    :task/help "Usage: bb :cool-task
+                                      :args ["-e" "(+ 1 2 3)"]
+                                      :task/help "Usage: bb :cool-task
 
 Addition is a pretty advanced topic.  Let us start with the identity element
 0. ..."}
@@ -125,3 +125,13 @@ Addition is a pretty advanced topic.  Let us start with the identity element
       (is (str/includes? res "The following tasks are available:"))
       (is (str/includes? res ":cool-task-1"))
       (is (str/includes? res ":cool-task-2")))))
+
+(deftest main-task-test
+  (with-config {:paths ["test-resources/task_scripts"]
+                :tasks {:main-task {:task/type :main
+                                    :main 'tasks ;; this calls tasks/-main
+                                    :args [1 2 3]}}}
+    (is (= '("1" "2" "3") (bb :main-task)))
+    (let [res (apply test-utils/bb nil
+                     (map str [:help :main-task]))]
+      (is (str/includes? res "Usage: just pass some args")))))
