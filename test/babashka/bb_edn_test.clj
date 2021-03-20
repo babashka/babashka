@@ -88,3 +88,9 @@
                           :all {:task/type :babashka
                                 :args [:do :div-by-zero :or-do :sum]}}}
       (is (= 6 (bb :all))))))
+
+(deftest priotize-user-task-test
+  (is (map? (bb :describe)))
+  (with-config {:tasks {:describe {:task/type :babashka
+                                   :args ["-e" "(+ 1 2 3)"]}}}
+    (is (= 6 (bb :describe)))))
