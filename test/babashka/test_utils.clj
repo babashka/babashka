@@ -2,7 +2,7 @@
   (:require
    [babashka.impl.classpath :as cp]
    [babashka.main :as main]
-   [me.raynes.conch :refer [let-programs] :as sh]
+   [babashka.process :as p]
    [sci.core :as sci]
    [sci.impl.vars :as vars]))
 
@@ -43,15 +43,15 @@
         (vars/bindRoot sci/err *err*)))))
 
 (defn bb-native [input & args]
-  (let-programs [bb "./bb"]
-    (try (if input
-           (apply bb (conj (vec args)
-                           {:in input}))
-           (apply bb args))
-         (catch Exception e
-           (let [d (ex-data e)
-                 err-msg (or (:stderr (ex-data e)) "")]
-             (throw (ex-info err-msg d)))))))
+  (let [res (p/process (into ["./bb"] args)
+                       {:in input
+                        :out :string
+                        :err :string})
+        res (deref res)
+        exit (:exit res)
+        error? (pos? exit)]
+    (if error? (throw (ex-info (or (:err res) "") {}))
+        (:out res))))
 
 (def bb
   (case (System/getenv "BABASHKA_TEST_ENV")
