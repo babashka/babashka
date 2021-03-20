@@ -33,3 +33,17 @@
       (is (fs/exists? temp-file))
       (bb :clean)
       (is (not (fs/exists? temp-file))))))
+
+(deftest do-task-test
+  (let [temp-dir (fs/create-temp-dir)
+        temp-file (fs/create-file (fs/path temp-dir "temp-file.txt"))]
+    (with-config {:tasks {:clean {:task/type :shell
+                                  :args ["rm" (str temp-file)]}
+                          :sum {:task/type :babashka
+                                :args ["-e" "(+ 1 2 3)"]}
+                          :all {:task/type :babashka
+                                :args [:do :clean :and-do :sum]}}}
+      (is (fs/exists? temp-file))
+      (let [res (bb :all)]
+        (is (= 6 res)))
+      (is (not (fs/exists? temp-file))))))
