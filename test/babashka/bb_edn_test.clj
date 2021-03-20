@@ -4,7 +4,8 @@
    [babashka.fs :as fs]
    [babashka.test-utils :as test-utils]
    [clojure.edn :as edn]
-   [clojure.test :as test :refer [deftest is testing]]))
+   [clojure.test :as test :refer [deftest is testing]]
+   [clojure.string :as str]))
 
 (defn bb [& args]
   (edn/read-string
@@ -94,3 +95,14 @@
   (with-config {:tasks {:describe {:task/type :babashka
                                    :args ["-e" "(+ 1 2 3)"]}}}
     (is (= 6 (bb :describe)))))
+
+(deftest help-task-test
+  (with-config {:tasks {:cool-task {:task/type :babashka
+                                    :args ["-e" "(+ 1 2 3)"]
+                                    :task/help "Usage: bb :cool-task
+
+Addition is a pretty advanced topic.  Let us start with the identity element
+0. ..."}}}
+    (is (str/includes? (apply test-utils/bb nil
+                              (map str [:help :cool-task]))
+                       "Usage: bb :cool-task"))))

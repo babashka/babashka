@@ -42,6 +42,13 @@
                                    :__ :print-hello]}
          ,
 
+         ;;;; help
+         :cool-task {:task/type :babashka
+                     :args ["-e" "(+ 1 2 3)"]
+                     :task/help "Usage: bb :cool-task
+
+Sum up the numbers 1, 2 and 3."}
+         ,
          ;;;; context (not implemented)
          ;; the problem with this is the DSL nature which is very opiniated and
          ;; maybe not so nice to learn for people who only want to write Clojure

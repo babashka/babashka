@@ -81,13 +81,17 @@
 (defn print-version []
   (println (str "babashka v" version)))
 
+(def bb-edn
+  (atom nil))
 
-(defn print-help []
-  (println (str "Babashka v" version))
-  ;; (println (str "sci v" (str/trim (slurp (io/resource "SCI_VERSION")))))
-  (println)
-  (println "Options must appear in the order of groups mentioned below.")
-  (println "
+(defn print-help [command-line-args]
+  (if (empty? command-line-args)
+    (do
+      (println (str "Babashka v" version))
+      ;; (println (str "sci v" (str/trim (slurp (io/resource "SCI_VERSION")))))
+      (println)
+      (println "Options must appear in the order of groups mentioned below.")
+      (println "
 Help:
 
   --help, -h or -?    Print this help text.
@@ -132,7 +136,17 @@ If the first argument is not any of the above options, then it treated as a file
 Everything after that is bound to *command-line-args*.
 
 Use -- to separate script command line args from bb command line args.
-"))
+")
+      [nil 0]) ;; end do
+    (let [k (first command-line-args)
+          k (keyword (subs k 1))
+          task (get-in @bb-edn [:tasks k])
+          help-text (:task/help task)]
+      (if help-text
+        [(println help-text) 0]
+        [(println "No help found for task:" k) 1])
+      ,)) ;; end if
+  ,) ;; end defn
 
 (defn print-describe []
   (println
@@ -362,9 +376,6 @@ Use -- to separate script command line args from bb command line args.
     (println msg)
     {:exec (fn [] [nil exit])}))
 
-(def bb-edn
-  (atom nil))
-
 (defn parse-opts [options]
   (let [fst (when options (first options))
         key? (when fst (str/starts-with? fst ":"))
@@ -384,7 +395,8 @@ Use -- to separate script command line args from bb command line args.
                          ("--clojure" ":clojure") (assoc opts-map :clojure true
                                                          :command-line-args (rest options))
                          ("--version" ":version") {:version true}
-                         ("--help" "-h" "-?") {:help? true}
+                         ("--help" "-h" "-?" ":help") {:help true
+                                                       :command-line-args (rest options)}
                          ("--verbose")(recur (next options)
                                              (assoc opts-map
                                                     :verbose? true))
@@ -475,7 +487,7 @@ Use -- to separate script command line args from bb command line args.
                          (let [options (next options)]
                            (recur (next options)
                                   (update opts-map :expressions (fnil conj []) (first options))))
-                         ("--main", "-m")
+                         ("--main", "-m", ":main")
                          (let [options (next options)]
                            (recur (next options)
                                   (assoc opts-map :main (first options))))
@@ -542,7 +554,7 @@ Use -- to separate script command line args from bb command line args.
                   sci/ns @sci/ns]
       (let [{version-opt :version
              :keys [:shell-in :edn-in :shell-out :edn-out
-                    :help? :file :command-line-args
+                    :help :file :command-line-args
                     :expressions :stream?
                     :repl :socket-repl :nrepl
                     :verbose? :classpath
@@ -671,8 +683,8 @@ Use -- to separate script command line args from bb command line args.
                 (second
                  (cond version-opt
                        [(print-version) 0]
-                       help?
-                       [(print-help) 0]
+                       help
+                       (print-help command-line-args)
                        describe?
                        [(print-describe) 0]
                        repl [(repl/start-repl! sci-ctx) 0]
