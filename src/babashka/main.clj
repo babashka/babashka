@@ -148,6 +148,15 @@ Use -- to separate script command line args from bb command line args.
       ,)) ;; end if
   ,) ;; end defn
 
+(defn print-tasks [tasks]
+  (println "The following tasks are available:")
+  (println)
+  (doseq [k (keys tasks)]
+    (println k))
+  (println)
+  (println "Run bb :help <task> to view help of a specific task.")
+  [nil 0])
+
 (defn print-describe []
   (println
    (format
@@ -397,6 +406,8 @@ Use -- to separate script command line args from bb command line args.
                          ("--version" ":version") {:version true}
                          ("--help" "-h" "-?" ":help") {:help true
                                                        :command-line-args (rest options)}
+                         (":tasks") {:tasks tasks
+                                     :command-line-args (rest options)}
                          ("--verbose")(recur (next options)
                                              (assoc opts-map
                                                     :verbose? true))
@@ -499,7 +510,7 @@ Use -- to separate script command line args from bb command line args.
                                                                       (= % ":or-do"))))
                                              options)]
                            {:do options})
-                         (":invoke")
+                         #_#_(":invoke")
                          {:exec-src
                           (pr-str '(if-let [f (requiring-resolve (symbol (first *command-line-args*)))]
                                      (apply f (rest *command-line-args*))
@@ -560,7 +571,7 @@ Use -- to separate script command line args from bb command line args.
                     :verbose? :classpath
                     :main :uberscript :describe?
                     :jar :uberjar :clojure
-                    :exec-src]
+                    :exec-src :tasks]
              exec-fn :exec}
             opts
             _ (when verbose? (vreset! common/verbose? true))
@@ -683,8 +694,8 @@ Use -- to separate script command line args from bb command line args.
                 (second
                  (cond version-opt
                        [(print-version) 0]
-                       help
-                       (print-help command-line-args)
+                       help (print-help command-line-args)
+                       tasks (print-tasks tasks)
                        describe?
                        [(print-describe) 0]
                        repl [(repl/start-repl! sci-ctx) 0]

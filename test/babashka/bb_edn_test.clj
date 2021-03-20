@@ -106,3 +106,22 @@ Addition is a pretty advanced topic.  Let us start with the identity element
     (is (str/includes? (apply test-utils/bb nil
                               (map str [:help :cool-task]))
                        "Usage: bb :cool-task"))))
+
+(deftest list-tasks-test
+  (with-config {:tasks {:cool-task-1 {:task/type :babashka
+                                    :args ["-e" "(+ 1 2 3)"]
+                                    :task/help "Usage: bb :cool-task
+
+Addition is a pretty advanced topic.  Let us start with the identity element
+0. ..."}
+                        :cool-task-2 {:task/type :babashka
+                                      :args ["-e" "(+ 1 2 3)"]
+                                      :task/help "Usage: bb :cool-task
+
+Addition is a pretty advanced topic.  Let us start with the identity element
+0. ..."}}}
+    (let [res (apply test-utils/bb nil
+                     (map str [:tasks]))]
+      (is (str/includes? res "The following tasks are available:"))
+      (is (str/includes? res ":cool-task-1"))
+      (is (str/includes? res ":cool-task-2")))))
