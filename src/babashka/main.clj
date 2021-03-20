@@ -362,18 +362,14 @@ Use -- to separate script command line args from bb command line args.
     (println msg)
     {:exec (fn [] [nil exit])}))
 
-(def ^:dynamic *bb-edn*
-  (delay
-    (let [bb-edn-file (or (System/getenv "BABASHKA_EDN")
-                          "bb.edn")]
-      (when (fs/exists? bb-edn-file)
-        (edn/read-string (slurp bb-edn-file))))))
+(def bb-edn
+  (atom nil))
 
 (defn parse-opts [options]
   (let [fst (when options (first options))
         key? (when fst (str/starts-with? fst ":"))
         k (when key? (keyword (subs fst 1)))
-        bb-edn (when k @*bb-edn*)
+        bb-edn (when k @bb-edn)
         tasks (when (and k bb-edn)
                 (:tasks bb-edn))
         user-task (when tasks (get tasks k))]
@@ -515,6 +511,21 @@ Use -- to separate script command line args from bb command line args.
                                    (error (str "File does not exist: " opt) 1)))))))
                        opts-map))]
           opts))))
+
+(defn resolve-task [task {:keys [:command-line-args]}]
+  (case (:task/type task)
+    :babashka
+    (let [cmd-line-args (get task :args)]
+      (parse-opts (seq (map str (concat cmd-line-args command-line-args)))))
+    :shell
+    (let [args (get task :args)
+          args (into (vec args) command-line-args)]
+      {:exec (fn []
+               [nil
+                (-> (p/process args {:inherit true})
+                    p/check
+                    :exit)])})
+    (error (str "No such task: " (:task/type task)) 1)))
 
 (def should-load-inits?
   "if true, then we should still load preloads and user.clj"
@@ -739,8 +750,12 @@ Use -- to separate script command line args from bb command line args.
   [& args]
   (handle-pipe!)
   (handle-sigint!)
-  (when-let [bb-edn @*bb-edn*]
-    (deps/add-deps bb-edn))
+  (let [bb-edn-file (or (System/getenv "BABASHKA_EDN")
+                        "bb.edn")]
+    (when (fs/exists? bb-edn-file)
+      (let [edn (edn/read-string (slurp bb-edn-file))]
+        (reset! bb-edn edn)
+        (deps/add-deps edn))))
   (if-let [dev-opts (System/getenv "BABASHKA_DEV")]
     (let [{:keys [:n]} (if (= "true" dev-opts) {:n 1}
                            (edn/read-string dev-opts))

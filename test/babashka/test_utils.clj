@@ -3,14 +3,19 @@
    [babashka.impl.classpath :as cp]
    [babashka.main :as main]
    [babashka.process :as p]
+   [clojure.edn :as edn]
    [sci.core :as sci]
    [sci.impl.vars :as vars]))
 
 (set! *warn-on-reflection* true)
 
+(def ^:dynamic *bb-edn-path* nil)
+
 (defn bb-jvm [input-or-opts & args]
   (reset! cp/cp-state nil)
   (reset! main/env {})
+  (when-let [path *bb-edn-path*]
+    (reset! main/bb-edn (edn/read-string (slurp path))))
   (let [os (java.io.StringWriter.)
         es (if-let [err (:err input-or-opts)]
              err (java.io.StringWriter.))
@@ -44,9 +49,13 @@
 
 (defn bb-native [input & args]
   (let [res (p/process (into ["./bb"] args)
-                       {:in input
-                        :out :string
-                        :err :string})
+                       (cond-> {:in input
+                               :out :string
+                               :err :string}
+                         *bb-edn-path*
+                         (assoc
+                          :env (assoc (into {} (System/getenv))
+                                      "BABASHKA_EDN" *bb-edn-path*))))
         res (deref res)
         exit (:exit res)
         error? (pos? exit)]
