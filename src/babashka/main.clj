@@ -396,13 +396,22 @@ Use -- to separate script command line args from bb command line args.
 (defn parse-opts [options]
   (let [fst (when options (first options))
         key? (when fst (str/starts-with? fst ":"))
-        k (when key? (keyword (subs fst 1)))
+        keys (when key? (rest (str/split fst #":")))
+        expanded (when (and key? (> (count keys) 1))
+                   (concat (cons ":do" (interpose ":and-do"
+                                                  (map #(str ":" %)
+                                                       keys)))
+                           (rest options)))
+        k (when (and key? (not expanded))
+            (keyword (first keys)))
         bb-edn (when k @bb-edn)
         tasks (when (and k bb-edn)
                 (:tasks bb-edn))
         user-task (when tasks (get tasks k))]
-    (if user-task
+    (cond user-task
       (resolve-task user-task {:command-line-args (next options)})
+      expanded (parse-opts expanded)
+      :else
       (let [opts (loop [options options
                         opts-map {}]
                    (if options
