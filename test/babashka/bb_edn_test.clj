@@ -123,12 +123,14 @@ Addition is a pretty advanced topic.  Let us start with the identity element
 (deftest list-tasks-test
   (with-config {:tasks {:cool-task-1 {:task/type :babashka
                                       :args ["-e" "(+ 1 2 3)"]
+                                      :task/description "Return the sum of 1, 2 and 3."
                                       :task/help "Usage: bb :cool-task
 
 Addition is a pretty advanced topic.  Let us start with the identity element
 0. ..."}
                         :cool-task-2 {:task/type :babashka
-                                      :args ["-e" "(+ 1 2 3)"]
+                                      :task/description "Return the sum of 4, 5 and 6."
+                                      :args ["-e" "(+ 4 5 6)"]
                                       :task/help "Usage: bb :cool-task
 
 Addition is a pretty advanced topic.  Let us start with the identity element
@@ -136,8 +138,8 @@ Addition is a pretty advanced topic.  Let us start with the identity element
     (let [res (apply test-utils/bb nil
                      (map str [:tasks]))]
       (is (str/includes? res "The following tasks are available:"))
-      (is (str/includes? res ":cool-task-1"))
-      (is (str/includes? res ":cool-task-2")))))
+      (is (str/includes? res ":cool-task-1 Return the"))
+      (is (str/includes? res ":cool-task-2 Return the")))))
 
 (deftest main-task-test
   (with-config {:paths ["test-resources/task_scripts"]

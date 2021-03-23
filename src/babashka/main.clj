@@ -157,13 +157,14 @@ Use -- to separate script command line args from bb command line args.
   ,) ;; end defn
 
 (defn print-tasks [tasks]
-  (println "The following tasks are available:")
-  (println)
-  (doseq [k (keys tasks)]
-    (println k))
-  (println)
-  (println "Run bb :help <task> to view help of a specific task.")
-  [nil 0])
+  (let [tasks (into (sorted-map) tasks)]
+    (println "The following tasks are available:")
+    (println)
+    (doseq [[k v] tasks]
+      (println k (:task/description v)))
+    (println)
+    (println "Run bb :help <task> to view help of a specific task.")
+    [nil 0]))
 
 (defn print-describe []
   (println
