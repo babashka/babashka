@@ -558,10 +558,10 @@ Use -- to separate script command line args from bb command line args.
 (defn resolve-task [task {:keys [:command-line-args]}]
   (case (:task/type task)
     :babashka
-    (let [cmd-line-args (get task :args)]
+    (let [cmd-line-args (get task :task/args)]
       (parse-opts (seq (map str (concat cmd-line-args command-line-args)))))
     :shell
-    (let [args (get task :args)
+    (let [args (get task :task/args)
           args (into (vec args) command-line-args)]
       {:exec (fn []
                [nil
@@ -570,7 +570,7 @@ Use -- to separate script command line args from bb command line args.
                     :exit)])})
     :main
     (let [main-arg (:main task)
-          cmd-line-args (:args task)]
+          cmd-line-args (:task/args task)]
       (parse-opts (seq (map str (concat ["--main" main-arg] cmd-line-args command-line-args)))))
     (error (str "No such task: " (:task/type task)) 1)))
 
