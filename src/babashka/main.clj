@@ -565,7 +565,7 @@ Use -- to separate script command line args from bb command line args.
       {:exec (fn []
                [nil
                 (-> (p/process args {:inherit true})
-                    p/check
+                    deref
                     :exit)])})
     :main
     (let [main-arg (:main task)
