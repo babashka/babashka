@@ -551,7 +551,9 @@ Use -- to separate script command line args from bb command line args.
                                         (if (str/ends-with? opt ".jar")
                                           :jar :file) opt
                                         :command-line-args (next options))
-                                 (error (str "File does not exist: " opt) 1)))))))
+                                 (error (str (if (str/starts-with? opt ":")
+                                               "Task does not exist: "
+                                               "File does not exist: ") opt) 1)))))))
                      opts-map))]
         opts))))
 

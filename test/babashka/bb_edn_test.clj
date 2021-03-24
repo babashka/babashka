@@ -20,6 +20,12 @@
      (binding [test-utils/*bb-edn-path* (str bb-edn-file#)]
        ~@body)))
 
+(deftest task-cli-test
+  (with-config {}
+    (is (thrown-with-msg?
+         Exception #"Task does not exist: :sum"
+         (bb :sum)))))
+
 (deftest babashka-task-test
   (with-config {:tasks {:sum {:task/type :babashka
                               :task/args ["-e" "(+ 1 2 3)"]}}}
