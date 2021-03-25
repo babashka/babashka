@@ -39,18 +39,19 @@
       (bb :clean)
       (is (not (fs/exists? temp-file))))))
 
-#_(deftest do-task-test
+(deftest sequential-task-test
   (testing ":and-do"
     (let [temp-dir (fs/create-temp-dir)
           temp-file (fs/create-file (fs/path temp-dir "temp-file.txt"))]
-      (with-config {:tasks {:clean [:shell "rm" (str temp-file)]
-                            :sum [:babashka "-e" "(+ 1 2 3)"]
-                            :all [:babashka :clean:sum]}}
+      (with-config {:tasks {:sum [:babashka "-e" "(+ 1 2 3)"]
+                            :all [:do
+                                  [:shell "rm" (str temp-file)]
+                                  [:sum]]}}
         (is (fs/exists? temp-file))
         (let [res (bb :all)]
           (is (= 6 res)))
         (is (not (fs/exists? temp-file)))))
-    (testing ":and-do shortcut"
+    #_(testing ":and-do shortcut"
       (let [temp-dir (fs/create-temp-dir)
             temp-file (fs/create-file (fs/path temp-dir "temp-file.txt"))]
         (with-config {:tasks {:clean [:shell :clean:sum]
@@ -60,7 +61,7 @@
           (let [res (bb :clean:sum)]
             (is (= 6 res)))
           (is (not (fs/exists? temp-file)))))))
-  (testing ":do always continuing"
+  #_(testing ":do always continuing"
     (with-config {:tasks {:sum-1 [:babashka "-e" "(do (+ 4 5 6) nil)"]
                           :sum-2 [:babashka "-e" "(+ 1 2 3)"]
                           :all [:babashka :sum-1:sum2]}}
@@ -69,18 +70,18 @@
                           :sum [:babashka "-e" "(+ 1 2 3)"]
                           :all[:babashka :div-by-zero:sum] }}
       (is (= 6 (bb :all)))))
-  (testing ":and-do failing"
+  #_(testing ":and-do failing"
     (with-config {:tasks {:div-by-zero [:babashka "-e" "(/ 1 0)"]
                           :sum [:babashka "-e" "(+ 1 2 3)"]
                           :all [:babashka :div-by-zero:sum]}}
       (is (thrown-with-msg? Exception #"Divide"
                             (bb :all)))))
-  (testing ":or-do short-cutting"
+  #_(testing ":or-do short-cutting"
     (with-config {:tasks {:sum-1 [:babashka "-e" "(+ 1 2 3)"]
                           :sum-2 [:babashka "-e" "(+ 4 5 6)"]
                           :all [:or [:sum1] [:sum2]]}}
       (is (= 6 (bb :all)))))
-  (testing ":or-do succeeding after failing"
+  #_(testing ":or-do succeeding after failing"
     (with-config {:tasks {:div-by-zero [:babashka "-e" "(/ 1 0)"]
                           :sum [:babashka "-e" "(+ 1 2 3)"]
                           :all [:babashka [:or [:div-by-zero] [:sum]]]}}

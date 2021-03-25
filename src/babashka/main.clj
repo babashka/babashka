@@ -587,7 +587,9 @@ Use -- to separate script command line args from bb command line args.
       (let [main-arg (first args)
             cmd-line-args (rest args)]
         (parse-opts (seq (map str (concat ["--main" main-arg] cmd-line-args command-line-args)))))
-      (error (str "No such task: " (:task/type task)) 1))))
+      :do
+      
+      (error (str "No such task: " task) 1))))
 
 (def should-load-inits?
   "if true, then we should still load preloads and user.clj"
