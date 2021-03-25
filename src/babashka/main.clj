@@ -84,6 +84,17 @@
 (def bb-edn
   (atom nil))
 
+(defn decode-task [task]
+  (let [task-key (first task)
+        args (rest task)
+        maybe-opts (first args)]
+    (if (map? maybe-opts)
+      {:task task-key
+       :opts maybe-opts
+       :args (rest args)}
+      {:task task-key
+       :args args})))
+
 (defn print-help [ctx command-line-args]
   (if (empty? command-line-args)
     (do
@@ -141,8 +152,9 @@ Use -- to separate script command line args from bb command line args.
     (let [k (first command-line-args)
           k (keyword (subs k 1))
           task (get-in @bb-edn [:tasks k])
-          main (:main task)
-          help-text (:task/help task)]
+          {:keys [:args]} (decode-task task)
+          main (first args)
+          help-text (:task/help (meta task))]
       (if help-text
         [(println help-text) 0]
         (if main
@@ -558,23 +570,24 @@ Use -- to separate script command line args from bb command line args.
         opts))))
 
 (defn resolve-task [task {:keys [:command-line-args]}]
-  (case (:task/type task)
-    :babashka
-    (let [cmd-line-args (get task :task/args)]
-      (parse-opts (seq (map str (concat cmd-line-args command-line-args)))))
-    :shell
-    (let [args (get task :task/args)
-          args (into (vec args) command-line-args)]
-      {:exec (fn []
-               [nil
-                (-> (p/process args {:inherit true})
-                    deref
-                    :exit)])})
-    :main
-    (let [main-arg (:main task)
-          cmd-line-args (:task/args task)]
-      (parse-opts (seq (map str (concat ["--main" main-arg] cmd-line-args command-line-args)))))
-    (error (str "No such task: " (:task/type task)) 1)))
+  (let [{:keys [:task :opts :args]} (decode-task task)]
+    opts ;; not used
+    (case task
+      :babashka
+      (let [cmd-line-args args]
+        (parse-opts (seq (map str (concat cmd-line-args command-line-args)))))
+      :shell
+      (let [args (into (vec args) command-line-args)]
+        {:exec (fn []
+                 [nil
+                  (-> (p/process args {:inherit true})
+                      deref
+                      :exit)])})
+      :main
+      (let [main-arg (first args)
+            cmd-line-args (rest args)]
+        (parse-opts (seq (map str (concat ["--main" main-arg] cmd-line-args command-line-args)))))
+      (error (str "No such task: " (:task/type task)) 1))))
 
 (def should-load-inits?
   "if true, then we should still load preloads and user.clj"
