@@ -16,7 +16,8 @@
 (defmacro with-config [cfg & body]
   `(let [temp-dir# (fs/create-temp-dir)
          bb-edn-file# (fs/file temp-dir# "bb.edn")]
-     (spit bb-edn-file# ~cfg)
+     (binding [*print-meta* true]
+       (spit bb-edn-file# ~cfg))
      (binding [test-utils/*bb-edn-path* (str bb-edn-file#)]
        ~@body)))
 
@@ -93,31 +94,31 @@
     (is (= 6 (bb :describe)))))
 
 (deftest help-task-test
-  (with-config "{:tasks {:cool-task
-                        ^{:help \"Usage: bb :cool-task
+  (with-config {:tasks {:cool-task
+                        ^{:help "Usage: bb :cool-task
 
-    Addition is a pretty advanced topic.  Let us start with the identity element
-    0. ...\"}
-                        [:babashka -e (+ 1 2 3)]}}"
+                          Addition is a pretty advanced topic.  Let us start with the identity element
+                          0. ..."}
+                        [:babashka "-e" "(+ 1 2 3)"]}}
     (is (str/includes? (apply test-utils/bb nil
                               (map str [:help :cool-task]))
                        "Usage: bb :cool-task"))))
 
-#_(deftest list-tasks-test
-  (with-config {:tasks {:cool-task-1 {:task/type :babashka
-                                      :task/args ["-e" "(+ 1 2 3)"]
-                                      :task/description "Return the sum of 1, 2 and 3."
-                                      :task/help "Usage: bb :cool-task
+(deftest list-tasks-test
+  (with-config {:tasks {:cool-task-1
+                        ^{:description "Return the sum of 1, 2 and 3."
+                          :help "Usage: bb :cool-task
 
 Addition is a pretty advanced topic.  Let us start with the identity element
 0. ..."}
-                        :cool-task-2 {:task/type :babashka
-                                      :task/description "Return the sum of 4, 5 and 6."
-                                      :task/args ["-e" "(+ 4 5 6)"]
-                                      :task/help "Usage: bb :cool-task
+                        [:babashka "-e" "(+ 1 2 3)"]
+                        :cool-task-2
+                        ^{:description "Return the sum of 4, 5 and 6."
+                          :help "Usage: bb :cool-task
 
 Addition is a pretty advanced topic.  Let us start with the identity element
-0. ..."}}}
+0. ..."}
+                        [:babashka "-e" "(+ 4 5 6)"]}}
     (let [res (apply test-utils/bb nil
                      (map str [:tasks]))]
       (is (str/includes? res "The following tasks are available:"))
