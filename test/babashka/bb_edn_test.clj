@@ -70,7 +70,7 @@
                           :sum [:babashka "-e" "(+ 1 2 3)"]
                           :all[:babashka :div-by-zero:sum] }}
       (is (= 6 (bb :all)))))
-  #_(testing ":and-do failing"
+  (testing "task fails when one of subtask fails"
     (with-config {:tasks {:div-by-zero [:babashka "-e" "(/ 1 0)"]
                           :sum [:babashka "-e" "(+ 1 2 3)"]
                           :all [:babashka :div-by-zero:sum]}}

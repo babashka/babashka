@@ -411,19 +411,17 @@ Use -- to separate script command line args from bb command line args.
         key? (when fst (str/starts-with? fst ":"))
         keys (when key? (rest (str/split fst #":")))
         expanded (when (and key? (> (count keys) 1))
-                   (concat (cons ":do" (interpose ":and-do"
-                                                  (map #(str ":" %)
-                                                       keys)))
-                           (rest options)))
+                   (into [:do] (map (comp vector keyword) keys)))
         k (when (and key? (not expanded))
             (keyword (first keys)))
-        bb-edn (when k @bb-edn)
-        tasks (when (and k bb-edn)
+        task? (or expanded k)
+        bb-edn (when task? @bb-edn)
+        tasks (when (and task? bb-edn)
                 (:tasks bb-edn))
         user-task (when tasks (get tasks k))]
     (cond user-task
       (resolve-task tasks user-task {:command-line-args (next options)})
-      expanded (parse-opts expanded)
+      expanded (resolve-task tasks expanded nil)
       :else
       (let [opts (loop [options options
                         opts-map {}]
@@ -818,18 +816,12 @@ Use -- to separate script command line args from bb command line args.
     (when-let [bb-edn @bb-edn] (deps/add-deps bb-edn)))
   (let [opts (parse-opts args)]
     (if-let [do-opts (:do opts)]
-      (reduce (fn [_prev-exit opts]
+      (reduce (fn [prev-exit opts]
                 ;; (prn :prev prev-exit)
                 ;; (prn :opts opts)
-                (exec opts)
-                #_(if (pos? prev-exit)
-                  (case opts
-                    ([":do"] [":or-do"]) 0 ;; skipping, returning 0
-                    (reduced prev-exit))
-                  (case opts
-                    [":or-do"] (reduced prev-exit) ;; short-cutting
-                    ([":do"] [":and-do"]) 0 ;; skipping, returning 0
-                    (exec (parse-opts opts)))))
+                (if (pos? prev-exit)
+                  (reduced prev-exit)
+                  (exec opts)))
               0
               do-opts)
       (exec opts))))
