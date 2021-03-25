@@ -154,7 +154,7 @@ Use -- to separate script command line args from bb command line args.
           task (get-in @bb-edn [:tasks k])
           {:keys [:args]} (decode-task task)
           main (first args)
-          help-text (:task/help (meta task))]
+          help-text (:help (meta task))]
       (if help-text
         [(println help-text) 0]
         (if main

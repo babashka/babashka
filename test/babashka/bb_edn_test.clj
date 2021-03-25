@@ -91,12 +91,13 @@
   (with-config {:tasks {:describe [:babashka "-e" "(+ 1 2 3)"]}}
     (is (= 6 (bb :describe)))))
 
-#_(deftest help-task-test
-  (with-config {:tasks {:cool-task ^{:task/help "Usage: bb :cool-task
+(deftest help-task-test
+  (with-config "{:tasks {:cool-task
+                        ^{:help \"Usage: bb :cool-task
 
-Addition is a pretty advanced topic.  Let us start with the identity element
-0. ..."}
-                        [:babashka "-e" "(+ 1 2 3)"]}}
+    Addition is a pretty advanced topic.  Let us start with the identity element
+    0. ...\"}
+                        [:babashka -e (+ 1 2 3)]}}"
     (is (str/includes? (apply test-utils/bb nil
                               (map str [:help :cool-task]))
                        "Usage: bb :cool-task"))))
