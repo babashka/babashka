@@ -422,7 +422,7 @@ Use -- to separate script command line args from bb command line args.
                 (:tasks bb-edn))
         user-task (when tasks (get tasks k))]
     (cond user-task
-      (resolve-task user-task {:command-line-args (next options)})
+      (resolve-task tasks user-task {:command-line-args (next options)})
       expanded (parse-opts expanded)
       :else
       (let [opts (loop [options options
@@ -532,7 +532,7 @@ Use -- to separate script command line args from bb command line args.
                          (let [options (next options)]
                            (recur (next options)
                                   (assoc opts-map :main (first options))))
-                         (":do")
+                         #_#_(":do")
                          (let [options (next options)
                                options (into [] (comp (partition-by #(or
                                                                       (= % ":do")
@@ -569,7 +569,7 @@ Use -- to separate script command line args from bb command line args.
                      opts-map))]
         opts))))
 
-(defn resolve-task [task {:keys [:command-line-args]}]
+(defn resolve-task [tasks task {:keys [:command-line-args]}]
   (let [{:keys [:task :opts :args]} (decode-task task)]
     opts ;; not used
     (case task
@@ -588,8 +588,11 @@ Use -- to separate script command line args from bb command line args.
             cmd-line-args (rest args)]
         (parse-opts (seq (map str (concat ["--main" main-arg] cmd-line-args command-line-args)))))
       :do
-      
-      (error (str "No such task: " task) 1))))
+      {:do (map #(resolve-task tasks % nil) args)}
+      ;; default
+      (if-let [t (get tasks task)]
+        (resolve-task tasks t nil)
+        (error (str "No such task: " task) 1)))))
 
 (def should-load-inits?
   "if true, then we should still load preloads and user.clj"
@@ -815,10 +818,11 @@ Use -- to separate script command line args from bb command line args.
     (when-let [bb-edn @bb-edn] (deps/add-deps bb-edn)))
   (let [opts (parse-opts args)]
     (if-let [do-opts (:do opts)]
-      (reduce (fn [prev-exit opts]
+      (reduce (fn [_prev-exit opts]
                 ;; (prn :prev prev-exit)
                 ;; (prn :opts opts)
-                (if (pos? prev-exit)
+                (exec opts)
+                #_(if (pos? prev-exit)
                   (case opts
                     ([":do"] [":or-do"]) 0 ;; skipping, returning 0
                     (reduced prev-exit))
