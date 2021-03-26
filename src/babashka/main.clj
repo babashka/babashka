@@ -152,11 +152,12 @@ Use -- to separate script command line args from bb command line args.
     (let [k (first command-line-args)
           k (keyword (subs k 1))
           task (get-in @bb-edn [:tasks k])
-          {:keys [:task :args]} (decode-task task)
+          {:keys [:args]
+           task-key :task} (decode-task task)
           help-text (:help (meta task))]
       (if help-text
         [(println help-text) 0]
-        (if-let [main (when (= :main task)
+        (if-let [main (when (= :main task-key)
                         (first args))]
           (let [main (if (simple-symbol? main)
                        (symbol (str main) "-main")
