@@ -181,7 +181,7 @@ Use -- to separate script command line args from bb command line args.
     (doseq [[k v] tasks]
       (println (str (format fmt k)
                     (when-let [d (:description (meta v))]
-                      (str " - " d)))))
+                      (str " " d)))))
     (println)
     (println "Run bb :help <task> to view help of a specific task.")
     [nil 0]))

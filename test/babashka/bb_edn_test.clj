@@ -122,8 +122,8 @@ Addition is a pretty advanced topic.  Let us start with the identity element
     (let [res (apply test-utils/bb nil
                      (map str [:tasks]))]
       (is (str/includes? res "The following tasks are available:"))
-      (is (str/includes? res ":task-1      - Return the"))
-      (is (str/includes? res ":cool-task-2 - Return the")))))
+      (is (str/includes? res ":task-1      Return the"))
+      (is (str/includes? res ":cool-task-2 Return the")))))
 
 (deftest main-task-test
   (with-config {:paths ["test-resources/task_scripts"]
