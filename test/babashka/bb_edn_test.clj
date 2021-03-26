@@ -25,7 +25,11 @@
   (with-config {}
     (is (thrown-with-msg?
          Exception #"Task does not exist: :sum"
-         (bb :sum)))))
+         (bb :sum))))
+  (with-config {}
+    (is (thrown-with-msg?
+         Exception #"Task does not exist: :sum"
+         (bb :help :sum)))))
 
 (deftest babashka-task-test
   (with-config {:tasks {:sum [:babashka "-e" "(+ 1 2 3)"]}}

@@ -95,6 +95,10 @@
       {:task task-key
        :args args})))
 
+(defn print-error [& msgs]
+  (binding [*out* *err*]
+    (apply println msgs)))
+
 (defn print-help [ctx command-line-args]
   (if (empty? command-line-args)
     (do
@@ -150,22 +154,22 @@ Use -- to separate script command line args from bb command line args.
 ")
       [nil 0]) ;; end do
     (let [k (first command-line-args)
-          k (keyword (subs k 1))
-          task (get-in @bb-edn [:tasks k])
-          {:keys [:args]
-           task-key :task} (decode-task task)
-          help-text (:help (meta task))]
-      (if help-text
-        [(println help-text) 0]
-        (if-let [main (when (= :main task-key)
-                        (first args))]
-          (let [main (if (simple-symbol? main)
-                       (symbol (str main) "-main")
-                       main)]
-            (if-let [doc (sci/eval-string* ctx (format "(some-> (requiring-resolve '%s) meta :doc)" main))]
-              [(println doc) 0]
-              [(println "No help found for task:" k) 1]))
-          [(println "No help found for task:" k) 1]))
+          k (keyword (subs k 1))]
+      (if-let [task (get-in @bb-edn [:tasks k])]
+        (let [{:keys [:args]
+               task-key :task} (decode-task task)]
+          (if-let [help-text (:help (meta task))]
+            [(println help-text) 0]
+            (if-let [main (when (= :main task-key)
+                            (first args))]
+              (let [main (if (simple-symbol? main)
+                           (symbol (str main) "-main")
+                           main)]
+                (if-let [doc (sci/eval-string* ctx (format "(some-> (requiring-resolve '%s) meta :doc)" main))]
+                  [(println doc) 0]
+                  [(print-error "No help found for task:" k) 1]))
+              [(print-error "No help found for task:" k) 1])))
+        [(print-error "Task does not exist:" k) 1])
       ,)) ;; end if
   ,) ;; end defn
 
