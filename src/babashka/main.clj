@@ -169,11 +169,18 @@ Use -- to separate script command line args from bb command line args.
   ,) ;; end defn
 
 (defn print-tasks [tasks]
-  (let [tasks (into (sorted-map) tasks)]
+  (let [tasks (into (sorted-map) tasks)
+        ks (keys tasks)
+        longest (apply max
+                       (map (comp count str)
+                            ks))
+        fmt (str "%1$-" longest "s")]
     (println "The following tasks are available:")
     (println)
     (doseq [[k v] tasks]
-      (println k (:description (meta v))))
+      (println (str (format fmt k)
+                    (when-let [d (:description (meta v))]
+                      (str " - " d)))))
     (println)
     (println "Run bb :help <task> to view help of a specific task.")
     [nil 0]))
