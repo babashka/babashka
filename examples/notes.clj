@@ -88,7 +88,7 @@
 
 (defn get-session-id [headers]
   (if-let [cookie-header (first (filter #(str/starts-with? % "Cookie: ") headers))]
-    (let [parts (str/split cookie-header #"; ")]
+    (let [parts (str/split (str/replace cookie-header "Cookie: " "") #"; ")]
       (if-let [notes-id (first (filter #(str/starts-with? % "notes-id") parts))]
         (str/replace notes-id "notes-id=" "")
         (new-session!)))
