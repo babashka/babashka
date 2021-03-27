@@ -114,7 +114,7 @@ Help:
   version            Print the current version of babashka.
   describe           Print an EDN map with information about this version of babashka.
   tasks              List tasks.
-  doc <var>          Print docstring of var or task.
+  doc <var>          Print docstring of var or task. Resolves using requiring-resolve.
 
 Evaluation:
 
