@@ -587,7 +587,11 @@ Use -- to separate script command line args from bb command line args.
       (let [cmd-line-args args]
         (parse-opts (seq (map str (concat cmd-line-args command-line-args)))))
       :shell
-      (let [args (into (vec args) command-line-args)]
+      (let [args (if (and (= 1 (count args))
+                          (string? (first args)))
+                   (p/tokenize (first args))
+                   args)
+            args (into (vec args) command-line-args)]
         {:exec (fn []
                  [nil
                   (-> (p/process args {:inherit true})
