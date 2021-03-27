@@ -22,6 +22,8 @@
    'start       (copy-var process/start tns)
    'pipeline    (copy-var process/pipeline tns)
    '$           (copy-var process/$ tns)
+   'sh          (copy-var process/sh tns)
+   'tokenize    (copy-var process/tokenize tns)
    '*defaults*  defaults
    'destroy     (copy-var process/destroy tns)
    'destroy-tree (copy-var process/destroy-tree tns)})
