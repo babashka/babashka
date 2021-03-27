@@ -85,7 +85,10 @@
   (atom nil))
 
 (defn decode-task [task]
-  (let [task-key (first task)
+  (let [task (if (map? task)
+               (:task task)
+               task)
+        task-key (first task)
         args (rest task)
         maybe-opts (first args)]
     (if (map? maybe-opts)
@@ -158,7 +161,7 @@ Use -- to separate script command line args from bb command line args.
       (if-let [task (get-in @bb-edn [:tasks k])]
         (let [{:keys [:args]
                task-key :task} (decode-task task)]
-          (if-let [help-text (:help (meta task))]
+          (if-let [help-text (:help task)]
             [(println help-text) 0]
             (if-let [main (when (= :main task-key)
                             (first args))]
@@ -184,7 +187,7 @@ Use -- to separate script command line args from bb command line args.
     (println)
     (doseq [[k v] tasks]
       (println (str (format fmt k)
-                    (when-let [d (:description (meta v))]
+                    (when-let [d (:description v)]
                       (str " " d)))))
     (println)
     (println "Run bb :help <task> to view help of a specific task.")

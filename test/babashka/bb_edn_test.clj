@@ -106,30 +106,30 @@
 
 (deftest help-task-test
   (with-config {:tasks {:cool-task
-                        ^{:help "Usage: bb :cool-task
+                        {:help "Usage: bb :cool-task
 
                           Addition is a pretty advanced topic.  Let us start with the identity element
-                          0. ..."}
-                        [:babashka "-e" "(+ 1 2 3)"]}}
+                          0. ..."
+                         :task [:babashka "-e" "(+ 1 2 3)"]}}}
     (is (str/includes? (apply test-utils/bb nil
                               (map str [:help :cool-task]))
                        "Usage: bb :cool-task"))))
 
 (deftest list-tasks-test
   (with-config {:tasks {:task-1
-                        ^{:description "Return the sum of 1, 2 and 3."
-                          :help "Usage: bb :cool-task
+                        {:description "Return the sum of 1, 2 and 3."
+                         :help "Usage: bb :cool-task
 
 Addition is a pretty advanced topic.  Let us start with the identity element
 0. ..."}
-                        [:babashka "-e" "(+ 1 2 3)"]
+                        :task [:babashka "-e" "(+ 1 2 3)"]
                         :cool-task-2
-                        ^{:description "Return the sum of 4, 5 and 6."
+                        {:description "Return the sum of 4, 5 and 6."
                           :help "Usage: bb :cool-task
 
 Addition is a pretty advanced topic.  Let us start with the identity element
-0. ..."}
-                        [:babashka "-e" "(+ 4 5 6)"]}}
+0. ..."
+                         :task [:babashka "-e" "(+ 4 5 6)"]}}}
     (let [res (apply test-utils/bb nil
                      (map str [:tasks]))]
       (is (str/includes? res "The following tasks are available:"))
