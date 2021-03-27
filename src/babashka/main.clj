@@ -171,14 +171,16 @@ Use -- to separate script command line args from bb command line args.
                 (let [main (if (simple-symbol? main)
                              (symbol (str main) "-main")
                              main)]
-                  (if-let [doc (sci/eval-string* ctx (format "(some-> (requiring-resolve '%s) meta :doc)" main))]
-                    [(println doc) 0]
+                  (if (sci/eval-string* ctx (format "(when (requiring-resolve '%1$s)
+                                                       (clojure.repl/doc %1$s) true)" main))
+                    [nil 0]
                     [(print-error "No docstring found for task:" k) 1]))
                 [(print-error "No docstring found for task:" k) 1])))
           [(print-error "Task does not exist:" k) 1]))
       (let [arg (if (str/includes? arg "/") arg (str "clojure.core/" arg))]
-        (if-let [doc (sci/eval-string* ctx (format "(some-> (requiring-resolve '%s) meta :doc)" arg))]
-          [(println doc) 0]
+        (if (sci/eval-string* ctx (format "(when (requiring-resolve '%1$s)
+                                             (clojure.repl/doc %1$s) true)" arg))
+          [nil 0]
           [(print-error "No docstring found for var:" arg) 1]))))
   ,)
 
