@@ -164,3 +164,13 @@ Addition is a pretty advanced topic.  Let us start with the identity element
       (is (fs/exists? temp-file))
       (bb :hello)
       (is (not (fs/exists? temp-file))))))
+
+(deftest clojure-test
+  (let [temp-dir (fs/create-temp-dir)
+        temp-file (fs/create-file (fs/path temp-dir "temp-file.txt"))]
+    (with-config {:tasks {:jvm ['clojure "-M" "-e"
+                                (format "(do (require '[clojure.java.io :as io])
+                                             (.delete (io/file \"%s\")))" (str temp-file))]}}
+      (is (fs/exists? temp-file))
+      (bb :jvm)
+      (is (not (fs/exists? temp-file))))))

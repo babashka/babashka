@@ -622,6 +622,8 @@ Use -- to separate script command line args from bb command line args.
       (let [main-arg (first args)
             cmd-line-args (rest args)]
         (parse-opts (seq (map str (concat ["--main" main-arg] cmd-line-args command-line-args)))))
+      clojure
+      (parse-opts (seq (map str (concat ["--clojure"] args command-line-args))))
       do
       {:do (map #(resolve-task tasks % nil) args)}
       ;; default
