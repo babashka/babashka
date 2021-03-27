@@ -844,6 +844,18 @@ Use -- to separate script command line args from bb command line args.
                         :verbose verbose?}))
         exit-code))))
 
+(defn exec* [opts]
+  (if-let [do-opts (:do opts)]
+    (reduce (fn [prev-exit opts]
+              ;; (prn :prev prev-exit)
+              ;; (prn :opts opts)
+              (if (pos? prev-exit)
+                (reduced prev-exit)
+                (exec* opts)))
+            0
+            do-opts)
+    (exec opts)))
+
 (defn main [& args]
   (let [bb-edn-file (or (System/getenv "BABASHKA_EDN")
                         "bb.edn")]
@@ -853,16 +865,7 @@ Use -- to separate script command line args from bb command line args.
     ;; we mutate the atom from tests as well, so despite the above it can contain a bb.edn
     (when-let [bb-edn @bb-edn] (deps/add-deps bb-edn)))
   (let [opts (parse-opts args)]
-    (if-let [do-opts (:do opts)]
-      (reduce (fn [prev-exit opts]
-                ;; (prn :prev prev-exit)
-                ;; (prn :opts opts)
-                (if (pos? prev-exit)
-                  (reduced prev-exit)
-                  (exec opts)))
-              0
-              do-opts)
-      (exec opts))))
+    (exec* opts)))
 
 (defn -main
   [& args]

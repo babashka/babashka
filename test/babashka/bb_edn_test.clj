@@ -151,3 +151,16 @@ Addition is a pretty advanced topic.  Let us start with the identity element
     (let [res (apply test-utils/bb nil
                      (map str ["doc" :main-task]))]
       (is (str/includes? res "Usage: just pass some args")))))
+
+(deftest do-test
+  (let [temp-dir (fs/create-temp-dir)
+        temp-file (fs/create-file (fs/path temp-dir "temp-file.txt"))]
+    (with-config {:tasks {:bye ['do
+                                ['babashka "-e" "(+ 1 2 3)"]
+                                ['shell "rm" (str temp-file)]]
+                          :hello ['do
+                                  ['babashka "-e" "(+ 1 2 3)"]
+                                  [:bye]]}}
+      (is (fs/exists? temp-file))
+      (bb :hello)
+      (is (not (fs/exists? temp-file))))))
