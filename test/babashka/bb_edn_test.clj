@@ -42,13 +42,20 @@
       (is (fs/exists? temp-file))
       (bb :clean)
       (is (not (fs/exists? temp-file)))))
-  (let [temp-dir (fs/create-temp-dir)
-        temp-file (fs/create-file (fs/path temp-dir "temp-file.txt"))]
-    (testing "tokenization"
+  (testing "tokenization"
+    (let [temp-dir (fs/create-temp-dir)
+          temp-file (fs/create-file (fs/path temp-dir "temp-file.txt"))]
       (with-config {:tasks {:clean ['shell (str "rm " (str temp-file))]}}
         (is (fs/exists? temp-file))
         (bb :clean)
-        (is (not (fs/exists? temp-file)))))))
+        (is (not (fs/exists? temp-file)))))
+    (testing "first string is tokenized even with following args"
+      (let [temp-dir (fs/create-temp-dir)
+            temp-file (fs/create-file (fs/path temp-dir "temp-file.txt"))]
+        (with-config {:tasks {:clean ['shell (str "rm -rf " (str temp-file))]}}
+          (is (fs/exists? temp-file))
+          (bb :clean)
+          (is (not (fs/exists? temp-file))))))))
 
 (deftest sequential-task-test
   (testing ":and-do"
