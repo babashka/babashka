@@ -29,7 +29,7 @@
   (with-config {}
     (is (thrown-with-msg?
          Exception #"Task does not exist: :sum"
-         (bb :help :sum)))))
+         (bb "doc" :sum)))))
 
 (deftest babashka-task-test
   (with-config {:tasks {:sum [:babashka "-e" "(+ 1 2 3)"]}}
@@ -100,38 +100,40 @@
       (is (= 6 (bb :all))))))
 
 (deftest prioritize-user-task-test
-  (is (map? (bb :describe)))
+  (is (map? (bb "describe")))
   (with-config {:tasks {:describe [:babashka "-e" "(+ 1 2 3)"]}}
     (is (= 6 (bb :describe)))))
 
-(deftest help-task-test
+(deftest doc-task-test
   (with-config {:tasks {:cool-task
-                        {:help "Usage: bb :cool-task
+                        {:doc "Usage: bb :cool-task
 
                           Addition is a pretty advanced topic.  Let us start with the identity element
                           0. ..."
                          :task [:babashka "-e" "(+ 1 2 3)"]}}}
     (is (str/includes? (apply test-utils/bb nil
-                              (map str [:help :cool-task]))
+                              (map str ["doc" :cool-task]))
                        "Usage: bb :cool-task"))))
 
 (deftest list-tasks-test
+  (with-config {}
+    (let [res (test-utils/bb nil "tasks")]
+      (is (str/includes? res "No tasks found."))))
   (with-config {:tasks {:task-1
                         {:description "Return the sum of 1, 2 and 3."
-                         :help "Usage: bb :cool-task
+                         :doc "Usage: bb :cool-task
 
 Addition is a pretty advanced topic.  Let us start with the identity element
 0. ..."}
                         :task [:babashka "-e" "(+ 1 2 3)"]
                         :cool-task-2
                         {:description "Return the sum of 4, 5 and 6."
-                          :help "Usage: bb :cool-task
+                         :doc "Usage: bb :cool-task
 
 Addition is a pretty advanced topic.  Let us start with the identity element
 0. ..."
                          :task [:babashka "-e" "(+ 4 5 6)"]}}}
-    (let [res (apply test-utils/bb nil
-                     (map str [:tasks]))]
+    (let [res (test-utils/bb nil "tasks")]
       (is (str/includes? res "The following tasks are available:"))
       (is (str/includes? res ":task-1      Return the"))
       (is (str/includes? res ":cool-task-2 Return the")))))
@@ -141,5 +143,5 @@ Addition is a pretty advanced topic.  Let us start with the identity element
                 :tasks {:main-task [:main 'tasks 1 2 3]}}
     (is (= '("1" "2" "3") (bb :main-task)))
     (let [res (apply test-utils/bb nil
-                     (map str [:help :main-task]))]
+                     (map str ["doc" :main-task]))]
       (is (str/includes? res "Usage: just pass some args")))))

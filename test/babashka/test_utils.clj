@@ -4,12 +4,24 @@
    [babashka.main :as main]
    [babashka.process :as p]
    [clojure.edn :as edn]
+   [clojure.test :as test :refer [*report-counters*]]
    [sci.core :as sci]
    [sci.impl.vars :as vars]))
 
 (set! *warn-on-reflection* true)
 
 (def ^:dynamic *bb-edn-path* nil)
+
+(defmethod clojure.test/report :begin-test-var [m]
+  (println "===" (-> m :var meta :name))
+  (println))
+
+(defmethod clojure.test/report :end-test-var [_m]
+  (let [{:keys [:fail :error]} @*report-counters*]
+    (when (and (= "true" (System/getenv "BABASHKA_FAIL_FAST"))
+               (or (pos? fail) (pos? error)))
+      (println "=== Failing fast")
+      (System/exit 1))))
 
 (defn bb-jvm [input-or-opts & args]
   (reset! cp/cp-state nil)
