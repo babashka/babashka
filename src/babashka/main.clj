@@ -166,7 +166,7 @@ Use -- to separate script command line args from bb command line args.
                  task-key :task} (decode-task task)]
             (if-let [help-text (:doc task)]
               [(println help-text) 0]
-              (if-let [main (when (= :main task-key)
+              (if-let [main (when (= 'main task-key)
                               (first args))]
                 (let [main (if (simple-symbol? main)
                              (symbol (str main) "-main")
@@ -450,7 +450,7 @@ Use -- to separate script command line args from bb command line args.
         key? (when fst (str/starts-with? fst ":"))
         keys (when key? (rest (str/split fst #":")))
         expanded (when (and key? (> (count keys) 1))
-                   (into [:do] (map (comp vector keyword) keys)))
+                   (into ['do] (map (comp vector keyword) keys)))
         k (when (and key? (not expanded))
             (keyword (first keys)))
         bb-edn @bb-edn
@@ -603,10 +603,10 @@ Use -- to separate script command line args from bb command line args.
   (let [{:keys [:task :opts :args]} (decode-task task)]
     opts ;; not used
     (case task
-      :babashka
+      babashka
       (let [cmd-line-args args]
         (parse-opts (seq (map str (concat cmd-line-args command-line-args)))))
-      :shell
+      shell
       (let [args (if (and (= 1 (count args))
                           (string? (first args)))
                    (p/tokenize (first args))
@@ -617,11 +617,11 @@ Use -- to separate script command line args from bb command line args.
                   (-> (p/process args {:inherit true})
                       deref
                       :exit)])})
-      :main
+      main
       (let [main-arg (first args)
             cmd-line-args (rest args)]
         (parse-opts (seq (map str (concat ["--main" main-arg] cmd-line-args command-line-args)))))
-      :do
+      do
       {:do (map #(resolve-task tasks % nil) args)}
       ;; default
       (if-let [t (get tasks task)]
