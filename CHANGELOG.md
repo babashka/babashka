@@ -15,6 +15,10 @@ Babashka.fs:
 
 - Create target dir automatically in `copy-tree`
 
+Babashka.nrepl:
+
+- Implement `cider-nrepl` `info` / `lookup` op [#30](https://github.com/babashka/babashka.nrepl/issues/30) [(@brdloush)](https://github.com/brdloush)
+
 Babashka.process:
 
 - Support tokenizing single string [#39](https://github.com/babashka/process/issues/39)
