@@ -81,7 +81,7 @@
   (println (str "babashka v" version)))
 
 (def bb-edn
-  (atom nil))
+  (volatile! nil))
 
 (defn print-error [& msgs]
   (binding [*out* *err*]
@@ -552,10 +552,6 @@ Use -- to separate script command line args from bb command line args.
                          opts-map))]
             opts))))
 
-(def should-load-inits?
-  "if true, then we should still load preloads and user.clj"
-  (volatile! true))
-
 (def env (atom {}))
 
 (defn exec [opts]
@@ -647,7 +643,7 @@ Use -- to separate script command line args from bb command line args.
             opts (addons/future opts)
             sci-ctx (sci/init opts)
             _ (vreset! common/ctx sci-ctx)
-            preloads (when @should-load-inits? (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim)))
+            preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim))
             [expressions exit-code]
             (cond expressions [expressions nil]
                   main
@@ -669,28 +665,15 @@ Use -- to separate script command line args from bb command line args.
             exit-code
             ;; handle preloads
             (if exit-code exit-code
-                (do (when @should-load-inits?
-                      (when preloads
-                        (sci/binding [sci/file "<preloads>"]
-                          (try
-                            (sci/eval-string* sci-ctx preloads)
-                            (catch Throwable e
-                              (error-handler e {:expression expression
-                                                :verbose? verbose?
-                                                :preloads preloads
-                                                :loader (:loader @cp/cp-state)})))))
-                      (when @cp/cp-state
-                        (when-let [{:keys [:file :source]}
-                                   (cp/source-for-namespace (:loader @cp/cp-state) "user" nil)]
-                          (sci/binding [sci/file file]
-                            (try
-                              (sci/eval-string* sci-ctx source)
-                              (catch Throwable e
-                                (error-handler e {:expression expression
-                                                  :verbose? verbose?
-                                                  :preloads preloads
-                                                  :loader (:loader @cp/cp-state)}))))))
-                      (vreset! should-load-inits? false))
+                (do (when preloads
+                      (sci/binding [sci/file "<preloads>"]
+                        (try
+                          (sci/eval-string* sci-ctx preloads)
+                          (catch Throwable e
+                            (error-handler e {:expression expression
+                                              :verbose? verbose?
+                                              :preloads preloads
+                                              :loader (:loader @cp/cp-state)})))))
                     nil))
             ;; socket REPL is start asynchronously. when no other args are
             ;; provided, a normal REPL will be started as well, which causes the
@@ -765,7 +748,7 @@ Use -- to separate script command line args from bb command line args.
                         "bb.edn")]
     (when (fs/exists? bb-edn-file)
       (let [edn (edn/read-string (slurp bb-edn-file))]
-        (reset! bb-edn edn)))
+        (vreset! bb-edn edn)))
     ;; we mutate the atom from tests as well, so despite the above it can contain a bb.edn
     (when-let [bb-edn @bb-edn] (deps/add-deps bb-edn)))
   (let [opts (parse-opts args)]

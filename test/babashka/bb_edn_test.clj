@@ -4,7 +4,7 @@
    [babashka.test-utils :as test-utils]
    [clojure.edn :as edn]
    [clojure.string :as str]
-   [clojure.test :as test :refer [deftest is testing]]))
+   [clojure.test :as test :refer [deftest is]]))
 
 (defn bb [& args]
   (edn/read-string

@@ -26,8 +26,9 @@
 (defn bb-jvm [input-or-opts & args]
   (reset! cp/cp-state nil)
   (reset! main/env {})
-  (when-let [path *bb-edn-path*]
-    (reset! main/bb-edn (edn/read-string (slurp path))))
+  (if-let [path *bb-edn-path*]
+    (vreset! main/bb-edn (edn/read-string (slurp path)))
+    (vreset! main/bb-edn nil))
   (let [os (java.io.StringWriter.)
         es (if-let [err (:err input-or-opts)]
              err (java.io.StringWriter.))
