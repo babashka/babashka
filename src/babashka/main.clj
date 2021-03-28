@@ -163,11 +163,12 @@ Use -- to separate script command line args from bb command line args.
           (if (simple-symbol? '%1$s)
             (try (require '%1$s) true
               (catch Exception e nil))
-            (requiring-resolve '%1$s)))
+            (try (requiring-resolve '%1$s) true
+              (catch Exception e nil))))
  (clojure.repl/doc %1$s)
  true)" arg))
       [nil 0]
-      [(print-error "No docstring found for var:" arg) 1]))
+      [nil 1]))
   ,)
 
 (defn print-describe []
