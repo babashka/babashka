@@ -31,3 +31,8 @@
     (is (str/includes? (apply test-utils/bb nil
                               (map str ["doc" "tasks/-main"]))
                        "Main docstring"))))
+
+(deftest deps-test
+  (with-config '{:deps {medley/medley {:mvn/version "1.3.0"}}}
+    (is (= '{1 {:id 1}, 2 {:id 2}}
+           (bb "-e" "(require 'medley.core)" "-e" "(medley.core/index-by :id [{:id 1} {:id 2}])")))))
