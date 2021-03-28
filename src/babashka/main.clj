@@ -391,11 +391,6 @@ Use -- to separate script command line args from bb command line args.
 (defn shell-seq [in]
   (line-seq (java.io.BufferedReader. in)))
 
-(defn error [msg exit]
-  (binding [*out* *err*]
-    (println msg)
-    {:exec (fn [] [nil exit])}))
-
 (defn parse-opts [options]
   (let [opt (first options)]
     (cond (and (command? opt)
@@ -522,12 +517,10 @@ Use -- to separate script command line args from bb command line args.
                                    (-> opts-map
                                        (update :expressions (fnil conj []) (first options))
                                        (assoc :command-line-args (next options)))
-                                   (if (fs/exists? opt)
-                                     (assoc opts-map
-                                            (if (str/ends-with? opt ".jar")
-                                              :jar :file) opt
-                                            :command-line-args (next options))
-                                     (error (str "File does not exist: " opt) 1)))))))
+                                   (assoc opts-map
+                                          (if (str/ends-with? opt ".jar")
+                                            :jar :file) opt
+                                          :command-line-args (next options)))))))
                          opts-map))]
             opts))))
 
@@ -546,8 +539,7 @@ Use -- to separate script command line args from bb command line args.
                     :verbose? :classpath
                     :main :uberscript :describe?
                     :jar :uberjar :clojure
-                    :doc]
-             exec-fn :exec}
+                    :doc]}
             opts
             _ (when verbose? (vreset! common/verbose? true))
             _ (do ;; set properties
@@ -699,7 +691,6 @@ Use -- to separate script command line args from bb command line args.
                                                :verbose? verbose?
                                                :preloads preloads
                                                :loader (:loader @cp/cp-state)}))))
-                       exec-fn (exec-fn)
                        clojure [nil (if-let [proc (deps/clojure command-line-args)]
                                       (-> @proc :exit)
                                       0)]
