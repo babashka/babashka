@@ -83,6 +83,21 @@
 (def bb-edn
   (volatile! nil))
 
+(defn command? [x]
+  (case x
+    ("clojure"
+     "version"
+     "help"
+     "doc"
+     "tasks"
+     "uberjar"
+     "uberscript"
+     "repl"
+     "socket-repl"
+     "nrepl-server"
+     "describe") true
+    false))
+
 (defn print-error [& msgs]
   (binding [*out* *err*]
     (apply println msgs)))
@@ -91,29 +106,27 @@
   (println (str "Babashka v" version))
   ;; (println (str "sci v" (str/trim (slurp (io/resource "SCI_VERSION")))))
   (println)
-  (println "Options must appear in the order of groups mentioned below.")
   (println "
 Help:
 
   help, -h or -?     Print this help text.
   version            Print the current version of babashka.
   describe           Print an EDN map with information about this version of babashka.
-  tasks              List tasks.
-  doc <var>          Print docstring of var or task. Resolves using requiring-resolve.
-
-Evaluation:
-
-  -e, --eval <expr>  Evaluate an expression.
-  -f, --file <path>  Evaluate a file.
-  -cp, --classpath   Classpath to use.
-  -m, --main <ns>    Call the -main function from namespace with args.
-  --verbose          Print debug information and entire stacktrace in case of exception.
+  doc <x>            Print docstring of var or namespace. Requires namespace if necessary.
 
 REPL:
 
   repl               Start REPL. Use rlwrap for history.
   socket-repl        Start socket REPL. Specify port (e.g. 1666) or host and port separated by colon (e.g. 127.0.0.1:1666).
   nrepl-server       Start nREPL server. Specify port (e.g. 1667) or host and port separated by colon (e.g. 127.0.0.1:1667).
+
+Evaluation:
+
+  -e, --eval <expr>  Evaluate an expression.
+  -f, --file <path>  Evaluate a file.
+  -cp, --classpath   Classpath to use.
+  -m, --main <x>     Call the -main function from a namespace or call a fully qualified var.
+  --verbose          Print debug information and entire stacktrace in case of exception.
 
 In- and output flags:
 
@@ -401,21 +414,6 @@ Use -- to separate script command line args from bb command line args.
   (binding [*out* *err*]
     (println msg)
     {:exec (fn [] [nil exit])}))
-
-(defn command? [x]
-  (case x
-    ("clojure"
-     "version"
-     "help"
-     "doc"
-     "tasks"
-     "uberjar"
-     "uberscript"
-     "repl"
-     "socket-repl"
-     "nrepl-server"
-     "describe") true
-    false))
 
 (defn parse-opts [options]
   (let [opt (first options)]
