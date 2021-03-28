@@ -23,7 +23,6 @@ Deps.clj:
 
 - Catch up with Clojure CLI 1.10.3.814 [#40](https://github.com/borkdude/deps.clj/issues/40)
 
-
 Sci:
 
 - Support new kwargs handling from 1.11.0 [#553](https://github.com/borkdude/sci/issues/553)
