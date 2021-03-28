@@ -1,7 +1,6 @@
 (ns babashka.uberjar-test
   (:require
    [babashka.test-utils :as tu]
-   [clojure.edn :as edn]
    [clojure.string :as str]
    [clojure.test :as t :refer [deftest is testing]]))
 

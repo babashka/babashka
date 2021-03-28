@@ -112,21 +112,34 @@ Help:
   help, -h or -?     Print this help text.
   version            Print the current version of babashka.
   describe           Print an EDN map with information about this version of babashka.
-  doc <x>            Print docstring of var or namespace. Requires namespace if necessary.
+  doc <var|ns>       Print docstring of var or namespace. Requires namespace if necessary.
 
 REPL:
 
-  repl               Start REPL. Use rlwrap for history.
-  socket-repl        Start socket REPL. Specify port (e.g. 1666) or host and port separated by colon (e.g. 127.0.0.1:1666).
-  nrepl-server       Start nREPL server. Specify port (e.g. 1667) or host and port separated by colon (e.g. 127.0.0.1:1667).
+  Usage: <repl-command> [port/host] [eval-opts]
+  Specify port (e.g. 1666) or host and port separated by colon (e.g. 127.0.0.1:1666).
+
+  repl               Start REPL. Use rlwrap for history. When invoking bb with no args, this is the default command.
+  socket-repl        Start socket REPL.
+  nrepl-server       Start nREPL server.
+
+Clojure:
+
+  clojure [args...]  Invokes clojure. Takes same args as the official clojure CLI.
+
+Packaging:
+
+  uberscript <file> [eval-opts]  Collect preloads, -e, -f and -m and all required namespaces from the classpath into a single file.
+
+  uberjar    <jar> [eval-opts]   Similar to --uberscript but creates jar file.
 
 Evaluation:
 
-  -e, --eval <expr>  Evaluate an expression.
-  -f, --file <path>  Evaluate a file.
-  -cp, --classpath   Classpath to use.
-  -m, --main <x>     Call the -main function from a namespace or call a fully qualified var.
-  --verbose          Print debug information and entire stacktrace in case of exception.
+  -e, --eval <expr>    Evaluate an expression.
+  -f, --file <path>    Evaluate a file.
+  -cp, --classpath     Classpath to use.
+  -m, --main <ns|var>  Call the -main function from a namespace or call a fully qualified var.
+  --verbose            Print debug information and entire stacktrace in case of exception.
 
 In- and output flags:
 
@@ -135,18 +148,6 @@ In- and output flags:
   -o                 Write lines to stdout.
   -O                 Write EDN values to stdout.
   --stream           Stream over lines or EDN values from stdin. Combined with -i or -I *input* becomes a single value per iteration.
-
-Uberscript:
-
-  uberscript <file> Collect preloads, -e, -f and -m and all required namespaces from the classpath into a single file.
-
-Uberjar:
-
-  uberjar    <jar>  Similar to --uberscript but creates jar file.
-
-Clojure:
-
-  clojure [args...] Invokes clojure. Takes same args as the official clojure CLI.
 
 If the first argument is not any of the above options, then it treated as a file if it exists, or as an expression otherwise.
 Everything after that is bound to *command-line-args*.

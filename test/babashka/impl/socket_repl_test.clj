@@ -51,7 +51,7 @@
           (vreset! common/ctx ctx)
           (start-repl! "0.0.0.0:1666" ctx))
         (do (vreset! server-process
-                     (p/process ["./bb" "--socket-repl" "localhost:1666"]))
+                     (p/process ["./bb" "socket-repl" "localhost:1666"]))
             (w/wait-for-port "localhost" 1666)))
       (Thread/sleep 50)
       (is (socket-command "(+ 1 2 3)" "user=> 6"))
