@@ -27,6 +27,7 @@ Deps.clj:
 Sci:
 
 - Support new kwargs handling from 1.11.0 [#553](https://github.com/borkdude/sci/issues/553)
+- Allow dynamic `:doc` on `def`/`defn` [#554](https://github.com/borkdude/sci/issues/554)
 
 ## 0.3.0
 
