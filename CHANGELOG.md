@@ -2,6 +2,32 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
+## 0.3.1
+
+Babashka proper:
+
+- Support `bb.edn` project config with `:paths` and `:deps`
+- Main options are now supported to be called as `bb option` instead of `bb --option`
+- Support fully qualified symbol in `--main` option [#758](https://github.com/babashka/babashka/issues/758)
+
+Babashka.fs:
+
+- Create target dir automatically in `copy-tree`
+
+Babashka.process:
+
+- Support tokenizing single string [#39](https://github.com/babashka/process/issues/39)
+- Support `:extra-env` option [#40](https://github.com/babashka/process/issues/40)
+
+Deps.clj:
+
+- Catch up with Clojure CLI 1.10.3.814 [#40](https://github.com/borkdude/deps.clj/issues/40)
+
+
+Sci:
+
+- Support new kwargs handling from 1.11.0 [#553](https://github.com/borkdude/sci/issues/553)
+
 ## 0.3.0
 
 ### New
