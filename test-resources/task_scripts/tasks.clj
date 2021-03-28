@@ -1,4 +1,6 @@
-(ns tasks)
+(ns tasks
+  "This is task docstring."
+  )
 
 (defn -main
   "Usage: just pass some args.

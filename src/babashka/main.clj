@@ -34,7 +34,6 @@
    [babashka.impl.test :as t]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
    [babashka.nrepl.server :as nrepl-server]
-   [babashka.process :as p]
    [babashka.wait :as wait]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
@@ -83,20 +82,6 @@
 
 (def bb-edn
   (atom nil))
-
-(defn decode-task [task]
-  (let [task (if (map? task)
-               (:task task)
-               task)
-        task-key (first task)
-        args (rest task)
-        maybe-opts (first args)]
-    (if (map? maybe-opts)
-      {:task task-key
-       :opts maybe-opts
-       :args (rest args)}
-      {:task task-key
-       :args args})))
 
 (defn print-error [& msgs]
   (binding [*out* *err*]
@@ -159,29 +144,16 @@ Use -- to separate script command line args from bb command line args.
 
 (defn print-doc [ctx command-line-args]
   (let [arg (first command-line-args)]
-    (if (str/starts-with? arg ":")
-      (let [k (keyword (subs arg 1))]
-        (if-let [task (get-in @bb-edn [:tasks k])]
-          (let [{:keys [:args]
-                 task-key :task} (decode-task task)]
-            (if-let [help-text (:doc task)]
-              [(println help-text) 0]
-              (if-let [main (when (= 'main task-key)
-                              (first args))]
-                (let [main (if (simple-symbol? main)
-                             (symbol (str main) "-main")
-                             main)]
-                  (if (sci/eval-string* ctx (format "(when (requiring-resolve '%1$s)
-                                                       (clojure.repl/doc %1$s) true)" main))
-                    [nil 0]
-                    [(print-error "No docstring found for task:" k) 1]))
-                [(print-error "No docstring found for task:" k) 1])))
-          [(print-error "Task does not exist:" k) 1]))
-      (let [arg (if (str/includes? arg "/") arg (str "clojure.core/" arg))]
-        (if (sci/eval-string* ctx (format "(when (requiring-resolve '%1$s)
-                                             (clojure.repl/doc %1$s) true)" arg))
-          [nil 0]
-          [(print-error "No docstring found for var:" arg) 1]))))
+    (if (sci/eval-string* ctx (format "
+(when (or (resolve '%1$s)
+          (if (simple-symbol? '%1$s)
+            (try (require '%1$s) true
+              (catch Exception e nil))
+            (requiring-resolve '%1$s)))
+ (clojure.repl/doc %1$s)
+ true)" arg))
+      [nil 0]
+      [(print-error "No docstring found for var:" arg) 1]))
   ,)
 
 (defn print-tasks [tasks]
@@ -425,8 +397,6 @@ Use -- to separate script command line args from bb command line args.
 (defn shell-seq [in]
   (line-seq (java.io.BufferedReader. in)))
 
-(declare resolve-task)
-
 (defn error [msg exit]
   (binding [*out* *err*]
     (println msg)
@@ -448,23 +418,8 @@ Use -- to separate script command line args from bb command line args.
     false))
 
 (defn parse-opts [options]
-  (let [fst (when options (first options))
-        key? (when fst (str/starts-with? fst ":"))
-        keys (when key? (rest (str/split fst #":")))
-        expanded (when (and key? (> (count keys) 1))
-                   (into ['do] (map (comp vector keyword) keys)))
-        k (when (and key? (not expanded))
-            (keyword (first keys)))
-        bb-edn @bb-edn
-        tasks (when bb-edn
-                (:tasks bb-edn))
-        user-task (when (and tasks k)
-                    (get tasks k))
-        opt (first options)]
-    (cond user-task
-          (resolve-task tasks user-task {:command-line-args (next options)})
-          expanded (resolve-task tasks expanded nil)
-          (and (command? opt)
+  (let [opt (first options)]
+    (cond (and (command? opt)
                (not (fs/regular-file? opt)))
           (recur (cons (str "--" opt) (next options)))
           :else
@@ -483,8 +438,6 @@ Use -- to separate script command line args from bb command line args.
                              ("--doc")
                              {:doc true
                               :command-line-args (rest options)}
-                             ("--tasks") {:tasks (or tasks {})
-                                          :command-line-args (rest options)}
                              ("--verbose") (recur (next options)
                                                   (assoc opts-map
                                                          :verbose? true))
@@ -595,41 +548,9 @@ Use -- to separate script command line args from bb command line args.
                                             (if (str/ends-with? opt ".jar")
                                               :jar :file) opt
                                             :command-line-args (next options))
-                                     (error (str (if (str/starts-with? opt ":")
-                                                   "Task does not exist: "
-                                                   "File does not exist: ") opt) 1)))))))
+                                     (error (str "File does not exist: " opt) 1)))))))
                          opts-map))]
             opts))))
-
-(defn resolve-task [tasks task {:keys [:command-line-args]}]
-  (let [{:keys [:task :opts :args]} (decode-task task)]
-    opts ;; not used
-    (case task
-      babashka
-      (let [cmd-line-args args]
-        (parse-opts (seq (map str (concat cmd-line-args command-line-args)))))
-      shell
-      (let [args (if (string? (first args))
-                   (into (p/tokenize (first args)) (rest args))
-                   args)
-            args (into (vec args) command-line-args)]
-        {:exec (fn []
-                 [nil
-                  (-> (p/process args {:inherit true})
-                      deref
-                      :exit)])})
-      main
-      (let [main-arg (first args)
-            cmd-line-args (rest args)]
-        (parse-opts (seq (map str (concat ["--main" main-arg] cmd-line-args command-line-args)))))
-      clojure
-      (parse-opts (seq (map str (concat ["--clojure"] args command-line-args))))
-      do
-      {:do (map #(resolve-task tasks % nil) args)}
-      ;; default
-      (if-let [t (get tasks task)]
-        (resolve-task tasks t nil)
-        (error (str "No such task: " task) 1)))))
 
 (def should-load-inits?
   "if true, then we should still load preloads and user.clj"
@@ -650,7 +571,7 @@ Use -- to separate script command line args from bb command line args.
                     :verbose? :classpath
                     :main :uberscript :describe?
                     :jar :uberjar :clojure
-                    :exec-src :tasks :doc]
+                    :doc]
              exec-fn :exec}
             opts
             _ (when verbose? (vreset! common/verbose? true))
@@ -781,7 +702,6 @@ Use -- to separate script command line args from bb command line args.
                  (cond version-opt
                        [(print-version) 0]
                        help (print-help sci-ctx command-line-args)
-                       tasks (print-tasks tasks)
                        doc (print-doc sci-ctx command-line-args)
                        describe?
                        [(print-describe) 0]
@@ -818,12 +738,6 @@ Use -- to separate script command line args from bb command line args.
                                                :preloads preloads
                                                :loader (:loader @cp/cp-state)}))))
                        exec-fn (exec-fn)
-                       exec-src [(let [res (sci/binding [sci/file (or @sci/file "<task>")
-                                                         core/command-line-args command-line-args]
-                                             (sci/eval-string* sci-ctx exec-src))]
-                                   (when (some? res)
-                                     (prn res)))
-                                 0]
                        clojure [nil (if-let [proc (deps/clojure command-line-args)]
                                       (-> @proc :exit)
                                       0)]
@@ -846,18 +760,6 @@ Use -- to separate script command line args from bb command line args.
                         :verbose verbose?}))
         exit-code))))
 
-(defn exec* [opts]
-  (if-let [do-opts (:do opts)]
-    (reduce (fn [prev-exit opts]
-              ;; (prn :prev prev-exit)
-              ;; (prn :opts opts)
-              (if (pos? prev-exit)
-                (reduced prev-exit)
-                (exec* opts)))
-            0
-            do-opts)
-    (exec opts)))
-
 (defn main [& args]
   (let [bb-edn-file (or (System/getenv "BABASHKA_EDN")
                         "bb.edn")]
@@ -867,7 +769,7 @@ Use -- to separate script command line args from bb command line args.
     ;; we mutate the atom from tests as well, so despite the above it can contain a bb.edn
     (when-let [bb-edn @bb-edn] (deps/add-deps bb-edn)))
   (let [opts (parse-opts args)]
-    (exec* opts)))
+    (exec opts)))
 
 (defn -main
   [& args]
