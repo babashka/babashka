@@ -116,7 +116,7 @@ Help:
 
 REPL:
 
-  Usage: <repl-command> [port/host] [eval-opts]
+  Usage: <repl-command> [port/host] [classpath-opt]
   Specify port (e.g. 1666) or host and port separated by colon (e.g. 127.0.0.1:1666).
 
   repl               Start REPL. Use rlwrap for history. When invoking bb with no args, this is the default command.
