@@ -28,17 +28,18 @@
      resource-paths)))
 
 (defn path-from-jar
-  [^java.io.File jar-file resource-paths {:keys [:url?]}]
-  (with-open [jar (JarFile. jar-file)]
-    (some (fn [path]
-            (when-let [entry (.getEntry jar path)]
-              (if url?
-                ;; manual conversion, faster than going through .toURI
-                (java.net.URL. "jar" nil
-                 (str "file:" (.getAbsolutePath jar-file) "!/" path))
-                {:file path
-                 :source (slurp (.getInputStream jar entry))})))
-          resource-paths)))
+  [^java.io.File jar-file resource-paths opts]
+  (let [url? (:url? opts)]
+    (with-open [jar (JarFile. jar-file)]
+      (some (fn [path]
+              (when-let [entry (.getEntry jar path)]
+                (if url?
+                  ;; manual conversion, faster than going through .toURI
+                  (java.net.URL. "jar" nil
+                                 (str "file:" (.getAbsolutePath jar-file) "!/" path))
+                  {:file path
+                   :source (slurp (.getInputStream jar entry))})))
+            resource-paths))))
 
 (deftype JarFileResolver [jar-file]
   IResourceResolver
@@ -57,8 +58,10 @@
   (getResources [_ resource-paths opts]
     (keep #(getResource % resource-paths opts) entries)))
 
+(def path-sep (System/getProperty "path.separator"))
+
 (defn loader [^String classpath]
-  (let [parts (.split classpath (System/getProperty "path.separator"))
+  (let [parts (.split classpath path-sep)
         entries (map part->entry parts)]
     (Loader. entries)))
 
@@ -88,7 +91,7 @@
          (fn [{:keys [:cp]}]
            (let [new-cp
                  (if-not cp extra-classpath
-                         (str cp (System/getProperty "path.separator") extra-classpath))]
+                         (str cp path-sep extra-classpath))]
              {:loader (loader new-cp)
               :cp new-cp})))
   nil)
@@ -96,7 +99,7 @@
 (defn split-classpath
   "Returns the classpath as a seq of strings, split by the platform
   specific path separator."
-  ([^String cp] (vec (.split cp (System/getProperty "path.separator")))))
+  ([^String cp] (vec (.split cp path-sep))))
 
 (defn get-classpath
   "Returns the current classpath as set by --classpath, BABASHKA_CLASSPATH and add-classpath."
