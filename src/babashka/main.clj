@@ -170,26 +170,6 @@ Use -- to separate script command line args from bb command line args.
       [(print-error "No docstring found for var:" arg) 1]))
   ,)
 
-(defn print-tasks [tasks]
-  (if (seq tasks)
-    (let [tasks (into (sorted-map) tasks)
-          ks (keys tasks)
-          longest (apply max
-                         (map (comp count str)
-                              ks))
-          fmt (str "%1$-" longest "s")]
-      (println "The following tasks are available:")
-      (println)
-      (doseq [[k v] tasks]
-        (println (str (format fmt k)
-                      (when-let [d (:description v)]
-                        (str " " d)))))
-      (println)
-      (println "Run bb :help <task> to view help of a specific task.")
-      [nil 0])
-    (do (println "No tasks found.")
-        [nil 0])))
-
 (defn print-describe []
   (println
    (format
