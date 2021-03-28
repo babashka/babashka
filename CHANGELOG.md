@@ -9,6 +9,7 @@ Babashka proper:
 - Support `bb.edn` project config with `:paths` and `:deps`
 - Main options are now supported to be called as `bb option` instead of `bb --option`
 - Support fully qualified symbol in `--main` option [#758](https://github.com/babashka/babashka/issues/758)
+- Support new `doc` option to retrieve a docstring from the command line
 
 Babashka.fs:
 
