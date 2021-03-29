@@ -2,7 +2,12 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
-## 0.3.1
+## 0.3.1 (unreleased)
+
+Preliminary docs:
+
+bb.edn: https://book.babashka.org/master.html#_bb_edn
+-m with fully qualified symbol: https://book.babashka.org/master.html#_invoking_a_main_function 
 
 Babashka proper:
 

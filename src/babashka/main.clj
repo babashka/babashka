@@ -104,8 +104,6 @@
 
 (defn print-help [_ctx _command-line-args]
   (println (str "Babashka v" version))
-  ;; (println (str "sci v" (str/trim (slurp (io/resource "SCI_VERSION")))))
-  (println)
   (println "
 Help:
 
@@ -113,6 +111,14 @@ Help:
   version            Print the current version of babashka.
   describe           Print an EDN map with information about this version of babashka.
   doc <var|ns>       Print docstring of var or namespace. Requires namespace if necessary.
+
+Evaluation:
+
+  -e, --eval <expr>    Evaluate an expression.
+  -f, --file <path>    Evaluate a file.
+  -cp, --classpath     Classpath to use.
+  -m, --main <ns|var>  Call the -main function from a namespace or call a fully qualified var.
+  --verbose            Print debug information and entire stacktrace in case of exception.
 
 REPL:
 
@@ -133,15 +139,7 @@ Packaging:
 
   uberjar    <jar> [eval-opts]   Similar to --uberscript but creates jar file.
 
-Evaluation:
-
-  -e, --eval <expr>    Evaluate an expression.
-  -f, --file <path>    Evaluate a file.
-  -cp, --classpath     Classpath to use.
-  -m, --main <ns|var>  Call the -main function from a namespace or call a fully qualified var.
-  --verbose            Print debug information and entire stacktrace in case of exception.
-
-In- and output flags:
+In- and output flags (to be used with -e on the command line):
 
   -i                 Bind *input* to a lazy seq of lines from stdin.
   -I                 Bind *input* to a lazy seq of EDN values from stdin.

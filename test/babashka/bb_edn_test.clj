@@ -36,3 +36,12 @@
   (with-config '{:deps {medley/medley {:mvn/version "1.3.0"}}}
     (is (= '{1 {:id 1}, 2 {:id 2}}
            (bb "-e" "(require 'medley.core)" "-e" "(medley.core/index-by :id [{:id 1} {:id 2}])")))))
+
+;; TODO:
+;; Do we want to support the same parsing as the clj CLI?
+;; Or do we want `--aliases :foo:bar`
+;; Let's wait for a good use case
+#_(deftest alias-deps-test
+  (with-config '{:aliases {:medley {:deps {medley/medley {:mvn/version "1.3.0"}}}}}
+    (is (= '{1 {:id 1}, 2 {:id 2}}
+           (bb "-A:medley" "-e" "(require 'medley.core)" "-e" "(medley.core/index-by :id [{:id 1} {:id 2}])")))))
