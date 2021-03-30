@@ -7,10 +7,9 @@ For a list of breaking changes, check [here](#breaking-changes).
 Babashka proper:
 
 - Support `bb.edn` project config with `:paths` and `:deps`. See [docs](https://book.babashka.org/index.html#_bb_edn).
-- Main options are now supported to be called as `bb option` instead of `bb --option`
+- Rewrite CLI arg parsing to to subcommand style invocations: `bb --uberjar` becomes `bb uberjar`
 - Support fully qualified symbol in `--main` option [#758](https://github.com/babashka/babashka/issues/758). See [docs](https://book.babashka.org/index.html#_invoking_a_main_function ).
 - Support new `doc` option to retrieve a docstring from the command line
-- Rewrite CLI arg parsing to to subcommand style invocations
 
 Babashka.fs:
 
