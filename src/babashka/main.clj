@@ -139,8 +139,8 @@ Clojure:
 
 Packaging:
 
-  uberscript <file> [main-opt]  Collect all required namespaces from the classpath into a single file. Optionally sets `-m` as the main function.
-  uberjar    <jar> [main-opt]   Similar to uberscript but creates jar file.
+  uberscript <file> [eval-opt]  Collect all required namespaces from the classpath into a single file. Accepts additional eval opts, like `-m`.
+  uberjar    <jar>  [eval-opt]  Similar to uberscript but creates jar file.
 
 In- and output flags (only to be used with -e one-liners):
 
