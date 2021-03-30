@@ -4,7 +4,7 @@
    [babashka.test-utils :as test-utils]
    [clojure.edn :as edn]
    [clojure.string :as str]
-   [clojure.test :as test :refer [deftest is]]))
+   [clojure.test :as test :refer [deftest is testing]]))
 
 (defn bb [& args]
   (edn/read-string
@@ -35,7 +35,11 @@
 (deftest deps-test
   (with-config '{:deps {medley/medley {:mvn/version "1.3.0"}}}
     (is (= '{1 {:id 1}, 2 {:id 2}}
-           (bb "-e" "(require 'medley.core)" "-e" "(medley.core/index-by :id [{:id 1} {:id 2}])")))))
+           (bb "-e" "(require 'medley.core)" "-e" "(medley.core/index-by :id [{:id 1} {:id 2}])"))))
+  (testing "--classpath option overrides bb.edn"
+    (with-config '{:deps {medley/medley {:mvn/version "1.3.0"}}}
+      (is (= "src"
+             (bb "-cp" "src" "-e" "(babashka.classpath/get-classpath)"))))))
 
 ;; TODO:
 ;; Do we want to support the same parsing as the clj CLI?

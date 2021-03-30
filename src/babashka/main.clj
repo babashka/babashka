@@ -111,7 +111,7 @@ or:    bb [classpath opts] subcommand [subcommand opts] [cmdline args]
 
 Classpath:
 
-  -cp, --classpath     Classpath to use.
+  -cp, --classpath     Classpath to use. Overrides bb.edn classpath.
 
 Evaluation:
 
@@ -562,8 +562,16 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
             uberscript-sources (atom ())
             classpath (or classpath
                           (System/getenv "BABASHKA_CLASSPATH"))
-            _ (when classpath
-                (cp/add-classpath classpath))
+            _ (if classpath
+                (cp/add-classpath classpath)
+                ;; when classpath isn't set, we calculate it from bb.edn, if present
+                (let [bb-edn-file (or (System/getenv "BABASHKA_EDN")
+                                      "bb.edn")]
+                  (when (fs/exists? bb-edn-file)
+                    (let [edn (edn/read-string (slurp bb-edn-file))]
+                      (vreset! bb-edn edn)))
+                  ;; we mutate the atom from tests as well, so despite the above it can contain a bb.edn
+                  (when-let [bb-edn @bb-edn] (deps/add-deps bb-edn))))
             abs-path (when file
                        (let [abs-path (.getAbsolutePath (io/file file))]
                          (vars/bindRoot sci/file abs-path)
@@ -715,13 +723,6 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
         exit-code))))
 
 (defn main [& args]
-  (let [bb-edn-file (or (System/getenv "BABASHKA_EDN")
-                        "bb.edn")]
-    (when (fs/exists? bb-edn-file)
-      (let [edn (edn/read-string (slurp bb-edn-file))]
-        (vreset! bb-edn edn)))
-    ;; we mutate the atom from tests as well, so despite the above it can contain a bb.edn
-    (when-let [bb-edn @bb-edn] (deps/add-deps bb-edn)))
   (let [opts (parse-opts args)]
     (exec opts)))
 
