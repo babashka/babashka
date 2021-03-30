@@ -153,8 +153,8 @@ In- and output flags (only to be used with -e one-liners):
   -O                 Write EDN values to stdout.
   --stream           Stream over lines or EDN values from stdin. Combined with -i or -I *input* becomes a single value per iteration.
 
+File names take precedence over subcommand names.
 Remaining arguments are bound to *command-line-args*.
-
 Use -- to separate script command line args from bb command line args.
 ")
   [nil 0])
