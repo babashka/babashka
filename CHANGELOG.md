@@ -2,18 +2,13 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
-## 0.3.1 (unreleased)
-
-Preliminary docs:
-
-bb.edn: https://book.babashka.org/master.html#_bb_edn
--m with fully qualified symbol: https://book.babashka.org/master.html#_invoking_a_main_function 
+## 0.3.1
 
 Babashka proper:
 
-- Support `bb.edn` project config with `:paths` and `:deps`
+- Support `bb.edn` project config with `:paths` and `:deps`. See [docs](https://book.babashka.org/index.html#_bb_edn).
 - Main options are now supported to be called as `bb option` instead of `bb --option`
-- Support fully qualified symbol in `--main` option [#758](https://github.com/babashka/babashka/issues/758)
+- Support fully qualified symbol in `--main` option [#758](https://github.com/babashka/babashka/issues/758). See [docs](https://book.babashka.org/index.html#_invoking_a_main_function ).
 - Support new `doc` option to retrieve a docstring from the command line
 
 Babashka.fs:
