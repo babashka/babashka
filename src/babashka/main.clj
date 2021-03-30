@@ -155,8 +155,7 @@ In- and output flags (only to be used with -e one-liners):
 
 File names take precedence over subcommand names.
 Remaining arguments are bound to *command-line-args*.
-Use -- to separate script command line args from bb command line args.
-")
+Use -- to separate script command line args from bb command line args.")
   [nil 0])
 
 (defn print-doc [ctx command-line-args]
