@@ -129,12 +129,9 @@ Help:
 
 REPL:
 
-  Usage: <repl-command> [port/host]
-  Specify port (e.g. 1666) or host and port separated by colon (e.g. 127.0.0.1:1666).
-
-  repl               Start REPL. Use rlwrap for history. When invoking bb with no args, this is the default command.
-  socket-repl        Start socket REPL.
-  nrepl-server       Start nREPL server.
+  repl                 Start REPL. Use rlwrap for history.
+  socket-repl  [addr]  Start a socket REPL. Addr opt defaults to localhost:1666.
+  nrepl-server [addr]  Start nREPL server. Address option defaults to locahost:1667.
 
 Clojure:
 
@@ -155,7 +152,8 @@ In- and output flags (only to be used with -e one-liners):
 
 File names take precedence over subcommand names.
 Remaining arguments are bound to *command-line-args*.
-Use -- to separate script command line args from bb command line args.")
+Use -- to separate script command line args from bb command line args.
+When no eval opts or subcommand is provided, the implicit subcommand is repl.")
   [nil 0])
 
 (defn print-doc [ctx command-line-args]
