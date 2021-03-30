@@ -105,6 +105,21 @@
 (defn print-help [_ctx _command-line-args]
   (println (str "Babashka v" version))
   (println "
+Usage: bb [classpath opts] [eval opts] [cmdline args]
+or:    bb [classpath opts] file [cmdline args]
+or:    bb [classpath opts] subcommand [subcommand opts] [cmdline args]
+
+Classpath:
+
+  -cp, --classpath     Classpath to use.
+
+Evaluation:
+
+  -e, --eval <expr>    Evaluate an expression.
+  -f, --file <path>    Evaluate a file.
+  -m, --main <ns|var>  Call the -main function from a namespace or call a fully qualified var.
+  --verbose            Print debug information and entire stacktrace in case of exception.
+
 Help:
 
   help, -h or -?     Print this help text.
@@ -112,17 +127,9 @@ Help:
   describe           Print an EDN map with information about this version of babashka.
   doc <var|ns>       Print docstring of var or namespace. Requires namespace if necessary.
 
-Evaluation:
-
-  -e, --eval <expr>    Evaluate an expression.
-  -f, --file <path>    Evaluate a file.
-  -cp, --classpath     Classpath to use.
-  -m, --main <ns|var>  Call the -main function from a namespace or call a fully qualified var.
-  --verbose            Print debug information and entire stacktrace in case of exception.
-
 REPL:
 
-  Usage: <repl-command> [port/host] [classpath-opt]
+  Usage: <repl-command> [port/host]
   Specify port (e.g. 1666) or host and port separated by colon (e.g. 127.0.0.1:1666).
 
   repl               Start REPL. Use rlwrap for history. When invoking bb with no args, this is the default command.
@@ -135,11 +142,11 @@ Clojure:
 
 Packaging:
 
-  uberscript <file> [eval-opts]  Collect preloads, -e, -f and -m and all required namespaces from the classpath into a single file.
+  uberscript <file> [main-opt]  Collect all required namespaces from the classpath into a single file. Optionally sets `-m` as the main function.
 
-  uberjar    <jar> [eval-opts]   Similar to --uberscript but creates jar file.
+  uberjar    <jar> [main-opt]   Similar to uberscript but creates jar file.
 
-In- and output flags (to be used with -e on the command line):
+In- and output flags (only to be used with -e one-liners):
 
   -i                 Bind *input* to a lazy seq of lines from stdin.
   -I                 Bind *input* to a lazy seq of EDN values from stdin.
@@ -147,8 +154,7 @@ In- and output flags (to be used with -e on the command line):
   -O                 Write EDN values to stdout.
   --stream           Stream over lines or EDN values from stdin. Combined with -i or -I *input* becomes a single value per iteration.
 
-If the first argument is not any of the above options, then it treated as a file if it exists, or as an expression otherwise.
-Everything after that is bound to *command-line-args*.
+Remaining arguments are bound to *command-line-args*.
 
 Use -- to separate script command line args from bb command line args.
 ")
