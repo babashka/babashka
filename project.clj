@@ -69,6 +69,7 @@
                     :feature/hiccup
                     :feature/test-check
                     :feature/spec-alpha
+                    :feature/rewrite-clj
                     {:dependencies [[com.clojure-goes-fast/clj-async-profiler "0.4.1"]
                                     [com.opentable.components/otj-pg-embedded "0.13.3"]]}]
              :uberjar {:global-vars {*assert* false}
