@@ -14,7 +14,7 @@
 (def core-match?     (not= "false" (System/getenv "BABASHKA_FEATURE_CORE_MATCH")))
 (def hiccup?         (not= "false" (System/getenv "BABASHKA_FEATURE_HICCUP")))
 (def test-check?     (not= "false" (System/getenv "BABASHKA_FEATURE_TEST_CHECK")))
-(def malli?          (not= "false" (System/getenv "BABASHKA_FEATURE_MALLI")))
+(def rewrite-clj?    (not= "false" (System/getenv "BABASHKA_FEATURE_REWRITE_CLJ")))
 
 ;; excluded by default
 (def jdbc? (= "true" (System/getenv "BABASHKA_FEATURE_JDBC")))
@@ -68,5 +68,5 @@
 (when spec-alpha?
   (require '[babashka.impl.spec]))
 
-(when malli?
-  (require '[babashka.impl.malli]))
+(when rewrite-clj?
+  (require '[babashka.impl.rewrite-clj]))

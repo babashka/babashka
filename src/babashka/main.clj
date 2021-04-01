@@ -192,7 +192,7 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
  :feature/hiccup     %s
  :feature/test-check %s
  :feature/spec-alpha %s
- :feature/malli      %s}")
+ :feature/rewrite-clj %s}")
     version
     features/core-async?
     features/csv?
@@ -210,7 +210,7 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
     features/hiccup?
     features/test-check?
     features/spec-alpha?
-    features/malli?)))
+    features/rewrite-clj?)))
 
 (defn read-file [file]
   (let [f (io/file file)]
@@ -340,12 +340,10 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                               'clojure.spec.alpha @(resolve 'babashka.impl.spec/spec-namespace)
                               'clojure.spec.gen.alpha @(resolve 'babashka.impl.spec/gen-namespace)
                               'clojure.spec.test.alpha @(resolve 'babashka.impl.spec/test-namespace)))
-    features/malli? (assoc 'malli.core
-                           @(resolve 'babashka.impl.malli/malli-namespace)
-                           'malli.transform
-                           @(resolve 'babashka.impl.malli/malli-transform-namespace)
-                           'malli.error
-                           @(resolve 'babashka.impl.malli/malli-error-namespace))))
+    features/rewrite-clj? (assoc 'rewrite-clj.node
+                           @(resolve 'babashka.impl.rewrite-clj/node-namespace)
+                           'rewrite-clj.parser
+                           @(resolve 'babashka.impl.rewrite-clj/parser-namespace))))
 
 (def imports
   '{ArithmeticException java.lang.ArithmeticException

@@ -52,8 +52,8 @@
                               :dependencies [[hiccup/hiccup "2.0.0-alpha2"]]}
              :feature/test-check {:source-paths ["feature-test-check"]}
              :feature/spec-alpha {:source-paths ["feature-spec-alpha"]}
-             :feature/malli {:source-paths ["feature-malli"]
-                             :dependencies [[metosin/malli "0.3.0-SNAPSHOT"]]}
+             :feature/rewrite-clj {:source-paths ["feature-rewrite-clj"]
+                                   :dependencies [[rewrite-clj/rewrite-clj "1.0.594-alpha"]]}
              :test [:feature/xml
                     :feature/lanterna
                     :feature/yaml
