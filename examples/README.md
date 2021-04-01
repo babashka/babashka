@@ -1,5 +1,37 @@
 # Examples
 
+- [Examples](#examples)
+  - [Delete a list of files returned by a Unix command](#delete-a-list-of-files-returned-by-a-unix-command)
+  - [Calculate aggregate size of directory](#calculate-aggregate-size-of-directory)
+  - [Shuffle the lines of a file](#shuffle-the-lines-of-a-file)
+  - [Fetch latest Github release tag](#fetch-latest-github-release-tag)
+  - [Generate deps.edn entry for a gitlib](#generate-depsedn-entry-for-a-gitlib)
+  - [View download statistics from Clojars](#view-download-statistics-from-clojars)
+  - [Portable tree command](#portable-tree-command)
+  - [List outdated maven dependencies](#list-outdated-maven-dependencies)
+  - [Convert project.clj to deps.edn](#convert-projectclj-to-depsedn)
+  - [Print current time in California](#print-current-time-in-california)
+  - [Tiny http server](#tiny-http-server)
+  - [Print random docstring](#print-random-docstring)
+  - [Cryptographic hash](#cryptographic-hash)
+  - [Package script as Docker image](#package-script-as-docker-image)
+  - [Extract single file from zip](#extract-single-file-from-zip)
+  - [Note taking app](#note-taking-app)
+  - [which](#which)
+  - [pom.xml version](#pomxml-version)
+  - [Whatsapp frequencies](#whatsapp-frequencies)
+  - [Find unused vars](#find-unused-vars)
+  - [List contents of jar file](#list-contents-of-jar-file)
+  - [Invoke vim inside a script](#invoke-vim-inside-a-script)
+  - [Portal](#portal)
+  - [Image viewer](#image-viewer)
+  - [File server](#file-server)
+  - [Torrent viewer](#torrent-viewer)
+  - [cprop.clj](#cpropclj)
+  - [fzf](#fzf)
+  - [digitalocean-ping.clj](#digitalocean-pingclj)
+  - [download-aliases.clj](#download-aliasesclj)
+
 Here's a gallery of useful examples. Do you have a useful example? PR welcome!
 
 ## Delete a list of files returned by a Unix command
@@ -161,7 +193,9 @@ See [examples/pst.clj](https://github.com/babashka/babashka/blob/master/examples
 
 ## Tiny http server
 
-See [examples/http_server.clj](https://github.com/babashka/babashka/blob/master/examples/http_server.clj)
+This implements an http server from scratch. Note that babashka comes with `org.httpkit.server` now, so you don't need to build an http server from scratch anymore.
+
+See [examples/http_server_from_scratch.clj](https://github.com/babashka/babashka/blob/master/examples/http_server_from_scratch.clj)
 
 Original by [@souenzzo](https://gist.github.com/souenzzo/a959a4c5b8c0c90df76fe33bb7dfe201)
 
@@ -330,10 +364,22 @@ Opens browser window and lets user navigate through images of all sub-directorie
 Example usage:
 
 ``` shell
-$ examples/image_viewer.clj
+$ examples/image-viewer.clj
 ```
 
-See [image_viewer.clj](image_viewer.clj).
+See [image-viewer.clj](image-viewer.clj).
+
+## File server
+
+Opens browser window and lets user navigate through filesystem.
+
+Example usage:
+
+``` shell
+$ examples/file-server.clj
+```
+
+See [file-server.clj](file-server.clj).
 
 ## Torrent viewer
 
@@ -368,18 +414,6 @@ Example usage:
 
 ``` shell
 $ cat src/babashka/main.clj | bb examples/fzf.clj
-```
-
-## [rofi](rofi.clj)
-
-Invoke [rofi](https://github.com/davatorium/rofi), a type-to-filter menu on linux, from babashka.
-
-See [rofi.clj](rofi.clj)
-
-Example usage:
-
-``` shell
-$ cat src/babashka/main.clj | bb examples/rofi.clj
 ```
 
 ## [digitalocean-ping.clj](digitalocean-ping.clj)

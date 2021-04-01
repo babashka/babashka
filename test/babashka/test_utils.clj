@@ -2,14 +2,33 @@
   (:require
    [babashka.impl.classpath :as cp]
    [babashka.main :as main]
-   [me.raynes.conch :refer [let-programs] :as sh]
+   [babashka.process :as p]
+   [clojure.edn :as edn]
+   [clojure.test :as test :refer [*report-counters*]]
    [sci.core :as sci]
    [sci.impl.vars :as vars]))
 
 (set! *warn-on-reflection* true)
 
+(def ^:dynamic *bb-edn-path* nil)
+
+(defmethod clojure.test/report :begin-test-var [m]
+  (println "===" (-> m :var meta :name))
+  (println))
+
+(defmethod clojure.test/report :end-test-var [_m]
+  (let [{:keys [:fail :error]} @*report-counters*]
+    (when (and (= "true" (System/getenv "BABASHKA_FAIL_FAST"))
+               (or (pos? fail) (pos? error)))
+      (println "=== Failing fast")
+      (System/exit 1))))
+
 (defn bb-jvm [input-or-opts & args]
   (reset! cp/cp-state nil)
+  (reset! main/env {})
+  (if-let [path *bb-edn-path*]
+    (vreset! main/bb-edn (edn/read-string (slurp path)))
+    (vreset! main/bb-edn nil))
   (let [os (java.io.StringWriter.)
         es (if-let [err (:err input-or-opts)]
              err (java.io.StringWriter.))
@@ -30,26 +49,33 @@
                       (if (string? input-or-opts)
                         (with-in-str input-or-opts (apply main/main args))
                         (apply main/main args)))]
+            ;; (prn :err (str es))
             (if (zero? res)
               (str os)
-              (throw (ex-info (str es)
-                              {:stdout (str os)
-                               :stderr (str es)})))))
+              (do
+                (println (str os))
+                (throw (ex-info (str es)
+                                  {:stdout (str os)
+                                   :stderr (str es)}))))))
       (finally
         (when (string? input-or-opts) (vars/bindRoot sci/in *in*))
         (vars/bindRoot sci/out *out*)
         (vars/bindRoot sci/err *err*)))))
 
 (defn bb-native [input & args]
-  (let-programs [bb "./bb"]
-    (try (if input
-           (apply bb (conj (vec args)
-                           {:in input}))
-           (apply bb args))
-         (catch Exception e
-           (let [d (ex-data e)
-                 err-msg (or (:stderr (ex-data e)) "")]
-             (throw (ex-info err-msg d)))))))
+  (let [res (p/process (into ["./bb"] args)
+                       (cond-> {:in input
+                               :out :string
+                               :err :string}
+                         *bb-edn-path*
+                         (assoc
+                          :env (assoc (into {} (System/getenv))
+                                      "BABASHKA_EDN" *bb-edn-path*))))
+        res (deref res)
+        exit (:exit res)
+        error? (pos? exit)]
+    (if error? (throw (ex-info (or (:err res) "") {}))
+        (:out res))))
 
 (def bb
   (case (System/getenv "BABASHKA_TEST_ENV")

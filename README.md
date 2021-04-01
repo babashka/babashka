@@ -5,8 +5,6 @@
 [![Financial Contributors on Open Collective](https://opencollective.com/babashka/all/badge.svg?label=financial+contributors)](https://opencollective.com/babashka) [![Clojars Project](https://img.shields.io/clojars/v/babashka/babashka.svg)](https://clojars.org/babashka/babashka)
 [![twitter](https://img.shields.io/badge/twitter-%23babashka-blue)](https://twitter.com/search?q=%23babashka&src=typed_query&f=live)
 
-A Clojure [babushka](https://en.wikipedia.org/wiki/Headscarf) for the grey areas of Bash.
-
 <blockquote class="twitter-tweet" data-lang="en">
     <p lang="en" dir="ltr">Life's too short to remember how to write Bash code. I feel liberated.</p>
     &mdash;
@@ -15,8 +13,9 @@ A Clojure [babushka](https://en.wikipedia.org/wiki/Headscarf) for the grey areas
 
 ## Introduction
 
-The main idea behind babashka is to leverage Clojure in places where you would
-be using bash otherwise.
+Babashka is a native Clojure interpreter for scripting with fast startup. Its
+main goal is to leverage Clojure in places where you would be using bash
+otherwise.
 
 As one user described it:
 

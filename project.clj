@@ -17,12 +17,11 @@
   :dependencies [[org.clojure/clojure "1.10.2"]
                  [borkdude/edamame "0.0.11-alpha.29"]
                  [borkdude/graal.locking "0.0.2"]
-                 [org.clojure/tools.cli "1.0.194"]
+                 [org.clojure/tools.cli "1.0.206"]
                  [cheshire "5.10.0"]
                  [nrepl/bencode "1.1.0"]
                  [borkdude/sci.impl.reflector "0.0.1"]
-                 [org.clojure/test.check "1.1.0"]
-                 [org.clojure/math.combinatorics "0.1.6"]]
+                 [org.clojure/test.check "1.1.0"]]
   :profiles {:feature/xml  {:source-paths ["feature-xml"]
                             :dependencies [[org.clojure/data.xml "0.2.0-alpha6"]]}
              :feature/yaml {:source-paths ["feature-yaml"]
@@ -42,9 +41,9 @@
              :feature/datascript {:source-paths ["feature-datascript"]
                                   :dependencies [[datascript "1.0.1"]]}
              :feature/httpkit-client {:source-paths ["feature-httpkit-client"]
-                                      :dependencies [[http-kit "2.5.1"]]}
+                                      :dependencies [[http-kit "2.5.3"]]}
              :feature/httpkit-server {:source-paths ["feature-httpkit-server"]
-                                      :dependencies [[http-kit "2.5.1"]]}
+                                      :dependencies [[http-kit "2.5.3"]]}
              :feature/lanterna {:source-paths ["feature-lanterna"]
                                 :dependencies [[babashka/clojure-lanterna "0.9.8-SNAPSHOT"]]}
              :feature/core-match {:source-paths ["feature-core-match"]
@@ -70,8 +69,7 @@
                     :feature/hiccup
                     :feature/test-check
                     :feature/spec-alpha
-                    {:dependencies [[clj-commons/conch "0.9.2"]
-                                    [com.clojure-goes-fast/clj-async-profiler "0.4.1"]
+                    {:dependencies [[com.clojure-goes-fast/clj-async-profiler "0.4.1"]
                                     [com.opentable.components/otj-pg-embedded "0.13.3"]]}]
              :uberjar {:global-vars {*assert* false}
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"

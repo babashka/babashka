@@ -13,13 +13,13 @@
          "depstar/src" "process/src"
          "deps.clj/src" "deps.clj/resources"
          "resources" "sci/resources"],
- :deps {org.clojure/clojure {:mvn/version "1.10.2"},
+ :deps {org.clojure/clojure {:mvn/version "1.10.3"},
         borkdude/sci {:local/root "sci"}
         babashka/babasha.curl {:local/root "babashka.curl"}
         babashka/fs {:local/root "fs"}
         borkdude/graal.locking {:mvn/version "0.0.2"},
         org.clojure/core.async {:mvn/version "1.3.610"},
-        org.clojure/tools.cli {:mvn/version "1.0.194"},
+        org.clojure/tools.cli {:mvn/version "1.0.206"},
         org.clojure/data.csv {:mvn/version "1.0.0"},
         cheshire/cheshire {:mvn/version "5.10.0"}
         org.clojure/data.xml {:mvn/version "0.2.0-alpha6"}
@@ -31,13 +31,12 @@
         org.postgresql/postgresql {:mvn/version "42.2.18"}
         org.hsqldb/hsqldb {:mvn/version "2.5.1"}
         datascript/datascript {:mvn/version "1.0.1"}
-        http-kit/http-kit {:mvn/version "2.5.1"}
+        http-kit/http-kit {:mvn/version "2.5.3"}
         babashka/clojure-lanterna {:mvn/version "0.9.8-SNAPSHOT"}
-        org.clojure/math.combinatorics {:mvn/version "0.1.6"}
         org.clojure/core.match {:mvn/version "1.0.0"}
         hiccup/hiccup {:mvn/version "2.0.0-alpha2"}
         metosin/malli {:mvn/version "0.3.0-SNAPSHOT"}}
- :aliases {:main
+ :aliases {:babashka/dev
            {:main-opts ["-m" "babashka.main"]}
            :profile
            {:extra-deps
@@ -72,9 +71,12 @@
                          honeysql/honeysql {:mvn/version "1.0.444"}
                          minimallist/minimallist {:mvn/version "0.0.6"}
                          circleci/bond {:mvn/version "0.4.0"}
-                         version-clj/version-clj {:mvn/version "0.1.2"}
+                         version-clj/version-clj {:mvn/version "2.0.1"}
                          gaka/gaka {:mvn/version "0.3.0"}
-                         failjure/failjure {:mvn/version "2.1.1"}}}
+                         failjure/failjure {:mvn/version "2.1.1"}}
+            :classpath-overrides {org.clojure/clojure nil
+                                  org.clojure/spec.alpha nil
+                                  org.clojure/core.specs.alpha nil}}
            :clj-nvd
            {:extra-deps {clj-nvd/clj-nvd {:git/url "https://github.com/miikka/clj-nvd.git"
                                           :sha "f2ec98699e057a379baf170cb49cf7ad76874a70"}}

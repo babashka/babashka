@@ -7,20 +7,9 @@
    [clojure.java.io :as io]
    [clojure.java.shell :refer [sh]]
    [clojure.string :as str]
-   [clojure.test :as test :refer [deftest is testing *report-counters*]]
+   [clojure.test :as test :refer [deftest is testing]]
    [flatland.ordered.map :refer [ordered-map]]
    [sci.core :as sci]))
-
-(defmethod clojure.test/report :begin-test-var [m]
-  (println "===" (-> m :var meta :name))
-  (println))
-
-(defmethod clojure.test/report :end-test-var [_m]
-  (let [{:keys [:fail :error]} @*report-counters*]
-    (when (and (= "true" (System/getenv "BABASHKA_FAIL_FAST"))
-               (or (pos? fail) (pos? error)))
-      (println "=== Failing fast")
-      (System/exit 1))))
 
 (defn bb [input & args]
   (edn/read-string
@@ -363,16 +352,7 @@
     (is (.exists f2))
     (let [v (bb nil "-f" (.getPath (io/file "test-resources" "babashka" "glob.clj")))]
       (is (vector? v))
-      (is (.exists (io/file (first v))))))
-  (testing "reify can handle multiple classes at once"
-    (is (true? (bb nil "
-(def filter-obj (reify java.io.FileFilter
-                  (accept [this f] (prn (.getPath f)) true)
-                  java.io.FilenameFilter
-                  (accept [this f name] (prn name) true)))
-(def s1 (with-out-str (.listFiles (clojure.java.io/file \".\") filter-obj)))
-(def s2 (with-out-str (.list (clojure.java.io/file \".\") filter-obj)))
-(and (pos? (count s1)) (pos? (count s2)))")))))
+      (is (.exists (io/file (first v)))))))
 
 (deftest future-print-test
   (testing "the root binding of sci/*out*"
@@ -574,7 +554,12 @@
 
 (deftest var-print-method-test
   (when test-utils/native?
-    (is (bb nil "(defmethod print-method sci.lang.IVar [o w] (.write w (str :foo (symbol o)))) (def x 1) (= \":foouser/x\" (pr-str #'x))"))))
+    (is (bb nil "(defmethod print-method sci.lang.IVar [o w] (.write w (str :foo (symbol o)))) (def x 1) (= \":foouser/x\" (pr-str #'x))"))
+    (is (= :foouser/x (bb nil "(defmethod print-method sci.lang.IVar [o w] (.write w (str :foo (symbol o)))) (def x 1)")))))
+
+(deftest stdout-interop-test
+  (when test-utils/native?
+    (is (= 'Something (bb nil "(.print (System/out) \"Something\")")))))
 
 ;;;; Scratch
 

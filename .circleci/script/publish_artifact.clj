@@ -16,7 +16,7 @@
       (curl/post slack-hook-url {:headers {"content-type" "application/json"}
                                  :body json}))))
 
-(def release-text (format "[%s - %s@%s]: https://%s-201467090-gh.circle-artifacts.com/0/release/babashka-%s-%s-amd64.zip"
+(def release-text (format "[%s - %s@%s]: https://%s-201467090-gh.circle-artifacts.com/0/release/babashka-%s-%s-amd64.tar.gz"
                           (System/getenv "BABASHKA_PLATFORM")
                           (System/getenv "CIRCLE_BRANCH")
                           (System/getenv "CIRCLE_SHA1")

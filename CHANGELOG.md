@@ -2,24 +2,126 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
-## Unreleased
+## 0.3.1
+
+Babashka proper:
+
+- Support `bb.edn` project config with `:paths` and `:deps`. See [docs](https://book.babashka.org/index.html#_bb_edn).
+- Rewrite CLI arg parsing to to subcommand style invocations: `bb --uberjar` becomes `bb uberjar`
+- Support fully qualified symbol in `--main` option [#758](https://github.com/babashka/babashka/issues/758). See [docs](https://book.babashka.org/index.html#_invoking_a_main_function ).
+- Support new `doc` option to retrieve a docstring from the command line
+
+Babashka.fs:
+
+- Create target dir automatically in `copy-tree`
+
+Babashka.nrepl:
+
+- Implement `cider-nrepl` `info` / `lookup` op [#30](https://github.com/babashka/babashka.nrepl/issues/30) [(@brdloush)](https://github.com/brdloush)
+
+Babashka.process:
+
+- Support tokenizing single string [#39](https://github.com/babashka/process/issues/39)
+- Support `:extra-env` option [#40](https://github.com/babashka/process/issues/40)
+
+Deps.clj:
+
+- Catch up with Clojure CLI 1.10.3.814 [#40](https://github.com/borkdude/deps.clj/issues/40)
+
+Sci:
+
+- Support new kwargs handling from 1.11.0 [#553](https://github.com/borkdude/sci/issues/553)
+- Allow dynamic `:doc` on `def`/`defn` [#554](https://github.com/borkdude/sci/issues/554)
+
+## 0.3.0
+
+### New
+
+- Linux support for AArch64 [#241](https://github.com/babashka/babashka/issues/241). This means you can now run babashka on Raspberry Pi 64bit and Chromebooks with ARM 64-bit processors!
+
+A major thanks to [CircleCI](https://circleci.com/) for enabling AArch64 support
+in the babashka organization and [GraalVM](http://graalvm.org/) for supporting this platform.
+
+### Enhancements / fixes
+
+- Fix `print-method` when writing to stdout [#667](https://github.com/babashka/babashka/issues/667)
+- Fix interop with `System/out` [#754](https://github.com/babashka/babashka/issues/754)
+- Support [version-clj](https://github.com/xsc/version-clj) v2.0.1 by adding `java.util.regex.Matcher` to the reflection config
+- Distribute linux and macOS archives as `tar.gz`. The reason is that `unzip` is
+  not pre-installed on most unix-y systems. ([@grazfather](https://github.com/grazfather))
+
+Babashka.fs:
+
+- Fix globbing on Windows
+- Fix Windows tests
+- Fix issue with `copy-tree` when dest dir doesn't exist yet
+
+Thanks [@lread](https://github.com/lread) for his help on fixing issues with Windows.
+
+Sci:
+
+- Support `:reload-all` [#552](https://github.com/borkdude/sci/issues/552)
+- Narrow `reify` to just one class. See discussion in
+  [sci#549](https://github.com/borkdude/sci/issues/549).
+- Add preliminary support for `proxy` (mainly to support pathom3 smart maps)
+  [sci#550](https://github.com/borkdude/sci/issues/550).
+
+Thanks to [@wilkerlucio](https://github.com/wilkerlucio) and
+  [@GreshamDanielStephens](https://github.com/GreshamDanielStephens) for their
+  help and discussions.
+
+## v0.2.13
+
+### Enhancements / fixes
+
+- Add more interfaces to be used with `reify` ([@wilkerlucio](https://github.com/wilkerlucio)) (mostly to support smart maps with [pathom3](https://github.com/wilkerlucio/pathom3))
+
+Babashka.curl:
+
+- Use `--data-binary` when sending files or streams [#35](https://github.com/babashka/babashka.curl/issues/35)
+
+Babashka.fs:
+
+- Add `create-link` and `split-paths` ([@eamonnsullivan](https://github.com/eamonnsullivan))
+- Add `split-ext` and `extension` ([@kiramclean](https://github.com/kiramclean))
+- Add `regular-file?`([@tekacs](https://github.com/tekacs))
+- Globbing is always recursive but should not be [#18](https://github.com/babashka/fs/issues/18)
+
+Sci:
+
+- Allow combinations of interfaces and protocols in `reify` [#540](https://github.com/borkdude/sci/issues/540)
+  ([@GreshamDanielStephens](https://github.com/GreshamDanielStephens))
+- Fix metadata on non-constant map literal expression [#546](https://github.com/borkdude/sci/issues/546)
+
+## 0.2.12
+
+### Enhancements / fixes
+
+- Fix false positive cyclic dep problem with doric lib [#741](https://github.com/babashka/babashka/issues/741)
+
+## 0.2.11
 
 ### Enhancements / fixes
 
 - Use default `*print-right-margin*` value from `clojure.pprint`
+- Upgrade httpkit to 2.5.3 [#738](https://github.com/babashka/babashka/issues/738)
+- Upgrade tools.cli to 1.0.206
+- Add several classes to be used with `defprotocol` (`PersistentVector`, `PersistentHashSet`, ...)
+- Support reifying `clojure.lang.IFn` and `clojure.lang.ILookup`
 
 Sci:
 
-- Detect cyclic load dependencies [#531](https://github.com/babashka/babashka/issues/531)
-- Pick fn arity independent of written order [#532](https://github.com/babashka/babashka/issues/532) ([@GreshamDanielStephens](https://github.com/GreshamDanielStephens))
-
-Babashka.fs:
-
-- Add `create-link` and `split-paths`
+- Detect cyclic load dependencies [#531](https://github.com/borkdude/sci/issues/531)
+- Pick fn arity independent of written order [#532](https://github.com/borkdude/sci/issues/532) ([@GreshamDanielStephens](https://github.com/GreshamDanielStephens))
+- `(instance? clojure.lang.IAtom 1)` returns `true` [#537](https://github.com/borkdude/sci/issues/537)
+- Add `dissoc!`([@wilkerlucio](https://github.com/wilkerlucio))
+- Add `force`
+- Fix `ns-unmap` on referred var [#539](https://github.com/borkdude/sci/issues/539)
 
 Babashka.nrepl:
 
 - Fix printing in lazy value [#36](https://github.com/babashka/babashka.nrepl/issues/36)
+- Update link in nREPL server message [#37](https://github.com/babashka/babashka.nrepl/issues/37)
 
 ## 0.2.10
 
@@ -44,11 +146,11 @@ Babashka.nrepl:
 
 Sci:
 
-- Fix error reporting in case of arity error [#518](https://github.com/babashka/babashka/issues/518)
-- Shadowing record field names in protocol functions [#513](https://github.com/babashka/babashka/issues/513)
-- Fix destructuring in protocol method for record [#512](https://github.com/babashka/babashka/issues/512)
-- Faster processing of maps, sets and vectors [#482](https://github.com/babashka/babashka/issues/482)
-- Prioritize current namespace vars in syntax quote [#509](https://github.com/babashka/babashka/issues/509)
+- Fix error reporting in case of arity error [#518](https://github.com/borkdude/sci/issues/518)
+- Shadowing record field names in protocol functions [#513](https://github.com/borkdude/sci/issues/513)
+- Fix destructuring in protocol method for record [#512](https://github.com/borkdude/sci/issues/512)
+- Faster processing of maps, sets and vectors [#482](https://github.com/borkdude/sci/issues/482)
+- Prioritize current namespace vars in syntax quote [#509](https://github.com/borkdude/sci/issues/509)
 - Fix ns-publics to not include refers [#520](https://github.com/borkdude/sci/issues/520)
 - Add `refer-clojure` macro [#519](https://github.com/borkdude/sci/issues/519)
 

@@ -100,6 +100,8 @@
           java.io.OutputStream
           java.io.FileReader
           java.io.InputStreamReader
+          java.io.OutputStreamWriter
+          java.io.PrintStream
           java.io.PushbackInputStream
           java.io.Reader
           java.io.SequenceInputStream
@@ -118,6 +120,7 @@
           java.lang.Exception
           java.lang.Float
           java.lang.IllegalArgumentException
+          java.lang.IndexOutOfBoundsException
           java.lang.Integer
           java.lang.Iterable
           java.lang.Long
@@ -216,7 +219,7 @@
           java.util.jar.JarFile$JarFileEntry
           java.util.stream.Stream
           java.util.Random
-          ;; java.util.regex.Matcher
+          java.util.regex.Matcher
           java.util.regex.Pattern
           java.util.Base64
           java.util.Base64$Decoder
@@ -249,35 +252,58 @@
     :methods [borkdude.graal.LockFix] ;; support for locking
 
     :fields [clojure.lang.PersistentQueue]
-    :instance-checks [clojure.lang.Cons
+    :instance-checks [clojure.lang.APersistentMap ;; for proxy
+                      clojure.lang.AMapEntry ;; for proxy
+                      clojure.lang.Associative
+                      clojure.lang.Atom
+                      clojure.lang.Cons
+                      clojure.lang.Counted
                       clojure.lang.Cycle
                       clojure.lang.IObj
                       clojure.lang.Fn ;; to distinguish fns from maps, etc.
                       clojure.lang.IFn
                       clojure.lang.IPending
-                      ;; clojure.lang.IDeref
-                      ;; clojure.lang.IAtom
+                      ;; clojure.lang.IDeref ;; implemented as protocol in sci
+                      ;; clojure.lang.IAtom  ;; implemented as protocol in sci
                       clojure.lang.IEditableCollection
                       clojure.lang.IMapEntry
+                      clojure.lang.IMeta
                       clojure.lang.ILookup
                       clojure.lang.IPersistentCollection
                       clojure.lang.IPersistentMap
                       clojure.lang.IPersistentSet
-                      ;;clojure.lang.PersistentHashSet ;; temp for meander
+                      clojure.lang.IPersistentStack
                       clojure.lang.IPersistentVector
                       clojure.lang.IRecord
+                      clojure.lang.IReduce
+                      clojure.lang.IReduceInit
+                      clojure.lang.IKVReduce
                       clojure.lang.IRef
                       clojure.lang.ISeq
+                      clojure.lang.Indexed
                       clojure.lang.Iterate
                       clojure.lang.LazySeq
                       clojure.lang.Named
                       clojure.lang.Keyword
+                      clojure.lang.PersistentArrayMap
+                      clojure.lang.PersistentHashMap
+                      clojure.lang.PersistentHashSet
+                      clojure.lang.PersistentList
+                      clojure.lang.PersistentQueue
+                      clojure.lang.PersistentStructMap
+                      clojure.lang.PersistentTreeMap
+                      clojure.lang.PersistentTreeSet
+                      clojure.lang.PersistentVector
                       clojure.lang.Ratio
                       clojure.lang.Repeat
+                      clojure.lang.Reversible
                       clojure.lang.Symbol
                       clojure.lang.Sequential
                       clojure.lang.Seqable
-                      java.util.List]
+                      clojure.lang.Volatile
+                      java.util.List
+                      java.util.Iterator
+                      java.util.Map$Entry]
     :custom ~custom-map})
 
 (defmacro gen-class-map []

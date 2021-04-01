@@ -11,9 +11,11 @@ cd /tmp/release
 mkdir -p /tmp/bb_size
 ./bb '(spit "/tmp/bb_size/size" (.length (io/file "bb")))'
 
-## release binary as zip archive
+## release binary as tar.gz archive
 
-zip "babashka-$VERSION-$BABASHKA_PLATFORM-amd64.zip" bb # bbk
+arch=${BABASHKA_ARCH:-amd64}
+
+tar zcvf "babashka-$VERSION-$BABASHKA_PLATFORM-$arch.tar.gz" bb # bbk
 
 ## cleanup
 
