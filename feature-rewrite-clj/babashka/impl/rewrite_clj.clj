@@ -1,11 +1,14 @@
 (ns babashka.impl.rewrite-clj
   {:no-doc true}
-  (:require [rewrite-clj.node :as n]
-            [rewrite-clj.parser :as p]
-            [sci.core :as sci :refer [copy-var]]))
+  (:require [rewrite-clj.node]
+            [rewrite-clj.parser]
+            [rewrite-clj.zip]
+            [sci.core :as sci]))
 
 (def nns (sci/create-ns 'rewrite-clj.node nil))
+(def pens (sci/create-ns 'rewrite-clj.paredit nil))
 (def pns (sci/create-ns 'rewrite-clj.parser nil))
+(def zns (sci/create-ns 'rewrite-clj.zip nil))
 
 #_(defmacro copy-var
   "Copies contents from var `sym` to a new sci var. The value `ns` is an
@@ -30,9 +33,12 @@
 
 (defn make-ns [ns sci-ns]
   (reduce (fn [ns-map [var-name var]]
-            (assoc ns-map var-name
-                   (sci/new-var (symbol var-name) @var
-                                {:ns sci-ns})))
+            (let [m (meta var)
+                  no-doc (:no-doc m)]
+              (if no-doc ns-map
+                  (assoc ns-map var-name
+                         (sci/new-var (symbol var-name) @var
+                                      {:ns sci-ns})))))
           {}
           (ns-publics ns)))
 
@@ -40,8 +46,10 @@
   (make-ns 'rewrite-clj.node nns))
 
 (def parser-namespace
-  {'parse (copy-var p/parse pns)
-   'parse-file (copy-var p/parse-file pns)
-   'parse-all (copy-var p/parse-all pns)
-   'parse-string (copy-var p/parse-string pns)
-   'parse-string-all (copy-var p/parse-string-all pns)})
+  (make-ns 'rewrite-clj.parser pns))
+
+(def paredit-namespace
+  (make-ns 'rewrite-clj.paredit pens))
+
+(def zip-namespace
+  (make-ns 'rewrite-clj.zip zns))
