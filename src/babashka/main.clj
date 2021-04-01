@@ -342,8 +342,12 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                               'clojure.spec.test.alpha @(resolve 'babashka.impl.spec/test-namespace)))
     features/rewrite-clj? (assoc 'rewrite-clj.node
                            @(resolve 'babashka.impl.rewrite-clj/node-namespace)
+                           'rewrite-clj.paredit
+                           @(resolve 'babashka.impl.rewrite-clj/paredit-namespace)
                            'rewrite-clj.parser
-                           @(resolve 'babashka.impl.rewrite-clj/parser-namespace))))
+                           @(resolve 'babashka.impl.rewrite-clj/parser-namespace)
+                           'rewrite-clj.zip
+                           @(resolve 'babashka.impl.rewrite-clj/zip-namespace))))
 
 (def imports
   '{ArithmeticException java.lang.ArithmeticException

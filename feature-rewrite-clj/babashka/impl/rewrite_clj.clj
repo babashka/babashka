@@ -1,6 +1,7 @@
 (ns babashka.impl.rewrite-clj
   {:no-doc true}
   (:require [rewrite-clj.node]
+            [rewrite-clj.paredit]
             [rewrite-clj.parser]
             [rewrite-clj.zip]
             [sci.core :as sci]))
