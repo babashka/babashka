@@ -130,8 +130,8 @@ Help:
 REPL:
 
   repl                 Start REPL. Use rlwrap for history.
-  socket-repl  [addr]  Start a socket REPL. Addr opt defaults to localhost:1666.
-  nrepl-server [addr]  Start nREPL server. Address option defaults to locahost:1667.
+  socket-repl  [addr]  Start a socket REPL. Address defaults to localhost:1666.
+  nrepl-server [addr]  Start nREPL server. Address defaults to localhost:1667.
 
 Clojure:
 
