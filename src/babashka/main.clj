@@ -81,9 +81,6 @@
 (defn print-version []
   (println (str "babashka v" version)))
 
-(def bb-edn
-  (volatile! nil))
-
 (defn command? [x]
   (case x
     ("clojure"
@@ -172,14 +169,6 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
       [nil 0]
       [nil 1]))
   ,)
-
-(defn run-task [ctx task]
-  (let [task (symbol task)
-        task (get-in @bb-edn [:tasks task])]
-    (when task
-      (sci/eval-form ctx '(require '[babashka.tasks :refer [shell clojure]]))
-      (sci/eval-form ctx task))
-    [nil 0]))
 
 (defn print-describe []
   (println
@@ -523,7 +512,7 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                                (recur (next options)
                                       (assoc opts-map :run (first options))))
                              ;; fallback
-                             (if (some opts-map [:file :jar :socket-repl :expressions :main])
+                             (if (some opts-map [:file :jar :socket-repl :expressions :main :run])
                                (assoc opts-map
                                       :command-line-args options)
                                (let [trimmed-opt (str/triml opt)
@@ -584,9 +573,9 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                                       "bb.edn")]
                   (when (fs/exists? bb-edn-file)
                     (let [edn (edn/read-string (slurp bb-edn-file))]
-                      (vreset! bb-edn edn)))
-                  ;; we mutate the atom from tests as well, so despite the above it can contain a bb.edn
-                  (when-let [bb-edn @bb-edn] (deps/add-deps bb-edn))))
+                      (vreset! common/bb-edn edn)))
+                  ;; we mutate the state from tests as well, so despite the above it can contain a bb.edn
+                  (when-let [bb-edn @common/bb-edn] (deps/add-deps bb-edn))))
             abs-path (when file
                        (let [abs-path (.getAbsolutePath (io/file file))]
                          (vars/bindRoot sci/file abs-path)
@@ -650,7 +639,11 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                                    "-main")]
                     [[(format "(ns user (:require [%1$s])) (apply %1$s/%2$s *command-line-args*)"
                               ns var-name)] nil])
-                  run (run-task sci-ctx run)
+                  run (let [task (symbol run)
+                            task (get-in @common/bb-edn [:tasks task])]
+                        (when task
+                          [[(format "(require '[babashka.tasks :refer [shell clojure run]])
+                                   %s" task)] nil]))
                   file (try [[(read-file file)] nil]
                             (catch Exception e
                               (error-handler e {:expression expressions

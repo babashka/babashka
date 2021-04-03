@@ -1,6 +1,7 @@
 (ns babashka.test-utils
   (:require
    [babashka.impl.classpath :as cp]
+   [babashka.impl.common :as common]
    [babashka.main :as main]
    [babashka.process :as p]
    [clojure.edn :as edn]
@@ -27,8 +28,8 @@
   (reset! cp/cp-state nil)
   (reset! main/env {})
   (if-let [path *bb-edn-path*]
-    (vreset! main/bb-edn (edn/read-string (slurp path)))
-    (vreset! main/bb-edn nil))
+    (vreset! common/bb-edn (edn/read-string (slurp path)))
+    (vreset! common/bb-edn nil))
   (let [os (java.io.StringWriter.)
         es (if-let [err (:err input-or-opts)]
              err (java.io.StringWriter.))
