@@ -177,7 +177,7 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
   (let [task (symbol task)
         task (get-in @bb-edn [:tasks task])]
     (when task
-      (sci/eval-form ctx '(require '[babashka.tasks :refer [shell]]))
+      (sci/eval-form ctx '(require '[babashka.tasks :refer [shell clojure]]))
       (sci/eval-form ctx task))
     [nil 0]))
 
