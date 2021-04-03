@@ -190,7 +190,9 @@
 (test-namespaces 'failjure.test-core)
 
 (test-namespaces 'rewrite-clj.parser-test
-                 'rewrite-clj.node-test)
+                 'rewrite-clj.node-test
+                 'rewrite-clj.zip-test
+                 )
 
 ;;;; final exit code
 
