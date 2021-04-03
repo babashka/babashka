@@ -4,12 +4,14 @@
             [rewrite-clj.paredit]
             [rewrite-clj.parser]
             [rewrite-clj.zip]
+            [rewrite-clj.zip.subedit]
             [sci.core :as sci]))
 
 (def nns (sci/create-ns 'rewrite-clj.node nil))
 (def pens (sci/create-ns 'rewrite-clj.paredit nil))
 (def pns (sci/create-ns 'rewrite-clj.parser nil))
 (def zns (sci/create-ns 'rewrite-clj.zip nil))
+(def zsns (sci/create-ns 'rewrite-clj.zip.subedit nil))
 
 #_(defmacro copy-var
   "Copies contents from var `sym` to a new sci var. The value `ns` is an
@@ -39,7 +41,8 @@
               (if no-doc ns-map
                   (assoc ns-map var-name
                          (sci/new-var (symbol var-name) @var
-                                      {:ns sci-ns})))))
+                                      (cond-> {:ns sci-ns}
+                                        (:macro m) (assoc :macro true)))))))
           {}
           (ns-publics ns)))
 
@@ -54,3 +57,6 @@
 
 (def zip-namespace
   (make-ns 'rewrite-clj.zip zns))
+
+(def subedit-namespace
+  (make-ns 'rewrite-clj.zip.subedit zsns))

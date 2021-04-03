@@ -347,7 +347,9 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                            'rewrite-clj.parser
                            @(resolve 'babashka.impl.rewrite-clj/parser-namespace)
                            'rewrite-clj.zip
-                           @(resolve 'babashka.impl.rewrite-clj/zip-namespace))))
+                           @(resolve 'babashka.impl.rewrite-clj/zip-namespace)
+                           'rewrite-clj.zip.subedit
+                           @(resolve 'babashka.impl.rewrite-clj/subedit-namespace))))
 
 (def imports
   '{ArithmeticException java.lang.ArithmeticException
