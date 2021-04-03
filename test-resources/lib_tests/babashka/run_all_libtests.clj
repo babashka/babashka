@@ -189,6 +189,8 @@
 
 (test-namespaces 'failjure.test-core)
 
+(test-namespaces 'rewrite-clj.parser-test)
+
 ;;;; final exit code
 
 (let [{:keys [:test :fail :error] :as m} @status]
