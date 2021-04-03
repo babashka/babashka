@@ -643,7 +643,12 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                             task (get-in @common/bb-edn [:tasks task])]
                         (when task
                           [[(format "(require '[babashka.tasks :refer [shell clojure run]])
-                                   %s" task)] nil]))
+                                   %s" (if (qualified-symbol? task)
+                                         (format "(do (require (quote %s))
+                                                  (apply %s *command-line-args*))"
+                                                 (namespace task)
+                                                 task)
+                                         task))] nil]))
                   file (try [[(read-file file)] nil]
                             (catch Exception e
                               (error-handler e {:expression expressions
