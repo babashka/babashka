@@ -31,7 +31,7 @@
    [babashka.impl.reify :refer [reify-fn]]
    [babashka.impl.repl :as repl]
    [babashka.impl.socket-repl :as socket-repl]
-   [babashka.impl.tasks :refer [tasks-namespace]]
+   [babashka.impl.tasks :as tasks :refer [tasks-namespace]]
    [babashka.impl.test :as t]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
    [babashka.nrepl.server :as nrepl-server]
@@ -649,12 +649,16 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
 (require '[babashka.tasks :refer [shell clojure run]])
 %s"
                                       (str init)
-                                      (if (qualified-symbol? task)
+                                      (cond (qualified-symbol? task)
                                         (format "(do (require (quote %s))
                                                   (apply %s *command-line-args*))"
               (namespace task)
               task)
-                                        task))] nil])
+                                        (map? task)
+                                        (let [deps (:depends task)]
+                                          (tasks/target-order tasks task-name)
+                                          (prn :deps deps))
+                                        :else task))] nil])
                           [(binding [*out* *err*]
                              (println "No such task:" task-name)) 1]))
                   file (try [[(read-file file)] nil]

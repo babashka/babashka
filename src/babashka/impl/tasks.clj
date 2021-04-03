@@ -1,6 +1,7 @@
 (ns babashka.impl.tasks
   (:require [babashka.impl.common :refer [ctx bb-edn]]
             [babashka.impl.deps :as deps]
+            [babashka.impl.topo :as topo]
             [babashka.process :as p]
             [sci.core :as sci]))
 
@@ -26,3 +27,13 @@
   {'shell (sci/copy-var shell sci-ns)
    'clojure (sci/copy-var clojure sci-ns)
    'run (sci/copy-var run sci-ns)})
+
+(defn depends-map [tasks target-name]
+  (let [deps (set (:depends (get tasks target-name)))
+        m [target-name deps]]
+    (into {} (cons m (map #(depends-map tasks %) deps)))))
+
+(defn target-order [tasks target-name]
+  (map symbol
+       (topo/kahn-sort
+        (depends-map tasks target-name))))
