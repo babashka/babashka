@@ -31,6 +31,7 @@
    [babashka.impl.reify :refer [reify-fn]]
    [babashka.impl.repl :as repl]
    [babashka.impl.socket-repl :as socket-repl]
+   [babashka.impl.tasks :refer [tasks-namespace]]
    [babashka.impl.test :as t]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
    [babashka.nrepl.server :as nrepl-server]
@@ -95,7 +96,8 @@
      "repl"
      "socket-repl"
      "nrepl-server"
-     "describe") true
+     "describe"
+     "run") true
     false))
 
 (defn print-error [& msgs]
@@ -170,6 +172,14 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
       [nil 0]
       [nil 1]))
   ,)
+
+(defn run-task [ctx task]
+  (let [task (symbol task)
+        task (get-in @bb-edn [:tasks task])]
+    (when task
+      (sci/eval-form ctx '(require '[babashka.tasks :refer [shell]]))
+      (sci/eval-form ctx task))
+    [nil 0]))
 
 (defn print-describe []
   (println
@@ -301,7 +311,8 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
        'clojure.core.protocols protocols-namespace
        'babashka.process process-namespace
        'clojure.core.server clojure-core-server
-       'babashka.deps deps-namespace}
+       'babashka.deps deps-namespace
+       'babashka.tasks tasks-namespace}
     features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace))
     features/yaml? (assoc 'clj-yaml.core @(resolve 'babashka.impl.yaml/yaml-namespace)
                           'flatland.ordered.map @(resolve 'babashka.impl.ordered/ordered-map-ns))
@@ -507,6 +518,10 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                              (let [options (next options)]
                                (recur (next options)
                                       (assoc opts-map :main (first options))))
+                             ("--run")
+                             (let [options (next options)]
+                               (recur (next options)
+                                      (assoc opts-map :run (first options))))
                              ;; fallback
                              (if (some opts-map [:file :jar :socket-repl :expressions :main])
                                (assoc opts-map
@@ -540,7 +555,7 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                     :verbose? :classpath
                     :main :uberscript :describe?
                     :jar :uberjar :clojure
-                    :doc]}
+                    :doc :run]}
             opts
             _ (when verbose? (vreset! common/verbose? true))
             _ (do ;; set properties
@@ -635,6 +650,7 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                                    "-main")]
                     [[(format "(ns user (:require [%1$s])) (apply %1$s/%2$s *command-line-args*)"
                               ns var-name)] nil])
+                  run (run-task sci-ctx run)
                   file (try [[(read-file file)] nil]
                             (catch Exception e
                               (error-handler e {:expression expressions
