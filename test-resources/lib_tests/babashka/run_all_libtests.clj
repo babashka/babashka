@@ -192,7 +192,7 @@
 (test-namespaces 'rewrite-clj.parser-test
                  'rewrite-clj.node-test
                  'rewrite-clj.zip-test
-                 )
+                 'rewrite-clj.paredit-test)
 
 ;;;; final exit code
 
