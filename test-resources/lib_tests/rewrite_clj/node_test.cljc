@@ -2,42 +2,44 @@
   "This test namespace originated from rewrite-cljs."
   (:require [clojure.test :refer [deftest is are testing]]
             [rewrite-clj.node :as n]
-            [rewrite-clj.node.protocols :as proto]
+            ;; [rewrite-clj.node.protocols :as proto]
             [rewrite-clj.parser :as p]))
 
 (deftest nodes-convert-to-strings-and-sexpr-ability
   (testing "easily parseable"
-    (are [?in ?expected-tag ?expected-type ?expected-sexpr-able?]
+    (are [?in ?expected-tag #_#_?expected-type ?expected-sexpr-able?]
       (let [n (p/parse-string ?in)]
           (is (= ?in (str n)))
           (is (= ?expected-tag (n/tag n)))
-          (is (= ?expected-type (proto/node-type n)))
-          (is (= ?expected-sexpr-able? (n/sexpr-able? n))))
-      ","               :comma          :comma              false
-      "; comment"       :comment        :comment            false
-      "#! comment"      :comment        :comment            false
-      "@deref"          :deref          :deref              true
-      "#(fn %1)"        :fn             :fn                 true
-      ":my-kw"          :token          :keyword            true
-      "^:meta b"        :meta           :meta               true
-      "#:prefix {:a 1}" :namespaced-map :namespaced-map     true
-      "\n"              :newline        :newline            false
-      "'quoted"         :quote          :quote              true
-      "#booya 32"       :reader-macro   :reader-macro       true
-      "#'myvar"         :var            :reader             true
-      "#\"regex\""      :regex          :regex              true
-      "[1 2 3]"         :vector         :seq                true
-      "\"string\""      :token          :string             true
-      "symbol"          :token          :symbol             true
-      "43"              :token          :token              true
-      "#_ nope"         :uneval         :uneval             false
-      "  "              :whitespace     :whitespace         false))
+          #_(is (= ?expected-type (proto/node-type n)))
+          #_(is (= ?expected-sexpr-able? (n/sexpr-able? n))))
+      ","               :comma          ;;:comma              false
+      "; comment"       :comment        ;;:comment            false
+      "#! comment"      :comment        ;;:comment            false
+      "@deref"          :deref          ;;:deref              true
+      "#(fn %1)"        :fn             ;;:fn                 true
+      ":my-kw"          :token          ;;:keyword            true
+      "^:meta b"        :meta           ;;:meta               true
+      "#:prefix {:a 1}" :namespaced-map ;;:namespaced-map     true
+      "\n"              :newline        ;;:newline            false
+      "'quoted"         :quote          ;;:quote              true
+      "#booya 32"       :reader-macro   ;;:reader-macro       true
+      "#'myvar"         :var            ;;:reader             true
+      "#\"regex\""      :regex          ;;:regex              true
+      "[1 2 3]"         :vector         ;;:seq                true
+      "\"string\""      :token          ;;:string             true
+      "symbol"          :token          ;;:symbol             true
+      "43"              :token          ;;:token              true
+      "#_ nope"         :uneval         ;;:uneval             false
+      "  "              :whitespace     ;;:whitespace         false
+      )
+    )
   (testing "map qualifier"
     (are [?auto-resolved ?prefix ?expected-str]
       (let [n (n/map-qualifier-node ?auto-resolved ?prefix)]
         (is (= ?expected-str (str n)))
         (is (= :map-qualifier (n/tag n)))
-        (is (= :map-qualifier (proto/node-type n)))
+        #_(is (= :map-qualifier (proto/node-type n)))
         (is (= true (n/sexpr-able? n))))
       false "prefix"  ":prefix"
       true  nil       "::"
@@ -45,7 +47,7 @@
   (testing "integer"
     (let [n (n/integer-node 42)]
       (is (= :token (n/tag n)))
-      (is (= :int (proto/node-type n)))
+      #_(is (= :int (proto/node-type n)))
       (is (= "42" (str n)))
       (is (n/sexpr-able? n))))
   (testing "forms node"
