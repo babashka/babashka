@@ -193,7 +193,8 @@
                  'rewrite-clj.node-test
                  'rewrite-clj.zip-test
                  'rewrite-clj.paredit-test
-                 'rewrite-clj.zip.subedit-test)
+                 'rewrite-clj.zip.subedit-test
+                 'rewrite-clj.node.coercer-test)
 
 ;;;; final exit code
 
