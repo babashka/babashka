@@ -387,15 +387,26 @@
 
 ;;; UTILITIES FOR ASSERTIONS
 
+(defn get-possibly-unbound-var
+  "Like var-get but returns nil if the var is unbound."
+  {:added "1.1"}
+  [v]
+  (try (deref v)
+       (catch IllegalStateException _
+         nil)))
+
 (defn function?
   "Returns true if argument is a function or a symbol that resolves to
   a function (not a macro)."
   {:added "1.1"}
   [x]
-  (if (symbol? x) ;; TODO
+  (if (symbol? x)
     (when-let [v (second (resolve/lookup @ctx x false))]
-      (when-let [value (if (vars/var? v) @v v)]
+      (when-let [value (if (vars/var? v)
+                         (get-possibly-unbound-var v)
+                         v)]
         (and (fn? value)
+             (not (:macro (meta v)))
              (not (:sci/macro (meta v))))))
     (fn? x)))
 
@@ -444,7 +455,7 @@
 ;; symbol in the test expression.
 
 (defmulti assert-expr
-  (fn [msg form]
+  (fn [_msg form]
     (cond
       (nil? form) :always-fail
       (seq? form) (first form)
@@ -548,7 +559,8 @@
   {:added "1.1"}
   ([form]
    `(clojure.test/is ~form nil))
-  ([form msg] `(clojure.test/try-expr ~msg ~form)))
+  ([form msg]
+   `(clojure.test/try-expr ~msg ~form)))
 
 (defmacro are
   "Checks multiple assertions with a template expression.

@@ -431,7 +431,7 @@
     '{:??_nsalias_??/a {:??_nsalias2_??/b 1}}
     '{:bing.bang/a {:woopa.doopa/b 1}}))
 
-#_(deftest t-parsing-exceptions
+(deftest t-parsing-exceptions
   (are [?s ?p]
        (is (thrown-with-msg? ExceptionInfo ?p (p/parse-string ?s)))
     "#"                     #".*Unexpected EOF.*"
@@ -461,7 +461,7 @@
     "#::alias [a]"          #".*namespaced map expects a map*"
     "#:prefix [a]"          #".*namespaced map expects a map.*"))
 
-#_(deftest t-sexpr-exceptions
+(deftest t-sexpr-exceptions
   (are [?s]
       (is (thrown-with-msg? ExceptionInfo #"unsupported operation.*" (node/sexpr (p/parse-string ?s))))
     "#_42"                 ;; reader ignore/discard
