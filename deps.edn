@@ -7,6 +7,7 @@
          "feature-hiccup"
          "feature-test-check"
          "feature-spec-alpha"
+         "feature-rewrite-clj"
          "pods/src"
          "babashka.nrepl/src"
          "depstar/src" "process/src"
@@ -33,7 +34,8 @@
         http-kit/http-kit {:mvn/version "2.5.3"}
         babashka/clojure-lanterna {:mvn/version "0.9.8-SNAPSHOT"}
         org.clojure/core.match {:mvn/version "1.0.0"}
-        hiccup/hiccup {:mvn/version "2.0.0-alpha2"}}
+        hiccup/hiccup {:mvn/version "2.0.0-alpha2"}
+        rewrite-clj/rewrite-clj {:mvn/version "1.0.605-alpha"}}
  :aliases {:babashka/dev
            {:main-opts ["-m" "babashka.main"]}
            :profile
