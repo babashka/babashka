@@ -2,6 +2,10 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
+## 0.3.2 (unreleased)
+
+- Include [rewrite-clj](https://github.com/clj-commons/rewrite-clj) into babashka [#769](https://github.com/babashka/babashka/issues/769) .
+
 ## 0.3.1
 
 Babashka proper:
@@ -17,7 +21,7 @@ Babashka.fs:
 
 Babashka.nrepl:
 
-- Implement `cider-nrepl` `info` / `lookup` op [#30](https://github.com/babashka/babashka.nrepl/issues/30) [(@brdloush)](https://github.com/brdloush)
+- Implement `cider-nrepl` `info` / `lookup` op [#30](https://github.com/babashka/babashka.nrepl/issues/30) ([@brdloush](https://github.com/brdloush))
 
 Babashka.process:
 
