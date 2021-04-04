@@ -191,7 +191,8 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
  :feature/core-match %s
  :feature/hiccup     %s
  :feature/test-check %s
- :feature/spec-alpha %s}")
+ :feature/spec-alpha %s
+ :feature/rewrite-clj %s}")
     version
     features/core-async?
     features/csv?
@@ -208,7 +209,8 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
     features/core-match?
     features/hiccup?
     features/test-check?
-    features/spec-alpha?)))
+    features/spec-alpha?
+    features/rewrite-clj?)))
 
 (defn read-file [file]
   (let [f (io/file file)]
@@ -337,7 +339,17 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
     features/spec-alpha? (-> (assoc        ;; spec
                               'clojure.spec.alpha @(resolve 'babashka.impl.spec/spec-namespace)
                               'clojure.spec.gen.alpha @(resolve 'babashka.impl.spec/gen-namespace)
-                              'clojure.spec.test.alpha @(resolve 'babashka.impl.spec/test-namespace)))))
+                              'clojure.spec.test.alpha @(resolve 'babashka.impl.spec/test-namespace)))
+    features/rewrite-clj? (assoc 'rewrite-clj.node
+                           @(resolve 'babashka.impl.rewrite-clj/node-namespace)
+                           'rewrite-clj.paredit
+                           @(resolve 'babashka.impl.rewrite-clj/paredit-namespace)
+                           'rewrite-clj.parser
+                           @(resolve 'babashka.impl.rewrite-clj/parser-namespace)
+                           'rewrite-clj.zip
+                           @(resolve 'babashka.impl.rewrite-clj/zip-namespace)
+                           'rewrite-clj.zip.subedit
+                           @(resolve 'babashka.impl.rewrite-clj/subedit-namespace))))
 
 (def imports
   '{ArithmeticException java.lang.ArithmeticException

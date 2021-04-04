@@ -41,8 +41,7 @@ BABASHKA_BINARY=${BABASHKA_BINARY:-"bb"}
 args=( "-jar" "$BABASHKA_JAR"
        "-H:Name=$BABASHKA_BINARY"
        "-H:+ReportExceptionStackTraces"
-       "-J-Dclojure.spec.skip-macros=true"
-       "-J-Dclojure.compiler.direct-linking=true"
+       "-J-Dborkdude.dynaload.aot=true"
        "-H:IncludeResources=BABASHKA_VERSION"
        "-H:IncludeResources=SCI_VERSION"
        "-H:ReflectionConfigurationFiles=reflection.json"
@@ -104,6 +103,7 @@ then
     export BABASHKA_FEATURE_HICCUP="${BABASHKA_FEATURE_HICCUP:-false}"
     export BABASHKA_FEATURE_TEST_CHECK="${BABASHKA_FEATURE_TEST_CHECK:-false}"
     export BABASHKA_FEATURE_SPEC_ALPHA="${BABASHKA_FEATURE_SPEC_ALPHA:-false}"
+    export BABASHKA_FEATURE_REWRITE_CLJ="${BABASHKA_FEATURE_REWRITE_CLJ:-false}"
 fi
 
 "$GRAALVM_HOME/bin/native-image" "${args[@]}"
