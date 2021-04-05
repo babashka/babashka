@@ -651,28 +651,7 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                                    "-main")]
                     [[(format "(ns user (:require [%1$s])) (apply %1$s/%2$s *command-line-args*)"
                               ns var-name)] nil])
-                  run (let [task-name (symbol run)
-                            tasks (get @common/bb-edn :tasks)
-                            task (get tasks task-name)]
-                        (if task
-                          (let [init (get tasks 'tasks/init)]
-                            [[(format "
-%s
-(require '[babashka.tasks :refer [shell clojure run]])
-%s"
-                                      (str init)
-                                      (cond (qualified-symbol? task)
-                                        (format "(do (require (quote %s))
-                                                  (apply %s *command-line-args*))"
-              (namespace task)
-              task)
-                                        (map? task)
-                                        (let [deps (:depends task)]
-                                          (tasks/target-order tasks task-name)
-                                          (prn :deps deps))
-                                        :else task))] nil])
-                          [(binding [*out* *err*]
-                             (println "No such task:" task-name)) 1]))
+                  run (tasks/assemble-task run)
                   file (try [[(read-file file)] nil]
                             (catch Exception e
                               (error-handler e {:expression expressions

@@ -1,7 +1,6 @@
 (ns babashka.impl.tasks
   (:require [babashka.impl.common :refer [ctx bb-edn]]
             [babashka.impl.deps :as deps]
-            [babashka.impl.topo :as topo]
             [babashka.process :as p]
             [sci.core :as sci]))
 
@@ -29,11 +28,63 @@
    'run (sci/copy-var run sci-ns)})
 
 (defn depends-map [tasks target-name]
-  (let [deps (set (:depends (get tasks target-name)))
+  (let [deps (seq (:depends (get tasks target-name)))
         m [target-name deps]]
     (into {} (cons m (map #(depends-map tasks %) deps)))))
 
-(defn target-order [tasks target-name]
-  (map symbol
-       (topo/kahn-sort
-        (depends-map tasks target-name))))
+(defn assemble-task-1
+  "Assembles task, does not process :depends."
+  [task]
+  (cond (qualified-symbol? task)
+        (format "
+(do (require (quote %s))
+(apply %s *command-line-args*))"
+                (namespace task)
+                task)
+        (map? task)
+        (let [task (:task task)]
+          (assemble-task-1 task))
+        :else task))
+
+(defn format-task [init prog]
+  (format "
+(require '[babashka.tasks :refer [shell clojure run]])
+%s
+%s"
+          (str init)
+          prog))
+
+(defn target-order
+  ([tasks task-name] (target-order tasks task-name (volatile! #{})))
+  ([tasks task-name processed]
+   (let [task (tasks task-name)
+         depends (:depends task)]
+     (loop [deps (seq depends)]
+       (let [p @processed
+             deps (remove #(contains? p %) deps)
+             order (vec (mapcat #(target-order tasks % processed) deps))]
+         (vswap! processed conj task-name)
+         (conj order task-name))))))
+
+(defn assemble-task [task-name]
+  (let [task-name (symbol task-name)
+        tasks (get @bb-edn :tasks)
+        task (get tasks task-name)]
+    (if task
+      (let [init (get tasks 'tasks/init)
+            prog (if (and (map? task)
+                          (:depends task))
+                   (let [targets (target-order tasks task-name)]
+                     (loop [prog ""
+                            targets (seq targets)]
+                       (if-let [t (first targets)]
+                         (if-let [task (get tasks t)]
+                           (recur (str prog "\n" (assemble-task-1 task))
+                                  (next targets))
+                           [(binding [*out* *err*]
+                              (println "No such task:" task-name)) 1])
+                         [[(format-task init prog)] nil])))
+                   [[(format-task init (assemble-task-1 task))] nil])]
+        prog)
+      [(binding [*out* *err*]
+         (println "No such task:" task-name)) 1])))
