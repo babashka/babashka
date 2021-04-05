@@ -21,7 +21,7 @@ Twitter.
 - A [PR](https://github.com/ring-clojure/ring-codec/issues/26) to make `ring-codec` compatible with babashka
 - The [stuartsierra/component](https://github.com/stuartsierra/component) library [seems to work with babashka](https://github.com/babashka/babashka/issues/742)
 - [pathom3](https://pathom3.wsscode.com/docs/tutorials/babashka/) works with babashka!
-- [VPN Connect script](https://tech.toryanderson.com/2021/03/06/re-writing-an-openconnect-vpn-connect-script-in-babashka/)
+- [VPN Connect](https://tech.toryanderson.com/2021/03/06/re-writing-an-openconnect-vpn-connect-script-in-babashka/) script
 - [Github code search](https://gist.github.com/ertugrulcetin/4f35557962fac3d159d8c931e94873e9) script
 
 ## 2021-02
