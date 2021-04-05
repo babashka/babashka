@@ -1,5 +1,6 @@
 (ns babashka.impl.tasks
-  (:require [babashka.impl.common :refer [ctx bb-edn]]
+  (:require [babashka.fs :as fs]
+            [babashka.impl.common :refer [ctx bb-edn]]
             [babashka.impl.deps :as deps]
             [babashka.process :as p]
             [sci.core :as sci]))
@@ -22,10 +23,18 @@
     (when task
       (sci/eval-form @ctx task))))
 
+(defn modified-since? [target file-set]
+  (or (not (fs/exists? target))
+      (let [lm (fs/last-modified-time target)]
+        (some #(pos? (compare (fs/last-modified-time %)
+                              lm))
+              file-set))))
+
 (def tasks-namespace
   {'shell (sci/copy-var shell sci-ns)
    'clojure (sci/copy-var clojure sci-ns)
-   'run (sci/copy-var run sci-ns)})
+   'run (sci/copy-var run sci-ns)
+   'modified-since? (sci/copy-var modified-since? sci-ns)})
 
 (defn depends-map [tasks target-name]
   (let [deps (seq (:depends (get tasks target-name)))
@@ -48,7 +57,7 @@
 
 (defn format-task [init prog]
   (format "
-(require '[babashka.tasks :refer [shell clojure run]])
+(require '[babashka.tasks :refer [shell clojure run modified-since?]])
 %s
 %s"
           (str init)
