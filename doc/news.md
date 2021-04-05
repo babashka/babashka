@@ -8,7 +8,7 @@ Twitter.
 ## 2021-04
 
 - Babashka 0.3.2 released. See [CHANGELOG.md](https://github.com/babashka/babashka/blob/master/CHANGELOG.md). Highlights: rewrite-clj.
-- [Sort requires and imports using rewrite-clj](https://gist.github.com/laurio/01530ea7700752885df21e92bb926f75)
+- [Sort requires and imports](https://gist.github.com/laurio/01530ea7700752885df21e92bb926f75) using rewrite-clj
 
 ## 2021-03
 
