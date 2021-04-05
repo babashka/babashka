@@ -52,6 +52,8 @@
                               :dependencies [[hiccup/hiccup "2.0.0-alpha2"]]}
              :feature/test-check {:source-paths ["feature-test-check"]}
              :feature/spec-alpha {:source-paths ["feature-spec-alpha"]}
+             :feature/rewrite-clj {:source-paths ["feature-rewrite-clj"]
+                                   :dependencies [[rewrite-clj/rewrite-clj "1.0.605-alpha"]]}
              :test [:feature/xml
                     :feature/lanterna
                     :feature/yaml
@@ -67,11 +69,13 @@
                     :feature/hiccup
                     :feature/test-check
                     :feature/spec-alpha
+                    :feature/rewrite-clj
                     {:dependencies [[com.clojure-goes-fast/clj-async-profiler "0.4.1"]
                                     [com.opentable.components/otj-pg-embedded "0.13.3"]]}]
              :uberjar {:global-vars {*assert* false}
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"
-                                  "-Dclojure.spec.skip-macros=true"]
+                                  "-Dclojure.spec.skip-macros=true"
+                                  "-Dborkdude.dynaload.aot=true"]
                        :main babashka.main
                        :aot :all}
              :reflection {:main babashka.impl.classes/generate-reflection-file}}
