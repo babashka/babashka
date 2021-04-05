@@ -5,12 +5,24 @@ you have anything to add. Also see
 [#babashka](https://twitter.com/hashtag/babashka?src=hashtag_click&f=live) on
 Twitter.
 
+## 2021-04
+
+- Babashka 0.3.2 released. See [CHANGELOG.md](https://github.com/babashka/babashka/blob/master/CHANGELOG.md). Highlights: rewrite-clj.
+- [Sort requires and imports](https://gist.github.com/laurio/01530ea7700752885df21e92bb926f75) using rewrite-clj
+
 ## 2021-03
 
+- Babashka 0.3.0 - 0.3.1 released. See [CHANGELOG.md](https://github.com/babashka/babashka/blob/master/CHANGELOG.md). Highlights: Raspberry Pi support, bb.edn, more flexible main invocation.
+- [Babashka shebang](https://github.com/borkdude/deps.clj/blob/master/deps.bat#L1-L7) for Windows .bat files
+- [Datalevin](https://twitter.com/huahaiy/status/1371689142585753604) now works as a babashka pod
+- [Babashka sql pods](https://github.com/babashka/babashka-sql-pods/blob/master/CHANGELOG.md) update
+- [JPoint](https://jpoint.ru/en/2021/talks/3nr1czuok3dvtewtcdjalm/) is going to have a talk on babashka
 - A `python -m http.server` [replacement in babashka](https://gist.github.com/holyjak/36c6284c047ffb7573e8a34399de27d8)
 - A [PR](https://github.com/ring-clojure/ring-codec/issues/26) to make `ring-codec` compatible with babashka
 - The [stuartsierra/component](https://github.com/stuartsierra/component) library [seems to work with babashka](https://github.com/babashka/babashka/issues/742)
 - [pathom3](https://pathom3.wsscode.com/docs/tutorials/babashka/) works with babashka!
+- [VPN Connect](https://tech.toryanderson.com/2021/03/06/re-writing-an-openconnect-vpn-connect-script-in-babashka/) script
+- [Github code search](https://gist.github.com/ertugrulcetin/4f35557962fac3d159d8c931e94873e9) script
 
 ## 2021-02
 
@@ -18,7 +30,6 @@ Twitter.
 - [babashka.fs](https://github.com/babashka/fs): utility library for dealing with files (based on java.nio). Bundled with bb 0.2.9.
 - New [Youtube channel](https://www.youtube.com/channel/UCRCl_R1ihLJt7IOgICdb9Lw) with babashka related videos
 - MS SQL support for the [babashka sql pods](https://github.com/babashka/babashka-sql-pods/)
-
 - [Clojure like its PHP](https://eccentric-j.com/blog/clojure-like-its-php.html): run babashka scripts as CGI scripts
 - [Automating Video Edits with Clojure and ffmpeg](https://youtu.be/Tmgy57R9HZM) by Adam James
 - [Gaka](https://github.com/cdaddr/gaka), a CSS-generating library that works with babashka.
@@ -42,7 +53,6 @@ lein imitation script built on deps.edn
 
 - Babashka [0.2.8](https://github.com/babashka/babashka/blob/master/CHANGELOG.md#v028) released. This includes new libraries: hiccup, core.match and clojure.test.check.
 - On 27th of February, Michiel (a.k.a. @borkdude) will do a talk about babashka at the [2021 GraalVM workshop](https://graalworkshop.github.io/2021/).
-
 - First release of the [aws pod](https://github.com/babashka/pod-babashka-aws).
 - A [script](https://gist.github.com/borkdude/ba372c8cee311e31020b04063d88e1be) to print API breakage warnings.
 - A [script](https://gist.github.com/lgouger/2262e2d2503306f2595e48a7888f4e73) to lazily page through AWS results using the new [aws pod](https://github.com/babashka/pod-babashka-aws).
@@ -60,19 +70,15 @@ internals](https://youtu.be/pgNp4Lk3gf0). Also see
 [slides](https://speakerdeck.com/babashka/babashka-and-sci-internals-at-london-clojurians-december-2020)
 and [REPL
 session](https://gist.github.com/borkdude/66a4d844668e12ae1a8277af10d6cc4b).
-
 - Babashka 0.2.6 released. See [release
 notes](https://github.com/babashka/babashka/blob/master/CHANGELOG.md#v026).
-
 - Babashka 0.2.5 released. See [release
 notes](https://github.com/babashka/babashka/blob/master/CHANGELOG.md#v025).
-
 - First release of the [sqlite pod](https://github.com/babashka/pod-babashka-sqlite3)
 - First release of the [buddy pod](https://github.com/babashka/pod-babashka-buddy)
 - The data from the babashka survey is now available
 [here](https://nl.surveymonkey.com/results/SM-8W8V36DZ7/). I have provided a
 summary [here](surveys/2020-11.md).
-
 - Blog article: [exporter for passwordstore.org](https://www.ieugen.ro/posts/2020/2020-12-26-export-passwords-with-babashka/) by Eugen Stan
 - [weavejester/progrock](https://github.com/weavejester/progrock) is a babashka-compatible library
   for printing progress bars.
@@ -80,12 +86,10 @@ summary [here](surveys/2020-11.md).
 
 ## 2020-11
 
-Babashka [survey](https://nl.surveymonkey.com/r/H2HK3RC). Feedback will be used
+- Babashka [survey](https://nl.surveymonkey.com/r/H2HK3RC). Feedback will be used
 for future development.
-
-Babashka 0.2.4 released. See [release
+- Babashka 0.2.4 released. See [release
 notes](https://github.com/babashka/babashka/blob/master/CHANGELOG.md#v024).
-
 - [Gaiwan.co](https://github.com/lambdaisland/gaiwan_co#tech-stack) are building their static HTML with babashka and [bootleg](https://github.com/retrogradeorbit/bootleg#babashka-pod-usage).
 - [sha-words](https://github.com/ordnungswidrig/sha-words): A clojure program to
   turn a sha hash into list of nouns in a predictable jar.
@@ -107,9 +111,8 @@ notes](https://github.com/babashka/babashka/blob/master/CHANGELOG.md#v024).
 
 ## 2020-10
 
-Babashka 0.2.3 released. See [release
+- Babashka 0.2.3 released. See [release
 notes](https://github.com/babashka/babashka/blob/master/CHANGELOG.md#v023-2020-10-21).
-
 - [Malcolm Sparks](https://twitter.com/malcolmsparks/status/1320274099952848896) posted a
   [script](https://gist.github.com/malcolmsparks/61418b6bbcd0962536add1ccb07033b5) that
   sorts his photo collection.
@@ -122,10 +125,9 @@ notes](https://github.com/babashka/babashka/blob/master/CHANGELOG.md#v023-2020-1
 
 ## 2020-09
 
-Babashka
+- Babashka
 [0.2.1](https://github.com/babashka/babashka/blob/master/CHANGELOG.md#v021-2020-09-25)
 and 0.2.2 released.
-
 - Code Quality report for Clojure projects in Gitlab using babashka and clj-kondo. See [gist](https://gist.github.com/hansbugge/4be701d771057e8ef6bbbb0912656355). By Hans Bugge.
 - [pod-tzzh-aws](https://github.com/tzzh/pod-tzzh-aws): a pod to interact with AWS.
 - [spotifyd-notification](https://github.com/dharrigan/spotifyd-notification) by
@@ -133,8 +135,7 @@ and 0.2.2 released.
 
 ## 2020-08
 
-Babashka [0.2.0](https://github.com/babashka/babashka/blob/master/CHANGELOG.md#v020-2020-08-28) released.
-
+- Babashka [0.2.0](https://github.com/babashka/babashka/blob/master/CHANGELOG.md#v020-2020-08-28) released.
 - Maarten Metz
   [blogs](https://www.mxmmz.nl/blog/building-a-website-with-babashka.html) about
   how he rebuilt his blog using babashka.
@@ -150,7 +151,6 @@ Babashka [0.2.0](https://github.com/babashka/babashka/blob/master/CHANGELOG.md#v
 
 ## 2020-06
 
-Babashka [0.1.3](https://github.com/babashka/babashka/blob/master/CHANGELOG.md#v013-2020-06-27) and 0.1.2 released.
-
+- Babashka [0.1.3](https://github.com/babashka/babashka/blob/master/CHANGELOG.md#v013-2020-06-27) and 0.1.2 released.
 - New release of [brisk](https://github.com/justone/brisk), a CLI around nippy which can be used as a pod from babashka.
 - [passphrase.clj](https://gist.github.com/snorremd/43c49649d2d844ee1e646fee67c141bb) script by Snorre Magnus Davøen
