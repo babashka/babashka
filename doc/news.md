@@ -5,12 +5,24 @@ you have anything to add. Also see
 [#babashka](https://twitter.com/hashtag/babashka?src=hashtag_click&f=live) on
 Twitter.
 
+## 2021-04
+
+- Babashka 0.3.2 released. See [CHANGELOG.md](https://github.com/babashka/babashka/blob/master/CHANGELOG.md). Highlights: rewrite-clj.
+- [Sort requires and imports using rewrite-clj](https://gist.github.com/laurio/01530ea7700752885df21e92bb926f75)
+
 ## 2021-03
 
+- Babashka 0.3.0 - 0.3.1 released. See [CHANGELOG.md](https://github.com/babashka/babashka/blob/master/CHANGELOG.md). Highlights: Raspberry Pi support, bb.edn, more flexible main invocation.
+- [Babashka shebang](https://github.com/borkdude/deps.clj/blob/master/deps.bat#L1-L7) for Windows .bat files
+- [Datalevin](https://twitter.com/huahaiy/status/1371689142585753604) now works as a babashka pod
+- [Babashka sql pods](https://github.com/babashka/babashka-sql-pods/blob/master/CHANGELOG.md) update
+- [JPoint](https://jpoint.ru/en/2021/talks/3nr1czuok3dvtewtcdjalm/) is going to have a talk on babashka
 - A `python -m http.server` [replacement in babashka](https://gist.github.com/holyjak/36c6284c047ffb7573e8a34399de27d8)
 - A [PR](https://github.com/ring-clojure/ring-codec/issues/26) to make `ring-codec` compatible with babashka
 - The [stuartsierra/component](https://github.com/stuartsierra/component) library [seems to work with babashka](https://github.com/babashka/babashka/issues/742)
 - [pathom3](https://pathom3.wsscode.com/docs/tutorials/babashka/) works with babashka!
+- [VPN Connect script](https://tech.toryanderson.com/2021/03/06/re-writing-an-openconnect-vpn-connect-script-in-babashka/)
+- [Github code search](https://gist.github.com/ertugrulcetin/4f35557962fac3d159d8c931e94873e9) script
 
 ## 2021-02
 
