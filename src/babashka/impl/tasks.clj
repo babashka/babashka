@@ -55,13 +55,16 @@
           (assemble-task-1 task))
         :else task))
 
-(defn format-task [init prog]
+(defn format-task [init when-expr prog]
   (format "
 (require '[babashka.tasks :refer [shell clojure run modified-since?]])
 %s
 %s"
           (str init)
-          prog))
+          (if when-expr
+            (format "(when %s %s)"
+                    when-expr prog)
+            prog)))
 
 (defn target-order
   ([tasks task-name] (target-order tasks task-name (volatile! #{})))
@@ -92,13 +95,8 @@
                                   (next targets))
                            [(binding [*out* *err*]
                               (println "No such task:" task-name)) 1])
-                         [[(format-task init prog)] nil])))
-                   [[(format-task init (assemble-task-1 task))] nil])
-            prog (if when-expr
-                   (format "(when %s %s)"
-                           when-expr prog)
-                   prog)]
-        (prn :prog prog)
+                         [[(format-task init when-expr prog)] nil])))
+                   [[(format-task init when-expr (assemble-task-1 task))] nil])]
         prog)
       [(binding [*out* *err*]
          (println "No such task:" task-name)) 1])))
