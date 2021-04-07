@@ -1,5 +1,6 @@
 (ns babashka.test-utils
   (:require
+   [babashka.fs :as fs]
    [babashka.impl.classpath :as cp]
    [babashka.impl.common :as common]
    [babashka.main :as main]
@@ -107,3 +108,11 @@
 
 (defn stop-server! [^java.net.ServerSocket server]
   (.close server))
+
+(defmacro with-config [cfg & body]
+  `(let [temp-dir# (fs/create-temp-dir)
+         bb-edn-file# (fs/file temp-dir# "bb.edn")]
+     (binding [*print-meta* true]
+       (spit bb-edn-file# ~cfg))
+     (binding [*bb-edn-path* (str bb-edn-file#)]
+       ~@body)))

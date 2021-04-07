@@ -734,7 +734,7 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
         (when uberjar
           (uberjar/run {:dest uberjar
                         :jar :uber
-                        :classpath classpath
+                        :classpath (cp/get-classpath)
                         :main-class main
                         :verbose verbose?}))
         exit-code))))
