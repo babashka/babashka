@@ -13,7 +13,14 @@
       (System/exit exit-code))))
 
 (defn shell [cmd & args]
-  (exit-non-zero (p/process (into (p/tokenize cmd) args) {:inherit true})))
+  (let [[opts cmd args]
+        (if (map? cmd)
+          [cmd (first args) (rest args)]
+          [nil cmd args])]
+    (exit-non-zero
+     (p/process (into (p/tokenize cmd) args) (merge {:in :inherit
+                                                     :out :inherit
+                                                     :err :inherit} opts)))))
 
 (defn clojure [cmd & args]
   (exit-non-zero (deps/clojure (into (p/tokenize cmd) args))))
@@ -23,18 +30,21 @@
     (when task
       (sci/eval-form @ctx task))))
 
-(defn modified-since? [target file-set]
-  (or (not (fs/exists? target))
-      (let [lm (fs/last-modified-time target)]
-        (some #(pos? (compare (fs/last-modified-time %)
-                              lm))
-              file-set))))
+(defn modified-since [target file-set]
+  (let [lm (if (fs/exists? target)
+             (fs/file-time->millis
+              (fs/last-modified-time target))
+             0)]
+    (seq (filter #(> (fs/file-time->millis
+                      (fs/last-modified-time %))
+                     lm)
+                 file-set))))
 
 (def tasks-namespace
   {'shell (sci/copy-var shell sci-ns)
    'clojure (sci/copy-var clojure sci-ns)
    'run (sci/copy-var run sci-ns)
-   'modified-since? (sci/copy-var modified-since? sci-ns)})
+   'modified-since (sci/copy-var modified-since sci-ns)})
 
 (defn depends-map [tasks target-name]
   (let [deps (seq (:depends (get tasks target-name)))
@@ -57,7 +67,7 @@
 
 (defn format-task [init when-expr prog]
   (format "
-(require '[babashka.tasks :refer [shell clojure run modified-since?]])
+(require '[babashka.tasks :refer [shell clojure run modified-since]])
 %s
 %s"
           (str init)
