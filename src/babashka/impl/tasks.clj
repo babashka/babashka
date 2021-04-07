@@ -80,7 +80,7 @@
         tasks (get @bb-edn :tasks)
         task (get tasks task-name)]
     (if task
-      (let [init (get tasks 'tasks/init)
+      (let [init (get tasks :init)
             prog (if (and (map? task)
                           (:depends task))
                    (let [targets (target-order tasks task-name)]
