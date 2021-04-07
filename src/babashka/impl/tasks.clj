@@ -30,10 +30,12 @@
 
 
 (defn last-modified-1
-  "Returns max last-modified of regular file f."
+  "Returns max last-modified of regular file f. Returns 0 if file does not exist."
   [f]
-  (fs/file-time->millis
-   (fs/last-modified-time f)))
+  (if (fs/exists? f)
+    (fs/file-time->millis
+     (fs/last-modified-time f))
+    0))
 
 (defn last-modified
   "Returns max last-modified of f or of all files within f"
@@ -54,9 +56,15 @@
     (when task
       (sci/eval-form @ctx task))))
 
-(defn modified-since [target file-set]
-  (let [lm (last-modified target)]
-    (seq (map str (filter #(> (last-modified %) lm) file-set)))))
+(defn expand-file-set
+  [file-set]
+  (if (coll? file-set)
+    (mapcat expand-file-set file-set)
+    (filter fs/regular-file? (file-seq (fs/file file-set)))))
+
+(defn modified-since [anchor file-set]
+  (let [lm (last-modified anchor)]
+    (seq (map str (filter #(> (last-modified-1 %) lm) (expand-file-set file-set))))))
 
 (def tasks-namespace
   {'shell (sci/copy-var shell sci-ns)
