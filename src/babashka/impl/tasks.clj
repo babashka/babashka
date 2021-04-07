@@ -81,8 +81,8 @@
         task (get tasks task-name)]
     (if task
       (let [init (get tasks :init)
-            prog (if (and (map? task)
-                          (:depends task))
+            when-expr (get task :when)
+            prog (if (:depends task)
                    (let [targets (target-order tasks task-name)]
                      (loop [prog ""
                             targets (seq targets)]
@@ -93,7 +93,12 @@
                            [(binding [*out* *err*]
                               (println "No such task:" task-name)) 1])
                          [[(format-task init prog)] nil])))
-                   [[(format-task init (assemble-task-1 task))] nil])]
+                   [[(format-task init (assemble-task-1 task))] nil])
+            prog (if when-expr
+                   (format "(when %s %s)"
+                           when-expr prog)
+                   prog)]
+        (prn :prog prog)
         prog)
       [(binding [*out* *err*]
          (println "No such task:" task-name)) 1])))
