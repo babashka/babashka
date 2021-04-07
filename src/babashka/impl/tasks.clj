@@ -30,19 +30,21 @@
 
 
 (defn last-modified-1
-  "Returns max last-modified of f or of all files within f. 0 if file doesn't exist."
+  "Returns max last-modified of regular file f."
   [f]
-  (if (fs/exists? f)
-    (fs/file-time->millis
-     (fs/last-modified-time f))
-    0))
+  (fs/file-time->millis
+   (fs/last-modified-time f)))
 
 (defn last-modified
   "Returns max last-modified of f or of all files within f"
   [f]
-  (apply max 0
-         (map last-modified-1
-              (filter fs/regular-file? (file-seq (fs/file f))))))
+  (if (fs/exists? f)
+    (if (fs/regular-file? f)
+      (last-modified-1 f)
+      (apply max 0
+             (map last-modified-1
+                  (filter fs/regular-file? (file-seq (fs/file f))))))
+    0))
 
 (defn clojure [cmd & args]
   (exit-non-zero (deps/clojure (into (p/tokenize cmd) args))))
@@ -54,10 +56,7 @@
 
 (defn modified-since [target file-set]
   (let [lm (last-modified target)]
-    (seq (map str (filter #(> (fs/file-time->millis
-                               (fs/last-modified-time %))
-                              lm)
-                          file-set)))))
+    (seq (map str (filter #(> (last-modified %) lm) file-set)))))
 
 (def tasks-namespace
   {'shell (sci/copy-var shell sci-ns)
