@@ -3,7 +3,8 @@
             [babashka.impl.common :refer [ctx bb-edn]]
             [babashka.impl.deps :as deps]
             [babashka.process :as p]
-            [sci.core :as sci]))
+            [sci.core :as sci]
+            [clojure.java.io :as io]))
 
 (def sci-ns (sci/create-ns 'babashka.tasks nil))
 
@@ -16,11 +17,32 @@
   (let [[opts cmd args]
         (if (map? cmd)
           [cmd (first args) (rest args)]
-          [nil cmd args])]
+          [nil cmd args])
+        opts (if-let [o (:out opts)]
+               (if (string? o)
+                 (update opts :out io/file)
+                 opts)
+               opts)]
     (exit-non-zero
      (p/process (into (p/tokenize cmd) args) (merge {:in :inherit
                                                      :out :inherit
                                                      :err :inherit} opts)))))
+
+
+(defn last-modified-1
+  "Returns max last-modified of f or of all files within f. 0 if file doesn't exist."
+  [f]
+  (if (fs/exists? f)
+    (fs/file-time->millis
+     (fs/last-modified-time f))
+    0))
+
+(defn last-modified
+  "Returns max last-modified of f or of all files within f"
+  [f]
+  (apply max 0
+         (map last-modified-1
+              (filter fs/regular-file? (file-seq (fs/file f))))))
 
 (defn clojure [cmd & args]
   (exit-non-zero (deps/clojure (into (p/tokenize cmd) args))))
@@ -31,14 +53,11 @@
       (sci/eval-form @ctx task))))
 
 (defn modified-since [target file-set]
-  (let [lm (if (fs/exists? target)
-             (fs/file-time->millis
-              (fs/last-modified-time target))
-             0)]
-    (seq (filter #(> (fs/file-time->millis
-                      (fs/last-modified-time %))
-                     lm)
-                 file-set))))
+  (let [lm (last-modified target)]
+    (seq (map str (filter #(> (fs/file-time->millis
+                               (fs/last-modified-time %))
+                              lm)
+                          file-set)))))
 
 (def tasks-namespace
   {'shell (sci/copy-var shell sci-ns)
