@@ -2,6 +2,13 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
+## Unreleased
+
+Sci:
+
+- Bug with protocol methods in record where later arg overrides "this" [#557](https://github.com/borkdude/sci/issues/557)
+- Support `:rename` in `:refer-clojure` [#558](https://github.com/borkdude/sci/issues/558)
+
 ## 0.3.2
 
 - Include [rewrite-clj](https://github.com/clj-commons/rewrite-clj) into babashka [#769](https://github.com/babashka/babashka/issues/769) .
