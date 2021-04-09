@@ -323,7 +323,7 @@ jobs:
     environment:
       LEIN_ROOT: "true"
       GRAALVM_HOME: /home/circleci/graalvm-ce-java11-21.0.0
-      BABASHKA_PLATFORM: linux # used in release script
+      BABASHKA_PLATFORM: linux-static # used in release script
       BABASHKA_ARCH: aarch64
       BABASHKA_TEST_ENV: native
       BABASHKA_XMX: "-J-Xmx6500m"
