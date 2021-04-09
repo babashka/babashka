@@ -15,6 +15,10 @@ mkdir -p /tmp/bb_size
 
 arch=${BABASHKA_ARCH:-amd64}
 
+if [ "$BABASHKA_STATIC" = "true" ]; then
+    arch="$arch-static"
+fi
+
 tar zcvf "babashka-$VERSION-$BABASHKA_PLATFORM-$arch.tar.gz" bb # bbk
 
 ## cleanup
