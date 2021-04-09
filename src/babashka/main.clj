@@ -535,8 +535,14 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                                        (update :expressions (fnil conj []) (first options))
                                        (assoc :command-line-args (next options)))
                                    (assoc opts-map
-                                          (if (str/ends-with? opt ".jar")
-                                            :jar :file) opt
+                                          (if (fs/exists? opt)
+                                            (if (str/ends-with? opt ".jar")
+                                              :jar
+                                              :file)
+                                            (if (contains? (:tasks @common/bb-edn)
+                                                           (symbol opt))
+                                              :run
+                                              :file)) opt
                                           :command-line-args (next options)))))))
                          opts-map))]
             opts))))
@@ -581,13 +587,7 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
             _ (if classpath
                 (cp/add-classpath classpath)
                 ;; when classpath isn't set, we calculate it from bb.edn, if present
-                (let [bb-edn-file (or (System/getenv "BABASHKA_EDN")
-                                      "bb.edn")]
-                  (when (fs/exists? bb-edn-file)
-                    (let [edn (edn/read-string (slurp bb-edn-file))]
-                      (vreset! common/bb-edn edn)))
-                  ;; we mutate the state from tests as well, so despite the above it can contain a bb.edn
-                  (when-let [bb-edn @common/bb-edn] (deps/add-deps bb-edn))))
+                (when-let [bb-edn @common/bb-edn] (deps/add-deps bb-edn)))
             abs-path (when file
                        (let [abs-path (.getAbsolutePath (io/file file))]
                          (vars/bindRoot sci/file abs-path)
@@ -740,6 +740,11 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
         exit-code))))
 
 (defn main [& args]
+  (let [bb-edn-file (or (System/getenv "BABASHKA_EDN")
+                        "bb.edn")]
+    (when (fs/exists? bb-edn-file)
+      (let [edn (edn/read-string (slurp bb-edn-file))]
+        (vreset! common/bb-edn edn))))
   (let [opts (parse-opts args)]
     (exec opts)))
 
