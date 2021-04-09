@@ -245,14 +245,14 @@ jobs:
           command: |
             git submodule init
             git submodule update
-      # - run:
-      #     name: "Short circuit on SNAPSHOT"
-      #     command: |
-      #       VERSION=$(cat resources/BABASHKA_VERSION)
-      #       if [[ "$VERSION" == *-SNAPSHOT ]]
-      #       then
-      #         circleci task halt
-      #       fi
+      - run:
+          name: "Short circuit on SNAPSHOT"
+          command: |
+            VERSION=$(cat resources/BABASHKA_VERSION)
+            if [[ "$VERSION" == *-SNAPSHOT ]]
+            then
+              circleci task halt
+            fi
       - restore_cache:
           keys:
             - linux-aarch64-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
@@ -516,6 +516,7 @@ workflows:
       - linux-static
       - mac
       - linux-aarch64
+      - linux-aarch64-static
       - deploy:
           filters:
             branches:
@@ -523,7 +524,6 @@ workflows:
           requires:
             - jvm
             - linux
-            - linux-static
             - mac
       - docker:
           filters:
