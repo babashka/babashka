@@ -245,14 +245,104 @@ jobs:
           command: |
             git submodule init
             git submodule update
+      # - run:
+      #     name: "Short circuit on SNAPSHOT"
+      #     command: |
+      #       VERSION=$(cat resources/BABASHKA_VERSION)
+      #       if [[ "$VERSION" == *-SNAPSHOT ]]
+      #       then
+      #         circleci task halt
+      #       fi
+      - restore_cache:
+          keys:
+            - linux-aarch64-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - run:
-          name: "Short circuit on SNAPSHOT"
+          name: Install Leiningen
           command: |
-            VERSION=$(cat resources/BABASHKA_VERSION)
-            if [[ "$VERSION" == *-SNAPSHOT ]]
-            then
-              circleci task halt
+            sudo script/install-leiningen
+      - run:
+          name: Install Clojure
+          command: |
+            wget https://download.clojure.org/install/linux-install-1.10.1.447.sh
+            chmod +x linux-install-1.10.1.447.sh
+            sudo ./linux-install-1.10.1.447.sh
+      - run:
+          name: Install lsof
+          command: |
+            sudo apt-get install lsof
+      - run:
+          name: Install native dev tools
+          command: |
+            sudo apt-get update
+            sudo apt-get -y install gcc g++ zlib1g-dev
+      - run:
+          name: Download GraalVM
+          command: |
+            cd ~
+            if ! [ -d graalvm-ce-java11-21.0.0 ]; then
+              curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.0.0/graalvm-ce-java11-linux-aarch64-21.0.0.tar.gz
+              tar xzf graalvm-ce-java11-linux-aarch64-21.0.0.tar.gz
             fi
+      - run:
+          name: Build binary
+          command: |
+            script/uberjar
+            script/compile
+          no_output_timeout: 30m
+      - run:
+          name: Run tests
+          command: |
+            script/test
+            script/run_lib_tests
+      - run:
+          name: Release
+          command: |
+            .circleci/script/release
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+            - release
+      - save_cache:
+          paths:
+            - ~/.m2
+            - ~/graalvm-ce-java11-21.0.0
+          key: linux-aarch64-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
+      - store_artifacts:
+          path: /tmp/release
+          destination: release
+      - run:
+          name: Publish artifact link to Slack
+          command: |
+            ./bb .circleci/script/publish_artifact.clj || true
+  linux-aarch64-static:
+    machine:
+      enabled: true
+      image: ubuntu-2004:202101-01
+    resource_class: arm.large
+    working_directory: ~/repo
+    environment:
+      LEIN_ROOT: "true"
+      GRAALVM_HOME: /home/circleci/graalvm-ce-java11-21.0.0
+      BABASHKA_PLATFORM: linux # used in release script
+      BABASHKA_ARCH: aarch64
+      BABASHKA_TEST_ENV: native
+      BABASHKA_XMX: "-J-Xmx6500m"
+      BABASHKA_STATIC: "true"
+    steps:
+      - checkout
+      - run:
+          name: "Pull Submodules"
+          command: |
+            git submodule init
+            git submodule update
+      # - run:
+      #     name: "Short circuit on SNAPSHOT"
+      #     command: |
+      #       VERSION=$(cat resources/BABASHKA_VERSION)
+      #       if [[ "$VERSION" == *-SNAPSHOT ]]
+      #       then
+      #         circleci task halt
+      #       fi
       - restore_cache:
           keys:
             - linux-aarch64-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
