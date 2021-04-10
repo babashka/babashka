@@ -4,6 +4,20 @@ For a list of breaking changes, check [here](#breaking-changes).
 
 ## Unreleased
 
+Babashka:
+
+- Use get-classpath when build an uberjar [#776](https://github.com/babashka/babashka/issues/776)
+- Provide linux arm64 static binaries #782
+- Upgrade to Clojure `1.11.0-alpha1` to get full map passing to kwargs function support
+
+Deps.clj:
+
+- Bump tools jar to to 1.10.3.822
+
+Fs:
+
+- `delete-tree` should not throw when dir does not exist [#22](https://github.com/babashka/fs/issues/22)
+
 Sci:
 
 - Bug with protocol methods in record where later arg overrides "this" [#557](https://github.com/borkdude/sci/issues/557)
