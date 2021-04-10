@@ -38,10 +38,16 @@
     (is (= 6 (bb "foo"))))
   (let [tmp-dir (fs/create-temp-dir)
         out (str (fs/file tmp-dir "out.txt"))]
-    (test-utils/with-config {:tasks {'foo (list 'shell {:out out}
-                                                "echo hello")}}
-      (bb "foo")
-      (is (= "hello\n" (slurp out))))
+    (testing "shell test"
+      (test-utils/with-config {:tasks {'foo (list 'shell {:out out}
+                                                  "echo hello")}}
+        (bb "foo")
+        (is (= "hello\n" (slurp out)))))
+    (testing "clojure test"
+      (test-utils/with-config {:tasks {'foo (list 'clojure {:out out}
+                                                  "-M -e" "(println :yolo)")}}
+        (bb "foo")
+        (is (= ":yolo\n" (slurp out)))))
     (test-utils/with-config {:tasks {'quux (list 'spit out "quux\n")
                                      'baz (list 'spit out "baz\n" :append true)
                                      'bar {:depends ['baz]
