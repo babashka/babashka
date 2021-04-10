@@ -6,7 +6,7 @@ For a list of breaking changes, check [here](#breaking-changes).
 
 Babashka:
 
-- Use get-classpath when build an uberjar [#776](https://github.com/babashka/babashka/issues/776)
+- Fix building uberjar with classpath from `bb.edn` [#776](https://github.com/babashka/babashka/issues/776)
 - Provide linux arm64 static binaries [#782](https://github.com/babashka/babashka/issues/782)
 - Upgrade to Clojure `1.11.0-alpha1` to get full map passing to kwargs function support
 - First cut of bb tasks [#788](https://github.com/babashka/babashka/issues/788). This is a preview version which is expected to
