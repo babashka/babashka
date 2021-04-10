@@ -19,6 +19,7 @@
   {;; placeholder
    'absolute? (sci/copy-var fs/absolute? fns)
    'absolutize (sci/copy-var fs/absolutize fns)
+   'canonicalize (sci/copy-var fs/canonicalize fns)
    'components (sci/copy-var fs/components fns)
    'copy (sci/copy-var fs/copy fns)
    'copy-tree (sci/copy-var fs/copy-tree fns)
@@ -52,6 +53,7 @@
    'list-dir (sci/copy-var fs/list-dir fns)
    'list-dirs (sci/copy-var fs/list-dirs fns)
    'millis->file-time (sci/copy-var fs/millis->file-time fns)
+   'modified-since (sci/copy-var fs/modified-since fns)
    'move (sci/copy-var fs/move fns)
    'normalize (sci/copy-var fs/normalize fns)
    'parent (sci/copy-var fs/parent fns)
