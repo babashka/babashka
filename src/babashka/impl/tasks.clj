@@ -54,6 +54,11 @@
         m [target-name deps]]
     (into {} (cons m (map #(depends-map tasks %) deps)))))
 
+#_(defn wrap-when [expr when-expr]
+  (if when-expr
+    (format "(when %s %s)" (second when-expr) expr)
+    expr))
+
 (defn assemble-task-1
   "Assembles task, does not process :depends."
   [task]
@@ -68,16 +73,13 @@
           (assemble-task-1 task))
         :else task))
 
-(defn format-task [init when-expr prog]
+(defn format-task [init prog]
   (format "
 (require '[babashka.tasks :refer [shell clojure]])
 %s
 %s"
           (str init)
-          (if when-expr
-            (format "(when %s %s)"
-                    when-expr prog)
-            prog)))
+          prog))
 
 (defn target-order
   ([tasks task-name] (target-order tasks task-name (volatile! #{})))
@@ -97,9 +99,9 @@
         tasks (get @bb-edn :tasks)
         task (get tasks task-name)]
     (if task
-      (let [init (get tasks :init)
-            when-expr (get task :when)
-            prog (if (:depends task)
+      (let [m? (map? task)
+            init (and m? (get tasks :init))
+            prog (if (and m? (:depends task))
                    (let [targets (target-order tasks task-name)]
                      (loop [prog ""
                             targets (seq targets)]
@@ -109,8 +111,8 @@
                                   (next targets))
                            [(binding [*out* *err*]
                               (println "No such task:" task-name)) 1])
-                         [[(format-task init when-expr prog)] nil])))
-                   [[(format-task init when-expr (assemble-task-1 task))] nil])]
+                         [[(format-task init prog)] nil])))
+                   [[(format-task init (assemble-task-1 task))] nil])]
         prog)
       [(binding [*out* *err*]
          (println "No such task:" task-name)) 1])))

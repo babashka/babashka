@@ -43,19 +43,36 @@
                                                   "echo hello")}}
         (bb "foo")
         (is (= "hello\n" (slurp out)))))
+    (fs/delete out)
     (testing "clojure test"
       (test-utils/with-config {:tasks {'foo (list 'clojure {:out out}
                                                   "-M -e" "(println :yolo)")}}
         (bb "foo")
         (is (= ":yolo\n" (slurp out)))))
-    (test-utils/with-config {:tasks {'quux (list 'spit out "quux\n")
-                                     'baz (list 'spit out "baz\n" :append true)
-                                     'bar {:depends ['baz]
-                                           :task (list 'spit out "bar\n" :append true)}
-                                     'foo {:depends ['quux 'bar 'baz]
-                                           :task (list 'spit out "foo\n" :append true)}}}
-      (bb "foo")
-      (is (= "quux\nbaz\nbar\nfoo\n" (slurp out))))))
+    (fs/delete out)
+    (testing "depends"
+      (test-utils/with-config {:tasks {'quux (list 'spit out "quux\n")
+                                       'baz (list 'spit out "baz\n" :append true)
+                                       'bar {:depends ['baz]
+                                             :task (list 'spit out "bar\n" :append true)}
+                                       'foo {:depends ['quux 'bar 'baz]
+                                             :task (list 'spit out "foo\n" :append true)}}}
+        (bb "foo")
+        (is (= "quux\nbaz\nbar\nfoo\n" (slurp out)))))
+    (fs/delete out)
+    ;; Note: this behavior with :when was complex, since the place where :when
+    ;; is inserted isn't very intuitive here
+    ;; This is why we don't support :when for now
+    #_(testing "depends with :when"
+      (test-utils/with-config {:tasks {'quux (list 'spit out "quux\n")
+                                       'baz (list 'spit out "baz\n" :append true)
+                                       'bar {:when false
+                                             :depends ['baz]
+                                             :task (list 'spit out "bar\n" :append true)}
+                                       'foo {:depends ['quux 'bar]
+                                             :task (list 'spit out "foo\n" :append true)}}}
+        (bb "foo")
+        (is (= "quux\nbaz\nbar\nfoo\n" (slurp out)))))))
 
 (deftest list-tasks-test
   (test-utils/with-config {}
