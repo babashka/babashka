@@ -65,7 +65,7 @@
 
 (defn format-task [init when-expr prog]
   (format "
-(require '[babashka.tasks :refer [shell clojure run modified-since]])
+(require '[babashka.tasks :refer [shell clojure]])
 %s
 %s"
           (str init)
