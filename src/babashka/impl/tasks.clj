@@ -122,20 +122,19 @@
       (let [names (keys tasks)
             raw-names (filter symbol? names)
             names (map str raw-names)
-            names (sort names)
+            names (remove #(str/starts-with? % "-") names)
+            names (remove #(:private (get tasks (symbol %))) names)
             longest (apply max (map count names))
             fmt (str "%1$-" longest "s")]
         (println "The following tasks are available:")
         (println)
-        (doseq [k raw-names
-                :let [task (get tasks k)]]
-          (when-not (or (str/starts-with? k "-")
-                        (:private task))
-            (let [task (if (qualified-symbol? task)
-                         {:doc (format "Runs %s. See `bb doc %s` for more info." task task)}
-                         task)]
-              (println (str (format fmt k)
-                            (when-let [d (:doc task)]
-                              (str " " d))))))))
+        (doseq [k names
+                :let [task (get tasks (symbol k))]]
+          (let [task (if (qualified-symbol? task)
+                       {:doc (format "Runs %s. See `bb doc %s` for more info." task task)}
+                       task)]
+            (println (str (format fmt k)
+                          (when-let [d (:doc task)]
+                            (str " " d)))))))
       (println "No tasks found."))))
 

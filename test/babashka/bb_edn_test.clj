@@ -51,6 +51,28 @@
       (bb "foo")
       (is (= "quux\nbaz\nbar\nfoo\n" (slurp out))))))
 
+(deftest list-tasks-test
+  (test-utils/with-config {}
+    (let [res (test-utils/bb nil "tasks")]
+      (is (str/includes? res "No tasks found."))))
+  (test-utils/with-config {:tasks {'task1
+                                   {:doc "task1 doc"
+                                    :task '(+ 1 2 3)}
+                                   'task2
+                                   {:doc "task2 doc"
+                                    :task '(+ 4 5 6)}
+                                   '-task3
+                                   {:task '(+ 1 2 3)}
+                                   'task4
+                                   {:task '(+ 1 2 3)
+                                    :private true}}}
+    (let [res (test-utils/bb nil "tasks")]
+      (is (str/includes? res "The following tasks are available:"))
+      (is (str/includes? res "task1 task1 doc"))
+      (is (str/includes? res "task2 task2 doc"))
+      (is (not (str/includes? res "task3")))
+      (is (not (str/includes? res "task4"))))))
+
 ;; TODO:
 ;; Do we want to support the same parsing as the clj CLI?
 ;; Or do we want `--aliases :foo:bar`
