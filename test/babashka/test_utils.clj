@@ -51,7 +51,6 @@
                       (if (string? input-or-opts)
                         (with-in-str input-or-opts (apply main/main args))
                         (apply main/main args)))]
-            ;; (prn :err (str es))
             (if (zero? res)
               (str os)
               (do
@@ -67,12 +66,12 @@
 (defn bb-native [input & args]
   (let [res (p/process (into ["./bb"] args)
                        (cond-> {:in input
-                               :out :string
-                               :err :string}
+                                :out :string
+                                :err :string}
                          *bb-edn-path*
                          (assoc
-                          :env (assoc (into {} (System/getenv))
-                                      "BABASHKA_EDN" *bb-edn-path*))))
+                          :extra-env (assoc (into {} (System/getenv))
+                                            "BABASHKA_EDN" *bb-edn-path*))))
         res (deref res)
         exit (:exit res)
         error? (pos? exit)]

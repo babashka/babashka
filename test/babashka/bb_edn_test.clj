@@ -1,5 +1,6 @@
 (ns babashka.bb-edn-test
   (:require
+   [babashka.fs :as fs]
    [babashka.test-utils :as test-utils]
    [clojure.edn :as edn]
    [clojure.string :as str]
@@ -31,6 +32,16 @@
     (test-utils/with-config '{:deps {medley/medley {:mvn/version "1.3.0"}}}
       (is (= "src"
              (bb "-cp" "src" "-e" "(babashka.classpath/get-classpath)"))))))
+
+(deftest task-test
+  (test-utils/with-config '{:tasks {foo (+ 1 2 3)}}
+    (is (= 6 (bb "foo"))))
+  (let [tmp-dir (fs/create-temp-dir)
+        out (str (fs/file tmp-dir "out.txt"))]
+    (test-utils/with-config {:tasks {'foo (list 'shell {:out out}
+                                                "echo hello")}}
+      (bb "foo")
+      (is (= "hello\n" (slurp out))))))
 
 ;; TODO:
 ;; Do we want to support the same parsing as the clj CLI?
