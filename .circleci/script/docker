@@ -22,7 +22,7 @@ if [ -z "$CIRCLE_PULL_REQUEST" ] && [ "$CIRCLE_BRANCH" = "master" ]; then
     docker tag "$image_name:$latest_tag" "$image_name:$image_tag"
     rm -f bb
     if [[ $snapshot == "false" ]]; then
-        tar zxvf  "/tmp/release/babashka-${image_tag}-linux-static-amd64.tar.gz"
+        tar zxvf  "/tmp/release/babashka-${image_tag}-linux-amd64-static.tar.gz"
         docker build -t "$image_name:alpine" -f Dockerfile.alpine .
         docker tag "$image_name:alpine" "$image_name:$image_tag-alpine"
     fi
