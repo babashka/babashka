@@ -1,10 +1,10 @@
 (ns babashka.impl.tasks
-  (:require [babashka.fs :as fs]
-            [babashka.impl.common :refer [ctx bb-edn]]
+  (:require [babashka.impl.common :refer [bb-edn]]
             [babashka.impl.deps :as deps]
             [babashka.process :as p]
-            [sci.core :as sci]
-            [clojure.java.io :as io]))
+            [clojure.java.io :as io]
+            [clojure.string :as str]
+            [sci.core :as sci]))
 
 (def sci-ns (sci/create-ns 'babashka.tasks nil))
 
@@ -24,25 +24,30 @@
                  opts)
                opts)]
     (exit-non-zero
-     (p/process (into (p/tokenize cmd) args) (merge {:in :inherit
-                                                     :out :inherit
-                                                     :err :inherit} opts)))))
+     (p/process (into (p/tokenize cmd) args)
+                (merge {:in :inherit
+                        :out :inherit
+                        :err :inherit} opts)))))
 
 (defn clojure [cmd & args]
-  (exit-non-zero (deps/clojure (into (p/tokenize cmd) args))))
-
-#_(defn run [task]
-  (let [task (get-in @bb-edn [:tasks task])]
-    (when task
-      (sci/eval-form @ctx task))))
+  (let [[opts cmd args]
+        (if (map? cmd)
+          [cmd (first args) (rest args)]
+          [nil cmd args])
+        opts (if-let [o (:out opts)]
+               (if (string? o)
+                 (update opts :out io/file)
+                 opts)
+               opts)]
+    (exit-non-zero
+     (deps/clojure (into (p/tokenize cmd) args)
+                   (merge {:in :inherit
+                           :out :inherit
+                           :err :inherit} opts)))))
 
 (def tasks-namespace
   {'shell (sci/copy-var shell sci-ns)
-   'clojure (sci/copy-var clojure sci-ns)
-   ;; 'run (sci/copy-var run sci-ns)
-   ;; 'modified-since (sci/copy-var modified-since sci-ns)
-   }
-  )
+   'clojure (sci/copy-var clojure sci-ns)})
 
 (defn depends-map [tasks target-name]
   (let [deps (seq (:depends (get tasks target-name)))
@@ -108,3 +113,28 @@
         prog)
       [(binding [*out* *err*]
          (println "No such task:" task-name)) 1])))
+
+(defn list-tasks
+  []
+  (let [tasks (:tasks @bb-edn)]
+    (if (seq tasks)
+      (let [names (keys tasks)
+            raw-names (filter symbol? names)
+            names (map str raw-names)
+            names (sort names)
+            longest (apply max (map count names))
+            fmt (str "%1$-" longest "s")]
+        (println "The following tasks are available:")
+        (println)
+        (doseq [k raw-names
+                :let [task (get tasks k)]]
+          (when-not (or (str/starts-with? k "-")
+                        (:private task))
+            (let [task (if (qualified-symbol? task)
+                         {:doc (format "Runs %s. See `bb doc %s` for more info." task task)}
+                         task)]
+              (println (str (format fmt k)
+                            (when-let [d (:doc task)]
+                              (str " " d))))))))
+      (println "No tasks found."))))
+

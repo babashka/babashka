@@ -93,8 +93,7 @@
      "repl"
      "socket-repl"
      "nrepl-server"
-     "describe"
-     "run") true
+     "describe") true
     false))
 
 (defn print-error [& msgs]
@@ -533,6 +532,9 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                                (let [options (next options)]
                                  (recur (next options)
                                         (assoc opts-map :run (first options))))
+                               ("--tasks")
+                               (assoc opts-map :list-tasks true
+                                      :command-line-args (next options))
                                ;; fallback
                                (if (some opts-map [:file :jar :socket-repl :expressions :main :run])
                                  (assoc opts-map
@@ -567,7 +569,7 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                     :verbose? :classpath
                     :main :uberscript :describe?
                     :jar :uberjar :clojure
-                    :doc :run]}
+                    :doc :run :list-tasks]}
             opts
             _ (when verbose? (vreset! common/verbose? true))
             _ (do ;; set properties
@@ -693,6 +695,7 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                        repl [(repl/start-repl! sci-ctx) 0]
                        nrepl [(start-nrepl! nrepl sci-ctx) 0]
                        uberjar [nil 0]
+                       list-tasks [(tasks/list-tasks) 0]
                        expressions
                        (sci/binding [sci/file abs-path]
                          (try
