@@ -28,49 +28,21 @@
                                                      :out :inherit
                                                      :err :inherit} opts)))))
 
-
-(defn last-modified-1
-  "Returns max last-modified of regular file f. Returns 0 if file does not exist."
-  [f]
-  (if (fs/exists? f)
-    (fs/file-time->millis
-     (fs/last-modified-time f))
-    0))
-
-(defn last-modified
-  "Returns max last-modified of f or of all files within f"
-  [f]
-  (if (fs/exists? f)
-    (if (fs/regular-file? f)
-      (last-modified-1 f)
-      (apply max 0
-             (map last-modified-1
-                  (filter fs/regular-file? (file-seq (fs/file f))))))
-    0))
-
 (defn clojure [cmd & args]
   (exit-non-zero (deps/clojure (into (p/tokenize cmd) args))))
 
-(defn run [task]
+#_(defn run [task]
   (let [task (get-in @bb-edn [:tasks task])]
     (when task
       (sci/eval-form @ctx task))))
 
-(defn expand-file-set
-  [file-set]
-  (if (coll? file-set)
-    (mapcat expand-file-set file-set)
-    (filter fs/regular-file? (file-seq (fs/file file-set)))))
-
-(defn modified-since [anchor file-set]
-  (let [lm (last-modified anchor)]
-    (seq (map str (filter #(> (last-modified-1 %) lm) (expand-file-set file-set))))))
-
 (def tasks-namespace
   {'shell (sci/copy-var shell sci-ns)
    'clojure (sci/copy-var clojure sci-ns)
-   'run (sci/copy-var run sci-ns)
-   'modified-since (sci/copy-var modified-since sci-ns)})
+   ;; 'run (sci/copy-var run sci-ns)
+   ;; 'modified-since (sci/copy-var modified-since sci-ns)
+   }
+  )
 
 (defn depends-map [tasks target-name]
   (let [deps (seq (:depends (get tasks target-name)))
