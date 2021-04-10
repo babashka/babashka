@@ -41,7 +41,15 @@
     (test-utils/with-config {:tasks {'foo (list 'shell {:out out}
                                                 "echo hello")}}
       (bb "foo")
-      (is (= "hello\n" (slurp out))))))
+      (is (= "hello\n" (slurp out))))
+    (test-utils/with-config {:tasks {'quux (list 'spit out "quux\n")
+                                     'baz (list 'spit out "baz\n" :append true)
+                                     'bar {:depends ['baz]
+                                           :task (list 'spit out "bar\n" :append true)}
+                                     'foo {:depends ['quux 'bar 'baz]
+                                           :task (list 'spit out "foo\n" :append true)}}}
+      (bb "foo")
+      (is (= "quux\nbaz\nbar\nfoo\n" (slurp out))))))
 
 ;; TODO:
 ;; Do we want to support the same parsing as the clj CLI?

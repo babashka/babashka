@@ -85,11 +85,12 @@
    (let [task (tasks task-name)
          depends (:depends task)]
      (loop [deps (seq depends)]
-       (let [p @processed
-             deps (remove #(contains? p %) deps)
+       (let [deps (remove #(contains? @processed %) deps)
              order (vec (mapcat #(target-order tasks % processed) deps))]
-         (vswap! processed conj task-name)
-         (conj order task-name))))))
+         (if-not (contains? @processed task-name)
+           (do (vswap! processed conj task-name)
+               (conj order task-name))
+           order))))))
 
 (defn assemble-task [task-name]
   (let [task-name (symbol task-name)
