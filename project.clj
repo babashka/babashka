@@ -14,7 +14,7 @@
   ;; :java-source-paths ["sci/reflector/src-java"]
   :java-source-paths ["src-java"]
   :resource-paths ["resources" "sci/resources"]
-  :dependencies [[org.clojure/clojure "1.10.2"]
+  :dependencies [[org.clojure/clojure "1.11.0-alpha1"]
                  [borkdude/edamame "0.0.11-alpha.29"]
                  [borkdude/graal.locking "0.0.2"]
                  [org.clojure/tools.cli "1.0.206"]
