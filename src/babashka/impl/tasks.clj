@@ -81,8 +81,10 @@
 
 (defn assemble-task-1
   "Assembles task, does not process :depends."
-  ([task-name task depends] (assemble-task-1 task-name task depends nil))
-  ([task-name task depends last?]
+  ([task-name task]
+   (assemble-task-1 task-name task nil nil))
+  ([task-name task last?] (assemble-task-1 task-name task last? nil))
+  ([task-name task last? depends]
    (cond (qualified-symbol? task)
          (let [prog (format "(apply %s *command-line-args*)" task)
                prog (wrap-depends prog depends)
@@ -95,7 +97,7 @@
            prog)
          (map? task)
          (let [t (:task task)]
-           (assemble-task-1 task-name t (:depends task) last?))
+           (assemble-task-1 task-name t last? (:depends task)))
          :else (let [prog (wrap-depends task depends)]
                  (wrap-def task-name prog last?)))))
 
@@ -135,7 +137,7 @@
                              targets (next targets)]
                          (if targets
                            (if-let [task (get tasks t)]
-                             (recur (str prog "\n" (assemble-task-1 t task depends))
+                             (recur (str prog "\n" (assemble-task-1 t task))
                                     targets)
                              [(binding [*out* *err*]
                                 (println "No such task:" task-name)) 1])
@@ -143,11 +145,11 @@
                              (let [prog (str prog "\n"
                                              (apply str (map deref-task depends))
                                              "\n"
-                                             (assemble-task-1 t task depends true))]
+                                             (assemble-task-1 t task true))]
                                [[(format-task init prog)] nil])
                              [(binding [*out* *err*]
                                 (println "No such task:" task-name)) 1])))))
-                   [[(format-task init (assemble-task-1 task-name task []))] nil])]
+                   [[(format-task init (assemble-task-1 task-name task true))] nil])]
         (when (= "true" (System/getenv "BABASHKA_DEV"))
           (println (ffirst prog)))
         prog)
