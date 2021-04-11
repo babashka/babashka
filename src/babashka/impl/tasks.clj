@@ -67,18 +67,25 @@
     expr))
 
 (defn wrap-def [task-name prog last?]
-  (format "(def %s %s) %s"
+  (format "(def %s (future %s)) %s"
           task-name prog
           (if last?
             (format "(babashka.tasks/-wait %s)" task-name)
             task-name)))
 
+(defn deref-task [dep]
+  (format "(babashka.tasks/-wait %s)" dep))
+
+(defn wrap-depends [prog depends]
+  (format "(do %s)" (str (str/join "\n" (map deref-task depends)) "\n" prog)))
+
 (defn assemble-task-1
   "Assembles task, does not process :depends."
-  ([task-name task] (assemble-task-1 task-name task nil))
-  ([task-name task last?]
+  ([task-name task depends] (assemble-task-1 task-name task depends nil))
+  ([task-name task depends last?]
    (cond (qualified-symbol? task)
          (let [prog (format "(apply %s *command-line-args*)" task)
+               prog (wrap-depends prog depends)
                prog (wrap-def task-name prog last?)
                prog (format "
 (do (require (quote %s))
@@ -87,9 +94,10 @@
                             prog)]
            prog)
          (map? task)
-         (let [task (:task task)]
-           (assemble-task-1 task-name task last?))
-         :else (wrap-def task-name task last?))))
+         (let [t (:task task)]
+           (assemble-task-1 task-name t (:depends task) last?))
+         :else (let [prog (wrap-depends task depends)]
+                 (wrap-def task-name prog last?)))))
 
 (defn format-task [init prog]
   (format "
@@ -112,9 +120,6 @@
                (conj order task-name))
            order))))))
 
-(defn deref-task [dep]
-  (format "(babashka.tasks/-wait %s)" dep))
-
 (defn assemble-task [task-name]
   (let [task-name (symbol task-name)
         tasks (get @bb-edn :tasks)
@@ -130,7 +135,7 @@
                              targets (next targets)]
                          (if targets
                            (if-let [task (get tasks t)]
-                             (recur (str prog "\n" (assemble-task-1 t task))
+                             (recur (str prog "\n" (assemble-task-1 t task depends))
                                     targets)
                              [(binding [*out* *err*]
                                 (println "No such task:" task-name)) 1])
@@ -138,11 +143,13 @@
                              (let [prog (str prog "\n"
                                              (apply str (map deref-task depends))
                                              "\n"
-                                             (assemble-task-1 t task true))]
+                                             (assemble-task-1 t task depends true))]
                                [[(format-task init prog)] nil])
                              [(binding [*out* *err*]
                                 (println "No such task:" task-name)) 1])))))
-                   [[(format-task init (assemble-task-1 task-name task))] nil])]
+                   [[(format-task init (assemble-task-1 task-name task []))] nil])]
+        (when (= "true" (System/getenv "BABASHKA_DEV"))
+          (println (ffirst prog)))
         prog)
       [(binding [*out* *err*]
          (println "No such task:" task-name)) 1])))
