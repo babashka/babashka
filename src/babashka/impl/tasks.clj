@@ -45,9 +45,16 @@
                            :out :inherit
                            :err :inherit} opts)))))
 
+(defn -wait [res]
+  (when res
+    (if (future? res)
+      @res
+      res)))
+
 (def tasks-namespace
   {'shell (sci/copy-var shell sci-ns)
-   'clojure (sci/copy-var clojure sci-ns)})
+   'clojure (sci/copy-var clojure sci-ns)
+   '-wait (sci/copy-var -wait sci-ns)})
 
 (defn depends-map [tasks target-name]
   (let [deps (seq (:depends (get tasks target-name)))
@@ -59,19 +66,30 @@
     (format "(when %s %s)" (second when-expr) expr)
     expr))
 
+(defn wrap-def [task-name prog last?]
+  (format "(def %s %s) %s"
+          task-name prog
+          (if last?
+            (format "(babashka.tasks/-wait %s)" task-name)
+            task-name)))
+
 (defn assemble-task-1
   "Assembles task, does not process :depends."
-  [task]
-  (cond (qualified-symbol? task)
-        (format "
+  ([task-name task] (assemble-task-1 task-name task nil))
+  ([task-name task last?]
+   (cond (qualified-symbol? task)
+         (let [prog (format "(apply %s *command-line-args*)" task)
+               prog (wrap-def task-name prog last?)
+               prog (format "
 (do (require (quote %s))
-(apply %s *command-line-args*))"
-                (namespace task)
-                task)
-        (map? task)
-        (let [task (:task task)]
-          (assemble-task-1 task))
-        :else task))
+%s)"
+                            (namespace task)
+                            prog)]
+           prog)
+         (map? task)
+         (let [task (:task task)]
+           (assemble-task-1 task-name task last?))
+         :else (wrap-def task-name task last?))))
 
 (defn format-task [init prog]
   (format "
@@ -94,6 +112,9 @@
                (conj order task-name))
            order))))))
 
+(defn deref-task [dep]
+  (format "(babashka.tasks/-wait %s)" dep))
+
 (defn assemble-task [task-name]
   (let [task-name (symbol task-name)
         tasks (get @bb-edn :tasks)
@@ -101,18 +122,27 @@
     (if task
       (let [m? (map? task)
             init (and m? (get tasks :init))
-            prog (if (and m? (:depends task))
+            prog (if-let [depends (when m? (:depends task))]
                    (let [targets (target-order tasks task-name)]
                      (loop [prog ""
                             targets (seq targets)]
-                       (if-let [t (first targets)]
-                         (if-let [task (get tasks t)]
-                           (recur (str prog "\n" (assemble-task-1 task))
-                                  (next targets))
-                           [(binding [*out* *err*]
-                              (println "No such task:" task-name)) 1])
-                         [[(format-task init prog)] nil])))
-                   [[(format-task init (assemble-task-1 task))] nil])]
+                       (let [t (first targets)
+                             targets (next targets)]
+                         (if targets
+                           (if-let [task (get tasks t)]
+                             (recur (str prog "\n" (assemble-task-1 t task))
+                                    targets)
+                             [(binding [*out* *err*]
+                                (println "No such task:" task-name)) 1])
+                           (if-let [task (get tasks t)]
+                             (let [prog (str prog "\n"
+                                             (apply str (map deref-task depends))
+                                             "\n"
+                                             (assemble-task-1 t task true))]
+                               [[(format-task init prog)] nil])
+                             [(binding [*out* *err*]
+                                (println "No such task:" task-name)) 1])))))
+                   [[(format-task init (assemble-task-1 task-name task))] nil])]
         prog)
       [(binding [*out* *err*]
          (println "No such task:" task-name)) 1])))
