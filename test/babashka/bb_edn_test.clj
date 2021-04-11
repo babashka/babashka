@@ -90,11 +90,7 @@
                                    {:task '(+ 1 2 3)
                                     :private true}}}
     (let [res (test-utils/bb nil "tasks")]
-      (is (str/includes? res "The following tasks are available:"))
-      (is (str/includes? res "task1 task1 doc"))
-      (is (str/includes? res "task2 task2 doc"))
-      (is (not (str/includes? res "task3")))
-      (is (not (str/includes? res "task4"))))))
+      (is (= "The following tasks are available:\n\ntask1 task1 doc\ntask2 task2 doc\n" res)))))
 
 ;; TODO:
 ;; Do we want to support the same parsing as the clj CLI?

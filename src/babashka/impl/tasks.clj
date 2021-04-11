@@ -122,10 +122,11 @@
   (let [tasks (:tasks @bb-edn)]
     (if (seq tasks)
       (let [names (keys tasks)
-            raw-names (filter symbol? names)
-            names (map str raw-names)
+            names (filter symbol? names)
+            names (map str names)
             names (remove #(str/starts-with? % "-") names)
             names (remove #(:private (get tasks (symbol %))) names)
+            names (sort names)
             longest (apply max (map count names))
             fmt (str "%1$-" longest "s")]
         (println "The following tasks are available:")
