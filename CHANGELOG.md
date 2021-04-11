@@ -2,6 +2,16 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
+## v0.3.4
+
+Babashka:
+
+- Sort tasks in `bb tasks` output
+
+Deps.clj:
+
+- Fix arg parsing when invoking from Powershell [#42](https://github.com/borkdude/deps.clj/issues/42)
+
 ## v0.3.3
 
 Babashka:
