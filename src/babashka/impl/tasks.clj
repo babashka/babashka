@@ -66,10 +66,15 @@
     (format "(when %s %s)" (second when-expr) expr)
     expr))
 
-(defn wrap-def [task-name prog last?]
-  (format "(def %s (future %s)) %s"
-          task-name prog
-          (if last?
+(defn wrap-future [prog parallel?]
+  (if parallel?
+    (format "(future %s)" prog)
+    prog))
+
+(defn wrap-def [task-name prog parallel? last?]
+  (format "(def %s %s) %s"
+          task-name (wrap-future prog parallel?)
+          (if (and parallel? last?)
             (format "(babashka.tasks/-wait %s)" task-name)
             task-name)))
 
@@ -81,14 +86,14 @@
 
 (defn assemble-task-1
   "Assembles task, does not process :depends."
-  ([task-name task]
-   (assemble-task-1 task-name task nil nil))
-  ([task-name task last?] (assemble-task-1 task-name task last? nil))
-  ([task-name task last? depends]
+  ([task-name task parallel?]
+   (assemble-task-1 task-name task parallel? nil nil))
+  ([task-name task parallel? last?] (assemble-task-1 task-name task parallel? last? nil))
+  ([task-name task parallel? last? depends]
    (cond (qualified-symbol? task)
          (let [prog (format "(apply %s *command-line-args*)" task)
                prog (wrap-depends prog depends)
-               prog (wrap-def task-name prog last?)
+               prog (wrap-def task-name prog parallel? last?)
                prog (format "
 (do (require (quote %s))
 %s)"
@@ -97,9 +102,9 @@
            prog)
          (map? task)
          (let [t (:task task)]
-           (assemble-task-1 task-name t last? (:depends task)))
+           (assemble-task-1 task-name t parallel? last? (:depends task)))
          :else (let [prog (wrap-depends task depends)]
-                 (wrap-def task-name prog last?)))))
+                 (wrap-def task-name prog parallel? last?)))))
 
 (defn format-task [init prog]
   (format "
@@ -122,7 +127,7 @@
                (conj order task-name))
            order))))))
 
-(defn assemble-task [task-name]
+(defn assemble-task [task-name parallel?]
   (let [task-name (symbol task-name)
         tasks (get @bb-edn :tasks)
         task (get tasks task-name)]
@@ -137,7 +142,7 @@
                              targets (next targets)]
                          (if targets
                            (if-let [task (get tasks t)]
-                             (recur (str prog "\n" (assemble-task-1 t task))
+                             (recur (str prog "\n" (assemble-task-1 t task parallel?))
                                     targets)
                              [(binding [*out* *err*]
                                 (println "No such task:" task-name)) 1])
@@ -145,11 +150,11 @@
                              (let [prog (str prog "\n"
                                              (apply str (map deref-task depends))
                                              "\n"
-                                             (assemble-task-1 t task true))]
+                                             (assemble-task-1 t task parallel? true))]
                                [[(format-task init prog)] nil])
                              [(binding [*out* *err*]
                                 (println "No such task:" task-name)) 1])))))
-                   [[(format-task init (assemble-task-1 task-name task true))] nil])]
+                   [[(format-task init (assemble-task-1 task-name task parallel? true))] nil])]
         (when (= "true" (System/getenv "BABASHKA_DEV"))
           (println (ffirst prog)))
         prog)

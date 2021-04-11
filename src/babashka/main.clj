@@ -88,6 +88,7 @@
      "help"
      "doc"
      "tasks"
+     "run"
      "uberjar"
      "uberscript"
      "repl"
@@ -403,6 +404,17 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
 (defn shell-seq [in]
   (line-seq (java.io.BufferedReader. in)))
 
+(defn parse-run-opts [opts-map args]
+  (loop [opts-map opts-map
+         args (seq args)]
+    (if args
+      (let [fst (first args)]
+        (if (= "--parallel" fst)
+          (recur (assoc opts-map :parallel-tasks true)
+                 (next args))
+          (assoc opts-map :run fst :command-line-args (next args))))
+      opts-map)))
+
 (defn parse-opts [options]
   (let [opt (first options)
         tasks (into #{} (map str) (keys (:tasks @common/bb-edn)))]
@@ -413,9 +425,9 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
             (fs/regular-file? opt)
             (if (str/ends-with? opt ".jar")
               {:jar opt
-               :command-line-args (rest options)}
+               :command-line-args (next options)}
               {:file opt
-               :command-line-args (rest options)})
+               :command-line-args (next options)})
             (command? opt)
             (recur (cons (str "--" opt) (next options)))
             :else
@@ -529,9 +541,7 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                                  (recur (next options)
                                         (assoc opts-map :main (first options))))
                                ("--run")
-                               (let [options (next options)]
-                                 (recur (next options)
-                                        (assoc opts-map :run (first options))))
+                               (parse-run-opts opts-map (next options))
                                ("--tasks")
                                (assoc opts-map :list-tasks true
                                       :command-line-args (next options))
@@ -556,7 +566,7 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
 
 (def env (atom {}))
 
-(defn exec [opts]
+(defn exec [cli-opts]
   (binding [*unrestricted* true]
     (sci/binding [core/warn-on-reflection @core/warn-on-reflection
                   core/data-readers @core/data-readers
@@ -570,7 +580,7 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                     :main :uberscript :describe?
                     :jar :uberjar :clojure
                     :doc :run :list-tasks]}
-            opts
+            cli-opts
             _ (when verbose? (vreset! common/verbose? true))
             _ (do ;; set properties
                 (when main (System/setProperty "babashka.main" main))
@@ -658,7 +668,7 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                                    "-main")]
                     [[(format "(ns user (:require [%1$s])) (apply %1$s/%2$s *command-line-args*)"
                               ns var-name)] nil])
-                  run (tasks/assemble-task run)
+                  run (tasks/assemble-task run (:parallel-tasks cli-opts))
                   file (try [[(read-file file)] nil]
                             (catch Exception e
                               (error-handler e {:expression expressions
