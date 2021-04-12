@@ -158,6 +158,7 @@
                 java.nio.ByteOrder
                 java.nio.CharBuffer
                 java.nio.DirectByteBuffer
+                java.nio.HeapByteBuffer
                 java.nio.file.OpenOption
                 java.nio.charset.Charset
                 java.nio.charset.CoderResult
