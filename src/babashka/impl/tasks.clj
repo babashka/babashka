@@ -13,6 +13,12 @@
     (when (not (zero? exit-code))
       (System/exit exit-code))))
 
+(def default-opts
+  {:in :inherit
+   :out :inherit
+   :err :inherit
+   :shutdown p/destroy-tree})
+
 (defn shell [cmd & args]
   (let [[opts cmd args]
         (if (map? cmd)
@@ -25,9 +31,7 @@
                opts)]
     (exit-non-zero
      (p/process (into (p/tokenize cmd) args)
-                (merge {:in :inherit
-                        :out :inherit
-                        :err :inherit} opts)))))
+                (merge default-opts opts)))))
 
 (defn clojure [cmd & args]
   (let [[opts cmd args]
@@ -41,9 +45,7 @@
                opts)]
     (exit-non-zero
      (deps/clojure (into (p/tokenize cmd) args)
-                   (merge {:in :inherit
-                           :out :inherit
-                           :err :inherit} opts)))))
+                   (merge default-opts opts)))))
 
 (defn -wait [res]
   (when res
