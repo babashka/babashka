@@ -155,6 +155,7 @@
           java.net.URLDecoder
           ~@(when features/java-nio?
               '[java.nio.file.OpenOption
+                java.nio.charset.Charset
                 java.nio.file.CopyOption
                 java.nio.file.DirectoryNotEmptyException
                 java.nio.file.FileAlreadyExistsException
