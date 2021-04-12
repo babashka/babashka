@@ -103,12 +103,15 @@
          (map? task)
          (let [t (:task task)]
            (assemble-task-1 task-name t parallel? last? (:depends task)))
-         :else (let [prog (wrap-depends task depends)]
+         :else (let [task (pr-str task)
+                     prog (wrap-depends task depends)]
                  (wrap-def task-name prog parallel? last?)))))
 
 (defn format-task [init prog]
   (format "
-(require '[babashka.tasks :refer [shell clojure]])
+(require '[babashka.tasks :as tasks])
+(def clojure tasks/clojure)
+(def shell tasks/shell)
 %s
 %s"
           (str init)
