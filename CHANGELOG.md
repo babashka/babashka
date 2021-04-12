@@ -6,12 +6,7 @@ For a list of breaking changes, check [here](#breaking-changes).
 
 Babashka:
 
-- Sort tasks in `bb tasks` output
-
-Experimental:
-
-- Add `bb run --parallel <task>`
-- Fix `:init` in  `:tasks`
+- Tasks improvements. See [issue](https://github.com/babashka/babashka/issues/778).
 
 Deps.clj:
 
