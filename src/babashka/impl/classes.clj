@@ -154,8 +154,14 @@
           java.net.URLEncoder
           java.net.URLDecoder
           ~@(when features/java-nio?
-              '[java.nio.file.OpenOption
+              '[java.nio.ByteBuffer
+                java.nio.ByteOrder
+                java.nio.CharBuffer
+                java.nio.DirectByteBuffer
+                java.nio.file.OpenOption
                 java.nio.charset.Charset
+                java.nio.charset.CoderResult
+                java.nio.charset.StandardCharsets
                 java.nio.file.CopyOption
                 java.nio.file.DirectoryNotEmptyException
                 java.nio.file.FileAlreadyExistsException
