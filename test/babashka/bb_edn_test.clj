@@ -60,6 +60,10 @@
         (bb "foo")
         (is (= "quux\nbaz\nbar\nfoo\n" (slurp out)))))
     (fs/delete out)
+    (testing "init test"
+      (test-utils/with-config '{:tasks {:init (def x 1)
+                                        foo x}}
+        (is (= 1 (bb "foo")))))
     ;; Note: this behavior with :when was complex, since the place where :when
     ;; is inserted isn't very intuitive here
     ;; This is why we don't support :when for now

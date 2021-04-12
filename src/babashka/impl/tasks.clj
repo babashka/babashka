@@ -133,7 +133,7 @@
         task (get tasks task-name)]
     (if task
       (let [m? (map? task)
-            init (and m? (get tasks :init))
+            init (get tasks :init)
             prog (if-let [depends (when m? (:depends task))]
                    (let [targets (target-order tasks task-name)]
                      (loop [prog ""
@@ -154,7 +154,9 @@
                                [[(format-task init prog)] nil])
                              [(binding [*out* *err*]
                                 (println "No such task:" task-name)) 1])))))
-                   [[(format-task init (assemble-task-1 task-name task parallel? true))] nil])]
+                   [[(format-task
+                      init
+                      (assemble-task-1 task-name task parallel? true))] nil])]
         (when (= "true" (System/getenv "BABASHKA_DEV"))
           (println (ffirst prog)))
         prog)

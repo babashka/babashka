@@ -8,6 +8,11 @@ Babashka:
 
 - Sort tasks in `bb tasks` output
 
+Experimental:
+
+- Add `bb run --parallel <task>`
+- Fix `:init` in  `:tasks`
+
 Deps.clj:
 
 - Fix arg parsing when invoking from Powershell [#42](https://github.com/borkdude/deps.clj/issues/42)
