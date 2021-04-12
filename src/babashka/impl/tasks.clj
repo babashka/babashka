@@ -79,10 +79,12 @@
             task-name)))
 
 (defn deref-task [dep]
-  (format "(babashka.tasks/-wait %s)" dep))
+  (format "(def %s (babashka.tasks/-wait %s))" dep dep))
 
-(defn wrap-depends [prog depends]
-  (format "(do %s)" (str (str/join "\n" (map deref-task depends)) "\n" prog)))
+(defn wrap-depends [prog depends parallel?]
+  (if parallel?
+    (format "(do %s)" (str (str/join "\n" (map deref-task depends)) "\n" prog))
+    prog))
 
 (defn assemble-task-1
   "Assembles task, does not process :depends."
@@ -92,7 +94,7 @@
   ([task-name task parallel? last? depends]
    (cond (qualified-symbol? task)
          (let [prog (format "(apply %s *command-line-args*)" task)
-               prog (wrap-depends prog depends)
+               prog (wrap-depends prog depends parallel?)
                prog (wrap-def task-name prog parallel? last?)
                prog (format "
 (do (require (quote %s))
@@ -104,7 +106,7 @@
          (let [t (:task task)]
            (assemble-task-1 task-name t parallel? last? (:depends task)))
          :else (let [task (pr-str task)
-                     prog (wrap-depends task depends)]
+                     prog (wrap-depends task depends parallel?)]
                  (wrap-def task-name prog parallel? last?)))))
 
 (defn format-task [init prog]
