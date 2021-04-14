@@ -160,6 +160,7 @@
                 java.nio.file.OpenOption
                 java.nio.charset.Charset
                 java.nio.charset.CoderResult
+                java.nio.charset.CharsetEncoder
                 java.nio.charset.StandardCharsets
                 java.nio.file.CopyOption
                 java.nio.file.DirectoryNotEmptyException
