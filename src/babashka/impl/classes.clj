@@ -309,7 +309,8 @@
                       clojure.lang.Volatile
                       java.util.List
                       java.util.Iterator
-                      java.util.Map$Entry]
+                      java.util.Map$Entry
+                      java.nio.DirectByteBuffer]
     :custom ~custom-map})
 
 (defmacro gen-class-map []

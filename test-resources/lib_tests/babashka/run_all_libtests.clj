@@ -196,6 +196,8 @@
                  'rewrite-clj.zip.subedit-test
                  'rewrite-clj.node.coercer-test)
 
+(test-namespaces 'helins.binf.test)
+
 ;;;; final exit code
 
 (let [{:keys [:test :fail :error] :as m} @status]
