@@ -159,6 +159,7 @@
                 java.nio.ByteOrder
                 java.nio.CharBuffer
                 java.nio.DirectByteBuffer
+                java.nio.DirectByteBufferR
                 java.nio.MappedByteBuffer
                 java.nio.file.OpenOption
                 java.nio.channels.FileChannel
