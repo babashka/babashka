@@ -561,6 +561,32 @@
   (when test-utils/native?
     (is (= 'Something (bb nil "(.print (System/out) \"Something\")")))))
 
+(deftest byte-buffer-test
+  (testing "interop with HeapByteBuffer"
+    (is (= 42 (bb nil "(count (.array (java.nio.ByteBuffer/allocate 42)))"))))
+  (testing "interop with HeapByteByfferR"
+    (is (bb nil "(.hasRemaining (.asReadOnlyBuffer (java.nio.ByteBuffer/allocate 42)))")))
+  (is (bb nil "
+(import 'java.io.RandomAccessFile)
+(import 'java.nio.channels.FileChannel$MapMode)
+(def raf (RandomAccessFile. \"/tmp/binf-example.dat\" \"rw\"))
+;; DirectByteBuffer
+(def view (-> raf .getChannel (.map FileChannel$MapMode/READ_WRITE 0 4)))
+;; interop with DirectByteBuffer
+(.load view)
+(.force view)
+true"))
+  (is (bb nil "
+(import 'java.io.RandomAccessFile)
+(import 'java.nio.channels.FileChannel$MapMode)
+(def raf (RandomAccessFile. \"/tmp/binf-example.dat\" \"r\"))
+;; DirectByteBuffer
+(def view (-> raf .getChannel (.map FileChannel$MapMode/READ_ONLY 0 4)))
+;; interop with DirectByteBufferR
+(.load view)
+(.force view)
+true")))
+
 ;;;; Scratch
 
 (comment

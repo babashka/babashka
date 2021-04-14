@@ -95,6 +95,7 @@
           java.io.FileFilter
           java.io.FilenameFilter
           java.io.FileNotFoundException
+          java.io.RandomAccessFile
           java.io.InputStream
           java.io.IOException
           java.io.OutputStream
@@ -154,7 +155,19 @@
           java.net.URLEncoder
           java.net.URLDecoder
           ~@(when features/java-nio?
-              '[java.nio.file.OpenOption
+              '[java.nio.ByteBuffer
+                java.nio.ByteOrder
+                java.nio.CharBuffer
+                java.nio.DirectByteBuffer
+                java.nio.DirectByteBufferR
+                java.nio.MappedByteBuffer
+                java.nio.file.OpenOption
+                java.nio.channels.FileChannel
+                java.nio.channels.FileChannel$MapMode
+                java.nio.charset.Charset
+                java.nio.charset.CoderResult
+                java.nio.charset.CharsetEncoder
+                java.nio.charset.StandardCharsets
                 java.nio.file.CopyOption
                 java.nio.file.DirectoryNotEmptyException
                 java.nio.file.FileAlreadyExistsException
@@ -344,7 +357,17 @@
                    (instance? java.nio.file.PathMatcher v)
                    java.nio.file.PathMatcher
                    (instance? java.util.stream.BaseStream v)
-                   java.util.stream.BaseStream)))))
+                   java.util.stream.BaseStream
+                   (instance? java.nio.ByteBuffer v)
+                   java.nio.ByteBuffer
+                   (instance? java.nio.charset.Charset v)
+                   java.nio.charset.Charset
+                   (instance? java.nio.charset.CharsetEncoder v)
+                   java.nio.charset.CharsetEncoder
+                   (instance? java.nio.CharBuffer v)
+                   java.nio.CharBuffer
+                   (instance? java.nio.channels.FileChannel v)
+                   java.nio.channels.FileChannel)))))
 
 (def class-map (gen-class-map))
 
