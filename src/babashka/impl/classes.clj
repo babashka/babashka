@@ -95,6 +95,7 @@
           java.io.FileFilter
           java.io.FilenameFilter
           java.io.FileNotFoundException
+          java.io.RandomAccessFile
           java.io.InputStream
           java.io.IOException
           java.io.OutputStream
@@ -159,6 +160,7 @@
                 java.nio.CharBuffer
                 java.nio.MappedByteBuffer
                 java.nio.file.OpenOption
+                java.nio.channels.FileChannel$MapMode
                 java.nio.charset.Charset
                 java.nio.charset.CoderResult
                 java.nio.charset.CharsetEncoder
