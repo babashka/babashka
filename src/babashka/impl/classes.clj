@@ -157,8 +157,6 @@
               '[java.nio.ByteBuffer
                 java.nio.ByteOrder
                 java.nio.CharBuffer
-                java.nio.DirectByteBuffer
-                java.nio.HeapByteBuffer
                 java.nio.file.OpenOption
                 java.nio.charset.Charset
                 java.nio.charset.CoderResult
@@ -352,7 +350,9 @@
                    (instance? java.nio.file.PathMatcher v)
                    java.nio.file.PathMatcher
                    (instance? java.util.stream.BaseStream v)
-                   java.util.stream.BaseStream)))))
+                   java.util.stream.BaseStream
+                   (instance? java.nio.ByteBuffer v)
+                   java.nio.ByteBuffer)))))
 
 (def class-map (gen-class-map))
 
