@@ -157,6 +157,7 @@
               '[java.nio.ByteBuffer
                 java.nio.ByteOrder
                 java.nio.CharBuffer
+                java.nio.MappedByteBuffer
                 java.nio.file.OpenOption
                 java.nio.charset.Charset
                 java.nio.charset.CoderResult
