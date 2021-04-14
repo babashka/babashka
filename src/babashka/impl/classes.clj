@@ -353,7 +353,13 @@
                    (instance? java.util.stream.BaseStream v)
                    java.util.stream.BaseStream
                    (instance? java.nio.ByteBuffer v)
-                   java.nio.ByteBuffer)))))
+                   java.nio.ByteBuffer
+                   (instance? java.nio.charset.Charset v)
+                   java.nio.charset.Charset
+                   (instance? java.nio.charset.CharsetEncoder v)
+                   java.nio.charset.CharsetEncoder
+                   (instance? java.nio.CharBuffer v)
+                   java.nio.CharBuffer)))))
 
 (def class-map (gen-class-map))
 

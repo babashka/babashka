@@ -2,7 +2,6 @@
 ;; License, v. 2.0. If a copy of the MPL was not distributed with this
 ;; file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-
 (ns helins.binf.test
 
   {:author "Adam Helins"}
@@ -12,10 +11,9 @@
             [helins.binf.buffer         :as binf.buffer]
             [helins.binf.int            :as binf.int]
             [helins.binf.int64          :as binf.int64]
-            #?(:clj [helins.binf.native :as binf.native])
+            #?@(:bb [] :clj [[helins.binf.native :as binf.native]])
             [helins.binf.test.buffer    :as binf.test.buffer]
             [helins.binf.test.string    :as binf.test.string]))
-
 
 #?(:clj (set! *warn-on-reflection*
               true))
@@ -42,7 +40,8 @@
          (binf/endian-set :little-endian)))
 
 
-#?(:clj (def view-native
+#?(:bb nil
+   :clj (def view-native
              (binf/endian-set (binf.native/view size)
                               :little-endian)))
 
@@ -53,8 +52,8 @@
                   (binf/endian-set :little-endian))))
 
 
-
-(t/deftest buffer->view
+;; view native not supported in bb
+#_(t/deftest buffer->view
 
   ;; Without offset nor size
   
@@ -137,7 +136,7 @@
 
   ;; With offset
 
-  (let [v (binf/view view
+  #_(let [v (binf/view view
                      offset)
         #?@(:clj [v-native (binf/view view-native
                                       offset)])]
@@ -163,7 +162,7 @@
 
   ;; With offset and size
 
-  (let [v (binf/view view
+  #_(let [v (binf/view view
                      offset
                      size-2)
         #?@(:clj [v-native (binf/view view-native
@@ -199,12 +198,11 @@
 
 
 
-#?(:clj (defn view-8-native
+;; #?(:clj (defn view-8-native
 
-  []
+;;   []
 
-  (binf.native/view 8)))
-
+;;   (binf.native/view 8)))
 
 
 #?(:cljs (defn view-8-shared
@@ -311,7 +309,7 @@
 
 #?(:clj (t/deftest view-uints-native
 
-  (-view-uints view-8-native)))
+  #_(-view-uints view-8-native)))
 
 
 
@@ -329,7 +327,7 @@
 
 #?(:clj (t/deftest view-i64-native
 
-  (-view-i64 view-8-native)))
+  #_(-view-i64 view-8-native)))
 
 
 
@@ -347,7 +345,7 @@
 
 #?(:clj (t/deftest view-f32-native
 
-  (-view-f32 view-8-native)))
+  #_(-view-f32 view-8-native)))
 
 
 
@@ -359,7 +357,7 @@
 
 #?(:clj (t/deftest view-f64-native
 
-  (-view-f64 view-8-native)))
+  #_(-view-f64 view-8-native)))
 
 
 
@@ -447,7 +445,8 @@
 
 
 
-#?(:clj (t/deftest rwa-buffer-native
+#?(:bb nil
+   :clj (t/deftest rwa-buffer-native
 
   (-rwa-buffer (binf.native/view copy-size))))
 
@@ -465,7 +464,8 @@
 
 
 
-#?(:clj (t/deftest rwr-buffer-shared
+#?(:bb nil
+   :clj (t/deftest rwr-buffer-shared
 
   (-rwr-buffer (binf.native/view copy-size))))
 
@@ -564,7 +564,8 @@
 
 
 
-#?(:clj (t/deftest a-string-native
+#?(:bb nil
+   :clj (t/deftest a-string-native
 
   (-a-string #(binf.native/view 1024))))
 
@@ -576,7 +577,8 @@
 
 
 
-#?(:clj (t/deftest r-string-native
+#?(:bb nil
+   :clj (t/deftest r-string-native
 
   (-r-string #(binf.native/view 1024))))
 

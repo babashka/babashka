@@ -10,7 +10,7 @@
   {:author "Adam Helinski"}
 
   (:require [clojure.test                    :as t]
-            [clojure.test.check.clojure-test :as tc.ct]
+            #?@(:bb [] :clj [clojure.test.check.clojure-test :as tc.ct])
             [clojure.test.check.generators   :as tc.gen]
             [clojure.test.check.properties   :as tc.prop]
             [helins.binf.string              :as binf.string]))
@@ -33,7 +33,7 @@
 
 
 
-(tc.ct/defspec gen
+#_(tc.ct/defspec gen
 
   (tc.prop/for-all [string tc.gen/string]
     (= string
