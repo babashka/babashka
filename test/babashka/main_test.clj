@@ -587,6 +587,18 @@ true"))
 (.force view)
 true")))
 
+(deftest secure-random-test
+  (let [prog '(do (import 'java.security.SecureRandom 'java.util.Base64)
+
+                  (let [random (SecureRandom.)
+                        base64 (.withoutPadding (Base64/getUrlEncoder))]
+                    (defn generate-token []
+                      (let [buffer (byte-array 32)]
+                        (.nextBytes random buffer)
+                        (.encodeToString base64 buffer))))
+                  (generate-token))]
+    (is (string? (bb nil (str prog))))))
+
 ;;;; Scratch
 
 (comment
