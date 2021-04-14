@@ -160,6 +160,7 @@
                 java.nio.CharBuffer
                 java.nio.MappedByteBuffer
                 java.nio.file.OpenOption
+                java.nio.channels.FileChannel
                 java.nio.channels.FileChannel$MapMode
                 java.nio.charset.Charset
                 java.nio.charset.CoderResult
@@ -363,7 +364,9 @@
                    (instance? java.nio.charset.CharsetEncoder v)
                    java.nio.charset.CharsetEncoder
                    (instance? java.nio.CharBuffer v)
-                   java.nio.CharBuffer)))))
+                   java.nio.CharBuffer
+                   (instance? java.nio.channels.FileChannel v)
+                   java.nio.channels.FileChannel)))))
 
 (def class-map (gen-class-map))
 
