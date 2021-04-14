@@ -111,13 +111,23 @@
                      prog (wrap-depends task depends parallel?)]
                  (wrap-def task-name prog parallel? last?)))))
 
-(defn format-task [init prog]
+(defn format-task [init requires prog]
   (format "
-(require '[babashka.tasks :as tasks])
-(def clojure tasks/clojure)
-(def shell tasks/shell)
+(ns %s %s)
+(require '[babashka.tasks])
+(when-not (resolve 'clojure)
+  ;; we don't use refer so users can override this
+  (intern *ns* 'clojure babashka.tasks/clojure))
+
+(when-not (resolve 'shell)
+  (intern *ns* 'shell babashka.tasks/shell))
+
 %s
 %s"
+          (gensym "user")
+          (if (seq requires)
+            (format "(:require %s)" (str/join " " requires))
+            "")
           (str init)
           prog))
 
@@ -140,29 +150,34 @@
         task (get tasks task-name)]
     (if task
       (let [m? (map? task)
+            requires (get tasks :requires)
             init (get tasks :init)
             prog (if-let [depends (when m? (:depends task))]
                    (let [targets (target-order tasks task-name)]
                      (loop [prog ""
-                            targets (seq targets)]
+                            targets (seq targets)
+                            requires requires]
                        (let [t (first targets)
                              targets (next targets)]
                          (if targets
                            (if-let [task (get tasks t)]
                              (recur (str prog "\n" (assemble-task-1 t task parallel?))
-                                    targets)
+                                    targets
+                                    (concat requires (:requires task)))
                              [(binding [*out* *err*]
                                 (println "No such task:" task-name)) 1])
                            (if-let [task (get tasks t)]
                              (let [prog (str prog "\n"
                                              (apply str (map deref-task depends))
                                              "\n"
-                                             (assemble-task-1 t task parallel? true))]
-                               [[(format-task init prog)] nil])
+                                             (assemble-task-1 t task parallel? true))
+                                   requires (concat requires (:requires task))]
+                               [[(format-task init requires prog)] nil])
                              [(binding [*out* *err*]
                                 (println "No such task:" task-name)) 1])))))
                    [[(format-task
                       init
+                      (concat requires (:requires task))
                       (assemble-task-1 task-name task parallel? true))] nil])]
         (when (= "true" (System/getenv "BABASHKA_DEV"))
           (println (ffirst prog)))

@@ -64,6 +64,17 @@
       (test-utils/with-config '{:tasks {:init (def x 1)
                                         foo x}}
         (is (= 1 (bb "foo")))))
+    (testing "requires test"
+      (test-utils/with-config '{:tasks {:requires ([babashka.fs :as fs])
+                                        foo (fs/exists? ".")}}
+        (is (= true (bb "foo"))))
+      (test-utils/with-config '{:tasks {foo {:requires ([babashka.fs :as fs])
+                                             :task (fs/exists? ".")}}}
+        (is (= true (bb "foo"))))
+      (test-utils/with-config '{:tasks {bar {:requires ([babashka.fs :as fs])}
+                                        foo {:depends [bar]
+                                             :task (fs/exists? ".")}}}
+        (is (= true (bb "foo")))))
     ;; Note: this behavior with :when was complex, since the place where :when
     ;; is inserted isn't very intuitive here
     ;; This is why we don't support :when for now
