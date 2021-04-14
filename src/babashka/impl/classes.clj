@@ -158,6 +158,7 @@
               '[java.nio.ByteBuffer
                 java.nio.ByteOrder
                 java.nio.CharBuffer
+                java.nio.DirectByteBuffer
                 java.nio.MappedByteBuffer
                 java.nio.file.OpenOption
                 java.nio.channels.FileChannel
@@ -314,8 +315,7 @@
                       clojure.lang.Volatile
                       java.util.List
                       java.util.Iterator
-                      java.util.Map$Entry
-                      java.nio.DirectByteBuffer]
+                      java.util.Map$Entry]
     :custom ~custom-map})
 
 (defmacro gen-class-map []
