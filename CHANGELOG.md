@@ -8,6 +8,11 @@ For a list of breaking changes, check [here](#breaking-changes).
 - Tasks improvements. See [issue](https://github.com/babashka/babashka/issues/778).
 - Add `java.security.SecureRandom` #790
 
+Sci:
+
+- Add `aset-byte`, `aset-boolean`, `aset-short`, etc.
+- Add `bit-clear`
+
 ## v0.3.4
 
 Babashka:
