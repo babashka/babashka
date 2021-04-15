@@ -2,7 +2,7 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
-## Unreleased
+## 0.3.5
 
 - Support [binf.cljc](https://github.com/helins/binf.cljc) library by adding `ByteBuffer` and `Charset`-related classes [#784](https://github.com/babashka/babashka/issues/784)
 - Tasks improvements. See [issue](https://github.com/babashka/babashka/issues/778).
