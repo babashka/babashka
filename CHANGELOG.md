@@ -12,6 +12,7 @@ Sci:
 
 - Add `aset-byte`, `aset-boolean`, `aset-short`, etc.
 - Add `bit-clear`
+- Add `bound-fn` and `bound-fn*`
 
 ## v0.3.4
 
