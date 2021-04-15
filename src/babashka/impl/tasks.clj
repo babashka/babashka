@@ -153,7 +153,8 @@
             requires (get tasks :requires)
             init (get tasks :init)
             prog (if-let [depends (when m? (:depends task))]
-                   (let [targets (target-order tasks task-name)]
+                   (let [targets (target-order tasks task-name)
+                         parallel? (or parallel? (set? depends))]
                      (loop [prog ""
                             targets (seq targets)
                             requires requires]
