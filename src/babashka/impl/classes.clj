@@ -256,7 +256,9 @@
           ~(symbol "[I")
           ~(symbol "[Ljava.lang.Object;")
           ~@(when features/yaml? '[org.yaml.snakeyaml.error.YAMLException])
-          ~@(when features/hsqldb? '[org.hsqldb.jdbcDriver])]
+          ~@(when features/hsqldb? '[org.hsqldb.jdbcDriver])
+          ~@(when-let [c (resolve 'org.graalvm.nativeimage.ProcessProperties)]
+              [c])]
     :constructors [clojure.lang.Delay
                    clojure.lang.MapEntry
                    clojure.lang.LineNumberingPushbackReader
