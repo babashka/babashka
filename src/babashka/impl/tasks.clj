@@ -28,10 +28,13 @@
                (if (string? o)
                  (update opts :out io/file)
                  opts)
-               opts)]
+               opts)
+        cmd (if (.exists (io/file cmd))
+              [cmd]
+              (p/tokenize cmd))
+        cmd (into cmd args)]
     (exit-non-zero
-     (p/process (into (p/tokenize cmd) args)
-                (merge default-opts opts)))))
+     (p/process cmd (merge default-opts opts)))))
 
 (defn clojure [cmd & args]
   (let [[opts cmd args]
@@ -42,10 +45,13 @@
                (if (string? o)
                  (update opts :out io/file)
                  opts)
-               opts)]
+               opts)
+        cmd (if (.exists (io/file cmd))
+              [cmd]
+              (p/tokenize cmd))
+        cmd (into cmd args)]
     (exit-non-zero
-     (deps/clojure (into (p/tokenize cmd) args)
-                   (merge default-opts opts)))))
+     (deps/clojure cmd (merge default-opts opts)))))
 
 (defn -wait [res]
   (when res
