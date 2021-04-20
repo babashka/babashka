@@ -1,0 +1,22 @@
+{:deps {borkdude/gh-release-artifact
+        {:local/root "../gh-release-artifact"}
+        #_{:git/url "https://github.com/borkdude/gh-release-artifact"
+                                      :sha "058b90f559bd1480faf569d31404409aca801690"}}
+ :tasks {:requires ([clojure.string :as str])
+         -current-sha {:requires ([clojure.java.shell :refer [sh]])
+                       :task (-> (sh "git" "rev-parse" "HEAD")
+                                 :out
+                                 str/trim)}
+         -current-version {:task (-> (slurp "resources/BABASHKA_VERSION")
+                                     str/trim)}
+         -github-token (if-let [ght (System/getenv "GITHUB_TOKEN")]
+                         ght
+                         (do
+                           (println "Terminating early since GITHUB_TOKEN wasn't set")
+                           (System/exit 0)))
+         release-artifact {:requires ([borkdude.gh-release-artifact :as ghr])
+                           :depends [-github-token -current-sha -current-version]
+                           :task (ghr/overwrite-asset {:file "babashka-0.3.5-reflection.json"
+                                                       :content-type "application/json"
+                                                       :commit -current-sha
+                                                       :tag (str "v" -current-version)})}}}
