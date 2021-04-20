@@ -1,7 +1,7 @@
 {:deps {borkdude/gh-release-artifact
-        {:local/root "../gh-release-artifact"}
-        #_{:git/url "https://github.com/borkdude/gh-release-artifact"
-                                      :sha "058b90f559bd1480faf569d31404409aca801690"}}
+        #_{:local/root "../gh-release-artifact"}
+        {:git/url "https://github.com/borkdude/gh-release-artifact"
+         :sha "bfc2e781e5c3969eadc168821a773c48d5676da3"}}
  :tasks {:requires ([clojure.string :as str])
          -current-sha {:requires ([clojure.java.shell :refer [sh]])
                        :task (-> (sh "git" "rev-parse" "HEAD")
@@ -16,7 +16,16 @@
                            (System/exit 0)))
          release-artifact {:requires ([borkdude.gh-release-artifact :as ghr])
                            :depends [-github-token -current-sha -current-version]
-                           :task (ghr/overwrite-asset {:file "babashka-0.3.5-reflection.json"
-                                                       :content-type "application/json"
-                                                       :commit -current-sha
-                                                       :tag (str "v" -current-version)})}}}
+                           :task (let [file (first *command-line-args*)]
+                                   (assert file "File name must be provided")
+                                   (ghr/overwrite-asset {:org "babashka"
+                                                         :repo "babashka"
+                                                         :file file
+                                                         :content-type (cond
+                                                                         (str/ends-with? file ".zip")
+                                                                         "application/zip"
+                                                                         (str/ends-with? file ".tar.gz")
+                                                                         "application/tar+gzip")
+                                                         :commit -current-sha
+                                                         :tag (str "v" -current-version)})
+                                   nil)}}}
