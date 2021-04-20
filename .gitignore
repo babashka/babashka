@@ -32,3 +32,4 @@ org_babashka*.h
 !test-resources/divide_by_zero.jar
 .envrc
 .lsp
+bb.build_artifacts.txt
