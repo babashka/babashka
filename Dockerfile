@@ -3,13 +3,13 @@ FROM clojure:lein-2.9.1 AS BASE
 RUN apt update
 RUN apt install --no-install-recommends -yy curl unzip build-essential zlib1g-dev
 WORKDIR "/opt"
-RUN curl -sLO https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.0.0/graalvm-ce-java11-linux-amd64-21.0.0.tar.gz
-RUN tar -xzf graalvm-ce-java11-linux-amd64-21.0.0.tar.gz
+RUN curl -sLO https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.1.0/graalvm-ce-java11-linux-amd64-21.1.0.tar.gz
+RUN tar -xzf graalvm-ce-java11-linux-amd64-21.1.0.tar.gz
 
 ARG BABASHKA_XMX="-J-Xmx3g"
 
-ENV GRAALVM_HOME="/opt/graalvm-ce-java11-21.0.0"
-ENV JAVA_HOME="/opt/graalvm-ce-java11-21.0.0/bin"
+ENV GRAALVM_HOME="/opt/graalvm-ce-java11-21.1.0"
+ENV JAVA_HOME="/opt/graalvm-ce-java11-21.1.0/bin"
 ENV PATH="$JAVA_HOME:$PATH"
 ENV BABASHKA_XMX=$BABASHKA_XMX
 
