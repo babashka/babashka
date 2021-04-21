@@ -18,18 +18,23 @@
    (apply test-utils/bb (when (some? input) (str input)) (map str args))))
 
 (deftest parse-opts-test
-  (is (= {:nrepl "1667"}
-         (main/parse-opts ["--nrepl-server"])))
-  (is (= {:socket-repl "1666"}
-         (main/parse-opts ["--socket-repl"])))
+  (is (= "1667"
+         (:nrepl (main/parse-opts ["--nrepl-server"]))))
+  (is (= "1666"
+         (:socket-repl (main/parse-opts ["--socket-repl"]))))
   (is (= {:nrepl "1667", :classpath "src"}
          (main/parse-opts ["--nrepl-server" "-cp" "src"])))
+  (is (= {:nrepl "1667", :classpath "src"}
+         (main/parse-opts ["-cp" "src" "nrepl-server"])))
   (is (= {:socket-repl "1666", :expressions ["123"]}
          (main/parse-opts ["--socket-repl" "-e" "123"])))
-  (is (= {:socket-repl "1666", :expressions ["123"]}
+  (is (= {:classpath nil, :socket-repl "1666", :expressions ["123"]}
          (main/parse-opts ["--socket-repl" "1666" "-e" "123"])))
-  (is (= {:nrepl "1666", :expressions ["123"]}
+  (is (= {:classpath nil :nrepl "1666", :expressions ["123"]}
          (main/parse-opts ["--nrepl-server" "1666" "-e" "123"])))
+  (is (= {:classpath "src"
+          :uberjar "foo.jar"}
+         (main/parse-opts ["--classpath" "src" "uberjar" "foo.jar"])))
   (is (= 123 (bb nil "(println 123)")))
   (is (= 123 (bb nil "-e" "(println 123)")))
   (is (= 123 (bb nil "--eval" "(println 123)")))
