@@ -171,6 +171,13 @@ scoop bucket add extras
 scoop install babashka
 ```
 
+### asdf
+
+There's an [asdf](https://github.com/asdf-vm/asdf) plugin for babashka.
+
+    asdf plugin add babashka
+    asdf install babashka latest
+
 ### Installer script
 
 Install via the installer script:
