@@ -1,26 +1,7 @@
-{:deps {borkdude/gh-release-artifact
+{:paths ["script"]
+ :deps {borkdude/gh-release-artifact
         #_{:local/root "../gh-release-artifact"}
         {:git/url "https://github.com/borkdude/gh-release-artifact"
-         :sha "fc00f75f4ba9ab6bd9f228e9ed288e019a534e0c"}}
+         :sha "2f8898d84126a4e922c490f8614211a8b0cf67cd"}}
  :tasks {:requires ([clojure.string :as str])
-         -current-sha {:requires ([clojure.java.shell :refer [sh]])
-                       :task (-> (sh "git" "rev-parse" "HEAD")
-                                 :out
-                                 str/trim)}
-         -current-version {:task (-> (slurp "resources/BABASHKA_VERSION")
-                                     str/trim)}
-         -github-token (if-let [ght (System/getenv "GITHUB_TOKEN")]
-                         ght
-                         (do
-                           (println "Terminating early since GITHUB_TOKEN wasn't set")
-                           (System/exit 0)))
-         release-artifact {:requires ([borkdude.gh-release-artifact :as ghr])
-                           :depends [-github-token -current-sha -current-version]
-                           :task (let [file (first *command-line-args*)]
-                                   (assert file "File name must be provided")
-                                   (ghr/overwrite-asset {:org "babashka"
-                                                         :repo "babashka"
-                                                         :file file
-                                                         :commit -current-sha
-                                                         :tag (str "v" -current-version)})
-                                   nil)}}}
+         release-artifact babashka.release-artifact/release}}
