@@ -29,4 +29,5 @@ BABASHKA_EDN=".build/bb.edn" ./bb release-artifact "/tmp/release/$archive"
 
 ## cleanup
 
+cd /tmp/release
 rm bb # bbk
