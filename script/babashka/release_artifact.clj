@@ -19,6 +19,6 @@
           (ghr/overwrite-asset {:org "babashka"
                                 :repo "babashka"
                                 :file file
-                                :tag (str "vx" current-version)}))
+                                :tag (str "v" current-version)}))
       (println "Skipping release artifact (no GITHUB_TOKEN or not on main branch)"))
     nil))
