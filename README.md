@@ -155,6 +155,15 @@ Upgrade:
 
     yay -S babashka-bin
 
+### asdf
+
+[asdf](https://github.com/asdf-vm/asdf) is an extendable version manager for linux and macOS.
+
+Babashka can be installed using a plugin as follows:
+
+    asdf plugin add babashka
+    asdf install babashka latest
+
 ### Windows
 
 On Windows you can install using [scoop](https://scoop.sh/) and the
@@ -170,13 +179,6 @@ scoop bucket add scoop-clojure https://github.com/littleli/scoop-clojure
 scoop bucket add extras
 scoop install babashka
 ```
-
-### asdf
-
-There's an [asdf](https://github.com/asdf-vm/asdf) plugin for babashka.
-
-    asdf plugin add babashka
-    asdf install babashka latest
 
 ### Installer script
 
