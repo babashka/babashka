@@ -765,11 +765,13 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
             (spit uberscript-out preloads :append true)
             (spit uberscript-out expression :append true)))
         (when uberjar
-          (uberjar/run {:dest uberjar
-                        :jar :uber
-                        :classpath (cp/get-classpath)
-                        :main-class main
-                        :verbose verbose?}))
+          (if-let [cp (cp/get-classpath)]
+            (uberjar/run {:dest uberjar
+                          :jar :uber
+                          :classpath cp
+                          :main-class main
+                          :verbose verbose?})
+            (throw (Exception. "The uberjar task needs a classpath."))))
         exit-code))))
 
 (defn main [& args]
