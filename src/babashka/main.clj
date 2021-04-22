@@ -560,7 +560,8 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                                 (assoc opts-map :list-tasks true
                                        :command-line-args (next options))
                                 ;; fallback
-                                (if (some opts-map [:file :jar :socket-repl :expressions :main :run])
+                                (if (and opts-map
+                                         (some opts-map [:file :jar :socket-repl :expressions :main :run]))
                                   (assoc opts-map
                                          :command-line-args options)
                                   (let [trimmed-opt (str/triml opt)

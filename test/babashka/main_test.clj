@@ -28,9 +28,9 @@
          (main/parse-opts ["-cp" "src" "nrepl-server"])))
   (is (= {:socket-repl "1666", :expressions ["123"]}
          (main/parse-opts ["--socket-repl" "-e" "123"])))
-  (is (= {:classpath nil, :socket-repl "1666", :expressions ["123"]}
+  (is (= {:socket-repl "1666", :expressions ["123"]}
          (main/parse-opts ["--socket-repl" "1666" "-e" "123"])))
-  (is (= {:classpath nil :nrepl "1666", :expressions ["123"]}
+  (is (= {:nrepl "1666", :expressions ["123"]}
          (main/parse-opts ["--nrepl-server" "1666" "-e" "123"])))
   (is (= {:classpath "src"
           :uberjar "foo.jar"}
