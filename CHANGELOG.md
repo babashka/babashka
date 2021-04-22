@@ -2,6 +2,16 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
+## Unreleased
+
+- Add check for arg count to for macro [#767](https://github.com/babashka/babashka/issues/767)
+- Ignore empty classpath entries #780
+- Fix uberjar CLI parsing and throw when no classpath is provided #780
+
+Deps.clj:
+
+- Windows fixes
+
 ## 0.3.5
 
 - Support [binf.cljc](https://github.com/helins/binf.cljc) library by adding `ByteBuffer` and `Charset`-related classes [#784](https://github.com/babashka/babashka/issues/784)
