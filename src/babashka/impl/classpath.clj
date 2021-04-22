@@ -47,9 +47,10 @@
     (path-from-jar jar-file resource-paths opts)))
 
 (defn part->entry [part]
-  (if (str/ends-with? part ".jar")
-    (JarFileResolver. (io/file part))
-    (DirectoryResolver. (io/file part))))
+  (when-not (str/blank? part)
+    (if (str/ends-with? part ".jar")
+      (JarFileResolver. (io/file part))
+      (DirectoryResolver. (io/file part)))))
 
 (deftype Loader [entries]
   IResourceResolver
@@ -62,7 +63,7 @@
 
 (defn loader [^String classpath]
   (let [parts (.split classpath path-sep)
-        entries (map part->entry parts)]
+        entries (keep part->entry parts)]
     (Loader. entries)))
 
 (defn source-for-namespace [loader namespace opts]

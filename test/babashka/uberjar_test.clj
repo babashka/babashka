@@ -4,6 +4,13 @@
    [clojure.string :as str]
    [clojure.test :as t :refer [deftest is testing]]))
 
+(defn count-entries [jar]
+  (with-open [jar-file (java.util.jar.JarFile. jar)]
+    (count (map #_prn
+                identity
+                (enumeration-seq
+                 (.entries jar-file))))))
+
 (deftest uberjar-test
   (testing "uberjar with --main"
     (let [tmp-file (java.io.File/createTempFile "uber" ".jar")
@@ -36,4 +43,18 @@
         ;; running
         (is (= "(\"42\")\n" (tu/bb nil "--jar" path "-m" "my.main-main" "42")))
         (is (= "(\"42\")\n" (tu/bb nil "--classpath" path "-m" "my.main-main" "42")))
-        (is (= "(\"42\")\n" (tu/bb nil path "42")))))))
+        (is (= "(\"42\")\n" (tu/bb nil path "42"))))))
+  (testing "throw on empty classpath"
+    (let [tmp-file (java.io.File/createTempFile "uber" ".jar")
+          path (.getPath tmp-file)]
+      (.deleteOnExit tmp-file)
+      (is (thrown-with-msg?
+           Exception #"classpath"
+           (tu/bb nil "uberjar" path "-m" "my.main-main")))))
+  (testing "ignore empty entries on classpath"
+    (let [tmp-file (java.io.File/createTempFile "uber" ".jar")
+          path (.getPath tmp-file)]
+      (.deleteOnExit tmp-file)
+      (tu/bb nil "--classpath" ":::" "uberjar" path "-m" "my.main-main")
+      ;; Only a manifest entry is added
+      (is (< (count-entries path) 3)))))
