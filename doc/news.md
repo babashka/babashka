@@ -13,7 +13,6 @@ Twitter.
 - [Sort requires and imports](https://gist.github.com/laurio/01530ea7700752885df21e92bb926f75) using rewrite-clj
 - Babashka [tasks proposal](https://github.com/babashka/babashka/issues/778), available in babashka 0.3.5
 - A new useful function in `babashka.fs`: [modified-since](https://babashka.org/fs/babashka.fs.html#var-modified-since)
-
 - Using babashka [for animations](https://twitter.com/RustyVermeer/status/1385269161106972673)
 - [rewrite-edn](https://github.com/borkdude/rewrite-edn) is now compatible with babashka
 
