@@ -7,8 +7,15 @@ Twitter.
 
 ## 2021-04
 
-- Babashka 0.3.2 released. See [CHANGELOG.md](https://github.com/babashka/babashka/blob/master/CHANGELOG.md). Highlights: rewrite-clj.
+- Babashka 0.3.2 - 0.3.5 released. See [CHANGELOG.md](https://github.com/babashka/babashka/blob/master/CHANGELOG.md). Highlights:
+     - Add [rewrite-clj](https://github.com/clj-commons/rewrite-clj).
+     - Support for the [binf](https://github.com/helins/binf.cljc) library.
 - [Sort requires and imports](https://gist.github.com/laurio/01530ea7700752885df21e92bb926f75) using rewrite-clj
+- Babashka [tasks proposal](https://github.com/babashka/babashka/issues/778), available in babashka 0.3.5
+- A new useful function in `babashka.fs`: [modified-since](https://babashka.org/fs/babashka.fs.html#var-modified-since)
+
+- Using babashka [for animations](https://twitter.com/RustyVermeer/status/1385269161106972673)
+- [rewrite-edn](https://github.com/borkdude/rewrite-edn) is now compatible with babashka
 
 ## 2021-03
 

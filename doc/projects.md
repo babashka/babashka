@@ -36,6 +36,8 @@ The following libraries and projects are known to work with babashka.
     - [failjure](#failjure)
     - [pretty](#pretty)
     - [clojure-term-colors](#clojure-term-colors)
+    - [binf](#binf)
+    - [rewrite-edn](#rewrite-edn)
   - [Pods](#pods)
   - [Projects](#projects-1)
     - [babashka-test-action](#babashka-test-action)
@@ -56,6 +58,7 @@ The following libraries and projects are known to work with babashka.
     - [turtlequeue/setup-babashka](#turtlequeuesetup-babashka)
     - [interdep](#interdep)
     - [sha-words](#sha-words)
+    - [adam-james-v/scripts](#adam-james-vscripts)
 
 Also keep an eye on the [news](news.md) page for new projects, gists and other
 developments around babashka.
@@ -488,6 +491,29 @@ Clojure ASCII color formatting for terminal output.
  "No color")
 ```
 
+### [binf](https://github.com/helins/binf.cljc)
+
+Handling binary formats in all shapes and forms.
+
+### [rewrite-edn](https://github.com/borkdude/rewrite-edn)
+
+Rewrite EDN with preservation of whitespace, based on rewrite-clj.
+
+Example:
+
+``` clojure
+#!/usr/bin/env bb
+
+(require '[babashka.deps :as deps])
+(deps/add-deps '{:deps {borkdude/rewrite-edn {:mvn/version "0.0.2"}}})
+(require '[borkdude.rewrite-edn :as r])
+
+(def edn-string (slurp "deps.edn"))
+(def nodes (r/parse-string edn-string))
+
+(println (str (r/assoc-in nodes [:deps 'my-other-dep] {:mvn/version "0.1.2"})))
+```
+
 ## Pods
 
 [Babashka pods](https://github.com/babashka/babashka.pods) are programs that can
@@ -589,3 +615,7 @@ Manage interdependent dependencies using Clojure's tools.deps and babashka.
 ### [sha-words](https://github.com/ordnungswidrig/sha-words)
 
 A clojure program to turn a sha hash into list of nouns in a predictable jar.
+
+### [adam-james-v/scripts](https://github.com/adam-james-v/scripts)
+
+A collection of useful scripts. Mainly written with Clojure/babashka
