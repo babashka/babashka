@@ -7,7 +7,7 @@
             [sci.core :as sci]))
 
 (def sci-ns (sci/create-ns 'babashka.tasks nil))
-(def default-log-level :error)
+(def default-log-level :info)
 (def log-level (sci/new-dynamic-var '*-log-level* default-log-level {:ns sci-ns}))
 (def task-name (sci/new-dynamic-var '*-task-name* nil {:ns sci-ns}))
 
