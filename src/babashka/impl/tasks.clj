@@ -17,7 +17,7 @@
         ;; do not log when level is :error
         (identical? :info log-level)
       (binding [*out* *err*]
-        (println ">" (str/join " " strs))))))
+        (println (format "[bb %s]" @task-name) (str/join " " strs))))))
 
 (defn log-error [& strs]
   (let [log-level @log-level]
@@ -26,7 +26,7 @@
            (identical? :info @log-level)
            (identical? :error @log-level))
       (binding [*out* *err*]
-        (println ">" (str/join " " strs))))))
+        (println (format "[bb %s]" @task-name) (str/join " " strs))))))
 
 (defn- exit-non-zero [proc]
   (when-let [exit-code (some-> proc deref :exit)]
@@ -75,7 +75,7 @@
         cmd (into cmd args)
         local-log-level (:log-level opts)]
     (sci/binding [log-level (or local-log-level @log-level)]
-      (apply log-info (cons "clojure" cmd))
+      (apply log-info cmd)
       (exit-non-zero (deps/clojure cmd (merge default-opts opts))))))
 
 (defn -wait [res]
@@ -106,7 +106,7 @@
 (defn wrap-body [task-name prog parallel? log-level]
   (format "(binding [babashka.tasks/*-task-name* \"%s\"
   babashka.tasks/*-log-level* %s]
-  (babashka.tasks/-log-info babashka.tasks/*-task-name*)
+  (babashka.tasks/-log-info \"Starting\")
   %s)" task-name
           log-level
           (if parallel?
