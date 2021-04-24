@@ -7,7 +7,7 @@
             [sci.core :as sci]))
 
 (def sci-ns (sci/create-ns 'babashka.tasks nil))
-(def default-log-level :info)
+(def default-log-level :error)
 (def log-level (sci/new-dynamic-var '*-log-level* default-log-level {:ns sci-ns}))
 (def task-name (sci/new-dynamic-var '*-task-name* nil {:ns sci-ns}))
 
@@ -106,7 +106,7 @@
 (defn wrap-body [task-name prog parallel? log-level]
   (format "(binding [babashka.tasks/*-task-name* \"%s\"
   babashka.tasks/*-log-level* %s]
-  (babashka.tasks/-log-info \"Starting\")
+  (babashka.tasks/-log-info)
   %s)" task-name
           log-level
           (if parallel?
