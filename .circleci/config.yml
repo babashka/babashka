@@ -56,7 +56,13 @@ jobs:
             mkdir -p /tmp/release
             script/uberjar
             VERSION=$(cat resources/BABASHKA_VERSION)
-            cp target/babashka-$VERSION-standalone.jar /tmp/release/babashka-$VERSION-standalone.jar
+            jar=target/babashka-$VERSION-standalone.jar
+            cp $jar /tmp/release
+
+            java -jar $jar script/reflection.clj
+            reflection="babashka-$VERSION-reflection.json"
+            BABASHKA_EDN=".build/bb.edn" java -jar "$jar" release-artifact "$jar"
+            BABASHKA_EDN=".build/bb.edn" java -jar "$jar" release-artifact "$reflection"
       - store_artifacts:
           path: /tmp/release
           destination: release

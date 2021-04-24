@@ -55,6 +55,3 @@ call %GRAALVM_HOME%\bin\native-image.cmd ^
 if %errorlevel% neq 0 exit /b %errorlevel%
 
 call bb "(+ 1 2 3)"
-
-echo Creating zip archive
-jar -cMf babashka-%BABASHKA_VERSION%-windows-amd64.zip bb.exe

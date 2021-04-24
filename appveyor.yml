@@ -52,6 +52,16 @@ build_script:
 
     call script/compile.bat
 
+    echo Creating zip archive
+
+    set zip=babashka-%BABASHKA_VERSION%-windows-amd64.zip
+
+    jar -cMf %zip% bb.exe
+
+    set BABASHKA_EDN=.build/bb.edn
+
+    bb release-artifact %zip%
+
 # - cmd: >-
 #     lein clean
 

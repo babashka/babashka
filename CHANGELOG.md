@@ -2,11 +2,27 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
+## Unreleased
+
+- Add check for arg count to for macro [#767](https://github.com/babashka/babashka/issues/767)
+- Ignore empty classpath entries [#780](https://github.com/babashka/babashka/issues/780)
+- Fix uberjar CLI parsing and throw when no classpath is provided [#780](https://github.com/babashka/babashka/issues/780)
+- Fix task priortiy (file > task > subcommand) [#800](https://github.com/babashka/babashka/issues/800)
+
+Deps.clj:
+
+- Windows fixes
+
+Babashka.fs:
+
+- Allow dir as dest in `copy` [#24](https://github.com/babashka/fs/issues/24)
+- Allow dir as dest in `move` [#25](https://github.com/babashka/fs/issues/25)
+
 ## 0.3.5
 
 - Support [binf.cljc](https://github.com/helins/binf.cljc) library by adding `ByteBuffer` and `Charset`-related classes [#784](https://github.com/babashka/babashka/issues/784)
 - Tasks improvements. See [issue](https://github.com/babashka/babashka/issues/778).
-- Add `java.security.SecureRandom` #790
+- Add `java.security.SecureRandom` [#790](https://github.com/babashka/babashka/issues/790)
 
 Sci:
 

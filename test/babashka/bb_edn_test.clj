@@ -1,6 +1,8 @@
 (ns babashka.bb-edn-test
   (:require
    [babashka.fs :as fs]
+   [babashka.impl.common :as common]
+   [babashka.main :as main]
    [babashka.test-utils :as test-utils]
    [clojure.edn :as edn]
    [clojure.string :as str]
@@ -106,6 +108,20 @@
                                     :private true}}}
     (let [res (test-utils/bb nil "tasks")]
       (is (= "The following tasks are available:\n\ntask1 task1 doc\ntask2 task2 doc\n" res)))))
+
+(deftest task-priority-test
+  (when-not test-utils/native?
+    (testing "FILE > TASK > SUBCOMMAND"
+      (is (= "foo.jar" (:uberjar (main/parse-opts ["uberjar" "foo.jar"]))))
+      (test-utils/with-config '{:tasks {uberjar (+ 1 2 3)}}
+        (vreset! common/bb-edn (edn/read-string (slurp test-utils/*bb-edn-path*)))
+        (is (= "uberjar" (:run (main/parse-opts ["uberjar"])))))
+      (try
+        (test-utils/with-config '{:tasks {uberjar (+ 1 2 3)}}
+          (spit "uberjar" "#!/usr/bin/env bb\n(+ 1 2 3)")
+          (vreset! common/bb-edn (edn/read-string (slurp test-utils/*bb-edn-path*)))
+          (is (= "uberjar" (:file (main/parse-opts ["uberjar"])))))
+        (finally (fs/delete "uberjar"))))))
 
 ;; TODO:
 ;; Do we want to support the same parsing as the clj CLI?

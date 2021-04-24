@@ -81,6 +81,24 @@ To progress work on sqlite and mySQL, I need a working Clojure example. If you
 want to contribute, consider making a an example Clojure GraalVM CLI that puts
 something in a sqlite / mysql DB and reads something from it.
 
+## ADR
+
+Some decisions:
+
+### bb.edn
+
+- We chose the name `bb.edn` (rather than `babashka.edn`) for the configuration
+  file based on this
+  [poll](https://twitter.com/borkdude/status/1374720217608302595). The name `bb`
+  combined with `.edn` is not likely to cause conflicts with other tools.
+- We did not choose to put the babashka configuration in `deps.edn` to keep bb config isolated (and more flexible) and also support it in projects that do not use `deps.edn`
+
+### .babashka
+
+- Rather than naming the home config dir `~/.bb` we chose `~/.babashka` to
+  prevent conflicts with other global tools. We might introduce a project local
+  `~/.babashka` directory for storing caches or whatnot too.
+
 ## Binary size
 
 Keep notes here about how adding libraries and classes to Babashka affects the binary size.
