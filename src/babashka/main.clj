@@ -735,7 +735,7 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                        repl [(repl/start-repl! sci-ctx) 0]
                        nrepl [(start-nrepl! nrepl sci-ctx) 0]
                        uberjar [nil 0]
-                       list-tasks [(tasks/list-tasks) 0]
+                       list-tasks [(tasks/list-tasks sci-ctx) 0]
                        expressions
                        (sci/binding [sci/file abs-path]
                          (try

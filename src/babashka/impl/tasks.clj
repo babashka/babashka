@@ -235,7 +235,7 @@
          (println "No such task:" task-name)) 1])))
 
 (defn list-tasks
-  []
+  [sci-ctx]
   (let [tasks (:tasks @bb-edn)]
     (if (seq tasks)
       (let [names (keys tasks)
@@ -251,7 +251,11 @@
         (doseq [k names
                 :let [task (get tasks (symbol k))]]
           (let [task (if (qualified-symbol? task)
-                       {:doc (format "Runs %s. See `bb doc %s` for more info." task task)}
+                       {:doc (sci/eval-string*
+                              sci-ctx
+                              (format "
+(try (require '%s) (catch Exception _ nil))
+(:doc (meta (resolve '%s)))" (namespace task) task))}
                        task)]
             (println (str (format fmt k)
                           (when-let [d (:doc task)]
