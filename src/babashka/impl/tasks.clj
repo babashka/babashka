@@ -100,22 +100,22 @@
    (assemble-task-1 task-name task parallel? nil nil))
   ([task-name task parallel? last?] (assemble-task-1 task-name task parallel? last? nil))
   ([task-name task parallel? last? depends]
-   (cond (qualified-symbol? task)
-         (let [prog (format "(apply %s *command-line-args*)" task)
-               prog (wrap-depends prog depends parallel?)
-               prog (wrap-def task-name prog parallel? last?)
-               prog (format "
+   (let [[task depends] (if (map? task)
+                          [(:task task) (:depends task)]
+                          [task depends])]
+     (if (qualified-symbol? task)
+       (let [prog (format "(apply %s *command-line-args*)" task)
+             prog (wrap-depends prog depends parallel?)
+             prog (wrap-def task-name prog parallel? last?)
+             prog (format "
 (do (require (quote %s))
 %s)"
-                            (namespace task)
-                            prog)]
-           prog)
-         (map? task)
-         (let [t (:task task)]
-           (assemble-task-1 task-name t parallel? last? (:depends task)))
-         :else (let [task (pr-str task)
-                     prog (wrap-depends task depends parallel?)]
-                 (wrap-def task-name prog parallel? last?)))))
+                          (namespace task)
+                              prog)]
+             prog)
+       (let [task (pr-str task)
+             prog (wrap-depends task depends parallel?)]
+         (wrap-def task-name prog parallel? last?))))))
 
 (defn format-task [init requires prog]
   (format "

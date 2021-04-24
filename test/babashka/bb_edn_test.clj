@@ -77,8 +77,6 @@
                                         foo {:depends [bar]
                                              :task (fs/exists? ".")}}}
         (is (= true (bb "foo")))))
-    ;; Note: this behavior with :when was complex, since the place where :when
-    ;; is inserted isn't very intuitive here
     ;; This is why we don't support :when for now
     #_(testing "depends with :when"
       (test-utils/with-config {:tasks {'quux (list 'spit out "quux\n")
@@ -89,7 +87,10 @@
                                        'foo {:depends ['quux 'bar]
                                              :task (list 'spit out "foo\n" :append true)}}}
         (bb "foo")
-        (is (= "quux\nbaz\nbar\nfoo\n" (slurp out)))))))
+        (is (= "quux\nbaz\nbar\nfoo\n" (slurp out)))))
+    (testing "map returned from task"
+      (test-utils/with-config '{:tasks {foo {:task {:a 1 :b 2}}}}
+        (is (= {:a 1 :b 2} (bb "foo")))))))
 
 (deftest list-tasks-test
   (test-utils/with-config {}
