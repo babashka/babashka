@@ -8,6 +8,7 @@
          "feature-test-check"
          "feature-spec-alpha"
          "feature-rewrite-clj"
+         "feature-version-clj"
          "pods/src"
          "babashka.nrepl/src"
          "depstar/src" "process/src"

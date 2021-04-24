@@ -191,7 +191,8 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
  :feature/hiccup     %s
  :feature/test-check %s
  :feature/spec-alpha %s
- :feature/rewrite-clj %s}")
+ :feature/rewrite-clj %s
+ :feature/version-clj %s}")
     version
     features/core-async?
     features/csv?
@@ -209,7 +210,8 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
     features/hiccup?
     features/test-check?
     features/spec-alpha?
-    features/rewrite-clj?)))
+    features/rewrite-clj?
+    features/version-clj?)))
 
 (defn read-file [file]
   (let [f (io/file file)]
@@ -260,7 +262,8 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
     features/jdbc?       (assoc 'jdbc 'next.jdbc)
     features/core-async? (assoc 'async 'clojure.core.async)
     features/csv?        (assoc 'csv 'clojure.data.csv)
-    features/transit?    (assoc 'transit 'cognitect.transit)))
+    features/transit?    (assoc 'transit 'cognitect.transit)
+    features/version-clj? (assoc 'version 'version-clj.core)))
 
 ;;(def ^:private server-ns-obj (sci/create-ns 'clojure.core.server nil))
 
@@ -349,7 +352,9 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                                  'rewrite-clj.zip
                                  @(resolve 'babashka.impl.rewrite-clj/zip-namespace)
                                  'rewrite-clj.zip.subedit
-                                 @(resolve 'babashka.impl.rewrite-clj/subedit-namespace))))
+                                 @(resolve 'babashka.impl.rewrite-clj/subedit-namespace))
+    features/version-clj? (assoc 'version-clj.core
+                                 @(resolve 'babashka.impl.version-clj/version-clj-namespace))))
 
 (def imports
   '{ArithmeticException java.lang.ArithmeticException

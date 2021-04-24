@@ -1,34 +1,9 @@
-(ns babashka.impl.rewrite-clj
+(ns babashka.impl.version-clj
   {:no-doc true}
-  (:require [version-clj.core :as v]
-            [sci.core :as sci]))
+  (:require [sci.core :as sci]
+            [version-clj.core]))
 
-(def nns (sci/create-ns 'rewrite-clj.node nil))
-(def pens (sci/create-ns 'rewrite-clj.paredit nil))
-(def pns (sci/create-ns 'rewrite-clj.parser nil))
-(def zns (sci/create-ns 'rewrite-clj.zip nil))
-(def zsns (sci/create-ns 'rewrite-clj.zip.subedit nil))
-
-#_(defmacro copy-var
-  "Copies contents from var `sym` to a new sci var. The value `ns` is an
-  object created with `sci.core/create-ns`."
-  ([sym ns]
-   `(let [ns# ~ns
-          var# (var ~sym)
-          val# (deref var#)
-          m# (-> var# meta)
-          ns-name# (vars/getName ns#)
-          name# (:name m#)
-          name-sym# (symbol (str ns-name#) (str name#))
-          new-m# {:doc (:doc m#)
-                  :name name#
-                  :arglists (:arglists m#)
-                  :ns ns#}]
-      (cond (:dynamic m#)
-            (new-dynamic-var name# val# new-m#)
-            (:macro m#)
-            (new-macro-var name# val# new-m#)
-            :else (new-var name# val# new-m#)))))
+(def vns (sci/create-ns 'version-clj.core nil))
 
 (defn make-ns [ns sci-ns]
   (reduce (fn [ns-map [var-name var]]
@@ -47,17 +22,5 @@
           {}
           (ns-publics ns)))
 
-(def node-namespace
-  (make-ns 'rewrite-clj.node nns))
-
-(def parser-namespace
-  (make-ns 'rewrite-clj.parser pns))
-
-(def paredit-namespace
-  (make-ns 'rewrite-clj.paredit pens))
-
-(def zip-namespace
-  (make-ns 'rewrite-clj.zip zns))
-
-(def subedit-namespace
-  (make-ns 'rewrite-clj.zip.subedit zsns))
+(def version-clj-namespace
+  (make-ns 'version-clj.core vns))

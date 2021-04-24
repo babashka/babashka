@@ -153,6 +153,13 @@ else
     BABASHKA_LEIN_PROFILES+=",-feature/rewrite-clj"
 fi
 
+if [ "$BABASHKA_FEATURE_VERSION_CLJ" != "false" ]
+then
+    BABASHKA_LEIN_PROFILES+=",+feature/version-clj"
+else
+    BABASHKA_LEIN_PROFILES+=",-feature/version-clj"
+fi
+
 if [ -z "$BABASHKA_JAR" ]; then
     lein with-profiles "$BABASHKA_LEIN_PROFILES,+reflection,-uberjar" do run
     lein with-profiles "$BABASHKA_LEIN_PROFILES" do clean, uberjar
