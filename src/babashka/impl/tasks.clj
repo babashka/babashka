@@ -7,21 +7,6 @@
             [sci.core :as sci]))
 
 (def sci-ns (sci/create-ns 'babashka.tasks nil))
-
-(defn- exit-non-zero [log-level proc]
-  (when-let [exit-code (some-> proc deref :exit)]
-    (when (not (zero? exit-code))
-      (when (contains? #{:info :error} log-level)
-        (binding [*out* *err*]
-          (println (str "> Terminating with non-zero exit code: " exit-code))))
-      (System/exit exit-code))))
-
-(def default-opts
-  {:in :inherit
-   :out :inherit
-   :err :inherit
-   :shutdown p/destroy-tree})
-
 (def log-level (sci/new-dynamic-var '*-log-level* :info {:ns sci-ns}))
 (def task-name (sci/new-dynamic-var '*-task-name* nil {:ns sci-ns}))
 
@@ -42,6 +27,18 @@
       (binding [*out* *err*]
         (println ">" (str/join " " strs))))))
 
+(defn- exit-non-zero [proc]
+  (when-let [exit-code (some-> proc deref :exit)]
+    (when (not (zero? exit-code))
+      (log-error "Terminating bb with non-zero exit code: " exit-code)
+      (System/exit exit-code))))
+
+(def default-opts
+  {:in :inherit
+   :out :inherit
+   :err :inherit
+   :shutdown p/destroy-tree})
+
 (defn shell [cmd & args]
   (let [[opts cmd args]
         (if (map? cmd)
@@ -59,8 +56,7 @@
         local-log-level (:log-level opts)]
     (sci/binding [log-level (or local-log-level @log-level)]
       (apply log-info cmd)
-      (exit-non-zero log-level
-                     (p/process cmd (merge default-opts opts))))))
+      (exit-non-zero (p/process cmd (merge default-opts opts))))))
 
 (defn clojure [cmd & args]
   (let [[opts cmd args]
@@ -75,10 +71,12 @@
         cmd (if (.exists (io/file cmd))
               [cmd]
               (p/tokenize cmd))
-        cmd (into cmd args)]
-    (apply log-info cmd)
-    (exit-non-zero log-level
-     (deps/clojure cmd (merge default-opts opts)))))
+        cmd (into cmd args)
+        local-log-level (:log-level opts)]
+    (sci/binding [log-level (or local-log-level @log-level)]
+
+      (apply log-info cmd)
+      (exit-non-zero (p/process cmd (merge default-opts opts))))))
 
 (defn -wait [res]
   (when res
