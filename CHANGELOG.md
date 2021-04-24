@@ -15,6 +15,7 @@ Deps.clj:
 Babashka.fs:
 
 - Allow dir as dest in `copy` [#24](https://github.com/babashka/fs/issues/24)
+- Allow dir as dest in `move` [#25](https://github.com/babashka/fs/issues/25)
 
 ## 0.3.5
 
