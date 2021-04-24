@@ -28,11 +28,15 @@
       (binding [*out* *err*]
         (println (format "[bb %s]" @task-name) (str/join " " strs))))))
 
-(defn- exit-non-zero [proc]
-  (when-let [exit-code (some-> proc deref :exit)]
-    (when (not (zero? exit-code))
-      (log-error "Terminating bb with non-zero exit code: " exit-code)
-      (System/exit exit-code))))
+(defn- handle-non-zero [proc opts]
+  (when-let [proc (when proc (deref proc))]
+    (let [exit-code (:exit proc)]
+      (if (and (not (zero? exit-code))
+               (not (:continue opts)))
+        (do (log-error "Terminating with non-zero exit code: " exit-code)
+            (System/exit exit-code))
+        (with-meta proc
+          {:babashka/no-print true})))))
 
 (def default-opts
   {:in :inherit
@@ -50,6 +54,11 @@
                  (update opts :out io/file)
                  opts)
                opts)
+        opts (if-let [o (:err opts)]
+               (if (string? o)
+                 (update opts :err io/file)
+                 opts)
+               opts)
         cmd (if (.exists (io/file cmd))
               [cmd]
               (p/tokenize cmd))
@@ -57,7 +66,7 @@
         local-log-level (:log-level opts)]
     (sci/binding [log-level (or local-log-level @log-level)]
       (apply log-info cmd)
-      (exit-non-zero (p/process cmd (merge default-opts opts))))))
+      (handle-non-zero (p/process cmd (merge default-opts opts)) opts))))
 
 (defn clojure [cmd & args]
   (let [[opts cmd args]
@@ -69,6 +78,11 @@
                  (update opts :out io/file)
                  opts)
                opts)
+        opts (if-let [o (:err opts)]
+               (if (string? o)
+                 (update opts :err io/file)
+                 opts)
+               opts)
         cmd (if (.exists (io/file cmd))
               [cmd]
               (p/tokenize cmd))
@@ -76,7 +90,7 @@
         local-log-level (:log-level opts)]
     (sci/binding [log-level (or local-log-level @log-level)]
       (apply log-info cmd)
-      (exit-non-zero (deps/clojure cmd (merge default-opts opts))))))
+      (handle-non-zero (deps/clojure cmd (merge default-opts opts)) opts))))
 
 (defn -wait [res]
   (when res

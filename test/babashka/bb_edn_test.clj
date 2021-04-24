@@ -45,6 +45,14 @@
                                                   "echo hello")}}
         (bb "foo")
         (is (= "hello\n" (slurp out)))))
+    (testing "shell test with :continue"
+      (test-utils/with-config {:tasks {'foo (list 'shell {:out out
+                                                          :err out
+                                                          :continue true}
+                                                  "ls foobar")}}
+        (bb "foo")
+        (is (str/includes? (slurp out)
+                           "foobar"))))
     (fs/delete out)
     (testing "clojure test"
       (test-utils/with-config {:tasks {'foo (list 'clojure {:out out}

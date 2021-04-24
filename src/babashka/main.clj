@@ -748,7 +748,9 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                                                                 input-var in
                                                                 core/command-line-args command-line-args]
                                                     (sci/eval-string* sci-ctx expression))]
-                                              (when (some? res)
+                                              ;; return value printing
+                                              (when (and (some? res)
+                                                         (not (:babashka/no-print (meta res))))
                                                 (if-let [pr-f (cond shell-out println
                                                                     edn-out prn)]
                                                   (if (coll? res)
