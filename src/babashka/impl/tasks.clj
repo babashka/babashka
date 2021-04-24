@@ -7,7 +7,8 @@
             [sci.core :as sci]))
 
 (def sci-ns (sci/create-ns 'babashka.tasks nil))
-(def log-level (sci/new-dynamic-var '*-log-level* :info {:ns sci-ns}))
+(def default-log-level :error)
+(def log-level (sci/new-dynamic-var '*-log-level* default-log-level {:ns sci-ns}))
 (def task-name (sci/new-dynamic-var '*-task-name* nil {:ns sci-ns}))
 
 (defn log-info [& strs]
@@ -74,9 +75,8 @@
         cmd (into cmd args)
         local-log-level (:log-level opts)]
     (sci/binding [log-level (or local-log-level @log-level)]
-
-      (apply log-info cmd)
-      (exit-non-zero (p/process cmd (merge default-opts opts))))))
+      (apply log-info (cons "clojure" cmd))
+      (exit-non-zero (deps/clojure cmd (merge default-opts opts))))))
 
 (defn -wait [res]
   (when res
@@ -191,11 +191,11 @@
                (conj order task-name))
            order))))))
 
-(defn assemble-task [task-name parallel?]
+(defn assemble-task [task-name parallel? log-level]
   (let [task-name (symbol task-name)
         bb-edn @bb-edn
         tasks (get bb-edn :tasks)
-        log-level (or (:log-level tasks) :info)
+        log-level (or log-level (:log-level tasks) default-log-level)
         task (get tasks task-name)]
     (if task
       (let [m? (map? task)

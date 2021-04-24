@@ -415,9 +415,14 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
          args (seq args)]
     (if args
       (let [fst (first args)]
-        (if (= "--parallel" fst)
+        (case fst
+          "--parallel"
           (recur (assoc opts-map :parallel-tasks true)
                  (next args))
+          "--log-level"
+          (let [args (next args)]
+            (recur (assoc opts-map :log-level (keyword (first args)))
+                   (next args)))
           (assoc opts-map :run fst :command-line-args (next args))))
       opts-map)))
 
@@ -691,7 +696,9 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                                    "-main")]
                     [[(format "(ns user (:require [%1$s])) (apply %1$s/%2$s *command-line-args*)"
                               ns var-name)] nil])
-                  run (tasks/assemble-task run (:parallel-tasks cli-opts))
+                  run (tasks/assemble-task run
+                                           (:parallel-tasks cli-opts)
+                                           (:log-level cli-opts))
                   file (try [[(read-file file)] nil]
                             (catch Exception e
                               (error-handler e {:expression expressions
