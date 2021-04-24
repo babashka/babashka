@@ -8,8 +8,6 @@
 
 (def sci-ns (sci/create-ns 'babashka.tasks nil))
 
-(def ^:dynamic *task-name* nil)
-
 (defn- exit-non-zero [log-level proc]
   (when-let [exit-code (some-> proc deref :exit)]
     (when (not (zero? exit-code))
@@ -24,6 +22,26 @@
    :err :inherit
    :shutdown p/destroy-tree})
 
+(def log-level (sci/new-dynamic-var '*-log-level* :info {:ns sci-ns}))
+(def task-name (sci/new-dynamic-var '*-task-name* nil {:ns sci-ns}))
+
+(defn log-info [& strs]
+  (let [log-level @log-level]
+    (when
+        ;; do not log when level is :error
+        (identical? :info log-level)
+      (binding [*out* *err*]
+        (println ">" (str/join " " strs))))))
+
+(defn log-error [& strs]
+  (let [log-level @log-level]
+    (when (or
+           ;; log error also in case of info level
+           (identical? :info @log-level)
+           (identical? :error @log-level))
+      (binding [*out* *err*]
+        (println ">" (str/join " " strs))))))
+
 (defn shell [cmd & args]
   (let [[opts cmd args]
         (if (map? cmd)
@@ -34,20 +52,15 @@
                  (update opts :out io/file)
                  opts)
                opts)
-        log-level (or (:log opts)
-                      (-> @bb-edn
-                          :tasks
-                          :log)
-                      :info)
         cmd (if (.exists (io/file cmd))
               [cmd]
               (p/tokenize cmd))
-        cmd (into cmd args)]
-    (when (identical? :info log-level)
-      (binding [*out* *err*]
-        (println ">" (str/join " " cmd))))
-    (exit-non-zero log-level
-     (p/process cmd (merge default-opts opts)))))
+        cmd (into cmd args)
+        local-log-level (:log-level opts)]
+    (sci/binding [log-level (or local-log-level @log-level)]
+      (apply log-info cmd)
+      (exit-non-zero log-level
+                     (p/process cmd (merge default-opts opts))))))
 
 (defn clojure [cmd & args]
   (let [[opts cmd args]
@@ -59,18 +72,11 @@
                  (update opts :out io/file)
                  opts)
                opts)
-        log-level (or (:log opts)
-                      (-> @bb-edn
-                          :tasks
-                          :log)
-                      :info)
         cmd (if (.exists (io/file cmd))
               [cmd]
               (p/tokenize cmd))
         cmd (into cmd args)]
-    (when (identical? :info log-level)
-      (binding [*out* *err*]
-        (println ">" (str/join " " (cons "clojure" cmd)))))
+    (apply log-info cmd)
     (exit-non-zero log-level
      (deps/clojure cmd (merge default-opts opts)))))
 
@@ -83,7 +89,11 @@
 (def tasks-namespace
   {'shell (sci/copy-var shell sci-ns)
    'clojure (sci/copy-var clojure sci-ns)
-   '-wait (sci/copy-var -wait sci-ns)})
+   '-wait (sci/copy-var -wait sci-ns)
+   '*-task-name* task-name
+   '*-log-level* log-level
+   '-log-info (sci/copy-var log-info sci-ns)
+   '-log-error (sci/copy-var log-error sci-ns)})
 
 (defn depends-map [tasks target-name]
   (let [deps (seq (:depends (get tasks target-name)))
@@ -95,14 +105,19 @@
     (format "(when %s %s)" (second when-expr) expr)
     expr))
 
-(defn wrap-future [prog parallel?]
-  (if parallel?
-    (format "(future %s)" prog)
-    prog))
+(defn wrap-body [task-name prog parallel? log-level]
+  (format "(binding [babashka.tasks/*-task-name* \"%s\"
+  babashka.tasks/*-log-level* %s]
+  (babashka.tasks/-log-info babashka.tasks/*-task-name*)
+  %s)" task-name
+          log-level
+          (if parallel?
+            (format "(future %s)" prog)
+            prog)))
 
-(defn wrap-def [task-name prog parallel? last?]
+(defn wrap-def [task-name prog parallel? last? log-level]
   (format "(def %s %s) %s"
-          task-name (wrap-future prog parallel?)
+          task-name (wrap-body task-name prog parallel? log-level)
           (if (and parallel? last?)
             (format "(babashka.tasks/-wait %s)" task-name)
             task-name)))
@@ -115,14 +130,6 @@
     (format "(do %s)" (str (str/join "\n" (map deref-task depends)) "\n" prog))
     prog))
 
-(defn wrap-print [task-name prog]
-  (str (format
-        "(binding [*out* *err*]
-     (println \"> %s\"))
-   "
-        task-name)
-       prog))
-
 (defn assemble-task-1
   "Assembles task, does not process :depends."
   ([task-name task log-level parallel?]
@@ -134,14 +141,14 @@
                           [task depends])
          private? (or (:private task)
                       (str/starts-with? task-name "-"))
-         log-level (or log-level
-                       (:log task)
+         log-level (or (:log-level task)
                        (when private?
-                         :error))]
+                         :error)
+                       log-level)]
      (if (qualified-symbol? task)
        (let [prog (format "(apply %s *command-line-args*)" task)
              prog (wrap-depends prog depends parallel?)
-             prog (wrap-def task-name prog parallel? last?)
+             prog (wrap-def task-name prog parallel? last? log-level)
              prog (format "
 (do (require (quote %s))
 %s)"
@@ -150,10 +157,7 @@
              prog)
        (let [task (pr-str task)
              prog (wrap-depends task depends parallel?)
-             prog (wrap-def task-name prog parallel? last?)
-             prog (if (identical? :error log-level)
-                    prog
-                    (wrap-print task-name prog))]
+             prog (wrap-def task-name prog parallel? last? log-level)]
          prog)))))
 
 (defn format-task [init requires prog]
@@ -193,7 +197,7 @@
   (let [task-name (symbol task-name)
         bb-edn @bb-edn
         tasks (get bb-edn :tasks)
-        log-level (or (:log tasks) :info)
+        log-level (or (:log-level tasks) :info)
         task (get tasks task-name)]
     (if task
       (let [m? (map? task)
