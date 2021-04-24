@@ -77,6 +77,12 @@
 ;; with the java provided by GraalVM.
 
 (def version (str/trim (slurp (io/resource "BABASHKA_VERSION"))))
+(defn parse-version [version]
+  (mapv #(Integer/parseInt %)
+        (-> version
+            (str/replace "-SNAPSHOT" "")
+            (str/split #"\."))))
+(def version-data (parse-version version))
 
 (defn print-version []
   (println (str "babashka v" version)))
@@ -776,12 +782,29 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
             (throw (Exception. "The uberjar task needs a classpath."))))
         exit-code))))
 
+(defn satisfies-min-version? [min-version]
+  (let [[major-current minor-current patch-current] version-data
+        [major-min minor-min patch-min] (parse-version min-version)]
+    (or (> major-current major-min)
+        (and (= major-current major-min)
+             (or (> minor-current minor-min)
+                 (and (= minor-current minor-min)
+                      (>= patch-current patch-min)))))))
+
 (defn main [& args]
   (let [bb-edn-file (or (System/getenv "BABASHKA_EDN")
-                        "bb.edn")]
-    (when (fs/exists? bb-edn-file)
-      (let [edn (edn/read-string (slurp bb-edn-file))]
-        (vreset! common/bb-edn edn))))
+                        "bb.edn")
+        bb-edn (or (when (fs/exists? bb-edn-file)
+                     (let [edn (edn/read-string (slurp bb-edn-file))]
+                       (vreset! common/bb-edn edn)))
+                   ;; tests may have modified bb-edn
+                   @common/bb-edn)
+        min-bb-version (:min-bb-version bb-edn)]
+    (when min-bb-version
+      (when-not (satisfies-min-version? min-bb-version)
+        (binding [*out* *err*]
+          (println (str "WARNING: this project requires babashka "
+                        min-bb-version " or newer, but you have: " version))))))
   (let [opts (parse-opts args)]
     (exec opts)))
 

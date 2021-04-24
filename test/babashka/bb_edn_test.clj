@@ -113,15 +113,22 @@
   (when-not test-utils/native?
     (testing "FILE > TASK > SUBCOMMAND"
       (is (= "foo.jar" (:uberjar (main/parse-opts ["uberjar" "foo.jar"]))))
-      (test-utils/with-config '{:tasks {uberjar (+ 1 2 3)}}
-        (vreset! common/bb-edn (edn/read-string (slurp test-utils/*bb-edn-path*)))
-        (is (= "uberjar" (:run (main/parse-opts ["uberjar"])))))
+      (vreset! common/bb-edn '{:tasks {uberjar (+ 1 2 3)}})
+      (is (= "uberjar" (:run (main/parse-opts ["uberjar"]))))
       (try
-        (test-utils/with-config '{:tasks {uberjar (+ 1 2 3)}}
-          (spit "uberjar" "#!/usr/bin/env bb\n(+ 1 2 3)")
-          (vreset! common/bb-edn (edn/read-string (slurp test-utils/*bb-edn-path*)))
-          (is (= "uberjar" (:file (main/parse-opts ["uberjar"])))))
+        (spit "uberjar" "#!/usr/bin/env bb\n(+ 1 2 3)")
+        (vreset! common/bb-edn '{:tasks {uberjar (+ 1 2 3)}})
+        (is (= "uberjar" (:file (main/parse-opts ["uberjar"]))))
         (finally (fs/delete "uberjar"))))))
+
+(deftest min-bb-version
+  (when-not test-utils/native?
+    (vreset! common/bb-edn '{:min-bb-version "300.0.0"})
+    (let [sw (java.io.StringWriter.)]
+      (binding [*err* sw]
+        (main/main "-e" "nil"))
+      (is (str/includes? (str sw)
+                         "WARNING: this project requires babashka 300.0.0 or newer, but you have: ")))))
 
 ;; TODO:
 ;; Do we want to support the same parsing as the clj CLI?
