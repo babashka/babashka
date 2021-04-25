@@ -51,6 +51,7 @@
                                                   "echo hello")}}
         (bb "foo")
         (is (= "hello\n" (slurp out)))))
+    (fs/delete out)
     (testing "shell test with :continue"
       (test-utils/with-config {:tasks {'foo (list 'shell {:out out
                                                           :err out
@@ -59,15 +60,15 @@
         (bb "foo")
         (is (str/includes? (slurp out)
                            "foobar"))))
+    (fs/delete out)
     (testing "shell test with :continue fn"
-      (test-utils/with-config {:tasks {'foo (list 'shell {:out out
-                                                          :err out
-                                                          :continue '(fn [proc]
-                                                                       (contains? proc :exit))}
-                                                  "ls foobar")}}
-        (bb "foo")
-        (is (str/includes? (slurp out)
-                           "foobar"))))
+      (test-utils/with-config {:tasks {'foo (list '-> (list 'shell {:out out
+                                                                    :err out
+                                                                    :continue '(fn [proc]
+                                                                           (contains? proc :exit))}
+                                                      "ls foobar")
+                                                  :exit)}}
+        (is (= 1 (bb "run" "--prn" "foo")))))
     (fs/delete out)
     (testing "clojure test"
       (test-utils/with-config {:tasks {'foo (list 'clojure {:out out}
