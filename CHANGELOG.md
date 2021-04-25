@@ -10,6 +10,7 @@ For a list of breaking changes, check [here](#breaking-changes).
 - Tasks: fix priority (file > task > subcommand) [#800](https://github.com/babashka/babashka/issues/800)
 - Support map literal in task [#796](https://github.com/babashka/babashka/issues/796)
 - Tasks: support resolving docstring from function [#802](https://github.com/babashka/babashka/issues/802)
+- Support `:min-bb-version` in `bb.edn` A warning is printed when the minimum version is not satisfied. [#663](https://github.com/babashka/babashka/issues/663)
 
 Deps.clj:
 
