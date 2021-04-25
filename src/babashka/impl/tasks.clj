@@ -97,7 +97,7 @@
         cmd (into cmd args)
         local-log-level (:log-level opts)]
     (sci/binding [log-level (or local-log-level @log-level)]
-      (apply log-info cmd)
+      (apply log-info (cons "clojure" cmd))
       (handle-non-zero (deps/clojure cmd (merge default-opts opts)) opts))))
 
 (defn -wait [res]
