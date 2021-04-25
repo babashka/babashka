@@ -9,10 +9,8 @@ For a list of breaking changes, check [here](#breaking-changes).
 - Add check for arg count to for macro [#767](https://github.com/babashka/babashka/issues/767)
 - Ignore empty classpath entries [#780](https://github.com/babashka/babashka/issues/780)
 - Fix uberjar CLI parsing and throw when no classpath is provided [#780](https://github.com/babashka/babashka/issues/780)
-- Tasks: fix priority (file > task > subcommand) [#800](https://github.com/babashka/babashka/issues/800)
-- Support map literal in task [#796](https://github.com/babashka/babashka/issues/796)
-- Tasks: support resolving docstring from function [#802](https://github.com/babashka/babashka/issues/802)
 - Support `:min-bb-version` in `bb.edn` A warning is printed when the minimum version is not satisfied. [#663](https://github.com/babashka/babashka/issues/663)
+- Tasks improvements. See [issue](https://github.com/babashka/babashka/issues/778).
 
 Deps.clj:
 
