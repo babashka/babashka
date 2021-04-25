@@ -162,10 +162,11 @@
              prog (wrap-depends prog depends parallel?)
              prog (wrap-def task-name prog parallel? last? log-level)
              prog (format "
-(do (require (quote %s))
-%s)"
+(when-not (resolve '%s) (require (quote %s)))
+%s"
+                          task
                           (namespace task)
-                              prog)]
+                          prog)]
              prog)
        (let [task (pr-str task)
              prog (wrap-depends task depends parallel?)

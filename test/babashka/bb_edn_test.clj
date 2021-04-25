@@ -98,7 +98,19 @@
         (is (= "quux\nbaz\nbar\nfoo\n" (slurp out)))))
     (testing "map returned from task"
       (test-utils/with-config '{:tasks {foo {:task {:a 1 :b 2}}}}
-        (is (= {:a 1 :b 2} (bb "foo")))))))
+        (is (= {:a 1 :b 2} (bb "foo")))))
+    (testing "fully qualified symbol execution"
+      (test-utils/with-config {:paths ["test-resources/task_scripts"]
+                               :tasks '{foo tasks/foo}}
+        (is (= :foo (bb "foo"))))
+      (test-utils/with-config {:paths ["test-resources/task_scripts"]
+                               :tasks '{:requires ([tasks :as t])
+                                        foo t/foo}}
+        (is (= :foo (bb "foo"))))
+      (test-utils/with-config {:paths ["test-resources/task_scripts"]
+                               :tasks '{foo {:requires ([tasks :as t])
+                                             :task t/foo}}}
+        (is (= :foo (bb "foo")))))))
 
 (deftest list-tasks-test
   (test-utils/with-config {}
