@@ -38,6 +38,7 @@ The following libraries and projects are known to work with babashka.
     - [clojure-term-colors](#clojure-term-colors)
     - [binf](#binf)
     - [rewrite-edn](#rewrite-edn)
+    - [expound](#expound)
   - [Pods](#pods)
   - [Projects](#projects-1)
     - [babashka-test-action](#babashka-test-action)
@@ -512,6 +513,35 @@ Example:
 (def nodes (r/parse-string edn-string))
 
 (println (str (r/assoc-in nodes [:deps 'my-other-dep] {:mvn/version "0.1.2"})))
+```
+
+### [expound](https://github.com/bhb/expound)
+
+Formats `spartan.spec` error messages in a way that is optimized for humans to read.
+
+Example:
+
+``` clojure
+#!/usr/bin/env bb
+
+(ns expound
+  (:require [babashka.deps :as deps]))
+
+(deps/add-deps
+ '{:deps {borkdude/spartan.spec {:git/url "https://github.com/borkdude/spartan.spec"
+                                 :sha "bf4ace4a857c29cbcbb934f6a4035cfabe173ff1"}
+          expound/expound {:mvn/version "0.8.9"}}})
+
+;; Loading spartan.spec will create a namespace clojure.spec.alpha for compatibility:
+(require 'spartan.spec)
+(alias 's 'clojure.spec.alpha)
+
+;; Expound expects some vars to be there, like `fdef`. Spartan prints warnings that these are used, but doesn't implement them yet.
+(require '[expound.alpha :as expound])
+
+(s/def ::a (s/cat :i int? :j string?))
+
+(expound/expound ::a [1 2])
 ```
 
 ## Pods
