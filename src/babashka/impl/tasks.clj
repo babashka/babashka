@@ -4,6 +4,9 @@
             [babashka.process :as p]
             [clojure.java.io :as io]
             [clojure.string :as str]
+            [rewrite-clj.node :as node]
+            [rewrite-clj.parser :as parser]
+            [rewrite-clj.zip :as zip]
             [sci.core :as sci]))
 
 (def sci-ns (sci/create-ns 'babashka.tasks nil))
@@ -279,16 +282,30 @@
                            fn-sym)]
           (sci/eval-string* sci-ctx prog)))))
 
+(defn key-order [edn]
+  (let [forms (parser/parse-string-all edn)
+        the-map (some #(when (= :map (node/tag %))
+                         %)
+                      (:children forms))
+        loc (zip/edn the-map)
+        loc (zip/down loc)
+        loc (zip/find-next-value loc :tasks)
+        loc (zip/right loc)
+        loc (zip/down loc)]
+    (filter symbol?
+            (map zip/sexpr
+                 (take-while #(not (zip/end? %))
+                             (take-nth 2 (iterate zip/right loc)))))))
+
 (defn list-tasks
   [sci-ctx]
   (let [tasks (:tasks @bb-edn)]
     (if (seq tasks)
-      (let [names (keys tasks)
-            names (filter symbol? names)
+      (let [raw-edn (:raw @bb-edn)
+            names (key-order raw-edn)
             names (map str names)
             names (remove #(str/starts-with? % "-") names)
             names (remove #(:private (get tasks (symbol %))) names)
-            names (sort names)
             longest (apply max (map count names))
             fmt (str "%1$-" longest "s")]
         (println "The following tasks are available:")

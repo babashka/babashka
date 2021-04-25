@@ -810,7 +810,9 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
   (let [bb-edn-file (or (System/getenv "BABASHKA_EDN")
                         "bb.edn")
         bb-edn (or (when (fs/exists? bb-edn-file)
-                     (let [edn (edn/read-string (slurp bb-edn-file))]
+                     (let [raw-string (slurp bb-edn-file)
+                           edn (edn/read-string raw-string)
+                           edn (assoc edn :raw raw-string)]
                        (vreset! common/bb-edn edn)))
                    ;; tests may have modified bb-edn
                    @common/bb-edn)
