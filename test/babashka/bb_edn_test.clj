@@ -68,7 +68,7 @@
                                                                            (contains? proc :exit))}
                                                       "ls foobar")
                                                   :exit)}}
-        (is (= 1 (bb "run" "--prn" "foo")))))
+        (is (pos? (bb "run" "--prn" "foo")))))
     (fs/delete out)
     (testing "clojure test"
       (test-utils/with-config {:tasks {'foo (list 'clojure {:out out}
