@@ -248,6 +248,31 @@
       [(binding [*out* *err*]
          (println "No such task:" task-name)) 1])))
 
+(defn doc-from-task [sci-ctx tasks task]
+  (or (:doc task)
+      (when-let [fn-sym (cond (qualified-symbol? task)
+                         task
+                         (map? task)
+                         (let [t (:task task)]
+                           (when (qualified-symbol? t)
+                             t)))]
+        (let [requires (:requires tasks)
+              requires (map (fn [x]
+                              (list 'quote x))
+                            (concat requires (:requires task)))
+              prog (format "
+;; first try to require the fully qualified namespace, as this is the cheapest option
+(try (require '%s)
+  ;; on failure, the namespace might have been an alias so we require other namespaces
+  (catch Exception _ %s))
+(:doc (meta (resolve '%s)))"
+                           (namespace fn-sym)
+                           (if (seq requires)
+                             (list* 'require requires)
+                             "")
+                           fn-sym)]
+          (sci/eval-string* sci-ctx prog)))))
+
 (defn list-tasks
   [sci-ctx]
   (let [tasks (:tasks @bb-edn)]
@@ -264,15 +289,7 @@
         (println)
         (doseq [k names
                 :let [task (get tasks (symbol k))]]
-          (let [task (if (qualified-symbol? task)
-                       {:doc (sci/eval-string*
-                              sci-ctx
-                              (format "
-(try (require '%s) (catch Exception _ nil))
-(:doc (meta (resolve '%s)))" (namespace task) task))}
-                       task)]
-            (println (str (format fmt k)
-                          (when-let [d (:doc task)]
-                            (str " " d)))))))
+          (println (str (format fmt k)
+                        (when-let [d (doc-from-task sci-ctx tasks task)]
+                          (str " " d))))))
       (println "No tasks found."))))
-

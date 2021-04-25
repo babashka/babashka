@@ -105,7 +105,8 @@
     (let [res (test-utils/bb nil "tasks")]
       (is (str/includes? res "No tasks found."))))
   (test-utils/with-config {:paths ["test-resources/task_scripts"]
-                           :tasks {'task1
+                           :tasks {:requires '([tasks :as t])
+                                   'task1
                                    {:doc "task1 doc"
                                     :task '(+ 1 2 3)}
                                    'task2
@@ -117,9 +118,12 @@
                                    {:task '(+ 1 2 3)
                                     :private true}
                                    'foo 'tasks/foo
-                                   'bar 'non-existing/bar}}
+                                   'bar 't/foo
+                                   'baz 'non-existing/bar
+                                   'quux {:requires '([tasks :as t2])
+                                          :task 't2/foo}}}
     (let [res (test-utils/bb nil "tasks")]
-      (is (= "The following tasks are available:\n\nbar  \nfoo   Foo docstring\ntask1 task1 doc\ntask2 task2 doc\n"
+      (is (= "The following tasks are available:\n\nbar   Foo docstring\nbaz  \nfoo   Foo docstring\nquux  Foo docstring\ntask1 task1 doc\ntask2 task2 doc\n"
              res)))))
 
 (deftest task-priority-test
