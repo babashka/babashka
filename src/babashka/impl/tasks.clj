@@ -23,20 +23,25 @@
   (let [log-level @log-level]
     (when (or
            ;; log error also in case of info level
-           (identical? :info @log-level)
-           (identical? :error @log-level))
+           (identical? :info log-level)
+           (identical? :error log-level))
       (binding [*out* *err*]
         (println (format "[bb %s]" @task-name) (str/join " " strs))))))
 
 (defn- handle-non-zero [proc opts]
-  (when-let [proc (when proc (deref proc))]
-    (let [exit-code (:exit proc)]
-      (if (and (not (zero? exit-code))
-               (not (:continue opts)))
-        (do (log-error "Terminating with non-zero exit code: " exit-code)
-            (System/exit exit-code))
-        (with-meta proc
-          {:babashka/no-print true})))))
+  (when proc
+    (when-let [proc (deref proc)]
+      (let [exit-code (:exit proc)
+            zero-exit? (zero? exit-code)
+            continue (:continue opts)
+            continue? (if continue
+                        (or (true? continue)
+                            (continue proc))
+                        zero-exit?)]
+        (if continue? proc
+            (do (when-not zero-exit?
+                  (log-error "Terminating with non-zero exit code: " exit-code))
+                (System/exit exit-code)))))))
 
 (def default-opts
   {:in :inherit
@@ -244,7 +249,7 @@
                       (concat requires (:requires task))
                       (assemble-task-1 task-name task log-level parallel? true))] nil])]
         (when (= "true" (System/getenv "BABASHKA_DEV"))
-          (println (ffirst prog)))
+          (.println System/out (ffirst prog)))
         prog)
       [(binding [*out* *err*]
          (println "No such task:" task-name)) 1])))

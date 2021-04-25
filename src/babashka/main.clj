@@ -423,6 +423,11 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
           (let [args (next args)]
             (recur (assoc opts-map :log-level (keyword (first args)))
                    (next args)))
+          "--prn"
+          (let [args (next args)]
+            (recur (assoc opts-map :prn true)
+                   args))
+          ;; default
           (assoc opts-map :run fst :command-line-args (next args))))
       opts-map)))
 
@@ -750,7 +755,8 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                                                     (sci/eval-string* sci-ctx expression))]
                                               ;; return value printing
                                               (when (and (some? res)
-                                                         (not (:babashka/no-print (meta res))))
+                                                         (or (not run)
+                                                             (:prn cli-opts)))
                                                 (if-let [pr-f (cond shell-out println
                                                                     edn-out prn)]
                                                   (if (coll? res)
