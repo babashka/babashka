@@ -6,6 +6,8 @@ For a list of breaking changes, check [here](#breaking-changes).
 
 ## 0.3.6
 
+Babashka proper:
+
 - Add check for arg count to `for` macro [#767](https://github.com/babashka/babashka/issues/767)
 - Ignore empty classpath entries [#780](https://github.com/babashka/babashka/issues/780)
 - Fix uberjar CLI parsing and throw when no classpath is provided [#780](https://github.com/babashka/babashka/issues/780)
