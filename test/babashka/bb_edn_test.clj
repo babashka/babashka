@@ -152,7 +152,14 @@
                                           :task t2/foo}}}"
     (let [res (test-utils/bb nil "tasks")]
       (is (= "The following tasks are available:\n\ntask1 task1 doc\ntask2 task2 doc\nfoo   Foo docstring\nbar   Foo docstring\nbaz  \nquux  Foo docstring\n"
-             res)))))
+             res))))
+  (testing ":tasks is the first node"
+    (test-utils/with-config "{:tasks {task1
+                                    {:doc \"task1 doc\"
+                                     :task (+ 1 2 3)}}}"
+      (let [res (test-utils/bb nil "tasks")]
+        (is (= "The following tasks are available:\n\ntask1 task1 doc\n"
+               res))))))
 
 (deftest task-priority-test
   (when-not test-utils/native?

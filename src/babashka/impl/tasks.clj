@@ -289,7 +289,7 @@
                       (:children forms))
         loc (zip/edn the-map)
         loc (zip/down loc)
-        loc (zip/find-next-value loc :tasks)
+        loc (zip/find-value loc :tasks)
         loc (zip/right loc)
         loc (zip/down loc)]
     (filter symbol?
