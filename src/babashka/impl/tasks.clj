@@ -1,5 +1,6 @@
 (ns babashka.impl.tasks
-  (:require [babashka.impl.common :refer [bb-edn]]
+  (:require [babashka.impl.classpath :as cp]
+            [babashka.impl.common :refer [bb-edn]]
             [babashka.impl.deps :as deps]
             [babashka.process :as p]
             [clojure.java.io :as io]
@@ -181,8 +182,11 @@
              prog (wrap-def task-name prog parallel? last? log-level)]
          prog)))))
 
-(defn format-task [init requires prog]
+(defn format-task [init extra-paths extra-deps requires prog]
   (format "
+%s ;; extra-paths
+%s ;; extra-deps
+
 (ns %s %s)
 (require '[babashka.tasks])
 (when-not (resolve 'clojure)
@@ -194,6 +198,12 @@
 
 %s
 %s"
+          (if (seq extra-paths)
+            (format "(babashka.classpath/add-classpath \"%s\")" (str/join cp/path-sep extra-paths))
+            "")
+          (if (seq extra-deps)
+            (format "(babashka.deps/add-deps '%s)" (pr-str {:deps extra-deps}))
+            "")
           (gensym "user")
           (if (seq requires)
             (format "(:require %s)" (str/join " " requires))
@@ -228,6 +238,8 @@
                    (let [targets (target-order tasks task-name)]
                      (loop [prog ""
                             targets (seq targets)
+                            extra-paths []
+                            extra-deps nil
                             requires requires]
                        (let [t (first targets)
                              targets (next targets)]
@@ -235,6 +247,8 @@
                            (if-let [task (get tasks t)]
                              (recur (str prog "\n" (assemble-task-1 t task log-level parallel?))
                                     targets
+                                    (concat extra-paths (:extra-paths task))
+                                    (merge extra-deps (:extra-deps task))
                                     (concat requires (:requires task)))
                              [(binding [*out* *err*]
                                 (println "No such task:" task-name)) 1])
@@ -243,12 +257,16 @@
                                              (apply str (map deref-task depends))
                                              "\n"
                                              (assemble-task-1 t task log-level parallel? true))
+                                   extra-paths (concat extra-paths (:extra-paths task))
+                                   extra-deps (merge extra-deps (:extra-deps task))
                                    requires (concat requires (:requires task))]
-                               [[(format-task init requires prog)] nil])
+                               [[(format-task init extra-paths extra-deps requires prog)] nil])
                              [(binding [*out* *err*]
                                 (println "No such task:" task-name)) 1])))))
                    [[(format-task
                       init
+                      (:extra-paths task)
+                      (:extra-deps task)
                       (concat requires (:requires task))
                       (assemble-task-1 task-name task log-level parallel? true))] nil])]
         (when (= "true" (System/getenv "BABASHKA_DEV"))

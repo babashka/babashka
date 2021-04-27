@@ -126,7 +126,19 @@
       (test-utils/with-config {:paths ["test-resources/task_scripts"]
                                :tasks '{foo {:requires ([tasks :as t])
                                              :task t/foo}}}
-        (is (= :foo (bb "run" "--prn" "foo"))))))
+        (is (= :foo (bb "run" "--prn" "foo")))))
+  (testing "extra-paths"
+    (test-utils/with-config {:paths ["test-resources/task_scripts"]
+                             :tasks '{:requires ([tasks :as t])
+                                      foo {:extra-paths ["test-resources/task_test_scripts"]
+                                           :requires ([task-test :as tt])
+                                           :task tt/task-test-fn}}}
+      (is (= :task-test-fn (bb "run" "--prn" "foo")))))
+  (testing "extra-deps"
+    (test-utils/with-config {:tasks '{foo {:extra-deps {medley/medley {:mvn/version "1.3.0"}}
+                                           :requires ([medley.core :as m])
+                                           :task (m/index-by :id [{:id 1} {:id 2}])}}}
+      (is (= {1 {:id 1}, 2 {:id 2}} (bb "run" "--prn" "foo"))))))
 
 (deftest list-tasks-test
   (test-utils/with-config {}
