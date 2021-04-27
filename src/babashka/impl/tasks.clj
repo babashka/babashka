@@ -43,7 +43,7 @@
                         zero-exit?)]
         (if continue? proc
             (do (when-not zero-exit?
-                  (log-error "Terminating with non-zero exit code: " exit-code))
+                  (log-error "Terminating with non-zero exit code:" exit-code))
                 (System/exit exit-code)))))))
 
 (def default-opts
