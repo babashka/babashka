@@ -15,7 +15,7 @@
 (def log-level (sci/new-dynamic-var '*-log-level* default-log-level {:ns sci-ns}))
 ;; (def task-name (sci/new-dynamic-var '*-task-name* nil {:ns sci-ns}))
 (def task (sci/new-dynamic-var '*task* nil {:ns sci-ns}))
-(def task-fn (sci/new-dynamic-var 'current-task (fn [] (prn :task @task) @task) {:ns sci-ns}))
+(def task-fn (sci/new-dynamic-var 'current-task (fn [] @task) {:ns sci-ns}))
 
 (defn log-info [& strs]
   (let [log-level @log-level]
@@ -160,14 +160,11 @@
 (defn assemble-task-1
   "Assembles task, does not process :depends."
   ([task-map task log-level parallel?]
-   (assemble-task-1 task-map task log-level parallel? nil nil))
-  ([task-map task log-level parallel? last?] (assemble-task-1 task-map task log-level parallel? last? nil))
-  ([task-map task log-level parallel? last? depends]
-   (let [[task depends] (if (map? task)
-                          [(:task task) (:depends task)]
-                          [task depends])
-         task-map (if depends (assoc task-map :depends depends)
-                      task-map)
+   (assemble-task-1 task-map task log-level parallel? nil))
+  ([task-map task log-level parallel? last?]
+   (let [[task depends task-map] (if (map? task)
+                                   [(:task task) (:depends task) (merge task-map task)]
+                                   [task nil (assoc task-map :task task)])
          task-name (:name task-map)
          private? (or (:private task)
                       (str/starts-with? task-name "-"))
