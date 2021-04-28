@@ -15,7 +15,8 @@
 (def log-level (sci/new-dynamic-var '*-log-level* default-log-level {:ns sci-ns}))
 ;; (def task-name (sci/new-dynamic-var '*-task-name* nil {:ns sci-ns}))
 (def task (sci/new-dynamic-var '*task* nil {:ns sci-ns}))
-(def task-fn (sci/new-dynamic-var 'current-task (fn [] @task) {:ns sci-ns}))
+(def current-task (sci/new-dynamic-var 'current-task (fn [] @task) {:ns sci-ns}))
+(def state (sci/new-var 'state (atom {}) {:ns sci-ns}))
 
 (defn log-info [& strs]
   (let [log-level @log-level]
@@ -114,7 +115,8 @@
    'clojure (sci/copy-var clojure sci-ns)
    '-wait (sci/copy-var -wait sci-ns)
    '*task* task
-   'current-task task-fn
+   'current-task current-task
+   'current-state state
    '*-log-level* log-level
    '-log-info (sci/copy-var log-info sci-ns)
    '-log-error (sci/copy-var log-error sci-ns)})
@@ -250,19 +252,24 @@
             init (get tasks :init)
             prog (if-let [depends (when m? (:depends task))]
                    (let [targets (target-order tasks task-name)
-                         task-map {:order targets}]
+                         task-map {}]
                      (loop [prog ""
                             targets (seq targets)
+                            done []
                             extra-paths []
                             extra-deps nil
                             requires requires]
                        (let [t (first targets)
-                             task-map (assoc task-map :name t)
-                             targets (next targets)]
+                             targets (next targets)
+                             task-map (cond->
+                                          (assoc task-map :name t
+                                                 :-after done)
+                                        targets (assoc :-before (vec targets)))]
                          (if targets
                            (if-let [task (get tasks t)]
                              (recur (str prog "\n" (assemble-task-1 task-map task log-level parallel?))
                                     targets
+                                    (conj done t)
                                     (concat extra-paths (:extra-paths task))
                                     (merge extra-deps (:extra-deps task))
                                     (concat requires (:requires task)))
