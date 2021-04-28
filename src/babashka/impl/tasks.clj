@@ -13,8 +13,9 @@
 (def sci-ns (sci/create-ns 'babashka.tasks nil))
 (def default-log-level :error)
 (def log-level (sci/new-dynamic-var '*-log-level* default-log-level {:ns sci-ns}))
-(def task-name (sci/new-dynamic-var '*-task-name* nil {:ns sci-ns}))
+;; (def task-name (sci/new-dynamic-var '*-task-name* nil {:ns sci-ns}))
 (def task (sci/new-dynamic-var '*task* nil {:ns sci-ns}))
+(def task-fn (sci/new-dynamic-var 'current-task (fn [] (prn :task @task) @task) {:ns sci-ns}))
 
 (defn log-info [& strs]
   (let [log-level @log-level]
@@ -22,7 +23,7 @@
         ;; do not log when level is :error
         (identical? :info log-level)
       (binding [*out* *err*]
-        (println (format "[bb %s]" @task-name) (str/join " " strs))))))
+        (println (format "[bb %s]" (:name @task)) (str/join " " strs))))))
 
 (defn log-error [& strs]
   (let [log-level @log-level]
@@ -31,7 +32,7 @@
            (identical? :info log-level)
            (identical? :error log-level))
       (binding [*out* *err*]
-        (println (format "[bb %s]" @task-name) (str/join " " strs))))))
+        (println (format "[bb %s]" (:name @task)) (str/join " " strs))))))
 
 (defn- handle-non-zero [proc opts]
   (when proc
@@ -113,7 +114,7 @@
    'clojure (sci/copy-var clojure sci-ns)
    '-wait (sci/copy-var -wait sci-ns)
    '*task* task
-   '*-task-name* task-name
+   'current-task task-fn
    '*-log-level* log-level
    '-log-info (sci/copy-var log-info sci-ns)
    '-log-error (sci/copy-var log-error sci-ns)})
@@ -129,13 +130,13 @@
     expr))
 
 (defn wrap-body [task-map prog parallel? log-level]
-  (format "(binding [babashka.tasks/*-task-name* \"%s\"
+  (format "(binding [
   babashka.tasks/*-log-level* %s
-  babashka.tasks/*task* %s]
+  babashka.tasks/*task* '%s]
   (babashka.tasks/-log-info)
-  %s)" (:name task-map)
+  %s)"
           log-level
-          task-map
+          (pr-str task-map)
           (if parallel?
             (format "(future %s)" prog)
             prog)))
@@ -207,8 +208,13 @@
 (when-not (resolve 'shell)
   (intern *ns* 'shell babashka.tasks/shell))
 
+(when-not (resolve 'current-task)
+  (intern *ns* 'current-task babashka.tasks/current-task))
+
 %s
-%s"
+%s
+
+"
           (if (seq extra-paths)
             (format "(babashka.classpath/add-classpath \"%s\")" (str/join cp/path-sep extra-paths))
             "")
