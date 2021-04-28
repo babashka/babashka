@@ -249,17 +249,19 @@
             requires (get tasks :requires)
             init (get tasks :init)
             prog (if-let [depends (when m? (:depends task))]
-                   (let [targets (target-order tasks task-name)]
+                   (let [targets (target-order tasks task-name)
+                         task-map {:order targets}]
                      (loop [prog ""
                             targets (seq targets)
                             extra-paths []
                             extra-deps nil
                             requires requires]
                        (let [t (first targets)
+                             task-map (assoc task-map :name t)
                              targets (next targets)]
                          (if targets
                            (if-let [task (get tasks t)]
-                             (recur (str prog "\n" (assemble-task-1 {:name t} task log-level parallel?))
+                             (recur (str prog "\n" (assemble-task-1 task-map task log-level parallel?))
                                     targets
                                     (concat extra-paths (:extra-paths task))
                                     (merge extra-deps (:extra-deps task))
@@ -270,7 +272,7 @@
                              (let [prog (str prog "\n"
                                              (apply str (map deref-task depends))
                                              "\n"
-                                             (assemble-task-1 {:name t} task log-level parallel? true))
+                                             (assemble-task-1 task-map task log-level parallel? true))
                                    extra-paths (concat extra-paths (:extra-paths task))
                                    extra-deps (merge extra-deps (:extra-deps task))
                                    requires (concat requires (:requires task))]
