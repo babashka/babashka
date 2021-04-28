@@ -36,6 +36,11 @@
   (test-utils/with-config '{:deps {medley/medley {:mvn/version "1.3.0"}}}
     (is (= '{1 {:id 1}, 2 {:id 2}}
            (bb "-e" "(require 'medley.core)" "-e" "(medley.core/index-by :id [{:id 1} {:id 2}])"))))
+  (test-utils/with-config '{:deps {medley/medley {:mvn/version "1.3.0"}}}
+    (let [cp (bb "-e" "(do (require '[babashka.classpath :as cp])
+                           (cp/split-classpath (cp/get-classpath)))")]
+      (is (= 1 (count cp)))
+      (is (str/includes? (first cp) "medley"))))
   (testing "--classpath option overrides bb.edn"
     (test-utils/with-config '{:deps {medley/medley {:mvn/version "1.3.0"}}}
       (is (= "src"
