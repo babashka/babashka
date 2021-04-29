@@ -299,7 +299,7 @@
                                                  :name t
                                                  :before done)
                                         targets (assoc :after (vec targets))
-                                        depends-on-t (assoc :dependees depends-on-t))]
+                                        depends-on-t (assoc :dependents depends-on-t))]
                          (if targets
                            (if-let [task (get tasks t)]
                              (recur (str prog "\n" (assemble-task-1 task-map task log-level parallel?))
