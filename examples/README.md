@@ -31,6 +31,7 @@
   - [fzf](#fzf)
   - [digitalocean-ping.clj](#digitalocean-pingclj)
   - [download-aliases.clj](#download-aliasesclj)
+  - [Is TTY?](#is-tty)
 
 Here's a gallery of useful examples. Do you have a useful example? PR welcome!
 
@@ -431,3 +432,33 @@ $ bb digitalocean-ping.clj
 ## [download-aliases.clj](download-aliases.clj)
 
 Download deps for all aliases in a deps.edn project.
+
+## [Is TTY?](is_tty.clj)
+
+An equivalent of Python's `os.isatty()` in Babashka, to check if the
+`stdin`/`stdout`/`stderr` is connected to a TTY or not (useful to check if the
+script output is being redirect to `/dev/null`, for example).
+
+Only works in Unix systems.
+
+``` shell
+$ bb is-tty.clj
+STDIN is TTY?: true
+STDOUT is TTY?: true
+STDERR is TTY?: true
+
+$ bb is-tty.clj </dev/null
+STDIN is TTY?: false
+STDOUT is TTY?: true
+STDERR is TTY?: true
+
+$ bb is-tty.clj 1>&2 >/dev/null
+STDIN is TTY?: true
+STDOUT is TTY?: false
+STDERR is TTY?: true
+
+$ bb is-tty.clj 2>/dev/null
+STDIN is TTY?: true
+STDOUT is TTY?: true
+STDERR is TTY?: false
+```
