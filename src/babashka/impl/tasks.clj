@@ -179,7 +179,7 @@
            [(:task task)
             (:depends task)
             (merge task-map task)]
-           [task (:enter task-map) (:leave task-map) nil (assoc task-map :task task)])
+           [task nil (assoc task-map :task task)])
          enter (:enter task-map)
          leave (:leave task-map)
          task-name (:name task-map)
