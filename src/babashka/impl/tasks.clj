@@ -13,7 +13,10 @@
 (def sci-ns (sci/create-ns 'babashka.tasks nil))
 (def default-log-level :error)
 (def log-level (sci/new-dynamic-var '*-log-level* default-log-level {:ns sci-ns}))
-(def task-name (sci/new-dynamic-var '*-task-name* nil {:ns sci-ns}))
+;; (def task-name (sci/new-dynamic-var '*-task-name* nil {:ns sci-ns}))
+(def task (sci/new-dynamic-var '*task* nil {:ns sci-ns}))
+(def current-task (sci/new-dynamic-var 'current-task (fn [] @task) {:ns sci-ns}))
+(def state (sci/new-var 'state (atom {}) {:ns sci-ns}))
 
 (defn log-info [& strs]
   (let [log-level @log-level]
@@ -21,7 +24,7 @@
         ;; do not log when level is :error
         (identical? :info log-level)
       (binding [*out* *err*]
-        (println (format "[bb %s]" @task-name) (str/join " " strs))))))
+        (println (format "[bb %s]" (:name @task)) (str/join " " strs))))))
 
 (defn log-error [& strs]
   (let [log-level @log-level]
@@ -30,7 +33,7 @@
            (identical? :info log-level)
            (identical? :error log-level))
       (binding [*out* *err*]
-        (println (format "[bb %s]" @task-name) (str/join " " strs))))))
+        (println (format "[bb %s]" (:name @task)) (str/join " " strs))))))
 
 (defn- handle-non-zero [proc opts]
   (when proc
@@ -111,7 +114,9 @@
   {'shell (sci/copy-var shell sci-ns)
    'clojure (sci/copy-var clojure sci-ns)
    '-wait (sci/copy-var -wait sci-ns)
-   '*-task-name* task-name
+   '*task* task
+   'current-task current-task
+   'current-state state
    '*-log-level* log-level
    '-log-info (sci/copy-var log-info sci-ns)
    '-log-error (sci/copy-var log-error sci-ns)})
@@ -126,25 +131,38 @@
     (format "(when %s %s)" (second when-expr) expr)
     expr))
 
-(defn wrap-body [task-name prog parallel? log-level]
-  (format "(binding [babashka.tasks/*-task-name* \"%s\"
-  babashka.tasks/*-log-level* %s]
+(defn wrap-body [task-map prog parallel? log-level]
+  (format "(binding [
+  babashka.tasks/*-log-level* %s
+  babashka.tasks/*task* '%s]
   (babashka.tasks/-log-info)
-  %s)" task-name
+  %s)"
           log-level
+          (pr-str task-map)
           (if parallel?
             (format "(future %s)" prog)
             prog)))
 
-(defn wrap-def [task-name prog parallel? last? log-level]
-  (format "(def %s %s) %s"
-          task-name (wrap-body task-name prog parallel? log-level)
-          (if (and parallel? last?)
-            (format "(babashka.tasks/-wait %s)" task-name)
-            task-name)))
+(defn wrap-def [task-map prog parallel? last? log-level]
+  (let [task-name (:name task-map)]
+    (format "(def %s %s) %s"
+            task-name (wrap-body task-map prog parallel? log-level)
+            (if (and parallel? last?)
+              (format "(babashka.tasks/-wait %s)" task-name)
+              task-name))))
 
 (defn deref-task [dep]
   (format "(def %s (babashka.tasks/-wait %s))" dep dep))
+
+(defn wrap-enter-leave [prog enter leave]
+  (str (pr-str enter) "\n"
+       (if leave
+         (format "
+(let [res %s]
+  %s
+  res)"
+                 prog (pr-str leave))
+         prog)))
 
 (defn wrap-depends [prog depends parallel?]
   (if parallel?
@@ -153,23 +171,32 @@
 
 (defn assemble-task-1
   "Assembles task, does not process :depends."
-  ([task-name task log-level parallel?]
-   (assemble-task-1 task-name task log-level parallel? nil nil))
-  ([task-name task log-level parallel? last?] (assemble-task-1 task-name task log-level parallel? last? nil))
-  ([task-name task log-level parallel? last? depends]
-   (let [[task depends] (if (map? task)
-                          [(:task task) (:depends task)]
-                          [task depends])
+  ([task-map task log-level parallel?]
+   (assemble-task-1 task-map task log-level parallel? nil))
+  ([task-map task log-level parallel? last?]
+   (let [[task depends task-map]
+         (if (map? task)
+           [(:task task)
+            (:depends task)
+            (merge task-map task)]
+           [task nil (assoc task-map :task task)])
+         enter (:enter task-map)
+         leave (:leave task-map)
+         task-name (:name task-map)
          private? (or (:private task)
                       (str/starts-with? task-name "-"))
+         task-map (if private?
+                    (assoc task-map :private private?)
+                    task-map)
          log-level (or (:log-level task)
                        (when private?
                          :error)
                        log-level)]
      (if (qualified-symbol? task)
        (let [prog (format "(apply %s *command-line-args*)" task)
+             prog (wrap-enter-leave prog enter leave)
              prog (wrap-depends prog depends parallel?)
-             prog (wrap-def task-name prog parallel? last? log-level)
+             prog (wrap-def task-map prog parallel? last? log-level)
              prog (format "
 (when-not (resolve '%s) (require (quote %s)))
 %s"
@@ -177,9 +204,10 @@
                           (namespace task)
                           prog)]
              prog)
-       (let [task (pr-str task)
-             prog (wrap-depends task depends parallel?)
-             prog (wrap-def task-name prog parallel? last? log-level)]
+       (let [prog (pr-str task)
+             prog (wrap-enter-leave prog enter leave)
+             prog (wrap-depends prog depends parallel?)
+             prog (wrap-def task-map prog parallel? last? log-level)]
          prog)))))
 
 (defn format-task [init extra-paths extra-deps requires prog]
@@ -196,8 +224,13 @@
 (when-not (resolve 'shell)
   (intern *ns* 'shell babashka.tasks/shell))
 
+(when-not (resolve 'current-task)
+  (intern *ns* 'current-task babashka.tasks/current-task))
+
 %s
-%s"
+%s
+
+"
           (if (seq extra-paths)
             (format "(babashka.classpath/add-classpath \"%s\")" (str/join cp/path-sep extra-paths))
             "")
@@ -224,10 +257,22 @@
                (conj order task-name))
            order))))))
 
+#_(defn tasks->dependees [task-names tasks]
+  (let [tasks->depends (zipmap task-names (map #(:depends (get tasks %)) task-names))]
+    (persistent!
+     (reduce (fn [acc [task depends]]
+               (reduce (fn [acc dep]
+                         (assoc! acc dep (conj (or (get acc dep)
+                                                   #{})
+                                               task)))
+                       acc depends)) (transient {}) tasks->depends))))
+
 (defn assemble-task [task-name parallel? log-level]
   (let [task-name (symbol task-name)
         bb-edn @bb-edn
         tasks (get bb-edn :tasks)
+        enter (:enter tasks)
+        leave (:leave tasks)
         log-level (or log-level (:log-level tasks) default-log-level)
         task (get tasks task-name)]
     (if task
@@ -235,18 +280,31 @@
             requires (get tasks :requires)
             init (get tasks :init)
             prog (if-let [depends (when m? (:depends task))]
-                   (let [targets (target-order tasks task-name)]
+                   (let [targets (target-order tasks task-name)
+                         #_#_dependees (tasks->dependees targets tasks)
+                         task-map (cond-> {}
+                                    enter (assoc :enter enter)
+                                    leave (assoc :leave leave))]
                      (loop [prog ""
                             targets (seq targets)
+                            done []
                             extra-paths []
                             extra-deps nil
                             requires requires]
                        (let [t (first targets)
-                             targets (next targets)]
+                             targets (next targets)
+                             #_#_ depends-on-t (get dependees t)
+                             task-map (cond->
+                                          (assoc task-map
+                                                 :name t
+                                                 #_#_:started done)
+                                        #_#_targets (assoc :pending (vec targets))
+                                        #_#_depends-on-t (assoc :dependents depends-on-t))]
                          (if targets
                            (if-let [task (get tasks t)]
-                             (recur (str prog "\n" (assemble-task-1 t task log-level parallel?))
+                             (recur (str prog "\n" (assemble-task-1 task-map task log-level parallel?))
                                     targets
+                                    (conj done t)
                                     (concat extra-paths (:extra-paths task))
                                     (merge extra-deps (:extra-deps task))
                                     (concat requires (:requires task)))
@@ -256,7 +314,7 @@
                              (let [prog (str prog "\n"
                                              (apply str (map deref-task depends))
                                              "\n"
-                                             (assemble-task-1 t task log-level parallel? true))
+                                             (assemble-task-1 task-map task log-level parallel? true))
                                    extra-paths (concat extra-paths (:extra-paths task))
                                    extra-deps (merge extra-deps (:extra-deps task))
                                    requires (concat requires (:requires task))]
@@ -268,7 +326,10 @@
                       (:extra-paths task)
                       (:extra-deps task)
                       (concat requires (:requires task))
-                      (assemble-task-1 task-name task log-level parallel? true))] nil])]
+                      (assemble-task-1 (cond-> {:name task-name}
+                                         enter (assoc :enter enter)
+                                         leave (assoc :leave leave))
+                                       task log-level parallel? true))] nil])]
         (when (= "true" (System/getenv "BABASHKA_DEV"))
           (.println System/out (ffirst prog)))
         prog)
