@@ -257,7 +257,7 @@
                (conj order task-name))
            order))))))
 
-(defn tasks->dependees [task-names tasks]
+#_(defn tasks->dependees [task-names tasks]
   (let [tasks->depends (zipmap task-names (map #(:depends (get tasks %)) task-names))]
     (persistent!
      (reduce (fn [acc [task depends]]
@@ -281,7 +281,7 @@
             init (get tasks :init)
             prog (if-let [depends (when m? (:depends task))]
                    (let [targets (target-order tasks task-name)
-                         dependees (tasks->dependees targets tasks)
+                         #_#_dependees (tasks->dependees targets tasks)
                          task-map (cond-> {}
                                     enter (assoc :enter enter)
                                     leave (assoc :leave leave))]
@@ -293,13 +293,13 @@
                             requires requires]
                        (let [t (first targets)
                              targets (next targets)
-                             depends-on-t (get dependees t)
+                             #_#_ depends-on-t (get dependees t)
                              task-map (cond->
                                           (assoc task-map
                                                  :name t
-                                                 :before done)
-                                        targets (assoc :after (vec targets))
-                                        depends-on-t (assoc :dependents depends-on-t))]
+                                                 #_#_:started done)
+                                        #_#_targets (assoc :pending (vec targets))
+                                        #_#_depends-on-t (assoc :dependents depends-on-t))]
                          (if targets
                            (if-let [task (get tasks t)]
                              (recur (str prog "\n" (assemble-task-1 task-map task log-level parallel?))
