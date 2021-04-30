@@ -7,7 +7,7 @@ For a list of breaking changes, check [here](#breaking-changes).
 ## 0.3.7
 
 - Ignore local and global deps.edn when resolving deps for `bb.edn` [#807](https://github.com/babashka/babashka/issues/807)
-- Use `IllegalArgumentException` when throwing on duplicate case constants [#807](https://github.com/babashka/babashka/issues/807)
+- Use `IllegalArgumentException` when throwing on duplicate case constants [#809](https://github.com/babashka/babashka/issues/809)
 - Fix --classpath when no additional args are passed [#811](https://github.com/babashka/babashka/issues/811)
 - Task changes and improvements, see [issue](https://github.com/babashka/babashka/issues/778)
 
