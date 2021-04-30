@@ -143,7 +143,18 @@
     (test-utils/with-config {:tasks '{foo {:extra-deps {medley/medley {:mvn/version "1.3.0"}}
                                            :requires ([medley.core :as m])
                                            :task (m/index-by :id [{:id 1} {:id 2}])}}}
-      (is (= {1 {:id 1}, 2 {:id 2}} (bb "run" "--prn" "foo"))))))
+      (is (= {1 {:id 1}, 2 {:id 2}} (bb "run" "--prn" "foo")))))
+  (testing "enter / leave"
+    (test-utils/with-config '{:tasks {:init (do (def enter-ctx (atom []))
+                                                (def leave-ctx (atom [])))
+                                      :enter (swap! enter-ctx conj (:name (current-task)))
+                                      :leave (swap! leave-ctx conj (:name (current-task)))
+                                      foo {:depends [bar]
+                                           :task [@enter-ctx @leave-ctx]}
+                                      bar {:depends [baz]}
+                                      baz {:enter nil
+                                           :leave nil}}}
+      (is (= '[[bar foo] [bar]] (bb "run" "--prn" "foo"))))))
 
 (deftest list-tasks-test
   (test-utils/with-config {}
