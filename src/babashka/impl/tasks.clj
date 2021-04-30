@@ -1,6 +1,6 @@
 (ns babashka.impl.tasks
   (:require [babashka.impl.classpath :as cp]
-            [babashka.impl.common :refer [bb-edn]]
+            [babashka.impl.common :refer [ctx bb-edn]]
             [babashka.impl.deps :as deps]
             [babashka.process :as p]
             [clojure.java.io :as io]
@@ -110,14 +110,6 @@
       @res
       res)))
 
-(def tasks-namespace
-  {'shell (sci/copy-var shell sci-ns)
-   'clojure (sci/copy-var clojure sci-ns)
-   '-wait (sci/copy-var -wait sci-ns)
-   '*task* task
-   'current-task current-task
-   'current-state state})
-
 (defn depends-map [tasks target-name]
   (let [deps (seq (:depends (get tasks target-name)))
         m [target-name deps]]
@@ -211,6 +203,9 @@
 
 (when-not (resolve 'current-task)
   (intern *ns* 'current-task babashka.tasks/current-task))
+
+(when-not (resolve 'run)
+  (intern *ns* 'run babashka.tasks/run))
 
 %s
 %s
@@ -379,3 +374,18 @@
                         (when-let [d (doc-from-task sci-ctx tasks task)]
                           (str " " d))))))
       (println "No tasks found."))))
+
+(defn run
+  ([task] (run task nil))
+  ([task {:keys [:parallel]}]
+   (let [[[expr]] (assemble-task task parallel)]
+     (sci/eval-string* @ctx expr))))
+
+(def tasks-namespace
+  {'shell (sci/copy-var shell sci-ns)
+   'clojure (sci/copy-var clojure sci-ns)
+   '-wait (sci/copy-var -wait sci-ns)
+   '*task* task
+   'current-task current-task
+   'current-state state
+   'run (sci/copy-var run sci-ns)})

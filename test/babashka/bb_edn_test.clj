@@ -154,7 +154,11 @@
                                       bar {:depends [baz]}
                                       baz {:enter nil
                                            :leave nil}}}
-      (is (= '[[bar foo] [bar]] (bb "run" "--prn" "foo"))))))
+      (is (= '[[bar foo] [bar]] (bb "run" "--prn" "foo")))))
+  (testing "run"
+    (test-utils/with-config '{:tasks {a (+ 1 2 3)
+                                      b (prn (run 'a))}}
+      (is (= 6 (bb "run" "b"))))))
 
 (deftest list-tasks-test
   (test-utils/with-config {}
