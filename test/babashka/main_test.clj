@@ -612,6 +612,10 @@ true")))
                   (generate-token))]
     (is (string? (bb nil (str prog))))))
 
+(deftest with-precision-test
+  (is (= 0.33333333333333333333M (bb nil "(with-precision 20 (/ 1M 3))")))
+  (is (= 0.33333333333333333334M (bb nil "(with-precision 20 :rounding CEILING (/ 1M 3))"))))
+
 ;;;; Scratch
 
 (comment

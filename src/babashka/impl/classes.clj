@@ -142,6 +142,8 @@
           java.lang.Throwable
           java.math.BigDecimal
           java.math.BigInteger
+          java.math.MathContext
+          java.math.RoundingMode
           java.net.ConnectException
           java.net.DatagramSocket
           java.net.DatagramPacket
