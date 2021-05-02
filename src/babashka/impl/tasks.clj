@@ -135,14 +135,14 @@
 (defn deref-task [dep]
   (format "(def %s (babashka.tasks/-wait %s))" dep dep))
 
-(defn wrap-enter-leave [prog enter leave]
+(defn wrap-enter-leave [task-name prog enter leave]
   (str (pr-str enter) "\n"
        (if leave
          (format "
-(let [res %s]
+(let [%s %s]
   %s
-  res)"
-                 prog (pr-str leave))
+  %s)"
+                 task-name prog (pr-str leave) task-name)
          prog)))
 
 (defn wrap-depends [prog depends parallel?]
@@ -171,7 +171,7 @@
                     task-map)]
      (if (qualified-symbol? task)
        (let [prog (format "(apply %s *command-line-args*)" task)
-             prog (wrap-enter-leave prog enter leave)
+             prog (wrap-enter-leave task-name prog enter leave)
              prog (wrap-depends prog depends parallel?)
              prog (wrap-def task-map prog parallel? last?)
              prog (format "
@@ -182,7 +182,7 @@
                           prog)]
              prog)
        (let [prog (pr-str task)
-             prog (wrap-enter-leave prog enter leave)
+             prog (wrap-enter-leave task-name prog enter leave)
              prog (wrap-depends prog depends parallel?)
              prog (wrap-def task-map prog parallel? last?)]
          prog)))))
