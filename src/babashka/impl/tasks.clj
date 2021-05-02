@@ -230,7 +230,7 @@
    (let [task (tasks task-name)
          depends (:depends task)]
      (when (contains? processing task-name)
-       (throw (Exception. (str "Cyclic task: " task-name))))
+       (throw (ex-info (str "Cyclic task: " task-name) {})))
      (loop [deps (seq depends)]
        (let [deps (remove #(contains? @processed %) deps)
              order (vec (mapcat #(target-order tasks % processed (conj processing task-name)) deps))]
@@ -261,47 +261,53 @@
             requires (get tasks :requires)
             init (get tasks :init)
             prog (if-let [depends (when m? (:depends task))]
-                   (let [targets (target-order tasks task-name)
+                   (let [[targets error]
+                         (try [(target-order tasks task-name)]
+                              (catch clojure.lang.ExceptionInfo e
+                                [nil (ex-message e)]))
                          #_#_dependees (tasks->dependees targets tasks)
                          task-map (cond-> {}
                                     enter (assoc :enter enter)
                                     leave (assoc :leave leave))]
-                     (loop [prog ""
-                            targets (seq targets)
-                            done []
-                            extra-paths []
-                            extra-deps nil
-                            requires requires]
-                       (let [t (first targets)
-                             targets (next targets)
-                             #_#_ depends-on-t (get dependees t)
-                             task-map (cond->
-                                          (assoc task-map
-                                                 :name t
-                                                 #_#_:started done)
-                                        #_#_targets (assoc :pending (vec targets))
-                                        #_#_depends-on-t (assoc :dependents depends-on-t))]
-                         (if targets
-                           (if-let [task (get tasks t)]
-                             (recur (str prog "\n" (assemble-task-1 task-map task parallel?))
-                                    targets
-                                    (conj done t)
-                                    (concat extra-paths (:extra-paths task))
-                                    (merge extra-deps (:extra-deps task))
-                                    (concat requires (:requires task)))
-                             [(binding [*out* *err*]
-                                (println "No such task:" t)) 1])
-                           (if-let [task (get tasks t)]
-                             (let [prog (str prog "\n"
-                                             (apply str (map deref-task depends))
-                                             "\n"
-                                             (assemble-task-1 task-map task parallel? true))
-                                   extra-paths (concat extra-paths (:extra-paths task))
-                                   extra-deps (merge extra-deps (:extra-deps task))
-                                   requires (concat requires (:requires task))]
-                               [[(format-task init extra-paths extra-deps requires prog)] nil])
-                             [(binding [*out* *err*]
-                                (println "No such task:" t)) 1])))))
+                     (if error
+                       [(binding [*out* *err*]
+                          (println error)) 1]
+                       (loop [prog ""
+                              targets (seq targets)
+                              done []
+                              extra-paths []
+                              extra-deps nil
+                              requires requires]
+                         (let [t (first targets)
+                               targets (next targets)
+                               #_#_ depends-on-t (get dependees t)
+                               task-map (cond->
+                                            (assoc task-map
+                                                   :name t
+                                                   #_#_:started done)
+                                          #_#_targets (assoc :pending (vec targets))
+                                          #_#_depends-on-t (assoc :dependents depends-on-t))]
+                           (if targets
+                             (if-let [task (get tasks t)]
+                               (recur (str prog "\n" (assemble-task-1 task-map task parallel?))
+                                      targets
+                                      (conj done t)
+                                      (concat extra-paths (:extra-paths task))
+                                      (merge extra-deps (:extra-deps task))
+                                      (concat requires (:requires task)))
+                               [(binding [*out* *err*]
+                                  (println "No such task:" t)) 1])
+                             (if-let [task (get tasks t)]
+                               (let [prog (str prog "\n"
+                                               (apply str (map deref-task depends))
+                                               "\n"
+                                               (assemble-task-1 task-map task parallel? true))
+                                     extra-paths (concat extra-paths (:extra-paths task))
+                                     extra-deps (merge extra-deps (:extra-deps task))
+                                     requires (concat requires (:requires task))]
+                                 [[(format-task init extra-paths extra-deps requires prog)] nil])
+                               [(binding [*out* *err*]
+                                  (println "No such task:" t)) 1]))))))
                    [[(format-task
                       init
                       (:extra-paths task)
