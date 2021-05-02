@@ -50,7 +50,7 @@
   (test-utils/with-config '{:tasks {foo (+ 1 2 3)}}
     (is (= 6 (bb "run" "--prn" "foo"))))
   (let [tmp-dir (fs/create-temp-dir)
-        out (str (fs/file tmp-dir "out.txt"))]
+        out     (str (fs/file tmp-dir "out.txt"))]
     (testing "shell test"
       (test-utils/with-config {:tasks {'foo (list 'shell {:out out}
                                                   "echo hello")}}
@@ -58,8 +58,8 @@
         (is (= "hello\n" (slurp out)))))
     (fs/delete out)
     (testing "shell test with :continue"
-      (test-utils/with-config {:tasks {'foo (list 'shell {:out out
-                                                          :err out
+      (test-utils/with-config {:tasks {'foo (list 'shell {:out      out
+                                                          :err      out
                                                           :continue true}
                                                   "ls foobar")}}
         (bb "foo")
@@ -67,11 +67,11 @@
                            "foobar"))))
     (fs/delete out)
     (testing "shell test with :continue fn"
-      (test-utils/with-config {:tasks {'foo (list '-> (list 'shell {:out out
-                                                                    :err out
+      (test-utils/with-config {:tasks {'foo (list '-> (list 'shell {:out      out
+                                                                    :err      out
                                                                     :continue '(fn [proc]
-                                                                           (contains? proc :exit))}
-                                                      "ls foobar")
+                                                                                 (contains? proc :exit))}
+                                                            "ls foobar")
                                                   :exit)}}
         (is (pos? (bb "run" "--prn" "foo")))))
     (fs/delete out)
@@ -83,112 +83,116 @@
     (fs/delete out)
     (testing "depends"
       (test-utils/with-config {:tasks {'quux (list 'spit out "quux\n")
-                                       'baz (list 'spit out "baz\n" :append true)
-                                       'bar {:depends ['baz]
-                                             :task (list 'spit out "bar\n" :append true)}
-                                       'foo {:depends ['quux 'bar 'baz]
-                                             :task (list 'spit out "foo\n" :append true)}}}
+                                       'baz  (list 'spit out "baz\n" :append true)
+                                       'bar  {:depends ['baz]
+                                              :task    (list 'spit out "bar\n" :append true)}
+                                       'foo  {:depends ['quux 'bar 'baz]
+                                              :task    (list 'spit out "foo\n" :append true)}}}
         (bb "foo")
         (is (= "quux\nbaz\nbar\nfoo\n" (slurp out)))))
     (fs/delete out)
     ;; This is why we don't support :when for now
     #_(testing "depends with :when"
         (test-utils/with-config {:tasks {'quux (list 'spit out "quux\n")
-                                         'baz (list 'spit out "baz\n" :append true)
-                                         'bar {:when false
-                                               :depends ['baz]
-                                               :task (list 'spit out "bar\n" :append true)}
-                                         'foo {:depends ['quux 'bar]
-                                               :task (list 'spit out "foo\n" :append true)}}}
+                                         'baz  (list 'spit out "baz\n" :append true)
+                                         'bar  {:when    false
+                                                :depends ['baz]
+                                                :task    (list 'spit out "bar\n" :append true)}
+                                         'foo  {:depends ['quux 'bar]
+                                                :task    (list 'spit out "foo\n" :append true)}}}
           (bb "foo")
           (is (= "quux\nbaz\nbar\nfoo\n" (slurp out))))))
   (testing "init test"
-      (test-utils/with-config '{:tasks {:init (def x 1)
-                                        foo x}}
-        (is (= 1 (bb "run" "--prn" "foo")))))
+    (test-utils/with-config '{:tasks {:init (def x 1)
+                                      foo   x}}
+      (is (= 1 (bb "run" "--prn" "foo")))))
   (testing "requires test"
-      (test-utils/with-config '{:tasks {:requires ([babashka.fs :as fs])
-                                        foo (fs/exists? ".")}}
-        (is (= true (bb "run" "--prn" "foo"))))
-      (test-utils/with-config '{:tasks {foo {:requires ([babashka.fs :as fs])
-                                             :task (fs/exists? ".")}}}
-        (is (= true (bb "run" "--prn" "foo"))))
-      (test-utils/with-config '{:tasks {bar {:requires ([babashka.fs :as fs])}
-                                        foo {:depends [bar]
-                                             :task (fs/exists? ".")}}}
-        (is (= true (bb "run" "--prn" "foo")))))
+    (test-utils/with-config '{:tasks {:requires ([babashka.fs :as fs])
+                                      foo       (fs/exists? ".")}}
+      (is (= true (bb "run" "--prn" "foo"))))
+    (test-utils/with-config '{:tasks {foo {:requires ([babashka.fs :as fs])
+                                           :task     (fs/exists? ".")}}}
+      (is (= true (bb "run" "--prn" "foo"))))
+    (test-utils/with-config '{:tasks {bar {:requires ([babashka.fs :as fs])}
+                                      foo {:depends [bar]
+                                           :task    (fs/exists? ".")}}}
+      (is (= true (bb "run" "--prn" "foo")))))
   (testing "map returned from task"
-      (test-utils/with-config '{:tasks {foo {:task {:a 1 :b 2}}}}
-        (is (= {:a 1 :b 2} (bb "run" "--prn" "foo")))))
+    (test-utils/with-config '{:tasks {foo {:task {:a 1 :b 2}}}}
+      (is (= {:a 1 :b 2} (bb "run" "--prn" "foo")))))
   (testing "fully qualified symbol execution"
-      (test-utils/with-config {:paths ["test-resources/task_scripts"]
-                               :tasks '{foo tasks/foo}}
-        (is (= :foo (bb "run" "--prn" "foo"))))
-      (test-utils/with-config {:paths ["test-resources/task_scripts"]
-                               :tasks '{:requires ([tasks :as t])
-                                        foo t/foo}}
-        (is (= :foo (bb "run" "--prn" "foo"))))
-      (test-utils/with-config {:paths ["test-resources/task_scripts"]
-                               :tasks '{foo {:requires ([tasks :as t])
-                                             :task t/foo}}}
-        (is (= :foo (bb "run" "--prn" "foo")))))
+    (test-utils/with-config {:paths ["test-resources/task_scripts"]
+                             :tasks '{foo tasks/foo}}
+      (is (= :foo (bb "run" "--prn" "foo"))))
+    (test-utils/with-config {:paths ["test-resources/task_scripts"]
+                             :tasks '{:requires ([tasks :as t])
+                                      foo       t/foo}}
+      (is (= :foo (bb "run" "--prn" "foo"))))
+    (test-utils/with-config {:paths ["test-resources/task_scripts"]
+                             :tasks '{foo {:requires ([tasks :as t])
+                                           :task     t/foo}}}
+      (is (= :foo (bb "run" "--prn" "foo")))))
   (testing "extra-paths"
     (test-utils/with-config {:paths ["test-resources/task_scripts"]
                              :tasks '{:requires ([tasks :as t])
-                                      foo {:extra-paths ["test-resources/task_test_scripts"]
-                                           :requires ([task-test :as tt])
-                                           :task tt/task-test-fn}}}
+                                      foo       {:extra-paths ["test-resources/task_test_scripts"]
+                                                 :requires    ([task-test :as tt])
+                                                 :task        tt/task-test-fn}}}
       (is (= :task-test-fn (bb "run" "--prn" "foo")))))
   (testing "extra-deps"
     (test-utils/with-config {:tasks '{foo {:extra-deps {medley/medley {:mvn/version "1.3.0"}}
-                                           :requires ([medley.core :as m])
-                                           :task (m/index-by :id [{:id 1} {:id 2}])}}}
+                                           :requires   ([medley.core :as m])
+                                           :task       (m/index-by :id [{:id 1} {:id 2}])}}}
       (is (= {1 {:id 1}, 2 {:id 2}} (bb "run" "--prn" "foo")))))
   (testing "enter / leave"
-    (test-utils/with-config '{:tasks {:init (do (def enter-ctx (atom []))
-                                                (def leave-ctx (atom [])))
+    (test-utils/with-config '{:tasks {:init  (do (def enter-ctx (atom []))
+                                                 (def leave-ctx (atom [])))
                                       :enter (swap! enter-ctx conj (:name (current-task)))
                                       :leave (swap! leave-ctx conj (:name (current-task)))
-                                      foo {:depends [bar]
-                                           :task [@enter-ctx @leave-ctx]}
-                                      bar {:depends [baz]}
-                                      baz {:enter nil
-                                           :leave nil}}}
+                                      foo    {:depends [bar]
+                                              :task    [@enter-ctx @leave-ctx]}
+                                      bar    {:depends [baz]}
+                                      baz    {:enter nil
+                                              :leave nil}}}
       (is (= '[[bar foo] [bar]] (bb "run" "--prn" "foo")))))
   (testing "run"
     (test-utils/with-config '{:tasks {a (+ 1 2 3)
                                       b (prn (run 'a))}}
       (is (= 6 (bb "run" "b")))))
   (testing "no such task"
-    (test-utils/with-config '{:tasks {a      (+ 1 2 3)}}
+    (test-utils/with-config '{:tasks {a (+ 1 2 3)}}
       (is (thrown-with-msg?
             Exception #"No such task: b"
             (bb "run" "b")))))
   (testing "unresolved dependency"
-    (test-utils/with-config '{:tasks {a      (+ 1 2 3)
-                                      b      {:depends [x]
-                                              :task    (+ a 4 5 6)}}}
+    (test-utils/with-config '{:tasks {a (+ 1 2 3)
+                                      b {:depends [x]
+                                         :task    (+ a 4 5 6)}}}
       (is (thrown-with-msg?
             Exception #"No such task: x"
             (bb "run" "b")))))
   (testing "cyclic task"
-    (test-utils/with-config '{:tasks {b      {:depends [b]
-                                              :task    (+ a 4 5 6)}}}
+    (test-utils/with-config '{:tasks {b {:depends [b]
+                                         :task    (+ a 4 5 6)}}}
       (is (thrown-with-msg?
             Exception #"Cyclic task: b"
             (bb "run" "b"))))
-    (test-utils/with-config '{:tasks {c      {:depends [b]}
-                                      b      {:depends [c]
-                                              :task    (+ a 4 5 6)}}}
+    (test-utils/with-config '{:tasks {c {:depends [b]}
+                                      b {:depends [c]
+                                         :task    (+ a 4 5 6)}}}
       (is (thrown-with-msg?
             Exception #"Cyclic task: b"
-            (bb "run" "b"))))))
+            (bb "run" "b")))))
+  (testing "doc"
+    (test-utils/with-config '{:tasks {b {:doc "Beautiful docstring"}}}
+      (let [s (test-utils/bb nil "doc" "b")]
+        (is (= "-------------------------\nb\nTask\nBeautiful docstring\n" s)))))
 
-(deftest list-tasks-test
-  (test-utils/with-config {}
-    (let [res (test-utils/bb nil "tasks")]
-      (is (str/includes? res "No tasks found."))))
-  (test-utils/with-config "{:paths [\"test-resources/task_scripts\"]
+  (deftest list-tasks-test
+    (test-utils/with-config {}
+      (let [res (test-utils/bb nil "tasks")]
+        (is (str/includes? res "No tasks found."))))
+    (test-utils/with-config "{:paths [\"test-resources/task_scripts\"]
                             :tasks {:requires ([tasks :as t])
                                     task1
                                     {:doc \"task1 doc\"
@@ -206,16 +210,16 @@
                                     baz non-existing/bar
                                     quux {:requires ([tasks :as t2])
                                           :task t2/foo}}}"
-    (let [res (test-utils/bb nil "tasks")]
-      (is (= "The following tasks are available:\n\ntask1 task1 doc\ntask2 task2 doc\nfoo   Foo docstring\nbar   Foo docstring\nbaz  \nquux  Foo docstring\n"
-             res))))
-  (testing ":tasks is the first node"
-    (test-utils/with-config "{:tasks {task1
+      (let [res (test-utils/bb nil "tasks")]
+        (is (= "The following tasks are available:\n\ntask1 task1 doc\ntask2 task2 doc\nfoo   Foo docstring\nbar   Foo docstring\nbaz  \nquux  Foo docstring\n"
+               res))))
+    (testing ":tasks is the first node"
+      (test-utils/with-config "{:tasks {task1
                                     {:doc \"task1 doc\"
                                      :task (+ 1 2 3)}}}"
-      (let [res (test-utils/bb nil "tasks")]
-        (is (= "The following tasks are available:\n\ntask1 task1 doc\n"
-               res))))))
+        (let [res (test-utils/bb nil "tasks")]
+          (is (= "The following tasks are available:\n\ntask1 task1 doc\n"
+                 res)))))))
 
 (deftest task-priority-test
   (when-not test-utils/native?

@@ -162,8 +162,18 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
   [nil 0])
 
 (defn print-doc [ctx command-line-args]
-  (let [arg (first command-line-args)]
-    (if (sci/eval-string* ctx (format "
+  (let [arg (first command-line-args)
+        tasks (:tasks @common/bb-edn)]
+    (if (or (when-let [s (tasks/doc-from-task
+                           ctx
+                           tasks
+                           (get tasks (symbol arg)))]
+              [(do (println "-------------------------")
+                   (println arg)
+                   (println "Task")
+                   (println s)
+                   true) 0])
+            (sci/eval-string* ctx (format "
 (when (or (resolve '%1$s)
           (if (simple-symbol? '%1$s)
             (try (require '%1$s) true
@@ -171,7 +181,7 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
             (try (requiring-resolve '%1$s) true
               (catch Exception e nil))))
  (clojure.repl/doc %1$s)
- true)" arg))
+ true)" arg)))
       [nil 0]
       [nil 1]))
   ,)
