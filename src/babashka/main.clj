@@ -110,20 +110,20 @@
 (defn print-help [_ctx _command-line-args]
   (println (str "Babashka v" version))
   (println "
-Usage: bb [classpath opts] [eval opts] [cmdline args]
-or:    bb [classpath opts] file [cmdline args]
-or:    bb [classpath opts] subcommand [subcommand opts] [cmdline args]
+Usage: bb [global-opts] [eval opts] [cmdline args]
+or:    bb [global-opts] file [cmdline args]
+or:    bb [global-opts] subcommand [subcommand opts] [cmdline args]
 
-Classpath:
+Global opts:
 
   -cp, --classpath     Classpath to use. Overrides bb.edn classpath.
+  --debug              Print debug information and internal stacktrace in case of exception.
 
 Evaluation:
 
   -e, --eval <expr>    Evaluate an expression.
   -f, --file <path>    Evaluate a file.
   -m, --main <ns|var>  Call the -main function from a namespace or call a fully qualified var.
-  --verbose            Print debug information and entire stacktrace in case of exception.
 
 Help:
 
@@ -567,7 +567,7 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
     (if options
       (case (first options)
         ("--classpath" "-cp") (recur (nnext options) (assoc opts-map :classpath (second options)))
-        ("--verbose") (recur (next options) (assoc opts-map :verbose? true))
+        ("--debug") (recur (next options) (assoc opts-map :debug true))
         [options opts-map])
       [options opts-map])))
 
@@ -612,12 +612,12 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                     :help :file :command-line-args
                     :expressions :stream?
                     :repl :socket-repl :nrepl
-                    :verbose? :classpath
+                    :debug :classpath
                     :main :uberscript :describe?
                     :jar :uberjar :clojure
                     :doc :run :list-tasks]}
             cli-opts
-            _ (when verbose? (vreset! common/verbose? true))
+            _ (when debug (vreset! common/debug true))
             _ (do ;; set properties
                 (when main (System/setProperty "babashka.main" main))
                 (System/setProperty "babashka.version" version))
@@ -709,7 +709,7 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                   file (try [[(read-file file)] nil]
                             (catch Exception e
                               (error-handler e {:expression expressions
-                                                :verbose? verbose?
+                                                :debug debug
                                                 :preloads preloads
                                                 :loader (:loader @cp/cp-state)}))))
             expression (str/join " " expressions) ;; this might mess with the locations...
@@ -722,7 +722,7 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                           (sci/eval-string* sci-ctx preloads)
                           (catch Throwable e
                             (error-handler e {:expression expression
-                                              :verbose? verbose?
+                                              :debug debug
                                               :preloads preloads
                                               :loader (:loader @cp/cp-state)})))))
                     nil))
@@ -772,7 +772,7 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                                      res)))))
                            (catch Throwable e
                              (error-handler e {:expression expression
-                                               :verbose? verbose?
+                                               :debug debug
                                                :preloads preloads
                                                :loader (:loader @cp/cp-state)}))))
                        clojure [nil (if-let [proc (deps/clojure command-line-args)]
@@ -795,7 +795,7 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                           :jar :uber
                           :classpath cp
                           :main-class main
-                          :verbose verbose?})
+                          :verbose debug})
             (throw (Exception. "The uberjar task needs a classpath."))))
         exit-code))))
 
