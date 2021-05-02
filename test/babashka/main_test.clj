@@ -35,6 +35,12 @@
   (is (= {:classpath "src"
           :uberjar "foo.jar"}
          (main/parse-opts ["--classpath" "src" "uberjar" "foo.jar"])))
+  (is (= {:classpath "src"
+          :uberjar "foo.jar"
+          :verbose? true}
+         (main/parse-opts ["--verbose" "--classpath" "src" "uberjar" "foo.jar"])))
+  (is (= "src" (:classpath (main/parse-opts ["--classpath" "src"]))))
+  (is (:verbose? (main/parse-opts ["--verbose"])))
   (is (= 123 (bb nil "(println 123)")))
   (is (= 123 (bb nil "-e" "(println 123)")))
   (is (= 123 (bb nil "--eval" "(println 123)")))
@@ -47,7 +53,7 @@
   (let [v (bb nil "--describe")]
     (is (:babashka/version v))
     (is (:feature/xml v)))
-  (is (= "src" (:classpath (main/parse-opts ["--classpath" "src"])))))
+  )
 
 (deftest version-test
   (is (= [1 0 0] (main/parse-version "1.0.0-SNAPSHOT")))

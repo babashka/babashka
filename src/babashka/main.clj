@@ -427,12 +427,6 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
           (assoc opts-map :run fst :command-line-args (next args))))
       opts-map)))
 
-(defn parse-global-opts [options]
-  (when-let [f (first options)]
-    (case f
-      ("--classpath" "-cp") [(nnext options) (second options)]
-      [options nil])))
-
 (defn parse-args [args opts-map]
   (loop [options args
          opts-map opts-map]
@@ -567,12 +561,22 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                        :command-line-args (next options)))))))
       opts-map)))
 
+(defn parse-global-opts [options]
+  (loop [options (seq options)
+         opts-map {}]
+    (if options
+      (case (first options)
+        ("--classpath" "-cp") (recur (nnext options) (assoc opts-map :classpath (second options)))
+        ("--verbose") (recur (next options) (assoc opts-map :verbose? true))
+        [options opts-map])
+      [options opts-map])))
+
 (defn parse-opts
   ([options] (parse-opts options nil))
   ([options opts-map]
-   (let [[options classpath] (parse-global-opts options)
-         opts-map (if classpath (assoc opts-map :classpath classpath)
-                      opts-map)
+   (let [[options opts-map] (if opts-map
+                              [options opts-map]
+                              (parse-global-opts options))
          opt (first options)
          tasks (into #{} (map str) (keys (:tasks @common/bb-edn)))]
      (if-not opt opts-map
@@ -580,16 +584,16 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
              (cond
                (fs/regular-file? opt)
                (if (str/ends-with? opt ".jar")
-                 {:classpath classpath
-                  :jar opt
-                  :command-line-args (next options)}
-                 {:classpath classpath
-                  :file opt
-                  :command-line-args (next options)})
+                 (assoc opts-map
+                        :jar opt
+                        :command-line-args (next options))
+                 (assoc opts-map
+                        :file opt
+                        :command-line-args (next options)))
                (contains? tasks opt)
-               {:run opt
-                :classpath classpath
-                :command-line-args (rest options)}
+               (assoc opts-map
+                      :run opt
+                      :command-line-args (next options))
                (command? opt)
                (recur (cons (str "--" opt) (next options)) opts-map)
                :else
