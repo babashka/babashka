@@ -579,7 +579,6 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                               (parse-global-opts options))
          opt (first options)
          tasks (into #{} (map str) (keys (:tasks @common/bb-edn)))]
-     (prn options opts-map)
      (if-not opt opts-map
              ;; FILE > TASK > SUBCOMMAND
              (cond
