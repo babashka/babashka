@@ -158,7 +158,19 @@
   (testing "run"
     (test-utils/with-config '{:tasks {a (+ 1 2 3)
                                       b (prn (run 'a))}}
-      (is (= 6 (bb "run" "b"))))))
+      (is (= 6 (bb "run" "b")))))
+  (testing "no such task"
+    (test-utils/with-config '{:tasks {a      (+ 1 2 3)}}
+      (is (thrown-with-msg?
+            Exception #"No such task: b"
+            (bb "run" "b")))))
+  (testing "unresolved dependency"
+    (test-utils/with-config '{:tasks {a      (+ 1 2 3)
+                                      b      {:depends [x]
+                                              :task    (+ a 4 5 6)}}}
+      (is (thrown-with-msg?
+            Exception #"No such task: x"
+            (bb "run" "b"))))))
 
 (deftest list-tasks-test
   (test-utils/with-config {}

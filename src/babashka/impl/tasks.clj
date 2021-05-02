@@ -288,7 +288,7 @@
                                     (merge extra-deps (:extra-deps task))
                                     (concat requires (:requires task)))
                              [(binding [*out* *err*]
-                                (println "No such task:" task-name)) 1])
+                                (println "No such task:" t)) 1])
                            (if-let [task (get tasks t)]
                              (let [prog (str prog "\n"
                                              (apply str (map deref-task depends))
@@ -299,7 +299,7 @@
                                    requires (concat requires (:requires task))]
                                [[(format-task init extra-paths extra-deps requires prog)] nil])
                              [(binding [*out* *err*]
-                                (println "No such task:" task-name)) 1])))))
+                                (println "No such task:" t)) 1])))))
                    [[(format-task
                       init
                       (:extra-paths task)
