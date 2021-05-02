@@ -37,10 +37,10 @@
          (main/parse-opts ["--classpath" "src" "uberjar" "foo.jar"])))
   (is (= {:classpath "src"
           :uberjar "foo.jar"
-          :verbose? true}
-         (main/parse-opts ["--verbose" "--classpath" "src" "uberjar" "foo.jar"])))
+          :debug true}
+         (main/parse-opts ["--debug" "--classpath" "src" "uberjar" "foo.jar"])))
   (is (= "src" (:classpath (main/parse-opts ["--classpath" "src"]))))
-  (is (:verbose? (main/parse-opts ["--verbose"])))
+  (is (:debug (main/parse-opts ["--debug"])))
   (is (= 123 (bb nil "(println 123)")))
   (is (= 123 (bb nil "-e" "(println 123)")))
   (is (= 123 (bb nil "--eval" "(println 123)")))

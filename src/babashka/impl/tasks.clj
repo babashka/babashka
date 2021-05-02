@@ -1,6 +1,6 @@
 (ns babashka.impl.tasks
   (:require [babashka.impl.classpath :as cp]
-            [babashka.impl.common :refer [ctx bb-edn]]
+            [babashka.impl.common :refer [ctx bb-edn debug]]
             [babashka.impl.deps :as deps]
             [babashka.process :as p]
             [clojure.java.io :as io]
@@ -309,8 +309,9 @@
                                          enter (assoc :enter enter)
                                          leave (assoc :leave leave))
                                        task parallel? true))] nil])]
-        (when (= "true" (System/getenv "BABASHKA_DEV"))
-          (.println System/out (ffirst prog)))
+        (when @debug
+          (binding [*out* *err*]
+            (println (ffirst prog))))
         prog)
       [(binding [*out* *err*]
          (println "No such task:" task-name)) 1])))
