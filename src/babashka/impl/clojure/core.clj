@@ -1,11 +1,11 @@
 (ns babashka.impl.clojure.core
   {:no-doc true}
-  (:refer-clojure :exclude [future read+string clojure-version])
+  (:refer-clojure :exclude [future read+string clojure-version with-precision])
   (:require [babashka.impl.common :as common]
             [borkdude.graal.locking :as locking]
             [clojure.string :as str]
             [sci.core :as sci]
-            [sci.impl.namespaces :refer [copy-core-var #_clojure-core-ns]]))
+            [sci.impl.namespaces :refer [copy-core-var clojure-core-ns]]))
 
 (defn locking* [form bindings v f & args]
   (apply @#'locking/locking form bindings v f args))
@@ -22,6 +22,7 @@
 (def data-readers (sci/new-dynamic-var '*data-readers* nil))
 (def command-line-args (sci/new-dynamic-var '*command-line-args* nil))
 (def warn-on-reflection (sci/new-dynamic-var '*warn-on-reflection* false))
+(def math-context (sci/new-dynamic-var '*math-context* nil))
 
 ;; (def major (:major *clojure-version*))
 ;; (def minor (:minor *clojure-version*))
@@ -68,6 +69,26 @@
         eof-value
         v) s])))
 
+(defmacro with-precision
+  "Sets the precision and rounding mode to be used for BigDecimal operations.
+
+  Usage: (with-precision 10 (/ 1M 3))
+  or:    (with-precision 10 :rounding HALF_DOWN (/ 1M 3))
+
+  The rounding mode is one of CEILING, FLOOR, HALF_UP, HALF_DOWN,
+  HALF_EVEN, UP, DOWN and UNNECESSARY; it defaults to HALF_UP."
+  [precision & exprs]
+  (let [[body rm] (if (= (first exprs) :rounding)
+                    [(next (next exprs))
+                     `((. java.math.RoundingMode ~(second exprs)))]
+                    [exprs nil])]
+    `(clojure.core/-with-precision (java.math.MathContext. ~precision ~@rm)
+                                   (fn [] ~@body))))
+
+(defn -with-precision [math-context body-fn]
+  (binding [*math-context* math-context]
+    (body-fn)))
+
 (def core-extras
   {'file-seq (copy-core-var file-seq)
    'agent (copy-core-var agent)
@@ -91,6 +112,9 @@
                   (apply read+string @common/ctx args))
    '*command-line-args* command-line-args
    '*warn-on-reflection* warn-on-reflection
+   '*math-context* math-context
+   'with-precision (sci/copy-var with-precision clojure-core-ns)
+   '-with-precision (sci/copy-var -with-precision clojure-core-ns)
    ;;'*clojure-version* clojure-version-var
    ;;'clojure-version (sci/copy-var clojure-version clojure-core-ns)
    }
