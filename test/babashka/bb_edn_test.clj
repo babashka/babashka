@@ -170,6 +170,18 @@
                                               :task    (+ a 4 5 6)}}}
       (is (thrown-with-msg?
             Exception #"No such task: x"
+            (bb "run" "b")))))
+  (testing "cyclic task"
+    (test-utils/with-config '{:tasks {b      {:depends [b]
+                                              :task    (+ a 4 5 6)}}}
+      (is (thrown-with-msg?
+            Exception #"Cyclic task: b"
+            (bb "run" "b"))))
+    (test-utils/with-config '{:tasks {c      {:depends [b]}
+                                      b      {:depends [c]
+                                              :task    (+ a 4 5 6)}}}
+      (is (thrown-with-msg?
+            Exception #"Cyclic task: b"
             (bb "run" "b"))))))
 
 (deftest list-tasks-test

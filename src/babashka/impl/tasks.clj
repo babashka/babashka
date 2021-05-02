@@ -225,13 +225,15 @@
           prog))
 
 (defn target-order
-  ([tasks task-name] (target-order tasks task-name (volatile! #{})))
-  ([tasks task-name processed]
+  ([tasks task-name] (target-order tasks task-name (volatile! #{}) #{}))
+  ([tasks task-name processed processing]
    (let [task (tasks task-name)
          depends (:depends task)]
+     (when (contains? processing task-name)
+       (throw (Exception. (str "Cyclic task: " task-name))))
      (loop [deps (seq depends)]
        (let [deps (remove #(contains? @processed %) deps)
-             order (vec (mapcat #(target-order tasks % processed) deps))]
+             order (vec (mapcat #(target-order tasks % processed (conj processing task-name)) deps))]
          (if-not (contains? @processed task-name)
            (do (vswap! processed conj task-name)
                (conj order task-name))
