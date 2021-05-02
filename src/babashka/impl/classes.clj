@@ -151,6 +151,7 @@
           java.net.InetAddress
           java.net.ServerSocket
           java.net.Socket
+          java.net.SocketException
           java.net.UnknownHostException
           java.net.URI
           ;; java.net.URL, see below
@@ -268,8 +269,9 @@
     :methods [borkdude.graal.LockFix] ;; support for locking
 
     :fields [clojure.lang.PersistentQueue]
-    :instance-checks [clojure.lang.APersistentMap ;; for proxy
-                      clojure.lang.AMapEntry ;; for proxy
+    :instance-checks [clojure.lang.AMapEntry ;; for proxy
+                      clojure.lang.APersistentMap ;; for proxy
+                      clojure.lang.AReference
                       clojure.lang.Associative
                       clojure.lang.Atom
                       clojure.lang.Cons
