@@ -577,7 +577,9 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
     (if options
       (case (first options)
         ("--classpath" "-cp") (recur (nnext options) (assoc opts-map :classpath (second options)))
-        ("--debug") (recur (next options) (assoc opts-map :debug true))
+        ("--debug"
+         "--verbose" ;; renamed to --debug
+         ) (recur (next options) (assoc opts-map :debug true))
         [options opts-map])
       [options opts-map])))
 

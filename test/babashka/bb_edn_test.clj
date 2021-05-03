@@ -20,18 +20,6 @@
       :eof nil}
      ret)))
 
-(deftest doc-test
-  (test-utils/with-config {:paths ["test-resources/task_scripts"]}
-    (is (str/includes? (apply test-utils/bb nil
-                              (map str ["doc" "tasks"]))
-                       "This is task ns docstring."))
-    (is (str/includes? (apply test-utils/bb nil
-                              (map str ["doc" "tasks/foo"]))
-                       "Foo docstring"))
-    (is (str/includes? (apply test-utils/bb nil
-                              (map str ["doc" "tasks/-main"]))
-                       "Main docstring"))))
-
 (deftest deps-test
   (test-utils/with-config '{:deps {medley/medley {:mvn/version "1.3.0"}}}
     (is (= '{1 {:id 1}, 2 {:id 2}}

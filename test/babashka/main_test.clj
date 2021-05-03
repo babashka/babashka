@@ -622,6 +622,23 @@ true")))
   (is (= 0.33333333333333333333M (bb nil "(with-precision 20 (/ 1M 3))")))
   (is (= 0.33333333333333333334M (bb nil "(with-precision 20 :rounding CEILING (/ 1M 3))"))))
 
+(deftest doc-test
+  (test-utils/with-config {:paths ["test-resources/task_scripts"]}
+    (is (str/includes? (apply test-utils/bb nil
+                              (map str ["doc" "tasks"]))
+                       "This is task ns docstring."))
+    (is (str/includes? (apply test-utils/bb nil
+                              (map str ["doc" "tasks/foo"]))
+                       "Foo docstring"))
+    (is (str/includes? (apply test-utils/bb nil
+                              (map str ["doc" "tasks/-main"]))
+                       "Main docstring"))
+    (is (str/includes? (apply test-utils/bb nil
+                              (map str ["doc" "with-precision"]))
+                       "precision"))
+    (is (str/blank? (with-out-str (main/main "doc" "non-existing"))))
+    (is (= 1 (main/main "doc" "non-existing")))))
+
 ;;;; Scratch
 
 (comment
