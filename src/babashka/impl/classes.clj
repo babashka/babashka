@@ -125,6 +125,7 @@
           java.lang.Integer
           java.lang.Iterable
           java.lang.Long
+          java.lang.NullPointerException
           java.lang.Number
           java.lang.NumberFormatException
           java.lang.Math
