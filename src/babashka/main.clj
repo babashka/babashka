@@ -1,4 +1,3 @@
-(require '[babashka.impl.patches]) ;; ensure this is loaded first
 (ns babashka.main
   {:no-doc true}
   (:refer-clojure :exclude [error-handler])
@@ -854,10 +853,6 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                 (println "ran" n "times"))))))
     (let [exit-code (apply main args)]
       (System/exit exit-code))))
-
-(alter-var-root #'io/resource (constantly (fn [path]
-                                            (prn :path path :res (cp/resource path))
-                                            (cp/resource path))))
 
 ;;;; Scratch
 
