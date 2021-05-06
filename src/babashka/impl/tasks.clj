@@ -46,11 +46,10 @@
                             (continue proc))
                         zero-exit?)]
         (if continue? proc
-            (do (when-not zero-exit?
-                  (binding [*out* *err*]
-                    (println "Received non-zero exit code in task:" (:name @task))))
-                (throw (ex-info (str "Error during task: " (:name @task))
-                                {:proc proc :task task :exit exit-code}))))))))
+            (throw (ex-info (str "Error while executing task: " (:name @task))
+                            {:proc proc
+                             :task task
+                             :babashka/exit exit-code})))))))
 
 (def default-opts
   {:in :inherit

@@ -79,8 +79,8 @@
 (defn error-handler [^Exception e opts]
   (binding [*out* *err*]
     (let [d (ex-data e)
-          cause-exit (some-> e ex-cause ex-data :exit)
-          exit-code (or (:exit d) cause-exit)
+          cause-exit (some-> e ex-cause ex-data :babashka/exit)
+          exit-code (or (:babashka/exit d) cause-exit)
           sci-error? (isa? (:type d) :sci/error)
           ex-name (when sci-error?
                     (some-> ^Throwable (ex-cause e)
@@ -88,41 +88,45 @@
           stacktrace (some->
                       d :sci.impl/callstack
                       cs/stacktrace)]
-      (if exit-code [nil exit-code]
-          (do
-            (ruler "Error")
-            (println "Type:    " (or
-                                  ex-name
-                                  (.. e getClass getName)))
-            (when-let [m (.getMessage e)]
-              (println (str "Message:  " m)))
-            (let [{:keys [:file :line :column]} d]
-              (when line
-                (println (str "Location: "
-                              (when file (str file ":"))
-                              line ":" column""))))
-            (when-let [phase (cs/phase e stacktrace)]
-              (println "Phase:   " phase))
-            (println)
-            (when-let [ec (when sci-error?
-                            (error-context e opts))]
-              (ruler "Context")
-              (println ec)
-              (println))
-            (when-let [locals (not-empty (:locals d))]
-              (ruler "Locals")
-              (print-locals locals)
-              (println))
-            (when sci-error?
-              (when-let
-                  [st (let [st (with-out-str
-                                 (when stacktrace
-                                   (print-stacktrace stacktrace opts)))]
-                        (when-not (str/blank? st) st))]
-                (ruler "Stack trace")
-                (println st)))
-            (when (:debug opts)
-              (ruler "Exception")
-              (print-stack-trace e))
-              (flush)
-              [nil 1])))))
+      (if exit-code
+        (do
+          (when-let [m (.getMessage e)]
+            (println m))
+          [nil exit-code])
+        (do
+          (ruler "Error")
+          (println "Type:    " (or
+                                ex-name
+                                (.. e getClass getName)))
+          (when-let [m (.getMessage e)]
+            (println (str "Message:  " m)))
+          (let [{:keys [:file :line :column]} d]
+            (when line
+              (println (str "Location: "
+                            (when file (str file ":"))
+                            line ":" column""))))
+          (when-let [phase (cs/phase e stacktrace)]
+            (println "Phase:   " phase))
+          (println)
+          (when-let [ec (when sci-error?
+                          (error-context e opts))]
+            (ruler "Context")
+            (println ec)
+            (println))
+          (when-let [locals (not-empty (:locals d))]
+            (ruler "Locals")
+            (print-locals locals)
+            (println))
+          (when sci-error?
+            (when-let
+                [st (let [st (with-out-str
+                               (when stacktrace
+                                 (print-stacktrace stacktrace opts)))]
+                      (when-not (str/blank? st) st))]
+              (ruler "Stack trace")
+              (println st)))
+          (when (:debug opts)
+            (ruler "Exception")
+            (print-stack-trace e))
+          (flush)
+          [nil 1])))))
