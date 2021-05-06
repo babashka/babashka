@@ -2,6 +2,7 @@
   {:no-doc true}
   (:require [babashka.impl.classpath :refer [resource]]
             [sci.core :as sci]
+            [selmer.filters :as filters]
             [selmer.parser]
             [selmer.tags :as tags]
             [selmer.util :refer [*resource-fn*]]))
@@ -43,7 +44,15 @@
 (def selmer-tags-ns (sci/create-ns 'selmer.tags stns))
 
 (def selmer-tags-namespace
-  {;; needed by selmer.parser/add-tag! 
+  {;; needed by selmer.parser/add-tag!
    'expr-tags (sci/copy-var tags/expr-tags stns)
    ;; needed by selmer.parser/add-tag!
    'tag-handler (sci/copy-var tags/tag-handler stns)})
+
+(def sfns (sci/create-ns 'selmer.filters nil))
+
+(def selmer-filters-ns (sci/create-ns 'selmer.filters sfns))
+
+(def selmer-filters-namespace
+  {'add-filter! (sci/copy-var filters/add-filter! sfns)
+   'remove-filter! (sci/copy-var filters/remove-filter! sfns)})

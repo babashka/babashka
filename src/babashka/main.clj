@@ -371,7 +371,9 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
     features/selmer? (assoc 'selmer.parser
                             @(resolve 'babashka.impl.selmer/selmer-parser-namespace)
                             'selmer.tags
-                            @(resolve 'babashka.impl.selmer/selmer-tags-namespace))))
+                            @(resolve 'babashka.impl.selmer/selmer-tags-namespace)
+                            'selmer.filters
+                            @(resolve 'babashka.impl.selmer/selmer-filters-namespace))))
 
 (def imports
   '{ArithmeticException java.lang.ArithmeticException

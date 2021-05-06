@@ -1,13 +1,14 @@
 (ns selmer.core-test
-  (:require #_[selmer.tags :refer :all]
-            #_[selmer.filters :refer :all]
-            #_[selmer.template-parser :refer :all]
+  (:require #_[selmer.template-parser :refer :all]
             #_[selmer.util :refer :all]
             [cheshire.core :as cheshire]
             [clojure.java.io :as io]
             [clojure.string :as str]
-            [clojure.test :refer [deftest is testing]]
-            [selmer.parser :as p :refer [render render-file render-template parse parse-input]])
+            [clojure.test :refer [deftest are is testing]]
+            [selmer.filters :as f]
+            [selmer.parser :as p :refer [render render-file render-template
+                                         parse parse-input known-variables]]
+            [selmer.tags :as tags])
   (:import (java.io StringReader ByteArrayInputStream)
            java.io.File
            java.util.Locale))
@@ -21,8 +22,8 @@
          (try (render "{{blah|safe|woot" {:blah "woot"})
               (catch Exception ex (.getMessage ex))))))
 
-#_(deftest custom-handler-test
-  (let [handler (tag-handler
+(deftest custom-handler-test
+  (let [handler (tags/tag-handler
                   (fn [args context-map content]
                     (get-in content [:foo :content]))
                   :foo :endfoo)]
@@ -31,14 +32,14 @@
          (render-template (parse parse-input (java.io.StringReader. "{% foo %}some {{bar}} content{% endfoo %}")
                                  {:custom-tags {:foo handler}}) {:bar "bar"}))))
 
-  (let [handler (tag-handler
+  (let [handler (tags/tag-handler
                   (fn [args context-map] (clojure.string/join "," args))
                   :bar)]
     (is (= "arg1,arg2"
            (render-template (parse parse-input (java.io.StringReader. "{% bar arg1 arg2 %}")
                                    {:custom-tags {:bar handler}}) {}))))
 
-  (add-tag! :bar (fn [args context-map] (clojure.string/join "," args)))
+  (p/add-tag! :bar (fn [args context-map] (clojure.string/join "," args)))
   (render-template (parse parse-input (java.io.StringReader. "{% bar arg1 arg2 %}")) {}))
 
 (deftest remove-tag
@@ -474,565 +475,565 @@
 ;;     (= {:tag-value "nums", :tag-type :filter}
 ;;        (read-tag-info (java.io.StringReader. "{ nums }}")))))
 
-;; (deftest if-tag-test
-;;   (is
-;;     (= (fix-line-sep "\n\n\n\n<h1>NOT BAR!</h1>\n\n\n\n\"bar\"\n\n\n\n\t\n\tinner\n\t\n")
-;;        (render-template (parse parse-input (str path "if.html")) {:nested "x" :inner "y"})))
-;;   (is
-;;     (= (fix-line-sep "\n\n\n\n<h1>NOT BAR!</h1>\n\n\n\n\"foo\"\n\n\n")
-;;        (render-template (parse parse-input (str path "if.html")) {:user-id "bob"})))
-;;   (is
-;;     (= (fix-line-sep "\n\n\n\n<h1>NOT BAR!</h1>\n\n\n\n\"bar\"\n\n\n")
-;;        (render-template (parse parse-input (str path "if.html")) {:foo false})))
-;;   (is
-;;     (= (fix-line-sep "\n<h1>FOO!</h1>\n\n\n\n\n<h1>NOT BAR!</h1>\n\n\n\n\"bar\"\n\n\n")
-;;        (render-template (parse parse-input (str path "if.html")) {:foo true})))
-;;   (is
-;;     (= (fix-line-sep "\n<h1>FOO!</h1>\n\n\n\n\n<h1>BAR!</h1>\n\n\n\n\"bar\"\n\n\n")
-;;        (render-template (parse parse-input (str path "if.html")) {:foo true :bar "test"})))
-;;   (is
-;;     (= ""
-;;        (render "{% if x > 2 %}bigger{% endif %}" {:v 3})))
-;;   (is
-;;     (= "ok"
-;;        (render "{% if x = 2.0 %}ok{% endif %}" {:x 2})))
-;;   (is
-;;     (= "doublenil"
-;;        (render "{% if x = y %}doublenil{% endif %}" {})))
-;;   (is
-;;     (= "ok"
-;;        (render "{% if x|length = 5 %}ok{% endif %}" {:x (range 5)})))
-;;   (is
-;;     (= "bigger"
-;;        (render "{% if v > 2 %}bigger{% endif %}" {:v 3})))
-;;   (is
-;;     (= ""
-;;        (render "{% if v > 2 %}bigger{% endif %}" {:v 0})))
-;;   (is
-;;     (= "not bigger"
-;;        (render "{% if not v > 2 %}not bigger{% endif %}" {:v 0})))
-;;   (is
-;;     (= "smaller"
-;;        (render "{% if not v > 2 %}bigger{% else %}smaller{% endif %}" {:v 5})))
-;;   (is
-;;     (= "equal"
-;;        (render "{% if 5 = v %}equal{% endif %}" {:v 5})))
-;;   (is
-;;     (= ""
-;;        (render "{% if not 5 = v %}equal{% endif %}" {:v 5})))
-;;   (is
-;;     (= "greater equal"
-;;        (render "{% if 5 <= v %}greater equal{% endif %}" {:v 5})))
-;;   (is
-;;     (= "less equal"
-;;        (render "{% if 5 >= v %}less equal{% endif %}" {:v 5})))
-;;   (is
-;;     (= "less equal"
-;;        (render "{% if v1 >= v2 %}less equal{% endif %}" {:v1 5 :v2 3})))
-;;   (is
-;;     (= " no value "
-;;        (render "{% if user-id %} has value {% else %} no value {% endif %}" {})))
-;;   (is (= (render "{% if foo %}foo is true{% endif %}" {:foo true})
-;;          "foo is true"))
-;;   (is (= (render "{% if foo %}foo is true{% endif %}" {:foo false})
-;;          ""))
-;;   (is (= (render "{% if foo %}foo is true{% else %}foo is false{% endif %}"
-;;                  {:foo true})
-;;          "foo is true"))
-;;   (is (= (render "{% if foo %}foo is true{% else %}foo is false{% endif %}"
-;;                  {:foo false})
-;;          "foo is false"))
-;;   (is (= (render "{% if fruit = \"banana\"%}for monkey{% else %}not banana{% endif %}"
-;;                  {:fruit "banana"})
-;;          "for monkey"))
+(deftest if-tag-test
+  (is
+    (= (fix-line-sep "\n\n\n\n<h1>NOT BAR!</h1>\n\n\n\n\"bar\"\n\n\n\n\t\n\tinner\n\t\n")
+       (render-template (parse parse-input (str path "if.html")) {:nested "x" :inner "y"})))
+  (is
+    (= (fix-line-sep "\n\n\n\n<h1>NOT BAR!</h1>\n\n\n\n\"foo\"\n\n\n")
+       (render-template (parse parse-input (str path "if.html")) {:user-id "bob"})))
+  (is
+    (= (fix-line-sep "\n\n\n\n<h1>NOT BAR!</h1>\n\n\n\n\"bar\"\n\n\n")
+       (render-template (parse parse-input (str path "if.html")) {:foo false})))
+  (is
+    (= (fix-line-sep "\n<h1>FOO!</h1>\n\n\n\n\n<h1>NOT BAR!</h1>\n\n\n\n\"bar\"\n\n\n")
+       (render-template (parse parse-input (str path "if.html")) {:foo true})))
+  (is
+    (= (fix-line-sep "\n<h1>FOO!</h1>\n\n\n\n\n<h1>BAR!</h1>\n\n\n\n\"bar\"\n\n\n")
+       (render-template (parse parse-input (str path "if.html")) {:foo true :bar "test"})))
+  (is
+    (= ""
+       (render "{% if x > 2 %}bigger{% endif %}" {:v 3})))
+  (is
+    (= "ok"
+       (render "{% if x = 2.0 %}ok{% endif %}" {:x 2})))
+  (is
+    (= "doublenil"
+       (render "{% if x = y %}doublenil{% endif %}" {})))
+  (is
+    (= "ok"
+       (render "{% if x|length = 5 %}ok{% endif %}" {:x (range 5)})))
+  (is
+    (= "bigger"
+       (render "{% if v > 2 %}bigger{% endif %}" {:v 3})))
+  (is
+    (= ""
+       (render "{% if v > 2 %}bigger{% endif %}" {:v 0})))
+  (is
+    (= "not bigger"
+       (render "{% if not v > 2 %}not bigger{% endif %}" {:v 0})))
+  (is
+    (= "smaller"
+       (render "{% if not v > 2 %}bigger{% else %}smaller{% endif %}" {:v 5})))
+  (is
+    (= "equal"
+       (render "{% if 5 = v %}equal{% endif %}" {:v 5})))
+  (is
+    (= ""
+       (render "{% if not 5 = v %}equal{% endif %}" {:v 5})))
+  (is
+    (= "greater equal"
+       (render "{% if 5 <= v %}greater equal{% endif %}" {:v 5})))
+  (is
+    (= "less equal"
+       (render "{% if 5 >= v %}less equal{% endif %}" {:v 5})))
+  (is
+    (= "less equal"
+       (render "{% if v1 >= v2 %}less equal{% endif %}" {:v1 5 :v2 3})))
+  (is
+    (= " no value "
+       (render "{% if user-id %} has value {% else %} no value {% endif %}" {})))
+  (is (= (render "{% if foo %}foo is true{% endif %}" {:foo true})
+         "foo is true"))
+  (is (= (render "{% if foo %}foo is true{% endif %}" {:foo false})
+         ""))
+  (is (= (render "{% if foo %}foo is true{% else %}foo is false{% endif %}"
+                 {:foo true})
+         "foo is true"))
+  (is (= (render "{% if foo %}foo is true{% else %}foo is false{% endif %}"
+                 {:foo false})
+         "foo is false"))
+  (is (= (render "{% if fruit = \"banana\"%}for monkey{% else %}not banana{% endif %}"
+                 {:fruit "banana"})
+         "for monkey"))
 
-;;   (let [template
-;;         (parse parse-input
-;;                (java.io.StringReader.
-;;                  "{% if foo %}
-;;                   foo is true
-;;                   {% if bar %}bar is also true{% endif %}
-;;                   {% else %} foo is false
-;;                   {% if baz %}but baz is true {% else %}baz is also false{% endif %}
-;;                   {% endif %}"))]
-;;     (is (= (render-template template {:foo true :bar true :baz false})
-;;            "\n                  foo is true\n                  bar is also true\n                  "))
-;;     (is (= (render-template template {:foo false :bar true :baz false})
-;;            " foo is false\n                  baz is also false\n                  "))
-;;     (is (= (render-template template {:foo false :bar true :baz true})
-;;            " foo is false\n                  but baz is true \n                  ")))
-;;   (is (thrown? Exception (render "foo {% else %} bar" {}))))
+  (let [template
+        (parse parse-input
+               (java.io.StringReader.
+                 "{% if foo %}
+                  foo is true
+                  {% if bar %}bar is also true{% endif %}
+                  {% else %} foo is false
+                  {% if baz %}but baz is true {% else %}baz is also false{% endif %}
+                  {% endif %}"))]
+    (is (= (render-template template {:foo true :bar true :baz false})
+           "\n                  foo is true\n                  bar is also true\n                  "))
+    (is (= (render-template template {:foo false :bar true :baz false})
+           " foo is false\n                  baz is also false\n                  "))
+    (is (= (render-template template {:foo false :bar true :baz true})
+           " foo is false\n                  but baz is true \n                  ")))
+  (is (thrown? Exception (render "foo {% else %} bar" {}))))
 
-;; (deftest elif
-;;   (is (= "bar!"
-;;          (str/trim (render "{% if foo %}   foo!
-;;                                {% elif bar %} bar!
-;;                                {% elif baz %} baz!
-;;                                {% else %}     else!
-;;                                {% endif %}"
-;;                               {:foo false
-;;                                :bar true
-;;                                :baz true}))))
-;;   (is (= "baz!"
-;;          (str/trim (render "{% if foo %}   foo!
-;;                                {% elif bar %} bar!
-;;                                {% elif baz %} baz!
-;;                                {% else %}     else!
-;;                                {% endif %}"
-;;                               {:foo false
-;;                                :bar false
-;;                                :baz true}))))
-;;   (is (= "else!"
-;;          (str/trim (render "{% if foo %}   foo!
-;;                                {% elif bar %} bar!
-;;                                {% elif baz %} baz!
-;;                                {% else %}     else!
-;;                                {% endif %}"
-;;                               {:foo false
-;;                                :bar false
-;;                                :baz false}))))
-;;   (is (= "bar!"
-;;          (str/trim (render-file "templates/elif.html" {:bar true}))))
-;;   (is (= ""
-;;          (str/trim (render "{% if foo %}   foo!
-;;                                {% elif bar %} bar!
-;;                                {% elif baz %} baz!
-;;                                {% endif %}"
-;;                               {:foo false
-;;                                :bar false
-;;                                :baz false}))))
-;;   (is (= "bar!"
-;;          (str/trim (render "{% if foo > 3 %}       foo!
-;;                                {% elif not bar = 3 %} bar!
-;;                                {% elif baz %}         baz!
-;;                                {% endif %}"
-;;                               {:foo 2
-;;                                :bar 4
-;;                                :baz false}))))
-;;   (is (= "potato"
-;;          (str/trim (render "{% if foo > 3 %}       foo!
-;;                                {% elif any bar baz %} potato
-;;                                {% endif %}"
-;;                               {:foo 2
-;;                                :bar false
-;;                                :baz true})))))
+(deftest elif
+  (is (= "bar!"
+         (str/trim (render "{% if foo %}   foo!
+                               {% elif bar %} bar!
+                               {% elif baz %} baz!
+                               {% else %}     else!
+                               {% endif %}"
+                              {:foo false
+                               :bar true
+                               :baz true}))))
+  (is (= "baz!"
+         (str/trim (render "{% if foo %}   foo!
+                               {% elif bar %} bar!
+                               {% elif baz %} baz!
+                               {% else %}     else!
+                               {% endif %}"
+                              {:foo false
+                               :bar false
+                               :baz true}))))
+  (is (= "else!"
+         (str/trim (render "{% if foo %}   foo!
+                               {% elif bar %} bar!
+                               {% elif baz %} baz!
+                               {% else %}     else!
+                               {% endif %}"
+                              {:foo false
+                               :bar false
+                               :baz false}))))
+  (is (= "bar!"
+         (str/trim (render-file "templates/elif.html" {:bar true}))))
+  (is (= ""
+         (str/trim (render "{% if foo %}   foo!
+                               {% elif bar %} bar!
+                               {% elif baz %} baz!
+                               {% endif %}"
+                              {:foo false
+                               :bar false
+                               :baz false}))))
+  (is (= "bar!"
+         (str/trim (render "{% if foo > 3 %}       foo!
+                               {% elif not bar = 3 %} bar!
+                               {% elif baz %}         baz!
+                               {% endif %}"
+                              {:foo 2
+                               :bar 4
+                               :baz false}))))
+  (is (= "potato"
+         (str/trim (render "{% if foo > 3 %}       foo!
+                               {% elif any bar baz %} potato
+                               {% endif %}"
+                              {:foo 2
+                               :bar false
+                               :baz true})))))
 
-;; (deftest for-respects-missing-value-formatter
-;;   ;; Using bindings instead of set-missing-value-formatter! to avoid cleanup
-;;   (binding [*missing-value-formatter* (fn [tag context-map]
-;;                                         (str "missing: " tag))]
-;;     (is (= (render "{% for e in things %}{% endfor %}" {})
-;;            "missing: {:tag-name :for, :args [:things]}"))
-;;     (is (= (render "{% for e in things.a %}{% endfor %}" {:things {}})
-;;            "missing: {:tag-name :for, :args [:things :a]}"))))
+#_(deftest for-respects-missing-value-formatter
+  ;; Using bindings instead of set-missing-value-formatter! to avoid cleanup
+  (binding [*missing-value-formatter* (fn [tag context-map]
+                                        (str "missing: " tag))]
+    (is (= (render "{% for e in things %}{% endfor %}" {})
+           "missing: {:tag-name :for, :args [:things]}"))
+    (is (= (render "{% for e in things.a %}{% endfor %}" {:things {}})
+           "missing: {:tag-name :for, :args [:things :a]}"))))
 
-;; (deftest test-if-not
-;;   (is (= (render "{% if not foo %}foo is true{% endif %}" {:foo true})
-;;          ""))
-;;   (is (= (render "{% if not foo %}foo is true{% endif %}" {:foo false})
-;;          "foo is true")))
+(deftest test-if-not
+  (is (= (render "{% if not foo %}foo is true{% endif %}" {:foo true})
+         ""))
+  (is (= (render "{% if not foo %}foo is true{% endif %}" {:foo false})
+         "foo is true")))
 
-;; (deftest test-nested-if
-;;   (is (= (render (str "{% if foo %}before bar {% if bar %}"
-;;                       "foo & bar are true"
-;;                       "{% endif %} after bar{% endif %}")
-;;                  {:foo true
-;;                   :bar true})
-;;          "before bar foo & bar are true after bar")))
+(deftest test-nested-if
+  (is (= (render (str "{% if foo %}before bar {% if bar %}"
+                      "foo & bar are true"
+                      "{% endif %} after bar{% endif %}")
+                 {:foo true
+                  :bar true})
+         "before bar foo & bar are true after bar")))
 
-;; (deftest ifequal-tag-test
-;;   (is (= (fix-line-sep "\n<h1>equal!</h1>\n\n\n\n\n\n<p>not equal</p>\n\n")
-;;          (render-template (parse parse-input (str path "ifequal.html")) {:foo "bar"})))
-;;   (is (= (fix-line-sep "\n\n\n<h1>equal!</h1>\n\n\n\n<p>not equal</p>\n\n")
-;;          (render-template (parse parse-input (str path "ifequal.html")) {:foo "baz" :bar "baz"})))
-;;   (is (= (fix-line-sep "\n\n\n<h1>equal!</h1>\n\n\n\n<h1>equal!</h1>\n\n")
-;;          (render-template (parse parse-input (str path "ifequal.html")) {:baz "test"})))
-;;   (is (= (fix-line-sep "\n\n\n<h1>equal!</h1>\n\n\n\n<p>not equal</p>\n\n")
-;;          (render-template (parse parse-input (str path "ifequal.html")) {:baz "fail"})))
+(deftest ifequal-tag-test
+  (is (= (fix-line-sep "\n<h1>equal!</h1>\n\n\n\n\n\n<p>not equal</p>\n\n")
+         (render-template (parse parse-input (str path "ifequal.html")) {:foo "bar"})))
+  (is (= (fix-line-sep "\n\n\n<h1>equal!</h1>\n\n\n\n<p>not equal</p>\n\n")
+         (render-template (parse parse-input (str path "ifequal.html")) {:foo "baz" :bar "baz"})))
+  (is (= (fix-line-sep "\n\n\n<h1>equal!</h1>\n\n\n\n<h1>equal!</h1>\n\n")
+         (render-template (parse parse-input (str path "ifequal.html")) {:baz "test"})))
+  (is (= (fix-line-sep "\n\n\n<h1>equal!</h1>\n\n\n\n<p>not equal</p>\n\n")
+         (render-template (parse parse-input (str path "ifequal.html")) {:baz "fail"})))
 
-;;   (is (= (render "{% ifequal foo|upper \"FOO\" %}yez{% endifequal %}" {:foo "foo"})
-;;          "yez"))
+  (is (= (render "{% ifequal foo|upper \"FOO\" %}yez{% endifequal %}" {:foo "foo"})
+         "yez"))
 
-;;   (is (= (render "{% ifequal foo \"foo\" %}yez{% endifequal %}" {:foo "foo"})
-;;          "yez"))
-;;   (is (= (render "{% ifequal foo \"foo\" bar %}yez{% endifequal %}"
-;;                  {:foo "foo"
-;;                   :bar "foo"})
-;;          "yez"))
-;;   (is (= (render "{% ifequal foo \"foo\" bar %}yez{% endifequal %}"
-;;                  {:foo "foo"
-;;                   :bar "bar"})
-;;          ""))
-;;   (is (= (render "{% ifequal foo \"foo\" %}foo{% else %}no foo{% endifequal %}"
-;;                  {:foo "foo"})
-;;          "foo"))
-;;   (is (= (render "{% ifequal foo \"foo\" %}foo{% else %}no foo{% endifequal %}"
-;;                  {:foo false})
-;;          "no foo"))
-;;   (is (= (render "{% ifequal foo :foo %}foo{% endifequal %}"
-;;                  {:foo :foo})
-;;          "foo")))
+  (is (= (render "{% ifequal foo \"foo\" %}yez{% endifequal %}" {:foo "foo"})
+         "yez"))
+  (is (= (render "{% ifequal foo \"foo\" bar %}yez{% endifequal %}"
+                 {:foo "foo"
+                  :bar "foo"})
+         "yez"))
+  (is (= (render "{% ifequal foo \"foo\" bar %}yez{% endifequal %}"
+                 {:foo "foo"
+                  :bar "bar"})
+         ""))
+  (is (= (render "{% ifequal foo \"foo\" %}foo{% else %}no foo{% endifequal %}"
+                 {:foo "foo"})
+         "foo"))
+  (is (= (render "{% ifequal foo \"foo\" %}foo{% else %}no foo{% endifequal %}"
+                 {:foo false})
+         "no foo"))
+  (is (= (render "{% ifequal foo :foo %}foo{% endifequal %}"
+                 {:foo :foo})
+         "foo")))
 
-;; (deftest ifunequal-tag-test
-;;   (is (= (render "{% ifunequal foo \"bar\" %}yez{% endifunequal %}" {:foo "foo"})
-;;          "yez"))
-;;   (is (= (render "{% ifunequal foo \"foo\" %}yez{% endifunequal %}" {:foo "foo"})
-;;          ""))
-;;   (is (= (render "{% ifunequal foo|upper \"foo\" %}yez{% endifunequal %}" {:foo "foo"})
-;;          "yez"))
-;;   (is (= (render "{% ifunequal foo :bar %}foo{% endifunequal %}"
-;;                  {:foo :foo})
-;;          "foo")))
+(deftest ifunequal-tag-test
+  (is (= (render "{% ifunequal foo \"bar\" %}yez{% endifunequal %}" {:foo "foo"})
+         "yez"))
+  (is (= (render "{% ifunequal foo \"foo\" %}yez{% endifunequal %}" {:foo "foo"})
+         ""))
+  (is (= (render "{% ifunequal foo|upper \"foo\" %}yez{% endifunequal %}" {:foo "foo"})
+         "yez"))
+  (is (= (render "{% ifunequal foo :bar %}foo{% endifunequal %}"
+                 {:foo :foo})
+         "foo")))
 
-;; (deftest safe-tag
-;;   (is (= (render "{% safe %} {% if bar %}{% for i in y %} {{foo|upper}} {% endfor %}{%endif%} {% endsafe %}"
-;;                  {:bar true :foo "<foo>" :y [1 2]})
-;;          "  <FOO>  <FOO>  "))
-;;   (is (= (render-file "templates/safe.html" {:bar true :unsafe "<script>window.location.replace('http://not.so.safe');</script>"})
-;;          "<script>window.location.replace('http://not.so.safe');</script>")))
+(deftest safe-tag
+  (is (= (render "{% safe %} {% if bar %}{% for i in y %} {{foo|upper}} {% endfor %}{%endif%} {% endsafe %}"
+                 {:bar true :foo "<foo>" :y [1 2]})
+         "  <FOO>  <FOO>  "))
+  (is (= (render-file "templates/safe.html" {:bar true :unsafe "<script>window.location.replace('http://not.so.safe');</script>"})
+         "<script>window.location.replace('http://not.so.safe');</script>")))
 
-;; (deftest safe-tag-rendering
-;;   ;; .render-node should return an integer as add is defined as a safe filter
-;;   (is (= 42 (-> (parse parse-input
-;;                        (StringReader. "{{seed|safe}}"))
-;;                 ^selmer.node.INode first
-;;                 (.render-node {:seed 42})))))
+#_(deftest safe-tag-rendering
+  ;; .render-node should return an integer as add is defined as a safe filter
+  (is (= 42 (-> (parse parse-input
+                       (StringReader. "{{seed|safe}}"))
+                ^selmer.node.INode first
+                (.render-node {:seed 42})))))
 
-;; (deftest filter-tag-test
-;;   (is
-;;     (= "ok"
-;;        ((filter-tag {:tag-value "foo.bar.baz"}) {:foo {:bar {:baz "ok"}}})))
-;;   (is
-;;     (= "ok"
-;;        ((filter-tag {:tag-value "foo"}) {:foo "ok"}))))
+#_(deftest filter-tag-test
+  (is
+    (= "ok"
+       ((filter-tag {:tag-value "foo.bar.baz"}) {:foo {:bar {:baz "ok"}}})))
+  (is
+    (= "ok"
+       ((filter-tag {:tag-value "foo"}) {:foo "ok"}))))
 
-;; (deftest tag-content-test
-;;   (is
-;;     (= {:if   {:args nil :content ["foo bar "]}
-;;         :else {:args nil :content [" baz"]}}
-;;        (into {}
-;;              (map
-;;                (fn [[k v]]
-;;                  [k (update-in v [:content] #(map (fn [node] (.render-node ^selmer.node.INode node {})) %))])
-;;                (tag-content (java.io.StringReader. "foo bar {%else%} baz{% endif %}") :if :else :endif)))))
-;;   (is
-;;     (= {:for {:args nil, :content ["foo bar  baz"]}}
-;;        (update-in (tag-content (java.io.StringReader. "foo bar  baz{% endfor %}") :for :endfor)
-;;                   [:for :content 0] #(.render-node ^selmer.node.INode % {})))))
+#_(deftest tag-content-test
+  (is
+    (= {:if   {:args nil :content ["foo bar "]}
+        :else {:args nil :content [" baz"]}}
+       (into {}
+             (map
+               (fn [[k v]]
+                 [k (update-in v [:content] #(map (fn [node] (.render-node ^selmer.node.INode node {})) %))])
+               (tag-content (java.io.StringReader. "foo bar {%else%} baz{% endif %}") :if :else :endif)))))
+  (is
+    (= {:for {:args nil, :content ["foo bar  baz"]}}
+       (update-in (tag-content (java.io.StringReader. "foo bar  baz{% endfor %}") :for :endfor)
+                  [:for :content 0] #(.render-node ^selmer.node.INode % {})))))
 
-;; (deftest filter-upper
-;;   (is (= "FOO" (render "{{f|upper}}" {:f "foo"}))))
+(deftest filter-upper
+  (is (= "FOO" (render "{{f|upper}}" {:f "foo"}))))
 
-;; (deftest filter-email
-;;   (is (= "<a href='mailto:foo@bar.baz'>foo@bar.baz</a>"
-;;          (render "{{e|email}}" {:e "foo@bar.baz"})))
-;;   (is (= "<a href='mailto:foo@bar'>foo@bar</a>"
-;;          (render "{{e|email:false}}" {:e "foo@bar"})))
-;;   (is (thrown? Exception (render "{{e|email}}" {:e "foo@bar"}))))
+(deftest filter-email
+  (is (= "<a href='mailto:foo@bar.baz'>foo@bar.baz</a>"
+         (render "{{e|email}}" {:e "foo@bar.baz"})))
+  (is (= "<a href='mailto:foo@bar'>foo@bar</a>"
+         (render "{{e|email:false}}" {:e "foo@bar"})))
+  (is (thrown? Exception (render "{{e|email}}" {:e "foo@bar"}))))
 
-;; (deftest filter-01234
-;;   (is (= "<a href='tel:01234-567890'>01234 567890</a>"
-;;          (render "{{p|phone}}" {:p "01234 567890"})))
-;;   (is (= "<a href='tel:+44-1234-567890'>01234 567890</a>"
-;;          (render "{{p|phone:44}}" {:p "01234 567890"})))
-;;   (is (= "<a href='tel:01234-567890'>01234 567890</a>"
-;;          (render "{{p|phone:false}}" {:p "01234 567890"})))
-;;   (is (= "<a href='tel:+44-1234-567890'>01234 567890</a>"
-;;          (render "{{p|phone:44:true}}" {:p "01234 567890"})))
-;;   (is (= "<a href='tel:+44-1234-567890'>01234 567890</a>"
-;;          (render "{{p|phone:44:false}}" {:p "01234 567890"})))
-;;   (is (= "<a href='tel:01234-567890'>01234 567890</a>"
-;;          (render "{{p|phone}}" {:p "01234 567890"})))
-;;   (is (= "<a href='tel:abc-01234-56789'>abc 01234 56789</a>"
-;;          (render "{{p|phone:false}}" {:p "abc 01234 56789"})))
-;;   (is (thrown? Exception (render "{{p|phone}}" {:p "abc 01234 56789"})))
-;;   ;; if an international dialing prefix is supplied which doesn't appear
-;;   ;; to be valid (and we're validating), we ought to get an exception.
-;;   (is (thrown? Exception (render "{{p|phone:true:abc}}" {:p "01234 56789"}))))
+(deftest filter-01234
+  (is (= "<a href='tel:01234-567890'>01234 567890</a>"
+         (render "{{p|phone}}" {:p "01234 567890"})))
+  (is (= "<a href='tel:+44-1234-567890'>01234 567890</a>"
+         (render "{{p|phone:44}}" {:p "01234 567890"})))
+  (is (= "<a href='tel:01234-567890'>01234 567890</a>"
+         (render "{{p|phone:false}}" {:p "01234 567890"})))
+  (is (= "<a href='tel:+44-1234-567890'>01234 567890</a>"
+         (render "{{p|phone:44:true}}" {:p "01234 567890"})))
+  (is (= "<a href='tel:+44-1234-567890'>01234 567890</a>"
+         (render "{{p|phone:44:false}}" {:p "01234 567890"})))
+  (is (= "<a href='tel:01234-567890'>01234 567890</a>"
+         (render "{{p|phone}}" {:p "01234 567890"})))
+  (is (= "<a href='tel:abc-01234-56789'>abc 01234 56789</a>"
+         (render "{{p|phone:false}}" {:p "abc 01234 56789"})))
+  (is (thrown? Exception (render "{{p|phone}}" {:p "abc 01234 56789"})))
+  ;; if an international dialing prefix is supplied which doesn't appear
+  ;; to be valid (and we're validating), we ought to get an exception.
+  (is (thrown? Exception (render "{{p|phone:true:abc}}" {:p "01234 56789"}))))
 
-;; (deftest filter-subs
-;;   (is (= "FOO ..." (render "{{f|subs:0:3:\" ...\"}}" {:f "FOO BAR"}))))
+(deftest filter-subs
+  (is (= "FOO ..." (render "{{f|subs:0:3:\" ...\"}}" {:f "FOO BAR"}))))
 
-;; (deftest filter-abbreviate
-;;   (are [expected input] (= expected (render input {:f "this is a text to test"}))
-;;     "this is a text t..." "{{f|abbreviate:19:19}}"
-;;     "this is a text to test" "{{f|abbreviate:22:22}}"
-;;     "this is a text to test" "{{f|abbreviate:22:12}}"
-;;     "this is a..." "{{f|abbreviate:21:12}}"
-;;     "this is a text to ..." "{{f|abbreviate:21}}"
-;;     "this is a text to ..." "{{f|abbr-right|abbreviate:21}}"
-;;     "this is a text to ..." "{{f|abbr-left|abbr-right|abbreviate:21}}"
-;;     "... is a text to test" "{{f|abbr-left|abbreviate:21}}"
-;;     "... is a text to test" "{{f|abbr-right|abbr-left|abbreviate:21}}"
-;;     "this is a text to tes" "{{f|abbr-ellipsis:\"\"|abbreviate:21}}"
-;;     "this is a...t to test" "{{f|abbr-middle|abbreviate:21}}"
-;;     "this is a//xt to test" "{{f|abbr-ellipsis://|abbr-middle|abbreviate:21}}"
-;;     "this is a …xt to test" "{{f|abbr-ellipsis:…|abbr-middle|abbreviate:21}}")
+(deftest filter-abbreviate
+  (are [expected input] (= expected (render input {:f "this is a text to test"}))
+    "this is a text t..." "{{f|abbreviate:19:19}}"
+    "this is a text to test" "{{f|abbreviate:22:22}}"
+    "this is a text to test" "{{f|abbreviate:22:12}}"
+    "this is a..." "{{f|abbreviate:21:12}}"
+    "this is a text to ..." "{{f|abbreviate:21}}"
+    "this is a text to ..." "{{f|abbr-right|abbreviate:21}}"
+    "this is a text to ..." "{{f|abbr-left|abbr-right|abbreviate:21}}"
+    "... is a text to test" "{{f|abbr-left|abbreviate:21}}"
+    "... is a text to test" "{{f|abbr-right|abbr-left|abbreviate:21}}"
+    "this is a text to tes" "{{f|abbr-ellipsis:\"\"|abbreviate:21}}"
+    "this is a...t to test" "{{f|abbr-middle|abbreviate:21}}"
+    "this is a//xt to test" "{{f|abbr-ellipsis://|abbr-middle|abbreviate:21}}"
+    "this is a …xt to test" "{{f|abbr-ellipsis:…|abbr-middle|abbreviate:21}}")
 
-;;   (are [expected input] (= expected (render input {:f "1234567890*0987654321"}))
-;;     "123456 [...] 7654321" "{{f|abbr-middle|abbr-ellipsis:\" [...] \"|abbreviate:20}}"
-;;     "1234567 [..] 7654321" "{{f|abbr-middle|abbr-ellipsis:\" [..] \"|abbreviate:20}}"
-;;     "1234567 [.] 87654321" "{{f|abbr-middle|abbr-ellipsis:\" [.] \"|abbreviate:20}}"
-;;     "12345678900987654321" "{{f|abbr-middle|abbr-ellipsis:\"\"|abbreviate:20}}"
-;;     "123456 [...] 654321" "{{f|abbr-middle|abbr-ellipsis:\" [...] \"|abbreviate:19}}"
-;;     "123456 [..] 7654321" "{{f|abbr-middle|abbr-ellipsis:\" [..] \"|abbreviate:19}}"
-;;     "1234567 [.] 7654321" "{{f|abbr-middle|abbr-ellipsis:\" [.] \"|abbreviate:19}}"
-;;     "...67890*098765..." "{{f|abbr-left|abbreviate:19|abbreviate:18}}"
-;;     "...567890*09876..." "{{f|abbreviate:19|abbr-left|abbreviate:18}}")
+  (are [expected input] (= expected (render input {:f "1234567890*0987654321"}))
+    "123456 [...] 7654321" "{{f|abbr-middle|abbr-ellipsis:\" [...] \"|abbreviate:20}}"
+    "1234567 [..] 7654321" "{{f|abbr-middle|abbr-ellipsis:\" [..] \"|abbreviate:20}}"
+    "1234567 [.] 87654321" "{{f|abbr-middle|abbr-ellipsis:\" [.] \"|abbreviate:20}}"
+    "12345678900987654321" "{{f|abbr-middle|abbr-ellipsis:\"\"|abbreviate:20}}"
+    "123456 [...] 654321" "{{f|abbr-middle|abbr-ellipsis:\" [...] \"|abbreviate:19}}"
+    "123456 [..] 7654321" "{{f|abbr-middle|abbr-ellipsis:\" [..] \"|abbreviate:19}}"
+    "1234567 [.] 7654321" "{{f|abbr-middle|abbr-ellipsis:\" [.] \"|abbreviate:19}}"
+    "...67890*098765..." "{{f|abbr-left|abbreviate:19|abbreviate:18}}"
+    "...567890*09876..." "{{f|abbreviate:19|abbr-left|abbreviate:18}}")
 
-;;   (is (thrown-with-msg? Exception #"15 .* 14"
-;;                         (render "{{f|abbr-ellipsis:\"a long ellipsis\"|abbreviate:14}}" {:f "short text"})))
-;;   (is (thrown-with-msg? Exception #"14 .* 15"
-;;                         (render "{{f|abbreviate:14:15}}" {:f "short text"}))))
-
-
-
-;; (deftest filter-take
-;;   (is (= "[:dog :cat :bird]"
-;;          (render "{{seq-of-some-sort|take:3}}" {:seq-of-some-sort [:dog :cat :bird :bird :bird :is :the :word]}))))
+  (is (thrown-with-msg? Exception #"15 .* 14"
+                        (render "{{f|abbr-ellipsis:\"a long ellipsis\"|abbreviate:14}}" {:f "short text"})))
+  (is (thrown-with-msg? Exception #"14 .* 15"
+                        (render "{{f|abbreviate:14:15}}" {:f "short text"}))))
 
 
-;; (deftest filter-drop
-;;   (is (= "[:bird :is :the :word]"
-;;          (render "{{seq-of-some-sort|drop:4}}" {:seq-of-some-sort [:dog :cat :bird :bird :bird :is :the :word]}))))
 
-;; (deftest filter-drop-formatted
-;;   (is (= "bird is the word"
-;;          (render "{{seq-of-some-sort|drop:4|join:\" \"}}" {:seq-of-some-sort ["dog" "cat" "bird" "bird" "bird" "is" "the" "word"]}))))
+(deftest filter-take
+  (is (= "[:dog :cat :bird]"
+         (render "{{seq-of-some-sort|take:3}}" {:seq-of-some-sort [:dog :cat :bird :bird :bird :is :the :word]}))))
 
-;; ;; How do we handle nils ?
-;; ;; nils should return empty strings at the point of injection in a DTL library. - cma
-;; (deftest filter-no-value
-;;   (is (= "" (render "{{f|upper}}" {}))))
 
-;; (deftest filter-currency-format
-;;   (let [amount 123.45
-;;         curr (java.text.NumberFormat/getCurrencyInstance (Locale/getDefault))
-;;         curr-de (java.text.NumberFormat/getCurrencyInstance (java.util.Locale. "de"))
-;;         curr-de-DE (java.text.NumberFormat/getCurrencyInstance (java.util.Locale. "de" "DE"))]
-;;     (is (= (.format curr amount)
-;;            (render "{{f|currency-format}}" {:f amount})))
-;;     (is (= (.format curr-de amount) (render "{{f|currency-format:de}}" {:f amount})))
-;;     (is (= (.format curr-de-DE amount) (render "{{f|currency-format:de:DE}}" {:f amount})))))
+(deftest filter-drop
+  (is (= "[:bird :is :the :word]"
+         (render "{{seq-of-some-sort|drop:4}}" {:seq-of-some-sort [:dog :cat :bird :bird :bird :is :the :word]}))))
 
-;; (deftest filter-number-format
-;;   (let [number 123.04455
-;;         numberformat "%.3f"
-;;         locale (Locale/getDefault)
-;;         locale-de (java.util.Locale. "de")]
-;;     (is (= (String/format locale numberformat (into-array Object [number]))
-;;            (render (str "{{f|number-format:" numberformat "}}") {:f number})))
-;;     (is (= (String/format locale-de numberformat (into-array Object [number]))
-;;            (render (str "{{f|number-format:" numberformat ":de}}") {:f number})))))
+(deftest filter-drop-formatted
+  (is (= "bird is the word"
+         (render "{{seq-of-some-sort|drop:4|join:\" \"}}" {:seq-of-some-sort ["dog" "cat" "bird" "bird" "bird" "is" "the" "word"]}))))
 
-;; (deftest filter-date
-;;   (let [date (java.util.Date.)
-;;         firstofmarch (java.util.Date. 114 2 1)]
-;;     (is (= "" (render "{{d|date:\"yyyy-MM-dd\"}}" {:d nil})))
-;;     (is (= (.format (java.text.SimpleDateFormat. "yyyy-MM-dd HH:mm:ss") date)
-;;            (render "{{f|date:\"yyyy-MM-dd HH:mm:ss\"}}" {:f date})))
-;;     (is (= (.format (java.text.SimpleDateFormat. "MMMM" (java.util.Locale. "fr")) firstofmarch)
-;;            (render "{{f|date:\"MMMM\":fr}}" {:f firstofmarch})))
-;;     (is (= "00:00" (render "{{d|date:shortTime:en_US}}" {:d firstofmarch})))
-;;     (is (= "上午12:00" (render "{{d|date:shortTime:zh}}" {:d firstofmarch})))
-;;     (is (= "2014-03-01" (render "{{d|date:shortDate:en_US}}" {:d firstofmarch})))
-;;     (is (= "2014/3/1" (render "{{d|date:shortDate:zh}}" {:d firstofmarch})))
-;;     (is (= "2014-03-01 00:00" (render "{{d|date:shortDateTime:en_US}}" {:d firstofmarch})))
-;;     (is (= "2014/3/1 上午12:00" (render "{{d|date:shortDateTime:zh}}" {:d firstofmarch})))
-;;     (is (= "2014年3月1日" (render "{{d|date:longDate:zh}}" {:d firstofmarch})))
-;;     (is (= "2014 Mar 1" (render "{{d|date:longDate:en_US}}" {:d firstofmarch})))))
+;; How do we handle nils ?
+;; nils should return empty strings at the point of injection in a DTL library. - cma
+(deftest filter-no-value
+  (is (= "" (render "{{f|upper}}" {}))))
 
-;; (deftest filter-hash-md5
-;;   (is (= "acbd18db4cc2f85cedef654fccc4a4d8"
-;;          (render "{{f|hash:\"md5\"}}" {:f "foo"}))))
+#_(deftest filter-currency-format
+  (let [amount 123.45
+        curr (java.text.NumberFormat/getCurrencyInstance (Locale/getDefault))
+        curr-de (java.text.NumberFormat/getCurrencyInstance (java.util.Locale. "de"))
+        curr-de-DE (java.text.NumberFormat/getCurrencyInstance (java.util.Locale. "de" "DE"))]
+    (is (= (.format curr amount)
+           (render "{{f|currency-format}}" {:f amount})))
+    (is (= (.format curr-de amount) (render "{{f|currency-format:de}}" {:f amount})))
+    (is (= (.format curr-de-DE amount) (render "{{f|currency-format:de:DE}}" {:f amount})))))
 
-;; (deftest filter-hash-sha512
-;;   (is (= (str "f7fbba6e0636f890e56fbbf3283e524c6fa3204ae298382d624741d"
-;;               "0dc6638326e282c41be5e4254d8820772c5518a2c5a8c0c7f7eda19"
-;;               "594a7eb539453e1ed7")
-;;          (render "{{f|hash:\"sha512\"}}" {:f "foo"}))))
+(deftest filter-number-format
+  (let [number 123.04455
+        numberformat "%.3f"
+        locale (Locale/getDefault)
+        locale-de (java.util.Locale. "de")]
+    (is (= (String/format locale numberformat (into-array Object [number]))
+           (render (str "{{f|number-format:" numberformat "}}") {:f number})))
+    (is (= (String/format locale-de numberformat (into-array Object [number]))
+           (render (str "{{f|number-format:" numberformat ":de}}") {:f number})))))
 
-;; (deftest filter-hash-invalid-hash
-;;   (is (thrown? Exception (render "{{f|hash:\"foo\"}}" {:f "foo"}))))
+(deftest filter-date
+  (let [date (java.util.Date.)
+        firstofmarch (java.util.Date. 114 2 1)]
+    (is (= "" (render "{{d|date:\"yyyy-MM-dd\"}}" {:d nil})))
+    #_(is (= (.format (java.text.SimpleDateFormat. "yyyy-MM-dd HH:mm:ss") date)
+           (render "{{f|date:\"yyyy-MM-dd HH:mm:ss\"}}" {:f date})))
+    #_(is (= (.format (java.text.SimpleDateFormat. "MMMM" (java.util.Locale. "fr")) firstofmarch)
+           (render "{{f|date:\"MMMM\":fr}}" {:f firstofmarch})))
+    (is (= "00:00" (render "{{d|date:shortTime:en_US}}" {:d firstofmarch})))
+    (is (= "上午12:00" (render "{{d|date:shortTime:zh}}" {:d firstofmarch})))
+    (is (= "2014-03-01" (render "{{d|date:shortDate:en_US}}" {:d firstofmarch})))
+    (is (= "2014/3/1" (render "{{d|date:shortDate:zh}}" {:d firstofmarch})))
+    (is (= "2014-03-01 00:00" (render "{{d|date:shortDateTime:en_US}}" {:d firstofmarch})))
+    (is (= "2014/3/1 上午12:00" (render "{{d|date:shortDateTime:zh}}" {:d firstofmarch})))
+    (is (= "2014年3月1日" (render "{{d|date:longDate:zh}}" {:d firstofmarch})))
+    (is (= "2014 Mar 1" (render "{{d|date:longDate:en_US}}" {:d firstofmarch})))))
 
-;; (deftest filter-join
-;;   (is (= "1, 2, 3, 4"
-;;          (render "{{sequence|join:\", \"}}" {:sequence [1 2 3 4]})))
-;;   (is (= "1234"
-;;          (render "{{sequence|join}}" {:sequence [1 2 3 4]}))))
+(deftest filter-hash-md5
+  (is (= "acbd18db4cc2f85cedef654fccc4a4d8"
+         (render "{{f|hash:\"md5\"}}" {:f "foo"}))))
 
-;; (deftest filter-add
-;;   (is (= "11" (render "{{add_me|add:2:3:4}}" {:add_me 2})))
-;;   (is (= "hello" (render "{{h|add:e:l:l:o}}" {:h "h"})))
-;;   (is (= "0" (render "{{paginate.page|add:-1}}" {:paginate {:page 1}}))))
+(deftest filter-hash-sha512
+  (is (= (str "f7fbba6e0636f890e56fbbf3283e524c6fa3204ae298382d624741d"
+              "0dc6638326e282c41be5e4254d8820772c5518a2c5a8c0c7f7eda19"
+              "594a7eb539453e1ed7")
+         (render "{{f|hash:\"sha512\"}}" {:f "foo"}))))
 
-;; (deftest filter-count
-;;   (is (= "3" (render "{{f|count}}" {:f "foo"})))
-;;   (is (= "4" (render "{{f|count}}" {:f [1 2 3 4]})))
-;;   (is (= "0" (render "{{f|count}}" {:f []})))
-;;   (is (= "0" (render "{{f|count}}" {}))))
+(deftest filter-hash-invalid-hash
+  (is (thrown? Exception (render "{{f|hash:\"foo\"}}" {:f "foo"}))))
 
-;; (deftest emptiness
-;;   (is (= "true" (render "{{xs|empty?" {:xs []})))
-;;   (is (= "foo" (render "{% if xs|empty? %}foo{% endif %}" {:xs []})))
-;;   (is (= "" (render "{% if xs|not-empty %}foo{% endif %}" {:xs []})))
-;;   (is (= "foo" (render "{% if xs|not-empty %}foo{% endif %}" {:xs [1 2]}))))
+(deftest filter-join
+  (is (= "1, 2, 3, 4"
+         (render "{{sequence|join:\", \"}}" {:sequence [1 2 3 4]})))
+  (is (= "1234"
+         (render "{{sequence|join}}" {:sequence [1 2 3 4]}))))
 
-;; ;; switched commas + doublequotes for colons
-;; ;; TODO - maybe remain consistent with django's only 1 argument allowed.
-;; ;; I like being able to accept multiple arguments.
-;; ;; Alternatively, we could have curried filters and just chain
-;; ;; it into a val and apply it Haskell-style.
-;; ;; I think that could surprise users. (which is bad)
-;; (deftest filter-pluralize
-;;   (is (= "s" (render "{{f|pluralize}}" {:f []})))
-;;   (is (= "" (render "{{f|pluralize}}" {:f [1]})))
-;;   (is (= "s" (render "{{f|pluralize}}" {:f [1 2 3]})))
+(deftest filter-add
+  (is (= "11" (render "{{add_me|add:2:3:4}}" {:add_me 2})))
+  (is (= "hello" (render "{{h|add:e:l:l:o}}" {:h "h"})))
+  (is (= "0" (render "{{paginate.page|add:-1}}" {:paginate {:page 1}}))))
 
-;;   (is (= "ies" (render "{{f|pluralize:\"ies\"}}" {:f []})))
-;;   (is (= "" (render "{{f|pluralize:\"ies\"}}" {:f [1]})))
-;;   (is (= "ies" (render "{{f|pluralize:\"ies\"}}" {:f [1 2 3]})))
+(deftest filter-count
+  (is (= "3" (render "{{f|count}}" {:f "foo"})))
+  (is (= "4" (render "{{f|count}}" {:f [1 2 3 4]})))
+  (is (= "0" (render "{{f|count}}" {:f []})))
+  (is (= "0" (render "{{f|count}}" {}))))
 
-;;   (is (= "ies" (render "{{f|pluralize:y:ies}}" {:f []})))
-;;   (is (= "y" (render "{{f|pluralize:y:ies}}" {:f [1]})))
-;;   (is (= "ies" (render "{{f|pluralize:y:ies}}" {:f [1 2 3]})))
+(deftest emptiness
+  (is (= "true" (render "{{xs|empty?" {:xs []})))
+  (is (= "foo" (render "{% if xs|empty? %}foo{% endif %}" {:xs []})))
+  (is (= "" (render "{% if xs|not-empty %}foo{% endif %}" {:xs []})))
+  (is (= "foo" (render "{% if xs|not-empty %}foo{% endif %}" {:xs [1 2]}))))
 
-;;   (is (= "s" (render "{{f|pluralize}}" {:f 0})))
-;;   (is (= "" (render "{{f|pluralize}}" {:f 1})))
-;;   (is (= "s" (render "{{f|pluralize}}" {:f 3})))
+;; switched commas + doublequotes for colons
+;; TODO - maybe remain consistent with django's only 1 argument allowed.
+;; I like being able to accept multiple arguments.
+;; Alternatively, we could have curried filters and just chain
+;; it into a val and apply it Haskell-style.
+;; I think that could surprise users. (which is bad)
+(deftest filter-pluralize
+  (is (= "s" (render "{{f|pluralize}}" {:f []})))
+  (is (= "" (render "{{f|pluralize}}" {:f [1]})))
+  (is (= "s" (render "{{f|pluralize}}" {:f [1 2 3]})))
 
-;;   (is (= "ies" (render "{{f|pluralize:\"ies\"}}" {:f 0})))
-;;   (is (= "" (render "{{f|pluralize:\"ies\"}}" {:f 1})))
-;;   (is (= "ies" (render "{{f|pluralize:\"ies\"}}" {:f 3})))
+  (is (= "ies" (render "{{f|pluralize:\"ies\"}}" {:f []})))
+  (is (= "" (render "{{f|pluralize:\"ies\"}}" {:f [1]})))
+  (is (= "ies" (render "{{f|pluralize:\"ies\"}}" {:f [1 2 3]})))
 
-;;   (is (= "ies" (render "{{f|pluralize:y:ies}}" {:f 0})))
-;;   (is (= "y" (render "{{f|pluralize:y:ies}}" {:f 1})))
-;;   (is (= "ies" (render "{{f|pluralize:y:ies}}" {:f 3}))))
+  (is (= "ies" (render "{{f|pluralize:y:ies}}" {:f []})))
+  (is (= "y" (render "{{f|pluralize:y:ies}}" {:f [1]})))
+  (is (= "ies" (render "{{f|pluralize:y:ies}}" {:f [1 2 3]})))
 
-;; ;; to-json is simply json here
-;; (deftest filter-to-json
-;;   (is (= "1" (render "{{f|json}}" {:f 1})))
-;;   (is (= "[1]" (render "{{f|json}}" {:f [1]})))
-;;   (is (= {"dan" "awesome", "foo" 27}
-;;          (-> ^String (render "{{f|json}}" {:f {:foo 27 :dan "awesome"}})
-;;              (.replaceAll "&quot;" "\"")
-;;              p/parse-string)))
-;;   (is (= {"dan" "awesome", "foo" 27}
-;;          (parse-string (render "{{f|json|safe}}" {:f {:foo 27 :dan "awesome"}}))))
-;;   ;; safe only works at the end
-;;   #_(is (= "{\"foo\":27,\"dan\":\"awesome\"}"
-;;            (render "{{f|safe|json}}" {:f {:foo 27 :dan "awesome"}})))
-;;   ;; Do we really want to nil-pun the empty map?
-;;   ;; Is that going to surprise the user?
-;;   (is (= "null" (render "{{f|json}}" {}))))
+  (is (= "s" (render "{{f|pluralize}}" {:f 0})))
+  (is (= "" (render "{{f|pluralize}}" {:f 1})))
+  (is (= "s" (render "{{f|pluralize}}" {:f 3})))
 
-;; ;; TODO
-;; (deftest filter-chaining
-;;   (is (= "ACBD18DB4CC2F85CEDEF654FCCC4A4D8"
-;;          (render "{{f|hash:\"md5\"|upper}}" {:f "foo"}))))
+  (is (= "ies" (render "{{f|pluralize:\"ies\"}}" {:f 0})))
+  (is (= "" (render "{{f|pluralize:\"ies\"}}" {:f 1})))
+  (is (= "ies" (render "{{f|pluralize:\"ies\"}}" {:f 3})))
 
-;; (deftest filter-add-2
-;;   (testing "Adds numbers"
-;;     (is (= "40"
-;;            (render "{{seed|add:1:2:3}}" {:seed 34})))
-;;     (is (= "37.5"
-;;            (render "{{seed|add:1.1:-2:3.9}}" {:seed 34.5}))))
-;;   (testing "Concat strings if not a number"
-;;     (is (= "foo123"
-;;            (render "{{seed|add:1:2:3}}" {:seed "foo"})))))
+  (is (= "ies" (render "{{f|pluralize:y:ies}}" {:f 0})))
+  (is (= "y" (render "{{f|pluralize:y:ies}}" {:f 1})))
+  (is (= "ies" (render "{{f|pluralize:y:ies}}" {:f 3}))))
 
-;; (deftest filter-round
-;;   (is (= "3"
-;;          (render "{{foo|round}}" {:foo 3.33333}))))
+;; to-json is simply json here
+(deftest filter-to-json
+  (is (= "1" (render "{{f|json}}" {:f 1})))
+  (is (= "[1]" (render "{{f|json}}" {:f [1]})))
+  #_(is (= {"dan" "awesome", "foo" 27}
+         (-> ^String (render "{{f|json}}" {:f {:foo 27 :dan "awesome"}})
+             (.replaceAll "&quot;" "\"")
+             parse-string)))
+  #_(is (= {"dan" "awesome", "foo" 27}
+         (parse-string (render "{{f|json|safe}}" {:f {:foo 27 :dan "awesome"}}))))
+  ;; safe only works at the end
+  #_(is (= "{\"foo\":27,\"dan\":\"awesome\"}"
+           (render "{{f|safe|json}}" {:f {:foo 27 :dan "awesome"}})))
+  ;; Do we really want to nil-pun the empty map?
+  ;; Is that going to surprise the user?
+  (is (= "null" (render "{{f|json}}" {}))))
 
-;; (deftest filter-drop-last
-;;   (is (= "[:dog :cat :bird :bird]"
-;;          (render "{{seq-of-some-sort|drop-last:4}}" {:seq-of-some-sort [:dog :cat :bird :bird :bird :is :the :word]}))))
+;; TODO
+(deftest filter-chaining
+  (is (= "ACBD18DB4CC2F85CEDEF654FCCC4A4D8"
+         (render "{{f|hash:\"md5\"|upper}}" {:f "foo"}))))
 
-;; (deftest filter-replace
-;;   (is (= "Float posuere erat a ante venenatis ..."
-;;          (render "{{foo|replace:Integer:Float}}" {:foo "Integer posuere erat a ante venenatis ..."})))
-;;   (is (= "bar bar test bar ..."
-;;          (render "{{foo|replace:foo:bar}}" {:foo "foo foo test foo ..."}))))
+(deftest filter-add-2
+  (testing "Adds numbers"
+    (is (= "40"
+           (render "{{seed|add:1:2:3}}" {:seed 34})))
+    (is (= "37.5"
+           (render "{{seed|add:1.1:-2:3.9}}" {:seed 34.5}))))
+  (testing "Concat strings if not a number"
+    (is (= "foo123"
+           (render "{{seed|add:1:2:3}}" {:seed "foo"})))))
 
-;; (deftest filter-add-3
-;;   (is (= "5.1"
-;;          (render "{{foo|add:2.1}}" {:foo 3})))
-;;   (is (= "4.66"
-;;          (render "{{foo|add:2:0.33:-1}}" {:foo 3.33})))
-;;   (is (= "5"
-;;          (render "{{foo|add:2}}" {:foo 3}))))
+(deftest filter-round
+  (is (= "3"
+         (render "{{foo|round}}" {:foo 3.33333}))))
 
-;; (deftest filter-multiply
-;;   (is (= "6"
-;;          (render "{{foo|multiply:2}}" {:foo 3})))
-;;   (is (= "9.99"
-;;          (render "{{foo|multiply:3}}" {:foo 3.33})))
-;;   (is (= "1.5"
-;;          (render "{{foo|multiply:0.5}}" {:foo 3})))
-;;   (is (thrown? Exception (render "{{foo|multiply:0.5}}" {:foo "bar"}))))
+(deftest filter-drop-last
+  (is (= "[:dog :cat :bird :bird]"
+         (render "{{seq-of-some-sort|drop-last:4}}" {:seq-of-some-sort [:dog :cat :bird :bird :bird :is :the :word]}))))
 
-;; (deftest filter-divide
-;;   (is (= "1.5"
-;;          (render "{{foo|divide:2}}" {:foo 3})))
-;;   (is (= "1.11"
-;;          (render "{{foo|divide:3}}" {:foo 3.33})))
-;;   (is (= "5"
-;;          (render "{{foo|divide:2}}" {:foo 10})))
-;;   (is (thrown? Exception (render "{{foo|divide:foo}}" {:foo 1})))
-;;   (is (thrown? Exception (render "{{foo|divide:0}}" {:foo 1}))))
+(deftest filter-replace
+  (is (= "Float posuere erat a ante venenatis ..."
+         (render "{{foo|replace:Integer:Float}}" {:foo "Integer posuere erat a ante venenatis ..."})))
+  (is (= "bar bar test bar ..."
+         (render "{{foo|replace:foo:bar}}" {:foo "foo foo test foo ..."}))))
 
-;; (deftest filter-between
-;;   (is (= "true"
-;;          (render "{% if foo|between?:2:4 %}true{% else %}false{% endif %}" {:foo 3})))
-;;   (is (= "true"
-;;          (render "{% if foo|between?:4:2 %}true{% else %}false{% endif %}" {:foo 3})))
-;;   (is (= "false"
-;;          (render "{% if foo|between?:2:4 %}true{% else %}false{% endif %}" {:foo 4.33})))
-;;   (is (= "false"
-;;          (render "{% if foo|between?:4:2 %}true{% else %}false{% endif %}" {:foo 4.33})))
-;;   (is (= "true"
-;;          (render "{% if foo|between?:@min:@max %}true{% else %}false{% endif %}" {:foo 20.1, :min 5.99, :max 100.5})))
-;;   (is (= "true"
-;;          (render "{% if foo|between?:@min:@max %}true{% else %}false{% endif %}" {:foo 5.99, :min 5.99, :max 100.5})))
-;;   (is (= "true"
-;;          (render "{% if foo|between?:@min:@max %}true{% else %}false{% endif %}" {:foo 100.5, :min 5.99, :max 100.5})))
-;;   (is (= "false"
-;;          (render "{% if foo|between?:@min:@max %}true{% else %}false{% endif %}" {:foo 5.98, :min 5.99, :max 100.5})))
-;;   (is (thrown? Exception (render "{{foo|between?:2:4}}" {:foo "throw me"}))))
+(deftest filter-add-3
+  (is (= "5.1"
+         (render "{{foo|add:2.1}}" {:foo 3})))
+  (is (= "4.66"
+         (render "{{foo|add:2:0.33:-1}}" {:foo 3.33})))
+  (is (= "5"
+         (render "{{foo|add:2}}" {:foo 3}))))
 
-;; (deftest test-escaping
-;;   (is (= "<tag>&lt;foo bar=&quot;baz&quot;&gt;\\&gt;</tag>"
-;;          (render "<tag>{{f}}</tag>" {:f "<foo bar=\"baz\">\\>"})))
-;;   ;; Escapes the same chars as django's escape
-;;   (is (= "&amp;&quot;&#39;&lt;&gt;"
-;;          (render "{{f}}" {:f "&\"'<>"})))
-;;   ;; Escapes content that is supposed to be URL encoded
-;;   (is (= "clojure+url"
-;;          (render "{{f|urlescape}}" {:f "clojure url"}))))
+(deftest filter-multiply
+  (is (= "6"
+         (render "{{foo|multiply:2}}" {:foo 3})))
+  (is (= "9.99"
+         (render "{{foo|multiply:3}}" {:foo 3.33})))
+  (is (= "1.5"
+         (render "{{foo|multiply:0.5}}" {:foo 3})))
+  (is (thrown? Exception (render "{{foo|multiply:0.5}}" {:foo "bar"}))))
 
-;; ;; Safe only works at the end.
-;; ;; Don't think it should work anywhere else :-) - cbp (agreed, - cma)
-;; (deftest test-safe-filter
-;;   (is (= "&lt;foo&gt;"
-;;          (render "{{f}}" {:f "<foo>"})))
-;;   (is (= "<foo>"
-;;          (render "{{f|safe}}" {:f "<foo>"})))
-;;   (is (= "<FOO>"
-;;          (render "{{f|upper|safe}}" {:f "<foo>"}))))
+(deftest filter-divide
+  (is (= "1.5"
+         (render "{{foo|divide:2}}" {:foo 3})))
+  (is (= "1.11"
+         (render "{{foo|divide:3}}" {:foo 3.33})))
+  (is (= "5"
+         (render "{{foo|divide:2}}" {:foo 10})))
+  (is (thrown? Exception (render "{{foo|divide:foo}}" {:foo 1})))
+  (is (thrown? Exception (render "{{foo|divide:0}}" {:foo 1}))))
 
-;; ;; test @-syntax for dereferencing context map in filter arguments
-;; (deftest test-deref-filter-arg
-;;   (is (= " Sean "                                           ;; note center filter expects String for width!
-;;          (render "{{name|center:@width}}" {:name "Sean" :width "6"})))
-;;   (is (= "4"                                                ;; ensure we can substitute a data structure
-;;          (render "{{name|default:@v|count}}" {:v [1 2 3 4]})))
-;;   (is (= "@"                                                ;; literal @ is not dereferenced
-;;          (render "{{name|default:@}}" {:name nil})))
-;;   (is (= "@foo"                                             ;; literal @foo used when no context map match
-;;          (render "{{name|default:@foo}}" {:name nil})))
-;;   (is (= "quux"                                             ;; test nested lookup
-;;          (render "{{name|default:@foo.bar.baz}}" {:name nil :foo {:bar {:baz "quux"}}}))))
+(deftest filter-between
+  (is (= "true"
+         (render "{% if foo|between?:2:4 %}true{% else %}false{% endif %}" {:foo 3})))
+  (is (= "true"
+         (render "{% if foo|between?:4:2 %}true{% else %}false{% endif %}" {:foo 3})))
+  (is (= "false"
+         (render "{% if foo|between?:2:4 %}true{% else %}false{% endif %}" {:foo 4.33})))
+  (is (= "false"
+         (render "{% if foo|between?:4:2 %}true{% else %}false{% endif %}" {:foo 4.33})))
+  (is (= "true"
+         (render "{% if foo|between?:@min:@max %}true{% else %}false{% endif %}" {:foo 20.1, :min 5.99, :max 100.5})))
+  (is (= "true"
+         (render "{% if foo|between?:@min:@max %}true{% else %}false{% endif %}" {:foo 5.99, :min 5.99, :max 100.5})))
+  (is (= "true"
+         (render "{% if foo|between?:@min:@max %}true{% else %}false{% endif %}" {:foo 100.5, :min 5.99, :max 100.5})))
+  (is (= "false"
+         (render "{% if foo|between?:@min:@max %}true{% else %}false{% endif %}" {:foo 5.98, :min 5.99, :max 100.5})))
+  (is (thrown? Exception (render "{{foo|between?:2:4}}" {:foo "throw me"}))))
+
+(deftest test-escaping
+  (is (= "<tag>&lt;foo bar=&quot;baz&quot;&gt;\\&gt;</tag>"
+         (render "<tag>{{f}}</tag>" {:f "<foo bar=\"baz\">\\>"})))
+  ;; Escapes the same chars as django's escape
+  (is (= "&amp;&quot;&#39;&lt;&gt;"
+         (render "{{f}}" {:f "&\"'<>"})))
+  ;; Escapes content that is supposed to be URL encoded
+  (is (= "clojure+url"
+         (render "{{f|urlescape}}" {:f "clojure url"}))))
+
+;; Safe only works at the end.
+;; Don't think it should work anywhere else :-) - cbp (agreed, - cma)
+(deftest test-safe-filter
+  (is (= "&lt;foo&gt;"
+         (render "{{f}}" {:f "<foo>"})))
+  (is (= "<foo>"
+         (render "{{f|safe}}" {:f "<foo>"})))
+  (is (= "<FOO>"
+         (render "{{f|upper|safe}}" {:f "<foo>"}))))
+
+;; test @-syntax for dereferencing context map in filter arguments
+(deftest test-deref-filter-arg
+  (is (= " Sean "                                           ;; note center filter expects String for width!
+         (render "{{name|center:@width}}" {:name "Sean" :width "6"})))
+  (is (= "4"                                                ;; ensure we can substitute a data structure
+         (render "{{name|default:@v|count}}" {:v [1 2 3 4]})))
+  (is (= "@"                                                ;; literal @ is not dereferenced
+         (render "{{name|default:@}}" {:name nil})))
+  (is (= "@foo"                                             ;; literal @foo used when no context map match
+         (render "{{name|default:@foo}}" {:name nil})))
+  (is (= "quux"                                             ;; test nested lookup
+         (render "{{name|default:@foo.bar.baz}}" {:name nil :foo {:bar {:baz "quux"}}}))))
 
 ;; (deftest custom-resource-path-setting
 ;;   (is (nil? *custom-resource-path*))
@@ -1046,68 +1047,68 @@
 ;;   (set-resource-path! nil)
 ;;   (is (nil? *custom-resource-path*)))
 
-;; (deftest custom-resource-path-setting-url
-;;   (set-resource-path! (clojure.java.io/resource "templates/inheritance"))
-;;   (is (string? *custom-resource-path*))
-;;   (is (= (fix-line-sep "Hello, World!\n") (render-file "foo.html" {:name "World"})))
-;;   (set-resource-path! nil))
+(deftest custom-resource-path-setting-url
+  (p/set-resource-path! (clojure.java.io/resource "templates/inheritance"))
+  #_(is (string? *custom-resource-path*))
+  (is (= (fix-line-sep "Hello, World!\n") (render-file "foo.html" {:name "World"})))
+  (p/set-resource-path! nil))
 
-;; (deftest safe-filter
-;;   (add-filter! :foo (fn [^String x] [:safe (.toUpperCase x)]))
-;;   (is
-;;     (= "<DIV>I'M SAFE</DIV>"
-;;        (render "{{x|foo}}" {:x "<div>I'm safe</div>"})))
-;;   (add-filter! :bar #(.toUpperCase ^String %))
-;;   (is
-;;     (= "&lt;DIV&gt;I&#39;M NOT SAFE&lt;/DIV&gt;"
-;;        (render "{{x|bar}}" {:x "<div>I'm not safe</div>"}))))
+(deftest safe-filter
+  (f/add-filter! :foo (fn [^String x] [:safe (.toUpperCase x)]))
+  (is
+    (= "<DIV>I'M SAFE</DIV>"
+       (render "{{x|foo}}" {:x "<div>I'm safe</div>"})))
+  (f/add-filter! :bar #(.toUpperCase ^String %))
+  (is
+    (= "&lt;DIV&gt;I&#39;M NOT SAFE&lt;/DIV&gt;"
+       (render "{{x|bar}}" {:x "<div>I'm not safe</div>"}))))
 
-;; (deftest remove-filter
-;;   (testing "we can add and remove a filter"
-;;     (add-filter! :temp (fn [x] (str "TEMP_" (str/upper-case x))))
-;;     (is (= "TEMP_FOO_BAR" (render "{{x|temp}}" {:x "foo_bar"})))
-;;     (remove-filter! :temp)
-;;     (is (thrown? Exception (render "{{x|temp}}" {:x "foo_bar"})))))
+(deftest remove-filter
+  (testing "we can add and remove a filter"
+    (f/add-filter! :temp (fn [x] (str "TEMP_" (str/upper-case x))))
+    (is (= "TEMP_FOO_BAR" (render "{{x|temp}}" {:x "foo_bar"})))
+    (f/remove-filter! :temp)
+    (is (thrown? Exception (render "{{x|temp}}" {:x "foo_bar"})))))
 
-;; (deftest linebreaks-test
-;;   (testing "single newlines become <br />, double newlines become <p>"
-;;     (is (= "<p><br />bar<br />baz</p>"
-;;            (render "{{foo|linebreaks|safe}}" {:foo "\nbar\nbaz"})))))
+(deftest linebreaks-test
+  (testing "single newlines become <br />, double newlines become <p>"
+    (is (= "<p><br />bar<br />baz</p>"
+           (render "{{foo|linebreaks|safe}}" {:foo "\nbar\nbaz"})))))
 
-;; (deftest linebreaks-br-test
-;;   (testing "works like linebreaks, but no <p> tags"
-;;     (is (= "<br />bar<br />baz"
-;;            (render "{{foo|linebreaks-br|safe}}" {:foo "\nbar\nbaz"})))))
+(deftest linebreaks-br-test
+  (testing "works like linebreaks, but no <p> tags"
+    (is (= "<br />bar<br />baz"
+           (render "{{foo|linebreaks-br|safe}}" {:foo "\nbar\nbaz"})))))
 
-;; (deftest linenumbers-test
-;;   (testing "displays text with line numbers"
-;;     (is (= "1. foo\n2. bar\n3. baz"
-;;            (render "{{foo|linenumbers}}" {:foo "foo\nbar\nbaz"})))))
+(deftest linenumbers-test
+  (testing "displays text with line numbers"
+    (is (= "1. foo\n2. bar\n3. baz"
+           (render "{{foo|linenumbers}}" {:foo "foo\nbar\nbaz"})))))
 
-;; (deftest lower-test
-;;   (testing "converts words to lower case"
-;;     (is (= "foobar" (render "{{foo|lower}}" {:foo "FOOBaR"})))
-;;     (is (= "foobar" (render "{{foo|lower}}" {:foo "foobar"})))))
+(deftest lower-test
+  (testing "converts words to lower case"
+    (is (= "foobar" (render "{{foo|lower}}" {:foo "FOOBaR"})))
+    (is (= "foobar" (render "{{foo|lower}}" {:foo "foobar"})))))
 
-;; (deftest literals-test
-;;   (testing "converts words to lower case"
-;;     (is (= "foobar" (render "{{\"FOObar\"|lower}}" {})))))
+(deftest literals-test
+  (testing "converts words to lower case"
+    (is (= "foobar" (render "{{\"FOObar\"|lower}}" {})))))
 
-;; (deftest number-format-test
-;;   (testing "formats the number with default locale"
-;;     (let [locale-number (String/format (Locale/getDefault) "%.3f"
-;;                                        (into-array Object [123.045]))]
-;;       (is (= locale-number (render "{{amount|number-format:%.3f}}" {:amount 123.04455})))
-;;       (is (= locale-number (render "{{amount|number-format:%.3f}}" {:amount 123.045})))))
-;;   (testing "formats the number with specified locale"
-;;     (is (= "123,045" (render "{{amount|number-format:%.3f:de}}" {:amount 123.04455})))))
+(deftest number-format-test
+  (testing "formats the number with default locale"
+    (let [locale-number (String/format (Locale/getDefault) "%.3f"
+                                       (into-array Object [123.045]))]
+      (is (= locale-number (render "{{amount|number-format:%.3f}}" {:amount 123.04455})))
+      (is (= locale-number (render "{{amount|number-format:%.3f}}" {:amount 123.045})))))
+  (testing "formats the number with specified locale"
+    (is (= "123,045" (render "{{amount|number-format:%.3f:de}}" {:amount 123.04455})))))
 
-;; (deftest default-if-empty-test
-;;   (testing "default when empty behavior"
-;;     (is (= "yogthos" (render "{{name|default-if-empty:\"I <3 ponies\"}}" {:name "yogthos"})))
-;;     (is (= "I &lt;3 ponies" (render "{{name|default-if-empty:\"I <3 ponies\"}}" {:name nil})))
-;;     (is (= "I &lt;3 ponies" (render "{{name|default-if-empty:\"I <3 ponies\"}}" {:name []})))
-;;     (is (= "I &lt;3 ponies" (render "{{name|default-if-empty:\"I <3 ponies\"}}" {})))))
+(deftest default-if-empty-test
+  (testing "default when empty behavior"
+    (is (= "yogthos" (render "{{name|default-if-empty:\"I <3 ponies\"}}" {:name "yogthos"})))
+    (is (= "I &lt;3 ponies" (render "{{name|default-if-empty:\"I <3 ponies\"}}" {:name nil})))
+    (is (= "I &lt;3 ponies" (render "{{name|default-if-empty:\"I <3 ponies\"}}" {:name []})))
+    (is (= "I &lt;3 ponies" (render "{{name|default-if-empty:\"I <3 ponies\"}}" {})))))
 
 ;; (deftest turn-off-escaping-test
 ;;   (testing "with escaping turned off"
@@ -1137,123 +1138,123 @@
 ;;       (is (= "I <3 ponies" (render "{{name}}" {:name "I <3 ponies"})))
 ;;       (finally (turn-on-escaping!)))))
 
-;; (deftest name-test
-;;   (testing "converts keywords to strings"
-;;     (is (= "foobar" (render "{{foo|name}}" {:foo :foobar})))
-;;     (is (= "foobar" (render "{{foo/bar}}" {"foo/bar" "foobar"}))))
-;;   (testing "leaves strings as they are"
-;;     (is (= "foobar" (render "{{foo|name}}" {:foo "foobar"})))))
+(deftest name-test
+  (testing "converts keywords to strings"
+    (is (= "foobar" (render "{{foo|name}}" {:foo :foobar})))
+    (is (= "foobar" (render "{{foo/bar}}" {"foo/bar" "foobar"}))))
+  (testing "leaves strings as they are"
+    (is (= "foobar" (render "{{foo|name}}" {:foo "foobar"})))))
 
-;; (deftest handler-metadata
-;;   (testing "puts tag into FunctionNode handlers"
-;;     (is (= {:tag {:tag-type :filter, :tag-value "foo"}}
-;;            (as-> (parse-input (java.io.StringReader. "{{foo}}")) $
-;;              (first $)
-;;              (.handler ^selmer.node.FunctionNode $)
-;;              (meta $))))))
+#_(deftest handler-metadata
+  (testing "puts tag into FunctionNode handlers"
+    (is (= {:tag {:tag-type :filter, :tag-value "foo"}}
+           (as-> (parse-input (java.io.StringReader. "{{foo}}")) $
+             (first $)
+             (.handler ^selmer.node.FunctionNode $)
+              (meta $))))))
 
-;; (deftest testing-boolean-values
-;;   (testing "Boolean value"
-;;     (is (= "Hello true" (render "Hello {{name}}" {:name true})))
-;;     (is (= "Hello false" (render "Hello {{name}}" {:name false})))
-;;     (is (= "Hello " (render "Hello {{name}}" {:name nil})))))
+(deftest testing-boolean-values
+  (testing "Boolean value"
+    (is (= "Hello true" (render "Hello {{name}}" {:name true})))
+    (is (= "Hello false" (render "Hello {{name}}" {:name false})))
+    (is (= "Hello " (render "Hello {{name}}" {:name nil})))))
 
-;; (deftest missing-values
-;;   (testing "Missing value - default behaviour"
-;;     (is (= "" (render "{{missing}}" {})))
-;;     (is (= "" (render "{{missing.too}}" {} ""))))
+(deftest missing-values
+  (testing "Missing value - default behaviour"
+    (is (= "" (render "{{missing}}" {})))
+    (is (= "" (render "{{missing.too}}" {} ""))))
 
-;;   (testing "Missing value - with custom missing value handlers"
-;;     ;; Using bindings instead of set-missing-value-formatter! to avoid cleanup
-;;     (binding [*missing-value-formatter* (constantly "XXX")
-;;               *filter-missing-values* false]
-;;       (is (= "XXX" (render "{{missing}}" {})))
-;;       (is (= "XXX" (render "{{missing.too}}" {}))))
-;;     (binding [*missing-value-formatter* (fn [tag context-map]
-;;                                           (if (= (:tag-type tag) :filter)
-;;                                             (str "<missing value: " (:tag-value tag) ">")
-;;                                             (str "<missing value: " (:tag-name tag) ">")))
-;;               *filter-missing-values* false]
-;;       (is (= "Hi <missing value: name>" (render "Hi {{name}}" {})))
-;;       (is (= "Hi mr. <missing value: name.lastname>" (render "Hi mr. {{name.lastname}}" {})))
+  #_(testing "Missing value - with custom missing value handlers"
+    ;; Using bindings instead of set-missing-value-formatter! to avoid cleanup
+    (binding [*missing-value-formatter* (constantly "XXX")
+              *filter-missing-values* false]
+      (is (= "XXX" (render "{{missing}}" {})))
+      (is (= "XXX" (render "{{missing.too}}" {}))))
+    (binding [*missing-value-formatter* (fn [tag context-map]
+                                          (if (= (:tag-type tag) :filter)
+                                            (str "<missing value: " (:tag-value tag) ">")
+                                            (str "<missing value: " (:tag-name tag) ">")))
+              *filter-missing-values* false]
+      (is (= "Hi <missing value: name>" (render "Hi {{name}}" {})))
+      (is (= "Hi mr. <missing value: name.lastname>" (render "Hi mr. {{name.lastname}}" {})))
 
-;;       (let [custom-tag-handler (tag-handler
-;;                                  (fn [_ context-map]
-;;                                    (when-let [l (:list context-map)]
-;;                                      (clojure.string/join ", " (:list context-map))))
-;;                                  :bar)]
-;;         (is (= "1, 2, 3, 4"
-;;                (render-template
-;;                  (parse parse-input (java.io.StringReader. "{% bar %}") {:custom-tags {:bar custom-tag-handler}})
-;;                  {:list [1 2 3 4]})))
-;;         (is (= "<missing value: :bar>"
-;;                (render-template
-;;                  (parse parse-input (java.io.StringReader. "{% bar %}") {:custom-tags {:bar custom-tag-handler}})
-;;                  {}))))
+      (let [custom-tag-handler (tag-handler
+                                 (fn [_ context-map]
+                                   (when-let [l (:list context-map)]
+                                     (clojure.string/join ", " (:list context-map))))
+                                 :bar)]
+        (is (= "1, 2, 3, 4"
+               (render-template
+                 (parse parse-input (java.io.StringReader. "{% bar %}") {:custom-tags {:bar custom-tag-handler}})
+                 {:list [1 2 3 4]})))
+        (is (= "<missing value: :bar>"
+               (render-template
+                 (parse parse-input (java.io.StringReader. "{% bar %}") {:custom-tags {:bar custom-tag-handler}})
+                 {}))))
 
-;;       (is (= "<missing value: name|count>" (render "{{name|count}}" {})))))
+      (is (= "<missing value: name|count>" (render "{{name|count}}" {})))))
 
-;;   (testing "Missing value - custom missing value handler with filtering of missing values turned on"
-;;     (binding [*missing-value-formatter* (constantly "XXX")
-;;               *filter-missing-values* true]
-;;       (is (= "XXX" (render "{{missing}}" {})))
-;;       (is (= "XXX" (render "{{missing.too}}" {})))
-;;       (is (= "0" (render "{{missing|count}}" {}))))))
+  #_(testing "Missing value - custom missing value handler with filtering of missing values turned on"
+    (binding [*missing-value-formatter* (constantly "XXX")
+              *filter-missing-values* true]
+      (is (= "XXX" (render "{{missing}}" {})))
+      (is (= "XXX" (render "{{missing.too}}" {})))
+      (is (= "0" (render "{{missing|count}}" {}))))))
 
-;; (deftest testing-known-variables
-;;   (testing "Basic variables"
-;;     (is (= #{:name} (known-variables "{{name}}")))
-;;     (is (= #{:name} (known-variables "{{name|capitalize}}")))
-;;     (is (= #{:person} (known-variables "{{person.name|capitalize}}"))))
+(deftest testing-known-variables
+  (testing "Basic variables"
+    (is (= #{:name} (known-variables "{{name}}")))
+    (is (= #{:name} (known-variables "{{name|capitalize}}")))
+    (is (= #{:person} (known-variables "{{person.name|capitalize}}"))))
 
-;;   (testing "If statements"
-;;     (is (= #{:foo :bar :baz} (known-variables "{% if any foo bar baz %}hello{% endif %}")))
-;;     (is (= #{:foo :bar :baz} (known-variables "{% if not any foo bar baz %}hello{% endif %}")))
-;;     (is (= #{:foo :bar} (known-variables "{% if all foo bar %}hello{% endif %}")))
-;;     (is (= #{:x} (known-variables "{% if 6 >= x %}yes!{% endif %}")))
-;;     (is (= #{:x :y} (known-variables "{% if x <= y %}yes!{% endif %}")))
-;;     (is (= #{:x} (known-variables "{% if x > 5 %}yes!{% else %}no!{% endif %}")))
-;;     (is (= #{:vals} (known-variables "{% if vals|length <= 3 %}yes!{% else %}no!{% endif %}"))))
+  (testing "If statements"
+    (is (= #{:foo :bar :baz} (known-variables "{% if any foo bar baz %}hello{% endif %}")))
+    (is (= #{:foo :bar :baz} (known-variables "{% if not any foo bar baz %}hello{% endif %}")))
+    (is (= #{:foo :bar} (known-variables "{% if all foo bar %}hello{% endif %}")))
+    (is (= #{:x} (known-variables "{% if 6 >= x %}yes!{% endif %}")))
+    (is (= #{:x :y} (known-variables "{% if x <= y %}yes!{% endif %}")))
+    (is (= #{:x} (known-variables "{% if x > 5 %}yes!{% else %}no!{% endif %}")))
+    (is (= #{:vals} (known-variables "{% if vals|length <= 3 %}yes!{% else %}no!{% endif %}"))))
 
-;;   (testing "ifequal"
-;;     (is (= #{:foo :bar} (known-variables "{% ifequal foo bar %}yes!{% endifequal %}")))
-;;     (is (= #{:foo :bar} (known-variables "{% ifequal foo bar %}yes!{% else %}no!{% endifequal %}")))
-;;     (is (= #{:foo} (known-variables "{% ifequal foo \"this also works\" %}yes!{% endifequal %}"))))
+  (testing "ifequal"
+    (is (= #{:foo :bar} (known-variables "{% ifequal foo bar %}yes!{% endifequal %}")))
+    (is (= #{:foo :bar} (known-variables "{% ifequal foo bar %}yes!{% else %}no!{% endifequal %}")))
+    (is (= #{:foo} (known-variables "{% ifequal foo \"this also works\" %}yes!{% endifequal %}"))))
 
-;;   (testing "ifunequal"
-;;     (is (= #{:foo :bar} (known-variables "{% ifunequal foo bar %}yes!{% endifunequal %}"))))
+  (testing "ifunequal"
+    (is (= #{:foo :bar} (known-variables "{% ifunequal foo bar %}yes!{% endifunequal %}"))))
 
-;;   (testing "for"
-;;     (is (= #{:some-list} (known-variables "{% for x in some-list %}element: {{x}} first? {{forloop.first}} last? {{forloop.last}}{% endfor %}")))
-;;     (is (= #{:items} (known-variables "{% for item in items %} <tr><td>{{item.name}}</td><td>{{item.age}}</td></tr> {% endfor %}")))
-;;     (is (= #{:items} (known-variables "{% for x,y in items %}{{x}},{{y}}{% endfor %}"))))
+  (testing "for"
+    (is (= #{:some-list} (known-variables "{% for x in some-list %}element: {{x}} first? {{forloop.first}} last? {{forloop.last}}{% endfor %}")))
+    (is (= #{:items} (known-variables "{% for item in items %} <tr><td>{{item.name}}</td><td>{{item.age}}</td></tr> {% endfor %}")))
+    (is (= #{:items} (known-variables "{% for x,y in items %}{{x}},{{y}}{% endfor %}"))))
 
-;;   (testing "sum"
-;;     (is (= #{:foo :bar :baz} (known-variables "{% sum foo bar baz %}"))))
+  (testing "sum"
+    (is (= #{:foo :bar :baz} (known-variables "{% sum foo bar baz %}"))))
 
-;;   (testing "now"
-;;     (is (= #{} (known-variables "{% now \"dd MM yyyy\" %}"))))
+  (testing "now"
+    (is (= #{} (known-variables "{% now \"dd MM yyyy\" %}"))))
 
-;;   (testing "firstof"
-;;     (is (= #{:var1 :var2 :var3} (known-variables "{% firstof var1 var2 var3 %}"))))
+  (testing "firstof"
+    (is (= #{:var1 :var2 :var3} (known-variables "{% firstof var1 var2 var3 %}"))))
 
-;;   (testing "verbatim"
-;;     (is (= #{} (known-variables "{% verbatim %}{{if dying}}Still alive.{{/if}}{% endverbatim %}"))))
+  (testing "verbatim"
+    (is (= #{} (known-variables "{% verbatim %}{{if dying}}Still alive.{{/if}}{% endverbatim %}"))))
 
 
-;;   (testing "nesting"
-;;     (is (= #{:x :y :z} (known-variables "{% if x <= y %}{% if z = 2 %}yes!{% else %}not!{% endif %}{% endif %}")))
-;;     (is (= #{:items :foo} (known-variables "{% for item,idx in items|sort %}
-;;                                               <tr><td>{{item.name}}</td>
-;;                                               <td>{{item.age}}</td></tr>
-;;                                               {% ifequal item.middeName foo %}
-;;                                                 BOOM
-;;                                               {% endifequal %}
-;;                                             {% endfor %}")))))
+  (testing "nesting"
+    (is (= #{:x :y :z} (known-variables "{% if x <= y %}{% if z = 2 %}yes!{% else %}not!{% endif %}{% endif %}")))
+    (is (= #{:items :foo} (known-variables "{% for item,idx in items|sort %}
+                                              <tr><td>{{item.name}}</td>
+                                              <td>{{item.age}}</td></tr>
+                                              {% ifequal item.middeName foo %}
+                                                BOOM
+                                              {% endifequal %}
+                                            {% endfor %}")))))
 
-;; (deftest debug-test
-;;   (is (str/includes? (render "{% debug %}" {:debug-value 1})
-;;                      "debug-value"))
-;;   (testing "basic rendering escapes HTML"
-;;     (is (str/includes? (basic-edn->html {:a "<pre>"}) "&quot"))))
+#_(deftest debug-test
+  (is (str/includes? (render "{% debug %}" {:debug-value 1})
+                     "debug-value"))
+  (testing "basic rendering escapes HTML"
+    (is (str/includes? (basic-edn->html {:a "<pre>"}) "&quot"))))
 
