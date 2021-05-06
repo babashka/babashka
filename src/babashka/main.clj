@@ -165,9 +165,9 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
   (let [arg (first command-line-args)
         tasks (:tasks @common/bb-edn)]
     (if (or (when-let [s (tasks/doc-from-task
-                           ctx
-                           tasks
-                           (get tasks (symbol arg)))]
+                          ctx
+                          tasks
+                          (get tasks (symbol arg)))]
               [(do (println "-------------------------")
                    (println arg)
                    (println "Task")
@@ -207,7 +207,8 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
  :feature/hiccup     %s
  :feature/test-check %s
  :feature/spec-alpha %s
- :feature/rewrite-clj %s}")
+ :feature/rewrite-clj %s
+ :feature/selmer %s}")
     version
     features/core-async?
     features/csv?
@@ -225,7 +226,8 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
     features/hiccup?
     features/test-check?
     features/spec-alpha?
-    features/rewrite-clj?)))
+    features/rewrite-clj?
+    features/selmer?)))
 
 (defn read-file [file]
   (let [f (io/file file)]
@@ -365,7 +367,13 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                                  'rewrite-clj.zip
                                  @(resolve 'babashka.impl.rewrite-clj/zip-namespace)
                                  'rewrite-clj.zip.subedit
-                                 @(resolve 'babashka.impl.rewrite-clj/subedit-namespace))))
+                                 @(resolve 'babashka.impl.rewrite-clj/subedit-namespace))
+    features/selmer? (assoc 'selmer.parser
+                            @(resolve 'babashka.impl.selmer/selmer-parser-namespace)
+                            'selmer.tags
+                            @(resolve 'babashka.impl.selmer/selmer-tags-namespace)
+                            'selmer.filters
+                            @(resolve 'babashka.impl.selmer/selmer-filters-namespace))))
 
 (def imports
   '{ArithmeticException java.lang.ArithmeticException
@@ -683,11 +691,6 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                                   (assoc 'clojure.core
                                          (assoc core-extras
                                                 'load-file load-file*))
-                                  (assoc-in ['clojure.java.io 'resource]
-                                            (fn [path]
-                                              (when-let [{:keys [:loader]} @cp/cp-state]
-                                                (if (str/starts-with? path "/") nil ;; non-relative paths always return nil
-                                                    (cp/getResource loader [path] {:url? true})))))
                                   (assoc-in ['user (with-meta '*input*
                                                      (when-not stream?
                                                        {:sci.impl/deref! true}))] input-var))

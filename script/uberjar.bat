@@ -118,6 +118,11 @@ set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/rewrite-clj
 set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/rewrite-clj
 )
 
+if not "%BABASHKA_FEATURE_REWRITE_SELMER%"=="false" (
+set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/selmer
+) else (
+set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/selmer
+)
 
 call lein with-profiles %BABASHKA_LEIN_PROFILES% bb "(+ 1 2 3)"
 

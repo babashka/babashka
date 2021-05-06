@@ -15,6 +15,7 @@
 (def hiccup?         (not= "false" (System/getenv "BABASHKA_FEATURE_HICCUP")))
 (def test-check?     (not= "false" (System/getenv "BABASHKA_FEATURE_TEST_CHECK")))
 (def rewrite-clj?    (not= "false" (System/getenv "BABASHKA_FEATURE_REWRITE_CLJ")))
+(def selmer?         (not= "false" (System/getenv "BABASHKA_FEATURE_SELMER")))
 
 ;; excluded by default
 (def jdbc? (= "true" (System/getenv "BABASHKA_FEATURE_JDBC")))
@@ -70,3 +71,6 @@
 
 (when rewrite-clj?
   (require '[babashka.impl.rewrite-clj]))
+
+(when selmer?
+  (require '[babashka.impl.selmer]))

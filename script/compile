@@ -85,6 +85,12 @@ if [ "$BABASHKA_FEATURE_HSQLDB" = "true" ]; then
     args+=("-H:IncludeResources=org/hsqldb/.*\.properties" "-H:IncludeResources=org/hsqldb/.*\.sql")
 fi
 
+BABASHKA_FEATURE_SELMER=${BABASHKA_FEATURE_SELMER:-}
+
+if [ "$BABASHKA_FEATURE_SELMER" = "true" ]; then
+    args+=("-H:IncludeResources=json.human.css")
+fi
+
 BABASHKA_LEAN=${BABASHKA_LEAN:-}
 
 if [ "$BABASHKA_LEAN" = "true" ]
@@ -104,6 +110,7 @@ then
     export BABASHKA_FEATURE_TEST_CHECK="${BABASHKA_FEATURE_TEST_CHECK:-false}"
     export BABASHKA_FEATURE_SPEC_ALPHA="${BABASHKA_FEATURE_SPEC_ALPHA:-false}"
     export BABASHKA_FEATURE_REWRITE_CLJ="${BABASHKA_FEATURE_REWRITE_CLJ:-false}"
+    export BABASHKA_FEATURE_SELMER="${BABASHKA_FEATURE_SELMER:-false}"
 fi
 
 "$GRAALVM_HOME/bin/native-image" "${args[@]}"

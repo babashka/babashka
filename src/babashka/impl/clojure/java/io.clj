@@ -1,6 +1,7 @@
 (ns babashka.impl.clojure.java.io
   {:no-doc true}
-  (:require [clojure.java.io :as io]
+  (:require [babashka.impl.classpath :as cp]
+            [clojure.java.io :as io]
             [sci.core :as sci :refer [copy-var]]
             [sci.impl.types :as types])
   (:import [java.io File ]))
@@ -64,4 +65,5 @@
    'make-parents (copy-var io/make-parents io-ns)
    'output-stream (copy-var io/output-stream io-ns)
    'reader (copy-var io/reader io-ns)
-   'writer (copy-var io/writer io-ns)})
+   'writer (copy-var io/writer io-ns)
+   'resource (sci/copy-var cp/resource io-ns)})
