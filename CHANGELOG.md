@@ -4,6 +4,11 @@ For a list of breaking changes, check [here](#breaking-changes).
 
 ## Unreleased
 
+- Add [Selmer](https://github.com/yogthos/Selmer) to build-in libraries #821
+- Don't throw when `PATH` isn't set during deps resolving (@ieugen)
+- Add `with-precision` macro #662
+- Task changes and improvements, see [issue](https://github.com/babashka/babashka/issues/778)
+
 ## 0.3.7
 
 - Ignore local and global deps.edn when resolving deps for `bb.edn` [#807](https://github.com/babashka/babashka/issues/807)
