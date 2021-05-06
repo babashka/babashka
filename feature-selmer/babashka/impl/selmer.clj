@@ -1,9 +1,9 @@
 (ns babashka.impl.selmer
   {:no-doc true}
-  (:require [babashka.impl.classpath :refer [get-classpath]]
+  (:require [babashka.impl.classpath :refer [resource]]
             [sci.core :as sci]
             [selmer.parser]
-            [selmer.util :refer [*custom-resource-path*]]))
+            [selmer.util :refer [*resource-fn*]]))
 
 (def sns (sci/create-ns 'selmer.parser nil))
 
@@ -26,15 +26,13 @@
 
 (def selmer-parser-ns (make-ns 'selmer.parser sns))
 
-#_(defn render-file
-  " Parses files if there isn't a memoized post-parse vector ready to go,
+(defn render-file
+  "Parses files if there isn't a memoized post-parse vector ready to go,
   renders post-parse vector with passed context-map regardless. Double-checks
   last-modified on files. Uses classpath for filename-or-url path "
   [& args]
-  (binding [*custom-resource-path* (get-classpath)]
-    (prn :cp *custom-resource-path*)
+  (binding [*resource-fn* resource]
     (apply selmer.parser/render-file args)))
 
 (def selmer-namespace
-  selmer-parser-ns
-  #_(assoc selmer-parser-ns 'render-file (sci/copy-var render-file sns)))
+  (assoc selmer-parser-ns 'render-file (sci/copy-var render-file sns)))
