@@ -55,7 +55,7 @@
              :feature/rewrite-clj {:source-paths ["feature-rewrite-clj"]
                                    :dependencies [[rewrite-clj/rewrite-clj "1.0.605-alpha"]]}
              :feature/selmer {:source-paths ["feature-selmer"]
-                              :dependencies [[org.clojars.borkdude/selmer "1.12.35-pre1"]]}
+                              :dependencies [[selmer/selmer "1.12.35"]]}
              :test [:feature/xml
                     :feature/lanterna
                     :feature/yaml
