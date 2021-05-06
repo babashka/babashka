@@ -26,7 +26,7 @@
       (binding [*out* *err*]
         (println (format "[bb %s]" (:name @task)) (str/join " " strs))))))
 
-(defn log-error [& strs]
+#_(defn log-error [& strs]
   (let [log-level @log-level]
     (when (or
            ;; log error also in case of info level
@@ -47,8 +47,10 @@
                         zero-exit?)]
         (if continue? proc
             (do (when-not zero-exit?
-                  (log-error "Terminating with non-zero exit code:" exit-code))
-                (System/exit exit-code)))))))
+                  (binding [*out* *err*]
+                    (println "Received non-zero exit code in task:" (:name @task))))
+                (throw (ex-info (str "Error during task: " (:name @task))
+                                {:proc proc :task task :exit exit-code}))))))))
 
 (def default-opts
   {:in :inherit

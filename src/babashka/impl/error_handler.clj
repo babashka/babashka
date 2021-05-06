@@ -79,7 +79,8 @@
 (defn error-handler [^Exception e opts]
   (binding [*out* *err*]
     (let [d (ex-data e)
-          exit-code (:bb/exit-code d)
+          cause-exit (some-> e ex-cause ex-data :exit)
+          exit-code (or (:exit d) cause-exit)
           sci-error? (isa? (:type d) :sci/error)
           ex-name (when sci-error?
                     (some-> ^Throwable (ex-cause e)
@@ -120,7 +121,7 @@
                         (when-not (str/blank? st) st))]
                 (ruler "Stack trace")
                 (println st)))
-            (when (:verbose? opts)
+            (when (:debug opts)
               (ruler "Exception")
               (print-stack-trace e))
               (flush)
