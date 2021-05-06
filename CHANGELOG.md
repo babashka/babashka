@@ -4,9 +4,9 @@ For a list of breaking changes, check [here](#breaking-changes).
 
 ## Unreleased
 
-- Add [Selmer](https://github.com/yogthos/Selmer) to build-in libraries #821
-- Don't throw when `PATH` isn't set during deps resolving (@ieugen)
-- Add `with-precision` macro #662
+- Add [Selmer](https://github.com/yogthos/Selmer) to build-in libraries [#821](https://github.com/babashka/babashka/issues/821)
+- Don't throw when `PATH` isn't set during deps resolving ([@ieugen](https://github.com/ieugen))
+- Add `with-precision` macro [#662](https://github.com/babashka/babashka/issues/662)
 - Task changes and improvements, see [issue](https://github.com/babashka/babashka/issues/778)
 
 ## 0.3.7
