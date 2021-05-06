@@ -85,6 +85,12 @@ if [ "$BABASHKA_FEATURE_HSQLDB" = "true" ]; then
     args+=("-H:IncludeResources=org/hsqldb/.*\.properties" "-H:IncludeResources=org/hsqldb/.*\.sql")
 fi
 
+BABASHKA_FEATURE_SELMER=${BABASHKA_FEATURE_SELMER:-}
+
+if [ "$BABASHKA_FEATURE_SELMER" = "true" ]; then
+    args+=("-H:IncludeResources=json.human.css")
+fi
+
 BABASHKA_LEAN=${BABASHKA_LEAN:-}
 
 if [ "$BABASHKA_LEAN" = "true" ]

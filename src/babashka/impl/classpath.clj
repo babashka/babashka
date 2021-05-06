@@ -15,7 +15,7 @@
 
 (deftype DirectoryResolver [path]
   IResourceResolver
-  (getResource [_ resource-paths {:keys [:url?]}]
+  (getResource [_ resource-paths url?]
     (some
      (fn [resource-path]
        (let [f (io/file path resource-path)]
@@ -28,23 +28,22 @@
      resource-paths)))
 
 (defn path-from-jar
-  [^java.io.File jar-file resource-paths opts]
-  (let [url? (:url? opts)]
-    (with-open [jar (JarFile. jar-file)]
-      (some (fn [path]
-              (when-let [entry (.getEntry jar path)]
-                (if url?
-                  ;; manual conversion, faster than going through .toURI
-                  (java.net.URL. "jar" nil
-                                 (str "file:" (.getAbsolutePath jar-file) "!/" path))
-                  {:file path
-                   :source (slurp (.getInputStream jar entry))})))
-            resource-paths))))
+  [^java.io.File jar-file resource-paths url?]
+  (with-open [jar (JarFile. jar-file)]
+    (some (fn [path]
+            (when-let [entry (.getEntry jar path)]
+              (if url?
+                ;; manual conversion, faster than going through .toURI
+                (java.net.URL. "jar" nil
+                               (str "file:" (.getAbsolutePath jar-file) "!/" path))
+                {:file path
+                 :source (slurp (.getInputStream jar entry))})))
+          resource-paths)))
 
 (deftype JarFileResolver [jar-file]
   IResourceResolver
-  (getResource [_ resource-paths opts]
-    (path-from-jar jar-file resource-paths opts)))
+  (getResource [_ resource-paths url?]
+    (path-from-jar jar-file resource-paths url?)))
 
 (defn part->entry [part]
   (when-not (str/blank? part)
@@ -106,6 +105,12 @@
   "Returns the current classpath as set by --classpath, BABASHKA_CLASSPATH and add-classpath."
   []
   (:cp @cp-state))
+
+(defn resource [path]
+  (when-let [st @cp-state]
+    (let [loader (:loader st)]
+      (if (str/starts-with? path "/") nil ;; non-relative paths always return nil
+          (getResource loader [path] true)))))
 
 (def cns (sci/create-ns 'babashka.classpath nil))
 
