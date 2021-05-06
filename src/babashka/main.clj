@@ -369,7 +369,9 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                                  'rewrite-clj.zip.subedit
                                  @(resolve 'babashka.impl.rewrite-clj/subedit-namespace))
     features/selmer? (assoc 'selmer.parser
-                            @(resolve 'babashka.impl.selmer/selmer-namespace))))
+                            @(resolve 'babashka.impl.selmer/selmer-parser-namespace)
+                            'selmer.tags
+                            @(resolve 'babashka.impl.selmer/selmer-tags-namespace))))
 
 (def imports
   '{ArithmeticException java.lang.ArithmeticException

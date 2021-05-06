@@ -1,0 +1,13 @@
+{% ifequal foo "bar" %}
+<h1>equal!</h1>
+{% endifequal %}
+
+{% ifequal foo bar %}
+<h1>equal!</h1>
+{% endifequal %}
+
+{% ifequal baz "test" %}
+<h1>equal!</h1>
+{% else %}
+<p>not equal</p>
+{% endifequal %}

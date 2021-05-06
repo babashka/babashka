@@ -3,9 +3,10 @@
   (:require [babashka.impl.classpath :refer [resource]]
             [sci.core :as sci]
             [selmer.parser]
+            [selmer.tags :as tags]
             [selmer.util :refer [*resource-fn*]]))
 
-(def sns (sci/create-ns 'selmer.parser nil))
+(def spns (sci/create-ns 'selmer.parser nil))
 
 (defn make-ns [ns sci-ns]
   (reduce (fn [ns-map [var-name var]]
@@ -24,7 +25,7 @@
           {}
           (ns-publics ns)))
 
-(def selmer-parser-ns (make-ns 'selmer.parser sns))
+(def selmer-parser-ns (make-ns 'selmer.parser spns))
 
 (defn render-file
   "Parses files if there isn't a memoized post-parse vector ready to go,
@@ -34,5 +35,15 @@
   (binding [*resource-fn* resource]
     (apply selmer.parser/render-file args)))
 
-(def selmer-namespace
-  (assoc selmer-parser-ns 'render-file (sci/copy-var render-file sns)))
+(def selmer-parser-namespace
+  (assoc selmer-parser-ns 'render-file (sci/copy-var render-file spns)))
+
+(def stns (sci/create-ns 'selmer.tags nil))
+
+(def selmer-tags-ns (sci/create-ns 'selmer.tags stns))
+
+(def selmer-tags-namespace
+  {;; needed by selmer.parser/add-tag! 
+   'expr-tags (sci/copy-var tags/expr-tags stns)
+   ;; needed by selmer.parser/add-tag!
+   'tag-handler (sci/copy-var tags/tag-handler stns)})

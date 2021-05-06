@@ -198,6 +198,8 @@
 
 (test-namespaces 'helins.binf.test)
 
+(test-namespaces 'selmer.core-test)
+
 ;;;; final exit code
 
 (let [{:keys [:test :fail :error] :as m} @status]
