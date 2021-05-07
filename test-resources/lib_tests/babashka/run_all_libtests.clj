@@ -204,8 +204,8 @@
                  'jasentaa.worked-example-1
                  'jasentaa.worked-example-2
                  'jasentaa.collections-test
-                 'parser.basic-test
-                 'parser.combinators-test)
+                 'jasentaa.parser.basic-test
+                 'jasentaa.parser.combinators-test)
 
 ;;;; final exit code
 
