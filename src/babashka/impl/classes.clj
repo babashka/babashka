@@ -256,6 +256,7 @@
           java.util.zip.GZIPInputStream
           java.util.zip.GZIPOutputStream
           java.util.zip.ZipInputStream
+          java.util.zip.ZipOutputStream
           java.util.zip.ZipEntry
           ~(symbol "[B")
           ~(symbol "[I")
