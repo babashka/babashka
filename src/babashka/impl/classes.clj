@@ -194,7 +194,7 @@
           java.security.MessageDigest
           java.security.DigestInputStream
           java.security.SecureRandom
-          java.text.ParserException
+          java.text.ParseException
           ~@(when features/java-time?
               `[java.time.format.DateTimeFormatter
                 java.time.Clock
