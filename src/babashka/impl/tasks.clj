@@ -269,7 +269,8 @@
                          #_#_dependees (tasks->dependees targets tasks)
                          task-map (cond-> {}
                                     enter (assoc :enter enter)
-                                    leave (assoc :leave leave))]
+                                    leave (assoc :leave leave)
+                                    parallel? (assoc :parallel parallel?))]
                      (if error
                        [(binding [*out* *err*]
                           (println error)) 1]
@@ -316,7 +317,8 @@
                       (concat requires (:requires task))
                       (assemble-task-1 (cond-> {:name task-name}
                                          enter (assoc :enter enter)
-                                         leave (assoc :leave leave))
+                                         leave (assoc :leave leave)
+                                         parallel? (assoc :parallel parallel?))
                                        task parallel? true))] nil])]
         (when @debug
           (binding [*out* *err*]
@@ -391,7 +393,8 @@
 
 (defn run
   ([task] (run task nil))
-  ([task {:keys [:parallel]}]
+  ([task {:keys [:parallel]
+          :or {parallel (:parallel (current-task))}}]
    (let [[[expr]] (assemble-task task parallel)]
      (sci/eval-string* @ctx expr))))
 
