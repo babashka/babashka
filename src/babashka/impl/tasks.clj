@@ -360,10 +360,14 @@
         loc (zip/find-value loc :tasks)
         loc (zip/right loc)
         loc (zip/down loc)]
-    (filter symbol?
-            (map zip/sexpr
-                 (take-while #(not (zip/end? %))
-                             (take-nth 2 (iterate zip/right loc)))))))
+    (->>
+     loc
+     (iterate zip/right)
+     (take-nth 2 )
+     (take-while #(not (zip/end? %)))
+     (filter zip/sexpr-able?)
+     (map zip/sexpr)
+     (filter symbol?))))
 
 (defn list-tasks
   [sci-ctx]
