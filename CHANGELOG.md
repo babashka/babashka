@@ -2,9 +2,23 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
-## Unreleased
+## 0.4.0
 
-- Add [Selmer](https://github.com/yogthos/Selmer) to build-in libraries [#821](https://github.com/babashka/babashka/issues/821)
+Babashka proper:
+
+- Add [Task runner](https://book.babashka.org/#tasks) feature
+- Add `java.util.zip.ZipOutputStream` class
+- Add `java.text.ParseException` exception class to support
+  [jasentaa](https://github.com/rm-hull/jasentaa) parser combinator library
+- Update Selmer to 1.12.40
+
+Sci:
+
+- Better error msg for protocol not found or class
+
+## 0.3.8
+
+- Add [Selmer](https://github.com/yogthos/Selmer) to built-in libraries [#821](https://github.com/babashka/babashka/issues/821)
 - Don't throw when `PATH` isn't set during deps resolving ([@ieugen](https://github.com/ieugen))
 - Add `with-precision` macro [#662](https://github.com/babashka/babashka/issues/662)
 - Task changes and improvements, see [issue](https://github.com/babashka/babashka/issues/778)
