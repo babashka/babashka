@@ -27,13 +27,13 @@
         (println (format "[bb %s]" (:name @task)) (str/join " " strs))))))
 
 #_(defn log-error [& strs]
-  (let [log-level @log-level]
-    (when (or
-           ;; log error also in case of info level
-           (identical? :info log-level)
-           (identical? :error log-level))
-      (binding [*out* *err*]
-        (println (format "[bb %s]" (:name @task)) (str/join " " strs))))))
+    (let [log-level @log-level]
+      (when (or
+             ;; log error also in case of info level
+             (identical? :info log-level)
+             (identical? :error log-level))
+        (binding [*out* *err*]
+          (println (format "[bb %s]" (:name @task)) (str/join " " strs))))))
 
 (defn- handle-non-zero [proc opts]
   (when proc
@@ -181,7 +181,7 @@
                           task
                           (namespace task)
                           prog)]
-             prog)
+         prog)
        (let [prog (pr-str task)
              prog (wrap-enter-leave task-name prog enter leave)
              prog (wrap-depends prog depends parallel?)
@@ -241,14 +241,14 @@
            order))))))
 
 #_(defn tasks->dependees [task-names tasks]
-  (let [tasks->depends (zipmap task-names (map #(:depends (get tasks %)) task-names))]
-    (persistent!
-     (reduce (fn [acc [task depends]]
-               (reduce (fn [acc dep]
-                         (assoc! acc dep (conj (or (get acc dep)
-                                                   #{})
-                                               task)))
-                       acc depends)) (transient {}) tasks->depends))))
+    (let [tasks->depends (zipmap task-names (map #(:depends (get tasks %)) task-names))]
+      (persistent!
+       (reduce (fn [acc [task depends]]
+                 (reduce (fn [acc dep]
+                           (assoc! acc dep (conj (or (get acc dep)
+                                                     #{})
+                                                 task)))
+                         acc depends)) (transient {}) tasks->depends))))
 
 (defn assemble-task [task-name parallel?]
   (let [task-name (symbol task-name)
@@ -328,11 +328,11 @@
 (defn doc-from-task [sci-ctx tasks task]
   (or (:doc task)
       (when-let [fn-sym (cond (qualified-symbol? task)
-                         task
-                         (map? task)
-                         (let [t (:task task)]
-                           (when (qualified-symbol? t)
-                             t)))]
+                              task
+                              (map? task)
+                              (let [t (:task task)]
+                                (when (qualified-symbol? t)
+                                  t)))]
         (let [requires (:requires tasks)
               requires (map (fn [x]
                               (list 'quote x))
@@ -360,14 +360,14 @@
         loc (zip/find-value loc :tasks)
         loc (zip/right loc)
         loc (zip/down loc)]
-    (->>
-     loc
-     (iterate zip/right)
-     (take-nth 2 )
-     (take-while #(not (zip/end? %)))
-     (filter zip/sexpr-able?)
-     (map zip/sexpr)
-     (filter symbol?))))
+    (into []
+          (comp
+           (take-nth 2 )
+           (take-while #(not (zip/end? %)))
+           (filter zip/sexpr-able?)
+           (map zip/sexpr)
+           (filter symbol?))
+          (iterate zip/right loc))))
 
 (defn list-tasks
   [sci-ctx]
