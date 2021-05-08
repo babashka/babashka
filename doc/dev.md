@@ -83,7 +83,7 @@ something in a sqlite / mysql DB and reads something from it.
 
 ## ADR
 
-Some decisions:
+Some design decisions:
 
 ### bb.edn
 
@@ -98,6 +98,16 @@ Some decisions:
 - Rather than naming the home config dir `~/.bb` we chose `~/.babashka` to
   prevent conflicts with other global tools. We might introduce a project local
   `~/.babashka` directory for storing caches or whatnot too.
+
+### Tasks
+
+Some of these design decisions were formed in [these discussions](https://github.com/babashka/babashka/discussions/779).
+
+- Tasks do not allow passing arguments to dependent tasks, other than by rebinding `*command-line-args*` (see discussion).
+- Does the list of dependencies need to be dynamic? No, see discussion (same reason as args)
+- bb <foo> is resolved as file > task > bb subcommand. Shadowing future subcommand is a problem that a user can solve by renaming a task or file. (same as lein aliases). Also see Conflicts.
+- It is a feature that tasks are defined as top-level vars (instead of local let-bound symbols). This plays well with the Gilardi scenario, e.g. here: https://github.com/babashka/babashka.github.io/blob/ad276625f6c41f269d19450f236cb54cab2591e1/bb.edn#L7.
+- The parallel option trickles down into run calls. People who use parallel will be confused if it’s dropped magically, people who don’t use parallel won’t notice anything either way so it doesn’t matter
 
 ## Binary size
 

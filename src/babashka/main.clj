@@ -119,12 +119,6 @@ Global opts:
   -cp, --classpath     Classpath to use. Overrides bb.edn classpath.
   --debug              Print debug information and internal stacktrace in case of exception.
 
-Evaluation:
-
-  -e, --eval <expr>    Evaluate an expression.
-  -f, --file <path>    Evaluate a file.
-  -m, --main <ns|var>  Call the -main function from a namespace or call a fully qualified var.
-
 Help:
 
   help, -h or -?     Print this help text.
@@ -132,11 +126,22 @@ Help:
   describe           Print an EDN map with information about this version of babashka.
   doc <var|ns>       Print docstring of var or namespace. Requires namespace if necessary.
 
+Evaluation:
+
+  -e, --eval <expr>    Evaluate an expression.
+  -f, --file <path>    Evaluate a file.
+  -m, --main <ns|var>  Call the -main function from a namespace or call a fully qualified var.
+
 REPL:
 
   repl                 Start REPL. Use rlwrap for history.
   socket-repl  [addr]  Start a socket REPL. Address defaults to localhost:1666.
   nrepl-server [addr]  Start nREPL server. Address defaults to localhost:1667.
+
+Tasks:
+
+  tasks       Print list of available tasks.
+  run <task>  Run task. See run --help for more details.
 
 Clojure:
 
@@ -185,6 +190,18 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
       [nil 0]
       [nil 1]))
   ,)
+
+(defn print-run-help []
+  (println (str/trim "
+bb run [opts] <task>: run a task.
+
+Supported options:
+
+  --prn:      print task result using prn.
+  --parallel: executes task dependencies in parallel when possible.
+
+Use bb run --help to show this help output.
+")))
 
 (defn print-describe []
   (println
@@ -434,6 +451,9 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
     (if args
       (let [fst (first args)]
         (case fst
+          "--help"
+          (recur (assoc opts-map :run true :run-help true)
+                 (next args))
           "--parallel"
           (recur (assoc opts-map :parallel-tasks true)
                  (next args))
@@ -718,8 +738,10 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                                    "-main")]
                     [[(format "(ns user (:require [%1$s])) (apply %1$s/%2$s *command-line-args*)"
                               ns var-name)] nil])
-                  run (tasks/assemble-task run
-                                           (:parallel-tasks cli-opts))
+                  run (if (:run-help cli-opts)
+                        [(print-run-help) 0]
+                        (tasks/assemble-task run
+                                             (:parallel-tasks cli-opts)))
                   file (try [[(read-file file)] nil]
                             (catch Exception e
                               (error-handler e {:expression expressions
