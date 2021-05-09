@@ -97,7 +97,7 @@ if [ "$BABASHKA_STATIC" = "true" ]; then
     # - /usr/lib/gcc/x86_64-linux-gnu/6
     # - /usr/lib/gcc/x86_64-linux-gnu/6.3.0
     for dest_dir in /usr/lib/gcc/x86_64-linux-gnu/*; do
-        sudo cp /usr/lib/x86_64-linux-musl/lib/libz.a "$dest_dir"
+        sudo cp -f /usr/lib/x86_64-linux-musl/lib/libz.a "$dest_dir"
     done
 fi
 
