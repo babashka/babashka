@@ -7,7 +7,7 @@ if [ "$BABASHKA_STATIC" != "true" ] && [ "$BABASHKA_USE_MUSL" != "true" ]; then
 fi
 
 # Build musl
-git clone "https://github.com/richfelker/musl-cross-make" -b v0.9.9
+git clone "https://github.com/thiagokokada/musl-cross-make" -b v0.9.10
 pushd musl-cross-make
 echo "TARGET = x86_64-linux-musl" > config.mak
 make -j"$(nproc)"
