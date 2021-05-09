@@ -76,7 +76,29 @@ args=( "-jar" "$BABASHKA_JAR"
 BABASHKA_STATIC=${BABASHKA_STATIC:-}
 
 if [ "$BABASHKA_STATIC" = "true" ]; then
-    args+=("--static")
+    args+=("--static" "--libc=musl")
+
+    # needs to be in a separate script as we need sudo and >> redirects in it wont work.
+    sudo bash script/setup-musl
+
+    ZLIB_VERSION="1.2.11"
+
+    curl -O -sL "https://zlib.net/zlib-${ZLIB_VERSION}.tar.gz"
+    tar xf "zlib-${ZLIB_VERSION}.tar.gz"
+    cd "zlib-${ZLIB_VERSION}"
+    CC=musl-gcc ./configure --static --prefix=/usr/lib/x86_64-linux-musl/
+    make CC=musl-gcc
+    sudo make install
+    export CC=gcc
+    cd ..
+
+    # depending on GCC version, we will have different directories here.
+    # for example, for GCC 6.3.0 we will have:
+    # - /usr/lib/gcc/x86_64-linux-gnu/6
+    # - /usr/lib/gcc/x86_64-linux-gnu/6.3.0
+    for dest_dir in /usr/lib/gcc/x86_64-linux-gnu/*; do
+        sudo cp -f /usr/lib/x86_64-linux-musl/lib/libz.a "$dest_dir"
+    done
 fi
 
 BABASHKA_FEATURE_HSQLDB=${BABASHKA_FEATURE_HSQLDB:-}
