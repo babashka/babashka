@@ -77,6 +77,7 @@ BABASHKA_STATIC=${BABASHKA_STATIC:-}
 
 if [ "$BABASHKA_STATIC" = "true" ]; then
     args+=("--static")
+    [ "$BABASHKA_USE_MUSL" = "true" ] && args+=("--libc=musl")
 fi
 
 BABASHKA_FEATURE_HSQLDB=${BABASHKA_FEATURE_HSQLDB:-}

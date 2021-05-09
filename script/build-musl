@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+set -eou pipefail
+
+if [ "$BABASHKA_STATIC" != "true" ] && [ "$BABASHKA_USE_MUSL" != "true" ]; then
+    exit 0
+fi
+
+# Build musl
+git clone "https://github.com/richfelker/musl-cross-make" -b v0.9.9
+pushd musl-cross-make
+echo "TARGET = x86_64-linux-musl" > config.mak
+make -j"$(nproc)"
+make install
+ln -s "$PWD/output/bin/x86_64-linux-musl-gcc" "$PWD/output/bin/musl-gcc"
+export PATH="/opt/musl-cross-make/output/bin:$PATH"
+popd
+
+# Build zlib with musl
+ver="1.2.11"
+curl -O "https://zlib.net/zlib-${ver}.tar.gz"
+tar xvf "zlib-${ver}.tar.gz"
+pushd "zlib-${ver}"
+CC=musl-gcc ./configure --static --prefix="/opt/musl-cross-make/output/x86_64-linux-musl/"
+make CC=musl-gcc
+make install
+popd
