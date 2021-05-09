@@ -29,7 +29,10 @@
   (reset! cp/cp-state nil)
   (reset! main/env {})
   (if-let [path *bb-edn-path*]
-    (vreset! common/bb-edn (edn/read-string (slurp path)))
+    (let [raw (slurp path)]
+      (vreset! common/bb-edn
+               (assoc (edn/read-string raw)
+                      :raw raw)))
     (vreset! common/bb-edn nil))
   (let [os (java.io.StringWriter.)
         es (if-let [err (:err input-or-opts)]

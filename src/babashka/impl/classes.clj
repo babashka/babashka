@@ -125,6 +125,7 @@
           java.lang.Integer
           java.lang.Iterable
           java.lang.Long
+          java.lang.NullPointerException
           java.lang.Number
           java.lang.NumberFormatException
           java.lang.Math
@@ -142,6 +143,8 @@
           java.lang.Throwable
           java.math.BigDecimal
           java.math.BigInteger
+          java.math.MathContext
+          java.math.RoundingMode
           java.net.ConnectException
           java.net.DatagramSocket
           java.net.DatagramPacket
@@ -149,6 +152,7 @@
           java.net.InetAddress
           java.net.ServerSocket
           java.net.Socket
+          java.net.SocketException
           java.net.UnknownHostException
           java.net.URI
           ;; java.net.URL, see below
@@ -190,6 +194,7 @@
           java.security.MessageDigest
           java.security.DigestInputStream
           java.security.SecureRandom
+          java.text.ParseException
           ~@(when features/java-time?
               `[java.time.format.DateTimeFormatter
                 java.time.Clock
@@ -251,6 +256,7 @@
           java.util.zip.GZIPInputStream
           java.util.zip.GZIPOutputStream
           java.util.zip.ZipInputStream
+          java.util.zip.ZipOutputStream
           java.util.zip.ZipEntry
           ~(symbol "[B")
           ~(symbol "[I")
@@ -266,8 +272,9 @@
     :methods [borkdude.graal.LockFix] ;; support for locking
 
     :fields [clojure.lang.PersistentQueue]
-    :instance-checks [clojure.lang.APersistentMap ;; for proxy
-                      clojure.lang.AMapEntry ;; for proxy
+    :instance-checks [clojure.lang.AMapEntry ;; for proxy
+                      clojure.lang.APersistentMap ;; for proxy
+                      clojure.lang.AReference
                       clojure.lang.Associative
                       clojure.lang.Atom
                       clojure.lang.Cons

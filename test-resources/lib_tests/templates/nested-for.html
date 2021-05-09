@@ -1,0 +1,13 @@
+<html>
+<body>
+<ul>
+{% for user in users %}
+	<li>
+	{% for i in user %}
+	{{i.name}}
+	{% endfor %}
+	</li>
+{% endfor %} 
+</ul>
+</body>
+</html>

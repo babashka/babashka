@@ -198,6 +198,15 @@
 
 (test-namespaces 'helins.binf.test)
 
+(test-namespaces 'selmer.core-test)
+
+(test-namespaces 'jasentaa.position-test
+                 'jasentaa.worked-example-1
+                 'jasentaa.worked-example-2
+                 'jasentaa.collections-test
+                 'jasentaa.parser.basic-test
+                 'jasentaa.parser.combinators-test)
+
 ;;;; final exit code
 
 (let [{:keys [:test :fail :error] :as m} @status]

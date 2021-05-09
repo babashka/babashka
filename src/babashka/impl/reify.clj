@@ -150,4 +150,7 @@
 
     java.util.Iterator
     {hasNext [[this]]
-     next    [[this]]}}))
+     next    [[this]]}
+
+    java.lang.Comparable
+    {compareTo [[this other]]}}))

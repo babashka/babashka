@@ -35,6 +35,12 @@
   (is (= {:classpath "src"
           :uberjar "foo.jar"}
          (main/parse-opts ["--classpath" "src" "uberjar" "foo.jar"])))
+  (is (= {:classpath "src"
+          :uberjar "foo.jar"
+          :debug true}
+         (main/parse-opts ["--debug" "--classpath" "src" "uberjar" "foo.jar"])))
+  (is (= "src" (:classpath (main/parse-opts ["--classpath" "src"]))))
+  (is (:debug (main/parse-opts ["--debug"])))
   (is (= 123 (bb nil "(println 123)")))
   (is (= 123 (bb nil "-e" "(println 123)")))
   (is (= 123 (bb nil "--eval" "(println 123)")))
@@ -46,7 +52,15 @@
   (is (= '("-e" "1") (bb nil "-e" "*command-line-args*" "--" "-e" "1")))
   (let [v (bb nil "--describe")]
     (is (:babashka/version v))
-    (is (:feature/xml v))))
+    (is (:feature/xml v)))
+  )
+
+(deftest version-test
+  (is (= [1 0 0] (main/parse-version "1.0.0-SNAPSHOT")))
+  (is (main/satisfies-min-version? "0.1.0"))
+  (is (main/satisfies-min-version? "0.1.0-SNAPSHOT"))
+  (is (not (main/satisfies-min-version? "300.0.0")))
+  (is (not (main/satisfies-min-version? "300.0.0-SNAPSHOT"))))
 
 (deftest print-error-test
   (is (thrown-with-msg? Exception #"java.lang.NullPointerException"
@@ -603,6 +617,27 @@ true")))
                         (.encodeToString base64 buffer))))
                   (generate-token))]
     (is (string? (bb nil (str prog))))))
+
+(deftest with-precision-test
+  (is (= 0.33333333333333333333M (bb nil "(with-precision 20 (/ 1M 3))")))
+  (is (= 0.33333333333333333334M (bb nil "(with-precision 20 :rounding CEILING (/ 1M 3))"))))
+
+(deftest doc-test
+  (test-utils/with-config {:paths ["test-resources/task_scripts"]}
+    (is (str/includes? (apply test-utils/bb nil
+                              (map str ["doc" "tasks"]))
+                       "This is task ns docstring."))
+    (is (str/includes? (apply test-utils/bb nil
+                              (map str ["doc" "tasks/foo"]))
+                       "Foo docstring"))
+    (is (str/includes? (apply test-utils/bb nil
+                              (map str ["doc" "tasks/-main"]))
+                       "Main docstring"))
+    (is (str/includes? (apply test-utils/bb nil
+                              (map str ["doc" "with-precision"]))
+                       "precision"))
+    (is (str/blank? (with-out-str (main/main "doc" "non-existing"))))
+    (is (= 1 (main/main "doc" "non-existing")))))
 
 ;;;; Scratch
 

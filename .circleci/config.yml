@@ -105,7 +105,7 @@ jobs:
           name: Install native dev tools
           command: |
             sudo apt-get update
-            sudo apt-get -y install gcc g++ zlib1g-dev
+            sudo apt-get -y install g++ zlib1g-dev
       - run:
           name: Download GraalVM
           command: |
@@ -166,14 +166,14 @@ jobs:
           command: |
             git submodule init
             git submodule update
-      - run:
-          name: "Short circuit on SNAPSHOT"
-          command: |
-            VERSION=$(cat resources/BABASHKA_VERSION)
-            if [[ "$VERSION" == *-SNAPSHOT ]]
-            then
-              circleci task halt
-            fi
+      # - run:
+      #     name: "Short circuit on SNAPSHOT"
+      #     command: |
+      #       VERSION=$(cat resources/BABASHKA_VERSION)
+      #       if [[ "$VERSION" == *-SNAPSHOT ]]
+      #       then
+      #         circleci task halt
+      #       fi
       - restore_cache:
           keys:
             - linux-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}

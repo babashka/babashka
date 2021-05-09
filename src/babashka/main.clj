@@ -77,6 +77,12 @@
 ;; with the java provided by GraalVM.
 
 (def version (str/trim (slurp (io/resource "BABASHKA_VERSION"))))
+(defn parse-version [version]
+  (mapv #(Integer/parseInt %)
+        (-> version
+            (str/replace "-SNAPSHOT" "")
+            (str/split #"\."))))
+(def version-data (parse-version version))
 
 (defn print-version []
   (println (str "babashka v" version)))
@@ -104,20 +110,14 @@
 (defn print-help [_ctx _command-line-args]
   (println (str "Babashka v" version))
   (println "
-Usage: bb [classpath opts] [eval opts] [cmdline args]
-or:    bb [classpath opts] file [cmdline args]
-or:    bb [classpath opts] subcommand [subcommand opts] [cmdline args]
+Usage: bb [global-opts] [eval opts] [cmdline args]
+or:    bb [global-opts] file [cmdline args]
+or:    bb [global-opts] subcommand [subcommand opts] [cmdline args]
 
-Classpath:
+Global opts:
 
   -cp, --classpath     Classpath to use. Overrides bb.edn classpath.
-
-Evaluation:
-
-  -e, --eval <expr>    Evaluate an expression.
-  -f, --file <path>    Evaluate a file.
-  -m, --main <ns|var>  Call the -main function from a namespace or call a fully qualified var.
-  --verbose            Print debug information and entire stacktrace in case of exception.
+  --debug              Print debug information and internal stacktrace in case of exception.
 
 Help:
 
@@ -126,11 +126,22 @@ Help:
   describe           Print an EDN map with information about this version of babashka.
   doc <var|ns>       Print docstring of var or namespace. Requires namespace if necessary.
 
+Evaluation:
+
+  -e, --eval <expr>    Evaluate an expression.
+  -f, --file <path>    Evaluate a file.
+  -m, --main <ns|var>  Call the -main function from a namespace or call a fully qualified var.
+
 REPL:
 
   repl                 Start REPL. Use rlwrap for history.
   socket-repl  [addr]  Start a socket REPL. Address defaults to localhost:1666.
   nrepl-server [addr]  Start nREPL server. Address defaults to localhost:1667.
+
+Tasks:
+
+  tasks       Print list of available tasks.
+  run <task>  Run task. See run --help for more details.
 
 Clojure:
 
@@ -156,8 +167,18 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
   [nil 0])
 
 (defn print-doc [ctx command-line-args]
-  (let [arg (first command-line-args)]
-    (if (sci/eval-string* ctx (format "
+  (let [arg (first command-line-args)
+        tasks (:tasks @common/bb-edn)]
+    (if (or (when-let [s (tasks/doc-from-task
+                          ctx
+                          tasks
+                          (get tasks (symbol arg)))]
+              [(do (println "-------------------------")
+                   (println arg)
+                   (println "Task")
+                   (println s)
+                   true) 0])
+            (sci/eval-string* ctx (format "
 (when (or (resolve '%1$s)
           (if (simple-symbol? '%1$s)
             (try (require '%1$s) true
@@ -165,10 +186,22 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
             (try (requiring-resolve '%1$s) true
               (catch Exception e nil))))
  (clojure.repl/doc %1$s)
- true)" arg))
+ true)" arg)))
       [nil 0]
       [nil 1]))
   ,)
+
+(defn print-run-help []
+  (println (str/trim "
+bb run [opts] <task>: run a task.
+
+Supported options:
+
+  --prn:      print task result using prn.
+  --parallel: executes task dependencies in parallel when possible.
+
+Use bb run --help to show this help output.
+")))
 
 (defn print-describe []
   (println
@@ -191,7 +224,8 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
  :feature/hiccup     %s
  :feature/test-check %s
  :feature/spec-alpha %s
- :feature/rewrite-clj %s}")
+ :feature/rewrite-clj %s
+ :feature/selmer %s}")
     version
     features/core-async?
     features/csv?
@@ -209,7 +243,8 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
     features/hiccup?
     features/test-check?
     features/spec-alpha?
-    features/rewrite-clj?)))
+    features/rewrite-clj?
+    features/selmer?)))
 
 (defn read-file [file]
   (let [f (io/file file)]
@@ -349,7 +384,13 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                                  'rewrite-clj.zip
                                  @(resolve 'babashka.impl.rewrite-clj/zip-namespace)
                                  'rewrite-clj.zip.subedit
-                                 @(resolve 'babashka.impl.rewrite-clj/subedit-namespace))))
+                                 @(resolve 'babashka.impl.rewrite-clj/subedit-namespace))
+    features/selmer? (assoc 'selmer.parser
+                            @(resolve 'babashka.impl.selmer/selmer-parser-namespace)
+                            'selmer.tags
+                            @(resolve 'babashka.impl.selmer/selmer-tags-namespace)
+                            'selmer.filters
+                            @(resolve 'babashka.impl.selmer/selmer-filters-namespace))))
 
 (def imports
   '{ArithmeticException java.lang.ArithmeticException
@@ -409,177 +450,194 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
          args (seq args)]
     (if args
       (let [fst (first args)]
-        (if (= "--parallel" fst)
+        (case fst
+          "--help"
+          (recur (assoc opts-map :run true :run-help true)
+                 (next args))
+          "--parallel"
           (recur (assoc opts-map :parallel-tasks true)
                  (next args))
+          "--prn"
+          (let [args (next args)]
+            (recur (assoc opts-map :prn true)
+                   args))
+          ;; default
           (assoc opts-map :run fst :command-line-args (next args))))
       opts-map)))
 
+(defn parse-args [args opts-map]
+  (loop [options args
+         opts-map opts-map]
+    (if options
+      (let [opt (first options)]
+        (case opt
+          ("--") (assoc opts-map :command-line-args (next options))
+          ("--clojure") (assoc opts-map :clojure true
+                               :command-line-args (rest options))
+          ("--version") {:version true}
+          ("--help" "-h" "-?" "help")
+          {:help true
+           :command-line-args (rest options)}
+          ("--doc")
+          {:doc true
+           :command-line-args (rest options)}
+          ("--verbose") (recur (next options)
+                               (assoc opts-map
+                                      :verbose? true))
+          ("--describe") (recur (next options)
+                                (assoc opts-map
+                                       :describe? true))
+          ("--stream") (recur (next options)
+                              (assoc opts-map
+                                     :stream? true))
+          ("-i") (recur (next options)
+                        (assoc opts-map
+                               :shell-in true))
+          ("-I") (recur (next options)
+                        (assoc opts-map
+                               :edn-in true))
+          ("-o") (recur (next options)
+                        (assoc opts-map
+                               :shell-out true))
+          ("-O") (recur (next options)
+                        (assoc opts-map
+                               :edn-out true))
+          ("-io") (recur (next options)
+                         (assoc opts-map
+                                :shell-in true
+                                :shell-out true))
+          ("-iO") (recur (next options)
+                         (assoc opts-map
+                                :shell-in true
+                                :edn-out true))
+          ("-Io") (recur (next options)
+                         (assoc opts-map
+                                :edn-in true
+                                :shell-out true))
+          ("-IO") (recur (next options)
+                         (assoc opts-map
+                                :edn-in true
+                                :edn-out true))
+          ("--classpath", "-cp")
+          (let [options (next options)]
+            (recur (next options)
+                   (assoc opts-map :classpath (first options))))
+          ("--uberscript")
+          (let [options (next options)]
+            (recur (next options)
+                   (assoc opts-map
+                          :uberscript (first options))))
+          ("--uberjar")
+          (let [options (next options)]
+            (recur (next options)
+                   (assoc opts-map
+                          :uberjar (first options))))
+          ("-f" "--file")
+          (let [options (next options)]
+            (recur (next options)
+                   (assoc opts-map
+                          :file (first options))))
+          ("--jar" "-jar")
+          (let [options (next options)]
+            (recur (next options)
+                   (assoc opts-map
+                          :jar (first options))))
+          ("--repl")
+          (let [options (next options)]
+            (recur (next options)
+                   (assoc opts-map
+                          :repl true)))
+          ("--socket-repl")
+          (let [options (next options)
+                opt (first options)
+                opt (when (and opt (not (str/starts-with? opt "-")))
+                      opt)
+                options (if opt (next options)
+                            options)]
+            (recur options
+                   (assoc opts-map
+                          :socket-repl (or opt "1666"))))
+          ("--nrepl-server")
+          (let [options (next options)
+                opt (first options)
+                opt (when (and opt (not (str/starts-with? opt "-")))
+                      opt)
+                options (if opt (next options)
+                            options)]
+            (recur options
+                   (assoc opts-map
+                          :nrepl (or opt "1667"))))
+          ("--eval", "-e")
+          (let [options (next options)]
+            (recur (next options)
+                   (update opts-map :expressions (fnil conj []) (first options))))
+          ("--main", "-m",)
+          (let [options (next options)]
+            (recur (next options)
+                   (assoc opts-map :main (first options))))
+          ("--run")
+          (parse-run-opts opts-map (next options))
+          ("--tasks")
+          (assoc opts-map :list-tasks true
+                 :command-line-args (next options))
+          ;; fallback
+          (if (and opts-map
+                   (some opts-map [:file :jar :socket-repl :expressions :main :run]))
+            (assoc opts-map
+                   :command-line-args options)
+            (let [trimmed-opt (str/triml opt)
+                  c (.charAt trimmed-opt 0)]
+              (case c
+                (\( \{ \[ \* \@ \#)
+                (-> opts-map
+                    (update :expressions (fnil conj []) (first options))
+                    (assoc :command-line-args (next options)))
+                (assoc opts-map
+                       (if (str/ends-with? opt ".jar")
+                         :jar
+                         :file) opt
+                       :command-line-args (next options)))))))
+      opts-map)))
+
 (defn parse-global-opts [options]
-  (when-let [f (first options)]
-    (case f
-      ("--classpath" "-cp") [(nnext options) (second options)]
-      [options nil])))
+  (loop [options (seq options)
+         opts-map {}]
+    (if options
+      (case (first options)
+        ("--classpath" "-cp") (recur (nnext options) (assoc opts-map :classpath (second options)))
+        ("--debug"
+         "--verbose" ;; renamed to --debug
+         ) (recur (next options) (assoc opts-map :debug true))
+        [options opts-map])
+      [options opts-map])))
 
 (defn parse-opts
   ([options] (parse-opts options nil))
-  ([options opts]
-   (let [[options classpath] (parse-global-opts options)
-         opts (if classpath (assoc opts :classpath classpath)
-                  opts)
+  ([options opts-map]
+   (let [[options opts-map] (if opts-map
+                              [options opts-map]
+                              (parse-global-opts options))
          opt (first options)
          tasks (into #{} (map str) (keys (:tasks @common/bb-edn)))]
-     (when opt
-       ;; FILE > TASK > SUBCOMMAND
-       (cond
-         (fs/regular-file? opt)
-         (if (str/ends-with? opt ".jar")
-           {:classpath classpath
-            :jar opt
-            :command-line-args (next options)}
-           {:classpath classpath
-            :file opt
-            :command-line-args (next options)})
-         (contains? tasks opt)
-         {:run opt
-          :classpath classpath
-          :command-line-args (rest options)}
-         (command? opt)
-         (recur (cons (str "--" opt) (next options)) opts)
-         :else
-         (let [opts (loop [options options
-                           opts-map opts]
-                      (if options
-                        (let [opt (first options)]
-                          (case opt
-                            ("--") (assoc opts-map :command-line-args (next options))
-                            ("--clojure") (assoc opts-map :clojure true
-                                                 :command-line-args (rest options))
-                            ("--version") {:version true}
-                            ("--help" "-h" "-?" "help")
-                            {:help true
-                             :command-line-args (rest options)}
-                            ("--doc")
-                            {:doc true
-                             :command-line-args (rest options)}
-                            ("--verbose") (recur (next options)
-                                                 (assoc opts-map
-                                                        :verbose? true))
-                            ("--describe") (recur (next options)
-                                                  (assoc opts-map
-                                                         :describe? true))
-                            ("--stream") (recur (next options)
-                                                (assoc opts-map
-                                                       :stream? true))
-                            ("-i") (recur (next options)
-                                          (assoc opts-map
-                                                 :shell-in true))
-                            ("-I") (recur (next options)
-                                          (assoc opts-map
-                                                 :edn-in true))
-                            ("-o") (recur (next options)
-                                          (assoc opts-map
-                                                 :shell-out true))
-                            ("-O") (recur (next options)
-                                          (assoc opts-map
-                                                 :edn-out true))
-                            ("-io") (recur (next options)
-                                           (assoc opts-map
-                                                  :shell-in true
-                                                  :shell-out true))
-                            ("-iO") (recur (next options)
-                                           (assoc opts-map
-                                                  :shell-in true
-                                                  :edn-out true))
-                            ("-Io") (recur (next options)
-                                           (assoc opts-map
-                                                  :edn-in true
-                                                  :shell-out true))
-                            ("-IO") (recur (next options)
-                                           (assoc opts-map
-                                                  :edn-in true
-                                                  :edn-out true))
-                            ("--classpath", "-cp")
-                            (let [options (next options)]
-                              (recur (next options)
-                                     (assoc opts-map :classpath (first options))))
-                            ("--uberscript")
-                            (let [options (next options)]
-                              (recur (next options)
-                                     (assoc opts-map
-                                            :uberscript (first options))))
-                            ("--uberjar")
-                            (let [options (next options)]
-                              (recur (next options)
-                                     (assoc opts-map
-                                            :uberjar (first options))))
-                            ("-f" "--file")
-                            (let [options (next options)]
-                              (recur (next options)
-                                     (assoc opts-map
-                                            :file (first options))))
-                            ("--jar" "-jar")
-                            (let [options (next options)]
-                              (recur (next options)
-                                     (assoc opts-map
-                                            :jar (first options))))
-                            ("--repl")
-                            (let [options (next options)]
-                              (recur (next options)
-                                     (assoc opts-map
-                                            :repl true)))
-                            ("--socket-repl")
-                            (let [options (next options)
-                                  opt (first options)
-                                  opt (when (and opt (not (str/starts-with? opt "-")))
-                                        opt)
-                                  options (if opt (next options)
-                                              options)]
-                              (recur options
-                                     (assoc opts-map
-                                            :socket-repl (or opt "1666"))))
-                            ("--nrepl-server")
-                            (let [options (next options)
-                                  opt (first options)
-                                  opt (when (and opt (not (str/starts-with? opt "-")))
-                                        opt)
-                                  options (if opt (next options)
-                                              options)]
-                              (recur options
-                                     (assoc opts-map
-                                            :nrepl (or opt "1667"))))
-                            ("--eval", "-e")
-                            (let [options (next options)]
-                              (recur (next options)
-                                     (update opts-map :expressions (fnil conj []) (first options))))
-                            ("--main", "-m",)
-                            (let [options (next options)]
-                              (recur (next options)
-                                     (assoc opts-map :main (first options))))
-                            ("--run")
-                            (parse-run-opts opts-map (next options))
-                            ("--tasks")
-                            (assoc opts-map :list-tasks true
-                                   :command-line-args (next options))
-                            ;; fallback
-                            (if (and opts-map
-                                     (some opts-map [:file :jar :socket-repl :expressions :main :run]))
-                              (assoc opts-map
-                                     :command-line-args options)
-                              (let [trimmed-opt (str/triml opt)
-                                    c (.charAt trimmed-opt 0)]
-                                (case c
-                                  (\( \{ \[ \* \@ \#)
-                                  (-> opts-map
-                                      (update :expressions (fnil conj []) (first options))
-                                      (assoc :command-line-args (next options)))
-                                  (assoc opts-map
-                                         (if (str/ends-with? opt ".jar")
-                                           :jar
-                                           :file) opt
-                                         :command-line-args (next options)))))))
-                        opts-map))]
-           opts))))))
+     (if-not opt opts-map
+             ;; FILE > TASK > SUBCOMMAND
+             (cond
+               (fs/regular-file? opt)
+               (if (str/ends-with? opt ".jar")
+                 (assoc opts-map
+                        :jar opt
+                        :command-line-args (next options))
+                 (assoc opts-map
+                        :file opt
+                        :command-line-args (next options)))
+               (contains? tasks opt)
+               (assoc opts-map
+                      :run opt
+                      :command-line-args (next options))
+               (command? opt)
+               (recur (cons (str "--" opt) (next options)) opts-map)
+               :else
+               (parse-args options opts-map))))))
 
 (def env (atom {}))
 
@@ -593,12 +651,12 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                     :help :file :command-line-args
                     :expressions :stream?
                     :repl :socket-repl :nrepl
-                    :verbose? :classpath
+                    :debug :classpath
                     :main :uberscript :describe?
                     :jar :uberjar :clojure
                     :doc :run :list-tasks]}
             cli-opts
-            _ (when verbose? (vreset! common/verbose? true))
+            _ (when debug (vreset! common/debug true))
             _ (do ;; set properties
                 (when main (System/setProperty "babashka.main" main))
                 (System/setProperty "babashka.version" version))
@@ -653,11 +711,6 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                                   (assoc 'clojure.core
                                          (assoc core-extras
                                                 'load-file load-file*))
-                                  (assoc-in ['clojure.java.io 'resource]
-                                            (fn [path]
-                                              (when-let [{:keys [:loader]} @cp/cp-state]
-                                                (if (str/starts-with? path "/") nil ;; non-relative paths always return nil
-                                                    (cp/getResource loader [path] {:url? true})))))
                                   (assoc-in ['user (with-meta '*input*
                                                      (when-not stream?
                                                        {:sci.impl/deref! true}))] input-var))
@@ -685,11 +738,14 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                                    "-main")]
                     [[(format "(ns user (:require [%1$s])) (apply %1$s/%2$s *command-line-args*)"
                               ns var-name)] nil])
-                  run (tasks/assemble-task run (:parallel-tasks cli-opts))
+                  run (if (:run-help cli-opts)
+                        [(print-run-help) 0]
+                        (tasks/assemble-task run
+                                             (:parallel-tasks cli-opts)))
                   file (try [[(read-file file)] nil]
                             (catch Exception e
                               (error-handler e {:expression expressions
-                                                :verbose? verbose?
+                                                :debug debug
                                                 :preloads preloads
                                                 :loader (:loader @cp/cp-state)}))))
             expression (str/join " " expressions) ;; this might mess with the locations...
@@ -702,7 +758,7 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                           (sci/eval-string* sci-ctx preloads)
                           (catch Throwable e
                             (error-handler e {:expression expression
-                                              :verbose? verbose?
+                                              :debug debug
                                               :preloads preloads
                                               :loader (:loader @cp/cp-state)})))))
                     nil))
@@ -722,7 +778,7 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                        repl [(repl/start-repl! sci-ctx) 0]
                        nrepl [(start-nrepl! nrepl sci-ctx) 0]
                        uberjar [nil 0]
-                       list-tasks [(tasks/list-tasks) 0]
+                       list-tasks [(tasks/list-tasks sci-ctx) 0]
                        expressions
                        (sci/binding [sci/file abs-path]
                          (try
@@ -735,7 +791,10 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                                                                 input-var in
                                                                 core/command-line-args command-line-args]
                                                     (sci/eval-string* sci-ctx expression))]
-                                              (when (some? res)
+                                              ;; return value printing
+                                              (when (and (some? res)
+                                                         (or (not run)
+                                                             (:prn cli-opts)))
                                                 (if-let [pr-f (cond shell-out println
                                                                     edn-out prn)]
                                                   (if (coll? res)
@@ -749,7 +808,7 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                                      res)))))
                            (catch Throwable e
                              (error-handler e {:expression expression
-                                               :verbose? verbose?
+                                               :debug debug
                                                :preloads preloads
                                                :loader (:loader @cp/cp-state)}))))
                        clojure [nil (if-let [proc (deps/clojure command-line-args)]
@@ -772,16 +831,35 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
                           :jar :uber
                           :classpath cp
                           :main-class main
-                          :verbose verbose?})
+                          :verbose debug})
             (throw (Exception. "The uberjar task needs a classpath."))))
         exit-code))))
 
+(defn satisfies-min-version? [min-version]
+  (let [[major-current minor-current patch-current] version-data
+        [major-min minor-min patch-min] (parse-version min-version)]
+    (or (> major-current major-min)
+        (and (= major-current major-min)
+             (or (> minor-current minor-min)
+                 (and (= minor-current minor-min)
+                      (>= patch-current patch-min)))))))
+
 (defn main [& args]
   (let [bb-edn-file (or (System/getenv "BABASHKA_EDN")
-                        "bb.edn")]
-    (when (fs/exists? bb-edn-file)
-      (let [edn (edn/read-string (slurp bb-edn-file))]
-        (vreset! common/bb-edn edn))))
+                        "bb.edn")
+        bb-edn (or (when (fs/exists? bb-edn-file)
+                     (let [raw-string (slurp bb-edn-file)
+                           edn (edn/read-string raw-string)
+                           edn (assoc edn :raw raw-string)]
+                       (vreset! common/bb-edn edn)))
+                   ;; tests may have modified bb-edn
+                   @common/bb-edn)
+        min-bb-version (:min-bb-version bb-edn)]
+    (when min-bb-version
+      (when-not (satisfies-min-version? min-bb-version)
+        (binding [*out* *err*]
+          (println (str "WARNING: this project requires babashka "
+                        min-bb-version " or newer, but you have: " version))))))
   (let [opts (parse-opts args)]
     (exec opts)))
 

@@ -76,13 +76,41 @@ args=( "-jar" "$BABASHKA_JAR"
 BABASHKA_STATIC=${BABASHKA_STATIC:-}
 
 if [ "$BABASHKA_STATIC" = "true" ]; then
-    args+=("--static")
+    args+=("--static" "--libc=musl")
+
+    # needs to be in a separate script as we need sudo and >> redirects in it wont work.
+    sudo bash script/setup-musl
+
+    ZLIB_VERSION="1.2.11"
+
+    curl -O -sL "https://zlib.net/zlib-${ZLIB_VERSION}.tar.gz"
+    tar xf "zlib-${ZLIB_VERSION}.tar.gz"
+    cd "zlib-${ZLIB_VERSION}"
+    CC=musl-gcc ./configure --static --prefix=/usr/lib/x86_64-linux-musl/
+    make CC=musl-gcc
+    sudo make install
+    export CC=gcc
+    cd ..
+
+    # depending on GCC version, we will have different directories here.
+    # for example, for GCC 6.3.0 we will have:
+    # - /usr/lib/gcc/x86_64-linux-gnu/6
+    # - /usr/lib/gcc/x86_64-linux-gnu/6.3.0
+    for dest_dir in /usr/lib/gcc/x86_64-linux-gnu/*; do
+        sudo cp -f /usr/lib/x86_64-linux-musl/lib/libz.a "$dest_dir"
+    done
 fi
 
 BABASHKA_FEATURE_HSQLDB=${BABASHKA_FEATURE_HSQLDB:-}
 
 if [ "$BABASHKA_FEATURE_HSQLDB" = "true" ]; then
     args+=("-H:IncludeResources=org/hsqldb/.*\.properties" "-H:IncludeResources=org/hsqldb/.*\.sql")
+fi
+
+BABASHKA_FEATURE_SELMER=${BABASHKA_FEATURE_SELMER:-}
+
+if [ "$BABASHKA_FEATURE_SELMER" = "true" ]; then
+    args+=("-H:IncludeResources=json.human.css")
 fi
 
 BABASHKA_LEAN=${BABASHKA_LEAN:-}
@@ -104,6 +132,7 @@ then
     export BABASHKA_FEATURE_TEST_CHECK="${BABASHKA_FEATURE_TEST_CHECK:-false}"
     export BABASHKA_FEATURE_SPEC_ALPHA="${BABASHKA_FEATURE_SPEC_ALPHA:-false}"
     export BABASHKA_FEATURE_REWRITE_CLJ="${BABASHKA_FEATURE_REWRITE_CLJ:-false}"
+    export BABASHKA_FEATURE_SELMER="${BABASHKA_FEATURE_SELMER:-false}"
 fi
 
 "$GRAALVM_HOME/bin/native-image" "${args[@]}"

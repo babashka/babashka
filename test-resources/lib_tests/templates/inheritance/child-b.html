@@ -1,0 +1,9 @@
+{% extends "templates/inheritance/child-a.html" %}
+{% block header %}
+B header
+{{block.super}}
+{% endblock %}
+
+{% block content %}
+Some content
+{% endblock %}

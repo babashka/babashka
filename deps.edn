@@ -8,6 +8,7 @@
          "feature-test-check"
          "feature-spec-alpha"
          "feature-rewrite-clj"
+         "feature-selmer"
          "pods/src"
          "babashka.nrepl/src"
          "depstar/src" "process/src"
@@ -35,7 +36,8 @@
         babashka/clojure-lanterna {:mvn/version "0.9.8-SNAPSHOT"}
         org.clojure/core.match {:mvn/version "1.0.0"}
         hiccup/hiccup {:mvn/version "2.0.0-alpha2"}
-        rewrite-clj/rewrite-clj {:mvn/version "1.0.605-alpha"}}
+        rewrite-clj/rewrite-clj {:mvn/version "1.0.605-alpha"}
+        selmer/selmer {:mvn/version "1.12.40"}}
  :aliases {:babashka/dev
            {:main-opts ["-m" "babashka.main"]}
            :profile
@@ -74,7 +76,8 @@
                          version-clj/version-clj {:mvn/version "2.0.1"}
                          gaka/gaka {:mvn/version "0.3.0"}
                          failjure/failjure {:mvn/version "2.1.1"}
-                         io.helins/binf {:mvn/version "1.1.0-beta0"}}
+                         io.helins/binf {:mvn/version "1.1.0-beta0"}
+                         rm-hull/jasentaa {:mvn/version "0.2.5"}}
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil
                                   org.clojure/core.specs.alpha nil}}

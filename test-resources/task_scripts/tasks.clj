@@ -8,4 +8,5 @@
 
 (defn foo
   "Foo docstring"
-  [])
+  []
+  :foo)

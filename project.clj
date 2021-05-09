@@ -15,7 +15,7 @@
   :java-source-paths ["src-java"]
   :resource-paths ["resources" "sci/resources"]
   :dependencies [[org.clojure/clojure "1.11.0-alpha1"]
-                 [borkdude/edamame "0.0.11-alpha.29"]
+                 [borkdude/edamame "0.0.11"]
                  [borkdude/graal.locking "0.0.2"]
                  [org.clojure/tools.cli "1.0.206"]
                  [cheshire "5.10.0"]
@@ -54,6 +54,8 @@
              :feature/spec-alpha {:source-paths ["feature-spec-alpha"]}
              :feature/rewrite-clj {:source-paths ["feature-rewrite-clj"]
                                    :dependencies [[rewrite-clj/rewrite-clj "1.0.605-alpha"]]}
+             :feature/selmer {:source-paths ["feature-selmer"]
+                              :dependencies [[selmer/selmer "1.12.40"]]}
              :test [:feature/xml
                     :feature/lanterna
                     :feature/yaml
@@ -70,6 +72,7 @@
                     :feature/test-check
                     :feature/spec-alpha
                     :feature/rewrite-clj
+                    :feature/selmer
                     {:dependencies [[com.clojure-goes-fast/clj-async-profiler "0.4.1"]
                                     [com.opentable.components/otj-pg-embedded "0.13.3"]]}]
              :uberjar {:global-vars {*assert* false}
