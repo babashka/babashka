@@ -33,6 +33,3 @@ org_babashka*.h
 .envrc
 .lsp
 bb.build_artifacts.txt
-JavaRecur.class
-javarecur
-javarecur.build_artifacts.txt

@@ -3,9 +3,6 @@
 rm -rf /tmp/release
 mkdir -p /tmp/release
 cp bb /tmp/release
-#_cp javarecur /tmp/release
-
-# cp src-bash/bbk /tmp/release
 
 VERSION=$(cat resources/BABASHKA_VERSION)
 
