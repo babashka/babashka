@@ -76,7 +76,7 @@ args=( "-jar" "$BABASHKA_JAR"
 BABASHKA_STATIC=${BABASHKA_STATIC:-}
 
 if [ "$BABASHKA_STATIC" = "true" ]; then
-    args+=("--static" "--libc=musl")
+    args+=("--static" "--libc=musl" "-H:CCompilerOption=-Wl,-z,stack-size=2097152")
 
     # needs to be in a separate script as we need sudo and >> redirects in it wont work.
     sudo bash script/setup-musl
