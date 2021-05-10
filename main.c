@@ -1,13 +1,16 @@
 #include <stdio.h>
 
-void printer(int x)
+void recur(int x)
 {
-  printf("%d\n", x);
-  printer(x + 1);
+  if (x == 200000) {
+    printf("%d\n", x);
+    return;
+  }
+  recur(x + 1);
 }
 
 int main()
 {
-  printer(0);
+  recur(0);
   return 0;
 }
