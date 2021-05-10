@@ -372,7 +372,7 @@ jobs:
           command: |
             sudo apt-get update
             sudo apt-get -y install gcc g++ zlib1g-dev
-            sudo .circleci/script/setup-musl
+            export BABASHKA_ARCH; sudo .circleci/script/setup-musl
       - run:
           name: Download GraalVM
           command: |
