@@ -204,7 +204,7 @@ jobs:
           name: Build binary
           command: |
             script/uberjar
-            script/compile
+            LDFLAGS=-Wl,-z,stack-size=xerror2097152 script/compile
           no_output_timeout: 30m
       - run:
           name: Run tests
