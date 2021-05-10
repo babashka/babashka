@@ -865,7 +865,7 @@ Use bb run --help to show this help output.
 
 (defn run-in-thread [f]
   ;; initial stack size
-  (doto (Thread. nil f "main" 2000000)
+  (doto (Thread. nil f "main" #_2000000)
     (.start)
     (.join)))
 
