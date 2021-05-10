@@ -22,3 +22,26 @@ pin-priority: 600
 eof
 
 apt-get update -y && apt-get install musl-tools/unstable -y
+
+ZLIB_VERSION="1.2.11"
+
+curl -O -sL "https://zlib.net/zlib-${ZLIB_VERSION}.tar.gz"
+
+echo "c3e5e9fdd5004dcb542feda5ee4f0ff0744628baf8ed2dd5d66f8ca1197cb1a1 zlib-${ZLIB_VERSION}.tar.gz" |
+    sha256sum --check
+tar xf "zlib-${ZLIB_VERSION}.tar.gz"
+
+cd "zlib-${ZLIB_VERSION}"
+CC=musl-gcc ./configure --static --prefix=/usr/lib/x86_64-linux-musl/
+make CC=musl-gcc
+sudo make install
+export CC=gcc
+cd ..
+
+# depending on GCC version, we will have different directories here.
+# for example, for GCC 6.3.0 we will have:
+# - /usr/lib/gcc/x86_64-linux-gnu/6
+# - /usr/lib/gcc/x86_64-linux-gnu/6.3.0
+for dest_dir in /usr/lib/gcc/x86_64-linux-gnu/*; do
+    sudo cp -f /usr/lib/x86_64-linux-musl/lib/libz.a "$dest_dir"
+done
