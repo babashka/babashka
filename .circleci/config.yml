@@ -211,11 +211,6 @@ jobs:
           command: |
             script/test
             script/run_lib_tests
-            script/run_lib_tests
-            script/run_lib_tests
-            script/run_lib_tests
-            script/run_lib_tests
-            script/run_lib_tests
       - run:
           name: Release
           command: |
@@ -523,9 +518,9 @@ workflows:
   ci:
     jobs:
 #      - jvm
-#      - linux
+      - linux
       - linux-static
-#      - mac
+      - mac
 #      - linux-aarch64
 #      - linux-aarch64-static
       # - deploy:
