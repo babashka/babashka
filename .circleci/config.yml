@@ -155,6 +155,7 @@ jobs:
       BABASHKA_PLATFORM: linux # used in release script
       BABASHKA_TEST_ENV: native
       BABASHKA_STATIC: "true"
+      BABASHKA_MUSL: "true"
       BABASHKA_XMX: "-J-Xmx6500m"
     resource_class: large
     steps:

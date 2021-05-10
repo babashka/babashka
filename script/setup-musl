@@ -1,5 +1,17 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
+if  [[ -z "${BABASHKA_STATIC:-}" ]]; then
+    echo "BABASHKA_STATIC wasn't set, skipping musl installation."
+    exit 0
+fi
+
+if [[ -z "${BABASHKA_MUSL:-}" ]]; then
+    echo "BABASHKA_MUSL wasn't set, skipping musl installation."
+    exit 0
+fi
+
 # This script sets up the latest available musl-tools using apt pinning from debian unstable.
 # The one available in stable and testing are quite outdated and this ensures we get the latest improvements
 # This explictly installs musl from unstable and keeps the others at a higher priority
