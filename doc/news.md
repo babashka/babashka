@@ -5,9 +5,19 @@ you have anything to add. Also see
 [#babashka](https://twitter.com/hashtag/babashka?src=hashtag_click&f=live) on
 Twitter.
 
+## 2021-05
+
+- Babashka 0.3.6-0.4.0 release. Highlights:
+    - New [task runner feature](https://book.babashka.org/#tasks).
+    - Add [Selmer](https://github.com/yogthos/Selmer) to built-in libraries.
+    - Add compatibility with [jasentaa](https://github.com/rm-hull/jasentaa).
+- New [website](https://babashka.org).
+- [Homoiconicity and feature flags](https://martinklepsch.org/posts/homoiconicity-and-feature-flags.html) by Martin Klepsch.
+- [Localizing a Ghost theme](https://martinklepsch.org/posts/localizing-a-ghost-theme.html) by Martin Klepsch.
+
 ## 2021-04
 
-- Babashka 0.3.2 - 0.3.5 released. See [CHANGELOG.md](https://github.com/babashka/babashka/blob/master/CHANGELOG.md). Highlights:
+- Babashka 0.3.2 - 0.3.6 released. See [CHANGELOG.md](https://github.com/babashka/babashka/blob/master/CHANGELOG.md). Highlights:
      - Add [rewrite-clj](https://github.com/clj-commons/rewrite-clj).
      - Support for the [binf](https://github.com/helins/binf.cljc) library.
 - [Sort requires and imports](https://gist.github.com/laurio/01530ea7700752885df21e92bb926f75) using rewrite-clj
