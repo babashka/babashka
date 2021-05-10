@@ -33,6 +33,8 @@ tar xf "zlib-${ZLIB_VERSION}.tar.gz"
 
 arch=${BABASHKA_ARCH:-x86_64}
 
+echo "ARCH: $arch"
+
 cd "zlib-${ZLIB_VERSION}"
 CC=musl-gcc ./configure --static --prefix=/usr/lib/$arch-linux-musl/
 make CC=musl-gcc
