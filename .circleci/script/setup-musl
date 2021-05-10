@@ -4,6 +4,18 @@
 # The one available in stable and testing are quite outdated and this ensures we get the latest improvements
 # This explictly installs musl from unstable and keeps the others at a higher priority
 
+if [ "$BABASHKA_STATIC" != "true" ]
+then
+    echo "BABASHKA_STATIC wasn't set, skipping musl installation."
+    exit 0
+fi
+
+if [ "$BABASHKA_ARCH" = "aarch64" ]
+then
+    echo "GraalVM only supports musl on x86_64"
+    exit 0
+fi
+
 cat >> /etc/apt/sources.list <<eof
 deb http://ftp.us.debian.org/debian unstable main non-free contrib
 deb http://non-us.debian.org/debian-non-us unstable/non-us main contrib non-free

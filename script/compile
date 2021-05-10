@@ -75,7 +75,7 @@ args=( "-jar" "$BABASHKA_JAR"
 
 BABASHKA_STATIC=${BABASHKA_STATIC:-}
 
-if [ "$BABASHKA_STATIC" = "true" ]; then
+if [ "$BABASHKA_STATIC" = "true" ] & [ "$BABASHKA_ARCH" != "aarch64" ]; then
     args+=("--static" "--libc=musl"
            # see https://github.com/oracle/graal/issues/3398
            "-H:CCompilerOption=-Wl,-z,stack-size=2097152")

@@ -192,7 +192,7 @@ jobs:
           command: |
             sudo apt-get update
             sudo apt-get -y install gcc g++ zlib1g-dev
-            sudo .circleci/script/setup-musl
+            sudo -E script/setup-musl
       - run:
           name: Download GraalVM
           command: |
@@ -372,7 +372,7 @@ jobs:
           command: |
             sudo apt-get update
             sudo apt-get -y install gcc g++ zlib1g-dev
-            sudo -E .circleci/script/setup-musl
+            # sudo -E script/setup-musl
       - run:
           name: Download GraalVM
           command: |
