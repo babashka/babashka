@@ -136,7 +136,7 @@ then
 fi
 
 javac JavaRecur.java
-"$GRAALVM_HOME/bin/native-image" --no-server --no-fallback "--static" "--libc=musl" "-H:CCompilerOption=-Wl,-z,stack-size=10485760" JavaRecur
+"$GRAALVM_HOME/bin/native-image" --no-server --no-fallback "--static" "--libc=musl" "-H:CCompilerOption=--verbose,-Wl,-z,stack-size=10485760" "-H:+TraceNativeToolUsage" JavaRecur
 
 ./javarecur
 
