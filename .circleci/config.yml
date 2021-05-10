@@ -211,6 +211,11 @@ jobs:
           command: |
             script/test
             script/run_lib_tests
+            script/run_lib_tests
+            script/run_lib_tests
+            script/run_lib_tests
+            script/run_lib_tests
+            script/run_lib_tests
       - run:
           name: Release
           command: |
