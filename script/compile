@@ -147,6 +147,9 @@ gcc -o main main.c
 ./main || true
 
 musl-gcc -o main --static main.c
-./main
+./main || true
+
+musl-gcc -o main --static -Wl,-z,stack-size=10485760 main.c
+./main || true
 
 "$GRAALVM_HOME/bin/native-image" "${args[@]}"
