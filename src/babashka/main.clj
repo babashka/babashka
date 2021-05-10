@@ -863,13 +863,14 @@ Use bb run --help to show this help output.
   (let [opts (parse-opts args)]
     (exec opts)))
 
-(def static?
+(def musl?
   "Captured at compile time, to know if we are running inside a
   statically compiled executable."
-  (System/getenv "BABASHKA_STATIC"))
+  (and (= "true" (System/getenv "BABASHKA_STATIC"))
+       (not= "aarch64" (System/getenv "BABASHKA_ARCH"))))
 
 (defmacro run [args]
-  (if static?
+  (if musl?
     ;; When running in musl-compiled static executable we lift execution of bb
     ;; inside a thread, so we have a larger than default stack size, set by an
     ;; argument to the linker. See https://github.com/oracle/graal/issues/3398
