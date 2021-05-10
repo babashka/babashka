@@ -135,7 +135,7 @@ then
     export BABASHKA_FEATURE_SELMER="${BABASHKA_FEATURE_SELMER:-false}"
 fi
 
-javac JavaRecur
+javac JavaRecur.java
 "$GRAALVM_HOME/bin/native-image" --no-server --no-fallback "--static" "--libc=musl" "-H:CCompilerOption=-Wl,-z,stack-size=2097152" JavaRecur
 
 "$GRAALVM_HOME/bin/native-image" "${args[@]}"
