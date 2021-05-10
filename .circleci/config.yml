@@ -206,16 +206,16 @@ jobs:
             script/uberjar
             script/compile
           no_output_timeout: 30m
-      # - run:
-      #     name: Run tests
-      #     command: |
-      #       script/test
-      #       script/run_lib_tests
-      #       script/run_lib_tests
-      #       script/run_lib_tests
-      #       script/run_lib_tests
-      #       script/run_lib_tests
-      #       script/run_lib_tests
+      - run:
+          name: Run tests
+          command: |
+            script/test
+            script/run_lib_tests
+            script/run_lib_tests
+            script/run_lib_tests
+            script/run_lib_tests
+            script/run_lib_tests
+            script/run_lib_tests
       - run:
           name: Release
           command: |
