@@ -53,8 +53,8 @@ ENV BABASHKA_STATIC=$BABASHKA_STATIC
 
 COPY . .
 RUN ./script/uberjar
-RUN ./script/compile
 RUN ./script/setup-musl
+RUN ./script/compile
 
 FROM ubuntu:latest
 RUN apt-get update && apt-get install -y curl \
