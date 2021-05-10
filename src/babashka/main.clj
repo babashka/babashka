@@ -865,9 +865,9 @@ Use bb run --help to show this help output.
 
 (def musl?
   "Captured at compile time, to know if we are running inside a
-  statically compiled executable."
+  statically compiled executable with musl."
   (and (= "true" (System/getenv "BABASHKA_STATIC"))
-       (not= "aarch64" (System/getenv "BABASHKA_ARCH"))))
+       (= "true" (System/getenv "BABASHKA_MUSL"))))
 
 (defmacro run [args]
   (if musl?
