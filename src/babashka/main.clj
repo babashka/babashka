@@ -863,30 +863,41 @@ Use bb run --help to show this help output.
   (let [opts (parse-opts args)]
     (exec opts)))
 
-(defn run-in-thread [f]
-  ;; initial stack size
-  (doto (Thread. nil f "main" #_2000000)
-    (.start)
-    (.join)))
+(def static?
+  "Captured at compile time, to know if we are running inside a
+  statically compiled executable."
+  (System/getenv "BABASHKA_STATIC"))
+
+(defmacro run [args]
+  (if static?
+    ;; When running in musl-compiled static executable we lift execution of bb
+    ;; inside a thread, so we have a larger than default stack size, set by an
+    ;; argument to the linker. See https://github.com/oracle/graal/issues/3398
+    `(let [v# (volatile! nil)
+           f# (fn []
+                (vreset! v# (apply main ~args)))]
+       (doto (Thread. nil f# "main")
+         (.start)
+         (.join))
+       @v#)
+    `(apply main ~args)))
 
 (defn -main
   [& args]
   (handle-pipe!)
   (handle-sigint!)
-  (let [exit (volatile! nil)]
-    (if-let [dev-opts (System/getenv "BABASHKA_DEV")]
-      (let [{:keys [:n]} (if (= "true" dev-opts) {:n 1}
-                             (edn/read-string dev-opts))
-            last-iteration (dec n)]
-        (dotimes [i n]
-          (if (< i last-iteration)
-            (with-out-str (apply main args))
-            (do (run-in-thread #(vreset! exit (apply main args)))
-                (binding [*out* *err*]
-                  (println "ran" n "times"))))))
-      (do (run-in-thread #(vreset! exit (apply main args)))
-          (let [exit-code @exit]
-            (System/exit exit-code))))))
+  (if-let [dev-opts (System/getenv "BABASHKA_DEV")]
+    (let [{:keys [:n]} (if (= "true" dev-opts) {:n 1}
+                           (edn/read-string dev-opts))
+          last-iteration (dec n)]
+      (dotimes [i n]
+        (if (< i last-iteration)
+          (with-out-str (apply main args))
+          (do (run args)
+              (binding [*out* *err*]
+                (println "ran" n "times"))))))
+    (let [exit-code (run args)]
+      (System/exit exit-code))))
 
 ;;;; Scratch
 
