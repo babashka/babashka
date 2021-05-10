@@ -3,7 +3,7 @@
 rm -rf /tmp/release
 mkdir -p /tmp/release
 cp bb /tmp/release
-cp javarecur /tmp/release
+#_cp javarecur /tmp/release
 
 # cp src-bash/bbk /tmp/release
 
@@ -23,7 +23,7 @@ fi
 
 archive="babashka-$VERSION-$BABASHKA_PLATFORM-$arch.tar.gz"
 
-tar zcvf "$archive" bb javarecur # bbk
+tar zcvf "$archive" bb # bbk
 
 cd -
 
