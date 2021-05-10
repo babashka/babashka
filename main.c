@@ -2,10 +2,8 @@
 
 void recur(int x)
 {
-  if (x == 200000) {
+  if (x % 10000 == 0)
     printf("%d\n", x);
-    return;
-  }
   recur(x + 1);
 }
 
