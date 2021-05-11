@@ -413,6 +413,7 @@ Use bb run --help to show this help output.
     Float java.lang.Float
     Long java.lang.Long
     Math java.lang.Math
+    NullPointerException java.lang.NullPointerException
     Number java.lang.Number
     NumberFormatException java.lang.NumberFormatException
     Object java.lang.Object
