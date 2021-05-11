@@ -34,7 +34,7 @@ call %GRAALVM_HOME%\bin\native-image.cmd ^
   "-H:ReflectionConfigurationFiles=reflection.json" ^
   "--initialize-at-build-time"  ^
   "--initialize-at-run-time=org.postgresql.sspi.SSPIClient" ^
-  "--initialize-at-run-time=org.httpkit.client.ClientSslEngineFactory\$SSLHolder" ^
+  "--initialize-at-run-time=org.httpkit.client.ClientSslEngineFactory$SSLHolder" ^
   "-H:EnableURLProtocols=http,https,jar" ^
   "--enable-all-security-services" ^
   "-H:+JNI" ^
