@@ -3,7 +3,6 @@
 rm -rf /tmp/release
 mkdir -p /tmp/release
 cp bb /tmp/release
-# cp src-bash/bbk /tmp/release
 
 VERSION=$(cat resources/BABASHKA_VERSION)
 

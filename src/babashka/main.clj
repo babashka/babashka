@@ -390,7 +390,9 @@ Use bb run --help to show this help output.
                             'selmer.tags
                             @(resolve 'babashka.impl.selmer/selmer-tags-namespace)
                             'selmer.filters
-                            @(resolve 'babashka.impl.selmer/selmer-filters-namespace))))
+                            @(resolve 'babashka.impl.selmer/selmer-filters-namespace)
+                            'selmer.util
+                            @(resolve 'babashka.impl.selmer/selmer-util-namespace))))
 
 (def imports
   '{ArithmeticException java.lang.ArithmeticException
@@ -413,6 +415,7 @@ Use bb run --help to show this help output.
     Float java.lang.Float
     Long java.lang.Long
     Math java.lang.Math
+    NullPointerException java.lang.NullPointerException
     Number java.lang.Number
     NumberFormatException java.lang.NumberFormatException
     Object java.lang.Object
@@ -863,6 +866,26 @@ Use bb run --help to show this help output.
   (let [opts (parse-opts args)]
     (exec opts)))
 
+(def musl?
+  "Captured at compile time, to know if we are running inside a
+  statically compiled executable with musl."
+  (and (= "true" (System/getenv "BABASHKA_STATIC"))
+       (= "true" (System/getenv "BABASHKA_MUSL"))))
+
+(defmacro run [args]
+  (if musl?
+    ;; When running in musl-compiled static executable we lift execution of bb
+    ;; inside a thread, so we have a larger than default stack size, set by an
+    ;; argument to the linker. See https://github.com/oracle/graal/issues/3398
+    `(let [v# (volatile! nil)
+           f# (fn []
+                (vreset! v# (apply main ~args)))]
+       (doto (Thread. nil f# "main")
+         (.start)
+         (.join))
+       @v#)
+    `(apply main ~args)))
+
 (defn -main
   [& args]
   (handle-pipe!)
@@ -874,10 +897,10 @@ Use bb run --help to show this help output.
       (dotimes [i n]
         (if (< i last-iteration)
           (with-out-str (apply main args))
-          (do (apply main args)
+          (do (run args)
               (binding [*out* *err*]
                 (println "ran" n "times"))))))
-    (let [exit-code (apply main args)]
+    (let [exit-code (run args)]
       (System/exit exit-code))))
 
 ;;;; Scratch

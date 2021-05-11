@@ -199,6 +199,7 @@
 (test-namespaces 'helins.binf.test)
 
 (test-namespaces 'selmer.core-test)
+(test-namespaces 'selmer.our-test)
 
 (test-namespaces 'jasentaa.position-test
                  'jasentaa.worked-example-1

@@ -5,7 +5,7 @@
             [selmer.filters :as filters]
             [selmer.parser]
             [selmer.tags :as tags]
-            [selmer.util :refer [*resource-fn*]]))
+            [selmer.util :as util]))
 
 (def spns (sci/create-ns 'selmer.parser nil))
 
@@ -28,16 +28,37 @@
 
 (def selmer-parser-ns (make-ns 'selmer.parser spns))
 
+(def suns (sci/create-ns 'selmer.util nil))
+
+(def escape-variables
+  (sci/new-dynamic-var '*escape-variables* util/*escape-variables* {:ns suns}))
+
 (defn render-file
   "Parses files if there isn't a memoized post-parse vector ready to go,
   renders post-parse vector with passed context-map regardless. Double-checks
   last-modified on files. Uses classpath for filename-or-url path "
   [& args]
-  (binding [*resource-fn* resource]
+  (binding [util/*resource-fn* resource
+            util/*escape-variables* @escape-variables]
     (apply selmer.parser/render-file args)))
 
+(defn render
+  " render takes the string, the context-map and possibly also opts. "
+  [& args]
+  (binding [util/*escape-variables* @escape-variables]
+    (apply selmer.parser/render args)))
+
+(defn render-template
+  " vector of ^selmer.node.INodes and a context map."
+  [template context-map]
+  (binding [util/*escape-variables* @escape-variables]
+    (selmer.parser/render-template template context-map)))
+
 (def selmer-parser-namespace
-  (assoc selmer-parser-ns 'render-file (sci/copy-var render-file spns)))
+  (-> selmer-parser-ns
+      (assoc 'render-file (sci/copy-var render-file spns)
+             'render      (sci/copy-var render spns)
+             'render-template (sci/copy-var render-template spns))))
 
 (def stns (sci/create-ns 'selmer.tags nil))
 
@@ -56,3 +77,24 @@
 (def selmer-filters-namespace
   {'add-filter! (sci/copy-var filters/add-filter! sfns)
    'remove-filter! (sci/copy-var filters/remove-filter! sfns)})
+
+(defn turn-off-escaping! []
+  (sci/alter-var-root escape-variables (constantly false)))
+
+(defn turn-on-escaping! []
+  (sci/alter-var-root escape-variables (constantly true)))
+
+(defmacro with-escaping [& body]
+  `(binding [selmer.util/*escape-variables* true]
+     ~@body))
+
+(defmacro without-escaping [& body]
+  `(binding [selmer.util/*escape-variables* false]
+     ~@body))
+
+(def selmer-util-namespace
+  {'turn-off-escaping! (sci/copy-var turn-off-escaping! suns)
+   'turn-on-escaping! (sci/copy-var turn-on-escaping! suns)
+   '*escape-variables* escape-variables
+   'with-escaping (sci/copy-var with-escaping suns)
+   'without-escaping (sci/copy-var without-escaping suns)})
