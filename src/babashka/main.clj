@@ -390,7 +390,9 @@ Use bb run --help to show this help output.
                             'selmer.tags
                             @(resolve 'babashka.impl.selmer/selmer-tags-namespace)
                             'selmer.filters
-                            @(resolve 'babashka.impl.selmer/selmer-filters-namespace))))
+                            @(resolve 'babashka.impl.selmer/selmer-filters-namespace)
+                            'selmer.util
+                            @(resolve 'babashka.impl.selmer/selmer-util-namespace))))
 
 (def imports
   '{ArithmeticException java.lang.ArithmeticException
