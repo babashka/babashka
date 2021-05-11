@@ -5,7 +5,8 @@
             [selmer.filters :as filters]
             [selmer.parser]
             [selmer.tags :as tags]
-            [selmer.util :as util]))
+            [selmer.util :as util]
+            [selmer.validator :as validator]))
 
 (def spns (sci/create-ns 'selmer.parser nil))
 
@@ -72,8 +73,6 @@
 
 (def sfns (sci/create-ns 'selmer.filters nil))
 
-(def selmer-filters-ns (sci/create-ns 'selmer.filters sfns))
-
 (def selmer-filters-namespace
   {'add-filter! (sci/copy-var filters/add-filter! sfns)
    'remove-filter! (sci/copy-var filters/remove-filter! sfns)})
@@ -97,4 +96,10 @@
    'turn-on-escaping! (sci/copy-var turn-on-escaping! suns)
    '*escape-variables* escape-variables
    'with-escaping (sci/copy-var with-escaping suns)
-   'without-escaping (sci/copy-var without-escaping suns)})
+   'without-escaping (sci/copy-var without-escaping suns)
+   'set-missing-value-formatter! (sci/copy-var util/set-missing-value-formatter! suns)})
+
+(def svns (sci/create-ns 'selmer.validator nil))
+
+(def selmer-validator-namespace
+  {'validate-off! (sci/copy-var validator/validate-off! svns)})
