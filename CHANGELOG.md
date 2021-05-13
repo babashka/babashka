@@ -2,6 +2,19 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
+## 0.4.1
+
+- Base static linux build on musl. The binary should now work in most linuxes
+  out of the box. ([@lispyclouds](https://github.com/lispyclouds),
+  [@thiagokokada](https://github.com/thiagokokada))
+- Add `NullPointerException` to default imports
+- Add `thread-bound?` function
+- Expose escaping functions from `selmer.util` [#835](https://github.com/babashka/babashka/issues/835)
+- Fix Windows GraalVM config for httpkit
+- Add `:error-fn` option to `shell` [#836](https://github.com/babashka/babashka/issues/836)
+- Add `babashka.task` `System` property [#837](https://github.com/babashka/babashka/issues/837)
+- Allow thread-first with `shell` like `babashka.process` [#829](https://github.com/babashka/babashka/issues/829)
+
 ## 0.4.0
 
 Babashka proper:
