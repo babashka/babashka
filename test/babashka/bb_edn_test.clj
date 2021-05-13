@@ -62,6 +62,23 @@
                                                             "ls foobar")
                                                   :exit)}}
         (is (pos? (bb "run" "--prn" "foo")))))
+    (testing "shell test with :error"
+      (test-utils/with-config
+        {:tasks {'foo (list '-> (list 'shell {:out      out
+                                              :err      out
+                                              :error-fn '(constantly 1337) }
+                                      "ls foobar"))}}
+        (is (= 1337 (bb "run" "--prn" "foo"))))
+      (test-utils/with-config
+          {:tasks {'foo (list '-> (list 'shell {:out      out
+                                                :err      out
+                                                :error-fn
+                                                '(fn [opts]
+                                                   (and (:task opts)
+                                                        (:proc opts)
+                                                        (not (zero? (:exit (:proc opts))))))}
+                                        "ls foobar"))}}
+          (is (true? (bb "run" "--prn" "foo")))))
     (fs/delete out)
     (testing "clojure test"
       (test-utils/with-config {:tasks {'foo (list 'clojure {:out out}

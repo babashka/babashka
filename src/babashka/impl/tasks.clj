@@ -44,12 +44,15 @@
             continue? (if continue
                         (or (true? continue)
                             (continue proc))
-                        zero-exit?)]
+                        zero-exit?)
+            info {:proc proc
+                  :task task
+                  :babashka/exit exit-code}]
         (if continue? proc
-            (throw (ex-info (str "Error while executing task: " (:name @task))
-                            {:proc proc
-                             :task task
-                             :babashka/exit exit-code})))))))
+            (if-let [err-fn (:error-fn opts)]
+              (err-fn info)
+              (throw (ex-info (str "Error while executing task: " (:name @task))
+                              info))))))))
 
 (def default-opts
   {:in :inherit
