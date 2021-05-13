@@ -35,7 +35,7 @@
 
 (def binary-size-text
   (format "[%s - %s@%s] binary size: %s"
-          (System/getenv "BABASHKA_PLATFORM")
+          platform
           (System/getenv "CIRCLE_BRANCH")
           (System/getenv "CIRCLE_SHA1")
           (slurp (io/file "/tmp/bb_size/size"))))
