@@ -61,7 +61,12 @@
    :shutdown p/destroy-tree})
 
 (defn shell [cmd & args]
-  (let [[opts cmd args]
+  (let [[prev cmd args]
+        (if (and (map? cmd)
+                 (:proc cmd))
+          [cmd (first args) (rest args)]
+          [nil cmd args])
+        [opts cmd args]
         (if (map? cmd)
           [cmd (first args) (rest args)]
           [nil cmd args])
@@ -75,6 +80,9 @@
                  (update opts :err io/file)
                  opts)
                opts)
+        opts (if prev
+               (assoc opts :in nil)
+               opts)
         cmd (if (.exists (io/file cmd))
               [cmd]
               (p/tokenize cmd))
@@ -82,7 +90,7 @@
         local-log-level (:log-level opts)]
     (sci/binding [log-level (or local-log-level @log-level)]
       (apply log-info cmd)
-      (handle-non-zero (p/process cmd (merge default-opts opts)) opts))))
+      (handle-non-zero (p/process prev cmd (merge default-opts opts)) opts))))
 
 (defn clojure [cmd & args]
   (let [[opts cmd args]
