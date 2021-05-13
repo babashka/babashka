@@ -192,6 +192,10 @@
     (test-utils/with-config '{:tasks {b {:doc "Beautiful docstring"}}}
       (let [s (test-utils/bb nil "doc" "b")]
         (is (= "-------------------------\nb\nTask\nBeautiful docstring\n" s)))))
+  (testing "system property"
+    (test-utils/with-config '{:tasks {b (System/getProperty "babashka.task")}}
+      (let [s (bb "run" "--prn" "b")]
+        (is (= "b" s)))))
 
   (deftest list-tasks-test
     (test-utils/with-config {}

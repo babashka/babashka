@@ -745,8 +745,10 @@ Use bb run --help to show this help output.
                               ns var-name)] nil])
                   run (if (:run-help cli-opts)
                         [(print-run-help) 0]
-                        (tasks/assemble-task run
-                                             (:parallel-tasks cli-opts)))
+                        (do
+                          (System/setProperty "babashka.task" (str run))
+                          (tasks/assemble-task run
+                                               (:parallel-tasks cli-opts))))
                   file (try [[(read-file file)] nil]
                             (catch Exception e
                               (error-handler e {:expression expressions
