@@ -196,6 +196,13 @@
     (test-utils/with-config '{:tasks {b (System/getProperty "babashka.task")}}
       (let [s (bb "run" "--prn" "b")]
         (is (= "b" s)))))
+  (testing "shell pipe test"
+    (test-utils/with-config '{:tasks {a (-> (shell {:out :string}
+                                                   "echo hello")
+                                            (shell {:out :string} "cat")
+                                            :out)}}
+      (let [s (bb "run" "--prn" "a")]
+        (is (= "hello\n" s)))))
 
   (deftest list-tasks-test
     (test-utils/with-config {}

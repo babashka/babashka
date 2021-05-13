@@ -80,6 +80,9 @@
                  (update opts :err io/file)
                  opts)
                opts)
+        opts (if prev
+               (assoc opts :in nil)
+               opts)
         cmd (if (.exists (io/file cmd))
               [cmd]
               (p/tokenize cmd))
