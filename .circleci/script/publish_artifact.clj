@@ -16,13 +16,20 @@
       (curl/post slack-hook-url {:headers {"content-type" "application/json"}
                                  :body json}))))
 
-(def release-text (format "[%s - %s@%s]: https://%s-201467090-gh.circle-artifacts.com/0/release/babashka-%s-%s-amd64.tar.gz"
-                          (System/getenv "BABASHKA_PLATFORM")
+(def platform
+  (str (System/getenv "BABASHKA_PLATFORM")
+       "-"
+       (or (System/getenv "BABASHKA_ARCH") "amd64")
+       (when (= "true" (System/getenv "BABASHKA_STATIC"))
+         "-static")))
+
+(def release-text (format "[%s - %s@%s]: https://%s-201467090-gh.circle-artifacts.com/0/release/babashka-%s-%s.tar.gz"
+                          platform
                           (System/getenv "CIRCLE_BRANCH")
                           (System/getenv "CIRCLE_SHA1")
                           (System/getenv "CIRCLE_BUILD_NUM")
                           babashka-version
-                          (System/getenv "BABASHKA_PLATFORM")))
+                          platform))
 
 (slack! release-text)
 
