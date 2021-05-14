@@ -68,6 +68,11 @@ do
     esac
 done
 
+if [[ "$checksum" != "" ]] && [[ "$version" == "" ]]; then
+    >&2 echo "Options --checksum and --version should be provided together!"
+    exit 1
+fi
+
 if [[ "$version" == "" ]]; then
   version="$(curl -sL https://raw.githubusercontent.com/babashka/babashka/master/resources/BABASHKA_RELEASED_VERSION)"
 fi
