@@ -3,16 +3,17 @@
 set -euo pipefail
 
 version=""
+checksum=""
 default_install_dir="/usr/local/bin"
-install_dir=$default_install_dir
+install_dir="$default_install_dir"
 default_download_dir="/tmp"
-download_dir=$default_download_dir
+download_dir="$default_download_dir"
 
 print_help() {
     echo "Installs latest (or specific) version of babashka. Installation directory defaults to /usr/local/bin."
     echo -e
     echo "Usage:"
-    echo "install [--dir <dir>] [--download-dir <download-dir>] [--version <version>]"
+    echo "install [--dir <dir>] [--download-dir <download-dir>] [--version <version>] [--checksum <checksum>]"
     echo -e
     echo "Defaults:"
     echo " * Installation directory: ${default_install_dir}"
@@ -32,7 +33,7 @@ do
         print_help
     fi
 
-    case $key in
+    case "$key" in
         --dir)
             install_dir="$2"
             shift
@@ -45,6 +46,11 @@ do
             ;;
         --version)
             version="$2"
+            shift
+            shift
+            ;;
+        --checksum)
+            checksum="$2"
             shift
             shift
             ;;
@@ -81,16 +87,26 @@ else
   util="$(which tar) -zxf"
 fi
 
-download_url="https://github.com/babashka/babashka/releases/download/v$version/babashka-$version-$platform-$arch."$ext
+filename="babashka-$version-$platform-$arch."$ext
+download_url="https://github.com/babashka/babashka/releases/download/v$version/$filename"
 
 mkdir -p "$download_dir"
 cd "$download_dir"
 echo -e "Downloading $download_url to $download_dir"
-rm -rf "babashka-$version-$platform-$arch."$ext
+
+rm -rf "$filename"
 rm -rf "bb"
-curl -o "babashka-$version-$platform-$arch."$ext -sL $download_url
-$util "babashka-$version-$platform-$arch."$ext
-rm "babashka-$version-$platform-$arch."$ext
+curl -o "$filename" -sL "$download_url"
+if [ -n "$checksum" ]; then
+    if ! echo "$checksum $filename" | sha256sum --check --status; then
+        >&2 echo "Failed checksum on $filename"
+        >&2 echo "Got: $(sha256sum "$filename" | cut -d' ' -f1)"
+        >&2 echo "Expected: $checksum"
+        exit 1
+    fi
+fi
+$util "$filename"
+rm "$filename"
 
 if [ "$download_dir" != "$install_dir" ]
 then
