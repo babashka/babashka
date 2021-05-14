@@ -208,6 +208,10 @@
                  'jasentaa.parser.basic-test
                  'jasentaa.parser.combinators-test)
 
+(test-namespaces 'honey.sql-test
+                 'honey.sql.helpers-test
+                 'honey.sql.postgres-test)
+
 ;;;; final exit code
 
 (let [{:keys [:test :fail :error] :as m} @status]
