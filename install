@@ -3,20 +3,28 @@
 set -euo pipefail
 
 version=""
+checksum=""
+static_binary="false"
 default_install_dir="/usr/local/bin"
-install_dir=$default_install_dir
+install_dir="$default_install_dir"
 default_download_dir="/tmp"
-download_dir=$default_download_dir
+download_dir="$default_download_dir"
 
 print_help() {
     echo "Installs latest (or specific) version of babashka. Installation directory defaults to /usr/local/bin."
     echo -e
     echo "Usage:"
-    echo "install [--dir <dir>] [--download-dir <download-dir>] [--version <version>]"
+    echo "install [--dir <dir>] [--download-dir <download-dir>] [--version <version>] [--checksum <checksum>] [--static]"
     echo -e
     echo "Defaults:"
     echo " * Installation directory: ${default_install_dir}"
     echo " * Download directory: ${default_download_dir}"
+    if [[ -z "$checksum" ]]; then
+        echo " * Checksum: no"
+    else
+        echo " * Checksum: ${checksum}"
+    fi
+    echo " * Static binary: ${static_binary}"
     echo " * Version: <Latest release on github>"
     exit 1
 }
@@ -25,14 +33,10 @@ if [[ $# -eq 1 ]]; then
    install_dir=${1:-}
 fi
 
-while [[ $# -gt 1 ]]
+while [[ $# -gt 0 ]]
 do
     key="$1"
-    if [[ -z "${2:-}" ]]; then
-        print_help
-    fi
-
-    case $key in
+    case "$key" in
         --dir)
             install_dir="$2"
             shift
@@ -48,12 +52,26 @@ do
             shift
             shift
             ;;
+        --checksum)
+            checksum="$2"
+            shift
+            shift
+            ;;
+        --static)
+            static_binary="true"
+            shift
+            ;;
         *)    # unknown option
             print_help
             shift
             ;;
     esac
 done
+
+if [[ "$checksum" != "" ]] && [[ "$version" == "" ]]; then
+    >&2 echo "Options --checksum and --version should be provided together!"
+    exit 1
+fi
 
 if [[ "$version" == "" ]]; then
   version="$(curl -sL https://raw.githubusercontent.com/babashka/babashka/master/resources/BABASHKA_RELEASED_VERSION)"
@@ -81,18 +99,36 @@ else
   util="$(which tar) -zxf"
 fi
 
-download_url="https://github.com/babashka/babashka/releases/download/v$version/babashka-$version-$platform-$arch."$ext
+if [[ "$static_binary" == "true" ]]; then
+    if [[ "$platform" != "linux" ]]; then
+        >&2 echo "Static binaries are only available in Linux platform!"
+        exit 1
+    fi
+    filename="babashka-$version-$platform-$arch-static."$ext
+else
+    filename="babashka-$version-$platform-$arch."$ext
+fi
+download_url="https://github.com/babashka/babashka/releases/download/v$version/$filename"
 
 mkdir -p "$download_dir"
 cd "$download_dir"
 echo -e "Downloading $download_url to $download_dir"
-rm -rf "babashka-$version-$platform-$arch."$ext
-rm -rf "bb"
-curl -o "babashka-$version-$platform-$arch."$ext -sL $download_url
-$util "babashka-$version-$platform-$arch."$ext
-rm "babashka-$version-$platform-$arch."$ext
 
-if [ "$download_dir" != "$install_dir" ]
+rm -rf "$filename"
+rm -rf "bb"
+curl -o "$filename" -sL "$download_url"
+if [[ -n "$checksum" ]]; then
+    if ! echo "$checksum $filename" | sha256sum --check --status; then
+        >&2 echo "Failed checksum on $filename"
+        >&2 echo "Got: $(sha256sum "$filename" | cut -d' ' -f1)"
+        >&2 echo "Expected: $checksum"
+        exit 1
+    fi
+fi
+$util "$filename"
+rm "$filename"
+
+if [[ "$download_dir" != "$install_dir" ]]
 then
     mkdir -p "$install_dir"
     if [ -f "$install_dir/bb" ]; then
