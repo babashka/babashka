@@ -19,6 +19,11 @@ print_help() {
     echo "Defaults:"
     echo " * Installation directory: ${default_install_dir}"
     echo " * Download directory: ${default_download_dir}"
+    if [[ -z "$checksum" ]]; then
+        echo " * Checksum: no"
+    else
+        echo " * Checksum: ${checksum}"
+    fi
     echo " * Static binary: ${static_binary}"
     echo " * Version: <Latest release on github>"
     exit 1
