@@ -21,7 +21,7 @@
     (if-let [script (-> open-url-script deref deref)]
       (sh script url)
       (case os
-        :mac (sh "/usr/bin/open" url)
+        :mac (sh "open" url)
         :linux (sh "xdg-open" url)
         :windows (sh "cmd" "/C" "start" url)))))
 
