@@ -287,7 +287,8 @@ Differences with Clojure:
 - Currently `reify` works only for one class at a time
 
 - The `clojure.core.async/go` macro is not (yet) supported. For compatibility it
-  currently maps to `clojure.core.async/thread`. More info [here](#coreasync).
+  currently maps to `clojure.core.async/thread`. More info
+  [here](https://book.babashka.org/#core_async).
 
 ## Package babashka script as a AWS Lambda
 
