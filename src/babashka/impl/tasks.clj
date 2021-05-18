@@ -3,12 +3,17 @@
             [babashka.impl.common :refer [ctx bb-edn debug]]
             [babashka.impl.deps :as deps]
             [babashka.process :as p]
+            [clojure.core.async :refer [chan <!! alts!! thread]]
             [clojure.java.io :as io]
             [clojure.string :as str]
             [rewrite-clj.node :as node]
             [rewrite-clj.parser :as parser]
             [rewrite-clj.zip :as zip]
-            [sci.core :as sci]))
+            [sci.core :as sci])
+  (:import [clojure.core.async.impl.channels ManyToManyChannel]))
+
+(defn chan? [x]
+  (instance? ManyToManyChannel x))
 
 (def sci-ns (sci/create-ns 'babashka.tasks nil))
 (def default-log-level :error)
@@ -118,8 +123,13 @@
 
 (defn -wait [res]
   (when res
-    (if (future? res)
-      @res
+    (if (chan? res)
+      (let [[_task-name res] (<!! res)]
+        (if (instance? Throwable res)
+          (throw (ex-info (ex-message res)
+                          {:babashka/exit 1
+                           :data (ex-data res)}))
+          res))
       res)))
 
 (defn depends-map [tasks target-name]
@@ -127,13 +137,21 @@
         m [target-name deps]]
     (into {} (cons m (map #(depends-map tasks %) deps)))))
 
+(defmacro -err-thread [name & body]
+  `(clojure.core.async/thread
+     (try [~name ~@body]
+          (catch Throwable e#
+            [~name (ex-info (str "Error in task: " ~name
+                                 "\n" (ex-message e#))
+                            (or (ex-data e#) {}))]))))
+
 (defn wrap-body [task-map prog parallel?]
   (format "(binding [
   babashka.tasks/*task* '%s]
   %s)"
           (pr-str task-map)
           (if parallel?
-            (format "(future %s)" prog)
+            (format "(babashka.tasks/-err-thread \"%s\" %s)" (:name task-map) prog)
             prog)))
 
 (defn wrap-def [task-map prog parallel? last?]
@@ -144,8 +162,24 @@
               (format "(babashka.tasks/-wait %s)" task-name)
               task-name))))
 
-(defn deref-task [dep]
-  (format "(def %s (babashka.tasks/-wait %s))" dep dep))
+(defn wait-tasks [deps]
+  (if deps
+    (format "
+(let [chans %s]
+  (loop [cs chans]
+    (let [[v p] (clojure.core.async/alts!! cs)
+          [task-name v] v
+          cs (filterv #(not= p %%) cs)
+          ;; _ (.println System/err (str \"n: \" task-name \" v: \" v))
+          _ (intern *ns* (symbol task-name) v)]
+      (when (instance? Throwable v)
+        (throw (ex-info (ex-message v)
+                        {:babashka/exit 1
+                         :data (ex-data v)})))
+      (when (seq cs)
+        (recur cs)))))" deps)
+    "")
+  #_(format "(def %s (babashka.tasks/-wait %s))" dep dep))
 
 (defn wrap-enter-leave [task-name prog enter leave]
   (str (pr-str enter) "\n"
@@ -159,7 +193,7 @@
 
 (defn wrap-depends [prog depends parallel?]
   (if parallel?
-    (format "(do %s)" (str (str/join "\n" (map deref-task depends)) "\n" prog))
+    (format "(do %s)" (str (str "\n" (wait-tasks depends)) "\n" prog))
     prog))
 
 (defn assemble-task-1
@@ -312,7 +346,7 @@
                                   (println "No such task:" t)) 1])
                              (if-let [task (get tasks t)]
                                (let [prog (str prog "\n"
-                                               (apply str (map deref-task depends))
+                                               #_(wait-tasks depends) #_(apply str (map deref-task depends))
                                                "\n"
                                                (assemble-task-1 task-map task parallel? true))
                                      extra-paths (concat extra-paths (:extra-paths task))
@@ -413,6 +447,7 @@
   {'shell (sci/copy-var shell sci-ns)
    'clojure (sci/copy-var clojure sci-ns)
    '-wait (sci/copy-var -wait sci-ns)
+   '-err-thread (sci/copy-var -err-thread sci-ns)
    '*task* task
    'current-task current-task
    'current-state state
