@@ -804,7 +804,7 @@ Use bb run --help to show this help output.
                                                              (:prn cli-opts)))
                                                 (if-let [pr-f (cond shell-out println
                                                                     edn-out prn)]
-                                                  (if (coll? res)
+                                                  (if (sequential? res)
                                                     (doseq [l res
                                                             :while (not (pipe-signal-received?))]
                                                       (pr-f l))
