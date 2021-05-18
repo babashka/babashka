@@ -2,6 +2,17 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
+## Unreleased
+
+Babashka proper:
+
+- Improve `clojure.java.browse`, add `*open-url-script*` #846 ([@thiagokokada](https://github.com/thiagokokada))
+- Add `--checksum` option to install script #842 ([@thiagokokada](https://github.com/thiagokokada))
+
+Babashka.pods:
+
+- Allow pods to set custom transit read and write handlers
+
 ## 0.4.1
 
 - Base static linux build on musl. The binary should now work in most linuxes
