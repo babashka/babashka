@@ -3,7 +3,7 @@
             [babashka.impl.common :refer [ctx bb-edn debug]]
             [babashka.impl.deps :as deps]
             [babashka.process :as p]
-            [clojure.core.async :refer [chan <!! alts!! thread]]
+            [clojure.core.async :refer [<!!]]
             [clojure.java.io :as io]
             [clojure.string :as str]
             [rewrite-clj.node :as node]
@@ -12,7 +12,7 @@
             [sci.core :as sci])
   (:import [clojure.core.async.impl.channels ManyToManyChannel]))
 
-(defn chan? [x]
+(defn -chan? [x]
   (instance? ManyToManyChannel x))
 
 (def sci-ns (sci/create-ns 'babashka.tasks nil))
@@ -123,7 +123,7 @@
 
 (defn -wait [res]
   (when res
-    (if (chan? res)
+    (if (-chan? res)
       (let [[_task-name res] (<!! res)]
         (if (instance? Throwable res)
           (throw (ex-info (ex-message res)
@@ -165,13 +165,14 @@
 (defn wait-tasks [deps]
   (if deps
     (format "
-(let [chans %s]
+(let [chans (filter babashka.tasks/-chan? %s)]
   (loop [cs chans]
     (let [[v p] (clojure.core.async/alts!! cs)
           [task-name v] v
           cs (filterv #(not= p %%) cs)
           ;; _ (.println System/err (str \"n: \" task-name \" v: \" v))
-          _ (intern *ns* (symbol task-name) v)]
+          ;; check for existence of v, as the channel may already have been consumed once
+          _ (when v (intern *ns* (symbol task-name) v))]
       (when (instance? Throwable v)
         (throw (ex-info (ex-message v)
                         {:babashka/exit 1
@@ -447,6 +448,7 @@
   {'shell (sci/copy-var shell sci-ns)
    'clojure (sci/copy-var clojure sci-ns)
    '-wait (sci/copy-var -wait sci-ns)
+   '-chan? (sci/copy-var -chan? sci-ns)
    '-err-thread (sci/copy-var -err-thread sci-ns)
    '*task* task
    'current-task current-task

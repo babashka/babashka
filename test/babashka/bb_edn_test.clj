@@ -224,7 +224,19 @@
                                               (throw (ex-info "0 noes" {})))
                                         c {:depends [a b]}}}
         (is (thrown-with-msg? Exception #"0 noes"
-                              (bb "run" "--parallel" "c")))))))
+                              (bb "run" "--parallel" "c")))))
+    (testing "edge case"
+      (test-utils/with-config '{:tasks
+                                {a   (run '-a {:parallel true})
+                                 -a  {:depends [a:a a:b c]
+                                      :task (prn [a:a a:b c])}
+                                 a:a {:depends [c]
+                                      :task (+ 1 2 3)}
+                                 a:b {:depends [c]
+                                      :task (do (Thread/sleep 10)
+                                                (+ 1 2 3))}
+                                 c (do (Thread/sleep 10) :c)}}
+        (is (= [6 6 :c] (bb "run" "--prn" "a")))))))
 
 (deftest list-tasks-test
   (test-utils/with-config {}
