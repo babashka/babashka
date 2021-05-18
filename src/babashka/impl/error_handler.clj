@@ -100,6 +100,8 @@
                                 (.. e getClass getName)))
           (when-let [m (.getMessage e)]
             (println (str "Message:  " m)))
+          (when-let [cdt (ex-data (.getCause e))]
+            (println (str "Data:     " cdt)))
           (let [{:keys [:file :line :column]} d]
             (when line
               (println (str "Location: "
