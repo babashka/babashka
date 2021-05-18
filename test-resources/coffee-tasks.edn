@@ -1,0 +1,23 @@
+{:tasks
+ {coffeep {:depends [groundsp hot-waterp filterp mugp]
+           :task (do (Thread/sleep 300)
+                     [:made-coffee [groundsp hot-waterp filterp mugp]])}
+  groundsp {:depends [beansp]
+            :task (do
+                    (Thread/sleep 200)
+                    [:ground-beans [beansp]])}
+  hot-waterp {:depends [waterp]
+              :task (do (Thread/sleep 200)
+                        [:heated-water [waterp]])}
+  filterp {:task (do
+                   (Thread/sleep 100)
+                   :filter)}
+  mugp {:task (do
+                (Thread/sleep 100)
+                :mug)}
+  waterp {:task (do
+                  (Thread/sleep 100)
+                  :poured-water)}
+  beansp {:task (do
+                  (Thread/sleep 100)
+                  :measured-beans)}}}
