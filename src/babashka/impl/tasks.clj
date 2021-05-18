@@ -138,7 +138,7 @@
           (catch Throwable e#
             (ex-info (str "Error in task: " ~name
                           "\n" (ex-message e#))
-                     (ex-data e#))))))
+                     (or (ex-data e#) {}))))))
 
 (defn wrap-body [task-map prog parallel?]
   (format "(binding [
@@ -157,8 +157,23 @@
               (format "(babashka.tasks/-wait %s)" task-name)
               task-name))))
 
-(defn deref-task [dep]
-  (format "(def %s (babashka.tasks/-wait %s))" dep dep))
+(defn wait-tasks [deps]
+  (if deps
+    (format "
+(let [chans %s]
+  (loop [cs chans vs []]
+    (let [[v p] (clojure.core.async/alts!! cs)
+          cs (filterv #(not= p %%) cs)
+          vs (conj vs v)]
+      (when (instance? Throwable v)
+        (throw (ex-info (ex-message v)
+                        {:babashka/exit 1
+                         :data (ex-data v)})))
+      (if (seq cs)
+        (recur cs vs)
+        vs))))" deps)
+    "")
+  #_(format "(def %s (babashka.tasks/-wait %s))" dep dep))
 
 (defn wrap-enter-leave [task-name prog enter leave]
   (str (pr-str enter) "\n"
@@ -172,7 +187,7 @@
 
 (defn wrap-depends [prog depends parallel?]
   (if parallel?
-    (format "(do %s)" (str (str/join "\n" (map deref-task depends)) "\n" prog))
+    (format "(do %s)" (str (str "\n" (wait-tasks depends)) "\n" prog))
     prog))
 
 (defn assemble-task-1
@@ -325,7 +340,7 @@
                                   (println "No such task:" t)) 1])
                              (if-let [task (get tasks t)]
                                (let [prog (str prog "\n"
-                                               (apply str (map deref-task depends))
+                                               (wait-tasks depends) #_(apply str (map deref-task depends))
                                                "\n"
                                                (assemble-task-1 task-map task parallel? true))
                                      extra-paths (concat extra-paths (:extra-paths task))
