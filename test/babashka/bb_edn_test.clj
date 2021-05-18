@@ -70,15 +70,15 @@
                                       "ls foobar"))}}
         (is (= 1337 (bb "run" "--prn" "foo"))))
       (test-utils/with-config
-          {:tasks {'foo (list '-> (list 'shell {:out      out
-                                                :err      out
-                                                :error-fn
-                                                '(fn [opts]
-                                                   (and (:task opts)
-                                                        (:proc opts)
-                                                        (not (zero? (:exit (:proc opts))))))}
-                                        "ls foobar"))}}
-          (is (true? (bb "run" "--prn" "foo")))))
+        {:tasks {'foo (list '-> (list 'shell {:out      out
+                                              :err      out
+                                              :error-fn
+                                              '(fn [opts]
+                                                 (and (:task opts)
+                                                      (:proc opts)
+                                                      (not (zero? (:exit (:proc opts))))))}
+                                      "ls foobar"))}}
+        (is (true? (bb "run" "--prn" "foo")))))
     (fs/delete out)
     (testing "clojure test"
       (test-utils/with-config {:tasks {'foo (list 'clojure {:out out}
@@ -167,27 +167,27 @@
   (testing "no such task"
     (test-utils/with-config '{:tasks {a (+ 1 2 3)}}
       (is (thrown-with-msg?
-            Exception #"No such task: b"
-            (bb "run" "b")))))
+           Exception #"No such task: b"
+           (bb "run" "b")))))
   (testing "unresolved dependency"
     (test-utils/with-config '{:tasks {a (+ 1 2 3)
                                       b {:depends [x]
                                          :task    (+ a 4 5 6)}}}
       (is (thrown-with-msg?
-            Exception #"No such task: x"
-            (bb "run" "b")))))
+           Exception #"No such task: x"
+           (bb "run" "b")))))
   (testing "cyclic task"
     (test-utils/with-config '{:tasks {b {:depends [b]
                                          :task    (+ a 4 5 6)}}}
       (is (thrown-with-msg?
-            Exception #"Cyclic task: b"
-            (bb "run" "b"))))
+           Exception #"Cyclic task: b"
+           (bb "run" "b"))))
     (test-utils/with-config '{:tasks {c {:depends [b]}
                                       b {:depends [c]
                                          :task    (+ a 4 5 6)}}}
       (is (thrown-with-msg?
-            Exception #"Cyclic task: b"
-            (bb "run" "b")))))
+           Exception #"Cyclic task: b"
+           (bb "run" "b")))))
   (testing "doc"
     (test-utils/with-config '{:tasks {b {:doc "Beautiful docstring"}}}
       (let [s (test-utils/bb nil "doc" "b")]
@@ -203,12 +203,34 @@
                                             :out)}}
       (let [s (bb "run" "--prn" "a")]
         (is (= "hello\n" s)))))
+  (testing "parallel test"
+    (test-utils/with-config (edn/read-string (slurp "test-resources/coffee-tasks.edn"))
+      (let [tree [:made-coffee [[:ground-beans [:measured-beans]] [:heated-water [:poured-water]] :filter :mug]]
+            t0 (System/currentTimeMillis)
+            s (bb "run" "--prn" "coffeep")
+            t1 (System/currentTimeMillis)
+            delta-sequential (- t1 t0)]
+        (is (= tree s))
+        (test-utils/with-config (edn/read-string (slurp "test-resources/coffee-tasks.edn"))
+          (let [t0 (System/currentTimeMillis)
+                s (bb "run" "--parallel" "--prn" "coffeep")
+                t1 (System/currentTimeMillis)
+                delta-parallel (- t1 t0)]
+            (is (= tree s))
+            (is (< delta-parallel delta-sequential))))))
+    (testing "exception"
+      (test-utils/with-config '{:tasks {a (Thread/sleep 10000)
+                                        b (do (Thread/sleep 10)
+                                              (throw (ex-info "0 noes" {})))
+                                        c {:depends [a b]}}}
+        (is (thrown-with-msg? Exception #"0 noes"
+                              (bb "run" "--parallel" "c")))))))
 
-  (deftest list-tasks-test
-    (test-utils/with-config {}
-      (let [res (test-utils/bb nil "tasks")]
-        (is (str/includes? res "No tasks found."))))
-    (test-utils/with-config "{:paths [\"test-resources/task_scripts\"]
+(deftest list-tasks-test
+  (test-utils/with-config {}
+    (let [res (test-utils/bb nil "tasks")]
+      (is (str/includes? res "No tasks found."))))
+  (test-utils/with-config "{:paths [\"test-resources/task_scripts\"]
                             :tasks {:requires ([tasks :as t])
                                     task1
                                     {:doc \"task1 doc\"
@@ -226,16 +248,16 @@
                                     baz non-existing/bar
                                     quux {:requires ([tasks :as t2])
                                           :task t2/foo}}}"
-      (let [res (test-utils/bb nil "tasks")]
-        (is (= "The following tasks are available:\n\ntask1 task1 doc\ntask2 task2 doc\nfoo   Foo docstring\nbar   Foo docstring\nbaz  \nquux  Foo docstring\n"
-               res))))
-    (testing ":tasks is the first node"
-      (test-utils/with-config "{:tasks {task1
+    (let [res (test-utils/bb nil "tasks")]
+      (is (= "The following tasks are available:\n\ntask1 task1 doc\ntask2 task2 doc\nfoo   Foo docstring\nbar   Foo docstring\nbaz  \nquux  Foo docstring\n"
+             res))))
+  (testing ":tasks is the first node"
+    (test-utils/with-config "{:tasks {task1
                                     {:doc \"task1 doc\"
                                      :task (+ 1 2 3)}}}"
-        (let [res (test-utils/bb nil "tasks")]
-          (is (= "The following tasks are available:\n\ntask1 task1 doc\n"
-                 res)))))))
+      (let [res (test-utils/bb nil "tasks")]
+        (is (= "The following tasks are available:\n\ntask1 task1 doc\n"
+               res))))))
 
 (deftest task-priority-test
   (when-not test-utils/native?

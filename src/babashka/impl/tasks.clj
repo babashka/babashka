@@ -124,7 +124,12 @@
 (defn -wait [res]
   (when res
     (if (chan? res)
-      (<!! res)
+      (let [[_task-name res] (<!! res)]
+        (if (instance? Throwable res)
+          (throw (ex-info (ex-message res)
+                          {:babashka/exit 1
+                           :data (ex-data res)}))
+          res))
       res)))
 
 (defn depends-map [tasks target-name]
@@ -134,11 +139,11 @@
 
 (defmacro -err-thread [name & body]
   `(clojure.core.async/thread
-     (try ~@body
+     (try [~name ~@body]
           (catch Throwable e#
-            (ex-info (str "Error in task: " ~name
-                          "\n" (ex-message e#))
-                     (or (ex-data e#) {}))))))
+            [~name (ex-info (str "Error in task: " ~name
+                                 "\n" (ex-message e#))
+                            (or (ex-data e#) {}))]))))
 
 (defn wrap-body [task-map prog parallel?]
   (format "(binding [
@@ -161,17 +166,18 @@
   (if deps
     (format "
 (let [chans %s]
-  (loop [cs chans vs []]
+  (loop [cs chans]
     (let [[v p] (clojure.core.async/alts!! cs)
+          [task-name v] v
           cs (filterv #(not= p %%) cs)
-          vs (conj vs v)]
+          ;; _ (.println System/err (str \"n: \" task-name \" v: \" v))
+          _ (intern *ns* (symbol task-name) v)]
       (when (instance? Throwable v)
         (throw (ex-info (ex-message v)
                         {:babashka/exit 1
                          :data (ex-data v)})))
-      (if (seq cs)
-        (recur cs vs)
-        vs))))" deps)
+      (when (seq cs)
+        (recur cs)))))" deps)
     "")
   #_(format "(def %s (babashka.tasks/-wait %s))" dep dep))
 
@@ -340,7 +346,7 @@
                                   (println "No such task:" t)) 1])
                              (if-let [task (get tasks t)]
                                (let [prog (str prog "\n"
-                                               (wait-tasks depends) #_(apply str (map deref-task depends))
+                                               #_(wait-tasks depends) #_(apply str (map deref-task depends))
                                                "\n"
                                                (assemble-task-1 task-map task parallel? true))
                                      extra-paths (concat extra-paths (:extra-paths task))
