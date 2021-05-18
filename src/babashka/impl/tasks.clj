@@ -3,12 +3,17 @@
             [babashka.impl.common :refer [ctx bb-edn debug]]
             [babashka.impl.deps :as deps]
             [babashka.process :as p]
+            [clojure.core.async :refer [chan <!! alts!! thread]]
             [clojure.java.io :as io]
             [clojure.string :as str]
             [rewrite-clj.node :as node]
             [rewrite-clj.parser :as parser]
             [rewrite-clj.zip :as zip]
-            [sci.core :as sci]))
+            [sci.core :as sci])
+  (:import [clojure.core.async.impl.channels ManyToManyChannel]))
+
+(defn chan? [x]
+  (instance? ManyToManyChannel x))
 
 (def sci-ns (sci/create-ns 'babashka.tasks nil))
 (def default-log-level :error)
@@ -118,8 +123,8 @@
 
 (defn -wait [res]
   (when res
-    (if (future? res)
-      @res
+    (if (chan? res)
+      (<!! res)
       res)))
 
 (defn depends-map [tasks target-name]
@@ -127,13 +132,21 @@
         m [target-name deps]]
     (into {} (cons m (map #(depends-map tasks %) deps)))))
 
+(defmacro -err-thread [name & body]
+  `(clojure.core.async/thread
+     (try ~@body
+          (catch Throwable e#
+            (ex-info (str "Error in task: " ~name
+                          "\n" (ex-message e#))
+                     (ex-data e#))))))
+
 (defn wrap-body [task-map prog parallel?]
   (format "(binding [
   babashka.tasks/*task* '%s]
   %s)"
           (pr-str task-map)
           (if parallel?
-            (format "(future %s)" prog)
+            (format "(babashka.tasks/-err-thread \"%s\" %s)" (:name task-map) prog)
             prog)))
 
 (defn wrap-def [task-map prog parallel? last?]
@@ -413,6 +426,7 @@
   {'shell (sci/copy-var shell sci-ns)
    'clojure (sci/copy-var clojure sci-ns)
    '-wait (sci/copy-var -wait sci-ns)
+   '-err-thread (sci/copy-var -err-thread sci-ns)
    '*task* task
    'current-task current-task
    'current-state state
