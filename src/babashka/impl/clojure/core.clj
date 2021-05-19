@@ -1,11 +1,14 @@
 (ns babashka.impl.clojure.core
   {:no-doc true}
-  (:refer-clojure :exclude [future read+string clojure-version with-precision])
+  (:refer-clojure :exclude [future read+string clojure-version with-precision
+                            send-via send send-off])
   (:require [babashka.impl.common :as common]
             [borkdude.graal.locking :as locking]
+            [clojure.core :as c]
             [clojure.string :as str]
             [sci.core :as sci]
-            [sci.impl.namespaces :refer [copy-core-var clojure-core-ns]]))
+            [sci.impl.namespaces :refer [copy-core-var clojure-core-ns]]
+            [sci.impl.vars :as vars]))
 
 (defn locking* [form bindings v f & args]
   (apply @#'locking/locking form bindings v f args))
@@ -88,6 +91,35 @@
 (defn -with-precision [math-context body-fn]
   (binding [*math-context* math-context]
     (body-fn)))
+
+
+;;;; Agents
+
+(defn send-via
+  "Dispatch an action to an agent. Returns the agent immediately.
+  Subsequently, in a thread supplied by executor, the state of the agent
+  will be set to the value of:
+  (apply action-fn state-of-agent args)"
+  [executor ^clojure.lang.Agent a f & args]
+  (apply c/send-via executor a (vars/binding-conveyor-fn f) args))
+
+(defn send
+  "Dispatch an action to an agent. Returns the agent immediately.
+  Subsequently, in a thread from a thread pool, the state of the agent
+  will be set to the value of:
+  (apply action-fn state-of-agent args)"
+  [^clojure.lang.Agent a f & args]
+  (apply send-via clojure.lang.Agent/pooledExecutor a f args))
+
+(defn send-off
+  "Dispatch a potentially blocking action to an agent. Returns the
+  agent immediately. Subsequently, in a separate thread, the state of
+  the agent will be set to the value of:
+  (apply action-fn state-of-agent args)"
+  [^clojure.lang.Agent a f & args]
+  (apply send-via clojure.lang.Agent/soloExecutor a f args))
+
+;;;; End agents
 
 (def core-extras
   {;; agents
