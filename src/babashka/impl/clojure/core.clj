@@ -90,10 +90,20 @@
     (body-fn)))
 
 (def core-extras
-  {'file-seq (copy-core-var file-seq)
+  {;; agents
    'agent (copy-core-var agent)
+   'agent-error (copy-core-var agent-error)
+   'await (copy-core-var await)
    'send (copy-core-var send)
    'send-off (copy-core-var send-off)
+   'send-via (copy-core-var send-via)
+   'release-pending-sends (copy-core-var release-pending-sends)
+   'restart-agent (copy-core-var restart-agent)
+   'set-validator! (copy-core-var set-validator!)
+   'set-error-handler! (copy-core-var set-error-handler!)
+   'set-error-mode! (copy-core-var set-error-mode!)
+   ;; end agents
+   'file-seq (copy-core-var file-seq)
    'promise (copy-core-var promise)
    'deliver (copy-core-var deliver)
    'locking (with-meta locking* {:sci/macro true})
