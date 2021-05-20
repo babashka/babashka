@@ -34,6 +34,7 @@
    [babashka.impl.tasks :as tasks :refer [tasks-namespace]]
    [babashka.impl.test :as t]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
+   [babashka.impl.utils :refer [utils-namespace]]
    [babashka.nrepl.server :as nrepl-server]
    [babashka.wait :as wait]
    [clojure.edn :as edn]
@@ -314,6 +315,7 @@ Use bb run --help to show this help output.
        'clojure.java.shell shell-namespace
        'babashka.wait {'wait-for-port wait/wait-for-port
                        'wait-for-path wait/wait-for-path}
+       'babashka.utils utils-namespace
        'babashka.signal {'pipe-signal-received? pipe-signal-received?}
        'clojure.java.io io-namespace
        'cheshire.core cheshire-core-namespace

@@ -12,7 +12,6 @@
                  "deps.clj/src" "deps.clj/resources"]
   ;; for debugging Reflector.java code:
   ;; :java-source-paths ["sci/reflector/src-java"]
-  :java-source-paths ["src-java"]
   :resource-paths ["resources" "sci/resources"]
   :dependencies [[org.clojure/clojure "1.11.0-alpha1"]
                  [borkdude/edamame "0.0.11"]
@@ -75,7 +74,9 @@
                     :feature/selmer
                     {:dependencies [[com.clojure-goes-fast/clj-async-profiler "0.4.1"]
                                     [com.opentable.components/otj-pg-embedded "0.13.3"]]}]
-             :uberjar {:global-vars {*assert* false}
+             :uberjar {:java-source-paths ["src-java"]
+                       :dependencies [[org.graalvm.nativeimage/svm "21.1.0"]]
+                       :global-vars {*assert* false}
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"
                                   "-Dclojure.spec.skip-macros=true"
                                   "-Dborkdude.dynaload.aot=true"]
