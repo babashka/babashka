@@ -6,9 +6,11 @@ For a list of breaking changes, check [here](#breaking-changes).
 
 Babashka proper:
 
-- Improve `clojure.java.browse`, add `*open-url-script*` #846 ([@thiagokokada](https://github.com/thiagokokada))
-- Add `--checksum` option to install script #842 ([@thiagokokada](https://github.com/thiagokokada))
+- Improve `clojure.java.browse`, add `*open-url-script*` [#846](https://github.com/babashka/babashka/issues/846) ([@thiagokokada](https://github.com/thiagokokada))
+- Add `--checksum` option to install script [#842](https://github.com/babashka/babashka/issues/842) ([@thiagokokada](https://github.com/thiagokokada))
 - Add more agent functions and fix binding conveyance
+- Better error handling for parallel tasks [#847](https://github.com/babashka/babashka/issues/847)
+- Use `sequential?` for identifying if the script output needs splitting ([@arichiardi](https://github.com/arichiardi))
 
 Babashka.pods:
 
