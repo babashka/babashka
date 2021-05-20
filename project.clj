@@ -75,7 +75,7 @@
                     {:dependencies [[com.clojure-goes-fast/clj-async-profiler "0.4.1"]
                                     [com.opentable.components/otj-pg-embedded "0.13.3"]]}]
              :uberjar {:java-source-paths ["src-java"]
-                       :dependencies [[org.graalvm.nativeimage/svm "21.1.0"]]
+                       :dependencies [[org.graalvm.nativeimage/svm "21.0.0"]]
                        :global-vars {*assert* false}
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"
                                   "-Dclojure.spec.skip-macros=true"
