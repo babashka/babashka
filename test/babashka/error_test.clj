@@ -169,3 +169,33 @@ user/quux         - <expr>:1:15
 user/quux         - <expr>:1:1
 user/bar          - <expr>:1:69
 user              - <expr>:1:91"))))
+
+(deftest print-exception-data-test
+  (testing "output of uncaught ExceptionInfo"
+    (let [output (try (tu/bb nil "(let [d {:zero 0 :one 1}] (throw (ex-info \"some msg\" d)))")
+                      (catch Exception e (ex-message e)))]
+      (multiline-equals output
+                        "----- Error --------------------------------------------------------------------
+Type:     clojure.lang.ExceptionInfo
+Message:  some msg
+Data:     {:zero 0, :one 1}
+Location: <expr>:1:27
+
+----- Context ------------------------------------------------------------------
+1: (let [d {:zero 0 :one 1}] (throw (ex-info \"some msg\" d)))
+                             ^--- some msg
+
+----- Locals -------------------------------------------------------------------
+d: {:zero 0, :one 1}")))
+  (testing "output of ordinary Exception"
+    (let [output (try (tu/bb nil "(throw (Exception. \"some msg\"))")
+                      (catch Exception e (ex-message e)))]
+      (multiline-equals output
+                        "----- Error --------------------------------------------------------------------
+Type:     java.lang.Exception
+Message:  some msg
+Location: <expr>:1:1
+
+----- Context ------------------------------------------------------------------
+1: (throw (Exception. \"some msg\"))
+   ^--- some msg"))))
