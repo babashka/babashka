@@ -2,8 +2,8 @@
 
 (defmacro if-graal [then else]
   (if (resolve 'babashka.impl.Graal)
-    ~then
-    ~else))
+    then
+    else))
 
 (defn set-env [name value]
   (if-graal
