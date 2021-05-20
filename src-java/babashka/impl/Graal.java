@@ -26,14 +26,16 @@ public class Graal {
     private static native int setenv(CCharPointer name, CCharPointer value, int overwrite);
 
     // API
-    public static void setEnv(String name, String value) {
+    public static int setEnv(String name, String value) {
+        int ret = 0;
         System.out.println("setenv" + " " + name + " " + value);
         try (CCharPointerHolder nameHolder = CTypeConversion.toCString(name);
              CCharPointerHolder valueHolder = CTypeConversion.toCString(value)) {
-            setenv(nameHolder.get(), valueHolder.get(), 1);
+            ret = setenv(nameHolder.get(), valueHolder.get(), 1);
             System.out.println(System.getenv(name));
         }
         System.out.println(System.getenv(name));
+        return ret;
     }
 
     // public static void main(String[] args) {
