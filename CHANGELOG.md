@@ -2,12 +2,13 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
-## Unreleased
+## 0.4.2
 
 Babashka proper:
 
 - Improve `clojure.java.browse`, add `*open-url-script*` #846 ([@thiagokokada](https://github.com/thiagokokada))
 - Add `--checksum` option to install script #842 ([@thiagokokada](https://github.com/thiagokokada))
+- Add more agent functions and fix binding conveyance
 
 Babashka.pods:
 
