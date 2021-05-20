@@ -15,4 +15,5 @@
    'read (copy-var transit/read tns)
    'reader (copy-var transit/reader tns)
    'read-handler (copy-var transit/read-handler tns)
-   'read-handler-map (copy-var transit/read-handler-map tns)})
+   'read-handler-map (copy-var transit/read-handler-map tns)
+   'tagged-value (copy-var transit/tagged-value tns)})

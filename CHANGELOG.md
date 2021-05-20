@@ -2,6 +2,10 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
+## 0.4.3
+
+- Add `cognitect.transit/tagged-value`, needed for sql pods
+
 ## 0.4.2
 
 Babashka proper:
