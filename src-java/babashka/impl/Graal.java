@@ -27,10 +27,13 @@ public class Graal {
 
     // API
     public static void setEnv(String name, String value) {
+        System.out.println("setenv", name, value);
         try (CCharPointerHolder nameHolder = CTypeConversion.toCString(name);
              CCharPointerHolder valueHolder = CTypeConversion.toCString(value)) {
             setenv(nameHolder.get(), valueHolder.get(), 1);
+            System.out.println(System.getenv(name));
         }
+        System.out.println(System.getenv(name));
     }
 
     // public static void main(String[] args) {

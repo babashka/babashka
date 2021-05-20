@@ -7,5 +7,7 @@
 
 (defn set-env [name value]
   (if-graal
-      (babashka.impl.Graal/setEnv name value)
+      (do
+        (prn :setting name value)
+        (babashka.impl.Graal/setEnv name value))
     (throw (UnsupportedOperationException. "set-env is only available in the native image."))))
