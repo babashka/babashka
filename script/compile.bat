@@ -41,6 +41,7 @@ call %GRAALVM_HOME%\bin\native-image.cmd ^
   "-H:Log=registerResource:" ^
   "--no-fallback" ^
   "--verbose" ^
+  "-H:NativeLinkerOption=prefs.lib" ^
   "-H:ServiceLoaderFeatureExcludeServices=javax.sound.sampled.spi.AudioFileReader" ^
   "-H:ServiceLoaderFeatureExcludeServices=javax.sound.midi.spi.MidiFileReader" ^
   "-H:ServiceLoaderFeatureExcludeServices=javax.sound.sampled.spi.MixerProvider" ^
