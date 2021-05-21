@@ -118,9 +118,9 @@ rm -rf "$filename"
 rm -rf "bb"
 curl -o "$filename" -sL "$download_url"
 if [[ -n "$checksum" ]]; then
-    if ! echo "$checksum $filename" | sha256sum --check --status; then
+    if ! echo "$checksum *$filename" | shasum -a 256 --check --status; then
         >&2 echo "Failed checksum on $filename"
-        >&2 echo "Got: $(sha256sum "$filename" | cut -d' ' -f1)"
+        >&2 echo "Got: $(shasum -a 256 "$filename" | cut -d' ' -f1)"
         >&2 echo "Expected: $checksum"
         exit 1
     fi
