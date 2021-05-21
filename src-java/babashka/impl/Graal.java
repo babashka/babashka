@@ -25,22 +25,36 @@ public class Graal {
     @CFunction
     private static native int setenv(CCharPointer name, CCharPointer value, int overwrite);
 
-    // API
-    public static int setEnv(String name, String value) {
-        int ret = 0;
-        System.out.println("setenv" + " " + name + " " + value);
-        try (CCharPointerHolder nameHolder = CTypeConversion.toCString(name);
-             CCharPointerHolder valueHolder = CTypeConversion.toCString(value)) {
-            ret = setenv(nameHolder.get(), valueHolder.get(), 1);
-            System.out.println(System.getenv(name));
-        }
-        System.out.println(System.getenv(name));
-        return ret;
+    @CFunction
+    private static native CCharPointer getenv(CCharPointer name);
+
+    // Public API
+
+    public static boolean setEnv(String name, String value) {
+        return setEnv(name, value, true);
     }
 
-    // public static void main(String[] args) {
-    //     setEnv(args[0], args[1]);
-    //     System.out.println(System.getenv(args[0]));
-    // }
-}
+    public static boolean setEnv(String name, String value, boolean overwrite) {
+        boolean ret = false;
+        try (CCharPointerHolder nameHolder = CTypeConversion.toCString(name)) {
+            CCharPointerHolder valueHolder = CTypeConversion.toCString(value);
+            int w = (overwrite ? 1 : 0);
+            int cRet = setenv(nameHolder.get(), valueHolder.get(), w);
+            ret = (cRet == 0 ? true : false);
+            return ret;
+        }
+    }
 
+    public static String getEnv(String name) {
+        try (CCharPointerHolder nameHolder = CTypeConversion.toCString(name);) {
+            CCharPointer p = getenv(nameHolder.get());
+            String ret = CTypeConversion.toJavaString(p);
+            return ret;
+        }
+    }
+
+    public static void main(String[] args) {
+        System.out.println(setEnv(args[0], args[1]));
+        System.out.println(getEnv(args[0]));
+    }
+}
