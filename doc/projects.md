@@ -60,6 +60,7 @@ The following libraries and projects are known to work with babashka.
     - [interdep](#interdep)
     - [sha-words](#sha-words)
     - [adam-james-v/scripts](#adam-james-vscripts)
+    - [oidc-client](#oidc-client)
 
 Also keep an eye on the [news](news.md) page for new projects, gists and other
 developments around babashka.
@@ -649,3 +650,9 @@ A clojure program to turn a sha hash into list of nouns in a predictable jar.
 ### [adam-james-v/scripts](https://github.com/adam-james-v/scripts)
 
 A collection of useful scripts. Mainly written with Clojure/babashka
+
+### [oidc-client](https://gist.github.com/holyjak/ad4e1e9b863f8ed57ef0cb6ac6b30494)
+
+Tired of being forced to use the browser every time you need to refresh an OIDC token to authenticate with a backend service? Finally there is a CLI tool for that - the babashka and Docker powered oidc_client.clj.
+
+Upon first invocation it opens up a browser for the OIDC provider login, thereafter it caches the refresh token and uses it as long as it remains valid.
