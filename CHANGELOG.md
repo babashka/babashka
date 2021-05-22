@@ -2,6 +2,37 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
+## 0.4.3
+
+- Add `cognitect.transit/tagged-value`, needed for sql pods
+
+## 0.4.2
+
+Babashka proper:
+
+- Improve `clojure.java.browse`, add `*open-url-script*` [#846](https://github.com/babashka/babashka/issues/846) ([@thiagokokada](https://github.com/thiagokokada))
+- Add `--checksum` option to install script [#842](https://github.com/babashka/babashka/issues/842) ([@thiagokokada](https://github.com/thiagokokada))
+- Add more agent functions and fix binding conveyance
+- Better error handling for parallel tasks [#847](https://github.com/babashka/babashka/issues/847)
+- Use `sequential?` for identifying if the script output needs splitting ([@arichiardi](https://github.com/arichiardi))
+
+Babashka.pods:
+
+- Allow pods to set custom transit read and write handlers
+
+## 0.4.1
+
+- Base static linux build on musl. The binary should now work in most linuxes
+  out of the box. ([@lispyclouds](https://github.com/lispyclouds),
+  [@thiagokokada](https://github.com/thiagokokada))
+- Add `NullPointerException` to default imports
+- Add `thread-bound?` function
+- Expose escaping functions from `selmer.util` [#835](https://github.com/babashka/babashka/issues/835)
+- Fix Windows GraalVM config for httpkit
+- Add `:error-fn` option to `shell` [#836](https://github.com/babashka/babashka/issues/836)
+- Add `babashka.task` `System` property [#837](https://github.com/babashka/babashka/issues/837)
+- Allow thread-first with `shell` like `babashka.process` [#829](https://github.com/babashka/babashka/issues/829)
+
 ## 0.4.0
 
 Babashka proper:

@@ -106,7 +106,7 @@ $ bb '(vec (dedupe *input*))' <<< '[1 1 1 1 2]'
 [1 2]
 ```
 
-Read more about input and output flags [here](doc/io-flags.md).
+Read more about input and output flags [here](https://book.babashka.org/#_input_and_output_flags).
 
 Execute a script. E.g. print the current time in California using the
 `java.time` API:
@@ -200,15 +200,33 @@ $ ./install --dir .
 To install a specific version, the script also supports `--version`:
 
 ``` shell
-$ ./install --dir . --version 0.2.5
+$ ./install --dir . --version 0.4.1
 ```
 
 To force the download of the zip archive to a different directory than `/tmp`
 use the `--download-dir` argument:
 
 ``` shell
-$ ./install --dir . --version 0.2.5 --download-dir .
+$ ./install --dir . --version 0.4.1 --download-dir .
 ```
+
+On Linux, if you want to install the static binary version:
+
+``` shell
+$ ./install --dir . --version 0.4.1 --download-dir . --static
+```
+
+In case you want to check the download, you can use the `--checksum` option.
+This maybe useful for unattended installations:
+
+``` shell
+$ sha256sum babashka-0.4.1-linux-amd64-static.tar.gz
+ab70fb39fdbb5206c0a2faab178ffb54dd9597991a4bc13c65df2564e8f174f6  babashka-0.4.1-linux-amd64-static.tar.g
+$ ./install --dir /tmp --checksum ab70fb39fdbb5206c0a2faab178ffb54dd9597991a4bc13c65df2564e8f174f6 --static --version 0.4.1
+```
+
+Note that the `--checksum` option only works when `--version` option is also
+provided. This is to avoid breakage when a new version of Babashka is released.
 
 ### Github releases
 
@@ -269,7 +287,8 @@ Differences with Clojure:
 - Currently `reify` works only for one class at a time
 
 - The `clojure.core.async/go` macro is not (yet) supported. For compatibility it
-  currently maps to `clojure.core.async/thread`. More info [here](#coreasync).
+  currently maps to `clojure.core.async/thread`. More info
+  [here](https://book.babashka.org/#core_async).
 
 ## Package babashka script as a AWS Lambda
 

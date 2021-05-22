@@ -392,7 +392,9 @@ Use bb run --help to show this help output.
                             'selmer.filters
                             @(resolve 'babashka.impl.selmer/selmer-filters-namespace)
                             'selmer.util
-                            @(resolve 'babashka.impl.selmer/selmer-util-namespace))))
+                            @(resolve 'babashka.impl.selmer/selmer-util-namespace)
+                            'selmer.validator
+                            @(resolve 'babashka.impl.selmer/selmer-validator-namespace))))
 
 (def imports
   '{ArithmeticException java.lang.ArithmeticException
@@ -743,8 +745,10 @@ Use bb run --help to show this help output.
                               ns var-name)] nil])
                   run (if (:run-help cli-opts)
                         [(print-run-help) 0]
-                        (tasks/assemble-task run
-                                             (:parallel-tasks cli-opts)))
+                        (do
+                          (System/setProperty "babashka.task" (str run))
+                          (tasks/assemble-task run
+                                               (:parallel-tasks cli-opts))))
                   file (try [[(read-file file)] nil]
                             (catch Exception e
                               (error-handler e {:expression expressions
@@ -800,7 +804,7 @@ Use bb run --help to show this help output.
                                                              (:prn cli-opts)))
                                                 (if-let [pr-f (cond shell-out println
                                                                     edn-out prn)]
-                                                  (if (coll? res)
+                                                  (if (sequential? res)
                                                     (doseq [l res
                                                             :while (not (pipe-signal-received?))]
                                                       (pr-f l))
