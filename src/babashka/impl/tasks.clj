@@ -20,7 +20,7 @@
 (def log-level (sci/new-dynamic-var '*-log-level* default-log-level {:ns sci-ns}))
 ;; (def task-name (sci/new-dynamic-var '*-task-name* nil {:ns sci-ns}))
 (def task (sci/new-dynamic-var '*task* nil {:ns sci-ns}))
-(def current-task (sci/new-dynamic-var 'current-task (fn [] @task) {:ns sci-ns}))
+(def current-task (sci/new-var 'current-task (fn [] @task) {:ns sci-ns}))
 (def state (sci/new-var 'state (atom {}) {:ns sci-ns}))
 
 (defn log-info [& strs]
