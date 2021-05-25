@@ -52,5 +52,5 @@ make CC=musl-gcc
 make install
 cd ..
 
-# Add a symbolic link pointing libz to the correct place so ldd can find it
-ln -sf "/usr/local/lib/libz.a" "/usr/lib/$arch-linux-musl/libz.a"
+# Install libz.a in the correct place so ldd can find it
+install -Dm644 "/usr/local/lib/libz.a" "/usr/lib/$arch-linux-musl/libz.a"
