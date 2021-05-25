@@ -47,16 +47,10 @@ arch=${BABASHKA_ARCH:-"x86_64"}
 echo "ARCH: $arch"
 
 cd "zlib-${ZLIB_VERSION}"
-CC=musl-gcc ./configure --static --prefix=/usr/lib/$arch-linux-musl/
+CC=musl-gcc ./configure --static --prefix="/usr/local"
 make CC=musl-gcc
-sudo make install
-export CC=gcc
+make install
 cd ..
 
-# depending on GCC version, we will have different directories here.
-# for example, for GCC 6.3.0 we will have:
-# - /usr/lib/gcc/x86_64-linux-gnu/6
-# - /usr/lib/gcc/x86_64-linux-gnu/6.3.0
-for dest_dir in /usr/lib/gcc/$arch-linux-gnu/*; do
-    sudo cp -f /usr/lib/$arch-linux-musl/lib/libz.a "$dest_dir"
-done
+# Install libz.a in the correct place so ldd can find it
+install -Dm644 "/usr/local/lib/libz.a" "/usr/lib/$arch-linux-musl/libz.a"
