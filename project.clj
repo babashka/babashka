@@ -80,7 +80,7 @@
                                   "-Dclojure.spec.skip-macros=true"
                                   "-Dborkdude.dynaload.aot=true"]
                        :main babashka.main
-                       :aot :all}
+                       :aot [babashka.main]}
              :reflection {:main babashka.impl.classes/generate-reflection-file}}
   :aliases {"bb" ["with-profile" "test"  "run" "-m" "babashka.main"]}
   :deploy-repositories [["clojars" {:url "https://clojars.org/repo"
