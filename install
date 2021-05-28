@@ -7,7 +7,7 @@ checksum=""
 static_binary="false"
 default_install_dir="/usr/local/bin"
 install_dir="$default_install_dir"
-default_download_dir="/tmp"
+default_download_dir=${TMPDIR:-"/tmp"}
 download_dir="$default_download_dir"
 
 print_help() {
