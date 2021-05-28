@@ -7,8 +7,7 @@ checksum=""
 static_binary="false"
 default_install_dir="/usr/local/bin"
 install_dir="$default_install_dir"
-default_download_dir=${TMPDIR:-"/tmp"}
-download_dir="$default_download_dir"
+download_dir=""
 
 print_help() {
     echo "Installs latest (or specific) version of babashka. Installation directory defaults to /usr/local/bin."
@@ -18,7 +17,7 @@ print_help() {
     echo -e
     echo "Defaults:"
     echo " * Installation directory: ${default_install_dir}"
-    echo " * Download directory: ${default_download_dir}"
+    echo " * Download directory: temporary"
     if [[ -z "$checksum" ]]; then
         echo " * Checksum: no"
     else
@@ -64,6 +63,11 @@ do
     esac
 done
 
+if [[ -z "$download_dir" ]]; then
+    download_dir="$(mktemp -d)"
+    trap 'rm -rf "$download_dir"' EXIT
+fi
+
 if [[ "$checksum" != "" ]] && [[ "$version" == "" ]]; then
     >&2 echo "Options --checksum and --version should be provided together!"
     exit 1
@@ -81,7 +85,7 @@ esac
 case "$(uname -m)" in
     aarch64)   arch=aarch64;;
 esac
-arch=${arch:-amd64}
+arch="${arch:-amd64}"
 
 # Ugly ugly conversion of version to a comparable number
 IFS='.' read -ra VER <<< "$version"
@@ -106,29 +110,30 @@ else
 fi
 download_url="https://github.com/babashka/babashka/releases/download/v$version/$filename"
 
-mkdir -p "$download_dir"
-cd "$download_dir"
-echo -e "Downloading $download_url to $download_dir"
+# Running this part in a subshell so when it finishes we go back to the previous directory
+mkdir -p "$download_dir" && (
+    cd "$download_dir"
+    echo -e "Downloading $download_url to $download_dir"
 
-rm -rf "$filename"
-rm -rf "bb"
-curl -o "$filename" -sL "$download_url"
-if [[ -n "$checksum" ]]; then
-    if ! echo "$checksum *$filename" | shasum -a 256 --check --status; then
-        >&2 echo "Failed checksum on $filename"
-        >&2 echo "Got: $(shasum -a 256 "$filename" | cut -d' ' -f1)"
-        >&2 echo "Expected: $checksum"
-        exit 1
+    curl -o "$filename" -sL "$download_url"
+    if [[ -n "$checksum" ]]; then
+        if ! echo "$checksum *$filename" | shasum -a 256 --check --status; then
+            >&2 echo "Failed checksum on $filename"
+            >&2 echo "Got: $(shasum -a 256 "$filename" | cut -d' ' -f1)"
+            >&2 echo "Expected: $checksum"
+            exit 1
+        fi
     fi
-fi
-$util "$filename"
-rm "$filename"
+    $util "$filename"
+    rm -f "$filename"
+)
 
 if [[ "$download_dir" != "$install_dir" ]]
 then
     mkdir -p "$install_dir"
     if [ -f "$install_dir/bb" ]; then
         echo "Moving $install_dir/bb to $install_dir/bb.old"
+        mv -f "$install_dir/bb" "$install_dir/bb.old"
     fi
     mv -f "$download_dir/bb" "$install_dir/bb"
 fi
