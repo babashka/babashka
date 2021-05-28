@@ -78,14 +78,14 @@ if [[ "$version" == "" ]]; then
 fi
 
 case "$(uname -s)" in
-    Linux*)     platform=linux;;
-    Darwin*)    platform=macos;;
+    Linux*)  platform=linux;;
+    Darwin*) platform=macos;;
 esac
 
 case "$(uname -m)" in
-    aarch64)   arch=aarch64;;
+    aarch64) arch=aarch64;;
+    *)       arch=amd64;;
 esac
-arch="${arch:-amd64}"
 
 # Ugly ugly conversion of version to a comparable number
 IFS='.' read -ra VER <<< "$version"
@@ -99,15 +99,16 @@ else
   util="$(which tar) -zxf"
 fi
 
-if [[ "$static_binary" == "true" ]]; then
-    if [[ "$platform" != "linux" ]]; then
-        >&2 echo "Static binaries are only available in Linux platform!"
-        exit 1
-    fi
-    filename="babashka-$version-$platform-$arch-static."$ext
-else
-    filename="babashka-$version-$platform-$arch."$ext
-fi
+case "$platform-$static_binary" in
+    linux-true) filename="babashka-$version-$platform-$arch-static."$ext
+                ;;
+    *-true)     >&2 echo "Static binaries are only available in Linux platform! Using the non-static one..."
+                filename="babashka-$version-$platform-$arch."$ext
+                ;;
+    *)          filename="babashka-$version-$platform-$arch."$ext
+                ;;
+esac
+
 download_url="https://github.com/babashka/babashka/releases/download/v$version/$filename"
 
 # Running this part in a subshell so when it finishes we go back to the previous directory
