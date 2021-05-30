@@ -2,6 +2,18 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
+## Unreleased
+
+Babashka proper:
+
+- Print ex-data in error report [#730](https://github.com/babashka/babashka/issues/730) ([@GreshamDanielStephens](https://github.com/GreshamDanielStephens), [@rng-dynamics](https://github.com/rng-dynamics))
+- Support dynamic vars in tasks [#865](https://github.com/babashka/babashka/issues/865)
+- Use stable namespace when using `run` in tasks [#865](https://github.com/babashka/babashka/issues/865)
+
+Babashka.nrepl:
+
+- Error reporting improvement [#40](https://github.com/babashka/babashka.nrepl/issues/865)
+
 ## 0.4.3
 
 - Add `cognitect.transit/tagged-value`, needed for sql pods
