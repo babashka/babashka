@@ -132,6 +132,7 @@
           java.lang.Object
           java.lang.Process
           java.lang.ProcessHandle
+          java.lang.ProcessHandle$Info
           java.lang.ProcessBuilder
           java.lang.ProcessBuilder$Redirect
           java.lang.Runtime
@@ -247,6 +248,7 @@
           java.util.Locale
           java.util.Map
           java.util.MissingResourceException
+          java.util.Optional
           java.util.Properties
           java.util.Set
           java.util.UUID
@@ -344,6 +346,8 @@
                    java.lang.Process
                    (instance? java.lang.ProcessHandle v)
                    java.lang.ProcessHandle
+                   (instance? java.lang.ProcessHandle$Info v)
+                   java.lang.ProcessHandle$Info
                    ;; added for calling .put on .environment from ProcessBuilder
                    (instance? java.util.Map v)
                    java.util.Map
