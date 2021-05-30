@@ -236,7 +236,16 @@
                                       :task (do (Thread/sleep 10)
                                                 (+ 1 2 3))}
                                  c (do (Thread/sleep 10) :c)}}
-        (is (= [6 6 :c] (bb "run" "--prn" "a")))))))
+        (is (= [6 6 :c] (bb "run" "--prn" "a"))))))
+  (testing "dynamic vars"
+    (test-utils/with-config '{:tasks
+                              {:init (def ^:dynamic *foo* true)
+                               a (do
+                                   (def ^:dynamic *bar* false)
+                                   (binding [*foo* false
+                                             *bar* true]
+                                     [*foo* *bar*]))}}
+      (is (= [false true] (bb "run" "--prn" "a"))))))
 
 (deftest list-tasks-test
   (test-utils/with-config {}
