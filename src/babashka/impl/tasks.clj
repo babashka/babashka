@@ -158,17 +158,17 @@
     (format "
 (let [chans (filter babashka.tasks/-chan? %s)]
   (loop [cs chans]
-    (let [[v p] (clojure.core.async/alts!! cs)
-          [task-name v] v
-          cs (filterv #(not= p %%) cs)
-          ;; _ (.println System/err (str \"n: \" task-name \" v: \" v))
-          ;; check for existence of v, as the channel may already have been consumed once
-          _ (when v (intern *ns* (symbol task-name) v))]
-      (when (instance? Throwable v)
-        (throw (ex-info (ex-message v)
-                        {:babashka/exit 1
-                         :data (ex-data v)})))
-      (when (seq cs)
+    (when (seq cs)
+      (let [[v p] (clojure.core.async/alts!! cs)
+            [task-name v] v
+            cs (filterv #(not= p %%) cs)
+            ;; _ (.println System/err (str \"n: \" task-name \" v: \" v))
+            ;; check for existence of v, as the channel may already have been consumed once
+            _ (when v (intern *ns* (symbol task-name) v))]
+        (when (instance? Throwable v)
+          (throw (ex-info (ex-message v)
+                          {:babashka/exit 1
+                           :data (ex-data v)})))
         (recur cs)))))" deps)
     "")
   #_(format "(def %s (babashka.tasks/-wait %s))" dep dep))
