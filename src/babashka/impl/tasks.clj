@@ -225,6 +225,8 @@
              prog (wrap-def task-map prog parallel? last?)]
          prog)))))
 
+(def rand-ns (delay (symbol (str "user-" (java.util.UUID/randomUUID)))))
+
 (defn format-task [init extra-paths extra-deps requires prog]
   (format "
 %s ;; extra-paths
@@ -255,7 +257,7 @@
           (if (seq extra-deps)
             (format "(babashka.deps/add-deps '%s)" (pr-str {:deps extra-deps}))
             "")
-          (gensym "user")
+          @rand-ns
           (if (seq requires)
             (format "(:require %s)" (str/join " " requires))
             "")

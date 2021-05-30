@@ -245,7 +245,19 @@
                                    (binding [*foo* false
                                              *bar* true]
                                      [*foo* *bar*]))}}
-      (is (= [false true] (bb "run" "--prn" "a"))))))
+      (is (= [false true] (bb "run" "--prn" "a")))))
+  (testing "stable namespace name"
+    (test-utils/with-config '{:tasks
+                              {:init (do (def ^:dynamic *jdk*)
+                                         (def ^:dynamic *server*))
+                               server [*jdk* *server*]
+                               run-all (for [jdk [8 11 15]
+                                             server [:foo :bar]]
+                                         (binding [*jdk* jdk
+                                                   *server* server]
+                                           (babashka.tasks/run 'server)))}}
+      (is (= '([8 :foo] [8 :bar] [11 :foo] [11 :bar] [15 :foo] [15 :bar])
+             (bb "run" "--prn" "run-all"))))))
 
 (deftest list-tasks-test
   (test-utils/with-config {}
