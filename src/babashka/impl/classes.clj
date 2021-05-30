@@ -248,6 +248,7 @@
           java.util.Locale
           java.util.Map
           java.util.MissingResourceException
+          java.util.Optional
           java.util.Properties
           java.util.Set
           java.util.UUID
