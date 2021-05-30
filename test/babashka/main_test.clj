@@ -468,8 +468,8 @@
   ;; TODO: refactor into individual unit tests
   ;; One for downloading a small file and one for unzipping.
   #_(is (try (= 6 (bb nil (io/file "test" "babashka" "scripts" "download_and_extract_zip.bb")))
-           (catch Exception e
-             (is (str/includes? (str e) "timed out"))))))
+             (catch Exception e
+               (is (str/includes? (str e) "timed out"))))))
 
 (deftest get-message-on-exception-info-test
   (is "foo" (bb nil "(try (throw (ex-info \"foo\" {})) (catch Exception e (.getMessage e)))")))
@@ -638,6 +638,14 @@ true")))
                        "precision"))
     (is (str/blank? (with-out-str (main/main "doc" "non-existing"))))
     (is (= 1 (main/main "doc" "non-existing")))))
+
+(deftest process-handler-info-test
+  (when test-utils/native?
+    (is (= ["-e" "(vec (.get (.arguments (.info (java.lang.ProcessHandle/current)))))"]
+           (bb nil "-e" "(vec (.get (.arguments (.info (java.lang.ProcessHandle/current)))))")))
+    (is (str/ends-with?
+         (bb nil "-e" "(.get (.command (.info (java.lang.ProcessHandle/current))))")
+         "bb"))))
 
 ;;;; Scratch
 
