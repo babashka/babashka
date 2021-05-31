@@ -7,8 +7,8 @@ For a list of breaking changes, check [here](#breaking-changes).
 Babashka proper:
 
 - Print ex-data in error report [#730](https://github.com/babashka/babashka/issues/730) ([@GreshamDanielStephens](https://github.com/GreshamDanielStephens), [@rng-dynamics](https://github.com/rng-dynamics))
-- Support dynamic vars in tasks [#865](https://github.com/babashka/babashka/issues/865)
-- Use stable namespace when using `run` in tasks [#865](https://github.com/babashka/babashka/issues/865)
+- Tasks: support dynamic vars [#865](https://github.com/babashka/babashka/issues/865)
+- Tasks: use stable namespace when using `run` [#865](https://github.com/babashka/babashka/issues/865)
 - Add `java.lang.ProcessHandle$Info` [#872](https://github.com/babashka/babashka/issues/872)
 - Add `java.util.Optional` [#872](https://github.com/babashka/babashka/issues/872)
 
