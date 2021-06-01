@@ -426,6 +426,7 @@ Use bb run --help to show this help output.
     Process        java.lang.Process
     ProcessBuilder java.lang.ProcessBuilder
     Short java.lang.Short
+    StackTraceElement java.lang.StackTraceElement
     String java.lang.String
     StringBuilder java.lang.StringBuilder
     System java.lang.System

@@ -138,6 +138,7 @@
           java.lang.Runtime
           java.lang.RuntimeException
           java.lang.Short
+          java.lang.StackTraceElement
           java.lang.String
           java.lang.StringBuilder
           java.lang.System
