@@ -11,6 +11,7 @@ Babashka proper:
 - Tasks: use stable namespace when using `run` [#865](https://github.com/babashka/babashka/issues/865)
 - Add `java.lang.ProcessHandle$Info` [#872](https://github.com/babashka/babashka/issues/872)
 - Add `java.util.Optional` [#872](https://github.com/babashka/babashka/issues/872)
+- Add `java.lang.StackTraceElement` (to gain compatibility with libraries such as [omniconf](https://github.com/grammarly/omniconf))
 
 Babashka.nrepl:
 
