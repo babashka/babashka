@@ -39,6 +39,7 @@ The following libraries and projects are known to work with babashka.
     - [binf](#binf)
     - [rewrite-edn](#rewrite-edn)
     - [expound](#expound)
+    - [omniconf](#omniconf)
   - [Pods](#pods)
   - [Projects](#projects-1)
     - [babashka-test-action](#babashka-test-action)
@@ -543,6 +544,30 @@ Example:
 (s/def ::a (s/cat :i int? :j string?))
 
 (expound/expound ::a [1 2])
+```
+
+### [omniconf](https://github.com/grammarly/omniconf)
+
+script.clj:
+``` clojure
+#!/usr/bin/env bb
+
+(ns script
+  (:require [babashka.deps :as deps]))
+
+(deps/add-deps
+ '{:deps {com.grammarly/omniconf {:mvn/version "0.4.3"}}})
+
+(require '[omniconf.core :as cfg])
+(cfg/define {:foo {}})
+(cfg/populate-from-env)
+(cfg/get :foo)
+```
+
+``` text
+FOO=1 script.clj
+Populating Omniconf from env: 1 value(s)
+"1"
 ```
 
 ## Pods
