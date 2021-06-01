@@ -16,6 +16,10 @@ Babashka.nrepl:
 
 - Error reporting improvement [#40](https://github.com/babashka/babashka.nrepl/issues/865)
 
+Sci:
+
+- Support trailing metadata in `defn`
+
 ## 0.4.3
 
 - Add `cognitect.transit/tagged-value`, needed for sql pods
