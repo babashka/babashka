@@ -388,8 +388,7 @@
   (is (= "hello" (bb nil "(doto (java.lang.Thread. (fn [] (prn \"hello\"))) (.start) (.join)) nil"))))
 
 (deftest dynvar-test
-  (is (= 1 (bb nil "(binding [*command-line-args* 1] *command-line-args*)")))
-  (is (= 1 (bb nil "(binding [*input* 1] *input*)"))))
+  (is (= 1 (bb nil "(binding [*command-line-args* 1] *command-line-args*)"))))
 
 (deftest file-in-error-msg-test
   (is (thrown-with-msg? Exception #"error.bb"

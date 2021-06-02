@@ -44,6 +44,7 @@
    [sci.core :as sci]
    [sci.impl.namespaces :as sci-namespaces]
    [sci.impl.unrestrict :refer [*unrestricted*]]
+   [sci.impl.utils :refer [ctx-fn]]
    [sci.impl.vars :as vars])
   (:gen-class))
 
@@ -308,9 +309,15 @@ Use bb run --help to show this help output.
    'start-server (fn [& args]
                    (apply server/start-server @common/ctx args))})
 
+(def input-var (sci/new-dynamic-var '*input*))
+
 (def namespaces
   (cond->
-      {'clojure.tools.cli tools-cli-namespace
+      {'user {'*input* (ctx-fn
+                        (fn [_ctx]
+                          (force @input-var))
+                        nil)}
+       'clojure.tools.cli tools-cli-namespace
        'clojure.java.shell shell-namespace
        'babashka.wait {'wait-for-port wait/wait-for-port
                        'wait-for-path wait/wait-for-path}
@@ -433,7 +440,6 @@ Use bb run --help to show this help output.
     Thread java.lang.Thread
     Throwable java.lang.Throwable})
 
-(def input-var (sci/new-dynamic-var '*input* nil))
 (def edn-readers (cond-> {}
                    features/yaml?
                    (assoc 'ordered/map @(resolve 'flatland.ordered.map/ordered-map))))
@@ -716,10 +722,7 @@ Use bb run --help to show this help output.
                   :namespaces (-> namespaces
                                   (assoc 'clojure.core
                                          (assoc core-extras
-                                                'load-file load-file*))
-                                  (assoc-in ['user (with-meta '*input*
-                                                     (when-not stream?
-                                                       {:sci.impl/deref! true}))] input-var))
+                                                'load-file load-file*)))
                   :env env
                   :features #{:bb :clj}
                   :classes classes/class-map
