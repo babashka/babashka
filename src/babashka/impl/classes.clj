@@ -152,6 +152,7 @@
           java.net.DatagramPacket
           java.net.HttpURLConnection
           java.net.InetAddress
+          java.net.InetSocketAddress
           java.net.ServerSocket
           java.net.Socket
           java.net.SocketException
