@@ -71,7 +71,8 @@
                    {:name "toString"}
                    {:name "toURI"}]}
         java.util.Arrays
-        {:methods [{:name "copyOf"}]}
+        {:methods [{:name "copyOf"}
+                   {:name "copyOfRange"}]}
         ;; this fixes clojure.lang.Reflector for Java 11
         java.lang.reflect.AccessibleObject
         {:methods [{:name "canAccess"}]}}
