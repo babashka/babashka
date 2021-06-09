@@ -212,6 +212,12 @@
                  'honey.sql.helpers-test
                  'honey.sql.postgres-test)
 
+(test-namespaces 'slingshot.slingshot-test
+                 'slingshot.support-test
+                 ;; TODO:
+                 ;; 'slingshot.test-test
+                 )
+
 ;;;; final exit code
 
 (let [{:keys [:test :fail :error] :as m} @status]
