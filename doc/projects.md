@@ -580,9 +580,9 @@ $ bb -e "(require '[slingshot.slingshot :as s]) (s/try+ (s/throw+ {:type ::foo})
 1
 ```
 
-NOTE: slingshot's tests pass with babashka, except for catching record types by
-name, due to a difference in how records are implemented in babashka. This may
-be fixed later if this turns out to be really useful.
+NOTE: slingshot's tests pass with babashka except one: catching a record types
+by name. This is due to a difference in how records are implemented in
+babashka. This may be fixed later if this turns out to be really useful.
 
 ## Pods
 
