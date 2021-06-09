@@ -1,7 +1,7 @@
 (ns babashka.impl.clojure.core
   {:no-doc true}
   (:refer-clojure :exclude [future read+string clojure-version with-precision
-                            send-via send send-off])
+                            send-via send send-off sync])
   (:require [babashka.impl.common :as common]
             [borkdude.graal.locking :as locking]
             [clojure.core :as c]
@@ -121,6 +121,22 @@
 
 ;;;; End agents
 
+;;;; STM
+
+(defn -run-in-transaction [f]
+  (clojure.lang.LockingTransaction/runInTransaction f))
+
+(defmacro sync
+  "transaction-flags => TBD, pass nil for now
+  Runs the exprs (in an implicit do) in a transaction that encompasses
+  exprs and any nested calls.  Starts a transaction if none is already
+  running on this thread. Any uncaught exception will abort the
+  transaction and flow out of sync. The exprs may be run more than
+  once, but any effects on Refs will be atomic."
+  {:added "1.0"}
+  [_flags-ignored-for-now & body]
+  `(clojure.core/-run-in-transaction (fn [] ~@body)))
+
 (def core-extras
   {;; agents
    'agent (copy-core-var agent)
@@ -161,6 +177,13 @@
    '*math-context* math-context
    'with-precision (sci/copy-var with-precision clojure-core-ns)
    '-with-precision (sci/copy-var -with-precision clojure-core-ns)
+   ;; STM
+   'alter (sci/copy-var alter clojure-core-ns)
+   'dosync (sci/copy-var dosync clojure-core-ns)
+   '-run-in-transaction (sci/copy-var -run-in-transaction clojure-core-ns)
+   'sync (sci/copy-var sync clojure-core-ns)
+   'ref (sci/copy-var ref clojure-core-ns)
+   'ref-set (sci/copy-var ref-set clojure-core-ns)
    ;;'*clojure-version* clojure-version-var
    ;;'clojure-version (sci/copy-var clojure-version clojure-core-ns)
    }
