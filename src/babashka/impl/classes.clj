@@ -236,6 +236,7 @@
                 java.time.temporal.Temporal
                 java.time.temporal.TemporalAccessor
                 java.time.temporal.TemporalAdjuster])
+          java.util.concurrent.ExecutionException
           java.util.concurrent.LinkedBlockingQueue
           java.util.jar.JarFile
           java.util.jar.JarEntry
