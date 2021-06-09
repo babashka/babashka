@@ -179,6 +179,7 @@
    '-with-precision (sci/copy-var -with-precision clojure-core-ns)
    ;; STM
    'alter (sci/copy-var alter clojure-core-ns)
+   'commute (sci/copy-var commute clojure-core-ns)
    'dosync (sci/copy-var dosync clojure-core-ns)
    '-run-in-transaction (sci/copy-var -run-in-transaction clojure-core-ns)
    'sync (sci/copy-var sync clojure-core-ns)
