@@ -71,7 +71,8 @@
                    {:name "toString"}
                    {:name "toURI"}]}
         java.util.Arrays
-        {:methods [{:name "copyOf"}]}
+        {:methods [{:name "copyOf"}
+                   {:name "copyOfRange"}]}
         ;; this fixes clojure.lang.Reflector for Java 11
         java.lang.reflect.AccessibleObject
         {:methods [{:name "canAccess"}]}}
@@ -235,6 +236,7 @@
                 java.time.temporal.Temporal
                 java.time.temporal.TemporalAccessor
                 java.time.temporal.TemporalAdjuster])
+          java.util.concurrent.ExecutionException
           java.util.concurrent.LinkedBlockingQueue
           java.util.jar.JarFile
           java.util.jar.JarEntry
