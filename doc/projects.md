@@ -570,6 +570,19 @@ Populating Omniconf from env: 1 value(s)
 "1"
 ```
 
+### [slingshot](https://github.com/scgilardi/slingshot)
+
+Enhanced try and throw for Clojure leveraging Clojure's capabilities.
+
+``` text
+$ export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {slingshot/slingshot {:mvn/version "0.12.2"}}}')
+$ bb -e "(require '[slingshot.slingshot :as s]) (s/try+ (s/throw+ {:type ::foo}) (catch [:type ::foo] [] 1))"
+1
+```
+
+NOTE: slingshot's tests pass with babashka, except for catching record types,
+due to a difference in how records are implemented in babashka.
+
 ## Pods
 
 [Babashka pods](https://github.com/babashka/babashka.pods) are programs that can
