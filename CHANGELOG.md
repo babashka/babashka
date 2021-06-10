@@ -11,7 +11,7 @@ Babashka proper:
 - Add STM facilities (`dosync`, `ref`, etc.)
 - Fix `.wait`, `.notify` interop on arbitrary classes
 
-Deps.clj (using in `clojure` invocations):
+Deps.clj (used for resolving deps and `clojure` invocations):
 
 - Fix JVM option parsing [#46](https://github.com/borkdude/deps.clj/issues/46)
 
