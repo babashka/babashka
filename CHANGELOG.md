@@ -2,6 +2,19 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
+## 0.4.5
+
+Babashka proper:
+
+- Add `java.net.InetSocketAddress`
+- Add support for slingshot [#675](https://github.com/babashka/babashka/issues/675)
+- Add STM facilities (`dosync`, `ref`, etc.)
+- Fix `.wait`, `.notify` interop on arbitrary classes
+
+Deps.clj (using in `clojure` invocations):
+
+- Fix JVM option parsing [#46](https://github.com/borkdude/deps.clj/issues/46)
+
 ## 0.4.4
 
 Babashka proper:
