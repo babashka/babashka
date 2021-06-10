@@ -15,6 +15,8 @@ Deps.clj (using in `clojure` invocations):
 
 - Fix JVM option parsing [#46](https://github.com/borkdude/deps.clj/issues/46)
 
+Sci: various minor performance improvements.
+
 ## 0.4.4
 
 Babashka proper:
