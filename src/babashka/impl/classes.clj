@@ -409,7 +409,7 @@
         instance-checks (vec (for [c (sort (:instance-checks classes))
                                    :let [class-name (str c)]]
                                {:name class-name
-                                :methods [{:name "toString"}]}))
+                                :methods [{:name "getName"}]}))
         custom-entries (for [[c v] (:custom classes)
                              :let [class-name (str c)]]
                          (assoc v :name class-name))
