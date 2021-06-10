@@ -406,10 +406,14 @@
                           :let [class-name (str c)]]
                       {:name class-name
                        :allPublicFields true}))
+        instance-checks (vec (for [c (sort (:instance-checks classes))
+                                   :let [class-name (str c)]]
+                               ;; don't include any methods
+                               {:name class-name}))
         custom-entries (for [[c v] (:custom classes)
                              :let [class-name (str c)]]
                          (assoc v :name class-name))
-        all-entries (concat entries constructors methods fields custom-entries)]
+        all-entries (concat entries constructors methods fields instance-checks custom-entries)]
     all-entries))
 
 (defn generate-reflection-file
