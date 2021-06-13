@@ -114,6 +114,8 @@ Some of these design decisions were formed in [these discussions](https://github
 Keep notes here about how adding libraries and classes to Babashka affects the binary size.
 We're registering the size of the macOS binary (as built on CircleCI).
 
+2021/06/13 Upgrading from GraalvM 21.0 to 21.1 added roughly 3mb. Issue [here](https://github.com/oracle/graal/issues/3280#issuecomment-846402115).
+
 2020/10/30 Without httpkit client+server: 68113436. With: 69503316 = 1390kb added.
 
 2020/05/01 Removed `next.jdbc` and postgres JDBC driver: 48304980
