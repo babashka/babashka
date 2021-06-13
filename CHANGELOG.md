@@ -2,6 +2,10 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
+## 0.4.6
+
+- Upgrade to GraalVM 21.1, fixes [#884](https://github.com/babashka/babashka/issues/884)
+
 ## 0.4.5
 
 Babashka proper:
