@@ -2,6 +2,40 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
+## 0.4.5
+
+Babashka proper:
+
+- Add `java.net.InetSocketAddress`
+- Add support for slingshot [#675](https://github.com/babashka/babashka/issues/675)
+- Add STM facilities (`dosync`, `ref`, etc.)
+- Fix `.wait`, `.notify` interop on arbitrary classes
+
+Deps.clj (used for resolving deps and `clojure` invocations):
+
+- Fix JVM option parsing [#46](https://github.com/borkdude/deps.clj/issues/46)
+
+Sci: various minor performance improvements.
+
+## 0.4.4
+
+Babashka proper:
+
+- Print ex-data in error report [#730](https://github.com/babashka/babashka/issues/730) ([@GreshamDanielStephens](https://github.com/GreshamDanielStephens), [@rng-dynamics](https://github.com/rng-dynamics))
+- Tasks: support dynamic vars [#865](https://github.com/babashka/babashka/issues/865)
+- Tasks: use stable namespace when using `run` [#865](https://github.com/babashka/babashka/issues/865)
+- Add `java.lang.ProcessHandle$Info` [#872](https://github.com/babashka/babashka/issues/872)
+- Add `java.util.Optional` [#872](https://github.com/babashka/babashka/issues/872)
+- Add `java.lang.StackTraceElement` (to gain compatibility with libraries such as [omniconf](https://github.com/grammarly/omniconf))
+
+Babashka.nrepl:
+
+- Error reporting improvement [#40](https://github.com/babashka/babashka.nrepl/issues/865)
+
+Sci:
+
+- Support trailing metadata in `defn`
+
 ## 0.4.3
 
 - Add `cognitect.transit/tagged-value`, needed for sql pods

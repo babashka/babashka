@@ -71,7 +71,8 @@
                    {:name "toString"}
                    {:name "toURI"}]}
         java.util.Arrays
-        {:methods [{:name "copyOf"}]}
+        {:methods [{:name "copyOf"}
+                   {:name "copyOfRange"}]}
         ;; this fixes clojure.lang.Reflector for Java 11
         java.lang.reflect.AccessibleObject
         {:methods [{:name "canAccess"}]}}
@@ -132,11 +133,13 @@
           java.lang.Object
           java.lang.Process
           java.lang.ProcessHandle
+          java.lang.ProcessHandle$Info
           java.lang.ProcessBuilder
           java.lang.ProcessBuilder$Redirect
           java.lang.Runtime
           java.lang.RuntimeException
           java.lang.Short
+          java.lang.StackTraceElement
           java.lang.String
           java.lang.StringBuilder
           java.lang.System
@@ -150,6 +153,7 @@
           java.net.DatagramPacket
           java.net.HttpURLConnection
           java.net.InetAddress
+          java.net.InetSocketAddress
           java.net.ServerSocket
           java.net.Socket
           java.net.SocketException
@@ -232,6 +236,7 @@
                 java.time.temporal.Temporal
                 java.time.temporal.TemporalAccessor
                 java.time.temporal.TemporalAdjuster])
+          java.util.concurrent.ExecutionException
           java.util.concurrent.LinkedBlockingQueue
           java.util.jar.JarFile
           java.util.jar.JarEntry
@@ -247,6 +252,7 @@
           java.util.Locale
           java.util.Map
           java.util.MissingResourceException
+          java.util.Optional
           java.util.Properties
           java.util.Set
           java.util.UUID
@@ -344,6 +350,8 @@
                    java.lang.Process
                    (instance? java.lang.ProcessHandle v)
                    java.lang.ProcessHandle
+                   (instance? java.lang.ProcessHandle$Info v)
+                   java.lang.ProcessHandle$Info
                    ;; added for calling .put on .environment from ProcessBuilder
                    (instance? java.util.Map v)
                    java.util.Map
@@ -398,10 +406,14 @@
                           :let [class-name (str c)]]
                       {:name class-name
                        :allPublicFields true}))
+        instance-checks (vec (for [c (sort (:instance-checks classes))
+                                   :let [class-name (str c)]]
+                               ;; don't include any methods
+                               {:name class-name}))
         custom-entries (for [[c v] (:custom classes)
                              :let [class-name (str c)]]
                          (assoc v :name class-name))
-        all-entries (concat entries constructors methods fields custom-entries)]
+        all-entries (concat entries constructors methods fields instance-checks custom-entries)]
     all-entries))
 
 (defn generate-reflection-file

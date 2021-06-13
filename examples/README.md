@@ -300,6 +300,8 @@ $ examples/which.clj rg
 A script to retrieve the version from a `pom.xml` file. See
 [pom_version_get.clj](pom_version_get.clj). Written by [@wilkerlucio](https://github.com/wilkerlucio).
 
+See [pom_version_get_xml_zip.clj](pom_version_get_xml_zip.clj) for how to do the same using zippers.
+
 Also see [pom_version_set.clj](pom_version_set.clj) to set the pom version.
 
 ## Whatsapp frequencies
