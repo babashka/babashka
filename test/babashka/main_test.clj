@@ -646,6 +646,15 @@ true")))
          (bb nil "-e" "(.get (.command (.info (java.lang.ProcessHandle/current))))")
          "bb"))))
 
+(deftest interop-concurrency-test
+  (is (= ["true" 3] (last (bb nil "-e"
+                              "
+(def f (fn [_]
+         [(String/valueOf true)
+          (.length \"foo\")]))
+
+(vec (pmap f (map str (range 10000))))")))))
+
 ;;;; Scratch
 
 (comment
