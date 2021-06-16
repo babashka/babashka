@@ -39,6 +39,7 @@ The following libraries and projects are known to work with babashka.
     - [binf](#binf)
     - [rewrite-edn](#rewrite-edn)
     - [expound](#expound)
+    - [omniconf](#omniconf)
   - [Pods](#pods)
   - [Projects](#projects-1)
     - [babashka-test-action](#babashka-test-action)
@@ -60,6 +61,7 @@ The following libraries and projects are known to work with babashka.
     - [interdep](#interdep)
     - [sha-words](#sha-words)
     - [adam-james-v/scripts](#adam-james-vscripts)
+    - [oidc-client](#oidc-client)
 
 Also keep an eye on the [news](news.md) page for new projects, gists and other
 developments around babashka.
@@ -544,6 +546,44 @@ Example:
 (expound/expound ::a [1 2])
 ```
 
+### [omniconf](https://github.com/grammarly/omniconf)
+
+script.clj:
+``` clojure
+#!/usr/bin/env bb
+
+(ns script
+  (:require [babashka.deps :as deps]))
+
+(deps/add-deps
+ '{:deps {com.grammarly/omniconf {:mvn/version "0.4.3"}}})
+
+(require '[omniconf.core :as cfg])
+(cfg/define {:foo {}})
+(cfg/populate-from-env)
+(cfg/get :foo)
+```
+
+``` text
+FOO=1 script.clj
+Populating Omniconf from env: 1 value(s)
+"1"
+```
+
+### [slingshot](https://github.com/scgilardi/slingshot)
+
+Enhanced try and throw for Clojure leveraging Clojure's capabilities.
+
+``` clojure
+$ export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {slingshot/slingshot {:mvn/version "0.12.2"}}}')
+$ bb -e "(require '[slingshot.slingshot :as s]) (s/try+ (s/throw+ {:type ::foo}) (catch [:type ::foo] [] 1))"
+1
+```
+
+NOTE: slingshot's tests pass with babashka except one: catching a record types
+by name. This is due to a difference in how records are implemented in
+babashka. This may be fixed later if this turns out to be really useful.
+
 ## Pods
 
 [Babashka pods](https://github.com/babashka/babashka.pods) are programs that can
@@ -649,3 +689,9 @@ A clojure program to turn a sha hash into list of nouns in a predictable jar.
 ### [adam-james-v/scripts](https://github.com/adam-james-v/scripts)
 
 A collection of useful scripts. Mainly written with Clojure/babashka
+
+### [oidc-client](https://gist.github.com/holyjak/ad4e1e9b863f8ed57ef0cb6ac6b30494)
+
+Tired of being forced to use the browser every time you need to refresh an OIDC token to authenticate with a backend service? Finally there is a CLI tool for that - the babashka and Docker powered oidc_client.clj.
+
+Upon first invocation it opens up a browser for the OIDC provider login, thereafter it caches the refresh token and uses it as long as it remains valid.

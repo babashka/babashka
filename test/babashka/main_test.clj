@@ -17,7 +17,7 @@
     :eof nil}
    (apply test-utils/bb (when (some? input) (str input)) (map str args))))
 
-(deftest parse-opts-test
+(deftest ^:windows parse-opts-test
   (is (= "1667"
          (:nrepl (main/parse-opts ["--nrepl-server"]))))
   (is (= "1666"
@@ -52,17 +52,17 @@
   (is (= '("-e" "1") (bb nil "-e" "*command-line-args*" "--" "-e" "1")))
   (let [v (bb nil "--describe")]
     (is (:babashka/version v))
-    (is (:feature/xml v)))
-  )
+    (is (:feature/xml v))))
 
-(deftest version-test
+
+(deftest ^:windows version-test
   (is (= [1 0 0] (main/parse-version "1.0.0-SNAPSHOT")))
   (is (main/satisfies-min-version? "0.1.0"))
   (is (main/satisfies-min-version? "0.1.0-SNAPSHOT"))
   (is (not (main/satisfies-min-version? "300.0.0")))
   (is (not (main/satisfies-min-version? "300.0.0-SNAPSHOT"))))
 
-(deftest print-error-test
+(deftest ^:windows print-error-test
   (is (thrown-with-msg? Exception #"java.lang.NullPointerException"
                         (bb nil "(subs nil 0 0)"))))
 
@@ -131,8 +131,8 @@
     (doseq [s res]
       (is (not-empty s)))))
 
-(deftest malformed-command-line-args-test
-  (is (thrown-with-msg? Exception #"File does not exist: non-existing\n"
+(deftest ^:windows malformed-command-line-args-test
+  (is (thrown-with-msg? Exception #"File does not exist: non-existing"
                         (bb nil "-f" "non-existing"))))
 
 (deftest ssl-test
@@ -178,10 +178,11 @@
                              name)))))
     (testing "print source from file on classpath"
       (is (= "(defn foo [x y]\n  (+ x y))\n"
-             (bb nil
-                 "-cp" dir
-                 "-e" (format "(require '[clojure.repl :refer [source]] '[%s])" name)
-                 "-e" (format "(with-out-str (source %s/foo))" name)))))))
+             (test-utils/normalize
+              (bb nil
+                  "-cp" dir
+                  "-e" (format "(require '[clojure.repl :refer [source]] '[%s])" name)
+                  "-e" (format "(with-out-str (source %s/foo))" name))))))))
 
 (deftest eval-test
   (is (= "120\n" (test-utils/bb nil "(eval '(do (defn foo [x y] (+ x y))
@@ -388,8 +389,7 @@
   (is (= "hello" (bb nil "(doto (java.lang.Thread. (fn [] (prn \"hello\"))) (.start) (.join)) nil"))))
 
 (deftest dynvar-test
-  (is (= 1 (bb nil "(binding [*command-line-args* 1] *command-line-args*)")))
-  (is (= 1 (bb nil "(binding [*input* 1] *input*)"))))
+  (is (= 1 (bb nil "(binding [*command-line-args* 1] *command-line-args*)"))))
 
 (deftest file-in-error-msg-test
   (is (thrown-with-msg? Exception #"error.bb"
@@ -468,8 +468,8 @@
   ;; TODO: refactor into individual unit tests
   ;; One for downloading a small file and one for unzipping.
   #_(is (try (= 6 (bb nil (io/file "test" "babashka" "scripts" "download_and_extract_zip.bb")))
-           (catch Exception e
-             (is (str/includes? (str e) "timed out"))))))
+             (catch Exception e
+               (is (str/includes? (str e) "timed out"))))))
 
 (deftest get-message-on-exception-info-test
   (is "foo" (bb nil "(try (throw (ex-info \"foo\" {})) (catch Exception e (.getMessage e)))")))
@@ -638,6 +638,23 @@ true")))
                        "precision"))
     (is (str/blank? (with-out-str (main/main "doc" "non-existing"))))
     (is (= 1 (main/main "doc" "non-existing")))))
+
+(deftest process-handler-info-test
+  (when test-utils/native?
+    (is (= ["-e" "(vec (.get (.arguments (.info (java.lang.ProcessHandle/current)))))"]
+           (bb nil "-e" "(vec (.get (.arguments (.info (java.lang.ProcessHandle/current)))))")))
+    (is (str/ends-with?
+         (bb nil "-e" "(.get (.command (.info (java.lang.ProcessHandle/current))))")
+         "bb"))))
+
+(deftest interop-concurrency-test
+  (is (= ["true" 3] (last (bb nil "-e"
+                              "
+(def f (fn [_]
+         [(String/valueOf true)
+          (.length \"foo\")]))
+
+(vec (pmap f (map str (range 10000))))")))))
 
 ;;;; Scratch
 

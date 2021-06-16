@@ -15,7 +15,6 @@ then
     # Remove all the default features, unless explicitly set to true:
     export BABASHKA_FEATURE_XML="${BABASHKA_FEATURE_XML:-false}"
     export BABASHKA_FEATURE_YAML="${BABASHKA_FEATURE_YAML:-false}"
-    export BABASHKA_FEATURE_CORE_ASYNC="${BABASHKA_FEATURE_CORE_ASYNC:-false}"
     export BABASHKA_FEATURE_CSV="${BABASHKA_FEATURE_CSV:-false}"
     export BABAHSKA_FEATURE_TRANSIT="${BABAHSKA_FEATURE_TRANSIT:-false}"
     export BABASHKA_FEATURE_JAVA_TIME="${BABASHKA_FEATURE_JAVA_TIME:-false}"

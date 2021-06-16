@@ -6,11 +6,18 @@
    [babashka.main :as main]
    [babashka.process :as p]
    [clojure.edn :as edn]
+   [clojure.string :as str]
    [clojure.test :as test :refer [*report-counters*]]
    [sci.core :as sci]
    [sci.impl.vars :as vars]))
 
 (set! *warn-on-reflection* true)
+
+
+(defn normalize [s]
+  (if main/windows?
+    (str/replace s "\r\n" "\n")
+    s))
 
 (def ^:dynamic *bb-edn-path* nil)
 
@@ -55,7 +62,7 @@
                         (with-in-str input-or-opts (apply main/main args))
                         (apply main/main args)))]
             (if (zero? res)
-              (str os)
+              (normalize (str os))
               (do
                 (println (str os))
                 (throw (ex-info (str es)

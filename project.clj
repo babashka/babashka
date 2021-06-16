@@ -13,6 +13,7 @@
   ;; for debugging Reflector.java code:
   ;; :java-source-paths ["sci/reflector/src-java"]
   :resource-paths ["resources" "sci/resources"]
+  :test-selectors {:windows :windows}
   :dependencies [[org.clojure/clojure "1.11.0-alpha1"]
                  [borkdude/edamame "0.0.11"]
                  [borkdude/graal.locking "0.0.2"]
@@ -83,7 +84,7 @@
                                   "-Dclojure.spec.skip-macros=true"
                                   "-Dborkdude.dynaload.aot=true"]
                        :main babashka.main
-                       :aot :all}
+                       :aot [babashka.main]}
              :reflection {:main babashka.impl.classes/generate-reflection-file}}
   :aliases {"bb" ["with-profile" "test"  "run" "-m" "babashka.main"]}
   :deploy-repositories [["clojars" {:url "https://clojars.org/repo"

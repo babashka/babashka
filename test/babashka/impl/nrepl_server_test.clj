@@ -180,7 +180,7 @@
                                    "session" session "id" (new-id!)})
         (dotimes [_ 3]
           (let [reply (read-reply in session @id)]
-            (is (= "Hello\n" (:out reply)))))))))
+            (is (= "Hello\n" (tu/normalize (:out reply))))))))))
 
 (deftest nrepl-server-test
   (let [proc-state (atom nil)
