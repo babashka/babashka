@@ -1,25 +1,53 @@
 (ns babashka.test-utils
   (:require
+   [babashka.fs :as fs]
+   [babashka.impl.classpath :as cp]
+   [babashka.impl.common :as common]
    [babashka.main :as main]
+   [babashka.process :as p]
+   [clojure.edn :as edn]
    [clojure.string :as str]
-   [me.raynes.conch :refer [let-programs] :as sh]
+   [clojure.test :as test :refer [*report-counters*]]
    [sci.core :as sci]
    [sci.impl.vars :as vars]))
 
 (set! *warn-on-reflection* true)
+
 
 (defn normalize [s]
   (if main/windows?
     (str/replace s "\r\n" "\n")
     s))
 
+(def ^:dynamic *bb-edn-path* nil)
+
+(defmethod clojure.test/report :begin-test-var [m]
+  (println "===" (-> m :var meta :name))
+  (println))
+
+(defmethod clojure.test/report :end-test-var [_m]
+  (let [{:keys [:fail :error]} @*report-counters*]
+    (when (and (= "true" (System/getenv "BABASHKA_FAIL_FAST"))
+               (or (pos? fail) (pos? error)))
+      (println "=== Failing fast")
+      (System/exit 1))))
+
 (defn bb-jvm [input-or-opts & args]
-  (reset! main/cp-state nil)
+  (reset! cp/cp-state nil)
+  (reset! main/env {})
+  (if-let [path *bb-edn-path*]
+    (let [raw (slurp path)]
+      (vreset! common/bb-edn
+               (assoc (edn/read-string raw)
+                      :raw raw)))
+    (vreset! common/bb-edn nil))
   (let [os (java.io.StringWriter.)
         es (if-let [err (:err input-or-opts)]
              err (java.io.StringWriter.))
-        is (when (string? input-or-opts)
-             (java.io.StringReader. input-or-opts))
+        in (if (string? input-or-opts)
+             input-or-opts (:in input-or-opts))
+        is (when in
+             (java.io.StringReader. in))
         bindings-map (cond-> {sci/out os
                               sci/err es}
                        is (assoc sci/in is))]
@@ -35,25 +63,30 @@
                         (apply main/main args)))]
             (if (zero? res)
               (normalize (str os))
-              (throw (ex-info (str es)
-                              {:stdout (str os)
-                               :stderr (str es)})))))
+              (do
+                (println (str os))
+                (throw (ex-info (str es)
+                                  {:stdout (str os)
+                                   :stderr (str es)}))))))
       (finally
         (when (string? input-or-opts) (vars/bindRoot sci/in *in*))
         (vars/bindRoot sci/out *out*)
         (vars/bindRoot sci/err *err*)))))
 
 (defn bb-native [input & args]
-  (let-programs [bb "./bb"]
-    (try (normalize
-          (if input
-            (apply bb (conj (vec args)
-                            {:in input}))
-            (apply bb args)))
-         (catch Exception e
-           (let [d (ex-data e)
-                 err-msg (or (:stderr (ex-data e)) "")]
-             (throw (ex-info err-msg d)))))))
+  (let [res (p/process (into ["./bb"] args)
+                       (cond-> {:in input
+                                :out :string
+                                :err :string}
+                         *bb-edn-path*
+                         (assoc
+                          :extra-env (assoc (into {} (System/getenv))
+                                            "BABASHKA_EDN" *bb-edn-path*))))
+        res (deref res)
+        exit (:exit res)
+        error? (pos? exit)]
+    (if error? (throw (ex-info (or (:err res) "") {}))
+        (:out res))))
 
 (def bb
   (case (System/getenv "BABASHKA_TEST_ENV")
@@ -84,3 +117,11 @@
 
 (defn stop-server! [^java.net.ServerSocket server]
   (.close server))
+
+(defmacro with-config [cfg & body]
+  `(let [temp-dir# (fs/create-temp-dir)
+         bb-edn-file# (fs/file temp-dir# "bb.edn")]
+     (binding [*print-meta* true]
+       (spit bb-edn-file# ~cfg))
+     (binding [*bb-edn-path* (str bb-edn-file#)]
+       ~@body)))

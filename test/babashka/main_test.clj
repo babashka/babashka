@@ -7,20 +7,9 @@
    [clojure.java.io :as io]
    [clojure.java.shell :refer [sh]]
    [clojure.string :as str]
-   [clojure.test :as test :refer [deftest is testing *report-counters*]]
+   [clojure.test :as test :refer [deftest is testing]]
    [flatland.ordered.map :refer [ordered-map]]
    [sci.core :as sci]))
-
-(defmethod clojure.test/report :begin-test-var [m]
-  (println "===" (-> m :var meta :name))
-  (println))
-
-(defmethod clojure.test/report :end-test-var [m]
-  (let [{:keys [:fail :error]} @*report-counters*]
-    (when (and (= "true" (System/getenv "BABASHKA_FAIL_FAST"))
-               (or (pos? fail) (pos? error)))
-      (println "=== Failing fast")
-      (System/exit 1))))
 
 (defn bb [input & args]
   (edn/read-string
@@ -29,18 +18,29 @@
    (apply test-utils/bb (when (some? input) (str input)) (map str args))))
 
 (deftest parse-opts-test
-  (is (= {:nrepl "1667"}
-         (main/parse-opts ["--nrepl-server"])))
-  (is (= {:socket-repl "1666"}
-         (main/parse-opts ["--socket-repl"])))
+  (is (= "1667"
+         (:nrepl (main/parse-opts ["--nrepl-server"]))))
+  (is (= "1666"
+         (:socket-repl (main/parse-opts ["--socket-repl"]))))
   (is (= {:nrepl "1667", :classpath "src"}
          (main/parse-opts ["--nrepl-server" "-cp" "src"])))
+  (is (= {:nrepl "1667", :classpath "src"}
+         (main/parse-opts ["-cp" "src" "nrepl-server"])))
   (is (= {:socket-repl "1666", :expressions ["123"]}
          (main/parse-opts ["--socket-repl" "-e" "123"])))
   (is (= {:socket-repl "1666", :expressions ["123"]}
          (main/parse-opts ["--socket-repl" "1666" "-e" "123"])))
   (is (= {:nrepl "1666", :expressions ["123"]}
          (main/parse-opts ["--nrepl-server" "1666" "-e" "123"])))
+  (is (= {:classpath "src"
+          :uberjar "foo.jar"}
+         (main/parse-opts ["--classpath" "src" "uberjar" "foo.jar"])))
+  (is (= {:classpath "src"
+          :uberjar "foo.jar"
+          :debug true}
+         (main/parse-opts ["--debug" "--classpath" "src" "uberjar" "foo.jar"])))
+  (is (= "src" (:classpath (main/parse-opts ["--classpath" "src"]))))
+  (is (:debug (main/parse-opts ["--debug"])))
   (is (= 123 (bb nil "(println 123)")))
   (is (= 123 (bb nil "-e" "(println 123)")))
   (is (= 123 (bb nil "--eval" "(println 123)")))
@@ -52,13 +52,21 @@
   (is (= '("-e" "1") (bb nil "-e" "*command-line-args*" "--" "-e" "1")))
   (let [v (bb nil "--describe")]
     (is (:babashka/version v))
-    (is (:feature/xml v))))
+    (is (:feature/xml v)))
+  )
+
+(deftest version-test
+  (is (= [1 0 0] (main/parse-version "1.0.0-SNAPSHOT")))
+  (is (main/satisfies-min-version? "0.1.0"))
+  (is (main/satisfies-min-version? "0.1.0-SNAPSHOT"))
+  (is (not (main/satisfies-min-version? "300.0.0")))
+  (is (not (main/satisfies-min-version? "300.0.0-SNAPSHOT"))))
 
 (deftest print-error-test
   (is (thrown-with-msg? Exception #"java.lang.NullPointerException"
                         (bb nil "(subs nil 0 0)"))))
 
-(deftest main-test
+(deftest input-test
   (testing "-io behaves as identity"
     (is (= "foo\nbar\n" (test-utils/bb "foo\nbar\n" "-io" "*input*"))))
   (testing "if and when"
@@ -107,28 +115,21 @@
             (bb "foo\n Clojure is nice. \nbar\n If you're nice to clojure. "
                 "-i"
                 "(map-indexed #(-> [%1 %2]) *input*)")
-            (bb "(keep #(when (re-find #\"(?i)clojure\" (second %)) (first %)) *input*)"))))))
+            (bb "(keep #(when (re-find #\"(?i)clojure\" (second %)) (first %)) *input*)")))))
+  (testing "ordered/map data reader works"
+    (is (= "localhost" (bb "#ordered/map ([:test \"localhost\"])"
+                           "(:test *input*)"))))
+  (testing "bb doesn't wait for input if *input* isn't used"
+    (is (= "2\n" (with-out-str (main/main "(inc 1)"))))))
 
 (deftest println-test
   (is (= "hello\n" (test-utils/bb nil "(println \"hello\")"))))
-
-(deftest input-test
-  (testing "bb doesn't wait for input if *input* isn't used"
-    (is (= "2\n" (with-out-str (main/main "(inc 1)"))))))
 
 (deftest System-test
   (let [res (bb nil "-f" "test/babashka/scripts/System.bb")]
     (is (= "bar" (second res)))
     (doseq [s res]
-      (is (not-empty s))))
-  (let [out (java.io.StringWriter.)
-        err (java.io.StringWriter.)
-        exit-code (sci/with-bindings {sci/out out
-                                      sci/err err}
-                    (binding [*out* out *err* err]
-                      (main/main "(println \"Hello world!\") (System/exit 42)")))]
-    (is (= (str out) "Hello world!\n"))
-    (is (= 42 exit-code))))
+      (is (not-empty s)))))
 
 (deftest malformed-command-line-args-test
   (is (thrown-with-msg? Exception #"File does not exist: non-existing"
@@ -388,8 +389,7 @@
   (is (= "hello" (bb nil "(doto (java.lang.Thread. (fn [] (prn \"hello\"))) (.start) (.join)) nil"))))
 
 (deftest dynvar-test
-  (is (= 1 (bb nil "(binding [*command-line-args* 1] *command-line-args*)")))
-  (is (= 1 (bb nil "(binding [*input* 1] *input*)"))))
+  (is (= 1 (bb nil "(binding [*command-line-args* 1] *command-line-args*)"))))
 
 (deftest file-in-error-msg-test
   (is (thrown-with-msg? Exception #"error.bb"
@@ -418,7 +418,7 @@
 (deftest clojure-data-xml-test
   (is (= "<?xml version=\"1.0\" encoding=\"UTF-8\"?><items><item>1</item><item>2</item></items>"
          (bb nil "(let [xml (xml/parse-str \"<items><item>1</item><item>2</item></items>\")] (xml/emit-str xml))")))
-  (is (= "0.0.87-SNAPSHOT" (bb nil "examples/pom_version.clj" (.getPath (io/file "test-resources" "pom.xml"))))))
+  (is (= "0.0.87-SNAPSHOT" (bb nil "examples/pom_version_get.clj" (.getPath (io/file "test-resources" "pom.xml"))))))
 
 (deftest uberscript-test
   (let [tmp-file (java.io.File/createTempFile "uberscript" ".clj")]
@@ -428,10 +428,10 @@
 
 (deftest unrestricted-access
   (testing "babashka is allowed to mess with built-in vars"
-    (is (= 1 (bb nil "
-(def inc2 inc) (alter-var-root #'clojure.core/inc (constantly dec))
-(let [res (inc 2)]
-  (alter-var-root #'clojure.core/inc (constantly inc2))
+    (is (= {} (bb nil "
+(def assoc2 assoc) (alter-var-root #'clojure.core/assoc (constantly dissoc))
+(let [res (assoc {:a 1} :a 2)]
+  (alter-var-root #'clojure.core/assoc (constantly assoc2))
   res)")))))
 
 (deftest pprint-test
@@ -445,7 +445,9 @@
     (is (= "(0 1 2 3 4 5 6 7 8 9)\n" (bb nil "
 (let [sw (java.io.StringWriter.)]
   (binding [clojure.pprint/*print-right-margin* 50]
-    (clojure.pprint/pprint (range 10) sw)) (str sw))")))))
+    (clojure.pprint/pprint (range 10) sw)) (str sw))"))))
+  (testing "print-table writes to sci/out"
+    (is (str/includes? (test-utils/bb "(with-out-str (clojure.pprint/print-table [{:a 1} {:a 2}]))") "----"))))
 
 (deftest read-string-test
   (testing "namespaced keyword via alias"
@@ -462,9 +464,12 @@
       (is v))))
 
 (deftest download-and-extract-test
-  (is (try (= 6 (bb nil (io/file "test" "babashka" "scripts" "download_and_extract_zip.bb")))
-           (catch Exception e
-             (is (str/includes? (str e) "timed out"))))))
+  ;; Disabled because Github throttles bandwidth and this makes for a very slow test.
+  ;; TODO: refactor into individual unit tests
+  ;; One for downloading a small file and one for unzipping.
+  #_(is (try (= 6 (bb nil (io/file "test" "babashka" "scripts" "download_and_extract_zip.bb")))
+             (catch Exception e
+               (is (str/includes? (str e) "timed out"))))))
 
 (deftest get-message-on-exception-info-test
   (is "foo" (bb nil "(try (throw (ex-info \"foo\" {})) (catch Exception e (.getMessage e)))")))
@@ -542,7 +547,114 @@
 (deftest repl-test
   (is (str/includes? (test-utils/bb "(ns foo) ::foo" "--repl") ":foo/foo"))
   (is (str/includes? (test-utils/bb "[*warn-on-reflection* (set! *warn-on-reflection* true) *warn-on-reflection*]")
-                     "[false true true]")))
+                     "[false true true]"))
+  (when-not test-utils/native?
+    (let [sw (java.io.StringWriter.)]
+      (sci/with-bindings {sci/err sw}
+        (test-utils/bb {:in "x" :err sw} "--repl"))
+      (is (str/includes? (str sw) "Could not resolve symbol: x [at <repl>:1:1]")))))
+
+(deftest java-stream-test
+  (is (every? number? (bb nil "(take 2 (iterator-seq (.iterator (.doubles (java.util.Random.)))))"))))
+
+(deftest read+string-test
+  (is (= '[:user/foo "::foo"]
+         (bb nil "(read+string (clojure.lang.LineNumberingPushbackReader. (java.io.StringReader. \"::foo\")))"))))
+
+(deftest iterable-test
+  (is (true? (bb nil "
+(defn iter [coll]
+  (if (instance? java.lang.Iterable coll)
+    (.iterator ^java.lang.Iterable coll)
+    (let [s (or (seq coll) [])]
+      (.iterator ^java.lang.Iterable s))))
+
+(= [1 2 3] (iterator-seq (iter [1 2 3])))"))))
+
+(deftest var-print-method-test
+  (when test-utils/native?
+    (is (bb nil "(defmethod print-method sci.lang.IVar [o w] (.write w (str :foo (symbol o)))) (def x 1) (= \":foouser/x\" (pr-str #'x))"))
+    (is (= :foouser/x (bb nil "(defmethod print-method sci.lang.IVar [o w] (.write w (str :foo (symbol o)))) (def x 1)")))))
+
+(deftest stdout-interop-test
+  (when test-utils/native?
+    (is (= 'Something (bb nil "(.print (System/out) \"Something\")")))))
+
+(deftest byte-buffer-test
+  (testing "interop with HeapByteBuffer"
+    (is (= 42 (bb nil "(count (.array (java.nio.ByteBuffer/allocate 42)))"))))
+  (testing "interop with HeapByteByfferR"
+    (is (bb nil "(.hasRemaining (.asReadOnlyBuffer (java.nio.ByteBuffer/allocate 42)))")))
+  (is (bb nil "
+(import 'java.io.RandomAccessFile)
+(import 'java.nio.channels.FileChannel$MapMode)
+(def raf (RandomAccessFile. \"/tmp/binf-example.dat\" \"rw\"))
+;; DirectByteBuffer
+(def view (-> raf .getChannel (.map FileChannel$MapMode/READ_WRITE 0 4)))
+;; interop with DirectByteBuffer
+(.load view)
+(.force view)
+true"))
+  (is (bb nil "
+(import 'java.io.RandomAccessFile)
+(import 'java.nio.channels.FileChannel$MapMode)
+(def raf (RandomAccessFile. \"/tmp/binf-example.dat\" \"r\"))
+;; DirectByteBuffer
+(def view (-> raf .getChannel (.map FileChannel$MapMode/READ_ONLY 0 4)))
+;; interop with DirectByteBufferR
+(.load view)
+(.force view)
+true")))
+
+(deftest secure-random-test
+  (let [prog '(do (import 'java.security.SecureRandom 'java.util.Base64)
+
+                  (let [random (SecureRandom.)
+                        base64 (.withoutPadding (Base64/getUrlEncoder))]
+                    (defn generate-token []
+                      (let [buffer (byte-array 32)]
+                        (.nextBytes random buffer)
+                        (.encodeToString base64 buffer))))
+                  (generate-token))]
+    (is (string? (bb nil (str prog))))))
+
+(deftest with-precision-test
+  (is (= 0.33333333333333333333M (bb nil "(with-precision 20 (/ 1M 3))")))
+  (is (= 0.33333333333333333334M (bb nil "(with-precision 20 :rounding CEILING (/ 1M 3))"))))
+
+(deftest doc-test
+  (test-utils/with-config {:paths ["test-resources/task_scripts"]}
+    (is (str/includes? (apply test-utils/bb nil
+                              (map str ["doc" "tasks"]))
+                       "This is task ns docstring."))
+    (is (str/includes? (apply test-utils/bb nil
+                              (map str ["doc" "tasks/foo"]))
+                       "Foo docstring"))
+    (is (str/includes? (apply test-utils/bb nil
+                              (map str ["doc" "tasks/-main"]))
+                       "Main docstring"))
+    (is (str/includes? (apply test-utils/bb nil
+                              (map str ["doc" "with-precision"]))
+                       "precision"))
+    (is (str/blank? (with-out-str (main/main "doc" "non-existing"))))
+    (is (= 1 (main/main "doc" "non-existing")))))
+
+(deftest process-handler-info-test
+  (when test-utils/native?
+    (is (= ["-e" "(vec (.get (.arguments (.info (java.lang.ProcessHandle/current)))))"]
+           (bb nil "-e" "(vec (.get (.arguments (.info (java.lang.ProcessHandle/current)))))")))
+    (is (str/ends-with?
+         (bb nil "-e" "(.get (.command (.info (java.lang.ProcessHandle/current))))")
+         "bb"))))
+
+(deftest interop-concurrency-test
+  (is (= ["true" 3] (last (bb nil "-e"
+                              "
+(def f (fn [_]
+         [(String/valueOf true)
+          (.length \"foo\")]))
+
+(vec (pmap f (map str (range 10000))))")))))
 
 ;;;; Scratch
 

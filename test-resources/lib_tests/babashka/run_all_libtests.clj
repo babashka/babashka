@@ -6,10 +6,12 @@
 
 (def status (atom {}))
 
+(defn test-namespace? [ns]
+  (or (empty? ns-args)
+      (contains? ns-args ns)))
+
 (defn test-namespaces [& namespaces]
-  (let [namespaces (if (seq ns-args)
-                     (seq (keep ns-args namespaces))
-                     namespaces)]
+  (let [namespaces (seq (filter test-namespace? namespaces))]
     (when namespaces
       (doseq [ns namespaces]
         (require ns))
@@ -121,7 +123,14 @@
 
 ;;;; doric
 
-(test-namespaces 'doric.test.core)
+(defn test-doric-cyclic-dep-problem
+  []
+  (require '[doric.core :as d])
+  ((resolve 'doric.core/table) [:a :b] [{:a 1 :b 2}]))
+
+(when (test-namespace? 'doric.test.core)
+  (test-doric-cyclic-dep-problem)
+  (test-namespaces 'doric.test.core))
 
 ;;;; cljc-java-time
 
@@ -159,6 +168,55 @@
 ;;;; httpkit client
 
 (test-namespaces 'httpkit.client-test)
+
+;;;; babashka.process
+
+;; test built-in babashka.process
+(test-namespaces 'babashka.process-test)
+
+;; test babashka.process from source
+(require '[babashka.process] :reload)
+(test-namespaces 'babashka.process-test)
+
+(test-namespaces 'core-match.core-tests)
+
+(test-namespaces 'hiccup.core-test)
+(test-namespaces 'hiccup2.core-test)
+
+(test-namespaces 'test-check.smoke-test)
+
+(test-namespaces 'gaka.core-test)
+
+(test-namespaces 'failjure.test-core)
+
+(test-namespaces 'rewrite-clj.parser-test
+                 'rewrite-clj.node-test
+                 'rewrite-clj.zip-test
+                 'rewrite-clj.paredit-test
+                 'rewrite-clj.zip.subedit-test
+                 'rewrite-clj.node.coercer-test)
+
+(test-namespaces 'helins.binf.test)
+
+(test-namespaces 'selmer.core-test)
+(test-namespaces 'selmer.our-test)
+
+(test-namespaces 'jasentaa.position-test
+                 'jasentaa.worked-example-1
+                 'jasentaa.worked-example-2
+                 'jasentaa.collections-test
+                 'jasentaa.parser.basic-test
+                 'jasentaa.parser.combinators-test)
+
+(test-namespaces 'honey.sql-test
+                 'honey.sql.helpers-test
+                 'honey.sql.postgres-test)
+
+(test-namespaces 'slingshot.slingshot-test
+                 'slingshot.support-test
+                 ;; TODO:
+                 ;; 'slingshot.test-test
+                 )
 
 ;;;; final exit code
 

@@ -1,7 +1,10 @@
 (ns babashka.impl.clojure.java.browse
   {:no-doc true}
   (:require [clojure.java.shell :refer [sh]]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [sci.core :as sci]))
+
+(def open-url-script (sci/new-dynamic-var '*open-url-script* (atom nil)))
 
 (def os
   (let [os-name (System/getProperty "os.name")
@@ -15,11 +18,13 @@
 
 (defn browse-url [url]
   (let [url (str url)]
-    (case os
-      :mac (sh "/usr/bin/open" url)
-      :linux (sh "/usr/bin/xdg-open" url)
-      :windows (sh "cmd" "/C" "start" url))))
+    (if-let [script (-> open-url-script deref deref)]
+      (sh script url)
+      (case os
+        :mac (sh "open" url)
+        :linux (sh "xdg-open" url)
+        :windows (sh "cmd" "/C" "start" url)))))
 
 (def browse-namespace
-  {'browse-url browse-url})
-
+  {'*open-url-script* open-url-script
+   'browse-url        browse-url})

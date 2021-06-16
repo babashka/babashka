@@ -1,15 +1,17 @@
 (ns babashka.impl.test
-  (:require  [babashka.impl.clojure.test :as t]
-             [sci.core :as sci]))
+  (:require [babashka.impl.clojure.test :as t]
+            [babashka.impl.common :refer [ctx]]
+            [sci.core :as sci]))
 
-(defn macrofy [v]
-  (with-meta v {:sci/macro true}))
+(defn contextualize [f]
+  (fn [& args]
+    (apply f @ctx args)))
 
-(defn contextualize [v]
-  (with-meta v {:sci.impl/op :needs-ctx}))
+(def tns t/tns)
 
 (def clojure-test-namespace
-  {'*load-tests* t/load-tests
+  {:obj tns
+   '*load-tests* t/load-tests
    '*stack-trace-depth* t/stack-trace-depth
    '*report-counters* t/report-counters
    '*initial-report-counters* t/initial-report-counters
@@ -29,19 +31,16 @@
    'assert-any t/assert-any
    ;; assertion methods
    'assert-expr t/assert-expr
-   'try-expr (with-meta @#'t/try-expr
-               {:sci/macro true})
+   'try-expr (sci/copy-var t/try-expr tns)
    ;; assertion macros
-   'is (with-meta @#'t/is
-         {;; :sci.impl/op :needs-ctx
-          :sci/macro true})
-   'are (macrofy @#'t/are)
-   'testing (macrofy @#'t/testing)
+   'is (sci/copy-var t/is tns)
+   'are (sci/copy-var t/are tns)
+   'testing (sci/copy-var t/testing tns)
    ;; defining tests
-   'with-test (macrofy @#'t/with-test)
-   'deftest (macrofy @#'t/deftest)
-   'deftest- (macrofy @#'t/deftest-)
-   'set-test (macrofy @#'t/set-test)
+   'with-test (sci/copy-var t/with-test tns)
+   'deftest (sci/copy-var t/deftest tns)
+   'deftest- (sci/copy-var t/deftest- tns)
+   'set-test (sci/copy-var t/set-test tns)
    ;; fixtures
    'use-fixtures t/use-fixtures
    'compose-fixtures t/compose-fixtures
@@ -49,8 +48,8 @@
    ;; running tests: low level
    'test-var t/test-var
    'test-vars t/test-vars
-   'test-all-vars (with-meta t/test-all-vars {:sci.impl/op :needs-ctx})
-   'test-ns (with-meta t/test-ns {:sci.impl/op :needs-ctx})
+   'test-all-vars (contextualize t/test-all-vars)
+   'test-ns (contextualize t/test-ns)
    ;; running tests: high level
    'run-tests (contextualize t/run-tests)
    'run-all-tests (contextualize t/run-all-tests)

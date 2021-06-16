@@ -10,13 +10,17 @@
                (str/includes? os-name "win") "windows")
       tmp-dir (System/getProperty "java.io.tmpdir")
       zip-file (io/file tmp-dir "bb-0.0.78.zip")
-      source (URL. (format "https://github.com/borkdude/babashka/releases/download/v0.0.78/babashka-0.0.78-%s-amd64.zip" os))
+      source (URL. (format "https://github.com/babashka/babashka/releases/download/v0.0.78/babashka-0.0.78-%s-amd64.zip" os))
       conn ^HttpURLConnection (.openConnection ^URL source)
       _ (.setConnectTimeout conn 2000)
       _ (.setReadTimeout conn 2000)]
   (.connect conn)
+  (binding [*out* (io/writer System/err)]
+    (prn :before))
   (with-open [is (.getInputStream conn)]
     (io/copy is zip-file))
+  (binding [*out* (io/writer System/err)]
+    (prn :after))
   (let [bb-file (io/file tmp-dir "bb-extracted")
         fs (java.nio.file.FileSystems/newFileSystem (.toPath zip-file) nil)
         to-extract (.getPath fs "bb" (into-array String []))]

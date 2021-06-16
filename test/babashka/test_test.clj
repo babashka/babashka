@@ -83,3 +83,12 @@
     (is (= (:message m2) "1 is not equal to 2"))
     (is (= (:line m2) 6))
     (is (= m3 '{:type :end-test-var, :var bar}))))
+
+(deftest are-with-is-test
+  (let [output (bb "
+(do (require '[clojure.test :as t])
+(t/deftest foo (t/are [x]
+(t/is (thrown-with-msg? Exception #\"\" x))
+(throw (ex-info \"\" {})))))
+(t/run-tests *ns*)")]
+    (is (str/includes? output "Ran 1 tests containing 2 assertions."))))

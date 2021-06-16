@@ -195,7 +195,7 @@
                             :features #{:bb}})
                      nrepl-opts)]
           (reset! server-state server))
-        (let [pb (ProcessBuilder. ["./bb" "--nrepl-server" "0.0.0.0:1668"])
+        (let [pb (ProcessBuilder. ["./bb" "nrepl-server" "0.0.0.0:1668"])
               _ (.redirectError pb ProcessBuilder$Redirect/INHERIT)
               ;; _ (.redirectOutput pb ProcessBuilder$Redirect/INHERIT)
               ;; env (.environment pb)

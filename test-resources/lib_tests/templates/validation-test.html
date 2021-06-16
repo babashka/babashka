@@ -1,0 +1,14 @@
+{% extends "app/views/templates/base.html" %} 
+{% block body %}
+	<div class="container-fluid">
+		<div class="centered-form">
+		<form action="{{context}}/login" class="form-signin" method="POST">
+			<h3 class="form-signin-heading">{{title|upper}}</h3>
+			{% if formid|str|date %}<input type="hidden" id="formid" name="formid" value="{{formid}}" />{% endif %}
+			<input class="input-block-level" id="userid" name="userid" placeholder="T-id" type="text">
+			<input class="input-block-level" id="pass" name="pass" placeholder="Password" type="password">
+			<input class="btn btn-primary" type="submit" value="Sign in">
+		</form>
+		</div>
+	</div>
+{% endblock %}

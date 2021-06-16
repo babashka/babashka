@@ -234,16 +234,16 @@
     babashka.impl.clojure.test
   (:require [babashka.impl.common :refer [ctx]]
             [clojure.stacktrace :as stack]
-            [clojure.string :as str]
             [clojure.template :as temp]
             [sci.core :as sci]
-            [sci.impl.analyzer :as ana]
             [sci.impl.namespaces :as sci-namespaces]
+            [sci.impl.resolve :as resolve]
             [sci.impl.vars :as vars]))
 
 ;; Nothing is marked "private" here, so you can rebind things to plug
 ;; in your own testing or reporting frameworks.
 
+(def tns (sci/create-ns 'clojure.test nil))
 
 ;;; USER-MODIFIABLE GLOBALS
 
@@ -252,28 +252,28 @@
    be created by deftest, set-test, or with-test.  Use this to omit
    tests when compiling or loading production code."}
   load-tests
-  (sci/new-dynamic-var '*load-tests* true))
+  (sci/new-dynamic-var '*load-tests* true {:ns tns}))
 
 (def
   ^{:doc "The maximum depth of stack traces to print when an Exception
   is thrown during a test.  Defaults to nil, which means print the
   complete stack trace."}
   stack-trace-depth
-  (sci/new-dynamic-var '*stack-trace-depth* nil))
+  (sci/new-dynamic-var '*stack-trace-depth* nil {:ns tns}))
 
 
 ;;; GLOBALS USED BY THE REPORTING FUNCTIONS
 
-(def report-counters (sci/new-dynamic-var '*report-counters* nil))     ; bound to a ref of a map in test-ns
+(def report-counters (sci/new-dynamic-var '*report-counters* nil {:ns tns}))     ; bound to a ref of a map in test-ns
 
 (def initial-report-counters  ; used to initialize *report-counters*
-  (sci/new-dynamic-var '*initial-report-counters* {:test 0, :pass 0, :fail 0, :error 0}))
+  (sci/new-dynamic-var '*initial-report-counters* {:test 0, :pass 0, :fail 0, :error 0} {:ns tns}))
 
-(def testing-vars (sci/new-dynamic-var '*testing-vars* (list)))  ; bound to hierarchy of vars being tested
+(def testing-vars (sci/new-dynamic-var '*testing-vars* (list) {:ns tns}))  ; bound to hierarchy of vars being tested
 
-(def testing-contexts (sci/new-dynamic-var '*testing-contexts* (list))) ; bound to hierarchy of "testing" strings
+(def testing-contexts (sci/new-dynamic-var '*testing-contexts* (list) {:ns tns})) ; bound to hierarchy of "testing" strings
 
-(def test-out (sci/new-dynamic-var '*test-out* sci/out))         ; PrintWriter for test reporting output
+(def test-out (sci/new-dynamic-var '*test-out* sci/out {:ns tns}))         ; PrintWriter for test reporting output
 
 (defmacro with-test-out-internal
   "Runs body with *out* bound to the value of *test-out*."
@@ -283,18 +283,6 @@
      ~@body))
 
 ;;; UTILITIES FOR REPORTING FUNCTIONS
-
-(defn file-position
-  "Returns a vector [filename line-number] for the nth call up the
-  stack.
-
-  Deprecated in 1.2: The information needed for test reporting is
-  now on :file and :line keys in the result map."
-  {:added "1.1"
-   :deprecated "1.2"}
-  [n]
-  (let [^StackTraceElement s (nth (.getStackTrace (new java.lang.Throwable)) n)]
-    [(.getFileName s) (.getLineNumber s)]))
 
 (defn testing-vars-str
   "Returns a string representation of the current test.  Renders names
@@ -336,8 +324,6 @@
     :dynamic true
     :added "1.1"}
   report-impl :type)
-
-(def tns (sci/create-ns 'clojure.test nil))
 
 (def report (sci/copy-var report-impl tns))
 
@@ -401,15 +387,26 @@
 
 ;;; UTILITIES FOR ASSERTIONS
 
+(defn get-possibly-unbound-var
+  "Like var-get but returns nil if the var is unbound."
+  {:added "1.1"}
+  [v]
+  (try (deref v)
+       (catch IllegalStateException _
+         nil)))
+
 (defn function?
   "Returns true if argument is a function or a symbol that resolves to
   a function (not a macro)."
   {:added "1.1"}
   [x]
-  (if (symbol? x) ;; TODO
-    (when-let [v (second (ana/lookup @ctx x false))]
-      (when-let [value (if (vars/var? v) @v v)]
+  (if (symbol? x)
+    (when-let [v (second (resolve/lookup @ctx x false))]
+      (when-let [value (if (vars/var? v)
+                         (get-possibly-unbound-var v)
+                         v)]
         (and (fn? value)
+             (not (:macro (meta v)))
              (not (:sci/macro (meta v))))))
     (fn? x)))
 
@@ -458,7 +455,7 @@
 ;; symbol in the test expression.
 
 (defmulti assert-expr
-  (fn [msg form]
+  (fn [_msg form]
     (cond
       (nil? form) :always-fail
       (seq? form) (first form)
@@ -562,7 +559,8 @@
   {:added "1.1"}
   ([form]
    `(clojure.test/is ~form nil))
-  ([form msg] `(clojure.test/try-expr ~msg ~form)))
+  ([form msg]
+   `(clojure.test/try-expr ~msg ~form)))
 
 (defmacro are
   "Checks multiple assertions with a template expression.

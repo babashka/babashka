@@ -30,3 +30,6 @@ org_babashka*.h
 /bb.stripped.pdb
 /.calva
 !test-resources/divide_by_zero.jar
+.envrc
+.lsp
+bb.build_artifacts.txt

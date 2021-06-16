@@ -136,19 +136,21 @@ user/foo          - <expr>:1:1
 user              - <expr>:1:45")))
 
 (deftest error-in-macroexpansion-test
-  (let [output (try (tu/bb nil "-e"  "(defmacro foo [x & xs] `(do (subs nil 1) ~x)) (foo 1)")
+  (let [output (try (tu/bb nil "-e"  "(defmacro foo [x] `(subs nil ~x)) (foo 1)")
                     (catch Exception e (ex-message e)))]
     (multiline-equals output
                       "----- Error --------------------------------------------------------------------
 Type:     java.lang.NullPointerException
-Location: <expr>:1:47
+Location: <expr>:1:35
 
 ----- Context ------------------------------------------------------------------
-1: (defmacro foo [x & xs] `(do (subs nil 1) ~x)) (foo 1)
-                                                 ^--- 
+1: (defmacro foo [x] `(subs nil ~x)) (foo 1)
+                                     ^--- 
 
 ----- Stack trace --------------------------------------------------------------
-clojure.core/subs - <built-in>"))
+clojure.core/subs - <built-in>
+user              - <expr>:1:35
+"))
   (testing "calling a var inside macroexpansion"
     (let [output (try (tu/bb nil "-e"  "(defn quux [] (subs nil 1)) (defmacro foo [x & xs] `(do (quux) ~x)) (defn bar [] (foo 1)) (bar)")
                       (catch Exception e (ex-message e)))]
@@ -167,3 +169,33 @@ user/quux         - <expr>:1:15
 user/quux         - <expr>:1:1
 user/bar          - <expr>:1:69
 user              - <expr>:1:91"))))
+
+(deftest print-exception-data-test
+  (testing "output of uncaught ExceptionInfo"
+    (let [output (try (tu/bb nil "(let [d {:zero 0 :one 1}] (throw (ex-info \"some msg\" d)))")
+                      (catch Exception e (ex-message e)))]
+      (multiline-equals output
+                        "----- Error --------------------------------------------------------------------
+Type:     clojure.lang.ExceptionInfo
+Message:  some msg
+Data:     {:zero 0, :one 1}
+Location: <expr>:1:27
+
+----- Context ------------------------------------------------------------------
+1: (let [d {:zero 0 :one 1}] (throw (ex-info \"some msg\" d)))
+                             ^--- some msg
+
+----- Locals -------------------------------------------------------------------
+d: {:zero 0, :one 1}")))
+  (testing "output of ordinary Exception"
+    (let [output (try (tu/bb nil "(throw (Exception. \"some msg\"))")
+                      (catch Exception e (ex-message e)))]
+      (multiline-equals output
+                        "----- Error --------------------------------------------------------------------
+Type:     java.lang.Exception
+Message:  some msg
+Location: <expr>:1:1
+
+----- Context ------------------------------------------------------------------
+1: (throw (Exception. \"some msg\"))
+   ^--- some msg"))))

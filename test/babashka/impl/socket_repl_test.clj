@@ -1,9 +1,13 @@
 (ns babashka.impl.socket-repl-test
   (:require
+   [babashka.impl.common :as common]
    [babashka.impl.socket-repl :refer [start-repl! stop-repl!]]
+   [babashka.main :refer [clojure-core-server]]
+   [babashka.process :as p]
    [babashka.test-utils :as tu]
+   [babashka.wait :as w]
+   [clojure.edn :as edn]
    [clojure.java.io :as io]
-   [clojure.java.shell :refer [sh]]
    [clojure.string :as str]
    [clojure.test :as t :refer [deftest is testing]]
    [sci.impl.opts :refer [init]]))
@@ -15,53 +19,110 @@
               reader (io/reader socket)
               sw (java.io.StringWriter.)
               writer (io/writer socket)]
-    (binding [*out* writer]
-      (println (str expr))
-      (println ":repl/exit\n"))
+    (binding [*out* writer] 
+      (println (str expr "\n")))
     (loop []
-      (when-let [l (.readLine ^java.io.BufferedReader reader)]
+      (when-let [l (try (.readLine ^java.io.BufferedReader reader)
+                        (catch java.net.SocketException _ nil))]
+        ;; (prn :l l)
         (binding [*out* sw]
           (println l))
-        (recur)))
-    (let [s (str sw)]
-      (is (str/includes? s expected)
-          (format "\"%s\" does not contain \"%s\""
-                  s expected))
-      s)))
+        (let [s (str sw)]
+          ;; (prn :s s :expected expected (str/includes? s expected))
+          (if (if (fn? expected)
+                (expected s)
+                (str/includes? s expected))
+            (is true)
+            (recur)))))
+    (binding [*out* writer]
+      (println ":repl/quit\n"))
+    :success))
+
+(def server-process (volatile! nil))
+
+(def exec? (System/getenv "BABASHKA_SOCKET_REPL_TEST"))
 
 (deftest socket-repl-test
-  (try
-    (if tu/jvm?
-      (start-repl! "0.0.0.0:1666" (init {:bindings {'*command-line-args*
-                                                    ["a" "b" "c"]}
-                                         :env (atom {})
-                                         :features #{:bb}}))
-      (future
-        (sh "bash" "-c"
-            "echo '[1 2 3]' | ./bb --socket-repl 0.0.0.0:1666 a b c")))
-    ;; wait for server to be available
-    (when tu/native?
-      (while (not (zero? (:exit
-                          (sh "bash" "-c"
-                              "lsof -t -i:1666"))))))
-    (is (socket-command "(+ 1 2 3)" "user=> 6"))
-    (testing "*command-line-args*"
-      (is (socket-command '*command-line-args* "\"a\" \"b\" \"c\"")))
-    (testing "&env"
-      (socket-command "(defmacro bindings [] (mapv #(list 'quote %) (keys &env)))" "bindings")
-      (socket-command "(defn bar [x y z] (bindings))" "bar")
-      (is (socket-command "(bar 1 2 3)" "[x y z]")))
-    (testing "reader conditionals"
-      (is (socket-command "#?(:bb 1337 :clj 8888)" "1337")))
-    (testing "*1, *2, *3, *e"
-      (is (socket-command "1\n*1" "1")))
-    (testing "*ns*"
-      (is (socket-command "(ns foo.bar) (ns-name *ns*)" "foo.bar")))
-    (finally
+  (when exec?
+    (try
       (if tu/jvm?
-        (stop-repl!)
-        (sh "bash" "-c"
-            "kill -9 $(lsof -t -i:1666)")))))
+        (let [ctx (init {:namespaces {'clojure.core.server clojure-core-server}
+                         :features #{:bb}})]
+          (vreset! common/ctx ctx)
+          (start-repl! "0.0.0.0:1666" ctx))
+        (do (vreset! server-process
+                     (p/process ["./bb" "socket-repl" "localhost:1666"]))
+            (w/wait-for-port "localhost" 1666)))
+      (Thread/sleep 50)
+      (is (socket-command "(+ 1 2 3)" "user=> 6"))
+      (testing "&env"
+        (socket-command "(defmacro bindings [] (mapv #(list 'quote %) (keys &env)))" "bindings")
+        (socket-command "(defn bar [x y z] (bindings))" "bar")
+        (is (socket-command "(bar 1 2 3)" "[x y z]")))
+      (testing "reader conditionals"
+        (is (socket-command "#?(:bb 1337 :clj 8888)" "1337")))
+      (testing "*1, *2, *3, *e"
+        (is (socket-command "1\n*1" "1")))
+      (testing "*ns*"
+        (is (socket-command "(ns foo.bar) (ns-name *ns*)" "foo.bar")))
+      (finally
+        (if tu/jvm?
+          (do (stop-repl!)
+              (vreset! common/ctx nil)
+              (Thread/sleep 100))
+          (p/destroy-tree @server-process))))))
+
+(deftest socket-repl-opts-test
+  (when exec?
+    (try
+      (if tu/jvm?
+        (let [ctx (init {:bindings {'*command-line-args*
+                                    ["a" "b" "c"]}
+                         :env (atom {})
+                         :namespaces {'clojure.core.server clojure-core-server}
+                         :features #{:bb}})]
+          (vreset! common/ctx ctx)
+          (start-repl! "{:address \"localhost\" :accept clojure.core.server/repl :port 1666}"
+                       ctx))
+        (do (vreset! server-process
+                     (p/process ["./bb" "--socket-repl" "{:address \"localhost\" :accept clojure.core.server/repl :port 1666}"]))
+            (w/wait-for-port "localhost" 1666)))
+      (Thread/sleep 50)
+      (is (socket-command "(+ 1 2 3)" "user=> 6"))
+      (finally
+        (if tu/jvm?
+          (do (stop-repl!)
+              (vreset! common/ctx nil)
+              (Thread/sleep 100))
+          (p/destroy-tree @server-process))))))
+
+(deftest socket-prepl-test
+  (when exec?
+    (try
+      (if tu/jvm?
+        (let [ctx (init {:bindings {'*command-line-args*
+                                    ["a" "b" "c"]}
+                         :env (atom {})
+                         :namespaces {'clojure.core.server clojure-core-server}
+                         :features #{:bb}})]
+          (vreset! common/ctx ctx)
+          (start-repl! "{:address \"localhost\" :accept clojure.core.server/io-prepl :port 1666}"
+                       ctx))
+        (do (vreset! server-process
+                     (p/process ["./bb" "--socket-repl" "{:address \"localhost\" :accept clojure.core.server/io-prepl :port 1666}"]))
+            (w/wait-for-port "localhost" 1666)))
+      (Thread/sleep 50)
+      (is (socket-command "(+ 1 2 3)" (fn [s]
+                                        (let [m (edn/read-string s)]
+                                          (and (= "6" (:val m))
+                                               (= "user" (:ns m))
+                                               (= "(+ 1 2 3)" (:form m)))))))
+      (finally
+        (if tu/jvm?
+          (do (stop-repl!)
+              (vreset! common/ctx nil)
+              (Thread/sleep 100))
+          (p/destroy-tree @server-process))))))
 
 ;;;; Scratch
 

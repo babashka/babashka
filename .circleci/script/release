@@ -3,7 +3,6 @@
 rm -rf /tmp/release
 mkdir -p /tmp/release
 cp bb /tmp/release
-# cp src-bash/bbk /tmp/release
 
 VERSION=$(cat resources/BABASHKA_VERSION)
 
@@ -11,10 +10,23 @@ cd /tmp/release
 mkdir -p /tmp/bb_size
 ./bb '(spit "/tmp/bb_size/size" (.length (io/file "bb")))'
 
-## release binary as zip archive
+## release binary as tar.gz archive
 
-zip "babashka-$VERSION-$BABASHKA_PLATFORM-amd64.zip" bb # bbk
+arch=${BABASHKA_ARCH:-amd64}
+
+if [ "$BABASHKA_STATIC" = "true" ]; then
+    arch="$arch-static"
+fi
+
+archive="babashka-$VERSION-$BABASHKA_PLATFORM-$arch.tar.gz"
+
+tar zcvf "$archive" bb # bbk
+
+cd -
+
+BABASHKA_EDN=".build/bb.edn" ./bb release-artifact "/tmp/release/$archive"
 
 ## cleanup
 
+cd /tmp/release
 rm bb # bbk

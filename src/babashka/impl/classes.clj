@@ -71,7 +71,11 @@
                    {:name "toString"}
                    {:name "toURI"}]}
         java.util.Arrays
-        {:methods [{:name "copyOf"}]}}
+        {:methods [{:name "copyOf"}
+                   {:name "copyOfRange"}]}
+        ;; this fixes clojure.lang.Reflector for Java 11
+        java.lang.reflect.AccessibleObject
+        {:methods [{:name "canAccess"}]}}
     features/hsqldb? (assoc `org.hsqldb.dbinfo.DatabaseInformationFull
                             {:methods [{:name "<init>"
                                         :parameterTypes ["org.hsqldb.Database"]}]}
@@ -89,12 +93,17 @@
           java.io.ByteArrayOutputStream
           java.io.Console
           java.io.File
+          java.io.FileFilter
+          java.io.FilenameFilter
           java.io.FileNotFoundException
+          java.io.RandomAccessFile
           java.io.InputStream
           java.io.IOException
           java.io.OutputStream
           java.io.FileReader
           java.io.InputStreamReader
+          java.io.OutputStreamWriter
+          java.io.PrintStream
           java.io.PushbackInputStream
           java.io.Reader
           java.io.SequenceInputStream
@@ -112,44 +121,69 @@
           java.lang.Double
           java.lang.Exception
           java.lang.Float
+          java.lang.IllegalArgumentException
+          java.lang.IndexOutOfBoundsException
           java.lang.Integer
+          java.lang.Iterable
           java.lang.Long
+          java.lang.NullPointerException
           java.lang.Number
           java.lang.NumberFormatException
           java.lang.Math
           java.lang.Object
           java.lang.Process
           java.lang.ProcessHandle
+          java.lang.ProcessHandle$Info
           java.lang.ProcessBuilder
           java.lang.ProcessBuilder$Redirect
           java.lang.Runtime
           java.lang.RuntimeException
           java.lang.Short
+          java.lang.StackTraceElement
           java.lang.String
           java.lang.StringBuilder
           java.lang.System
           java.lang.Throwable
           java.math.BigDecimal
           java.math.BigInteger
+          java.math.MathContext
+          java.math.RoundingMode
           java.net.ConnectException
           java.net.DatagramSocket
           java.net.DatagramPacket
           java.net.HttpURLConnection
           java.net.InetAddress
+          java.net.InetSocketAddress
           java.net.ServerSocket
           java.net.Socket
+          java.net.SocketException
           java.net.UnknownHostException
           java.net.URI
           ;; java.net.URL, see below
           java.net.URLEncoder
           java.net.URLDecoder
           ~@(when features/java-nio?
-              '[java.nio.file.OpenOption
+              '[java.nio.ByteBuffer
+                java.nio.ByteOrder
+                java.nio.CharBuffer
+                java.nio.DirectByteBuffer
+                java.nio.DirectByteBufferR
+                java.nio.MappedByteBuffer
+                java.nio.file.OpenOption
+                java.nio.channels.FileChannel
+                java.nio.channels.FileChannel$MapMode
+                java.nio.charset.Charset
+                java.nio.charset.CoderResult
+                java.nio.charset.CharsetEncoder
+                java.nio.charset.StandardCharsets
                 java.nio.file.CopyOption
+                java.nio.file.DirectoryNotEmptyException
                 java.nio.file.FileAlreadyExistsException
                 java.nio.file.FileSystem
                 java.nio.file.FileSystems
+                java.nio.file.FileVisitor
                 java.nio.file.FileVisitOption
+                java.nio.file.FileVisitResult
                 java.nio.file.Files
                 java.nio.file.LinkOption
                 java.nio.file.NoSuchFileException
@@ -163,6 +197,8 @@
                 java.nio.file.attribute.PosixFilePermissions])
           java.security.MessageDigest
           java.security.DigestInputStream
+          java.security.SecureRandom
+          java.text.ParseException
           ~@(when features/java-time?
               `[java.time.format.DateTimeFormatter
                 java.time.Clock
@@ -200,12 +236,14 @@
                 java.time.temporal.Temporal
                 java.time.temporal.TemporalAccessor
                 java.time.temporal.TemporalAdjuster])
+          java.util.concurrent.ExecutionException
           java.util.concurrent.LinkedBlockingQueue
           java.util.jar.JarFile
           java.util.jar.JarEntry
           java.util.jar.JarFile$JarFileEntry
           java.util.stream.Stream
           java.util.Random
+          java.util.regex.Matcher
           java.util.regex.Pattern
           java.util.Base64
           java.util.Base64$Decoder
@@ -214,6 +252,7 @@
           java.util.Locale
           java.util.Map
           java.util.MissingResourceException
+          java.util.Optional
           java.util.Properties
           java.util.Set
           java.util.UUID
@@ -222,7 +261,12 @@
           java.util.zip.DeflaterInputStream
           java.util.zip.GZIPInputStream
           java.util.zip.GZIPOutputStream
+          java.util.zip.ZipInputStream
+          java.util.zip.ZipOutputStream
+          java.util.zip.ZipEntry
           ~(symbol "[B")
+          ~(symbol "[I")
+          ~(symbol "[Ljava.lang.Object;")
           ~@(when features/yaml? '[org.yaml.snakeyaml.error.YAMLException])
           ~@(when features/hsqldb? '[org.hsqldb.jdbcDriver])]
     :constructors [clojure.lang.Delay
@@ -234,23 +278,59 @@
     :methods [borkdude.graal.LockFix] ;; support for locking
 
     :fields [clojure.lang.PersistentQueue]
-    :instance-checks [clojure.lang.IObj
+    :instance-checks [clojure.lang.AMapEntry ;; for proxy
+                      clojure.lang.APersistentMap ;; for proxy
+                      clojure.lang.AReference
+                      clojure.lang.Associative
+                      clojure.lang.Atom
+                      clojure.lang.Cons
+                      clojure.lang.Counted
+                      clojure.lang.Cycle
+                      clojure.lang.IObj
+                      clojure.lang.Fn ;; to distinguish fns from maps, etc.
                       clojure.lang.IFn
                       clojure.lang.IPending
-                      ;; clojure.lang.IDeref
-                      ;; clojure.lang.IAtom
+                      ;; clojure.lang.IDeref ;; implemented as protocol in sci
+                      ;; clojure.lang.IAtom  ;; implemented as protocol in sci
                       clojure.lang.IEditableCollection
                       clojure.lang.IMapEntry
+                      clojure.lang.IMeta
+                      clojure.lang.ILookup
+                      clojure.lang.IPersistentCollection
                       clojure.lang.IPersistentMap
                       clojure.lang.IPersistentSet
+                      clojure.lang.IPersistentStack
                       clojure.lang.IPersistentVector
                       clojure.lang.IRecord
+                      clojure.lang.IReduce
+                      clojure.lang.IReduceInit
+                      clojure.lang.IKVReduce
+                      clojure.lang.IRef
                       clojure.lang.ISeq
+                      clojure.lang.Indexed
+                      clojure.lang.Iterate
+                      clojure.lang.LazySeq
                       clojure.lang.Named
                       clojure.lang.Keyword
+                      clojure.lang.PersistentArrayMap
+                      clojure.lang.PersistentHashMap
+                      clojure.lang.PersistentHashSet
+                      clojure.lang.PersistentList
+                      clojure.lang.PersistentQueue
+                      clojure.lang.PersistentStructMap
+                      clojure.lang.PersistentTreeMap
+                      clojure.lang.PersistentTreeSet
+                      clojure.lang.PersistentVector
+                      clojure.lang.Ratio
+                      clojure.lang.Repeat
+                      clojure.lang.Reversible
                       clojure.lang.Symbol
                       clojure.lang.Sequential
-                      java.util.List]
+                      clojure.lang.Seqable
+                      clojure.lang.Volatile
+                      java.util.List
+                      java.util.Iterator
+                      java.util.Map$Entry]
     :custom ~custom-map})
 
 (defmacro gen-class-map []
@@ -270,6 +350,8 @@
                    java.lang.Process
                    (instance? java.lang.ProcessHandle v)
                    java.lang.ProcessHandle
+                   (instance? java.lang.ProcessHandle$Info v)
+                   java.lang.ProcessHandle$Info
                    ;; added for calling .put on .environment from ProcessBuilder
                    (instance? java.util.Map v)
                    java.util.Map
@@ -290,14 +372,22 @@
                    java.nio.file.FileSystem
                    (instance? java.nio.file.PathMatcher v)
                    java.nio.file.PathMatcher
-                   (instance? java.util.stream.Stream v)
-                   java.util.stream.Stream)))))
+                   (instance? java.util.stream.BaseStream v)
+                   java.util.stream.BaseStream
+                   (instance? java.nio.ByteBuffer v)
+                   java.nio.ByteBuffer
+                   (instance? java.nio.charset.Charset v)
+                   java.nio.charset.Charset
+                   (instance? java.nio.charset.CharsetEncoder v)
+                   java.nio.charset.CharsetEncoder
+                   (instance? java.nio.CharBuffer v)
+                   java.nio.CharBuffer
+                   (instance? java.nio.channels.FileChannel v)
+                   java.nio.channels.FileChannel)))))
 
 (def class-map (gen-class-map))
 
-(defn generate-reflection-file
-  "Generate reflection.json file"
-  [& args]
+(defn reflection-file-entries []
   (let [entries (vec (for [c (sort (:all classes))
                            :let [class-name (str c)]]
                        {:name class-name
@@ -316,28 +406,50 @@
                           :let [class-name (str c)]]
                       {:name class-name
                        :allPublicFields true}))
+        instance-checks (vec (for [c (sort (:instance-checks classes))
+                                   :let [class-name (str c)]]
+                               ;; don't include any methods
+                               {:name class-name}))
         custom-entries (for [[c v] (:custom classes)
                              :let [class-name (str c)]]
                          (assoc v :name class-name))
-        all-entries (concat entries constructors methods fields custom-entries)]
+        all-entries (concat entries constructors methods fields instance-checks custom-entries)]
+    all-entries))
+
+(defn generate-reflection-file
+  "Generate reflection.json file"
+  [& args]
+  (let [all-entries (reflection-file-entries)]
     (spit (or
            (first args)
            "reflection.json") (json/generate-string all-entries {:pretty true}))))
 
+(defn public-declared-method? [c m]
+  (and (= c (.getDeclaringClass m))
+       (not (.getAnnotation m Deprecated))))
+
+(defn public-declared-method-names [c]
+  (->> (.getMethods c)
+       (keep (fn [m]
+               (when (public-declared-method? c m)
+                 {:class c
+                  :name (.getName m)})))
+       (distinct)
+       (sort-by :name)
+       (vec)))
+
+(defn all-methods []
+  (->> (reflection-file-entries)
+       (map :name)
+       (map #(Class/forName %))
+       (mapcat public-declared-method-names)))
+
 (comment
-
-  (defn public-declared-method? [c m]
-    (and (= c (.getDeclaringClass m))
-         (not (.getAnnotation m Deprecated))))
-
-  (defn public-declared-method-names [c]
-    (->> (.getMethods c)
-         (keep (fn [m]
-                 (when (public-declared-method? c m)
-                   {:name (.getName m)})))
-         (distinct)
-         (sort-by :name)
-         (vec)))
-
   (public-declared-method-names java.net.URL)
-  (public-declared-method-names java.util.Properties))
+  (public-declared-method-names java.util.Properties)
+
+  (->> (reflection-file-entries)
+       (map :name)
+       (map #(Class/forName %)))
+
+  )

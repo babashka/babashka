@@ -32,20 +32,26 @@ call %GRAALVM_HOME%\bin\native-image.cmd ^
   "-H:IncludeResources=BABASHKA_VERSION" ^
   "-H:IncludeResources=SCI_VERSION" ^
   "-H:ReflectionConfigurationFiles=reflection.json" ^
-  "--initialize-at-run-time=java.lang.Math$RandomNumberGeneratorHolder" ^
   "--initialize-at-build-time"  ^
   "--initialize-at-run-time=org.postgresql.sspi.SSPIClient" ^
+  "--initialize-at-run-time=org.httpkit.client.ClientSslEngineFactory$SSLHolder" ^
   "-H:EnableURLProtocols=http,https,jar" ^
   "--enable-all-security-services" ^
   "-H:+JNI" ^
   "-H:Log=registerResource:" ^
   "--no-fallback" ^
   "--verbose" ^
+  "-H:ServiceLoaderFeatureExcludeServices=javax.sound.sampled.spi.AudioFileReader" ^
+  "-H:ServiceLoaderFeatureExcludeServices=javax.sound.midi.spi.MidiFileReader" ^
+  "-H:ServiceLoaderFeatureExcludeServices=javax.sound.sampled.spi.MixerProvider" ^
+  "-H:ServiceLoaderFeatureExcludeServices=javax.sound.sampled.spi.FormatConversionProvider" ^
+  "-H:ServiceLoaderFeatureExcludeServices=javax.sound.sampled.spi.AudioFileWriter" ^
+  "-H:ServiceLoaderFeatureExcludeServices=javax.sound.midi.spi.MidiDeviceProvider" ^
+  "-H:ServiceLoaderFeatureExcludeServices=javax.sound.midi.spi.SoundbankReader" ^
+  "-H:ServiceLoaderFeatureExcludeServices=javax.sound.midi.spi.MidiFileWriter" ^
+  "-H:ServiceLoaderFeatureExcludeServices=java.awt.Toolkit" ^
   "%BABASHKA_XMX%"
 
 if %errorlevel% neq 0 exit /b %errorlevel%
 
 call bb "(+ 1 2 3)"
-
-echo Creating zip archive
-jar -cMf babashka-%BABASHKA_VERSION%-windows-amd64.zip bb.exe

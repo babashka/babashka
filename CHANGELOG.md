@@ -1,6 +1,538 @@
 # Changelog
 
-For a list of breaking changes, check [here](#breaking-changes)
+For a list of breaking changes, check [here](#breaking-changes).
+
+## 0.4.6
+
+- Upgrade to GraalVM 21.1, fixes [#884](https://github.com/babashka/babashka/issues/884)
+
+## 0.4.5
+
+Babashka proper:
+
+- Add `java.net.InetSocketAddress`
+- Add support for slingshot [#675](https://github.com/babashka/babashka/issues/675)
+- Add STM facilities (`dosync`, `ref`, etc.)
+- Fix `.wait`, `.notify` interop on arbitrary classes
+
+Deps.clj (used for resolving deps and `clojure` invocations):
+
+- Fix JVM option parsing [#46](https://github.com/borkdude/deps.clj/issues/46)
+
+Sci: various minor performance improvements.
+
+## 0.4.4
+
+Babashka proper:
+
+- Print ex-data in error report [#730](https://github.com/babashka/babashka/issues/730) ([@GreshamDanielStephens](https://github.com/GreshamDanielStephens), [@rng-dynamics](https://github.com/rng-dynamics))
+- Tasks: support dynamic vars [#865](https://github.com/babashka/babashka/issues/865)
+- Tasks: use stable namespace when using `run` [#865](https://github.com/babashka/babashka/issues/865)
+- Add `java.lang.ProcessHandle$Info` [#872](https://github.com/babashka/babashka/issues/872)
+- Add `java.util.Optional` [#872](https://github.com/babashka/babashka/issues/872)
+- Add `java.lang.StackTraceElement` (to gain compatibility with libraries such as [omniconf](https://github.com/grammarly/omniconf))
+
+Babashka.nrepl:
+
+- Error reporting improvement [#40](https://github.com/babashka/babashka.nrepl/issues/865)
+
+Sci:
+
+- Support trailing metadata in `defn`
+
+## 0.4.3
+
+- Add `cognitect.transit/tagged-value`, needed for sql pods
+
+## 0.4.2
+
+Babashka proper:
+
+- Improve `clojure.java.browse`, add `*open-url-script*` [#846](https://github.com/babashka/babashka/issues/846) ([@thiagokokada](https://github.com/thiagokokada))
+- Add `--checksum` option to install script [#842](https://github.com/babashka/babashka/issues/842) ([@thiagokokada](https://github.com/thiagokokada))
+- Add more agent functions and fix binding conveyance
+- Better error handling for parallel tasks [#847](https://github.com/babashka/babashka/issues/847)
+- Use `sequential?` for identifying if the script output needs splitting ([@arichiardi](https://github.com/arichiardi))
+
+Babashka.pods:
+
+- Allow pods to set custom transit read and write handlers
+
+## 0.4.1
+
+- Base static linux build on musl. The binary should now work in most linuxes
+  out of the box. ([@lispyclouds](https://github.com/lispyclouds),
+  [@thiagokokada](https://github.com/thiagokokada))
+- Add `NullPointerException` to default imports
+- Add `thread-bound?` function
+- Expose escaping functions from `selmer.util` [#835](https://github.com/babashka/babashka/issues/835)
+- Fix Windows GraalVM config for httpkit
+- Add `:error-fn` option to `shell` [#836](https://github.com/babashka/babashka/issues/836)
+- Add `babashka.task` `System` property [#837](https://github.com/babashka/babashka/issues/837)
+- Allow thread-first with `shell` like `babashka.process` [#829](https://github.com/babashka/babashka/issues/829)
+
+## 0.4.0
+
+Babashka proper:
+
+- Add [Task runner](https://book.babashka.org/#tasks) feature
+- Add `java.util.zip.ZipOutputStream` class
+- Add `java.text.ParseException` exception class to support
+  [jasentaa](https://github.com/rm-hull/jasentaa) parser combinator library
+- Update Selmer to 1.12.40
+
+Sci:
+
+- Better error msg for protocol not found or class
+
+## 0.3.8
+
+- Add [Selmer](https://github.com/yogthos/Selmer) to built-in libraries [#821](https://github.com/babashka/babashka/issues/821)
+- Don't throw when `PATH` isn't set during deps resolving ([@ieugen](https://github.com/ieugen))
+- Add `with-precision` macro [#662](https://github.com/babashka/babashka/issues/662)
+- Task changes and improvements, see [issue](https://github.com/babashka/babashka/issues/778)
+
+## 0.3.7
+
+- Ignore local and global deps.edn when resolving deps for `bb.edn` [#807](https://github.com/babashka/babashka/issues/807)
+- Use `IllegalArgumentException` when throwing on duplicate case constants [#809](https://github.com/babashka/babashka/issues/809)
+- Fix --classpath when no additional args are passed [#811](https://github.com/babashka/babashka/issues/811)
+- Task changes and improvements, see [issue](https://github.com/babashka/babashka/issues/778)
+
+## 0.3.6
+
+Babashka proper:
+
+- Add check for arg count to `for` macro [#767](https://github.com/babashka/babashka/issues/767)
+- Ignore empty classpath entries [#780](https://github.com/babashka/babashka/issues/780)
+- Fix uberjar CLI parsing and throw when no classpath is provided [#780](https://github.com/babashka/babashka/issues/780)
+- Support `:min-bb-version` in `bb.edn` See [docs](https://book.babashka.org/#_bb_edn). [#663](https://github.com/babashka/babashka/issues/663)
+- Tasks improvements. See [issue](https://github.com/babashka/babashka/issues/778).
+
+Deps.clj:
+
+- Windows fixes
+
+Babashka.fs:
+
+- Allow dir as dest in `copy` [#24](https://github.com/babashka/fs/issues/24)
+- Allow dir as dest in `move` [#25](https://github.com/babashka/fs/issues/25)
+
+## 0.3.5
+
+- Support [binf.cljc](https://github.com/helins/binf.cljc) library by adding `ByteBuffer` and `Charset`-related classes [#784](https://github.com/babashka/babashka/issues/784)
+- Tasks improvements. See [issue](https://github.com/babashka/babashka/issues/778).
+- Add `java.security.SecureRandom` [#790](https://github.com/babashka/babashka/issues/790)
+
+Sci:
+
+- Add `aset-byte`, `aset-boolean`, `aset-short`, etc.
+- Add `bit-clear`
+- Add `bound-fn` and `bound-fn*`
+
+## v0.3.4
+
+Babashka:
+
+- Tasks improvements. See [issue](https://github.com/babashka/babashka/issues/778).
+
+Deps.clj:
+
+- Fix arg parsing when invoking from Powershell [#42](https://github.com/borkdude/deps.clj/issues/42)
+
+## v0.3.3
+
+Babashka:
+
+- Fix building uberjar with classpath from `bb.edn` [#776](https://github.com/babashka/babashka/issues/776)
+- Provide linux arm64 static binaries [#782](https://github.com/babashka/babashka/issues/782)
+- Upgrade to Clojure `1.11.0-alpha1` to get full map passing to kwargs function support
+- First cut of bb tasks [#778](https://github.com/babashka/babashka/issues/778). This is a preview version which is expected to
+  change. Please try it out but use with caution.
+
+Deps.clj:
+
+- Bump tools jar to to 1.10.3.822
+
+Fs:
+
+- `delete-tree` should not throw when dir does not exist [#22](https://github.com/babashka/fs/issues/22)
+
+Sci:
+
+- Bug with protocol methods in record where later arg overrides "this" [#557](https://github.com/borkdude/sci/issues/557)
+- Support `:rename` in `:refer-clojure` [#558](https://github.com/borkdude/sci/issues/558)
+
+## 0.3.2
+
+- Include [rewrite-clj](https://github.com/clj-commons/rewrite-clj) into babashka [#769](https://github.com/babashka/babashka/issues/769) .
+
+## 0.3.1
+
+Babashka proper:
+
+- Support `bb.edn` project config with `:paths` and `:deps`. See [docs](https://book.babashka.org/index.html#_bb_edn).
+- Rewrite CLI arg parsing to to subcommand style invocations: `bb --uberjar` becomes `bb uberjar`
+- Support fully qualified symbol in `--main` option [#758](https://github.com/babashka/babashka/issues/758). See [docs](https://book.babashka.org/index.html#_invoking_a_main_function ).
+- Support new `doc` option to retrieve a docstring from the command line
+
+Babashka.fs:
+
+- Create target dir automatically in `copy-tree`
+
+Babashka.nrepl:
+
+- Implement `cider-nrepl` `info` / `lookup` op [#30](https://github.com/babashka/babashka.nrepl/issues/30) ([@brdloush](https://github.com/brdloush))
+
+Babashka.process:
+
+- Support tokenizing single string [#39](https://github.com/babashka/process/issues/39)
+- Support `:extra-env` option [#40](https://github.com/babashka/process/issues/40)
+
+Deps.clj:
+
+- Catch up with Clojure CLI 1.10.3.814 [#40](https://github.com/borkdude/deps.clj/issues/40)
+
+Sci:
+
+- Support new kwargs handling from 1.11.0 [#553](https://github.com/borkdude/sci/issues/553)
+- Allow dynamic `:doc` on `def`/`defn` [#554](https://github.com/borkdude/sci/issues/554)
+
+## 0.3.0
+
+### New
+
+- Linux support for AArch64 [#241](https://github.com/babashka/babashka/issues/241). This means you can now run babashka on Raspberry Pi 64bit and Chromebooks with ARM 64-bit processors!
+
+A major thanks to [CircleCI](https://circleci.com/) for enabling AArch64 support
+in the babashka organization and [GraalVM](http://graalvm.org/) for supporting this platform.
+
+### Enhancements / fixes
+
+- Fix `print-method` when writing to stdout [#667](https://github.com/babashka/babashka/issues/667)
+- Fix interop with `System/out` [#754](https://github.com/babashka/babashka/issues/754)
+- Support [version-clj](https://github.com/xsc/version-clj) v2.0.1 by adding `java.util.regex.Matcher` to the reflection config
+- Distribute linux and macOS archives as `tar.gz`. The reason is that `unzip` is
+  not pre-installed on most unix-y systems. ([@grazfather](https://github.com/grazfather))
+
+Babashka.fs:
+
+- Fix globbing on Windows
+- Fix Windows tests
+- Fix issue with `copy-tree` when dest dir doesn't exist yet
+
+Thanks [@lread](https://github.com/lread) for his help on fixing issues with Windows.
+
+Sci:
+
+- Support `:reload-all` [#552](https://github.com/borkdude/sci/issues/552)
+- Narrow `reify` to just one class. See discussion in
+  [sci#549](https://github.com/borkdude/sci/issues/549).
+- Add preliminary support for `proxy` (mainly to support pathom3 smart maps)
+  [sci#550](https://github.com/borkdude/sci/issues/550).
+
+Thanks to [@wilkerlucio](https://github.com/wilkerlucio) and
+  [@GreshamDanielStephens](https://github.com/GreshamDanielStephens) for their
+  help and discussions.
+
+## v0.2.13
+
+### Enhancements / fixes
+
+- Add more interfaces to be used with `reify` ([@wilkerlucio](https://github.com/wilkerlucio)) (mostly to support smart maps with [pathom3](https://github.com/wilkerlucio/pathom3))
+
+Babashka.curl:
+
+- Use `--data-binary` when sending files or streams [#35](https://github.com/babashka/babashka.curl/issues/35)
+
+Babashka.fs:
+
+- Add `create-link` and `split-paths` ([@eamonnsullivan](https://github.com/eamonnsullivan))
+- Add `split-ext` and `extension` ([@kiramclean](https://github.com/kiramclean))
+- Add `regular-file?`([@tekacs](https://github.com/tekacs))
+- Globbing is always recursive but should not be [#18](https://github.com/babashka/fs/issues/18)
+
+Sci:
+
+- Allow combinations of interfaces and protocols in `reify` [#540](https://github.com/borkdude/sci/issues/540)
+  ([@GreshamDanielStephens](https://github.com/GreshamDanielStephens))
+- Fix metadata on non-constant map literal expression [#546](https://github.com/borkdude/sci/issues/546)
+
+## 0.2.12
+
+### Enhancements / fixes
+
+- Fix false positive cyclic dep problem with doric lib [#741](https://github.com/babashka/babashka/issues/741)
+
+## 0.2.11
+
+### Enhancements / fixes
+
+- Use default `*print-right-margin*` value from `clojure.pprint`
+- Upgrade httpkit to 2.5.3 [#738](https://github.com/babashka/babashka/issues/738)
+- Upgrade tools.cli to 1.0.206
+- Add several classes to be used with `defprotocol` (`PersistentVector`, `PersistentHashSet`, ...)
+- Support reifying `clojure.lang.IFn` and `clojure.lang.ILookup`
+
+Sci:
+
+- Detect cyclic load dependencies [#531](https://github.com/borkdude/sci/issues/531)
+- Pick fn arity independent of written order [#532](https://github.com/borkdude/sci/issues/532) ([@GreshamDanielStephens](https://github.com/GreshamDanielStephens))
+- `(instance? clojure.lang.IAtom 1)` returns `true` [#537](https://github.com/borkdude/sci/issues/537)
+- Add `dissoc!`([@wilkerlucio](https://github.com/wilkerlucio))
+- Add `force`
+- Fix `ns-unmap` on referred var [#539](https://github.com/borkdude/sci/issues/539)
+
+Babashka.nrepl:
+
+- Fix printing in lazy value [#36](https://github.com/babashka/babashka.nrepl/issues/36)
+- Update link in nREPL server message [#37](https://github.com/babashka/babashka.nrepl/issues/37)
+
+## 0.2.10
+
+Sci:
+
+- Priorize referred vars over vars in current ns [#527](https://github.com/borkdude/sci/issues/527)
+- If with falsy literal returns nil [#529](https://github.com/borkdude/sci/issues/529)
+
+## 0.2.9
+
+### New
+
+- Include [babashka.fs](https://github.com/babashka/fs)
+
+### Enhancements / fixes
+
+- Upgrade to GraalVM 21.0.0 [#712](https://github.com/babashka/babashka/issues/712)
+
+Babashka.nrepl:
+
+- Implement pprint support [#18](https://github.com/babashka/babashka.nrepl/issues/18) ([@kolharsam](https://github.com/kolharsam), [@grazfather](https://github.com/grazfather), [@bbatsov](https://github.com/bbatsov))
+
+Sci:
+
+- Fix error reporting in case of arity error [#518](https://github.com/borkdude/sci/issues/518)
+- Shadowing record field names in protocol functions [#513](https://github.com/borkdude/sci/issues/513)
+- Fix destructuring in protocol method for record [#512](https://github.com/borkdude/sci/issues/512)
+- Faster processing of maps, sets and vectors [#482](https://github.com/borkdude/sci/issues/482)
+- Prioritize current namespace vars in syntax quote [#509](https://github.com/borkdude/sci/issues/509)
+- Fix ns-publics to not include refers [#520](https://github.com/borkdude/sci/issues/520)
+- Add `refer-clojure` macro [#519](https://github.com/borkdude/sci/issues/519)
+
+## v0.2.8
+
+### New
+
+- Include [clojure.core.match](https://github.com/clojure/core.match) [#594](https://github.com/babashka/babashka/issues/594)
+- Include [hiccup](https://github.com/weavejester/hiccup) [#646](https://github.com/babashka/babashka/issues/646)
+- Include [clojure.test.check](https://github.com/clojure/test.check) [#487](https://github.com/babashka/babashka/issues/487). Included namespaces:
+  - clojure.test.check
+  - clojure.test.check.generators
+  - clojure.test.check.properties
+
+### Fixed / enhanced
+
+- Fix symbol resolution in syntax quote when overwriting core var
+- Performance enhancements
+
+## v0.2.7
+
+### New
+
+- Add Alpine [Docker images](https://hub.docker.com/repository/registry-1.docker.io/babashka/babashka/tags?page=1&ordering=last_updated) [#699](https://github.com/babashka/babashka/issues/699) ([@lispyclouds](https://github.com/lispyclouds))
+- Add `pp` from `clojure.pprint` [#707](https://github.com/babashka/babashka/issues/707)
+
+### Fixed / enhanced
+
+- Fix issue with unzipping nested directory [babashka/pod-registry#4](https://github.com/babashka/pod-registry/issues/4)
+- Test cannot be defined conditionally [#705](https://github.com/babashka/babashka/issues/705)
+- Add `--download-dir` option to install script [#688](https://github.com/babashka/babashka/issues/688)
+- `(instance? clojure.lang.Fn x)` now works
+- (.keySet {:a 1}) returns nil [#711](https://github.com/babashka/babashka/issues/711)
+- Various performance enhancements
+- Babashka.curl: allow keywords as header names [#32](https://github.com/babashka/babashka.curl/pull/32) ([@xificurC](https://github.com/xificurC))
+
+## v0.2.6
+
+### New
+
+- Implement [pod registry](https://github.com/babashka/pod-registry) to
+  automatically obtain pods when used in
+  script. [#690](https://github.com/babashka/babashka/issues/690)
+- [Buddy pod](https://github.com/babashka/pod-babashka-buddy) [#656](https://github.com/babashka/babashka/issues/656)
+- [Etaoin pod 0.0.1 release](https://github.com/babashka/pod-babashka-etaoin)
+- [Filewatcher pod 0.0.1 release](https://github.com/babashka/pod-babashka-filewatcher)
+- [Fswatcher pod](https://github.com/babashka/pod-babashka-fswatcher) ([@lispyclouds](https://github.com/lispyclouds))
+
+### Fixed / enhanced
+
+- Auto-resolved map fix [#684](https://github.com/babashka/babashka/issues/684)
+- Handle whitespace after read-cond splice
+- Several performance improvements
+
+### Thanks
+
+Special thanks to [@lispyclouds](https://github.com/lispyclouds) for hammocking
+on the pod registry and working on the new fswatcher pod.
+
+## v0.2.5
+
+This release adds a new `babashka.deps` namespace which offers [tools.deps
+integration](https://clojure.org/guides/deps_and_cli). See
+[docs](https://book.babashka.org/#babashkadeps).
+
+### New
+
+- Add `get-classpath` and `split-classpath` to `babashka.classpath`
+  namespace. [#670](https://github.com/babashka/babashka/issues/670). See
+  [docs](https://book.babashka.org/#babashka_classpath).
+- Expose `add-deps` in `babashka.deps`
+  [#677](https://github.com/babashka/babashka/issues/677). See
+  [docs](https://book.babashka.org/#_add_deps).
+- Expose `clojure` in `babashka.deps`
+  [#678](https://github.com/babashka/babashka/issues/678). See
+  [docs](https://book.babashka.org/#_clojure).
+- Implement `--clojure` option to invoke a JVM clojure process similar to the
+  official Clojure CLI. See [docs](https://book.babashka.org/#_invoking_clojure).
+
+### Fixed / enhanced
+
+- Add syntax checks to `binding` macro [#666](https://github.com/babashka/babashka/issues/666)
+- Upgrade to GraalVM 20.3.0 [#653](https://github.com/babashka/babashka/issues/653)
+
+## v0.2.4
+
+Thanks to [Nextjournal](https://nextjournal.com/) for funding work on
+prepl. Thanks to the community for taking the time to create issues, discussions
+and code contributions. Thanks to sponsors on
+[OpenCollective](https://opencollective.com/babashka) and
+[Github](https://github.com/sponsors/borkdude) for continued financial support.
+
+### New
+
+- pREPL implementation
+  [#664](https://github.com/babashka/babashka/issues/664). See
+  [docs](https://github.com/babashka/babashka/blob/master/doc/repl.md#prepl).
+  The pREPL is used by NextJournal to expose a babashka [notebook
+  environment](http://nextjournal.com/try/babashka?cm6=1).
+- [News page](doc/news.md) where you can follow the latest developments around babashka.
+- Expose `pprint/simple-dispatch` [#627](https://github.com/babashka/babashka/issues/627)
+- Support nested libspecs [borkdude/sci#399](https://github.com/borkdude/sci/issues/399)
+- Add OracleDB feature flag [#638](https://github.com/babashka/babashka/issues/638) ([@holyjak](https://github.com/holyjak))
+- Docker build documentation improvements [#643](https://github.com/babashka/babashka/issues/643) ([@holyjak](https://github.com/holyjak))
+- Implement `get-thread-bindings`, `var-get` and `var-set`
+- Print used port when starting nREPL server ([@plexus](https://github.com/plexus))
+
+### Fixed / enhanced
+
+- Can't call symbol literal as function [#622](https://github.com/babashka/babashka/issues/622)
+- `:or` in destructuring broken for `false` case
+- Support aliases in protocol fns [borkdude/sci#440](https://github.com/borkdude/sci/issues/440)
+- Reader metadata preservation and evaluation fixes [#654](https://github.com/babashka/babashka/issues/654), [borkdude/sci#447](https://github.com/borkdude/sci/issues/447), [borkdude/sci#448](https://github.com/borkdude/sci/issues/448)
+- Optimization for constant colls [borkdude/sci#452](https://github.com/borkdude/sci/issues/452)
+- `ns-unmap` doesn't work for imported classes [borkdude/sci#432](https://github.com/borkdude/sci/issues/432)
+- Fix parsing of trailing uneval in reader conditional
+  [borkdude/edamame#65](https://github.com/borkdude/edamame/issues/65)
+- `symbol` works on sci var [borkdude/sci#453](https://github.com/borkdude/sci/issues/453)
+
+### Changed
+
+- Remove cheshire smile functions [#658](https://github.com/babashka/babashka/issues/658)
+- `babashka.curl` now calls curl with `--compressed` by default [babashka/babashka.curl#28](https://github.com/babashka/babashka.curl)
+
+## v0.2.3 (2020-10-21)
+
+Thanks to [@tzzh](https://github.com/tzzh), [@Heliosmaster](https://github.com/Heliosmaster), [@lispyclouds](https://github.com/lispyclouds) and [@kwrooijen](https://github.com/kwrooijen) for contributing to this release. Thanks to [Clojurists Together](https://www.clojuriststogether.org/) for sponsoring this release. Thanks to [Adgoji](https://github.com/AdGoji) and other sponsors on [OpenCollective](https://opencollective.com/babashka) and [Github](https://github.com/sponsors/borkdude) for their ongoing support.
+
+### New
+
+- [babashka/process](https://github.com/babashka/process): a Clojure library for working with `java.lang.Process`
+- [pod-tzzh-mail](https://github.com/tzzh/pod-tzzh-mail): a pod for sending mail by [@tzzh](https://github.com/tzzh)
+- [pod-babashka-lanterna](https://github.com/babashka/pod-babashka-lanterna): a pod for creating TUI apps
+- [pod.xledger.sql-server](https://github.com/xledger/pod_sql_server): a pod for interacting with SQL Server
+- Add `lazy-cat` [#605](https://github.com/babashka/babashka/issues/605)
+- Support error output in babashka.nrepl
+  [babashka.nrepl#28](https://github.com/babashka/babashka.nrepl/issues/28)
+  ([@tzzh](https://github.com/tzzh))
+- Add lanterna [feature flag](https://github.com/babashka/babashka/commit/13f65f05aeff891678e88965d9fbd146bfa87f4e) ([@kwrooijen](https://github.com/kwrooijen))
+- Add socket support to pods [babashka/pods#2](https://github.com/babashka/pods/issues/2)
+- Add `curl` to babashka/babashka Docker image to support `babashka.curl` ([@hansbugge](https://github.com/hansbugge))
+- Add `transit+json` format support to pods [babashka/pods#21](https://github.com/babashka/pods/issues/21)
+- Add `bound?` [borkdude/sci#430](https://github.com/borkdude/sci/issues/430)
+- Add [portal](https://github.com/babashka/babashka/tree/master/examples#portal) example
+- Add `*print-namespace-maps*` [borkdude/sci#428](https://github.com/borkdude/sci/issues/428)
+- Support `clojure.java.io/Coercions` protocol [#601](https://github.com/babashka/babashka/issues/601)
+- Add `clojure.pprint/write` [#607](https://github.com/babashka/babashka/issues/607)
+- Add pretty-printer vars from `cheshire.core` [#619](https://github.com/babashka/babashka/issues/619)
+
+### Fixed
+
+- `pprint/print-table` should write to `sci/out` [#611](https://github.com/babashka/babashka/issues/611)
+- `System/exit` doesn't work in REPL [#605](https://github.com/babashka/babashka/issues/606)
+- Fix pod destroy function [#615](https://github.com/babashka/babashka/issues/615)
+- Bind `*file*` in nREPL server [babashka/babashka.nrepl#31](https://github.com/babashka/babashka.nrepl/issues/31)
+- Support `map->` constructor on defrecords [borkdude/sci#431](https://github.com/borkdude/sci/issues/431)
+- Import should return class [#610](https://github.com/babashka/babashka/issues/610)
+
+### Changed
+
+- The [Docker image](https://hub.docker.com/r/babashka/babashka/) is now based
+  on Ubuntu instead of Alpine.
+
+## v0.2.2 (2020-09-30)
+
+This is a patch release for
+[babashka/babashka.pods#20](https://github.com/babashka/babashka.pods/issues/20),
+but it also introduces new support around `reify`.
+
+### New
+
+- Support `java.nio.file.FileVisitor` and `java.io.FilenameFilter` with `reify` [#600](https://github.com/babashka/babashka/issues/600). Nice side effect: this makes babashka compatible with the [fs](https://github.com/clj-commons/fs) library:
+    ``` clojure
+    $ export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {clj-commons/fs {:mvn/version "1.5.2"}}}')
+    $ bb -e '(ns foo (:require [me.raynes.fs :as fs])) (map str (fs/glob "*.md"))'
+    ("/Users/borkdude/Dropbox/dev/clojure/glam/README.md")
+    ```
+- Add classes `java.util.zip.ZipInputStream` and `java.util.zip.ZipEntry`. This makes babashka compatible with [glam](https://github.com/borkdude/glam), a work in progress package manager.
+
+### Fixed
+
+- Ensure ns map exists for namespaces used only "code" vars [babashka/babashka.pods#20](https://github.com/babashka/babashka.pods/issues/20). This fixes compatibility with [bootleg](https://github.com/retrogradeorbit/bootleg).
+
+## v0.2.1 (2020-09-25)
+
+Thanks to [@RickMoynihan](https://github.com/RickMoynihan), [@joinr](https://github.com/joinr), [@djblue](https://github.com/djblue), [@lread](https://github.com/lread), [@teodorlu](https://github.com/teodorlu), [@tzzh](https://github.com/tzzh) and [@zoren](https://github.com/zoren) for contributing to this release. Thanks to [Clojurists Together](https://www.clojuriststogether.org/) for sponsoring this release.
+
+### New
+
+- Include `org.httpkit.client`, a high performance async http client [#561](https://github.com/babashka/babashka/issues/561)
+- Include `org.httpkit.server`, an HTTP server
+  [#556](https://github.com/babashka/babashka/issues/556). This namespace should
+  be considered experimental and may stay or be removed in a future version of
+  babashka, depending on feedback from the community. See [example](examples/httpkit_server.clj)
+- Add `java.io.FileNotFoundException`, `java.security.DigestInputStream`, `java.nio.file.FileVisitOption` classes
+- Support implementing `IDeref`, `IAtom` and `IAtom2` on records [sci#401](https://github.com/borkdude/sci/issues/401)
+- Support compatibility with [version-clj](https://github.com/xsc/version-clj) [#565](https://github.com/babashka/babashka/issues/565) [@lread](https://github.com/lread) and [@borkdude](https://github.com/borkdude)
+- Support YAML roundtrip through `*input*` [#583](https://github.com/babashka/babashka/issues/583)
+- Support `clojure.core/find-var` [sci#420](https://github.com/borkdude/sci/issues/420) [@RickMoynihan](https://github.com/RickMoynihan)
+- Support `clojure.pprint/cl-format` [#571](https://github.com/babashka/babashka/issues/571)
+- [AWS pod](https://github.com/tzzh/pod-tzzh-aws)
+
+### Fixed / enhanced
+
+- Fix location printing in REPL (`--repl`) [#598](https://github.com/babashka/babashka/issues/589)
+- Babashka.curl sends form params incorrectly as multipart [babashka.curl#25](https://github.com/babashka/babashka.curl/issues/25)
+- Update Windows build instructions [#574](https://github.com/babashka/babashka/issues/574)
+- Set minimum macOS version in build explicitly [#588](https://github.com/babashka/babashka/pull/588)
+- Fix NPE in error handling logic [#587](https://github.com/babashka/babashka/issues/587)
+- Fix namespace switch in REPL (`--repl`) [#564](https://github.com/babashka/babashka/issues/564)
+- Fix location of errors in REPL (`--repl`) [#589](https://github.com/babashka/babashka/issues/589)
+- Support multi-arity methods in `defprotocol` [sci#406](https://github.com/borkdude/sci/issues/406)
+- Constructor call not recognized in protocol impl [sci#419](https://github.com/borkdude/sci/issues/419)
+- Improve handling of top-level do in macro expansion [sci#421](https://github.com/borkdude/sci/issues/421)
+- Performance improvements suggested by [@joinr](https://github.com/joinr) [sci#415](https://github.com/borkdude/sci/issues/415)
+- Throw when trying to redefine referred var [sci#398](https://github.com/borkdude/sci/issues/398)
+- `pprint` is now backed by `clojure.pprint/pprint` instead of fipp [#571](https://github.com/babashka/babashka/issues/571)
 
 ## v0.2.0 (2020-08-28)
 
@@ -10,27 +542,27 @@ contributing to this release. Thanks to [Clojurists Together](https://www.clojur
 
 ### New
 
-- Add support for `clojure.datafy`, `Datafiable` and `Navigable` [#468](https://github.com/borkdude/babashka/issues/468). To play with the new `clojure.datafy` support, you can use [portal](https://github.com/djblue/portal):
+- Add support for `clojure.datafy`, `Datafiable` and `Navigable` [#468](https://github.com/babashka/babashka/issues/468). To play with the new `clojure.datafy` support, you can use [portal](https://github.com/djblue/portal):
   ``` clojure
   $ bb -cp `clj -Spath -Sdeps '{:deps {djblue/portal {:mvn/version "0.4.0"}}}'`
   ```
-- Add support for building and running uberjars [#536](https://github.com/borkdude/babashka/issues/536). See [docs](https://github.com/borkdude/babashka#uberjar).
-- Print context, locals and stack trace on exception [#543](https://github.com/borkdude/babashka/issues/543).
-- Expose more transit vars [#525](https://github.com/borkdude/babashka/issues/525) ([@djblue](https://github.com/djblue))
+- Add support for building and running uberjars [#536](https://github.com/babashka/babashka/issues/536). See [docs](https://github.com/babashka/babashka#uberjar).
+- Print context, locals and stack trace on exception [#543](https://github.com/babashka/babashka/issues/543).
+- Expose more transit vars [#525](https://github.com/babashka/babashka/issues/525) ([@djblue](https://github.com/djblue))
 - Add `add-tap`,`tap>`, `remove-tap`, `class?`, `iterator-seq`, `remove-watch`, `realized?`
 - Add `clojure.walk/macroexpand-all`
 - Add `java.lang.ProcessHandle` and better support for killing subprocesses via
-  Java interop. See [test script](https://github.com/borkdude/babashka/blob/7049b1b0bd582b717094703bcf299fb6363bb142/test/babashka/scripts/kill_child_processes.bb).
-- Add `clojure.lang.ArityException` and tests to support the [circleci/bond](https://github.com/circleci/bond) library [#524](https://github.com/borkdude/babashka/issues/524) ([@cldwalker](https://github.com/cldwalker)).
+  Java interop. See [test script](https://github.com/babashka/babashka/blob/7049b1b0bd582b717094703bcf299fb6363bb142/test/babashka/scripts/kill_child_processes.bb).
+- Add `clojure.lang.ArityException` and tests to support the [circleci/bond](https://github.com/circleci/bond) library [#524](https://github.com/babashka/babashka/issues/524) ([@cldwalker](https://github.com/cldwalker)).
 - Add `java.time.format.DateTimeParseException`
 
 ### Fixed
 
-- Fix order of namespaces in uberscript [#535](https://github.com/borkdude/babashka/issues/535)
-- Fix reading resources from jar files [#528](https://github.com/borkdude/babashka/issues/528)
+- Fix order of namespaces in uberscript [#535](https://github.com/babashka/babashka/issues/535)
+- Fix reading resources from jar files [#528](https://github.com/babashka/babashka/issues/528)
 - Switch from canonical to absolute paths in `:file` field on var metadata
-  [#532](https://github.com/borkdude/babashka/issues/532)
-- Babashka shows wrong filename when error is from required ns [#508](https://github.com/borkdude/babashka/issues/508)
+  [#532](https://github.com/babashka/babashka/issues/532)
+- Babashka shows wrong filename when error is from required ns [#508](https://github.com/babashka/babashka/issues/508)
 - Eval metadata on var created with `defn` [borkdude/sci#36](https://github.com/borkdude/sci/issues/36)
 - Metadata fn on var fails if calling the var itself [borkdude/sci#363](https://github.com/borkdude/sci/issues/363)
 - Allow re-binding of core vars in with-redefs [borkdude/sci#375](https://github.com/borkdude/sci/issues/375)
@@ -46,15 +578,15 @@ Thanks [@llacom](https://github.com/llacom), [@AndreTheHunter](https://github.co
 
 - Add eldoc support in babashka.nrepl ([@borkdude](https://github.com/borkdude) and [@llacom](https://github.com/llacom))
 - Add `java.time.temporal.{TemportalAdjuster, TemporalAmount}` classes
-- Add `clojure.java.browse/browse-url` [#495](https://github.com/borkdude/babashka/issues/495)
+- Add `clojure.java.browse/browse-url` [#495](https://github.com/babashka/babashka/issues/495)
 - Add classes for cli-matic library ([@AndreTheHunter](https://github.com/AndreTheHunter))
-- Add `babashka.version` system property [#479](https://github.com/borkdude/babashka/issues/479)
+- Add `babashka.version` system property [#479](https://github.com/babashka/babashka/issues/479)
 - Add `java.net.ConnectException` class
-- Add `babashka.file` system property to support `__name__ = "__main__"` pattern (see [docs](https://github.com/borkdude/babashka#__name__--__main__-pattern)) [#478](https://github.com/borkdude/babashka/issues/478).
+- Add `babashka.file` system property to support `__name__ = "__main__"` pattern (see [docs](https://github.com/babashka/babashka#__name__--__main__-pattern)) [#478](https://github.com/babashka/babashka/issues/478).
 
 ### Fixed
 
-- Make `clojure.test/report` a dynamic var [#482](https://github.com/borkdude/babashka/issues/482), [#491](https://github.com/borkdude/babashka/issues/491)
+- Make `clojure.test/report` a dynamic var [#482](https://github.com/babashka/babashka/issues/482), [#491](https://github.com/babashka/babashka/issues/491)
 - Make `clojure.test/test-var` a dynamic var
 - Allow arbitrary Clojure code in tagged literals (previously only EDN was allowed)
 - Fix http-server example ([@xingzheone](https://github.com/xingzheone))
@@ -66,11 +598,11 @@ Thanks [@llacom](https://github.com/llacom), [@AndreTheHunter](https://github.co
 Thanks [@jeroenvandijk](https://github.com/jeroenvandijk) for contributing to this release.
 
 - Support `:extend-via-metadata` option in protocols
-- Fix classpath issue for Windows [#496](https://github.com/borkdude/babashka/issues/496)
+- Fix classpath issue for Windows [#496](https://github.com/babashka/babashka/issues/496)
 - Add `double-array`, `short-array` and `clojure.lang.BigInt` for compatibility with
   [clojure.data.generators](https://github.com/clojure/data.generators)
 - Add support for `*print-level*`
-- Add version info in `:describe` message of babashka.nrepl [#471](https://github.com/borkdude/babashka/issues/471)
+- Add version info in `:describe` message of babashka.nrepl [#471](https://github.com/babashka/babashka/issues/471)
 - Add compatibility for [honeysql](https://github.com/seancorfield/honeysql)
   (most notable change: support `import` for records)
 
@@ -92,8 +624,8 @@ This release brings compatibility with the
 
 ### Enhancements / fixes
 
-- Fix interop with result of `.environment` method on `ProcessBuilder` [#460](https://github.com/borkdude/babashka/issues/460)
-- Disable signal handlers via environment variable for AWS Lambda [#462](https://github.com/borkdude/babashka/issues/462) ([@Chowlz](https://github.com/Chowlz)). See [README.md](https://github.com/borkdude/babashka#package-babashka-script-as-a-aws-lambda).
+- Fix interop with result of `.environment` method on `ProcessBuilder` [#460](https://github.com/babashka/babashka/issues/460)
+- Disable signal handlers via environment variable for AWS Lambda [#462](https://github.com/babashka/babashka/issues/462) ([@Chowlz](https://github.com/Chowlz)). See [README.md](https://github.com/babashka/babashka#package-babashka-script-as-a-aws-lambda).
 - babashka.curl: fix double quote escaping issue on Windows
 - Fix resolving var in syntax-quote from other namespace brought in via `:refer`
 - `io/resource` should return `nil` for non-relative paths instead of throwing
@@ -109,41 +641,49 @@ Thanks [@martinklepsch](https://github.com/martinklepsch) and [@cldwalker](https
 - Add `java.nio.file.PathMatcher` class. This allows one to implement a
   [glob](test-resources/babashka/glob.clj) function.
 - Support alternative interop form: `(. Integer -SIZE) ;;=> 32`
-- [#454](https://github.com/borkdude/babashka/issues/454): syntax check on amount of arguments to `def`
-- [#458](https://github.com/borkdude/babashka/issues/458): add `clojure.data` namespace
+- [#454](https://github.com/babashka/babashka/issues/454): syntax check on amount of arguments to `def`
+- [#458](https://github.com/babashka/babashka/issues/458): add `clojure.data` namespace
 
 ## Prior to v0.1.0
 
 Details about releases prior to v0.1.0 can be found
-[here](https://github.com/borkdude/babashka/releases).
+[here](https://github.com/babashka/babashka/releases).
 
 ## Breaking changes
+
+### v0.2.4
+
+- Remove cheshire smile functions [#658](https://github.com/babashka/babashka/issues/658)
+
+### v0.2.3
+
+- The [Docker image](https://hub.docker.com/r/babashka/babashka/) is now based on Ubuntu instead of Alpine.
 
 ### v0.0.90
 
 - The `next.jdbc` namespace and PostgresQL driver, introduced in `v0.0.89`, are
   no longer part of the standardly distributed `bb` binary. This is now
   available behind a feature flag. See [feature flag
-  documentation](https://github.com/borkdude/babashka/blob/master/doc/build.md#feature-flags).
-- [borkdude/babashka.curl#16](https://github.com/borkdude/babashka.curl/issues/16):
+  documentation](https://github.com/babashka/babashka/blob/master/doc/build.md#feature-flags).
+- [babashka/babashka.curl#16](https://github.com/babashka/babashka.curl/issues/16):
   Exceptional status codes or nonzero `curl` exit codes will throw exceptions by
   default. You can opt out with `:throw false`.
 
 ### v0.0.79
-- [babashka.curl#9](https://github.com/borkdude/babashka.curl/issues/9):
+- [babashka.curl#9](https://github.com/babashka/babashka.curl/issues/9):
   Functions in `babashka.curl` like `get`, `post`, etc. now always return a map
   with `:status`, `:body`, and `:headers`.
 
 ### v0.0.71
-- [#267](https://github.com/borkdude/babashka/issues/267) Change behavior of
+- [#267](https://github.com/babashka/babashka/issues/267) Change behavior of
   reader conditionals: the `:clj` branch is taken when it occurs before a `:bb`
   branch.
 
 ### v0.0.44 - 0.0.45
-- [#173](https://github.com/borkdude/babashka/issues/173): Rename `*in*` to
+- [#173](https://github.com/babashka/babashka/issues/173): Rename `*in*` to
   `*input*` (in the `user` namespace). The reason for this is that it shadowed
   `clojure.core/*in*` when used unqualified.
 
 ### v0.0.43
-- [#160](https://github.com/borkdude/babashka/issues/160): Add support for
+- [#160](https://github.com/babashka/babashka/issues/160): Add support for
   `java.lang.ProcessBuilder`. See docs. This replaces the `conch` namespace.

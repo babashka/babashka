@@ -28,6 +28,12 @@ if "%BABASHKA_FEATURE_HSQLDB%"=="true" (
   set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/hsqldb
 )
 
+if "%BABASHKA_FEATURE_ORACLEDB%"=="true" (
+  set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/oracledb
+) else (
+  set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/oracledb
+)
+
 if not "%BABASHKA_FEATURE_XML%"=="false" (
   set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/xml
 ) else (
@@ -74,6 +80,48 @@ if not "%BABASHKA_FEATURE_HTTPKIT_SERVER%"=="false" (
 set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/httpkit-server
 ) else (
 set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/httpkit-server
+)
+
+if "%BABASHKA_FEATURE_LANTERNA%"=="true" (
+  set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/lanterna
+) else (
+  set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/lanterna
+)
+
+if not "%BABASHKA_FEATURE_CORE_MATCH%"=="false" (
+set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/core-match
+) else (
+set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/core-match
+)
+
+if not "%BABASHKA_FEATURE_HICCUP%"=="false" (
+set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/hiccup
+) else (
+set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/hiccup
+)
+
+if not "%BABASHKA_FEATURE_TEST_CHECK%"=="false" (
+set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/test-check
+) else (
+set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/test-check
+)
+
+if "%BABASHKA_FEATURE_SPEC_ALPHA%"=="true" (
+set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/spec-alpha
+) else (
+set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/spec-alpha
+)
+
+if not "%BABASHKA_FEATURE_REWRITE_CLJ%"=="false" (
+set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/rewrite-clj
+) else (
+set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/rewrite-clj
+)
+
+if not "%BABASHKA_FEATURE_REWRITE_SELMER%"=="false" (
+set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/selmer
+) else (
+set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/selmer
 )
 
 call lein with-profiles %BABASHKA_LEIN_PROFILES% bb "(+ 1 2 3)"

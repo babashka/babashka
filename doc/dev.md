@@ -1,6 +1,6 @@
 # Developing Babashka
 
-You need [lein](https://leiningen.org/) for running JVM tests and/or producing uberjars. For building binaries you need GraalVM. Currently we use java11-20.2.0.
+You need [lein](https://leiningen.org/) for running JVM tests and/or producing uberjars. For building binaries you need GraalVM. Currently we use java11-21.1.0.
 
 ## Clone repository
 
@@ -81,10 +81,42 @@ To progress work on sqlite and mySQL, I need a working Clojure example. If you
 want to contribute, consider making a an example Clojure GraalVM CLI that puts
 something in a sqlite / mysql DB and reads something from it.
 
+## ADR
+
+Some design decisions:
+
+### bb.edn
+
+- We chose the name `bb.edn` (rather than `babashka.edn`) for the configuration
+  file based on this
+  [poll](https://twitter.com/borkdude/status/1374720217608302595). The name `bb`
+  combined with `.edn` is not likely to cause conflicts with other tools.
+- We did not choose to put the babashka configuration in `deps.edn` to keep bb config isolated (and more flexible) and also support it in projects that do not use `deps.edn`
+
+### .babashka
+
+- Rather than naming the home config dir `~/.bb` we chose `~/.babashka` to
+  prevent conflicts with other global tools. We might introduce a project local
+  `~/.babashka` directory for storing caches or whatnot too.
+
+### Tasks
+
+Some of these design decisions were formed in [these discussions](https://github.com/babashka/babashka/discussions/779).
+
+- Tasks do not allow passing arguments to dependent tasks, other than by rebinding `*command-line-args*` (see discussion).
+- Does the list of dependencies need to be dynamic? No, see discussion (same reason as args)
+- bb <foo> is resolved as file > task > bb subcommand. Shadowing future subcommand is a problem that a user can solve by renaming a task or file. (same as lein aliases). Also see Conflicts.
+- It is a feature that tasks are defined as top-level vars (instead of local let-bound symbols). This plays well with the Gilardi scenario, e.g. here: https://github.com/babashka/babashka.github.io/blob/ad276625f6c41f269d19450f236cb54cab2591e1/bb.edn#L7.
+- The parallel option trickles down into run calls. People who use parallel will be confused if it’s dropped magically, people who don’t use parallel won’t notice anything either way so it doesn’t matter
+
 ## Binary size
 
 Keep notes here about how adding libraries and classes to Babashka affects the binary size.
 We're registering the size of the macOS binary (as built on CircleCI).
+
+2021/06/13 Upgrading from GraalvM 21.0 to 21.1 added roughly 3mb. Issue [here](https://github.com/oracle/graal/issues/3280#issuecomment-846402115).
+
+2020/10/30 Without httpkit client+server: 68113436. With: 69503316 = 1390kb added.
 
 2020/05/01 Removed `next.jdbc` and postgres JDBC driver: 48304980
 

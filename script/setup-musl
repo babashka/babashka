@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if  [[ -z "${BABASHKA_STATIC:-}" ]]; then
+    echo "BABASHKA_STATIC wasn't set, skipping musl installation."
+    exit 0
+fi
+
+if [[ -z "${BABASHKA_MUSL:-}" ]]; then
+    echo "BABASHKA_MUSL wasn't set, skipping musl installation."
+    exit 0
+fi
+
+# This script sets up the latest available musl-tools using apt pinning from debian unstable.
+# The one available in stable and testing are quite outdated and this ensures we get the latest improvements
+# This explictly installs musl from unstable and keeps the others at a higher priority
+
+cat >> /etc/apt/sources.list <<eof
+deb http://ftp.us.debian.org/debian unstable main non-free contrib
+deb http://non-us.debian.org/debian-non-us unstable/non-us main contrib non-free
+eof
+
+cat >> /etc/apt/preferences <<eof
+Package: *
+Pin: release a=stable
+Pin-Priority: 700
+Package: *
+Pin: release a=testing
+Pin-Priority: 650
+Package: *
+pin: release a=unstable
+pin-priority: 600
+eof
+
+apt-get update -y && apt-get install musl-tools/unstable -y
+
+ZLIB_VERSION="1.2.11"
+
+curl -O -sL "https://zlib.net/zlib-${ZLIB_VERSION}.tar.gz"
+
+echo "c3e5e9fdd5004dcb542feda5ee4f0ff0744628baf8ed2dd5d66f8ca1197cb1a1 zlib-${ZLIB_VERSION}.tar.gz" |
+    sha256sum --check
+tar xf "zlib-${ZLIB_VERSION}.tar.gz"
+
+arch=${BABASHKA_ARCH:-"x86_64"}
+echo "ARCH: $arch"
+
+cd "zlib-${ZLIB_VERSION}"
+CC=musl-gcc ./configure --static --prefix="/usr/local"
+make CC=musl-gcc
+make install
+cd ..
+
+# Install libz.a in the correct place so ldd can find it
+install -Dm644 "/usr/local/lib/libz.a" "/usr/lib/$arch-linux-musl/libz.a"
