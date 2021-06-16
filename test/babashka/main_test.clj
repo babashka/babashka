@@ -52,17 +52,17 @@
   (is (= '("-e" "1") (bb nil "-e" "*command-line-args*" "--" "-e" "1")))
   (let [v (bb nil "--describe")]
     (is (:babashka/version v))
-    (is (:feature/xml v)))
-  )
+    (is (:feature/xml v))))
 
-(deftest version-test
+
+(deftest ^:windows version-test
   (is (= [1 0 0] (main/parse-version "1.0.0-SNAPSHOT")))
   (is (main/satisfies-min-version? "0.1.0"))
   (is (main/satisfies-min-version? "0.1.0-SNAPSHOT"))
   (is (not (main/satisfies-min-version? "300.0.0")))
   (is (not (main/satisfies-min-version? "300.0.0-SNAPSHOT"))))
 
-(deftest print-error-test
+(deftest ^:windows print-error-test
   (is (thrown-with-msg? Exception #"java.lang.NullPointerException"
                         (bb nil "(subs nil 0 0)"))))
 
@@ -123,7 +123,7 @@
     (is (= "2\n" (with-out-str (main/main "(inc 1)"))))))
 
 (deftest println-test
-  (is (= "hello\n" (test-utils/bb nil "(println \"hello\")"))))
+  (is (= "hello\n" (test-utils/normalize (test-utils/bb nil "(println \"hello\")")))))
 
 (deftest System-test
   (let [res (bb nil "-f" "test/babashka/scripts/System.bb")]
@@ -131,7 +131,7 @@
     (doseq [s res]
       (is (not-empty s)))))
 
-(deftest malformed-command-line-args-test
+(deftest ^:windows malformed-command-line-args-test
   (is (thrown-with-msg? Exception #"File does not exist: non-existing"
                         (bb nil "-f" "non-existing"))))
 
