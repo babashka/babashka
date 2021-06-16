@@ -123,7 +123,7 @@
     (is (= "2\n" (with-out-str (main/main "(inc 1)"))))))
 
 (deftest println-test
-  (is (= "hello\n" (test-utils/normalize (test-utils/bb nil "(println \"hello\")")))))
+  (is (= "hello\n" (test-utils/bb nil "(println \"hello\")"))))
 
 (deftest System-test
   (let [res (bb nil "-f" "test/babashka/scripts/System.bb")]
