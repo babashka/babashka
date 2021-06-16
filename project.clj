@@ -14,6 +14,7 @@
   ;; :java-source-paths ["sci/reflector/src-java"]
   :java-source-paths ["src-java"]
   :resource-paths ["resources" "sci/resources"]
+  :test-selectors {:windows :windows}
   :dependencies [[org.clojure/clojure "1.11.0-alpha1"]
                  [borkdude/edamame "0.0.11"]
                  [borkdude/graal.locking "0.0.2"]

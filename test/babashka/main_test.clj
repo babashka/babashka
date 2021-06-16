@@ -17,7 +17,7 @@
     :eof nil}
    (apply test-utils/bb (when (some? input) (str input)) (map str args))))
 
-(deftest parse-opts-test
+(deftest ^:windows parse-opts-test
   (is (= "1667"
          (:nrepl (main/parse-opts ["--nrepl-server"]))))
   (is (= "1666"
