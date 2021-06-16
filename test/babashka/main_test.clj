@@ -17,7 +17,7 @@
     :eof nil}
    (apply test-utils/bb (when (some? input) (str input)) (map str args))))
 
-(deftest parse-opts-test
+(deftest ^:windows parse-opts-test
   (is (= "1667"
          (:nrepl (main/parse-opts ["--nrepl-server"]))))
   (is (= "1666"
@@ -132,7 +132,7 @@
       (is (not-empty s)))))
 
 (deftest malformed-command-line-args-test
-  (is (thrown-with-msg? Exception #"File does not exist: non-existing\n"
+  (is (thrown-with-msg? Exception #"File does not exist: non-existing"
                         (bb nil "-f" "non-existing"))))
 
 (deftest ssl-test
@@ -178,10 +178,11 @@
                              name)))))
     (testing "print source from file on classpath"
       (is (= "(defn foo [x y]\n  (+ x y))\n"
-             (bb nil
-                 "-cp" dir
-                 "-e" (format "(require '[clojure.repl :refer [source]] '[%s])" name)
-                 "-e" (format "(with-out-str (source %s/foo))" name)))))))
+             (test-utils/normalize
+              (bb nil
+                  "-cp" dir
+                  "-e" (format "(require '[clojure.repl :refer [source]] '[%s])" name)
+                  "-e" (format "(with-out-str (source %s/foo))" name))))))))
 
 (deftest eval-test
   (is (= "120\n" (test-utils/bb nil "(eval '(do (defn foo [x y] (+ x y))
