@@ -634,7 +634,7 @@ Use bb run --help to show this help output.
      (if-not opt opts-map
              ;; FILE > TASK > SUBCOMMAND
              (cond
-               (fs/regular-file? opt)
+               (.exists (io/file opt))
                (if (str/ends-with? opt ".jar")
                  (assoc opts-map
                         :jar opt
