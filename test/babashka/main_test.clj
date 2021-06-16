@@ -52,17 +52,17 @@
   (is (= '("-e" "1") (bb nil "-e" "*command-line-args*" "--" "-e" "1")))
   (let [v (bb nil "--describe")]
     (is (:babashka/version v))
-    (is (:feature/xml v)))
-  )
+    (is (:feature/xml v))))
 
-(deftest version-test
+
+(deftest ^:windows version-test
   (is (= [1 0 0] (main/parse-version "1.0.0-SNAPSHOT")))
   (is (main/satisfies-min-version? "0.1.0"))
   (is (main/satisfies-min-version? "0.1.0-SNAPSHOT"))
   (is (not (main/satisfies-min-version? "300.0.0")))
   (is (not (main/satisfies-min-version? "300.0.0-SNAPSHOT"))))
 
-(deftest print-error-test
+(deftest ^:windows print-error-test
   (is (thrown-with-msg? Exception #"java.lang.NullPointerException"
                         (bb nil "(subs nil 0 0)"))))
 
@@ -131,7 +131,7 @@
     (doseq [s res]
       (is (not-empty s)))))
 
-(deftest malformed-command-line-args-test
+(deftest ^:windows malformed-command-line-args-test
   (is (thrown-with-msg? Exception #"File does not exist: non-existing"
                         (bb nil "-f" "non-existing"))))
 
