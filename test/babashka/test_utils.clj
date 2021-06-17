@@ -19,6 +19,11 @@
     (str/replace s "\r\n" "\n")
     s))
 
+(defn escape-file-paths [s]
+  (if main/windows?
+    (str/replace s "\\" "\\\\")
+    s))
+
 (def ^:dynamic *bb-edn-path* nil)
 
 (defmethod clojure.test/report :begin-test-var [m]
@@ -86,7 +91,7 @@
         exit (:exit res)
         error? (pos? exit)]
     (if error? (throw (ex-info (or (:err res) "") {}))
-        (:out res))))
+               (normalize (:out res)))))
 
 (def bb
   (case (System/getenv "BABASHKA_TEST_ENV")

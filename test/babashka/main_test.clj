@@ -66,7 +66,7 @@
   (is (thrown-with-msg? Exception #"java.lang.NullPointerException"
                         (bb nil "(subs nil 0 0)"))))
 
-(deftest input-test
+(deftest ^:windows input-test
   (testing "-io behaves as identity"
     (is (= "foo\nbar\n" (test-utils/bb "foo\nbar\n" "-io" "*input*"))))
   (testing "if and when"
@@ -120,12 +120,12 @@
     (is (= "localhost" (bb "#ordered/map ([:test \"localhost\"])"
                            "(:test *input*)"))))
   (testing "bb doesn't wait for input if *input* isn't used"
-    (is (= "2\n" (with-out-str (main/main "(inc 1)"))))))
+    (is (= "2\n" (test-utils/normalize (with-out-str (main/main "(inc 1)")))))))
 
-(deftest println-test
+(deftest ^:windows println-test
   (is (= "hello\n" (test-utils/bb nil "(println \"hello\")"))))
 
-(deftest System-test
+(deftest ^:windows System-test
   (let [res (bb nil "-f" "test/babashka/scripts/System.bb")]
     (is (= "bar" (second res)))
     (doseq [s res]
@@ -135,11 +135,11 @@
   (is (thrown-with-msg? Exception #"File does not exist: non-existing"
                         (bb nil "-f" "non-existing"))))
 
-(deftest ssl-test
+(deftest ^:windows ssl-test
   (let [resp (bb nil "(slurp \"https://www.google.com\")")]
     (is (re-find #"doctype html" resp))))
 
-(deftest stream-test
+(deftest ^:windows stream-test
   (is (= "2\n3\n4\n" (test-utils/bb "1 2 3" "--stream" "(inc *input*)")))
   (is (= "2\n3\n4\n" (test-utils/bb "{:x 2} {:x 3} {:x 4}" "--stream" "(:x *input*)")))
   (let [x "foo\n\bar\n"]
@@ -147,18 +147,18 @@
   (let [x "f\n\b\n"]
     (is (= x (test-utils/bb x "--stream" "-io" "(subs *input* 0 1)")))))
 
-(deftest load-file-test
+(deftest ^:windows load-file-test
   (let [tmp (java.io.File/createTempFile "script" ".clj")]
     (.deleteOnExit tmp)
     (spit tmp "(ns foo) (defn foo [x y] (+ x y)) (defn bar [x y] (* x y))")
     (is (= "120\n" (test-utils/bb nil (format "(load-file \"%s\") (foo/bar (foo/foo 10 30) 3)"
-                                              (.getPath tmp)))))
+                                              (test-utils/escape-file-paths (.getPath tmp))))))
     (testing "namespace is restored after load file"
       (is (= 'start-ns
              (bb nil (format "(ns start-ns) (load-file \"%s\") (ns-name *ns*)"
-                             (.getPath tmp))))))))
+                             (test-utils/escape-file-paths (.getPath tmp)))))))))
 
-(deftest repl-source-test
+(deftest ^:windows repl-source-test
   (let [tmp (java.io.File/createTempFile "lib" ".clj")
         name (str/replace (.getName tmp) ".clj" "")
         dir (.getParent tmp)]
@@ -170,32 +170,33 @@
 (defn foo [x y]
   (+ x y))" name))
       (is (= "(defn foo [x y]\n  (+ x y))\n"
-             (bb nil (format "
+             (test-utils/normalize
+               (bb nil (format "
 (load-file \"%s\")
 (require '[clojure.repl :refer [source]])
 (with-out-str (source %s/foo))"
-                             (.getPath tmp)
-                             name)))))
+                         (test-utils/escape-file-paths (.getPath tmp))
+                         name))))))
     (testing "print source from file on classpath"
       (is (= "(defn foo [x y]\n  (+ x y))\n"
              (test-utils/normalize
-              (bb nil
-                  "-cp" dir
-                  "-e" (format "(require '[clojure.repl :refer [source]] '[%s])" name)
-                  "-e" (format "(with-out-str (source %s/foo))" name))))))))
+               (bb nil
+                   "-cp" dir
+                   "-e" (format "(require '[clojure.repl :refer [source]] '[%s])" name)
+                   "-e" (format "(with-out-str (source %s/foo))" name))))))))
 
-(deftest eval-test
+(deftest ^:windows eval-test
   (is (= "120\n" (test-utils/bb nil "(eval '(do (defn foo [x y] (+ x y))
                                                 (defn bar [x y] (* x y))
                                                 (bar (foo 10 30) 3)))"))))
 
-(deftest preloads-test
+(deftest ^:windows preloads-test
   ;; THIS TEST REQUIRES:
   ;; export BABASHKA_PRELOADS='(defn __bb__foo [] "foo") (defn __bb__bar [] "bar")'
   (when (System/getenv "BABASHKA_PRELOADS_TEST")
     (is (= "foobar" (bb nil "(str (__bb__foo) (__bb__bar))")))))
 
-(deftest io-test
+(deftest ^:windows io-test
   (is (true? (bb nil "(.exists (io/file \"README.md\"))")))
   (is (true? (bb nil "(.canWrite (io/file \"README.md\"))"))))
 
@@ -222,18 +223,21 @@
           out (edn/read-string out)]
       (is (= '("y" "y") out)))))
 
-(deftest future-test
+(deftest ^:windows future-test
   (is (= 6 (bb nil "@(future (+ 1 2 3))"))))
 
-(deftest promise-test
+(deftest ^:windows promise-test
   (is (= :timeout (bb nil "(deref (promise) 1 :timeout)")))
   (is (= :ok (bb nil "(let [x (promise)]
                         (deliver x :ok)
                         @x)"))))
 
-(deftest process-builder-test
-  (is (str/includes? (bb nil "
-(def pb (ProcessBuilder. [\"ls\"]))
+(deftest ^:windows process-builder-test
+  (let [cmd-line (if main/windows?
+                   "[\"cmd\" \"/c\" \"dir\" ]"
+                   "[\"ls\"]")]
+    (is (str/includes? (bb nil (str "
+(def pb (ProcessBuilder. " cmd-line "))
 (def env (.environment pb))
 (.put env \"FOO\" \"BAR\") ;; test for issue 460
 (def ls (-> pb (.start)))
@@ -241,14 +245,15 @@
 (.write (io/writer input) \"hello\") ;; dummy test just to see if this works
 (def output (.getInputStream ls))
 (assert (int? (.waitFor ls)))
-(slurp output)")
-                     "LICENSE"))
+(slurp output)"))
+                       "LICENSE")))
   (testing "bb is able to kill subprocesses created by ProcessBuilder"
     (when test-utils/native?
-      (let [output (test-utils/bb nil (io/file "test" "babashka" "scripts" "kill_child_processes.bb"))
+      (let [process-count (if main/windows? 6 3)
+            output (test-utils/bb nil (io/file "test" "babashka" "scripts" "kill_child_processes.bb"))
             parsed (edn/read-string (format "[%s]" output))]
         (is (every? number? parsed))
-        (is (= 3 (count parsed)))))))
+        (is (= process-count (count parsed)))))))
 
 (deftest create-temp-file-test
   (let [temp-dir-path (System/getProperty "java.io.tmpdir")]
