@@ -76,7 +76,7 @@ jobs:
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
-      GRAALVM_HOME: /home/circleci/graalvm-ce-java11-21.1.0
+      GRAALVM_HOME: /home/circleci/graalvm-ce-java11-21.2.0-dev
       BABASHKA_PLATFORM: linux # used in release script
       BABASHKA_TEST_ENV: native
       BABASHKA_XMX: "-J-Xmx6500m"
@@ -111,7 +111,7 @@ jobs:
           command: |
             cd ~
             if ! [ -d graalvm-ce-java11-21.1.0 ]; then
-              curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.1.0/graalvm-ce-java11-linux-amd64-21.1.0.tar.gz
+              curl -O -sL https://github.com/graalvm/graalvm-ce-dev-builds/releases/download/21.2.0-dev-20210616_2034/graalvm-ce-java11-linux-amd64-dev.tar.gz
               tar xzf graalvm-ce-java11-linux-amd64-21.1.0.tar.gz
             fi
       - run:
@@ -520,24 +520,24 @@ workflows:
   version: 2
   ci:
     jobs:
-      - jvm
+#      - jvm
       - linux
-      - linux-static
-      - mac
-      - linux-aarch64
-      - linux-aarch64-static
-      - deploy:
-          filters:
-            branches:
-              only: master
-          requires:
-            - jvm
-            - linux
-            - mac
-      - docker:
-          filters:
-            branches:
-              only: master
-          requires:
-            - linux
-            - linux-static
+#      - linux-static
+#      - mac
+#      - linux-aarch64
+#      - linux-aarch64-static
+      # - deploy:
+      #     filters:
+      #       branches:
+      #         only: master
+      #     requires:
+      #       - jvm
+      #       - linux
+      #       - mac
+      # - docker:
+      #     filters:
+      #       branches:
+      #         only: master
+      #     requires:
+      #       - linux
+      #       - linux-static
