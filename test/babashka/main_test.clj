@@ -265,7 +265,7 @@
                              (.exists tfile))"
                            temp-dir-path))))))
 
-(deftest wait-for-port-test
+(deftest ^:windows wait-for-port-test
   (let [server (test-utils/start-server! 1777)]
     (is (= 1777 (:port (bb nil "(wait/wait-for-port \"127.0.0.1\" 1777)"))))
     (test-utils/stop-server! server)
@@ -298,10 +298,10 @@
                                {:default :timed-out :timeout 100}))"
                            temp-dir-path))))))
 
-(deftest tools-cli-test
+(deftest ^:windows tools-cli-test
   (is (= {:result 8080} (bb nil "test/babashka/scripts/tools.cli.bb"))))
 
-(deftest try-catch-test
+(deftest ^:windows try-catch-test
   (is (zero? (bb nil "(try (/ 1 0) (catch ArithmeticException _ 0))")))
   (is (= :got-it (bb nil "
 (defn foo []
@@ -315,29 +315,29 @@
 (bar)
 "))))
 
-(deftest reader-conditionals-test
+(deftest ^:windows reader-conditionals-test
   (is (= :hello (bb nil "#?(:bb :hello :default :bye)")))
   (is (= :hello (bb nil "#? (:bb :hello :default :bye)")))
   (is (= :hello (bb nil "#?(:clj :hello :bb :bye)")))
   (is (= [1 2] (bb nil "[1 2 #?@(:bb [] :clj [1])]"))))
 
-(deftest csv-test
+(deftest ^:windows csv-test
   (is (= '(["Adult" "87727"] ["Elderly" "43914"] ["Child" "33411"] ["Adolescent" "29849"]
            ["Infant" "15238"] ["Newborn" "10050"] ["In Utero" "1198"])
          (bb nil (.getPath (io/file "test" "babashka" "scripts" "csv.bb"))))))
 
-(deftest assert-test ;; assert was first implemented in bb but moved to sci later
+(deftest ^:windows assert-test ;; assert was first implemented in bb but moved to sci later
   (is (thrown-with-msg? Exception #"should-be-true"
                         (bb nil "(def should-be-true false) (assert should-be-true)"))))
 
-(deftest Pattern-test
+(deftest ^:windows Pattern-test
   (is (= ["1" "2" "3"]
          (bb nil "(vec (.split (java.util.regex.Pattern/compile \"f\") \"1f2f3\"))")))
   (is (true? (bb nil "(some? java.util.regex.Pattern/CANON_EQ)"))))
 
-(deftest writer-test
+(deftest ^:windows writer-test
   (let [tmp-file (java.io.File/createTempFile "bbb" "bbb")
-        path (.getPath tmp-file)]
+        path (test-utils/escape-file-paths (.getPath tmp-file))]
     (bb nil (format "(with-open [w (io/writer \"%s\")]
                        (.write w \"foobar\n\")
                        (.append w \"barfoo\n\")
@@ -345,21 +345,23 @@
                     path))
     (is (= "foobar\nbarfoo\n" (slurp path)))))
 
-(deftest binding-test
-  (is (=  6 (bb nil "(def w (java.io.StringWriter.))
+(deftest ^:windows binding-test
+  (is (= (if main/windows? 7 6)
+        (bb nil "(def w (java.io.StringWriter.))
                  (binding [clojure.core/*out* w]
                    (println \"hello\"))
                  (count (str w))"))))
 
-(deftest with-out-str-test
-  (is (= 6 (bb nil "(count (with-out-str (println \"hello\")))"))))
+(deftest ^:windows with-out-str-test
+  (is (= (if main/windows? 7 6)
+        (bb nil "(count (with-out-str (println \"hello\")))"))))
 
-(deftest with-in-str-test
+(deftest ^:windows with-in-str-test
   (is (= 5 (bb nil "(count (with-in-str \"hello\" (read-line)))"))))
 
-(deftest java-nio-test
+(deftest ^:windows java-nio-test
   (let [f (java.io.File/createTempFile "foo" "bar")
-        temp-path (.getPath f)
+        temp-path (test-utils/escape-file-paths (.getPath f))
         p (.toPath (io/file f))
         p' (.resolveSibling p "f2")
         f2 (.toFile p')]
@@ -379,59 +381,62 @@
       (is (vector? v))
       (is (.exists (io/file (first v)))))))
 
-(deftest future-print-test
+(deftest ^:windows future-print-test
   (testing "the root binding of sci/*out*"
     (is (= "hello"  (bb nil "@(future (prn \"hello\"))")))))
 
-(deftest Math-test
+(deftest ^:windows Math-test
   (is (== 8.0 (bb nil "(Math/pow 2 3)"))))
 
-(deftest Base64-test
+(deftest ^:windows Base64-test
   (is (= "babashka"
          (bb nil "(String. (.decode (java.util.Base64/getDecoder) (.encode (java.util.Base64/getEncoder) (.getBytes \"babashka\"))))"))))
 
-(deftest Thread-test
+(deftest ^:windows Thread-test
   (is (= "hello" (bb nil "(doto (java.lang.Thread. (fn [] (prn \"hello\"))) (.start) (.join)) nil"))))
 
-(deftest dynvar-test
+(deftest ^:windows dynvar-test
   (is (= 1 (bb nil "(binding [*command-line-args* 1] *command-line-args*)"))))
 
-(deftest file-in-error-msg-test
+(deftest ^:windows file-in-error-msg-test
   (is (thrown-with-msg? Exception #"error.bb"
                         (bb nil (.getPath (io/file "test" "babashka" "scripts" "error.bb"))))))
 
-(deftest compatibility-test
+(deftest ^:windows compatibility-test
   (is (true? (bb nil "(set! *warn-on-reflection* true)"))))
 
-(deftest clojure-main-repl-test
-  (is (= "\"> foo!\\nnil\\n> \"\n" (test-utils/bb nil "
+(deftest ^:windows clojure-main-repl-test
+  (let [expected-outcome (if main/windows?
+                           "\"> foo!\\r\\nnil\\r\\n> \"\n"
+                           "\"> foo!\\nnil\\n> \"\n")]
+    (is (= expected-outcome (test-utils/bb nil "
 (defn foo [] (println \"foo!\"))
 (with-out-str
   (with-in-str \"(foo)\"
-    (clojure.main/repl :init (fn []) :prompt (fn [] (print \"> \")))))"))))
+    (clojure.main/repl :init (fn []) :prompt (fn [] (print \"> \")))))")))))
 
-(deftest command-line-args-test
+(deftest ^:windows command-line-args-test
   (is (true? (bb nil "(nil? *command-line-args*)")))
   (is (= ["1" "2" "3"] (bb nil "*command-line-args*" "1" "2" "3"))))
 
-(deftest constructors-test
+(deftest ^:windows constructors-test
   (testing "the clojure.lang.Delay constructor works"
     (is (= 1 (bb nil "@(delay 1)"))))
   (testing "the clojure.lang.MapEntry constructor works"
     (is (true? (bb nil "(= (first {1 2}) (clojure.lang.MapEntry. 1 2))")))))
 
-(deftest clojure-data-xml-test
+(deftest ^:windows clojure-data-xml-test
   (is (= "<?xml version=\"1.0\" encoding=\"UTF-8\"?><items><item>1</item><item>2</item></items>"
          (bb nil "(let [xml (xml/parse-str \"<items><item>1</item><item>2</item></items>\")] (xml/emit-str xml))")))
   (is (= "0.0.87-SNAPSHOT" (bb nil "examples/pom_version_get.clj" (.getPath (io/file "test-resources" "pom.xml"))))))
 
-(deftest uberscript-test
+(deftest ^:windows uberscript-test
   (let [tmp-file (java.io.File/createTempFile "uberscript" ".clj")]
     (.deleteOnExit tmp-file)
-    (is (empty? (bb nil "--uberscript" (.getPath tmp-file) "-e" "(System/exit 1)")))
+    (is (empty? (bb nil "--uberscript" (test-utils/escape-file-paths (.getPath tmp-file)) "-e" "(System/exit 1)")))
     (is (= "(System/exit 1)" (slurp tmp-file)))))
 
-(deftest unrestricted-access
+(deftest ^:windows unrestricted-access
   (testing "babashka is allowed to mess with built-in vars"
     (is (= {} (bb nil "
 (def assoc2 assoc) (alter-var-root #'clojure.core/assoc (constantly dissoc))
@@ -439,27 +444,29 @@
   (alter-var-root #'clojure.core/assoc (constantly assoc2))
   res)")))))
 
-(deftest pprint-test
+(deftest ^:windows pprint-test
   (testing "writer"
     (is (string? (bb nil "(let [sw (java.io.StringWriter.)] (clojure.pprint/pprint (range 10) sw) (str sw))"))))
   (testing "*print-right-margin*"
-    (is (= "(0\n 1\n 2\n 3\n 4\n 5\n 6\n 7\n 8\n 9)\n" (bb nil "
+    (is (= "(0\n 1\n 2\n 3\n 4\n 5\n 6\n 7\n 8\n 9)\n"
+          (test-utils/normalize (bb nil "
 (let [sw (java.io.StringWriter.)]
   (binding [clojure.pprint/*print-right-margin* 5]
-    (clojure.pprint/pprint (range 10) sw)) (str sw))")))
-    (is (= "(0 1 2 3 4 5 6 7 8 9)\n" (bb nil "
+    (clojure.pprint/pprint (range 10) sw)) (str sw))"))))
+    (is (= "(0 1 2 3 4 5 6 7 8 9)\n"
+          (test-utils/normalize (bb nil "
 (let [sw (java.io.StringWriter.)]
   (binding [clojure.pprint/*print-right-margin* 50]
-    (clojure.pprint/pprint (range 10) sw)) (str sw))"))))
+    (clojure.pprint/pprint (range 10) sw)) (str sw))")))))
   (testing "print-table writes to sci/out"
     (is (str/includes? (test-utils/bb "(with-out-str (clojure.pprint/print-table [{:a 1} {:a 2}]))") "----"))))
 
-(deftest read-string-test
+(deftest ^:windows read-string-test
   (testing "namespaced keyword via alias"
     (is (= :clojure.string/foo
            (bb nil "(ns foo (:require [clojure.string :as str])) (read-string \"::str/foo\")")))))
 
-(deftest available-stream-test
+(deftest ^:windows available-stream-test
   (is (= 0 (bb nil "(.available System/in)"))))
 
 (deftest file-reader-test
@@ -476,41 +483,41 @@
              (catch Exception e
                (is (str/includes? (str e) "timed out"))))))
 
-(deftest get-message-on-exception-info-test
+(deftest ^:windows get-message-on-exception-info-test
   (is "foo" (bb nil "(try (throw (ex-info \"foo\" {})) (catch Exception e (.getMessage e)))")))
 
-(deftest pushback-reader-test
+(deftest ^:windows pushback-reader-test
   (is (= "foo" (bb nil "
 (require '[clojure.java.io :as io])
 (let [pb (java.io.PushbackInputStream. (java.io.ByteArrayInputStream. (.getBytes \"foo\")))]
   (.unread pb (.read pb))
   (slurp pb))"))))
 
-(deftest delete-on-exit-test
+(deftest ^:windows delete-on-exit-test
   (when test-utils/native?
     (let [f (java.io.File/createTempFile "foo" "bar")
-          p (.getPath f)]
+          p (test-utils/escape-file-paths (.getPath f))]
       (bb nil (format "(.deleteOnExit (io/file \"%s\"))" p))
       (is (false? (.exists f))))))
 
-(deftest yaml-test
+(deftest ^:windows yaml-test
   (is (str/starts-with?
        (bb nil "(yaml/generate-string [{:name \"John Smith\", :age 33} {:name \"Mary Smith\", :age 27}])")
        "-")))
 
-(deftest arrays-copy-of-test
+(deftest ^:windows arrays-copy-of-test
   (is (= "foo" (bb nil "(String. (java.util.Arrays/copyOf (.getBytes \"foo\") 3))"))))
 
-(deftest data-readers-test
+(deftest ^:windows data-readers-test
   (is (= 2 (bb nil "(set! *data-readers* {'t/tag inc}) #t/tag 1"))))
 
-(deftest ordered-test
+(deftest ^:windows ordered-test
   (is (= (ordered-map :a 1 :b 2) (bb nil "(flatland.ordered.map/ordered-map :a 1 :b 2)"))))
 
-(deftest data-diff-test
+(deftest ^:windows data-diff-test
   (is (= [[nil 1] [nil 2] [1 nil 2]] (bb nil "(require '[clojure.data :as d]) (d/diff [1 1 2] [1 2 2])"))))
 
-(deftest version-property-test
+(deftest ^:windows version-property-test
   (is (= "true\ntrue\nfalse\n"
          (test-utils/bb nil (.getPath (io/file "test-resources" "babashka" "version.clj"))))))
 
@@ -520,13 +527,13 @@
          (clojure.test/do-report {:type :pass, :message ~msg,
                                   :expected :success, :actual :success}))))
 
-(deftest empty-expressions-test
+(deftest ^:windows empty-expressions-test
   (testing "bb executes the empty file and doesn't start a REPL"
     (is (working? (test-utils/bb nil (.getPath (io/file "test-resources" "babashka" "empty.clj"))))))
   (testing "bb executes the empty expression and doesn't start a REPL"
     (is (working? (test-utils/bb nil "-e" "")))))
 
-(deftest file-property-test
+(deftest ^:windows file-property-test
   (is (= "true\nfalse\n"
          (test-utils/bb nil (.getPath (io/file "test-resources" "babashka" "file_property1.clj")))))
   (is (= "true\n"
@@ -538,18 +545,18 @@
     (is (apply = res))
     (is (str/includes? (first res) ".."))))
 
-(deftest file-location-test
+(deftest ^:windows file-location-test
   (is (thrown-with-msg?
        Exception #"file_location2.clj"
        (test-utils/bb nil (.getPath (io/file "test-resources" "babashka" "file_location1.clj"))))))
 
-(deftest preloads-file-location-test
+(deftest ^:windows preloads-file-location-test
   (when (System/getenv "BABASHKA_PRELOADS_TEST")
     (is (thrown-with-msg?
          Exception #"preloads"
          (test-utils/bb nil (.getPath (io/file "test-resources" "babashka" "file_location_preloads.clj")))))))
 
-(deftest repl-test
+(deftest ^:windows repl-test
   (is (str/includes? (test-utils/bb "(ns foo) ::foo" "--repl") ":foo/foo"))
   (is (str/includes? (test-utils/bb "[*warn-on-reflection* (set! *warn-on-reflection* true) *warn-on-reflection*]")
                      "[false true true]"))
@@ -559,14 +566,14 @@
         (test-utils/bb {:in "x" :err sw} "--repl"))
       (is (str/includes? (str sw) "Could not resolve symbol: x [at <repl>:1:1]")))))
 
-(deftest java-stream-test
+(deftest ^:windows java-stream-test
   (is (every? number? (bb nil "(take 2 (iterator-seq (.iterator (.doubles (java.util.Random.)))))"))))
 
-(deftest read+string-test
+(deftest ^:windows read+string-test
   (is (= '[:user/foo "::foo"]
          (bb nil "(read+string (clojure.lang.LineNumberingPushbackReader. (java.io.StringReader. \"::foo\")))"))))
 
-(deftest iterable-test
+(deftest ^:windows iterable-test
   (is (true? (bb nil "
 (defn iter [coll]
   (if (instance? java.lang.Iterable coll)
@@ -576,16 +583,16 @@
 
 (= [1 2 3] (iterator-seq (iter [1 2 3])))"))))
 
-(deftest var-print-method-test
+(deftest ^:windows var-print-method-test
   (when test-utils/native?
     (is (bb nil "(defmethod print-method sci.lang.IVar [o w] (.write w (str :foo (symbol o)))) (def x 1) (= \":foouser/x\" (pr-str #'x))"))
     (is (= :foouser/x (bb nil "(defmethod print-method sci.lang.IVar [o w] (.write w (str :foo (symbol o)))) (def x 1)")))))
 
-(deftest stdout-interop-test
+(deftest ^:windows stdout-interop-test
   (when test-utils/native?
     (is (= 'Something (bb nil "(.print (System/out) \"Something\")")))))
 
-(deftest byte-buffer-test
+(deftest ^:windows byte-buffer-test
   (testing "interop with HeapByteBuffer"
     (is (= 42 (bb nil "(count (.array (java.nio.ByteBuffer/allocate 42)))"))))
   (testing "interop with HeapByteByfferR"
@@ -611,7 +618,7 @@ true"))
 (.force view)
 true")))
 
-(deftest secure-random-test
+(deftest ^:windows secure-random-test
   (let [prog '(do (import 'java.security.SecureRandom 'java.util.Base64)
 
                   (let [random (SecureRandom.)
@@ -623,7 +630,7 @@ true")))
                   (generate-token))]
     (is (string? (bb nil (str prog))))))
 
-(deftest with-precision-test
+(deftest ^:windows with-precision-test
   (is (= 0.33333333333333333333M (bb nil "(with-precision 20 (/ 1M 3))")))
   (is (= 0.33333333333333333334M (bb nil "(with-precision 20 :rounding CEILING (/ 1M 3))"))))
 
@@ -652,7 +659,7 @@ true")))
          (bb nil "-e" "(.get (.command (.info (java.lang.ProcessHandle/current))))")
          "bb"))))
 
-(deftest interop-concurrency-test
+(deftest ^:windows interop-concurrency-test
   (is (= ["true" 3] (last (bb nil "-e"
                               "
 (def f (fn [_]

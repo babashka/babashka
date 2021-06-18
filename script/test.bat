@@ -19,3 +19,8 @@ set BABASHKA_PRELOADS=(defn __bb__foo [] "foo") (defn __bb__bar [] "bar")
 set BABASHKA_PRELOADS_TEST=true
 echo "running tests part 2"
 call lein test :only babashka.main-test/preloads-test
+
+set BABASHKA_PRELOADS=(defn ithrow [] (/ 1 0))
+set BABASHKA_PRELOADS_TEST=true
+echo "running tests part 3"
+call lein test :only babashka.main-test/preloads-file-location-test
