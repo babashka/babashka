@@ -22,4 +22,4 @@
              "-e" "(load-file (io/file \"test-resources\" \"babashka\" \"statsd.clj\"))"
              "-e" "(require '[statsd-client :as c])"
              "-e" "(c/increment :foo)"))
-    (is (= ":foo:1|c\n" (str sw)))))
+    (is (= ":foo:1|c\n" (tu/normalize (str sw))))))

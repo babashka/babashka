@@ -40,7 +40,7 @@
 (defn foo [] (/ 1 0))
 (foo)")
                     (catch Exception e (ex-message e)))]
-    (is (str/includes? output "----- Stack trace --------------------------------------------------------------
+    (is (str/includes? (tu/normalize output) "----- Stack trace --------------------------------------------------------------
 clojure.core// - <built-in>
 user/foo       - <expr>:2:14
 user/foo       - <expr>:2:1
@@ -51,7 +51,7 @@ user           - <expr>:3:1"))))
 (defn foo [] (/ 1 0))
 (foo)")
                     (catch Exception e (ex-message e)))]
-    (is (str/includes? output "----- Context ------------------------------------------------------------------
+    (is (str/includes? (tu/normalize output) "----- Context ------------------------------------------------------------------
 1: 
 2: (defn foo [] (/ 1 0))
                 ^--- Divide by zero
@@ -60,14 +60,14 @@ user           - <expr>:3:1"))))
 (deftest parse-error-context-test
   (let [output (try (tu/bb nil "{:a}")
                     (catch Exception e (ex-message e)))]
-    (is (str/includes? output "----- Context ------------------------------------------------------------------
+    (is (str/includes? (tu/normalize output) "----- Context ------------------------------------------------------------------
 1: {:a}
    ^--- The map literal starting with :a contains 1 form(s)."))))
 
 (deftest jar-error-test
   (let [output (try (tu/bb nil "-cp" (.getPath (io/file "test-resources" "divide_by_zero.jar")) "-e" "(require 'foo)")
                     (catch Exception e (ex-message e)))]
-    (is (str/includes? output "----- Error --------------------------------------------------------------------
+    (is (str/includes? (tu/normalize output) "----- Error --------------------------------------------------------------------
 Type:     java.lang.ArithmeticException
 Message:  Divide by zero
 Location: foo.clj:1:10
@@ -83,7 +83,7 @@ foo            - foo.clj:1:10"))))
 (deftest static-call-test
   (let [output (try (tu/bb nil "-e" "File/x")
                     (catch Exception e (ex-message e)))]
-    (is (str/includes? output
+    (is (str/includes? (tu/normalize output)
                        "----- Error --------------------------------------------------------------------
 Type:     java.lang.IllegalArgumentException
 Message:  No matching field found: x for class java.io.File
@@ -97,7 +97,7 @@ Location: <expr>:1:1
 user - <expr>:1:1"))
     (let [output (try (tu/bb nil "-e" "(File/x)")
                       (catch Exception e (ex-message e)))]
-      (is (str/includes? output
+      (is (str/includes? (tu/normalize output)
                          "----- Error --------------------------------------------------------------------
 Type:     java.lang.IllegalArgumentException
 Message:  No matching method x found taking 0 args
