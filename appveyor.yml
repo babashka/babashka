@@ -65,6 +65,8 @@ build_script:
 
     bb release-artifact %zip%
 
+    set BABASHKA_EDN=
+
     set BABASHKA_TEST_ENV=native
 
     call script/test.bat
