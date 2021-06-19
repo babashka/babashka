@@ -464,3 +464,20 @@ STDIN is TTY?: true
 STDOUT is TTY?: true
 STDERR is TTY?: false
 ```
+
+## [normalize-keywords.clj](normalize-keywords.clj)
+
+Provide a Clojure file to the script and it will print the Clojure file with
+auto-resolved keywords normalized to fully qualified ones: `::set/foo` becomes `:clojure.set/foo`.
+
+``` clojure
+$ cat /tmp/test.clj
+(ns test (:require [clojure.set :as set]))
+
+[::set/foo ::bar]
+
+$ bb examples/normalize-keywords.clj /tmp/test.clj
+(ns test (:require [clojure.set :as set]))
+
+[:clojure.set/foo :test/bar]
+```
