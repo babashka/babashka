@@ -468,7 +468,8 @@ STDERR is TTY?: false
 ## [normalize-keywords.clj](normalize-keywords.clj)
 
 Provide a Clojure file to the script and it will print the Clojure file with
-auto-resolved keywords normalized to fully qualified ones: `::set/foo` becomes `:clojure.set/foo`.
+auto-resolved keywords normalized to fully qualified ones without double colons:
+`::set/foo` becomes `:clojure.set/foo`.
 
 ``` clojure
 $ cat /tmp/test.clj
