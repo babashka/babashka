@@ -12,7 +12,7 @@
                 (enumeration-seq
                  (.entries jar-file))))))
 
-(deftest uberjar-test
+(deftest ^:skip-windows uberjar-test
   (testing "uberjar with --main"
     (let [tmp-file (java.io.File/createTempFile "uber" ".jar")
           path (.getPath tmp-file)]
