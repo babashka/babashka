@@ -55,16 +55,16 @@
   (testing "map returned from task"
     (test-utils/with-config '{:tasks {foo {:task {:a 1 :b 2}}}}
       (is (= {:a 1 :b 2} (bb "run" "--prn" "foo")))))
-  (let [tmp-dir (fs/create-temp-dir)
-        out     (str (fs/file tmp-dir "out.txt"))
+  (let [tmp-dir  (fs/create-temp-dir)
+        out      (str (fs/file tmp-dir "out.txt"))
         echo-cmd (if main/windows? "cmd /c echo" "echo")
-        ls-cmd (if main/windows? "cmd /c dir" "ls")
-        rn (partial test-utils/normalize)]
+        ls-cmd   (if main/windows? "cmd /c dir" "ls")
+        fix-lines test-utils/normalize]
     (testing "shell test"
       (test-utils/with-config {:tasks {'foo (list 'shell {:out out}
                                               echo-cmd "hello")}}
         (bb "foo")
-        (is (= "hello\n" (rn (slurp out))))))
+        (is (= "hello\n" (fix-lines (slurp out))))))
     (fs/delete out)
     (testing "shell test with :continue fn"
       (test-utils/with-config {:tasks {'foo (list '-> (list 'shell {:out      out
@@ -96,7 +96,7 @@
       (test-utils/with-config {:tasks {'foo (list 'clojure {:out out}
                                               "-M -e" "(println :yolo)")}}
         (bb "foo")
-        (is (= ":yolo\n" (rn (slurp out))))))
+        (is (= ":yolo\n" (fix-lines (slurp out))))))
     (fs/delete out)
     (testing "depends"
       (test-utils/with-config {:tasks {'quux (list 'spit out "quux\n")
