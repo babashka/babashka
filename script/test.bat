@@ -40,3 +40,10 @@ REM call lein test :only babashka.pod-test || exit /B 1
 
 set BABASHKA_SOCKET_REPL_TEST=true
 call lein test :only babashka.impl.socket-repl-test || exit /B 1
+
+set BABASHKA_PRELOADS=
+set BABASHKA_CLASSPATH=
+set BABASHKA_PRELOADS_TEST=
+set BABASHKA_CLASSPATH_TEST=
+set BABASHKA_POD_TEST=
+set BABASHKA_SOCKET_REPL_TEST=
