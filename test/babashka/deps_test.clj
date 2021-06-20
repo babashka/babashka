@@ -42,14 +42,14 @@
 (babashka.deps/clojure [\"-P\"])
 true
 "))))
-  (is (= "6\n" (bb "
+  (is (= "6\n" (test-utils/normalize (bb "
 (require '[babashka.deps :as deps])
 (require '[babashka.process :as p])
 
 (-> (babashka.deps/clojure [\"-M\" \"-e\" \"(+ 1 2 3)\"] {:out :string})
     (p/check)
     :out)
-")))
+"))))
   (when-not test-utils/native?
     (is (thrown-with-msg? Exception #"Option changed" (bb "
 (require '[babashka.deps :as deps])

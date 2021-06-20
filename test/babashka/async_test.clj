@@ -4,7 +4,7 @@
    [clojure.edn :as edn]
    [clojure.test :as t :refer [deftest is]]))
 
-(deftest alts!!-test
+(deftest ^:skip-windows alts!!-test
   (is (= "process 2\n" (test-utils/bb nil "
    (defn async-command [& args]
      (async/thread (apply shell/sh \"bash\" \"-c\" args)))

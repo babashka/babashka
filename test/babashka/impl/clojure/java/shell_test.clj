@@ -3,7 +3,7 @@
             [babashka.test-utils :as test-utils]
             [clojure.string :as str]))
 
-(deftest with-sh-env-test
+(deftest ^:skip-windows with-sh-env-test
   (is (= "\"BAR\""
          (str/trim (test-utils/bb nil "
 (-> (shell/with-sh-env {:FOO \"BAR\"}

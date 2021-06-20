@@ -10,4 +10,4 @@
 (deftest transit-test
   (is (= "\"foo\"\n{:a [1 2]}\n"
          (bb (format "(load-file \"%s\")"
-                     (.getPath (io/file "test-resources" "babashka" "transit.clj")))))))
+               (test-utils/escape-file-paths (.getPath (io/file "test-resources" "babashka" "transit.clj"))))))))
