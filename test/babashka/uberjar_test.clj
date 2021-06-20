@@ -1,9 +1,9 @@
 (ns babashka.uberjar-test
   (:require
+    [babashka.main :as main]
     [babashka.test-utils :as tu]
     [clojure.string :as str]
-    [clojure.test :as t :refer [deftest is testing]]
-    [babashka.main :as main]))
+    [clojure.test :as t :refer [deftest is testing]]))
 
 (defn count-entries [jar]
   (with-open [jar-file (java.util.jar.JarFile. jar)]

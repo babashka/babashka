@@ -49,7 +49,7 @@
   "REPL with predefined hooks for attachable socket server."
   ([sci-ctx] (repl sci-ctx nil))
   ([sci-ctx {:keys [:init :read :eval :need-prompt :prompt :flush :print :caught]}]
-   (let [in @sci/in #_(r/indexing-push-back-reader (r/push-back-reader @sci/in))]
+   (let [in @sci/in]
      (m/repl
       :init (or init
                 (fn []

@@ -8,6 +8,7 @@
    [clojure.edn :as edn]
    [clojure.string :as str]
    [clojure.test :as test :refer [*report-counters*]]
+   [clojure.tools.reader.reader-types :as r]
    [sci.core :as sci]
    [sci.impl.vars :as vars]))
 
@@ -51,7 +52,8 @@
         in (if (string? input-or-opts)
              input-or-opts (:in input-or-opts))
         is (when in
-             (java.io.StringReader. in))
+             (r/indexing-push-back-reader
+              (r/push-back-reader (java.io.StringReader. in))))
         bindings-map (cond-> {sci/out os
                               sci/err es}
                        is (assoc sci/in is))]
