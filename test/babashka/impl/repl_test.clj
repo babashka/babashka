@@ -47,6 +47,8 @@
   (assert-repl "1\n(dec *1)(+ *2 *2)" "2")
   (assert-repl "1\n(dec *1)(+ *2 *2)" "2")
   (assert-repl "*command-line-args*" "[\"a\" \"b\" \"c\"]")
+  (assert-repl "(read-line)hello" "hello")
+  (assert-repl "(read-line)\nhello" "hello")
   (assert-repl-error "(+ 1 nil)" "NullPointerException")
   (assert-repl-error "(/ 1 0) (pst 1)" "Divide by zero\n\tclojure.lang.Numbers"))
 
