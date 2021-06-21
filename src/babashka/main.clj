@@ -314,7 +314,7 @@ Use bb run --help to show this help output.
 (def namespaces
   (cond->
       {'user {'*input* (ctx-fn
-                        (fn [_ctx]
+                        (fn [_ctx _bindings]
                           (force @input-var))
                         nil)}
        'clojure.tools.cli tools-cli-namespace
