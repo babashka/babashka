@@ -38,6 +38,9 @@ fi
 
 BABASHKA_BINARY=${BABASHKA_BINARY:-"bb"}
 
+# the initialize-at-build-time flag is generated with
+# (->> (map ns-name (all-ns)) (remove #(str/starts-with? % "clojure")) (map #(str/split (str %) #"\.")) (keep butlast) (map #(str/join "." %)) distinct (map munge) (cons "clojure"))
+
 args=( "-jar" "$BABASHKA_JAR"
        "-H:Name=$BABASHKA_BINARY"
        "-H:+ReportExceptionStackTraces"
