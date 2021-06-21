@@ -100,6 +100,7 @@
           java.io.InputStream
           java.io.IOException
           java.io.OutputStream
+          java.io.FileInputStream
           java.io.FileReader
           java.io.InputStreamReader
           java.io.OutputStreamWriter
