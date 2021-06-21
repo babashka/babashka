@@ -218,6 +218,9 @@
                  ;; 'slingshot.test-test
                  )
 
+(test-namespaces 'hasch.test
+                 )
+
 ;;;; final exit code
 
 (let [{:keys [:test :fail :error] :as m} @status]

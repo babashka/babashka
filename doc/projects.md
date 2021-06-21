@@ -584,6 +584,20 @@ NOTE: slingshot's tests pass with babashka except one: catching a record types
 by name. This is due to a difference in how records are implemented in
 babashka. This may be fixed later if this turns out to be really useful.
 
+### [hasch](https://github.com/replikativ/hasch)
+
+Cross-platform (JVM and JS atm.) edn data structure hashing for Clojure.
+
+``` clojure
+$ export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {io.replikativ/hasch {:mvn/version "0.3.7"}}}')
+$ bb -e "(use 'hasch.core) (edn-hash (range 100))"
+(168 252 48 247 180 148 51 182 108 76 20 251 155 187 66 8 124 123 103 28 250 151 26 139 10 216 119 168 101 123 130 225 66 168 48 63 53 99 25 117 173 29 198 229 101 196 162 30 23 145 7 166 232 193 57 239 226 238 240 41 254 78 135 122)
+```
+
+NOTE: hasch's tests pass with babashka except the test around hashing
+records. This is due to a difference in how records are implemented in
+babashka. This may be fixed later if this turns out to be really useful.
+
 ## Pods
 
 [Babashka pods](https://github.com/babashka/babashka.pods) are programs that can
