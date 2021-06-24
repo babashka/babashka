@@ -12,7 +12,7 @@
                 (enumeration-seq
                  (.entries jar-file))))))
 
-(deftest ^:skip-windows uberjar-test
+(deftest uberjar-test
   (testing "uberjar with --main"
     (let [tmp-file (java.io.File/createTempFile "uber" ".jar")
           path (.getPath tmp-file)]
@@ -45,13 +45,16 @@
         (is (= "(\"42\")\n" (tu/bb nil "--jar" path "-m" "my.main-main" "42")))
         (is (= "(\"42\")\n" (tu/bb nil "--classpath" path "-m" "my.main-main" "42")))
         (is (= "(\"42\")\n" (tu/bb nil path "42"))))))
-  (testing "throw on empty classpath"
-    (let [tmp-file (java.io.File/createTempFile "uber" ".jar")
-          path (.getPath tmp-file)]
-      (.deleteOnExit tmp-file)
-      (is (thrown-with-msg?
-           Exception #"classpath"
-           (tu/bb nil "uberjar" path "-m" "my.main-main")))))
+
+  ; this test fails the windows native test in CI
+  (when-not main/windows?
+    (testing "throw on empty classpath"
+      (let [tmp-file (java.io.File/createTempFile "uber" ".jar")
+            path     (.getPath tmp-file)]
+        (.deleteOnExit tmp-file)
+        (is (thrown-with-msg?
+              Exception #"classpath"
+              (tu/bb nil "uberjar" path "-m" "my.main-main"))))))
   (testing "ignore empty entries on classpath"
     (let [tmp-file (java.io.File/createTempFile "uber" ".jar")
           path (.getPath tmp-file)

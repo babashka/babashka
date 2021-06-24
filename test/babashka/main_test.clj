@@ -200,6 +200,7 @@
   (is (true? (bb nil "(.exists (io/file \"README.md\"))")))
   (is (true? (bb nil "(.canWrite (io/file \"README.md\"))"))))
 
+; skipped because the windows shell doesn't seem to deal well with infinite things
 (deftest ^:skip-windows pipe-test
   (when (and test-utils/native?
              (not main/windows?))
@@ -208,12 +209,18 @@
                          head -n10"))
           out (str/split-lines out)
           out (map edn/read-string out)]
-      (is (= (take 10 (map #(* % %) (range))) out))))
-  (when (and test-utils/native?
-             (not main/windows?))
+      (is (= (take 10 (map #(* % %) (range))) out)))
     (let [out (:out (sh "bash" "-c" "./bb -O '(repeat \"dude\")' |
                          ./bb --stream '(str *input* \"rino\")' |
                          ./bb -I '(take 3 *input*)'"))
+          out (edn/read-string out)]
+      (is (= '("duderino" "duderino" "duderino") out)))))
+
+(deftest ^:windows-only win-pipe-test
+  (when (and test-utils/native? main/windows?)
+    (let [out (:out (sh "cmd" "/c" ".\\bb -O \"(repeat 50 \\\"dude\\\")\" |"
+                         ".\\bb --stream \"(str *input* \\\"rino\\\")\" |"
+                         ".\\bb -I \"(take 3 *input*)\""))
           out (edn/read-string out)]
       (is (= '("duderino" "duderino" "duderino") out)))))
 
@@ -255,15 +262,11 @@
         (is (every? number? parsed))
         (is (= process-count (count parsed)))))))
 
-(deftest ^:skip-windows create-temp-file-test
-  (let [temp-dir-path (System/getProperty "java.io.tmpdir")]
-    (is (= true
-           (bb nil (format "(let [tdir (io/file \"%s\")
-                                 tfile
-                                 (File/createTempFile \"ctf\" \"tmp\" tdir)]
+(deftest create-temp-file-test
+  (is (= true
+        (bb nil "(let [tfile (File/createTempFile \"ctf\" \"tmp\")]
                              (.deleteOnExit tfile) ; for cleanup
-                             (.exists tfile))"
-                           temp-dir-path))))))
+                             (.exists tfile))"))))
 
 (deftest wait-for-port-test
   (let [server (test-utils/start-server! 1777)]
@@ -475,6 +478,11 @@
       (prn "output:" v)
       (is v))))
 
+(deftest win-file-reader-test
+  (let [v (bb nil "(slurp (io/reader (java.io.FileReader. \"test-resources/babashka/empty.clj\")))")]
+    (prn "output:" v)
+    (is (empty? v))))
+
 (deftest ^:skip-windows download-and-extract-test
   ;; Disabled because Github throttles bandwidth and this makes for a very slow test.
   ;; TODO: refactor into individual unit tests
@@ -658,6 +666,12 @@ true")))
     (is (str/ends-with?
          (bb nil "-e" "(.get (.command (.info (java.lang.ProcessHandle/current))))")
          "bb"))))
+
+(deftest ^:windows-only win-process-handler-info-test
+  (when (and test-utils/native? main/windows?)
+    (is (str/ends-with?
+          (bb nil "-e" "(.get (.command (.info (java.lang.ProcessHandle/current))))")
+          "bb.exe"))))
 
 (deftest interop-concurrency-test
   (is (= ["true" 3] (last (bb nil "-e"

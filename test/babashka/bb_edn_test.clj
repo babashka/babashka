@@ -244,21 +244,23 @@
                                                    *server* server]
                                            (babashka.tasks/run 'server)))}}
       (is (= '([8 :foo] [8 :bar] [11 :foo] [11 :bar] [15 :foo] [15 :bar])
-            (bb "run" "--prn" "run-all"))))))
-
-
-(deftest ^:skip-windows unix-task-test
+            (bb "run" "--prn" "run-all")))))
   (let [tmp-dir (fs/create-temp-dir)
-        out     (str (fs/file tmp-dir "out.txt"))]
+        out     (str (fs/file tmp-dir "out.txt"))
+        ls-cmd  (if main/windows? "cmd /c dir" "ls")
+        expected-output (if main/windows? "File Not Found" "foobar")]
     (testing "shell test with :continue"
       (test-utils/with-config {:tasks {'foo (list 'shell {:out      out
                                                           :err      out
                                                           :continue true}
-                                              "ls foobar")}}
+                                              (str ls-cmd " foobar"))}}
         (bb "foo")
         (is (str/includes? (slurp out)
-              "foobar"))))
-    (fs/delete out))
+              expected-output))))
+    (fs/delete out)))
+
+
+(deftest ^:skip-windows unix-task-test
   (testing "shell pipe test"
     (test-utils/with-config '{:tasks {a (-> (shell {:out :string}
                                               "echo hello")
@@ -266,6 +268,19 @@
                                           :out)}}
       (let [s (bb "run" "--prn" "a")]
         (is (= "hello\n" s))))))
+
+(deftest ^:windows-only win-task-test
+  (when main/windows?
+    (testing "shell pipe test"
+      ; this task prints the contents of deps.edn
+      (test-utils/with-config '{:tasks {a (->> (shell {:out :string}
+                                                 "cmd /c echo deps.edn")
+                                            :out
+                                            clojure.string/trim-newline
+                                            (shell {:out :string} "cmd /c type")
+                                            :out)}}
+        (let [s (bb "run" "--prn" "a")]
+          (is (str/includes? s "paths")))))))
 
 (deftest list-tasks-test
   (test-utils/with-config {}
