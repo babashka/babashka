@@ -128,10 +128,12 @@
   (if (contains? cli-args "--run-as-pod")
     (do (debug "running pod with cli args" cli-args)
         (run-pod cli-args))
-    (let [native? (contains? cli-args "--native")]
-      (pods/load-pod (if native?
-                       (into ["./bb" "test-resources/pod.clj" "--run-as-pod"] cli-args)
-                       (into ["lein" "bb" "test-resources/pod.clj" "--run-as-pod"] cli-args)))
+    (let [native? (contains? cli-args "--native")
+          windows? (contains? cli-args "--windows")]
+      (pods/load-pod (cond
+                       native?  (into ["./bb" "test-resources/pod.clj" "--run-as-pod"] cli-args)
+                       windows? (into ["cmd" "/c" "lein" "bb" "test-resources/pod.clj" "--run-as-pod"] cli-args)
+                       :else    (into ["lein" "bb" "test-resources/pod.clj" "--run-as-pod"] cli-args)))
       (require '[pod.test-pod])
       (if (contains? cli-args "--json")
         (do
