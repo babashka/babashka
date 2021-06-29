@@ -298,6 +298,9 @@ handling of SIGINT and SIGPIPE. This can be done by setting
 
 ## Articles, podcasts and videos
 
+- [Integrating Babashka into Bazel](https://timjaeger.io/20210627-integrating-babashka-with-bazel.html) by Tim Jäger
+- [Talk](https://youtu.be/Yjeh57eE9rg): Babashka: a native Clojure interpreter for scripting — The 2021 Graal Workshop at CGO
+- [Blog](https://savo.rocks/posts/playing-new-music-on-old-car-stereo-with-clojure-and-babashka/): Playing New Music On Old Car Stereo With Clojure And Babashka
 - [Homoiconicity and feature flags](https://martinklepsch.org/posts/homoiconicity-and-feature-flags.html) by Martin Klepsch
 - [Clojure like its PHP](https://eccentric-j.com/blog/clojure-like-its-php.html) by Jay Zawrotny (eccentric-j)
 - [Deploy babashka script to AWS Lambda](https://www.jocas.lt/blog/post/babashka-aws-lambda/) by Dainius Jocas.
