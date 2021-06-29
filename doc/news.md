@@ -7,7 +7,7 @@ Twitter.
 
 ## 2021-06
 
-- New babashka release 0.4.4-0.4.5
+- New babashka 0.4.4 - 0.4.5 released.
 - Share your babashka creations on the [Show and tell](https://github.com/babashka/babashka/discussions/categories/show-and-tell) forum on Github.
 - [Integrating Babashka into Bazel](https://timjaeger.io/20210627-integrating-babashka-with-bazel.html) by Tim Jäger
 - [Babashka + scittle guestbook example](https://github.com/kloimhardt/babashka-scittle-guestbook)
@@ -22,7 +22,7 @@ Twitter.
 
 ## 2021-05
 
-- Babashka 0.3.6-0.4.3 release. Highlights:
+- Babashka 0.3.7 - 0.4.3 released. Highlights:
     - New [task runner feature](https://book.babashka.org/#tasks).
     - Add [Selmer](https://github.com/yogthos/Selmer) to built-in libraries.
     - Add compatibility with [jasentaa](https://github.com/rm-hull/jasentaa).
