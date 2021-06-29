@@ -28,8 +28,6 @@ Twitter.
     - Add compatibility with [jasentaa](https://github.com/rm-hull/jasentaa).
 - New [website](https://babashka.org).
 - [Talk](https://youtu.be/Yjeh57eE9rg): Babashka: a native Clojure interpreter for scripting — The 2021 Graal Workshop at CGO
-- Babashka is now compatible with [jasentaa](https://twitter.com/borkdude/status/1391346873986805763), a parser combinator library.
-- Babashka now comes with the [Selmer](https://twitter.com/borkdude/status/1390280042618540037) templating library.
 - [Blog](https://savo.rocks/posts/playing-new-music-on-old-car-stereo-with-clojure-and-babashka/): Playing New Music On Old Car Stereo With Clojure And Babashka
 - [Homoiconicity and feature flags](https://martinklepsch.org/posts/homoiconicity-and-feature-flags.html) by Martin Klepsch.
 - [Manage your macOS setup](https://github.com/cldwalker/osx-setup) using babashka.
