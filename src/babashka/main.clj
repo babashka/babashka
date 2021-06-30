@@ -117,8 +117,9 @@ or:    bb [global-opts] subcommand [subcommand opts] [cmdline args]
 
 Global opts:
 
-  -cp, --classpath     Classpath to use. Overrides bb.edn classpath.
-  --debug              Print debug information and internal stacktrace in case of exception.
+  -cp, --classpath         Classpath to use. Overrides bb.edn classpath.
+  --debug                  Print debug information and internal stacktrace in case of exception.
+  -Xmx<size>[g|G|m|M|k|K]  Set a maximum heap size (e.g. -Xmx256M to limit the heap to 256MB).
 
 Help:
 
@@ -126,6 +127,7 @@ Help:
   version            Print the current version of babashka.
   describe           Print an EDN map with information about this version of babashka.
   doc <var|ns>       Print docstring of var or namespace. Requires namespace if necessary.
+  -XX:PrintFlags=    Print help text for \"expert\" runtime options (GC/safepoint options).
 
 Evaluation:
 
