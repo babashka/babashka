@@ -25,7 +25,7 @@
   - [Invoke vim inside a script](#invoke-vim-inside-a-script)
   - [Portal](#portal)
   - [Image viewer](#image-viewer)
-  - [File server](#file-server)
+  - [HTTP server](#http-server)
   - [Torrent viewer](#torrent-viewer)
   - [cprop.clj](#cpropclj)
   - [fzf](#fzf)
@@ -372,14 +372,15 @@ $ examples/image-viewer.clj
 
 See [image-viewer.clj](image-viewer.clj).
 
-## File server
+## HTTP Server
 
-Opens browser window and lets user navigate through filesystem.
+Opens browser window and lets user navigate through filesystem, similar to
+`python3 -m http.server`.
 
 Example usage:
 
 ``` shell
-$ examples/file-server.clj
+$ examples/http-server.clj
 ```
 
 See [file-server.clj](file-server.clj).

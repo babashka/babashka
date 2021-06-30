@@ -34,9 +34,8 @@ set BABASHKA_CLASSPATH=test-resources/babashka/src_for_classpath_test/env
 echo "running tests part 4"
 call lein test :only babashka.classpath-test/classpath-env-test || exit /B 1
 
-echo "not running pod tests on windows (yet)"
-REM set BABASHKA_POD_TEST=true
-REM call lein test :only babashka.pod-test || exit /B 1
+set BABASHKA_POD_TEST=true
+call lein test :only babashka.pod-test || exit /B 1
 
 set BABASHKA_SOCKET_REPL_TEST=true
 call lein test :only babashka.impl.socket-repl-test || exit /B 1
