@@ -21,14 +21,15 @@
 
 (def xml-str (xml/indent-str (xml/sexp-as-element pet-store-sexp)))
 
-(println "Our XML as a string is:" xml-str)
+(println "Our XML as a string is:")
+(println xml-str)
 
 (comment xml-str is
          "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-           <pet-store>
-            <family vip=\"true\">
-             <owners>
-              <name>Terry Smith</name>...")
+          <pet-store>
+           <family>
+            <owners>
+             <name>Terry Smith</name>...")
 
 ; and then we can parse that XML back into a data structure
 
@@ -39,7 +40,7 @@
      :attrs {},
      :content
        ({:tag :family,
-         :attrs {:vip \"true\"},
+         :attrs {},
          :content ...})}"
 
 
