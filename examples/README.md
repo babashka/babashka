@@ -32,6 +32,9 @@
   - [digitalocean-ping.clj](#digitalocean-pingclj)
   - [download-aliases.clj](#download-aliasesclj)
   - [Is TTY?](#is-tty)
+  - [normalize-keywords.clj](#normalize-keywordsclj)
+  - [Check stdin for data](#check-stdin-for-data)
+  - [Using org.clojure/data.xml](#using-orgclojuredataxml)
 
 Here's a gallery of useful examples. Do you have a useful example? PR welcome!
 
@@ -482,4 +485,30 @@ $ bb examples/normalize-keywords.clj /tmp/test.clj
 (ns test (:require [clojure.set :as set]))
 
 [:clojure.set/foo :test/bar]
+```
+
+## Check stdin for data
+
+```shell
+# when piping something in, we get a positive number
+$ echo 'abc' | bb '(pos? (.available System/in))'
+true
+# even if we echo an empty string, we still get the newline
+$ echo '' | bb '(pos? (.available System/in))'
+true
+# with nothing passed in, we finally return false
+$ bb '(pos? (.available System/in))'
+false
+```
+
+## Using org.clojure/data.xml
+
+[xml-example.clj](xml-example.clj) explores some of the capabilities provided
+by the `org.clojure/data.xml` library (required as `xml` by default in Babashka). 
+While running the script will show some output, reading the file shows the library 
+in use.
+
+```shell
+$ bb examples/xml-example.clj
+... some vaguely interesting XML manipulation output
 ```
