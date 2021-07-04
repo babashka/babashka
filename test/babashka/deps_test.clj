@@ -56,4 +56,8 @@ true
 (babashka.deps/clojure [\"-Sresolve-tags\"])
 "))))
   (is (true? (bb "
-(= 5 (:exit @(babashka.deps/clojure [] {:in \"(System/exit 5)\" :out :string})))"))))
+(= 5 (:exit @(babashka.deps/clojure [] {:in \"(System/exit 5)\" :out :string})))")))
+  (testing "start from other directory"
+    (is (= {1 {:id 1}, 2 {:id 2}}
+           (edn/read-string (bb "
+(:out @(babashka.deps/clojure [\"-M\" \"-e\" \"(require 'medley.core) (medley.core/index-by :id [{:id 1} {:id 2}])\"] {:out :string :dir \"test-resources/clojure-dir-test\"}))"))))))
