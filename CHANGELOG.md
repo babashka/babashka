@@ -9,6 +9,7 @@ Babashka proper:
 - Passing form on Windows with question mark breaks evaluation [#889](https://github.com/babashka/babashka/issues/889)
 - `(read-line)` is buggy in REPL [#899](https://github.com/babashka/babashka/issues/899)
 - Add `java.io.FileInputStream`. This fixes compatibility with [replikativ/hasch](https://github.com/replikativ/hasch).
+- `babashka.tasks/clojure` with `:dir` option doesn't resolve deps in `:dir` [#914](https://github.com/babashka/babashka/issues/914)
 
 Sci: minor perf improvements.
 
