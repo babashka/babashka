@@ -109,6 +109,7 @@
      (binding [*in* @sci/in
                *out* @sci/out
                *err* @sci/err
+               deps/*dir* (:dir opts)
                deps/*process-fn* (fn
                                    ([cmd] (p/process cmd opts))
                                    ([cmd _] (p/process cmd opts)))
