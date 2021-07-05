@@ -221,6 +221,8 @@
 (test-namespaces 'hasch.test
                  )
 
+(test-namespaces 'omniconf.core-test)
+
 ;;;; final exit code
 
 (let [{:keys [:test :fail :error] :as m} @status]
