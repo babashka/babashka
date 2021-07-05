@@ -31,11 +31,12 @@
   (println))
 
 (defmethod clojure.test/report :end-test-var [_m]
-  (let [{:keys [:fail :error]} @*report-counters*]
-    (when (and (= "true" (System/getenv "BABASHKA_FAIL_FAST"))
-               (or (pos? fail) (pos? error)))
-      (println "=== Failing fast")
-      (System/exit 1))))
+  (when-let [rc *report-counters*]
+    (let [{:keys [:fail :error]} @rc]
+      (when (and (= "true" (System/getenv "BABASHKA_FAIL_FAST"))
+                 (or (pos? fail) (pos? error)))
+        (println "=== Failing fast")
+        (System/exit 1)))))
 
 (defn bb-jvm [input-or-opts & args]
   (reset! cp/cp-state nil)
