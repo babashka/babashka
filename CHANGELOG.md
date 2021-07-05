@@ -11,6 +11,10 @@ Babashka proper:
 - Add `java.io.FileInputStream`. This fixes compatibility with [replikativ/hasch](https://github.com/replikativ/hasch).
 - `babashka.tasks/clojure` with `:dir` option doesn't resolve deps in `:dir` [#914](https://github.com/babashka/babashka/issues/914)
 
+Deps.clj:
+
+Update to v0.0.16 which corresponds to clojure CLI `1.10.3.855`.
+
 Sci: minor perf improvements.
 
 ## 0.4.6
