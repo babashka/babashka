@@ -3,7 +3,9 @@
   (:require [clojure.pprint :as pprint]
             [sci.core :as sci]))
 
-(defonce patch-option-table
+(defonce patched? (volatile! false))
+
+(when-not @patched?
   (alter-var-root #'pprint/write-option-table
                   (fn [m]
                     (zipmap (keys m)
@@ -16,12 +18,12 @@
             #(when-let [v (get t (key %))] [v (val %)])
             m))))
 
-(alter-var-root #'pprint/table-ize (constantly new-table-ize))
-
-(alter-meta! #'pprint/write-option-table dissoc :private)
-(alter-meta! #'pprint/with-pretty-writer dissoc :private)
-(alter-meta! #'pprint/pretty-writer? dissoc :private)
-(alter-meta! #'pprint/make-pretty-writer dissoc :private)
+(when-not @patched?
+  (alter-var-root #'pprint/table-ize (constantly new-table-ize))
+  (alter-meta! #'pprint/write-option-table dissoc :private)
+  (alter-meta! #'pprint/with-pretty-writer dissoc :private)
+  (alter-meta! #'pprint/pretty-writer? dissoc :private)
+  (alter-meta! #'pprint/make-pretty-writer dissoc :private))
 
 (def new-write
   (fn [object & kw-args]
@@ -45,10 +47,10 @@
             (if (nil? optval)
               (.toString ^java.io.StringWriter base-writer))))))))
 
-(alter-var-root #'pprint/write (constantly new-write))
+(when-not @patched?
+  (alter-var-root #'pprint/write (constantly new-write)))
 
 (def pprint-ns (sci/create-ns 'clojure.pprint nil))
-
 
 (defn print-table
   "Prints a collection of maps in a textual table. Prints table headings
@@ -72,7 +74,8 @@
    (pprint s @sci/out))
   ([s writer]
    (binding [pprint/*print-right-margin* @print-right-margin
-             #_#_pprint/*print-pprint-dispatch* @print-pprint-dispatch]
+             pprint/*print-pprint-dispatch* @print-pprint-dispatch
+             ]
      (pprint/pprint s writer))))
 
 (def pprint-namespace
@@ -84,10 +87,12 @@
    ;; we alter-var-root-ed write above, so this should copy the right function
    'write (sci/copy-var pprint/write pprint-ns)
    'simple-dispatch (sci/copy-var pprint/simple-dispatch pprint-ns)
-   ;; 'formatter-out (sci/copy-var pprint/formatter-out pprint-ns)
-   ;; 'cached-compile (sci/copy-var pprint/cached-compile pprint-ns) #_(sci/new-var 'cache-compile @#'pprint/cached-compile (meta @#'pprint/cached-compile))
-   ;; 'init-navigator (sci/copy-var pprint/init-navigator pprint-ns)
-   ;; 'execute-format (sci/copy-var pprint/execute-format pprint-ns)
-   ;; 'with-pprint-dispatch (sci/copy-var pprint/with-pprint-dispatch pprint-ns)
-   ;; '*print-pprint-dispatch* print-pprint-dispatch
+   'formatter-out (sci/copy-var pprint/formatter-out pprint-ns)
+   'cached-compile (sci/copy-var pprint/cached-compile pprint-ns) #_(sci/new-var 'cache-compile @#'pprint/cached-compile (meta @#'pprint/cached-compile))
+   'init-navigator (sci/copy-var pprint/init-navigator pprint-ns)
+   'execute-format (sci/copy-var pprint/execute-format pprint-ns)
+   'with-pprint-dispatch (sci/copy-var pprint/with-pprint-dispatch pprint-ns)
+   '*print-pprint-dispatch* print-pprint-dispatch
    })
+
+(vreset! patched? true)
