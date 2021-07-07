@@ -35,6 +35,7 @@
   - [normalize-keywords.clj](#normalize-keywordsclj)
   - [Check stdin for data](#check-stdin-for-data)
   - [Using org.clojure/data.xml](#using-orgclojuredataxml)
+  - [Simple logger](#simple-logger)
 
 Here's a gallery of useful examples. Do you have a useful example? PR welcome!
 
@@ -511,4 +512,13 @@ in use.
 ```shell
 $ bb examples/xml-example.clj
 ... some vaguely interesting XML manipulation output
+```
+
+## Simple logger
+
+[logger.clj](logger.clj) is a simple logger that works in bb.
+
+``` clojure
+$ bb "(require 'logger) (logger/log \"the logger says hi\")"
+<expr>:1:19 the logger says hi 
 ```
