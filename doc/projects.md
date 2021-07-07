@@ -628,6 +628,10 @@ FOO=1 script.clj
 "1"
 ```
 
+### [ffclj](https://github.com/luissantos/ffclj)
+
+A wrapper around executing `ffmpeg` and `ffprobe`. Supports progress reporting via core.async channels.
+
 ## Pods
 
 [Babashka pods](https://github.com/babashka/babashka.pods) are programs that can
