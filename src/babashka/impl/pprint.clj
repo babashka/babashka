@@ -63,7 +63,7 @@
   (sci/new-dynamic-var '*print-right-margin* pprint/*print-right-margin* {:ns pprint-ns}))
 
 (def print-pprint-dispatch
-  (sci/new-dynamic-var '*print-pprint-dispatch pprint/*print-pprint-dispatch* {:ns pprint-ns}))
+  (sci/new-dynamic-var '*print-pprint-dispatch* pprint/*print-pprint-dispatch* {:ns pprint-ns}))
 
 (defn pprint
   "Pretty print object to the optional output writer. If the writer is not provided,
@@ -72,7 +72,7 @@
    (pprint s @sci/out))
   ([s writer]
    (binding [pprint/*print-right-margin* @print-right-margin
-             pprint/*print-pprint-dispatch* @print-pprint-dispatch]
+             #_#_pprint/*print-pprint-dispatch* @print-pprint-dispatch]
      (pprint/pprint s writer))))
 
 (def pprint-namespace
@@ -84,9 +84,10 @@
    ;; we alter-var-root-ed write above, so this should copy the right function
    'write (sci/copy-var pprint/write pprint-ns)
    'simple-dispatch (sci/copy-var pprint/simple-dispatch pprint-ns)
-   'formatter-out (sci/copy-var pprint/formatter-out pprint-ns)
-   'cached-compile (sci/copy-var pprint/cached-compile pprint-ns) #_(sci/new-var 'cache-compile @#'pprint/cached-compile (meta @#'pprint/cached-compile))
-   'init-navigator (sci/copy-var pprint/init-navigator pprint-ns)
-   'execute-format (sci/copy-var pprint/execute-format pprint-ns)
-   'with-pprint-dispatch (sci/copy-var pprint/with-pprint-dispatch pprint-ns)
-   '*print-pprint-dispatch* print-pprint-dispatch})
+   ;; 'formatter-out (sci/copy-var pprint/formatter-out pprint-ns)
+   ;; 'cached-compile (sci/copy-var pprint/cached-compile pprint-ns) #_(sci/new-var 'cache-compile @#'pprint/cached-compile (meta @#'pprint/cached-compile))
+   ;; 'init-navigator (sci/copy-var pprint/init-navigator pprint-ns)
+   ;; 'execute-format (sci/copy-var pprint/execute-format pprint-ns)
+   ;; 'with-pprint-dispatch (sci/copy-var pprint/with-pprint-dispatch pprint-ns)
+   ;; '*print-pprint-dispatch* print-pprint-dispatch
+   })
