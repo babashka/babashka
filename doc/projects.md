@@ -607,6 +607,8 @@ Populate a configuration map from multiple sources (environment variables,
 system variables, config files, etc.)
 
 Example:
+
+script.clj
 ``` clojure
 #!/usr/bin/env bb
 
