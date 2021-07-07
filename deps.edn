@@ -81,7 +81,8 @@
                          rm-hull/jasentaa {:mvn/version "0.2.5"}
                          slingshot/slingshot {:mvn/version "0.12.2"}
                          io.replikativ/hasch {:mvn/version "0.3.7"}
-                         com.grammarly/omniconf {:mvn/version "0.4.3"}}
+                         com.grammarly/omniconf {:mvn/version "0.4.3"}
+                         crispin/crispin {:mvn/version "0.3.8"}}
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil
                                   org.clojure/core.specs.alpha nil}}

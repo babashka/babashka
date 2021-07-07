@@ -223,6 +223,8 @@
 
 (test-namespaces 'omniconf.core-test)
 
+(test-namespaces 'crispin.core-test)
+
 ;;;; final exit code
 
 (let [{:keys [:test :fail :error] :as m} @status]
