@@ -409,13 +409,15 @@ Use bb run --help to show this help output.
                             @(resolve 'babashka.impl.selmer/selmer-validator-namespace))))
 
 (def imports
-  '{ArithmeticException java.lang.ArithmeticException
+  '{Appendable java.lang.Appendable
+    ArithmeticException java.lang.ArithmeticException
     AssertionError java.lang.AssertionError
     BigDecimal java.math.BigDecimal
     BigInteger java.math.BigInteger
     Boolean java.lang.Boolean
     Byte java.lang.Byte
     Character java.lang.Character
+    CharSequence java.lang.CharSequence
     Class java.lang.Class
     ClassNotFoundException java.lang.ClassNotFoundException
     Comparable java.lang.Comparable
