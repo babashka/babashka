@@ -43,6 +43,7 @@ The following libraries and projects are known to work with babashka.
     - [slingshot](#slingshot)
     - [hasch](#hasch)
     - [crispin](#crispin)
+    - [ffclj](#ffclj)
   - [Pods](#pods)
   - [Projects](#projects-1)
     - [babashka-test-action](#babashka-test-action)
