@@ -40,6 +40,9 @@ The following libraries and projects are known to work with babashka.
     - [rewrite-edn](#rewrite-edn)
     - [expound](#expound)
     - [omniconf](#omniconf)
+    - [slingshot](#slingshot)
+    - [hasch](#hasch)
+    - [crispin](#crispin)
   - [Pods](#pods)
   - [Projects](#projects-1)
     - [babashka-test-action](#babashka-test-action)
@@ -597,6 +600,31 @@ $ bb -e "(use 'hasch.core) (edn-hash (range 100))"
 NOTE: hasch's tests pass with babashka except the test around hashing
 records. This is due to a difference in how records are implemented in
 babashka. This may be fixed later if this turns out to be really useful.
+
+### [crispin](https://github.com/dunaj-project/crispin)
+
+Populate a configuration map from multiple sources (environment variables, 
+system variables, config files, etc.)
+
+Example:
+``` clojure
+#!/usr/bin/env bb
+
+(ns script
+  (:require [babashka.deps :as deps]))
+
+(deps/add-deps
+ '{:deps {crispin/crispin {:mvn/version "0.3.8"}}})
+
+(require '[crispin.core :as crispin])
+(def app-cfg (crispin/cfg))
+(app-cfg :foo)
+```
+
+``` text
+FOO=1 script.clj
+"1"
+```
 
 ## Pods
 
