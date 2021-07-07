@@ -15,7 +15,10 @@ Deps.clj:
 
 Update to v0.0.16 which corresponds to clojure CLI `1.10.3.855`.
 
-Sci: minor perf improvements.
+Sci:
+
+- Perf improvements
+- `case` expression generated from macro doesn't work correctly
 
 ## 0.4.6
 
