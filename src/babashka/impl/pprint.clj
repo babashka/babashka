@@ -1,8 +1,7 @@
 (ns babashka.impl.pprint
   {:no-doc true}
   (:require [clojure.pprint :as pprint]
-            [sci.core :as sci]
-            [sci.impl.vars :as vars]))
+            [sci.core :as sci]))
 
 (defonce patch-option-table
   (alter-var-root #'pprint/write-option-table
@@ -48,10 +47,8 @@
 
 (alter-var-root #'pprint/write (constantly new-write))
 
-(def pprint-ns (vars/->SciNamespace 'clojure.pprint nil))
+(def pprint-ns (sci/create-ns 'clojure.pprint nil))
 
-(def print-right-margin
-  (sci/new-dynamic-var 'print-right-margin pprint/*print-right-margin* {:ns pprint-ns}))
 
 (defn print-table
   "Prints a collection of maps in a textual table. Prints table headings
@@ -62,13 +59,20 @@
    (binding [*out* @sci/out]
      (pprint/print-table ks rows))))
 
+(def print-right-margin
+  (sci/new-dynamic-var '*print-right-margin* pprint/*print-right-margin* {:ns pprint-ns}))
+
+(def print-pprint-dispatch
+  (sci/new-dynamic-var '*print-pprint-dispatch pprint/*print-pprint-dispatch* {:ns pprint-ns}))
+
 (defn pprint
   "Pretty print object to the optional output writer. If the writer is not provided,
   print the object to the currently bound value of *out*."
   ([s]
    (pprint s @sci/out))
   ([s writer]
-   (binding [pprint/*print-right-margin* @print-right-margin]
+   (binding [pprint/*print-right-margin* @print-right-margin
+             pprint/*print-pprint-dispatch* @print-pprint-dispatch]
      (pprint/pprint s writer))))
 
 (def pprint-namespace
@@ -85,4 +89,4 @@
    'init-navigator (sci/copy-var pprint/init-navigator pprint-ns)
    'execute-format (sci/copy-var pprint/execute-format pprint-ns)
    'with-pprint-dispatch (sci/copy-var pprint/with-pprint-dispatch pprint-ns)
-   '*print-pprint-dispatch* (sci/copy-var pprint/*print-pprint-dispatch* pprint-ns)})
+   '*print-pprint-dispatch* print-pprint-dispatch})
