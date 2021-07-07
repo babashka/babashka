@@ -80,4 +80,9 @@
    ;; we alter-var-root-ed write above, so this should copy the right function
    'write (sci/copy-var pprint/write pprint-ns)
    'simple-dispatch (sci/copy-var pprint/simple-dispatch pprint-ns)
-   })
+   'formatter-out (sci/copy-var pprint/formatter-out pprint-ns)
+   'cached-compile (sci/copy-var pprint/cached-compile pprint-ns) #_(sci/new-var 'cache-compile @#'pprint/cached-compile (meta @#'pprint/cached-compile))
+   'init-navigator (sci/copy-var pprint/init-navigator pprint-ns)
+   'execute-format (sci/copy-var pprint/execute-format pprint-ns)
+   'with-pprint-dispatch (sci/copy-var pprint/with-pprint-dispatch pprint-ns)
+   '*print-pprint-dispatch* (sci/copy-var pprint/*print-pprint-dispatch* pprint-ns)})
