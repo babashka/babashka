@@ -10,6 +10,8 @@ Babashka proper:
 - `(read-line)` is buggy in REPL [#899](https://github.com/babashka/babashka/issues/899)
 - Add `java.io.FileInputStream`. This fixes compatibility with [replikativ/hasch](https://github.com/replikativ/hasch).
 - `babashka.tasks/clojure` with `:dir` option doesn't resolve deps in `:dir` [#914](https://github.com/babashka/babashka/issues/914)
+- Support `pprint/formatter-out` [#922](https://github.com/babashka/babashka/issues/922)
+- Support `pprint/cl-format` with `with-out-str` [#930](https://github.com/babashka/babashka/issues/930)
 
 Deps.clj:
 
