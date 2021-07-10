@@ -225,6 +225,9 @@
 
 (test-namespaces 'crispin.core-test)
 
+(test-namespaces 'clojure.data.json-test
+                 'clojure.data.json-test-suite-test)
+
 ;;;; final exit code
 
 (let [{:keys [:test :fail :error] :as m} @status]

@@ -82,7 +82,9 @@
                          slingshot/slingshot {:mvn/version "0.12.2"}
                          io.replikativ/hasch {:mvn/version "0.3.7"}
                          com.grammarly/omniconf {:mvn/version "0.4.3"}
-                         crispin/crispin {:mvn/version "0.3.8"}}
+                         crispin/crispin {:mvn/version "0.3.8"}
+                         org.clojure/data.json {:git/url "https://github.com/babashka/data.json.git"
+                                                :sha     "7d4ae6a2923965bf2e83962f5268f69eaa4a9a57"}}
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil
                                   org.clojure/core.specs.alpha nil}}
