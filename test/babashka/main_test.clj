@@ -12,10 +12,11 @@
    [sci.core :as sci]))
 
 (defn bb [input & args]
-  (edn/read-string
-   {:readers *data-readers*
-    :eof nil}
-   (apply test-utils/bb (when (some? input) (str input)) (map str args))))
+  (test-utils/normalize
+   (edn/read-string
+    {:readers *data-readers*
+     :eof nil}
+    (apply test-utils/bb (when (some? input) (str input)) (map str args)))))
 
 (deftest parse-opts-test
   (is (= "1667"
@@ -170,20 +171,18 @@
 (defn foo [x y]
   (+ x y))" name))
       (is (= "(defn foo [x y]\n  (+ x y))\n"
-             (test-utils/normalize
-               (bb nil (format "
+             (bb nil (format "
 (load-file \"%s\")
 (require '[clojure.repl :refer [source]])
 (with-out-str (source %s/foo))"
-                         (test-utils/escape-file-paths (.getPath tmp))
-                         name))))))
+                             (test-utils/escape-file-paths (.getPath tmp))
+                             name)))))
     (testing "print source from file on classpath"
       (is (= "(defn foo [x y]\n  (+ x y))\n"
-             (test-utils/normalize
-               (bb nil
-                   "-cp" dir
-                   "-e" (format "(require '[clojure.repl :refer [source]] '[%s])" name)
-                   "-e" (format "(with-out-str (source %s/foo))" name))))))))
+             (bb nil
+                 "-cp" dir
+                 "-e" (format "(require '[clojure.repl :refer [source]] '[%s])" name)
+                 "-e" (format "(with-out-str (source %s/foo))" name)))))))
 
 (deftest eval-test
   (is (= "120\n" (test-utils/bb nil "(eval '(do (defn foo [x y] (+ x y))
@@ -452,17 +451,28 @@
     (is (string? (bb nil "(let [sw (java.io.StringWriter.)] (clojure.pprint/pprint (range 10) sw) (str sw))"))))
   (testing "*print-right-margin*"
     (is (= "(0\n 1\n 2\n 3\n 4\n 5\n 6\n 7\n 8\n 9)\n"
-          (test-utils/normalize (bb nil "
+           (bb nil "
 (let [sw (java.io.StringWriter.)]
   (binding [clojure.pprint/*print-right-margin* 5]
-    (clojure.pprint/pprint (range 10) sw)) (str sw))"))))
+    (clojure.pprint/pprint (range 10) sw)) (str sw))")))
     (is (= "(0 1 2 3 4 5 6 7 8 9)\n"
-          (test-utils/normalize (bb nil "
+           (bb nil "
 (let [sw (java.io.StringWriter.)]
   (binding [clojure.pprint/*print-right-margin* 50]
-    (clojure.pprint/pprint (range 10) sw)) (str sw))")))))
+    (clojure.pprint/pprint (range 10) sw)) (str sw))"))))
   (testing "print-table writes to sci/out"
-    (is (str/includes? (test-utils/bb "(with-out-str (clojure.pprint/print-table [{:a 1} {:a 2}]))") "----"))))
+    (is (str/includes? (test-utils/bb "(with-out-str (clojure.pprint/print-table [{:a 1} {:a 2}]))") "----")))
+  (testing "cl-format writes to sci/out"
+    (is (= "[1, 2, 3]" (bb nil "(with-out-str (clojure.pprint/cl-format true \"~<[~;~@{~w~^, ~:_~}~;]~:>\" [1,2,3]))"))))
+  (testing "formatter-out"
+    (is (= "[1, 2, 3]\n"
+           (bb nil (pr-str '(do (require '[clojure.pprint :as pprint])
+                                (def print-array (pprint/formatter-out "~<[~;~@{~w~^, ~:_~}~;]~:>"))
+                                (pprint/with-pprint-dispatch
+                                  #(if (seqable? %)
+                                     (print-array %)
+                                     (print %))
+                                  (with-out-str (pprint/pprint [1 2 3]))))))))))
 
 (deftest read-string-test
   (testing "namespaced keyword via alias"
