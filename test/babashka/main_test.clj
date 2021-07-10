@@ -462,7 +462,18 @@
   (binding [clojure.pprint/*print-right-margin* 50]
     (clojure.pprint/pprint (range 10) sw)) (str sw))")))))
   (testing "print-table writes to sci/out"
-    (is (str/includes? (test-utils/bb "(with-out-str (clojure.pprint/print-table [{:a 1} {:a 2}]))") "----"))))
+    (is (str/includes? (test-utils/bb "(with-out-str (clojure.pprint/print-table [{:a 1} {:a 2}]))") "----")))
+  (testing "cl-format writes to sci/out"
+    (is (= "[1, 2, 3]" (bb nil "(with-out-str (clojure.pprint/cl-format true \"~<[~;~@{~w~^, ~:_~}~;]~:>\" [1,2,3]))"))))
+  (testing "formatter-out"
+    (is (= "[1, 2, 3]\n"
+           (bb nil (pr-str '(do (require '[clojure.pprint :as pprint])
+                                (def print-array (pprint/formatter-out "~<[~;~@{~w~^, ~:_~}~;]~:>"))
+                                (pprint/with-pprint-dispatch
+                                  #(if (seqable? %)
+                                     (print-array %)
+                                     (print %))
+                                  (with-out-str (pprint/pprint [1 2 3]))))))))))
 
 (deftest read-string-test
   (testing "namespaced keyword via alias"
