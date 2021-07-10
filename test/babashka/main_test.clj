@@ -467,13 +467,14 @@
     (is (= "[1, 2, 3]" (bb nil "(with-out-str (clojure.pprint/cl-format true \"~<[~;~@{~w~^, ~:_~}~;]~:>\" [1,2,3]))"))))
   (testing "formatter-out"
     (is (= "[1, 2, 3]\n"
-           (bb nil (pr-str '(do (require '[clojure.pprint :as pprint])
-                                (def print-array (pprint/formatter-out "~<[~;~@{~w~^, ~:_~}~;]~:>"))
-                                (pprint/with-pprint-dispatch
-                                  #(if (seqable? %)
-                                     (print-array %)
-                                     (print %))
-                                  (with-out-str (pprint/pprint [1 2 3]))))))))))
+           (test-utils/normalize
+            (bb nil (pr-str '(do (require '[clojure.pprint :as pprint])
+                                 (def print-array (pprint/formatter-out "~<[~;~@{~w~^, ~:_~}~;]~:>"))
+                                 (pprint/with-pprint-dispatch
+                                   #(if (seqable? %)
+                                      (print-array %)
+                                      (print %))
+                                   (with-out-str (pprint/pprint [1 2 3])))))))))))
 
 (deftest read-string-test
   (testing "namespaced keyword via alias"
