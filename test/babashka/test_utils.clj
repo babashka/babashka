@@ -14,15 +14,19 @@
 
 (set! *warn-on-reflection* true)
 
-(defn string-replace-if-windows [match replacement]
-  (fn [s]
-    (if main/windows?
-      (str/replace s match replacement)
-      s)))
+(def normalize
+  (if main/windows?
+    (fn [s] (if (string? s)
+              (str/replace s "\r\n" "\n")
+              s))
+    identity))
 
-(def normalize (string-replace-if-windows "\r\n" "\n"))
-
-(def escape-file-paths (string-replace-if-windows "\\" "\\\\"))
+(def escape-file-paths
+  (if main/windows?
+    (fn [s] (if (string? s)
+              (str/replace s "\\" "\\\\")
+              s))
+    identity))
 
 (def ^:dynamic *bb-edn-path* nil)
 
