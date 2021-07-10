@@ -33,6 +33,8 @@
    [babashka.impl.socket-repl :as socket-repl]
    [babashka.impl.tasks :as tasks :refer [tasks-namespace]]
    [babashka.impl.test :as t]
+   [babashka.impl.timbre :refer [timbre-namespace tools-logging-namespace
+                                 tools-logging-impl-namespace]]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
    [babashka.nrepl.server :as nrepl-server]
    [babashka.wait :as wait]
@@ -350,7 +352,10 @@ Use bb run --help to show this help output.
        'babashka.process process-namespace
        'clojure.core.server clojure-core-server
        'babashka.deps deps-namespace
-       'babashka.tasks tasks-namespace}
+       'babashka.tasks tasks-namespace
+       'taoensso.timbre timbre-namespace
+       'clojure.tools.logging tools-logging-namespace
+       'clojure.tools.logging.impl tools-logging-impl-namespace}
     features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace))
     features/yaml? (assoc 'clj-yaml.core @(resolve 'babashka.impl.yaml/yaml-namespace)
                           'flatland.ordered.map @(resolve 'babashka.impl.ordered/ordered-map-ns))
