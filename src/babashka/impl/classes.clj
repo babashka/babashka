@@ -106,6 +106,7 @@
           java.io.OutputStreamWriter
           java.io.PrintStream
           java.io.PushbackInputStream
+          java.io.PushbackReader
           java.io.Reader
           java.io.SequenceInputStream
           java.io.StringReader
@@ -277,8 +278,7 @@
                    clojure.lang.MapEntry
                    clojure.lang.LineNumberingPushbackReader
                    java.io.EOFException
-                   java.io.PrintWriter
-                   java.io.PushbackReader]
+                   java.io.PrintWriter]
     :methods [borkdude.graal.LockFix] ;; support for locking
 
     :fields [clojure.lang.PersistentQueue]
