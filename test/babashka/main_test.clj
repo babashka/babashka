@@ -462,8 +462,16 @@
     (clojure.pprint/pprint (range 10) sw)) (str sw))"))))
   (testing "print-table writes to sci/out"
     (is (str/includes? (test-utils/bb "(with-out-str (clojure.pprint/print-table [{:a 1} {:a 2}]))") "----")))
-  (testing "cl-format writes to sci/out"
-    (is (= "[1, 2, 3]" (bb nil "(with-out-str (clojure.pprint/cl-format true \"~<[~;~@{~w~^, ~:_~}~;]~:>\" [1,2,3]))"))))
+  (testing "cl-format outputs"
+    (testing "cl-format true writes to sci/out"
+      (is (= "[1, 2, 3]" (bb nil "(with-out-str (clojure.pprint/cl-format true \"~<[~;~@{~w~^, ~:_~}~;]~:>\" [1,2,3]))"))))
+    (testing "cl-format nil returns a string"
+      (is (= "forty-two" (bb nil "(clojure.pprint/cl-format nil \"~R\" 42)"))))
+    (testing "cl-format with a writer uses the writer"
+      (is (= "1,234,567      " (bb nil "
+(let [sw (java.io.StringWriter.)]
+   (clojure.pprint/cl-format sw \"~15@<~:d~>\" 1234567)
+   (str sw))")))))
   (testing "formatter-out"
     (is (= "[1, 2, 3]\n"
            (bb nil (pr-str '(do (require '[clojure.pprint :as pprint])
