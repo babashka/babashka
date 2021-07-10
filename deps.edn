@@ -44,7 +44,8 @@
            {:extra-deps
             {com.clojure-goes-fast/clj-async-profiler {:mvn/version "0.4.1"}}
             :extra-paths ["test"]
-            :jvm-opts ["-Djdk.attach.allowAttachSelf"]
+            :jvm-opts ["-Djdk.attach.allowAttachSelf"
+                       "-Dclojure.compiler.direct-linking=true"]
             :main-opts ["-m" "babashka.profile"]}
            :lib-tests
            {:extra-paths ["process/src" "process/test"]
