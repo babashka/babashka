@@ -17,6 +17,7 @@ cache:
   - 'graalvm -> appveyor.yml'
 
 clone_script:
+- cmd: git config --global core.autocrlf true
 - ps: >-
     if(-not $env:APPVEYOR_PULL_REQUEST_NUMBER) {
       git clone -q --branch=$env:APPVEYOR_REPO_BRANCH https://github.com/$env:APPVEYOR_REPO_NAME.git $env:APPVEYOR_BUILD_FOLDER
@@ -70,6 +71,8 @@ build_script:
     set BABASHKA_TEST_ENV=native
 
     call script/test.bat
+
+    call script/run_lib_tests.bat
 
 artifacts:
 - path: babashka-*-windows-amd64.zip

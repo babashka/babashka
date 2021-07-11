@@ -1048,7 +1048,7 @@
 ;;   (is (nil? *custom-resource-path*)))
 
 (deftest custom-resource-path-setting-url
-  (p/set-resource-path! (clojure.java.io/resource "templates/inheritance"))
+  (p/set-resource-path! "templates/inheritance")
   #_(is (string? *custom-resource-path*))
   (is (= (fix-line-sep "Hello, World!\n") (render-file "foo.html" {:name "World"})))
   (p/set-resource-path! nil))
@@ -1257,4 +1257,3 @@
                      "debug-value"))
   (testing "basic rendering escapes HTML"
     (is (str/includes? (basic-edn->html {:a "<pre>"}) "&quot"))))
-
