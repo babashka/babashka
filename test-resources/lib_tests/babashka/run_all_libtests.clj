@@ -1,5 +1,6 @@
 (ns babashka.run-all-libtests
   (:require [clojure.java.io :as io]
+            [clojure.string :as str]
             [clojure.test :as t]))
 
 (def ns-args (set (map symbol *command-line-args*)))
@@ -18,6 +19,10 @@
       (let [m (apply t/run-tests namespaces)]
         (swap! status (fn [status]
                         (merge-with + status (dissoc m :type))))))))
+
+(def windows? (-> (System/getProperty "os.name")
+                (str/lower-case)
+                (str/includes? "win")))
 
 ;;;; clj-http-lite
 
@@ -38,8 +43,8 @@
 (prn (random-uuid))
 
 ;;;; babashka.curl
-
-(test-namespaces 'babashka.curl-test)
+; skip tests on Windows because of the :compressed thing
+(when-not windows? (test-namespaces 'babashka.curl-test))
 
 ;;;; cprop
 
@@ -114,7 +119,8 @@
 
 (require '[babashka.curl :as curl])
 (spit "deps_test.clj"
-      (:body (curl/get "https://raw.githubusercontent.com/borkdude/deps.clj/master/deps.clj")))
+      (:body (curl/get "https://raw.githubusercontent.com/borkdude/deps.clj/master/deps.clj"
+               (if windows? {:compressed false} {}))))
 
 (binding [*command-line-args* ["-Sdescribe"]]
   (load-file "deps_test.clj"))
@@ -170,13 +176,13 @@
 (test-namespaces 'httpkit.client-test)
 
 ;;;; babashka.process
+(when-not windows?
+  ;; test built-in babashka.process
+  (test-namespaces 'babashka.process-test)
 
-;; test built-in babashka.process
-(test-namespaces 'babashka.process-test)
-
-;; test babashka.process from source
-(require '[babashka.process] :reload)
-(test-namespaces 'babashka.process-test)
+  ;; test babashka.process from source
+  (require '[babashka.process] :reload)
+  (test-namespaces 'babashka.process-test))
 
 (test-namespaces 'core-match.core-tests)
 

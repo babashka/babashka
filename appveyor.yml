@@ -71,6 +71,8 @@ build_script:
 
     call script/test.bat
 
+    call script/run_lib_tests.bat
+
 artifacts:
 - path: babashka-*-windows-amd64.zip
   name: babashka
