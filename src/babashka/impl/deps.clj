@@ -56,7 +56,7 @@
   keywords) which will used to calculate classpath. The classpath is
   then used to resolve dependencies in babashka."
   ([deps-map] (add-deps deps-map nil))
-  ([deps-map {:keys [:aliases]}]
+  ([deps-map {:keys [:aliases :extra-env]}]
    (when-let [paths (:paths deps-map)]
      (cp/add-classpath (str/join cp/path-sep paths)))
    (when-let [deps-map (not-empty (dissoc deps-map :paths :tasks :raw :min-bb-version))]
@@ -70,7 +70,8 @@
                  "-Sdeps-file" "" ;; we reset deps file so the local deps.edn isn't used
                  ,]
            args (conj args (str "-A:" (str/join ":" (cons ":org.babashka/defaults" aliases))))
-           cp (with-out-str (apply deps/-main args))
+           cp (with-out-str (binding [deps/*extra-env* extra-env]
+                              (apply deps/-main args)))
            cp (str/trim cp)
            cp (str/replace cp (re-pattern (str cp/path-sep "+$")) "")]
        (cp/add-classpath cp)))))
@@ -110,6 +111,7 @@
                *out* @sci/out
                *err* @sci/err
                deps/*dir* (:dir opts)
+               deps/*extra-env* (:extra-env opts)
                deps/*process-fn* (fn
                                    ([cmd] (p/process cmd opts))
                                    ([cmd _] (p/process cmd opts)))
