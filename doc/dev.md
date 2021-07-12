@@ -7,7 +7,7 @@ You need [lein](https://leiningen.org/) for running JVM tests and/or producing u
 To work on Babashka itself make sure Git submodules are checked out.
 
 ``` shellsession
-$ git clone https://github.com/borkdude/babashka --recursive
+$ git clone https://github.com/babashka/babashka --recursive
 ```
 
 To update later on:
@@ -66,7 +66,7 @@ Findings from various experiments with JDBC drivers in babashka:
   20MB to the binary. Since sqlite has a nice CLI we could also just shell out
   to it (there's an example in the examples dir). We could also build a
   `babashka.sqlite` namespace around the CLI maybe similar to
-  `babashka.curl`. See [#385](https://github.com/borkdude/babashka/issues/385)
+  `babashka.curl`. See [#385](https://github.com/babashka/babashka/issues/385)
   for details.
 - HSQLDB: easy to get going with Graalvm. Adds 10 MB to the binary. It's under a
   feature flag right now on master. See [build.md](build.md) for details. Derby
@@ -75,7 +75,7 @@ Findings from various experiments with JDBC drivers in babashka:
   got it to crash. 4800m did work, but it took 17 minutes (compared to 10
   minutes without this feature).
 - MySQL / MariaDB: can't get those to work yet. Work in progress in issue
-  [#387](https://github.com/borkdude/babashka/issues/387).
+  [#387](https://github.com/babashka/babashka/issues/387).
 
 To progress work on sqlite and mySQL, I need a working Clojure example. If you
 want to contribute, consider making a an example Clojure GraalVM CLI that puts
