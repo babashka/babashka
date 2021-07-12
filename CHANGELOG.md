@@ -21,6 +21,7 @@ Sci:
 
 - Perf improvements
 - `case` expression generated from macro doesn't work correctly
+- Fix stacktrace with invalid import [borkdude/sci#589](https://github.com/borkdude/sci/issues/589)
 
 ## 0.4.6
 
