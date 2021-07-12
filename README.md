@@ -383,13 +383,18 @@ This project exists thanks to all the people who contribute. [[Contribute](doc/d
 
 ### Financial Contributors
 
+#### Github Sponsors
+
+- [Dig Gashinsky](https://github.com/digash)
+
+#### OpenCollective
 Become a financial contributor and help us sustain our community. [[Contribute](https://opencollective.com/babashka/contribute)]
 
-#### Individuals
+##### Individuals
 
 <a href="https://opencollective.com/babashka"><img src="https://opencollective.com/babashka/individuals.svg?width=890"></a>
 
-#### Organizations
+##### Organizations
 
 Support this project with your organization. Your logo will show up here with a link to your website. [[Contribute](https://opencollective.com/babashka/contribute)]
 
