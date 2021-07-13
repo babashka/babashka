@@ -14,15 +14,17 @@
 
 (set! *warn-on-reflection* true)
 
+(def windows? main/windows?)
+
 (def normalize
-  (if main/windows?
+  (if windows?
     (fn [s] (if (string? s)
               (str/replace s "\r\n" "\n")
               s))
     identity))
 
 (def escape-file-paths
-  (if main/windows?
+  (if windows?
     (fn [s] (if (string? s)
               (str/replace s "\\" "\\\\")
               s))
