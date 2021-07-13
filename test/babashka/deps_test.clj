@@ -1,5 +1,6 @@
 (ns babashka.deps-test
   (:require
+   [babashka.fs :as fs]
    [babashka.test-utils :as test-utils]
    [clojure.edn :as edn]
    [clojure.test :as test :refer [deftest is testing]]))
@@ -10,7 +11,8 @@
     :eof nil}
    (apply test-utils/bb nil (map str args))))
 
-(deftest dependency-test (is (= #{:a :c :b} (bb "
+(deftest dependency-test
+  (is (= #{:a :c :b} (bb "
 (require '[babashka.deps :as deps])
 
 (deps/add-deps '{:deps {com.stuartsierra/dependency {:mvn/version \"1.0.0\"}}})
@@ -24,7 +26,19 @@
             (dep/depend :d :c)))
 
 (dep/transitive-dependencies g1 :d)
-"))))
+")))
+  (testing "GITLIBS can set location of .gitlibs dir"
+    (let [tmp-dir (fs/create-temp-dir)
+          libs-dir (fs/file tmp-dir ".gitlibs")
+          libs-dir2 (fs/file tmp-dir ".gitlibs2")]
+      (bb (pr-str `(do (babashka.deps/add-deps '{:deps {babashka/process {:git/url "https://github.com/babashka/process" :sha "4c6699d06b49773d3e5c5b4c11d3334fb78cc996"}}}
+                                               {:force true
+                                                :env {"GITLIBS" ~(str libs-dir)}}) nil)))
+      (bb (pr-str `(do (babashka.deps/add-deps '{:deps {babashka/process {:git/url "https://github.com/babashka/process" :sha "4c6699d06b49773d3e5c5b4c11d3334fb78cc996"}}}
+                                               {:force true
+                                                :extra-env {"GITLIBS" ~(str libs-dir2)}}) nil)))
+      (is (fs/exists? libs-dir))
+      (is (fs/exists? libs-dir2)))))
 
 (deftest clojure-test
   (testing "-Stree prints to *out*"
@@ -60,4 +74,12 @@ true
   (testing "start from other directory"
     (is (= {1 {:id 1}, 2 {:id 2}}
            (edn/read-string (bb "
-(:out @(babashka.deps/clojure [\"-M\" \"-e\" \"(require 'medley.core) (medley.core/index-by :id [{:id 1} {:id 2}])\"] {:out :string :dir \"test-resources/clojure-dir-test\"}))"))))))
+(:out @(babashka.deps/clojure [\"-M\" \"-e\" \"(require 'medley.core) (medley.core/index-by :id [{:id 1} {:id 2}])\"] {:out :string :dir \"test-resources/clojure-dir-test\"}))")))))
+  (testing "GITLIBS can set location of .gitlibs dir"
+    (let [tmp-dir (fs/create-temp-dir)
+          libs-dir (fs/file tmp-dir ".gitlibs")
+          libs-dir2 (fs/file tmp-dir ".gitlibs2")]
+      (bb (pr-str `(do (babashka.deps/clojure ["-Sforce" "-Spath" "-Sdeps" "{:deps {babashka/process {:git/url \"https://github.com/babashka/process\" :sha \"4c6699d06b49773d3e5c5b4c11d3334fb78cc996\"}}}"] {:out :string :env {"GITLIBS" ~(str libs-dir)}}) nil)))
+      (bb (pr-str `(do (babashka.deps/clojure ["-Sforce" "-Spath" "-Sdeps" "{:deps {babashka/process {:git/url \"https://github.com/babashka/process\" :sha \"4c6699d06b49773d3e5c5b4c11d3334fb78cc996\"}}}"] {:out :string :extra-env {"GITLIBS" ~(str libs-dir2)}}) nil)))
+      (is (fs/exists? libs-dir))
+      (is (fs/exists? libs-dir2)))))

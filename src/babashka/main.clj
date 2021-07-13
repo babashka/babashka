@@ -124,8 +124,9 @@ Substrate VM opts:
 
 Global opts:
 
-  -cp, --classpath         Classpath to use. Overrides bb.edn classpath.
-  --debug                  Print debug information and internal stacktrace in case of exception.
+  -cp, --classpath  Classpath to use. Overrides bb.edn classpath.
+  --debug           Print debug information and internal stacktrace in case of exception.
+  --force           Passes -Sforce to deps.clj, forcing recalculation of the classpath.
 
 Help:
 
@@ -505,9 +506,13 @@ Use bb run --help to show this help output.
           ("--doc")
           {:doc true
            :command-line-args (rest options)}
+          ;; renamed to --debug
           ("--verbose") (recur (next options)
                                (assoc opts-map
                                       :verbose? true))
+          ("--force") (recur (next options)
+                               (assoc opts-map
+                                      :force? true))
           ("--describe") (recur (next options)
                                 (assoc opts-map
                                        :describe? true))
@@ -675,7 +680,7 @@ Use bb run --help to show this help output.
                     :help :file :command-line-args
                     :expressions :stream?
                     :repl :socket-repl :nrepl
-                    :debug :classpath
+                    :debug :classpath :force?
                     :main :uberscript :describe?
                     :jar :uberjar :clojure
                     :doc :run :list-tasks]}
@@ -703,7 +708,7 @@ Use bb run --help to show this help output.
             _ (if classpath
                 (cp/add-classpath classpath)
                 ;; when classpath isn't set, we calculate it from bb.edn, if present
-                (when-let [bb-edn @common/bb-edn] (deps/add-deps bb-edn)))
+                (when-let [bb-edn @common/bb-edn] (deps/add-deps bb-edn {:force force?})))
             abs-path (when file
                        (let [abs-path (.getAbsolutePath (io/file file))]
                          (vars/bindRoot sci/file abs-path)
