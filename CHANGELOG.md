@@ -15,7 +15,7 @@ Babashka proper:
 - Support `pprint/cl-format` with `with-out-str` [#930](https://github.com/babashka/babashka/issues/930)
 - Compatibility with `org.clojure/data.json {:mvn/version "2.4.0}"`
 - Support passing `GITLIBS` via `:extra-env` in `clojure` to set git lib dir:
-  `(clojure {:extra-env {"GITLIBS" ".gitlib"}} ,,,) [#934](https://github.com/babashka/babashka/issues/934)`
+  `(clojure {:extra-env {"GITLIBS" ".gitlib"}} ,,,)` [#934](https://github.com/babashka/babashka/issues/934)
 - Add `--force` option to force recomputation of bababashka deps classpath.
 
 Deps.clj:
