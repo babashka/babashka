@@ -33,7 +33,8 @@
           libs-dir2 (fs/file tmp-dir ".gitlibs2")]
       (bb (pr-str `(do (babashka.deps/add-deps '{:deps {babashka/process {:git/url "https://github.com/babashka/process" :sha "4c6699d06b49773d3e5c5b4c11d3334fb78cc996"}}}
                                                {:force true
-                                                :env {"GITLIBS" ~(str libs-dir)}}) nil)))
+                                                :env {"PATH" (System/getenv "PATH")
+                                                      "GITLIBS" ~(str libs-dir)}}) nil)))
       (bb (pr-str `(do (babashka.deps/add-deps '{:deps {babashka/process {:git/url "https://github.com/babashka/process" :sha "4c6699d06b49773d3e5c5b4c11d3334fb78cc996"}}}
                                                {:force true
                                                 :extra-env {"GITLIBS" ~(str libs-dir2)}}) nil)))
@@ -79,7 +80,9 @@ true
     (let [tmp-dir (fs/create-temp-dir)
           libs-dir (fs/file tmp-dir ".gitlibs")
           libs-dir2 (fs/file tmp-dir ".gitlibs2")]
-      (bb (pr-str `(do (babashka.deps/clojure ["-Sforce" "-Spath" "-Sdeps" "{:deps {babashka/process {:git/url \"https://github.com/babashka/process\" :sha \"4c6699d06b49773d3e5c5b4c11d3334fb78cc996\"}}}"] {:out :string :env {"GITLIBS" ~(str libs-dir)}}) nil)))
+      (bb (pr-str `(do (babashka.deps/clojure ["-Sforce" "-Spath" "-Sdeps" "{:deps {babashka/process {:git/url \"https://github.com/babashka/process\" :sha \"4c6699d06b49773d3e5c5b4c11d3334fb78cc996\"}}}"]
+                                              {:out :string :env {"PATH" (System/getenv "PATH")
+                                                                  "GITLIBS" ~(str libs-dir)}}) nil)))
       (bb (pr-str `(do (babashka.deps/clojure ["-Sforce" "-Spath" "-Sdeps" "{:deps {babashka/process {:git/url \"https://github.com/babashka/process\" :sha \"4c6699d06b49773d3e5c5b4c11d3334fb78cc996\"}}}"] {:out :string :extra-env {"GITLIBS" ~(str libs-dir2)}}) nil)))
       (is (fs/exists? libs-dir))
       (is (fs/exists? libs-dir2)))))
