@@ -1,5 +1,5 @@
 [(System/getProperty "user.dir")
  (System/getProperty "foo" "bar")
- (System/getenv "HOME")
+ (or (System/getenv "HOME") (System/getenv "HOMEPATH"))
  (System/getProperties)
  (System/getenv)]

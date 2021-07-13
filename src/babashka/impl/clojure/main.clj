@@ -17,6 +17,8 @@
     babashka.impl.clojure.main
   (:refer-clojure :exclude [with-bindings]))
 
+(set! *warn-on-reflection* true)
+
 (defn demunge
   "Given a string representation of a fn class,
   as in a stack trace element, returns a readable version."

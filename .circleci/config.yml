@@ -111,7 +111,7 @@ jobs:
           command: |
             cd ~
             if ! [ -d graalvm-ce-java11-21.1.0 ]; then
-              curl -O -sL https://github.com/graalvm/graalvm-ce-dev-builds/releases/download/21.2.0-dev-20210616_2034/graalvm-ce-java11-linux-amd64-dev.tar.gz
+              curl -O -sL https://github.com/graalvm/graalvm-ce-dev-builds/releases/download/21.2.0-dev-20210712_1204/graalvm-ce-java11-linux-amd64-dev.tar.gz
               tar xzf graalvm-ce-java11-linux-amd64-dev.tar.gz
             fi
       - run:

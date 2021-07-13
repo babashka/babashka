@@ -12,12 +12,13 @@
    [sci.core :as sci]))
 
 (defn bb [input & args]
-  (edn/read-string
-   {:readers *data-readers*
-    :eof nil}
-   (apply test-utils/bb (when (some? input) (str input)) (map str args))))
+  (test-utils/normalize
+   (edn/read-string
+    {:readers *data-readers*
+     :eof nil}
+    (apply test-utils/bb (when (some? input) (str input)) (map str args)))))
 
-(deftest ^:windows parse-opts-test
+(deftest parse-opts-test
   (is (= "1667"
          (:nrepl (main/parse-opts ["--nrepl-server"]))))
   (is (= "1666"
@@ -52,17 +53,17 @@
   (is (= '("-e" "1") (bb nil "-e" "*command-line-args*" "--" "-e" "1")))
   (let [v (bb nil "--describe")]
     (is (:babashka/version v))
-    (is (:feature/xml v))))
+    (is (:feature/xml v)))
+  (is (= {:force? true} (main/parse-opts ["--force"]))))
 
-
-(deftest ^:windows version-test
+(deftest version-test
   (is (= [1 0 0] (main/parse-version "1.0.0-SNAPSHOT")))
   (is (main/satisfies-min-version? "0.1.0"))
   (is (main/satisfies-min-version? "0.1.0-SNAPSHOT"))
   (is (not (main/satisfies-min-version? "300.0.0")))
   (is (not (main/satisfies-min-version? "300.0.0-SNAPSHOT"))))
 
-(deftest ^:windows print-error-test
+(deftest print-error-test
   (is (thrown-with-msg? Exception #"java.lang.NullPointerException"
                         (bb nil "(subs nil 0 0)"))))
 
@@ -120,7 +121,7 @@
     (is (= "localhost" (bb "#ordered/map ([:test \"localhost\"])"
                            "(:test *input*)"))))
   (testing "bb doesn't wait for input if *input* isn't used"
-    (is (= "2\n" (with-out-str (main/main "(inc 1)"))))))
+    (is (= "2\n" (test-utils/normalize (with-out-str (main/main "(inc 1)")))))))
 
 (deftest println-test
   (is (= "hello\n" (test-utils/bb nil "(println \"hello\")"))))
@@ -131,7 +132,7 @@
     (doseq [s res]
       (is (not-empty s)))))
 
-(deftest ^:windows malformed-command-line-args-test
+(deftest malformed-command-line-args-test
   (is (thrown-with-msg? Exception #"File does not exist: non-existing"
                         (bb nil "-f" "non-existing"))))
 
@@ -152,11 +153,11 @@
     (.deleteOnExit tmp)
     (spit tmp "(ns foo) (defn foo [x y] (+ x y)) (defn bar [x y] (* x y))")
     (is (= "120\n" (test-utils/bb nil (format "(load-file \"%s\") (foo/bar (foo/foo 10 30) 3)"
-                                              (.getPath tmp)))))
+                                              (test-utils/escape-file-paths (.getPath tmp))))))
     (testing "namespace is restored after load file"
       (is (= 'start-ns
              (bb nil (format "(ns start-ns) (load-file \"%s\") (ns-name *ns*)"
-                             (.getPath tmp))))))))
+                             (test-utils/escape-file-paths (.getPath tmp)))))))))
 
 (deftest repl-source-test
   (let [tmp (java.io.File/createTempFile "lib" ".clj")
@@ -174,15 +175,14 @@
 (load-file \"%s\")
 (require '[clojure.repl :refer [source]])
 (with-out-str (source %s/foo))"
-                             (.getPath tmp)
+                             (test-utils/escape-file-paths (.getPath tmp))
                              name)))))
     (testing "print source from file on classpath"
       (is (= "(defn foo [x y]\n  (+ x y))\n"
-             (test-utils/normalize
-              (bb nil
-                  "-cp" dir
-                  "-e" (format "(require '[clojure.repl :refer [source]] '[%s])" name)
-                  "-e" (format "(with-out-str (source %s/foo))" name))))))))
+             (bb nil
+                 "-cp" dir
+                 "-e" (format "(require '[clojure.repl :refer [source]] '[%s])" name)
+                 "-e" (format "(with-out-str (source %s/foo))" name)))))))
 
 (deftest eval-test
   (is (= "120\n" (test-utils/bb nil "(eval '(do (defn foo [x y] (+ x y))
@@ -199,7 +199,8 @@
   (is (true? (bb nil "(.exists (io/file \"README.md\"))")))
   (is (true? (bb nil "(.canWrite (io/file \"README.md\"))"))))
 
-(deftest pipe-test
+; skipped because the windows shell doesn't seem to deal well with infinite things
+(deftest ^:skip-windows pipe-test
   (when (and test-utils/native?
              (not main/windows?))
     (let [out (:out (sh "bash" "-c" "./bb -o '(range)' |
@@ -207,16 +208,22 @@
                          head -n10"))
           out (str/split-lines out)
           out (map edn/read-string out)]
-      (is (= (take 10 (map #(* % %) (range))) out))))
-  (when (and test-utils/native?
-             (not main/windows?))
+      (is (= (take 10 (map #(* % %) (range))) out)))
     (let [out (:out (sh "bash" "-c" "./bb -O '(repeat \"dude\")' |
                          ./bb --stream '(str *input* \"rino\")' |
                          ./bb -I '(take 3 *input*)'"))
           out (edn/read-string out)]
       (is (= '("duderino" "duderino" "duderino") out)))))
 
-(deftest lazy-text-in-test
+(deftest ^:windows-only win-pipe-test
+  (when (and test-utils/native? main/windows?)
+    (let [out (:out (sh "cmd" "/c" ".\\bb -O \"(repeat 50 \\\"dude\\\")\" |"
+                         ".\\bb --stream \"(str *input* \\\"rino\\\")\" |"
+                         ".\\bb -I \"(take 3 *input*)\""))
+          out (edn/read-string out)]
+      (is (= '("duderino" "duderino" "duderino") out)))))
+
+(deftest ^:skip-windows lazy-text-in-test
   (when test-utils/native?
     (let [out (:out (sh "bash" "-c" "yes | ./bb -i '(take 2 *input*)'"))
           out (edn/read-string out)]
@@ -232,8 +239,11 @@
                         @x)"))))
 
 (deftest process-builder-test
-  (is (str/includes? (bb nil "
-(def pb (ProcessBuilder. [\"ls\"]))
+  (let [cmd-line (if main/windows?
+                   "[\"cmd\" \"/c\" \"dir\" ]"
+                   "[\"ls\"]")]
+    (is (str/includes? (bb nil (str "
+(def pb (ProcessBuilder. " cmd-line "))
 (def env (.environment pb))
 (.put env \"FOO\" \"BAR\") ;; test for issue 460
 (def ls (-> pb (.start)))
@@ -241,24 +251,21 @@
 (.write (io/writer input) \"hello\") ;; dummy test just to see if this works
 (def output (.getInputStream ls))
 (assert (int? (.waitFor ls)))
-(slurp output)")
-                     "LICENSE"))
+(slurp output)"))
+                       "LICENSE")))
   (testing "bb is able to kill subprocesses created by ProcessBuilder"
     (when test-utils/native?
-      (let [output (test-utils/bb nil (io/file "test" "babashka" "scripts" "kill_child_processes.bb"))
+      (let [process-count (if main/windows? 6 3)
+            output (test-utils/bb nil (io/file "test" "babashka" "scripts" "kill_child_processes.bb"))
             parsed (edn/read-string (format "[%s]" output))]
         (is (every? number? parsed))
-        (is (= 3 (count parsed)))))))
+        (is (= process-count (count parsed)))))))
 
 (deftest create-temp-file-test
-  (let [temp-dir-path (System/getProperty "java.io.tmpdir")]
-    (is (= true
-           (bb nil (format "(let [tdir (io/file \"%s\")
-                                 tfile
-                                 (File/createTempFile \"ctf\" \"tmp\" tdir)]
+  (is (= true
+        (bb nil "(let [tfile (File/createTempFile \"ctf\" \"tmp\")]
                              (.deleteOnExit tfile) ; for cleanup
-                             (.exists tfile))"
-                           temp-dir-path))))))
+                             (.exists tfile))"))))
 
 (deftest wait-for-port-test
   (let [server (test-utils/start-server! 1777)]
@@ -270,7 +277,7 @@
     (is (=  1777 (:port edn)))
     (is (number? (:took edn)))))
 
-(deftest wait-for-path-test
+(deftest ^:skip-windows wait-for-path-test
   (let [temp-dir-path (System/getProperty "java.io.tmpdir")]
     (is (not= :timed-out
               (bb nil (format "(let [tdir (io/file \"%s\")
@@ -332,7 +339,7 @@
 
 (deftest writer-test
   (let [tmp-file (java.io.File/createTempFile "bbb" "bbb")
-        path (.getPath tmp-file)]
+        path (test-utils/escape-file-paths (.getPath tmp-file))]
     (bb nil (format "(with-open [w (io/writer \"%s\")]
                        (.write w \"foobar\n\")
                        (.append w \"barfoo\n\")
@@ -341,20 +348,22 @@
     (is (= "foobar\nbarfoo\n" (slurp path)))))
 
 (deftest binding-test
-  (is (=  6 (bb nil "(def w (java.io.StringWriter.))
+  (is (= (if main/windows? 7 6)
+        (bb nil "(def w (java.io.StringWriter.))
                  (binding [clojure.core/*out* w]
                    (println \"hello\"))
                  (count (str w))"))))
 
 (deftest with-out-str-test
-  (is (= 6 (bb nil "(count (with-out-str (println \"hello\")))"))))
+  (is (= (if main/windows? 7 6)
+        (bb nil "(count (with-out-str (println \"hello\")))"))))
 
 (deftest with-in-str-test
   (is (= 5 (bb nil "(count (with-in-str \"hello\" (read-line)))"))))
 
 (deftest java-nio-test
   (let [f (java.io.File/createTempFile "foo" "bar")
-        temp-path (.getPath f)
+        temp-path (test-utils/escape-file-paths (.getPath f))
         p (.toPath (io/file f))
         p' (.resolveSibling p "f2")
         f2 (.toFile p')]
@@ -399,11 +408,14 @@
   (is (true? (bb nil "(set! *warn-on-reflection* true)"))))
 
 (deftest clojure-main-repl-test
-  (is (= "\"> foo!\\nnil\\n> \"\n" (test-utils/bb nil "
+  (let [expected-outcome (if main/windows?
+                           "\"> foo!\\r\\nnil\\r\\n> \"\n"
+                           "\"> foo!\\nnil\\n> \"\n")]
+    (is (= expected-outcome (test-utils/bb nil "
 (defn foo [] (println \"foo!\"))
 (with-out-str
   (with-in-str \"(foo)\"
-    (clojure.main/repl :init (fn []) :prompt (fn [] (print \"> \")))))"))))
+    (clojure.main/repl :init (fn []) :prompt (fn [] (print \"> \")))))")))))
 
 (deftest command-line-args-test
   (is (true? (bb nil "(nil? *command-line-args*)")))
@@ -423,7 +435,7 @@
 (deftest uberscript-test
   (let [tmp-file (java.io.File/createTempFile "uberscript" ".clj")]
     (.deleteOnExit tmp-file)
-    (is (empty? (bb nil "--uberscript" (.getPath tmp-file) "-e" "(System/exit 1)")))
+    (is (empty? (bb nil "--uberscript" (test-utils/escape-file-paths (.getPath tmp-file)) "-e" "(System/exit 1)")))
     (is (= "(System/exit 1)" (slurp tmp-file)))))
 
 (deftest unrestricted-access
@@ -438,16 +450,37 @@
   (testing "writer"
     (is (string? (bb nil "(let [sw (java.io.StringWriter.)] (clojure.pprint/pprint (range 10) sw) (str sw))"))))
   (testing "*print-right-margin*"
-    (is (= "(0\n 1\n 2\n 3\n 4\n 5\n 6\n 7\n 8\n 9)\n" (bb nil "
+    (is (= "(0\n 1\n 2\n 3\n 4\n 5\n 6\n 7\n 8\n 9)\n"
+           (bb nil "
 (let [sw (java.io.StringWriter.)]
   (binding [clojure.pprint/*print-right-margin* 5]
     (clojure.pprint/pprint (range 10) sw)) (str sw))")))
-    (is (= "(0 1 2 3 4 5 6 7 8 9)\n" (bb nil "
+    (is (= "(0 1 2 3 4 5 6 7 8 9)\n"
+           (bb nil "
 (let [sw (java.io.StringWriter.)]
   (binding [clojure.pprint/*print-right-margin* 50]
     (clojure.pprint/pprint (range 10) sw)) (str sw))"))))
   (testing "print-table writes to sci/out"
-    (is (str/includes? (test-utils/bb "(with-out-str (clojure.pprint/print-table [{:a 1} {:a 2}]))") "----"))))
+    (is (str/includes? (test-utils/bb "(with-out-str (clojure.pprint/print-table [{:a 1} {:a 2}]))") "----")))
+  (testing "cl-format outputs"
+    (testing "cl-format true writes to sci/out"
+      (is (= "[1, 2, 3]" (bb nil "(with-out-str (clojure.pprint/cl-format true \"~<[~;~@{~w~^, ~:_~}~;]~:>\" [1,2,3]))"))))
+    (testing "cl-format nil returns a string"
+      (is (= "forty-two" (bb nil "(clojure.pprint/cl-format nil \"~R\" 42)"))))
+    (testing "cl-format with a writer uses the writer"
+      (is (= "1,234,567      " (bb nil "
+(let [sw (java.io.StringWriter.)]
+   (clojure.pprint/cl-format sw \"~15@<~:d~>\" 1234567)
+   (str sw))")))))
+  (testing "formatter-out"
+    (is (= "[1, 2, 3]\n"
+           (bb nil (pr-str '(do (require '[clojure.pprint :as pprint])
+                                (def print-array (pprint/formatter-out "~<[~;~@{~w~^, ~:_~}~;]~:>"))
+                                (pprint/with-pprint-dispatch
+                                  #(if (seqable? %)
+                                     (print-array %)
+                                     (print %))
+                                  (with-out-str (pprint/pprint [1 2 3]))))))))))
 
 (deftest read-string-test
   (testing "namespaced keyword via alias"
@@ -457,13 +490,18 @@
 (deftest available-stream-test
   (is (= 0 (bb nil "(.available System/in)"))))
 
-(deftest file-reader-test
+(deftest ^:skip-windows file-reader-test
   (when (str/includes? (str/lower-case (System/getProperty "os.name")) "linux")
     (let [v (bb nil "(slurp (io/reader (java.io.FileReader. \"/proc/loadavg\")))")]
       (prn "output:" v)
       (is v))))
 
-(deftest download-and-extract-test
+(deftest win-file-reader-test
+  (let [v (bb nil "(slurp (io/reader (java.io.FileReader. \"test-resources/babashka/empty.clj\")))")]
+    (prn "output:" v)
+    (is (empty? v))))
+
+(deftest ^:skip-windows download-and-extract-test
   ;; Disabled because Github throttles bandwidth and this makes for a very slow test.
   ;; TODO: refactor into individual unit tests
   ;; One for downloading a small file and one for unzipping.
@@ -484,7 +522,7 @@
 (deftest delete-on-exit-test
   (when test-utils/native?
     (let [f (java.io.File/createTempFile "foo" "bar")
-          p (.getPath f)]
+          p (test-utils/escape-file-paths (.getPath f))]
       (bb nil (format "(.deleteOnExit (io/file \"%s\"))" p))
       (is (false? (.exists f))))))
 
@@ -639,13 +677,19 @@ true")))
     (is (str/blank? (with-out-str (main/main "doc" "non-existing"))))
     (is (= 1 (main/main "doc" "non-existing")))))
 
-(deftest process-handler-info-test
+(deftest ^:skip-windows process-handler-info-test
   (when test-utils/native?
     (is (= ["-e" "(vec (.get (.arguments (.info (java.lang.ProcessHandle/current)))))"]
            (bb nil "-e" "(vec (.get (.arguments (.info (java.lang.ProcessHandle/current)))))")))
     (is (str/ends-with?
          (bb nil "-e" "(.get (.command (.info (java.lang.ProcessHandle/current))))")
          "bb"))))
+
+(deftest ^:windows-only win-process-handler-info-test
+  (when (and test-utils/native? main/windows?)
+    (is (str/ends-with?
+          (bb nil "-e" "(.get (.command (.info (java.lang.ProcessHandle/current))))")
+          "bb.exe"))))
 
 (deftest interop-concurrency-test
   (is (= ["true" 3] (last (bb nil "-e"

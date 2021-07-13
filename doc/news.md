@@ -5,15 +5,34 @@ you have anything to add. Also see
 [#babashka](https://twitter.com/hashtag/babashka?src=hashtag_click&f=live) on
 Twitter.
 
+## 2021-06
+
+- New babashka 0.4.4 - 0.4.5 released.
+- Share your babashka creations on the [Show and tell](https://github.com/babashka/babashka/discussions/categories/show-and-tell) forum on Github.
+- [Integrating Babashka into Bazel](https://timjaeger.io/20210627-integrating-babashka-with-bazel.html) by Tim Jäger
+- [Babashka + scittle guestbook example](https://github.com/kloimhardt/babashka-scittle-guestbook)
+- [Slingshot works with babashka](https://twitter.com/borkdude/status/1402547783295504387)
+- [Spire gets a babashka pod](https://twitter.com/epic_castle/status/1402212817533431808)
+- [Text to speech AWS example](https://twitter.com/FieryCodDev/status/1401843357555511301) with scittle and babashka.
+- [Game of Life](https://gist.github.com/mmzsource/655b9dcfe56eed8a045022837186ed84)
+- [ob-babashka](https://gist.github.com/adam-james-v/f4d2b75a70b095d14a351a1eff96b4b0): Emacs org-babel functions for babashka.
+- [Normalize auto-resolved keywords](https://github.com/babashka/babashka/tree/master/examples#normalize-keywordsclj)
+- [Create PostgreSQL backups](https://twitter.com/stelstuff/status/1400559261025980418) using babashka.
+- [Change flutter SDK](https://gist.github.com/ampersanda/aac70cc0644df12199ea32988f3c4d73) using babashka.
+
 ## 2021-05
 
-- Babashka 0.3.6-0.4.0 release. Highlights:
+- Babashka 0.3.7 - 0.4.3 released. Highlights:
     - New [task runner feature](https://book.babashka.org/#tasks).
     - Add [Selmer](https://github.com/yogthos/Selmer) to built-in libraries.
     - Add compatibility with [jasentaa](https://github.com/rm-hull/jasentaa).
 - New [website](https://babashka.org).
+- [Talk](https://youtu.be/Yjeh57eE9rg): Babashka: a native Clojure interpreter for scripting — The 2021 Graal Workshop at CGO
+- [Blog](https://savo.rocks/posts/playing-new-music-on-old-car-stereo-with-clojure-and-babashka/): Playing New Music On Old Car Stereo With Clojure And Babashka
 - [Homoiconicity and feature flags](https://martinklepsch.org/posts/homoiconicity-and-feature-flags.html) by Martin Klepsch.
+- [Manage your macOS setup](https://github.com/cldwalker/osx-setup) using babashka.
 - [Localizing a Ghost theme](https://martinklepsch.org/posts/localizing-a-ghost-theme.html) by Martin Klepsch.
+- [Babashka SQL pods 0.0.8](https://twitter.com/borkdude/status/1396136828479188997) including a MySQL pod
 
 ## 2021-04
 

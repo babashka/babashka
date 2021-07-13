@@ -37,54 +37,66 @@
 (deftest task-test
   (test-utils/with-config '{:tasks {foo (+ 1 2 3)}}
     (is (= 6 (bb "run" "--prn" "foo"))))
-  (let [tmp-dir (fs/create-temp-dir)
-        out     (str (fs/file tmp-dir "out.txt"))]
+  (testing "init test"
+    (test-utils/with-config '{:tasks {:init (def x 1)
+                                      foo   x}}
+      (is (= 1 (bb "run" "--prn" "foo")))))
+  (testing "requires test"
+    (test-utils/with-config '{:tasks {:requires ([babashka.fs :as fs])
+                                      foo       (fs/exists? ".")}}
+      (is (= true (bb "run" "--prn" "foo"))))
+    (test-utils/with-config '{:tasks {foo {:requires ([babashka.fs :as fs])
+                                           :task     (fs/exists? ".")}}}
+      (is (= true (bb "run" "--prn" "foo"))))
+    (test-utils/with-config '{:tasks {bar {:requires ([babashka.fs :as fs])}
+                                      foo {:depends [bar]
+                                           :task    (fs/exists? ".")}}}
+      (is (= true (bb "run" "--prn" "foo")))))
+  (testing "map returned from task"
+    (test-utils/with-config '{:tasks {foo {:task {:a 1 :b 2}}}}
+      (is (= {:a 1 :b 2} (bb "run" "--prn" "foo")))))
+  (let [tmp-dir  (fs/create-temp-dir)
+        out      (str (fs/file tmp-dir "out.txt"))
+        echo-cmd (if main/windows? "cmd /c echo" "echo")
+        ls-cmd   (if main/windows? "cmd /c dir" "ls")
+        fix-lines test-utils/normalize]
     (testing "shell test"
       (test-utils/with-config {:tasks {'foo (list 'shell {:out out}
-                                                  "echo hello")}}
+                                              echo-cmd "hello")}}
         (bb "foo")
-        (is (= "hello\n" (slurp out)))))
-    (fs/delete out)
-    (testing "shell test with :continue"
-      (test-utils/with-config {:tasks {'foo (list 'shell {:out      out
-                                                          :err      out
-                                                          :continue true}
-                                                  "ls foobar")}}
-        (bb "foo")
-        (is (str/includes? (slurp out)
-                           "foobar"))))
+        (is (= "hello\n" (fix-lines (slurp out))))))
     (fs/delete out)
     (testing "shell test with :continue fn"
       (test-utils/with-config {:tasks {'foo (list '-> (list 'shell {:out      out
                                                                     :err      out
                                                                     :continue '(fn [proc]
                                                                                  (contains? proc :exit))}
-                                                            "ls foobar")
-                                                  :exit)}}
+                                                        ls-cmd "foobar")
+                                              :exit)}}
         (is (pos? (bb "run" "--prn" "foo")))))
     (testing "shell test with :error"
       (test-utils/with-config
         {:tasks {'foo (list '-> (list 'shell {:out      out
                                               :err      out
-                                              :error-fn '(constantly 1337) }
-                                      "ls foobar"))}}
+                                              :error-fn '(constantly 1337)}
+                                  ls-cmd "foobar"))}}
         (is (= 1337 (bb "run" "--prn" "foo"))))
       (test-utils/with-config
-        {:tasks {'foo (list '-> (list 'shell {:out      out
-                                              :err      out
+        {:tasks {'foo (list '-> (list 'shell {:out out
+                                              :err out
                                               :error-fn
-                                              '(fn [opts]
-                                                 (and (:task opts)
-                                                      (:proc opts)
-                                                      (not (zero? (:exit (:proc opts))))))}
-                                      "ls foobar"))}}
+                                                   '(fn [opts]
+                                                      (and (:task opts)
+                                                        (:proc opts)
+                                                        (not (zero? (:exit (:proc opts))))))}
+                                  ls-cmd "foobar"))}}
         (is (true? (bb "run" "--prn" "foo")))))
     (fs/delete out)
     (testing "clojure test"
       (test-utils/with-config {:tasks {'foo (list 'clojure {:out out}
-                                                  "-M -e" "(println :yolo)")}}
+                                              "-M -e" "(println :yolo)")}}
         (bb "foo")
-        (is (= ":yolo\n" (slurp out)))))
+        (is (= ":yolo\n" (fix-lines (slurp out))))))
     (fs/delete out)
     (testing "depends"
       (test-utils/with-config {:tasks {'quux (list 'spit out "quux\n")
@@ -107,24 +119,6 @@
                                                 :task    (list 'spit out "foo\n" :append true)}}}
           (bb "foo")
           (is (= "quux\nbaz\nbar\nfoo\n" (slurp out))))))
-  (testing "init test"
-    (test-utils/with-config '{:tasks {:init (def x 1)
-                                      foo   x}}
-      (is (= 1 (bb "run" "--prn" "foo")))))
-  (testing "requires test"
-    (test-utils/with-config '{:tasks {:requires ([babashka.fs :as fs])
-                                      foo       (fs/exists? ".")}}
-      (is (= true (bb "run" "--prn" "foo"))))
-    (test-utils/with-config '{:tasks {foo {:requires ([babashka.fs :as fs])
-                                           :task     (fs/exists? ".")}}}
-      (is (= true (bb "run" "--prn" "foo"))))
-    (test-utils/with-config '{:tasks {bar {:requires ([babashka.fs :as fs])}
-                                      foo {:depends [bar]
-                                           :task    (fs/exists? ".")}}}
-      (is (= true (bb "run" "--prn" "foo")))))
-  (testing "map returned from task"
-    (test-utils/with-config '{:tasks {foo {:task {:a 1 :b 2}}}}
-      (is (= {:a 1 :b 2} (bb "run" "--prn" "foo")))))
   (testing "fully qualified symbol execution"
     (test-utils/with-config {:paths ["test-resources/task_scripts"]
                              :tasks '{foo tasks/foo}}
@@ -167,27 +161,27 @@
   (testing "no such task"
     (test-utils/with-config '{:tasks {a (+ 1 2 3)}}
       (is (thrown-with-msg?
-           Exception #"No such task: b"
-           (bb "run" "b")))))
+            Exception #"No such task: b"
+            (bb "run" "b")))))
   (testing "unresolved dependency"
     (test-utils/with-config '{:tasks {a (+ 1 2 3)
                                       b {:depends [x]
                                          :task    (+ a 4 5 6)}}}
       (is (thrown-with-msg?
-           Exception #"No such task: x"
-           (bb "run" "b")))))
+            Exception #"No such task: x"
+            (bb "run" "b")))))
   (testing "cyclic task"
     (test-utils/with-config '{:tasks {b {:depends [b]
                                          :task    (+ a 4 5 6)}}}
       (is (thrown-with-msg?
-           Exception #"Cyclic task: b"
-           (bb "run" "b"))))
+            Exception #"Cyclic task: b"
+            (bb "run" "b"))))
     (test-utils/with-config '{:tasks {c {:depends [b]}
                                       b {:depends [c]
                                          :task    (+ a 4 5 6)}}}
       (is (thrown-with-msg?
-           Exception #"Cyclic task: b"
-           (bb "run" "b")))))
+            Exception #"Cyclic task: b"
+            (bb "run" "b")))))
   (testing "doc"
     (test-utils/with-config '{:tasks {b {:doc "Beautiful docstring"}}}
       (let [s (test-utils/bb nil "doc" "b")]
@@ -196,25 +190,18 @@
     (test-utils/with-config '{:tasks {b (System/getProperty "babashka.task")}}
       (let [s (bb "run" "--prn" "b")]
         (is (= "b" s)))))
-  (testing "shell pipe test"
-    (test-utils/with-config '{:tasks {a (-> (shell {:out :string}
-                                                   "echo hello")
-                                            (shell {:out :string} "cat")
-                                            :out)}}
-      (let [s (bb "run" "--prn" "a")]
-        (is (= "hello\n" s)))))
   (testing "parallel test"
     (test-utils/with-config (edn/read-string (slurp "test-resources/coffee-tasks.edn"))
-      (let [tree [:made-coffee [[:ground-beans [:measured-beans]] [:heated-water [:poured-water]] :filter :mug]]
-            t0 (System/currentTimeMillis)
-            s (bb "run" "--prn" "coffeep")
-            t1 (System/currentTimeMillis)
+      (let [tree             [:made-coffee [[:ground-beans [:measured-beans]] [:heated-water [:poured-water]] :filter :mug]]
+            t0               (System/currentTimeMillis)
+            s                (bb "run" "--prn" "coffeep")
+            t1               (System/currentTimeMillis)
             delta-sequential (- t1 t0)]
         (is (= tree s))
         (test-utils/with-config (edn/read-string (slurp "test-resources/coffee-tasks.edn"))
-          (let [t0 (System/currentTimeMillis)
-                s (bb "run" "--parallel" "--prn" "coffeep")
-                t1 (System/currentTimeMillis)
+          (let [t0             (System/currentTimeMillis)
+                s              (bb "run" "--parallel" "--prn" "coffeep")
+                t1             (System/currentTimeMillis)
                 delta-parallel (- t1 t0)]
             (is (= tree s))
             (is (< delta-parallel delta-sequential))))))
@@ -224,40 +211,76 @@
                                               (throw (ex-info "0 noes" {})))
                                         c {:depends [a b]}}}
         (is (thrown-with-msg? Exception #"0 noes"
-                              (bb "run" "--parallel" "c")))))
+              (bb "run" "--parallel" "c")))))
     (testing "edge case"
       (test-utils/with-config '{:tasks
                                 {a   (run '-a {:parallel true})
                                  -a  {:depends [a:a a:b c]
-                                      :task (prn [a:a a:b c])}
+                                      :task    (prn [a:a a:b c])}
                                  a:a {:depends [c]
-                                      :task (+ 1 2 3)}
+                                      :task    (+ 1 2 3)}
                                  a:b {:depends [c]
-                                      :task (do (Thread/sleep 10)
-                                                (+ 1 2 3))}
-                                 c (do (Thread/sleep 10) :c)}}
+                                      :task    (do (Thread/sleep 10)
+                                                   (+ 1 2 3))}
+                                 c   (do (Thread/sleep 10) :c)}}
         (is (= [6 6 :c] (bb "run" "--prn" "a"))))))
   (testing "dynamic vars"
     (test-utils/with-config '{:tasks
                               {:init (def ^:dynamic *foo* true)
-                               a (do
-                                   (def ^:dynamic *bar* false)
-                                   (binding [*foo* false
-                                             *bar* true]
-                                     [*foo* *bar*]))}}
+                               a     (do
+                                       (def ^:dynamic *bar* false)
+                                       (binding [*foo* false
+                                                 *bar* true]
+                                         [*foo* *bar*]))}}
       (is (= [false true] (bb "run" "--prn" "a")))))
   (testing "stable namespace name"
     (test-utils/with-config '{:tasks
-                              {:init (do (def ^:dynamic *jdk*)
-                                         (def ^:dynamic *server*))
-                               server [*jdk* *server*]
-                               run-all (for [jdk [8 11 15]
+                              {:init   (do (def ^:dynamic *jdk*)
+                                           (def ^:dynamic *server*))
+                               server  [*jdk* *server*]
+                               run-all (for [jdk    [8 11 15]
                                              server [:foo :bar]]
-                                         (binding [*jdk* jdk
+                                         (binding [*jdk*    jdk
                                                    *server* server]
                                            (babashka.tasks/run 'server)))}}
       (is (= '([8 :foo] [8 :bar] [11 :foo] [11 :bar] [15 :foo] [15 :bar])
-             (bb "run" "--prn" "run-all"))))))
+            (bb "run" "--prn" "run-all")))))
+  (let [tmp-dir (fs/create-temp-dir)
+        out     (str (fs/file tmp-dir "out.txt"))
+        ls-cmd  (if main/windows? "cmd /c dir" "ls")
+        expected-output (if main/windows? "File Not Found" "foobar")]
+    (testing "shell test with :continue"
+      (test-utils/with-config {:tasks {'foo (list 'shell {:out      out
+                                                          :err      out
+                                                          :continue true}
+                                              (str ls-cmd " foobar"))}}
+        (bb "foo")
+        (is (str/includes? (slurp out)
+              expected-output))))
+    (fs/delete out)))
+
+
+(deftest ^:skip-windows unix-task-test
+  (testing "shell pipe test"
+    (test-utils/with-config '{:tasks {a (-> (shell {:out :string}
+                                              "echo hello")
+                                          (shell {:out :string} "cat")
+                                          :out)}}
+      (let [s (bb "run" "--prn" "a")]
+        (is (= "hello\n" s))))))
+
+(deftest ^:windows-only win-task-test
+  (when main/windows?
+    (testing "shell pipe test"
+      ; this task prints the contents of deps.edn
+      (test-utils/with-config '{:tasks {a (->> (shell {:out :string}
+                                                 "cmd /c echo deps.edn")
+                                            :out
+                                            clojure.string/trim-newline
+                                            (shell {:out :string} "cmd /c type")
+                                            :out)}}
+        (let [s (bb "run" "--prn" "a")]
+          (is (str/includes? s "paths")))))))
 
 (deftest list-tasks-test
   (test-utils/with-config {}

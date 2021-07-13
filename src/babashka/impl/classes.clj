@@ -100,21 +100,25 @@
           java.io.InputStream
           java.io.IOException
           java.io.OutputStream
+          java.io.FileInputStream
           java.io.FileReader
           java.io.InputStreamReader
           java.io.OutputStreamWriter
           java.io.PrintStream
           java.io.PushbackInputStream
+          java.io.PushbackReader
           java.io.Reader
           java.io.SequenceInputStream
           java.io.StringReader
           java.io.StringWriter
           java.io.Writer
+          java.lang.Appendable
           java.lang.ArithmeticException
           java.lang.AssertionError
           java.lang.Boolean
           java.lang.Byte
           java.lang.Character
+          java.lang.CharSequence
           java.lang.Class
           java.lang.ClassNotFoundException
           java.lang.Comparable
@@ -198,6 +202,7 @@
           java.security.MessageDigest
           java.security.DigestInputStream
           java.security.SecureRandom
+          java.sql.Date
           java.text.ParseException
           ~@(when features/java-time?
               `[java.time.format.DateTimeFormatter
@@ -273,8 +278,7 @@
                    clojure.lang.MapEntry
                    clojure.lang.LineNumberingPushbackReader
                    java.io.EOFException
-                   java.io.PrintWriter
-                   java.io.PushbackReader]
+                   java.io.PrintWriter]
     :methods [borkdude.graal.LockFix] ;; support for locking
 
     :fields [clojure.lang.PersistentQueue]
@@ -328,6 +332,9 @@
                       clojure.lang.Sequential
                       clojure.lang.Seqable
                       clojure.lang.Volatile
+                      java.util.concurrent.atomic.AtomicInteger
+                      java.util.concurrent.atomic.AtomicLong
+                      java.util.Collection
                       java.util.List
                       java.util.Iterator
                       java.util.Map$Entry]

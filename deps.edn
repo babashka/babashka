@@ -37,14 +37,17 @@
         org.clojure/core.match {:mvn/version "1.0.0"}
         hiccup/hiccup {:mvn/version "2.0.0-alpha2"}
         rewrite-clj/rewrite-clj {:mvn/version "1.0.605-alpha"}
-        selmer/selmer {:mvn/version "1.12.40"}}
+        selmer/selmer {:mvn/version "1.12.40"}
+        com.taoensso/timbre {:mvn/version "5.1.2"}
+        org.clojure/tools.logging {:mvn/version "1.1.0"}}
  :aliases {:babashka/dev
            {:main-opts ["-m" "babashka.main"]}
            :profile
            {:extra-deps
             {com.clojure-goes-fast/clj-async-profiler {:mvn/version "0.4.1"}}
             :extra-paths ["test"]
-            :jvm-opts ["-Djdk.attach.allowAttachSelf"]
+            :jvm-opts ["-Djdk.attach.allowAttachSelf"
+                       "-Dclojure.compiler.direct-linking=true"]
             :main-opts ["-m" "babashka.profile"]}
            :lib-tests
            {:extra-paths ["process/src" "process/test"]
@@ -79,7 +82,11 @@
                          failjure/failjure {:mvn/version "2.1.1"}
                          io.helins/binf {:mvn/version "1.1.0-beta0"}
                          rm-hull/jasentaa {:mvn/version "0.2.5"}
-                         slingshot/slingshot {:mvn/version "0.12.2"}}
+                         slingshot/slingshot {:mvn/version "0.12.2"}
+                         io.replikativ/hasch {:mvn/version "0.3.7"}
+                         com.grammarly/omniconf {:mvn/version "0.4.3"}
+                         crispin/crispin {:mvn/version "0.3.8"}
+                         org.clojure/data.json {:mvn/version "2.4.0"}}
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil
                                   org.clojure/core.specs.alpha nil}}

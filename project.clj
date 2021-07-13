@@ -14,7 +14,8 @@
   ;; :java-source-paths ["sci/reflector/src-java"]
   :java-source-paths ["src-java"]
   :resource-paths ["resources" "sci/resources"]
-  :test-selectors {:windows :windows}
+  :test-selectors {:default (complement :windows-only)
+                   :windows (complement :skip-windows)}
   :dependencies [[org.clojure/clojure "1.11.0-alpha1"]
                  [borkdude/edamame "0.0.11"]
                  [borkdude/graal.locking "0.0.2"]
@@ -22,7 +23,9 @@
                  [cheshire "5.10.0"]
                  [nrepl/bencode "1.1.0"]
                  [borkdude/sci.impl.reflector "0.0.1"]
-                 [org.clojure/test.check "1.1.0"]]
+                 [org.clojure/test.check "1.1.0"]
+                 [com.taoensso/timbre "5.1.2"]
+                 [org.clojure/tools.logging "1.1.0"]]
   :profiles {:feature/xml  {:source-paths ["feature-xml"]
                             :dependencies [[org.clojure/data.xml "0.2.0-alpha6"]]}
              :feature/yaml {:source-paths ["feature-yaml"]

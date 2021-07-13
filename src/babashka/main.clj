@@ -33,6 +33,8 @@
    [babashka.impl.socket-repl :as socket-repl]
    [babashka.impl.tasks :as tasks :refer [tasks-namespace]]
    [babashka.impl.test :as t]
+   [babashka.impl.timbre :refer [timbre-namespace tools-logging-namespace
+                                 tools-logging-impl-namespace]]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
    [babashka.nrepl.server :as nrepl-server]
    [babashka.wait :as wait]
@@ -111,14 +113,20 @@
 (defn print-help [_ctx _command-line-args]
   (println (str "Babashka v" version))
   (println "
-Usage: bb [global-opts] [eval opts] [cmdline args]
-or:    bb [global-opts] file [cmdline args]
-or:    bb [global-opts] subcommand [subcommand opts] [cmdline args]
+Usage: bb [svm-opts] [global-opts] [eval opts] [cmdline args]
+or:    bb [svm-opts] [global-opts] file [cmdline args]
+or:    bb [svm-opts] [global-opts] subcommand [subcommand opts] [cmdline args]
+
+Substrate VM opts:
+
+  -Xmx<size>[g|G|m|M|k|K]  Set a maximum heap size (e.g. -Xmx256M to limit the heap to 256MB).
+  -XX:PrintFlags=          Print all Substrate VM options.
 
 Global opts:
 
-  -cp, --classpath     Classpath to use. Overrides bb.edn classpath.
-  --debug              Print debug information and internal stacktrace in case of exception.
+  -cp, --classpath  Classpath to use. Overrides bb.edn classpath.
+  --debug           Print debug information and internal stacktrace in case of exception.
+  --force           Passes -Sforce to deps.clj, forcing recalculation of the classpath.
 
 Help:
 
@@ -314,7 +322,7 @@ Use bb run --help to show this help output.
 (def namespaces
   (cond->
       {'user {'*input* (ctx-fn
-                        (fn [_ctx]
+                        (fn [_ctx _bindings]
                           (force @input-var))
                         nil)}
        'clojure.tools.cli tools-cli-namespace
@@ -345,7 +353,10 @@ Use bb run --help to show this help output.
        'babashka.process process-namespace
        'clojure.core.server clojure-core-server
        'babashka.deps deps-namespace
-       'babashka.tasks tasks-namespace}
+       'babashka.tasks tasks-namespace
+       'taoensso.timbre timbre-namespace
+       'clojure.tools.logging tools-logging-namespace
+       'clojure.tools.logging.impl tools-logging-impl-namespace}
     features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace))
     features/yaml? (assoc 'clj-yaml.core @(resolve 'babashka.impl.yaml/yaml-namespace)
                           'flatland.ordered.map @(resolve 'babashka.impl.ordered/ordered-map-ns))
@@ -404,13 +415,15 @@ Use bb run --help to show this help output.
                             @(resolve 'babashka.impl.selmer/selmer-validator-namespace))))
 
 (def imports
-  '{ArithmeticException java.lang.ArithmeticException
+  '{Appendable java.lang.Appendable
+    ArithmeticException java.lang.ArithmeticException
     AssertionError java.lang.AssertionError
     BigDecimal java.math.BigDecimal
     BigInteger java.math.BigInteger
     Boolean java.lang.Boolean
     Byte java.lang.Byte
     Character java.lang.Character
+    CharSequence java.lang.CharSequence
     Class java.lang.Class
     ClassNotFoundException java.lang.ClassNotFoundException
     Comparable java.lang.Comparable
@@ -493,9 +506,13 @@ Use bb run --help to show this help output.
           ("--doc")
           {:doc true
            :command-line-args (rest options)}
+          ;; renamed to --debug
           ("--verbose") (recur (next options)
                                (assoc opts-map
                                       :verbose? true))
+          ("--force") (recur (next options)
+                               (assoc opts-map
+                                      :force? true))
           ("--describe") (recur (next options)
                                 (assoc opts-map
                                        :describe? true))
@@ -663,7 +680,7 @@ Use bb run --help to show this help output.
                     :help :file :command-line-args
                     :expressions :stream?
                     :repl :socket-repl :nrepl
-                    :debug :classpath
+                    :debug :classpath :force?
                     :main :uberscript :describe?
                     :jar :uberjar :clojure
                     :doc :run :list-tasks]}
@@ -691,7 +708,7 @@ Use bb run --help to show this help output.
             _ (if classpath
                 (cp/add-classpath classpath)
                 ;; when classpath isn't set, we calculate it from bb.edn, if present
-                (when-let [bb-edn @common/bb-edn] (deps/add-deps bb-edn)))
+                (when-let [bb-edn @common/bb-edn] (deps/add-deps bb-edn {:force force?})))
             abs-path (when file
                        (let [abs-path (.getAbsolutePath (io/file file))]
                          (vars/bindRoot sci/file abs-path)

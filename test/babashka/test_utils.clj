@@ -8,16 +8,25 @@
    [clojure.edn :as edn]
    [clojure.string :as str]
    [clojure.test :as test :refer [*report-counters*]]
+   [clojure.tools.reader.reader-types :as r]
    [sci.core :as sci]
    [sci.impl.vars :as vars]))
 
 (set! *warn-on-reflection* true)
 
-
-(defn normalize [s]
+(def normalize
   (if main/windows?
-    (str/replace s "\r\n" "\n")
-    s))
+    (fn [s] (if (string? s)
+              (str/replace s "\r\n" "\n")
+              s))
+    identity))
+
+(def escape-file-paths
+  (if main/windows?
+    (fn [s] (if (string? s)
+              (str/replace s "\\" "\\\\")
+              s))
+    identity))
 
 (def ^:dynamic *bb-edn-path* nil)
 
@@ -26,11 +35,12 @@
   (println))
 
 (defmethod clojure.test/report :end-test-var [_m]
-  (let [{:keys [:fail :error]} @*report-counters*]
-    (when (and (= "true" (System/getenv "BABASHKA_FAIL_FAST"))
-               (or (pos? fail) (pos? error)))
-      (println "=== Failing fast")
-      (System/exit 1))))
+  (when-let [rc *report-counters*]
+    (let [{:keys [:fail :error]} @rc]
+      (when (and (= "true" (System/getenv "BABASHKA_FAIL_FAST"))
+                 (or (pos? fail) (pos? error)))
+        (println "=== Failing fast")
+        (System/exit 1)))))
 
 (defn bb-jvm [input-or-opts & args]
   (reset! cp/cp-state nil)
@@ -47,7 +57,8 @@
         in (if (string? input-or-opts)
              input-or-opts (:in input-or-opts))
         is (when in
-             (java.io.StringReader. in))
+             (r/indexing-push-back-reader
+              (r/push-back-reader (java.io.StringReader. in))))
         bindings-map (cond-> {sci/out os
                               sci/err es}
                        is (assoc sci/in is))]
@@ -86,7 +97,7 @@
         exit (:exit res)
         error? (pos? exit)]
     (if error? (throw (ex-info (or (:err res) "") {}))
-        (:out res))))
+               (normalize (:out res)))))
 
 (def bb
   (case (System/getenv "BABASHKA_TEST_ENV")

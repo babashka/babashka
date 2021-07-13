@@ -56,7 +56,7 @@
   keywords) which will used to calculate classpath. The classpath is
   then used to resolve dependencies in babashka."
   ([deps-map] (add-deps deps-map nil))
-  ([deps-map {:keys [:aliases]}]
+  ([deps-map {:keys [:aliases :env :extra-env :force]}]
    (when-let [paths (:paths deps-map)]
      (cp/add-classpath (str/join cp/path-sep paths)))
    (when-let [deps-map (not-empty (dissoc deps-map :paths :tasks :raw :min-bb-version))]
@@ -65,12 +65,14 @@
                                 :classpath-overrides {org.clojure/clojure ""
                                                       org.clojure/spec.alpha ""
                                                       org.clojure/core.specs.alpha ""}})
-           args ["-Srepro" ;; do not include deps.edn from user config
-                 "-Spath" "-Sdeps" (str deps-map)
-                 "-Sdeps-file" "" ;; we reset deps file so the local deps.edn isn't used
-                 ,]
-           args (conj args (str "-A:" (str/join ":" (cons ":org.babashka/defaults" aliases))))
-           cp (with-out-str (apply deps/-main args))
+           args (list "-Srepro" ;; do not include deps.edn from user config
+                      "-Spath" "-Sdeps" (str deps-map)
+                      "-Sdeps-file" "") ;; we reset deps file so the local deps.edn isn't used
+           args (if force (cons "-Sforce" args) args)
+           args (concat args [(str "-A:" (str/join ":" (cons ":org.babashka/defaults" aliases)))])
+           cp (with-out-str (binding [deps/*env* env
+                                      deps/*extra-env* extra-env]
+                              (apply deps/-main args)))
            cp (str/trim cp)
            cp (str/replace cp (re-pattern (str cp/path-sep "+$")) "")]
        (cp/add-classpath cp)))))
@@ -109,6 +111,9 @@
      (binding [*in* @sci/in
                *out* @sci/out
                *err* @sci/err
+               deps/*dir* (:dir opts)
+               deps/*env* (:env opts)
+               deps/*extra-env* (:extra-env opts)
                deps/*process-fn* (fn
                                    ([cmd] (p/process cmd opts))
                                    ([cmd _] (p/process cmd opts)))

@@ -182,7 +182,7 @@
           (let [reply (read-reply in session @id)]
             (is (= "Hello\n" (tu/normalize (:out reply))))))))))
 
-(deftest nrepl-server-test
+(deftest ^:skip-windows nrepl-server-test
   (let [proc-state (atom nil)
         server-state (atom nil)]
     (try

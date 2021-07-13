@@ -9,6 +9,8 @@
 (defn bb [input & args]
   (edn/read-string (apply tu/bb (when (some? input) (str input)) (map str args))))
 
+(def path-sep (System/getProperty "path.separator"))
+
 (deftest classpath-test
   (is (= :my-script/bb
          (bb nil "--classpath" "test-resources/babashka/src_for_classpath_test"
@@ -24,12 +26,12 @@
   (is (= "test-resources"
          (bb nil "--classpath" "test-resources"
              "(require '[babashka.classpath :as cp]) (cp/get-classpath)")))
-  (is (= "test-resources:foobar"
-         (bb nil "--classpath" "test-resources"
-             "(require '[babashka.classpath :as cp]) (cp/add-classpath \"foobar\") (cp/get-classpath)")))
+  (is (= (str/join path-sep ["test-resources" "foobar"])
+        (bb nil "--classpath" "test-resources"
+            "(require '[babashka.classpath :as cp]) (cp/add-classpath \"foobar\") (cp/get-classpath)")))
   (is (= ["foo" "bar"]
-         (bb nil "--classpath" "foo:bar"
-             "(require '[babashka.classpath :as cp]) (cp/split-classpath (cp/get-classpath))"))))
+         (bb nil "--classpath" (str/join path-sep ["foo" "bar"])
+           "(require '[babashka.classpath :as cp]) (cp/split-classpath (cp/get-classpath))"))))
 
 (deftest classpath-env-test
   ;; for this test you have to set `BABASHKA_CLASSPATH` to test-resources/babashka/src_for_classpath_test/env
@@ -57,7 +59,8 @@
 (deftest resource-test
   (let [tmp-file (java.io.File/createTempFile "icon" ".png")]
     (.deleteOnExit tmp-file)
-    (bb nil "--classpath" "logo" "-e" (format "(io/copy (io/input-stream (io/resource \"icon.png\")) (io/file \"%s\"))" (.getPath tmp-file)))
+    (bb nil "--classpath" "logo" "-e" (format "(io/copy (io/input-stream (io/resource \"icon.png\")) (io/file \"%s\"))"
+                                        (tu/escape-file-paths (.getPath tmp-file))))
     (is (= (.length (io/file "logo" "icon.png"))
            (.length tmp-file))))
   (testing "No exception on absolute path"

@@ -4,7 +4,29 @@ For a list of breaking changes, check [here](#breaking-changes).
 
 ## Unreleased
 
+Babashka proper:
+
+- Add `clojure.tools.logging` with `taoensso.timbre` as the default implementation
 - Passing form on Windows with question mark breaks evaluation [#889](https://github.com/babashka/babashka/issues/889)
+- `(read-line)` is buggy in REPL [#899](https://github.com/babashka/babashka/issues/899)
+- Add `java.io.FileInputStream`. This fixes compatibility with [replikativ/hasch](https://github.com/replikativ/hasch).
+- `babashka.tasks/clojure` with `:dir` option doesn't resolve deps in `:dir` [#914](https://github.com/babashka/babashka/issues/914)
+- Support `pprint/formatter-out` [#922](https://github.com/babashka/babashka/issues/922)
+- Support `pprint/cl-format` with `with-out-str` [#930](https://github.com/babashka/babashka/issues/930)
+- Compatibility with `org.clojure/data.json {:mvn/version "2.4.0}"`
+- Support passing `GITLIBS` via `:extra-env` in `clojure` to set git lib dir:
+  `(clojure {:extra-env {"GITLIBS" ".gitlib"}} ,,,) [#934](https://github.com/babashka/babashka/issues/934)`
+- Add `--force` option to force recomputation of bababashka deps classpath.
+
+Deps.clj:
+
+Update to v0.0.16 which corresponds to clojure CLI `1.10.3.855`.
+
+Sci:
+
+- Perf improvements
+- `case` expression generated from macro doesn't work correctly
+- Fix stacktrace with invalid import [borkdude/sci#589](https://github.com/borkdude/sci/issues/589)
 
 ## 0.4.6
 

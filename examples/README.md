@@ -25,13 +25,17 @@
   - [Invoke vim inside a script](#invoke-vim-inside-a-script)
   - [Portal](#portal)
   - [Image viewer](#image-viewer)
-  - [File server](#file-server)
+  - [HTTP server](#http-server)
   - [Torrent viewer](#torrent-viewer)
   - [cprop.clj](#cpropclj)
   - [fzf](#fzf)
   - [digitalocean-ping.clj](#digitalocean-pingclj)
   - [download-aliases.clj](#download-aliasesclj)
   - [Is TTY?](#is-tty)
+  - [normalize-keywords.clj](#normalize-keywordsclj)
+  - [Check stdin for data](#check-stdin-for-data)
+  - [Using org.clojure/data.xml](#using-orgclojuredataxml)
+  - [Simple logger](#simple-logger)
 
 Here's a gallery of useful examples. Do you have a useful example? PR welcome!
 
@@ -372,14 +376,15 @@ $ examples/image-viewer.clj
 
 See [image-viewer.clj](image-viewer.clj).
 
-## File server
+## HTTP Server
 
-Opens browser window and lets user navigate through filesystem.
+Opens browser window and lets user navigate through filesystem, similar to
+`python3 -m http.server`.
 
 Example usage:
 
 ``` shell
-$ examples/file-server.clj
+$ examples/http-server.clj
 ```
 
 See [file-server.clj](file-server.clj).
@@ -463,4 +468,57 @@ $ bb is-tty.clj 2>/dev/null
 STDIN is TTY?: true
 STDOUT is TTY?: true
 STDERR is TTY?: false
+```
+
+## [normalize-keywords.clj](normalize-keywords.clj)
+
+Provide a Clojure file to the script and it will print the Clojure file with
+auto-resolved keywords normalized to fully qualified ones without double colons:
+`::set/foo` becomes `:clojure.set/foo`.
+
+``` clojure
+$ cat /tmp/test.clj
+(ns test (:require [clojure.set :as set]))
+
+[::set/foo ::bar]
+
+$ bb examples/normalize-keywords.clj /tmp/test.clj
+(ns test (:require [clojure.set :as set]))
+
+[:clojure.set/foo :test/bar]
+```
+
+## Check stdin for data
+
+```shell
+# when piping something in, we get a positive number
+$ echo 'abc' | bb '(pos? (.available System/in))'
+true
+# even if we echo an empty string, we still get the newline
+$ echo '' | bb '(pos? (.available System/in))'
+true
+# with nothing passed in, we finally return false
+$ bb '(pos? (.available System/in))'
+false
+```
+
+## Using org.clojure/data.xml
+
+[xml-example.clj](xml-example.clj) explores some of the capabilities provided
+by the `org.clojure/data.xml` library (required as `xml` by default in Babashka). 
+While running the script will show some output, reading the file shows the library 
+in use.
+
+```shell
+$ bb examples/xml-example.clj
+... some vaguely interesting XML manipulation output
+```
+
+## Simple logger
+
+[logger.clj](logger.clj) is a simple logger that works in bb.
+
+``` clojure
+$ bb "(require 'logger) (logger/log \"the logger says hi\")"
+<expr>:1:19 the logger says hi 
 ```

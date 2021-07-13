@@ -38,11 +38,18 @@
                              (str ":" line ":" column))"]"))))
       (sio/flush))))
 
+(defn skip-if-eol
+  "Inspired by skip-if-eol from clojure.main."
+  [s]
+  (let [c (r/read-char s)]
+    (when-not (= c \newline)
+      (r/unread s c))))
+
 (defn repl
   "REPL with predefined hooks for attachable socket server."
   ([sci-ctx] (repl sci-ctx nil))
   ([sci-ctx {:keys [:init :read :eval :need-prompt :prompt :flush :print :caught]}]
-   (let [in (r/indexing-push-back-reader (r/push-back-reader @sci/in))]
+   (let [in @sci/in]
      (m/repl
       :init (or init
                 (fn []
@@ -57,6 +64,7 @@
       :read (or read
                 (fn [_request-prompt request-exit]
                   (let [v (parser/parse-next sci-ctx in)]
+                    (skip-if-eol in)
                     (if (or (identical? :repl/quit v)
                             (identical? :repl/exit v)
                             (identical? parser/eof v))
