@@ -2,7 +2,7 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
-## Unreleased
+## 0.5.0
 
 Babashka proper:
 
@@ -14,6 +14,7 @@ Babashka proper:
   `(clojure {:extra-env {"GITLIBS" ".gitlib"}} ,,,)` [#934](https://github.com/babashka/babashka/issues/934)
 - Add `--force` option to force recomputation of bababashka deps classpath.
 - Add `java.io.FileInputStream`. This fixes compatibility with [replikativ/hasch](https://github.com/replikativ/hasch).
+- Update Selmer to `1.12.44`, include `<<` interpolation macro
 - Passing form on Windows with question mark breaks evaluation [#889](https://github.com/babashka/babashka/issues/889)
 - Fix `(read-line)` in REPL [#899](https://github.com/babashka/babashka/issues/899)
 - `babashka.tasks/clojure` with `:dir` option doesn't resolve deps in `:dir` [#914](https://github.com/babashka/babashka/issues/914)
