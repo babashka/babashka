@@ -40,7 +40,7 @@
      (timbre/swap-config! assoc-in [:appenders :spit] (timbre/spit-appender {:fname "/tmp/timbre.log"}))
      (log/infof "Hello %s" 123)))
 
-(deftest logging-test
+#_(deftest logging-test
   (let [res (tu/bb nil (pr-str program))]
     (is (= 17 (count (re-seq #"\[dude:.\]" res))))
     (is (= 6 (count (re-seq #"DEBUG" res))))
