@@ -167,7 +167,8 @@
 
 (def tools-logging-namespace
   (assoc (make-ns 'clojure.tools.logging lns ['debug 'debugf 'info 'infof 'warn 'warnf 'error 'errorf
-                                              'logp 'logf '*logger-factory* 'log*])
+                                              'logp 'logf '*logger-factory* 'log*
+                                              'trace 'tracef])
          'log (sci/copy-var log lns)))
 
 (def lins (sci/create-ns 'clojure.tools.logging.impl nil))
