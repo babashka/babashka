@@ -2,6 +2,9 @@
   {:no-doc true}
   (:refer-clojure :exclude [error-handler])
   (:require
+   ;; we name this ns a01 to always have it on top and sorting won't mess with it
+   ;; it loads patches
+   [a1]
    [babashka.fs :as fs]
    [babashka.impl.bencode :refer [bencode-namespace]]
    [babashka.impl.cheshire :refer [cheshire-core-namespace]]
@@ -24,7 +27,7 @@
    [babashka.impl.features :as features]
    [babashka.impl.fs :refer [fs-namespace]]
    [babashka.impl.logging :refer [timbre-namespace tools-logging-namespace
-                                 tools-logging-impl-namespace]]
+                                  tools-logging-impl-namespace]]
    [babashka.impl.pods :as pods]
    [babashka.impl.pprint :refer [pprint-namespace]]
    [babashka.impl.process :refer [process-namespace]]
