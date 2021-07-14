@@ -3,8 +3,7 @@
             [clojure.tools.logging.impl :as impl]
             [sci.core :as sci]
             [taoensso.encore :as enc :refer [have]]
-            [taoensso.timbre :as timbre]
-            [taoensso.timbre.appenders.core :as appenders]))
+            [taoensso.timbre :as timbre]))
 
 ;;;; timbre
 
@@ -60,44 +59,7 @@
           {}
           (select-keys (ns-publics ns) ks)))
 
-(def atomic-println @#'appenders/atomic-println)
-
-(defn println-appender
-  "Returns a simple `println` appender for Clojure/Script.
-  Use with ClojureScript requires that `cljs.core/*print-fn*` be set.
-  :stream (clj only) - e/o #{:auto :*out* :*err* :std-err :std-out <io-stream>}."
-
-  ;; Unfortunately no easy way to check if *print-fn* is set. Metadata on the
-  ;; default throwing fn would be nice...
-
-  [& [{:keys [stream] :or {stream :auto}}]]
-  (let [stream
-        (case stream
-          :std-err timbre/default-err
-          :std-out timbre/default-out
-          stream)]
-    {:enabled?   true
-     :async?     false
-     :min-level  nil
-     :rate-limit nil
-     :output-fn  :inherit
-     :fn
-     (fn [data]
-       (let [{:keys [output_]} data
-             stream
-             (case stream
-               :auto  (if (:error-level? data) @sci/err @sci/out)
-               :*out* @sci/out
-               :*err* @sci/err
-               stream)]
-         (binding [*out* stream]
-           (atomic-println (force output_)))))}))
-
-(def default-config (assoc-in timbre/*config* [:appenders :println]
-                              (println-appender {:stream :auto})))
-
-(def config (sci/new-dynamic-var '*config* default-config
-                                 {:ns tns}))
+(def config (sci/new-dynamic-var '*config* timbre/*config* {:ns tns}))
 
 (defn swap-config! [f & args]
   (apply sci/alter-var-root config f args))
@@ -109,12 +71,11 @@
                                         'info 'infof 'warn 'warnf
                                         'error 'errorf
                                         '-log! 'with-level
-                                        'spit-appender])
+                                        'println-appender 'spit-appender])
          'log! (sci/copy-var log! tns)
          '*config* config
          'swap-config! (sci/copy-var swap-config! tns)
-         'set-level! (sci/copy-var set-level! tns)
-         'println-appender (sci/copy-var println-appender tns)))
+         'set-level! (sci/copy-var set-level! tns)))
 
 ;;;; clojure.tools.logging
 

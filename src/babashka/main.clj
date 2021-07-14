@@ -24,7 +24,7 @@
    [babashka.impl.features :as features]
    [babashka.impl.fs :refer [fs-namespace]]
    [babashka.impl.logging :refer [timbre-namespace tools-logging-namespace
-                                 tools-logging-impl-namespace]]
+                                  tools-logging-impl-namespace]]
    [babashka.impl.pods :as pods]
    [babashka.impl.pprint :refer [pprint-namespace]]
    [babashka.impl.process :refer [process-namespace]]
@@ -355,8 +355,9 @@ Use bb run --help to show this help output.
        'babashka.deps deps-namespace
        'babashka.tasks tasks-namespace
        'taoensso.timbre timbre-namespace
-       'clojure.tools.logging tools-logging-namespace
-       'clojure.tools.logging.impl tools-logging-impl-namespace}
+       ;; 'clojure.tools.logging tools-logging-namespace
+       ;; 'clojure.tools.logging.impl tools-logging-impl-namespace
+       }
     features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace))
     features/yaml? (assoc 'clj-yaml.core @(resolve 'babashka.impl.yaml/yaml-namespace)
                           'flatland.ordered.map @(resolve 'babashka.impl.ordered/ordered-map-ns))
