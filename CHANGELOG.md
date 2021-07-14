@@ -34,6 +34,9 @@ Special thanks to:
 - [@bobisageek](https://github.com/bobisageek) for spending time and energy on
 getting the majority of tests to work on Windows.
 - [@ptaoussanis](https://github.com/ptaoussanis) for creating [timbre](https://github.com/ptaoussanis/timbre).
+- [@puredanger](https://github.com/puredanger) for accepting patches to
+  [data.json](https://github.com/clojure/data.json) which made it compatible
+  with babashka.
 
 ## 0.4.6
 
