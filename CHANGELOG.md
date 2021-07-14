@@ -29,6 +29,12 @@ Sci:
 - `case` expression generated from macro doesn't work correctly
 - Fix stacktrace with invalid import [borkdude/sci#589](https://github.com/borkdude/sci/issues/589)
 
+Special thanks to:
+
+- [@bobisageek](https://github.com/bobisageek) for spending time and energy on
+getting the majority of tests to work on Windows.
+- [@ptaoussanis](https://github.com/ptaoussanis) for creating [timbre](https://github.com/ptaoussanis/timbre).
+
 ## 0.4.6
 
 - Upgrade to GraalVM 21.1, fixes [#884](https://github.com/babashka/babashka/issues/884)
