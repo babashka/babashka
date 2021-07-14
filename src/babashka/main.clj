@@ -23,6 +23,8 @@
    [babashka.impl.error-handler :refer [error-handler]]
    [babashka.impl.features :as features]
    [babashka.impl.fs :refer [fs-namespace]]
+   [babashka.impl.logging :refer [timbre-namespace tools-logging-namespace
+                                 tools-logging-impl-namespace]]
    [babashka.impl.pods :as pods]
    [babashka.impl.pprint :refer [pprint-namespace]]
    [babashka.impl.process :refer [process-namespace]]
@@ -33,8 +35,6 @@
    [babashka.impl.socket-repl :as socket-repl]
    [babashka.impl.tasks :as tasks :refer [tasks-namespace]]
    [babashka.impl.test :as t]
-   [babashka.impl.timbre :refer [timbre-namespace tools-logging-namespace
-                                 tools-logging-impl-namespace]]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
    [babashka.nrepl.server :as nrepl-server]
    [babashka.wait :as wait]
