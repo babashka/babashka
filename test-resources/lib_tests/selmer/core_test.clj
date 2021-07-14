@@ -7,8 +7,10 @@
             [clojure.test :refer [deftest are is testing]]
             [selmer.filters :as f]
             [selmer.parser :as p :refer [render render-file render-template
-                                         parse parse-input known-variables]]
-            [selmer.tags :as tags])
+                                         parse parse-input known-variables
+                                         << resolve-var-from-kw env-map]]
+            [selmer.tags :as tags]
+            [clojure.set :as set])
   (:import (java.io StringReader ByteArrayInputStream)
            java.io.File
            java.util.Locale))
@@ -1257,3 +1259,38 @@
                      "debug-value"))
   (testing "basic rendering escapes HTML"
     (is (str/includes? (basic-edn->html {:a "<pre>"}) "&quot"))))
+
+(deftest allow-whitespace-in-filter-test
+  (is (= "bar" (render "{{ foo | default:bar }}" {:dude 1}))))
+
+;; String interopolation
+
+;; setup namespaces, vars + alias for << tests
+(def one "one")
+(def y 1)
+(require '[selmer.benchmark :as sb])
+
+(deftest string-interpolation-test
+  (is (= "one plus one is two."
+         (<< "{{one}} plus {{one}} is two.")))
+
+  (let [one 1]
+    (is (= "1 + 1 = 2"
+           (<< "{{one}} + {{one}} = 2"))))
+
+  (let [one 1
+        one 11]
+    (is (= "11 + 11 = 2"
+           (<< "{{one}} + {{one}} = 2"))))
+
+  (is (= "selmer.benchmark/user has 10 items."
+         (<< "selmer.benchmark/user has {{selmer..benchmark/user|count}} items.")))
+
+  (is (= "sb/user has 10 items."
+         (<< "sb/user has {{sb/user|count}} items.")))
+
+  (is (= "" (let [y nil] (<< "{{y}}")))
+      "<< picks up local values even if they are nil")
+
+  (is (= "false" (let [y false] (<< "{{y}}")))
+      "<< picks up local values even if they are false"))

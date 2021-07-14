@@ -11,14 +11,17 @@
   (or (empty? ns-args)
       (contains? ns-args ns)))
 
-(defn test-namespaces [& namespaces]
-  (let [namespaces (seq (filter test-namespace? namespaces))]
-    (when namespaces
-      (doseq [ns namespaces]
-        (require ns))
-      (let [m (apply t/run-tests namespaces)]
-        (swap! status (fn [status]
-                        (merge-with + status (dissoc m :type))))))))
+(defmacro test-namespaces [& namespaces]
+  (let [namespaces (map second namespaces)
+        namespaces (seq (filter test-namespace? namespaces))
+        quoted-namespaces (map #(list 'quote %) namespaces)
+        requires (map #(list 'require %) quoted-namespaces)]
+    (when (seq requires)
+      `(do
+         ~@requires
+         (let [m# (t/run-tests ~@quoted-namespaces)]
+           (swap! status (fn [status#]
+                           (merge-with + status# (dissoc m# :type)))))))))
 
 (def windows? (-> (System/getProperty "os.name")
                 (str/lower-case)

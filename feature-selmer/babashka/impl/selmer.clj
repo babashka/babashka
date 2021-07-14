@@ -1,6 +1,7 @@
 (ns babashka.impl.selmer
   {:no-doc true}
   (:require [babashka.impl.classpath :refer [resource]]
+            [babashka.impl.common :refer [ctx]]
             [sci.core :as sci]
             [selmer.filters :as filters]
             [selmer.parser]
@@ -10,20 +11,23 @@
 
 (def spns (sci/create-ns 'selmer.parser nil))
 
+(def include #{'env-map})
+
 (defn make-ns [ns sci-ns]
   (reduce (fn [ns-map [var-name var]]
             (let [m (meta var)
                   no-doc (:no-doc m)
                   doc (:doc m)
                   arglists (:arglists m)]
-              (if no-doc ns-map
-                  (assoc ns-map var-name
-                         (sci/new-var (symbol var-name) @var
-                                      (cond-> {:ns sci-ns
-                                               :name (:name m)}
-                                        (:macro m) (assoc :macro true)
-                                        doc (assoc :doc doc)
-                                        arglists (assoc :arglists arglists)))))))
+              (if (and no-doc (not (contains? include var-name)))
+                ns-map
+                (assoc ns-map var-name
+                       (sci/new-var (symbol var-name) @var
+                                    (cond-> {:ns sci-ns
+                                             :name (:name m)}
+                                      (:macro m) (assoc :macro true)
+                                      doc (assoc :doc doc)
+                                      arglists (assoc :arglists arglists)))))))
           {}
           (ns-publics ns)))
 
@@ -55,11 +59,37 @@
   (binding [util/*escape-variables* @escape-variables]
     (selmer.parser/render-template template context-map)))
 
+(defn sci-ns-resolve [ns fqs]
+  (sci/eval-form @ctx (list 'clojure.core/ns-resolve ns (list 'quote fqs))))
+
+(defn force! [x]
+  (if (instance? clojure.lang.IDeref x) @x x))
+
+(defn ^:no-doc resolve-var-from-kw [ns env kw]
+  (if (namespace kw)
+    (when-let [v (sci-ns-resolve ns (symbol (str (namespace kw) "/" (name kw))))] {kw (force! v)})
+    (or
+     ;; check local env first
+     (when-let [[_ v] (find env kw)] {kw v})
+     (when-let [v (sci-ns-resolve ns (symbol (name kw)))] {kw (force! v)}))))
+
+(defmacro <<
+  "Resolves the variables from your template string from the local-env, or the
+  namespace and puts them into your template for you.
+  e.g. (let [a 1] (<< \"{{a}} + {{a}} = 2\")) ;;=> \"1 + 1 = 2\" "
+  [s]
+  `(->> (selmer.parser/known-variables ~s)
+        (mapv #(selmer.parser/resolve-var-from-kw ~(deref sci/ns) (selmer.parser/env-map) %))
+        (apply merge)
+        (selmer.parser/render ~s)))
+
 (def selmer-parser-namespace
   (-> selmer-parser-ns
       (assoc 'render-file (sci/copy-var render-file spns)
              'render      (sci/copy-var render spns)
-             'render-template (sci/copy-var render-template spns))))
+             'render-template (sci/copy-var render-template spns)
+             'resolve-var-from-kw (sci/copy-var resolve-var-from-kw spns)
+             '<< (sci/copy-var << spns))))
 
 (def stns (sci/create-ns 'selmer.tags nil))
 
