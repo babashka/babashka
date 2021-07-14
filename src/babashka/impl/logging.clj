@@ -67,15 +67,18 @@
 (defn set-level! [level] (swap-config! (fn [m] (assoc m :min-level level))))
 
 (def timbre-namespace
-  (assoc (make-ns 'taoensso.timbre tns ['trace 'tracef 'debug 'debugf
+  (assoc (make-ns 'taoensso.timbre tns [] #_['trace 'tracef 'debug 'debugf
                                         'info 'infof 'warn 'warnf
                                         'error 'errorf
                                         '-log! 'with-level
                                         'println-appender 'spit-appender])
-         'log! (sci/copy-var log! tns)
-         '*config* config
-         'swap-config! (sci/copy-var swap-config! tns)
-         'set-level! (sci/copy-var set-level! tns)))
+         nil nil
+         #_#_'log! (sci/copy-var log! tns)
+         #_#_'*config* config
+         #_#_'swap-config! (sci/copy-var swap-config! tns)
+         #_#_'set-level! (sci/copy-var set-level! tns)))
+
+(prn timbre-namespace)
 
 ;;;; clojure.tools.logging
 
