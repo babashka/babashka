@@ -60,10 +60,10 @@
           program (pr-str '(do
                              (require '[taoensso.timbre :as timbre]
                                       '[clojure.string :as str])
-                             (def appender (timbre/spit-appender {:fname "{{fname}}"}))
+                             (def appender (timbre/spit-appender {:fname :fname-placeholder}))
                              (timbre/swap-config! assoc-in [:appenders :spit] appender)
                              (str/includes? (with-out-str (timbre/info "hello")) "hello")))
-          program (str/replace program "{{fname}}" (str temp-file))
+          program (str/replace program ":fname-placeholder" (pr-str (.getPath temp-file)))
           _ (tu/bb
                nil
                program)
