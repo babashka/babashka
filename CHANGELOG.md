@@ -7,12 +7,12 @@ For a list of breaking changes, check [here](#breaking-changes).
 Babashka proper:
 
 - Add `clojure.tools.logging` with `taoensso.timbre` as the default implementation
-- Source compatibility with `org.clojure/data.json {:mvn/version "2.4.0}"`
+- Source compatibility with `org.clojure/data.json {:mvn/version "2.4.0"}`
 - Support `pprint/formatter-out` [#922](https://github.com/babashka/babashka/issues/922)
 - Support `pprint/cl-format` with `with-out-str` [#930](https://github.com/babashka/babashka/issues/930)
 - Support passing `GITLIBS` via `:extra-env` in `clojure` to set git lib dir:
-  `(clojure {:extra-env {"GITLIBS" ".gitlib"}} ,,,)` [#934](https://github.com/babashka/babashka/issues/934)
-- Add `--force` option to force recomputation of bababashka deps classpath.
+  `(clojure {:extra-env {"GITLIBS" ".gitlib"}} ...)` [#934](https://github.com/babashka/babashka/issues/934)
+- Add `--force` option to force recomputation of babashka deps classpath.
 - Add `java.io.FileInputStream`. This fixes compatibility with [replikativ/hasch](https://github.com/replikativ/hasch).
 - Update Selmer to `1.12.44`, include `<<` interpolation macro
 - Passing form on Windows with question mark breaks evaluation [#889](https://github.com/babashka/babashka/issues/889)
