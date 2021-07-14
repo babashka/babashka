@@ -72,8 +72,7 @@
                                         'error 'errorf
                                         '-log! 'with-level
                                         'println-appender 'spit-appender])
-         nil nil
-         #_#_'log! (sci/copy-var log! tns)
+         'log! (sci/copy-var log! tns)
          #_#_'*config* config
          #_#_'swap-config! (sci/copy-var swap-config! tns)
          #_#_'set-level! (sci/copy-var set-level! tns)))
