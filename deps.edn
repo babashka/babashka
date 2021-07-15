@@ -19,10 +19,10 @@
         babashka/babashka.curl {:local/root "babashka.curl"}
         babashka/fs {:local/root "fs"}
         borkdude/graal.locking {:mvn/version "0.0.2"},
-        org.clojure/core.async {:mvn/version "1.3.610"},
+        org.clojure/core.async {:mvn/version "1.3.618"},
         org.clojure/tools.cli {:mvn/version "1.0.206"},
         org.clojure/data.csv {:mvn/version "1.0.0"},
-        cheshire/cheshire {:mvn/version "5.10.0"}
+        cheshire/cheshire {:mvn/version "5.10.1"}
         org.clojure/data.xml {:mvn/version "0.2.0-alpha6"}
         clj-commons/clj-yaml {:mvn/version "0.7.106"}
         com.cognitect/transit-clj {:mvn/version "1.0.324"}
@@ -36,7 +36,7 @@
         babashka/clojure-lanterna {:mvn/version "0.9.8-SNAPSHOT"}
         org.clojure/core.match {:mvn/version "1.0.0"}
         hiccup/hiccup {:mvn/version "2.0.0-alpha2"}
-        rewrite-clj/rewrite-clj {:mvn/version "1.0.605-alpha"}
+        rewrite-clj/rewrite-clj {:mvn/version "1.0.644-alpha"}
         selmer/selmer {:mvn/version "1.12.44"}
         com.taoensso/timbre {:mvn/version "5.1.2"}
         org.clojure/tools.logging {:mvn/version "1.1.0"}}
@@ -44,7 +44,7 @@
            {:main-opts ["-m" "babashka.main"]}
            :profile
            {:extra-deps
-            {com.clojure-goes-fast/clj-async-profiler {:mvn/version "0.4.1"}}
+            {com.clojure-goes-fast/clj-async-profiler {:mvn/version "0.5.0"}}
             :extra-paths ["test"]
             :jvm-opts ["-Djdk.attach.allowAttachSelf"
                        "-Dclojure.compiler.direct-linking=true"]

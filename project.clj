@@ -20,7 +20,7 @@
                  [borkdude/edamame "0.0.11"]
                  [borkdude/graal.locking "0.0.2"]
                  [org.clojure/tools.cli "1.0.206"]
-                 [cheshire "5.10.0"]
+                 [cheshire "5.10.1"]
                  [nrepl/bencode "1.1.0"]
                  [borkdude/sci.impl.reflector "0.0.1"]
                  [org.clojure/test.check "1.1.0"]
@@ -37,7 +37,7 @@
              :feature/oracledb [:feature/jdbc {:dependencies [[io.helidon.integrations.db/ojdbc "2.1.0"]]}] ; ojdbc10 + GraalVM config, by Oracle
              :feature/hsqldb [:feature/jdbc {:dependencies [[org.hsqldb/hsqldb "2.5.1"]]}]
              :feature/core-async {:source-paths ["feature-core-async"]
-                                  :dependencies [[org.clojure/core.async "1.3.610"]]}
+                                  :dependencies [[org.clojure/core.async "1.3.618"]]}
              :feature/csv {:source-paths ["feature-csv"]
                            :dependencies [[org.clojure/data.csv "1.0.0"]]}
              :feature/transit {:source-paths ["feature-transit"]
@@ -57,7 +57,7 @@
              :feature/test-check {:source-paths ["feature-test-check"]}
              :feature/spec-alpha {:source-paths ["feature-spec-alpha"]}
              :feature/rewrite-clj {:source-paths ["feature-rewrite-clj"]
-                                   :dependencies [[rewrite-clj/rewrite-clj "1.0.605-alpha"]]}
+                                   :dependencies [[rewrite-clj/rewrite-clj "1.0.644-alpha"]]}
              :feature/selmer {:source-paths ["feature-selmer"]
                               :dependencies [[selmer/selmer "1.12.44"]]}
              :test [:feature/xml
@@ -77,7 +77,7 @@
                     :feature/spec-alpha
                     :feature/rewrite-clj
                     :feature/selmer
-                    {:dependencies [[com.clojure-goes-fast/clj-async-profiler "0.4.1"]
+                    {:dependencies [[com.clojure-goes-fast/clj-async-profiler "0.5.0"]
                                     [com.opentable.components/otj-pg-embedded "0.13.3"]]}]
              :uberjar {:global-vars {*assert* false}
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"
