@@ -42,10 +42,10 @@ build_script:
 
     call lein self-install
 
-- cmd: >-
-    set BABASHKA_TEST_ENV=jvm
+#- cmd: >-
+#    set BABASHKA_TEST_ENV=jvm
 
-    call script/test.bat
+#    call script/test.bat
 
 # see https://github.com/quarkusio/quarkus/pull/7663
 
@@ -74,7 +74,7 @@ build_script:
 
     call script/test.bat
 
-    call script/run_lib_tests.bat
+# call script/run_lib_tests.bat
 
 artifacts:
 - path: babashka-*-windows-amd64.zip
