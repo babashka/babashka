@@ -2,9 +2,7 @@
   {:no-doc true}
   (:refer-clojure :exclude [error-handler])
   (:require
-   ;; we name this ns a01 to always have it on top and sorting won't mess with it
-   ;; it loads patches
-   [a1]
+   [aaaa-this-has-to-be-first-because-patches]
    [babashka.fs :as fs]
    [babashka.impl.bencode :refer [bencode-namespace]]
    [babashka.impl.cheshire :refer [cheshire-core-namespace]]
