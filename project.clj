@@ -29,7 +29,7 @@
   :profiles {:feature/xml  {:source-paths ["feature-xml"]
                             :dependencies [[org.clojure/data.xml "0.2.0-alpha6"]]}
              :feature/yaml {:source-paths ["feature-yaml"]
-                            :dependencies [[clj-commons/clj-yaml "0.7.106"]]}
+                            :dependencies [[clj-commons/clj-yaml "0.7.107"]]}
              :feature/jdbc {:source-paths ["feature-jdbc"]
                             :dependencies [[seancorfield/next.jdbc "1.1.610"]]}
              :feature/postgresql [:feature/jdbc {:dependencies [[org.postgresql/postgresql "42.2.18"]]}]

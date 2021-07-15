@@ -10,6 +10,6 @@
    'unmark (copy-var yaml/unmark yns)
    'generate-string (copy-var yaml/generate-string yns)
    'parse-string (copy-var yaml/parse-string yns)
-   ;; 'generate-stream (copy-var yaml/generate-stream yns)
-   ;; 'parse-stream (copy-var yaml/parse-stream yns)
+   'generate-stream (copy-var yaml/generate-stream yns)
+   'parse-stream (copy-var yaml/parse-stream yns)
    })
