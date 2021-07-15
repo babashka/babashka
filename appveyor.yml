@@ -68,6 +68,8 @@ build_script:
 
     set BABASHKA_EDN=
 
+    set BABASHKA_CLASSPATH=
+
     set BABASHKA_TEST_ENV=native
 
     call script/test.bat
