@@ -245,19 +245,21 @@
                                            (babashka.tasks/run 'server)))}}
       (is (= '([8 :foo] [8 :bar] [11 :foo] [11 :bar] [15 :foo] [15 :bar])
             (bb "run" "--prn" "run-all")))))
-  (let [tmp-dir (fs/create-temp-dir)
-        out     (str (fs/file tmp-dir "out.txt"))
-        ls-cmd  (if main/windows? "cmd /c dir" "ls")
-        expected-output (if main/windows? "File Not Found" "foobar")]
-    (testing "shell test with :continue"
-      (test-utils/with-config {:tasks {'foo (list 'shell {:out      out
-                                                          :err      out
-                                                          :continue true}
-                                              (str ls-cmd " foobar"))}}
-        (bb "foo")
-        (is (str/includes? (slurp out)
-              expected-output))))
-    (fs/delete out)))
+  ;; TODO: disabled because of " Volume in drive C has no label.\r\n Volume Serial Number is 1CB8-D4AA\r\n\r\n Directory of C:\\projects\\babashka\r\n\r\n" on Appveyor. See https://ci.appveyor.com/project/borkdude/babashka/builds/40003094.
+  (when-not main/windows?
+    (let [tmp-dir (fs/create-temp-dir)
+          out     (str (fs/file tmp-dir "out.txt"))
+          ls-cmd  (if main/windows? "cmd /c dir" "ls")
+          expected-output (if main/windows? "File Not Found" "foobar")]
+      (testing "shell test with :continue"
+        (test-utils/with-config {:tasks {'foo (list 'shell {:out      out
+                                                            :err      out
+                                                            :continue true}
+                                                    (str ls-cmd " foobar"))}}
+          (bb "foo")
+          (is (str/includes? (slurp out)
+                             expected-output))))
+      (fs/delete out))))
 
 
 (deftest ^:skip-windows unix-task-test
