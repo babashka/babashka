@@ -15,6 +15,7 @@
    [babashka.impl.clojure.java.shell :refer [shell-namespace]]
    [babashka.impl.clojure.main :as clojure-main :refer [demunge]]
    [babashka.impl.clojure.stacktrace :refer [stacktrace-namespace]]
+   [babashka.impl.clojure.tools.reader-types :refer [edn-namespace reader-types-namespace]]
    [babashka.impl.clojure.zip :refer [zip-namespace]]
    [babashka.impl.common :as common]
    [babashka.impl.curl :refer [curl-namespace]]
@@ -357,7 +358,9 @@ Use bb run --help to show this help output.
        'babashka.tasks tasks-namespace
        'taoensso.timbre timbre-namespace
        'clojure.tools.logging tools-logging-namespace
-       'clojure.tools.logging.impl tools-logging-impl-namespace}
+       'clojure.tools.logging.impl tools-logging-impl-namespace
+       'clojure.tools.reader.edn edn-namespace
+       'clojure.tools.reader.reader-types reader-types-namespace}
     features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace))
     features/yaml? (assoc 'clj-yaml.core @(resolve 'babashka.impl.yaml/yaml-namespace)
                           'flatland.ordered.map @(resolve 'babashka.impl.ordered/ordered-map-ns))
