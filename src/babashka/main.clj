@@ -432,6 +432,7 @@ Use bb run --help to show this help output.
     Exception java.lang.Exception
     IndexOutOfBoundsException java.lang.IndexOutOfBoundsException
     IllegalArgumentException java.lang.IllegalArgumentException
+    IllegalStateException java.lang.IllegalStateException
     Integer java.lang.Integer
     Iterable java.lang.Iterable
     File java.io.File
