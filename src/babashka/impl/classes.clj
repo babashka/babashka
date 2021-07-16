@@ -126,8 +126,10 @@
           java.lang.Exception
           java.lang.Float
           java.lang.IllegalArgumentException
+          java.lang.IllegalStateException
           java.lang.IndexOutOfBoundsException
           java.lang.Integer
+          java.lang.InterruptedException
           java.lang.Iterable
           java.lang.Long
           java.lang.NullPointerException
