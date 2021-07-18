@@ -104,6 +104,8 @@
 
 (defn set-level! [level] (swap-config! (fn [m] (assoc m :min-level level))))
 
+(defn merge-config! [m] (swap-config! (fn [old] (enc/nested-merge old m))))
+
 (def timbre-namespace
   (assoc (make-ns 'taoensso.timbre tns ['trace 'tracef 'debug 'debugf
                                         'info 'infof 'warn 'warnf
@@ -113,6 +115,7 @@
          'log! (sci/copy-var log! tns)
          '*config* config
          'swap-config! (sci/copy-var swap-config! tns)
+         'merge-config! (sci/copy-var merge-config! tns)
          'set-level! (sci/copy-var set-level! tns)
          'println-appender (sci/copy-var println-appender tns)))
 

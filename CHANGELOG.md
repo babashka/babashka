@@ -6,6 +6,7 @@ For a list of breaking changes, check [here](#breaking-changes).
 
 - Upgrade `clj-yaml` to 0.7.107 which adds two new vars: `generate-stream`, `parse-stream`
 - Upgrade several other deps
+- Add `timbre/merge-config!`
 
 ## 0.5.0
 
