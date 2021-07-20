@@ -71,6 +71,7 @@ args=( "-jar" "$BABASHKA_JAR"
        "-H:ServiceLoaderFeatureExcludeServices=javax.sound.midi.spi.MidiDeviceProvider"
        "-H:ServiceLoaderFeatureExcludeServices=javax.sound.midi.spi.SoundbankReader"
        "-H:ServiceLoaderFeatureExcludeServices=javax.sound.midi.spi.MidiFileWriter"
+       "-H:+AddAllCharsets"
        "$BABASHKA_XMX" )
 
 BABASHKA_STATIC=${BABASHKA_STATIC:-}
