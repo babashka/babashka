@@ -150,6 +150,7 @@
           java.lang.StringBuilder
           java.lang.System
           java.lang.Throwable
+          java.lang.UnsupportedOperationException
           java.math.BigDecimal
           java.math.BigInteger
           java.math.MathContext
@@ -206,6 +207,7 @@
           java.security.SecureRandom
           java.sql.Date
           java.text.ParseException
+          java.text.SimpleDateFormat
           ~@(when features/java-time?
               `[java.time.format.DateTimeFormatter
                 java.time.Clock
@@ -395,6 +397,48 @@
                    java.nio.channels.FileChannel)))))
 
 (def class-map (gen-class-map))
+
+(def imports
+  '{Appendable java.lang.Appendable
+    ArithmeticException java.lang.ArithmeticException
+    AssertionError java.lang.AssertionError
+    BigDecimal java.math.BigDecimal
+    BigInteger java.math.BigInteger
+    Boolean java.lang.Boolean
+    Byte java.lang.Byte
+    Character java.lang.Character
+    CharSequence java.lang.CharSequence
+    Class java.lang.Class
+    ClassNotFoundException java.lang.ClassNotFoundException
+    Comparable java.lang.Comparable
+    Double java.lang.Double
+    Exception java.lang.Exception
+    IndexOutOfBoundsException java.lang.IndexOutOfBoundsException
+    IllegalArgumentException java.lang.IllegalArgumentException
+    IllegalStateException java.lang.IllegalStateException
+    Integer java.lang.Integer
+    InterruptedException java.lang.InterruptedException
+    Iterable java.lang.Iterable
+    File java.io.File
+    Float java.lang.Float
+    Long java.lang.Long
+    Math java.lang.Math
+    NullPointerException java.lang.NullPointerException
+    Number java.lang.Number
+    NumberFormatException java.lang.NumberFormatException
+    Object java.lang.Object
+    Runtime java.lang.Runtime
+    RuntimeException java.lang.RuntimeException
+    Process        java.lang.Process
+    ProcessBuilder java.lang.ProcessBuilder
+    Short java.lang.Short
+    StackTraceElement java.lang.StackTraceElement
+    String java.lang.String
+    StringBuilder java.lang.StringBuilder
+    System java.lang.System
+    Thread java.lang.Thread
+    Throwable java.lang.Throwable
+    UnsupportedOperationException java.lang.UnsupportedOperationException})
 
 (defn reflection-file-entries []
   (let [entries (vec (for [c (sort (:all classes))

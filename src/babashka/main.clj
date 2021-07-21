@@ -415,47 +415,6 @@ Use bb run --help to show this help output.
                             'selmer.validator
                             @(resolve 'babashka.impl.selmer/selmer-validator-namespace))))
 
-(def imports
-  '{Appendable java.lang.Appendable
-    ArithmeticException java.lang.ArithmeticException
-    AssertionError java.lang.AssertionError
-    BigDecimal java.math.BigDecimal
-    BigInteger java.math.BigInteger
-    Boolean java.lang.Boolean
-    Byte java.lang.Byte
-    Character java.lang.Character
-    CharSequence java.lang.CharSequence
-    Class java.lang.Class
-    ClassNotFoundException java.lang.ClassNotFoundException
-    Comparable java.lang.Comparable
-    Double java.lang.Double
-    Exception java.lang.Exception
-    IndexOutOfBoundsException java.lang.IndexOutOfBoundsException
-    IllegalArgumentException java.lang.IllegalArgumentException
-    IllegalStateException java.lang.IllegalStateException
-    Integer java.lang.Integer
-    InterruptedException java.lang.InterruptedException
-    Iterable java.lang.Iterable
-    File java.io.File
-    Float java.lang.Float
-    Long java.lang.Long
-    Math java.lang.Math
-    NullPointerException java.lang.NullPointerException
-    Number java.lang.Number
-    NumberFormatException java.lang.NumberFormatException
-    Object java.lang.Object
-    Runtime java.lang.Runtime
-    RuntimeException java.lang.RuntimeException
-    Process        java.lang.Process
-    ProcessBuilder java.lang.ProcessBuilder
-    Short java.lang.Short
-    StackTraceElement java.lang.StackTraceElement
-    String java.lang.String
-    StringBuilder java.lang.StringBuilder
-    System java.lang.System
-    Thread java.lang.Thread
-    Throwable java.lang.Throwable})
-
 (def edn-readers (cond-> {}
                    features/yaml?
                    (assoc 'ordered/map @(resolve 'flatland.ordered.map/ordered-map))))
@@ -746,7 +705,7 @@ Use bb run --help to show this help output.
                   :env env
                   :features #{:bb :clj}
                   :classes classes/class-map
-                  :imports imports
+                  :imports classes/imports
                   :load-fn load-fn
                   :uberscript uberscript
                   :readers core/data-readers
