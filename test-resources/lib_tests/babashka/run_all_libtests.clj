@@ -237,6 +237,17 @@
 (test-namespaces 'clojure.data.json-test
                  'clojure.data.json-test-suite-test)
 
+(test-namespaces
+ ;; TODO: env tests don't work because envoy lib isn't compatible with bb
+ #_'vault.env-test
+ 'vault.lease-test
+ 'vault.client.http-test
+ ;; TODO:
+ ;; failing tests in the following namespaces:
+ #_'vault.client.mock-test
+ #_'vault.secrets.kvv1-test
+ #_'vault.secrets.kvv2-test)
+
 ;;;; final exit code
 
 (let [{:keys [:test :fail :error] :as m} @status]
