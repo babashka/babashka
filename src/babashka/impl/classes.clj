@@ -101,7 +101,10 @@
           java.io.IOException
           java.io.OutputStream
           java.io.FileInputStream
+          java.io.FileOutputStream
           java.io.FileReader
+          java.io.BufferedInputStream
+          java.io.BufferedOutputStream
           java.io.InputStreamReader
           java.io.OutputStreamWriter
           java.io.PrintStream
@@ -198,6 +201,7 @@
                 java.nio.file.PathMatcher
                 java.nio.file.Paths
                 java.nio.file.StandardCopyOption
+                java.nio.file.attribute.BasicFileAttributes
                 java.nio.file.attribute.FileAttribute
                 java.nio.file.attribute.FileTime
                 java.nio.file.attribute.PosixFilePermission
@@ -248,9 +252,13 @@
                 java.time.temporal.TemporalAdjuster])
           java.util.concurrent.ExecutionException
           java.util.concurrent.LinkedBlockingQueue
+          java.util.jar.Attributes$Name
           java.util.jar.JarFile
           java.util.jar.JarEntry
           java.util.jar.JarFile$JarFileEntry
+          java.util.jar.JarInputStream
+          java.util.jar.JarOutputStream
+          java.util.jar.Manifest
           java.util.stream.Stream
           java.util.Random
           java.util.regex.Matcher
@@ -274,6 +282,7 @@
           java.util.zip.ZipInputStream
           java.util.zip.ZipOutputStream
           java.util.zip.ZipEntry
+          java.util.zip.ZipFile
           ~(symbol "[B")
           ~(symbol "[I")
           ~(symbol "[Ljava.lang.Object;")
