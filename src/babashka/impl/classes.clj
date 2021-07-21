@@ -150,7 +150,7 @@
           java.lang.StringBuilder
           java.lang.System
           java.lang.Throwable
-          java.lang.UnsupportedOperationException
+          ;; java.lang.UnsupportedOperationException
           java.math.BigDecimal
           java.math.BigInteger
           java.math.MathContext
@@ -207,7 +207,8 @@
           java.security.SecureRandom
           java.sql.Date
           java.text.ParseException
-          java.text.SimpleDateFormat
+          ;; adds about 200kb, same functionality provided by java.time:
+          ;; java.text.SimpleDateFormat
           ~@(when features/java-time?
               `[java.time.format.DateTimeFormatter
                 java.time.Clock
@@ -438,7 +439,8 @@
     System java.lang.System
     Thread java.lang.Thread
     Throwable java.lang.Throwable
-    UnsupportedOperationException java.lang.UnsupportedOperationException})
+    ;; UnsupportedOperationException java.lang.UnsupportedOperationException
+    })
 
 (defn reflection-file-entries []
   (let [entries (vec (for [c (sort (:all classes))
