@@ -86,7 +86,8 @@
                          io.replikativ/hasch {:mvn/version "0.3.7"}
                          com.grammarly/omniconf {:mvn/version "0.4.3"}
                          crispin/crispin {:mvn/version "0.3.8"}
-                         org.clojure/data.json {:mvn/version "2.4.0"}}
+                         org.clojure/data.json {:mvn/version "2.4.0"}
+                         amperity/vault-clj {:mvn/version "1.0.4"}}
            :classpath-overrides {org.clojure/clojure nil
                                  org.clojure/spec.alpha nil
                                  org.clojure/core.specs.alpha nil}}

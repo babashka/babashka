@@ -237,6 +237,13 @@
 (test-namespaces 'clojure.data.json-test
                  'clojure.data.json-test-suite-test)
 
+(test-namespaces #_'vault.env-test
+                 'vault.lease-test
+                 'vault.client.http-test
+                 'vault.client.mock-test
+                 'vault.secrets.kvv1-test
+                 'vault.secrets.kvv2-test)
+
 ;;;; final exit code
 
 (let [{:keys [:test :fail :error] :as m} @status]
