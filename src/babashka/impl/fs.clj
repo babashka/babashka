@@ -7,7 +7,7 @@
 
 (def current-file (fs/file (fs/absolutize (fs/path "src" *file*))))
 
-(defn update-vars []
+(defn update-vars [_]
   (let [output (with-out-str (doseq [k (sort (keys (ns-publics 'babashka.fs)))]
                                  (println (str "   '" k) (format "(sci/copy-var fs/%s fns)" k))))
         this-file (slurp current-file)
@@ -79,6 +79,7 @@
    'split-paths (sci/copy-var fs/split-paths fns)
    'starts-with? (sci/copy-var fs/starts-with? fns)
    'str->posix (sci/copy-var fs/str->posix fns)
+   'strip-ext (sci/copy-var fs/strip-ext fns)
    'sym-link? (sci/copy-var fs/sym-link? fns)
    'temp-dir (sci/copy-var fs/temp-dir fns)
    'walk-file-tree (sci/copy-var fs/walk-file-tree fns)
