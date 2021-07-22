@@ -7,6 +7,7 @@ For a list of breaking changes, check [here](#breaking-changes).
 - Upgrade `clj-yaml` to 0.7.107 which adds two new vars: `generate-stream`, `parse-stream`
 - Upgrade several other deps
 - Add `timbre/merge-config!`
+- Add `strip-ext` to `babashka.fs` ([@corasaurus-hex](https://github.com/corasaurus-hex))
 
 ## 0.5.0
 
