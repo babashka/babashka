@@ -3,8 +3,8 @@
    [babashka.fs :as fs]
    [babashka.test-utils :as test-utils]
    [clojure.edn :as edn]
-   [clojure.test :as test :refer [deftest is testing]]
-   [clojure.string :as str]))
+   [clojure.string :as str]
+   [clojure.test :as test :refer [deftest is testing]]))
 
 (defn bb [& args]
   (edn/read-string
@@ -93,3 +93,23 @@ true
                 (str/replace ":env-key" ":extra-env")))
         (is (fs/exists? libs-dir))
         (is (fs/exists? libs-dir2))))))
+
+(deftest ^:windows-only win-clojure-test
+    (testing "GITLIBS can set location of .gitlibs dir"
+      (let [tmp-dir   (fs/create-temp-dir)
+            libs-dir  (fs/file tmp-dir ".gitlibs")
+            libs-dir2 (fs/file tmp-dir ".gitlibs2")
+            ; nested quotes need different escaping for Windows based on jvm/native test
+            escape-quote (if test-utils/native? "\\\\\"" "\\\"")
+            deps-map (str/join escape-quote [" \"{:deps {babashka/process {:git/url "
+                       "https://github.com/babashka/process" " :sha "
+                       "4c6699d06b49773d3e5c5b4c11d3334fb78cc996" "}}}\""])
+            template  (str "(do (babashka.deps/clojure [\"-Sforce\" \"-Spath\" \"-Sdeps\"" deps-map "]
+                                     {:out :string :env-key {\"PATH\"    (System/getenv \"PATH\")
+                                                             \"GITLIBS\" :gitlibs}}) nil)")]
+        (bb (-> template (str/replace ":gitlibs" (pr-str (str libs-dir)))
+              (str/replace ":env-key" ":env")))
+        (bb (-> template (str/replace ":gitlibs" (pr-str (str libs-dir2)))
+              (str/replace ":env-key" ":extra-env")))
+        (is (fs/exists? libs-dir))
+        (is (fs/exists? libs-dir2)))))
