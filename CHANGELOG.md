@@ -8,6 +8,7 @@ For a list of breaking changes, check [here](#breaking-changes).
 - Upgrade several other deps
 - Add `timbre/merge-config!`
 - Add `strip-ext` to `babashka.fs` ([@corasaurus-hex](https://github.com/corasaurus-hex))
+- Fixed: `with-open` fails on `java.io.PrintWriter` [#953](https://github.com/babashka/babashka/issues/953)
 
 ## 0.5.0
 
