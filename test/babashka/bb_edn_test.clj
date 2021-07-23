@@ -252,7 +252,7 @@
                                                   (list 'shell {:continue true}
                                                         (str ls-cmd " foobar"))
                                                   (list 'println :hello))}}
-        (is (= :hello (bb "foo")))))))
+        (is (str/includes? (test-utils/bb nil "foo") ":hello"))))))
 
 (deftest ^:skip-windows unix-task-test
   (testing "shell pipe test"
