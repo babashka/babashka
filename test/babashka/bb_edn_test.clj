@@ -246,21 +246,13 @@
       (is (= '([8 :foo] [8 :bar] [11 :foo] [11 :bar] [15 :foo] [15 :bar])
             (bb "run" "--prn" "run-all")))))
   ;; TODO: disabled because of " Volume in drive C has no label.\r\n Volume Serial Number is 1CB8-D4AA\r\n\r\n Directory of C:\\projects\\babashka\r\n\r\n" on Appveyor. See https://ci.appveyor.com/project/borkdude/babashka/builds/40003094.
-  (when-not main/windows?
-    (let [tmp-dir (fs/create-temp-dir)
-          out     (str (fs/file tmp-dir "out.txt"))
-          ls-cmd  (if main/windows? "cmd /c dir" "ls")
-          expected-output (if main/windows? "File Not Found" "foobar")]
-      (testing "shell test with :continue"
-        (test-utils/with-config {:tasks {'foo (list 'shell {:out      out
-                                                            :err      out
-                                                            :continue true}
-                                                    (str ls-cmd " foobar"))}}
-          (bb "foo")
-          (is (str/includes? (slurp out)
-                             expected-output))))
-      (fs/delete out))))
-
+  (testing "shell test with :continue"
+    (let [ls-cmd  (if main/windows? "cmd /c dir" "ls")]
+      (test-utils/with-config {:tasks {'foo (list 'do
+                                                  (list 'shell {:continue true}
+                                                        (str ls-cmd " foobar"))
+                                                  (list 'println :hello))}}
+        (is (= :hello (bb "foo")))))))
 
 (deftest ^:skip-windows unix-task-test
   (testing "shell pipe test"
