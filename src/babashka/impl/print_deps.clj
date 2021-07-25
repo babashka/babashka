@@ -1,8 +1,10 @@
 (ns babashka.impl.print-deps
-  (:require [babashka.impl.deps :as deps]
-            [clojure.edn :as edn]
-            [clojure.java.io :as io]
-            [clojure.pprint :as pp]))
+  (:require
+   [babashka.impl.common :as common]
+   [babashka.impl.deps :as deps]
+   [clojure.edn :as edn]
+   [clojure.java.io :as io]
+   [clojure.pprint :as pp]))
 
 (defn print-deps [deps-format]
   (let [deps (-> (io/resource "META-INF/babashka/deps.edn")
@@ -18,6 +20,8 @@
                      'babashka/clojure-lanterna
                      'seancorfield/next.jdbc
                      'datascript/datascript)
+        bb-edn-deps (:deps @common/bb-edn)
+        deps (merge deps bb-edn-deps)
         deps {:deps (:deps deps)}]
     (case deps-format
       ("deps" nil) (binding [*print-namespace-maps* false]
