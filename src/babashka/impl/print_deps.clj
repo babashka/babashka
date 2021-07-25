@@ -4,7 +4,8 @@
    [babashka.impl.deps :as deps]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
-   [clojure.pprint :as pp]))
+   [clojure.pprint :as pp]
+   [clojure.string :as str]))
 
 (defn print-deps [deps-format]
   (let [deps (-> (io/resource "META-INF/babashka/deps.edn")
@@ -26,4 +27,4 @@
     (case deps-format
       ("deps" nil) (binding [*print-namespace-maps* false]
                      (pp/pprint deps))
-      ("classpath") (println (with-out-str (deps/clojure ["-Spath" "-Sdeps" deps]))))))
+      ("classpath") (println (str/trim (with-out-str (deps/clojure ["-Spath" "-Sdeps" deps])))))))
