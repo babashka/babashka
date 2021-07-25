@@ -28,6 +28,7 @@
                                   tools-logging-impl-namespace]]
    [babashka.impl.pods :as pods]
    [babashka.impl.pprint :refer [pprint-namespace]]
+   [babashka.impl.print-deps :as print-deps]
    [babashka.impl.process :refer [process-namespace]]
    [babashka.impl.protocols :refer [protocols-namespace]]
    [babashka.impl.proxy :refer [proxy-fn]]
@@ -104,7 +105,8 @@
      "repl"
      "socket-repl"
      "nrepl-server"
-     "describe") true
+     "describe"
+     "print-deps") true
     false))
 
 (defn print-error [& msgs]
@@ -452,6 +454,19 @@ Use bb run --help to show this help output.
           (assoc opts-map :run fst :command-line-args (next args))))
       opts-map)))
 
+(defn- parse-print-deps-opts
+  [opts-map args]
+  (loop [opts-map (assoc opts-map :print-deps true)
+         args (seq args)]
+    (if args
+      (let [fst (first args)]
+        (case fst
+          "--format"
+          (recur (assoc opts-map :print-deps-format (second args))
+                 (nnext args))
+          opts-map))
+      opts-map)))
+
 (defn parse-args [args opts-map]
   (loop [options args
          opts-map opts-map]
@@ -571,6 +586,8 @@ Use bb run --help to show this help output.
           ("--tasks")
           (assoc opts-map :list-tasks true
                  :command-line-args (next options))
+          ("--print-deps")
+          (parse-print-deps-opts opts-map (next options))
           ;; fallback
           (if (and opts-map
                    (some opts-map [:file :jar :socket-repl :expressions :main :run]))
@@ -645,7 +662,8 @@ Use bb run --help to show this help output.
                     :debug :classpath :force?
                     :main :uberscript :describe?
                     :jar :uberjar :clojure
-                    :doc :run :list-tasks]}
+                    :doc :run :list-tasks
+                    :print-deps]}
             cli-opts
             _ (when debug (vreset! common/debug true))
             _ (do ;; set properties
@@ -769,6 +787,7 @@ Use bb run --help to show this help output.
                        nrepl [(start-nrepl! nrepl sci-ctx) 0]
                        uberjar [nil 0]
                        list-tasks [(tasks/list-tasks sci-ctx) 0]
+                       print-deps [(print-deps/print-deps (:print-deps-format cli-opts)) 0]
                        expressions
                        (sci/binding [sci/file abs-path]
                          (try
