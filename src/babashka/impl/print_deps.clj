@@ -11,10 +11,11 @@
   (let [deps (-> (io/resource "META-INF/babashka/deps.edn")
                  slurp
                  edn/read-string)
-        deps (update deps :deps assoc
-                     'babashka/fs {:mvn/version "0.0.5"}
-                     'babashka/babashka.curl {:mvn/version "0.0.3"})
-        deps (update deps :deps dissoc
+        deps (:deps deps)
+        deps (assoc deps
+                    'babashka/fs {:mvn/version "0.0.5"}
+                    'babashka/babashka.curl {:mvn/version "0.0.3"})
+        deps (dissoc deps
                      'borkdude/sci
                      'borkdude/graal.locking
                      'org.postgresql/postgresql
@@ -23,7 +24,10 @@
                      'datascript/datascript)
         bb-edn-deps (:deps @common/bb-edn)
         deps (merge deps bb-edn-deps)
-        deps {:deps (:deps deps)}]
+        paths (:paths @common/bb-edn)
+        deps {:deps deps}
+        deps (cond-> deps
+               (seq paths) (assoc :paths paths))]
     (case deps-format
       ("deps" nil) (binding [*print-namespace-maps* false]
                      (pp/pprint deps))
