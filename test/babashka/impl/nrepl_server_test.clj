@@ -85,7 +85,8 @@
                                        "id" (new-id!)
                                        "ns" "ns0"})
             (is (= ":foo0" (:value (read-reply in session @id)))))
-          (testing "providing an ns value of a non-existing namespace creates the namespace"
+          ;; TODO: I don't remember why we created a new ns
+          #_(testing "providing an ns value of a non-existing namespace creates the namespace"
             (bencode/write-bencode os {"op" "eval"
                                        "code" "(ns-name *ns*)"
                                        "session" session
