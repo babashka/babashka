@@ -38,7 +38,7 @@
    [babashka.impl.test :as t]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
    [babashka.nrepl.server :as nrepl-server]
-   [babashka.wait :as wait]
+   [babashka.wait :refer [wait-namespace]]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.string :as str]
@@ -70,6 +70,8 @@
     (def handle-pipe! (constantly nil))
     (def pipe-signal-received? (constantly false))
     (def handle-sigint! (constantly nil))))
+
+(def signal-ns {'pipe-signal-received? (sci/copy-var pipe-signal-received? (sci/create-ns 'babashka.signal nil))})
 
 (sci/alter-var-root sci/in (constantly *in*))
 (sci/alter-var-root sci/out (constantly *out*))
@@ -328,9 +330,8 @@ Use bb run --help to show this help output.
                         nil)}
        'clojure.tools.cli tools-cli-namespace
        'clojure.java.shell shell-namespace
-       'babashka.wait {'wait-for-port wait/wait-for-port
-                       'wait-for-path wait/wait-for-path}
-       'babashka.signal {'pipe-signal-received? pipe-signal-received?}
+       'babashka.wait wait-namespace
+       'babashka.signal signal-ns
        'clojure.java.io io-namespace
        'cheshire.core cheshire-core-namespace
        'clojure.data data/data-namespace
