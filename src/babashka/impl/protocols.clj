@@ -31,8 +31,8 @@
 
 (def protocols-namespace
   {'Datafiable (sci/new-var 'clojure.core.protocols/Datafiable {:methods #{'datafy}
-                                                                :ns protocols-ns})
+                                                                :ns protocols-ns} {:ns protocols-ns})
    'datafy (copy-var datafy protocols-ns)
    'Navigable (sci/new-var 'clojure.core.protocols/Navigable {:methods #{'nav}
-                                                              :ns protocols-ns})
+                                                              :ns protocols-ns} {:ns protocols-ns})
    'nav (copy-var nav protocols-ns)})
