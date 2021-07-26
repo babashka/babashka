@@ -1,8 +1,8 @@
 (ns babashka.impl.socket-repl-test
   (:require
    [babashka.impl.common :as common]
+   [babashka.impl.server :refer [clojure-core-server-namespace]]
    [babashka.impl.socket-repl :refer [start-repl! stop-repl!]]
-   [babashka.main :refer [clojure-core-server]]
    [babashka.process :as p]
    [babashka.test-utils :as tu]
    [babashka.wait :as w]
@@ -46,7 +46,7 @@
   (when exec?
     (try
       (if tu/jvm?
-        (let [ctx (init {:namespaces {'clojure.core.server clojure-core-server}
+        (let [ctx (init {:namespaces {'clojure.core.server clojure-core-server-namespace}
                          :features #{:bb}})]
           (vreset! common/ctx ctx)
           (start-repl! "0.0.0.0:1666" ctx))
@@ -79,7 +79,7 @@
         (let [ctx (init {:bindings {'*command-line-args*
                                     ["a" "b" "c"]}
                          :env (atom {})
-                         :namespaces {'clojure.core.server clojure-core-server}
+                         :namespaces {'clojure.core.server clojure-core-server-namespace}
                          :features #{:bb}})]
           (vreset! common/ctx ctx)
           (start-repl! "{:address \"localhost\" :accept clojure.core.server/repl :port 1666}"
@@ -103,7 +103,7 @@
         (let [ctx (init {:bindings {'*command-line-args*
                                     ["a" "b" "c"]}
                          :env (atom {})
-                         :namespaces {'clojure.core.server clojure-core-server}
+                         :namespaces {'clojure.core.server clojure-core-server-namespace}
                          :features #{:bb}})]
           (vreset! common/ctx ctx)
           (start-repl! "{:address \"localhost\" :accept clojure.core.server/io-prepl :port 1666}"

@@ -9,7 +9,6 @@
    [babashka.impl.classes :as classes]
    [babashka.impl.classpath :as cp :refer [classpath-namespace]]
    [babashka.impl.clojure.core :as core :refer [core-extras]]
-   [babashka.impl.clojure.core.server :as server]
    [babashka.impl.clojure.java.browse :refer [browse-namespace]]
    [babashka.impl.clojure.java.io :refer [io-namespace]]
    [babashka.impl.clojure.java.shell :refer [shell-namespace]]
@@ -33,6 +32,7 @@
    [babashka.impl.proxy :refer [proxy-fn]]
    [babashka.impl.reify :refer [reify-fn]]
    [babashka.impl.repl :as repl]
+   [babashka.impl.server :refer [clojure-core-server-namespace]]
    [babashka.impl.socket-repl :as socket-repl]
    [babashka.impl.tasks :as tasks :refer [tasks-namespace]]
    [babashka.impl.test :as t]
@@ -311,15 +311,6 @@ Use bb run --help to show this help output.
 
 ;;(def ^:private server-ns-obj (sci/create-ns 'clojure.core.server nil))
 
-(def clojure-core-server
-  {'repl socket-repl/repl
-   'prepl (fn [& args]
-            (apply server/prepl @common/ctx args))
-   'io-prepl (fn [& args]
-               (apply server/io-prepl @common/ctx args))
-   'start-server (fn [& args]
-                   (apply server/start-server @common/ctx args))})
-
 (def input-var (sci/new-dynamic-var '*input*))
 
 (def namespaces
@@ -353,7 +344,7 @@ Use bb run --help to show this help output.
        'clojure.datafy datafy-namespace
        'clojure.core.protocols protocols-namespace
        'babashka.process process-namespace
-       'clojure.core.server clojure-core-server
+       'clojure.core.server clojure-core-server-namespace
        'babashka.deps deps-namespace
        'babashka.tasks tasks-namespace
        'taoensso.timbre timbre-namespace
