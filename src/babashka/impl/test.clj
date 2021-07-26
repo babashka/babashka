@@ -9,6 +9,9 @@
 
 (def tns t/tns)
 
+(defn new-var [var-sym f]
+  (sci/new-var var-sym f {:ns tns}))
+
 (def clojure-test-namespace
   {:obj tns
    '*load-tests* t/load-tests
@@ -21,16 +24,16 @@
    ;; 'with-test-out (macrofy @#'t/with-test-out)
    ;; 'file-position t/file-position
    'testing-vars-str t/testing-vars-str
-   'testing-contexts-str t/testing-contexts-str
+   'testing-contexts-str (sci/copy-var t/testing-contexts-str tns)
    'inc-report-counter t/inc-report-counter
    'report t/report
-   'do-report t/do-report
+   'do-report (sci/copy-var t/do-report tns)
    ;; assertion utilities
    'function? t/function?
    'assert-predicate t/assert-predicate
-   'assert-any t/assert-any
+   'assert-any (sci/copy-var t/assert-any tns)
    ;; assertion methods
-   'assert-expr t/assert-expr
+   'assert-expr (sci/copy-var t/assert-expr tns)
    'try-expr (sci/copy-var t/try-expr tns)
    ;; assertion macros
    'is (sci/copy-var t/is tns)
@@ -43,14 +46,14 @@
    'set-test (sci/copy-var t/set-test tns)
    ;; fixtures
    'use-fixtures t/use-fixtures
-   'compose-fixtures t/compose-fixtures
-   'join-fixtures t/join-fixtures
+   'compose-fixtures (sci/copy-var t/compose-fixtures tns)
+   'join-fixtures (sci/copy-var t/join-fixtures tns)
    ;; running tests: low level
    'test-var t/test-var
    'test-vars t/test-vars
-   'test-all-vars (contextualize t/test-all-vars)
+   'test-all-vars (new-var 'test-all-vars (contextualize t/test-all-vars))
    'test-ns (contextualize t/test-ns)
    ;; running tests: high level
    'run-tests (contextualize t/run-tests)
-   'run-all-tests (contextualize t/run-all-tests)
+   'run-all-tests (new-var 'run-all-tests (contextualize t/run-all-tests))
    'successful? t/successful?})
