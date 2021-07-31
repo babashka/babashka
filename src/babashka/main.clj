@@ -9,7 +9,6 @@
    [babashka.impl.classes :as classes]
    [babashka.impl.classpath :as cp :refer [classpath-namespace]]
    [babashka.impl.clojure.core :as core :refer [core-extras]]
-   [babashka.impl.clojure.core.server :as server]
    [babashka.impl.clojure.java.browse :refer [browse-namespace]]
    [babashka.impl.clojure.java.io :refer [io-namespace]]
    [babashka.impl.clojure.java.shell :refer [shell-namespace]]
@@ -34,12 +33,13 @@
    [babashka.impl.proxy :refer [proxy-fn]]
    [babashka.impl.reify :refer [reify-fn]]
    [babashka.impl.repl :as repl]
+   [babashka.impl.server :refer [clojure-core-server-namespace]]
    [babashka.impl.socket-repl :as socket-repl]
    [babashka.impl.tasks :as tasks :refer [tasks-namespace]]
    [babashka.impl.test :as t]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
    [babashka.nrepl.server :as nrepl-server]
-   [babashka.wait :as wait]
+   [babashka.wait :refer [wait-namespace]]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.string :as str]
@@ -71,6 +71,8 @@
     (def handle-pipe! (constantly nil))
     (def pipe-signal-received? (constantly false))
     (def handle-sigint! (constantly nil))))
+
+(def signal-ns {'pipe-signal-received? (sci/copy-var pipe-signal-received? (sci/create-ns 'babashka.signal nil))})
 
 (sci/alter-var-root sci/in (constantly *in*))
 (sci/alter-var-root sci/out (constantly *out*))
@@ -311,15 +313,6 @@ Use bb run --help to show this help output.
 
 ;;(def ^:private server-ns-obj (sci/create-ns 'clojure.core.server nil))
 
-(def clojure-core-server
-  {'repl socket-repl/repl
-   'prepl (fn [& args]
-            (apply server/prepl @common/ctx args))
-   'io-prepl (fn [& args]
-               (apply server/io-prepl @common/ctx args))
-   'start-server (fn [& args]
-                   (apply server/start-server @common/ctx args))})
-
 (def input-var (sci/new-dynamic-var '*input*))
 
 (def namespaces
@@ -330,9 +323,8 @@ Use bb run --help to show this help output.
                         nil)}
        'clojure.tools.cli tools-cli-namespace
        'clojure.java.shell shell-namespace
-       'babashka.wait {'wait-for-port wait/wait-for-port
-                       'wait-for-path wait/wait-for-path}
-       'babashka.signal {'pipe-signal-received? pipe-signal-received?}
+       'babashka.wait wait-namespace
+       'babashka.signal signal-ns
        'clojure.java.io io-namespace
        'cheshire.core cheshire-core-namespace
        'clojure.data data/data-namespace
@@ -354,7 +346,7 @@ Use bb run --help to show this help output.
        'clojure.datafy datafy-namespace
        'clojure.core.protocols protocols-namespace
        'babashka.process process-namespace
-       'clojure.core.server clojure-core-server
+       'clojure.core.server clojure-core-server-namespace
        'babashka.deps deps-namespace
        'babashka.tasks tasks-namespace
        'taoensso.timbre timbre-namespace
