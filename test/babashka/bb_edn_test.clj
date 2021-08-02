@@ -34,6 +34,22 @@
       (is (= "src"
              (bb "-cp" "src" "-e" "(babashka.classpath/get-classpath)"))))))
 
+(deftest print-deps-test
+  (test-utils/with-config '{:deps {medley/medley {:mvn/version "1.3.0"}}}
+    (testing "deps output"
+      (let [edn (bb "print-deps")
+            deps (:deps edn)]
+        (is deps)
+        (is (map? (get deps 'selmer/selmer)))
+        (is (string? (:mvn/version (get deps 'selmer/selmer))))
+        (testing "user provided lib"
+          (is (map? (get deps 'medley/medley))))))
+    (testing "classpath output"
+      (let [classpath (test-utils/bb nil "print-deps" "--format" "classpath")]
+        (is (str/includes? classpath "selmer"))
+        (is (str/includes? classpath (System/getProperty "path.separator")))
+        (is (str/includes? classpath "medley"))))))
+
 (deftest task-test
   (test-utils/with-config '{:tasks {foo (+ 1 2 3)}}
     (is (= 6 (bb "run" "--prn" "foo"))))

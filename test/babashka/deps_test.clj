@@ -113,8 +113,3 @@ true
               (str/replace ":env-key" ":extra-env")))
         (is (fs/exists? libs-dir))
         (is (fs/exists? libs-dir2)))))
-
-(deftest print-deps-test
-  
-
-  )

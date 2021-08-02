@@ -5,7 +5,8 @@
    [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.pprint :as pp]
-   [clojure.string :as str]))
+   [clojure.string :as str]
+   [sci.core :as sci]))
 
 (defn print-deps [deps-format]
   (let [deps (-> (io/resource "META-INF/babashka/deps.edn")
@@ -21,7 +22,8 @@
                      'org.postgresql/postgresql
                      'babashka/clojure-lanterna
                      'seancorfield/next.jdbc
-                     'datascript/datascript)
+                     'datascript/datascript
+                     'org.hsqldb/hsqldb)
         bb-edn-deps (:deps @common/bb-edn)
         deps (merge deps bb-edn-deps)
         paths (:paths @common/bb-edn)
@@ -31,4 +33,6 @@
     (case deps-format
       ("deps" nil) (binding [*print-namespace-maps* false]
                      (pp/pprint deps))
-      ("classpath") (println (str/trim (with-out-str (deps/clojure ["-Spath" "-Sdeps" deps])))))))
+      ("classpath") (let [cp (str/trim (sci/with-out-str
+                                         (deps/clojure ["-Spath" "-Sdeps" deps] {:out :string})))]
+                      (println cp)))))
