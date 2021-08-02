@@ -2,13 +2,18 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
-## Unreleased
+## 0.5.1 (unreleased)
 
+- Add new `print-deps` subcommand for printing a `deps.edn` map and classpath
+  which includes all built-in deps. This can be used for editor tooling like
+  Cursive and clojure-lsp, but also for migrating a babashka project to a Graal
+  native-image project.
 - Upgrade `clj-yaml` to 0.7.107 which adds two new vars: `generate-stream`, `parse-stream`
-- Upgrade several other deps
 - Add `timbre/merge-config!`
 - Add `strip-ext` to `babashka.fs` ([@corasaurus-hex](https://github.com/corasaurus-hex))
 - Fixed: `with-open` fails on `java.io.PrintWriter` [#953](https://github.com/babashka/babashka/issues/953)
+- Upgrade `deps.clj` to match Clojure CLI `1.10.3.933`
+- Upgrade several other deps
 
 ## 0.5.0
 
