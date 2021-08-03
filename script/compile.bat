@@ -31,6 +31,7 @@ call %GRAALVM_HOME%\bin\native-image.cmd ^
   "-J-Dclojure.compiler.direct-linking=true" ^
   "-H:IncludeResources=BABASHKA_VERSION" ^
   "-H:IncludeResources=SCI_VERSION" ^
+  "-H:IncludeResources=META-INF/babashka/.*" ^
   "-H:ReflectionConfigurationFiles=reflection.json" ^
   "--initialize-at-build-time"  ^
   "--initialize-at-run-time=org.postgresql.sspi.SSPIClient" ^
