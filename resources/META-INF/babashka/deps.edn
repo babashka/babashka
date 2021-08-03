@@ -50,7 +50,7 @@
                        "-Dclojure.compiler.direct-linking=true"]
             :main-opts ["-m" "babashka.profile"]}
            :lib-tests
-           {:extra-paths ["process/src" "process/test"]
+           {:extra-paths ["process/src" "process/test" "test-resources/lib_tests"]
             :extra-deps {babashka/clj-http-lite
                          {:git/url "https://github.com/babashka/clj-http-lite"
                           :sha "f44ebe45446f0f44f2b73761d102af3da6d0a13e"}
