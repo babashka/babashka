@@ -34,7 +34,7 @@
       (is (= "src"
              (bb "-cp" "src" "-e" "(babashka.classpath/get-classpath)"))))))
 
-(deftest ^:skip-windows print-deps-test
+(deftest print-deps-test
   (test-utils/with-config '{:deps {medley/medley {:mvn/version "1.3.0"}}}
     (testing "deps output"
       (let [edn (bb "print-deps")
