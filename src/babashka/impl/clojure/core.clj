@@ -7,8 +7,8 @@
             [clojure.core :as c]
             [clojure.string :as str]
             [sci.core :as sci]
-            [sci.impl.namespaces :refer [copy-core-var clojure-core-ns]]
-            [sci.impl.vars :as vars]))
+            [sci.impl.namespaces :refer [copy-core-var]]
+            [sci.impl.vars :as vars :refer [clojure-core-ns]]))
 
 (defn locking* [form bindings v f & args]
   (apply @#'locking/locking form bindings v f args))
