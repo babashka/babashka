@@ -7,7 +7,7 @@
             [clojure.core :as c]
             [clojure.string :as str]
             [sci.core :as sci]
-            [sci.impl.namespaces :refer [copy-core-var]]
+            [sci.impl.namespaces :refer [copy-core-var core-var macrofy]]
             [sci.impl.vars :as vars :refer [clojure-core-ns]]))
 
 (defn locking* [form bindings v f & args]
@@ -162,20 +162,20 @@
    'file-seq (copy-core-var file-seq)
    'promise (copy-core-var promise)
    'deliver (copy-core-var deliver)
-   'locking (with-meta locking* {:sci/macro true})
+   'locking (macrofy 'locking locking*)
    'shutdown-agents (copy-core-var shutdown-agents)
    'slurp (copy-core-var slurp)
    'spit (copy-core-var spit)
-   'time (with-meta time* {:sci/macro true})
+   'time (macrofy 'time time*)
    'Throwable->map (copy-core-var Throwable->map)
    'tap> (copy-core-var tap>)
    'add-tap (copy-core-var add-tap)
    'remove-tap (copy-core-var remove-tap)
    '*data-readers* data-readers
-   'default-data-readers default-data-readers
+   'default-data-readers (copy-core-var default-data-readers)
    'xml-seq (copy-core-var xml-seq)
-   'read+string (fn [& args]
-                  (apply read+string @common/ctx args))
+   'read+string (core-var 'read+string (fn [& args]
+                  (apply read+string @common/ctx args)))
    '*command-line-args* command-line-args
    '*warn-on-reflection* warn-on-reflection
    '*math-context* math-context

@@ -320,6 +320,8 @@ Use bb run --help to show this help output.
 
 (def input-var (sci/new-dynamic-var '*input*))
 
+(def clojure-main-ns (sci/create-ns 'clojure.main))
+
 (def namespaces
   (cond->
       {'user {'*input* (ctx-fn
@@ -335,11 +337,13 @@ Use bb run --help to show this help output.
        'clojure.data data/data-namespace
        'clojure.stacktrace stacktrace-namespace
        'clojure.zip zip-namespace
-       'clojure.main {'demunge demunge
-                      'repl-requires clojure-main/repl-requires
-                      'repl (fn [& opts]
-                              (let [opts (apply hash-map opts)]
-                                (repl/start-repl! @common/ctx opts)))}
+       'clojure.main {:obj clojure-main-ns
+                      'demunge (sci/copy-var demunge clojure-main-ns)
+                      'repl-requires (sci/copy-var clojure-main/repl-requires clojure-main-ns)
+                      'repl (sci/new-var 'repl
+                              (fn [& opts]
+                                (let [opts (apply hash-map opts)]
+                                  (repl/start-repl! @common/ctx opts))) {:ns clojure-main-ns})}
        'clojure.test t/clojure-test-namespace
        'babashka.classpath classpath-namespace
        'clojure.pprint pprint-namespace
@@ -716,7 +720,7 @@ Use bb run --help to show this help output.
                   :namespaces (-> namespaces
                                   (assoc 'clojure.core
                                          (assoc core-extras
-                                                'load-file load-file*)))
+                                                'load-file (sci-namespaces/core-var 'load-file load-file*))))
                   :env env
                   :features #{:bb :clj}
                   :classes classes/class-map

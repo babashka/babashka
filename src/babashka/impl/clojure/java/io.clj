@@ -54,11 +54,11 @@
 
 (def io-namespace
   {'Coercions (sci/new-var 'Coercions {:methods #{'as-file 'as-url}
-                                       :ns io-ns})
+                                       :ns io-ns} {:ns io-ns})
    'as-relative-path (copy-var as-relative-path io-ns)
-   'as-file as-file
+   'as-file (copy-var as-file io-ns)
    'file (copy-var file io-ns)
-   'as-url as-url
+   'as-url (copy-var as-url io-ns)
    'copy (copy-var io/copy io-ns)
    'delete-file (copy-var io/delete-file io-ns)
    'input-stream (copy-var io/input-stream io-ns)
