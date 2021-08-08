@@ -174,4 +174,4 @@
     (println (str "'" k) (format "(sci/copy-var tc/%s p-ns)" k)))
 
 (def test-check-namespace
-  {'quick-check (sci/copy-var tc/quick-check p-ns)})
+  {'quick-check (sci/copy-var tc/quick-check tc-ns)})
