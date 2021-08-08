@@ -2,6 +2,7 @@
   {:no-doc true}
   (:require [clojure.core.async :as async]
             [clojure.core.async.impl.protocols :as protocols]
+            [sci.impl.namespaces :refer [copy-var macrofy]]
             [sci.impl.vars :as vars]))
 
 (def ^java.util.concurrent.Executor executor @#'async/thread-macro-executor)
@@ -38,72 +39,78 @@
   [_ _ bindings & body]
   (list 'clojure.core.async/thread (list* 'loop bindings body)))
 
+(def core-async-namespace (vars/->SciNamespace 'clojure.core.async nil))
+
 (def async-namespace
-  {'<!! async/<!!
-   '>!! async/>!!
-   'admix async/admix
-   'alts! async/alts!
-   'alts!! async/alts!!
-   'alt!! (with-meta alt!! {:sci/macro true})
-   'buffer async/buffer
-   'chan async/chan
-   'close! async/close!
-   'do-alt async/do-alt
-   'do-alts async/do-alts
-   'dropping-buffer async/dropping-buffer
-   'filter< async/filter<
-   'filter> async/filter>
-   'into async/into
-   'map async/map
-   'map< async/map<
-   'map> async/map>
-   'mapcat< async/mapcat<
-   'mapcat> async/mapcat>
-   'merge async/merge
-   'mix async/mix
-   'mult async/mult
-   'offer! async/offer!
-   'onto-chan async/onto-chan
-   'partition async/partition
-   'partition-by async/partition-by
-   'pipe async/pipe
-   'pipeline async/pipeline
-   'pipeline-async async/pipeline-async
-   'pipeline-blocking async/pipeline-blocking
-   'poll! async/poll!
-   'promise-chan async/promise-chan
-   'pub async/pub
-   'put! async/put!
-   'reduce async/reduce
-   'remove< async/remove<
-   'remove> async/remove>
-   'sliding-buffer async/sliding-buffer
-   'solo-mode async/solo-mode
-   'split async/split
-   'sub async/sub
-   'take async/take
-   'take! async/take!
-   'tap async/tap
-   'thread (with-meta thread {:sci/macro true})
-   'thread-call thread-call
-   'timeout async/timeout
-   'to-chan async/to-chan
-   'toggle async/toggle
-   'transduce async/transduce
-   'unblocking-buffer? async/unblocking-buffer?
-   'unique async/unique
-   'unmix async/unmix
-   'unmix-all async/unmix-all
-   'unsub async/unsub
-   'unsub-all async/unsub-all
-   'untap async/untap
-   'untap-all async/untap-all
+  {:obj core-async-namespace
+   '<!! (copy-var async/<!! core-async-namespace)
+   '>!! (copy-var async/>!! core-async-namespace)
+   'admix (copy-var async/admix core-async-namespace)
+   'alts! (copy-var async/alts! core-async-namespace)
+   'alts!! (copy-var async/alts!! core-async-namespace)
+   'alt!! (macrofy 'alt!! alt!! core-async-namespace)
+   'buffer (copy-var async/buffer core-async-namespace)
+   'chan (copy-var async/chan core-async-namespace)
+   'close! (copy-var async/close! core-async-namespace)
+   'do-alt (copy-var async/do-alt core-async-namespace)
+   'do-alts (copy-var async/do-alts core-async-namespace)
+   'dropping-buffer (copy-var async/dropping-buffer core-async-namespace)
+   'filter< (copy-var async/filter< core-async-namespace)
+   'filter> (copy-var async/filter> core-async-namespace)
+   'into (copy-var async/into core-async-namespace)
+   'map (copy-var async/map core-async-namespace)
+   'map< (copy-var async/map< core-async-namespace)
+   'map> (copy-var async/map> core-async-namespace)
+   'mapcat< (copy-var async/mapcat< core-async-namespace)
+   'mapcat> (copy-var async/mapcat> core-async-namespace)
+   'merge (copy-var async/merge core-async-namespace)
+   'mix (copy-var async/mix core-async-namespace)
+   'mult (copy-var async/mult core-async-namespace)
+   'offer! (copy-var async/offer! core-async-namespace)
+   'onto-chan (copy-var async/onto-chan core-async-namespace)
+   'partition (copy-var async/partition core-async-namespace)
+   'partition-by (copy-var async/partition-by core-async-namespace)
+   'pipe (copy-var async/pipe core-async-namespace)
+   'pipeline (copy-var async/pipeline core-async-namespace)
+   'pipeline-async (copy-var async/pipeline-async core-async-namespace)
+   'pipeline-blocking (copy-var async/pipeline-blocking core-async-namespace)
+   'poll! (copy-var async/poll! core-async-namespace)
+   'promise-chan (copy-var async/promise-chan core-async-namespace)
+   'pub (copy-var async/pub core-async-namespace)
+   'put! (copy-var async/put! core-async-namespace)
+   'reduce (copy-var async/reduce core-async-namespace)
+   'remove< (copy-var async/remove< core-async-namespace)
+   'remove> (copy-var async/remove> core-async-namespace)
+   'sliding-buffer (copy-var async/sliding-buffer core-async-namespace)
+   'solo-mode (copy-var async/solo-mode core-async-namespace)
+   'split (copy-var async/split core-async-namespace)
+   'sub (copy-var async/sub core-async-namespace)
+   'take (copy-var async/take core-async-namespace)
+   'take! (copy-var async/take! core-async-namespace)
+   'tap (copy-var async/tap core-async-namespace)
+   'thread (macrofy 'thread thread core-async-namespace)
+   'thread-call (copy-var thread-call core-async-namespace)
+   'timeout (copy-var async/timeout core-async-namespace)
+   'to-chan (copy-var async/to-chan core-async-namespace)
+   'toggle (copy-var async/toggle core-async-namespace)
+   'transduce (copy-var async/transduce core-async-namespace)
+   'unblocking-buffer? (copy-var async/unblocking-buffer? core-async-namespace)
+   'unique (copy-var async/unique core-async-namespace)
+   'unmix (copy-var async/unmix core-async-namespace)
+   'unmix-all (copy-var async/unmix-all core-async-namespace)
+   'unsub (copy-var async/unsub core-async-namespace)
+   'unsub-all (copy-var async/unsub-all core-async-namespace)
+   'untap (copy-var async/untap core-async-namespace)
+   'untap-all (copy-var async/untap-all core-async-namespace)
    ;; polyfill
-   'go (with-meta thread {:sci/macro true})
-   '<! async/<!!
-   '>! async/>!!
-   'alt! (with-meta alt!! {:sci/macro true})
-   'go-loop (with-meta go-loop {:sci/macro true})})
+   'go (macrofy 'go thread core-async-namespace)
+   '<! (copy-var async/<!! core-async-namespace)
+   '>! (copy-var async/>!! core-async-namespace)
+   'alt! (macrofy 'alt! alt!! core-async-namespace)
+   'go-loop (macrofy 'go-loop go-loop core-async-namespace)})
+
+(def async-protocols-ns (vars/->SciNamespace 'clojure.core.async.impl.protocols nil))
 
 (def async-protocols-namespace
-  {'ReadPort protocols/ReadPort})
+  {:obj async-protocols-ns
+   'ReadPort (copy-var protocols/ReadPort async-protocols-ns)})

@@ -23,3 +23,19 @@
 
 (.exists (io/file path)) ;; true
 "))))
+
+(deftest string-as-file-test
+  (is (true? (bb "
+(require '[clojure.java.io :as io])
+
+(instance? java.io.File (io/as-file \".\"))
+"))))
+
+(deftest string-as-url-test
+  (is (true? (bb "
+(require '[clojure.java.io :as io])
+
+(let [url (io/as-url \"https://github.com/babashka/babashka\")]
+  (and (= \"https\" (.getProtocol url))
+       (= \"github.com\" (.getHost url))))
+"))))
