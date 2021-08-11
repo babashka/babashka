@@ -237,6 +237,8 @@
 (test-namespaces 'clojure.data.json-test
                  'clojure.data.json-test-suite-test)
 
+(test-namespaces 'multigrep.core-test)
+
 (test-namespaces
  ;; TODO: env tests don't work because envoy lib isn't compatible with bb
  #_'vault.env-test
