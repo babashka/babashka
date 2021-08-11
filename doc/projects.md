@@ -44,6 +44,7 @@ The following libraries and projects are known to work with babashka.
     - [hasch](#hasch)
     - [crispin](#crispin)
     - [ffclj](#ffclj)
+    - [multigrep](#multigrep)
   - [Pods](#pods)
   - [Projects](#projects-1)
     - [babashka-test-action](#babashka-test-action)
@@ -632,6 +633,44 @@ FOO=1 script.clj
 ### [ffclj](https://github.com/luissantos/ffclj)
 
 A wrapper around executing `ffmpeg` and `ffprobe`. Supports progress reporting via core.async channels.
+
+### [multigrep](https://github.com/clj-commons/multigrep)
+
+Regex-based file grepping and/or text substitution.
+
+Example:
+- find the words that are exactly four letters long in some strings:
+```clj
+(ns multigrep-demo
+  (:require [babashka.deps :as deps]
+            [clojure.pprint :refer [pprint]])
+  (:import (java.io StringReader)))
+
+(deps/add-deps '{:deps {clj-commons/multigrep {:mvn/version "0.5.0"}}})
+
+(require '[multigrep.core :as grep])
+
+; the StringReaders could be anything that clojure.java.io/reader will accept (files, URLs, etc.)
+(let [sentence1 (StringReader. "the quick brown fox jumps over the lazy dog")
+      sentence2 (StringReader. "Lorem ipsum dolor sit amet")]
+  (pprint (grep/grep #"\b[a-z]{4}\b" [sentence1 sentence2])))
+```
+
+outputs:
+```
+({:file
+  #object[java.io.StringReader...],
+  :line "the quick brown fox jumps over the lazy dog",
+  :line-number 1,
+  :regex #"\b[a-z]{4}\b",
+  :re-seq ("over" "lazy")}
+ {:file
+  #object[java.io.StringReader...],
+  :line "Lorem ipsum dolor sit amet",
+  :line-number 1,
+  :regex #"\b[a-z]{4}\b",
+  :re-seq ("amet")})
+```
 
 ## Pods
 

@@ -8,7 +8,7 @@
 
 (def tns (sci/create-ns 'lanterna.terminal nil))
 (def sns (sci/create-ns 'lanterna.screen nil))
-(def cns (sci/create-ns 'lanterna.screen nil))
+(def cns (sci/create-ns 'lanterna.constants nil))
 
 (def lanterna-terminal-namespace
   {'add-resize-listener (copy-var lanterna.terminal/add-resize-listener tns)
