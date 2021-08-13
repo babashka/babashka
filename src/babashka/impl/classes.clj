@@ -152,6 +152,7 @@
           java.lang.System
           java.lang.Throwable
           ;; java.lang.UnsupportedOperationException
+          java.lang.reflect.Method
           java.math.BigDecimal
           java.math.BigInteger
           java.math.MathContext
