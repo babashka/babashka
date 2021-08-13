@@ -75,7 +75,9 @@
                    {:name "copyOfRange"}]}
         ;; this fixes clojure.lang.Reflector for Java 11
         java.lang.reflect.AccessibleObject
-        {:methods [{:name "canAccess"}]}}
+        {:methods [{:name "canAccess"}]}
+        java.lang.reflect.Method
+        {:methods [{:name "getName"}]}}
     features/hsqldb? (assoc `org.hsqldb.dbinfo.DatabaseInformationFull
                             {:methods [{:name "<init>"
                                         :parameterTypes ["org.hsqldb.Database"]}]}
@@ -152,7 +154,6 @@
           java.lang.System
           java.lang.Throwable
           ;; java.lang.UnsupportedOperationException
-          java.lang.reflect.Method
           java.math.BigDecimal
           java.math.BigInteger
           java.math.MathContext
