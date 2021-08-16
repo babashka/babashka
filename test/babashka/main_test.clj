@@ -700,6 +700,11 @@ true")))
 
 (vec (pmap f (map str (range 10000))))")))))
 
+(deftest print-readably-test
+  (is (= "\"foo\"" (bb nil "-e" "(binding [*print-readably* true] (pr-str \"foo\"))")))
+  (is (= "foo" (bb nil "-e" "(binding [*print-readably* false] (pr-str \"foo\"))")))
+  (is (= "foo\n" (bb nil "-e" "(binding [*print-readably* false] (with-out-str (clojure.pprint/pprint \"foo\")))"))))
+
 ;;;; Scratch
 
 (comment
