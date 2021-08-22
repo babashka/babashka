@@ -474,12 +474,12 @@
     all-entries))
 
 (defn generate-reflection-file
-  "Generate reflection.json file"
+  "Generate reflect-config.json file"
   [& args]
   (let [all-entries (reflection-file-entries)]
     (spit (or
            (first args)
-           "reflection.json") (json/generate-string all-entries {:pretty true}))))
+           "resources/META-INF/native-image/babashka/babashka/reflect-config.json") (json/generate-string all-entries {:pretty true}))))
 
 (defn public-declared-method? [c m]
   (and (= c (.getDeclaringClass m))

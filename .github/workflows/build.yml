@@ -85,19 +85,10 @@ jobs:
           BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
           echo "##[set-output name=version;]${BABASHKA_VERSION}"
 
-      - name: Reflection artifact
-        run: |
-          cp reflection.json babashka-${{ steps.babashka-version.outputs.version }}-reflection.json
-
       - uses: actions/upload-artifact@v1
         with:
           name: jar
           path: target/babashka-${{ steps.babashka-version.outputs.version }}-standalone.jar
-
-      - uses: actions/upload-artifact@v1
-        with:
-          name: reflection.json
-          path: babashka-${{ steps.babashka-version.outputs.version }}-reflection.json
 
   linux:
     if: "!contains(github.event.head_commit.message, 'skip ci')"
@@ -113,11 +104,6 @@ jobs:
       - uses: actions/download-artifact@v1
         with:
           name: jar
-          path: .
-
-      - uses: actions/download-artifact@v1
-        with:
-          name: reflection.json
           path: .
 
       - name: Cache deps
@@ -157,7 +143,6 @@ jobs:
           export BABASHKA_JAR=babashka-${{ steps.babashka-version.outputs.version }}-standalone.jar
           export BABASHKA_XMX="-J-Xmx6g"
           export GRAALVM_HOME="$HOME/graalvm-ce-java11-21.1.0"
-          cp babashka-${{ steps.babashka-version.outputs.version }}-reflection.json reflection.json
           script/compile
 
       - name: Test binary
@@ -194,11 +179,6 @@ jobs:
       - uses: actions/download-artifact@v1
         with:
           name: jar
-          path: .
-
-      - uses: actions/download-artifact@v1
-        with:
-          name: reflection.json
           path: .
 
       - name: Cache deps
@@ -239,7 +219,6 @@ jobs:
           export BABASHKA_XMX="-J-Xmx6g"
           export GRAALVM_HOME="$HOME/graalvm-ce-java11-21.1.0"
           export BABASHKA_STATIC=true
-          cp babashka-${{ steps.babashka-version.outputs.version }}-reflection.json reflection.json
           script/compile
 
       - name: Test binary
@@ -279,11 +258,6 @@ jobs:
           name: jar
           path: .
 
-      - uses: actions/download-artifact@v1
-        with:
-          name: reflection.json
-          path: .
-
       - name: Cache GraalVM
         uses: actions/cache@v1
         id: cache-graalvm
@@ -312,7 +286,6 @@ jobs:
           export BABASHKA_JAR=babashka-${{ steps.babashka-version.outputs.version }}-standalone.jar
           export BABASHKA_XMX="-J-Xmx6g"
           export GRAALVM_HOME="$HOME/graalvm-ce-java11-21.1.0/Contents/Home"
-          cp babashka-${{ steps.babashka-version.outputs.version }}-reflection.json reflection.json
           script/compile
 
       - name: Test binary
