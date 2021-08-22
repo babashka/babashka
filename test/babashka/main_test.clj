@@ -705,6 +705,20 @@ true")))
   (is (= "foo" (bb nil "-e" "(binding [*print-readably* false] (pr-str \"foo\"))")))
   (is (= "foo\n" (bb nil "-e" "(binding [*print-readably* false] (with-out-str (clojure.pprint/pprint \"foo\")))"))))
 
+; repl-requires: '[[clojure.repl :refer (source apropos pst dir doc find-doc)]
+;                  [clojure.pprint :refer (pp pprint)]]
+(deftest repl-requires-test
+  (testing "the elements of repl-requires are available to scripts passed on the command line"
+    (is (str/includes? (bb nil "
+    (load-file \"test-resources/babashka/file_location2.clj\")
+    (require '[babashka.file-location2 :as fl])
+    (source fl/ok)") "ok"))
+    ; using <= in case new matching functions get added
+    (is (<= 8 (bb nil '(count (apropos "first")))))
+    (is (= [1 2 3] (bb "[1 2 3]" "(pprint *input*)")))
+    (let [first-doc (test-utils/bb nil "(doc first)")]
+        (is (every? #(str/includes? first-doc %) ["---" "clojure.core/first" "first item"])))))
+
 ;;;; Scratch
 
 (comment
