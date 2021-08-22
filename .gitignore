@@ -16,7 +16,7 @@ pom.xml.asc
 !test-resources/babashka/src_for_classpath_test/foo.jar
 !test-resources/pom.xml
 .cpcache
-*reflection.json
+*reflect-config.json
 /tmp
 /reports
 *.dylib
