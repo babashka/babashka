@@ -683,7 +683,8 @@ Use bb run --help to show this help output.
                                          edn-in
                                          (edn-seq *in*)
                                          :else
-                                         (edn/read {:readers edn-readers} *in*))))))
+                                         (edn/read {:readers edn-readers
+                                                    :default tagged-literal} *in*))))))
             uberscript-sources (atom ())
             classpath (or classpath
                           (System/getenv "BABASHKA_CLASSPATH"))

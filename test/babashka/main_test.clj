@@ -733,7 +733,13 @@ true")))
             (test-utils/normalize (test-utils/bb "{:a #abc 123}{:a #cde 789}" "-I" "(map :a *input*)")))))
     (testing "when using --stream and -I"
       (is (= "#abc 123\n#cde 789\n"
-            (test-utils/normalize (test-utils/bb "{:a #abc 123}{:a #cde 789}" "--stream" "-I" "-e" "(println (:a *input*))")))))))
+            (test-utils/normalize (test-utils/bb "{:a #abc 123}{:a #cde 789}" "--stream" "-I" "-e" "(println (:a *input*))")))))
+    (testing "when using --stream (-I is sort of implied if no -i)"
+      (is (= "#abc 123\n#cde 789\n"
+            (test-utils/normalize (test-utils/bb "{:a #abc 123}{:a #cde 789}" "--stream" "-e" "(println (:a *input*))")))))
+    (testing "when reading one EDN form from stdin (no --stream or -I or -i)"
+      (is (= "#abc 123\n"
+            (test-utils/normalize (test-utils/bb "{:a #abc 123}{:a #cde 789}" "-e" "(println (:a *input*))")))))))
 
 ;;;; Scratch
 
