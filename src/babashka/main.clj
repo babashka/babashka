@@ -424,7 +424,7 @@ Use bb run --help to show this help output.
 
 (defn edn-seq*
   [^java.io.BufferedReader rdr]
-  (let [edn-val (edn/read {:eof ::EOF :readers edn-readers} rdr)]
+  (let [edn-val (edn/read {:eof ::EOF :readers edn-readers :default tagged-literal} rdr)]
     (when (not (identical? ::EOF edn-val))
       (cons edn-val (lazy-seq (edn-seq* rdr))))))
 
@@ -676,13 +676,15 @@ Use bb run --help to show this help output.
                           (if stream?
                             (if shell-in (or (read-line) ::EOF)
                                 (edn/read {:readers edn-readers
+                                           :default tagged-literal
                                            :eof ::EOF} *in*))
                             (delay (cond shell-in
                                          (shell-seq *in*)
                                          edn-in
                                          (edn-seq *in*)
                                          :else
-                                         (edn/read {:readers edn-readers} *in*))))))
+                                         (edn/read {:readers edn-readers
+                                                    :default tagged-literal} *in*))))))
             uberscript-sources (atom ())
             classpath (or classpath
                           (System/getenv "BABASHKA_CLASSPATH"))

@@ -719,6 +719,28 @@ true")))
     (let [first-doc (test-utils/bb nil "(doc first)")]
         (is (every? #(str/includes? first-doc %) ["---" "clojure.core/first" "first item"])))))
 
+(deftest edn-input-test
+  (testing "clojure's default readers"
+    (is (= '(#inst "2021-08-24T00:56:02.014-00:00")
+          (bb "#inst \"2021-08-24T00:56:02.014-00:00\"" "-I" "(println *input*)")))
+    (is (= '(#uuid "00000000-0000-0000-0000-000000000000")
+          (bb "#uuid \"00000000-0000-0000-0000-000000000000\"" "-I" "(println *input*)"))))
+  (testing "use tagged-literal as default data reader fn..."
+    (testing "when using the -I option"
+      (is (= "(#made-up-tag 42)\n"
+            (test-utils/normalize (test-utils/bb "#made-up-tag 42" "-I" "(println *input*)"))))
+      (is (= "(#abc 123 #cde 789)\n"
+            (test-utils/normalize (test-utils/bb "{:a #abc 123}{:a #cde 789}" "-I" "(map :a *input*)")))))
+    (testing "when using --stream and -I"
+      (is (= "#abc 123\n#cde 789\n"
+            (test-utils/normalize (test-utils/bb "{:a #abc 123}{:a #cde 789}" "--stream" "-I" "-e" "(println (:a *input*))")))))
+    (testing "when using --stream (-I is sort of implied if no -i)"
+      (is (= "#abc 123\n#cde 789\n"
+            (test-utils/normalize (test-utils/bb "{:a #abc 123}{:a #cde 789}" "--stream" "-e" "(println (:a *input*))")))))
+    (testing "when reading one EDN form from stdin (no --stream or -I or -i)"
+      (is (= "#abc 123\n"
+            (test-utils/normalize (test-utils/bb "{:a #abc 123}{:a #cde 789}" "-e" "(println (:a *input*))")))))))
+
 ;;;; Scratch
 
 (comment
