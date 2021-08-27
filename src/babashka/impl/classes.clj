@@ -159,11 +159,15 @@
           java.math.MathContext
           java.math.RoundingMode
           java.net.ConnectException
+          java.net.CookieHandler
+          java.net.CookieManager
           java.net.DatagramSocket
           java.net.DatagramPacket
           java.net.HttpURLConnection
           java.net.InetAddress
           java.net.InetSocketAddress
+          java.net.InMemoryCookieStore
+          java.net.ProxySelector
           java.net.ServerSocket
           java.net.Socket
           java.net.SocketException
@@ -172,6 +176,26 @@
           ;; java.net.URL, see below
           java.net.URLEncoder
           java.net.URLDecoder
+          java.net.http.HttpClient
+          java.net.http.HttpClient$Builder
+          java.net.http.HttpClient$Redirect
+          java.net.http.HttpClient$Version
+          java.net.http.HttpHeaders
+          java.net.http.HttpRequest
+          java.net.http.HttpRequest$BodyPublisher
+          java.net.http.HttpRequest$BodyPublishers
+          java.net.http.HttpRequest$Builder
+          java.net.http.HttpResponse
+          java.net.http.HttpResponse$BodyHandler
+          java.net.http.HttpResponse$BodyHandlers
+          jdk.internal.net.http.HttpClientBuilderImpl
+          jdk.internal.net.http.HttpClientFacade
+          jdk.internal.net.http.HttpRequestBuilderImpl
+          jdk.internal.net.http.HttpResponseImpl
+          jdk.internal.net.http.common.MinimalFuture
+          java.net.http.WebSocket
+          java.net.http.WebSocket$Builder
+          java.net.http.WebSocket$Listener
           ~@(when features/java-nio?
               '[java.nio.ByteBuffer
                 java.nio.ByteOrder
@@ -269,6 +293,7 @@
           java.util.Properties
           java.util.Set
           java.util.UUID
+          java.util.concurrent.CompletableFuture
           java.util.concurrent.TimeUnit
           java.util.zip.InflaterInputStream
           java.util.zip.DeflaterInputStream
@@ -277,6 +302,8 @@
           java.util.zip.ZipInputStream
           java.util.zip.ZipOutputStream
           java.util.zip.ZipEntry
+          javax.net.ssl.SSLContext
+          javax.net.ssl.SSLParameters
           ~(symbol "[B")
           ~(symbol "[I")
           ~(symbol "[Ljava.lang.Object;")
