@@ -26,6 +26,35 @@
                 (def resp (.send client req (HttpResponse$BodyHandlers/ofString)))
                 [(.statusCode resp) (string? (.body resp))])))))
 
+(deftest post-input-stream-test
+  (let [body "with love from java.net.http"]
+    (is (= body
+           (bb
+             '(do
+                (ns net
+                  (:require
+                   [cheshire.core :as json]
+                   [clojure.java.io :as io])
+                  (:import
+                   (java.net.http HttpClient
+                                  HttpRequest
+                                  HttpRequest$BodyPublishers
+                                  HttpResponse$BodyHandlers)
+                   (java.net URI)
+                   (java.util.function Supplier)))
+                (let [body "with love from java.net.http"
+                      req (-> (HttpRequest/newBuilder (URI. "https://www.postman-echo.com/post"))
+                              (.method "POST" (HttpRequest$BodyPublishers/ofInputStream
+                                                (reify Supplier (get [_]
+                                                                  (io/input-stream (.getBytes body))))))
+                              (.build))
+                      client (-> (HttpClient/newBuilder)
+                                 (.build))
+                      res (.send client req (HttpResponse$BodyHandlers/ofString))]
+                  (-> (.body res)
+                      (json/parse-string true)
+                      :data))))))))
+
 (deftest cookie-test
   (is (= []
          (bb '(do (ns net

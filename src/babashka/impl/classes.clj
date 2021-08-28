@@ -296,6 +296,7 @@
           java.util.UUID
           java.util.concurrent.CompletableFuture
           java.util.concurrent.TimeUnit
+          java.util.function.Supplier
           java.util.zip.InflaterInputStream
           java.util.zip.DeflaterInputStream
           java.util.zip.GZIPInputStream
