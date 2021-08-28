@@ -10,21 +10,21 @@
 (deftest java-http-client-test
   (is (= [200 true]
          (bb
-          '(do (ns net
-                 (:import [java.net.http HttpClient HttpRequest HttpResponse$BodyHandlers]
-                          [java.net URI]))
+           '(do (ns net
+                  (:import [java.net.http HttpClient HttpRequest HttpResponse$BodyHandlers]
+                           [java.net URI]))
 
-               (def req
-                 (-> (HttpRequest/newBuilder (URI. "https://www.clojure.org"))
-                     (.GET)
-                     (.build)))
+                (def req
+                  (-> (HttpRequest/newBuilder (URI. "https://www.clojure.org"))
+                      (.GET)
+                      (.build)))
 
-               (def client
-                 (-> (HttpClient/newBuilder)
-                     (.build)))
+                (def client
+                  (-> (HttpClient/newBuilder)
+                      (.build)))
 
-               (def resp (.send client req (HttpResponse$BodyHandlers/ofString)))
-               [(.statusCode resp) (string? (.body resp))])))))
+                (def resp (.send client req (HttpResponse$BodyHandlers/ofString)))
+                [(.statusCode resp) (string? (.body resp))])))))
 
 (deftest cookie-test
   (is (= []
