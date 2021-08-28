@@ -188,11 +188,6 @@
           java.net.http.HttpResponse
           java.net.http.HttpResponse$BodyHandler
           java.net.http.HttpResponse$BodyHandlers
-          jdk.internal.net.http.HttpClientBuilderImpl
-          jdk.internal.net.http.HttpClientFacade
-          jdk.internal.net.http.HttpRequestBuilderImpl
-          jdk.internal.net.http.HttpResponseImpl
-          jdk.internal.net.http.common.MinimalFuture
           java.net.http.WebSocket
           java.net.http.WebSocket$Builder
           java.net.http.WebSocket$Listener
@@ -316,6 +311,10 @@
     :methods [borkdude.graal.LockFix] ;; support for locking
 
     :fields [clojure.lang.PersistentQueue]
+    ;; this just adds the class without any methods also suitable for private
+    ;; classes: add the privage class here and the public class to the normal
+    ;; list above and then everything reachable via the public class will be
+    ;; visible in the native image.
     :instance-checks [clojure.lang.AMapEntry ;; for proxy
                       clojure.lang.APersistentMap ;; for proxy
                       clojure.lang.AReference
@@ -371,7 +370,13 @@
                       java.util.Collection
                       java.util.List
                       java.util.Iterator
-                      java.util.Map$Entry]
+                      java.util.Map$Entry
+                      ;; jdk.internal.net.http.HttpClientBuilderImpl
+                      ;; jdk.internal.net.http.HttpClientFacade
+                      ;; jdk.internal.net.http.HttpRequestBuilderImpl
+                      ;; jdk.internal.net.http.HttpResponseImpl
+                      ;; jdk.internal.net.http.common.MinimalFuture
+                      ]
     :custom ~custom-map})
 
 (defmacro gen-class-map []
