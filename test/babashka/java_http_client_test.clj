@@ -25,3 +25,11 @@
 
                (def resp (.send client req (HttpResponse$BodyHandlers/ofString)))
                [(.statusCode resp) (string? (.body resp))])))))
+
+(deftest cookie-test
+  (is (= []
+         (bb '(do (ns net
+                    (:import [java.net CookieManager]))
+                  (-> (CookieManager.)
+                      (.getCookieStore)
+                      (.getCookies)))))))
