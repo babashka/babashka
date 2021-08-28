@@ -161,12 +161,12 @@
           java.net.ConnectException
           java.net.CookieHandler
           java.net.CookieManager
+          java.net.CookieStore
           java.net.DatagramSocket
           java.net.DatagramPacket
           java.net.HttpURLConnection
           java.net.InetAddress
           java.net.InetSocketAddress
-          java.net.InMemoryCookieStore
           java.net.ProxySelector
           java.net.ServerSocket
           java.net.Socket
@@ -429,7 +429,9 @@
                    (instance? java.nio.CharBuffer v)
                    java.nio.CharBuffer
                    (instance? java.nio.channels.FileChannel v)
-                   java.nio.channels.FileChannel)))))
+                   java.nio.channels.FileChannel
+                   (instance? java.net.CookieStore v)
+                   java.net.CookieStore)))))
 
 (def class-map (gen-class-map))
 
