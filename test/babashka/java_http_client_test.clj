@@ -42,7 +42,7 @@
            '(do
               (ns net
                 (:import
-                 [java.net.http HttpClient HttpResponse$BodyHandlers HttpRequest]
+                 [java.net.http HttpClient HttpRequest HttpResponse$BodyHandlers]
                  [java.net URI]))
 
               (defn send-and-catch [client req handler]
