@@ -371,11 +371,11 @@
                       java.util.List
                       java.util.Iterator
                       java.util.Map$Entry
-                      ;; jdk.internal.net.http.HttpClientBuilderImpl
-                      ;; jdk.internal.net.http.HttpClientFacade
-                      ;; jdk.internal.net.http.HttpRequestBuilderImpl
-                      ;; jdk.internal.net.http.HttpResponseImpl
-                      ;; jdk.internal.net.http.common.MinimalFuture
+                      jdk.internal.net.http.HttpClientBuilderImpl
+                      jdk.internal.net.http.HttpClientFacade
+                      jdk.internal.net.http.HttpRequestBuilderImpl
+                      jdk.internal.net.http.HttpResponseImpl
+                      jdk.internal.net.http.common.MinimalFuture
                       ]
     :custom ~custom-map})
 
