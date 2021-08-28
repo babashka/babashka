@@ -177,10 +177,11 @@
           java.net.URLEncoder
           java.net.URLDecoder
           ;; java.net.http
-          ;; internal public classes...
           jdk.internal.net.http.HttpClientBuilderImpl
           jdk.internal.net.http.HttpRequestBuilderImpl
           jdk.internal.net.http.common.MinimalFuture
+          jdk.internal.net.http.HttpClientFacade
+          jdk.internal.net.http.HttpResponseImpl
           java.net.http.HttpClient
           java.net.http.HttpClient$Builder
           java.net.http.HttpClient$Redirect
@@ -375,11 +376,7 @@
                       java.util.Collection
                       java.util.List
                       java.util.Iterator
-                      java.util.Map$Entry
-
-                      jdk.internal.net.http.HttpClientFacade
-                      jdk.internal.net.http.HttpResponseImpl
-                      ]
+                      java.util.Map$Entry]
     :custom ~custom-map})
 
 (defmacro gen-class-map []
