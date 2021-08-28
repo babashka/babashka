@@ -61,7 +61,27 @@
                     (:import [java.net CookieManager]))
                   (-> (CookieManager.)
                       (.getCookieStore)
-                      (.getCookies)))))))
+                      (.getCookies))))))
+  (is (= "www.postman-echo.com"
+         (bb '(do
+                (ns net
+                  (:import
+                   (java.net CookieManager URI)
+                   (java.net.http HttpClient HttpRequest HttpResponse$BodyHandlers)))
+                (let [client (-> (HttpClient/newBuilder)
+                              (.cookieHandler (CookieManager.))
+                              (.build))
+                      req (-> (HttpRequest/newBuilder (URI. "https://www.postman-echo.com/get"))
+                              (.GET)
+                              (.build))]
+                  (.send client req (HttpResponse$BodyHandlers/discarding))
+                  (-> client
+                      (.cookieHandler)
+                      (.get)
+                      (.getCookieStore)
+                      (.getCookies)
+                      first
+                      (.getDomain))))))))
 
 (deftest cert-test
   (is (= {:expired "java.security.cert.CertificateExpiredException"

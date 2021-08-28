@@ -164,6 +164,7 @@
           java.net.CookieStore
           java.net.DatagramSocket
           java.net.DatagramPacket
+          java.net.HttpCookie
           java.net.HttpURLConnection
           java.net.InetAddress
           java.net.InetSocketAddress
