@@ -11,8 +11,11 @@
   (is (= [200 true]
          (bb
            '(do (ns net
-                  (:import [java.net.http HttpClient HttpRequest HttpResponse$BodyHandlers]
-                           [java.net URI]))
+                  (:import
+                   (java.net.http HttpClient
+                                  HttpRequest
+                                  HttpResponse$BodyHandlers)
+                   (java.net URI)))
 
                 (def req
                   (-> (HttpRequest/newBuilder (URI. "https://www.clojure.org"))
@@ -66,11 +69,14 @@
          (bb '(do
                 (ns net
                   (:import
-                   (java.net CookieManager URI)
-                   (java.net.http HttpClient HttpRequest HttpResponse$BodyHandlers)))
+                   (java.net CookieManager
+                             URI)
+                   (java.net.http HttpClient
+                                  HttpRequest
+                                  HttpResponse$BodyHandlers)))
                 (let [client (-> (HttpClient/newBuilder)
-                              (.cookieHandler (CookieManager.))
-                              (.build))
+                                 (.cookieHandler (CookieManager.))
+                                 (.build))
                       req (-> (HttpRequest/newBuilder (URI. "https://www.postman-echo.com/get"))
                               (.GET)
                               (.build))]
@@ -91,8 +97,10 @@
            '(do
               (ns net
                 (:import
-                 [java.net.http HttpClient HttpRequest HttpResponse$BodyHandlers]
-                 [java.net URI]))
+                 (java.net URI)
+                 (java.net.http HttpClient
+                                HttpRequest
+                                HttpResponse$BodyHandlers)))
 
               (defn send-and-catch [client req handler]
                 (try
