@@ -158,15 +158,18 @@
           java.math.BigInteger
           java.math.MathContext
           java.math.RoundingMode
+          java.net.Authenticator
           java.net.ConnectException
           java.net.CookieHandler
           java.net.CookieManager
           java.net.CookieStore
           java.net.DatagramSocket
           java.net.DatagramPacket
+          java.net.HttpCookie
           java.net.HttpURLConnection
           java.net.InetAddress
           java.net.InetSocketAddress
+          java.net.PasswordAuthentication
           java.net.ProxySelector
           java.net.ServerSocket
           java.net.Socket
@@ -296,6 +299,7 @@
           java.util.UUID
           java.util.concurrent.CompletableFuture
           java.util.concurrent.TimeUnit
+          java.util.function.Supplier
           java.util.zip.InflaterInputStream
           java.util.zip.DeflaterInputStream
           java.util.zip.GZIPInputStream

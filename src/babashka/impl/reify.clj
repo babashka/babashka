@@ -152,5 +152,8 @@
     {hasNext [[this]]
      next    [[this]]}
 
+    java.util.function.Supplier
+    {get [[this]]}
+
     java.lang.Comparable
     {compareTo [[this other]]}}))
