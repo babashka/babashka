@@ -92,6 +92,28 @@
                         first
                         :type
                         name)))))))))
+
+(deftest executor
+  (is (= 200
+         (bb
+           '(do
+              (ns net
+                (:import
+                 (java.net URI)
+                 (java.net.http HttpClient
+                                HttpRequest
+                                HttpResponse$BodyHandlers)
+                 (java.util.concurrent Executors)))
+              (let [uri (URI. "https://www.postman-echo.com/get")
+                    req (-> (HttpRequest/newBuilder uri)
+                            (.GET)
+                            (.build))
+                    client (-> (HttpClient/newBuilder)
+                               (.executor (Executors/newSingleThreadExecutor))
+                               (.build))
+                    res (.send client req (HttpResponse$BodyHandlers/discarding))]
+                (.statusCode res)))))))
+
 (deftest client-proxy
   (is (= 200
          (bb
