@@ -41,8 +41,10 @@
                                 HttpRequest$BodyPublishers
                                 HttpResponse$BodyHandlers)
                  (java.net URI)))
+              (def log [x] (.println System/out x))
               (let [req (-> (HttpRequest/newBuilder (URI. "https://www.postman-echo.com"))
                             (.GET)
+                            (.timeout (java.time.Duration/ofSeconds 5))
                             (.build))
                     never-redirecting-client (-> (HttpClient/newBuilder)
                                                  (.followRedirects HttpClient$Redirect/NEVER)
@@ -51,8 +53,12 @@
                                            (.followRedirects HttpClient$Redirect/ALWAYS)
                                            (.build))
                     handler (HttpResponse$BodyHandlers/discarding)]
-                [(.statusCode (.send never-redirecting-client req handler))
-                 (.statusCode (.send redirecting-client req handler))]))))))
+                [(do
+                   (log "doing never redirect")
+                   (.statusCode (.send never-redirecting-client req handler)))
+                 (do
+                   (log "doing redirect")
+                   (.statusCode (.send redirecting-client req handler)))]))))))
 
 (deftest post-input-stream-test
   (let [body "with love from java.net.http"]
