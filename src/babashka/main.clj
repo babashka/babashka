@@ -244,7 +244,8 @@ Use bb run --help to show this help output.
  :feature/test-check %s
  :feature/spec-alpha %s
  :feature/rewrite-clj %s
- :feature/selmer %s}")
+ :feature/selmer %s
+ :feature/logging %s}")
     version
     features/core-async?
     features/csv?
@@ -263,7 +264,8 @@ Use bb run --help to show this help output.
     features/test-check?
     features/spec-alpha?
     features/rewrite-clj?
-    features/selmer?)))
+    features/selmer?
+    features/logging?)))
 
 (defn read-file [file]
   (let [f (io/file file)]
@@ -357,10 +359,7 @@ Use bb run --help to show this help output.
        'babashka.process process-namespace
        'clojure.core.server clojure-core-server-namespace
        'babashka.deps deps-namespace
-       'babashka.tasks tasks-namespace
-       'taoensso.timbre timbre-namespace
-       'clojure.tools.logging tools-logging-namespace
-       'clojure.tools.logging.impl tools-logging-impl-namespace}
+       'babashka.tasks tasks-namespace}
     features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace))
     features/yaml? (assoc 'clj-yaml.core @(resolve 'babashka.impl.yaml/yaml-namespace)
                           'flatland.ordered.map @(resolve 'babashka.impl.ordered/ordered-map-ns))
@@ -416,7 +415,13 @@ Use bb run --help to show this help output.
                             'selmer.util
                             @(resolve 'babashka.impl.selmer/selmer-util-namespace)
                             'selmer.validator
-                            @(resolve 'babashka.impl.selmer/selmer-validator-namespace))))
+                            @(resolve 'babashka.impl.selmer/selmer-validator-namespace))
+    features/logging? (assoc 'taoensso.timbre @(resolve 'babashka.impl.logging/timbre-namespace)
+                             'clojure.tools.logging
+                             @(resolve 'babashka.impl.logging/tools-logging-namespace)
+                             'clojure.tools.logging.impl
+                             @(resolve 'babashka.impl.logging/tools-logging-impl-namespace))))
+
 
 (def edn-readers (cond-> {}
                    features/yaml?

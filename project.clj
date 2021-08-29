@@ -23,9 +23,7 @@
                  [cheshire "5.10.1"]
                  [nrepl/bencode "1.1.0"]
                  [borkdude/sci.impl.reflector "0.0.1"]
-                 [org.clojure/test.check "1.1.0"]
-                 [com.taoensso/timbre "5.1.2"]
-                 [org.clojure/tools.logging "1.1.0"]]
+                 [org.clojure/test.check "1.1.0"]]
   :profiles {:feature/xml  {:source-paths ["feature-xml"]
                             :dependencies [[org.clojure/data.xml "0.2.0-alpha6"]]}
              :feature/yaml {:source-paths ["feature-yaml"]
@@ -60,6 +58,9 @@
                                    :dependencies [[rewrite-clj/rewrite-clj "1.0.644-alpha"]]}
              :feature/selmer {:source-paths ["feature-selmer"]
                               :dependencies [[selmer/selmer "1.12.44"]]}
+             :feature/logging {:source-paths ["feature-logging"]
+                               :dependencies [[com.taoensso/timbre "5.1.2"]
+                                              [org.clojure/tools.logging "1.1.0"]]}
              :test [:feature/xml
                     :feature/lanterna
                     :feature/yaml
@@ -77,6 +78,7 @@
                     :feature/spec-alpha
                     :feature/rewrite-clj
                     :feature/selmer
+                    :feature/logging
                     {:dependencies [[com.clojure-goes-fast/clj-async-profiler "0.5.0"]
                                     [com.opentable.components/otj-pg-embedded "0.13.3"]]}]
              :uberjar {:global-vars {*assert* false}
