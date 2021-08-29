@@ -140,8 +140,7 @@
                            URI)
                  (java.net.http HttpClient
                                 HttpRequest
-                                HttpResponse$BodyHandlers)
-                 (java.time Duration)))
+                                HttpResponse$BodyHandlers)))
               (let [uri (URI. "https://www.postman-echo.com/get")
                     req (-> (HttpRequest/newBuilder uri)
                             (.build))
