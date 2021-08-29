@@ -2,9 +2,8 @@
   (:require
    [babashka.test-utils :as test-utils]
    [clojure.edn :as edn]
-   [clojure.template :as tmpl]
-   [clojure.test :as test :refer [deftest is]]
-   [clojure.string :as str]))
+   [clojure.string :as str]
+   [clojure.test :as test :refer [deftest is]]))
 
 (defn bb [expr]
   (edn/read-string (apply test-utils/bb nil [(str expr)])))
