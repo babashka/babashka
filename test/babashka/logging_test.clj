@@ -1,6 +1,5 @@
 (ns babashka.logging-test
   (:require  [babashka.fs :as fs]
-             [babashka.impl.features :as features]
              [babashka.test-utils :as tu]
              [clojure.edn :as edn]
              [clojure.test :as t :refer [deftest is testing]]
@@ -43,68 +42,65 @@
      (log/infof "Hello %s" 123)
      (timbre/swap-config! (constantly old-config))))
 
-(when features/logging?
-  (deftest logging-test
-    (let [res (tu/bb nil (pr-str program))]
-      (is (= 17 (count (re-seq #"\[dude:.\]" res))))
-      (is (= 6 (count (re-seq #"DEBUG" res))))
-      (is (= 11 (count (re-seq #"INFO" res)))))
-    (testing "println appender works with with-out-str"
-      (let [res (tu/bb
-                  nil
-                  (pr-str '(do
-                             (require '[taoensso.timbre :as timbre]
-                               '[clojure.string :as str])
-                             (str/includes? (with-out-str (timbre/info "hello")) "hello"))))
-            res (edn/read-string res)]
-        (is (true? res))))
-    (testing "spit-appender"
-      (let [temp-file (-> (fs/create-temp-dir)
-                        (fs/file "log.txt"))
-            program   (pr-str '(do
-                                 (require '[taoensso.timbre :as timbre]
-                                   '[clojure.string :as str])
-                                 (def appender (timbre/spit-appender {:fname :fname-placeholder}))
-                                 (def old-config timbre/*config*)
-                                 (timbre/swap-config! assoc-in [:appenders :spit] appender)
-                                 (str/includes? (with-out-str (timbre/info "hello")) "hello")
-                                 (timbre/swap-config! (constantly old-config))))
-            program   (str/replace program ":fname-placeholder" (pr-str (.getPath temp-file)))
-            _         (tu/bb
-                        nil
-                        program)
-            res       (slurp temp-file)]
-        (is (str/includes? res "hello"))))))
+(deftest logging-test
+  (let [res (tu/bb nil (pr-str program))]
+    (is (= 17 (count (re-seq #"\[dude:.\]" res))))
+    (is (= 6 (count (re-seq #"DEBUG" res))))
+    (is (= 11 (count (re-seq #"INFO" res)))))
+  (testing "println appender works with with-out-str"
+    (let [res (tu/bb
+                nil
+                (pr-str '(do
+                           (require '[taoensso.timbre :as timbre]
+                             '[clojure.string :as str])
+                           (str/includes? (with-out-str (timbre/info "hello")) "hello"))))
+          res (edn/read-string res)]
+      (is (true? res))))
+  (testing "spit-appender"
+    (let [temp-file (-> (fs/create-temp-dir)
+                      (fs/file "log.txt"))
+          program   (pr-str '(do
+                               (require '[taoensso.timbre :as timbre]
+                                 '[clojure.string :as str])
+                               (def appender (timbre/spit-appender {:fname :fname-placeholder}))
+                               (def old-config timbre/*config*)
+                               (timbre/swap-config! assoc-in [:appenders :spit] appender)
+                               (str/includes? (with-out-str (timbre/info "hello")) "hello")
+                               (timbre/swap-config! (constantly old-config))))
+          program   (str/replace program ":fname-placeholder" (pr-str (.getPath temp-file)))
+          _         (tu/bb
+                      nil
+                      program)
+          res       (slurp temp-file)]
+      (is (str/includes? res "hello")))))
 
 (def readable-prog
   '(do
-  (ns readble-test)
-  (require '[clojure.tools.logging.readable :as logr])
-  (require '[taoensso.timbre :as timbre])
+     (ns readble-test)
+     (require '[clojure.tools.logging.readable :as logr])
+     (require '[taoensso.timbre :as timbre])
 
-  (defn test-fn
-    []
-    (logr/trace (ex-info "trace exception" {}))
-    (logr/debugf "%s" {"abc" 123 "def" 789})
-    (logr/info (list \a \b))
-    (logr/warnf "%s" "test warn")
-    (let [g (logr/spyf "%s" (apply str (interpose "," ["abc" "def" "ghi"])))]
-      (println g)))
+     (defn test-fn []
+       (logr/trace (ex-info "trace exception" {}))
+       (logr/debugf "%s" {"abc" 123 "def" 789})
+       (logr/info (list \a \b))
+       (logr/warnf "%s" "test warn")
+       (let [g (logr/spyf "%s" (apply str (interpose "," ["abc" "def" "ghi"])))]
+         (println g)))
 
-  (println "before setting anything")
-  (test-fn)
+     (println "before setting anything")
+     (test-fn)
 
-  (println "with print-readably set to nil (overridden by log macros)")
-  (binding [*print-readably* nil]
-    (test-fn))
+     (println "with print-readably set to nil (overridden by log macros)")
+     (binding [*print-readably* nil]
+       (test-fn))
 
-  (println "setting log level")
-  (timbre/set-level! :warn)
-  (test-fn)
-  (timbre/set-level! :debug)))
+     (println "setting log level")
+     (timbre/set-level! :warn)
+     (test-fn)
+     (timbre/set-level! :debug)))
 
-(when features/logging?
-  (deftest readable-logging-test
+(deftest readable-logging-test
   (let [res (tu/bb nil (pr-str readable-prog))]
     (testing "spied value is returned and printed (and printed from println even though spyf level isn't enabled)"
       (is (= 5 (count (re-seq #"abc,def,ghi" res)))))
@@ -113,4 +109,4 @@
     (testing "strings logged are printed readably"
       (is (= 3 (count (re-seq #"\"test warn\"" res)))))
     (testing "lists are printed readably"
-      (is (= 2 (count (re-seq #"\(\\a \\b\)" res))))))))
+      (is (= 2 (count (re-seq #"\(\\a \\b\)" res)))))))
