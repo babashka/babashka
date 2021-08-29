@@ -2,9 +2,8 @@
   (:require
    [babashka.test-utils :as test-utils]
    [clojure.edn :as edn]
-   [clojure.template :as tmpl]
-   [clojure.test :as test :refer [deftest is]]
-   [clojure.string :as str]))
+   [clojure.string :as str]
+   [clojure.test :as test :refer [deftest is]]))
 
 (defn bb [expr]
   (edn/read-string (apply test-utils/bb nil [(str expr)])))
@@ -93,7 +92,45 @@
                         first
                         :type
                         name)))))))))
+
+(deftest executor
+  (is (= 200
+         (bb
+           '(do
+              (ns net
+                (:import
+                 (java.net URI)
+                 (java.net.http HttpClient
+                                HttpRequest
+                                HttpResponse$BodyHandlers)
+                 (java.util.concurrent Executors)))
+              (let [uri (URI. "https://www.postman-echo.com/get")
+                    req (-> (HttpRequest/newBuilder uri)
+                            (.GET)
+                            (.build))
+                    client (-> (HttpClient/newBuilder)
+                               (.executor (Executors/newSingleThreadExecutor))
+                               (.build))
+                    res (.send client req (HttpResponse$BodyHandlers/discarding))]
+                (.statusCode res)))))))
+
 (deftest client-proxy
+  (is (= true
+         (bb
+           '(do
+              (ns net
+                (:import
+                 (java.net ProxySelector)
+                 (java.net.http HttpClient)))
+              (let [bespoke-proxy (proxy [ProxySelector] []
+                                    (connectFailed [_ _ _])
+                                    (select [_ _]))
+                    client (-> (HttpClient/newBuilder)
+                               (.proxy bespoke-proxy)
+                               (.build))]
+                (= bespoke-proxy (-> (.proxy client)
+                                     (.get))))))))
+
   (is (= 200
          (bb
            '(do
@@ -103,8 +140,7 @@
                            URI)
                  (java.net.http HttpClient
                                 HttpRequest
-                                HttpResponse$BodyHandlers)
-                 (java.time Duration)))
+                                HttpResponse$BodyHandlers)))
               (let [uri (URI. "https://www.postman-echo.com/get")
                     req (-> (HttpRequest/newBuilder uri)
                             (.build))
@@ -136,9 +172,35 @@
                     (.thenApply (reify Function (apply [_ t] (.statusCode t))))
                     (deref))))))))
 
-(deftest post-input-stream-test
+(deftest body-publishers-test
+  (is (= true
+         (bb
+          '(do
+             (ns net
+               (:require
+                [cheshire.core :as json]
+                [clojure.java.io :as io]
+                [clojure.string :as str])
+               (:import
+                (java.net URI)
+                (java.net.http HttpClient
+                               HttpRequest
+                               HttpRequest$BodyPublishers
+                               HttpResponse$BodyHandlers)
+                (java.util.function Supplier)))
+             (let [bp (HttpRequest$BodyPublishers/ofFile (.toPath (io/file "README.md")))
+                   req (-> (HttpRequest/newBuilder (URI. "https://www.postman-echo.com/post"))
+                           (.method "POST" bp)
+                           (.build))
+                   client (-> (HttpClient/newBuilder)
+                              (.build))
+                   res (.send client req (HttpResponse$BodyHandlers/ofString))
+                   body-data (-> (.body res) (json/parse-string true) :data)]
+                (str/includes? body-data "babashka"))))))
   (let [body "with love from java.net.http"]
-    (is (= body
+    (is (= {:of-input-stream body
+            :of-byte-array body
+            :of-byte-arrays body}
            (bb
             '(do
                (ns net
@@ -153,10 +215,42 @@
                                  HttpResponse$BodyHandlers)
                   (java.util.function Supplier)))
                (let [body "with love from java.net.http"
+                     publishers {:of-input-stream (HttpRequest$BodyPublishers/ofInputStream
+                                                    (reify Supplier (get [_] (io/input-stream (.getBytes body)))))
+                                 :of-byte-array (HttpRequest$BodyPublishers/ofByteArray (.getBytes body))
+                                 :of-byte-arrays (HttpRequest$BodyPublishers/ofByteArrays [(.getBytes body)])}
+                     client (-> (HttpClient/newBuilder)
+                                (.build))
+                     body-data (fn [res] (-> (.body res) (json/parse-string true) :data))]
+                 (->> publishers
+                      (map (fn [[k body-publisher]]
+                             (let [req (-> (HttpRequest/newBuilder (URI. "https://www.postman-echo.com/post"))
+                                           (.method "POST" body-publisher)
+                                           (.build))]
+                               [k (-> (.send client req (HttpResponse$BodyHandlers/ofString))
+                                      (body-data))])))
+                      (into {}))))))))
+  (let [body "おはようございます！"]
+    (is (= body
+           (bb
+            '(do
+               (ns net
+                 (:require
+                  [cheshire.core :as json]
+                  [clojure.java.io :as io])
+                 (:import
+                  (java.net URI)
+                  (java.net.http HttpClient
+                                 HttpRequest
+                                 HttpRequest$BodyPublishers
+                                 HttpResponse$BodyHandlers)
+                  (java.nio.charset Charset)
+                  (java.util.function Supplier)))
+               (let [body "おはようございます！"
                      req (-> (HttpRequest/newBuilder (URI. "https://www.postman-echo.com/post"))
-                             (.method "POST" (HttpRequest$BodyPublishers/ofInputStream
-                                              (reify Supplier (get [_]
-                                                                (io/input-stream (.getBytes body))))))
+                             (.method "POST" (HttpRequest$BodyPublishers/ofString
+                                               body (Charset/forName "UTF-16")))
+                             (.header "Content-Type" "text/plain; charset=utf-16")
                              (.build))
                      client (-> (HttpClient/newBuilder)
                                 (.build))

@@ -298,6 +298,7 @@
           java.util.Set
           java.util.UUID
           java.util.concurrent.CompletableFuture
+          java.util.concurrent.Executors
           java.util.concurrent.TimeUnit
           java.util.function.Function
           java.util.function.Supplier

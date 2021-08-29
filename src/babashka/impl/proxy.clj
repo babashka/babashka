@@ -61,4 +61,9 @@
 
       ["java.net.Authenticator" #{}]
       (proxy [java.net.Authenticator] []
-        (getPasswordAuthentication [] ((method-or-bust methods 'getPasswordAuthentication) this))))))
+        (getPasswordAuthentication [] ((method-or-bust methods 'getPasswordAuthentication) this)))
+
+      ["java.net.ProxySelector" #{}]
+      (proxy [java.net.ProxySelector] []
+        (connectFailed [_ _ _] ((method-or-bust methods 'connectFailed) this))
+        (select [_ _] ((method-or-bust methods 'select) this))))))
