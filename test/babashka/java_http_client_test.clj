@@ -115,6 +115,22 @@
                 (.statusCode res)))))))
 
 (deftest client-proxy
+  (is (= true
+         (bb
+           '(do
+              (ns net
+                (:import
+                 (java.net ProxySelector)
+                 (java.net.http HttpClient)))
+              (let [bespoke-proxy (proxy [ProxySelector] []
+                                    (connectFailed [_ _ _])
+                                    (select [_ _]))
+                    client (-> (HttpClient/newBuilder)
+                               (.proxy bespoke-proxy)
+                               (.build))]
+                (= bespoke-proxy (-> (.proxy client)
+                                     (.get))))))))
+
   (is (= 200
          (bb
            '(do
