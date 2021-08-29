@@ -173,8 +173,34 @@
                     (deref))))))))
 
 (deftest body-publishers-test
+  (is (= true
+         (bb
+          '(do
+             (ns net
+               (:require
+                [cheshire.core :as json]
+                [clojure.java.io :as io]
+                [clojure.string :as str])
+               (:import
+                (java.net URI)
+                (java.net.http HttpClient
+                               HttpRequest
+                               HttpRequest$BodyPublishers
+                               HttpResponse$BodyHandlers)
+                (java.util.function Supplier)))
+             (let [bp (HttpRequest$BodyPublishers/ofFile (.toPath (io/file "README.md")))
+                   req (-> (HttpRequest/newBuilder (URI. "https://www.postman-echo.com/post"))
+                           (.method "POST" bp)
+                           (.build))
+                   client (-> (HttpClient/newBuilder)
+                              (.build))
+                   res (.send client req (HttpResponse$BodyHandlers/ofString))
+                   body-data (-> (.body res) (json/parse-string true) :data)]
+                (str/includes? body-data "babashka"))))))
   (let [body "with love from java.net.http"]
-    (is (= body
+    (is (= {:of-input-stream body
+            :of-byte-array body
+            :of-byte-arrays body}
            (bb
             '(do
                (ns net
@@ -189,17 +215,21 @@
                                  HttpResponse$BodyHandlers)
                   (java.util.function Supplier)))
                (let [body "with love from java.net.http"
-                     req (-> (HttpRequest/newBuilder (URI. "https://www.postman-echo.com/post"))
-                             (.method "POST" (HttpRequest$BodyPublishers/ofInputStream
-                                               (reify Supplier (get [_]
-                                                                 (io/input-stream (.getBytes body))))))
-                             (.build))
+                     publishers {:of-input-stream (HttpRequest$BodyPublishers/ofInputStream
+                                                    (reify Supplier (get [_] (io/input-stream (.getBytes body)))))
+                                 :of-byte-array (HttpRequest$BodyPublishers/ofByteArray (.getBytes body))
+                                 :of-byte-arrays (HttpRequest$BodyPublishers/ofByteArrays [(.getBytes body)])}
                      client (-> (HttpClient/newBuilder)
                                 (.build))
-                     res (.send client req (HttpResponse$BodyHandlers/ofString))]
-                 (-> (.body res)
-                     (json/parse-string true)
-                     :data)))))))
+                     body-data (fn [res] (-> (.body res) (json/parse-string true) :data))]
+                 (->> publishers
+                      (map (fn [[k body-publisher]]
+                             (let [req (-> (HttpRequest/newBuilder (URI. "https://www.postman-echo.com/post"))
+                                           (.method "POST" body-publisher)
+                                           (.build))]
+                               [k (-> (.send client req (HttpResponse$BodyHandlers/ofString))
+                                      (body-data))])))
+                      (into {}))))))))
   (let [body "おはようございます！"]
     (is (= body
            (bb
