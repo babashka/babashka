@@ -29,6 +29,31 @@
                 (def resp (.send client req (HttpResponse$BodyHandlers/ofString)))
                 [(.statusCode resp) (string? (.body resp))])))))
 
+(deftest redirect-test
+  (is (= [302 200]
+         (bb
+           '(do
+              (ns net
+                (:import
+                 (java.net.http HttpClient
+                                HttpClient$Redirect
+                                HttpRequest
+                                HttpRequest$BodyPublishers
+                                HttpResponse$BodyHandlers)
+                 (java.net URI)))
+              (let [req (-> (HttpRequest/newBuilder (URI. "https://www.postman-echo.com"))
+                            (.GET)
+                            (.build))
+                    never-redirecting-client (-> (HttpClient/newBuilder)
+                                                 (.followRedirects HttpClient$Redirect/NEVER)
+                                                 (.build))
+                    redirecting-client (-> (HttpClient/newBuilder)
+                                           (.followRedirects HttpClient$Redirect/ALWAYS)
+                                           (.build))
+                    handler (HttpResponse$BodyHandlers/discarding)]
+                [(.statusCode (.send never-redirecting-client req handler))
+                 (.statusCode (.send redirecting-client req handler))]))))))
+
 (deftest post-input-stream-test
   (let [body "with love from java.net.http"]
     (is (= body
