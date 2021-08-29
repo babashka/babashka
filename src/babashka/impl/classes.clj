@@ -158,6 +158,7 @@
           java.math.BigInteger
           java.math.MathContext
           java.math.RoundingMode
+          java.net.Authenticator
           java.net.ConnectException
           java.net.CookieHandler
           java.net.CookieManager
@@ -168,6 +169,7 @@
           java.net.HttpURLConnection
           java.net.InetAddress
           java.net.InetSocketAddress
+          java.net.PasswordAuthentication
           java.net.ProxySelector
           java.net.ServerSocket
           java.net.Socket

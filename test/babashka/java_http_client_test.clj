@@ -89,6 +89,32 @@
                       first
                       (.getDomain))))))))
 
+(deftest authenticator-test
+  (is (= [401 200]
+         (bb
+           '(do
+              (ns net
+                (:import
+                 (java.net Authenticator
+                           PasswordAuthentication
+                           URI)
+                 (java.net.http HttpClient
+                                HttpRequest
+                                HttpResponse$BodyHandlers)))
+              (let [no-auth-client (-> (HttpClient/newBuilder)
+                                       (.build))
+                    req (-> (HttpRequest/newBuilder (URI. "https://www.postman-echo.com/basic-auth"))
+                            (.build))
+                    handler (HttpResponse$BodyHandlers/discarding)
+                    no-auth-res (.send no-auth-client req handler)
+                    authenticator (proxy [Authenticator] []
+                                    (getPasswordAuthentication [] (PasswordAuthentication. "postman" (char-array "password"))))
+                    auth-client (-> (HttpClient/newBuilder)
+                                    (.authenticator authenticator)
+                                    (.build))
+                    auth-res (.send auth-client req handler)]
+                [(.statusCode no-auth-res) (.statusCode auth-res)]))))))
+
 (deftest cert-test
   (is (= {:expired "java.security.cert.CertificateExpiredException"
           :wrong-host "sun.security.provider.certpath.SunCertPathBuilderException"
