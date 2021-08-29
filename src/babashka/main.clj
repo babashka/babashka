@@ -420,7 +420,9 @@ Use bb run --help to show this help output.
                              'clojure.tools.logging
                              @(resolve 'babashka.impl.logging/tools-logging-namespace)
                              'clojure.tools.logging.impl
-                             @(resolve 'babashka.impl.logging/tools-logging-impl-namespace))))
+                             @(resolve 'babashka.impl.logging/tools-logging-impl-namespace)
+                             'clojure.tools.logging.readable
+                             @(resolve 'babashka.impl.logging/tools-logging-readable-namespace))))
 
 
 (def edn-readers (cond-> {}
