@@ -23,8 +23,6 @@
    [babashka.impl.error-handler :refer [error-handler]]
    [babashka.impl.features :as features]
    [babashka.impl.fs :refer [fs-namespace]]
-   [babashka.impl.logging :refer [timbre-namespace tools-logging-namespace
-                                  tools-logging-impl-namespace]]
    [babashka.impl.pods :as pods]
    [babashka.impl.pprint :refer [pprint-namespace]]
    [babashka.impl.print-deps :as print-deps]
