@@ -142,8 +142,10 @@
 
 (deftest cert-test
   (is (= {:expired "java.security.cert.CertificateExpiredException"
-          :wrong-host "sun.security.provider.certpath.SunCertPathBuilderException"
-          :self-signed "sun.security.provider.certpath.SunCertPathBuilderException"}
+          :revoked "sun.security.cert.CertificateRevokedException"
+          :self-signed "sun.security.provider.certpath.SunCertPathBuilderException"
+          :untrusted-root "sun.security.provider.certpath.SunCertPathBuilderException"
+          :wrong-host "sun.security.provider.certpath.SunCertPathBuilderException"}
          (bb
            '(do
               (ns net
@@ -155,14 +157,19 @@
 
               (defn send-and-catch [client req handler]
                 (try
-                  (.send client req (HttpResponse$BodyHandlers/discarding))
+                  (let [res (.send client req (HttpResponse$BodyHandlers/discarding))]
+                    (.statusCode res))
                   (catch Throwable t
                     (-> (Throwable->map t) :via last :type name))))
 
               (let [client (-> (HttpClient/newBuilder)
                                (.build))
                     handler (HttpResponse$BodyHandlers/discarding)
-                    reqs (->> [:expired :wrong-host :self-signed]
+                    reqs (->> [:expired
+                               :self-signed
+                               :revoked
+                               :untrusted-root
+                               :wrong-host]
                               (map (fn [k]
                                      (let [req (-> (URI. (format "https://%s.badssl.com" (name k)))
                                                    (HttpRequest/newBuilder)
