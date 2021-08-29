@@ -93,6 +93,26 @@
                         first
                         :type
                         name)))))))))
+(deftest client-proxy
+  (is (= 200
+         (bb
+           '(do
+              (ns net
+                (:import
+                 (java.net ProxySelector
+                           URI)
+                 (java.net.http HttpClient
+                                HttpRequest
+                                HttpResponse$BodyHandlers)
+                 (java.time Duration)))
+              (let [uri (URI. "https://www.postman-echo.com/get")
+                    req (-> (HttpRequest/newBuilder uri)
+                            (.build))
+                    client (-> (HttpClient/newBuilder)
+                               (.proxy (ProxySelector/getDefault))
+                               (.build))
+                    res (.send client req (HttpResponse$BodyHandlers/discarding))]
+                (.statusCode res)))))))
 
 (deftest post-input-stream-test
   (let [body "with love from java.net.http"]
