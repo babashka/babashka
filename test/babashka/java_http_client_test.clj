@@ -387,3 +387,32 @@
                         first
                         :type
                         name)))))))))
+
+(deftest body-handlers-test
+  (is (= true
+         (bb
+          '(do
+             (ns net
+               (:require
+                [clojure.string :as str])
+               (:import
+                (java.net URI)
+                (java.net.http HttpClient
+                               HttpRequest
+                               HttpResponse$BodyHandlers)
+                (java.nio.file Files StandardOpenOption)
+                (java.nio.file.attribute FileAttribute)))
+             (let [client (-> (HttpClient/newBuilder)
+                              (.build))
+                   uri (URI. "https://raw.githubusercontent.com/babashka/babashka/master/README.md")
+                   req (-> (HttpRequest/newBuilder uri)
+                           (.GET)
+                           (.build))
+                   temp-file (Files/createTempFile "bb-prefix-" "-bb-suffix" (make-array FileAttribute 0))
+                   open-options (into-array StandardOpenOption [StandardOpenOption/CREATE
+                                                                StandardOpenOption/WRITE])
+                   handler (HttpResponse$BodyHandlers/ofFile temp-file open-options)
+                   res (.send client req handler)
+                   temp-file-path (str (.body res))
+                   contents (slurp temp-file-path)]
+               (str/includes? contents "babashka")))))))

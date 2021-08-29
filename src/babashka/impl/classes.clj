@@ -208,6 +208,7 @@
                 java.nio.DirectByteBufferR
                 java.nio.MappedByteBuffer
                 java.nio.file.OpenOption
+                java.nio.file.StandardOpenOption
                 java.nio.channels.FileChannel
                 java.nio.channels.FileChannel$MapMode
                 java.nio.charset.Charset
