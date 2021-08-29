@@ -67,6 +67,33 @@
     (println "Testing redirect never")
     (is (= 302 (bb (redirect-prog :never))))))
 
+(deftest connect-timeout-test
+  (is (= "java.net.http.HttpConnectTimeoutException"
+         (bb
+           '(do
+              (ns net
+                (:import
+                 (java.net.http HttpClient
+                                HttpRequest
+                                HttpResponse$BodyHandlers)
+                 (java.net URI)
+                 (java.time Duration)))
+
+              (let [client (-> (HttpClient/newBuilder)
+                               (.connectTimeout (Duration/ofMillis 1))
+                               (.build))
+                    req (-> (HttpRequest/newBuilder (URI. "Https://www.postman-echo.com/get"))
+                            (.GET)
+                            (.build))]
+                (try
+                  (.send client req (HttpResponse$BodyHandlers/discarding))
+                  (catch Throwable t
+                    (-> (Throwable->map t)
+                        :via
+                        first
+                        :type
+                        name)))))))))
+
 (deftest post-input-stream-test
   (let [body "with love from java.net.http"]
     (is (= body
@@ -198,3 +225,29 @@
                       (map (fn [[k req]]
                              [k (send-and-catch client req handler)]))
                       (into {})))))))))
+(deftest request-timeout-test
+  (is (= "java.net.http.HttpTimeoutException"
+         (bb
+           '(do
+              (ns net
+                (:import
+                 (java.net.http HttpClient
+                                HttpRequest
+                                HttpResponse$BodyHandlers)
+                 (java.net URI)
+                 (java.time Duration)))
+
+              (let [client (-> (HttpClient/newBuilder)
+                               (.build))
+                    req (-> (HttpRequest/newBuilder (URI. "https://www.postman-echo.com/delay/1"))
+                            (.GET)
+                            (.timeout (Duration/ofMillis 200))
+                            (.build))]
+                (try
+                  (.send client req (HttpResponse$BodyHandlers/discarding))
+                  (catch Throwable t
+                    (-> (Throwable->map t)
+                        :via
+                        first
+                        :type
+                        name)))))))))
