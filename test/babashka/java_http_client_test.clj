@@ -14,10 +14,10 @@
          (bb
           '(do (ns net
                  (:import
+                  (java.net URI)
                   (java.net.http HttpClient
                                  HttpRequest
-                                 HttpResponse$BodyHandlers)
-                  (java.net URI)))
+                                 HttpResponse$BodyHandlers)))
 
                (def req
                  (-> (HttpRequest/newBuilder (URI. "https://www.clojure.org"))
@@ -73,10 +73,10 @@
            '(do
               (ns net
                 (:import
+                 (java.net URI)
                  (java.net.http HttpClient
                                 HttpRequest
                                 HttpResponse$BodyHandlers)
-                 (java.net URI)
                  (java.time Duration)))
 
               (let [client (-> (HttpClient/newBuilder)
@@ -93,6 +93,48 @@
                         first
                         :type
                         name)))))))))
+(deftest client-proxy
+  (is (= 200
+         (bb
+           '(do
+              (ns net
+                (:import
+                 (java.net ProxySelector
+                           URI)
+                 (java.net.http HttpClient
+                                HttpRequest
+                                HttpResponse$BodyHandlers)
+                 (java.time Duration)))
+              (let [uri (URI. "https://www.postman-echo.com/get")
+                    req (-> (HttpRequest/newBuilder uri)
+                            (.build))
+                    client (-> (HttpClient/newBuilder)
+                               (.proxy (ProxySelector/getDefault))
+                               (.build))
+                    res (.send client req (HttpResponse$BodyHandlers/discarding))]
+                (.statusCode res)))))))
+
+(deftest send-async-test
+  (is (= 200
+         (bb
+           '(do
+              (ns net
+                (:import
+                 (java.net ProxySelector
+                           URI)
+                 (java.net.http HttpClient
+                                HttpRequest
+                                HttpResponse$BodyHandlers)
+                 (java.time Duration)
+                 (java.util.function Function)))
+              (let [client (-> (HttpClient/newBuilder)
+                               (.build))
+                    req (-> (HttpRequest/newBuilder (URI. "https://www.postman-echo.com/get"))
+                            (.GET)
+                            (.build))]
+                (-> (.sendAsync client req (HttpResponse$BodyHandlers/discarding))
+                    (.thenApply (reify Function (apply [_ t] (.statusCode t))))
+                    (deref))))))))
 
 (deftest post-input-stream-test
   (let [body "with love from java.net.http"]
@@ -104,11 +146,11 @@
                   [cheshire.core :as json]
                   [clojure.java.io :as io])
                  (:import
+                  (java.net URI)
                   (java.net.http HttpClient
                                  HttpRequest
                                  HttpRequest$BodyPublishers
                                  HttpResponse$BodyHandlers)
-                  (java.net URI)
                   (java.util.function Supplier)))
                (let [body "with love from java.net.http"
                      req (-> (HttpRequest/newBuilder (URI. "https://www.postman-echo.com/post"))
@@ -231,10 +273,10 @@
            '(do
               (ns net
                 (:import
+                 (java.net URI)
                  (java.net.http HttpClient
                                 HttpRequest
                                 HttpResponse$BodyHandlers)
-                 (java.net URI)
                  (java.time Duration)))
 
               (let [client (-> (HttpClient/newBuilder)
