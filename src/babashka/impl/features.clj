@@ -16,6 +16,7 @@
 (def test-check?     (not= "false" (System/getenv "BABASHKA_FEATURE_TEST_CHECK")))
 (def rewrite-clj?    (not= "false" (System/getenv "BABASHKA_FEATURE_REWRITE_CLJ")))
 (def selmer?         (not= "false" (System/getenv "BABASHKA_FEATURE_SELMER")))
+(def logging?        (not= "false" (System/getenv "BABASHKA_FEATURE_LOGGING")))
 
 ;; excluded by default
 (def jdbc? (= "true" (System/getenv "BABASHKA_FEATURE_JDBC")))
@@ -74,3 +75,6 @@
 
 (when selmer?
   (require '[babashka.impl.selmer]))
+
+(when logging?
+  (require '[babashka.impl.logging]))
