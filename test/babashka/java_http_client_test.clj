@@ -14,10 +14,10 @@
          (bb
           '(do (ns net
                  (:import
+                  (java.net URI)
                   (java.net.http HttpClient
                                  HttpRequest
-                                 HttpResponse$BodyHandlers)
-                  (java.net URI)))
+                                 HttpResponse$BodyHandlers)))
 
                (def req
                  (-> (HttpRequest/newBuilder (URI. "https://www.clojure.org"))
@@ -73,10 +73,10 @@
            '(do
               (ns net
                 (:import
+                 (java.net URI)
                  (java.net.http HttpClient
                                 HttpRequest
                                 HttpResponse$BodyHandlers)
-                 (java.net URI)
                  (java.time Duration)))
 
               (let [client (-> (HttpClient/newBuilder)
@@ -104,11 +104,11 @@
                   [cheshire.core :as json]
                   [clojure.java.io :as io])
                  (:import
+                  (java.net URI)
                   (java.net.http HttpClient
                                  HttpRequest
                                  HttpRequest$BodyPublishers
                                  HttpResponse$BodyHandlers)
-                  (java.net URI)
                   (java.util.function Supplier)))
                (let [body "with love from java.net.http"
                      req (-> (HttpRequest/newBuilder (URI. "https://www.postman-echo.com/post"))
@@ -231,10 +231,10 @@
            '(do
               (ns net
                 (:import
+                 (java.net URI)
                  (java.net.http HttpClient
                                 HttpRequest
                                 HttpResponse$BodyHandlers)
-                 (java.net URI)
                  (java.time Duration)))
 
               (let [client (-> (HttpClient/newBuilder)
