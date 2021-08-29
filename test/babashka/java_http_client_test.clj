@@ -172,7 +172,7 @@
                     (.thenApply (reify Function (apply [_ t] (.statusCode t))))
                     (deref))))))))
 
-(deftest post-input-stream-test
+(deftest body-publishers-test
   (let [body "with love from java.net.http"]
     (is (= body
            (bb
@@ -191,8 +191,36 @@
                (let [body "with love from java.net.http"
                      req (-> (HttpRequest/newBuilder (URI. "https://www.postman-echo.com/post"))
                              (.method "POST" (HttpRequest$BodyPublishers/ofInputStream
-                                              (reify Supplier (get [_]
-                                                                (io/input-stream (.getBytes body))))))
+                                               (reify Supplier (get [_]
+                                                                 (io/input-stream (.getBytes body))))))
+                             (.build))
+                     client (-> (HttpClient/newBuilder)
+                                (.build))
+                     res (.send client req (HttpResponse$BodyHandlers/ofString))]
+                 (-> (.body res)
+                     (json/parse-string true)
+                     :data)))))))
+  (let [body "おはようございます！"]
+    (is (= body
+           (bb
+            '(do
+               (ns net
+                 (:require
+                  [cheshire.core :as json]
+                  [clojure.java.io :as io])
+                 (:import
+                  (java.net URI)
+                  (java.net.http HttpClient
+                                 HttpRequest
+                                 HttpRequest$BodyPublishers
+                                 HttpResponse$BodyHandlers)
+                  (java.nio.charset Charset)
+                  (java.util.function Supplier)))
+               (let [body "おはようございます！"
+                     req (-> (HttpRequest/newBuilder (URI. "https://www.postman-echo.com/post"))
+                             (.method "POST" (HttpRequest$BodyPublishers/ofString
+                                               body (Charset/forName "UTF-16")))
+                             (.header "Content-Type" "text/plain; charset=utf-16")
                              (.build))
                      client (-> (HttpClient/newBuilder)
                                 (.build))
