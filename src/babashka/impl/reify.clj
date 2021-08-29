@@ -152,6 +152,9 @@
     {hasNext [[this]]
      next    [[this]]}
 
+    java.util.function.Function
+    {apply [[this t]]}
+
     java.util.function.Supplier
     {get [[this]]}
 

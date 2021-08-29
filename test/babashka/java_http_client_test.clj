@@ -114,6 +114,28 @@
                     res (.send client req (HttpResponse$BodyHandlers/discarding))]
                 (.statusCode res)))))))
 
+(deftest send-async-test
+  (is (= 200
+         (bb
+           '(do
+              (ns net
+                (:import
+                 (java.net ProxySelector
+                           URI)
+                 (java.net.http HttpClient
+                                HttpRequest
+                                HttpResponse$BodyHandlers)
+                 (java.time Duration)
+                 (java.util.function Function)))
+              (let [client (-> (HttpClient/newBuilder)
+                               (.build))
+                    req (-> (HttpRequest/newBuilder (URI. "https://www.postman-echo.com/get"))
+                            (.GET)
+                            (.build))]
+                (-> (.sendAsync client req (HttpResponse$BodyHandlers/discarding))
+                    (.thenApply (reify Function (apply [_ t] (.statusCode t))))
+                    (deref))))))))
+
 (deftest post-input-stream-test
   (let [body "with love from java.net.http"]
     (is (= body
