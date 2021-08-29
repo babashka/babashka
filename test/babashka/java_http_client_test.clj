@@ -41,7 +41,7 @@
                                 HttpRequest$BodyPublishers
                                 HttpResponse$BodyHandlers)
                  (java.net URI)))
-              (def log [x] (.println System/out x))
+              (defn log [x] (.println System/out x))
               (let [req (-> (HttpRequest/newBuilder (URI. "https://www.postman-echo.com"))
                             (.GET)
                             (.timeout (java.time.Duration/ofSeconds 5))
