@@ -22,6 +22,7 @@
      (println "before setting log level")
      (test-fn)
 
+     (def old-config timbre/*config*)
      (alter-var-root #'timbre/*config* #(assoc %1 :min-level :info))
 
      (println "after setting log level to :info")
@@ -38,7 +39,6 @@
      (timbre/infof "Hello %s" 123)
      (log/infof "Hello %s" 123)
 
-     (def old-config timbre/*config*)
      (timbre/swap-config! assoc-in [:appenders :spit] (timbre/spit-appender {:fname "/tmp/timbre.log"}))
      (log/infof "Hello %s" 123)
      (timbre/swap-config! (constantly old-config))))
