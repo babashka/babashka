@@ -254,7 +254,7 @@
                                [k (-> (.send client req (HttpResponse$BodyHandlers/ofString))
                                       (body-data))])))
                       (into {}))))))))
-  (let [body "おはようございます！"]
+  #_(let [body "おはようございます！"]
     (is (= body
            (bb
             '(do
