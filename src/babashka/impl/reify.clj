@@ -148,6 +148,15 @@
     {iterator [[this]]
      forEach  [[this action]]}
 
+    java.net.http.WebSocket$Listener
+    {onBinary [[this ws data last?]]
+     onClose [[this ws status-code reason]]
+     onError [[this ws error]]
+     onOpen [[this ws]]
+     onPing [[this ws data]]
+     onPong [[this ws data]]
+     onText [[this ws data last?]]}
+
     java.util.Iterator
     {hasNext [[this]]
      next    [[this]]}
