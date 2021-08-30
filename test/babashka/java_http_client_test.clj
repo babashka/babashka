@@ -362,6 +362,7 @@
                       (map (fn [[k req]]
                              [k (send-and-catch client req handler)]))
                       (into {})))))))))
+
 (deftest request-timeout-test
   (is (= "java.net.http.HttpTimeoutException"
          (bb
