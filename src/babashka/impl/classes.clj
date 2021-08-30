@@ -181,10 +181,11 @@
           java.net.URLDecoder
           ;; java.net.http
           jdk.internal.net.http.HttpClientBuilderImpl
-          jdk.internal.net.http.HttpRequestBuilderImpl
-          jdk.internal.net.http.common.MinimalFuture
           jdk.internal.net.http.HttpClientFacade
+          jdk.internal.net.http.HttpRequestBuilderImpl
           jdk.internal.net.http.HttpResponseImpl
+          jdk.internal.net.http.common.MinimalFuture
+          jdk.internal.net.http.websocket.BuilderImpl
           java.net.http.HttpClient
           java.net.http.HttpClient$Builder
           java.net.http.HttpClient$Redirect
