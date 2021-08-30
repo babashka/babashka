@@ -2,8 +2,8 @@
   (:require  [babashka.fs :as fs]
              [babashka.test-utils :as tu]
              [clojure.edn :as edn]
-             [clojure.test :as t :refer [deftest is testing]]
-             [clojure.string :as str]))
+             [clojure.string :as str]
+             [clojure.test :as t :refer [deftest is testing]]))
 
 (def program
   '(do
@@ -41,31 +41,33 @@
      (log/infof "Hello %s" 123)))
 
 (deftest logging-test
-  (let [res (tu/bb nil (pr-str program))]
-    (is (= 17 (count (re-seq #"\[dude:.\]" res))))
-    (is (= 6 (count (re-seq #"DEBUG" res))))
-    (is (= 11 (count (re-seq #"INFO" res)))))
-  (testing "println appender works with with-out-str"
-    (let [res (tu/bb
-               nil
-               (pr-str '(do
-                          (require '[taoensso.timbre :as timbre]
-                                   '[clojure.string :as str])
-                          (str/includes? (with-out-str (timbre/info "hello")) "hello"))))
-          res (edn/read-string res)]
-      (is (true? res))))
-  (testing "spit-appender"
-    (let [temp-file (-> (fs/create-temp-dir)
-                        (fs/file "log.txt"))
-          program (pr-str '(do
-                             (require '[taoensso.timbre :as timbre]
-                                      '[clojure.string :as str])
-                             (def appender (timbre/spit-appender {:fname :fname-placeholder}))
-                             (timbre/swap-config! assoc-in [:appenders :spit] appender)
-                             (str/includes? (with-out-str (timbre/info "hello")) "hello")))
-          program (str/replace program ":fname-placeholder" (pr-str (.getPath temp-file)))
-          _ (tu/bb
+  (when-not (and (= "true" (System/getenv "BABASHKA_STATIC"))
+                 (= "aarch64" (System/getenv "BABASHKA_ARCH")))
+    (let [res (tu/bb nil (pr-str program))]
+      (is (= 17 (count (re-seq #"\[dude:.\]" res))))
+      (is (= 6 (count (re-seq #"DEBUG" res))))
+      (is (= 11 (count (re-seq #"INFO" res)))))
+    (testing "println appender works with with-out-str"
+      (let [res (tu/bb
+                 nil
+                 (pr-str '(do
+                            (require '[taoensso.timbre :as timbre]
+                                     '[clojure.string :as str])
+                            (str/includes? (with-out-str (timbre/info "hello")) "hello"))))
+            res (edn/read-string res)]
+        (is (true? res))))
+    (testing "spit-appender"
+      (let [temp-file (-> (fs/create-temp-dir)
+                          (fs/file "log.txt"))
+            program (pr-str '(do
+                               (require '[taoensso.timbre :as timbre]
+                                        '[clojure.string :as str])
+                               (def appender (timbre/spit-appender {:fname :fname-placeholder}))
+                               (timbre/swap-config! assoc-in [:appenders :spit] appender)
+                               (str/includes? (with-out-str (timbre/info "hello")) "hello")))
+            program (str/replace program ":fname-placeholder" (pr-str (.getPath temp-file)))
+            _ (tu/bb
                nil
                program)
-          res (slurp temp-file)]
-      (is (str/includes? res "hello")))))
+            res (slurp temp-file)]
+        (is (str/includes? res "hello"))))))
