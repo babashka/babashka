@@ -310,7 +310,8 @@
                    handler (HttpResponse$BodyHandlers/discarding)
                    no-auth-res (.send no-auth-client req handler)
                    authenticator (proxy [Authenticator] []
-                                   (getPasswordAuthentication [] (PasswordAuthentication. "postman" (char-array "password"))))
+                                   (getPasswordAuthentication []
+                                     (PasswordAuthentication. "postman" (char-array "password"))))
                    auth-client (-> (HttpClient/newBuilder)
                                    (.authenticator authenticator)
                                    (.build))
