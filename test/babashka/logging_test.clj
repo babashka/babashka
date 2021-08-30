@@ -2,8 +2,8 @@
   (:require  [babashka.fs :as fs]
              [babashka.test-utils :as tu]
              [clojure.edn :as edn]
-             [clojure.test :as t :refer [deftest is testing]]
-             [clojure.string :as str]))
+             [clojure.string :as str]
+             [clojure.test :as t :refer [deftest is testing]]))
 
 (def program
   '(do
@@ -43,36 +43,38 @@
      (timbre/swap-config! (constantly old-config))))
 
 (deftest logging-test
-  (let [res (tu/bb nil (pr-str program))]
-    (is (= 17 (count (re-seq #"\[dude:.\]" res))))
-    (is (= 6 (count (re-seq #"DEBUG" res))))
-    (is (= 11 (count (re-seq #"INFO" res)))))
-  (testing "println appender works with with-out-str"
-    (let [res (tu/bb
-                nil
-                (pr-str '(do
-                           (require '[taoensso.timbre :as timbre]
-                             '[clojure.string :as str])
-                           (str/includes? (with-out-str (timbre/info "hello")) "hello"))))
-          res (edn/read-string res)]
-      (is (true? res))))
-  (testing "spit-appender"
-    (let [temp-file (-> (fs/create-temp-dir)
-                      (fs/file "log.txt"))
-          program   (pr-str '(do
-                               (require '[taoensso.timbre :as timbre]
-                                 '[clojure.string :as str])
-                               (def appender (timbre/spit-appender {:fname :fname-placeholder}))
-                               (def old-config timbre/*config*)
-                               (timbre/swap-config! assoc-in [:appenders :spit] appender)
-                               (str/includes? (with-out-str (timbre/info "hello")) "hello")
-                               (timbre/swap-config! (constantly old-config))))
-          program   (str/replace program ":fname-placeholder" (pr-str (.getPath temp-file)))
-          _         (tu/bb
-                      nil
-                      program)
-          res       (slurp temp-file)]
-      (is (str/includes? res "hello")))))
+  (when-not (and (= "true" (System/getenv "BABASHKA_STATIC"))
+                 (= "aarch64" (System/getenv "BABASHKA_ARCH")))
+    (let [res (tu/bb nil (pr-str program))]
+      (is (= 17 (count (re-seq #"\[dude:.\]" res))))
+      (is (= 6 (count (re-seq #"DEBUG" res))))
+      (is (= 11 (count (re-seq #"INFO" res)))))
+    (testing "println appender works with with-out-str"
+      (let [res (tu/bb
+                 nil
+                 (pr-str '(do
+                            (require '[taoensso.timbre :as timbre]
+                                     '[clojure.string :as str])
+                            (str/includes? (with-out-str (timbre/info "hello")) "hello"))))
+            res (edn/read-string res)]
+        (is (true? res))))
+    (testing "spit-appender"
+      (let [temp-file (-> (fs/create-temp-dir)
+                          (fs/file "log.txt"))
+            program   (pr-str '(do
+                                 (require '[taoensso.timbre :as timbre]
+                                          '[clojure.string :as str])
+                                 (def appender (timbre/spit-appender {:fname :fname-placeholder}))
+                                 (def old-config timbre/*config*)
+                                 (timbre/swap-config! assoc-in [:appenders :spit] appender)
+                                 (str/includes? (with-out-str (timbre/info "hello")) "hello")
+                                 (timbre/swap-config! (constantly old-config))))
+            program   (str/replace program ":fname-placeholder" (pr-str (.getPath temp-file)))
+            _         (tu/bb
+                       nil
+                       program)
+            res       (slurp temp-file)]
+        (is (str/includes? res "hello"))))))
 
 (def readable-prog
   '(do
@@ -101,12 +103,14 @@
      (timbre/set-level! :debug)))
 
 (deftest readable-logging-test
-  (let [res (tu/bb nil (pr-str readable-prog))]
-    (testing "spied value is returned and printed (and printed from println even though spyf level isn't enabled)"
-      (is (= 5 (count (re-seq #"abc,def,ghi" res)))))
-    (testing "spied value is printed readably as a result of spyf"
-      (is (= 2 (count (re-seq #"\"abc,def,ghi\"" res)))))
-    (testing "strings logged are printed readably"
-      (is (= 3 (count (re-seq #"\"test warn\"" res)))))
-    (testing "lists are printed readably"
-      (is (= 2 (count (re-seq #"\(\\a \\b\)" res)))))))
+  (when-not (and (= "true" (System/getenv "BABASHKA_STATIC"))
+                 (= "aarch64" (System/getenv "BABASHKA_ARCH")))
+    (let [res (tu/bb nil (pr-str readable-prog))]
+      (testing "spied value is returned and printed (and printed from println even though spyf level isn't enabled)"
+        (is (= 5 (count (re-seq #"abc,def,ghi" res)))))
+      (testing "spied value is printed readably as a result of spyf"
+        (is (= 2 (count (re-seq #"\"abc,def,ghi\"" res)))))
+      (testing "strings logged are printed readably"
+        (is (= 3 (count (re-seq #"\"test warn\"" res)))))
+      (testing "lists are printed readably"
+        (is (= 2 (count (re-seq #"\(\\a \\b\)" res))))))))
