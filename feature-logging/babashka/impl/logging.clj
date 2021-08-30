@@ -1,6 +1,7 @@
 (ns babashka.impl.logging
   (:require [clojure.tools.logging]
             [clojure.tools.logging.impl :as impl]
+            [clojure.tools.logging.readable]
             [sci.core :as sci]
             [taoensso.encore :as enc :refer [have]]
             [taoensso.timbre :as timbre]
@@ -178,3 +179,10 @@
 
 (def tools-logging-impl-namespace
   (make-ns 'clojure.tools.logging.impl lins ['get-logger 'enabled?]))
+
+(def tlr-ns (sci/create-ns 'clojure.tools.logging.readable nil))
+
+(def tools-logging-readable-namespace
+  (make-ns 'clojure.tools.logging.readable tlr-ns ['trace 'tracef 'debug 'debugf 'info 'infof
+                                                          'warn 'warnf 'error 'errorf 'fatal 'fatalf
+                                                          'logf 'logp 'spyf]))

@@ -3,24 +3,24 @@
 ## Prerequisites
 
 - Install [lein](https://leiningen.org/) for producing uberjars
-- Download [GraalVM](https://www.graalvm.org/downloads/). Currently we use *java11-21.1.0*.
+- Download [GraalVM](https://www.graalvm.org/downloads/). Currently we use *java11-21.2.0*.
 - For Windows, installing Visual Studio 2019 with the "Desktop development
 with C++" workload is recommended.
 - Set `$GRAALVM_HOME` to the GraalVM distribution directory. On macOS this can look like:
 
   ``` shell
-  export GRAALVM_HOME=~/Downloads/graalvm-ce-java11-21.1.0/Contents/Home
+  export GRAALVM_HOME=~/Downloads/graalvm-ce-java11-21.2.0/Contents/Home
   ```
 
   On linux:
 
   ``` shell
-  export GRAALVM_HOME=~/Downloads/graalvm-ce-java11-21.1.0
+  export GRAALVM_HOME=~/Downloads/graalvm-ce-java11-21.2.0
   ```
 
   On Windows, from the [Visual Studio 2019 x64 Native Tools Command Prompt](https://github.com/oracle/graal/issues/2116#issuecomment-590470806) or `cmd.exe` (not Powershell):
   ```
-  set GRAALVM_HOME=%USERPROFILE%\Downloads\graalvm-ce-java11-21.1.0
+  set GRAALVM_HOME=%USERPROFILE%\Downloads\graalvm-ce-java11-21.2.0
   ```
   If you are not running from the x64 Native Tools Command Prompt, you will need to set additional environment variables using:
   ```
@@ -112,6 +112,7 @@ Babashka supports the following feature flags:
 | `BABASHKA_FEATURE_ORACLEDB` | Includes the [Oracle](https://www.oracle.com/database/technologies/appdev/jdbc.html) JDBC driver | `false` |
 | `BABASHKA_FEATURE_DATASCRIPT` | Includes [datascript](https://github.com/tonsky/datascript) | `false` |
 | `BABASHKA_FEATURE_LANTERNA` | Includes [clojure-lanterna](https://github.com/babashka/clojure-lanterna) | `false` |
+| `BABASHKA_FEATURE_LOGGING` | Includes [clojure.tools.logging](https://github.com/clojure/tools.logging) with [taoensso.timbre](https://github.com/ptaoussanis/timbre) as the default implementation| `true` | 
 
 Note that httpkit server is currently experimental, the feature flag could be toggled to `false` in a future release.
 
