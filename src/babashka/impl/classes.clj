@@ -186,6 +186,7 @@
           jdk.internal.net.http.HttpResponseImpl
           jdk.internal.net.http.common.MinimalFuture
           jdk.internal.net.http.websocket.BuilderImpl
+          jdk.internal.net.http.websocket.WebSocketImpl
           java.net.http.HttpClient
           java.net.http.HttpClient$Builder
           java.net.http.HttpClient$Redirect

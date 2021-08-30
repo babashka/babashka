@@ -3,7 +3,8 @@
    [babashka.test-utils :as test-utils]
    [clojure.edn :as edn]
    [clojure.string :as str]
-   [clojure.test :as test :refer [deftest is]]))
+   [clojure.test :as test :refer [deftest is]]
+   [org.httpkit.server :as httpkit.server]))
 
 (defn bb [expr]
   (edn/read-string (apply test-utils/bb nil [(str expr)])))
@@ -416,3 +417,47 @@
                    temp-file-path (str (.body res))
                    contents (slurp temp-file-path)]
                (str/includes? contents "babashka")))))))
+
+(defn ws-handler [{:keys [init] :as opts} req]
+  (when init (init req))
+  (httpkit.server/as-channel
+    req
+    (select-keys opts [:on-close :on-ping :on-receive])))
+
+(def ^:dynamic *ws-port* 1234)
+
+(defmacro with-ws-server
+  [opts & body]
+  `(let [s# (httpkit.server/run-server (partial ws-handler ~opts) {:port ~*ws-port*})]
+     (try ~@body (finally (s# :timeout 100)))))
+
+(deftest websockets-test
+  (with-ws-server {:on-receive #(httpkit.server/send! %1 %2)}
+    (is (= "zomg websockets!"
+           (bb
+            '(do
+               (ns net
+                 (:require
+                  [clojure.string :as str])
+                 (:import
+                  (java.net URI)
+                  (java.net.http HttpClient
+                                 WebSocket$Listener)
+                  (java.util.concurrent CompletableFuture)
+                  (java.util.function Function)))
+               (let [p (promise)
+                     uri (URI. "ws://localhost:1234")
+                     listener (reify WebSocket$Listener
+                                (onOpen [_ ws]
+                                  (.request ws 1))
+                                (onText [_ ws data last?]
+                                  (.request ws 1)
+                                  (.thenApply (CompletableFuture/completedFuture nil)
+                                              (reify Function
+                                                (apply [_ _] (deliver p (str data)))))))
+                     client (HttpClient/newHttpClient)
+                     ws (-> (.newWebSocketBuilder client)
+                            (.buildAsync uri listener)
+                            (deref))]
+                 (.sendText ws "zomg websockets!" true)
+                 (deref p 5000 ::timeout))))))))
