@@ -151,6 +151,29 @@
                     res (.send client req (HttpResponse$BodyHandlers/discarding))]
                 (.statusCode res)))))))
 
+(deftest ssl-test
+  (is (= 200
+         (bb
+           '(do
+              (ns net
+                (:import
+                 (java.net URI)
+                 (java.net.http HttpClient
+                                HttpRequest
+                                HttpResponse$BodyHandlers)
+                 (javax.net.ssl SSLContext
+                                SSLParameters)))
+              (let [uri (URI. "https://www.postman-echo.com/get")
+                    req (-> (HttpRequest/newBuilder uri)
+                            (.build))
+                    ssl-context (doto (SSLContext/getInstance "TLS")
+                                  (.init nil nil nil))
+                    client (-> (HttpClient/newBuilder)
+                               (.sslContext ssl-context)
+                               (.build))
+                    res (.send client req (HttpResponse$BodyHandlers/discarding))]
+                (.statusCode res)))))))
+
 (deftest send-async-test
   (is (= 200
          (bb
