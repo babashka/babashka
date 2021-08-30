@@ -254,34 +254,36 @@
                                [k (-> (.send client req (HttpResponse$BodyHandlers/ofString))
                                       (body-data))])))
                       (into {}))))))))
-  #_(let [body "おはようございます！"]
-    (is (= body
-           (bb
-            '(do
-               (ns net
-                 (:require
-                  [cheshire.core :as json]
-                  [clojure.java.io :as io])
-                 (:import
-                  (java.net URI)
-                  (java.net.http HttpClient
-                                 HttpRequest
-                                 HttpRequest$BodyPublishers
-                                 HttpResponse$BodyHandlers)
-                  (java.nio.charset Charset)
-                  (java.util.function Supplier)))
-               (let [body "おはようございます！"
-                     req (-> (HttpRequest/newBuilder (URI. "https://www.postman-echo.com/post"))
-                             (.method "POST" (HttpRequest$BodyPublishers/ofString
-                                               body (Charset/forName "UTF-16")))
-                             (.header "Content-Type" "text/plain; charset=utf-16")
-                             (.build))
-                     client (-> (HttpClient/newBuilder)
-                                (.build))
-                     res (.send client req (HttpResponse$BodyHandlers/ofString))]
-                 (-> (.body res)
-                     (json/parse-string true)
-                     :data))))))))
+  (when-not test-utils/windows?
+    ;; TODO: somehow doesn't work in Windows, should it?
+    (let [body "おはようございます！"]
+      (is (= body
+             (bb
+              '(do
+                 (ns net
+                   (:require
+                    [cheshire.core :as json]
+                    [clojure.java.io :as io])
+                   (:import
+                    (java.net URI)
+                    (java.net.http HttpClient
+                                   HttpRequest
+                                   HttpRequest$BodyPublishers
+                                   HttpResponse$BodyHandlers)
+                    (java.nio.charset Charset)
+                    (java.util.function Supplier)))
+                 (let [body "おはようございます！"
+                       req (-> (HttpRequest/newBuilder (URI. "https://www.postman-echo.com/post"))
+                               (.method "POST" (HttpRequest$BodyPublishers/ofString
+                                                body (Charset/forName "UTF-16")))
+                               (.header "Content-Type" "text/plain; charset=utf-16")
+                               (.build))
+                       client (-> (HttpClient/newBuilder)
+                                  (.build))
+                       res (.send client req (HttpResponse$BodyHandlers/ofString))]
+                   (-> (.body res)
+                       (json/parse-string true)
+                       :data)))))))))
 
 (deftest cookie-test
   (is (= []
