@@ -9,6 +9,13 @@
 (defn bb [expr]
   (edn/read-string (apply test-utils/bb nil [(str expr)])))
 
+(deftest interop-test
+  (is (= :hello
+         (bb '(do
+                (def x (reify java.net.http.WebSocket$Listener
+                         (onOpen [this ws] :hello)))
+                (.onOpen x nil))))))
+
 (deftest java-http-client-test
   (is (= [200 true]
          (bb
