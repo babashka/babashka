@@ -387,6 +387,51 @@
                  (->> reqs
                       (map (fn [[k req]]
                              [k (send-and-catch client req handler)]))
+                      (into {})))))))
+
+    (is (= {:expired 200
+            :self-signed 200
+            :untrusted-root 200}
+           (bb
+            '(do
+               (ns net
+                 (:import
+                  (java.net URI)
+                  (java.net.http HttpClient
+                                 HttpRequest
+                                 HttpResponse$BodyHandlers)
+                  (java.security SecureRandom)
+                  (java.security.cert X509Certificate)
+                  (javax.net.ssl SSLContext
+                                 TrustManager
+                                 X509TrustManager)))
+               (let [insecure-trust-manager (reify X509TrustManager
+                                              (checkClientTrusted [_ _ _])
+                                              (checkServerTrusted [_ _ _])
+                                              (getAcceptedIssuers [_] (into-array X509Certificate [])))
+                     insecure-trust-managers (into-array TrustManager [insecure-trust-manager])
+                     insecure-context (doto (SSLContext/getInstance "TLS")
+                                        (.init nil
+                                               insecure-trust-managers
+                                               (SecureRandom.)))
+                     client (-> (HttpClient/newBuilder)
+                                (.sslContext insecure-context)
+                                (.build))
+                     handler (HttpResponse$BodyHandlers/discarding)
+                     reqs (->> [:expired
+                                :self-signed
+                                :untrusted-root]
+                               (map (fn [k]
+                                      (let [req (-> (URI. (format "https://%s.badssl.com" (name k)))
+                                                    (HttpRequest/newBuilder)
+                                                    (.GET)
+                                                    (.build))]
+                                        [k req])))
+                               (into {}))]
+                 (->> reqs
+                      (map (fn [[k req]]
+                             [k (-> (.send client req handler)
+                                    (.statusCode))]))
                       (into {})))))))))
 
 (deftest request-timeout-test

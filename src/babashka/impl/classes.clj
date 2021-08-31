@@ -239,6 +239,7 @@
           java.security.MessageDigest
           java.security.DigestInputStream
           java.security.SecureRandom
+          java.security.cert.X509Certificate
           java.sql.Date
           java.text.ParseException
           ;; adds about 200kb, same functionality provided by java.time:
@@ -314,6 +315,8 @@
           java.util.zip.ZipEntry
           javax.net.ssl.SSLContext
           javax.net.ssl.SSLParameters
+          javax.net.ssl.TrustManager
+          javax.net.ssl.X509TrustManager
           ~(symbol "[B")
           ~(symbol "[I")
           ~(symbol "[Ljava.lang.Object;")
