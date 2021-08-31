@@ -158,12 +158,19 @@
           java.math.BigInteger
           java.math.MathContext
           java.math.RoundingMode
+          java.net.Authenticator
           java.net.ConnectException
+          java.net.CookieHandler
+          java.net.CookieManager
+          java.net.CookieStore
           java.net.DatagramSocket
           java.net.DatagramPacket
+          java.net.HttpCookie
           java.net.HttpURLConnection
           java.net.InetAddress
           java.net.InetSocketAddress
+          java.net.PasswordAuthentication
+          java.net.ProxySelector
           java.net.ServerSocket
           java.net.Socket
           java.net.SocketException
@@ -172,6 +179,29 @@
           ;; java.net.URL, see below
           java.net.URLEncoder
           java.net.URLDecoder
+          ;; java.net.http
+          jdk.internal.net.http.HttpClientBuilderImpl
+          jdk.internal.net.http.HttpClientFacade
+          jdk.internal.net.http.HttpRequestBuilderImpl
+          jdk.internal.net.http.HttpResponseImpl
+          jdk.internal.net.http.common.MinimalFuture
+          jdk.internal.net.http.websocket.BuilderImpl
+          jdk.internal.net.http.websocket.WebSocketImpl
+          java.net.http.HttpClient
+          java.net.http.HttpClient$Builder
+          java.net.http.HttpClient$Redirect
+          java.net.http.HttpClient$Version
+          java.net.http.HttpHeaders
+          java.net.http.HttpRequest
+          java.net.http.HttpRequest$BodyPublisher
+          java.net.http.HttpRequest$BodyPublishers
+          java.net.http.HttpRequest$Builder
+          java.net.http.HttpResponse
+          java.net.http.HttpResponse$BodyHandler
+          java.net.http.HttpResponse$BodyHandlers
+          java.net.http.WebSocket
+          java.net.http.WebSocket$Builder
+          java.net.http.WebSocket$Listener
           ~@(when features/java-nio?
               '[java.nio.ByteBuffer
                 java.nio.ByteOrder
@@ -180,6 +210,7 @@
                 java.nio.DirectByteBufferR
                 java.nio.MappedByteBuffer
                 java.nio.file.OpenOption
+                java.nio.file.StandardOpenOption
                 java.nio.channels.FileChannel
                 java.nio.channels.FileChannel$MapMode
                 java.nio.charset.Charset
@@ -269,7 +300,11 @@
           java.util.Properties
           java.util.Set
           java.util.UUID
+          java.util.concurrent.CompletableFuture
+          java.util.concurrent.Executors
           java.util.concurrent.TimeUnit
+          java.util.function.Function
+          java.util.function.Supplier
           java.util.zip.InflaterInputStream
           java.util.zip.DeflaterInputStream
           java.util.zip.GZIPInputStream
@@ -277,6 +312,8 @@
           java.util.zip.ZipInputStream
           java.util.zip.ZipOutputStream
           java.util.zip.ZipEntry
+          javax.net.ssl.SSLContext
+          javax.net.ssl.SSLParameters
           ~(symbol "[B")
           ~(symbol "[I")
           ~(symbol "[Ljava.lang.Object;")
@@ -289,6 +326,10 @@
     :methods [borkdude.graal.LockFix] ;; support for locking
 
     :fields [clojure.lang.PersistentQueue]
+    ;; this just adds the class without any methods also suitable for private
+    ;; classes: add the privage class here and the public class to the normal
+    ;; list above and then everything reachable via the public class will be
+    ;; visible in the native image.
     :instance-checks [clojure.lang.AMapEntry ;; for proxy
                       clojure.lang.APersistentMap ;; for proxy
                       clojure.lang.AReference
@@ -397,7 +438,9 @@
                    (instance? java.nio.CharBuffer v)
                    java.nio.CharBuffer
                    (instance? java.nio.channels.FileChannel v)
-                   java.nio.channels.FileChannel)))))
+                   java.nio.channels.FileChannel
+                   (instance? java.net.CookieStore v)
+                   java.net.CookieStore)))))
 
 (def class-map (gen-class-map))
 

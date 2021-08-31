@@ -57,4 +57,13 @@
         (key [] ((method-or-bust methods 'key) this))
         (val [] ((method-or-bust methods 'val) this))
         (getKey [] ((method-or-bust methods 'getKey) this))
-        (getValue [] ((method-or-bust methods 'getValue) this))))))
+        (getValue [] ((method-or-bust methods 'getValue) this)))
+
+      ["java.net.Authenticator" #{}]
+      (proxy [java.net.Authenticator] []
+        (getPasswordAuthentication [] ((method-or-bust methods 'getPasswordAuthentication) this)))
+
+      ["java.net.ProxySelector" #{}]
+      (proxy [java.net.ProxySelector] []
+        (connectFailed [_ _ _] ((method-or-bust methods 'connectFailed) this))
+        (select [_ _] ((method-or-bust methods 'select) this))))))
