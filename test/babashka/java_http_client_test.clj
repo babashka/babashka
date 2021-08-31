@@ -12,9 +12,9 @@
 (deftest interop-test
   (is (= :hello
          (bb '(do
-                (def x (reify java.net.http.WebSocket$Listener
-                         (onOpen [this ws] :hello)))
-                (.onOpen x nil))))))
+                (def res (atom nil))
+                (def x (reify java.net.http.WebSocket$Listener (onOpen [this ws] (reset! res :hello))))
+                (.onOpen x nil) @res)))))
 
 (deftest java-http-client-test
   (is (= [200 true]
