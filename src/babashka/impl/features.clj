@@ -8,6 +8,7 @@
 (def csv?            (not= "false" (System/getenv "BABASHKA_FEATURE_CSV")))
 (def transit?        (not= "false" (System/getenv "BABASHKA_FEATURE_TRANSIT")))
 (def java-time?      (not= "false" (System/getenv "BABASHKA_FEATURE_JAVA_TIME")))
+(def java-net-http?  (not= "false" (System/getenv "BABASHKA_FEATURE_JAVA_NET_HTTP")))
 (def java-nio?       (not= "false" (System/getenv "BABASHKA_FEATURE_JAVA_NIO")))
 (def httpkit-client? (not= "false" (System/getenv "BABASHKA_FEATURE_HTTPKIT_CLIENT")))
 (def httpkit-server? (not= "false" (System/getenv "BABASHKA_FEATURE_HTTPKIT_SERVER")))

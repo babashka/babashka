@@ -1,4 +1,4 @@
-(ns babashka.java-http-client-test
+(ns babashka.java-net-http-test
   (:require
    [babashka.test-utils :as test-utils]
    [clojure.edn :as edn]
