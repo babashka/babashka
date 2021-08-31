@@ -9,7 +9,9 @@
 (defn bb [expr]
   (edn/read-string (apply test-utils/bb nil [(str expr)])))
 
-(deftest java-http-client-test
+;; HttpClient
+
+(deftest send-test
   (is (= [200 true]
          (bb
           '(do (ns net
@@ -24,48 +26,91 @@
                      (.GET)
                      (.build)))
 
-               (def client
-                 (-> (HttpClient/newBuilder)
-                     (.build)))
+               (def client (HttpClient/newHttpClient))
 
-               (def resp (.send client req (HttpResponse$BodyHandlers/ofString)))
-               [(.statusCode resp) (string? (.body resp))])))))
+               (def res (.send client req (HttpResponse$BodyHandlers/ofString)))
+               [(.statusCode res) (string? (.body res))])))))
 
-(deftest redirect-test
-  (let [redirect-prog
-        (fn [redirect-kind]
-          (str/replace (str '(do
-                               (ns net
-                                 (:import
-                                  (java.net.http HttpClient
-                                                 HttpClient$Redirect
-                                                 HttpRequest
-                                                 HttpRequest$BodyPublishers
-                                                 HttpResponse$BodyHandlers)
-                                  (java.net URI)))
-                               (defn log [x] (.println System/err x))
-                               (let [req (-> (HttpRequest/newBuilder (URI. "https://www.postman-echo.com"))
-                                             (.GET)
-                                             (.timeout (java.time.Duration/ofSeconds 5))
-                                             (.build))
-                                     client (-> (HttpClient/newBuilder)
-                                                (.followRedirects :redirect/kind)
-                                                (.build))
-                                     handler (HttpResponse$BodyHandlers/discarding)]
-                                 (.statusCode (.send client req handler)))))
-                       ":redirect/kind"
-                       (case redirect-kind
-                         :never
-                         "HttpClient$Redirect/NEVER"
-                         :always
-                         "HttpClient$Redirect/ALWAYS")))]
-    ;; TODO: make graalvm repro of never-ending request with redirect always on linux aarch64 (+ musl?)
-    (when-not (and (= "aarch64" (System/getenv "BABASHKA_ARCH"))
-                   (= "linux" (System/getenv "BABASHKA_PLATFORM")))
-      (println "Testing redirect always")
-      (is (= 200 (bb (redirect-prog :always)))))
-    (println "Testing redirect never")
-    (is (= 302 (bb (redirect-prog :never))))))
+(deftest send-async-test
+  (is (= [200 true]
+         (bb
+           '(do
+              (ns net
+                (:import
+                 (java.net URI)
+                 (java.net.http HttpClient
+                                HttpRequest
+                                HttpResponse$BodyHandlers)
+                 (java.util.function Function)))
+
+              (let [client (HttpClient/newHttpClient)
+                    req (-> (HttpRequest/newBuilder (URI. "https://www.clojure.org"))
+                            (.GET)
+                            (.build))]
+                (-> (.sendAsync client req (HttpResponse$BodyHandlers/ofString))
+                    (.thenApply (reify Function (apply [_ res] [(.statusCode res) (string? (.body res))])))
+                    (deref))))))))
+
+;; HttpClient options
+
+(deftest authenticator-test
+  (is (= [401 200]
+         (bb
+          '(do
+             (ns net
+               (:import
+                (java.net Authenticator
+                          PasswordAuthentication
+                          URI)
+                (java.net.http HttpClient
+                               HttpRequest
+                               HttpResponse$BodyHandlers)))
+
+             (let [no-auth-client (HttpClient/newHttpClient)
+                   req (-> (HttpRequest/newBuilder (URI. "https://www.postman-echo.com/basic-auth"))
+                           (.build))
+                   handler (HttpResponse$BodyHandlers/discarding)
+                   no-auth-res (.send no-auth-client req handler)
+                   authenticator (proxy [Authenticator] []
+                                   (getPasswordAuthentication []
+                                     (PasswordAuthentication. "postman" (char-array "password"))))
+                   auth-client (-> (HttpClient/newBuilder)
+                                   (.authenticator authenticator)
+                                   (.build))
+                   auth-res (.send auth-client req handler)]
+               [(.statusCode no-auth-res) (.statusCode auth-res)]))))))
+
+(deftest cookie-test
+  (is (= []
+         (bb '(do (ns net
+                    (:import [java.net CookieManager]))
+                  (-> (CookieManager.)
+                      (.getCookieStore)
+                      (.getCookies))))))
+  (is (= "www.postman-echo.com"
+         (bb '(do
+                (ns net
+                  (:import
+                   (java.net CookieManager
+                             URI)
+                   (java.net.http HttpClient
+                                  HttpRequest
+                                  HttpResponse$BodyHandlers)))
+
+                (let [client (-> (HttpClient/newBuilder)
+                                 (.cookieHandler (CookieManager.))
+                                 (.build))
+                      req (-> (HttpRequest/newBuilder (URI. "https://www.postman-echo.com/get"))
+                              (.GET)
+                              (.build))]
+                  (.send client req (HttpResponse$BodyHandlers/discarding))
+                  (-> client
+                      (.cookieHandler)
+                      (.get)
+                      (.getCookieStore)
+                      (.getCookies)
+                      first
+                      (.getDomain))))))))
 
 (deftest connect-timeout-test
   (is (= "java.net.http.HttpConnectTimeoutException"
@@ -94,7 +139,7 @@
                         :type
                         name)))))))))
 
-(deftest executor
+(deftest executor-test
   (is (= 200
          (bb
            '(do
@@ -105,6 +150,7 @@
                                 HttpRequest
                                 HttpResponse$BodyHandlers)
                  (java.util.concurrent Executors)))
+
               (let [uri (URI. "https://www.postman-echo.com/get")
                     req (-> (HttpRequest/newBuilder uri)
                             (.GET)
@@ -115,7 +161,7 @@
                     res (.send client req (HttpResponse$BodyHandlers/discarding))]
                 (.statusCode res)))))))
 
-(deftest client-proxy
+(deftest proxy-test
   (is (= true
          (bb
            '(do
@@ -123,6 +169,7 @@
                 (:import
                  (java.net ProxySelector)
                  (java.net.http HttpClient)))
+
               (let [bespoke-proxy (proxy [ProxySelector] []
                                     (connectFailed [_ _ _])
                                     (select [_ _]))
@@ -142,6 +189,7 @@
                  (java.net.http HttpClient
                                 HttpRequest
                                 HttpResponse$BodyHandlers)))
+
               (let [uri (URI. "https://www.postman-echo.com/get")
                     req (-> (HttpRequest/newBuilder uri)
                             (.build))
@@ -151,199 +199,44 @@
                     res (.send client req (HttpResponse$BodyHandlers/discarding))]
                 (.statusCode res)))))))
 
-(deftest ssl-test
-  (is (= 200
-         (bb
-           '(do
-              (ns net
-                (:import
-                 (java.net URI)
-                 (java.net.http HttpClient
-                                HttpRequest
-                                HttpResponse$BodyHandlers)
-                 (javax.net.ssl SSLContext
-                                SSLParameters)))
-              (let [uri (URI. "https://www.postman-echo.com/get")
-                    req (-> (HttpRequest/newBuilder uri)
-                            (.build))
-                    ssl-context (doto (SSLContext/getInstance "TLS")
-                                  (.init nil nil nil))
-                    client (-> (HttpClient/newBuilder)
-                               (.sslContext ssl-context)
-                               (.build))
-                    res (.send client req (HttpResponse$BodyHandlers/discarding))]
-                (.statusCode res)))))))
+(deftest redirect-test
+  (let [redirect-prog
+        (fn [redirect-kind]
+          (str/replace (str '(do
+                               (ns net
+                                 (:import
+                                  (java.net.http HttpClient
+                                                 HttpClient$Redirect
+                                                 HttpRequest
+                                                 HttpRequest$BodyPublishers
+                                                 HttpResponse$BodyHandlers)
+                                  (java.net URI)))
 
-(deftest send-async-test
-  (is (= 200
-         (bb
-           '(do
-              (ns net
-                (:import
-                 (java.net ProxySelector
-                           URI)
-                 (java.net.http HttpClient
-                                HttpRequest
-                                HttpResponse$BodyHandlers)
-                 (java.time Duration)
-                 (java.util.function Function)))
-              (let [client (-> (HttpClient/newBuilder)
-                               (.build))
-                    req (-> (HttpRequest/newBuilder (URI. "https://www.postman-echo.com/get"))
-                            (.GET)
-                            (.build))]
-                (-> (.sendAsync client req (HttpResponse$BodyHandlers/discarding))
-                    (.thenApply (reify Function (apply [_ t] (.statusCode t))))
-                    (deref))))))))
+                               (defn log [x] (.println System/err x))
+                               (let [req (-> (HttpRequest/newBuilder (URI. "https://www.postman-echo.com"))
+                                             (.GET)
+                                             (.timeout (java.time.Duration/ofSeconds 5))
+                                             (.build))
+                                     client (-> (HttpClient/newBuilder)
+                                                (.followRedirects :redirect/kind)
+                                                (.build))
+                                     handler (HttpResponse$BodyHandlers/discarding)]
+                                 (.statusCode (.send client req handler)))))
+                       ":redirect/kind"
+                       (case redirect-kind
+                         :never
+                         "HttpClient$Redirect/NEVER"
+                         :always
+                         "HttpClient$Redirect/ALWAYS")))]
+    ;; TODO: make graalvm repro of never-ending request with redirect always on linux aarch64 (+ musl?)
+    (when-not (and (= "aarch64" (System/getenv "BABASHKA_ARCH"))
+                   (= "linux" (System/getenv "BABASHKA_PLATFORM")))
+      (println "Testing redirect always")
+      (is (= 200 (bb (redirect-prog :always)))))
+    (println "Testing redirect never")
+    (is (= 302 (bb (redirect-prog :never))))))
 
-(deftest body-publishers-test
-  (is (= true
-         (bb
-          '(do
-             (ns net
-               (:require
-                [cheshire.core :as json]
-                [clojure.java.io :as io]
-                [clojure.string :as str])
-               (:import
-                (java.net URI)
-                (java.net.http HttpClient
-                               HttpRequest
-                               HttpRequest$BodyPublishers
-                               HttpResponse$BodyHandlers)
-                (java.util.function Supplier)))
-             (let [bp (HttpRequest$BodyPublishers/ofFile (.toPath (io/file "README.md")))
-                   req (-> (HttpRequest/newBuilder (URI. "https://www.postman-echo.com/post"))
-                           (.method "POST" bp)
-                           (.build))
-                   client (-> (HttpClient/newBuilder)
-                              (.build))
-                   res (.send client req (HttpResponse$BodyHandlers/ofString))
-                   body-data (-> (.body res) (json/parse-string true) :data)]
-                (str/includes? body-data "babashka"))))))
-  (let [body "with love from java.net.http"]
-    (is (= {:of-input-stream body
-            :of-byte-array body
-            :of-byte-arrays body}
-           (bb
-            '(do
-               (ns net
-                 (:require
-                  [cheshire.core :as json]
-                  [clojure.java.io :as io])
-                 (:import
-                  (java.net URI)
-                  (java.net.http HttpClient
-                                 HttpRequest
-                                 HttpRequest$BodyPublishers
-                                 HttpResponse$BodyHandlers)
-                  (java.util.function Supplier)))
-               (let [body "with love from java.net.http"
-                     publishers {:of-input-stream (HttpRequest$BodyPublishers/ofInputStream
-                                                    (reify Supplier (get [_] (io/input-stream (.getBytes body)))))
-                                 :of-byte-array (HttpRequest$BodyPublishers/ofByteArray (.getBytes body))
-                                 :of-byte-arrays (HttpRequest$BodyPublishers/ofByteArrays [(.getBytes body)])}
-                     client (-> (HttpClient/newBuilder)
-                                (.build))
-                     body-data (fn [res] (-> (.body res) (json/parse-string true) :data))]
-                 (->> publishers
-                      (map (fn [[k body-publisher]]
-                             (let [req (-> (HttpRequest/newBuilder (URI. "https://www.postman-echo.com/post"))
-                                           (.method "POST" body-publisher)
-                                           (.build))]
-                               [k (-> (.send client req (HttpResponse$BodyHandlers/ofString))
-                                      (body-data))])))
-                      (into {}))))))))
-  (when-not test-utils/windows?
-    ;; TODO: somehow doesn't work in Windows, should it?
-    (let [body "おはようございます！"]
-      (is (= body
-             (bb
-              '(do
-                 (ns net
-                   (:require
-                    [cheshire.core :as json]
-                    [clojure.java.io :as io])
-                   (:import
-                    (java.net URI)
-                    (java.net.http HttpClient
-                                   HttpRequest
-                                   HttpRequest$BodyPublishers
-                                   HttpResponse$BodyHandlers)
-                    (java.nio.charset Charset)
-                    (java.util.function Supplier)))
-                 (let [body "おはようございます！"
-                       req (-> (HttpRequest/newBuilder (URI. "https://www.postman-echo.com/post"))
-                               (.method "POST" (HttpRequest$BodyPublishers/ofString
-                                                body (Charset/forName "UTF-16")))
-                               (.header "Content-Type" "text/plain; charset=utf-16")
-                               (.build))
-                       client (-> (HttpClient/newBuilder)
-                                  (.build))
-                       res (.send client req (HttpResponse$BodyHandlers/ofString))]
-                   (-> (.body res)
-                       (json/parse-string true)
-                       :data)))))))))
-
-(deftest cookie-test
-  (is (= []
-         (bb '(do (ns net
-                    (:import [java.net CookieManager]))
-                  (-> (CookieManager.)
-                      (.getCookieStore)
-                      (.getCookies))))))
-  (is (= "www.postman-echo.com"
-         (bb '(do
-                (ns net
-                  (:import
-                   (java.net CookieManager
-                             URI)
-                   (java.net.http HttpClient
-                                  HttpRequest
-                                  HttpResponse$BodyHandlers)))
-                (let [client (-> (HttpClient/newBuilder)
-                                 (.cookieHandler (CookieManager.))
-                                 (.build))
-                      req (-> (HttpRequest/newBuilder (URI. "https://www.postman-echo.com/get"))
-                              (.GET)
-                              (.build))]
-                  (.send client req (HttpResponse$BodyHandlers/discarding))
-                  (-> client
-                      (.cookieHandler)
-                      (.get)
-                      (.getCookieStore)
-                      (.getCookies)
-                      first
-                      (.getDomain))))))))
-
-(deftest authenticator-test
-  (is (= [401 200]
-         (bb
-          '(do
-             (ns net
-               (:import
-                (java.net Authenticator
-                          PasswordAuthentication
-                          URI)
-                (java.net.http HttpClient
-                               HttpRequest
-                               HttpResponse$BodyHandlers)))
-             (let [no-auth-client (-> (HttpClient/newBuilder)
-                                      (.build))
-                   req (-> (HttpRequest/newBuilder (URI. "https://www.postman-echo.com/basic-auth"))
-                           (.build))
-                   handler (HttpResponse$BodyHandlers/discarding)
-                   no-auth-res (.send no-auth-client req handler)
-                   authenticator (proxy [Authenticator] []
-                                   (getPasswordAuthentication []
-                                     (PasswordAuthentication. "postman" (char-array "password"))))
-                   auth-client (-> (HttpClient/newBuilder)
-                                   (.authenticator authenticator)
-                                   (.build))
-                   auth-res (.send auth-client req handler)]
-               [(.statusCode no-auth-res) (.statusCode auth-res)]))))))
-
-(deftest cert-test
+(deftest ssl-context-test
   ;; TODO: investigate aarch64 issue
   (when-not
       (and (= "aarch64" (System/getenv "BABASHKA_ARCH"))
@@ -369,8 +262,7 @@
                    (catch Throwable t
                      (-> (Throwable->map t) :via last :type name))))
 
-               (let [client (-> (HttpClient/newBuilder)
-                                (.build))
+               (let [client (HttpClient/newHttpClient)
                      handler (HttpResponse$BodyHandlers/discarding)
                      reqs (->> [:expired
                                 :self-signed
@@ -405,6 +297,7 @@
                   (javax.net.ssl SSLContext
                                  TrustManager
                                  X509TrustManager)))
+
                (let [insecure-trust-manager (reify X509TrustManager
                                               (checkClientTrusted [_ _ _])
                                               (checkServerTrusted [_ _ _])
@@ -434,6 +327,100 @@
                                     (.statusCode))]))
                       (into {})))))))))
 
+;; HttpRequest
+
+(deftest body-publishers-test
+  (is (= true
+         (bb
+          '(do
+             (ns net
+               (:require
+                [cheshire.core :as json]
+                [clojure.java.io :as io]
+                [clojure.string :as str])
+               (:import
+                (java.net URI)
+                (java.net.http HttpClient
+                               HttpRequest
+                               HttpRequest$BodyPublishers
+                               HttpResponse$BodyHandlers)
+                (java.util.function Supplier)))
+
+             (let [bp (HttpRequest$BodyPublishers/ofFile (.toPath (io/file "README.md")))
+                   req (-> (HttpRequest/newBuilder (URI. "https://www.postman-echo.com/post"))
+                           (.method "POST" bp)
+                           (.build))
+                   client (HttpClient/newHttpClient)
+                   res (.send client req (HttpResponse$BodyHandlers/ofString))
+                   body-data (-> (.body res) (json/parse-string true) :data)]
+                (str/includes? body-data "babashka"))))))
+
+  (let [body "with love from java.net.http"]
+    (is (= {:of-input-stream body
+            :of-byte-array body
+            :of-byte-arrays body}
+           (bb
+            '(do
+               (ns net
+                 (:require
+                  [cheshire.core :as json]
+                  [clojure.java.io :as io])
+                 (:import
+                  (java.net URI)
+                  (java.net.http HttpClient
+                                 HttpRequest
+                                 HttpRequest$BodyPublishers
+                                 HttpResponse$BodyHandlers)
+                  (java.util.function Supplier)))
+
+               (let [body "with love from java.net.http"
+                     publishers {:of-input-stream (HttpRequest$BodyPublishers/ofInputStream
+                                                    (reify Supplier (get [_] (io/input-stream (.getBytes body)))))
+                                 :of-byte-array (HttpRequest$BodyPublishers/ofByteArray (.getBytes body))
+                                 :of-byte-arrays (HttpRequest$BodyPublishers/ofByteArrays [(.getBytes body)])}
+                     client (-> (HttpClient/newBuilder)
+                                (.build))
+                     body-data (fn [res] (-> (.body res) (json/parse-string true) :data))]
+                 (->> publishers
+                      (map (fn [[k body-publisher]]
+                             (let [req (-> (HttpRequest/newBuilder (URI. "https://www.postman-echo.com/post"))
+                                           (.method "POST" body-publisher)
+                                           (.build))]
+                               [k (-> (.send client req (HttpResponse$BodyHandlers/ofString))
+                                      (body-data))])))
+                      (into {}))))))))
+  (when-not test-utils/windows?
+    ;; TODO: somehow doesn't work in Windows, should it?
+    (let [body "おはようございます！"]
+      (is (= body
+             (bb
+              '(do
+                 (ns net
+                   (:require
+                    [cheshire.core :as json]
+                    [clojure.java.io :as io])
+                   (:import
+                    (java.net URI)
+                    (java.net.http HttpClient
+                                   HttpRequest
+                                   HttpRequest$BodyPublishers
+                                   HttpResponse$BodyHandlers)
+                    (java.nio.charset Charset)
+                    (java.util.function Supplier)))
+
+                 (let [body "おはようございます！"
+                       req (-> (HttpRequest/newBuilder (URI. "https://www.postman-echo.com/post"))
+                               (.method "POST" (HttpRequest$BodyPublishers/ofString
+                                                body (Charset/forName "UTF-16")))
+                               (.header "Content-Type" "text/plain; charset=utf-16")
+                               (.build))
+                       client (HttpClient/newHttpClient)
+                       res (.send client req (HttpResponse$BodyHandlers/ofString))]
+                   (-> (.body res)
+                       (json/parse-string true)
+                       :data)))))))))
+
+
 (deftest request-timeout-test
   (is (= "java.net.http.HttpTimeoutException"
          (bb
@@ -446,8 +433,7 @@
                                 HttpResponse$BodyHandlers)
                  (java.time Duration)))
 
-              (let [client (-> (HttpClient/newBuilder)
-                               (.build))
+              (let [client (HttpClient/newHttpClient)
                     req (-> (HttpRequest/newBuilder (URI. "https://www.postman-echo.com/delay/1"))
                             (.GET)
                             (.timeout (Duration/ofMillis 200))
@@ -475,6 +461,7 @@
                                HttpResponse$BodyHandlers)
                 (java.nio.file Files StandardOpenOption)
                 (java.nio.file.attribute FileAttribute)))
+
              (let [client (-> (HttpClient/newBuilder)
                               (.build))
                    uri (URI. "https://raw.githubusercontent.com/babashka/babashka/master/README.md")
@@ -489,6 +476,8 @@
                    temp-file-path (str (.body res))
                    contents (slurp temp-file-path)]
                (str/includes? contents "babashka")))))))
+
+;; WebSockets
 
 (defn ws-handler [{:keys [init] :as opts} req]
   (when init (init req))
@@ -517,6 +506,7 @@
                                  WebSocket$Listener)
                   (java.util.concurrent CompletableFuture)
                   (java.util.function Function)))
+
                (let [p (promise)
                      uri (URI. "ws://localhost:1234")
                      listener (reify WebSocket$Listener
