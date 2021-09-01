@@ -250,6 +250,10 @@
  #_'vault.secrets.kvv1-test
  #_'vault.secrets.kvv2-test)
 
+;; we don't really run any tests for java-http-clj yet, but we require the
+;; namespaces to see if they at least load correctly
+(test-namespaces 'java-http-clj.smoke-test)
+
 ;;;; final exit code
 
 (let [{:keys [:test :fail :error] :as m} @status]

@@ -6,10 +6,19 @@
    [clojure.test :as test :refer [deftest is]]
    [org.httpkit.server :as httpkit.server]))
 
-(defn bb [expr]
-  (edn/read-string (apply test-utils/bb nil [(str expr)])))
+(defn bb [& exprs]
+  (edn/read-string (apply test-utils/bb nil (map str exprs))))
 
 ;; HttpClient
+
+(deftest interop-test
+  (is (= :hello
+         (bb "-e"
+             (binding [*print-meta* true]
+               '(do
+                  (def res (atom nil))
+                  (def x (reify java.net.http.WebSocket$Listener (onOpen [this ws] (reset! res :hello))))
+                  (.onOpen ^java.net.http.WebSocket$Listener x nil) @res))))))
 
 (deftest send-test
   (is (= [200 true]
@@ -34,22 +43,22 @@
 (deftest send-async-test
   (is (= [200 true]
          (bb
-           '(do
-              (ns net
-                (:import
-                 (java.net URI)
-                 (java.net.http HttpClient
-                                HttpRequest
-                                HttpResponse$BodyHandlers)
-                 (java.util.function Function)))
+          '(do
+             (ns net
+               (:import
+                (java.net URI)
+                (java.net.http HttpClient
+                               HttpRequest
+                               HttpResponse$BodyHandlers)
+                (java.util.function Function)))
 
-              (let [client (HttpClient/newHttpClient)
-                    req (-> (HttpRequest/newBuilder (URI. "https://www.clojure.org"))
-                            (.GET)
-                            (.build))]
-                (-> (.sendAsync client req (HttpResponse$BodyHandlers/ofString))
-                    (.thenApply (reify Function (apply [_ res] [(.statusCode res) (string? (.body res))])))
-                    (deref))))))))
+             (let [client (HttpClient/newHttpClient)
+                   req (-> (HttpRequest/newBuilder (URI. "https://www.clojure.org"))
+                           (.GET)
+                           (.build))]
+               (-> (.sendAsync client req (HttpResponse$BodyHandlers/ofString))
+                   (.thenApply (reify Function (apply [_ res] [(.statusCode res) (string? (.body res))])))
+                   (deref))))))))
 
 ;; HttpClient options
 
@@ -115,89 +124,89 @@
 (deftest connect-timeout-test
   (is (= "java.net.http.HttpConnectTimeoutException"
          (bb
-           '(do
-              (ns net
-                (:import
-                 (java.net URI)
-                 (java.net.http HttpClient
-                                HttpRequest
-                                HttpResponse$BodyHandlers)
-                 (java.time Duration)))
+          '(do
+             (ns net
+               (:import
+                (java.net URI)
+                (java.net.http HttpClient
+                               HttpRequest
+                               HttpResponse$BodyHandlers)
+                (java.time Duration)))
 
-              (let [client (-> (HttpClient/newBuilder)
-                               (.connectTimeout (Duration/ofMillis 1))
-                               (.build))
-                    req (-> (HttpRequest/newBuilder (URI. "Https://www.postman-echo.com/get"))
-                            (.GET)
-                            (.build))]
-                (try
-                  (.send client req (HttpResponse$BodyHandlers/discarding))
-                  (catch Throwable t
-                    (-> (Throwable->map t)
-                        :via
-                        first
-                        :type
-                        name)))))))))
+             (let [client (-> (HttpClient/newBuilder)
+                              (.connectTimeout (Duration/ofMillis 1))
+                              (.build))
+                   req (-> (HttpRequest/newBuilder (URI. "Https://www.postman-echo.com/get"))
+                           (.GET)
+                           (.build))]
+               (try
+                 (.send client req (HttpResponse$BodyHandlers/discarding))
+                 (catch Throwable t
+                   (-> (Throwable->map t)
+                       :via
+                       first
+                       :type
+                       name)))))))))
 
 (deftest executor-test
   (is (= 200
          (bb
-           '(do
-              (ns net
-                (:import
-                 (java.net URI)
-                 (java.net.http HttpClient
-                                HttpRequest
-                                HttpResponse$BodyHandlers)
-                 (java.util.concurrent Executors)))
+          '(do
+             (ns net
+               (:import
+                (java.net URI)
+                (java.net.http HttpClient
+                               HttpRequest
+                               HttpResponse$BodyHandlers)
+                (java.util.concurrent Executors)))
 
-              (let [uri (URI. "https://www.postman-echo.com/get")
-                    req (-> (HttpRequest/newBuilder uri)
-                            (.GET)
-                            (.build))
-                    client (-> (HttpClient/newBuilder)
-                               (.executor (Executors/newSingleThreadExecutor))
-                               (.build))
-                    res (.send client req (HttpResponse$BodyHandlers/discarding))]
-                (.statusCode res)))))))
+             (let [uri (URI. "https://www.postman-echo.com/get")
+                   req (-> (HttpRequest/newBuilder uri)
+                           (.GET)
+                           (.build))
+                   client (-> (HttpClient/newBuilder)
+                              (.executor (Executors/newSingleThreadExecutor))
+                              (.build))
+                   res (.send client req (HttpResponse$BodyHandlers/discarding))]
+               (.statusCode res)))))))
 
 (deftest proxy-test
   (is (= true
          (bb
-           '(do
-              (ns net
-                (:import
-                 (java.net ProxySelector)
-                 (java.net.http HttpClient)))
+          '(do
+             (ns net
+               (:import
+                (java.net ProxySelector)
+                (java.net.http HttpClient)))
 
-              (let [bespoke-proxy (proxy [ProxySelector] []
-                                    (connectFailed [_ _ _])
-                                    (select [_ _]))
-                    client (-> (HttpClient/newBuilder)
-                               (.proxy bespoke-proxy)
-                               (.build))]
-                (= bespoke-proxy (-> (.proxy client)
-                                     (.get))))))))
+             (let [bespoke-proxy (proxy [ProxySelector] []
+                                   (connectFailed [_ _ _])
+                                   (select [_ _]))
+                   client (-> (HttpClient/newBuilder)
+                              (.proxy bespoke-proxy)
+                              (.build))]
+               (= bespoke-proxy (-> (.proxy client)
+                                    (.get))))))))
 
   (is (= 200
          (bb
-           '(do
-              (ns net
-                (:import
-                 (java.net ProxySelector
-                           URI)
-                 (java.net.http HttpClient
-                                HttpRequest
-                                HttpResponse$BodyHandlers)))
+          '(do
+             (ns net
+               (:import
+                (java.net ProxySelector
+                          URI)
+                (java.net.http HttpClient
+                               HttpRequest
+                               HttpResponse$BodyHandlers)))
 
-              (let [uri (URI. "https://www.postman-echo.com/get")
-                    req (-> (HttpRequest/newBuilder uri)
-                            (.build))
-                    client (-> (HttpClient/newBuilder)
-                               (.proxy (ProxySelector/getDefault))
-                               (.build))
-                    res (.send client req (HttpResponse$BodyHandlers/discarding))]
-                (.statusCode res)))))))
+             (let [uri (URI. "https://www.postman-echo.com/get")
+                   req (-> (HttpRequest/newBuilder uri)
+                           (.build))
+                   client (-> (HttpClient/newBuilder)
+                              (.proxy (ProxySelector/getDefault))
+                              (.build))
+                   res (.send client req (HttpResponse$BodyHandlers/discarding))]
+               (.statusCode res)))))))
 
 (deftest redirect-test
   (let [redirect-prog
@@ -353,7 +362,7 @@
                    client (HttpClient/newHttpClient)
                    res (.send client req (HttpResponse$BodyHandlers/ofString))
                    body-data (-> (.body res) (json/parse-string true) :data)]
-                (str/includes? body-data "babashka"))))))
+               (str/includes? body-data "babashka"))))))
 
   (let [body "with love from java.net.http"]
     (is (= {:of-input-stream body
@@ -375,7 +384,7 @@
 
                (let [body "with love from java.net.http"
                      publishers {:of-input-stream (HttpRequest$BodyPublishers/ofInputStream
-                                                    (reify Supplier (get [_] (io/input-stream (.getBytes body)))))
+                                                   (reify Supplier (get [_] (io/input-stream (.getBytes body)))))
                                  :of-byte-array (HttpRequest$BodyPublishers/ofByteArray (.getBytes body))
                                  :of-byte-arrays (HttpRequest$BodyPublishers/ofByteArrays [(.getBytes body)])}
                      client (-> (HttpClient/newBuilder)
@@ -424,28 +433,28 @@
 (deftest request-timeout-test
   (is (= "java.net.http.HttpTimeoutException"
          (bb
-           '(do
-              (ns net
-                (:import
-                 (java.net URI)
-                 (java.net.http HttpClient
-                                HttpRequest
-                                HttpResponse$BodyHandlers)
-                 (java.time Duration)))
+          '(do
+             (ns net
+               (:import
+                (java.net URI)
+                (java.net.http HttpClient
+                               HttpRequest
+                               HttpResponse$BodyHandlers)
+                (java.time Duration)))
 
-              (let [client (HttpClient/newHttpClient)
-                    req (-> (HttpRequest/newBuilder (URI. "https://www.postman-echo.com/delay/1"))
-                            (.GET)
-                            (.timeout (Duration/ofMillis 200))
-                            (.build))]
-                (try
-                  (.send client req (HttpResponse$BodyHandlers/discarding))
-                  (catch Throwable t
-                    (-> (Throwable->map t)
-                        :via
-                        first
-                        :type
-                        name)))))))))
+             (let [client (HttpClient/newHttpClient)
+                   req (-> (HttpRequest/newBuilder (URI. "https://www.postman-echo.com/delay/1"))
+                           (.GET)
+                           (.timeout (Duration/ofMillis 200))
+                           (.build))]
+               (try
+                 (.send client req (HttpResponse$BodyHandlers/discarding))
+                 (catch Throwable t
+                   (-> (Throwable->map t)
+                       :via
+                       first
+                       :type
+                       name)))))))))
 
 (deftest body-handlers-test
   (is (= true
@@ -482,8 +491,8 @@
 (defn ws-handler [{:keys [init] :as opts} req]
   (when init (init req))
   (httpkit.server/as-channel
-    req
-    (select-keys opts [:on-close :on-ping :on-receive])))
+   req
+   (select-keys opts [:on-close :on-ping :on-receive])))
 
 (def ^:dynamic *ws-port* 1234)
 
