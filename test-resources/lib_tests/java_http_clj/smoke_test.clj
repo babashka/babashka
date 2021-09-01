@@ -23,19 +23,22 @@
      (try ~@body (finally (s# :timeout 100)))))
 
 (deftest websockets-smoke-test
-  (with-ws-server {:on-receive #(httpkit.server/send! %1 %2)}
-    (is (= "zomg websockets!"
-           (let [p (promise)
-                 ws (ws-client/build-websocket "ws://localhost:1234"
-                                               {:on-binary (fn [_ data last?] (deliver p data))
-                                                :on-text (fn [ws data last?] (deliver p data))
-                                                :on-error (fn [ws throwable] (deliver p throwable))
-                                                :on-ping (fn [ws data] (deliver p data))
-                                                :on-pong (fn [ws data] (deliver p data))
-                                                :on-open (fn [ws] nil)
-                                                :on-close (fn [ws status-code reason] nil)})]
-             (-> ws
-                 (ws-client/send "zomg websockets!"))
-             (try (deref p 5000 ::timeout)
-                  (finally
-                    (ws-client/close ws))))))))
+  (when-not (and
+             (= "aarch64" (System/getenv "BABASHKA_ARCH"))
+             (= "true" (System/getenv "BABASHKA_STATIC")))
+    (with-ws-server {:on-receive #(httpkit.server/send! %1 %2)}
+      (is (= "zomg websockets!"
+             (let [p (promise)
+                   ws (ws-client/build-websocket "ws://localhost:1234"
+                                                 {:on-binary (fn [_ data last?] (deliver p data))
+                                                  :on-text (fn [ws data last?] (deliver p data))
+                                                  :on-error (fn [ws throwable] (deliver p throwable))
+                                                  :on-ping (fn [ws data] (deliver p data))
+                                                  :on-pong (fn [ws data] (deliver p data))
+                                                  :on-open (fn [ws] nil)
+                                                  :on-close (fn [ws status-code reason] nil)})]
+               (-> ws
+                   (ws-client/send "zomg websockets!"))
+               (try (deref p 5000 ::timeout)
+                    (finally
+                      (ws-client/close ws)))))))))
