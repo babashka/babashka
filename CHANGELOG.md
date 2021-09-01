@@ -2,6 +2,10 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
+## 0.6.0
+
+
+
 ## 0.5.1
 
 - Add new `print-deps` subcommand for printing a `deps.edn` map and classpath

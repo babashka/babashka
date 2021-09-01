@@ -122,7 +122,7 @@
                       (.getDomain))))))))
 
 (deftest connect-timeout-test
-  (is (= "java.net.http.HttpConnectTimeoutException"
+  (is (str/includes?
          (bb
           '(do
              (ns net
@@ -146,7 +146,9 @@
                        :via
                        first
                        :type
-                       name)))))))))
+                       name))))))
+         ;; can be either java.net.http.HttpConnectTimeoutException or java.net.http.HttpTimeoutException
+         "TimeoutException")))
 
 (deftest executor-test
   (is (= 200
