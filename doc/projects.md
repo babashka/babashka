@@ -68,6 +68,9 @@ The following libraries and projects are known to work with babashka.
     - [sha-words](#sha-words)
     - [adam-james-v/scripts](#adam-james-vscripts)
     - [oidc-client](#oidc-client)
+    - [jirazzz](#jirazzz)
+    - [Babashka + scittle guestbook](#babashka--scittle-guestbook)
+    - [bb htmx todo app](#bb-htmx-todo-app)
 
 Also keep an eye on the [news](news.md) page for new projects, gists and other
 developments around babashka.
@@ -788,3 +791,19 @@ A collection of useful scripts. Mainly written with Clojure/babashka
 Tired of being forced to use the browser every time you need to refresh an OIDC token to authenticate with a backend service? Finally there is a CLI tool for that - the babashka and Docker powered oidc_client.clj.
 
 Upon first invocation it opens up a browser for the OIDC provider login, thereafter it caches the refresh token and uses it as long as it remains valid.
+
+### [jirazzz](https://github.com/rwstauner/jirazzz)
+
+A babashka JIRA client by Randy Stauner
+
+### [Babashka + scittle guestbook](https://github.com/kloimhardt/babashka-scittle-guestbook)
+
+Luminus guestbook example for Babashka + Scittle.
+
+### [bb htmx todo app](https://github.com/prestancedesign/babashka-htmx-todoapp)
+
+Quick example of a todo list SPA using Babashka and htmx.
+
+### [bb aws lambda runtime](https://github.com/tatut/bb-lambda)
+
+AWS Lambda custom runtime for Babashka scripts.

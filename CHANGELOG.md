@@ -5,7 +5,10 @@ For a list of breaking changes, check [here](#breaking-changes).
 ## 0.6.0 (unreleased)
 
 - Support for `java.net` HTTP Client. This enables running
-  [java-http-clj](https://github.com/schmee/java-http-clj) from source.
+  [java-http-clj](https://github.com/schmee/java-http-clj) from source. The raw
+  interop is the first part of a multi-stage plan to move all http related
+  scripting towards `java.net.http` in favor of the other two solutions
+  currently available in `bb`: `babashka.curl` and `org.httpkit.client`.
 - Add `*print-readably*` and `*flush-on-newline*` [#959](https://github.com/babashka/babashka/issues/959)
 - Support `:clojure.core/eval-file metadata` [#960](https://github.com/babashka/babashka/issues/960)
 - Add `clojure.data.xml/alias-uri` [#995](https://github.com/babashka/babashka/issues/995)

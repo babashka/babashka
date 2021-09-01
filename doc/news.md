@@ -5,6 +5,43 @@ you have anything to add. Also see
 [#babashka](https://twitter.com/hashtag/babashka?src=hashtag_click&f=live) on
 Twitter.
 
+## 2021-09
+
+- New babashka 0.6.0 released. Highlight: support for `java.net.http` which
+  enables running [java-http-clj](https://github.com/schmee/java-http-clj) from
+  source. The raw interop is the first part of a multi-stage plan to move all
+  http related scripting towards `java.net.http` in favor of the other two
+  solutions currently available in `bb`: `babashka.curl` and
+  `org.httpkit.client`.
+
+## 2021-08
+
+- New babashka 0.5.1 released. Highlight: new `print-deps` command for printing
+  a `deps.edn` map and classpath which includes all built-in deps. This can be
+  used for editor tooling like Cursive and clojure-lsp, but also for migrating a
+  babashka project to a Graal native-image project.
+- Babashka receives long term funding from [Clojurists Together](https://www.clojuriststogether.org/news/long-term-funding-selections/). Thanks!
+- Babashka is 2 years old this month: the [first commit](https://github.com/babashka/babashka/commit/6dee50b0face0b890a7f628a63b21d5d706a48ee) was on 9 August 2019!
+- [nbb](https://github.com/borkdude/nbb): babashka's Node.js cousin
+- [Cursive](https://twitter.com/CursiveIDE/status/1422540023207915520) adds
+  support for babashka in the latest EAP
+- [clojure-lsp](https://twitter.com/ericdallo/status/1422559744712138753) adds support for babashka scripts
+- [bb guestbook](https://github.com/SVMBrown/bb-guestbook) by Scot Brown.
+- [bb htmx todo app](https://github.com/prestancedesign/babashka-htmx-todoapp) by Michael Sahili.
+- [bb aws lambda runtime](https://github.com/tatut/bb-lambda) by Tatu Tarvainen.
+
+## 2021-07
+
+- New babashka 0.5.0 released. Highlights: `clojure.tools.logging` + `taoensso.timbre` added, source compatibility with `clojure.data.json`.
+- [Babashka tasks](https://youtu.be/u5ECoR7KT1Y), talk by Michiel Borkent
+- [Rewriting a clojure file with rewrite-clj and babashka](https://youtu.be/b7NPKsm8gkc), video by Oxalorg
+- [Babashka tasks for PostgreSQL](https://github.com/babashka/babashka/discussions/929) by Stel Abrego
+- [String interpolation](https://twitter.com/yogthos/status/1415324124361154561) with Selmer in bb
+- [Jirazzz](https://github.com/rwstauner/jirazzz): a babashka JIRA client by Randy Stauner
+- [Babashka + scittle guestbook](https://github.com/kloimhardt/babashka-scittle-guestbook) by Kloimhardt
+- [Paillier cryptosystem](https://github.com/babashka/babashka/discussions/948) by litteli
+- [csv-to-yaml.clj](https://github.com/babashka/babashka/discussions/939) by Cora
+
 ## 2021-06
 
 - New babashka 0.4.4 - 0.4.5 released.
