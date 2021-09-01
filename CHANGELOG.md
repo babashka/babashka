@@ -2,9 +2,19 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
-## 0.6.0
+## 0.6.0 (unreleased)
 
-
+- Support for `java.net` HTTP Client. This enables running
+  [java-http-clj](https://github.com/schmee/java-http-clj) from source.
+- Add `*print-readably*` and `*flush-on-newline*` [#959](https://github.com/babashka/babashka/issues/959)
+- Support `:clojure.core/eval-file metadata` [#960](https://github.com/babashka/babashka/issues/960)
+- Make REPL requires available in expression on command line [#972](https://github.com/babashka/babashka/issues/972) ([@bobisageek](https://github.com/bobisageek))
+- Fix docstrings and metadata for large number of vars [#957](https://github.com/babashka/babashka/issues/957) ([@bobisageek](https://github.com/bobisageek))
+- Add limited support for `java.lang.reflect.Method` (`getName` only) [#969](https://github.com/babashka/babashka/issues/969)
+- Use tagged-literal for unknown tags when reading EDN via `*input*` [#975](https://github.com/babashka/babashka/issues/975) ([@bobisageek](https://github.com/bobisageek))
+- Logging feature flag and `tools.logging.readable` [#981](https://github.com/babashka/babashka/issues/981) ([@bobisageek](https://github.com/bobisageek))
+- Migrate GraalVM config to uberjar [#973](https://github.com/babashka/babashka/issues/973) ([@ericdallo](https://github.com/ericdallo))
+- Upgrade to GraalVM 21.2.0
 
 ## 0.5.1
 
