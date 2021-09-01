@@ -8,6 +8,7 @@ For a list of breaking changes, check [here](#breaking-changes).
   [java-http-clj](https://github.com/schmee/java-http-clj) from source.
 - Add `*print-readably*` and `*flush-on-newline*` [#959](https://github.com/babashka/babashka/issues/959)
 - Support `:clojure.core/eval-file metadata` [#960](https://github.com/babashka/babashka/issues/960)
+- Add `clojure.data.xml/alias-uri` [#995](https://github.com/babashka/babashka/issues/995)
 - Make REPL requires available in expression on command line [#972](https://github.com/babashka/babashka/issues/972) ([@bobisageek](https://github.com/bobisageek))
 - Fix docstrings and metadata for large number of vars [#957](https://github.com/babashka/babashka/issues/957) ([@bobisageek](https://github.com/bobisageek))
 - Add limited support for `java.lang.reflect.Method` (`getName` only) [#969](https://github.com/babashka/babashka/issues/969)
