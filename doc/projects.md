@@ -45,6 +45,7 @@ The following libraries and projects are known to work with babashka.
     - [crispin](#crispin)
     - [ffclj](#ffclj)
     - [multigrep](#multigrep)
+    - [java-http-clj](#java-http-clj)
   - [Pods](#pods)
   - [Projects](#projects-1)
     - [babashka-test-action](#babashka-test-action)
@@ -671,6 +672,10 @@ outputs:
   :regex #"\b[a-z]{4}\b",
   :re-seq ("amet")})
 ```
+
+### [java-http-clj](https://github.com/schmee/java-http-clj)
+
+Http client based on `java.net.http`.
 
 ## Pods
 
