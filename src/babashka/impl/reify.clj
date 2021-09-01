@@ -168,4 +168,9 @@
     {get [[this]]}
 
     java.lang.Comparable
-    {compareTo [[this other]]}}))
+    {compareTo [[this other]]}
+
+    javax.net.ssl.X509TrustManager
+    {checkClientTrusted [[this chain auth-type]]
+     checkServerTrusted [[this chain auth-type]]
+     getAcceptedIssuers [[this]]}}))
