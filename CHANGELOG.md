@@ -2,7 +2,7 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
-## 0.6.0 (unreleased)
+## 0.6.0
 
 - Support for `java.net` HTTP Client. This enables running
   [java-http-clj](https://github.com/schmee/java-http-clj) from source. The raw
@@ -14,7 +14,8 @@ For a list of breaking changes, check [here](#breaking-changes).
 - Add `clojure.data.xml/alias-uri` [#995](https://github.com/babashka/babashka/issues/995)
 - Make REPL requires available in expression on command line [#972](https://github.com/babashka/babashka/issues/972) ([@bobisageek](https://github.com/bobisageek))
 - Fix docstrings and metadata for large number of vars [#957](https://github.com/babashka/babashka/issues/957) ([@bobisageek](https://github.com/bobisageek))
-- Add limited support for `java.lang.reflect.Method` (`getName` only) [#969](https://github.com/babashka/babashka/issues/969)
+- Upgrade `deps.clj` / `tools.jar` to match Clojure CLI 1.10.3.967
+- Add (limited) support for `java.lang.reflect.Method` (`getName` only) [#969](https://github.com/babashka/babashka/issues/969)
 - Use tagged-literal for unknown tags when reading EDN via `*input*` [#975](https://github.com/babashka/babashka/issues/975) ([@bobisageek](https://github.com/bobisageek))
 - Logging feature flag and `tools.logging.readable` [#981](https://github.com/babashka/babashka/issues/981) ([@bobisageek](https://github.com/bobisageek))
 - Migrate GraalVM config to uberjar [#973](https://github.com/babashka/babashka/issues/973) ([@ericdallo](https://github.com/ericdallo))
