@@ -433,7 +433,7 @@
 
 
 (deftest request-timeout-test
-  (is (= "java.net.http.HttpTimeoutException"
+  (is (str/includes?
          (bb
           '(do
              (ns net
@@ -456,7 +456,8 @@
                        :via
                        first
                        :type
-                       name)))))))))
+                       name))))))
+         "TimeoutException")))
 
 (deftest body-handlers-test
   (is (= true
