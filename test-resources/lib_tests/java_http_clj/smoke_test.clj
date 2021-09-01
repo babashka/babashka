@@ -8,6 +8,8 @@
   (is (= 200 (:status (client/get "https://www.clojure.org"))))
   (is (instance? java.net.http.WebSocket$Builder (ws-client/websocket-builder))))
 
+(deftest async-smoke-test
+  (is (= 200 (:status @(client/send-async {:uri "https://www.clojure.org" :method :get})))))
 
 (defn ws-handler [{:keys [init] :as opts} req]
   (when init (init req))
