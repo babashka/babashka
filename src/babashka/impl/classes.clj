@@ -446,6 +446,8 @@
                    java.nio.channels.FileChannel
                    (instance? java.net.CookieStore v)
                    java.net.CookieStore
+                   ;; this makes interop on reified classes work
+                   ;; see java_net_http_test/interop-test
                    (instance? sci.impl.types.IReified v)
                    (first (t/getInterfaces v)))))))
 
