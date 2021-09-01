@@ -2,6 +2,7 @@
   {:no-doc true}
   (:require
    [babashka.impl.features :as features]
+   [sci.impl.types :as t]
    [cheshire.core :as json]))
 
 (def custom-map
@@ -444,7 +445,9 @@
                    (instance? java.nio.channels.FileChannel v)
                    java.nio.channels.FileChannel
                    (instance? java.net.CookieStore v)
-                   java.net.CookieStore)))))
+                   java.net.CookieStore
+                   (instance? sci.impl.types.IReified v)
+                   (first (t/getInterfaces v)))))))
 
 (def class-map (gen-class-map))
 

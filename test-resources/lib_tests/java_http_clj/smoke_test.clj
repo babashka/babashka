@@ -27,13 +27,15 @@
     (is (= "zomg websockets!"
            (let [p (promise)
                  ws (ws-client/build-websocket "ws://localhost:1234"
-                                               {:on-text (fn [_ws data _last?]
-                                                           (prn :data data)
-                                                           (deliver p data))
-                                                :on-error (fn [ws throwable]
-                                                            (println "Uh oh!" (.getMessage throwable)))})]
+                                               {:on-binary (fn [_ data last?] (deliver p data))
+                                                :on-text (fn [ws data last?] (deliver p data))
+                                                :on-error (fn [ws throwable] (deliver p throwable))
+                                                :on-ping (fn [ws data] (deliver p data))
+                                                :on-pong (fn [ws data] (deliver p data))
+                                                :on-open (fn [ws] nil)
+                                                :on-close (fn [ws status-code reason] nil)})]
              (-> ws
-                 (ws-client/send "zomg websockets!")
-                 )
-             (deref p 5000 ::timeout)
-             #_(ws-client/close ws))))))
+                 (ws-client/send "zomg websockets!"))
+             (try (deref p 5000 ::timeout)
+                  (finally
+                    (ws-client/close ws))))))))
