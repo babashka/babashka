@@ -741,7 +741,16 @@ true")))
             (test-utils/normalize (test-utils/bb "{:a #abc 123}{:a #cde 789}" "--stream" "-e" "(println (:a *input*))")))))
     (testing "when reading one EDN form from stdin (no --stream or -I or -i)"
       (is (= "#abc 123\n"
-            (test-utils/normalize (test-utils/bb "{:a #abc 123}{:a #cde 789}" "-e" "(println (:a *input*))")))))))
+             (test-utils/normalize (test-utils/bb "{:a #abc 123}{:a #cde 789}" "-e" "(println (:a *input*))")))))))
+
+(deftest piped-input-output-stream-test
+  (is (= 10 (bb nil "
+(def po (java.io.PipedOutputStream.))
+(def pi (java.io.PipedInputStream.))
+(.connect pi po)
+(.write po 10)
+(.read pi)
+"))))
 
 ;;;; Scratch
 

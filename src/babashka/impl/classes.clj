@@ -107,6 +107,8 @@
           java.io.FileReader
           java.io.InputStreamReader
           java.io.OutputStreamWriter
+          java.io.PipedInputStream
+          java.io.PipedOutputStream
           java.io.PrintStream
           java.io.PrintWriter
           java.io.PushbackInputStream
