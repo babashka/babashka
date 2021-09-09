@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+GRAALVM_VERSION="${GRAALVM_VERSION:-21.2.0}"
+
+if ! [ -d "graalvm-ce-java11-$GRAALVM_VERSION" ]; then
+	echo "Downloading GraalVM $GRAALVM_VERSION on '$PWD'..."
+	curl -O -sL "https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-$GRAALVM_VERSION/graalvm-ce-java11-linux-amd64-$GRAALVM_VERSION.tar.gz"
+	tar xzf graalvm-ce-java11-linux-amd64-$GRAALVM_VERSION.tar.gz
+fi

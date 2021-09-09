@@ -89,10 +89,7 @@ jobs:
       - run:
           name: Download GraalVM
           command: |
-            if ! [ -d graalvm-ce-java11-21.2.0 ]; then
-              curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.2.0/graalvm-ce-java11-linux-amd64-21.2.0.tar.gz
-              tar xzf graalvm-ce-java11-linux-amd64-21.2.0.tar.gz
-            fi
+            script/download-graalvm
       - run:
           name: Build binary
           command: |
@@ -166,10 +163,7 @@ jobs:
       - run:
           name: Download GraalVM
           command: |
-            if ! [ -d graalvm-ce-java11-21.2.0 ]; then
-              curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.2.0/graalvm-ce-java11-linux-amd64-21.2.0.tar.gz
-              tar xzf graalvm-ce-java11-linux-amd64-21.2.0.tar.gz
-            fi
+            script/download-graalvm
       - run:
           name: Build binary
           command: |
@@ -240,10 +234,7 @@ jobs:
       - run:
           name: Download GraalVM
           command: |
-            if ! [ -d graalvm-ce-java11-21.2.0 ]; then
-              curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.2.0/graalvm-ce-java11-linux-aarch64-21.2.0.tar.gz
-              tar xzf graalvm-ce-java11-linux-aarch64-21.2.0.tar.gz
-            fi
+            script/download-graalvm
       - run:
           name: Build binary
           command: |
@@ -316,10 +307,7 @@ jobs:
       - run:
           name: Download GraalVM
           command: |
-            if ! [ -d graalvm-ce-java11-21.2.0 ]; then
-              curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.2.0/graalvm-ce-java11-linux-aarch64-21.2.0.tar.gz
-              tar xzf graalvm-ce-java11-linux-aarch64-21.2.0.tar.gz
-            fi
+            script/download-graalvm
       - run:
           name: Build binary
           command: |
@@ -374,11 +362,7 @@ jobs:
       - run:
           name: Download GraalVM
           command: |
-            ls -la
-            if ! [ -d graalvm-ce-java11-21.2.0 ]; then
-              curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.2.0/graalvm-ce-java11-darwin-amd64-21.2.0.tar.gz
-              tar xzf graalvm-ce-java11-darwin-amd64-21.2.0.tar.gz
-            fi
+            script/download-graalvm
       - run:
           name: Build binary
           command: |
