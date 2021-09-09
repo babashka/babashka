@@ -11,22 +11,14 @@ case "$BABASHKA_PLATFORM" in
 	linux)
 		GRAALVM_PLATFORM="linux"
 		;;
-	*)
-		echo "Invalid platform $BABASHKA_PLATFORM!" >&2
-		exit 1
-		;;
 esac
 
-case "$BABASHKA_ARCH" in
-	amd64)
-		GRAALVM_ARCH="amd64"
-		;;
+case "${BABASHKA_ARCH:-}" in
 	aarch64)
 		GRAALVM_ARCH="aarch64"
 		;;
 	*)
-		echo "Invalid arch $BABASHKA_ARCH!" >&2
-		exit 1
+		GRAALVM_ARCH="amd64"
 		;;
 esac
 
