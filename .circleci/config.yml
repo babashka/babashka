@@ -217,8 +217,6 @@ jobs:
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
-      GRAALVM_VERSION: "21.2.0"
-      GRAALVM_HOME: /home/circleci/graalvm-ce-java11-21.2.0
       BABASHKA_PLATFORM: linux # used in release script
       BABASHKA_ARCH: aarch64
       BABASHKA_TEST_ENV: native
@@ -296,7 +294,7 @@ jobs:
     environment:
       LEIN_ROOT: "true"
       GRAALVM_VERSION: "21.2.0"
-      GRAALVM_HOME: /home/circleci/graalvm-ce-java11-21.2.0
+      GRAALVM_HOME: /home/circleci/repo/graalvm-ce-java11-21.2.0
       BABASHKA_PLATFORM: linux # used in release script
       BABASHKA_ARCH: aarch64
       BABASHKA_TEST_ENV: native
@@ -373,7 +371,7 @@ jobs:
     environment:
       MACOSX_DEPLOYMENT_TARGET: 10.13 # 10.12 is EOL
       GRAALVM_VERSION: "21.2.0"
-      GRAALVM_HOME: /Users/distiller/graalvm-ce-java11-21.2.0/Contents/Home
+      GRAALVM_HOME: /Users/distiller/project/graalvm-ce-java11-21.2.0/Contents/Home
       BABASHKA_PLATFORM: macos # used in release script
       BABASHKA_TEST_ENV: native
       BABASHKA_XMX: "-J-Xmx6500m"
