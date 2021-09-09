@@ -255,7 +255,6 @@ jobs:
       - run:
           name: Download GraalVM
           command: |
-            cd ~
             script/download-graalvm
       - run:
           name: Build binary
@@ -336,7 +335,6 @@ jobs:
       - run:
           name: Download GraalVM
           command: |
-            cd ~
             script/download-graalvm
       - run:
           name: Build binary
@@ -401,7 +399,6 @@ jobs:
       - run:
           name: Download GraalVM
           command: |
-            cd ~
             script/download-graalvm
       - run:
           name: Build binary
