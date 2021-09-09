@@ -7,7 +7,7 @@ jobs:
   jvm:
     docker:
       # specify the version you desire here
-      - image: circleci/clojure:lein-2.9.1
+      - image: clojure:openjdk-11-lein-2.9.6-bullseye
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
@@ -30,11 +30,11 @@ jobs:
           command: |
             wget -nc https://download.clojure.org/install/linux-install-1.10.1.447.sh
             chmod +x linux-install-1.10.1.447.sh
-            sudo ./linux-install-1.10.1.447.sh
+            ./linux-install-1.10.1.447.sh
       - run:
           name: Install lsof
           command: |
-            sudo apt-get install lsof
+            apt-get install lsof
       - run:
           name: Run JVM tests
           command: |
@@ -72,7 +72,7 @@ jobs:
           key: v1-dependencies-{{ checksum "project.clj" }}-{{ checksum "deps.edn" }}
   linux:
     docker:
-      - image: circleci/clojure:lein-2.9.1
+      - image: clojure:openjdk-11-lein-2.9.6-bullseye
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
@@ -96,16 +96,16 @@ jobs:
           command: |
             wget https://download.clojure.org/install/linux-install-1.10.1.447.sh
             chmod +x linux-install-1.10.1.447.sh
-            sudo ./linux-install-1.10.1.447.sh
+            ./linux-install-1.10.1.447.sh
       - run:
           name: Install lsof
           command: |
-            sudo apt-get install lsof
+            apt-get install lsof
       - run:
           name: Install native dev tools
           command: |
-            sudo apt-get update
-            sudo apt-get -y install g++ zlib1g-dev
+            apt-get update
+            apt-get -y install build-essential zlib1g-dev
       - run:
           name: Download GraalVM
           command: |
@@ -147,7 +147,7 @@ jobs:
             ./bb .circleci/script/publish_artifact.clj || true
   linux-static:
     docker:
-      - image: circleci/clojure:lein-2.9.1
+      - image: clojure:openjdk-11-lein-2.9.6-bullseye
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
@@ -183,17 +183,17 @@ jobs:
           command: |
             wget https://download.clojure.org/install/linux-install-1.10.1.447.sh
             chmod +x linux-install-1.10.1.447.sh
-            sudo ./linux-install-1.10.1.447.sh
+            ./linux-install-1.10.1.447.sh
       - run:
           name: Install lsof
           command: |
-            sudo apt-get install lsof
+            apt-get install lsof
       - run:
           name: Install native dev tools
           command: |
-            sudo apt-get update
-            sudo apt-get -y install gcc g++ zlib1g-dev
-            sudo -E script/setup-musl
+            apt-get update
+            apt-get -y install build-essential zlib1g-dev
+            script/setup-musl
       - run:
           name: Download GraalVM
           command: |
@@ -267,22 +267,22 @@ jobs:
       - run:
           name: Install Leiningen
           command: |
-            sudo script/install-leiningen
+            script/install-leiningen
       - run:
           name: Install Clojure
           command: |
             wget https://download.clojure.org/install/linux-install-1.10.1.447.sh
             chmod +x linux-install-1.10.1.447.sh
-            sudo ./linux-install-1.10.1.447.sh
+            ./linux-install-1.10.1.447.sh
       - run:
           name: Install lsof
           command: |
-            sudo apt-get install lsof
+            apt-get install lsof
       - run:
           name: Install native dev tools
           command: |
-            sudo apt-get update
-            sudo apt-get -y install gcc g++ zlib1g-dev
+            apt-get update
+            apt-get -y install build-essential zlib1g-dev
       - run:
           name: Download GraalVM
           command: |
@@ -357,23 +357,23 @@ jobs:
       - run:
           name: Install Leiningen
           command: |
-            sudo script/install-leiningen
+            script/install-leiningen
       - run:
           name: Install Clojure
           command: |
             wget https://download.clojure.org/install/linux-install-1.10.1.447.sh
             chmod +x linux-install-1.10.1.447.sh
-            sudo ./linux-install-1.10.1.447.sh
+            ./linux-install-1.10.1.447.sh
       - run:
           name: Install lsof
           command: |
-            sudo apt-get install lsof
+            apt-get install lsof
       - run:
           name: Install native dev tools
           command: |
-            sudo apt-get update
-            sudo apt-get -y install gcc g++ zlib1g-dev
-            # sudo -E script/setup-musl
+            apt-get update
+            apt-get -y install build-essential zlib1g-dev
+            # script/setup-musl
       - run:
           name: Download GraalVM
           command: |
@@ -482,7 +482,7 @@ jobs:
   deploy:
     resource_class: large
     docker:
-      - image: circleci/clojure:lein-2.9.1
+      - image: clojure:openjdk-11-lein-2.9.6-bullseye
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
