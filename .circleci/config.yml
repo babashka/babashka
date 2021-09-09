@@ -356,9 +356,22 @@ jobs:
           keys:
             - mac-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - run:
+          name: Install Clojure
+          command: |
+            script/install-clojure /usr/local
+      - run:
+          name: Install Leiningen
+          command: |
+            script/install-leiningen
+      - run:
           name: Download GraalVM
           command: |
-            script/download-graalvm
+            cd ~
+            ls -la
+            if ! [ -d graalvm-ce-java11-21.2.0 ]; then
+              curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.2.0/graalvm-ce-java11-darwin-amd64-21.2.0.tar.gz
+              tar xzf graalvm-ce-java11-darwin-amd64-21.2.0.tar.gz
+            fi
       - run:
           name: Build binary
           command: |
