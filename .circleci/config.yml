@@ -7,7 +7,7 @@ jobs:
   jvm:
     docker:
       # specify the version you desire here
-      - circleci/clojure:lein-2.9.6
+      - image: circleci/clojure:lein-2.9.6
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
