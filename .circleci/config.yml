@@ -83,6 +83,12 @@ jobs:
           keys:
             - linux-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - run:
+          name: Install Clojure
+          command: |
+            wget -nc https://download.clojure.org/install/linux-install-1.10.1.447.sh
+            chmod +x linux-install-1.10.1.447.sh
+            ./linux-install-1.10.1.447.sh
+      - run:
           name: Install native dev tools
           command: |
             apt-get update
@@ -157,6 +163,12 @@ jobs:
           keys:
             - linux-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - run:
+          name: Install Clojure
+          command: |
+            wget -nc https://download.clojure.org/install/linux-install-1.10.1.447.sh
+            chmod +x linux-install-1.10.1.447.sh
+            ./linux-install-1.10.1.447.sh
+      - run:
           name: Install native dev tools
           command: |
             apt-get update
@@ -226,6 +238,12 @@ jobs:
             then
               circleci task halt
             fi
+      - run:
+          name: Install Clojure
+          command: |
+            wget -nc https://download.clojure.org/install/linux-install-1.10.1.447.sh
+            chmod +x linux-install-1.10.1.447.sh
+            ./linux-install-1.10.1.447.sh
       - restore_cache:
           keys:
             - linux-aarch64-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
@@ -299,6 +317,12 @@ jobs:
       #       then
       #         circleci task halt
       #       fi
+      - run:
+          name: Install Clojure
+          command: |
+            wget -nc https://download.clojure.org/install/linux-install-1.10.1.447.sh
+            chmod +x linux-install-1.10.1.447.sh
+            ./linux-install-1.10.1.447.sh
       - restore_cache:
           keys:
             - linux-aarch64-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
