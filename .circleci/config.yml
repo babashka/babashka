@@ -66,7 +66,7 @@ jobs:
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
-      GRAALVM_HOME: /home/circleci/graalvm-ce-java11-21.2.0
+      GRAALVM_HOME: /root/repo/graalvm-ce-java11-21.2.0
       BABASHKA_PLATFORM: linux # used in release script
       BABASHKA_TEST_ENV: native
       BABASHKA_XMX: "-J-Xmx6500m"
@@ -127,7 +127,7 @@ jobs:
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
-      GRAALVM_HOME: /home/circleci/graalvm-ce-java11-21.2.0
+      GRAALVM_HOME: /root/repo/graalvm-ce-java11-21.2.0
       BABASHKA_PLATFORM: linux # used in release script
       BABASHKA_TEST_ENV: native
       BABASHKA_STATIC: "true"
@@ -203,7 +203,7 @@ jobs:
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
-      GRAALVM_HOME: /home/circleci/graalvm-ce-java11-21.2.0
+      GRAALVM_HOME: /root/repo/graalvm-ce-java11-21.2.0
       BABASHKA_PLATFORM: linux # used in release script
       BABASHKA_ARCH: aarch64
       BABASHKA_TEST_ENV: native
@@ -274,7 +274,7 @@ jobs:
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
-      GRAALVM_HOME: /home/circleci/graalvm-ce-java11-21.2.0
+      GRAALVM_HOME: /root/repo/graalvm-ce-java11-21.2.0
       BABASHKA_PLATFORM: linux # used in release script
       BABASHKA_ARCH: aarch64
       BABASHKA_TEST_ENV: native
