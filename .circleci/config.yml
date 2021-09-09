@@ -218,7 +218,7 @@ jobs:
     environment:
       LEIN_ROOT: "true"
       GRAALVM_VERSION: "21.2.0"
-      GRAALVM_HOME: /root/repo/graalvm-ce-java11-21.2.0
+      GRAALVM_HOME: /home/circleci/graalvm-ce-java11-21.2.0
       BABASHKA_PLATFORM: linux # used in release script
       BABASHKA_ARCH: aarch64
       BABASHKA_TEST_ENV: native
@@ -243,18 +243,19 @@ jobs:
           command: |
             wget -nc https://download.clojure.org/install/linux-install-1.10.1.447.sh
             chmod +x linux-install-1.10.1.447.sh
-            ./linux-install-1.10.1.447.sh
+            sudo ./linux-install-1.10.1.447.sh
       - restore_cache:
           keys:
             - linux-aarch64-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - run:
           name: Install native dev tools
           command: |
-            apt-get update
-            apt-get -y install build-essential zlib1g-dev
+            sudo apt-get update
+            sudo apt-get -y install build-essential zlib1g-dev
       - run:
           name: Download GraalVM
           command: |
+            cd ~
             script/download-graalvm
       - run:
           name: Build binary
@@ -296,7 +297,7 @@ jobs:
     environment:
       LEIN_ROOT: "true"
       GRAALVM_VERSION: "21.2.0"
-      GRAALVM_HOME: /root/repo/graalvm-ce-java11-21.2.0
+      GRAALVM_HOME: /home/circleci/graalvm-ce-java11-21.2.0
       BABASHKA_PLATFORM: linux # used in release script
       BABASHKA_ARCH: aarch64
       BABASHKA_TEST_ENV: native
@@ -322,19 +323,20 @@ jobs:
           command: |
             wget -nc https://download.clojure.org/install/linux-install-1.10.1.447.sh
             chmod +x linux-install-1.10.1.447.sh
-            ./linux-install-1.10.1.447.sh
+            sudo ./linux-install-1.10.1.447.sh
       - restore_cache:
           keys:
             - linux-aarch64-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - run:
           name: Install native dev tools
           command: |
-            apt-get update
-            apt-get -y install build-essential zlib1g-dev
-            # script/setup-musl
+            sudo apt-get update
+            sudo apt-get -y install build-essential zlib1g-dev
+            # sudo -E script/setup-musl
       - run:
           name: Download GraalVM
           command: |
+            cd ~
             script/download-graalvm
       - run:
           name: Build binary
