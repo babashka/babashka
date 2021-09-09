@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-GRAALVM_VERSION="${GRAALVM_VERSION:-21.2.0}"
+export GRAALVM_VERSION="${GRAALVM_VERSION:-21.2.0}"
+export GRAALVM_HOME="$PWD"
 
 if ! [ -d "graalvm-ce-java11-$GRAALVM_VERSION" ]; then
 	echo "Downloading GraalVM $GRAALVM_VERSION on '$PWD'..."
