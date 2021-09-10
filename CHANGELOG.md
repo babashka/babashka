@@ -2,6 +2,15 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
+## Unreleased
+
+- Fix for schmee java-http-clj send-async [#997](https://github.com/babashka/babashka/issues/997)
+- Add `PipedInput/OutputStream` [#1001](https://github.com/babashka/babashka/issues/1001)
+
+SCI:
+
+- Self-referential function returns wrong binding [#1006](https://github.com/babashka/babashka/issues/1006)
+
 ## 0.6.0
 
 - Support for `java.net` HTTP Client. This enables running
