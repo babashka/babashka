@@ -28,9 +28,7 @@ jobs:
       - run:
           name: Install Clojure
           command: |
-            wget -nc https://download.clojure.org/install/linux-install-1.10.1.447.sh
-            chmod +x linux-install-1.10.1.447.sh
-            sudo ./linux-install-1.10.1.447.sh
+            sudo script/install-clojure
       - run:
           name: Run JVM tests
           command: |
@@ -91,9 +89,7 @@ jobs:
       - run:
           name: Install Clojure
           command: |
-            wget -nc https://download.clojure.org/install/linux-install-1.10.1.447.sh
-            chmod +x linux-install-1.10.1.447.sh
-            ./linux-install-1.10.1.447.sh
+            script/install-clojure
       - run:
           name: Install native dev tools
           command: |
@@ -171,9 +167,7 @@ jobs:
       - run:
           name: Install Clojure
           command: |
-            wget -nc https://download.clojure.org/install/linux-install-1.10.1.447.sh
-            chmod +x linux-install-1.10.1.447.sh
-            ./linux-install-1.10.1.447.sh
+            script/install-clojure
       - run:
           name: Install native dev tools
           command: |
@@ -247,9 +241,7 @@ jobs:
       - run:
           name: Install Clojure
           command: |
-            wget -nc https://download.clojure.org/install/linux-install-1.10.1.447.sh
-            chmod +x linux-install-1.10.1.447.sh
-            sudo ./linux-install-1.10.1.447.sh
+            sudo script/install-clojure
       - restore_cache:
           keys:
             - linux-aarch64-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
@@ -326,9 +318,7 @@ jobs:
       - run:
           name: Install Clojure
           command: |
-            wget -nc https://download.clojure.org/install/linux-install-1.10.1.447.sh
-            chmod +x linux-install-1.10.1.447.sh
-            sudo ./linux-install-1.10.1.447.sh
+            sudo script/install-clojure
       - restore_cache:
           keys:
             - linux-aarch64-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
@@ -397,7 +387,7 @@ jobs:
       - run:
           name: Install Clojure
           command: |
-            script/install-clojure /usr/local
+            script/install-clojure
       - run:
           name: Install Leiningen
           command: |
