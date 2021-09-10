@@ -71,7 +71,7 @@ jobs:
     environment:
       LEIN_ROOT: "true"
       GRAALVM_VERSION: "21.2.0"
-      GRAALVM_HOME: /opt/graalvm-ce-java11-21.2.0
+      GRAALVM_HOME: /tmp/graalvm-ce-java11-21.2.0
       BABASHKA_PLATFORM: linux # used in release script
       BABASHKA_TEST_ENV: native
       BABASHKA_XMX: "-J-Xmx6500m"
@@ -121,7 +121,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-            - /opt/graalvm-ce-java11-21.2.0
+            - /tmp/graalvm-ce-java11-21.2.0
           key: linux-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - store_artifacts:
           path: /tmp/release
@@ -137,7 +137,7 @@ jobs:
     environment:
       LEIN_ROOT: "true"
       GRAALVM_VERSION: "21.2.0"
-      GRAALVM_HOME: /opt/graalvm-ce-java11-21.2.0
+      GRAALVM_HOME: /tmp/graalvm-ce-java11-21.2.0
       BABASHKA_PLATFORM: linux # used in release script
       BABASHKA_TEST_ENV: native
       BABASHKA_STATIC: "true"
@@ -200,7 +200,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-            - /opt/graalvm-ce-java11-21.2.0
+            - /tmp/graalvm-ce-java11-21.2.0
           key: linux-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - store_artifacts:
           path: /tmp/release
@@ -218,7 +218,7 @@ jobs:
     environment:
       LEIN_ROOT: "true"
       GRAALVM_VERSION: "21.2.0"
-      GRAALVM_HOME: /opt/graalvm-ce-java11-21.2.0
+      GRAALVM_HOME: /tmp/graalvm-ce-java11-21.2.0
       BABASHKA_PLATFORM: linux # used in release script
       BABASHKA_ARCH: aarch64
       BABASHKA_TEST_ENV: native
@@ -253,7 +253,7 @@ jobs:
       - run:
           name: Download GraalVM
           command: |
-            sudo -E script/install-graalvm
+            script/install-graalvm
       - run:
           name: Build binary
           command: |
@@ -276,7 +276,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-            - /opt/graalvm-ce-java11-21.2.0
+            - /tmp/graalvm-ce-java11-21.2.0
           key: linux-aarch64-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - store_artifacts:
           path: /tmp/release
@@ -294,7 +294,7 @@ jobs:
     environment:
       LEIN_ROOT: "true"
       GRAALVM_VERSION: "21.2.0"
-      GRAALVM_HOME: /opt/graalvm-ce-java11-21.2.0
+      GRAALVM_HOME: /tmp/graalvm-ce-java11-21.2.0
       BABASHKA_PLATFORM: linux # used in release script
       BABASHKA_ARCH: aarch64
       BABASHKA_TEST_ENV: native
@@ -318,7 +318,7 @@ jobs:
       - run:
           name: Install Clojure
           command: |
-            sudo -E script/install-clojure
+            sudo script/install-clojure
       - restore_cache:
           keys:
             - linux-aarch64-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
@@ -331,7 +331,7 @@ jobs:
       - run:
           name: Download GraalVM
           command: |
-            sudo -E script/install-graalvm
+            script/install-graalvm
       - run:
           name: Build binary
           command: |
@@ -354,7 +354,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-            - /opt/graalvm-ce-java11-21.2.0
+            - /tmp/graalvm-ce-java11-21.2.0
           key: linux-aarch64-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - store_artifacts:
           path: /tmp/release
@@ -369,7 +369,7 @@ jobs:
     environment:
       MACOSX_DEPLOYMENT_TARGET: 10.13 # 10.12 is EOL
       GRAALVM_VERSION: "21.2.0"
-      GRAALVM_HOME: /usr/local/opt/graalvm-ce-java11-21.2.0/Contents/Home
+      GRAALVM_HOME: /tmp/graalvm-ce-java11-21.2.0/Contents/Home
       BABASHKA_PLATFORM: macos # used in release script
       BABASHKA_TEST_ENV: native
       BABASHKA_XMX: "-J-Xmx6500m"
@@ -395,7 +395,7 @@ jobs:
       - run:
           name: Download GraalVM
           command: |
-            script/install-graalvm /usr/local/opt
+            script/install-graalvm
       - run:
           name: Build binary
           command: |
@@ -416,7 +416,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-            - /usr/local/opt/graalvm-ce-java11-21.2.0/Contents/Home
+            - /tmp/graalvm-ce-java11-21.2.0/Contents/Home
           key: mac-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - store_artifacts:
           path: /tmp/release

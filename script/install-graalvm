@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-INSTALL_DIR="${1:-/opt}"
+INSTALL_DIR="${1:-/tmp}"
 
 GRAALVM_VERSION="${GRAALVM_VERSION:-21.2.0}"
 
@@ -23,8 +23,6 @@ case "${BABASHKA_ARCH:-}" in
 		GRAALVM_ARCH="amd64"
 		;;
 esac
-
-mkdir -p "$INSTALL_DIR"
 
 pushd "$INSTALL_DIR" >/dev/null
 
