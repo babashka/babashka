@@ -2,6 +2,8 @@
 
 set -euo pipefail
 
+INSTALL_DIR="${1:-/tmp}"
+
 GRAALVM_VERSION="${GRAALVM_VERSION:-21.2.0}"
 
 case "$BABASHKA_PLATFORM" in
@@ -22,8 +24,12 @@ case "${BABASHKA_ARCH:-}" in
 		;;
 esac
 
+pushd "$INSTALL_DIR" >/dev/null
+
 if ! [ -d "graalvm-ce-java11-$GRAALVM_VERSION" ]; then
 	echo "Downloading GraalVM $GRAALVM_PLATFORM-$GRAALVM_ARCH-$GRAALVM_VERSION on '$PWD'..."
 	curl -O -sL "https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-$GRAALVM_VERSION/graalvm-ce-java11-$GRAALVM_PLATFORM-$GRAALVM_ARCH-$GRAALVM_VERSION.tar.gz"
 	tar xzf graalvm-ce-java11-$GRAALVM_PLATFORM-$GRAALVM_ARCH-$GRAALVM_VERSION.tar.gz
 fi
+
+popd >/dev/null
