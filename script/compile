@@ -60,6 +60,9 @@ if [ "$BABASHKA_STATIC" = "true" ]; then
         args+=("--libc=musl"
                # see https://github.com/oracle/graal/issues/3398
                "-H:CCompilerOption=-Wl,-z,stack-size=2097152")
+    else
+        # see https://github.com/oracle/graal/issues/3737
+        args+=("-H:+StaticExecutableWithDynamicLibC")
     fi
 fi
 
