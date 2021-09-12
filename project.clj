@@ -24,7 +24,7 @@
                  [nrepl/bencode "1.1.0"]
                  [borkdude/sci.impl.reflector "0.0.1"]
                  [org.clojure/test.check "1.1.0"]
-                 [com.github.clj-easy/graal-build-time "0.0.10"]]
+                 [com.github.clj-easy/graal-build-time "0.0.11"]]
   :profiles {:feature/xml  {:source-paths ["feature-xml"]
                             :dependencies [[org.clojure/data.xml "0.2.0-alpha6"]]}
              :feature/yaml {:source-paths ["feature-yaml"]
