@@ -2,7 +2,7 @@
   {:no-doc true}
   (:refer-clojure :exclude [error-handler])
   (:require
-   [aaaa-this-has-to-be-first-because-patches]
+   [aaaa-this-has-to-be-first.because-patches]
    [babashka.fs :as fs]
    [babashka.impl.bencode :refer [bencode-namespace]]
    [babashka.impl.cheshire :refer [cheshire-core-namespace]]
