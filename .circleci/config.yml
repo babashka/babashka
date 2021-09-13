@@ -6,8 +6,7 @@ version: 2.1
 jobs:
   jvm:
     docker:
-      # specify the version you desire here
-      - image: circleci/clojure:lein-2.9.6
+      - image: circleci/clojure:openjdk-11-lein-2.9.6-bullseye
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
@@ -66,7 +65,7 @@ jobs:
           key: v1-dependencies-{{ checksum "project.clj" }}-{{ checksum "deps.edn" }}
   linux:
     docker:
-      - image: clojure:openjdk-11-lein-2.9.6-bullseye
+      - image: circleci/clojure:openjdk-11-lein-2.9.6-bullseye
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
@@ -89,12 +88,12 @@ jobs:
       - run:
           name: Install Clojure
           command: |
-            script/install-clojure
+            sudo script/install-clojure
       - run:
           name: Install native dev tools
           command: |
-            apt-get update
-            apt-get -y install build-essential zlib1g-dev
+            sudo apt-get update
+            sudo apt-get -y install build-essential zlib1g-dev
       - run:
           name: Download GraalVM
           command: |
@@ -132,7 +131,7 @@ jobs:
             ./bb .circleci/script/publish_artifact.clj || true
   linux-static:
     docker:
-      - image: clojure:openjdk-11-lein-2.9.6-bullseye
+      - image: circleci/clojure:openjdk-11-lein-2.9.6-bullseye
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
@@ -167,13 +166,13 @@ jobs:
       - run:
           name: Install Clojure
           command: |
-            script/install-clojure
+            sudo script/install-clojure
       - run:
           name: Install native dev tools
           command: |
-            apt-get update
-            apt-get -y install build-essential zlib1g-dev
-            script/setup-musl
+            sudo apt-get update
+            sudo apt-get -y install build-essential zlib1g-dev
+            sudo -E script/setup-musl
       - run:
           name: Download GraalVM
           command: |
