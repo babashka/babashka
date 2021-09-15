@@ -321,6 +321,7 @@
           java.util.zip.ZipInputStream
           java.util.zip.ZipOutputStream
           java.util.zip.ZipEntry
+          java.util.zip.ZipFile
           ~(symbol "[B")
           ~(symbol "[I")
           ~(symbol "[Ljava.lang.Object;")
