@@ -7,8 +7,8 @@ assignees: ''
 
 ---
 
-To keep development of this project going, consider sponsoring. If you are
-already a sponsor, thank you!
+[ To keep development of this project going, consider sponsoring. If you are
+already a sponsor, thank you! ]
 
 **version**
 
