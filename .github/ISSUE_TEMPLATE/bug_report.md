@@ -7,6 +7,10 @@ assignees: ''
 
 ---
 
+:heart: To keep development of this project going, consider sponsoring
+[sponsoring](https://github.com/sponsors/borkdude)! If you are already a
+sponsor, thank you :pray:!
+
 **version**
 
 [ Please specify which version of babashka you're using. You can find this with `babashka --version`. The documentation on the master branch may be ahead of the most released version. ]
@@ -27,5 +31,3 @@ new binary when the issue is resolved. ]
 **expected behavior**
 
 [ What is the behavior you expected to see? Please provide a minimal working example ]
-
-[ Optional: if you or your organization is sponsoring this project, please write "**Sponsor**" in this ticket for higher priority. ]
