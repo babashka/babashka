@@ -7,9 +7,8 @@ assignees: ''
 
 ---
 
-:heart: To keep development of this project going, consider sponsoring
-[sponsoring](https://github.com/sponsors/borkdude)! If you are already a
-sponsor, thank you :pray:!
+To keep development of this project going, consider sponsoring. If you are
+already a sponsor, thank you!
 
 **Is your feature request related to a problem? Please describe.**
 A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
