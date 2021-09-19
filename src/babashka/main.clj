@@ -425,7 +425,10 @@ Use bb run --help to show this help output.
 
 (def edn-readers (cond-> {}
                    features/yaml?
-                   (assoc 'ordered/map @(resolve 'flatland.ordered.map/ordered-map))))
+                   (assoc 'ordered/map @(resolve 'flatland.ordered.map/ordered-map))
+                   features/xml?
+                   (assoc 'xml/ns @(resolve 'clojure.data.xml.name/uri-symbol)
+                          'xml/element @(resolve 'clojure.data.xml.node/tagged-element))))
 
 (defn edn-seq*
   [^java.io.BufferedReader rdr]
@@ -658,7 +661,7 @@ Use bb run --help to show this help output.
 (defn exec [cli-opts]
   (binding [*unrestricted* true]
     (sci/binding [core/warn-on-reflection @core/warn-on-reflection
-                  core/data-readers @core/data-readers
+                  core/data-readers (into @core/data-readers edn-readers)
                   sci/ns @sci/ns]
       (let [{version-opt :version
              :keys [:shell-in :edn-in :shell-out :edn-out
