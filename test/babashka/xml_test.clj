@@ -6,8 +6,7 @@
 (def simple-xml-str "<a><b>data</b></a>")
 
 (deftest xml-edn-read-test
-  (let [quoted-xml     (pr-str simple-xml-str)
-        parsed-edn     (test-utils/bb nil (str "(xml/parse-str " quoted-xml ")"))
+  (let [parsed-edn     (test-utils/bb nil (str "(xml/parse-str \"" simple-xml-str "\")"))
         emitted-xml    (test-utils/bb parsed-edn "(xml/emit-str *input*)")]
     (is (str/includes? emitted-xml simple-xml-str))))
 
