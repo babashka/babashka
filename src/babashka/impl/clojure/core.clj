@@ -26,7 +26,7 @@
   ([sym] (core-dynamic-var sym nil))
   ([sym init-val] (sci/new-dynamic-var sym init-val {:ns clojure-core-ns})))
 
-(def data-readers (core-dynamic-var '*data-readers*))
+(def data-readers (core-dynamic-var '*data-readers* {}))
 (def command-line-args (core-dynamic-var '*command-line-args*))
 (def warn-on-reflection (core-dynamic-var '*warn-on-reflection* false))
 (def math-context (core-dynamic-var '*math-context*))

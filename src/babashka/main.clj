@@ -425,7 +425,13 @@ Use bb run --help to show this help output.
 
 (def edn-readers (cond-> {}
                    features/yaml?
-                   (assoc 'ordered/map @(resolve 'flatland.ordered.map/ordered-map))))
+                   (assoc 'ordered/map @(resolve 'flatland.ordered.map/ordered-map))
+                   features/xml?
+                   (assoc 'xml/ns @(resolve 'clojure.data.xml.name/uri-symbol)
+                          'xml/element @(resolve 'clojure.data.xml.node/tagged-element))))
+
+;; also put the edn readers into *data-readers*
+(sci/alter-var-root core/data-readers into edn-readers)
 
 (defn edn-seq*
   [^java.io.BufferedReader rdr]
