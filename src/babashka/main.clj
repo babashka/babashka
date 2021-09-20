@@ -430,6 +430,9 @@ Use bb run --help to show this help output.
                    (assoc 'xml/ns @(resolve 'clojure.data.xml.name/uri-symbol)
                           'xml/element @(resolve 'clojure.data.xml.node/tagged-element))))
 
+;; also put the edn readers into *data-readers*
+(sci/alter-var-root core/data-readers into edn-readers)
+
 (defn edn-seq*
   [^java.io.BufferedReader rdr]
   (let [edn-val (edn/read {:eof ::EOF :readers edn-readers :default tagged-literal} rdr)]
@@ -661,7 +664,7 @@ Use bb run --help to show this help output.
 (defn exec [cli-opts]
   (binding [*unrestricted* true]
     (sci/binding [core/warn-on-reflection @core/warn-on-reflection
-                  core/data-readers (into @core/data-readers edn-readers)
+                  core/data-readers @core/data-readers
                   sci/ns @sci/ns]
       (let [{version-opt :version
              :keys [:shell-in :edn-in :shell-out :edn-out
