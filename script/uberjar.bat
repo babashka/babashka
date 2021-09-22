@@ -46,12 +46,6 @@ if not "%BABASHKA_FEATURE_YAML%"=="false" (
   set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/yaml
 )
 
-if not "%BABASHKA_FEATURE_CORE_ASYNC%"=="false" (
-  set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/core-async
-) else (
-  set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/core-async
-)
-
 if not "%BABASHKA_FEATURE_CSV%"=="false" (
   set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/csv
 ) else (

@@ -9,6 +9,7 @@
    [babashka.impl.classes :as classes]
    [babashka.impl.classpath :as cp :refer [classpath-namespace]]
    [babashka.impl.clojure.core :as core :refer [core-extras]]
+   [babashka.impl.clojure.core.async :refer [async-namespace async-protocols-namespace]]
    [babashka.impl.clojure.java.browse :refer [browse-namespace]]
    [babashka.impl.clojure.java.io :refer [io-namespace]]
    [babashka.impl.clojure.java.shell :refer [shell-namespace]]
@@ -225,7 +226,6 @@ Use bb run --help to show this help output.
    (format
     (str/trim "
 {:babashka/version   \"%s\"
- :feature/core-async %s
  :feature/csv        %s
  :feature/java-nio   %s
  :feature/java-time  %s
@@ -245,7 +245,6 @@ Use bb run --help to show this help output.
  :feature/selmer %s
  :feature/logging %s}")
     version
-    features/core-async?
     features/csv?
     features/java-nio?
     features/java-time?
@@ -308,11 +307,11 @@ Use bb run --help to show this help output.
         curl babashka.curl
         fs babashka.fs
         bencode bencode.core
-        deps babashka.deps}
+        deps babashka.deps
+        async clojure.core.async}
     features/xml?        (assoc 'xml 'clojure.data.xml)
     features/yaml?       (assoc 'yaml 'clj-yaml.core)
     features/jdbc?       (assoc 'jdbc 'next.jdbc)
-    features/core-async? (assoc 'async 'clojure.core.async)
     features/csv?        (assoc 'csv 'clojure.data.csv)
     features/transit?    (assoc 'transit 'cognitect.transit)))
 
@@ -357,14 +356,14 @@ Use bb run --help to show this help output.
        'babashka.process process-namespace
        'clojure.core.server clojure-core-server-namespace
        'babashka.deps deps-namespace
-       'babashka.tasks tasks-namespace}
+       'babashka.tasks tasks-namespace
+       'clojure.core.async async-namespace
+       'clojure.core.async.impl.protocols async-protocols-namespace}
     features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace))
     features/yaml? (assoc 'clj-yaml.core @(resolve 'babashka.impl.yaml/yaml-namespace)
                           'flatland.ordered.map @(resolve 'babashka.impl.ordered/ordered-map-ns))
     features/jdbc? (assoc 'next.jdbc @(resolve 'babashka.impl.jdbc/njdbc-namespace)
                           'next.jdbc.sql @(resolve 'babashka.impl.jdbc/next-sql-namespace))
-    features/core-async? (assoc 'clojure.core.async @(resolve 'babashka.impl.async/async-namespace)
-                                'clojure.core.async.impl.protocols @(resolve 'babashka.impl.async/async-protocols-namespace))
     features/csv?  (assoc 'clojure.data.csv @(resolve 'babashka.impl.csv/csv-namespace))
     features/transit? (assoc 'cognitect.transit @(resolve 'babashka.impl.transit/transit-namespace))
     features/datascript? (assoc 'datascript.core @(resolve 'babashka.impl.datascript/datascript-namespace))

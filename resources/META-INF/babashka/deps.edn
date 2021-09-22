@@ -1,4 +1,4 @@
-{:paths ["src" "feature-xml" "feature-core-async"
+{:paths ["src" "feature-xml"
          "feature-yaml" "feature-csv" "feature-transit"
          "feature-java-time" "feature-java-nio"
          "feature-httpkit-client" "feature-httpkit-server"

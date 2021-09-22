@@ -23,6 +23,7 @@
                  [cheshire "5.10.1"]
                  [nrepl/bencode "1.1.0"]
                  [borkdude/sci.impl.reflector "0.0.1"]
+                 [org.clojure/core.async "1.3.618"]
                  [org.clojure/test.check "1.1.0"]
                  [com.github.clj-easy/graal-build-time "0.1.0"]]
   :profiles {:feature/xml  {:source-paths ["feature-xml"]
@@ -35,8 +36,6 @@
              ;:feature/oracledb [:feature/jdbc {:dependencies [[com.oracle.database.jdbc/ojdbc8 "19.8.0.0"]]}]
              :feature/oracledb [:feature/jdbc {:dependencies [[io.helidon.integrations.db/ojdbc "2.1.0"]]}] ; ojdbc10 + GraalVM config, by Oracle
              :feature/hsqldb [:feature/jdbc {:dependencies [[org.hsqldb/hsqldb "2.5.1"]]}]
-             :feature/core-async {:source-paths ["feature-core-async"]
-                                  :dependencies [[org.clojure/core.async "1.3.618"]]}
              :feature/csv {:source-paths ["feature-csv"]
                            :dependencies [[org.clojure/data.csv "1.0.0"]]}
              :feature/transit {:source-paths ["feature-transit"]
@@ -67,7 +66,6 @@
                     :feature/yaml
                     :feature/postgresql
                     :feature/hsqldb
-                    :feature/core-async
                     :feature/csv
                     :feature/transit
                     :feature/datascript
