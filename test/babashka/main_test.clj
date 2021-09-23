@@ -240,7 +240,7 @@
 
 (deftest process-builder-test
   (let [cmd-line (if main/windows?
-                   "[\"cmd\" \"/c\" \"dir\" ]"
+                   "[\"cmd\" \"/c\" \"dir\"]"
                    "[\"ls\"]")]
     (is (str/includes? (bb nil (str "
 (def pb (ProcessBuilder. " cmd-line "))
@@ -716,7 +716,7 @@ true")))
     (require '[babashka.file-location2 :as fl])
     (source fl/ok)") "ok"))
     ; using <= in case new matching functions get added
-    (is (<= 8 (bb nil '(count (apropos "first")))))
+    (is (<= 6 (bb nil '(count (apropos "first")))))
     (is (= [1 2 3] (bb "[1 2 3]" "(pprint *input*)")))
     (let [first-doc (test-utils/bb nil "(doc first)")]
         (is (every? #(str/includes? first-doc %) ["---" "clojure.core/first" "first item"])))))

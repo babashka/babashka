@@ -106,12 +106,6 @@ set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/spec-alpha
 set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/spec-alpha
 )
 
-if not "%BABASHKA_FEATURE_REWRITE_CLJ%"=="false" (
-set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/rewrite-clj
-) else (
-set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/rewrite-clj
-)
-
 if not "%BABASHKA_FEATURE_SELMER%"=="false" (
 set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/selmer
 ) else (
