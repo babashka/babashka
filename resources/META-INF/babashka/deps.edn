@@ -7,7 +7,6 @@
          "feature-hiccup"
          "feature-test-check"
          "feature-spec-alpha"
-         "feature-rewrite-clj"
          "feature-selmer"
          "feature-logging"
          "pods/src"
@@ -56,7 +55,7 @@
                          {:git/url "https://github.com/babashka/clj-http-lite"
                           :sha "f44ebe45446f0f44f2b73761d102af3da6d0a13e"}
                          borkdude/spartan.spec {:git/url "https://github.com/borkdude/spartan.spec"
-                                       :sha "16f7eec4b6589c77c96c9fcf989f78fffcee7c4c"}
+                                                :sha "16f7eec4b6589c77c96c9fcf989f78fffcee7c4c"}
                          lambdaisland/regal {:git/url "https://github.com/lambdaisland/regal"
                                              :sha "f902d2c43121f9e1c48603d6eb99f5900eb6a9f6"}
                          weavejester/medley {:git/url "https://github.com/weavejester/medley"
@@ -91,9 +90,9 @@
                          clj-commons/multigrep {:mvn/version "0.5.0"}
                          amperity/vault-clj {:mvn/version "1.0.4"}
                          java-http-clj/java-http-clj {:mvn/version "0.4.3"}}
-           :classpath-overrides {org.clojure/clojure nil
-                                 org.clojure/spec.alpha nil
-                                 org.clojure/core.specs.alpha nil}}
+            :classpath-overrides {org.clojure/clojure nil
+                                  org.clojure/spec.alpha nil
+                                  org.clojure/core.specs.alpha nil}}
            :clj-nvd
            {:extra-deps {clj-nvd/clj-nvd {:git/url "https://github.com/miikka/clj-nvd.git"
                                           :sha "f2ec98699e057a379baf170cb49cf7ad76874a70"}}
