@@ -294,6 +294,7 @@
           java.util.jar.JarFile
           java.util.jar.JarEntry
           java.util.jar.JarFile$JarFileEntry
+          java.util.stream.BaseStream
           java.util.stream.Stream
           java.util.Random
           java.util.regex.Matcher
