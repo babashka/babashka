@@ -1,4 +1,4 @@
-(ns babashka.impl.async
+(ns babashka.impl.clojure.core.async
   {:no-doc true}
   (:require [clojure.core.async :as async]
             [clojure.core.async.impl.protocols :as protocols]

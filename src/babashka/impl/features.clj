@@ -4,7 +4,6 @@
 ;; included by default
 (def yaml?           (not= "false" (System/getenv "BABASHKA_FEATURE_YAML")))
 (def xml?            (not= "false" (System/getenv "BABASHKA_FEATURE_XML")))
-(def core-async?     (not= "false" (System/getenv "BABASHKA_FEATURE_CORE_ASYNC")))
 (def csv?            (not= "false" (System/getenv "BABASHKA_FEATURE_CSV")))
 (def transit?        (not= "false" (System/getenv "BABASHKA_FEATURE_TRANSIT")))
 (def java-time?      (not= "false" (System/getenv "BABASHKA_FEATURE_JAVA_TIME")))
@@ -15,7 +14,6 @@
 (def core-match?     (not= "false" (System/getenv "BABASHKA_FEATURE_CORE_MATCH")))
 (def hiccup?         (not= "false" (System/getenv "BABASHKA_FEATURE_HICCUP")))
 (def test-check?     (not= "false" (System/getenv "BABASHKA_FEATURE_TEST_CHECK")))
-(def rewrite-clj?    (not= "false" (System/getenv "BABASHKA_FEATURE_REWRITE_CLJ")))
 (def selmer?         (not= "false" (System/getenv "BABASHKA_FEATURE_SELMER")))
 (def logging?        (not= "false" (System/getenv "BABASHKA_FEATURE_LOGGING")))
 
@@ -37,9 +35,6 @@
 
 (when jdbc?
   (require '[babashka.impl.jdbc]))
-
-(when core-async?
-  (require '[babashka.impl.async]))
 
 (when csv?
   (require '[babashka.impl.csv]))
@@ -70,9 +65,6 @@
 
 (when spec-alpha?
   (require '[babashka.impl.spec]))
-
-(when rewrite-clj?
-  (require '[babashka.impl.rewrite-clj]))
 
 (when selmer?
   (require '[babashka.impl.selmer]))

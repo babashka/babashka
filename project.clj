@@ -23,8 +23,10 @@
                  [cheshire "5.10.1"]
                  [nrepl/bencode "1.1.0"]
                  [borkdude/sci.impl.reflector "0.0.1"]
+                 [org.clojure/core.async "1.3.618"]
                  [org.clojure/test.check "1.1.0"]
-                 [com.github.clj-easy/graal-build-time "0.1.0"]]
+                 [com.github.clj-easy/graal-build-time "0.1.0"]
+                 [rewrite-clj/rewrite-clj "1.0.644-alpha"]]
   :profiles {:feature/xml  {:source-paths ["feature-xml"]
                             :dependencies [[org.clojure/data.xml "0.2.0-alpha6"]]}
              :feature/yaml {:source-paths ["feature-yaml"]
@@ -35,8 +37,6 @@
              ;:feature/oracledb [:feature/jdbc {:dependencies [[com.oracle.database.jdbc/ojdbc8 "19.8.0.0"]]}]
              :feature/oracledb [:feature/jdbc {:dependencies [[io.helidon.integrations.db/ojdbc "2.1.0"]]}] ; ojdbc10 + GraalVM config, by Oracle
              :feature/hsqldb [:feature/jdbc {:dependencies [[org.hsqldb/hsqldb "2.5.1"]]}]
-             :feature/core-async {:source-paths ["feature-core-async"]
-                                  :dependencies [[org.clojure/core.async "1.3.618"]]}
              :feature/csv {:source-paths ["feature-csv"]
                            :dependencies [[org.clojure/data.csv "1.0.0"]]}
              :feature/transit {:source-paths ["feature-transit"]
@@ -55,8 +55,6 @@
                               :dependencies [[hiccup/hiccup "2.0.0-alpha2"]]}
              :feature/test-check {:source-paths ["feature-test-check"]}
              :feature/spec-alpha {:source-paths ["feature-spec-alpha"]}
-             :feature/rewrite-clj {:source-paths ["feature-rewrite-clj"]
-                                   :dependencies [[rewrite-clj/rewrite-clj "1.0.644-alpha"]]}
              :feature/selmer {:source-paths ["feature-selmer"]
                               :dependencies [[selmer/selmer "1.12.44"]]}
              :feature/logging {:source-paths ["feature-logging"]
@@ -67,7 +65,6 @@
                     :feature/yaml
                     :feature/postgresql
                     :feature/hsqldb
-                    :feature/core-async
                     :feature/csv
                     :feature/transit
                     :feature/datascript
@@ -77,7 +74,6 @@
                     :feature/hiccup
                     :feature/test-check
                     :feature/spec-alpha
-                    :feature/rewrite-clj
                     :feature/selmer
                     :feature/logging
                     {:dependencies [[com.clojure-goes-fast/clj-async-profiler "0.5.0"]

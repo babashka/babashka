@@ -240,7 +240,7 @@
 
 (deftest process-builder-test
   (let [cmd-line (if main/windows?
-                   "[\"cmd\" \"/c\" \"dir\" ]"
+                   "[\"cmd\" \"/c\" \"dir\"]"
                    "[\"ls\"]")]
     (is (str/includes? (bb nil (str "
 (def pb (ProcessBuilder. " cmd-line "))

@@ -9,6 +9,7 @@
    [babashka.impl.classes :as classes]
    [babashka.impl.classpath :as cp :refer [classpath-namespace]]
    [babashka.impl.clojure.core :as core :refer [core-extras]]
+   [babashka.impl.clojure.core.async :refer [async-namespace async-protocols-namespace]]
    [babashka.impl.clojure.java.browse :refer [browse-namespace]]
    [babashka.impl.clojure.java.io :refer [io-namespace]]
    [babashka.impl.clojure.java.shell :refer [shell-namespace]]
@@ -31,6 +32,7 @@
    [babashka.impl.proxy :refer [proxy-fn]]
    [babashka.impl.reify :refer [reify-fn]]
    [babashka.impl.repl :as repl]
+   [babashka.impl.rewrite-clj :as rewrite]
    [babashka.impl.server :refer [clojure-core-server-namespace]]
    [babashka.impl.socket-repl :as socket-repl]
    [babashka.impl.tasks :as tasks :refer [tasks-namespace]]
@@ -225,7 +227,6 @@ Use bb run --help to show this help output.
    (format
     (str/trim "
 {:babashka/version   \"%s\"
- :feature/core-async %s
  :feature/csv        %s
  :feature/java-nio   %s
  :feature/java-time  %s
@@ -241,11 +242,9 @@ Use bb run --help to show this help output.
  :feature/hiccup     %s
  :feature/test-check %s
  :feature/spec-alpha %s
- :feature/rewrite-clj %s
  :feature/selmer %s
  :feature/logging %s}")
     version
-    features/core-async?
     features/csv?
     features/java-nio?
     features/java-time?
@@ -261,7 +260,6 @@ Use bb run --help to show this help output.
     features/hiccup?
     features/test-check?
     features/spec-alpha?
-    features/rewrite-clj?
     features/selmer?
     features/logging?)))
 
@@ -308,11 +306,11 @@ Use bb run --help to show this help output.
         curl babashka.curl
         fs babashka.fs
         bencode bencode.core
-        deps babashka.deps}
+        deps babashka.deps
+        async clojure.core.async}
     features/xml?        (assoc 'xml 'clojure.data.xml)
     features/yaml?       (assoc 'yaml 'clj-yaml.core)
     features/jdbc?       (assoc 'jdbc 'next.jdbc)
-    features/core-async? (assoc 'async 'clojure.core.async)
     features/csv?        (assoc 'csv 'clojure.data.csv)
     features/transit?    (assoc 'transit 'cognitect.transit)))
 
@@ -357,14 +355,19 @@ Use bb run --help to show this help output.
        'babashka.process process-namespace
        'clojure.core.server clojure-core-server-namespace
        'babashka.deps deps-namespace
-       'babashka.tasks tasks-namespace}
+       'babashka.tasks tasks-namespace
+       'clojure.core.async async-namespace
+       'clojure.core.async.impl.protocols async-protocols-namespace
+       'rewrite-clj.node rewrite/node-namespace
+       'rewrite-clj.paredit rewrite/paredit-namespace
+       'rewrite-clj.parser rewrite/parser-namespace
+       'rewrite-clj.zip rewrite/zip-namespace
+       'rewrite-clj.zip.subedit rewrite/subedit-namespace}
     features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace))
     features/yaml? (assoc 'clj-yaml.core @(resolve 'babashka.impl.yaml/yaml-namespace)
                           'flatland.ordered.map @(resolve 'babashka.impl.ordered/ordered-map-ns))
     features/jdbc? (assoc 'next.jdbc @(resolve 'babashka.impl.jdbc/njdbc-namespace)
                           'next.jdbc.sql @(resolve 'babashka.impl.jdbc/next-sql-namespace))
-    features/core-async? (assoc 'clojure.core.async @(resolve 'babashka.impl.async/async-namespace)
-                                'clojure.core.async.impl.protocols @(resolve 'babashka.impl.async/async-protocols-namespace))
     features/csv?  (assoc 'clojure.data.csv @(resolve 'babashka.impl.csv/csv-namespace))
     features/transit? (assoc 'cognitect.transit @(resolve 'babashka.impl.transit/transit-namespace))
     features/datascript? (assoc 'datascript.core @(resolve 'babashka.impl.datascript/datascript-namespace))
@@ -394,16 +397,6 @@ Use bb run --help to show this help output.
                               'clojure.spec.alpha @(resolve 'babashka.impl.spec/spec-namespace)
                               'clojure.spec.gen.alpha @(resolve 'babashka.impl.spec/gen-namespace)
                               'clojure.spec.test.alpha @(resolve 'babashka.impl.spec/test-namespace)))
-    features/rewrite-clj? (assoc 'rewrite-clj.node
-                                 @(resolve 'babashka.impl.rewrite-clj/node-namespace)
-                                 'rewrite-clj.paredit
-                                 @(resolve 'babashka.impl.rewrite-clj/paredit-namespace)
-                                 'rewrite-clj.parser
-                                 @(resolve 'babashka.impl.rewrite-clj/parser-namespace)
-                                 'rewrite-clj.zip
-                                 @(resolve 'babashka.impl.rewrite-clj/zip-namespace)
-                                 'rewrite-clj.zip.subedit
-                                 @(resolve 'babashka.impl.rewrite-clj/subedit-namespace))
     features/selmer? (assoc 'selmer.parser
                             @(resolve 'babashka.impl.selmer/selmer-parser-namespace)
                             'selmer.tags

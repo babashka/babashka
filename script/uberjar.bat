@@ -46,12 +46,6 @@ if not "%BABASHKA_FEATURE_YAML%"=="false" (
   set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/yaml
 )
 
-if not "%BABASHKA_FEATURE_CORE_ASYNC%"=="false" (
-  set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/core-async
-) else (
-  set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/core-async
-)
-
 if not "%BABASHKA_FEATURE_CSV%"=="false" (
   set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/csv
 ) else (
@@ -110,12 +104,6 @@ if "%BABASHKA_FEATURE_SPEC_ALPHA%"=="true" (
 set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/spec-alpha
 ) else (
 set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/spec-alpha
-)
-
-if not "%BABASHKA_FEATURE_REWRITE_CLJ%"=="false" (
-set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/rewrite-clj
-) else (
-set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/rewrite-clj
 )
 
 if not "%BABASHKA_FEATURE_SELMER%"=="false" (
