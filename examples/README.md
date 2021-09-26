@@ -36,6 +36,7 @@
   - [Check stdin for data](#check-stdin-for-data)
   - [Using org.clojure/data.xml](#using-orgclojuredataxml)
   - [Simple logger](#simple-logger)
+  - [Using GZip streams (memo utility)](#using-gzip-streams-to-make-a-note-utility)
 
 Here's a gallery of useful examples. Do you have a useful example? PR welcome!
 
@@ -521,4 +522,15 @@ $ bb examples/xml-example.clj
 ``` clojure
 $ bb "(require 'logger) (logger/log \"the logger says hi\")"
 <expr>:1:19 the logger says hi 
+```
+
+## Using GZip streams to make a note utility
+
+[memo.clj](memo.clj) creates zip files in /tmp for stashing notes (possibly the most inefficient KV store ever)
+
+```shell
+$ echo "8675309" | memo.clj put jenny
+ok
+$ memo.clj get jenny
+8675309
 ```
