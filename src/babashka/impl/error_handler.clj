@@ -4,7 +4,7 @@
             [clojure.java.io :as io]
             [clojure.stacktrace :refer [print-stack-trace]]
             [clojure.string :as str]
-            [sci.impl.callstack :as cs]))
+            [sci.core :as sci]))
 
 (defn ruler [title]
   (println (apply str "----- " title " " (repeat (- 80 7 (count title)) \-))))
@@ -19,7 +19,7 @@
 
 (defn print-stacktrace
   [stacktrace {:keys [:verbose?]}]
-  (let [stacktrace (cs/format-stacktrace stacktrace)
+  (let [stacktrace (sci/format-stacktrace stacktrace)
         segments (split-stacktrace stacktrace verbose?)
         [fst snd] segments]
     (run! println fst)
@@ -76,6 +76,11 @@
         ;; print nil as nil
         (prn v)))))
 
+(defn phase [ex stacktrace]
+  (or (:phase (ex-data ex))
+      (when (some :macro stacktrace)
+        "macroexpand")))
+
 (defn error-handler [^Exception e opts]
   (binding [*out* *err*]
     (let [d (ex-data e)
@@ -85,9 +90,7 @@
           ex-name (when sci-error?
                     (some-> ^Throwable (ex-cause e)
                             .getClass .getName))
-          stacktrace (some->
-                      d :sci.impl/callstack
-                      cs/stacktrace)]
+          stacktrace (sci/stacktrace e)]
       (if exit-code
         (do
           (when-let [m (.getMessage e)]
@@ -108,7 +111,7 @@
               (println (str "Location: "
                             (when file (str file ":"))
                             line ":" column""))))
-          (when-let [phase (cs/phase e stacktrace)]
+          (when-let [phase (phase e stacktrace)]
             (println "Phase:   " phase))
           (println)
           (when-let [ec (when sci-error?
