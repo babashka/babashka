@@ -254,6 +254,8 @@
 ;; namespaces to see if they at least load correctly
 (test-namespaces 'java-http-clj.smoke-test)
 
+(test-namespaces 'component.component-test)
+
 ;;;; final exit code
 
 (let [{:keys [:test :fail :error] :as m} @status]
