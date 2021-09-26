@@ -46,6 +46,7 @@ The following libraries and projects are known to work with babashka.
     - [ffclj](#ffclj)
     - [multigrep](#multigrep)
     - [java-http-clj](#java-http-clj)
+    - [component](#component)
   - [Pods](#pods)
   - [Projects](#projects-1)
     - [babashka-test-action](#babashka-test-action)
@@ -679,6 +680,10 @@ outputs:
 ### [java-http-clj](https://github.com/schmee/java-http-clj)
 
 Http client based on `java.net.http`.
+
+### [component](https://github.com/stuartsierra/component)
+
+A tiny Clojure framework for managing the lifecycle and dependencies of software components which have runtime state.
 
 ## Pods
 
