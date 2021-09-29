@@ -119,7 +119,7 @@
             (ruler "Context")
             (println ec)
             (println))
-          (when-let [locals (not-empty (:locals d))]
+          (when-let [locals (and (:debug opts) (not-empty (:locals d)))]
             (ruler "Locals")
             (print-locals locals)
             (println))
