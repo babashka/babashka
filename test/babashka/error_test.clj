@@ -14,14 +14,9 @@
                   l2 (get lines-s2 i)]
               (if (and l1 l2)
                 (is (= l1 l2)
-                    (format "Lines did not match.
-Line: %s
-Left:  %s
-Right: %s"
-                            i (pr-str l1) (pr-str l2)))
-                (is false (format "Out of lines at line: %s.
-Left:  %s
-Right: %s"
+                  (format "Lines did not match.\nLine: %s\nLeft:  %s\nRight: %s"
+                          i (pr-str l1) (pr-str l2)))
+                (is false (format "Out of lines at line: %s.\nLeft:  %s\nRight: %s"
                                   i (pr-str l1) (pr-str l2))))))
           (range max-lines))))
 
