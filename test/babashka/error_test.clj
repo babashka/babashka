@@ -14,9 +14,14 @@
                   l2 (get lines-s2 i)]
               (if (and l1 l2)
                 (is (= l1 l2)
-                    (format "Lines did not match.\nLine: %s\nLeft:  %s\nRight: %s"
+                    (format "Lines did not match.
+Line: %s
+Left:  %s
+Right: %s"
                             i (pr-str l1) (pr-str l2)))
-                (is false (format "Out of lines at line: %s.\nLeft:  %s\nRight: %s"
+                (is false (format "Out of lines at line: %s.
+Left:  %s
+Right: %s"
                                   i (pr-str l1) (pr-str l2))))))
           (range max-lines))))
 
@@ -173,7 +178,6 @@ user              - <expr>:1:91"))))
                         "----- Error --------------------------------------------------------------------
 Type:     clojure.lang.ExceptionInfo
 Message:  some msg
-Data:     {:zero 0, :one 1}
 Location: <expr>:1:27
 
 ----- Context ------------------------------------------------------------------
@@ -195,29 +199,26 @@ Location: <expr>:1:1
 
 (deftest debug-exception-print-test
   (testing "debug mode includes locals and exception data in output"
-    (let [output (try (tu/bb nil "--debug" "(let [x 1] (/ x 0))")
+    (let [output (try (tu/bb nil "--debug" "(let [x 1] (throw (ex-info \"Panic!\" {:kung :foo})))")
                       (is false) ; ensure that exception is thrown and we don't get here
                       (catch Exception e (ex-message e)))]
       (is (str/includes? (tu/normalize output)
             "----- Error --------------------------------------------------------------------
-Type:     java.lang.ArithmeticException
-Message:  Divide by zero
+Type:     clojure.lang.ExceptionInfo
+Message:  Panic!
+Data:     {:kung :foo}
 Location: <expr>:1:12
 
 ----- Context ------------------------------------------------------------------
-1: (let [x 1] (/ x 0))
-              ^--- Divide by zero
+1: (let [x 1] (throw (ex-info \"Panic!\" {:kung :foo})))
+              ^--- Panic!
 
 ----- Locals -------------------------------------------------------------------
 x: 1
 
------ Stack trace --------------------------------------------------------------
-clojure.core// - <built-in>
-user           - <expr>:1:12
-
 ----- Exception ----------------------------------------------------------------
-clojure.lang.ExceptionInfo: Divide by zero
-{:type :sci/error, :line 1, :column 12, :message \"Divide by zero\",")))))
+clojure.lang.ExceptionInfo: Panic!
+{:type :sci/error, :line 1, :column 12, :message \"Panic!\",")))))
 
 (deftest macro-locals-print-test
   (testing "exception during macro call includes &form and &env locals"
@@ -248,3 +249,18 @@ user              - <expr>:1:45
 ----- Exception ----------------------------------------------------------------
 clojure.lang.ExceptionInfo: null
 {:type :sci/error, :line 1, :column 19,")))))
+
+(deftest non-debug-print-test
+  (testing "locals and ex-data are not printed if debug isn't enabled"
+    (let [output (try (tu/bb nil "(let [x 1] (throw (ex-info \"Panic!\" {:kung :foo})))")
+                      (is false)
+                      (catch Exception e (ex-message e)))]
+      (is (str/includes? (tu/normalize output)
+            "----- Error --------------------------------------------------------------------
+Type:     clojure.lang.ExceptionInfo
+Message:  Panic!
+Location: <expr>:1:12
+
+----- Context ------------------------------------------------------------------
+1: (let [x 1] (throw (ex-info \"Panic!\" {:kung :foo})))
+              ^--- Panic!")))))
