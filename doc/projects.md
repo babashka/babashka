@@ -688,7 +688,7 @@ A tiny Clojure framework for managing the lifecycle and dependencies of software
 
 ### [minimallist](https://github.com/green-coder/minimallist)
 
-A minimalist data driven data model library, inspired by Clojure Spec and Malli.
+A minimalist data-driven data model library, inspired by Clojure Spec and Malli.
 
 Example partially borrowed from [minimallist's cljdoc](https://cljdoc.org/d/minimallist/minimallist/CURRENT/doc/usage-in-babashka)
 

@@ -543,7 +543,7 @@ $ memo.clj get jenny
 
 ```
 $ bb db_who.clj
-|             name |   program_name |
+|             user |   program_name |
 |------------------+----------------|
 |   root@localhost |          mysql |
 | fred@192.168.1.2 |      workbench |
