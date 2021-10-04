@@ -23,7 +23,7 @@ Sponsoring via Cognitect.
 
 ### [EnjoyHQ](https://getenjoyhq.com/)
 
-<img src="https://getenjoyhq.com/wp-content/uploads/2021/07/EnjoyHQ_uz-blue_cropp.svg">
+<img src="https://getenjoyhq.com/wp-content/uploads/2021/07/EnjoyHQ_uz-blue_cropp.svg" width="300">
 
 ### [Epic Castle](https://epiccastle.io)
 
