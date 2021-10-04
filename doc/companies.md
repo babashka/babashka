@@ -35,8 +35,12 @@ Sponsoring via [Cognitect](https://www.cognitect.com/).
 
 - [AWS](https://aws.amazon.com/)
 - [Barracuda](https://www.barracuda.com/)
+- [Datil](https://datil.com/)
 - [Juxt](https://www.juxt.pro/)
 - [Latacora](https://www.latacora.com/)
 - [Metosin](https://www.metosin.fi/en/)
+- [Nextdoc](https://www.nextdoc.io/)
 - [Reify Health](https://www.reifyhealth.com/)
 - [Splash Financial](https://www.splashfinancial.com/)
+- [TOYOKUMO, Inc.](https://toyokumo.co.jp/)
+- [Zero one group](https://zero-one-group.com/)
