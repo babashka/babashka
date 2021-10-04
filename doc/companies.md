@@ -15,7 +15,7 @@ size) with a logo and hiring link (if applicable)!
 
 ### Epic Castle
 
-![epic castle](https://epiccastle.io/images/logo.png)
+![epic castle](https://epiccastle.io/images/logo.png | width=100)
 
 ## Companies
 
