@@ -36,4 +36,5 @@ Sponsoring via [Cognitect](https://www.cognitect.com/).
 - [Juxt](https://www.juxt.pro/)
 - [Latacora](https://www.latacora.com/)
 - [Metosin](https://www.metosin.fi/en/)
+- [Reify Health](https://www.reifyhealth.com/)
 - [Splash Financial](https://www.splashfinancial.com/)
