@@ -58,21 +58,21 @@ $ ls | bb -i '(filter #(-> % io/file .isDirectory) *input*)'
 bb took 4ms.
 ```
 
-### Babashka users
+## Babashka users
 
 See [companies](doc/companies.md) for a list of companies using babashka.
 
 Are you using babashka in your company or personal projects? Let us know
 [here](https://github.com/babashka/babashka/issues/254).
 
-### Setting expectations
+## Setting expectations
 
-Babashka uses [sci](https://github.com/borkdude/sci) for interpreting
-Clojure. Sci implements a substantial subset of Clojure. Interpreting code is in
+Babashka uses [SCI](https://github.com/borkdude/sci) for interpreting
+Clojure. SCI implements a substantial subset of Clojure. Interpreting code is in
 general not as performant as executing compiled code. If your script takes more
 than a few seconds to run or has lots of loops, Clojure on the JVM may be a
-better fit as the performance on JVM is going to outweigh its
-startup time penalty. Read more about the differences with Clojure
+better fit as the performance on JVM is going to outweigh its startup time
+penalty. Read more about the differences with Clojure
 [here](#differences-with-clojure).
 
 ## Status
