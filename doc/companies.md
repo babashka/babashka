@@ -33,6 +33,8 @@ Sponsoring via [Cognitect](https://www.cognitect.com/).
 
 ## Companies
 
+- [AWS](https://aws.amazon.com/)
+- [Barracuda](https://www.barracuda.com/)
 - [Juxt](https://www.juxt.pro/)
 - [Latacora](https://www.latacora.com/)
 - [Metosin](https://www.metosin.fi/en/)
