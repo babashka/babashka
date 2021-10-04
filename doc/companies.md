@@ -31,4 +31,7 @@ Sponsoring via Cognitect.
 
 ## Companies
 
+- [Juxt](https://www.juxt.pro/)
+- [Latacora](https://www.latacora.com/)
 - [Metosin](https://www.metosin.fi/en/)
+- [Splash Financial](https://www.splashfinancial.com/)
