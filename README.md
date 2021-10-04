@@ -60,7 +60,10 @@ bb took 4ms.
 
 ### Babashka users
 
-Are you using babashka in your company or personal projects? Let us know [here](https://github.com/babashka/babashka/issues/254).
+See [companies](doc/companies.md) for a list of companies using babashka.
+
+Are you using babashka in your company or personal projects? Let us know
+[here](https://github.com/babashka/babashka/issues/254).
 
 ### Setting expectations
 
