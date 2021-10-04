@@ -21,6 +21,10 @@ Sponsoring via Cognitect.
 
 <img src="https://cdn.nextjournal.com/images/nextjournal-logo.svg" width="300">
 
+### [EnjoyHQ](https://getenjoyhq.com/)
+
+<img src="https://getenjoyhq.com/wp-content/uploads/2021/07/EnjoyHQ_uz-blue_cropp.svg">
+
 ### [Epic Castle](https://epiccastle.io)
 
 <img src="https://epiccastle.io/images/logo.png" width="100">
