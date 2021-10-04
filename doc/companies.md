@@ -9,4 +9,4 @@ link (if applicable)!
 
 - [Adgoji](https://www.adgoji.com/)
 
-<img src="//images.squarespace-cdn.com/content/v1/5e5f79dcaeba9e2b64132975/1585646545419-5DOZS4SVO5AU0MFA3ZB3/adgoji_logofull.png?format=1500w" alt="adgoji" class="Header-branding-logo">
+<img src="//www.adgoji.com/images.squarespace-cdn.com/content/v1/5e5f79dcaeba9e2b64132975/1585646545419-5DOZS4SVO5AU0MFA3ZB3/adgoji_logofull.png?format=1500w" alt="adgoji" class="Header-branding-logo">
