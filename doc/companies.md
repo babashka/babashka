@@ -15,7 +15,7 @@ size) with a logo and hiring link (if applicable)!
 
 ### [Nextjournal](https://nextjournal.com/)
 
-<img src="https://cdn.nextjournal.com/images/nextjournal-logo.svg" width="100">
+<img src="https://cdn.nextjournal.com/images/nextjournal-logo.svg" width="300">
 
 ### [Epic Castle](https://epiccastle.io)
 
