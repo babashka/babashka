@@ -47,6 +47,7 @@ The following libraries and projects are known to work with babashka.
     - [multigrep](#multigrep)
     - [java-http-clj](#java-http-clj)
     - [component](#component)
+    - [minimallist](#minimallist)
   - [Pods](#pods)
   - [Projects](#projects-1)
     - [babashka-test-action](#babashka-test-action)
@@ -684,6 +685,36 @@ Http client based on `java.net.http`.
 ### [component](https://github.com/stuartsierra/component)
 
 A tiny Clojure framework for managing the lifecycle and dependencies of software components which have runtime state.
+
+### [minimallist](https://github.com/green-coder/minimallist)
+
+A minimalist data-driven data model library, inspired by Clojure Spec and Malli.
+
+Example partially borrowed from [minimallist's cljdoc](https://cljdoc.org/d/minimallist/minimallist/CURRENT/doc/usage-in-babashka)
+
+```clj
+(require '[babashka.deps :refer [add-deps]])
+         
+
+(add-deps '{:deps {minimallist/minimallist {:git/url "https://github.com/green-coder/minimallist"
+                                            :sha     "b373bb18b8868526243735c760bdc67a88dd1e9a"}}})
+
+(require '[minimallist.core :as m])
+(require '[minimallist.helper :as h])
+
+(def contact (h/map [:name  (h/fn string?)]
+                    [:phone (h/fn string?)]))
+(m/valid? contact {:name "Lucy" :phone "5551212"})   ;=> true
+(m/valid? contact {:name "Lucy" :phone 5551212}) ;=> false
+
+(m/describe contact {:name "Lucy" :phone "5551212"})   ;=> {:valid? true, :entries {...}}
+(m/describe contact {:name "Lucy" :phone 5551212}) ;=> {:valid? false, :entries {... :phone {:valid? false...}}}
+
+;; Does not work for now.
+;(require '[clojure.test.check.generators :as tcg])
+;(require '[minimallist.generator :as mg])
+;(tcg/sample (mg/gen (h/fn int?)))
+```
 
 ## Pods
 

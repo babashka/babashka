@@ -37,6 +37,8 @@
   - [Using org.clojure/data.xml](#using-orgclojuredataxml)
   - [Simple logger](#simple-logger)
   - [Using GZip streams (memo utility)](#using-gzip-streams-to-make-a-note-utility)
+  - [Pretty-printing mySQL results](#pretty-printing-mysql-results)
+  
 
 Here's a gallery of useful examples. Do you have a useful example? PR welcome!
 
@@ -533,4 +535,17 @@ $ echo "8675309" | memo.clj put jenny
 ok
 $ memo.clj get jenny
 8675309
+```
+
+## Pretty-printing mySQL results
+
+[db_who.clj](db_who.clj) will query mysql for all the connected sessions and pretty-print the user and what program they're using.
+
+```
+$ bb db_who.clj
+|             user |   program_name |
+|------------------+----------------|
+|   root@localhost |          mysql |
+| fred@192.168.1.2 |      workbench |
+| jane@192.168.1.3 | Toad for mySQL |
 ```
