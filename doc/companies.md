@@ -15,6 +15,8 @@ size) with a logo and hiring link (if applicable)!
 
 ### [Nubank](https://nubank.com.br/)
 
+<img src="https://upload.wikimedia.org/wikipedia/commons/f/f7/Nubank_logo_2021.svg">
+
 Sponsoring via Cognitect.
 
 ### [Nextjournal](https://nextjournal.com/)
