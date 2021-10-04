@@ -13,6 +13,10 @@ size) with a logo and hiring link (if applicable)!
 
 ![adgoji](https://images.squarespace-cdn.com/content/v1/5e5f79dcaeba9e2b64132975/1585646545419-5DOZS4SVO5AU0MFA3ZB3/adgoji_logofull.png?format=300w)
 
+### [Nextjournal](https://nextjournal.com/)
+
+<img src="https://cdn.nextjournal.com/images/nextjournal-logo.svg">
+
 ### [Epic Castle](https://epiccastle.io)
 
 <img src="https://epiccastle.io/images/logo.png" width="100">
