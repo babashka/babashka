@@ -4,7 +4,7 @@ Is your company using babashka? Mention it in
 [this](https://github.com/babashka/babashka/discussions/1026) discussion to get
 yours listed!
 
-For a list of companies using clj-kondo, see
+If your company is using clj-kondo as well, mention it
 [here](https://github.com/clj-kondo/clj-kondo/discussions/1397).
 
 If your company is sponsoring, it will be listed first (in order of sponsorship
