@@ -1,8 +1,8 @@
 # Companies using babashka
 
 Is your company using babashka? Mention it in
-[this](https://github.com/babashka/babashka/issues/254) issue to get yours
-listed!
+[this](https://github.com/babashka/babashka/discussions/1026) discussion to get
+yours listed!
 
 If your company is sponsoring, it will be listed first (in order of sponsorship
 size) with a logo and hiring link (if applicable)!
@@ -36,6 +36,7 @@ Sponsoring via [Cognitect](https://www.cognitect.com/).
 - [AWS](https://aws.amazon.com/)
 - [Barracuda](https://www.barracuda.com/)
 - [Datil](https://datil.com/)
+- [Doctor Evidence](https://drevidence.com)
 - [Fluent](https://fluent.to/)
 - [Hi](https://www.hi.group/)
 - [Juxt](https://www.juxt.pro/)
