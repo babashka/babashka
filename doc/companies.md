@@ -42,6 +42,7 @@ Sponsoring via [Cognitect](https://www.cognitect.com/).
 - [Latacora](https://www.latacora.com/)
 - [Metosin](https://www.metosin.fi/en/)
 - [Nextdoc](https://www.nextdoc.io/)
+- [PractiTest](https://www.practitest.com/)
 - [Reify Health](https://www.reifyhealth.com/)
 - [Splash Financial](https://www.splashfinancial.com/)
 - [TOYOKUMO, Inc.](https://toyokumo.co.jp/)
