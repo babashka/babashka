@@ -50,4 +50,5 @@ Sponsoring via [Cognitect](https://www.cognitect.com/).
 - [Reify Health](https://www.reifyhealth.com/)
 - [Splash Financial](https://www.splashfinancial.com/)
 - [TOYOKUMO, Inc.](https://toyokumo.co.jp/)
+- [Xcoo](https://xcoo.com/)
 - [Zero one group](https://zero-one-group.com/)
