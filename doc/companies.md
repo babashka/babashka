@@ -39,6 +39,7 @@ Sponsoring via [Cognitect](https://www.cognitect.com/).
 - [AWS](https://aws.amazon.com/)
 - [Barracuda](https://www.barracuda.com/)
 - [Datil](https://datil.com/)
+- [Deon Digital](https://www.deondigital.com/)
 - [Doctor Evidence](https://drevidence.com)
 - [Fluent](https://fluent.to/)
 - [Hi](https://www.hi.group/)
