@@ -2,8 +2,8 @@
   {:no-doc true}
   (:require
    [babashka.impl.features :as features]
-   [sci.impl.types :as t]
-   [cheshire.core :as json]))
+   [cheshire.core :as json]
+   [sci.impl.types :as t]))
 
 (def custom-map
   (cond->
@@ -99,12 +99,13 @@
           java.io.FileFilter
           java.io.FilenameFilter
           java.io.FileNotFoundException
+          java.io.FileInputStream
+          java.io.FileOutputStream
+          java.io.FileReader
           java.io.RandomAccessFile
           java.io.InputStream
           java.io.IOException
           java.io.OutputStream
-          java.io.FileInputStream
-          java.io.FileReader
           java.io.InputStreamReader
           java.io.OutputStreamWriter
           java.io.PipedInputStream
