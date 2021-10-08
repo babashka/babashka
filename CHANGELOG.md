@@ -2,6 +2,29 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
+## 0.6.2
+
+- Add `java.util.zip.ZipFile`, `java.util.stream.BaseStream`
+- Fix data reader for clojure.data.xml and `*input*` [#1004](https://github.com/babashka/babashka/issues/1004) ([@bobisageek](https://github.com/bobisageek))
+- Upgrade `deps.clj` (matches clojure CLI `1.10.986`)
+- Print locals only when debug option is enabled [#1015](https://github.com/babashka/babashka/issues/1015)
+
+### SCI:
+
+- Fix order of protocol handling wrt/ `extend-type`, `defrecord` and `:extend-via-metadata`
+
+### babashka.curl:
+
+- Support keywords as query and form param keys ([@lispyclouds](https://github.com/lispyclouds))
+
+### babashka.nrepl:
+
+- Fix hanging CIDER [#45](https://github.com/babashka/babashka.nrepl/issues/45)
+
+### babashka.fs:
+
+-  Add `fs/unzip`
+
 ## 0.6.1
 
 - Fix for `java-http-clj` `send-async` [#997](https://github.com/babashka/babashka/issues/997)
