@@ -246,7 +246,7 @@
 
 (deftest ssl-context-test
   (is (= {:expired "java.security.cert.CertificateExpiredException"
-          :revoked 200 ;; TODO: fix, "sun.security.cert.CertificateRevokedException"
+          :revoked "java.security.cert.CertificateExpiredException"
           :self-signed "sun.security.provider.certpath.SunCertPathBuilderException"
           :untrusted-root "sun.security.provider.certpath.SunCertPathBuilderException"
           :wrong-host "sun.security.provider.certpath.SunCertPathBuilderException"}
