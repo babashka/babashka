@@ -248,7 +248,9 @@
                 java.nio.file.attribute.PosixFilePermissions])
           java.security.MessageDigest
           java.security.DigestInputStream
+          java.security.Provider
           java.security.SecureRandom
+          java.security.Security
           java.sql.Date
           java.text.ParseException
           ;; adds about 200kb, same functionality provided by java.time:
