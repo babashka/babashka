@@ -7,6 +7,7 @@
 
 (def current-file (fs/file (fs/absolutize (fs/path "src" *file*))))
 
+;; clojure -X babashka.impl.fs/update-vars
 (defn update-vars [_]
   (let [output (with-out-str (doseq [k (sort (keys (ns-publics 'babashka.fs)))]
                                  (println (str "   '" k) (format "(sci/copy-var fs/%s fns)" k))))
@@ -82,6 +83,7 @@
    'strip-ext (sci/copy-var fs/strip-ext fns)
    'sym-link? (sci/copy-var fs/sym-link? fns)
    'temp-dir (sci/copy-var fs/temp-dir fns)
+   'unzip (sci/copy-var fs/unzip fns)
    'walk-file-tree (sci/copy-var fs/walk-file-tree fns)
    'which (sci/copy-var fs/which fns)
    'writable? (sci/copy-var fs/writable? fns)
