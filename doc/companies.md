@@ -28,7 +28,7 @@ Sponsoring via [Cognitect](https://www.cognitect.com/).
 
 ### [Fluent](https//fluent.to)
 
-<img src="https://uploads-ssl.webflow.com/600fdbbcf0cbfe02f1a48030/600fdf0fffe881c3e8e298f4_Fluent%20logotype-p-500.png" width=300">
+<img src="https://uploads-ssl.webflow.com/600fdbbcf0cbfe02f1a48030/600fdf0fffe881c3e8e298f4_Fluent logotype-p-500.png" width=300">
 
 ### [EnjoyHQ](https://getenjoyhq.com/)
 
