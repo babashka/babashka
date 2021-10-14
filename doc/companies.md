@@ -26,6 +26,10 @@ Sponsoring via [Cognitect](https://www.cognitect.com/).
 
 <img src="https://cdn.nextjournal.com/images/nextjournal-logo.svg" width="300">
 
+### [Fluent](https//fluent.to)
+
+<img src="https://uploads-ssl.webflow.com/600fdbbcf0cbfe02f1a48030/600fdf0fffe881c3e8e298f4_Fluent%20logotype-p-500.png" width="300">
+
 ### [EnjoyHQ](https://getenjoyhq.com/)
 
 <img src="https://getenjoyhq.com/wp-content/uploads/2021/07/EnjoyHQ_uz-blue_cropp.svg" width="300">
