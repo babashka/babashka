@@ -132,6 +132,7 @@ Global opts:
   -cp, --classpath  Classpath to use. Overrides bb.edn classpath.
   --debug           Print debug information and internal stacktrace in case of exception.
   --force           Passes -Sforce to deps.clj, forcing recalculation of the classpath.
+  --init <file>     Load file after any preloads and prior to evaluation/subcommands.
 
 Help:
 
@@ -586,6 +587,10 @@ Use bb run --help to show this help output.
           (let [options (next options)]
             (recur (next options)
                    (assoc opts-map :main (first options))))
+          ("--init")
+          (let [options (next options)]
+            (recur (next options)
+                   (assoc opts-map :init (first options))))
           ("--run")
           (parse-run-opts opts-map (next options))
           ("--tasks")
@@ -662,7 +667,7 @@ Use bb run --help to show this help output.
       (let [{version-opt :version
              :keys [:shell-in :edn-in :shell-out :edn-out
                     :help :file :command-line-args
-                    :expressions :stream?
+                    :expressions :stream? :init
                     :repl :socket-repl :nrepl
                     :debug :classpath :force?
                     :main :uberscript :describe?
@@ -762,6 +767,7 @@ Use bb run --help to show this help output.
                               (error-handler e {:expression expressions
                                                 :debug debug
                                                 :preloads preloads
+                                                :init init
                                                 :loader (:loader @cp/cp-state)}))))
             expression (str/join " " expressions) ;; this might mess with the locations...
             exit-code
@@ -775,7 +781,21 @@ Use bb run --help to show this help output.
                             (error-handler e {:expression expression
                                               :debug debug
                                               :preloads preloads
+                                              :init init
                                               :loader (:loader @cp/cp-state)})))))
+                    nil))
+            exit-code
+            ;; handle --init
+            (if exit-code exit-code
+                (do (when init
+                      (try
+                        (load-file* init)
+                        (catch Throwable e
+                          (error-handler e {:expression expression
+                                            :debug debug
+                                            :preloads preloads
+                                            :init init
+                                            :loader (:loader @cp/cp-state)}))))
                     nil))
             ;; socket REPL is start asynchronously. when no other args are
             ;; provided, a normal REPL will be started as well, which causes the

@@ -189,6 +189,26 @@
                                                 (defn bar [x y] (* x y))
                                                 (bar (foo 10 30) 3)))"))))
 
+(deftest init-test
+  (testing "init with a file"
+    (is (= "foo" (bb nil "--init" "test-resources/babashka/init_test.clj" 
+                   "-f" "test-resources/babashka/init_caller.clj"))))
+  (testing "init with eval(s)"
+    (is (= "foo" (bb nil "--init" "test-resources/babashka/init_test.clj"
+                   "-e" "(init-test/do-a-thing)"))))
+  (testing "init with main from init'ed ns"
+    (is (= "Hello from init!" (bb nil "--init" "test-resources/babashka/init_test.clj"
+                                "-m" "init-test"))))
+  (testing "init with main from another namespace"
+    (test-utils/with-config '{:paths ["test-resources/babashka/src_for_classpath_test"]}
+      (is (= "foo" (bb nil "--init" "test-resources/babashka/init_test.clj"
+                     "-m" "call-init-main")))))
+  (testing "init with a qualified function passed to --main"
+    (test-utils/with-config '{:paths ["test-resources/babashka/src_for_classpath_test"]}
+      (is (= "foobar" (bb nil "--init" "test-resources/babashka/init_test.clj"
+                        "-m" "call-init-main/foobar"))))))
+    
+
 (deftest preloads-test
   ;; THIS TEST REQUIRES:
   ;; export BABASHKA_PRELOADS='(defn __bb__foo [] "foo") (defn __bb__bar [] "bar")'
