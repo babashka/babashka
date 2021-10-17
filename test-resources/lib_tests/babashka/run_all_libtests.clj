@@ -229,7 +229,6 @@
 
 (test-namespaces 'hasch.test
                  )
-                 
 
 (test-namespaces 'omniconf.core-test)
 
