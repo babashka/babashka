@@ -258,6 +258,8 @@
 
 (test-namespaces 'ruuter.core-test)
 
+(test-namespaces 'clj-commons.digest-test)
+
 ;;;; final exit code
 
 (let [{:keys [:test :fail :error] :as m} @status]
