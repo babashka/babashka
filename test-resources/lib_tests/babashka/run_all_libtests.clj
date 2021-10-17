@@ -222,13 +222,13 @@
                  'honey.sql.postgres-test)
 
 (test-namespaces 'slingshot.slingshot-test
-                 'slingshot.support-test
+                 'slingshot.support-test)
                  ;; TODO:
                  ;; 'slingshot.test-test
-                 )
+                 
 
-(test-namespaces 'hasch.test
-                 )
+(test-namespaces 'hasch.test)
+                 
 
 (test-namespaces 'omniconf.core-test)
 
@@ -255,6 +255,8 @@
 (test-namespaces 'java-http-clj.smoke-test)
 
 (test-namespaces 'component.component-test)
+
+(test-namespaces 'ruuter.core-test)
 
 ;;;; final exit code
 
