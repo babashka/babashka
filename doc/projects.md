@@ -48,6 +48,8 @@ The following libraries and projects are known to work with babashka.
     - [java-http-clj](#java-http-clj)
     - [component](#component)
     - [minimallist](#minimallist)
+    - [ruuter](#ruuter)
+    - [clj-commons.digest](#clj-commonsdigest)
   - [Pods](#pods)
   - [Projects](#projects-1)
     - [babashka-test-action](#babashka-test-action)
@@ -715,6 +717,14 @@ Example partially borrowed from [minimallist's cljdoc](https://cljdoc.org/d/mini
 ;(require '[minimallist.generator :as mg])
 ;(tcg/sample (mg/gen (h/fn int?)))
 ```
+
+### [ruuter](https://github.com/askonomm/ruuter)
+
+A zero-dependency router where each route is a map. Works with the httpkit server built into babashka.
+
+### [clj-commons.digest](https://github.com/clj-commons/digest)
+
+A message digest library, providing functions for MD5, SHA-1, SHA-256, etc.
 
 ## Pods
 
