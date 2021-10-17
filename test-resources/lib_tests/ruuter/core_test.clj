@@ -19,8 +19,8 @@
 (deftest ruuter-with-httpkit-test
   (let [stop-server  (server/run-server #(ruuter/route routes %) {:port port})
         fetch        #(client/get (str "http://localhost:" port %) {:as :text})
-        root-result  @(fetch "/")
-        hello-result @(fetch "/hello/babashka")]
+        root-result  (deref (fetch "/") 500 nil)
+        hello-result (deref (fetch "/hello/babashka") 500 nil)]
     (stop-server)
     (is (= "Hi there!" (:body root-result)))
     (is (= "Hello, babashka" (:body hello-result)))))
