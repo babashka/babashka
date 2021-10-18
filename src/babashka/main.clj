@@ -587,10 +587,6 @@ Use bb run --help to show this help output.
           (let [options (next options)]
             (recur (next options)
                    (assoc opts-map :main (first options))))
-          ("--init")
-          (let [options (next options)]
-            (recur (next options)
-                   (assoc opts-map :init (first options))))
           ("--run")
           (parse-run-opts opts-map (next options))
           ("--tasks")
@@ -626,6 +622,8 @@ Use bb run --help to show this help output.
         ("--debug"
          "--verbose" ;; renamed to --debug
          ) (recur (next options) (assoc opts-map :debug true))
+        ("--init")
+        (recur (nnext options) (assoc opts-map :init (second options)))
         [options opts-map])
       [options opts-map])))
 

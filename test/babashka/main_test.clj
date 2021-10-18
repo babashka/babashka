@@ -206,7 +206,17 @@
   (testing "init with a qualified function passed to --main"
     (test-utils/with-config '{:paths ["test-resources/babashka/src_for_classpath_test"]}
       (is (= "foobar" (bb nil "--init" "test-resources/babashka/init_test.clj"
-                        "-m" "call-init-main/foobar"))))))
+                        "-m" "call-init-main/foobar")))))
+  (testing "init with a subcommand after it"
+    (let [actual-output (test-utils/bb "(println (init-test/do-a-thing))"
+                          "--init" "test-resources/babashka/init_test.clj" "repl")]
+      (is (str/includes? actual-output "foo\n")))
+    (test-utils/with-config '{:tasks {thing (println (init-test/do-a-thing))}} ; make a task available 
+      (let [actual-output (test-utils/bb nil "--init" "test-resources/babashka/init_test.clj" "tasks")]
+        (is (every? #(str/includes? actual-output %) ["following tasks are available" "thing"])))))
+  (testing "init with a task name after it"
+    (test-utils/with-config '{:tasks {thing (println (init-test/do-a-thing))}} ; make a task available 
+      (is (= "foo\n" (test-utils/bb nil "--init" "test-resources/babashka/init_test.clj" "thing"))))))
     
 
 (deftest preloads-test
