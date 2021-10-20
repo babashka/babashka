@@ -53,6 +53,7 @@
    'last-modified-time (sci/copy-var fs/last-modified-time fns)
    'list-dir (sci/copy-var fs/list-dir fns)
    'list-dirs (sci/copy-var fs/list-dirs fns)
+   'match (sci/copy-var fs/match fns)
    'millis->file-time (sci/copy-var fs/millis->file-time fns)
    'modified-since (sci/copy-var fs/modified-since fns)
    'move (sci/copy-var fs/move fns)
