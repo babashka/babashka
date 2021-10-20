@@ -53,6 +53,7 @@ Sponsoring via [Cognitect](https://www.cognitect.com/).
 - [Nextdoc](https://www.nextdoc.io/)
 - [PractiTest](https://www.practitest.com/)
 - [Reify Health](https://www.reifyhealth.com/)
+- [Schnaq](https://schnaq.com/)
 - [Splash Financial](https://www.splashfinancial.com/)
 - [TOYOKUMO, Inc.](https://toyokumo.co.jp/)
 - [Xcoo](https://xcoo.com/)
