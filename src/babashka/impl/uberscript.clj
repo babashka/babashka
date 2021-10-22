@@ -14,7 +14,7 @@
                      clause)
             [ns & tail] clause]
         (loop [parsed {:ns ns}
-               tail (clojure.core/seq tail)]
+               tail (seq tail)]
           (if tail
             (let [ftail (first tail)]
               (case ftail
@@ -31,18 +31,15 @@
                        (nnext tail))))
             parsed))))))
 
-(defn recompose-clause [{:keys [:ns :as :refer]}]
-  [ns :as as :refer refer])
-
+(defn recompose-clause [{:keys [:ns :as]}]
+  [ns :as as])
 
 (defn process-ns
   [_ctx ns]
   (keep (fn [x]
           (if (seqable? x) ;; for some reason pathom has [:require-macros com.wsscode.pathom.connect] in a vector...
             (let [fx (first x)]
-              (when (clojure.core/or
-                     (identical? :require fx)
-                     (identical? :require-macros fx))
+              (when (identical? :require fx)
                 (let [decomposed (keep decompose-clause (rest x))
                       recomposed (map recompose-clause decomposed)]
                   (list* :require recomposed))))
