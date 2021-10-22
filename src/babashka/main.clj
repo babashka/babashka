@@ -718,7 +718,8 @@ Use bb run --help to show this help output.
                           ""
                           (let [res (cp/source-for-namespace loader namespace nil)]
                             (when uberscript (swap! uberscript-sources conj (:source res)))
-                            res))))
+                            (doto res
+                              #_(as-> $ (.println System/err (str ">" (pr-str $)))))))))
             main (if (and jar (not main))
                    (when-let [res (cp/getResource
                                    (cp/loader jar)

@@ -87,6 +87,7 @@
         (let [rdr (sci/reader expr)]
           (loop []
             (let [next-val (sci/parse-next ctx rdr)]
+              ;; (.println System/err (pr-str next-val))
               (when-not (= ::sci/eof next-val)
                 (if (seq? next-val)
                   (let [fst (first next-val)]
