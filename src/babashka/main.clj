@@ -38,6 +38,7 @@
    [babashka.impl.tasks :as tasks :refer [tasks-namespace]]
    [babashka.impl.test :as t]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
+   [babashka.impl.uberscript :as uberscript]
    [babashka.nrepl.server :as nrepl-server]
    [babashka.wait :refer [wait-namespace]]
    [clojure.edn :as edn]
@@ -813,7 +814,12 @@ Use bb run --help to show this help output.
                        uberjar [nil 0]
                        list-tasks [(tasks/list-tasks sci-ctx) 0]
                        print-deps [(print-deps/print-deps (:print-deps-format cli-opts)) 0]
+                       uberscript
+                       [nil (do (uberscript/uberscript {:ctx sci-ctx
+                                                        :expressions expressions})
+                                0)]
                        expressions
+                       ;; execute code
                        (sci/binding [sci/file abs-path]
                          (try
                            ; when evaluating expression(s), add in repl-requires so things like
@@ -851,7 +857,6 @@ Use bb run --help to show this help output.
                        clojure [nil (if-let [proc (deps/clojure command-line-args)]
                                       (-> @proc :exit)
                                       0)]
-                       uberscript [nil 0]
                        :else [(repl/start-repl! sci-ctx) 0]))
                 1)]
         (flush)
