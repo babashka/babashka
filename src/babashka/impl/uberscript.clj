@@ -86,17 +86,22 @@
       (doseq [expr expressions]
         (let [rdr (sci/reader expr)]
           (loop []
-            (let [next-val (sci/parse-next ctx rdr)]
+            (let [next-val (try (sci/parse-next ctx rdr)
+                                ;; swallow reader error
+                                (catch Exception _e nil))]
               ;; (.println System/err (pr-str next-val))
               (when-not (= ::sci/eof next-val)
                 (if (seq? next-val)
                   (let [fst (first next-val)]
-                    (cond (= 'ns fst)
-                          (sci/eval-form ctx (doto (process-ns ctx next-val)
-                                               #_(as-> $ (.println System/err (pr-str $)))))
-                          (= 'require fst)
-                          (sci/eval-form ctx (process-require ctx next-val))
-                          (= 'in-ns fst)
-                          (sci/eval-form ctx (process-in-ns ctx next-val)))
+                    (try
+                      (cond (= 'ns fst)
+                            (sci/eval-form ctx (doto (process-ns ctx next-val)
+                                                 #_(as-> $ (.println System/err (pr-str $)))))
+                            (= 'require fst)
+                            (sci/eval-form ctx (process-require ctx next-val))
+                            (= 'in-ns fst)
+                            (sci/eval-form ctx (process-in-ns ctx next-val)))
+                      ;; swallow exception and continue
+                      (catch Exception _e nil))
                     (recur))
                   (recur))))))))))
