@@ -20,7 +20,7 @@
               (case ftail
                 :as (recur (assoc parsed :as (second tail))
                            (nnext tail))
-                (:refer :refer-macros)
+                :refer
                 (let [refer (second tail)]
                   (if (seqable? refer)
                     (recur (assoc parsed :refer (second tail))
@@ -34,17 +34,9 @@
 (defn recompose-clause [{:keys [:ns :as :refer]}]
   [ns :as as :refer refer])
 
-(defn stub-refers [ctx {:keys [:ns :refer]}]
-  (when (clojure.core/seq refer)
-    (let [ns-obj (sci/create-ns ns nil)
-          env (:env ctx)]
-      (run! #(swap! env assoc-in [:namespaces ns %]
-                    (sci/new-var % nil {:name %
-                                        :ns ns-obj}))
-            refer))))
 
 (defn process-ns
-  [ctx ns]
+  [_ctx ns]
   (keep (fn [x]
           (if (seqable? x) ;; for some reason pathom has [:require-macros com.wsscode.pathom.connect] in a vector...
             (let [fx (first x)]
@@ -53,7 +45,6 @@
                      (identical? :require-macros fx))
                 (let [decomposed (keep decompose-clause (rest x))
                       recomposed (map recompose-clause decomposed)]
-                  (run! #(stub-refers ctx %) decomposed)
                   (list* :require recomposed))))
             x))
         ns))
@@ -64,10 +55,9 @@
             (second clause)))
         clauses))
 
-(defn process-require [ctx req]
+(defn process-require [_ctx req]
   (let [quoted (keep-quoted (rest req))
         decomposed (map decompose-clause quoted)]
-    (run! #(stub-refers ctx %) decomposed)
     (list* 'require (map (fn [clause]
                            (list 'quote (recompose-clause clause)))
                          decomposed))))
