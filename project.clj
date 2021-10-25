@@ -26,7 +26,7 @@
                  [org.clojure/core.async "1.3.618"]
                  [org.clojure/test.check "1.1.0"]
                  [com.github.clj-easy/graal-build-time "0.1.0"]
-                 [rewrite-clj/rewrite-clj "1.0.644-alpha"]]
+                 [rewrite-clj/rewrite-clj "1.0.699-alpha"]]
   :profiles {:feature/xml  {:source-paths ["feature-xml"]
                             :dependencies [[org.clojure/data.xml "0.2.0-alpha6"]]}
              :feature/yaml {:source-paths ["feature-yaml"]
