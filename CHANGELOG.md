@@ -2,6 +2,10 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
+## 0.6.4
+
+- Fix for `DEPS_CLJ_TOOLS_VERSION` introduced in deps.clj bundled in 0.6.3
+
 ## 0.6.3
 
 - Add `java.security.Provider` and `java.security.Security`. This adds compatibility with [clj-commons/digest](https://github.com/clj-commons/digest).
