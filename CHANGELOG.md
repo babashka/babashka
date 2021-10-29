@@ -2,6 +2,18 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
+## 0.6.3
+
+- Add `java.security.Provider` and `java.security.Security`. This adds compatibility with [clj-commons/digest](https://github.com/clj-commons/digest).
+- Fix mapping for `babashka.fs/unzip` [#1030](https://github.com/babashka/babashka/issues/1030)
+- Pods: support metadata in pod vars, like docstrings ([@quoll](https://github.com/quoll))
+- babashka.curl: support `:follow-redirects false` ([@sudorock](https://github.com/sudorock))
+- Add support for `--init` as a file to be loaded before evaluation actions [#1033](https://github.com/babashka/babashka/issues/1033) ([@bobisageek](https://github.com/bobisageek))
+- Bump rewrite-clj to v1.0.699-alpha ([@yannvanhalewyn](https://github.com/yannvanhalewyn))
+- Fix `BABASHKA_FEATURE_POSTGRESQL` feature flag, initialize `java.sql.SQLException` build time [#1040](https://github.com/babashka/babashka/issues/1040)
+- Deps.clj: upgrade to tools version `1.10.3.998` and include new
+  `DEPS_CLJ_TOOLS_VERSION` environment variable to use older or newer tools jar.
+
 ## 0.6.2
 
 - Add `java.util.zip.ZipFile`, `java.util.stream.BaseStream`
