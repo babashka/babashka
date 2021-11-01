@@ -50,6 +50,7 @@ The following libraries and projects are known to work with babashka.
     - [minimallist](#minimallist)
     - [ruuter](#ruuter)
     - [clj-commons.digest](#clj-commonsdigest)
+    - [contajners](#contajners)
   - [Pods](#pods)
   - [Projects](#projects-1)
     - [babashka-test-action](#babashka-test-action)
@@ -725,6 +726,34 @@ A zero-dependency router where each route is a map. Works with the httpkit serve
 ### [clj-commons.digest](https://github.com/clj-commons/digest)
 
 A message digest library, providing functions for MD5, SHA-1, SHA-256, etc.
+
+### [contajners](https://github.com/lispyclouds/contajners)
+
+An idiomatic, data-driven, REPL friendly clojure client for OCI container engines.
+
+Example:
+
+``` clojure
+#!/usr/bin/env bb
+
+(require '[babashka.deps :as deps])
+
+(deps/add-deps '{:deps {org.clojars.lispyclouds/contajners {:mvn/version "0.0.2"}}})
+
+(require '[contajners.core :as c])
+
+(def images-docker (c/client {:engine   :docker
+                              :category :images
+                              :version  "v1.41"
+                              :conn     {:uri "unix:///var/run/docker.sock"}}))
+
+; Pull an image
+(c/invoke images-docker {:op     :ImageCreate
+                         :params {:fromImage "busybox:musl"}})
+
+; list all images
+(c/invoke images-docker {:op :ImageList})
+```
 
 ## Pods
 
