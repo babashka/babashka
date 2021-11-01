@@ -365,6 +365,7 @@
                       clojure.lang.IPersistentSet
                       clojure.lang.IPersistentStack
                       clojure.lang.IPersistentVector
+                      clojure.lang.IPersistentList
                       clojure.lang.IRecord
                       clojure.lang.IReduce
                       clojure.lang.IReduceInit
