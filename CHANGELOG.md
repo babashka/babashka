@@ -2,6 +2,13 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
+## Unreleased
+
+- Deps.clj: upgrade tools jar, support checking manifest staleness (see [TDEPS-83](https://clojure.atlassian.net/browse/TDEPS-83))
+- Add `clojure.lang.IPersistentList` ([@FieryCod](https://github.com/FieryCod))
+- The [contajners](https://github.com/lispyclouds/contajners) library is now compatible with babashka
+- Support `Object` `toString` override on defrecords [#999](https://github.com/babashka/babashka/issues/999)
+
 ## 0.6.4
 
 - Fix for `DEPS_CLJ_TOOLS_VERSION` introduced in deps.clj bundled in 0.6.3
