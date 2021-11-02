@@ -54,7 +54,8 @@
   (let [v (bb nil "--describe")]
     (is (:babashka/version v))
     (is (:feature/xml v)))
-  (is (= {:force? true} (main/parse-opts ["--force"]))))
+  (is (= {:force? true} (main/parse-opts ["--force"])))
+  (is (= {:main "foo", :command-line-args '("-h")} (main/parse-opts ["-m" "foo" "-h"]))))
 
 (deftest version-test
   (is (= [1 0 0] (main/parse-version "1.0.0-SNAPSHOT")))
@@ -217,7 +218,6 @@
   (testing "init with a task name after it"
     (test-utils/with-config '{:tasks {thing (println (init-test/do-a-thing))}} ; make a task available 
       (is (= "foo\n" (test-utils/bb nil "--init" "test-resources/babashka/init_test.clj" "thing"))))))
-    
 
 (deftest preloads-test
   ;; THIS TEST REQUIRES:

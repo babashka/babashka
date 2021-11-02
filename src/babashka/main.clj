@@ -585,8 +585,8 @@ Use bb run --help to show this help output.
                    (update opts-map :expressions (fnil conj []) (first options))))
           ("--main", "-m",)
           (let [options (next options)]
-            (recur (next options)
-                   (assoc opts-map :main (first options))))
+            (assoc opts-map :main (first options)
+                   :command-line-args (rest options)))
           ("--run")
           (parse-run-opts opts-map (next options))
           ("--tasks")
