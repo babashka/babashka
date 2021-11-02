@@ -245,45 +245,48 @@
     (is (= 302 (bb (redirect-prog :never))))))
 
 (deftest ssl-context-test
-  (is (= {:expired "java.security.cert.CertificateExpiredException"
-          :revoked "java.security.cert.CertificateExpiredException"
-          :self-signed "sun.security.provider.certpath.SunCertPathBuilderException"
-          :untrusted-root "sun.security.provider.certpath.SunCertPathBuilderException"
-          :wrong-host "sun.security.provider.certpath.SunCertPathBuilderException"}
-         (bb
-          '(do
-             (ns net
-               (:import
-                (java.net URI)
-                (java.net.http HttpClient
-                               HttpRequest
-                               HttpResponse$BodyHandlers)))
+  (let [result
+        (bb
+         '(do
+            (ns net
+              (:import
+               (java.net URI)
+               (java.net.http HttpClient
+                              HttpRequest
+                              HttpResponse$BodyHandlers)))
 
-             (defn send-and-catch [client req handler]
-               (try
-                 (let [res (.send client req (HttpResponse$BodyHandlers/discarding))]
-                   (.statusCode res))
-                 (catch Throwable t
-                   (-> (Throwable->map t) :via last :type name))))
+            (defn send-and-catch [client req handler]
+              (try
+                (let [res (.send client req (HttpResponse$BodyHandlers/discarding))]
+                  (.statusCode res))
+                (catch Throwable t
+                  (-> (Throwable->map t) :via last :type name))))
 
-             (let [client (HttpClient/newHttpClient)
-                   handler (HttpResponse$BodyHandlers/discarding)
-                   reqs (->> [:expired
-                              :self-signed
-                              :revoked
-                              :untrusted-root
-                              :wrong-host]
-                             (map (fn [k]
-                                    (let [req (-> (URI. (format "https://%s.badssl.com" (name k)))
-                                                  (HttpRequest/newBuilder)
-                                                  (.GET)
-                                                  (.build))]
-                                      [k req])))
-                             (into {}))]
-               (->> reqs
-                    (map (fn [[k req]]
-                           [k (send-and-catch client req handler)]))
-                    (into {})))))))
+            (let [client (HttpClient/newHttpClient)
+                  handler (HttpResponse$BodyHandlers/discarding)
+                  reqs (->> [:expired
+                             :self-signed
+                             :revoked
+                             :untrusted-root
+                             :wrong-host]
+                            (map (fn [k]
+                                   (let [req (-> (URI. (format "https://%s.badssl.com" (name k)))
+                                                 (HttpRequest/newBuilder)
+                                                 (.GET)
+                                                 (.build))]
+                                     [k req])))
+                            (into {}))]
+              (->> reqs
+                   (map (fn [[k req]]
+                          [k (send-and-catch client req handler)]))
+                   (into {})))))]
+    (doseq [[k v] {:expired "java.security.cert.CertificateExpiredException"
+                   ;; somehow this gave 200 instead of the exception at one point
+                   ;; :revoked "java.security.cert.CertificateExpiredException"
+                   :self-signed "sun.security.provider.certpath.SunCertPathBuilderException"
+                   :untrusted-root "sun.security.provider.certpath.SunCertPathBuilderException"
+                   :wrong-host "sun.security.provider.certpath.SunCertPathBuilderException"}]
+      (is (= v (k result)))))
 
   (is (= {:expired 200
           :self-signed 200
