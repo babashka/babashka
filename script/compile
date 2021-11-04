@@ -25,9 +25,11 @@ export JAVA_HOME=$GRAALVM_HOME
 export PATH=$GRAALVM_HOME/bin:$PATH
 
 rm -rf resources/*.class
-# SVM_JAR=$(find -L "$GRAALVM_HOME" | grep svm.jar)
+SVM_JAR=$(find -L "$GRAALVM_HOME" | grep svm.jar)
 # "$GRAALVM_HOME/bin/javac" -cp "$SVM_JAR" resources/CutOffCoreServicesDependencies.java
 # "$GRAALVM_HOME/bin/javac" -cp "$SVM_JAR" resources/CutOffSunAwtWwwContentAudioAiff.java
+"$GRAALVM_HOME/bin/javac" -cp "$SVM_JAR" resources/CutOffSunAwtWwwContentImageX_XpiXmap.java
+"$GRAALVM_HOME/bin/javac" -cp "$SVM_JAR" resources/CutOffSunAwtWwwContentImageGif.java
 # "$GRAALVM_HOME/bin/javac" -cp "$SVM_JAR" resources/CutOffMisc.java
 
 if [ -z "$BABASHKA_JAR" ]; then
@@ -46,6 +48,10 @@ args=("-jar" "$BABASHKA_JAR"
       # "-H:DashboardDump=reports/dump"
       # "-H:+DashboardPretty"
       # "-H:+DashboardJson"
+      # -H:ReportAnalysisForbiddenType=java.awt.Window
+      # -H:ReportAnalysisForbiddenType=java.awt.EventDispatchThread\$HierarchyEventFilter
+      # -H:ReportAnalysisForbiddenType=java.awt.EventDispatchThread:InHeap,Allocated
+      -H:ReportAnalysisForbiddenType=java.awt.Toolkit:InHeap,Allocated
       "--verbose"
       "--no-fallback"
       "--native-image-info"

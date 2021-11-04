@@ -39,7 +39,8 @@
         rewrite-clj/rewrite-clj {:mvn/version "1.0.699-alpha"}
         selmer/selmer {:mvn/version "1.12.44"}
         com.taoensso/timbre {:mvn/version "5.1.2"}
-        org.clojure/tools.logging {:mvn/version "1.1.0"}}
+        org.clojure/tools.logging {:mvn/version "1.1.0"}
+        borkdude/edamame {:local/root "../edamame"}}
  :aliases {:babashka/dev
            {:main-opts ["-m" "babashka.main"]}
            :profile
