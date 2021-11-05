@@ -23,7 +23,7 @@
                  [cheshire "5.10.1"]
                  [nrepl/bencode "1.1.0"]
                  [borkdude/sci.impl.reflector "0.0.1"]
-                 [org.clojure/core.async "1.3.618"]
+                 [org.clojure/core.async "1.4.627"]
                  [org.clojure/test.check "1.1.0"]
                  [com.github.clj-easy/graal-build-time "0.1.0"]
                  [rewrite-clj/rewrite-clj "1.0.699-alpha"]]
