@@ -1,7 +1,7 @@
 (ns babashka.impl.print-deps
   (:require
+   [babashka.deps :as deps]
    [babashka.impl.common :as common]
-   [babashka.impl.deps :as deps]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.pprint :as pp]

@@ -3,6 +3,7 @@
   (:refer-clojure :exclude [error-handler])
   (:require
    [aaaa-this-has-to-be-first.because-patches]
+   [babashka.deps :as bdeps]
    [babashka.fs :as fs]
    [babashka.impl.bencode :refer [bencode-namespace]]
    [babashka.impl.cheshire :refer [cheshire-core-namespace]]
@@ -848,7 +849,7 @@ Use bb run --help to show this help output.
                                                :debug debug
                                                :preloads preloads
                                                :loader (:loader @cp/cp-state)}))))
-                       clojure [nil (if-let [proc (deps/clojure command-line-args)]
+                       clojure [nil (if-let [proc (bdeps/clojure command-line-args)]
                                       (-> @proc :exit)
                                       0)]
                        uberscript [nil 0]
