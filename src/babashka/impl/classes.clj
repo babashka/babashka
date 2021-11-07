@@ -90,6 +90,8 @@
   `{:all [clojure.lang.ArityException
           clojure.lang.BigInt
           clojure.lang.ExceptionInfo
+          java.io.BufferedInputStream
+          java.io.BufferedOutputStream
           java.io.BufferedReader
           java.io.BufferedWriter
           java.io.ByteArrayInputStream
@@ -242,6 +244,7 @@
                 java.nio.file.PathMatcher
                 java.nio.file.Paths
                 java.nio.file.StandardCopyOption
+                java.nio.file.attribute.BasicFileAttributes
                 java.nio.file.attribute.FileAttribute
                 java.nio.file.attribute.FileTime
                 java.nio.file.attribute.PosixFilePermission
@@ -294,9 +297,12 @@
                 java.time.temporal.TemporalAdjuster])
           java.util.concurrent.ExecutionException
           java.util.concurrent.LinkedBlockingQueue
+          java.util.jar.Attributes$Name
           java.util.jar.JarFile
           java.util.jar.JarEntry
           java.util.jar.JarFile$JarFileEntry
+          java.util.jar.JarOutputStream
+          java.util.jar.Manifest
           java.util.stream.BaseStream
           java.util.stream.Stream
           java.util.Random
@@ -457,7 +463,11 @@
                    ;; this makes interop on reified classes work
                    ;; see java_net_http_test/interop-test
                    (instance? sci.impl.types.IReified v)
-                   (first (t/getInterfaces v)))))))
+                   (first (t/getInterfaces v))
+                   (instance? java.io.Closeable v)
+                   java.io.Closeable
+                   (instance? java.nio.file.attribute.BasicFileAttributes v)
+                   java.nio.file.attribute.BasicFileAttributes)))))
 
 (def class-map (gen-class-map))
 
