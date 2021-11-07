@@ -337,7 +337,8 @@
                    java.io.EOFException]
     :methods [borkdude.graal.LockFix] ;; support for locking
 
-    :fields [clojure.lang.PersistentQueue]
+    :fields [clojure.lang.PersistentQueue
+             ~@(when features/postgresql? '[org.postgresql.PGProperty])]
     ;; this just adds the class without any methods also suitable for private
     ;; classes: add the privage class here and the public class to the normal
     ;; list above and then everything reachable via the public class will be
