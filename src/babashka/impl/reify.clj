@@ -67,7 +67,8 @@
     java.nio.file.FileVisitor
     {preVisitDirectory  [[this p attrs]]
      postVisitDirectory [[this p attrs]]
-     visitFile          [[this p attrs]]}
+     visitFile          [[this p attrs]]
+     visitFileFailed    [[this p ex]]}
 
     java.io.FileFilter
     {accept [[this f]]}
