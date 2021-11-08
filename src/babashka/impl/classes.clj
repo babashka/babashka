@@ -405,7 +405,8 @@
                       java.util.Collection
                       java.util.List
                       java.util.Iterator
-                      java.util.Map$Entry]
+                      java.util.Map$Entry
+                      ~@(when features/xml? ['clojure.data.xml.node.Element])]
     :custom ~custom-map})
 
 (defmacro gen-class-map []
