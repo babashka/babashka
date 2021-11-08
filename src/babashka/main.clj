@@ -365,7 +365,9 @@ Use bb run --help to show this help output.
        'rewrite-clj.parser rewrite/parser-namespace
        'rewrite-clj.zip rewrite/zip-namespace
        'rewrite-clj.zip.subedit rewrite/subedit-namespace}
-    features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace))
+    features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace)
+                          'clojure.data.xml.event @(resolve 'babashka.impl.xml/xml-event-namespace)
+                          'clojure.data.xml.tree @(resolve 'babashka.impl.xml/xml-tree-namespace))
     features/yaml? (assoc 'clj-yaml.core @(resolve 'babashka.impl.yaml/yaml-namespace)
                           'flatland.ordered.map @(resolve 'babashka.impl.ordered/ordered-map-ns))
     features/jdbc? (assoc 'next.jdbc @(resolve 'babashka.impl.jdbc/njdbc-namespace)

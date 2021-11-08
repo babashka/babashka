@@ -2,10 +2,14 @@
   {:no-doc true}
   (:require [babashka.impl.common :refer [ctx]]
             [clojure.data.xml :as xml]
+            [clojure.data.xml.event :as event]
+            [clojure.data.xml.tree :as tree]
             [sci.core :as sci :refer [copy-var]]
             [sci.impl.vars]))
 
 (def xns (sci/create-ns 'clojure.data.xml nil))
+(def xens (sci/create-ns 'clojure.data.xml.event  nil))
+(def xtns (sci/create-ns 'clojure.data.xml.tree nil))
 
 (defn- clj-ns-name [ns]
   (cond (instance? sci.impl.vars.SciNamespace ns) (str ns)
@@ -68,3 +72,11 @@
    'uri-file        (copy-var xml/uri-file xns)
    'uri-symbol      (copy-var xml/uri-symbol xns)
    'xml-comment     (copy-var xml/xml-comment xns)})
+
+(def xml-event-namespace
+  {'event-element (copy-var event/event-element xens)
+   'event-exit? (copy-var event/event-exit? xens)
+   'event-node (copy-var event/event-node xens)})
+
+(def xml-tree-namespace
+  {'seq-tree (copy-var tree/seq-tree xtns)})
