@@ -302,6 +302,7 @@
           java.util.jar.JarFile
           java.util.jar.JarEntry
           java.util.jar.JarFile$JarFileEntry
+          java.util.jar.JarInputStream
           java.util.jar.JarOutputStream
           java.util.jar.Manifest
           java.util.stream.BaseStream
