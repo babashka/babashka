@@ -26,9 +26,13 @@ Sponsoring via [Cognitect](https://www.cognitect.com/).
 
 <img src="https://cdn.nextjournal.com/images/nextjournal-logo.svg" width="300">
 
-### [Fluent](https//fluent.to)
+### [Fluent](https://fluent.to)
 
 <img src="https://uploads-ssl.webflow.com/600fdbbcf0cbfe02f1a48030/600fdf0fffe881c3e8e298f4_Fluent%20logotype-p-500.png" width="300">
+
+### [Dr. Evidence](https://www.drevidence.com/)
+
+<img src="https://user-images.githubusercontent.com/284934/138914250-f447ca3d-c1c1-4c60-bfaf-9000541d4a0d.png" width="325">
 
 ### [EnjoyHQ](https://getenjoyhq.com/)
 
@@ -44,7 +48,6 @@ Sponsoring via [Cognitect](https://www.cognitect.com/).
 - [Barracuda](https://www.barracuda.com/)
 - [Datil](https://datil.com/)
 - [Deon Digital](https://www.deondigital.com/)
-- [Doctor Evidence](https://drevidence.com)
 - [Fluent](https://fluent.to/)
 - [Hi](https://www.hi.group/)
 - [Juxt](https://www.juxt.pro/)

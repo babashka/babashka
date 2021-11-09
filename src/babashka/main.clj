@@ -3,6 +3,7 @@
   (:refer-clojure :exclude [error-handler])
   (:require
    [aaaa-this-has-to-be-first.because-patches]
+   [babashka.deps :as bdeps]
    [babashka.fs :as fs]
    [babashka.impl.bencode :refer [bencode-namespace]]
    [babashka.impl.cheshire :refer [cheshire-core-namespace]]
@@ -586,8 +587,8 @@ Use bb run --help to show this help output.
                    (update opts-map :expressions (fnil conj []) (first options))))
           ("--main", "-m",)
           (let [options (next options)]
-            (recur (next options)
-                   (assoc opts-map :main (first options))))
+            (assoc opts-map :main (first options)
+                   :command-line-args (rest options)))
           ("--run")
           (parse-run-opts opts-map (next options))
           ("--tasks")
@@ -860,7 +861,7 @@ Use bb run --help to show this help output.
                                                :debug debug
                                                :preloads preloads
                                                :loader (:loader @cp/cp-state)}))))
-                       clojure [nil (if-let [proc (deps/clojure command-line-args)]
+                       clojure [nil (if-let [proc (bdeps/clojure command-line-args)]
                                       (-> @proc :exit)
                                       0)]
                        :else [(repl/start-repl! sci-ctx) 0]))

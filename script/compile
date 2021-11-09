@@ -29,7 +29,6 @@ rm -rf resources/*.class
 # "$GRAALVM_HOME/bin/javac" -cp "$SVM_JAR" resources/CutOffCoreServicesDependencies.java
 # "$GRAALVM_HOME/bin/javac" -cp "$SVM_JAR" resources/CutOffSunAwtWwwContentAudioAiff.java
 # "$GRAALVM_HOME/bin/javac" -cp "$SVM_JAR" resources/CutOffMisc.java
-
 if [ -z "$BABASHKA_JAR" ]; then
     lein with-profiles +reflection,+native-image "do" run
     lein "do" clean, uberjar
@@ -46,6 +45,7 @@ args=("-jar" "$BABASHKA_JAR"
       # "-H:DashboardDump=reports/dump"
       # "-H:+DashboardPretty"
       # "-H:+DashboardJson"
+      "-H:ReportAnalysisForbiddenType=java.awt.Toolkit:InHeap,Allocated"
       "--verbose"
       "--no-fallback"
       "--native-image-info"

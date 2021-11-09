@@ -1,7 +1,7 @@
 (ns babashka.impl.tasks
-  (:require [babashka.impl.classpath :as cp]
+  (:require [babashka.deps :as deps]
+            [babashka.impl.classpath :as cp]
             [babashka.impl.common :refer [ctx bb-edn debug]]
-            [babashka.impl.deps :as deps]
             [babashka.process :as p]
             [clojure.core.async :refer [<!!]]
             [clojure.java.io :as io]

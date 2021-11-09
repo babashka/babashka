@@ -1,7 +1,7 @@
 (ns babashka.namespace-test
   (:require [babashka.test-utils :as tu]
             [clojure.edn :as edn]
-            [clojure.test :refer :all]))
+            [clojure.test :refer [deftest is testing]]))
 
 (defn bb [input & args]
   (edn/read-string
@@ -14,7 +14,7 @@
             have ns metadata that matches the namespace it's in"
     (comment "results seq contains vars whose ns meta doesn't match the ns they're in")
     (is (empty? (bb nil "
-(let [excluded-namespaces #{'clojure.lang 'user}]
+(let [excluded-namespaces #{'user}]
   (for [nspace              (remove #(excluded-namespaces (ns-name %)) (all-ns))
         [var-symbol ns-var] (ns-publics nspace)
         :let                [ns-ns-name  (ns-name nspace)
