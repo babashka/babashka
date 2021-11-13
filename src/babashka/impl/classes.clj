@@ -90,6 +90,8 @@
   `{:all [clojure.lang.ArityException
           clojure.lang.BigInt
           clojure.lang.ExceptionInfo
+          java.io.BufferedInputStream
+          java.io.BufferedOutputStream
           java.io.BufferedReader
           java.io.BufferedWriter
           java.io.ByteArrayInputStream
@@ -296,9 +298,13 @@
                 java.time.temporal.TemporalAdjuster])
           java.util.concurrent.ExecutionException
           java.util.concurrent.LinkedBlockingQueue
+          java.util.jar.Attributes$Name
           java.util.jar.JarFile
           java.util.jar.JarEntry
           java.util.jar.JarFile$JarFileEntry
+          java.util.jar.JarInputStream
+          java.util.jar.JarOutputStream
+          java.util.jar.Manifest
           java.util.stream.BaseStream
           java.util.stream.Stream
           java.util.Random
@@ -401,7 +407,8 @@
                       java.util.Collection
                       java.util.List
                       java.util.Iterator
-                      java.util.Map$Entry]
+                      java.util.Map$Entry
+                      ~@(when features/xml? ['clojure.data.xml.node.Element])]
     :custom ~custom-map})
 
 (defmacro gen-class-map []
@@ -467,6 +474,7 @@
                    java.io.Closeable
                    (instance? java.nio.file.attribute.BasicFileAttributes v)
                    java.nio.file.attribute.BasicFileAttributes
+                   ;; keep commas for merge friendliness
                    ,,,)))))
 
 (def class-map (gen-class-map))
