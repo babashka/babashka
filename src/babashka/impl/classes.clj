@@ -94,6 +94,7 @@
           java.io.BufferedWriter
           java.io.ByteArrayInputStream
           java.io.ByteArrayOutputStream
+          java.io.Closeable
           java.io.Console
           java.io.File
           java.io.FileFilter
