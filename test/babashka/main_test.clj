@@ -412,7 +412,13 @@
     (let [v (bb nil "-f" (.getPath (io/file "test-resources" "babashka" "glob.clj")))]
       (is (vector? v))
       (is (.exists (io/file (first v)))))
-    (is (= :success (bb nil "(with-open [str (java.nio.file.Files/newDirectoryStream (.toPath (clojure.java.io/file \".\")))] :success)")))))
+    (is (= :success (bb nil "(with-open [str (java.nio.file.Files/newDirectoryStream (.toPath (clojure.java.io/file \".\")))] :success)")))
+    (is (string? (bb nil
+                     '(do (import [java.nio.file Files LinkOption])
+                          (import [java.nio.file.attribute BasicFileAttributes])
+                          (def attrs (Files/readAttributes (.toPath (io/file ".")) BasicFileAttributes ^"[Ljava.nio.file.LinkOption;"
+                                                           (into-array LinkOption [])))
+                          (str (.lastModifiedTime attrs))))))))
 
 (deftest future-print-test
   (testing "the root binding of sci/*out*"
