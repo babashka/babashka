@@ -425,6 +425,7 @@
                    (instance? java.util.Map v)
                    java.util.Map
                    ;; added for issue #239 regarding clj-http-lite
+                   ;; can potentially be removed due to fix for #1061
                    (instance? java.io.ByteArrayOutputStream v)
                    java.io.ByteArrayOutputStream
                    (instance? java.security.MessageDigest v)
@@ -458,7 +459,10 @@
                    ;; this makes interop on reified classes work
                    ;; see java_net_http_test/interop-test
                    (instance? sci.impl.types.IReified v)
-                   (first (t/getInterfaces v)))))))
+                   (first (t/getInterfaces v))
+                   ;; fix for #1061
+                   (instance? java.io.Closeable v)
+                   java.io.Closeable)))))
 
 (def class-map (gen-class-map))
 

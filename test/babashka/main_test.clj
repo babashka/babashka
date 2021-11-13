@@ -411,7 +411,8 @@
     (is (.exists f2))
     (let [v (bb nil "-f" (.getPath (io/file "test-resources" "babashka" "glob.clj")))]
       (is (vector? v))
-      (is (.exists (io/file (first v)))))))
+      (is (.exists (io/file (first v)))))
+    (is (= :success (bb nil "(with-open [str (java.nio.file.Files/newDirectoryStream (.toPath (clojure.java.io/file \".\")))] :success)")))))
 
 (deftest future-print-test
   (testing "the root binding of sci/*out*"
