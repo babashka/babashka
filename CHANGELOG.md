@@ -4,6 +4,12 @@ For a list of breaking changes, check [here](#breaking-changes).
 
 ## Unreleased
 
+<!--
+- Compat with https://github.com/borkdude/clj-multihash/tree/babashka-next
+- Compat with https://github.com/babashka/tools.bbuild
+- Compat with https://github.com/babashka/tools.namespace
+-->
+
 - Deps.clj: upgrade tools jar, support checking manifest staleness (see [TDEPS-83](https://clojure.atlassian.net/browse/TDEPS-83))
 - Add `clojure.lang.IPersistentList` ([@FieryCod](https://github.com/FieryCod))
 - The [contajners](https://github.com/lispyclouds/contajners) library is now compatible with babashka
