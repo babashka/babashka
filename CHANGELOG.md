@@ -8,6 +8,15 @@ For a list of breaking changes, check [here](#breaking-changes).
 - Add `clojure.lang.IPersistentList` ([@FieryCod](https://github.com/FieryCod))
 - The [contajners](https://github.com/lispyclouds/contajners) library is now compatible with babashka
 - Support `Object` `toString` override on defrecords [#999](https://github.com/babashka/babashka/issues/999)
+- Bump to GraalVM 21.3.0 JVM 11
+- Bump `core.async` to `1.4.627`
+- Bump edamame to `v0.0.14`, fixes parsing of `foo@bar`
+- Fix segfault when reifying `FileVisitor` with `visitFileFailed` [#1055](https://github.com/babashka/babashka/issues/1055)
+- Add `PGProperty` fields to reflection config (fix for postgres feature flag) [#1046](https://github.com/babashka/babashka/issues/1046) ([@bobisageek](https://github.com/bobisageek))
+- Fix for `babashka.fs/unzip` when entry in dir comes before dir in entries
+- Calling `.close` on `DirectoryStream` fails [#1061](https://github.com/babashka/babashka/issues/1061)
+- Add support for `java.nio.file.attribute.BasicFileAttributes`
+- Add various `tools.build` related classes for running parts of tools.build with bb ([@hugoduncan](https://github.com/hugoduncan))
 
 ## 0.6.4
 
