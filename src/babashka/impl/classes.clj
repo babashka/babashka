@@ -243,6 +243,7 @@
                 java.nio.file.PathMatcher
                 java.nio.file.Paths
                 java.nio.file.StandardCopyOption
+                java.nio.file.attribute.BasicFileAttributes
                 java.nio.file.attribute.FileAttribute
                 java.nio.file.attribute.FileTime
                 java.nio.file.attribute.PosixFilePermission
@@ -463,7 +464,10 @@
                    (first (t/getInterfaces v))
                    ;; fix for #1061
                    (instance? java.io.Closeable v)
-                   java.io.Closeable)))))
+                   java.io.Closeable
+                   (instance? java.nio.file.attribute.BasicFileAttributes v)
+                   java.nio.file.attribute.BasicFileAttributes
+                   ,,,)))))
 
 (def class-map (gen-class-map))
 
