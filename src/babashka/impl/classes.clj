@@ -96,6 +96,7 @@
           java.io.BufferedWriter
           java.io.ByteArrayInputStream
           java.io.ByteArrayOutputStream
+          java.io.Closeable
           java.io.Console
           java.io.Closeable
           java.io.File
@@ -434,6 +435,7 @@
                    (instance? java.util.Map v)
                    java.util.Map
                    ;; added for issue #239 regarding clj-http-lite
+                   ;; can potentially be removed due to fix for #1061
                    (instance? java.io.ByteArrayOutputStream v)
                    java.io.ByteArrayOutputStream
                    (instance? java.security.MessageDigest v)
@@ -468,10 +470,13 @@
                    ;; see java_net_http_test/interop-test
                    (instance? sci.impl.types.IReified v)
                    (first (t/getInterfaces v))
+                   ;; fix for #1061
                    (instance? java.io.Closeable v)
                    java.io.Closeable
                    (instance? java.nio.file.attribute.BasicFileAttributes v)
-                   java.nio.file.attribute.BasicFileAttributes)))))
+                   java.nio.file.attribute.BasicFileAttributes
+                   ;; keep commas for merge friendliness
+                   ,,,)))))
 
 (def class-map (gen-class-map))
 
