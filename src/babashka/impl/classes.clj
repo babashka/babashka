@@ -98,7 +98,6 @@
           java.io.ByteArrayOutputStream
           java.io.Closeable
           java.io.Console
-          java.io.Closeable
           java.io.File
           java.io.FileFilter
           java.io.FilenameFilter
