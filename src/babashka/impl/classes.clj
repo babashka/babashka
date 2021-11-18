@@ -204,6 +204,8 @@
                 java.net.http.WebSocket$Builder
                 java.net.http.WebSocket$Listener
                 java.security.cert.X509Certificate
+                javax.crypto.Mac
+                javax.crypto.spec.SecretKeySpec
                 javax.net.ssl.SSLContext
                 javax.net.ssl.SSLParameters
                 javax.net.ssl.TrustManager
