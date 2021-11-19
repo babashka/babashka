@@ -87,6 +87,7 @@
    'unzip (sci/copy-var fs/unzip fns)
    'walk-file-tree (sci/copy-var fs/walk-file-tree fns)
    'which (sci/copy-var fs/which fns)
+   'with-temp-dir (sci/copy-var fs/with-temp-dir fns)
    'writable? (sci/copy-var fs/writable? fns)
     ;; end placeholder
    })
