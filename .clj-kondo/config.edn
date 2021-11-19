@@ -1,4 +1,5 @@
-{:lint-as {me.raynes.conch/let-programs clojure.core/let
+{:config-paths ["babashka/sci"]
+ :lint-as {me.raynes.conch/let-programs clojure.core/let
            babashka.impl.File/gen-wrapper-fn clojure.core/def
            babashka.impl.Pattern/gen-wrapper-fn clojure.core/def
            babashka.impl.File/gen-wrapper-fn-2 clojure.core/def
