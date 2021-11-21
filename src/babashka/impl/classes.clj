@@ -398,6 +398,7 @@
                       clojure.lang.PersistentTreeSet
                       clojure.lang.PersistentVector
                       clojure.lang.Ratio
+                      clojure.lang.ReaderConditional
                       clojure.lang.Repeat
                       clojure.lang.Reversible
                       clojure.lang.Symbol
