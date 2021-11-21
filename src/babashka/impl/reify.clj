@@ -174,4 +174,12 @@
     javax.net.ssl.X509TrustManager
     {checkClientTrusted [[this chain auth-type]]
      checkServerTrusted [[this chain auth-type]]
-     getAcceptedIssuers [[this]]}}))
+     getAcceptedIssuers [[this]]}
+
+    clojure.lang.LispReader$Resolver
+    {currentNS [[this]]
+     resolveClass [[this sym]]
+     resolveAlias [[this sym]]
+     resolveVar [[this sym]]}
+
+    }))

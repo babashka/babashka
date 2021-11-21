@@ -386,6 +386,7 @@
                       clojure.lang.Indexed
                       clojure.lang.Iterate
                       clojure.lang.LazySeq
+                      clojure.lang.LispReader$Resolver
                       clojure.lang.Named
                       clojure.lang.Keyword
                       clojure.lang.PersistentArrayMap
