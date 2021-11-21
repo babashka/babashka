@@ -739,7 +739,7 @@ Use bb run --help to show this help output.
                   :imports classes/imports
                   :load-fn load-fn
                   :uberscript uberscript
-                  :readers core/data-readers
+                  ;; :readers core/data-readers
                   :reify-fn reify-fn
                   :proxy-fn proxy-fn}
             opts (addons/future opts)
