@@ -170,6 +170,8 @@
           java.net.DatagramPacket
           java.net.HttpURLConnection
           java.net.InetAddress
+          java.net.Inet4Address
+          java.net.Inet6Address
           java.net.InetSocketAddress
           java.net.ServerSocket
           java.net.Socket
