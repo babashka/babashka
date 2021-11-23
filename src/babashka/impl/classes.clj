@@ -78,7 +78,11 @@
         java.lang.reflect.AccessibleObject
         {:methods [{:name "canAccess"}]}
         java.lang.reflect.Method
-        {:methods [{:name "getName"}]}}
+        {:methods [{:name "getName"}]}
+        java.net.Inet4Address
+        {:methods [{:name "getHostAddress"}]}
+        java.net.Inet6Address
+        {:methods [{:name "getHostAddress"}]}}
     features/hsqldb? (assoc `org.hsqldb.dbinfo.DatabaseInformationFull
                             {:methods [{:name "<init>"
                                         :parameterTypes ["org.hsqldb.Database"]}]}
@@ -170,8 +174,6 @@
           java.net.DatagramPacket
           java.net.HttpURLConnection
           java.net.InetAddress
-          java.net.Inet4Address
-          java.net.Inet6Address
           java.net.InetSocketAddress
           java.net.ServerSocket
           java.net.Socket

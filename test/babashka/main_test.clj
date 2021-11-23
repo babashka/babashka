@@ -789,6 +789,9 @@ true")))
 (.read pi)
 "))))
 
+(deftest InetAddress-test
+  (is (= "192.168.2.2" (bb nil "(-> (java.net.InetAddress/getByName \"192.168.2.2\") (.getHostAddress))"))))
+
 ;;;; Scratch
 
 (comment
