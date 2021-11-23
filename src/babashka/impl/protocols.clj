@@ -35,4 +35,5 @@
    'datafy (copy-var datafy protocols-ns)
    'Navigable (sci/new-var 'clojure.core.protocols/Navigable {:methods #{'nav}
                                                               :ns protocols-ns} {:ns protocols-ns})
-   'nav (copy-var nav protocols-ns)})
+   'nav (copy-var nav protocols-ns)
+   'IKVReduce (copy-var datafy protocols-ns)})

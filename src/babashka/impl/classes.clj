@@ -316,6 +316,10 @@
           java.util.Random
           java.util.regex.Matcher
           java.util.regex.Pattern
+          java.util.ArrayDeque
+          java.util.ArrayList
+          java.util.Collections
+          java.util.Comparator
           java.util.Base64
           java.util.Base64$Decoder
           java.util.Base64$Encoder
@@ -323,6 +327,7 @@
           java.util.Locale
           java.util.Map
           java.util.MissingResourceException
+          java.util.NoSuchElementException
           java.util.Optional
           java.util.Properties
           java.util.Set
