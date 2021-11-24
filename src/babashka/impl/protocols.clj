@@ -48,7 +48,7 @@
 (def protocols-namespace
   {;; Datafiable
    'Datafiable (sci/new-var 'clojure.core.protocols/Datafiable {:methods #{'datafy}
-                                                                ;; :protocol p/Datafiable
+                                                                :protocol (trim-protocol p/Datafiable)
                                                                 :ns protocols-ns}
                             {:ns protocols-ns})
    'datafy (copy-var datafy protocols-ns)
