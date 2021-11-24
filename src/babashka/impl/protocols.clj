@@ -41,21 +41,17 @@
 ;;;; sci namespace
 (def protocols-ns (sci/create-ns 'clojure.core.protocols nil))
 
-(defn trim-protocol
-  [protocol]
-  (select-keys protocol [:on :on-interface :impls]))
-
 (def protocols-namespace
   {;; Datafiable
    'Datafiable (sci/new-var 'clojure.core.protocols/Datafiable {:methods #{'datafy}
-                                                                :protocol (trim-protocol p/Datafiable)
+                                                                :protocol p/Datafiable
                                                                 :ns protocols-ns}
                             {:ns protocols-ns})
    'datafy (copy-var datafy protocols-ns)
 
    ;; Navigable
    'Navigable (sci/new-var 'clojure.core.protocols/Navigable {:methods #{'nav}
-                                                              :protocol (trim-protocol p/Navigable)
+                                                              :protocol p/Navigable
                                                               :ns protocols-ns}
                            {:ns protocols-ns})
    'nav (copy-var nav protocols-ns)
