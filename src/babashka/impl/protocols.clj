@@ -55,7 +55,7 @@
 
    ;; Navigable
    'Navigable (sci/new-var 'clojure.core.protocols/Navigable {:methods #{'nav}
-                                                              ;; :protocol p/Navigable
+                                                              :protocol (trim-protocol p/Navigable)
                                                               :ns protocols-ns}
                            {:ns protocols-ns})
    'nav (copy-var nav protocols-ns)
