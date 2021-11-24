@@ -792,6 +792,11 @@ true")))
 (deftest InetAddress-test
   (is (= "192.168.2.2" (bb nil "(-> (java.net.InetAddress/getByName \"192.168.2.2\") (.getHostAddress))"))))
 
+(deftest satisfies-protocols-test
+  (is (true? (bb nil "(satisfies? clojure.core.protocols/Datafiable {})")))
+  (is (true? (bb nil "(satisfies? clojure.core.protocols/Navigable {})")))
+  (is (true? (bb nil "(satisfies? clojure.core.protocols/IKVReduce {})"))))
+
 ;;;; Scratch
 
 (comment
