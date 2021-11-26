@@ -2,88 +2,92 @@
   {:no-doc true}
   (:require
    [babashka.impl.features :as features]
-   [babashka.impl.proxy :refer [proxy-classes]]
+   [babashka.impl.proxy :as proxy]
    [cheshire.core :as json]
    [sci.impl.types :as t]))
 
+(def base-custom-map
+  `{clojure.lang.LineNumberingPushbackReader {:allPublicConstructors true
+                                              :allPublicMethods true}
+    java.lang.Thread
+    {:allPublicConstructors true
+     ;; generated with `public-declared-method-names`, see in
+     ;; `comment` below
+     :methods [{:name "activeCount"}
+               {:name "checkAccess"}
+               {:name "currentThread"}
+               {:name "dumpStack"}
+               {:name "enumerate"}
+               {:name "getAllStackTraces"}
+               {:name "getContextClassLoader"}
+               {:name "getDefaultUncaughtExceptionHandler"}
+               {:name "getId"}
+               {:name "getName"}
+               {:name "getPriority"}
+               {:name "getStackTrace"}
+               {:name "getState"}
+               {:name "getThreadGroup"}
+               {:name "getUncaughtExceptionHandler"}
+               {:name "holdsLock"}
+               {:name "interrupt"}
+               {:name "interrupted"}
+               {:name "isAlive"}
+               {:name "isDaemon"}
+               {:name "isInterrupted"}
+               {:name "join"}
+               {:name "run"}
+               {:name "setContextClassLoader"}
+               {:name "setDaemon"}
+               {:name "setDefaultUncaughtExceptionHandler"}
+               {:name "setName"}
+               {:name "setPriority"}
+               {:name "setUncaughtExceptionHandler"}
+               {:name "sleep"}
+               {:name "start"}
+               {:name "toString"}
+               {:name "yield"}]}
+    java.net.URL
+    {:allPublicConstructors true
+     :allPublicFields true
+     ;; generated with `public-declared-method-names`, see in
+     ;; `comment` below
+     :methods [{:name "equals"}
+               {:name "getAuthority"}
+               {:name "getContent"}
+               {:name "getDefaultPort"}
+               {:name "getFile"}
+               {:name "getHost"}
+               {:name "getPath"}
+               {:name "getPort"}
+               {:name "getProtocol"}
+               {:name "getQuery"}
+               {:name "getRef"}
+               {:name "getUserInfo"}
+               {:name "hashCode"}
+               {:name "openConnection"}
+               {:name "openStream"}
+               {:name "sameFile"}
+               ;; not supported: {:name "setURLStreamHandlerFactory"}
+               {:name "toExternalForm"}
+               {:name "toString"}
+               {:name "toURI"}]}
+    java.util.Arrays
+    {:methods [{:name "copyOf"}
+               {:name "copyOfRange"}]}
+    ;; this fixes clojure.lang.Reflector for Java 11
+    java.lang.reflect.AccessibleObject
+    {:methods [{:name "canAccess"}]}
+    java.lang.reflect.Method
+    {:methods [{:name "getName"}]}
+    java.net.Inet4Address
+    {:methods [{:name "getHostAddress"}]}
+    java.net.Inet6Address
+    {:methods [{:name "getHostAddress"}]}})
+
 (def custom-map
   (cond->
-      `{clojure.lang.LineNumberingPushbackReader {:allPublicConstructors true
-                                                  :allPublicMethods true}
-        java.lang.Thread
-        {:allPublicConstructors true
-         ;; generated with `public-declared-method-names`, see in
-         ;; `comment` below
-         :methods [{:name "activeCount"}
-                   {:name "checkAccess"}
-                   {:name "currentThread"}
-                   {:name "dumpStack"}
-                   {:name "enumerate"}
-                   {:name "getAllStackTraces"}
-                   {:name "getContextClassLoader"}
-                   {:name "getDefaultUncaughtExceptionHandler"}
-                   {:name "getId"}
-                   {:name "getName"}
-                   {:name "getPriority"}
-                   {:name "getStackTrace"}
-                   {:name "getState"}
-                   {:name "getThreadGroup"}
-                   {:name "getUncaughtExceptionHandler"}
-                   {:name "holdsLock"}
-                   {:name "interrupt"}
-                   {:name "interrupted"}
-                   {:name "isAlive"}
-                   {:name "isDaemon"}
-                   {:name "isInterrupted"}
-                   {:name "join"}
-                   {:name "run"}
-                   {:name "setContextClassLoader"}
-                   {:name "setDaemon"}
-                   {:name "setDefaultUncaughtExceptionHandler"}
-                   {:name "setName"}
-                   {:name "setPriority"}
-                   {:name "setUncaughtExceptionHandler"}
-                   {:name "sleep"}
-                   {:name "start"}
-                   {:name "toString"}
-                   {:name "yield"}]}
-        java.net.URL
-        {:allPublicConstructors true
-         :allPublicFields true
-         ;; generated with `public-declared-method-names`, see in
-         ;; `comment` below
-         :methods [{:name "equals"}
-                   {:name "getAuthority"}
-                   {:name "getContent"}
-                   {:name "getDefaultPort"}
-                   {:name "getFile"}
-                   {:name "getHost"}
-                   {:name "getPath"}
-                   {:name "getPort"}
-                   {:name "getProtocol"}
-                   {:name "getQuery"}
-                   {:name "getRef"}
-                   {:name "getUserInfo"}
-                   {:name "hashCode"}
-                   {:name "openConnection"}
-                   {:name "openStream"}
-                   {:name "sameFile"}
-                   ;; not supported: {:name "setURLStreamHandlerFactory"}
-                   {:name "toExternalForm"}
-                   {:name "toString"}
-                   {:name "toURI"}]}
-        java.util.Arrays
-        {:methods [{:name "copyOf"}
-                   {:name "copyOfRange"}]}
-        ;; this fixes clojure.lang.Reflector for Java 11
-        java.lang.reflect.AccessibleObject
-        {:methods [{:name "canAccess"}]}
-        java.lang.reflect.Method
-        {:methods [{:name "getName"}]}
-        java.net.Inet4Address
-        {:methods [{:name "getHostAddress"}]}
-        java.net.Inet6Address
-        {:methods [{:name "getHostAddress"}]}}
+      (merge base-custom-map
+             proxy/custom-reflect-map)
     features/hsqldb? (assoc `org.hsqldb.dbinfo.DatabaseInformationFull
                             {:methods [{:name "<init>"
                                         :parameterTypes ["org.hsqldb.Database"]}]}
@@ -359,8 +363,7 @@
           ~(symbol "[I")
           ~(symbol "[Ljava.lang.Object;")
           ~@(when features/yaml? '[org.yaml.snakeyaml.error.YAMLException])
-          ~@(when features/hsqldb? '[org.hsqldb.jdbcDriver])
-          ~@proxy-classes]
+          ~@(when features/hsqldb? '[org.hsqldb.jdbcDriver])]
     :constructors [clojure.lang.Delay
                    clojure.lang.MapEntry
                    clojure.lang.LineNumberingPushbackReader

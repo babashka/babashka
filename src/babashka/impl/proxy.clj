@@ -69,12 +69,14 @@
         (connectFailed [_ _ _] ((method-or-bust methods 'connectFailed) this))
         (select [_ _] ((method-or-bust methods 'select) this))))))
 
-(def proxy-classes
-  (map #(symbol (class-name %))
-       [(class (proxy-fn {:class clojure.lang.APersistentMap :interfaces [clojure.lang.IMeta clojure.lang.IObj]}))
-        (class (proxy-fn {:class clojure.lang.AMapEntry}))
-        (class (proxy-fn {:class java.net.Authenticator}))
-        (class (proxy-fn {:class java.net.ProxySelector}))]))
+(defn class-sym [c] (symbol (class-name c)))
+
+(def custom-reflect-map
+  {(class-sym (class (proxy-fn {:class java.net.Authenticator})))
+   {:methods [{:name "getPasswordAuthentication"}]}
+   (class-sym (class (proxy-fn {:class java.net.ProxySelector})))
+   {:methods [{:name "connectFailed"}
+              {:name "select"}]}})
 
 ;;; Scratch
 
