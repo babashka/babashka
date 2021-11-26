@@ -2,6 +2,7 @@
   {:no-doc true}
   (:require
    [babashka.impl.features :as features]
+   [babashka.impl.proxy :refer [proxy-classes]]
    [cheshire.core :as json]
    [sci.impl.types :as t]))
 
@@ -358,7 +359,8 @@
           ~(symbol "[I")
           ~(symbol "[Ljava.lang.Object;")
           ~@(when features/yaml? '[org.yaml.snakeyaml.error.YAMLException])
-          ~@(when features/hsqldb? '[org.hsqldb.jdbcDriver])]
+          ~@(when features/hsqldb? '[org.hsqldb.jdbcDriver])
+          ~@proxy-classes]
     :constructors [clojure.lang.Delay
                    clojure.lang.MapEntry
                    clojure.lang.LineNumberingPushbackReader

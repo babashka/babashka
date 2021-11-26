@@ -61,9 +61,23 @@
 
       ["java.net.Authenticator" #{}]
       (proxy [java.net.Authenticator] []
-        (getPasswordAuthentication [] ((method-or-bust methods 'getPasswordAuthentication) this)))
+        (getPasswordAuthentication []
+          ((method-or-bust methods 'getPasswordAuthentication) this)))
 
       ["java.net.ProxySelector" #{}]
       (proxy [java.net.ProxySelector] []
         (connectFailed [_ _ _] ((method-or-bust methods 'connectFailed) this))
         (select [_ _] ((method-or-bust methods 'select) this))))))
+
+(def proxy-classes
+  (map #(symbol (class-name %))
+       [(class (proxy-fn {:class clojure.lang.APersistentMap :interfaces [clojure.lang.IMeta clojure.lang.IObj]}))
+        (class (proxy-fn {:class clojure.lang.AMapEntry}))
+        (class (proxy-fn {:class java.net.Authenticator}))
+        (class (proxy-fn {:class java.net.ProxySelector}))]))
+
+;;; Scratch
+
+(comment
+
+  )
