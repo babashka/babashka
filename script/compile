@@ -66,8 +66,17 @@ if [ "$BABASHKA_STATIC" = "true" ]; then
     fi
 fi
 
-BABASHKA_FEATURE_HSQLDB=${BABASHKA_FEATURE_HSQLDB:-}
+BABASHKA_FEATURE_SQLITE=${BABASHKA_FEATURE_SQLITE:-}
 
+if [ "$BABASHKA_FEATURE_SQLITE" = "true" ]; then
+    args+=(
+        # ensure the native sqlite binaries from xerial/sqlite-jdbc make it into the `bb` bin
+        "-H:IncludeResources=db/.*|static/.*|templates/.*|.*.yml|.*.xml|.*/org/sqlite/.*|org/sqlite/.*|.*.properties" 
+    )
+fi
+
+BABASHKA_FEATURE_HSQLDB=${BABASHKA_FEATURE_HSQLDB:-}
+    
 if [ "$BABASHKA_FEATURE_HSQLDB" = "true" ]; then
     args+=("-H:IncludeResources=org/hsqldb/.*\.properties" "-H:IncludeResources=org/hsqldb/.*\.sql")
 fi

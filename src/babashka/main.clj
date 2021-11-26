@@ -253,6 +253,7 @@ Use bb run --help to show this help output.
     features/xml?
     features/yaml?
     features/jdbc?
+    features/sqlite?
     features/postgresql?
     features/hsqldb?
     features/oracledb?
