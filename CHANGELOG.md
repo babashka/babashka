@@ -2,6 +2,21 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
+<!-- ## 0.6.6 (2021-11-26) -->
+
+<!-- - Add `javax.crypto.Mac` and `javax.crypto.spec.SecretKeySpec` classes to support development of [yaaws-api](https://github.com/grzm/yaaws-api) ([@grzm](https://github.com/grzm)) -->
+<!-- - Add `fs/with-temp-dir` to `babashka.fs` ([@hugoduncan](https://github.com/hugoduncan)) -->
+<!-- - Add `fs/home` and `fs/expand-home` to `babashka.fs` (@Kineolyan) -->
+<!-- - `clojure.core/read` improvements: support `:eof` + `:read-cond` -->
+<!-- - Add support `*read-eval*`, `*default-reader-fn*` and `*reader-resolver*` dynamic vars to be used with `clojure.core/read`. -->
+<!-- - Add `java.net.Inet4Address` and `java.net.Inet6Address` classes -->
+<!-- - Fix `--version` option, don't read cp file. #1071 (@bobisageek) -->
+<!-- - Add classes to support running the -->
+<!--   [xforms](https://github.com/cgrand/xforms) library from source: -->
+<!--   `java.util.ArrayDeque`, `java.util.ArrayList`, `java.util.Collections`, -->
+<!--   `java.util.Comparator`, `java.util.NoSuchElementException` -->
+<!-- - `babashka.curl`: support `:as :bytes` option to download binary file -->
+
 ## 0.6.5 (2021-11-13)
 
 - Compatibility with a [fork of
