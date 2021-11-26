@@ -15,6 +15,76 @@
 (defn -chan? [x]
   (instance? ManyToManyChannel x))
 
+;; TODO copied over from src/babashka/process.clj
+(def windows?
+  (-> (System/getProperty "os.name")
+      (str/lower-case)
+      (str/includes? "windows")))
+
+(defn ext-add-windows
+  "Attempts to determine the actual filename extension that MS-Windows
+  Command Prompt would have used to locate and execute CMD.
+
+  The extension is
+
+  1. The extension of the CMD, if any.
+
+  2. or if CMD is an absolute path, then it is the first item in
+  ENV-PATHEXT list that when appended to CMD matches an existing file.
+
+  2. or if CMD is an relative path, then it is the first item in
+  ENV-PATHEXT list that when appended to CMD matches an existing file
+  relative to the current working directory.
+
+  3. or if CMD is just a solo filename, then it is the first item in
+  ENV-PATHEXT list that when appended to CMD matches an existing file
+  relative to the current working directory or relative to a path in
+  the ENV-PATH list (iterated from first to last).
+
+  ENV-PATH and ENV-PATHEXT default to the PATH and PATHEXT environment
+  variables respectively when not provided.
+
+  Returns CMD if it already came with an extension or an extension
+  could not be determined. Otherwise it returns CMD with the extension
+  appended."
+  ([cmd]
+   (ext-add-windows cmd (System/getenv "PATH") (System/getenv "PATHEXT")))
+  ([cmd env-path env-pathext]
+   (let [path (java.nio.file.Paths/get cmd (into-array String []))
+         ext? (-> path .getFileName .toString (str/includes? "."))]
+     (if ext?
+       cmd
+
+       (let [cmd-solo (.getFileName path)
+
+             paths (if (.isAbsolute path)
+                     ;; absolute
+                     [(-> path .getParent .toAbsolutePath .toString)]
+
+                     (if-let [parent (.getParent path)]
+                       ;; relative to current directory
+                       [(-> parent .toAbsolutePath .toString)]
+
+                       ;; solo filename, relative to CWD or PATH
+                       (-> (str ".;" env-path)
+                           (str/split #";")
+                           (->> (filter not-empty)))))
+
+             path-exts (when env-pathext
+                         (->> (str/split env-pathext #";")
+                              (filter not-empty)))]
+
+         (if-let [cmd-ext-path
+                  (some (fn [dir]
+                          (some (fn [ext]
+                                  (when (.exists (io/file dir (str cmd-solo ext)))
+                                    (str cmd ext)))
+                                path-exts))
+                        paths)]
+           cmd-ext-path
+
+           cmd))))))
+
 (def sci-ns (sci/create-ns 'babashka.tasks nil))
 (def default-log-level :error)
 (def log-level (sci/new-dynamic-var '*-log-level* default-log-level {:ns sci-ns}))
@@ -82,6 +152,9 @@
         cmd (if (.exists (io/file cmd))
               [cmd]
               (p/tokenize cmd))
+        cmd (if windows?
+              (update cmd 0 ext-add-windows)
+              cmd)
         cmd (into cmd args)
         local-log-level (:log-level opts)]
     (sci/binding [log-level (or local-log-level @log-level)]

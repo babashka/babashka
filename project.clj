@@ -77,6 +77,7 @@
                     :feature/selmer
                     :feature/logging
                     {:dependencies [[com.clojure-goes-fast/clj-async-profiler "0.5.0"]
+                                    [com.magnars/test-with-files "2021-02-17"]
                                     [com.opentable.components/otj-pg-embedded "0.13.3"]]}]
              :uberjar {:global-vars {*assert* false}
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"
