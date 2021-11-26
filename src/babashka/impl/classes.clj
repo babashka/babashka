@@ -189,6 +189,7 @@
                 java.net.CookieHandler
                 java.net.CookieManager
                 java.net.CookieStore
+                java.net.CookiePolicy
                 java.net.HttpCookie
                 java.net.PasswordAuthentication
                 java.net.ProxySelector
@@ -210,9 +211,11 @@
                 java.security.cert.X509Certificate
                 javax.crypto.Mac
                 javax.crypto.spec.SecretKeySpec
+                javax.net.ssl.KeyManagerFactory
                 javax.net.ssl.SSLContext
                 javax.net.ssl.SSLParameters
                 javax.net.ssl.TrustManager
+                javax.net.ssl.TrustManagerFactory
                 javax.net.ssl.X509TrustManager
                 jdk.internal.net.http.HttpClientBuilderImpl
                 jdk.internal.net.http.HttpClientFacade
@@ -259,6 +262,7 @@
           java.security.MessageDigest
           java.security.DigestInputStream
           java.security.Provider
+          java.security.KeyStore
           java.security.SecureRandom
           java.security.Security
           java.sql.Date
@@ -337,6 +341,7 @@
           java.util.concurrent.TimeUnit
           java.util.function.Function
           java.util.function.Supplier
+          java.util.zip.Inflater
           java.util.zip.InflaterInputStream
           java.util.zip.DeflaterInputStream
           java.util.zip.GZIPInputStream
@@ -344,6 +349,7 @@
           java.util.zip.ZipInputStream
           java.util.zip.ZipOutputStream
           java.util.zip.ZipEntry
+          java.util.zip.ZipException
           java.util.zip.ZipFile
           ~(symbol "[B")
           ~(symbol "[I")
