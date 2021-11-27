@@ -210,6 +210,7 @@
                 java.net.http.HttpResponse
                 java.net.http.HttpResponse$BodyHandler
                 java.net.http.HttpResponse$BodyHandlers
+                java.net.http.HttpTimeoutException
                 java.net.http.WebSocket
                 java.net.http.WebSocket$Builder
                 java.net.http.WebSocket$Listener

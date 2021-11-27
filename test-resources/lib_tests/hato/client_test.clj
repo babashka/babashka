@@ -163,7 +163,7 @@
   (testing "callback"
     (is (= 200 @(get "https://httpbin.org/status/200" {:async? true} :status identity))
         "returns status on success")
-    (is (= 400 @(get "https://httpbin.org/status/400" {:async? true} identity #(-> % ex-data (doto (-> keys prn)) :status)))
+    (is (= 400 @(get "https://httpbin.org/status/400" {:async? true} identity #(-> % ex-data :status)))
         "extracts response map from ex-info on fail")))
 
 (deftest ^:integration test-exceptions
@@ -339,3 +339,10 @@
                                   (fn [req]
                                     ::response))]})]
     (is (= ::response r))))
+
+(try (get "https://httpbin.org/gzip" {:timeout 1000})
+     (catch java.net.http.HttpTimeoutException _
+       (doseq [v (vals (ns-publics *ns*))]
+         (when (:integration (meta v))
+           (println "Removing test from" v "because httpbin is slow.")
+           (alter-meta! v dissoc :test)))))
