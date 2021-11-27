@@ -2,20 +2,32 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
-<!-- ## 0.6.6 (2021-11-26) -->
+## Unreleased <!-- 0.6.6 (2021-11-27) -->
 
-<!-- - Add `javax.crypto.Mac` and `javax.crypto.spec.SecretKeySpec` classes to support development of [yaaws-api](https://github.com/grzm/yaaws-api) ([@grzm](https://github.com/grzm)) -->
-<!-- - Add `fs/with-temp-dir` to `babashka.fs` ([@hugoduncan](https://github.com/hugoduncan)) -->
-<!-- - Add `fs/home` and `fs/expand-home` to `babashka.fs` (@Kineolyan) -->
-<!-- - `clojure.core/read` improvements: support `:eof` + `:read-cond` -->
-<!-- - Add support `*read-eval*`, `*default-reader-fn*` and `*reader-resolver*` dynamic vars to be used with `clojure.core/read`. -->
-<!-- - Add `java.net.Inet4Address` and `java.net.Inet6Address` classes -->
-<!-- - Fix `--version` option, don't read cp file. #1071 (@bobisageek) -->
-<!-- - Add classes to support running the -->
-<!--   [xforms](https://github.com/cgrand/xforms) library from source: -->
-<!--   `java.util.ArrayDeque`, `java.util.ArrayList`, `java.util.Collections`, -->
-<!--   `java.util.Comparator`, `java.util.NoSuchElementException` -->
-<!-- - `babashka.curl`: support `:as :bytes` option to download binary file -->
+- Add `javax.crypto.Mac` and `javax.crypto.spec.SecretKeySpec` classes to support development of [yaaws-api](https://github.com/grzm/yaaws-api) ([@grzm](https://github.com/grzm))
+- Add `fs/with-temp-dir` to `babashka.fs` ([@hugoduncan](https://github.com/hugoduncan))
+- Add `fs/home` and `fs/expand-home` to `babashka.fs` ([@Kineolyan](https://github.com/Kineolyan))
+- `clojure.core/read` improvements: support `:eof` + `:read-cond`
+- Add support `*read-eval*`, `*default-reader-fn*` and `*reader-resolver*` dynamic vars to be used with `clojure.core/read`.
+- Add `java.net.Inet4Address` and `java.net.Inet6Address` classes
+- Fix `--version` option, don't read cp file. [#1071](https://github.com/babashka/babashka/issues/1071) ([@bobisageek](https://github.com/bobisageek))
+- Add classes to support running the
+  [xforms](https://github.com/cgrand/xforms) library from source:
+  `java.util.ArrayDeque`, `java.util.ArrayList`, `java.util.Collections`,
+  `java.util.Comparator`, `java.util.NoSuchElementException`
+- `babashka.curl`: support `:as :bytes` option to download binary file
+- Add compatibility with hato and clj-http-lite insecure feature [#1080](https://github.com/babashka/babashka/issues/1080)
+  Added classes:
+  - `java.net.CookiePolicy`
+  - `java.net.http.HttpTimeoutException`
+  - `javax.net.ssl.HostnameVerifier`
+  - `javax.net.ssl.HttpsURLConnection`
+  - `javax.net.ssl.KeyManagerFactory`
+  - `javax.net.ssl.SSLSession`
+  - `javax.net.ssl.TrustManagerFactory`
+  - `java.security.KeyStore`
+  - `java.util.zip.Inflater`
+  - `java.util.zip.ZipException`
 
 ## 0.6.5 (2021-11-13)
 
