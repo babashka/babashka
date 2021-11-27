@@ -13,11 +13,13 @@ For a list of breaking changes, check [here](#breaking-changes).
 - Fix `--version` option, don't read cp file. [#1071](https://github.com/babashka/babashka/issues/1071) ([@bobisageek](https://github.com/bobisageek))
 - Add classes to support running the
   [xforms](https://github.com/cgrand/xforms) library from source:
-  `java.util.ArrayDeque`, `java.util.ArrayList`, `java.util.Collections`,
-  `java.util.Comparator`, `java.util.NoSuchElementException`
+  - `java.util.ArrayDeque`
+  - `java.util.ArrayList`
+  - `java.util.Collections`
+  - `java.util.Comparator`
+  - `java.util.NoSuchElementException`
 - `babashka.curl`: support `:as :bytes` option to download binary file
-- Add compatibility with hato and clj-http-lite insecure feature [#1080](https://github.com/babashka/babashka/issues/1080)
-  Added classes:
+- Add compatibility with hato and clj-http-lite insecure feature by adding classes:
   - `java.net.CookiePolicy`
   - `java.net.http.HttpTimeoutException`
   - `javax.net.ssl.HostnameVerifier`
