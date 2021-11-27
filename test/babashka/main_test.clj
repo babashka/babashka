@@ -793,9 +793,18 @@ true")))
   (is (= "192.168.2.2" (bb nil "(-> (java.net.InetAddress/getByName \"192.168.2.2\") (.getHostAddress))"))))
 
 (deftest satisfies-protocols-test
-  #_(is (true? (bb nil "(satisfies? clojure.core.protocols/Datafiable {})")))
-  #_(is (true? (bb nil "(satisfies? clojure.core.protocols/Navigable {})")))
+  (is (true? (bb nil "(satisfies? clojure.core.protocols/Datafiable {})")))
+  (is (true? (bb nil "(satisfies? clojure.core.protocols/Navigable {})")))
   (is (true? (bb nil "(satisfies? clojure.core.protocols/IKVReduce {})"))))
+
+(deftest interop-on-proxy
+  (is (true? (bb nil (pr-str
+                      '(instance? java.net.PasswordAuthentication
+                                  (.getPasswordAuthentication
+                                   (proxy [java.net.Authenticator] []
+                                     (getPasswordAuthentication []
+                                       (java.net.PasswordAuthentication. "bork"
+                                                                         (char-array "dude")))))))))))
 
 ;;;; Scratch
 

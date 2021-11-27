@@ -51,11 +51,9 @@
             :main-opts ["-m" "babashka.profile"]}
            :lib-tests
            {:extra-paths ["process/src" "process/test" "test-resources/lib_tests"]
-            :extra-deps {babashka/clj-http-lite
-                         {:git/url "https://github.com/babashka/clj-http-lite"
-                          :sha "f44ebe45446f0f44f2b73761d102af3da6d0a13e"}
+            :extra-deps {org.clj-commons/clj-http-lite {:mvn/version "0.4.392"}
                          borkdude/spartan.spec {:git/url "https://github.com/borkdude/spartan.spec"
-                                                :sha "16f7eec4b6589c77c96c9fcf989f78fffcee7c4c"}
+                                                :sha "7689f85d4c79de6c7b5ee3ab62e3e72eeccd3318"}
                          lambdaisland/regal {:git/url "https://github.com/lambdaisland/regal"
                                              :sha "f902d2c43121f9e1c48603d6eb99f5900eb6a9f6"}
                          weavejester/medley {:git/url "https://github.com/weavejester/medley"
@@ -92,7 +90,8 @@
                          java-http-clj/java-http-clj {:mvn/version "0.4.3"}
                          com.stuartsierra/component {:mvn/version "1.0.0"}
                          org.clojars.askonomm/ruuter {:mvn/version "1.2.2"}
-                         org.clj-commons/digest {:mvn/version "1.4.100"}}
+                         org.clj-commons/digest {:mvn/version "1.4.100"}
+                         hato/hato {:mvn/version "0.8.2"}}
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil
                                   org.clojure/core.specs.alpha nil}}
