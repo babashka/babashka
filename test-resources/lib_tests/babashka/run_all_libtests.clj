@@ -1,7 +1,10 @@
 (ns babashka.run-all-libtests
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
-            [clojure.test :as t]))
+            [clojure.test :as t]
+            [spartan.spec]))
+
+(require 'clojure.spec.alpha)
 
 (def ns-args (set (map symbol *command-line-args*)))
 
@@ -259,6 +262,8 @@
 (test-namespaces 'ruuter.core-test)
 
 (test-namespaces 'clj-commons.digest-test)
+
+(test-namespaces 'hato.client-test)
 
 ;;;; final exit code
 
