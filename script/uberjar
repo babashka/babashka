@@ -35,6 +35,13 @@ else
     BABASHKA_LEIN_PROFILES+=",-feature/jdbc"
 fi
 
+if [ "$BABASHKA_FEATURE_SQLITE" = "true" ]
+then
+    BABASHKA_LEIN_PROFILES+=",+feature/sqlite"
+else
+    BABASHKA_LEIN_PROFILES+=",-feature/sqlite"
+fi
+
 if [ "$BABASHKA_FEATURE_POSTGRESQL" = "true" ]
 then
     BABASHKA_LEIN_PROFILES+=",+feature/postgresql"
