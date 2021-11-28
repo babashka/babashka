@@ -8,6 +8,7 @@
   :license {:name "Eclipse Public License 1.0"
             :url "http://opensource.org/licenses/eclipse-1.0.php"}
   :source-paths ["src" "sci/src" "babashka.curl/src" "fs/src" "pods/src"
+                 "babashka.core/src"
                  "babashka.nrepl/src" "depstar/src" "process/src"
                  "deps.clj/src" "deps.clj/resources"]
   ;; for debugging Reflector.java code:

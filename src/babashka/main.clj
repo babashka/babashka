@@ -20,6 +20,7 @@
    [babashka.impl.common :as common]
    [babashka.impl.curl :refer [curl-namespace]]
    [babashka.impl.data :as data]
+   [babashka.impl.core  :as bbcore]
    [babashka.impl.datafy :refer [datafy-namespace]]
    [babashka.impl.deps :as deps :refer [deps-namespace]]
    [babashka.impl.error-handler :refer [error-handler]]
@@ -331,6 +332,7 @@ Use bb run --help to show this help output.
                         nil)}
        'clojure.tools.cli tools-cli-namespace
        'clojure.java.shell shell-namespace
+       'babashka.core bbcore/core-namespace
        'babashka.wait wait-namespace
        'babashka.signal signal-ns
        'clojure.java.io io-namespace

@@ -18,6 +18,7 @@
         borkdude/sci {:local/root "sci"}
         babashka/babashka.curl {:local/root "babashka.curl"}
         babashka/fs {:local/root "fs"}
+        babashka/babashka.core {:local/root "babashka.core"}
         borkdude/graal.locking {:mvn/version "0.0.2"},
         org.clojure/core.async {:mvn/version "1.4.627"},
         org.clojure/tools.cli {:mvn/version "1.0.206"},
