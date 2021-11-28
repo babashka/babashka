@@ -4,11 +4,14 @@ For a list of breaking changes, check [here](#breaking-changes).
 
 ## Unreleased <!-- 0.6.6 (2021-11-27) -->
 
-- Add `javax.crypto.Mac` and `javax.crypto.spec.SecretKeySpec` classes to support development of [yaaws-api](https://github.com/grzm/yaaws-api) ([@grzm](https://github.com/grzm))
+-  Resolve program in `babashka.process` on Windows using known extensions. This
+   means you can now invoke `(shell "yarn")` and it will work on both Unix-like
+   systems and Windows.
 - Add `fs/with-temp-dir` to `babashka.fs` ([@hugoduncan](https://github.com/hugoduncan))
 - Add `fs/home` and `fs/expand-home` to `babashka.fs` ([@Kineolyan](https://github.com/Kineolyan))
 - `clojure.core/read` improvements: support `:eof` + `:read-cond`
 - Add support `*read-eval*`, `*default-reader-fn*` and `*reader-resolver*` dynamic vars to be used with `clojure.core/read`.
+- Add `javax.crypto.Mac` and `javax.crypto.spec.SecretKeySpec` classes to support development of [yaaws-api](https://github.com/grzm/yaaws-api) ([@grzm](https://github.com/grzm))
 - Add `java.net.Inet4Address` and `java.net.Inet6Address` classes
 - Fix `--version` option, don't read cp file. [#1071](https://github.com/babashka/babashka/issues/1071) ([@bobisageek](https://github.com/bobisageek))
 - Add classes to support running the
@@ -19,7 +22,9 @@ For a list of breaking changes, check [here](#breaking-changes).
   - `java.util.Comparator`
   - `java.util.NoSuchElementException`
 - `babashka.curl`: support `:as :bytes` option to download binary file
-- Add compatibility with hato and clj-http-lite insecure feature by adding classes:
+- Add compatibility with [hato](https://github.com/gnarroway/hato) and
+  [clj-http-lite](https://github.com/clj-commons/clj-http-lite) insecure feature
+  by adding classes:
   - `java.net.CookiePolicy`
   - `java.net.http.HttpTimeoutException`
   - `javax.net.ssl.HostnameVerifier`
