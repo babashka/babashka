@@ -14,8 +14,10 @@
                  edn/read-string)
         deps (:deps deps)
         deps (assoc deps
-                    'babashka/fs {:mvn/version "0.0.5"}
-                    'babashka/babashka.curl {:mvn/version "0.0.3"})
+                    'babashka/fs {:mvn/version "0.1.2"}
+                    'babashka/babashka.curl {:mvn/version "0.1.1"}
+                    'babashka/babashka.core {:git/url "https://github.com/babashka/babashka.core"
+                                             :git/sha "52a6037bd4b632bffffb04394fb4efd0cdab6b1e"})
         deps (dissoc deps
                      'borkdude/sci
                      'borkdude/graal.locking
