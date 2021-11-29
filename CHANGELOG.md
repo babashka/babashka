@@ -2,6 +2,13 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
+## 0.6.7 (2021-11-29)
+
+Minor bugfix release:
+
+- `print-deps` included `:local/root` dependency which is not valid outside babashka repo
+- `fs/which` edge case improvement on Windows #1083
+
 ## 0.6.6 (2021-11-29)
 
 -  Resolve program in `babashka.process` on Windows using known extensions. This
