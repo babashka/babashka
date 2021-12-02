@@ -2,12 +2,19 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
+## 0.6.8
+
+- Add `reader-conditional?`, `test`
+- Deps.clj: bump to tools jar `1.10.3.1040`
+- Babashka.process: support deref with timeout (SevereOverfl0w)
+- Add new functions from clojure 1.11 alpha 3 except `clojure.java.math`
+
 ## 0.6.7 (2021-11-29)
 
 Minor bugfix release:
 
 - `print-deps` included `:local/root` dependency which is not valid outside babashka repo
-- `fs/which` edge case improvement on Windows #1083
+- `fs/which` edge case improvement on Windows [#1083](https://github.com/babashka/babashka/issues/1083)
 
 ## 0.6.6 (2021-11-29)
 
