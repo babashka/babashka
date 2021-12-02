@@ -2,7 +2,7 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
-## 0.6.8
+## 0.6.8 (2021-12-02)
 
 - Add `reader-conditional?`, `test`
 - Deps.clj: bump to tools jar `1.10.3.1040`
