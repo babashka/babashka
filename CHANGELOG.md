@@ -6,7 +6,7 @@ For a list of breaking changes, check [here](#breaking-changes).
 
 - Add `reader-conditional?`, `test`
 - Deps.clj: bump to tools jar `1.10.3.1040`
-- Babashka.process: support deref with timeout (SevereOverfl0w)
+- Babashka.process: support `deref` with timeout (@SevereOverfl0w)
 - Add new functions from clojure 1.11 alpha 3 except `clojure.java.math`
 - nREPL server: catch `Throwable` instead of `Exception`, fixes hanging with `assert`
 
