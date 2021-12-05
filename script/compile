@@ -19,7 +19,9 @@ then
     exit 1
 fi
 
-"$GRAALVM_HOME/bin/gu" install native-image
+if [[ ! -x "$GRAALVM_HOME/bin/native-image" ]]; then
+    "$GRAALVM_HOME/bin/gu" install native-image
+fi
 
 export JAVA_HOME=$GRAALVM_HOME
 export PATH=$GRAALVM_HOME/bin:$PATH
