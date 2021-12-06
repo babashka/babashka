@@ -15,3 +15,5 @@ CHANGES.md
 Dockerfile
 LICENSE
 README.md
+.cpcache/
+target/
