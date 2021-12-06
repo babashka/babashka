@@ -7,7 +7,8 @@ WORKDIR "/opt"
 
 ENV GRAALVM_VERSION="21.3.0"
 ARG TARGETARCH
-RUN export ARCH=${TARGETARCH}; if [ "${TARGETARCH}" = "arm64" ]; then ARCH=aarch64; fi && \
+RUN export ARCH=${TARGETARCH}; if [ "${ARCH}" = "" ]; then ARCH=amd64; elif [ "${TARGETARCH}" = "arm64" ]; then ARCH=aarch64; fi && \
+    echo "Building for ${ARCH}" && \
     curl -sLO https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-${GRAALVM_VERSION}/graalvm-ce-java11-linux-${ARCH}-${GRAALVM_VERSION}.tar.gz && \
     tar -xzf graalvm-ce-java11-linux-${ARCH}-${GRAALVM_VERSION}.tar.gz && \
     rm graalvm-ce-java11-linux-${ARCH}-${GRAALVM_VERSION}.tar.gz
