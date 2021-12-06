@@ -344,6 +344,7 @@
           java.util.Optional
           java.util.Properties
           java.util.Set
+          java.util.StringTokenizer
           java.util.UUID
           java.util.concurrent.CompletableFuture
           java.util.concurrent.Executors
