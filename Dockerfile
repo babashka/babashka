@@ -7,11 +7,17 @@ WORKDIR "/opt"
 
 ENV GRAALVM_VERSION="21.3.0"
 ARG TARGETARCH
-RUN export ARCH=${TARGETARCH}; if [ "${ARCH}" = "" ]; then ARCH=amd64; elif [ "${TARGETARCH}" = "arm64" ]; then ARCH=aarch64; fi && \
-    echo "Building for ${ARCH}" && \
-    curl -sLO https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-${GRAALVM_VERSION}/graalvm-ce-java11-linux-${ARCH}-${GRAALVM_VERSION}.tar.gz && \
-    tar -xzf graalvm-ce-java11-linux-${ARCH}-${GRAALVM_VERSION}.tar.gz && \
-    rm graalvm-ce-java11-linux-${ARCH}-${GRAALVM_VERSION}.tar.gz
+ENV BABASHKA_ARCH=${TARGETARCH}
+ENV GRAALVM_ARCH=${TARGETARCH}
+RUN if [ "${TARGETARCH}" = "" ] || [ "${TARGETARCH}" = "amd64" ]; then \
+      export GRAALVM_ARCH=amd64; export BABASHKA_ARCH=x86_64; \
+    elif [ "${TARGETARCH}" = "arm64" ]; then \
+      export GRAALVM_ARCH=aarch64; \
+    fi && \
+    echo "Installing GraalVM for ${GRAALVM_ARCH}" && \
+    curl -sLO https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-${GRAALVM_VERSION}/graalvm-ce-java11-linux-${GRAALVM_ARCH}-${GRAALVM_VERSION}.tar.gz && \
+    tar -xzf graalvm-ce-java11-linux-${GRAALVM_ARCH}-${GRAALVM_VERSION}.tar.gz && \
+    rm graalvm-ce-java11-linux-${GRAALVM_ARCH}-${GRAALVM_VERSION}.tar.gz
 
 ARG BABASHKA_XMX="-J-Xmx4500m"
 
