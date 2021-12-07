@@ -6,8 +6,18 @@ RUN apt install --no-install-recommends -yy build-essential zlib1g-dev
 WORKDIR "/opt"
 
 ENV GRAALVM_VERSION="21.3.0"
-RUN curl -sLO https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-${GRAALVM_VERSION}/graalvm-ce-java11-linux-amd64-${GRAALVM_VERSION}.tar.gz
-RUN tar -xzf graalvm-ce-java11-linux-amd64-${GRAALVM_VERSION}.tar.gz
+ARG TARGETARCH
+ENV BABASHKA_ARCH=${TARGETARCH}
+ENV GRAALVM_ARCH=${TARGETARCH}
+RUN if [ "${TARGETARCH}" = "" ] || [ "${TARGETARCH}" = "amd64" ]; then \
+      export GRAALVM_ARCH=amd64; export BABASHKA_ARCH=x86_64; \
+    elif [ "${TARGETARCH}" = "arm64" ]; then \
+      export GRAALVM_ARCH=aarch64; \
+    fi && \
+    echo "Installing GraalVM for ${GRAALVM_ARCH}" && \
+    curl -sLO https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-${GRAALVM_VERSION}/graalvm-ce-java11-linux-${GRAALVM_ARCH}-${GRAALVM_VERSION}.tar.gz && \
+    tar -xzf graalvm-ce-java11-linux-${GRAALVM_ARCH}-${GRAALVM_VERSION}.tar.gz && \
+    rm graalvm-ce-java11-linux-${GRAALVM_ARCH}-${GRAALVM_VERSION}.tar.gz
 
 ARG BABASHKA_XMX="-J-Xmx4500m"
 
