@@ -455,6 +455,7 @@ jobs:
   docker-aarch64:
     machine:
       image: ubuntu-2004:202111-01
+    resource_class: arm.medium
     steps:
       - checkout
       - attach_workspace:
