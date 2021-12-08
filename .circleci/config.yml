@@ -230,14 +230,6 @@ jobs:
             git submodule init
             git submodule update
       - run:
-          name: "Short circuit on SNAPSHOT"
-          command: |
-            VERSION=$(cat resources/BABASHKA_VERSION)
-            if [[ "$VERSION" == *-SNAPSHOT ]]
-            then
-              circleci task halt
-            fi
-      - run:
           name: Install Clojure
           command: |
             sudo script/install-clojure
