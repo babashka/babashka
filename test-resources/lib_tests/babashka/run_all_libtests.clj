@@ -1,10 +1,9 @@
 (ns babashka.run-all-libtests
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
-            [clojure.test :as t]
-            [spartan.spec]))
+            [clojure.test :as t]))
 
-(require 'clojure.spec.alpha)
+#_(require 'clojure.spec.alpha)
 
 (def ns-args (set (map symbol *command-line-args*)))
 
@@ -34,9 +33,10 @@
 
 (test-namespaces 'clj-http.lite.client-test)
 
-;;;; spartan.spec
+;; ;;;; clojure.spec
 
-(test-namespaces 'spartan.spec-test)
+(test-namespaces 'clojure.test-clojure.spec
+                 'clojure.test-clojure.instr)
 
 ;;;; regal
 
