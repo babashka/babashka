@@ -265,6 +265,7 @@
 
 (test-namespaces 'hato.client-test)
 
+(test-namespaces 'better-cond.core-test)
 ;;;; final exit code
 
 (let [{:keys [:test :fail :error] :as m} @status]

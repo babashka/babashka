@@ -92,10 +92,11 @@
                          com.stuartsierra/component {:mvn/version "1.0.0"}
                          org.clojars.askonomm/ruuter {:mvn/version "1.2.2"}
                          org.clj-commons/digest {:mvn/version "1.4.100"}
-                         hato/hato {:mvn/version "0.8.2"}}
+                         hato/hato {:mvn/version "0.8.2"}
+                         better-cond/better-cond {:mvn/version "2.1.1"}
+                         org.clojure/core.specs.alpha {:mvn/version "0.2.62"}}
             :classpath-overrides {org.clojure/clojure nil
-                                  org.clojure/spec.alpha nil
-                                  org.clojure/core.specs.alpha nil}}
+                                  org.clojure/spec.alpha nil}}
            :clj-nvd
            {:extra-deps {clj-nvd/clj-nvd {:git/url "https://github.com/miikka/clj-nvd.git"
                                           :sha "f2ec98699e057a379baf170cb49cf7ad76874a70"}}
