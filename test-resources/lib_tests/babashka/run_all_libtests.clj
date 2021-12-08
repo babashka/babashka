@@ -270,7 +270,10 @@
 (test-namespaces 'exoscale.coax-test)
 
 (test-namespaces 'orchestra.core-test 'orchestra.expound-test 'orchestra.many-fns 'orchestra.reload-test)
+
 ;; TODO, after @cldwalker finishes PR to specmonstah (test-namespaces 'reifyhealth.specmonstah.core-test)
+
+(test-namespaces 'integrant.core-test)
 
 ;;;; final exit code
 
