@@ -61,10 +61,13 @@
      (cp/add-classpath (str/join cp/path-sep paths)))
    (when-let [deps-map (not-empty (dissoc deps-map :paths :tasks :raw :min-bb-version))]
      (let [deps-map (assoc-in deps-map [:aliases :org.babashka/defaults]
-                              '{:replace-paths [] ;; babashka sets paths manually
-                                :classpath-overrides {org.clojure/clojure ""
-                                                      org.clojure/spec.alpha ""
-                                                      org.clojure/core.specs.alpha ""}})
+                              {:replace-paths [] ;; babashka sets paths manually
+                               :classpath-overrides (cond->
+                                                        '{org.clojure/clojure ""
+                                                          org.clojure/spec.alpha ""}
+                                                      ;; only remove core specs when they are not mentioned in deps map
+                                                      (not (str/includes? (str deps-map) "org.clojure/core.specs.alpha"))
+                                                      (assoc 'org.clojure/core.specs.alpha ""))})
            args (list "-Srepro" ;; do not include deps.edn from user config
                       "-Spath" "-Sdeps" (str deps-map)
                       "-Sdeps-file" "") ;; we reset deps file so the local deps.edn isn't used
