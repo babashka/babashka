@@ -11,6 +11,7 @@
    [babashka.impl.classpath :as cp :refer [classpath-namespace]]
    [babashka.impl.clojure.core :as core :refer [core-extras]]
    [babashka.impl.clojure.core.async :refer [async-namespace async-protocols-namespace]]
+   [babashka.impl.clojure.instant :as instant]
    [babashka.impl.clojure.java.browse :refer [browse-namespace]]
    [babashka.impl.clojure.java.io :refer [io-namespace]]
    [babashka.impl.clojure.java.shell :refer [shell-namespace]]
@@ -18,9 +19,9 @@
    [babashka.impl.clojure.stacktrace :refer [stacktrace-namespace]]
    [babashka.impl.clojure.zip :refer [zip-namespace]]
    [babashka.impl.common :as common]
+   [babashka.impl.core  :as bbcore]
    [babashka.impl.curl :refer [curl-namespace]]
    [babashka.impl.data :as data]
-   [babashka.impl.core  :as bbcore]
    [babashka.impl.datafy :refer [datafy-namespace]]
    [babashka.impl.deps :as deps :refer [deps-namespace]]
    [babashka.impl.error-handler :refer [error-handler]]
@@ -338,6 +339,7 @@ Use bb run --help to show this help output.
        'clojure.java.io io-namespace
        'cheshire.core cheshire-core-namespace
        'clojure.data data/data-namespace
+       'clojure.instant instant/instant-namespace
        'clojure.stacktrace stacktrace-namespace
        'clojure.zip zip-namespace
        'clojure.main {:obj clojure-main-ns
