@@ -56,4 +56,5 @@
    ;; running tests: high level
    'run-tests (new-var 'run-tests (contextualize t/run-tests))
    'run-all-tests (new-var 'run-all-tests (contextualize t/run-all-tests))
-   'successful? (sci/copy-var t/successful? tns)})
+   'successful? (sci/copy-var t/successful? tns)
+   'with-test-out (sci/copy-var t/with-test-out tns)})

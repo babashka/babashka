@@ -94,7 +94,9 @@
                          org.clj-commons/digest {:mvn/version "1.4.100"}
                          hato/hato {:mvn/version "0.8.2"}
                          better-cond/better-cond {:mvn/version "2.1.1"}
-                         org.clojure/core.specs.alpha {:mvn/version "0.2.62"}}
+                         org.clojure/core.specs.alpha {:mvn/version "0.2.62"}
+                         reifyhealth/specmonstah {:mvn/version "2.0.0"}
+                         exoscale/coax {:mvn/version "1.0.0-alpha14"}}
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil}}
            :clj-nvd

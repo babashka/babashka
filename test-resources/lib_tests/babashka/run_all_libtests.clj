@@ -266,6 +266,10 @@
 (test-namespaces 'hato.client-test)
 
 (test-namespaces 'better-cond.core-test)
+
+(test-namespaces 'exoscale.coax-test)
+;; TODO, after @cldwalker finishes PR to specmonstah (test-namespaces 'reifyhealth.specmonstah.core-test)
+
 ;;;; final exit code
 
 (let [{:keys [:test :fail :error] :as m} @status]

@@ -272,8 +272,8 @@ Use bb run --help to show this help output.
   (let [f (io/file file)]
     (if (.exists f)
       (as-> (slurp file) x
-        ;; remove shebang
-        (str/replace x #"^#!.*" ""))
+            ;; remove shebang
+            (str/replace x #"^#!.*" ""))
       (throw (Exception. (str "File does not exist: " file))))))
 
 (defn load-file* [f]
@@ -346,9 +346,9 @@ Use bb run --help to show this help output.
                       'demunge (sci/copy-var demunge clojure-main-ns)
                       'repl-requires (sci/copy-var clojure-main/repl-requires clojure-main-ns)
                       'repl (sci/new-var 'repl
-                              (fn [& opts]
-                                (let [opts (apply hash-map opts)]
-                                  (repl/start-repl! @common/ctx opts))) {:ns clojure-main-ns})}
+                                         (fn [& opts]
+                                           (let [opts (apply hash-map opts)]
+                                             (repl/start-repl! @common/ctx opts))) {:ns clojure-main-ns})}
        'clojure.test t/clojure-test-namespace
        'babashka.classpath classpath-namespace
        'clojure.pprint pprint-namespace
@@ -402,7 +402,10 @@ Use bb run --help to show this help output.
                                 'clojure.test.check.properties
                                 @(resolve 'babashka.impl.clojure.test.check/properties-namespace)
                                 'clojure.test.check
-                                @(resolve 'babashka.impl.clojure.test.check/test-check-namespace))
+                                @(resolve 'babashka.impl.clojure.test.check/test-check-namespace)
+                                ;; it's better to load this from source by adding the clojure.test.check dependency
+                                #_#_'clojure.test.check.clojure-test
+                                @(resolve 'babashka.impl.clojure.test.check/test-check-clojure-test-namespace))
     features/spec-alpha? (-> (assoc        ;; spec
                               'clojure.spec.alpha @(resolve 'babashka.impl.spec/spec-namespace)
                               'clojure.spec.gen.alpha @(resolve 'babashka.impl.spec/gen-namespace)
@@ -503,8 +506,8 @@ Use bb run --help to show this help output.
                                (assoc opts-map
                                       :verbose? true))
           ("--force") (recur (next options)
-                               (assoc opts-map
-                                      :force? true))
+                             (assoc opts-map
+                                    :force? true))
           ("--describe") (recur (next options)
                                 (assoc opts-map
                                        :describe? true))
@@ -833,8 +836,8 @@ Use bb run --help to show this help output.
                        expressions
                        (sci/binding [sci/file abs-path]
                          (try
-                           ; when evaluating expression(s), add in repl-requires so things like
-                           ; pprint and dir are available
+                                        ; when evaluating expression(s), add in repl-requires so things like
+                                        ; pprint and dir are available
                            (sci/eval-form sci-ctx `(apply require (quote ~clojure-main/repl-requires)))
                            (loop []
                              (let [in (read-next *in*)]

@@ -414,6 +414,7 @@
                       clojure.lang.LispReader$Resolver
                       clojure.lang.Named
                       clojure.lang.Keyword
+                      clojure.lang.MultiFn
                       clojure.lang.PersistentArrayMap
                       clojure.lang.PersistentHashMap
                       clojure.lang.PersistentHashSet
