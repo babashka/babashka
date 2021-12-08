@@ -19,8 +19,8 @@ if [ -z "$CIRCLE_PULL_REQUEST" ] && [ "$CIRCLE_BRANCH" = "master" ]; then
     echo "Building $platform Docker image $image_name:$image_tag"
     echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
     tar zxvf  "/tmp/release/babashka-${image_tag}-${platform}.tar.gz"
-    docker build -t "$image_name" -f Dockerfile.ci .
-    docker tag "$image_name:$latest_tag" "$image_name:$image_tag"
+    docker build -t "$image_name:$image_tag-${platform}" -f Dockerfile.ci .
+    # docker tag "$image_name:$latest_tag" "$image_name:$image_tag"
     rm -f bb
 
     # alpine doesn't provide upstream arm64 images yet
@@ -32,15 +32,17 @@ if [ -z "$CIRCLE_PULL_REQUEST" ] && [ "$CIRCLE_BRANCH" = "master" ]; then
 
     # we only update latest when it's not a SNAPSHOT version
     if [ "false" = "$snapshot" ]; then
-        echo "Pushing image $image_name:$latest_tag"
-        docker push "$image_name:$latest_tag"
-        echo "Pushing image $image_name:alpine"
-        docker push "$image_name:alpine"
+        # echo "Pushing image $image_name:$latest_tag"
+        # docker push "$image_name:$latest_tag"
+        if [[ $platform == "linux-amd64" ]]; then
+            echo "Pushing image $image_name:alpine"
+            docker push "$image_name:alpine"
+        fi
     fi
     # we update the version tag, even if it's a SNAPSHOT version
-    echo "Pushing image $image_name:$image_tag"
-    docker push "$image_name:$image_tag"
-    if [[ $snapshot == "false" ]]; then
+    echo "Pushing image $image_name:$image_tag-${platform}"
+    docker push "$image_name:$image_tag-${platform}"
+    if [[ $snapshot == "false" && $platform == "linux-amd64" ]]; then
         docker push "$image_name:$image_tag-alpine"
     fi
 else

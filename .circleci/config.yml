@@ -460,12 +460,21 @@ jobs:
       - checkout
       - attach_workspace:
           at: /tmp
-      - setup-docker-buildx
       - run:
           name: Build Docker image
           environment:
             PLATFORM: linux-aarch64
           command: .circleci/script/docker
+  docker-manifest:
+    machine:
+      image: ubuntu-2004:202111-01
+    steps:
+      - checkout
+      - run:
+          name: Create & push Docker manifest
+          environment:
+            PLATFORM_TAGS: linux-amd64,linux-aarch64
+          command: .circleci/script/docker-manifest
 
 workflows:
   version: 2
@@ -498,3 +507,10 @@ workflows:
               only: master
           requires:
             - linux-aarch64
+      - docker-manifest:
+          filters:
+            branches:
+              only: master
+          requires:
+            - docker
+            - docker-aarch64

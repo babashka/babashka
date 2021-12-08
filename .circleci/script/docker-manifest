@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+image_name="cap10morgan/babashka"
+image_tag=$(cat resources/BABASHKA_VERSION)
+latest_tag="latest"
+
+IFS=',' read -r -a platform_tags <<< "${PLATFORM_TAGS:-linux-amd64}"
+
+base_manifest_create_cmd="docker manifest create"
+
+if [[ $image_tag =~ SNAPSHOT$ ]]; then
+    echo "This is a snapshot version"
+    snapshot="true"
+else
+    echo "This is a non-snapshot version"
+    snapshot="false"
+fi
+
+if [ -z "$CIRCLE_PULL_REQUEST" ] && [ "$CIRCLE_BRANCH" = "master" ]; then
+    echo "Building Docker manifest for $image_name:$image_tag on platform(s) $PLATFORM_TAGS"
+    manifest_create_cmd="$base_manifest_create_cmd $image_name:$image_tag"
+    for platform_tag in "${platform_tags[@]}"; do
+        manifest_create_cmd="$manifest_create_cmd $image_name:$image_tag-$platform_tag"
+    done
+    eval $manifest_create_cmd
+
+    # we only update latest when it's not a SNAPSHOT version
+    manifest_create_cmd=""
+    if [[ $snapshot == "false" ]]; then
+        echo "Building Docker manifest for $image_name:$latest_tag on platform(s) $PLATFORM_TAGS"
+        manifest_create_cmd="$base_manifest_create_cmd $image_name:$latest_tag"
+        for platform_tag in "${platform_tags[@]}"; do
+            manifest_create_cmd="$manifest_create_cmd $image_name:$image_tag-$platform_tag"
+        done
+        eval $manifest_create_cmd
+    fi
+    
+    echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
+
+    echo "Pushing Docker manifest for $image_name:$image_tag"
+    docker manifest push $image_name:$image_tag
+
+    if [[ $snapshot == "false" ]]; then
+        echo "Pushing Docker manifest for $image_name:$latest_tag"
+        docker manifest push $image_name:$latest_tag
+    fi
+else
+    echo "Not publishing a Docker manifest"
+fi
+
+exit 0;
