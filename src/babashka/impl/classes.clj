@@ -82,7 +82,9 @@
     java.net.Inet4Address
     {:methods [{:name "getHostAddress"}]}
     java.net.Inet6Address
-    {:methods [{:name "getHostAddress"}]}})
+    {:methods [{:name "getHostAddress"}]}
+    clojure.lang.IFn
+    {:methods [{:name "applyTo"}]}})
 
 (def custom-map
   (cond->
@@ -388,7 +390,6 @@
                       clojure.lang.Cycle
                       clojure.lang.IObj
                       clojure.lang.Fn ;; to distinguish fns from maps, etc.
-                      clojure.lang.IFn
                       clojure.lang.IPending
                       ;; clojure.lang.IDeref ;; implemented as protocol in sci
                       ;; clojure.lang.IAtom  ;; implemented as protocol in sci
