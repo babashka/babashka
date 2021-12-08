@@ -716,17 +716,22 @@ Use bb run --help to show this help output.
             _ (when jar
                 (cp/add-classpath jar))
             load-fn (fn [{:keys [:namespace :reload]}]
-                      (when-let [{:keys [:loader]}
-                                 @cp/cp-state]
-                        (if ;; ignore built-in namespaces when uberscripting, unless with :reload
-                            (and uberscript
-                                 (not reload)
-                                 (or (contains? namespaces namespace)
-                                     (contains? sci-namespaces/namespaces namespace)))
-                          ""
-                          (let [res (cp/source-for-namespace loader namespace nil)]
-                            (when uberscript (swap! uberscript-sources conj (:source res)))
-                            res))))
+                      (or (when-let [{:keys [:loader]}
+                                     @cp/cp-state]
+                            (if ;; ignore built-in namespaces when uberscripting, unless with :reload
+                                (and uberscript
+                                     (not reload)
+                                     (or (contains? namespaces namespace)
+                                         (contains? sci-namespaces/namespaces namespace)))
+                              ""
+                              (let [res (cp/source-for-namespace loader namespace nil)]
+                                (when uberscript (swap! uberscript-sources conj (:source res)))
+                                res)))
+                          (case namespace
+                            clojure.spec.alpha
+                            (binding [*out* *err*]
+                              (println "[babashka] WARNING: Use the babashka-compatible version of clojure.spec.alpha, available here: https://github.com/babashka/spec.alpha"))
+                            nil)))
             main (if (and jar (not main))
                    (when-let [res (cp/getResource
                                    (cp/loader jar)
