@@ -460,6 +460,19 @@ jobs:
       - run:
           name: Build Docker image
           command: .circleci/script/docker
+  docker-aarch64:
+    machine:
+      image: ubuntu-2004:202111-01
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /tmp
+      - setup-docker-buildx
+      - run:
+          name: Build Docker image
+          environment:
+            PLATFORM: linux-aarch64
+          command: .circleci/script/docker
 
 workflows:
   version: 2
@@ -486,3 +499,9 @@ workflows:
           requires:
             - linux
             - linux-static
+      - docker-aarch64:
+          filters:
+            branches:
+              only: master
+          requires:
+            - linux-aarch64
