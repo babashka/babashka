@@ -201,5 +201,6 @@
    'random-uuid (sci/copy-var random-uuid clojure-core-ns)
    'NaN? (sci/copy-var NaN? clojure-core-ns)
    'infinite? (sci/copy-var infinite? clojure-core-ns)
-   'StackTraceElement->vec (sci/copy-var StackTraceElement->vec clojure-core-ns)}
+   'StackTraceElement->vec (sci/copy-var StackTraceElement->vec clojure-core-ns)
+   'memfn (sci/copy-var memfn clojure-core-ns)}
   )
