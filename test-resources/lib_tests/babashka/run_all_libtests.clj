@@ -36,7 +36,8 @@
 ;; ;;;; clojure.spec
 
 (test-namespaces 'clojure.test-clojure.spec
-                 'clojure.test-clojure.instr)
+                 'clojure.test-clojure.instr
+                 'clojure.test-clojure.multi-spec)
 
 ;;;; regal
 
