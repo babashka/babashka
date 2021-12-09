@@ -806,6 +806,9 @@ true")))
                                        (java.net.PasswordAuthentication. "bork"
                                                                          (char-array "dude")))))))))))
 
+(deftest aget-test
+  (is (= 1 (bb nil "(def array-2d (into-array [(int-array [1 2]) (int-array [3 4])])) (aget array-2d 0 0)"))))
+
 ;;;; Scratch
 
 (comment

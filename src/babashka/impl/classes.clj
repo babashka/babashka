@@ -87,7 +87,9 @@
     {:methods [{:name "applyTo"}]}
     clojure.lang.MultiFn
     {:fields [{:name "dispatchFn"}]
-     :methods [{:name "getMethod"}]}})
+     :methods [{:name "getMethod"}]}
+    clojure.lang.RT
+    {:methods [{:name "aget"}]}})
 
 (def custom-map
   (cond->

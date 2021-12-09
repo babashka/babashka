@@ -54,7 +54,7 @@
            {:extra-paths ["process/src" "process/test" "test-resources/lib_tests"]
             :extra-deps {org.clj-commons/clj-http-lite {:mvn/version "0.4.392"}
                          org.babashka/spec.alpha {:git/url "https://github.com/babashka/spec.alpha"
-                                                  :sha "5012f0b11f0b59c928423982566c1e12b67f3ed1"}
+                                                  :sha "0dec1f88cbde74a0470b454396f09a03adb4ae39"}
                          lambdaisland/regal {:git/url "https://github.com/lambdaisland/regal"
                                              :sha "f902d2c43121f9e1c48603d6eb99f5900eb6a9f6"}
                          weavejester/medley {:git/url "https://github.com/weavejester/medley"
