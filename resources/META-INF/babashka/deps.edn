@@ -53,8 +53,8 @@
            :lib-tests
            {:extra-paths ["process/src" "process/test" "test-resources/lib_tests"]
             :extra-deps {org.clj-commons/clj-http-lite {:mvn/version "0.4.392"}
-                         borkdude/spartan.spec {:git/url "https://github.com/borkdude/spartan.spec"
-                                                :sha "7689f85d4c79de6c7b5ee3ab62e3e72eeccd3318"}
+                         org.babashka/spec.alpha {:git/url "https://github.com/babashka/spec.alpha"
+                                                  :sha "1deb5702da3747a42f3aff769307672e59fc8ed8"}
                          lambdaisland/regal {:git/url "https://github.com/lambdaisland/regal"
                                              :sha "f902d2c43121f9e1c48603d6eb99f5900eb6a9f6"}
                          weavejester/medley {:git/url "https://github.com/weavejester/medley"
@@ -92,10 +92,16 @@
                          com.stuartsierra/component {:mvn/version "1.0.0"}
                          org.clojars.askonomm/ruuter {:mvn/version "1.2.2"}
                          org.clj-commons/digest {:mvn/version "1.4.100"}
-                         hato/hato {:mvn/version "0.8.2"}}
+                         hato/hato {:mvn/version "0.8.2"}
+                         better-cond/better-cond {:mvn/version "2.1.1"}
+                         org.clojure/core.specs.alpha {:mvn/version "0.2.62"}
+                         reifyhealth/specmonstah {:mvn/version "2.0.0"}
+                         exoscale/coax {:mvn/version "1.0.0-alpha14"}
+                         orchestra/orchestra {:mvn/version "2021.01.01-1"}
+                         expound/expound {:mvn/version "0.8.10"}
+                         integrant/integrant {:mvn/version "0.8.0"}}
             :classpath-overrides {org.clojure/clojure nil
-                                  org.clojure/spec.alpha nil
-                                  org.clojure/core.specs.alpha nil}}
+                                  org.clojure/spec.alpha nil}}
            :clj-nvd
            {:extra-deps {clj-nvd/clj-nvd {:git/url "https://github.com/miikka/clj-nvd.git"
                                           :sha "f2ec98699e057a379baf170cb49cf7ad76874a70"}}
