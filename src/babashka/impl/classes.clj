@@ -84,7 +84,10 @@
     java.net.Inet6Address
     {:methods [{:name "getHostAddress"}]}
     clojure.lang.IFn
-    {:methods [{:name "applyTo"}]}})
+    {:methods [{:name "applyTo"}]}
+    clojure.lang.MultiFn
+    {:methods [{:name "dispatchFn"}
+               {:name "getMethod"}]}})
 
 (def custom-map
   (cond->
@@ -415,7 +418,6 @@
                       clojure.lang.LispReader$Resolver
                       clojure.lang.Named
                       clojure.lang.Keyword
-                      clojure.lang.MultiFn
                       clojure.lang.PersistentArrayMap
                       clojure.lang.PersistentHashMap
                       clojure.lang.PersistentHashSet
