@@ -2,7 +2,7 @@
 
 set -eo pipefail
 
-image_name="cap10morgan/babashka"
+image_name="babashka/babashka"
 image_tag=$(cat resources/BABASHKA_VERSION)
 latest_tag="latest"
 
