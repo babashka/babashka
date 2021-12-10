@@ -482,7 +482,9 @@ workflows:
       - docker:
           filters:
             branches:
-              only: master
+              only: 
+                - master
+                - feature/build-arm64-docker-image-in-ci
           requires:
             - linux
             - linux-static
