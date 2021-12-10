@@ -89,7 +89,9 @@
     {:fields [{:name "dispatchFn"}]
      :methods [{:name "getMethod"}]}
     clojure.lang.RT
-    {:methods [{:name "aget"}]}})
+    {:methods [{:name "aget"}
+               {:name "aset"}
+               {:name "aclone"}]}})
 
 (def custom-map
   (cond->
@@ -371,6 +373,7 @@
           ~(symbol "[B")
           ~(symbol "[I")
           ~(symbol "[Ljava.lang.Object;")
+          ~(symbol "[Ljava.lang.Double;")
           ~@(when features/yaml? '[org.yaml.snakeyaml.error.YAMLException])
           ~@(when features/hsqldb? '[org.hsqldb.jdbcDriver])]
     :constructors [clojure.lang.Delay
