@@ -4,7 +4,9 @@ For a list of breaking changes, check [here](#breaking-changes).
 
 ## 0.7.0 (2021-12-10)
 
-- Add compatibility with `clojure.spec.alpha`. See [babashka/spec.alpha](https://github.com/babashka/spec.alpha).
+- Add compatibility with `clojure.spec.alpha`. See
+  [babashka/spec.alpha](https://github.com/babashka/spec.alpha) and this [blog
+  post](https://blog.michielborkent.nl/using-clojure-spec-alpha-with-babashka.html).
 - Add `to-array-2d`, `aclone`, `areduce` and `amap` ([@MrEbbinghaus](https://github.com/MrEbbinghaus))
 - Add `inst-ms`
 - Add `java.util.StringTokenizer`
