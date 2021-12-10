@@ -485,6 +485,7 @@ workflows:
               only: 
                 - master
                 - feature/build-arm64-docker-image-in-ci
+                - pull/1099
           requires:
             - linux
             - linux-static
