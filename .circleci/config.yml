@@ -3,6 +3,13 @@
 # Check https://circleci.com/docs/2.0/language-clojure/ for more details
 #
 version: 2.1
+commands:
+  setup-docker-buildx:
+    steps:
+      - run:
+          name: Create multi-platform capabale buildx builder
+          command: |
+            docker buildx create --name ci-builder --use
 jobs:
   jvm:
     docker:
@@ -441,40 +448,18 @@ jobs:
             - ~/.m2
           key: v1-dependencies-{{ checksum "project.clj" }}
   docker:
-    docker:
-      - image: circleci/buildpack-deps:bullseye
-    steps:
-      - checkout
-      - attach_workspace:
-          at: /tmp
-      - setup_remote_docker:
-          version: 19.03.12
-      - run:
-          name: Build Docker image
-          command: .circleci/script/docker
-  docker-aarch64:
     machine:
       image: ubuntu-2004:202111-01
-    resource_class: arm.medium
     steps:
       - checkout
+      - setup-docker-buildx
       - attach_workspace:
           at: /tmp
       - run:
           name: Build Docker image
           environment:
-            PLATFORM: linux-aarch64
+            PLATFORM: linux/amd64,linux/arm64
           command: .circleci/script/docker
-  docker-manifest:
-    machine:
-      image: ubuntu-2004:202111-01
-    steps:
-      - checkout
-      - run:
-          name: Create & push Docker manifest
-          environment:
-            PLATFORM_TAGS: linux-amd64,linux-aarch64
-          command: .circleci/script/docker-manifest
 
 workflows:
   version: 2
@@ -501,16 +486,4 @@ workflows:
           requires:
             - linux
             - linux-static
-      - docker-aarch64:
-          filters:
-            branches:
-              only: master
-          requires:
             - linux-aarch64
-      - docker-manifest:
-          filters:
-            branches:
-              only: master
-          requires:
-            - docker
-            - docker-aarch64
