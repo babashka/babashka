@@ -10,11 +10,6 @@ commands:
           name: Create multi-platform capabale buildx builder
           command: |
             docker buildx create --name ci-builder --use
-  delete-circleci-gitconfig:
-    steps:
-      - run:
-          name: Delete ~/.gitconfig
-          command: rm -rf ~/.gitconfig
 jobs:
   jvm:
     docker:
@@ -25,7 +20,6 @@ jobs:
       BABASHKA_PLATFORM: linux # could be used in jar name
     resource_class: large
     steps:
-      - delete-circleci-gitconfig
       - checkout
       - run:
           name: "Pull Submodules"
@@ -89,7 +83,6 @@ jobs:
       BABASHKA_XMX: "-J-Xmx6500m"
     resource_class: large
     steps:
-      - delete-circleci-gitconfig
       - checkout
       - run:
           name: "Pull Submodules"
@@ -158,7 +151,6 @@ jobs:
       BABASHKA_XMX: "-J-Xmx6500m"
     resource_class: large
     steps:
-      - delete-circleci-gitconfig
       - checkout
       - attach_workspace:
           at: /tmp
@@ -238,7 +230,6 @@ jobs:
       BABASHKA_TEST_ENV: native
       BABASHKA_XMX: "-J-Xmx6500m"
     steps:
-      - delete-circleci-gitconfig
       - checkout
       - run:
           name: "Pull Submodules"
@@ -308,7 +299,6 @@ jobs:
       BABASHKA_XMX: "-J-Xmx6500m"
       BABASHKA_STATIC: "true"
     steps:
-      - delete-circleci-gitconfig
       - checkout
       - run:
           name: "Pull Submodules"
@@ -383,7 +373,6 @@ jobs:
       BABASHKA_XMX: "-J-Xmx6500m"
     resource_class: large
     steps:
-      - delete-circleci-gitconfig
       - checkout
       - run:
           name: "Pull Submodules"
@@ -442,7 +431,6 @@ jobs:
     environment:
       LEIN_ROOT: "true"
     steps:
-      - delete-circleci-gitconfig
       - checkout
       - run:
           name: "Pull Submodules"
@@ -463,7 +451,6 @@ jobs:
     machine:
       image: ubuntu-2004:202111-01
     steps:
-      - delete-circleci-gitconfig
       - checkout
       - setup-docker-buildx
       - attach_workspace:
