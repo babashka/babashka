@@ -21,8 +21,9 @@ echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
 IFS=',' read -r -a platforms <<< "$platform"
 for p in "${platforms[@]}"; do
     tarball_platform=${p//\//-}
-    mkdir -p $platform
-    tar zxvf "/tmp/release/babashka-${image_tag}-${tarball_platform}.tar.gz" -C $platform 
+    if [[ $tarball_platform == "linux-arm64" ]]; then tarball_platform="linux-aarch64"; fi
+    mkdir -p $p
+    tar zxvf "/tmp/release/babashka-${image_tag}-${tarball_platform}.tar.gz" -C $p
 done
 docker buildx build -t "$image_name:$image_tag" --platform "$platform" --push -f Dockerfile.ci .
 if [[ $snapshot == "false" ]]; then
