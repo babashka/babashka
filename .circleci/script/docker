@@ -21,7 +21,7 @@ IFS=',' read -r -a platforms <<< "$platform"
 for p in "${platforms[@]}"; do
     tarball_platform=${p//\//-}
     mkdir -p $platform
-    tar -C $platform zxvf "/tmp/release/babashka-${image_tag}-${tarball_platform}.tar.gz"
+    tar zxvf "/tmp/release/babashka-${image_tag}-${tarball_platform}.tar.gz" -C $platform 
 done
 docker buildx build -t "$image_name:$image_tag" --platform "$platform" --push -f Dockerfile.ci .
 if [[ $snapshot == "false" ]]; then
