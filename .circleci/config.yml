@@ -35,13 +35,13 @@ jobs:
           name: Install Clojure
           command: |
             sudo script/install-clojure
-      - run:
-          name: Run JVM tests
-          command: |
-            export BABASHKA_FEATURE_JDBC=true
-            export BABASHKA_FEATURE_POSTGRESQL=true
-            script/test
-            script/run_lib_tests
+      # - run:
+      #     name: Run JVM tests
+      #     command: |
+      #       export BABASHKA_FEATURE_JDBC=true
+      #       export BABASHKA_FEATURE_POSTGRESQL=true
+      #       script/test
+      #       script/run_lib_tests
       # - run:
       #     name: Run as tools.deps dependency
       #     command: |
@@ -111,11 +111,11 @@ jobs:
             script/uberjar
             script/compile
           no_output_timeout: 30m
-      - run:
-          name: Run tests
-          command: |
-            script/test
-            script/run_lib_tests
+      # - run:
+      #     name: Run tests
+      #     command: |
+      #       script/test
+      #       script/run_lib_tests
       - run:
           name: Release
           command: |
@@ -190,11 +190,11 @@ jobs:
             script/uberjar
             script/compile
           no_output_timeout: 30m
-      - run:
-          name: Run tests
-          command: |
-            script/test
-            script/run_lib_tests
+      # - run:
+      #     name: Run tests
+      #     command: |
+      #       script/test
+      #       script/run_lib_tests
       - run:
           name: Release
           command: |
@@ -258,11 +258,11 @@ jobs:
             script/uberjar
             script/compile
           no_output_timeout: 30m
-      - run:
-          name: Run tests
-          command: |
-            script/test
-            script/run_lib_tests
+      # - run:
+      #     name: Run tests
+      #     command: |
+      #       script/test
+      #       script/run_lib_tests
       - run:
           name: Release
           command: |
@@ -336,11 +336,11 @@ jobs:
             script/uberjar
             script/compile
           no_output_timeout: 30m
-      - run:
-          name: Run tests
-          command: |
-            script/test
-            script/run_lib_tests
+      # - run:
+      #     name: Run tests
+      #     command: |
+      #       script/test
+      #       script/run_lib_tests
       - run:
           name: Release
           command: |
@@ -401,12 +401,12 @@ jobs:
             script/uberjar
             script/compile
           no_output_timeout: 30m
-      - run:
-          name: Run tests
-          command: |
-            export PATH=$GRAALVM_HOME/bin:$PATH
-            script/test
-            script/run_lib_tests
+      # - run:
+      #     name: Run tests
+      #     command: |
+      #       export PATH=$GRAALVM_HOME/bin:$PATH
+      #       script/test
+      #       script/run_lib_tests
       - run:
           name: Release
           command: |
