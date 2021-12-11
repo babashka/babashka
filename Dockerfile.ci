@@ -5,8 +5,9 @@ RUN apt-get update \
     && mkdir -p /usr/local/bin
 
 ARG TARGETARCH
+ARG TARGETOS
 
-COPY ${TARGETARCH}/bb /usr/local/bin/bb
+COPY ${TARGETOS}/${TARGETARCH}/bb /usr/local/bin/bb
 
 RUN chmod +x /usr/local/bin/bb
 
