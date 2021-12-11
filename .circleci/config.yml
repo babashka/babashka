@@ -456,6 +456,9 @@ jobs:
       - attach_workspace:
           at: /tmp
       - run:
+          name: List workspace contents
+          command: ls -la /tmp/release
+      - run:
           name: Build Docker image
           environment:
             PLATFORM: linux/amd64,linux/arm64
