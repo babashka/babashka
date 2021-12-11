@@ -219,7 +219,7 @@ jobs:
     machine:
       enabled: true
       image: ubuntu-2004:202101-01
-    resource_class: arm.large
+    resource_class: arm.medium
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
@@ -287,7 +287,7 @@ jobs:
     machine:
       enabled: true
       image: ubuntu-2004:202101-01
-    resource_class: arm.large
+    resource_class: arm.medium
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
