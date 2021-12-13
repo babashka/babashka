@@ -31,7 +31,7 @@ if [[ $snapshot == "false" ]]; then
     docker buildx build -t "$image_name:$latest_tag" --platform "$platform" --push -f Dockerfile.ci .
 fi
 for p in "${platforms[@]}"; do
-    rm -f $p
+    rm -rf $p
 done
 
 # alpine doesn't provide upstream arm64 images yet
