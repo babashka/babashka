@@ -9,6 +9,7 @@ commands:
       - run:
           name: Create multi-platform capabale buildx builder
           command: |
+            docker run --privileged --rm tonistiigi/binfmt --install all
             docker buildx create --name ci-builder --use
 jobs:
   jvm:
