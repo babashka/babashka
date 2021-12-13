@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 
 set -eo pipefail
-set -x
 
-image_name="cap10morgan/babashka"
+image_name="babashka/babashka"
 image_tag=$(cat resources/BABASHKA_VERSION)
 platform=${PLATFORM:-"linux/amd64"}
 latest_tag="latest"
@@ -16,36 +15,40 @@ else
     snapshot="false"
 fi
 
-echo "Building & pushing $platform Docker image(s) $image_name:$image_tag"
-echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
-IFS=',' read -r -a platforms <<< "$platform"
-for p in "${platforms[@]}"; do
-    tarball_platform=${p//\//-}
-    if [[ $tarball_platform == "linux-arm64" ]]; then tarball_platform="linux-aarch64"; fi
-    mkdir -p $p
-    tar zxvf "/tmp/release/babashka-${image_tag}-${tarball_platform}.tar.gz" -C $p
-done
-docker buildx build -t "$image_name:$image_tag" --platform "$platform" --push -f Dockerfile.ci .
-if [[ $snapshot == "false" ]]; then
-    echo "Building & pushing $platform Docker image(s) $image_name:$latest_tag"
-    docker buildx build -t "$image_name:$latest_tag" --platform "$platform" --push -f Dockerfile.ci .
-fi
-for p in "${platforms[@]}"; do
-    rm -rf $p
-done
-
-# alpine doesn't provide upstream arm64 images yet
-if [[ $platform == "linux-amd64" ]]; then
-    tar zxvf  "/tmp/release/babashka-${image_tag}-${platform}-static.tar.gz"
-    docker build -t "$image_name:alpine" -f Dockerfile.alpine .
-    rm -f bb
-    docker tag "$image_name:alpine" "$image_name:$image_tag-alpine"
-    echo "Pushing image $image_name:$image_tag-alpine"
-    docker push "$image_name:$image_tag-alpine"
+if [ -z "$CIRCLE_PULL_REQUEST" ] && [ "$CIRCLE_BRANCH" = "master" ]; then
+    echo "Building & pushing $platform Docker image(s) $image_name:$image_tag"
+    echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
+    IFS=',' read -r -a platforms <<< "$platform"
+    for p in "${platforms[@]}"; do
+        tarball_platform=${p//\//-}
+        if [[ $tarball_platform == "linux-arm64" ]]; then tarball_platform="linux-aarch64"; fi
+        mkdir -p $p
+        tar zxvf "/tmp/release/babashka-${image_tag}-${tarball_platform}.tar.gz" -C $p
+    done
+    docker buildx build -t "$image_name:$image_tag" --platform "$platform" --push -f Dockerfile.ci .
     if [[ $snapshot == "false" ]]; then
-        echo "Pushing image $image_name:alpine"
-        docker push "$image_name:alpine"
+        echo "Building & pushing $platform Docker image(s) $image_name:$latest_tag"
+        docker buildx build -t "$image_name:$latest_tag" --platform "$platform" --push -f Dockerfile.ci .
     fi
+    for p in "${platforms[@]}"; do
+        rm -rf $p
+    done
+
+    # alpine doesn't provide upstream arm64 images yet
+    if [[ $platform == "linux-amd64" ]]; then
+        tar zxvf  "/tmp/release/babashka-${image_tag}-${platform}-static.tar.gz"
+        docker build -t "$image_name:alpine" -f Dockerfile.alpine .
+        rm -f bb
+        docker tag "$image_name:alpine" "$image_name:$image_tag-alpine"
+        echo "Pushing image $image_name:$image_tag-alpine"
+        docker push "$image_name:$image_tag-alpine"
+        if [[ $snapshot == "false" ]]; then
+            echo "Pushing image $image_name:alpine"
+            docker push "$image_name:alpine"
+        fi
+    fi
+else
+    echo "Not publishing Docker image"
 fi
 
 exit 0;

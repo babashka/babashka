@@ -112,11 +112,11 @@ jobs:
             script/uberjar
             script/compile
           no_output_timeout: 30m
-      # - run:
-      #     name: Run tests
-      #     command: |
-      #       script/test
-      #       script/run_lib_tests
+      - run:
+          name: Run tests
+          command: |
+            script/test
+            script/run_lib_tests
       - run:
           name: Release
           command: |
@@ -191,11 +191,11 @@ jobs:
             script/uberjar
             script/compile
           no_output_timeout: 30m
-      # - run:
-      #     name: Run tests
-      #     command: |
-      #       script/test
-      #       script/run_lib_tests
+      - run:
+          name: Run tests
+          command: |
+            script/test
+            script/run_lib_tests
       - run:
           name: Release
           command: |
@@ -220,7 +220,7 @@ jobs:
     machine:
       enabled: true
       image: ubuntu-2004:202101-01
-    resource_class: arm.medium
+    resource_class: arm.large
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
@@ -259,11 +259,11 @@ jobs:
             script/uberjar
             script/compile
           no_output_timeout: 30m
-      # - run:
-      #     name: Run tests
-      #     command: |
-      #       script/test
-      #       script/run_lib_tests
+      - run:
+          name: Run tests
+          command: |
+            script/test
+            script/run_lib_tests
       - run:
           name: Release
           command: |
@@ -288,7 +288,7 @@ jobs:
     machine:
       enabled: true
       image: ubuntu-2004:202101-01
-    resource_class: arm.medium
+    resource_class: arm.large
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
@@ -337,11 +337,11 @@ jobs:
             script/uberjar
             script/compile
           no_output_timeout: 30m
-      # - run:
-      #     name: Run tests
-      #     command: |
-      #       script/test
-      #       script/run_lib_tests
+      - run:
+          name: Run tests
+          command: |
+            script/test
+            script/run_lib_tests
       - run:
           name: Release
           command: |
@@ -402,12 +402,12 @@ jobs:
             script/uberjar
             script/compile
           no_output_timeout: 30m
-      # - run:
-      #     name: Run tests
-      #     command: |
-      #       export PATH=$GRAALVM_HOME/bin:$PATH
-      #       script/test
-      #       script/run_lib_tests
+      - run:
+          name: Run tests
+          command: |
+            export PATH=$GRAALVM_HOME/bin:$PATH
+            script/test
+            script/run_lib_tests
       - run:
           name: Release
           command: |
@@ -457,9 +457,6 @@ jobs:
       - attach_workspace:
           at: /tmp
       - run:
-          name: List workspace contents
-          command: ls -la /tmp/release
-      - run:
           name: Build Docker image
           environment:
             PLATFORM: linux/amd64,linux/arm64
@@ -488,8 +485,6 @@ workflows:
             branches:
               only: 
                 - master
-                - feature/build-arm64-docker-image-in-ci
-                - pull/1099
           requires:
             - linux
             - linux-static
