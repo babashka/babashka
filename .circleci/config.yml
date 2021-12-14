@@ -36,17 +36,17 @@ jobs:
           name: Install Clojure
           command: |
             sudo script/install-clojure
-      # - run:
-      #     name: Run JVM tests
-      #     command: |
-      #       export BABASHKA_FEATURE_JDBC=true
-      #       export BABASHKA_FEATURE_POSTGRESQL=true
-      #       script/test
-      #       script/run_lib_tests
-      # - run:
-      #     name: Run as tools.deps dependency
-      #     command: |
-      #       .circleci/script/tools.deps
+      - run:
+          name: Run JVM tests
+          command: |
+            export BABASHKA_FEATURE_JDBC=true
+            export BABASHKA_FEATURE_POSTGRESQL=true
+            script/test
+            script/run_lib_tests
+      - run:
+          name: Run as tools.deps dependency
+          command: |
+            .circleci/script/tools.deps
       - run:
           name: Run as lein command
           command: |
