@@ -3,6 +3,14 @@
 # Check https://circleci.com/docs/2.0/language-clojure/ for more details
 #
 version: 2.1
+commands:
+  setup-docker-buildx:
+    steps:
+      - run:
+          name: Create multi-platform capabale buildx builder
+          command: |
+            docker run --privileged --rm tonistiigi/binfmt --install all
+            docker buildx create --name ci-builder --use
 jobs:
   jvm:
     docker:
@@ -35,10 +43,6 @@ jobs:
             export BABASHKA_FEATURE_POSTGRESQL=true
             script/test
             script/run_lib_tests
-      # - run:
-      #     name: Run as tools.deps dependency
-      #     command: |
-      #       .circleci/script/tools.deps
       - run:
           name: Run as lein command
           command: |
@@ -229,14 +233,6 @@ jobs:
           command: |
             git submodule init
             git submodule update
-      - run:
-          name: "Short circuit on SNAPSHOT"
-          command: |
-            VERSION=$(cat resources/BABASHKA_VERSION)
-            if [[ "$VERSION" == *-SNAPSHOT ]]
-            then
-              circleci task halt
-            fi
       - run:
           name: Install Clojure
           command: |
@@ -449,16 +445,17 @@ jobs:
             - ~/.m2
           key: v1-dependencies-{{ checksum "project.clj" }}
   docker:
-    docker:
-      - image: circleci/buildpack-deps:bullseye
+    machine:
+      image: ubuntu-2004:202111-01
     steps:
       - checkout
+      - setup-docker-buildx
       - attach_workspace:
           at: /tmp
-      - setup_remote_docker:
-          version: 19.03.12
       - run:
           name: Build Docker image
+          environment:
+            PLATFORM: linux/amd64,linux/arm64
           command: .circleci/script/docker
 
 workflows:
@@ -482,7 +479,9 @@ workflows:
       - docker:
           filters:
             branches:
-              only: master
+              only: 
+                - master
           requires:
             - linux
             - linux-static
+            - linux-aarch64
