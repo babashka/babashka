@@ -44,10 +44,6 @@ jobs:
             script/test
             script/run_lib_tests
       - run:
-          name: Run as tools.deps dependency
-          command: |
-            .circleci/script/tools.deps
-      - run:
           name: Run as lein command
           command: |
             .circleci/script/lein
