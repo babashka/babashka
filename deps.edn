@@ -95,11 +95,13 @@
                          hato/hato {:mvn/version "0.8.2"}
                          better-cond/better-cond {:mvn/version "2.1.1"}
                          org.clojure/core.specs.alpha {:mvn/version "0.2.62"}
-                         reifyhealth/specmonstah {:mvn/version "2.0.0"}
+                         reifyhealth/specmonstah {:git/url "https://github.com/reifyhealth/specmonstah"
+                                                  :sha     "a2b357009a3aa99a0c2d2361f3bbcd0b0e36505e"}
                          exoscale/coax {:mvn/version "1.0.0-alpha14"}
                          orchestra/orchestra {:mvn/version "2021.01.01-1"}
                          expound/expound {:mvn/version "0.8.10"}
-                         integrant/integrant {:mvn/version "0.8.0"}}
+                         integrant/integrant {:mvn/version "0.8.0"}
+                         com.stuartsierra/dependency {:mvn/version "1.0.0"}}
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil}}
            :clj-nvd

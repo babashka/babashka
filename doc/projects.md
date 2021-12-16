@@ -54,6 +54,8 @@ The following libraries and projects are known to work with babashka.
   - [ruuter](#ruuter)
   - [clj-commons.digest](#clj-commonsdigest)
   - [contajners](#contajners)
+  - [dependency](#dependency)
+  - [specmonstah](#specmonstah)
 - [Pods](#pods)
 - [Projects](#projects-1)
   - [babashka-test-action](#babashka-test-action)
@@ -81,7 +83,7 @@ The following libraries and projects are known to work with babashka.
   - [bb htmx todo app](#bb-htmx-todo-app)
 
 For more supported libraries, see [this test
-file](test-resources/lib_tests/babashka/run_all_libtests.clj ). Also keep an eye
+file](../test-resources/lib_tests/babashka/run_all_libtests.clj ). Also keep an eye
 on the [news](news.md) page for new projects, gists and other developments
 around babashka.
 
@@ -106,7 +108,7 @@ instrumentation! Its readme also contains instructions on how to use
 
 ### [tools.bbuild](https://github.com/babashka/tools.bbuild)
 
-A fork of `tools.build`. 
+A fork of `tools.build`.
 
 ### [clj-http-lite](https://github.com/babashka/clj-http-lite)
 
@@ -781,6 +783,14 @@ Example:
 ; list all images
 (c/invoke images-docker {:op :ImageList})
 ```
+
+### [dependency](https://github.com/stuartsierra/dependency)
+
+Represent dependency graphs as a directed acylic graph.
+
+### [specmonstah](https://github.com/reifyhealth/specmonstah)
+
+Write concise, maintainable test fixtures with clojure.spec.alpha.
 
 ## Pods
 
