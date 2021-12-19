@@ -81,6 +81,21 @@
       (when (some :macro stacktrace)
         "macroexpand")))
 
+(defn render-native-sym [sym]
+  (let [sym (-> (str sym)
+                (clojure.lang.Compiler/demunge)
+                symbol)
+        ns (namespace sym)]
+    (when ns
+      (let [ns (symbol ns)
+            nm (symbol (name sym))]
+        {:ns ns
+         :name nm
+         :sci/built-in true}))))
+
+(defn render-native-stacktrace-elem [[sym _ _file _line]]
+  (render-native-sym sym))
+
 (defn error-handler [^Exception e opts]
   (binding [*out* *err*]
     (let [d (ex-data e)
@@ -90,7 +105,11 @@
           ex-name (when sci-error?
                     (some-> ^Throwable (ex-cause e)
                             .getClass .getName))
-          stacktrace (sci/stacktrace e)]
+          stacktrace (concat (sequence (comp (map StackTraceElement->vec)
+                                             (take-while #(not (str/starts-with? (first %) "sci.impl.")))
+                                             (map render-native-stacktrace-elem))
+                                       (.getStackTrace (or (ex-cause e) e)))
+                             (sci/stacktrace e))]
       (if exit-code
         (do
           (when-let [m (.getMessage e)]
