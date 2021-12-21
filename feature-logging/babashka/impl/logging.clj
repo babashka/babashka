@@ -107,18 +107,27 @@
 
 (defn merge-config! [m] (swap-config! (fn [old] (enc/nested-merge old m))))
 
+(defmacro -log-and-rethrow-errors [?line & body]
+  `(try (do ~@body)
+        (catch Throwable e#
+          (do
+            #_(error e#) ; CLJ-865
+            (timbre/log! :error :p [e#] ~{:?line ?line})
+            (throw e#)))))
+
 (def timbre-namespace
   (assoc (make-ns 'taoensso.timbre tns ['trace 'tracef 'debug 'debugf
                                         'info 'infof 'warn 'warnf
                                         'error 'errorf
                                         '-log! 'with-level
-                                        'spit-appender])
+                                        'spit-appender '-spy 'spy])
          'log! (sci/copy-var log! tns)
          '*config* config
          'swap-config! (sci/copy-var swap-config! tns)
          'merge-config! (sci/copy-var merge-config! tns)
          'set-level! (sci/copy-var set-level! tns)
-         'println-appender (sci/copy-var println-appender tns)))
+         'println-appender (sci/copy-var println-appender tns)
+         '-log-and-rethrow-errors (sci/copy-var -log-and-rethrow-errors tns)))
 
 ;;;; clojure.tools.logging
 
