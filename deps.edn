@@ -61,7 +61,7 @@
                                              :sha "a4e5fb5383f5c0d83cb2d005181a35b76d8a136d"}
                          cprop/cprop {:mvn/version "0.1.16"}
                          comb/comb {:mvn/version "0.1.1"}
-                         mvxcvi/arrangement {:mvn/version "1.2.0"}
+                         mvxcvi/arrangement {:mvn/version "2.0.0"}
                          org.clojure/data.zip {:mvn/version "1.0.0"}
                          clojure-csv/clojure-csv {:mvn/version "2.0.2"}
                          org.clojure/math.combinatorics {:mvn/version "0.1.6"}

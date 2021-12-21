@@ -92,6 +92,8 @@ If the library you want to add doesn't work with the script, you can manually do
 * Add an entry in `run_all_libtests.clj` to run the added test namespaces.
 * Run the tests `script/lib_tests/run_all_libtests NS1 NS2`
 
+Note: If you have to modify a test to have it work with bb, add an inline
+comment with prefix "TEST-FIX:" explaining what you did.
 
 ## Build
 

@@ -1,4 +1,6 @@
 #!/usr/bin/env bb
+;; Adds a library to bb-tested-libs.edn to be tested given a library version and
+;; git repository. Optionally takes a --test to then test the added library.
 
 (ns add-libtest
   (:require [babashka.deps :as deps]

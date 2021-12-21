@@ -59,41 +59,13 @@
 (require '[cprop.source :refer [from-env]])
 (println (:cprop-env (from-env)))
 
-;;;; comb
-
-;; TODO: port to test-namespaces
-
-(require '[comb.template :as template])
-(prn (template/eval "<% (dotimes [x 3] %>foo<% ) %>"))
-(prn (template/eval "Hello <%= name %>" {:name "Alice"}))
-(def hello
-  (template/fn [name] "Hello <%= name %>"))
-(prn (hello "Alice"))
-
-;;;; arrangement
-
-;; TODO: port to test-namespaces
-
-(require '[arrangement.core :as order])
-(prn (sort order/rank ['a false 2 :b nil 3.14159
-                       "c" true \d [3 2] #{:one :two}
-                       [3 1 2] #{:three}]))
-
 ;;;; clj-yaml
 
 (test-namespaces 'clj-yaml.core-test)
 
-;;;; clojure-csv
-
-;; TODO: port to test-namespaces
-
-(require '[clojure-csv.core :as csv])
-;; TODO: convert to test
-(prn (csv/write-csv (csv/parse-csv "a,b,c\n1,2,3")))
-
 ;;;; clojure.data.zip
 
-;; TODO: port to test-namespaces
+;; TODO: port to test-namespaces. Blocked until clojure.xml is supported
 
 (require '[clojure.data.xml :as xml])
 (require '[clojure.zip :as zip])
