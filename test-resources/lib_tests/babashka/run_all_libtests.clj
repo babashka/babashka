@@ -1,6 +1,7 @@
 (ns babashka.run-all-libtests
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
+            [clojure.edn :as edn]
             [clojure.test :as t]))
 
 #_(require 'clojure.spec.alpha)
@@ -13,17 +14,14 @@
   (or (empty? ns-args)
       (contains? ns-args ns)))
 
-(defmacro test-namespaces [& namespaces]
-  (let [namespaces (map second namespaces)
-        namespaces (seq (filter test-namespace? namespaces))
-        quoted-namespaces (map #(list 'quote %) namespaces)
-        requires (map #(list 'require %) quoted-namespaces)]
-    (when (seq requires)
-      `(do
-         ~@requires
-         (let [m# (t/run-tests ~@quoted-namespaces)]
-           (swap! status (fn [status#]
-                           (merge-with + status# (dissoc m# :type)))))))))
+(defn test-namespaces [& namespaces]
+  (let [namespaces (seq (filter test-namespace? namespaces))]
+    (when (seq namespaces)
+      (doseq [n namespaces]
+        (require n))
+      (let [m (apply t/run-tests namespaces)]
+        (swap! status (fn [status]
+                        (merge-with + status (dissoc m :type))))))))
 
 (def windows? (-> (System/getProperty "os.name")
                 (str/lower-case)
@@ -275,6 +273,10 @@
 (test-namespaces 'reifyhealth.specmonstah.core-test 'reifyhealth.specmonstah.spec-gen-test)
 
 (test-namespaces 'com.stuartsierra.dependency-test)
+
+(let [lib-tests (edn/read-string (slurp (io/resource "bb-tested-libs.edn")))]
+  (doseq [{tns :test-namespaces} (vals lib-tests)]
+    (apply test-namespaces tns)))
 
 ;;;; final exit code
 
