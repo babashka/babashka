@@ -61,7 +61,7 @@
                                              :sha "a4e5fb5383f5c0d83cb2d005181a35b76d8a136d"}
                          cprop/cprop {:mvn/version "0.1.16"}
                          comb/comb {:mvn/version "0.1.1"}
-                         mvxcvi/arrangement {:mvn/version "1.2.0"}
+                         mvxcvi/arrangement {:mvn/version "2.0.0"}
                          org.clojure/data.zip {:mvn/version "1.0.0"}
                          clojure-csv/clojure-csv {:mvn/version "2.0.2"}
                          org.clojure/math.combinatorics {:mvn/version "0.1.6"}
@@ -101,7 +101,9 @@
                          orchestra/orchestra {:mvn/version "2021.01.01-1"}
                          expound/expound {:mvn/version "0.8.10"}
                          integrant/integrant {:mvn/version "0.8.0"}
-                         com.stuartsierra/dependency {:mvn/version "1.0.0"}}
+                         com.stuartsierra/dependency {:mvn/version "1.0.0"}
+                         listora/again {:mvn/version "1.0.0"}
+                         org.clojure/tools.gitlibs {:mvn/version "2.4.172"}}
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil}}
            :clj-nvd
