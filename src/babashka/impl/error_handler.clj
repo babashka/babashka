@@ -18,9 +18,9 @@
            (drop (- stack-count 5) stacktrace)]))))
 
 (defn print-stacktrace
-  [stacktrace {:keys [:verbose?]}]
+  [stacktrace {:keys [:debug]}]
   (let [stacktrace (sci/format-stacktrace stacktrace)
-        segments (split-stacktrace stacktrace verbose?)
+        segments (split-stacktrace stacktrace debug)
         [fst snd] segments]
     (run! println fst)
     (when snd
@@ -29,7 +29,7 @@
 
 (defn error-context [ex opts]
   (let [{:keys [:file :line :column]} (ex-data ex)]
-    (when (and file line)
+    (when (and file line column)
       (when-let [content (case file
                            "<expr>" (:expression opts)
                            "<preloads>" (:preloads opts)
