@@ -1,6 +1,7 @@
 (ns babashka.run-all-libtests
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
+            [clojure.edn :as edn]
             [clojure.test :as t]))
 
 #_(require 'clojure.spec.alpha)
@@ -13,17 +14,14 @@
   (or (empty? ns-args)
       (contains? ns-args ns)))
 
-(defmacro test-namespaces [& namespaces]
-  (let [namespaces (map second namespaces)
-        namespaces (seq (filter test-namespace? namespaces))
-        quoted-namespaces (map #(list 'quote %) namespaces)
-        requires (map #(list 'require %) quoted-namespaces)]
-    (when (seq requires)
-      `(do
-         ~@requires
-         (let [m# (t/run-tests ~@quoted-namespaces)]
-           (swap! status (fn [status#]
-                           (merge-with + status# (dissoc m# :type)))))))))
+(defn test-namespaces [& namespaces]
+  (let [namespaces (seq (filter test-namespace? namespaces))]
+    (when (seq namespaces)
+      (doseq [n namespaces]
+        (require n))
+      (let [m (apply t/run-tests namespaces)]
+        (swap! status (fn [status]
+                        (merge-with + status (dissoc m :type))))))))
 
 (def windows? (-> (System/getProperty "os.name")
                 (str/lower-case)
@@ -61,41 +59,13 @@
 (require '[cprop.source :refer [from-env]])
 (println (:cprop-env (from-env)))
 
-;;;; comb
-
-;; TODO: port to test-namespaces
-
-(require '[comb.template :as template])
-(prn (template/eval "<% (dotimes [x 3] %>foo<% ) %>"))
-(prn (template/eval "Hello <%= name %>" {:name "Alice"}))
-(def hello
-  (template/fn [name] "Hello <%= name %>"))
-(prn (hello "Alice"))
-
-;;;; arrangement
-
-;; TODO: port to test-namespaces
-
-(require '[arrangement.core :as order])
-(prn (sort order/rank ['a false 2 :b nil 3.14159
-                       "c" true \d [3 2] #{:one :two}
-                       [3 1 2] #{:three}]))
-
 ;;;; clj-yaml
 
 (test-namespaces 'clj-yaml.core-test)
 
-;;;; clojure-csv
-
-;; TODO: port to test-namespaces
-
-(require '[clojure-csv.core :as csv])
-;; TODO: convert to test
-(prn (csv/write-csv (csv/parse-csv "a,b,c\n1,2,3")))
-
 ;;;; clojure.data.zip
 
-;; TODO: port to test-namespaces
+;; TODO: port to test-namespaces. Blocked until clojure.xml is supported
 
 (require '[clojure.data.xml :as xml])
 (require '[clojure.zip :as zip])
@@ -275,6 +245,10 @@
 (test-namespaces 'reifyhealth.specmonstah.core-test 'reifyhealth.specmonstah.spec-gen-test)
 
 (test-namespaces 'com.stuartsierra.dependency-test)
+
+(let [lib-tests (edn/read-string (slurp (io/resource "bb-tested-libs.edn")))]
+  (doseq [{tns :test-namespaces} (vals lib-tests)]
+    (apply test-namespaces tns)))
 
 ;;;; final exit code
 
