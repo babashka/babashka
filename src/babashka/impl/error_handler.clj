@@ -105,12 +105,12 @@
           ex-name (when sci-error?
                     (some-> ^Throwable (ex-cause e)
                             .getClass .getName))
-          stacktrace (concat (sequence (comp (map StackTraceElement->vec)
-                                             (take-while #(not (str/starts-with? (first %) "sci.impl.")))
-                                             (map render-native-stacktrace-elem)
-                                             (dedupe))
-                                       (.getStackTrace (or (ex-cause e) e)))
-                             (sci/stacktrace e))]
+          stacktrace (dedupe
+                      (concat (sequence (comp (map StackTraceElement->vec)
+                                              (take-while #(not (str/starts-with? (first %) "sci.impl.")))
+                                              (map render-native-stacktrace-elem))
+                                        (.getStackTrace (or (ex-cause e) e)))
+                              (sci/stacktrace e)))]
       (if exit-code
         (do
           (when-let [m (.getMessage e)]
