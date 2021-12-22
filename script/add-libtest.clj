@@ -57,9 +57,11 @@
                           lib-coordinate)))))
 
 (defn- copy-tests
-  [git-url lib-name {:keys [directory]}]
-  (let [lib-dir (or (gl/procure git-url lib-name "master")
-                    (gl/procure git-url lib-name "main"))
+  [git-url lib-name {:keys [directory branch]}]
+  (let [lib-dir (if branch
+                  (gl/procure git-url lib-name branch)
+                  (or (gl/procure git-url lib-name "master")
+                      (gl/procure git-url lib-name "main")))
         lib-root-dir (if directory
                        (fs/file lib-dir directory) lib-dir)
         test-dir (some #(when (fs/exists? (fs/file lib-root-dir %))
@@ -75,7 +77,7 @@
      :test-dir test-dir}))
 
 (defn- add-lib-to-tested-libs
-  [lib-name git-url {:keys [lib-dir test-dir]}]
+  [lib-name git-url {:keys [lib-dir test-dir]} options]
   (let [git-sha (fs/file-name lib-dir)
         relative-test-files (map #(str (fs/relativize test-dir %))
                                  (fs/glob test-dir "**/*.{clj,cljc}"))
@@ -87,9 +89,12 @@
                              (str/replace-first #"\.clj(c?)$" "")
                              symbol)
                         relative-test-files)
-        lib {:git-sha git-sha
-             :git-url git-url
-             :test-namespaces namespaces}
+        lib (merge
+             {:git-sha git-sha
+              :git-url git-url
+              :test-namespaces namespaces}
+             ;; Options needed to update libs
+             (select-keys options [:branch :directory]))
         nodes (-> "test-resources/lib_tests/bb-tested-libs.edn" slurp r/parse-string)]
     (spit "test-resources/lib_tests/bb-tested-libs.edn"
          (str (r/assoc-in nodes
@@ -107,7 +112,7 @@
         lib-coordinate (deps-map lib-name)
         _ (add-lib-to-deps lib-name lib-coordinate)
         dirs (copy-tests git-url lib-name options)
-        namespaces (add-lib-to-tested-libs lib-name git-url dirs)]
+        namespaces (add-lib-to-tested-libs lib-name git-url dirs options)]
     (println "Added lib" lib-name "which tests the following namespaces:" namespaces)
     (when (:test options)
       (apply shell "script/lib_tests/run_all_libtests" namespaces))))
@@ -122,7 +127,9 @@
   [["-h" "--help"]
    ["-t" "--test" "Run tests"]
    ;; https://github.com/weavejester/environ/tree/master/environ used this option
-   ["-d" "--directory DIRECTORY" "Directory where library is located"]])
+   ["-d" "--directory DIRECTORY" "Directory where library is located"]
+   ;; https://github.com/reifyhealth/specmonstah used this option
+   ["-b" "--branch BRANCH" "Default branch for git url"]])
 
 (when (= *file* (System/getProperty "babashka.file"))
   (run-command add-libtest *command-line-args* cli-options))

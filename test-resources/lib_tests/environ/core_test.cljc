@@ -19,7 +19,7 @@
 
 #?(:clj (defn refresh-ns []
           (remove-ns 'environ.core)
-          ;; TEST-FIX: bb doesn't have *loaded-libs*
+          ;; BB-TEST-PATCH: bb doesn't have *loaded-libs*
           ; (dosync (alter @#'clojure.core/*loaded-libs* disj 'environ.core))
           (require 'environ.core)))
 

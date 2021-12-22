@@ -1,7 +1,7 @@
 (ns clojure-csv.test.utils
   "Some whitebox testing of the private utility functions used in core."
   (:import [java.io StringReader])
-  ;; TEST-FIX: Had to require since use caused conflict which bb failed on
+  ;; BB-TEST-PATCH: Had to require since use caused conflict which bb failed on
   (:require [clojure-csv.core])
   (:use clojure.test
         clojure.java.io))

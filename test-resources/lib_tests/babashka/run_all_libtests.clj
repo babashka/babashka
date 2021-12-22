@@ -65,7 +65,7 @@
 
 ;;;; clojure.data.zip
 
-;; TODO: port to test-namespaces. Blocked until clojure.xml is supported
+;; TODO: port to test-namespaces
 
 (require '[clojure.data.xml :as xml])
 (require '[clojure.zip :as zip])
@@ -201,15 +201,9 @@
                  ;; 'slingshot.test-test
                  )
 
-(test-namespaces 'hasch.test
-                 )
-
 (test-namespaces 'omniconf.core-test)
 
 (test-namespaces 'crispin.core-test)
-
-(test-namespaces 'clojure.data.json-test
-                 'clojure.data.json-test-suite-test)
 
 (test-namespaces 'multigrep.core-test)
 
@@ -230,21 +224,11 @@
 
 (test-namespaces 'component.component-test)
 
-(test-namespaces 'ruuter.core-test)
-
 (test-namespaces 'clj-commons.digest-test)
 
 (test-namespaces 'hato.client-test)
 
-(test-namespaces 'better-cond.core-test)
-
-(test-namespaces 'exoscale.coax-test)
-
 (test-namespaces 'orchestra.core-test 'orchestra.expound-test 'orchestra.many-fns 'orchestra.reload-test)
-
-(test-namespaces 'reifyhealth.specmonstah.core-test 'reifyhealth.specmonstah.spec-gen-test)
-
-(test-namespaces 'com.stuartsierra.dependency-test)
 
 (let [lib-tests (edn/read-string (slurp (io/resource "bb-tested-libs.edn")))]
   (doseq [{tns :test-namespaces} (vals lib-tests)]
