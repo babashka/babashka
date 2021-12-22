@@ -10,6 +10,7 @@
             [loom.attr :as lat]))
 
 (use-fixtures :each td/test-fixture)
+
 (use-fixtures :once (fn [t] (stest/instrument) (t)))
 
 (defmacro is-graph=

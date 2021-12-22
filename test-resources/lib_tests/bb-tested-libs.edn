@@ -1,8 +1,19 @@
 ;; These libraries are tested against babashka and have been added by
-;; script/add-libtest.clj
+;; script/add-libtest.clj. Each library entry contains enough data to run tests
+;; and to update tests later
 {listora/again
  {:git-sha "b1a6793f0deaa3cc016eee7626097ba8bf36ba10", :git-url "https://github.com/liwp/again", :test-namespaces (again.core-test)}
  org.clojure/tools.gitlibs {:git-sha "9f98af7631e34983d5b0886e1ab6eadc3856290b", :git-url "https://github.com/clojure/tools.gitlibs", :test-namespaces (clojure.tools.test-gitlibs clojure.tools.gitlibs.test-impl)}
  comb/comb {:git-sha "625a63a9c040fa4a2b3153d8c84d08dc2fc8f660", :git-url "https://github.com/weavejester/comb", :test-namespaces (comb.test.template)}
  mvxcvi/arrangement {:git-sha "360d29e7ae81abbf986b5a8e272f2086227d038d", :git-url "https://github.com/greglook/clj-arrangement", :test-namespaces (arrangement.core-test)}
- clojure-csv/clojure-csv {:git-sha "b6bb882a3a9ac1f82e06eb2262ae7c8141935228", :git-url "https://github.com/davidsantiago/clojure-csv", :test-namespaces (clojure-csv.test.utils clojure-csv.test.core)}}
+ clojure-csv/clojure-csv {:git-sha "b6bb882a3a9ac1f82e06eb2262ae7c8141935228", :git-url "https://github.com/davidsantiago/clojure-csv", :test-namespaces (clojure-csv.test.utils clojure-csv.test.core)}
+ environ/environ {:git-sha "aa90997b38bb8070d94dc4a00a14e656eb5fc9ae", :git-url "https://github.com/weavejester/environ", :test-namespaces (environ.core-test), :directory "environ"}
+ table/table {:git-sha "55aef3d5fced682942af811bf5d642f79fb87688", :git-url "https://github.com/cldwalker/table", :test-namespaces (table.width-test table.core-test)}
+ com.stuartsierra/dependency {:git-sha "3a467918cd0e5b6ab775d344cfb2a80b56daad6d", :git-url "https://github.com/stuartsierra/dependency", :test-namespaces (com.stuartsierra.dependency-test)}
+ reifyhealth/specmonstah {:git-sha "a2b357009a3aa99a0c2d2361f3bbcd0b0e36505e", :git-url "https://github.com/reifyhealth/specmonstah", :test-namespaces (reifyhealth.specmonstah.spec-gen-test reifyhealth.specmonstah.test-data reifyhealth.specmonstah.core-test), :branch "develop"}
+ exoscale/coax {:git-sha "0d4212af7c07e4f05f74186f05df8a97777b43fe", :git-url "https://github.com/exoscale/coax", :test-namespaces (exoscale.coax-test)}
+ better-cond/better-cond {:git-sha "4720bd8bcfd1adc1197b8d5f07873bc46008d333", :git-url "https://github.com/Engelberg/better-cond", :test-namespaces (better-cond.core-test)}
+ org.clojars.askonomm/ruuter {:git-sha "78659212f95cac827efc816dfbdab8181c25fc3d", :git-url "https://github.com/askonomm/ruuter", :test-namespaces (ruuter.core-test)}
+ ;; clojure.data.json-gen-test ommitted from test-namespaces b/c it hangs on stest/check
+ org.clojure/data.json {:git-sha "9f1c9ccf3fd3e5a39cfb7289d3d456e842ddf442", :git-url "https://github.com/clojure/data.json", :test-namespaces (clojure.data.json-test clojure.data.json-test-suite-test clojure.data.json-compat-0-1-test)}
+ io.replikativ/hasch {:git-sha "04d9c0bd34d86bad79502d8a6963eb2525a22b15", :git-url "https://github.com/replikativ/hasch", :test-namespaces (hasch.test)}}

@@ -109,7 +109,7 @@
 (deftest reader-cases
   ;; reader will be created and closed in with-open, but used outside.
   ;; this is actually a java.io.IOException, but thrown at runtime so...
-  ;; TEST-FIX: bb throws IOException instead of RuntimeException
+  ;; BB-TEST-PATCH: bb throws IOException instead of RuntimeException
   (is (thrown? java.io.IOException
                (dorun (with-open [sr (StringReader. "a,b,c")]
                         (parse-csv sr))))))

@@ -75,7 +75,7 @@
 #?(:clj
    (deftest class-ordering
      (is-sorted
-      ;; TEST-FIX: bb doesn't have java.util.Currency/getInstance
+      ;; BB-TEST-PATCH: bb doesn't have java.util.Currency/getInstance
       #_(java.util.Currency/getInstance "JPY")
       #_(java.util.Currency/getInstance "USD")
       (java.util.Date. 1234567890)
