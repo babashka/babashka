@@ -5,4 +5,6 @@
  org.clojure/tools.gitlibs {:git-sha "9f98af7631e34983d5b0886e1ab6eadc3856290b", :git-url "https://github.com/clojure/tools.gitlibs", :test-namespaces (clojure.tools.test-gitlibs clojure.tools.gitlibs.test-impl)}
  comb/comb {:git-sha "625a63a9c040fa4a2b3153d8c84d08dc2fc8f660", :git-url "https://github.com/weavejester/comb", :test-namespaces (comb.test.template)}
  mvxcvi/arrangement {:git-sha "360d29e7ae81abbf986b5a8e272f2086227d038d", :git-url "https://github.com/greglook/clj-arrangement", :test-namespaces (arrangement.core-test)}
- clojure-csv/clojure-csv {:git-sha "b6bb882a3a9ac1f82e06eb2262ae7c8141935228", :git-url "https://github.com/davidsantiago/clojure-csv", :test-namespaces (clojure-csv.test.utils clojure-csv.test.core)}}
+ clojure-csv/clojure-csv {:git-sha "b6bb882a3a9ac1f82e06eb2262ae7c8141935228", :git-url "https://github.com/davidsantiago/clojure-csv", :test-namespaces (clojure-csv.test.utils clojure-csv.test.core)}
+ environ/environ {:git-sha "aa90997b38bb8070d94dc4a00a14e656eb5fc9ae", :git-url "https://github.com/weavejester/environ", :test-namespaces (environ.core-test)}
+ table/table {:git-sha "55aef3d5fced682942af811bf5d642f79fb87688", :git-url "https://github.com/cldwalker/table", :test-namespaces (table.width-test table.core-test)}}
