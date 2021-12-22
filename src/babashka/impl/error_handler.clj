@@ -24,7 +24,7 @@
         [fst snd] segments]
     (run! println fst)
     (when snd
-      (println "...")
+      (println "... (run with --debug to see elided elements)")
       (run! println snd))))
 
 (defn error-context [ex opts]
