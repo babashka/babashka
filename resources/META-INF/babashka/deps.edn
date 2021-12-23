@@ -54,14 +54,14 @@
            {:extra-paths ["process/src" "process/test" "test-resources/lib_tests"]
             :extra-deps {org.clj-commons/clj-http-lite {:mvn/version "0.4.392"}
                          org.babashka/spec.alpha {:git/url "https://github.com/babashka/spec.alpha"
-                                                  :sha "1deb5702da3747a42f3aff769307672e59fc8ed8"}
+                                                  :sha "0dec1f88cbde74a0470b454396f09a03adb4ae39"}
                          lambdaisland/regal {:git/url "https://github.com/lambdaisland/regal"
                                              :sha "f902d2c43121f9e1c48603d6eb99f5900eb6a9f6"}
                          weavejester/medley {:git/url "https://github.com/weavejester/medley"
                                              :sha "a4e5fb5383f5c0d83cb2d005181a35b76d8a136d"}
                          cprop/cprop {:mvn/version "0.1.16"}
                          comb/comb {:mvn/version "0.1.1"}
-                         mvxcvi/arrangement {:mvn/version "1.2.0"}
+                         mvxcvi/arrangement {:mvn/version "2.0.0"}
                          org.clojure/data.zip {:mvn/version "1.0.0"}
                          clojure-csv/clojure-csv {:mvn/version "2.0.2"}
                          org.clojure/math.combinatorics {:mvn/version "0.1.6"}
@@ -95,11 +95,16 @@
                          hato/hato {:mvn/version "0.8.2"}
                          better-cond/better-cond {:mvn/version "2.1.1"}
                          org.clojure/core.specs.alpha {:mvn/version "0.2.62"}
-                         reifyhealth/specmonstah {:mvn/version "2.0.0"}
+                         reifyhealth/specmonstah {:git/url "https://github.com/reifyhealth/specmonstah", :sha "a2b357009a3aa99a0c2d2361f3bbcd0b0e36505e"}
                          exoscale/coax {:mvn/version "1.0.0-alpha14"}
                          orchestra/orchestra {:mvn/version "2021.01.01-1"}
                          expound/expound {:mvn/version "0.8.10"}
-                         integrant/integrant {:mvn/version "0.8.0"}}
+                         integrant/integrant {:mvn/version "0.8.0"}
+                         com.stuartsierra/dependency {:mvn/version "1.0.0"}
+                         listora/again {:mvn/version "1.0.0"}
+                         org.clojure/tools.gitlibs {:mvn/version "2.4.172"}
+                         environ/environ {:mvn/version "1.2.0"}
+                         table/table {:git/url "https://github.com/cldwalker/table", :sha "55aef3d5fced682942af811bf5d642f79fb87688"}}
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil}}
            :clj-nvd
