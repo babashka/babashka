@@ -1,10 +1,6 @@
 (ns babashka.impl.uberscript
   (:require [sci.core :as sci]))
 
-;; TODO: rewrite ns form to exclude :refer. Is
-
-;; From grasp
-
 (defn decompose-clause [clause]
   (if (symbol? clause)
     {:ns clause}
@@ -37,7 +33,7 @@
 (defn process-ns
   [_ctx ns]
   (keep (fn [x]
-          (if (seqable? x) ;; for some reason pathom has [:require-macros com.wsscode.pathom.connect] in a vector...
+          (if (seqable? x)
             (let [fx (first x)]
               (when (identical? :require fx)
                 (let [decomposed (keep decompose-clause (rest x))
@@ -67,28 +63,43 @@
     (when (clojure.core/seq quoted)
       (list* 'in-ns quoted))))
 
+(defn loc [rdr]
+  (str (when-let [f @sci/file]
+         (str f ":"))
+       (sci/get-line-number rdr)
+       ":"
+       (sci/get-column-number rdr)))
+
 (defn uberscript [{:keys [ctx expressions]}]
   (let [ctx (assoc ctx :reload-all true)]
     (sci/binding [sci/file @sci/file]
       (doseq [expr expressions]
         (let [rdr (sci/reader expr)]
           (loop []
-            (let [next-val (try (sci/parse-next ctx rdr)
-                                ;; swallow reader error
-                                (catch Exception _e nil))]
+            (let [next-val
+                  (try (sci/parse-next ctx rdr)
+                       ;; swallow reader error
+                       (catch Exception _e
+                         (binding [*out* *err*]
+                           (println "[babashka]" "Ignoring read error while assembling uberscript near"
+                                    (loc rdr)))))]
               ;; (.println System/err (pr-str next-val))
               (when-not (= ::sci/eof next-val)
                 (if (seq? next-val)
-                  (let [fst (first next-val)]
-                    (try
-                      (cond (= 'ns fst)
-                            (sci/eval-form ctx (doto (process-ns ctx next-val)
-                                                 #_(as-> $ (.println System/err (pr-str $)))))
-                            (= 'require fst)
-                            (sci/eval-form ctx (process-require ctx next-val))
-                            (= 'in-ns fst)
-                            (sci/eval-form ctx (process-in-ns ctx next-val)))
-                      ;; swallow exception and continue
-                      (catch Exception _e nil))
+                  (let [fst (first next-val)
+                        expr (cond (= 'ns fst)
+                                   (process-ns ctx next-val)
+                                   (= 'require fst)
+                                   (process-require ctx next-val)
+                                   (= 'in-ns fst)
+                                   (process-in-ns ctx next-val))]
+                    (when expr
+                      (try
+                        (sci/eval-form ctx expr)
+                        ;; swallow exception and continue
+                        (catch Exception _e
+                          (binding [*out* *err*]
+                            (println "[babashka]" "Ignoring expression while assembling uberscript:"
+                                     expr "near" (loc rdr))))))
                     (recur))
                   (recur))))))))))

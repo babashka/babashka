@@ -728,9 +728,6 @@ Use bb run --help to show this help output.
                                      (or (contains? namespaces namespace)
                                          (contains? sci-namespaces/namespaces namespace)))
                               ""
-                              #_(let [res (cp/source-for-namespace loader namespace nil)]
-                                  (when uberscript (swap! uberscript-sources conj (:source res)))
-                                  res)
                               (when-let [res (cp/source-for-namespace loader namespace nil)]
                                 (if uberscript
                                   (do (swap! uberscript-sources conj (:source res))
