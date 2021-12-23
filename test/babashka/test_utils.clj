@@ -75,7 +75,9 @@
                         (with-in-str input-or-opts (apply main/main args))
                         (apply main/main args)))]
             (if (zero? res)
-              (normalize (str os))
+              (do
+                (println (str es)) ;; flush stderr
+                (normalize (str os)))
               (do
                 (println (str os))
                 (throw (ex-info (str es)
