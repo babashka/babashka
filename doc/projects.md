@@ -56,6 +56,7 @@ The following libraries and projects are known to work with babashka.
   - [contajners](#contajners)
   - [dependency](#dependency)
   - [specmonstah](#specmonstah)
+  - [markdown-clj](#markdown-clj)
 - [Pods](#pods)
 - [Projects](#projects-1)
   - [babashka-test-action](#babashka-test-action)
@@ -791,6 +792,10 @@ Represent dependency graphs as a directed acylic graph.
 ### [specmonstah](https://github.com/reifyhealth/specmonstah)
 
 Write concise, maintainable test fixtures with clojure.spec.alpha.
+
+### [markdown-clj](https://github.com/yogthos/markdown-clj)
+
+Markdown parser that translates markdown to html.
 
 ## Pods
 

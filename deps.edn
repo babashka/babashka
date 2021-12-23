@@ -104,7 +104,9 @@
                          listora/again {:mvn/version "1.0.0"}
                          org.clojure/tools.gitlibs {:mvn/version "2.4.172"}
                          environ/environ {:mvn/version "1.2.0"}
-                         table/table {:git/url "https://github.com/cldwalker/table", :sha "55aef3d5fced682942af811bf5d642f79fb87688"}}
+                         table/table {:git/url "https://github.com/cldwalker/table", :sha "55aef3d5fced682942af811bf5d642f79fb87688"}
+                         markdown-clj/markdown-clj {:mvn/version "1.10.8"}
+                         org.clojure/tools.namespace {:git/url "https://github.com/babashka/tools.namespace", :sha "a13b037215e21a2e71aa34b27e1dd52c801a2a7b"}}
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil}}
            :clj-nvd
