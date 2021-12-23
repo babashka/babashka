@@ -8,6 +8,7 @@
   :license {:name "Eclipse Public License 1.0"
             :url "http://opensource.org/licenses/eclipse-1.0.php"}
   :source-paths ["src" "sci/src" "babashka.curl/src" "fs/src" "pods/src"
+                 "babashka.core/src"
                  "babashka.nrepl/src" "depstar/src" "process/src"
                  "deps.clj/src" "deps.clj/resources"]
   ;; for debugging Reflector.java code:
@@ -16,8 +17,8 @@
   :resource-paths ["resources" "sci/resources"]
   :test-selectors {:default (complement :windows-only)
                    :windows (complement :skip-windows)}
-  :dependencies [[org.clojure/clojure "1.11.0-alpha1"]
-                 [borkdude/edamame "0.0.14"]
+  :dependencies [[org.clojure/clojure "1.11.0-alpha3"]
+                 [borkdude/edamame "0.0.19"]
                  [borkdude/graal.locking "0.0.2"]
                  [org.clojure/tools.cli "1.0.206"]
                  [cheshire "5.10.1"]
@@ -33,6 +34,7 @@
                             :dependencies [[clj-commons/clj-yaml "0.7.107"]]}
              :feature/jdbc {:source-paths ["feature-jdbc"]
                             :dependencies [[seancorfield/next.jdbc "1.1.610"]]}
+             :feature/sqlite [:feature/jdbc {:dependencies [[org.xerial/sqlite-jdbc "3.36.0.3"]]}]
              :feature/postgresql [:feature/jdbc {:dependencies [[org.postgresql/postgresql "42.2.18"]]}]
              ;:feature/oracledb [:feature/jdbc {:dependencies [[com.oracle.database.jdbc/ojdbc8 "19.8.0.0"]]}]
              :feature/oracledb [:feature/jdbc {:dependencies [[io.helidon.integrations.db/ojdbc "2.1.0"]]}] ; ojdbc10 + GraalVM config, by Oracle

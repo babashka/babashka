@@ -1,7 +1,10 @@
 (ns babashka.run-all-libtests
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
+            [clojure.edn :as edn]
             [clojure.test :as t]))
+
+#_(require 'clojure.spec.alpha)
 
 (def ns-args (set (map symbol *command-line-args*)))
 
@@ -11,17 +14,14 @@
   (or (empty? ns-args)
       (contains? ns-args ns)))
 
-(defmacro test-namespaces [& namespaces]
-  (let [namespaces (map second namespaces)
-        namespaces (seq (filter test-namespace? namespaces))
-        quoted-namespaces (map #(list 'quote %) namespaces)
-        requires (map #(list 'require %) quoted-namespaces)]
-    (when (seq requires)
-      `(do
-         ~@requires
-         (let [m# (t/run-tests ~@quoted-namespaces)]
-           (swap! status (fn [status#]
-                           (merge-with + status# (dissoc m# :type)))))))))
+(defn test-namespaces [& namespaces]
+  (let [namespaces (seq (filter test-namespace? namespaces))]
+    (when (seq namespaces)
+      (doseq [n namespaces]
+        (require n))
+      (let [m (apply t/run-tests namespaces)]
+        (swap! status (fn [status]
+                        (merge-with + status (dissoc m :type))))))))
 
 (def windows? (-> (System/getProperty "os.name")
                 (str/lower-case)
@@ -31,9 +31,11 @@
 
 (test-namespaces 'clj-http.lite.client-test)
 
-;;;; spartan.spec
+;; ;;;; clojure.spec
 
-(test-namespaces 'spartan.spec-test)
+(test-namespaces 'clojure.test-clojure.spec
+                 'clojure.test-clojure.instr
+                 'clojure.test-clojure.multi-spec)
 
 ;;;; regal
 
@@ -57,37 +59,9 @@
 (require '[cprop.source :refer [from-env]])
 (println (:cprop-env (from-env)))
 
-;;;; comb
-
-;; TODO: port to test-namespaces
-
-(require '[comb.template :as template])
-(prn (template/eval "<% (dotimes [x 3] %>foo<% ) %>"))
-(prn (template/eval "Hello <%= name %>" {:name "Alice"}))
-(def hello
-  (template/fn [name] "Hello <%= name %>"))
-(prn (hello "Alice"))
-
-;;;; arrangement
-
-;; TODO: port to test-namespaces
-
-(require '[arrangement.core :as order])
-(prn (sort order/rank ['a false 2 :b nil 3.14159
-                       "c" true \d [3 2] #{:one :two}
-                       [3 1 2] #{:three}]))
-
 ;;;; clj-yaml
 
 (test-namespaces 'clj-yaml.core-test)
-
-;;;; clojure-csv
-
-;; TODO: port to test-namespaces
-
-(require '[clojure-csv.core :as csv])
-;; TODO: convert to test
-(prn (csv/write-csv (csv/parse-csv "a,b,c\n1,2,3")))
 
 ;;;; clojure.data.zip
 
@@ -227,15 +201,9 @@
                  ;; 'slingshot.test-test
                  )
 
-(test-namespaces 'hasch.test
-                 )
-
 (test-namespaces 'omniconf.core-test)
 
 (test-namespaces 'crispin.core-test)
-
-(test-namespaces 'clojure.data.json-test
-                 'clojure.data.json-test-suite-test)
 
 (test-namespaces 'multigrep.core-test)
 
@@ -256,9 +224,15 @@
 
 (test-namespaces 'component.component-test)
 
-(test-namespaces 'ruuter.core-test)
-
 (test-namespaces 'clj-commons.digest-test)
+
+(test-namespaces 'hato.client-test)
+
+(test-namespaces 'orchestra.core-test 'orchestra.expound-test 'orchestra.many-fns 'orchestra.reload-test)
+
+(let [lib-tests (edn/read-string (slurp (io/resource "bb-tested-libs.edn")))]
+  (doseq [{tns :test-namespaces} (vals lib-tests)]
+    (apply test-namespaces tns)))
 
 ;;;; final exit code
 

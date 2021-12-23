@@ -248,3 +248,10 @@ user              - <expr>:1:45
 ----- Exception ----------------------------------------------------------------
 clojure.lang.ExceptionInfo: null
 {:type :sci/error, :line 1, :column 19,")))))
+
+(deftest native-stacktrace-test
+  (let [output (try (tu/bb nil "(merge 1 2 3)")
+                    (is false)
+                    (catch Exception e (ex-message e)))]
+    (is (str/includes? (tu/normalize output)
+                       "clojure.core/reduce1        - <built-in>"))))

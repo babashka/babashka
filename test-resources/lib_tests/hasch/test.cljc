@@ -74,16 +74,18 @@
     (is (= (edn-hash #{1 2 3 4})
            '(42 216 217 238 97 125 210 112 2 83 128 62 82 47 119 14 59 95 246 107 191 138 251 102 201 52 9 132 96 243 199 223 218 81 88 130 165 214 125 48 222 30 64 233 101 122 196 84 11 93 186 26 92 225 203 161 196 98 186 138 174 118 244 248)))
 
+    ;; BB-TEST-PATCH: bb fails on commented record invocations with
+    ;; `No method in multimethod '-coerce' for dispatch value`
     (is (= #_(edn-hash (Bar. "hello"))
            #_(edn-hash (ic/incognito-reader {'hasch.test.Bar map->Bar}
-                                          (ic/incognito-writer {} (Bar. "hello"))))
+                                            (ic/incognito-writer {} (Bar. "hello"))))
            #_(edn-hash (ic/map->IncognitoTaggedLiteral (ic/incognito-writer {} (Bar. "hello"))))
            (edn-hash (ic/map->IncognitoTaggedLiteral {:tag 'hasch.test.Bar
                                                       :value {:name "hello"}}))
            '(194 16 151 144 95 224 245 28 219 137 32 192 218 166 162 177 32 154 132 5 111 169 220 211 204 164 67 231 51 96 248 217 77 78 28 136 150 212 202 152 45 167 120 241 14 152 250 246 187 113 212 216 204 46 163 107 91 24 91 0 72 38 4 31)))
 
     (is (= (edn-hash #?(:cljs (js/Uint8Array. #js [1 2 3 42 149])
-                        :clj (byte-array [1 2 3 42 149])))
+                              :clj (byte-array [1 2 3 42 149])))
            '(135 209 248 171 162 90 41 221 173 216 64 218 222 93 242 60 243 5 190 153 101 194 74 130 55 184 84 148 167 94 210 250 140 211 6 234 221 25 113 83 153 75 180 4 194 163 178 197 243 126 27 172 248 169 161 90 102 172 160 98 249 32 42 157)))))
 
 (deftest padded-coercion
@@ -144,4 +146,3 @@
     (def repl-env (reset! cemerick.austin.repls/browser-repl-env
                          (cemerick.austin/repl-env)))
     (cemerick.austin.repls/cljs-repl repl-env))
-

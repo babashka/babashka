@@ -411,7 +411,14 @@
     (is (.exists f2))
     (let [v (bb nil "-f" (.getPath (io/file "test-resources" "babashka" "glob.clj")))]
       (is (vector? v))
-      (is (.exists (io/file (first v)))))))
+      (is (.exists (io/file (first v)))))
+    (is (= :success (bb nil "(with-open [str (java.nio.file.Files/newDirectoryStream (.toPath (clojure.java.io/file \".\")))] :success)")))
+    (is (string? (bb nil
+                     '(do (import [java.nio.file Files LinkOption])
+                          (import [java.nio.file.attribute BasicFileAttributes])
+                          (def attrs (Files/readAttributes (.toPath (io/file ".")) BasicFileAttributes ^"[Ljava.nio.file.LinkOption;"
+                                                           (into-array LinkOption [])))
+                          (str (.lastModifiedTime attrs))))))))
 
 (deftest future-print-test
   (testing "the root binding of sci/*out*"
@@ -781,6 +788,26 @@ true")))
 (.write po 10)
 (.read pi)
 "))))
+
+(deftest InetAddress-test
+  (is (= "192.168.2.2" (bb nil "(-> (java.net.InetAddress/getByName \"192.168.2.2\") (.getHostAddress))"))))
+
+(deftest satisfies-protocols-test
+  (is (true? (bb nil "(satisfies? clojure.core.protocols/Datafiable {})")))
+  (is (true? (bb nil "(satisfies? clojure.core.protocols/Navigable {})")))
+  (is (true? (bb nil "(satisfies? clojure.core.protocols/IKVReduce {})"))))
+
+(deftest interop-on-proxy
+  (is (true? (bb nil (pr-str
+                      '(instance? java.net.PasswordAuthentication
+                                  (.getPasswordAuthentication
+                                   (proxy [java.net.Authenticator] []
+                                     (getPasswordAuthentication []
+                                       (java.net.PasswordAuthentication. "bork"
+                                                                         (char-array "dude")))))))))))
+
+(deftest aget-test
+  (is (= 1 (bb nil "(def array-2d (into-array [(int-array [1 2]) (int-array [3 4])])) (aget array-2d 0 0)"))))
 
 ;;;; Scratch
 

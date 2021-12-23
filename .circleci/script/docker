@@ -4,6 +4,7 @@ set -eo pipefail
 
 image_name="babashka/babashka"
 image_tag=$(cat resources/BABASHKA_VERSION)
+platform=${PLATFORM:-"linux/amd64"}
 latest_tag="latest"
 
 if [[ $image_tag =~ SNAPSHOT$ ]]; then
@@ -15,29 +16,36 @@ else
 fi
 
 if [ -z "$CIRCLE_PULL_REQUEST" ] && [ "$CIRCLE_BRANCH" = "master" ]; then
-    echo "Building Docker image $image_name:$image_tag"
+    echo "Building & pushing $platform Docker image(s) $image_name:$image_tag"
     echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
-    tar zxvf  "/tmp/release/babashka-${image_tag}-linux-amd64.tar.gz"
-    docker build -t "$image_name" -f Dockerfile.ci .
-    docker tag "$image_name:$latest_tag" "$image_name:$image_tag"
-    rm -f bb
+    IFS=',' read -r -a platforms <<< "$platform"
+    for p in "${platforms[@]}"; do
+        tarball_platform=${p//\//-}
+        if [[ $tarball_platform == "linux-arm64" ]]; then tarball_platform="linux-aarch64"; fi
+        mkdir -p $p
+        tar zxvf "/tmp/release/babashka-${image_tag}-${tarball_platform}.tar.gz" -C $p
+    done
+    docker buildx build -t "$image_name:$image_tag" --platform "$platform" --push -f Dockerfile.ci .
     if [[ $snapshot == "false" ]]; then
-        tar zxvf  "/tmp/release/babashka-${image_tag}-linux-amd64-static.tar.gz"
+        echo "Building & pushing $platform Docker image(s) $image_name:$latest_tag"
+        docker buildx build -t "$image_name:$latest_tag" --platform "$platform" --push -f Dockerfile.ci .
+    fi
+    for p in "${platforms[@]}"; do
+        rm -rf $p
+    done
+
+    # alpine doesn't provide upstream arm64 images yet
+    if [[ $platform == "linux-amd64" ]]; then
+        tar zxvf  "/tmp/release/babashka-${image_tag}-${platform}-static.tar.gz"
         docker build -t "$image_name:alpine" -f Dockerfile.alpine .
+        rm -f bb
         docker tag "$image_name:alpine" "$image_name:$image_tag-alpine"
-    fi
-    # we only update latest when it's not a SNAPSHOT version
-    if [ "false" = "$snapshot" ]; then
-        echo "Pushing image $image_name:$latest_tag"
-        docker push "$image_name:$latest_tag"
-        echo "Pushing image $image_name:alpine"
-        docker push "$image_name:alpine"
-    fi
-    # we update the version tag, even if it's a SNAPSHOT version
-    echo "Pushing image $image_name:$image_tag"
-    docker push "$image_name:$image_tag"
-    if [[ $snapshot == "false" ]]; then
+        echo "Pushing image $image_name:$image_tag-alpine"
         docker push "$image_name:$image_tag-alpine"
+        if [[ $snapshot == "false" ]]; then
+            echo "Pushing image $image_name:alpine"
+            docker push "$image_name:alpine"
+        fi
     fi
 else
     echo "Not publishing Docker image"

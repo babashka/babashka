@@ -91,7 +91,7 @@ esac
 IFS='.' read -ra VER <<< "$version"
 vernum=$(printf "%03d%03d%03d" "${VER[0]}" "${VER[1]}" "${VER[2]}")
 
-if [[ $vernum -le 000002013 ]]; then
+if [[ 10#$vernum -le 10#000002013 ]]; then
   ext="zip"
   util="$(which unzip) -qqo"
 else
@@ -111,6 +111,18 @@ esac
 
 download_url="https://github.com/babashka/babashka/releases/download/v$version/$filename"
 
+# macOS only have shasum available by default
+# Some Linux distros (RHEL-like) only have sha256sum avaiable by default (others have both)
+if command -v sha256sum >/dev/null; then
+   sha256sum_cmd="sha256sum"
+elif command -v shasum >/dev/null; then
+   sha256sum_cmd="shasum -a 256"
+else
+   >&2 echo "Either 'sha256sum' or 'shasum' needs to be on PATH for '--checksum' flag!"
+   >&2 echo "Exiting..."
+   exit 1
+fi
+
 # Running this part in a subshell so when it finishes we go back to the previous directory
 mkdir -p "$download_dir" && (
     cd "$download_dir"
@@ -118,7 +130,7 @@ mkdir -p "$download_dir" && (
 
     curl -o "$filename" -sL "$download_url"
     if [[ -n "$checksum" ]]; then
-        if ! echo "$checksum *$filename" | shasum -a 256 --check --status; then
+        if ! echo "$checksum *$filename" | $sha256sum_cmd --check --status; then
             >&2 echo "Failed checksum on $filename"
             >&2 echo "Got: $(shasum -a 256 "$filename" | cut -d' ' -f1)"
             >&2 echo "Expected: $checksum"

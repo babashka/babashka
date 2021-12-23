@@ -11,6 +11,7 @@
    [babashka.impl.classpath :as cp :refer [classpath-namespace]]
    [babashka.impl.clojure.core :as core :refer [core-extras]]
    [babashka.impl.clojure.core.async :refer [async-namespace async-protocols-namespace]]
+   [babashka.impl.clojure.instant :as instant]
    [babashka.impl.clojure.java.browse :refer [browse-namespace]]
    [babashka.impl.clojure.java.io :refer [io-namespace]]
    [babashka.impl.clojure.java.shell :refer [shell-namespace]]
@@ -18,6 +19,7 @@
    [babashka.impl.clojure.stacktrace :refer [stacktrace-namespace]]
    [babashka.impl.clojure.zip :refer [zip-namespace]]
    [babashka.impl.common :as common]
+   [babashka.impl.core  :as bbcore]
    [babashka.impl.curl :refer [curl-namespace]]
    [babashka.impl.data :as data]
    [babashka.impl.datafy :refer [datafy-namespace]]
@@ -254,6 +256,7 @@ Use bb run --help to show this help output.
     features/xml?
     features/yaml?
     features/jdbc?
+    features/sqlite?
     features/postgresql?
     features/hsqldb?
     features/oracledb?
@@ -270,8 +273,8 @@ Use bb run --help to show this help output.
   (let [f (io/file file)]
     (if (.exists f)
       (as-> (slurp file) x
-        ;; remove shebang
-        (str/replace x #"^#!.*" ""))
+            ;; remove shebang
+            (str/replace x #"^#!.*" ""))
       (throw (Exception. (str "File does not exist: " file))))))
 
 (defn load-file* [f]
@@ -331,20 +334,22 @@ Use bb run --help to show this help output.
                         nil)}
        'clojure.tools.cli tools-cli-namespace
        'clojure.java.shell shell-namespace
+       'babashka.core bbcore/core-namespace
        'babashka.wait wait-namespace
        'babashka.signal signal-ns
        'clojure.java.io io-namespace
        'cheshire.core cheshire-core-namespace
        'clojure.data data/data-namespace
+       'clojure.instant instant/instant-namespace
        'clojure.stacktrace stacktrace-namespace
        'clojure.zip zip-namespace
        'clojure.main {:obj clojure-main-ns
                       'demunge (sci/copy-var demunge clojure-main-ns)
                       'repl-requires (sci/copy-var clojure-main/repl-requires clojure-main-ns)
                       'repl (sci/new-var 'repl
-                              (fn [& opts]
-                                (let [opts (apply hash-map opts)]
-                                  (repl/start-repl! @common/ctx opts))) {:ns clojure-main-ns})}
+                                         (fn [& opts]
+                                           (let [opts (apply hash-map opts)]
+                                             (repl/start-repl! @common/ctx opts))) {:ns clojure-main-ns})}
        'clojure.test t/clojure-test-namespace
        'babashka.classpath classpath-namespace
        'clojure.pprint pprint-namespace
@@ -366,11 +371,14 @@ Use bb run --help to show this help output.
        'rewrite-clj.parser rewrite/parser-namespace
        'rewrite-clj.zip rewrite/zip-namespace
        'rewrite-clj.zip.subedit rewrite/subedit-namespace}
-    features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace))
+    features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace)
+                          'clojure.data.xml.event @(resolve 'babashka.impl.xml/xml-event-namespace)
+                          'clojure.data.xml.tree @(resolve 'babashka.impl.xml/xml-tree-namespace))
     features/yaml? (assoc 'clj-yaml.core @(resolve 'babashka.impl.yaml/yaml-namespace)
                           'flatland.ordered.map @(resolve 'babashka.impl.ordered/ordered-map-ns))
     features/jdbc? (assoc 'next.jdbc @(resolve 'babashka.impl.jdbc/njdbc-namespace)
-                          'next.jdbc.sql @(resolve 'babashka.impl.jdbc/next-sql-namespace))
+                          'next.jdbc.sql @(resolve 'babashka.impl.jdbc/next-sql-namespace)
+                          'next.jdbc.result-set @(resolve 'babashka.impl.jdbc/result-set-namespace))
     features/csv?  (assoc 'clojure.data.csv @(resolve 'babashka.impl.csv/csv-namespace))
     features/transit? (assoc 'cognitect.transit @(resolve 'babashka.impl.transit/transit-namespace))
     features/datascript? (assoc 'datascript.core @(resolve 'babashka.impl.datascript/datascript-namespace))
@@ -395,7 +403,10 @@ Use bb run --help to show this help output.
                                 'clojure.test.check.properties
                                 @(resolve 'babashka.impl.clojure.test.check/properties-namespace)
                                 'clojure.test.check
-                                @(resolve 'babashka.impl.clojure.test.check/test-check-namespace))
+                                @(resolve 'babashka.impl.clojure.test.check/test-check-namespace)
+                                ;; it's better to load this from source by adding the clojure.test.check dependency
+                                #_#_'clojure.test.check.clojure-test
+                                @(resolve 'babashka.impl.clojure.test.check/test-check-clojure-test-namespace))
     features/spec-alpha? (-> (assoc        ;; spec
                               'clojure.spec.alpha @(resolve 'babashka.impl.spec/spec-namespace)
                               'clojure.spec.gen.alpha @(resolve 'babashka.impl.spec/gen-namespace)
@@ -496,8 +507,8 @@ Use bb run --help to show this help output.
                                (assoc opts-map
                                       :verbose? true))
           ("--force") (recur (next options)
-                               (assoc opts-map
-                                      :force? true))
+                             (assoc opts-map
+                                    :force? true))
           ("--describe") (recur (next options)
                                 (assoc opts-map
                                        :describe? true))
@@ -709,23 +720,31 @@ Use bb run --help to show this help output.
             _ (when jar
                 (cp/add-classpath jar))
             load-fn (fn [{:keys [:namespace :reload]}]
-                      (when-let [{:keys [:loader]}
-                                 @cp/cp-state]
-                        (if ;; ignore built-in namespaces when uberscripting, unless with :reload
-                            (and uberscript
-                                 (not reload)
-                                 (or (contains? namespaces namespace)
-                                     (contains? sci-namespaces/namespaces namespace)))
-                          {}
-                          (when-let [res (cp/source-for-namespace loader namespace nil)]
-                            (if uberscript
-                              (do (swap! uberscript-sources conj (:source res))
-                                  (uberscript/uberscript {:ctx @common/ctx
-                                                          :expressions [(:source res)]})
-                                  {})
-                              res)
-                            #_(doto res
-                              #_(as-> $ (.println System/err (str ">" (pr-str $)))))))))
+                      (or (when-let [{:keys [:loader]}
+                                     @cp/cp-state]
+                            (if ;; ignore built-in namespaces when uberscripting, unless with :reload
+                                (and uberscript
+                                     (not reload)
+                                     (or (contains? namespaces namespace)
+                                         (contains? sci-namespaces/namespaces namespace)))
+                              ""
+                              (when-let [res (cp/source-for-namespace loader namespace nil)]
+                                (if uberscript
+                                  (do (swap! uberscript-sources conj (:source res))
+                                      (uberscript/uberscript {:ctx @common/ctx
+                                                              :expressions [(:source res)]})
+                                      {})
+                                  res)
+                                #_(doto res
+                                    #_(as-> $ (.println System/err (str ">" (pr-str $))))))))
+                          (case namespace
+                            clojure.spec.alpha
+                            (binding [*out* *err*]
+                              (println "[babashka] WARNING: Use the babashka-compatible version of clojure.spec.alpha, available here: https://github.com/babashka/spec.alpha"))
+                            clojure.core.specs.alpha
+                            (binding [*out* *err*]
+                              (println "[babashka] WARNING: clojure.core.specs.alpha is removed from the classpath, unless you explicitly add the dependency."))
+                            nil)))
             main (if (and jar (not main))
                    (when-let [res (cp/getResource
                                    (cp/loader jar)
@@ -744,7 +763,7 @@ Use bb run --help to show this help output.
                   :imports classes/imports
                   :load-fn load-fn
                   :uberscript uberscript
-                  :readers core/data-readers
+                  ;; :readers core/data-readers
                   :reify-fn reify-fn
                   :proxy-fn proxy-fn}
             opts (addons/future opts)
@@ -829,8 +848,8 @@ Use bb run --help to show this help output.
                        ;; execute code
                        (sci/binding [sci/file abs-path]
                          (try
-                           ; when evaluating expression(s), add in repl-requires so things like
-                           ; pprint and dir are available
+                                        ; when evaluating expression(s), add in repl-requires so things like
+                                        ; pprint and dir are available
                            (sci/eval-form sci-ctx `(apply require (quote ~clojure-main/repl-requires)))
                            (loop []
                              (let [in (read-next *in*)]

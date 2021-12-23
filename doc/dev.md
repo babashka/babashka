@@ -1,5 +1,42 @@
 # Developing Babashka
 
+## Workflow
+
+### Start with an issue before writing code
+
+Before writing any code, please create an issue first that describes the problem
+you are trying to solve with alternatives that you have considered. A little bit
+of prior communication can save a lot of time on coding. Keep the problem as
+small as possible. If there are two problems, make two issues. We discuss the
+issue and if we reach an agreement on the approach, it's time to move on to a
+PR.
+
+### Follow up with a pull request
+
+Post a corresponding PR with the smallest change possible to address the
+issue. Then we discuss the PR, make changes as needed and if we reach an
+agreement, the PR will be merged.
+
+### Tests
+
+Each bug fix, change or new feature should be tested well to prevent future
+regressions.
+
+### Force-push
+
+Please do not use `git push --force` on your PR branch for the following
+reasons:
+
+- It makes it more difficult for others to contribute to your branch if needed.
+- It makes it harder to review incremental commits.
+- Links (in e.g. e-mails and notifications) go stale and you're confronted with:
+  this code isn't here anymore, when clicking on them.
+- CircleCI doesn't play well with it: it might try to fetch a commit which
+  doesn't exist anymore.
+- Your PR will be squashed anyway.
+
+## Requirements
+
 You need [lein](https://leiningen.org/) for running JVM tests and/or producing uberjars. For building binaries you need GraalVM. Currently we use java11-21.3.0.
 
 ## Clone repository
@@ -44,12 +81,19 @@ Test the native version:
 ## Tests for Libraries
 
 Babashka runs tests of libraries that are compatible with it through
-`script/run_lib_tests`. To add tests for a new library, do the following:
+`script/run_lib_tests`. To add tests for a new library that has a git repository
+and run them, use the script `add-libtest.clj` e.g. `script/add-libtest.clj
+'{listora/again {:mvn/version "1.0.0"}}' https://github.com/liwp/again --test`.
+
+If the library you want to add doesn't work with the script, you can manually do the following:
 
 * Add an entry for the library in `deps.edn` under the `:lib-tests` alias.
 * Create a directory for the library in `test-resources/lib_tests/` and copy its tests to there.
 * Add an entry in `run_all_libtests.clj` to run the added test namespaces.
+* Run the tests `script/lib_tests/run_all_libtests NS1 NS2`
 
+Note: If you have to modify a test to have it work with bb, add an inline
+comment with prefix "BB-TEST-PATCH:" explaining what you did.
 
 ## Build
 
@@ -81,7 +125,7 @@ To progress work on sqlite and mySQL, I need a working Clojure example. If you
 want to contribute, consider making a an example Clojure GraalVM CLI that puts
 something in a sqlite / mysql DB and reads something from it.
 
-## ADR
+## Design decisions
 
 Some design decisions:
 

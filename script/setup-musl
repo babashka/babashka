@@ -12,6 +12,11 @@ if [[ -z "${BABASHKA_MUSL:-}" ]]; then
     exit 0
 fi
 
+if [[ "${BABASHKA_ARCH:-"x86_64"}" != "x86_64" ]]; then
+    echo "GraalVM only supports building static binaries on x86_64."
+    exit 1
+fi
+
 apt-get update -y && apt-get install musl-tools -y
 
 ZLIB_VERSION="1.2.11"

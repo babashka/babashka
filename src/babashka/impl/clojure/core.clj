@@ -8,6 +8,7 @@
             [clojure.string :as str]
             [sci.core :as sci]
             [sci.impl.namespaces :refer [copy-core-var core-var macrofy]]
+            [sci.impl.parser :as parser]
             [sci.impl.vars :as vars :refer [clojure-core-ns]]))
 
 (defn locking* [form bindings v f & args]
@@ -26,7 +27,7 @@
   ([sym] (core-dynamic-var sym nil))
   ([sym init-val] (sci/new-dynamic-var sym init-val {:ns clojure-core-ns})))
 
-(def data-readers (core-dynamic-var '*data-readers* {}))
+(def data-readers parser/data-readers)
 (def command-line-args (core-dynamic-var '*command-line-args*))
 (def warn-on-reflection (core-dynamic-var '*warn-on-reflection* false))
 (def math-context (core-dynamic-var '*math-context*))
@@ -191,5 +192,15 @@
    'ref-set (sci/copy-var ref-set clojure-core-ns)
    ;;'*clojure-version* clojure-version-var
    ;;'clojure-version (sci/copy-var clojure-version clojure-core-ns)
-   }
+   'update-vals (sci/copy-var update-vals clojure-core-ns)
+   'update-keys (sci/copy-var update-keys clojure-core-ns)
+   'parse-boolean (sci/copy-var parse-boolean clojure-core-ns)
+   'parse-double (sci/copy-var parse-double clojure-core-ns)
+   'parse-long (sci/copy-var parse-long clojure-core-ns)
+   'parse-uuid (sci/copy-var parse-uuid clojure-core-ns)
+   'random-uuid (sci/copy-var random-uuid clojure-core-ns)
+   'NaN? (sci/copy-var NaN? clojure-core-ns)
+   'infinite? (sci/copy-var infinite? clojure-core-ns)
+   'StackTraceElement->vec (sci/copy-var StackTraceElement->vec clojure-core-ns)
+   'memfn (sci/copy-var memfn clojure-core-ns)}
   )

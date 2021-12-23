@@ -175,3 +175,25 @@
 
 (def test-check-namespace
   {'quick-check (sci/copy-var tc/quick-check tc-ns)})
+
+#_(require '[clojure.test.check.clojure-test :as tct])
+
+#_(def tct-ns (sci/create-ns 'clojure.test.check nil))
+
+#_(doseq [k (sort (keys (ns-publics 'clojure.test.check.clojure-test)))]
+  (println (str "'" k) (format "(sci/copy-var tct/%s tct-ns)" k)))
+
+#_(def test-check-clojure-test-namespace
+  {'*default-opts* (sci/copy-var tct/*default-opts* tct-ns)
+   '*default-test-count* (sci/copy-var tct/*default-test-count* tct-ns)
+   '*report-completion* (sci/copy-var tct/*report-completion* tct-ns)
+   '*report-shrinking* (sci/copy-var tct/*report-shrinking* tct-ns)
+   '*report-trials* (sci/copy-var tct/*report-trials* tct-ns)
+   '*trial-report-period* (sci/copy-var tct/*trial-report-period* tct-ns)
+   'assert-check (sci/copy-var tct/assert-check tct-ns)
+   'default-reporter-fn (sci/copy-var tct/default-reporter-fn tct-ns)
+   'defspec (sci/copy-var tct/defspec tct-ns)
+   'process-options (sci/copy-var tct/process-options tct-ns)
+   'trial-report-dots (sci/copy-var tct/trial-report-dots tct-ns)
+   'trial-report-periodic (sci/copy-var tct/trial-report-periodic tct-ns)
+   'with-test-out* (sci/copy-var tct/with-test-out* tct-ns)})
