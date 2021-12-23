@@ -115,38 +115,9 @@
   (test-doric-cyclic-dep-problem)
   (test-namespaces 'doric.test.core))
 
-;;;; cljc-java-time
-
-(test-namespaces 'cljc.java-time-test)
-
-;;;; camel-snake-kebab
-
-(test-namespaces 'camel-snake-kebab.core-test)
-
-;;;; aero
-
-(test-namespaces 'aero.core-test)
-
-;;;; clojure.data.generators
-
-(test-namespaces 'clojure.data.generators-test)
-
 ;;;; honeysql
 
 (test-namespaces 'honeysql.core-test 'honeysql.format-test)
-
-;;;; minimallist
-
-(test-namespaces 'minimallist.core-test)
-
-;;;; bond
-(test-namespaces 'bond.test.james)
-
-;;;; version-clj
-(test-namespaces 'version-clj.compare-test
-                 'version-clj.core-test
-                 'version-clj.split-test
-                 'version-clj.via-use-test)
 
 ;;;; httpkit client
 
@@ -168,10 +139,6 @@
 
 (test-namespaces 'test-check.smoke-test)
 
-(test-namespaces 'gaka.core-test)
-
-(test-namespaces 'failjure.test-core)
-
 (test-namespaces 'rewrite-clj.parser-test
                  'rewrite-clj.node-test
                  'rewrite-clj.zip-test
@@ -184,22 +151,9 @@
 (test-namespaces 'selmer.core-test)
 (test-namespaces 'selmer.our-test)
 
-(test-namespaces 'jasentaa.position-test
-                 'jasentaa.worked-example-1
-                 'jasentaa.worked-example-2
-                 'jasentaa.collections-test
-                 'jasentaa.parser.basic-test
-                 'jasentaa.parser.combinators-test)
-
 (test-namespaces 'honey.sql-test
                  'honey.sql.helpers-test
                  'honey.sql.postgres-test)
-
-(test-namespaces 'slingshot.slingshot-test
-                 'slingshot.support-test
-                 ;; TODO:
-                 ;; 'slingshot.test-test
-                 )
 
 (test-namespaces 'omniconf.core-test)
 
@@ -221,8 +175,6 @@
 ;; we don't really run any tests for java-http-clj yet, but we require the
 ;; namespaces to see if they at least load correctly
 (test-namespaces 'java-http-clj.smoke-test)
-
-(test-namespaces 'component.component-test)
 
 (test-namespaces 'clj-commons.digest-test)
 

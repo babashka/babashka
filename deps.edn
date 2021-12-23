@@ -69,16 +69,16 @@
                          henryw374/cljc.java-time
                          {:git/url "https://github.com/henryw374/cljc.java-time.git"
                           :sha "e3d184b78e933322b3fcaa6ca66cbb8f42a6b35c"}
-                         camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.1"}
+                         camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.2"}
                          aero/aero {:mvn/version "1.1.6"}
                          org.clojure/data.generators {:mvn/version "1.0.0"}
                          honeysql/honeysql {:mvn/version "1.0.444"}
                          com.github.seancorfield/honeysql {:mvn/version "2.0.0-rc2"}
-                         minimallist/minimallist {:mvn/version "0.0.6"}
-                         circleci/bond {:mvn/version "0.4.0"}
-                         version-clj/version-clj {:mvn/version "2.0.1"}
+                         minimallist/minimallist {:mvn/version "0.0.10"}
+                         circleci/bond {:mvn/version "0.6.0"}
+                         version-clj/version-clj {:mvn/version "2.0.2"}
                          gaka/gaka {:mvn/version "0.3.0"}
-                         failjure/failjure {:mvn/version "2.1.1"}
+                         failjure/failjure {:mvn/version "2.2.0"}
                          io.helins/binf {:mvn/version "1.1.0-beta0"}
                          rm-hull/jasentaa {:mvn/version "0.2.5"}
                          slingshot/slingshot {:mvn/version "0.12.2"}

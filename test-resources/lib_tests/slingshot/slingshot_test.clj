@@ -74,18 +74,19 @@
              (mega-try (throw+ exception-1))
              (mega-try (throw exception-1))
              (try (throw+ exception-1)
-                  (catch Exception e [:class-exception e]))
+               (catch Exception e [:class-exception e]))
              (try (throw exception-1)
-                  (catch Exception e [:class-exception e])))))
+               (catch Exception e [:class-exception e])))))
     (testing "IllegalArgumentException thrown by clojure/core"
       (is (= :class-iae (first (mega-try (str/replace "foo" 1 1)))))))
 
   (testing "catch by java class generically"
     (is (= [:class-string "fail"] (mega-try (throw+ "fail")))))
 
+  ;; BB-TEST-PATCH: bb has different record internals
   #_(testing "catch by clojure record type"
-    (is (= [:class-exception-record exception-record-1]
-           (mega-try (throw+ exception-record-1)))))
+      (is (= [:class-exception-record exception-record-1]
+             (mega-try (throw+ exception-record-1)))))
 
   (testing "catch by key is present"
     (is (= [:key-is-present #{:a-key}] (mega-try (throw+ #{:a-key})))))
