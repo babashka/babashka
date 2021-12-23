@@ -20,4 +20,18 @@
  ;; BB-TEST-PATCH: Removed markdown.md-file-test b/c tests hardcode path to test
  ;; files. Removed markdown.benchmark b/c it depends on criterium which isn't bb compatible
  markdown-clj/markdown-clj {:git-sha "ac245d3049afa25a6d41fcb5ba5a268f52c610e4", :git-url "https://github.com/yogthos/markdown-clj", :test-namespaces (markdown.md-test)}
- org.clojure/tools.namespace {:git-sha "a13b037215e21a2e71aa34b27e1dd52c801a2a7b", :git-url "https://github.com/babashka/tools.namespace", :test-namespaces (clojure.tools.namespace.test-helpers clojure.tools.namespace.dependency-test clojure.tools.namespace.find-test clojure.tools.namespace.move-test clojure.tools.namespace.parse-test clojure.tools.namespace.dir-test), :branch "babashka"}}
+ org.clojure/tools.namespace {:git-sha "a13b037215e21a2e71aa34b27e1dd52c801a2a7b", :git-url "https://github.com/babashka/tools.namespace", :test-namespaces (clojure.tools.namespace.test-helpers clojure.tools.namespace.dependency-test clojure.tools.namespace.find-test clojure.tools.namespace.move-test clojure.tools.namespace.parse-test clojure.tools.namespace.dir-test), :branch "babashka"}
+ com.stuartsierra/component {:git-sha "9f9653d1d95644e3c30beadf8c8811f86758ea23", :git-url "https://github.com/stuartsierra/component", :test-namespaces (com.stuartsierra.component-test)}
+ slingshot/slingshot {:git-sha "6961ab0593ab9633c15b7697ffd43823090720be", :git-url "https://github.com/scgilardi/slingshot", :test-namespaces (slingshot.slingshot-test slingshot.support-test slingshot.test-test)}
+ rm-hull/jasentaa {:git-sha "f52a0e75cbdf1d2b72d9604232db264ff6473f12", :git-url "https://github.com/rm-hull/jasentaa", :test-namespaces (jasentaa.position-test jasentaa.worked-example-2 jasentaa.collections-test jasentaa.parser.basic-test jasentaa.parser.combinators-test jasentaa.test-helpers jasentaa.worked-example-1)}
+ failjure/failjure {:git-sha "c6e528c1eda6ad5eaab0f1fb2a97e766bf41fdd5", :git-url "https://github.com/adambard/failjure", :test-namespaces (failjure.test-core)}
+ gaka/gaka {:git-sha "2f264758881d6dc586b948ca8757134675f542a7", :git-url "https://github.com/cdaddr/gaka", :test-namespaces (gaka.core-test)}
+ version-clj/version-clj {:git-sha "9d86cd870f7e435fd6d593cb689790a22d8040a6", :git-url "https://github.com/xsc/version-clj", :test-namespaces (version-clj.compare-test version-clj.split-test version-clj.core-test version-clj.via-use-test)}
+ circleci/bond {:git-sha "0d389cfb4628341824bddbe8bf102f15ad25ad0d", :git-url "https://github.com/circleci/bond", :test-namespaces (bond.assertions-test bond.james-test bond.target-data)}
+ ;; BB-TEST-PATCH: minimallist.generator-test excluded because generator ns can't be required
+ minimallist/minimallist {:git-sha "f10ebbd3c2b93e7579295618a7ed1e870c489bc4", :git-url "https://github.com/green-coder/minimallist", :test-namespaces (minimallist.util-test minimallist.core-test), :branch "all-work-and-no-play"}
+ aero/aero {:git-sha "743e9bc495425b4a4a7c780f5e4b09f6680b4e7a", :git-url "http://github.com/juxt/aero", :test-namespaces (aero.core-test)}
+ org.clojure/data.generators {:git-sha "bf65f99aa9dcabed7de7c09b74d71db208cf61ee", :git-url "https://github.com/clojure/data.generators", :test-namespaces (clojure.data.generators-test)}
+ camel-snake-kebab/camel-snake-kebab {:git-sha "d072c7fd242ab0becd4bb265622ded415f2a4b68", :git-url "https://github.com/clj-commons/camel-snake-kebab", :test-namespaces (camel-snake-kebab.internals.string-separator-test camel-snake-kebab.extras-test camel-snake-kebab.core-test)}
+ ;; BB-TEST-PATCH: Removed cljs-test-opts.edn
+ henryw374/cljc.java-time {:git-sha "b9da12ea25e80a0e284a5bffd88ebcbf18fc3bf7", :git-url "https://github.com/henryw374/cljc.java-time", :test-namespaces (cljc.java-time-test)}}

@@ -6,6 +6,7 @@
 
 (use 'version-clj.core)
 
+;; BB-TEST-PATCH: This test doesn't exist upstream
 (deftest sanity-test
   (is (= [[1 0 0] ["snapshot"]] (version->seq "1.0.0-SNAPSHOT")))
   (is (= 0 (version-compare "1.0" "1.0.0")))

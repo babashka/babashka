@@ -1,7 +1,6 @@
 (ns gaka.core-test
-  (:require [clojure.test :refer [deftest is are]]
-            [gaka.core :refer [css compile* inline-css render-rule]]
-            ))
+  (:use gaka.core
+        clojure.test))
 
 (defmacro =? [& body]
   `(are [x# y#] (= x# y#)
@@ -194,3 +193,4 @@
   (is
    (re-find #"^(color: red; border: 1;|border: 1; color: red;)$"
             (inline-css {:color :red :border 1}))))
+

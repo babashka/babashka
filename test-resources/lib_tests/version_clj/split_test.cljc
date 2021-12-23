@@ -35,6 +35,10 @@
        "0.5.0-alpha.1"          [[0 5 0] ["alpha" 1]]
        "0.5.0-alpha.1"          [[0 5 0] ["alpha" 1]]
        "0.0.3-alpha.8+oryOS.15" [[0 0 3] ["alpha" [8 "+oryos"] 15]]
+       "v1"                     [["v" 1]]
+       "v1.1"                   [["v" [1 1]]]
+       "ver1"                   [["ver" 1]]
+       "ver1.1"                 [["ver" [1 1]]]
        ))
 
 (deftest t-split-without-qualifiers
