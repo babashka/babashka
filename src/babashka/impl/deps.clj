@@ -68,7 +68,12 @@
                        paths (mapv #(str (fs/file base-dir %)) paths)]
                    paths)]
        (cp/add-classpath (str/join cp/path-sep paths))))
-   (when-let [deps-map (not-empty (dissoc deps-map :paths :tasks :raw :min-bb-version))]
+   (when-let [deps-map (not-empty (dissoc deps-map
+                                          ;; paths are added manually above
+                                          :paths
+                                          ;; extra-paths are transformed to :deps in task handling
+                                          :extra-paths
+                                          :tasks :raw :min-bb-version))]
      (binding [*print-namespace-maps* false]
        (let [deps-map (assoc-in deps-map [:aliases :org.babashka/defaults]
                                 {:replace-paths [] ;; babashka sets paths manually

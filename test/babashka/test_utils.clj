@@ -51,7 +51,8 @@
     (let [raw (slurp path)]
       (vreset! common/bb-edn
                (assoc (edn/read-string raw)
-                      :raw raw)))
+                      :raw raw
+                      :file *bb-edn-path*)))
     (vreset! common/bb-edn nil))
   (let [os (java.io.StringWriter.)
         es (if-let [err (:err input-or-opts)]

@@ -252,10 +252,9 @@
 "
           (let [deps (cond-> {}
                        (seq extra-deps) (assoc :deps extra-deps)
-                       (seq extra-paths) (assoc :paths extra-deps))]
+                       (seq extra-paths) (assoc :paths extra-paths))]
             (if (seq deps)
-              (format "(babashka.deps/add-deps '%s)" (pr-str {:paths extra-paths
-                                                              :deps extra-deps}))
+              (format "(babashka.deps/add-deps '%s)" (pr-str deps))
               ""))
           @rand-ns
           (if (seq requires)
