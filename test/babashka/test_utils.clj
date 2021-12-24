@@ -72,7 +72,9 @@
                         (apply main/main args)))]
             (if (zero? res)
               (do
-                (println (str es)) ;; flush stderr
+                (let [err (str es)]
+                  (when-not (str/blank? err)
+                    (println err))) ;; flush stderr
                 (normalize (str os)))
               (do
                 (println (str os))
