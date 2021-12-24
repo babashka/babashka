@@ -47,6 +47,7 @@
 (defn bb-jvm [input-or-opts & args]
   (reset! cp/cp-state nil)
   (reset! main/env {})
+  (vreset! common/bb-edn nil)
   (let [args (cond-> args *bb-edn-path*
                      (->> (list* "--config" *bb-edn-path* "--deps-root" ".")))
         os (java.io.StringWriter.)

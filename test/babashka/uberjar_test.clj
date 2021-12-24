@@ -45,16 +45,6 @@
         (is (= "(\"42\")\n" (tu/bb nil "--jar" path "-m" "my.main-main" "42")))
         (is (= "(\"42\")\n" (tu/bb nil "--classpath" path "-m" "my.main-main" "42")))
         (is (= "(\"42\")\n" (tu/bb nil path "42"))))))
-
-  ; this test fails the windows native test in CI
-  (when-not main/windows?
-    (testing "throw on empty classpath"
-      (let [tmp-file (java.io.File/createTempFile "uber" ".jar")
-            path     (.getPath tmp-file)]
-        (.deleteOnExit tmp-file)
-        (is (thrown-with-msg?
-              Exception #"classpath"
-              (tu/bb nil "uberjar" path "-m" "my.main-main"))))))
   (testing "ignore empty entries on classpath"
     (let [tmp-file (java.io.File/createTempFile "uber" ".jar")
           path (.getPath tmp-file)
@@ -63,3 +53,14 @@
       (tu/bb nil "--classpath" empty-classpath "uberjar" path "-m" "my.main-main")
       ;; Only a manifest entry is added
       (is (< (count-entries path) 3)))))
+
+(deftest throw-on-empty-classpath
+  ;; this test fails the windows native test in CI
+  (when-not main/windows?
+    (testing "throw on empty classpath"
+      (let [tmp-file (java.io.File/createTempFile "uber" ".jar")
+            path     (.getPath tmp-file)]
+        (.deleteOnExit tmp-file)
+        (is (thrown-with-msg?
+             Exception #"classpath"
+             (tu/bb nil "uberjar" path "-m" "my.main-main")))))))

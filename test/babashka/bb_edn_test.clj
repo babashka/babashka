@@ -338,13 +338,18 @@
         (finally (fs/delete "uberjar"))))))
 
 (deftest min-bb-version
-  (when-not test-utils/native?
-    (vreset! common/bb-edn '{:min-bb-version "300.0.0"})
-    (let [sw (java.io.StringWriter.)]
-      (binding [*err* sw]
-        (main/main "-e" "nil"))
-      (is (str/includes? (str sw)
-                         "WARNING: this project requires babashka 300.0.0 or newer, but you have: ")))))
+  (fs/with-temp-dir [dir {}]
+    (let [config (str (fs/file dir "bb.edn"))]
+      (spit config '{:min-bb-version "300.0.0"})
+      (let [sw (java.io.StringWriter.)]
+        (binding [*err* sw]
+          (main/main "--config" config  "-e" "nil"))
+        (is (str/includes? (str sw)
+                           "WARNING: this project requires babashka 300.0.0 or newer, but you have: "))))))
+
+(comment
+  (min-bb-version)
+  )
 
 ;; TODO:
 ;; Do we want to support the same parsing as the clj CLI?

@@ -920,18 +920,16 @@ Use bb run --help to show this help output.
   (let [[args global-opts] (parse-global-opts args)
         bb-edn-file (or (:config global-opts)
                         "bb.edn")
-        bb-edn (or (when (fs/exists? bb-edn-file)
-                     (let [raw-string (slurp bb-edn-file)
-                           edn (edn/read-string raw-string)
-                           edn (assoc edn
-                                      :raw raw-string
-                                      :file bb-edn-file
-                                      :deps-root
-                                      (or (:deps-root global-opts)
-                                          (str (fs/parent bb-edn-file))))]
-                       (vreset! common/bb-edn edn)))
-                   ;; tests may have modified bb-edn
-                   @common/bb-edn)
+        bb-edn (when (fs/exists? bb-edn-file)
+                 (let [raw-string (slurp bb-edn-file)
+                       edn (edn/read-string raw-string)
+                       edn (assoc edn
+                                  :raw raw-string
+                                  :file bb-edn-file
+                                  :deps-root
+                                  (or (:deps-root global-opts)
+                                      (str (fs/parent bb-edn-file))))]
+                   (vreset! common/bb-edn edn)))
         min-bb-version (:min-bb-version bb-edn)]
     (when min-bb-version
       (when-not (satisfies-min-version? min-bb-version)
