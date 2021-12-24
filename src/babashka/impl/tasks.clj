@@ -229,8 +229,7 @@
 
 (defn format-task [init extra-paths extra-deps requires prog]
   (format "
-%s ;; extra-paths
-%s ;; extra-deps
+%s ;; deps
 
 (ns %s %s)
 (require '[babashka.tasks])
@@ -251,12 +250,13 @@
 %s
 
 "
-          (if (seq extra-paths)
-            (format "(babashka.classpath/add-classpath \"%s\")" (str/join cp/path-sep extra-paths))
-            "")
-          (if (seq extra-deps)
-            (format "(babashka.deps/add-deps '%s)" (pr-str {:deps extra-deps}))
-            "")
+          (let [deps (cond-> {}
+                       (seq extra-deps) (assoc :deps extra-deps)
+                       (seq extra-paths) (assoc :paths extra-deps))]
+            (if (seq deps)
+              (format "(babashka.deps/add-deps '%s)" (pr-str {:paths extra-paths
+                                                              :deps extra-deps}))
+              ""))
           @rand-ns
           (if (seq requires)
             (format "(:require %s)" (str/join " " requires))
@@ -271,13 +271,13 @@
          depends (:depends task)]
      (when (contains? processing task-name)
        (throw (ex-info (str "Cyclic task: " task-name) {})))
-     (loop [deps (seq depends)]
-       (let [deps (remove #(contains? @processed %) deps)
-             order (vec (mapcat #(target-order tasks % processed (conj processing task-name)) deps))]
-         (if-not (contains? @processed task-name)
-           (do (vswap! processed conj task-name)
-               (conj order task-name))
-           order))))))
+     (let [deps (seq depends)
+           deps (remove #(contains? @processed %) deps)
+           order (vec (mapcat #(target-order tasks % processed (conj processing task-name)) deps))]
+       (if-not (contains? @processed task-name)
+         (do (vswap! processed conj task-name)
+             (conj order task-name))
+         order)))))
 
 #_(defn tasks->dependees [task-names tasks]
     (let [tasks->depends (zipmap task-names (map #(:depends (get tasks %)) task-names))]

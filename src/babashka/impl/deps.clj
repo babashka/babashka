@@ -1,6 +1,8 @@
 (ns babashka.impl.deps
   (:require [babashka.deps :as bdeps]
+            [babashka.fs :as fs]
             [babashka.impl.classpath :as cp]
+            [babashka.impl.common :refer [bb-edn]]
             [borkdude.deps :as deps]
             [clojure.string :as str]
             [sci.core :as sci]))
@@ -58,7 +60,14 @@
   ([deps-map] (add-deps deps-map nil))
   ([deps-map {:keys [:aliases :env :extra-env :force]}]
    (when-let [paths (:paths deps-map)]
-     (cp/add-classpath (str/join cp/path-sep paths)))
+     (let [paths (let [f (:file @bb-edn)
+                       f (fs/absolutize f)
+                       ;; cwd (fs/absolutize ".")
+                       ;; rel (fs/relativize cwd f)
+                       base-dir (fs/parent f)
+                       paths (mapv #(str (fs/file base-dir %)) paths)]
+                   paths)]
+       (cp/add-classpath (str/join cp/path-sep paths))))
    (when-let [deps-map (not-empty (dissoc deps-map :paths :tasks :raw :min-bb-version))]
      (binding [*print-namespace-maps* false]
        (let [deps-map (assoc-in deps-map [:aliases :org.babashka/defaults]
