@@ -62,11 +62,7 @@ build_script:
 
     jar -cMf %zip% bb.exe
 
-    set BABASHKA_EDN=.build/bb.edn
-
-    bb release-artifact %zip%
-
-    set BABASHKA_EDN=
+    bb --config .build/bb.edn release-artifact %zip%
 
     set BABASHKA_CLASSPATH=
 
