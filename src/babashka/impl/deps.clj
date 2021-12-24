@@ -60,12 +60,11 @@
   ([deps-map] (add-deps deps-map nil))
   ([deps-map {:keys [:aliases :env :extra-env :force]}]
    (when-let [paths (:paths deps-map)]
-     (let [paths (let [f (:file @bb-edn)
-                       f (fs/absolutize f)
+     (let [paths (let [deps-root (:deps-root @bb-edn)
+                       deps-root (fs/absolutize deps-root)
                        ;; cwd (fs/absolutize ".")
                        ;; rel (fs/relativize cwd f)
-                       base-dir (fs/parent f)
-                       paths (mapv #(str (fs/file base-dir %)) paths)]
+                       paths (mapv #(str (fs/file deps-root %)) paths)]
                    paths)]
        (cp/add-classpath (str/join cp/path-sep paths))))
    (when-let [deps-map (not-empty (dissoc deps-map

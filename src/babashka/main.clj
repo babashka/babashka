@@ -643,6 +643,9 @@ Use bb run --help to show this help output.
 
         ("--config")
         (recur (nnext options) (assoc opts-map :config (second options)))
+
+        ("--deps-root")
+        (recur (nnext options) (assoc opts-map :deps-root (second options)))
         [options opts-map])
       [options opts-map])))
 
@@ -915,15 +918,17 @@ Use bb run --help to show this help output.
 
 (defn main [& args]
   (let [[args global-opts] (parse-global-opts args)
-        bb-edn-file (or (System/getenv "BABASHKA_EDN")
-                        (:config global-opts)
+        bb-edn-file (or (:config global-opts)
                         "bb.edn")
         bb-edn (or (when (fs/exists? bb-edn-file)
                      (let [raw-string (slurp bb-edn-file)
                            edn (edn/read-string raw-string)
                            edn (assoc edn
                                       :raw raw-string
-                                      :file bb-edn-file)]
+                                      :file bb-edn-file
+                                      :deps-root
+                                      (or (:deps-root global-opts)
+                                          (str (fs/parent bb-edn-file))))]
                        (vreset! common/bb-edn edn)))
                    ;; tests may have modified bb-edn
                    @common/bb-edn)
