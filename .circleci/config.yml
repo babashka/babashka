@@ -58,8 +58,8 @@ jobs:
 
             java -jar $jar script/reflection.clj
             reflection="babashka-$VERSION-reflection.json"
-            java -jar "$jar" --config .build/bb.edn release-artifact "$jar"
-            java -jar "$jar" --config .build/bb.edn release-artifact "$reflection"
+            java -jar "$jar" --config .build/bb.edn --deps-root . release-artifact "$jar"
+            java -jar "$jar" --config .build/bb.edn --deps-root . release-artifact "$reflection"
       - store_artifacts:
           path: /tmp/release
           destination: release

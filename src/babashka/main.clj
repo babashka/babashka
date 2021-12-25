@@ -137,6 +137,8 @@ Global opts:
   --debug           Print debug information and internal stacktrace in case of exception.
   --force           Passes -Sforce to deps.clj, forcing recalculation of the classpath.
   --init <file>     Load file after any preloads and prior to evaluation/subcommands.
+  --config <file>   Replacing bb.edn with file. Relative paths are resolved relative to file.
+  --deps-root <dir> Treat dir as root of relative paths in config.
 
 Help:
 
