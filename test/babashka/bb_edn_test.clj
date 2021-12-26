@@ -1,12 +1,14 @@
 (ns babashka.bb-edn-test
   (:require
    [babashka.fs :as fs]
+   [babashka.impl.classpath :as cp]
    [babashka.impl.common :as common]
    [babashka.main :as main]
    [babashka.test-utils :as test-utils]
    [clojure.edn :as edn]
    [clojure.string :as str]
-   [clojure.test :as test :refer [deftest is testing]]))
+   [clojure.test :as test :refer [deftest is testing]]
+   [sci.core :as sci]))
 
 (defn bb [& args]
   (let [args (map str args)
@@ -220,7 +222,10 @@
                 t1             (System/currentTimeMillis)
                 delta-parallel (- t1 t0)]
             (is (= tree s))
-            (is (< delta-parallel delta-sequential))))))
+            (when (>=  (doto (-> (Runtime/getRuntime) (.availableProcessors))
+                         (prn))
+                       2)
+              (is (< delta-parallel delta-sequential)))))))
     (testing "exception"
       (test-utils/with-config '{:tasks {a (Thread/sleep 10000)
                                         b (do (Thread/sleep 10)
@@ -337,20 +342,24 @@
         (is (= "uberjar" (:file (main/parse-opts ["uberjar"]))))
         (finally (fs/delete "uberjar"))))))
 
-(deftest min-bb-version
-  (when-not test-utils/native?
-    (vreset! common/bb-edn '{:min-bb-version "300.0.0"})
-    (let [sw (java.io.StringWriter.)]
-      (binding [*err* sw]
-        (main/main "-e" "nil"))
-      (is (str/includes? (str sw)
-                         "WARNING: this project requires babashka 300.0.0 or newer, but you have: ")))))
+(deftest min-bb-version-test
+  (fs/with-temp-dir [dir {}]
+    (let [config (str (fs/file dir "bb.edn"))]
+      (spit config '{:min-bb-version "300.0.0"})
+      (let [sw (java.io.StringWriter.)]
+        (binding [*err* sw]
+          (main/main "--config" config  "-e" "nil"))
+        (is (str/includes? (str sw)
+                           "WARNING: this project requires babashka 300.0.0 or newer, but you have: "))))))
 
-;; TODO:
-;; Do we want to support the same parsing as the clj CLI?
-;; Or do we want `--aliases :foo:bar`
-;; Let's wait for a good use case
-#_(deftest alias-deps-test
-    (test-utils/with-config '{:aliases {:medley {:deps {medley/medley {:mvn/version "1.3.0"}}}}}
-      (is (= '{1 {:id 1}, 2 {:id 2}}
-             (bb "-A:medley" "-e" "(require 'medley.core)" "-e" "(medley.core/index-by :id [{:id 1} {:id 2}])")))))
+(deftest classpath-other-bb-edn-test
+  (fs/with-temp-dir [dir {}]
+    (let [config (str (fs/file dir "bb.edn"))]
+      (spit config '{:paths ["src"]
+                     :tasks {cp (prn (babashka.classpath/get-classpath))}})
+      (let [out (bb "--config" config "cp")
+            entries (cp/split-classpath out)
+            entry (first entries)]
+        (is (= 1 (count entries)))
+        (is (= (fs/parent config) (fs/parent entry)))
+        (is (str/ends-with? entry "src"))))))

@@ -137,6 +137,8 @@ Global opts:
   --debug           Print debug information and internal stacktrace in case of exception.
   --force           Passes -Sforce to deps.clj, forcing recalculation of the classpath.
   --init <file>     Load file after any preloads and prior to evaluation/subcommands.
+  --config <file>   Replacing bb.edn with file. Relative paths are resolved relative to file.
+  --deps-root <dir> Treat dir as root of relative paths in config.
 
 Help:
 
@@ -632,21 +634,27 @@ Use bb run --help to show this help output.
     (if options
       (case (first options)
         ("--classpath" "-cp") (recur (nnext options) (assoc opts-map :classpath (second options)))
+
         ("--debug"
-         "--verbose" ;; renamed to --debug
-         ) (recur (next options) (assoc opts-map :debug true))
+         "--verbose")
+        ;; renamed to --debug
+        (recur (next options) (assoc opts-map :debug true))
+
         ("--init")
         (recur (nnext options) (assoc opts-map :init (second options)))
+
+        ("--config")
+        (recur (nnext options) (assoc opts-map :config (second options)))
+
+        ("--deps-root")
+        (recur (nnext options) (assoc opts-map :deps-root (second options)))
         [options opts-map])
       [options opts-map])))
 
 (defn parse-opts
   ([options] (parse-opts options nil))
   ([options opts-map]
-   (let [[options opts-map] (if opts-map
-                              [options opts-map]
-                              (parse-global-opts options))
-         opt (first options)
+   (let [opt (first options)
          tasks (into #{} (map str) (keys (:tasks @common/bb-edn)))]
      (if-not opt opts-map
              ;; FILE > TASK > SUBCOMMAND
@@ -743,228 +751,231 @@ Use bb run --help to show this help output.
                             (binding [*out* *err*]
                               (println "[babashka] WARNING: clojure.core.specs.alpha is removed from the classpath, unless you explicitly add the dependency."))
                             nil)))
-      main (if (and jar (not main))
-             (when-let [res (cp/getResource
-                             (cp/loader jar)
-                             ["META-INF/MANIFEST.MF"] {:url? true})]
-               (cp/main-ns res))
-             main)
-      ;; TODO: pull more of these values to compile time
-      opts {:aliases aliases
-            :namespaces (-> namespaces
-                            (assoc 'clojure.core
-                                   (assoc core-extras
-                                          'load-file (sci-namespaces/core-var 'load-file load-file*))))
-            :env env
-            :features #{:bb :clj}
-            :classes classes/class-map
-            :imports classes/imports
-            :load-fn load-fn
-            :uberscript uberscript
-            ;; :readers core/data-readers
-            :reify-fn reify-fn
-            :proxy-fn proxy-fn}
-      opts (addons/future opts)
-      sci-ctx (sci/init opts)
-      _ (vreset! common/ctx sci-ctx)
-      preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim))
-      [expressions exit-code]
-      (cond expressions [expressions nil]
-            main
-            (let [sym (symbol main)
-                  ns? (namespace sym)
-                  ns (or ns? sym)
-                  var-name (if ns?
-                             (name sym)
-                             "-main")]
-              [[(format "(ns user (:require [%1$s])) (apply %1$s/%2$s *command-line-args*)"
-                        ns var-name)] nil])
-            run (if (:run-help cli-opts)
-                  [(print-run-help) 0]
-                  (do
-                    (System/setProperty "babashka.task" (str run))
-                    (tasks/assemble-task run
-                                         (:parallel-tasks cli-opts))))
-            file (try [[(read-file file)] nil]
-                      (catch Exception e
-                        (error-handler e {:expression expressions
-                                          :debug debug
-                                          :preloads preloads
-                                          :init init
-                                          :loader (:loader @cp/cp-state)}))))
-      expression (str/join " " expressions) ;; this might mess with the locations...
-      exit-code
-      ;; handle preloads
-      (if exit-code exit-code
-          (do (when preloads
-                (sci/binding [sci/file "<preloads>"]
-                  (try
-                    (sci/eval-string* sci-ctx preloads)
-                    (catch Throwable e
-                      (error-handler e {:expression expression
-                                        :debug debug
-                                        :preloads preloads
-                                        :init init
-                                        :loader (:loader @cp/cp-state)})))))
-              nil))
-      exit-code
-      ;; handle --init
-      (if exit-code exit-code
-          (do (when init
-                (try
-                  (load-file* init)
-                  (catch Throwable e
-                    (error-handler e {:expression expression
-                                      :debug debug
-                                      :preloads preloads
-                                      :init init
-                                      :loader (:loader @cp/cp-state)}))))
-              nil))
-      ;; socket REPL is start asynchronously. when no other args are
-      ;; provided, a normal REPL will be started as well, which causes the
-      ;; process to wait until SIGINT
-      _ (when socket-repl (start-socket-repl! socket-repl sci-ctx))
-      exit-code
-      (or exit-code
-          (second
-           (cond version-opt
-                 [(print-version) 0]
-                 help (print-help sci-ctx command-line-args)
-                 doc (print-doc sci-ctx command-line-args)
-                 describe?
-                 [(print-describe) 0]
-                 repl [(repl/start-repl! sci-ctx) 0]
-                 nrepl [(start-nrepl! nrepl sci-ctx) 0]
-                 uberjar [nil 0]
-                 list-tasks [(tasks/list-tasks sci-ctx) 0]
-                 print-deps [(print-deps/print-deps (:print-deps-format cli-opts)) 0]
-                 uberscript
-                 [nil (do (uberscript/uberscript {:ctx sci-ctx
-                                                  :expressions expressions})
-                          0)]
-                 expressions
-                 ;; execute code
-                 (sci/binding [sci/file abs-path]
-                   (try
+            main (if (and jar (not main))
+                   (when-let [res (cp/getResource
+                                   (cp/loader jar)
+                                   ["META-INF/MANIFEST.MF"] {:url? true})]
+                     (cp/main-ns res))
+                   main)
+            ;; TODO: pull more of these values to compile time
+            opts {:aliases aliases
+                  :namespaces (-> namespaces
+                                  (assoc 'clojure.core
+                                         (assoc core-extras
+                                                'load-file (sci-namespaces/core-var 'load-file load-file*))))
+                  :env env
+                  :features #{:bb :clj}
+                  :classes classes/class-map
+                  :imports classes/imports
+                  :load-fn load-fn
+                  :uberscript uberscript
+                  ;; :readers core/data-readers
+                  :reify-fn reify-fn
+                  :proxy-fn proxy-fn}
+            opts (addons/future opts)
+            sci-ctx (sci/init opts)
+            _ (vreset! common/ctx sci-ctx)
+            preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim))
+            [expressions exit-code]
+            (cond expressions [expressions nil]
+                  main
+                  (let [sym (symbol main)
+                        ns? (namespace sym)
+                        ns (or ns? sym)
+                        var-name (if ns?
+                                   (name sym)
+                                   "-main")]
+                    [[(format "(ns user (:require [%1$s])) (apply %1$s/%2$s *command-line-args*)"
+                              ns var-name)] nil])
+                  run (if (:run-help cli-opts)
+                        [(print-run-help) 0]
+                        (do
+                          (System/setProperty "babashka.task" (str run))
+                          (tasks/assemble-task run
+                                               (:parallel-tasks cli-opts))))
+                  file (try [[(read-file file)] nil]
+                            (catch Exception e
+                              (error-handler e {:expression expressions
+                                                :debug debug
+                                                :preloads preloads
+                                                :init init
+                                                :loader (:loader @cp/cp-state)}))))
+            expression (str/join " " expressions) ;; this might mess with the locations...
+            exit-code
+            ;; handle preloads
+            (if exit-code exit-code
+                (do (when preloads
+                      (sci/binding [sci/file "<preloads>"]
+                        (try
+                          (sci/eval-string* sci-ctx preloads)
+                          (catch Throwable e
+                            (error-handler e {:expression expression
+                                              :debug debug
+                                              :preloads preloads
+                                              :init init
+                                              :loader (:loader @cp/cp-state)})))))
+                    nil))
+            exit-code
+            ;; handle --init
+            (if exit-code exit-code
+                (do (when init
+                      (try
+                        (load-file* init)
+                        (catch Throwable e
+                          (error-handler e {:expression expression
+                                            :debug debug
+                                            :preloads preloads
+                                            :init init
+                                            :loader (:loader @cp/cp-state)}))))
+                    nil))
+            ;; socket REPL is start asynchronously. when no other args are
+            ;; provided, a normal REPL will be started as well, which causes the
+            ;; process to wait until SIGINT
+            _ (when socket-repl (start-socket-repl! socket-repl sci-ctx))
+            exit-code
+            (or exit-code
+                (second
+                 (cond version-opt
+                       [(print-version) 0]
+                       help (print-help sci-ctx command-line-args)
+                       doc (print-doc sci-ctx command-line-args)
+                       describe?
+                       [(print-describe) 0]
+                       repl [(repl/start-repl! sci-ctx) 0]
+                       nrepl [(start-nrepl! nrepl sci-ctx) 0]
+                       uberjar [nil 0]
+                       list-tasks [(tasks/list-tasks sci-ctx) 0]
+                       print-deps [(print-deps/print-deps (:print-deps-format cli-opts)) 0]
+                       uberscript
+                       [nil (do (uberscript/uberscript {:ctx sci-ctx
+                                                        :expressions expressions})
+                                0)]
+                       expressions
+                       ;; execute code
+                       (sci/binding [sci/file abs-path]
+                         (try
                                         ; when evaluating expression(s), add in repl-requires so things like
                                         ; pprint and dir are available
-                     (sci/eval-form sci-ctx `(apply require (quote ~clojure-main/repl-requires)))
-                     (loop []
-                       (let [in (read-next *in*)]
-                         (if (identical? ::EOF in)
-                           [nil 0] ;; done streaming
-                           (let [res [(let [res
-                                            (sci/binding [sci/file (or @sci/file "<expr>")
-                                                          input-var in
-                                                          core/command-line-args command-line-args]
-                                              (sci/eval-string* sci-ctx expression))]
-                                        ;; return value printing
-                                        (when (and (some? res)
-                                                   (or (not run)
-                                                       (:prn cli-opts)))
-                                          (if-let [pr-f (cond shell-out println
-                                                              edn-out prn)]
-                                            (if (sequential? res)
-                                              (doseq [l res
-                                                      :while (not (pipe-signal-received?))]
-                                                (pr-f l))
-                                              (pr-f res))
-                                            (prn res)))) 0]]
-                             (if stream?
-                               (recur)
-                               res)))))
-                     (catch Throwable e
-                       (error-handler e {:expression expression
-                                         :debug debug
-                                         :preloads preloads
-                                         :loader (:loader @cp/cp-state)}))))
-                 clojure [nil (if-let [proc (bdeps/clojure command-line-args)]
-                                (-> @proc :exit)
-                                0)]
-                 :else [(repl/start-repl! sci-ctx) 0]))
-          1)]
-    (flush)
-    (when uberscript
-      (let [uberscript-out uberscript]
-        (spit uberscript-out "") ;; reset file
-        (doseq [s (distinct @uberscript-sources)]
-          (spit uberscript-out s :append true))
-        (spit uberscript-out preloads :append true)
-        (spit uberscript-out expression :append true)))
-    (when uberjar
-      (if-let [cp (cp/get-classpath)]
-        (uberjar/run {:dest uberjar
-                      :jar :uber
-                      :classpath cp
-                      :main-class main
-                      :verbose debug})
-        (throw (Exception. "The uberjar task needs a classpath."))))
-    exit-code))))
+                           (sci/eval-form sci-ctx `(apply require (quote ~clojure-main/repl-requires)))
+                           (loop []
+                             (let [in (read-next *in*)]
+                               (if (identical? ::EOF in)
+                                 [nil 0] ;; done streaming
+                                 (let [res [(let [res
+                                                  (sci/binding [sci/file (or @sci/file "<expr>")
+                                                                input-var in
+                                                                core/command-line-args command-line-args]
+                                                    (sci/eval-string* sci-ctx expression))]
+                                              ;; return value printing
+                                              (when (and (some? res)
+                                                         (or (not run)
+                                                             (:prn cli-opts)))
+                                                (if-let [pr-f (cond shell-out println
+                                                                    edn-out prn)]
+                                                  (if (sequential? res)
+                                                    (doseq [l res
+                                                            :while (not (pipe-signal-received?))]
+                                                      (pr-f l))
+                                                    (pr-f res))
+                                                  (prn res)))) 0]]
+                                   (if stream?
+                                     (recur)
+                                     res)))))
+                           (catch Throwable e
+                             (error-handler e {:expression expression
+                                               :debug debug
+                                               :preloads preloads
+                                               :loader (:loader @cp/cp-state)}))))
+                       clojure [nil (if-let [proc (bdeps/clojure command-line-args)]
+                                      (-> @proc :exit)
+                                      0)]
+                       :else [(repl/start-repl! sci-ctx) 0]))
+                1)]
+        (flush)
+        (when uberscript
+          (let [uberscript-out uberscript]
+            (spit uberscript-out "") ;; reset file
+            (doseq [s (distinct @uberscript-sources)]
+              (spit uberscript-out s :append true))
+            (spit uberscript-out preloads :append true)
+            (spit uberscript-out expression :append true)))
+        (when uberjar
+          (if-let [cp (cp/get-classpath)]
+            (uberjar/run {:dest uberjar
+                          :jar :uber
+                          :classpath cp
+                          :main-class main
+                          :verbose debug})
+            (throw (Exception. "The uberjar task needs a classpath."))))
+        exit-code))))
 
 (defn satisfies-min-version? [min-version]
-(let [[major-current minor-current patch-current] version-data
-      [major-min minor-min patch-min] (parse-version min-version)]
-(or (> major-current major-min)
-    (and (= major-current major-min)
-         (or (> minor-current minor-min)
-             (and (= minor-current minor-min)
-                  (>= patch-current patch-min)))))))
+  (let [[major-current minor-current patch-current] version-data
+        [major-min minor-min patch-min] (parse-version min-version)]
+    (or (> major-current major-min)
+        (and (= major-current major-min)
+             (or (> minor-current minor-min)
+                 (and (= minor-current minor-min)
+                      (>= patch-current patch-min)))))))
 
 (defn main [& args]
-(let [bb-edn-file (or (System/getenv "BABASHKA_EDN")
-                      "bb.edn")
-      bb-edn (or (when (fs/exists? bb-edn-file)
-                   (let [raw-string (slurp bb-edn-file)
-                         edn (edn/read-string raw-string)
-                         edn (assoc edn :raw raw-string)]
-                     (vreset! common/bb-edn edn)))
-                 ;; tests may have modified bb-edn
-                 @common/bb-edn)
-      min-bb-version (:min-bb-version bb-edn)]
-(when min-bb-version
-  (when-not (satisfies-min-version? min-bb-version)
-    (binding [*out* *err*]
-      (println (str "WARNING: this project requires babashka "
-                    min-bb-version " or newer, but you have: " version))))))
-(let [opts (parse-opts args)]
-(exec opts)))
+  (let [[args global-opts] (parse-global-opts args)
+        bb-edn-file (or (:config global-opts)
+                        "bb.edn")
+        bb-edn (when (fs/exists? bb-edn-file)
+                 (let [raw-string (slurp bb-edn-file)
+                       edn (edn/read-string raw-string)
+                       edn (assoc edn
+                                  :raw raw-string
+                                  :file bb-edn-file
+                                  :deps-root
+                                  (or (:deps-root global-opts)
+                                      (str (fs/parent bb-edn-file))))]
+                   (vreset! common/bb-edn edn)))
+        min-bb-version (:min-bb-version bb-edn)]
+    (when min-bb-version
+      (when-not (satisfies-min-version? min-bb-version)
+        (binding [*out* *err*]
+          (println (str "WARNING: this project requires babashka "
+                        min-bb-version " or newer, but you have: " version)))))
+    (exec (parse-opts args global-opts))))
 
 (def musl?
-"Captured at compile time, to know if we are running inside a
+  "Captured at compile time, to know if we are running inside a
   statically compiled executable with musl."
-(and (= "true" (System/getenv "BABASHKA_STATIC"))
-(= "true" (System/getenv "BABASHKA_MUSL"))))
+  (and (= "true" (System/getenv "BABASHKA_STATIC"))
+       (= "true" (System/getenv "BABASHKA_MUSL"))))
 
 (defmacro run [args]
-(if musl?
-;; When running in musl-compiled static executable we lift execution of bb
-;; inside a thread, so we have a larger than default stack size, set by an
-;; argument to the linker. See https://github.com/oracle/graal/issues/3398
-`(let [v# (volatile! nil)
-       f# (fn []
-            (vreset! v# (apply main ~args)))]
-   (doto (Thread. nil f# "main")
-     (.start)
-     (.join))
-   @v#)
-`(apply main ~args)))
+  (if musl?
+    ;; When running in musl-compiled static executable we lift execution of bb
+    ;; inside a thread, so we have a larger than default stack size, set by an
+    ;; argument to the linker. See https://github.com/oracle/graal/issues/3398
+    `(let [v# (volatile! nil)
+           f# (fn []
+                (vreset! v# (apply main ~args)))]
+       (doto (Thread. nil f# "main")
+         (.start)
+         (.join))
+       @v#)
+    `(apply main ~args)))
 
 (defn -main
-[& args]
-(handle-pipe!)
-(handle-sigint!)
-(if-let [dev-opts (System/getenv "BABASHKA_DEV")]
-(let [{:keys [:n]} (if (= "true" dev-opts) {:n 1}
-                       (edn/read-string dev-opts))
-      last-iteration (dec n)]
-  (dotimes [i n]
-    (if (< i last-iteration)
-      (with-out-str (apply main args))
-      (do (run args)
-          (binding [*out* *err*]
-            (println "ran" n "times"))))))
-(let [exit-code (run args)]
-  (System/exit exit-code))))
+  [& args]
+  (handle-pipe!)
+  (handle-sigint!)
+  (if-let [dev-opts (System/getenv "BABASHKA_DEV")]
+    (let [{:keys [:n]} (if (= "true" dev-opts) {:n 1}
+                           (edn/read-string dev-opts))
+          last-iteration (dec n)]
+      (dotimes [i n]
+        (if (< i last-iteration)
+          (with-out-str (apply main args))
+          (do (run args)
+              (binding [*out* *err*]
+                (println "ran" n "times"))))))
+    (let [exit-code (run args)]
+      (System/exit exit-code))))
 
 ;;;; Scratch
 

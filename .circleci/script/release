@@ -24,7 +24,7 @@ tar zcvf "$archive" bb # bbk
 
 cd -
 
-BABASHKA_EDN=".build/bb.edn" ./bb release-artifact "/tmp/release/$archive"
+./bb --config .build/bb.edn --deps-root . release-artifact "/tmp/release/$archive"
 
 ## cleanup
 

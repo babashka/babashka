@@ -15,7 +15,7 @@
       +---+---+
       | 3 | 4 |
       +---+---+
-      ") "\n")
+      ") (System/lineSeparator))
     (with-out-str (table [["1" "2"] ["3" "4"]])))))
 
 (deftest test-table-with-vecs-in-vec

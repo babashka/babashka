@@ -414,7 +414,7 @@
     (is (= x (json/read-str (with-out-str (json/pprint x)))))))
 
 (deftest pretty-print-nonescaped-unicode
-  (is (= "\"\u1234\u4567\"\n"
+  (is (= (str "\"\u1234\u4567\"" (System/lineSeparator))
          (with-out-str
            (json/pprint "\u1234\u4567" :escape-unicode false)))))
 
