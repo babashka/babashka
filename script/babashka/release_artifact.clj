@@ -11,14 +11,13 @@
           :out
           str/trim)))
 
-(defn current-version []
-  (-> (slurp "resources/BABASHKA_VERSION")
-      str/trim))
-
 (defn release [& args]
   (let [ght (System/getenv "GITHUB_TOKEN")
         file (first args)
-        branch (current-branch)]
+        branch (current-branch)
+        current-version
+        (-> (slurp "resources/BABASHKA_VERSION")
+            str/trim)]
     (if (and ght (contains? #{"master" "main"} branch))
       (do (assert file "File name must be provided")
           (ghr/overwrite-asset {:org "babashka"

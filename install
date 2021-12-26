@@ -109,7 +109,14 @@ case "$platform-$static_binary" in
                 ;;
 esac
 
-download_url="https://github.com/babashka/babashka/releases/download/v$version/$filename"
+if [[ "$version" == *-SNAPSHOT ]]
+then
+    repo="babashka-dev-builds"
+else
+    repo="babashka"
+fi
+
+download_url="https://github.com/babashka/$repo/releases/download/v$version/$filename"
 
 # macOS only have shasum available by default
 # Some Linux distros (RHEL-like) only have sha256sum avaiable by default (others have both)
