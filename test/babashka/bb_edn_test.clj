@@ -357,9 +357,7 @@
     (let [config (str (fs/file dir "bb.edn"))]
       (spit config '{:paths ["src"]
                      :tasks {cp (prn (babashka.classpath/get-classpath))}})
-      (let [out (edn/read-string
-                 (sci/with-out-str
-                   (main/main "--config" config  "cp")))
+      (let [out (bb "--config" config "cp")
             entries (cp/split-classpath out)
             entry (first entries)]
         (is (= 1 (count entries)))
