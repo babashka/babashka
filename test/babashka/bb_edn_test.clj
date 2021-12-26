@@ -222,7 +222,10 @@
                 t1             (System/currentTimeMillis)
                 delta-parallel (- t1 t0)]
             (is (= tree s))
-            (is (< delta-parallel delta-sequential))))))
+            (when (>=  (doto (-> (Runtime/getRuntime) (.availableProcessors))
+                         (prn))
+                       2)
+              (is (< delta-parallel delta-sequential)))))))
     (testing "exception"
       (test-utils/with-config '{:tasks {a (Thread/sleep 10000)
                                         b (do (Thread/sleep 10)
