@@ -1,12 +1,14 @@
 (ns babashka.bb-edn-test
   (:require
    [babashka.fs :as fs]
+   [babashka.impl.classpath :as cp]
    [babashka.impl.common :as common]
    [babashka.main :as main]
    [babashka.test-utils :as test-utils]
    [clojure.edn :as edn]
    [clojure.string :as str]
-   [clojure.test :as test :refer [deftest is testing]]))
+   [clojure.test :as test :refer [deftest is testing]]
+   [sci.core :as sci]))
 
 (defn bb [& args]
   (let [args (map str args)
@@ -337,7 +339,7 @@
         (is (= "uberjar" (:file (main/parse-opts ["uberjar"]))))
         (finally (fs/delete "uberjar"))))))
 
-(deftest min-bb-version
+(deftest min-bb-version-test
   (fs/with-temp-dir [dir {}]
     (let [config (str (fs/file dir "bb.edn"))]
       (spit config '{:min-bb-version "300.0.0"})
@@ -347,3 +349,16 @@
         (is (str/includes? (str sw)
                            "WARNING: this project requires babashka 300.0.0 or newer, but you have: "))))))
 
+(deftest classpath-other-bb-edn-test
+  (fs/with-temp-dir [dir {}]
+    (let [config (str (fs/file dir "bb.edn"))]
+      (spit config '{:paths ["src"]
+                     :tasks {cp (prn (babashka.classpath/get-classpath))}})
+      (let [out (edn/read-string
+                 (sci/with-out-str
+                   (main/main "--config" config  "cp")))
+            entries (cp/split-classpath out)
+            entry (first entries)]
+        (is (= 1 (count entries)))
+        (is (= (fs/parent config) (fs/parent entry)))
+        (is (str/ends-with? entry "src"))))))
