@@ -88,7 +88,7 @@ case "$(uname -m)" in
 esac
 
 # Ugly ugly conversion of version to a comparable number
-IFS='.' read -ra VER <<< "$version"
+IFS='.' read -ra VER <<< "${version//-SNAPSHOT/}"
 vernum=$(printf "%03d%03d%03d" "${VER[0]}" "${VER[1]}" "${VER[2]}")
 
 if [[ 10#$vernum -le 10#000002013 ]]; then
