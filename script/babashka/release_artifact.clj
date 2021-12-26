@@ -11,10 +11,12 @@
           :out
           str/trim)))
 
+(defn current-version []
+  (-> (slurp "resources/BABASHKA_VERSION")
+      str/trim))
+
 (defn release [& args]
-  (let [current-version (-> (slurp "resources/BABASHKA_VERSION")
-                            str/trim)
-        ght (System/getenv "GITHUB_TOKEN")
+  (let [ght (System/getenv "GITHUB_TOKEN")
         file (first args)
         branch (current-branch)]
     (if (and ght (contains? #{"master" "main"} branch))
@@ -28,6 +30,9 @@
                                 :repo "babashka-dev-builds"
                                 :file file
                                 :tag (str "v" current-version)
-                                :draft false}))
+                                ;; do not set, because we are posting to another repo
+                                :target-commitish false
+                                :draft false
+                                :prerelease true}))
       (println "Skipping release artifact (no GITHUB_TOKEN or not on main branch)"))
     nil))
