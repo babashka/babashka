@@ -57,45 +57,62 @@
                           [:aliases :lib-tests :extra-deps lib-name]
                           lib-coordinate)))))
 
+(defn- default-test-dir
+  [lib-root-dir]
+  (some #(when (fs/exists? (fs/file lib-root-dir %))
+           (str (fs/file lib-root-dir %)))
+        ;; Most common test dir
+        ["test"
+         ;; official clojure repos like https://github.com/clojure/tools.gitlibs
+         "src/test/clojure"]))
+
 (defn- copy-tests
-  [git-url lib-name {:keys [directory branch]}]
+  [git-url lib-name {:keys [directory branch test-directories]}]
   (let [lib-dir (if branch
                   (gl/procure git-url lib-name branch)
                   (or (gl/procure git-url lib-name "master")
                       (gl/procure git-url lib-name "main")))
-        lib-root-dir (if directory
-                       (fs/file lib-dir directory) lib-dir)
-        test-dir (some #(when (fs/exists? (fs/file lib-root-dir %))
-                          (str (fs/file lib-root-dir %)))
-                       ;; Search common test dirs
-                       ["test"
-                        ;; official clojure repos like https://github.com/clojure/tools.gitlibs
-                        "src/test/clojure"])]
-    (when-not test-dir
-      (error "No test dir found"))
-    (shell "cp -R" (str test-dir fs/file-separator) "test-resources/lib_tests/")
+        lib-root-dir (if directory (fs/file lib-dir directory) lib-dir)
+        test-dirs (if test-directories
+                    (map #(when (fs/exists? (fs/file lib-root-dir %))
+                            (str (fs/file lib-root-dir %)))
+                         test-directories)
+                    (some-> (default-test-dir lib-root-dir) vector))]
+    (when (empty? test-dirs)
+      (error "No test directories found"))
+    (doseq [test-dir test-dirs]
+      (shell "cp -R" (str test-dir fs/file-separator) "test-resources/lib_tests/"))
     {:lib-dir lib-dir
-     :test-dir test-dir}))
+     :test-dirs test-dirs}))
+
+(defn- default-test-namespaces
+  [test-dir]
+  (let [relative-test-files (map #(str (fs/relativize test-dir %))
+                                 (fs/glob test-dir "**/*.{clj,cljc}"))]
+    (when (empty? relative-test-files)
+      (error (str "No test files found in " test-dir)))
+    (map #(-> %
+              (str/replace fs/file-separator ".")
+              (str/replace "_" "-")
+              (str/replace-first #"\.clj(c?)$" "")
+              symbol)
+         relative-test-files)))
 
 (defn- add-lib-to-tested-libs
-  [lib-name git-url {:keys [lib-dir test-dir]} options]
-  (let [git-sha (fs/file-name lib-dir)
-        relative-test-files (map #(str (fs/relativize test-dir %))
-                                 (fs/glob test-dir "**/*.{clj,cljc}"))
-        _ (when (empty? relative-test-files)
-            (error "No test files found"))
-        namespaces (map #(-> %
-                             (str/replace fs/file-separator ".")
-                             (str/replace "_" "-")
-                             (str/replace-first #"\.clj(c?)$" "")
-                             symbol)
-                        relative-test-files)
-        lib (merge
-             {:git-sha git-sha
-              :git-url git-url
-              :test-namespaces namespaces}
-             ;; Options needed to update libs
-             (select-keys options [:branch :directory]))
+  [lib-name git-url {:keys [lib-dir test-dirs]} options]
+  (let [namespaces (or (get-in options [:manually-added :test-namespaces])
+                       (mapcat default-test-namespaces test-dirs))
+        default-lib (merge
+                     {:git-url git-url
+                      :test-namespaces namespaces}
+                     ;; Options needed to update libs
+                     (select-keys options [:branch :directory :test-directories]))
+        lib (if (:manually-added options)
+              (-> default-lib
+                  (merge (:manually-added options))
+                  (assoc :manually-added true))
+              (assoc default-lib
+                     :git-sha (fs/file-name lib-dir)))
         nodes (-> "test-resources/lib_tests/bb-tested-libs.edn" slurp r/parse-string)]
     (spit "test-resources/lib_tests/bb-tested-libs.edn"
          (str (r/assoc-in nodes
@@ -143,8 +160,8 @@
         (get-lib-map artifact-or-deps-string options)
         _ (when (nil? git-url)
             (error "git-url is required. Please specify with --git-url"))
-        _ (add-lib-to-deps lib-name lib-coordinate)
-        dirs (copy-tests git-url lib-name options)
+        _ (when-not (:manually-added options) (add-lib-to-deps lib-name lib-coordinate))
+        dirs (when-not (:manually-added options) (copy-tests git-url lib-name options))
         namespaces (add-lib-to-tested-libs lib-name git-url dirs options)]
     (println "Added lib" lib-name "which tests the following namespaces:" namespaces)
     (when (:test options)
@@ -163,7 +180,12 @@
    ["-d" "--directory DIRECTORY" "Directory where library is located"]
    ;; https://github.com/reifyhealth/specmonstah used this option
    ["-b" "--branch BRANCH" "Default branch for git url"]
-   ["-g" "--git-url GITURL" "Git url for artifact. Defaults to homepage on clojars"]])
+   ["-g" "--git-url GITURL" "Git url for artifact. Defaults to homepage on clojars"]
+   ["-m" "--manually-added LIB-MAP" "Only add library to edn file with LIB-MAP merged into library entry"
+    :parse-fn edn/read-string :validate-fn map?]
+   ;; https://github.com/jeaye/orchestra used this option
+   ["-T" "--test-directories TEST-DIRECTORY" "Directories where library tests are located"
+    :multi true :update-fn conj]])
 
 (when (= *file* (System/getProperty "babashka.file"))
   (run-command add-libtest *command-line-args* cli-options))

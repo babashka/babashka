@@ -46,4 +46,25 @@
  org.clojure/math.combinatorics {:git-sha "e555a45b5802cf5e8c43b4377628ef34a634554b", :git-url "https://github.com/clojure/math.combinatorics", :test-namespaces (clojure.math.test-combinatorics)}
  doric/doric {:git-sha "8747fdce565187a5c368c575cf4ca794084b0a5c", :git-url "https://github.com/joegallo/doric", :test-namespaces (doric.test.core doric.test.readme doric.test.doctest)}
  com.github.seancorfield/honeysql {:git-sha "6e4e1f6928450788353c181f32474d930d6afe84", :git-url "https://github.com/seancorfield/honeysql", :test-namespaces (honey.sql-test honey.sql.helpers-test honey.sql.postgres-test), :branch "develop"}
- honeysql/honeysql {:git-sha "1137dd12350afdc30ad4976c3718279581390b36", :git-url "https://github.com/seancorfield/honeysql", :test-namespaces (honeysql.format-test honeysql.core-test), :branch "v1"}}
+ honeysql/honeysql {:git-sha "1137dd12350afdc30ad4976c3718279581390b36", :git-url "https://github.com/seancorfield/honeysql", :test-namespaces (honeysql.format-test honeysql.core-test), :branch "v1"}
+ ; skip tests on Windows because of the :compressed thing
+ babashka/babashka.curl {:git-url "https://github.com/babashka/babashka.curl", :test-namespaces [babashka.curl-test], :skip-windows true, :manually-added true}
+ http-kit/http-kit {:git-url "https://github.com/http-kit/http-kit", :test-namespaces [httpkit.client-test], :manually-added true}
+ org.clojure/core.match {:git-url "https://github.com/clojure/core.match", :test-namespaces [core-match.core-tests], :manually-added true}
+ hiccup/hiccup {:git-url "http://github.com/weavejester/hiccup", :test-namespaces [hiccup.core-test hiccup2.core-test], :manually-added true}
+ org.clojure/test.check {:git-url "https://github.com/clojure/test.check", :test-namespaces [test-check.smoke-test], :manually-added true}
+ io.helins/binf {:git-url "https://github.com/helins/binf.cljc", :test-namespaces [helins.binf.test], :manually-added true}
+ selmer/selmer {:git-url "https://github.com/yogthos/Selmer", :test-namespaces [selmer.core-test selmer.our-test], :manually-added true}
+ com.grammarly/omniconf {:git-url "https://github.com/grammarly/omniconf", :test-namespaces [omniconf.core-test], :manually-added true}
+ crispin/crispin {:git-url "https://github.com/dunaj-project/crispin", :test-namespaces [crispin.core-test], :manually-added true}
+ clj-commons/multigrep {:git-url "https://github.com/clj-commons/multigrep", :test-namespaces [multigrep.core-test], :manually-added true}
+ org.clj-commons/digest {:git-url "https://github.com/clj-commons/clj-digest", :test-namespaces [clj-commons.digest-test], :manually-added true}
+ hato/hato {:git-url "https://github.com/gnarroway/hato", :test-namespaces [hato.client-test], :manually-added true}
+ java-http-clj/java-http-clj {:git-url "http://www.github.com/schmee/java-http-clj", :test-namespaces [java-http-clj.smoke-test], :manually-added true}
+ rewrite-clj/rewrite-clj {:git-url "https://github.com/clj-commons/rewrite-clj", :test-namespaces [rewrite-clj.parser-test rewrite-clj.node-test rewrite-clj.zip-test rewrite-clj.paredit-test rewrite-clj.zip.subedit-test rewrite-clj.node.coercer-test], :manually-added true}
+ ;; TODO: env tests don't work because envoy lib isn't compatible with bb
+ ;; TODO: failing tests in the following namespaces: vault.client.mock-test, vault.secrets.kvv1-test vault.secrets.kvv2-test
+ amperity/vault-clj {:git-url "https://github.com/amperity/vault-clj", :test-namespaces [vault.lease-test vault.client.http-test], :manually-added true}
+ orchestra/orchestra {:git-url "https://github.com/jeaye/orchestra", :test-namespaces (orchestra.make-fns orchestra.many-fns orchestra.expound-test orchestra.core-test orchestra.reload-test), :test-directories ("test/cljc" "test/clj"), :git-sha "81e5181f7b42e5e2763a2b37db17954f3be0314e"}
+ ;; BB-TEST-PATCH: Manually removed tasks.clj
+ org.clj-commons/clj-http-lite {:git-url "https://github.com/clj-commons/clj-http-lite", :test-namespaces (clj-http.lite.test-runner clj-http.lite.client-test), :test-directories ("bb"), :git-sha "6b53000df55ac05c4ff8e5047a5323fc08a52e8b"}}

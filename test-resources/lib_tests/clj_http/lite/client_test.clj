@@ -24,11 +24,12 @@
                                     :accept :json
                                     :throw-exceptions false})))))
 
-(deftest insecure-test
-  (is (= 200 (:status (client/get "https://self-signed.badssl.com/" {:insecure? true})))))
-
 (deftest exception-test
   (try (client/get "https://site.com/broken")
        (is false "should not reach here")
        (catch Exception e
          (is (:headers (ex-data e))))))
+
+;; BB-TEST-PATCH: Added test
+(deftest insecure-test
+  (is (= 200 (:status (client/get "https://self-signed.badssl.com/" {:insecure? true})))))

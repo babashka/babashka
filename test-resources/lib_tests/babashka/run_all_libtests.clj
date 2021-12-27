@@ -4,8 +4,6 @@
             [clojure.edn :as edn]
             [clojure.test :as t]))
 
-#_(require 'clojure.spec.alpha)
-
 (def ns-args (set (map symbol *command-line-args*)))
 
 (def status (atom {}))
@@ -26,14 +24,6 @@
 (def windows? (-> (System/getProperty "os.name")
                 (str/lower-case)
                 (str/includes? "win")))
-
-;;;; clj-http-lite
-
-(test-namespaces 'clj-http.lite.client-test)
-
-;;;; babashka.curl
-; skip tests on Windows because of the :compressed thing
-(when-not windows? (test-namespaces 'babashka.curl-test))
 
 ;;;; cprop
 
@@ -86,10 +76,6 @@
 (when (test-namespace? 'doric.test.core)
   (test-doric-cyclic-dep-problem))
 
-;;;; httpkit client
-
-(test-namespaces 'httpkit.client-test)
-
 ;;;; babashka.process
 (when-not windows?
   ;; test built-in babashka.process
@@ -99,55 +85,10 @@
   (require '[babashka.process] :reload)
   (test-namespaces 'babashka.process-test))
 
-(test-namespaces 'core-match.core-tests)
-
-(test-namespaces 'hiccup.core-test)
-(test-namespaces 'hiccup2.core-test)
-
-(test-namespaces 'test-check.smoke-test)
-
-(test-namespaces 'rewrite-clj.parser-test
-                 'rewrite-clj.node-test
-                 'rewrite-clj.zip-test
-                 'rewrite-clj.paredit-test
-                 'rewrite-clj.zip.subedit-test
-                 'rewrite-clj.node.coercer-test)
-
-(test-namespaces 'helins.binf.test)
-
-(test-namespaces 'selmer.core-test)
-(test-namespaces 'selmer.our-test)
-
-(test-namespaces 'omniconf.core-test)
-
-(test-namespaces 'crispin.core-test)
-
-(test-namespaces 'multigrep.core-test)
-
-(test-namespaces
- ;; TODO: env tests don't work because envoy lib isn't compatible with bb
- #_'vault.env-test
- 'vault.lease-test
- 'vault.client.http-test
- ;; TODO:
- ;; failing tests in the following namespaces:
- #_'vault.client.mock-test
- #_'vault.secrets.kvv1-test
- #_'vault.secrets.kvv2-test)
-
-;; we don't really run any tests for java-http-clj yet, but we require the
-;; namespaces to see if they at least load correctly
-(test-namespaces 'java-http-clj.smoke-test)
-
-(test-namespaces 'clj-commons.digest-test)
-
-(test-namespaces 'hato.client-test)
-
-(test-namespaces 'orchestra.core-test 'orchestra.expound-test 'orchestra.many-fns 'orchestra.reload-test)
-
 (let [lib-tests (edn/read-string (slurp (io/resource "bb-tested-libs.edn")))]
-  (doseq [{tns :test-namespaces} (vals lib-tests)]
-    (apply test-namespaces tns)))
+  (doseq [{tns :test-namespaces skip-windows :skip-windows} (vals lib-tests)]
+    (when-not (and skip-windows windows?)
+      (apply test-namespaces tns))))
 
 ;;;; final exit code
 
