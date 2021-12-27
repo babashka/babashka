@@ -320,3 +320,17 @@
          (format {:select [:*]
                   :from [[:foo :f]]
                   :cross-join [[:bar :b]]}))))
+
+(deftest issue-299-test
+  (let [name    "test field"
+        ;; this was being rendered inline into the SQL
+        ;; creating an injection vulnerability (v1 only)
+        ;; the context for seq->sql here seems to be the
+        ;; 'regular' one so it tries to treat this as an
+        ;; alias: 'value alias' -- the fix was to make it
+        ;; a function context so it becomes (TRUE, ?):
+        enabled [true, "); SELECT case when (SELECT current_setting('is_superuser'))='off' then pg_sleep(0.2) end; -- "]]
+    (is (= ["INSERT INTO table (name, enabled) VALUES (?, (TRUE, ?))" name (second enabled)]
+           (format {:insert-into :table
+                    :values [{:name name
+                              :enabled enabled}]})))))

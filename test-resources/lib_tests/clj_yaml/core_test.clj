@@ -1,8 +1,15 @@
 (ns clj-yaml.core-test
   (:require [clojure.test :refer (deftest testing is)]
             [clojure.string :as string]
-            [clj-yaml.core :refer [parse-string unmark generate-string]])
-  (:import [java.util Date]))
+            [clojure.java.io :as io]
+            [clj-yaml.core :refer [parse-string unmark generate-string
+                                   parse-stream generate-stream]])
+  (:import [java.util Date]
+           (java.io ByteArrayOutputStream OutputStreamWriter ByteArrayInputStream)
+           java.nio.charset.StandardCharsets
+           (org.yaml.snakeyaml.error YAMLException)
+           ;; BB-TEST-PATCH: bb doesn't have these classes
+           #_(org.yaml.snakeyaml.constructor DuplicateKeyException)))
 
 (def nested-hash-yaml
   "root:\n  childa: a\n  childb: \n    grandchild: \n      greatgrandchild: bar\n")
@@ -27,7 +34,7 @@ items:
 ")
 
 (def inline-list-yaml
-"--- # Shopping list
+  "--- # Shopping list
 [milk, pumpkin pie, eggs, juice]
 ")
 
@@ -160,8 +167,8 @@ the-bin: !!binary 0101")
       ;; This test ensures that generate-string uses the older behavior by default, for the sake
       ;; of stability, i.e. backwards compatibility.
       (is
-        (= "{description: Big-picture diagram showing how our top-level systems and stakeholders interact}\n"
-           (generate-string data))))))
+       (= "{description: Big-picture diagram showing how our top-level systems and stakeholders interact}\n"
+          (generate-string data))))))
 
 (deftest dump-opts
   (let [data [{:age 33 :name "jon"} {:age 44 :name "boo"}]]
@@ -170,9 +177,7 @@ the-bin: !!binary 0101")
     (is (= "[{age: 33, name: jon}, {age: 44, name: boo}]\n"
            (generate-string data :dumper-options {:flow-style :flow})))))
 
-;; TODO: this test is failing in GraalVM
-;; Could be related to https://github.com/oracle/graal/issues/2234
-#_(deftest parse-time
+(deftest parse-time
   (testing "clj-time parses timestamps with more than millisecond precision correctly."
     (let [timestamp "2001-11-23 15:02:31.123456 -04:00"
           expected 1006542151123]
@@ -182,7 +187,7 @@ the-bin: !!binary 0101")
   (let [parsed (parse-string hashes-lists-yaml)
         [first second] (:items parsed)]
     (is (= (keys first) '(:part_no :descrip :price :quantity)))
-    (is (= (keys second)'(:part_no :descrip :price :quantity :owners)))))
+    (is (= (keys second) '(:part_no :descrip :price :quantity :owners)))))
 
 
 (deftest nulls-are-fine
@@ -201,3 +206,90 @@ the-bin: !!binary 0101")
   (testing "emoji in comments are OK too"
     (let [yaml "# 💣 emoji in a comment\n42"]
       (is (= 42 (parse-string yaml))))))
+
+(def too-many-aliases
+  (->> (range 51)
+       (map #(str "b" % ": *a"))
+       (cons "a: &a [\"a\",\"a\"]")
+       (string/join "\n")))
+
+(deftest max-aliases-for-collections-works
+  (is (thrown-with-msg? YAMLException #"Number of aliases" (parse-string too-many-aliases)))
+  (is (parse-string too-many-aliases :max-aliases-for-collections 51)))
+
+(def recursive-yaml "
+---
+&A
+- *A: *A
+")
+
+(deftest allow-recursive-works
+  (is (thrown-with-msg? YAMLException #"Recursive" (parse-string recursive-yaml)))
+  (is (parse-string recursive-yaml :allow-recursive-keys true)))
+
+(def duplicate-keys-yaml "
+a: 1
+a: 1
+")
+
+#_(deftest duplicate-keys-works
+  (is (parse-string duplicate-keys-yaml))
+  (is (thrown-with-msg? DuplicateKeyException #"found duplicate key" (parse-string duplicate-keys-yaml :allow-duplicate-keys false))))
+
+(def namespaced-keys-yaml "
+foo/bar: 42
+")
+
+(deftest namespaced-keys-works
+  (testing "namespaced keys in yaml can round trip through parse and generate"
+    (is (= {:foo/bar 42} (-> namespaced-keys-yaml
+                             parse-string
+                             generate-string
+                             parse-string)))))
+
+(defn to-bytes
+  "Converts a string to a byte array."
+  [data]
+  (.getBytes ^String data StandardCharsets/UTF_8))
+
+(defn roundtrip
+  "Testing roundtrip of string and stream parser, and checking their equivalence."
+  [data-as-string]
+  (let [data (parse-string data-as-string)
+        data-stream (parse-stream (io/reader (ByteArrayInputStream. (to-bytes data-as-string))))
+        output-stream (ByteArrayOutputStream.)
+        writer (OutputStreamWriter. output-stream)
+        _ (generate-stream writer data)
+        reader (ByteArrayInputStream. (.toByteArray output-stream))]
+    (= data ;; string -> edn
+       (parse-string (generate-string data)) ;; edn -> string -> edn
+       (parse-stream (io/reader reader)) ;; edn -> stream -> edn
+       ;; stream -> edn
+       data-stream)))
+
+(deftest roundtrip-test
+  (testing "Roundtrip test"
+    (is (roundtrip duplicate-keys-yaml))
+    (is (roundtrip hashes-of-lists-yaml))
+    (is (roundtrip inline-hash-yaml))
+    (is (roundtrip inline-list-yaml))
+    (is (roundtrip list-of-hashes-yaml))
+    (is (roundtrip list-yaml))
+    (is (roundtrip nested-hash-yaml))))
+
+(def indented-yaml "todo:
+  -  name: Fix issue
+     responsible:
+          name: Rita
+")
+
+;; BB-TEST-PATCH - bb generates different indents
+#_(deftest indentation-test
+  (testing "Can use indicator-indent and indent to achieve desired indentation"
+    (is (not= indented-yaml (generate-string (parse-string indented-yaml)
+                                             :dumper-options {:flow-style :block})))
+    (is (= indented-yaml
+           (generate-string (parse-string indented-yaml)
+                            :dumper-options {:indent 5
+                                             :indicator-indent 2
+                                             :flow-style :block})))))

@@ -31,22 +31,6 @@
 
 (test-namespaces 'clj-http.lite.client-test)
 
-;; ;;;; clojure.spec
-
-(test-namespaces 'clojure.test-clojure.spec
-                 'clojure.test-clojure.instr
-                 'clojure.test-clojure.multi-spec)
-
-;;;; regal
-
-(test-namespaces 'babashka.lambdaisland.regal-test)
-
-;;;; medley
-
-(require '[medley.core :refer [index-by random-uuid]])
-(prn (index-by :id [{:id 1} {:id 2}]))
-(prn (random-uuid))
-
 ;;;; babashka.curl
 ; skip tests on Windows because of the :compressed thing
 (when-not windows? (test-namespaces 'babashka.curl-test))
@@ -58,10 +42,6 @@
 (require '[cprop.core])
 (require '[cprop.source :refer [from-env]])
 (println (:cprop-env (from-env)))
-
-;;;; clj-yaml
-
-(test-namespaces 'clj-yaml.core-test)
 
 ;;;; clojure.data.zip
 
@@ -81,14 +61,6 @@
                                         ;(prn :xml xml)
   (prn :alice-is-a (xml1-> xml :character [(attr= :name "alice")] (attr :type)))
   (prn :animal-is-called (xml1-> xml :character [(attr= :type "animal")] (attr :name))))
-
-;;;; clojure.data.csv
-
-(test-namespaces 'clojure.data.csv-test)
-
-;;;; clojure.math.combinatorics
-
-(test-namespaces 'clojure.math.test-combinatorics)
 
 ;;;; deps.clj
 
@@ -112,12 +84,7 @@
   ((resolve 'doric.core/table) [:a :b] [{:a 1 :b 2}]))
 
 (when (test-namespace? 'doric.test.core)
-  (test-doric-cyclic-dep-problem)
-  (test-namespaces 'doric.test.core))
-
-;;;; honeysql
-
-(test-namespaces 'honeysql.core-test 'honeysql.format-test)
+  (test-doric-cyclic-dep-problem))
 
 ;;;; httpkit client
 
@@ -150,10 +117,6 @@
 
 (test-namespaces 'selmer.core-test)
 (test-namespaces 'selmer.our-test)
-
-(test-namespaces 'honey.sql-test
-                 'honey.sql.helpers-test
-                 'honey.sql.postgres-test)
 
 (test-namespaces 'omniconf.core-test)
 

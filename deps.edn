@@ -55,10 +55,7 @@
             :extra-deps {org.clj-commons/clj-http-lite {:mvn/version "0.4.392"}
                          org.babashka/spec.alpha {:git/url "https://github.com/babashka/spec.alpha"
                                                   :sha "0dec1f88cbde74a0470b454396f09a03adb4ae39"}
-                         lambdaisland/regal {:git/url "https://github.com/lambdaisland/regal"
-                                             :sha "f902d2c43121f9e1c48603d6eb99f5900eb6a9f6"}
-                         weavejester/medley {:git/url "https://github.com/weavejester/medley"
-                                             :sha "a4e5fb5383f5c0d83cb2d005181a35b76d8a136d"}
+                         lambdaisland/regal {:mvn/version "0.0.143"}
                          cprop/cprop {:mvn/version "0.1.16"}
                          comb/comb {:mvn/version "0.1.1"}
                          mvxcvi/arrangement {:mvn/version "2.0.0"}
@@ -72,8 +69,8 @@
                          camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.2"}
                          aero/aero {:mvn/version "1.1.6"}
                          org.clojure/data.generators {:mvn/version "1.0.0"}
-                         honeysql/honeysql {:mvn/version "1.0.444"}
-                         com.github.seancorfield/honeysql {:mvn/version "2.0.0-rc2"}
+                         honeysql/honeysql {:mvn/version "1.0.461"}
+                         com.github.seancorfield/honeysql {:mvn/version "2.2.840"}
                          minimallist/minimallist {:mvn/version "0.0.10"}
                          circleci/bond {:mvn/version "0.6.0"}
                          version-clj/version-clj {:mvn/version "2.0.2"}
@@ -104,9 +101,10 @@
                          listora/again {:mvn/version "1.0.0"}
                          org.clojure/tools.gitlibs {:mvn/version "2.4.172"}
                          environ/environ {:mvn/version "1.2.0"}
-                         table/table {:git/url "https://github.com/cldwalker/table", :sha "55aef3d5fced682942af811bf5d642f79fb87688"}
+                         table/table {:git/url "https://github.com/cldwalker/table", :sha "f6293c5f3dac1dd6f525a80fc80930f8ccdf16b7"}
                          markdown-clj/markdown-clj {:mvn/version "1.10.8"}
-                         org.clojure/tools.namespace {:git/url "https://github.com/babashka/tools.namespace", :sha "a13b037215e21a2e71aa34b27e1dd52c801a2a7b"}}
+                         org.clojure/tools.namespace {:git/url "https://github.com/babashka/tools.namespace", :sha "a13b037215e21a2e71aa34b27e1dd52c801a2a7b"}
+                         medley/medley {:mvn/version "1.3.0"}}
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil}}
            :clj-nvd

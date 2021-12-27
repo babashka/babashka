@@ -3,8 +3,7 @@
 (ns honey.sql-test
   (:refer-clojure :exclude [format])
   (:require [clojure.string :as str]
-            #?(:clj [clojure.test :refer [deftest is testing]]
-               :cljs [cljs.test :refer-macros [deftest is testing]])
+            [clojure.test :refer [deftest is testing]]
             [honey.sql :as sut :refer [format]]
             [honey.sql.helpers :as h])
   #?(:clj (:import (clojure.lang ExceptionInfo))))
@@ -15,17 +14,39 @@
                      {:dialect :mysql}))))
 
 (deftest expr-tests
+  ;; special-cased = nil:
   (is (= ["id IS NULL"]
          (sut/format-expr [:= :id nil])))
   (is (= ["id IS NULL"]
          (sut/format-expr [:is :id nil])))
+  (is (= ["id = TRUE"]
+         (sut/format-expr [:= :id true])))
+  (is (= ["id IS TRUE"]
+         (sut/format-expr [:is :id true])))
+  (is (= ["id <> TRUE"]
+         (sut/format-expr [:<> :id true])))
+  (is (= ["id IS NOT TRUE"]
+         (sut/format-expr [:is-not :id true])))
+  (is (= ["id = FALSE"]
+         (sut/format-expr [:= :id false])))
+  (is (= ["id IS FALSE"]
+         (sut/format-expr [:is :id false])))
+  (is (= ["id <> FALSE"]
+         (sut/format-expr [:<> :id false])))
+  (is (= ["id IS NOT FALSE"]
+         (sut/format-expr [:is-not :id false])))
+  ;; special-cased <> nil:
   (is (= ["id IS NOT NULL"]
          (sut/format-expr [:<> :id nil])))
+  ;; legacy alias:
   (is (= ["id IS NOT NULL"]
          (sut/format-expr [:!= :id nil])))
+  ;; legacy alias:
+  (is (= ["id IS NOT NULL"]
+         (sut/format-expr [:not= :id nil])))
   (is (= ["id IS NOT NULL"]
          (sut/format-expr [:is-not :id nil])))
-  ;; degenerate cases:
+  ;; degenerate (special) cases:
   (is (= ["NULL IS NULL"]
          (sut/format-expr [:= nil nil])))
   (is (= ["NULL IS NOT NULL"]
@@ -185,30 +206,30 @@
   ;;   ORDER BY foo ASC
   (is (= (format {:union [{:select [:foo] :from [:bar1]}
                           {:select [:foo] :from [:bar2]}]})
-         ["(SELECT foo FROM bar1) UNION (SELECT foo FROM bar2)"]))
+         ["SELECT foo FROM bar1 UNION SELECT foo FROM bar2"]))
 
   (testing "union complex values"
     (is (= (format {:union [{:select [:foo] :from [:bar1]}
                             {:select [:foo] :from [:bar2]}]
                     :with [[[:bar {:columns [:spam :eggs]}]
                             {:values [[1 2] [3 4] [5 6]]}]]})
-           ["WITH bar (spam, eggs) AS (VALUES (?, ?), (?, ?), (?, ?)) (SELECT foo FROM bar1) UNION (SELECT foo FROM bar2)"
+           ["WITH bar (spam, eggs) AS (VALUES (?, ?), (?, ?), (?, ?)) SELECT foo FROM bar1 UNION SELECT foo FROM bar2"
             1 2 3 4 5 6]))))
 
 (deftest union-all-test
   (is (= (format {:union-all [{:select [:foo] :from [:bar1]}
                               {:select [:foo] :from [:bar2]}]})
-         ["(SELECT foo FROM bar1) UNION ALL (SELECT foo FROM bar2)"])))
+         ["SELECT foo FROM bar1 UNION ALL SELECT foo FROM bar2"])))
 
 (deftest intersect-test
   (is (= (format {:intersect [{:select [:foo] :from [:bar1]}
                               {:select [:foo] :from [:bar2]}]})
-         ["(SELECT foo FROM bar1) INTERSECT (SELECT foo FROM bar2)"])))
+         ["SELECT foo FROM bar1 INTERSECT SELECT foo FROM bar2"])))
 
 (deftest except-test
   (is (= (format {:except [{:select [:foo] :from [:bar1]}
                            {:select [:foo] :from [:bar2]}]})
-         ["(SELECT foo FROM bar1) EXCEPT (SELECT foo FROM bar2)"])))
+         ["SELECT foo FROM bar1 EXCEPT SELECT foo FROM bar2"])))
 
 (deftest inner-parts-test
   (testing "The correct way to apply ORDER BY to various parts of a UNION"
@@ -222,7 +243,7 @@
                         :order-by [[:amount :desc]]
                         :limit 5}]}]
               :order-by [[:amount :asc]]})
-           ["(SELECT amount, id, created_on FROM transactions) UNION (SELECT amount, id, created_on FROM (SELECT amount, id, created_on FROM other_transactions ORDER BY amount DESC LIMIT ?)) ORDER BY amount ASC" 5]))))
+           ["SELECT amount, id, created_on FROM transactions UNION SELECT amount, id, created_on FROM (SELECT amount, id, created_on FROM other_transactions ORDER BY amount DESC LIMIT ?) ORDER BY amount ASC" 5]))))
 
 (deftest compare-expressions-test
   (testing "Sequences should be fns when in value/comparison spots"
@@ -254,14 +275,14 @@
                           {:select [:foo] :from [:bar2]}]
                   :with [[[:bar {:columns [:spam :eggs]}]
                           {:values [[1 2] [3 4] [5 6]]}]]})
-         ["WITH bar (spam, eggs) AS (VALUES (?, ?), (?, ?), (?, ?)) (SELECT foo FROM bar1) UNION (SELECT foo FROM bar2)" 1 2 3 4 5 6])))
+         ["WITH bar (spam, eggs) AS (VALUES (?, ?), (?, ?), (?, ?)) SELECT foo FROM bar1 UNION SELECT foo FROM bar2" 1 2 3 4 5 6])))
 
 (deftest union-all-with-cte
   (is (= (format {:union-all [{:select [:foo] :from [:bar1]}
                               {:select [:foo] :from [:bar2]}]
                   :with [[[:bar {:columns [:spam :eggs]}]
                           {:values [[1 2] [3 4] [5 6]]}]]})
-         ["WITH bar (spam, eggs) AS (VALUES (?, ?), (?, ?), (?, ?)) (SELECT foo FROM bar1) UNION ALL (SELECT foo FROM bar2)" 1 2 3 4 5 6])))
+         ["WITH bar (spam, eggs) AS (VALUES (?, ?), (?, ?), (?, ?)) SELECT foo FROM bar1 UNION ALL SELECT foo FROM bar2" 1 2 3 4 5 6])))
 
 (deftest parameterizer-none
   (testing "array parameter"
@@ -277,7 +298,7 @@
                     :with [[[:bar {:columns [:spam :eggs]}]
                             {:values [[1 2] [3 4] [5 6]]}]]}
                    {:inline true})
-           ["WITH bar (spam, eggs) AS (VALUES (1, 2), (3, 4), (5, 6)) (SELECT foo FROM bar1) UNION (SELECT foo FROM bar2)"]))))
+           ["WITH bar (spam, eggs) AS (VALUES (1, 2), (3, 4), (5, 6)) SELECT foo FROM bar1 UNION SELECT foo FROM bar2"]))))
 
 (deftest inline-was-parameterizer-none
   (testing "array parameter"
@@ -294,7 +315,7 @@
                     :with [[[:bar {:columns [:spam :eggs]}]
                             {:values (mapv #(mapv vector (repeat :inline) %)
                                            [[1 2] [3 4] [5 6]])}]]})
-           ["WITH bar (spam, eggs) AS (VALUES (1, 2), (3, 4), (5, 6)) (SELECT foo FROM bar1) UNION (SELECT foo FROM bar2)"]))))
+           ["WITH bar (spam, eggs) AS (VALUES (1, 2), (3, 4), (5, 6)) SELECT foo FROM bar1 UNION SELECT foo FROM bar2"]))))
 
 (deftest similar-regex-tests
   (testing "basic similar to"
@@ -379,11 +400,21 @@
   (is (=
        ["UPDATE `foo` INNER JOIN `bar` ON `bar`.`id` = `foo`.`bar_id` SET `a` = ? WHERE `bar`.`b` = ?" 1 42]
        (->
-         {:update :foo
-          :join   [:bar [:= :bar.id :foo.bar_id]]
-          :set    {:a 1}
-          :where  [:= :bar.b 42]}
-         (format {:dialect :mysql})))))
+        {:update :foo
+         :join   [:bar [:= :bar.id :foo.bar_id]]
+         :set    {:a 1}
+         :where  [:= :bar.b 42]}
+        (format {:dialect :mysql}))))
+  ;; issue 344
+  (is (=
+       ["UPDATE `foo` INNER JOIN `bar` ON `bar`.`id` = `foo`.`bar_id` SET `f`.`a` = ? WHERE `bar`.`b` = ?" 1 42]
+       (->
+        {:update :foo
+         :join   [:bar [:= :bar.id :foo.bar_id]]
+         ;; do not drop ns in set clause for MySQL:
+         :set    {:f/a 1}
+         :where  [:= :bar.b 42]}
+        (format {:dialect :mysql})))))
 
 (deftest format-arity-test
   (testing "format can be called with no options"
@@ -401,7 +432,8 @@
            (-> {:delete-from :foo
                 :where [:= :foo.id 42]}
                (format :dialect :mysql :pretty true)))))
-  (when (str/starts-with? #?(:bb "1.11"
+  ;; BB-TEST-PATCH: bb doesn't have clojure-version
+  (when (str/starts-with? #?(:bb  "1.11"
                              :clj (clojure-version)
                              :cljs *clojurescript-version*) "1.11")
     (testing "format can be called with mixed arguments"
@@ -439,7 +471,7 @@
              (format {:dialect :mysql})))))
 
 (deftest inlined-values-are-stringified-correctly
-  (is (= ["SELECT 'foo', 'It''s a quote!', BAR, NULL"]
+  (is (= ["SELECT 'foo', 'It''s a quote!', bar, NULL"]
          (format {:select [[[:inline "foo"]]
                            [[:inline "It's a quote!"]]
                            [[:inline :bar]]
@@ -784,3 +816,31 @@ ORDER BY id = ? DESC
                     :from :bar
                     :join [[{:select :a :from :b :where [:= :id 123]} :x] :y]
                     :where [:= :id 456]})))))
+
+(deftest fetch-offset-issue-338
+  (testing "default offset (with and without limit)"
+    (is (= ["SELECT foo FROM bar LIMIT ? OFFSET ?" 10 20]
+           (format {:select :foo :from :bar
+                    :limit 10 :offset 20})))
+    (is (= ["SELECT foo FROM bar OFFSET ?" 20]
+           (format {:select :foo :from :bar
+                    :offset 20}))))
+  (testing "default offset / fetch"
+    (is (= ["SELECT foo FROM bar OFFSET ? ROWS FETCH NEXT ? ROWS ONLY" 20 10]
+           (format {:select :foo :from :bar
+                    :fetch 10 :offset 20})))
+    (is (= ["SELECT foo FROM bar OFFSET ? ROW FETCH NEXT ? ROW ONLY" 1 1]
+           (format {:select :foo :from :bar
+                    :fetch 1 :offset 1})))
+    (is (= ["SELECT foo FROM bar FETCH FIRST ? ROWS ONLY" 2]
+           (format {:select :foo :from :bar
+                    :fetch 2}))))
+  (testing "SQL Server offset"
+    (is (= ["SELECT [foo] FROM [bar] OFFSET ? ROWS FETCH NEXT ? ROWS ONLY" 20 10]
+           (format {:select :foo :from :bar
+                    :fetch 10 :offset 20}
+                   {:dialect :sqlserver})))
+    (is (= ["SELECT [foo] FROM [bar] OFFSET ? ROWS" 20]
+           (format {:select :foo :from :bar
+                    :offset 20}
+                   {:dialect :sqlserver})))))
