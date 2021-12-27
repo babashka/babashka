@@ -9,6 +9,9 @@ For a list of breaking changes, check [here](#breaking-changes).
 - Check `shasum` / `sha256sum` in `PATH` on install script ([@thiagokokada](https://github.com/thiagokokada))
 - Build arm64 docker image in CI [#1099](https://github.com/babashka/babashka/issues/1099) ([@cap10morgan](https://github.com/cap10morgan))
 - Upgrade to `edamame` v0.0.19
+- Load tasks and deps from other bb.edn file using `--config` and `--deps-root` options [#1110](https://github.com/babashka/babashka/issues/1110)
+- Uberscript improvements [#584](https://github.com/babashka/babashka/issues/584), [#1037](https://github.com/babashka/babashka/issues/1037)
+  Include native elements in printed stacktrace [#1105](https://github.com/babashka/babashka/issues/1105)
 
 ## 0.7.0 (2021-12-10)
 
