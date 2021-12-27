@@ -95,6 +95,7 @@
           (is (thrown-with-msg? clojure.lang.ExceptionInfo #"did not conform to spec" (no-kwargs-fn 1 :not-num)))
           (is (thrown-with-msg? clojure.lang.ExceptionInfo #"did not conform to spec" (no-kwargs-fn 1 2 :not-num 3)))
 
+          ;; BB-TEST-PATCH: bb gets sci internals instead
           #_(testing "that the ex-info data looks correct"
             (try (fail-no-kwargs 1 :not-num)
                  (catch Exception ei
@@ -151,14 +152,15 @@
           (is (thrown-with-msg? clojure.lang.ExceptionInfo #"did not conform to spec" (kwargs-fn 1 :not-num)))
           (is (thrown-with-msg? clojure.lang.ExceptionInfo #"did not conform to spec" (kwargs-fn 1 2 :a 1 {:b :not-num})))
 
+          ;; BB-TEST-PATCH: bb gets sci internals instead
           #_(testing "that the ex-info data looks correct"
-            (try (fail-kwargs 1 :not-num)
-                 (catch Exception ei
-                   (is (= 'clojure.test-clojure.instr/fail-kwargs (-> ei ex-data :clojure.spec.test.alpha/caller :var-scope)))))
+              (try (fail-kwargs 1 :not-num)
+                (catch Exception ei
+                  (is (= 'clojure.test-clojure.instr/fail-kwargs (-> ei ex-data :clojure.spec.test.alpha/caller :var-scope)))))
 
-            (try (fail-kwargs 1 2 :a 1 {:b :not-num})
-                 (catch Exception ei
-                   (is (= 'clojure.test-clojure.instr/fail-kwargs (-> ei ex-data :clojure.spec.test.alpha/caller :var-scope)))))))
+              (try (fail-kwargs 1 2 :a 1 {:b :not-num})
+                (catch Exception ei
+                  (is (= 'clojure.test-clojure.instr/fail-kwargs (-> ei ex-data :clojure.spec.test.alpha/caller :var-scope)))))))
 
         (testing "that the uninstrumented kwargs function operates as the raw function"
           (stest/unstrument `kwargs-fn)

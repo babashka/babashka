@@ -2,8 +2,7 @@
   (:refer-clojure :exclude [format name when])
   (:use [doric.core]
         [clojure.test]
-        [doric.org :only [th td render]])
-  (:require [clojure.string :as str]))
+        [doric.org :only [th td render]]))
 
 (deftest test-title-case
   (is (= "Foo" (title-case "foo")))
@@ -73,10 +72,10 @@
 ;; TODO (deftest test-body)
 
 (deftest test-render
-  (let [rendered (set (render [["1" "2"]["3" "4"]]))]
-    (is (contains? rendered "| 1 | 2 |"))
-    (is (contains? rendered "| 3 | 4 |"))
-    (is (contains? rendered "|---+---|"))))
+  (let [rendered (render [["1" "2"]["3" "4"]])]
+    (is (.contains rendered "| 1 | 2 |"))
+    (is (.contains rendered "| 3 | 4 |"))
+    (is (.contains rendered "|---+---|"))))
 
 ;; TODO embiggen these tests
 (deftest test-table

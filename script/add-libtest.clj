@@ -106,7 +106,7 @@
 (defn- fetch-artifact
   [artifact]
   (let [url (str "https://clojars.org/api/artifacts/" artifact)
-        _ (println (str "GET " url "..."))
+        _ (println "GET" url "...")
         resp @(http/get url {:headers {"Accept" "application/edn"}})]
     (if (= 200 (:status resp))
       (-> resp :body slurp edn/read-string)

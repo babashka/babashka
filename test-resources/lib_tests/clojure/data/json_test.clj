@@ -414,6 +414,7 @@
     (is (= x (json/read-str (with-out-str (json/pprint x)))))))
 
 (deftest pretty-print-nonescaped-unicode
+  ;; BB-TEST-PATCH: Windows compatability
   (is (= (str "\"\u1234\u4567\"" (System/lineSeparator))
          (with-out-str
            (json/pprint "\u1234\u4567" :escape-unicode false)))))

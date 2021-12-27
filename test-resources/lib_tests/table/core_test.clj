@@ -310,7 +310,7 @@
       ")
     (table-str  [[1 2] [:c :d]  [:a :b]] :sort true))))
 
-;; BB-TEST-PATCH: Intermittent failing test
+;; TODO: Intermittent failing test
 #_(deftest test-table-with-sort-option-as-field-name
   (is (=
     (unindent

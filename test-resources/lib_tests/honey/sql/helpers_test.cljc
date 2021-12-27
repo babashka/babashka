@@ -2,8 +2,7 @@
 
 (ns honey.sql.helpers-test
   (:refer-clojure :exclude [filter for group-by partition-by set update])
-  (:require #?(:clj [clojure.test :refer [deftest is testing]]
-               :cljs [cljs.test :refer-macros [deftest is testing]])
+  (:require [clojure.test :refer [deftest is testing]]
             [honey.sql :as sql]
             [honey.sql.helpers :as h
              :refer [add-column add-index alter-table columns create-table create-table-as create-view
