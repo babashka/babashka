@@ -25,46 +25,13 @@
                 (str/lower-case)
                 (str/includes? "win")))
 
-;;;; cprop
+;; Standard test-runner for libtests
+(let [lib-tests (edn/read-string (slurp (io/resource "bb-tested-libs.edn")))]
+  (doseq [{tns :test-namespaces skip-windows :skip-windows} (vals lib-tests)]
+    (when-not (and skip-windows windows?)
+      (apply test-namespaces tns))))
 
-;; TODO: port to test-namespaces
-
-(require '[cprop.core])
-(require '[cprop.source :refer [from-env]])
-(println (:cprop-env (from-env)))
-
-;;;; clojure.data.zip
-
-;; TODO: port to test-namespaces
-
-(require '[clojure.data.xml :as xml])
-(require '[clojure.zip :as zip])
-(require '[clojure.data.zip.xml :refer [attr attr= xml1->]])
-
-(def data (str "<root>"
-               "  <character type=\"person\" name=\"alice\" />"
-               "  <character type=\"animal\" name=\"march hare\" />"
-               "</root>"))
-
-;; TODO: convert to test
-(let [xml   (zip/xml-zip (xml/parse (java.io.StringReader. data)))]
-                                        ;(prn :xml xml)
-  (prn :alice-is-a (xml1-> xml :character [(attr= :name "alice")] (attr :type)))
-  (prn :animal-is-called (xml1-> xml :character [(attr= :type "animal")] (attr :name))))
-
-;;;; deps.clj
-
-;; TODO: port to test-namespaces
-
-(require '[babashka.curl :as curl])
-(spit "deps_test.clj"
-      (:body (curl/get "https://raw.githubusercontent.com/borkdude/deps.clj/master/deps.clj"
-               (if windows? {:compressed false} {}))))
-
-(binding [*command-line-args* ["-Sdescribe"]]
-  (load-file "deps_test.clj"))
-
-(.delete (io/file "deps_test.clj"))
+;; Non-standard tests - These are tests with unusual setup around test-namespaces
 
 ;;;; doric
 
@@ -84,11 +51,6 @@
   ;; test babashka.process from source
   (require '[babashka.process] :reload)
   (test-namespaces 'babashka.process-test))
-
-(let [lib-tests (edn/read-string (slurp (io/resource "bb-tested-libs.edn")))]
-  (doseq [{tns :test-namespaces skip-windows :skip-windows} (vals lib-tests)]
-    (when-not (and skip-windows windows?)
-      (apply test-namespaces tns))))
 
 ;;;; final exit code
 

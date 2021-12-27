@@ -13,10 +13,12 @@
             [clojure.edn :as edn]))
 
 (deps/add-deps '{:deps {org.clojure/tools.gitlibs {:mvn/version "2.4.172"}
-                        borkdude/rewrite-edn {:mvn/version "0.1.0"}}})
+                        borkdude/rewrite-edn {:mvn/version "0.1.0"}
+                        org.clojure/data.csv {:mvn/version "1.0.0"}}})
 
 (require '[clojure.tools.gitlibs :as gl])
 (require '[borkdude.rewrite-edn :as r])
+(require '[clojure.data.csv :as csv])
 
 ;; CLI Utils
 ;; =========
@@ -153,6 +155,16 @@
        :lib-coordinate (-> deps-map vals first)
        :git-url (:git-url options)})))
 
+(defn- write-lib-to-csv
+  "Updates libraries.csv with latest bb-tested-libs.edn"
+  []
+  (let [libs (-> "test-resources/lib_tests/bb-tested-libs.edn" slurp edn/read-string)
+        rows (sort-by first
+                      (map (fn [[name {:keys [git-url]}]]
+                             [name git-url]) libs))]
+    (with-open [w (io/writer "doc/libraries.csv")]
+      (csv/write-csv w (into [["maven-name" "git-url"]] rows)))))
+
 (defn- add-libtest*
   [args options]
   (let [[artifact-or-deps-string] args
@@ -164,6 +176,7 @@
         dirs (when-not (:manually-added options) (copy-tests git-url lib-name options))
         namespaces (add-lib-to-tested-libs lib-name git-url dirs options)]
     (println "Added lib" lib-name "which tests the following namespaces:" namespaces)
+    (write-lib-to-csv)
     (when (:test options)
       (apply shell "script/lib_tests/run_all_libtests" namespaces))))
 
