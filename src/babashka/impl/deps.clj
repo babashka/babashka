@@ -60,18 +60,16 @@
   ([deps-map] (add-deps deps-map nil))
   ([deps-map {:keys [:aliases :env :extra-env :force]}]
    (when-let [paths (:paths deps-map)]
-     (let [paths (let [deps-root (:deps-root @bb-edn)
-                       deps-root (fs/absolutize deps-root)
-                       ;; cwd (fs/absolutize ".")
-                       ;; rel (fs/relativize cwd f)
-                       paths (mapv #(str (fs/file deps-root %)) paths)]
+     (let [paths (if-let [deps-root (:deps-root @bb-edn)]
+                   (let [deps-root (fs/absolutize deps-root)
+                         paths (mapv #(str (fs/file deps-root %)) paths)]
+                     paths)
                    paths)]
        (cp/add-classpath (str/join cp/path-sep paths))))
    (when-let [deps-map (not-empty (dissoc deps-map
                                           ;; paths are added manually above
+                                          ;; extra-paths are added as :paths in tasks
                                           :paths
-                                          ;; extra-paths are transformed to :deps in task handling
-                                          :extra-paths
                                           :tasks :raw :min-bb-version))]
      (binding [*print-namespace-maps* false]
        (let [deps-map (assoc-in deps-map [:aliases :org.babashka/defaults]

@@ -7,8 +7,7 @@
    [babashka.test-utils :as test-utils]
    [clojure.edn :as edn]
    [clojure.string :as str]
-   [clojure.test :as test :refer [deftest is testing]]
-   [sci.core :as sci]))
+   [clojure.test :as test :refer [deftest is testing]]))
 
 (defn bb [& args]
   (let [args (map str args)
