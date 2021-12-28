@@ -34,7 +34,7 @@
  aero/aero {:git-sha "743e9bc495425b4a4a7c780f5e4b09f6680b4e7a", :git-url "http://github.com/juxt/aero", :test-namespaces (aero.core-test)}
  org.clojure/data.generators {:git-sha "bf65f99aa9dcabed7de7c09b74d71db208cf61ee", :git-url "https://github.com/clojure/data.generators", :test-namespaces (clojure.data.generators-test)}
  camel-snake-kebab/camel-snake-kebab {:git-sha "d072c7fd242ab0becd4bb265622ded415f2a4b68", :git-url "https://github.com/clj-commons/camel-snake-kebab", :test-namespaces (camel-snake-kebab.internals.string-separator-test camel-snake-kebab.extras-test camel-snake-kebab.core-test)}
- ;; BB-TEST-PATCH: Removed cljs-test-opts.edn
+ ;; BB-TEST-PATCH: Deleted cljs-test-opts.edn
  henryw374/cljc.java-time {:git-sha "b9da12ea25e80a0e284a5bffd88ebcbf18fc3bf7", :git-url "https://github.com/henryw374/cljc.java-time", :test-namespaces (cljc.java-time-test)}
  org.babashka/spec.alpha {:git-sha "6c4aed643daaf55c6f898d4915275704db683aa2", :git-url "https://github.com/babashka/spec.alpha", :test-namespaces (clojure.test-clojure.instr clojure.test-clojure.spec)}
  ;; BB-TEST-PATCH: Don't have 4 tests namespaces because they depend on
@@ -66,8 +66,31 @@
  ;; TODO: failing tests in the following namespaces: vault.client.mock-test, vault.secrets.kvv1-test vault.secrets.kvv2-test
  amperity/vault-clj {:git-url "https://github.com/amperity/vault-clj", :test-namespaces [vault.lease-test vault.client.http-test], :manually-added true}
  orchestra/orchestra {:git-url "https://github.com/jeaye/orchestra", :test-namespaces (orchestra.make-fns orchestra.many-fns orchestra.expound-test orchestra.core-test orchestra.reload-test), :test-directories ("test/cljc" "test/clj"), :git-sha "81e5181f7b42e5e2763a2b37db17954f3be0314e"}
- ;; BB-TEST-PATCH: Manually removed tasks.clj
+ ;; BB-TEST-PATCH: Deleted tasks.clj
  org.clj-commons/clj-http-lite {:git-url "https://github.com/clj-commons/clj-http-lite", :test-namespaces (clj-http.lite.test-runner clj-http.lite.client-test), :test-directories ("bb"), :git-sha "6b53000df55ac05c4ff8e5047a5323fc08a52e8b"}
  cprop/cprop {:git-url "https://github.com/tolitius/cprop", :test-namespaces [cprop.smoke-test], :manually-added true}
  org.clojure/data.zip {:git-url "https://github.com/clojure/data.zip", :test-namespaces [clojure.data.zip-test], :manually-added true}
- borkdude/deps {:git-url "https://github.com/borkdude/deps.clj", :test-namespaces [borkdude.deps.smoke-test], :manually-added true}}
+ borkdude/deps {:git-url "https://github.com/borkdude/deps.clj", :test-namespaces [borkdude.deps.smoke-test], :manually-added true}
+ io.github.cognitect-labs/test-runner {:git-url "https://github.com/cognitect-labs/test-runner", :test-namespaces (cognitect.test-runner.samples-test cognitect.test-runner.sample-property-test cognitect.test-runner-test), :git-sha "cc75980b43011773162b485f46f939dc5fba91e4"}
+ borkdude/missing.test.assertions {:git-url "https://github.com/borkdude/missing.test.assertions", :test-namespaces (missing.test.assertions-test missing.test.old-methods), :git-sha "603cb01bee72fb17addacc53c34c85612684ad70"}
+ ;; No tests to run
+ io.github.technomancy/limit-break {:git-url "https://github.com/technomancy/limit-break", :test-namespaces [], :manually-added true}
+ dev.nubank/docopt {:git-url "https://github.com/nubank/docopt.clj", :test-namespaces (docopt.core-test), :git-sha "2794195a7288002e8d8a44f7bc37180c9cca8971"}
+ ;; BB-TEST-PATCH: Deleted unused resources/
+ testdoc/testdoc {:git-url "https://github.com/liquidz/testdoc", :test-namespaces (testdoc.style.repl-test testdoc.style.code-first-test testdoc.core-test), :git-sha "6b995ef25f3cc6450a1ce30f72baed371476f6eb"}
+ org.clojars.lispyclouds/contajners {:git-url "https://github.com/lispyclouds/contajners", :test-namespaces (contajners.core-test contajners.impl-test), :git-sha "d163637ff36d79995516d6705da1e9afc7b44764"}
+ ;; Don't run tests b/c they depend on `psql`
+ douglass/clj-psql {:git-url "https://github.com/DarinDouglass/clj-psql", :test-namespaces [], :manually-added true}
+ ;; Don't run tests b/c they depend on `ffmpeg`
+ ffclj/ffclj {:git-url "https://github.com/luissantos/ffclj", :test-namespaces [], :manually-added true}
+ ;; BB-TEST-PATCH: Can't load deps for tests - expound.alpha-test, expound.spell-spec-test, expound.paths-test. Skip expound.printer-test as most tests fail
+ ;; BB-TEST-PATCH: Deleted cljs_test.cljs and *.txt
+ expound/expound {:git-url "https://github.com/bhb/expound", :test-namespaces (expound.specs-test expound.print-length-test expound.test-utils expound.spec-gen expound.problems-test), :git-sha "589a7f69323dc0423197b346c75808e48e771427"}
+ ;; BB-TEST-PATCH: Removed borkdude.rewrite-edn-test because it fails
+ borkdude/rewrite-edn {:git-url "https://github.com/borkdude/rewrite-edn", :test-namespaces [], :branch "63f09048a3ebbd48f86fa9626076e7e540cfb7ee", :git-sha "63f09048a3ebbd48f86fa9626076e7e540cfb7ee"}
+ clojure-term-colors/clojure-term-colors {:git-url "https://github.com/trhura/clojure-term-colors", :test-namespaces (clojure.term.colors-test), :git-sha "71620a5e121d51afe28c50c0aa14ceb4cbff7981"}
+ ;; BB-TEST-PATCH: Removed io.aviso.exception-test because it can't load ns with clojure.lang.Compiler.
+ ;; BB-TEST-PATCH: Deleted demo*.clj
+ io.aviso/pretty {:git-url "https://github.com/AvisoNovate/pretty", :test-namespaces (io.aviso.binary-test), :git-sha "155926f991f94addaf6f5c8621748924ab144988"}
+ progrock/progrock {:git-url "https://github.com/weavejester/progrock", :test-namespaces (progrock.core-test), :git-sha "9c277a3244c52bfde19c21add327d6e20b94fdf5"}
+ djblue/portal {:git-url "https://github.com/djblue/portal", :test-namespaces (portal.jvm-test portal.test-runner portal.runtime.cson-test portal.runtime.fs-test portal.e2e portal.bench), :git-sha "64e4624bcf3bee2dd47e3d8e47982c709738eb11"}}

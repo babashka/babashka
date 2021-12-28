@@ -1,6 +1,11 @@
 #!/usr/bin/env bb
-;; Adds a library to bb-tested-libs.edn to be tested given a library version and
-;; git repository. Optionally takes a --test to then test the added library.
+;; Adds a library to bb-tested-libs.edn and libraries.csv and optionally run its
+;; tests. There are two modes to this script - automatic (default) and manual.
+;; The script defaults to automatically copying tests as this normally works.
+;; There are several options to specify where the library is including
+;; --git-url, --dir and --test-directories. See --help for more. In manual mode,
+;; tests are manually added outside of the script and the script is run to add
+;; the library to library lists.
 
 (ns add-libtest
   (:require [babashka.deps :as deps]
@@ -74,6 +79,7 @@
                   (gl/procure git-url lib-name branch)
                   (or (gl/procure git-url lib-name "master")
                       (gl/procure git-url lib-name "main")))
+        _ (println "Git clone is at" lib-dir)
         lib-root-dir (if directory (fs/file lib-dir directory) lib-dir)
         test-dirs (if test-directories
                     (map #(when (fs/exists? (fs/file lib-root-dir %))
@@ -123,6 +129,9 @@
     namespaces))
 
 (defn- fetch-artifact
+  "Using the clojars api to get a library's git url doesn't always work. A
+  possibly more reliable data source could be the scm urls in this POM feed -
+  https://github.com/clojars/clojars-web/wiki/Data#useful-extracts-from-the-poms"
   [artifact]
   (let [url (str "https://clojars.org/api/artifacts/" artifact)
         _ (println "GET" url "...")
@@ -130,15 +139,6 @@
     (if (= 200 (:status resp))
       (-> resp :body slurp edn/read-string)
       (error (str "Response failed and returned " (pr-str resp))))))
-
-(defn- deps-to-lib-name-and-coordinate
-  [deps-string]
-  (let [deps-map (edn/read-string deps-string)
-        _ (when (not= 1 (count deps-map))
-            (error "Deps map must have one key"))
-        lib-name (ffirst deps-map)
-        lib-coordinate (deps-map lib-name)]
-    [lib-name lib-coordinate]))
 
 (defn- get-lib-map
   [deps-string options]
@@ -148,12 +148,13 @@
       {:lib-name (symbol deps-string)
        :lib-coordinate {:mvn/version (:latest_version artifact-edn)}
        :git-url (or (:git-url options) (:homepage artifact-edn))})
-    (let [deps-map (edn/read-string deps-string)]
-      (when (not= 1 (count deps-map))
-        (error "Deps map must have one key"))
+    (let [deps-map (edn/read-string deps-string)
+          _ (when (or (not (map? deps-map)) (not= 1 (count deps-map)))
+              (error "Deps map must have one key"))
+          lib-coordinate (-> deps-map vals first)]
       {:lib-name (ffirst deps-map)
-       :lib-coordinate (-> deps-map vals first)
-       :git-url (:git-url options)})))
+       :lib-coordinate lib-coordinate
+       :git-url (or (:git/url lib-coordinate) (:git-url options))})))
 
 (defn- write-lib-to-csv
   "Updates libraries.csv with latest bb-tested-libs.edn"

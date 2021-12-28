@@ -1,0 +1,57 @@
+# Should output the same things as docopt/docopt for language agnostic tests
+
+# Testing `--`
+
+r"""Usage: prog foo -- <extra-opts>...
+
+"""
+
+$ prog foo
+"user-error"
+
+$ prog foo -- --bar
+{"--":true, "<extra-opts>": ["--bar"], "foo":true}
+
+r"""Usage: prog foo [--] <extra-opts>...
+
+"""
+
+$ prog foo
+"user-error"
+# Wrong, should be
+# {"foo": true, "--": false, "<extra-opts>": []}
+
+$ prog foo -- --bar
+{"foo": true, "--": true, "<extra-opts>": ["--bar"]}
+
+r"""Complex command
+
+Usage:
+    prog [options] <param-x> <param-y> -- <extra>...
+    prog [options] <param-a> <param-b> <param-c> <param-d> -- <extra>...
+    prog [options] <param-x> <param-y>
+    prog [options] <param-a> <param-b> <param-c> <param-d>
+
+Options:
+    -f --foo     Foo
+    --bar <bar>  Bar
+
+"""
+
+$ prog x y --foo
+{"--":false,"--bar":null,"--foo":true,"<extra>":[],"<param-a>":null,"<param-b>":null,"<param-c>":null,"<param-d>":null,"<param-x>":"x","<param-y>":"y"}
+
+$ prog a b c d
+{"--":false,"--bar":null,"--foo":false,"<extra>":[],"<param-a>":"a","<param-b>":"b","<param-c>":"c","<param-d>":"d","<param-x>":null,"<param-y>":null}
+
+$ prog a b c d --foo --bar bar
+{"--":false,"--bar":"bar","--foo":true,"<extra>":[],"<param-a>":"a","<param-b>":"b","<param-c>":"c","<param-d>":"d","<param-x>":null,"<param-y>":null}
+
+$ prog x y --bar bar -- extra
+{"--bar": "bar", "--foo": false, "<param-x>": "x", "<param-y>": "y", "--": true, "<extra>": ["extra"], "<param-a>": null, "<param-b>": null, "<param-c>": null, "<param-d>": null}
+
+$ prog a b c d --foo --bar bar -- extra
+{"--foo": true, "--bar": "bar", "<param-x>": null, "<param-y>": null, "--": true, "<extra>": ["extra"], "<param-a>": "a", "<param-b>": "b", "<param-c>": "c", "<param-d>": "d"}
+
+$ prog x y -- e1 e2 e3 e4
+{"--bar": null, "--foo": false, "<param-x>": "x", "<param-y>": "y", "--": true, "<extra>": ["e1", "e2", "e3", "e4"], "<param-a>": null, "<param-b>": null, "<param-c>": null, "<param-d>": null}

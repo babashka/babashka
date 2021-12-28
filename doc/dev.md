@@ -85,15 +85,15 @@ Babashka runs tests of libraries that are compatible with it through
 and run them, use the script `add-libtest.clj` e.g. `script/add-libtest.clj
 '{listora/again {:mvn/version "1.0.0"}}' https://github.com/liwp/again --test`.
 
-If the library you want to add doesn't work with the script, you can manually do the following:
+If the library you want to add doesn't work automatically, you can manually do the following:
 
 * Add an entry for the library in `deps.edn` under the `:lib-tests` alias.
 * Create a directory for the library in `test-resources/lib_tests/` and copy its tests to there.
-* Add an entry in `run_all_libtests.clj` to run the added test namespaces.
+* Add a manual lib entry using `add-libtest.clj` e.g. `script/add-libtest.clj http-kit/http-kit -m '{:test-namespaces [httpkit.client-test]}'`.
 * Run the tests `script/lib_tests/run_all_libtests NS1 NS2`
 
-Note: If you have to modify a test to have it work with bb, add an inline
-comment with prefix "BB-TEST-PATCH:" explaining what you did.
+Note: If you have to modify any test file or configuration to have it work with
+bb, add an inline comment with prefix `BB-TEST-PATCH:` explaining what you did.
 
 ## Build
 
