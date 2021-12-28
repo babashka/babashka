@@ -78,7 +78,8 @@
  dev.nubank/docopt {:git-url "https://github.com/nubank/docopt.clj", :test-namespaces (docopt.core-test), :git-sha "2794195a7288002e8d8a44f7bc37180c9cca8971"}
  ;; BB-TEST-PATCH: Deleted unused resources/
  testdoc/testdoc {:git-url "https://github.com/liquidz/testdoc", :test-namespaces (testdoc.style.repl-test testdoc.style.code-first-test testdoc.core-test), :git-sha "6b995ef25f3cc6450a1ce30f72baed371476f6eb"}
- org.clojars.lispyclouds/contajners {:git-url "https://github.com/lispyclouds/contajners", :test-namespaces (contajners.core-test contajners.impl-test), :git-sha "d163637ff36d79995516d6705da1e9afc7b44764"}
+ ;; BB-TEST-PATCH: Remove contajners.core-test as it fails
+ org.clojars.lispyclouds/contajners {:git-url "https://github.com/lispyclouds/contajners", :test-namespaces (contajners.impl-test), :git-sha "d163637ff36d79995516d6705da1e9afc7b44764"}
  ;; Don't run tests b/c they depend on `psql`
  douglass/clj-psql {:git-url "https://github.com/DarinDouglass/clj-psql", :test-namespaces [], :manually-added true}
  ;; Don't run tests b/c they depend on `ffmpeg`
@@ -91,6 +92,8 @@
  clojure-term-colors/clojure-term-colors {:git-url "https://github.com/trhura/clojure-term-colors", :test-namespaces (clojure.term.colors-test), :git-sha "71620a5e121d51afe28c50c0aa14ceb4cbff7981"}
  ;; BB-TEST-PATCH: Removed io.aviso.exception-test because it can't load ns with clojure.lang.Compiler.
  ;; BB-TEST-PATCH: Deleted demo*.clj
- io.aviso/pretty {:git-url "https://github.com/AvisoNovate/pretty", :test-namespaces (io.aviso.binary-test), :git-sha "155926f991f94addaf6f5c8621748924ab144988"}
+ ;; BB-TEST-PATCH: Don't run on windows as most binary tests fail
+ io.aviso/pretty {:git-url "https://github.com/AvisoNovate/pretty", :test-namespaces (io.aviso.binary-test), :git-sha "155926f991f94addaf6f5c8621748924ab144988"  :skip-windows true}
  progrock/progrock {:git-url "https://github.com/weavejester/progrock", :test-namespaces (progrock.core-test), :git-sha "9c277a3244c52bfde19c21add327d6e20b94fdf5"}
- djblue/portal {:git-url "https://github.com/djblue/portal", :test-namespaces (portal.jvm-test portal.test-runner portal.runtime.cson-test portal.runtime.fs-test portal.e2e portal.bench), :git-sha "64e4624bcf3bee2dd47e3d8e47982c709738eb11"}}
+ ;; Don't run portal.jvm-test as it depends on headless chrome
+ djblue/portal {:git-url "https://github.com/djblue/portal", :test-namespaces (portal.test-runner portal.runtime.cson-test portal.runtime.fs-test portal.e2e portal.bench), :git-sha "64e4624bcf3bee2dd47e3d8e47982c709738eb11"}}

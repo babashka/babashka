@@ -1,5 +1,6 @@
 (ns progrock.core-test
   (:require [clojure.test :refer :all]
+            [clojure.string :as str]
             [progrock.core :as pr]))
 
 (deftest test-progress-bar
@@ -37,5 +38,6 @@
            "\r 0/50     0% [                                                  ]  ETA: --:--"))
     (is (= (with-out-str (pr/print bar {:length 10}))
            "\r 0/50     0% [          ]  ETA: --:--"))
-    (is (= (with-out-str (pr/print (pr/done bar) {:length 10}))
-           "\r 0/50     0% [          ]  ETA: --:--\n"))))
+    ;; BB-TEST-PATCH: Make windows compatible
+    (is (= (str/trim (with-out-str (pr/print (pr/done bar) {:length 10})))
+           "0/50     0% [          ]  ETA: --:--"))))
