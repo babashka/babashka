@@ -72,10 +72,11 @@
 ;; TODO (deftest test-body)
 
 (deftest test-render
-  (let [rendered (render [["1" "2"]["3" "4"]])]
-    (is (.contains rendered "| 1 | 2 |"))
-    (is (.contains rendered "| 3 | 4 |"))
-    (is (.contains rendered "|---+---|"))))
+  ;; BB-TEST-PATCH: Switch to set as .contains isn't supported in bb as it's atypical Clojure
+  (let [rendered (set (render [["1" "2"]["3" "4"]]))]
+    (is (contains? rendered "| 1 | 2 |"))
+    (is (contains? rendered "| 3 | 4 |"))
+    (is (contains? rendered "|---+---|"))))
 
 ;; TODO embiggen these tests
 (deftest test-table
