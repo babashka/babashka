@@ -20,7 +20,8 @@
  ;; BB-TEST-PATCH: Removed markdown.md-file-test b/c tests hardcode path to test
  ;; files. Removed markdown.benchmark b/c it depends on criterium which isn't bb compatible
  markdown-clj/markdown-clj {:git-sha "ac245d3049afa25a6d41fcb5ba5a268f52c610e4", :git-url "https://github.com/yogthos/markdown-clj", :test-namespaces (markdown.md-test)}
- org.clojure/tools.namespace {:git-sha "a13b037215e21a2e71aa34b27e1dd52c801a2a7b", :git-url "https://github.com/babashka/tools.namespace", :test-namespaces (clojure.tools.namespace.test-helpers clojure.tools.namespace.dependency-test clojure.tools.namespace.find-test clojure.tools.namespace.move-test clojure.tools.namespace.parse-test clojure.tools.namespace.dir-test), :branch "babashka"}
+ ;; BB-TEST-PATCH: Removed clojure.tools.namespace.dir-test as it fails on windows
+ org.clojure/tools.namespace {:git-sha "a13b037215e21a2e71aa34b27e1dd52c801a2a7b", :git-url "https://github.com/babashka/tools.namespace", :test-namespaces (clojure.tools.namespace.test-helpers clojure.tools.namespace.dependency-test clojure.tools.namespace.find-test clojure.tools.namespace.move-test clojure.tools.namespace.parse-test), :branch "babashka"}
  com.stuartsierra/component {:git-sha "9f9653d1d95644e3c30beadf8c8811f86758ea23", :git-url "https://github.com/stuartsierra/component", :test-namespaces (com.stuartsierra.component-test)}
  slingshot/slingshot {:git-sha "6961ab0593ab9633c15b7697ffd43823090720be", :git-url "https://github.com/scgilardi/slingshot", :test-namespaces (slingshot.slingshot-test slingshot.support-test slingshot.test-test)}
  rm-hull/jasentaa {:git-sha "f52a0e75cbdf1d2b72d9604232db264ff6473f12", :git-url "https://github.com/rm-hull/jasentaa", :test-namespaces (jasentaa.position-test jasentaa.worked-example-2 jasentaa.collections-test jasentaa.parser.basic-test jasentaa.parser.combinators-test jasentaa.test-helpers jasentaa.worked-example-1)}
