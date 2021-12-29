@@ -14,6 +14,10 @@ For a list of breaking changes, check [here](#breaking-changes).
 - Include native elements in printed stacktrace [#1105](https://github.com/babashka/babashka/issues/1105)
 - Missing error message when exception happens in REPL print [#1116](https://github.com/babashka/babashka/issues/1116)
 - Undeprecate `$` in babashka.process
+- Add lots of library tests to CI ([@cldwalker](https://github.com/cldwalker))
+- Release SNAPSHOT builds to
+  [babashka-dev-builds](https://github.com/babashka/babashka-dev-builds/releases)
+  (use only for testing)
 
 ## 0.7.0 (2021-12-10)
 
