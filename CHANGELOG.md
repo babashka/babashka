@@ -11,7 +11,8 @@ For a list of breaking changes, check [here](#breaking-changes).
 - Upgrade to `edamame` v0.0.19
 - Load tasks and deps from other bb.edn file using `--config` and `--deps-root` options [#1110](https://github.com/babashka/babashka/issues/1110)
 - Uberscript improvements [#584](https://github.com/babashka/babashka/issues/584), [#1037](https://github.com/babashka/babashka/issues/1037)
-  Include native elements in printed stacktrace [#1105](https://github.com/babashka/babashka/issues/1105)
+- Include native elements in printed stacktrace [#1105](https://github.com/babashka/babashka/issues/1105)
+- Missing error message when exception happens in REPL print [#1116](https://github.com/babashka/babashka/issues/1116)
 
 ## 0.7.0 (2021-12-10)
 
