@@ -1,7 +1,7 @@
 (ns babashka.run-all-libtests
-  (:require [clojure.java.io :as io]
-            [clojure.string :as str]
+  (:require [babashka.core :refer [windows?]]
             [clojure.edn :as edn]
+            [clojure.java.io :as io]
             [clojure.test :as t]))
 
 (def ns-args (set (map symbol *command-line-args*)))
@@ -21,14 +21,10 @@
         (swap! status (fn [status]
                         (merge-with + status (dissoc m :type))))))))
 
-(def windows? (-> (System/getProperty "os.name")
-                (str/lower-case)
-                (str/includes? "win")))
-
 ;; Standard test-runner for libtests
 (let [lib-tests (edn/read-string (slurp (io/resource "bb-tested-libs.edn")))]
   (doseq [{tns :test-namespaces skip-windows :skip-windows} (vals lib-tests)]
-    (when-not (and skip-windows windows?)
+    (when-not (and skip-windows (windows?))
       (apply test-namespaces tns))))
 
 ;; Non-standard tests - These are tests with unusual setup around test-namespaces
@@ -44,7 +40,7 @@
   (test-doric-cyclic-dep-problem))
 
 ;;;; babashka.process
-(when-not windows?
+(when-not (windows?)
   ;; test built-in babashka.process
   (test-namespaces 'babashka.process-test)
 
