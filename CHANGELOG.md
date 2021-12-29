@@ -2,7 +2,7 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
-## 0.7.1 (2021-12-29)
+## 0.7.2 (2021-12-29)
 
 - Add `spy` macro from `taoensso.timbre` [#1087](https://github.com/babashka/babashka/issues/1087)
 - Better error for higher order fn arity mismatch
@@ -13,6 +13,7 @@ For a list of breaking changes, check [here](#breaking-changes).
 - Uberscript improvements [#584](https://github.com/babashka/babashka/issues/584), [#1037](https://github.com/babashka/babashka/issues/1037)
 - Include native elements in printed stacktrace [#1105](https://github.com/babashka/babashka/issues/1105)
 - Missing error message when exception happens in REPL print [#1116](https://github.com/babashka/babashka/issues/1116)
+- Undeprecate `$` in babashka.process
 
 ## 0.7.0 (2021-12-10)
 
