@@ -5,6 +5,7 @@
    [babashka.impl.common :as common]
    [babashka.main :as main]
    [babashka.test-utils :as test-utils]
+   [borkdude.deps]
    [clojure.edn :as edn]
    [clojure.string :as str]
    [clojure.test :as test :refer [deftest is testing]]))
@@ -362,3 +363,11 @@
         (is (= 1 (count entries)))
         (is (= (fs/parent config) (fs/parent entry)))
         (is (str/ends-with? entry "src"))))))
+
+(deftest without-deps-test
+  (when-not test-utils/native?
+    (with-redefs [borkdude.deps/-main (fn [& _]
+                                        (throw (ex-info "This ain't allowed!" {})))]
+      (testing "bb.edn without :deps should not require deps.clj"
+        (test-utils/with-config '{:tasks {a 1}}
+          (bb "-e" "(+ 1 2 3)"))))))

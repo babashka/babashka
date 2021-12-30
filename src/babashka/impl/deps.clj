@@ -44,8 +44,8 @@
      paths)))
 
 #_(merge-default-deps '{:deps {medley/medley nil}
-                      :aliases {:foo {medley/medley nil}}}
-                    '{medley/medley {:mvn/version "1.3.0"}})
+                        :aliases {:foo {medley/medley nil}}}
+                      '{medley/medley {:mvn/version "1.3.0"}})
 
 ;;;; end merge edn files
 
@@ -66,31 +66,35 @@
                      paths)
                    paths)]
        (cp/add-classpath (str/join cp/path-sep paths))))
-   (when-let [deps-map (not-empty (dissoc deps-map
-                                          ;; paths are added manually above
-                                          ;; extra-paths are added as :paths in tasks
-                                          :paths
-                                          :tasks :raw :min-bb-version))]
-     (binding [*print-namespace-maps* false]
-       (let [deps-map (assoc-in deps-map [:aliases :org.babashka/defaults]
-                                {:replace-paths [] ;; babashka sets paths manually
-                                 :classpath-overrides (cond->
-                                                          '{org.clojure/clojure ""
-                                                            org.clojure/spec.alpha ""}
-                                                        ;; only remove core specs when they are not mentioned in deps map
-                                                        (not (str/includes? (str deps-map) "org.clojure/core.specs.alpha"))
-                                                        (assoc 'org.clojure/core.specs.alpha ""))})
-             args (list "-Srepro" ;; do not include deps.edn from user config
-                        "-Spath" "-Sdeps" (str deps-map)
-                        "-Sdeps-file" "") ;; we reset deps file so the local deps.edn isn't used
-             args (if force (cons "-Sforce" args) args)
-             args (concat args [(str "-A:" (str/join ":" (cons ":org.babashka/defaults" aliases)))])
-             cp (with-out-str (binding [deps/*env* env
-                                        deps/*extra-env* extra-env]
-                                (apply deps/-main args)))
-             cp (str/trim cp)
-             cp (str/replace cp (re-pattern (str cp/path-sep "+$")) "")]
-         (cp/add-classpath cp))))))
+   (let [need-deps? (or (:deps deps-map)
+                        (and (:aliases deps-map)
+                             aliases))]
+     (when need-deps?
+       (let [deps-map (dissoc deps-map
+                              ;; paths are added manually above
+                              ;; extra-paths are added as :paths in tasks
+                              :paths :tasks :raw :file :deps-root
+                              :min-bb-version)]
+         (binding [*print-namespace-maps* false]
+           (let [deps-map (assoc-in deps-map [:aliases :org.babashka/defaults]
+                                    {:replace-paths [] ;; babashka sets paths manually
+                                     :classpath-overrides (cond->
+                                                              '{org.clojure/clojure ""
+                                                                org.clojure/spec.alpha ""}
+                                                            ;; only remove core specs when they are not mentioned in deps map
+                                                            (not (str/includes? (str deps-map) "org.clojure/core.specs.alpha"))
+                                                            (assoc 'org.clojure/core.specs.alpha ""))})
+                 args (list "-Srepro" ;; do not include deps.edn from user config
+                            "-Spath" "-Sdeps" (str deps-map)
+                            "-Sdeps-file" "") ;; we reset deps file so the local deps.edn isn't used
+                 args (if force (cons "-Sforce" args) args)
+                 args (concat args [(str "-A:" (str/join ":" (cons ":org.babashka/defaults" aliases)))])
+                 cp (with-out-str (binding [deps/*env* env
+                                            deps/*extra-env* extra-env]
+                                    (apply deps/-main args)))
+                 cp (str/trim cp)
+                 cp (str/replace cp (re-pattern (str cp/path-sep "+$")) "")]
+             (cp/add-classpath cp))))))))
 
 (def deps-namespace
   {'add-deps (sci/copy-var add-deps dns)
