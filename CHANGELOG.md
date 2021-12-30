@@ -2,6 +2,10 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
+## 0.7.3 (2021-12-30)
+
+- Do not require java for bb tasks without deps [#1123](https://github.com/babashka/babashka/issues/1123), [#1124](https://github.com/babashka/babashka/issues/1124)
+
 ## 0.7.2 (2021-12-29)
 
 - Add `spy` macro from `taoensso.timbre` [#1087](https://github.com/babashka/babashka/issues/1087)
