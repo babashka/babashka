@@ -27,7 +27,7 @@ Twitter.
   data-driven, REPL friendly clojure client for OCI container engines.
 - [deps-modules](https://github.com/exoscale/deps-modules#babashka):  a clojure "tool" that attempts to solve one of the "multi module" project problems with tools.deps in a minimalistic way.
 - [Moldable Emacs: a Clojure Playground with Babashka](https://ag91.github.io/blog/2021/11/05/moldable-emacs-a-clojure-playground-with-babashka/)
-- [awd pod 0.1.0](https://twitter.com/borkdude/status/1459117378441261056)
+- [aws pod 0.1.0](https://twitter.com/borkdude/status/1459117378441261056)
 - [tools.bbuild](https://github.com/babashka/tools.bbuild): a fork of tools.build that runs with babashka and [tools-deps-native](https://github.com/babashka/tools-deps-native)
 - [Making markdown-clj babashka compatible](https://blog.michielborkent.nl/markdown-clj-babashka-compatible.html) by Michiel Borkent
 - [radiale](https://github.com/xlfe/radiale): radiale: home automation project written using #babashka and Python
