@@ -371,8 +371,3 @@
       (testing "bb.edn without :deps should not require deps.clj"
         (test-utils/with-config '{:tasks {a 1}}
           (bb "-e" "(+ 1 2 3)"))))))
-
-(deftest pod-test
-  (test-utils/with-config "{:pods {clj-kondo/clj-kondo {:version \"2021.12.19\"}}}"
-    (let [res (bb "-e" "(require '[pod.borkdude.clj-kondo :as clj-kondo]) (clj-kondo/run! {:lint [\"src\"]})")]
-      (prn res))))
