@@ -26,6 +26,14 @@ Sponsoring via [Cognitect](https://www.cognitect.com/).
 
 <img src="https://cdn.nextjournal.com/images/nextjournal-logo.svg" width="300">
 
+### [ATA](https://ata-llc.com) - [hiring](https://www.ziprecruiter.com/c/ATA-LLC/Jobs)
+
+<img width="250" alt="Screen Shot 2022-01-07 at 21 21 00" src="https://user-images.githubusercontent.com/284934/148602984-6c333501-505b-4692-ad7a-62383510fb9a.png">
+
+### [Cognician](https://www.cognician.com)
+
+<img src="https://avatars.githubusercontent.com/u/1450774?s=150&v=4">
+
 ### [Fluent](https://fluent.to)
 
 <img src="https://uploads-ssl.webflow.com/600fdbbcf0cbfe02f1a48030/600fdf0fffe881c3e8e298f4_Fluent%20logotype-p-500.png" width="300">
