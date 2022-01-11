@@ -33,7 +33,7 @@ rm -rf resources/*.class
 # "$GRAALVM_HOME/bin/javac" -cp "$SVM_JAR" resources/CutOffMisc.java
 if [ -z "$BABASHKA_JAR" ]; then
     lein with-profiles +reflection,+native-image "do" run
-    lein "do" clean, uberjar, metabom
+    lein "do" clean, uberjar
     BABASHKA_JAR=${BABASHKA_JAR:-"target/babashka-$BABASHKA_VERSION-standalone.jar"}
 fi
 

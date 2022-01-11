@@ -28,8 +28,6 @@
                  [org.clojure/test.check "1.1.0"]
                  [com.github.clj-easy/graal-build-time "0.1.0"]
                  [rewrite-clj/rewrite-clj "1.0.699-alpha"]]
-  :plugins       [[org.kipz/lein-meta-bom "0.1.1"]]
-  :metabom {:jar-name "metabom.jar"}
   :profiles {:feature/xml  {:source-paths ["feature-xml"]
                             :dependencies [[org.clojure/data.xml "0.2.0-alpha6"]]}
              :feature/yaml {:source-paths ["feature-yaml"]

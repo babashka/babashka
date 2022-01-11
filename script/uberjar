@@ -165,5 +165,5 @@ cp deps.edn resources/META-INF/babashka/deps.edn
 
 if [ -z "$BABASHKA_JAR" ]; then
     lein with-profiles "$BABASHKA_LEIN_PROFILES,+reflection,-uberjar" do run
-    lein with-profiles "$BABASHKA_LEIN_PROFILES" do clean, uberjar, metabom
+    lein with-profiles "$BABASHKA_LEIN_PROFILES" do clean, uberjar
 fi
