@@ -1,7 +1,9 @@
 # Changelog
 
 For a list of breaking changes, check [here](#breaking-changes).
+## Unreleased
 
+- Add opencontainers annoations to docker image [#1134](https://github.com/babashka/babashka/issues/1134)
 ## 0.7.3 (2021-12-30)
 
 - Do not require java for bb tasks without deps [#1123](https://github.com/babashka/babashka/issues/1123), [#1124](https://github.com/babashka/babashka/issues/1124)
