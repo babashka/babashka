@@ -6,15 +6,15 @@ image_name="babashka/babashka"
 image_tag=$(cat resources/BABASHKA_VERSION)
 platform=${PLATFORM:-"linux/amd64"}
 latest_tag="latest"
-label_args="--label \"org.opencontainers.image.description=Native, fast starting Clojure interpreter for scripting\" \
-            --label \"org.opencontainers.image.title=Babashka\" \
-            --label \"org.opencontainers.image.created=`date -Iseconds`\" \
-            --label \"org.opencontainers.image.url=${CIRCLE_REPOSITORY_URL}\" \
-            --label \"org.opencontainers.image.documentation=${CIRCLE_REPOSITORY_URL}\" \
-            --label \"org.opencontainers.image.source=${CIRCLE_REPOSITORY_URL}\" \
-            --label \"org.opencontainers.image.revision=${CIRCLE_SHA1}\" \
-            --label \"org.opencontainers.image.ref.name=${CIRCLE_TAG:${CIRCLE_BRANCH}}\" \
-            --label \"org.opencontainers.image.version=${image_tag}\""
+label_args=("--label" "'org.opencontainers.image.description=Native, fast starting Clojure interpreter for scripting'"
+            "--label" "org.opencontainers.image.title=Babashka"
+            "--label" "org.opencontainers.image.created=$(date -Iseconds)"
+            "--label" "org.opencontainers.image.url=${CIRCLE_REPOSITORY_URL}"
+            "--label" "org.opencontainers.image.documentation=${CIRCLE_REPOSITORY_URL}"
+            "--label" "org.opencontainers.image.source=${CIRCLE_REPOSITORY_URL}"
+            "--label" "org.opencontainers.image.revision=${CIRCLE_SHA1}"
+            "--label" "org.opencontainers.image.ref.name=${CIRCLE_TAG}:${CIRCLE_BRANCH}"
+            "--label" "org.opencontainers.image.version=${image_tag}")
 
 if [[ $image_tag =~ SNAPSHOT$ ]]; then
     echo "This is a snapshot version"
@@ -34,10 +34,10 @@ if [ -z "$CIRCLE_PULL_REQUEST" ] && [ "$CIRCLE_BRANCH" = "master" ]; then
         mkdir -p $p
         tar zxvf "/tmp/release/babashka-${image_tag}-${tarball_platform}.tar.gz" -C $p
     done
-    docker buildx build -t "$image_name:$image_tag" --platform "$platform" "$label_args" --push -f Dockerfile.ci .
+    docker buildx build -t "$image_name:$image_tag" --platform "$platform" "${label_args[@]}" --push -f Dockerfile.ci .
     if [[ $snapshot == "false" ]]; then
         echo "Building & pushing $platform Docker image(s) $image_name:$latest_tag"
-        docker buildx build -t "$image_name:$latest_tag" --platform "$platform" "$label_args" --push -f Dockerfile.ci .
+        docker buildx build -t "$image_name:$latest_tag" --platform "$platform" "${label_args[@]}" --push -f Dockerfile.ci .
     fi
     for p in "${platforms[@]}"; do
         rm -rf $p
@@ -46,7 +46,7 @@ if [ -z "$CIRCLE_PULL_REQUEST" ] && [ "$CIRCLE_BRANCH" = "master" ]; then
     # alpine doesn't provide upstream arm64 images yet
     if [[ $platform == "linux-amd64" ]]; then
         tar zxvf  "/tmp/release/babashka-${image_tag}-${platform}-static.tar.gz"
-        docker build -t "$image_name:alpine" "$label_args" -f Dockerfile.alpine .
+        docker build -t "$image_name:alpine" "${label_args[@]}" -f Dockerfile.alpine .
         rm -f bb
         docker tag "$image_name:alpine" "$image_name:$image_tag-alpine"
         echo "Pushing image $image_name:$image_tag-alpine"
