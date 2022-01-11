@@ -2,6 +2,9 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
+## Unreleased
+
+- Add metabom jar to docker images [#1133](https://github.com/babashka/babashka/issues/1133)
 ## 0.7.3 (2021-12-30)
 
 - Do not require java for bb tasks without deps [#1123](https://github.com/babashka/babashka/issues/1123), [#1124](https://github.com/babashka/babashka/issues/1124)
