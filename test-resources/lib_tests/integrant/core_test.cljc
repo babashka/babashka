@@ -98,6 +98,7 @@
                             "{:foo/a #test/var clojure.core/+}")
             {:foo/a #'+}))))
 
+;; BB-TEST-PATCH: No *loaded-libs* in bb
 #?(:bb :TODO :clj
    (defn- remove-lib [lib]
      (remove-ns lib)
@@ -105,6 +106,7 @@
 
 (derive :integrant.test-child/foo :integrant.test/foo)
 
+;; BB-TEST-PATCH: No *loaded-libs* in bb
 #?(:bb :TODO
    :clj
    (deftest load-namespaces-test
