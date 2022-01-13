@@ -45,14 +45,12 @@ if [ -z "$CIRCLE_PULL_REQUEST" ] && [ "$CIRCLE_BRANCH" = "master" ]; then
 
     # build alpine image for linux-amd64 only (no upstream arm64 support yet)
     tar zxvf  "/tmp/release/babashka-${image_tag}-linux-amd64-static.tar.gz"
-    docker buildx build -t "$image_name:alpine" --platform=linux/amd64 "${label_args[@]}" -f Dockerfile.alpine .
+    echo "Building & pushing Docker image $image_name:$image_tag-alpine"
+    docker buildx build -t "$image_name:$image_tag-alpine" --platform=linux/amd64 "${label_args[@]}" --push -f Dockerfile.alpine .
     rm -f bb
-    docker tag "$image_name:alpine" "$image_name:$image_tag-alpine"
-    echo "Pushing image $image_name:$image_tag-alpine"
-    docker push "$image_name:$image_tag-alpine"
     if [[ $snapshot == "false" ]]; then
-        echo "Pushing image $image_name:alpine"
-        docker push "$image_name:alpine"
+        echo "Building & pushing Docker image $image_name:alpine"
+        docker buildx build -t "$image_name:alpine" --platform=linux/amd64 "${label_args[@]}" --push -f Dockerfile.alpine .
     fi
 else
     echo "Not publishing Docker image"
