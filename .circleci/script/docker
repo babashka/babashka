@@ -45,7 +45,7 @@ if [ -z "$CIRCLE_PULL_REQUEST" ] && [ "$CIRCLE_BRANCH" = "master" ]; then
 
     # alpine doesn't provide upstream arm64 images yet
     if [[ $platform == *"linux/amd64"* ]]; then
-        tar zxvf  "/tmp/release/babashka-${image_tag}-${platform}-static.tar.gz"
+        tar zxvf  "/tmp/release/babashka-${image_tag}-linux-amd64-static.tar.gz"
         docker buildx build -t "$image_name:alpine" --platform=linux/amd64 "${label_args[@]}" -f Dockerfile.alpine .
         rm -f bb
         docker tag "$image_name:alpine" "$image_name:$image_tag-alpine"
