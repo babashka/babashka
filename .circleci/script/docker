@@ -49,9 +49,8 @@ if [ -z "$CIRCLE_PULL_REQUEST" ] && [ "$CIRCLE_BRANCH" = "master" ]; then
     docker buildx build -t "$image_name:$image_tag-alpine" --platform=linux/amd64 "${label_args[@]}" --push -f Dockerfile.alpine .
     rm -f bb
     if [[ $snapshot == "false" ]]; then
-        docker tag "$image_name:$image_tag-alpine" "$image_name:alpine"
-        echo "Pushing image $image_name:alpine"
-        docker push "$image_name:alpine"
+        echo "Building & pushing Docker image $image_name:alpine"
+        docker buildx build -t "$image_name:alpine" --platform=linux/amd64 "${label_args[@]}" --push -f Dockerfile.alpine .
     fi
 else
     echo "Not publishing Docker image"
