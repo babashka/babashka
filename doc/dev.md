@@ -81,9 +81,19 @@ Test the native version:
 ## Tests for Libraries
 
 Babashka runs tests of libraries that are compatible with it through
-`script/run_lib_tests`. To add tests for a new library that has a git repository
-and run them, use the script `add-libtest.clj` e.g. `script/add-libtest.clj
-'{listora/again {:mvn/version "1.0.0"}}' https://github.com/liwp/again --test`.
+`script/run_lib_tests`. The script `add-libtest.clj` makes adding new libraries
+fairly easy. Some examples:
+
+```sh
+# To add tests for a new library on clojars
+script/add-libtest.clj com.exoscale/lingo -t
+
+# To add tests for a new library that is git based only
+script/add-libtest.clj '{borkdude/carve {:git/url "https://github.com/borkdude/carve" :sha "df552797a198b6701fb2d92390fce7c59205ea77"}}' -t
+
+# There are a number of options for specifying how to copy tests
+script/add-libtest.clj -h
+```
 
 If the library you want to add doesn't work automatically, you can manually do the following:
 

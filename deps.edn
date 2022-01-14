@@ -114,7 +114,12 @@
                          clojure-term-colors/clojure-term-colors {:mvn/version "0.1.0"}
                          io.aviso/pretty {:mvn/version "1.1.1"}
                          progrock/progrock {:mvn/version "0.1.2"}
-                         djblue/portal {:mvn/version "0.19.0"}}
+                         djblue/portal {:mvn/version "0.19.0"}
+                         com.wsscode/cljc-misc {:mvn/version "2021.10.16"}
+                         edn-query-language/eql {:mvn/version "2021.07.18"}
+                         meta-merge/meta-merge {:mvn/version "1.0.0"}
+                         com.exoscale/lingo {:mvn/version "1.0.0-alpha14"}
+                         io.github.swirrl/dogstatsd {:mvn/version "0.1.39"}}
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil}}
            :clj-nvd
