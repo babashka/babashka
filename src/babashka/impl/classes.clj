@@ -86,8 +86,6 @@
     {:methods [{:name "getHostAddress"}]}
     clojure.lang.IFn
     {:methods [{:name "applyTo"}]}
-    clojure.lang.MapEntry
-    {:methods [{:name "create"}]}
     clojure.lang.MultiFn
     {:fields [{:name "dispatchFn"}]
      :methods [{:name "getMethod"}]}
