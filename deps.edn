@@ -117,7 +117,6 @@
                          djblue/portal {:mvn/version "0.19.0"}
                          com.wsscode/cljc-misc {:mvn/version "2021.10.16"}
                          edn-query-language/eql {:mvn/version "2021.07.18"}
-                         town.lilac/pyramid {:mvn/version "3.2.0"}
                          meta-merge/meta-merge {:mvn/version "1.0.0"}
                          com.exoscale/lingo {:mvn/version "1.0.0-alpha14"}
                          io.github.swirrl/dogstatsd {:mvn/version "0.1.39"}}
