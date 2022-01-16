@@ -1,7 +1,7 @@
 (ns babashka.impl.clojure.core
   {:no-doc true}
   (:refer-clojure :exclude [future read+string clojure-version with-precision
-                            send-via send send-off sync])
+                            send-via send send-off sync into-array])
   (:require [babashka.impl.common :as common]
             [borkdude.graal.locking :as locking]
             [clojure.core :as c]
@@ -142,6 +142,21 @@
   [_flags-ignored-for-now & body]
   `(clojure.core/-run-in-transaction (fn [] ~@body)))
 
+(defn into-array
+  "Returns an array with components set to the values in aseq. The array's
+  component type is type if provided, or the type of the first value in
+  aseq if present, or Object. All values in aseq must be compatible with
+  the component type. Class objects for the primitive types can be obtained
+  using, e.g., Integer/TYPE."
+  {:added "1.0"
+   :static true}
+  ([aseq]
+   (try (clojure.lang.RT/seqToTypedArray (seq aseq))
+        (catch IllegalArgumentException _
+          (clojure.lang.RT/seqToTypedArray Object (seq aseq)))))
+  ([type aseq]
+   (clojure.lang.RT/seqToTypedArray type (seq aseq))))
+
 (def core-extras
   {;; agents
    'agent (copy-core-var agent)
@@ -202,5 +217,6 @@
    'NaN? (sci/copy-var NaN? clojure-core-ns)
    'infinite? (sci/copy-var infinite? clojure-core-ns)
    'StackTraceElement->vec (sci/copy-var StackTraceElement->vec clojure-core-ns)
-   'memfn (sci/copy-var memfn clojure-core-ns)}
+   'memfn (sci/copy-var memfn clojure-core-ns)
+   'into-array (sci/copy-var into-array clojure-core-ns)}
   )
