@@ -5,6 +5,7 @@ For a list of breaking changes, check [here](#breaking-changes).
 ## Unreleased
 
 - Add opencontainers annoations to docker image [#1134](https://github.com/babashka/babashka/issues/1134)
+- Fix Alpine Linux Docker images in CI script [#1140](https://github.com/babashka/babashka/issues/1140)
 
 ## 0.7.3 (2021-12-30)
 

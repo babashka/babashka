@@ -12,10 +12,12 @@ clj-commons/clj-yaml,https://github.com/clj-commons/clj-yaml
 clj-commons/multigrep,https://github.com/clj-commons/multigrep
 clojure-csv/clojure-csv,https://github.com/davidsantiago/clojure-csv
 clojure-term-colors/clojure-term-colors,https://github.com/trhura/clojure-term-colors
+com.exoscale/lingo,https://github.com/exoscale/lingo
 com.github.seancorfield/honeysql,https://github.com/seancorfield/honeysql
 com.grammarly/omniconf,https://github.com/grammarly/omniconf
 com.stuartsierra/component,https://github.com/stuartsierra/component
 com.stuartsierra/dependency,https://github.com/stuartsierra/dependency
+com.wsscode/cljc-misc,https://github.com/wilkerlucio/cljc-misc
 comb/comb,https://github.com/weavejester/comb
 cprop/cprop,https://github.com/tolitius/cprop
 crispin/crispin,https://github.com/dunaj-project/crispin
@@ -23,6 +25,7 @@ dev.nubank/docopt,https://github.com/nubank/docopt.clj
 djblue/portal,https://github.com/djblue/portal
 doric/doric,https://github.com/joegallo/doric
 douglass/clj-psql,https://github.com/DarinDouglass/clj-psql
+edn-query-language/eql,https://github.com/edn-query-language/eql
 environ/environ,https://github.com/weavejester/environ
 exoscale/coax,https://github.com/exoscale/coax
 expound/expound,https://github.com/bhb/expound
@@ -34,8 +37,10 @@ henryw374/cljc.java-time,https://github.com/henryw374/cljc.java-time
 hiccup/hiccup,http://github.com/weavejester/hiccup
 honeysql/honeysql,https://github.com/seancorfield/honeysql
 http-kit/http-kit,https://github.com/http-kit/http-kit
+integrant/integrant,https://github.com/weavejester/integrant
 io.aviso/pretty,https://github.com/AvisoNovate/pretty
 io.github.cognitect-labs/test-runner,https://github.com/cognitect-labs/test-runner
+io.github.swirrl/dogstatsd,https://github.com/swirrl/dogstatsd
 io.github.technomancy/limit-break,https://github.com/technomancy/limit-break
 io.helins/binf,https://github.com/helins/binf.cljc
 io.replikativ/hasch,https://github.com/replikativ/hasch
@@ -44,6 +49,7 @@ lambdaisland/regal,https://github.com/lambdaisland/regal
 listora/again,https://github.com/liwp/again
 markdown-clj/markdown-clj,https://github.com/yogthos/markdown-clj
 medley/medley,https://github.com/weavejester/medley
+meta-merge/meta-merge,https://github.com/weavejester/meta-merge
 minimallist/minimallist,https://github.com/green-coder/minimallist
 mvxcvi/arrangement,https://github.com/greglook/clj-arrangement
 orchestra/orchestra,https://github.com/jeaye/orchestra
