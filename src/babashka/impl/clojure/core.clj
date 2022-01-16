@@ -151,9 +151,11 @@
   {:added "1.0"
    :static true}
   ([aseq]
-   (clojure.lang.RT/seqToTypedArray Object (seq aseq)))
-  ([_type aseq]
-   (clojure.lang.RT/seqToTypedArray Object (seq aseq))))
+   (try (clojure.lang.RT/seqToTypedArray (seq aseq))
+        (catch IllegalArgumentException _
+          (clojure.lang.RT/seqToTypedArray Object (seq aseq)))))
+  ([type aseq]
+   (clojure.lang.RT/seqToTypedArray type (seq aseq))))
 
 (def core-extras
   {;; agents
