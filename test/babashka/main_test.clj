@@ -814,8 +814,8 @@ true")))
   (is (= 1 (bb nil "(def array-2d (into-array [(int-array [1 2]) (int-array [3 4])])) (aget array-2d 0 0)"))))
 
 (deftest into-array-fallback-test
-  (is (= :a (bb nil "(first (into-array [:f]))")))
-  (is (= :a (bb nil "(first (first (into-array [(into-array [:f])])))"))))
+  (is (= :f (bb nil "(first (into-array [:f]))")))
+  (is (= :f (bb nil "(first (first (into-array [(into-array [:f])])))"))))
 
 ;;;; Scratch
 
