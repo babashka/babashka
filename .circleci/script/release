@@ -18,6 +18,9 @@ if [ "$BABASHKA_STATIC" = "true" ]; then
     arch="$arch-static"
 fi
 
+# because circle won't allow the same file to be saved/restored in the same workspace concurrently
+cp metabom.jar "/tmp/release/$BABASHKA_PLATFORM-$arch-metabom.jar"
+
 archive="babashka-$VERSION-$BABASHKA_PLATFORM-$arch.tar.gz"
 
 tar zcvf "$archive" bb # bbk
