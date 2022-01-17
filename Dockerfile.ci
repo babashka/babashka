@@ -7,6 +7,7 @@ RUN apt-get update \
 ARG TARGETARCH
 ARG TARGETOS
 
+COPY metabom.jar /opt/babashka-metabom.jar
 COPY ${TARGETOS}/${TARGETARCH}/bb /usr/local/bin/bb
 
 RUN chmod +x /usr/local/bin/bb

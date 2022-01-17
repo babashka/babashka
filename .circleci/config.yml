@@ -55,7 +55,6 @@ jobs:
             VERSION=$(cat resources/BABASHKA_VERSION)
             jar=target/babashka-$VERSION-standalone.jar
             cp $jar /tmp/release
-
             java -jar $jar script/reflection.clj
             reflection="babashka-$VERSION-reflection.json"
             java -jar "$jar" --config .build/bb.edn --deps-root . release-artifact "$jar"
@@ -479,7 +478,7 @@ workflows:
       - docker:
           filters:
             branches:
-              only: 
+              only:
                 - master
           requires:
             - linux
