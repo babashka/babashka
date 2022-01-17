@@ -1,14 +1,12 @@
 #!/usr/bin/env bash
 
-rm -rf /tmp/release
-mkdir -p /tmp/release
-cp bb /tmp/release
+release_dir="/tmp/release"
+rm -rf "$release_dir"
+mkdir -p "$release_dir"
+cp bb "$release_dir"
 
 VERSION=$(cat resources/BABASHKA_VERSION)
 
-cd /tmp/release
-mkdir -p /tmp/bb_size
-./bb '(spit "/tmp/bb_size/size" (.length (io/file "bb")))'
 
 ## release binary as tar.gz archive
 
@@ -21,15 +19,19 @@ fi
 # because circle won't allow the same file to be saved/restored in the same workspace concurrently
 cp metabom.jar "/tmp/release/$BABASHKA_PLATFORM-$arch-metabom.jar"
 
+cd "$release_dir"
+mkdir -p /tmp/bb_size
+./bb '(spit "/tmp/bb_size/size" (.length (io/file "bb")))'
+
 archive="babashka-$VERSION-$BABASHKA_PLATFORM-$arch.tar.gz"
 
 tar zcvf "$archive" bb # bbk
 
 cd -
 
-./bb --config .build/bb.edn --deps-root . release-artifact "/tmp/release/$archive"
+./bb --config .build/bb.edn --deps-root . release-artifact "$release_dir/$archive"
 
 ## cleanup
 
-cd /tmp/release
+cd "$release_dir"
 rm bb # bbk

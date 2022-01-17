@@ -24,38 +24,33 @@ else
     snapshot="false"
 fi
 
-if [ -z "$CIRCLE_PULL_REQUEST" ] && [ "$CIRCLE_BRANCH" = "master" ]; then
-    echo "Building & pushing $platform Docker image(s) $image_name:$image_tag"
-    echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
-    IFS=',' read -r -a platforms <<< "$platform"
-    for p in "${platforms[@]}"; do
-        tarball_platform=${p//\//-}
-        if [[ $tarball_platform == "linux-arm64" ]]; then tarball_platform="linux-aarch64"; fi
-        mkdir -p $p
-        tar zxvf "/tmp/release/babashka-${image_tag}-${tarball_platform}.tar.gz" -C $p
-        # this overwrites, but this is to work around having built the uberjar/metabom multiple times
-        cp "/tmp/release/${tarball_platform}-metabom.jar" ./metabom.jar
-    done
-    docker buildx build -t "$image_name:$image_tag" --platform "$platform" "${label_args[@]}" --push -f Dockerfile.ci .
-    if [[ $snapshot == "false" ]]; then
-        echo "Building & pushing $platform Docker image(s) $image_name:$latest_tag"
-        docker buildx build -t "$image_name:$latest_tag" --platform "$platform" "${label_args[@]}" --push -f Dockerfile.ci .
-    fi
-    for p in "${platforms[@]}"; do
-        rm -rf $p
-    done
+echo "Building $platform Docker image(s) $image_name:$image_tag"
+IFS=',' read -r -a platforms <<< "$platform"
+for p in "${platforms[@]}"; do
+    tarball_platform=${p//\//-}
+    if [[ $tarball_platform == "linux-arm64" ]]; then tarball_platform="linux-aarch64"; fi
+    mkdir -p $p
+    tar zxvf "/tmp/release/babashka-${image_tag}-${tarball_platform}.tar.gz" -C $p
+    # this overwrites, but this is to work around having built the uberjar/metabom multiple times
+    cp "/tmp/release/${tarball_platform}-metabom.jar" ./metabom.jar
+done
+docker buildx build -t "$image_name:$image_tag" --platform "$platform" "${label_args[@]}"  -f Dockerfile.ci .
+if [[ $snapshot == "false" ]]; then
+    echo "Building $platform Docker image(s) $image_name:$latest_tag"
+    docker buildx build -t "$image_name:$latest_tag" --platform "$platform" "${label_args[@]}" -f Dockerfile.ci .
+fi
+for p in "${platforms[@]}"; do
+    rm -rf $p
+done
 
-    # build alpine image for linux-amd64 only (no upstream arm64 support yet)
-    tar zxvf  "/tmp/release/babashka-${image_tag}-linux-amd64-static.tar.gz"
-    echo "Building & pushing Docker image $image_name:$image_tag-alpine"
-    docker buildx build -t "$image_name:$image_tag-alpine" --platform=linux/amd64 "${label_args[@]}" --push -f Dockerfile.alpine .
-    rm -f bb
-    if [[ $snapshot == "false" ]]; then
-        echo "Building & pushing Docker image $image_name:alpine"
-        docker buildx build -t "$image_name:alpine" --platform=linux/amd64 "${label_args[@]}" --push -f Dockerfile.alpine .
-    fi
-else
-    echo "Not publishing Docker image"
+# build alpine image for linux-amd64 only (no upstream arm64 support yet)
+tar zxvf  "/tmp/release/babashka-${image_tag}-linux-amd64-static.tar.gz"
+echo "Building Docker image $image_name:$image_tag-alpine"
+docker buildx build -t "$image_name:$image_tag-alpine" --platform=linux/amd64 "${label_args[@]}" -f Dockerfile.alpine .
+rm -f bb
+if [[ $snapshot == "false" ]]; then
+    echo "Building Docker image $image_name:alpine"
+    docker buildx build -t "$image_name:alpine" --platform=linux/amd64 "${label_args[@]}" -f Dockerfile.alpine .
 fi
 
 exit 0;
