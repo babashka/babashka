@@ -601,7 +601,9 @@ Use bb run --help to show this help output.
           ("--main", "-m",)
           (let [options (next options)]
             (assoc opts-map :main (first options)
-                   :command-line-args (rest options)))
+                   :command-line-args (if (= "--" (second options))
+                                        (nthrest options 2)
+                                        (rest options))))
           ("--run")
           (parse-run-opts opts-map (next options))
           ("--tasks")
