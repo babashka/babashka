@@ -59,7 +59,8 @@
     (is (:babashka/version v))
     (is (:feature/xml v)))
   (is (= {:force? true} (parse-opts ["--force"])))
-  (is (= {:main "foo", :command-line-args '("-h")} (parse-opts ["-m" "foo" "-h"]))))
+  (is (= {:main "foo", :command-line-args '("-h")} (parse-opts ["-m" "foo" "-h"])))
+  (is (= {:main "foo", :command-line-args '("-h")} (parse-opts ["-m" "foo" "--" "-h"]))))
 
 (deftest version-test
   (is (= [1 0 0] (main/parse-version "1.0.0-SNAPSHOT")))
