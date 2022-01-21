@@ -549,3 +549,9 @@ $ bb db_who.clj
 | fred@192.168.1.2 |      workbench |
 | jane@192.168.1.3 | Toad for mySQL |
 ```
+## Single page application with Babashka + htmx
+
+Example of a todo list SPA using Babashka and htmx
+See [htmx_todoapp.clj](htmx_todoapp.clj)
+
+Contributed by [@prestancedesign](https://github.com/prestancedesign).
