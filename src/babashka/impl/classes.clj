@@ -92,7 +92,9 @@
     clojure.lang.RT
     {:methods [{:name "aget"}
                {:name "aset"}
-               {:name "aclone"}]}})
+               {:name "aclone"}]}
+    clojure.lang.Compiler
+    {:fields [{:name "specials"}]}})
 
 (def custom-map
   (cond->
@@ -391,6 +393,7 @@
     ;; visible in the native image.
     :instance-checks [clojure.lang.AMapEntry ;; for proxy
                       clojure.lang.APersistentMap ;; for proxy
+                      clojure.lang.APersistentSet
                       clojure.lang.AReference
                       clojure.lang.Associative
                       clojure.lang.Atom
