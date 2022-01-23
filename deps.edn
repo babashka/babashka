@@ -119,7 +119,8 @@
                          edn-query-language/eql {:mvn/version "2021.07.18"}
                          meta-merge/meta-merge {:mvn/version "1.0.0"}
                          com.exoscale/lingo {:mvn/version "1.0.0-alpha14"}
-                         io.github.swirrl/dogstatsd {:mvn/version "0.1.39"}}
+                         io.github.swirrl/dogstatsd {:mvn/version "0.1.39"}
+                         org.clojure/algo.monads {:mvn/version "0.1.6"}}
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil}}
            :clj-nvd

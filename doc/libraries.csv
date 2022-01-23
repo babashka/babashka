@@ -58,6 +58,7 @@ org.clj-commons/clj-http-lite,https://github.com/clj-commons/clj-http-lite
 org.clj-commons/digest,https://github.com/clj-commons/clj-digest
 org.clojars.askonomm/ruuter,https://github.com/askonomm/ruuter
 org.clojars.lispyclouds/contajners,https://github.com/lispyclouds/contajners
+org.clojure/algo.monads,https://github.com/clojure/algo.monads
 org.clojure/core.match,https://github.com/clojure/core.match
 org.clojure/data.csv,https://github.com/clojure/data.csv
 org.clojure/data.generators,https://github.com/clojure/data.generators

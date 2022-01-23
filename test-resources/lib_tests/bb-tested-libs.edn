@@ -102,4 +102,5 @@
  edn-query-language/eql {:git-url "https://github.com/edn-query-language/eql", :test-namespaces (edn-query-language.core-test), :git-sha "0d4f9745d98c3d20b81bb4bdce3e8e15db7fd094"}
  meta-merge/meta-merge {:git-url "https://github.com/weavejester/meta-merge", :test-namespaces (meta-merge.core-test), :git-sha "c968c38baccd4219fe0ba592d89af37ea8e426bf"}
  com.exoscale/lingo {:git-url "https://github.com/exoscale/lingo", :test-namespaces (exoscale.lingo.test.core-test), :git-sha "30b5084fab28d24c99ec683e21535366910d9f2f" :skip-windows true}
- io.github.swirrl/dogstatsd {:git-url "https://github.com/swirrl/dogstatsd", :test-namespaces (swirrl.dogstatsd-test), :git-sha "e110caae452cd1185e65e389a359b69502076d61"}}
+ io.github.swirrl/dogstatsd {:git-url "https://github.com/swirrl/dogstatsd", :test-namespaces (swirrl.dogstatsd-test), :git-sha "e110caae452cd1185e65e389a359b69502076d61"}
+ org.clojure/algo.monads {:git-url "https://github.com/clojure/algo.monads", :test-namespaces (clojure.algo.test-monads), :git-sha "3a985b0b099110b1654d568fecf597bc9c8d1ff5"}}
