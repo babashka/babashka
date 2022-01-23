@@ -7,8 +7,8 @@ image: Visual Studio 2017
 clone_folder: C:\projects\babashka
 
 environment:
-  GRAALVM_HOME: C:\projects\babashka\graalvm\graalvm-ce-java11-21.1.0
-  JAVA_HOME: C:\projects\babashka\graalvm\graalvm-ce-java11-21.1.0
+  GRAALVM_HOME: C:\projects\babashka\graalvm\graalvm-ce-java11-21.3.0
+  JAVA_HOME: C:\projects\babashka\graalvm\graalvm-ce-java11-21.3.0
   BABASHKA_XMX: "-J-Xmx5g"
 
 cache:
@@ -33,7 +33,7 @@ clone_script:
 
 build_script:
 - cmd: >-
-    powershell -Command "if (Test-Path('graalvm')) { return } else { (New-Object Net.WebClient).DownloadFile('https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.1.0/graalvm-ce-java11-windows-amd64-21.1.0.zip', 'graalvm.zip') }"
+    powershell -Command "if (Test-Path('graalvm')) { return } else { (New-Object Net.WebClient).DownloadFile('https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.3.0/graalvm-ce-java11-windows-amd64-21.3.0.zip', 'graalvm.zip') }"
 
     powershell -Command "if (Test-Path('graalvm')) { return } else { Expand-Archive graalvm.zip graalvm }"
 
@@ -62,11 +62,7 @@ build_script:
 
     jar -cMf %zip% bb.exe
 
-    set BABASHKA_EDN=.build/bb.edn
-
-    bb release-artifact %zip%
-
-    set BABASHKA_EDN=
+    bb --config .build/bb.edn --deps-root . release-artifact %zip%
 
     set BABASHKA_CLASSPATH=
 
@@ -74,7 +70,7 @@ build_script:
 
     call script/test.bat
 
-# call script/run_lib_tests.bat
+    call script/run_lib_tests.bat
 
 artifacts:
 - path: babashka-*-windows-amd64.zip

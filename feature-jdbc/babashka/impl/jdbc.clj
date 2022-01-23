@@ -1,8 +1,9 @@
 (ns babashka.impl.jdbc
   {:no-doc true}
   (:require [next.jdbc :as njdbc]
+            [next.jdbc.result-set :as rs]
             [next.jdbc.sql :as sql]
-            [sci.impl.namespaces :refer [copy-var]]
+            [sci.impl.namespaces :refer [copy-var macrofy]]
             [sci.impl.vars :as vars]))
 
 (def next-ns (vars/->SciNamespace 'next.jdbc nil))
@@ -28,10 +29,20 @@
    'plan (copy-var njdbc/plan next-ns)
    'prepare (copy-var njdbc/prepare next-ns)
    'transact (copy-var njdbc/transact next-ns)
-   'with-transaction (with-meta with-transaction
-                       {:sci/macro true})})
+   'with-transaction (macrofy 'with-transaction with-transaction next-ns)})
 
 (def sns (vars/->SciNamespace 'next.jdbc.sql nil))
 
 (def next-sql-namespace
   {'insert-multi! (copy-var sql/insert-multi! sns)})
+
+(def rsns (vars/->SciNamespace 'next.jdbc.result-set nil))
+
+(def result-set-namespace
+  {'as-maps (copy-var rs/as-maps rsns)
+   'as-unqualified-maps (copy-var rs/as-unqualified-maps rsns)
+   'as-modified-maps (copy-var rs/as-modified-maps rsns)
+   'as-unqualified-modified-maps (copy-var rs/as-unqualified-modified-maps rsns)
+   'as-lower-maps (copy-var rs/as-lower-maps rsns)
+   'as-unqualified-lower-maps (copy-var rs/as-unqualified-lower-maps rsns)
+   'as-maps-adapter (copy-var rs/as-maps-adapter rsns)})

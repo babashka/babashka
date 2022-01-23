@@ -4,7 +4,202 @@ For a list of breaking changes, check [here](#breaking-changes).
 
 ## Unreleased
 
+- Add metabom jar to docker images [#1133](https://github.com/babashka/babashka/issues/1133)
+- Add opencontainers annoations to docker image [#1134](https://github.com/babashka/babashka/issues/1134)
+- Fix Alpine Linux Docker images in CI script [#1140](https://github.com/babashka/babashka/issues/1140)
+
+## 0.7.3 (2021-12-30)
+
+- Do not require java for bb tasks without deps [#1123](https://github.com/babashka/babashka/issues/1123), [#1124](https://github.com/babashka/babashka/issues/1124)
+
+## 0.7.2 (2021-12-29)
+
+- Add `spy` macro from `taoensso.timbre` [#1087](https://github.com/babashka/babashka/issues/1087)
+- Better error for higher order fn arity mismatch
+- Check `shasum` / `sha256sum` in `PATH` on install script ([@thiagokokada](https://github.com/thiagokokada))
+- Build arm64 docker image in CI [#1099](https://github.com/babashka/babashka/issues/1099) ([@cap10morgan](https://github.com/cap10morgan))
+- Upgrade to `edamame` v0.0.19
+- Load tasks and deps from other bb.edn file using `--config` and `--deps-root` options [#1110](https://github.com/babashka/babashka/issues/1110)
+- Uberscript improvements [#584](https://github.com/babashka/babashka/issues/584), [#1037](https://github.com/babashka/babashka/issues/1037)
+- Include native elements in printed stacktrace [#1105](https://github.com/babashka/babashka/issues/1105)
+- Missing error message when exception happens in REPL print [#1116](https://github.com/babashka/babashka/issues/1116)
+- Undeprecate `$` in babashka.process
+- Add lots of library tests to CI ([@cldwalker](https://github.com/cldwalker))
+- Release SNAPSHOT builds to
+  [babashka-dev-builds](https://github.com/babashka/babashka-dev-builds/releases)
+  (use only for testing)
+
+## 0.7.0 (2021-12-10)
+
+- Add compatibility with `clojure.spec.alpha`. See
+  [babashka/spec.alpha](https://github.com/babashka/spec.alpha) and this [blog
+  post](https://blog.michielborkent.nl/using-clojure-spec-alpha-with-babashka.html).
+- Add `to-array-2d`, `aclone`, `areduce` and `amap` ([@MrEbbinghaus](https://github.com/MrEbbinghaus))
+- Add `inst-ms`
+- Add `java.util.StringTokenizer`
+- `clojure.core/read` can read with `PushbackReader` that is not `LineNumberingPushbackReader`
+- Allow macroexpand on `for` and `doseq` ([@erdos](https://github.com/erdos))
+- Add `clojure.instant/read-instant-date`
+- Add `StackTraceElement->vec`
+- Add `memfn`
+- Implement Java field access (for `clojure.spec.alpha`)
+- Warn on requiring `clojure.spec.alpha`, suggesting to use [babashka/spec.alpha](https://github.com/babashka/spec.alpha)
+- Warn on requiring `clojure.core.specs.alpha`, suggesting to explicitly add it to deps
+- Deprecate `$` in babashka.process (still available, but no longer recommended)
+
+## 0.6.8 (2021-12-02)
+
+- Add `reader-conditional?`, `test`
+- Deps.clj: bump to tools jar `1.10.3.1040`
+- Babashka.process: support `deref` with timeout ([@SevereOverfl0w](https://github.com/SevereOverfl0w))
+- Add new functions from clojure 1.11 alpha 3 except `clojure.java.math`
+- nREPL server: catch `Throwable` instead of `Exception`, fixes hanging with `assert`
+
+## 0.6.7 (2021-11-29)
+
+Minor bugfix release:
+
+- `print-deps` included `:local/root` dependency which is not valid outside babashka repo
+- `fs/which` edge case improvement on Windows [#1083](https://github.com/babashka/babashka/issues/1083)
+
+## 0.6.6 (2021-11-29)
+
+-  Resolve program in `babashka.process` on Windows using known extensions. This
+   means you can now invoke `(shell "yarn")` and it will work on both Unix-like
+   systems and Windows.
+- Add `babashka.core` namespace with `windows?` predicate.
+- Add `fs/with-temp-dir` to `babashka.fs` ([@hugoduncan](https://github.com/hugoduncan))
+- Add `fs/home` and `fs/expand-home` to `babashka.fs` ([@Kineolyan](https://github.com/Kineolyan))
+- `clojure.core/read` improvements: support `:eof` + `:read-cond`
+- Add support `*read-eval*`, `*default-reader-fn*` and `*reader-resolver*` dynamic vars to be used with `clojure.core/read`.
+- Add `SQLITE` feature flag ([@nikvdp](https://github.com/nikvdp))
+- Add `javax.crypto.Mac` and `javax.crypto.spec.SecretKeySpec` classes to support development of [yaaws-api](https://github.com/grzm/yaaws-api) ([@grzm](https://github.com/grzm))
+- Add `java.net.Inet4Address` and `java.net.Inet6Address` classes
+- Fix `--version` option, don't read cp file. [#1071](https://github.com/babashka/babashka/issues/1071) ([@bobisageek](https://github.com/bobisageek))
+- Add classes to support running the
+  [xforms](https://github.com/cgrand/xforms) library from source:
+  - `java.util.ArrayDeque`
+  - `java.util.ArrayList`
+  - `java.util.Collections`
+  - `java.util.Comparator`
+  - `java.util.NoSuchElementException`
+- `babashka.curl`: support `:as :bytes` option to download binary file
+- Add compatibility with [hato](https://github.com/gnarroway/hato) and
+  [clj-http-lite](https://github.com/clj-commons/clj-http-lite) insecure feature
+  by adding classes:
+  - `java.net.CookiePolicy`
+  - `java.net.http.HttpTimeoutException`
+  - `javax.net.ssl.HostnameVerifier`
+  - `javax.net.ssl.HttpsURLConnection`
+  - `javax.net.ssl.KeyManagerFactory`
+  - `javax.net.ssl.SSLSession`
+  - `javax.net.ssl.TrustManagerFactory`
+  - `java.security.KeyStore`
+  - `java.util.zip.Inflater`
+  - `java.util.zip.ZipException`
+
+## 0.6.5 (2021-11-13)
+
+- Compatibility with a [fork of
+  tools.namespace](https://github.com/babashka/tools.namespace). This allows
+  running the Cognitect
+  [test-runner](https://github.com/cognitect-labs/test-runner) (Cognitest) from source.
+- Add various `tools.build` related classes for running parts of tools.build
+  with bb ([@hugoduncan](https://github.com/hugoduncan)). Keep an eye on [this
+  repo](https://github.com/babashka/tools.bbuild).
+- Deps.clj: upgrade tools jar, support checking manifest staleness (see [TDEPS-83](https://clojure.atlassian.net/browse/TDEPS-83))
+- Add `clojure.lang.IPersistentList` ([@FieryCod](https://github.com/FieryCod))
+- The [contajners](https://github.com/lispyclouds/contajners) library is now compatible with babashka
+- Support `Object` `toString` override on defrecords [#999](https://github.com/babashka/babashka/issues/999).
+- Bump to GraalVM 21.3.0 JVM 11
+- Bump `core.async` to `1.4.627`
+- Bump edamame to `v0.0.14`, fixes parsing of `foo@bar`
+- Fix segfault when reifying `FileVisitor` with `visitFileFailed` [#1055](https://github.com/babashka/babashka/issues/1055)
+- Add `PGProperty` fields to reflection config (fix for postgres feature flag) [#1046](https://github.com/babashka/babashka/issues/1046) ([@bobisageek](https://github.com/bobisageek))
+- Fix for `babashka.fs/unzip` when entry in dir comes before dir in entries
+- Calling `.close` on `DirectoryStream` fails [#1061](https://github.com/babashka/babashka/issues/1061)
+- Add support for `java.nio.file.attribute.BasicFileAttributes`
+
+## 0.6.4
+
+- Fix for `DEPS_CLJ_TOOLS_VERSION` introduced in deps.clj bundled in 0.6.3
+
+## 0.6.3
+
+- Add `java.security.Provider` and `java.security.Security`. This adds compatibility with [clj-commons/digest](https://github.com/clj-commons/digest).
+- Fix mapping for `babashka.fs/unzip` [#1030](https://github.com/babashka/babashka/issues/1030)
+- Pods: support metadata in pod vars, like docstrings ([@quoll](https://github.com/quoll))
+- babashka.curl: support `:follow-redirects false` ([@sudorock](https://github.com/sudorock))
+- Add support for `--init` as a file to be loaded before evaluation actions [#1033](https://github.com/babashka/babashka/issues/1033) ([@bobisageek](https://github.com/bobisageek))
+- Bump rewrite-clj to v1.0.699-alpha ([@yannvanhalewyn](https://github.com/yannvanhalewyn))
+- Fix `BABASHKA_FEATURE_POSTGRESQL` feature flag, initialize `java.sql.SQLException` build time [#1040](https://github.com/babashka/babashka/issues/1040)
+- Deps.clj: upgrade to tools version `1.10.3.998` and include new
+  `DEPS_CLJ_TOOLS_VERSION` environment variable to use older or newer tools jar.
+
+## 0.6.2
+
+- Add `java.util.zip.ZipFile`, `java.util.stream.BaseStream`
+- Fix data reader for clojure.data.xml and `*input*` [#1004](https://github.com/babashka/babashka/issues/1004) ([@bobisageek](https://github.com/bobisageek))
+- Upgrade `deps.clj` (matches clojure CLI `1.10.986`)
+- Print locals only when debug option is enabled [#1015](https://github.com/babashka/babashka/issues/1015)
+
+### SCI:
+
+- Fix order of protocol handling wrt/ `extend-type`, `defrecord` and `:extend-via-metadata`
+
+### babashka.curl:
+
+- Support keywords as query and form param keys ([@lispyclouds](https://github.com/lispyclouds))
+
+### babashka.nrepl:
+
+- Fix hanging CIDER [#45](https://github.com/babashka/babashka.nrepl/issues/45)
+
+### babashka.fs:
+
+-  Add `fs/unzip`
+
+## 0.6.1
+
+- Fix for `java-http-clj` `send-async` [#997](https://github.com/babashka/babashka/issues/997)
+- Add `PipedInput/OutputStream` [#1001](https://github.com/babashka/babashka/issues/1001)
+- `aarch64` static binaries are compiled with `"-H:+StaticExecutableWithDynamicLibC"`
+
+SCI:
+
+- Self-referential function returns wrong binding in presence of laziness
+  [#1006](https://github.com/babashka/babashka/issues/1006)
+
+## 0.6.0
+
+- Support for `java.net` HTTP Client. This enables running
+  [java-http-clj](https://github.com/schmee/java-http-clj) from source. The raw
+  interop is the first part of a multi-stage plan to move all http related
+  scripting towards `java.net.http` in favor of the other two solutions
+  currently available in `bb`: `babashka.curl` and `org.httpkit.client`. ([@grzm](https://github.com/grzm))
+- Add `*print-readably*` and `*flush-on-newline*` [#959](https://github.com/babashka/babashka/issues/959)
+- Support `:clojure.core/eval-file metadata` [#960](https://github.com/babashka/babashka/issues/960)
+- Add `clojure.data.xml/alias-uri` [#995](https://github.com/babashka/babashka/issues/995)
+- Make REPL requires available in expression on command line [#972](https://github.com/babashka/babashka/issues/972) ([@bobisageek](https://github.com/bobisageek))
+- Fix docstrings and metadata for large number of vars [#957](https://github.com/babashka/babashka/issues/957) ([@bobisageek](https://github.com/bobisageek))
+- Upgrade `deps.clj` / `tools.jar` to match Clojure CLI 1.10.3.967
+- Add (limited) support for `java.lang.reflect.Method` (`getName` only) [#969](https://github.com/babashka/babashka/issues/969)
+- Use tagged-literal for unknown tags when reading EDN via `*input*` [#975](https://github.com/babashka/babashka/issues/975) ([@bobisageek](https://github.com/bobisageek))
+- Logging feature flag and `tools.logging.readable` [#981](https://github.com/babashka/babashka/issues/981) ([@bobisageek](https://github.com/bobisageek))
+- Migrate GraalVM config to uberjar [#973](https://github.com/babashka/babashka/issues/973) ([@ericdallo](https://github.com/ericdallo))
+- Upgrade to GraalVM 21.2.0
+
+## 0.5.1
+
+- Add new `print-deps` subcommand for printing a `deps.edn` map and classpath
+  which includes all built-in deps. This can be used for editor tooling like
+  Cursive and clojure-lsp, but also for migrating a babashka project to a Graal
+  native-image project.
 - Upgrade `clj-yaml` to 0.7.107 which adds two new vars: `generate-stream`, `parse-stream`
+- Add `timbre/merge-config!`
+- Add `strip-ext` to `babashka.fs` ([@corasaurus-hex](https://github.com/corasaurus-hex))
+- Fixed: `with-open` fails on `java.io.PrintWriter` [#953](https://github.com/babashka/babashka/issues/953)
+- Upgrade `deps.clj` to match Clojure CLI `1.10.3.933`
 - Upgrade several other deps
 
 ## 0.5.0

@@ -68,7 +68,7 @@
 
 (deftest read-objects
   (is (= {:k1 1, :k2 2, :k3 3, :k4 4, :k5 5, :k6 6, :k7 7, :k8 8
-          :k9 9, :k10 10, :k11 11, :k12 12, :k13 13, :k14 14, :k15 15, :k16 16} 
+          :k9 9, :k10 10, :k11 11, :k12 12, :k13 13, :k14 14, :k15 15, :k16 16}
          (json/read-str "{\"k1\": 1, \"k2\": 2, \"k3\": 3, \"k4\": 4,
                           \"k5\": 5, \"k6\": 6, \"k7\": 7, \"k8\": 8,
                           \"k9\": 9, \"k10\": 10, \"k11\": 11, \"k12\": 12,
@@ -241,6 +241,7 @@
         roundtripped  (java.util.UUID/fromString (json/read-str (json/write-str uid)))]
     (is (= uid roundtripped))))
 
+;; BB-TEST-PATCH: bb doesn't have SimpleDateFormat
 #_(def ^java.text.SimpleDateFormat date-format
   (doto (java.text.SimpleDateFormat. "dd-MM-yyyy hh:mm:ss")
     (.setTimeZone  (java.util.TimeZone/getDefault))))
@@ -413,6 +414,7 @@
     (is (= x (json/read-str (with-out-str (json/pprint x)))))))
 
 (deftest pretty-print-nonescaped-unicode
+  ;; BB-TEST-PATCH: Windows compatability
   (is (= (str "\"\u1234\u4567\"" (System/lineSeparator))
          (with-out-str
            (json/pprint "\u1234\u4567" :escape-unicode false)))))

@@ -6,4 +6,4 @@
 
 (def version (str/trim (slurp (io/file "resources" "BABASHKA_VERSION"))))
 (sh "lein" "with-profiles" "+reflection" "run")
-(io/copy (io/file "reflection.json") (io/file (str "babashka-" version "-reflection.json")))
+(io/copy (io/file "resources/META-INF/native-image/babashka/babashka/reflect-config.json") (io/file (str "babashka-" version "-reflection.json")))

@@ -1,5 +1,6 @@
 (ns babashka.wait
-  (:require [clojure.java.io :as io])
+  (:require [clojure.java.io :as io]
+            [sci.core :as sci])
   (:import [java.net Socket SocketException]))
 
 (set! *warn-on-reflection* true)
@@ -56,7 +57,13 @@
                default
                :else
                (assoc opts :took
-                 (- (System/currentTimeMillis) t0))))))))
+                      (- (System/currentTimeMillis) t0))))))))
+
+(def wns (sci/create-ns 'babashka.wait nil))
+
+(def wait-namespace
+  {'wait-for-port (sci/copy-var wait-for-port wns)
+   'wait-for-path (sci/copy-var wait-for-path wns)})
 
 (comment
   (wait-for-port "localhost" 80)

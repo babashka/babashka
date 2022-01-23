@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
 
-install_dir=${1:-/usr/local}
+set -euo pipefail
+
+CLOJURE_TOOLS_VERSION="1.10.3.1040"
+
+install_dir="${1:-/usr/local}"
 mkdir -p "$install_dir"
 cd /tmp
-curl -O -sL https://download.clojure.org/install/clojure-tools-1.10.1.447.tar.gz
-tar xzf clojure-tools-1.10.1.447.tar.gz
+curl -O -sL "https://download.clojure.org/install/clojure-tools-$CLOJURE_TOOLS_VERSION.tar.gz"
+tar xzf "clojure-tools-$CLOJURE_TOOLS_VERSION.tar.gz"
 cd clojure-tools
 clojure_lib_dir="$install_dir/lib/clojure"
 mkdir -p "$clojure_lib_dir/libexec"
@@ -18,6 +22,6 @@ cp clojure "$install_dir/bin"
 cp clj "$install_dir/bin"
 
 cd /tmp
-rm -rf clojure-tools-1.10.1.447.tar.gz
-rm -rf clojure-tools
+rm -rf "clojure-tools-$CLOJURE_TOOLS_VERSION.tar.gz"
+rm -rf "clojure-tools"
 echo "Installed clojure to $install_dir/bin"

@@ -46,9 +46,11 @@
 (defn stack-trace-fn []
   (stack-trace))
 
+;; BB-TEST-PATCH: Returns jdk.internal.reflect.DelegatingMethodAccessorImpl
+;; instead of what's expected
 #_(deftest test-stack-trace
   (let [{:keys [methodName className]} (-> (stack-trace-fn) first bean)]
-    (is (= methodName "invoke"))
+    (is (.startsWith ^String methodName "invoke"))
     (is (re-find #"stack_trace_fn" className))))
 
 (deftest test-resolve-local

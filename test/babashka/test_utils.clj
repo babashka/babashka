@@ -47,13 +47,10 @@
 (defn bb-jvm [input-or-opts & args]
   (reset! cp/cp-state nil)
   (reset! main/env {})
-  (if-let [path *bb-edn-path*]
-    (let [raw (slurp path)]
-      (vreset! common/bb-edn
-               (assoc (edn/read-string raw)
-                      :raw raw)))
-    (vreset! common/bb-edn nil))
-  (let [os (java.io.StringWriter.)
+  (vreset! common/bb-edn nil)
+  (let [args (cond-> args *bb-edn-path*
+                     (->> (list* "--config" *bb-edn-path* "--deps-root" ".")))
+        os (java.io.StringWriter.)
         es (if-let [err (:err input-or-opts)]
              err (java.io.StringWriter.))
         in (if (string? input-or-opts)
@@ -75,7 +72,11 @@
                         (with-in-str input-or-opts (apply main/main args))
                         (apply main/main args)))]
             (if (zero? res)
-              (normalize (str os))
+              (do
+                (let [err (str es)]
+                  (when-not (str/blank? err)
+                    (println err))) ;; flush stderr
+                (normalize (str os)))
               (do
                 (println (str os))
                 (throw (ex-info (str es)
@@ -87,14 +88,12 @@
         (vars/bindRoot sci/err *err*)))))
 
 (defn bb-native [input & args]
-  (let [res (p/process (into ["./bb"] args)
-                       (cond-> {:in input
-                                :out :string
-                                :err :string}
-                         *bb-edn-path*
-                         (assoc
-                          :extra-env (assoc (into {} (System/getenv))
-                                            "BABASHKA_EDN" *bb-edn-path*))))
+  (let [args (cond-> args *bb-edn-path*
+               (->> (list* "--config" *bb-edn-path* "--deps-root" ".")))
+        res (p/process (into ["./bb"] args)
+                       {:in input
+                        :out :string
+                        :err :string})
         res (deref res)
         exit (:exit res)
         error? (pos? exit)]

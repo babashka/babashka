@@ -70,4 +70,13 @@
        ;; Some more zero-extension Tests
        "1-SNAPSHOT"      "1.0-SNAPSHOT"    0
        "1-alpha"         "1-alpha0"        0
+
+       ;; Prefixed versions
+       "v1"              "v1"              0
+       "v1"              "v2"             -1
+       "v1"              "v1.1"           -1
+       "v1.1"            "v1.2"           -1
+       "v1.1"            "v2"             -1
+       "alpaca1.0"       "bermuda1.0"     -1
        ))
+

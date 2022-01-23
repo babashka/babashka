@@ -23,3 +23,6 @@
 [submodule "fs"]
 	path = fs
 	url = https://github.com/babashka/fs
+[submodule "babashka.core"]
+	path = babashka.core
+	url = https://github.com/babashka/babashka.core.git

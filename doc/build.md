@@ -3,24 +3,24 @@
 ## Prerequisites
 
 - Install [lein](https://leiningen.org/) for producing uberjars
-- Download [GraalVM](https://www.graalvm.org/downloads/). Currently we use *java11-21.1.0*.
+- Download [GraalVM](https://www.graalvm.org/downloads/). Currently we use *java11-21.3.0*.
 - For Windows, installing Visual Studio 2019 with the "Desktop development
 with C++" workload is recommended.
 - Set `$GRAALVM_HOME` to the GraalVM distribution directory. On macOS this can look like:
 
   ``` shell
-  export GRAALVM_HOME=~/Downloads/graalvm-ce-java11-21.1.0/Contents/Home
+  export GRAALVM_HOME=~/Downloads/graalvm-ce-java11-21.3.0/Contents/Home
   ```
 
   On linux:
 
   ``` shell
-  export GRAALVM_HOME=~/Downloads/graalvm-ce-java11-21.1.0
+  export GRAALVM_HOME=~/Downloads/graalvm-ce-java11-21.3.0
   ```
 
   On Windows, from the [Visual Studio 2019 x64 Native Tools Command Prompt](https://github.com/oracle/graal/issues/2116#issuecomment-590470806) or `cmd.exe` (not Powershell):
   ```
-  set GRAALVM_HOME=%USERPROFILE%\Downloads\graalvm-ce-java11-21.1.0
+  set GRAALVM_HOME=%USERPROFILE%\Downloads\graalvm-ce-java11-21.3.0
   ```
   If you are not running from the x64 Native Tools Command Prompt, you will need to set additional environment variables using:
   ```
@@ -93,8 +93,8 @@ Babashka supports the following feature flags:
 
 | Name   |  Description                                 | Default  |
 |--------|----------------------------------------------|----------|
-| `BABASHKA_FEATURE_CORE_ASYNC` | Includes the [clojure.core.async](https://github.com/clojure/core.async) library | `true` |
 | `BABASHKA_FEATURE_CSV` | Includes the [clojure.data.csv](https://github.com/clojure/data.csv) library | `true` |
+| `BABASHKA_FEATURE_JAVA_NET_HTTP` | Includes commonly used classes from the `java.net.http` package | `true` |
 | `BABASHKA_FEATURE_JAVA_NIO` | Includes commonly used classes from the `java.nio` package | `true` |
 | `BABASHKA_FEATURE_JAVA_TIME` | Includes commonly used classes from the `java.time` package | `true` |
 | `BABASHKA_FEATURE_TRANSIT` | Includes the [transit-clj](https://github.com/cognitect/transit-clj) library | `true` |
@@ -107,11 +107,13 @@ Babashka supports the following feature flags:
 | `BABASHKA_FEATURE_TEST_CHECK` | Includes the [clojure.test.check](https://github.com/clojure/test.check) library | `true` |
 | `BABASHKA_FEATURE_SPEC_ALPHA` | Includes the [clojure.spec.alpha](https://github.com/clojure/spec.alpha) library (WIP) | `false` |
 | `BABASHKA_FEATURE_JDBC` | Includes the [next.jdbc](https://github.com/seancorfield/next-jdbc) library | `false`    |
+| `BABASHKA_FEATURE_SQLITE` | Includes the [sqlite-jdbc](https://github.com/xerial/sqlite-jdbc) library | `false`    |
 | `BABASHKA_FEATURE_POSTGRESQL` | Includes the [PostgresSQL](https://jdbc.postgresql.org/) JDBC driver |  `false` |
 | `BABASHKA_FEATURE_HSQLDB` | Includes the [HSQLDB](http://www.hsqldb.org/) JDBC driver | `false` |
 | `BABASHKA_FEATURE_ORACLEDB` | Includes the [Oracle](https://www.oracle.com/database/technologies/appdev/jdbc.html) JDBC driver | `false` |
 | `BABASHKA_FEATURE_DATASCRIPT` | Includes [datascript](https://github.com/tonsky/datascript) | `false` |
 | `BABASHKA_FEATURE_LANTERNA` | Includes [clojure-lanterna](https://github.com/babashka/clojure-lanterna) | `false` |
+| `BABASHKA_FEATURE_LOGGING` | Includes [clojure.tools.logging](https://github.com/clojure/tools.logging) with [taoensso.timbre](https://github.com/ptaoussanis/timbre) as the default implementation| `true` | 
 
 Note that httpkit server is currently experimental, the feature flag could be toggled to `false` in a future release.
 

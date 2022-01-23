@@ -12,7 +12,8 @@ test/
 .gitmodules
 appveyor.yml
 CHANGES.md
-deps.edn
 Dockerfile
 LICENSE
 README.md
+.cpcache/
+target/

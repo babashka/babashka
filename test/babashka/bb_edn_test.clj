@@ -1,9 +1,11 @@
 (ns babashka.bb-edn-test
   (:require
    [babashka.fs :as fs]
+   [babashka.impl.classpath :as cp]
    [babashka.impl.common :as common]
    [babashka.main :as main]
    [babashka.test-utils :as test-utils]
+   [borkdude.deps]
    [clojure.edn :as edn]
    [clojure.string :as str]
    [clojure.test :as test :refer [deftest is testing]]))
@@ -33,6 +35,22 @@
     (test-utils/with-config '{:deps {medley/medley {:mvn/version "1.3.0"}}}
       (is (= "src"
              (bb "-cp" "src" "-e" "(babashka.classpath/get-classpath)"))))))
+
+(deftest print-deps-test
+  (test-utils/with-config '{:deps {medley/medley {:mvn/version "1.3.0"}}}
+    (testing "deps output"
+      (let [edn (bb "print-deps")
+            deps (:deps edn)]
+        (is deps)
+        (is (map? (get deps 'selmer/selmer)))
+        (is (string? (:mvn/version (get deps 'selmer/selmer))))
+        (testing "user provided lib"
+          (is (map? (get deps 'medley/medley))))))
+    (testing "classpath output"
+      (let [classpath (test-utils/bb nil "print-deps" "--format" "classpath")]
+        (is (str/includes? classpath "selmer"))
+        (is (str/includes? classpath (System/getProperty "path.separator")))
+        (is (str/includes? classpath "medley"))))))
 
 (deftest task-test
   (test-utils/with-config '{:tasks {foo (+ 1 2 3)}}
@@ -204,7 +222,10 @@
                 t1             (System/currentTimeMillis)
                 delta-parallel (- t1 t0)]
             (is (= tree s))
-            (is (< delta-parallel delta-sequential))))))
+            (when (>=  (doto (-> (Runtime/getRuntime) (.availableProcessors))
+                         (prn))
+                       2)
+              (is (< delta-parallel delta-sequential)))))))
     (testing "exception"
       (test-utils/with-config '{:tasks {a (Thread/sleep 10000)
                                         b (do (Thread/sleep 10)
@@ -246,21 +267,13 @@
       (is (= '([8 :foo] [8 :bar] [11 :foo] [11 :bar] [15 :foo] [15 :bar])
             (bb "run" "--prn" "run-all")))))
   ;; TODO: disabled because of " Volume in drive C has no label.\r\n Volume Serial Number is 1CB8-D4AA\r\n\r\n Directory of C:\\projects\\babashka\r\n\r\n" on Appveyor. See https://ci.appveyor.com/project/borkdude/babashka/builds/40003094.
-  (when-not main/windows?
-    (let [tmp-dir (fs/create-temp-dir)
-          out     (str (fs/file tmp-dir "out.txt"))
-          ls-cmd  (if main/windows? "cmd /c dir" "ls")
-          expected-output (if main/windows? "File Not Found" "foobar")]
-      (testing "shell test with :continue"
-        (test-utils/with-config {:tasks {'foo (list 'shell {:out      out
-                                                            :err      out
-                                                            :continue true}
-                                                    (str ls-cmd " foobar"))}}
-          (bb "foo")
-          (is (str/includes? (slurp out)
-                             expected-output))))
-      (fs/delete out))))
-
+  (testing "shell test with :continue"
+    (let [ls-cmd  (if main/windows? "cmd /c dir" "ls")]
+      (test-utils/with-config {:tasks {'foo (list 'do
+                                                  (list 'shell {:continue true}
+                                                        (str ls-cmd " foobar"))
+                                                  (list 'println :hello))}}
+        (is (str/includes? (test-utils/bb nil "foo") ":hello"))))))
 
 (deftest ^:skip-windows unix-task-test
   (testing "shell pipe test"
@@ -329,20 +342,32 @@
         (is (= "uberjar" (:file (main/parse-opts ["uberjar"]))))
         (finally (fs/delete "uberjar"))))))
 
-(deftest min-bb-version
-  (when-not test-utils/native?
-    (vreset! common/bb-edn '{:min-bb-version "300.0.0"})
-    (let [sw (java.io.StringWriter.)]
-      (binding [*err* sw]
-        (main/main "-e" "nil"))
-      (is (str/includes? (str sw)
-                         "WARNING: this project requires babashka 300.0.0 or newer, but you have: ")))))
+(deftest min-bb-version-test
+  (fs/with-temp-dir [dir {}]
+    (let [config (str (fs/file dir "bb.edn"))]
+      (spit config '{:min-bb-version "300.0.0"})
+      (let [sw (java.io.StringWriter.)]
+        (binding [*err* sw]
+          (main/main "--config" config  "-e" "nil"))
+        (is (str/includes? (str sw)
+                           "WARNING: this project requires babashka 300.0.0 or newer, but you have: "))))))
 
-;; TODO:
-;; Do we want to support the same parsing as the clj CLI?
-;; Or do we want `--aliases :foo:bar`
-;; Let's wait for a good use case
-#_(deftest alias-deps-test
-    (test-utils/with-config '{:aliases {:medley {:deps {medley/medley {:mvn/version "1.3.0"}}}}}
-      (is (= '{1 {:id 1}, 2 {:id 2}}
-             (bb "-A:medley" "-e" "(require 'medley.core)" "-e" "(medley.core/index-by :id [{:id 1} {:id 2}])")))))
+(deftest classpath-other-bb-edn-test
+  (fs/with-temp-dir [dir {}]
+    (let [config (str (fs/file dir "bb.edn"))]
+      (spit config '{:paths ["src"]
+                     :tasks {cp (prn (babashka.classpath/get-classpath))}})
+      (let [out (bb "--config" config "cp")
+            entries (cp/split-classpath out)
+            entry (first entries)]
+        (is (= 1 (count entries)))
+        (is (= (fs/parent config) (fs/parent entry)))
+        (is (str/ends-with? entry "src"))))))
+
+(deftest without-deps-test
+  (when-not test-utils/native?
+    (with-redefs [borkdude.deps/-main (fn [& _]
+                                        (throw (ex-info "This ain't allowed!" {})))]
+      (testing "bb.edn without :deps should not require deps.clj"
+        (test-utils/with-config '{:tasks {a 1}}
+          (bb "-e" "(+ 1 2 3)"))))))

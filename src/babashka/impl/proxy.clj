@@ -57,4 +57,36 @@
         (key [] ((method-or-bust methods 'key) this))
         (val [] ((method-or-bust methods 'val) this))
         (getKey [] ((method-or-bust methods 'getKey) this))
-        (getValue [] ((method-or-bust methods 'getValue) this))))))
+        (getValue [] ((method-or-bust methods 'getValue) this)))
+
+      ["java.net.Authenticator" #{}]
+      (proxy [java.net.Authenticator] []
+        (getPasswordAuthentication []
+          ((method-or-bust methods 'getPasswordAuthentication) this)))
+
+      ["java.net.ProxySelector" #{}]
+      (proxy [java.net.ProxySelector] []
+        (connectFailed [uri socket-address ex]
+          ((method-or-bust methods 'connectFailed) this uri socket-address ex))
+        (select [uri] ((method-or-bust methods 'select) this uri)))
+
+      ["javax.net.ssl.HostnameVerifier" #{}]
+      (proxy [javax.net.ssl.HostnameVerifier] []
+        (verify [host-name session] ((method-or-bust methods 'verify) this host-name session))))))
+
+(defn class-sym [c] (symbol (class-name c)))
+
+(def custom-reflect-map
+  {(class-sym (class (proxy-fn {:class java.net.Authenticator})))
+   {:methods [{:name "getPasswordAuthentication"}]}
+   (class-sym (class (proxy-fn {:class java.net.ProxySelector})))
+   {:methods [{:name "connectFailed"}
+              {:name "select"}]}
+   (class-sym (class (proxy-fn {:class javax.net.ssl.HostnameVerifier})))
+   {:methods [{:name "verify"}]}})
+
+;;; Scratch
+
+(comment
+
+  )

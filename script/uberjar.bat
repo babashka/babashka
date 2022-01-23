@@ -16,6 +16,12 @@ if "%BABASHKA_FEATURE_JDBC%"=="true" (
   set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/jdbc
 )
 
+if "%BABASHKA_FEATURE_SQLITE%"=="true" (
+  set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/sqlite
+) else (
+  set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/sqlite
+)
+
 if "%BABASHKA_FEATURE_POSTGRESQL%"=="true" (
   set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/postgresql
 ) else (
@@ -44,12 +50,6 @@ if not "%BABASHKA_FEATURE_YAML%"=="false" (
   set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/yaml
 ) else (
   set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/yaml
-)
-
-if not "%BABASHKA_FEATURE_CORE_ASYNC%"=="false" (
-  set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/core-async
-) else (
-  set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/core-async
 )
 
 if not "%BABASHKA_FEATURE_CSV%"=="false" (
@@ -112,16 +112,16 @@ set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/spec-alpha
 set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/spec-alpha
 )
 
-if not "%BABASHKA_FEATURE_REWRITE_CLJ%"=="false" (
-set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/rewrite-clj
-) else (
-set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/rewrite-clj
-)
-
-if not "%BABASHKA_FEATURE_REWRITE_SELMER%"=="false" (
+if not "%BABASHKA_FEATURE_SELMER%"=="false" (
 set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/selmer
 ) else (
 set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/selmer
+)
+
+if not "%BABASHKA_FEATURE_LOGGING%"=="false" (
+set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/logging
+) else (
+set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/logging
 )
 
 call lein with-profiles %BABASHKA_LEIN_PROFILES% bb "(+ 1 2 3)"

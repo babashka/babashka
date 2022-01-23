@@ -1,16 +1,28 @@
-FROM clojure:lein-2.9.1 AS BASE
+FROM clojure:openjdk-11-lein-2.9.6-bullseye AS BASE
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update
-RUN apt install --no-install-recommends -yy curl unzip build-essential zlib1g-dev sudo
+RUN apt install --no-install-recommends -yy build-essential zlib1g-dev
 WORKDIR "/opt"
-RUN curl -sLO https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.1.0/graalvm-ce-java11-linux-amd64-21.1.0.tar.gz
-RUN tar -xzf graalvm-ce-java11-linux-amd64-21.1.0.tar.gz
+
+ENV GRAALVM_VERSION="21.3.0"
+ARG TARGETARCH
+ENV BABASHKA_ARCH=${TARGETARCH}
+ENV GRAALVM_ARCH=${TARGETARCH}
+RUN if [ "${TARGETARCH}" = "" ] || [ "${TARGETARCH}" = "amd64" ]; then \
+      export GRAALVM_ARCH=amd64; export BABASHKA_ARCH=x86_64; \
+    elif [ "${TARGETARCH}" = "arm64" ]; then \
+      export GRAALVM_ARCH=aarch64; \
+    fi && \
+    echo "Installing GraalVM for ${GRAALVM_ARCH}" && \
+    curl -sLO https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-${GRAALVM_VERSION}/graalvm-ce-java11-linux-${GRAALVM_ARCH}-${GRAALVM_VERSION}.tar.gz && \
+    tar -xzf graalvm-ce-java11-linux-${GRAALVM_ARCH}-${GRAALVM_VERSION}.tar.gz && \
+    rm graalvm-ce-java11-linux-${GRAALVM_ARCH}-${GRAALVM_VERSION}.tar.gz
 
 ARG BABASHKA_XMX="-J-Xmx4500m"
 
-ENV GRAALVM_HOME="/opt/graalvm-ce-java11-21.1.0"
-ENV JAVA_HOME="/opt/graalvm-ce-java11-21.1.0/bin"
+ENV GRAALVM_HOME="/opt/graalvm-ce-java11-${GRAALVM_VERSION}"
+ENV JAVA_HOME="/opt/graalvm-ce-java11-${GRAALVM_VERSION}/bin"
 ENV PATH="$JAVA_HOME:$PATH"
 ENV BABASHKA_XMX=$BABASHKA_XMX
 
@@ -18,8 +30,8 @@ ENV BABASHKA_XMX=$BABASHKA_XMX
 # by setting them at build time via `docker build --build-arg ARG_NAME=true ...`
 ARG BABASHKA_LEAN=
 ARG BABASHKA_MUSL=
-ARG BABASHKA_FEATURE_CORE_ASYNC=
 ARG BABASHKA_FEATURE_CSV=
+ARG BABASHKA_FEATURE_JAVA_NET_HTTP=
 ARG BABASHKA_FEATURE_JAVA_NIO=
 ARG BABASHKA_FEATURE_JAVA_TIME=
 ARG BABAHSKA_FEATURE_TRANSIT=
@@ -35,8 +47,8 @@ ARG BABASHKA_FEATURE_DATASCRIPT=
 ARG BABASHKA_FEATURE_LANTERNA=
 ARG BABASHKA_STATIC=
 ENV BABASHKA_LEAN=$BABASHKA_LEAN
-ENV BABASHKA_FEATURE_CORE_ASYNC=$BABASHKA_FEATURE_CORE_ASYNC
 ENV BABASHKA_FEATURE_CSV=$BABASHKA_FEATURE_CSV
+ENV BABASHKA_FEATURE_JAVA_NET_HTTP=$BABASHKA_FEATURE_JAVA_NET_HTTP
 ENV BABASHKA_FEATURE_JAVA_NIO=$BABASHKA_FEATURE_JAVA_NIO
 ENV BABASHKA_FEATURE_JAVA_TIME=$BABASHKA_FEATURE_JAVA_TIME
 ENV BABAHSKA_FEATURE_TRANSIT=$BABAHSKA_FEATURE_TRANSIT
@@ -61,5 +73,6 @@ RUN ./script/compile
 FROM ubuntu:latest
 RUN apt-get update && apt-get install -y curl \
         && mkdir -p /usr/local/bin
+COPY --from=BASE /opt/target/metabom.jar /opt/babashka-metabom.jar
 COPY --from=BASE /opt/bb /usr/local/bin/bb
 CMD ["bb"]

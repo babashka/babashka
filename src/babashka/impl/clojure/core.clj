@@ -1,14 +1,15 @@
 (ns babashka.impl.clojure.core
   {:no-doc true}
   (:refer-clojure :exclude [future read+string clojure-version with-precision
-                            send-via send send-off sync])
+                            send-via send send-off sync into-array])
   (:require [babashka.impl.common :as common]
             [borkdude.graal.locking :as locking]
             [clojure.core :as c]
             [clojure.string :as str]
             [sci.core :as sci]
-            [sci.impl.namespaces :refer [copy-core-var clojure-core-ns]]
-            [sci.impl.vars :as vars]))
+            [sci.impl.namespaces :refer [copy-core-var core-var macrofy]]
+            [sci.impl.parser :as parser]
+            [sci.impl.vars :as vars :refer [clojure-core-ns]]))
 
 (defn locking* [form bindings v f & args]
   (apply @#'locking/locking form bindings v f args))
@@ -22,10 +23,14 @@
      (prn (str "Elapsed time: " (/ (double (- (. System (nanoTime)) start#)) 1000000.0) " msecs"))
      ret#))
 
-(def data-readers (sci/new-dynamic-var '*data-readers* nil))
-(def command-line-args (sci/new-dynamic-var '*command-line-args* nil))
-(def warn-on-reflection (sci/new-dynamic-var '*warn-on-reflection* false))
-(def math-context (sci/new-dynamic-var '*math-context* nil))
+(defn core-dynamic-var
+  ([sym] (core-dynamic-var sym nil))
+  ([sym init-val] (sci/new-dynamic-var sym init-val {:ns clojure-core-ns})))
+
+(def data-readers parser/data-readers)
+(def command-line-args (core-dynamic-var '*command-line-args*))
+(def warn-on-reflection (core-dynamic-var '*warn-on-reflection* false))
+(def math-context (core-dynamic-var '*math-context*))
 
 ;; (def major (:major *clojure-version*))
 ;; (def minor (:minor *clojure-version*))
@@ -137,6 +142,21 @@
   [_flags-ignored-for-now & body]
   `(clojure.core/-run-in-transaction (fn [] ~@body)))
 
+(defn into-array
+  "Returns an array with components set to the values in aseq. The array's
+  component type is type if provided, or the type of the first value in
+  aseq if present, or Object. All values in aseq must be compatible with
+  the component type. Class objects for the primitive types can be obtained
+  using, e.g., Integer/TYPE."
+  {:added "1.0"
+   :static true}
+  ([aseq]
+   (try (clojure.lang.RT/seqToTypedArray (seq aseq))
+        (catch IllegalArgumentException _
+          (clojure.lang.RT/seqToTypedArray Object (seq aseq)))))
+  ([type aseq]
+   (clojure.lang.RT/seqToTypedArray type (seq aseq))))
+
 (def core-extras
   {;; agents
    'agent (copy-core-var agent)
@@ -158,20 +178,20 @@
    'file-seq (copy-core-var file-seq)
    'promise (copy-core-var promise)
    'deliver (copy-core-var deliver)
-   'locking (with-meta locking* {:sci/macro true})
+   'locking (macrofy 'locking locking*)
    'shutdown-agents (copy-core-var shutdown-agents)
    'slurp (copy-core-var slurp)
    'spit (copy-core-var spit)
-   'time (with-meta time* {:sci/macro true})
+   'time (macrofy 'time time*)
    'Throwable->map (copy-core-var Throwable->map)
    'tap> (copy-core-var tap>)
    'add-tap (copy-core-var add-tap)
    'remove-tap (copy-core-var remove-tap)
    '*data-readers* data-readers
-   'default-data-readers default-data-readers
+   'default-data-readers (copy-core-var default-data-readers)
    'xml-seq (copy-core-var xml-seq)
-   'read+string (fn [& args]
-                  (apply read+string @common/ctx args))
+   'read+string (core-var 'read+string (fn [& args]
+                  (apply read+string @common/ctx args)))
    '*command-line-args* command-line-args
    '*warn-on-reflection* warn-on-reflection
    '*math-context* math-context
@@ -187,5 +207,16 @@
    'ref-set (sci/copy-var ref-set clojure-core-ns)
    ;;'*clojure-version* clojure-version-var
    ;;'clojure-version (sci/copy-var clojure-version clojure-core-ns)
-   }
+   'update-vals (sci/copy-var update-vals clojure-core-ns)
+   'update-keys (sci/copy-var update-keys clojure-core-ns)
+   'parse-boolean (sci/copy-var parse-boolean clojure-core-ns)
+   'parse-double (sci/copy-var parse-double clojure-core-ns)
+   'parse-long (sci/copy-var parse-long clojure-core-ns)
+   'parse-uuid (sci/copy-var parse-uuid clojure-core-ns)
+   'random-uuid (sci/copy-var random-uuid clojure-core-ns)
+   'NaN? (sci/copy-var NaN? clojure-core-ns)
+   'infinite? (sci/copy-var infinite? clojure-core-ns)
+   'StackTraceElement->vec (sci/copy-var StackTraceElement->vec clojure-core-ns)
+   'memfn (sci/copy-var memfn clojure-core-ns)
+   'into-array (sci/copy-var into-array clojure-core-ns)}
   )

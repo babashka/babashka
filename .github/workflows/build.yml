@@ -45,17 +45,17 @@ jobs:
         uses: actions/cache@v1
         id: cache-graalvm
         with:
-          path: ~/graalvm-ce-java11-21.1.0
-          key: ${{ runner.os }}-graalvm-21.1.0
+          path: ~/graalvm-ce-java11-21.3.0
+          key: ${{ runner.os }}-graalvm-21.3.0
           restore-keys: |
-                ${{ runner.os }}-graalvm-21.1.0
+                ${{ runner.os }}-graalvm-21.3.0
 
       - name: Download GraalVM
         run: |
           cd ~
-          if ! [ -d graalvm-ce-java11-21.1.0 ]; then
-            curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.1.0/graalvm-ce-java11-linux-amd64-21.1.0.tar.gz
-            tar xzf graalvm-ce-java11-linux-amd64-21.1.0.tar.gz
+          if ! [ -d graalvm-ce-java11-21.3.0 ]; then
+            curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.3.0/graalvm-ce-java11-linux-amd64-21.3.0.tar.gz
+            tar xzf graalvm-ce-java11-linux-amd64-21.3.0.tar.gz
           fi
 
       - name: Fetch deps
@@ -65,18 +65,18 @@ jobs:
 
       - name: Run tests
         run: |
-          export GRAALVM_HOME="$HOME/graalvm-ce-java11-21.1.0"
+          export GRAALVM_HOME="$HOME/graalvm-ce-java11-21.3.0"
           script/test
 
       - name: Test libraries
         run: |
-          export GRAALVM_HOME="$HOME/graalvm-ce-java11-21.1.0"
+          export GRAALVM_HOME="$HOME/graalvm-ce-java11-21.3.0"
           sudo script/install-clojure
           script/run_lib_tests
 
       - name: Build uberjar
         run: |
-          export GRAALVM_HOME="$HOME/graalvm-ce-java11-21.1.0"
+          export GRAALVM_HOME="$HOME/graalvm-ce-java11-21.3.0"
           script/uberjar
 
       - name: Babashka version
@@ -85,19 +85,10 @@ jobs:
           BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
           echo "##[set-output name=version;]${BABASHKA_VERSION}"
 
-      - name: Reflection artifact
-        run: |
-          cp reflection.json babashka-${{ steps.babashka-version.outputs.version }}-reflection.json
-
       - uses: actions/upload-artifact@v1
         with:
           name: jar
           path: target/babashka-${{ steps.babashka-version.outputs.version }}-standalone.jar
-
-      - uses: actions/upload-artifact@v1
-        with:
-          name: reflection.json
-          path: babashka-${{ steps.babashka-version.outputs.version }}-reflection.json
 
   linux:
     if: "!contains(github.event.head_commit.message, 'skip ci')"
@@ -115,11 +106,6 @@ jobs:
           name: jar
           path: .
 
-      - uses: actions/download-artifact@v1
-        with:
-          name: reflection.json
-          path: .
-
       - name: Cache deps
         uses: actions/cache@v1
         id: cache-deps
@@ -133,17 +119,17 @@ jobs:
         uses: actions/cache@v1
         id: cache-graalvm
         with:
-          path: ~/graalvm-ce-java11-21.1.0
-          key: ${{ runner.os }}-graalvm-21.1.0
+          path: ~/graalvm-ce-java11-21.3.0
+          key: ${{ runner.os }}-graalvm-21.3.0
           restore-keys: |
-                ${{ runner.os }}-graalvm-21.1.0
+                ${{ runner.os }}-graalvm-21.3.0
 
       - name: Download GraalVM
         run: |
           cd ~
-          if ! [ -d graalvm-ce-java11-21.1.0 ]; then
-            curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.1.0/graalvm-ce-java11-linux-amd64-21.1.0.tar.gz
-            tar xzf graalvm-ce-java11-linux-amd64-21.1.0.tar.gz
+          if ! [ -d graalvm-ce-java11-21.3.0 ]; then
+            curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.3.0/graalvm-ce-java11-linux-amd64-21.3.0.tar.gz
+            tar xzf graalvm-ce-java11-linux-amd64-21.3.0.tar.gz
           fi
 
       - name: Babashka version
@@ -156,13 +142,12 @@ jobs:
         run: |
           export BABASHKA_JAR=babashka-${{ steps.babashka-version.outputs.version }}-standalone.jar
           export BABASHKA_XMX="-J-Xmx6g"
-          export GRAALVM_HOME="$HOME/graalvm-ce-java11-21.1.0"
-          cp babashka-${{ steps.babashka-version.outputs.version }}-reflection.json reflection.json
+          export GRAALVM_HOME="$HOME/graalvm-ce-java11-21.3.0"
           script/compile
 
       - name: Test binary
         run: |
-          export GRAALVM_HOME="$HOME/graalvm-ce-java11-21.1.0"
+          export GRAALVM_HOME="$HOME/graalvm-ce-java11-21.3.0"
           BABASHKA_TEST_ENV=native script/test
 
       - name: Install clojure
@@ -171,7 +156,7 @@ jobs:
 
       - name: Test libraries
         run: |
-          export GRAALVM_HOME="$HOME/graalvm-ce-java11-21.1.0"
+          export GRAALVM_HOME="$HOME/graalvm-ce-java11-21.3.0"
           BABASHKA_TEST_ENV=native script/run_lib_tests
 
       - name: Upload artifact
@@ -196,11 +181,6 @@ jobs:
           name: jar
           path: .
 
-      - uses: actions/download-artifact@v1
-        with:
-          name: reflection.json
-          path: .
-
       - name: Cache deps
         uses: actions/cache@v1
         id: cache-deps
@@ -214,17 +194,17 @@ jobs:
         uses: actions/cache@v1
         id: cache-graalvm
         with:
-          path: ~/graalvm-ce-java11-21.1.0
-          key: ${{ runner.os }}-graalvm-21.1.0
+          path: ~/graalvm-ce-java11-21.3.0
+          key: ${{ runner.os }}-graalvm-21.3.0
           restore-keys: |
-                ${{ runner.os }}-graalvm-21.1.0
+                ${{ runner.os }}-graalvm-21.3.0
 
       - name: Download GraalVM
         run: |
           cd ~
-          if ! [ -d graalvm-ce-java11-21.1.0 ]; then
-            curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.1.0/graalvm-ce-java11-linux-amd64-21.1.0.tar.gz
-            tar xzf graalvm-ce-java11-linux-amd64-21.1.0.tar.gz
+          if ! [ -d graalvm-ce-java11-21.3.0 ]; then
+            curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.3.0/graalvm-ce-java11-linux-amd64-21.3.0.tar.gz
+            tar xzf graalvm-ce-java11-linux-amd64-21.3.0.tar.gz
           fi
 
       - name: Babashka version
@@ -237,15 +217,14 @@ jobs:
         run: |
           export BABASHKA_JAR=babashka-${{ steps.babashka-version.outputs.version }}-standalone.jar
           export BABASHKA_XMX="-J-Xmx6g"
-          export GRAALVM_HOME="$HOME/graalvm-ce-java11-21.1.0"
+          export GRAALVM_HOME="$HOME/graalvm-ce-java11-21.3.0"
           export BABASHKA_STATIC=true
-          cp babashka-${{ steps.babashka-version.outputs.version }}-reflection.json reflection.json
           script/compile
 
       - name: Test binary
         run: |
           ./bb '(+ 1 2 3)'
-          export GRAALVM_HOME="$HOME/graalvm-ce-java11-21.1.0"
+          export GRAALVM_HOME="$HOME/graalvm-ce-java11-21.3.0"
           BABASHKA_TEST_ENV=native script/test
 
       - name: Install clojure
@@ -254,7 +233,7 @@ jobs:
 
       - name: Test libraries
         run: |
-          export GRAALVM_HOME="$HOME/graalvm-ce-java11-21.1.0"
+          export GRAALVM_HOME="$HOME/graalvm-ce-java11-21.3.0"
           BABASHKA_TEST_ENV=native script/run_lib_tests
 
       - name: Upload artifact
@@ -279,26 +258,21 @@ jobs:
           name: jar
           path: .
 
-      - uses: actions/download-artifact@v1
-        with:
-          name: reflection.json
-          path: .
-
       - name: Cache GraalVM
         uses: actions/cache@v1
         id: cache-graalvm
         with:
-          path: ~/graalvm-ce-java11-21.1.0
-          key: ${{ runner.os }}-graalvm-21.1.0
+          path: ~/graalvm-ce-java11-21.3.0
+          key: ${{ runner.os }}-graalvm-21.3.0
           restore-keys: |
-                ${{ runner.os }}-graalvm-21.1.0
+                ${{ runner.os }}-graalvm-21.3.0
 
       - name: Download GraalVM
         run: |
           cd ~
-          if ! [ -d graalvm-ce-java11-21.1.0 ]; then
-            curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.1.0/graalvm-ce-java11-darwin-amd64-21.1.0.tar.gz
-            tar xzf graalvm-ce-java11-darwin-amd64-21.1.0.tar.gz
+          if ! [ -d graalvm-ce-java11-21.3.0 ]; then
+            curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.3.0/graalvm-ce-java11-darwin-amd64-21.3.0.tar.gz
+            tar xzf graalvm-ce-java11-darwin-amd64-21.3.0.tar.gz
           fi
 
       - name: Babashka version
@@ -311,19 +285,18 @@ jobs:
         run: |
           export BABASHKA_JAR=babashka-${{ steps.babashka-version.outputs.version }}-standalone.jar
           export BABASHKA_XMX="-J-Xmx6g"
-          export GRAALVM_HOME="$HOME/graalvm-ce-java11-21.1.0/Contents/Home"
-          cp babashka-${{ steps.babashka-version.outputs.version }}-reflection.json reflection.json
+          export GRAALVM_HOME="$HOME/graalvm-ce-java11-21.3.0/Contents/Home"
           script/compile
 
       - name: Test binary
         run: |
-          export GRAALVM_HOME="$HOME/graalvm-ce-java11-21.1.0/Contents/Home"
+          export GRAALVM_HOME="$HOME/graalvm-ce-java11-21.3.0/Contents/Home"
           sudo script/install-leiningen
           BABASHKA_TEST_ENV=native script/test
 
       - name: Test libraries
         run: |
-          export GRAALVM_HOME="$HOME/graalvm-ce-java11-21.1.0/Contents/Home"
+          export GRAALVM_HOME="$HOME/graalvm-ce-java11-21.3.0/Contents/Home"
           sudo script/install-clojure
           BABASHKA_TEST_ENV=native script/run_lib_tests
 

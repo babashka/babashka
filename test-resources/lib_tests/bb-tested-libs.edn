@@ -1,0 +1,106 @@
+;; These libraries are tested against babashka and have been added by
+;; script/add-libtest.clj. Each library entry contains enough data to run tests
+;; and to update tests later
+{listora/again
+ {:git-sha "b1a6793f0deaa3cc016eee7626097ba8bf36ba10", :git-url "https://github.com/liwp/again", :test-namespaces (again.core-test)}
+ org.clojure/tools.gitlibs {:git-sha "9f98af7631e34983d5b0886e1ab6eadc3856290b", :git-url "https://github.com/clojure/tools.gitlibs", :test-namespaces (clojure.tools.test-gitlibs clojure.tools.gitlibs.test-impl)}
+ comb/comb {:git-sha "625a63a9c040fa4a2b3153d8c84d08dc2fc8f660", :git-url "https://github.com/weavejester/comb", :test-namespaces (comb.test.template)}
+ mvxcvi/arrangement {:git-sha "360d29e7ae81abbf986b5a8e272f2086227d038d", :git-url "https://github.com/greglook/clj-arrangement", :test-namespaces (arrangement.core-test)}
+ clojure-csv/clojure-csv {:git-sha "b6bb882a3a9ac1f82e06eb2262ae7c8141935228", :git-url "https://github.com/davidsantiago/clojure-csv", :test-namespaces (clojure-csv.test.utils clojure-csv.test.core)}
+ environ/environ {:git-sha "aa90997b38bb8070d94dc4a00a14e656eb5fc9ae", :git-url "https://github.com/weavejester/environ", :test-namespaces (environ.core-test), :directory "environ"}
+ table/table {:git-sha "f6293c5f3dac1dd6f525a80fc80930f8ccdf16b7", :git-url "https://github.com/cldwalker/table", :test-namespaces (table.width-test table.core-test)}
+ com.stuartsierra/dependency {:git-sha "3a467918cd0e5b6ab775d344cfb2a80b56daad6d", :git-url "https://github.com/stuartsierra/dependency", :test-namespaces (com.stuartsierra.dependency-test)}
+ reifyhealth/specmonstah {:git-sha "a2b357009a3aa99a0c2d2361f3bbcd0b0e36505e", :git-url "https://github.com/reifyhealth/specmonstah", :test-namespaces (reifyhealth.specmonstah.spec-gen-test reifyhealth.specmonstah.test-data reifyhealth.specmonstah.core-test), :branch "develop"}
+ exoscale/coax {:git-sha "0d4212af7c07e4f05f74186f05df8a97777b43fe", :git-url "https://github.com/exoscale/coax", :test-namespaces (exoscale.coax-test)}
+ better-cond/better-cond {:git-sha "4720bd8bcfd1adc1197b8d5f07873bc46008d333", :git-url "https://github.com/Engelberg/better-cond", :test-namespaces (better-cond.core-test)}
+ org.clojars.askonomm/ruuter {:git-sha "78659212f95cac827efc816dfbdab8181c25fc3d", :git-url "https://github.com/askonomm/ruuter", :test-namespaces (ruuter.core-test)}
+ ;; clojure.data.json-gen-test ommitted from test-namespaces b/c it hangs on stest/check
+ org.clojure/data.json {:git-sha "9f1c9ccf3fd3e5a39cfb7289d3d456e842ddf442", :git-url "https://github.com/clojure/data.json", :test-namespaces (clojure.data.json-test clojure.data.json-test-suite-test clojure.data.json-compat-0-1-test)}
+ io.replikativ/hasch {:git-sha "04d9c0bd34d86bad79502d8a6963eb2525a22b15", :git-url "https://github.com/replikativ/hasch", :test-namespaces (hasch.test)}
+ ;; BB-TEST-PATCH: Removed markdown.md-file-test b/c tests hardcode path to test
+ ;; files. Removed markdown.benchmark b/c it depends on criterium which isn't bb compatible
+ markdown-clj/markdown-clj {:git-sha "ac245d3049afa25a6d41fcb5ba5a268f52c610e4", :git-url "https://github.com/yogthos/markdown-clj", :test-namespaces (markdown.md-test)}
+ ;; BB-TEST-PATCH: Removed clojure.tools.namespace.dir-test as it fails on windows
+ org.clojure/tools.namespace {:git-sha "a13b037215e21a2e71aa34b27e1dd52c801a2a7b", :git-url "https://github.com/babashka/tools.namespace", :test-namespaces (clojure.tools.namespace.test-helpers clojure.tools.namespace.dependency-test clojure.tools.namespace.find-test clojure.tools.namespace.move-test clojure.tools.namespace.parse-test), :branch "babashka"}
+ com.stuartsierra/component {:git-sha "9f9653d1d95644e3c30beadf8c8811f86758ea23", :git-url "https://github.com/stuartsierra/component", :test-namespaces (com.stuartsierra.component-test)}
+ slingshot/slingshot {:git-sha "6961ab0593ab9633c15b7697ffd43823090720be", :git-url "https://github.com/scgilardi/slingshot", :test-namespaces (slingshot.slingshot-test slingshot.support-test slingshot.test-test)}
+ rm-hull/jasentaa {:git-sha "f52a0e75cbdf1d2b72d9604232db264ff6473f12", :git-url "https://github.com/rm-hull/jasentaa", :test-namespaces (jasentaa.position-test jasentaa.worked-example-2 jasentaa.collections-test jasentaa.parser.basic-test jasentaa.parser.combinators-test jasentaa.test-helpers jasentaa.worked-example-1)}
+ failjure/failjure {:git-sha "c6e528c1eda6ad5eaab0f1fb2a97e766bf41fdd5", :git-url "https://github.com/adambard/failjure", :test-namespaces (failjure.test-core)}
+ gaka/gaka {:git-sha "2f264758881d6dc586b948ca8757134675f542a7", :git-url "https://github.com/cdaddr/gaka", :test-namespaces (gaka.core-test)}
+ version-clj/version-clj {:git-sha "9d86cd870f7e435fd6d593cb689790a22d8040a6", :git-url "https://github.com/xsc/version-clj", :test-namespaces (version-clj.compare-test version-clj.split-test version-clj.core-test version-clj.via-use-test)}
+ circleci/bond {:git-sha "0d389cfb4628341824bddbe8bf102f15ad25ad0d", :git-url "https://github.com/circleci/bond", :test-namespaces (bond.assertions-test bond.james-test bond.target-data)}
+ ;; BB-TEST-PATCH: minimallist.generator-test excluded because generator ns can't be required
+ minimallist/minimallist {:git-sha "f10ebbd3c2b93e7579295618a7ed1e870c489bc4", :git-url "https://github.com/green-coder/minimallist", :test-namespaces (minimallist.util-test minimallist.core-test), :branch "all-work-and-no-play"}
+ aero/aero {:git-sha "743e9bc495425b4a4a7c780f5e4b09f6680b4e7a", :git-url "http://github.com/juxt/aero", :test-namespaces (aero.core-test)}
+ org.clojure/data.generators {:git-sha "bf65f99aa9dcabed7de7c09b74d71db208cf61ee", :git-url "https://github.com/clojure/data.generators", :test-namespaces (clojure.data.generators-test)}
+ camel-snake-kebab/camel-snake-kebab {:git-sha "d072c7fd242ab0becd4bb265622ded415f2a4b68", :git-url "https://github.com/clj-commons/camel-snake-kebab", :test-namespaces (camel-snake-kebab.internals.string-separator-test camel-snake-kebab.extras-test camel-snake-kebab.core-test)}
+ ;; BB-TEST-PATCH: Deleted cljs-test-opts.edn
+ henryw374/cljc.java-time {:git-sha "b9da12ea25e80a0e284a5bffd88ebcbf18fc3bf7", :git-url "https://github.com/henryw374/cljc.java-time", :test-namespaces (cljc.java-time-test)}
+ org.babashka/spec.alpha {:git-sha "6c4aed643daaf55c6f898d4915275704db683aa2", :git-url "https://github.com/babashka/spec.alpha", :test-namespaces (clojure.test-clojure.instr clojure.test-clojure.spec)}
+ ;; BB-TEST-PATCH: Don't have 4 tests namespaces because they depend on
+ ;; additional libs that aren't bb compatible e.g. instaparse and malli
+ lambdaisland/regal {:git-sha "d13f26dfdf37186ee86016ed144fc823c5b24c11", :git-url "https://github.com/lambdaisland/regal", :test-namespaces (lambdaisland.regal.test-util lambdaisland.regal-test)}
+ medley/medley {:git-sha "d723afcb18e1fae27f3b68a25c7a151569159a9e", :git-url "https://github.com/weavejester/medley", :test-namespaces (medley.core-test)}
+ clj-commons/clj-yaml {:git-sha "9c2d602ec6ab33da061575f52e3de1aff41f67f5", :git-url "https://github.com/clj-commons/clj-yaml", :test-namespaces (clj-yaml.core-test)}
+ org.clojure/data.csv {:git-sha "aa9b3bdd3a1d3f6a7fe12eaab76b45ef3f197ad5", :git-url "https://github.com/clojure/data.csv", :test-namespaces (clojure.data.csv-test)}
+ org.clojure/math.combinatorics {:git-sha "e555a45b5802cf5e8c43b4377628ef34a634554b", :git-url "https://github.com/clojure/math.combinatorics", :test-namespaces (clojure.math.test-combinatorics)}
+ doric/doric {:git-sha "8747fdce565187a5c368c575cf4ca794084b0a5c", :git-url "https://github.com/joegallo/doric", :test-namespaces (doric.test.core doric.test.readme doric.test.doctest)}
+ com.github.seancorfield/honeysql {:git-sha "6e4e1f6928450788353c181f32474d930d6afe84", :git-url "https://github.com/seancorfield/honeysql", :test-namespaces (honey.sql-test honey.sql.helpers-test honey.sql.postgres-test), :branch "develop"}
+ honeysql/honeysql {:git-sha "1137dd12350afdc30ad4976c3718279581390b36", :git-url "https://github.com/seancorfield/honeysql", :test-namespaces (honeysql.format-test honeysql.core-test), :branch "v1"}
+ ; skip tests on Windows because of the :compressed thing
+ babashka/babashka.curl {:git-url "https://github.com/babashka/babashka.curl", :test-namespaces [babashka.curl-test], :skip-windows true, :manually-added true}
+ http-kit/http-kit {:git-url "https://github.com/http-kit/http-kit", :test-namespaces [httpkit.client-test], :manually-added true}
+ org.clojure/core.match {:git-url "https://github.com/clojure/core.match", :test-namespaces [core-match.core-tests], :manually-added true}
+ hiccup/hiccup {:git-url "http://github.com/weavejester/hiccup", :test-namespaces [hiccup.core-test hiccup2.core-test], :manually-added true}
+ org.clojure/test.check {:git-url "https://github.com/clojure/test.check", :test-namespaces [test-check.smoke-test], :manually-added true}
+ io.helins/binf {:git-url "https://github.com/helins/binf.cljc", :test-namespaces [helins.binf.test], :manually-added true}
+ selmer/selmer {:git-url "https://github.com/yogthos/Selmer", :test-namespaces [selmer.core-test selmer.our-test], :manually-added true}
+ com.grammarly/omniconf {:git-url "https://github.com/grammarly/omniconf", :test-namespaces [omniconf.core-test], :manually-added true}
+ crispin/crispin {:git-url "https://github.com/dunaj-project/crispin", :test-namespaces [crispin.core-test], :manually-added true}
+ clj-commons/multigrep {:git-url "https://github.com/clj-commons/multigrep", :test-namespaces [multigrep.core-test], :manually-added true}
+ org.clj-commons/digest {:git-url "https://github.com/clj-commons/clj-digest", :test-namespaces [clj-commons.digest-test], :manually-added true}
+ hato/hato {:git-url "https://github.com/gnarroway/hato", :test-namespaces [hato.client-test], :manually-added true}
+ java-http-clj/java-http-clj {:git-url "http://www.github.com/schmee/java-http-clj", :test-namespaces [java-http-clj.smoke-test], :manually-added true}
+ rewrite-clj/rewrite-clj {:git-url "https://github.com/clj-commons/rewrite-clj", :test-namespaces [rewrite-clj.parser-test rewrite-clj.node-test rewrite-clj.zip-test rewrite-clj.paredit-test rewrite-clj.zip.subedit-test rewrite-clj.node.coercer-test], :manually-added true}
+ ;; TODO: env tests don't work because envoy lib isn't compatible with bb
+ ;; TODO: failing tests in the following namespaces: vault.client.mock-test, vault.secrets.kvv1-test vault.secrets.kvv2-test
+ amperity/vault-clj {:git-url "https://github.com/amperity/vault-clj", :test-namespaces [vault.lease-test vault.client.http-test], :manually-added true}
+ orchestra/orchestra {:git-url "https://github.com/jeaye/orchestra", :test-namespaces (orchestra.make-fns orchestra.many-fns orchestra.expound-test orchestra.core-test orchestra.reload-test), :test-directories ("test/cljc" "test/clj"), :git-sha "81e5181f7b42e5e2763a2b37db17954f3be0314e"}
+ ;; BB-TEST-PATCH: Deleted tasks.clj
+ org.clj-commons/clj-http-lite {:git-url "https://github.com/clj-commons/clj-http-lite", :test-namespaces (clj-http.lite.test-runner clj-http.lite.client-test), :test-directories ("bb"), :git-sha "6b53000df55ac05c4ff8e5047a5323fc08a52e8b"}
+ cprop/cprop {:git-url "https://github.com/tolitius/cprop", :test-namespaces [cprop.smoke-test], :manually-added true}
+ org.clojure/data.zip {:git-url "https://github.com/clojure/data.zip", :test-namespaces [clojure.data.zip-test], :manually-added true}
+ borkdude/deps {:git-url "https://github.com/borkdude/deps.clj", :test-namespaces [borkdude.deps.smoke-test], :manually-added true}
+ io.github.cognitect-labs/test-runner {:git-url "https://github.com/cognitect-labs/test-runner", :test-namespaces (cognitect.test-runner.samples-test cognitect.test-runner.sample-property-test cognitect.test-runner-test), :git-sha "cc75980b43011773162b485f46f939dc5fba91e4"}
+ borkdude/missing.test.assertions {:git-url "https://github.com/borkdude/missing.test.assertions", :test-namespaces (missing.test.assertions-test missing.test.old-methods), :git-sha "603cb01bee72fb17addacc53c34c85612684ad70"}
+ ;; No tests to run
+ io.github.technomancy/limit-break {:git-url "https://github.com/technomancy/limit-break", :test-namespaces [], :manually-added true}
+ dev.nubank/docopt {:git-url "https://github.com/nubank/docopt.clj", :test-namespaces (docopt.core-test), :git-sha "2794195a7288002e8d8a44f7bc37180c9cca8971"}
+ ;; BB-TEST-PATCH: Deleted unused resources/
+ testdoc/testdoc {:git-url "https://github.com/liquidz/testdoc", :test-namespaces (testdoc.style.repl-test testdoc.style.code-first-test testdoc.core-test), :git-sha "6b995ef25f3cc6450a1ce30f72baed371476f6eb"}
+ ;; BB-TEST-PATCH: Remove contajners.core-test as it fails
+ org.clojars.lispyclouds/contajners {:git-url "https://github.com/lispyclouds/contajners", :test-namespaces (contajners.impl-test), :git-sha "d163637ff36d79995516d6705da1e9afc7b44764"}
+ ;; Don't run tests b/c they depend on `psql`
+ douglass/clj-psql {:git-url "https://github.com/DarinDouglass/clj-psql", :test-namespaces [], :manually-added true}
+ ;; Don't run tests b/c they depend on `ffmpeg`
+ ffclj/ffclj {:git-url "https://github.com/luissantos/ffclj", :test-namespaces [], :manually-added true}
+ ;; BB-TEST-PATCH: Can't load deps for tests - expound.alpha-test, expound.spell-spec-test, expound.paths-test. Skip expound.printer-test as most tests fail
+ ;; BB-TEST-PATCH: Deleted cljs_test.cljs and *.txt
+ expound/expound {:git-url "https://github.com/bhb/expound", :test-namespaces (expound.specs-test expound.print-length-test expound.test-utils expound.spec-gen expound.problems-test), :git-sha "589a7f69323dc0423197b346c75808e48e771427"}
+ ;; BB-TEST-PATCH: Removed borkdude.rewrite-edn-test because it fails
+ borkdude/rewrite-edn {:git-url "https://github.com/borkdude/rewrite-edn", :test-namespaces [], :branch "63f09048a3ebbd48f86fa9626076e7e540cfb7ee", :git-sha "63f09048a3ebbd48f86fa9626076e7e540cfb7ee"}
+ clojure-term-colors/clojure-term-colors {:git-url "https://github.com/trhura/clojure-term-colors", :test-namespaces (clojure.term.colors-test), :git-sha "71620a5e121d51afe28c50c0aa14ceb4cbff7981"}
+ ;; BB-TEST-PATCH: Removed io.aviso.exception-test because it can't load ns with clojure.lang.Compiler.
+ ;; BB-TEST-PATCH: Deleted demo*.clj
+ ;; BB-TEST-PATCH: Don't run on windows as most binary tests fail
+ io.aviso/pretty {:git-url "https://github.com/AvisoNovate/pretty", :test-namespaces (io.aviso.binary-test), :git-sha "155926f991f94addaf6f5c8621748924ab144988"  :skip-windows true}
+ progrock/progrock {:git-url "https://github.com/weavejester/progrock", :test-namespaces (progrock.core-test), :git-sha "9c277a3244c52bfde19c21add327d6e20b94fdf5"}
+ ;; Don't run portal.jvm-test as it depends on headless chrome
+ djblue/portal {:git-url "https://github.com/djblue/portal", :test-namespaces (portal.test-runner portal.runtime.cson-test portal.runtime.fs-test portal.e2e portal.bench), :git-sha "64e4624bcf3bee2dd47e3d8e47982c709738eb11"}
+ integrant/integrant {:git-url "https://github.com/weavejester/integrant", :test-namespaces (integrant.test.foo integrant.test.quz integrant.test.bar integrant.test.baz integrant.core-test), :git-sha "32a46f5dca8a6b563a6dddf88bec887be3201b08"}
+ com.wsscode/cljc-misc {:git-url "https://github.com/wilkerlucio/cljc-misc", :test-namespaces (com.wsscode.misc.uuid-test com.wsscode.misc.macros-test com.wsscode.misc.math-test com.wsscode.misc.coll-test com.wsscode.misc.refs-test), :git-sha "dc8e31a200f9cacf86af10b63e40fcb448c259f4"}
+ edn-query-language/eql {:git-url "https://github.com/edn-query-language/eql", :test-namespaces (edn-query-language.core-test), :git-sha "0d4f9745d98c3d20b81bb4bdce3e8e15db7fd094"}
+ meta-merge/meta-merge {:git-url "https://github.com/weavejester/meta-merge", :test-namespaces (meta-merge.core-test), :git-sha "c968c38baccd4219fe0ba592d89af37ea8e426bf"}
+ com.exoscale/lingo {:git-url "https://github.com/exoscale/lingo", :test-namespaces (exoscale.lingo.test.core-test), :git-sha "30b5084fab28d24c99ec683e21535366910d9f2f" :skip-windows true}
+ io.github.swirrl/dogstatsd {:git-url "https://github.com/swirrl/dogstatsd", :test-namespaces (swirrl.dogstatsd-test), :git-sha "e110caae452cd1185e65e389a359b69502076d61"}
+ org.clojure/algo.monads {:git-url "https://github.com/clojure/algo.monads", :test-namespaces (clojure.algo.test-monads), :git-sha "3a985b0b099110b1654d568fecf597bc9c8d1ff5"}}

@@ -4,7 +4,7 @@
             [clojure.java.io :as io]
             [clojure.stacktrace :refer [print-stack-trace]]
             [clojure.string :as str]
-            [sci.impl.callstack :as cs]))
+            [sci.core :as sci]))
 
 (defn ruler [title]
   (println (apply str "----- " title " " (repeat (- 80 7 (count title)) \-))))
@@ -18,18 +18,18 @@
            (drop (- stack-count 5) stacktrace)]))))
 
 (defn print-stacktrace
-  [stacktrace {:keys [:verbose?]}]
-  (let [stacktrace (cs/format-stacktrace stacktrace)
-        segments (split-stacktrace stacktrace verbose?)
+  [stacktrace {:keys [:debug]}]
+  (let [stacktrace (sci/format-stacktrace stacktrace)
+        segments (split-stacktrace stacktrace debug)
         [fst snd] segments]
     (run! println fst)
     (when snd
-      (println "...")
+      (println "... (run with --debug to see elided elements)")
       (run! println snd))))
 
 (defn error-context [ex opts]
   (let [{:keys [:file :line :column]} (ex-data ex)]
-    (when (and file line)
+    (when (and file line column)
       (when-let [content (case file
                            "<expr>" (:expression opts)
                            "<preloads>" (:preloads opts)
@@ -76,6 +76,26 @@
         ;; print nil as nil
         (prn v)))))
 
+(defn phase [ex stacktrace]
+  (or (:phase (ex-data ex))
+      (when (some :macro stacktrace)
+        "macroexpand")))
+
+(defn render-native-sym [sym]
+  (let [sym (-> (str sym)
+                (clojure.lang.Compiler/demunge)
+                symbol)
+        ns (namespace sym)]
+    (when ns
+      (let [ns (symbol ns)
+            nm (symbol (name sym))]
+        {:ns ns
+         :name nm
+         :sci/built-in true}))))
+
+(defn render-native-stacktrace-elem [[sym _ _file _line]]
+  (render-native-sym sym))
+
 (defn error-handler [^Exception e opts]
   (binding [*out* *err*]
     (let [d (ex-data e)
@@ -85,9 +105,12 @@
           ex-name (when sci-error?
                     (some-> ^Throwable (ex-cause e)
                             .getClass .getName))
-          stacktrace (some->
-                      d :sci.impl/callstack
-                      cs/stacktrace)]
+          stacktrace (dedupe
+                      (concat (sequence (comp (map StackTraceElement->vec)
+                                              (take-while #(not (str/starts-with? (first %) "sci.impl.")))
+                                              (map render-native-stacktrace-elem))
+                                        (.getStackTrace (or (ex-cause e) e)))
+                              (sci/stacktrace e)))]
       (if exit-code
         (do
           (when-let [m (.getMessage e)]
@@ -108,7 +131,7 @@
               (println (str "Location: "
                             (when file (str file ":"))
                             line ":" column""))))
-          (when-let [phase (cs/phase e stacktrace)]
+          (when-let [phase (phase e stacktrace)]
             (println "Phase:   " phase))
           (println)
           (when-let [ec (when sci-error?
@@ -116,7 +139,7 @@
             (ruler "Context")
             (println ec)
             (println))
-          (when-let [locals (not-empty (:locals d))]
+          (when-let [locals (and (:debug opts) (not-empty (:locals d)))]
             (ruler "Locals")
             (print-locals locals)
             (println))

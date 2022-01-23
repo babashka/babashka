@@ -18,30 +18,34 @@
      :eof nil}
     (apply test-utils/bb (when (some? input) (str input)) (map str args)))))
 
+(defn parse-opts [args]
+  (let [[args global-opts] (main/parse-global-opts args)]
+    (main/parse-opts args global-opts)))
+
 (deftest parse-opts-test
   (is (= "1667"
-         (:nrepl (main/parse-opts ["--nrepl-server"]))))
+         (:nrepl (parse-opts ["--nrepl-server"]))))
   (is (= "1666"
-         (:socket-repl (main/parse-opts ["--socket-repl"]))))
+         (:socket-repl (parse-opts ["--socket-repl"]))))
   (is (= {:nrepl "1667", :classpath "src"}
-         (main/parse-opts ["--nrepl-server" "-cp" "src"])))
+         (parse-opts ["--nrepl-server" "-cp" "src"])))
   (is (= {:nrepl "1667", :classpath "src"}
-         (main/parse-opts ["-cp" "src" "nrepl-server"])))
+         (parse-opts ["-cp" "src" "nrepl-server"])))
   (is (= {:socket-repl "1666", :expressions ["123"]}
-         (main/parse-opts ["--socket-repl" "-e" "123"])))
+         (parse-opts ["--socket-repl" "-e" "123"])))
   (is (= {:socket-repl "1666", :expressions ["123"]}
-         (main/parse-opts ["--socket-repl" "1666" "-e" "123"])))
+         (parse-opts ["--socket-repl" "1666" "-e" "123"])))
   (is (= {:nrepl "1666", :expressions ["123"]}
-         (main/parse-opts ["--nrepl-server" "1666" "-e" "123"])))
+         (parse-opts ["--nrepl-server" "1666" "-e" "123"])))
   (is (= {:classpath "src"
           :uberjar "foo.jar"}
-         (main/parse-opts ["--classpath" "src" "uberjar" "foo.jar"])))
+         (parse-opts ["--classpath" "src" "uberjar" "foo.jar"])))
   (is (= {:classpath "src"
           :uberjar "foo.jar"
           :debug true}
-         (main/parse-opts ["--debug" "--classpath" "src" "uberjar" "foo.jar"])))
-  (is (= "src" (:classpath (main/parse-opts ["--classpath" "src"]))))
-  (is (:debug (main/parse-opts ["--debug"])))
+         (parse-opts ["--debug" "--classpath" "src" "uberjar" "foo.jar"])))
+  (is (= "src" (:classpath (parse-opts ["--classpath" "src"]))))
+  (is (:debug (parse-opts ["--debug"])))
   (is (= 123 (bb nil "(println 123)")))
   (is (= 123 (bb nil "-e" "(println 123)")))
   (is (= 123 (bb nil "--eval" "(println 123)")))
@@ -54,7 +58,9 @@
   (let [v (bb nil "--describe")]
     (is (:babashka/version v))
     (is (:feature/xml v)))
-  (is (= {:force? true} (main/parse-opts ["--force"]))))
+  (is (= {:force? true} (parse-opts ["--force"])))
+  (is (= {:main "foo", :command-line-args '("-h")} (parse-opts ["-m" "foo" "-h"])))
+  (is (= {:main "foo", :command-line-args '("-h")} (parse-opts ["-m" "foo" "--" "-h"]))))
 
 (deftest version-test
   (is (= [1 0 0] (main/parse-version "1.0.0-SNAPSHOT")))
@@ -189,6 +195,35 @@
                                                 (defn bar [x y] (* x y))
                                                 (bar (foo 10 30) 3)))"))))
 
+(deftest init-test
+  (testing "init with a file"
+    (is (= "foo" (bb nil "--init" "test-resources/babashka/init_test.clj" 
+                   "-f" "test-resources/babashka/init_caller.clj"))))
+  (testing "init with eval(s)"
+    (is (= "foo" (bb nil "--init" "test-resources/babashka/init_test.clj"
+                   "-e" "(init-test/do-a-thing)"))))
+  (testing "init with main from init'ed ns"
+    (is (= "Hello from init!" (bb nil "--init" "test-resources/babashka/init_test.clj"
+                                "-m" "init-test"))))
+  (testing "init with main from another namespace"
+    (test-utils/with-config '{:paths ["test-resources/babashka/src_for_classpath_test"]}
+      (is (= "foo" (bb nil "--init" "test-resources/babashka/init_test.clj"
+                     "-m" "call-init-main")))))
+  (testing "init with a qualified function passed to --main"
+    (test-utils/with-config '{:paths ["test-resources/babashka/src_for_classpath_test"]}
+      (is (= "foobar" (bb nil "--init" "test-resources/babashka/init_test.clj"
+                        "-m" "call-init-main/foobar")))))
+  (testing "init with a subcommand after it"
+    (let [actual-output (test-utils/bb "(println (init-test/do-a-thing))"
+                          "--init" "test-resources/babashka/init_test.clj" "repl")]
+      (is (str/includes? actual-output "foo\n")))
+    (test-utils/with-config '{:tasks {thing (println (init-test/do-a-thing))}} ; make a task available 
+      (let [actual-output (test-utils/bb nil "--init" "test-resources/babashka/init_test.clj" "tasks")]
+        (is (every? #(str/includes? actual-output %) ["following tasks are available" "thing"])))))
+  (testing "init with a task name after it"
+    (test-utils/with-config '{:tasks {thing (println (init-test/do-a-thing))}} ; make a task available 
+      (is (= "foo\n" (test-utils/bb nil "--init" "test-resources/babashka/init_test.clj" "thing"))))))
+
 (deftest preloads-test
   ;; THIS TEST REQUIRES:
   ;; export BABASHKA_PRELOADS='(defn __bb__foo [] "foo") (defn __bb__bar [] "bar")'
@@ -240,7 +275,7 @@
 
 (deftest process-builder-test
   (let [cmd-line (if main/windows?
-                   "[\"cmd\" \"/c\" \"dir\" ]"
+                   "[\"cmd\" \"/c\" \"dir\"]"
                    "[\"ls\"]")]
     (is (str/includes? (bb nil (str "
 (def pb (ProcessBuilder. " cmd-line "))
@@ -381,7 +416,14 @@
     (is (.exists f2))
     (let [v (bb nil "-f" (.getPath (io/file "test-resources" "babashka" "glob.clj")))]
       (is (vector? v))
-      (is (.exists (io/file (first v)))))))
+      (is (.exists (io/file (first v)))))
+    (is (= :success (bb nil "(with-open [str (java.nio.file.Files/newDirectoryStream (.toPath (clojure.java.io/file \".\")))] :success)")))
+    (is (string? (bb nil
+                     '(do (import [java.nio.file Files LinkOption])
+                          (import [java.nio.file.attribute BasicFileAttributes])
+                          (def attrs (Files/readAttributes (.toPath (io/file ".")) BasicFileAttributes ^"[Ljava.nio.file.LinkOption;"
+                                                           (into-array LinkOption [])))
+                          (str (.lastModifiedTime attrs))))))))
 
 (deftest future-print-test
   (testing "the root binding of sci/*out*"
@@ -430,7 +472,9 @@
 (deftest clojure-data-xml-test
   (is (= "<?xml version=\"1.0\" encoding=\"UTF-8\"?><items><item>1</item><item>2</item></items>"
          (bb nil "(let [xml (xml/parse-str \"<items><item>1</item><item>2</item></items>\")] (xml/emit-str xml))")))
-  (is (= "0.0.87-SNAPSHOT" (bb nil "examples/pom_version_get.clj" (.getPath (io/file "test-resources" "pom.xml"))))))
+  (is (= "0.0.87-SNAPSHOT" (bb nil "examples/pom_version_get.clj" (.getPath (io/file "test-resources" "pom.xml")))))
+  (is (= ":xmlns.DAV%3A/propfind"
+         (bb nil "(clojure.data.xml/alias-uri :D \"DAV:\") (str ::D/propfind)"))))
 
 (deftest uberscript-test
   (let [tmp-file (java.io.File/createTempFile "uberscript" ".clj")]
@@ -699,6 +743,80 @@ true")))
           (.length \"foo\")]))
 
 (vec (pmap f (map str (range 10000))))")))))
+
+(deftest print-readably-test
+  (is (= "\"foo\"" (bb nil "-e" "(binding [*print-readably* true] (pr-str \"foo\"))")))
+  (is (= "foo" (bb nil "-e" "(binding [*print-readably* false] (pr-str \"foo\"))")))
+  (is (= "foo\n" (bb nil "-e" "(binding [*print-readably* false] (with-out-str (clojure.pprint/pprint \"foo\")))"))))
+
+; repl-requires: '[[clojure.repl :refer (source apropos pst dir doc find-doc)]
+;                  [clojure.pprint :refer (pp pprint)]]
+(deftest repl-requires-test
+  (testing "the elements of repl-requires are available to scripts passed on the command line"
+    (is (str/includes? (bb nil "
+    (load-file \"test-resources/babashka/file_location2.clj\")
+    (require '[babashka.file-location2 :as fl])
+    (source fl/ok)") "ok"))
+    ; using <= in case new matching functions get added
+    (is (<= 8 (bb nil '(count (apropos "first")))))
+    (is (= [1 2 3] (bb "[1 2 3]" "(pprint *input*)")))
+    (let [first-doc (test-utils/bb nil "(doc first)")]
+        (is (every? #(str/includes? first-doc %) ["---" "clojure.core/first" "first item"])))))
+
+(deftest edn-input-test
+  (testing "clojure's default readers"
+    (is (= '(#inst "2021-08-24T00:56:02.014-00:00")
+          (bb "#inst \"2021-08-24T00:56:02.014-00:00\"" "-I" "(println *input*)")))
+    (is (= '(#uuid "00000000-0000-0000-0000-000000000000")
+          (bb "#uuid \"00000000-0000-0000-0000-000000000000\"" "-I" "(println *input*)"))))
+  (testing "use tagged-literal as default data reader fn..."
+    (testing "when using the -I option"
+      (is (= "(#made-up-tag 42)\n"
+            (test-utils/normalize (test-utils/bb "#made-up-tag 42" "-I" "(println *input*)"))))
+      (is (= "(#abc 123 #cde 789)\n"
+            (test-utils/normalize (test-utils/bb "{:a #abc 123}{:a #cde 789}" "-I" "(map :a *input*)")))))
+    (testing "when using --stream and -I"
+      (is (= "#abc 123\n#cde 789\n"
+            (test-utils/normalize (test-utils/bb "{:a #abc 123}{:a #cde 789}" "--stream" "-I" "-e" "(println (:a *input*))")))))
+    (testing "when using --stream (-I is sort of implied if no -i)"
+      (is (= "#abc 123\n#cde 789\n"
+            (test-utils/normalize (test-utils/bb "{:a #abc 123}{:a #cde 789}" "--stream" "-e" "(println (:a *input*))")))))
+    (testing "when reading one EDN form from stdin (no --stream or -I or -i)"
+      (is (= "#abc 123\n"
+             (test-utils/normalize (test-utils/bb "{:a #abc 123}{:a #cde 789}" "-e" "(println (:a *input*))")))))))
+
+(deftest piped-input-output-stream-test
+  (is (= 10 (bb nil "
+(def po (java.io.PipedOutputStream.))
+(def pi (java.io.PipedInputStream.))
+(.connect pi po)
+(.write po 10)
+(.read pi)
+"))))
+
+(deftest InetAddress-test
+  (is (= "192.168.2.2" (bb nil "(-> (java.net.InetAddress/getByName \"192.168.2.2\") (.getHostAddress))"))))
+
+(deftest satisfies-protocols-test
+  (is (true? (bb nil "(satisfies? clojure.core.protocols/Datafiable {})")))
+  (is (true? (bb nil "(satisfies? clojure.core.protocols/Navigable {})")))
+  (is (true? (bb nil "(satisfies? clojure.core.protocols/IKVReduce {})"))))
+
+(deftest interop-on-proxy
+  (is (true? (bb nil (pr-str
+                      '(instance? java.net.PasswordAuthentication
+                                  (.getPasswordAuthentication
+                                   (proxy [java.net.Authenticator] []
+                                     (getPasswordAuthentication []
+                                       (java.net.PasswordAuthentication. "bork"
+                                                                         (char-array "dude")))))))))))
+
+(deftest aget-test
+  (is (= 1 (bb nil "(def array-2d (into-array [(int-array [1 2]) (int-array [3 4])])) (aget array-2d 0 0)"))))
+
+(deftest into-array-fallback-test
+  (is (= :f (bb nil "(first (into-array [:f]))")))
+  (is (= :f (bb nil "(first (first (into-array [(into-array [:f])])))"))))
 
 ;;;; Scratch
 

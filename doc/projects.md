@@ -4,6 +4,10 @@ The following libraries and projects are known to work with babashka.
 
 - [Projects](#projects)
   - [Libraries](#libraries)
+    - [tools.namespace](#toolsnamespace)
+    - [test-runner](#test-runner)
+    - [spec.alpha](#specalpha)
+    - [tools.bbuild](#toolsbbuild)
     - [clj-http-lite](#clj-http-lite)
     - [spartan.spec](#spartanspec)
     - [missing.test.assertions](#missingtestassertions)
@@ -44,6 +48,17 @@ The following libraries and projects are known to work with babashka.
     - [hasch](#hasch)
     - [crispin](#crispin)
     - [ffclj](#ffclj)
+    - [multigrep](#multigrep)
+    - [java-http-clj](#java-http-clj)
+    - [component](#component)
+    - [minimallist](#minimallist)
+    - [ruuter](#ruuter)
+    - [clj-commons.digest](#clj-commonsdigest)
+    - [contajners](#contajners)
+    - [dependency](#dependency)
+    - [specmonstah](#specmonstah)
+    - [markdown-clj](#markdown-clj)
+    - [algo.monads](#algomonads)
   - [Pods](#pods)
   - [Projects](#projects-1)
     - [babashka-test-action](#babashka-test-action)
@@ -66,18 +81,46 @@ The following libraries and projects are known to work with babashka.
     - [sha-words](#sha-words)
     - [adam-james-v/scripts](#adam-james-vscripts)
     - [oidc-client](#oidc-client)
+    - [jirazzz](#jirazzz)
+    - [Babashka + scittle guestbook](#babashka--scittle-guestbook)
+    - [bb htmx todo app](#bb-htmx-todo-app)
+    - [bb aws lambda runtime](#bb-aws-lambda-runtime)
 
 Also keep an eye on the [news](news.md) page for new projects, gists and other
 developments around babashka.
 
 ## Libraries
 
-### [clj-http-lite](https://github.com/babashka/clj-http-lite)
+For a full list of libraries, see [libraries.csv](./libraries.csv). To add a
+library, see [these instructions](./dev.md#tests-for-libraries).
 
-A fork of a fork of `clj-http-lite`. Example:
+### [tools.namespace](https://github.com/babashka/tools.namespace)
+
+A fork of `tools.namespace`. This is used by other libraries and enables them to
+be supported by babashka.
+
+### [test-runner](https://github.com/cognitect-labs/test-runner)
+
+This library works with the
+[tools.namespace](https://github.com/babashka/tools.namespace) fork. See its
+readme for an example task for running tests.
+
+### [spec.alpha](https://github.com/babashka/spec.alpha)
+
+A fork of `clojure.spec.alpha` that includes support for generation and
+instrumentation! Its readme also contains instructions on how to use
+`clojure.core.specs.alpha`.
+
+### [tools.bbuild](https://github.com/babashka/tools.bbuild)
+
+A fork of `tools.build`.
+
+### [clj-http-lite](https://github.com/clj-commons/clj-http-lite)
+
+Example:
 
 ``` shell
-$ export BABASHKA_CLASSPATH="$(clojure -Sdeps '{:deps {clj-http-lite {:git/url "https://github.com/babashka/clj-http-lite" :sha "f44ebe45446f0f44f2b73761d102af3da6d0a13e"}}}' -Spath)"
+$ export BABASHKA_CLASSPATH="$(clojure -Sdeps '{:deps {org.clj-commons/clj-http-lite {:mvn/version "0.4.392"}}}' -Spath)"
 
 $ bb "(require '[clj-http.lite.client :as client]) (:status (client/get \"https://www.clojure.org\"))"
 200
@@ -85,7 +128,8 @@ $ bb "(require '[clj-http.lite.client :as client]) (:status (client/get \"https:
 
 ### [spartan.spec](https://github.com/borkdude/spartan.spec/)
 
-An babashka-compatible implementation of `clojure.spec.alpha`.
+An babashka-compatible implementation of `clojure.spec.alpha`. See
+[spec.alpha](#specalpha) for a more complete implementation.
 
 ### [missing.test.assertions](https://github.com/borkdude/missing.test.assertions)
 
@@ -106,16 +150,10 @@ Ran 1 tests containing 0 assertions.
 
 ### [medley](https://github.com/weavejester/medley/)
 
-Requires `bb` >= v0.0.71. Latest coordinates checked with with bb:
-
-``` clojure
-{:git/url "https://github.com/weavejester/medley" :sha "a4e5fb5383f5c0d83cb2d005181a35b76d8a136d"}
-```
-
 Example:
 
 ``` shell
-$ export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {medley {:git/url "https://github.com/weavejester/medley" :sha "a4e5fb5383f5c0d83cb2d005181a35b76d8a136d"}}}')
+$ export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {medley/medley {:mvn/version "1.3.0"}}}')
 
 $ bb -e "(require '[medley.core :as m]) (m/index-by :id [{:id 1} {:id 2}])"
 {1 {:id 1}, 2 {:id 2}}
@@ -162,16 +200,10 @@ export BABASHKA_CLASSPATH="$(clojure -Sdeps '{:deps {clojure-csv {:mvn/version "
 
 ### [regal](https://github.com/lambdaisland/regal)
 
-Requires `bb` >= v0.0.71. Latest coordinates checked with with bb:
-
-``` clojure
-{:git/url "https://github.com/lambdaisland/regal" :sha "d4e25e186f7b9705ebb3df6b21c90714d278efb7"}
-```
-
 Example:
 
 ``` shell
-$ export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {regal {:git/url "https://github.com/lambdaisland/regal" :sha "d4e25e186f7b9705ebb3df6b21c90714d278efb7"}}}')
+$ export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {lambdaisland/regal {:mvn/version "0.0.143"}}}')
 
 $ bb -e "(require '[lambdaisland.regal :as regal]) (regal/regex [:* \"ab\"])"
 #"(?:\Qab\E)*"
@@ -604,7 +636,7 @@ babashka. This may be fixed later if this turns out to be really useful.
 
 ### [crispin](https://github.com/dunaj-project/crispin)
 
-Populate a configuration map from multiple sources (environment variables, 
+Populate a configuration map from multiple sources (environment variables,
 system variables, config files, etc.)
 
 Example:
@@ -632,6 +664,134 @@ FOO=1 script.clj
 ### [ffclj](https://github.com/luissantos/ffclj)
 
 A wrapper around executing `ffmpeg` and `ffprobe`. Supports progress reporting via core.async channels.
+
+### [multigrep](https://github.com/clj-commons/multigrep)
+
+Regex-based file grepping and/or text substitution.
+
+Example:
+- find the words that are exactly four letters long in some strings:
+```clj
+(ns multigrep-demo
+  (:require [babashka.deps :as deps]
+            [clojure.pprint :refer [pprint]])
+  (:import (java.io StringReader)))
+
+(deps/add-deps '{:deps {clj-commons/multigrep {:mvn/version "0.5.0"}}})
+
+(require '[multigrep.core :as grep])
+
+; the StringReaders could be anything that clojure.java.io/reader will accept (files, URLs, etc.)
+(let [sentence1 (StringReader. "the quick brown fox jumps over the lazy dog")
+      sentence2 (StringReader. "Lorem ipsum dolor sit amet")]
+  (pprint (grep/grep #"\b[a-z]{4}\b" [sentence1 sentence2])))
+```
+
+outputs:
+```
+({:file
+  #object[java.io.StringReader...],
+  :line "the quick brown fox jumps over the lazy dog",
+  :line-number 1,
+  :regex #"\b[a-z]{4}\b",
+  :re-seq ("over" "lazy")}
+ {:file
+  #object[java.io.StringReader...],
+  :line "Lorem ipsum dolor sit amet",
+  :line-number 1,
+  :regex #"\b[a-z]{4}\b",
+  :re-seq ("amet")})
+```
+
+### [java-http-clj](https://github.com/schmee/java-http-clj)
+
+Http client based on `java.net.http`.
+
+### [component](https://github.com/stuartsierra/component)
+
+A tiny Clojure framework for managing the lifecycle and dependencies of software components which have runtime state.
+
+### [minimallist](https://github.com/green-coder/minimallist)
+
+A minimalist data-driven data model library, inspired by Clojure Spec and Malli.
+
+Example partially borrowed from [minimallist's cljdoc](https://cljdoc.org/d/minimallist/minimallist/CURRENT/doc/usage-in-babashka)
+
+```clj
+(require '[babashka.deps :refer [add-deps]])
+
+
+(add-deps '{:deps {minimallist/minimallist {:git/url "https://github.com/green-coder/minimallist"
+                                            :sha     "b373bb18b8868526243735c760bdc67a88dd1e9a"}}})
+
+(require '[minimallist.core :as m])
+(require '[minimallist.helper :as h])
+
+(def contact (h/map [:name  (h/fn string?)]
+                    [:phone (h/fn string?)]))
+(m/valid? contact {:name "Lucy" :phone "5551212"})   ;=> true
+(m/valid? contact {:name "Lucy" :phone 5551212}) ;=> false
+
+(m/describe contact {:name "Lucy" :phone "5551212"})   ;=> {:valid? true, :entries {...}}
+(m/describe contact {:name "Lucy" :phone 5551212}) ;=> {:valid? false, :entries {... :phone {:valid? false...}}}
+
+;; Does not work for now.
+;(require '[clojure.test.check.generators :as tcg])
+;(require '[minimallist.generator :as mg])
+;(tcg/sample (mg/gen (h/fn int?)))
+```
+
+### [ruuter](https://github.com/askonomm/ruuter)
+
+A zero-dependency router where each route is a map. Works with the httpkit server built into babashka.
+
+### [clj-commons.digest](https://github.com/clj-commons/digest)
+
+A message digest library, providing functions for MD5, SHA-1, SHA-256, etc.
+
+### [contajners](https://github.com/lispyclouds/contajners)
+
+An idiomatic, data-driven, REPL friendly clojure client for OCI container engines.
+
+Example:
+
+``` clojure
+#!/usr/bin/env bb
+
+(require '[babashka.deps :as deps])
+
+(deps/add-deps '{:deps {org.clojars.lispyclouds/contajners {:mvn/version "0.0.2"}}})
+
+(require '[contajners.core :as c])
+
+(def images-docker (c/client {:engine   :docker
+                              :category :images
+                              :version  "v1.41"
+                              :conn     {:uri "unix:///var/run/docker.sock"}}))
+
+; Pull an image
+(c/invoke images-docker {:op     :ImageCreate
+                         :params {:fromImage "busybox:musl"}})
+
+; list all images
+(c/invoke images-docker {:op :ImageList})
+```
+
+### [dependency](https://github.com/stuartsierra/dependency)
+
+Represent dependency graphs as a directed acylic graph.
+
+### [specmonstah](https://github.com/reifyhealth/specmonstah)
+
+Write concise, maintainable test fixtures with clojure.spec.alpha.
+
+### [markdown-clj](https://github.com/yogthos/markdown-clj)
+
+Markdown parser that translates markdown to html.
+
+### [algo.monads](https://github.com/clojure/algo.monads)
+
+Macros for defining monads, and definition of the most common monads.
 
 ## Pods
 
@@ -744,3 +904,19 @@ A collection of useful scripts. Mainly written with Clojure/babashka
 Tired of being forced to use the browser every time you need to refresh an OIDC token to authenticate with a backend service? Finally there is a CLI tool for that - the babashka and Docker powered oidc_client.clj.
 
 Upon first invocation it opens up a browser for the OIDC provider login, thereafter it caches the refresh token and uses it as long as it remains valid.
+
+### [jirazzz](https://github.com/rwstauner/jirazzz)
+
+A babashka JIRA client by Randy Stauner
+
+### [Babashka + scittle guestbook](https://github.com/kloimhardt/babashka-scittle-guestbook)
+
+Luminus guestbook example for Babashka + Scittle.
+
+### [bb htmx todo app](https://github.com/prestancedesign/babashka-htmx-todoapp)
+
+Quick example of a todo list SPA using Babashka and htmx.
+
+### [bb aws lambda runtime](https://github.com/tatut/bb-lambda)
+
+AWS Lambda custom runtime for Babashka scripts.

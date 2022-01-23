@@ -4,7 +4,9 @@
             [clojure.string :as str]
             [sci.core :as sci]))
 
-(def open-url-script (sci/new-dynamic-var '*open-url-script* (atom nil)))
+(def bns (sci/create-ns 'clojure.java.browse nil))
+
+(def open-url-script (sci/new-dynamic-var '*open-url-script* (atom nil) {:ns bns}))
 
 (def os
   (let [os-name (System/getProperty "os.name")
@@ -27,4 +29,4 @@
 
 (def browse-namespace
   {'*open-url-script* open-url-script
-   'browse-url        browse-url})
+   'browse-url        (sci/copy-var browse-url bns)})

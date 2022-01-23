@@ -3,11 +3,18 @@
 # Check https://circleci.com/docs/2.0/language-clojure/ for more details
 #
 version: 2.1
+commands:
+  setup-docker-buildx:
+    steps:
+      - run:
+          name: Create multi-platform capabale buildx builder
+          command: |
+            docker run --privileged --rm tonistiigi/binfmt --install all
+            docker buildx create --name ci-builder --use
 jobs:
   jvm:
     docker:
-      # specify the version you desire here
-      - image: circleci/clojure:lein-2.9.1
+      - image: circleci/clojure:openjdk-11-lein-2.9.6-bullseye
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
@@ -28,13 +35,7 @@ jobs:
       - run:
           name: Install Clojure
           command: |
-            wget -nc https://download.clojure.org/install/linux-install-1.10.1.447.sh
-            chmod +x linux-install-1.10.1.447.sh
-            sudo ./linux-install-1.10.1.447.sh
-      - run:
-          name: Install lsof
-          command: |
-            sudo apt-get install lsof
+            sudo script/install-clojure
       - run:
           name: Run JVM tests
           command: |
@@ -42,10 +43,6 @@ jobs:
             export BABASHKA_FEATURE_POSTGRESQL=true
             script/test
             script/run_lib_tests
-      # - run:
-      #     name: Run as tools.deps dependency
-      #     command: |
-      #       .circleci/script/tools.deps
       - run:
           name: Run as lein command
           command: |
@@ -58,11 +55,10 @@ jobs:
             VERSION=$(cat resources/BABASHKA_VERSION)
             jar=target/babashka-$VERSION-standalone.jar
             cp $jar /tmp/release
-
             java -jar $jar script/reflection.clj
             reflection="babashka-$VERSION-reflection.json"
-            BABASHKA_EDN=".build/bb.edn" java -jar "$jar" release-artifact "$jar"
-            BABASHKA_EDN=".build/bb.edn" java -jar "$jar" release-artifact "$reflection"
+            java -jar "$jar" --config .build/bb.edn --deps-root . release-artifact "$jar"
+            java -jar "$jar" --config .build/bb.edn --deps-root . release-artifact "$reflection"
       - store_artifacts:
           path: /tmp/release
           destination: release
@@ -72,11 +68,12 @@ jobs:
           key: v1-dependencies-{{ checksum "project.clj" }}-{{ checksum "deps.edn" }}
   linux:
     docker:
-      - image: circleci/clojure:lein-2.9.1
+      - image: circleci/clojure:openjdk-11-lein-2.9.6-bullseye
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
-      GRAALVM_HOME: /home/circleci/graalvm-ce-java11-21.1.0
+      GRAALVM_VERSION: "21.3.0"
+      GRAALVM_HOME: /home/circleci/graalvm-ce-java11-21.3.0
       BABASHKA_PLATFORM: linux # used in release script
       BABASHKA_TEST_ENV: native
       BABASHKA_XMX: "-J-Xmx6500m"
@@ -94,26 +91,16 @@ jobs:
       - run:
           name: Install Clojure
           command: |
-            wget https://download.clojure.org/install/linux-install-1.10.1.447.sh
-            chmod +x linux-install-1.10.1.447.sh
-            sudo ./linux-install-1.10.1.447.sh
-      - run:
-          name: Install lsof
-          command: |
-            sudo apt-get install lsof
+            sudo script/install-clojure
       - run:
           name: Install native dev tools
           command: |
             sudo apt-get update
-            sudo apt-get -y install g++ zlib1g-dev
+            sudo apt-get -y install build-essential zlib1g-dev
       - run:
           name: Download GraalVM
           command: |
-            cd ~
-            if ! [ -d graalvm-ce-java11-21.1.0 ]; then
-              curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.1.0/graalvm-ce-java11-linux-amd64-21.1.0.tar.gz
-              tar xzf graalvm-ce-java11-linux-amd64-21.1.0.tar.gz
-            fi
+            script/install-graalvm
       - run:
           name: Build binary
           command: |
@@ -136,7 +123,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-            - ~/graalvm-ce-java11-21.1.0
+            - ~/graalvm-ce-java11-21.3.0
           key: linux-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - store_artifacts:
           path: /tmp/release
@@ -147,11 +134,12 @@ jobs:
             ./bb .circleci/script/publish_artifact.clj || true
   linux-static:
     docker:
-      - image: circleci/clojure:lein-2.9.1
+      - image: circleci/clojure:openjdk-11-lein-2.9.6-bullseye
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
-      GRAALVM_HOME: /home/circleci/graalvm-ce-java11-21.1.0
+      GRAALVM_VERSION: "21.3.0"
+      GRAALVM_HOME: /home/circleci/graalvm-ce-java11-21.3.0
       BABASHKA_PLATFORM: linux # used in release script
       BABASHKA_TEST_ENV: native
       BABASHKA_STATIC: "true"
@@ -181,27 +169,17 @@ jobs:
       - run:
           name: Install Clojure
           command: |
-            wget https://download.clojure.org/install/linux-install-1.10.1.447.sh
-            chmod +x linux-install-1.10.1.447.sh
-            sudo ./linux-install-1.10.1.447.sh
-      - run:
-          name: Install lsof
-          command: |
-            sudo apt-get install lsof
+            sudo script/install-clojure
       - run:
           name: Install native dev tools
           command: |
             sudo apt-get update
-            sudo apt-get -y install gcc g++ zlib1g-dev
+            sudo apt-get -y install build-essential zlib1g-dev
             sudo -E script/setup-musl
       - run:
           name: Download GraalVM
           command: |
-            cd ~
-            if ! [ -d graalvm-ce-java11-21.1.0 ]; then
-              curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.1.0/graalvm-ce-java11-linux-amd64-21.1.0.tar.gz
-              tar xzf graalvm-ce-java11-linux-amd64-21.1.0.tar.gz
-            fi
+            script/install-graalvm
       - run:
           name: Build binary
           command: |
@@ -224,7 +202,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-            - ~/graalvm-ce-java11-21.1.0
+            - ~/graalvm-ce-java11-21.3.0
           key: linux-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - store_artifacts:
           path: /tmp/release
@@ -241,7 +219,8 @@ jobs:
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
-      GRAALVM_HOME: /home/circleci/graalvm-ce-java11-21.1.0
+      GRAALVM_VERSION: "21.3.0"
+      GRAALVM_HOME: /home/circleci/graalvm-ce-java11-21.3.0
       BABASHKA_PLATFORM: linux # used in release script
       BABASHKA_ARCH: aarch64
       BABASHKA_TEST_ENV: native
@@ -254,43 +233,21 @@ jobs:
             git submodule init
             git submodule update
       - run:
-          name: "Short circuit on SNAPSHOT"
+          name: Install Clojure
           command: |
-            VERSION=$(cat resources/BABASHKA_VERSION)
-            if [[ "$VERSION" == *-SNAPSHOT ]]
-            then
-              circleci task halt
-            fi
+            sudo script/install-clojure
       - restore_cache:
           keys:
             - linux-aarch64-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - run:
-          name: Install Leiningen
-          command: |
-            sudo script/install-leiningen
-      - run:
-          name: Install Clojure
-          command: |
-            wget https://download.clojure.org/install/linux-install-1.10.1.447.sh
-            chmod +x linux-install-1.10.1.447.sh
-            sudo ./linux-install-1.10.1.447.sh
-      - run:
-          name: Install lsof
-          command: |
-            sudo apt-get install lsof
-      - run:
           name: Install native dev tools
           command: |
             sudo apt-get update
-            sudo apt-get -y install gcc g++ zlib1g-dev
+            sudo apt-get -y install build-essential zlib1g-dev
       - run:
           name: Download GraalVM
           command: |
-            cd ~
-            if ! [ -d graalvm-ce-java11-21.1.0 ]; then
-              curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.1.0/graalvm-ce-java11-linux-aarch64-21.1.0.tar.gz
-              tar xzf graalvm-ce-java11-linux-aarch64-21.1.0.tar.gz
-            fi
+            script/install-graalvm
       - run:
           name: Build binary
           command: |
@@ -313,7 +270,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-            - ~/graalvm-ce-java11-21.1.0
+            - ~/graalvm-ce-java11-21.3.0
           key: linux-aarch64-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - store_artifacts:
           path: /tmp/release
@@ -330,7 +287,8 @@ jobs:
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
-      GRAALVM_HOME: /home/circleci/graalvm-ce-java11-21.1.0
+      GRAALVM_VERSION: "21.3.0"
+      GRAALVM_HOME: /home/circleci/graalvm-ce-java11-21.3.0
       BABASHKA_PLATFORM: linux # used in release script
       BABASHKA_ARCH: aarch64
       BABASHKA_TEST_ENV: native
@@ -351,37 +309,23 @@ jobs:
       #       then
       #         circleci task halt
       #       fi
+      - run:
+          name: Install Clojure
+          command: |
+            sudo script/install-clojure
       - restore_cache:
           keys:
             - linux-aarch64-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - run:
-          name: Install Leiningen
-          command: |
-            sudo script/install-leiningen
-      - run:
-          name: Install Clojure
-          command: |
-            wget https://download.clojure.org/install/linux-install-1.10.1.447.sh
-            chmod +x linux-install-1.10.1.447.sh
-            sudo ./linux-install-1.10.1.447.sh
-      - run:
-          name: Install lsof
-          command: |
-            sudo apt-get install lsof
-      - run:
           name: Install native dev tools
           command: |
             sudo apt-get update
-            sudo apt-get -y install gcc g++ zlib1g-dev
+            sudo apt-get -y install build-essential zlib1g-dev
             # sudo -E script/setup-musl
       - run:
           name: Download GraalVM
           command: |
-            cd ~
-            if ! [ -d graalvm-ce-java11-21.1.0 ]; then
-              curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.1.0/graalvm-ce-java11-linux-aarch64-21.1.0.tar.gz
-              tar xzf graalvm-ce-java11-linux-aarch64-21.1.0.tar.gz
-            fi
+            script/install-graalvm
       - run:
           name: Build binary
           command: |
@@ -404,7 +348,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-            - ~/graalvm-ce-java11-21.1.0
+            - ~/graalvm-ce-java11-21.3.0
           key: linux-aarch64-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - store_artifacts:
           path: /tmp/release
@@ -418,7 +362,8 @@ jobs:
       xcode: "12.0.0"
     environment:
       MACOSX_DEPLOYMENT_TARGET: 10.13 # 10.12 is EOL
-      GRAALVM_HOME: /Users/distiller/graalvm-ce-java11-21.1.0/Contents/Home
+      GRAALVM_VERSION: "21.3.0"
+      GRAALVM_HOME: /Users/distiller/graalvm-ce-java11-21.3.0/Contents/Home
       BABASHKA_PLATFORM: macos # used in release script
       BABASHKA_TEST_ENV: native
       BABASHKA_XMX: "-J-Xmx6500m"
@@ -436,7 +381,7 @@ jobs:
       - run:
           name: Install Clojure
           command: |
-            script/install-clojure /usr/local
+            script/install-clojure
       - run:
           name: Install Leiningen
           command: |
@@ -444,12 +389,7 @@ jobs:
       - run:
           name: Download GraalVM
           command: |
-            cd ~
-            ls -la
-            if ! [ -d graalvm-ce-java11-21.1.0 ]; then
-              curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.1.0/graalvm-ce-java11-darwin-amd64-21.1.0.tar.gz
-              tar xzf graalvm-ce-java11-darwin-amd64-21.1.0.tar.gz
-            fi
+            script/install-graalvm
       - run:
           name: Build binary
           command: |
@@ -470,7 +410,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-            - ~/graalvm-ce-java11-21.1.0
+            - ~/graalvm-ce-java11-21.3.0/Contents/Home
           key: mac-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - store_artifacts:
           path: /tmp/release
@@ -482,7 +422,7 @@ jobs:
   deploy:
     resource_class: large
     docker:
-      - image: circleci/clojure:lein-2.9.1
+      - image: circleci/clojure:lein-2.9.6
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
@@ -504,16 +444,17 @@ jobs:
             - ~/.m2
           key: v1-dependencies-{{ checksum "project.clj" }}
   docker:
-    docker:
-      - image: circleci/buildpack-deps:stretch
+    machine:
+      image: ubuntu-2004:202111-01
     steps:
       - checkout
+      - setup-docker-buildx
       - attach_workspace:
           at: /tmp
-      - setup_remote_docker:
-          version: 19.03.12
       - run:
           name: Build Docker image
+          environment:
+            PLATFORM: linux/amd64,linux/arm64
           command: .circleci/script/docker
 
 workflows:
@@ -537,7 +478,9 @@ workflows:
       - docker:
           filters:
             branches:
-              only: master
+              only:
+                - master
           requires:
             - linux
             - linux-static
+            - linux-aarch64

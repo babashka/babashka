@@ -8,6 +8,7 @@
   :license {:name "Eclipse Public License 1.0"
             :url "http://opensource.org/licenses/eclipse-1.0.php"}
   :source-paths ["src" "sci/src" "babashka.curl/src" "fs/src" "pods/src"
+                 "babashka.core/src"
                  "babashka.nrepl/src" "depstar/src" "process/src"
                  "deps.clj/src" "deps.clj/resources"]
   ;; for debugging Reflector.java code:
@@ -16,28 +17,30 @@
   :resource-paths ["resources" "sci/resources"]
   :test-selectors {:default (complement :windows-only)
                    :windows (complement :skip-windows)}
-  :dependencies [[org.clojure/clojure "1.11.0-alpha1"]
-                 [borkdude/edamame "0.0.11"]
+  :dependencies [[org.clojure/clojure "1.11.0-alpha3"]
+                 [borkdude/edamame "0.0.19"]
                  [borkdude/graal.locking "0.0.2"]
                  [org.clojure/tools.cli "1.0.206"]
                  [cheshire "5.10.1"]
                  [nrepl/bencode "1.1.0"]
                  [borkdude/sci.impl.reflector "0.0.1"]
+                 [org.clojure/core.async "1.4.627"]
                  [org.clojure/test.check "1.1.0"]
-                 [com.taoensso/timbre "5.1.2"]
-                 [org.clojure/tools.logging "1.1.0"]]
+                 [com.github.clj-easy/graal-build-time "0.1.0"]
+                 [rewrite-clj/rewrite-clj "1.0.699-alpha"]]
+  :plugins       [[org.kipz/lein-meta-bom "0.1.1"]]
+  :metabom {:jar-name "metabom.jar"}
   :profiles {:feature/xml  {:source-paths ["feature-xml"]
                             :dependencies [[org.clojure/data.xml "0.2.0-alpha6"]]}
              :feature/yaml {:source-paths ["feature-yaml"]
                             :dependencies [[clj-commons/clj-yaml "0.7.107"]]}
              :feature/jdbc {:source-paths ["feature-jdbc"]
                             :dependencies [[seancorfield/next.jdbc "1.1.610"]]}
+             :feature/sqlite [:feature/jdbc {:dependencies [[org.xerial/sqlite-jdbc "3.36.0.3"]]}]
              :feature/postgresql [:feature/jdbc {:dependencies [[org.postgresql/postgresql "42.2.18"]]}]
              ;:feature/oracledb [:feature/jdbc {:dependencies [[com.oracle.database.jdbc/ojdbc8 "19.8.0.0"]]}]
              :feature/oracledb [:feature/jdbc {:dependencies [[io.helidon.integrations.db/ojdbc "2.1.0"]]}] ; ojdbc10 + GraalVM config, by Oracle
              :feature/hsqldb [:feature/jdbc {:dependencies [[org.hsqldb/hsqldb "2.5.1"]]}]
-             :feature/core-async {:source-paths ["feature-core-async"]
-                                  :dependencies [[org.clojure/core.async "1.3.618"]]}
              :feature/csv {:source-paths ["feature-csv"]
                            :dependencies [[org.clojure/data.csv "1.0.0"]]}
              :feature/transit {:source-paths ["feature-transit"]
@@ -56,16 +59,16 @@
                               :dependencies [[hiccup/hiccup "2.0.0-alpha2"]]}
              :feature/test-check {:source-paths ["feature-test-check"]}
              :feature/spec-alpha {:source-paths ["feature-spec-alpha"]}
-             :feature/rewrite-clj {:source-paths ["feature-rewrite-clj"]
-                                   :dependencies [[rewrite-clj/rewrite-clj "1.0.644-alpha"]]}
              :feature/selmer {:source-paths ["feature-selmer"]
                               :dependencies [[selmer/selmer "1.12.44"]]}
+             :feature/logging {:source-paths ["feature-logging"]
+                               :dependencies [[com.taoensso/timbre "5.1.2"]
+                                              [org.clojure/tools.logging "1.1.0"]]}
              :test [:feature/xml
                     :feature/lanterna
                     :feature/yaml
                     :feature/postgresql
                     :feature/hsqldb
-                    :feature/core-async
                     :feature/csv
                     :feature/transit
                     :feature/datascript
@@ -75,8 +78,8 @@
                     :feature/hiccup
                     :feature/test-check
                     :feature/spec-alpha
-                    :feature/rewrite-clj
                     :feature/selmer
+                    :feature/logging
                     {:dependencies [[com.clojure-goes-fast/clj-async-profiler "0.5.0"]
                                     [com.opentable.components/otj-pg-embedded "0.13.3"]]}]
              :uberjar {:global-vars {*assert* false}

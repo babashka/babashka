@@ -4,6 +4,7 @@
 [![project chat](https://img.shields.io/badge/slack-join_chat-brightgreen.svg)](https://app.slack.com/client/T03RZGPFR/CLX41ASCS)
 [![Financial Contributors on Open Collective](https://opencollective.com/babashka/all/badge.svg?label=financial+contributors)](https://opencollective.com/babashka) [![Clojars Project](https://img.shields.io/clojars/v/babashka/babashka.svg)](https://clojars.org/babashka/babashka)
 [![twitter](https://img.shields.io/badge/twitter-%23babashka-blue)](https://twitter.com/search?q=%23babashka&src=typed_query&f=live)
+[![docs](https://img.shields.io/badge/website-docs-blue)](https://book.babashka.org)
 
 <blockquote class="twitter-tweet" data-lang="en">
     <p lang="en" dir="ltr">Life's too short to remember how to write Bash code. I feel liberated.</p>
@@ -33,7 +34,6 @@ As one user described it:
 
 ### Non-goals
 
-* Performance
 * Provide a mixed Clojure/Bash DSL (see portability).
 * Replace existing shells. Babashka is a tool you can use inside existing shells like bash and it is designed to play well with them. It does not aim to replace them.
 
@@ -58,18 +58,21 @@ $ ls | bb -i '(filter #(-> % io/file .isDirectory) *input*)'
 bb took 4ms.
 ```
 
-### Babashka users
+## Babashka users
 
-Are you using babashka in your company or personal projects? Let us know [here](https://github.com/babashka/babashka/issues/254).
+See [companies](doc/companies.md) for a list of companies using babashka.
 
-### Setting expectations
+Are you using babashka in your company or personal projects? Let us know
+[here](https://github.com/babashka/babashka/issues/254).
 
-Babashka uses [sci](https://github.com/borkdude/sci) for interpreting
-Clojure. Sci implements a substantial subset of Clojure. Interpreting code is in
+## Setting expectations
+
+Babashka uses [SCI](https://github.com/borkdude/sci) for interpreting
+Clojure. SCI implements a substantial subset of Clojure. Interpreting code is in
 general not as performant as executing compiled code. If your script takes more
 than a few seconds to run or has lots of loops, Clojure on the JVM may be a
-better fit as the performance on JVM is going to outweigh its
-startup time penalty. Read more about the differences with Clojure
+better fit as the performance on JVM is going to outweigh its startup time
+penalty. Read more about the differences with Clojure
 [here](#differences-with-clojure).
 
 ## Status
@@ -298,6 +301,11 @@ handling of SIGINT and SIGPIPE. This can be done by setting
 
 ## Articles, podcasts and videos
 
+- [Moldable Emacs: a Clojure Playground with Babashka](https://ag91.github.io/blog/2021/11/05/moldable-emacs-a-clojure-playground-with-babashka/) by Andrea
+- [Finding my inner Wes Anderson with #Babashka](https://javahippie.net/clojure/2021/10/18/finding-my-inner-wes-anderson.html) by Tim Zöller
+- [Awesome Babashka: Parse & produce HTML and SQLite](https://blog.jakubholy.net/2021/awesome-babashka-dash/) by Jakub Holý
+- [Babashka tasks](https://youtu.be/u5ECoR7KT1Y), talk by Michiel Borkent
+- [Rewriting a clojure file with rewrite-clj and babashka](https://youtu.be/b7NPKsm8gkc), video by Oxalorg
 - [Integrating Babashka into Bazel](https://timjaeger.io/20210627-integrating-babashka-with-bazel.html) by Tim Jäger
 - [Talk](https://youtu.be/Yjeh57eE9rg): Babashka: a native Clojure interpreter for scripting — The 2021 Graal Workshop at CGO
 - [Blog](https://savo.rocks/posts/playing-new-music-on-old-car-stereo-with-clojure-and-babashka/): Playing New Music On Old Car Stereo With Clojure And Babashka

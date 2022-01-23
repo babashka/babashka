@@ -124,11 +124,6 @@ Phase:    macroexpand
 1: (defmacro foo [x] (subs nil 1) `(do ~x ~x)) (foo 1)
                      ^--- 
 
------ Locals -------------------------------------------------------------------
-&form: (foo 1)
-&env:  {}
-x:     1
-
 ----- Stack trace --------------------------------------------------------------
 clojure.core/subs - <built-in>
 user/foo          - <expr>:1:19
@@ -183,10 +178,8 @@ Location: <expr>:1:27
 
 ----- Context ------------------------------------------------------------------
 1: (let [d {:zero 0 :one 1}] (throw (ex-info \"some msg\" d)))
-                             ^--- some msg
+                             ^--- some msg")))
 
------ Locals -------------------------------------------------------------------
-d: {:zero 0, :one 1}")))
   (testing "output of ordinary Exception"
     (let [output (try (tu/bb nil "(throw (Exception. \"some msg\"))")
                       (catch Exception e (ex-message e)))]
@@ -199,3 +192,66 @@ Location: <expr>:1:1
 ----- Context ------------------------------------------------------------------
 1: (throw (Exception. \"some msg\"))
    ^--- some msg"))))
+
+(deftest debug-exception-print-test
+  (testing "debug mode includes locals and exception data in output"
+    (let [output (try (tu/bb nil "--debug" "(let [x 1] (/ x 0))")
+                      (is false) ; ensure that exception is thrown and we don't get here
+                      (catch Exception e (ex-message e)))]
+      (is (str/includes? (tu/normalize output)
+            "----- Error --------------------------------------------------------------------
+Type:     java.lang.ArithmeticException
+Message:  Divide by zero
+Location: <expr>:1:12
+
+----- Context ------------------------------------------------------------------
+1: (let [x 1] (/ x 0))
+              ^--- Divide by zero
+
+----- Locals -------------------------------------------------------------------
+x: 1
+
+----- Stack trace --------------------------------------------------------------
+clojure.core// - <built-in>
+user           - <expr>:1:12
+
+----- Exception ----------------------------------------------------------------
+clojure.lang.ExceptionInfo: Divide by zero
+{:type :sci/error, :line 1, :column 12, :message \"Divide by zero\",")))))
+
+(deftest macro-locals-print-test
+  (testing "exception during macro call includes &form and &env locals"
+    (let [output (try (tu/bb nil "--debug" "(defmacro foo [x] (subs nil 1) `(do ~x ~x)) (foo 1)")
+                      (is false)
+                      (catch Exception e (ex-message e)))]
+      (is (str/includes? (tu/normalize output)
+            "----- Error --------------------------------------------------------------------
+Type:     java.lang.NullPointerException
+Location: <expr>:1:19
+Phase:    macroexpand
+
+----- Context ------------------------------------------------------------------
+1: (defmacro foo [x] (subs nil 1) `(do ~x ~x)) (foo 1)
+                     ^--- 
+
+----- Locals -------------------------------------------------------------------
+&form: (foo 1)
+&env:  {}
+x:     1
+
+----- Stack trace --------------------------------------------------------------
+clojure.core/subs - <built-in>
+user/foo          - <expr>:1:19
+user/foo          - <expr>:1:1
+user              - <expr>:1:45
+
+----- Exception ----------------------------------------------------------------
+clojure.lang.ExceptionInfo: null
+{:type :sci/error, :line 1, :column 19,")))))
+
+(deftest native-stacktrace-test
+  (let [output (try (tu/bb nil "(merge 1 2 3)")
+                    (is false)
+                    (catch Exception e (ex-message e)))]
+    (is (str/includes? (tu/normalize output)
+                       "clojure.core/reduce1        - <built-in>"))))

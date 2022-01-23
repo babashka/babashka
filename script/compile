@@ -19,7 +19,9 @@ then
     exit 1
 fi
 
-"$GRAALVM_HOME/bin/gu" install native-image
+if [[ ! -x "$GRAALVM_HOME/bin/native-image" ]]; then
+    "$GRAALVM_HOME/bin/gu" install native-image
+fi
 
 export JAVA_HOME=$GRAALVM_HOME
 export PATH=$GRAALVM_HOME/bin:$PATH
@@ -29,49 +31,30 @@ rm -rf resources/*.class
 # "$GRAALVM_HOME/bin/javac" -cp "$SVM_JAR" resources/CutOffCoreServicesDependencies.java
 # "$GRAALVM_HOME/bin/javac" -cp "$SVM_JAR" resources/CutOffSunAwtWwwContentAudioAiff.java
 # "$GRAALVM_HOME/bin/javac" -cp "$SVM_JAR" resources/CutOffMisc.java
-
 if [ -z "$BABASHKA_JAR" ]; then
     lein with-profiles +reflection,+native-image "do" run
-    lein "do" clean, uberjar
+    lein "do" clean, uberjar, metabom
     BABASHKA_JAR=${BABASHKA_JAR:-"target/babashka-$BABASHKA_VERSION-standalone.jar"}
 fi
 
+# because script/test cleans target during ci before the jar can we saved
+cp target/metabom.jar .
+
 BABASHKA_BINARY=${BABASHKA_BINARY:-"bb"}
 
-args=( "-jar" "$BABASHKA_JAR"
-       "-H:Name=$BABASHKA_BINARY"
-       "-H:+ReportExceptionStackTraces"
-       "-J-Dborkdude.dynaload.aot=true"
-       "-H:IncludeResources=BABASHKA_VERSION"
-       "-H:IncludeResources=SCI_VERSION"
-       "-H:ReflectionConfigurationFiles=reflection.json"
-       "--initialize-at-build-time"
-       #"-H:+PrintAnalysisCallTree"
-       # "-H:+DashboardAll"
-       # "-H:DashboardDump=reports/dump"
-       # "-H:+DashboardPretty"
-       # "-H:+DashboardJson"
-       "-H:Log=registerResource:"
-       "-H:EnableURLProtocols=http,https,jar"
-       "--enable-all-security-services"
-       "-H:+JNI"
-       "--verbose"
-       "--no-fallback"
-       "--no-server"
-       "--report-unsupported-elements-at-runtime"
-       "--initialize-at-run-time=org.postgresql.sspi.SSPIClient"
-       "--initialize-at-run-time=org.httpkit.client.ClientSslEngineFactory\$SSLHolder"
-       "--native-image-info"
-       "--verbose"
-       "-H:ServiceLoaderFeatureExcludeServices=javax.sound.sampled.spi.AudioFileReader"
-       "-H:ServiceLoaderFeatureExcludeServices=javax.sound.midi.spi.MidiFileReader"
-       "-H:ServiceLoaderFeatureExcludeServices=javax.sound.sampled.spi.MixerProvider"
-       "-H:ServiceLoaderFeatureExcludeServices=javax.sound.sampled.spi.FormatConversionProvider"
-       "-H:ServiceLoaderFeatureExcludeServices=javax.sound.sampled.spi.AudioFileWriter"
-       "-H:ServiceLoaderFeatureExcludeServices=javax.sound.midi.spi.MidiDeviceProvider"
-       "-H:ServiceLoaderFeatureExcludeServices=javax.sound.midi.spi.SoundbankReader"
-       "-H:ServiceLoaderFeatureExcludeServices=javax.sound.midi.spi.MidiFileWriter"
-       "$BABASHKA_XMX" )
+args=("-jar" "$BABASHKA_JAR"
+      "-H:Name=$BABASHKA_BINARY"
+      "-H:+ReportExceptionStackTraces"
+      # "-H:+PrintAnalysisCallTree"
+      # "-H:+DashboardAll"
+      # "-H:DashboardDump=reports/dump"
+      # "-H:+DashboardPretty"
+      # "-H:+DashboardJson"
+      "-H:ReportAnalysisForbiddenType=java.awt.Toolkit:InHeap,Allocated"
+      "--verbose"
+      "--no-fallback"
+      "--native-image-info"
+      "$BABASHKA_XMX")
 
 BABASHKA_STATIC=${BABASHKA_STATIC:-}
 BABASHKA_MUSL=${BABASHKA_MUSL:-}
@@ -82,6 +65,9 @@ if [ "$BABASHKA_STATIC" = "true" ]; then
         args+=("--libc=musl"
                # see https://github.com/oracle/graal/issues/3398
                "-H:CCompilerOption=-Wl,-z,stack-size=2097152")
+    else
+        # see https://github.com/oracle/graal/issues/3737
+        args+=("-H:+StaticExecutableWithDynamicLibC")
     fi
 fi
 
@@ -104,10 +90,10 @@ then
     # Remove all the default features, unless explicitly set to true:
     export BABASHKA_FEATURE_XML="${BABASHKA_FEATURE_XML:-false}"
     export BABASHKA_FEATURE_YAML="${BABASHKA_FEATURE_YAML:-false}"
-    export BABASHKA_FEATURE_CORE_ASYNC="${BABASHKA_FEATURE_CORE_ASYNC:-false}"
     export BABASHKA_FEATURE_CSV="${BABASHKA_FEATURE_CSV:-false}"
     export BABAHSKA_FEATURE_TRANSIT="${BABAHSKA_FEATURE_TRANSIT:-false}"
     export BABASHKA_FEATURE_JAVA_TIME="${BABASHKA_FEATURE_JAVA_TIME:-false}"
+    export BABASHKA_FEATURE_JAVA_NET_HTTP="${BABASHKA_FEATURE_JAVA_NET_HTTP:-false}"
     export BABASHKA_FEATURE_JAVA_NIO="${BABASHKA_FEATURE_JAVA_NIO:-false}"
     export BABASHKA_FEATURE_HTTPKIT_CLIENT="${BABASHKA_FEATURE_HTTPKIT_CLIENT:-false}"
     export BABASHKA_FEATURE_HTTPKIT_SERVER="${BABASHKA_FEATURE_HTTPKIT_SERVER:-false}"
@@ -115,8 +101,8 @@ then
     export BABASHKA_FEATURE_HICCUP="${BABASHKA_FEATURE_HICCUP:-false}"
     export BABASHKA_FEATURE_TEST_CHECK="${BABASHKA_FEATURE_TEST_CHECK:-false}"
     export BABASHKA_FEATURE_SPEC_ALPHA="${BABASHKA_FEATURE_SPEC_ALPHA:-false}"
-    export BABASHKA_FEATURE_REWRITE_CLJ="${BABASHKA_FEATURE_REWRITE_CLJ:-false}"
     export BABASHKA_FEATURE_SELMER="${BABASHKA_FEATURE_SELMER:-false}"
+    export BABASHKA_FEATURE_LOGGING="${BABASHKA_FEATURE_LOGGING:-false}"
 fi
 
 "$GRAALVM_HOME/bin/native-image" "${args[@]}"

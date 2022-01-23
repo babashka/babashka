@@ -89,7 +89,9 @@
    (pprint s @sci/out))
   ([s writer]
    (binding [pprint/*print-right-margin* @print-right-margin
-             pprint/*print-pprint-dispatch* @print-pprint-dispatch]
+             pprint/*print-pprint-dispatch* @print-pprint-dispatch
+             *print-meta* @sci/print-meta
+             *print-readably* @sci/print-readably]
      (pprint/pprint s writer))))
 
 (defn cl-format

@@ -12,28 +12,12 @@ if [[ -z "${BABASHKA_MUSL:-}" ]]; then
     exit 0
 fi
 
-# This script sets up the latest available musl-tools using apt pinning from debian unstable.
-# The one available in stable and testing are quite outdated and this ensures we get the latest improvements
-# This explictly installs musl from unstable and keeps the others at a higher priority
+if [[ "${BABASHKA_ARCH:-"x86_64"}" != "x86_64" ]]; then
+    echo "GraalVM only supports building static binaries on x86_64."
+    exit 1
+fi
 
-cat >> /etc/apt/sources.list <<eof
-deb http://ftp.us.debian.org/debian unstable main non-free contrib
-deb http://non-us.debian.org/debian-non-us unstable/non-us main contrib non-free
-eof
-
-cat >> /etc/apt/preferences <<eof
-Package: *
-Pin: release a=stable
-Pin-Priority: 700
-Package: *
-Pin: release a=testing
-Pin-Priority: 650
-Package: *
-pin: release a=unstable
-pin-priority: 600
-eof
-
-apt-get update -y && apt-get install musl-tools/unstable -y
+apt-get update -y && apt-get install musl-tools -y
 
 ZLIB_VERSION="1.2.11"
 
@@ -54,3 +38,5 @@ cd ..
 
 # Install libz.a in the correct place so ldd can find it
 install -Dm644 "/usr/local/lib/libz.a" "/usr/lib/$arch-linux-musl/libz.a"
+
+ln -s /usr/bin/musl-gcc /usr/bin/x86_64-linux-musl-gcc

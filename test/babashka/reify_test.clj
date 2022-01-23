@@ -65,3 +65,35 @@
   (toString [_] (str :foo))))
 (hash m)
 ")))))
+
+(deftest reify-file-visitor-test
+  (let [prog '(do (ns dude
+                    (:import
+                     [java.io File]
+                     [java.nio.file FileSystems FileVisitor FileVisitResult Files Path])
+                    (:gen-class))
+
+                  (defn match-paths
+                    "Match glob to paths under root and return a collection of Path objects"
+                    [^File root glob]
+                    (let [root-path (.toPath root)
+                          matcher (.getPathMatcher (FileSystems/getDefault) (str "glob:" glob))
+                          paths (volatile! [])
+                          visitor (reify FileVisitor
+                                    (visitFile [_ path attrs]
+                                      (when (.matches matcher (.relativize root-path ^Path path))
+                                        (vswap! paths conj path))
+                                      FileVisitResult/CONTINUE)
+                                    (visitFileFailed [_ path ex]
+                                      FileVisitResult/CONTINUE)
+                                    (preVisitDirectory [_ _ _] FileVisitResult/CONTINUE)
+                                    (postVisitDirectory [_ _ _] FileVisitResult/CONTINUE))]
+                      (Files/walkFileTree root-path visitor)
+                      @paths))
+
+                  [(count (match-paths (File. ".") "**"))
+                   ;; visitFileFailed is implemented
+                   (count (match-paths (File. "xxx") "**"))])
+        [x y] (bb nil prog)]
+    (is (pos? x))
+    (is (zero? y))))

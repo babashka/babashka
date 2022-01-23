@@ -18,10 +18,12 @@ then
     export BABASHKA_FEATURE_CSV="${BABASHKA_FEATURE_CSV:-false}"
     export BABAHSKA_FEATURE_TRANSIT="${BABAHSKA_FEATURE_TRANSIT:-false}"
     export BABASHKA_FEATURE_JAVA_TIME="${BABASHKA_FEATURE_JAVA_TIME:-false}"
+    export BABASHKA_FEATURE_JAVA_NET_HTTP="${BABASHKA_FEATURE_JAVA_NET_HTTP:-false}"
     export BABASHKA_FEATURE_JAVA_NIO="${BABASHKA_FEATURE_JAVA_NIO:-false}"
     export BABASHKA_FEATURE_HTTPKIT_CLIENT="${BABASHKA_FEATURE_HTTPKIT_CLIENT:-false}"
     export BABASHKA_FEATURE_HTTPKIT_SERVER="${BABASHKA_FEATURE_HTTPKIT_SERVER:-false}"
     export BABASHKA_FEATURE_CORE_MATCH="${BABASHKA_FEATURE_CORE_MATCH:-false}"
+    export BABASHKA_FEATURE_LOGGING="${BABASHKA_FEATURE_LOGGING:-false}"
 fi
 
 BABASHKA_LEIN_PROFILES="+uberjar"
@@ -31,6 +33,13 @@ then
     BABASHKA_LEIN_PROFILES+=",+feature/jdbc"
 else
     BABASHKA_LEIN_PROFILES+=",-feature/jdbc"
+fi
+
+if [ "$BABASHKA_FEATURE_SQLITE" = "true" ]
+then
+    BABASHKA_LEIN_PROFILES+=",+feature/sqlite"
+else
+    BABASHKA_LEIN_PROFILES+=",-feature/sqlite"
 fi
 
 if [ "$BABASHKA_FEATURE_POSTGRESQL" = "true" ]
@@ -66,13 +75,6 @@ then
     BABASHKA_LEIN_PROFILES+=",+feature/yaml"
 else
     BABASHKA_LEIN_PROFILES+=",-feature/yaml"
-fi
-
-if [ "$BABASHKA_FEATURE_CORE_ASYNC" != "false" ]
-then
-    BABASHKA_LEIN_PROFILES+=",+feature/core-async"
-else
-    BABASHKA_LEIN_PROFILES+=",-feature/core-async"
 fi
 
 if [ "$BABASHKA_FEATURE_CSV" != "false" ]
@@ -145,13 +147,6 @@ else
     BABASHKA_LEIN_PROFILES+=",-feature/spec-alpha"
 fi
 
-if [ "$BABASHKA_FEATURE_REWRITE_CLJ" != "false" ]
-then
-    BABASHKA_LEIN_PROFILES+=",+feature/rewrite-clj"
-else
-    BABASHKA_LEIN_PROFILES+=",-feature/rewrite-clj"
-fi
-
 if [ "$BABASHKA_FEATURE_SELMER" != "false" ]
 then
     BABASHKA_LEIN_PROFILES+=",+feature/selmer"
@@ -159,8 +154,16 @@ else
     BABASHKA_LEIN_PROFILES+=",-feature/selmer"
 fi
 
+if [ "$BABASHKA_FEATURE_LOGGING" != "false" ]
+then
+    BABASHKA_LEIN_PROFILES+=",+feature/logging"
+else
+    BABASHKA_LEIN_PROFILES+=",-feature/logging"
+fi
+
+cp deps.edn resources/META-INF/babashka/deps.edn
 
 if [ -z "$BABASHKA_JAR" ]; then
     lein with-profiles "$BABASHKA_LEIN_PROFILES,+reflection,-uberjar" do run
-    lein with-profiles "$BABASHKA_LEIN_PROFILES" do clean, uberjar
+    lein with-profiles "$BABASHKA_LEIN_PROFILES" do clean, uberjar, metabom
 fi

@@ -67,7 +67,8 @@
     java.nio.file.FileVisitor
     {preVisitDirectory  [[this p attrs]]
      postVisitDirectory [[this p attrs]]
-     visitFile          [[this p attrs]]}
+     visitFile          [[this p attrs]]
+     visitFileFailed    [[this p ex]]}
 
     java.io.FileFilter
     {accept [[this f]]}
@@ -148,9 +149,37 @@
     {iterator [[this]]
      forEach  [[this action]]}
 
+    java.net.http.WebSocket$Listener
+    {onBinary [[this ws data last?]]
+     onClose [[this ws status-code reason]]
+     onError [[this ws error]]
+     onOpen [[this ws]]
+     onPing [[this ws data]]
+     onPong [[this ws data]]
+     onText [[this ws data last?]]}
+
     java.util.Iterator
     {hasNext [[this]]
      next    [[this]]}
 
+    java.util.function.Function
+    {apply [[this t]]}
+
+    java.util.function.Supplier
+    {get [[this]]}
+
     java.lang.Comparable
-    {compareTo [[this other]]}}))
+    {compareTo [[this other]]}
+
+    javax.net.ssl.X509TrustManager
+    {checkClientTrusted [[this chain auth-type]]
+     checkServerTrusted [[this chain auth-type]]
+     getAcceptedIssuers [[this]]}
+
+    clojure.lang.LispReader$Resolver
+    {currentNS [[this]]
+     resolveClass [[this sym]]
+     resolveAlias [[this sym]]
+     resolveVar [[this sym]]}
+
+    }))
