@@ -17,7 +17,7 @@ For a list of breaking changes, check [here](#breaking-changes).
 - SCI: fix order of metadata evaluation ([@erdos](https://github.com/erdos))
 - Fix: cannot take value of macro of `->`
 - Fix [#1144](https://github.com/babashka/babashka/issues/1144): cannot create multidimensional arrays
-- Fix [#1143](https://github.com/babashka/babashka/issues/1143): allow optional (ignored) -- when using using --main ([@grzm](https://github.com/grzm))
+- Fix [#1143](https://github.com/babashka/babashka/issues/1143): allow optional (ignored) `--` when using using `--main` ([@grzm](https://github.com/grzm))
 - SCI: throw when `recur` is used from non-tail position
 - Add more libraries to CI lib tests ([@cljwalker](https://github.com/cljwalker))
 - Upgrade several built-in deps: `org.clojure/clojure`, `cheshire`, `core.async`, `test.check`
