@@ -38,4 +38,5 @@
    '*sh-env* sh-env
    'with-sh-dir (sci/copy-var shell/with-sh-dir shell-ns)
    'with-sh-env (sci/copy-var shell/with-sh-env shell-ns)
-   'sh (sci/copy-var sh shell-ns)})
+   'sh (sci/copy-var sh shell-ns)
+   'launch (sci/copy-var shell/launch shell-ns)})
