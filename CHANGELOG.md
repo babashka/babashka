@@ -2,10 +2,10 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
-## 0.7.4
+## 0.7.4 (2022-01-25)
 
 - Add new namespace from clojure 1.11: `clojure.math`
-- Add new vars from clojure 1.11: `abs`, `iterate`
+- Add new vars from clojure 1.11: `abs`, `iteration`
 - Add compatibility with `org.clojure/algo.monads`
 - SCI: support `:as-alias`
 - SCI: add `pop!` ([@kbaba1001](https://github.com/kbaba1001))
