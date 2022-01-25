@@ -4,6 +4,8 @@ For a list of breaking changes, check [here](#breaking-changes).
 
 ## 0.7.4 (2022-01-25)
 
+Please leave some feedback about babashka [here](https://forms.gle/ko3NjDg2SwXeEoNQ9).
+
 - Add new namespace from clojure 1.11: `clojure.math`
 - Add new vars from clojure 1.11: `abs`, `iteration`
 - Add compatibility with `org.clojure/algo.monads`
