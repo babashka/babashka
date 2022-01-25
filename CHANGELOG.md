@@ -2,11 +2,25 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
-## Unreleased
+## 0.7.4
 
-- Add metabom jar to docker images [#1133](https://github.com/babashka/babashka/issues/1133)
-- Add opencontainers annoations to docker image [#1134](https://github.com/babashka/babashka/issues/1134)
-- Fix Alpine Linux Docker images in CI script [#1140](https://github.com/babashka/babashka/issues/1140)
+- Add new namespace from clojure 1.11: `clojure.math`
+- Add new vars from clojure 1.11: `abs`, `iterate`
+- Add compatibility with `org.clojure/algo.monads`
+- SCI: support `:as-alias`
+- SCI: add `pop!` ([@kbaba1001](https://github.com/kbaba1001))
+- `deps.clj`: update to clojure CLI 1.10.3.1058
+- Add metabom jar to docker images [#1133](https://github.com/babashka/babashka/issues/1133) ([@kipz](https://github.com/kipz), [@lispyclouds](https://github.com/lispyclouds))
+- Add opencontainers annotations to docker image [#1134](https://github.com/babashka/babashka/issues/1134) ([@kipz](https://github.com/kipz), [@lispyclouds](https://github.com/lispyclouds))
+- Fix Alpine Linux Docker images in CI script [#1140](https://github.com/babashka/babashka/issues/1140) ([@kipz](https://github.com/kipz), [@lispyclouds](https://github.com/lispyclouds))
+- `babashka.fs`: create dirs in `copy-tree` ([@duzunov](https://github.com/duzunov))
+- SCI: fix order of metadata evaluation ([@erdos](https://github.com/erdos))
+- Fix: cannot take value of macro of `->`
+- Fix [#1144](https://github.com/babashka/babashka/issues/1144): cannot create multidimensional arrays
+- Fix [#1143](https://github.com/babashka/babashka/issues/1143): allow optional (ignored) -- when using using --main ([@grzm](https://github.com/grzm))
+- SCI: throw when `recur` is used from non-tail position
+- Add more libraries to CI lib tests ([@cljwalker](https://github.com/cljwalker))
+- Upgrade several built-in deps: `org.clojure/clojure`, `cheshire`, `core.async`, `test.check`
 
 ## 0.7.3 (2021-12-30)
 
