@@ -16,6 +16,7 @@
    [babashka.impl.clojure.java.io :refer [io-namespace]]
    [babashka.impl.clojure.java.shell :refer [shell-namespace]]
    [babashka.impl.clojure.main :as clojure-main :refer [demunge]]
+   [babashka.impl.clojure.math :refer [math-namespace]]
    [babashka.impl.clojure.stacktrace :refer [stacktrace-namespace]]
    [babashka.impl.clojure.zip :refer [zip-namespace]]
    [babashka.impl.common :as common]
@@ -353,6 +354,7 @@ Use bb run --help to show this help output.
                                            (let [opts (apply hash-map opts)]
                                              (repl/start-repl! @common/ctx opts))) {:ns clojure-main-ns})}
        'clojure.test t/clojure-test-namespace
+       'clojure.math math-namespace
        'babashka.classpath classpath-namespace
        'clojure.pprint pprint-namespace
        'babashka.curl curl-namespace
