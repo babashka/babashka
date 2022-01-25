@@ -72,8 +72,8 @@ jobs:
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
-      GRAALVM_VERSION: "21.3.0"
-      GRAALVM_HOME: /home/circleci/graalvm-ce-java11-21.3.0
+      GRAALVM_VERSION: "22.0.0.2"
+      GRAALVM_HOME: /home/circleci/graalvm-ce-java11-22.0.0.2
       BABASHKA_PLATFORM: linux # used in release script
       BABASHKA_TEST_ENV: native
       BABASHKA_XMX: "-J-Xmx6500m"
@@ -123,7 +123,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-            - ~/graalvm-ce-java11-21.3.0
+            - ~/graalvm-ce-java11-22.0.0.2
           key: linux-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - store_artifacts:
           path: /tmp/release
@@ -138,8 +138,8 @@ jobs:
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
-      GRAALVM_VERSION: "21.3.0"
-      GRAALVM_HOME: /home/circleci/graalvm-ce-java11-21.3.0
+      GRAALVM_VERSION: "22.0.0.2"
+      GRAALVM_HOME: /home/circleci/graalvm-ce-java11-22.0.0.2
       BABASHKA_PLATFORM: linux # used in release script
       BABASHKA_TEST_ENV: native
       BABASHKA_STATIC: "true"
@@ -202,7 +202,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-            - ~/graalvm-ce-java11-21.3.0
+            - ~/graalvm-ce-java11-22.0.0.2
           key: linux-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - store_artifacts:
           path: /tmp/release
@@ -219,8 +219,8 @@ jobs:
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
-      GRAALVM_VERSION: "21.3.0"
-      GRAALVM_HOME: /home/circleci/graalvm-ce-java11-21.3.0
+      GRAALVM_VERSION: "22.0.0.2"
+      GRAALVM_HOME: /home/circleci/graalvm-ce-java11-22.0.0.2
       BABASHKA_PLATFORM: linux # used in release script
       BABASHKA_ARCH: aarch64
       BABASHKA_TEST_ENV: native
@@ -270,7 +270,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-            - ~/graalvm-ce-java11-21.3.0
+            - ~/graalvm-ce-java11-22.0.0.2
           key: linux-aarch64-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - store_artifacts:
           path: /tmp/release
@@ -287,8 +287,8 @@ jobs:
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
-      GRAALVM_VERSION: "21.3.0"
-      GRAALVM_HOME: /home/circleci/graalvm-ce-java11-21.3.0
+      GRAALVM_VERSION: "22.0.0.2"
+      GRAALVM_HOME: /home/circleci/graalvm-ce-java11-22.0.0.2
       BABASHKA_PLATFORM: linux # used in release script
       BABASHKA_ARCH: aarch64
       BABASHKA_TEST_ENV: native
@@ -348,7 +348,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-            - ~/graalvm-ce-java11-21.3.0
+            - ~/graalvm-ce-java11-22.0.0.2
           key: linux-aarch64-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - store_artifacts:
           path: /tmp/release
@@ -362,8 +362,8 @@ jobs:
       xcode: "12.0.0"
     environment:
       MACOSX_DEPLOYMENT_TARGET: 10.13 # 10.12 is EOL
-      GRAALVM_VERSION: "21.3.0"
-      GRAALVM_HOME: /Users/distiller/graalvm-ce-java11-21.3.0/Contents/Home
+      GRAALVM_VERSION: "22.0.0.2"
+      GRAALVM_HOME: /Users/distiller/graalvm-ce-java11-22.0.0.2/Contents/Home
       BABASHKA_PLATFORM: macos # used in release script
       BABASHKA_TEST_ENV: native
       BABASHKA_XMX: "-J-Xmx6500m"
@@ -410,7 +410,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-            - ~/graalvm-ce-java11-21.3.0/Contents/Home
+            - ~/graalvm-ce-java11-22.0.0.2/Contents/Home
           key: mac-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - store_artifacts:
           path: /tmp/release
