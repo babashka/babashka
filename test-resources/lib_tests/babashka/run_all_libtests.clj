@@ -2,7 +2,15 @@
   (:require [babashka.core :refer [windows?]]
             [clojure.edn :as edn]
             [clojure.java.io :as io]
-            [clojure.test :as t]))
+            [clojure.test :as t :refer [*report-counters*]]))
+
+(defmethod clojure.test/report :end-test-var [_m]
+  (when-let [rc *report-counters*]
+    (let [{:keys [:fail :error]} @rc]
+      (when (and (= "true" (System/getenv "BABASHKA_FAIL_FAST"))
+                 (or (pos? fail) (pos? error)))
+        (println "=== Failing fast")
+        (System/exit 1)))))
 
 (def ns-args (set (map symbol *command-line-args*)))
 
