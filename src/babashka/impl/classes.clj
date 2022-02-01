@@ -119,6 +119,10 @@
           java.io.ByteArrayOutputStream
           java.io.Closeable
           java.io.Console
+          java.io.DataInput
+          java.io.DataInputStream
+          java.io.DataOutput
+          java.io.DataOutputStream
           java.io.File
           java.io.FileFilter
           java.io.FilenameFilter
