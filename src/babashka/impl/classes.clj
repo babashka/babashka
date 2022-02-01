@@ -80,6 +80,8 @@
     {:methods [{:name "canAccess"}]}
     java.lang.reflect.Method
     {:methods [{:name "getName"}]}
+    java.lang.reflect.Array
+    {:methods [{:name "newInstance"}]}
     java.net.Inet4Address
     {:methods [{:name "getHostAddress"}]}
     java.net.Inet6Address
@@ -119,6 +121,10 @@
           java.io.ByteArrayOutputStream
           java.io.Closeable
           java.io.Console
+          java.io.DataInput
+          java.io.DataInputStream
+          java.io.DataOutput
+          java.io.DataOutputStream
           java.io.File
           java.io.FileFilter
           java.io.FilenameFilter
