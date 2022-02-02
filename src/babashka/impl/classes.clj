@@ -6,6 +6,8 @@
    [cheshire.core :as json]
    [sci.impl.types :as t]))
 
+;; (set! *warn-on-reflection* true)
+
 (def base-custom-map
   `{clojure.lang.LineNumberingPushbackReader {:allPublicConstructors true
                                               :allPublicMethods true}
