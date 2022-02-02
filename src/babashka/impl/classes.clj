@@ -520,6 +520,8 @@
                    java.io.Closeable
                    (instance? java.nio.file.attribute.BasicFileAttributes v)
                    java.nio.file.attribute.BasicFileAttributes
+                   (instance? java.awt.Toolkit v)
+                   java.awt.Toolkit
                    ;; keep commas for merge friendliness
                    ,,,)))))
 
