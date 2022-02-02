@@ -111,6 +111,10 @@
   `{:all [clojure.lang.ArityException
           clojure.lang.BigInt
           clojure.lang.ExceptionInfo
+          java.awt.datatransfer.DataFlavor
+          java.awt.datatransfer.StringSelection
+          java.awt.datatransfer.Transferable
+          java.awt.Toolkit
           java.io.BufferedInputStream
           java.io.BufferedOutputStream
           java.io.BufferedReader
