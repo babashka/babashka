@@ -522,6 +522,8 @@
                    java.nio.file.attribute.BasicFileAttributes
                    (instance? java.awt.Toolkit v)
                    java.awt.Toolkit
+                   (instance? java.awt.datatransfer.Clipboard v)
+                   java.awt.datatransfer.Clipboard
                    ;; keep commas for merge friendliness
                    ,,,)))))
 
