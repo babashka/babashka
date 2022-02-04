@@ -78,7 +78,12 @@
     ;; this fixes clojure.lang.Reflector for Java 11
     java.lang.reflect.AccessibleObject
     {:methods [{:name "canAccess"}]}
+    java.lang.reflect.Constructor
+    {:methods [{:name "getParameterCount"}
+               {:name "getParameterTypes"}]}
     java.lang.reflect.Method
+    {:methods [{:name "getName"}]}
+    java.lang.reflect.Field
     {:methods [{:name "getName"}]}
     java.lang.reflect.Array
     {:methods [{:name "newInstance"}]}
@@ -96,7 +101,9 @@
                {:name "aset"}
                {:name "aclone"}]}
     clojure.lang.Compiler
-    {:fields [{:name "specials"}]}})
+    {:fields [{:name "specials"}]}
+    java.beans.Introspector
+    {:methods [{:name "getBeanInfo"}]}})
 
 (def custom-map
   (cond->
@@ -113,6 +120,7 @@
   `{:all [clojure.lang.ArityException
           clojure.lang.BigInt
           clojure.lang.ExceptionInfo
+          java.beans.PropertyDescriptor
           java.io.BufferedInputStream
           java.io.BufferedOutputStream
           java.io.BufferedReader
@@ -160,6 +168,7 @@
           java.lang.ClassNotFoundException
           java.lang.Comparable
           java.lang.Double
+          java.lang.Enum
           java.lang.Exception
           java.lang.Float
           java.lang.IllegalArgumentException
@@ -169,6 +178,7 @@
           java.lang.InterruptedException
           java.lang.Iterable
           java.lang.Long
+          java.lang.NoSuchFieldException
           java.lang.NullPointerException
           java.lang.Number
           java.lang.NumberFormatException
@@ -293,6 +303,7 @@
           java.security.SecureRandom
           java.security.Security
           java.sql.Date
+          java.sql.SQLException
           java.text.ParseException
           ;; adds about 200kb, same functionality provided by java.time:
           ;; java.text.SimpleDateFormat
@@ -357,6 +368,7 @@
           java.util.Date
           java.util.Locale
           java.util.Map
+          java.util.HashMap
           java.util.MissingResourceException
           java.util.NoSuchElementException
           java.util.Optional
@@ -541,6 +553,7 @@
     ClassNotFoundException java.lang.ClassNotFoundException
     Comparable java.lang.Comparable
     Double java.lang.Double
+    Enum java.lang.Enum
     Exception java.lang.Exception
     IndexOutOfBoundsException java.lang.IndexOutOfBoundsException
     IllegalArgumentException java.lang.IllegalArgumentException
@@ -552,6 +565,7 @@
     Float java.lang.Float
     Long java.lang.Long
     Math java.lang.Math
+    NoSuchFieldException java.lang.NoSuchFieldException
     NullPointerException java.lang.NullPointerException
     Number java.lang.Number
     NumberFormatException java.lang.NumberFormatException
