@@ -44,7 +44,7 @@
              :feature/csv {:source-paths ["feature-csv"]
                            :dependencies [[org.clojure/data.csv "1.0.0"]]}
              :feature/transit {:source-paths ["feature-transit"]
-                               :dependencies [[com.cognitect/transit-clj "1.0.324"]]}
+                               :dependencies [[com.cognitect/transit-clj "1.0.329"]]}
              :feature/datascript {:source-paths ["feature-datascript"]
                                   :dependencies [[datascript "1.0.1"]]}
              :feature/httpkit-client {:source-paths ["feature-httpkit-client"]
