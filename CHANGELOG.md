@@ -2,6 +2,10 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
+## Unreleased
+
+- Fix [#1170](https://github.com/babashka/babashka/issues/1170): defmacro with a defrecord inside fails to resolve classname
+
 ## 0.7.4 (2022-01-25)
 
 Please leave some feedback about babashka [here](https://forms.gle/ko3NjDg2SwXeEoNQ9).
