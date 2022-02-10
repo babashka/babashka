@@ -10,6 +10,7 @@ camel-snake-kebab/camel-snake-kebab,https://github.com/clj-commons/camel-snake-k
 circleci/bond,https://github.com/circleci/bond
 clj-commons/clj-yaml,https://github.com/clj-commons/clj-yaml
 clj-commons/multigrep,https://github.com/clj-commons/multigrep
+clj-stacktrace/clj-stacktrace,https://github.com/mmcgrana/clj-stacktrace
 clojure-csv/clojure-csv,https://github.com/davidsantiago/clojure-csv
 clojure-term-colors/clojure-term-colors,https://github.com/trhura/clojure-term-colors
 com.exoscale/lingo,https://github.com/exoscale/lingo
@@ -43,6 +44,7 @@ io.github.cognitect-labs/test-runner,https://github.com/cognitect-labs/test-runn
 io.github.swirrl/dogstatsd,https://github.com/swirrl/dogstatsd
 io.github.technomancy/limit-break,https://github.com/technomancy/limit-break
 io.helins/binf,https://github.com/helins/binf.cljc
+io.lambdaforge/datalog-parser,https://github.com/lambdaforge/datalog-parser
 io.replikativ/hasch,https://github.com/replikativ/hasch
 java-http-clj/java-http-clj,http://www.github.com/schmee/java-http-clj
 lambdaisland/regal,https://github.com/lambdaisland/regal
