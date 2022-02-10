@@ -103,4 +103,6 @@
  meta-merge/meta-merge {:git-url "https://github.com/weavejester/meta-merge", :test-namespaces (meta-merge.core-test), :git-sha "c968c38baccd4219fe0ba592d89af37ea8e426bf"}
  com.exoscale/lingo {:git-url "https://github.com/exoscale/lingo", :test-namespaces (exoscale.lingo.test.core-test), :git-sha "30b5084fab28d24c99ec683e21535366910d9f2f" :skip-windows true}
  io.github.swirrl/dogstatsd {:git-url "https://github.com/swirrl/dogstatsd", :test-namespaces (swirrl.dogstatsd-test), :git-sha "e110caae452cd1185e65e389a359b69502076d61"}
- org.clojure/algo.monads {:git-url "https://github.com/clojure/algo.monads", :test-namespaces (clojure.algo.test-monads), :git-sha "3a985b0b099110b1654d568fecf597bc9c8d1ff5"}}
+ org.clojure/algo.monads {:git-url "https://github.com/clojure/algo.monads", :test-namespaces (clojure.algo.test-monads), :git-sha "3a985b0b099110b1654d568fecf597bc9c8d1ff5"}
+ io.lambdaforge/datalog-parser {:git-url "https://github.com/lambdaforge/datalog-parser", :test-namespaces (datalog.parser.pull-test datalog.parser.test.util datalog.parser.impl-test datalog.parser-test datalog.unparser-test), :git-sha "02d193f397afc3f93da704e7c6c850b194f0e797"}
+ clj-stacktrace/clj-stacktrace {:git-url "https://github.com/mmcgrana/clj-stacktrace", :test-namespaces (clj-stacktrace.repl-test clj-stacktrace.core-test), :git-sha "94dc2dd748710e79800e94b713e167e5dc525717"}}
