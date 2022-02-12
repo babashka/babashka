@@ -78,7 +78,8 @@
   (let [lib-dir (if branch
                   (gl/procure git-url lib-name branch)
                   (or (gl/procure git-url lib-name "master")
-                      (gl/procure git-url lib-name "main")))
+                      (gl/procure git-url lib-name "main")
+                      (throw (ex-info "Unable to clone git-url" {}))))
         _ (println "Git clone is at" lib-dir)
         lib-root-dir (if directory (fs/file lib-dir directory) lib-dir)
         test-dirs (if test-directories
