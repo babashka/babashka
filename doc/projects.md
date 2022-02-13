@@ -2,92 +2,97 @@
 
 The following libraries and projects are known to work with babashka.
 
-- [Libraries](#libraries)
-  - [tools.namespace](#toolsnamespace)
-  - [test-runner](#test-runner)
-  - [spec.alpha](#specalpha)
-  - [tools.bbuild](#toolsbbuild)
-  - [clj-http-lite](#clj-http-lite)
-  - [spartan.spec](#spartanspec)
-  - [missing.test.assertions](#missingtestassertions)
-  - [medley](#medley)
-  - [limit-break](#limit-break)
-  - [clojure-csv](#clojure-csv)
-  - [regal](#regal)
-  - [cprop](#cprop)
-  - [comb](#comb)
-  - [nubank/docopt](#nubankdocopt)
-  - [arrangement](#arrangement)
-  - [clojure.math.combinatorics](#clojuremathcombinatorics)
-  - [testdoc](#testdoc)
-  - [doric](#doric)
-  - [clojure.data.zip](#clojuredatazip)
-  - [clj-psql](#clj-psql)
-  - [camel-snake-kebab](#camel-snake-kebab)
-  - [aero](#aero)
-  - [clojure.data.generators](#clojuredatagenerators)
-  - [honeysql](#honeysql)
-  - [bond](#bond)
-  - [portal](#portal)
-  - [version-clj](#version-clj)
-  - [matchete](#matchete)
-  - [progrock](#progrock)
-  - [clj-commons/fs](#clj-commonsfs)
-  - [cljc.java-time](#cljcjava-time)
-  - [environ](#environ)
-  - [gaka](#gaka)
-  - [failjure](#failjure)
-  - [pretty](#pretty)
-  - [clojure-term-colors](#clojure-term-colors)
-  - [binf](#binf)
-  - [rewrite-edn](#rewrite-edn)
-  - [expound](#expound)
-  - [omniconf](#omniconf)
-  - [slingshot](#slingshot)
-  - [hasch](#hasch)
-  - [crispin](#crispin)
-  - [ffclj](#ffclj)
-  - [multigrep](#multigrep)
-  - [java-http-clj](#java-http-clj)
-  - [component](#component)
-  - [minimallist](#minimallist)
-  - [ruuter](#ruuter)
-  - [clj-commons.digest](#clj-commonsdigest)
-  - [contajners](#contajners)
-  - [dependency](#dependency)
-  - [specmonstah](#specmonstah)
-- [Pods](#pods)
-- [Projects](#projects-1)
-  - [babashka-test-action](#babashka-test-action)
-  - [deps.clj](#depsclj)
-  - [4bb](#4bb)
-  - [babashka lambda layer](#babashka-lambda-layer)
-  - [Release on push Github action](#release-on-push-github-action)
-  - [justone/bb-scripts](#justonebb-scripts)
-  - [nativity](#nativity)
-  - [cldwalker/bb-clis](#cldwalkerbb-clis)
-  - [krell template](#krell-template)
-  - [wee-httpd](#wee-httpd)
-  - [covid19-babashka](#covid19-babashka)
-  - [bb-spotify](#bb-spotify)
-  - [lambdaisland/open-source](#lambdaislandopen-source)
-  - [dharrigan/spotifyd-notification](#dharriganspotifyd-notification)
-  - [nextjournal/ssh-github-auth](#nextjournalssh-github-auth)
-  - [turtlequeue/setup-babashka](#turtlequeuesetup-babashka)
-  - [interdep](#interdep)
-  - [sha-words](#sha-words)
-  - [adam-james-v/scripts](#adam-james-vscripts)
-  - [oidc-client](#oidc-client)
-  - [jirazzz](#jirazzz)
-  - [Babashka + scittle guestbook](#babashka--scittle-guestbook)
-  - [bb htmx todo app](#bb-htmx-todo-app)
+- [Projects](#projects)
+  - [Libraries](#libraries)
+    - [tools.namespace](#toolsnamespace)
+    - [test-runner](#test-runner)
+    - [spec.alpha](#specalpha)
+    - [tools.bbuild](#toolsbbuild)
+    - [clj-http-lite](#clj-http-lite)
+    - [spartan.spec](#spartanspec)
+    - [missing.test.assertions](#missingtestassertions)
+    - [medley](#medley)
+    - [limit-break](#limit-break)
+    - [clojure-csv](#clojure-csv)
+    - [regal](#regal)
+    - [cprop](#cprop)
+    - [comb](#comb)
+    - [nubank/docopt](#nubankdocopt)
+    - [arrangement](#arrangement)
+    - [clojure.math.combinatorics](#clojuremathcombinatorics)
+    - [testdoc](#testdoc)
+    - [doric](#doric)
+    - [clojure.data.zip](#clojuredatazip)
+    - [clj-psql](#clj-psql)
+    - [camel-snake-kebab](#camel-snake-kebab)
+    - [aero](#aero)
+    - [clojure.data.generators](#clojuredatagenerators)
+    - [honeysql](#honeysql)
+    - [bond](#bond)
+    - [portal](#portal)
+    - [version-clj](#version-clj)
+    - [matchete](#matchete)
+    - [progrock](#progrock)
+    - [clj-commons/fs](#clj-commonsfs)
+    - [cljc.java-time](#cljcjava-time)
+    - [environ](#environ)
+    - [gaka](#gaka)
+    - [failjure](#failjure)
+    - [pretty](#pretty)
+    - [clojure-term-colors](#clojure-term-colors)
+    - [binf](#binf)
+    - [rewrite-edn](#rewrite-edn)
+    - [expound](#expound)
+    - [omniconf](#omniconf)
+    - [slingshot](#slingshot)
+    - [hasch](#hasch)
+    - [crispin](#crispin)
+    - [ffclj](#ffclj)
+    - [multigrep](#multigrep)
+    - [java-http-clj](#java-http-clj)
+    - [component](#component)
+    - [minimallist](#minimallist)
+    - [ruuter](#ruuter)
+    - [clj-commons.digest](#clj-commonsdigest)
+    - [contajners](#contajners)
+    - [dependency](#dependency)
+    - [specmonstah](#specmonstah)
+    - [markdown-clj](#markdown-clj)
+    - [algo.monads](#algomonads)
+  - [Pods](#pods)
+  - [Projects](#projects-1)
+    - [babashka-test-action](#babashka-test-action)
+    - [deps.clj](#depsclj)
+    - [4bb](#4bb)
+    - [babashka lambda layer](#babashka-lambda-layer)
+    - [Release on push Github action](#release-on-push-github-action)
+    - [justone/bb-scripts](#justonebb-scripts)
+    - [nativity](#nativity)
+    - [cldwalker/bb-clis](#cldwalkerbb-clis)
+    - [krell template](#krell-template)
+    - [wee-httpd](#wee-httpd)
+    - [covid19-babashka](#covid19-babashka)
+    - [bb-spotify](#bb-spotify)
+    - [lambdaisland/open-source](#lambdaislandopen-source)
+    - [dharrigan/spotifyd-notification](#dharriganspotifyd-notification)
+    - [nextjournal/ssh-github-auth](#nextjournalssh-github-auth)
+    - [turtlequeue/setup-babashka](#turtlequeuesetup-babashka)
+    - [interdep](#interdep)
+    - [sha-words](#sha-words)
+    - [adam-james-v/scripts](#adam-james-vscripts)
+    - [oidc-client](#oidc-client)
+    - [jirazzz](#jirazzz)
+    - [Babashka + scittle guestbook](#babashka--scittle-guestbook)
+    - [bb htmx todo app](#bb-htmx-todo-app)
+    - [bb aws lambda runtime](#bb-aws-lambda-runtime)
 
-For more supported libraries, see [this test
-file](../test-resources/lib_tests/babashka/run_all_libtests.clj ). Also keep an eye
-on the [news](news.md) page for new projects, gists and other developments
-around babashka.
+Also keep an eye on the [news](news.md) page for new projects, gists and other
+developments around babashka.
 
 ## Libraries
+
+For a full list of libraries, see [libraries.csv](./libraries.csv). To add a
+library, see [these instructions](./dev.md#tests-for-libraries).
 
 ### [tools.namespace](https://github.com/babashka/tools.namespace)
 
@@ -110,12 +115,12 @@ instrumentation! Its readme also contains instructions on how to use
 
 A fork of `tools.build`.
 
-### [clj-http-lite](https://github.com/babashka/clj-http-lite)
+### [clj-http-lite](https://github.com/clj-commons/clj-http-lite)
 
-A fork of a fork of `clj-http-lite`. Example:
+Example:
 
 ``` shell
-$ export BABASHKA_CLASSPATH="$(clojure -Sdeps '{:deps {clj-http-lite {:git/url "https://github.com/babashka/clj-http-lite" :sha "f44ebe45446f0f44f2b73761d102af3da6d0a13e"}}}' -Spath)"
+$ export BABASHKA_CLASSPATH="$(clojure -Sdeps '{:deps {org.clj-commons/clj-http-lite {:mvn/version "0.4.392"}}}' -Spath)"
 
 $ bb "(require '[clj-http.lite.client :as client]) (:status (client/get \"https://www.clojure.org\"))"
 200
@@ -145,16 +150,10 @@ Ran 1 tests containing 0 assertions.
 
 ### [medley](https://github.com/weavejester/medley/)
 
-Requires `bb` >= v0.0.71. Latest coordinates checked with with bb:
-
-``` clojure
-{:git/url "https://github.com/weavejester/medley" :sha "a4e5fb5383f5c0d83cb2d005181a35b76d8a136d"}
-```
-
 Example:
 
 ``` shell
-$ export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {medley {:git/url "https://github.com/weavejester/medley" :sha "a4e5fb5383f5c0d83cb2d005181a35b76d8a136d"}}}')
+$ export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {medley/medley {:mvn/version "1.3.0"}}}')
 
 $ bb -e "(require '[medley.core :as m]) (m/index-by :id [{:id 1} {:id 2}])"
 {1 {:id 1}, 2 {:id 2}}
@@ -201,16 +200,10 @@ export BABASHKA_CLASSPATH="$(clojure -Sdeps '{:deps {clojure-csv {:mvn/version "
 
 ### [regal](https://github.com/lambdaisland/regal)
 
-Requires `bb` >= v0.0.71. Latest coordinates checked with with bb:
-
-``` clojure
-{:git/url "https://github.com/lambdaisland/regal" :sha "d4e25e186f7b9705ebb3df6b21c90714d278efb7"}
-```
-
 Example:
 
 ``` shell
-$ export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {regal {:git/url "https://github.com/lambdaisland/regal" :sha "d4e25e186f7b9705ebb3df6b21c90714d278efb7"}}}')
+$ export BABASHKA_CLASSPATH=$(clojure -Spath -Sdeps '{:deps {lambdaisland/regal {:mvn/version "0.0.143"}}}')
 
 $ bb -e "(require '[lambdaisland.regal :as regal]) (regal/regex [:* \"ab\"])"
 #"(?:\Qab\E)*"
@@ -791,6 +784,14 @@ Represent dependency graphs as a directed acylic graph.
 ### [specmonstah](https://github.com/reifyhealth/specmonstah)
 
 Write concise, maintainable test fixtures with clojure.spec.alpha.
+
+### [markdown-clj](https://github.com/yogthos/markdown-clj)
+
+Markdown parser that translates markdown to html.
+
+### [algo.monads](https://github.com/clojure/algo.monads)
+
+Macros for defining monads, and definition of the most common monads.
 
 ## Pods
 

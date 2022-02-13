@@ -13,7 +13,7 @@
               goog.string.format
               [cljs.tools.reader.reader-types
                :refer [source-logging-push-back-reader]]]))
-  ;; TODO:
+  ;; BB-TEST-PATCH
   #_#?(:clj (:import [aero.core Deferred])))
 
 (defn env [s]
@@ -38,6 +38,8 @@
   (if (= value :favorite) :chocolate :vanilla))
 
 (deftest basic-test
+  ;; BB-TEST-PATCH: This and several other test files were changed to work with
+  ;; our dir structure
   (let [config (read-config "test-resources/lib_tests/aero/config.edn")]
     (is (= "Hello World!" (:greeting config))))
   (testing "Reading empty config returns nil"

@@ -33,9 +33,12 @@ rm -rf resources/*.class
 # "$GRAALVM_HOME/bin/javac" -cp "$SVM_JAR" resources/CutOffMisc.java
 if [ -z "$BABASHKA_JAR" ]; then
     lein with-profiles +reflection,+native-image "do" run
-    lein "do" clean, uberjar
+    lein "do" clean, uberjar, metabom
     BABASHKA_JAR=${BABASHKA_JAR:-"target/babashka-$BABASHKA_VERSION-standalone.jar"}
 fi
+
+# because script/test cleans target during ci before the jar can we saved
+cp target/metabom.jar .
 
 BABASHKA_BINARY=${BABASHKA_BINARY:-"bb"}
 

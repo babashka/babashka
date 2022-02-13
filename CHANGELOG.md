@@ -4,11 +4,50 @@ For a list of breaking changes, check [here](#breaking-changes).
 
 ## Unreleased
 
+- Fix [#1170](https://github.com/babashka/babashka/issues/1170): defmacro with a defrecord inside fails to resolve classname
+
+## 0.7.4 (2022-01-25)
+
+Please leave some feedback about babashka [here](https://forms.gle/ko3NjDg2SwXeEoNQ9).
+
+- Add new namespace from clojure 1.11: `clojure.math`
+- Add new vars from clojure 1.11: `abs`, `iteration`
+- Add compatibility with `org.clojure/algo.monads`
+- SCI: support `:as-alias`
+- SCI: add `pop!` ([@kbaba1001](https://github.com/kbaba1001))
+- `deps.clj`: update to clojure CLI 1.10.3.1058
+- Add metabom jar to docker images [#1133](https://github.com/babashka/babashka/issues/1133) ([@kipz](https://github.com/kipz), [@lispyclouds](https://github.com/lispyclouds))
+- Add opencontainers annotations to docker image [#1134](https://github.com/babashka/babashka/issues/1134) ([@kipz](https://github.com/kipz), [@lispyclouds](https://github.com/lispyclouds))
+- Fix Alpine Linux Docker images in CI script [#1140](https://github.com/babashka/babashka/issues/1140) ([@kipz](https://github.com/kipz), [@lispyclouds](https://github.com/lispyclouds))
+- `babashka.fs`: create dirs in `copy-tree` ([@duzunov](https://github.com/duzunov))
+- SCI: fix order of metadata evaluation ([@erdos](https://github.com/erdos))
+- Fix: cannot take value of macro of `->`
+- Fix [#1144](https://github.com/babashka/babashka/issues/1144): cannot create multidimensional arrays
+- Fix [#1143](https://github.com/babashka/babashka/issues/1143): allow optional (ignored) `--` when using using `--main` ([@grzm](https://github.com/grzm))
+- SCI: throw when `recur` is used from non-tail position
+- Add more libraries to CI lib tests ([@cljwalker](https://github.com/cljwalker))
+- Upgrade several built-in deps: `org.clojure/clojure`, `cheshire`, `core.async`, `test.check`
+
+## 0.7.3 (2021-12-30)
+
+- Do not require java for bb tasks without deps [#1123](https://github.com/babashka/babashka/issues/1123), [#1124](https://github.com/babashka/babashka/issues/1124)
+
+## 0.7.2 (2021-12-29)
+
 - Add `spy` macro from `taoensso.timbre` [#1087](https://github.com/babashka/babashka/issues/1087)
 - Better error for higher order fn arity mismatch
 - Check `shasum` / `sha256sum` in `PATH` on install script ([@thiagokokada](https://github.com/thiagokokada))
 - Build arm64 docker image in CI [#1099](https://github.com/babashka/babashka/issues/1099) ([@cap10morgan](https://github.com/cap10morgan))
 - Upgrade to `edamame` v0.0.19
+- Load tasks and deps from other bb.edn file using `--config` and `--deps-root` options [#1110](https://github.com/babashka/babashka/issues/1110)
+- Uberscript improvements [#584](https://github.com/babashka/babashka/issues/584), [#1037](https://github.com/babashka/babashka/issues/1037)
+- Include native elements in printed stacktrace [#1105](https://github.com/babashka/babashka/issues/1105)
+- Missing error message when exception happens in REPL print [#1116](https://github.com/babashka/babashka/issues/1116)
+- Undeprecate `$` in babashka.process
+- Add lots of library tests to CI ([@cldwalker](https://github.com/cldwalker))
+- Release SNAPSHOT builds to
+  [babashka-dev-builds](https://github.com/babashka/babashka-dev-builds/releases)
+  (use only for testing)
 
 ## 0.7.0 (2021-12-10)
 

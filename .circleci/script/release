@@ -6,9 +6,7 @@ cp bb /tmp/release
 
 VERSION=$(cat resources/BABASHKA_VERSION)
 
-cd /tmp/release
-mkdir -p /tmp/bb_size
-./bb '(spit "/tmp/bb_size/size" (.length (io/file "bb")))'
+
 
 ## release binary as tar.gz archive
 
@@ -18,13 +16,20 @@ if [ "$BABASHKA_STATIC" = "true" ]; then
     arch="$arch-static"
 fi
 
+# because circle won't allow the same file to be saved/restored in the same workspace concurrently
+cp metabom.jar "/tmp/release/$BABASHKA_PLATFORM-$arch-metabom.jar"
+
+cd /tmp/release
+mkdir -p /tmp/bb_size
+./bb '(spit "/tmp/bb_size/size" (.length (io/file "bb")))'
+
 archive="babashka-$VERSION-$BABASHKA_PLATFORM-$arch.tar.gz"
 
 tar zcvf "$archive" bb # bbk
 
 cd -
 
-BABASHKA_EDN=".build/bb.edn" ./bb release-artifact "/tmp/release/$archive"
+./bb --config .build/bb.edn --deps-root . release-artifact "/tmp/release/$archive"
 
 ## cleanup
 

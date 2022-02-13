@@ -104,10 +104,12 @@ by default when a new command-line REPL is started."} repl-requires
                     (set! *3 *2)
                     (set! *2 *1)
                     (set! *1 value)
-                    (try
-                      (print value)
-                      (catch Throwable e
-                        (throw (ex-info nil {:clojure.error/phase :print-eval-result} e)))))))
+                    (try (print value)
+                         (catch Throwable e
+                           (throw (ex-info (ex-message e)
+                                           (assoc (meta input)
+                                                  :file "<repl>"
+                                                  :type :sci/error) e)))))))
             (catch Throwable e
               (caught e)
               (set! *e e))))]

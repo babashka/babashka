@@ -73,12 +73,15 @@
                {:name "toURI"}]}
     java.util.Arrays
     {:methods [{:name "copyOf"}
-               {:name "copyOfRange"}]}
+               {:name "copyOfRange"}
+               {:name "equals"}]}
     ;; this fixes clojure.lang.Reflector for Java 11
     java.lang.reflect.AccessibleObject
     {:methods [{:name "canAccess"}]}
     java.lang.reflect.Method
     {:methods [{:name "getName"}]}
+    java.lang.reflect.Array
+    {:methods [{:name "newInstance"}]}
     java.net.Inet4Address
     {:methods [{:name "getHostAddress"}]}
     java.net.Inet6Address
@@ -91,7 +94,9 @@
     clojure.lang.RT
     {:methods [{:name "aget"}
                {:name "aset"}
-               {:name "aclone"}]}})
+               {:name "aclone"}]}
+    clojure.lang.Compiler
+    {:fields [{:name "specials"}]}})
 
 (def custom-map
   (cond->
@@ -116,6 +121,10 @@
           java.io.ByteArrayOutputStream
           java.io.Closeable
           java.io.Console
+          java.io.DataInput
+          java.io.DataInputStream
+          java.io.DataOutput
+          java.io.DataOutputStream
           java.io.File
           java.io.FileFilter
           java.io.FilenameFilter
@@ -392,6 +401,7 @@
     ;; visible in the native image.
     :instance-checks [clojure.lang.AMapEntry ;; for proxy
                       clojure.lang.APersistentMap ;; for proxy
+                      clojure.lang.APersistentSet
                       clojure.lang.AReference
                       clojure.lang.Associative
                       clojure.lang.Atom

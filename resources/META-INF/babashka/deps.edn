@@ -14,20 +14,20 @@
          "depstar/src" "process/src"
          "deps.clj/src" "deps.clj/resources"
          "resources" "sci/resources"],
- :deps {org.clojure/clojure {:mvn/version "1.11.0-alpha3"},
+ :deps {org.clojure/clojure {:mvn/version "1.11.0-beta1"},
         borkdude/sci {:local/root "sci"}
         babashka/babashka.curl {:local/root "babashka.curl"}
         babashka/fs {:local/root "fs"}
         babashka/babashka.core {:local/root "babashka.core"}
         borkdude/graal.locking {:mvn/version "0.0.2"},
-        org.clojure/core.async {:mvn/version "1.4.627"},
+        org.clojure/core.async {:mvn/version "1.5.648"},
         org.clojure/tools.cli {:mvn/version "1.0.206"},
         org.clojure/data.csv {:mvn/version "1.0.0"},
-        cheshire/cheshire {:mvn/version "5.10.1"}
+        cheshire/cheshire {:mvn/version "5.10.2"}
         org.clojure/data.xml {:mvn/version "0.2.0-alpha6"}
         clj-commons/clj-yaml {:mvn/version "0.7.107"}
-        com.cognitect/transit-clj {:mvn/version "1.0.324"}
-        org.clojure/test.check {:mvn/version "1.1.0"}
+        com.cognitect/transit-clj {:mvn/version "1.0.329"}
+        org.clojure/test.check {:mvn/version "1.1.1"}
         nrepl/bencode {:mvn/version "1.1.0"}
         seancorfield/next.jdbc {:mvn/version "1.1.610"}
         org.postgresql/postgresql {:mvn/version "42.2.18"}
@@ -55,8 +55,7 @@
             :extra-deps {org.clj-commons/clj-http-lite {:mvn/version "0.4.392"}
                          org.babashka/spec.alpha {:git/url "https://github.com/babashka/spec.alpha"
                                                   :sha "0dec1f88cbde74a0470b454396f09a03adb4ae39"}
-                         lambdaisland/regal {:git/url "https://github.com/lambdaisland/regal"
-                                             :sha "f902d2c43121f9e1c48603d6eb99f5900eb6a9f6"}
+                         lambdaisland/regal {:mvn/version "0.0.143"}
                          weavejester/medley {:git/url "https://github.com/weavejester/medley"
                                              :sha "a4e5fb5383f5c0d83cb2d005181a35b76d8a136d"}
                          cprop/cprop {:mvn/version "0.1.16"}
@@ -69,16 +68,16 @@
                          henryw374/cljc.java-time
                          {:git/url "https://github.com/henryw374/cljc.java-time.git"
                           :sha "e3d184b78e933322b3fcaa6ca66cbb8f42a6b35c"}
-                         camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.1"}
+                         camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.2"}
                          aero/aero {:mvn/version "1.1.6"}
                          org.clojure/data.generators {:mvn/version "1.0.0"}
-                         honeysql/honeysql {:mvn/version "1.0.444"}
-                         com.github.seancorfield/honeysql {:mvn/version "2.0.0-rc2"}
-                         minimallist/minimallist {:mvn/version "0.0.6"}
-                         circleci/bond {:mvn/version "0.4.0"}
-                         version-clj/version-clj {:mvn/version "2.0.1"}
+                         honeysql/honeysql {:mvn/version "1.0.461"}
+                         com.github.seancorfield/honeysql {:mvn/version "2.2.840"}
+                         minimallist/minimallist {:mvn/version "0.0.10"}
+                         circleci/bond {:mvn/version "0.6.0"}
+                         version-clj/version-clj {:mvn/version "2.0.2"}
                          gaka/gaka {:mvn/version "0.3.0"}
-                         failjure/failjure {:mvn/version "2.1.1"}
+                         failjure/failjure {:mvn/version "2.2.0"}
                          io.helins/binf {:mvn/version "1.1.0-beta0"}
                          rm-hull/jasentaa {:mvn/version "0.2.5"}
                          slingshot/slingshot {:mvn/version "0.12.2"}
@@ -104,7 +103,30 @@
                          listora/again {:mvn/version "1.0.0"}
                          org.clojure/tools.gitlibs {:mvn/version "2.4.172"}
                          environ/environ {:mvn/version "1.2.0"}
+<<<<<<< HEAD
                          table/table {:git/url "https://github.com/cldwalker/table", :sha "55aef3d5fced682942af811bf5d642f79fb87688"}}
+=======
+                         table/table {:git/url "https://github.com/cldwalker/table", :sha "f6293c5f3dac1dd6f525a80fc80930f8ccdf16b7"}
+                         markdown-clj/markdown-clj {:mvn/version "1.10.8"}
+                         org.clojure/tools.namespace {:git/url "https://github.com/babashka/tools.namespace", :sha "a13b037215e21a2e71aa34b27e1dd52c801a2a7b"}
+                         medley/medley {:mvn/version "1.3.0"}
+                         io.github.cognitect-labs/test-runner {:git/tag "v0.5.0", :git/sha "b3fd0d2"}
+                         borkdude/missing.test.assertions {:git/url "https://github.com/borkdude/missing.test.assertions", :sha "603cb01bee72fb17addacc53c34c85612684ad70"}
+                         dev.nubank/docopt {:mvn/version "0.6.1-fix7"}
+                         testdoc/testdoc {:mvn/version "1.4.1"}
+                         org.clojars.lispyclouds/contajners {:mvn/version "0.0.4"}
+                         borkdude/rewrite-edn {:mvn/version "0.1.0"}
+                         clojure-term-colors/clojure-term-colors {:mvn/version "0.1.0"}
+                         io.aviso/pretty {:mvn/version "1.1.1"}
+                         progrock/progrock {:mvn/version "0.1.2"}
+                         djblue/portal {:mvn/version "0.19.0"}
+                         com.wsscode/cljc-misc {:mvn/version "2021.10.16"}
+                         edn-query-language/eql {:mvn/version "2021.07.18"}
+                         meta-merge/meta-merge {:mvn/version "1.0.0"}
+                         com.exoscale/lingo {:mvn/version "1.0.0-alpha14"}
+                         io.github.swirrl/dogstatsd {:mvn/version "0.1.39"}
+                         org.clojure/algo.monads {:mvn/version "0.1.6"}}
+>>>>>>> array-play
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil}}
            :clj-nvd

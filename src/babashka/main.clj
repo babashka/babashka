@@ -16,6 +16,7 @@
    [babashka.impl.clojure.java.io :refer [io-namespace]]
    [babashka.impl.clojure.java.shell :refer [shell-namespace]]
    [babashka.impl.clojure.main :as clojure-main :refer [demunge]]
+   [babashka.impl.clojure.math :refer [math-namespace]]
    [babashka.impl.clojure.stacktrace :refer [stacktrace-namespace]]
    [babashka.impl.clojure.zip :refer [zip-namespace]]
    [babashka.impl.common :as common]
@@ -41,6 +42,7 @@
    [babashka.impl.tasks :as tasks :refer [tasks-namespace]]
    [babashka.impl.test :as t]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
+   [babashka.impl.uberscript :as uberscript]
    [babashka.nrepl.server :as nrepl-server]
    [babashka.wait :refer [wait-namespace]]
    [clojure.edn :as edn]
@@ -136,6 +138,8 @@ Global opts:
   --debug           Print debug information and internal stacktrace in case of exception.
   --force           Passes -Sforce to deps.clj, forcing recalculation of the classpath.
   --init <file>     Load file after any preloads and prior to evaluation/subcommands.
+  --config <file>   Replacing bb.edn with file. Relative paths are resolved relative to file.
+  --deps-root <dir> Treat dir as root of relative paths in config.
 
 Help:
 
@@ -272,8 +276,8 @@ Use bb run --help to show this help output.
   (let [f (io/file file)]
     (if (.exists f)
       (as-> (slurp file) x
-            ;; remove shebang
-            (str/replace x #"^#!.*" ""))
+        ;; remove shebang
+        (str/replace x #"^#!.*" ""))
       (throw (Exception. (str "File does not exist: " file))))))
 
 (defn load-file* [f]
@@ -350,6 +354,7 @@ Use bb run --help to show this help output.
                                            (let [opts (apply hash-map opts)]
                                              (repl/start-repl! @common/ctx opts))) {:ns clojure-main-ns})}
        'clojure.test t/clojure-test-namespace
+       'clojure.math math-namespace
        'babashka.classpath classpath-namespace
        'clojure.pprint pprint-namespace
        'babashka.curl curl-namespace
@@ -598,7 +603,9 @@ Use bb run --help to show this help output.
           ("--main", "-m",)
           (let [options (next options)]
             (assoc opts-map :main (first options)
-                   :command-line-args (rest options)))
+                   :command-line-args (if (= "--" (second options))
+                                        (nthrest options 2)
+                                        (rest options))))
           ("--run")
           (parse-run-opts opts-map (next options))
           ("--tasks")
@@ -631,21 +638,27 @@ Use bb run --help to show this help output.
     (if options
       (case (first options)
         ("--classpath" "-cp") (recur (nnext options) (assoc opts-map :classpath (second options)))
+
         ("--debug"
-         "--verbose" ;; renamed to --debug
-         ) (recur (next options) (assoc opts-map :debug true))
+         "--verbose")
+        ;; renamed to --debug
+        (recur (next options) (assoc opts-map :debug true))
+
         ("--init")
         (recur (nnext options) (assoc opts-map :init (second options)))
+
+        ("--config")
+        (recur (nnext options) (assoc opts-map :config (second options)))
+
+        ("--deps-root")
+        (recur (nnext options) (assoc opts-map :deps-root (second options)))
         [options opts-map])
       [options opts-map])))
 
 (defn parse-opts
   ([options] (parse-opts options nil))
   ([options opts-map]
-   (let [[options opts-map] (if opts-map
-                              [options opts-map]
-                              (parse-global-opts options))
-         opt (first options)
+   (let [opt (first options)
          tasks (into #{} (map str) (keys (:tasks @common/bb-edn)))]
      (if-not opt opts-map
              ;; FILE > TASK > SUBCOMMAND
@@ -727,9 +740,13 @@ Use bb run --help to show this help output.
                                      (or (contains? namespaces namespace)
                                          (contains? sci-namespaces/namespaces namespace)))
                               ""
-                              (let [res (cp/source-for-namespace loader namespace nil)]
-                                (when uberscript (swap! uberscript-sources conj (:source res)))
-                                res)))
+                              (when-let [res (cp/source-for-namespace loader namespace nil)]
+                                (if uberscript
+                                  (do (swap! uberscript-sources conj (:source res))
+                                      (uberscript/uberscript {:ctx @common/ctx
+                                                              :expressions [(:source res)]})
+                                      {})
+                                  res))))
                           (case namespace
                             clojure.spec.alpha
                             (binding [*out* *err*]
@@ -833,7 +850,12 @@ Use bb run --help to show this help output.
                        uberjar [nil 0]
                        list-tasks [(tasks/list-tasks sci-ctx) 0]
                        print-deps [(print-deps/print-deps (:print-deps-format cli-opts)) 0]
+                       uberscript
+                       [nil (do (uberscript/uberscript {:ctx sci-ctx
+                                                        :expressions expressions})
+                                0)]
                        expressions
+                       ;; execute code
                        (sci/binding [sci/file abs-path]
                          (try
                                         ; when evaluating expression(s), add in repl-requires so things like
@@ -871,7 +893,6 @@ Use bb run --help to show this help output.
                        clojure [nil (if-let [proc (bdeps/clojure command-line-args)]
                                       (-> @proc :exit)
                                       0)]
-                       uberscript [nil 0]
                        :else [(repl/start-repl! sci-ctx) 0]))
                 1)]
         (flush)
@@ -902,23 +923,28 @@ Use bb run --help to show this help output.
                       (>= patch-current patch-min)))))))
 
 (defn main [& args]
-  (let [bb-edn-file (or (System/getenv "BABASHKA_EDN")
+  (let [[args global-opts] (parse-global-opts args)
+        config (:config global-opts)
+        bb-edn-file (or config
                         "bb.edn")
-        bb-edn (or (when (fs/exists? bb-edn-file)
-                     (let [raw-string (slurp bb-edn-file)
-                           edn (edn/read-string raw-string)
-                           edn (assoc edn :raw raw-string)]
-                       (vreset! common/bb-edn edn)))
-                   ;; tests may have modified bb-edn
-                   @common/bb-edn)
+        bb-edn (when (fs/exists? bb-edn-file)
+                 (let [raw-string (slurp bb-edn-file)
+                       edn (edn/read-string raw-string)
+                       edn (assoc edn
+                                  :raw raw-string
+                                  :file bb-edn-file)
+                       edn (if-let [deps-root (or (:deps-root global-opts)
+                                                  (some-> config fs/parent))]
+                             (assoc edn :deps-root deps-root)
+                             edn)]
+                   (vreset! common/bb-edn edn)))
         min-bb-version (:min-bb-version bb-edn)]
     (when min-bb-version
       (when-not (satisfies-min-version? min-bb-version)
         (binding [*out* *err*]
           (println (str "WARNING: this project requires babashka "
-                        min-bb-version " or newer, but you have: " version))))))
-  (let [opts (parse-opts args)]
-    (exec opts)))
+                        min-bb-version " or newer, but you have: " version)))))
+    (exec (parse-opts args global-opts))))
 
 (def musl?
   "Captured at compile time, to know if we are running inside a

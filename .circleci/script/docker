@@ -6,6 +6,15 @@ image_name="babashka/babashka"
 image_tag=$(cat resources/BABASHKA_VERSION)
 platform=${PLATFORM:-"linux/amd64"}
 latest_tag="latest"
+label_args=("--label" "'org.opencontainers.image.description=Native, fast starting Clojure interpreter for scripting'"
+            "--label" "org.opencontainers.image.title=Babashka"
+            "--label" "org.opencontainers.image.created=$(date -Iseconds)"
+            "--label" "org.opencontainers.image.url=${CIRCLE_REPOSITORY_URL}"
+            "--label" "org.opencontainers.image.documentation=${CIRCLE_REPOSITORY_URL}"
+            "--label" "org.opencontainers.image.source=${CIRCLE_REPOSITORY_URL}"
+            "--label" "org.opencontainers.image.revision=${CIRCLE_SHA1}"
+            "--label" "org.opencontainers.image.ref.name=${CIRCLE_TAG}:${CIRCLE_BRANCH}"
+            "--label" "org.opencontainers.image.version=${image_tag}")
 
 if [[ $image_tag =~ SNAPSHOT$ ]]; then
     echo "This is a snapshot version"
@@ -24,28 +33,26 @@ if [ -z "$CIRCLE_PULL_REQUEST" ] && [ "$CIRCLE_BRANCH" = "master" ]; then
         if [[ $tarball_platform == "linux-arm64" ]]; then tarball_platform="linux-aarch64"; fi
         mkdir -p $p
         tar zxvf "/tmp/release/babashka-${image_tag}-${tarball_platform}.tar.gz" -C $p
+        # this overwrites, but this is to work around having built the uberjar/metabom multiple times
+        cp "/tmp/release/${tarball_platform}-metabom.jar" ./metabom.jar
     done
-    docker buildx build -t "$image_name:$image_tag" --platform "$platform" --push -f Dockerfile.ci .
+    docker buildx build -t "$image_name:$image_tag" --platform "$platform" "${label_args[@]}" --push -f Dockerfile.ci .
     if [[ $snapshot == "false" ]]; then
         echo "Building & pushing $platform Docker image(s) $image_name:$latest_tag"
-        docker buildx build -t "$image_name:$latest_tag" --platform "$platform" --push -f Dockerfile.ci .
+        docker buildx build -t "$image_name:$latest_tag" --platform "$platform" "${label_args[@]}" --push -f Dockerfile.ci .
     fi
     for p in "${platforms[@]}"; do
         rm -rf $p
     done
 
-    # alpine doesn't provide upstream arm64 images yet
-    if [[ $platform == "linux-amd64" ]]; then
-        tar zxvf  "/tmp/release/babashka-${image_tag}-${platform}-static.tar.gz"
-        docker build -t "$image_name:alpine" -f Dockerfile.alpine .
-        rm -f bb
-        docker tag "$image_name:alpine" "$image_name:$image_tag-alpine"
-        echo "Pushing image $image_name:$image_tag-alpine"
-        docker push "$image_name:$image_tag-alpine"
-        if [[ $snapshot == "false" ]]; then
-            echo "Pushing image $image_name:alpine"
-            docker push "$image_name:alpine"
-        fi
+    # build alpine image for linux-amd64 only (no upstream arm64 support yet)
+    tar zxvf  "/tmp/release/babashka-${image_tag}-linux-amd64-static.tar.gz"
+    echo "Building & pushing Docker image $image_name:$image_tag-alpine"
+    docker buildx build -t "$image_name:$image_tag-alpine" --platform=linux/amd64 "${label_args[@]}" --push -f Dockerfile.alpine .
+
+    if [[ $snapshot == "false" ]]; then
+        echo "Building & pushing Docker image $image_name:alpine"
+        docker buildx build -t "$image_name:alpine" --platform=linux/amd64 "${label_args[@]}" --push -f Dockerfile.alpine .
     fi
 else
     echo "Not publishing Docker image"

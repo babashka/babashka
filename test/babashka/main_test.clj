@@ -18,30 +18,34 @@
      :eof nil}
     (apply test-utils/bb (when (some? input) (str input)) (map str args)))))
 
+(defn parse-opts [args]
+  (let [[args global-opts] (main/parse-global-opts args)]
+    (main/parse-opts args global-opts)))
+
 (deftest parse-opts-test
   (is (= "1667"
-         (:nrepl (main/parse-opts ["--nrepl-server"]))))
+         (:nrepl (parse-opts ["--nrepl-server"]))))
   (is (= "1666"
-         (:socket-repl (main/parse-opts ["--socket-repl"]))))
+         (:socket-repl (parse-opts ["--socket-repl"]))))
   (is (= {:nrepl "1667", :classpath "src"}
-         (main/parse-opts ["--nrepl-server" "-cp" "src"])))
+         (parse-opts ["--nrepl-server" "-cp" "src"])))
   (is (= {:nrepl "1667", :classpath "src"}
-         (main/parse-opts ["-cp" "src" "nrepl-server"])))
+         (parse-opts ["-cp" "src" "nrepl-server"])))
   (is (= {:socket-repl "1666", :expressions ["123"]}
-         (main/parse-opts ["--socket-repl" "-e" "123"])))
+         (parse-opts ["--socket-repl" "-e" "123"])))
   (is (= {:socket-repl "1666", :expressions ["123"]}
-         (main/parse-opts ["--socket-repl" "1666" "-e" "123"])))
+         (parse-opts ["--socket-repl" "1666" "-e" "123"])))
   (is (= {:nrepl "1666", :expressions ["123"]}
-         (main/parse-opts ["--nrepl-server" "1666" "-e" "123"])))
+         (parse-opts ["--nrepl-server" "1666" "-e" "123"])))
   (is (= {:classpath "src"
           :uberjar "foo.jar"}
-         (main/parse-opts ["--classpath" "src" "uberjar" "foo.jar"])))
+         (parse-opts ["--classpath" "src" "uberjar" "foo.jar"])))
   (is (= {:classpath "src"
           :uberjar "foo.jar"
           :debug true}
-         (main/parse-opts ["--debug" "--classpath" "src" "uberjar" "foo.jar"])))
-  (is (= "src" (:classpath (main/parse-opts ["--classpath" "src"]))))
-  (is (:debug (main/parse-opts ["--debug"])))
+         (parse-opts ["--debug" "--classpath" "src" "uberjar" "foo.jar"])))
+  (is (= "src" (:classpath (parse-opts ["--classpath" "src"]))))
+  (is (:debug (parse-opts ["--debug"])))
   (is (= 123 (bb nil "(println 123)")))
   (is (= 123 (bb nil "-e" "(println 123)")))
   (is (= 123 (bb nil "--eval" "(println 123)")))
@@ -54,8 +58,9 @@
   (let [v (bb nil "--describe")]
     (is (:babashka/version v))
     (is (:feature/xml v)))
-  (is (= {:force? true} (main/parse-opts ["--force"])))
-  (is (= {:main "foo", :command-line-args '("-h")} (main/parse-opts ["-m" "foo" "-h"]))))
+  (is (= {:force? true} (parse-opts ["--force"])))
+  (is (= {:main "foo", :command-line-args '("-h")} (parse-opts ["-m" "foo" "-h"])))
+  (is (= {:main "foo", :command-line-args '("-h")} (parse-opts ["-m" "foo" "--" "-h"]))))
 
 (deftest version-test
   (is (= [1 0 0] (main/parse-version "1.0.0-SNAPSHOT")))
@@ -808,6 +813,10 @@ true")))
 
 (deftest aget-test
   (is (= 1 (bb nil "(def array-2d (into-array [(int-array [1 2]) (int-array [3 4])])) (aget array-2d 0 0)"))))
+
+(deftest into-array-fallback-test
+  (is (= :f (bb nil "(first (into-array [:f]))")))
+  (is (= :f (bb nil "(first (first (into-array [(into-array [:f])])))"))))
 
 ;;;; Scratch
 

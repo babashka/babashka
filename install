@@ -88,7 +88,7 @@ case "$(uname -m)" in
 esac
 
 # Ugly ugly conversion of version to a comparable number
-IFS='.' read -ra VER <<< "$version"
+IFS='.' read -ra VER <<< "${version//-SNAPSHOT/}"
 vernum=$(printf "%03d%03d%03d" "${VER[0]}" "${VER[1]}" "${VER[2]}")
 
 if [[ 10#$vernum -le 10#000002013 ]]; then
@@ -109,7 +109,14 @@ case "$platform-$static_binary" in
                 ;;
 esac
 
-download_url="https://github.com/babashka/babashka/releases/download/v$version/$filename"
+if [[ "$version" == *-SNAPSHOT ]]
+then
+    repo="babashka-dev-builds"
+else
+    repo="babashka"
+fi
+
+download_url="https://github.com/babashka/$repo/releases/download/v$version/$filename"
 
 # macOS only have shasum available by default
 # Some Linux distros (RHEL-like) only have sha256sum avaiable by default (others have both)

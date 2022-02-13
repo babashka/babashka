@@ -24,6 +24,7 @@ RUN apk --no-cache add curl ca-certificates tar && \
     apk add --allow-untrusted /tmp/glibc-2.28-r0.apk
 RUN echo 'hosts: files mdns4_minimal [NOTFOUND=return] dns mdns4' >> /etc/nsswitch.conf
 
+COPY metabom.jar /opt/babashka-metabom.jar
 COPY --from=tester /bin/bb /bin/bb
 
 CMD ["bb"]

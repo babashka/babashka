@@ -9,8 +9,7 @@
 
 (ns honey.sql.postgres-test
   (:refer-clojure :exclude [update partition-by set])
-  (:require #?(:clj [clojure.test :refer [deftest is testing]]
-               :cljs [cljs.test :refer-macros [deftest is testing]])
+  (:require [clojure.test :refer [deftest is testing]]
             ;; pull in all the PostgreSQL helpers that the nilenso
             ;; library provided (as well as the regular HoneySQL ones):
             [honey.sql.helpers :as sqlh :refer
@@ -320,7 +319,7 @@
 
 (deftest values-except-select
   (testing "select which values are not not present in a table"
-    (is (= ["(VALUES (?), (?), (?)) EXCEPT (SELECT id FROM images)" 4 5 6]
+    (is (= ["VALUES (?), (?), (?) EXCEPT SELECT id FROM images" 4 5 6]
            (sql/format
             {:except
              [{:values [[4] [5] [6]]}
@@ -328,7 +327,7 @@
 
 (deftest select-except-select
   (testing "select which rows are not present in another table"
-    (is (= ["(SELECT ip) EXCEPT (SELECT ip FROM ip_location)"]
+    (is (= ["SELECT ip EXCEPT SELECT ip FROM ip_location"]
            (sql/format
             {:except
              [{:select [:ip]}
@@ -336,7 +335,7 @@
 
 (deftest values-except-all-select
   (testing "select which values are not not present in a table"
-    (is (= ["(VALUES (?), (?), (?)) EXCEPT ALL (SELECT id FROM images)" 4 5 6]
+    (is (= ["VALUES (?), (?), (?) EXCEPT ALL SELECT id FROM images" 4 5 6]
            (sql/format
             {:except-all
              [{:values [[4] [5] [6]]}
@@ -344,7 +343,7 @@
 
 (deftest select-except-all-select
   (testing "select which rows are not present in another table"
-    (is (= ["(SELECT ip) EXCEPT ALL (SELECT ip FROM ip_location)"]
+    (is (= ["SELECT ip EXCEPT ALL SELECT ip FROM ip_location"]
            (sql/format
             {:except-all
              [{:select [:ip]}

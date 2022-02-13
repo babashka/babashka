@@ -2,7 +2,7 @@
 #_" -*- mode: clojure; -*-"
 ;; Source: https://gist.github.com/holyjak/36c6284c047ffb7573e8a34399de27d8
 
-;; Based on https://github.com/babashka/babashka/blob/master/examples/image_viewer.clj
+;; Based on https://github.com/babashka/babashka/blob/master/examples/image-viewer.clj
 (ns http-server
   (:require [babashka.fs :as fs]
             [clojure.java.browse :as browse]

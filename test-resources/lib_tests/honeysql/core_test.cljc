@@ -3,11 +3,12 @@
   (:require [#?@(:clj [clojure.test :refer]
                  :cljs [cljs.test :refer-macros]) [deftest testing is]]
             [honeysql.core :as sql]
+            [honeysql.format :as sql-f]
             [honeysql.helpers :refer [select modifiers from join left-join
                                       right-join full-join cross-join
                                       where group having
                                       order-by limit offset values columns
-                                      insert-into with merge-where]]
+                                      insert-into with merge-where merge-having]]
             honeysql.format-test))
 
 ;; TODO: more tests
@@ -90,7 +91,7 @@
          (->
            (insert-into :foo)
            (columns :bar)
-           (values [[(honeysql.format/value {:baz "my-val"})]])
+           (values [[(sql-f/value {:baz "my-val"})]])
            sql/format)))
   (is (= ["INSERT INTO foo (a, b, c) VALUES (?, ?, ?), (?, ?, ?)"
           "a" "b" "c" "a" "b" "c"]
@@ -217,43 +218,113 @@
              sql/format))))
 
 (deftest merge-where-no-params-test
-  (testing "merge-where called with just the map as parameter - see #228"
-    (let [sqlmap (-> (select :*)
-                     (from :table)
-                     (where [:= :foo :bar]))]
-      (is (= ["SELECT * FROM table WHERE foo = bar"]
-             (sql/format (apply merge-where sqlmap [])))))))
+  (doseq [[k [f merge-f]] {"WHERE"  [where merge-where]
+                           "HAVING" [having merge-having]}]
+    (testing "merge-where called with just the map as parameter - see #228"
+      (let [sqlmap (-> (select :*)
+                       (from :table)
+                       (f [:= :foo :bar]))]
+        (is (= [(str "SELECT * FROM table " k " foo = bar")]
+               (sql/format (apply merge-f sqlmap []))))))))
 
 (deftest merge-where-test
-  (is (= ["SELECT * FROM table WHERE (foo = bar AND quuz = xyzzy)"]
-         (-> (select :*)
-             (from :table)
-             (where [:= :foo :bar] [:= :quuz :xyzzy])
-             sql/format)))
-  (is (= ["SELECT * FROM table WHERE (foo = bar AND quuz = xyzzy)"]
-         (-> (select :*)
-             (from :table)
-             (where [:= :foo :bar])
-             (merge-where [:= :quuz :xyzzy])
-             sql/format))))
+  (doseq [[k sql-keyword f merge-f] [[:where "WHERE" where merge-where]
+                                     [:having "HAVING" having merge-having]]]
+    (is (= [(str "SELECT * FROM table " sql-keyword " (foo = bar AND quuz = xyzzy)")]
+           (-> (select :*)
+               (from :table)
+               (f [:= :foo :bar] [:= :quuz :xyzzy])
+               sql/format)))
+    (is (= [(str "SELECT * FROM table " sql-keyword " (foo = bar AND quuz = xyzzy)")]
+           (-> (select :*)
+               (from :table)
+               (f [:= :foo :bar])
+               (merge-f [:= :quuz :xyzzy])
+               sql/format)))
+    (testing "Should work when first arg isn't a map"
+      (is (= {k [:and [:x] [:y]]}
+             (merge-f [:x] [:y]))))
+    (testing "Shouldn't use conjunction if there is only one clause in the result"
+      (is (= {k [:x]}
+             (merge-f {} [:x]))))
+    (testing "Should be able to specify the conjunction type"
+      (is (= {k [:or [:x] [:y]]}
+             (merge-f {}
+                      :or
+                      [:x] [:y]))))
+    (testing "Should ignore nil clauses"
+      (is (= {k [:or [:x] [:y]]}
+             (merge-f {}
+                      :or
+                      [:x] nil [:y]))))))
+
+(deftest merge-where-build-clause-test
+  (doseq [k [:where :having]]
+    (testing (str "Should be able to build a " k " clause with sql/build")
+      (is (= {k [:and [:a] [:x] [:y]]}
+             (sql/build
+              k [:a]
+              (keyword (str "merge-" (name k))) [:and [:x] [:y]]))))))
+
+(deftest merge-where-combine-clauses-test
+  (doseq [[k f] {:where  merge-where
+                 :having merge-having}]
+    (testing (str "Combine new " k " clauses into the existing clause when appropriate. (#282)")
+      (testing "No existing clause"
+        (is (= {k [:and [:x] [:y]]}
+               (f {}
+                  [:x] [:y]))))
+      (testing "Existing clause is not a conjunction."
+        (is (= {k [:and [:a] [:x] [:y]]}
+               (f {k [:a]}
+                  [:x] [:y]))))
+      (testing "Existing clause IS a conjunction."
+        (testing "New clause(s) are not conjunctions"
+          (is (= {k [:and [:a] [:b] [:x] [:y]]}
+                 (f {k [:and [:a] [:b]]}
+                    [:x] [:y]))))
+        (testing "New clauses(s) ARE conjunction(s)"
+          (is (= {k [:and [:a] [:b] [:x] [:y]]}
+                 (f {k [:and [:a] [:b]]}
+                    [:and [:x] [:y]])))
+          (is (= {k [:and [:a] [:b] [:x] [:y]]}
+                 (f {k [:and [:a] [:b]]}
+                    [:and [:x]]
+                    [:y])))
+          (is (= {k [:and [:a] [:b] [:x] [:y]]}
+                 (f {k [:and [:a] [:b]]}
+                    [:and [:x]]
+                    [:and [:y]])))))
+      (testing "if existing clause isn't the same conjunction, don't merge into it"
+        (testing "existing conjunction is `:or`"
+          (is (= {k [:and [:or [:a] [:b]] [:x] [:y]]}
+                 (f {k [:or [:a] [:b]]}
+                    [:x] [:y]))))
+        (testing "pass conjunction type as a param (override default of :and)"
+          (is (= {k [:or [:and [:a] [:b]] [:x] [:y]]}
+                 (f {k [:and [:a] [:b]]}
+                    :or
+                    [:x] [:y]))))))))
 
 (deftest where-nil-params-test
-  (testing "where called with nil parameters - see #246"
-    (is (= ["SELECT * FROM table WHERE (foo = bar AND quuz = xyzzy)"]
-           (-> (select :*)
-               (from :table)
-               (where nil [:= :foo :bar] nil [:= :quuz :xyzzy] nil)
-               sql/format)))
-    (is (= ["SELECT * FROM table"]
-           (-> (select :*)
-               (from :table)
-               (where)
-               sql/format)))
-    (is (= ["SELECT * FROM table"]
-           (-> (select :*)
-               (from :table)
-               (where nil nil nil nil)
-               sql/format)))))
+  (doseq [[_ sql-keyword f] [[:where "WHERE" where]
+                             [:having "HAVING" having]]]
+    (testing (str sql-keyword " called with nil parameters - see #246")
+      (is (= [(str "SELECT * FROM table " sql-keyword " (foo = bar AND quuz = xyzzy)")]
+             (-> (select :*)
+                 (from :table)
+                 (f nil [:= :foo :bar] nil [:= :quuz :xyzzy] nil)
+                 sql/format)))
+      (is (= ["SELECT * FROM table"]
+             (-> (select :*)
+                 (from :table)
+                 (f)
+                 sql/format)))
+      (is (= ["SELECT * FROM table"]
+             (-> (select :*)
+                 (from :table)
+                 (f nil nil nil nil)
+                 sql/format))))))
 
 (deftest cross-join-test
   (is (= ["SELECT * FROM foo CROSS JOIN bar"]

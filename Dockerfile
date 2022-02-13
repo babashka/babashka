@@ -5,7 +5,7 @@ RUN apt update
 RUN apt install --no-install-recommends -yy build-essential zlib1g-dev
 WORKDIR "/opt"
 
-ENV GRAALVM_VERSION="21.3.0"
+ENV GRAALVM_VERSION="22.0.0.2"
 ARG TARGETARCH
 ENV BABASHKA_ARCH=${TARGETARCH}
 ENV GRAALVM_ARCH=${TARGETARCH}
@@ -73,5 +73,6 @@ RUN ./script/compile
 FROM ubuntu:latest
 RUN apt-get update && apt-get install -y curl \
         && mkdir -p /usr/local/bin
+COPY --from=BASE /opt/target/metabom.jar /opt/babashka-metabom.jar
 COPY --from=BASE /opt/bb /usr/local/bin/bb
 CMD ["bb"]

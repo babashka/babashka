@@ -47,7 +47,11 @@
 
   (testing "handling of blank input string"
     (is (= "" (csk/->kebab-case "")))
-    (is (= "" (csk/->kebab-case " ")))))
+    (is (= "" (csk/->kebab-case " "))))
+
+  (testing "handling of input consisting of only separator(s)"
+    (is (= "" (csk/->kebab-case "a" :separator \a)))
+    (is (= "" (csk/->kebab-case "aa" :separator \a)))))
 
 (deftest http-header-case-test
   (are [x y] (= x (csk/->HTTP-Header-Case y))

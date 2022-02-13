@@ -37,7 +37,7 @@ reasons:
 
 ## Requirements
 
-You need [lein](https://leiningen.org/) for running JVM tests and/or producing uberjars. For building binaries you need GraalVM. Currently we use java11-21.3.0.
+You need [lein](https://leiningen.org/) for running JVM tests and/or producing uberjars. For building binaries you need GraalVM. Currently we use java11-22.0.0.2.
 
 ## Clone repository
 
@@ -81,19 +81,29 @@ Test the native version:
 ## Tests for Libraries
 
 Babashka runs tests of libraries that are compatible with it through
-`script/run_lib_tests`. To add tests for a new library that has a git repository
-and run them, use the script `add-libtest.clj` e.g. `script/add-libtest.clj
-'{listora/again {:mvn/version "1.0.0"}}' https://github.com/liwp/again --test`.
+`script/run_lib_tests`. The script `add-libtest.clj` makes adding new libraries
+fairly easy. Some examples:
 
-If the library you want to add doesn't work with the script, you can manually do the following:
+```sh
+# To add tests for a new library on clojars
+script/add-libtest.clj com.exoscale/lingo -t
+
+# To add tests for a new library that is git based only
+script/add-libtest.clj '{borkdude/carve {:git/url "https://github.com/borkdude/carve" :sha "df552797a198b6701fb2d92390fce7c59205ea77"}}' -t
+
+# There are a number of options for specifying how to copy tests
+script/add-libtest.clj -h
+```
+
+If the library you want to add doesn't work automatically, you can manually do the following:
 
 * Add an entry for the library in `deps.edn` under the `:lib-tests` alias.
 * Create a directory for the library in `test-resources/lib_tests/` and copy its tests to there.
-* Add an entry in `run_all_libtests.clj` to run the added test namespaces.
+* Add a manual lib entry using `add-libtest.clj` e.g. `script/add-libtest.clj http-kit/http-kit -m '{:test-namespaces [httpkit.client-test]}'`.
 * Run the tests `script/lib_tests/run_all_libtests NS1 NS2`
 
-Note: If you have to modify a test to have it work with bb, add an inline
-comment with prefix "BB-TEST-PATCH:" explaining what you did.
+Note: If you have to modify any test file or configuration to have it work with
+bb, add an inline comment with prefix `BB-TEST-PATCH:` explaining what you did.
 
 ## Build
 
@@ -149,7 +159,7 @@ Some of these design decisions were formed in [these discussions](https://github
 
 - Tasks do not allow passing arguments to dependent tasks, other than by rebinding `*command-line-args*` (see discussion).
 - Does the list of dependencies need to be dynamic? No, see discussion (same reason as args)
-- bb <foo> is resolved as file > task > bb subcommand. Shadowing future subcommand is a problem that a user can solve by renaming a task or file. (same as lein aliases). Also see Conflicts.
+- bb &lt;foo&gt; is resolved as file > task > bb subcommand. Shadowing future subcommand is a problem that a user can solve by renaming a task or file. (same as lein aliases). Also see Conflicts.
 - It is a feature that tasks are defined as top-level vars (instead of local let-bound symbols). This plays well with the Gilardi scenario, e.g. here: https://github.com/babashka/babashka.github.io/blob/ad276625f6c41f269d19450f236cb54cab2591e1/bb.edn#L7.
 - The parallel option trickles down into run calls. People who use parallel will be confused if it’s dropped magically, people who don’t use parallel won’t notice anything either way so it doesn’t matter
 

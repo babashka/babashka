@@ -17,17 +17,19 @@
   :resource-paths ["resources" "sci/resources"]
   :test-selectors {:default (complement :windows-only)
                    :windows (complement :skip-windows)}
-  :dependencies [[org.clojure/clojure "1.11.0-alpha3"]
+  :dependencies [[org.clojure/clojure "1.11.0-beta1"]
                  [borkdude/edamame "0.0.19"]
                  [borkdude/graal.locking "0.0.2"]
                  [org.clojure/tools.cli "1.0.206"]
-                 [cheshire "5.10.1"]
+                 [cheshire "5.10.2"]
                  [nrepl/bencode "1.1.0"]
                  [borkdude/sci.impl.reflector "0.0.1"]
-                 [org.clojure/core.async "1.4.627"]
-                 [org.clojure/test.check "1.1.0"]
+                 [org.clojure/core.async "1.5.648"]
+                 [org.clojure/test.check "1.1.1"]
                  [com.github.clj-easy/graal-build-time "0.1.0"]
                  [rewrite-clj/rewrite-clj "1.0.699-alpha"]]
+  :plugins       [[org.kipz/lein-meta-bom "0.1.1"]]
+  :metabom {:jar-name "metabom.jar"}
   :profiles {:feature/xml  {:source-paths ["feature-xml"]
                             :dependencies [[org.clojure/data.xml "0.2.0-alpha6"]]}
              :feature/yaml {:source-paths ["feature-yaml"]
@@ -42,7 +44,7 @@
              :feature/csv {:source-paths ["feature-csv"]
                            :dependencies [[org.clojure/data.csv "1.0.0"]]}
              :feature/transit {:source-paths ["feature-transit"]
-                               :dependencies [[com.cognitect/transit-clj "1.0.324"]]}
+                               :dependencies [[com.cognitect/transit-clj "1.0.329"]]}
              :feature/datascript {:source-paths ["feature-datascript"]
                                   :dependencies [[datascript "1.0.1"]]}
              :feature/httpkit-client {:source-paths ["feature-httpkit-client"]

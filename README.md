@@ -147,6 +147,11 @@ Install:
 
     brew install borkdude/brew/babashka
 
+On macOS with an M1 processor:
+
+    softwareupdate --install-rosetta
+    arch -x86_64 brew install borkdude/brew/babashka
+
 Upgrade:
 
     brew upgrade babashka
