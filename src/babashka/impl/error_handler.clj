@@ -139,10 +139,6 @@
             (ruler "Context")
             (println ec)
             (println))
-          (when-let [locals (and (:debug opts) (not-empty (:locals d)))]
-            (ruler "Locals")
-            (print-locals locals)
-            (println))
           (when sci-error?
             (when-let
                 [st (let [st (with-out-str

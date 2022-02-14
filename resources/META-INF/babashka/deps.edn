@@ -14,7 +14,7 @@
          "depstar/src" "process/src"
          "deps.clj/src" "deps.clj/resources"
          "resources" "sci/resources"],
- :deps {org.clojure/clojure {:mvn/version "1.11.0-alpha4"},
+ :deps {org.clojure/clojure {:mvn/version "1.11.0-beta1"},
         borkdude/sci {:local/root "sci"}
         babashka/babashka.curl {:local/root "babashka.curl"}
         babashka/fs {:local/root "fs"}
@@ -26,7 +26,7 @@
         cheshire/cheshire {:mvn/version "5.10.2"}
         org.clojure/data.xml {:mvn/version "0.2.0-alpha6"}
         clj-commons/clj-yaml {:mvn/version "0.7.107"}
-        com.cognitect/transit-clj {:mvn/version "1.0.324"}
+        com.cognitect/transit-clj {:mvn/version "1.0.329"}
         org.clojure/test.check {:mvn/version "1.1.1"}
         nrepl/bencode {:mvn/version "1.1.0"}
         seancorfield/next.jdbc {:mvn/version "1.1.610"}
@@ -120,7 +120,9 @@
                          meta-merge/meta-merge {:mvn/version "1.0.0"}
                          com.exoscale/lingo {:mvn/version "1.0.0-alpha14"}
                          io.github.swirrl/dogstatsd {:mvn/version "0.1.39"}
-                         org.clojure/algo.monads {:mvn/version "0.1.6"}}
+                         org.clojure/algo.monads {:mvn/version "0.1.6"}
+                         io.lambdaforge/datalog-parser {:mvn/version "0.1.9"}
+                         clj-stacktrace/clj-stacktrace {:mvn/version "0.2.8"}}
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil}}
            :clj-nvd
