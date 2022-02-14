@@ -12,6 +12,7 @@ clj-commons/clj-yaml,https://github.com/clj-commons/clj-yaml
 clj-commons/multigrep,https://github.com/clj-commons/multigrep
 clj-stacktrace/clj-stacktrace,https://github.com/mmcgrana/clj-stacktrace
 clojure-csv/clojure-csv,https://github.com/davidsantiago/clojure-csv
+clojure-msgpack/clojure-msgpack,https://github.com/edma2/clojure-msgpack
 clojure-term-colors/clojure-term-colors,https://github.com/trhura/clojure-term-colors
 com.exoscale/lingo,https://github.com/exoscale/lingo
 com.github.seancorfield/honeysql,https://github.com/seancorfield/honeysql
