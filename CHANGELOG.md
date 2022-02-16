@@ -2,9 +2,17 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
-## Unreleased
+## 0.7.5
 
-- Fix [#1170](https://github.com/babashka/babashka/issues/1170): defmacro with a defrecord inside fails to resolve classname
+- SCI: Performance improvements for loops and varargs function invocation.
+- Fix [#1170](https://github.com/babashka/babashka/issues/1170): `defmacro` with a `defrecord` inside fails to resolve classname in protocol implementation.
+- Bump deps.clj to tools jar `1.10.3.1082`.
+- Upgrade to GraalVM 22.0.0.2.
+- Add `halt-when`.
+- Add `java.io.Data` classes
+- Add compatibility with [clojure-msgpack](https://github.com/edma2/clojure-msgpack)
+- Upgrade to clojure 11 beta1
+- Bump transit to 1.0.329
 
 ## 0.7.4 (2022-01-25)
 
