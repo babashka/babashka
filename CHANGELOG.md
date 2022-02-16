@@ -8,6 +8,8 @@ For a list of breaking changes, check [here](#breaking-changes).
 
 ## 0.7.5 (2022-02-16)
 
+Please leave some feedback about babashka in the [2022 Q1 Survey](https://forms.gle/ko3NjDg2SwXeEoNQ9)!
+
 - SCI: Performance improvements for loops and varargs function invocation.
 - Fix [#1170](https://github.com/babashka/babashka/issues/1170): `defmacro` with a `defrecord` inside fails to resolve classname in protocol implementation.
 - Bump deps.clj to tools jar `1.10.3.1082`.
