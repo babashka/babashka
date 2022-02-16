@@ -2,7 +2,11 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
-## 0.7.5
+## Unreleased
+
+- ...
+
+## 0.7.5 (2022-02-16)
 
 - SCI: Performance improvements for loops and varargs function invocation.
 - Fix [#1170](https://github.com/babashka/babashka/issues/1170): `defmacro` with a `defrecord` inside fails to resolve classname in protocol implementation.
