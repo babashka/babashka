@@ -4,7 +4,9 @@ For a list of breaking changes, check [here](#breaking-changes).
 
 ## Unreleased
 
-- ...
+### Fixes
+
+- [#1181](https://github.com/babashka/babashka/issues/1181): clojure.test report does not respect *test-out* correctly
 
 ## 0.7.5 (2022-02-16)
 
