@@ -279,7 +279,7 @@
   "Runs body with *out* bound to the value of *test-out*."
   {:added "1.1"}
   [& body]
-  `(sci/binding [sci/out @test-out]
+  `(binding [*out* @test-out]
      ~@body))
 
 (defmacro with-test-out
