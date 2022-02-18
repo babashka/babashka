@@ -1,13 +1,17 @@
 (ns babashka.test-test
   (:require
+   [babashka.impl.clojure.test :as test-impl]
    [babashka.test-utils :as tu]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.string :as str]
-   [clojure.test :as t :refer [deftest is]]))
+   [clojure.test :as t :refer [deftest is]]
+   [sci.core :as sci]))
 
 (defn bb [& args]
-  (apply tu/bb nil (map str args)))
+  (let [sw (java.io.StringWriter.)]
+    (sci/binding [test-impl/test-out sw]
+      (str sw (apply tu/bb nil (map str args))))))
 
 (deftest deftest-test
   (is (str/includes?
@@ -92,3 +96,15 @@
 (throw (ex-info \"\" {})))))
 (t/run-tests *ns*)")]
     (is (str/includes? output "Ran 1 tests containing 2 assertions."))))
+
+(deftest test-out-test
+  (let [output (bb "
+(do (require '[clojure.test :as t])
+(t/deftest foo (t/are [x]
+(t/is (thrown-with-msg? Exception #\"\" x))
+(throw (ex-info \"\" {})))))
+(let [sw (java.io.StringWriter.)]
+  (binding [t/*test-out* sw]
+    (t/with-test-out (t/run-tests *ns*)))
+    (str/includes? (str sw) \"Ran 1 tests containing 2 assertions.\"))")]
+    (is (str/includes? output "true"))))
