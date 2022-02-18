@@ -96,3 +96,15 @@
 (throw (ex-info \"\" {})))))
 (t/run-tests *ns*)")]
     (is (str/includes? output "Ran 1 tests containing 2 assertions."))))
+
+(deftest test-out-test
+  (let [output (bb "
+(do (require '[clojure.test :as t])
+(t/deftest foo (t/are [x]
+(t/is (thrown-with-msg? Exception #\"\" x))
+(throw (ex-info \"\" {})))))
+(let [sw (java.io.StringWriter.)]
+  (binding [t/*test-out* sw]
+    (t/with-test-out (t/run-tests *ns*)))
+    (str/includes? (str sw) \"Ran 1 tests containing 2 assertions.\"))")]
+    (is (str/includes? output "true"))))
