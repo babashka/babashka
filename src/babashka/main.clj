@@ -52,8 +52,8 @@
    [sci.addons :as addons]
    [sci.core :as sci]
    [sci.impl.namespaces :as sci-namespaces]
+   [sci.impl.types :as sci-types]
    [sci.impl.unrestrict :refer [*unrestricted*]]
-   [sci.impl.utils :refer [ctx-fn]]
    [sci.impl.vars :as vars])
   (:gen-class))
 
@@ -331,10 +331,10 @@ Use bb run --help to show this help output.
 
 (def namespaces
   (cond->
-      {'user {'*input* (ctx-fn
-                        (fn [_ctx _bindings]
-                          (force @input-var))
-                        nil)}
+      {'user {'*input* (reify
+                         sci-types/Eval
+                         (eval [_ _ctx _bindings]
+                           (force @input-var)))}
        'clojure.tools.cli tools-cli-namespace
        'clojure.java.shell shell-namespace
        'babashka.core bbcore/core-namespace
