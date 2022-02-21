@@ -25,7 +25,7 @@
         org.clojure/data.csv {:mvn/version "1.0.0"},
         cheshire/cheshire {:mvn/version "5.10.2"}
         org.clojure/data.xml {:mvn/version "0.2.0-alpha6"}
-        clj-commons/clj-yaml {:mvn/version "0.7.107"}
+        clj-commons/clj-yaml {:mvn/version "0.7.108"}
         com.cognitect/transit-clj {:mvn/version "1.0.329"}
         org.clojure/test.check {:mvn/version "1.1.1"}
         nrepl/bencode {:mvn/version "1.1.0"}
