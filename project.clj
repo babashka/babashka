@@ -46,7 +46,7 @@
              :feature/transit {:source-paths ["feature-transit"]
                                :dependencies [[com.cognitect/transit-clj "1.0.329"]]}
              :feature/datascript {:source-paths ["feature-datascript"]
-                                  :dependencies [[datascript "1.0.1"]]}
+                                  :dependencies [[datascript "1.3.10"]]}
              :feature/httpkit-client {:source-paths ["feature-httpkit-client"]
                                       :dependencies [[http-kit "2.5.3"]]}
              :feature/httpkit-server {:source-paths ["feature-httpkit-server"]

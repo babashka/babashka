@@ -59,6 +59,7 @@ The following libraries and projects are known to work with babashka.
     - [specmonstah](#specmonstah)
     - [markdown-clj](#markdown-clj)
     - [algo.monads](#algomonads)
+    - [datalog-parser](#datalog-parser)
   - [Pods](#pods)
   - [Projects](#projects-1)
     - [babashka-test-action](#babashka-test-action)
@@ -792,6 +793,10 @@ Markdown parser that translates markdown to html.
 ### [algo.monads](https://github.com/clojure/algo.monads)
 
 Macros for defining monads, and definition of the most common monads.
+
+### [datalog-parser](https://github.com/lambdaforge/datalog-parser)
+
+Datalog parser that is compliant with datomic, datascript and datahike.
 
 ## Pods
 

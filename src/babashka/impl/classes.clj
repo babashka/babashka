@@ -384,6 +384,16 @@
           ~(symbol "[I")
           ~(symbol "[Ljava.lang.Object;")
           ~(symbol "[Ljava.lang.Double;")
+          ~@(when features/datascript?
+              `[me.tonsky.persistent_sorted_set.PersistentSortedSet
+                datascript.db.DB
+                datascript.db.Datom
+                ~(symbol "[Lclojure.lang.Keyword;")
+                ~(symbol "[Lclojure.lang.PersistentArrayMap;")
+                ~(symbol "[Lclojure.lang.PersistentVector;")
+                ~(symbol "[Lclojure.lang.PersistentHashSet;")
+                ~(symbol "[Ljava.util.regex.Pattern;")
+                ~(symbol "[Lclojure.core$range;")])
           ~@(when features/yaml? '[org.yaml.snakeyaml.error.YAMLException])
           ~@(when features/hsqldb? '[org.hsqldb.jdbcDriver])]
     :constructors [clojure.lang.Delay
