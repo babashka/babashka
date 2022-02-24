@@ -25,7 +25,7 @@
         org.clojure/data.csv {:mvn/version "1.0.0"},
         cheshire/cheshire {:mvn/version "5.10.2"}
         org.clojure/data.xml {:mvn/version "0.2.0-alpha6"}
-        clj-commons/clj-yaml {:mvn/version "0.7.107"}
+        clj-commons/clj-yaml {:mvn/version "0.7.108"}
         com.cognitect/transit-clj {:mvn/version "1.0.329"}
         org.clojure/test.check {:mvn/version "1.1.1"}
         nrepl/bencode {:mvn/version "1.1.0"}
@@ -123,7 +123,9 @@
                          org.clojure/algo.monads {:mvn/version "0.1.6"}
                          io.lambdaforge/datalog-parser {:mvn/version "0.1.9"}
                          clj-stacktrace/clj-stacktrace {:mvn/version "0.2.8"}
-                         clojure-msgpack/clojure-msgpack {:mvn/version "1.2.1"}}
+                         clojure-msgpack/clojure-msgpack {:mvn/version "1.2.1"}
+                         cli-matic {:git/url "https://github.com/l3nz/cli-matic.git", :git/sha "9cd53ba7336363e3d06650dbad413b6f8b06e471"}
+                         cli-matic/cli-matic {:git/url "https://github.com/l3nz/cli-matic.git", :git/sha "9cd53ba7336363e3d06650dbad413b6f8b06e471"}}
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil}}
            :clj-nvd

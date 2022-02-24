@@ -8,6 +8,7 @@ borkdude/missing.test.assertions,https://github.com/borkdude/missing.test.assert
 borkdude/rewrite-edn,https://github.com/borkdude/rewrite-edn
 camel-snake-kebab/camel-snake-kebab,https://github.com/clj-commons/camel-snake-kebab
 circleci/bond,https://github.com/circleci/bond
+cli-matic/cli-matic,https://github.com/l3nz/cli-matic.git
 clj-commons/clj-yaml,https://github.com/clj-commons/clj-yaml
 clj-commons/multigrep,https://github.com/clj-commons/multigrep
 clj-stacktrace/clj-stacktrace,https://github.com/mmcgrana/clj-stacktrace
