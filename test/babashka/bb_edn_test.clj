@@ -304,7 +304,9 @@
   (test-utils/with-config "{:paths [\"test-resources/task_scripts\"]
                             :tasks {:requires ([tasks :as t])
                                     task1
-                                    {:doc \"task1 doc\"
+                                    {:doc \"task1 doc
+more stuff here
+even more stuff here\"
                                      :task (+ 1 2 3)}
                                     task2
                                     {:doc \"task2 doc\"

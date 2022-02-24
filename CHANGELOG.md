@@ -7,6 +7,7 @@ For a list of breaking changes, check [here](#breaking-changes).
 ### Fixes
 
 - [#1181](https://github.com/babashka/babashka/issues/1181): clojure.test report does not respect *test-out* correctly
+- [#1180](https://github.com/babashka/babashka/issues/1180): limit bb tasks output to first line of docstring
 
 ## 0.7.5 (2022-02-16)
 

@@ -1,6 +1,5 @@
 (ns babashka.impl.tasks
   (:require [babashka.deps :as deps]
-            [babashka.impl.classpath :as cp]
             [babashka.impl.common :refer [ctx bb-edn debug]]
             [babashka.process :as p]
             [clojure.core.async :refer [<!!]]
@@ -421,7 +420,9 @@
                 :let [task (get tasks (symbol k))]]
           (println (str (format fmt k)
                         (when-let [d (doc-from-task sci-ctx tasks task)]
-                          (str " " d))))))
+                          (let [first-line (-> (str/split-lines d)
+                                               first)]
+                            (str " " first-line)))))))
       (println "No tasks found."))))
 
 (defn run
