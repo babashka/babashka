@@ -8,7 +8,6 @@ Please leave some feedback about babashka in the [2022 Q1 Survey](https://forms.
 
 - SCI performance improvements
 - Bump clj-yaml to 0.7.1.108
-- Limit output of `bb tasks` to first line of docstring.
 - [#1181](https://github.com/babashka/babashka/issues/1181): clojure.test report does not respect *test-out* correctly
 - [#1180](https://github.com/babashka/babashka/issues/1180): limit bb tasks output to first line of docstring
 - babashka.process: support appending to `:out` file
