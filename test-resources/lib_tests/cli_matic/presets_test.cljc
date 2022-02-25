@@ -276,7 +276,8 @@
 (def base-dir (.getParent (io/file *file*)))
 (def resource (fn [x] (str (io/file base-dir x))))
 
-(deftest test-slurping
+(deftest ^:skip-bb ;; BB_TEST_PATCH: skipped because of Windows newlines
+  test-slurping
   (testing "Slurping all-in-one"
     (are [i o]
          (= (parse-cmds-simpler
