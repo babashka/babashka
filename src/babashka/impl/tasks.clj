@@ -152,23 +152,43 @@
               (format "(babashka.tasks/-wait %s)" task-name)
               task-name))))
 
+(def o (Object.))
+
+(defn log [& strs]
+  (locking o
+    (apply prn strs)))
+
 (defn wait-tasks [deps]
   (if deps
-    (format "
-(let [chans (filter babashka.tasks/-chan? %s)]
-  (loop [cs chans]
-    (when (seq cs)
-      (let [[v p] (clojure.core.async/alts!! cs)
-            [task-name v] v
-            cs (filterv #(not= p %%) cs)
-            ;; _ (.println System/err (str \"n: \" task-name \" v: \" v))
-            ;; check for existence of v, as the channel may already have been consumed once
-            _ (when v (intern *ns* (symbol task-name) v))]
-        (when (instance? Throwable v)
-          (throw (ex-info (ex-message v)
-                          {:babashka/exit 1
-                           :data (ex-data v)})))
-        (recur cs)))))" deps)
+    (format
+     (pr-str
+      '(let [chans (filter babashka.tasks/-chan? %s)]
+         (loop [cs chans]
+           (when (seq cs)
+             (let [;; what if one task consumes the channel, and interns the
+                   ;; value but another also tries to consume the channel, sees
+                   ;; nil, and that dependency resolves to the channel?
+                   [v p] (clojure.core.async/alts!! cs)
+                   ;; v = nil means the channel has already been consumed once!
+                   [task-name v] v
+                   ;; _ (log :task-name task-name)
+                   cs (filterv #(not= p %) cs)
+                   ;; _ (when task-name (log :resolve task-name (some-> (resolve (symbol task-name)) deref)))
+                   ;; _ (Thread/sleep 10)
+                   _ (when v (intern *ns* (symbol task-name) v))
+                   #_#__ (when task-name (log :resolve2 task-name (some-> (resolve (symbol task-name)) deref)))]
+               (when (instance? Throwable v)
+                 (throw (ex-info (ex-message v)
+                                 {:babashka/exit 1
+                                  :data (ex-data v)})))
+               (recur cs))))
+         ;; since resolving channels into values may happen in parallel and some
+         ;; channels may have been resolved on other threads, we should wait
+         ;; until all deps have been interned as values rather than chans
+         (loop [deps '%s]
+           (when (some (fn [task-name]
+                         (babashka.tasks/-chan? (deref (resolve (symbol task-name))))) deps)
+             (recur deps))))) deps deps)
     "")
   #_(format "(def %s (babashka.tasks/-wait %s))" dep dep))
 
@@ -184,7 +204,8 @@
 
 (defn wrap-depends [prog depends parallel?]
   (if parallel?
-    (format "(do %s)" (str (str "\n" (wait-tasks depends)) "\n" prog))
+    (format "(do %s)" (str (str "\n" (wait-tasks depends))
+                           "\n" prog))
     prog))
 
 (defn assemble-task-1
@@ -231,7 +252,7 @@
 %s ;; deps
 
 (ns %s %s)
-(require '[babashka.tasks])
+(require '[babashka.tasks #_#_:refer [log]])
 (when-not (resolve 'clojure)
   ;; we don't use refer so users can override this
   (intern *ns* 'clojure babashka.tasks/clojure))
@@ -441,4 +462,5 @@
    '*task* task
    'current-task current-task
    'current-state state
-   'run (sci/copy-var run sci-ns)})
+   'run (sci/copy-var run sci-ns)
+   #_#_'log log})
