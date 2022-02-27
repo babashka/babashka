@@ -189,8 +189,7 @@
            (when (some (fn [task-name]
                          (babashka.tasks/-chan? (deref (resolve (symbol task-name))))) deps)
              (recur deps))))) deps deps)
-    "")
-  #_(format "(def %s (babashka.tasks/-wait %s))" dep dep))
+    ""))
 
 (defn wrap-enter-leave [task-name prog enter leave]
   (str (pr-str enter) "\n"
