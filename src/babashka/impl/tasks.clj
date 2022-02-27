@@ -192,9 +192,11 @@
        (if leave
          (format "
 (let [%s %s]
-  %s
+  (binding [babashka.tasks/*task*
+            (assoc babashka.tasks/*task* :result %s)]
+    %s)
   %s)"
-                 task-name prog (pr-str leave) task-name)
+                 task-name prog task-name (pr-str leave) task-name)
          prog)))
 
 (defn wrap-depends [prog depends parallel?]

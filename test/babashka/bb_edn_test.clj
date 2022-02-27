@@ -416,3 +416,12 @@ even more stuff here\"
                       d {:depends [a b c]
                          :task (prn [a b c])}}})
     (is (= [nil nil nil] (bb "run" "--parallel" "d")))))
+
+(deftest current-task-result-test
+  (test-utils/with-config
+    (pr-str '{:tasks {:leave (prn [(:name (current-task)) (:result (current-task))])
+                      a 1
+                      b 2
+                      c {:depends [a b]
+                         :task [a b]}}})
+    (is (= ["[a 1]" "[b 2]" "[c [1 2]]"] (str/split-lines (test-utils/bb nil "run" "c"))))))

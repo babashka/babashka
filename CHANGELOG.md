@@ -4,9 +4,13 @@ For a list of breaking changes, check [here](#breaking-changes).
 
 ## Unreleased
 
+### New
+
+- [#1187](https://github.com/babashka/babashka/issues/1187) tasks: Add `:result` key to `(current-task)` map that can be used in `:leave` task hook
+
 ### Enhancements
 
-- [#1190](https://github.com/babashka/babashka/issues/1190): task dependencies resolve as core.async channels
+- [#1190](https://github.com/babashka/babashka/issues/1190) tasks: task dependencies resolve as core.async channels
 
 ## 0.7.6 (2022-02-24)
 
