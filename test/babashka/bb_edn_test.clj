@@ -407,3 +407,12 @@ even more stuff here\"
     (time (dotimes [_ 50]
             (is (str/includes? (test-utils/bb nil "run" "--parallel" "task-g")
                                "task-b:  clojure.lang.Keyword"))))))
+
+(deftest parallel-nil-results-test
+  (test-utils/with-config
+    (pr-str '{:tasks {a (do nil)
+                      b (do nil)
+                      c (do nil)
+                      d {:depends [a b c]
+                         :task (prn [a b c])}}})
+    (is (= [nil nil nil] (bb "run" "--parallel" "d")))))

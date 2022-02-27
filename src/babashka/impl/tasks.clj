@@ -154,9 +154,12 @@
 
 (def o (Object.))
 
-(defn log [& strs]
+#_:clj-kondo/ignore
+(defn- log
+  "Used internally for debugging"
+  [& strs]
   (locking o
-    (apply prn strs)))
+    (apply  prn strs)))
 
 (defn wait-tasks [deps]
   (if deps
@@ -165,18 +168,10 @@
       '(let [chans (filter babashka.tasks/-chan? %s)]
          (loop [cs chans]
            (when (seq cs)
-             (let [;; what if one task consumes the channel, and interns the
-                   ;; value but another also tries to consume the channel, sees
-                   ;; nil, and that dependency resolves to the channel?
-                   [v p] (clojure.core.async/alts!! cs)
-                   ;; v = nil means the channel has already been consumed once!
-                   [task-name v] v
-                   ;; _ (log :task-name task-name)
+             (let [[v* p] (clojure.core.async/alts!! cs)
+                   [task-name v] v*
                    cs (filterv #(not= p %) cs)
-                   ;; _ (when task-name (log :resolve task-name (some-> (resolve (symbol task-name)) deref)))
-                   ;; _ (Thread/sleep 10)
-                   _ (when v (intern *ns* (symbol task-name) v))
-                   #_#__ (when task-name (log :resolve2 task-name (some-> (resolve (symbol task-name)) deref)))]
+                   _ (when v* (intern *ns* (symbol task-name) v))]
                (when (instance? Throwable v)
                  (throw (ex-info (ex-message v)
                                  {:babashka/exit 1
@@ -185,6 +180,7 @@
          ;; since resolving channels into values may happen in parallel and some
          ;; channels may have been resolved on other threads, we should wait
          ;; until all deps have been interned as values rather than chans
+         ;; see issue 1190
          (loop [deps '%s]
            (when (some (fn [task-name]
                          (babashka.tasks/-chan? (deref (resolve (symbol task-name))))) deps)
