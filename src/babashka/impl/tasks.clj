@@ -152,25 +152,40 @@
               (format "(babashka.tasks/-wait %s)" task-name)
               task-name))))
 
+(def o (Object.))
+
+#_:clj-kondo/ignore
+(defn- log
+  "Used internally for debugging"
+  [& strs]
+  (locking o
+    (apply  prn strs)))
+
 (defn wait-tasks [deps]
   (if deps
-    (format "
-(let [chans (filter babashka.tasks/-chan? %s)]
-  (loop [cs chans]
-    (when (seq cs)
-      (let [[v p] (clojure.core.async/alts!! cs)
-            [task-name v] v
-            cs (filterv #(not= p %%) cs)
-            ;; _ (.println System/err (str \"n: \" task-name \" v: \" v))
-            ;; check for existence of v, as the channel may already have been consumed once
-            _ (when v (intern *ns* (symbol task-name) v))]
-        (when (instance? Throwable v)
-          (throw (ex-info (ex-message v)
-                          {:babashka/exit 1
-                           :data (ex-data v)})))
-        (recur cs)))))" deps)
-    "")
-  #_(format "(def %s (babashka.tasks/-wait %s))" dep dep))
+    (format
+     (pr-str
+      '(let [chans (filter babashka.tasks/-chan? %s)]
+         (loop [cs chans]
+           (when (seq cs)
+             (let [[v* p] (clojure.core.async/alts!! cs)
+                   [task-name v] v*
+                   cs (filterv #(not= p %) cs)
+                   _ (when v* (intern *ns* (symbol task-name) v))]
+               (when (instance? Throwable v)
+                 (throw (ex-info (ex-message v)
+                                 {:babashka/exit 1
+                                  :data (ex-data v)})))
+               (recur cs))))
+         ;; since resolving channels into values may happen in parallel and some
+         ;; channels may have been resolved on other threads, we should wait
+         ;; until all deps have been interned as values rather than chans
+         ;; see issue 1190
+         (loop [deps '%s]
+           (when (some (fn [task-name]
+                         (babashka.tasks/-chan? (deref (resolve (symbol task-name))))) deps)
+             (recur deps))))) deps deps)
+    ""))
 
 (defn wrap-enter-leave [task-name prog enter leave]
   (str (pr-str enter) "\n"
@@ -184,7 +199,8 @@
 
 (defn wrap-depends [prog depends parallel?]
   (if parallel?
-    (format "(do %s)" (str (str "\n" (wait-tasks depends)) "\n" prog))
+    (format "(do %s)" (str (str "\n" (wait-tasks depends))
+                           "\n" prog))
     prog))
 
 (defn assemble-task-1
@@ -231,7 +247,7 @@
 %s ;; deps
 
 (ns %s %s)
-(require '[babashka.tasks])
+(require '[babashka.tasks #_#_:refer [log]])
 (when-not (resolve 'clojure)
   ;; we don't use refer so users can override this
   (intern *ns* 'clojure babashka.tasks/clojure))
@@ -441,4 +457,5 @@
    '*task* task
    'current-task current-task
    'current-state state
-   'run (sci/copy-var run sci-ns)})
+   'run (sci/copy-var run sci-ns)
+   #_#_'log log})

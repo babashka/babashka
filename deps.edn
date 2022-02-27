@@ -124,7 +124,6 @@
                          io.lambdaforge/datalog-parser {:mvn/version "0.1.9"}
                          clj-stacktrace/clj-stacktrace {:mvn/version "0.2.8"}
                          clojure-msgpack/clojure-msgpack {:mvn/version "1.2.1"}
-                         cli-matic {:git/url "https://github.com/l3nz/cli-matic.git", :git/sha "9cd53ba7336363e3d06650dbad413b6f8b06e471"}
                          cli-matic/cli-matic {:git/url "https://github.com/l3nz/cli-matic.git", :git/sha "9cd53ba7336363e3d06650dbad413b6f8b06e471"}}
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil}}

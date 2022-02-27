@@ -80,7 +80,7 @@
         fix-lines test-utils/normalize]
     (testing "shell test"
       (test-utils/with-config {:tasks {'foo (list 'shell {:out out}
-                                              echo-cmd "hello")}}
+                                                  echo-cmd "hello")}}
         (bb "foo")
         (is (= "hello\n" (fix-lines (slurp out))))))
     (fs/delete out)
@@ -89,30 +89,30 @@
                                                                     :err      out
                                                                     :continue '(fn [proc]
                                                                                  (contains? proc :exit))}
-                                                        ls-cmd "foobar")
-                                              :exit)}}
+                                                            ls-cmd "foobar")
+                                                  :exit)}}
         (is (pos? (bb "run" "--prn" "foo")))))
     (testing "shell test with :error"
       (test-utils/with-config
         {:tasks {'foo (list '-> (list 'shell {:out      out
                                               :err      out
                                               :error-fn '(constantly 1337)}
-                                  ls-cmd "foobar"))}}
+                                      ls-cmd "foobar"))}}
         (is (= 1337 (bb "run" "--prn" "foo"))))
       (test-utils/with-config
         {:tasks {'foo (list '-> (list 'shell {:out out
                                               :err out
                                               :error-fn
-                                                   '(fn [opts]
-                                                      (and (:task opts)
-                                                        (:proc opts)
-                                                        (not (zero? (:exit (:proc opts))))))}
-                                  ls-cmd "foobar"))}}
+                                              '(fn [opts]
+                                                 (and (:task opts)
+                                                      (:proc opts)
+                                                      (not (zero? (:exit (:proc opts))))))}
+                                      ls-cmd "foobar"))}}
         (is (true? (bb "run" "--prn" "foo")))))
     (fs/delete out)
     (testing "clojure test"
       (test-utils/with-config {:tasks {'foo (list 'clojure {:out out}
-                                              "-M -e" "(println :yolo)")}}
+                                                  "-M -e" "(println :yolo)")}}
         (bb "foo")
         (is (= ":yolo\n" (fix-lines (slurp out))))))
     (fs/delete out)
@@ -179,27 +179,27 @@
   (testing "no such task"
     (test-utils/with-config '{:tasks {a (+ 1 2 3)}}
       (is (thrown-with-msg?
-            Exception #"No such task: b"
-            (bb "run" "b")))))
+           Exception #"No such task: b"
+           (bb "run" "b")))))
   (testing "unresolved dependency"
     (test-utils/with-config '{:tasks {a (+ 1 2 3)
                                       b {:depends [x]
                                          :task    (+ a 4 5 6)}}}
       (is (thrown-with-msg?
-            Exception #"No such task: x"
-            (bb "run" "b")))))
+           Exception #"No such task: x"
+           (bb "run" "b")))))
   (testing "cyclic task"
     (test-utils/with-config '{:tasks {b {:depends [b]
                                          :task    (+ a 4 5 6)}}}
       (is (thrown-with-msg?
-            Exception #"Cyclic task: b"
-            (bb "run" "b"))))
+           Exception #"Cyclic task: b"
+           (bb "run" "b"))))
     (test-utils/with-config '{:tasks {c {:depends [b]}
                                       b {:depends [c]
                                          :task    (+ a 4 5 6)}}}
       (is (thrown-with-msg?
-            Exception #"Cyclic task: b"
-            (bb "run" "b")))))
+           Exception #"Cyclic task: b"
+           (bb "run" "b")))))
   (testing "doc"
     (test-utils/with-config '{:tasks {b {:doc "Beautiful docstring"}}}
       (let [s (test-utils/bb nil "doc" "b")]
@@ -232,7 +232,7 @@
                                               (throw (ex-info "0 noes" {})))
                                         c {:depends [a b]}}}
         (is (thrown-with-msg? Exception #"0 noes"
-              (bb "run" "--parallel" "c")))))
+                              (bb "run" "--parallel" "c")))))
     (testing "edge case"
       (test-utils/with-config '{:tasks
                                 {a   (run '-a {:parallel true})
@@ -265,7 +265,7 @@
                                                    *server* server]
                                            (babashka.tasks/run 'server)))}}
       (is (= '([8 :foo] [8 :bar] [11 :foo] [11 :bar] [15 :foo] [15 :bar])
-            (bb "run" "--prn" "run-all")))))
+             (bb "run" "--prn" "run-all")))))
   ;; TODO: disabled because of " Volume in drive C has no label.\r\n Volume Serial Number is 1CB8-D4AA\r\n\r\n Directory of C:\\projects\\babashka\r\n\r\n" on Appveyor. See https://ci.appveyor.com/project/borkdude/babashka/builds/40003094.
   (testing "shell test with :continue"
     (let [ls-cmd  (if main/windows? "cmd /c dir" "ls")]
@@ -278,22 +278,22 @@
 (deftest ^:skip-windows unix-task-test
   (testing "shell pipe test"
     (test-utils/with-config '{:tasks {a (-> (shell {:out :string}
-                                              "echo hello")
-                                          (shell {:out :string} "cat")
-                                          :out)}}
+                                                   "echo hello")
+                                            (shell {:out :string} "cat")
+                                            :out)}}
       (let [s (bb "run" "--prn" "a")]
         (is (= "hello\n" s))))))
 
 (deftest ^:windows-only win-task-test
   (when main/windows?
     (testing "shell pipe test"
-      ; this task prints the contents of deps.edn
+                                        ; this task prints the contents of deps.edn
       (test-utils/with-config '{:tasks {a (->> (shell {:out :string}
-                                                 "cmd /c echo deps.edn")
-                                            :out
-                                            clojure.string/trim-newline
-                                            (shell {:out :string} "cmd /c type")
-                                            :out)}}
+                                                      "cmd /c echo deps.edn")
+                                               :out
+                                               clojure.string/trim-newline
+                                               (shell {:out :string} "cmd /c type")
+                                               :out)}}
         (let [s (bb "run" "--prn" "a")]
           (is (str/includes? s "paths")))))))
 
@@ -373,3 +373,46 @@ even more stuff here\"
       (testing "bb.edn without :deps should not require deps.clj"
         (test-utils/with-config '{:tasks {a 1}}
           (bb "-e" "(+ 1 2 3)"))))))
+
+(deftest deps-race-condition-test
+  (test-utils/with-config
+    (pr-str '{:tasks {task-b (do
+                               (Thread/sleep 10)
+                               :task00-out)
+                      task-c {:depends [task-b]
+                              :task (do
+                                      (println
+                                       "task-b: "
+                                       (type task-b))
+                                      {})}
+                      task-a {:task (do
+                                      (Thread/sleep 10)
+                                      :task0-out)}
+                      task-e {:depends [task-e1] :task {}}
+                      task-e2 {:depends [task-a] :task {}}
+                      task-e3 {:depends [task-b] :task {}}
+                      task-e1 {:depends [task-e2 task-e3]
+                               :task {}}
+                      task-h {:depends [task-a task-b]
+                              :task {}}
+                      task-d {:task (do (Thread/sleep 2) {})}
+                      task-f {:depends [task-d task-e task-a]
+                              :task {}}
+                      task-g {:depends [task-f
+                                        task-d
+                                        task-a
+                                        task-c
+                                        task-h]
+                              :task {}}}})
+    (time (dotimes [_ 50]
+            (is (str/includes? (test-utils/bb nil "run" "--parallel" "task-g")
+                               "task-b:  clojure.lang.Keyword"))))))
+
+(deftest parallel-nil-results-test
+  (test-utils/with-config
+    (pr-str '{:tasks {a (do nil)
+                      b (do nil)
+                      c (do nil)
+                      d {:depends [a b c]
+                         :task (prn [a b c])}}})
+    (is (= [nil nil nil] (bb "run" "--parallel" "d")))))
