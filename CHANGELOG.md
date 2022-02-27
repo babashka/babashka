@@ -2,6 +2,12 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
+## Unreleased
+
+### Enhancements
+
+- [#1190](https://github.com/babashka/babashka/issues/1190): task dependencies resolve as core.async channels
+
 ## 0.7.6 (2022-02-24)
 
 Please leave some feedback about babashka in the [2022 Q1 Survey](https://forms.gle/ko3NjDg2SwXeEoNQ9)!
