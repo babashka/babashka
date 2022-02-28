@@ -212,7 +212,7 @@ $ bb -e "(require '[lambdaisland.regal :as regal]) (regal/regex [:* \"ab\"])"
 
 ### [cprop](https://github.com/tolitius/cprop/)
 
-A clojure configuration libary. Latest test version: `"0.1.16"`.
+A clojure configuration library. Latest test version: `"0.1.16"`.
 
 ### [comb](https://github.com/weavejester/comb)
 
