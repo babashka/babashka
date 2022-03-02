@@ -13,7 +13,9 @@
 </blockquote>
 
 <hr>
+
 Please leave some feedback about babashka in the [Q1 Survey](https://forms.gle/ko3NjDg2SwXeEoNQ9)!
+
 <hr>
 
 ## Introduction
