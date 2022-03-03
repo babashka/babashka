@@ -296,7 +296,7 @@
           java.sql.Date
           java.text.ParseException
           ;; adds about 200kb, same functionality provided by java.time:
-          ;; java.text.SimpleDateFormat
+          java.text.SimpleDateFormat
           ~@(when features/java-time?
               `[java.time.format.DateTimeFormatter
                 java.time.Clock
@@ -336,6 +336,8 @@
                 java.time.temporal.TemporalAdjuster])
           java.util.concurrent.ExecutionException
           java.util.concurrent.LinkedBlockingQueue
+          java.util.concurrent.ScheduledThreadPoolExecutor
+          java.util.concurrent.ThreadPoolExecutor
           java.util.jar.Attributes$Name
           java.util.jar.JarFile
           java.util.jar.JarEntry
