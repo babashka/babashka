@@ -2,15 +2,25 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
+A preview of the next release can be installed from
+[babashka-dev-builds](https://github.com/babashka/babashka-dev-builds).
+
 ## Unreleased
 
 ### New
 
 - [#1187](https://github.com/babashka/babashka/issues/1187) tasks: Add `:result` key to `(current-task)` map that can be used in `:leave` task hook
+- [#1192](https://github.com/babashka/babashka/issues/1192): expose `*assert*`
+- Add `clojure.instant/parse-timestamp`
+- Compatibility with [at-at](https://github.com/overtone/at-at) by adding:
+  - `java.text.SimpleDateFormat`
+  - `java.util.concurrent.ThreadPoolExecutor`
+  - `java.util.concurrent.ScheduledThreadPoolExecutor`
 
 ### Enhancements
 
 - [#1190](https://github.com/babashka/babashka/issues/1190) tasks: task dependencies resolve as core.async channels
+- Bump tools deps jar to `1.10.3.1087`
 
 ## 0.7.6 (2022-02-24)
 
