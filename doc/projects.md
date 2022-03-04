@@ -798,6 +798,10 @@ Macros for defining monads, and definition of the most common monads.
 
 Datalog parser that is compliant with datomic, datascript and datahike.
 
+### [at-at](https://github.com/overtone/at-at)
+
+Ahead-of-time function scheduler. Compatible with babashka 0.7.7+.
+
 ## Pods
 
 [Babashka pods](https://github.com/babashka/babashka.pods) are programs that can
