@@ -5,7 +5,7 @@ For a list of breaking changes, check [here](#breaking-changes).
 A preview of the next release can be installed from
 [babashka-dev-builds](https://github.com/babashka/babashka-dev-builds).
 
-## Unreleased
+## 0.7.7 (2022-03-04)
 
 ### New
 
