@@ -34,6 +34,9 @@
 (def print-pprint-dispatch
   (sci/new-dynamic-var '*print-pprint-dispatch* pprint/*print-pprint-dispatch* {:ns pprint-ns}))
 
+(def print-miser-width
+  (sci/new-dynamic-var '*print-miser-width* pprint/*print-miser-width* {:ns pprint-ns}))
+
 (def new-write
   (fn [object & kw-args]
     (let [options (merge {:stream true} (apply hash-map kw-args))]
@@ -90,6 +93,7 @@
   ([s writer]
    (binding [pprint/*print-right-margin* @print-right-margin
              pprint/*print-pprint-dispatch* @print-pprint-dispatch
+             pprint/*print-miser-width* @print-miser-width
              *print-meta* @sci/print-meta
              *print-readably* @sci/print-readably]
      (pprint/pprint s writer))))
@@ -129,6 +133,37 @@ http://www.lispworks.com/documentation/HyperSpec/Body/22_c.htm
   (sci/binding [sci/out *out*]
     (apply #'pprint/execute-format args)))
 
+(defn get-pretty-writer
+   "Returns the java.io.Writer passed in wrapped in a pretty writer proxy, unless it's 
+already a pretty writer. Generally, it is unnecessary to call this function, since pprint,
+write, and cl-format all call it if they need to. However if you want the state to be 
+preserved across calls, you will want to wrap them with this. 
+For example, when you want to generate column-aware output with multiple calls to cl-format, 
+do it like in this example:
+    (defn print-table [aseq column-width]
+      (binding [*out* (get-pretty-writer *out*)]
+        (doseq [row aseq]
+          (doseq [col row]
+            (cl-format true \"~4D~7,vT\" col column-width))
+          (prn))))
+Now when you run:
+    user> (print-table (map #(vector % (* % %) (* % % %)) (range 1 11)) 8)
+It prints a table of squares and cubes for the numbers from 1 to 10:
+       1      1       1    
+       2      4       8    
+       3      9      27    
+       4     16      64    
+       5     25     125    
+       6     36     216    
+       7     49     343    
+       8     64     512    
+       9     81     729    
+      10    100    1000"
+  [writer]
+  (binding [pprint/*print-right-margin* @print-right-margin
+            pprint/*print-miser-width* @print-miser-width]
+    (pprint/get-pretty-writer writer)))
+
 (def pprint-namespace
   {'pp (sci/copy-var pprint/pp pprint-ns)
    'pprint (sci/copy-var pprint pprint-ns)
@@ -144,6 +179,7 @@ http://www.lispworks.com/documentation/HyperSpec/Body/22_c.htm
    'execute-format (sci/copy-var execute-format pprint-ns)
    'with-pprint-dispatch (sci/copy-var pprint/with-pprint-dispatch pprint-ns)
    '*print-pprint-dispatch* print-pprint-dispatch
-   })
+   '*print-miser-width* print-miser-width
+   'get-pretty-writer (sci/copy-var get-pretty-writer pprint-ns)})
 
 (vreset! patched? true)
