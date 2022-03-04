@@ -16,6 +16,7 @@ A preview of the next release can be installed from
   - `java.text.SimpleDateFormat`
   - `java.util.concurrent.ThreadPoolExecutor`
   - `java.util.concurrent.ScheduledThreadPoolExecutor`
+- Add `pprint/get-pretty-writer`
 
 ### Enhancements
 
