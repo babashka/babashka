@@ -54,7 +54,8 @@
    [sci.impl.namespaces :as sci-namespaces]
    [sci.impl.types :as sci-types]
    [sci.impl.unrestrict :refer [*unrestricted*]]
-   [sci.impl.vars :as vars])
+   [sci.impl.vars :as vars]
+   [sci.impl.io :as sio])
   (:gen-class))
 
 (def windows?
@@ -876,13 +877,13 @@ Use bb run --help to show this help output.
                                                          (or (not run)
                                                              (:prn cli-opts)))
                                                 (if-let [pr-f (cond shell-out println
-                                                                    edn-out prn)]
+                                                                    edn-out sio/prn)]
                                                   (if (sequential? res)
                                                     (doseq [l res
                                                             :while (not (pipe-signal-received?))]
                                                       (pr-f l))
                                                     (pr-f res))
-                                                  (prn res)))) 0]]
+                                                  (sio/prn res)))) 0]]
                                    (if stream?
                                      (recur)
                                      res)))))
