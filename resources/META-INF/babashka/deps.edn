@@ -14,20 +14,20 @@
          "depstar/src" "process/src"
          "deps.clj/src" "deps.clj/resources"
          "resources" "sci/resources"],
- :deps {org.clojure/clojure {:mvn/version "1.11.0-alpha3"},
+ :deps {org.clojure/clojure {:mvn/version "1.11.0-beta1"},
         borkdude/sci {:local/root "sci"}
         babashka/babashka.curl {:local/root "babashka.curl"}
         babashka/fs {:local/root "fs"}
         babashka/babashka.core {:local/root "babashka.core"}
         borkdude/graal.locking {:mvn/version "0.0.2"},
-        org.clojure/core.async {:mvn/version "1.4.627"},
+        org.clojure/core.async {:mvn/version "1.5.648"},
         org.clojure/tools.cli {:mvn/version "1.0.206"},
         org.clojure/data.csv {:mvn/version "1.0.0"},
-        cheshire/cheshire {:mvn/version "5.10.1"}
+        cheshire/cheshire {:mvn/version "5.10.2"}
         org.clojure/data.xml {:mvn/version "0.2.0-alpha6"}
-        clj-commons/clj-yaml {:mvn/version "0.7.107"}
-        com.cognitect/transit-clj {:mvn/version "1.0.324"}
-        org.clojure/test.check {:mvn/version "1.1.0"}
+        clj-commons/clj-yaml {:mvn/version "0.7.108"}
+        com.cognitect/transit-clj {:mvn/version "1.0.329"}
+        org.clojure/test.check {:mvn/version "1.1.1"}
         nrepl/bencode {:mvn/version "1.1.0"}
         seancorfield/next.jdbc {:mvn/version "1.1.610"}
         org.postgresql/postgresql {:mvn/version "42.2.18"}
@@ -114,7 +114,17 @@
                          clojure-term-colors/clojure-term-colors {:mvn/version "0.1.0"}
                          io.aviso/pretty {:mvn/version "1.1.1"}
                          progrock/progrock {:mvn/version "0.1.2"}
-                         djblue/portal {:mvn/version "0.19.0"}}
+                         djblue/portal {:mvn/version "0.19.0"}
+                         com.wsscode/cljc-misc {:mvn/version "2021.10.16"}
+                         edn-query-language/eql {:mvn/version "2021.07.18"}
+                         meta-merge/meta-merge {:mvn/version "1.0.0"}
+                         com.exoscale/lingo {:mvn/version "1.0.0-alpha14"}
+                         io.github.swirrl/dogstatsd {:mvn/version "0.1.39"}
+                         org.clojure/algo.monads {:mvn/version "0.1.6"}
+                         io.lambdaforge/datalog-parser {:mvn/version "0.1.9"}
+                         clj-stacktrace/clj-stacktrace {:mvn/version "0.2.8"}
+                         clojure-msgpack/clojure-msgpack {:mvn/version "1.2.1"}
+                         cli-matic/cli-matic {:git/url "https://github.com/l3nz/cli-matic.git", :git/sha "9cd53ba7336363e3d06650dbad413b6f8b06e471"}}
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil}}
            :clj-nvd

@@ -16,6 +16,7 @@
    [babashka.impl.clojure.java.io :refer [io-namespace]]
    [babashka.impl.clojure.java.shell :refer [shell-namespace]]
    [babashka.impl.clojure.main :as clojure-main :refer [demunge]]
+   [babashka.impl.clojure.math :refer [math-namespace]]
    [babashka.impl.clojure.stacktrace :refer [stacktrace-namespace]]
    [babashka.impl.clojure.tools.reader-types :refer [edn-namespace reader-types-namespace]]
    [babashka.impl.clojure.zip :refer [zip-namespace]]
@@ -52,9 +53,10 @@
    [sci.addons :as addons]
    [sci.core :as sci]
    [sci.impl.namespaces :as sci-namespaces]
+   [sci.impl.types :as sci-types]
    [sci.impl.unrestrict :refer [*unrestricted*]]
-   [sci.impl.utils :refer [ctx-fn]]
-   [sci.impl.vars :as vars])
+   [sci.impl.vars :as vars]
+   [sci.impl.io :as sio])
   (:gen-class))
 
 (def windows?
@@ -331,10 +333,10 @@ Use bb run --help to show this help output.
 
 (def namespaces
   (cond->
-      {'user {'*input* (ctx-fn
-                        (fn [_ctx _bindings]
-                          (force @input-var))
-                        nil)}
+      {'user {'*input* (reify
+                         sci-types/Eval
+                         (eval [_ _ctx _bindings]
+                           (force @input-var)))}
        'clojure.tools.cli tools-cli-namespace
        'clojure.java.shell shell-namespace
        'babashka.core bbcore/core-namespace
@@ -354,6 +356,7 @@ Use bb run --help to show this help output.
                                            (let [opts (apply hash-map opts)]
                                              (repl/start-repl! @common/ctx opts))) {:ns clojure-main-ns})}
        'clojure.test t/clojure-test-namespace
+       'clojure.math math-namespace
        'babashka.classpath classpath-namespace
        'clojure.pprint pprint-namespace
        'babashka.curl curl-namespace
@@ -386,7 +389,8 @@ Use bb run --help to show this help output.
                           'next.jdbc.result-set @(resolve 'babashka.impl.jdbc/result-set-namespace))
     features/csv?  (assoc 'clojure.data.csv @(resolve 'babashka.impl.csv/csv-namespace))
     features/transit? (assoc 'cognitect.transit @(resolve 'babashka.impl.transit/transit-namespace))
-    features/datascript? (assoc 'datascript.core @(resolve 'babashka.impl.datascript/datascript-namespace))
+    features/datascript? (assoc 'datascript.core @(resolve 'babashka.impl.datascript/datascript-namespace)
+                                'datascript.db @(resolve 'babashka.impl.datascript/datascript-db-namespace))
     features/httpkit-client? (assoc 'org.httpkit.client @(resolve 'babashka.impl.httpkit-client/httpkit-client-namespace)
                                     'org.httpkit.sni-client @(resolve 'babashka.impl.httpkit-client/sni-client-namespace))
     features/httpkit-server? (assoc 'org.httpkit.server @(resolve 'babashka.impl.httpkit-server/httpkit-server-namespace))
@@ -876,13 +880,13 @@ Use bb run --help to show this help output.
                                                          (or (not run)
                                                              (:prn cli-opts)))
                                                 (if-let [pr-f (cond shell-out println
-                                                                    edn-out prn)]
+                                                                    edn-out sio/prn)]
                                                   (if (sequential? res)
                                                     (doseq [l res
                                                             :while (not (pipe-signal-received?))]
                                                       (pr-f l))
                                                     (pr-f res))
-                                                  (prn res)))) 0]]
+                                                  (sio/prn res)))) 0]]
                                    (if stream?
                                      (recur)
                                      res)))))

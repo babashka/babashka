@@ -208,9 +208,6 @@ Location: <expr>:1:12
 1: (let [x 1] (/ x 0))
               ^--- Divide by zero
 
------ Locals -------------------------------------------------------------------
-x: 1
-
 ----- Stack trace --------------------------------------------------------------
 clojure.core// - <built-in>
 user           - <expr>:1:12
@@ -219,13 +216,13 @@ user           - <expr>:1:12
 clojure.lang.ExceptionInfo: Divide by zero
 {:type :sci/error, :line 1, :column 12, :message \"Divide by zero\",")))))
 
-(deftest macro-locals-print-test
-  (testing "exception during macro call includes &form and &env locals"
-    (let [output (try (tu/bb nil "--debug" "(defmacro foo [x] (subs nil 1) `(do ~x ~x)) (foo 1)")
-                      (is false)
-                      (catch Exception e (ex-message e)))]
-      (is (str/includes? (tu/normalize output)
-            "----- Error --------------------------------------------------------------------
+(deftest macro-test
+  (let [output (try (tu/bb nil "--debug" "(defmacro foo [x] (subs nil 1) `(do ~x ~x)) (foo 1)")
+                    (is false)
+                    (catch Exception e (ex-message e)))
+        output (tu/normalize output)]
+    (is (str/includes? output
+                       "----- Error --------------------------------------------------------------------
 Type:     java.lang.NullPointerException
 Location: <expr>:1:19
 Phase:    macroexpand
@@ -233,11 +230,6 @@ Phase:    macroexpand
 ----- Context ------------------------------------------------------------------
 1: (defmacro foo [x] (subs nil 1) `(do ~x ~x)) (foo 1)
                      ^--- 
-
------ Locals -------------------------------------------------------------------
-&form: (foo 1)
-&env:  {}
-x:     1
 
 ----- Stack trace --------------------------------------------------------------
 clojure.core/subs - <built-in>
@@ -247,7 +239,7 @@ user              - <expr>:1:45
 
 ----- Exception ----------------------------------------------------------------
 clojure.lang.ExceptionInfo: null
-{:type :sci/error, :line 1, :column 19,")))))
+{:type :sci/error, :line 1, :column 19"))))
 
 (deftest native-stacktrace-test
   (let [output (try (tu/bb nil "(merge 1 2 3)")

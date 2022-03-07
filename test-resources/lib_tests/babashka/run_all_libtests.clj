@@ -2,7 +2,15 @@
   (:require [babashka.core :refer [windows?]]
             [clojure.edn :as edn]
             [clojure.java.io :as io]
-            [clojure.test :as t]))
+            [clojure.test :as t :refer [*report-counters*]]))
+
+(defmethod clojure.test/report :end-test-var [_m]
+  (when-let [rc *report-counters*]
+    (let [{:keys [:fail :error]} @rc]
+      (when (and (= "true" (System/getenv "BABASHKA_FAIL_FAST"))
+                 (or (pos? fail) (pos? error)))
+        (println "=== Failing fast")
+        (System/exit 1)))))
 
 (def ns-args (set (map symbol *command-line-args*)))
 
@@ -12,11 +20,21 @@
   (or (empty? ns-args)
       (contains? ns-args ns)))
 
+(defn- filter-vars!
+  [ns filter-fn]
+  (doseq [[_name var] (ns-publics ns)]
+    (when (:test (meta var))
+      (when (not (filter-fn var))
+        (alter-meta! var #(-> %
+                              (assoc ::test (:test %))
+                              (dissoc :test)))))))
+
 (defn test-namespaces [& namespaces]
   (let [namespaces (seq (filter test-namespace? namespaces))]
     (when (seq namespaces)
       (doseq [n namespaces]
-        (require n))
+        (require n)
+        (filter-vars! (find-ns n) #(-> % meta :skip-bb not)))
       (let [m (apply t/run-tests namespaces)]
         (swap! status (fn [status]
                         (merge-with + status (dissoc m :type))))))))

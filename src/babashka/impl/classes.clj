@@ -80,6 +80,9 @@
     {:methods [{:name "canAccess"}]}
     java.lang.reflect.Method
     {:methods [{:name "getName"}]}
+    java.lang.reflect.Array
+    {:methods [{:name "newInstance"}
+               {:name "set"}]}
     java.net.Inet4Address
     {:methods [{:name "getHostAddress"}]}
     java.net.Inet6Address
@@ -119,6 +122,10 @@
           java.io.ByteArrayOutputStream
           java.io.Closeable
           java.io.Console
+          java.io.DataInput
+          java.io.DataInputStream
+          java.io.DataOutput
+          java.io.DataOutputStream
           java.io.File
           java.io.FileFilter
           java.io.FilenameFilter
@@ -289,7 +296,7 @@
           java.sql.Date
           java.text.ParseException
           ;; adds about 200kb, same functionality provided by java.time:
-          ;; java.text.SimpleDateFormat
+          java.text.SimpleDateFormat
           ~@(when features/java-time?
               `[java.time.format.DateTimeFormatter
                 java.time.Clock
@@ -329,6 +336,8 @@
                 java.time.temporal.TemporalAdjuster])
           java.util.concurrent.ExecutionException
           java.util.concurrent.LinkedBlockingQueue
+          java.util.concurrent.ScheduledThreadPoolExecutor
+          java.util.concurrent.ThreadPoolExecutor
           java.util.jar.Attributes$Name
           java.util.jar.JarFile
           java.util.jar.JarEntry
@@ -377,6 +386,16 @@
           ~(symbol "[I")
           ~(symbol "[Ljava.lang.Object;")
           ~(symbol "[Ljava.lang.Double;")
+          ~@(when features/datascript?
+              `[me.tonsky.persistent_sorted_set.PersistentSortedSet
+                datascript.db.DB
+                datascript.db.Datom
+                ~(symbol "[Lclojure.lang.Keyword;")
+                ~(symbol "[Lclojure.lang.PersistentArrayMap;")
+                ~(symbol "[Lclojure.lang.PersistentVector;")
+                ~(symbol "[Lclojure.lang.PersistentHashSet;")
+                ~(symbol "[Ljava.util.regex.Pattern;")
+                ~(symbol "[Lclojure.core$range;")])
           ~@(when features/yaml? '[org.yaml.snakeyaml.error.YAMLException])
           ~@(when features/hsqldb? '[org.hsqldb.jdbcDriver])]
     :constructors [clojure.lang.Delay

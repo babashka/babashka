@@ -17,15 +17,15 @@
   :resource-paths ["resources" "sci/resources"]
   :test-selectors {:default (complement :windows-only)
                    :windows (complement :skip-windows)}
-  :dependencies [[org.clojure/clojure "1.11.0-alpha3"]
+  :dependencies [[org.clojure/clojure "1.11.0-beta1"]
                  [borkdude/edamame "0.0.19"]
                  [borkdude/graal.locking "0.0.2"]
                  [org.clojure/tools.cli "1.0.206"]
-                 [cheshire "5.10.1"]
+                 [cheshire "5.10.2"]
                  [nrepl/bencode "1.1.0"]
                  [borkdude/sci.impl.reflector "0.0.1"]
-                 [org.clojure/core.async "1.4.627"]
-                 [org.clojure/test.check "1.1.0"]
+                 [org.clojure/core.async "1.5.648"]
+                 [org.clojure/test.check "1.1.1"]
                  [com.github.clj-easy/graal-build-time "0.1.0"]
                  [rewrite-clj/rewrite-clj "1.0.699-alpha"]]
   :plugins       [[org.kipz/lein-meta-bom "0.1.1"]]
@@ -33,7 +33,7 @@
   :profiles {:feature/xml  {:source-paths ["feature-xml"]
                             :dependencies [[org.clojure/data.xml "0.2.0-alpha6"]]}
              :feature/yaml {:source-paths ["feature-yaml"]
-                            :dependencies [[clj-commons/clj-yaml "0.7.107"]]}
+                            :dependencies [[clj-commons/clj-yaml "0.7.108"]]}
              :feature/jdbc {:source-paths ["feature-jdbc"]
                             :dependencies [[seancorfield/next.jdbc "1.1.610"]]}
              :feature/sqlite [:feature/jdbc {:dependencies [[org.xerial/sqlite-jdbc "3.36.0.3"]]}]
@@ -44,9 +44,9 @@
              :feature/csv {:source-paths ["feature-csv"]
                            :dependencies [[org.clojure/data.csv "1.0.0"]]}
              :feature/transit {:source-paths ["feature-transit"]
-                               :dependencies [[com.cognitect/transit-clj "1.0.324"]]}
+                               :dependencies [[com.cognitect/transit-clj "1.0.329"]]}
              :feature/datascript {:source-paths ["feature-datascript"]
-                                  :dependencies [[datascript "1.0.1"]]}
+                                  :dependencies [[datascript "1.3.10"]]}
              :feature/httpkit-client {:source-paths ["feature-httpkit-client"]
                                       :dependencies [[http-kit "2.5.3"]]}
              :feature/httpkit-server {:source-paths ["feature-httpkit-server"]

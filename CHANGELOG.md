@@ -2,11 +2,73 @@
 
 For a list of breaking changes, check [here](#breaking-changes).
 
-## Unreleased
+A preview of the next release can be installed from
+[babashka-dev-builds](https://github.com/babashka/babashka-dev-builds).
 
-- Add metabom jar to docker images [#1133](https://github.com/babashka/babashka/issues/1133)
-- Add opencontainers annoations to docker image [#1134](https://github.com/babashka/babashka/issues/1134)
-- Fix Alpine Linux Docker images in CI script [#1140](https://github.com/babashka/babashka/issues/1140)
+## 0.7.7 (2022-03-04)
+
+### New
+
+- [#1187](https://github.com/babashka/babashka/issues/1187) tasks: Add `:result` key to `(current-task)` map that can be used in `:leave` task hook
+- [#1192](https://github.com/babashka/babashka/issues/1192): expose `*assert*`
+- Add `clojure.instant/parse-timestamp`
+- Compatibility with [at-at](https://github.com/overtone/at-at) by adding:
+  - `java.text.SimpleDateFormat`
+  - `java.util.concurrent.ThreadPoolExecutor`
+  - `java.util.concurrent.ScheduledThreadPoolExecutor`
+- Add `pprint/get-pretty-writer`
+
+### Enhancements
+
+- [#1190](https://github.com/babashka/babashka/issues/1190) tasks: task dependencies resolve as core.async channels
+- Bump tools deps jar to `1.10.3.1087`
+
+## 0.7.6 (2022-02-24)
+
+Please leave some feedback about babashka in the [2022 Q1 Survey](https://forms.gle/ko3NjDg2SwXeEoNQ9)!
+
+- SCI performance improvements
+- Bump clj-yaml to 0.7.1.108
+- [#1181](https://github.com/babashka/babashka/issues/1181): clojure.test report does not respect *test-out* correctly
+- [#1180](https://github.com/babashka/babashka/issues/1180): limit bb tasks output to first line of docstring
+- babashka.process: support appending to `:out` file
+- babashka.fs: add `create-temp-file`, `read-attributes*`, `zip`
+
+## 0.7.5 (2022-02-16)
+
+Please leave some feedback about babashka in the [2022 Q1 Survey](https://forms.gle/ko3NjDg2SwXeEoNQ9)!
+
+- SCI: Performance improvements for loops and varargs function invocation.
+- Fix [#1170](https://github.com/babashka/babashka/issues/1170): `defmacro` with a `defrecord` inside fails to resolve classname in protocol implementation.
+- Bump deps.clj to tools jar `1.10.3.1082`.
+- Upgrade to GraalVM 22.0.0.2.
+- Add `halt-when`.
+- Add `java.io.Data` classes
+- Add compatibility with [clojure-msgpack](https://github.com/edma2/clojure-msgpack)
+- Upgrade to clojure 11 beta1
+- Bump transit to 1.0.329
+
+## 0.7.4 (2022-01-25)
+
+Please leave some feedback about babashka [here](https://forms.gle/ko3NjDg2SwXeEoNQ9).
+
+- Add new namespace from clojure 1.11: `clojure.math`
+- Add new vars from clojure 1.11: `abs`, `iteration`
+- Add compatibility with `org.clojure/algo.monads`
+- SCI: support `:as-alias`
+- SCI: add `pop!` ([@kbaba1001](https://github.com/kbaba1001))
+- `deps.clj`: update to clojure CLI 1.10.3.1058
+- Add metabom jar to docker images [#1133](https://github.com/babashka/babashka/issues/1133) ([@kipz](https://github.com/kipz), [@lispyclouds](https://github.com/lispyclouds))
+- Add opencontainers annotations to docker image [#1134](https://github.com/babashka/babashka/issues/1134) ([@kipz](https://github.com/kipz), [@lispyclouds](https://github.com/lispyclouds))
+- Fix Alpine Linux Docker images in CI script [#1140](https://github.com/babashka/babashka/issues/1140) ([@kipz](https://github.com/kipz), [@lispyclouds](https://github.com/lispyclouds))
+- `babashka.fs`: create dirs in `copy-tree` ([@duzunov](https://github.com/duzunov))
+- SCI: fix order of metadata evaluation ([@erdos](https://github.com/erdos))
+- Fix: cannot take value of macro of `->`
+- Fix [#1144](https://github.com/babashka/babashka/issues/1144): cannot create multidimensional arrays
+- Fix [#1143](https://github.com/babashka/babashka/issues/1143): allow optional (ignored) `--` when using using `--main` ([@grzm](https://github.com/grzm))
+- SCI: throw when `recur` is used from non-tail position
+- Add more libraries to CI lib tests ([@cljwalker](https://github.com/cljwalker))
+- Upgrade several built-in deps: `org.clojure/clojure`, `cheshire`, `core.async`, `test.check`
 
 ## 0.7.3 (2021-12-30)
 

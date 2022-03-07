@@ -273,13 +273,13 @@
 
 (def testing-contexts (sci/new-dynamic-var '*testing-contexts* (list) {:ns tns})) ; bound to hierarchy of "testing" strings
 
-(def test-out (sci/new-dynamic-var '*test-out* sci/out {:ns tns}))         ; PrintWriter for test reporting output
+(def test-out (sci/new-dynamic-var '*test-out* *out* {:ns tns}))         ; PrintWriter for test reporting output
 
 (defmacro with-test-out-internal
   "Runs body with *out* bound to the value of *test-out*."
   {:added "1.1"}
   [& body]
-  `(sci/binding [sci/out @test-out]
+  `(binding [*out* @test-out]
      ~@body))
 
 (defmacro with-test-out

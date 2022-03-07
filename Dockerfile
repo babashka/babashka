@@ -5,7 +5,7 @@ RUN apt update
 RUN apt install --no-install-recommends -yy build-essential zlib1g-dev
 WORKDIR "/opt"
 
-ENV GRAALVM_VERSION="21.3.0"
+ENV GRAALVM_VERSION="22.0.0.2"
 ARG TARGETARCH
 ENV BABASHKA_ARCH=${TARGETARCH}
 ENV GRAALVM_ARCH=${TARGETARCH}

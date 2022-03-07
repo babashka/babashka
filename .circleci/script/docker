@@ -49,7 +49,7 @@ if [ -z "$CIRCLE_PULL_REQUEST" ] && [ "$CIRCLE_BRANCH" = "master" ]; then
     tar zxvf  "/tmp/release/babashka-${image_tag}-linux-amd64-static.tar.gz"
     echo "Building & pushing Docker image $image_name:$image_tag-alpine"
     docker buildx build -t "$image_name:$image_tag-alpine" --platform=linux/amd64 "${label_args[@]}" --push -f Dockerfile.alpine .
-    rm -f bb
+
     if [[ $snapshot == "false" ]]; then
         echo "Building & pushing Docker image $image_name:alpine"
         docker buildx build -t "$image_name:alpine" --platform=linux/amd64 "${label_args[@]}" --push -f Dockerfile.alpine .

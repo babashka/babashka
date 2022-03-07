@@ -347,10 +347,9 @@
                                        {:ujoin {:u1 [:x] :u2 [:y]}}])]
       (is (= {:type     :root,
               :children [{:type :prop, :dispatch-key :x, :key :x}
-                         ;; BB-TEST-PATCH: bb returns {} for some meta calls that clojure doesn't
-                         {:type :join, :dispatch-key :y, :key :y, :query [{:z [:a]}] :meta {}}
-                         {:type :join, :dispatch-key :table, :key [:table 1], :query [:z {:other [:m :n]}] :meta {}}
-                         {:type :join, :dispatch-key :ujoin, :key :ujoin, :query {:u1 [:x], :u2 [:y]} :meta {}}]}
+                         {:type :join, :dispatch-key :y, :key :y, :query [{:z [:a]}]}
+                         {:type :join, :dispatch-key :table, :key [:table 1], :query [:z {:other [:m :n]}]}
+                         {:type :join, :dispatch-key :ujoin, :key :ujoin, :query {:u1 [:x], :u2 [:y]}}]}
             ast)))))
 
 

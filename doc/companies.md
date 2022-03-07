@@ -38,6 +38,10 @@ Sponsoring via [Cognitect](https://www.cognitect.com/).
 
 <img src="https://uploads-ssl.webflow.com/600fdbbcf0cbfe02f1a48030/600fdf0fffe881c3e8e298f4_Fluent%20logotype-p-500.png" width="300">
 
+### [180seg](https://www.180s.com.br)
+
+<img src="https://avatars.githubusercontent.com/u/75583439?s=200&v=4">
+
 ### [Dr. Evidence](https://www.drevidence.com/)
 
 <img src="https://user-images.githubusercontent.com/284934/138914250-f447ca3d-c1c1-4c60-bfaf-9000541d4a0d.png" width="325">

@@ -12,6 +12,12 @@
     <a href="https://github.com/laheadle">@laheadle</a> on Clojurians Slack
 </blockquote>
 
+<hr>
+
+Please leave some feedback about babashka in the [Q1 Survey](https://forms.gle/ko3NjDg2SwXeEoNQ9)!
+
+<hr>
+
 ## Introduction
 
 Babashka is a native Clojure interpreter for scripting with fast startup. Its
@@ -146,6 +152,11 @@ Linux and macOS binaries are provided via brew.
 Install:
 
     brew install borkdude/brew/babashka
+
+On macOS with an M1 processor:
+
+    softwareupdate --install-rosetta
+    arch -x86_64 brew install borkdude/brew/babashka
 
 Upgrade:
 

@@ -127,7 +127,7 @@
     (is (= "localhost" (bb "#ordered/map ([:test \"localhost\"])"
                            "(:test *input*)"))))
   (testing "bb doesn't wait for input if *input* isn't used"
-    (is (= "2\n" (test-utils/normalize (with-out-str (main/main "(inc 1)")))))))
+    (is (= "2\n" (test-utils/normalize (sci/with-out-str (main/main "(inc 1)")))))))
 
 (deftest println-test
   (is (= "hello\n" (test-utils/bb nil "(println \"hello\")"))))

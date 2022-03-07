@@ -59,6 +59,7 @@ The following libraries and projects are known to work with babashka.
     - [specmonstah](#specmonstah)
     - [markdown-clj](#markdown-clj)
     - [algo.monads](#algomonads)
+    - [datalog-parser](#datalog-parser)
   - [Pods](#pods)
   - [Projects](#projects-1)
     - [babashka-test-action](#babashka-test-action)
@@ -211,7 +212,7 @@ $ bb -e "(require '[lambdaisland.regal :as regal]) (regal/regex [:* \"ab\"])"
 
 ### [cprop](https://github.com/tolitius/cprop/)
 
-A clojure configuration libary. Latest test version: `"0.1.16"`.
+A clojure configuration library. Latest test version: `"0.1.16"`.
 
 ### [comb](https://github.com/weavejester/comb)
 
@@ -792,6 +793,14 @@ Markdown parser that translates markdown to html.
 ### [algo.monads](https://github.com/clojure/algo.monads)
 
 Macros for defining monads, and definition of the most common monads.
+
+### [datalog-parser](https://github.com/lambdaforge/datalog-parser)
+
+Datalog parser that is compliant with datomic, datascript and datahike.
+
+### [at-at](https://github.com/overtone/at-at)
+
+Ahead-of-time function scheduler. Compatible with babashka 0.7.7+.
 
 ## Pods
 
