@@ -158,6 +158,7 @@
           java.lang.Character
           java.lang.CharSequence
           java.lang.Class
+          java.lang.ClassCastException
           java.lang.ClassNotFoundException
           java.lang.Comparable
           java.lang.Double
@@ -410,7 +411,8 @@
     ;; classes: add the privage class here and the public class to the normal
     ;; list above and then everything reachable via the public class will be
     ;; visible in the native image.
-    :instance-checks [clojure.lang.AMapEntry ;; for proxy
+    :instance-checks [clojure.lang.AFn
+                      clojure.lang.AMapEntry ;; for proxy
                       clojure.lang.APersistentMap ;; for proxy
                       clojure.lang.APersistentSet
                       clojure.lang.AReference
@@ -440,6 +442,7 @@
                       clojure.lang.IKVReduce
                       clojure.lang.IRef
                       clojure.lang.ISeq
+                      clojure.lang.ITransientVector
                       clojure.lang.Indexed
                       clojure.lang.Iterate
                       clojure.lang.LazySeq
@@ -551,6 +554,7 @@
     Character java.lang.Character
     CharSequence java.lang.CharSequence
     Class java.lang.Class
+    ClassCastException java.lang.ClassCastException
     ClassNotFoundException java.lang.ClassNotFoundException
     Comparable java.lang.Comparable
     Double java.lang.Double
