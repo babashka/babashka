@@ -8,6 +8,19 @@
 (defn load-pod [& args]
   (apply pods/load-pod @ctx args))
 
+(defn load-pods [pods-map]
+  (dorun
+    (for [[name coord] pods-map]
+      (condp #(contains? %2 %1) coord
+        :registry/version
+        (load-pod name (:registry/version coord))
+
+        :local/root
+        (load-pod (:local/root coord))
+
+        :git/url
+        (throw (RuntimeException. "git pod coordinates not yet supported"))))))
+
 (def podns (sci/create-ns 'babashka.pods nil))
 
 (def pods-namespace

@@ -784,6 +784,9 @@ Use bb run --help to show this help output.
             opts (addons/future opts)
             sci-ctx (sci/init opts)
             _ (vreset! common/ctx sci-ctx)
+            pods (:pods @common/bb-edn)
+            _ (when pods
+                (pods/load-pods pods))
             preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim))
             [expressions exit-code]
             (cond expressions [expressions nil]
