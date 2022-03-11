@@ -933,6 +933,8 @@ Use bb run --help to show this help output.
         bb-edn-file (or config
                         "bb.edn")
         bb-edn (when (fs/exists? bb-edn-file)
+                 (System/setProperty "babashka.config"
+                                     (.getAbsolutePath (io/file bb-edn-file)))
                  (let [raw-string (slurp bb-edn-file)
                        edn (edn/read-string raw-string)
                        edn (assoc edn
