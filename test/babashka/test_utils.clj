@@ -48,6 +48,7 @@
   (reset! cp/cp-state nil)
   (reset! main/env {})
   (vreset! common/bb-edn nil)
+  (System/clearProperty "babashka.config")
   (let [args (cond-> args *bb-edn-path*
                      (->> (list* "--config" *bb-edn-path* "--deps-root" ".")))
         os (java.io.StringWriter.)
@@ -135,8 +136,5 @@
          bb-edn-file# (fs/file temp-dir# "bb.edn")]
      (binding [*print-meta* true]
        (spit bb-edn-file# ~cfg))
-     (try
-       (binding [*bb-edn-path* (str bb-edn-file#)]
-         ~@body)
-       (finally
-         (System/clearProperty "babashka.config")))))
+     (binding [*bb-edn-path* (str bb-edn-file#)]
+       ~@body)))
