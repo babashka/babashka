@@ -1,6 +1,7 @@
 maven-name,git-url
 aero/aero,http://github.com/juxt/aero
 amperity/vault-clj,https://github.com/amperity/vault-clj
+aysylu/loom,https://github.com/aysylu/loom
 babashka/babashka.curl,https://github.com/babashka/babashka.curl
 better-cond/better-cond,https://github.com/Engelberg/better-cond
 borkdude/deps,https://github.com/borkdude/deps.clj

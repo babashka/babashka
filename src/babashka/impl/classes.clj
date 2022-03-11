@@ -133,6 +133,7 @@
           java.io.FileInputStream
           java.io.FileOutputStream
           java.io.FileReader
+          java.io.FileWriter
           java.io.RandomAccessFile
           java.io.InputStream
           java.io.IOException
@@ -462,6 +463,7 @@
                       clojure.lang.ReaderConditional
                       clojure.lang.Repeat
                       clojure.lang.Reversible
+                      clojure.lang.Sorted
                       clojure.lang.Symbol
                       clojure.lang.Sequential
                       clojure.lang.Seqable

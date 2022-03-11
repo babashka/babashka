@@ -16,6 +16,7 @@
 (def test-check?     (not= "false" (System/getenv "BABASHKA_FEATURE_TEST_CHECK")))
 (def selmer?         (not= "false" (System/getenv "BABASHKA_FEATURE_SELMER")))
 (def logging?        (not= "false" (System/getenv "BABASHKA_FEATURE_LOGGING")))
+(def priority-map?   (not= "false" (System/getenv "BABASHKA_FEATURE_PRIORITY_MAP")))
 
 ;; excluded by default
 (def jdbc? (= "true" (System/getenv "BABASHKA_FEATURE_JDBC")))
@@ -72,3 +73,6 @@
 
 (when logging?
   (require '[babashka.impl.logging]))
+
+(when priority-map?
+  (require '[babashka.impl.priority-map]))
