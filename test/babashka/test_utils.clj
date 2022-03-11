@@ -135,5 +135,8 @@
          bb-edn-file# (fs/file temp-dir# "bb.edn")]
      (binding [*print-meta* true]
        (spit bb-edn-file# ~cfg))
-     (binding [*bb-edn-path* (str bb-edn-file#)]
-       ~@body)))
+     (try
+       (binding [*bb-edn-path* (str bb-edn-file#)]
+         ~@body)
+       (finally
+         (System/clearProperty "babashka.config")))))

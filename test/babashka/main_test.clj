@@ -604,11 +604,11 @@
     (is (working? (test-utils/bb nil "-e" "")))))
 
 (deftest config-property-test
-  (is (= "false\n"
-         (test-utils/bb nil (.getPath (io/file "test-resources" "babashka" "config_property.clj")))))
   (is (= "true\ntrue\n"
          (test-utils/with-config {:tasks {}}
-           (test-utils/bb nil (.getPath (io/file "test-resources" "babashka" "config_property.clj")))))))
+           (test-utils/bb nil (.getPath (io/file "test-resources" "babashka" "config_property.clj"))))))
+  (is (= "false\n"
+         (test-utils/bb nil (.getPath (io/file "test-resources" "babashka" "config_property.clj"))))))
 
 (deftest file-property-test
   (is (= "true\nfalse\n"
