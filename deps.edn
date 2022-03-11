@@ -9,6 +9,7 @@
          "feature-spec-alpha"
          "feature-selmer"
          "feature-logging"
+         "feature-priority-map"
          "pods/src"
          "babashka.nrepl/src"
          "depstar/src" "process/src"
@@ -40,7 +41,8 @@
         rewrite-clj/rewrite-clj {:mvn/version "1.0.699-alpha"}
         selmer/selmer {:mvn/version "1.12.44"}
         com.taoensso/timbre {:mvn/version "5.1.2"}
-        org.clojure/tools.logging {:mvn/version "1.1.0"}}
+        org.clojure/tools.logging {:mvn/version "1.1.0"}
+        org.clojure/data.priority-map {:mvn/version "1.1.0"}}
  :aliases {:babashka/dev
            {:main-opts ["-m" "babashka.main"]}
            :profile
@@ -124,7 +126,8 @@
                          io.lambdaforge/datalog-parser {:mvn/version "0.1.9"}
                          clj-stacktrace/clj-stacktrace {:mvn/version "0.2.8"}
                          clojure-msgpack/clojure-msgpack {:mvn/version "1.2.1"}
-                         cli-matic/cli-matic {:git/url "https://github.com/l3nz/cli-matic.git", :git/sha "9cd53ba7336363e3d06650dbad413b6f8b06e471"}}
+                         cli-matic/cli-matic {:git/url "https://github.com/l3nz/cli-matic.git", :git/sha "9cd53ba7336363e3d06650dbad413b6f8b06e471"}
+                         aysylu/loom {:mvn/version "1.0.2"}}
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil}}
            :clj-nvd

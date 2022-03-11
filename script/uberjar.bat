@@ -124,6 +124,12 @@ set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/logging
 set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/logging
 )
 
+if not "%BABASHKA_FEATURE_PRIORITY_MAP%"=="false" (
+set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/priority-map
+) else (
+set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/priority-map
+)
+
 call lein with-profiles %BABASHKA_LEIN_PROFILES% bb "(+ 1 2 3)"
 
 call lein with-profiles %BABASHKA_LEIN_PROFILES%,+reflection,-uberjar do run

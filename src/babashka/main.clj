@@ -253,7 +253,8 @@ Use bb run --help to show this help output.
  :feature/test-check %s
  :feature/spec-alpha %s
  :feature/selmer %s
- :feature/logging %s}")
+ :feature/logging %s
+ :feature/priority-map %s}")
     version
     features/csv?
     features/java-nio?
@@ -272,7 +273,8 @@ Use bb run --help to show this help output.
     features/test-check?
     features/spec-alpha?
     features/selmer?
-    features/logging?)))
+    features/logging?
+    features/priority-map?)))
 
 (defn read-file [file]
   (let [f (io/file file)]
@@ -436,8 +438,9 @@ Use bb run --help to show this help output.
                              'clojure.tools.logging.impl
                              @(resolve 'babashka.impl.logging/tools-logging-impl-namespace)
                              'clojure.tools.logging.readable
-                             @(resolve 'babashka.impl.logging/tools-logging-readable-namespace))))
-
+                             @(resolve 'babashka.impl.logging/tools-logging-readable-namespace))
+    features/priority-map? (assoc 'clojure.data.priority-map
+                                  @(resolve 'babashka.impl.priority-map/priority-map-namespace))))
 
 (def edn-readers (cond-> {}
                    features/yaml?
