@@ -12,14 +12,17 @@
   (dorun
     (for [[name coord] pods-map]
       (condp #(contains? %2 %1) coord
-        :registry/version
-        (load-pod name (:registry/version coord))
+        :version
+        (load-pod name (:version coord))
 
         :local/root
         (load-pod (:local/root coord))
 
-        :git/url
-        (throw (RuntimeException. "git pod coordinates not yet supported"))))))
+        (throw (IllegalArgumentException.
+                 (str (-> coord keys first)
+                      " is not a supported pod coordinate type. "
+                      "Use :version for registry-hosted pods or :local/root "
+                      "for pods on your local filesystem.")))))))
 
 (def podns (sci/create-ns 'babashka.pods nil))
 
