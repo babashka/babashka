@@ -7,7 +7,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-- [#1204](https://github.com/babashka/babashka/issues/1187) add property `babashka.config` to reflect `bb.edn` location ([@mknoszlig](https://github.com/mknoszlig))
+- [#1204](https://github.com/babashka/babashka/issues/1204) add property `babashka.config` to reflect `bb.edn` location ([@mknoszlig](https://github.com/mknoszlig))
 
 ## 0.7.7 (2022-03-04)
 
