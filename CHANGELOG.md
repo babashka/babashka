@@ -7,7 +7,12 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Add `clojure.data.priority-map` as built-in library - this makes babashka compatible with [aysylu/loom](https://github.com/aysylu/loom)
+- Add part of `clojure.tools.reader.reader-types` to support `hugsql.core`
 - [#1204](https://github.com/babashka/babashka/issues/1204) add property `babashka.config` to reflect `bb.edn` location ([@mknoszlig](https://github.com/mknoszlig))
+- SCI: implement `declare` as macro
+- #938: drop location metadata from symbols, except top level
+- #1199: support `print-method` impls on records
 
 ## 0.7.7 (2022-03-04)
 
