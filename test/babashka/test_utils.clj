@@ -48,6 +48,7 @@
   (reset! cp/cp-state nil)
   (reset! main/env {})
   (vreset! common/bb-edn nil)
+  (System/clearProperty "babashka.config")
   (let [args (cond-> args *bb-edn-path*
                      (->> (list* "--config" *bb-edn-path* "--deps-root" ".")))
         os (java.io.StringWriter.)
