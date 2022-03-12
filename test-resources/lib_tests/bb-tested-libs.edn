@@ -110,4 +110,5 @@
  cli-matic/cli-matic {:git-url "https://github.com/l3nz/cli-matic.git", :test-namespaces (cli-matic.utils-test cli-matic.presets-test cli-matic.help-gen-test cli-matic.utils-convert-config-test cli-matic.utils-candidates-test cli-matic.core-test cli-matic.utils-v2-test), :git-sha "9cd53ba7336363e3d06650dbad413b6f8b06e471"}
  aysylu/loom {:git-url "https://github.com/aysylu/loom", :test-namespaces (loom.test.network-simplex loom.test.label loom.test.alg-generic loom.test.compliance-tester loom.test.flow loom.test.alg loom.test.attr loom.test.graph loom.test.derived), :git-sha "d458f0c0dee9021983c64381b90a470f0178cc8e"}
  com.layerware/hugsql-core {:test-namespaces (hugsql.babashka-test)}
+ com.github.seancorfield/expectations {:git-url "https://github.com/clojure-expectations/clojure-test", :test-namespaces (expectations.clojure.test-test), :git-sha "b30fefd97d9eb7d1f47e06956521f354cb926b03"}
 }

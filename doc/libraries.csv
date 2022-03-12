@@ -17,8 +17,10 @@ clojure-csv/clojure-csv,https://github.com/davidsantiago/clojure-csv
 clojure-msgpack/clojure-msgpack,https://github.com/edma2/clojure-msgpack
 clojure-term-colors/clojure-term-colors,https://github.com/trhura/clojure-term-colors
 com.exoscale/lingo,https://github.com/exoscale/lingo
+com.github.seancorfield/expectations,https://github.com/clojure-expectations/clojure-test
 com.github.seancorfield/honeysql,https://github.com/seancorfield/honeysql
 com.grammarly/omniconf,https://github.com/grammarly/omniconf
+com.layerware/hugsql-core,
 com.stuartsierra/component,https://github.com/stuartsierra/component
 com.stuartsierra/dependency,https://github.com/stuartsierra/dependency
 com.wsscode/cljc-misc,https://github.com/wilkerlucio/cljc-misc
