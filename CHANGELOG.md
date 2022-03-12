@@ -13,6 +13,8 @@ A preview of the next release can be installed from
 - SCI: implement `declare` as macro
 - #938: drop location metadata from symbols, except top level
 - #1199: support `print-method` impls on records
+- `babashka.fs`: add `windows?` predicate
+-  SCI: add `*clojure-version*` and `(clojure-version)`
 
 ## 0.7.7 (2022-03-04)
 
