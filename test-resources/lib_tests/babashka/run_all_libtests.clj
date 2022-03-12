@@ -33,6 +33,7 @@
   (let [namespaces (seq (filter test-namespace? namespaces))]
     (when (seq namespaces)
       (doseq [n namespaces]
+        (println "Requiring" n)
         (require n)
         (filter-vars! (find-ns n) #(-> % meta ((some-fn :skip-bb
                                                         :test-check-slow)) not)))
