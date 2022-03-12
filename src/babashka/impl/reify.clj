@@ -11,10 +11,6 @@
 ;; get: 'Not implemented: seq', because print-method thought this object was
 ;; seqable, while in fact, it wasn't.
 
-(defn method-or-bust [methods k]
-  (or (get methods k)
-      (throw (UnsupportedOperationException. "Method not implemented: " k))))
-
 (defmacro gen-reify-combos
   "Generates pre-compiled reify combinations"
   [methods]
@@ -120,7 +116,8 @@
      equiv [[this x]]}
 
     clojure.lang.IReduce
-    {reduce [[this f]]}
+    {reduce [[this f]
+             [this f init]]}
 
     clojure.lang.IReduceInit
     {reduce [[this f initial]]}
