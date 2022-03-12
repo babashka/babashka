@@ -108,4 +108,6 @@
  clj-stacktrace/clj-stacktrace {:git-url "https://github.com/mmcgrana/clj-stacktrace", :test-namespaces (clj-stacktrace.repl-test clj-stacktrace.core-test), :git-sha "94dc2dd748710e79800e94b713e167e5dc525717"}
  clojure-msgpack/clojure-msgpack {:git-url "https://github.com/edma2/clojure-msgpack", :test-namespaces (msgpack.core-check msgpack.core-test), :git-sha "a4bca2cf064a87d9c4a564c634c6ebb65578dad5"}
  cli-matic/cli-matic {:git-url "https://github.com/l3nz/cli-matic.git", :test-namespaces (cli-matic.utils-test cli-matic.presets-test cli-matic.help-gen-test cli-matic.utils-convert-config-test cli-matic.utils-candidates-test cli-matic.core-test cli-matic.utils-v2-test), :git-sha "9cd53ba7336363e3d06650dbad413b6f8b06e471"}
- aysylu/loom {:git-url "https://github.com/aysylu/loom", :test-namespaces (loom.test.network-simplex loom.test.label loom.test.alg-generic loom.test.compliance-tester loom.test.flow loom.test.alg loom.test.attr loom.test.graph loom.test.derived), :git-sha "d458f0c0dee9021983c64381b90a470f0178cc8e"}}
+ aysylu/loom {:git-url "https://github.com/aysylu/loom", :test-namespaces (loom.test.network-simplex loom.test.label loom.test.alg-generic loom.test.compliance-tester loom.test.flow loom.test.alg loom.test.attr loom.test.graph loom.test.derived), :git-sha "d458f0c0dee9021983c64381b90a470f0178cc8e"}
+ com.layerware/hugsql-core {:test-namespaces (hugsql.babashka-test)}
+}
