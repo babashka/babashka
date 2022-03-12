@@ -376,7 +376,9 @@
           java.util.function.Supplier
           java.util.zip.Inflater
           java.util.zip.InflaterInputStream
+          java.util.zip.Deflater
           java.util.zip.DeflaterInputStream
+          java.util.zip.DeflaterOutputStream
           java.util.zip.GZIPInputStream
           java.util.zip.GZIPOutputStream
           java.util.zip.ZipInputStream
