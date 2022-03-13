@@ -5,16 +5,18 @@ For a list of breaking changes, check [here](#breaking-changes).
 A preview of the next release can be installed from
 [babashka-dev-builds](https://github.com/babashka/babashka-dev-builds).
 
-## Unreleased
+## 0.7.8 (2022-03-13)
 
 - Add `clojure.data.priority-map` as built-in library - this makes babashka compatible with [aysylu/loom](https://github.com/aysylu/loom)
-- Add part of `clojure.tools.reader.reader-types` to support `hugsql.core`
+- Add part of `clojure.tools.reader.reader-types` to support [hugsql.core](https://www.hugsql.org)
 - [#1204](https://github.com/babashka/babashka/issues/1204) add property `babashka.config` to reflect `bb.edn` location ([@mknoszlig](https://github.com/mknoszlig))
-- SCI: implement `declare` as macro
-- #938: drop location metadata from symbols, except top level
-- #1199: support `print-method` impls on records
+- Several fixes and enhancements to run Red Planet Lab's [specter](https://github.com/borkdude/specter/commit/8ba809a2cd35d3b6f8c5287e6bd3b4e06e42f6dc) library in babashka
+- [#1199](https://github.com/babashka/babashka/issues/1199): support `print-method` impls on records
 - `babashka.fs`: add `windows?` predicate
 -  SCI: add `*clojure-version*` and `(clojure-version)`
+- Add `java.util.zip.Deflater` and `java.util.zip.DeflaterOutputStream`
+- SCI: implement `declare` as macro
+- [#938](https://github.com/babashka/babashka/issues/938): drop location metadata from symbols, except top level
 
 ## 0.7.7 (2022-03-04)
 
