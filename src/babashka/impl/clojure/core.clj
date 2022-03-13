@@ -30,6 +30,7 @@
 (def data-readers parser/data-readers)
 (def command-line-args (core-dynamic-var '*command-line-args*))
 (def warn-on-reflection (core-dynamic-var '*warn-on-reflection* false))
+(def compile-files (core-dynamic-var '*compile-files* false))
 (def math-context (core-dynamic-var '*math-context*))
 
 (defn read+string
@@ -167,6 +168,7 @@
                   (apply read+string @common/ctx args)))
    '*command-line-args* command-line-args
    '*warn-on-reflection* warn-on-reflection
+   '*compile-files* compile-files
    '*math-context* math-context
    'with-precision (sci/copy-var with-precision clojure-core-ns)
    '-with-precision (sci/copy-var -with-precision clojure-core-ns)
