@@ -7,6 +7,17 @@ A preview of the next release can be installed from
 
 ## 0.7.8 (2022-03-13)
 
+This release improves compatibility with several libraries: [loom](https://github.com/aysylu/loom), [hugsql.core](https://www.hugsql.org) and [specter](https://github.com/redplanetlabs/specter)!
+
+To use specter in babashka, use the following fork and coordinates.
+
+``` clojure
+{:deps {com.rpl/specter {:git/url "https://github.com/borkdude/specter"
+                         :git/sha "8ba809a2cd35d3b6f8c5287e6bd3b4e06e42f6dc"}}}
+```
+
+Hopefully the compatibility commit can be upstreamed back into specter at some point.
+
 - Add `clojure.data.priority-map` as built-in library - this makes babashka compatible with [aysylu/loom](https://github.com/aysylu/loom)
 - Add part of `clojure.tools.reader.reader-types` to support [hugsql.core](https://www.hugsql.org)
 - [#1204](https://github.com/babashka/babashka/issues/1204) add property `babashka.config` to reflect `bb.edn` location ([@mknoszlig](https://github.com/mknoszlig))
