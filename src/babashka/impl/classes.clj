@@ -97,7 +97,9 @@
                {:name "aset"}
                {:name "aclone"}]}
     clojure.lang.Compiler
-    {:fields [{:name "specials"}]}})
+    {:fields [{:name "specials"}]}
+    clojure.lang.PersistentHashMap
+    {:fields [{:name "EMPTY"}]}})
 
 (def custom-map
   (cond->
@@ -453,7 +455,6 @@
                       clojure.lang.Named
                       clojure.lang.Keyword
                       clojure.lang.PersistentArrayMap
-                      clojure.lang.PersistentHashMap
                       clojure.lang.PersistentHashSet
                       clojure.lang.PersistentList
                       clojure.lang.PersistentQueue
