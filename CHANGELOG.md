@@ -9,7 +9,7 @@ A preview of the next release can be installed from
 
 This release improves compatibility with several libraries: [loom](https://github.com/aysylu/loom), [hugsql.core](https://www.hugsql.org) and [specter](https://github.com/redplanetlabs/specter)!
 
-To use specter in babashka, use the following fork and coordinates.
+To use specter in babashka, use the following coordinates:
 
 ``` clojure
 {:deps {com.rpl/specter {:git/url "https://github.com/borkdude/specter"
