@@ -42,7 +42,8 @@
         selmer/selmer {:mvn/version "1.12.44"}
         com.taoensso/timbre {:mvn/version "5.1.2"}
         org.clojure/tools.logging {:mvn/version "1.1.0"}
-        org.clojure/data.priority-map {:mvn/version "1.1.0"}}
+        org.clojure/data.priority-map {:mvn/version "1.1.0"}
+        instaparse/instaparse {:mvn/version "1.4.10"}}
  :aliases {:babashka/dev
            {:main-opts ["-m" "babashka.main"]}
            :profile
