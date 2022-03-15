@@ -5,6 +5,14 @@ you have anything to add. Also see
 [#babashka](https://twitter.com/hashtag/babashka?src=hashtag_click&f=live) on
 Twitter.
 
+<!--
+
+## 2022-03
+
+- [Create a password manager with Clojure using Babashka, sqlite, honeysql and stash](https://youtu.be/jm0RXmyjRJ8) by Daniel Amber
+
+-->
+
 ## 2021-12
 
 - Releases: [0.6.8 - 0.7.3](https://github.com/babashka/babashka/blob/master/CHANGELOG.md).
