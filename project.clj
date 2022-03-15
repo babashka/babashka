@@ -27,7 +27,8 @@
                  [org.clojure/core.async "1.5.648"]
                  [org.clojure/test.check "1.1.1"]
                  [com.github.clj-easy/graal-build-time "0.1.0"]
-                 [rewrite-clj/rewrite-clj "1.0.699-alpha"]]
+                 [rewrite-clj/rewrite-clj "1.0.699-alpha"]
+                 [instaparse/instaparse "1.4.10"]]
   :plugins       [[org.kipz/lein-meta-bom "0.1.1"]]
   :metabom {:jar-name "metabom.jar"}
   :profiles {:feature/xml  {:source-paths ["feature-xml"]
