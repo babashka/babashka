@@ -8,15 +8,15 @@
 (defn load-pod [& args]
   (apply pods/load-pod @ctx args))
 
-(defn load-pods [pods-map]
+(defn load-pods-metadata [pods-map]
   (dorun
-    (for [[name coord] pods-map]
+    (for [[pod-spec coord] pods-map]
       (condp #(contains? %2 %1) coord
         :version
-        (load-pod name (:version coord))
+        (pods/load-pod-metadata @ctx pod-spec (select-keys coord [:version]))
 
         :local/root
-        (load-pod (:local/root coord))
+        (pods/load-pod-metadata @ctx pod-spec {:path (:local/root coord)})
 
         (throw (IllegalArgumentException.
                  (str (-> coord keys first)

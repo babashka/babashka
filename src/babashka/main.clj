@@ -737,7 +737,9 @@ Use bb run --help to show this help output.
             _ (when jar
                 (cp/add-classpath jar))
             load-fn (fn [{:keys [:namespace :reload]}]
-                      (or (when-let [{:keys [:loader]}
+                      (or (when-let [pod (-> @common/ctx :env deref :pod-namespaces (get namespace))]
+                            (pods/load-pod (:pod-spec pod) (:opts pod)))
+                          (when-let [{:keys [:loader]}
                                      @cp/cp-state]
                             (if ;; ignore built-in namespaces when uberscripting, unless with :reload
                                 (and uberscript
@@ -786,7 +788,7 @@ Use bb run --help to show this help output.
             _ (vreset! common/ctx sci-ctx)
             pods (:pods @common/bb-edn)
             _ (when pods
-                (pods/load-pods pods))
+                (pods/load-pods-metadata pods))
             preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim))
             [expressions exit-code]
             (cond expressions [expressions nil]
