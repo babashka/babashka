@@ -12,11 +12,8 @@ This release improves compatibility with several libraries: [loom](https://githu
 To use specter in babashka, use the following coordinates:
 
 ``` clojure
-{:deps {com.rpl/specter {:git/url "https://github.com/borkdude/specter"
-                         :git/sha "8ba809a2cd35d3b6f8c5287e6bd3b4e06e42f6dc"}}}
+{:deps {com.rpl/specter {:mvn/version "1.1.4"}}}
 ```
-
-Hopefully the compatibility commit can be upstreamed back into specter at some point.
 
 - Add `clojure.data.priority-map` as built-in library - this makes babashka compatible with [aysylu/loom](https://github.com/aysylu/loom)
 - Add part of `clojure.tools.reader.reader-types` to support [hugsql.core](https://www.hugsql.org)

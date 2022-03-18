@@ -111,4 +111,5 @@
  aysylu/loom {:git-url "https://github.com/aysylu/loom", :test-namespaces (loom.test.network-simplex loom.test.label loom.test.alg-generic loom.test.compliance-tester loom.test.flow loom.test.alg loom.test.attr loom.test.graph loom.test.derived), :git-sha "d458f0c0dee9021983c64381b90a470f0178cc8e"}
  com.layerware/hugsql-core {:test-namespaces (hugsql.babashka-test)}
  com.github.seancorfield/expectations {:git-url "https://github.com/clojure-expectations/clojure-test", :test-namespaces (expectations.clojure.test-test), :git-sha "b30fefd97d9eb7d1f47e06956521f354cb926b03"}
+ com.rpl/specter {:git-url "https://github.com/redplanetlabs/specter", :test-namespaces (com.rpl.specter.cljs-test-helpers com.rpl.specter.test-helpers com.rpl.specter.core-test com.rpl.specter.zipper-test), :git-sha "67e86806020b9d02fbca8cdb1efad3002fc81a32"}
 }

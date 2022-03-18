@@ -21,6 +21,7 @@ com.github.seancorfield/expectations,https://github.com/clojure-expectations/clo
 com.github.seancorfield/honeysql,https://github.com/seancorfield/honeysql
 com.grammarly/omniconf,https://github.com/grammarly/omniconf
 com.layerware/hugsql-core,
+com.rpl/specter,https://github.com/redplanetlabs/specter
 com.stuartsierra/component,https://github.com/stuartsierra/component
 com.stuartsierra/dependency,https://github.com/stuartsierra/dependency
 com.wsscode/cljc-misc,https://github.com/wilkerlucio/cljc-misc
