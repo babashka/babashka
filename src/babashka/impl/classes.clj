@@ -99,12 +99,13 @@
     clojure.lang.Compiler
     {:fields [{:name "specials"}]}
     clojure.lang.PersistentHashMap
-    {:fields [{:name "EMPTY"}]
-     :methods [{:name "valAt"}]}
+    {:fields [{:name "EMPTY"}]}
     clojure.lang.APersistentVector
     {:methods [{:name "indexOf"}]}
-    clojure.lang.PersistentArrayMap
+    clojure.lang.ILookup
     {:methods [{:name "valAt"}]}
+    clojure.lang.IPersistentMap
+    {:methods [{:name "without"}]}
 })
 
 (def custom-map
@@ -440,9 +441,7 @@
                       clojure.lang.IEditableCollection
                       clojure.lang.IMapEntry
                       clojure.lang.IMeta
-                      clojure.lang.ILookup
                       clojure.lang.IPersistentCollection
-                      clojure.lang.IPersistentMap
                       clojure.lang.IPersistentSet
                       clojure.lang.IPersistentStack
                       clojure.lang.IPersistentVector
@@ -460,6 +459,7 @@
                       clojure.lang.LispReader$Resolver
                       clojure.lang.Named
                       clojure.lang.Keyword
+                      clojure.lang.PersistentArrayMap
                       clojure.lang.PersistentHashSet
                       clojure.lang.PersistentList
                       clojure.lang.PersistentQueue
