@@ -99,9 +99,13 @@
     clojure.lang.Compiler
     {:fields [{:name "specials"}]}
     clojure.lang.PersistentHashMap
-    {:fields [{:name "EMPTY"}]}
-    clojure.lang.PersistentVector
-    {:methods [{:name "indexOf"}]}})
+    {:fields [{:name "EMPTY"}]
+     :methods [{:name "valAt"}]}
+    clojure.lang.APersistentVector
+    {:methods [{:name "indexOf"}]}
+    clojure.lang.PersistentArrayMap
+    {:methods [{:name "valAt"}]}
+})
 
 (def custom-map
   (cond->
@@ -456,13 +460,13 @@
                       clojure.lang.LispReader$Resolver
                       clojure.lang.Named
                       clojure.lang.Keyword
-                      clojure.lang.PersistentArrayMap
                       clojure.lang.PersistentHashSet
                       clojure.lang.PersistentList
                       clojure.lang.PersistentQueue
                       clojure.lang.PersistentStructMap
                       clojure.lang.PersistentTreeMap
                       clojure.lang.PersistentTreeSet
+                      clojure.lang.PersistentVector
                       clojure.lang.Ratio
                       clojure.lang.ReaderConditional
                       clojure.lang.Repeat
