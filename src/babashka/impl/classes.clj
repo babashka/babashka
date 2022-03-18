@@ -99,7 +99,9 @@
     clojure.lang.Compiler
     {:fields [{:name "specials"}]}
     clojure.lang.PersistentHashMap
-    {:fields [{:name "EMPTY"}]}})
+    {:fields [{:name "EMPTY"}]}
+    clojure.lang.PersistentVector
+    {:methods [{:name "indexOf"}]}})
 
 (def custom-map
   (cond->
@@ -461,7 +463,6 @@
                       clojure.lang.PersistentStructMap
                       clojure.lang.PersistentTreeMap
                       clojure.lang.PersistentTreeSet
-                      clojure.lang.PersistentVector
                       clojure.lang.Ratio
                       clojure.lang.ReaderConditional
                       clojure.lang.Repeat
