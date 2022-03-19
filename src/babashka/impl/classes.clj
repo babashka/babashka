@@ -108,6 +108,8 @@
     {:methods [{:name "without"}]}
     clojure.lang.IPersistentSet
     {:methods [{:name "disjoin"}]}
+    clojure.lang.IPersistentVector
+    {:methods [{:name "nth"}]}
 })
 
 (def custom-map
@@ -445,7 +447,6 @@
                       clojure.lang.IMeta
                       clojure.lang.IPersistentCollection
                       clojure.lang.IPersistentStack
-                      clojure.lang.IPersistentVector
                       clojure.lang.IPersistentList
                       clojure.lang.IRecord
                       clojure.lang.IReduce
