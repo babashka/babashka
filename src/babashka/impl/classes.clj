@@ -106,6 +106,8 @@
     {:methods [{:name "valAt"}]}
     clojure.lang.IPersistentMap
     {:methods [{:name "without"}]}
+    clojure.lang.IPersistentSet
+    {:methods [{:name "disjoin"}]}
 })
 
 (def custom-map
@@ -442,7 +444,6 @@
                       clojure.lang.IMapEntry
                       clojure.lang.IMeta
                       clojure.lang.IPersistentCollection
-                      clojure.lang.IPersistentSet
                       clojure.lang.IPersistentStack
                       clojure.lang.IPersistentVector
                       clojure.lang.IPersistentList
