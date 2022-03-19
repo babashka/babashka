@@ -108,7 +108,7 @@
     {:methods [{:name "without"}]}
     clojure.lang.IPersistentSet
     {:methods [{:name "disjoin"}]}
-    clojure.lang.IPersistentVector
+    clojure.lang.Indexed
     {:methods [{:name "nth"}]}
 })
 
@@ -454,8 +454,8 @@
                       clojure.lang.IKVReduce
                       clojure.lang.IRef
                       clojure.lang.ISeq
+                      clojure.lang.IPersistentVector
                       clojure.lang.ITransientVector
-                      clojure.lang.Indexed
                       clojure.lang.Iterate
                       clojure.lang.LazySeq
                       clojure.lang.LispReader$Resolver
