@@ -110,6 +110,9 @@
     {:methods [{:name "disjoin"}]}
     clojure.lang.Indexed
     {:methods [{:name "nth"}]}
+    java.util.Iterator
+    {:methods [{:name "hasNext"}
+               {:name "next"}]}
 })
 
 (def custom-map
@@ -482,7 +485,6 @@
                       java.util.concurrent.atomic.AtomicLong
                       java.util.Collection
                       java.util.List
-                      java.util.Iterator
                       java.util.Map$Entry
                       ~@(when features/xml? ['clojure.data.xml.node.Element])]
     :custom ~custom-map})
