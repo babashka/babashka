@@ -976,22 +976,85 @@ Use bb run --help to show this help output.
        @v#)
     `(apply main ~args)))
 
+(require '[bencode.core :as bencode])
+
+(defn bytes->str [x]
+  (if (bytes? x) (String. (bytes x))
+      (str x)))
+
+(defn read-msg [msg]
+  (let [res (zipmap (map keyword (keys msg))
+                    (map #(if (bytes? %)
+                            (String. (bytes %))
+                            %)
+                         (vals msg)))
+        res (if-let [status (:status res)]
+              (assoc res :status (mapv bytes->str status))
+              res)
+        res (if-let [status (:sessions res)]
+              (assoc res :sessions (mapv bytes->str status))
+              res)]
+    res))
+
+(def prog "
+  ;; Only one argument doesn't trigger the segfault
+  (defn foo [_ _]
+
+  ;; Removing the println, printing only one \"\" or printing with `print` doesn't trigger the seg-fault.
+  (println \"\" \"\")
+
+  (foo nil nil))
+
+(foo nil nil)
+
+(nil) ; <- Send this to the REPL to provoke the seg-fault")
+
+(defn read-reply [in session id]
+  (loop []
+    (let [msg (read-msg (bencode/read-bencode in))]
+      (if (and (= (:session msg) session)
+               (= (:id msg) id))
+        (do
+          (when true (prn "received" msg))
+          msg)
+        (do
+          (when true (prn "skipping over msg" msg))
+          (recur))))))
+
+(defn nrepl-test []
+  (with-open [socket (java.net.Socket. "127.0.0.1" 1668)
+              in (.getInputStream socket)
+              in (java.io.PushbackInputStream. in)
+              os (.getOutputStream socket)]
+    (bencode.core/write-bencode os {"op" "clone"})
+    (let [session (:new-session (read-msg (bencode/read-bencode in)))
+          id (atom 0)
+          new-id! #(swap! id inc)]
+      (bencode/write-bencode os {"op" "eval" "code" prog "session" session "id" (new-id!)})
+      (while
+          (let [msg (read-reply in session @id)]
+            (prn msg)
+            (not= (:status msg) ["done"]))))))
+
 (defn -main
-  [& args]
+  [& _args]
   (handle-pipe!)
   (handle-sigint!)
-  (if-let [dev-opts (System/getenv "BABASHKA_DEV")]
-    (let [{:keys [:n]} (if (= "true" dev-opts) {:n 1}
-                           (edn/read-string dev-opts))
-          last-iteration (dec n)]
-      (dotimes [i n]
-        (if (< i last-iteration)
-          (with-out-str (apply main args))
-          (do (run args)
-              (binding [*out* *err*]
-                (println "ran" n "times"))))))
-    (let [exit-code (run args)]
-      (System/exit exit-code))))
+  (let [server-state (atom nil)]
+    (try
+      (let [nrepl-opts (babashka.nrepl.server/parse-opt "0.0.0.0:1668")
+            nrepl-opts (assoc nrepl-opts
+                              :describe {"versions" {"babashka" version}})
+            server (babashka.nrepl.server/start-server!
+                    (sci/init {:namespaces namespaces
+                               :features #{:bb}})
+                    nrepl-opts)]
+        (reset! server-state server))
+      (babashka.wait/wait-for-port "localhost" 1668)
+      (nrepl-test)
+      (finally
+        (babashka.nrepl.server/stop-server! @server-state)
+        (shutdown-agents)))))
 
 ;;;; Scratch
 
