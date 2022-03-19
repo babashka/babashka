@@ -687,6 +687,8 @@ Use bb run --help to show this help output.
 
 (def env (atom {}))
 
+(defonce pod-namespaces (volatile! {}))
+
 (defn exec [cli-opts]
   (binding [*unrestricted* true]
     (sci/binding [core/warn-on-reflection @core/warn-on-reflection
@@ -737,9 +739,7 @@ Use bb run --help to show this help output.
             _ (when jar
                 (cp/add-classpath jar))
             load-fn (fn [{:keys [:namespace :reload]}]
-                      (or (when-let [pod (-> @common/ctx :env deref :pod-namespaces (get namespace))]
-                            (pods/load-pod (:pod-spec pod) (:opts pod)))
-                          (when-let [{:keys [:loader]}
+                      (or (when-let [{:keys [:loader]}
                                      @cp/cp-state]
                             (if ;; ignore built-in namespaces when uberscripting, unless with :reload
                                 (and uberscript
@@ -754,6 +754,8 @@ Use bb run --help to show this help output.
                                                               :expressions [(:source res)]})
                                       {})
                                   res))))
+                          (when-let [pod (get @pod-namespaces namespace)]
+                            (pods/load-pod (:pod-spec pod) (:opts pod)))
                           (case namespace
                             clojure.spec.alpha
                             (binding [*out* *err*]
@@ -786,9 +788,9 @@ Use bb run --help to show this help output.
             opts (addons/future opts)
             sci-ctx (sci/init opts)
             _ (vreset! common/ctx sci-ctx)
-            pods (:pods @common/bb-edn)
-            _ (when pods
-                (pods/load-pods-metadata pods))
+            _ (when-let [pods (:pods @common/bb-edn)]
+                (let [pod-metadata (pods/load-pods-metadata pods)]
+                  (vreset! pod-namespaces pod-metadata)))
             preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim))
             [expressions exit-code]
             (cond expressions [expressions nil]
