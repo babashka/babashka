@@ -687,7 +687,7 @@ Use bb run --help to show this help output.
 
 (def env (atom {}))
 
-(defonce pod-namespaces (volatile! {}))
+(def pod-namespaces (volatile! {}))
 
 (defn exec [cli-opts]
   (binding [*unrestricted* true]
