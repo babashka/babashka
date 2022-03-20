@@ -1052,6 +1052,7 @@ Use bb run --help to show this help output.
         (reset! server-state server))
       (babashka.wait/wait-for-port "localhost" 1668)
       (nrepl-test)
+      (nrepl-test)
       (finally
         (babashka.nrepl.server/stop-server! @server-state)
         (shutdown-agents)))))
