@@ -14,10 +14,12 @@
       (merge pod-namespaces
              (condp #(contains? %2 %1) coord
                :version
-               (pods/load-pod-metadata pod-spec (select-keys coord [:version]))
+               (pods/load-pod-metadata pod-spec (merge {:cache true}
+                                                       (select-keys coord [:version :cache])))
 
-               :local/root
-               (pods/load-pod-metadata pod-spec {:path (:local/root coord)})
+               :path
+               (pods/load-pod-metadata pod-spec (merge {:cache true}
+                                                       (select-keys coord [:path :cache])))
 
                (throw (IllegalArgumentException.
                         (str (-> coord keys first)
