@@ -425,3 +425,16 @@ even more stuff here\"
                       c {:depends [a b]
                          :task [a b]}}})
     (is (= ["[a 1]" "[b 2]" "[c [1 2]]"] (str/split-lines (test-utils/bb nil "run" "c"))))))
+
+(deftest pod-from-registry-test
+  (test-utils/with-config
+    (pr-str '{:paths ["test-resources"]
+              :pods  {retrogradeorbit/bootleg {:version "0.1.9"}}})
+    (is (= "\"<div><p>Test</p></div>\"\n"
+           (test-utils/bb nil "-m" "pod-tests.bootleg")))))
+
+(deftest local-pod-test
+  (test-utils/with-config
+    (pr-str '{:paths ["test-resources"]
+              :pods {pod/test-pod {:path "test-resources/pod.clj"}}})
+    (is (= "42\n" (test-utils/bb nil "-m" "pod-tests.local")))))
