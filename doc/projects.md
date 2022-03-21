@@ -60,6 +60,8 @@ The following libraries and projects are known to work with babashka.
     - [markdown-clj](#markdown-clj)
     - [algo.monads](#algomonads)
     - [datalog-parser](#datalog-parser)
+    - [at-at](#at-at)
+    - [aysylu/loom](#aysyluloom)
   - [Pods](#pods)
   - [Projects](#projects-1)
     - [babashka-test-action](#babashka-test-action)
@@ -801,6 +803,10 @@ Datalog parser that is compliant with datomic, datascript and datahike.
 ### [at-at](https://github.com/overtone/at-at)
 
 Ahead-of-time function scheduler. Compatible with babashka 0.7.7+.
+
+### [aysylu/loom](https://github.com/aysylu/loom)
+
+Graph library for Clojure. Compatible with babashka 0.7.8+.
 
 ## Pods
 

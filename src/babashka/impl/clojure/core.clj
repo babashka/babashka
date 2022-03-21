@@ -30,34 +30,8 @@
 (def data-readers parser/data-readers)
 (def command-line-args (core-dynamic-var '*command-line-args*))
 (def warn-on-reflection (core-dynamic-var '*warn-on-reflection* false))
+(def compile-files (core-dynamic-var '*compile-files* false))
 (def math-context (core-dynamic-var '*math-context*))
-
-;; (def major (:major *clojure-version*))
-;; (def minor (:minor *clojure-version*))
-;; (def incremental (:incremental *clojure-version*))
-;; (def qualifier (str "sci" (when-let [q (:qualifier *clojure-version*)]
-;;                             (str "+" q))))
-
-;; (def clojure-ver {:major       major
-;;                   :minor       minor
-;;                   :incremental incremental
-;;                   :qualifier   qualifier})
-
-;; (defn clojure-version
-;;   "Returns clojure version as a printable string."
-;;   {:added "1.0"}
-;;   []
-;;   (str major
-;;        "."
-;;        minor
-;;        (when-let [i incremental]
-;;          (str "." i))
-;;        (when-let [q qualifier]
-;;          (when (pos? (count q)) (str "-" q)))
-;;        (when incremental
-;;          "-SNAPSHOT")))
-
-;; (def clojure-version-var (sci/new-dynamic-var '*clojure-version* clojure-ver))
 
 (defn read+string
   "Added for compatibility. Must be used with
@@ -194,6 +168,7 @@
                   (apply read+string @common/ctx args)))
    '*command-line-args* command-line-args
    '*warn-on-reflection* warn-on-reflection
+   '*compile-files* compile-files
    '*math-context* math-context
    'with-precision (sci/copy-var with-precision clojure-core-ns)
    '-with-precision (sci/copy-var -with-precision clojure-core-ns)
@@ -205,8 +180,6 @@
    'sync (sci/copy-var sync clojure-core-ns)
    'ref (sci/copy-var ref clojure-core-ns)
    'ref-set (sci/copy-var ref-set clojure-core-ns)
-   ;;'*clojure-version* clojure-version-var
-   ;;'clojure-version (sci/copy-var clojure-version clojure-core-ns)
    'update-vals (sci/copy-var update-vals clojure-core-ns)
    'update-keys (sci/copy-var update-keys clojure-core-ns)
    'parse-boolean (sci/copy-var parse-boolean clojure-core-ns)

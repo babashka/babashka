@@ -114,6 +114,7 @@ Babashka supports the following feature flags:
 | `BABASHKA_FEATURE_DATASCRIPT` | Includes [datascript](https://github.com/tonsky/datascript) | `false` |
 | `BABASHKA_FEATURE_LANTERNA` | Includes [clojure-lanterna](https://github.com/babashka/clojure-lanterna) | `false` |
 | `BABASHKA_FEATURE_LOGGING` | Includes [clojure.tools.logging](https://github.com/clojure/tools.logging) with [taoensso.timbre](https://github.com/ptaoussanis/timbre) as the default implementation| `true` | 
+| `BABASHKA_FEATURE_PRIORITY_MAP` | Includes [clojure.data.priority-map](https://github.com/clojure/data.priority-map) | `true` | 
 
 Note that httpkit server is currently experimental, the feature flag could be toggled to `false` in a future release.
 

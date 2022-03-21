@@ -34,7 +34,8 @@
     (when (seq namespaces)
       (doseq [n namespaces]
         (require n)
-        (filter-vars! (find-ns n) #(-> % meta :skip-bb not)))
+        (filter-vars! (find-ns n) #(-> % meta ((some-fn :skip-bb
+                                                        :test-check-slow)) not)))
       (let [m (apply t/run-tests namespaces)]
         (swap! status (fn [status]
                         (merge-with + status (dissoc m :type))))))))

@@ -120,7 +120,8 @@
      equiv [[this x]]}
 
     clojure.lang.IReduce
-    {reduce [[this f]]}
+    {reduce [[this f]
+             [this f initial]]}
 
     clojure.lang.IReduceInit
     {reduce [[this f initial]]}

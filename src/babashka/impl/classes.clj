@@ -97,7 +97,23 @@
                {:name "aset"}
                {:name "aclone"}]}
     clojure.lang.Compiler
-    {:fields [{:name "specials"}]}})
+    {:fields [{:name "specials"}]}
+    clojure.lang.PersistentHashMap
+    {:fields [{:name "EMPTY"}]}
+    clojure.lang.APersistentVector
+    {:methods [{:name "indexOf"}]}
+    clojure.lang.ILookup
+    {:methods [{:name "valAt"}]}
+    clojure.lang.IPersistentMap
+    {:methods [{:name "without"}]}
+    clojure.lang.IPersistentSet
+    {:methods [{:name "disjoin"}]}
+    clojure.lang.Indexed
+    {:methods [{:name "nth"}]}
+    java.util.Iterator
+    {:methods [{:name "hasNext"}
+               {:name "next"}]}
+})
 
 (def custom-map
   (cond->
@@ -133,6 +149,7 @@
           java.io.FileInputStream
           java.io.FileOutputStream
           java.io.FileReader
+          java.io.FileWriter
           java.io.RandomAccessFile
           java.io.InputStream
           java.io.IOException
@@ -375,7 +392,9 @@
           java.util.function.Supplier
           java.util.zip.Inflater
           java.util.zip.InflaterInputStream
+          java.util.zip.Deflater
           java.util.zip.DeflaterInputStream
+          java.util.zip.DeflaterOutputStream
           java.util.zip.GZIPInputStream
           java.util.zip.GZIPOutputStream
           java.util.zip.ZipInputStream
@@ -429,12 +448,8 @@
                       clojure.lang.IEditableCollection
                       clojure.lang.IMapEntry
                       clojure.lang.IMeta
-                      clojure.lang.ILookup
                       clojure.lang.IPersistentCollection
-                      clojure.lang.IPersistentMap
-                      clojure.lang.IPersistentSet
                       clojure.lang.IPersistentStack
-                      clojure.lang.IPersistentVector
                       clojure.lang.IPersistentList
                       clojure.lang.IRecord
                       clojure.lang.IReduce
@@ -442,15 +457,14 @@
                       clojure.lang.IKVReduce
                       clojure.lang.IRef
                       clojure.lang.ISeq
+                      clojure.lang.IPersistentVector
                       clojure.lang.ITransientVector
-                      clojure.lang.Indexed
                       clojure.lang.Iterate
                       clojure.lang.LazySeq
                       clojure.lang.LispReader$Resolver
                       clojure.lang.Named
                       clojure.lang.Keyword
                       clojure.lang.PersistentArrayMap
-                      clojure.lang.PersistentHashMap
                       clojure.lang.PersistentHashSet
                       clojure.lang.PersistentList
                       clojure.lang.PersistentQueue
@@ -462,6 +476,7 @@
                       clojure.lang.ReaderConditional
                       clojure.lang.Repeat
                       clojure.lang.Reversible
+                      clojure.lang.Sorted
                       clojure.lang.Symbol
                       clojure.lang.Sequential
                       clojure.lang.Seqable
@@ -470,7 +485,6 @@
                       java.util.concurrent.atomic.AtomicLong
                       java.util.Collection
                       java.util.List
-                      java.util.Iterator
                       java.util.Map$Entry
                       ~@(when features/xml? ['clojure.data.xml.node.Element])]
     :custom ~custom-map})
