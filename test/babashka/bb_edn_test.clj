@@ -434,7 +434,7 @@ even more stuff here\"
       (is (= "\"<div><p>Test</p></div>\"\n"
              (test-utils/bb nil "-m" "pod-tests.bootleg"))))))
 
-(deftest local-pod-test
+(deftest ^:skip-windows local-pod-test
   (test-utils/with-config
     (pr-str '{:paths ["test-resources"]
               :pods {pod/test-pod {:path "test-resources/pod"}}})
