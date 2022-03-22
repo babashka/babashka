@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
-dir=$(dirname $0)
+dir=$(dirname "$0")
 
-exec env BABASHKA_POD=true ${dir}/../bb ${dir}/pod.clj
+export BABASHKA_POD=true
+
+if [[ $BABASHKA_TEST_ENV == "native" ]]; then
+  exec "${dir}"/../bb "${dir}"/pod.clj
+else
+  exec clojure -M:test-pod
+fi
