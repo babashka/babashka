@@ -436,5 +436,5 @@ even more stuff here\"
 (deftest local-pod-test
   (test-utils/with-config
     (pr-str '{:paths ["test-resources"]
-              :pods {pod/test-pod {:path "test-resources/pod.clj"}}})
+              :pods {pod/test-pod {:path "test-resources/pod"}}})
     (is (= "42\n" (test-utils/bb nil "-m" "pod-tests.local")))))

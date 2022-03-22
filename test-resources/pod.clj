@@ -1,5 +1,3 @@
-#!/usr/bin/env bb
-
 (ns pod
   (:refer-clojure :exclude [read read-string])
   (:require [babashka.pods :as pods]

@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+dir=$(dirname $0)
+
+exec env BABASHKA_POD=true ${dir}/../bb ${dir}/pod.clj
