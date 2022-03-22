@@ -558,11 +558,12 @@
     m))
 
 
-(def class-map* (cond-> (gen-class-map)
-                  (when features/java-net-http?
-                    (zipmap java-net-http-classes))))
+(def class-map*
+  "This contains mapping of symbol to class of all classes that are allowed to be initialized at build time."
+  (gen-class-map))
 
 (def class-map
+  "A delay to delay initialization of java-net-http classes to run time, since GraalVM 22.1"
   (delay (time (persistent! (reduce (fn [acc c]
                                       (assoc! acc c (Class/forName (str c))))
                                     (transient class-map*) (when features/java-net-http?
