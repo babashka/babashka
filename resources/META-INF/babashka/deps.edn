@@ -137,9 +137,12 @@
            {:extra-deps {clj-nvd/clj-nvd {:git/url "https://github.com/miikka/clj-nvd.git"
                                           :sha "f2ec98699e057a379baf170cb49cf7ad76874a70"}}
             :main-opts ["-m" "clj-nvd.core"]}
- :test ;; added by neil
- {:extra-paths ["test"]
-  :extra-deps {io.github.cognitect-labs/test-runner
-                {:git/tag "v0.5.0" :git/sha "b3fd0d2"}}
-  :main-opts ["-m" "cognitect.test-runner"]
-  :exec-fn cognitect.test-runner.api/test}}}
+           :test
+           {:extra-paths ["test"]
+            :extra-deps {io.github.cognitect-labs/test-runner
+                          {:git/tag "v0.5.0" :git/sha "b3fd0d2"}}
+            :main-opts ["-m" "cognitect.test-runner"]
+            :exec-fn cognitect.test-runner.api/test}
+           :test-pod
+           {:extra-paths ["test-resources"]
+            :main-opts ["-m" "babashka.main" "test-resources/pod.clj"]}}}
