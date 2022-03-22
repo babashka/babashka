@@ -113,7 +113,7 @@
     java.util.Iterator
     {:methods [{:name "hasNext"}
                {:name "next"}]}
-})
+    })
 
 (def custom-map
   (cond->
@@ -125,6 +125,52 @@
                             `java.util.ResourceBundle
                             {:methods [{:name "getBundle"
                                         :parameterTypes ["java.lang.String","java.util.Locale","java.lang.ClassLoader"]}]})))
+
+(def java-net-http-classes
+  "These classes must be initialized at run time since GraalVM 22.1"
+  '[java.net.Authenticator
+    java.net.CookieHandler
+    java.net.CookieManager
+    java.net.CookieStore
+    java.net.CookiePolicy
+    java.net.HttpCookie
+    java.net.PasswordAuthentication
+    java.net.ProxySelector
+    java.net.http.HttpClient
+    java.net.http.HttpClient$Builder
+    java.net.http.HttpClient$Redirect
+    java.net.http.HttpClient$Version
+    java.net.http.HttpHeaders
+    java.net.http.HttpRequest
+    java.net.http.HttpRequest$BodyPublisher
+    java.net.http.HttpRequest$BodyPublishers
+    java.net.http.HttpRequest$Builder
+    java.net.http.HttpResponse
+    java.net.http.HttpResponse$BodyHandler
+    java.net.http.HttpResponse$BodyHandlers
+    java.net.http.HttpTimeoutException
+    java.net.http.WebSocket
+    java.net.http.WebSocket$Builder
+    java.net.http.WebSocket$Listener
+    java.security.cert.X509Certificate
+    javax.crypto.Mac
+    javax.crypto.spec.SecretKeySpec
+    javax.net.ssl.HostnameVerifier ;; clj-http-lite
+    javax.net.ssl.HttpsURLConnection ;; clj-http-lite
+    javax.net.ssl.KeyManagerFactory
+    javax.net.ssl.SSLContext
+    javax.net.ssl.SSLParameters
+    javax.net.ssl.SSLSession ;; clj-http-lite
+    javax.net.ssl.TrustManager
+    javax.net.ssl.TrustManagerFactory
+    javax.net.ssl.X509TrustManager
+    jdk.internal.net.http.HttpClientBuilderImpl
+    jdk.internal.net.http.HttpClientFacade
+    jdk.internal.net.http.HttpRequestBuilderImpl
+    jdk.internal.net.http.HttpResponseImpl
+    jdk.internal.net.http.common.MinimalFuture
+    jdk.internal.net.http.websocket.BuilderImpl
+    jdk.internal.net.http.websocket.WebSocketImpl])
 
 (def classes
   `{:all [clojure.lang.ArityException
@@ -225,51 +271,6 @@
           ;; java.net.URL, see below
           java.net.URLEncoder
           java.net.URLDecoder
-          ;; java.net.http
-          ~@(when features/java-net-http?
-              '[java.net.Authenticator
-                java.net.CookieHandler
-                java.net.CookieManager
-                java.net.CookieStore
-                java.net.CookiePolicy
-                java.net.HttpCookie
-                java.net.PasswordAuthentication
-                java.net.ProxySelector
-                java.net.http.HttpClient
-                java.net.http.HttpClient$Builder
-                java.net.http.HttpClient$Redirect
-                java.net.http.HttpClient$Version
-                java.net.http.HttpHeaders
-                java.net.http.HttpRequest
-                java.net.http.HttpRequest$BodyPublisher
-                java.net.http.HttpRequest$BodyPublishers
-                java.net.http.HttpRequest$Builder
-                java.net.http.HttpResponse
-                java.net.http.HttpResponse$BodyHandler
-                java.net.http.HttpResponse$BodyHandlers
-                java.net.http.HttpTimeoutException
-                java.net.http.WebSocket
-                java.net.http.WebSocket$Builder
-                java.net.http.WebSocket$Listener
-                java.security.cert.X509Certificate
-                javax.crypto.Mac
-                javax.crypto.spec.SecretKeySpec
-                javax.net.ssl.HostnameVerifier ;; clj-http-lite
-                javax.net.ssl.HttpsURLConnection ;; clj-http-lite
-                javax.net.ssl.KeyManagerFactory
-                javax.net.ssl.SSLContext
-                javax.net.ssl.SSLParameters
-                javax.net.ssl.SSLSession ;; clj-http-lite
-                javax.net.ssl.TrustManager
-                javax.net.ssl.TrustManagerFactory
-                javax.net.ssl.X509TrustManager
-                jdk.internal.net.http.HttpClientBuilderImpl
-                jdk.internal.net.http.HttpClientFacade
-                jdk.internal.net.http.HttpRequestBuilderImpl
-                jdk.internal.net.http.HttpResponseImpl
-                jdk.internal.net.http.common.MinimalFuture
-                jdk.internal.net.http.websocket.BuilderImpl
-                jdk.internal.net.http.websocket.WebSocketImpl])
           ~@(when features/java-nio?
               '[java.nio.ByteBuffer
                 java.nio.ByteOrder
@@ -499,63 +500,74 @@
         m (apply hash-map
                  (for [c classes
                        c [(list 'quote c) c]]
-                   c))]
-    (assoc m :public-class
-           (fn [v]
-             (cond (instance? java.lang.Process v)
-                   java.lang.Process
-                   (instance? java.lang.ProcessHandle v)
-                   java.lang.ProcessHandle
-                   (instance? java.lang.ProcessHandle$Info v)
-                   java.lang.ProcessHandle$Info
-                   ;; added for calling .put on .environment from ProcessBuilder
-                   (instance? java.util.Map v)
-                   java.util.Map
-                   ;; added for issue #239 regarding clj-http-lite
-                   ;; can potentially be removed due to fix for #1061
-                   (instance? java.io.ByteArrayOutputStream v)
-                   java.io.ByteArrayOutputStream
-                   (instance? java.security.MessageDigest v)
-                   java.security.MessageDigest
-                   ;; streams
-                   (instance? java.io.InputStream v)
-                   java.io.InputStream
-                   (instance? java.io.OutputStream v)
-                   java.io.OutputStream
-                   ;; java nio
-                   (instance? java.nio.file.Path v)
-                   java.nio.file.Path
-                   (instance? java.nio.file.FileSystem v)
-                   java.nio.file.FileSystem
-                   (instance? java.nio.file.PathMatcher v)
-                   java.nio.file.PathMatcher
-                   (instance? java.util.stream.BaseStream v)
-                   java.util.stream.BaseStream
-                   (instance? java.nio.ByteBuffer v)
-                   java.nio.ByteBuffer
-                   (instance? java.nio.charset.Charset v)
-                   java.nio.charset.Charset
-                   (instance? java.nio.charset.CharsetEncoder v)
-                   java.nio.charset.CharsetEncoder
-                   (instance? java.nio.CharBuffer v)
-                   java.nio.CharBuffer
-                   (instance? java.nio.channels.FileChannel v)
-                   java.nio.channels.FileChannel
-                   (instance? java.net.CookieStore v)
-                   java.net.CookieStore
-                   ;; this makes interop on reified classes work
-                   ;; see java_net_http_test/interop-test
-                   (instance? sci.impl.types.IReified v)
-                   (first (t/getInterfaces v))
-                   ;; fix for #1061
-                   (instance? java.io.Closeable v)
-                   java.io.Closeable
-                   (instance? java.nio.file.attribute.BasicFileAttributes v)
-                   java.nio.file.attribute.BasicFileAttributes
-                   ;; keep commas for merge friendliness
-                   ,,,)))))
+                   c))
+        m (assoc m :public-class
+                 (fn [v]
+                   (cond (instance? java.lang.Process v)
+                         java.lang.Process
+                         (instance? java.lang.ProcessHandle v)
+                         java.lang.ProcessHandle
+                         (instance? java.lang.ProcessHandle$Info v)
+                         java.lang.ProcessHandle$Info
+                         ;; added for calling .put on .environment from ProcessBuilder
+                         (instance? java.util.Map v)
+                         java.util.Map
+                         ;; added for issue #239 regarding clj-http-lite
+                         ;; can potentially be removed due to fix for #1061
+                         (instance? java.io.ByteArrayOutputStream v)
+                         java.io.ByteArrayOutputStream
+                         (instance? java.security.MessageDigest v)
+                         java.security.MessageDigest
+                         ;; streams
+                         (instance? java.io.InputStream v)
+                         java.io.InputStream
+                         (instance? java.io.OutputStream v)
+                         java.io.OutputStream
+                         ;; java nio
+                         (instance? java.nio.file.Path v)
+                         java.nio.file.Path
+                         (instance? java.nio.file.FileSystem v)
+                         java.nio.file.FileSystem
+                         (instance? java.nio.file.PathMatcher v)
+                         java.nio.file.PathMatcher
+                         (instance? java.util.stream.BaseStream v)
+                         java.util.stream.BaseStream
+                         (instance? java.nio.ByteBuffer v)
+                         java.nio.ByteBuffer
+                         (instance? java.nio.charset.Charset v)
+                         java.nio.charset.Charset
+                         (instance? java.nio.charset.CharsetEncoder v)
+                         java.nio.charset.CharsetEncoder
+                         (instance? java.nio.CharBuffer v)
+                         java.nio.CharBuffer
+                         (instance? java.nio.channels.FileChannel v)
+                         java.nio.channels.FileChannel
+                         (instance? java.net.CookieStore v)
+                         java.net.CookieStore
+                         ;; this makes interop on reified classes work
+                         ;; see java_net_http_test/interop-test
+                         (instance? sci.impl.types.IReified v)
+                         (first (t/getInterfaces v))
+                         ;; fix for #1061
+                         (instance? java.io.Closeable v)
+                         java.io.Closeable
+                         (instance? java.nio.file.attribute.BasicFileAttributes v)
+                         java.nio.file.attribute.BasicFileAttributes
+                         ;; keep commas for merge friendliness
+                         ,,,)))]
+    m))
 
-(def class-map (gen-class-map))
+
+(def class-map*
+  "This contains mapping of symbol to class of all classes that are allowed to be initialized at build time."
+  (gen-class-map))
+
+(def class-map
+  "A delay to delay initialization of java-net-http classes to run time, since GraalVM 22.1"
+  (delay (persistent! (reduce (fn [acc c]
+                                (assoc! acc c (Class/forName (str c))))
+                              (transient class-map*) (when features/java-net-http?
+                                                       java-net-http-classes)))))
 
 (def imports
   '{Appendable java.lang.Appendable
@@ -602,7 +614,9 @@
     })
 
 (defn reflection-file-entries []
-  (let [entries (vec (for [c (sort (:all classes))
+  (let [entries (vec (for [c (sort (concat (:all classes)
+                                           (when features/java-net-http?
+                                             java-net-http-classes)))
                            :let [class-name (str c)]]
                        {:name class-name
                         :allPublicMethods true
