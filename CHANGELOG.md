@@ -12,6 +12,10 @@ A preview of the next release can be installed from
 - [#863](https://github.com/babashka/babashka/issues/863): allow pods to be declared in `bb.edn` and load them when required
   - See [updated pod library docs for details](TODO: link)
 
+### Enhanced
+
+- [#1216](https://github.com/babashka/babashka/issues/1216): support `core.async/alts!` using polyfill
+
 ## 0.7.8 (2022-03-13)
 
 This release improves compatibility with several libraries: [loom](https://github.com/aysylu/loom), [hugsql.core](https://www.hugsql.org) and [specter](https://github.com/redplanetlabs/specter)!

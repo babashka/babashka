@@ -46,7 +46,6 @@
    '<!! (copy-var async/<!! core-async-namespace)
    '>!! (copy-var async/>!! core-async-namespace)
    'admix (copy-var async/admix core-async-namespace)
-   'alts! (copy-var async/alts! core-async-namespace)
    'alts!! (copy-var async/alts!! core-async-namespace)
    'alt!! (macrofy 'alt!! alt!! core-async-namespace)
    'buffer (copy-var async/buffer core-async-namespace)
@@ -107,6 +106,7 @@
    '<! (copy-var async/<!! core-async-namespace)
    '>! (copy-var async/>!! core-async-namespace)
    'alt! (macrofy 'alt! alt!! core-async-namespace)
+   'alts! (copy-var async/alts!! core-async-namespace)
    'go-loop (macrofy 'go-loop go-loop core-async-namespace)})
 
 (def async-protocols-ns (vars/->SciNamespace 'clojure.core.async.impl.protocols nil))
