@@ -1,9 +1,10 @@
 (ns babashka.impl.pods
   {:no-doc true}
   (:refer-clojure :exclude [read])
-  (:require [babashka.impl.common :refer [ctx]]
+  (:require [babashka.impl.common :refer [ctx bb-edn]]
             [babashka.pods.sci :as pods]
-            [sci.core :as sci]))
+            [sci.core :as sci]
+            [clojure.java.io :as io]))
 
 (defn load-pod [& args]
   (apply pods/load-pod @ctx args))
@@ -14,12 +15,15 @@
       (merge pod-namespaces
              (condp #(contains? %2 %1) coord
                :version
-               (pods/load-pod-metadata pod-spec (merge {:cache true}
-                                                       (select-keys coord [:version :cache])))
+               (pods/load-pod-metadata pod-spec
+                                       (merge {:cache true}
+                                              (select-keys coord [:version :cache])))
 
                :path
-               (pods/load-pod-metadata pod-spec (merge {:cache true}
-                                                       (select-keys coord [:path :cache])))
+               (pods/load-pod-metadata (-> @bb-edn :file io/file)
+                                       pod-spec
+                                       (merge {:cache true}
+                                              (select-keys coord [:path :cache])))
 
                (throw (IllegalArgumentException.
                         (str (-> coord keys first)
