@@ -952,14 +952,14 @@ Use bb run --help to show this help output.
         bb-edn (when bb-edn-file
                  (System/setProperty "babashka.config" bb-edn-file)
                  (let [raw-string (slurp bb-edn-file)
-                       edn        (edn/read-string raw-string)
-                       edn        (assoc edn
-                                    :raw raw-string
-                                    :file bb-edn-file)
-                       edn        (if-let [deps-root (or (:deps-root global-opts)
-                                                         (some-> config fs/parent))]
-                                    (assoc edn :deps-root deps-root)
-                                    edn)]
+                       edn (edn/read-string raw-string)
+                       edn (assoc edn
+                             :raw raw-string
+                             :file bb-edn-file)
+                       edn (if-let [deps-root (or (:deps-root global-opts)
+                                                  (some-> config fs/parent))]
+                             (assoc edn :deps-root deps-root)
+                             edn)]
                    (vreset! common/bb-edn edn)))
         min-bb-version (:min-bb-version bb-edn)]
     (when min-bb-version
