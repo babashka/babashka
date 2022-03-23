@@ -272,7 +272,7 @@ Have a library that is already compatible or has recently been made compatible? 
 
 Pods are programs that can be used as a Clojure library by
 babashka. Documentation is available in the [pod library
-repo](https://github.com/babashka/babashka.pods).
+repo](https://github.com/babashka/pods).
 
 A list of available pods can be found [here](doc/projects.md#pods).
 

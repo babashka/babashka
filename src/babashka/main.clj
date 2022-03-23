@@ -690,6 +690,8 @@ Use bb run --help to show this help output.
 
 (def env (atom {}))
 
+(def pod-namespaces (volatile! {}))
+
 (defn exec [cli-opts]
   (binding [*unrestricted* true]
     (sci/binding [core/warn-on-reflection @core/warn-on-reflection
@@ -755,6 +757,8 @@ Use bb run --help to show this help output.
                                                               :expressions [(:source res)]})
                                       {})
                                   res))))
+                          (when-let [pod (get @pod-namespaces namespace)]
+                            (pods/load-pod (:pod-spec pod) (:opts pod)))
                           (case namespace
                             clojure.spec.alpha
                             (binding [*out* *err*]
@@ -787,6 +791,9 @@ Use bb run --help to show this help output.
             opts (addons/future opts)
             sci-ctx (sci/init opts)
             _ (vreset! common/ctx sci-ctx)
+            _ (when-let [pods (:pods @common/bb-edn)]
+                (let [pod-metadata (pods/load-pods-metadata pods)]
+                  (vreset! pod-namespaces pod-metadata)))
             preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim))
             [expressions exit-code]
             (cond expressions [expressions nil]

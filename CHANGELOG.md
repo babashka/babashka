@@ -5,6 +5,13 @@ For a list of breaking changes, check [here](#breaking-changes).
 A preview of the next release can be installed from
 [babashka-dev-builds](https://github.com/babashka/babashka-dev-builds).
 
+## 0.8.0 (TBD)
+
+### New
+
+- [#863](https://github.com/babashka/babashka/issues/863): allow pods to be declared in `bb.edn` and load them when required
+  - See [updated pod library docs for details](TODO: link)
+
 ## 0.7.8 (2022-03-13)
 
 This release improves compatibility with several libraries: [loom](https://github.com/aysylu/loom), [hugsql.core](https://www.hugsql.org) and [specter](https://github.com/redplanetlabs/specter)!

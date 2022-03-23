@@ -14,7 +14,7 @@ commands:
 jobs:
   jvm:
     docker:
-      - image: circleci/clojure:openjdk-11-lein-2.9.6-bullseye
+      - image: circleci/clojure:openjdk-11-lein-2.9.8-bullseye
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
@@ -68,7 +68,7 @@ jobs:
           key: v1-dependencies-{{ checksum "project.clj" }}-{{ checksum "deps.edn" }}
   linux:
     docker:
-      - image: circleci/clojure:openjdk-11-lein-2.9.6-bullseye
+      - image: circleci/clojure:openjdk-11-lein-2.9.8-bullseye
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
@@ -134,7 +134,7 @@ jobs:
             ./bb .circleci/script/publish_artifact.clj || true
   linux-static:
     docker:
-      - image: circleci/clojure:openjdk-11-lein-2.9.6-bullseye
+      - image: circleci/clojure:openjdk-11-lein-2.9.8-bullseye
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
@@ -422,7 +422,7 @@ jobs:
   deploy:
     resource_class: large
     docker:
-      - image: circleci/clojure:lein-2.9.6
+      - image: circleci/clojure:lein-2.9.8
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
