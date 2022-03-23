@@ -920,11 +920,15 @@ Use bb run --help to show this help output.
             (spit uberscript-out expression :append true)))
         (when uberjar
           (if-let [cp (cp/get-classpath)]
-            (uberjar/run {:dest uberjar
-                          :jar :uber
-                          :classpath cp
-                          :main-class main
-                          :verbose debug})
+            (do
+              (fs/copy (:file @common/bb-edn) "resources/bb.edn")
+              (try
+                (uberjar/run {:dest uberjar
+                              :jar :uber
+                              :classpath cp
+                              :main-class main
+                              :verbose debug})
+                (finally (fs/delete "resources/bb.edn"))))
             (throw (Exception. "The uberjar task needs a classpath."))))
         exit-code))))
 
@@ -939,21 +943,23 @@ Use bb run --help to show this help output.
 
 (defn main [& args]
   (let [[args global-opts] (parse-global-opts args)
+        {:keys [:jar] :as opts} (parse-opts args global-opts)
         config (:config global-opts)
-        bb-edn-file (or config
-                        "bb.edn")
-        bb-edn (when (fs/exists? bb-edn-file)
-                 (System/setProperty "babashka.config"
-                                     (.getAbsolutePath (io/file bb-edn-file)))
+        abs-path #(-> % io/file .getAbsolutePath)
+        bb-edn-file (or (and config (fs/exists? config) (abs-path config))
+                        (some-> jar cp/loader (cp/resource "bb.edn") .toString)
+                        (and (fs/exists? "bb.edn") (abs-path "bb.edn")))
+        bb-edn (when bb-edn-file
+                 (System/setProperty "babashka.config" bb-edn-file)
                  (let [raw-string (slurp bb-edn-file)
-                       edn (edn/read-string raw-string)
-                       edn (assoc edn
-                                  :raw raw-string
-                                  :file bb-edn-file)
-                       edn (if-let [deps-root (or (:deps-root global-opts)
-                                                  (some-> config fs/parent))]
-                             (assoc edn :deps-root deps-root)
-                             edn)]
+                       edn        (edn/read-string raw-string)
+                       edn        (assoc edn
+                                    :raw raw-string
+                                    :file bb-edn-file)
+                       edn        (if-let [deps-root (or (:deps-root global-opts)
+                                                         (some-> config fs/parent))]
+                                    (assoc edn :deps-root deps-root)
+                                    edn)]
                    (vreset! common/bb-edn edn)))
         min-bb-version (:min-bb-version bb-edn)]
     (when min-bb-version
@@ -961,7 +967,7 @@ Use bb run --help to show this help output.
         (binding [*out* *err*]
           (println (str "WARNING: this project requires babashka "
                         min-bb-version " or newer, but you have: " version)))))
-    (exec (parse-opts args global-opts))))
+    (exec opts)))
 
 (def musl?
   "Captured at compile time, to know if we are running inside a
