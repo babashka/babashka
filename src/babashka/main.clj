@@ -946,9 +946,13 @@ Use bb run --help to show this help output.
         {:keys [:jar] :as opts} (parse-opts args global-opts)
         config (:config global-opts)
         abs-path #(-> % io/file .getAbsolutePath)
-        bb-edn-file (or (and config (fs/exists? config) (abs-path config))
-                        (some-> jar cp/loader (cp/resource "bb.edn") .toString)
-                        (and (fs/exists? "bb.edn") (abs-path "bb.edn")))
+        bb-edn-file (cond
+                      config (if (fs/exists? config)
+                               (abs-path config)
+                               (throw (IllegalArgumentException.
+                                        (str "Config file " config " does not exist"))))
+                      jar (some-> jar cp/loader (cp/resource "bb.edn") .toString)
+                      :else (when (fs/exists? "bb.edn") (abs-path "bb.edn")))
         bb-edn (when bb-edn-file
                  (System/setProperty "babashka.config" bb-edn-file)
                  (let [raw-string (slurp bb-edn-file)
