@@ -663,6 +663,15 @@ Use bb run --help to show this help output.
         [options opts-map])
       [options opts-map])))
 
+(defn parse-file-opt
+  [options opts-map]
+  (let [opt (first options)
+        opts-key (if (str/ends-with? opt ".jar")
+                   :jar :file)]
+    (assoc opts-map
+      opts-key opt
+      :command-line-args (next options))))
+
 (defn parse-opts
   ([options] (parse-opts options nil))
   ([options opts-map]
@@ -672,19 +681,18 @@ Use bb run --help to show this help output.
              ;; FILE > TASK > SUBCOMMAND
              (cond
                (.isFile (io/file opt))
-               (if (str/ends-with? opt ".jar")
-                 (assoc opts-map
-                        :jar opt
-                        :command-line-args (next options))
-                 (assoc opts-map
-                        :file opt
-                        :command-line-args (next options)))
+               (if (or (:file opts-map) (:jar opts-map))
+                 opts-map ; we've already parsed the file opt
+                 (parse-file-opt options opts-map))
+
                (contains? tasks opt)
                (assoc opts-map
                       :run opt
                       :command-line-args (next options))
+
                (command? opt)
                (recur (cons (str "--" opt) (next options)) opts-map)
+
                :else
                (parse-args options opts-map))))))
 
@@ -920,15 +928,17 @@ Use bb run --help to show this help output.
             (spit uberscript-out expression :append true)))
         (when uberjar
           (if-let [cp (cp/get-classpath)]
-            (do
-              (fs/copy (:file @common/bb-edn) "resources/bb.edn")
-              (try
-                (uberjar/run {:dest uberjar
-                              :jar :uber
-                              :classpath cp
-                              :main-class main
-                              :verbose debug})
-                (finally (fs/delete "resources/bb.edn"))))
+            (let [bb-edn-file (:file @common/bb-edn)]
+               (when (and bb-edn-file (fs/exists? bb-edn-file))
+                 (fs/copy bb-edn-file "resources/bb.edn"))
+               (try
+                 (uberjar/run {:dest uberjar
+                               :jar :uber
+                               :classpath cp
+                               :main-class main
+                               :verbose debug})
+                 (finally (when (fs/exists? "resources/bb.edn")
+                            (fs/delete "resources/bb.edn")))))
             (throw (Exception. "The uberjar task needs a classpath."))))
         exit-code))))
 
@@ -943,14 +953,12 @@ Use bb run --help to show this help output.
 
 (defn main [& args]
   (let [[args global-opts] (parse-global-opts args)
-        {:keys [:jar] :as opts} (parse-opts args global-opts)
+        {:keys [:jar] :as file-opt} (when (some-> args first io/file .isFile)
+                                      (parse-file-opt args global-opts))
         config (:config global-opts)
         abs-path #(-> % io/file .getAbsolutePath)
         bb-edn-file (cond
-                      config (if (fs/exists? config)
-                               (abs-path config)
-                               (throw (IllegalArgumentException.
-                                        (str "Config file " config " does not exist"))))
+                      config (when (fs/exists? config) (abs-path config))
                       jar (some-> jar cp/loader (cp/resource "bb.edn") .toString)
                       :else (when (fs/exists? "bb.edn") (abs-path "bb.edn")))
         bb-edn (when bb-edn-file
@@ -971,7 +979,7 @@ Use bb run --help to show this help output.
         (binding [*out* *err*]
           (println (str "WARNING: this project requires babashka "
                         min-bb-version " or newer, but you have: " version)))))
-    (exec opts)))
+    (exec (parse-opts args (merge global-opts file-opt)))))
 
 (def musl?
   "Captured at compile time, to know if we are running inside a
