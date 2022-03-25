@@ -5,7 +5,8 @@
             [clojure.java.io :as io]
             [clojure.string :as str]
             [sci.core :as sci])
-  (:import [java.util.jar JarFile Manifest]))
+  (:import [java.util.jar JarFile Manifest]
+           (java.net URL)))
 
 (set! *warn-on-reflection* true)
 
@@ -107,8 +108,8 @@
   (:cp @cp-state))
 
 (defn resource
-  ([path] (when-let [st @cp-state] (resource (:loader st) path)))
-  ([loader path]
+  (^URL [path] (when-let [st @cp-state] (resource (:loader st) path)))
+  (^URL [loader path]
    (if (str/starts-with? path "/") nil ;; non-relative paths always return nil
        (getResource loader [path] true))))
 
