@@ -3,14 +3,21 @@
     [babashka.main :as main]
     [babashka.test-utils :as tu]
     [clojure.string :as str]
-    [clojure.test :as t :refer [deftest is testing]]))
+    [clojure.test :as t :refer [deftest is testing]]
+    [babashka.fs :as fs]
+    [clojure.edn :as edn])
+  (:import (java.util.jar JarFile)
+           (java.io File InputStreamReader PushbackReader)))
+
+(defn jar-entries [jar]
+  (with-open [jar-file (JarFile. jar)]
+    (doall (enumeration-seq (.entries jar-file)))))
 
 (defn count-entries [jar]
-  (with-open [jar-file (java.util.jar.JarFile. jar)]
-    (count (map #_prn
-                identity
-                (enumeration-seq
-                 (.entries jar-file))))))
+  (-> jar jar-entries count))
+
+(defn get-entry [^File jar entry-name]
+  (-> jar JarFile. (.getEntry entry-name)))
 
 (deftest uberjar-test
   (testing "uberjar with --main"
@@ -53,6 +60,23 @@
       (tu/bb nil "--classpath" empty-classpath "uberjar" path "-m" "my.main-main")
       ;; Only a manifest entry is added
       (is (< (count-entries path) 3)))))
+
+(deftest uberjar-with-pods-test
+  (testing "jar contains bb.edn w/ only :pods when bb.edn has :pods"
+    (let [tmp-file (java.io.File/createTempFile "uber" ".jar")
+          path (.getPath tmp-file)]
+      (.deleteOnExit tmp-file)
+      (let [config {:paths ["test-resources/babashka/uberjar/src"]
+                    :deps '{local/deps {:local/root "test-resources/babashka/uberjar"}}
+                    :pods '{retrogradeorbit/bootleg {:version "0.1.9"}
+                            pod/test-pod {:path "test-resources/pod"}}}]
+        (tu/with-config config
+          (tu/bb nil "uberjar" path "-m" "my.main-main")
+          (let [bb-edn-entry (get-entry tmp-file "bb.edn")
+                bb-edn (-> path JarFile. (.getInputStream bb-edn-entry)
+                           InputStreamReader. PushbackReader. edn/read)]
+            (is (= #{:pods} (-> bb-edn keys set)))
+            (is (= (:pods config) (:pods bb-edn)))))))))
 
 (deftest throw-on-empty-classpath
   ;; this test fails the windows native test in CI
