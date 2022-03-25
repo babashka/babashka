@@ -932,12 +932,11 @@ Use bb run --help to show this help output.
                                :jar :uber
                                :classpath cp
                                :main-class main
-                               :verbose debug}
-                  bb-edn-file (:file @common/bb-edn)]
-              (if (and bb-edn-file (fs/exists? bb-edn-file))
+                               :verbose debug}]
+              (if-let [bb-edn-pods (:pods @common/bb-edn)]
                 (fs/with-temp-dir [bb-edn-dir {}]
                   (let [bb-edn-resource (fs/file bb-edn-dir "bb.edn")]
-                    (fs/copy bb-edn-file bb-edn-resource)
+                    (->> bb-edn-pods (hash-map :pods) pr-str (spit bb-edn-resource))
                     (let [cp-with-bb-edn (str cp cp/path-sep bb-edn-dir)]
                       (uberjar/run (assoc uber-params
                                      :classpath cp-with-bb-edn)))))
