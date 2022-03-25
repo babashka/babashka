@@ -928,19 +928,20 @@ Use bb run --help to show this help output.
             (spit uberscript-out expression :append true)))
         (when uberjar
           (if-let [cp (cp/get-classpath)]
-            (let [bb-edn-file (:file @common/bb-edn)]
-               (when (and bb-edn-file (fs/exists? bb-edn-file))
-                 (let [bb-edn-resource "resources/bb.edn"]
-                   (io/make-parents bb-edn-resource)
-                   (fs/copy bb-edn-file bb-edn-resource)))
-               (try
-                 (uberjar/run {:dest uberjar
+            (let [uber-params {:dest uberjar
                                :jar :uber
                                :classpath cp
                                :main-class main
-                               :verbose debug})
-                 (finally (when (fs/exists? "resources/bb.edn")
-                            (fs/delete "resources/bb.edn")))))
+                               :verbose debug}
+                  bb-edn-file (:file @common/bb-edn)]
+              (if (and bb-edn-file (fs/exists? bb-edn-file))
+                (fs/with-temp-dir [bb-edn-dir {}]
+                  (let [bb-edn-resource (fs/file bb-edn-dir "bb.edn")]
+                    (fs/copy bb-edn-file bb-edn-resource)
+                    (let [cp-with-bb-edn (str cp cp/path-sep bb-edn-dir)]
+                      (uberjar/run (assoc uber-params
+                                     :classpath cp-with-bb-edn)))))
+                (uberjar/run uber-params)))
             (throw (Exception. "The uberjar task needs a classpath."))))
         exit-code))))
 
