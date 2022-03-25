@@ -930,7 +930,9 @@ Use bb run --help to show this help output.
           (if-let [cp (cp/get-classpath)]
             (let [bb-edn-file (:file @common/bb-edn)]
                (when (and bb-edn-file (fs/exists? bb-edn-file))
-                 (fs/copy bb-edn-file "resources/bb.edn"))
+                 (let [bb-edn-resource "resources/bb.edn"]
+                   (io/make-parents bb-edn-resource)
+                   (fs/copy bb-edn-file bb-edn-resource)))
                (try
                  (uberjar/run {:dest uberjar
                                :jar :uber
