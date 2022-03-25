@@ -386,6 +386,7 @@
           java.util.Set
           java.util.StringTokenizer
           java.util.UUID
+          java.util.concurrent.Future
           java.util.concurrent.CompletableFuture
           java.util.concurrent.Executors
           java.util.concurrent.TimeUnit
@@ -553,6 +554,8 @@
                          java.io.Closeable
                          (instance? java.nio.file.attribute.BasicFileAttributes v)
                          java.nio.file.attribute.BasicFileAttributes
+                         (instance? java.util.concurrent.Future v)
+                         java.util.concurrent.Future
                          ;; keep commas for merge friendliness
                          ,,,)))]
     m))

@@ -15,6 +15,7 @@ A preview of the next release can be installed from
 ### Enhanced
 
 - [#1216](https://github.com/babashka/babashka/issues/1216): support `core.async/alts!` using polyfill
+- [#1220](https://github.com/babashka/babashka/issues/1220): add reflection on java.util.concurrent.Future
 
 ## 0.7.8 (2022-03-13)
 
