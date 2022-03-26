@@ -184,6 +184,6 @@
      resolveVar [[this sym]]}
 
     sun.misc.SignalHandler
-    {handle [[this]]}
+    {handle [[this signal]]}
 
     }))
