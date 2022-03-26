@@ -183,4 +183,7 @@
      resolveAlias [[this sym]]
      resolveVar [[this sym]]}
 
+    sun.misc.SignalHandler
+    {handle [[this]]}
+
     }))
