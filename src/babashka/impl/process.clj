@@ -1,6 +1,7 @@
 (ns babashka.impl.process
   {:no-doc true}
   (:require [babashka.process :as process]
+            [babashka.process.pprint] ;; defines simple-dispatch for []printing processes
             [sci.core :as sci :refer [copy-var]]))
 
 (def tns (sci/create-ns 'babashka.process nil))
