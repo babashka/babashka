@@ -72,12 +72,7 @@
 
       ["javax.net.ssl.HostnameVerifier" #{}]
       (proxy [javax.net.ssl.HostnameVerifier] []
-        (verify [host-name session] ((method-or-bust methods 'verify) this host-name session)))
-
-      ["sun.misc.SignalHandler" #{}]
-      (proxy [sun.misc.SignalHandler] []
-        (handle [sig]
-          ((method-or-bust methods 'handle) this sig))))))
+        (verify [host-name session] ((method-or-bust methods 'verify) this host-name session))))))
 
 (defn class-sym [c] (symbol (class-name c)))
 

@@ -404,8 +404,6 @@
           java.util.zip.ZipEntry
           java.util.zip.ZipException
           java.util.zip.ZipFile
-          sun.misc.Signal
-          sun.misc.SignalHandler
           ~(symbol "[B")
           ~(symbol "[I")
           ~(symbol "[Ljava.lang.Object;")
