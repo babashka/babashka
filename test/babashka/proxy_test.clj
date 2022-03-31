@@ -78,3 +78,55 @@
           true
           false]
          (bb (with-out-str (clojure.pprint/pprint code))))))
+
+(deftest PipedInputStream-PipedOutputStream-proxy-test
+  (is (= {:available 1
+          :read-result -1
+          :byte-read 10
+          :array-read '(0 0 0 0 0 0 10 0 0 0 0 0 0 0 0 0)
+          :instance? true}
+         (bb (with-out-str
+               (clojure.pprint/pprint
+                '(let [ins (proxy [java.io.PipedInputStream] []
+                            (available [] 1)
+                            (close [] nil)
+                            (read
+                              ([] 10)
+                              ([byte-arr off len]
+                               (aset byte-arr off (byte 10))
+                               -1
+                               ))
+                            (receive [b]
+                              nil
+                              ))
+                       arr (byte-array 16)
+                       ]
+                   {:available (.available ins)
+                    :read-result (.read ins arr 6 2)
+                    :byte-read (.read ins)
+                    :array-read (seq arr)
+                    :instance? (instance? java.io.PipedInputStream ins)
+                    }))))))
+
+  (is (= {:instance? true
+          :arr '(1 2 3 4 5 0 0 0)
+          :arr2 '(10)}
+         (bb (with-out-str
+               (clojure.pprint/pprint
+                '(let [arr (byte-array 8)
+                       arr2 (byte-array 1)
+                       outs (proxy [java.io.PipedOutputStream] []
+                             (close [] nil)
+                             (connect [sink] nil)
+                             (flush [] nil)
+                             (write
+                               ([b] (aset arr2 0 (byte b)))
+                               ([byte-arr off len]
+                                (doseq [n (range len)]
+                                  (aset arr n (aget byte-arr (+ off n)))))))
+                       ]
+                   (.write outs (int 10))
+                   (.write outs (byte-array [0 0 0 1 2 3 4 5 0 0 0]) 3 5)
+                   {:instance? (instance? java.io.PipedOutputStream outs)
+                    :arr (seq arr)
+                    :arr2 (seq arr2)})))))))
