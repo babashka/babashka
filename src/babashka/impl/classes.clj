@@ -383,7 +383,7 @@
           java.util.NoSuchElementException
           java.util.Optional
           java.util.Properties
-          java.util.Scanner
+          ;; java.util.Scanner
           java.util.Set
           java.util.StringTokenizer
           java.util.UUID
