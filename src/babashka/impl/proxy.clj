@@ -72,7 +72,27 @@
 
       ["javax.net.ssl.HostnameVerifier" #{}]
       (proxy [javax.net.ssl.HostnameVerifier] []
-        (verify [host-name session] ((method-or-bust methods 'verify) this host-name session))))))
+        (verify [host-name session] ((method-or-bust methods 'verify) this host-name session)))
+
+      ["java.io.PipedInputStream" #{}]
+      (proxy [java.io.PipedInputStream] []
+        (available [] ((method-or-bust methods 'available) this))
+        (close [] ((method-or-bust methods 'close) this))
+        (read
+          ([]
+           ((method-or-bust methods 'read) this))
+          ([b off len]
+           ((method-or-bust methods 'read) this b off len)))
+        (receive [b] ((method-or-bust methods 'receive) this b)))
+
+      ["java.io.PipedOutputStream" #{}]
+      (proxy [java.io.PipedOutputStream] []
+        (close [] ((method-or-bust methods 'close) this))
+        (connect [snk] ((method-or-bust methods 'connect) this snk))
+        (flush [] ((method-or-bust methods 'flush) this))
+        (write
+          ([b] ((method-or-bust methods 'write) this b))
+          ([b off len] ((method-or-bust methods 'write) this b off len)))))))
 
 (defn class-sym [c] (symbol (class-name c)))
 
