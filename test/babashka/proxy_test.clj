@@ -94,19 +94,16 @@
                               ([] 10)
                               ([byte-arr off len]
                                (aset byte-arr off (byte 10))
-                               -1
-                               ))
+                               -1))
                             (receive [b]
-                              nil
-                              ))
+                              nil))
                        arr (byte-array 16)
                        ]
                    {:available (.available ins)
                     :read-result (.read ins arr 6 2)
                     :byte-read (.read ins)
                     :array-read (seq arr)
-                    :instance? (instance? java.io.PipedInputStream ins)
-                    }))))))
+                    :instance? (instance? java.io.PipedInputStream ins)}))))))
 
   (is (= {:instance? true
           :arr '(1 2 3 4 5 0 0 0)
@@ -123,8 +120,7 @@
                                ([b] (aset arr2 0 (byte b)))
                                ([byte-arr off len]
                                 (doseq [n (range len)]
-                                  (aset arr n (aget byte-arr (+ off n)))))))
-                       ]
+                                  (aset arr n (aget byte-arr (+ off n)))))))]
                    (.write outs (int 10))
                    (.write outs (byte-array [0 0 0 1 2 3 4 5 0 0 0]) 3 5)
                    {:instance? (instance? java.io.PipedOutputStream outs)
