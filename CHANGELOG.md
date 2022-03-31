@@ -17,6 +17,10 @@ A preview of the next release can be installed from
 - [#1216](https://github.com/babashka/babashka/issues/1216): support `core.async/alts!` using polyfill
 - [#1220](https://github.com/babashka/babashka/issues/1220): add reflection on java.util.concurrent.Future
 
+## 0.7.9-SNAPSHOT
+
+- [#1224](https://github.com/babashka/babashka/issues/1224): add `proxy` support for `java.io.PipedInputStream` and `java.io.PipedOutputStream`. Add reflection for `java.utils.Scanner`.
+
 ## 0.7.8 (2022-03-13)
 
 This release improves compatibility with several libraries: [loom](https://github.com/aysylu/loom), [hugsql.core](https://www.hugsql.org) and [specter](https://github.com/redplanetlabs/specter)!
