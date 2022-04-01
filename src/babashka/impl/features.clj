@@ -17,7 +17,7 @@
 (def selmer?         (not= "false" (System/getenv "BABASHKA_FEATURE_SELMER")))
 (def logging?        (not= "false" (System/getenv "BABASHKA_FEATURE_LOGGING")))
 (def priority-map?   (not= "false" (System/getenv "BABASHKA_FEATURE_PRIORITY_MAP")))
-
+(def spec-alpha?     (not= "false" (System/getenv "BABASHKA_FEATURE_SPEC_ALPHA")))
 ;; excluded by default
 (def jdbc? (= "true" (System/getenv "BABASHKA_FEATURE_JDBC")))
 (def sqlite? (= "true" (System/getenv "BABASHKA_FEATURE_SQLITE")))
@@ -26,7 +26,6 @@
 (def hsqldb? (= "true" (System/getenv "BABASHKA_FEATURE_HSQLDB")))
 (def datascript? (= "true" (System/getenv "BABASHKA_FEATURE_DATASCRIPT")))
 (def lanterna? (= "true" (System/getenv "BABASHKA_FEATURE_LANTERNA")))
-(def spec-alpha? (= "true" (System/getenv "BABASHKA_FEATURE_SPEC_ALPHA")))
 
 (when xml?
   (require '[babashka.impl.xml]))
