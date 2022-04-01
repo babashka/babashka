@@ -60,7 +60,7 @@
              :feature/test-check {:source-paths ["feature-test-check"]}
              :feature/spec-alpha {:source-paths ["feature-spec-alpha"]}
              :feature/selmer {:source-paths ["feature-selmer"]
-                              :dependencies [[selmer/selmer "1.12.44"]]}
+                              :dependencies [[selmer/selmer "1.12.50"]]}
              :feature/logging {:source-paths ["feature-logging"]
                                :dependencies [[com.taoensso/timbre "5.2.1"]
                                               [org.clojure/tools.logging "1.1.0"]]}
