@@ -140,7 +140,7 @@ else
     BABASHKA_LEIN_PROFILES+=",-feature/test-check"
 fi
 
-if [ "$BABASHKA_FEATURE_SPEC_ALPHA" = "true" ]
+if [ "$BABASHKA_FEATURE_SPEC_ALPHA" != "false" ]
 then
     BABASHKA_LEIN_PROFILES+=",+feature/spec-alpha"
 else
