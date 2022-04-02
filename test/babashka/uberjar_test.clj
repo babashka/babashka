@@ -1,13 +1,13 @@
 (ns babashka.uberjar-test
   (:require
-    [babashka.main :as main]
-    [babashka.test-utils :as tu]
-    [clojure.string :as str]
-    [clojure.test :as t :refer [deftest is testing]]
-    [babashka.fs :as fs]
-    [clojure.edn :as edn])
-  (:import (java.util.jar JarFile)
-           (java.io File InputStreamReader PushbackReader)))
+   [babashka.fs :as fs]
+   [babashka.main :as main]
+   [babashka.test-utils :as tu]
+   [clojure.edn :as edn]
+   [clojure.string :as str]
+   [clojure.test :as t :refer [deftest is testing]])
+  (:import (java.io File InputStreamReader PushbackReader)
+           (java.util.jar JarFile)))
 
 (defn jar-entries [jar]
   (with-open [jar-file (JarFile. jar)]
@@ -69,8 +69,8 @@
         (.deleteOnExit tmp-file)
         (let [config {:paths ["test-resources/babashka/uberjar/src"]
                       :deps '{local/deps {:local/root "test-resources/babashka/uberjar"}}
-                      :pods '{retrogradeorbit/bootleg {:version "0.1.9"}
-                              pod/test-pod {:path "test-resources/pod"}}}]
+                      :pods (cond-> '{retrogradeorbit/bootleg {:version "0.1.9"}
+                                      (not (fs/windows?)) (assoc 'pod/test-pod {:path "test-resources/pod"})})}]
           (tu/with-config config
             (tu/bb nil "uberjar" path "-m" "my.main-main")
             (let [bb-edn-entry (get-entry tmp-file "bb.edn")
