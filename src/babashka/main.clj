@@ -52,11 +52,11 @@
    [hf.depstar.uberjar :as uberjar]
    [sci.addons :as addons]
    [sci.core :as sci]
+   [sci.impl.io :as sio]
    [sci.impl.namespaces :as sci-namespaces]
    [sci.impl.types :as sci-types]
    [sci.impl.unrestrict :refer [*unrestricted*]]
-   [sci.impl.vars :as vars]
-   [sci.impl.io :as sio])
+   [sci.impl.vars :as vars])
   (:gen-class))
 
 (def windows?
@@ -669,8 +669,8 @@ Use bb run --help to show this help output.
         opts-key (if (str/ends-with? opt ".jar")
                    :jar :file)]
     (assoc opts-map
-      opts-key opt
-      :command-line-args (next options))))
+           opts-key opt
+           :command-line-args (next options))))
 
 (defn parse-opts
   ([options] (parse-opts options nil))
@@ -765,16 +765,25 @@ Use bb run --help to show this help output.
                                                               :expressions [(:source res)]})
                                       {})
                                   res))))
-                          (when-let [pod (get @pod-namespaces namespace)]
-                            (pods/load-pod (:pod-spec pod) (:opts pod)))
-                          (case namespace
-                            clojure.spec.alpha
-                            (binding [*out* *err*]
-                              (println "[babashka] WARNING: Use the babashka-compatible version of clojure.spec.alpha, available here: https://github.com/babashka/spec.alpha"))
-                            clojure.core.specs.alpha
-                            (binding [*out* *err*]
-                              (println "[babashka] WARNING: clojure.core.specs.alpha is removed from the classpath, unless you explicitly add the dependency."))
-                            nil)))
+                          (if-let [pod (get @pod-namespaces namespace)]
+                            (if uberscript
+                              (do
+                                (swap! uberscript-sources conj
+                                       (format
+                                        "(babashka.pods/load-pod '%s \"%s\" '%s)\n"
+                                        (:pod-spec pod) (:version (:opts pod))
+                                        (dissoc (:opts pod)
+                                                :version :metadata)))
+                                {})
+                              (pods/load-pod (:pod-spec pod) (:opts pod)))
+                            (case namespace
+                              clojure.spec.alpha
+                              (binding [*out* *err*]
+                                (println "[babashka] WARNING: Use the babashka-compatible version of clojure.spec.alpha, available here: https://github.com/babashka/spec.alpha"))
+                              clojure.core.specs.alpha
+                              (binding [*out* *err*]
+                                (println "[babashka] WARNING: clojure.core.specs.alpha is removed from the classpath, unless you explicitly add the dependency."))
+                              nil))))
             main (if (and jar (not main))
                    (when-let [res (cp/getResource
                                    (cp/loader jar)
@@ -939,7 +948,7 @@ Use bb run --help to show this help output.
                     (->> {:pods bb-edn-pods} pr-str (spit bb-edn-resource))
                     (let [cp-with-bb-edn (str cp cp/path-sep bb-edn-dir)]
                       (uberjar/run (assoc uber-params
-                                     :classpath cp-with-bb-edn)))))
+                                          :classpath cp-with-bb-edn)))))
                 (uberjar/run uber-params)))
             (throw (Exception. "The uberjar task needs a classpath."))))
         exit-code))))
@@ -968,8 +977,8 @@ Use bb run --help to show this help output.
                  (let [raw-string (slurp bb-edn-file)
                        edn (edn/read-string raw-string)
                        edn (assoc edn
-                             :raw raw-string
-                             :file bb-edn-file)
+                                  :raw raw-string
+                                  :file bb-edn-file)
                        edn (if-let [deps-root (or (:deps-root global-opts)
                                                   (some-> config fs/parent))]
                              (assoc edn :deps-root deps-root)
