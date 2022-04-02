@@ -27,11 +27,6 @@
 (deftest pods-test
   (let [tmp-file (java.io.File/createTempFile "uberscript" ".clj")]
     (.deleteOnExit tmp-file)
-    ;; we test:
-    ;; order of namespaces
-    ;; reader error for ::a/foo is swallowed
-    ;; pod namespaces can be loaded without a problem
-    ;; resulting program can be executed
     (tu/with-config (pr-str '{:paths ["test-resources/babashka/uberscript/src"]
                               :pods {org.babashka/go-sqlite3 {:version "0.1.0"}}})
       (is (empty? (tu/bb nil  "uberscript" (.getPath tmp-file) "-m" "my.main-pod")))
