@@ -63,21 +63,21 @@
 
 (deftest uberjar-with-pods-test
   (testing "jar contains bb.edn w/ only :pods when bb.edn has :pods"
-    (when (= "amd64" (System/getProperty "os.arch")) ; TODO: Build bootleg for aarch64 too or use a different pod
-      (let [tmp-file (java.io.File/createTempFile "uber" ".jar")
-            path (.getPath tmp-file)]
-        (.deleteOnExit tmp-file)
-        (let [config {:paths ["test-resources/babashka/uberjar/src"]
-                      :deps '{local/deps {:local/root "test-resources/babashka/uberjar"}}
-                      :pods (cond-> '{retrogradeorbit/bootleg {:version "0.1.9"}
-                                      (not (fs/windows?)) (assoc 'pod/test-pod {:path "test-resources/pod"})})}]
-          (tu/with-config config
-            (tu/bb nil "uberjar" path "-m" "my.main-main")
-            (let [bb-edn-entry (get-entry tmp-file "bb.edn")
-                  bb-edn (-> path JarFile. (.getInputStream bb-edn-entry)
-                             InputStreamReader. PushbackReader. edn/read)]
-              (is (= #{:pods} (-> bb-edn keys set)))
-              (is (= (:pods config) (:pods bb-edn))))))))))
+    (let [tmp-file (java.io.File/createTempFile "uber" ".jar")
+          path (.getPath tmp-file)]
+      (.deleteOnExit tmp-file)
+      (let [config {:paths ["test-resources/babashka/uberjar/src"]
+                    :deps '{local/deps {:local/root "test-resources/babashka/uberjar"}}
+                    :pods (cond-> '{org.babashka/go-sqlite3 {:version "0.1.0"}}
+                            (not (fs/windows?)) (assoc 'pod/test-pod {:path "test-resources/pod"}))}]
+        (tu/with-config config
+          (tu/bb nil "uberjar" path "-m" "my.main-pod")
+          (let [bb-edn-entry (get-entry tmp-file "bb.edn")
+                bb-edn (-> path JarFile. (.getInputStream bb-edn-entry)
+                           InputStreamReader. PushbackReader. edn/read)]
+            (is (= #{:pods} (-> bb-edn keys set)))
+            (is (= (:pods config) (:pods bb-edn))))
+          (is (str/includes? (tu/bb nil "--jar" path) "3")))))))
 
 (deftest throw-on-empty-classpath
   ;; this test fails the windows native test in CI
