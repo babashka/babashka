@@ -34,5 +34,7 @@
     ;; resulting program can be executed
     (tu/with-config (pr-str '{:paths ["test-resources/babashka/uberscript/src"]
                               :pods {org.babashka/go-sqlite3 {:version "0.1.0"}}})
-      (is (empty? (tu/bb nil  "uberscript" (.getPath tmp-file) "-m" "my.main-pod"))))
+      (is (empty? (tu/bb nil  "uberscript" (.getPath tmp-file) "-m" "my.main-pod")))
+      (is (= 1 (count (re-seq #"load-pod 'org.babashka/go-sqlite3"
+                              (str/join (str/split-lines (slurp tmp-file))))))))
     (is (str/includes? (tu/bb nil "--file" (.getPath tmp-file)) "3"))))

@@ -52,11 +52,11 @@
    [hf.depstar.uberjar :as uberjar]
    [sci.addons :as addons]
    [sci.core :as sci]
+   [sci.impl.io :as sio]
    [sci.impl.namespaces :as sci-namespaces]
    [sci.impl.types :as sci-types]
    [sci.impl.unrestrict :refer [*unrestricted*]]
-   [sci.impl.vars :as vars]
-   [sci.impl.io :as sio])
+   [sci.impl.vars :as vars])
   (:gen-class))
 
 (def windows?
@@ -767,9 +767,14 @@ Use bb run --help to show this help output.
                                   res))))
                           (if-let [pod (get @pod-namespaces namespace)]
                             (if uberscript
-                              (do (swap! uberscript-sources conj (format "(babashka.pods/load-pod '%s \"%s\")\n"
-                                                                         (:pod-spec pod) (:version (:opts pod))))
-                                  {})
+                              (do
+                                (swap! uberscript-sources conj
+                                       (format
+                                        "(babashka.pods/load-pod '%s \"%s\" '%s)\n"
+                                        (:pod-spec pod) (:version (:opts pod))
+                                        (dissoc (:opts pod)
+                                                :version :metadata)))
+                                {})
                               (pods/load-pod (:pod-spec pod) (:opts pod)))
                             (case namespace
                               clojure.spec.alpha
