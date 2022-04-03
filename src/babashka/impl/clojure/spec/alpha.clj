@@ -471,7 +471,7 @@
         pred-exprs (mapv (fn [e] `(fn* [~gx] ~e)) pred-exprs)
         pred-forms (walk/postwalk res pred-exprs)]
     ;; `(map-spec-impl ~req-keys '~req ~opt '~pred-forms ~pred-exprs ~gen)
-    `(map-spec-impl {:req '~req :opt '~opt :req-un '~req-un :opt-un '~opt-un
+    `(clojure.spec.alpha/map-spec-impl {:req '~req :opt '~opt :req-un '~req-un :opt-un '~opt-un
                      :req-keys '~req-keys :req-specs '~req-specs
                      :opt-keys '~opt-keys :opt-specs '~opt-specs
                      :pred-forms '~pred-forms
@@ -1815,7 +1815,7 @@
   [& kspecs]
   `(let [mspec# (keys ~@kspecs)]
      (with-gen (clojure.spec.alpha/& (* (cat ::k keyword? ::v any?)) ::kvs->map mspec#)
-       (fn [] (gen/fmap (fn [m#] (apply concat m#)) (gen mspec#))))))
+       (fn [] (clojure.spec.gen.alpha/fmap (fn [m#] (apply concat m#)) (gen mspec#))))))
 
 (defn ^:skip-wiki nonconforming
   "takes a spec and returns a spec that has the same properties except
@@ -1868,7 +1868,7 @@
   "returns a spec that accepts nil and values satisfying pred"
   [pred]
   (let [pf (res pred)]
-    `(nilable-impl '~pf ~pred nil)))
+    `(clojure.spec.alpha/nilable-impl '~pf ~pred nil)))
 
 (defn exercise
   "generates a number (default 10) of values compatible with spec and maps conform over them,

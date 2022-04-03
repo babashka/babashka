@@ -56,6 +56,8 @@
    'every (copy-var s/every sns)
    'every-impl (copy-var s/every-impl sns)
    'every-kv (copy-var s/every-kv sns)
+   'keys (copy-var s/keys sns)
+   'map-spec-impl (copy-var s/map-spec-impl sns)
    'map-of (copy-var s/map-of sns)
    'spec (copy-var s/spec sns)
    'spec-impl (copy-var s/spec-impl sns)
@@ -68,7 +70,16 @@
    'double-in (copy-var s/double-in sns)
    'inst-in (copy-var s/inst-in sns)
    'inst-in-range? (copy-var s/inst-in-range? sns)
-   #_#_'explain-data (copy-var s/explain-data sns)})
+   'conform (copy-var s/conform sns)
+   'explain-data (copy-var s/explain-data sns)
+   'describe (copy-var s/describe sns)
+   'form (copy-var s/form sns)
+   'unform (copy-var s/unform sns)
+   'nilable (copy-var s/nilable sns)
+   'nilable-impl (copy-var s/nilable-impl sns)
+   'nonconforming (copy-var s/nonconforming sns)
+   'get-spec (copy-var s/get-spec sns)
+   'exercise (copy-var s/exercise sns)})
 
 #_:clj-kondo/ignore
 (def test-namespace
@@ -80,7 +91,8 @@
   {'fmap (copy-var gen/fmap gns)
    'generate (copy-var gen/generate gns)
    'large-integer* (copy-var gen/large-integer* gns)
-   'double* (copy-var gen/double* gns)})
+   'double* (copy-var gen/double* gns)
+   'return (copy-var gen/return gns)})
 
 ;; def-impl
 ;; -> spec? ;; OK
