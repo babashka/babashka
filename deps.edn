@@ -16,7 +16,7 @@
          "depstar/src" "process/src"
          "deps.clj/src" "deps.clj/resources"
          "resources" "sci/resources"],
- :deps {org.clojure/clojure {:mvn/version "1.11.0"},
+ :deps {org.clojure/clojure {:mvn/version "1.11.1"},
         borkdude/sci {:local/root "sci"}
         babashka/babashka.curl {:local/root "babashka.curl"}
         babashka/fs {:local/root "fs"}

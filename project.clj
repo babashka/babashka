@@ -17,7 +17,7 @@
   :resource-paths ["resources" "sci/resources"]
   :test-selectors {:default (complement :windows-only)
                    :windows (complement :skip-windows)}
-  :dependencies [[org.clojure/clojure "1.11.0"]
+  :dependencies [[org.clojure/clojure "1.11.1"]
                  [borkdude/edamame "0.0.19"]
                  [borkdude/graal.locking "0.0.2"]
                  [org.clojure/tools.cli "1.0.206"]
