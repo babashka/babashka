@@ -703,6 +703,7 @@ Use bb run --help to show this help output.
 (defn exec [cli-opts]
   (binding [*unrestricted* true]
     (sci/binding [core/warn-on-reflection @core/warn-on-reflection
+                  core/unchecked-math @core/unchecked-math
                   core/data-readers @core/data-readers
                   sci/ns @sci/ns]
       (let [{version-opt :version
