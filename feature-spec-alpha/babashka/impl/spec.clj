@@ -77,7 +77,8 @@
 
 #_:clj-kondo/ignore
 (def gen-namespace
-  {'generate (copy-var gen/generate gns)
+  {'fmap (copy-var gen/fmap gns)
+   'generate (copy-var gen/generate gns)
    'large-integer* (copy-var gen/large-integer* gns)
    'double* (copy-var gen/double* gns)})
 

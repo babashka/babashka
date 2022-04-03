@@ -1910,7 +1910,7 @@
      (clojure.spec.alpha/spec
       (clojure.spec.alpha/and inst? #(clojure.spec.alpha/inst-in-range? ~start ~end %))
       :gen (fn []
-             (gen/fmap mkdate#
+             (clojure.spec.gen.alpha/fmap mkdate#
                        (clojure.spec.gen.alpha/large-integer* {:min st# :max et#}))))))
 
 (defn int-in-range?
