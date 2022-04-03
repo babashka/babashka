@@ -16,6 +16,7 @@ A preview of the next release can be installed from
 
 - [#1216](https://github.com/babashka/babashka/issues/1216): support `core.async/alts!` using polyfill
 - [#1220](https://github.com/babashka/babashka/issues/1220): add reflection on java.util.concurrent.Future
+- [#1211](https://github.com/babashka/babashka/issues/1211): return exit code 130 on sigint
 
 ## 0.7.9-SNAPSHOT
 
