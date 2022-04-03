@@ -52,11 +52,11 @@
    [hf.depstar.uberjar :as uberjar]
    [sci.addons :as addons]
    [sci.core :as sci]
+   [sci.impl.io :as sio]
    [sci.impl.namespaces :as sci-namespaces]
    [sci.impl.types :as sci-types]
    [sci.impl.unrestrict :refer [*unrestricted*]]
-   [sci.impl.vars :as vars]
-   [sci.impl.io :as sio])
+   [sci.impl.vars :as vars])
   (:gen-class))
 
 (def windows?
@@ -663,6 +663,15 @@ Use bb run --help to show this help output.
         [options opts-map])
       [options opts-map])))
 
+(defn parse-file-opt
+  [options opts-map]
+  (let [opt (first options)
+        opts-key (if (str/ends-with? opt ".jar")
+                   :jar :file)]
+    (assoc opts-map
+           opts-key opt
+           :command-line-args (next options))))
+
 (defn parse-opts
   ([options] (parse-opts options nil))
   ([options opts-map]
@@ -672,19 +681,18 @@ Use bb run --help to show this help output.
              ;; FILE > TASK > SUBCOMMAND
              (cond
                (.isFile (io/file opt))
-               (if (str/ends-with? opt ".jar")
-                 (assoc opts-map
-                        :jar opt
-                        :command-line-args (next options))
-                 (assoc opts-map
-                        :file opt
-                        :command-line-args (next options)))
+               (if (or (:file opts-map) (:jar opts-map))
+                 opts-map ; we've already parsed the file opt
+                 (parse-file-opt options opts-map))
+
                (contains? tasks opt)
                (assoc opts-map
                       :run opt
                       :command-line-args (next options))
+
                (command? opt)
                (recur (cons (str "--" opt) (next options)) opts-map)
+
                :else
                (parse-args options opts-map))))))
 
@@ -757,16 +765,25 @@ Use bb run --help to show this help output.
                                                               :expressions [(:source res)]})
                                       {})
                                   res))))
-                          (when-let [pod (get @pod-namespaces namespace)]
-                            (pods/load-pod (:pod-spec pod) (:opts pod)))
-                          (case namespace
-                            clojure.spec.alpha
-                            (binding [*out* *err*]
-                              (println "[babashka] WARNING: Use the babashka-compatible version of clojure.spec.alpha, available here: https://github.com/babashka/spec.alpha"))
-                            clojure.core.specs.alpha
-                            (binding [*out* *err*]
-                              (println "[babashka] WARNING: clojure.core.specs.alpha is removed from the classpath, unless you explicitly add the dependency."))
-                            nil)))
+                          (if-let [pod (get @pod-namespaces namespace)]
+                            (if uberscript
+                              (do
+                                (swap! uberscript-sources conj
+                                       (format
+                                        "(babashka.pods/load-pod '%s \"%s\" '%s)\n"
+                                        (:pod-spec pod) (:version (:opts pod))
+                                        (dissoc (:opts pod)
+                                                :version :metadata)))
+                                {})
+                              (pods/load-pod (:pod-spec pod) (:opts pod)))
+                            (case namespace
+                              clojure.spec.alpha
+                              (binding [*out* *err*]
+                                (println "[babashka] WARNING: Use the babashka-compatible version of clojure.spec.alpha, available here: https://github.com/babashka/spec.alpha"))
+                              clojure.core.specs.alpha
+                              (binding [*out* *err*]
+                                (println "[babashka] WARNING: clojure.core.specs.alpha is removed from the classpath, unless you explicitly add the dependency."))
+                              nil))))
             main (if (and jar (not main))
                    (when-let [res (cp/getResource
                                    (cp/loader jar)
@@ -920,11 +937,20 @@ Use bb run --help to show this help output.
             (spit uberscript-out expression :append true)))
         (when uberjar
           (if-let [cp (cp/get-classpath)]
-            (uberjar/run {:dest uberjar
-                          :jar :uber
-                          :classpath cp
-                          :main-class main
-                          :verbose debug})
+            (let [uber-params {:dest uberjar
+                               :jar :uber
+                               :classpath cp
+                               :main-class main
+                               :verbose debug}]
+              (if-let [bb-edn-pods (:pods @common/bb-edn)]
+                (fs/with-temp-dir [bb-edn-dir {}]
+                  (let [bb-edn-resource (fs/file bb-edn-dir "META-INF" "bb.edn")]
+                    (fs/create-dirs (fs/parent bb-edn-resource))
+                    (->> {:pods bb-edn-pods} pr-str (spit bb-edn-resource))
+                    (let [cp-with-bb-edn (str bb-edn-dir cp/path-sep cp)]
+                      (uberjar/run (assoc uber-params
+                                          :classpath cp-with-bb-edn)))))
+                (uberjar/run uber-params)))
             (throw (Exception. "The uberjar task needs a classpath."))))
         exit-code))))
 
@@ -939,12 +965,16 @@ Use bb run --help to show this help output.
 
 (defn main [& args]
   (let [[args global-opts] (parse-global-opts args)
+        {:keys [:jar] :as file-opt} (when (some-> args first io/file .isFile)
+                                      (parse-file-opt args global-opts))
         config (:config global-opts)
-        bb-edn-file (or config
-                        "bb.edn")
-        bb-edn (when (fs/exists? bb-edn-file)
-                 (System/setProperty "babashka.config"
-                                     (.getAbsolutePath (io/file bb-edn-file)))
+        abs-path #(-> % io/file .getAbsolutePath)
+        bb-edn-file (cond
+                      config (when (fs/exists? config) (abs-path config))
+                      jar (some-> jar cp/loader (cp/resource "META-INF/bb.edn") .toString)
+                      :else (when (fs/exists? "bb.edn") (abs-path "bb.edn")))
+        bb-edn (when bb-edn-file
+                 (System/setProperty "babashka.config" bb-edn-file)
                  (let [raw-string (slurp bb-edn-file)
                        edn (edn/read-string raw-string)
                        edn (assoc edn
@@ -961,7 +991,7 @@ Use bb run --help to show this help output.
         (binding [*out* *err*]
           (println (str "WARNING: this project requires babashka "
                         min-bb-version " or newer, but you have: " version)))))
-    (exec (parse-opts args global-opts))))
+    (exec (parse-opts args (merge global-opts file-opt)))))
 
 (def musl?
   "Captured at compile time, to know if we are running inside a

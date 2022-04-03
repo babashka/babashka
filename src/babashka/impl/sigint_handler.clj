@@ -12,4 +12,4 @@
      (reify SignalHandler
        (handle [_ _]
          ;; This is needed to run shutdown hooks on interrupt, System/exit triggers those
-         (System/exit 0))))))
+         (System/exit 130))))))

@@ -1,7 +1,8 @@
 (ns babashka.uberscript-test
   (:require
    [babashka.test-utils :as tu]
-   [clojure.test :as t :refer [deftest is]]))
+   [clojure.test :as t :refer [deftest is]]
+   [clojure.string :as str]))
 
 (deftest basic-test
   (let [tmp-file (java.io.File/createTempFile "uberscript" ".clj")]
@@ -23,3 +24,12 @@
       (is (= ":clojure.string/foo\ntrue\n(\"1\" \"2\" \"3\" \"4\")\n"
              (tu/bb nil "--file" (.getPath tmp-file) "1" "2" "3" "4"))))))
 
+(deftest pods-test
+  (let [tmp-file (java.io.File/createTempFile "uberscript" ".clj")]
+    (.deleteOnExit tmp-file)
+    (tu/with-config (pr-str '{:paths ["test-resources/babashka/uberscript/src"]
+                              :pods {org.babashka/go-sqlite3 {:version "0.1.0"}}})
+      (is (empty? (tu/bb nil  "uberscript" (.getPath tmp-file) "-m" "my.main-pod")))
+      (is (= 1 (count (re-seq #"load-pod 'org.babashka/go-sqlite3"
+                              (str/join (str/split-lines (slurp tmp-file))))))))
+    (is (str/includes? (tu/bb nil "--file" (.getPath tmp-file)) "3"))))
