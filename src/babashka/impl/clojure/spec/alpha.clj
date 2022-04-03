@@ -494,7 +494,7 @@
         pred-forms (mapv second pairs)
         pf (mapv res pred-forms)]
     (c/assert (c/and (even? (count key-pred-forms)) (every? keyword? keys)) "spec/or expects k1 p1 k2 p2..., where ks are keywords")
-    `(or-spec-impl ~keys '~pf ~pred-forms nil)))
+    `(clojure.spec.alpha/or-spec-impl ~keys '~pf ~pred-forms nil)))
 
 (defmacro and
   "Takes predicate/spec-forms, e.g.
@@ -504,7 +504,7 @@
   Returns a spec that returns the conformed value. Successive
   conformed values propagate through rest of predicates."
   [& pred-forms]
-  `(and-spec-impl '~(mapv res pred-forms) ~(vec pred-forms) nil))
+  `(clojure.spec.alpha/and-spec-impl '~(mapv res pred-forms) ~(vec pred-forms) nil))
 
 (defmacro merge
   "Takes map-validating specs (e.g. 'keys' specs) and
@@ -569,7 +569,7 @@
 
                  distinct
                  (conj `(c/or (empty? ~gx) (apply distinct? ~gx))))]
-    `(every-impl '~pred ~pred ~(assoc nopts ::cpred `(fn* [~gx] (c/and ~@cpreds))) ~gen)))
+    `(clojure.spec.alpha/every-impl '~pred ~pred ~(assoc nopts ::cpred `(fn* [~gx] (c/and ~@cpreds))) ~gen)))
 
 (defmacro every-kv
   "like 'every' but takes separate key and val preds and works on associative collections.
@@ -579,8 +579,8 @@
   See also - map-of"
 
   [kpred vpred & opts]
-  (let [desc `(every-kv ~(res kpred) ~(res vpred) ~@(res-kind opts))]
-    `(every (tuple ~kpred ~vpred) ::kfn (fn [i# v#] (nth v# 0)) :into {} ::describe '~desc ~@opts)))
+  (let [desc `(clojure.spec.alpha/every-kv ~(res kpred) ~(res vpred) ~@(res-kind opts))]
+    `(clojure.spec.alpha/every (clojure.spec.alpha/tuple ~kpred ~vpred) ::kfn (fn [i# v#] (nth v# 0)) :into {} ::describe '~desc ~@opts)))
 
 (defmacro coll-of
   "Returns a spec for a collection of items satisfying pred. Unlike
@@ -606,27 +606,27 @@
 
   See also - every-kv"
   [kpred vpred & opts]
-  (let [desc `(map-of ~(res kpred) ~(res vpred) ~@(res-kind opts))]
-    `(every-kv ~kpred ~vpred ::conform-all true :kind map? ::describe '~desc ~@opts)))
+  (let [desc `(clojure.spec.alpha/map-of ~(res kpred) ~(res vpred) ~@(res-kind opts))]
+    `(clojure.spec.alpha/every-kv ~kpred ~vpred ::conform-all true :kind map? ::describe '~desc ~@opts)))
 
 
 (defmacro *
   "Returns a regex op that matches zero or more values matching
   pred. Produces a vector of matches iff there is at least one match"
   [pred-form]
-  `(rep-impl '~(res pred-form) ~pred-form))
+  `(clojure.spec.alpha/rep-impl '~(res pred-form) ~pred-form))
 
 (defmacro +
   "Returns a regex op that matches one or more values matching
   pred. Produces a vector of matches"
   [pred-form]
-  `(rep+impl '~(res pred-form) ~pred-form))
+  `(clojure.spec.alpha/rep+impl '~(res pred-form) ~pred-form))
 
 (defmacro ?
   "Returns a regex op that matches zero or one value matching
   pred. Produces a single value (not a collection) if matched."
   [pred-form]
-  `(maybe-impl ~pred-form '~(res pred-form)))
+  `(clojure.spec.alpha/maybe-impl ~pred-form '~(res pred-form)))
 
 (defmacro alt
   "Takes key+pred pairs, e.g.
@@ -643,7 +643,7 @@
         pred-forms (mapv second pairs)
         pf (mapv res pred-forms)]
     (c/assert (c/and (even? (count key-pred-forms)) (every? keyword? keys)) "alt expects k1 p1 k2 p2..., where ks are keywords")
-    `(alt-impl ~keys ~pred-forms '~pf)))
+    `(clojure.spec.alpha/alt-impl ~keys ~pred-forms '~pf)))
 
 (defmacro cat
   "Takes key+pred pairs, e.g.
@@ -667,15 +667,15 @@
   conjunction of the predicates, and any conforming they might perform."
   [re & preds]
   (let [pv (vec preds)]
-    `(amp-impl ~re '~(res re) ~pv '~(mapv res pv))))
+    `(clojure.spec.alpha/amp-impl ~re '~(res re) ~pv '~(mapv res pv))))
 
 (defmacro conformer
   "takes a predicate function with the semantics of conform i.e. it should return either a
   (possibly converted) value or :clojure.spec.alpha/invalid, and returns a
   spec that uses it as a predicate/conformer. Optionally takes a
   second fn that does unform of result of first"
-  ([f] `(spec-impl '(conformer ~(res f)) ~f nil true))
-  ([f unf] `(spec-impl '(conformer ~(res f) ~(res unf)) ~f nil true ~unf)))
+  ([f] `(clojure.spec.alpha/spec-impl '(conformer ~(res f)) ~f nil true))
+  ([f unf] `(clojure.spec.alpha/spec-impl '(conformer ~(res f) ~(res unf)) ~f nil true ~unf)))
 
 (defmacro fspec
   "takes :args :ret and (optional) :fn kwargs whose values are preds
@@ -704,7 +704,7 @@
   will be referred to in paths using its ordinal."
   [& preds]
   (c/assert (not (empty? preds)))
-  `(tuple-impl '~(mapv res preds) ~(vec preds)))
+  `(clojure.spec.alpha/tuple-impl '~(mapv res preds) ~(vec preds)))
 
 (defn- macroexpand-check
   [v args]
@@ -1060,7 +1060,7 @@
              (when (every? identity gs)
                (apply gen/tuple gs)))))
        (with-gen* [_ gfn] (tuple-impl forms preds gfn))
-       (describe* [_] `(tuple ~@forms))))))
+       (describe* [_] `(clojure.spec.alpha/tuple ~@forms))))))
 
 (defn- tagged-ret [tag ret]
   (clojure.lang.MapEntry. tag ret))

@@ -25,7 +25,7 @@
   the registry for k."
   [_ _ k spec-form]
   (let [k (if (symbol? k) (ns-qualify k) k)]
-    `(clojure.spec.alpha/def-impl '~k '~(s/res spec-form) ~spec-form)))
+    `(clojure.spec.alpha/def-impl '~k '~(#'s/res spec-form) ~spec-form)))
 
 ;; TODO: fix error in clj-kondo: def is a special form which should always be resolved as the special form
 #_:clj-kondo/ignore
@@ -34,14 +34,34 @@
    'def-impl (copy-var s/def-impl sns)
    'valid? (copy-var s/valid? sns)
    'gen (copy-var s/gen sns)
+   '* (copy-var s/* sns)
+   'rep-impl (copy-var s/rep-impl sns)
+   '+ (copy-var s/+ sns)
+   'rep+impl (copy-var s/rep+impl sns)
+   '? (copy-var s/? sns)
+   'maybe-impl (copy-var s/maybe-impl sns)
+   '& (copy-var s/& sns)
+   'amp-impl (copy-var s/amp-impl sns)
+   'and (copy-var s/and sns)
+   'and-spec-impl (copy-var s/and-spec-impl sns)
+   'or (copy-var s/or sns)
+   'or-spec-impl (copy-var s/or-spec-impl sns)
    'cat (copy-var s/cat sns)
    'cat-impl (copy-var s/cat-impl sns)
+   'alt (copy-var s/alt sns)
+   'alt-impl (copy-var s/alt-impl sns)
    'fdef (copy-var s/fdef sns)
    'fspec (copy-var s/fspec sns)
    'fspec-impl (copy-var s/fspec-impl sns)
-   ;; 372
+   'every (copy-var s/every sns)
+   'every-impl (copy-var s/every-impl sns)
+   'every-kv (copy-var s/every-kv sns)
+   'map-of (copy-var s/map-of sns)
    'spec (copy-var s/spec sns)
    'spec-impl (copy-var s/spec-impl sns)
+   'tuple (copy-var s/tuple sns)
+   'tuple-impl (copy-var s/tuple-impl sns)
+   'conformer (copy-var s/conformer sns)
    #_#_'explain-data (copy-var s/explain-data sns)})
 
 #_:clj-kondo/ignore
