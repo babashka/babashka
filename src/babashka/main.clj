@@ -944,9 +944,10 @@ Use bb run --help to show this help output.
                                :verbose debug}]
               (if-let [bb-edn-pods (:pods @common/bb-edn)]
                 (fs/with-temp-dir [bb-edn-dir {}]
-                  (let [bb-edn-resource (fs/file bb-edn-dir "bb.edn")]
+                  (let [bb-edn-resource (fs/file bb-edn-dir "META-INF" "bb.edn")]
+                    (fs/create-dirs (fs/parent bb-edn-resource))
                     (->> {:pods bb-edn-pods} pr-str (spit bb-edn-resource))
-                    (let [cp-with-bb-edn (str cp cp/path-sep bb-edn-dir)]
+                    (let [cp-with-bb-edn (str bb-edn-dir cp/path-sep cp)]
                       (uberjar/run (assoc uber-params
                                           :classpath cp-with-bb-edn)))))
                 (uberjar/run uber-params)))
@@ -970,7 +971,7 @@ Use bb run --help to show this help output.
         abs-path #(-> % io/file .getAbsolutePath)
         bb-edn-file (cond
                       config (when (fs/exists? config) (abs-path config))
-                      jar (some-> jar cp/loader (cp/resource "bb.edn") .toString)
+                      jar (some-> jar cp/loader (cp/resource "META-INF/bb.edn") .toString)
                       :else (when (fs/exists? "bb.edn") (abs-path "bb.edn")))
         bb-edn (when bb-edn-file
                  (System/setProperty "babashka.config" bb-edn-file)

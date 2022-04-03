@@ -72,7 +72,7 @@
                             (not (fs/windows?)) (assoc 'pod/test-pod {:path "test-resources/pod"}))}]
         (tu/with-config config
           (tu/bb nil "uberjar" path "-m" "my.main-pod")
-          (let [bb-edn-entry (get-entry tmp-file "bb.edn")
+          (let [bb-edn-entry (get-entry tmp-file "META-INF/bb.edn")
                 bb-edn (-> path JarFile. (.getInputStream bb-edn-entry)
                            InputStreamReader. PushbackReader. edn/read)]
             (is (= #{:pods} (-> bb-edn keys set)))
