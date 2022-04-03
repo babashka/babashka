@@ -17,10 +17,8 @@ A preview of the next release can be installed from
 - [#1216](https://github.com/babashka/babashka/issues/1216): support `core.async/alts!` using polyfill
 - [#1220](https://github.com/babashka/babashka/issues/1220): add reflection on java.util.concurrent.Future
 - [#1211](https://github.com/babashka/babashka/issues/1211): return exit code 130 on sigint
-
-## 0.7.9-SNAPSHOT
-
 - [#1224](https://github.com/babashka/babashka/issues/1224): add `proxy` support for `java.io.PipedInputStream` and `java.io.PipedOutputStream`. Add reflection for `java.utils.Scanner`.
+- [babashka.curl#43](https://github.com/babashka/babashka.curl/issues/43) fix: last set-cookie headers on a page overwrites the ones before
 
 ## 0.7.8 (2022-03-13)
 
