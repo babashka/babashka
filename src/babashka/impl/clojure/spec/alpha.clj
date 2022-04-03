@@ -593,7 +593,7 @@
   See also - every, map-of"
   [pred & opts]
   (let [desc `(coll-of ~(res pred) ~@(res-kind opts))]
-    `(every ~pred ::conform-all true ::describe '~desc ~@opts)))
+    `(clojure.spec.alpha/every ~pred ::conform-all true ::describe '~desc ~@opts)))
 
 (defmacro map-of
   "Returns a spec for a map whose keys satisfy kpred and vals satisfy
@@ -1907,10 +1907,11 @@
   `(let [st# (inst-ms ~start)
          et# (inst-ms ~end)
          mkdate# (fn [d#] (java.util.Date. ^{:tag ~'long} d#))]
-     (spec (and inst? #(inst-in-range? ~start ~end %))
-           :gen (fn []
-                  (gen/fmap mkdate#
-                            (gen/large-integer* {:min st# :max et#}))))))
+     (clojure.spec.alpha/spec
+      (clojure.spec.alpha/and inst? #(clojure.spec.alpha/inst-in-range? ~start ~end %))
+      :gen (fn []
+             (gen/fmap mkdate#
+                       (clojure.spec.gen.alpha/large-integer* {:min st# :max et#}))))))
 
 (defn int-in-range?
   "Return true if start <= val, val < end and val is a fixed
@@ -1922,8 +1923,9 @@
   "Returns a spec that validates fixed precision integers in the
   range from start (inclusive) to end (exclusive)."
   [start end]
-  `(spec (and int? #(int-in-range? ~start ~end %))
-         :gen #(gen/large-integer* {:min ~start :max (dec ~end)})))
+  `(clojure.spec.alpha/spec
+    (clojure.spec.alpha/and int? #(clojure.spec.alpha/int-in-range? ~start ~end %))
+    :gen #(clojure.spec.gen.alpha/large-integer* {:min ~start :max (dec ~end)})))
 
 (defmacro double-in
   "Specs a 64-bit floating point number. Options:
@@ -1935,12 +1937,12 @@
   [& {:keys [infinite? NaN? min max]
       :or {infinite? true NaN? true}
       :as m}]
-  `(spec (and c/double?
+  `(clojure.spec.alpha/spec (clojure.spec.alpha/and c/double?
               ~@(when-not infinite? '[#(not (Double/isInfinite %))])
               ~@(when-not NaN? '[#(not (Double/isNaN %))])
               ~@(when max `[#(<= % ~max)])
               ~@(when min `[#(<= ~min %)]))
-         :gen #(gen/double* ~m)))
+         :gen #(clojure.spec.gen.alpha/double* ~m)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; assert ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defonce

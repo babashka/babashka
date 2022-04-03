@@ -61,7 +61,13 @@
    'spec-impl (copy-var s/spec-impl sns)
    'tuple (copy-var s/tuple sns)
    'tuple-impl (copy-var s/tuple-impl sns)
+   'coll-of (copy-var s/coll-of sns)
    'conformer (copy-var s/conformer sns)
+   'int-in (copy-var s/int-in sns)
+   'int-in-range? (copy-var s/int-in-range? sns)
+   'double-in (copy-var s/double-in sns)
+   'inst-in (copy-var s/inst-in sns)
+   'inst-in-range? (copy-var s/inst-in-range? sns)
    #_#_'explain-data (copy-var s/explain-data sns)})
 
 #_:clj-kondo/ignore
@@ -71,7 +77,9 @@
 
 #_:clj-kondo/ignore
 (def gen-namespace
-  {'generate (copy-var gen/generate gns)})
+  {'generate (copy-var gen/generate gns)
+   'large-integer* (copy-var gen/large-integer* gns)
+   'double* (copy-var gen/double* gns)})
 
 ;; def-impl
 ;; -> spec? ;; OK
