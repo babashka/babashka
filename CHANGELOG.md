@@ -10,7 +10,7 @@ A preview of the next release can be installed from
 ### New
 
 - [#863](https://github.com/babashka/babashka/issues/863): allow pods to be declared in `bb.edn` and load them when required
-  - See [updated pod library docs for details](TODO: link)
+  - See [updated pod library docs for details](https://github.com/babashka/pods#in-a-babashka-project)
 
 ### Enhanced
 
