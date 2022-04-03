@@ -23,7 +23,7 @@ A preview of the next release can be installed from
 - SCI: support `let*` special form
 - Add compatibility with GraalVM 22.1
 - Bump timbre
-- Bump Clojure to 1.11.1
+- Bump Clojure to 1.11.0
 - Pods: support Rosetta2 fallback
 - Process: fix for pprint
 - Fs: improvement for which: do not match on local paths
