@@ -129,7 +129,7 @@
                          clojure-msgpack/clojure-msgpack {:mvn/version "1.2.1"}
                          cli-matic/cli-matic {:git/url "https://github.com/l3nz/cli-matic.git", :git/sha "9cd53ba7336363e3d06650dbad413b6f8b06e471"}
                          aysylu/loom {:mvn/version "1.0.2"}
-                         com.layerware/hugsql-core {:mvn/version "0.5.1"}
+                         com.layerware/hugsql-core {:mvn/version "0.5.3"}
                          com.github.seancorfield/expectations {:mvn/version "2.0.157"}
                          com.rpl/specter {:mvn/version "1.1.4"}}
             :classpath-overrides {org.clojure/clojure nil
