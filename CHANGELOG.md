@@ -5,12 +5,11 @@ For a list of breaking changes, check [here](#breaking-changes).
 A preview of the next release can be installed from
 [babashka-dev-builds](https://github.com/babashka/babashka-dev-builds).
 
-## 0.8.0 (TBD)
+## 0.8.0
 
 ### New
 
-- [#863](https://github.com/babashka/babashka/issues/863): allow pods to be declared in `bb.edn` and load them when required
-  - See [updated pod library docs for details](https://github.com/babashka/pods#in-a-babashka-project)
+- [#863](https://github.com/babashka/babashka/issues/863): allow pods to be declared in `bb.edn` and load them when required. See [updated pod library docs for details](https://github.com/babashka/pods#in-a-babashka-project) and the entry in the [babashka book](https://book.babashka.org/#_pods_in_bb_edn) for details.
 
 ### Enhanced
 
@@ -30,6 +29,8 @@ A preview of the next release can be installed from
 - Proxy support for PipedInputStream and PipedOutputStream
 - Expose `java.util.Scanner` for interop
 - Bump Selmer
+- Add `->Eduction`
+- Add `*unchecked-math` for compatibility
 
 ## 0.7.8 (2022-03-13)
 
