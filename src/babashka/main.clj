@@ -115,7 +115,8 @@
      "socket-repl"
      "nrepl-server"
      "describe"
-     "print-deps") true
+     "print-deps"
+     "prepare") true
     false))
 
 (defn print-error [& msgs]
@@ -175,6 +176,7 @@ Packaging:
 
   uberscript <file> [eval-opt]  Collect all required namespaces from the classpath into a single file. Accepts additional eval opts, like `-m`.
   uberjar    <jar>  [eval-opt]  Similar to uberscript but creates jar file.
+  prepare                       Download deps & pods defined in bb.edn and cache their metadata. Only an optimization, this will happen on demand when needed.
 
 In- and output flags (only to be used with -e one-liners):
 
@@ -621,6 +623,10 @@ Use bb run --help to show this help output.
                  :command-line-args (next options))
           ("--print-deps")
           (parse-print-deps-opts opts-map (next options))
+          ("--prepare")
+          (let [options (next options)]
+            (recur (next options)
+                   (assoc opts-map :prepare true)))
           ;; fallback
           (if (and opts-map
                    (some opts-map [:file :jar :socket-repl :expressions :main :run]))
@@ -715,7 +721,7 @@ Use bb run --help to show this help output.
                     :main :uberscript :describe?
                     :jar :uberjar :clojure
                     :doc :run :list-tasks
-                    :print-deps]}
+                    :print-deps :prepare]}
             cli-opts
             _ (when debug (vreset! common/debug true))
             _ (do ;; set properties
@@ -883,6 +889,7 @@ Use bb run --help to show this help output.
                        uberjar [nil 0]
                        list-tasks [(tasks/list-tasks sci-ctx) 0]
                        print-deps [(print-deps/print-deps (:print-deps-format cli-opts)) 0]
+                       prepare [nil 0]
                        uberscript
                        [nil (do (uberscript/uberscript {:ctx sci-ctx
                                                         :expressions expressions})
