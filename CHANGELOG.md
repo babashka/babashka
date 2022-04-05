@@ -5,6 +5,10 @@ For a list of breaking changes, check [here](#breaking-changes).
 A preview of the next release can be installed from
 [babashka-dev-builds](https://github.com/babashka/babashka-dev-builds).
 
+## 0.8.1 (TBD)
+
+- [#1041](https://github.com/babashka/babashka/issues/1041): Improve error message when regex literal in EDN config
+
 ## 0.8.0 (2022-04-04)
 
 ### New
