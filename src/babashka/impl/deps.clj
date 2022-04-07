@@ -101,4 +101,4 @@
    'clojure (sci/copy-var bdeps/clojure dns)
    'merge-deps (sci/copy-var merge-deps dns)
    ;; undocumented
-   'merge-defaults (sci/copy-var merge-default-deps dns)})
+   'merge-defaults (sci/copy-var merge-default-deps dns {:name 'merge-defaults})})

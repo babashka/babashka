@@ -825,6 +825,10 @@ true")))
   (is (= :f (bb nil "(first (into-array [:f]))")))
   (is (= :f (bb nil "(first (first (into-array [(into-array [:f])])))"))))
 
+(deftest var-names-test
+  (testing "for all public vars, ns/symbol from ns map matches metadata"
+    (is (empty? (bb nil (.getPath (io/file "test" "babashka" "scripts" "check_var_names.bb")))))))
+
 ;;;; Scratch
 
 (comment

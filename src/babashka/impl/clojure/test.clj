@@ -332,7 +332,7 @@
     :added "1.1"}
   report-impl :type)
 
-(def report (sci/copy-var report-impl tns))
+(def report (sci/copy-var report-impl tns {:name 'report}))
 
 (defn do-report
   "Add file and line information to a test result and call report.
@@ -722,7 +722,7 @@
                          :expected nil, :actual e})))
       (do-report {:type :end-test-var, :var v}))))
 
-(def test-var (sci/copy-var test-var-impl tns))
+(def test-var (sci/copy-var test-var-impl tns {:name 'test-var}))
 
 (defn test-vars
   "Groups vars by their namespace and runs test-vars on them with

@@ -76,4 +76,4 @@
 
 (def sni-client-namespace
   {'ssl-configurer (copy-var sni-client/ssl-configurer sns)
-   'default-client (sci/new-var 'sni-client sni-client {:ns sns})})
+   'default-client (sci/new-var 'default-client sni-client {:ns sns})})
