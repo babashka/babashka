@@ -10,6 +10,7 @@ A preview of the next release can be installed from
 
 - Add `prepare` subcommand to download deps & pods and cache pod metadata
 - [#1041](https://github.com/babashka/babashka/issues/1041): Improve error message when regex literal in EDN config
+- [#1223](https://github.com/babashka/babashka/issues/1223): Ensure that var metadata (specifically `:name`) aligns with the var's symbol (which in turn ensures that `doc` will print the var's name)
 
 ## 0.8.0 (2022-04-04)
 
