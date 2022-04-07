@@ -827,7 +827,7 @@ true")))
 
 (deftest var-names-test
   (testing "for all public vars, ns/symbol from ns map matches metadata"
-    (is (empty? (bb nil "-f" "test-resources/babashka/check_var_names.bb")))))
+    (is (empty? (bb nil (.getPath (io/file "test" "babashka" "scripts" "check_var_names.bb")))))))
 
 ;;;; Scratch
 
