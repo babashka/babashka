@@ -103,10 +103,10 @@
    'untap-all (copy-var async/untap-all core-async-namespace)
    ;; polyfill
    'go (macrofy 'go thread core-async-namespace)
-   '<! (copy-var async/<!! core-async-namespace)
-   '>! (copy-var async/>!! core-async-namespace)
+   '<! (copy-var async/<!! core-async-namespace {:name '<!})
+   '>! (copy-var async/>!! core-async-namespace {:name '>!})
    'alt! (macrofy 'alt! alt!! core-async-namespace)
-   'alts! (copy-var async/alts!! core-async-namespace)
+   'alts! (copy-var async/alts!! core-async-namespace {:name 'alts!})
    'go-loop (macrofy 'go-loop go-loop core-async-namespace)})
 
 (def async-protocols-ns (vars/->SciNamespace 'clojure.core.async.impl.protocols nil))
