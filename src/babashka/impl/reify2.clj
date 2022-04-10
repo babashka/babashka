@@ -136,15 +136,24 @@
                                                  {:name "forEachRemaining"
                                                   :desc [java.util.function.Consumer :void]}]))
 
+(set! *warn-on-reflection* true)
+
+(defn class->methods [^Class clazz]
+  (let [meths (mapv bean (.getDeclaredMethods clazz))
+        meths (mapv (fn [{:keys [name
+                                parameterTypes
+                                returnType]}]
+                      (let [ret-type (condp = returnType
+                                       Void/TYPE :void
+                                       Boolean/TYPE :boolean
+                                       returnType)]
+                        {:name name
+                         :desc (conj (vec parameterTypes) ret-type)}))
+                   meths)]
+    meths))
+
 (insn/define (interface-data clojure.lang.IFn
-                             [{:name "invoke"
-                               :desc [Object]}
-                              {:name "invoke"
-                               :desc [Object Object]}
-                              {:name "invoke"
-                               :desc [Object Object Object]}
-                              {:name "invoke"
-                               :desc [Object Object Object Object]}]))
+                             (class->methods clojure.lang.IFn)))
 
 (insn/define (interface-data java.nio.file.FileVisitor
                              [{:name "preVisitDirectory"
@@ -165,10 +174,17 @@
                                       java.nio.file.FileVisitResult]}]))
 
 (comment
+
+  (def meths (map bean (.getMethods java.nio.file.FileVisitor)))
+  (first meths)
+  )
+
+(comment
   (isa? babashka.impl.java.util.Iterator java.util.Iterator)
   (.next (babashka.impl.java.util.Iterator. {'next (fn [_] :hello)}))
   ((babashka.impl.clojure.lang.IFn. {'invoke (fn [_] :hello)}))
   ((babashka.impl.clojure.lang.IFn. {'invoke (fn [_ _] :hello)}) 1)
+  (.run (babashka.impl.clojure.lang.IFn. {'invoke (fn [_] :hello)}))
   (.preVisitDirectory (babashka.impl.java.nio.file.FileVisitor. {'preVisitDirectory (fn [_ _ _] nil)}) 1 nil)
   (.postVisitDirectory (babashka.impl.java.nio.file.FileVisitor. {'postVisitDirectory (fn [_ _ _] nil)}) 1 nil)
   )
