@@ -37,7 +37,7 @@
 (defn return [desc]
   (case (last desc)
     :void [:return]
-    :boolean [:ireturn]
+    (:boolean :int) [:ireturn]
     [:areturn]))
 
 (defn loads [desc]
@@ -67,6 +67,8 @@
                   :void [:pop]
                   :boolean [[:checkcast Boolean]
                             [:invokevirtual Boolean "booleanValue"]]
+                  :int [[:checkcast Integer]
+                        [:invokevirtual Integer "intValue"]]
                   "java.lang.Object" nil
                   (when (class? ret-type*)
                     [[:checkcast ret-type*]])))
@@ -127,86 +129,70 @@
                        :desc desc
                        :emit (emit-method interface name desc)}))}))
 
-(insn/define (interface-data java.util.Iterator [{:name "hasNext"
-                                                  :desc [:boolean]}
-                                                 {:name "remove"
-                                                  :desc [:void]}
-                                                 {:name "next"
-                                                  :desc [Object]}
-                                                 {:name "forEachRemaining"
-                                                  :desc [java.util.function.Consumer :void]}]))
-
 (set! *warn-on-reflection* true)
 
 (defn class->methods [^Class clazz]
-  (let [meths (mapv bean (.getDeclaredMethods clazz))
+  (let [meths (mapv bean (.getMethods clazz))
         meths (mapv (fn [{:keys [name
-                                parameterTypes
-                                returnType]}]
+                                 parameterTypes
+                                 returnType]}]
                       (let [ret-type (condp = returnType
                                        Void/TYPE :void
                                        Boolean/TYPE :boolean
+                                       Integer/TYPE :int
                                        returnType)]
                         {:name name
                          :desc (conj (vec parameterTypes) ret-type)}))
-                   meths)]
-    meths))
+                    meths)]
+    (distinct meths)))
 
-(insn/define (interface-data clojure.lang.IFn
-                             (class->methods clojure.lang.IFn)))
+(def interfaces [java.nio.file.FileVisitor
+                 java.io.FileFilter
+                 java.io.FilenameFilter
+                 clojure.lang.Associative
+                 clojure.lang.ILookup
+                 java.util.Map$Entry
+                 clojure.lang.IFn
+                 clojure.lang.IPersistentCollection
+                 clojure.lang.IReduce
+                 clojure.lang.IReduceInit
+                 clojure.lang.IKVReduce
+                 ;; TODO: fix interfaces with primitive arguments
+                 #_clojure.lang.Indexed
+                 clojure.lang.IPersistentMap
+                 clojure.lang.IPersistentStack
+                 clojure.lang.Reversible
+                 clojure.lang.Seqable
+                 java.lang.Iterable
+                 ;; TODO: fix interfaces with primitive arguments
+                 #_java.net.http.WebSocket$Listener
+                 java.util.Iterator
+                 java.util.function.Function
+                 java.util.function.Supplier
+                 java.lang.Comparable
+                 javax.net.ssl.X509TrustManager
+                 clojure.lang.LispReader$Resolver])
 
-(insn/define (interface-data java.nio.file.FileVisitor
-                             [{:name "preVisitDirectory"
-                               :desc [Object
-                                      java.nio.file.attribute.BasicFileAttributes
-                                      java.nio.file.FileVisitResult]}
-                              {:name "postVisitDirectory"
-                               :desc [Object
-                                      java.io.IOException
-                                      java.nio.file.FileVisitResult]}
-                              {:name "visitFile"
-                               :desc [Object
-                                      java.nio.file.attribute.BasicFileAttributes
-                                      java.nio.file.FileVisitResult]}
-                              {:name "visitFileFailed"
-                               :desc [Object
-                                      java.io.IOException
-                                      java.nio.file.FileVisitResult]}]))
-
-(comment
-
-  (def meths (map bean (.getMethods java.nio.file.FileVisitor)))
-  (first meths)
-  )
-
-(comment
-  (isa? babashka.impl.java.util.Iterator java.util.Iterator)
-  (.next (babashka.impl.java.util.Iterator. {'next (fn [_] :hello)}))
-  ((babashka.impl.clojure.lang.IFn. {'invoke (fn [_] :hello)}))
-  ((babashka.impl.clojure.lang.IFn. {'invoke (fn [_ _] :hello)}) 1)
-  (.run (babashka.impl.clojure.lang.IFn. {'invoke (fn [_] :hello)}))
-  (.preVisitDirectory (babashka.impl.java.nio.file.FileVisitor. {'preVisitDirectory (fn [_ _ _] nil)}) 1 nil)
-  (.postVisitDirectory (babashka.impl.java.nio.file.FileVisitor. {'postVisitDirectory (fn [_ _ _] nil)}) 1 nil)
-  )
+(doseq [i interfaces]
+  (insn/define (interface-data i (class->methods i))))
 
 (defn method-or-bust [methods k]
   (or (get methods k)
       (throw (UnsupportedOperationException. "Method not implemented: " k))))
 
-(def reify-fn (fn [m]
-                (prn :m m)
-                (case (.getName ^Class (first (:interfaces m)))
-                  "java.lang.Object"
-                  (reify java.lang.Object
-                    (toString [this]
-                      ((method-or-bust (:methods m) 'toString) this)))
-                  "java.util.Iterator"
-                  (new babashka.impl.java.util.Iterator (:methods m))
-                  "clojure.lang.IFn"
-                  (new babashka.impl.clojure.lang.IFn (:methods m))
-                  "java.nio.file.FileVisitor"
-                  (new babashka.impl.java.nio.file.FileVisitor (:methods m))
-                  )))
+(defmacro gen-reify-fn []
+  `(fn [~'m]
+     (case (.getName ~(with-meta `(first (:interfaces ~'m))
+                        {:tag 'Class}))
+      "java.lang.Object"
+      (reify java.lang.Object
+        (toString [~'this]
+          ((method-or-bust (:methods ~'m) 'toString) ~'this)))
+      ~@(for [i interfaces]
+          [(let [in (.getName ^Class i)]
+             `(new ~(symbol (str "babashka.impl." in)) (:methods ~'m)))]))))
+
+(def reify-fn (gen-reify-fn))
 
 #_(def reify-fn
     (gen-reify-combos
