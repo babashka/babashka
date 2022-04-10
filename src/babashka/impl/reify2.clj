@@ -176,6 +176,10 @@
 (doseq [i interfaces]
   (insn/define (interface-data i (class->methods i))))
 
+(comment
+  (.apply (new babashka.impl.java.util.function.Function {'apply (fn [_ _]
+                                                                  :hello)}) 1))
+
 (defn method-or-bust [methods k]
   (or (get methods k)
       (throw (UnsupportedOperationException. "Method not implemented: " k))))
@@ -188,9 +192,13 @@
       (reify java.lang.Object
         (toString [~'this]
           ((method-or-bust (:methods ~'m) (quote ~'toString)) ~'this)))
-      ~@(for [i interfaces]
-          [(let [in (.getName ^Class i)]
-             `(new ~(symbol (str "babashka.impl." in)) (:methods ~'m)))]))))
+      ~@(mapcat identity
+                (for [i interfaces]
+                  (let [in (.getName ^Class i)]
+                    [in
+                     `(new ~(symbol (str "babashka.impl." in)) (:methods ~'m))]))))))
+
+(macroexpand '(gen-reify-fn))
 
 (def reify-fn (gen-reify-fn))
 
