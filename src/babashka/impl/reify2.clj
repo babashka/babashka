@@ -150,6 +150,18 @@
                              [{:name "preVisitDirectory"
                                :desc [Object
                                       java.nio.file.attribute.BasicFileAttributes
+                                      java.nio.file.FileVisitResult]}
+                              {:name "postVisitDirectory"
+                               :desc [Object
+                                      java.io.IOException
+                                      java.nio.file.FileVisitResult]}
+                              {:name "visitFile"
+                               :desc [Object
+                                      java.nio.file.attribute.BasicFileAttributes
+                                      java.nio.file.FileVisitResult]}
+                              {:name "visitFileFailed"
+                               :desc [Object
+                                      java.io.IOException
                                       java.nio.file.FileVisitResult]}]))
 
 (comment
@@ -158,6 +170,7 @@
   ((babashka.impl.clojure.lang.IFn. {'invoke (fn [_] :hello)}))
   ((babashka.impl.clojure.lang.IFn. {'invoke (fn [_ _] :hello)}) 1)
   (.preVisitDirectory (babashka.impl.java.nio.file.FileVisitor. {'preVisitDirectory (fn [_ _ _] nil)}) 1 nil)
+  (.postVisitDirectory (babashka.impl.java.nio.file.FileVisitor. {'postVisitDirectory (fn [_ _ _] nil)}) 1 nil)
   )
 
 (defn method-or-bust [methods k]
