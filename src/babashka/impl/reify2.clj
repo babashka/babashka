@@ -187,7 +187,7 @@
       "java.lang.Object"
       (reify java.lang.Object
         (toString [~'this]
-          ((method-or-bust (:methods ~'m) 'toString) ~'this)))
+          ((method-or-bust (:methods ~'m) (quote ~'toString)) ~'this)))
       ~@(for [i interfaces]
           [(let [in (.getName ^Class i)]
              `(new ~(symbol (str "babashka.impl." in)) (:methods ~'m)))]))))
