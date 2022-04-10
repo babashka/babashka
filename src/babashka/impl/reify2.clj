@@ -59,11 +59,17 @@
               [:aload (inc args)]]
              (loads desc)
              [[:invokeinterface clojure.lang.IFn "invoke" (vec (repeat (inc (count desc)) Object))]
-              (case (last desc)
-                :void [:pop]
-                :boolean [[:checkcast Boolean]
-                          [:invokevirtual Boolean "booleanValue"]]
-                nil)
+              (let [ret-type* (last desc)
+                    ret-type (if (class? ret-type*)
+                               (.getName ^Class ret-type*)
+                               ret-type*)]
+                (case ret-type
+                  :void [:pop]
+                  :boolean [[:checkcast Boolean]
+                            [:invokevirtual Boolean "booleanValue"]]
+                  "java.lang.Object" nil
+                  (when (class? ret-type*)
+                    [[:checkcast ret-type*]])))
               (return desc)
               [:mark :fallback]]
              (loads desc)
@@ -140,20 +146,38 @@
                               {:name "invoke"
                                :desc [Object Object Object Object]}]))
 
+(insn/define (interface-data java.nio.file.FileVisitor
+                             [{:name "preVisitDirectory"
+                               :desc [Object
+                                      java.nio.file.attribute.BasicFileAttributes
+                                      java.nio.file.FileVisitResult]}]))
+
 (comment
   (isa? babashka.impl.java.util.Iterator java.util.Iterator)
   (.next (babashka.impl.java.util.Iterator. {'next (fn [_] :hello)}))
   ((babashka.impl.clojure.lang.IFn. {'invoke (fn [_] :hello)}))
   ((babashka.impl.clojure.lang.IFn. {'invoke (fn [_ _] :hello)}) 1)
+  (.preVisitDirectory (babashka.impl.java.nio.file.FileVisitor. {'preVisitDirectory (fn [_ _ _] nil)}) 1 nil)
   )
+
+(defn method-or-bust [methods k]
+  (or (get methods k)
+      (throw (UnsupportedOperationException. "Method not implemented: " k))))
 
 (def reify-fn (fn [m]
                 (prn :m m)
                 (case (.getName ^Class (first (:interfaces m)))
+                  "java.lang.Object"
+                  (reify java.lang.Object
+                    (toString [this]
+                      ((method-or-bust (:methods m) 'toString) this)))
                   "java.util.Iterator"
                   (new babashka.impl.java.util.Iterator (:methods m))
                   "clojure.lang.IFn"
-                  (new babashka.impl.clojure.lang.IFn (:methods m)))))
+                  (new babashka.impl.clojure.lang.IFn (:methods m))
+                  "java.nio.file.FileVisitor"
+                  (new babashka.impl.java.nio.file.FileVisitor (:methods m))
+                  )))
 
 #_(def reify-fn
     (gen-reify-combos
