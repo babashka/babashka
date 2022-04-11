@@ -41,9 +41,16 @@
     [:areturn]))
 
 (defn loads [desc]
-  (mapv (fn [i]
-          [:aload i])
-        (range (count desc))))
+  (let [desc (butlast desc)]
+    (vec (mapcat (fn [i e]
+                   (case e
+                     :boolean [[:iload i]
+                               [:invokestatic Boolean "valueOf" [:boolean Boolean]]]
+                     :int [[:iload i]
+                           [:invokestatic Integer "valueOf" [:int Boolean]]]
+                     [[:aload i]]))
+                 (range (count desc))
+                 desc))))
 
 (defn emit-method [class meth desc]
   (let [args (dec (count desc))]
@@ -57,6 +64,7 @@
               [:aload (inc args)]
               [:ifnull :fallback]
               [:aload (inc args)]]
+             [[:aload 0]]
              (loads desc)
              [[:invokeinterface clojure.lang.IFn "invoke" (vec (repeat (inc (count desc)) Object))]
               (let [ret-type* (last desc)
@@ -74,6 +82,7 @@
                     [[:checkcast ret-type*]])))
               (return desc)
               [:mark :fallback]]
+             [[:aload 0]]
              (loads desc)
              [[:invokespecial class meth desc]
               (return desc)]])))
@@ -131,18 +140,21 @@
 
 (set! *warn-on-reflection* true)
 
+(defn type->kw [type]
+  (condp = type
+    Void/TYPE :void
+    Boolean/TYPE :boolean
+    Integer/TYPE :int
+    type))
+
 (defn class->methods [^Class clazz]
   (let [meths (mapv bean (.getMethods clazz))
         meths (mapv (fn [{:keys [name
                                  parameterTypes
                                  returnType]}]
-                      (let [ret-type (condp = returnType
-                                       Void/TYPE :void
-                                       Boolean/TYPE :boolean
-                                       Integer/TYPE :int
-                                       returnType)]
+                      (let [ret-type (type->kw returnType)]
                         {:name name
-                         :desc (conj (vec parameterTypes) ret-type)}))
+                         :desc (conj (mapv type->kw parameterTypes) ret-type)}))
                     meths)]
     (distinct meths)))
 
@@ -158,7 +170,7 @@
                  clojure.lang.IReduceInit
                  clojure.lang.IKVReduce
                  ;; TODO: fix interfaces with primitive arguments
-                 #_clojure.lang.Indexed
+                 clojure.lang.Indexed
                  clojure.lang.IPersistentMap
                  clojure.lang.IPersistentStack
                  clojure.lang.Reversible
@@ -177,8 +189,9 @@
   (insn/define (interface-data i (class->methods i))))
 
 (comment
-  (.apply (new babashka.impl.java.util.function.Function {'apply (fn [_ _]
-                                                                  :hello)}) 1))
+  (interface-data clojure.lang.Indexed (class->methods clojure.lang.Indexed))
+  (interface-data clojure.lang.Indexed (class->methods clojure.lang.Associative))
+  )
 
 (defn method-or-bust [methods k]
   (or (get methods k)
