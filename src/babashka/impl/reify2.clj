@@ -105,6 +105,10 @@
      :fields (into [{:flags #{:private},
                      :name "_methods" :type java.util.Map}
                     {:flags #{:private},
+                     :name "_interfaces" :type Object}
+                    {:flags #{:private},
+                     :name "_protocols" :type Object}
+                    {:flags #{:private},
                      :name "_meta" :type clojure.lang.IPersistentMap}]
                    (for [name method-names]
                      {:flags #{:private :static},
@@ -121,12 +125,18 @@
                              [:invokespecial :super :init [:void]]
                              [:return]]}
                      {:name :init
-                      :desc [java.util.Map :void]
+                      :desc [java.util.Map Object Object :void]
                       :emit [[:aload 0]
                              [:invokespecial :super :init [:void]]
                              [:aload 0]
                              [:aload 1]
                              [:putfield :this "_methods" java.util.Map]
+                             [:aload 0]
+                             [:aload 2]
+                             [:putfield :this "_interfaces" Object]
+                             [:aload 0]
+                             [:aload 3]
+                             [:putfield :this "_protocols" Object]
                              [:return]]}
                      {:name :meta
                       :desc [clojure.lang.IPersistentMap]
@@ -230,7 +240,10 @@
                  (for [i interfaces]
                    (let [in (.getName ^Class i)]
                      [in
-                      `(new ~(symbol (str "babashka.impl." in)) (:methods ~'m))]))))))
+                      `(new ~(symbol (str "babashka.impl." in))
+                            (:methods ~'m)
+                            (:interfaces ~'m)
+                            (:protocols ~'m))]))))))
 
 (macroexpand '(gen-reify-fn))
 
