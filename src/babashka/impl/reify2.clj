@@ -153,7 +153,7 @@
                      {:name :getInterfaces
                       :desc [Object]
                       :emit [[:aload 0]
-                             [:getfield :this "_methods" java.util.Map]
+                             [:getfield :this "_interfaces" Object]
                              [:areturn]]}
                      {:name :getMethods
                       :desc [Object]
@@ -163,7 +163,7 @@
                      {:name :getProtocols
                       :desc [Object]
                       :emit [[:aload 0]
-                             [:getfield :this "_methods" java.util.Map]
+                             [:getfield :this "_protocols" Object]
                              [:areturn]]}]
                     (for [{:keys [name desc]} methods]
                       {:flags #{:public}, :name name
@@ -254,6 +254,16 @@
                   :methods {'nth (fn [_ i] (nth [1 2 3] i))}}) 0)
   (nth (reify-fn {:interfaces [clojure.lang.Indexed]
                   :methods {'nth (fn [_ i default] (nth [1 2 3] i default))}}) 10 :default)
+  (sci.impl.types/getMethods
+   (reify-fn {:interfaces [clojure.lang.Indexed]
+              :methods {'nth (fn [_ i default] (nth [1 2 3] i default))}}))
+  (sci.impl.types/getInterfaces
+   (reify-fn {:interfaces [clojure.lang.Indexed]
+              :methods {'nth (fn [_ i default] (nth [1 2 3] i default))}}))
+  (sci.impl.types/getProtocols
+   (reify-fn {:interfaces [clojure.lang.Indexed]
+              :methods {'nth (fn [_ i default] (nth [1 2 3] i default))}}))
+
   )
 
 #_(def reify-fn
