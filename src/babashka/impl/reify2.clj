@@ -45,13 +45,10 @@
     (vec
      (mapcat (fn [i e]
                (case e
-                 #_#_:boolean [[:iload i]
-                               [:invokestatic Boolean "valueOf" [:boolean Boolean]]]
-                 ;; this causes operand underflow
+                 :boolean [[:iload i]
+                            (when cast? [:invokestatic Boolean "valueOf" [:boolean Boolean]])]
                  :int [[:iload i]
-                       (when cast? [:invokestatic Integer "valueOf" [:int Integer]])
-                       #_[:astore i]
-                       #_[:aload i]]
+                       (when cast? [:invokestatic Integer "valueOf" [:int Integer]])]
                  [[:aload i]]))
              (range 1 (inc (count desc)))
              desc))))
@@ -207,7 +204,7 @@
                  clojure.lang.Reversible
                  clojure.lang.Seqable
                  java.lang.Iterable
-                 #_java.net.http.WebSocket$Listener
+                 java.net.http.WebSocket$Listener
                  java.util.Iterator
                  java.util.function.Function
                  java.util.function.Supplier
