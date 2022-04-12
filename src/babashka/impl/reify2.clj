@@ -224,6 +224,13 @@
 
 (def reify-fn (gen-reify-fn))
 
+(comment
+  (nth (reify-fn {:interfaces [clojure.lang.Indexed]
+                  :methods {'nth (fn [_ i] (nth [1 2 3] i))}}) 0)
+  (nth (reify-fn {:interfaces [clojure.lang.Indexed]
+                  :methods {'nth (fn [_ i default] (nth [1 2 3] i default))}}) 10 :default)
+  )
+
 #_(def reify-fn
     (gen-reify-combos
      {java.lang.Object
