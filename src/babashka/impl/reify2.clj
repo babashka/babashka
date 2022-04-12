@@ -100,7 +100,8 @@
      :version 1.8
      :interfaces [class-sym
                   'clojure.lang.IMeta
-                  'clojure.lang.IObj]
+                  'clojure.lang.IObj
+                  'sci.impl.types.IReified]
      :fields (into [{:flags #{:private},
                      :name "_methods" :type java.util.Map}
                     {:flags #{:private},
@@ -138,6 +139,21 @@
                              [:aload 1]
                              [:putfield :this "_meta" clojure.lang.IPersistentMap]
                              [:aload 0]
+                             [:areturn]]}
+                     {:name :getInterfaces
+                      :desc [Object]
+                      :emit [[:aload 0]
+                             [:getfield :this "_methods" java.util.Map]
+                             [:areturn]]}
+                     {:name :getMethods
+                      :desc [Object]
+                      :emit [[:aload 0]
+                             [:getfield :this "_methods" java.util.Map]
+                             [:areturn]]}
+                     {:name :getProtocols
+                      :desc [Object]
+                      :emit [[:aload 0]
+                             [:getfield :this "_methods" java.util.Map]
                              [:areturn]]}]
                     (for [{:keys [name desc]} methods]
                       {:flags #{:public}, :name name
