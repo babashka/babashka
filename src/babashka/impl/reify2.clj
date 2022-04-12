@@ -99,9 +99,9 @@
     {:name (symbol (str "babashka.impl." (.getName interface)))
      :version 1.8
      :interfaces [class-sym
+                  'sci.impl.types.IReified
                   'clojure.lang.IMeta
-                  'clojure.lang.IObj
-                  'sci.impl.types.IReified]
+                  'clojure.lang.IObj]
      :fields (into [{:flags #{:private},
                      :name "_methods" :type java.util.Map}
                     {:flags #{:private},
@@ -230,22 +230,27 @@
 
 (defmacro gen-reify-fn []
   `(fn [~'m]
-     (case (.getName ~(with-meta `(first (:interfaces ~'m))
-                        {:tag 'Class}))
-       "java.lang.Object"
-       (reify java.lang.Object
-         (toString [~'this]
-           ((method-or-bust (:methods ~'m) (quote ~'toString)) ~'this)))
-       ~@(mapcat identity
-                 (for [i interfaces]
-                   (let [in (.getName ^Class i)]
-                     [in
-                      `(new ~(symbol (str "babashka.impl." in))
-                            (:methods ~'m)
-                            (:interfaces ~'m)
-                            (:protocols ~'m))]))))))
+     (if (empty? (:interfaces ~'m))
+       (new babashka.impl.clojure.lang.Indexed
+            (:methods ~'m)
+            (:interfaces ~'m)
+            (:protocols ~'m))
+       (case (.getName ~(with-meta `(first (:interfaces ~'m))
+                          {:tag 'Class}))
+         "java.lang.Object"
+         (reify java.lang.Object
+           (toString [~'this]
+             ((method-or-bust (:methods ~'m) (quote ~'toString)) ~'this)))
+         ~@(mapcat identity
+                   (for [i interfaces]
+                     (let [in (.getName ^Class i)]
+                       [in
+                        `(new ~(symbol (str "babashka.impl." in))
+                              (:methods ~'m)
+                              (:interfaces ~'m)
+                              (:protocols ~'m))])))))))
 
-(macroexpand '(gen-reify-fn))
+#_(macroexpand '(gen-reify-fn))
 
 (def reify-fn (gen-reify-fn))
 
@@ -264,7 +269,9 @@
    (reify-fn {:interfaces [clojure.lang.Indexed]
               :methods {'nth (fn [_ i default] (nth [1 2 3] i default))}}))
 
-  )
+  (instance? sci.impl.types.IReified
+             (reify-fn {:interfaces [clojure.lang.Indexed]
+                        :methods {'nth (fn [_ i default] (nth [1 2 3] i default))}})))
 
 #_(def reify-fn
     (gen-reify-combos
