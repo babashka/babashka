@@ -40,17 +40,21 @@
     (:boolean :int) [:ireturn]
     [:areturn]))
 
-(defn loads [desc]
+(defn loads [desc cast?]
   (let [desc (butlast desc)]
-    (vec (mapcat (fn [i e]
-                   (case e
-                     :boolean [[:iload i]
-                               [:invokestatic Boolean "valueOf" [:boolean Boolean]]]
-                     :int [[:iload i]
-                           [:invokestatic Integer "valueOf" [:int Boolean]]]
-                     [[:aload i]]))
-                 (range (count desc))
-                 desc))))
+    (vec
+     (mapcat (fn [i e]
+               (case e
+                 #_#_:boolean [[:iload i]
+                           [:invokestatic Boolean "valueOf" [:boolean Boolean]]]
+                 ;; this causes operand underflow
+                 :int [[:iload i]
+                       (when cast? [:invokestatic Integer "valueOf" [:int Integer]])
+                       #_[:astore i]
+                       #_[:aload i]]
+                 [[:aload i]]))
+             (range 1 (inc (count desc)))
+             desc))))
 
 (defn emit-method [class meth desc]
   (let [args (dec (count desc))]
@@ -63,9 +67,11 @@
               [:astore (inc args)]
               [:aload (inc args)]
               [:ifnull :fallback]
-              [:aload (inc args)]]
-             [[:aload 0]]
-             (loads desc)
+              [:aload (inc args)]
+              ;; load this, always the first argument of IFn
+              [:aload 0]]
+             ;; load remaining args
+             (loads desc true)
              [[:invokeinterface clojure.lang.IFn "invoke" (vec (repeat (inc (count desc)) Object))]
               (let [ret-type* (last desc)
                     ret-type (if (class? ret-type*)
@@ -83,7 +89,7 @@
               (return desc)
               [:mark :fallback]]
              [[:aload 0]]
-             (loads desc)
+             (loads desc false)
              [[:invokespecial class meth desc]
               (return desc)]])))
 
@@ -158,32 +164,34 @@
                     meths)]
     (distinct meths)))
 
-(def interfaces [java.nio.file.FileVisitor
-                 java.io.FileFilter
-                 java.io.FilenameFilter
-                 clojure.lang.Associative
-                 clojure.lang.ILookup
-                 java.util.Map$Entry
-                 clojure.lang.IFn
-                 clojure.lang.IPersistentCollection
-                 clojure.lang.IReduce
-                 clojure.lang.IReduceInit
-                 clojure.lang.IKVReduce
-                 ;; TODO: fix interfaces with primitive arguments
-                 clojure.lang.Indexed
-                 clojure.lang.IPersistentMap
-                 clojure.lang.IPersistentStack
-                 clojure.lang.Reversible
-                 clojure.lang.Seqable
-                 java.lang.Iterable
-                 ;; TODO: fix interfaces with primitive arguments
-                 #_java.net.http.WebSocket$Listener
-                 java.util.Iterator
-                 java.util.function.Function
-                 java.util.function.Supplier
-                 java.lang.Comparable
-                 javax.net.ssl.X509TrustManager
-                 clojure.lang.LispReader$Resolver])
+(def interfaces [clojure.lang.Indexed])
+
+#_(def interfaces [java.nio.file.FileVisitor
+                   java.io.FileFilter
+                   java.io.FilenameFilter
+                   clojure.lang.Associative
+                   clojure.lang.ILookup
+                   java.util.Map$Entry
+                   clojure.lang.IFn
+                   clojure.lang.IPersistentCollection
+                   clojure.lang.IReduce
+                   clojure.lang.IReduceInit
+                   clojure.lang.IKVReduce
+                   ;; TODO: fix interfaces with primitive arguments
+                   clojure.lang.Indexed
+                   clojure.lang.IPersistentMap
+                   clojure.lang.IPersistentStack
+                   clojure.lang.Reversible
+                   clojure.lang.Seqable
+                   java.lang.Iterable
+                   ;; TODO: fix interfaces with primitive arguments
+                   #_java.net.http.WebSocket$Listener
+                   java.util.Iterator
+                   java.util.function.Function
+                   java.util.function.Supplier
+                   java.lang.Comparable
+                   javax.net.ssl.X509TrustManager
+                   clojure.lang.LispReader$Resolver])
 
 (doseq [i interfaces]
   (insn/define (interface-data i (class->methods i))))
@@ -191,6 +199,7 @@
 (comment
   (interface-data clojure.lang.Indexed (class->methods clojure.lang.Indexed))
   (interface-data clojure.lang.Indexed (class->methods clojure.lang.Associative))
+  (interface-data clojure.lang.Indexed (class->methods java.util.Iterator))
   )
 
 (defn method-or-bust [methods k]
@@ -201,15 +210,15 @@
   `(fn [~'m]
      (case (.getName ~(with-meta `(first (:interfaces ~'m))
                         {:tag 'Class}))
-      "java.lang.Object"
-      (reify java.lang.Object
-        (toString [~'this]
-          ((method-or-bust (:methods ~'m) (quote ~'toString)) ~'this)))
-      ~@(mapcat identity
-                (for [i interfaces]
-                  (let [in (.getName ^Class i)]
-                    [in
-                     `(new ~(symbol (str "babashka.impl." in)) (:methods ~'m))]))))))
+       "java.lang.Object"
+       (reify java.lang.Object
+         (toString [~'this]
+           ((method-or-bust (:methods ~'m) (quote ~'toString)) ~'this)))
+       ~@(mapcat identity
+                 (for [i interfaces]
+                   (let [in (.getName ^Class i)]
+                     [in
+                      `(new ~(symbol (str "babashka.impl." in)) (:methods ~'m))]))))))
 
 (macroexpand '(gen-reify-fn))
 
