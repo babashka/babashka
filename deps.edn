@@ -17,7 +17,8 @@
          "deps.clj/src" "deps.clj/resources"
          "resources" "sci/resources"],
  :deps {org.clojure/clojure {:mvn/version "1.11.0"},
-        borkdude/sci {:local/root "sci"}
+        org.babashka/sci {:local/root "sci"}
+        org.babashka/babashka.impl.reify {:mvn/version "0.0.2"}
         babashka/babashka.curl {:local/root "babashka.curl"}
         babashka/fs {:local/root "fs"}
         babashka/babashka.core {:local/root "babashka.core"}

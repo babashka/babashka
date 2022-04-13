@@ -1,9 +1,9 @@
 (ns build
-  (:require [babashka.impl.reify2 :as reify2]
+  (:require [build.reify2 :as reify2]
             [clojure.tools.build.api :as b]))
 
 (def lib 'org.babashka/babashka.impl.reify)
-(def version "0.0.1")
+(def version "0.0.2")
 (def class-dir "target/classes")
 (def basis (b/create-basis {:project "deps.edn"}))
 (def jar-file (format "target/%s-%s.jar" (name lib) version))
