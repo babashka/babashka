@@ -25,6 +25,7 @@
                  [cheshire "5.10.2"]
                  [nrepl/bencode "1.1.0"]
                  [borkdude/sci.impl.reflector "0.0.1"]
+                 [org.babashka/sci.impl.types "0.0.2"]
                  [org.babashka/babashka.impl.reify "0.0.5"]
                  [org.clojure/core.async "1.5.648"]
                  [org.clojure/test.check "1.1.1"]
