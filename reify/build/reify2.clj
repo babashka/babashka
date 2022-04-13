@@ -37,7 +37,7 @@
                       (util/method-name method) (util/method-desc desc) true)
     (op/return)))
 
-(defn emit-method [class meth desc]
+(defn emit-method [class meth desc default]
   (let [args (dec (count desc))]
     [[[:aload 0]
       [:getfield :this "_methods" java.util.Map]
@@ -68,10 +68,18 @@
             [[:checkcast ret-type*]])))
       (return desc)
       [:mark :fallback]]
-     [[:aload 0]]
-     (loads desc false)
-     [[:invokespecial class meth desc true]
-      (return desc)]]))
+     (if default
+       [[[:aload 0]]
+        (loads desc false)
+        [[:invokespecial class meth desc true]
+         (return desc)]]
+       ;; 28: new           #35                 // class java/lang/RuntimeException
+       ;; 31: dup
+       ;; 32: ldc           #37                 // String no
+       ;; 34: invokespecial #39                 // Method java/lang/RuntimeException."<init>":(Ljava/lang/String;)V
+       ;;                                                                                      37: athrow
+
+       )]))
 
 (defn interface-data [^Class interface methods]
   (let [class-sym (symbol (.getName interface))
@@ -146,10 +154,10 @@
                       :emit [[:aload 0]
                              [:getfield :this "_protocols" Object]
                              [:areturn]]}]
-                    (for [{:keys [name desc]} methods]
+                    (for [{:keys [name desc default]} methods]
                       {:flags #{:public}, :name name
                        :desc desc
-                       :emit (emit-method interface name desc)}
+                       :emit (emit-method interface name desc default)}
                       ))}))
 
 (set! *warn-on-reflection* true)
@@ -165,18 +173,20 @@
   (let [meths (mapv bean (.getMethods clazz))
         meths (mapv (fn [{:keys [name
                                  parameterTypes
-                                 returnType]}]
+                                 returnType
+                                 default]}]
                       (let [ret-type (type->kw returnType)]
                         {:name name
-                         :desc (conj (mapv type->kw parameterTypes) ret-type)}))
+                         :desc (conj (mapv type->kw parameterTypes) ret-type)
+                         :default default}))
                     meths)]
     (distinct meths)))
 
-;; (let [i clojure.lang.IFn]
-;;   (insn/define (insn/visit (interface-data i (class->methods i)))))
+(let [i clojure.lang.IFn]
+  (insn/define (insn/visit (interface-data i (class->methods i)))))
 
-;; (prn :defined)
-;; (babashka.impl.clojure.lang.IFn. {} {} {})
+(prn :defined)
+(babashka.impl.clojure.lang.IFn. {} {} {})
 
 (defn gen-classes [_]
   (doseq [i interfaces]
