@@ -1,8 +1,7 @@
 (ns build.reify2
   {:no-doc true}
   (:require [babashka.impl.reify2.interfaces :refer [interfaces]]
-            [insn.core :as insn]
-            [sci.impl.types]))
+            [insn.core :as insn]))
 
 (set! *warn-on-reflection* false)
 
