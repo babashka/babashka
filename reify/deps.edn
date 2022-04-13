@@ -5,5 +5,9 @@
    :deps {io.github.clojure/tools.build {:git/tag "v0.8.1" :git/sha "7d40500"}
           slipset/deps-deploy {:mvn/version "0.2.0"}
           org.babashka/sci.impl.types {:mvn/version "0.0.2"}
-          insn/insn {:mvn/version "0.5.3"}}
+          ;; insn/insn {:mvn/version "0.5.3"}
+          insn/insn {
+                     :git/sha "f85da286d429b507480f8527b12ce3e1e0e17296"
+                     :git/url "https://github.com/phronmophobic/insn"
+                     }}
    :ns-default build}}}

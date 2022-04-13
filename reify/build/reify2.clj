@@ -30,42 +30,48 @@
              (range 1 (inc (count desc)))
              desc))))
 
+#_(defn write-super-remove [v iface method desc]
+  (doto v
+    (op/aload 0)
+    (.visitMethodInsn Opcodes/INVOKESPECIAL (util/class-desc iface)
+                      (util/method-name method) (util/method-desc desc) true)
+    (op/return)))
+
 (defn emit-method [class meth desc]
   (let [args (dec (count desc))]
-    (reduce into []
-            [[[:aload 0]
-              [:getfield :this "_methods" java.util.Map]
-              [:getstatic :this (str "_sym_" meth) clojure.lang.Symbol]
-              [:invokeinterface java.util.Map "get"]
-              [:checkcast clojure.lang.IFn]
-              [:astore (inc args)]
-              [:aload (inc args)]
-              [:ifnull :fallback]
-              [:aload (inc args)]
-              ;; load this, always the first argument of IFn
-              [:aload 0]]
-             ;; load remaining args
-             (loads desc true)
-             [[:invokeinterface clojure.lang.IFn "invoke" (vec (repeat (inc (count desc)) Object))]
-              (let [ret-type* (last desc)
-                    ret-type (if (class? ret-type*)
-                               (.getName ^Class ret-type*)
-                               ret-type*)]
-                (case ret-type
-                  :void [:pop]
-                  :boolean [[:checkcast Boolean]
-                            [:invokevirtual Boolean "booleanValue"]]
-                  :int [[:checkcast Integer]
-                        [:invokevirtual Integer "intValue"]]
-                  "java.lang.Object" nil
-                  (when (class? ret-type*)
-                    [[:checkcast ret-type*]])))
-              (return desc)
-              [:mark :fallback]]
-             [[:aload 0]]
-             (loads desc false)
-             [[:invokespecial class meth desc #_true]
-              (return desc)]])))
+    [[[:aload 0]
+      [:getfield :this "_methods" java.util.Map]
+      [:getstatic :this (str "_sym_" meth) clojure.lang.Symbol]
+      [:invokeinterface java.util.Map "get" [Object Object]]
+      [:checkcast clojure.lang.IFn]
+      [:astore (inc args)]
+      [:aload (inc args)]
+      [:ifnull :fallback]
+      [:aload (inc args)]
+      ;; load this, always the first argument of IFn
+      [:aload 0]]
+     ;; load remaining args
+     (loads desc true)
+     [[:invokeinterface clojure.lang.IFn "invoke" (vec (repeat (inc (count desc)) Object))]
+      (let [ret-type* (last desc)
+            ret-type (if (class? ret-type*)
+                       (.getName ^Class ret-type*)
+                       ret-type*)]
+        (case ret-type
+          :void [:pop]
+          :boolean [[:checkcast Boolean]
+                    [:invokevirtual Boolean "booleanValue"]]
+          :int [[:checkcast Integer]
+                [:invokevirtual Integer "intValue"]]
+          "java.lang.Object" nil
+          (when (class? ret-type*)
+            [[:checkcast ret-type*]])))
+      (return desc)
+      [:mark :fallback]]
+     [[:aload 0]]
+     (loads desc false)
+     [[:invokespecial class meth desc true]
+      (return desc)]]))
 
 (defn interface-data [^Class interface methods]
   (let [class-sym (symbol (.getName interface))
@@ -76,6 +82,7 @@
                   'sci.impl.types.IReified
                   'clojure.lang.IMeta
                   'clojure.lang.IObj]
+     :flags [:super :public]
      :fields (into [{:flags #{:private},
                      :name "_methods" :type java.util.Map}
                     {:flags #{:private},
@@ -142,7 +149,8 @@
                     (for [{:keys [name desc]} methods]
                       {:flags #{:public}, :name name
                        :desc desc
-                       :emit (emit-method interface name desc)}))}))
+                       :emit (emit-method interface name desc)}
+                      ))}))
 
 (set! *warn-on-reflection* true)
 
@@ -164,11 +172,11 @@
                     meths)]
     (distinct meths)))
 
-(let [i clojure.lang.IFn]
-  (insn/define (insn/visit (interface-data i (class->methods i)))))
+;; (let [i clojure.lang.IFn]
+;;   (insn/define (insn/visit (interface-data i (class->methods i)))))
 
-(prn :defined)
-(babashka.impl.clojure.lang.IFn. nil nil nil)
+;; (prn :defined)
+;; (babashka.impl.clojure.lang.IFn. {} {} {})
 
 (defn gen-classes [_]
   (doseq [i interfaces]

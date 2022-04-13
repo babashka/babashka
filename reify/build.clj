@@ -3,7 +3,7 @@
             [clojure.tools.build.api :as b]))
 
 (def lib 'org.babashka/babashka.impl.reify)
-(def version "0.0.5")
+(def version "0.0.6")
 (def class-dir "target/classes")
 (def basis (b/create-basis {:project "deps.edn"}))
 (def jar-file (format "target/%s-%s.jar" (name lib) version))
@@ -26,13 +26,21 @@
   (b/jar {:class-dir class-dir
           :jar-file jar-file}))
 
+(defn install [_]
+  (jar nil)
+  (b/install {:basis basis
+              :lib lib
+              :version version
+              :jar-file jar-file
+              :class-dir class-dir}))
+
 (defn deploy [opts]
   (jar opts)
   ((requiring-resolve 'deps-deploy.deps-deploy/deploy)
-    (merge {:installer :remote
-                       :artifact jar-file
-                       :pom-file (b/pom-path {:lib lib :class-dir class-dir})}
-                    opts))
+   (merge {:installer :remote
+           :artifact jar-file
+           :pom-file (b/pom-path {:lib lib :class-dir class-dir})}
+          opts))
   opts)
 
 ;;;; Scratch
