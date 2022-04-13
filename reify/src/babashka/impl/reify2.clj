@@ -1,5 +1,6 @@
 (ns babashka.impl.reify2
-  (:require [babashka.impl.reify2.interfaces :refer [interfaces]]))
+  (:require [sci.core]
+            [babashka.impl.reify2.interfaces :refer [interfaces]]))
 
 (set! *warn-on-reflection* false)
 
