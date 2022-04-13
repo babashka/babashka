@@ -64,7 +64,7 @@
               [:mark :fallback]]
              [[:aload 0]]
              (loads desc false)
-             [[:invokespecial class meth desc true]
+             [[:invokespecial class meth desc #_true]
               (return desc)]])))
 
 (defn interface-data [^Class interface methods]
@@ -164,6 +164,13 @@
                     meths)]
     (distinct meths)))
 
+(let [i clojure.lang.IFn]
+  (insn/define (insn/visit (interface-data i (class->methods i)))))
+
+(prn :defined)
+(babashka.impl.clojure.lang.IFn. nil nil nil)
+
 (defn gen-classes [_]
   (doseq [i interfaces]
-    (insn/write (insn/visit (interface-data i (class->methods i))) "target/classes")))
+    (insn/write (doto (insn/visit (interface-data i (class->methods i)))
+                  insn/define) "target/classes")))

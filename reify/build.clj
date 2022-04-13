@@ -34,3 +34,9 @@
                        :pom-file (b/pom-path {:lib lib :class-dir class-dir})}
                     opts))
   opts)
+
+;;;; Scratch
+
+(comment
+  (gen-classes nil)
+  )
