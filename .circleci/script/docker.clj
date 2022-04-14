@@ -12,7 +12,7 @@
 
 (def image-name "babashka/babashka")
 
-(def image-tag (slurp "resources/BABSHKA_VERSION"))
+(def image-tag (slurp "resources/BABASHKA_VERSION"))
 
 (def latest-tag "latest")
 

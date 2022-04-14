@@ -456,7 +456,7 @@ jobs:
       - attach_workspace:
           at: /tmp
       - run:
-          name: Build binary
+          name: Build uberjar
           command: script/uberjar
       - run:
           name: Build Docker image
