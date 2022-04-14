@@ -35,7 +35,7 @@
    [babashka.impl.process :refer [process-namespace]]
    [babashka.impl.protocols :refer [protocols-namespace]]
    [babashka.impl.proxy :refer [proxy-fn]]
-   [babashka.impl.reify :refer [reify-fn]]
+   [babashka.impl.reify2 :refer [reify-fn]]
    [babashka.impl.repl :as repl]
    [babashka.impl.rewrite-clj :as rewrite]
    [babashka.impl.server :refer [clojure-core-server-namespace]]

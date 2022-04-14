@@ -391,7 +391,9 @@
           java.util.concurrent.CompletableFuture
           java.util.concurrent.Executors
           java.util.concurrent.TimeUnit
+          java.util.function.Consumer
           java.util.function.Function
+          java.util.function.Predicate
           java.util.function.Supplier
           java.util.zip.Inflater
           java.util.zip.InflaterInputStream

@@ -17,7 +17,9 @@
          "deps.clj/src" "deps.clj/resources"
          "resources" "sci/resources"],
  :deps {org.clojure/clojure {:mvn/version "1.11.0"},
-        borkdude/sci {:local/root "sci"}
+        org.babashka/sci {:local/root "sci"}
+        org.babashka/babashka.impl.reify {:mvn/version "0.0.7"}
+        org.babashka/sci.impl.types {:mvn/version "0.0.2"}
         babashka/babashka.curl {:local/root "babashka.curl"}
         babashka/fs {:local/root "fs"}
         babashka/babashka.core {:local/root "babashka.core"}
@@ -40,10 +42,11 @@
         org.clojure/core.match {:mvn/version "1.0.0"}
         hiccup/hiccup {:mvn/version "2.0.0-alpha2"}
         rewrite-clj/rewrite-clj {:mvn/version "1.0.699-alpha"}
-        selmer/selmer {:mvn/version "1.12.44"}
+        selmer/selmer {:mvn/version "1.12.50"}
         com.taoensso/timbre {:mvn/version "5.2.1"}
         org.clojure/tools.logging {:mvn/version "1.1.0"}
-        org.clojure/data.priority-map {:mvn/version "1.1.0"}}
+        org.clojure/data.priority-map {:mvn/version "1.1.0"}
+        insn/insn {:mvn/version "0.5.2"}}
  :aliases {:babashka/dev
            {:main-opts ["-m" "babashka.main"]}
            :profile
@@ -129,7 +132,7 @@
                          clojure-msgpack/clojure-msgpack {:mvn/version "1.2.1"}
                          cli-matic/cli-matic {:git/url "https://github.com/l3nz/cli-matic.git", :git/sha "9cd53ba7336363e3d06650dbad413b6f8b06e471"}
                          aysylu/loom {:mvn/version "1.0.2"}
-                         com.layerware/hugsql-core {:mvn/version "0.5.1"}
+                         com.layerware/hugsql-core {:mvn/version "0.5.3"}
                          com.github.seancorfield/expectations {:mvn/version "2.0.157"}
                          com.rpl/specter {:mvn/version "1.1.4"}}
             :classpath-overrides {org.clojure/clojure nil

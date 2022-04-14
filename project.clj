@@ -10,7 +10,8 @@
   :source-paths ["src" "sci/src" "babashka.curl/src" "fs/src" "pods/src"
                  "babashka.core/src"
                  "babashka.nrepl/src" "depstar/src" "process/src"
-                 "deps.clj/src" "deps.clj/resources"]
+                 "deps.clj/src" "deps.clj/resources"
+                 "reify/src"]
   ;; for debugging Reflector.java code:
   ;; :java-source-paths ["sci/reflector/src-java"]
   :java-source-paths ["src-java"]
@@ -24,10 +25,13 @@
                  [cheshire "5.10.2"]
                  [nrepl/bencode "1.1.0"]
                  [borkdude/sci.impl.reflector "0.0.1"]
+                 [org.babashka/sci.impl.types "0.0.2"]
+                 [org.babashka/babashka.impl.reify "0.1.0"]
                  [org.clojure/core.async "1.5.648"]
                  [org.clojure/test.check "1.1.1"]
                  [com.github.clj-easy/graal-build-time "0.1.0"]
-                 [rewrite-clj/rewrite-clj "1.0.699-alpha"]]
+                 [rewrite-clj/rewrite-clj "1.0.699-alpha"]
+                 [insn/insn "0.5.2"]]
   :plugins       [[org.kipz/lein-meta-bom "0.1.1"]]
   :metabom {:jar-name "metabom.jar"}
   :profiles {:feature/xml  {:source-paths ["feature-xml"]

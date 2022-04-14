@@ -17,7 +17,9 @@
          "deps.clj/src" "deps.clj/resources"
          "resources" "sci/resources"],
  :deps {org.clojure/clojure {:mvn/version "1.11.0"},
-        borkdude/sci {:local/root "sci"}
+        org.babashka/sci {:local/root "sci"}
+        org.babashka/babashka.impl.reify {:mvn/version "0.1.0"}
+        org.babashka/sci.impl.types {:mvn/version "0.0.2"}
         babashka/babashka.curl {:local/root "babashka.curl"}
         babashka/fs {:local/root "fs"}
         babashka/babashka.core {:local/root "babashka.core"}
@@ -43,7 +45,8 @@
         selmer/selmer {:mvn/version "1.12.50"}
         com.taoensso/timbre {:mvn/version "5.2.1"}
         org.clojure/tools.logging {:mvn/version "1.1.0"}
-        org.clojure/data.priority-map {:mvn/version "1.1.0"}}
+        org.clojure/data.priority-map {:mvn/version "1.1.0"}
+        insn/insn {:mvn/version "0.5.2"}}
  :aliases {:babashka/dev
            {:main-opts ["-m" "babashka.main"]}
            :profile

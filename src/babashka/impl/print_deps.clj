@@ -20,6 +20,7 @@
                                              :git/sha "52a6037bd4b632bffffb04394fb4efd0cdab6b1e"})
         deps (dissoc deps
                      'borkdude/sci
+                     'org.babashka/sci
                      'borkdude/graal.locking
                      'org.postgresql/postgresql
                      'babashka/clojure-lanterna

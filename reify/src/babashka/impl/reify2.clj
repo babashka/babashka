@@ -1,0 +1,79 @@
+(ns babashka.impl.reify2
+  (:require [babashka.impl.reify2.interfaces :refer [interfaces]]))
+
+(set! *warn-on-reflection* false)
+
+(defn method-or-bust [methods k]
+  (or (get methods k)
+      (throw (UnsupportedOperationException. "Method not implemented: " k))))
+
+(defn reify-ifn [m]
+  (let [methods (:methods m)
+        invoke-fn (or (get methods 'invoke)
+                      (fn [& _args]
+                        (throw (UnsupportedOperationException. "Method not implemented: invoke"))))
+        apply-fn (or (get methods 'applyTo)
+                     (fn [& _args]
+                       (throw (UnsupportedOperationException. "Method not implemented: applyTo"))))]
+    (reify
+      sci.impl.types.IReified
+      (getMethods [_] (:methods m))
+      (getInterfaces [_] (:interfaces m))
+      (getProtocols [_] (:protocols m))
+      clojure.lang.IFn
+      (invoke [this] (invoke-fn this))
+      (invoke [this a0] (invoke-fn this a0))
+      (invoke [this a0 a1] (invoke-fn this a0 a1))
+      (invoke [this a0 a1 a2] (invoke-fn this a0 a1 a2))
+      (invoke [this a0 a1 a2 a3] (invoke-fn this a0 a1 a2 a3))
+      (invoke [this a0 a1 a2 a3 a4] (invoke-fn this a0 a1 a2 a3 a4))
+      (invoke [this a0 a1 a2 a3 a4 a5] (invoke-fn this a0 a1 a2 a3 a4 a5))
+      (invoke [this a0 a1 a2 a3 a4 a5 a6] (invoke-fn this a0 a1 a2 a3 a4 a5 a6))
+      (invoke [this a0 a1 a2 a3 a4 a5 a6 a7] (invoke-fn this a0 a1 a2 a3 a4 a5 a6 a7))
+      (invoke [this a0 a1 a2 a3 a4 a5 a6 a7 a8] (invoke-fn this a0 a1 a2 a3 a4 a5 a6 a7 a8))
+      (invoke [this a0 a1 a2 a3 a4 a5 a6 a7 a8 a9] (invoke-fn this a0 a1 a2 a3 a4 a5 a6 a7 a8 a9))
+      (invoke [this a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10] (invoke-fn this a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10))
+      (invoke [this a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11] (invoke-fn this a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11))
+      (invoke [this a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12] (invoke-fn this a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12))
+      (invoke [this a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13] (invoke-fn this a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13))
+      (invoke [this a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14] (invoke-fn this a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14))
+      (invoke [this a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15] (invoke-fn this a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15))
+      (invoke [this a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15 a16] (invoke-fn this a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15 a16))
+      (invoke [this a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15 a16 a17] (invoke-fn this a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15 a16 a17))
+      (invoke [this a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15 a16 a17 a18] (invoke-fn this a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15 a16 a17 a18))
+      (invoke [this a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15 a16 a17 a18 a19] (invoke-fn this a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15 a16 a17 a18 a19))
+      (invoke [this a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15 a16 a17 a18 a19 a20] (invoke-fn this a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15 a16 a17 a18 a19 a20))
+      (applyTo [this arglist] (apply-fn this arglist)))))
+
+(defmacro gen-reify-fn []
+  `(fn [~'m]
+     (if (empty? (:interfaces ~'m))
+       (reify
+         sci.impl.types.IReified
+         (getMethods [_] (:methods ~'m))
+         (getInterfaces [_] (:interfaces ~'m))
+         (getProtocols [_] (:protocols ~'m)))
+       (case (.getName ~(with-meta `(first (:interfaces ~'m))
+                          {:tag 'Class}))
+         "java.lang.Object"
+         (reify
+           java.lang.Object
+           (toString [~'this]
+             ((method-or-bust (:methods ~'m) (quote ~'toString)) ~'this))
+           sci.impl.types.IReified
+           (getMethods [_] (:methods ~'m))
+           (getInterfaces [_] (:interfaces ~'m))
+           (getProtocols [_] (:protocols ~'m)))
+         ~@(mapcat identity
+                   (cons
+                    ["clojure.lang.IFn"
+                     `(reify-ifn ~'m)]
+                    (for [i interfaces]
+                      (let [in (.getName ^Class i)]
+                        [in
+                         `(new ~(symbol (str "babashka.impl." in))
+                               (:methods ~'m)
+                               (:interfaces ~'m)
+                               (:protocols ~'m))]))))))))
+
+(def reify-fn (gen-reify-fn))
