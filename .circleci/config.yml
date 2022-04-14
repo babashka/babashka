@@ -447,6 +447,11 @@ jobs:
       image: ubuntu-2004:202111-01
     steps:
       - checkout
+      - run:
+          name: "Pull Submodules"
+          command: |
+            git submodule init
+            git submodule update
       - setup-docker-buildx
       - attach_workspace:
           at: /tmp
