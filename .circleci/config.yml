@@ -60,10 +60,6 @@ jobs:
             reflection="babashka-$VERSION-reflection.json"
             java -jar "$jar" --config .build/bb.edn --deps-root . release-artifact "$jar"
             java -jar "$jar" --config .build/bb.edn --deps-root . release-artifact "$reflection"
-      - persist_to_workspace:
-          root: /tmp
-          paths:
-            - release
       - store_artifacts:
           path: /tmp/release
           destination: release
@@ -109,8 +105,7 @@ jobs:
       - run:
           name: Build binary
           command: |
-            VERSION=$(cat resources/BABASHKA_VERSION)
-            BABASHKA_JAR=/tmp/release/babashka-$VERSION-standalone.jar
+            script/uberjar
             script/compile
           no_output_timeout: 30m
       - run:
@@ -189,8 +184,7 @@ jobs:
       - run:
           name: Build binary
           command: |
-            VERSION=$(cat resources/BABASHKA_VERSION)
-            BABASHKA_JAR=/tmp/release/babashka-$VERSION-standalone.jar
+            script/uberjar
             script/compile
           no_output_timeout: 30m
       - run:
@@ -257,8 +251,7 @@ jobs:
       - run:
           name: Build binary
           command: |
-            VERSION=$(cat resources/BABASHKA_VERSION)
-            BABASHKA_JAR=/tmp/release/babashka-$VERSION-standalone.jar
+            script/uberjar
             script/compile
           no_output_timeout: 30m
       - run:
@@ -335,8 +328,7 @@ jobs:
       - run:
           name: Build binary
           command: |
-            VERSION=$(cat resources/BABASHKA_VERSION)
-            BABASHKA_JAR=/tmp/release/babashka-$VERSION-standalone.jar
+            script/uberjar
             script/compile
           no_output_timeout: 30m
       - run:
@@ -401,8 +393,7 @@ jobs:
           name: Build binary
           command: |
             export PATH=$GRAALVM_HOME/bin:$PATH
-            VERSION=$(cat resources/BABASHKA_VERSION)
-            BABASHKA_JAR=/tmp/release/babashka-$VERSION-standalone.jar
+            script/uberjar
             script/compile
           no_output_timeout: 30m
       - run:
@@ -460,33 +451,24 @@ jobs:
       - attach_workspace:
           at: /tmp
       - run:
+          name: Build binary
+          command: script/uberjar
+      - run:
           name: Build Docker image
           environment:
             PLATFORM: linux/amd64,linux/arm64
-          command: |
-            VERSION=$(cat resources/BABASHKA_VERSION)
-            java -jar /tmp/release/babashka-$VERSION-standalone.jar .circleci/script/docker.clj
+          command: java -jar ./target/babashka-$(cat resources/BABASHKA_VERSION)-standalone.jar .circleci/script/docker.clj
 
 workflows:
   version: 2
   ci:
     jobs:
       - jvm
-      - linux:
-          requires:
-            - jvm
-      - linux-static:
-          requires:
-            - jvm
-      - mac:
-          requires:
-            - jvm
-      - linux-aarch64:
-          requires:
-            - jvm
-      - linux-aarch64-static:
-          requires:
-            - jvm
+      - linux
+      - linux-static
+      - mac
+      - linux-aarch64
+      - linux-aarch64-static
       - deploy:
           filters:
             branches:
