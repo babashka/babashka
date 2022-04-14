@@ -65,14 +65,17 @@
     (let [tarball-platform (s/replace platform #"\/" "-")
           tarball-platform (if (= "linux-arm64")
                              "linux-aarch64"
-                             tarball-platform)]
+                             tarball-platform)
+          tarball-path     (format "/tmp/release/babashka-%s-%s.tar.gz"
+                                   image-tag
+                                   tarball-platform)]
       (fs/create-dirs platform)
-      (exec ["tar" "zxvf" (format "/tmp/release/babashka-%s-%s.tar.gz" image-tag tarball-platform) "-C" platform])
+      (exec ["tar" "zxvf" tarball-path "-C" platform])
       ; this overwrites, but this is to work around having built the uberjar/metabom multiple times
-      (fs/copy (format "/tmp/release/%s-metabom.jar" tarball-platform) "metabom.jar")))
-  (build-push image-tag platform "Dockerfile.ci")
-  (when-not snapshot
-    (build-push latest-tag platform "Dockerfile.ci")))
+      (fs/copy (format "/tmp/release/%s-metabom.jar" tarball-platform) "metabom.jar"))
+    (build-push image-tag platform "Dockerfile.ci")
+    (when-not snapshot
+      (build-push latest-tag platform "Dockerfile.ci"))))
 
 (defn build-push-alpine-images
   "Build alpine image for linux-amd64 only (no upstream arm64 support yet)"
