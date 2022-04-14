@@ -21,7 +21,6 @@
   (let [desc (butlast desc)]
     (vec
      (mapcat (fn [i e]
-               (prn :e e)
                (case e
                  :boolean [[:iload i]
                             (when cast? [:invokestatic Boolean "valueOf" [:boolean Boolean]])]
@@ -169,7 +168,9 @@
     type))
 
 (defn class->methods [^Class clazz]
-  (let [meths (mapv bean (.getMethods clazz))
+  (let [meths (.getMethods clazz)
+        meths (mapv bean meths)
+        meths (filter #(<= (:parameterCount %) 19) meths)
         meths (mapv (fn [{:keys [name
                                  parameterTypes
                                  returnType
@@ -189,26 +190,25 @@
   (filter #(> (count (:desc %)) 19) (class->methods clojure.lang.IFn))
   )
 (def reified (babashka.impl.clojure.lang.IFn. {'invoke (fn [& _args] :yep)} {} {}))
-(.invoke reified nil)
-(.invoke reified nil nil)
-(.invoke reified
-         nil nil nil nil nil nil nil nil nil nil
-         nil nil nil nil nil nil nil nil nil nil)
-(.invoke reified
-         nil nil nil nil nil nil nil nil nil nil
-         nil nil nil nil nil nil nil nil nil nil (into-array []))
-
-(.invoke (reify clojure.lang.IFn (invoke [_
-                                          a0 a1 a2 a3 a4 a5 a6 a7 a8 a9
-                                          a10 a11 a12 a13 a14 a15 a16 a17 a18 a19
-                                          a20]
-                                   a20))
-         nil nil nil nil nil nil nil nil nil nil
-         nil nil nil nil nil nil nil nil nil nil (into-array []))
 
 (comment
   (map bean (.getMethods babashka.impl.clojure.lang.IFn))
+  (.invoke reified nil)
+  (.invoke reified nil nil)
+  (.invoke reified
+           nil nil nil nil nil nil nil nil nil nil
+           nil nil nil nil nil nil nil nil nil nil)
+  (.invoke reified
+           nil nil nil nil nil nil nil nil nil nil
+           nil nil nil nil nil nil nil nil nil nil (into-array []))
 
+  (.invoke (reify clojure.lang.IFn (invoke [_
+                                            a0 a1 a2 a3 a4 a5 a6 a7 a8 a9
+                                            a10 a11 a12 a13 a14 a15 a16 a17 a18 a19
+                                            a20]
+                                     a20))
+           nil nil nil nil nil nil nil nil nil nil
+           nil nil nil nil nil nil nil nil nil nil (into-array []))
   )
 
 (defn gen-classes [_]
