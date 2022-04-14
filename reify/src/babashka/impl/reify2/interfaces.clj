@@ -6,7 +6,7 @@
                  clojure.lang.Associative
                  clojure.lang.ILookup
                  java.util.Map$Entry
-                 clojure.lang.IFn
+                 ;; clojure.lang.IFn
                  clojure.lang.IPersistentCollection
                  clojure.lang.IReduce
                  clojure.lang.IReduceInit
