@@ -39,7 +39,7 @@
 (defn exec
   [cmd]
   (-> cmd
-      (proc/sh {:inherit true})
+      (proc/process {:out :inherit :err :inherit})
       (proc/check)))
 
 (defn docker-login
