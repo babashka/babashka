@@ -97,3 +97,15 @@
         [x y] (bb nil prog)]
     (is (pos? x))
     (is (zero? y))))
+
+(deftest reify-default-method-test
+  (let [prog '(do (def iter (let [coll [:a :b :c] idx (volatile! -1)]
+                              (reify java.util.Iterator (hasNext [_] (< @idx 2))
+                                (next [_] (nth coll (vswap! idx inc))))))
+                  (def res (volatile! []))
+                  (vswap! res conj (.hasNext iter))
+                  (vswap! res conj (.next iter))
+                  (.forEachRemaining
+                   iter (reify java.util.function.Consumer (accept [_ x] (vswap! res conj x))))
+                  (= [true :a :b :c] @res))]
+    (is (true? (bb nil prog)))))
