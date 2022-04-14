@@ -52,13 +52,12 @@
                    platform
                    image-name
                    image-tag))
-  (exec ["docker" "buildx" "build"
-         "-t" (str image-name ":" image-tag)
-         "--platform" platform
-         (s/join "" label-args)
-         "--push"
-         "-f" docker-file
-         "."]))
+  (let [base-cmd ["docker" "buildx" "build"
+                  "-t" (str image-name ":" image-tag)
+                  "--platform" platform
+                  "--push"
+                  "-f" docker-file]]
+    (exec (concat base-cmd label-args ["."]))))
 
 (defn build-push-images
   []
@@ -68,7 +67,7 @@
                              "linux-aarch64"
                              tarball-platform)]
       (fs/create-dirs platform)
-      (exec ["tar" "zxvf" (str "/tmp/release/babashka-%s-%s.tar.gz" image-tag tarball-platform) "-C" platform])
+      (exec ["tar" "zxvf" (format "/tmp/release/babashka-%s-%s.tar.gz" image-tag tarball-platform) "-C" platform])
       ; this overwrites, but this is to work around having built the uberjar/metabom multiple times
       (fs/copy (format "/tmp/release/%s-metabom.jar" tarball-platform) "metabom.jar")))
   (build-push image-tag platform "Dockerfile.ci")

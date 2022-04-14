@@ -60,6 +60,10 @@ jobs:
             reflection="babashka-$VERSION-reflection.json"
             java -jar "$jar" --config .build/bb.edn --deps-root . release-artifact "$jar"
             java -jar "$jar" --config .build/bb.edn --deps-root . release-artifact "$reflection"
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+            - release
       - store_artifacts:
           path: /tmp/release
           destination: release
