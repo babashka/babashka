@@ -11,13 +11,6 @@ commands:
           command: |
             docker run --privileged --rm tonistiigi/binfmt --install all
             docker buildx create --name ci-builder --use
-  bootstrap:
-    steps:
-      - run:
-          name: Install current stable bb
-          command: |
-            curl -sLO https://raw.githubusercontent.com/babashka/babashka/master/install
-            sudo bash install
 
 jobs:
   jvm:
@@ -455,14 +448,15 @@ jobs:
     steps:
       - checkout
       - setup-docker-buildx
-      - bootstrap
       - attach_workspace:
           at: /tmp
       - run:
           name: Build Docker image
           environment:
             PLATFORM: linux/amd64,linux/arm64
-          command: bb .circleci/script/docker.clj
+          command: |
+            VERSION=$(cat resources/BABASHKA_VERSION)
+            java -jar /tmp/release/babashka-$VERSION-standalone.jar .circleci/script/docker.clj
 
 workflows:
   version: 2
@@ -483,10 +477,6 @@ workflows:
             - linux
             - mac
       - docker:
-          filters:
-            branches:
-              only:
-                - master
           requires:
             - linux
             - linux-static
