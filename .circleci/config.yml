@@ -109,7 +109,8 @@ jobs:
       - run:
           name: Build binary
           command: |
-            script/uberjar
+            VERSION=$(cat resources/BABASHKA_VERSION)
+            BABASHKA_JAR=/tmp/release/babashka-$VERSION-standalone.jar
             script/compile
           no_output_timeout: 30m
       - run:
@@ -188,7 +189,8 @@ jobs:
       - run:
           name: Build binary
           command: |
-            script/uberjar
+            VERSION=$(cat resources/BABASHKA_VERSION)
+            BABASHKA_JAR=/tmp/release/babashka-$VERSION-standalone.jar
             script/compile
           no_output_timeout: 30m
       - run:
@@ -255,7 +257,8 @@ jobs:
       - run:
           name: Build binary
           command: |
-            script/uberjar
+            VERSION=$(cat resources/BABASHKA_VERSION)
+            BABASHKA_JAR=/tmp/release/babashka-$VERSION-standalone.jar
             script/compile
           no_output_timeout: 30m
       - run:
@@ -332,7 +335,8 @@ jobs:
       - run:
           name: Build binary
           command: |
-            script/uberjar
+            VERSION=$(cat resources/BABASHKA_VERSION)
+            BABASHKA_JAR=/tmp/release/babashka-$VERSION-standalone.jar
             script/compile
           no_output_timeout: 30m
       - run:
@@ -397,7 +401,8 @@ jobs:
           name: Build binary
           command: |
             export PATH=$GRAALVM_HOME/bin:$PATH
-            script/uberjar
+            VERSION=$(cat resources/BABASHKA_VERSION)
+            BABASHKA_JAR=/tmp/release/babashka-$VERSION-standalone.jar
             script/compile
           no_output_timeout: 30m
       - run:
@@ -467,11 +472,21 @@ workflows:
   ci:
     jobs:
       - jvm
-      - linux
-      - linux-static
-      - mac
-      - linux-aarch64
-      - linux-aarch64-static
+      - linux:
+          requires:
+            - jvm
+      - linux-static:
+          requires:
+            - jvm
+      - mac:
+          requires:
+            - jvm
+      - linux-aarch64:
+          requires:
+            - jvm
+      - linux-aarch64-static:
+          requires:
+            - jvm
       - deploy:
           filters:
             branches:
