@@ -58,6 +58,11 @@
   (toString [_] (str :foo))))
 (str m)
 "))))
+  (testing "toString + protocol"
+    (is (= ":dude1:dude2"
+           (bb nil "
+(defprotocol Dude (dude [_])) (def obj (reify Object (toString [_] (str :dude1)) Dude (dude [_] :dude2))) (str (str obj) (dude obj))
+"))))
   (testing "Hashcode still works when only overriding toString"
     (is (number?
          (bb nil "
