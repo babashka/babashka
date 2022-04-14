@@ -89,6 +89,6 @@
   (if snapshot
     (println "This is a snapshot version")
     (println "This is a non-snapshot version"))
-  #_(docker-login (read-env "DOCKERHUB_USER") (read-env "DOCKERHUB_PASS"))
+  (docker-login (read-env "DOCKERHUB_USER") (read-env "DOCKERHUB_PASS"))
   (build-push-images)
   (build-push-alpine-images))
