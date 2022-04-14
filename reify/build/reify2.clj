@@ -73,13 +73,11 @@
         (loads desc false)
         [[:invokespecial class meth desc true]
          (return desc)]]
-       ;; 28: new           #35                 // class java/lang/RuntimeException
-       ;; 31: dup
-       ;; 32: ldc           #37                 // String no
-       ;; 34: invokespecial #39                 // Method java/lang/RuntimeException."<init>":(Ljava/lang/String;)V
-       ;;                                                                                      37: athrow
-
-       )]))
+       [[:new java.lang.UnsupportedOperationException]
+        [:dup]
+        [:ldc (format "No implementation of method found: %s %s" meth desc)]
+        [:invokespecial java.lang.UnsupportedOperationException :init [String :void]]
+        [:athrow]])]))
 
 (defn interface-data [^Class interface methods]
   (let [class-sym (symbol (.getName interface))
@@ -186,7 +184,7 @@
   (insn/define (insn/visit (interface-data i (class->methods i)))))
 
 (prn :defined)
-(babashka.impl.clojure.lang.IFn. {} {} {})
+(babashka.impl.clojure.lang.IFn. {} {} {}) nil
 
 (defn gen-classes [_]
   (doseq [i interfaces]
