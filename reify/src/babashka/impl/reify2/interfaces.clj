@@ -19,7 +19,9 @@
                  java.lang.Iterable
                  java.net.http.WebSocket$Listener
                  java.util.Iterator
+                 java.util.function.Consumer
                  java.util.function.Function
+                 java.util.function.Predicate
                  java.util.function.Supplier
                  java.lang.Comparable
                  javax.net.ssl.X509TrustManager
