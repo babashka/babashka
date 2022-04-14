@@ -11,6 +11,14 @@ commands:
           command: |
             docker run --privileged --rm tonistiigi/binfmt --install all
             docker buildx create --name ci-builder --use
+  bootstrap:
+    steps:
+      - run:
+          name: Install current stable bb
+          command: |
+            curl -sLO https://raw.githubusercontent.com/babashka/babashka/master/install
+            sudo bash install
+
 jobs:
   jvm:
     docker:
@@ -213,7 +221,6 @@ jobs:
             ./bb .circleci/script/publish_artifact.clj || true
   linux-aarch64:
     machine:
-      enabled: true
       image: ubuntu-2004:202101-01
     resource_class: arm.large
     working_directory: ~/repo
@@ -281,7 +288,6 @@ jobs:
             ./bb .circleci/script/publish_artifact.clj || true
   linux-aarch64-static:
     machine:
-      enabled: true
       image: ubuntu-2004:202101-01
     resource_class: arm.large
     working_directory: ~/repo
@@ -449,13 +455,14 @@ jobs:
     steps:
       - checkout
       - setup-docker-buildx
+      - bootstrap
       - attach_workspace:
           at: /tmp
       - run:
           name: Build Docker image
           environment:
             PLATFORM: linux/amd64,linux/arm64
-          command: .circleci/script/docker
+          command: bb .circleci/script/docker.clj
 
 workflows:
   version: 2
