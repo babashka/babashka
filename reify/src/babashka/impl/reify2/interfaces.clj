@@ -6,6 +6,8 @@
                  clojure.lang.Associative
                  clojure.lang.ILookup
                  java.util.Map$Entry
+                 ;; TODO: fix problems with clojure.lang.IFn, special cased for now
+                 ;; The problem is that the 20-arity (highest one) could not be reified
                  ;; clojure.lang.IFn
                  clojure.lang.IPersistentCollection
                  clojure.lang.IReduce

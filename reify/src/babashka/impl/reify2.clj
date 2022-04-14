@@ -48,16 +48,22 @@
 (defmacro gen-reify-fn []
   `(fn [~'m]
      (if (empty? (:interfaces ~'m))
-       (reify sci.impl.types.IReified
+       (reify
+         sci.impl.types.IReified
          (getMethods [_] (:methods ~'m))
          (getInterfaces [_] (:interfaces ~'m))
          (getProtocols [_] (:protocols ~'m)))
        (case (.getName ~(with-meta `(first (:interfaces ~'m))
                           {:tag 'Class}))
          "java.lang.Object"
-         (reify java.lang.Object
+         (reify
+           java.lang.Object
            (toString [~'this]
-             ((method-or-bust (:methods ~'m) (quote ~'toString)) ~'this)))
+             ((method-or-bust (:methods ~'m) (quote ~'toString)) ~'this))
+           sci.impl.types.IReified
+           (getMethods [_] (:methods ~'m))
+           (getInterfaces [_] (:interfaces ~'m))
+           (getProtocols [_] (:protocols ~'m)))
          ~@(mapcat identity
                    (cons
                     ["clojure.lang.IFn"
