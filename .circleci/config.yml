@@ -483,9 +483,6 @@ workflows:
             - linux
             - mac
       - docker:
-          filters:
-            branches:
-              only: master
           requires:
             - linux
             - linux-static
