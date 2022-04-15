@@ -1,4 +1,4 @@
-(require '[clojure.string :as s]
+(require '[clojure.string :as str]
          '[babashka.process :as proc]
          '[babashka.fs :as fs])
 (import '[java.time Instant])
@@ -34,7 +34,7 @@
            (read-env "CIRCLE_BRANCH"))
    "--label" (str "org.opencontainers.image.version=" image-tag)])
 
-(def snapshot (s/includes? image-tag "SNAPSHOT"))
+(def snapshot? (str/includes? image-tag "SNAPSHOT"))
 
 (defn exec
   [cmd]
@@ -61,8 +61,8 @@
 
 (defn build-push-images
   []
-  (doseq [platform (s/split platforms #",")]
-    (let [tarball-platform (s/replace platform #"\/" "-")
+  (doseq [platform (str/split platforms #",")]
+    (let [tarball-platform (str/replace platform #"\/" "-")
           tarball-platform (if (= "linux-arm64")
                              "linux-aarch64"
                              tarball-platform)
@@ -74,7 +74,7 @@
       ; this overwrites, but this is to work around having built the uberjar/metabom multiple times
       (fs/copy (format "/tmp/release/%s-metabom.jar" tarball-platform) "metabom.jar" {:replace-existing true}))
     (build-push image-tag platform "Dockerfile.ci")
-    (when-not snapshot
+    (when-not snapshot?
       (build-push latest-tag platform "Dockerfile.ci"))))
 
 (defn build-push-alpine-images
@@ -82,11 +82,11 @@
   []
   (exec ["tar" "zxvf" (str "/tmp/release/babashka-" image-tag "-linux-amd64-static.tar.gz")])
   (build-push (str image-tag "-alpine") "linux/amd64" "Dockerfile.alpine")
-  (when-not snapshot
+  (when-not snapshot?
     (build-push "alpine" "linux/amd64" "Dockerfile.alpine")))
 
 (when (= *file* (System/getProperty "babashka.file"))
-  (if snapshot
+  (if snapshot?
     (println "This is a snapshot version")
     (println "This is a non-snapshot version"))
   (docker-login (read-env "DOCKERHUB_USER") (read-env "DOCKERHUB_PASS"))
