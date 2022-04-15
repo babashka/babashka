@@ -16,7 +16,7 @@
 
 (def latest-tag "latest")
 
-(def platforms (read-env "PLATFORM" "linux/amd64"))
+(def platforms (read-env "PLATFORMS" "linux/amd64"))
 
 (def circle-repository-url (read-env "CIRCLE_REPOSITORY_URL"))
 
@@ -63,7 +63,7 @@
   []
   (doseq [platform (str/split platforms #",")]
     (let [tarball-platform (str/replace platform #"\/" "-")
-          tarball-platform (if (= "linux-arm64")
+          tarball-platform (if (= "linux-arm64" tarball-platform)
                              "linux-aarch64"
                              tarball-platform)
           tarball-path     (format "/tmp/release/babashka-%s-%s.tar.gz"

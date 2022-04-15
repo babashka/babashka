@@ -461,7 +461,7 @@ jobs:
       - run:
           name: Build Docker image
           environment:
-            PLATFORM: linux/amd64,linux/arm64
+            PLATFORMS: linux/amd64,linux/arm64
           command: java -jar ./target/babashka-$(cat resources/BABASHKA_VERSION)-standalone.jar .circleci/script/docker.clj
 
 workflows:
