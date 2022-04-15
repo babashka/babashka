@@ -11,6 +11,7 @@ commands:
           command: |
             docker run --privileged --rm tonistiigi/binfmt --install all
             docker buildx create --name ci-builder --use
+
 jobs:
   jvm:
     docker:
@@ -213,7 +214,6 @@ jobs:
             ./bb .circleci/script/publish_artifact.clj || true
   linux-aarch64:
     machine:
-      enabled: true
       image: ubuntu-2004:202101-01
     resource_class: arm.large
     working_directory: ~/repo
@@ -281,7 +281,6 @@ jobs:
             ./bb .circleci/script/publish_artifact.clj || true
   linux-aarch64-static:
     machine:
-      enabled: true
       image: ubuntu-2004:202101-01
     resource_class: arm.large
     working_directory: ~/repo
@@ -448,14 +447,22 @@ jobs:
       image: ubuntu-2004:202111-01
     steps:
       - checkout
+      - run:
+          name: "Pull Submodules"
+          command: |
+            git submodule init
+            git submodule update
       - setup-docker-buildx
       - attach_workspace:
           at: /tmp
       - run:
+          name: Build uberjar
+          command: script/uberjar
+      - run:
           name: Build Docker image
           environment:
-            PLATFORM: linux/amd64,linux/arm64
-          command: .circleci/script/docker
+            PLATFORMS: linux/amd64,linux/arm64
+          command: java -jar ./target/babashka-$(cat resources/BABASHKA_VERSION)-standalone.jar .circleci/script/docker.clj
 
 workflows:
   version: 2
@@ -478,8 +485,7 @@ workflows:
       - docker:
           filters:
             branches:
-              only:
-                - master
+              only: master
           requires:
             - linux
             - linux-static
