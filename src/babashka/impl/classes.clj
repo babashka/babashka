@@ -226,6 +226,7 @@
           java.lang.Comparable
           java.lang.Double
           java.lang.Exception
+          java.lang.ExceptionInInitializerError
           java.lang.Float
           java.lang.IllegalArgumentException
           java.lang.IllegalStateException
@@ -440,6 +441,7 @@
                       clojure.lang.APersistentMap ;; for proxy
                       clojure.lang.APersistentSet
                       clojure.lang.AReference
+                      clojure.lang.Agent
                       clojure.lang.Associative
                       clojure.lang.Atom
                       clojure.lang.Cons
@@ -617,6 +619,7 @@
     Thread java.lang.Thread
     Throwable java.lang.Throwable
     ;; UnsupportedOperationException java.lang.UnsupportedOperationException
+    ExceptionInInitializerError java.lang.ExceptionInInitializerError
     })
 
 (defn reflection-file-entries []
