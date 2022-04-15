@@ -5,12 +5,15 @@ For a list of breaking changes, check [here](#breaking-changes).
 A preview of the next release can be installed from
 [babashka-dev-builds](https://github.com/babashka/babashka-dev-builds).
 
-=======
-## Unreleased
+## 0.8.1 (2022-04-15)
 
 - Add `prepare` subcommand to download deps & pods and cache pod metadata
 - [#1041](https://github.com/babashka/babashka/issues/1041): Improve error message when regex literal in EDN config
 - [#1223](https://github.com/babashka/babashka/issues/1223): Ensure that var metadata (specifically `:name`) aligns with the var's symbol (which in turn ensures that `doc` will print the var's name)
+- [#556](https://github.com/babashka/babashka/issues/556) Add server-status to org.httpkit.server
+- [#1231](https://github.com/babashka/babashka/issues/1231): missing methods in `reify` should fall back to default interface methods
+- Fix destructuring in defrecord protocol impls
+- Support `*print-dup*`
 
 ## 0.8.0 (2022-04-04)
 
@@ -25,7 +28,7 @@ A preview of the next release can be installed from
 - [#1211](https://github.com/babashka/babashka/issues/1211): return exit code 130 on sigint
 - [#1224](https://github.com/babashka/babashka/issues/1224): add `proxy` support for `java.io.PipedInputStream` and `java.io.PipedOutputStream`. Add reflection for `java.utils.Scanner`.
 - [babashka.curl#43](https://github.com/babashka/babashka.curl/issues/43) fix: last set-cookie headers on a page overwrites the ones before
-- #1216: fix `core.async` alts example with polyfill
+- [#1216](https://github.com/babashka/babashka/issues/1216): fix `core.async` alts example with polyfill
 - SCI: support `let*` special form
 - Add compatibility with GraalVM 22.1
 - Bump timbre
