@@ -72,10 +72,10 @@
       (fs/create-dirs platform)
       (exec ["tar" "zxvf" tarball-path "-C" platform])
       ; this overwrites, but this is to work around having built the uberjar/metabom multiple times
-      (fs/copy (format "/tmp/release/%s-metabom.jar" tarball-platform) "metabom.jar" {:replace-existing true}))
-    (build-push image-tag platform "Dockerfile.ci")
-    (when-not snapshot?
-      (build-push latest-tag platform "Dockerfile.ci"))))
+      (fs/copy (format "/tmp/release/%s-metabom.jar" tarball-platform) "metabom.jar" {:replace-existing true})))
+  (build-push image-tag platforms "Dockerfile.ci")
+  (when-not snapshot?
+    (build-push latest-tag platforms "Dockerfile.ci")))
 
 (defn build-push-alpine-images
   "Build alpine image for linux-amd64 only (no upstream arm64 support yet)"
