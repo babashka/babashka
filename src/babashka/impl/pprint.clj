@@ -95,7 +95,8 @@
              pprint/*print-pprint-dispatch* @print-pprint-dispatch
              pprint/*print-miser-width* @print-miser-width
              *print-meta* @sci/print-meta
-             *print-readably* @sci/print-readably]
+             *print-readably* @sci/print-readably
+             *print-length* @sci/print-length]
      (pprint/pprint s writer))))
 
 (defn cl-format

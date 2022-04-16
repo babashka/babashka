@@ -711,7 +711,8 @@ Use bb run --help to show this help output.
     (sci/binding [core/warn-on-reflection @core/warn-on-reflection
                   core/unchecked-math @core/unchecked-math
                   core/data-readers @core/data-readers
-                  sci/ns @sci/ns]
+                  sci/ns @sci/ns
+                  sci/print-length @sci/print-length]
       (let [{version-opt :version
              :keys [:shell-in :edn-in :shell-out :edn-out
                     :help :file :command-line-args

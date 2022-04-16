@@ -5,6 +5,10 @@ For a list of breaking changes, check [here](#breaking-changes).
 A preview of the next release can be installed from
 [babashka-dev-builds](https://github.com/babashka/babashka-dev-builds).
 
+## Unreleased
+
+- Convey `*print-length*` to pprint and allow `set!`
+
 ## 0.8.1 (2022-04-15)
 
 - Add `prepare` subcommand to download deps & pods and cache pod metadata
