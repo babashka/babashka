@@ -1,0 +1,69 @@
+<p>Lorem ipsum dolor <strong>sit</strong> amet. Lorem ipsum <em>dolor</em> <em>sit</em> <strong>amet</strong>.</p>
+
+<p>There's a <a href="https://example.com/that&#95;has&#95;things?!???!#in-it">link here</a>.</p>
+
+<ol><li>List item</li><li>Another list item<ol><li>Sub list item</li><li>Another sub list item<ol><li>Sub sub list item</li></ol></li><li>Continuing sub list item</li></ol></li><li>Continuing list item</li></ol>
+
+<pre><code class="language-javascript">// Detect horizontal line block
+function isHorizontalLineBlock(block) {
+  return block === "***";
+}
+
+// Render horizontal line block
+function horizontalLineBlock(block) {
+  return `&lt;hr&gt;`;
+}
+
+// Compose an array of parsers
+const parsers = [{
+  matcher: isHorizontalLineBlock,
+  renderers: [horizontalLineBlock]
+}];
+
+// And finally, our parser itself
+function markdownToHTML(markdown) {
+  // Create blocks
+  const blocks = content.split(/\n\n/);
+
+  // Parse blocks
+  const parsedBlocks = blocks.map((block) =&gt; {
+    // Let's find a parser that has a matcher that matches
+    const parser = parsers.find((parser) =&gt; parser.matcher(block));
+
+    // If match was found, let's run our renderers over `block`
+    if (parser) {
+      for (const renderer of match.renderers) {
+        block = renderer(block);
+      }
+    }
+
+    return block;
+  });
+
+  // And at last, join the blocks together for one big block.
+  return parsedBlocks.join("");
+}</code></pre>
+
+<ul><li>Test 123</li><li>Test 223<ul><li>Test 334<ol><li>Test test</li></ol></li></ul></li></ul>
+
+<p>This is <em><strong>bold italic text</strong></em> and <em><strong>this is also</strong></em>. <em>What about italic text that <strong>has bold text</strong></em>?</p>
+
+<h2>Hi there, world!</h2>
+
+<ul><li>List item</li><li>Another list <del>item</del><ul><li>Sub list item</li><li>Another sub list item<ul><li>Sub sub list item</li><li>Continuing sub list item</li></ul></li></ul></li><li>Continuing list item</li></ul>
+
+<hr>
+
+<ul><li>List item</li><li>Another list item<ul><li>Sub list item</li><li>Another sub list item<ol><li>Sub sub list item</li><li>Continuing sub list item</li></ol></li></ul></li><li>Continuing list item</li></ul>
+
+<h1>This is a H1 heading with settext</h1>
+
+<h2>And this is a H2 heading with settext</h2>
+
+<p>Testing paragraph right before a code block</p>
+
+<pre><code>code goes here</code></pre>
+
+<h1>Heading goes here</h1>
+
+<p>Paragraph right after heading</p>
