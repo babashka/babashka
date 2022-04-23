@@ -110,6 +110,9 @@
     {:methods [{:name "disjoin"}]}
     clojure.lang.Indexed
     {:methods [{:name "nth"}]}
+    clojure.lang.Ratio
+    {:fields [{:name "numerator"}
+              {:name "denominator"}]}
     java.util.Iterator
     {:methods [{:name "hasNext"}
                {:name "next"}]}
