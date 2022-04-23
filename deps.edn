@@ -135,7 +135,8 @@
                          com.layerware/hugsql-core {:mvn/version "0.5.3"}
                          com.github.seancorfield/expectations {:mvn/version "2.0.157"}
                          com.rpl/specter {:mvn/version "1.1.4"}
-                         com.github.askonomm/clarktown {:mvn/version "1.1.2"}}
+                         com.github.askonomm/clarktown {:mvn/version "1.1.2"}
+                         org.clojure/math.numeric-tower {:git/tag "math.numeric-tower-0.0.5", :git/sha "12eb9c5", :git/url "https://github.com/clojure/math.numeric-tower"}}
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil}}
            :clj-nvd

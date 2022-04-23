@@ -74,6 +74,7 @@ org.clojure/data.generators,https://github.com/clojure/data.generators
 org.clojure/data.json,https://github.com/clojure/data.json
 org.clojure/data.zip,https://github.com/clojure/data.zip
 org.clojure/math.combinatorics,https://github.com/clojure/math.combinatorics
+org.clojure/math.numeric-tower,https://github.com/clojure/math.numeric-tower
 org.clojure/test.check,https://github.com/clojure/test.check
 org.clojure/tools.gitlibs,https://github.com/clojure/tools.gitlibs
 org.clojure/tools.namespace,https://github.com/babashka/tools.namespace
