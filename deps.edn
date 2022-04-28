@@ -10,6 +10,7 @@
          "feature-selmer"
          "feature-logging"
          "feature-priority-map"
+         "feature-rrb-vector"
          "feature-jdbc"
          "pods/src"
          "babashka.nrepl/src"
@@ -46,7 +47,8 @@
         com.taoensso/timbre {:mvn/version "5.2.1"}
         org.clojure/tools.logging {:mvn/version "1.1.0"}
         org.clojure/data.priority-map {:mvn/version "1.1.0"}
-        insn/insn {:mvn/version "0.5.2"}}
+        insn/insn {:mvn/version "0.5.2"}
+        org.clojure/core.rrb-vector {:mvn/version "0.1.2"}}
  :aliases {:babashka/dev
            {:main-opts ["-m" "babashka.main"]}
            :profile
