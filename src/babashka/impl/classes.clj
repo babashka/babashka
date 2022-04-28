@@ -439,6 +439,7 @@
     ;; list above and then everything reachable via the public class will be
     ;; visible in the native image.
     :instance-checks [clojure.lang.AFn
+                      clojure.lang.Agent
                       clojure.lang.AMapEntry ;; for proxy
                       clojure.lang.APersistentMap ;; for proxy
                       clojure.lang.APersistentSet
@@ -489,6 +490,8 @@
                       clojure.lang.Sequential
                       clojure.lang.Seqable
                       clojure.lang.Volatile
+                      java.lang.ExceptionInInitializerError
+                      java.sql.Timestamp
                       java.util.concurrent.atomic.AtomicInteger
                       java.util.concurrent.atomic.AtomicLong
                       java.util.Collection
@@ -594,6 +597,7 @@
     Comparable java.lang.Comparable
     Double java.lang.Double
     Exception java.lang.Exception
+    ExceptionInInitializerError java.lang.ExceptionInInitializerError
     IndexOutOfBoundsException java.lang.IndexOutOfBoundsException
     IllegalArgumentException java.lang.IllegalArgumentException
     IllegalStateException java.lang.IllegalStateException
