@@ -70,6 +70,8 @@
                                               [org.clojure/tools.logging "1.1.0"]]}
              :feature/priority-map {:source-paths ["feature-priority-map"]
                                     :dependencies [[org.clojure/data.priority-map "1.1.0"]]}
+             :feature/rrb-vector {:source-paths ["feature-rrb-vector"]
+                                  :dependencies [[org.clojure/core.rrb-vector "0.1.2"]]}
              :test [:feature/xml
                     :feature/lanterna
                     :feature/yaml
@@ -87,6 +89,7 @@
                     :feature/selmer
                     :feature/logging
                     :feature/priority-map
+                    :feature/rrb-vector
                     {:dependencies [[com.clojure-goes-fast/clj-async-profiler "0.5.0"]
                                     [com.opentable.components/otj-pg-embedded "0.13.3"]]}]
              :uberjar {:global-vars {*assert* false}

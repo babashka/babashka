@@ -256,7 +256,8 @@ Use bb run --help to show this help output.
  :feature/spec-alpha %s
  :feature/selmer %s
  :feature/logging %s
- :feature/priority-map %s}")
+ :feature/priority-map %s
+ :feature/rrb-vector %s}")
     version
     features/csv?
     features/java-nio?
@@ -276,7 +277,8 @@ Use bb run --help to show this help output.
     features/spec-alpha?
     features/selmer?
     features/logging?
-    features/priority-map?)))
+    features/priority-map?
+    features/rrb-vector?)))
 
 (defn read-file [file]
   (let [f (io/file file)]
@@ -442,7 +444,8 @@ Use bb run --help to show this help output.
                              'clojure.tools.logging.readable
                              @(resolve 'babashka.impl.logging/tools-logging-readable-namespace))
     features/priority-map? (assoc 'clojure.data.priority-map
-                                  @(resolve 'babashka.impl.priority-map/priority-map-namespace))))
+                                  @(resolve 'babashka.impl.priority-map/priority-map-namespace))
+    features/rrb-vector? (assoc 'clojure.core.rrb-vector @(resolve 'babashka.impl.rrb-vector/rrb-vector-namespace))))
 
 (def edn-readers (cond-> {}
                    features/yaml?

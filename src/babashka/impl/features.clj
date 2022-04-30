@@ -17,6 +17,7 @@
 (def selmer?         (not= "false" (System/getenv "BABASHKA_FEATURE_SELMER")))
 (def logging?        (not= "false" (System/getenv "BABASHKA_FEATURE_LOGGING")))
 (def priority-map?   (not= "false" (System/getenv "BABASHKA_FEATURE_PRIORITY_MAP")))
+(def rrb-vector?     (not= "false" (System/getenv "BABASHKA_FEATURE_RRB_VECTOR")))
 
 ;; excluded by default
 (def jdbc? (= "true" (System/getenv "BABASHKA_FEATURE_JDBC")))
@@ -76,3 +77,6 @@
 
 (when priority-map?
   (require '[babashka.impl.priority-map]))
+
+(when rrb-vector?
+  (require '[babashka.impl.rrb-vector]))
