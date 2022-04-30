@@ -116,7 +116,8 @@
     java.util.Iterator
     {:methods [{:name "hasNext"}
                {:name "next"}]}
-    })
+    java.util.TimeZone
+    {:methods [{:name "getTimeZone"}]}})
 
 (def custom-map
   (cond->
