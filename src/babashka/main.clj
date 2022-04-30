@@ -84,6 +84,7 @@
 (sci/alter-var-root sci/in (constantly *in*))
 (sci/alter-var-root sci/out (constantly *out*))
 (sci/alter-var-root sci/err (constantly *err*))
+(sci/alter-var-root sci/read-eval (constantly *read-eval*))
 
 (set! *warn-on-reflection* true)
 ;; To detect problems when generating the image, run:
