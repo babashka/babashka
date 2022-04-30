@@ -219,7 +219,6 @@
                                        :form s})
                               true)))
                         (catch Throwable ex
-                          (prn (ex-message ex))
                           (set! *e ex)
                           (out-fn {:tag :ret :val (ex->data ex (or (-> ex ex-data :clojure.error/phase) :execution))
                                    :ns (str (.name *ns*)) :form s
