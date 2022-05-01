@@ -314,7 +314,9 @@ Use bb run --help to show this help output.
 
 (def aliases
   (cond->
-      '{tools.cli clojure.tools.cli
+      '{str clojure.string
+        set clojure.set
+        tools.cli clojure.tools.cli
         edn clojure.edn
         wait babashka.wait
         signal babashka.signal
