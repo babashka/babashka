@@ -390,7 +390,9 @@ Use bb run --help to show this help output.
        'rewrite-clj.zip.subedit rewrite/subedit-namespace
        'clojure.core.rrb-vector (if features/rrb-vector?
                                   @(resolve 'babashka.impl.rrb-vector/rrb-vector-namespace)
-                                  {'catvec (sci/copy-var into (sci/create-ns 'clojure.core.rrb-vector))})}
+                                  {'catvec (sci/copy-var into
+                                                         (sci/create-ns 'clojure.core.rrb-vector)
+                                                         {:name 'catvec})})}
     features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace)
                           'clojure.data.xml.event @(resolve 'babashka.impl.xml/xml-event-namespace)
                           'clojure.data.xml.tree @(resolve 'babashka.impl.xml/xml-tree-namespace))
