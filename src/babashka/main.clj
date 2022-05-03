@@ -257,8 +257,7 @@ Use bb run --help to show this help output.
  :feature/spec-alpha %s
  :feature/selmer %s
  :feature/logging %s
- :feature/priority-map %s
- :feature/rrb-vector %s}")
+ :feature/priority-map %s}")
     version
     features/csv?
     features/java-nio?
@@ -278,8 +277,7 @@ Use bb run --help to show this help output.
     features/spec-alpha?
     features/selmer?
     features/logging?
-    features/priority-map?
-    features/rrb-vector?)))
+    features/priority-map?)))
 
 (defn read-file [file]
   (let [f (io/file file)]
@@ -340,6 +338,9 @@ Use bb run --help to show this help output.
 
 (def clojure-main-ns (sci/create-ns 'clojure.main))
 
+(defn catvec [& xs]
+  (reduce into [] xs))
+
 (def namespaces
   (cond->
       {'user {'*input* (reify
@@ -390,9 +391,8 @@ Use bb run --help to show this help output.
        'rewrite-clj.zip.subedit rewrite/subedit-namespace
        'clojure.core.rrb-vector (if features/rrb-vector?
                                   @(resolve 'babashka.impl.rrb-vector/rrb-vector-namespace)
-                                  {'catvec (sci/copy-var into
-                                                         (sci/create-ns 'clojure.core.rrb-vector)
-                                                         {:name 'catvec})})}
+                                  {'catvec (sci/copy-var catvec
+                                                         (sci/create-ns 'clojure.core.rrb-vector))})}
     features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace)
                           'clojure.data.xml.event @(resolve 'babashka.impl.xml/xml-event-namespace)
                           'clojure.data.xml.tree @(resolve 'babashka.impl.xml/xml-tree-namespace))
