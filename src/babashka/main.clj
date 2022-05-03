@@ -387,7 +387,10 @@ Use bb run --help to show this help output.
        'rewrite-clj.paredit rewrite/paredit-namespace
        'rewrite-clj.parser rewrite/parser-namespace
        'rewrite-clj.zip rewrite/zip-namespace
-       'rewrite-clj.zip.subedit rewrite/subedit-namespace}
+       'rewrite-clj.zip.subedit rewrite/subedit-namespace
+       'clojure.core.rrb-vector (if features/rrb-vector?
+                                  @(resolve 'babashka.impl.rrb-vector/rrb-vector-namespace)
+                                  {'catvec (sci/copy-var into (sci/create-ns 'clojure.core.rrb-vector))})}
     features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace)
                           'clojure.data.xml.event @(resolve 'babashka.impl.xml/xml-event-namespace)
                           'clojure.data.xml.tree @(resolve 'babashka.impl.xml/xml-tree-namespace))
@@ -447,8 +450,7 @@ Use bb run --help to show this help output.
                              'clojure.tools.logging.readable
                              @(resolve 'babashka.impl.logging/tools-logging-readable-namespace))
     features/priority-map? (assoc 'clojure.data.priority-map
-                                  @(resolve 'babashka.impl.priority-map/priority-map-namespace))
-    features/rrb-vector? (assoc 'clojure.core.rrb-vector @(resolve 'babashka.impl.rrb-vector/rrb-vector-namespace))))
+                                  @(resolve 'babashka.impl.priority-map/priority-map-namespace))))
 
 (def edn-readers (cond-> {}
                    features/yaml?

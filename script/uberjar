@@ -168,7 +168,7 @@ else
     BABASHKA_LEIN_PROFILES+=",-feature/priority-map"
 fi
 
-if [ "$BABASHKA_FEATURE_RRB_VECTOR" != "false" ]
+if [ "$BABASHKA_FEATURE_RRB_VECTOR" = "true" ]
 then
     BABASHKA_LEIN_PROFILES+=",+feature/rrb-vector"
 else
