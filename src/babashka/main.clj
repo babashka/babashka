@@ -339,7 +339,7 @@ Use bb run --help to show this help output.
 (def clojure-main-ns (sci/create-ns 'clojure.main))
 
 (defn catvec [& xs]
-  (reduce into [] xs))
+  (into [] cat xs))
 
 (def namespaces
   (cond->
