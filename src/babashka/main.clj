@@ -10,7 +10,8 @@
    [babashka.impl.classes :as classes]
    [babashka.impl.classpath :as cp :refer [classpath-namespace]]
    [babashka.impl.clojure.core :as core :refer [core-extras]]
-   [babashka.impl.clojure.core.async :refer [async-namespace async-protocols-namespace]]
+   [babashka.impl.clojure.core.async :refer [async-namespace
+                                             async-protocols-namespace]]
    [babashka.impl.clojure.instant :as instant]
    [babashka.impl.clojure.java.browse :refer [browse-namespace]]
    [babashka.impl.clojure.java.io :refer [io-namespace]]
@@ -18,7 +19,8 @@
    [babashka.impl.clojure.main :as clojure-main :refer [demunge]]
    [babashka.impl.clojure.math :refer [math-namespace]]
    [babashka.impl.clojure.stacktrace :refer [stacktrace-namespace]]
-   [babashka.impl.clojure.tools.reader-types :refer [edn-namespace reader-types-namespace]]
+   [babashka.impl.clojure.tools.reader-types :refer [edn-namespace
+                                                     reader-types-namespace]]
    [babashka.impl.clojure.zip :refer [zip-namespace]]
    [babashka.impl.common :as common]
    [babashka.impl.core  :as bbcore]
@@ -26,6 +28,7 @@
    [babashka.impl.data :as data]
    [babashka.impl.datafy :refer [datafy-namespace]]
    [babashka.impl.deps :as deps :refer [deps-namespace]]
+   [babashka.impl.edamame :refer [edamame-namespace]]
    [babashka.impl.error-handler :refer [error-handler]]
    [babashka.impl.features :as features]
    [babashka.impl.fs :refer [fs-namespace]]
@@ -392,7 +395,8 @@ Use bb run --help to show this help output.
        'clojure.core.rrb-vector (if features/rrb-vector?
                                   @(resolve 'babashka.impl.rrb-vector/rrb-vector-namespace)
                                   {'catvec (sci/copy-var catvec
-                                                         (sci/create-ns 'clojure.core.rrb-vector))})}
+                                                         (sci/create-ns 'clojure.core.rrb-vector))})
+       'edamame.core edamame-namespace}
     features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace)
                           'clojure.data.xml.event @(resolve 'babashka.impl.xml/xml-event-namespace)
                           'clojure.data.xml.tree @(resolve 'babashka.impl.xml/xml-tree-namespace))
