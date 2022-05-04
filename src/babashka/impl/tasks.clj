@@ -1,6 +1,7 @@
 (ns babashka.impl.tasks
   (:require [babashka.deps :as deps]
             [babashka.impl.common :refer [ctx bb-edn debug]]
+            [babashka.impl.process :as pp]
             [babashka.process :as p]
             [clojure.core.async :refer [<!!]]
             [clojure.java.io :as io]
@@ -85,7 +86,7 @@
         local-log-level (:log-level opts)]
     (sci/binding [log-level (or local-log-level @log-level)]
       (apply log-info cmd)
-      (handle-non-zero (p/process prev cmd (merge default-opts opts)) opts))))
+      (handle-non-zero (pp/process prev cmd (merge default-opts opts)) opts))))
 
 (defn clojure [cmd & args]
   (let [[opts cmd args]
