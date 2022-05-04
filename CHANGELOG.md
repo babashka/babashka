@@ -8,6 +8,15 @@ A preview of the next release can be installed from
 ## Unreleased
 
 - Convey `*print-length*` to pprint and allow `set!`
+- `babashka.nrepl`: support pprint length
+- SCI: support invoking field, without dash
+- Add compatibility with clojure numeric tower
+- Update deps.clj
+- Compatibility with fipp and puget
+- fix #1233: don't print error to stdout in prepl
+- Update process with pre-start-fn
+- Update fs
+- Expose edamame, fixes #549 and #1258 (#1259)
 
 ## 0.8.1 (2022-04-15)
 
