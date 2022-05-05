@@ -10,6 +10,7 @@
          "feature-selmer"
          "feature-logging"
          "feature-priority-map"
+         "feature-rrb-vector"
          "feature-jdbc"
          "pods/src"
          "babashka.nrepl/src"
@@ -18,7 +19,7 @@
          "resources" "sci/resources"],
  :deps {org.clojure/clojure {:mvn/version "1.11.0"},
         org.babashka/sci {:local/root "sci"}
-        org.babashka/babashka.impl.reify {:mvn/version "0.0.7"}
+        org.babashka/babashka.impl.reify {:mvn/version "0.1.0"}
         org.babashka/sci.impl.types {:mvn/version "0.0.2"}
         babashka/babashka.curl {:local/root "babashka.curl"}
         babashka/fs {:local/root "fs"}
@@ -46,7 +47,8 @@
         com.taoensso/timbre {:mvn/version "5.2.1"}
         org.clojure/tools.logging {:mvn/version "1.1.0"}
         org.clojure/data.priority-map {:mvn/version "1.1.0"}
-        insn/insn {:mvn/version "0.5.2"}}
+        insn/insn {:mvn/version "0.5.2"}
+        org.clojure/core.rrb-vector {:mvn/version "0.1.2"}}
  :aliases {:babashka/dev
            {:main-opts ["-m" "babashka.main"]}
            :profile
@@ -134,7 +136,9 @@
                          aysylu/loom {:mvn/version "1.0.2"}
                          com.layerware/hugsql-core {:mvn/version "0.5.3"}
                          com.github.seancorfield/expectations {:mvn/version "2.0.157"}
-                         com.rpl/specter {:mvn/version "1.1.4"}}
+                         com.rpl/specter {:mvn/version "1.1.4"}
+                         com.github.askonomm/clarktown {:mvn/version "1.1.2"}
+                         org.clojure/math.numeric-tower {:git/tag "math.numeric-tower-0.0.5", :git/sha "12eb9c5", :git/url "https://github.com/clojure/math.numeric-tower"}}
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil}}
            :clj-nvd
