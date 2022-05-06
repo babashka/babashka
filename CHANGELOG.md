@@ -5,18 +5,18 @@ For a list of breaking changes, check [here](#breaking-changes).
 A preview of the next release can be installed from
 [babashka-dev-builds](https://github.com/babashka/babashka-dev-builds).
 
-## Unreleased
+## 0.8.2 (2022-05-06)
 
 - Convey `*print-length*` to pprint and allow `set!`
 - `babashka.nrepl`: support pprint length
 - SCI: support invoking field, without dash
 - Add compatibility with clojure numeric tower
-- Update deps.clj
+- Update deps.clj to tools jar `1.11.1.1113`
 - Compatibility with fipp and puget
-- fix #1233: don't print error to stdout in prepl
-- Update process with pre-start-fn
-- Update fs
-- Expose edamame, fixes #549 and #1258 (#1259)
+- Fix [#1233](https://github.com/babashka/babashka/issues/1233): don't print error to stdout in prepl
+- Update process with `:pre-start-fn` option
+- Update fs with `cwd` and Windows glob improvements
+- Expose edamame, fixes [#549](https://github.com/babashka/babashka/issues/549) and [#1258](https://github.com/babashka/babashka/issues/1258) (#1259)
 
 ## 0.8.1 (2022-04-15)
 
