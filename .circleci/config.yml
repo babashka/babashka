@@ -214,7 +214,7 @@ jobs:
             ./bb .circleci/script/publish_artifact.clj || true
   linux-aarch64:
     machine:
-      image: ubuntu-2004:202101-01
+      image: ubuntu-2004:202111-01
     resource_class: arm.large
     working_directory: ~/repo
     environment:
@@ -281,7 +281,7 @@ jobs:
             ./bb .circleci/script/publish_artifact.clj || true
   linux-aarch64-static:
     machine:
-      image: ubuntu-2004:202101-01
+      image: ubuntu-2004:202111-01
     resource_class: arm.large
     working_directory: ~/repo
     environment:
