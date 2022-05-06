@@ -2,5 +2,5 @@
  :deps {borkdude/gh-release-artifact
         #_{:local/root "../gh-release-artifact"}
         {:git/url "https://github.com/borkdude/gh-release-artifact"
-         :sha "a83ee8da47d56a80b6380cbb6b4b9274048067bd"}}
+         :sha "cf082df46a648178d1904e9cbcb787d8136a35c6"}}
  :tasks {release-artifact babashka.release-artifact/release}}
