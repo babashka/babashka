@@ -17,6 +17,7 @@ A preview of the next release can be installed from
 - Update process with `:pre-start-fn` option
 - Update fs with `cwd` and Windows glob improvements
 - Expose edamame, fixes [#549](https://github.com/babashka/babashka/issues/549) and [#1258](https://github.com/babashka/babashka/issues/1258) (#1259)
+- Support `BABASBHKA_PODS_DIR` environment variable
 
 ## 0.8.1 (2022-04-15)
 
