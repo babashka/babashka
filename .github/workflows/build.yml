@@ -124,7 +124,18 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('project.clj') }}
           restore-keys: ${{ runner.os }}-maven-
 
-      - uses: graalvm/setup-graalvm@v1
+      - name: Setup GraalVM
+        if: "matrix.static == false"
+        uses: graalvm/setup-graalvm@v1
+        with:
+          version: '22.1.0'
+          java-version: '11'
+          components: 'native-image'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup GraalVM+musl
+        if: "matrix.static == true"
+        uses: graalvm/setup-graalvm@v1
         with:
           version: '22.1.0'
           java-version: '11'
