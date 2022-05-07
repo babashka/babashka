@@ -63,7 +63,7 @@ jobs:
           script/run_lib_tests
 
       - name: Run as lein command
-        run: .circcleci/script/lein
+        run: echo '{:a 1}' | lein bb '(:a *in*)'
 
       - name: Build uberjar
         run: |
