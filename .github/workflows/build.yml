@@ -129,6 +129,7 @@ jobs:
           version: '22.1.0'
           java-version: '11'
           components: 'native-image'
+          native-image-musl: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install clojure tools
@@ -143,13 +144,6 @@ jobs:
           sudo apt-get update
           sudo apt-get -y install build-essential zlib1g-dev
 
-      - name: Setup musl
-        if: "matrix.static == true && matrix.os == 'ubuntu-latest'"
-        env:
-          BABASHKA_STATIC: "true"
-          BABASHKA_MUSL: "true"
-        run: sudo -E script/setup-musl
-
       - name: Babashka version
         id: babashka-version
         run: |
@@ -160,7 +154,7 @@ jobs:
         run: script/uberjar
 
       - name: Build native image
-        if: "matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest'"
+        if: "matrix.static == false"
         run: script/compile
 
       - name: Build static native image
