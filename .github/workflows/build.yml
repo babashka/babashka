@@ -4,7 +4,9 @@ on:
   push:
     branches:
       - master
+  pull_request:
 
+# TODO: Add deploy if needed
 jobs:
   scratch:
     if: "!contains(github.event.head_commit.message, 'skip ci')"
