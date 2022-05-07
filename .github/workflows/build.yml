@@ -145,6 +145,9 @@ jobs:
 
       - name: Setup musl
         if: "matrix.static == true && matrix.os == 'ubuntu-latest'"
+        env:
+          BABASHKA_STATIC: "true"
+          BABASHKA_MUSL: "true"
         run: sudo -E script/setup-musl
 
       - name: Babashka version
