@@ -116,11 +116,6 @@ jobs:
           fetch-depth: 1
           submodules: 'true'
 
-      - uses: actions/download-artifact@v1
-        with:
-          name: jar
-          path: .
-
       - name: Cache deps
         uses: actions/cache@v2
         id: cache-deps
