@@ -464,4 +464,7 @@ jobs:
             PLATFORMS: linux/amd64,linux/arm64
           command: java -jar ./target/babashka-$(cat resources/BABASHKA_VERSION)-standalone.jar .circleci/script/docker.clj
 
-# TODO: Enable CircleCI back here
+workflows:
+  version: 2
+  ci:
+    jobs: [] # TODO: Enable CircleCI back here

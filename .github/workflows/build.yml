@@ -103,7 +103,6 @@ jobs:
             name: linux
             static: true
     runs-on: ${{ matrix.os }}
-    needs: [jvm]
     env:
       LEIN_ROOT: "true"
       GRAALVM_VERSION: "22.1.0"
@@ -149,6 +148,10 @@ jobs:
           sudo apt-get update
           sudo apt-get -y install build-essential zlib1g-dev
 
+      - name: Setup musl
+        if: "matrix.static == true && matrix.os == 'ubuntu-latest'"
+        run: sudo -E script/setup-musl
+
       - name: Babashka version
         id: babashka-version
         run: |
@@ -160,8 +163,7 @@ jobs:
 
       - name: Build native image
         if: "matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest'"
-        run: |
-          script/compile
+        run: script/compile
 
       - name: Build static native image
         if: "matrix.static == true"
