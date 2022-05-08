@@ -72,7 +72,7 @@ jobs:
 
       - uses: actions/upload-artifact@v1
         with:
-          name: jar
+          name: babashka-${{ steps.babashka-version.outputs.version }}-standalone.jar
           path: target/babashka-${{ steps.babashka-version.outputs.version }}-standalone.jar
 
   native:
@@ -80,7 +80,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: macos-latest
+          - os: macos-12
             name: macos
             static: false
          #- os: ubuntu-latest
@@ -174,14 +174,14 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           path: bb
-          name: babashka-${{ steps.babashka-version.outputs.version }}-${{ matrix.name }}-amd64.zip
+          name: babashka-${{ steps.babashka-version.outputs.version }}-${{ matrix.name }}-amd64
 
       - name: Upload static artifact
         if: "matrix.static == true"
         uses: actions/upload-artifact@v2
         with:
           path: bb
-          name: babashka-${{ steps.babashka-version.outputs.version }}-${{ matrix.name }}-static-amd64.zip
+          name: babashka-${{ steps.babashka-version.outputs.version }}-${{ matrix.name }}-static-amd64
 
   docker:
     if: ${{ false }} # Disabled
