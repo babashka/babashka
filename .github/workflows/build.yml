@@ -5,11 +5,14 @@ on:
     branches:
       - master
   pull_request:
+    branches:
+      - master
 
 # TODO: Add deploy if needed
 jobs:
   jvm:
-    if: "!contains(github.event.head_commit.message, 'skip ci')"
+    if: ${{ false }} # Disabled
+    # if: "!contains(github.event.head_commit.message, 'skip ci')"
     runs-on: ubuntu-latest
     env:
       LEIN_ROOT: "true"
