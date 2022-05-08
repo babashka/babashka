@@ -467,4 +467,26 @@ jobs:
 workflows:
   version: 2
   ci:
-    jobs: [] # TODO: Enable CircleCI back here
+    jobs:
+      - jvm
+      - linux
+      - linux-static
+    # - mac # TODO: Enable when not needed from Actions
+      - linux-aarch64
+      - linux-aarch64-static
+      - deploy:
+          filters:
+            branches:
+              only: master
+          requires:
+            - jvm
+            - linux
+          # - mac # TODO: Enable when not needed from Actions
+      - docker:
+          filters:
+            branches:
+              only: master
+          requires:
+            - linux
+            - linux-static
+            - linux-aarch64
