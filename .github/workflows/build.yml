@@ -8,19 +8,6 @@ on:
 
 # TODO: Add deploy if needed
 jobs:
-  scratch:
-    if: "!contains(github.event.head_commit.message, 'skip ci')"
-    runs-on: ubuntu-18.04
-    steps:
-      - name: Git checkout
-        uses: actions/checkout@v1
-        with:
-          fetch-depth: 1
-          submodules: 'true'
-
-      - name: Scratch
-        run: |
-          echo "Scratch"
   jvm:
     if: "!contains(github.event.head_commit.message, 'skip ci')"
     runs-on: ubuntu-latest
@@ -93,15 +80,15 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-latest
-            name: linux
-            static: false
           - os: macos-latest
             name: macos
             static: false
-          - os: ubuntu-latest
-            name: linux
-            static: true
+         #- os: ubuntu-latest
+         #  name: linux
+         #  static: false
+         #- os: ubuntu-latest
+         #  name: linux
+         #  static: true
     runs-on: ${{ matrix.os }}
     env:
       LEIN_ROOT: "true"
@@ -173,8 +160,7 @@ jobs:
         env:
           BABASHKA_STATIC: "true"
           BABASHKA_MUSL: "true"
-        run: |
-          script/compile
+        run: script/compile
 
       - name: Test binary and libs
         run: |
@@ -198,7 +184,8 @@ jobs:
           name: babashka-${{ steps.babashka-version.outputs.version }}-${{ matrix.name }}-static-amd64.zip
 
   docker:
-    if: "!contains(github.event.head_commit.message, 'skip ci') && github.event_name == 'push' && github.ref == 'refs/heads/master'"
+    if: ${{ false }} # Disabled
+    # if: "!contains(github.event.head_commit.message, 'skip ci') && github.event_name == 'push' && github.ref == 'refs/heads/master'"
     needs:
       - native
     runs-on: ubuntu-latest
