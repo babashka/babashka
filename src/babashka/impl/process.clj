@@ -27,4 +27,5 @@
    'tokenize    (copy-var process/tokenize tns)
    '*defaults*  defaults
    'destroy     (copy-var process/destroy tns)
-   'destroy-tree (copy-var process/destroy-tree tns)})
+   'destroy-tree (copy-var process/destroy-tree tns)
+   'exec (copy-var process/exec tns)})
