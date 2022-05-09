@@ -471,7 +471,7 @@ workflows:
       - jvm
       - linux
       - linux-static
-    # - mac # TODO: Enable when not needed from Actions
+      - mac
       - linux-aarch64
       - linux-aarch64-static
       - deploy:
