@@ -261,6 +261,7 @@
           java.math.BigInteger
           java.math.MathContext
           java.math.RoundingMode
+          java.net.BindException
           java.net.ConnectException
           java.net.DatagramSocket
           java.net.DatagramPacket
