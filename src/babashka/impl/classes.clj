@@ -97,7 +97,8 @@
                {:name "aset"}
                {:name "aclone"}]}
     clojure.lang.Compiler
-    {:fields [{:name "specials"}]}
+    {:fields [{:name "specials"}
+              {:name "CHAR_MAP"}]}
     clojure.lang.PersistentHashMap
     {:fields [{:name "EMPTY"}]}
     clojure.lang.APersistentVector
@@ -358,6 +359,7 @@
                 java.time.temporal.Temporal
                 java.time.temporal.TemporalAccessor
                 java.time.temporal.TemporalAdjuster])
+          java.util.concurrent.atomic.AtomicReference
           java.util.concurrent.ExecutionException
           java.util.concurrent.LinkedBlockingQueue
           java.util.concurrent.ScheduledThreadPoolExecutor
@@ -387,6 +389,7 @@
           java.util.Base64$Decoder
           java.util.Base64$Encoder
           java.util.Date
+          java.util.IdentityHashMap
           java.util.Locale
           java.util.Map
           java.util.MissingResourceException
@@ -396,6 +399,7 @@
           java.util.Scanner
           java.util.Set
           java.util.StringTokenizer
+          java.util.WeakHashMap
           java.util.UUID
           java.util.function.Consumer
           java.util.function.Function
@@ -572,6 +576,8 @@
                          java.util.concurrent.Future
                          (instance? java.util.concurrent.ScheduledExecutorService v)
                          java.util.concurrent.ScheduledExecutorService
+                         (instance? java.util.Iterator v)
+                         java.util.Iterator
                          ;; keep commas for merge friendliness
                          ,,,)))]
     m))

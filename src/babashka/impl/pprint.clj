@@ -181,6 +181,7 @@ It prints a table of squares and cubes for the numbers from 1 to 10:
    'with-pprint-dispatch (sci/copy-var pprint/with-pprint-dispatch pprint-ns)
    '*print-pprint-dispatch* print-pprint-dispatch
    '*print-miser-width* print-miser-width
-   'get-pretty-writer (sci/copy-var get-pretty-writer pprint-ns)})
+   'get-pretty-writer (sci/copy-var get-pretty-writer pprint-ns)
+   'write-out nil})
 
 (vreset! patched? true)
