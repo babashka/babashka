@@ -165,6 +165,9 @@ It prints a table of squares and cubes for the numbers from 1 to 10:
             pprint/*print-miser-width* @print-miser-width]
     (pprint/get-pretty-writer writer)))
 
+(defn write-out []
+  ::TODO)
+
 (def pprint-namespace
   {'pp (sci/copy-var pprint/pp pprint-ns)
    'pprint (sci/copy-var pprint pprint-ns)
@@ -182,6 +185,6 @@ It prints a table of squares and cubes for the numbers from 1 to 10:
    '*print-pprint-dispatch* print-pprint-dispatch
    '*print-miser-width* print-miser-width
    'get-pretty-writer (sci/copy-var get-pretty-writer pprint-ns)
-   'write-out (sci/copy-var get-pretty-writer pprint-ns {:name 'write-out})})
+   'write-out (sci/copy-var write-out pprint-ns)})
 
 (vreset! patched? true)
