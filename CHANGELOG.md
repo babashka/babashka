@@ -5,6 +5,11 @@ For a list of breaking changes, check [here](#breaking-changes).
 A preview of the next release can be installed from
 [babashka-dev-builds](https://github.com/babashka/babashka-dev-builds).
 
+## Unreleased
+
+- #1264: add support for calling `ScheduledExecutorService`
+- Add `java.net.BindException`
+
 ## 0.8.2 (2022-05-06)
 
 - Convey `*print-length*` to pprint and allow `set!`
