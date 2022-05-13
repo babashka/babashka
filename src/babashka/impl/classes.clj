@@ -390,6 +390,7 @@
           java.util.Base64$Encoder
           java.util.Date
           java.util.IdentityHashMap
+          java.util.List
           java.util.Locale
           java.util.Map
           java.util.MissingResourceException
@@ -502,7 +503,6 @@
                       java.util.concurrent.atomic.AtomicInteger
                       java.util.concurrent.atomic.AtomicLong
                       java.util.Collection
-                      java.util.List
                       java.util.Map$Entry
                       ~@(when features/xml? ['clojure.data.xml.node.Element])]
     :custom ~custom-map})
