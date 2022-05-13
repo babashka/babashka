@@ -516,6 +516,8 @@
                    c))
         m (assoc m :public-class
                  (fn [v]
+                   ;; NOTE: a series of instance check, so far, is still cheaper
+                   ;; than piggybacking on defmulti or defprotocol
                    (cond (instance? java.lang.Process v)
                          java.lang.Process
                          (instance? java.lang.ProcessHandle v)
