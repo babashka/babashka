@@ -362,6 +362,11 @@
           java.util.concurrent.LinkedBlockingQueue
           java.util.concurrent.ScheduledThreadPoolExecutor
           java.util.concurrent.ThreadPoolExecutor
+          java.util.concurrent.ScheduledExecutorService
+          java.util.concurrent.Future
+          java.util.concurrent.CompletableFuture
+          java.util.concurrent.Executors
+          java.util.concurrent.TimeUnit
           java.util.jar.Attributes$Name
           java.util.jar.JarFile
           java.util.jar.JarEntry
@@ -392,10 +397,6 @@
           java.util.Set
           java.util.StringTokenizer
           java.util.UUID
-          java.util.concurrent.Future
-          java.util.concurrent.CompletableFuture
-          java.util.concurrent.Executors
-          java.util.concurrent.TimeUnit
           java.util.function.Consumer
           java.util.function.Function
           java.util.function.Predicate
@@ -567,6 +568,8 @@
                          java.nio.file.attribute.BasicFileAttributes
                          (instance? java.util.concurrent.Future v)
                          java.util.concurrent.Future
+                         (instance? java.util.concurrent.ScheduledExecutorService v)
+                         java.util.concurrent.ScheduledExecutorService
                          ;; keep commas for merge friendliness
                          ,,,)))]
     m))
