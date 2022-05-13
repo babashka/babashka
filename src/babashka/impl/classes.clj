@@ -499,6 +499,9 @@
                       clojure.lang.Seqable
                       clojure.lang.Volatile
                       java.lang.ExceptionInInitializerError
+                      java.lang.LinkageError
+                      java.lang.ThreadDeath
+                      java.lang.VirtualMachineError
                       java.sql.Timestamp
                       java.util.concurrent.atomic.AtomicInteger
                       java.util.concurrent.atomic.AtomicLong
@@ -620,6 +623,7 @@
     File java.io.File
     Float java.lang.Float
     Long java.lang.Long
+    LinkageError java.lang.LinkageError
     Math java.lang.Math
     NullPointerException java.lang.NullPointerException
     Number java.lang.Number
@@ -636,6 +640,8 @@
     System java.lang.System
     Thread java.lang.Thread
     Throwable java.lang.Throwable
+    VirtualMachineError java.lang.VirtualMachineError
+    ThreadDeath java.lang.ThreadDeath
     ;; UnsupportedOperationException java.lang.UnsupportedOperationException
     })
 
