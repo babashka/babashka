@@ -97,7 +97,8 @@
                {:name "aset"}
                {:name "aclone"}]}
     clojure.lang.Compiler
-    {:fields [{:name "specials"}]}
+    {:fields [{:name "specials"}
+              {:name "CHAR_MAP"}]}
     clojure.lang.PersistentHashMap
     {:fields [{:name "EMPTY"}]}
     clojure.lang.APersistentVector
@@ -358,6 +359,7 @@
                 java.time.temporal.Temporal
                 java.time.temporal.TemporalAccessor
                 java.time.temporal.TemporalAdjuster])
+          java.util.concurrent.atomic.AtomicReference
           java.util.concurrent.ExecutionException
           java.util.concurrent.LinkedBlockingQueue
           java.util.concurrent.ScheduledThreadPoolExecutor
@@ -387,6 +389,8 @@
           java.util.Base64$Decoder
           java.util.Base64$Encoder
           java.util.Date
+          java.util.IdentityHashMap
+          java.util.List
           java.util.Locale
           java.util.Map
           java.util.MissingResourceException
@@ -396,6 +400,7 @@
           java.util.Scanner
           java.util.Set
           java.util.StringTokenizer
+          java.util.WeakHashMap
           java.util.UUID
           java.util.function.Consumer
           java.util.function.Function
@@ -494,11 +499,13 @@
                       clojure.lang.Seqable
                       clojure.lang.Volatile
                       java.lang.ExceptionInInitializerError
+                      java.lang.LinkageError
+                      java.lang.ThreadDeath
+                      java.lang.VirtualMachineError
                       java.sql.Timestamp
                       java.util.concurrent.atomic.AtomicInteger
                       java.util.concurrent.atomic.AtomicLong
                       java.util.Collection
-                      java.util.List
                       java.util.Map$Entry
                       ~@(when features/xml? ['clojure.data.xml.node.Element])]
     :custom ~custom-map})
@@ -572,6 +579,8 @@
                          java.util.concurrent.Future
                          (instance? java.util.concurrent.ScheduledExecutorService v)
                          java.util.concurrent.ScheduledExecutorService
+                         (instance? java.util.Iterator v)
+                         java.util.Iterator
                          ;; keep commas for merge friendliness
                          ,,,)))]
     m))
@@ -614,6 +623,7 @@
     File java.io.File
     Float java.lang.Float
     Long java.lang.Long
+    LinkageError java.lang.LinkageError
     Math java.lang.Math
     NullPointerException java.lang.NullPointerException
     Number java.lang.Number
@@ -630,6 +640,8 @@
     System java.lang.System
     Thread java.lang.Thread
     Throwable java.lang.Throwable
+    VirtualMachineError java.lang.VirtualMachineError
+    ThreadDeath java.lang.ThreadDeath
     ;; UnsupportedOperationException java.lang.UnsupportedOperationException
     })
 
