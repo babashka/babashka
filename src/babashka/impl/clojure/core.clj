@@ -195,5 +195,6 @@
    'abs (sci/copy-var abs clojure-core-ns)
    'StackTraceElement->vec (sci/copy-var StackTraceElement->vec clojure-core-ns)
    'memfn (sci/copy-var memfn clojure-core-ns)
-   'into-array (sci/copy-var into-array clojure-core-ns)}
+   'into-array (sci/copy-var into-array clojure-core-ns)
+   'print-method (sci/copy-var print-method clojure-core-ns)}
   )
