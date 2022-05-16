@@ -499,6 +499,7 @@
                       clojure.lang.Sequential
                       clojure.lang.Seqable
                       clojure.lang.Volatile
+                      java.lang.AbstractMethodError
                       java.lang.ExceptionInInitializerError
                       java.lang.LinkageError
                       java.lang.ThreadDeath
@@ -599,7 +600,8 @@
                                                        java-net-http-classes)))))
 
 (def imports
-  '{Appendable java.lang.Appendable
+  '{AbstractMethodError java.lang.AbstractMethodError
+    Appendable java.lang.Appendable
     ArithmeticException java.lang.ArithmeticException
     AssertionError java.lang.AssertionError
     BigDecimal java.math.BigDecimal
