@@ -448,6 +448,7 @@
     ;; visible in the native image.
     :instance-checks [clojure.lang.AFn
                       clojure.lang.Agent
+                      clojure.lang.AFunction
                       clojure.lang.AMapEntry ;; for proxy
                       clojure.lang.APersistentMap ;; for proxy
                       clojure.lang.APersistentSet
