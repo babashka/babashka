@@ -180,6 +180,8 @@ Babashka can be installed using a plugin as follows:
 
 ### Windows
 
+#### Scoop
+
 On Windows you can install using [scoop](https://scoop.sh/) and the
 [scoop-clojure](https://github.com/littleli/scoop-clojure) bucket.
 
@@ -193,6 +195,12 @@ scoop bucket add scoop-clojure https://github.com/littleli/scoop-clojure
 scoop bucket add extras
 scoop install babashka
 ```
+
+#### Manual
+
+If scoop does not work for you, then you can also just download the `bb.exe`
+binary from [Github releases](https://github.com/babashka/babashka/releases) and
+place it on your path manually.
 
 ### Installer script
 
