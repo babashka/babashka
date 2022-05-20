@@ -162,6 +162,22 @@ Upgrade:
 
     brew upgrade babashka
 
+### Nix
+
+Linux and macOS (including ARM Macs) binaries are provided via nix (see the installation instructions for nix [here](https://nixos.org/download.html)).
+
+Install:
+
+    # Adding `nixpkgs-unstable` channel for more up-to-date binaries, skip this if you already have `nixpkgs-unstable` in your channel list
+    nix-channel --add https://nixos.org/channels/nixpkgs-unstable nixpkgs-unstable
+    nix-channel --update
+    nix-env -iA nixpkgs-unstable.babashka
+
+Upgrade:
+
+    nix-channel --update
+    nix-env -iA nixpkgs-unstable.babashka
+
 ### Arch (Linux)
 
 `babashka` is [available](https://aur.archlinux.org/packages/babashka-bin/) in the [Arch User Repository](https://aur.archlinux.org). It can be installed using your favorite [AUR](https://aur.archlinux.org) helper such as
