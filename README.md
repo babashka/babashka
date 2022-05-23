@@ -178,6 +178,8 @@ Upgrade:
     nix-channel --update
     nix-env -iA nixpkgs-unstable.babashka
 
+You can find more documentation on how to use babashka with nix [here](./doc/nix.md).
+
 ### Arch (Linux)
 
 `babashka` is [available](https://aur.archlinux.org/packages/babashka-bin/) in the [Arch User Repository](https://aur.archlinux.org). It can be installed using your favorite [AUR](https://aur.archlinux.org) helper such as
