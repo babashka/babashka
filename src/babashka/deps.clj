@@ -1,5 +1,6 @@
 (ns babashka.deps
-  (:require [babashka.process :as p]
+  (:require [babashka.impl.process :as pp]
+            [babashka.process :as p]
             [borkdude.deps :as deps]
             [sci.core :as sci]))
 
@@ -41,8 +42,8 @@
                deps/*env* (:env opts)
                deps/*extra-env* (:extra-env opts)
                deps/*process-fn* (fn
-                                   ([cmd] (p/process cmd opts))
-                                   ([cmd _] (p/process cmd opts)))
+                                   ([cmd] (pp/process cmd opts))
+                                   ([cmd _] (pp/process cmd opts)))
                deps/*exit-fn* (fn
                                 ([_])
                                 ([_exit-code msg]

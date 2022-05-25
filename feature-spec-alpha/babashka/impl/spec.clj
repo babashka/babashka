@@ -4,12 +4,11 @@
             [babashka.impl.clojure.spec.gen.alpha :as gen]
             [babashka.impl.clojure.spec.test.alpha :as test]
             [clojure.core :as c]
-            [sci.core :as sci :refer [copy-var]]
-            [sci.impl.vars :as vars]))
+            [sci.core :as sci :refer [copy-var]]))
 
-(def sns (vars/->SciNamespace 'clojure.spec.alpha nil))
-(def tns (vars/->SciNamespace 'clojure.spec.test.alpha nil))
-(def gns (vars/->SciNamespace 'clojure.spec.gen.alpha nil))
+(def sns (sci/create-ns 'clojure.spec.alpha nil))
+(def tns (sci/create-ns 'clojure.spec.test.alpha nil))
+(def gns (sci/create-ns 'clojure.spec.gen.alpha nil))
 
 (defn- ns-qualify
   "Qualify symbol s by resolving it or using the current *ns*."

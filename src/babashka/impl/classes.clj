@@ -97,7 +97,8 @@
                {:name "aset"}
                {:name "aclone"}]}
     clojure.lang.Compiler
-    {:fields [{:name "specials"}]}
+    {:fields [{:name "specials"}
+              {:name "CHAR_MAP"}]}
     clojure.lang.PersistentHashMap
     {:fields [{:name "EMPTY"}]}
     clojure.lang.APersistentVector
@@ -110,10 +111,14 @@
     {:methods [{:name "disjoin"}]}
     clojure.lang.Indexed
     {:methods [{:name "nth"}]}
+    clojure.lang.Ratio
+    {:fields [{:name "numerator"}
+              {:name "denominator"}]}
     java.util.Iterator
     {:methods [{:name "hasNext"}
                {:name "next"}]}
-    })
+    java.util.TimeZone
+    {:methods [{:name "getTimeZone"}]}})
 
 (def custom-map
   (cond->
@@ -257,6 +262,7 @@
           java.math.BigInteger
           java.math.MathContext
           java.math.RoundingMode
+          java.net.BindException
           java.net.ConnectException
           java.net.DatagramSocket
           java.net.DatagramPacket
@@ -353,10 +359,16 @@
                 java.time.temporal.Temporal
                 java.time.temporal.TemporalAccessor
                 java.time.temporal.TemporalAdjuster])
+          java.util.concurrent.atomic.AtomicReference
           java.util.concurrent.ExecutionException
           java.util.concurrent.LinkedBlockingQueue
           java.util.concurrent.ScheduledThreadPoolExecutor
           java.util.concurrent.ThreadPoolExecutor
+          java.util.concurrent.ScheduledExecutorService
+          java.util.concurrent.Future
+          java.util.concurrent.CompletableFuture
+          java.util.concurrent.Executors
+          java.util.concurrent.TimeUnit
           java.util.jar.Attributes$Name
           java.util.jar.JarFile
           java.util.jar.JarEntry
@@ -377,20 +389,22 @@
           java.util.Base64$Decoder
           java.util.Base64$Encoder
           java.util.Date
+          java.util.IdentityHashMap
+          java.util.List
           java.util.Locale
           java.util.Map
           java.util.MissingResourceException
           java.util.NoSuchElementException
           java.util.Optional
           java.util.Properties
+          java.util.Scanner
           java.util.Set
           java.util.StringTokenizer
+          java.util.WeakHashMap
           java.util.UUID
-          java.util.concurrent.Future
-          java.util.concurrent.CompletableFuture
-          java.util.concurrent.Executors
-          java.util.concurrent.TimeUnit
+          java.util.function.Consumer
           java.util.function.Function
+          java.util.function.Predicate
           java.util.function.Supplier
           java.util.zip.Inflater
           java.util.zip.InflaterInputStream
@@ -435,6 +449,8 @@
     ;; list above and then everything reachable via the public class will be
     ;; visible in the native image.
     :instance-checks [clojure.lang.AFn
+                      clojure.lang.Agent
+                      clojure.lang.AFunction
                       clojure.lang.AMapEntry ;; for proxy
                       clojure.lang.APersistentMap ;; for proxy
                       clojure.lang.APersistentSet
@@ -485,10 +501,15 @@
                       clojure.lang.Sequential
                       clojure.lang.Seqable
                       clojure.lang.Volatile
+                      java.lang.AbstractMethodError
+                      java.lang.ExceptionInInitializerError
+                      java.lang.LinkageError
+                      java.lang.ThreadDeath
+                      java.lang.VirtualMachineError
+                      java.sql.Timestamp
                       java.util.concurrent.atomic.AtomicInteger
                       java.util.concurrent.atomic.AtomicLong
                       java.util.Collection
-                      java.util.List
                       java.util.Map$Entry
                       ~@(when features/xml? ['clojure.data.xml.node.Element])]
     :custom ~custom-map})
@@ -506,6 +527,8 @@
                    c))
         m (assoc m :public-class
                  (fn [v]
+                   ;; NOTE: a series of instance check, so far, is still cheaper
+                   ;; than piggybacking on defmulti or defprotocol
                    (cond (instance? java.lang.Process v)
                          java.lang.Process
                          (instance? java.lang.ProcessHandle v)
@@ -558,6 +581,10 @@
                          java.nio.file.attribute.BasicFileAttributes
                          (instance? java.util.concurrent.Future v)
                          java.util.concurrent.Future
+                         (instance? java.util.concurrent.ScheduledExecutorService v)
+                         java.util.concurrent.ScheduledExecutorService
+                         (instance? java.util.Iterator v)
+                         java.util.Iterator
                          ;; keep commas for merge friendliness
                          ,,,)))]
     m))
@@ -575,7 +602,8 @@
                                                        java-net-http-classes)))))
 
 (def imports
-  '{Appendable java.lang.Appendable
+  '{AbstractMethodError java.lang.AbstractMethodError
+    Appendable java.lang.Appendable
     ArithmeticException java.lang.ArithmeticException
     AssertionError java.lang.AssertionError
     BigDecimal java.math.BigDecimal
@@ -590,6 +618,7 @@
     Comparable java.lang.Comparable
     Double java.lang.Double
     Exception java.lang.Exception
+    ExceptionInInitializerError java.lang.ExceptionInInitializerError
     IndexOutOfBoundsException java.lang.IndexOutOfBoundsException
     IllegalArgumentException java.lang.IllegalArgumentException
     IllegalStateException java.lang.IllegalStateException
@@ -599,6 +628,7 @@
     File java.io.File
     Float java.lang.Float
     Long java.lang.Long
+    LinkageError java.lang.LinkageError
     Math java.lang.Math
     NullPointerException java.lang.NullPointerException
     Number java.lang.Number
@@ -615,6 +645,8 @@
     System java.lang.System
     Thread java.lang.Thread
     Throwable java.lang.Throwable
+    VirtualMachineError java.lang.VirtualMachineError
+    ThreadDeath java.lang.ThreadDeath
     ;; UnsupportedOperationException java.lang.UnsupportedOperationException
     })
 

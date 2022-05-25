@@ -1,7 +1,8 @@
 (ns babashka.impl.pprint
   {:no-doc true}
   (:require [clojure.pprint :as pprint]
-            [sci.core :as sci]))
+            [sci.core :as sci]
+            [sci.pprint]))
 
 (defonce patched? (volatile! false))
 
@@ -95,32 +96,33 @@
              pprint/*print-pprint-dispatch* @print-pprint-dispatch
              pprint/*print-miser-width* @print-miser-width
              *print-meta* @sci/print-meta
-             *print-readably* @sci/print-readably]
+             *print-readably* @sci/print-readably
+             *print-length* @sci/print-length]
      (pprint/pprint s writer))))
 
 (defn cl-format
-   "An implementation of a Common Lisp compatible format function. cl-format formats its
-arguments to an output stream or string based on the format control string given. It 
-supports sophisticated formatting of structured data.
-Writer is an instance of java.io.Writer, true to output to *out* or nil to output 
-to a string, format-in is the format control string and the remaining arguments 
-are the data to be formatted.
-The format control string is a string to be output with embedded 'format directives' 
-describing how to format the various arguments passed in.
-If writer is nil, cl-format returns the formatted result string. Otherwise, cl-format 
-returns nil.
-For example:
- (let [results [46 38 22]]
-        (cl-format true \"There ~[are~;is~:;are~]~:* ~d result~:p: ~{~d~^, ~}~%\" 
+  "An implementation of a Common Lisp compatible format function. cl-format formats its
+  arguments to an output stream or string based on the format control string given. It
+  supports sophisticated formatting of structured data.
+  Writer is an instance of java.io.Writer, true to output to *out* or nil to output
+  to a string, format-in is the format control string and the remaining arguments
+  are the data to be formatted.
+  The format control string is a string to be output with embedded 'format directives'
+  describing how to format the various arguments passed in.
+  If writer is nil, cl-format returns the formatted result string. Otherwise, cl-format
+  returns nil.
+  For example:
+  (let [results [46 38 22]]
+        (cl-format true \"There ~[are~;is~:;are~]~:* ~d result~:p: ~{~d~^, ~}~%\"
                    (count results) results))
-Prints to *out*:
- There are 3 results: 46, 38, 22
-Detailed documentation on format control strings is available in the \"Common Lisp the 
-Language, 2nd edition\", Chapter 22 (available online at:
-http://www.cs.cmu.edu/afs/cs.cmu.edu/project/ai-repository/ai/html/cltl/clm/node200.html#SECTION002633000000000000000) 
-and in the Common Lisp HyperSpec at 
-http://www.lispworks.com/documentation/HyperSpec/Body/22_c.htm
-"
+  Prints to *out*:
+  There are 3 results: 46, 38, 22
+  Detailed documentation on format control strings is available in the \"Common Lisp the
+  Language, 2nd edition\", Chapter 22 (available online at:
+  http://www.cs.cmu.edu/afs/cs.cmu.edu/project/ai-repository/ai/html/cltl/clm/node200.html#SECTION002633000000000000000)
+  and in the Common Lisp HyperSpec at
+  http://www.lispworks.com/documentation/HyperSpec/Body/22_c.htm
+  "
   [& args]
   ;; bind *out* to sci/out, so with-out-str works
   (binding [*out* @sci/out]
@@ -134,35 +136,62 @@ http://www.lispworks.com/documentation/HyperSpec/Body/22_c.htm
     (apply #'pprint/execute-format args)))
 
 (defn get-pretty-writer
-   "Returns the java.io.Writer passed in wrapped in a pretty writer proxy, unless it's 
-already a pretty writer. Generally, it is unnecessary to call this function, since pprint,
-write, and cl-format all call it if they need to. However if you want the state to be 
-preserved across calls, you will want to wrap them with this. 
-For example, when you want to generate column-aware output with multiple calls to cl-format, 
-do it like in this example:
+  "Returns the java.io.Writer passed in wrapped in a pretty writer proxy, unless it's
+  already a pretty writer. Generally, it is unnecessary to call this function, since pprint,
+  write, and cl-format all call it if they need to. However if you want the state to be
+  preserved across calls, you will want to wrap them with this.
+  For example, when you want to generate column-aware output with multiple calls to cl-format,
+  do it like in this example:
     (defn print-table [aseq column-width]
       (binding [*out* (get-pretty-writer *out*)]
         (doseq [row aseq]
           (doseq [col row]
             (cl-format true \"~4D~7,vT\" col column-width))
           (prn))))
-Now when you run:
+  Now when you run:
     user> (print-table (map #(vector % (* % %) (* % % %)) (range 1 11)) 8)
-It prints a table of squares and cubes for the numbers from 1 to 10:
-       1      1       1    
-       2      4       8    
-       3      9      27    
-       4     16      64    
-       5     25     125    
-       6     36     216    
-       7     49     343    
-       8     64     512    
-       9     81     729    
+  It prints a table of squares and cubes for the numbers from 1 to 10:
+       1      1       1
+       2      4       8
+       3      9      27
+       4     16      64
+       5     25     125
+       6     36     216
+       7     49     343
+       8     64     512
+       9     81     729
       10    100    1000"
   [writer]
   (binding [pprint/*print-right-margin* @print-right-margin
             pprint/*print-miser-width* @print-miser-width]
     (pprint/get-pretty-writer writer)))
+
+(def current-length #'pprint/*current-length*)
+
+(defn write-out
+  "Write an object to *out* subject to the current bindings of the printer control
+  variables. Use the kw-args argument to override individual variables for this call (and
+  any recursive calls).
+  *out* must be a PrettyWriter if pretty printing is enabled. This is the responsibility
+  of the caller.
+  This method is primarily intended for use by pretty print dispatch functions that
+  already know that the pretty printer will have set up their environment appropriately.
+  Normal library clients should use the standard \"write\" interface. "
+  {:added "1.2"}
+  [object]
+  (let [length-reached (and
+                        @current-length
+                        @sci/print-length
+                        (>= @current-length @sci/print-length))]
+    (if-not pprint/*print-pretty*
+      (pr object)
+      (if length-reached
+        (print "...")
+        (do
+          (when @current-length
+            (.set ^clojure.lang.Var current-length (inc @current-length)))
+          (print-pprint-dispatch object))))
+    length-reached))
 
 (def pprint-namespace
   {'pp (sci/copy-var pprint/pp pprint-ns)
@@ -180,6 +209,7 @@ It prints a table of squares and cubes for the numbers from 1 to 10:
    'with-pprint-dispatch (sci/copy-var pprint/with-pprint-dispatch pprint-ns)
    '*print-pprint-dispatch* print-pprint-dispatch
    '*print-miser-width* print-miser-width
-   'get-pretty-writer (sci/copy-var get-pretty-writer pprint-ns)})
+   'get-pretty-writer (sci/copy-var get-pretty-writer pprint-ns)
+   'write-out (sci/copy-var write-out pprint-ns)})
 
 (vreset! patched? true)

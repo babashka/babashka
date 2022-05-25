@@ -200,6 +200,12 @@
       (is (thrown-with-msg?
            Exception #"Cyclic task: b"
            (bb "run" "b")))))
+  (testing "friendly regex literal error handling"
+    (test-utils/with-config
+     "{:tasks {something (clojure.string/split \"1-2\" #\"-\")}}"
+     (is (thrown-with-msg?
+          Exception #"Invalid regex literal"
+          (bb "run" "something")))))
   (testing "doc"
     (test-utils/with-config '{:tasks {b {:doc "Beautiful docstring"}}}
       (let [s (test-utils/bb nil "doc" "b")]

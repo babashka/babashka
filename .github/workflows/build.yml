@@ -4,80 +4,69 @@ on:
   push:
     branches:
       - master
+  pull_request:
+    branches:
+      - master
 
+# TODO: Add deploy if needed
 jobs:
-
-  scratch:
-    if: "!contains(github.event.head_commit.message, 'skip ci')"
-    runs-on: ubuntu-18.04
-    steps:
-      - name: Git checkout
-        uses: actions/checkout@v1
-        with:
-          fetch-depth: 1
-          submodules: 'true'
-
-      - name: Scratch
-        run: |
-          echo "Scratch"
-
   jvm:
-    if: "!contains(github.event.head_commit.message, 'skip ci')"
-    # ubuntu 18.04 comes with lein + java8 installed
-    runs-on: ubuntu-18.04
+    if: ${{ false }} # Disabled
+    # if: "!contains(github.event.head_commit.message, 'skip ci')"
+    runs-on: ubuntu-latest
+    env:
+      LEIN_ROOT: "true"
+      BABASHKA_PLATFORM: linux # could be used in jar name
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Git checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
         with:
           fetch-depth: 1
           submodules: 'true'
 
       - name: Cache deps
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         id: cache-deps
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('project.clj') }}
-          restore-keys: |
-                ${{ runner.os }}-maven-
+          restore-keys: ${{ runner.os }}-maven-
 
-      - name: Cache GraalVM
-        uses: actions/cache@v1
-        id: cache-graalvm
+      - name: Prepare java
+        uses: actions/setup-java@v2
         with:
-          path: ~/graalvm-ce-java11-22.0.0.2
-          key: ${{ runner.os }}-graalvm-22.0.0.2
-          restore-keys: |
-                ${{ runner.os }}-graalvm-22.0.0.2
+          distribution: 'adopt-hotspot'
+          java-version: '11'
 
-      - name: Download GraalVM
-        run: |
-          cd ~
-          if ! [ -d graalvm-ce-java11-22.0.0.2 ]; then
-            curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-22.0.0.2/graalvm-ce-java11-linux-amd64-22.0.0.2.tar.gz
-            tar xzf graalvm-ce-java11-linux-amd64-22.0.0.2.tar.gz
-          fi
-
-      - name: Fetch deps
-        if: steps.cache-deps.outputs.cache-hit != 'true'
-        run: |
-          lein deps
+      - name: Install clojure tools
+        uses: DeLaGuardo/setup-clojure@5.0
+        with:
+          cli: 1.10.3.1040
+          lein: 2.9.8
 
       - name: Run tests
+        env:
+          BABASHKA_FEATURE_JDBC: "true"
+          BABASHKA_FEATURE_POSTGRESQL: "true"
         run: |
-          export GRAALVM_HOME="$HOME/graalvm-ce-java11-22.0.0.2"
           script/test
-
-      - name: Test libraries
-        run: |
-          export GRAALVM_HOME="$HOME/graalvm-ce-java11-22.0.0.2"
-          sudo script/install-clojure
           script/run_lib_tests
+
+      - name: Run as lein command
+        run: echo '{:a 1}' | lein bb '(:a *in*)'
 
       - name: Build uberjar
         run: |
-          export GRAALVM_HOME="$HOME/graalvm-ce-java11-22.0.0.2"
+          mkdir -p /tmp/release
           script/uberjar
+          VERSION=$(cat resources/BABASHKA_VERSION)
+          jar=target/babashka-$VERSION-standalone.jar
+          cp $jar /tmp/release
+          java -jar $jar script/reflection.clj
+          reflection="babashka-$VERSION-reflection.json"
+          java -jar "$jar" --config .build/bb.edn --deps-root . release-artifact "$jar"
+          java -jar "$jar" --config .build/bb.edn --deps-root . release-artifact "$reflection"
 
       - name: Babashka version
         id: babashka-version
@@ -87,50 +76,76 @@ jobs:
 
       - uses: actions/upload-artifact@v1
         with:
-          name: jar
+          name: babashka-${{ steps.babashka-version.outputs.version }}-standalone.jar
           path: target/babashka-${{ steps.babashka-version.outputs.version }}-standalone.jar
 
-  linux:
+  native:
     if: "!contains(github.event.head_commit.message, 'skip ci')"
-    needs: [jvm]
-    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        include:
+          - os: macos-12
+            name: macos
+            static: false
+         #- os: ubuntu-latest
+         #  name: linux
+         #  static: false
+         #- os: ubuntu-latest
+         #  name: linux
+         #  static: true
+    runs-on: ${{ matrix.os }}
+    env:
+      LEIN_ROOT: "true"
+      GRAALVM_VERSION: "22.1.0"
+      BABASHKA_PLATFORM: ${{ matrix.name }} # used in release script
+      BABASHKA_TEST_ENV: native
+      BABASHKA_XMX: "-J-Xmx6500m"
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Git checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
         with:
           fetch-depth: 1
           submodules: 'true'
 
-      - uses: actions/download-artifact@v1
-        with:
-          name: jar
-          path: .
-
       - name: Cache deps
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         id: cache-deps
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('project.clj') }}
-          restore-keys: |
-                ${{ runner.os }}-maven-
+          restore-keys: ${{ runner.os }}-maven-
 
-      - name: Cache GraalVM
-        uses: actions/cache@v1
-        id: cache-graalvm
+      - name: Setup GraalVM
+        if: "matrix.static == false"
+        uses: graalvm/setup-graalvm@v1
         with:
-          path: ~/graalvm-ce-java11-22.0.0.2
-          key: ${{ runner.os }}-graalvm-22.0.0.2
-          restore-keys: |
-                ${{ runner.os }}-graalvm-22.0.0.2
+          version: '22.1.0'
+          java-version: '11'
+          components: 'native-image'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Download GraalVM
+      - name: Setup GraalVM+musl
+        if: "matrix.static == true"
+        uses: graalvm/setup-graalvm@v1
+        with:
+          version: '22.1.0'
+          java-version: '11'
+          components: 'native-image'
+          native-image-musl: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install clojure tools
+        uses: DeLaGuardo/setup-clojure@5.0
+        with:
+          cli: 1.10.3.1040
+          lein: 2.9.8
+
+      - name: Install native dev tools
+        if: matrix.os == 'ubuntu-latest'
         run: |
-          cd ~
-          if ! [ -d graalvm-ce-java11-22.0.0.2 ]; then
-            curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-22.0.0.2/graalvm-ce-java11-linux-amd64-22.0.0.2.tar.gz
-            tar xzf graalvm-ce-java11-linux-amd64-22.0.0.2.tar.gz
-          fi
+          sudo apt-get update
+          sudo apt-get -y install build-essential zlib1g-dev
 
       - name: Babashka version
         id: babashka-version
@@ -138,209 +153,50 @@ jobs:
           BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
           echo "##[set-output name=version;]${BABASHKA_VERSION}"
 
-      - name: Build Linux native image
-        run: |
-          export BABASHKA_JAR=babashka-${{ steps.babashka-version.outputs.version }}-standalone.jar
-          export BABASHKA_XMX="-J-Xmx6g"
-          export GRAALVM_HOME="$HOME/graalvm-ce-java11-22.0.0.2"
-          script/compile
+      - name: Build uberjar
+        run: script/uberjar
 
-      - name: Test binary
-        run: |
-          export GRAALVM_HOME="$HOME/graalvm-ce-java11-22.0.0.2"
-          BABASHKA_TEST_ENV=native script/test
+      - name: Build native image
+        if: "matrix.static == false"
+        run: script/compile
 
-      - name: Install clojure
-        run: |
-          sudo script/install-clojure /usr/local
-
-      - name: Test libraries
-        run: |
-          export GRAALVM_HOME="$HOME/graalvm-ce-java11-22.0.0.2"
-          BABASHKA_TEST_ENV=native script/run_lib_tests
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v2
-        with:
-          path: bb
-          name: babashka-${{ steps.babashka-version.outputs.version }}-linux-amd64.zip
-
-  linux-static:
-    if: "!contains(github.event.head_commit.message, 'skip ci')"
-    needs: [jvm]
-    runs-on: ubuntu-16.04
-    steps:
-      - name: Git checkout
-        uses: actions/checkout@v1
-        with:
-          fetch-depth: 1
-          submodules: 'true'
-
-      - uses: actions/download-artifact@v1
-        with:
-          name: jar
-          path: .
-
-      - name: Cache deps
-        uses: actions/cache@v1
-        id: cache-deps
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('project.clj') }}
-          restore-keys: |
-                ${{ runner.os }}-maven-
-
-      - name: Cache GraalVM
-        uses: actions/cache@v1
-        id: cache-graalvm
-        with:
-          path: ~/graalvm-ce-java11-22.0.0.2
-          key: ${{ runner.os }}-graalvm-22.0.0.2
-          restore-keys: |
-                ${{ runner.os }}-graalvm-22.0.0.2
-
-      - name: Download GraalVM
-        run: |
-          cd ~
-          if ! [ -d graalvm-ce-java11-22.0.0.2 ]; then
-            curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-22.0.0.2/graalvm-ce-java11-linux-amd64-22.0.0.2.tar.gz
-            tar xzf graalvm-ce-java11-linux-amd64-22.0.0.2.tar.gz
-          fi
-
-      - name: Babashka version
-        id: babashka-version
-        run: |
-          BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
-          echo "##[set-output name=version;]${BABASHKA_VERSION}"
-
-      - name: Build Linux native image
-        run: |
-          export BABASHKA_JAR=babashka-${{ steps.babashka-version.outputs.version }}-standalone.jar
-          export BABASHKA_XMX="-J-Xmx6g"
-          export GRAALVM_HOME="$HOME/graalvm-ce-java11-22.0.0.2"
-          export BABASHKA_STATIC=true
-          script/compile
-
-      - name: Test binary
-        run: |
-          ./bb '(+ 1 2 3)'
-          export GRAALVM_HOME="$HOME/graalvm-ce-java11-22.0.0.2"
-          BABASHKA_TEST_ENV=native script/test
-
-      - name: Install clojure
-        run: |
-          sudo script/install-clojure
-
-      - name: Test libraries
-        run: |
-          export GRAALVM_HOME="$HOME/graalvm-ce-java11-22.0.0.2"
-          BABASHKA_TEST_ENV=native script/run_lib_tests
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v2
-        with:
-          path: bb
-          name: babashka-${{ steps.babashka-version.outputs.version }}-linux-static-amd64.zip
-
-  mac:
-    if: "!contains(github.event.head_commit.message, 'skip ci')"
-    needs: [jvm]
-    runs-on: macos-latest
-    steps:
-      - name: Git checkout
-        uses: actions/checkout@v1
-        with:
-          fetch-depth: 1
-          submodules: 'true'
-
-      - uses: actions/download-artifact@v1
-        with:
-          name: jar
-          path: .
-
-      - name: Cache GraalVM
-        uses: actions/cache@v1
-        id: cache-graalvm
-        with:
-          path: ~/graalvm-ce-java11-22.0.0.2
-          key: ${{ runner.os }}-graalvm-22.0.0.2
-          restore-keys: |
-                ${{ runner.os }}-graalvm-22.0.0.2
-
-      - name: Download GraalVM
-        run: |
-          cd ~
-          if ! [ -d graalvm-ce-java11-22.0.0.2 ]; then
-            curl -O -sL https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-22.0.0.2/graalvm-ce-java11-darwin-amd64-22.0.0.2.tar.gz
-            tar xzf graalvm-ce-java11-darwin-amd64-22.0.0.2.tar.gz
-          fi
-
-      - name: Babashka version
-        id: babashka-version
-        run: |
-          BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
-          echo "##[set-output name=version;]${BABASHKA_VERSION}"
-
-      - name: Build macOS native image
-        run: |
-          export BABASHKA_JAR=babashka-${{ steps.babashka-version.outputs.version }}-standalone.jar
-          export BABASHKA_XMX="-J-Xmx6g"
-          export GRAALVM_HOME="$HOME/graalvm-ce-java11-22.0.0.2/Contents/Home"
-          script/compile
-
-      - name: Test binary
-        run: |
-          export GRAALVM_HOME="$HOME/graalvm-ce-java11-22.0.0.2/Contents/Home"
-          sudo script/install-leiningen
-          BABASHKA_TEST_ENV=native script/test
-
-      - name: Test libraries
-        run: |
-          export GRAALVM_HOME="$HOME/graalvm-ce-java11-22.0.0.2/Contents/Home"
-          sudo script/install-clojure
-          BABASHKA_TEST_ENV=native script/run_lib_tests
-
-      - uses: actions/upload-artifact@v1
-        with:
-          path: bb
-          name: babashka-${{ steps.babashka-version.outputs.version }}-macos-amd64.zip
-
-  deploy:
-    if: "!contains(github.event.head_commit.message, 'skip ci') && github.event_name == 'push' && github.ref == 'refs/heads/master'"
-    needs: [jvm, linux, linux-static, mac]
-    runs-on: ubuntu-18.04
-    steps:
-      - name: Git checkout
-        uses: actions/checkout@v1
-        with:
-          fetch-depth: 1
-          submodules: 'true'
-
-      - name: Cache deps
-        uses: actions/cache@v1
-        id: cache-deps
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('project.clj') }}
-          restore-keys: |
-                ${{ runner.os }}-maven-
-
-      - name: Deploy
+      - name: Build static native image
+        if: "matrix.static == true"
         env:
-          CLOJARS_USER: "${{ secrets.CLOJARS_USER }}"
-          CLOJARS_PASS: "${{ secrets.CLOJARS_PASS }}"
+          BABASHKA_STATIC: "true"
+          BABASHKA_MUSL: "true"
+        run: script/compile
+
+      - name: Test binary and libs
         run: |
-          .github/script/deploy
+          script/test
+          script/run_lib_tests
+
+      - name: Release
+        run: .circleci/script/release
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          path: bb
+          name: babashka-${{ steps.babashka-version.outputs.version }}-${{ matrix.name }}-amd64
+
+      - name: Upload static artifact
+        if: "matrix.static == true"
+        uses: actions/upload-artifact@v2
+        with:
+          path: bb
+          name: babashka-${{ steps.babashka-version.outputs.version }}-${{ matrix.name }}-static-amd64
 
   docker:
-    if: "!contains(github.event.head_commit.message, 'skip ci') && github.event_name == 'push' && github.ref == 'refs/heads/master'"
+    if: ${{ false }} # Disabled
+    # if: "!contains(github.event.head_commit.message, 'skip ci') && github.event_name == 'push' && github.ref == 'refs/heads/master'"
     needs:
-      - linux
-      - linux-static
-    runs-on: ubuntu-18.04
+      - native
+    runs-on: ubuntu-latest
     steps:
       - name: Git checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
         with:
           fetch-depth: 1
           submodules: 'true'
@@ -366,9 +222,16 @@ jobs:
           name: babashka-${{ steps.babashka-version.outputs.version }}-linux-static-amd64.zip
           path: /tmp/release-static
 
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build uberjar
+        run: script/uberjar
+
       - name: Docker build
         env:
           DOCKERHUB_USER: "${{ secrets.DOCKERHUB_USER }}"
           DOCKERHUB_PASS: "${{ secrets.DOCKERHUB_PASS }}"
-        run: |
-          .github/script/docker
+          PLATFORMS: linux/amd64,linux/arm64
+        run: java -jar ./target/babashka-$(cat resources/BABASHKA_VERSION)-standalone.jar .circleci/script/docker.clj

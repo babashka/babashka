@@ -11,6 +11,7 @@ commands:
           command: |
             docker run --privileged --rm tonistiigi/binfmt --install all
             docker buildx create --name ci-builder --use
+
 jobs:
   jvm:
     docker:
@@ -72,8 +73,8 @@ jobs:
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
-      GRAALVM_VERSION: "22.0.0.2"
-      GRAALVM_HOME: /home/circleci/graalvm-ce-java11-22.0.0.2
+      GRAALVM_VERSION: "22.1.0"
+      GRAALVM_HOME: /home/circleci/graalvm-ce-java11-22.1.0
       BABASHKA_PLATFORM: linux # used in release script
       BABASHKA_TEST_ENV: native
       BABASHKA_XMX: "-J-Xmx6500m"
@@ -123,7 +124,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-            - ~/graalvm-ce-java11-22.0.0.2
+            - ~/graalvm-ce-java11-22.1.0
           key: linux-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - store_artifacts:
           path: /tmp/release
@@ -138,8 +139,8 @@ jobs:
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
-      GRAALVM_VERSION: "22.0.0.2"
-      GRAALVM_HOME: /home/circleci/graalvm-ce-java11-22.0.0.2
+      GRAALVM_VERSION: "22.1.0"
+      GRAALVM_HOME: /home/circleci/graalvm-ce-java11-22.1.0
       BABASHKA_PLATFORM: linux # used in release script
       BABASHKA_TEST_ENV: native
       BABASHKA_STATIC: "true"
@@ -202,7 +203,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-            - ~/graalvm-ce-java11-22.0.0.2
+            - ~/graalvm-ce-java11-22.1.0
           key: linux-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - store_artifacts:
           path: /tmp/release
@@ -213,14 +214,13 @@ jobs:
             ./bb .circleci/script/publish_artifact.clj || true
   linux-aarch64:
     machine:
-      enabled: true
-      image: ubuntu-2004:202101-01
+      image: ubuntu-2004:202111-01
     resource_class: arm.large
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
-      GRAALVM_VERSION: "22.0.0.2"
-      GRAALVM_HOME: /home/circleci/graalvm-ce-java11-22.0.0.2
+      GRAALVM_VERSION: "22.1.0"
+      GRAALVM_HOME: /home/circleci/graalvm-ce-java11-22.1.0
       BABASHKA_PLATFORM: linux # used in release script
       BABASHKA_ARCH: aarch64
       BABASHKA_TEST_ENV: native
@@ -270,7 +270,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-            - ~/graalvm-ce-java11-22.0.0.2
+            - ~/graalvm-ce-java11-22.1.0
           key: linux-aarch64-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - store_artifacts:
           path: /tmp/release
@@ -281,14 +281,13 @@ jobs:
             ./bb .circleci/script/publish_artifact.clj || true
   linux-aarch64-static:
     machine:
-      enabled: true
-      image: ubuntu-2004:202101-01
+      image: ubuntu-2004:202111-01
     resource_class: arm.large
     working_directory: ~/repo
     environment:
       LEIN_ROOT: "true"
-      GRAALVM_VERSION: "22.0.0.2"
-      GRAALVM_HOME: /home/circleci/graalvm-ce-java11-22.0.0.2
+      GRAALVM_VERSION: "22.1.0"
+      GRAALVM_HOME: /home/circleci/graalvm-ce-java11-22.1.0
       BABASHKA_PLATFORM: linux # used in release script
       BABASHKA_ARCH: aarch64
       BABASHKA_TEST_ENV: native
@@ -348,7 +347,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-            - ~/graalvm-ce-java11-22.0.0.2
+            - ~/graalvm-ce-java11-22.1.0
           key: linux-aarch64-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - store_artifacts:
           path: /tmp/release
@@ -362,8 +361,8 @@ jobs:
       xcode: "12.0.0"
     environment:
       MACOSX_DEPLOYMENT_TARGET: 10.13 # 10.12 is EOL
-      GRAALVM_VERSION: "22.0.0.2"
-      GRAALVM_HOME: /Users/distiller/graalvm-ce-java11-22.0.0.2/Contents/Home
+      GRAALVM_VERSION: "22.1.0"
+      GRAALVM_HOME: /Users/distiller/graalvm-ce-java11-22.1.0/Contents/Home
       BABASHKA_PLATFORM: macos # used in release script
       BABASHKA_TEST_ENV: native
       BABASHKA_XMX: "-J-Xmx6500m"
@@ -410,7 +409,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-            - ~/graalvm-ce-java11-22.0.0.2/Contents/Home
+            - ~/graalvm-ce-java11-22.1.0/Contents/Home
           key: mac-{{ checksum "project.clj" }}-{{ checksum ".circleci/config.yml" }}
       - store_artifacts:
           path: /tmp/release
@@ -448,14 +447,22 @@ jobs:
       image: ubuntu-2004:202111-01
     steps:
       - checkout
+      - run:
+          name: "Pull Submodules"
+          command: |
+            git submodule init
+            git submodule update
       - setup-docker-buildx
       - attach_workspace:
           at: /tmp
       - run:
+          name: Build uberjar
+          command: script/uberjar
+      - run:
           name: Build Docker image
           environment:
-            PLATFORM: linux/amd64,linux/arm64
-          command: .circleci/script/docker
+            PLATFORMS: linux/amd64,linux/arm64
+          command: java -jar ./target/babashka-$(cat resources/BABASHKA_VERSION)-standalone.jar .circleci/script/docker.clj
 
 workflows:
   version: 2
@@ -474,12 +481,11 @@ workflows:
           requires:
             - jvm
             - linux
-            - mac
+          # - mac # TODO: Enable when not needed from Actions
       - docker:
           filters:
             branches:
-              only:
-                - master
+              only: master
           requires:
             - linux
             - linux-static

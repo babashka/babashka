@@ -808,6 +808,10 @@ Ahead-of-time function scheduler. Compatible with babashka 0.7.7+.
 
 Graph library for Clojure. Compatible with babashka 0.7.8+.
 
+### [Clarktown](https://github.com/askonomm/clarktown)
+
+An extensible and modular zero-dependency, pure-Clojure Markdown parser.
+
 ## Pods
 
 [Babashka pods](https://github.com/babashka/babashka.pods) are programs that can
@@ -875,7 +879,7 @@ A babashka script to obtain covid-19 related information.
 
 ### [bb-spotify](https://github.com/kolharsam/bb-spotify)
 
-Contol your spotify player using babashka.
+Control your spotify player using babashka.
 
 ### [lambdaisland/open-source](https://github.com/lambdaisland/open-source)
 

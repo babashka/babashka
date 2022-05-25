@@ -28,7 +28,7 @@
                (throw (IllegalArgumentException.
                         (str (-> coord keys first)
                              " is not a supported pod coordinate type. "
-                             "Use :version for registry-hosted pods or :local/root "
+                             "Use :version for registry-hosted pods or :path "
                              "for pods on your local filesystem."))))))
     {} pods-map))
 

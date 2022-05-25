@@ -168,6 +168,13 @@ else
     BABASHKA_LEIN_PROFILES+=",-feature/priority-map"
 fi
 
+if [ "$BABASHKA_FEATURE_RRB_VECTOR" = "true" ]
+then
+    BABASHKA_LEIN_PROFILES+=",+feature/rrb-vector"
+else
+    BABASHKA_LEIN_PROFILES+=",-feature/rrb-vector"
+fi
+
 cp deps.edn resources/META-INF/babashka/deps.edn
 
 if [ -z "$BABASHKA_JAR" ]; then

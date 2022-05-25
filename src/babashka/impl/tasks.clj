@@ -1,6 +1,7 @@
 (ns babashka.impl.tasks
   (:require [babashka.deps :as deps]
             [babashka.impl.common :refer [ctx bb-edn debug]]
+            [babashka.impl.process :as pp]
             [babashka.process :as p]
             [clojure.core.async :refer [<!!]]
             [clojure.java.io :as io]
@@ -20,7 +21,7 @@
 ;; (def task-name (sci/new-dynamic-var '*-task-name* nil {:ns sci-ns}))
 (def task (sci/new-dynamic-var '*task* nil {:ns sci-ns}))
 (def current-task (sci/new-var 'current-task (fn [] @task) {:ns sci-ns}))
-(def state (sci/new-var 'state (atom {}) {:ns sci-ns}))
+(def state (sci/new-var 'current-state (atom {}) {:ns sci-ns}))
 
 (defn log-info [& strs]
   (let [log-level @log-level]
@@ -85,7 +86,7 @@
         local-log-level (:log-level opts)]
     (sci/binding [log-level (or local-log-level @log-level)]
       (apply log-info cmd)
-      (handle-non-zero (p/process prev cmd (merge default-opts opts)) opts))))
+      (handle-non-zero (pp/process prev cmd (merge default-opts opts)) opts))))
 
 (defn clojure [cmd & args]
   (let [[opts cmd args]

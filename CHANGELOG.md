@@ -5,17 +5,61 @@ For a list of breaking changes, check [here](#breaking-changes).
 A preview of the next release can be installed from
 [babashka-dev-builds](https://github.com/babashka/babashka-dev-builds).
 
-## 0.8.0 (TBD)
+## Unreleased
+
+- #1264: add support for calling `ScheduledExecutorService`
+- Add `java.net.BindException`
+
+## 0.8.2 (2022-05-06)
+
+- Convey `*print-length*` to pprint and allow `set!`
+- `babashka.nrepl`: support pprint length
+- SCI: support invoking field, without dash
+- Add compatibility with clojure numeric tower
+- Update deps.clj to tools jar `1.11.1.1113`
+- Compatibility with fipp and puget
+- Fix [#1233](https://github.com/babashka/babashka/issues/1233): don't print error to stdout in prepl
+- Update process with `:pre-start-fn` option
+- Update fs with `cwd` and Windows glob improvements
+- Expose edamame, fixes [#549](https://github.com/babashka/babashka/issues/549) and [#1258](https://github.com/babashka/babashka/issues/1258) (#1259)
+- Support `BABASBHKA_PODS_DIR` environment variable
+
+## 0.8.1 (2022-04-15)
+
+- Add `prepare` subcommand to download deps & pods and cache pod metadata
+- [#1041](https://github.com/babashka/babashka/issues/1041): Improve error message when regex literal in EDN config
+- [#1223](https://github.com/babashka/babashka/issues/1223): Ensure that var metadata (specifically `:name`) aligns with the var's symbol (which in turn ensures that `doc` will print the var's name)
+- [#556](https://github.com/babashka/babashka/issues/556) Add server-status to org.httpkit.server
+- [#1231](https://github.com/babashka/babashka/issues/1231): missing methods in `reify` should fall back to default interface methods
+- Fix destructuring in defrecord protocol impls
+- Support `*print-dup*`
+
+## 0.8.0 (2022-04-04)
 
 ### New
 
-- [#863](https://github.com/babashka/babashka/issues/863): allow pods to be declared in `bb.edn` and load them when required
-  - See [updated pod library docs for details](TODO: link)
+- [#863](https://github.com/babashka/babashka/issues/863): allow pods to be declared in `bb.edn` and load them when required. See [pod library docs](https://github.com/babashka/pods#in-a-babashka-project) and the entry in the [babashka book](https://book.babashka.org/#_pods_in_bb_edn) for details.
 
 ### Enhanced
 
 - [#1216](https://github.com/babashka/babashka/issues/1216): support `core.async/alts!` using polyfill
 - [#1220](https://github.com/babashka/babashka/issues/1220): add reflection on java.util.concurrent.Future
+- [#1211](https://github.com/babashka/babashka/issues/1211): return exit code 130 on sigint
+- [#1224](https://github.com/babashka/babashka/issues/1224): add `proxy` support for `java.io.PipedInputStream` and `java.io.PipedOutputStream`. Add reflection for `java.utils.Scanner`.
+- [babashka.curl#43](https://github.com/babashka/babashka.curl/issues/43) fix: last set-cookie headers on a page overwrites the ones before
+- [#1216](https://github.com/babashka/babashka/issues/1216): fix `core.async` alts example with polyfill
+- SCI: support `let*` special form
+- Add compatibility with GraalVM 22.1
+- Bump timbre
+- Bump Clojure to 1.11.0
+- Pods: support Rosetta2 fallback
+- Process: fix for pprint
+- Fs: improvement for which: do not match on local paths
+- Proxy support for PipedInputStream and PipedOutputStream
+- Expose `java.util.Scanner` for interop
+- Bump Selmer
+- Add `->Eduction`
+- Add `*unchecked-math` for compatibility
 
 ## 0.7.8 (2022-03-13)
 
