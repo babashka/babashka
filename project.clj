@@ -22,7 +22,7 @@
                  [borkdude/edamame "1.0.0"]
                  [borkdude/graal.locking "0.0.2"]
                  [org.clojure/tools.cli "1.0.206"]
-                 [cheshire "5.10.2"]
+                 [cheshire "5.11.0"]
                  [nrepl/bencode "1.1.0"]
                  [borkdude/sci.impl.reflector "0.0.1"]
                  [org.babashka/sci.impl.types "0.0.2"]
