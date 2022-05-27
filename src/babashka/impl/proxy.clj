@@ -74,6 +74,11 @@
       (proxy [javax.net.ssl.HostnameVerifier] []
         (verify [host-name session] ((method-or-bust methods 'verify) this host-name session)))
 
+      ["sun.misc.SignalHandler" #{}]
+      (proxy [sun.misc.SignalHandler] []
+        (handle [sig]
+          ((method-or-bust methods 'handle) this sig)))
+
       ["java.io.PipedInputStream" #{}]
       (proxy [java.io.PipedInputStream] []
         (available [] ((method-or-bust methods 'available) this))
@@ -92,7 +97,9 @@
         (flush [] ((method-or-bust methods 'flush) this))
         (write
           ([b] ((method-or-bust methods 'write) this b))
-          ([b off len] ((method-or-bust methods 'write) this b off len)))))))
+          ([b off len] ((method-or-bust methods 'write) this b off len))))
+      , ;; keep this for merge friendliness
+      )))
 
 (defn class-sym [c] (symbol (class-name c)))
 

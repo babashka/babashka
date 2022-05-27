@@ -27,4 +27,5 @@
                  java.util.function.Supplier
                  java.lang.Comparable
                  javax.net.ssl.X509TrustManager
-                 clojure.lang.LispReader$Resolver])
+                 clojure.lang.LispReader$Resolver
+                 sun.misc.SignalHandler])
