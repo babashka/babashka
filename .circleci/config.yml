@@ -18,14 +18,17 @@ jobs:
       - image: cimg/base:stable
     steps:
       - checkout
-      - run: #Installing Babashka globally because jobs are isolated
+      - run: 
           name: Bootstrap Babashka
           command: |
             curl -sLO https://raw.githubusercontent.com/babashka/babashka/master/install
-            sudo bash install 
+            sudo bash install --dir /tmp
+      - run:
+          name: Rename bb binary
+          command: mv /tmp/bb /tmp/bbb
       - run:
           name: Short CI if only irrelevant changes
-          command: bb .circleci/script/short.clj
+          command: /tmp/bbb  .circleci/script/short.clj
   jvm:
     docker:
       - image: circleci/clojure:openjdk-11-lein-2.9.8-bullseye
