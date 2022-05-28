@@ -13,6 +13,18 @@ commands:
             docker buildx create --name ci-builder --use
 
 jobs:
+  short-if-irrelevant:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - run: #Installing Babashka globally because jobs are isolated
+          name: Bootstrap Babashka
+          command: |
+            curl -sLO https://raw.githubusercontent.com/babashka/babashka/master/install
+            sudo bash install 
+      - run:
+          name: Short CI if only irrelevant changes
+          command: bb .circleci/script/short.clj
   jvm:
     docker:
       - image: circleci/clojure:openjdk-11-lein-2.9.8-bullseye
@@ -468,12 +480,25 @@ workflows:
   version: 2
   ci:
     jobs:
-      - jvm
-      - linux
-      - linux-static
-      - mac
-      - linux-aarch64
-      - linux-aarch64-static
+      - short-if-irrelevant
+      - jvm: 
+          requires:
+             - short-if-irrelevant
+      - linux: 
+          requires:
+             - short-if-irrelevant
+      - linux-static: 
+          requires:
+             - short-if-irrelevant
+      - mac: 
+          requires:
+             - short-if-irrelevant
+      - linux-aarch64: 
+          requires:
+             - short-if-irrelevant
+      - linux-aarch64-static: 
+          requires:
+             - short-if-irrelevant
       - deploy:
           filters:
             branches:
