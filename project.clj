@@ -22,11 +22,11 @@
                  [borkdude/edamame "1.0.0"]
                  [borkdude/graal.locking "0.0.2"]
                  [org.clojure/tools.cli "1.0.206"]
-                 [cheshire "5.10.2"]
+                 [cheshire "5.11.0"]
                  [nrepl/bencode "1.1.0"]
                  [borkdude/sci.impl.reflector "0.0.1"]
                  [org.babashka/sci.impl.types "0.0.2"]
-                 [org.babashka/babashka.impl.reify "0.1.0"]
+                 [org.babashka/babashka.impl.reify "0.1.1"]
                  [org.clojure/core.async "1.5.648"]
                  [org.clojure/test.check "1.1.1"]
                  [com.github.clj-easy/graal-build-time "0.1.0"]
@@ -52,9 +52,9 @@
              :feature/datascript {:source-paths ["feature-datascript"]
                                   :dependencies [[datascript "1.3.10"]]}
              :feature/httpkit-client {:source-paths ["feature-httpkit-client"]
-                                      :dependencies [[http-kit "2.5.3"]]}
+                                      :dependencies [[http-kit "2.6.0-RC1"]]}
              :feature/httpkit-server {:source-paths ["feature-httpkit-server"]
-                                      :dependencies [[http-kit "2.5.3"]]}
+                                      :dependencies [[http-kit "2.6.0-RC1"]]}
              :feature/lanterna {:source-paths ["feature-lanterna"]
                                 :dependencies [[babashka/clojure-lanterna "0.9.8-SNAPSHOT"]]}
              :feature/core-match {:source-paths ["feature-core-match"]
