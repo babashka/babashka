@@ -17,6 +17,7 @@ jobs:
     docker:
       - image: cimg/base:stable
     steps:
+      - checkout
       - run: #Installing Babashka globally because jobs are isolated
           name: Bootstrap Babashka
           command: |
