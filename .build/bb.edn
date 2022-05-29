@@ -2,5 +2,9 @@
  :deps {borkdude/gh-release-artifact
         #_{:local/root "../gh-release-artifact"}
         {:git/url "https://github.com/borkdude/gh-release-artifact"
-         :sha "cf082df46a648178d1904e9cbcb787d8136a35c6"}}
- :tasks {release-artifact babashka.release-artifact/release}}
+         :sha "cf082df46a648178d1904e9cbcb787d8136a35c6"}
+        babashka/.build {:git/url "https://github.com/babashka/.build"
+                         :git/sha "380ac01111050d3d63237f0e7ea816cbb229105c"}}
+ :tasks {:requires ([scripts.short-ci :as short])
+         release-artifact babashka.release-artifact/release
+         short-ci short/main}}
