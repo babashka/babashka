@@ -15,7 +15,7 @@ commands:
 jobs:
   short-if-irrelevant:
     docker:
-      - image: cimg/base:stable
+      - image: cimg/clojure:1.11.1
     steps:
       - checkout
       - run:
