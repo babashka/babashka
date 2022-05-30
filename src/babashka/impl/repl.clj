@@ -9,7 +9,7 @@
    [sci.impl.interpreter :refer [eval-form]]
    [sci.impl.io :as sio]
    [sci.impl.parser :as parser]
-   [sci.impl.vars :as vars]))
+   [sci.impl.utils :as utils]))
 
 (set! *warn-on-reflection* true)
 
@@ -80,7 +80,7 @@
                     (let [ret (eval-form sci-ctx expr)]
                       ret))))
       :need-prompt (or need-prompt (fn [] true))
-      :prompt (or prompt #(sio/printf "%s=> " (vars/current-ns-name)))
+      :prompt (or prompt #(sio/printf "%s=> " (utils/current-ns-name)))
       :flush (or flush sio/flush)
       :print (or print sio/prn)
       :caught (or caught repl-caught)))))

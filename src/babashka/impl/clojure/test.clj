@@ -409,7 +409,7 @@
   [x]
   (if (symbol? x)
     (when-let [v (second (resolve/lookup @ctx x false))]
-      (when-let [value (if (vars/var? v)
+      (when-let [value (if (instance? sci.lang.Var v)
                          (get-possibly-unbound-var v)
                          v)]
         (and (fn? value)
@@ -667,7 +667,7 @@
   value of key."
   {:added "1.1"}
   [key coll]
-  (swap! ns->fixtures assoc-in [(sci-namespaces/sci-ns-name @vars/current-ns) key] coll))
+  (swap! ns->fixtures assoc-in [(sci-namespaces/sci-ns-name @sci/ns) key] coll))
 
 (defmulti use-fixtures
   "Wrap test runs in a fixture function to perform setup and
@@ -779,7 +779,7 @@
   Defaults to current namespace if none given.  Returns a map
   summarizing test results."
   {:added "1.1"}
-  ([ctx] (run-tests ctx @vars/current-ns))
+  ([ctx] (run-tests ctx @sci/ns))
   ([ctx & namespaces]
    (let [summary (assoc (apply merge-with + (map #(test-ns ctx %) namespaces))
                         :type :summary)]
