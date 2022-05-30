@@ -9,7 +9,8 @@
             [sci.core :as sci]
             [sci.impl.namespaces :refer [copy-core-var core-var macrofy]]
             [sci.impl.parser :as parser]
-            [sci.impl.vars :as vars :refer [clojure-core-ns]]))
+            [sci.impl.utils :refer [clojure-core-ns]]
+            [sci.impl.vars :as vars]))
 
 (defn locking* [form bindings v f & args]
   (apply @#'locking/locking form bindings v f args))

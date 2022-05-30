@@ -18,7 +18,7 @@
             [babashka.impl.common :refer [debug]]
             [sci.core :as sci]
             [sci.impl.parser :as p]
-            [sci.impl.vars :as vars])
+            [sci.impl.utils :as utils])
   (:import
    [clojure.lang LineNumberingPushbackReader]
    [java.io BufferedWriter InputStreamReader OutputStreamWriter]
@@ -214,7 +214,7 @@
                                        :val (if (instance? Throwable ret)
                                               (Throwable->map ret)
                                               ret)
-                                       :ns (str (vars/current-ns-name))
+                                       :ns (str (utils/current-ns-name))
                                        :ms ms
                                        :form s})
                               true)))

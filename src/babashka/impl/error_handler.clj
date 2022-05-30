@@ -108,7 +108,7 @@
           stacktrace (dedupe
                       (concat (sequence (comp (map StackTraceElement->vec)
                                               (take-while #(not (str/starts-with? (first %) "sci.impl.")))
-                                              (map render-native-stacktrace-elem))
+                                              (keep render-native-stacktrace-elem))
                                         (.getStackTrace (or (ex-cause e) e)))
                               (sci/stacktrace e)))]
       (if exit-code
