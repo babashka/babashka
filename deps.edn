@@ -17,7 +17,7 @@
          "depstar/src" "process/src"
          "deps.clj/src" "deps.clj/resources"
          "resources" "sci/resources"],
- :deps {org.clojure/clojure {:mvn/version "1.11.0"},
+ :deps {org.clojure/clojure {:mvn/version "1.11.1"},
         org.babashka/sci {:local/root "sci"}
         org.babashka/babashka.impl.reify {:mvn/version "0.1.1"}
         org.babashka/sci.impl.types {:mvn/version "0.0.2"}
