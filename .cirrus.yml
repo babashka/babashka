@@ -18,6 +18,7 @@ task:
     sudo script/install-leiningen
     script/install-graalvm
     export PATH=$GRAALVM_HOME/bin:$PATH
+    sudo /usr/sbin/softwareupdate –install-rosetta –agree-to-license
     java -version
 
     script/uberjar
