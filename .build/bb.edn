@@ -7,4 +7,5 @@
                          :git/sha "1ce87f4960fea14f4d1248052e585e6027555d33"}}
  :tasks {:requires ([scripts.short-ci :as short])
          release-artifact babashka.release-artifact/release
-         short-ci {:task (do (alter-var-root (var short/config) assoc :skip-if-only (re-pattern ".*")))}}}
+         short-ci {:task (do (alter-var-root (var short/config) assoc :skip-if-only [(re-pattern ".*")])
+                             (apply short/main *command-line-args*))}}}

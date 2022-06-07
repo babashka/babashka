@@ -2,4 +2,36 @@ macos_instance:
   image: ghcr.io/cirruslabs/macos-monterey-base:latest
 
 task:
-  script: echo "Hello World from macOS!"
+  env:
+    LEIN_ROOT: "true"
+    GRAALVM_VERSION: "22.1.0"
+    GRAALVM_HOME: ${HOME}/graalvm-ce-java11-22.1.0/Contents/Home
+    BABASHKA_PLATFORM: macos # used in release script
+    BABASHKA_ARCH: aarch64
+    BABASHKA_TEST_ENV: native
+    BABASHKA_XMX: "-J-Xmx6500m"
+  script: |
+    git submodule init
+    git submodule update
+
+    sudo script/install-clojure
+    sudo script/install-leiningen
+    script/install-graalvm
+    export PATH=$GRAALVM_HOME/bin:$PATH
+    sudo /usr/sbin/softwareupdate --install-rosetta --agree-to-license
+    java -version
+
+    script/uberjar
+    script/compile
+
+    script/test
+    script/run_lib_tests
+
+    VERSION=$(cat resources/BABASHKA_VERSION)
+    arch=${BABASHKA_ARCH:-amd64}
+    archive="babashka-$VERSION-$BABASHKA_PLATFORM-$arch.tar.gz"
+    tar zcvf "$archive" bb
+    export GITHUB_TOKEN=ENCRYPTED[d6ff8cdc392157f211c754fa0763875434d1bfde0c00a05e48ba9470003a76c14c9213adb80623f81e13f2f0fa8fbd57]
+    ./bb --config .build/bb.edn --deps-root . release-artifact "/tmp/release/$archive" || true
+  binaries_artifacts:
+    path: "./bb"
