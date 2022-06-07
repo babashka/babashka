@@ -17,6 +17,7 @@
   (let [ght (System/getenv "GITHUB_TOKEN")
         _ (println "Github token found")
         file (first args)
+        _ (println "File" file)
         branch (current-branch)
         _ (println "On branch:" branch)
         current-version

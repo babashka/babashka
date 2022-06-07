@@ -25,8 +25,8 @@ task:
     script/uberjar
     script/compile
 
-    script/test
-    script/run_lib_tests
+    # script/test
+    # script/run_lib_tests
 
     VERSION=$(cat resources/BABASHKA_VERSION)
     arch=${BABASHKA_ARCH:-amd64}
