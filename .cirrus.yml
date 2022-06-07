@@ -14,3 +14,9 @@ task:
     echo "Hello World from macOS!"
     git submodule init
     git submodule update
+    script/install-clojure
+    script/install-leiningen
+    script/install-graalvm
+    export PATH=$GRAALVM_HOME/bin:$PATH
+    script/uberjar
+    script/compile
