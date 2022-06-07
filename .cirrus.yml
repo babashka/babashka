@@ -5,7 +5,7 @@ task:
   env:
     LEIN_ROOT: "true"
     GRAALVM_VERSION: "22.1.0"
-    GRAALVM_HOME: ${HOME}/graalvm-ce-java11-22.1.0
+    GRAALVM_HOME: ${HOME}/graalvm-ce-java11-22.1.0/Contents/Home
     BABASHKA_PLATFORM: macos # used in release script
     BABASHKA_ARCH: aarch64
     BABASHKA_TEST_ENV: native
@@ -18,7 +18,6 @@ task:
     sudo script/install-leiningen
     script/install-graalvm
     export PATH=$GRAALVM_HOME/bin:$PATH
-    export JAVA_HOME=$GRAALVM_HOME
     java -version
     script/uberjar
     script/compile
