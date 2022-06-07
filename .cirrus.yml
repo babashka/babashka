@@ -11,13 +11,23 @@ task:
     BABASHKA_TEST_ENV: native
     BABASHKA_XMX: "-J-Xmx6500m"
   script: |
-    echo "Hello World from macOS!"
     git submodule init
     git submodule update
+
     sudo script/install-clojure
     sudo script/install-leiningen
     script/install-graalvm
     export PATH=$GRAALVM_HOME/bin:$PATH
     java -version
+
     script/uberjar
     script/compile
+
+    script/test
+    script/run_lib_tests
+
+    VERSION=$(cat resources/BABASHKA_VERSION)
+    arch=${BABASHKA_ARCH:-amd64}
+    archive="babashka-$VERSION-$BABASHKA_PLATFORM-$arch.tar.gz"
+    tar zcvf "$archive" bb
+    ./bb --config .build/bb.edn --deps-root . release-artifact "/tmp/release/$archive" || true
