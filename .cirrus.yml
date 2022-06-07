@@ -2,4 +2,15 @@ macos_instance:
   image: ghcr.io/cirruslabs/macos-monterey-base:latest
 
 task:
-  script: echo "Hello World from macOS!"
+  env:
+    LEIN_ROOT: "true"
+    GRAALVM_VERSION: "22.1.0"
+    GRAALVM_HOME: ${HOME}/graalvm-ce-java11-22.1.0
+    BABASHKA_PLATFORM: macos # used in release script
+    BABASHKA_ARCH: aarch64
+    BABASHKA_TEST_ENV: native
+    BABASHKA_XMX: "-J-Xmx6500m"
+  script: |
+    echo "Hello World from macOS!"
+    git submodule init
+    git submodule update
