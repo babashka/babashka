@@ -74,7 +74,7 @@ if [[ "$checksum" != "" ]] && [[ "$version" == "" ]]; then
 fi
 
 if [[ "$version" == "" ]]; then
-  version="$(curl -sL https://raw.githubusercontent.com/babashka/babashka/master/resources/BABASHKA_RELEASED_VERSION)"
+    version="$(curl -sL https://raw.githubusercontent.com/babashka/babashka/master/resources/BABASHKA_RELEASED_VERSION)"
 fi
 
 case "$(uname -s)" in
@@ -82,21 +82,27 @@ case "$(uname -s)" in
     Darwin*) platform=macos;;
 esac
 
-case "$(uname -m)" in
-    aarch64) arch=aarch64;;
-    *)       arch=amd64;;
-esac
-
 # Ugly ugly conversion of version to a comparable number
 IFS='.' read -ra VER <<< "${version//-SNAPSHOT/}"
 vernum=$(printf "%03d%03d%03d" "${VER[0]}" "${VER[1]}" "${VER[2]}")
 
+case "$(uname -m)" in
+    aarch64) arch=aarch64;;
+    arm64) if [[ 10#$vernum -le 10#000008002 ]]; then
+               arch="amd64"
+           else
+               arch="aarch64"
+           fi
+           ;;
+    *) arch=amd64;;
+esac
+
 if [[ 10#$vernum -le 10#000002013 ]]; then
-  ext="zip"
-  util="$(which unzip) -qqo"
+    ext="zip"
+    util="$(which unzip) -qqo"
 else
-  ext="tar.gz"
-  util="$(which tar) -zxf"
+    ext="tar.gz"
+    util="$(which tar) -zxf"
 fi
 
 case "$platform-$static_binary" in
@@ -121,13 +127,13 @@ download_url="https://github.com/babashka/$repo/releases/download/v$version/$fil
 # macOS only have shasum available by default
 # Some Linux distros (RHEL-like) only have sha256sum avaiable by default (others have both)
 if command -v sha256sum >/dev/null; then
-   sha256sum_cmd="sha256sum"
+    sha256sum_cmd="sha256sum"
 elif command -v shasum >/dev/null; then
-   sha256sum_cmd="shasum -a 256"
+    sha256sum_cmd="shasum -a 256"
 else
-   >&2 echo "Either 'sha256sum' or 'shasum' needs to be on PATH for '--checksum' flag!"
-   >&2 echo "Exiting..."
-   exit 1
+    >&2 echo "Either 'sha256sum' or 'shasum' needs to be on PATH for '--checksum' flag!"
+    >&2 echo "Exiting..."
+    exit 1
 fi
 
 # Running this part in a subshell so when it finishes we go back to the previous directory
