@@ -34,4 +34,4 @@ task:
     tar zcvf "$archive" bb
     ./bb --config .build/bb.edn --deps-root . release-artifact "/tmp/release/$archive" || true
   binaries_artifacts:
-    path: "./bb"
+    path: "babashka-*.tar.gz"
