@@ -32,6 +32,6 @@ task:
     arch=${BABASHKA_ARCH:-amd64}
     archive="babashka-$VERSION-$BABASHKA_PLATFORM-$arch.tar.gz"
     tar zcvf "$archive" bb
-    ./bb --config .build/bb.edn --deps-root . release-artifact "/tmp/release/$archive" || true
+    ./bb --config .build/bb.edn --deps-root . release-artifact "$archive" || true
   binaries_artifacts:
     path: "babashka-*.tar.gz"
