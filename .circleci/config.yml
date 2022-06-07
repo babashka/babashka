@@ -486,38 +486,38 @@ workflows:
   version: 2
   ci:
     jobs:
-      - short-if-irrelevant
-      - jvm:
-          requires:
-             - short-if-irrelevant
-      - linux:
-          requires:
-             - short-if-irrelevant
-      - linux-static:
-          requires:
-             - short-if-irrelevant
-      - mac:
-          requires:
-             - short-if-irrelevant
-      - linux-aarch64:
-          requires:
-             - short-if-irrelevant
-      - linux-aarch64-static:
-          requires:
-             - short-if-irrelevant
-      - deploy:
-          filters:
-            branches:
-              only: master
-          requires:
-            - jvm
-            - linux
-          # - mac # TODO: Enable when not needed from Actions
-      - docker:
-          filters:
-            branches:
-              only: master
-          requires:
-            - linux
-            - linux-static
-            - linux-aarch64
+      # - short-if-irrelevant
+      # - jvm:
+      #     requires:
+      #        - short-if-irrelevant
+      # - linux:
+      #     requires:
+      #        - short-if-irrelevant
+      # - linux-static:
+      #     requires:
+      #        - short-if-irrelevant
+      # - mac:
+      #     requires:
+      #        - short-if-irrelevant
+      # - linux-aarch64:
+      #     requires:
+      #        - short-if-irrelevant
+      # - linux-aarch64-static:
+      #     requires:
+      #        - short-if-irrelevant
+      # - deploy:
+      #     filters:
+      #       branches:
+      #         only: master
+      #     requires:
+      #       - jvm
+      #       - linux
+      #     # - mac # TODO: Enable when not needed from Actions
+      # - docker:
+      #     filters:
+      #       branches:
+      #         only: master
+      #     requires:
+      #       - linux
+      #       - linux-static
+      #       - linux-aarch64
