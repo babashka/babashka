@@ -18,5 +18,7 @@ task:
     sudo script/install-leiningen
     script/install-graalvm
     export PATH=$GRAALVM_HOME/bin:$PATH
+    export JAVA_HOME=$GRAALVM_HOME
+    java -version
     script/uberjar
     script/compile
