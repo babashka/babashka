@@ -28,7 +28,8 @@ jobs:
           command: mv /tmp/bb /tmp/bbb
       - run:
           name: Short CI if only irrelevant changes
-          command: /tmp/bbb --config .build/bb.edn short-ci "circleci task halt"
+          command: /tmp/bbb --config .build/bb.edn short-ci "circleci-agent step halt"
+          command: circleci task halt
   jvm:
     docker:
       - image: circleci/clojure:openjdk-11-lein-2.9.8-bullseye
