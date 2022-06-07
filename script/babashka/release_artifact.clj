@@ -8,6 +8,7 @@
       (System/getenv "APPVEYOR_REPO_BRANCH")
       (System/getenv "CIRCLE_BRANCH")
       (System/getenv "GITHUB_REF_NAME")
+      (System/getenv "CIRRUS_BRANCH")
       (-> (sh "git" "rev-parse" "--abbrev-ref" "HEAD")
           :out
           str/trim)))
@@ -17,6 +18,7 @@
         _ (println "Github token found")
         file (first args)
         branch (current-branch)
+        _ (println "On branch:" branch)
         current-version
         (-> (slurp "resources/BABASHKA_VERSION")
             str/trim)]
