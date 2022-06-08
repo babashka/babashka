@@ -5,10 +5,27 @@ For a list of breaking changes, check [here](#breaking-changes).
 A preview of the next release can be installed from
 [babashka-dev-builds](https://github.com/babashka/babashka-dev-builds).
 
-## Unreleased
+## 0.8.156 (2022-06-08)
 
-- #1264: add support for calling `ScheduledExecutorService`
-- Add `java.net.BindException`
+- macOS aarch64 support (M1 processor)
+- Support for running [prismatic/schema](https://github.com/plumatic/schema)
+  from source.  There is an outstanding PR for babashka. Meanwhile you can use
+  [this](https://github.com/borkdude/schema) fork.
+- SCI: many small improvements, especially in `defrecord` (discovered while
+  trying to make `schema.core` work)
+- babashka.nrepl: fix completions for static Java interop
+- `fs/read-all-lines`, support charset
+- fs: `strip` and `split-ext` are less reliant on file system and are now just
+  string operations
+- Bump cheshire
+- Add `babashka.process/exec` for exec call (replacing the current process)
+- Improve `babashka.process/tokenize`
+- [#1264](https://github.com/babashka/babashka/issues/1264): add support for calling `ScheduledExecutorService`
+- Add support for `sun.misc.SignalHandler`
+- Add `java.net.BindException`, `clojure.lang.AFunction`, `AbstractMethodError`
+- Upgrade httpkit to `2.6.0-RC1`
+- Add `process/shell`, similar to `babashka.tasks/shell` but in process ns
+- pods: fix benign socket closed exception error output
 
 ## 0.8.2 (2022-05-06)
 
