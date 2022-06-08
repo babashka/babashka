@@ -7,12 +7,14 @@ A preview of the next release can be installed from
 
 ## 0.8.156 (2022-06-08)
 
-- macOS aarch64 support (M1 processor)
+- macOS aarch64 support. Upgrading via brew or the installer script should
+  install the aarch64 version on an M1 system.
 - Support for running [prismatic/schema](https://github.com/plumatic/schema)
-  from source.  There is an outstanding PR for babashka. Meanwhile you can use
+  from source.  There is an open PR for babashka. Until it is merged you can use
   [this](https://github.com/borkdude/schema) fork.
 - SCI: many small improvements, especially in `defrecord` (discovered while
   trying to make `schema.core` work)
+- Switch version schema to major.minor.release_count.
 - babashka.nrepl: fix completions for static Java interop
 - `fs/read-all-lines`, support charset
 - fs: `strip` and `split-ext` are less reliant on file system and are now just
