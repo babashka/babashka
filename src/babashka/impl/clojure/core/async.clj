@@ -2,7 +2,8 @@
   {:no-doc true}
   (:require [clojure.core.async :as async]
             [clojure.core.async.impl.protocols :as protocols]
-            [sci.impl.namespaces :refer [copy-var macrofy]]
+            [sci.core :as sci :refer [copy-var]]
+            [sci.impl.namespaces :refer [macrofy]]
             [sci.impl.vars :as vars]))
 
 (def ^java.util.concurrent.Executor executor @#'async/thread-macro-executor)
@@ -39,7 +40,7 @@
   [_ _ bindings & body]
   (list 'clojure.core.async/thread (list* 'loop bindings body)))
 
-(def core-async-namespace (vars/->SciNamespace 'clojure.core.async nil))
+(def core-async-namespace (sci/create-ns 'clojure.core.async nil))
 
 (def async-namespace
   {:obj core-async-namespace
@@ -109,7 +110,7 @@
    'alts! (copy-var async/alts!! core-async-namespace {:name 'alts!})
    'go-loop (macrofy 'go-loop go-loop core-async-namespace)})
 
-(def async-protocols-ns (vars/->SciNamespace 'clojure.core.async.impl.protocols nil))
+(def async-protocols-ns (sci/create-ns 'clojure.core.async.impl.protocols nil))
 
 (def async-protocols-namespace
   {:obj async-protocols-ns

@@ -1,10 +1,9 @@
 (ns babashka.impl.cheshire
   {:no-doc true}
   (:require [cheshire.core :as json]
-            [sci.impl.namespaces :refer [copy-var]]
-            [sci.impl.vars :as vars]))
+            [sci.core :as sci :refer [copy-var]]))
 
-(def tns (vars/->SciNamespace 'cheshire.core nil))
+(def tns (sci/create-ns 'cheshire.core nil))
 
 (def cheshire-core-namespace
   {'encode (copy-var json/encode tns)

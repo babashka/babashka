@@ -1,12 +1,13 @@
 (ns babashka.impl.jdbc
   {:no-doc true}
-  (:require [next.jdbc :as njdbc]
-            [next.jdbc.result-set :as rs]
-            [next.jdbc.sql :as sql]
-            [sci.impl.namespaces :refer [copy-var macrofy]]
-            [sci.impl.vars :as vars]))
+  (:require
+   [next.jdbc :as njdbc]
+   [next.jdbc.result-set :as rs]
+   [next.jdbc.sql :as sql]
+   [sci.core :as sci]
+   [sci.impl.namespaces :refer [copy-var macrofy]]))
 
-(def next-ns (vars/->SciNamespace 'next.jdbc nil))
+(def next-ns (sci/create-ns 'next.jdbc nil))
 
 (defn with-transaction
   "Given a transactable object, gets a connection and binds it to `sym`,
@@ -31,12 +32,12 @@
    'transact (copy-var njdbc/transact next-ns)
    'with-transaction (macrofy 'with-transaction with-transaction next-ns)})
 
-(def sns (vars/->SciNamespace 'next.jdbc.sql nil))
+(def sns (sci/create-ns 'next.jdbc.sql nil))
 
 (def next-sql-namespace
   {'insert-multi! (copy-var sql/insert-multi! sns)})
 
-(def rsns (vars/->SciNamespace 'next.jdbc.result-set nil))
+(def rsns (sci/create-ns 'next.jdbc.result-set nil))
 
 (def result-set-namespace
   {'as-maps (copy-var rs/as-maps rsns)

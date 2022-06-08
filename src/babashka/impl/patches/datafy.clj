@@ -1,13 +1,15 @@
 (ns babashka.impl.patches.datafy
-  (:require [babashka.impl.common :refer [ctx]]
-            [clojure.core.protocols :as p]
-            [clojure.datafy]
-            ;; ensure datafy is loaded, we're going to override its
-            ;; clojure.lang.Namespace implementation for datafy
-            [clojure.reflect]
-            [sci.impl.namespaces :refer [sci-ns-name sci-ns-publics sci-ns-imports sci-ns-interns]]
-            [sci.impl.vars])
-  (:import [sci.impl.vars SciNamespace]))
+  (:require ;; ensure datafy is loaded, we're going to override its
+ ;; clojure.lang.Namespace implementation for datafy
+   [babashka.impl.common :refer [ctx]]
+   [clojure.core.protocols :as p]
+   [clojure.datafy]
+   [clojure.reflect]
+   [sci.impl.namespaces :refer [sci-ns-imports sci-ns-interns sci-ns-name
+                                sci-ns-publics]]
+   [sci.impl.vars])
+  (:import
+   [sci.lang Namespace]))
 
 (defn- sortmap [m]
   (into (sorted-map) m))
@@ -29,7 +31,7 @@
       (assoc ret :name (-> c .getName symbol) :members (->> members (group-by :name) sortmap)))))
 
 (extend-protocol p/Datafiable
-  SciNamespace
+  Namespace
   (datafy [n]
     (with-meta {:name (sci-ns-name n)
                 :publics (->> n (sci-ns-publics @ctx) sortmap)
