@@ -11,7 +11,7 @@ A preview of the next release can be installed from
   install the aarch64 version on an M1 system.
 - Support for running [prismatic/schema](https://github.com/plumatic/schema)
   from source.  There is an open PR for babashka. Until it is merged you can use
-  [this](https://github.com/borkdude/schema) fork.
+  [this](https://github.com/borkdude/schema/tree/bb-test-suite) fork.
 - SCI: many small improvements, especially in `defrecord` (discovered while
   trying to make `schema.core` work)
 - Switch version schema to major.minor.release_count.
