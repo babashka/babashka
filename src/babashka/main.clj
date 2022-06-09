@@ -250,6 +250,7 @@ Use bb run --help to show this help output.
  :feature/yaml       %s
  :feature/jdbc       %s
  :feature/postgresql %s
+ :feature/sqlite %s
  :feature/hsqldb     %s
  :feature/oracledb   %s
  :feature/httpkit-client %s
@@ -268,8 +269,8 @@ Use bb run --help to show this help output.
     features/xml?
     features/yaml?
     features/jdbc?
-    features/sqlite?
     features/postgresql?
+    features/sqlite?
     features/hsqldb?
     features/oracledb?
     features/httpkit-client?
