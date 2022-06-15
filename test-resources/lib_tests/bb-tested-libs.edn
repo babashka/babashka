@@ -114,4 +114,15 @@
  com.rpl/specter {:git-url "https://github.com/redplanetlabs/specter", :test-namespaces (com.rpl.specter.cljs-test-helpers com.rpl.specter.test-helpers com.rpl.specter.core-test com.rpl.specter.zipper-test), :git-sha "67e86806020b9d02fbca8cdb1efad3002fc81a32"}
  com.github.askonomm/clarktown {:git-url "https://github.com/askonomm/clarktown", :test-namespaces (clarktown.core-test clarktown.parsers.horizontal-line-block-test clarktown.parsers.italic-test clarktown.parsers.link-and-image-test clarktown.parsers.empty-block-test clarktown.parsers.inline-code-test clarktown.parsers.heading-block-test clarktown.parsers.bold-test clarktown.parsers.quote-block-test clarktown.parsers.code-block-test clarktown.parsers.strikethrough-test), :git-sha "059bfa7bd9bfdde0c75646bf1dfc20d23da8a02c"}
  org.clojure/math.numeric-tower {:git-url "https://github.com/clojure/math.numeric-tower", :test-namespaces (clojure.math.test-numeric-tower), :git-sha "97827be66f35feebc3c89ba81c546fef4adc7947"}
+ prismatic/schema {:test-namespaces [schema.core-test
+                                     schema.macros-test
+                                     schema.coerce-test
+                                     schema.experimental.abstract-map-test
+                                     schema.test-test
+                                     schema.utils-test]
+                   :git-url "https://github.com/plumatic/schema"
+                   :git-sha "6846dc7c3a9df5bfd718f68f183c683ce0f621ff"
+                   :git-tag "schema-1.3.0"
+                   ;; specify for adding tests to classpath
+                   :test-paths ["test/clj" "test/cljc"]}
 }

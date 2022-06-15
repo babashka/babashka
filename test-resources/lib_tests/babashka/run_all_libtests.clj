@@ -1,5 +1,7 @@
 (ns babashka.run-all-libtests
-  (:require [babashka.core :refer [windows?]]
+  (:require [babashka.classpath :as cp :refer [add-classpath]]
+            [babashka.core :refer [windows?]]
+            [babashka.fs :as fs]
             [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.test :as t :refer [*report-counters*]]))
@@ -42,7 +44,13 @@
 
 ;; Standard test-runner for libtests
 (let [lib-tests (edn/read-string (slurp (io/resource "bb-tested-libs.edn")))]
-  (doseq [{tns :test-namespaces skip-windows :skip-windows} (vals lib-tests)]
+  (doseq [[libname {tns :test-namespaces skip-windows :skip-windows
+                    :keys [test-paths
+                           git-sha]}] lib-tests]
+    (let [git-dir (format ".gitlibs/libs/%s/%s" libname git-sha)
+          git-dir (fs/file (fs/home) git-dir)]
+      (doseq [p test-paths]
+        (add-classpath (str (fs/file git-dir p)))))
     (when-not (and skip-windows (windows?))
       (apply test-namespaces tns))))
 
