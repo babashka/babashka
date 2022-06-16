@@ -354,6 +354,13 @@ Use bb run --help to show this help output.
        'clojure.tools.cli tools-cli-namespace
        'clojure.java.shell shell-namespace
        'babashka.core bbcore/core-namespace
+       'babashka.nrepl.server (let [ns-sci (sci/create-ns 'babashka.nrepl.server)]
+                                {'start-server! (sci/new-var 'start-server!
+                                                             (fn [opts]
+                                                               (nrepl-server/start-server! @common/ctx opts))
+                                                             {:ns ns-sci})
+                                 'stop-server! (sci/copy-var nrepl-server/stop-server! ns-sci)
+                                 'parse-opt (sci/copy-var nrepl-server/parse-opt ns-sci)})
        'babashka.wait wait-namespace
        'babashka.signal signal-ns
        'clojure.java.io io-namespace
