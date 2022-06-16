@@ -6,6 +6,8 @@
             [cljc.java-time.temporal.temporal]
             [cljc.java-time.temporal.temporal-accessor]
             [cljc.java-time.temporal.temporal-adjuster]
+            [cljc.java-time.temporal.temporal-unit]
+            [cljc.java-time.temporal.value-range]
             [cljc.java-time.format.date-time-formatter]
             [cljc.java-time.format.resolver-style]
             [cljc.java-time.format.date-time-formatter-builder]
