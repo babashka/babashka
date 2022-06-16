@@ -324,6 +324,10 @@
           java.text.SimpleDateFormat
           ~@(when features/java-time?
               `[java.time.chrono.Chronology
+                java.time.chrono.ChronoPeriod
+                java.time.chrono.ChronoLocalDate
+                java.time.chrono.ChronoLocalDateTime
+                java.time.chrono.ChronoZonedDateTime
                 java.time.format.DateTimeFormatter
                 java.time.Clock
                 java.time.DateTimeException
@@ -354,6 +358,7 @@
                 java.time.temporal.IsoFields
                 java.time.temporal.JulianFields
                 java.time.temporal.TemporalAdjusters
+                java.time.temporal.TemporalAmount
                 java.time.temporal.TemporalField
                 java.time.temporal.TemporalUnit
                 ~(symbol "[Ljava.time.temporal.TemporalField;")
