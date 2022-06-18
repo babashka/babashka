@@ -366,7 +366,8 @@
                 java.time.temporal.Temporal
                 java.time.temporal.TemporalAccessor
                 java.time.temporal.TemporalAdjuster
-                java.time.temporal.ValueRange])
+                java.time.temporal.ValueRange
+                java.time.zone.ZoneRules])
           java.util.concurrent.atomic.AtomicReference
           java.util.concurrent.ExecutionException
           java.util.concurrent.LinkedBlockingQueue
