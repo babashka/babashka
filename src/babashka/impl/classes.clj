@@ -355,6 +355,7 @@
                 java.time.chrono.ChronoZonedDateTime
                 java.time.format.DateTimeFormatter
                 java.time.Clock
+                java.time.Clock$SystemClock
                 java.time.DateTimeException
                 java.time.DayOfWeek
                 java.time.Duration
