@@ -159,7 +159,7 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                         linux-graalvm-home
                                         "linux")
                    :linux-aarch64-static
-                   (unix true true "aarch64" machine-executor-conf "arm.large" linux-graalvm-home "linux")
+                   (unix true false "aarch64" machine-executor-conf "arm.large" linux-graalvm-home "linux")
                    :mac (unix false false "x86_64" mac-executor-conf "large" mac-graalvm-home "mac")
                    :deploy (deploy)
                    :docker (docker))
