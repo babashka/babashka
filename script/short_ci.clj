@@ -1,5 +1,7 @@
-(ns gen-ci
+(ns short-ci
   (:require
+    [babashka.tasks :as tasks]
+    [clojure.string :as str]
     [clj-yaml.core :as yaml]
     [flatland.ordered.map :refer [ordered-map]]))
 
@@ -127,6 +129,7 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                                        :destination "release"}}
                                     (run "Publish artifact link to Slack"
                                          "./bb .circleci/script/publish_artifact.clj || true")])))))
+
 (def config
   (let [docker-executor-conf  {:docker [{:image "circleci/clojure:openjdk-11-lein-2.9.8-bullseye"}]}
         machine-executor-conf {:machine {:image "ubuntu-2004:202111-01"}}
@@ -171,8 +174,56 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                     {:docker {:filters  {:branches {:only "master"}}
                                               :requires ["linux" "linux-static" "linux-aarch64"]}}]}))))
 
+(def shorted-config
+  (ordered-map
+    :version 2.1
+    :jobs    (ordered-map
+               :shorted
+               (ordered-map
+                 :docker [{:image "circleci/base"}]
+                 :steps  [(run "Shorted" "echo 'Skipping CI Run'")]))))
+
+(def skip-config
+  {:skip-if-only [#".*.md$"]})
+
+(defn get-changes
+  []
+  (-> (tasks/shell {:out :string} "git diff --name-only HEAD~1")
+      (:out)
+      (str/split-lines)))
+
+(defn irrelevant-change?
+  [change regexes]
+  (some? (some #(re-matches % change) regexes)))
+
+(defn relevant?
+  [change-set regexes]
+  (some? (some #(not (irrelevant-change? % regexes)) change-set)))
+
+(defn main
+  []
+  (let [{:keys [skip-if-only]} skip-config
+        changed-files          (get-changes)
+        conf                   (if (relevant? changed-files skip-if-only)
+                                 config
+                                 shorted-config)]
+    (println (yaml/generate-string conf
+                                   :dumper-options
+                                   {:flow-style :block}))))
+
+(when (= *file* (System/getProperty "babashka.file"))
+  (main))
+
 (comment
-  (spit "foo.yml"
-        (yaml/generate-string config
-                              :dumper-options
-                              {:flow-style :block})))
+  (main)
+  (def regexes
+    [#".*.md$"
+     #".*.clj$"]) ; ignore clojure files
+
+  (:out (tasks/shell {:out :string} "ls"))
+
+  (irrelevant-change? "src/file.png" regexes)
+
+  (re-matches #".*.clj$" "src/file.clj.dfff")
+
+  (relevant? ["src/file.clj"] regexes))

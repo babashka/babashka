@@ -26,13 +26,13 @@ jobs:
       - run:
           name: Rename bb binary
           command: mv /tmp/bb /tmp/bbb
-      - run: 
+      - run:
           name: Generate config
           command: |
-            /tmp/bbb --config .build/bb.edn short-ci > generated_config.yml
+            /tmp/bbb script/short_ci.clj > generated_config.yml
       - continuation/continue:
-          configuration_path: generated_config.yml 
-     
+          configuration_path: generated_config.yml
+
 # our single workflow, that triggers the setup job defined above
 workflows:
   setup:
