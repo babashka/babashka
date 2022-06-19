@@ -1,8 +1,8 @@
 (ns short-ci
   (:require
     [babashka.tasks :as tasks]
-    [clojure.string :as str]
     [clj-yaml.core :as yaml]
+    [clojure.string :as str]
     [flatland.ordered.map :refer [ordered-map]]))
 
 (defn run
@@ -176,12 +176,15 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
 
 (def shorted-config
   (ordered-map
-    :version 2.1
-    :jobs    (ordered-map
-               :shorted
-               (ordered-map
-                 :docker [{:image "circleci/base"}]
-                 :steps  [(run "Shorted" "echo 'Skipping CI Run'")]))))
+    :version   2.1
+    :jobs      (ordered-map
+                 :shorted
+                 (ordered-map
+                   :docker [{:image "circleci/base"}]
+                   :steps  [(run "Shorted" "echo 'Skipping CI Run'")]))
+    :workflows (ordered-map
+                 :version 2
+                 :ci      {:jobs ["shorted"]})))
 
 (def skip-config
   {:skip-if-only [#".*.md$"]})
