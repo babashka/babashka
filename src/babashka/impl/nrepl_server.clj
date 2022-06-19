@@ -7,7 +7,10 @@
 (def nrepl-server-namespace
   (let [ns-sci (create-ns 'babashka.nrepl.server)]
     {'start-server! (new-var 'start-server!
-                                 (fn [opts]
-                                   (start-server! @common/ctx opts))
-                                 {:ns ns-sci})
+                             (fn
+                               ([]
+                                (start-server! @common/ctx))
+                               ([opts]
+                                (start-server! @common/ctx opts)))
+                             {:ns ns-sci})
      'stop-server! (copy-var stop-server! ns-sci)}))
