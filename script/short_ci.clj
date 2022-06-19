@@ -113,7 +113,7 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                       (run "Install Leiningen" "script/install-leiningen"))
                                     (when (not= "mac" platform)
                                       (run "Install native dev tools"
-                                           (if (and static? musl?)
+                                           (if (and static? musl? (not= "aarch64" arch))
                                              (str base-install-cmd "\nsudo -E script/setup-musl")
                                              base-install-cmd)))
                                     (run "Download GraalVM" "script/install-graalvm")
