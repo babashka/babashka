@@ -182,7 +182,7 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
     :jobs      (ordered-map
                  :shorted
                  (ordered-map
-                   :docker [{:image "cimg/base"}]
+                   :docker [{:image "cimg/base:edge"}]
                    :steps  [(run "Shorted" "echo 'Skipping CI Run'")]))
     :workflows (ordered-map
                  :version 2
