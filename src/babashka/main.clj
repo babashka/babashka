@@ -32,6 +32,7 @@
    [babashka.impl.error-handler :refer [error-handler]]
    [babashka.impl.features :as features]
    [babashka.impl.fs :refer [fs-namespace]]
+   [babashka.impl.nrepl-server :refer [nrepl-server-namespace]]
    [babashka.impl.pods :as pods]
    [babashka.impl.pprint :refer [pprint-namespace]]
    [babashka.impl.print-deps :as print-deps]
@@ -354,13 +355,7 @@ Use bb run --help to show this help output.
        'clojure.tools.cli tools-cli-namespace
        'clojure.java.shell shell-namespace
        'babashka.core bbcore/core-namespace
-       'babashka.nrepl.server (let [ns-sci (sci/create-ns 'babashka.nrepl.server)]
-                                {'start-server! (sci/new-var 'start-server!
-                                                             (fn [opts]
-                                                               (nrepl-server/start-server! @common/ctx opts))
-                                                             {:ns ns-sci})
-                                 'stop-server! (sci/copy-var nrepl-server/stop-server! ns-sci)
-                                 'parse-opt (sci/copy-var nrepl-server/parse-opt ns-sci)})
+       'babashka.nrepl.server nrepl-server-namespace
        'babashka.wait wait-namespace
        'babashka.signal signal-ns
        'clojure.java.io io-namespace
