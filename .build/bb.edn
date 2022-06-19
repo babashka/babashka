@@ -2,9 +2,7 @@
  :deps {borkdude/gh-release-artifact
         #_{:local/root "../gh-release-artifact"}
         {:git/url "https://github.com/borkdude/gh-release-artifact"
-         :sha "cf082df46a648178d1904e9cbcb787d8136a35c6"}
-        babashka/.build {:git/url "https://github.com/agata-anastazja/.build"
-                         :git/sha "f8347e1e5d27e2735cdd9984c8384fef9f027490"}}
+         :sha "cf082df46a648178d1904e9cbcb787d8136a35c6"}}
  :tasks {:requires ([scripts.short-ci :as short])
          release-artifact babashka.release-artifact/release
          short-ci {:task (do (alter-var-root (var short/config) assoc :skip-if-only [(re-pattern ".*")])
