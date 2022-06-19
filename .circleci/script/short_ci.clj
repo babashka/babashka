@@ -80,16 +80,24 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
 
 (defn unix
   [static? musl? arch executor-conf resource-class graalvm-home platform]
-  (let [base-env         {:LEIN_ROOT                "true"
-                          :GRAALVM_VERSION          "22.1.0"
-                          :GRAALVM_HOME             graalvm-home
-                          :BABASHKA_PLATFORM        (if (= platform "mac")
-                                                      "macos"
-                                                      platform)
-                          :BABASHKA_TEST_ENV        "native"
-                          :BABASHKA_ARCH            arch
-                          :BABASHKA_XMX             "-J-Xmx6500m"
-                          :MACOSX_DEPLOYMENT_TARGET 10.13}
+  (let [env              {:LEIN_ROOT         "true"
+                          :GRAALVM_VERSION   "22.1.0"
+                          :GRAALVM_HOME      graalvm-home
+                          :BABASHKA_PLATFORM (if (= "mac" platform)
+                                               "macos"
+                                               platform)
+                          :BABASHKA_TEST_ENV "native"
+                          :BABASHKA_ARCH     arch
+                          :BABASHKA_XMX      "-J-Xmx6500m"}
+        env              (if static?
+                           (assoc env :BABASHKA_STATIC "true")
+                           env)
+        env              (if musl?
+                           (assoc env :BABASHKA_MUSL "true")
+                           env)
+        env              (if (= "mac" platform)
+                           (assoc env :MACOSX_DEPLOYMENT_TARGET 10.13)
+                           env)
         base-install-cmd "sudo apt-get update\nsudo apt-get -y install build-essential zlib1g-dev"
         cache-key        (format "%s-%s{{ checksum \"project.clj\" }}-{{ checksum \".circleci/config.yml\" }}"
                                  platform
@@ -100,9 +108,7 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
       executor-conf
       (ordered-map
         :working_directory "~/repo"
-        :environment       (if (and static? musl?)
-                             (assoc base-env :BABASHKA_STATIC "true" :BABASHKA_MUSL "true")
-                             base-env)
+        :environment       env
         :resource_class    resource-class
         :steps             (filter some?
                                    [:checkout
