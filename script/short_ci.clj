@@ -83,7 +83,9 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
   (let [base-env         {:LEIN_ROOT                "true"
                           :GRAALVM_VERSION          "22.1.0"
                           :GRAALVM_HOME             graalvm-home
-                          :BABASHKA_PLATFORM        platform
+                          :BABASHKA_PLATFORM        (if (= platform "mac")
+                                                      "macos"
+                                                      platform)
                           :BABASHKA_TEST_ENV        "native"
                           :BABASHKA_ARCH            arch
                           :BABASHKA_XMX             "-J-Xmx6500m"
