@@ -5,6 +5,11 @@ For a list of breaking changes, check [here](#breaking-changes).
 A preview of the next release can be installed from
 [babashka-dev-builds](https://github.com/babashka/babashka-dev-builds).
 
+## Unreleased
+
+- Expose `babashka.nrepl.server/start-server!`- and `stop-server!`-functions to support programmatically starting
+  an nrepl-server. `start-server!` is redefined to not require a sci-context as its first argument.
+
 ## 0.8.156 (2022-06-08)
 
 - macOS aarch64 support. Upgrading via brew or the installer script should
