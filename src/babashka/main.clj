@@ -773,40 +773,45 @@ Use bb run --help to show this help output.
             _ (when jar
                 (cp/add-classpath jar))
             load-fn (fn [{:keys [:namespace :reload]}]
-                      (or (when-let [{:keys [:loader]}
-                                     @cp/cp-state]
-                            (if ;; ignore built-in namespaces when uberscripting, unless with :reload
-                                (and uberscript
-                                     (not reload)
-                                     (or (contains? namespaces namespace)
-                                         (contains? sci-namespaces/namespaces namespace)))
-                              ""
-                              (when-let [res (cp/source-for-namespace loader namespace nil)]
-                                (if uberscript
-                                  (do (swap! uberscript-sources conj (:source res))
-                                      (uberscript/uberscript {:ctx @common/ctx
-                                                              :expressions [(:source res)]})
-                                      {})
-                                  res))))
-                          (if-let [pod (get @pod-namespaces namespace)]
-                            (if uberscript
-                              (do
-                                (swap! uberscript-sources conj
-                                       (format
-                                        "(babashka.pods/load-pod '%s \"%s\" '%s)\n"
-                                        (:pod-spec pod) (:version (:opts pod))
-                                        (dissoc (:opts pod)
-                                                :version :metadata)))
-                                {})
-                              (pods/load-pod (:pod-spec pod) (:opts pod)))
-                            (case namespace
-                              clojure.spec.alpha
-                              (binding [*out* *err*]
-                                (println "[babashka] WARNING: Use the babashka-compatible version of clojure.spec.alpha, available here: https://github.com/babashka/spec.alpha"))
-                              clojure.core.specs.alpha
-                              (binding [*out* *err*]
-                                (println "[babashka] WARNING: clojure.core.specs.alpha is removed from the classpath, unless you explicitly add the dependency."))
-                              nil))))
+                      (let [{:keys [loader]}
+                            @cp/cp-state]
+                        (or
+                         (when ;; ignore built-in namespaces when uberscripting, unless with :reload
+                             (and uberscript
+                                  (not reload)
+                                  (or (contains? namespaces namespace)
+                                      (contains? sci-namespaces/namespaces namespace)))
+                           "")
+                         ;; pod namespaces go before namespaces from source,
+                         ;; unless reload is used
+                         (when-not reload
+                           (when-let [pod (get @pod-namespaces namespace)]
+                             (if uberscript
+                               (do
+                                 (swap! uberscript-sources conj
+                                        (format
+                                         "(babashka.pods/load-pod '%s \"%s\" '%s)\n"
+                                         (:pod-spec pod) (:version (:opts pod))
+                                         (dissoc (:opts pod)
+                                                 :version :metadata)))
+                                 {})
+                               (pods/load-pod (:pod-spec pod) (:opts pod)))))
+                         (when loader
+                           (when-let [res (cp/source-for-namespace loader namespace nil)]
+                             (if uberscript
+                               (do (swap! uberscript-sources conj (:source res))
+                                   (uberscript/uberscript {:ctx @common/ctx
+                                                           :expressions [(:source res)]})
+                                   {})
+                               res)))
+                         (case namespace
+                           clojure.spec.alpha
+                           (binding [*out* *err*]
+                             (println "[babashka] WARNING: Use the babashka-compatible version of clojure.spec.alpha, available here: https://github.com/babashka/spec.alpha"))
+                           clojure.core.specs.alpha
+                           (binding [*out* *err*]
+                             (println "[babashka] WARNING: clojure.core.specs.alpha is removed from the classpath, unless you explicitly add the dependency."))
+                           nil))))
             main (if (and jar (not main))
                    (when-let [res (cp/getResource
                                    (cp/loader jar)
