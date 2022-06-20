@@ -107,8 +107,10 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                                "macos"
                                                platform)
                           :BABASHKA_TEST_ENV "native"
-                          :BABASHKA_ARCH     arch
                           :BABASHKA_XMX      "-J-Xmx6500m"}
+        env              (if (= "aarch64" arch)
+                           (assoc env :BABASHKA_ARCH arch)
+                           env)
         env              (if static?
                            (assoc env :BABASHKA_STATIC "true")
                            env)
@@ -177,9 +179,9 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
            "docker run --privileged --rm tonistiigi/binfmt --install all\ndocker buildx create --name ci-builder --use"}}]}}
       :jobs      (ordered-map
                    :jvm (jvm shorted?)
-                   :linux (unix shorted? false false "x86_64" docker-executor-conf "large" linux-graalvm-home "linux")
+                   :linux (unix shorted? false false "amd64" docker-executor-conf "large" linux-graalvm-home "linux")
                    :linux-static
-                   (unix shorted? true true "x86_64" docker-executor-conf "large" linux-graalvm-home "linux")
+                   (unix shorted? true true "amd64" docker-executor-conf "large" linux-graalvm-home "linux")
                    :linux-aarch64 (unix shorted?
                                         false
                                         false
@@ -190,7 +192,7 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                         "linux")
                    :linux-aarch64-static
                    (unix shorted? true false "aarch64" machine-executor-conf "arm.large" linux-graalvm-home "linux")
-                   :mac (unix shorted? false false "x86_64" mac-executor-conf "large" mac-graalvm-home "mac")
+                   :mac (unix shorted? false false "amd64" mac-executor-conf "large" mac-graalvm-home "mac")
                    :deploy (deploy shorted?)
                    :docker (docker shorted?))
       :workflows (ordered-map
