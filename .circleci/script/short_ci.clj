@@ -25,7 +25,7 @@
   [shorted? conf]
   (if shorted?
     (-> conf
-        (dissoc :machine)
+        (dissoc :machine :macos)
         (assoc :resource_class "small" :docker [{:image "ubuntu:latest"}]))
     conf))
 
