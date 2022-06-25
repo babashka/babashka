@@ -481,6 +481,7 @@
                       clojure.lang.ITransientVector
                       clojure.lang.Iterate
                       clojure.lang.LazySeq
+                      clojure.lang.LazilyPersistentVector
                       clojure.lang.LispReader$Resolver
                       clojure.lang.Named
                       clojure.lang.Keyword
@@ -503,12 +504,15 @@
                       clojure.lang.Volatile
                       java.lang.AbstractMethodError
                       java.lang.ExceptionInInitializerError
+                      java.util.HashMap
                       java.lang.LinkageError
                       java.lang.ThreadDeath
                       java.lang.VirtualMachineError
                       java.sql.Timestamp
                       java.util.concurrent.atomic.AtomicInteger
                       java.util.concurrent.atomic.AtomicLong
+                      java.util.concurrent.TimeoutException
+                      java.util.concurrent.FutureTask
                       java.util.Collection
                       java.util.Map$Entry
                       ~@(when features/xml? ['clojure.data.xml.node.Element])]
