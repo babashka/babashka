@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 - Expose `babashka.nrepl.server/start-server!`- and `stop-server!`-functions to support programmatically starting
   an nrepl-server. `start-server!` is redefined to not require a sci-context as its first argument.
+- Fix misspelling in script/uberjar: `BABASHKA_FEATURE_TRANSIT`
 
 ## 0.8.156 (2022-06-08)
 
