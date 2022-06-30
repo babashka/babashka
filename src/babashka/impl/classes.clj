@@ -481,7 +481,6 @@
                       clojure.lang.ITransientVector
                       clojure.lang.Iterate
                       clojure.lang.LazySeq
-                      clojure.lang.LazilyPersistentVector
                       clojure.lang.LispReader$Resolver
                       clojure.lang.Named
                       clojure.lang.Keyword
