@@ -366,6 +366,7 @@
           java.util.concurrent.ThreadPoolExecutor
           java.util.concurrent.ScheduledExecutorService
           java.util.concurrent.Future
+          java.util.concurrent.FutureTask
           java.util.concurrent.CompletableFuture
           java.util.concurrent.Executors
           java.util.concurrent.TimeUnit
@@ -389,6 +390,7 @@
           java.util.Base64$Decoder
           java.util.Base64$Encoder
           java.util.Date
+          java.util.HashMap
           java.util.IdentityHashMap
           java.util.List
           java.util.Locale
@@ -509,6 +511,7 @@
                       java.sql.Timestamp
                       java.util.concurrent.atomic.AtomicInteger
                       java.util.concurrent.atomic.AtomicLong
+                      java.util.concurrent.TimeoutException
                       java.util.Collection
                       java.util.Map$Entry
                       ~@(when features/xml? ['clojure.data.xml.node.Element])]
