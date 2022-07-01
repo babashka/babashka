@@ -5,8 +5,9 @@ For a list of breaking changes, check [here](#breaking-changes).
 A preview of the next release can be installed from
 [babashka-dev-builds](https://github.com/babashka/babashka-dev-builds).
 
-## Unreleased
+## 0.8.157 (2022-07-01)
 
+- Add compatibility with [`metosin/malli`](https://github.com/metosin/malli#babashka) `{:mvn/version "0.8.9"}`.
 - Expose `babashka.nrepl.server/start-server!`- and `stop-server!`-functions to support programmatically starting
   an nrepl-server. `start-server!` is redefined to not require a sci-context as its first argument.
 - Fix misspelling in script/uberjar: `BABASHKA_FEATURE_TRANSIT`
