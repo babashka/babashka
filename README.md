@@ -290,7 +290,10 @@ Go [here](https://book.babashka.org/#built-in-namespaces) to see the full list o
 
 A list of projects (scripts, libraries, pods and tools) known to work with babashka.
 
-Have a library that is already compatible or has recently been made compatible? Add the official badge to add some flair to your repo!
+### Flair
+
+Do you have a library that is already compatible or has recently been made
+compatible with babashka? Add this badge to add some flair to your repo:
 
 [![bb compatible](/logo/badge.svg)](https://babashka.org)
 
