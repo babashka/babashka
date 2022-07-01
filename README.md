@@ -292,8 +292,8 @@ A list of projects (scripts, libraries, pods and tools) known to work with babas
 
 ### Flair
 
-Do you have a library that is already compatible or has recently been made
-compatible with babashka? Add this badge to add some flair to your repo:
+Do you have a library that runs with babashka? Add this badge to add some flair
+to your repo:
 
 [![bb compatible](/logo/badge.svg)](https://babashka.org)
 
