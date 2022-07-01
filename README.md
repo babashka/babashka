@@ -300,7 +300,7 @@ to your repo:
 The raw HTML:
 
 ``` html
-<a href="https://babashka.org" rel="nofollow"><img src="/babashka/babashka/raw/master/logo/badge.svg" alt="bb compatible" style="max-width: 100%;"></a>
+<a href="https://babashka.org" rel="nofollow"><img src="https://github.com/babashka/babashka/raw/master/logo/badge.svg" alt="bb compatible" style="max-width: 100%;"></a>
 ```
 
 ## [Pods](https://github.com/babashka/babashka.pods)
