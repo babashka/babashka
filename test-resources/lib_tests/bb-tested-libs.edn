@@ -145,4 +145,18 @@
                 :git-tag "0.8.9"
                 ;; specify for adding tests to classpath
                 :test-paths ["test"]}
+ meander/epsilon {:test-namespaces [meander.epsilon-test
+                                    meander.defsyntax-test
+                                    meander.syntax.epsilon-test
+                                    meander.substitute.epsilon-test
+                                    meander.strategy.epsilon-test
+                                    meander.matrix.epsilon-test
+                                    meander.match.epsilon-test
+                                    meander.match.ir.epsilon-test
+                                    meander.match.check.epsilon-test
+                                    meander.interpreter.epsilon-test
+                                    meander.defsyntax-test.gh-145]
+                  :test-paths ["test"]
+                  :git-url "https://github.com/noprompt/meander"
+                  :git-sha "55f5ce70e6ef717e95c58260f6bc725d70c0cb6d"}
  }
