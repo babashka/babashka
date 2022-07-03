@@ -7,7 +7,6 @@ The following libraries and projects are known to work with babashka.
     - [tools.namespace](#toolsnamespace)
     - [test-runner](#test-runner)
     - [spec.alpha](#specalpha)
-    - [tools.bbuild](#toolsbbuild)
     - [clj-http-lite](#clj-http-lite)
     - [spartan.spec](#spartanspec)
     - [missing.test.assertions](#missingtestassertions)
@@ -62,6 +61,8 @@ The following libraries and projects are known to work with babashka.
     - [datalog-parser](#datalog-parser)
     - [at-at](#at-at)
     - [aysylu/loom](#aysyluloom)
+    - [Clarktown](#clarktown)
+    - [Malli](#malli)
   - [Pods](#pods)
   - [Projects](#projects-1)
     - [babashka-test-action](#babashka-test-action)
@@ -114,9 +115,9 @@ A fork of `clojure.spec.alpha` that includes support for generation and
 instrumentation! Its readme also contains instructions on how to use
 `clojure.core.specs.alpha`.
 
-### [tools.bbuild](https://github.com/babashka/tools.bbuild)
+<!-- ### [tools.bbuild](https://github.com/babashka/tools.bbuild) -->
 
-A fork of `tools.build`.
+<!-- A fork of `tools.build`. -->
 
 ### [clj-http-lite](https://github.com/clj-commons/clj-http-lite)
 
@@ -811,6 +812,10 @@ Graph library for Clojure. Compatible with babashka 0.7.8+.
 ### [Clarktown](https://github.com/askonomm/clarktown)
 
 An extensible and modular zero-dependency, pure-Clojure Markdown parser.
+
+### [Malli](https://github.com/metosin/malli#babashka)
+
+Data-Driven Schemas for Clojure/Script
 
 ## Pods
 
