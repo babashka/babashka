@@ -47,7 +47,7 @@
  doric/doric {:git-sha "8747fdce565187a5c368c575cf4ca794084b0a5c", :git-url "https://github.com/joegallo/doric", :test-namespaces (doric.test.core doric.test.readme doric.test.doctest)}
  com.github.seancorfield/honeysql {:git-sha "6e4e1f6928450788353c181f32474d930d6afe84", :git-url "https://github.com/seancorfield/honeysql", :test-namespaces (honey.sql-test honey.sql.helpers-test honey.sql.postgres-test), :branch "develop"}
  honeysql/honeysql {:git-sha "1137dd12350afdc30ad4976c3718279581390b36", :git-url "https://github.com/seancorfield/honeysql", :test-namespaces (honeysql.format-test honeysql.core-test), :branch "v1"}
- ; skip tests on Windows because of the :compressed thing
+                                        ; skip tests on Windows because of the :compressed thing
  babashka/babashka.curl {:git-url "https://github.com/babashka/babashka.curl", :test-namespaces [babashka.curl-test], :skip-windows true, :manually-added true}
  http-kit/http-kit {:git-url "https://github.com/http-kit/http-kit", :test-namespaces [httpkit.client-test], :manually-added true}
  org.clojure/core.match {:git-url "https://github.com/clojure/core.match", :test-namespaces [core-match.core-tests], :manually-added true}
@@ -125,4 +125,24 @@
                    :git-tag "schema-1.3.0"
                    ;; specify for adding tests to classpath
                    :test-paths ["test/clj" "test/cljc"]}
-}
+ metosin/malli {:test-namespaces [malli.clj-kondo-test
+                                  malli.core-test
+                                  malli.destructure-test
+                                  malli.dot-test
+                                  malli.error-test
+                                  malli.experimental-test
+                                  ;; malli.generator-test
+                                  malli.instrument-test
+                                  malli.json-schema-test
+                                  malli.plantuml-test
+                                  malli.provider-test
+                                  malli.registry-test
+                                  malli.swagger-test
+                                  malli.transform-test
+                                  malli.util-test]
+                :git-url "https://github.com/metosin/malli"
+                :git-sha "588147ef49b2e41c7d12a8aa994b39c1c6fedd99"
+                :git-tag "0.8.9"
+                ;; specify for adding tests to classpath
+                :test-paths ["test"]}
+ }

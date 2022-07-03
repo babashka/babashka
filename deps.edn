@@ -141,7 +141,10 @@
                          org.clojure/math.numeric-tower {:git/tag "math.numeric-tower-0.0.5", :git/sha "12eb9c5", :git/url "https://github.com/clojure/math.numeric-tower"}
                          prismatic/schema {:git/url "https://github.com/plumatic/schema"
                                            :git/sha "6846dc7c3a9df5bfd718f68f183c683ce0f621ff"
-                                           :git/tag "schema-1.3.0"}}
+                                           :git/tag "schema-1.3.0"}
+                         metosin/malli {:git/url "https://github.com/metosin/malli"
+                                        :git/sha "588147ef49b2e41c7d12a8aa994b39c1c6fedd99"
+                                        :git/tag "0.8.9"}}
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil}}
            :clj-nvd
