@@ -63,6 +63,7 @@ The following libraries and projects are known to work with babashka.
     - [aysylu/loom](#aysyluloom)
     - [Clarktown](#clarktown)
     - [Malli](#malli)
+    - [Meander](#meander)
   - [Pods](#pods)
   - [Projects](#projects-1)
     - [babashka-test-action](#babashka-test-action)
@@ -816,6 +817,10 @@ An extensible and modular zero-dependency, pure-Clojure Markdown parser.
 ### [Malli](https://github.com/metosin/malli#babashka)
 
 Data-Driven Schemas for Clojure/Script
+
+### [Meander](https://github.com/noprompt/meander)
+
+Tools for transparent data transformation
 
 ## Pods
 
