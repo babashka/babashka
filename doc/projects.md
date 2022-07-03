@@ -64,6 +64,7 @@ The following libraries and projects are known to work with babashka.
     - [Clarktown](#clarktown)
     - [Malli](#malli)
     - [Meander](#meander)
+    - [Schema](#schema)
   - [Pods](#pods)
   - [Projects](#projects-1)
     - [babashka-test-action](#babashka-test-action)
@@ -821,6 +822,10 @@ Data-Driven Schemas for Clojure/Script
 ### [Meander](https://github.com/noprompt/meander)
 
 Tools for transparent data transformation
+
+### [Schema](https://github.com/plumatic/schema)
+
+Clojure(Script) library for declarative data description and validation
 
 ## Pods
 
