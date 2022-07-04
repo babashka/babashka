@@ -2,9 +2,15 @@ name: build
 
 on:
   push:
+    paths-ignore:
+      - "**.md"
+      - "logo/**"
     branches:
       - master
   pull_request:
+    paths-ignore:
+      - "**.md"
+      - "logo/**"
     branches:
       - master
 
