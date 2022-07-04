@@ -223,7 +223,8 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                               :requires ["linux" "linux-static" "linux-aarch64"]}}]}))))
 
 (def skip-config
-  {:skip-if-only [#".*.md$"]})
+  {:skip-if-only [#".*.md$"
+                  #"^logo\/.*$"]})
 
 (defn get-changes
   []
@@ -253,14 +254,18 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
 
 (comment
   (main)
+
   (def regexes
     [#".*.md$"
-     #".*.clj$"]) ; ignore clojure files
+     #".*.clj$" ; ignore clojure files
+     #"^logo\/.*$"])
 
   (:out (tasks/shell {:out :string} "ls"))
 
   (irrelevant-change? "src/file.png" regexes)
 
   (re-matches #".*.clj$" "src/file.clj.dfff")
+
+  (re-matches #"^logo\/.*$" "logo/foo/bar.jpg")
 
   (relevant? ["src/file.clj"] regexes))
