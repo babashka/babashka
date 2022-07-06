@@ -91,6 +91,7 @@ The following libraries and projects are known to work with babashka.
     - [Babashka + scittle guestbook](#babashka--scittle-guestbook)
     - [bb htmx todo app](#bb-htmx-todo-app)
     - [bb aws lambda runtime](#bb-aws-lambda-runtime)
+    - [bb-github-app](#bb-github-app)
 
 Also keep an eye on the [news](news.md) page for new projects, gists and other
 developments around babashka.
@@ -954,3 +955,8 @@ Quick example of a todo list SPA using Babashka and htmx.
 ### [bb aws lambda runtime](https://github.com/tatut/bb-lambda)
 
 AWS Lambda custom runtime for Babashka scripts.
+
+### [bb-github-app](https://github.com/brandonstubbs/bb-github-app)
+
+An example Babashka script that can authenticate as a Github Application,
+this example focuses on the checks api.
