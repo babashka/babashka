@@ -11,6 +11,11 @@ environment:
   JAVA_HOME: C:\projects\babashka\graalvm\graalvm-ce-java11-22.1.0
   BABASHKA_XMX: "-J-Xmx5g"
 
+skip_commits:
+    files:
+      - "logo/*"
+      - "**/*.md"
+
 cache:
   - C:\ProgramData\chocolatey\lib -> project.clj, appveyor.yml
   - '%USERPROFILE%\.m2 -> project.clj'
