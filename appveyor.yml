@@ -13,8 +13,8 @@ environment:
 
 skip_commits:
     files:
-      - logo/*
-      - **/*.md
+      - "logo/*"
+      - "**/*.md"
 
 cache:
   - C:\ProgramData\chocolatey\lib -> project.clj, appveyor.yml
