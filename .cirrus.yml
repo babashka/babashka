@@ -2,7 +2,7 @@ macos_instance:
   image: ghcr.io/cirruslabs/macos-monterey-base:latest
 
 task:
-  skip: "!changesIncludeOnly('logo/*', '**.md')"
+  skip: "changesIncludeOnly('logo/*', '**.md')"
   env:
     LEIN_ROOT: "true"
     GRAALVM_VERSION: "22.1.0"
