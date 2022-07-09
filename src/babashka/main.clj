@@ -399,7 +399,9 @@ Use bb run --help to show this help output.
                                   @(resolve 'babashka.impl.rrb-vector/rrb-vector-namespace)
                                   {'catvec (sci/copy-var catvec
                                                          (sci/create-ns 'clojure.core.rrb-vector))})
-       'edamame.core edamame-namespace}
+       'edamame.core edamame-namespace
+       'sci.core {'format-stacktrace (sci/copy-var sci/format-stacktrace (sci/create-ns 'sci.core))
+                  'stacktrace (sci/copy-var sci/stacktrace (sci/create-ns 'sci.core))}}
     features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace)
                           'clojure.data.xml.event @(resolve 'babashka.impl.xml/xml-event-namespace)
                           'clojure.data.xml.tree @(resolve 'babashka.impl.xml/xml-tree-namespace))
