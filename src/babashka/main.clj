@@ -346,6 +346,8 @@ Use bb run --help to show this help output.
 (defn catvec [& xs]
   (into [] cat xs))
 
+(def sci-ns (sci/create-ns 'sci.core))
+
 (def namespaces
   (cond->
       {'user {'*input* (reify
@@ -400,8 +402,12 @@ Use bb run --help to show this help output.
                                   {'catvec (sci/copy-var catvec
                                                          (sci/create-ns 'clojure.core.rrb-vector))})
        'edamame.core edamame-namespace
-       'sci.core {'format-stacktrace (sci/copy-var sci/format-stacktrace (sci/create-ns 'sci.core))
-                  'stacktrace (sci/copy-var sci/stacktrace (sci/create-ns 'sci.core))}}
+       'sci.core {'format-stacktrace (sci/copy-var sci/format-stacktrace sci-ns)
+                  'stacktrace (sci/copy-var sci/stacktrace sci-ns)
+                  'eval-string (sci/copy-var sci/eval-string sci-ns)
+                  'eval-string* (sci/copy-var sci/eval-string* sci-ns)
+                  'init (sci/copy-var sci/init sci-ns)
+                  'fork (sci/copy-var sci/fork sci-ns)}}
     features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace)
                           'clojure.data.xml.event @(resolve 'babashka.impl.xml/xml-event-namespace)
                           'clojure.data.xml.tree @(resolve 'babashka.impl.xml/xml-tree-namespace))
