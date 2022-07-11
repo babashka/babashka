@@ -407,7 +407,8 @@ Use bb run --help to show this help output.
                   ;; 'eval-string (sci/copy-var sci/eval-string sci-ns)
                   ;; 'eval-string* (sci/copy-var sci/eval-string* sci-ns)
                   ;; 'init (sci/copy-var sci/init sci-ns)
-                  ;; 'fork (sci/copy-var sci/fork sci-ns)}
+                  ;; 'fork (sci/copy-var sci/fork sci-ns)
+                  }
        }
     features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace)
                           'clojure.data.xml.event @(resolve 'babashka.impl.xml/xml-event-namespace)
