@@ -404,10 +404,11 @@ Use bb run --help to show this help output.
        'edamame.core edamame-namespace
        'sci.core {'format-stacktrace (sci/copy-var sci/format-stacktrace sci-ns)
                   'stacktrace (sci/copy-var sci/stacktrace sci-ns)
-                  'eval-string (sci/copy-var sci/eval-string sci-ns)
-                  'eval-string* (sci/copy-var sci/eval-string* sci-ns)
-                  'init (sci/copy-var sci/init sci-ns)
-                  'fork (sci/copy-var sci/fork sci-ns)}}
+                  ;; 'eval-string (sci/copy-var sci/eval-string sci-ns)
+                  ;; 'eval-string* (sci/copy-var sci/eval-string* sci-ns)
+                  ;; 'init (sci/copy-var sci/init sci-ns)
+                  ;; 'fork (sci/copy-var sci/fork sci-ns)}
+       }
     features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace)
                           'clojure.data.xml.event @(resolve 'babashka.impl.xml/xml-event-namespace)
                           'clojure.data.xml.tree @(resolve 'babashka.impl.xml/xml-tree-namespace))
