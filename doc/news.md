@@ -12,9 +12,12 @@ Twitter.
 - [Babashka toolbox](https://babashka.org/toolbox/)
 - [Etaoin](https://github.com/clj-commons/etaoin) moved to clj-commons and now works with babashka as well.
 
-## 2022-03
+## [2022-03](https://twitter.com/search?q=(%23babashka)%20until%3A2022-04-01%20since%3A2022-03-01&src=typed_query&f=live)
 
 - [Create a password manager with Clojure using Babashka, sqlite, honeysql and stash](https://youtu.be/jm0RXmyjRJ8) by Daniel Amber
+- [Detecting inconsistent aliases in a clojure codebase](https://www.youtube.com/watch?v=bf8KLKkCH2g) by Oxalorg
+- [Clj-konmari](https://github.com/oxalorg/clj-konmari/) by Oxalorg
+- [Logseq-query](https://github.com/cldwalker/logseq-query) by Gabriel Horner [(announcement tweet)](https://twitter.com/cldwalker/status/1506991213030871041)
 
 ## [2022-02](https://twitter.com/search?q=(%23babashka)%20until%3A2022-03-01%20since%3A2022-02-01&src=typed_query&f=live)
 

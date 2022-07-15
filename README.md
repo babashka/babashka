@@ -352,6 +352,7 @@ handling of SIGINT and SIGPIPE. This can be done by setting
 ## Articles, podcasts and videos
 
 - [Recursive document transformations with Pandoc and Clojure](https://play.teod.eu/document-transform-pandoc-clojure/)
+- [Detecting inconsistent aliases in a clojure codebase](https://www.youtube.com/watch?v=bf8KLKkCH2g) by Oxalorg
 - [I, too, Wrote Myself a Static Site Generator](https://dawranliou.com/blog/i-too-wrote-myself-a-static-site-generator/) by Daw-Ran Liou
 - [Babashka and Clojure](https://youtu.be/ZvOs5Ele6VE) by Rahul Dé
 - [Create a password manager with Clojure using Babashka, sqlite, honeysql and stash](https://youtu.be/jm0RXmyjRJ8) by Daniel Amber
