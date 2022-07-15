@@ -16,6 +16,16 @@ Twitter.
 
 - [Create a password manager with Clojure using Babashka, sqlite, honeysql and stash](https://youtu.be/jm0RXmyjRJ8) by Daniel Amber
 
+## [2022-01](https://twitter.com/search?f=live&q=(%23babashka)%20until%3A2022-02-01%20since%3A2022-01-01&src=typed_query)
+
+- Releases: [0.7.4](https://github.com/babashka/babashka/blob/master/CHANGELOG.md).
+- [Babashka dev builds](https://github.com/babashka/babashka-dev-builds)
+- [Writing Clojure-living-cookbooks](https://www.loop-code-recur.io/live-clojure-cookbooks/) by Cyprien Pannier
+- [HTMX Todo App](https://github.com/prestancedesign/babashka-htmx-todoapp)
+- [Better linting for `bb.edn`](https://twitter.com/borkdude/status/1484100071134220291)
+- [Unwordle](https://github.com/mknoszlig/unwordle): solver for wordle puzzles
+- [Using babashka with PHP](https://blog.michielborkent.nl/using-babashka-with-php.html) by Michiel Borkent
+
 ## 2021-12
 
 - Releases: [0.6.8 - 0.7.3](https://github.com/babashka/babashka/blob/master/CHANGELOG.md).

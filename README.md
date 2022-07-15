@@ -354,6 +354,8 @@ handling of SIGINT and SIGPIPE. This can be done by setting
 - [Recursive document transformations with Pandoc and Clojure](https://play.teod.eu/document-transform-pandoc-clojure/)
 - [Babashka and Clojure](https://youtu.be/ZvOs5Ele6VE) by Rahul Dé
 - [Create a password manager with Clojure using Babashka, sqlite, honeysql and stash](https://youtu.be/jm0RXmyjRJ8) by Daniel Amber
+- [Writing Clojure-living-cookbooks](https://www.loop-code-recur.io/live-clojure-cookbooks) by Cyprien Pannier
+- [Using babashka with PHP](https://blog.michielborkent.nl/using-babashka-with-php.html) by Michiel Borkent
 - [Moldable Emacs: a Clojure Playground with Babashka](https://ag91.github.io/blog/2021/11/05/moldable-emacs-a-clojure-playground-with-babashka/) by Andrea
 - [Finding my inner Wes Anderson with #Babashka](https://javahippie.net/clojure/2021/10/18/finding-my-inner-wes-anderson.html) by Tim Zöller
 - [Awesome Babashka: Parse & produce HTML and SQLite](https://blog.jakubholy.net/2021/awesome-babashka-dash/) by Jakub Holý
