@@ -16,6 +16,19 @@ Twitter.
 
 - [Create a password manager with Clojure using Babashka, sqlite, honeysql and stash](https://youtu.be/jm0RXmyjRJ8) by Daniel Amber
 
+## [2022-02](https://twitter.com/search?q=(%23babashka)%20until%3A2022-03-01%20since%3A2022-02-01&src=typed_query&f=live)
+
+- Releases: [0.7.5 - 0.7.6](https://github.com/babashka/babashka/blob/master/CHANGELOG.md).
+- [Spire is available as a babashka pod](https://twitter.com/epic_castle/status/1496784352256008194)
+- Babashka Clojure template on [Repl.it](https://replit.com/@eccentric-j/Babashka-Clojure-Template?v=1#replit.nix) by Eccentric J
+- Create a self-contained executable with [caxa](https://github.com/babashka/babashka/wiki/Self-contained-executable)
+- Cli-matic is now compatible due to this [PR](https://github.com/l3nz/cli-matic/pull/145)
+- [I, too, Wrote Myself a Static Site Generator](https://dawranliou.com/blog/i-too-wrote-myself-a-static-site-generator/) by Daw-Ran Liou
+- [Staplegun](https://github.com/escherize/staplegun): Single file clipboard-manager
+- [Bbb](https://github.com/nikvdp/bbb): make executable CLI tools from bb scripts
+- [Apptemplate](https://github.com/redstarssystems/apptemplate): Application project template for Clojure featuring bb tasks
+
+
 ## [2022-01](https://twitter.com/search?f=live&q=(%23babashka)%20until%3A2022-02-01%20since%3A2022-01-01&src=typed_query)
 
 - Releases: [0.7.4](https://github.com/babashka/babashka/blob/master/CHANGELOG.md).
