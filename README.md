@@ -351,6 +351,7 @@ handling of SIGINT and SIGPIPE. This can be done by setting
 
 ## Articles, podcasts and videos
 
+- [Blambda!](https://jmglov.net/blog/2022-07-03-blambda.html) by Josh Glover
 - [Babashka CLI](https://blog.michielborkent.nl/babashka-cli.html): turn Clojure functions into CLIs!
 - [Breakneck Babashka on K8s](Breakneck Babashka on K8s) by Heow Goodman
 - [Recursive document transformations with Pandoc and Clojure](https://play.teod.eu/document-transform-pandoc-clojure/)

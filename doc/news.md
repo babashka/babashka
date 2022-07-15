@@ -5,11 +5,22 @@ you have anything to add. Also see
 [#babashka](https://twitter.com/hashtag/babashka?src=hashtag_click&f=live) on
 Twitter.
 
-## 2022-07
+## [2022-07](https://twitter.com/search?q=(%23babashka)%20until%3A2022-08-01%20since%3A2022-07-01&src=typed_query&f=live)
 
 - [Recursive document transformations with Pandoc and Clojure](https://play.teod.eu/document-transform-pandoc-clojure/)
 - [Expose Clojure functions in the CLI with babashka and nix](https://twitter.com/jlesquembre/status/1546777332471455745)
 - [Babashka toolbox](https://babashka.org/toolbox/)
+- [Quickblog](https://github.com/borkdude/quickblog): Light-weight static blog engine for Clojure and babashka
+- Win a babashka t-shirt by participating in [this](https://twitter.com/borkdude/status/1547847843381030912) contest!
+- [AWS Lambda, now with first class parentheses](https://www.juxt.pro/blog/nbb-lambda) by Ray McDermott (about nbb)
+- [Babashka toolbox](https://babashka.org/toolbox/): A categorised directory of libraries and tools for Babashka
+- [bb-github-app](https://github.com/brandonstubbs/bb-github-app): An example Babashka Script authenticating as a Github App and interacting with the Checks API
+- [Ruuter](https://github.com/askonomm/ruuter#setting-up-with-babashka) is a routing library which works very well with bb
+- [Blambda!](https://jmglov.net/blog/2022-07-03-blambda.html) by Josh Glover
+- Files with the `.bb` extension are now correctly highlighted as Clojure code on Github! See [this](https://twitter.com/borkdude/status/1543937735429431298) tweet.
+- Encode and decode files as kroki url diagrams, a [gist](https://gist.github.com/henryw374/070845dbd8cfb4672a3c0d06cf8b00e4) by Henry Widd
+- Customized bb builds with clj-nix: [tweet](https://twitter.com/jlesquembre/status/1543686641461694470)
+- [Meander](https://github.com/noprompt/meander) is now compatible with bb: [tweet](https://twitter.com/borkdude/status/1542881167338250242)
 
 ## [2022-06](https://twitter.com/search?q=(%23babashka)%20until%3A2022-07-01%20since%3A2022-06-01&src=typed_query&f=live)
 
