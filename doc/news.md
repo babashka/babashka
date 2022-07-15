@@ -7,7 +7,7 @@ Twitter.
 
 ## [2022-07](https://twitter.com/search?q=(%23babashka)%20until%3A2022-08-01%20since%3A2022-07-01&src=typed_query&f=live)
 
-- [Recursive document transformations with Pandoc and Clojure](https://play.teod.eu/document-transform-pandoc-clojure/)
+- [Recursive document transformations with Pandoc and Clojure](https://play.teod.eu/document-transform-pandoc-clojure/) by Teodor Heggelund
 - [Expose Clojure functions in the CLI with babashka and nix](https://twitter.com/jlesquembre/status/1546777332471455745)
 - [Babashka toolbox](https://babashka.org/toolbox/)
 - [Quickblog](https://github.com/borkdude/quickblog): Light-weight static blog engine for Clojure and babashka
