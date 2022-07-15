@@ -11,8 +11,23 @@ Twitter.
 - [Expose Clojure functions in the CLI with babashka and nix](https://twitter.com/jlesquembre/status/1546777332471455745)
 - [Babashka toolbox](https://babashka.org/toolbox/)
 
+## [2022-06](https://twitter.com/search?q=(%23babashka)%20until%3A2022-07-01%20since%3A2022-06-01&src=typed_query&f=live)
+
+- Releases: [0.8.156](https://github.com/babashka/babashka/blob/master/CHANGELOG.md).
+- [AWS wiki page](https://github.com/babashka/babashka/wiki/AWS)
+- [blambda](https://github.com/jmglov/blambda): Blambda! is a custom runtime for AWS Lambda that lets you write functions using Babashka
+- [Babashka CLI](https://blog.michielborkent.nl/babashka-cli.html): turn Clojure functions into CLIs!
+- [Http-server](https://github.com/babashka/http-server#babashka): Serve static assets
+- [Deps-bundler](https://github.com/MrGung/deps-bundler): Bundle dependencies on
+  a computer that has access to maven and clojars (PC-A) and bring these over to
+  a computer with limited access (PC-L).
+- [Prismatic/schema](https://github.com/plumatic/schema/blob/master/CHANGELOG.md#130-2022-06-10) and babashka are now compatible
+- [Logseq bb tasks](https://github.com/logseq/bb-tasks): Reusable babashka tasks used by logseq team
+- [Breakneck Babashka on K8s](Breakneck Babashka on K8s) by Heow Goodman
+
 ## [2022-05](https://twitter.com/search?q=(%23babashka)%20until%3A2022-06-01%20since%3A2022-05-01&src=typed_query&f=live)
 
+- Releases: [0.8.2](https://github.com/babashka/babashka/blob/master/CHANGELOG.md).
 - [Etaoin](https://github.com/clj-commons/etaoin) moved to clj-commons and now works with babashka as well.
 - [Nix docs for babashka](https://github.com/babashka/babashka/blob/master/doc/nix.md)
 - [Fly.io docs for babashka](https://github.com/babashka/babashka/tree/master/doc/fly_io)
@@ -22,6 +37,7 @@ Twitter.
 
 ## [2022-04](https://twitter.com/search?q=(%23babashka)%20until%3A2022-05-01%20since%3A2022-04-01&src=typed_query&f=live)
 
+- Releases: [0.8.1](https://github.com/babashka/babashka/blob/master/CHANGELOG.md).
 - Releases: [0.8.0](https://github.com/babashka/babashka/blob/master/CHANGELOG.md).
 - [Babashka and Clojure](https://youtu.be/ZvOs5Ele6VE) by Rahul Dé at North Virginia Linux Users Group
 - [Setup-Clojure](https://github.com/DeLaGuardo/setup-clojure/releases/tag/5.0) Github action is now able to install babashka!

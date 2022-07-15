@@ -351,6 +351,8 @@ handling of SIGINT and SIGPIPE. This can be done by setting
 
 ## Articles, podcasts and videos
 
+- [Babashka CLI](https://blog.michielborkent.nl/babashka-cli.html): turn Clojure functions into CLIs!
+- [Breakneck Babashka on K8s](Breakneck Babashka on K8s) by Heow Goodman
 - [Recursive document transformations with Pandoc and Clojure](https://play.teod.eu/document-transform-pandoc-clojure/)
 - [Detecting inconsistent aliases in a clojure codebase](https://www.youtube.com/watch?v=bf8KLKkCH2g) by Oxalorg
 - [I, too, Wrote Myself a Static Site Generator](https://dawranliou.com/blog/i-too-wrote-myself-a-static-site-generator/) by Daw-Ran Liou
