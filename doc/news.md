@@ -14,7 +14,11 @@ Twitter.
 
 ## [2022-04](https://twitter.com/search?q=(%23babashka)%20until%3A2022-05-01%20since%3A2022-04-01&src=typed_query&f=live)
 
+- Releases: [0.8.0](https://github.com/babashka/babashka/blob/master/CHANGELOG.md).
 - [Babashka and Clojure](https://youtu.be/ZvOs5Ele6VE) by Rahul Dé at North Virginia Linux Users Group
+- [Setup-Clojure](https://github.com/DeLaGuardo/setup-clojure/releases/tag/5.0) Github action is now able to install babashka!
+- Control Chrome via devtools using [clj-chrome-devtools](https://github.com/tatut/clj-chrome-devtools/blob/master/bb.clj) which runs with bb!
+- Use pods directly in `bb.edn`: [tweet](https://twitter.com/borkdude/status/1510995356229767172)
 
 ## [2022-03](https://twitter.com/search?q=(%23babashka)%20until%3A2022-04-01%20since%3A2022-03-01&src=typed_query&f=live)
 
@@ -110,7 +114,7 @@ Twitter.
 - [Cursive](https://twitter.com/CursiveIDE/status/1439022267187433472) adds support for babashka in 1.11.0
 - How to filter tail output with babashka on [StackOverflow](https://stackoverflow.com/questions/69241046/how-to-filter-output-of-tail-with-babashka/69241911?stw=2#69241911)
 - [Awesome Babashka: Parse & produce HTML and SQLite](https://blog.jakubholy.net/2021/awesome-babashka-dash/) by Jakub Holy
-- [neil](https://github.com/babashka/neil): an installable babashka script to add common aliases and features to deps.edn-based projects.
+- [Neil](https://github.com/babashka/neil): an installable babashka script to add common aliases and features to deps.edn-based projects.
 
 ## 2021-08
 
