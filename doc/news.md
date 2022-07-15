@@ -12,12 +12,19 @@ Twitter.
 - [Babashka toolbox](https://babashka.org/toolbox/)
 - [Etaoin](https://github.com/clj-commons/etaoin) moved to clj-commons and now works with babashka as well.
 
+## [2022-04](https://twitter.com/search?q=(%23babashka)%20until%3A2022-05-01%20since%3A2022-04-01&src=typed_query&f=live)
+
+- [Babashka and Clojure](https://youtu.be/ZvOs5Ele6VE) by Rahul Dé at North Virginia Linux Users Group
+
 ## [2022-03](https://twitter.com/search?q=(%23babashka)%20until%3A2022-04-01%20since%3A2022-03-01&src=typed_query&f=live)
 
+- Releases: [0.7.7 - 0.7.8](https://github.com/babashka/babashka/blob/master/CHANGELOG.md).
 - [Create a password manager with Clojure using Babashka, sqlite, honeysql and stash](https://youtu.be/jm0RXmyjRJ8) by Daniel Amber
 - [Detecting inconsistent aliases in a clojure codebase](https://www.youtube.com/watch?v=bf8KLKkCH2g) by Oxalorg
 - [Clj-konmari](https://github.com/oxalorg/clj-konmari/) by Oxalorg
-- [Logseq-query](https://github.com/cldwalker/logseq-query) by Gabriel Horner [(announcement tweet)](https://twitter.com/cldwalker/status/1506991213030871041)
+- [Logseq-query](https://github.com/cldwalker/logseq-query) by Gabriel Horner [(announcement tweet with video)](https://twitter.com/cldwalker/status/1506991213030871041)
+- The [loom](https://github.com/aysylu/loom) library is now compatible [(tweet)](https://twitter.com/borkdude/status/1502237220811550723)
+- The [at-at](https://github.com/overtone/at-at) library is now compatible
 
 ## [2022-02](https://twitter.com/search?q=(%23babashka)%20until%3A2022-03-01%20since%3A2022-02-01&src=typed_query&f=live)
 
