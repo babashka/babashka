@@ -42,7 +42,7 @@ Twitter.
 - [Nix docs for babashka](https://github.com/babashka/babashka/blob/master/doc/nix.md)
 - [Fly.io docs for babashka](https://github.com/babashka/babashka/tree/master/doc/fly_io)
 - [Babashka survey results](https://blog.michielborkent.nl/babashka-survey-q1-2022.html)
-- [Quickdoc](Quick and minimal API doc generation for Clojure)
+- [Quickdoc](https://github.com/borkdude/quickdoc): (Quick and minimal API doc generation for Clojure
 - [Awyeah-api](https://github.com/grzm/awyeah-api) - Cognitect's aws-api for babashka
 
 ## [2022-04](https://twitter.com/search?q=(%23babashka)%20until%3A2022-05-01%20since%3A2022-04-01&src=typed_query&f=live)
