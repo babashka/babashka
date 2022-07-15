@@ -8,11 +8,10 @@ Twitter.
 ## [2022-07](https://twitter.com/search?q=(%23babashka)%20until%3A2022-08-01%20since%3A2022-07-01&src=typed_query&f=live)
 
 - [Recursive document transformations with Pandoc and Clojure](https://play.teod.eu/document-transform-pandoc-clojure/) by Teodor Heggelund
-- [Babashka toolbox](https://babashka.org/toolbox/)
+- [Babashka toolbox](https://babashka.org/toolbox/): A categorised directory of libraries and tools for Babashka
 - [Quickblog](https://github.com/borkdude/quickblog): Light-weight static blog engine for Clojure and babashka
 - Win a babashka t-shirt by participating in [this](https://twitter.com/borkdude/status/1547847843381030912) contest!
 - [AWS Lambda, now with first class parentheses](https://www.juxt.pro/blog/nbb-lambda) by Ray McDermott (about nbb)
-- [Babashka toolbox](https://babashka.org/toolbox/): A categorised directory of libraries and tools for Babashka
 - [bb-github-app](https://github.com/brandonstubbs/bb-github-app): An example Babashka Script authenticating as a Github App and interacting with the Checks API
 - [Ruuter](https://github.com/askonomm/ruuter#setting-up-with-babashka) is a routing library which works very well with bb
 - [Blambda!](https://jmglov.net/blog/2022-07-03-blambda.html) by Josh Glover
