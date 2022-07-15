@@ -5,13 +5,16 @@ you have anything to add. Also see
 [#babashka](https://twitter.com/hashtag/babashka?src=hashtag_click&f=live) on
 Twitter.
 
-<!--
+## 2022-07
+
+- [Recursive document transformations with Pandoc and Clojure](https://play.teod.eu/document-transform-pandoc-clojure/)
+- [Expose Clojure functions in the CLI with babashka and nix](https://twitter.com/jlesquembre/status/1546777332471455745)
+- [Babashka toolbox](https://babashka.org/toolbox/)
+- [Etaoin](https://github.com/clj-commons/etaoin) moved to clj-commons and now works with babashka as well.
 
 ## 2022-03
 
 - [Create a password manager with Clojure using Babashka, sqlite, honeysql and stash](https://youtu.be/jm0RXmyjRJ8) by Daniel Amber
-
--->
 
 ## 2021-12
 
