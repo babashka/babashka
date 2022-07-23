@@ -20,6 +20,8 @@ Twitter.
 - Customized bb builds with clj-nix: [tweet](https://twitter.com/jlesquembre/status/1543686641461694470)
 - Expose Clojure functions in the CLI with babashka and nix: [tweet](https://twitter.com/jlesquembre/status/1546777332471455745)
 - [Meander](https://github.com/noprompt/meander) is now compatible with bb: [tweet](https://twitter.com/borkdude/status/1542881167338250242)
+- [Deleting AWS Glacier vaults with babashka](https://javahippie.net/clojure/2022/07/23/deleting-aws-glacier-vaults-with-babashka.html) by Tim Zöller
+
 
 ## [2022-06](https://twitter.com/search?q=(%23babashka)%20until%3A2022-07-01%20since%3A2022-06-01&src=typed_query&f=live)
 
