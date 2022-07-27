@@ -43,7 +43,9 @@
    ".github/workflows/build.yml"
    ".circleci/config.yml"
    "appveyor.yml"
-   "project.clj"])
+   "project.clj"
+   "script/bump_graal_version.clj"
+   ".circleci/script/short_ci.clj"])
 
 ;; We might have to keep changing these from
 ;; time to time whenever the version is bumped
@@ -51,10 +53,8 @@
 ;; OR
 ;;
 ;; We could have them as environment variables
-(def current-graal-version "22.0.0.2")
+(def current-graal-version "22.2.0")
 (def current-java-version "java11")
-(def valid-graal-bumps ["19.3.2" "20.1.0" "20.2.0" "20.3.0" "21.0.0" "21.1.0" "21.2.0" "21.3.0" "22.0.0.2" "22.1.0"])
-(def valid-java-bumps ["java8" "java11"])
 
 (def cl-options
   [["-g" "--graal VERSION" "graal version"]
@@ -65,8 +65,8 @@
   (:options (cli/parse-opts *command-line-args* cl-options)))
 
 (defn is-valid-bump?
-  [version valid-bumps]
-  (some #(= % version) valid-bumps))
+  [_version _valid-bumps]
+  true)
 
 (defn replace-current
   [file current new]
@@ -93,13 +93,13 @@
   (let [new-graal-version (:graal args)
         new-java-version (:java args)]
     (when (not (nil? new-graal-version))
-      (if (is-valid-bump? new-graal-version valid-graal-bumps)
+      (if (is-valid-bump? new-graal-version nil)
         (do
           (println "Performing Graal bump...")
           (bump-current current-graal-version new-graal-version))
         (show-error new-graal-version)))
     (when (not (nil? new-java-version))
-      (if (is-valid-bump? new-java-version valid-java-bumps)
+      (if (is-valid-bump? new-java-version nil)
         (do
           (println "Performing Java bump...")
           (bump-current current-java-version new-java-version))
