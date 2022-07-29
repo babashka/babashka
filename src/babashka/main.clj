@@ -645,6 +645,12 @@ Use bb run --help to show this help output.
                    :command-line-args (if (= "--" (second options))
                                         (nthrest options 2)
                                         (rest options))))
+          ("--exec", "-x",)
+          (let [options (next options)]
+            (assoc opts-map :exec (first options)
+                   :command-line-args (if (= "--" (second options))
+                                        (nthrest options 2)
+                                        (rest options))))
           ("--run")
           (parse-run-opts opts-map (next options))
           ("--tasks")
@@ -751,11 +757,13 @@ Use bb run --help to show this help output.
                     :main :uberscript :describe?
                     :jar :uberjar :clojure
                     :doc :run :list-tasks
-                    :print-deps :prepare]}
+                    :print-deps :prepare]
+             exec-fn :exec}
             cli-opts
             _ (when debug (vreset! common/debug true))
             _ (do ;; set properties
                 (when main (System/setProperty "babashka.main" main))
+                ;; TODO: what about exec here?
                 (System/setProperty "babashka.version" version))
             read-next (fn [*in*]
                         (if (pipe-signal-received?)
@@ -865,6 +873,11 @@ Use bb run --help to show this help output.
                                    "-main")]
                     [[(format "(ns user (:require [%1$s])) (apply %1$s/%2$s *command-line-args*)"
                               ns var-name)] nil])
+                  exec-fn
+                  (let [sym (symbol exec-fn)
+                        ns (namespace sym)
+                        var-name (name sym)]
+                    [[(cli/exec-fn-snippet ns var-name)] nil])
                   run (if (:run-help cli-opts)
                         [(print-run-help) 0]
                         (do
@@ -1008,10 +1021,10 @@ Use bb run --help to show this help output.
 
 (defn load-edn [string]
   (try (edn/read-string string)
-    (catch java.lang.RuntimeException e
-      (if (re-find #"No dispatch macro for: \"" (.getMessage e))
-        (throw (ex-info "Invalid regex literal found in EDN config, use re-pattern instead" {}))
-        (throw e)))))
+       (catch java.lang.RuntimeException e
+         (if (re-find #"No dispatch macro for: \"" (.getMessage e))
+           (throw (ex-info "Invalid regex literal found in EDN config, use re-pattern instead" {}))
+           (throw e)))))
 
 (defn main [& args]
   (let [[args global-opts] (parse-global-opts args)
