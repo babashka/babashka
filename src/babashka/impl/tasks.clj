@@ -462,7 +462,6 @@
    (let [ns (namespace fq-sym)
          var-name (name fq-sym)
          snippet (cli/exec-fn-snippet ns var-name)]
-     (prn snippet)
      `(load-string ~snippet))))
 
 (def tasks-namespace
