@@ -268,7 +268,7 @@
   (intern *ns* 'run babashka.tasks/run))
 
 (when-not (resolve 'exec)
-  (intern *ns* (with-meta 'exec {:macro true}) @(var babashka.tasks/exec)))
+  (intern *ns* 'exec @(var babashka.tasks/exec)))
 
 %s
 %s
@@ -457,14 +457,10 @@
    (let [[[expr]] (assemble-task task parallel)]
      (sci/eval-string* @ctx expr))))
 
-(defn ^:macro exec
-  "This is a macro so it works correctly with :init"
-  ([_ _ sym]
-   (let [ns (namespace sym)
-         ns (or ns (symbol (str @sci/ns)))
-         var-name (name sym)
-         snippet (cli/exec-fn-snippet ns var-name)]
-     `(load-string ~snippet))))
+(defn exec
+  ([sym]
+   (let [snippet (cli/exec-fn-snippet sym)]
+     (sci/eval-string* @ctx snippet))))
 
 (def tasks-namespace
   {'shell (sci/copy-var shell sci-ns)

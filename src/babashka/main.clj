@@ -874,10 +874,8 @@ Use bb run --help to show this help output.
                     [[(format "(ns user (:require [%1$s])) (apply %1$s/%2$s *command-line-args*)"
                               ns var-name)] nil])
                   exec-fn
-                  (let [sym (symbol exec-fn)
-                        ns (namespace sym)
-                        var-name (name sym)]
-                    [[(cli/exec-fn-snippet ns var-name)] nil])
+                  (let [sym (symbol exec-fn)]
+                    [[(cli/exec-fn-snippet sym)] nil])
                   run (if (:run-help cli-opts)
                         [(print-run-help) 0]
                         (do
