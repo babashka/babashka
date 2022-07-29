@@ -458,9 +458,10 @@
      (sci/eval-string* @ctx expr))))
 
 (defn ^:macro exec
-  ([_ _ fq-sym]
-   (let [ns (namespace fq-sym)
-         var-name (name fq-sym)
+  ([_ _ sym]
+   (let [ns (namespace sym)
+         ns (or ns (symbol (str @sci/ns)))
+         var-name (name sym)
          snippet (cli/exec-fn-snippet ns var-name)]
      `(load-string ~snippet))))
 
