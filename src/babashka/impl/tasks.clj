@@ -1,16 +1,19 @@
 (ns babashka.impl.tasks
-  (:require [babashka.deps :as deps]
-            [babashka.impl.common :refer [ctx bb-edn debug]]
-            [babashka.impl.process :as pp]
-            [babashka.process :as p]
-            [clojure.core.async :refer [<!!]]
-            [clojure.java.io :as io]
-            [clojure.string :as str]
-            [rewrite-clj.node :as node]
-            [rewrite-clj.parser :as parser]
-            [rewrite-clj.zip :as zip]
-            [sci.core :as sci])
-  (:import [clojure.core.async.impl.channels ManyToManyChannel]))
+  (:require
+   [babashka.deps :as deps]
+   [babashka.impl.cli :as cli]
+   [babashka.impl.common :refer [bb-edn ctx debug]]
+   [babashka.impl.process :as pp]
+   [babashka.process :as p]
+   [clojure.core.async :refer [<!!]]
+   [clojure.java.io :as io]
+   [clojure.string :as str]
+   [rewrite-clj.node :as node]
+   [rewrite-clj.parser :as parser]
+   [rewrite-clj.zip :as zip]
+   [sci.core :as sci])
+  (:import
+   [clojure.core.async.impl.channels ManyToManyChannel]))
 
 (defn -chan? [x]
   (instance? ManyToManyChannel x))
@@ -264,6 +267,9 @@
 (when-not (resolve 'run)
   (intern *ns* 'run babashka.tasks/run))
 
+(when-not (resolve 'exec)
+  (intern *ns* (with-meta 'exec {:macro true}) @(var babashka.tasks/exec)))
+
 %s
 %s
 
@@ -451,6 +457,14 @@
    (let [[[expr]] (assemble-task task parallel)]
      (sci/eval-string* @ctx expr))))
 
+(defn ^:macro exec
+  ([_ _ fq-sym]
+   (let [ns (namespace fq-sym)
+         var-name (name fq-sym)
+         snippet (cli/exec-fn-snippet ns var-name)]
+     (prn snippet)
+     `(load-string ~snippet))))
+
 (def tasks-namespace
   {'shell (sci/copy-var shell sci-ns)
    'clojure (sci/copy-var clojure sci-ns)
@@ -461,4 +475,5 @@
    'current-task current-task
    'current-state state
    'run (sci/copy-var run sci-ns)
+   'exec (sci/copy-var exec sci-ns)
    #_#_'log log})

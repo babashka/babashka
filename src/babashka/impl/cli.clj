@@ -16,5 +16,8 @@
 (def var-meta (meta (resolve '%1$s/%2$s)))
 (def cli-opts (babashka.cli/merge-opts (:org.babashka/cli ns-meta) (:org.babashka/cli var-meta)))
 (def opts (babashka.cli/parse-opts *command-line-args* cli-opts))
+(def task-exec-args (:exec-args (babashka.tasks/current-task)))
+(def cli-exec-args (:exec-args cli-opts))
+(def opts (babashka.cli/merge-opts cli-exec-args task-exec-args opts))
 (%1$s/%2$s opts)"
           ns var-name))
