@@ -5,6 +5,15 @@ For a list of breaking changes, check [here](#breaking-changes).
 A preview of the next release can be installed from
 [babashka-dev-builds](https://github.com/babashka/babashka-dev-builds).
 
+## 0.9.158 (2022-07-29)
+
+- [#1324](https://github.com/babashka/babashka/issues/1324): `-x` to invoke a function with babashka CLI
+- [#1324](https://github.com/babashka/babashka/issues/1324): `babashka.tasks/exec` to invoke a function with babashka CLI in tasks
+- SCI: don't eval metatada on defn body
+- SCI issue 774: make interpreter stacktrace available to user
+- `babashka.process`: improve `tokenize`
+- Upgrade to GraalVM 22.2.0 (#1325)
+
 ## 0.8.157 (2022-07-01)
 
 - Add compatibility with [`metosin/malli`](https://github.com/metosin/malli#babashka) `{:mvn/version "0.8.9"}`.
