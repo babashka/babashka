@@ -5,6 +5,11 @@ For a list of breaking changes, check [here](#breaking-changes).
 A preview of the next release can be installed from
 [babashka-dev-builds](https://github.com/babashka/babashka-dev-builds).
 
+## 0.9.160 (2022-07-29)
+
+- Breaking: change `exec`, introduced in `0.9.159` to a function instead.
+  You now write `(exec 'mynamespace.function)` instead.
+
 ## 0.9.159 (2022-07-29)
 
 - [#1324](https://github.com/babashka/babashka/issues/1324): `-x` to invoke a function with babashka CLI
