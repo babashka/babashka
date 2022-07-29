@@ -457,13 +457,9 @@
    (let [[[expr]] (assemble-task task parallel)]
      (sci/eval-string* @ctx expr))))
 
-(defn ^:macro exec
-  "This is a macro so it works correctly with :init"
-  ([_ _ sym]
-   (let [ns (namespace sym)
-         ns (or ns (symbol (str @sci/ns)))
-         var-name (name sym)
-         snippet (cli/exec-fn-snippet ns var-name)]
+(defn exec
+  ([sym]
+   (let [snippet (cli/exec-fn-snippet sym)]
      `(load-string ~snippet))))
 
 (def tasks-namespace
