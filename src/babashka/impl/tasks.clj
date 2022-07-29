@@ -458,6 +458,7 @@
      (sci/eval-string* @ctx expr))))
 
 (defn ^:macro exec
+  "This is a macro so it works correctly with :init"
   ([_ _ sym]
    (let [ns (namespace sym)
          ns (or ns (symbol (str @sci/ns)))
