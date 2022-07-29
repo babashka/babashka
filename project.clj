@@ -31,7 +31,8 @@
                  [org.clojure/test.check "1.1.1"]
                  [com.github.clj-easy/graal-build-time "0.1.0"]
                  [rewrite-clj/rewrite-clj "1.0.699-alpha"]
-                 [insn/insn "0.5.2"]]
+                 [insn/insn "0.5.2"]
+                 [org.babashka/cli "0.3.33"]]
   :plugins       [[org.kipz/lein-meta-bom "0.1.1"]]
   :metabom {:jar-name "metabom.jar"}
   :profiles {:feature/xml  {:source-paths ["feature-xml"]

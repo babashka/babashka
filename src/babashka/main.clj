@@ -9,6 +9,7 @@
    [babashka.impl.cheshire :refer [cheshire-core-namespace]]
    [babashka.impl.classes :as classes]
    [babashka.impl.classpath :as cp :refer [classpath-namespace]]
+   [babashka.impl.cli :as cli]
    [babashka.impl.clojure.core :as core :refer [core-extras]]
    [babashka.impl.clojure.core.async :refer [async-namespace
                                              async-protocols-namespace]]
@@ -409,6 +410,7 @@ Use bb run --help to show this help output.
                   ;; 'init (sci/copy-var sci/init sci-ns)
                   ;; 'fork (sci/copy-var sci/fork sci-ns)
                   }
+       'babashka.cli cli/cli-namespace
        }
     features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace)
                           'clojure.data.xml.event @(resolve 'babashka.impl.xml/xml-event-namespace)
