@@ -12,6 +12,8 @@ A preview of the next release can be installed from
 
 ## 0.9.159 (2022-07-29)
 
+Read the introductory blog post about the new babashka CLI integration [here](https://blog.michielborkent.nl/babashka-tasks-meets-babashka-cli.html).
+
 - [#1324](https://github.com/babashka/babashka/issues/1324): `-x` to invoke a function with babashka CLI
 - [#1324](https://github.com/babashka/babashka/issues/1324): `babashka.tasks/exec` to invoke a function with babashka CLI in tasks
 - SCI: don't eval metatada on defn body
