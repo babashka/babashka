@@ -5,6 +5,10 @@ For a list of breaking changes, check [here](#breaking-changes).
 A preview of the next release can be installed from
 [babashka-dev-builds](https://github.com/babashka/babashka-dev-builds).
 
+## 0.9.161 (2022-07-31)
+
+- Fix `exec`
+
 ## 0.9.160 (2022-07-29)
 
 - Breaking: change `exec`, introduced in `0.9.159` to a function instead.
