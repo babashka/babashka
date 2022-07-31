@@ -460,6 +460,9 @@
 (defn exec
   ([sym]
    (let [snippet (cli/exec-fn-snippet sym)]
+     (sci/eval-string* @ctx snippet)))
+  ([sym extra-opts]
+   (let [snippet (cli/exec-fn-snippet sym extra-opts)]
      (sci/eval-string* @ctx snippet))))
 
 (def tasks-namespace
