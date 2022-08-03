@@ -1,4 +1,4 @@
-<img src="logo/babashka.svg" width="425px">
+[<img src="logo/babashka.svg" width="425px">](https://babashka.org)
 
 [![CircleCI](https://circleci.com/gh/babashka/babashka/tree/master.svg?style=shield)](https://circleci.com/gh/babashka/babashka/tree/master)
 [![project chat](https://img.shields.io/badge/slack-join_chat-brightgreen.svg)](https://app.slack.com/client/T03RZGPFR/CLX41ASCS)
