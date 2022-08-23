@@ -78,6 +78,12 @@ if [ "$BABASHKA_FEATURE_HSQLDB" = "true" ]; then
     args+=("-H:IncludeResources=org/hsqldb/.*\.properties" "-H:IncludeResources=org/hsqldb/.*\.sql")
 fi
 
+BABASHKA_FEATURE_POSTGRESQL=${BABASHKA_FEATURE_POSTGRESQL:-}
+
+if [ "$BABASHKA_FEATURE_POSTGRESQL" = "true" ]; then
+    args+=("--initialize-at-build-time=org.postgresql.PGProperty")
+fi
+
 BABASHKA_FEATURE_SELMER=${BABASHKA_FEATURE_SELMER:-}
 
 if [ "$BABASHKA_FEATURE_SELMER" = "true" ]; then

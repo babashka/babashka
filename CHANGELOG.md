@@ -5,6 +5,10 @@ For a list of breaking changes, check [here](#breaking-changes).
 A preview of the next release can be installed from
 [babashka-dev-builds](https://github.com/babashka/babashka-dev-builds).
 
+## Unreleased
+
+- [#1343](https://github.com/babashka/babashka/issues/1343): Fix postgres feature
+
 ## 0.9.161 (2022-07-31)
 
 - Fix `exec`
