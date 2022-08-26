@@ -47,6 +47,8 @@
 
 (defmacro gen-reify-fn []
   `(fn [~'m]
+     (when (> (count (:interfaces ~'m)) 1)
+       (throw (UnsupportedOperationException. "babashka reify only supports implementing a single interface")))
      (if (empty? (:interfaces ~'m))
        (reify
          sci.impl.types.IReified
