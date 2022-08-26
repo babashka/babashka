@@ -51,6 +51,11 @@
 ]")))))
 
 (deftest reify-object
+  (testing "empty methods"
+    (is (clojure.string/starts-with?
+         (bb nil "
+(str (reify Object))")
+         "babashka.impl.reify")))
   (testing "toString"
     (is (= ":foo"
            (bb nil "
