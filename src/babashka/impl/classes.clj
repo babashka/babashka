@@ -141,6 +141,7 @@
     java.net.HttpCookie
     java.net.PasswordAuthentication
     java.net.ProxySelector
+    java.net.SocketTimeoutException
     java.net.http.HttpClient
     java.net.http.HttpClient$Builder
     java.net.http.HttpClient$Redirect
@@ -164,6 +165,7 @@
     javax.net.ssl.HttpsURLConnection ;; clj-http-lite
     javax.net.ssl.KeyManagerFactory
     javax.net.ssl.SSLContext
+    javax.net.ssl.SSLException
     javax.net.ssl.SSLParameters
     javax.net.ssl.SSLSession ;; clj-http-lite
     javax.net.ssl.TrustManager
