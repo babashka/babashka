@@ -8,7 +8,7 @@ A preview of the next release can be installed from
 ## Unreleased
 
 - [#1343](https://github.com/babashka/babashka/issues/1343): Fix postgres feature
-
+- [#1345](https://github.com/babashka/babashka/issues/1345): add `javax.net.ssl.SSLException` and `java.net.SocketTimeoutException` classes ([@lread](https://github.com/lread))
 ## 0.9.161 (2022-07-31)
 
 - Fix `exec`
