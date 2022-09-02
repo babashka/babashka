@@ -944,8 +944,8 @@ Use bb run --help to show this help output.
                        ;; execute code
                        (sci/binding [sci/file abs-path]
                          (try
-                           ;; when evaluating expression(s), add in repl-requires so things like
-                           ;; pprint and dir are available
+                                        ; when evaluating expression(s), add in repl-requires so things like
+                                        ; pprint and dir are available
                            (sci/eval-form sci-ctx `(apply require (quote ~clojure-main/repl-requires)))
                            (loop []
                              (let [in (read-next *in*)]
