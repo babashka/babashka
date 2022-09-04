@@ -26,7 +26,7 @@ Check out our new project: [bbin](https://github.com/babashka/bbin): install any
 - nREPL: preserve stacktrace on exception
 - Fix [#1322](https://github.com/babashka/babashka/issues/1322): improve error location
 - Fix [#1338](https://github.com/babashka/babashka/issues/1338): `add-watch` segfault
-- Fix [#1339](https://github.com/babashka/babashka/issues/1339): resolve record name ending with dot`
+- Fix [#1339](https://github.com/babashka/babashka/issues/1339): resolve record name ending with dot.
 
 ## 0.9.161 (2022-07-31)
 
