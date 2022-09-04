@@ -7,6 +7,8 @@ A preview of the next release can be installed from
 
 ## 0.9.162 (2022-09-04)
 
+Check out our new project: [bbin](https://github.com/babashka/bbin): install any Babashka script or project with one command.
+
 - [#1343](https://github.com/babashka/babashka/issues/1343): Fix postgres feature
 - [#1345](https://github.com/babashka/babashka/issues/1345): add `javax.net.ssl.SSLException` and `java.net.SocketTimeoutException` classes ([@lread](https://github.com/lread))
 - Fix `satisfies?` with marker protocol (no methods)
@@ -19,7 +21,7 @@ A preview of the next release can be installed from
 - nREPL: preserve stacktrace on exception
 - Fix [#1322](https://github.com/babashka/babashka/issues/1322): improve error location
 - Fix [#1338](https://github.com/babashka/babashka/issues/1338): `add-watch` segfault
-- Fix [#1339](https://github.com/babashka/babashka/issues/1339): record + ```Foo.`` should be resolved as `user.Foo.`
+- Fix [#1339](https://github.com/babashka/babashka/issues/1339): resolve record name ending with dot`
 
 ## 0.9.161 (2022-07-31)
 
