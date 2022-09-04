@@ -5,7 +5,7 @@ For a list of breaking changes, check [here](#breaking-changes).
 A preview of the next release can be installed from
 [babashka-dev-builds](https://github.com/babashka/babashka-dev-builds).
 
-## Unreleased
+## 0.9.162 (2022-09-04)
 
 - [#1343](https://github.com/babashka/babashka/issues/1343): Fix postgres feature
 - [#1345](https://github.com/babashka/babashka/issues/1345): add `javax.net.ssl.SSLException` and `java.net.SocketTimeoutException` classes ([@lread](https://github.com/lread))
