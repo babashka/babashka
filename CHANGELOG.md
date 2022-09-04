@@ -24,7 +24,7 @@ A preview of the next release can be installed from
 - nREPL: preserve stacktrace on exception
 - Fix [#1322](https://github.com/babashka/babashka/issues/1322): improve error location
 - Fix [#1338](https://github.com/babashka/babashka/issues/1338): `add-watch` segfault
-- Fix [#1339](https://github.com/babashka/babashka/issues/1339): record + ``Foo.` should be resolved as `user.Foo.`
+- Fix [#1339](https://github.com/babashka/babashka/issues/1339): record + ```Foo.`` should be resolved as `user.Foo.`
 
 ## 0.9.161 (2022-07-31)
 
