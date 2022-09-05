@@ -22,7 +22,9 @@
                  java.net.http.WebSocket$Listener
                  java.util.Iterator
                  java.util.function.Consumer
+                 java.util.function.BiConsumer
                  java.util.function.Function
+                 java.util.function.BiFunction
                  java.util.function.Predicate
                  java.util.function.Supplier
                  java.lang.Comparable
