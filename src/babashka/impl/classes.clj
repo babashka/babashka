@@ -505,6 +505,8 @@
                       clojure.lang.Sequential
                       clojure.lang.Seqable
                       clojure.lang.Volatile
+                      ;; the only way to check if something is a channel is to call instance? on this...
+                      clojure.core.async.impl.channels.ManyToManyChannel
                       java.lang.AbstractMethodError
                       java.lang.ExceptionInInitializerError
                       java.lang.LinkageError
