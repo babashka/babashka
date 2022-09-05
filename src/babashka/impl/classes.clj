@@ -594,7 +594,8 @@
                          (instance? java.util.Iterator v)
                          java.util.Iterator
                          ;; keep commas for merge friendliness
-                         ,,,)))]
+                         ,,,)))
+        m (assoc m (list 'quote 'clojure.lang.Var) 'sci.lang.Var)]
     m))
 
 
