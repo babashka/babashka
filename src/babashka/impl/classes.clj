@@ -363,7 +363,10 @@
                 java.time.temporal.TemporalAccessor
                 java.time.temporal.TemporalAdjuster])
           java.util.concurrent.atomic.AtomicReference
+          java.util.concurrent.CancellationException
+          java.util.concurrent.CompletionException
           java.util.concurrent.ExecutionException
+          java.util.concurrent.Executor
           java.util.concurrent.LinkedBlockingQueue
           java.util.concurrent.ScheduledThreadPoolExecutor
           java.util.concurrent.ThreadPoolExecutor
@@ -409,6 +412,8 @@
           java.util.UUID
           java.util.function.Consumer
           java.util.function.Function
+          java.util.function.BiConsumer
+          java.util.function.BiFunction
           java.util.function.Predicate
           java.util.function.Supplier
           java.util.zip.Inflater
