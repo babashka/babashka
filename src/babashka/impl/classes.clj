@@ -115,6 +115,9 @@
     clojure.lang.Ratio
     {:fields [{:name "numerator"}
               {:name "denominator"}]}
+    clojure.lang.Agent
+    {:fields [{:name "pooledExecutor"}
+              {:name "soloExecutor"}]}
     java.util.Iterator
     {:methods [{:name "hasNext"}
                {:name "next"}]}
@@ -459,7 +462,6 @@
     ;; list above and then everything reachable via the public class will be
     ;; visible in the native image.
     :instance-checks [clojure.lang.AFn
-                      clojure.lang.Agent
                       clojure.lang.AFunction
                       clojure.lang.AMapEntry ;; for proxy
                       clojure.lang.APersistentMap ;; for proxy
