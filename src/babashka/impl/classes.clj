@@ -4,6 +4,7 @@
    [babashka.impl.features :as features]
    [babashka.impl.proxy :as proxy]
    [cheshire.core :as json]
+   [clojure.core.async]
    [sci.impl.types :as t]))
 
 (def base-custom-map
