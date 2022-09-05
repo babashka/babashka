@@ -829,6 +829,9 @@ true")))
   (testing "for all public vars, ns/symbol from ns map matches metadata"
     (is (empty? (bb nil (.getPath (io/file "test" "babashka" "scripts" "check_var_names.bb")))))))
 
+(deftest clojure-lang-var-mapping-test
+  (is (= :var (bb nil "(defprotocol Foo (foo [_])) (extend-protocol Foo clojure.lang.Var (foo [_] :var)) (foo #'inc)"))))
+
 ;;;; Scratch
 
 (comment
