@@ -115,6 +115,9 @@
     clojure.lang.Ratio
     {:fields [{:name "numerator"}
               {:name "denominator"}]}
+    clojure.lang.Agent
+    {:fields [{:name "pooledExecutor"}
+              {:name "soloExecutor"}]}
     java.util.Iterator
     {:methods [{:name "hasNext"}
                {:name "next"}]}
@@ -363,7 +366,10 @@
                 java.time.temporal.TemporalAccessor
                 java.time.temporal.TemporalAdjuster])
           java.util.concurrent.atomic.AtomicReference
+          java.util.concurrent.CancellationException
+          java.util.concurrent.CompletionException
           java.util.concurrent.ExecutionException
+          java.util.concurrent.Executor
           java.util.concurrent.LinkedBlockingQueue
           java.util.concurrent.ScheduledThreadPoolExecutor
           java.util.concurrent.ThreadPoolExecutor
@@ -409,6 +415,8 @@
           java.util.UUID
           java.util.function.Consumer
           java.util.function.Function
+          java.util.function.BiConsumer
+          java.util.function.BiFunction
           java.util.function.Predicate
           java.util.function.Supplier
           java.util.zip.Inflater
@@ -454,7 +462,6 @@
     ;; list above and then everything reachable via the public class will be
     ;; visible in the native image.
     :instance-checks [clojure.lang.AFn
-                      clojure.lang.Agent
                       clojure.lang.AFunction
                       clojure.lang.AMapEntry ;; for proxy
                       clojure.lang.APersistentMap ;; for proxy
