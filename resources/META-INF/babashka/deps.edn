@@ -164,3 +164,4 @@
            :test-pod
            {:extra-paths ["test-resources"]
             :main-opts ["-m" "babashka.main" "test-resources/pod.clj"]}}}
+;; release
