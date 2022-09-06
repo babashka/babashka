@@ -45,8 +45,26 @@
       (invoke [this a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15 a16 a17 a18 a19 a20] (invoke-fn this a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15 a16 a17 a18 a19 a20))
       (applyTo [this arglist] (apply-fn this arglist)))))
 
+(defn reify-object [m]
+  (let [methods (:methods m)
+        toString-fn (or (get methods 'toString)
+                        (fn [this]
+                          (str
+                           (.getName (.getClass this))
+                           "@"
+                           (Integer/toHexString (.hashCode this)))))]
+    (reify
+      sci.impl.types.IReified
+      (getMethods [_] (:methods m))
+      (getInterfaces [_] (:interfaces m))
+      (getProtocols [_] (:protocols m))
+      java.lang.Object
+      (toString [this] (toString-fn this)))))
+
 (defmacro gen-reify-fn []
   `(fn [~'m]
+     (when (> (count (:interfaces ~'m)) 1)
+       (throw (UnsupportedOperationException. "babashka reify only supports implementing a single interface")))
      (if (empty? (:interfaces ~'m))
        (reify
          sci.impl.types.IReified
@@ -55,19 +73,12 @@
          (getProtocols [_] (:protocols ~'m)))
        (case (.getName ~(with-meta `(first (:interfaces ~'m))
                           {:tag 'Class}))
-         "java.lang.Object"
-         (reify
-           java.lang.Object
-           (toString [~'this]
-             ((method-or-bust (:methods ~'m) (quote ~'toString)) ~'this))
-           sci.impl.types.IReified
-           (getMethods [_] (:methods ~'m))
-           (getInterfaces [_] (:interfaces ~'m))
-           (getProtocols [_] (:protocols ~'m)))
          ~@(mapcat identity
                    (cons
                     ["clojure.lang.IFn"
-                     `(reify-ifn ~'m)]
+                     `(reify-ifn ~'m)
+                     "java.lang.Object"
+                     `(reify-object ~'m)]
                     (for [i interfaces]
                       (let [in (.getName ^Class i)]
                         [in

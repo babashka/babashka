@@ -51,6 +51,11 @@
 ]")))))
 
 (deftest reify-object
+  (testing "empty methods"
+    (is (clojure.string/starts-with?
+         (bb nil "
+(str (reify Object))")
+         "babashka.impl.reify")))
   (testing "toString"
     (is (= ":foo"
            (bb nil "
@@ -114,3 +119,12 @@
                    iter (reify java.util.function.Consumer (accept [_ x] (vswap! res conj x))))
                   (= [true :a :b :c] @res))]
     (is (true? (bb nil prog)))))
+
+(deftest reify-multiple-interfaces-test
+  (testing "throws exception"
+    (is (thrown?
+         clojure.lang.ExceptionInfo
+         (bb nil "
+(reify
+  java.lang.Object (toString [_] \"foo\")
+  clojure.lang.Seqable (seq [_] '(1 2 3)))")))))
