@@ -197,5 +197,6 @@
    'StackTraceElement->vec (sci/copy-var StackTraceElement->vec clojure-core-ns)
    'into-array (sci/copy-var into-array clojure-core-ns)
    'print-method (sci/copy-var print-method clojure-core-ns)
-   'print-dup (sci/copy-var print-dup clojure-core-ns)}
+   'print-dup (sci/copy-var print-dup clojure-core-ns)
+   'PrintWriter-on (sci/copy-var PrintWriter-on clojure-core-ns)}
   )
