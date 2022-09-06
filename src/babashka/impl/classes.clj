@@ -365,6 +365,8 @@
                 java.time.temporal.Temporal
                 java.time.temporal.TemporalAccessor
                 java.time.temporal.TemporalAdjuster])
+          java.util.concurrent.atomic.AtomicInteger
+          java.util.concurrent.atomic.AtomicLong
           java.util.concurrent.atomic.AtomicReference
           java.util.concurrent.CancellationException
           java.util.concurrent.CompletionException
@@ -521,8 +523,6 @@
                       java.lang.ThreadDeath
                       java.lang.VirtualMachineError
                       java.sql.Timestamp
-                      java.util.concurrent.atomic.AtomicInteger
-                      java.util.concurrent.atomic.AtomicLong
                       java.util.concurrent.TimeoutException
                       java.util.Collection
                       java.util.Map$Entry
