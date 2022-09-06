@@ -151,7 +151,10 @@
                                           :git/sha "55f5ce70e6ef717e95c58260f6bc725d70c0cb6d"}
                          cc.qbits/auspex {:git/url "https://github.com/mpenet/auspex"
                                           :git/sha "1a9d7427e60e1a434a764aa820d1c53f7e22504a"
-                                          :deps/manifest :deps}}
+                                          :deps/manifest :deps}
+                         exoscale/interceptor {:git/url "https://github.com/exoscale/interceptor"
+                                               :git/sha "ca115fe00a0abf3a2f78452ab309c3aa4c00fc4e"
+                                               :deps/manifest :deps}}
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil}}
            :clj-nvd
