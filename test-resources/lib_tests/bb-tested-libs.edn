@@ -159,4 +159,8 @@
                   :test-paths ["test"]
                   :git-url "https://github.com/noprompt/meander"
                   :git-sha "55f5ce70e6ef717e95c58260f6bc725d70c0cb6d"}
+ cc.qbits/auspex {:git-url "https://github.com/mpenet/auspex"
+                  :git-sha "1a9d7427e60e1a434a764aa820d1c53f7e22504a"
+                  :test-paths ["test"]
+                  :test-namespaces [qbits.auspex-test]}
  }
