@@ -373,7 +373,8 @@ Use bb run --help to show this help output.
                       'repl (sci/new-var 'repl
                                          (fn [& opts]
                                            (let [opts (apply hash-map opts)]
-                                             (repl/start-repl! @common/ctx opts))) {:ns clojure-main-ns})}
+                                             (repl/start-repl! @common/ctx opts))) {:ns clojure-main-ns})
+                      'with-bindings (sci/copy-var clojure-main/with-bindings clojure-main-ns)}
        'clojure.test t/clojure-test-namespace
        'clojure.math math-namespace
        'babashka.classpath classpath-namespace
