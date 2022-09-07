@@ -741,6 +741,12 @@ Use bb run --help to show this help output.
 
 (def pod-namespaces (volatile! {}))
 
+(defn download-only?
+  "If we're preparing pods for another OS / arch, don't try to run them."
+  []
+  (or (not= (System/getenv "OS_NAME") (System/getProperty "os.name"))
+      (not= (System/getenv "OS_ARCH") (System/getProperty "os.arch"))))
+
 (defn exec [cli-opts]
   (binding [*unrestricted* true]
     (sci/binding [core/warn-on-reflection @core/warn-on-reflection
@@ -859,7 +865,8 @@ Use bb run --help to show this help output.
             sci-ctx (sci/init opts)
             _ (vreset! common/ctx sci-ctx)
             _ (when-let [pods (:pods @common/bb-edn)]
-                (let [pod-metadata (pods/load-pods-metadata pods)]
+                (when-let [pod-metadata (pods/load-pods-metadata
+                                          pods {:download-only (download-only?)})]
                   (vreset! pod-namespaces pod-metadata)))
             preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim))
             [expressions exit-code]
