@@ -375,6 +375,10 @@
           java.util.concurrent.LinkedBlockingQueue
           java.util.concurrent.ScheduledThreadPoolExecutor
           java.util.concurrent.ThreadPoolExecutor
+          java.util.concurrent.ThreadPoolExecutor$AbortPolicy
+          java.util.concurrent.ThreadPoolExecutor$CallerRunsPolicy
+          java.util.concurrent.ThreadPoolExecutor$DiscardOldestPolicy
+          java.util.concurrent.ThreadPoolExecutor$DiscardPolicy
           java.util.concurrent.ScheduledExecutorService
           java.util.concurrent.Future
           java.util.concurrent.FutureTask
