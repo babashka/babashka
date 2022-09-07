@@ -21,4 +21,5 @@
   {'repl (sci/copy-var socket-repl/repl sns)
    'prepl (sci/copy-var prepl sns)
    'io-prepl (sci/copy-var io-prepl sns)
-   'start-server (sci/copy-var start-server sns)})
+   'start-server (sci/copy-var start-server sns)
+   'stop-server (sci/copy-var server/stop-server sns)})
