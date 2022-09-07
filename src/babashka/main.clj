@@ -745,8 +745,21 @@ Use bb run --help to show this help output.
 (defn download-only?
   "If we're preparing pods for another OS / arch, don't try to run them."
   []
-  (or (not= (System/getenv "OS_NAME") (System/getProperty "os.name"))
-      (not= (System/getenv "OS_ARCH") (System/getProperty "os.arch"))))
+  (let [env-os-name (System/getenv "BABASHKA_PODS_OS_NAME")
+        env-os-name-present? (not (str/blank? env-os-name))
+        sys-os-name (System/getProperty "os.name")
+        env-os-arch (System/getenv "BABASHKA_PODS_OS_ARCH")
+        env-os-arch-present? (not (str/blank? env-os-arch))
+        sys-os-arch (System/getProperty "os.arch")]
+    (when @common/debug
+      (binding [*out* *err*]
+        (println "System OS name:" sys-os-name)
+        (when env-os-name-present? (println "BABASHKA_PODS_OS_NAME:" env-os-name))
+        (println "System OS arch:" sys-os-arch)
+        (when env-os-arch-present? (println "BABASHKA_PODS_OS_ARCH:" env-os-arch))))
+    (cond
+      env-os-name-present? (not= env-os-name sys-os-name)
+      env-os-arch-present? (not= env-os-arch sys-os-arch))))
 
 (defn exec [cli-opts]
   (binding [*unrestricted* true]
