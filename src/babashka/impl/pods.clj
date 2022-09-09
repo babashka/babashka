@@ -9,20 +9,20 @@
 (defn load-pod [& args]
   (apply pods/load-pod @ctx args))
 
-(defn load-pods-metadata [pods-map]
+(defn load-pods-metadata [pods-map opts]
   (reduce-kv
     (fn [pod-namespaces pod-spec coord]
       (merge pod-namespaces
              (condp #(contains? %2 %1) coord
                :version
                (pods/load-pod-metadata pod-spec
-                                       (merge {:cache true}
+                                       (merge opts {:cache true}
                                               (select-keys coord [:version :cache])))
 
                :path
                (pods/load-pod-metadata (-> @bb-edn :file io/file)
                                        pod-spec
-                                       (merge {:cache true}
+                                       (merge opts {:cache true}
                                               (select-keys coord [:path :cache])))
 
                (throw (IllegalArgumentException.

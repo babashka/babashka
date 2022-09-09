@@ -4,6 +4,7 @@
    [babashka.impl.features :as features]
    [babashka.impl.proxy :as proxy]
    [cheshire.core :as json]
+   [clojure.core.async]
    [sci.impl.types :as t]))
 
 (def base-custom-map
@@ -114,6 +115,9 @@
     clojure.lang.Ratio
     {:fields [{:name "numerator"}
               {:name "denominator"}]}
+    clojure.lang.Agent
+    {:fields [{:name "pooledExecutor"}
+              {:name "soloExecutor"}]}
     java.util.Iterator
     {:methods [{:name "hasNext"}
                {:name "next"}]}
@@ -361,11 +365,20 @@
                 java.time.temporal.Temporal
                 java.time.temporal.TemporalAccessor
                 java.time.temporal.TemporalAdjuster])
+          java.util.concurrent.atomic.AtomicInteger
+          java.util.concurrent.atomic.AtomicLong
           java.util.concurrent.atomic.AtomicReference
+          java.util.concurrent.CancellationException
+          java.util.concurrent.CompletionException
           java.util.concurrent.ExecutionException
+          java.util.concurrent.Executor
           java.util.concurrent.LinkedBlockingQueue
           java.util.concurrent.ScheduledThreadPoolExecutor
           java.util.concurrent.ThreadPoolExecutor
+          java.util.concurrent.ThreadPoolExecutor$AbortPolicy
+          java.util.concurrent.ThreadPoolExecutor$CallerRunsPolicy
+          java.util.concurrent.ThreadPoolExecutor$DiscardOldestPolicy
+          java.util.concurrent.ThreadPoolExecutor$DiscardPolicy
           java.util.concurrent.ScheduledExecutorService
           java.util.concurrent.Future
           java.util.concurrent.FutureTask
@@ -408,6 +421,8 @@
           java.util.UUID
           java.util.function.Consumer
           java.util.function.Function
+          java.util.function.BiConsumer
+          java.util.function.BiFunction
           java.util.function.Predicate
           java.util.function.Supplier
           java.util.zip.Inflater
@@ -453,7 +468,6 @@
     ;; list above and then everything reachable via the public class will be
     ;; visible in the native image.
     :instance-checks [clojure.lang.AFn
-                      clojure.lang.Agent
                       clojure.lang.AFunction
                       clojure.lang.AMapEntry ;; for proxy
                       clojure.lang.APersistentMap ;; for proxy
@@ -505,14 +519,14 @@
                       clojure.lang.Sequential
                       clojure.lang.Seqable
                       clojure.lang.Volatile
+                      ;; the only way to check if something is a channel is to call instance? on this...
+                      clojure.core.async.impl.channels.ManyToManyChannel
                       java.lang.AbstractMethodError
                       java.lang.ExceptionInInitializerError
                       java.lang.LinkageError
                       java.lang.ThreadDeath
                       java.lang.VirtualMachineError
                       java.sql.Timestamp
-                      java.util.concurrent.atomic.AtomicInteger
-                      java.util.concurrent.atomic.AtomicLong
                       java.util.concurrent.TimeoutException
                       java.util.Collection
                       java.util.Map$Entry
@@ -591,7 +605,8 @@
                          (instance? java.util.Iterator v)
                          java.util.Iterator
                          ;; keep commas for merge friendliness
-                         ,,,)))]
+                         ,,,)))
+        m (assoc m (list 'quote 'clojure.lang.Var) 'sci.lang.Var)]
     m))
 
 

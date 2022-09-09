@@ -373,7 +373,8 @@ Use bb run --help to show this help output.
                       'repl (sci/new-var 'repl
                                          (fn [& opts]
                                            (let [opts (apply hash-map opts)]
-                                             (repl/start-repl! @common/ctx opts))) {:ns clojure-main-ns})}
+                                             (repl/start-repl! @common/ctx opts))) {:ns clojure-main-ns})
+                      'with-bindings (sci/copy-var clojure-main/with-bindings clojure-main-ns)}
        'clojure.test t/clojure-test-namespace
        'clojure.math math-namespace
        'babashka.classpath classpath-namespace
@@ -741,6 +742,25 @@ Use bb run --help to show this help output.
 
 (def pod-namespaces (volatile! {}))
 
+(defn download-only?
+  "If we're preparing pods for another OS / arch, don't try to run them."
+  []
+  (let [env-os-name (System/getenv "BABASHKA_PODS_OS_NAME")
+        env-os-name-present? (not (str/blank? env-os-name))
+        sys-os-name (System/getProperty "os.name")
+        env-os-arch (System/getenv "BABASHKA_PODS_OS_ARCH")
+        env-os-arch-present? (not (str/blank? env-os-arch))
+        sys-os-arch (System/getProperty "os.arch")]
+    (when @common/debug
+      (binding [*out* *err*]
+        (println "System OS name:" sys-os-name)
+        (when env-os-name-present? (println "BABASHKA_PODS_OS_NAME:" env-os-name))
+        (println "System OS arch:" sys-os-arch)
+        (when env-os-arch-present? (println "BABASHKA_PODS_OS_ARCH:" env-os-arch))))
+    (cond
+      env-os-name-present? (not= env-os-name sys-os-name)
+      env-os-arch-present? (not= env-os-arch sys-os-arch))))
+
 (defn exec [cli-opts]
   (binding [*unrestricted* true]
     (sci/binding [core/warn-on-reflection @core/warn-on-reflection
@@ -859,7 +879,8 @@ Use bb run --help to show this help output.
             sci-ctx (sci/init opts)
             _ (vreset! common/ctx sci-ctx)
             _ (when-let [pods (:pods @common/bb-edn)]
-                (let [pod-metadata (pods/load-pods-metadata pods)]
+                (when-let [pod-metadata (pods/load-pods-metadata
+                                          pods {:download-only (download-only?)})]
                   (vreset! pod-namespaces pod-metadata)))
             preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim))
             [expressions exit-code]
@@ -944,8 +965,8 @@ Use bb run --help to show this help output.
                        ;; execute code
                        (sci/binding [sci/file abs-path]
                          (try
-                                        ; when evaluating expression(s), add in repl-requires so things like
-                                        ; pprint and dir are available
+                           ;; when evaluating expression(s), add in repl-requires so things like
+                           ;; pprint and dir are available
                            (sci/eval-form sci-ctx `(apply require (quote ~clojure-main/repl-requires)))
                            (loop []
                              (let [in (read-next *in*)]

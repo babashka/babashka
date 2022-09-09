@@ -52,20 +52,19 @@
                           (str
                            (.getName (.getClass this))
                            "@"
-                           (Integer/toHexString (.hashCode this)))))
-        finalize-fn (or (get methods 'finalize)
-                        (fn [& _args]))]
+                           (Integer/toHexString (.hashCode this)))))]
     (reify
       sci.impl.types.IReified
       (getMethods [_] (:methods m))
       (getInterfaces [_] (:interfaces m))
       (getProtocols [_] (:protocols m))
       java.lang.Object
-      (toString [this] (toString-fn this))
-      (finalize [this] (finalize-fn this)))))
+      (toString [this] (toString-fn this)))))
 
 (defmacro gen-reify-fn []
   `(fn [~'m]
+     (when (> (count (:interfaces ~'m)) 1)
+       (throw (UnsupportedOperationException. "babashka reify only supports implementing a single interface")))
      (if (empty? (:interfaces ~'m))
        (reify
          sci.impl.types.IReified
@@ -79,8 +78,7 @@
                     ["clojure.lang.IFn"
                      `(reify-ifn ~'m)
                      "java.lang.Object"
-                     `(reify-object ~'m)
-                     ]
+                     `(reify-object ~'m)]
                     (for [i interfaces]
                       (let [in (.getName ^Class i)]
                         [in
