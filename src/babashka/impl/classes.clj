@@ -266,6 +266,9 @@
           java.lang.System
           java.lang.Throwable
           ;; java.lang.UnsupportedOperationException
+          java.lang.ref.WeakReference
+          java.lang.ref.ReferenceQueue
+          java.lang.ref.Cleaner
           java.math.BigDecimal
           java.math.BigInteger
           java.math.MathContext
