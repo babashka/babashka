@@ -81,6 +81,8 @@
     {:methods [{:name "canAccess"}]}
     java.lang.Package
     {:methods [{:name "getName"}]}
+    java.lang.reflect.Member
+    {:methods [{:name "getModifiers"}]}
     java.lang.reflect.Method
     {:methods [{:name "getName"}
                {:name "getModifiers"}
@@ -89,7 +91,8 @@
     java.lang.reflect.Modifier
     {:methods [{:name "isStatic"}]}
     java.lang.reflect.Field
-    {:methods [{:name "getName"}]}
+    {:methods [{:name "getName"}
+               {:name "getModifiers"}]}
     java.lang.reflect.Array
     {:methods [{:name "newInstance"}
                {:name "set"}]}
