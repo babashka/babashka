@@ -5,6 +5,10 @@ For a list of breaking changes, check [here](#breaking-changes).
 A preview of the next release can be installed from
 [babashka-dev-builds](https://github.com/babashka/babashka-dev-builds).
 
+## Unreleased
+
+- [#1358](https://github.com/babashka/babashka/issues/1358): Expose a subset of java.lang.ref to enable hooking into the destruction/GC of objects
+
 ## 0.9.162 (2022-09-04)
 
 Check out our new project: [bbin](https://github.com/babashka/bbin): install any Babashka script or project with one command.
