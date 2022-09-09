@@ -79,7 +79,16 @@
     ;; this fixes clojure.lang.Reflector for Java 11
     java.lang.reflect.AccessibleObject
     {:methods [{:name "canAccess"}]}
+    java.lang.Package
+    {:methods [{:name "getName"}]}
     java.lang.reflect.Method
+    {:methods [{:name "getName"}
+               {:name "getModifiers"}
+               {:name "getParameterTypes"}
+               {:name "getReturnType"}]}
+    java.lang.reflect.Modifier
+    {:methods [{:name "isStatic"}]}
+    java.lang.reflect.Field
     {:methods [{:name "getName"}]}
     java.lang.reflect.Array
     {:methods [{:name "newInstance"}
