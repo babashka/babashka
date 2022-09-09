@@ -84,6 +84,8 @@
     java.lang.reflect.Array
     {:methods [{:name "newInstance"}
                {:name "set"}]}
+    java.lang.Runnable
+    {:methods [{:name "run"}]}
     java.net.Inet4Address
     {:methods [{:name "getHostAddress"}]}
     java.net.Inet6Address
