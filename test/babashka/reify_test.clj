@@ -2,6 +2,7 @@
   (:require
    [babashka.test-utils :as test-utils]
    [clojure.edn :as edn]
+   [clojure.string :as str]
    [clojure.test :as test :refer [deftest is testing]]))
 
 (defn bb [input & args]
@@ -52,7 +53,7 @@
 
 (deftest reify-object
   (testing "empty methods"
-    (is (clojure.string/starts-with?
+    (is (str/starts-with?
          (bb nil "
 (str (reify Object))")
          "babashka.impl.reify")))
@@ -144,7 +145,8 @@
   (let [t (atom (Object.))
         wr (java.lang.ref.WeakReference. @t)]
     (reset! t nil)
-    (while (.get wr)
+    (while (or (.get wr)
+               (not @deleted?))
       (System/gc)
       (System/runFinalization))))
 (make-cleanable-ref)

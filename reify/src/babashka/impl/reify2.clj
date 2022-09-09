@@ -61,19 +61,6 @@
       java.lang.Object
       (toString [this] (toString-fn this)))))
 
-(defn reify-runnable [m]
-  (let [methods (:methods m)
-        run-fn (or (get methods 'run)
-                   (fn [_]))]
-    (reify
-      sci.impl.types.IReified
-      (getMethods [_] (:methods m))
-      (getInterfaces [_] (:interfaces m))
-      (getProtocols [_] (:protocols m))
-      java.lang.Runnable
-      (run [this] (run-fn this))))
-  )
-
 (defmacro gen-reify-fn []
   `(fn [~'m]
      (when (> (count (:interfaces ~'m)) 1)
@@ -91,9 +78,7 @@
                     ["clojure.lang.IFn"
                      `(reify-ifn ~'m)
                      "java.lang.Object"
-                     `(reify-object ~'m)
-                     "java.lang.Runnable"
-                     `(reify-runnable ~'m)]
+                     `(reify-object ~'m)]
                     (for [i interfaces]
                       (let [in (.getName ^Class i)]
                         [in
