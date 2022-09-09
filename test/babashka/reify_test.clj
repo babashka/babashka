@@ -128,3 +128,26 @@
 (reify
   java.lang.Object (toString [_] \"foo\")
   clojure.lang.Seqable (seq [_] '(1 2 3)))")))))
+
+(deftest reify-runnable-and-garbage-collection-test
+  (is (bb nil "
+(def cleaner (java.lang.ref.Cleaner/create))
+(def deleted? (atom false))
+(defn make-cleanable-ref []
+  (let [obj (Object.)]
+    (.register cleaner obj
+      (reify java.lang.Runnable
+        (run [_]
+          (reset! deleted? true))))
+    nil))
+(defn force-gc []
+  (let [t (atom (Object.))
+        wr (java.lang.ref.WeakReference. @t)]
+    (reset! t nil)
+    (while (.get wr)
+      (System/gc)
+      (System/runFinalization))))
+(make-cleanable-ref)
+(force-gc)
+@deleted?
+")))

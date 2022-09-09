@@ -84,6 +84,8 @@
     java.lang.reflect.Array
     {:methods [{:name "newInstance"}
                {:name "set"}]}
+    java.lang.Runnable
+    {:methods [{:name "run"}]}
     java.net.Inet4Address
     {:methods [{:name "getHostAddress"}]}
     java.net.Inet6Address
@@ -264,6 +266,9 @@
           java.lang.System
           java.lang.Throwable
           ;; java.lang.UnsupportedOperationException
+          java.lang.ref.WeakReference
+          java.lang.ref.ReferenceQueue
+          java.lang.ref.Cleaner
           java.math.BigDecimal
           java.math.BigInteger
           java.math.MathContext
