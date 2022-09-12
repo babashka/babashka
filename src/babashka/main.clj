@@ -162,6 +162,7 @@ Evaluation:
   -e, --eval <expr>    Evaluate an expression.
   -f, --file <path>    Evaluate a file.
   -m, --main <ns|var>  Call the -main function from a namespace or call a fully qualified var.
+  -x, --exec <var>     Call the fully qualified var. Args are parsed by babashka CLI.
 
 REPL:
 
