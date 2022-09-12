@@ -147,7 +147,8 @@
                                         :parameterTypes ["org.hsqldb.Database"]}]}
                             `java.util.ResourceBundle
                             {:methods [{:name "getBundle"
-                                        :parameterTypes ["java.lang.String","java.util.Locale","java.lang.ClassLoader"]}]})))
+                                        :parameterTypes ["java.lang.String","java.util.Locale",
+                                                         "java.lang.ClassLoader"]}]})))
 
 (def java-net-http-classes
   "These classes must be initialized at run time since GraalVM 22.1"
@@ -536,7 +537,8 @@
                       clojure.lang.Sequential
                       clojure.lang.Seqable
                       clojure.lang.Volatile
-                      ;; the only way to check if something is a channel is to call instance? on this...
+                      ;; the only way to check if something is a channel is to
+                      ;; call instance? on this...
                       clojure.core.async.impl.channels.ManyToManyChannel
                       java.lang.AbstractMethodError
                       java.lang.ExceptionInInitializerError
@@ -628,7 +630,8 @@
 
 
 (def class-map*
-  "This contains mapping of symbol to class of all classes that are allowed to be initialized at build time."
+  "This contains mapping of symbol to class of all classes that are
+  allowed to be initialized at build time."
   (gen-class-map))
 
 (def class-map
@@ -724,7 +727,8 @@
   (let [all-entries (reflection-file-entries)]
     (spit (or
            (first args)
-           "resources/META-INF/native-image/babashka/babashka/reflect-config.json") (json/generate-string all-entries {:pretty true}))))
+           "resources/META-INF/native-image/babashka/babashka/reflect-config.json")
+          (json/generate-string all-entries {:pretty true}))))
 
 (defn public-declared-method? [c m]
   (and (= c (.getDeclaringClass m))
