@@ -5,6 +5,7 @@
    [babashka.impl.proxy :as proxy]
    [cheshire.core :as json]
    [clojure.core.async]
+   [sci.core :as sci]
    [sci.impl.types :as t]))
 
 (def base-custom-map
@@ -744,18 +745,25 @@
        (sort-by :name)
        (vec)))
 
-(defn all-methods []
+(defn all-classes []
+  "Returns every java.lang.Class instance Babashka supports."
   (->> (reflection-file-entries)
        (map :name)
-       (map #(Class/forName %))
-       (mapcat public-declared-method-names)))
+       (map #(Class/forName %))))
+
+(defn all-methods []
+  (mapcat public-declared-method-names (all-classes)))
+
+(def cns (sci/create-ns 'babashka.classes nil))
+
+(def classes-namespace
+  {:obj cns
+   'all-classes (sci/copy-var all-classes cns)})
 
 (comment
   (public-declared-method-names java.net.URL)
   (public-declared-method-names java.util.Properties)
 
-  (->> (reflection-file-entries)
-       (map :name)
-       (map #(Class/forName %)))
+  (all-classes)
 
   )
