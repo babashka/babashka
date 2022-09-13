@@ -7,7 +7,7 @@
    [babashka.fs :as fs]
    [babashka.impl.bencode :refer [bencode-namespace]]
    [babashka.impl.cheshire :refer [cheshire-core-namespace]]
-   [babashka.impl.classes :as classes]
+   [babashka.impl.classes :as classes :refer [classes-namespace]]
    [babashka.impl.classpath :as cp :refer [classpath-namespace]]
    [babashka.impl.cli :as cli]
    [babashka.impl.clojure.core :as core :refer [core-extras]]
@@ -379,6 +379,7 @@ Use bb run --help to show this help output.
        'clojure.test t/clojure-test-namespace
        'clojure.math math-namespace
        'babashka.classpath classpath-namespace
+       'babashka.classes classes-namespace
        'clojure.pprint pprint-namespace
        'babashka.curl curl-namespace
        'babashka.fs fs-namespace
