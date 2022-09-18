@@ -445,3 +445,9 @@ even more stuff here\"
     (pr-str '{:paths ["test-resources"]
               :pods {pod/test-pod {:path "test-resources/pod"}}})
     (is (= "42\n" (test-utils/bb nil "-m" "pod-tests.local")))))
+
+(deftest tag-test
+  (test-utils/with-config
+    "{:deps {}
+      :aliases {:foo {:env-vars {:dude #env \"DUDE\"}}}}"
+    (is (= 6 (bb "-e" "(+ 1 2 3)")))))

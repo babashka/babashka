@@ -1040,8 +1040,8 @@ Use bb run --help to show this help output.
                  (and (= minor-current minor-min)
                       (>= patch-current patch-min)))))))
 
-(defn load-edn [string]
-  (try (edn/read-string string)
+(defn load-bb-edn [string]
+  (try (edn/read-string {:default tagged-literal} string)
        (catch java.lang.RuntimeException e
          (if (re-find #"No dispatch macro for: \"" (.getMessage e))
            (throw (ex-info "Invalid regex literal found in EDN config, use re-pattern instead" {}))
@@ -1060,7 +1060,7 @@ Use bb run --help to show this help output.
         bb-edn (when bb-edn-file
                  (System/setProperty "babashka.config" bb-edn-file)
                  (let [raw-string (slurp bb-edn-file)
-                       edn (load-edn raw-string)
+                       edn (load-bb-edn raw-string)
                        edn (assoc edn
                                   :raw raw-string
                                   :file bb-edn-file)

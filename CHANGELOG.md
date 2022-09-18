@@ -8,6 +8,7 @@ A preview of the next release can be installed from
 ## Unreleased
 
 - [#1358](https://github.com/babashka/babashka/issues/1358): Expose a subset of java.lang.ref to enable hooking into the destruction/GC of objects
+- [#1364](https://github.com/babashka/babashka/issues/1364): Be tolerant of unknown tags in `bb.edn`
 
 ## 0.9.162 (2022-09-04)
 
