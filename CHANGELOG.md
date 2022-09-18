@@ -29,15 +29,10 @@ A preview of the next release can be installed from
 
 ## 0.9.162 (2022-09-04)
 
-Check out our new project: [bbin](https://github.com/babashka/bbin): install any Babashka script or project with one command.
+Check out our new project: [bbin](https://github.com/babashka/bbin): install any Babashka script or project with one command. Thanks [@rads](https://github.com/rads)!
 
-- Throw exception on attempt to reify multiple interfaces
-- Allow java.lang.Object reify with empty methods
-
-## 0.9.162 (2022-09-04)
-
-Check out our new project: [bbin](https://github.com/babashka/bbin): install any Babashka script or project with one command.
-
+- Throw exception on attempt to reify multiple interfaces ([@retrogradeorbit](https://github.com/retrogradeorbit))
+- Allow java.lang.Object reify with empty methods ([@retrogradeorbit](https://github.com/retrogradeorbit))
 - [#1343](https://github.com/babashka/babashka/issues/1343): Fix postgres feature
 - [#1345](https://github.com/babashka/babashka/issues/1345): add `javax.net.ssl.SSLException` and `java.net.SocketTimeoutException` classes ([@lread](https://github.com/lread))
 - Fix `satisfies?` with marker protocol (no methods)
