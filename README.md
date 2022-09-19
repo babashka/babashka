@@ -286,22 +286,50 @@ Check out the [news](doc/news.md) page to keep track of babashka-related news it
 
 Go [here](https://book.babashka.org/#built-in-namespaces) to see the full list of built-in namespaces.
 
+### Flair
+
+If your library is built directly into babashka, let folks know with this badge:
+
+[![bb built-in](/logo/built-in-badge.svg)](https://babashka.org)
+
+Markdown
+```markdown
+[![bb built-in](https://raw.githubusercontent.com/babashka/babashka/master/logo/built-in-badge.svg)](https://babashka.org)
+```
+AsciiDoc
+```asciidoc
+https://babashka.org[image:https://raw.githubusercontent.com/babashka/babashka/master/logo/built-in-badge.svg[bb built-in]]
+```
+HTML:
+```html
+<a href="https://babashka.org" rel="nofollow"><img src="https://github.com/babashka/babashka/raw/master/logo/built-in-badge.svg" alt="bb built-in" style="max-width: 100%;"></a>
+```
+
 ## [Projects](doc/projects.md)
 
 A list of projects (scripts, libraries, pods and tools) known to work with babashka.
 
 ### Flair
 
-Do you have a library that runs with babashka? Add this badge to add some flair
+Do you have a library that can be used as babashka dependency? Add this badge to add some flair
 to your repo:
 
 [![bb compatible](/logo/badge.svg)](https://babashka.org)
 
-The raw HTML:
-
-``` html
+Markdown
+```markdown
+[![bb compatible](https://raw.githubusercontent.com/babashka/babashka/master/logo/badge.svg)](https://babashka.org)
+```
+AsciiDoc
+```asciidoc
+https://babashka.org[image:https://raw.githubusercontent.com/babashka/babashka/master/logo/badge.svg[bb compatible]]
+```
+HTML
+```html
 <a href="https://babashka.org" rel="nofollow"><img src="https://github.com/babashka/babashka/raw/master/logo/badge.svg" alt="bb compatible" style="max-width: 100%;"></a>
 ```
+
+
 
 ## [Pods](https://github.com/babashka/babashka.pods)
 
