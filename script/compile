@@ -55,7 +55,8 @@ args=("-jar" "$BABASHKA_JAR"
       "--no-fallback"
       "--native-image-info"
       # --trace-class-initialization=jdk.internal.net.http.common.DebugLogger,jdk.internal.net.http.websocket.WebSocketImpl,jdk.internal.net.http.common.Utils
-      "$BABASHKA_XMX")
+      "$BABASHKA_XMX"
+      "--enable-preview")
 
 BABASHKA_STATIC=${BABASHKA_STATIC:-}
 BABASHKA_MUSL=${BABASHKA_MUSL:-}
