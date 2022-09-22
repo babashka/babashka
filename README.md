@@ -286,22 +286,68 @@ Check out the [news](doc/news.md) page to keep track of babashka-related news it
 
 Go [here](https://book.babashka.org/#built-in-namespaces) to see the full list of built-in namespaces.
 
-## [Projects](doc/projects.md)
+## [Compatible Projects](doc/projects.md)
 
 A list of projects (scripts, libraries, pods and tools) known to work with babashka.
 
-### Flair
-
-Do you have a library that runs with babashka? Add this badge to add some flair
-to your repo:
+## Badges
+<!-- note to editor: it seems a blank line must appear before code blocks within <details> -->
 
 [![bb compatible](/logo/badge.svg)](https://babashka.org)
 
-The raw HTML:
+The babashka compatible badge indicates that a [library can be used as babashka dependency](doc/projects.md).
 
-``` html
+If this is the case for your library, we encourage you to proudly display this badge.
+
+<details><summary>Markdown</summary>
+
+```markdown
+[![bb compatible](https://raw.githubusercontent.com/babashka/babashka/master/logo/badge.svg)](https://babashka.org)
+```
+</details>
+
+<details><summary>AsciiDoc</summary>
+
+```asciidoc
+https://babashka.org[image:https://raw.githubusercontent.com/babashka/babashka/master/logo/badge.svg[bb compatible]]
+```
+</details>
+
+<details><summary>HTML</summary>
+
+```html
 <a href="https://babashka.org" rel="nofollow"><img src="https://github.com/babashka/babashka/raw/master/logo/badge.svg" alt="bb compatible" style="max-width: 100%;"></a>
 ```
+</details>
+<br/>
+
+[![bb built-in](/logo/built-in-badge.svg)](https://babashka.org)
+
+The babashka built-in badge means that a [library has been built directly into babashka](https://book.babashka.org/#built-in-namespaces) and requires no extra dependencies to use it.
+
+If this rare honor belongs to your library, you should display this badge.
+
+<details><summary>Markdown</summary>
+
+```markdown
+[![bb built-in](https://raw.githubusercontent.com/babashka/babashka/master/logo/built-in-badge.svg)](https://babashka.org)
+```
+</details>
+
+<details><summary>AsciiDoc</summary>
+
+```asciidoc
+https://babashka.org[image:https://raw.githubusercontent.com/babashka/babashka/master/logo/built-in-badge.svg[bb built-in]]
+```
+</details>
+
+<details><summary>HTML</summary>
+
+```html
+<a href="https://babashka.org" rel="nofollow"><img src="https://github.com/babashka/babashka/raw/master/logo/built-in-badge.svg" alt="bb built-in" style="max-width: 100%;"></a>
+```
+</details>
+</br>
 
 ## [Pods](https://github.com/babashka/babashka.pods)
 
