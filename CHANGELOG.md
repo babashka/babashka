@@ -5,17 +5,35 @@ For a list of breaking changes, check [here](#breaking-changes).
 A preview of the next release can be installed from
 [babashka-dev-builds](https://github.com/babashka/babashka-dev-builds).
 
+## Unreleased
+
+- [#1370](https://github.com/babashka/babashka/issues/1370): Map to-chan!, to-chan!!, onto-chan!, & onto-chan!! core.async fns into babashka's SCI core.async namespace.
+- [#1358](https://github.com/babashka/babashka/issues/1358): Expose a subset of java.lang.ref to enable hooking into the destruction/GC of objects ([@retrogradeorbit](https://github.com/retrogradeorbit))
+- [#1364](https://github.com/babashka/babashka/issues/1364): Be tolerant of unknown tags in `bb.edn`
+- Add and expose `babashka.classes/all-classes` to get a list of all available classes (as `java.lang.Class` objects) ([@eerohele](https://github.com/eerohele))
+- Add more reflection class methods ([@eerohele](https://github.com/eerohele))
+- Bump `clj-yaml`
+- Add `-x` help
+- Set `TCP_NODELAY` in pods for performance
+- Expose `clojure.main/with-bindings`
+- Add `ThreadPoolExecutor` rejection policy classes ([@eerohele](https://github.com/eerohele))
+- Download but don't run pods when `os.name` / `os.arch` don't match ([@cap10morgan](https://github.com/cap10morgan))
+- Add `clojure.core.server/stop-server` ([@eerohele](https://github.com/eerohele))
+- Add `ns-unalias`
+- Add `AtomicInteger` and `AtomicLong` to full interop
+- Add `PrintWriter-on`
+- Improve `reify` error messages ([@retrogradeorbit](https://github.com/retrogradeorbit))
+- Expose `core.async` `ManyToManyChannel`
+- fs: add `write-lines`
+- fs: add `write-bytes`
+- [#1350](https://github.com/babashka/babashka/issues/1350): map `clojure.lang.Var` to `sci.lang.Var`
+
 ## 0.9.162 (2022-09-04)
 
-Check out our new project: [bbin](https://github.com/babashka/bbin): install any Babashka script or project with one command.
+Check out our new project: [bbin](https://github.com/babashka/bbin): install any Babashka script or project with one command. Thanks [@rads](https://github.com/rads)!
 
-- Throw exception on attempt to reify multiple interfaces
-- Allow java.lang.Object reify with empty methods
-
-## 0.9.162 (2022-09-04)
-
-Check out our new project: [bbin](https://github.com/babashka/bbin): install any Babashka script or project with one command.
-
+- Throw exception on attempt to reify multiple interfaces ([@retrogradeorbit](https://github.com/retrogradeorbit))
+- Allow java.lang.Object reify with empty methods ([@retrogradeorbit](https://github.com/retrogradeorbit))
 - [#1343](https://github.com/babashka/babashka/issues/1343): Fix postgres feature
 - [#1345](https://github.com/babashka/babashka/issues/1345): add `javax.net.ssl.SSLException` and `java.net.SocketTimeoutException` classes ([@lread](https://github.com/lread))
 - Fix `satisfies?` with marker protocol (no methods)

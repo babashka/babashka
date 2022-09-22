@@ -1,0 +1,2 @@
+{:tasks {install (clojure "-T:build install")
+         deploy (clojure "-T:build deploy")}}

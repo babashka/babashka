@@ -7,7 +7,7 @@
    [babashka.fs :as fs]
    [babashka.impl.bencode :refer [bencode-namespace]]
    [babashka.impl.cheshire :refer [cheshire-core-namespace]]
-   [babashka.impl.classes :as classes]
+   [babashka.impl.classes :as classes :refer [classes-namespace]]
    [babashka.impl.classpath :as cp :refer [classpath-namespace]]
    [babashka.impl.cli :as cli]
    [babashka.impl.clojure.core :as core :refer [core-extras]]
@@ -162,6 +162,7 @@ Evaluation:
   -e, --eval <expr>    Evaluate an expression.
   -f, --file <path>    Evaluate a file.
   -m, --main <ns|var>  Call the -main function from a namespace or call a fully qualified var.
+  -x, --exec <var>     Call the fully qualified var. Args are parsed by babashka CLI.
 
 REPL:
 
@@ -378,6 +379,7 @@ Use bb run --help to show this help output.
        'clojure.test t/clojure-test-namespace
        'clojure.math math-namespace
        'babashka.classpath classpath-namespace
+       'babashka.classes classes-namespace
        'clojure.pprint pprint-namespace
        'babashka.curl curl-namespace
        'babashka.fs fs-namespace
@@ -1038,8 +1040,8 @@ Use bb run --help to show this help output.
                  (and (= minor-current minor-min)
                       (>= patch-current patch-min)))))))
 
-(defn load-edn [string]
-  (try (edn/read-string string)
+(defn load-bb-edn [string]
+  (try (edn/read-string {:default tagged-literal} string)
        (catch java.lang.RuntimeException e
          (if (re-find #"No dispatch macro for: \"" (.getMessage e))
            (throw (ex-info "Invalid regex literal found in EDN config, use re-pattern instead" {}))
@@ -1058,7 +1060,7 @@ Use bb run --help to show this help output.
         bb-edn (when bb-edn-file
                  (System/setProperty "babashka.config" bb-edn-file)
                  (let [raw-string (slurp bb-edn-file)
-                       edn (load-edn raw-string)
+                       edn (load-bb-edn raw-string)
                        edn (assoc edn
                                   :raw raw-string
                                   :file bb-edn-file)

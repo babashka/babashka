@@ -5,6 +5,7 @@
    [babashka.impl.proxy :as proxy]
    [cheshire.core :as json]
    [clojure.core.async]
+   [sci.core :as sci]
    [sci.impl.types :as t]))
 
 (def base-custom-map
@@ -79,11 +80,25 @@
     ;; this fixes clojure.lang.Reflector for Java 11
     java.lang.reflect.AccessibleObject
     {:methods [{:name "canAccess"}]}
-    java.lang.reflect.Method
+    java.lang.Package
     {:methods [{:name "getName"}]}
+    java.lang.reflect.Member
+    {:methods [{:name "getModifiers"}]}
+    java.lang.reflect.Method
+    {:methods [{:name "getName"}
+               {:name "getModifiers"}
+               {:name "getParameterTypes"}
+               {:name "getReturnType"}]}
+    java.lang.reflect.Modifier
+    {:methods [{:name "isStatic"}]}
+    java.lang.reflect.Field
+    {:methods [{:name "getName"}
+               {:name "getModifiers"}]}
     java.lang.reflect.Array
     {:methods [{:name "newInstance"}
                {:name "set"}]}
+    java.lang.Runnable
+    {:methods [{:name "run"}]}
     java.net.Inet4Address
     {:methods [{:name "getHostAddress"}]}
     java.net.Inet6Address
@@ -133,7 +148,8 @@
                                         :parameterTypes ["org.hsqldb.Database"]}]}
                             `java.util.ResourceBundle
                             {:methods [{:name "getBundle"
-                                        :parameterTypes ["java.lang.String","java.util.Locale","java.lang.ClassLoader"]}]})))
+                                        :parameterTypes ["java.lang.String","java.util.Locale",
+                                                         "java.lang.ClassLoader"]}]})))
 
 (def java-net-http-classes
   "These classes must be initialized at run time since GraalVM 22.1"
@@ -264,6 +280,9 @@
           java.lang.System
           java.lang.Throwable
           ;; java.lang.UnsupportedOperationException
+          java.lang.ref.WeakReference
+          java.lang.ref.ReferenceQueue
+          java.lang.ref.Cleaner
           java.math.BigDecimal
           java.math.BigInteger
           java.math.MathContext
@@ -519,7 +538,8 @@
                       clojure.lang.Sequential
                       clojure.lang.Seqable
                       clojure.lang.Volatile
-                      ;; the only way to check if something is a channel is to call instance? on this...
+                      ;; the only way to check if something is a channel is to
+                      ;; call instance? on this...
                       clojure.core.async.impl.channels.ManyToManyChannel
                       java.lang.AbstractMethodError
                       java.lang.ExceptionInInitializerError
@@ -611,7 +631,8 @@
 
 
 (def class-map*
-  "This contains mapping of symbol to class of all classes that are allowed to be initialized at build time."
+  "This contains mapping of symbol to class of all classes that are
+  allowed to be initialized at build time."
   (gen-class-map))
 
 (def class-map
@@ -707,7 +728,8 @@
   (let [all-entries (reflection-file-entries)]
     (spit (or
            (first args)
-           "resources/META-INF/native-image/babashka/babashka/reflect-config.json") (json/generate-string all-entries {:pretty true}))))
+           "resources/META-INF/native-image/babashka/babashka/reflect-config.json")
+          (json/generate-string all-entries {:pretty true}))))
 
 (defn public-declared-method? [c m]
   (and (= c (.getDeclaringClass m))
@@ -723,18 +745,25 @@
        (sort-by :name)
        (vec)))
 
-(defn all-methods []
+(defn all-classes []
+  "Returns every java.lang.Class instance Babashka supports."
   (->> (reflection-file-entries)
        (map :name)
-       (map #(Class/forName %))
-       (mapcat public-declared-method-names)))
+       (map #(Class/forName %))))
+
+(defn all-methods []
+  (mapcat public-declared-method-names (all-classes)))
+
+(def cns (sci/create-ns 'babashka.classes nil))
+
+(def classes-namespace
+  {:obj cns
+   'all-classes (sci/copy-var all-classes cns)})
 
 (comment
   (public-declared-method-names java.net.URL)
   (public-declared-method-names java.util.Properties)
 
-  (->> (reflection-file-entries)
-       (map :name)
-       (map #(Class/forName %)))
+  (all-classes)
 
   )

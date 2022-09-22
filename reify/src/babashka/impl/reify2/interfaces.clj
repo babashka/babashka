@@ -19,6 +19,7 @@
                  clojure.lang.Reversible
                  clojure.lang.Seqable
                  java.lang.Iterable
+                 java.lang.Runnable
                  java.net.http.WebSocket$Listener
                  java.util.Iterator
                  java.util.function.Consumer
