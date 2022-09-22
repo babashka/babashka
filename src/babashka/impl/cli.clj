@@ -12,10 +12,11 @@
   ([sym] (exec-fn-snippet sym nil))
   ([sym extra-opts]
    (format "
-(do
-(require '[babashka.cli])
-(let [extra-opts '%2$s
-      the-var (requiring-resolve `%1$s)
+(ns exec-%s
+  (:require [babashka.cli :as cli]))
+(let [extra-opts '%s
+      sym `%s
+      the-var (requiring-resolve sym)
       the-var-meta (meta the-var)
       ns (:ns (meta the-var))
       ns-meta (meta ns)
@@ -28,6 +29,8 @@
       task-exec-args (:exec-args ct)
       cli-exec-args (:exec-args cli-opts)
       opts (babashka.cli/merge-opts cli-exec-args task-exec-args opts)]
-(the-var opts)))"
+(the-var opts))"
+           (random-uuid)
+           (pr-str extra-opts)
            sym
-           (pr-str extra-opts))))
+           )))

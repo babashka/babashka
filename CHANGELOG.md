@@ -7,6 +7,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- [#1368](https://github.com/babashka/babashka/issues/1368): `-x`: do not pick up on aliases in `user` ns
 - [#1367](https://github.com/babashka/babashka/issues/1367): Fix line number in clojure.test output ([@retrogradeorbit](https://github.com/retrogradeorbit))
 - [#1370](https://github.com/babashka/babashka/issues/1370): Add `core.async` `to-chan!`, `to-chan!!`, `onto-chan!` ([@cap10morgan](https://github.com/cap10morgan))
 - [#1358](https://github.com/babashka/babashka/issues/1358): Expose a subset of java.lang.ref to enable hooking into the destruction/GC of objects ([@retrogradeorbit](https://github.com/retrogradeorbit))
