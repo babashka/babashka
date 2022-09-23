@@ -7,6 +7,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- [#1340](https://github.com/babashka/babashka/issues/1340): `defprotocol` are methods missing `:doc` metadata ([@bobisageek](https://github.com/bobisageek))
 - [#1368](https://github.com/babashka/babashka/issues/1368): `-x`: do not pick up on aliases in `user` ns
 - [#1367](https://github.com/babashka/babashka/issues/1367): Fix line number in clojure.test output ([@retrogradeorbit](https://github.com/retrogradeorbit))
 - [#1370](https://github.com/babashka/babashka/issues/1370): Add `core.async` `to-chan!`, `to-chan!!`, `onto-chan!` ([@cap10morgan](https://github.com/cap10morgan))
