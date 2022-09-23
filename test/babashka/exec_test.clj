@@ -14,3 +14,9 @@
   (is (= {:foo 1} (cheshire/parse-string
                    (edn/read-string
                     (bb "-x" "cheshire.core/generate-string" "--foo" "1")) true))))
+
+(deftest tag-test
+  (u/with-config
+    "{:deps {}
+      :tasks {foo (exec 'clojure.core/prn)}}"
+    (is (= {:dude 1} (edn/read-string (bb "run" "foo" "--dude" "1"))))))
