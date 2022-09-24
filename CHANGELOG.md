@@ -5,7 +5,7 @@ For a list of breaking changes, check [here](#breaking-changes).
 A preview of the next release can be installed from
 [babashka-dev-builds](https://github.com/babashka/babashka-dev-builds).
 
-## Unreleased
+## 0.10.163 (2022-09-24)
 
 - [#808](https://github.com/babashka/babashka/issues/808): support `-Sdeps` option to support passing extra deps map which will be merged last
 - [#1336](https://github.com/babashka/babashka/issues/1336): tasks subcommand doesn't work with global --force option ([@bobisageek](https://github.com/bobisageek))
