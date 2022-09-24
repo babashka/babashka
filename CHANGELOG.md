@@ -7,6 +7,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- [#808](https://github.com/babashka/babashka/issues/808): support `-Sdeps` option to support passing extra deps map which will be merged last
 - [#1336](https://github.com/babashka/babashka/issues/1336): tasks subcommand doesn't work with global --force option ([@bobisageek](https://github.com/bobisageek))
 - [#1340](https://github.com/babashka/babashka/issues/1340): `defprotocol` are methods missing `:doc` metadata ([@bobisageek](https://github.com/bobisageek))
 - [#1368](https://github.com/babashka/babashka/issues/1368): `-x`: do not pick up on aliases in `user` ns

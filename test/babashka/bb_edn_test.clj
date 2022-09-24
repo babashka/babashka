@@ -451,3 +451,9 @@ even more stuff here\"
     "{:deps {}
       :aliases {:foo {:env-vars {:dude #env \"DUDE\"}}}}"
     (is (= 6 (bb "-e" "(+ 1 2 3)")))))
+
+(deftest merge-deps-test
+  (test-utils/with-config
+    "{:deps {}}"
+    (is (= {1 {:a 1}}
+           (bb "-Sdeps" "{:deps {medley/medley {:mvn/version \"1.4.0\"}}}" "-e" "(require 'medley.core) (medley.core/index-by :a [{:a 1}])")))))
