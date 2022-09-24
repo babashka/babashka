@@ -552,9 +552,6 @@ Use bb run --help to show this help output.
           ("--verbose") (recur (next options)
                                (assoc opts-map
                                       :verbose? true))
-          ("--force") (recur (next options)
-                             (assoc opts-map
-                                    :force? true))
           ("--describe") (recur (next options)
                                 (assoc opts-map
                                        :describe? true))
@@ -698,6 +695,9 @@ Use bb run --help to show this help output.
 
         ("--init")
         (recur (nnext options) (assoc opts-map :init (second options)))
+
+        ("--force")
+        (recur (next options) (assoc opts-map :force? true))
 
         ("--config")
         (recur (nnext options) (assoc opts-map :config (second options)))
