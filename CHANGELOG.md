@@ -31,6 +31,10 @@ A preview of the next release can be installed from
 - fs: add `write-lines`
 - fs: add `write-bytes`
 - [#1350](https://github.com/babashka/babashka/issues/1350): map `clojure.lang.Var` to `sci.lang.Var`
+- Use temporary fork of `clj-yaml` with new `:load-all`, `:unknown-tag-fn`
+  options and preserves strings with numbers that start with zeros as strings
+  (this solves a problem when YAML 1.1 output is read as YAML 1.2.). Once
+  upstream SnakeYAML 1.33 lands, this will be used again.
 
 ## 0.9.162 (2022-09-04)
 
