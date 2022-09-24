@@ -12,8 +12,8 @@ A preview of the next release can be installed from
 ## 0.10.163 (2022-09-24)
 
 - [#808](https://github.com/babashka/babashka/issues/808): support `-Sdeps` option to support passing extra deps map which will be merged last
-- [#1336](https://github.com/babashka/babashka/issues/1336): tasks subcommand doesn't work with global --force option ([@bobisageek](https://github.com/bobisageek))
-- [#1340](https://github.com/babashka/babashka/issues/1340): `defprotocol` are methods missing `:doc` metadata ([@bobisageek](https://github.com/bobisageek))
+- [#1336](https://github.com/babashka/babashka/issues/1336): tasks subcommand doesn't work with global `-Sforce` option ([@bobisageek](https://github.com/bobisageek))
+- [#1340](https://github.com/babashka/babashka/issues/1340): `defprotocol` methods are missing `:doc` metadata ([@bobisageek](https://github.com/bobisageek))
 - [#1368](https://github.com/babashka/babashka/issues/1368): `-x`: do not pick up on aliases in `user` ns
 - [#1367](https://github.com/babashka/babashka/issues/1367): Fix line number in clojure.test output ([@retrogradeorbit](https://github.com/retrogradeorbit))
 - [#1370](https://github.com/babashka/babashka/issues/1370): Add `core.async` `to-chan!`, `to-chan!!`, `onto-chan!` ([@cap10morgan](https://github.com/cap10morgan))
