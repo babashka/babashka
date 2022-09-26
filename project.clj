@@ -38,7 +38,7 @@
   :profiles {:feature/xml  {:source-paths ["feature-xml"]
                             :dependencies [[org.clojure/data.xml "0.2.0-alpha8"]]}
              :feature/yaml {:source-paths ["feature-yaml"]
-                            :dependencies [[io.github.borkdude/clj-yaml "0.7-1.33-next"
+                            :dependencies [[clj-commons/clj-yaml "0.7.169"
                                             #_#_clj-commons/clj-yaml "0.7.110"]]}
              :feature/jdbc {:source-paths ["feature-jdbc"]
                             :dependencies [[seancorfield/next.jdbc "1.1.610"]]}
