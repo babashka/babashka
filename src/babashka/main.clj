@@ -145,10 +145,11 @@ Global opts:
 
   -cp, --classpath  Classpath to use. Overrides bb.edn classpath.
   --debug           Print debug information and internal stacktrace in case of exception.
-  --force           Passes -Sforce to deps.clj, forcing recalculation of the classpath.
   --init <file>     Load file after any preloads and prior to evaluation/subcommands.
   --config <file>   Replacing bb.edn with file. Relative paths are resolved relative to file.
   --deps-root <dir> Treat dir as root of relative paths in config.
+  -Sforce           Force recalculation of the classpath (don't use the cache)
+  -Sdeps            Deps data to use as the last deps file to be merged
 
 Help:
 
@@ -552,9 +553,6 @@ Use bb run --help to show this help output.
           ("--verbose") (recur (next options)
                                (assoc opts-map
                                       :verbose? true))
-          ("--force") (recur (next options)
-                             (assoc opts-map
-                                    :force? true))
           ("--describe") (recur (next options)
                                 (assoc opts-map
                                        :describe? true))
@@ -698,6 +696,12 @@ Use bb run --help to show this help output.
 
         ("--init")
         (recur (nnext options) (assoc opts-map :init (second options)))
+
+        ("--force" "-Sforce")
+        (recur (next options) (assoc opts-map :force? true))
+
+        ("-Sdeps")
+        (recur (nnext options) (assoc opts-map :merge-deps (second options)))
 
         ("--config")
         (recur (nnext options) (assoc opts-map :config (second options)))
@@ -1052,15 +1056,19 @@ Use bb run --help to show this help output.
         {:keys [:jar] :as file-opt} (when (some-> args first io/file .isFile)
                                       (parse-file-opt args global-opts))
         config (:config global-opts)
+        merge-deps (:merge-deps global-opts)
         abs-path #(-> % io/file .getAbsolutePath)
         bb-edn-file (cond
                       config (when (fs/exists? config) (abs-path config))
                       jar (some-> jar cp/loader (cp/resource "META-INF/bb.edn") .toString)
                       :else (when (fs/exists? "bb.edn") (abs-path "bb.edn")))
-        bb-edn (when bb-edn-file
-                 (System/setProperty "babashka.config" bb-edn-file)
-                 (let [raw-string (slurp bb-edn-file)
-                       edn (load-bb-edn raw-string)
+        bb-edn (when (or bb-edn-file merge-deps)
+                 (when bb-edn-file (System/setProperty "babashka.config" bb-edn-file))
+                 (let [raw-string (when bb-edn-file (slurp bb-edn-file))
+                       edn (when bb-edn-file (load-bb-edn raw-string))
+                       edn (if merge-deps
+                             (deps/merge-deps [edn (load-bb-edn merge-deps)])
+                             edn)
                        edn (assoc edn
                                   :raw raw-string
                                   :file bb-edn-file)
@@ -1069,6 +1077,7 @@ Use bb run --help to show this help output.
                              (assoc edn :deps-root deps-root)
                              edn)]
                    (vreset! common/bb-edn edn)))
+        ;; _ (.println System/err (str bb-edn))
         min-bb-version (:min-bb-version bb-edn)]
     (when min-bb-version
       (when-not (satisfies-min-version? min-bb-version)

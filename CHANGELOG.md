@@ -8,12 +8,16 @@ A preview of the next release can be installed from
 ## Unreleased
 
 - Add single argument read method support to PipedInputStream proxy ([@retrogradeorbit](https://github.com/retrogradeorbit))
-- [#1370](https://github.com/babashka/babashka/issues/1370): Map to-chan!, to-chan!!, onto-chan!, & onto-chan!! core.async fns into babashka's SCI core.async namespace.
-- [#1340](https://github.com/babashka/babashka/issues/1340): `defprotocol` are methods missing `:doc` metadata ([@bobisageek](https://github.com/bobisageek))
+
+## 0.10.163 (2022-09-24)
+
+- [#808](https://github.com/babashka/babashka/issues/808): support `-Sdeps` option to support passing extra deps map which will be merged last
+- [#1336](https://github.com/babashka/babashka/issues/1336): tasks subcommand doesn't work with global `-Sforce` option ([@bobisageek](https://github.com/bobisageek))
+- [#1340](https://github.com/babashka/babashka/issues/1340): `defprotocol` methods are missing `:doc` metadata ([@bobisageek](https://github.com/bobisageek))
 - [#1368](https://github.com/babashka/babashka/issues/1368): `-x`: do not pick up on aliases in `user` ns
 - [#1367](https://github.com/babashka/babashka/issues/1367): Fix line number in clojure.test output ([@retrogradeorbit](https://github.com/retrogradeorbit))
 - [#1370](https://github.com/babashka/babashka/issues/1370): Add `core.async` `to-chan!`, `to-chan!!`, `onto-chan!` ([@cap10morgan](https://github.com/cap10morgan))
-- [#1358](https://github.com/babashka/babashka/issues/1358): Expose a subset of java.lang.ref to enable hooking into the destruction/GC of objects ([@retrogradeorbit](https://github.com/retrogradeorbit))
+- [#1358](https://github.com/babashka/babashka/issues/1358): Expose a subset of `java.lang.ref` to enable hooking into the destruction/GC of objects ([@retrogradeorbit](https://github.com/retrogradeorbit))
 - [#1364](https://github.com/babashka/babashka/issues/1364): Be tolerant of unknown tags in `bb.edn`
 - Add and expose `babashka.classes/all-classes` to get a list of all available classes (as `java.lang.Class` objects) ([@eerohele](https://github.com/eerohele))
 - Add more reflection class methods ([@eerohele](https://github.com/eerohele))
@@ -32,6 +36,10 @@ A preview of the next release can be installed from
 - fs: add `write-lines`
 - fs: add `write-bytes`
 - [#1350](https://github.com/babashka/babashka/issues/1350): map `clojure.lang.Var` to `sci.lang.Var`
+- Use temporary fork of `clj-yaml` with new `:load-all`, `:unknown-tag-fn`
+  options and preserves strings with numbers that start with zeros as strings
+  (this solves a problem when YAML 1.1 output is read as YAML 1.2.). Once
+  upstream SnakeYAML 1.33 lands, this will be used again.
 
 ## 0.9.162 (2022-09-04)
 
