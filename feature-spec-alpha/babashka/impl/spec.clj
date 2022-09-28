@@ -1,12 +1,11 @@
 (ns babashka.impl.spec
   {:no-doc true}
-  (:require [babashka.impl.clojure.spec.alpha :as s]
+  (:require [babashka.impl.clojure.spec.alpha :as s :refer [sns]]
             [babashka.impl.clojure.spec.gen.alpha :as gen]
             [babashka.impl.clojure.spec.test.alpha :as test]
             [clojure.core :as c]
             [sci.core :as sci :refer [copy-var]]))
 
-(def sns (sci/create-ns 'clojure.spec.alpha nil))
 (def tns (sci/create-ns 'clojure.spec.test.alpha nil))
 (def gns (sci/create-ns 'clojure.spec.gen.alpha nil))
 
@@ -84,7 +83,8 @@
    'merge-spec-impl (copy-var s/merge-spec-impl sns)
    'keys* (copy-var s/keys* sns)
    'with-gen (copy-var s/with-gen sns)
-   'check-asserts (copy-var s/check-asserts sns)})
+   'check-asserts (copy-var s/check-asserts sns)
+   '*explain-out* s/explain-out-var})
 
 #_:clj-kondo/ignore
 (def test-namespace
