@@ -108,3 +108,7 @@
     (t/with-test-out (t/run-tests *ns*)))
     (str/includes? (str sw) \"Ran 1 tests containing 2 assertions.\"))")]
     (is (str/includes? output "true"))))
+
+(deftest line-number-test
+  (is (str/includes? (bb "test-resources/line_number_test_test.clj")
+                     "line_number_test_test.clj:4")))

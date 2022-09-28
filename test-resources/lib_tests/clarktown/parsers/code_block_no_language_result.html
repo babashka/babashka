@@ -1,0 +1,39 @@
+<pre><code>// Detect horizontal line block
+function isHorizontalLineBlock(block) {
+  return block === "***";
+}
+
+// Render horizontal line block
+function horizontalLineBlock(block) {
+  return `&lt;hr&gt;`;
+}
+
+// Compose an array of parsers
+const parsers = [{
+  matcher: isHorizontalLineBlock,
+  renderers: [horizontalLineBlock]
+}];
+
+// And finally, our parser itself
+function markdownToHTML(markdown) {
+  // Create blocks
+  const blocks = content.split(/\n\n/);
+
+  // Parse blocks
+  const parsedBlocks = blocks.map((block) =&gt; {
+    // Let's find a parser that has a matcher that matches
+    const parser = parsers.find((parser) =&gt; parser.matcher(block));
+
+    // If match was found, let's run our renderers over `block`
+    if (parser) {
+      for (const renderer of match.renderers) {
+        block = renderer(block);
+      }
+    }
+
+    return block;
+  });
+
+  // And at last, join the blocks together for one big block.
+  return parsedBlocks.join("");
+}</code></pre>

@@ -161,7 +161,9 @@
 
     java.util.Iterator
     {hasNext [[this]]
-     next    [[this]]}
+     next    [[this]]
+     remove  [[this]]
+     forEachRemaining [[this action]]}
 
     java.util.function.Function
     {apply [[this t]]}
@@ -182,5 +184,8 @@
      resolveClass [[this sym]]
      resolveAlias [[this sym]]
      resolveVar [[this sym]]}
+
+    sun.misc.SignalHandler
+    {handle [[this signal]]}
 
     }))

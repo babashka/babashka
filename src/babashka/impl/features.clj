@@ -26,6 +26,7 @@
 (def hsqldb? (= "true" (System/getenv "BABASHKA_FEATURE_HSQLDB")))
 (def datascript? (= "true" (System/getenv "BABASHKA_FEATURE_DATASCRIPT")))
 (def lanterna? (= "true" (System/getenv "BABASHKA_FEATURE_LANTERNA")))
+(def rrb-vector? (= "true" (System/getenv "BABASHKA_FEATURE_RRB_VECTOR")))
 
 (when xml?
   (require '[babashka.impl.xml]))
@@ -75,3 +76,6 @@
 
 (when priority-map?
   (require '[babashka.impl.priority-map]))
+
+(when rrb-vector?
+  (require '[babashka.impl.rrb-vector]))

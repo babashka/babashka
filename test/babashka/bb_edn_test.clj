@@ -200,6 +200,12 @@
       (is (thrown-with-msg?
            Exception #"Cyclic task: b"
            (bb "run" "b")))))
+  (testing "friendly regex literal error handling"
+    (test-utils/with-config
+     "{:tasks {something (clojure.string/split \"1-2\" #\"-\")}}"
+     (is (thrown-with-msg?
+          Exception #"Invalid regex literal"
+          (bb "run" "something")))))
   (testing "doc"
     (test-utils/with-config '{:tasks {b {:doc "Beautiful docstring"}}}
       (let [s (test-utils/bb nil "doc" "b")]
@@ -439,3 +445,15 @@ even more stuff here\"
     (pr-str '{:paths ["test-resources"]
               :pods {pod/test-pod {:path "test-resources/pod"}}})
     (is (= "42\n" (test-utils/bb nil "-m" "pod-tests.local")))))
+
+(deftest tag-test
+  (test-utils/with-config
+    "{:deps {}
+      :aliases {:foo {:env-vars {:dude #env \"DUDE\"}}}}"
+    (is (= 6 (bb "-e" "(+ 1 2 3)")))))
+
+(deftest merge-deps-test
+  (test-utils/with-config
+    "{:deps {}}"
+    (is (= {1 {:a 1}}
+           (bb "-Sdeps" "{:deps {medley/medley {:mvn/version \"1.4.0\"}}}" "-e" "(require 'medley.core) (medley.core/index-by :a [{:a 1}])")))))

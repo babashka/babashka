@@ -16,7 +16,7 @@ then
     export BABASHKA_FEATURE_XML="${BABASHKA_FEATURE_XML:-false}"
     export BABASHKA_FEATURE_YAML="${BABASHKA_FEATURE_YAML:-false}"
     export BABASHKA_FEATURE_CSV="${BABASHKA_FEATURE_CSV:-false}"
-    export BABAHSKA_FEATURE_TRANSIT="${BABAHSKA_FEATURE_TRANSIT:-false}"
+    export BABASHKA_FEATURE_TRANSIT="${BABASHKA_FEATURE_TRANSIT:-false}"
     export BABASHKA_FEATURE_JAVA_TIME="${BABASHKA_FEATURE_JAVA_TIME:-false}"
     export BABASHKA_FEATURE_JAVA_NET_HTTP="${BABASHKA_FEATURE_JAVA_NET_HTTP:-false}"
     export BABASHKA_FEATURE_JAVA_NIO="${BABASHKA_FEATURE_JAVA_NIO:-false}"
@@ -166,6 +166,13 @@ then
     BABASHKA_LEIN_PROFILES+=",+feature/priority-map"
 else
     BABASHKA_LEIN_PROFILES+=",-feature/priority-map"
+fi
+
+if [ "$BABASHKA_FEATURE_RRB_VECTOR" = "true" ]
+then
+    BABASHKA_LEIN_PROFILES+=",+feature/rrb-vector"
+else
+    BABASHKA_LEIN_PROFILES+=",-feature/rrb-vector"
 fi
 
 cp deps.edn resources/META-INF/babashka/deps.edn

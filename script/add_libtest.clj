@@ -11,11 +11,11 @@
   (:require [babashka.deps :as deps]
             [babashka.fs :as fs]
             [babashka.tasks :refer [shell]]
-            [org.httpkit.client :as http]
-            [clojure.string :as str]
+            [clojure.edn :as edn]
             [clojure.java.io :as io]
+            [clojure.string :as str]
             [clojure.tools.cli :as cli]
-            [clojure.edn :as edn]))
+            [org.httpkit.client :as http]))
 
 (deps/add-deps '{:deps {org.clojure/tools.gitlibs {:mvn/version "2.4.172"}
                         borkdude/rewrite-edn {:mvn/version "0.1.0"}

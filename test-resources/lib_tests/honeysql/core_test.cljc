@@ -11,6 +11,17 @@
                                       insert-into with merge-where merge-having]]
             honeysql.format-test))
 
+;; BB_TEST_PATCH: must explicitly set data readers
+#?(:clj
+   (do
+     (require '[honeysql.types])
+     (set! *data-readers* {'sql/call honeysql.types/read-sql-call
+                           'sql/inline honeysql.types/read-sql-inline
+                           'sql/raw honeysql.types/read-sql-raw
+                           'sql/param honeysql.types/read-sql-param
+                           'sql/array honeysql.types/read-sql-array
+                           'sql/regularize honeysql.format/regularize})))
+
 ;; TODO: more tests
 
 (deftest test-select

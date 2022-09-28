@@ -1,10 +1,9 @@
 (ns babashka.impl.tools.cli
   {:no-doc true}
   (:require [clojure.tools.cli :as tools.cli]
-            [sci.impl.namespaces :refer [copy-var]]
-            [sci.impl.vars :as vars]))
+            [sci.core :as sci :refer [copy-var]]))
 
-(def cli-ns (vars/->SciNamespace 'clojure.tools.cli nil))
+(def cli-ns (sci/create-ns 'clojure.tools.cli nil))
 
 (def tools-cli-namespace
   {'format-lines (copy-var tools.cli/format-lines cli-ns)

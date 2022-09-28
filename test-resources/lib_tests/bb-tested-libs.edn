@@ -47,7 +47,7 @@
  doric/doric {:git-sha "8747fdce565187a5c368c575cf4ca794084b0a5c", :git-url "https://github.com/joegallo/doric", :test-namespaces (doric.test.core doric.test.readme doric.test.doctest)}
  com.github.seancorfield/honeysql {:git-sha "6e4e1f6928450788353c181f32474d930d6afe84", :git-url "https://github.com/seancorfield/honeysql", :test-namespaces (honey.sql-test honey.sql.helpers-test honey.sql.postgres-test), :branch "develop"}
  honeysql/honeysql {:git-sha "1137dd12350afdc30ad4976c3718279581390b36", :git-url "https://github.com/seancorfield/honeysql", :test-namespaces (honeysql.format-test honeysql.core-test), :branch "v1"}
- ; skip tests on Windows because of the :compressed thing
+                                        ; skip tests on Windows because of the :compressed thing
  babashka/babashka.curl {:git-url "https://github.com/babashka/babashka.curl", :test-namespaces [babashka.curl-test], :skip-windows true, :manually-added true}
  http-kit/http-kit {:git-url "https://github.com/http-kit/http-kit", :test-namespaces [httpkit.client-test], :manually-added true}
  org.clojure/core.match {:git-url "https://github.com/clojure/core.match", :test-namespaces [core-match.core-tests], :manually-added true}
@@ -112,4 +112,59 @@
  com.layerware/hugsql-core {:test-namespaces (hugsql.babashka-test)}
  com.github.seancorfield/expectations {:git-url "https://github.com/clojure-expectations/clojure-test", :test-namespaces (expectations.clojure.test-test), :git-sha "b30fefd97d9eb7d1f47e06956521f354cb926b03"}
  com.rpl/specter {:git-url "https://github.com/redplanetlabs/specter", :test-namespaces (com.rpl.specter.cljs-test-helpers com.rpl.specter.test-helpers com.rpl.specter.core-test com.rpl.specter.zipper-test), :git-sha "67e86806020b9d02fbca8cdb1efad3002fc81a32"}
-}
+ com.github.askonomm/clarktown {:git-url "https://github.com/askonomm/clarktown", :test-namespaces (clarktown.core-test clarktown.parsers.horizontal-line-block-test clarktown.parsers.italic-test clarktown.parsers.link-and-image-test clarktown.parsers.empty-block-test clarktown.parsers.inline-code-test clarktown.parsers.heading-block-test clarktown.parsers.bold-test clarktown.parsers.quote-block-test clarktown.parsers.code-block-test clarktown.parsers.strikethrough-test), :git-sha "059bfa7bd9bfdde0c75646bf1dfc20d23da8a02c"}
+ org.clojure/math.numeric-tower {:git-url "https://github.com/clojure/math.numeric-tower", :test-namespaces (clojure.math.test-numeric-tower), :git-sha "97827be66f35feebc3c89ba81c546fef4adc7947"}
+ prismatic/schema {:test-namespaces [schema.core-test
+                                     schema.macros-test
+                                     schema.coerce-test
+                                     schema.experimental.abstract-map-test
+                                     schema.test-test
+                                     schema.utils-test]
+                   :git-url "https://github.com/plumatic/schema"
+                   :git-sha "6846dc7c3a9df5bfd718f68f183c683ce0f621ff"
+                   :git-tag "schema-1.3.0"
+                   ;; specify for adding tests to classpath
+                   :test-paths ["test/clj" "test/cljc"]}
+ metosin/malli {:test-namespaces [malli.clj-kondo-test
+                                  malli.core-test
+                                  malli.destructure-test
+                                  malli.dot-test
+                                  malli.error-test
+                                  malli.experimental-test
+                                  ;; malli.generator-test
+                                  malli.instrument-test
+                                  malli.json-schema-test
+                                  malli.plantuml-test
+                                  malli.provider-test
+                                  malli.registry-test
+                                  malli.swagger-test
+                                  malli.transform-test
+                                  malli.util-test]
+                :git-url "https://github.com/metosin/malli"
+                :git-sha "588147ef49b2e41c7d12a8aa994b39c1c6fedd99"
+                :git-tag "0.8.9"
+                ;; specify for adding tests to classpath
+                :test-paths ["test"]}
+ meander/epsilon {:test-namespaces [meander.epsilon-test
+                                    meander.defsyntax-test
+                                    meander.syntax.epsilon-test
+                                    meander.substitute.epsilon-test
+                                    meander.strategy.epsilon-test
+                                    meander.matrix.epsilon-test
+                                    meander.match.epsilon-test
+                                    meander.match.ir.epsilon-test
+                                    meander.match.check.epsilon-test
+                                    meander.interpreter.epsilon-test
+                                    meander.defsyntax-test.gh-145]
+                  :test-paths ["test"]
+                  :git-url "https://github.com/noprompt/meander"
+                  :git-sha "55f5ce70e6ef717e95c58260f6bc725d70c0cb6d"}
+ cc.qbits/auspex {:git-url "https://github.com/mpenet/auspex"
+                  :git-sha "1a9d7427e60e1a434a764aa820d1c53f7e22504a"
+                  :test-paths ["test"]
+                  :test-namespaces [qbits.auspex-test]}
+ exoscale/interceptor {:git-url "https://github.com/exoscale/interceptor"
+                       :git-sha "ca115fe00a0abf3a2f78452ab309c3aa4c00fc4e"
+                       :test-paths ["test"]
+                       :test-namespaces [exoscale.interceptor-test]}
+ }

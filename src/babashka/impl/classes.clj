@@ -4,6 +4,8 @@
    [babashka.impl.features :as features]
    [babashka.impl.proxy :as proxy]
    [cheshire.core :as json]
+   [clojure.core.async]
+   [sci.core :as sci]
    [sci.impl.types :as t]))
 
 (def base-custom-map
@@ -78,11 +80,25 @@
     ;; this fixes clojure.lang.Reflector for Java 11
     java.lang.reflect.AccessibleObject
     {:methods [{:name "canAccess"}]}
-    java.lang.reflect.Method
+    java.lang.Package
     {:methods [{:name "getName"}]}
+    java.lang.reflect.Member
+    {:methods [{:name "getModifiers"}]}
+    java.lang.reflect.Method
+    {:methods [{:name "getName"}
+               {:name "getModifiers"}
+               {:name "getParameterTypes"}
+               {:name "getReturnType"}]}
+    java.lang.reflect.Modifier
+    {:methods [{:name "isStatic"}]}
+    java.lang.reflect.Field
+    {:methods [{:name "getName"}
+               {:name "getModifiers"}]}
     java.lang.reflect.Array
     {:methods [{:name "newInstance"}
                {:name "set"}]}
+    java.lang.Runnable
+    {:methods [{:name "run"}]}
     java.net.Inet4Address
     {:methods [{:name "getHostAddress"}]}
     java.net.Inet6Address
@@ -97,7 +113,8 @@
                {:name "aset"}
                {:name "aclone"}]}
     clojure.lang.Compiler
-    {:fields [{:name "specials"}]}
+    {:fields [{:name "specials"}
+              {:name "CHAR_MAP"}]}
     clojure.lang.PersistentHashMap
     {:fields [{:name "EMPTY"}]}
     clojure.lang.APersistentVector
@@ -110,10 +127,17 @@
     {:methods [{:name "disjoin"}]}
     clojure.lang.Indexed
     {:methods [{:name "nth"}]}
+    clojure.lang.Ratio
+    {:fields [{:name "numerator"}
+              {:name "denominator"}]}
+    clojure.lang.Agent
+    {:fields [{:name "pooledExecutor"}
+              {:name "soloExecutor"}]}
     java.util.Iterator
     {:methods [{:name "hasNext"}
                {:name "next"}]}
-    })
+    java.util.TimeZone
+    {:methods [{:name "getTimeZone"}]}})
 
 (def custom-map
   (cond->
@@ -124,7 +148,8 @@
                                         :parameterTypes ["org.hsqldb.Database"]}]}
                             `java.util.ResourceBundle
                             {:methods [{:name "getBundle"
-                                        :parameterTypes ["java.lang.String","java.util.Locale","java.lang.ClassLoader"]}]})))
+                                        :parameterTypes ["java.lang.String","java.util.Locale",
+                                                         "java.lang.ClassLoader"]}]})))
 
 (def java-net-http-classes
   "These classes must be initialized at run time since GraalVM 22.1"
@@ -136,6 +161,7 @@
     java.net.HttpCookie
     java.net.PasswordAuthentication
     java.net.ProxySelector
+    java.net.SocketTimeoutException
     java.net.http.HttpClient
     java.net.http.HttpClient$Builder
     java.net.http.HttpClient$Redirect
@@ -159,6 +185,7 @@
     javax.net.ssl.HttpsURLConnection ;; clj-http-lite
     javax.net.ssl.KeyManagerFactory
     javax.net.ssl.SSLContext
+    javax.net.ssl.SSLException
     javax.net.ssl.SSLParameters
     javax.net.ssl.SSLSession ;; clj-http-lite
     javax.net.ssl.TrustManager
@@ -253,10 +280,14 @@
           java.lang.System
           java.lang.Throwable
           ;; java.lang.UnsupportedOperationException
+          java.lang.ref.WeakReference
+          java.lang.ref.ReferenceQueue
+          java.lang.ref.Cleaner
           java.math.BigDecimal
           java.math.BigInteger
           java.math.MathContext
           java.math.RoundingMode
+          java.net.BindException
           java.net.ConnectException
           java.net.DatagramSocket
           java.net.DatagramPacket
@@ -353,10 +384,26 @@
                 java.time.temporal.Temporal
                 java.time.temporal.TemporalAccessor
                 java.time.temporal.TemporalAdjuster])
+          java.util.concurrent.atomic.AtomicInteger
+          java.util.concurrent.atomic.AtomicLong
+          java.util.concurrent.atomic.AtomicReference
+          java.util.concurrent.CancellationException
+          java.util.concurrent.CompletionException
           java.util.concurrent.ExecutionException
+          java.util.concurrent.Executor
           java.util.concurrent.LinkedBlockingQueue
           java.util.concurrent.ScheduledThreadPoolExecutor
           java.util.concurrent.ThreadPoolExecutor
+          java.util.concurrent.ThreadPoolExecutor$AbortPolicy
+          java.util.concurrent.ThreadPoolExecutor$CallerRunsPolicy
+          java.util.concurrent.ThreadPoolExecutor$DiscardOldestPolicy
+          java.util.concurrent.ThreadPoolExecutor$DiscardPolicy
+          java.util.concurrent.ScheduledExecutorService
+          java.util.concurrent.Future
+          java.util.concurrent.FutureTask
+          java.util.concurrent.CompletableFuture
+          java.util.concurrent.Executors
+          java.util.concurrent.TimeUnit
           java.util.jar.Attributes$Name
           java.util.jar.JarFile
           java.util.jar.JarEntry
@@ -377,6 +424,9 @@
           java.util.Base64$Decoder
           java.util.Base64$Encoder
           java.util.Date
+          java.util.HashMap
+          java.util.IdentityHashMap
+          java.util.List
           java.util.Locale
           java.util.Map
           java.util.MissingResourceException
@@ -386,12 +436,13 @@
           java.util.Scanner
           java.util.Set
           java.util.StringTokenizer
+          java.util.WeakHashMap
           java.util.UUID
-          java.util.concurrent.Future
-          java.util.concurrent.CompletableFuture
-          java.util.concurrent.Executors
-          java.util.concurrent.TimeUnit
+          java.util.function.Consumer
           java.util.function.Function
+          java.util.function.BiConsumer
+          java.util.function.BiFunction
+          java.util.function.Predicate
           java.util.function.Supplier
           java.util.zip.Inflater
           java.util.zip.InflaterInputStream
@@ -405,6 +456,8 @@
           java.util.zip.ZipEntry
           java.util.zip.ZipException
           java.util.zip.ZipFile
+          sun.misc.Signal
+          sun.misc.SignalHandler
           ~(symbol "[B")
           ~(symbol "[I")
           ~(symbol "[Ljava.lang.Object;")
@@ -434,6 +487,7 @@
     ;; list above and then everything reachable via the public class will be
     ;; visible in the native image.
     :instance-checks [clojure.lang.AFn
+                      clojure.lang.AFunction
                       clojure.lang.AMapEntry ;; for proxy
                       clojure.lang.APersistentMap ;; for proxy
                       clojure.lang.APersistentSet
@@ -484,10 +538,17 @@
                       clojure.lang.Sequential
                       clojure.lang.Seqable
                       clojure.lang.Volatile
-                      java.util.concurrent.atomic.AtomicInteger
-                      java.util.concurrent.atomic.AtomicLong
+                      ;; the only way to check if something is a channel is to
+                      ;; call instance? on this...
+                      clojure.core.async.impl.channels.ManyToManyChannel
+                      java.lang.AbstractMethodError
+                      java.lang.ExceptionInInitializerError
+                      java.lang.LinkageError
+                      java.lang.ThreadDeath
+                      java.lang.VirtualMachineError
+                      java.sql.Timestamp
+                      java.util.concurrent.TimeoutException
                       java.util.Collection
-                      java.util.List
                       java.util.Map$Entry
                       ~@(when features/xml? ['clojure.data.xml.node.Element])]
     :custom ~custom-map})
@@ -505,6 +566,8 @@
                    c))
         m (assoc m :public-class
                  (fn [v]
+                   ;; NOTE: a series of instance check, so far, is still cheaper
+                   ;; than piggybacking on defmulti or defprotocol
                    (cond (instance? java.lang.Process v)
                          java.lang.Process
                          (instance? java.lang.ProcessHandle v)
@@ -557,13 +620,19 @@
                          java.nio.file.attribute.BasicFileAttributes
                          (instance? java.util.concurrent.Future v)
                          java.util.concurrent.Future
+                         (instance? java.util.concurrent.ScheduledExecutorService v)
+                         java.util.concurrent.ScheduledExecutorService
+                         (instance? java.util.Iterator v)
+                         java.util.Iterator
                          ;; keep commas for merge friendliness
-                         ,,,)))]
+                         ,,,)))
+        m (assoc m (list 'quote 'clojure.lang.Var) 'sci.lang.Var)]
     m))
 
 
 (def class-map*
-  "This contains mapping of symbol to class of all classes that are allowed to be initialized at build time."
+  "This contains mapping of symbol to class of all classes that are
+  allowed to be initialized at build time."
   (gen-class-map))
 
 (def class-map
@@ -574,7 +643,8 @@
                                                        java-net-http-classes)))))
 
 (def imports
-  '{Appendable java.lang.Appendable
+  '{AbstractMethodError java.lang.AbstractMethodError
+    Appendable java.lang.Appendable
     ArithmeticException java.lang.ArithmeticException
     AssertionError java.lang.AssertionError
     BigDecimal java.math.BigDecimal
@@ -589,6 +659,7 @@
     Comparable java.lang.Comparable
     Double java.lang.Double
     Exception java.lang.Exception
+    ExceptionInInitializerError java.lang.ExceptionInInitializerError
     IndexOutOfBoundsException java.lang.IndexOutOfBoundsException
     IllegalArgumentException java.lang.IllegalArgumentException
     IllegalStateException java.lang.IllegalStateException
@@ -598,6 +669,7 @@
     File java.io.File
     Float java.lang.Float
     Long java.lang.Long
+    LinkageError java.lang.LinkageError
     Math java.lang.Math
     NullPointerException java.lang.NullPointerException
     Number java.lang.Number
@@ -614,6 +686,8 @@
     System java.lang.System
     Thread java.lang.Thread
     Throwable java.lang.Throwable
+    VirtualMachineError java.lang.VirtualMachineError
+    ThreadDeath java.lang.ThreadDeath
     ;; UnsupportedOperationException java.lang.UnsupportedOperationException
     })
 
@@ -654,7 +728,8 @@
   (let [all-entries (reflection-file-entries)]
     (spit (or
            (first args)
-           "resources/META-INF/native-image/babashka/babashka/reflect-config.json") (json/generate-string all-entries {:pretty true}))))
+           "resources/META-INF/native-image/babashka/babashka/reflect-config.json")
+          (json/generate-string all-entries {:pretty true}))))
 
 (defn public-declared-method? [c m]
   (and (= c (.getDeclaringClass m))
@@ -670,18 +745,25 @@
        (sort-by :name)
        (vec)))
 
-(defn all-methods []
+(defn all-classes []
+  "Returns every java.lang.Class instance Babashka supports."
   (->> (reflection-file-entries)
        (map :name)
-       (map #(Class/forName %))
-       (mapcat public-declared-method-names)))
+       (map #(Class/forName %))))
+
+(defn all-methods []
+  (mapcat public-declared-method-names (all-classes)))
+
+(def cns (sci/create-ns 'babashka.classes nil))
+
+(def classes-namespace
+  {:obj cns
+   'all-classes (sci/copy-var all-classes cns)})
 
 (comment
   (public-declared-method-names java.net.URL)
   (public-declared-method-names java.util.Properties)
 
-  (->> (reflection-file-entries)
-       (map :name)
-       (map #(Class/forName %)))
+  (all-classes)
 
   )

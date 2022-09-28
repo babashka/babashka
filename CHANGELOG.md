@@ -5,12 +5,142 @@ For a list of breaking changes, check [here](#breaking-changes).
 A preview of the next release can be installed from
 [babashka-dev-builds](https://github.com/babashka/babashka-dev-builds).
 
-## 0.8.0 (TBD)
+## Unreleased
+
+- Add single argument read method support to PipedInputStream proxy ([@retrogradeorbit](https://github.com/retrogradeorbit))
+
+## 0.10.163 (2022-09-24)
+
+- [#808](https://github.com/babashka/babashka/issues/808): support `-Sdeps` option to support passing extra deps map which will be merged last
+- [#1336](https://github.com/babashka/babashka/issues/1336): tasks subcommand doesn't work with global `-Sforce` option ([@bobisageek](https://github.com/bobisageek))
+- [#1340](https://github.com/babashka/babashka/issues/1340): `defprotocol` methods are missing `:doc` metadata ([@bobisageek](https://github.com/bobisageek))
+- [#1368](https://github.com/babashka/babashka/issues/1368): `-x`: do not pick up on aliases in `user` ns
+- [#1367](https://github.com/babashka/babashka/issues/1367): Fix line number in clojure.test output ([@retrogradeorbit](https://github.com/retrogradeorbit))
+- [#1370](https://github.com/babashka/babashka/issues/1370): Add `core.async` `to-chan!`, `to-chan!!`, `onto-chan!` ([@cap10morgan](https://github.com/cap10morgan))
+- [#1358](https://github.com/babashka/babashka/issues/1358): Expose a subset of `java.lang.ref` to enable hooking into the destruction/GC of objects ([@retrogradeorbit](https://github.com/retrogradeorbit))
+- [#1364](https://github.com/babashka/babashka/issues/1364): Be tolerant of unknown tags in `bb.edn`
+- Add and expose `babashka.classes/all-classes` to get a list of all available classes (as `java.lang.Class` objects) ([@eerohele](https://github.com/eerohele))
+- Add more reflection class methods ([@eerohele](https://github.com/eerohele))
+- Bump `clj-yaml`
+- Add `-x` help
+- Set `TCP_NODELAY` in pods for performance
+- Expose `clojure.main/with-bindings`
+- Add `ThreadPoolExecutor` rejection policy classes ([@eerohele](https://github.com/eerohele))
+- Download but don't run pods when `os.name` / `os.arch` don't match ([@cap10morgan](https://github.com/cap10morgan))
+- Add `clojure.core.server/stop-server` ([@eerohele](https://github.com/eerohele))
+- Add `ns-unalias`
+- Add `AtomicInteger` and `AtomicLong` to full interop
+- Add `PrintWriter-on`
+- Improve `reify` error messages ([@retrogradeorbit](https://github.com/retrogradeorbit))
+- Expose `core.async` `ManyToManyChannel`
+- fs: add `write-lines`
+- fs: add `write-bytes`
+- [#1350](https://github.com/babashka/babashka/issues/1350): map `clojure.lang.Var` to `sci.lang.Var`
+- Use temporary fork of `clj-yaml` with new `:load-all`, `:unknown-tag-fn`
+  options and preserves strings with numbers that start with zeros as strings
+  (this solves a problem when YAML 1.1 output is read as YAML 1.2.). Once
+  upstream SnakeYAML 1.33 lands, this will be used again.
+
+## 0.9.162 (2022-09-04)
+
+Check out our new project: [bbin](https://github.com/babashka/bbin): install any Babashka script or project with one command. Thanks [@rads](https://github.com/rads)!
+
+- Throw exception on attempt to reify multiple interfaces ([@retrogradeorbit](https://github.com/retrogradeorbit))
+- Allow java.lang.Object reify with empty methods ([@retrogradeorbit](https://github.com/retrogradeorbit))
+- [#1343](https://github.com/babashka/babashka/issues/1343): Fix postgres feature
+- [#1345](https://github.com/babashka/babashka/issues/1345): add `javax.net.ssl.SSLException` and `java.net.SocketTimeoutException` classes ([@lread](https://github.com/lread))
+- Fix `satisfies?` with marker protocol (no methods)
+- Update `rewrite-clj`
+- Update `deps.clj`
+- Update `babashka.cli`
+- Update `org.clj-commons/clj-yaml`
+- `babashka.fs`: fix `expand-home` on Windows
+- `babashka.fs`: expose `:win-exts`
+- nREPL: preserve stacktrace on exception
+- Fix [#1322](https://github.com/babashka/babashka/issues/1322): improve error location
+- Fix [#1338](https://github.com/babashka/babashka/issues/1338): `add-watch` segfault
+- Fix [#1339](https://github.com/babashka/babashka/issues/1339): resolve record name ending with dot.
+
+## 0.9.161 (2022-07-31)
+
+- Fix `exec`
+
+## 0.9.160 (2022-07-29)
+
+- Breaking: change `exec`, introduced in `0.9.159` to a function instead.
+  You now write `(exec 'mynamespace.function)` instead.
+
+## 0.9.159 (2022-07-29)
+
+Read the introductory blog post about the new babashka CLI integration [here](https://blog.michielborkent.nl/babashka-tasks-meets-babashka-cli.html).
+
+- [#1324](https://github.com/babashka/babashka/issues/1324): `-x` to invoke a function with babashka CLI
+- [#1324](https://github.com/babashka/babashka/issues/1324): `babashka.tasks/exec` to invoke a function with babashka CLI in tasks
+- SCI: don't eval metatada on defn body
+- SCI issue 774: make interpreter stacktrace available to user
+- `babashka.process`: improve `tokenize`
+- Upgrade to GraalVM 22.2.0 (#1325)
+
+## 0.8.157 (2022-07-01)
+
+- Add compatibility with [`metosin/malli`](https://github.com/metosin/malli#babashka) `{:mvn/version "0.8.9"}`.
+- Expose `babashka.nrepl.server/start-server!`- and `stop-server!`-functions to support programmatically starting
+  an nrepl-server. `start-server!` is redefined to not require a sci-context as its first argument.
+- Fix misspelling in script/uberjar: `BABASHKA_FEATURE_TRANSIT`
+
+## 0.8.156 (2022-06-08)
+
+- macOS aarch64 support. Upgrading via brew or the installer script should
+  install the aarch64 version on an M1 system.
+- Support for running [prismatic/schema](https://github.com/plumatic/schema)
+  from source.  There is an open PR for babashka. Until it is merged you can use
+  [this](https://github.com/borkdude/schema/tree/bb-test-suite) fork.
+- SCI: many small improvements, especially in `defrecord` (discovered while
+  trying to make `schema.core` work)
+- Switch version schema to major.minor.release_count.
+- babashka.nrepl: fix completions for static Java interop
+- `fs/read-all-lines`, support charset
+- fs: `strip` and `split-ext` are less reliant on file system and are now just
+  string operations
+- Bump cheshire
+- Add `babashka.process/exec` for exec call (replacing the current process)
+- Improve `babashka.process/tokenize`
+- [#1264](https://github.com/babashka/babashka/issues/1264): add support for calling `ScheduledExecutorService`
+- Add support for `sun.misc.SignalHandler`
+- Add `java.net.BindException`, `clojure.lang.AFunction`, `AbstractMethodError`
+- Upgrade httpkit to `2.6.0-RC1`
+- Add `process/shell`, similar to `babashka.tasks/shell` but in process ns
+- pods: fix benign socket closed exception error output
+
+## 0.8.2 (2022-05-06)
+
+- Convey `*print-length*` to pprint and allow `set!`
+- `babashka.nrepl`: support pprint length
+- SCI: support invoking field, without dash
+- Add compatibility with clojure numeric tower
+- Update deps.clj to tools jar `1.11.1.1113`
+- Compatibility with fipp and puget
+- Fix [#1233](https://github.com/babashka/babashka/issues/1233): don't print error to stdout in prepl
+- Update process with `:pre-start-fn` option
+- Update fs with `cwd` and Windows glob improvements
+- Expose edamame, fixes [#549](https://github.com/babashka/babashka/issues/549) and [#1258](https://github.com/babashka/babashka/issues/1258) (#1259)
+- Support `BABASBHKA_PODS_DIR` environment variable
+
+## 0.8.1 (2022-04-15)
+
+- Add `prepare` subcommand to download deps & pods and cache pod metadata
+- [#1041](https://github.com/babashka/babashka/issues/1041): Improve error message when regex literal in EDN config
+- [#1223](https://github.com/babashka/babashka/issues/1223): Ensure that var metadata (specifically `:name`) aligns with the var's symbol (which in turn ensures that `doc` will print the var's name)
+- [#556](https://github.com/babashka/babashka/issues/556) Add server-status to org.httpkit.server
+- [#1231](https://github.com/babashka/babashka/issues/1231): missing methods in `reify` should fall back to default interface methods
+- Fix destructuring in defrecord protocol impls
+- Support `*print-dup*`
+
+## 0.8.0 (2022-04-04)
 
 ### New
 
-- [#863](https://github.com/babashka/babashka/issues/863): allow pods to be declared in `bb.edn` and load them when required
-  - See [updated pod library docs for details](TODO: link)
+- [#863](https://github.com/babashka/babashka/issues/863): allow pods to be declared in `bb.edn` and load them when required. See [pod library docs](https://github.com/babashka/pods#in-a-babashka-project) and the entry in the [babashka book](https://book.babashka.org/#_pods_in_bb_edn) for details.
 
 ### Enhanced
 
@@ -19,7 +149,7 @@ A preview of the next release can be installed from
 - [#1211](https://github.com/babashka/babashka/issues/1211): return exit code 130 on sigint
 - [#1224](https://github.com/babashka/babashka/issues/1224): add `proxy` support for `java.io.PipedInputStream` and `java.io.PipedOutputStream`. Add reflection for `java.utils.Scanner`.
 - [babashka.curl#43](https://github.com/babashka/babashka.curl/issues/43) fix: last set-cookie headers on a page overwrites the ones before
-- #1216: fix `core.async` alts example with polyfill
+- [#1216](https://github.com/babashka/babashka/issues/1216): fix `core.async` alts example with polyfill
 - SCI: support `let*` special form
 - Add compatibility with GraalVM 22.1
 - Bump timbre
@@ -30,6 +160,8 @@ A preview of the next release can be installed from
 - Proxy support for PipedInputStream and PipedOutputStream
 - Expose `java.util.Scanner` for interop
 - Bump Selmer
+- Add `->Eduction`
+- Add `*unchecked-math` for compatibility
 
 ## 0.7.8 (2022-03-13)
 

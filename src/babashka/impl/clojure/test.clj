@@ -232,13 +232,13 @@
    For additional event types, see the examples in the code.
 "}
     babashka.impl.clojure.test
-  (:require [babashka.impl.common :refer [ctx]]
-            [clojure.stacktrace :as stack]
-            [clojure.template :as temp]
-            [sci.core :as sci]
-            [sci.impl.namespaces :as sci-namespaces]
-            [sci.impl.resolve :as resolve]
-            [sci.impl.vars :as vars]))
+  (:require
+   [babashka.impl.common :refer [ctx]]
+   [clojure.stacktrace :as stack]
+   [clojure.template :as temp]
+   [sci.core :as sci]
+   [sci.impl.namespaces :as sci-namespaces]
+   [sci.impl.resolve :as resolve]))
 
 ;; Nothing is marked "private" here, so you can rebind things to plug
 ;; in your own testing or reporting frameworks.
@@ -332,7 +332,7 @@
     :added "1.1"}
   report-impl :type)
 
-(def report (sci/copy-var report-impl tns))
+(def report (sci/copy-var report-impl tns {:name 'report}))
 
 (defn do-report
   "Add file and line information to a test result and call report.
@@ -409,7 +409,7 @@
   [x]
   (if (symbol? x)
     (when-let [v (second (resolve/lookup @ctx x false))]
-      (when-let [value (if (vars/var? v)
+      (when-let [value (if (instance? sci.lang.Var v)
                          (get-possibly-unbound-var v)
                          v)]
         (and (fn? value)
@@ -667,7 +667,7 @@
   value of key."
   {:added "1.1"}
   [key coll]
-  (swap! ns->fixtures assoc-in [(sci-namespaces/sci-ns-name @vars/current-ns) key] coll))
+  (swap! ns->fixtures assoc-in [(sci-namespaces/sci-ns-name @sci/ns) key] coll))
 
 (defmulti use-fixtures
   "Wrap test runs in a fixture function to perform setup and
@@ -722,7 +722,7 @@
                          :expected nil, :actual e})))
       (do-report {:type :end-test-var, :var v}))))
 
-(def test-var (sci/copy-var test-var-impl tns))
+(def test-var (sci/copy-var test-var-impl tns {:name 'test-var}))
 
 (defn test-vars
   "Groups vars by their namespace and runs test-vars on them with
@@ -779,7 +779,7 @@
   Defaults to current namespace if none given.  Returns a map
   summarizing test results."
   {:added "1.1"}
-  ([ctx] (run-tests ctx @vars/current-ns))
+  ([ctx] (run-tests ctx @sci/ns))
   ([ctx & namespaces]
    (let [summary (assoc (apply merge-with + (map #(test-ns ctx %) namespaces))
                         :type :summary)]

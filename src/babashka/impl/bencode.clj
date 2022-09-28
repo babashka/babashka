@@ -1,10 +1,10 @@
 (ns babashka.impl.bencode
   {:no-doc true}
-  (:require [bencode.core :as bencode]
-            [sci.impl.namespaces :refer [copy-var]]
-            [sci.impl.vars :as vars]))
+  (:require
+   [bencode.core :as bencode]
+   [sci.core :as sci :refer [copy-var]]))
 
-(def tns (vars/->SciNamespace 'bencode.core nil))
+(def tns (sci/create-ns 'bencode.core nil))
 
 (def bencode-namespace
   {'read-bencode (copy-var bencode/read-bencode tns)

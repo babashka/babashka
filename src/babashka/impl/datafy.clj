@@ -3,8 +3,7 @@
   (:refer-clojure :exclude [create-ns])
   (:require
    [babashka.impl.protocols :as protocols]
-   [sci.core :as sci :refer [copy-var]]
-   [sci.impl.vars]))
+   [sci.core :as sci :refer [copy-var]]))
 
 (def datafy-ns (sci/create-ns 'clojure.datafy nil))
 

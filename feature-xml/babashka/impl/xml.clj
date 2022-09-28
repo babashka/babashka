@@ -12,7 +12,7 @@
 (def xtns (sci/create-ns 'clojure.data.xml.tree nil))
 
 (defn- clj-ns-name [ns]
-  (cond (instance? sci.impl.vars.SciNamespace ns) (str ns)
+  (cond (instance? sci.lang.Namespace ns) (str ns)
         (keyword? ns) (name ns)
         :else (str ns)))
 

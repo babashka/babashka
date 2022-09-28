@@ -36,7 +36,8 @@
       [:class-string e#])
 
     ;; by clojure record type
-    (catch exception-record e#
+    ;; BB test patch, exception-record != class?, so this expands into incorrect code
+    #_(catch exception-record e#
       [:class-exception-record e#])
 
     ;; by key-value

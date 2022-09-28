@@ -1,10 +1,9 @@
 (ns babashka.impl.clojure.zip
   {:no-doc true}
   (:require [clojure.zip :as zip]
-            [sci.impl.namespaces :refer [copy-var]]
-            [sci.impl.vars :as vars]))
+            [sci.core :as sci :refer [copy-var]]))
 
-(def zip-ns (vars/->SciNamespace 'clojure.zip nil))
+(def zip-ns (sci/create-ns 'clojure.zip nil))
 
 (def zip-namespace
   {'zipper       (copy-var zip/zipper zip-ns)

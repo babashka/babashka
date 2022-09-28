@@ -78,6 +78,12 @@ if [ "$BABASHKA_FEATURE_HSQLDB" = "true" ]; then
     args+=("-H:IncludeResources=org/hsqldb/.*\.properties" "-H:IncludeResources=org/hsqldb/.*\.sql")
 fi
 
+BABASHKA_FEATURE_POSTGRESQL=${BABASHKA_FEATURE_POSTGRESQL:-}
+
+if [ "$BABASHKA_FEATURE_POSTGRESQL" = "true" ]; then
+    args+=("--initialize-at-build-time=org.postgresql.PGProperty")
+fi
+
 BABASHKA_FEATURE_SELMER=${BABASHKA_FEATURE_SELMER:-}
 
 if [ "$BABASHKA_FEATURE_SELMER" = "true" ]; then
@@ -92,7 +98,7 @@ then
     export BABASHKA_FEATURE_XML="${BABASHKA_FEATURE_XML:-false}"
     export BABASHKA_FEATURE_YAML="${BABASHKA_FEATURE_YAML:-false}"
     export BABASHKA_FEATURE_CSV="${BABASHKA_FEATURE_CSV:-false}"
-    export BABAHSKA_FEATURE_TRANSIT="${BABAHSKA_FEATURE_TRANSIT:-false}"
+    export BABASHKA_FEATURE_TRANSIT="${BABASHKA_FEATURE_TRANSIT:-false}"
     export BABASHKA_FEATURE_JAVA_TIME="${BABASHKA_FEATURE_JAVA_TIME:-false}"
     export BABASHKA_FEATURE_JAVA_NET_HTTP="${BABASHKA_FEATURE_JAVA_NET_HTTP:-false}"
     export BABASHKA_FEATURE_JAVA_NIO="${BABASHKA_FEATURE_JAVA_NIO:-false}"

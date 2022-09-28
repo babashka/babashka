@@ -5,13 +5,88 @@ you have anything to add. Also see
 [#babashka](https://twitter.com/hashtag/babashka?src=hashtag_click&f=live) on
 Twitter.
 
-<!--
+## [2022-07](https://twitter.com/search?q=(%23babashka)%20until%3A2022-08-01%20since%3A2022-07-01&src=typed_query&f=live)
 
-## 2022-03
+- [Recursive document transformations with Pandoc and Clojure](https://play.teod.eu/document-transform-pandoc-clojure/) by Teodor Heggelund
+- [Babashka toolbox](https://babashka.org/toolbox/): A categorised directory of libraries and tools for Babashka
+- [Quickblog](https://github.com/borkdude/quickblog): Light-weight static blog engine for Clojure and babashka
+- Win a babashka t-shirt by participating in [this](https://twitter.com/borkdude/status/1547847843381030912) contest!
+- [AWS Lambda, now with first class parentheses](https://www.juxt.pro/blog/nbb-lambda) by Ray McDermott (about nbb)
+- [bb-github-app](https://github.com/brandonstubbs/bb-github-app): An example Babashka Script authenticating as a Github App and interacting with the Checks API
+- [Ruuter](https://github.com/askonomm/ruuter#setting-up-with-babashka) is a routing library which works very well with bb
+- [Blambda!](https://jmglov.net/blog/2022-07-03-blambda.html) by Josh Glover
+- Files with the `.bb` extension are now correctly highlighted as Clojure code on Github! See [this](https://twitter.com/borkdude/status/1543937735429431298) tweet.
+- Encode and decode files as kroki url diagrams, a [gist](https://gist.github.com/henryw374/070845dbd8cfb4672a3c0d06cf8b00e4) by Henry Widd
+- Customized bb builds with clj-nix: [tweet](https://twitter.com/jlesquembre/status/1543686641461694470)
+- Expose Clojure functions in the CLI with babashka and nix: [tweet](https://twitter.com/jlesquembre/status/1546777332471455745)
+- [Meander](https://github.com/noprompt/meander) is now compatible with bb: [tweet](https://twitter.com/borkdude/status/1542881167338250242)
+- [Deleting AWS Glacier vaults with babashka](https://javahippie.net/clojure/2022/07/23/deleting-aws-glacier-vaults-with-babashka.html) by Tim Zöller
 
+
+## [2022-06](https://twitter.com/search?q=(%23babashka)%20until%3A2022-07-01%20since%3A2022-06-01&src=typed_query&f=live)
+
+- Releases: [0.8.156](https://github.com/babashka/babashka/blob/master/CHANGELOG.md).
+- [AWS wiki page](https://github.com/babashka/babashka/wiki/AWS)
+- [blambda](https://github.com/jmglov/blambda): Blambda! is a custom runtime for AWS Lambda that lets you write functions using Babashka
+- [Babashka CLI](https://blog.michielborkent.nl/babashka-cli.html): turn Clojure functions into CLIs!
+- [Http-server](https://github.com/babashka/http-server#babashka): Serve static assets
+- [Deps-bundler](https://github.com/MrGung/deps-bundler): Bundle dependencies on
+  a computer that has access to maven and clojars (PC-A) and bring these over to
+  a computer with limited access (PC-L).
+- [Prismatic/schema](https://github.com/plumatic/schema/blob/master/CHANGELOG.md#130-2022-06-10) and babashka are now compatible
+- [Logseq bb tasks](https://github.com/logseq/bb-tasks): Reusable babashka tasks used by logseq team
+- [Breakneck Babashka on K8s](Breakneck Babashka on K8s) by Heow Goodman
+
+## [2022-05](https://twitter.com/search?q=(%23babashka)%20until%3A2022-06-01%20since%3A2022-05-01&src=typed_query&f=live)
+
+- Releases: [0.8.2](https://github.com/babashka/babashka/blob/master/CHANGELOG.md).
+- [Etaoin](https://github.com/clj-commons/etaoin) moved to clj-commons and now works with babashka as well.
+- [Nix docs for babashka](https://github.com/babashka/babashka/blob/master/doc/nix.md)
+- [Fly.io docs for babashka](https://github.com/babashka/babashka/tree/master/doc/fly_io)
+- [Babashka survey results](https://blog.michielborkent.nl/babashka-survey-q1-2022.html)
+- [Quickdoc](https://github.com/borkdude/quickdoc): (Quick and minimal API doc generation for Clojure
+- [Awyeah-api](https://github.com/grzm/awyeah-api) - Cognitect's aws-api for babashka
+
+## [2022-04](https://twitter.com/search?q=(%23babashka)%20until%3A2022-05-01%20since%3A2022-04-01&src=typed_query&f=live)
+
+- Releases: [0.8.0 - 0.8.1](https://github.com/babashka/babashka/blob/master/CHANGELOG.md).
+- [Babashka and Clojure](https://youtu.be/ZvOs5Ele6VE) by Rahul Dé at North Virginia Linux Users Group
+- [Setup-Clojure](https://github.com/DeLaGuardo/setup-clojure/releases/tag/5.0) Github action is now able to install babashka!
+- Control Chrome via devtools using [clj-chrome-devtools](https://github.com/tatut/clj-chrome-devtools/blob/master/bb.clj) which runs with bb!
+- Use pods directly in `bb.edn`: [tweet](https://twitter.com/borkdude/status/1510995356229767172)
+
+## [2022-03](https://twitter.com/search?q=(%23babashka)%20until%3A2022-04-01%20since%3A2022-03-01&src=typed_query&f=live)
+
+- Releases: [0.7.7 - 0.7.8](https://github.com/babashka/babashka/blob/master/CHANGELOG.md).
 - [Create a password manager with Clojure using Babashka, sqlite, honeysql and stash](https://youtu.be/jm0RXmyjRJ8) by Daniel Amber
+- [Detecting inconsistent aliases in a clojure codebase](https://www.youtube.com/watch?v=bf8KLKkCH2g) by Oxalorg
+- [Clj-konmari](https://github.com/oxalorg/clj-konmari/) by Oxalorg
+- [Logseq-query](https://github.com/cldwalker/logseq-query) by Gabriel Horner [(announcement tweet with video)](https://twitter.com/cldwalker/status/1506991213030871041)
+- The [loom](https://github.com/aysylu/loom) library is now compatible [(tweet)](https://twitter.com/borkdude/status/1502237220811550723)
+- The [at-at](https://github.com/overtone/at-at) library is now compatible
 
--->
+## [2022-02](https://twitter.com/search?q=(%23babashka)%20until%3A2022-03-01%20since%3A2022-02-01&src=typed_query&f=live)
+
+- Releases: [0.7.5 - 0.7.6](https://github.com/babashka/babashka/blob/master/CHANGELOG.md).
+- [Spire is available as a babashka pod](https://twitter.com/epic_castle/status/1496784352256008194)
+- Babashka Clojure template on [Repl.it](https://replit.com/@eccentric-j/Babashka-Clojure-Template?v=1#replit.nix) by Eccentric J
+- Create a self-contained executable with [caxa](https://github.com/babashka/babashka/wiki/Self-contained-executable)
+- Cli-matic is now compatible due to this [PR](https://github.com/l3nz/cli-matic/pull/145)
+- [I, too, Wrote Myself a Static Site Generator](https://dawranliou.com/blog/i-too-wrote-myself-a-static-site-generator/) by Daw-Ran Liou
+- [Staplegun](https://github.com/escherize/staplegun): Single file clipboard-manager
+- [Bbb](https://github.com/nikvdp/bbb): make executable CLI tools from bb scripts
+- [Apptemplate](https://github.com/redstarssystems/apptemplate): Application project template for Clojure featuring bb tasks
+
+
+## [2022-01](https://twitter.com/search?f=live&q=(%23babashka)%20until%3A2022-02-01%20since%3A2022-01-01&src=typed_query)
+
+- Releases: [0.7.4](https://github.com/babashka/babashka/blob/master/CHANGELOG.md).
+- [Babashka dev builds](https://github.com/babashka/babashka-dev-builds)
+- [Writing Clojure-living-cookbooks](https://www.loop-code-recur.io/live-clojure-cookbooks/) by Cyprien Pannier
+- [HTMX Todo App](https://github.com/prestancedesign/babashka-htmx-todoapp)
+- [Better linting for `bb.edn`](https://twitter.com/borkdude/status/1484100071134220291)
+- [Unwordle](https://github.com/mknoszlig/unwordle): solver for wordle puzzles
+- [Using babashka with PHP](https://blog.michielborkent.nl/using-babashka-with-php.html) by Michiel Borkent
 
 ## 2021-12
 
@@ -74,7 +149,7 @@ Twitter.
 - [Cursive](https://twitter.com/CursiveIDE/status/1439022267187433472) adds support for babashka in 1.11.0
 - How to filter tail output with babashka on [StackOverflow](https://stackoverflow.com/questions/69241046/how-to-filter-output-of-tail-with-babashka/69241911?stw=2#69241911)
 - [Awesome Babashka: Parse & produce HTML and SQLite](https://blog.jakubholy.net/2021/awesome-babashka-dash/) by Jakub Holy
-- [neil](https://github.com/babashka/neil): an installable babashka script to add common aliases and features to deps.edn-based projects.
+- [Neil](https://github.com/babashka/neil): an installable babashka script to add common aliases and features to deps.edn-based projects.
 
 ## 2021-08
 
