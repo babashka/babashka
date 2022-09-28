@@ -107,7 +107,7 @@
 (declare spec-impl)
 (declare regex-spec-impl)
 
-(defn- maybe-spec
+(defn maybe-spec
   "spec-or-k must be a spec, regex or resolvable kw/sym, else returns nil."
   [spec-or-k]
   (let [s (c/or (c/and (ident? spec-or-k) (reg-resolve spec-or-k))
@@ -2003,6 +2003,6 @@ system property. Defaults to true."}
   [spec x]
   (if *compile-asserts*
     `(if clojure.lang.RT/checkSpecAsserts
-       (assert* ~spec ~x)
+       (clojure.spec.alpha/assert* ~spec ~x)
        ~x)
     x))

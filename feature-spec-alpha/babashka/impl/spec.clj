@@ -86,7 +86,13 @@
    'check-asserts (copy-var s/check-asserts sns)
    '*explain-out* s/explain-out-var
    'multi-spec (copy-var s/multi-spec sns)
-   'multi-spec-impl (copy-var s/multi-spec-impl sns)})
+   'multi-spec-impl (copy-var s/multi-spec-impl sns)
+   'spec? (copy-var s/spec? sns)
+   'assert (copy-var s/assert sns)
+   'assert* (copy-var s/assert* sns)
+   'explain-printer (copy-var s/explain-printer sns)
+   ;; PRIVATE, but exposed for expound
+   'maybe-spec (copy-var s/maybe-spec sns)})
 
 #_:clj-kondo/ignore
 (def test-namespace
