@@ -512,7 +512,7 @@
   specs.  Unlike 'and', merge can generate maps satisfying the
   union of the predicates."
   [& pred-forms]
-  `(merge-spec-impl '~(mapv res pred-forms) ~(vec pred-forms) nil))
+  `(clojure.spec.alpha/merge-spec-impl '~(mapv res pred-forms) ~(vec pred-forms) nil))
 
 (defn- res-kind
   [opts]
@@ -1813,9 +1813,9 @@
   user=> (s/conform (s/cat :i1 integer? :m (s/keys* :req-un [::a ::c]) :i2 integer?) [42 :a 1 :c 2 :d 4 99])
   {:i1 42, :m {:a 1, :c 2, :d 4}, :i2 99}"
   [& kspecs]
-  `(let [mspec# (keys ~@kspecs)]
-     (with-gen (clojure.spec.alpha/& (* (cat ::k keyword? ::v any?)) ::kvs->map mspec#)
-       (fn [] (clojure.spec.gen.alpha/fmap (fn [m#] (apply concat m#)) (gen mspec#))))))
+  `(let [mspec# (clojure.spec.alpha/keys ~@kspecs)]
+     (clojure.spec.alpha/with-gen (clojure.spec.alpha/& (clojure.spec.alpha/* (clojure.spec.alpha/cat ::k keyword? ::v any?)) ::kvs->map mspec#)
+       (fn [] (clojure.spec.gen.alpha/fmap (fn [m#] (apply concat m#)) (clojure.spec.alpha/gen mspec#))))))
 
 (defn ^:skip-wiki nonconforming
   "takes a spec and returns a spec that has the same properties except

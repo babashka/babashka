@@ -79,7 +79,11 @@
    'nilable-impl (copy-var s/nilable-impl sns)
    'nonconforming (copy-var s/nonconforming sns)
    'get-spec (copy-var s/get-spec sns)
-   'exercise (copy-var s/exercise sns)})
+   'exercise (copy-var s/exercise sns)
+   'merge (copy-var s/merge sns)
+   'merge-spec-impl (copy-var s/merge-spec-impl sns)
+   'keys* (copy-var s/keys* sns)
+   'with-gen (copy-var s/with-gen sns)})
 
 #_:clj-kondo/ignore
 (def test-namespace
