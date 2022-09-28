@@ -66,7 +66,7 @@
                      paths)
                    paths)]
        (cp/add-classpath (str/join cp/path-sep paths))))
-   (let [need-deps? (or (:deps deps-map)
+   (let [need-deps? (or (seq (:deps deps-map))
                         (and (:aliases deps-map)
                              aliases))]
      (when need-deps?
