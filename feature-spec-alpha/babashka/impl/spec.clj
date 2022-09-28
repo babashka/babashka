@@ -83,7 +83,8 @@
    'merge (copy-var s/merge sns)
    'merge-spec-impl (copy-var s/merge-spec-impl sns)
    'keys* (copy-var s/keys* sns)
-   'with-gen (copy-var s/with-gen sns)})
+   'with-gen (copy-var s/with-gen sns)
+   'check-asserts (copy-var s/check-asserts sns)})
 
 #_:clj-kondo/ignore
 (def test-namespace
@@ -96,7 +97,8 @@
    'generate (copy-var gen/generate gns)
    'large-integer* (copy-var gen/large-integer* gns)
    'double* (copy-var gen/double* gns)
-   'return (copy-var gen/return gns)})
+   'return (copy-var gen/return gns)
+   'symbol (copy-var gen/symbol gns)})
 
 ;; def-impl
 ;; -> spec? ;; OK
