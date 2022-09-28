@@ -97,7 +97,8 @@
 #_:clj-kondo/ignore
 (def test-namespace
   {'instrument (copy-var test/instrument tns)
-   'unstrument (copy-var test/unstrument tns)})
+   'unstrument (copy-var test/unstrument tns)
+   'with-instrument-disabled (copy-var test/with-instrument-disabled tns)})
 
 #_:clj-kondo/ignore
 (def gen-namespace
