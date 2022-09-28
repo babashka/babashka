@@ -1049,7 +1049,8 @@ Use bb run --help to show this help output.
        (catch java.lang.RuntimeException e
          (if (re-find #"No dispatch macro for: \"" (.getMessage e))
            (throw (ex-info "Invalid regex literal found in EDN config, use re-pattern instead" {}))
-           (throw e)))))
+           (do (println "Error during loading bb.edn:")
+               (throw e))))))
 
 (defn main [& args]
   (let [[args global-opts] (parse-global-opts args)
