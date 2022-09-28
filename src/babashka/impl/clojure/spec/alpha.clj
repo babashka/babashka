@@ -418,7 +418,7 @@
   though those values are not evident in the spec.
   "
   [mm retag]
-  `(multi-spec-impl '~(res mm) (var ~mm) ~retag))
+  `(clojure.spec.alpha/multi-spec-impl '~(res mm) (var ~mm) ~retag))
 
 (defmacro keys
   "Creates and returns a map validating spec. :req and :opt are both

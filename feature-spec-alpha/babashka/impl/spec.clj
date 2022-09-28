@@ -84,7 +84,9 @@
    'keys* (copy-var s/keys* sns)
    'with-gen (copy-var s/with-gen sns)
    'check-asserts (copy-var s/check-asserts sns)
-   '*explain-out* s/explain-out-var})
+   '*explain-out* s/explain-out-var
+   'multi-spec (copy-var s/multi-spec sns)
+   'multi-spec-impl (copy-var s/multi-spec-impl sns)})
 
 #_:clj-kondo/ignore
 (def test-namespace
