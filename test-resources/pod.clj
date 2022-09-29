@@ -104,14 +104,14 @@
                             "id" id})
                           pod.test-pod/print
                           (do (write
-                               {"out" (pr-str args)
+                               {"out" (prn-str args)
                                 "id" id})
                               (write
                                {"status" ["done"]
                                 "id" id}))
                           pod.test-pod/print-err
                           (do (write
-                               {"err" (pr-str args)
+                               {"err" (prn-str args)
                                 "id" id})
                               (write
                                {"status" ["done"]
