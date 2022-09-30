@@ -15,11 +15,12 @@
   Guide: https://clojure.org/guides/spec"}
     babashka.impl.clojure.spec.alpha
   (:refer-clojure :exclude [+ * and assert or cat def keys merge])
-  (:require [babashka.impl.clojure.spec.gen.alpha :as gen]
-            [clojure.walk :as walk]
-            [sci.core :as sci]
-            [sci.impl.evaluator :as eval]
-            [babashka.impl.common :refer [ctx]]))
+  (:require
+   [babashka.impl.clojure.spec.gen.alpha :as gen]
+   [babashka.impl.common :refer [ctx]]
+   [clojure.walk :as walk]
+   [sci.core :as sci]
+   [sci.lang]))
 
 (alias 'c 'clojure.core)
 
@@ -310,10 +311,8 @@
 (defn ->sym
   "Returns a symbol from a symbol or var"
   [x]
-  (if (var? x)
-    (let [^clojure.lang.Var v x]
-      (symbol (str (.name (.ns v)))
-              (str (.sym v))))
+  (if (instance? sci.lang.Var x)
+    (sci/var->symbol x)
     x))
 
 (defn- unfn [expr]
