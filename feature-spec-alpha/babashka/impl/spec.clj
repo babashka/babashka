@@ -116,7 +116,8 @@
    'double* (copy-var gen/double* gns)
    'return (copy-var gen/return gns)
    'symbol (copy-var gen/symbol gns)
-   'gen-for-pred (copy-var gen/gen-for-pred gns)})
+   'gen-for-pred (copy-var gen/gen-for-pred gns)
+   'such-that (copy-var gen/such-that gns)})
 
 ;; def-impl
 ;; -> spec? ;; OK
