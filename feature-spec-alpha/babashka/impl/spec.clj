@@ -115,7 +115,8 @@
    'large-integer* (copy-var gen/large-integer* gns)
    'double* (copy-var gen/double* gns)
    'return (copy-var gen/return gns)
-   'symbol (copy-var gen/symbol gns)})
+   'symbol (copy-var gen/symbol gns)
+   'gen-for-pred (copy-var gen/gen-for-pred gns)})
 
 ;; def-impl
 ;; -> spec? ;; OK
