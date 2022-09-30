@@ -17,7 +17,9 @@
   (:refer-clojure :exclude [+ * and assert or cat def keys merge])
   (:require [babashka.impl.clojure.spec.gen.alpha :as gen]
             [clojure.walk :as walk]
-            [sci.core :as sci]))
+            [sci.core :as sci]
+            [sci.impl.evaluator :as eval]
+            [babashka.impl.common :refer [ctx]]))
 
 (alias 'c 'clojure.core)
 
@@ -322,12 +324,14 @@
       (conj (walk/postwalk-replace {s '%} form) '[%] 'fn))
     expr))
 
+(defn sci-resolve [sym]
+  (@sci.impl.utils/eval-resolve-state @ctx {} sym))
+
 (defn res [form]
   (cond
     (keyword? form) form
     (symbol? form) (c/or
-                    ;; TODO: insert sci resolve here
-                    #_(-> form resolve ->sym) form)
+                    (-> form sci-resolve ->sym) form)
     (sequential? form) (walk/postwalk #(if (symbol? %) (res %) %) (unfn form))
     :else form))
 
@@ -343,16 +347,17 @@
       (swap! registry-ref assoc k (with-name spec k))))
   k)
 
+(defn sci-ns-aliases []
+  (sci/eval-form @ctx (list 'ns-aliases @sci/ns)))
+
 (defn ns-qualify
   "Qualify symbol s by resolving it or using the current *ns*."
   [s]
   (if-let [ns-sym (some-> s namespace symbol)]
     (c/or (some->
-           ;; TODO: use sci ns-aliases
-           (get (ns-aliases *ns*) ns-sym) str (symbol (name s)))
+           (get (sci-ns-aliases) ns-sym) str (symbol (name s)))
           s)
-    ;; TODO: use sci current-ns!
-    (symbol (str (.name *ns*)) (str s))))
+    (symbol (str @sci/ns) (str s))))
 
 (defmacro def
   "Given a namespace-qualified keyword or resolvable symbol k, and a
