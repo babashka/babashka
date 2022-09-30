@@ -96,7 +96,8 @@
    'explain-data* (copy-var s/explain-data* sns)
    '->sym (copy-var s/->sym sns)
    'explain-str (copy-var s/explain-str sns)
-   'registry (copy-var s/registry sns)})
+   'registry (copy-var s/registry sns)
+   'explain-out (copy-var s/explain-out sns)})
 
 #_:clj-kondo/ignore
 (def test-namespace
