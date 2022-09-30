@@ -9,9 +9,12 @@
 (ns babashka.impl.clojure.spec.gen.alpha
     (:refer-clojure :exclude [boolean bytes cat hash-map list map not-empty set vector
                               char double int keyword symbol string uuid delay shuffle])
-    (:require [clojure.test.check]
-              [clojure.test.check.generators]
-              [clojure.test.check.properties]))
+    (:require
+     [babashka.impl.common :refer [ctx]]
+     [clojure.test.check]
+     [clojure.test.check.generators]
+     [clojure.test.check.properties]
+     [sci.core :as sci]))
 
 (alias 'c 'clojure.core)
 
@@ -52,7 +55,7 @@
   generator that delegates to that, but delays
   creation until used."
   [& body]
-  `(delay-impl (c/delay ~@body)))
+  `(clojure.spec.gen.alpha/delay-impl (c/delay ~@body)))
 
 (defmacro ^:skip-wiki lazy-combinator
   "Implementation macro, do not call directly."
@@ -64,6 +67,14 @@
          ~doc
          [& ~'args]
          (apply @g# ~'args)))))
+
+(defn gen-for-name
+  "Dynamically loads test.check generator named s."
+  [s]
+  (let [g (sci/eval-form @ctx s)]
+    (if (generator? g)
+      g
+      (throw (RuntimeException. (str "Var " s " is not a generator"))))))
 
 (defmacro ^:skip-wiki lazy-combinators
   "Implementation macro, do not call directly."

@@ -108,16 +108,17 @@
    'stacktrace-relevant-to-instrument (copy-var test/stacktrace-relevant-to-instrument tns)
    'spec-checking-fn (copy-var test/spec-checking-fn tns)})
 
+#_(let [syms '[uuid gen-for-pred lazy-prim set one-of any-printable vector-distinct boolean string-alphanumeric map delay simple-type char bind symbol-ns any shuffle lazy-prims cat double char-alpha int return gen-for-name symbol quick-check char-alphanumeric choose for-all* string-ascii frequency double* generate delay-impl lazy-combinators tuple string vector large-integer keyword-ns not-empty elements sample list large-integer* keyword hash-map ratio such-that fmap char-ascii simple-type-printable lazy-combinator bytes]]
+  #_:clj-kondo/ignore
+  (println
+   (zipmap (map #(list 'quote %) syms)
+           (map (fn [sym]
+                  (list 'copy-var (symbol "gen" (str sym)) 'gns))
+                syms))))
+
 #_:clj-kondo/ignore
 (def gen-namespace
-  {'fmap (copy-var gen/fmap gns)
-   'generate (copy-var gen/generate gns)
-   'large-integer* (copy-var gen/large-integer* gns)
-   'double* (copy-var gen/double* gns)
-   'return (copy-var gen/return gns)
-   'symbol (copy-var gen/symbol gns)
-   'gen-for-pred (copy-var gen/gen-for-pred gns)
-   'such-that (copy-var gen/such-that gns)})
+  {(quote lazy-prim) (copy-var gen/lazy-prim gns), (quote char-alpha) (copy-var gen/char-alpha gns), (quote large-integer*) (copy-var gen/large-integer* gns), (quote bind) (copy-var gen/bind gns), (quote gen-for-pred) (copy-var gen/gen-for-pred gns), (quote lazy-combinator) (copy-var gen/lazy-combinator gns), (quote ratio) (copy-var gen/ratio gns), (quote keyword-ns) (copy-var gen/keyword-ns gns), (quote fmap) (copy-var gen/fmap gns), (quote char-alphanumeric) (copy-var gen/char-alphanumeric gns), (quote int) (copy-var gen/int gns), (quote such-that) (copy-var gen/such-that gns), (quote double*) (copy-var gen/double* gns), (quote quick-check) (copy-var gen/quick-check gns), (quote cat) (copy-var gen/cat gns), (quote one-of) (copy-var gen/one-of gns), (quote choose) (copy-var gen/choose gns), (quote uuid) (copy-var gen/uuid gns), (quote string-ascii) (copy-var gen/string-ascii gns), (quote string) (copy-var gen/string gns), (quote char) (copy-var gen/char gns), (quote tuple) (copy-var gen/tuple gns), (quote elements) (copy-var gen/elements gns), (quote simple-type) (copy-var gen/simple-type gns), (quote frequency) (copy-var gen/frequency gns), (quote symbol-ns) (copy-var gen/symbol-ns gns), (quote for-all*) (copy-var gen/for-all* gns), (quote simple-type-printable) (copy-var gen/simple-type-printable gns), (quote generate) (copy-var gen/generate gns), (quote boolean) (copy-var gen/boolean gns), (quote hash-map) (copy-var gen/hash-map gns), (quote gen-for-name) (copy-var gen/gen-for-name gns), (quote shuffle) (copy-var gen/shuffle gns), (quote delay-impl) (copy-var gen/delay-impl gns), (quote large-integer) (copy-var gen/large-integer gns), (quote map) (copy-var gen/map gns), (quote any) (copy-var gen/any gns), (quote vector) (copy-var gen/vector gns), (quote lazy-combinators) (copy-var gen/lazy-combinators gns), (quote return) (copy-var gen/return gns), (quote keyword) (copy-var gen/keyword gns), (quote list) (copy-var gen/list gns), (quote delay) (copy-var gen/delay gns), (quote vector-distinct) (copy-var gen/vector-distinct gns), (quote symbol) (copy-var gen/symbol gns), (quote lazy-prims) (copy-var gen/lazy-prims gns), (quote bytes) (copy-var gen/bytes gns), (quote double) (copy-var gen/double gns), (quote char-ascii) (copy-var gen/char-ascii gns), (quote string-alphanumeric) (copy-var gen/string-alphanumeric gns), (quote any-printable) (copy-var gen/any-printable gns), (quote not-empty) (copy-var gen/not-empty gns), (quote sample) (copy-var gen/sample gns), (quote set) (copy-var gen/set gns)})
 
 ;; def-impl
 ;; -> spec? ;; OK
