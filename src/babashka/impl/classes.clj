@@ -391,7 +391,8 @@
                 java.time.temporal.Temporal
                 java.time.temporal.TemporalAccessor
                 java.time.temporal.TemporalAdjuster
-                java.time.temporal.ValueRange])
+                java.time.temporal.ValueRange
+                java.time.zone.ZoneRules])
           java.util.concurrent.atomic.AtomicInteger
           java.util.concurrent.atomic.AtomicLong
           java.util.concurrent.atomic.AtomicReference
