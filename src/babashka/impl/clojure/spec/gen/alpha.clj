@@ -24,7 +24,7 @@
   (apply @quick-check-ref args))
 
 (def ^:private for-all*-ref
-     (c/delay (clojure.test.check.properties/for-all*)))
+  (c/delay clojure.test.check.properties/for-all*))
 (defn for-all*
   "Dynamically loaded clojure.test.check.properties/for-all*."
   [& args]
