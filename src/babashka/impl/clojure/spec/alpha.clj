@@ -1806,7 +1806,9 @@
       (describe* [_] `(clojure.spec.alpha/fspec :args ~aform :ret ~rform :fn ~fform)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; non-primitives ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(clojure.spec.alpha/def :clojure.spec.alpha/kvs->map (conformer #(zipmap (map :clojure.spec.alpha/k %) (map :clojure.spec.alpha/v %)) #(map (fn [[k v]] {:clojure.spec.alpha/k k :clojure.spec.alpha/v v}) %)))
+(babashka.impl.clojure.spec.alpha/def
+  :clojure.spec.alpha/kvs->map
+  (conformer #(zipmap (map :clojure.spec.alpha/k %) (map :clojure.spec.alpha/v %)) #(map (fn [[k v]] {:clojure.spec.alpha/k k :clojure.spec.alpha/v v}) %)))
 
 (defmacro keys*
   "takes the same arguments as spec/keys and returns a regex op that matches sequences of key/values,

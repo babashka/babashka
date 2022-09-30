@@ -12,6 +12,7 @@
    [babashka.impl.clojure.spec.alpha :as s]
    [babashka.impl.clojure.spec.gen.alpha :as gen]
    [babashka.impl.pprint :as pp]
+   [babashka.impl.common :refer [ctx]]
    [clojure.string :as str]
    [sci.core :as sci]))
 
@@ -141,9 +142,9 @@
     (fn
       [& args]
       (if @instrument-enabled-var
-        (sci/binding [@instrument-enabled-var false]
+        (sci/binding [instrument-enabled-var false]
           (when (:args fn-spec) (conform! v :args (:args fn-spec) args args))
-          (sci/binding [@instrument-enabled-var true]
+          (sci/binding [instrument-enabled-var true]
             (.applyTo ^clojure.lang.IFn f args)))
         (.applyTo ^clojure.lang.IFn f args)))))
 
@@ -169,7 +170,7 @@
 (defn- instrument-1
   [s opts]
   ;; TODO: sci resolve
-  (when-let [v nil #_(resolve s)]
+  (when-let [v (sci/resolve @ctx s)]
     (when-not (-> v meta :macro)
       (let [spec (s/get-spec v)
             {:keys [raw wrapped]} (get @instrumented-vars v)
@@ -179,20 +180,19 @@
                       (throw (no-fspec v spec)))
             ofn (instrument-choose-fn to-wrap ospec s opts)
             checked (spec-checking-fn v ofn ospec)]
-        ;; TODO: use sci alter-var-root
-        (alter-var-root v (constantly checked))
+        (sci/alter-var-root v (constantly checked))
         (swap! instrumented-vars assoc v {:raw to-wrap :wrapped checked})
         (->sym v)))))
 
 (defn- unstrument-1
   [s]
-  (when-let [v nil #_(resolve s)]
+  (when-let [v (sci/resolve @ctx s)]
     (when-let [{:keys [raw wrapped]} (get @instrumented-vars v)]
       (swap! instrumented-vars dissoc v)
       (let [current @v]
         (when (= wrapped current)
           ;; TODO: use sci-alter-var-root
-          (alter-var-root v (constantly raw))
+          (sci/alter-var-root v (constantly raw))
           (->sym v))))))
 
 #_(defn- opt-syms
