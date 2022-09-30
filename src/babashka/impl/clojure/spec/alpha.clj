@@ -915,7 +915,7 @@
                         (apply concat)
                         (apply gen/hash-map)))))))))
       (with-gen* [_ gfn] (map-spec-impl (assoc argm :gfn gfn)))
-      (describe* [_] (cons `keys
+      (describe* [_] (cons 'clojure.spec.alpha/keys
                            (cond-> []
                              req (conj :req req)
                              opt (conj :opt opt)
@@ -1008,7 +1008,7 @@
              (when (every? identity gs)
                (gen/one-of gs)))))
        (with-gen* [_ gfn] (multi-spec-impl form mmvar retag gfn))
-       (describe* [_] `(multi-spec ~form ~retag))))))
+       (describe* [_] `(clojure.spec.alpha/multi-spec ~form ~retag))))))
 
 (defn ^:skip-wiki tuple-impl
   "Do not call this directly, use 'tuple'"
@@ -1140,7 +1140,7 @@
             (when-not (empty? gs)
               (gen/one-of gs)))))
       (with-gen* [_ gfn] (or-spec-impl keys forms preds gfn))
-      (describe* [_] `(or ~@(mapcat vector keys forms))))))
+      (describe* [_] `(clojure.spec.alpha/or ~@(mapcat vector keys forms))))))
 
 (defn- and-preds [x preds forms]
   (loop [ret x
@@ -1207,7 +1207,7 @@
       (explain* [_ path via in x] (explain-pred-list forms preds path via in x))
       (gen* [_ overrides path rmap] (if gfn (gfn) (gensub (first preds) overrides path rmap (first forms))))
       (with-gen* [_ gfn] (and-spec-impl forms preds gfn))
-      (describe* [_] `(and ~@forms)))))
+      (describe* [_] `(clojure.spec.alpha/and ~@forms)))))
 
 (defn ^:skip-wiki merge-spec-impl
   "Do not call this directly, use 'merge'"
@@ -1235,7 +1235,7 @@
          (apply gen/tuple (map #(gensub %1 overrides path rmap %2)
                                preds forms)))))
     (with-gen* [_ gfn] (merge-spec-impl forms preds gfn))
-    (describe* [_] `(merge ~@forms))))
+    (describe* [_] `(clojure.spec.alpha/merge ~@forms))))
 
 (defn- coll-prob [x kfn kform distinct count min-count max-count
                   path via in]
@@ -1386,7 +1386,7 @@
                    (gen/vector pgen 0 gen-max))))))))
 
        (with-gen* [_ gfn] (every-impl form pred opts gfn))
-       (describe* [_] (c/or describe-form `(every ~(res form) ~@(mapcat identity opts))))))))
+       (describe* [_] (c/or describe-form `(clojure.spec.alpha/every ~(res form) ~@(mapcat identity opts))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;; regex ;;;;;;;;;;;;;;;;;;;
 ;;See:
@@ -1803,7 +1803,7 @@
                                    (c/assert (pvalid? argspec args) (with-out-str (explain argspec args)))
                                    (gen/generate (gen retspec overrides))))))
       (with-gen* [_ gfn] (fspec-impl argspec aform retspec rform fnspec fform gfn))
-      (describe* [_] `(fspec :args ~aform :ret ~rform :fn ~fform)))))
+      (describe* [_] `(clojure.spec.alpha/fspec :args ~aform :ret ~rform :fn ~fform)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; non-primitives ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (clojure.spec.alpha/def :clojure.spec.alpha/kvs->map (conformer #(zipmap (map :clojure.spec.alpha/k %) (map :clojure.spec.alpha/v %)) #(map (fn [[k v]] {:clojure.spec.alpha/k k :clojure.spec.alpha/v v}) %)))
@@ -1846,7 +1846,7 @@
       (explain* [_ path via in x] (explain* @spec path via in x))
       (gen* [_ overrides path rmap] (gen* @spec overrides path rmap))
       (with-gen* [_ gfn] (nonconforming (with-gen* @spec gfn)))
-      (describe* [_] `(nonconforming ~(describe* @spec))))))
+      (describe* [_] `(clojure.spec.alpha/nonconforming ~(describe* @spec))))))
 
 (defn ^:skip-wiki nilable-impl
   "Do not call this directly, use 'nilable'"
@@ -1872,7 +1872,7 @@
            [[1 (gen/delay (gen/return nil))]
             [9 (gen/delay (gensub pred overrides (conj path :clojure.spec.alpha/pred) rmap form))]])))
       (with-gen* [_ gfn] (nilable-impl form pred gfn))
-      (describe* [_] `(nilable ~(res form))))))
+      (describe* [_] `(clojure.spec.alpha/nilable ~(res form))))))
 
 (defmacro nilable
   "returns a spec that accepts nil and values satisfying pred"
