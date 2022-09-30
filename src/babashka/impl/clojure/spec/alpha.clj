@@ -237,7 +237,7 @@
 (defn explain-printer
   "Default printer for explain-data. nil indicates a successful validation."
   [ed]
-  (binding [*out* sci/out]
+  (binding [*out* @sci/out]
     (if ed
       (let [problems (->> (:clojure.spec.alpha/problems ed)
                           (sort-by #(- (count (:in %))))
