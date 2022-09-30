@@ -367,6 +367,10 @@
   (let [k (if (symbol? k) (ns-qualify k) k)]
     `(clojure.spec.alpha/def-impl '~k '~(res spec-form) ~spec-form)))
 
+(defmacro internal-def
+  [k spec-form]
+  `(def-impl '~k '~(res spec-form) ~spec-form))
+
 (defn registry
   "returns the registry map, prefer 'get-spec' to lookup a spec by name"
   []
@@ -940,7 +944,10 @@
       (specize* [s _] s)
 
       Spec
-      (conform* [_ x] (let [ret (pred x)]
+       (conform* [_ x] (let [;; _ (prn :pred pred :descr (describe pred) :x x)
+                             ret (pred x)
+                             ;; _ (prn :ret ret)
+                             ]
                         (if cpred?
                           ret
                           (if ret x :clojure.spec.alpha/invalid))))
@@ -1806,7 +1813,7 @@
       (describe* [_] `(clojure.spec.alpha/fspec :args ~aform :ret ~rform :fn ~fform)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; non-primitives ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(babashka.impl.clojure.spec.alpha/def
+(internal-def
   :clojure.spec.alpha/kvs->map
   (conformer #(zipmap (map :clojure.spec.alpha/k %) (map :clojure.spec.alpha/v %)) #(map (fn [[k v]] {:clojure.spec.alpha/k k :clojure.spec.alpha/v v}) %)))
 
