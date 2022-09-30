@@ -2,11 +2,10 @@
   {:no-doc true}
   (:require [babashka.impl.clojure.spec.alpha :as s :refer [sns]]
             [babashka.impl.clojure.spec.gen.alpha :as gen]
-            [babashka.impl.clojure.spec.test.alpha :as test]
+            [babashka.impl.clojure.spec.test.alpha :as test :refer [tns]]
             [clojure.core :as c]
             [sci.core :as sci :refer [copy-var]]))
 
-(def tns (sci/create-ns 'clojure.spec.test.alpha nil))
 (def gns (sci/create-ns 'clojure.spec.gen.alpha nil))
 
 (defn- ns-qualify
@@ -92,13 +91,20 @@
    'assert* (copy-var s/assert* sns)
    'explain-printer (copy-var s/explain-printer sns)
    ;; PRIVATE, but exposed for expound
-   'maybe-spec (copy-var s/maybe-spec sns)})
+   'maybe-spec (copy-var s/maybe-spec sns)
+   'spec-name (copy-var s/spec-name sns)
+   'explain-data* (copy-var s/explain-data* sns)
+   '->sym (copy-var s/->sym sns)
+   'explain-str (copy-var s/explain-str sns)})
 
 #_:clj-kondo/ignore
 (def test-namespace
   {'instrument (copy-var test/instrument tns)
    'unstrument (copy-var test/unstrument tns)
-   'with-instrument-disabled (copy-var test/with-instrument-disabled tns)})
+   '*instrument-enabled* test/instrument-enabled-var
+   'with-instrument-disabled (copy-var test/with-instrument-disabled tns)
+   'stacktrace-relevant-to-instrument (copy-var test/stacktrace-relevant-to-instrument tns)
+   'spec-checking-fn (copy-var test/spec-checking-fn tns)})
 
 #_:clj-kondo/ignore
 (def gen-namespace

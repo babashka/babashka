@@ -95,7 +95,7 @@
     (instance? clojure.lang.IObj spec)
     (with-meta spec (assoc (meta spec) :clojure.spec.alpha/name name))))
 
-(defn- spec-name [spec]
+(defn spec-name [spec]
   (cond
     (ident? spec) spec
 
@@ -234,27 +234,28 @@
 (defn explain-printer
   "Default printer for explain-data. nil indicates a successful validation."
   [ed]
-  (if ed
-    (let [problems (->> (:clojure.spec.alpha/problems ed)
-                        (sort-by #(- (count (:in %))))
-                        (sort-by #(- (count (:path %)))))]
-      ;;(prn {:ed ed})
-      (doseq [{:keys [path pred val reason via in] :as prob} problems]
-        (pr val)
-        (print " - failed: ")
-        (if reason (print reason) (pr (abbrev pred)))
-        (when-not (empty? in)
-          (print (str " in: " (pr-str in))))
-        (when-not (empty? path)
-          (print (str " at: " (pr-str path))))
-        (when-not (empty? via)
-          (print (str " spec: " (pr-str (last via)))))
-        (doseq [[k v] prob]
-          (when-not (#{:path :pred :val :reason :via :in} k)
-            (print "\n\t" (pr-str k) " ")
-            (pr v)))
-        (newline)))
-    (println "Success!")))
+  (binding [*out* sci/out]
+    (if ed
+      (let [problems (->> (:clojure.spec.alpha/problems ed)
+                          (sort-by #(- (count (:in %))))
+                          (sort-by #(- (count (:path %)))))]
+        ;;(prn {:ed ed})
+        (doseq [{:keys [path pred val reason via in] :as prob} problems]
+          (pr val)
+          (print " - failed: ")
+          (if reason (print reason) (pr (abbrev pred)))
+          (when-not (empty? in)
+            (print (str " in: " (pr-str in))))
+          (when-not (empty? path)
+            (print (str " at: " (pr-str path))))
+          (when-not (empty? via)
+            (print (str " spec: " (pr-str (last via)))))
+          (doseq [[k v] prob]
+            (when-not (#{:path :pred :val :reason :via :in} k)
+              (print "\n\t" (pr-str k) " ")
+              (pr v)))
+          (newline)))
+      (println "Success!"))))
 
 (def sns (sci/create-ns 'clojure.spec.alpha nil))
 
@@ -274,7 +275,7 @@
 (defn explain-str
   "Given a spec and a value that fails to conform, returns an explanation as a string."
   [spec x]
-  (with-out-str (explain spec x)))
+  (sci/with-out-str (explain spec x)))
 
 (declare valid?)
 
@@ -304,7 +305,7 @@
   ([spec] (gen spec nil))
   ([spec overrides] (gensub spec overrides [] {:clojure.spec.alpha/recursion-limit *recursion-limit*} spec)))
 
-(defn- ->sym
+(defn ->sym
   "Returns a symbol from a symbol or var"
   [x]
   (if (var? x)

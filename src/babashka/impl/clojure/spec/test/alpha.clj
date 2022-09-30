@@ -12,7 +12,8 @@
    [babashka.impl.clojure.spec.alpha :as s]
    [babashka.impl.clojure.spec.gen.alpha :as gen]
    [babashka.impl.pprint :as pp]
-   [clojure.string :as str]))
+   [clojure.string :as str]
+   [sci.core :as sci]))
 
 (in-ns 'clojure.spec.test.check)
 (in-ns 'babashka.impl.clojure.spec.test.alpha)
@@ -27,13 +28,13 @@
   (@#'s/->sym x))
 
 #_(defn- ->var
-  [s-or-v]
-  (if (var? s-or-v)
-    s-or-v
-    (let [v (and (symbol? s-or-v) (resolve s-or-v))]
-      (if (var? v)
-        v
-        (throw (IllegalArgumentException. (str (pr-str s-or-v) " does not name a var")))))))
+    [s-or-v]
+    (if (var? s-or-v)
+      s-or-v
+      (let [v (and (symbol? s-or-v) (resolve s-or-v))]
+        (if (var? v)
+          v
+          (throw (IllegalArgumentException. (str (pr-str s-or-v) " does not name a var")))))))
 
 (defn- collectionize
   [x]
@@ -43,7 +44,7 @@
 
 (defn enumerate-namespace
   "Given a symbol naming an ns, or a collection of such symbols,
-returns the set of all symbols naming vars in those nses."
+  returns the set of all symbols naming vars in those nses."
   [ns-sym-or-syms]
   (into
    #{}
@@ -56,25 +57,29 @@ returns the set of all symbols naming vars in those nses."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; instrument ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def ^:private ^:dynamic *instrument-enabled*
-  "if false, instrumented fns call straight through"
-  true)
+(def tns (sci/create-ns 'clojure.spec.test.alpha))
+
+(def instrument-enabled-var (sci/new-dynamic-var '*instrument-enabled* true {:ns tns} ))
+
+#_(def ^:private ^:dynamic *instrument-enabled*
+    "if false, instrumented fns call straight through"
+    true)
 
 #_(defn- fn-spec?
-  "Fn-spec must include at least :args or :ret specs."
-  [m]
-  (or (:args m) (:ret m)))
+    "Fn-spec must include at least :args or :ret specs."
+    [m]
+    (or (:args m) (:ret m)))
 
 (defmacro with-instrument-disabled
   "Disables instrument's checking of calls, within a scope."
   [& body]
-  `(binding [*instrument-enabled* nil]
+  `(binding [clojure.spec.test.alpha/*instrument-enabled* nil]
      ~@body))
 
 (defn- interpret-stack-trace-element
   "Given the vector-of-syms form of a stacktrace element produced
-by e.g. Throwable->map, returns a map form that adds some keys
-guessing the original Clojure names. Returns a map with
+  by e.g. Throwable->map, returns a map form that adds some keys
+  guessing the original Clojure names. Returns a map with
 
   :class         class name symbol from stack trace
   :method        method symbol from stack trace
@@ -83,7 +88,7 @@ guessing the original Clojure names. Returns a map with
   :var-scope     optional Clojure var symbol scoping fn def
   :local-fn      optional local Clojure symbol scoping fn def
 
-For non-Clojure fns, :scope and :local-fn will be absent."
+  For non-Clojure fns, :scope and :local-fn will be absent."
   [[cls method file line]]
   (let [clojure? (contains? '#{invoke invokeStatic} method)
         demunge #(clojure.lang.Compiler/demunge %)
@@ -100,11 +105,11 @@ For non-Clojure fns, :scope and :local-fn will be absent."
            (when local
              {:local-fn (symbol (degensym local))}))))
 
-(defn- stacktrace-relevant-to-instrument
+(defn stacktrace-relevant-to-instrument
   "Takes a coll of stack trace elements (as returned by
-StackTraceElement->vec) and returns a coll of maps as per
-interpret-stack-trace-element that are relevant to a
-failure in instrument."
+  StackTraceElement->vec) and returns a coll of maps as per
+  interpret-stack-trace-element that are relevant to a
+  failure in instrument."
   [elems]
   (let [plumbing? (fn [{:keys [var-scope]}]
                     (contains? '#{clojure.spec.test.alpha/spec-checking-fn} var-scope))]
@@ -114,7 +119,7 @@ failure in instrument."
                     (drop-while plumbing?))
               elems)))
 
-(defn- spec-checking-fn
+(defn spec-checking-fn
   [v f fn-spec]
   (let [fn-spec (@#'s/maybe-spec fn-spec)
         conform! (fn [v role spec data args]
@@ -124,9 +129,9 @@ failure in instrument."
                                          stacktrace-relevant-to-instrument
                                          first)
                              ed (merge (assoc (s/explain-data* spec [] [] [] data)
-                                         ::s/fn (->sym v)
-                                         ::s/args args
-                                         ::s/failure :instrument)
+                                              ::s/fn (->sym v)
+                                              ::s/args args
+                                              ::s/failure :instrument)
                                        (when caller
                                          {::caller (dissoc caller :class :method)}))]
                          (throw (ex-info
@@ -134,13 +139,13 @@ failure in instrument."
                                  ed)))
                        conformed)))]
     (fn
-     [& args]
-     (if *instrument-enabled*
-       (with-instrument-disabled
-         (when (:args fn-spec) (conform! v :args (:args fn-spec) args args))
-         (binding [*instrument-enabled* true]
-           (.applyTo ^clojure.lang.IFn f args)))
-       (.applyTo ^clojure.lang.IFn f args)))))
+      [& args]
+      (if @instrument-enabled-var
+        (sci/binding [@instrument-enabled-var false]
+          (when (:args fn-spec) (conform! v :args (:args fn-spec) args args))
+          (sci/binding [@instrument-enabled-var true]
+            (.applyTo ^clojure.lang.IFn f args)))
+        (.applyTo ^clojure.lang.IFn f args)))))
 
 (defn- no-fspec
   [v spec]
@@ -191,9 +196,9 @@ failure in instrument."
           (->sym v))))))
 
 #_(defn- opt-syms
-  "Returns set of symbols referenced by 'instrument' opts map"
-  [opts]
-  (reduce into #{} [(:stub opts) (keys (:replace opts)) (keys (:spec opts))]))
+    "Returns set of symbols referenced by 'instrument' opts map"
+    [opts]
+    (reduce into #{} [(:stub opts) (keys (:replace opts)) (keys (:spec opts))]))
 
 (defn- fn-spec-name?
   [s]
@@ -206,11 +211,11 @@ failure in instrument."
 that can be instrumented."
   ([] (instrumentable-syms nil))
   ([opts]
-     (assert (every? ident? (keys (:gen opts))) "instrument :gen expects ident keys")
-     (reduce into #{} [(filter fn-spec-name? (keys (s/registry)))
-                       (keys (:spec opts))
-                       (:stub opts)
-                       (keys (:replace opts))])))
+   (assert (every? ident? (keys (:gen opts))) "instrument :gen expects ident keys")
+   (reduce into #{} [(filter fn-spec-name? (keys (s/registry)))
+                     (keys (:spec opts))
+                     (:stub opts)
+                     (keys (:replace opts))])))
 
 (defn instrument
   "Instruments the vars named by sym-or-syms, a symbol or collection
@@ -252,14 +257,14 @@ Returns a collection of syms naming the vars instrumented."
   ([] (instrument (instrumentable-syms)))
   ([sym-or-syms] (instrument sym-or-syms nil))
   ([sym-or-syms opts]
-     (locking instrumented-vars
-       (into
-        []
-        (comp (filter (instrumentable-syms opts))
-              (distinct)
-              (map #(instrument-1 % opts))
-              (remove nil?))
-        (collectionize sym-or-syms)))))
+   (locking instrumented-vars
+     (into
+      []
+      (comp (filter (instrumentable-syms opts))
+            (distinct)
+            (map #(instrument-1 % opts))
+            (remove nil?))
+      (collectionize sym-or-syms)))))
 
 (defn unstrument
   "Undoes instrument on the vars named by sym-or-syms, specified
@@ -267,13 +272,13 @@ as in instrument. With no args, unstruments all instrumented vars.
 Returns a collection of syms naming the vars unstrumented."
   ([] (unstrument (map ->sym (keys @instrumented-vars))))
   ([sym-or-syms]
-     (locking instrumented-vars
-       (into
-        []
-        (comp (filter symbol?)
-              (map unstrument-1)
-              (remove nil?))
-        (collectionize sym-or-syms)))))
+   (locking instrumented-vars
+     (into
+      []
+      (comp (filter symbol?)
+            (map unstrument-1)
+            (remove nil?))
+      (collectionize sym-or-syms)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; testing  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -283,9 +288,9 @@ Returns a collection of syms naming the vars unstrumented."
    "Specification-based check failed"
    (when-not (s/valid? spec v nil)
      (assoc (s/explain-data* spec [role] [] [] v)
-       ::args args
-       ::val v
-       ::s/failure :check-failed))))
+            ::args args
+            ::val v
+            ::s/failure :check-failed))))
 
 (defn- check-call
   "Returns true if call passes specs, otherwise *returns* an exception
@@ -331,20 +336,20 @@ with explain-data + ::s/failure."
         f (or f (when v @v))
         specd (s/spec spec)]
     (try
-     (cond
-      (or (nil? f) (some-> v meta :macro))
-      {:failure (ex-info "No fn to spec" {::s/failure :no-fn})
-       :sym s :spec spec}
-    
-      (:args specd)
-      (let [tcret (quick-check f specd opts)]
-        (make-check-result s spec tcret))
-    
-      :default
-      {:failure (ex-info "No :args spec" {::s/failure :no-args-spec})
-       :sym s :spec spec})
-     (finally
-      (when re-inst? (instrument s))))))
+      (cond
+        (or (nil? f) (some-> v meta :macro))
+        {:failure (ex-info "No fn to spec" {::s/failure :no-fn})
+         :sym s :spec spec}
+
+        (:args specd)
+        (let [tcret (quick-check f specd opts)]
+          (make-check-result s spec tcret))
+
+        :default
+        {:failure (ex-info "No :args spec" {::s/failure :no-args-spec})
+         :sym s :spec spec})
+      (finally
+        (when re-inst? (instrument s))))))
 
 (defn- sym->check-map
   [s]
@@ -363,17 +368,17 @@ with explain-data + ::s/failure."
 'check' for options and return."
   ([f spec] (check-fn f spec nil))
   ([f spec opts]
-     (validate-check-opts opts)
-     (check-1 {:f f :spec spec} opts)))
+   (validate-check-opts opts)
+   (check-1 {:f f :spec spec} opts)))
 
 (defn checkable-syms
   "Given an opts map as per check, returns the set of syms that
 can be checked."
   ([] (checkable-syms nil))
   ([opts]
-     (validate-check-opts opts)
-     (reduce into #{} [(filter fn-spec-name? (keys (s/registry)))
-                       (keys (:spec opts))])))
+   (validate-check-opts opts)
+   (reduce into #{} [(filter fn-spec-name? (keys (s/registry)))
+                     (keys (:spec opts))])))
 
 (defn check
   "Run generative tests for spec conformance on vars named by
@@ -381,7 +386,7 @@ sym-or-syms, a symbol or collection of symbols. If sym-or-syms
 is not specified, check all checkable vars.
 
 The opts map includes the following optional keys, where stc
-aliases clojure.spec.test.check: 
+aliases clojure.spec.test.check:
 
 ::stc/opts  opts to flow through test.check/quick-check
 :gen        map from spec names to generator overrides
@@ -411,10 +416,10 @@ spec itself will have an ::s/failure value in ex-data:
   ([] (check (checkable-syms)))
   ([sym-or-syms] (check sym-or-syms nil))
   ([sym-or-syms opts]
-     (->> (collectionize sym-or-syms)
-          (filter (checkable-syms opts))
-          (pmap
-           #(check-1 (sym->check-map %) opts)))))
+   (->> (collectionize sym-or-syms)
+        (filter (checkable-syms opts))
+        (pmap
+         #(check-1 (sym->check-map %) opts)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; check reporting  ;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -437,9 +442,9 @@ spec itself will have an ::s/failure value in ex-data:
   [ret]
   (let [failure (:failure ret)]
     (cond
-     (nil? failure) :check-passed
-     (failure-type failure) (failure-type failure)
-     :default :check-threw)))
+      (nil? failure) :check-passed
+      (failure-type failure) (failure-type failure)
+      :default :check-threw)))
 
 (defn abbrev-result
   "Given a check result, returns an abbreviated version
@@ -459,13 +464,11 @@ Returns a map with :total, the total number of results, plus a
 key with a count for each different :type of result."
   ([check-results] (summarize-results check-results abbrev-result))
   ([check-results summary-result]
-     (reduce
-      (fn [summary result]
-        (pp/pprint (summary-result result))
-        (-> summary
-            (update :total inc)
-            (update (result-type result) (fnil inc 0))))
-      {:total 0}
-       check-results)))
-
-
+   (reduce
+    (fn [summary result]
+      (pp/pprint (summary-result result))
+      (-> summary
+          (update :total inc)
+          (update (result-type result) (fnil inc 0))))
+    {:total 0}
+    check-results)))
