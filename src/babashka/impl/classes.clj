@@ -345,6 +345,7 @@
           java.security.Security
           java.sql.Date
           java.sql.Time
+          java.sql.Timestamp ;;maybe overkill including this
           java.text.ParseException
           ;; adds about 200kb, same functionality provided by java.time:
           java.text.SimpleDateFormat
