@@ -600,7 +600,7 @@
 
   See also - every, map-of"
   [pred & opts]
-  (let [desc `(coll-of ~(res pred) ~@(res-kind opts))]
+  (let [desc `(clojure.spec.alpha/coll-of ~(res pred) ~@(res-kind opts))]
     `(clojure.spec.alpha/every ~pred :clojure.spec.alpha/conform-all true :clojure.spec.alpha/describe '~desc ~@opts)))
 
 (defmacro map-of
