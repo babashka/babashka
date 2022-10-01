@@ -23,12 +23,10 @@
   [& args]
   (apply @quick-check-ref args))
 
-(def ^:private for-all*-ref
-  (c/delay clojure.test.check.properties/for-all*))
 (defn for-all*
   "Dynamically loaded clojure.test.check.properties/for-all*."
   [& args]
-  (apply @for-all*-ref args))
+  (apply clojure.test.check.properties/for-all* args))
 
 (let [g? clojure.test.check.generators/generator?
       g clojure.test.check.generators/generate
@@ -56,6 +54,13 @@
   creation until used."
   [& body]
   `(clojure.spec.gen.alpha/delay-impl (c/delay ~@body)))
+
+(defmacro delay-internal
+  "given body that returns a generator, returns a
+  generator that delegates to that, but delays
+  creation until used."
+  [& body]
+  `(babashka.impl.clojure.spec.gen.alpha/delay-impl (c/delay ~@body)))
 
 (defmacro ^:skip-wiki lazy-combinator
   "Implementation macro, do not call directly."

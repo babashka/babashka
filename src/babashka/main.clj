@@ -61,7 +61,8 @@
    [sci.impl.namespaces :as sci-namespaces]
    [sci.impl.types :as sci-types]
    [sci.impl.unrestrict :refer [*unrestricted*]]
-   [sci.impl.vars :as vars])
+   [sci.impl.vars :as vars]
+   [clojure.stacktrace :as stacktrace])
   (:gen-class))
 
 (def windows?
@@ -1126,5 +1127,27 @@ Use bb run --help to show this help output.
       (System/exit exit-code))))
 
 ;;;; Scratch
+
+(defn where-am-i [depth]
+  (let [ks [:fileName :lineNumber :className]]
+    (clojure.pprint/print-table
+     ks
+     (map (comp #(select-keys % ks) bean)
+          (take depth (.getStackTrace (Thread/currentThread)))))))
+
+(alter-var-root #'require
+                (fn [old-req]
+                  (fn [& args]
+                    (prn :require-args args)
+                    (where-am-i 100)
+                    #_(System/exit 0)
+                    #_(apply old-req args))))
+
+(alter-var-root #'requiring-resolve
+                (fn [old-req]
+                  (fn [& args]
+                    (prn :requiring-resolve-args args)
+                    (stacktrace/print-stack-trace (-> (Thread/currentThread) #_(.getStackTrace)))
+                    (apply old-req args))))
 
 (comment)

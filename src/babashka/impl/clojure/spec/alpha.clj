@@ -901,7 +901,7 @@
                 rgen (fn [k s] [k (gensub s overrides (conj path k) rmap k)])
                 ogen (fn [k s]
                        (when-not (recur-limit? rmap id path k)
-                         [k (gen/delay (gensub s overrides (conj path k) rmap k))]))
+                         [k (gen/delay-internal (gensub s overrides (conj path k) rmap k))]))
                 reqs (map rgen req-keys req-specs)
                 opts (remove nil? (map ogen opt-keys opt-specs))]
             (when (every? identity (concat (map second reqs) (map second opts)))
@@ -1004,7 +1004,7 @@
                        (let [p (f nil)]
                          (let [rmap (inck rmap id)]
                            (when-not (recur-limit? rmap id path k)
-                             (gen/delay
+                             (gen/delay-internal
                                (gen/fmap
                                 #(tag % k)
                                 (gensub p overrides (conj path k) rmap (list 'method form k))))))))
@@ -1141,7 +1141,7 @@
           (let [gen (fn [k p f]
                       (let [rmap (inck rmap id)]
                         (when-not (recur-limit? rmap id path k)
-                          (gen/delay
+                          (gen/delay-internal
                             (gensub p overrides (conj path k) rmap f)))))
                 gs (remove nil? (map gen keys preds forms))]
             (when-not (empty? gs)
@@ -1648,7 +1648,7 @@
                             ;;(prn {:k k :path path :rmap rmap :op op :id id})
                             (when-not (c/and rmap id k (recur-limit? rmap id path k))
                               (if id
-                                (gen/delay (re-gen p overrides (if k (conj path k) path) rmap (c/or f p)))
+                                (gen/delay-internal (re-gen p overrides (if k (conj path k) path) rmap (c/or f p)))
                                 (re-gen p overrides (if k (conj path k) path) rmap (c/or f p)))))]
                   (map gen ps (c/or (seq ks) (repeat nil)) (c/or (seq forms) (repeat nil)))))]
     (c/or (when-let [gfn (c/or (get overrides (spec-name origp))
@@ -1878,8 +1878,8 @@
         (if gfn
           (gfn)
           (gen/frequency
-           [[1 (gen/delay (gen/return nil))]
-            [9 (gen/delay (gensub pred overrides (conj path :clojure.spec.alpha/pred) rmap form))]])))
+           [[1 (gen/delay-internal (gen/return nil))]
+            [9 (gen/delay-internal (gensub pred overrides (conj path :clojure.spec.alpha/pred) rmap form))]])))
       (with-gen* [_ gfn] (nilable-impl form pred gfn))
       (describe* [_] `(clojure.spec.alpha/nilable ~(res form))))))
 
