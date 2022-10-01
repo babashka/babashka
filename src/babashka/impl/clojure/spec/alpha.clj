@@ -689,6 +689,14 @@
   ([f] `(clojure.spec.alpha/spec-impl '(conformer ~(res f)) ~f nil true))
   ([f unf] `(clojure.spec.alpha/spec-impl '(conformer ~(res f) ~(res unf)) ~f nil true ~unf)))
 
+(defmacro internal-conformer
+  "takes a predicate function with the semantics of conform i.e. it should return either a
+  (possibly converted) value or :clojure.spec.alpha/invalid, and returns a
+  spec that uses it as a predicate/conformer. Optionally takes a
+  second fn that does unform of result of first"
+  ([f] `(babashka.impl.clojure.spec.alpha/spec-impl '(conformer ~(res f)) ~f nil true))
+  ([f unf] `(babashka.impl.clojure.spec.alpha/spec-impl '(conformer ~(res f) ~(res unf)) ~f nil true ~unf)))
+
 (defmacro fspec
   "takes :args :ret and (optional) :fn kwargs whose values are preds
   and returns a spec whose conform/explain take a fn and validates it
@@ -944,10 +952,7 @@
       (specize* [s _] s)
 
       Spec
-       (conform* [_ x] (let [;; _ (prn :pred pred :descr (describe pred) :x x)
-                             ret (pred x)
-                             ;; _ (prn :ret ret)
-                             ]
+       (conform* [_ x] (let [ret (pred x)]
                         (if cpred?
                           ret
                           (if ret x :clojure.spec.alpha/invalid))))
@@ -1815,7 +1820,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; non-primitives ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (internal-def
   :clojure.spec.alpha/kvs->map
-  (conformer #(zipmap (map :clojure.spec.alpha/k %) (map :clojure.spec.alpha/v %)) #(map (fn [[k v]] {:clojure.spec.alpha/k k :clojure.spec.alpha/v v}) %)))
+  (internal-conformer #(zipmap (map :clojure.spec.alpha/k %) (map :clojure.spec.alpha/v %)) #(map (fn [[k v]] {:clojure.spec.alpha/k k :clojure.spec.alpha/v v}) %)))
 
 (defmacro keys*
   "takes the same arguments as spec/keys and returns a regex op that matches sequences of key/values,
