@@ -1136,18 +1136,15 @@ Use bb run --help to show this help output.
           (take depth (.getStackTrace (Thread/currentThread)))))))
 
 (alter-var-root #'require
-                (fn [old-req]
+                (fn [_old-req]
                   (fn [& args]
                     (prn :require-args args)
-                    (where-am-i 100)
-                    #_(System/exit 0)
-                    #_(apply old-req args))))
+                    (System/exit 1))))
 
 (alter-var-root #'requiring-resolve
-                (fn [old-req]
+                (fn [_old-req]
                   (fn [& args]
                     (prn :requiring-resolve-args args)
-                    (stacktrace/print-stack-trace (-> (Thread/currentThread) #_(.getStackTrace)))
-                    (apply old-req args))))
+                    (System/exit 1))))
 
 (comment)
