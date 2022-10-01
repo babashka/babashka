@@ -111,7 +111,8 @@
     clojure.lang.RT
     {:methods [{:name "aget"}
                {:name "aset"}
-               {:name "aclone"}]}
+               {:name "aclone"}]
+     :fields [{:name "checkSpecAsserts"}]}
     clojure.lang.Compiler
     {:fields [{:name "specials"}
               {:name "CHAR_MAP"}]}
