@@ -1,16 +1,24 @@
 (ns babashka.run-all-libtests
-  (:require [babashka.classpath :as cp :refer [add-classpath]]
-            [babashka.core :refer [windows?]]
-            [babashka.fs :as fs]
-            [clojure.edn :as edn]
-            [clojure.java.io :as io]
-            [clojure.test :as t :refer [*report-counters*]]
-            [clojure.string :as str]))
+  (:require
+   [babashka.classpath :as cp :refer [add-classpath]]
+   [babashka.core :refer [windows?]]
+   [babashka.fs :as fs]
+   [clojure.edn :as edn]
+   [clojure.java.io :as io]
+   [clojure.spec.test.alpha :as st]
+   [clojure.string :as str]
+   [clojure.test :as t :refer [*report-counters*]]
+   [orchestra.spec.test :as ot]))
 
-(defmethod clojure.test/report :begin-test-var [m]
-  (println "Running" (subs (str (-> m :var str)) 2)))
+#_(defmethod t/report :begin-test-var [m]
+    (println "Running" (subs (str (-> m :var str)) 2)))
 
-(defmethod clojure.test/report :end-test-var [_m]
+#_:clj-kondo/ignore
+(def orig-spec-checking-fn @#'clojure.spec.test.alpha/spec-checking-fn)
+
+(alter-var-root #'st/spec-checking-fn (constantly orig-spec-checking-fn))
+
+(defmethod t/report :end-test-var [_m]
   (when-let [rc *report-counters*]
     (let [{:keys [:fail :error]} @rc]
       (when (and (= "true" (System/getenv "BABASHKA_FAIL_FAST"))
@@ -38,11 +46,11 @@
 (defn test-namespaces [& namespaces]
   (let [namespaces (seq (filter test-namespace? namespaces))]
     (when (seq namespaces)
-      (let [no-orch-namespaces (remove #(str/starts-with? (str %) "orchestra") namespaces)
-            ;; somehow orchestra screws up other tests, so we run that last
-            orch-namespaces (filter #(str/starts-with? (str %) "orchestra") namespaces)
-            namespaces (concat no-orch-namespaces orch-namespaces)]
+      (let [namespaces namespaces]
         (doseq [n namespaces]
+          (if (str/starts-with? (str n) "orchestra")
+            (alter-var-root #'st/spec-checking-fn (constantly ot/spec-checking-fn))
+            (alter-var-root #'st/spec-checking-fn (constantly orig-spec-checking-fn)))
           (require n)
           (filter-vars! (find-ns n) #(-> % meta ((some-fn :skip-bb
                                                           :test-check-slow)) not))
