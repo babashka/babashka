@@ -5,7 +5,6 @@
    [babashka.impl.clojure.spec.gen.alpha :as gen]
    [babashka.impl.clojure.spec.test.alpha :as test :refer [tns]]
    [clojure.core :as c]
-   [clojure.spec.alpha :as csa]
    [sci.core :as sci :refer [copy-var]]))
 
 (def gns (sci/create-ns 'clojure.spec.gen.alpha nil))
@@ -27,8 +26,6 @@
   (let [k (if (symbol? k) (ns-qualify k) k)]
     `(clojure.spec.alpha/def-impl '~k '~(#'s/res spec-form) ~spec-form)))
 
-;; TODO: fix error in clj-kondo: def is a special form which should always be resolved as the special form
-#_:clj-kondo/ignore
 (def spec-namespace
   {'def (sci/copy-var s/def sns)
    'def-impl (copy-var s/def-impl sns)
@@ -53,7 +50,7 @@
    'fdef (copy-var s/fdef sns)
    'fspec (copy-var s/fspec sns)
    'fspec-impl (copy-var s/fspec-impl sns)
-   'every (copy-var csa/every sns)
+   'every (copy-var s/every sns)
    'every-impl (copy-var s/every-impl sns)
    'every-kv (copy-var s/every-kv sns)
    'keys (copy-var s/keys sns)

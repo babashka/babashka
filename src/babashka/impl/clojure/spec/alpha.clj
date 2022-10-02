@@ -535,7 +535,7 @@
        mopts)
      (mapcat identity))))
 
-#_(defmacro every
+(defmacro every
   "takes a pred and validates collection elements against that pred.
 
   Note that 'every' does not do exhaustive checking, rather it samples
@@ -569,9 +569,8 @@
         nopts (-> opts
                   (dissoc :gen :clojure.spec.alpha/describe)
                   (assoc :clojure.spec.alpha/kind-form `'~(res (:kind opts))
-                         :clojure.spec.alpha/describe (c/or desc `'(every ~(res pred) ~@(res-kind opts)))))
+                         :clojure.spec.alpha/describe (c/or desc `'(clojure.spec.alpha/every ~(res pred) ~@(res-kind opts)))))
         gx (gensym)
-        _ (prn nopts)
         cpreds (cond-> [(list (c/or kind `coll?) gx)]
                  count (conj `(= ~count (bounded-count ~count ~gx)))
 
