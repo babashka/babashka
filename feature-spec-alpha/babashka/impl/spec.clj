@@ -1,10 +1,12 @@
 (ns babashka.impl.spec
   {:no-doc true}
-  (:require [babashka.impl.clojure.spec.alpha :as s :refer [sns]]
-            [babashka.impl.clojure.spec.gen.alpha :as gen]
-            [babashka.impl.clojure.spec.test.alpha :as test :refer [tns]]
-            [clojure.core :as c]
-            [sci.core :as sci :refer [copy-var]]))
+  (:require
+   [babashka.impl.clojure.spec.alpha :as s :refer [sns]]
+   [babashka.impl.clojure.spec.gen.alpha :as gen]
+   [babashka.impl.clojure.spec.test.alpha :as test :refer [tns]]
+   [clojure.core :as c]
+   [clojure.spec.alpha :as csa]
+   [sci.core :as sci :refer [copy-var]]))
 
 (def gns (sci/create-ns 'clojure.spec.gen.alpha nil))
 
@@ -51,7 +53,7 @@
    'fdef (copy-var s/fdef sns)
    'fspec (copy-var s/fspec sns)
    'fspec-impl (copy-var s/fspec-impl sns)
-   'every (copy-var s/every sns)
+   'every (copy-var csa/every sns)
    'every-impl (copy-var s/every-impl sns)
    'every-kv (copy-var s/every-kv sns)
    'keys (copy-var s/keys sns)
