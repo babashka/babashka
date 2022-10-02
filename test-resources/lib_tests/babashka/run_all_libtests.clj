@@ -7,8 +7,7 @@
    [clojure.java.io :as io]
    [clojure.spec.test.alpha :as st]
    [clojure.string :as str]
-   [clojure.test :as t :refer [*report-counters*]]
-   [orchestra.spec.test :as ot]))
+   [clojure.test :as t :refer [*report-counters*]]))
 
 #_(defmethod t/report :begin-test-var [m]
     (println "Running" (subs (str (-> m :var str)) 2)))
@@ -50,7 +49,7 @@
         (doseq [n namespaces]
           (let [orchestra? (str/starts-with? (str n) "orchestra")]
             (if orchestra?
-              (alter-var-root #'st/spec-checking-fn (constantly ot/spec-checking-fn))
+              nil ;; (alter-var-root #'st/spec-checking-fn (constantly ot/spec-checking-fn))
               (alter-var-root #'st/spec-checking-fn (constantly orig-spec-checking-fn)))
             (when-not orchestra?
               (require n)

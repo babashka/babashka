@@ -324,7 +324,7 @@
     expr))
 
 (defn sci-resolve [sym]
-  (@sci.impl.utils/eval-resolve-state @ctx {} sym))
+  (sci/resolve @ctx sym))
 
 (defn res [form]
   (cond
@@ -669,7 +669,6 @@
         keys (mapv first pairs)
         pred-forms (mapv second pairs)
         pf (mapv res pred-forms)]
-    ;;(prn key-pred-forms)
     (c/assert (c/and (even? (count key-pred-forms)) (every? keyword? keys)) "cat expects k1 p1 k2 p2..., where ks are keywords")
     `(clojure.spec.alpha/cat-impl ~keys ~pred-forms '~pf)))
 
@@ -1581,12 +1580,12 @@
         nil p
         :clojure.spec.alpha/amp (list* 'clojure.spec.alpha/& amp forms)
         :clojure.spec.alpha/pcat (if rep+
-                 (list `+ rep+)
-                 (cons `cat (mapcat vector (c/or (seq ks) (repeat :_)) forms)))
+                 (list 'clojure.spec.alpha/+ rep+)
+                 (cons 'clojure.spec.alpha/cat (mapcat vector (c/or (seq ks) (repeat :_)) forms)))
         :clojure.spec.alpha/alt (if maybe
-                (list `? maybe)
-                (cons `alt (mapcat vector ks forms)))
-        :clojure.spec.alpha/rep (list (if splice `+ `*) forms)))))
+                (list 'clojure.spec.alpha/? maybe)
+                (cons 'clojure.spec.alpha/alt (mapcat vector ks forms)))
+        :clojure.spec.alpha/rep (list (if splice 'clojure.spec.alpha/+ 'clojure.spec.alpha/*) forms)))))
 
 (defn- op-explain [form p path via in input]
   ;;(prn {:form form :p p :path path :input input})
