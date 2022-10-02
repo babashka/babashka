@@ -48,15 +48,17 @@
     (when (seq namespaces)
       (let [namespaces namespaces]
         (doseq [n namespaces]
-          (if (str/starts-with? (str n) "orchestra")
-            (alter-var-root #'st/spec-checking-fn (constantly ot/spec-checking-fn))
-            (alter-var-root #'st/spec-checking-fn (constantly orig-spec-checking-fn)))
-          (require n)
-          (filter-vars! (find-ns n) #(-> % meta ((some-fn :skip-bb
-                                                          :test-check-slow)) not))
-          (let [m (apply t/run-tests [n])]
-            (swap! status (fn [status]
-                            (merge-with + status (dissoc m :type))))))))))
+          (let [orchestra? (str/starts-with? (str n) "orchestra")]
+            (if orchestra?
+              (alter-var-root #'st/spec-checking-fn (constantly ot/spec-checking-fn))
+              (alter-var-root #'st/spec-checking-fn (constantly orig-spec-checking-fn)))
+            (when-not orchestra?
+              (require n)
+              (filter-vars! (find-ns n) #(-> % meta ((some-fn :skip-bb
+                                                              :test-check-slow)) not))
+              (let [m (apply t/run-tests [n])]
+                (swap! status (fn [status]
+                                (merge-with + status (dissoc m :type))))))))))))
 
 ;; Standard test-runner for libtests
 (let [lib-tests (edn/read-string (slurp (io/resource "bb-tested-libs.edn")))
