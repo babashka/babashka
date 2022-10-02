@@ -150,7 +150,8 @@
         (.applyTo ^clojure.lang.IFn f args)))))
 
 ;; orchestra is going to override this
-(def spec-checking-fn-var (sci/new-var 'spec-checking-fn spec-checking-fn* {:ns tns}))
+(def spec-checking-fn-var (sci/new-var 'spec-checking-fn spec-checking-fn* {:ns tns
+                                                                            :name 'spec-checking-fn}))
 
 (defn- no-fspec
   [v spec]
