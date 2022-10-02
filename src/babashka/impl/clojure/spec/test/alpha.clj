@@ -125,14 +125,14 @@
   (let [fn-spec (@#'s/maybe-spec fn-spec)
         conform! (fn [v role spec data args]
                    (let [conformed (s/conform spec data)]
-                     (if (= ::s/invalid conformed)
+                     (if (= :clojure.spec.alpha/invalid conformed)
                        (let [caller (->> (.getStackTrace (Thread/currentThread))
                                          stacktrace-relevant-to-instrument
                                          first)
                              ed (merge (assoc (s/explain-data* spec [] [] [] data)
-                                              ::s/fn (->sym v)
-                                              ::s/args args
-                                              ::s/failure :instrument)
+                                              :clojure.spec.alpha/fn (->sym v)
+                                              :clojure.spec.alpha/args args
+                                              :clojure.spec.alpha/failure :instrument)
                                        (when caller
                                          {::caller (dissoc caller :class :method)}))]
                          (throw (ex-info
@@ -143,7 +143,8 @@
       [& args]
       (if @instrument-enabled-var
         (sci/binding [instrument-enabled-var false]
-          (when (:args fn-spec) (conform! v :args (:args fn-spec) args args))
+          (when (:args fn-spec)
+            (conform! v :args (:args fn-spec) args args))
           (sci/binding [instrument-enabled-var true]
             (.applyTo ^clojure.lang.IFn f args)))
         (.applyTo ^clojure.lang.IFn f args)))))
@@ -151,7 +152,7 @@
 (defn- no-fspec
   [v spec]
   (ex-info (str "Fn at " v " is not spec'ed.")
-           {:var v :spec spec ::s/failure :no-fspec}))
+           {:var v :spec spec :clojure.spec.alpha/failure :no-fspec}))
 
 (defonce ^:private instrumented-vars (atom {}))
 
@@ -169,7 +170,6 @@
 
 (defn- instrument-1
   [s opts]
-  ;; TODO: sci resolve
   (when-let [v (sci/resolve @ctx s)]
     (when-not (-> v meta :macro)
       (let [spec (s/get-spec v)
@@ -191,7 +191,6 @@
       (swap! instrumented-vars dissoc v)
       (let [current @v]
         (when (= wrapped current)
-          ;; TODO: use sci-alter-var-root
           (sci/alter-var-root v (constantly raw))
           (->sym v))))))
 
@@ -290,18 +289,18 @@ Returns a collection of syms naming the vars unstrumented."
      (assoc (s/explain-data* spec [role] [] [] v)
             ::args args
             ::val v
-            ::s/failure :check-failed))))
+            :clojure.spec.alpha/failure :check-failed))))
 
 (defn- check-call
   "Returns true if call passes specs, otherwise *returns* an exception
-with explain-data + ::s/failure."
+with explain-data + :clojure.spec.alpha/failure."
   [f specs args]
   (let [cargs (when (:args specs) (s/conform (:args specs) args))]
-    (if (= cargs ::s/invalid)
+    (if (= cargs :clojure.spec.alpha/invalid)
       (explain-check args (:args specs) args :args)
       (let [ret (apply f args)
             cret (when (:ret specs) (s/conform (:ret specs) ret))]
-        (if (= cret ::s/invalid)
+        (if (= cret :clojure.spec.alpha/invalid)
           (explain-check args (:ret specs) ret :ret)
           (if (and (:args specs) (:ret specs) (:fn specs))
             (if (s/valid? (:fn specs) {:args cargs :ret cret})
@@ -338,7 +337,7 @@ with explain-data + ::s/failure."
     (try
       (cond
         (or (nil? f) (some-> v meta :macro))
-        {:failure (ex-info "No fn to spec" {::s/failure :no-fn})
+        {:failure (ex-info "No fn to spec" {:clojure.spec.alpha/failure :no-fn})
          :sym s :spec spec}
 
         (:args specd)
@@ -346,7 +345,7 @@ with explain-data + ::s/failure."
           (make-check-result s spec tcret))
 
         :default
-        {:failure (ex-info "No :args spec" {::s/failure :no-args-spec})
+        {:failure (ex-info "No :args spec" {:clojure.spec.alpha/failure :no-args-spec})
          :sym s :spec spec})
       (finally
         (when re-inst? (instrument s))))))
@@ -404,7 +403,7 @@ keys
 ::stc/ret   optional value returned by test.check/quick-check
 
 The value for :failure can be any exception. Exceptions thrown by
-spec itself will have an ::s/failure value in ex-data:
+spec itself will have an :clojure.spec.alpha/failure value in ex-data:
 
 :check-failed   at least one checked return did not conform
 :no-args-spec   no :args spec provided
@@ -425,7 +424,7 @@ spec itself will have an ::s/failure value in ex-data:
 
 (defn- failure-type
   [x]
-  (::s/failure (ex-data x)))
+  (:clojure.spec.alpha/failure (ex-data x)))
 
 (defn- unwrap-failure
   [x]
@@ -435,7 +434,7 @@ spec itself will have an ::s/failure value in ex-data:
 
 (defn- result-type
   "Returns the type of the check result. This can be any of the
-::s/failure keywords documented in 'check', or:
+:clojure.spec.alpha/failure keywords documented in 'check', or:
 
   :check-passed   all checked fn returns conformed
   :check-threw    checked fn threw an exception"
