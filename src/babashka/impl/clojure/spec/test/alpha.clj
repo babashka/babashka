@@ -120,7 +120,7 @@
                     (drop-while plumbing?))
               elems)))
 
-(defn spec-checking-fn
+(defn spec-checking-fn* ;; renamed to we're forced to go through SCI var below
   [v f fn-spec]
   (let [fn-spec (@#'s/maybe-spec fn-spec)
         conform! (fn [v role spec data args]
@@ -148,6 +148,9 @@
           (sci/binding [instrument-enabled-var true]
             (.applyTo ^clojure.lang.IFn f args)))
         (.applyTo ^clojure.lang.IFn f args)))))
+
+;; orchestra is going to override this
+(def spec-checking-fn-var (sci/copy-var spec-checking-fn* tns))
 
 (defn- no-fspec
   [v spec]
@@ -179,7 +182,7 @@
             ospec (or (instrument-choose-spec spec s opts)
                       (throw (no-fspec v spec)))
             ofn (instrument-choose-fn to-wrap ospec s opts)
-            checked (spec-checking-fn v ofn ospec)]
+            checked (@spec-checking-fn-var v ofn ospec)]
         (sci/alter-var-root v (constantly checked))
         (swap! instrumented-vars assoc v {:raw to-wrap :wrapped checked})
         (->sym v)))))

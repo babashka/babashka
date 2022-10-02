@@ -106,7 +106,7 @@
    '*instrument-enabled* test/instrument-enabled-var
    'with-instrument-disabled (copy-var test/with-instrument-disabled tns)
    'stacktrace-relevant-to-instrument (copy-var test/stacktrace-relevant-to-instrument tns)
-   'spec-checking-fn (copy-var test/spec-checking-fn tns)})
+   'spec-checking-fn test/spec-checking-fn-var})
 
 #_(let [syms '[uuid gen-for-pred lazy-prim set one-of any-printable vector-distinct boolean string-alphanumeric map delay simple-type char bind symbol-ns any shuffle lazy-prims cat double char-alpha int return gen-for-name symbol quick-check char-alphanumeric choose for-all* string-ascii frequency double* generate delay-impl lazy-combinators tuple string vector large-integer keyword-ns not-empty elements sample list large-integer* keyword hash-map ratio such-that fmap char-ascii simple-type-printable lazy-combinator bytes]]
   #_:clj-kondo/ignore
