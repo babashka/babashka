@@ -887,7 +887,7 @@ Use bb run --help to show this help output.
             _ (vreset! common/ctx sci-ctx)
             _ (when-let [pods (:pods @common/bb-edn)]
                 (when-let [pod-metadata (pods/load-pods-metadata
-                                          pods {:download-only (download-only?)})]
+                                         pods {:download-only (download-only?)})]
                   (vreset! pod-namespaces pod-metadata)))
             preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim))
             [expressions exit-code]
@@ -1128,23 +1128,31 @@ Use bb run --help to show this help output.
 
 ;;;; Scratch
 
-(defn where-am-i [depth]
-  (let [ks [:fileName :lineNumber :className]]
-    (clojure.pprint/print-table
-     ks
-     (map (comp #(select-keys % ks) bean)
-          (take depth (.getStackTrace (Thread/currentThread)))))))
+(defmacro in-native-image-or-aot
+  [& body]
+  `(when (or (System/getProperty "org.graalvm.nativeimage.kind")
+             (System/getProperty "com.oracle.graalvm.isaot"))
+     ~@body))
 
-(alter-var-root #'require
-                (fn [_old-req]
-                  (fn [& args]
-                    (prn :require-args args)
-                    (System/exit 1))))
+(in-native-image-or-aot
 
-(alter-var-root #'requiring-resolve
-                (fn [_old-req]
-                  (fn [& args]
-                    (prn :requiring-resolve-args args)
-                    (System/exit 1))))
+ #_(defn where-am-i [depth]
+   (let [ks [:fileName :lineNumber :className]]
+     (clojure.pprint/print-table
+      ks
+      (map (comp #(select-keys % ks) bean)
+           (take depth (.getStackTrace (Thread/currentThread)))))))
+
+ (alter-var-root #'require
+                 (fn [_old-req]
+                   (fn [& args]
+                     (prn :require-args args)
+                     (System/exit 1))))
+
+ (alter-var-root #'requiring-resolve
+                 (fn [_old-req]
+                   (fn [& args]
+                     (prn :requiring-resolve-args args)
+                     (System/exit 1)))))
 
 (comment)
