@@ -6,6 +6,9 @@
             [clojure.java.io :as io]
             [clojure.test :as t :refer [*report-counters*]]))
 
+(defmethod clojure.test/report :begin-test-var [m]
+  (println "Running" (subs (str (-> m :var str)) 2)))
+
 (defmethod clojure.test/report :end-test-var [_m]
   (when-let [rc *report-counters*]
     (let [{:keys [:fail :error]} @rc]
