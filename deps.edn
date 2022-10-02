@@ -63,7 +63,7 @@
            :lib-tests
            {:extra-paths ["process/src" "process/test" "test-resources/lib_tests"]
             :extra-deps {org.clj-commons/clj-http-lite {:mvn/version "0.4.392"}
-                         org.babashka/spec.alpha {:git/url "https://github.com/babashka/spec.alpha"
+                         #_#_org.babashka/spec.alpha {:git/url "https://github.com/babashka/spec.alpha"
                                                   :sha "0dec1f88cbde74a0470b454396f09a03adb4ae39"}
                          lambdaisland/regal {:mvn/version "0.0.143"}
                          cprop/cprop {:mvn/version "0.1.16"}

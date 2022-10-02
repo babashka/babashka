@@ -854,7 +854,7 @@ Use bb run --help to show this help output.
                                    {})
                                res)))
                          (case namespace
-                           clojure.spec.alpha
+                           #_#_clojure.spec.alpha
                            (binding [*out* *err*]
                              (println "[babashka] WARNING: Use the babashka-compatible version of clojure.spec.alpha, available here: https://github.com/babashka/spec.alpha"))
                            clojure.core.specs.alpha
