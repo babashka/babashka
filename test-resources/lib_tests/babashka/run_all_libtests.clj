@@ -4,7 +4,8 @@
             [babashka.fs :as fs]
             [clojure.edn :as edn]
             [clojure.java.io :as io]
-            [clojure.test :as t :refer [*report-counters*]]))
+            [clojure.test :as t :refer [*report-counters*]]
+            [clojure.string :as str]))
 
 (defmethod clojure.test/report :end-test-var [_m]
   (when-let [rc *report-counters*]
@@ -34,16 +35,21 @@
 (defn test-namespaces [& namespaces]
   (let [namespaces (seq (filter test-namespace? namespaces))]
     (when (seq namespaces)
-      (doseq [n namespaces]
-        (require n)
-        (filter-vars! (find-ns n) #(-> % meta ((some-fn :skip-bb
-                                                        :test-check-slow)) not)))
-      (let [m (apply t/run-tests namespaces)]
-        (swap! status (fn [status]
-                        (merge-with + status (dissoc m :type))))))))
+      (let [no-orch-namespaces (remove #(str/starts-with? (str %) "orchestra") namespaces)
+            ;; somehow orchestra screws up other tests, so we run that last
+            orch-namespaces (filter #(str/starts-with? (str %) "orchestra") namespaces)
+            namespaces (concat no-orch-namespaces orch-namespaces)]
+        (doseq [n namespaces]
+          (require n)
+          (filter-vars! (find-ns n) #(-> % meta ((some-fn :skip-bb
+                                                          :test-check-slow)) not))
+          (let [m (apply t/run-tests [n])]
+            (swap! status (fn [status]
+                            (merge-with + status (dissoc m :type))))))))))
 
 ;; Standard test-runner for libtests
-(let [lib-tests (edn/read-string (slurp (io/resource "bb-tested-libs.edn")))]
+(let [lib-tests (edn/read-string (slurp (io/resource "bb-tested-libs.edn")))
+      test-nss (atom [])]
   (doseq [[libname {tns :test-namespaces skip-windows :skip-windows
                     :keys [test-paths
                            git-sha]}] lib-tests]
@@ -52,7 +58,8 @@
       (doseq [p test-paths]
         (add-classpath (str (fs/file git-dir p)))))
     (when-not (and skip-windows (windows?))
-      (apply test-namespaces tns))))
+      (swap! test-nss into tns)))
+  (apply test-namespaces @test-nss))
 
 ;; Non-standard tests - These are tests with unusual setup around test-namespaces
 
