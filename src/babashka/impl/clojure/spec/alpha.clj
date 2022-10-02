@@ -329,8 +329,11 @@
 (defn res [form]
   (cond
     (keyword? form) form
-    (symbol? form) (c/or
-                    (-> form sci-resolve ->sym) form)
+    (symbol? form) (cond
+                     (= 'fn form) 'clojure.core/fn ;; make tests pass, fn is not a macro in SCI
+                     (= 'not form) 'clojure.core/not ;; make tests pass, not is not a macro in SCI
+                     :else (c/or
+                            (-> form sci-resolve ->sym) form))
     (sequential? form) (walk/postwalk #(if (symbol? %) (res %) %) (unfn form))
     :else form))
 
@@ -484,12 +487,12 @@
         pred-forms (walk/postwalk res pred-exprs)]
     ;; `(map-spec-impl ~req-keys '~req ~opt '~pred-forms ~pred-exprs ~gen)
     `(clojure.spec.alpha/map-spec-impl {:req '~req :opt '~opt :req-un '~req-un :opt-un '~opt-un
-                     :req-keys '~req-keys :req-specs '~req-specs
-                     :opt-keys '~opt-keys :opt-specs '~opt-specs
-                     :pred-forms '~pred-forms
-                     :pred-exprs ~pred-exprs
-                     :keys-pred ~keys-pred
-                     :gfn ~gen})))
+                                        :req-keys '~req-keys :req-specs '~req-specs
+                                        :opt-keys '~opt-keys :opt-specs '~opt-specs
+                                        :pred-forms '~pred-forms
+                                        :pred-exprs ~pred-exprs
+                                        :keys-pred ~keys-pred
+                                        :gfn ~gen})))
 
 (defmacro or
   "Takes key+pred pairs, e.g.
@@ -563,7 +566,7 @@
   returns a test.check generator
 
   See also - coll-of, every-kv
-"
+  "
   [pred & {:keys [into kind count max-count min-count distinct gen-max gen] :as opts}]
   (let [desc (:clojure.spec.alpha/describe opts)
         nopts (-> opts
@@ -946,27 +949,27 @@
      (ident? pred) (cond-> (the-spec pred) gfn (with-gen gfn))
      :else
      (reify
-      Specize
-      (specize* [s] s)
-      (specize* [s _] s)
+       Specize
+       (specize* [s] s)
+       (specize* [s _] s)
 
-      Spec
+       Spec
        (conform* [_ x] (let [ret (pred x)]
-                        (if cpred?
-                          ret
-                          (if ret x :clojure.spec.alpha/invalid))))
-      (unform* [_ x] (if cpred?
-                       (if unc
-                         (unc x)
-                         (throw (IllegalStateException. "no unform fn for conformer")))
-                       x))
-      (explain* [_ path via in x]
-                (when (invalid? (dt pred x form cpred?))
-                  [{:path path :pred form :val x :via via :in in}]))
-      (gen* [_ _ _ _] (if gfn
-                        (gfn)
-                        (gen/gen-for-pred pred)))
-      (with-gen* [_ gfn] (spec-impl form pred gfn cpred? unc))
+                         (if cpred?
+                           ret
+                           (if ret x :clojure.spec.alpha/invalid))))
+       (unform* [_ x] (if cpred?
+                        (if unc
+                          (unc x)
+                          (throw (IllegalStateException. "no unform fn for conformer")))
+                        x))
+       (explain* [_ path via in x]
+         (when (invalid? (dt pred x form cpred?))
+           [{:path path :pred form :val x :via via :in in}]))
+       (gen* [_ _ _ _] (if gfn
+                         (gfn)
+                         (gen/gen-for-pred pred)))
+       (with-gen* [_ gfn] (spec-impl form pred gfn cpred? unc))
        (describe* [_] form)))))
 
 (def invalid :clojure.spec.alpha/invalid)
@@ -1009,9 +1012,9 @@
                          (let [rmap (inck rmap id)]
                            (when-not (recur-limit? rmap id path k)
                              (gen/delay-internal
-                               (gen/fmap
-                                #(tag % k)
-                                (gensub p overrides (conj path k) rmap (list 'method form k))))))))
+                              (gen/fmap
+                               #(tag % k)
+                               (gensub p overrides (conj path k) rmap (list 'method form k))))))))
                  gs (->> (methods @mmvar)
                          (remove (fn [[k]] (invalid? k)))
                          (map gen)
@@ -1146,7 +1149,7 @@
                       (let [rmap (inck rmap id)]
                         (when-not (recur-limit? rmap id path k)
                           (gen/delay-internal
-                            (gensub p overrides (conj path k) rmap f)))))
+                           (gensub p overrides (conj path k) rmap f)))))
                 gs (remove nil? (map gen keys preds forms))]
             (when-not (empty? gs)
               (gen/one-of gs)))))
@@ -1494,8 +1497,8 @@
       :clojure.spec.alpha/accept true
       nil nil
       :clojure.spec.alpha/amp (c/and (accept-nil? p1)
-                   (let [ret (-> (preturn p1) (and-preds ps (next forms)))]
-                     (not (invalid? ret))))
+                                     (let [ret (-> (preturn p1) (and-preds ps (next forms)))]
+                                       (not (invalid? ret))))
       :clojure.spec.alpha/rep (c/or (identical? p1 p2) (accept-nil? p1))
       :clojure.spec.alpha/pcat (every? accept-nil? ps)
       :clojure.spec.alpha/alt (c/some accept-nil? ps))))
@@ -1508,14 +1511,14 @@
       :clojure.spec.alpha/accept ret
       nil nil
       :clojure.spec.alpha/amp (let [pret (preturn p1)]
-              (if (noret? p1 pret)
-                :clojure.spec.alpha/nil
-                (and-preds pret ps forms)))
+                                (if (noret? p1 pret)
+                                  :clojure.spec.alpha/nil
+                                  (and-preds pret ps forms)))
       :clojure.spec.alpha/rep (add-ret p1 ret k)
       :clojure.spec.alpha/pcat (add-ret p0 ret k)
       :clojure.spec.alpha/alt (let [[[p0] [k0]] (filter-alt ps ks forms accept-nil?)
-                  r (if (nil? p0) :clojure.spec.alpha/nil (preturn p0))]
-              (if k0 (tagged-ret k0 r) r)))))
+                                    r (if (nil? p0) :clojure.spec.alpha/nil (preturn p0))]
+                                (if k0 (tagged-ret k0 r) r)))))
 
 (defn- op-unform [p x]
   ;;(prn {:p p :x x})
@@ -1525,18 +1528,18 @@
       :clojure.spec.alpha/accept [ret]
       nil [(unform p x)]
       :clojure.spec.alpha/amp (let [px (reduce #(unform %2 %1) x (reverse ps))]
-              (op-unform p1 px))
+                                (op-unform p1 px))
       :clojure.spec.alpha/rep (mapcat #(op-unform p1 %) x)
       :clojure.spec.alpha/pcat (if rep+
-               (mapcat #(op-unform p0 %) x)
-               (mapcat (fn [k]
-                         (when (contains? x k)
-                           (op-unform (kps k) (get x k))))
-                       ks))
+                                 (mapcat #(op-unform p0 %) x)
+                                 (mapcat (fn [k]
+                                           (when (contains? x k)
+                                             (op-unform (kps k) (get x k))))
+                                         ks))
       :clojure.spec.alpha/alt (if maybe
-              [(unform p0 x)]
-              (let [[k v] x]
-                (op-unform (kps k) v))))))
+                                [(unform p0 x)]
+                                (let [[k v] x]
+                                  (op-unform (kps k) v))))))
 
 (defn- add-ret [p r k]
   (let [{:keys [:clojure.spec.alpha/op ps splice] :as p} (reg-resolve! p)
@@ -1560,16 +1563,16 @@
         nil (let [ret (dt p x p)]
               (when-not (invalid? ret) (accept ret)))
         :clojure.spec.alpha/amp (when-let [p1 (deriv p1 x)]
-                (if (= :clojure.spec.alpha/accept (:clojure.spec.alpha/op p1))
-                  (let [ret (-> (preturn p1) (and-preds ps (next forms)))]
-                    (when-not (invalid? ret)
-                      (accept ret)))
-                  (amp-impl p1 amp ps forms)))
+                                  (if (= :clojure.spec.alpha/accept (:clojure.spec.alpha/op p1))
+                                    (let [ret (-> (preturn p1) (and-preds ps (next forms)))]
+                                      (when-not (invalid? ret)
+                                        (accept ret)))
+                                    (amp-impl p1 amp ps forms)))
         :clojure.spec.alpha/pcat (alt2 (pcat* {:ps (cons (deriv p0 x) pr), :ks ks, :forms forms, :ret ret})
-                     (when (accept-nil? p0) (deriv (pcat* {:ps pr, :ks kr, :forms (next forms), :ret (add-ret p0 ret k0)}) x)))
+                                       (when (accept-nil? p0) (deriv (pcat* {:ps pr, :ks kr, :forms (next forms), :ret (add-ret p0 ret k0)}) x)))
         :clojure.spec.alpha/alt (alt* (map #(deriv % x) ps) ks forms)
         :clojure.spec.alpha/rep (alt2 (rep* (deriv p1 x) p2 ret splice forms)
-                    (when (accept-nil? p1) (deriv (rep* p2 p2 (add-ret p1 ret nil) splice forms) x)))))))
+                                      (when (accept-nil? p1) (deriv (rep* p2 p2 (add-ret p1 ret nil) splice forms) x)))))))
 
 (defn- op-describe [p]
   (let [{:keys [:clojure.spec.alpha/op ps ks forms splice p1 rep+ maybe amp] :as p} (reg-resolve! p)]
@@ -1580,11 +1583,11 @@
         nil p
         :clojure.spec.alpha/amp (list* 'clojure.spec.alpha/& amp forms)
         :clojure.spec.alpha/pcat (if rep+
-                 (list 'clojure.spec.alpha/+ rep+)
-                 (cons 'clojure.spec.alpha/cat (mapcat vector (c/or (seq ks) (repeat :_)) forms)))
+                                   (list 'clojure.spec.alpha/+ rep+)
+                                   (cons 'clojure.spec.alpha/cat (mapcat vector (c/or (seq ks) (repeat :_)) forms)))
         :clojure.spec.alpha/alt (if maybe
-                (list 'clojure.spec.alpha/? maybe)
-                (cons 'clojure.spec.alpha/alt (mapcat vector ks forms)))
+                                  (list 'clojure.spec.alpha/? maybe)
+                                  (cons 'clojure.spec.alpha/alt (mapcat vector ks forms)))
         :clojure.spec.alpha/rep (list (if splice 'clojure.spec.alpha/+ 'clojure.spec.alpha/*) forms)))))
 
 (defn- op-explain [form p path via in input]
@@ -1606,41 +1609,41 @@
               (insufficient path form)
               (explain-1 form p path via in x))
         :clojure.spec.alpha/amp (if (empty? input)
-                (if (accept-nil? p1)
-                  (explain-pred-list forms ps path via in (preturn p1))
-                  (insufficient path (:amp p)))
-                (if-let [p1 (deriv p1 x)]
-                  (explain-pred-list forms ps path via in (preturn p1))
-                  (op-explain (:amp p) p1 path via in input)))
+                                  (if (accept-nil? p1)
+                                    (explain-pred-list forms ps path via in (preturn p1))
+                                    (insufficient path (:amp p)))
+                                  (if-let [p1 (deriv p1 x)]
+                                    (explain-pred-list forms ps path via in (preturn p1))
+                                    (op-explain (:amp p) p1 path via in input)))
         :clojure.spec.alpha/pcat (let [pkfs (map vector
-                               ps
-                               (c/or (seq ks) (repeat nil))
-                               (c/or (seq forms) (repeat nil)))
-                     [pred k form] (if (= 1 (count pkfs))
-                                     (first pkfs)
-                                     (first (remove (fn [[p]] (accept-nil? p)) pkfs)))
-                     path (if k (conj path k) path)
-                     form (c/or form (op-describe pred))]
-                 (if (c/and (empty? input) (not pred))
-                   (insufficient path form)
-                   (op-explain form pred path via in input)))
+                                                 ps
+                                                 (c/or (seq ks) (repeat nil))
+                                                 (c/or (seq forms) (repeat nil)))
+                                       [pred k form] (if (= 1 (count pkfs))
+                                                       (first pkfs)
+                                                       (first (remove (fn [[p]] (accept-nil? p)) pkfs)))
+                                       path (if k (conj path k) path)
+                                       form (c/or form (op-describe pred))]
+                                   (if (c/and (empty? input) (not pred))
+                                     (insufficient path form)
+                                     (op-explain form pred path via in input)))
         :clojure.spec.alpha/alt (if (empty? input)
-                (insufficient path (op-describe p))
-                (apply concat
-                       (map (fn [k form pred]
-                              (op-explain (c/or form (op-describe pred))
-                                          pred
-                                          (if k (conj path k) path)
-                                          via
-                                          in
-                                          input))
-                            (c/or (seq ks) (repeat nil))
-                            (c/or (seq forms) (repeat nil))
-                            ps)))
+                                  (insufficient path (op-describe p))
+                                  (apply concat
+                                         (map (fn [k form pred]
+                                                (op-explain (c/or form (op-describe pred))
+                                                            pred
+                                                            (if k (conj path k) path)
+                                                            via
+                                                            in
+                                                            input))
+                                              (c/or (seq ks) (repeat nil))
+                                              (c/or (seq forms) (repeat nil))
+                                              ps)))
         :clojure.spec.alpha/rep (op-explain (if (identical? p1 p2)
-                            forms
-                            (op-describe p1))
-                          p1 path via in input)))))
+                                              forms
+                                              (op-describe p1))
+                                            p1 path via in input)))))
 
 (defn- re-gen [p overrides path rmap f]
   ;;(prn {:op op :ks ks :forms forms})
@@ -1666,22 +1669,22 @@
           (when p
             (case op
               :clojure.spec.alpha/accept (if (= ret :clojure.spec.alpha/nil)
-                         (gen/return [])
-                         (gen/return [ret]))
+                                           (gen/return [])
+                                           (gen/return [ret]))
               nil (when-let [g (gensub p overrides path rmap f)]
                     (gen/fmap vector g))
               :clojure.spec.alpha/amp (re-gen p1 overrides path rmap (op-describe p1))
               :clojure.spec.alpha/pcat (let [gens (ggens ps ks forms)]
-                       (when (every? identity gens)
-                         (apply gen/cat gens)))
+                                         (when (every? identity gens)
+                                           (apply gen/cat gens)))
               :clojure.spec.alpha/alt (let [gens (remove nil? (ggens ps ks forms))]
-                      (when-not (empty? gens)
-                        (gen/one-of gens)))
+                                        (when-not (empty? gens)
+                                          (gen/one-of gens)))
               :clojure.spec.alpha/rep (if (recur-limit? rmap id [id] id)
-                      (gen/return [])
-                      (when-let [g (re-gen p2 overrides path rmap forms)]
-                        (gen/fmap #(apply concat %)
-                                  (gen/vector g)))))))))
+                                        (gen/return [])
+                                        (when-let [g (re-gen p2 overrides path rmap forms)]
+                                          (gen/fmap #(apply concat %)
+                                                    (gen/vector g)))))))))
 
 (defn- re-conform [p [x & xs :as data]]
   ;;(prn {:p p :x x :xs xs})
@@ -1818,8 +1821,8 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; non-primitives ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (internal-def
-  :clojure.spec.alpha/kvs->map
-  (internal-conformer #(zipmap (map :clojure.spec.alpha/k %) (map :clojure.spec.alpha/v %)) #(map (fn [[k v]] {:clojure.spec.alpha/k k :clojure.spec.alpha/v v}) %)))
+ :clojure.spec.alpha/kvs->map
+ (internal-conformer #(zipmap (map :clojure.spec.alpha/k %) (map :clojure.spec.alpha/v %)) #(map (fn [[k v]] {:clojure.spec.alpha/k k :clojure.spec.alpha/v v}) %)))
 
 (defmacro keys*
   "takes the same arguments as spec/keys and returns a regex op that matches sequences of key/values,
@@ -1934,7 +1937,7 @@
       (clojure.spec.alpha/and inst? #(clojure.spec.alpha/inst-in-range? ~start ~end %))
       :gen (fn []
              (clojure.spec.gen.alpha/fmap mkdate#
-                       (clojure.spec.gen.alpha/large-integer* {:min st# :max et#}))))))
+                                          (clojure.spec.gen.alpha/large-integer* {:min st# :max et#}))))))
 
 (defn int-in-range?
   "Return true if start <= val, val < end and val is a fixed
@@ -1961,11 +1964,11 @@
       :or {infinite? true NaN? true}
       :as m}]
   `(clojure.spec.alpha/spec (clojure.spec.alpha/and c/double?
-              ~@(when-not infinite? '[#(not (Double/isInfinite %))])
-              ~@(when-not NaN? '[#(not (Double/isNaN %))])
-              ~@(when max `[#(<= % ~max)])
-              ~@(when min `[#(<= ~min %)]))
-         :gen #(clojure.spec.gen.alpha/double* ~m)))
+                                                    ~@(when-not infinite? '[#(not (Double/isInfinite %))])
+                                                    ~@(when-not NaN? '[#(not (Double/isNaN %))])
+                                                    ~@(when max `[#(<= % ~max)])
+                                                    ~@(when min `[#(<= ~min %)]))
+                            :gen #(clojure.spec.gen.alpha/double* ~m)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; assert ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defonce
