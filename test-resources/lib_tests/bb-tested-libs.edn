@@ -79,7 +79,7 @@
  ;; BB-TEST-PATCH: Deleted unused resources/
  testdoc/testdoc {:git-url "https://github.com/liquidz/testdoc", :test-namespaces (testdoc.style.repl-test testdoc.style.code-first-test testdoc.core-test), :git-sha "6b995ef25f3cc6450a1ce30f72baed371476f6eb"}
  ;; BB-TEST-PATCH: Remove contajners.core-test as it fails
- org.clojars.lispyclouds/contajners {:git-url "https://github.com/lispyclouds/contajners", :test-namespaces (contajners.impl-test), :git-sha "d163637ff36d79995516d6705da1e9afc7b44764"}
+ org.clojars.lispyclouds/contajners {:git-url "https://github.com/lispyclouds/contajners", :test-namespaces (contajners.impl-test), :git-sha "5d55187eebedee4cd4f120fbffcbbcfae70a8a7b"}
  ;; Don't run tests b/c they depend on `psql`
  douglass/clj-psql {:git-url "https://github.com/DarinDouglass/clj-psql", :test-namespaces [], :manually-added true}
  ;; Don't run tests b/c they depend on `ffmpeg`
