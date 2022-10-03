@@ -767,7 +767,7 @@ Example:
 
 (require '[babashka.deps :as deps])
 
-(deps/add-deps '{:deps {org.clojars.lispyclouds/contajners {:mvn/version "0.0.2"}}})
+(deps/add-deps '{:deps {org.clojars.lispyclouds/contajners {:mvn/version "0.0.6"}}})
 
 (require '[contajners.core :as c])
 
