@@ -45,7 +45,8 @@
    "appveyor.yml"
    "project.clj"
    "script/bump_graal_version.clj"
-   ".circleci/script/short_ci.clj"])
+   ".circleci/script/short_ci.clj"
+   ".cirrus.yml"])
 
 ;; We might have to keep changing these from
 ;; time to time whenever the version is bumped
