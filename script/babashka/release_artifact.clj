@@ -30,7 +30,9 @@
                                 :repo "babashka"
                                 :file file
                                 :tag (str "v" current-version)
-                                :draft true})
+                                :draft true
+                                :overwrite (str/ends-with? current-version "SNAPSHOT")
+                                :sha256 true})
           (ghr/overwrite-asset {:org "babashka"
                                 :repo "babashka-dev-builds"
                                 :file file
@@ -38,6 +40,8 @@
                                 ;; do not set, because we are posting to another repo
                                 :target-commitish false
                                 :draft false
-                                :prerelease true}))
+                                :prerelease true
+                                :overwrite (str/ends-with? current-version "SNAPSHOT")
+                                :sha256 true}))
       (println "Skipping release artifact (no GITHUB_TOKEN or not on main branch)"))
     nil))
