@@ -23,20 +23,20 @@
          (when (.exists f)
            (if url?
              ;; manual conversion, faster than going through .toURI
-             (java.net.URL. "file" nil (.getAbsolutePath f))
+             (URL. "file" nil (.getAbsolutePath f))
              {:file (.getAbsolutePath f)
               :source (slurp f)}))))
      resource-paths)))
 
 (defn path-from-jar
-  [^java.io.File jar-file resource-paths url?]
+  [^File jar-file resource-paths url?]
   (with-open [jar (JarFile. jar-file)]
     (some (fn [path]
             (when-let [entry (.getEntry jar path)]
               (if url?
                 ;; manual conversion, faster than going through .toURI
-                (java.net.URL. "jar" nil
-                               (str "file:" (.getAbsolutePath jar-file) "!/" path))
+                (URL. "jar" nil
+                      (str "file:" (.getAbsolutePath jar-file) "!/" path))
                 {:file path
                  :source (slurp (.getInputStream jar entry))})))
           resource-paths)))
@@ -61,19 +61,36 @@
 
 (def path-sep (System/getProperty "path.separator"))
 
-(defn loader [^String classpath]
-  (let [parts (.split classpath path-sep)
-        entries (keep part->entry parts)]
-    (Loader. entries)))
+(defn classpath-entries [^String classpath]
+  (let [parts (.split classpath path-sep)]
+    (keep part->entry parts)))
 
-(defn source-for-namespace [loader namespace opts]
-  (let [ns-str (name namespace)
-        ^String ns-str (munge ns-str)
-        ;; do NOT pick the platform specific file separator here, since that doesn't work for searching in .jar files
-        ;; (io/file "foo" "bar/baz") does work on Windows, despite the forward slash
-        base-path (.replace ns-str "." "/")
-        resource-paths (mapv #(str base-path %) [".bb" ".clj" ".cljc"])]
-    (getResource loader resource-paths opts)))
+(defn loader [^String classpath]
+    (Loader. (classpath-entries classpath)))
+
+(declare get-classpath)
+
+(defn source-for-namespace
+  ([namespace opts]
+   (some-> (get-classpath) loader (source-for-namespace namespace opts)))
+  ([loader namespace opts]
+   (let [ns-str (name namespace)
+         ^String ns-str (munge ns-str)
+         ;; do NOT pick the platform specific file separator here, since that doesn't work for searching in .jar files
+         ;; (io/file "foo" "bar/baz") does work on Windows, despite the forward slash
+         base-path (.replace ns-str "." "/")
+         manifest-paths (loop [ns (str/split ns-str #"\.")
+                               paths []]
+                          (let [path (str/join "/" (conj ns "pod-manifest.edn"))
+                                next-ns (-> ns butlast vec)
+                                next-paths (conj paths path)]
+                            (if (< 1 (count next-ns)) ; don't look in top-level (e.g. com, pod) namespaces
+                              (recur next-ns next-paths)
+                              next-paths)))
+         resource-paths   (into (mapv #(str base-path %)
+                                      [".bb" ".clj" ".cljc"])
+                                manifest-paths)]
+     (getResource loader resource-paths opts))))
 
 (defn main-ns [manifest-resource]
   (with-open [is (io/input-stream manifest-resource)]

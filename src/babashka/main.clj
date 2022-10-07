@@ -408,14 +408,14 @@ Use bb run --help to show this help output.
                                                          (sci/create-ns 'clojure.core.rrb-vector))})
        'edamame.core edamame-namespace
        'sci.core {'format-stacktrace (sci/copy-var sci/format-stacktrace sci-ns)
-                  'stacktrace (sci/copy-var sci/stacktrace sci-ns)
+                  'stacktrace (sci/copy-var sci/stacktrace sci-ns)}
                   ;; 'eval-string (sci/copy-var sci/eval-string sci-ns)
                   ;; 'eval-string* (sci/copy-var sci/eval-string* sci-ns)
                   ;; 'init (sci/copy-var sci/init sci-ns)
                   ;; 'fork (sci/copy-var sci/fork sci-ns)
-                  }
-       'babashka.cli cli/cli-namespace
-       }
+
+       'babashka.cli cli/cli-namespace}
+
     features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace)
                           'clojure.data.xml.event @(resolve 'babashka.impl.xml/xml-event-namespace)
                           'clojure.data.xml.tree @(resolve 'babashka.impl.xml/xml-tree-namespace))
@@ -843,15 +843,28 @@ Use bb run --help to show this help output.
                                          (dissoc (:opts pod)
                                                  :version :metadata)))
                                  {})
-                               (pods/load-pod (:pod-spec pod) (:opts pod)))))
+                               (do
+                                 (pods/load-pod (:pod-spec pod) (:opts pod))
+                                 {}))))
                          (when loader
                            (when-let [res (cp/source-for-namespace loader namespace nil)]
-                             (if uberscript
-                               (do (swap! uberscript-sources conj (:source res))
-                                   (uberscript/uberscript {:ctx @common/ctx
-                                                           :expressions [(:source res)]})
-                                   {})
-                               res)))
+                             (println "load-fn source-for-namespace res:" (pr-str res))
+                             (if (str/ends-with? (:file res) "/pod-manifest.edn")
+                               (let [manifest (-> res :source edn/read-string)]
+                                 (when-let [pod-nses (pods/load-pod-from-manifest manifest)]
+                                   (println "load-fn got pod namespaces:" (pr-str pod-nses))
+                                   (spit (pods/pod-manifest-file manifest) (:source res))
+                                   (vswap! pod-namespaces merge pod-nses)
+                                   (let [pod (get pod-nses namespace)]
+                                     (pods/load-pod (:pod-spec pod) (:opts pod)))
+                                   {}))
+                               ;; TODO: Figure out how to handle library pods in uberscripts
+                               (if uberscript
+                                 (do (swap! uberscript-sources conj (:source res))
+                                     (uberscript/uberscript {:ctx @common/ctx
+                                                             :expressions [(:source res)]})
+                                     {})
+                                 res))))
                          (case namespace
                            clojure.spec.alpha
                            (binding [*out* *err*]
@@ -887,7 +900,7 @@ Use bb run --help to show this help output.
             _ (when-let [pods (:pods @common/bb-edn)]
                 (when-let [pod-metadata (pods/load-pods-metadata
                                           pods {:download-only (download-only?)})]
-                  (vreset! pod-namespaces pod-metadata)))
+                  (vswap! pod-namespaces merge pod-metadata)))
             preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim))
             [expressions exit-code]
             (cond expressions [expressions nil]
