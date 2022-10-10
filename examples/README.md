@@ -38,6 +38,8 @@
   - [Simple logger](#simple-logger)
   - [Using GZip streams (memo utility)](#using-gzip-streams-to-make-a-note-utility)
   - [Pretty-printing mySQL results](#pretty-printing-mysql-results)
+  - [Single page application with Babashka + htmx](#Single-page-application-with-Babashka-+-htmx)
+  - [Wikipedia translation](#wikipedia-translation)
   
 
 Here's a gallery of useful examples. Do you have a useful example? PR welcome!
@@ -390,7 +392,7 @@ Example usage:
 $ examples/http-server.clj
 ```
 
-See [file-server.clj](file-server.clj).
+See [http-server.clj](http-server.clj).
 
 ## Torrent viewer
 
@@ -555,3 +557,14 @@ Example of a todo list SPA using Babashka and htmx
 See [htmx_todoapp.clj](htmx_todoapp.clj)
 
 Contributed by [@prestancedesign](https://github.com/prestancedesign).
+
+## Wikipedia translation
+
+[wiki-translate.clj](wiki-translate.clj) uses Wikipedia to translate words from English to Dutch (other languages are available).
+
+``` shell
+$ ./wiki-translate.clj window
+"Venster (muur) – Dutch"
+```
+
+Shared by Janne Himanka on Clojurians Slack
