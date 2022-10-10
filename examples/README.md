@@ -38,7 +38,7 @@
   - [Simple logger](#simple-logger)
   - [Using GZip streams (memo utility)](#using-gzip-streams-to-make-a-note-utility)
   - [Pretty-printing mySQL results](#pretty-printing-mysql-results)
-  - [Single page application with Babashka + htmx](#Single-page-application-with-Babashka-+-htmx)
+  - [Single page application with Babashka + htmx](#single-page-application-with-babashka--htmx)
   - [Wikipedia translation](#wikipedia-translation)
   
 
