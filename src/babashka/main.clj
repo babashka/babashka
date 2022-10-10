@@ -806,14 +806,11 @@ Use bb run --help to show this help output.
 (defn build-load-fn
   []
   (fn [{:keys [:namespace :reload]}]
-    (println "load-fn called")
     (let [{:keys [loader]} @cp/cp-state]
-      (println "load-fn found loader?" (boolean loader))
       (or
         ;; pod namespaces go before namespaces from source,
         ;; unless reload is used
         (when-not reload
-          (println "load-fn looking for namespace" namespace "in pod-namespaces")
           (when-let [pod (get @pod-namespaces namespace)]
             (pods/load-pod (:pod-spec pod) (:opts pod))
             {}))
@@ -823,11 +820,9 @@ Use bb run --help to show this help output.
           nil)
         (when loader
           (when-let [{:keys [:file :source] :as res} (cp/source-for-namespace loader namespace nil)]
-            (println "load-fn source-for-namespace res:" (pr-str res))
             (if (str/ends-with? file "/pod-manifest.edn")
               (let [manifest (edn/read-string source)]
                 (when-let [pod-nses (pods/load-pod-metadata-from-manifest manifest)]
-                  (println "load-fn got pod namespaces:" (pr-str pod-nses))
                   ;; TODO: Make the pod loading code look for the manifest in the lib instead?
                   (spit (pods/pod-manifest-file manifest) source)
                   (vswap! pod-namespaces merge pod-nses)
