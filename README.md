@@ -59,8 +59,9 @@ anywhere on the path.
 Then you're ready to go:
 
 ``` shellsession
-# Unsetting environment variables that begin with 'BABASHKA'
-$ bb -o '(->> (System/getenv) keys (filter #(str/starts-with? % "BABASHKA_")) (map #(str "unset " %)))' | source /dev/stdin
+$ ls | bb -i '(filter #(-> % io/file .isDirectory) *input*)'
+("doc" "resources" "sci" "script" "src" "target" "test")
+bb took 4ms.
 ```
 
 ## Babashka users
