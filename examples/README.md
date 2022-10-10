@@ -563,7 +563,7 @@ Contributed by [@prestancedesign](https://github.com/prestancedesign).
 [wiki-translate.clj](wiki-translate.clj) uses Wikipedia to translate words from English to Dutch (other languages are available).
 
 ``` shell
-$ ./wiki-translate.clj window
+$ bb wiki-translate.clj window
 "Venster (muur) – Dutch"
 ```
 
