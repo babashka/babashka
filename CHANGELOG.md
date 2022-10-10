@@ -10,6 +10,7 @@ A preview of the next release can be installed from
 - Add single argument read method support to PipedInputStream proxy ([@retrogradeorbit](https://github.com/retrogradeorbit))
 - feat: Honor `*print-namespace-maps*` in pprint ([@ghoseb](https://github.com/ghoseb))
 - [#1369](https://github.com/babashka/babashka/issues/1369): provide `.sha256` files for every released asset
+- [#1390](https://github.com/babashka/babashka/pull/1390): Add support for distributing pods as Clojure libraries containing just the manifest.
 
 ## 0.10.163 (2022-09-24)
 
