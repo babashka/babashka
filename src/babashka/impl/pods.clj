@@ -32,9 +32,9 @@
                              "for pods on your local filesystem."))))))
     {} pods-map))
 
-(defn load-pod-from-manifest
+(defn load-pod-metadata-from-manifest
   [manifest]
-  (pods/load-pod-from-manifest manifest (-> @bb-edn :file io/file)))
+  (pods/load-pod-metadata-from-manifest manifest (-> @bb-edn :file io/file)))
 
 (defn pod-manifest-file
   [manifest]
@@ -44,6 +44,7 @@
 
 (def pods-namespace
   {'load-pod (sci/copy-var load-pod podns)
+   'load-pod-metadata-from-manifest (sci/copy-var load-pod-metadata-from-manifest podns)
    'invoke (sci/copy-var pods/invoke podns)
    'unload-pod (sci/copy-var pods/unload-pod podns)
    'add-transit-read-handler! (sci/copy-var pods/add-transit-read-handler! podns)

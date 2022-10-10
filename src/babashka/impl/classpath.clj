@@ -5,7 +5,8 @@
             [clojure.java.io :as io]
             [clojure.string :as str]
             [sci.core :as sci])
-  (:import [java.util.jar JarFile Manifest]
+  (:import (java.io File)
+           [java.util.jar JarFile Manifest]
            (java.net URL)))
 
 (set! *warn-on-reflection* true)

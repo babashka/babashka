@@ -767,6 +767,75 @@ Use bb run --help to show this help output.
       env-os-name-present? (not= env-os-name sys-os-name)
       env-os-arch-present? (not= env-os-arch sys-os-arch))))
 
+(def namespace-warnings
+  {'clojure.spec.alpha "[babashka] WARNING: Use the babashka-compatible version of clojure.spec.alpha, available here: https://github.com/babashka/spec.alpha"
+   'clojure.core.specs.alpha "[babashka] WARNING: clojure.core.specs.alpha is removed from the classpath, unless you explicitly add the dependency."})
+
+(defn build-uberscript-load-fn
+  [sources]
+  (fn [{:keys [:namespace :reload]}]
+    (let [{:keys [:loader]} @cp/cp-state]
+      (or
+        (when (not reload)
+          (if (or (contains? namespaces namespace)
+                  (contains? sci-namespaces/namespaces namespace))
+            "" ;; ignore built-in namespaces
+            (when-let [{:keys [:pod-spec :opts]} (get @pod-namespaces namespace)]
+              (swap! sources conj
+                     (format
+                       "(babashka.pods/load-pod '%s \"%s\" '%s)\n"
+                       pod-spec (:version opts)
+                       (dissoc opts :version :metadata)))
+              {})))
+        (when (contains? namespace-warnings namespace)
+          (binding [*out* *err*]
+            (println (get namespace-warnings namespace)))
+          nil)
+        (when loader
+          (when-let [{:keys [:file :source]} (cp/source-for-namespace loader namespace nil)]
+            (let [src (if (str/ends-with? file "/pod-manifest.edn")
+                        (format
+                          "(babashka.pods/load-pod-metadata-from-manifest '%s)\n"
+                          source)
+                        source)]
+              (swap! sources conj src)
+              (uberscript/uberscript {:ctx @common/ctx
+                                      :expressions [src]})
+              {})))))))
+
+(defn build-load-fn
+  []
+  (fn [{:keys [:namespace :reload]}]
+    (println "load-fn called")
+    (let [{:keys [loader]} @cp/cp-state]
+      (println "load-fn found loader?" (boolean loader))
+      (or
+        ;; pod namespaces go before namespaces from source,
+        ;; unless reload is used
+        (when-not reload
+          (println "load-fn looking for namespace" namespace "in pod-namespaces")
+          (when-let [pod (get @pod-namespaces namespace)]
+            (pods/load-pod (:pod-spec pod) (:opts pod))
+            {}))
+        (when (contains? namespace-warnings namespace)
+          (binding [*out* *err*]
+            (println (get namespace-warnings namespace)))
+          nil)
+        (when loader
+          (when-let [{:keys [:file :source] :as res} (cp/source-for-namespace loader namespace nil)]
+            (println "load-fn source-for-namespace res:" (pr-str res))
+            (if (str/ends-with? file "/pod-manifest.edn")
+              (let [manifest (edn/read-string source)]
+                (when-let [pod-nses (pods/load-pod-metadata-from-manifest manifest)]
+                  (println "load-fn got pod namespaces:" (pr-str pod-nses))
+                  ;; TODO: Make the pod loading code look for the manifest in the lib instead?
+                  (spit (pods/pod-manifest-file manifest) source)
+                  (vswap! pod-namespaces merge pod-nses)
+                  (let [pod (get pod-nses namespace)]
+                    (pods/load-pod (:pod-spec pod) (:opts pod)))
+                  {}))
+              res)))))))
+
 (defn exec [cli-opts]
   (binding [*unrestricted* true]
     (sci/binding [core/warn-on-reflection @core/warn-on-reflection
@@ -820,59 +889,9 @@ Use bb run --help to show this help output.
                          abs-path))
             _ (when jar
                 (cp/add-classpath jar))
-            load-fn (fn [{:keys [:namespace :reload]}]
-                      (let [{:keys [loader]}
-                            @cp/cp-state]
-                        (or
-                         (when ;; ignore built-in namespaces when uberscripting, unless with :reload
-                             (and uberscript
-                                  (not reload)
-                                  (or (contains? namespaces namespace)
-                                      (contains? sci-namespaces/namespaces namespace)))
-                           "")
-                         ;; pod namespaces go before namespaces from source,
-                         ;; unless reload is used
-                         (when-not reload
-                           (when-let [pod (get @pod-namespaces namespace)]
-                             (if uberscript
-                               (do
-                                 (swap! uberscript-sources conj
-                                        (format
-                                         "(babashka.pods/load-pod '%s \"%s\" '%s)\n"
-                                         (:pod-spec pod) (:version (:opts pod))
-                                         (dissoc (:opts pod)
-                                                 :version :metadata)))
-                                 {})
-                               (do
-                                 (pods/load-pod (:pod-spec pod) (:opts pod))
-                                 {}))))
-                         (when loader
-                           (when-let [res (cp/source-for-namespace loader namespace nil)]
-                             (println "load-fn source-for-namespace res:" (pr-str res))
-                             (if (str/ends-with? (:file res) "/pod-manifest.edn")
-                               (let [manifest (-> res :source edn/read-string)]
-                                 (when-let [pod-nses (pods/load-pod-from-manifest manifest)]
-                                   (println "load-fn got pod namespaces:" (pr-str pod-nses))
-                                   (spit (pods/pod-manifest-file manifest) (:source res))
-                                   (vswap! pod-namespaces merge pod-nses)
-                                   (let [pod (get pod-nses namespace)]
-                                     (pods/load-pod (:pod-spec pod) (:opts pod)))
-                                   {}))
-                               ;; TODO: Figure out how to handle library pods in uberscripts
-                               (if uberscript
-                                 (do (swap! uberscript-sources conj (:source res))
-                                     (uberscript/uberscript {:ctx @common/ctx
-                                                             :expressions [(:source res)]})
-                                     {})
-                                 res))))
-                         (case namespace
-                           clojure.spec.alpha
-                           (binding [*out* *err*]
-                             (println "[babashka] WARNING: Use the babashka-compatible version of clojure.spec.alpha, available here: https://github.com/babashka/spec.alpha"))
-                           clojure.core.specs.alpha
-                           (binding [*out* *err*]
-                             (println "[babashka] WARNING: clojure.core.specs.alpha is removed from the classpath, unless you explicitly add the dependency."))
-                           nil))))
+            load-fn (if uberscript
+                      (build-uberscript-load-fn uberscript-sources)
+                      (build-load-fn))
             main (if (and jar (not main))
                    (when-let [res (cp/getResource
                                    (cp/loader jar)
