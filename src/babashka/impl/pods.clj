@@ -32,10 +32,19 @@
                              "for pods on your local filesystem."))))))
     {} pods-map))
 
+(defn load-pod-metadata-from-manifest
+  [manifest]
+  (pods/load-pod-metadata-from-manifest manifest (-> @bb-edn :file io/file)))
+
+(defn pod-manifest-file
+  [manifest]
+  (pods/pod-manifest-file manifest))
+
 (def podns (sci/create-ns 'babashka.pods nil))
 
 (def pods-namespace
   {'load-pod (sci/copy-var load-pod podns)
+   'load-pod-metadata-from-manifest (sci/copy-var load-pod-metadata-from-manifest podns)
    'invoke (sci/copy-var pods/invoke podns)
    'unload-pod (sci/copy-var pods/unload-pod podns)
    'add-transit-read-handler! (sci/copy-var pods/add-transit-read-handler! podns)
