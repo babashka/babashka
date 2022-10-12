@@ -155,7 +155,7 @@
                          exoscale/interceptor {:git/url "https://github.com/exoscale/interceptor"
                                                :git/sha "ca115fe00a0abf3a2f78452ab309c3aa4c00fc4e"
                                                :deps/manifest :deps}
-                         lambdaisland/uri {:local/root "/tmp/uri"} #_{:git/url "https://github.com/lambdaisland/uri"
+                         lambdaisland/uri {:git/url "https://github.com/lambdaisland/uri"
                                            :git/sha "ac4f1f9c8e4f45a088db1c6383ce2191c973987c"}}
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil}}
