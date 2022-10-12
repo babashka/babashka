@@ -64,7 +64,8 @@
 (def hiccup-util-namespace
   {'*html-mode* html-mode
    '*escape-strings?* escape-strings?
-   'raw-string (copy-var util/raw-string uns)})
+   'raw-string (copy-var util/raw-string uns)
+   'to-uri (copy-var util/to-uri uns)})
 
 (defn render-html [& contents]
   (binding [util/*html-mode* @html-mode
