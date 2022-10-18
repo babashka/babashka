@@ -119,6 +119,8 @@
     {:fields [{:name "EMPTY"}]}
     clojure.lang.APersistentVector
     {:methods [{:name "indexOf"}]}
+    clojure.lang.LazySeq
+    {:methods [{:name "indexOf"}]}
     clojure.lang.ILookup
     {:methods [{:name "valAt"}]}
     clojure.lang.IPersistentMap
@@ -517,7 +519,6 @@
                       clojure.lang.IPersistentVector
                       clojure.lang.ITransientVector
                       clojure.lang.Iterate
-                      clojure.lang.LazySeq
                       clojure.lang.LispReader$Resolver
                       clojure.lang.Named
                       clojure.lang.Keyword

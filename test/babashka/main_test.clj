@@ -840,6 +840,9 @@ true")))
 (deftest clojure-ns-test
   (is (true? (bb nil "(instance? clojure.lang.Namespace *ns*)"))))
 
+(deftest index-of-test
+  (is (= 1 (bb nil "(.indexOf (map inc [1 2 3]) 3)"))))
+
 ;;;; Scratch
 
 (comment

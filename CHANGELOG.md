@@ -11,6 +11,7 @@ A preview of the next release can be installed from
 - feat: Honor `*print-namespace-maps*` in pprint ([@ghoseb](https://github.com/ghoseb))
 - [#1369](https://github.com/babashka/babashka/issues/1369): provide `.sha256` files for every released asset
 - [#1397](https://github.com/babashka/babashka/issues/1397): Add `clojure.lang.Namespace` as alias for `sci.lang.Namespace`, such that `(instance? clojure.lang.Namespace *ns*)` returns `true` in bb
+- [#1384](https://github.com/babashka/babashka/issues/1384): allow `.indexOf` on `LazySeq`
 
 ## 0.10.163 (2022-09-24)
 
