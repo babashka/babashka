@@ -837,6 +837,9 @@ true")))
 (deftest clojure-lang-var-mapping-test
   (is (= :var (bb nil "(defprotocol Foo (foo [_])) (extend-protocol Foo clojure.lang.Var (foo [_] :var)) (foo #'inc)"))))
 
+(deftest clojure-ns-test
+  (is (true? (bb nil "(instance? clojure.lang.Namespace *ns*)"))))
+
 ;;;; Scratch
 
 (comment
