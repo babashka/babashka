@@ -7,12 +7,26 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+...
+
+## 1.0.164 (2022-10-17)
+
+- SCI: optimizations for `let`
 - Add single argument read method support to PipedInputStream proxy ([@retrogradeorbit](https://github.com/retrogradeorbit))
 - feat: Honor `*print-namespace-maps*` in pprint ([@ghoseb](https://github.com/ghoseb))
 - [#1369](https://github.com/babashka/babashka/issues/1369): provide `.sha256` files for every released asset
 - [#1397](https://github.com/babashka/babashka/issues/1397): Add `clojure.lang.Namespace` as alias for `sci.lang.Namespace`, such that `(instance? clojure.lang.Namespace *ns*)` returns `true` in bb
 - [#1384](https://github.com/babashka/babashka/issues/1384): allow `.indexOf` on `LazySeq`
 - [#1330](https://github.com/babashka/babashka/issues/1330): allow `(set! *warn-on-reflection*)` in programmatic nREPL
+- Better error message when failing to load `bb.edn` ([@lispyclouds](https://github.com/lispyclouds))
+- Pods: print and flush to `*out*` and `*err*` instead of using `println` ([@justone](https://github.com/justone))
+- deps.clj: support for `CLJ_JVM_OPTS` and `JAVA_OPTS` ([@ikappaki](https://github.com/ikappaki))
+- Fix `*print-namespace-maps*` when using `clojure.pprint` ([@ghoseb](https://github.com/ghoseb))
+- Process: only slurp `*err*` when inputstream ([@ikappaki](https://github.com/ikappaki))
+- Process: add `alive?` API function ([@grzm](https://github.com/grzm))
+- Bump libraries: tools.cli, babashka.cli
+- [#1391](https://github.com/babashka/babashka/issues/1391): include raw in `hiccup2.core` ns
+- [#1391](https://github.com/babashka/babashka/issues/1391): support loading `hiccup.page` when adding hiccup to deps
 
 ## 0.10.163 (2022-09-24)
 
