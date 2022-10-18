@@ -96,7 +96,8 @@
 ;; echo '1' | java -agentlib:native-image-agent=config-output-dir=/tmp -jar target/babashka-xxx-standalone.jar '...'
 ;; with the java provided by GraalVM.
 
-(def version (str/trim (slurp (io/resource "BABASHKA_VERSION"))))
+(def version common/version)
+
 (defn parse-version [version]
   (mapv #(Integer/parseInt %)
         (-> version
@@ -305,16 +306,11 @@ Use bb run --help to show this help output.
 (defn start-socket-repl! [address ctx]
   (socket-repl/start-repl! address ctx))
 
-(defn start-nrepl! [address ctx]
-  (let [dev? (= "true" (System/getenv "BABASHKA_DEV"))
-        nrepl-opts (nrepl-server/parse-opt address)
-        nrepl-opts (assoc nrepl-opts
-                          :debug dev?
-                          :describe {"versions" {"babashka" version}}
-                          :thread-bind [core/warn-on-reflection])]
-    (nrepl-server/start-server! ctx nrepl-opts)
-    (binding [*out* *err*]
-      (println "For more info visit: https://book.babashka.org/#_nrepl")))
+(defn start-nrepl! [address]
+  (let [opts (nrepl-server/parse-opt address)]
+    (babashka.impl.nrepl-server/start-server! opts))
+  (binding [*out* *err*]
+    (println "For more info visit: https://book.babashka.org/#_nrepl"))
   ;; hang until SIGINT
   @(promise))
 
@@ -958,7 +954,7 @@ Use bb run --help to show this help output.
                        describe?
                        [(print-describe) 0]
                        repl [(repl/start-repl! sci-ctx) 0]
-                       nrepl [(start-nrepl! nrepl sci-ctx) 0]
+                       nrepl [(start-nrepl! nrepl) 0]
                        uberjar [nil 0]
                        list-tasks [(tasks/list-tasks sci-ctx) 0]
                        print-deps [(print-deps/print-deps (:print-deps-format cli-opts)) 0]
