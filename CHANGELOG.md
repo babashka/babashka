@@ -7,7 +7,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-...
+Fix [#1401](https://github.com/babashka/babashka/issues/1401): Referencing mutable field immediately after assignment gives old value
 
 ## 1.0.164 (2022-10-17)
 
