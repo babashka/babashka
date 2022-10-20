@@ -7,7 +7,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-Fix [#1401](https://github.com/babashka/babashka/issues/1401): Referencing mutable field immediately after assignment gives old value
+Fix [#1401](https://github.com/babashka/babashka/issues/1401): mutation of `deftype` field should be visible in protocol method
 
 ## 1.0.164 (2022-10-17)
 
