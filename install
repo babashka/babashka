@@ -125,7 +125,7 @@ fi
 download_url="https://github.com/babashka/$repo/releases/download/v$version/$filename"
 
 # macOS only have shasum available by default
-# Some Linux distros (RHEL-like) only have sha256sum avaiable by default (others have both)
+# Some Linux distros (RHEL-like) only have sha256sum available by default (others have both)
 if command -v sha256sum >/dev/null; then
     sha256sum_cmd="sha256sum"
 elif command -v shasum >/dev/null; then
