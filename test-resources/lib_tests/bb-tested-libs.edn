@@ -167,4 +167,5 @@
                        :git-sha "ca115fe00a0abf3a2f78452ab309c3aa4c00fc4e"
                        :test-paths ["test"]
                        :test-namespaces [exoscale.interceptor-test]}
+ clj-commons/fs {:git-url "https://github.com/clj-commons/fs", :test-namespaces (me.raynes.core-test), :git-sha "60026817c44015da8656925411d4af1d8210bad0"}
  }
