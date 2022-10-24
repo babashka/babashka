@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 - Fix [#1401](https://github.com/babashka/babashka/issues/1401): mutation of `deftype` field should be visible in protocol method
 - Fix [#1405](https://github.com/babashka/babashka/issues/1405): drop name metadata from conditionally defined var
+- Add lib tests for clj-commons/fs [#602](https://github.com/babashka/babashka/issues/602)
 
 ## 1.0.164 (2022-10-17)
 
