@@ -35,7 +35,6 @@ if ! [ -d "graalvm-ce-java19-$GRAALVM_VERSION" ]; then
     ls -la
     tar xzvf "$GRAALVM_FILENAME"
     ls -la "graalvm-ce-java19-$GRAALVM_VERSION"
-    "graalvm-ce-java19-$GRAALVM_VERSION"/bin/gu install native-image
 fi
 
 popd >/dev/null
