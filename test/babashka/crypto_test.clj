@@ -17,7 +17,7 @@
 (deftest hmac-sha-256-test
   (let [key-s "some-key"
         data "some-data"
-        expected-sha (String. (hmac-sha-256 (.getBytes key-s) data))]
+        expected-sha (String. (hmac-sha-256 (.getBytes key-s) data) "utf-8")]
     (is (= expected-sha (bb '(do (ns net
                                    (:import (javax.crypto Mac)
                                             (javax.crypto.spec SecretKeySpec)))
@@ -28,4 +28,4 @@
                                      (.doFinal mac (.getBytes data "UTF-8"))))
                                  (let [key-s "some-key"
                                        data "some-data"]
-                                   (String. (hmac-sha-256 (.getBytes key-s) data)))))))))
+                                   (String. (hmac-sha-256 (.getBytes key-s) data) "utf-8"))))))))
