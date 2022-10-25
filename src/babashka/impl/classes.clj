@@ -301,7 +301,8 @@
           java.net.SocketException
           java.net.UnknownHostException
           java.net.URI
-          ;; java.net.URL, see below
+          ;; java.net.URL, see custom map
+          java.net.URLConnection
           java.net.URLEncoder
           java.net.URLDecoder
           ~@(when features/java-nio?
