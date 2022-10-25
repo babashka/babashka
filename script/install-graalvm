@@ -24,18 +24,18 @@ case "${BABASHKA_ARCH:-}" in
         ;;
 esac
 
-GRAALVM_FILENAME="graalvm-ce-java11-$GRAALVM_PLATFORM-$GRAALVM_ARCH-$GRAALVM_VERSION.tar.gz"
+GRAALVM_FILENAME="graalvm-ce-java19-$GRAALVM_PLATFORM-$GRAALVM_ARCH-$GRAALVM_VERSION.tar.gz"
 
 pushd "$INSTALL_DIR" >/dev/null
 
-if ! [ -d "graalvm-ce-java11-$GRAALVM_VERSION" ]; then
+if ! [ -d "graalvm-ce-java19-$GRAALVM_VERSION" ]; then
     echo "Downloading GraalVM $GRAALVM_PLATFORM-$GRAALVM_ARCH-$GRAALVM_VERSION on '$PWD'..."
     echo "https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-$GRAALVM_VERSION/$GRAALVM_FILENAME"
     curl -LO "https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-$GRAALVM_VERSION/$GRAALVM_FILENAME"
     ls -la
     tar xzvf "$GRAALVM_FILENAME"
-    ls -la "graalvm-ce-java11-$GRAALVM_VERSION"
-    "graalvm-ce-java11-$GRAALVM_VERSION"/bin/gu install native-image
+    ls -la "graalvm-ce-java19-$GRAALVM_VERSION"
+    "graalvm-ce-java19-$GRAALVM_VERSION"/bin/gu install native-image
 fi
 
 popd >/dev/null
