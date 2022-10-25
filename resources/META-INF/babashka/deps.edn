@@ -1,0 +1,177 @@
+{:paths ["src" "feature-xml"
+         "feature-yaml" "feature-csv" "feature-transit"
+         "feature-java-time" "feature-java-nio"
+         "feature-httpkit-client" "feature-httpkit-server"
+         "feature-lanterna"
+         "feature-core-match"
+         "feature-hiccup"
+         "feature-test-check"
+         "feature-spec-alpha"
+         "feature-selmer"
+         "feature-logging"
+         "feature-priority-map"
+         "feature-rrb-vector"
+         "feature-jdbc"
+         "pods/src"
+         "babashka.nrepl/src"
+         "depstar/src" "process/src"
+         "deps.clj/src" "deps.clj/resources"
+         "resources" "sci/resources"
+         "reify/src"],
+ :deps {org.clojure/clojure {:mvn/version "1.11.1"},
+        org.babashka/sci {:local/root "sci"}
+        org.babashka/babashka.impl.reify {:mvn/version "0.1.3"}
+        org.babashka/sci.impl.types {:mvn/version "0.0.2"}
+        babashka/babashka.curl {:local/root "babashka.curl"}
+        babashka/fs {:local/root "fs"}
+        babashka/babashka.core {:local/root "babashka.core"}
+        borkdude/graal.locking {:mvn/version "0.0.2"},
+        org.clojure/core.async {:mvn/version "1.5.648"},
+        org.clojure/tools.cli {:mvn/version "1.0.214"},
+        org.clojure/data.csv {:mvn/version "1.0.0"},
+        cheshire/cheshire {:mvn/version "5.11.0"}
+        org.clojure/data.xml {:mvn/version "0.2.0-alpha8"}
+        clj-commons/clj-yaml {:mvn/version "0.7.169"}
+        com.cognitect/transit-clj {:mvn/version "1.0.329"}
+        org.clojure/test.check {:mvn/version "1.1.1"}
+        nrepl/bencode {:mvn/version "1.1.0"}
+        seancorfield/next.jdbc {:mvn/version "1.1.610"}
+        org.postgresql/postgresql {:mvn/version "42.2.18"}
+        org.hsqldb/hsqldb {:mvn/version "2.5.1"}
+        datascript/datascript {:mvn/version "1.0.1"}
+        http-kit/http-kit {:mvn/version "2.6.0-RC1"}
+        babashka/clojure-lanterna {:mvn/version "0.9.8-SNAPSHOT"}
+        org.clojure/core.match {:mvn/version "1.0.0"}
+        hiccup/hiccup {:mvn/version "2.0.0-alpha2"}
+        rewrite-clj/rewrite-clj {:mvn/version "1.1.45"}
+        selmer/selmer {:mvn/version "1.12.50"}
+        com.taoensso/timbre {:mvn/version "5.2.1"}
+        org.clojure/tools.logging {:mvn/version "1.1.0"}
+        org.clojure/data.priority-map {:mvn/version "1.1.0"}
+        insn/insn {:mvn/version "0.5.2"}
+        org.clojure/core.rrb-vector {:mvn/version "0.1.2"}
+        org.babashka/cli {:mvn/version "0.5.40"}}
+ :aliases {:babashka/dev
+           {:main-opts ["-m" "babashka.main"]}
+           :profile
+           {:extra-deps
+            {com.clojure-goes-fast/clj-async-profiler {:mvn/version "0.5.0"}}
+            :extra-paths ["test"]
+            :jvm-opts ["-Djdk.attach.allowAttachSelf"
+                       "-Dclojure.compiler.direct-linking=true"]
+            :main-opts ["-m" "babashka.profile"]}
+           :lib-tests
+           {:extra-paths ["process/src" "process/test" "test-resources/lib_tests"]
+            :extra-deps {org.clj-commons/clj-http-lite {:mvn/version "0.4.392"}
+                         org.babashka/spec.alpha {:git/url "https://github.com/babashka/spec.alpha"
+                                                  :sha "0dec1f88cbde74a0470b454396f09a03adb4ae39"}
+                         lambdaisland/regal {:mvn/version "0.0.143"}
+                         cprop/cprop {:mvn/version "0.1.16"}
+                         comb/comb {:mvn/version "0.1.1"}
+                         mvxcvi/arrangement {:mvn/version "2.0.0"}
+                         org.clojure/data.zip {:mvn/version "1.0.0"}
+                         clojure-csv/clojure-csv {:mvn/version "2.0.2"}
+                         org.clojure/math.combinatorics {:mvn/version "0.1.6"}
+                         doric/doric {:mvn/version "0.9.0"}
+                         henryw374/cljc.java-time
+                         {:git/url "https://github.com/henryw374/cljc.java-time.git"
+                          :sha "e3d184b78e933322b3fcaa6ca66cbb8f42a6b35c"}
+                         camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.2"}
+                         aero/aero {:mvn/version "1.1.6"}
+                         org.clojure/data.generators {:mvn/version "1.0.0"}
+                         honeysql/honeysql {:mvn/version "1.0.461"}
+                         com.github.seancorfield/honeysql {:mvn/version "2.2.840"}
+                         minimallist/minimallist {:mvn/version "0.0.10"}
+                         circleci/bond {:mvn/version "0.6.0"}
+                         version-clj/version-clj {:mvn/version "2.0.2"}
+                         gaka/gaka {:mvn/version "0.3.0"}
+                         failjure/failjure {:mvn/version "2.2.0"}
+                         io.helins/binf {:mvn/version "1.1.0-beta0"}
+                         rm-hull/jasentaa {:mvn/version "0.2.5"}
+                         slingshot/slingshot {:mvn/version "0.12.2"}
+                         io.replikativ/hasch {:mvn/version "0.3.7"}
+                         com.grammarly/omniconf {:mvn/version "0.4.3"}
+                         crispin/crispin {:mvn/version "0.3.8"}
+                         org.clojure/data.json {:mvn/version "2.4.0"}
+                         clj-commons/multigrep {:mvn/version "0.5.0"}
+                         amperity/vault-clj {:mvn/version "1.0.4"}
+                         java-http-clj/java-http-clj {:mvn/version "0.4.3"}
+                         com.stuartsierra/component {:mvn/version "1.0.0"}
+                         org.clojars.askonomm/ruuter {:mvn/version "1.2.2"}
+                         org.clj-commons/digest {:mvn/version "1.4.100"}
+                         hato/hato {:mvn/version "0.8.2"}
+                         better-cond/better-cond {:mvn/version "2.1.1"}
+                         org.clojure/core.specs.alpha {:mvn/version "0.2.62"}
+                         reifyhealth/specmonstah {:git/url "https://github.com/reifyhealth/specmonstah", :sha "a2b357009a3aa99a0c2d2361f3bbcd0b0e36505e"}
+                         exoscale/coax {:mvn/version "1.0.0-alpha14"}
+                         orchestra/orchestra {:mvn/version "2021.01.01-1"}
+                         expound/expound {:mvn/version "0.8.10"}
+                         integrant/integrant {:mvn/version "0.8.0"}
+                         com.stuartsierra/dependency {:mvn/version "1.0.0"}
+                         listora/again {:mvn/version "1.0.0"}
+                         org.clojure/tools.gitlibs {:mvn/version "2.4.172"}
+                         environ/environ {:mvn/version "1.2.0"}
+                         table/table {:git/url "https://github.com/cldwalker/table", :sha "f6293c5f3dac1dd6f525a80fc80930f8ccdf16b7"}
+                         markdown-clj/markdown-clj {:mvn/version "1.10.8"}
+                         org.clojure/tools.namespace {:git/url "https://github.com/babashka/tools.namespace", :sha "a13b037215e21a2e71aa34b27e1dd52c801a2a7b"}
+                         medley/medley {:mvn/version "1.3.0"}
+                         io.github.cognitect-labs/test-runner {:git/tag "v0.5.0", :git/sha "b3fd0d2"}
+                         borkdude/missing.test.assertions {:git/url "https://github.com/borkdude/missing.test.assertions", :sha "603cb01bee72fb17addacc53c34c85612684ad70"}
+                         dev.nubank/docopt {:mvn/version "0.6.1-fix7"}
+                         testdoc/testdoc {:mvn/version "1.4.1"}
+                         org.clojars.lispyclouds/contajners {:mvn/version "0.0.6"}
+                         borkdude/rewrite-edn {:mvn/version "0.1.0"}
+                         clojure-term-colors/clojure-term-colors {:mvn/version "0.1.0"}
+                         io.aviso/pretty {:mvn/version "1.1.1"}
+                         progrock/progrock {:mvn/version "0.1.2"}
+                         djblue/portal {:mvn/version "0.19.0"}
+                         com.wsscode/cljc-misc {:mvn/version "2021.10.16"}
+                         edn-query-language/eql {:mvn/version "2021.07.18"}
+                         meta-merge/meta-merge {:mvn/version "1.0.0"}
+                         com.exoscale/lingo {:mvn/version "1.0.0-alpha14"}
+                         io.github.swirrl/dogstatsd {:mvn/version "0.1.39"}
+                         org.clojure/algo.monads {:mvn/version "0.1.6"}
+                         io.lambdaforge/datalog-parser {:mvn/version "0.1.9"}
+                         clj-stacktrace/clj-stacktrace {:mvn/version "0.2.8"}
+                         clojure-msgpack/clojure-msgpack {:mvn/version "1.2.1"}
+                         cli-matic/cli-matic {:git/url "https://github.com/l3nz/cli-matic.git", :git/sha "9cd53ba7336363e3d06650dbad413b6f8b06e471"}
+                         aysylu/loom {:mvn/version "1.0.2"}
+                         com.layerware/hugsql-core {:mvn/version "0.5.3"}
+                         com.github.seancorfield/expectations {:mvn/version "2.0.157"}
+                         com.rpl/specter {:mvn/version "1.1.4"}
+                         com.github.askonomm/clarktown {:mvn/version "1.1.2"}
+                         org.clojure/math.numeric-tower {:git/tag "math.numeric-tower-0.0.5", :git/sha "12eb9c5", :git/url "https://github.com/clojure/math.numeric-tower"}
+                         prismatic/schema {:git/url "https://github.com/plumatic/schema"
+                                           :git/sha "6846dc7c3a9df5bfd718f68f183c683ce0f621ff"
+                                           :git/tag "schema-1.3.0"}
+                         metosin/malli {:git/url "https://github.com/metosin/malli"
+                                        :git/sha "588147ef49b2e41c7d12a8aa994b39c1c6fedd99"
+                                        :git/tag "0.8.9"}
+                         meander/epsilon {:git/url "https://github.com/noprompt/meander"
+                                          :git/sha "55f5ce70e6ef717e95c58260f6bc725d70c0cb6d"}
+                         cc.qbits/auspex {:git/url "https://github.com/mpenet/auspex"
+                                          :git/sha "1a9d7427e60e1a434a764aa820d1c53f7e22504a"
+                                          :deps/manifest :deps}
+                         exoscale/interceptor {:git/url "https://github.com/exoscale/interceptor"
+                                               :git/sha "ca115fe00a0abf3a2f78452ab309c3aa4c00fc4e"
+                                               :deps/manifest :deps}
+                         lambdaisland/uri {:git/url "https://github.com/lambdaisland/uri"
+                                           :git/sha "ac4f1f9c8e4f45a088db1c6383ce2191c973987c"
+                                               :deps/manifest :deps}
+                         clj-commons/fs {:mvn/version "1.6.310"}}
+            :classpath-overrides {org.clojure/clojure nil
+                                  org.clojure/spec.alpha nil}}
+           :clj-nvd
+           {:extra-deps {clj-nvd/clj-nvd {:git/url "https://github.com/miikka/clj-nvd.git"
+                                          :sha "f2ec98699e057a379baf170cb49cf7ad76874a70"}}
+            :main-opts ["-m" "clj-nvd.core"]}
+           :test
+           {:extra-paths ["test"]
+            :extra-deps {io.github.cognitect-labs/test-runner
+                          {:git/tag "v0.5.0" :git/sha "b3fd0d2"}}
+            :main-opts ["-m" "cognitect.test-runner"]
+            :exec-fn cognitect.test-runner.api/test}
+           :test-pod
+           {:extra-paths ["test-resources"]
+            :main-opts ["-m" "babashka.main" "test-resources/pod.clj"]}}}
+;; release

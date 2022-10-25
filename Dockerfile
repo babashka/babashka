@@ -5,7 +5,7 @@ RUN apt update
 RUN apt install --no-install-recommends -yy build-essential zlib1g-dev
 WORKDIR "/opt"
 
-ENV GRAALVM_VERSION="22.2.0"
+ENV GRAALVM_VERSION="22.3.0"
 ARG TARGETARCH
 ENV BABASHKA_ARCH=${TARGETARCH}
 ENV GRAALVM_ARCH=${TARGETARCH}
@@ -15,14 +15,14 @@ RUN if [ "${TARGETARCH}" = "" ] || [ "${TARGETARCH}" = "amd64" ]; then \
       export GRAALVM_ARCH=aarch64; \
     fi && \
     echo "Installing GraalVM for ${GRAALVM_ARCH}" && \
-    curl -sLO https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-${GRAALVM_VERSION}/graalvm-ce-java11-linux-${GRAALVM_ARCH}-${GRAALVM_VERSION}.tar.gz && \
-    tar -xzf graalvm-ce-java11-linux-${GRAALVM_ARCH}-${GRAALVM_VERSION}.tar.gz && \
-    rm graalvm-ce-java11-linux-${GRAALVM_ARCH}-${GRAALVM_VERSION}.tar.gz
+    curl -sLO https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-${GRAALVM_VERSION}/graalvm-ce-java19-linux-${GRAALVM_ARCH}-${GRAALVM_VERSION}.tar.gz && \
+    tar -xzf graalvm-ce-java19-linux-${GRAALVM_ARCH}-${GRAALVM_VERSION}.tar.gz && \
+    rm graalvm-ce-java19-linux-${GRAALVM_ARCH}-${GRAALVM_VERSION}.tar.gz
 
 ARG BABASHKA_XMX="-J-Xmx4500m"
 
-ENV GRAALVM_HOME="/opt/graalvm-ce-java11-${GRAALVM_VERSION}"
-ENV JAVA_HOME="/opt/graalvm-ce-java11-${GRAALVM_VERSION}/bin"
+ENV GRAALVM_HOME="/opt/graalvm-ce-java19-${GRAALVM_VERSION}"
+ENV JAVA_HOME="/opt/graalvm-ce-java19-${GRAALVM_VERSION}/bin"
 ENV PATH="$JAVA_HOME:$PATH"
 ENV BABASHKA_XMX=$BABASHKA_XMX
 
