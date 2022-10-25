@@ -86,8 +86,10 @@
         (read
           ([]
            ((method-or-bust methods 'read) this))
-          ([b off len]
-           ((method-or-bust methods 'read) this b off len)))
+          ([bs]
+           ((method-or-bust methods 'read) this bs))
+          ([bs off len]
+           ((method-or-bust methods 'read) this bs off len)))
         (receive [b] ((method-or-bust methods 'receive) this b)))
 
       ["java.io.PipedOutputStream" #{}]

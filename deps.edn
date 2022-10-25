@@ -27,11 +27,11 @@
         babashka/babashka.core {:local/root "babashka.core"}
         borkdude/graal.locking {:mvn/version "0.0.2"},
         org.clojure/core.async {:mvn/version "1.5.648"},
-        org.clojure/tools.cli {:mvn/version "1.0.206"},
+        org.clojure/tools.cli {:mvn/version "1.0.214"},
         org.clojure/data.csv {:mvn/version "1.0.0"},
         cheshire/cheshire {:mvn/version "5.11.0"}
         org.clojure/data.xml {:mvn/version "0.2.0-alpha8"}
-        clj-commons/clj-yaml {:mvn/version "0.7.110"}
+        clj-commons/clj-yaml {:mvn/version "0.7.169"}
         com.cognitect/transit-clj {:mvn/version "1.0.329"}
         org.clojure/test.check {:mvn/version "1.1.1"}
         nrepl/bencode {:mvn/version "1.1.0"}
@@ -50,7 +50,7 @@
         org.clojure/data.priority-map {:mvn/version "1.1.0"}
         insn/insn {:mvn/version "0.5.2"}
         org.clojure/core.rrb-vector {:mvn/version "0.1.2"}
-        org.babashka/cli {:mvn/version "0.3.35"}}
+        org.babashka/cli {:mvn/version "0.5.40"}}
  :aliases {:babashka/dev
            {:main-opts ["-m" "babashka.main"]}
            :profile
@@ -119,7 +119,7 @@
                          borkdude/missing.test.assertions {:git/url "https://github.com/borkdude/missing.test.assertions", :sha "603cb01bee72fb17addacc53c34c85612684ad70"}
                          dev.nubank/docopt {:mvn/version "0.6.1-fix7"}
                          testdoc/testdoc {:mvn/version "1.4.1"}
-                         org.clojars.lispyclouds/contajners {:mvn/version "0.0.4"}
+                         org.clojars.lispyclouds/contajners {:mvn/version "0.0.6"}
                          borkdude/rewrite-edn {:mvn/version "0.1.0"}
                          clojure-term-colors/clojure-term-colors {:mvn/version "0.1.0"}
                          io.aviso/pretty {:mvn/version "1.1.1"}
@@ -154,7 +154,11 @@
                                           :deps/manifest :deps}
                          exoscale/interceptor {:git/url "https://github.com/exoscale/interceptor"
                                                :git/sha "ca115fe00a0abf3a2f78452ab309c3aa4c00fc4e"
-                                               :deps/manifest :deps}}
+                                               :deps/manifest :deps}
+                         lambdaisland/uri {:git/url "https://github.com/lambdaisland/uri"
+                                           :git/sha "ac4f1f9c8e4f45a088db1c6383ce2191c973987c"
+                                               :deps/manifest :deps}
+                         clj-commons/fs {:mvn/version "1.6.310"}}
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil}}
            :clj-nvd

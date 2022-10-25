@@ -232,13 +232,13 @@
    For additional event types, see the examples in the code.
 "}
     babashka.impl.clojure.test
-  (:require [babashka.impl.common :refer [ctx]]
-            [clojure.stacktrace :as stack]
-            [clojure.template :as temp]
-            [sci.core :as sci]
-            [sci.impl.namespaces :as sci-namespaces]
-            [sci.impl.resolve :as resolve]
-            [sci.impl.vars :as vars]))
+  (:require
+   [babashka.impl.common :refer [ctx]]
+   [clojure.stacktrace :as stack]
+   [clojure.template :as temp]
+   [sci.core :as sci]
+   [sci.impl.namespaces :as sci-namespaces]
+   [sci.impl.resolve :as resolve]))
 
 ;; Nothing is marked "private" here, so you can rebind things to plug
 ;; in your own testing or reporting frameworks.

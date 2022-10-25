@@ -97,7 +97,8 @@
              pprint/*print-miser-width* @print-miser-width
              *print-meta* @sci/print-meta
              *print-readably* @sci/print-readably
-             *print-length* @sci/print-length]
+             *print-length* @sci/print-length
+             *print-namespace-maps* @sci/print-namespace-maps]
      (pprint/pprint s writer))))
 
 (defn cl-format

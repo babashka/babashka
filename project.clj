@@ -21,7 +21,7 @@
   :dependencies [[org.clojure/clojure "1.11.1"]
                  [borkdude/edamame "1.0.0"]
                  [borkdude/graal.locking "0.0.2"]
-                 [org.clojure/tools.cli "1.0.206"]
+                 [org.clojure/tools.cli "1.0.214"]
                  [cheshire "5.11.0"]
                  [nrepl/bencode "1.1.0"]
                  [borkdude/sci.impl.reflector "0.0.1"]
@@ -32,13 +32,14 @@
                  [com.github.clj-easy/graal-build-time "0.1.0"]
                  [rewrite-clj/rewrite-clj "1.1.45"]
                  [insn/insn "0.5.2"]
-                 [org.babashka/cli "0.3.35"]]
+                 [org.babashka/cli "0.5.40"]]
   :plugins       [[org.kipz/lein-meta-bom "0.1.1"]]
   :metabom {:jar-name "metabom.jar"}
   :profiles {:feature/xml  {:source-paths ["feature-xml"]
                             :dependencies [[org.clojure/data.xml "0.2.0-alpha8"]]}
              :feature/yaml {:source-paths ["feature-yaml"]
-                            :dependencies [[clj-commons/clj-yaml "0.7.110"]]}
+                            :dependencies [[clj-commons/clj-yaml "0.7.169"
+                                            #_#_clj-commons/clj-yaml "0.7.110"]]}
              :feature/jdbc {:source-paths ["feature-jdbc"]
                             :dependencies [[seancorfield/next.jdbc "1.1.610"]]}
              :feature/sqlite [:feature/jdbc {:dependencies [[org.xerial/sqlite-jdbc "3.36.0.3"]]}]

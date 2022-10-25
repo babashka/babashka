@@ -60,7 +60,12 @@
     (is (:feature/xml v)))
   (is (= {:force? true} (parse-opts ["--force"])))
   (is (= {:main "foo", :command-line-args '("-h")} (parse-opts ["-m" "foo" "-h"])))
-  (is (= {:main "foo", :command-line-args '("-h")} (parse-opts ["-m" "foo" "--" "-h"]))))
+  (is (= {:main "foo", :command-line-args '("-h")} (parse-opts ["-m" "foo" "--" "-h"])))
+  (is (= {:force? true :list-tasks true :command-line-args nil} (parse-opts ["--force" "tasks"])))
+  (is (= {:force? true :run "sometask" :command-line-args nil} (parse-opts ["--force" "run" "sometask"])))
+  (is (= {:force? true :repl true} (parse-opts ["--force" "repl"])))
+  (is (= {:force? true :clojure true :command-line-args '("-M" "-r")} 
+        (parse-opts ["--force" "clojure" "-M" "-r"]))))
 
 (deftest version-test
   (is (= [1 0 0] (main/parse-version "1.0.0-SNAPSHOT")))
@@ -831,6 +836,12 @@ true")))
 
 (deftest clojure-lang-var-mapping-test
   (is (= :var (bb nil "(defprotocol Foo (foo [_])) (extend-protocol Foo clojure.lang.Var (foo [_] :var)) (foo #'inc)"))))
+
+(deftest clojure-ns-test
+  (is (true? (bb nil "(instance? clojure.lang.Namespace *ns*)"))))
+
+(deftest index-of-test
+  (is (= 1 (bb nil "(.indexOf (map inc [1 2 3]) 3)"))))
 
 ;;;; Scratch
 

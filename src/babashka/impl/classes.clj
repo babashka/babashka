@@ -120,6 +120,8 @@
     {:fields [{:name "EMPTY"}]}
     clojure.lang.APersistentVector
     {:methods [{:name "indexOf"}]}
+    clojure.lang.LazySeq
+    {:methods [{:name "indexOf"}]}
     clojure.lang.ILookup
     {:methods [{:name "valAt"}]}
     clojure.lang.IPersistentMap
@@ -300,7 +302,8 @@
           java.net.SocketException
           java.net.UnknownHostException
           java.net.URI
-          ;; java.net.URL, see below
+          ;; java.net.URL, see custom map
+          java.net.URLConnection
           java.net.URLEncoder
           java.net.URLDecoder
           ~@(when features/java-nio?
@@ -519,7 +522,6 @@
                       clojure.lang.IPersistentVector
                       clojure.lang.ITransientVector
                       clojure.lang.Iterate
-                      clojure.lang.LazySeq
                       clojure.lang.LispReader$Resolver
                       clojure.lang.Named
                       clojure.lang.Keyword
@@ -630,7 +632,8 @@
                          java.util.Iterator
                          ;; keep commas for merge friendliness
                          ,,,)))
-        m (assoc m (list 'quote 'clojure.lang.Var) 'sci.lang.Var)]
+        m (assoc m (list 'quote 'clojure.lang.Var) 'sci.lang.Var)
+        m (assoc m (list 'quote 'clojure.lang.Namespace) 'sci.lang.Namespace)]
     m))
 
 

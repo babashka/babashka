@@ -1,12 +1,17 @@
 (ns babashka.run-all-libtests
-  (:require [babashka.classpath :as cp :refer [add-classpath]]
-            [babashka.core :refer [windows?]]
-            [babashka.fs :as fs]
-            [clojure.edn :as edn]
-            [clojure.java.io :as io]
-            [clojure.test :as t :refer [*report-counters*]]))
+  (:require
+   [babashka.classpath :as cp :refer [add-classpath]]
+   [babashka.core :refer [windows?]]
+   [babashka.fs :as fs]
+   [clojure.edn :as edn]
+   [clojure.java.io :as io]
+   [clojure.spec.test.alpha :as st]
+   [clojure.string :as str]
+   [clojure.test :as t :refer [*report-counters*]]))
 
-(defmethod clojure.test/report :end-test-var [_m]
+(def orig-spec-checking-fn @#'st/spec-checking-fn)
+
+(defmethod t/report :end-test-var [_m]
   (when-let [rc *report-counters*]
     (let [{:keys [:fail :error]} @rc]
       (when (and (= "true" (System/getenv "BABASHKA_FAIL_FAST"))
@@ -34,16 +39,23 @@
 (defn test-namespaces [& namespaces]
   (let [namespaces (seq (filter test-namespace? namespaces))]
     (when (seq namespaces)
-      (doseq [n namespaces]
-        (require n)
-        (filter-vars! (find-ns n) #(-> % meta ((some-fn :skip-bb
-                                                        :test-check-slow)) not)))
-      (let [m (apply t/run-tests namespaces)]
-        (swap! status (fn [status]
-                        (merge-with + status (dissoc m :type))))))))
+      (let [namespaces namespaces]
+        (doseq [n namespaces]
+          (let [orchestra? (str/starts-with? (str n) "orchestra")]
+            (if orchestra?
+              nil ;; (alter-var-root #'st/spec-checking-fn (constantly ot/spec-checking-fn))
+              (alter-var-root #'st/spec-checking-fn (constantly orig-spec-checking-fn)))
+            (when-not orchestra?
+              (require n)
+              (filter-vars! (find-ns n) #(-> % meta ((some-fn :skip-bb
+                                                              :test-check-slow)) not))
+              (let [m (apply t/run-tests [n])]
+                (swap! status (fn [status]
+                                (merge-with + status (dissoc m :type))))))))))))
 
 ;; Standard test-runner for libtests
-(let [lib-tests (edn/read-string (slurp (io/resource "bb-tested-libs.edn")))]
+(let [lib-tests (edn/read-string (slurp (io/resource "bb-tested-libs.edn")))
+      test-nss (atom [])]
   (doseq [[libname {tns :test-namespaces skip-windows :skip-windows
                     :keys [test-paths
                            git-sha]}] lib-tests]
@@ -52,7 +64,8 @@
       (doseq [p test-paths]
         (add-classpath (str (fs/file git-dir p)))))
     (when-not (and skip-windows (windows?))
-      (apply test-namespaces tns))))
+      (swap! test-nss into tns)))
+  (apply test-namespaces @test-nss))
 
 ;; Non-standard tests - These are tests with unusual setup around test-namespaces
 

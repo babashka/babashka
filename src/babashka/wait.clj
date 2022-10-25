@@ -26,8 +26,9 @@
                           :wait-for-port.impl/timed-out
                           :wait-for-port.impl/try-again))))]
          (cond (identical? :wait-for-port.impl/try-again v)
-               (do (Thread/sleep (or pause 100))
-                   (recur))
+               (let [^long pause (or pause 100)]
+                 (Thread/sleep pause)
+                 (recur))
                (identical? :wait-for-port.impl/timed-out v)
                default
                :else
@@ -51,8 +52,9 @@
                      :wait-for-path.impl/timed-out
                      :wait-for-path.impl/try-again)))]
          (cond (identical? :wait-for-path.impl/try-again v)
-               (do (Thread/sleep (or pause 100))
-                   (recur))
+               (let [^long pause (or pause 100)]
+                 (Thread/sleep pause)
+                 (recur))
                (identical? :wait-for-path.impl/timed-out v)
                default
                :else

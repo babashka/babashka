@@ -7,7 +7,39 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-- [#1358](https://github.com/babashka/babashka/issues/1358): Expose a subset of java.lang.ref to enable hooking into the destruction/GC of objects ([@retrogradeorbit](https://github.com/retrogradeorbit))
+- Fix [#1401](https://github.com/babashka/babashka/issues/1401): mutation of `deftype` field should be visible in protocol method
+- Fix [#1405](https://github.com/babashka/babashka/issues/1405): drop name metadata from conditionally defined var
+- [#602](https://github.com/babashka/babashka/issues/602): add lib tests for clj-commons/fs ([@bobisageek](https://github.com/bobisageek))
+- Add `java.net.URLConnection` class
+
+## 1.0.164 (2022-10-17)
+
+- SCI: optimizations for `let`
+- Add single argument read method support to PipedInputStream proxy ([@retrogradeorbit](https://github.com/retrogradeorbit))
+- feat: Honor `*print-namespace-maps*` in pprint ([@ghoseb](https://github.com/ghoseb))
+- [#1369](https://github.com/babashka/babashka/issues/1369): provide `.sha256` files for every released asset
+- [#1397](https://github.com/babashka/babashka/issues/1397): Add `clojure.lang.Namespace` as alias for `sci.lang.Namespace`, such that `(instance? clojure.lang.Namespace *ns*)` returns `true` in bb
+- [#1384](https://github.com/babashka/babashka/issues/1384): allow `.indexOf` on `LazySeq`
+- [#1330](https://github.com/babashka/babashka/issues/1330): allow `(set! *warn-on-reflection*)` in programmatic nREPL
+- Better error message when failing to load `bb.edn` ([@lispyclouds](https://github.com/lispyclouds))
+- Pods: print and flush to `*out*` and `*err*` instead of using `println` ([@justone](https://github.com/justone))
+- deps.clj: support for `CLJ_JVM_OPTS` and `JAVA_OPTS` ([@ikappaki](https://github.com/ikappaki))
+- Fix `*print-namespace-maps*` when using `clojure.pprint` ([@ghoseb](https://github.com/ghoseb))
+- Process: only slurp `*err*` when inputstream ([@ikappaki](https://github.com/ikappaki))
+- Process: add `alive?` API function ([@grzm](https://github.com/grzm))
+- Bump libraries: tools.cli, babashka.cli
+- [#1391](https://github.com/babashka/babashka/issues/1391): include raw in `hiccup2.core` ns
+- [#1391](https://github.com/babashka/babashka/issues/1391): support loading `hiccup.page` when adding hiccup to deps
+
+## 0.10.163 (2022-09-24)
+
+- [#808](https://github.com/babashka/babashka/issues/808): support `-Sdeps` option to support passing extra deps map which will be merged last
+- [#1336](https://github.com/babashka/babashka/issues/1336): tasks subcommand doesn't work with global `-Sforce` option ([@bobisageek](https://github.com/bobisageek))
+- [#1340](https://github.com/babashka/babashka/issues/1340): `defprotocol` methods are missing `:doc` metadata ([@bobisageek](https://github.com/bobisageek))
+- [#1368](https://github.com/babashka/babashka/issues/1368): `-x`: do not pick up on aliases in `user` ns
+- [#1367](https://github.com/babashka/babashka/issues/1367): Fix line number in clojure.test output ([@retrogradeorbit](https://github.com/retrogradeorbit))
+- [#1370](https://github.com/babashka/babashka/issues/1370): Add `core.async` `to-chan!`, `to-chan!!`, `onto-chan!` ([@cap10morgan](https://github.com/cap10morgan))
+- [#1358](https://github.com/babashka/babashka/issues/1358): Expose a subset of `java.lang.ref` to enable hooking into the destruction/GC of objects ([@retrogradeorbit](https://github.com/retrogradeorbit))
 - [#1364](https://github.com/babashka/babashka/issues/1364): Be tolerant of unknown tags in `bb.edn`
 - Add and expose `babashka.classes/all-classes` to get a list of all available classes (as `java.lang.Class` objects) ([@eerohele](https://github.com/eerohele))
 - Add more reflection class methods ([@eerohele](https://github.com/eerohele))
@@ -26,6 +58,10 @@ A preview of the next release can be installed from
 - fs: add `write-lines`
 - fs: add `write-bytes`
 - [#1350](https://github.com/babashka/babashka/issues/1350): map `clojure.lang.Var` to `sci.lang.Var`
+- Use temporary fork of `clj-yaml` with new `:load-all`, `:unknown-tag-fn`
+  options and preserves strings with numbers that start with zeros as strings
+  (this solves a problem when YAML 1.1 output is read as YAML 1.2.). Once
+  upstream SnakeYAML 1.33 lands, this will be used again.
 
 ## 0.9.162 (2022-09-04)
 

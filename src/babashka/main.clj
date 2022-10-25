@@ -96,7 +96,8 @@
 ;; echo '1' | java -agentlib:native-image-agent=config-output-dir=/tmp -jar target/babashka-xxx-standalone.jar '...'
 ;; with the java provided by GraalVM.
 
-(def version (str/trim (slurp (io/resource "BABASHKA_VERSION"))))
+(def version common/version)
+
 (defn parse-version [version]
   (mapv #(Integer/parseInt %)
         (-> version
@@ -145,10 +146,11 @@ Global opts:
 
   -cp, --classpath  Classpath to use. Overrides bb.edn classpath.
   --debug           Print debug information and internal stacktrace in case of exception.
-  --force           Passes -Sforce to deps.clj, forcing recalculation of the classpath.
   --init <file>     Load file after any preloads and prior to evaluation/subcommands.
   --config <file>   Replacing bb.edn with file. Relative paths are resolved relative to file.
   --deps-root <dir> Treat dir as root of relative paths in config.
+  -Sforce           Force recalculation of the classpath (don't use the cache)
+  -Sdeps            Deps data to use as the last deps file to be merged
 
 Help:
 
@@ -304,16 +306,11 @@ Use bb run --help to show this help output.
 (defn start-socket-repl! [address ctx]
   (socket-repl/start-repl! address ctx))
 
-(defn start-nrepl! [address ctx]
-  (let [dev? (= "true" (System/getenv "BABASHKA_DEV"))
-        nrepl-opts (nrepl-server/parse-opt address)
-        nrepl-opts (assoc nrepl-opts
-                          :debug dev?
-                          :describe {"versions" {"babashka" version}}
-                          :thread-bind [core/warn-on-reflection])]
-    (nrepl-server/start-server! ctx nrepl-opts)
-    (binding [*out* *err*]
-      (println "For more info visit: https://book.babashka.org/#_nrepl")))
+(defn start-nrepl! [address]
+  (let [opts (nrepl-server/parse-opt address)]
+    (babashka.impl.nrepl-server/start-server! opts))
+  (binding [*out* *err*]
+    (println "For more info visit: https://book.babashka.org/#_nrepl"))
   ;; hang until SIGINT
   @(promise))
 
@@ -552,9 +549,6 @@ Use bb run --help to show this help output.
           ("--verbose") (recur (next options)
                                (assoc opts-map
                                       :verbose? true))
-          ("--force") (recur (next options)
-                             (assoc opts-map
-                                    :force? true))
           ("--describe") (recur (next options)
                                 (assoc opts-map
                                        :describe? true))
@@ -698,6 +692,12 @@ Use bb run --help to show this help output.
 
         ("--init")
         (recur (nnext options) (assoc opts-map :init (second options)))
+
+        ("--force" "-Sforce")
+        (recur (next options) (assoc opts-map :force? true))
+
+        ("-Sdeps")
+        (recur (nnext options) (assoc opts-map :merge-deps (second options)))
 
         ("--config")
         (recur (nnext options) (assoc opts-map :config (second options)))
@@ -954,7 +954,7 @@ Use bb run --help to show this help output.
                        describe?
                        [(print-describe) 0]
                        repl [(repl/start-repl! sci-ctx) 0]
-                       nrepl [(start-nrepl! nrepl sci-ctx) 0]
+                       nrepl [(start-nrepl! nrepl) 0]
                        uberjar [nil 0]
                        list-tasks [(tasks/list-tasks sci-ctx) 0]
                        print-deps [(print-deps/print-deps (:print-deps-format cli-opts)) 0]
@@ -1045,22 +1045,28 @@ Use bb run --help to show this help output.
        (catch java.lang.RuntimeException e
          (if (re-find #"No dispatch macro for: \"" (.getMessage e))
            (throw (ex-info "Invalid regex literal found in EDN config, use re-pattern instead" {}))
-           (throw e)))))
+           (do (binding [*out* *err*]
+                 (println "Error during loading bb.edn:"))
+               (throw e))))))
 
 (defn main [& args]
   (let [[args global-opts] (parse-global-opts args)
         {:keys [:jar] :as file-opt} (when (some-> args first io/file .isFile)
                                       (parse-file-opt args global-opts))
         config (:config global-opts)
+        merge-deps (:merge-deps global-opts)
         abs-path #(-> % io/file .getAbsolutePath)
         bb-edn-file (cond
                       config (when (fs/exists? config) (abs-path config))
                       jar (some-> jar cp/loader (cp/resource "META-INF/bb.edn") .toString)
                       :else (when (fs/exists? "bb.edn") (abs-path "bb.edn")))
-        bb-edn (when bb-edn-file
-                 (System/setProperty "babashka.config" bb-edn-file)
-                 (let [raw-string (slurp bb-edn-file)
-                       edn (load-bb-edn raw-string)
+        bb-edn (when (or bb-edn-file merge-deps)
+                 (when bb-edn-file (System/setProperty "babashka.config" bb-edn-file))
+                 (let [raw-string (when bb-edn-file (slurp bb-edn-file))
+                       edn (when bb-edn-file (load-bb-edn raw-string))
+                       edn (if merge-deps
+                             (deps/merge-deps [edn (load-bb-edn merge-deps)])
+                             edn)
                        edn (assoc edn
                                   :raw raw-string
                                   :file bb-edn-file)
@@ -1069,6 +1075,7 @@ Use bb run --help to show this help output.
                              (assoc edn :deps-root deps-root)
                              edn)]
                    (vreset! common/bb-edn edn)))
+        ;; _ (.println System/err (str bb-edn))
         min-bb-version (:min-bb-version bb-edn)]
     (when min-bb-version
       (when-not (satisfies-min-version? min-bb-version)
