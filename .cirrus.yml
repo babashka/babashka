@@ -20,6 +20,7 @@ task:
     sudo script/install-leiningen
     script/install-graalvm
     export PATH=$GRAALVM_HOME/bin:$PATH
+    export JAVA_HOME=$GRAALVM_HOME
     sudo /usr/sbin/softwareupdate --install-rosetta --agree-to-license
     java -version
 
