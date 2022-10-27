@@ -26,7 +26,7 @@
         babashka/fs {:local/root "fs"}
         babashka/babashka.core {:local/root "babashka.core"}
         borkdude/graal.locking {:mvn/version "0.0.2"},
-        org.clojure/core.async {:mvn/version "1.5.648"},
+        org.clojure/core.async {:mvn/version "1.6.673"},
         org.clojure/tools.cli {:mvn/version "1.0.214"},
         org.clojure/data.csv {:mvn/version "1.0.0"},
         cheshire/cheshire {:mvn/version "5.11.0"}
@@ -156,7 +156,9 @@
                                                :git/sha "ca115fe00a0abf3a2f78452ab309c3aa4c00fc4e"
                                                :deps/manifest :deps}
                          lambdaisland/uri {:git/url "https://github.com/lambdaisland/uri"
-                                           :git/sha "ac4f1f9c8e4f45a088db1c6383ce2191c973987c"}}
+                                           :git/sha "ac4f1f9c8e4f45a088db1c6383ce2191c973987c"
+                                               :deps/manifest :deps}
+                         clj-commons/fs {:mvn/version "1.6.310"}}
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil}}
            :clj-nvd

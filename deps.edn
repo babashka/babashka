@@ -26,7 +26,7 @@
         babashka/fs {:local/root "fs"}
         babashka/babashka.core {:local/root "babashka.core"}
         borkdude/graal.locking {:mvn/version "0.0.2"},
-        org.clojure/core.async {:mvn/version "1.5.648"},
+        org.clojure/core.async {:mvn/version "1.6.673"},
         org.clojure/tools.cli {:mvn/version "1.0.214"},
         org.clojure/data.csv {:mvn/version "1.0.0"},
         cheshire/cheshire {:mvn/version "5.11.0"}
