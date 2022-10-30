@@ -7,7 +7,7 @@
             [clojure.core :as c]
             [clojure.string :as str]
             [sci.core :as sci]
-            [sci.impl.namespaces :refer [copy-core-var core-var macrofy]]
+            [sci.impl.namespaces :refer [copy-core-var new-var macrofy]]
             [sci.impl.parser :as parser]
             [sci.impl.utils :refer [clojure-core-ns]]
             [sci.impl.vars :as vars]))
@@ -166,7 +166,7 @@
    '*data-readers* data-readers
    'default-data-readers (copy-core-var default-data-readers)
    'xml-seq (copy-core-var xml-seq)
-   'read+string (core-var 'read+string (fn [& args]
+   'read+string (new-var 'read+string (fn [& args]
                   (apply read+string @common/ctx args)))
    '*command-line-args* command-line-args
    '*warn-on-reflection* warn-on-reflection

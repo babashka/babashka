@@ -867,7 +867,7 @@ Use bb run --help to show this help output.
                   :namespaces (-> namespaces
                                   (assoc 'clojure.core
                                          (assoc core-extras
-                                                'load-file (sci-namespaces/core-var 'load-file load-file*))))
+                                                'load-file (sci-namespaces/new-var 'load-file load-file*))))
                   :env env
                   :features #{:bb :clj}
                   :classes @classes/class-map
