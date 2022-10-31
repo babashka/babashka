@@ -4,8 +4,7 @@
    [next.jdbc :as njdbc]
    [next.jdbc.result-set :as rs]
    [next.jdbc.sql :as sql]
-   [sci.core :as sci]
-   [sci.impl.namespaces :refer [copy-var macrofy]]))
+   [sci.core :as sci]))
 
 (def next-ns (sci/create-ns 'next.jdbc nil))
 
@@ -20,30 +19,30 @@
   * `:rollback-only` -- `true` / `false`."
   [_ _ [sym transactable opts] & body]
   (let [con (vary-meta sym assoc :tag 'java.sql.Connection)]
-    `(next.jdbc/transact ~transactable (^{:once true} fn* [~con] ~@body) ~(or opts {}))))
+    `(njdbc/transact ~transactable (^{:once true} fn* [~con] ~@body) ~(or opts {}))))
 
 (def njdbc-namespace
-  {'get-datasource (copy-var njdbc/get-datasource next-ns)
-   'execute! (copy-var njdbc/execute! next-ns)
-   'execute-one! (copy-var njdbc/execute-one! next-ns)
-   'get-connection (copy-var njdbc/get-connection next-ns)
-   'plan (copy-var njdbc/plan next-ns)
-   'prepare (copy-var njdbc/prepare next-ns)
-   'transact (copy-var njdbc/transact next-ns)
-   'with-transaction (macrofy 'with-transaction with-transaction next-ns)})
+  {'get-datasource (sci/copy-var njdbc/get-datasource next-ns)
+   'execute! (sci/copy-var njdbc/execute! next-ns)
+   'execute-one! (sci/copy-var njdbc/execute-one! next-ns)
+   'get-connection (sci/copy-var njdbc/get-connection next-ns)
+   'plan (sci/copy-var njdbc/plan next-ns)
+   'prepare (sci/copy-var njdbc/prepare next-ns)
+   'transact (sci/copy-var njdbc/transact next-ns)
+   'with-transaction (sci/copy-var with-transaction next-ns)})
 
 (def sns (sci/create-ns 'next.jdbc.sql nil))
 
 (def next-sql-namespace
-  {'insert-multi! (copy-var sql/insert-multi! sns)})
+  {'insert-multi! (sci/copy-var sql/insert-multi! sns)})
 
 (def rsns (sci/create-ns 'next.jdbc.result-set nil))
 
 (def result-set-namespace
-  {'as-maps (copy-var rs/as-maps rsns)
-   'as-unqualified-maps (copy-var rs/as-unqualified-maps rsns)
-   'as-modified-maps (copy-var rs/as-modified-maps rsns)
-   'as-unqualified-modified-maps (copy-var rs/as-unqualified-modified-maps rsns)
-   'as-lower-maps (copy-var rs/as-lower-maps rsns)
-   'as-unqualified-lower-maps (copy-var rs/as-unqualified-lower-maps rsns)
-   'as-maps-adapter (copy-var rs/as-maps-adapter rsns)})
+  {'as-maps (sci/copy-var rs/as-maps rsns)
+   'as-unqualified-maps (sci/copy-var rs/as-unqualified-maps rsns)
+   'as-modified-maps (sci/copy-var rs/as-modified-maps rsns)
+   'as-unqualified-modified-maps (sci/copy-var rs/as-unqualified-modified-maps rsns)
+   'as-lower-maps (sci/copy-var rs/as-lower-maps rsns)
+   'as-unqualified-lower-maps (sci/copy-var rs/as-unqualified-lower-maps rsns)
+   'as-maps-adapter (sci/copy-var rs/as-maps-adapter rsns)})
