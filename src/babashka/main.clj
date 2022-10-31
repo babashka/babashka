@@ -57,6 +57,7 @@
    [hf.depstar.uberjar :as uberjar]
    [sci.addons :as addons]
    [sci.core :as sci]
+   [sci.impl.copy-vars :as sci-copy-vars]
    [sci.impl.io :as sio]
    [sci.impl.namespaces :as sci-namespaces]
    [sci.impl.types :as sci-types]
@@ -867,7 +868,7 @@ Use bb run --help to show this help output.
                   :namespaces (-> namespaces
                                   (assoc 'clojure.core
                                          (assoc core-extras
-                                                'load-file (sci-namespaces/new-var 'load-file load-file*))))
+                                                'load-file (sci-copy-vars/new-var 'load-file load-file*))))
                   :env env
                   :features #{:bb :clj}
                   :classes @classes/class-map

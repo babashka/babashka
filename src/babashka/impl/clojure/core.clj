@@ -7,7 +7,7 @@
             [clojure.core :as c]
             [clojure.string :as str]
             [sci.core :as sci]
-            [sci.impl.namespaces :refer [copy-core-var new-var macrofy]]
+            [sci.impl.copy-vars :refer [copy-core-var new-var macrofy]]
             [sci.impl.parser :as parser]
             [sci.impl.utils :refer [clojure-core-ns]]
             [sci.impl.vars :as vars]))

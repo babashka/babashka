@@ -3,7 +3,7 @@
   (:require [clojure.core.async :as async]
             [clojure.core.async.impl.protocols :as protocols]
             [sci.core :as sci :refer [copy-var]]
-            [sci.impl.namespaces :refer [macrofy]]
+            [sci.impl.copy-vars :refer [macrofy]]
             [sci.impl.vars :as vars]))
 
 (def ^java.util.concurrent.Executor executor @#'async/thread-macro-executor)
