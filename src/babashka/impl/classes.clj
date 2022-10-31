@@ -368,6 +368,7 @@
                 java.time.Year
                 java.time.YearMonth
                 java.time.ZoneRegion
+                java.time.zone.ZoneRules
                 java.time.ZonedDateTime
                 java.time.ZoneId
                 java.time.ZoneOffset
