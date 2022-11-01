@@ -5,13 +5,19 @@ For a list of breaking changes, check [here](#breaking-changes).
 A preview of the next release can be installed from
 [babashka-dev-builds](https://github.com/babashka/babashka-dev-builds).
 
-## Unreleased
+## 1.0.165 (2202-11-01)
 
 - Fix [#1401](https://github.com/babashka/babashka/issues/1401): mutation of `deftype` field should be visible in protocol method
 - Fix [#1405](https://github.com/babashka/babashka/issues/1405): drop name metadata from conditionally defined var
 - [#602](https://github.com/babashka/babashka/issues/602): add lib tests for clj-commons/fs ([@bobisageek](https://github.com/bobisageek))
 - Add `java.net.URLConnection` class
 - Add `java.time.zone.ZoneRules` class
+- Copy more docstrings for core macros and vars
+- Bump `core.async` to `1.6.673`
+- Implement `in-ns` as function, rather than special form (@SignSpice)
+- Bump `deps.clj` to `1.11.1.1182`
+- Bump GraalVM to `22.3.0`
+- SCI: don't rely on metadata for record implementation
 
 ## 1.0.164 (2022-10-17)
 
