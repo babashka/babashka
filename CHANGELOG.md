@@ -9,7 +9,7 @@ A preview of the next release can be installed from
 
 ...
 
-## 1.0.165 (2202-11-01)
+## 1.0.165 (2022-11-01)
 
 - Fix [#1401](https://github.com/babashka/babashka/issues/1401): mutation of `deftype` field should be visible in protocol method
 - Fix [#1405](https://github.com/babashka/babashka/issues/1405): drop name metadata from conditionally defined var
