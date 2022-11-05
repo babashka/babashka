@@ -168,4 +168,8 @@
                        :test-paths ["test"]
                        :test-namespaces [exoscale.interceptor-test]}
  clj-commons/fs {:git-url "https://github.com/clj-commons/fs", :test-namespaces (me.raynes.core-test), :git-sha "60026817c44015da8656925411d4af1d8210bad0"}
- }
+ postmortem/postmortem {:git-url "https://github.com/athos/Postmortem"
+                        :git-sha "1a29775a3d286f9f6fe3f979c78b6e2bf298d5ba"
+                        :test-paths ["test"]
+                        :test-namespaces [postmortem.core-test postmortem.instrument-test
+                                          postmortem.instrument-test]}}

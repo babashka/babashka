@@ -158,7 +158,9 @@
                          lambdaisland/uri {:git/url "https://github.com/lambdaisland/uri"
                                            :git/sha "ac4f1f9c8e4f45a088db1c6383ce2191c973987c"
                                                :deps/manifest :deps}
-                         clj-commons/fs {:mvn/version "1.6.310"}}
+                         clj-commons/fs {:mvn/version "1.6.310"}
+                         postmortem/postmortem {:git/url "https://github.com/athos/Postmortem"
+                                                :git/sha "1a29775a3d286f9f6fe3f979c78b6e2bf298d5ba"}}
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil}}
            :clj-nvd
