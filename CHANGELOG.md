@@ -7,7 +7,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-...
+- Add `run-test` and `run-test-var` to `clojure.test`
 
 ## 1.0.165 (2022-11-01)
 
