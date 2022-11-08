@@ -839,4 +839,4 @@
           (println test-symbol "is not a test.")))
 
       :else
-      `(run-test-var ~test-var))))
+      `(clojure.test/run-test-var ~test-var))))
