@@ -157,7 +157,7 @@
                                                :deps/manifest :deps}
                          lambdaisland/uri {:git/url "https://github.com/lambdaisland/uri"
                                            :git/sha "ac4f1f9c8e4f45a088db1c6383ce2191c973987c"
-                                               :deps/manifest :deps}
+                                           :deps/manifest :deps}
                          clj-commons/fs {:mvn/version "1.6.310"}
                          postmortem/postmortem {:git/url "https://github.com/athos/Postmortem"
                                                 :git/sha "1a29775a3d286f9f6fe3f979c78b6e2bf298d5ba"}}
@@ -170,7 +170,8 @@
            :test
            {:extra-paths ["test"]
             :extra-deps {io.github.cognitect-labs/test-runner
-                          {:git/tag "v0.5.0" :git/sha "b3fd0d2"}}
+                         {:git/tag "v0.5.0" :git/sha "b3fd0d2"}
+                         nubank/matcher-combinators {:mvn/version "3.6.0"}}
             :main-opts ["-m" "cognitect.test-runner"]
             :exec-fn cognitect.test-runner.api/test}
            :test-pod
