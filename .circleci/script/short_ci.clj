@@ -72,14 +72,16 @@
            "java -jar ./target/babashka-$(cat resources/BABASHKA_VERSION)-standalone.jar .circleci/script/docker.clj"}}]))))
 
 (defn jvm
-  [shorted?]
+  [shorted? graalvm-home]
   (gen-job
     shorted?
     (ordered-map
       :docker            [{:image "circleci/clojure:openjdk-11-lein-2.9.8-bullseye"}]
       :working_directory "~/repo"
       :environment       {:LEIN_ROOT         "true"
-                          :BABASHKA_PLATFORM "linux"}
+                          :BABASHKA_PLATFORM "linux"
+                          :GRAALVM_VERSION   "22.3.0"
+                          :GRAALVM_HOME      graalvm-home}
       :resource_class    "large"
       :steps
       (gen-steps
@@ -89,6 +91,7 @@
          {:restore_cache {:keys ["v1-dependencies-{{ checksum \"project.clj\" }}-{{ checksum \"deps.edn\" }}"
                                  "v1-dependencies-"]}}
          (run "Install Clojure" "sudo script/install-clojure")
+         (run "Download GraalVM" "script/install-graalvm")
          (run
            "Run JVM tests"
            "export BABASHKA_FEATURE_JDBC=true
@@ -192,7 +195,7 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
            :command
            "docker run --privileged --rm tonistiigi/binfmt --install all\ndocker buildx create --name ci-builder --use"}}]}}
       :jobs      (ordered-map
-                   :jvm (jvm shorted?)
+                   :jvm (jvm shorted? linux-graalvm-home)
                    :linux (unix shorted? false false "amd64" docker-executor-conf "large" linux-graalvm-home "linux")
                    :linux-static
                    (unix shorted? true true "amd64" docker-executor-conf "large" linux-graalvm-home "linux")
