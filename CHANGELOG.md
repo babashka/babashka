@@ -8,6 +8,7 @@ A preview of the next release can be installed from
 ## Unreleased
 
 - Add `run-test` and `run-test-var` to `clojure.test`
+- Compile distributed uberjar using GraalVM, fixes `babashka.process/exec` for Nix
 
 ## 1.0.165 (2022-11-01)
 
