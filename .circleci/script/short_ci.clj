@@ -105,6 +105,8 @@ script/uberjar
 VERSION=$(cat resources/BABASHKA_VERSION)
 jar=target/babashka-$VERSION-standalone.jar
 cp $jar /tmp/release
+export PATH=$GRAALVM_HOME/bin:$PATH
+export JAVA_HOME=$GRAALVM_HOME
 java -jar $jar script/reflection.clj
 reflection=\"babashka-$VERSION-reflection.json\"
 java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$jar\"
