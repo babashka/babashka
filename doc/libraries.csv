@@ -8,6 +8,7 @@ borkdude/deps,https://github.com/borkdude/deps.clj
 borkdude/missing.test.assertions,https://github.com/borkdude/missing.test.assertions
 borkdude/rewrite-edn,https://github.com/borkdude/rewrite-edn
 camel-snake-kebab/camel-snake-kebab,https://github.com/clj-commons/camel-snake-kebab
+cc.qbits/auspex,https://github.com/mpenet/auspex
 circleci/bond,https://github.com/circleci/bond
 cli-matic/cli-matic,https://github.com/l3nz/cli-matic.git
 clj-commons/clj-yaml,https://github.com/clj-commons/clj-yaml
@@ -19,6 +20,7 @@ clojure-msgpack/clojure-msgpack,https://github.com/edma2/clojure-msgpack
 clojure-term-colors/clojure-term-colors,https://github.com/trhura/clojure-term-colors
 com.exoscale/lingo,https://github.com/exoscale/lingo
 com.github.askonomm/clarktown,https://github.com/askonomm/clarktown
+com.github.rawleyfowler/sluj,https://github.com/rawleyfowler/sluj
 com.github.seancorfield/expectations,https://github.com/clojure-expectations/clojure-test
 com.github.seancorfield/honeysql,https://github.com/seancorfield/honeysql
 com.grammarly/omniconf,https://github.com/grammarly/omniconf
@@ -37,6 +39,7 @@ douglass/clj-psql,https://github.com/DarinDouglass/clj-psql
 edn-query-language/eql,https://github.com/edn-query-language/eql
 environ/environ,https://github.com/weavejester/environ
 exoscale/coax,https://github.com/exoscale/coax
+exoscale/interceptor,https://github.com/exoscale/interceptor
 expound/expound,https://github.com/bhb/expound
 failjure/failjure,https://github.com/adambard/failjure
 ffclj/ffclj,https://github.com/luissantos/ffclj
@@ -58,8 +61,10 @@ java-http-clj/java-http-clj,http://www.github.com/schmee/java-http-clj
 lambdaisland/regal,https://github.com/lambdaisland/regal
 listora/again,https://github.com/liwp/again
 markdown-clj/markdown-clj,https://github.com/yogthos/markdown-clj
+meander/epsilon,https://github.com/noprompt/meander
 medley/medley,https://github.com/weavejester/medley
 meta-merge/meta-merge,https://github.com/weavejester/meta-merge
+metosin/malli,https://github.com/metosin/malli
 minimallist/minimallist,https://github.com/green-coder/minimallist
 mvxcvi/arrangement,https://github.com/greglook/clj-arrangement
 orchestra/orchestra,https://github.com/jeaye/orchestra
@@ -79,6 +84,8 @@ org.clojure/math.numeric-tower,https://github.com/clojure/math.numeric-tower
 org.clojure/test.check,https://github.com/clojure/test.check
 org.clojure/tools.gitlibs,https://github.com/clojure/tools.gitlibs
 org.clojure/tools.namespace,https://github.com/babashka/tools.namespace
+postmortem/postmortem,https://github.com/athos/Postmortem
+prismatic/schema,https://github.com/plumatic/schema
 progrock/progrock,https://github.com/weavejester/progrock
 reifyhealth/specmonstah,https://github.com/reifyhealth/specmonstah
 rewrite-clj/rewrite-clj,https://github.com/clj-commons/rewrite-clj

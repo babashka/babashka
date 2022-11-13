@@ -10,6 +10,7 @@ A preview of the next release can be installed from
 - Add `run-test` and `run-test-var` to `clojure.test`
 - Compile distributed uberjar using GraalVM, fixes `babashka.process/exec` for Nix
 - [#1414](https://github.com/babashka/babashka/issues/1414): preserve metadata on exec task function argument map
+- [#1269](https://github.com/babashka/babashka/issues/1269): add lib tests for sluj ([@bobisageek](https://github.com/bobisageek))
 
 ## 1.0.165 (2022-11-01)
 
