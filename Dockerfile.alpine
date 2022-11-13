@@ -4,6 +4,8 @@ COPY bb /bin/bb
 
 RUN chmod +x /bin/bb
 
+# TODO: See https://github.com/sgerrand/alpine-pkg-glibc/issues/185 and remove the `--force-overwrite`s when resolved.
+
 RUN apk --no-cache add curl ca-certificates tar && \
     curl -Ls https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.28-r0/glibc-2.28-r0.apk > /tmp/glibc-2.28-r0.apk && \
     apk add --allow-untrusted --force-overwrite /tmp/glibc-2.28-r0.apk
