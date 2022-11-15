@@ -45,7 +45,7 @@
         hiccup/hiccup {:mvn/version "2.0.0-alpha2"}
         rewrite-clj/rewrite-clj {:mvn/version "1.1.45"}
         selmer/selmer {:mvn/version "1.12.50"}
-        com.taoensso/timbre {:mvn/version "5.2.1"}
+        com.taoensso/timbre {:mvn/version "6.0.1"}
         org.clojure/tools.logging {:mvn/version "1.1.0"}
         org.clojure/data.priority-map {:mvn/version "1.1.0"}
         insn/insn {:mvn/version "0.5.2"}
@@ -160,7 +160,10 @@
                                            :deps/manifest :deps}
                          clj-commons/fs {:mvn/version "1.6.310"}
                          postmortem/postmortem {:git/url "https://github.com/athos/Postmortem"
-                                                :git/sha "1a29775a3d286f9f6fe3f979c78b6e2bf298d5ba"}}
+                                                :git/sha "1a29775a3d286f9f6fe3f979c78b6e2bf298d5ba"}
+                         com.github.rawleyfowler/sluj {:git/url "https://github.com/rawleyfowler/sluj"
+                                                       :git/sha "4a92e772b4e07bf127423448d4140748b5782198"
+                                                       :deps/manifest :deps}}
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil}}
            :clj-nvd

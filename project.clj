@@ -68,7 +68,7 @@
              :feature/selmer {:source-paths ["feature-selmer"]
                               :dependencies [[selmer/selmer "1.12.50"]]}
              :feature/logging {:source-paths ["feature-logging"]
-                               :dependencies [[com.taoensso/timbre "5.2.1"]
+                               :dependencies [[com.taoensso/timbre "6.0.1"]
                                               [org.clojure/tools.logging "1.1.0"]]}
              :feature/priority-map {:source-paths ["feature-priority-map"]
                                     :dependencies [[org.clojure/data.priority-map "1.1.0"]]}
