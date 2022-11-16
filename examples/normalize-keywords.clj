@@ -3,7 +3,7 @@
             [rewrite-clj.node :as node]
             [rewrite-clj.zip :as z]))
 
-(pods/load-pod 'borkdude/clj-kondo "2021.06.18")
+(pods/load-pod 'clj-kondo/clj-kondo "2022.11.02")
 
 (require '[pod.borkdude.clj-kondo :as clj-kondo])
 
