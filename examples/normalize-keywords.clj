@@ -36,7 +36,7 @@
       (str (z/root zloc)))))
 
 (doseq [f (file-seq (io/file code))
-        :when (re-find #"\.clj[cdx]?$" (str f))
+        :when (re-find #"\.clj[cdsx]?$" (str f))
         :let [file-path (str f)]]
   (when-let [findings' (findings file-path)]
     (prn (format "Rewriting %s" file-path))
