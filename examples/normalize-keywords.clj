@@ -1,5 +1,6 @@
 (ns normalize-keywords
   (:require [babashka.pods :as pods]
+            [clojure.java.io :as io]
             [rewrite-clj.node :as node]
             [rewrite-clj.zip :as z]))
 
@@ -9,10 +10,9 @@
 
 (def code (first *command-line-args*))
 
-(def findings
-  (->> (with-in-str code
-         (clj-kondo/run! {:lint [code]
-                          :config {:output {:analysis {:keywords true}}}}))
+(defn findings [file-path]
+  (->> (clj-kondo/run! {:lint [file-path]
+                        :config {:output {:analysis {:keywords true}}}})
        :analysis
        :keywords
        (filter (some-fn :alias :auto-resolved))))
@@ -33,6 +33,11 @@
                 zloc (z/replace zloc (node/coerce k))]
             (recur zloc (next findings)))
           (recur (z/next zloc) findings)))
-      (println (str (z/root zloc))))))
+      (str (z/root zloc)))))
 
-(remove-locs (z/of-file code) findings)
+(doseq [f (file-seq (io/file code))
+        :when (re-find #"\.clj[cdx]?$" (str f))
+        :let [file-path (str f)]]
+  (when-let [findings' (findings file-path)]
+    (prn (format "Rewriting %s" file-path))
+    (spit f (remove-locs (z/of-file file-path) findings'))))
