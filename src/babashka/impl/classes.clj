@@ -549,6 +549,7 @@
                       java.lang.LinkageError
                       java.lang.ThreadDeath
                       java.lang.VirtualMachineError
+                      java.net.URLClassLoader
                       java.sql.Timestamp
                       java.util.concurrent.TimeoutException
                       java.util.Collection
