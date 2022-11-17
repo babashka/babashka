@@ -85,20 +85,24 @@ Here is an example `flake.nix` using `cowsay` as an external dependency:
 
 ```nix
 {
-  inputs.wbba.url = "github:sohalt/write-babashka-application";
-  inputs.flake-utils.url = "github:numtide/flake-utils";
+  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+  inputs.wbba = {
+    url = "github:sohalt/write-babashka-application";
+    inputs.nixpkgs.follows = "nixpkgs";
+  };
+  inputs.flake-utils = {
+    url = "github:numtide/flake-utils";
+    inputs.nixpkgs.follows = "nixpkgs";
+  };
   outputs = { nixpkgs, flake-utils, wbba, ... }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs {
           inherit system;
-          overlays = [ wbba.overlay ];
+          overlays = [ wbba.overlays.default ];
         };
         hello-babashka = pkgs.writeBabashkaApplication {
           name = "hello";
-          runtimeInputs = with pkgs;[
-            cowsay # add your dependencies here
-          ];
           text = ''
             (ns hello
               (:require [babashka.process :refer [sh]]))
@@ -107,6 +111,9 @@ Here is an example `flake.nix` using `cowsay` as an external dependency:
                  :out
                  print)
           '';
+          runtimeInputs = with pkgs;[
+            cowsay
+          ];
         };
       in
       {
