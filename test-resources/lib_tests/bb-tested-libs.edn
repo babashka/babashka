@@ -182,5 +182,5 @@
  org.clojure/tools.namespace {:git-sha "bd78b34d9551c99910a24ce939c2137fcf1bede1",
                               :git-url "https://github.com/clojure/tools.namespace",
                               :test-namespaces [clojure.tools.namespace.test-helpers clojure.tools.namespace.dependency-test clojure.tools.namespace.find-test clojure.tools.namespace.move-test clojure.tools.namespace.parse-test],
-                              :test-paths [;; "src/main/clojure" ;; add manually to classpath
+                              :test-paths ["src/main/clojure" ;; add manually to classpath
                                            "src/test/clojure"]}}
