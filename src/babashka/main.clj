@@ -20,6 +20,7 @@
    [babashka.impl.clojure.main :as clojure-main :refer [demunge]]
    [babashka.impl.clojure.math :refer [math-namespace]]
    [babashka.impl.clojure.stacktrace :refer [stacktrace-namespace]]
+   [babashka.impl.clojure.tools.reader :refer [reader-namespace]]
    [babashka.impl.clojure.tools.reader-types :refer [edn-namespace
                                                      reader-types-namespace]]
    [babashka.impl.clojure.zip :refer [zip-namespace]]
@@ -392,6 +393,7 @@ Use bb run --help to show this help output.
        'babashka.tasks tasks-namespace
        'clojure.tools.reader.edn edn-namespace
        'clojure.tools.reader.reader-types reader-types-namespace
+       'clojure.tools.reader reader-namespace
        'clojure.core.async async-namespace
        'clojure.core.async.impl.protocols async-protocols-namespace
        'rewrite-clj.node rewrite/node-namespace

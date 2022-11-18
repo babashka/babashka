@@ -13,4 +13,5 @@
                              'peek-char (sci/copy-var rt/peek-char rtns)
                              'read-char (sci/copy-var rt/read-char rtns)
                              'unread (sci/copy-var rt/unread rtns)
-                             'source-logging-push-back-reader (sci/copy-var rt/source-logging-push-back-reader rtns)})
+                             'source-logging-push-back-reader (sci/copy-var rt/source-logging-push-back-reader rtns)
+                             'source-logging-reader? (sci/copy-var rt/source-logging-reader? rtns)})
