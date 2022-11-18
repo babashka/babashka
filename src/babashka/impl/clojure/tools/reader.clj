@@ -15,6 +15,7 @@
     :location? seq?
     :end-location false}))
 
+;; Added for compatibility with tools.namespace
 (defn read
   "Reads the first object from an IPushbackReader or a java.io.PushbackReader.
    Returns the object read. If EOF, throws if eof-error? is true.
@@ -53,9 +54,3 @@
        v))))
 
 (def reader-namespace {'read (sci/copy-var read rns)})
-
-(comment
-  
-  (meta (read (rt/source-logging-push-back-reader "([1 2 3])")))
-
-  )
