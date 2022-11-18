@@ -179,8 +179,7 @@
                                        :test-namespaces [cognitect.test-runner.samples-test cognitect.test-runner.sample-property-test cognitect.test-runner-test],
                                        :test-paths ["test"]}
  ;; BB-TEST-PATCH: Removed clojure.tools.namespace.dir-test as it fails on windows
- org.clojure/tools.namespace {:git-sha "bd78b34d9551c99910a24ce939c2137fcf1bede1",
+ org.clojure/tools.namespace {:git-sha "daf82a10e70182aea4c0716a48f3922163441b32",
                               :git-url "https://github.com/clojure/tools.namespace",
                               :test-namespaces [clojure.tools.namespace.test-helpers clojure.tools.namespace.dependency-test clojure.tools.namespace.find-test clojure.tools.namespace.move-test clojure.tools.namespace.parse-test],
-                              :test-paths ["src/main/clojure" ;; add manually to classpath
-                                           "src/test/clojure"]}}
+                              :test-paths ["src/test/clojure"]}}
