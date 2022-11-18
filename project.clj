@@ -19,7 +19,7 @@
   :test-selectors {:default (complement :windows-only)
                    :windows (complement :skip-windows)}
   :dependencies [[org.clojure/clojure "1.11.1"]
-                 [borkdude/edamame "1.0.0"]
+                 [borkdude/edamame "1.0.16"]
                  [borkdude/graal.locking "0.0.2"]
                  [org.clojure/tools.cli "1.0.214"]
                  [cheshire "5.11.0"]
