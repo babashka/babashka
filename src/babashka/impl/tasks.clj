@@ -455,15 +455,15 @@
   ([task {:keys [:parallel]
           :or {parallel (:parallel (current-task))}}]
    (let [[[expr]] (assemble-task task parallel)]
-     (sci/eval-string* @ctx expr))))
+     (sci/eval-string* (ctx) expr))))
 
 (defn exec
   ([sym]
    (let [snippet (cli/exec-fn-snippet sym)]
-     (sci/eval-string* @ctx snippet)))
+     (sci/eval-string* (ctx) snippet)))
   ([sym extra-opts]
    (let [snippet (cli/exec-fn-snippet sym extra-opts)]
-     (sci/eval-string* @ctx snippet))))
+     (sci/eval-string* (ctx) snippet))))
 
 (def tasks-namespace
   {'shell (sci/copy-var shell sci-ns)

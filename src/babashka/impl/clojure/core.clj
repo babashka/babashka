@@ -167,7 +167,7 @@
    'default-data-readers (copy-core-var default-data-readers)
    'xml-seq (copy-core-var xml-seq)
    'read+string (new-var 'read+string (fn [& args]
-                  (apply read+string @common/ctx args)))
+                                        (apply read+string (common/ctx) args)))
    '*command-line-args* command-line-args
    '*warn-on-reflection* warn-on-reflection
    '*compile-files* compile-files

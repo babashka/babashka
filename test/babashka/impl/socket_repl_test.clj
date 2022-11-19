@@ -48,7 +48,7 @@
       (if tu/jvm?
         (let [ctx (init {:namespaces {'clojure.core.server clojure-core-server-namespace}
                          :features #{:bb}})]
-          (vreset! common/ctx ctx)
+          (vreset! common/ctx (fn [] ctx))
           (start-repl! "0.0.0.0:1666" ctx))
         (do (vreset! server-process
                      (p/process ["./bb" "socket-repl" "localhost:1666"]))
@@ -81,7 +81,7 @@
                          :env (atom {})
                          :namespaces {'clojure.core.server clojure-core-server-namespace}
                          :features #{:bb}})]
-          (vreset! common/ctx ctx)
+          (vreset! common/ctx (fn [] ctx))
           (start-repl! "{:address \"localhost\" :accept clojure.core.server/repl :port 1666}"
                        ctx))
         (do (vreset! server-process
@@ -105,7 +105,7 @@
                          :env (atom {})
                          :namespaces {'clojure.core.server clojure-core-server-namespace}
                          :features #{:bb}})]
-          (vreset! common/ctx ctx)
+          (vreset! common/ctx (fn [] ctx))
           (start-repl! "{:address \"localhost\" :accept clojure.core.server/io-prepl :port 1666}"
                        ctx))
         (do (vreset! server-process

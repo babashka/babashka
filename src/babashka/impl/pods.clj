@@ -1,13 +1,14 @@
 (ns babashka.impl.pods
   {:no-doc true}
   (:refer-clojure :exclude [read])
-  (:require [babashka.impl.common :refer [ctx bb-edn]]
-            [babashka.pods.sci :as pods]
-            [sci.core :as sci]
-            [clojure.java.io :as io]))
+  (:require
+   [babashka.impl.common :refer [bb-edn ctx]]
+   [babashka.pods.sci :as pods]
+   [clojure.java.io :as io]
+   [sci.core :as sci]))
 
 (defn load-pod [& args]
-  (apply pods/load-pod @ctx args))
+  (apply pods/load-pod (ctx) args))
 
 (defn load-pods-metadata [pods-map opts]
   (reduce-kv

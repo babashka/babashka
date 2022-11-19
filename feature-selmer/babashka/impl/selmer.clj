@@ -60,7 +60,7 @@
     (selmer.parser/render-template template context-map)))
 
 (defn sci-ns-resolve [ns fqs]
-  (sci/eval-form @ctx (list 'clojure.core/ns-resolve ns (list 'quote fqs))))
+  (sci/eval-form (ctx) (list 'clojure.core/ns-resolve ns (list 'quote fqs))))
 
 (defn force! [x]
   (if (instance? clojure.lang.IDeref x) @x x))

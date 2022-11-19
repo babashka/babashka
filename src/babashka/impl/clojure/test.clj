@@ -408,7 +408,7 @@
   {:added "1.1"}
   [x]
   (if (symbol? x)
-    (when-let [v (second (resolve/lookup @ctx x false))]
+    (when-let [v (second (resolve/lookup (ctx) x false))]
       (when-let [value (if (instance? sci.lang.Var v)
                          (get-possibly-unbound-var v)
                          v)]
@@ -826,7 +826,7 @@
   Because the intent is to run a single test, there is no check for the namespace test-ns-hook."
   {:added "1.11"}
   [test-symbol]
-  (let [test-var (sci/resolve @ctx test-symbol)]
+  (let [test-var (sci/resolve (ctx) test-symbol)]
     (cond
       (nil? test-var)
       (sci/binding [sci/out sci/err]

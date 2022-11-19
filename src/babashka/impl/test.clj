@@ -5,7 +5,7 @@
 
 (defn contextualize [f]
   (fn [& args]
-    (apply f @ctx args)))
+    (apply f (ctx) args)))
 
 (def tns t/tns)
 

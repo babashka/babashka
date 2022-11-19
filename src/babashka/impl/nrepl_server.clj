@@ -15,7 +15,7 @@
                       :describe {"versions" {"babashka" common/version}}
                       :thread-bind [babashka.impl.clojure.core/warn-on-reflection]}
                      opts)]
-     (server/start-server! @common/ctx opts))))
+     (server/start-server! (common/ctx) opts))))
 
 (def nrepl-server-namespace
   (let [ns-sci (sci/create-ns 'babashka.nrepl.server)]

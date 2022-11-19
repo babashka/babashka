@@ -34,7 +34,7 @@
   Namespace
   (datafy [n]
     (with-meta {:name (sci-ns-name n)
-                :publics (->> n (sci-ns-publics @ctx) sortmap)
-                :imports (->> n (sci-ns-imports @ctx) sortmap)
-                :interns (->> n (sci-ns-interns @ctx) sortmap)}
+                :publics (->> n (sci-ns-publics (ctx)) sortmap)
+                :imports (->> n (sci-ns-imports (ctx)) sortmap)
+                :interns (->> n (sci-ns-interns (ctx)) sortmap)}
       (meta n))))

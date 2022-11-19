@@ -58,6 +58,7 @@
    [hf.depstar.uberjar :as uberjar]
    [sci.addons :as addons]
    [sci.core :as sci]
+   [sci.ctx-store :as ctx-store]
    [sci.impl.copy-vars :as sci-copy-vars]
    [sci.impl.io :as sio]
    [sci.impl.namespaces :as sci-namespaces]
@@ -303,7 +304,7 @@ Use bb run --help to show this help output.
         s (slurp f)]
     (sci/with-bindings {sci/ns @sci/ns
                         sci/file (.getAbsolutePath f)}
-      (sci/eval-string* @common/ctx s))))
+      (sci/eval-string* (common/ctx) s))))
 
 (defn start-socket-repl! [address ctx]
   (socket-repl/start-repl! address ctx))
@@ -373,7 +374,7 @@ Use bb run --help to show this help output.
                       'repl (sci/new-var 'repl
                                          (fn [& opts]
                                            (let [opts (apply hash-map opts)]
-                                             (repl/start-repl! @common/ctx opts))) {:ns clojure-main-ns})
+                                             (repl/start-repl! (common/ctx) opts))) {:ns clojure-main-ns})
                       'with-bindings (sci/copy-var clojure-main/with-bindings clojure-main-ns)}
        'clojure.test t/clojure-test-namespace
        'clojure.math math-namespace
@@ -847,7 +848,7 @@ Use bb run --help to show this help output.
                            (when-let [res (cp/source-for-namespace loader namespace nil)]
                              (if uberscript
                                (do (swap! uberscript-sources conj (:source res))
-                                   (uberscript/uberscript {:ctx @common/ctx
+                                   (uberscript/uberscript {:ctx (common/ctx)
                                                            :expressions [(:source res)]})
                                    {})
                                res)))
@@ -882,7 +883,7 @@ Use bb run --help to show this help output.
                   :proxy-fn proxy-fn}
             opts (addons/future opts)
             sci-ctx (sci/init opts)
-            _ (vreset! common/ctx sci-ctx)
+            _ (ctx-store/reset-ctx! sci-ctx)
             _ (when-let [pods (:pods @common/bb-edn)]
                 (when-let [pod-metadata (pods/load-pods-metadata
                                           pods {:download-only (download-only?)})]
