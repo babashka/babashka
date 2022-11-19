@@ -106,7 +106,7 @@
                          :env (atom {})
                          :namespaces {'clojure.core.server clojure-core-server-namespace}
                          :features #{:bb}})]
-          (vreset! common/ctx (fn [] ctx))
+          (ctx-store/reset-ctx! ctx)
           (start-repl! "{:address \"localhost\" :accept clojure.core.server/io-prepl :port 1666}"
                        ctx))
         (do (vreset! server-process
@@ -121,7 +121,7 @@
       (finally
         (if tu/jvm?
           (do (stop-repl!)
-              (vreset! common/ctx nil)
+              (ctx-store/reset-ctx! nil)
               (Thread/sleep 100))
           (p/destroy-tree @server-process))))))
 
