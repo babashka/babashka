@@ -254,6 +254,7 @@
           java.lang.ClassNotFoundException
           java.lang.Comparable
           java.lang.Double
+          java.lang.Error
           java.lang.Exception
           java.lang.Float
           java.lang.IllegalArgumentException
@@ -663,6 +664,7 @@
     ClassNotFoundException java.lang.ClassNotFoundException
     Comparable java.lang.Comparable
     Double java.lang.Double
+    Error java.lang.Error
     Exception java.lang.Exception
     ExceptionInInitializerError java.lang.ExceptionInInitializerError
     IndexOutOfBoundsException java.lang.IndexOutOfBoundsException
