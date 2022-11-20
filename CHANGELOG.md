@@ -13,6 +13,11 @@ A preview of the next release can be installed from
 - [#1414](https://github.com/babashka/babashka/issues/1414): preserve metadata on exec task function argument map
 - [#1269](https://github.com/babashka/babashka/issues/1269): add lib tests for sluj ([@bobisageek](https://github.com/bobisageek))
 - Update nix app example in docs
+- Add `java.lang.Error` and `java.net.URLClassLoader` (only for compatibility with the `clojure.java.classpath` lib)
+- Deps.clj `deps.clj: 1.11.1.1200`
+- Upgrade timbre to `6.0.1`
+- Performance improvements in SCI
+- SCI: preserve stack information on `throw` expressions
 
 ## 1.0.165 (2022-11-01)
 
