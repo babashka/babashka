@@ -7,4 +7,5 @@
 (def data-ns (sci/create-ns 'clojure.data nil))
 
 (def data-namespace
-  {'diff       (copy-var data/diff data-ns)})
+  {'diff       (copy-var data/diff data-ns)
+   'equality-partition (copy-var data/equality-partition data-ns)})
