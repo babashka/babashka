@@ -5,10 +5,14 @@ For a list of breaking changes, check [here](#breaking-changes).
 A preview of the next release can be installed from
 [babashka-dev-builds](https://github.com/babashka/babashka-dev-builds).
 
+[Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
+
 ## 1.0.166 (2022-11-24)
 
-- Add `run-test` and `run-test-var` to `clojure.test`
+See the [Running tests with Babashka](https://blog.michielborkent.nl/babashka-test-runner.html) blog post for how to run tests with this release.
+
 - Compatibility with Cognitest [test-runner](https://github.com/cognitect-labs/test-runner) and [tools.namespace](https://github.com/clojure/tools.namespace)
+- Add `run-test` and `run-test-var` to `clojure.test`
 - Compile distributed uberjar using GraalVM, fixes `babashka.process/exec` for Nix
 - [#1414](https://github.com/babashka/babashka/issues/1414): preserve metadata on exec task function argument map
 - [#1269](https://github.com/babashka/babashka/issues/1269): add lib tests for sluj ([@bobisageek](https://github.com/bobisageek))
