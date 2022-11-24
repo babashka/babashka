@@ -9,7 +9,7 @@ A preview of the next release can be installed from
 
 ## 1.0.166 (2022-11-24)
 
-See the [Running tests with Babashka](https://blog.michielborkent.nl/babashka-test-runner.html) blog post for how to run tests with this release.
+See the [Testing babashka scripts](https://blog.michielborkent.nl/babashka-test-runner.html) blog post for how to run tests with this release.
 
 - Compatibility with Cognitest [test-runner](https://github.com/cognitect-labs/test-runner) and [tools.namespace](https://github.com/clojure/tools.namespace)
 - Add `run-test` and `run-test-var` to `clojure.test`
