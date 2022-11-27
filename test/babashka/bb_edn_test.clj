@@ -307,6 +307,25 @@
   (test-utils/with-config {}
     (let [res (test-utils/bb nil "tasks")]
       (is (str/includes? res "No tasks found."))))
+  (test-utils/with-config '{:tasks {:x 1}}
+    (let [res (test-utils/bb nil "tasks")]
+      (is (str/includes? res "No tasks found."))))
+  (test-utils/with-config '{:tasks {-xyz 5}}
+    (let [res (test-utils/bb nil "tasks")]
+      (is (str/includes? res "No tasks found."))))
+  (test-utils/with-config '{:tasks {xyz {:private true}}}
+    (let [res (test-utils/bb nil "tasks")]
+      (is (str/includes? res "No tasks found."))))
+  (test-utils/with-config '{:tasks {abc 1 xyz 2}}
+    (let [res (test-utils/bb nil "tasks")]
+      (is (= "The following tasks are available:\n\nabc\nxyz\n" res))))
+  (test-utils/with-config '{:tasks {abc 1  xyz {:doc "some text" :tasks 5}
+                                    -xyz 3 qrs {:private true}}}
+    (let [res (test-utils/bb nil "tasks")]
+      (is (= "The following tasks are available:\n\nabc\nxyz some text\n" res))))
+  (test-utils/with-config '{:tasks {xyz 1 abc 2}}
+    (let [res (test-utils/bb nil "tasks")]
+      (is (= "The following tasks are available:\n\nxyz\nabc\n" res))))
   (test-utils/with-config "{:paths [\"test-resources/task_scripts\"]
                             :tasks {:requires ([tasks :as t])
                                     task1
