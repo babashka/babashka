@@ -7,6 +7,10 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## Unreleased
+
+- [#1430](https://github.com/babashka/babashka/issues/1430): Fix issue with `bb tasks` throwing on empty display tasks list. 
+
 ## 1.0.166 (2022-11-24)
 
 See the [Testing babashka scripts](https://blog.michielborkent.nl/babashka-test-runner.html) blog post for how to run tests with this release.
