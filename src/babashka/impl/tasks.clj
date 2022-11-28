@@ -429,15 +429,22 @@
           (iterate zip/right loc))))
 
 (defn list-tasks
+  "Prints out the task names found in BB-EDN in the original order
+  alongside their documentation as retrieved with SCI-CTX.
+
+  For a task to be listed
+  - its name has to be a symbol but should not start with `-`, and
+  - should not be `:private`."
   [sci-ctx]
-  (let [tasks (:tasks @bb-edn)]
-    (if (seq tasks)
-      (let [raw-edn (:raw @bb-edn)
-            names (key-order raw-edn)
-            names (map str names)
-            names (remove #(str/starts-with? % "-") names)
-            names (remove #(:private (get tasks (symbol %))) names)
-            longest (apply max (map count names))
+  (let [tasks (:tasks @bb-edn)
+        raw-edn (:raw @bb-edn)
+        names (when (seq tasks)
+                (->> (key-order raw-edn)
+                     (map str)
+                     (remove #(str/starts-with? % "-"))
+                     (remove #(:private (get tasks (symbol %))))))]
+    (if (seq names)
+      (let [longest (apply max (map count names))
             fmt (str "%1$-" longest "s")]
         (println "The following tasks are available:")
         (println)
