@@ -220,6 +220,14 @@ If scoop does not work for you, then you can also just download the `bb.exe`
 binary from [Github releases](https://github.com/babashka/babashka/releases) and
 place it on your path manually.
 
+#### WSL1
+> Note: WSL1 users might experience a BSOD, please use the --static install option when installing
+``` shell
+$ curl -sLO https://raw.githubusercontent.com/babashka/babashka/master/install
+$ chmod +x install
+$ ./install --static
+```
+
 ### Installer script
 
 Install via the installer script:

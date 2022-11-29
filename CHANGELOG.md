@@ -9,7 +9,8 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-- [#1430](https://github.com/babashka/babashka/issues/1430): Fix issue with `bb tasks` throwing on empty display tasks list. 
+- [#1430](https://github.com/babashka/babashka/issues/1430): Fix issue with `bb tasks` throwing on empty display tasks list.
+- Add note about BSOD when using WSL1, see [README.md/quickstart](https://github.com/LouDnl/babashka#quickstart)
 
 ## 1.0.166 (2022-11-24)
 
