@@ -46,6 +46,8 @@ As one user described it:
 ## Quickstart
 
 For installation options check [Installation](https://github.com/babashka/babashka#installation).
+> Note: WSL1 users might experience a BSOD, please use the --static install option as described under [Installer-script](https://github.com/LouDnl/babashka#installer-script)
+
 For quick installation use:
 
 ``` shell
