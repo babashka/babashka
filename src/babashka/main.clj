@@ -89,6 +89,7 @@
 
 (def signal-ns {'pipe-signal-received? (sci/copy-var pipe-signal-received? (sci/create-ns 'babashka.signal nil))})
 
+(sci/enable-unrestricted-access!)
 (sci/alter-var-root sci/in (constantly *in*))
 (sci/alter-var-root sci/out (constantly *out*))
 (sci/alter-var-root sci/err (constantly *err*))
@@ -852,6 +853,12 @@ Use bb run --help to show this help output.
                                                            :expressions [(:source res)]})
                                    {})
                                res)))
+                         (let [rps (cp/resource-paths namespace)
+                               rps (mapv #(str "src/babashka/" %) rps)]
+                           (when-let [url (some #(io/resource %) rps)]
+                             (let [source (slurp url)]
+                               {:file (str url)
+                                :source source})))
                          (case namespace
                            clojure.spec.alpha
                            (binding [*out* *err*]

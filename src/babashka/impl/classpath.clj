@@ -66,14 +66,18 @@
         entries (keep part->entry parts)]
     (Loader. entries)))
 
-(defn source-for-namespace [loader namespace opts]
+(defn resource-paths [namespace]
   (let [ns-str (name namespace)
-        ^String ns-str (munge ns-str)
+        ^String ns-str (namespace-munge ns-str)
         ;; do NOT pick the platform specific file separator here, since that doesn't work for searching in .jar files
         ;; (io/file "foo" "bar/baz") does work on Windows, despite the forward slash
         base-path (.replace ns-str "." "/")
         resource-paths (mapv #(str base-path %) [".bb" ".clj" ".cljc"])]
-    (getResource loader resource-paths opts)))
+    resource-paths))
+
+(defn source-for-namespace [loader namespace opts]
+  (let [rps (resource-paths namespace)]
+    (getResource loader rps opts)))
 
 (defn main-ns [manifest-resource]
   (with-open [is (io/input-stream manifest-resource)]
