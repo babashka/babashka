@@ -856,7 +856,8 @@ Use bb run --help to show this help output.
                                rps (mapv #(str "src/babashka/" %) rps)]
                            (when-let [url (some #(io/resource %) rps)]
                              (let [source (slurp url)]
-                               source)))
+                               {:file (str url)
+                                :source source})))
                          (case namespace
                            clojure.spec.alpha
                            (binding [*out* *err*]
