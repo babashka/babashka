@@ -7,10 +7,17 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## Unreleased
+## 1.0.167 (2022-11-30)
 
+- [#1433](https://github.com/babashka/babashka/issues/1433): spec source as built-in fallback. When not including the
+  [clojure.spec.alpha](https://github.com/babashka/spec.alpha) fork as a
+  library, babashka loads a bundled version, when `clojure.spec.alpha` is required.
 - [#1430](https://github.com/babashka/babashka/issues/1430): Fix issue with `bb tasks` throwing on empty display tasks list.
 - Add note about BSOD when using WSL1, see [README.md/quickstart](https://github.com/LouDnl/babashka#quickstart)
+- SCI: performance improvements
+- Better error locations for interop ([@bobisageek](https://github.com/bobisageek))
+- Fix [babashka/babashka.nrepl#59](https://github.com/babashka/babashka.nrepl/issues/59): do not output extra new line with cider pprint
+- Use `namespace-munge` instead of `munge` for doing ns -> file lookup
 
 ## 1.0.166 (2022-11-24)
 
