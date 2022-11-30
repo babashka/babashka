@@ -10,7 +10,8 @@
    [clojure.test :as test :refer [*report-counters*]]
    [clojure.tools.reader.reader-types :as r]
    [sci.core :as sci]
-   [sci.impl.vars :as vars]))
+   [sci.impl.vars :as vars]
+   [sci.ctx-store :as ctx-store]))
 
 (set! *warn-on-reflection* true)
 
@@ -46,7 +47,7 @@
 
 (defn bb-jvm [input-or-opts & args]
   (reset! cp/cp-state nil)
-  (reset! main/env {})
+  (alter-var-root #'main/sci-ctx (constantly (main/new-sci-ctx)))
   (vreset! common/bb-edn nil)
   (System/clearProperty "babashka.config")
   (let [args (cond-> args *bb-edn-path*

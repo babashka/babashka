@@ -89,6 +89,7 @@
 
 (def signal-ns {'pipe-signal-received? (sci/copy-var pipe-signal-received? (sci/create-ns 'babashka.signal nil))})
 
+(sci/enable-unrestricted-access!)
 (sci/alter-var-root sci/in (constantly *in*))
 (sci/alter-var-root sci/out (constantly *out*))
 (sci/alter-var-root sci/err (constantly *err*))
@@ -744,8 +745,6 @@ Use bb run --help to show this help output.
                :else
                (parse-args options opts-map))))))
 
-(def env (atom {}))
-
 (def pod-namespaces (volatile! {}))
 
 (defn download-only?
@@ -767,6 +766,79 @@ Use bb run --help to show this help output.
       env-os-name-present? (not= env-os-name sys-os-name)
       env-os-arch-present? (not= env-os-arch sys-os-arch))))
 
+(def !uberscript (volatile! nil))
+(def !uberscript-sources (volatile! nil))
+
+(defn load-fn [{:keys [namespace reload]}]
+  (let [{:keys [loader]}
+        @cp/cp-state
+        uberscript @!uberscript
+        uberscript-sources @!uberscript-sources]
+    (or
+     (when ;; ignore built-in namespaces when uberscripting, unless with :reload
+         (and uberscript
+              (not reload)
+              (or (contains? namespaces namespace)
+                  (contains? sci-namespaces/namespaces namespace)))
+       "")
+     ;; pod namespaces go before namespaces from source,
+     ;; unless reload is used
+     (when-not reload
+       (when-let [pod (get @pod-namespaces namespace)]
+         (if uberscript
+           (do
+             (swap! uberscript-sources conj
+                    (format
+                     "(babashka.pods/load-pod '%s \"%s\" '%s)\n"
+                     (:pod-spec pod) (:version (:opts pod))
+                     (dissoc (:opts pod)
+                             :version :metadata)))
+             {})
+           (pods/load-pod (:pod-spec pod) (:opts pod)))))
+     (when loader
+       (when-let [res (cp/source-for-namespace loader namespace nil)]
+         (if uberscript
+           (do (swap! uberscript-sources conj (:source res))
+               (uberscript/uberscript {:ctx (common/ctx)
+                                       :expressions [(:source res)]})
+               {})
+           res)))
+     (let [rps (cp/resource-paths namespace)
+           rps (mapv #(str "src/babashka/" %) rps)]
+       (when-let [url (some #(io/resource %) rps)]
+         (let [source (slurp url)]
+           {:file (str url)
+            :source source})))
+     (case namespace
+       clojure.spec.alpha
+       (binding [*out* *err*]
+         (println "[babashka] WARNING: Use the babashka-compatible version of clojure.spec.alpha, available here: https://github.com/babashka/spec.alpha"))
+       clojure.core.specs.alpha
+       (binding [*out* *err*]
+         (println "[babashka] WARNING: clojure.core.specs.alpha is removed from the classpath, unless you explicitly add the dependency."))
+       nil))))
+
+(def opts (-> {:aliases aliases
+               :namespaces (-> namespaces
+                               (assoc 'clojure.core
+                                      (assoc core-extras
+                                             'load-file (sci-copy-vars/new-var 'load-file load-file*))))
+               :features #{:bb :clj}
+               :classes @classes/class-map
+               :imports classes/imports
+               :load-fn load-fn
+               ;; :readers core/data-readers
+               :reify-fn reify-fn
+               :proxy-fn proxy-fn}
+              addons/future))
+
+(defn new-sci-ctx []
+  (let [ctx (sci/init opts)]
+    (ctx-store/reset-ctx! ctx)
+    ctx))
+
+(def sci-ctx (new-sci-ctx))
+
 (defn exec [cli-opts]
   (binding [*unrestricted* true]
     (sci/binding [core/warn-on-reflection @core/warn-on-reflection
@@ -775,15 +847,15 @@ Use bb run --help to show this help output.
                   sci/ns @sci/ns
                   sci/print-length @sci/print-length]
       (let [{version-opt :version
-             :keys [:shell-in :edn-in :shell-out :edn-out
-                    :help :file :command-line-args
-                    :expressions :stream? :init
-                    :repl :socket-repl :nrepl
-                    :debug :classpath :force?
-                    :main :uberscript :describe?
-                    :jar :uberjar :clojure
-                    :doc :run :list-tasks
-                    :print-deps :prepare]
+             :keys [shell-in edn-in shell-out edn-out
+                    help file command-line-args
+                    expressions stream? init
+                    repl socket-repl nrepl
+                    debug classpath force?
+                    main uberscript describe?
+                    jar uberjar clojure
+                    doc run list-tasks
+                    print-deps prepare]
              exec-fn :exec}
             cli-opts
             _ (when debug (vreset! common/debug true))
@@ -820,79 +892,15 @@ Use bb run --help to show this help output.
                          abs-path))
             _ (when jar
                 (cp/add-classpath jar))
-            load-fn (fn [{:keys [:namespace :reload]}]
-                      (let [{:keys [loader]}
-                            @cp/cp-state]
-                        (or
-                         (when ;; ignore built-in namespaces when uberscripting, unless with :reload
-                             (and uberscript
-                                  (not reload)
-                                  (or (contains? namespaces namespace)
-                                      (contains? sci-namespaces/namespaces namespace)))
-                           "")
-                         ;; pod namespaces go before namespaces from source,
-                         ;; unless reload is used
-                         (when-not reload
-                           (when-let [pod (get @pod-namespaces namespace)]
-                             (if uberscript
-                               (do
-                                 (swap! uberscript-sources conj
-                                        (format
-                                         "(babashka.pods/load-pod '%s \"%s\" '%s)\n"
-                                         (:pod-spec pod) (:version (:opts pod))
-                                         (dissoc (:opts pod)
-                                                 :version :metadata)))
-                                 {})
-                               (pods/load-pod (:pod-spec pod) (:opts pod)))))
-                         (when loader
-                           (when-let [res (cp/source-for-namespace loader namespace nil)]
-                             (if uberscript
-                               (do (swap! uberscript-sources conj (:source res))
-                                   (uberscript/uberscript {:ctx (common/ctx)
-                                                           :expressions [(:source res)]})
-                                   {})
-                               res)))
-                         (let [rps (cp/resource-paths namespace)
-                               rps (mapv #(str "src/babashka/" %) rps)]
-                           (when-let [url (some #(io/resource %) rps)]
-                             (let [source (slurp url)]
-                               {:file (str url)
-                                :source source})))
-                         (case namespace
-                           clojure.spec.alpha
-                           (binding [*out* *err*]
-                             (println "[babashka] WARNING: Use the babashka-compatible version of clojure.spec.alpha, available here: https://github.com/babashka/spec.alpha"))
-                           clojure.core.specs.alpha
-                           (binding [*out* *err*]
-                             (println "[babashka] WARNING: clojure.core.specs.alpha is removed from the classpath, unless you explicitly add the dependency."))
-                           nil))))
             main (if (and jar (not main))
                    (when-let [res (cp/getResource
                                    (cp/loader jar)
                                    ["META-INF/MANIFEST.MF"] {:url? true})]
                      (cp/main-ns res))
                    main)
-            ;; TODO: pull more of these values to compile time
-            opts {:aliases aliases
-                  :namespaces (-> namespaces
-                                  (assoc 'clojure.core
-                                         (assoc core-extras
-                                                'load-file (sci-copy-vars/new-var 'load-file load-file*))))
-                  :env env
-                  :features #{:bb :clj}
-                  :classes @classes/class-map
-                  :imports classes/imports
-                  :load-fn load-fn
-                  :uberscript uberscript
-                  ;; :readers core/data-readers
-                  :reify-fn reify-fn
-                  :proxy-fn proxy-fn}
-            opts (addons/future opts)
-            sci-ctx (sci/init opts)
-            _ (ctx-store/reset-ctx! sci-ctx)
             _ (when-let [pods (:pods @common/bb-edn)]
                 (when-let [pod-metadata (pods/load-pods-metadata
-                                          pods {:download-only (download-only?)})]
+                                         pods {:download-only (download-only?)})]
                   (vreset! pod-namespaces pod-metadata)))
             preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim))
             [expressions exit-code]
@@ -970,9 +978,14 @@ Use bb run --help to show this help output.
                        print-deps [(print-deps/print-deps (:print-deps-format cli-opts)) 0]
                        prepare [nil 0]
                        uberscript
-                       [nil (do (uberscript/uberscript {:ctx sci-ctx
-                                                        :expressions expressions})
-                                0)]
+                       [nil (do
+                              (vreset! !uberscript true)
+                              (vreset! !uberscript-sources uberscript-sources)
+                              (uberscript/uberscript {:ctx sci-ctx
+                                                      :expressions expressions})
+                              (vreset! !uberscript nil)
+                              (vreset! !uberscript-sources nil)
+                              0)]
                        expressions
                        ;; execute code
                        (sci/binding [sci/file abs-path]
