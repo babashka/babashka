@@ -852,6 +852,11 @@ Use bb run --help to show this help output.
                                                            :expressions [(:source res)]})
                                    {})
                                res)))
+                         (let [rps (cp/resource-paths namespace)
+                               rps (mapv #(str "src/babashka/" %) rps)]
+                           (when-let [url (some #(io/resource %) rps)]
+                             (let [source (slurp url)]
+                               source)))
                          (case namespace
                            clojure.spec.alpha
                            (binding [*out* *err*]
