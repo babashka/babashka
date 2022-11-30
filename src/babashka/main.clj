@@ -824,7 +824,7 @@ Use bb run --help to show this help output.
                                       (assoc core-extras
                                              'load-file (sci-copy-vars/new-var 'load-file load-file*))))
                :features #{:bb :clj}
-               :classes @classes/class-map
+               :classes classes/class-map*
                :imports classes/imports
                :load-fn load-fn
                ;; :readers core/data-readers
@@ -838,6 +838,9 @@ Use bb run --help to show this help output.
     ctx))
 
 (def sci-ctx (new-sci-ctx))
+
+#_(sci/binding [core/warn-on-reflection @core/warn-on-reflection]
+    (sci/eval-form sci-ctx '(require '[clojure.spec.alpha])))
 
 (defn exec [cli-opts]
   (binding [*unrestricted* true]
@@ -990,6 +993,11 @@ Use bb run --help to show this help output.
                        ;; execute code
                        (sci/binding [sci/file abs-path]
                          (try
+                           (run! (fn [s]
+                                   (sci/add-class! sci-ctx s
+                                                   (Class/forName (str s))))
+                                 (when features/java-net-http?
+                                   classes/java-net-http-classes))
                            ;; when evaluating expression(s), add in repl-requires so things like
                            ;; pprint and dir are available
                            (sci/eval-form sci-ctx `(apply require (quote ~clojure-main/repl-requires)))
