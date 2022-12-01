@@ -95,7 +95,7 @@
                     {:dependencies [[com.clojure-goes-fast/clj-async-profiler "0.5.0"]
                                     [com.opentable.components/otj-pg-embedded "0.13.3"]
                                     [nubank/matcher-combinators "3.6.0"]]}]
-             :uberjar {:global-vars {*assert* false}
+             :uberjar {;;:global-vars {*assert* false}
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"
                                   "-Dclojure.spec.skip-macros=true"
                                   "-Dborkdude.dynaload.aot=true"]
