@@ -59,37 +59,13 @@
    :err :inherit
    :shutdown p/destroy-tree})
 
-(defn shell [cmd & args]
-  (let [[prev cmd args]
-        (if (and (map? cmd)
-                 (:proc cmd))
-          [cmd (first args) (rest args)]
-          [nil cmd args])
-        [opts cmd args]
-        (if (map? cmd)
-          [cmd (first args) (rest args)]
-          [nil cmd args])
-        opts (if-let [o (:out opts)]
-               (if (string? o)
-                 (update opts :out io/file)
-                 opts)
-               opts)
-        opts (if-let [o (:err opts)]
-               (if (string? o)
-                 (update opts :err io/file)
-                 opts)
-               opts)
-        opts (if prev
-               (assoc opts :in nil)
-               opts)
-        cmd (if (.exists (io/file cmd))
-              [cmd]
-              (p/tokenize cmd))
-        cmd (into cmd args)
-        local-log-level (:log-level opts)]
+(defn shell [& args]
+  (let [{:keys [prev cmd opts]} (p/parse-args args)
+        local-log-level (:log-level opts)
+        opts (merge default-opts opts)]
     (sci/binding [log-level (or local-log-level @log-level)]
-      (apply log-info cmd)
-      (handle-non-zero (pp/process prev cmd (merge default-opts opts)) opts))))
+      (apply log-info args)
+      (handle-non-zero (pp/process* {:opts opts :cmd cmd :prev prev}) opts))))
 
 (defn clojure [cmd & args]
   (let [[opts cmd args]

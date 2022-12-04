@@ -8,6 +8,10 @@
 
 (def defaults (sci/copy-var process/*defaults* tns))
 
+(defn process* [& args]
+  (binding [process/*defaults* @defaults]
+    (apply process/process* args)))
+
 (defn process [& args]
   (binding [process/*defaults* @defaults]
     (apply process/process args)))
@@ -17,7 +21,9 @@
     (apply process/pb args)))
 
 (def process-namespace
-  {'process     (copy-var process tns)
+  {'parse-args  (copy-var process/parse-args tns)
+   'process*    (copy-var process/process* tns)
+   'process     (copy-var process tns)
    'check       (copy-var process/check tns)
    'pb          (copy-var pb tns)
    'start       (copy-var process/start tns)
