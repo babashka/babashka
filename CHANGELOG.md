@@ -7,6 +7,9 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## Unreleased
+- [#1438](https://github.com/babashka/babashka/issues/1438): expose `query-string` function from httpkit ([@bobisageek](https://github.com/bobisageek))
+
 ## 1.0.167 (2022-11-30)
 
 - [#1433](https://github.com/babashka/babashka/issues/1433): spec source as built-in fallback. When not including the

@@ -72,7 +72,8 @@
    'acl       (copy-var acl cns)
    'unlock    (copy-var unlock cns)
    'default-client (copy-var client/default-client cns)
-   '*default-client* default-client})
+   '*default-client* default-client
+   'query-string (copy-var client/query-string cns)})
 
 (def sni-client-namespace
   {'ssl-configurer (copy-var sni-client/ssl-configurer sns)

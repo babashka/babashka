@@ -58,3 +58,9 @@
 
 (deftest alter-var-root-test
   (is (alter-var-root (var client/*default-client*) (constantly sni/default-client))))
+
+(deftest query-string-test
+  (is (= (client/query-string {:k1 "v1" :k2 "v2" :k3 nil :k4 ["v4a" "v4b"] :k5 []})
+        "k1=v1&k2=v2&k3=&k4=v4a&k4=v4b&k5="))
+  (is (= (client/query-string {:k1 \v :k2 'v2})
+        "k1=v&k2=v2")))
