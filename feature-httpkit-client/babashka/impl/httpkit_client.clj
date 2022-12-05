@@ -73,7 +73,8 @@
    'unlock    (copy-var unlock cns)
    'default-client (copy-var client/default-client cns)
    '*default-client* default-client
-   'query-string (copy-var client/query-string cns)})
+   'query-string (copy-var client/query-string cns)
+   'url-encode (copy-var client/url-encode cns)})
 
 (def sni-client-namespace
   {'ssl-configurer (copy-var sni-client/ssl-configurer sns)

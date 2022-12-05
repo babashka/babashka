@@ -1,6 +1,8 @@
 (ns httpkit.client-test
   (:require [cheshire.core :as json]
             [clojure.test :refer [deftest is testing #_*report-counters*]]
+            [org.httpkit.client :as client]
+            [org.httpkit.client :as client]
             [org.httpkit.client :as client]))
 
 (defmethod clojure.test/report :begin-test-var [m]
@@ -64,3 +66,8 @@
         "k1=v1&k2=v2&k3=&k4=v4a&k4=v4b&k5="))
   (is (= (client/query-string {:k1 \v :k2 'v2})
         "k1=v&k2=v2")))
+
+(deftest url-encode-test
+  (is (= "AbC" (client/url-encode "AbC")))
+  (is (= "%3C%3E%21%40%23%24%25%5E"
+        (client/url-encode "<>!@#$%^"))))
