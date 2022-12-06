@@ -1,8 +1,6 @@
 (ns httpkit.client-test
   (:require [cheshire.core :as json]
             [clojure.test :refer [deftest is testing #_*report-counters*]]
-            [org.httpkit.client :as client]
-            [org.httpkit.client :as client]
             [org.httpkit.client :as client]))
 
 (defmethod clojure.test/report :begin-test-var [m]
