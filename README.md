@@ -405,6 +405,7 @@ handling of SIGINT and SIGPIPE. This can be done by setting
 
 ## Articles, podcasts and videos
 
+- [Using Babashka to Get Electricity Prices](https://www.karimarttila.fi/clojure/2022/12/04/using-babashka-to-get-electricity-prices.html) by Kari Marttila
 - [Manage git hooks with babashka tasks](https://blaster.ai/blog/posts/manage-git-hooks-w-babashka.html) by Mykhaylo Bilyanskyy
 - [Messing around with babashka](https://ian-muge.medium.com/messing-around-with-babashka-f181a9003faa) by Ian Muge
 - [Deleting AWS Glacier vaults with babashka](https://javahippie.net/clojure/2022/07/23/deleting-aws-glacier-vaults-with-babashka.html) by Tim Zöller
