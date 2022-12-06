@@ -431,6 +431,7 @@
           java.util.Date
           java.util.HashMap
           java.util.IdentityHashMap
+          java.util.InputMismatchException
           java.util.List
           java.util.Locale
           java.util.Map
