@@ -464,6 +464,8 @@
           java.util.zip.ZipFile
           sun.misc.Signal
           sun.misc.SignalHandler
+          org.objectweb.asm.Type
+          java.lang.Void
           ~(symbol "[B")
           ~(symbol "[I")
           ~(symbol "[Ljava.lang.Object;")
@@ -504,6 +506,8 @@
                       clojure.lang.Counted
                       clojure.lang.Cycle
                       clojure.lang.IObj
+                      clojure.lang.IType
+                      clojure.lang.IReference
                       clojure.lang.Fn ;; to distinguish fns from maps, etc.
                       clojure.lang.IPending
                       ;; clojure.lang.IDeref ;; implemented as protocol in sci
@@ -696,6 +700,7 @@
     Throwable java.lang.Throwable
     VirtualMachineError java.lang.VirtualMachineError
     ThreadDeath java.lang.ThreadDeath
+    Void java.lang.Void
     ;; UnsupportedOperationException java.lang.UnsupportedOperationException
     })
 
