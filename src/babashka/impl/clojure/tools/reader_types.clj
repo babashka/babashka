@@ -8,6 +8,7 @@
 (def rtns (sci/create-ns 'clojure.tools.reader.reader-types))
 
 (def reader-types-namespace {'indexing-reader? (sci/copy-var rt/indexing-reader? rtns)
+                             'indexing-push-back-reader (sci/copy-var rt/indexing-push-back-reader rtns)
                              'get-line-number (sci/copy-var rt/get-line-number rtns)
                              'get-column-number (sci/copy-var rt/get-column-number rtns)
                              'peek-char (sci/copy-var rt/peek-char rtns)
