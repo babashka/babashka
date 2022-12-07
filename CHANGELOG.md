@@ -7,8 +7,13 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## Unreleased
+## 1.0.168 (2022-12-07)
+
+- `loop*`, `fn*` are now special forms and `loop`, `fn`, `defn`, `defmacro`, `and` and `or` are implemented as macros. This restores compatibility with [rcf](https://github.com/borkdude/hyperfiddle-rcf)
+- fs: don't touch dirs in `split-ext`
+- Update to babashka process to v0.4.13: support `(process opts? & args)` syntax everywhere
 - [#1438](https://github.com/babashka/babashka/issues/1438): expose `query-string` and `url-encode` functions from org.httpkit.client ([@bobisageek](https://github.com/bobisageek))
+- Add `java.util.InputMismatchException`
 
 ## 1.0.167 (2022-11-30)
 
