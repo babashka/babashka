@@ -7,8 +7,9 @@ WORKDIR "/opt"
 
 ENV GRAALVM_VERSION="22.3.0"
 ARG TARGETARCH
-ENV BABASHKA_ARCH=${TARGETARCH}
-ENV GRAALVM_ARCH=${TARGETARCH}
+# Do not set those directly, use TARGETARCH instead
+ENV BABASHKA_ARCH=
+ENV GRAALVM_ARCH=
 RUN if [ "${TARGETARCH}" = "" ] || [ "${TARGETARCH}" = "amd64" ]; then \
       export GRAALVM_ARCH=amd64; export BABASHKA_ARCH=x86_64; \
     elif [ "${TARGETARCH}" = "arm64" ]; then \
