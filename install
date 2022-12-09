@@ -94,7 +94,12 @@ case "$(uname -m)" in
                arch="aarch64"
            fi
            ;;
-    *) arch=amd64;;
+    *) arch=amd64
+       # always use static image on linux
+       if [[ "$platform" == "linux" ]]; then
+           static_binary="true"
+       fi
+       ;;
 esac
 
 if [[ 10#$vernum -le 10#000002013 ]]; then
