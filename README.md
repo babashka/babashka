@@ -174,6 +174,11 @@ Upgrade:
 
 You can find more documentation on how to use babashka with nix [here](./doc/nix.md).
 
+### Alpine
+
+On Alpine it's recommended to install via the `install` [bash
+script](https://github.com/babashka/babashka#installer-script).
+
 ### Arch (Linux)
 
 `babashka` is [available](https://aur.archlinux.org/packages/babashka-bin/) in the [Arch User Repository](https://aur.archlinux.org). It can be installed using your favorite [AUR](https://aur.archlinux.org) helper such as
@@ -224,7 +229,7 @@ $ ./install --static
 
 ### Installer script
 
-Install via the installer script:
+Install via the installer script for linux and macOS:
 
 ``` shell
 $ curl -sLO https://raw.githubusercontent.com/babashka/babashka/master/install
