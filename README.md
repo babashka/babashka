@@ -176,8 +176,9 @@ You can find more documentation on how to use babashka with nix [here](./doc/nix
 
 ### Alpine
 
-On Alpine it's recommended to install via the `install` [bash
-script](https://github.com/babashka/babashka#installer-script).
+On Alpine it's recommended to download the binary manually from [Github
+Releases](https://github.com/babashka/babashka/releases) and use the static
+linux binary.
 
 ### Arch (Linux)
 
