@@ -53,7 +53,7 @@ anywhere on the path.
 Then you're ready to go:
 
 ``` shellsession
-$ ls | bb -i '(filter #(-> % io/file .isDirectory) *input*)'
+$ ls | bb -i '(filter fs/directory? *input*)'
 ("doc" "resources" "sci" "script" "src" "target" "test")
 bb took 4ms.
 ```
@@ -109,7 +109,8 @@ $ bb '(vec (dedupe *input*))' <<< '[1 1 1 1 2]'
 [1 2]
 ```
 
-Read more about input and output flags [here](https://book.babashka.org/#_input_and_output_flags).
+Read more about `*input*` and in- and output flags
+[here](https://book.babashka.org/#_input_and_output_flags).
 
 Execute a script. E.g. print the current time in California using the
 `java.time` API:
