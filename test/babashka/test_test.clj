@@ -112,3 +112,9 @@
 (deftest line-number-test
   (is (str/includes? (bb "test-resources/line_number_test_test.clj")
                      "line_number_test_test.clj:4")))
+
+(deftest testing-vars-str-test
+  (is (str/includes?
+        (bb "(clojure.test/testing-vars-str {:file \"x\" :line 1})")
+        "() (x:1)")
+      "includes explicit line number + file name in test report"))

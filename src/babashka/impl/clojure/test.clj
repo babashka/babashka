@@ -297,7 +297,7 @@
   current assertion."
   {:added "1.1"}
   [m]
-  (let [{:keys [:file :line]} (meta (first @testing-vars))]
+  (let [{:keys [:file :line]} (merge m (meta (first @testing-vars)))]
     (str
      ;; Uncomment to include namespace in failure report:
      ;;(ns-name (:ns (meta (first *testing-vars*)))) "/ "
