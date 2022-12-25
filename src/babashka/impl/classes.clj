@@ -120,7 +120,8 @@
     clojure.lang.APersistentVector
     {:methods [{:name "indexOf"}]}
     clojure.lang.LazySeq
-    {:methods [{:name "indexOf"}]}
+    {:allPublicConstructors true,
+     :methods [{:name "indexOf"}]}
     clojure.lang.ILookup
     {:methods [{:name "valAt"}]}
     clojure.lang.IPersistentMap

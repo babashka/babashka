@@ -53,7 +53,7 @@ anywhere on the path.
 Then you're ready to go:
 
 ``` shellsession
-$ ls | bb -i '(filter #(-> % io/file .isDirectory) *input*)'
+$ ls | bb -i '(filter fs/directory? *input*)'
 ("doc" "resources" "sci" "script" "src" "target" "test")
 bb took 4ms.
 ```
@@ -109,7 +109,8 @@ $ bb '(vec (dedupe *input*))' <<< '[1 1 1 1 2]'
 [1 2]
 ```
 
-Read more about input and output flags [here](https://book.babashka.org/#_input_and_output_flags).
+Read more about `*input*` and in- and output flags
+[here](https://book.babashka.org/#_input_and_output_flags).
 
 Execute a script. E.g. print the current time in California using the
 `java.time` API:
@@ -174,6 +175,12 @@ Upgrade:
 
 You can find more documentation on how to use babashka with nix [here](./doc/nix.md).
 
+### Alpine
+
+On Alpine it's recommended to download the binary manually from [Github
+Releases](https://github.com/babashka/babashka/releases) and use the static
+linux binary.
+
 ### Arch (Linux)
 
 `babashka` is [available](https://aur.archlinux.org/packages/babashka-bin/) in the [Arch User Repository](https://aur.archlinux.org). It can be installed using your favorite [AUR](https://aur.archlinux.org) helper such as
@@ -224,7 +231,7 @@ $ ./install --static
 
 ### Installer script
 
-Install via the installer script:
+Install via the installer script for linux and macOS:
 
 ``` shell
 $ curl -sLO https://raw.githubusercontent.com/babashka/babashka/master/install
@@ -399,6 +406,8 @@ handling of SIGINT and SIGPIPE. This can be done by setting
 
 ## Articles, podcasts and videos
 
+- [Babashka: How GraalVM Helped Create a Fast-Starting Scripting Environment for Clojure](https://medium.com/graalvm/babashka-how-graalvm-helped-create-a-fast-starting-scripting-environment-for-clojure-b0fcc38b0746) by Michiel Borkent
+- [Adding Prompts To Your Babashka Scripts With Dialog](https://www.pixelated-noise.com/blog/2022/12/09/dialog-and-babashka/index.html) by A.C. Danvers
 - [Using Babashka to Get Electricity Prices](https://www.karimarttila.fi/clojure/2022/12/04/using-babashka-to-get-electricity-prices.html) by Kari Marttila
 - [Manage git hooks with babashka tasks](https://blaster.ai/blog/posts/manage-git-hooks-w-babashka.html) by Mykhaylo Bilyanskyy
 - [Messing around with babashka](https://ian-muge.medium.com/messing-around-with-babashka-f181a9003faa) by Ian Muge

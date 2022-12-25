@@ -8,6 +8,7 @@ static_binary="false"
 default_install_dir="/usr/local/bin"
 install_dir="$default_install_dir"
 download_dir=""
+dev_build=""
 
 print_help() {
     echo "Installs latest (or specific) version of babashka. Installation directory defaults to /usr/local/bin."
@@ -56,6 +57,10 @@ do
             static_binary="true"
             shift
             ;;
+        --dev-build)
+            dev_build="true"
+            shift
+            ;;
         *)    # unknown option
             print_help
             shift
@@ -74,7 +79,11 @@ if [[ "$checksum" != "" ]] && [[ "$version" == "" ]]; then
 fi
 
 if [[ "$version" == "" ]]; then
-    version="$(curl -sL https://raw.githubusercontent.com/babashka/babashka/master/resources/BABASHKA_RELEASED_VERSION)"
+    if [[ "$dev_build" == "true" ]]; then
+        version="$(curl -sL https://raw.githubusercontent.com/babashka/babashka/master/resources/BABASHKA_VERSION)"
+    else
+        version="$(curl -sL https://raw.githubusercontent.com/babashka/babashka/master/resources/BABASHKA_RELEASED_VERSION)"
+    fi
 fi
 
 case "$(uname -s)" in
@@ -94,7 +103,12 @@ case "$(uname -m)" in
                arch="aarch64"
            fi
            ;;
-    *) arch=amd64;;
+    *) arch=amd64
+       # always use static image on linux
+       if [[ "$platform" == "linux" ]]; then
+           static_binary="true"
+       fi
+       ;;
 esac
 
 if [[ 10#$vernum -le 10#000002013 ]]; then

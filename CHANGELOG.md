@@ -7,6 +7,16 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## Unreleased
+
+- Implement `ns`, `lazy-seq` as macro
+- Support `--dev-build` flag in installation script
+- [#1451](https://github.com/babashka/babashka/issues/1451): Allow passing explicit file and line number to clojure.test ([@matthewdowney](https://github.com/matthewdowney))
+- [#1280](https://github.com/babashka/babashka/issues/1280): babashka REPL doesn't quit right after Ctrl-d ([@formerly-a-trickster](https://github.com/formerly-a-trickster) and Alice Margatroid)
+- [#1446](https://github.com/babashka/babashka/issues/1446): add `pprint/code-dispatch`
+- Update zlib to version `1.2.13` ([@thiagokokada](https://github.com/thiagokokada))
+- [#1454](https://github.com/babashka/babashka/issues/1454): Add `babashka.process` to `print-deps` output
+
 ## 1.0.168 (2022-12-07)
 
 - `loop*`, `fn*` are now special forms and `loop`, `fn`, `defn`, `defmacro`, `and` and `or` are implemented as macros. This restores compatibility with [rcf](https://github.com/borkdude/hyperfiddle-rcf)
