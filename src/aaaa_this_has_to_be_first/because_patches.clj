@@ -3,28 +3,36 @@
   (:require [babashka.impl.patches.datafy]
             [babashka.impl.pprint]))
 
-;; Enable this for scanning requiring-resolve usage:
-;; ---
-;; (def old-requiring-resolve requiring-resolve)
+;; ;; Enable this for scanning requiring-resolve usage:
+;; ;; ---
 
-;; (defmacro static-requiring-resolve [sym]
-;;   (prn :sym sym)
-;;   `(old-requiring-resolve ~sym))
+;; (def old-require require)
+;; (def old-resolve resolve)
+
+;; (def our-requiring-resolve (fn [sym]
+;;                              (let [ns (symbol (namespace sym))]
+;;                                (old-require ns)
+;;                                (resolve sym))))
+
+;; (defn static-requiring-resolve [form _ _]
+;;   (prn :req-resolve form :args (rest form))
+;;   `(let [res# (our-requiring-resolve ~@(rest form))]
+;;      res#))
 
 ;; (alter-var-root #'requiring-resolve (constantly @#'static-requiring-resolve))
 ;; (doto #'requiring-resolve (.setMacro))
-;; ---
+;; ;; ---
 
-;; ((requiring-resolve 'clojure.pprint/pprint) (range 20))
+;; ;; Enable this for detecting literal usages of require
+;; ;; ---
 
-;; Enable this for detecting literal usages of require
-;; ---
-;; (def old-require require)
-
-;; (defmacro static-require [& syms]
+;; (defn static-require [& [&form _bindings & syms]]
 ;;   (when (meta &form)
-;;     (prn :require &form ))
+;;     (prn :require &form (meta &form) *file*))
 ;;   `(old-require ~@syms))
 ;; (alter-var-root #'require (constantly @#'static-require))
 ;; (doto #'require (.setMacro))
-;; ---
+
+;; (alter-var-root #'clojure.core/serialized-require (constantly (fn [& args]
+;;                                                                 (prn :serialized-req args))))
+;; ;; ---
