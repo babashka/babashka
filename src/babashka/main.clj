@@ -1138,6 +1138,13 @@ Use bb run --help to show this help output.
     (let [exit-code (run args)]
       (System/exit exit-code))))
 
+;; disable graalvm bloat
+(alter-var-root #'require (constantly (fn [& args] (prn :req args))))
+(alter-var-root #'resolve (constantly (fn [& args] (prn :resolve args))))
+(alter-var-root #'requiring-resolve (constantly (fn [& args] (prn :req-resolve args))))
+(alter-var-root #'find-var (constantly (fn [& args] (prn :find-var args))))
+(alter-var-root #'find-ns (constantly (fn [& args] (prn :find-ns args))))
+
 ;;;; Scratch
 
 (comment)
