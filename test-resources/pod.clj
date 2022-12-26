@@ -104,14 +104,14 @@
                             "id" id})
                           pod.test-pod/print
                           (do (write
-                               {"out" (pr-str args)
+                               {"out" (prn-str args)
                                 "id" id})
                               (write
                                {"status" ["done"]
                                 "id" id}))
                           pod.test-pod/print-err
                           (do (write
-                               {"err" (pr-str args)
+                               {"err" (prn-str args)
                                 "id" id})
                               (write
                                {"status" ["done"]
@@ -125,7 +125,8 @@
               :shutdown (System/exit 0))))))))
 
 (let [cli-args (set *command-line-args*)]
-  (if (contains? cli-args "--run-as-pod")
+  (if (or (= "true" (System/getenv "BABASHKA_POD"))
+          (contains? cli-args "--run-as-pod"))
     (do (debug "running pod with cli args" cli-args)
         (run-pod cli-args))
     (let [native? (contains? cli-args "--native")

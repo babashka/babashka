@@ -66,7 +66,7 @@
                      paths)
                    paths)]
        (cp/add-classpath (str/join cp/path-sep paths))))
-   (let [need-deps? (or (:deps deps-map)
+   (let [need-deps? (or (seq (:deps deps-map))
                         (and (:aliases deps-map)
                              aliases))]
      (when need-deps?
@@ -101,4 +101,4 @@
    'clojure (sci/copy-var bdeps/clojure dns)
    'merge-deps (sci/copy-var merge-deps dns)
    ;; undocumented
-   'merge-defaults (sci/copy-var merge-default-deps dns)})
+   'merge-defaults (sci/copy-var merge-default-deps dns {:name 'merge-defaults})})

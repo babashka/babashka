@@ -37,7 +37,7 @@ reasons:
 
 ## Requirements
 
-You need [lein](https://leiningen.org/) for running JVM tests and/or producing uberjars. For building binaries you need GraalVM. Currently we use java11-22.0.0.2.
+You need [lein](https://leiningen.org/) for running JVM tests and/or producing uberjars. For building binaries you need GraalVM. Currently we use java11-22.3.0.
 
 ## Clone repository
 
@@ -81,8 +81,14 @@ Test the native version:
 ## Tests for Libraries
 
 Babashka runs tests of libraries that are compatible with it through
-`script/run_lib_tests`. The script `add-libtest.clj` makes adding new libraries
-fairly easy. Some examples:
+`script/run_lib_tests`.
+
+You can check out [this
+commit](https://github.com/babashka/babashka/commit/8d9ac4c4d18a5588a4a258a61a9db3835b4f4e5c)
+for how to add tests for a library that needs no changes to its tests.
+The library is cloned as a git dependency, which also includes the tests, that are then added to the test's classpath and ran.
+
+If a library's tests needs changes, we copy the tests using the `add-libtest.clj` script. Examples:
 
 ```sh
 # To add tests for a new library on clojars

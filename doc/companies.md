@@ -61,6 +61,7 @@ Sponsoring via [Cognitect](https://www.cognitect.com/).
 - [Datil](https://datil.com/)
 - [Deon Digital](https://www.deondigital.com/)
 - [Fluent](https://fluent.to/)
+- [Fluree](https://flur.ee/)
 - [Hi](https://www.hi.group/)
 - [Juxt](https://www.juxt.pro/)
 - [Latacora](https://www.latacora.com/)

@@ -33,3 +33,6 @@ org_babashka*.h
 .envrc
 .lsp
 bb.build_artifacts.txt
+target
+.nrepl-port
+.DS_Store

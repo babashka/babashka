@@ -1,10 +1,10 @@
 (ns babashka.impl.curl
   {:no-doc true}
-  (:require [babashka.curl :as curl]
-            [sci.impl.namespaces :refer [copy-var]]
-            [sci.impl.vars :as vars]))
+  (:require
+   [babashka.curl :as curl]
+   [sci.core :as sci :refer [copy-var]]))
 
-(def tns (vars/->SciNamespace 'babashka.curl nil))
+(def tns (sci/create-ns 'babashka.curl nil))
 
 (def curl-namespace
   {'request (copy-var curl/request tns)

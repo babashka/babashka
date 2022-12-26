@@ -1,4 +1,4 @@
-<img src="logo/babashka.svg" width="425px">
+[<img src="logo/babashka.svg" alt="Babashka" width="425px">](https://babashka.org)
 
 [![CircleCI](https://circleci.com/gh/babashka/babashka/tree/master.svg?style=shield)](https://circleci.com/gh/babashka/babashka/tree/master)
 [![project chat](https://img.shields.io/badge/slack-join_chat-brightgreen.svg)](https://app.slack.com/client/T03RZGPFR/CLX41ASCS)
@@ -11,12 +11,6 @@
     &mdash;
     <a href="https://github.com/laheadle">@laheadle</a> on Clojurians Slack
 </blockquote>
-
-<hr>
-
-Please leave some feedback about babashka in the [Q1 Survey](https://forms.gle/ko3NjDg2SwXeEoNQ9)!
-
-<hr>
 
 ## Introduction
 
@@ -59,7 +53,7 @@ anywhere on the path.
 Then you're ready to go:
 
 ``` shellsession
-$ ls | bb -i '(filter #(-> % io/file .isDirectory) *input*)'
+$ ls | bb -i '(filter fs/directory? *input*)'
 ("doc" "resources" "sci" "script" "src" "target" "test")
 bb took 4ms.
 ```
@@ -115,7 +109,8 @@ $ bb '(vec (dedupe *input*))' <<< '[1 1 1 1 2]'
 [1 2]
 ```
 
-Read more about input and output flags [here](https://book.babashka.org/#_input_and_output_flags).
+Read more about `*input*` and in- and output flags
+[here](https://book.babashka.org/#_input_and_output_flags).
 
 Execute a script. E.g. print the current time in California using the
 `java.time` API:
@@ -153,14 +148,38 @@ Install:
 
     brew install borkdude/brew/babashka
 
-On macOS with an M1 processor:
+<!-- On macOS with an M1 processor: -->
 
-    softwareupdate --install-rosetta
-    arch -x86_64 brew install borkdude/brew/babashka
+<!--     softwareupdate --install-rosetta -->
+<!--     arch -x86_64 brew install borkdude/brew/babashka -->
 
 Upgrade:
 
     brew upgrade babashka
+
+### Nix
+
+Linux and macOS (including ARM Macs) binaries are provided via nix (see the installation instructions for nix [here](https://nixos.org/download.html)).
+
+Install:
+
+    # Adding `nixpkgs-unstable` channel for more up-to-date binaries, skip this if you already have `nixpkgs-unstable` in your channel list
+    nix-channel --add https://nixos.org/channels/nixpkgs-unstable nixpkgs-unstable
+    nix-channel --update
+    nix-env -iA nixpkgs-unstable.babashka
+
+Upgrade:
+
+    nix-channel --update
+    nix-env -iA nixpkgs-unstable.babashka
+
+You can find more documentation on how to use babashka with nix [here](./doc/nix.md).
+
+### Alpine
+
+On Alpine it's recommended to download the binary manually from [Github
+Releases](https://github.com/babashka/babashka/releases) and use the static
+linux binary.
 
 ### Arch (Linux)
 
@@ -180,6 +199,8 @@ Babashka can be installed using a plugin as follows:
 
 ### Windows
 
+#### Scoop
+
 On Windows you can install using [scoop](https://scoop.sh/) and the
 [scoop-clojure](https://github.com/littleli/scoop-clojure) bucket.
 
@@ -194,9 +215,23 @@ scoop bucket add extras
 scoop install babashka
 ```
 
+#### Manual
+
+If scoop does not work for you, then you can also just download the `bb.exe`
+binary from [Github releases](https://github.com/babashka/babashka/releases) and
+place it on your path manually.
+
+#### WSL1
+> Note: WSL1 users might experience a BSOD, please use the --static install option when installing
+``` shell
+$ curl -sLO https://raw.githubusercontent.com/babashka/babashka/master/install
+$ chmod +x install
+$ ./install --static
+```
+
 ### Installer script
 
-Install via the installer script:
+Install via the installer script for linux and macOS:
 
 ``` shell
 $ curl -sLO https://raw.githubusercontent.com/babashka/babashka/master/install
@@ -260,17 +295,76 @@ Check out the [news](doc/news.md) page to keep track of babashka-related news it
 
 Go [here](https://book.babashka.org/#built-in-namespaces) to see the full list of built-in namespaces.
 
-## [Projects](doc/projects.md)
+## [Compatible Projects](doc/projects.md)
 
 A list of projects (scripts, libraries, pods and tools) known to work with babashka.
+
+## Badges
+<!-- note to editor: it seems a blank line must appear before code blocks within <details> -->
+
+[![bb compatible](/logo/badge.svg)](https://babashka.org)
+
+The babashka compatible badge indicates that a [library can be used as babashka dependency](doc/projects.md).
+
+If this is the case for your library, we encourage you to proudly display this badge.
+
+<details><summary>Markdown</summary>
+
+```markdown
+[![bb compatible](https://raw.githubusercontent.com/babashka/babashka/master/logo/badge.svg)](https://babashka.org)
+```
+</details>
+
+<details><summary>AsciiDoc</summary>
+
+```asciidoc
+https://babashka.org[image:https://raw.githubusercontent.com/babashka/babashka/master/logo/badge.svg[bb compatible]]
+```
+</details>
+
+<details><summary>HTML</summary>
+
+```html
+<a href="https://babashka.org" rel="nofollow"><img src="https://github.com/babashka/babashka/raw/master/logo/badge.svg" alt="bb compatible" style="max-width: 100%;"></a>
+```
+</details>
+<br/>
+
+[![bb built-in](/logo/built-in-badge.svg)](https://babashka.org)
+
+The babashka built-in badge means that a [library has been built directly into babashka](https://book.babashka.org/#built-in-namespaces) and requires no extra dependencies to use it.
+
+If this rare honor belongs to your library, you should display this badge.
+
+<details><summary>Markdown</summary>
+
+```markdown
+[![bb built-in](https://raw.githubusercontent.com/babashka/babashka/master/logo/built-in-badge.svg)](https://babashka.org)
+```
+</details>
+
+<details><summary>AsciiDoc</summary>
+
+```asciidoc
+https://babashka.org[image:https://raw.githubusercontent.com/babashka/babashka/master/logo/built-in-badge.svg[bb built-in]]
+```
+</details>
+
+<details><summary>HTML</summary>
+
+```html
+<a href="https://babashka.org" rel="nofollow"><img src="https://github.com/babashka/babashka/raw/master/logo/built-in-badge.svg" alt="bb built-in" style="max-width: 100%;"></a>
+```
+</details>
+</br>
 
 ## [Pods](https://github.com/babashka/babashka.pods)
 
 Pods are programs that can be used as a Clojure library by
 babashka. Documentation is available in the [pod library
-repo](https://github.com/babashka/babashka.pods).
+repo](https://github.com/babashka/pods).
 
-A list of available pods can be found [here](doc/projects.md#pods).
+A list of available pods can be found in the [pod registry](https://github.com/babashka/pod-registry).
 
 ## Differences with Clojure
 
@@ -312,6 +406,23 @@ handling of SIGINT and SIGPIPE. This can be done by setting
 
 ## Articles, podcasts and videos
 
+- [Babashka: How GraalVM Helped Create a Fast-Starting Scripting Environment for Clojure](https://medium.com/graalvm/babashka-how-graalvm-helped-create-a-fast-starting-scripting-environment-for-clojure-b0fcc38b0746) by Michiel Borkent
+- [Adding Prompts To Your Babashka Scripts With Dialog](https://www.pixelated-noise.com/blog/2022/12/09/dialog-and-babashka/index.html) by A.C. Danvers
+- [Using Babashka to Get Electricity Prices](https://www.karimarttila.fi/clojure/2022/12/04/using-babashka-to-get-electricity-prices.html) by Kari Marttila
+- [Manage git hooks with babashka tasks](https://blaster.ai/blog/posts/manage-git-hooks-w-babashka.html) by Mykhaylo Bilyanskyy
+- [Messing around with babashka](https://ian-muge.medium.com/messing-around-with-babashka-f181a9003faa) by Ian Muge
+- [Deleting AWS Glacier vaults with babashka](https://javahippie.net/clojure/2022/07/23/deleting-aws-glacier-vaults-with-babashka.html) by Tim Zöller
+- [Recursive document transformations with Pandoc and Clojure](https://play.teod.eu/document-transform-pandoc-clojure/) by Teodor Heggelund
+- [Blambda!](https://jmglov.net/blog/2022-07-03-blambda.html) by Josh Glover
+- [Babashka CLI](https://blog.michielborkent.nl/babashka-cli.html): turn Clojure functions into CLIs!
+- [Breakneck Babashka on K8s](https://www.linkedin.com/pulse/breakneck-babashka-k8s-heow-goodman/) by Heow Goodman
+- [Recursive document transformations with Pandoc and Clojure](https://play.teod.eu/document-transform-pandoc-clojure/)
+- [Detecting inconsistent aliases in a clojure codebase](https://www.youtube.com/watch?v=bf8KLKkCH2g) by Oxalorg
+- [I, too, Wrote Myself a Static Site Generator](https://dawranliou.com/blog/i-too-wrote-myself-a-static-site-generator/) by Daw-Ran Liou
+- [Babashka and Clojure](https://youtu.be/ZvOs5Ele6VE) by Rahul Dé at North Virginia Linux Users Group
+- [Create a password manager with Clojure using Babashka, sqlite, honeysql and stash](https://youtu.be/jm0RXmyjRJ8) by Daniel Amber
+- [Writing Clojure-living-cookbooks](https://www.loop-code-recur.io/live-clojure-cookbooks) by Cyprien Pannier
+- [Using babashka with PHP](https://blog.michielborkent.nl/using-babashka-with-php.html) by Michiel Borkent
 - [Moldable Emacs: a Clojure Playground with Babashka](https://ag91.github.io/blog/2021/11/05/moldable-emacs-a-clojure-playground-with-babashka/) by Andrea
 - [Finding my inner Wes Anderson with #Babashka](https://javahippie.net/clojure/2021/10/18/finding-my-inner-wes-anderson.html) by Tim Zöller
 - [Awesome Babashka: Parse & produce HTML and SQLite](https://blog.jakubholy.net/2021/awesome-babashka-dash/) by Jakub Holý
@@ -360,7 +471,7 @@ binary, these evaluation criteria are considered:
 - The library cannot be interpreted by with babashka using `--classpath`.
 - The functionality can't be met by shelling out to another CLI or can't be
   written as a small layer over an existing CLI (like `babashka.curl`) instead.
-- The library cannot be implemented a
+- The library cannot be implemented as a
   [pod](https://github.com/babashka/babashka.pods).
 
 If not all of the criteria are met, but adding a feature is still useful to a

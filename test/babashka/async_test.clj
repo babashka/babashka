@@ -33,3 +33,12 @@
   (is (number? (edn/read-string (test-utils/bb nil "
 (def ^:dynamic x 0)
 (binding [x 10] (async/<!! (async/thread x)))")))))
+
+(deftest alts-test
+  (is (true? (edn/read-string (test-utils/bb nil "
+(= 10 (first (async/<!!
+  (async/go
+    (async/alts!
+     [(async/go
+        (async/<! (async/timeout 100))
+        10)])))))")))))

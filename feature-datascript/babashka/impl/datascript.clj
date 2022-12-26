@@ -2,11 +2,10 @@
   {:no-doc true}
   (:require [datascript.core :as d]
             [datascript.db :as db]
-            [sci.impl.namespaces :refer [copy-var]]
-            [sci.impl.vars :as vars]))
+            [sci.core :as sci :refer [copy-var]]))
 
-(def datascript-ns (vars/->SciNamespace 'datascript.core nil))
-(def datascript-db-ns (vars/->SciNamespace 'datascript.db nil))
+(def datascript-ns (sci/create-ns 'datascript.core nil))
+(def datascript-db-ns (sci/create-ns 'datascript.db nil))
 
 (def datascript-namespace
   {'create-conn (copy-var d/create-conn datascript-ns)

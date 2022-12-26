@@ -9,7 +9,7 @@ else
 fi
 
 export BABASHKA_CLASSPATH
-BABASHKA_CLASSPATH=$(clojure -A:lib-tests -Spath)
+BABASHKA_CLASSPATH=$(clojure -Spath -A:lib-tests)
 
 $BB_CMD -cp "$BABASHKA_CLASSPATH" \
         -f "test-resources/lib_tests/babashka/run_all_libtests.clj" "$@"

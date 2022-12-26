@@ -52,10 +52,11 @@
   util/raw-string)
 
 (def hiccup-namespace
-  {'html (copy-var html-1 hns)})
+  {'html (copy-var html-1 hns {:name 'html})})
 
 (def hiccup2-namespace
-  {'html (copy-var html-2 hns2)})
+  {'html (copy-var html-2 hns2 {:name 'html})
+   'raw (copy-var util/raw-string hns2 {:name 'raw})})
 
 (def html-mode (copy-var util/*html-mode* uns))
 (def escape-strings? (copy-var util/*escape-strings?* uns))
@@ -63,7 +64,8 @@
 (def hiccup-util-namespace
   {'*html-mode* html-mode
    '*escape-strings?* escape-strings?
-   'raw-string (copy-var util/raw-string uns)})
+   'raw-string (copy-var util/raw-string uns)
+   'to-uri (copy-var util/to-uri uns)})
 
 (defn render-html [& contents]
   (binding [util/*html-mode* @html-mode

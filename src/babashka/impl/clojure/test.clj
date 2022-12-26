@@ -232,13 +232,13 @@
    For additional event types, see the examples in the code.
 "}
     babashka.impl.clojure.test
-  (:require [babashka.impl.common :refer [ctx]]
-            [clojure.stacktrace :as stack]
-            [clojure.template :as temp]
-            [sci.core :as sci]
-            [sci.impl.namespaces :as sci-namespaces]
-            [sci.impl.resolve :as resolve]
-            [sci.impl.vars :as vars]))
+  (:require
+   [babashka.impl.common :refer [ctx]]
+   [clojure.stacktrace :as stack]
+   [clojure.template :as temp]
+   [sci.core :as sci]
+   [sci.impl.namespaces :as sci-namespaces]
+   [sci.impl.resolve :as resolve]))
 
 ;; Nothing is marked "private" here, so you can rebind things to plug
 ;; in your own testing or reporting frameworks.
@@ -297,7 +297,7 @@
   current assertion."
   {:added "1.1"}
   [m]
-  (let [{:keys [:file :line]} (meta (first @testing-vars))]
+  (let [{:keys [:file :line]} (merge m (meta (first @testing-vars)))]
     (str
      ;; Uncomment to include namespace in failure report:
      ;;(ns-name (:ns (meta (first *testing-vars*)))) "/ "
@@ -332,7 +332,7 @@
     :added "1.1"}
   report-impl :type)
 
-(def report (sci/copy-var report-impl tns))
+(def report (sci/copy-var report-impl tns {:name 'report}))
 
 (defn do-report
   "Add file and line information to a test result and call report.
@@ -408,8 +408,8 @@
   {:added "1.1"}
   [x]
   (if (symbol? x)
-    (when-let [v (second (resolve/lookup @ctx x false))]
-      (when-let [value (if (vars/var? v)
+    (when-let [v (second (resolve/lookup (ctx) x false))]
+      (when-let [value (if (instance? sci.lang.Var v)
                          (get-possibly-unbound-var v)
                          v)]
         (and (fn? value)
@@ -667,7 +667,7 @@
   value of key."
   {:added "1.1"}
   [key coll]
-  (swap! ns->fixtures assoc-in [(sci-namespaces/sci-ns-name @vars/current-ns) key] coll))
+  (swap! ns->fixtures assoc-in [(sci-namespaces/sci-ns-name @sci/ns) key] coll))
 
 (defmulti use-fixtures
   "Wrap test runs in a fixture function to perform setup and
@@ -722,7 +722,7 @@
                          :expected nil, :actual e})))
       (do-report {:type :end-test-var, :var v}))))
 
-(def test-var (sci/copy-var test-var-impl tns))
+(def test-var (sci/copy-var test-var-impl tns {:name 'test-var}))
 
 (defn test-vars
   "Groups vars by their namespace and runs test-vars on them with
@@ -779,7 +779,7 @@
   Defaults to current namespace if none given.  Returns a map
   summarizing test results."
   {:added "1.1"}
-  ([ctx] (run-tests ctx @vars/current-ns))
+  ([ctx] (run-tests ctx @sci/ns))
   ([ctx & namespaces]
    (let [summary (assoc (apply merge-with + (map #(test-ns ctx %) namespaces))
                         :type :summary)]
@@ -804,3 +804,39 @@
   [summary]
   (and (zero? (:fail summary 0))
        (zero? (:error summary 0))))
+
+(defn run-test-var
+  "Runs the tests for a single Var, with fixtures executed around the test, and summary output after."
+  {:added "1.11"}
+  [v]
+  (sci/binding [report-counters (atom @initial-report-counters)]
+    (let [ns-obj (-> v meta :ns)
+          summary (do
+                    (do-report {:type :begin-test-ns
+                                :ns   ns-obj})
+                    (test-vars [v])
+                    (do-report {:type :end-test-ns
+                                :ns   ns-obj})
+                    (assoc @@report-counters :type :summary))]
+      (do-report summary)
+      summary)))
+
+(defmacro run-test
+  "Runs a single test.
+  Because the intent is to run a single test, there is no check for the namespace test-ns-hook."
+  {:added "1.11"}
+  [test-symbol]
+  (let [test-var (sci/resolve (ctx) test-symbol)]
+    (cond
+      (nil? test-var)
+      (sci/binding [sci/out sci/err]
+        (binding [*out* sci/out]
+          (println "Unable to resolve" test-symbol "to a test function.")))
+
+      (not (-> test-var meta :test))
+      (sci/binding [sci/out sci/err]
+        (binding [*out* sci/out]
+          (println test-symbol "is not a test.")))
+
+      :else
+      `(clojure.test/run-test-var ~test-var))))

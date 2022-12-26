@@ -2,7 +2,8 @@
   {:no-doc true}
   (:require [clojure.core.async :as async]
             [clojure.core.async.impl.protocols :as protocols]
-            [sci.impl.namespaces :refer [copy-var macrofy]]
+            [sci.core :as sci :refer [copy-var]]
+            [sci.impl.copy-vars :refer [macrofy]]
             [sci.impl.vars :as vars]))
 
 (def ^java.util.concurrent.Executor executor @#'async/thread-macro-executor)
@@ -39,14 +40,13 @@
   [_ _ bindings & body]
   (list 'clojure.core.async/thread (list* 'loop bindings body)))
 
-(def core-async-namespace (vars/->SciNamespace 'clojure.core.async nil))
+(def core-async-namespace (sci/create-ns 'clojure.core.async nil))
 
 (def async-namespace
   {:obj core-async-namespace
    '<!! (copy-var async/<!! core-async-namespace)
    '>!! (copy-var async/>!! core-async-namespace)
    'admix (copy-var async/admix core-async-namespace)
-   'alts! (copy-var async/alts! core-async-namespace)
    'alts!! (copy-var async/alts!! core-async-namespace)
    'alt!! (macrofy 'alt!! alt!! core-async-namespace)
    'buffer (copy-var async/buffer core-async-namespace)
@@ -68,6 +68,8 @@
    'mult (copy-var async/mult core-async-namespace)
    'offer! (copy-var async/offer! core-async-namespace)
    'onto-chan (copy-var async/onto-chan core-async-namespace)
+   'onto-chan! (copy-var async/onto-chan! core-async-namespace)
+   'onto-chan!! (copy-var async/onto-chan!! core-async-namespace)
    'partition (copy-var async/partition core-async-namespace)
    'partition-by (copy-var async/partition-by core-async-namespace)
    'pipe (copy-var async/pipe core-async-namespace)
@@ -92,6 +94,8 @@
    'thread-call (copy-var thread-call core-async-namespace)
    'timeout (copy-var async/timeout core-async-namespace)
    'to-chan (copy-var async/to-chan core-async-namespace)
+   'to-chan! (copy-var async/to-chan! core-async-namespace)
+   'to-chan!! (copy-var async/to-chan!! core-async-namespace)
    'toggle (copy-var async/toggle core-async-namespace)
    'transduce (copy-var async/transduce core-async-namespace)
    'unblocking-buffer? (copy-var async/unblocking-buffer? core-async-namespace)
@@ -104,12 +108,13 @@
    'untap-all (copy-var async/untap-all core-async-namespace)
    ;; polyfill
    'go (macrofy 'go thread core-async-namespace)
-   '<! (copy-var async/<!! core-async-namespace)
-   '>! (copy-var async/>!! core-async-namespace)
+   '<! (copy-var async/<!! core-async-namespace {:name '<!})
+   '>! (copy-var async/>!! core-async-namespace {:name '>!})
    'alt! (macrofy 'alt! alt!! core-async-namespace)
+   'alts! (copy-var async/alts!! core-async-namespace {:name 'alts!})
    'go-loop (macrofy 'go-loop go-loop core-async-namespace)})
 
-(def async-protocols-ns (vars/->SciNamespace 'clojure.core.async.impl.protocols nil))
+(def async-protocols-ns (sci/create-ns 'clojure.core.async.impl.protocols nil))
 
 (def async-protocols-namespace
   {:obj async-protocols-ns

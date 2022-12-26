@@ -11,7 +11,7 @@
 
 ;; this is mapped to clojure.core.server/repl in babashka.main
 (def repl (fn []
-            (repl/repl @common/ctx)))
+            (repl/repl (common/ctx))))
 
 (defn parse-opts [opts]
   (let [opts (str/trim opts)

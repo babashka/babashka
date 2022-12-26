@@ -10,6 +10,7 @@
    [clojure.java.io :as io]
    [clojure.string :as str]
    [clojure.test :as t :refer [deftest is testing]]
+   [sci.ctx-store :as ctx-store]
    [sci.impl.opts :refer [init]]))
 
 (set! *warn-on-reflection* true)
@@ -19,7 +20,7 @@
               reader (io/reader socket)
               sw (java.io.StringWriter.)
               writer (io/writer socket)]
-    (binding [*out* writer] 
+    (binding [*out* writer]
       (println (str expr "\n")))
     (loop []
       (when-let [l (try (.readLine ^java.io.BufferedReader reader)
@@ -48,7 +49,7 @@
       (if tu/jvm?
         (let [ctx (init {:namespaces {'clojure.core.server clojure-core-server-namespace}
                          :features #{:bb}})]
-          (vreset! common/ctx ctx)
+          (ctx-store/reset-ctx! ctx)
           (start-repl! "0.0.0.0:1666" ctx))
         (do (vreset! server-process
                      (p/process ["./bb" "socket-repl" "localhost:1666"]))
@@ -68,7 +69,7 @@
       (finally
         (if tu/jvm?
           (do (stop-repl!)
-              (vreset! common/ctx nil)
+              (ctx-store/reset-ctx! nil)
               (Thread/sleep 100))
           (p/destroy-tree @server-process))))))
 
@@ -81,7 +82,7 @@
                          :env (atom {})
                          :namespaces {'clojure.core.server clojure-core-server-namespace}
                          :features #{:bb}})]
-          (vreset! common/ctx ctx)
+          (ctx-store/reset-ctx! ctx)
           (start-repl! "{:address \"localhost\" :accept clojure.core.server/repl :port 1666}"
                        ctx))
         (do (vreset! server-process
@@ -92,7 +93,7 @@
       (finally
         (if tu/jvm?
           (do (stop-repl!)
-              (vreset! common/ctx nil)
+              (ctx-store/reset-ctx! nil)
               (Thread/sleep 100))
           (p/destroy-tree @server-process))))))
 
@@ -105,7 +106,7 @@
                          :env (atom {})
                          :namespaces {'clojure.core.server clojure-core-server-namespace}
                          :features #{:bb}})]
-          (vreset! common/ctx ctx)
+          (ctx-store/reset-ctx! ctx)
           (start-repl! "{:address \"localhost\" :accept clojure.core.server/io-prepl :port 1666}"
                        ctx))
         (do (vreset! server-process
@@ -120,7 +121,7 @@
       (finally
         (if tu/jvm?
           (do (stop-repl!)
-              (vreset! common/ctx nil)
+              (ctx-store/reset-ctx! nil)
               (Thread/sleep 100))
           (p/destroy-tree @server-process))))))
 

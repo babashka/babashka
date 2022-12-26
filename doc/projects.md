@@ -7,7 +7,6 @@ The following libraries and projects are known to work with babashka.
     - [tools.namespace](#toolsnamespace)
     - [test-runner](#test-runner)
     - [spec.alpha](#specalpha)
-    - [tools.bbuild](#toolsbbuild)
     - [clj-http-lite](#clj-http-lite)
     - [spartan.spec](#spartanspec)
     - [missing.test.assertions](#missingtestassertions)
@@ -62,6 +61,11 @@ The following libraries and projects are known to work with babashka.
     - [datalog-parser](#datalog-parser)
     - [at-at](#at-at)
     - [aysylu/loom](#aysyluloom)
+    - [Clarktown](#clarktown)
+    - [Malli](#malli)
+    - [Meander](#meander)
+    - [Schema](#schema)
+    - [Sluj](#sluj)
   - [Pods](#pods)
   - [Projects](#projects-1)
     - [babashka-test-action](#babashka-test-action)
@@ -88,6 +92,7 @@ The following libraries and projects are known to work with babashka.
     - [Babashka + scittle guestbook](#babashka--scittle-guestbook)
     - [bb htmx todo app](#bb-htmx-todo-app)
     - [bb aws lambda runtime](#bb-aws-lambda-runtime)
+    - [bb-github-app](#bb-github-app)
 
 Also keep an eye on the [news](news.md) page for new projects, gists and other
 developments around babashka.
@@ -114,9 +119,9 @@ A fork of `clojure.spec.alpha` that includes support for generation and
 instrumentation! Its readme also contains instructions on how to use
 `clojure.core.specs.alpha`.
 
-### [tools.bbuild](https://github.com/babashka/tools.bbuild)
+<!-- ### [tools.bbuild](https://github.com/babashka/tools.bbuild) -->
 
-A fork of `tools.build`.
+<!-- A fork of `tools.build`. -->
 
 ### [clj-http-lite](https://github.com/clj-commons/clj-http-lite)
 
@@ -763,7 +768,7 @@ Example:
 
 (require '[babashka.deps :as deps])
 
-(deps/add-deps '{:deps {org.clojars.lispyclouds/contajners {:mvn/version "0.0.2"}}})
+(deps/add-deps '{:deps {org.clojars.lispyclouds/contajners {:mvn/version "0.0.6"}}})
 
 (require '[contajners.core :as c])
 
@@ -807,6 +812,26 @@ Ahead-of-time function scheduler. Compatible with babashka 0.7.7+.
 ### [aysylu/loom](https://github.com/aysylu/loom)
 
 Graph library for Clojure. Compatible with babashka 0.7.8+.
+
+### [Clarktown](https://github.com/askonomm/clarktown)
+
+An extensible and modular zero-dependency, pure-Clojure Markdown parser.
+
+### [Malli](https://github.com/metosin/malli#babashka)
+
+Data-Driven Schemas for Clojure/Script
+
+### [Meander](https://github.com/noprompt/meander)
+
+Tools for transparent data transformation
+
+### [Schema](https://github.com/plumatic/schema)
+
+Clojure(Script) library for declarative data description and validation
+
+### [Sluj](https://github.com/rawleyfowler/sluj)
+
+Sluj is a very small library for converting strings of UTF-16 text to slugs. A slug is a piece of text that is URL safe.
 
 ## Pods
 
@@ -875,7 +900,7 @@ A babashka script to obtain covid-19 related information.
 
 ### [bb-spotify](https://github.com/kolharsam/bb-spotify)
 
-Contol your spotify player using babashka.
+Control your spotify player using babashka.
 
 ### [lambdaisland/open-source](https://github.com/lambdaisland/open-source)
 
@@ -935,3 +960,8 @@ Quick example of a todo list SPA using Babashka and htmx.
 ### [bb aws lambda runtime](https://github.com/tatut/bb-lambda)
 
 AWS Lambda custom runtime for Babashka scripts.
+
+### [bb-github-app](https://github.com/brandonstubbs/bb-github-app)
+
+An example Babashka script that can authenticate as a Github Application,
+this example focuses on the checks api.

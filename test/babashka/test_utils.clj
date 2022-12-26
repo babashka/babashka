@@ -81,8 +81,8 @@
               (do
                 (println (str os))
                 (throw (ex-info (str es)
-                                  {:stdout (str os)
-                                   :stderr (str es)}))))))
+                                {:stdout (str os)
+                                 :stderr (str es)}))))))
       (finally
         (when (string? input-or-opts) (vars/bindRoot sci/in *in*))
         (vars/bindRoot sci/out *out*)

@@ -1,10 +1,9 @@
 (ns babashka.impl.transit
-  (:require [cognitect.transit :as transit]
-            [sci.impl.namespaces :refer [copy-var]]
-            [sci.impl.vars :as vars]))
+  (:require
+   [cognitect.transit :as transit]
+   [sci.core :as sci :refer [copy-var]]))
 
-
-(def tns (vars/->SciNamespace 'cognitect.transit nil))
+(def tns (sci/create-ns 'cognitect.transit nil))
 
 (def transit-namespace
   {'write (copy-var transit/write tns)

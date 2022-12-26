@@ -1,15 +1,19 @@
 (ns babashka.impl.tasks
-  (:require [babashka.deps :as deps]
-            [babashka.impl.common :refer [ctx bb-edn debug]]
-            [babashka.process :as p]
-            [clojure.core.async :refer [<!!]]
-            [clojure.java.io :as io]
-            [clojure.string :as str]
-            [rewrite-clj.node :as node]
-            [rewrite-clj.parser :as parser]
-            [rewrite-clj.zip :as zip]
-            [sci.core :as sci])
-  (:import [clojure.core.async.impl.channels ManyToManyChannel]))
+  (:require
+   [babashka.deps :as deps]
+   [babashka.impl.cli :as cli]
+   [babashka.impl.common :refer [bb-edn ctx debug]]
+   [babashka.impl.process :as pp]
+   [babashka.process :as p]
+   [clojure.core.async :refer [<!!]]
+   [clojure.java.io :as io]
+   [clojure.string :as str]
+   [rewrite-clj.node :as node]
+   [rewrite-clj.parser :as parser]
+   [rewrite-clj.zip :as zip]
+   [sci.core :as sci])
+  (:import
+   [clojure.core.async.impl.channels ManyToManyChannel]))
 
 (defn -chan? [x]
   (instance? ManyToManyChannel x))
@@ -20,7 +24,7 @@
 ;; (def task-name (sci/new-dynamic-var '*-task-name* nil {:ns sci-ns}))
 (def task (sci/new-dynamic-var '*task* nil {:ns sci-ns}))
 (def current-task (sci/new-var 'current-task (fn [] @task) {:ns sci-ns}))
-(def state (sci/new-var 'state (atom {}) {:ns sci-ns}))
+(def state (sci/new-var 'current-state (atom {}) {:ns sci-ns}))
 
 (defn log-info [& strs]
   (let [log-level @log-level]
@@ -55,37 +59,13 @@
    :err :inherit
    :shutdown p/destroy-tree})
 
-(defn shell [cmd & args]
-  (let [[prev cmd args]
-        (if (and (map? cmd)
-                 (:proc cmd))
-          [cmd (first args) (rest args)]
-          [nil cmd args])
-        [opts cmd args]
-        (if (map? cmd)
-          [cmd (first args) (rest args)]
-          [nil cmd args])
-        opts (if-let [o (:out opts)]
-               (if (string? o)
-                 (update opts :out io/file)
-                 opts)
-               opts)
-        opts (if-let [o (:err opts)]
-               (if (string? o)
-                 (update opts :err io/file)
-                 opts)
-               opts)
-        opts (if prev
-               (assoc opts :in nil)
-               opts)
-        cmd (if (.exists (io/file cmd))
-              [cmd]
-              (p/tokenize cmd))
-        cmd (into cmd args)
-        local-log-level (:log-level opts)]
+(defn shell [& args]
+  (let [{:keys [prev cmd opts]} (p/parse-args args)
+        local-log-level (:log-level opts)
+        opts (merge default-opts opts)]
     (sci/binding [log-level (or local-log-level @log-level)]
-      (apply log-info cmd)
-      (handle-non-zero (p/process prev cmd (merge default-opts opts)) opts))))
+      (apply log-info args)
+      (handle-non-zero (pp/process* {:opts opts :cmd cmd :prev prev}) opts))))
 
 (defn clojure [cmd & args]
   (let [[opts cmd args]
@@ -263,6 +243,9 @@
 (when-not (resolve 'run)
   (intern *ns* 'run babashka.tasks/run))
 
+(when-not (resolve 'exec)
+  (intern *ns* 'exec @(var babashka.tasks/exec)))
+
 %s
 %s
 
@@ -422,15 +405,22 @@
           (iterate zip/right loc))))
 
 (defn list-tasks
+  "Prints out the task names found in BB-EDN in the original order
+  alongside their documentation as retrieved with SCI-CTX.
+
+  For a task to be listed
+  - its name has to be a symbol but should not start with `-`, and
+  - should not be `:private`."
   [sci-ctx]
-  (let [tasks (:tasks @bb-edn)]
-    (if (seq tasks)
-      (let [raw-edn (:raw @bb-edn)
-            names (key-order raw-edn)
-            names (map str names)
-            names (remove #(str/starts-with? % "-") names)
-            names (remove #(:private (get tasks (symbol %))) names)
-            longest (apply max (map count names))
+  (let [tasks (:tasks @bb-edn)
+        raw-edn (:raw @bb-edn)
+        names (when (seq tasks)
+                (->> (key-order raw-edn)
+                     (map str)
+                     (remove #(str/starts-with? % "-"))
+                     (remove #(:private (get tasks (symbol %))))))]
+    (if (seq names)
+      (let [longest (apply max (map count names))
             fmt (str "%1$-" longest "s")]
         (println "The following tasks are available:")
         (println)
@@ -448,7 +438,15 @@
   ([task {:keys [:parallel]
           :or {parallel (:parallel (current-task))}}]
    (let [[[expr]] (assemble-task task parallel)]
-     (sci/eval-string* @ctx expr))))
+     (sci/eval-string* (ctx) expr))))
+
+(defn exec
+  ([sym]
+   (let [snippet (cli/exec-fn-snippet sym)]
+     (sci/eval-string* (ctx) snippet)))
+  ([sym extra-opts]
+   (let [snippet (cli/exec-fn-snippet sym extra-opts)]
+     (sci/eval-string* (ctx) snippet))))
 
 (def tasks-namespace
   {'shell (sci/copy-var shell sci-ns)
@@ -460,4 +458,5 @@
    'current-task current-task
    'current-state state
    'run (sci/copy-var run sci-ns)
+   'exec (sci/copy-var exec sci-ns)
    #_#_'log log})

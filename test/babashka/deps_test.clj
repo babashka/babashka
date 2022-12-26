@@ -35,6 +35,7 @@
       (bb (pr-str `(do (babashka.deps/add-deps '{:deps {babashka/process {:git/url "https://github.com/babashka/process" :sha "4c6699d06b49773d3e5c5b4c11d3334fb78cc996"}}}
                                                {:force true
                                                 :env {"PATH" (System/getenv "PATH")
+                                                      "JAVA_HOME" (System/getenv "JAVA_HOME")
                                                       "GITLIBS" ~(str libs-dir)}}) nil)))
       (bb (pr-str `(do (babashka.deps/add-deps '{:deps {babashka/process {:git/url "https://github.com/babashka/process" :sha "4c6699d06b49773d3e5c5b4c11d3334fb78cc996"}}}
                                                {:force true
@@ -66,6 +67,14 @@ true
     (p/check)
     :out)
 "))))
+  (is (= "6\n" (test-utils/normalize (bb "
+(require '[babashka.deps :as deps])
+(require '[babashka.process :as p])
+
+(-> (babashka.deps/clojure {:out :string} \"-M\" \"-e\" \"(+ 1 2 3)\")
+    (p/check)
+    :out)
+"))))
   (when-not test-utils/native?
     (is (thrown-with-msg? Exception #"Option changed" (bb "
 (require '[babashka.deps :as deps])
@@ -86,6 +95,7 @@ true
             libs-dir2 (fs/file tmp-dir ".gitlibs2")
             template (pr-str '(do (babashka.deps/clojure ["-Sforce" "-Spath" "-Sdeps" "{:deps {babashka/process {:git/url \"https://github.com/babashka/process\" :sha \"4c6699d06b49773d3e5c5b4c11d3334fb78cc996\"}}}"]
                                                          {:out :string :env-key {"PATH" (System/getenv "PATH")
+                                                                                 "JAVA_HOME" (System/getenv "JAVA_HOME")
                                                                                  "GITLIBS" :gitlibs}}) nil))]
         (bb (-> template (str/replace ":gitlibs" (pr-str (str libs-dir)))
                 (str/replace ":env-key" ":env")))

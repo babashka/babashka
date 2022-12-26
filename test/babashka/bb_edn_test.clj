@@ -200,6 +200,12 @@
       (is (thrown-with-msg?
            Exception #"Cyclic task: b"
            (bb "run" "b")))))
+  (testing "friendly regex literal error handling"
+    (test-utils/with-config
+     "{:tasks {something (clojure.string/split \"1-2\" #\"-\")}}"
+     (is (thrown-with-msg?
+          Exception #"Invalid regex literal"
+          (bb "run" "something")))))
   (testing "doc"
     (test-utils/with-config '{:tasks {b {:doc "Beautiful docstring"}}}
       (let [s (test-utils/bb nil "doc" "b")]
@@ -301,6 +307,25 @@
   (test-utils/with-config {}
     (let [res (test-utils/bb nil "tasks")]
       (is (str/includes? res "No tasks found."))))
+  (test-utils/with-config '{:tasks {:x 1}}
+    (let [res (test-utils/bb nil "tasks")]
+      (is (str/includes? res "No tasks found."))))
+  (test-utils/with-config '{:tasks {-xyz 5}}
+    (let [res (test-utils/bb nil "tasks")]
+      (is (str/includes? res "No tasks found."))))
+  (test-utils/with-config '{:tasks {xyz {:private true}}}
+    (let [res (test-utils/bb nil "tasks")]
+      (is (str/includes? res "No tasks found."))))
+  (test-utils/with-config '{:tasks {abc 1 xyz 2}}
+    (let [res (test-utils/bb nil "tasks")]
+      (is (= "The following tasks are available:\n\nabc\nxyz\n" res))))
+  (test-utils/with-config '{:tasks {abc 1  xyz {:doc "some text" :tasks 5}
+                                    -xyz 3 qrs {:private true}}}
+    (let [res (test-utils/bb nil "tasks")]
+      (is (= "The following tasks are available:\n\nabc\nxyz some text\n" res))))
+  (test-utils/with-config '{:tasks {xyz 1 abc 2}}
+    (let [res (test-utils/bb nil "tasks")]
+      (is (= "The following tasks are available:\n\nxyz\nabc\n" res))))
   (test-utils/with-config "{:paths [\"test-resources/task_scripts\"]
                             :tasks {:requires ([tasks :as t])
                                     task1
@@ -425,3 +450,29 @@ even more stuff here\"
                       c {:depends [a b]
                          :task [a b]}}})
     (is (= ["[a 1]" "[b 2]" "[c [1 2]]"] (str/split-lines (test-utils/bb nil "run" "c"))))))
+
+(deftest pod-from-registry-test
+  (when (= "amd64" (System/getProperty "os.arch")) ; TODO: Build bootleg for aarch64 too or use a different pod
+    (test-utils/with-config
+      (pr-str '{:paths ["test-resources"]
+                :pods  {retrogradeorbit/bootleg {:version "0.1.9"}}})
+      (is (= "\"<div><p>Test</p></div>\"\n"
+             (test-utils/bb nil "-m" "pod-tests.bootleg"))))))
+
+(deftest ^:skip-windows local-pod-test
+  (test-utils/with-config
+    (pr-str '{:paths ["test-resources"]
+              :pods {pod/test-pod {:path "test-resources/pod"}}})
+    (is (= "42\n" (test-utils/bb nil "-m" "pod-tests.local")))))
+
+(deftest tag-test
+  (test-utils/with-config
+    "{:deps {}
+      :aliases {:foo {:env-vars {:dude #env \"DUDE\"}}}}"
+    (is (= 6 (bb "-e" "(+ 1 2 3)")))))
+
+(deftest merge-deps-test
+  (test-utils/with-config
+    "{:deps {}}"
+    (is (= {1 {:a 1}}
+           (bb "-Sdeps" "{:deps {medley/medley {:mvn/version \"1.4.0\"}}}" "-e" "(require 'medley.core) (medley.core/index-by :a [{:a 1}])")))))

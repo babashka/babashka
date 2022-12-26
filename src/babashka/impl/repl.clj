@@ -9,7 +9,7 @@
    [sci.impl.interpreter :refer [eval-form]]
    [sci.impl.io :as sio]
    [sci.impl.parser :as parser]
-   [sci.impl.vars :as vars]))
+   [sci.impl.utils :as utils]))
 
 (set! *warn-on-reflection* true)
 
@@ -63,13 +63,14 @@
                   (eval-form sci-ctx `(apply require (quote ~m/repl-requires)))))
       :read (or read
                 (fn [_request-prompt request-exit]
-                  (let [v (parser/parse-next sci-ctx in)]
-                    (skip-if-eol in)
-                    (if (or (identical? :repl/quit v)
-                            (identical? :repl/exit v)
-                            (identical? parser/eof v))
-                      request-exit
-                      v))))
+                  (if (nil? (r/peek-char in))
+                    request-exit
+                    (let [v (parser/parse-next sci-ctx in)]
+                      (skip-if-eol in)
+                      (if (or (identical? :repl/quit v)
+                              (identical? :repl/exit v))
+                        request-exit
+                        v)))))
       :eval (or eval
                 (fn [expr]
                   (sci/with-bindings {sci/file "<repl>"
@@ -80,7 +81,7 @@
                     (let [ret (eval-form sci-ctx expr)]
                       ret))))
       :need-prompt (or need-prompt (fn [] true))
-      :prompt (or prompt #(sio/printf "%s=> " (vars/current-ns-name)))
+      :prompt (or prompt #(sio/printf "%s=> " (utils/current-ns-name)))
       :flush (or flush sio/flush)
       :print (or print sio/prn)
       :caught (or caught repl-caught)))))

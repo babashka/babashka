@@ -4,6 +4,8 @@
    [babashka.impl.features :as features]
    [babashka.impl.proxy :as proxy]
    [cheshire.core :as json]
+   [clojure.core.async]
+   [sci.core :as sci]
    [sci.impl.types :as t]))
 
 (def base-custom-map
@@ -78,11 +80,25 @@
     ;; this fixes clojure.lang.Reflector for Java 11
     java.lang.reflect.AccessibleObject
     {:methods [{:name "canAccess"}]}
-    java.lang.reflect.Method
+    java.lang.Package
     {:methods [{:name "getName"}]}
+    java.lang.reflect.Member
+    {:methods [{:name "getModifiers"}]}
+    java.lang.reflect.Method
+    {:methods [{:name "getName"}
+               {:name "getModifiers"}
+               {:name "getParameterTypes"}
+               {:name "getReturnType"}]}
+    java.lang.reflect.Modifier
+    {:methods [{:name "isStatic"}]}
+    java.lang.reflect.Field
+    {:methods [{:name "getName"}
+               {:name "getModifiers"}]}
     java.lang.reflect.Array
     {:methods [{:name "newInstance"}
                {:name "set"}]}
+    java.lang.Runnable
+    {:methods [{:name "run"}]}
     java.net.Inet4Address
     {:methods [{:name "getHostAddress"}]}
     java.net.Inet6Address
@@ -97,9 +113,34 @@
                {:name "aset"}
                {:name "aclone"}]}
     clojure.lang.Compiler
-    {:fields [{:name "specials"}]}
+    {:fields [{:name "specials"}
+              {:name "CHAR_MAP"}]}
     clojure.lang.PersistentHashMap
-    {:fields [{:name "EMPTY"}]}})
+    {:fields [{:name "EMPTY"}]}
+    clojure.lang.APersistentVector
+    {:methods [{:name "indexOf"}]}
+    clojure.lang.LazySeq
+    {:allPublicConstructors true,
+     :methods [{:name "indexOf"}]}
+    clojure.lang.ILookup
+    {:methods [{:name "valAt"}]}
+    clojure.lang.IPersistentMap
+    {:methods [{:name "without"}]}
+    clojure.lang.IPersistentSet
+    {:methods [{:name "disjoin"}]}
+    clojure.lang.Indexed
+    {:methods [{:name "nth"}]}
+    clojure.lang.Ratio
+    {:fields [{:name "numerator"}
+              {:name "denominator"}]}
+    clojure.lang.Agent
+    {:fields [{:name "pooledExecutor"}
+              {:name "soloExecutor"}]}
+    java.util.Iterator
+    {:methods [{:name "hasNext"}
+               {:name "next"}]}
+    java.util.TimeZone
+    {:methods [{:name "getTimeZone"}]}})
 
 (def custom-map
   (cond->
@@ -110,7 +151,56 @@
                                         :parameterTypes ["org.hsqldb.Database"]}]}
                             `java.util.ResourceBundle
                             {:methods [{:name "getBundle"
-                                        :parameterTypes ["java.lang.String","java.util.Locale","java.lang.ClassLoader"]}]})))
+                                        :parameterTypes ["java.lang.String","java.util.Locale",
+                                                         "java.lang.ClassLoader"]}]})))
+
+(def java-net-http-classes
+  "These classes must be initialized at run time since GraalVM 22.1"
+  '[java.net.Authenticator
+    java.net.CookieHandler
+    java.net.CookieManager
+    java.net.CookieStore
+    java.net.CookiePolicy
+    java.net.HttpCookie
+    java.net.PasswordAuthentication
+    java.net.ProxySelector
+    java.net.SocketTimeoutException
+    java.net.http.HttpClient
+    java.net.http.HttpClient$Builder
+    java.net.http.HttpClient$Redirect
+    java.net.http.HttpClient$Version
+    java.net.http.HttpHeaders
+    java.net.http.HttpRequest
+    java.net.http.HttpRequest$BodyPublisher
+    java.net.http.HttpRequest$BodyPublishers
+    java.net.http.HttpRequest$Builder
+    java.net.http.HttpResponse
+    java.net.http.HttpResponse$BodyHandler
+    java.net.http.HttpResponse$BodyHandlers
+    java.net.http.HttpTimeoutException
+    java.net.http.WebSocket
+    java.net.http.WebSocket$Builder
+    java.net.http.WebSocket$Listener
+    java.security.cert.X509Certificate
+    javax.crypto.Mac
+    javax.crypto.spec.SecretKeySpec
+    javax.net.ssl.HostnameVerifier ;; clj-http-lite
+    javax.net.ssl.HttpsURLConnection ;; clj-http-lite
+    javax.net.ssl.KeyManagerFactory
+    javax.net.ssl.SSLContext
+    javax.net.ssl.SSLException
+    javax.net.ssl.SSLParameters
+    javax.net.ssl.SSLSession ;; clj-http-lite
+    javax.net.ssl.TrustManager
+    javax.net.ssl.TrustManagerFactory
+    javax.net.ssl.X509TrustManager
+    jdk.internal.net.http.HttpClientBuilderImpl
+    jdk.internal.net.http.HttpClientFacade
+    jdk.internal.net.http.HttpRequestBuilderImpl
+    jdk.internal.net.http.HttpResponseImpl
+    jdk.internal.net.http.common.MinimalFuture
+    jdk.internal.net.http.websocket.BuilderImpl
+    jdk.internal.net.http.websocket.WebSocketImpl])
 
 (def classes
   `{:all [clojure.lang.ArityException
@@ -165,6 +255,7 @@
           java.lang.ClassNotFoundException
           java.lang.Comparable
           java.lang.Double
+          java.lang.Error
           java.lang.Exception
           java.lang.Float
           java.lang.IllegalArgumentException
@@ -193,10 +284,14 @@
           java.lang.System
           java.lang.Throwable
           ;; java.lang.UnsupportedOperationException
+          java.lang.ref.WeakReference
+          java.lang.ref.ReferenceQueue
+          java.lang.ref.Cleaner
           java.math.BigDecimal
           java.math.BigInteger
           java.math.MathContext
           java.math.RoundingMode
+          java.net.BindException
           java.net.ConnectException
           java.net.DatagramSocket
           java.net.DatagramPacket
@@ -208,54 +303,10 @@
           java.net.SocketException
           java.net.UnknownHostException
           java.net.URI
-          ;; java.net.URL, see below
+          ;; java.net.URL, see custom map
+          java.net.URLConnection
           java.net.URLEncoder
           java.net.URLDecoder
-          ;; java.net.http
-          ~@(when features/java-net-http?
-              '[java.net.Authenticator
-                java.net.CookieHandler
-                java.net.CookieManager
-                java.net.CookieStore
-                java.net.CookiePolicy
-                java.net.HttpCookie
-                java.net.PasswordAuthentication
-                java.net.ProxySelector
-                java.net.http.HttpClient
-                java.net.http.HttpClient$Builder
-                java.net.http.HttpClient$Redirect
-                java.net.http.HttpClient$Version
-                java.net.http.HttpHeaders
-                java.net.http.HttpRequest
-                java.net.http.HttpRequest$BodyPublisher
-                java.net.http.HttpRequest$BodyPublishers
-                java.net.http.HttpRequest$Builder
-                java.net.http.HttpResponse
-                java.net.http.HttpResponse$BodyHandler
-                java.net.http.HttpResponse$BodyHandlers
-                java.net.http.HttpTimeoutException
-                java.net.http.WebSocket
-                java.net.http.WebSocket$Builder
-                java.net.http.WebSocket$Listener
-                java.security.cert.X509Certificate
-                javax.crypto.Mac
-                javax.crypto.spec.SecretKeySpec
-                javax.net.ssl.HostnameVerifier ;; clj-http-lite
-                javax.net.ssl.HttpsURLConnection ;; clj-http-lite
-                javax.net.ssl.KeyManagerFactory
-                javax.net.ssl.SSLContext
-                javax.net.ssl.SSLParameters
-                javax.net.ssl.SSLSession ;; clj-http-lite
-                javax.net.ssl.TrustManager
-                javax.net.ssl.TrustManagerFactory
-                javax.net.ssl.X509TrustManager
-                jdk.internal.net.http.HttpClientBuilderImpl
-                jdk.internal.net.http.HttpClientFacade
-                jdk.internal.net.http.HttpRequestBuilderImpl
-                jdk.internal.net.http.HttpResponseImpl
-                jdk.internal.net.http.common.MinimalFuture
-                jdk.internal.net.http.websocket.BuilderImpl
-                jdk.internal.net.http.websocket.WebSocketImpl])
           ~@(when features/java-nio?
               '[java.nio.ByteBuffer
                 java.nio.ByteOrder
@@ -319,6 +370,7 @@
                 java.time.Year
                 java.time.YearMonth
                 java.time.ZoneRegion
+                java.time.zone.ZoneRules
                 java.time.ZonedDateTime
                 java.time.ZoneId
                 java.time.ZoneOffset
@@ -338,10 +390,26 @@
                 java.time.temporal.Temporal
                 java.time.temporal.TemporalAccessor
                 java.time.temporal.TemporalAdjuster])
+          java.util.concurrent.atomic.AtomicInteger
+          java.util.concurrent.atomic.AtomicLong
+          java.util.concurrent.atomic.AtomicReference
+          java.util.concurrent.CancellationException
+          java.util.concurrent.CompletionException
           java.util.concurrent.ExecutionException
+          java.util.concurrent.Executor
           java.util.concurrent.LinkedBlockingQueue
           java.util.concurrent.ScheduledThreadPoolExecutor
           java.util.concurrent.ThreadPoolExecutor
+          java.util.concurrent.ThreadPoolExecutor$AbortPolicy
+          java.util.concurrent.ThreadPoolExecutor$CallerRunsPolicy
+          java.util.concurrent.ThreadPoolExecutor$DiscardOldestPolicy
+          java.util.concurrent.ThreadPoolExecutor$DiscardPolicy
+          java.util.concurrent.ScheduledExecutorService
+          java.util.concurrent.Future
+          java.util.concurrent.FutureTask
+          java.util.concurrent.CompletableFuture
+          java.util.concurrent.Executors
+          java.util.concurrent.TimeUnit
           java.util.jar.Attributes$Name
           java.util.jar.JarFile
           java.util.jar.JarEntry
@@ -362,19 +430,26 @@
           java.util.Base64$Decoder
           java.util.Base64$Encoder
           java.util.Date
+          java.util.HashMap
+          java.util.IdentityHashMap
+          java.util.InputMismatchException
+          java.util.List
           java.util.Locale
           java.util.Map
           java.util.MissingResourceException
           java.util.NoSuchElementException
           java.util.Optional
           java.util.Properties
+          java.util.Scanner
           java.util.Set
           java.util.StringTokenizer
+          java.util.WeakHashMap
           java.util.UUID
-          java.util.concurrent.CompletableFuture
-          java.util.concurrent.Executors
-          java.util.concurrent.TimeUnit
+          java.util.function.Consumer
           java.util.function.Function
+          java.util.function.BiConsumer
+          java.util.function.BiFunction
+          java.util.function.Predicate
           java.util.function.Supplier
           java.util.zip.Inflater
           java.util.zip.InflaterInputStream
@@ -388,6 +463,8 @@
           java.util.zip.ZipEntry
           java.util.zip.ZipException
           java.util.zip.ZipFile
+          sun.misc.Signal
+          sun.misc.SignalHandler
           ~(symbol "[B")
           ~(symbol "[I")
           ~(symbol "[Ljava.lang.Object;")
@@ -417,6 +494,7 @@
     ;; list above and then everything reachable via the public class will be
     ;; visible in the native image.
     :instance-checks [clojure.lang.AFn
+                      clojure.lang.AFunction
                       clojure.lang.AMapEntry ;; for proxy
                       clojure.lang.APersistentMap ;; for proxy
                       clojure.lang.APersistentSet
@@ -434,12 +512,8 @@
                       clojure.lang.IEditableCollection
                       clojure.lang.IMapEntry
                       clojure.lang.IMeta
-                      clojure.lang.ILookup
                       clojure.lang.IPersistentCollection
-                      clojure.lang.IPersistentMap
-                      clojure.lang.IPersistentSet
                       clojure.lang.IPersistentStack
-                      clojure.lang.IPersistentVector
                       clojure.lang.IPersistentList
                       clojure.lang.IRecord
                       clojure.lang.IReduce
@@ -447,10 +521,9 @@
                       clojure.lang.IKVReduce
                       clojure.lang.IRef
                       clojure.lang.ISeq
+                      clojure.lang.IPersistentVector
                       clojure.lang.ITransientVector
-                      clojure.lang.Indexed
                       clojure.lang.Iterate
-                      clojure.lang.LazySeq
                       clojure.lang.LispReader$Resolver
                       clojure.lang.Named
                       clojure.lang.Keyword
@@ -471,11 +544,18 @@
                       clojure.lang.Sequential
                       clojure.lang.Seqable
                       clojure.lang.Volatile
-                      java.util.concurrent.atomic.AtomicInteger
-                      java.util.concurrent.atomic.AtomicLong
+                      ;; the only way to check if something is a channel is to
+                      ;; call instance? on this...
+                      clojure.core.async.impl.channels.ManyToManyChannel
+                      java.lang.AbstractMethodError
+                      java.lang.ExceptionInInitializerError
+                      java.lang.LinkageError
+                      java.lang.ThreadDeath
+                      java.lang.VirtualMachineError
+                      java.net.URLClassLoader
+                      java.sql.Timestamp
+                      java.util.concurrent.TimeoutException
                       java.util.Collection
-                      java.util.List
-                      java.util.Iterator
                       java.util.Map$Entry
                       ~@(when features/xml? ['clojure.data.xml.node.Element])]
     :custom ~custom-map})
@@ -490,66 +570,89 @@
         m (apply hash-map
                  (for [c classes
                        c [(list 'quote c) c]]
-                   c))]
-    (assoc m :public-class
-           (fn [v]
-             (cond (instance? java.lang.Process v)
-                   java.lang.Process
-                   (instance? java.lang.ProcessHandle v)
-                   java.lang.ProcessHandle
-                   (instance? java.lang.ProcessHandle$Info v)
-                   java.lang.ProcessHandle$Info
-                   ;; added for calling .put on .environment from ProcessBuilder
-                   (instance? java.util.Map v)
-                   java.util.Map
-                   ;; added for issue #239 regarding clj-http-lite
-                   ;; can potentially be removed due to fix for #1061
-                   (instance? java.io.ByteArrayOutputStream v)
-                   java.io.ByteArrayOutputStream
-                   (instance? java.security.MessageDigest v)
-                   java.security.MessageDigest
-                   ;; streams
-                   (instance? java.io.InputStream v)
-                   java.io.InputStream
-                   (instance? java.io.OutputStream v)
-                   java.io.OutputStream
-                   ;; java nio
-                   (instance? java.nio.file.Path v)
-                   java.nio.file.Path
-                   (instance? java.nio.file.FileSystem v)
-                   java.nio.file.FileSystem
-                   (instance? java.nio.file.PathMatcher v)
-                   java.nio.file.PathMatcher
-                   (instance? java.util.stream.BaseStream v)
-                   java.util.stream.BaseStream
-                   (instance? java.nio.ByteBuffer v)
-                   java.nio.ByteBuffer
-                   (instance? java.nio.charset.Charset v)
-                   java.nio.charset.Charset
-                   (instance? java.nio.charset.CharsetEncoder v)
-                   java.nio.charset.CharsetEncoder
-                   (instance? java.nio.CharBuffer v)
-                   java.nio.CharBuffer
-                   (instance? java.nio.channels.FileChannel v)
-                   java.nio.channels.FileChannel
-                   (instance? java.net.CookieStore v)
-                   java.net.CookieStore
-                   ;; this makes interop on reified classes work
-                   ;; see java_net_http_test/interop-test
-                   (instance? sci.impl.types.IReified v)
-                   (first (t/getInterfaces v))
-                   ;; fix for #1061
-                   (instance? java.io.Closeable v)
-                   java.io.Closeable
-                   (instance? java.nio.file.attribute.BasicFileAttributes v)
-                   java.nio.file.attribute.BasicFileAttributes
-                   ;; keep commas for merge friendliness
-                   ,,,)))))
+                   c))
+        m (assoc m :public-class
+                 (fn [v]
+                   ;; NOTE: a series of instance check, so far, is still cheaper
+                   ;; than piggybacking on defmulti or defprotocol
+                   (cond (instance? java.lang.Process v)
+                         java.lang.Process
+                         (instance? java.lang.ProcessHandle v)
+                         java.lang.ProcessHandle
+                         (instance? java.lang.ProcessHandle$Info v)
+                         java.lang.ProcessHandle$Info
+                         ;; added for calling .put on .environment from ProcessBuilder
+                         (instance? java.util.Map v)
+                         java.util.Map
+                         ;; added for issue #239 regarding clj-http-lite
+                         ;; can potentially be removed due to fix for #1061
+                         (instance? java.io.ByteArrayOutputStream v)
+                         java.io.ByteArrayOutputStream
+                         (instance? java.security.MessageDigest v)
+                         java.security.MessageDigest
+                         ;; streams
+                         (instance? java.io.InputStream v)
+                         java.io.InputStream
+                         (instance? java.io.OutputStream v)
+                         java.io.OutputStream
+                         ;; java nio
+                         (instance? java.nio.file.Path v)
+                         java.nio.file.Path
+                         (instance? java.nio.file.FileSystem v)
+                         java.nio.file.FileSystem
+                         (instance? java.nio.file.PathMatcher v)
+                         java.nio.file.PathMatcher
+                         (instance? java.util.stream.BaseStream v)
+                         java.util.stream.BaseStream
+                         (instance? java.nio.ByteBuffer v)
+                         java.nio.ByteBuffer
+                         (instance? java.nio.charset.Charset v)
+                         java.nio.charset.Charset
+                         (instance? java.nio.charset.CharsetEncoder v)
+                         java.nio.charset.CharsetEncoder
+                         (instance? java.nio.CharBuffer v)
+                         java.nio.CharBuffer
+                         (instance? java.nio.channels.FileChannel v)
+                         java.nio.channels.FileChannel
+                         (instance? java.net.CookieStore v)
+                         java.net.CookieStore
+                         ;; this makes interop on reified classes work
+                         ;; see java_net_http_test/interop-test
+                         (instance? sci.impl.types.IReified v)
+                         (first (t/getInterfaces v))
+                         ;; fix for #1061
+                         (instance? java.io.Closeable v)
+                         java.io.Closeable
+                         (instance? java.nio.file.attribute.BasicFileAttributes v)
+                         java.nio.file.attribute.BasicFileAttributes
+                         (instance? java.util.concurrent.Future v)
+                         java.util.concurrent.Future
+                         (instance? java.util.concurrent.ScheduledExecutorService v)
+                         java.util.concurrent.ScheduledExecutorService
+                         (instance? java.util.Iterator v)
+                         java.util.Iterator
+                         ;; keep commas for merge friendliness
+                         ,,,)))
+        m (assoc m (list 'quote 'clojure.lang.Var) 'sci.lang.Var)
+        m (assoc m (list 'quote 'clojure.lang.Namespace) 'sci.lang.Namespace)]
+    m))
 
-(def class-map (gen-class-map))
+
+(def class-map*
+  "This contains mapping of symbol to class of all classes that are
+  allowed to be initialized at build time."
+  (gen-class-map))
+
+(def class-map
+  "A delay to delay initialization of java-net-http classes to run time, since GraalVM 22.1"
+  (delay (persistent! (reduce (fn [acc c]
+                                (assoc! acc c (Class/forName (str c))))
+                              (transient class-map*) (when features/java-net-http?
+                                                       java-net-http-classes)))))
 
 (def imports
-  '{Appendable java.lang.Appendable
+  '{AbstractMethodError java.lang.AbstractMethodError
+    Appendable java.lang.Appendable
     ArithmeticException java.lang.ArithmeticException
     AssertionError java.lang.AssertionError
     BigDecimal java.math.BigDecimal
@@ -563,7 +666,9 @@
     ClassNotFoundException java.lang.ClassNotFoundException
     Comparable java.lang.Comparable
     Double java.lang.Double
+    Error java.lang.Error
     Exception java.lang.Exception
+    ExceptionInInitializerError java.lang.ExceptionInInitializerError
     IndexOutOfBoundsException java.lang.IndexOutOfBoundsException
     IllegalArgumentException java.lang.IllegalArgumentException
     IllegalStateException java.lang.IllegalStateException
@@ -573,6 +678,7 @@
     File java.io.File
     Float java.lang.Float
     Long java.lang.Long
+    LinkageError java.lang.LinkageError
     Math java.lang.Math
     NullPointerException java.lang.NullPointerException
     Number java.lang.Number
@@ -589,11 +695,15 @@
     System java.lang.System
     Thread java.lang.Thread
     Throwable java.lang.Throwable
+    VirtualMachineError java.lang.VirtualMachineError
+    ThreadDeath java.lang.ThreadDeath
     ;; UnsupportedOperationException java.lang.UnsupportedOperationException
     })
 
 (defn reflection-file-entries []
-  (let [entries (vec (for [c (sort (:all classes))
+  (let [entries (vec (for [c (sort (concat (:all classes)
+                                           (when features/java-net-http?
+                                             java-net-http-classes)))
                            :let [class-name (str c)]]
                        {:name class-name
                         :allPublicMethods true
@@ -627,7 +737,8 @@
   (let [all-entries (reflection-file-entries)]
     (spit (or
            (first args)
-           "resources/META-INF/native-image/babashka/babashka/reflect-config.json") (json/generate-string all-entries {:pretty true}))))
+           "resources/META-INF/native-image/babashka/babashka/reflect-config.json")
+          (json/generate-string all-entries {:pretty true}))))
 
 (defn public-declared-method? [c m]
   (and (= c (.getDeclaringClass m))
@@ -643,18 +754,25 @@
        (sort-by :name)
        (vec)))
 
-(defn all-methods []
+(defn all-classes []
+  "Returns every java.lang.Class instance Babashka supports."
   (->> (reflection-file-entries)
        (map :name)
-       (map #(Class/forName %))
-       (mapcat public-declared-method-names)))
+       (map #(Class/forName %))))
+
+(defn all-methods []
+  (mapcat public-declared-method-names (all-classes)))
+
+(def cns (sci/create-ns 'babashka.classes nil))
+
+(def classes-namespace
+  {:obj cns
+   'all-classes (sci/copy-var all-classes cns)})
 
 (comment
   (public-declared-method-names java.net.URL)
   (public-declared-method-names java.util.Properties)
 
-  (->> (reflection-file-entries)
-       (map :name)
-       (map #(Class/forName %)))
+  (all-classes)
 
   )

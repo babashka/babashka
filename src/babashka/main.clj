@@ -7,10 +7,12 @@
    [babashka.fs :as fs]
    [babashka.impl.bencode :refer [bencode-namespace]]
    [babashka.impl.cheshire :refer [cheshire-core-namespace]]
-   [babashka.impl.classes :as classes]
+   [babashka.impl.classes :as classes :refer [classes-namespace]]
    [babashka.impl.classpath :as cp :refer [classpath-namespace]]
+   [babashka.impl.cli :as cli]
    [babashka.impl.clojure.core :as core :refer [core-extras]]
-   [babashka.impl.clojure.core.async :refer [async-namespace async-protocols-namespace]]
+   [babashka.impl.clojure.core.async :refer [async-namespace
+                                             async-protocols-namespace]]
    [babashka.impl.clojure.instant :as instant]
    [babashka.impl.clojure.java.browse :refer [browse-namespace]]
    [babashka.impl.clojure.java.io :refer [io-namespace]]
@@ -18,7 +20,9 @@
    [babashka.impl.clojure.main :as clojure-main :refer [demunge]]
    [babashka.impl.clojure.math :refer [math-namespace]]
    [babashka.impl.clojure.stacktrace :refer [stacktrace-namespace]]
-   [babashka.impl.clojure.tools.reader-types :refer [edn-namespace reader-types-namespace]]
+   [babashka.impl.clojure.tools.reader :refer [reader-namespace]]
+   [babashka.impl.clojure.tools.reader-types :refer [edn-namespace
+                                                     reader-types-namespace]]
    [babashka.impl.clojure.zip :refer [zip-namespace]]
    [babashka.impl.common :as common]
    [babashka.impl.core  :as bbcore]
@@ -26,16 +30,18 @@
    [babashka.impl.data :as data]
    [babashka.impl.datafy :refer [datafy-namespace]]
    [babashka.impl.deps :as deps :refer [deps-namespace]]
+   [babashka.impl.edamame :refer [edamame-namespace]]
    [babashka.impl.error-handler :refer [error-handler]]
    [babashka.impl.features :as features]
    [babashka.impl.fs :refer [fs-namespace]]
+   [babashka.impl.nrepl-server :refer [nrepl-server-namespace]]
    [babashka.impl.pods :as pods]
    [babashka.impl.pprint :refer [pprint-namespace]]
    [babashka.impl.print-deps :as print-deps]
    [babashka.impl.process :refer [process-namespace]]
    [babashka.impl.protocols :refer [protocols-namespace]]
    [babashka.impl.proxy :refer [proxy-fn]]
-   [babashka.impl.reify :refer [reify-fn]]
+   [babashka.impl.reify2 :refer [reify-fn]]
    [babashka.impl.repl :as repl]
    [babashka.impl.rewrite-clj :as rewrite]
    [babashka.impl.server :refer [clojure-core-server-namespace]]
@@ -52,11 +58,13 @@
    [hf.depstar.uberjar :as uberjar]
    [sci.addons :as addons]
    [sci.core :as sci]
+   [sci.ctx-store :as ctx-store]
+   [sci.impl.copy-vars :as sci-copy-vars]
+   [sci.impl.io :as sio]
    [sci.impl.namespaces :as sci-namespaces]
    [sci.impl.types :as sci-types]
    [sci.impl.unrestrict :refer [*unrestricted*]]
-   [sci.impl.vars :as vars]
-   [sci.impl.io :as sio])
+   [sci.impl.vars :as vars])
   (:gen-class))
 
 (def windows?
@@ -81,16 +89,19 @@
 
 (def signal-ns {'pipe-signal-received? (sci/copy-var pipe-signal-received? (sci/create-ns 'babashka.signal nil))})
 
+(sci/enable-unrestricted-access!)
 (sci/alter-var-root sci/in (constantly *in*))
 (sci/alter-var-root sci/out (constantly *out*))
 (sci/alter-var-root sci/err (constantly *err*))
+(sci/alter-var-root sci/read-eval (constantly *read-eval*))
 
 (set! *warn-on-reflection* true)
 ;; To detect problems when generating the image, run:
 ;; echo '1' | java -agentlib:native-image-agent=config-output-dir=/tmp -jar target/babashka-xxx-standalone.jar '...'
 ;; with the java provided by GraalVM.
 
-(def version (str/trim (slurp (io/resource "BABASHKA_VERSION"))))
+(def version common/version)
+
 (defn parse-version [version]
   (mapv #(Integer/parseInt %)
         (-> version
@@ -115,7 +126,8 @@
      "socket-repl"
      "nrepl-server"
      "describe"
-     "print-deps") true
+     "print-deps"
+     "prepare") true
     false))
 
 (defn print-error [& msgs]
@@ -138,10 +150,11 @@ Global opts:
 
   -cp, --classpath  Classpath to use. Overrides bb.edn classpath.
   --debug           Print debug information and internal stacktrace in case of exception.
-  --force           Passes -Sforce to deps.clj, forcing recalculation of the classpath.
   --init <file>     Load file after any preloads and prior to evaluation/subcommands.
   --config <file>   Replacing bb.edn with file. Relative paths are resolved relative to file.
   --deps-root <dir> Treat dir as root of relative paths in config.
+  -Sforce           Force recalculation of the classpath (don't use the cache)
+  -Sdeps            Deps data to use as the last deps file to be merged
 
 Help:
 
@@ -155,6 +168,7 @@ Evaluation:
   -e, --eval <expr>    Evaluate an expression.
   -f, --file <path>    Evaluate a file.
   -m, --main <ns|var>  Call the -main function from a namespace or call a fully qualified var.
+  -x, --exec <var>     Call the fully qualified var. Args are parsed by babashka CLI.
 
 REPL:
 
@@ -175,6 +189,7 @@ Packaging:
 
   uberscript <file> [eval-opt]  Collect all required namespaces from the classpath into a single file. Accepts additional eval opts, like `-m`.
   uberjar    <jar>  [eval-opt]  Similar to uberscript but creates jar file.
+  prepare                       Download deps & pods defined in bb.edn and cache their metadata. Only an optimization, this will happen on demand when needed.
 
 In- and output flags (only to be used with -e one-liners):
 
@@ -244,6 +259,7 @@ Use bb run --help to show this help output.
  :feature/yaml       %s
  :feature/jdbc       %s
  :feature/postgresql %s
+ :feature/sqlite %s
  :feature/hsqldb     %s
  :feature/oracledb   %s
  :feature/httpkit-client %s
@@ -262,8 +278,8 @@ Use bb run --help to show this help output.
     features/xml?
     features/yaml?
     features/jdbc?
-    features/sqlite?
     features/postgresql?
+    features/sqlite?
     features/hsqldb?
     features/oracledb?
     features/httpkit-client?
@@ -289,27 +305,24 @@ Use bb run --help to show this help output.
         s (slurp f)]
     (sci/with-bindings {sci/ns @sci/ns
                         sci/file (.getAbsolutePath f)}
-      (sci/eval-string* @common/ctx s))))
+      (sci/eval-string* (common/ctx) s))))
 
 (defn start-socket-repl! [address ctx]
   (socket-repl/start-repl! address ctx))
 
-(defn start-nrepl! [address ctx]
-  (let [dev? (= "true" (System/getenv "BABASHKA_DEV"))
-        nrepl-opts (nrepl-server/parse-opt address)
-        nrepl-opts (assoc nrepl-opts
-                          :debug dev?
-                          :describe {"versions" {"babashka" version}}
-                          :thread-bind [core/warn-on-reflection])]
-    (nrepl-server/start-server! ctx nrepl-opts)
-    (binding [*out* *err*]
-      (println "For more info visit: https://book.babashka.org/#_nrepl")))
+(defn start-nrepl! [address]
+  (let [opts (nrepl-server/parse-opt address)]
+    (babashka.impl.nrepl-server/start-server! opts))
+  (binding [*out* *err*]
+    (println "For more info visit: https://book.babashka.org/#_nrepl"))
   ;; hang until SIGINT
   @(promise))
 
 (def aliases
   (cond->
-      '{tools.cli clojure.tools.cli
+      '{str clojure.string
+        set clojure.set
+        tools.cli clojure.tools.cli
         edn clojure.edn
         wait babashka.wait
         signal babashka.signal
@@ -335,6 +348,11 @@ Use bb run --help to show this help output.
 
 (require 'babashka.impl.instaparse)
 
+(defn catvec [& xs]
+  (into [] cat xs))
+
+(def sci-ns (sci/create-ns 'sci.core))
+
 (def namespaces
   (cond->
       {'user {'*input* (reify
@@ -344,6 +362,7 @@ Use bb run --help to show this help output.
        'clojure.tools.cli tools-cli-namespace
        'clojure.java.shell shell-namespace
        'babashka.core bbcore/core-namespace
+       'babashka.nrepl.server nrepl-server-namespace
        'babashka.wait wait-namespace
        'babashka.signal signal-ns
        'clojure.java.io io-namespace
@@ -358,10 +377,12 @@ Use bb run --help to show this help output.
                       'repl (sci/new-var 'repl
                                          (fn [& opts]
                                            (let [opts (apply hash-map opts)]
-                                             (repl/start-repl! @common/ctx opts))) {:ns clojure-main-ns})}
+                                             (repl/start-repl! (common/ctx) opts))) {:ns clojure-main-ns})
+                      'with-bindings (sci/copy-var clojure-main/with-bindings clojure-main-ns)}
        'clojure.test t/clojure-test-namespace
        'clojure.math math-namespace
        'babashka.classpath classpath-namespace
+       'babashka.classes classes-namespace
        'clojure.pprint pprint-namespace
        'babashka.curl curl-namespace
        'babashka.fs fs-namespace
@@ -376,13 +397,28 @@ Use bb run --help to show this help output.
        'babashka.tasks tasks-namespace
        'clojure.tools.reader.edn edn-namespace
        'clojure.tools.reader.reader-types reader-types-namespace
+       'clojure.tools.reader reader-namespace
        'clojure.core.async async-namespace
        'clojure.core.async.impl.protocols async-protocols-namespace
        'rewrite-clj.node rewrite/node-namespace
        'rewrite-clj.paredit rewrite/paredit-namespace
        'rewrite-clj.parser rewrite/parser-namespace
        'rewrite-clj.zip rewrite/zip-namespace
-       'rewrite-clj.zip.subedit rewrite/subedit-namespace}
+       'rewrite-clj.zip.subedit rewrite/subedit-namespace
+       'clojure.core.rrb-vector (if features/rrb-vector?
+                                  @(resolve 'babashka.impl.rrb-vector/rrb-vector-namespace)
+                                  {'catvec (sci/copy-var catvec
+                                                         (sci/create-ns 'clojure.core.rrb-vector))})
+       'edamame.core edamame-namespace
+       'sci.core {'format-stacktrace (sci/copy-var sci/format-stacktrace sci-ns)
+                  'stacktrace (sci/copy-var sci/stacktrace sci-ns)
+                  ;; 'eval-string (sci/copy-var sci/eval-string sci-ns)
+                  ;; 'eval-string* (sci/copy-var sci/eval-string* sci-ns)
+                  ;; 'init (sci/copy-var sci/init sci-ns)
+                  ;; 'fork (sci/copy-var sci/fork sci-ns)
+                  }
+       'babashka.cli cli/cli-namespace
+       }
     features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace)
                           'clojure.data.xml.event @(resolve 'babashka.impl.xml/xml-event-namespace)
                           'clojure.data.xml.tree @(resolve 'babashka.impl.xml/xml-tree-namespace))
@@ -524,9 +560,6 @@ Use bb run --help to show this help output.
           ("--verbose") (recur (next options)
                                (assoc opts-map
                                       :verbose? true))
-          ("--force") (recur (next options)
-                             (assoc opts-map
-                                    :force? true))
           ("--describe") (recur (next options)
                                 (assoc opts-map
                                        :describe? true))
@@ -620,6 +653,12 @@ Use bb run --help to show this help output.
                    :command-line-args (if (= "--" (second options))
                                         (nthrest options 2)
                                         (rest options))))
+          ("--exec", "-x",)
+          (let [options (next options)]
+            (assoc opts-map :exec (first options)
+                   :command-line-args (if (= "--" (second options))
+                                        (nthrest options 2)
+                                        (rest options))))
           ("--run")
           (parse-run-opts opts-map (next options))
           ("--tasks")
@@ -627,6 +666,10 @@ Use bb run --help to show this help output.
                  :command-line-args (next options))
           ("--print-deps")
           (parse-print-deps-opts opts-map (next options))
+          ("--prepare")
+          (let [options (next options)]
+            (recur (next options)
+                   (assoc opts-map :prepare true)))
           ;; fallback
           (if (and opts-map
                    (some opts-map [:file :jar :socket-repl :expressions :main :run]))
@@ -661,6 +704,12 @@ Use bb run --help to show this help output.
         ("--init")
         (recur (nnext options) (assoc opts-map :init (second options)))
 
+        ("--force" "-Sforce")
+        (recur (next options) (assoc opts-map :force? true))
+
+        ("-Sdeps")
+        (recur (nnext options) (assoc opts-map :merge-deps (second options)))
+
         ("--config")
         (recur (nnext options) (assoc opts-map :config (second options)))
 
@@ -668,6 +717,15 @@ Use bb run --help to show this help output.
         (recur (nnext options) (assoc opts-map :deps-root (second options)))
         [options opts-map])
       [options opts-map])))
+
+(defn parse-file-opt
+  [options opts-map]
+  (let [opt (first options)
+        opts-key (if (str/ends-with? opt ".jar")
+                   :jar :file)]
+    (assoc opts-map
+           opts-key opt
+           :command-line-args (next options))))
 
 (defn parse-opts
   ([options] (parse-opts options nil))
@@ -678,29 +736,51 @@ Use bb run --help to show this help output.
              ;; FILE > TASK > SUBCOMMAND
              (cond
                (.isFile (io/file opt))
-               (if (str/ends-with? opt ".jar")
-                 (assoc opts-map
-                        :jar opt
-                        :command-line-args (next options))
-                 (assoc opts-map
-                        :file opt
-                        :command-line-args (next options)))
+               (if (or (:file opts-map) (:jar opts-map))
+                 opts-map ; we've already parsed the file opt
+                 (parse-file-opt options opts-map))
+
                (contains? tasks opt)
                (assoc opts-map
                       :run opt
                       :command-line-args (next options))
+
                (command? opt)
                (recur (cons (str "--" opt) (next options)) opts-map)
+
                :else
                (parse-args options opts-map))))))
 
 (def env (atom {}))
 
+(def pod-namespaces (volatile! {}))
+
+(defn download-only?
+  "If we're preparing pods for another OS / arch, don't try to run them."
+  []
+  (let [env-os-name (System/getenv "BABASHKA_PODS_OS_NAME")
+        env-os-name-present? (not (str/blank? env-os-name))
+        sys-os-name (System/getProperty "os.name")
+        env-os-arch (System/getenv "BABASHKA_PODS_OS_ARCH")
+        env-os-arch-present? (not (str/blank? env-os-arch))
+        sys-os-arch (System/getProperty "os.arch")]
+    (when @common/debug
+      (binding [*out* *err*]
+        (println "System OS name:" sys-os-name)
+        (when env-os-name-present? (println "BABASHKA_PODS_OS_NAME:" env-os-name))
+        (println "System OS arch:" sys-os-arch)
+        (when env-os-arch-present? (println "BABASHKA_PODS_OS_ARCH:" env-os-arch))))
+    (cond
+      env-os-name-present? (not= env-os-name sys-os-name)
+      env-os-arch-present? (not= env-os-arch sys-os-arch))))
+
 (defn exec [cli-opts]
   (binding [*unrestricted* true]
     (sci/binding [core/warn-on-reflection @core/warn-on-reflection
+                  core/unchecked-math @core/unchecked-math
                   core/data-readers @core/data-readers
-                  sci/ns @sci/ns]
+                  sci/ns @sci/ns
+                  sci/print-length @sci/print-length]
       (let [{version-opt :version
              :keys [:shell-in :edn-in :shell-out :edn-out
                     :help :file :command-line-args
@@ -710,11 +790,13 @@ Use bb run --help to show this help output.
                     :main :uberscript :describe?
                     :jar :uberjar :clojure
                     :doc :run :list-tasks
-                    :print-deps]}
+                    :print-deps :prepare]
+             exec-fn :exec}
             cli-opts
             _ (when debug (vreset! common/debug true))
             _ (do ;; set properties
                 (when main (System/setProperty "babashka.main" main))
+                ;; TODO: what about exec here?
                 (System/setProperty "babashka.version" version))
             read-next (fn [*in*]
                         (if (pipe-signal-received?)
@@ -746,29 +828,51 @@ Use bb run --help to show this help output.
             _ (when jar
                 (cp/add-classpath jar))
             load-fn (fn [{:keys [:namespace :reload]}]
-                      (or (when-let [{:keys [:loader]}
-                                     @cp/cp-state]
-                            (if ;; ignore built-in namespaces when uberscripting, unless with :reload
-                                (and uberscript
-                                     (not reload)
-                                     (or (contains? namespaces namespace)
-                                         (contains? sci-namespaces/namespaces namespace)))
-                              ""
-                              (when-let [res (cp/source-for-namespace loader namespace nil)]
-                                (if uberscript
-                                  (do (swap! uberscript-sources conj (:source res))
-                                      (uberscript/uberscript {:ctx @common/ctx
-                                                              :expressions [(:source res)]})
-                                      {})
-                                  res))))
-                          (case namespace
-                            clojure.spec.alpha
-                            (binding [*out* *err*]
-                              (println "[babashka] WARNING: Use the babashka-compatible version of clojure.spec.alpha, available here: https://github.com/babashka/spec.alpha"))
-                            clojure.core.specs.alpha
-                            (binding [*out* *err*]
-                              (println "[babashka] WARNING: clojure.core.specs.alpha is removed from the classpath, unless you explicitly add the dependency."))
-                            nil)))
+                      (let [{:keys [loader]}
+                            @cp/cp-state]
+                        (or
+                         (when ;; ignore built-in namespaces when uberscripting, unless with :reload
+                             (and uberscript
+                                  (not reload)
+                                  (or (contains? namespaces namespace)
+                                      (contains? sci-namespaces/namespaces namespace)))
+                           "")
+                         ;; pod namespaces go before namespaces from source,
+                         ;; unless reload is used
+                         (when-not reload
+                           (when-let [pod (get @pod-namespaces namespace)]
+                             (if uberscript
+                               (do
+                                 (swap! uberscript-sources conj
+                                        (format
+                                         "(babashka.pods/load-pod '%s \"%s\" '%s)\n"
+                                         (:pod-spec pod) (:version (:opts pod))
+                                         (dissoc (:opts pod)
+                                                 :version :metadata)))
+                                 {})
+                               (pods/load-pod (:pod-spec pod) (:opts pod)))))
+                         (when loader
+                           (when-let [res (cp/source-for-namespace loader namespace nil)]
+                             (if uberscript
+                               (do (swap! uberscript-sources conj (:source res))
+                                   (uberscript/uberscript {:ctx (common/ctx)
+                                                           :expressions [(:source res)]})
+                                   {})
+                               res)))
+                         (let [rps (cp/resource-paths namespace)
+                               rps (mapv #(str "src/babashka/" %) rps)]
+                           (when-let [url (some #(io/resource %) rps)]
+                             (let [source (slurp url)]
+                               {:file (str url)
+                                :source source})))
+                         (case namespace
+                           clojure.spec.alpha
+                           (binding [*out* *err*]
+                             (println "[babashka] WARNING: Use the babashka-compatible version of clojure.spec.alpha, available here: https://github.com/babashka/spec.alpha"))
+                           clojure.core.specs.alpha
+                           (binding [*out* *err*]
+                             (println "[babashka] WARNING: clojure.core.specs.alpha is removed from the classpath, unless you explicitly add the dependency."))
+                           nil))))
             main (if (and jar (not main))
                    (when-let [res (cp/getResource
                                    (cp/loader jar)
@@ -780,10 +884,10 @@ Use bb run --help to show this help output.
                   :namespaces (-> namespaces
                                   (assoc 'clojure.core
                                          (assoc core-extras
-                                                'load-file (sci-namespaces/core-var 'load-file load-file*))))
+                                                'load-file (sci-copy-vars/new-var 'load-file load-file*))))
                   :env env
                   :features #{:bb :clj}
-                  :classes classes/class-map
+                  :classes @classes/class-map
                   :imports classes/imports
                   :load-fn load-fn
                   :uberscript uberscript
@@ -792,7 +896,11 @@ Use bb run --help to show this help output.
                   :proxy-fn proxy-fn}
             opts (addons/future opts)
             sci-ctx (sci/init opts)
-            _ (vreset! common/ctx sci-ctx)
+            _ (ctx-store/reset-ctx! sci-ctx)
+            _ (when-let [pods (:pods @common/bb-edn)]
+                (when-let [pod-metadata (pods/load-pods-metadata
+                                          pods {:download-only (download-only?)})]
+                  (vreset! pod-namespaces pod-metadata)))
             preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim))
             [expressions exit-code]
             (cond expressions [expressions nil]
@@ -805,6 +913,9 @@ Use bb run --help to show this help output.
                                    "-main")]
                     [[(format "(ns user (:require [%1$s])) (apply %1$s/%2$s *command-line-args*)"
                               ns var-name)] nil])
+                  exec-fn
+                  (let [sym (symbol exec-fn)]
+                    [[(cli/exec-fn-snippet sym)] nil])
                   run (if (:run-help cli-opts)
                         [(print-run-help) 0]
                         (do
@@ -860,10 +971,11 @@ Use bb run --help to show this help output.
                        describe?
                        [(print-describe) 0]
                        repl [(repl/start-repl! sci-ctx) 0]
-                       nrepl [(start-nrepl! nrepl sci-ctx) 0]
+                       nrepl [(start-nrepl! nrepl) 0]
                        uberjar [nil 0]
                        list-tasks [(tasks/list-tasks sci-ctx) 0]
                        print-deps [(print-deps/print-deps (:print-deps-format cli-opts)) 0]
+                       prepare [nil 0]
                        uberscript
                        [nil (do (uberscript/uberscript {:ctx sci-ctx
                                                         :expressions expressions})
@@ -872,8 +984,8 @@ Use bb run --help to show this help output.
                        ;; execute code
                        (sci/binding [sci/file abs-path]
                          (try
-                                        ; when evaluating expression(s), add in repl-requires so things like
-                                        ; pprint and dir are available
+                           ;; when evaluating expression(s), add in repl-requires so things like
+                           ;; pprint and dir are available
                            (sci/eval-form sci-ctx `(apply require (quote ~clojure-main/repl-requires)))
                            (loop []
                              (let [in (read-next *in*)]
@@ -919,11 +1031,20 @@ Use bb run --help to show this help output.
             (spit uberscript-out expression :append true)))
         (when uberjar
           (if-let [cp (cp/get-classpath)]
-            (uberjar/run {:dest uberjar
-                          :jar :uber
-                          :classpath cp
-                          :main-class main
-                          :verbose debug})
+            (let [uber-params {:dest uberjar
+                               :jar :uber
+                               :classpath cp
+                               :main-class main
+                               :verbose debug}]
+              (if-let [bb-edn-pods (:pods @common/bb-edn)]
+                (fs/with-temp-dir [bb-edn-dir {}]
+                  (let [bb-edn-resource (fs/file bb-edn-dir "META-INF" "bb.edn")]
+                    (fs/create-dirs (fs/parent bb-edn-resource))
+                    (->> {:pods bb-edn-pods} pr-str (spit bb-edn-resource))
+                    (let [cp-with-bb-edn (str bb-edn-dir cp/path-sep cp)]
+                      (uberjar/run (assoc uber-params
+                                          :classpath cp-with-bb-edn)))))
+                (uberjar/run uber-params)))
             (throw (Exception. "The uberjar task needs a classpath."))))
         exit-code))))
 
@@ -936,16 +1057,33 @@ Use bb run --help to show this help output.
                  (and (= minor-current minor-min)
                       (>= patch-current patch-min)))))))
 
+(defn load-bb-edn [string]
+  (try (edn/read-string {:default tagged-literal} string)
+       (catch java.lang.RuntimeException e
+         (if (re-find #"No dispatch macro for: \"" (.getMessage e))
+           (throw (ex-info "Invalid regex literal found in EDN config, use re-pattern instead" {}))
+           (do (binding [*out* *err*]
+                 (println "Error during loading bb.edn:"))
+               (throw e))))))
+
 (defn main [& args]
   (let [[args global-opts] (parse-global-opts args)
+        {:keys [:jar] :as file-opt} (when (some-> args first io/file .isFile)
+                                      (parse-file-opt args global-opts))
         config (:config global-opts)
-        bb-edn-file (or config
-                        "bb.edn")
-        bb-edn (when (fs/exists? bb-edn-file)
-                 (System/setProperty "babashka.config"
-                                     (.getAbsolutePath (io/file bb-edn-file)))
-                 (let [raw-string (slurp bb-edn-file)
-                       edn (edn/read-string raw-string)
+        merge-deps (:merge-deps global-opts)
+        abs-path #(-> % io/file .getAbsolutePath)
+        bb-edn-file (cond
+                      config (when (fs/exists? config) (abs-path config))
+                      jar (some-> jar cp/loader (cp/resource "META-INF/bb.edn") .toString)
+                      :else (when (fs/exists? "bb.edn") (abs-path "bb.edn")))
+        bb-edn (when (or bb-edn-file merge-deps)
+                 (when bb-edn-file (System/setProperty "babashka.config" bb-edn-file))
+                 (let [raw-string (when bb-edn-file (slurp bb-edn-file))
+                       edn (when bb-edn-file (load-bb-edn raw-string))
+                       edn (if merge-deps
+                             (deps/merge-deps [edn (load-bb-edn merge-deps)])
+                             edn)
                        edn (assoc edn
                                   :raw raw-string
                                   :file bb-edn-file)
@@ -954,13 +1092,14 @@ Use bb run --help to show this help output.
                              (assoc edn :deps-root deps-root)
                              edn)]
                    (vreset! common/bb-edn edn)))
+        ;; _ (.println System/err (str bb-edn))
         min-bb-version (:min-bb-version bb-edn)]
     (when min-bb-version
       (when-not (satisfies-min-version? min-bb-version)
         (binding [*out* *err*]
           (println (str "WARNING: this project requires babashka "
                         min-bb-version " or newer, but you have: " version)))))
-    (exec (parse-opts args global-opts))))
+    (exec (parse-opts args (merge global-opts file-opt)))))
 
 (def musl?
   "Captured at compile time, to know if we are running inside a

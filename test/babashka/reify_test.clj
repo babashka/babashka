@@ -2,6 +2,7 @@
   (:require
    [babashka.test-utils :as test-utils]
    [clojure.edn :as edn]
+   [clojure.string :as str]
    [clojure.test :as test :refer [deftest is testing]]))
 
 (defn bb [input & args]
@@ -51,12 +52,22 @@
 ]")))))
 
 (deftest reify-object
+  (testing "empty methods"
+    (is (str/starts-with?
+         (bb nil "
+(str (reify Object))")
+         "babashka.impl.reify")))
   (testing "toString"
     (is (= ":foo"
            (bb nil "
 (def m (reify Object
   (toString [_] (str :foo))))
 (str m)
+"))))
+  (testing "toString + protocol"
+    (is (= ":dude1:dude2"
+           (bb nil "
+(defprotocol Dude (dude [_])) (def obj (reify Object (toString [_] (str :dude1)) Dude (dude [_] :dude2))) (str (str obj) (dude obj))
 "))))
   (testing "Hashcode still works when only overriding toString"
     (is (number?
@@ -97,3 +108,48 @@
         [x y] (bb nil prog)]
     (is (pos? x))
     (is (zero? y))))
+
+(deftest reify-default-method-test
+  (let [prog '(do (def iter (let [coll [:a :b :c] idx (volatile! -1)]
+                              (reify java.util.Iterator (hasNext [_] (< @idx 2))
+                                (next [_] (nth coll (vswap! idx inc))))))
+                  (def res (volatile! []))
+                  (vswap! res conj (.hasNext iter))
+                  (vswap! res conj (.next iter))
+                  (.forEachRemaining
+                   iter (reify java.util.function.Consumer (accept [_ x] (vswap! res conj x))))
+                  (= [true :a :b :c] @res))]
+    (is (true? (bb nil prog)))))
+
+(deftest reify-multiple-interfaces-test
+  (testing "throws exception"
+    (is (thrown?
+         clojure.lang.ExceptionInfo
+         (bb nil "
+(reify
+  java.lang.Object (toString [_] \"foo\")
+  clojure.lang.Seqable (seq [_] '(1 2 3)))")))))
+
+(deftest reify-runnable-and-garbage-collection-test
+  (is (bb nil "
+(def cleaner (java.lang.ref.Cleaner/create))
+(def deleted? (atom false))
+(defn make-cleanable-ref []
+  (let [obj (Object.)]
+    (.register cleaner obj
+      (reify java.lang.Runnable
+        (run [_]
+          (reset! deleted? true))))
+    nil))
+(defn force-gc []
+  (let [t (atom (Object.))
+        wr (java.lang.ref.WeakReference. @t)]
+    (reset! t nil)
+    (while (or (.get wr)
+               (not @deleted?))
+      (System/gc)
+      (System/runFinalization))))
+(make-cleanable-ref)
+(force-gc)
+@deleted?
+")))

@@ -1,5 +1,6 @@
 (ns babashka.deps
-  (:require [babashka.process :as p]
+  (:require [babashka.impl.process :as pp]
+            [babashka.process :as p]
             [borkdude.deps :as deps]
             [sci.core :as sci]))
 
@@ -26,25 +27,28 @@
 
   (-> @(clojure) :exit) starts a clojure REPL, waits for it
   to finish and returns the exit code from the process."
-  ([] (clojure []))
-  ([args] (clojure args nil))
-  ([args opts]
-   (let [opts (merge {:in  :inherit
-                      :out :inherit
-                      :err :inherit
-                      :shutdown p/destroy-tree}
-                     opts)]
-     (binding [*in* @sci/in
-               *out* @sci/out
-               *err* @sci/err
-               deps/*dir* (:dir opts)
-               deps/*env* (:env opts)
-               deps/*extra-env* (:extra-env opts)
-               deps/*process-fn* (fn
-                                   ([cmd] (p/process cmd opts))
-                                   ([cmd _] (p/process cmd opts)))
-               deps/*exit-fn* (fn
-                                ([_])
-                                ([_exit-code msg]
-                                 (throw (Exception. msg))))]
-       (apply deps/-main (map str args))))))
+  [& args]
+  (let [{:keys [cmd opts prev]} (p/parse-args args)
+        opts (merge {:in  :inherit
+                     :out :inherit
+                     :err :inherit
+                     :shutdown p/destroy-tree}
+                    opts)]
+    (binding [*in* @sci/in
+              *out* @sci/out
+              *err* @sci/err
+              deps/*dir* (:dir opts)
+              deps/*env* (:env opts)
+              deps/*extra-env* (:extra-env opts)
+              deps/*process-fn* (fn
+                                  ([cmd] (pp/process* {:cmd cmd
+                                                       :prev prev
+                                                       :opts opts}))
+                                  ([cmd _] (pp/process* {:cmd cmd
+                                                         :prev prev
+                                                         :opts opts})))
+              deps/*exit-fn* (fn
+                               ([_])
+                               ([_exit-code msg]
+                                (throw (Exception. msg))))]
+      (apply deps/-main cmd))))
