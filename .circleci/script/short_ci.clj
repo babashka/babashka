@@ -153,7 +153,9 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                  :resource_class resource-class
                  :steps (gen-steps shorted?
                                    (filter some?
-                                           [:checkout
+                                           [(when (contains? #{"linux" "linux-aarch64"} platform)
+                                              (run "Check max glibc version" "script/check_glibc.sh"))
+                                            :checkout
                                             {:attach_workspace {:at "/tmp"}}
                                             (run "Pull Submodules" "git submodule init\ngit submodule update")
                                             {:restore_cache
