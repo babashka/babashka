@@ -1,4 +1,4 @@
-(ns short-ci
+(ns gen-ci
   (:require
     [babashka.tasks :as tasks]
     [clj-yaml.core :as yaml]
