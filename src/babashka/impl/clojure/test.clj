@@ -372,7 +372,9 @@
     (print "  actual: ")
     (let [actual (:actual m)]
       (if (instance? Throwable actual)
-        (stack/print-cause-trace actual @stack-trace-depth)
+        (if-let [st (sci/stacktrace actual)]
+          (run! println (sci/format-stacktrace st))
+          (stack/print-cause-trace actual @stack-trace-depth))
         (prn actual)))))
 
 (defmethod report-impl :summary [m]
