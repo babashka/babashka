@@ -16,6 +16,11 @@ A preview of the next release can be installed from
 - [#1446](https://github.com/babashka/babashka/issues/1446): add `pprint/code-dispatch`
 - Update zlib to version `1.2.13` ([@thiagokokada](https://github.com/thiagokokada))
 - [#1454](https://github.com/babashka/babashka/issues/1454): Add `babashka.process` to `print-deps` output
+- Update `deps.clj` / clojure tools to `1.11.1.1208`
+- Add `reader-conditional` function
+- Fix pretty printing (with `clojure.pprint`) of vars
+- Upgrade built-in `spec.alpha`
+- SCI performance improvements: faster JVM interop
 
 ## 1.0.168 (2022-12-07)
 
