@@ -322,10 +322,7 @@
   "Returns a symbol from a symbol or var"
   [x]
   (if (var? x)
-    (let [m (meta x)
-          n (:name m)
-          ns (:ns m)]
-      (symbol (str ns) (str n)))
+    (symbol x)
     x))
 
 (defn- unfn [expr]
@@ -339,10 +336,7 @@
 (defn- res [form]
   (cond
    (keyword? form) form
-   (symbol? form) (cond
-                    (= 'fn form) 'clojure.core/fn ;; make tests pass, fn is not a macro in SCI
-                    (= 'not form) 'clojure.core/not ;; make tests pass, not is not a macro in SCI
-                    :else (c/or (-> form resolve ->sym) form))
+   (symbol? form) (c/or (-> form resolve ->sym) form)
    (sequential? form) (walk/postwalk #(if (symbol? %) (res %) %) (unfn form))
    :else form))
 
