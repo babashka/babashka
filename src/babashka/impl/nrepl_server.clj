@@ -13,7 +13,8 @@
    (let [dev? (= "true" (System/getenv "BABASHKA_DEV"))
          opts (merge {:debug dev?
                       :describe {"versions" {"babashka" common/version}}
-                      :thread-bind [babashka.impl.clojure.core/warn-on-reflection]}
+                      :thread-bind [babashka.impl.clojure.core/warn-on-reflection
+                                    babashka.impl.clojure.core/unchecked-math]}
                      opts)]
      (server/start-server! (common/ctx) opts))))
 

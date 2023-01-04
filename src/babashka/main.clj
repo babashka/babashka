@@ -357,6 +357,7 @@ Use bb run --help to show this help output.
                          sci-types/Eval
                          (eval [_ _ctx _bindings]
                            (force @input-var)))}
+       'clojure.core core-extras
        'clojure.tools.cli tools-cli-namespace
        'clojure.java.shell shell-namespace
        'babashka.core bbcore/core-namespace
@@ -875,10 +876,7 @@ Use bb run --help to show this help output.
                    main)
             ;; TODO: pull more of these values to compile time
             opts {:aliases aliases
-                  :namespaces (-> namespaces
-                                  (assoc 'clojure.core
-                                         (assoc core-extras
-                                                'load-file (sci-copy-vars/new-var 'load-file load-file*))))
+                  :namespaces (assoc-in namespaces ['clojure.core 'load-file] (sci-copy-vars/new-var 'load-file load-file*))
                   :env env
                   :features #{:bb :clj}
                   :classes @classes/class-map
