@@ -87,13 +87,13 @@
             (is (= ":foo0" (:value (read-reply in session @id)))))
           ;; TODO: I don't remember why we created a new ns
           #_(testing "providing an ns value of a non-existing namespace creates the namespace"
-            (bencode/write-bencode os {"op" "eval"
-                                       "code" "(ns-name *ns*)"
-                                       "session" session
-                                       "id" (new-id!)
-                                       "ns" "unicorn"})
-            (let [reply (read-reply in session @id)]
-              (is (= "unicorn" (:value reply))))))
+              (bencode/write-bencode os {"op" "eval"
+                                         "code" "(ns-name *ns*)"
+                                         "session" session
+                                         "id" (new-id!)
+                                         "ns" "unicorn"})
+              (let [reply (read-reply in session @id)]
+                (is (= "unicorn" (:value reply))))))
         (testing "multiple top level expressions results in two value replies"
           (bencode/write-bencode os {"op" "eval"
                                      "code" "(+ 1 2 3) (+ 1 2 3)"
@@ -181,7 +181,11 @@
                                    "session" session "id" (new-id!)})
         (dotimes [_ 3]
           (let [reply (read-reply in session @id)]
-            (is (= "Hello\n" (tu/normalize (:out reply))))))))))
+            (is (= "Hello\n" (tu/normalize (:out reply)))))))
+      (testing "dynamic var can be set!, test unchecked-math"
+        (bencode/write-bencode os {"op" "eval" "code" "(set! *unchecked-math* true)"
+                                   "session" session "id" (new-id!)})
+        (is (= "true" (:value (read-reply in session @id))))))))
 
 (deftest ^:skip-windows nrepl-server-test
   (let [proc-state (atom nil)
