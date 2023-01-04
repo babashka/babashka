@@ -1,13 +1,16 @@
 (ns babashka.impl.nrepl-server-test
   (:require
+   [babashka.impl.nrepl-server :refer [start-server!]]
+   [babashka.nrepl.server :refer [parse-opt stop-server!]]
    [babashka.main :as main]
-   [babashka.nrepl.server :refer [start-server! stop-server! parse-opt]]
    [babashka.test-utils :as tu]
    [babashka.wait :as wait]
    [bencode.core :as bencode]
    [clojure.test :as t :refer [deftest is testing]]
-   [sci.impl.opts :refer [init]])
-  (:import [java.lang ProcessBuilder$Redirect]))
+   [sci.core :as sci]
+   [sci.ctx-store :as ctx-store])
+  (:import
+   [java.lang ProcessBuilder$Redirect]))
 
 (def debug? false)
 
@@ -185,35 +188,36 @@
       (testing "dynamic var can be set!, test unchecked-math"
         (bencode/write-bencode os {"op" "eval" "code" "(set! *unchecked-math* true)"
                                    "session" session "id" (new-id!)})
-        (is (= "true" (:value (read-reply in session @id))))))))
+        (let [reply (read-reply in session @id)]
+          (is (= "true" (:value reply))))))))
 
 (deftest ^:skip-windows nrepl-server-test
   (let [proc-state (atom nil)
-        server-state (atom nil)]
-    (try
-      (if tu/jvm?
-        (let [nrepl-opts (parse-opt "0.0.0.0:1668")
-              nrepl-opts (assoc nrepl-opts
-                                :describe {"versions" {"babashka" main/version}})
-              server (start-server!
-                     (init {:namespaces main/namespaces
-                            :features #{:bb}})
-                     nrepl-opts)]
-          (reset! server-state server))
-        (let [pb (ProcessBuilder. ["./bb" "nrepl-server" "0.0.0.0:1668"])
-              _ (.redirectError pb ProcessBuilder$Redirect/INHERIT)
-              ;; _ (.redirectOutput pb ProcessBuilder$Redirect/INHERIT)
-              ;; env (.environment pb)
-              ;; _ (.put env "BABASHKA_DEV" "true")
-              proc (.start pb)]
-          (reset! proc-state proc)))
-      (babashka.wait/wait-for-port "localhost" 1668)
-      (nrepl-test)
-      (finally
+        server-state (atom nil)
+        ctx (sci/init {:namespaces main/namespaces
+                       :features #{:bb}})]
+    (sci.ctx-store/with-ctx ctx
+      (try
         (if tu/jvm?
-          (stop-server! @server-state)
-          (when-let [proc @proc-state]
-            (.destroy ^Process proc)))))))
+          (let [nrepl-opts (parse-opt "0.0.0.0:1668")
+                nrepl-opts (assoc nrepl-opts
+                                  :describe {"versions" {"babashka" main/version}})
+                server (start-server! nrepl-opts)]
+            (reset! server-state server))
+          (let [pb (ProcessBuilder. ["./bb" "nrepl-server" "0.0.0.0:1668"])
+                _ (.redirectError pb ProcessBuilder$Redirect/INHERIT)
+                ;; _ (.redirectOutput pb ProcessBuilder$Redirect/INHERIT)
+                ;; env (.environment pb)
+                ;; _ (.put env "BABASHKA_DEV" "true")
+                proc (.start pb)]
+            (reset! proc-state proc)))
+        (babashka.wait/wait-for-port "localhost" 1668)
+        (nrepl-test)
+        (finally
+          (if tu/jvm?
+            (stop-server! @server-state)
+            (when-let [proc @proc-state]
+              (.destroy ^Process proc))))))))
 
 ;;;; Scratch
 
