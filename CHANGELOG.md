@@ -9,7 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-...
+- [#1456](https://github.com/babashka/babashka/issues/1456): allow `*warn-on-reflection*` and `*unchecked-math*` to be set in socket REPL and nREPL ([@axks](https://github.com/axks))
 
 ## 1.0.169 (2023-01-03)
 

@@ -1,8 +1,8 @@
 (ns babashka.impl.socket-repl-test
   (:require
-   [babashka.impl.common :as common]
    [babashka.impl.server :refer [clojure-core-server-namespace]]
    [babashka.impl.socket-repl :refer [start-repl! stop-repl!]]
+   [babashka.main :as main]
    [babashka.process :as p]
    [babashka.test-utils :as tu]
    [babashka.wait :as w]
@@ -15,7 +15,7 @@
 
 (set! *warn-on-reflection* true)
 
-(defn socket-command [expr expected]
+(defn socket-command [expr expected & [log?]]
   (with-open [socket (java.net.Socket. "127.0.0.1" 1666)
               reader (io/reader socket)
               sw (java.io.StringWriter.)
@@ -25,7 +25,8 @@
     (loop []
       (when-let [l (try (.readLine ^java.io.BufferedReader reader)
                         (catch java.net.SocketException _ nil))]
-        ;; (prn :l l)
+        (when log?
+          (println "===" l))
         (binding [*out* sw]
           (println l))
         (let [s (str sw)]
@@ -47,7 +48,7 @@
   (when exec?
     (try
       (if tu/jvm?
-        (let [ctx (init {:namespaces {'clojure.core.server clojure-core-server-namespace}
+        (let [ctx (init {:namespaces main/namespaces
                          :features #{:bb}})]
           (ctx-store/reset-ctx! ctx)
           (start-repl! "0.0.0.0:1666" ctx))
@@ -66,6 +67,8 @@
         (is (socket-command "1\n*1" "1")))
       (testing "*ns*"
         (is (socket-command "(ns foo.bar) (ns-name *ns*)" "foo.bar")))
+      (testing "set dyn vars"
+        (is (socket-command "[(set! *warn-on-reflection* true) (set! *unchecked-math* true)]" "[true true]")))
       (finally
         (if tu/jvm?
           (do (stop-repl!)
