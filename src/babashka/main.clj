@@ -775,7 +775,9 @@ Use bb run --help to show this help output.
                   core/unchecked-math @core/unchecked-math
                   core/data-readers @core/data-readers
                   sci/ns @sci/ns
-                  sci/print-length @sci/print-length]
+                  sci/print-length @sci/print-length
+                  ;; when adding vars here, also add them to repl.clj and nrepl_server.clj
+                  ]
       (let [{version-opt :version
              :keys [:shell-in :edn-in :shell-out :edn-out
                     :help :file :command-line-args

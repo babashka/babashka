@@ -52,7 +52,10 @@
   ([sci-ctx {:keys [:init :read :eval :need-prompt :prompt :flush :print :caught]}]
    (let [in @sci/in]
      (sci/binding [core-extras/warn-on-reflection @core-extras/warn-on-reflection
-                   core-extras/unchecked-math @core-extras/unchecked-math]
+                   core-extras/unchecked-math @core-extras/unchecked-math
+                   core-extras/data-readers @core-extras/data-readers
+                   sci/ns @sci/ns
+                   sci/print-length @sci/print-length]
        (m/repl
         :init (or init
                   (fn []
