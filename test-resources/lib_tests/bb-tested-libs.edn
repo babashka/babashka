@@ -65,7 +65,7 @@
  amperity/vault-clj {:git-url "https://github.com/amperity/vault-clj", :test-namespaces [vault.lease-test vault.client.http-test], :manually-added true}
  orchestra/orchestra {:git-url "https://github.com/jeaye/orchestra", :test-namespaces (orchestra.make-fns orchestra.many-fns orchestra.expound-test orchestra.core-test orchestra.reload-test), :test-directories ("test/cljc" "test/clj"), :git-sha "81e5181f7b42e5e2763a2b37db17954f3be0314e"}
  ;; BB-TEST-PATCH: Deleted tasks.clj
- org.clj-commons/clj-http-lite {:git-url "https://github.com/clj-commons/clj-http-lite", :test-namespaces (clj-http.lite.test-runner clj-http.lite.client-test), :test-directories ("bb"), :git-sha "6b53000df55ac05c4ff8e5047a5323fc08a52e8b"}
+ org.clj-commons/clj-http-lite {:git-url "https://github.com/clj-commons/clj-http-lite", :test-namespaces (clj-http.lite.test-runner clj-http.lite.client-test), :test-directories ("bb"), :git-sha "6b53000df55ac05c4ff8e5047a5323fc08a52e8b" :flaky true}
  cprop/cprop {:git-url "https://github.com/tolitius/cprop", :test-namespaces [cprop.smoke-test], :manually-added true}
  org.clojure/data.zip {:git-url "https://github.com/clojure/data.zip", :test-namespaces [clojure.data.zip-test], :manually-added true}
  borkdude/deps {:git-url "https://github.com/borkdude/deps.clj", :test-namespaces [borkdude.deps.smoke-test], :manually-added true}
