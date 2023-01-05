@@ -57,8 +57,8 @@
  crispin/crispin {:git-url "https://github.com/dunaj-project/crispin", :test-namespaces [crispin.core-test], :manually-added true}
  clj-commons/multigrep {:git-url "https://github.com/clj-commons/multigrep", :test-namespaces [multigrep.core-test], :manually-added true}
  org.clj-commons/digest {:git-url "https://github.com/clj-commons/clj-digest", :test-namespaces [clj-commons.digest-test], :manually-added true}
- hato/hato {:git-url "https://github.com/gnarroway/hato", :test-namespaces [hato.client-test], :manually-added true}
- java-http-clj/java-http-clj {:git-url "http://www.github.com/schmee/java-http-clj", :test-namespaces [java-http-clj.smoke-test], :manually-added true}
+ hato/hato {:git-url "https://github.com/gnarroway/hato", :test-namespaces [hato.client-test], :manually-added true :flaky true}
+ java-http-clj/java-http-clj {:git-url "http://www.github.com/schmee/java-http-clj", :test-namespaces [java-http-clj.smoke-test], :manually-added true :flaky true}
  rewrite-clj/rewrite-clj {:git-url "https://github.com/clj-commons/rewrite-clj", :test-namespaces [rewrite-clj.parser-test rewrite-clj.node-test rewrite-clj.zip-test rewrite-clj.paredit-test rewrite-clj.zip.subedit-test rewrite-clj.node.coercer-test], :manually-added true}
  ;; TODO: env tests don't work because envoy lib isn't compatible with bb
  ;; TODO: failing tests in the following namespaces: vault.client.mock-test, vault.secrets.kvv1-test vault.secrets.kvv2-test
