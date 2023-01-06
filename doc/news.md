@@ -5,6 +5,16 @@ you have anything to add. Also see
 [#babashka](https://twitter.com/hashtag/babashka?src=hashtag_click&f=live) on
 Twitter.
 
+## [2022-10](https://twitter.com/search?q=(%23babashka)%20until%3A2022-11-01%20since%3A2022-10-01&src=typed_query&f=live)
+
+- [bb-pod-racer](https://github.com/justone/bb-pod-racer): Speed up development of Babashka pods by Nate Jones
+- [Babashka tasks VSCode plugin](https://marketplace.visualstudio.com/items?itemName=fbeyer.babashka-tasks) by Ferdinand Beyer
+- A [PR](https://github.com/nextjournal/clerk/pull/232) to get Clerk working in babashka
+- [lein2deps](https://github.com/borkdude/lein2deps): lein to deps.edn converter
+- [awyeah-api](https://github.com/grzm/awyeah-api) by Michael Glaesemann v0.8.41 is now available! aws-api for Babashka. Aw yeah!
+- [bbssh](https://github.com/epiccastle/bbssh/releases/tag/v0.2.0) by Crispin Wellington, v0.2.0 released
+- [safely use rsync --archive --delete to backup a directory](https://gist.github.com/stelcodes/ddc8ff53de2192dca7d3fee1081ddb77) by Stel Abrego
+
 ## [2022-09](https://twitter.com/search?q=(%23babashka)%20until%3A2022-10-01%20since%3A2022-09-01&src=typed_query&f=live)
 
 - Introducing [bbin](https://radsmith.com/bbin): a tool to install babashka scripts on your system by Radford Smith
