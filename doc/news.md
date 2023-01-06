@@ -5,6 +5,20 @@ you have anything to add. Also see
 [#babashka](https://twitter.com/hashtag/babashka?src=hashtag_click&f=live) on
 Twitter.
 
+## [2022-11](https://twitter.com/search?q=(%23babashka)%20until%3A2022-12-01%20since%3A2022-11-01&src=typed_query&f=live)
+
+- Registration for a [Babashka workshop](https://clojure.stream/workshops/babashka) with Rahul De at ClojureStream is now open!
+- [Tutkain, a Sublime plugin for clojure based on socket REPL now with support for babashka](https://github.com/eerohele/Tutkain)
+- [Manage git hooks in babashka](https://blaster.ai/blog/posts/manage-git-hooks-w-babashka.html) by Mykhaylo Bilyanskyy
+- [Messing around with babashka](Messing around with Babashka) by Ian Muge
+- [A babashka one liner to inspect data in portal](https://twitter.com/borkdude/status/1597505695800516609)
+- [Using nREPL as a system interface](https://yogthos.net/posts/2022-11-26-nREPL-system-interaction.html) by Dmitri Sotnikov
+- [deep-diff2](https://github.com/lambdaisland/deep-diff2) is now babashka-compatible!
+- [A script to normalize auto-resolved keywords](https://github.com/babashka/babashka/blob/master/examples/normalize-keywords.clj)
+- [Sum up page counts of books from Calibre library with babashka](https://gist.github.com/jeeger/d13159fefaee33c771be979639900ebc) by Jan Seeger
+- [Tiny babashka script that returns a random clojure doc](https://gist.github.com/CarnunMP/c592cd3b6e711d56ddd4ca7832b9b251) by Carnun Marcus-Page
+
+
 ## [2022-10](https://twitter.com/search?q=(%23babashka)%20until%3A2022-11-01%20since%3A2022-10-01&src=typed_query&f=live)
 
 - [bb-pod-racer](https://github.com/justone/bb-pod-racer): Speed up development of Babashka pods by Nate Jones
