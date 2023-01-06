@@ -21,6 +21,7 @@ Twitter.
 - [JVM interop improvements in bb](https://twitter.com/borkdude/status/1606280110692352001)
 - [A little trick to have conditional code for babashka in a .clj file without resorting to .cljc reader conditionals](https://twitter.com/borkdude/status/1599067149187764224)
 - [Get Advent of Code input in babashka](https://gist.github.com/jeeger/6e39fea94ce49e33d1fa43f40cc36630) by Jan Seeger
+- [Grabbing current weather for a city using OpenWeather API](https://gist.github.com/yogthos/f86e63b856e1413180b2262024ece977) by Dmitri Sotnikov
 
 ## [2022-11](https://twitter.com/search?q=%28%23babashka%29%20until%3A2022-12-01%20since%3A2022-11-01&src=typed_query&f=live)
 
