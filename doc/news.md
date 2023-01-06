@@ -5,6 +5,14 @@ you have anything to add. Also see
 [#babashka](https://twitter.com/hashtag/babashka?src=hashtag_click&f=live) on
 Twitter.
 
+<!-- ## [2022-09](https://twitter.com/search?q=(%23babashka)%20until%3A2022-08-01%20since%3A2022-07-01&src=typed_query&f=live) -->
+
+## [2022-08](https://twitter.com/search?q=(%23babashka)%20until%3A2022-08-01%20since%3A2022-07-01&src=typed_query&f=live)
+- It's babashka's third birthday on August 9th 2022!
+- [etaoin](https://github.com/clj-commons/etaoin), Pure Clojure Webdriver protocol implementation, is now babashka-compatible!
+- [xforms](https://github.com/cgrand/xforms) is now babashka-compatible!
+- [squint](https://github.com/squint-cljs/squint) and [cherry](https://github.com/squint-cljs/cherry) are CLJS-compilers that work with babashka!
+
 ## [2022-07](https://twitter.com/search?q=(%23babashka)%20until%3A2022-08-01%20since%3A2022-07-01&src=typed_query&f=live)
 
 - [Recursive document transformations with Pandoc and Clojure](https://play.teod.eu/document-transform-pandoc-clojure/) by Teodor Heggelund
