@@ -5,8 +5,25 @@ you have anything to add. Also see
 [#babashka](https://twitter.com/hashtag/babashka?src=hashtag_click&f=live) on
 Twitter.
 
+## [2022-12](https://twitter.com/search?q=(%23babashka%20OR%20babashka)%20until%3A2023-01-01%20since%3A2022-12-01&src=typed_query&f=live)
+
+- Releases: [1.0.168](https://github.com/babashka/babashka/blob/master/CHANGELOG.md).
+- [How GraalVM Helped Create a Fast-Starting Scripting Environment for Clojure](https://medium.com/graalvm/babashka-how-graalvm-helped-create-a-fast-starting-scripting-environment-for-clojure-b0fcc38b0746)
+- [http-client](https://github.com/babashka/http-client): a new HTTP client library for babashka
+- [How to Do Things With Babashka](https://presumably.de/how-to-do-things-with-babashka.html) by Paulus Esterhazy (2022-12)
+- [Using Babashka to Get Electricity Prices](https://www.karimarttila.fi/clojure/2022/12/04/using-babashka-to-get-electricity-prices) by Kari Marttila
+- [Adding prompts to your babashka scripts with dialog](https://www.pixelated-noise.com/blog/2022/12/09/dialog-and-babashka/index.html) by A.C. Danvers
+- [Scraping an HTML dictionary with Babashka and Bootleg](https://blog.exupero.org/scraping-an-html-dictionary-with-babashka-and-bootleg/) by exupero
+- [quickblog](https://github.com/borkdude/quickblog) v0.1.0: Light-weight static blog engine for Clojure and babashka
+- [bb-excel](https://github.com/kbosompem/bb-excel): Read Excel Files in babashka scripts
+- [Get paginated list of issues from gitlab with clojure/babashka](https://gist.github.com/MrGung/29d0547fe45316c3438032fd164d42c6) by Steffen Glückselig
+- Install development builds: `bash <(curl https://raw.githubusercontent.com/babashka/babashka/master/install) --dev-build --dir /tmp`
+- [JVM interop improvements in bb](https://twitter.com/borkdude/status/1606280110692352001)
+- [A little trick to have conditional code for babashka in a .clj file without resorting to .cljc reader conditionals](https://twitter.com/borkdude/status/1599067149187764224)
+
 ## [2022-11](https://twitter.com/search?q=(%23babashka)%20until%3A2022-12-01%20since%3A2022-11-01&src=typed_query&f=live)
 
+- Releases: [1.0.165 - 1.0.167](https://github.com/babashka/babashka/blob/master/CHANGELOG.md).
 - Registration for a [Babashka workshop](https://clojure.stream/workshops/babashka) with Rahul De at ClojureStream is now open!
 - [Tutkain, a Sublime plugin for clojure based on socket REPL now with support for babashka](https://github.com/eerohele/Tutkain)
 - [Manage git hooks in babashka](https://blaster.ai/blog/posts/manage-git-hooks-w-babashka.html) by Mykhaylo Bilyanskyy
@@ -21,6 +38,7 @@ Twitter.
 
 ## [2022-10](https://twitter.com/search?q=(%23babashka)%20until%3A2022-11-01%20since%3A2022-10-01&src=typed_query&f=live)
 
+- Releases: [1.0.164](https://github.com/babashka/babashka/blob/master/CHANGELOG.md).
 - [bb-pod-racer](https://github.com/justone/bb-pod-racer): Speed up development of Babashka pods by Nate Jones
 - [Babashka tasks VSCode plugin](https://marketplace.visualstudio.com/items?itemName=fbeyer.babashka-tasks) by Ferdinand Beyer
 - A [PR](https://github.com/nextjournal/clerk/pull/232) to get Clerk working in babashka
@@ -31,6 +49,7 @@ Twitter.
 
 ## [2022-09](https://twitter.com/search?q=(%23babashka)%20until%3A2022-10-01%20since%3A2022-09-01&src=typed_query&f=live)
 
+- Releases: [0.9.162 - 0.10.163](https://github.com/babashka/babashka/blob/master/CHANGELOG.md).
 - Introducing [bbin](https://radsmith.com/bbin): a tool to install babashka scripts on your system by Radford Smith
 - [bbssh](https://github.com/epiccastle/bbssh): Babashka pod for SSH support by [Epic Castle](https://github.com/epiccastle)
 - [Loom virtual threads are coming to babashka](https://twitter.com/borkdude/status/1572222344684531717)
@@ -52,6 +71,7 @@ Twitter.
 
 ## [2022-07](https://twitter.com/search?q=(%23babashka)%20until%3A2022-08-01%20since%3A2022-07-01&src=typed_query&f=live)
 
+- Releases: [0.8.157 - 0.9.161](https://github.com/babashka/babashka/blob/master/CHANGELOG.md).
 - [Recursive document transformations with Pandoc and Clojure](https://play.teod.eu/document-transform-pandoc-clojure/) by Teodor Heggelund
 - [Babashka toolbox](https://babashka.org/toolbox/): A categorised directory of libraries and tools for Babashka
 - [Quickblog](https://github.com/borkdude/quickblog): Light-weight static blog engine for Clojure and babashka
