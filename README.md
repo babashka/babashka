@@ -280,9 +280,9 @@ static binary available which can be used on Alpine.
 
 ### CI
 
-On Github Actions it's recommended to use [setup-clojure](https://github.com/DeLaGuardo/setup-clojure) with `bb: latest`.
-You can use the [installer script](https://github.com/babashka/babashka#installer-script) on any non-Windows CI system. CircleCI requires `sudo`.
-On Appveyor + Windows you can use a bit of [Powershell](https://github.com/clj-kondo/clj-kondo/blob/39b5cb2b0d3d004c005e8975b6fafe0e314eec68/appveyor.yml#L60-L64).
+- On Github Actions it's recommended to use [setup-clojure](https://github.com/DeLaGuardo/setup-clojure) with `bb: latest`.
+- You can use the [installer script](https://github.com/babashka/babashka#installer-script) on any non-Windows CI system. CircleCI requires `sudo`.
+- On Appveyor + Windows you can use a bit of [Powershell](https://github.com/clj-kondo/clj-kondo/blob/39b5cb2b0d3d004c005e8975b6fafe0e314eec68/appveyor.yml#L60-L64).
 
 ## Docker
 
