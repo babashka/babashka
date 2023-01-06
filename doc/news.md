@@ -5,9 +5,22 @@ you have anything to add. Also see
 [#babashka](https://twitter.com/hashtag/babashka?src=hashtag_click&f=live) on
 Twitter.
 
-<!-- ## [2022-09](https://twitter.com/search?q=(%23babashka)%20until%3A2022-08-01%20since%3A2022-07-01&src=typed_query&f=live) -->
+## [2022-09](https://twitter.com/search?q=(%23babashka)%20until%3A2022-10-01%20since%3A2022-09-01&src=typed_query&f=live)
 
-## [2022-08](https://twitter.com/search?q=(%23babashka)%20until%3A2022-08-01%20since%3A2022-07-01&src=typed_query&f=live)
+- Introducing [bbin](https://radsmith.com/bbin): a tool to install babashka scripts on your system by Radford Smith
+- [bbssh](https://github.com/epiccastle/bbssh): Babashka pod for SSH support by [Epic Castle](https://github.com/epiccastle)
+- [Loom virtual threads are coming to babashka](https://twitter.com/borkdude/status/1572222344684531717)
+- [Tiny script to cycle through pulseaudio outputs (aka sinks)](https://gist.github.com/stelcodes/7d9136a5839b645b6cd5bc829a9fe541) by Stel Abrego
+- [Tetris in the console via pod-babashka-lantera](https://twitter.com/borkdude/status/1569351199404576770)
+- [org-mode gets support for babashka](https://git.savannah.gnu.org/cgit/emacs/org-mode.git/commit/?id=764642f55b7a9821acbabcfa1e2d354afab99be7)
+- [docs for combining babashka process with promesa](https://github.com/babashka/process#promesa)
+  [exoscale/interceptor](https://github.com/exoscale/interceptor) became babashka-compatible!
+- [Tutkain, socket REPL Sublime plugin, gets better support for babashka](https://twitter.com/borkdude/status/1568315151404924933)
+- [babashka tweepy](https://github.com/davclark/babashka-tweepy): kicking the tires on using the tweepy library from a babashka task by Dav Clark
+- [aoc helper](https://github.com/jjcomer/aoc-helper) by Josh Comer
+- [Dogfooding blambda part 5](https://jmglov.net/blog/2022-09-02-dogfooding-blambda-logs.html) by Josh Glover
+
+## [2022-08](https://twitter.com/search?q=(%23babashka)%20until%3A2022-09-01%20since%3A2022-08-01&src=typed_query&f=live)
 - It's babashka's third birthday on August 9th 2022!
 - [etaoin](https://github.com/clj-commons/etaoin), Pure Clojure Webdriver protocol implementation, is now babashka-compatible!
 - [xforms](https://github.com/cgrand/xforms) is now babashka-compatible!

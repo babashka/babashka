@@ -412,6 +412,7 @@ handling of SIGINT and SIGPIPE. This can be done by setting
 - [Using Babashka to Get Electricity Prices](https://www.karimarttila.fi/clojure/2022/12/04/using-babashka-to-get-electricity-prices.html) by Kari Marttila
 - [Manage git hooks with babashka tasks](https://blaster.ai/blog/posts/manage-git-hooks-w-babashka.html) by Mykhaylo Bilyanskyy
 - [Messing around with babashka](https://ian-muge.medium.com/messing-around-with-babashka-f181a9003faa) by Ian Muge
+- Introducing [bbin](https://radsmith.com/bbin) by Radford Smith (2022-09)
 - [Deleting AWS Glacier vaults with babashka](https://javahippie.net/clojure/2022/07/23/deleting-aws-glacier-vaults-with-babashka.html) by Tim Zöller
 - [Recursive document transformations with Pandoc and Clojure](https://play.teod.eu/document-transform-pandoc-clojure/) by Teodor Heggelund
 - [Blambda!](https://jmglov.net/blog/2022-07-03-blambda.html) by Josh Glover
