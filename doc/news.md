@@ -5,7 +5,7 @@ you have anything to add. Also see
 [#babashka](https://twitter.com/hashtag/babashka?src=hashtag_click&f=live) on
 Twitter.
 
-## [2022-12](https://twitter.com/search?q=(%23babashka%20OR%20babashka)%20until%3A2023-01-01%20since%3A2022-12-01&src=typed_query&f=live)
+## [2022-12](https://twitter.com/search?q=%28%23babashka%20OR%20babashka%29%20until%3A2023-01-01%20since%3A2022-12-01&src=typed_query&f=live)
 
 - Releases: [1.0.168](https://github.com/babashka/babashka/blob/master/CHANGELOG.md).
 - [How GraalVM Helped Create a Fast-Starting Scripting Environment for Clojure](https://medium.com/graalvm/babashka-how-graalvm-helped-create-a-fast-starting-scripting-environment-for-clojure-b0fcc38b0746)
@@ -21,7 +21,7 @@ Twitter.
 - [JVM interop improvements in bb](https://twitter.com/borkdude/status/1606280110692352001)
 - [A little trick to have conditional code for babashka in a .clj file without resorting to .cljc reader conditionals](https://twitter.com/borkdude/status/1599067149187764224)
 
-## [2022-11](https://twitter.com/search?q=(%23babashka)%20until%3A2022-12-01%20since%3A2022-11-01&src=typed_query&f=live)
+## [2022-11](https://twitter.com/search?q=%28%23babashka%29%20until%3A2022-12-01%20since%3A2022-11-01&src=typed_query&f=live)
 
 - Releases: [1.0.165 - 1.0.167](https://github.com/babashka/babashka/blob/master/CHANGELOG.md).
 - Registration for a [Babashka workshop](https://clojure.stream/workshops/babashka) with Rahul De at ClojureStream is now open!
@@ -36,7 +36,7 @@ Twitter.
 - [Tiny babashka script that returns a random clojure doc](https://gist.github.com/CarnunMP/c592cd3b6e711d56ddd4ca7832b9b251) by Carnun Marcus-Page
 
 
-## [2022-10](https://twitter.com/search?q=(%23babashka)%20until%3A2022-11-01%20since%3A2022-10-01&src=typed_query&f=live)
+## [2022-10](https://twitter.com/search?q=%28%23babashka%29%20until%3A2022-11-01%20since%3A2022-10-01&src=typed_query&f=live)
 
 - Releases: [1.0.164](https://github.com/babashka/babashka/blob/master/CHANGELOG.md).
 - [bb-pod-racer](https://github.com/justone/bb-pod-racer): Speed up development of Babashka pods by Nate Jones
@@ -47,7 +47,7 @@ Twitter.
 - [bbssh](https://github.com/epiccastle/bbssh/releases/tag/v0.2.0) by Crispin Wellington, v0.2.0 released
 - [safely use rsync --archive --delete to backup a directory](https://gist.github.com/stelcodes/ddc8ff53de2192dca7d3fee1081ddb77) by Stel Abrego
 
-## [2022-09](https://twitter.com/search?q=(%23babashka)%20until%3A2022-10-01%20since%3A2022-09-01&src=typed_query&f=live)
+## [2022-09](https://twitter.com/search?q=%28%23babashka%29%20until%3A2022-10-01%20since%3A2022-09-01&src=typed_query&f=live)
 
 - Releases: [0.9.162 - 0.10.163](https://github.com/babashka/babashka/blob/master/CHANGELOG.md).
 - Introducing [bbin](https://radsmith.com/bbin): a tool to install babashka scripts on your system by Radford Smith
@@ -63,13 +63,13 @@ Twitter.
 - [aoc helper](https://github.com/jjcomer/aoc-helper) by Josh Comer
 - [Dogfooding blambda part 5](https://jmglov.net/blog/2022-09-02-dogfooding-blambda-logs.html) by Josh Glover
 
-## [2022-08](https://twitter.com/search?q=(%23babashka)%20until%3A2022-09-01%20since%3A2022-08-01&src=typed_query&f=live)
+## [2022-08](https://twitter.com/search?q=%28%23babashka%29%20until%3A2022-09-01%20since%3A2022-08-01&src=typed_query&f=live)
 - It's babashka's third birthday on August 9th 2022!
 - [etaoin](https://github.com/clj-commons/etaoin), Pure Clojure Webdriver protocol implementation, is now babashka-compatible!
 - [xforms](https://github.com/cgrand/xforms) is now babashka-compatible!
 - [squint](https://github.com/squint-cljs/squint) and [cherry](https://github.com/squint-cljs/cherry) are CLJS-compilers that work with babashka!
 
-## [2022-07](https://twitter.com/search?q=(%23babashka)%20until%3A2022-08-01%20since%3A2022-07-01&src=typed_query&f=live)
+## [2022-07](https://twitter.com/search?q=%28%23babashka%29%20until%3A2022-08-01%20since%3A2022-07-01&src=typed_query&f=live)
 
 - Releases: [0.8.157 - 0.9.161](https://github.com/babashka/babashka/blob/master/CHANGELOG.md).
 - [Recursive document transformations with Pandoc and Clojure](https://play.teod.eu/document-transform-pandoc-clojure/) by Teodor Heggelund
@@ -88,7 +88,7 @@ Twitter.
 - [Deleting AWS Glacier vaults with babashka](https://javahippie.net/clojure/2022/07/23/deleting-aws-glacier-vaults-with-babashka.html) by Tim Zöller
 
 
-## [2022-06](https://twitter.com/search?q=(%23babashka)%20until%3A2022-07-01%20since%3A2022-06-01&src=typed_query&f=live)
+## [2022-06](https://twitter.com/search?q=%28%23babashka%29%20until%3A2022-07-01%20since%3A2022-06-01&src=typed_query&f=live)
 
 - Releases: [0.8.156](https://github.com/babashka/babashka/blob/master/CHANGELOG.md).
 - [AWS wiki page](https://github.com/babashka/babashka/wiki/AWS)
@@ -102,7 +102,7 @@ Twitter.
 - [Logseq bb tasks](https://github.com/logseq/bb-tasks): Reusable babashka tasks used by logseq team
 - [Breakneck Babashka on K8s](Breakneck Babashka on K8s) by Heow Goodman
 
-## [2022-05](https://twitter.com/search?q=(%23babashka)%20until%3A2022-06-01%20since%3A2022-05-01&src=typed_query&f=live)
+## [2022-05](https://twitter.com/search?q=%28%23babashka%29%20until%3A2022-06-01%20since%3A2022-05-01&src=typed_query&f=live)
 
 - Releases: [0.8.2](https://github.com/babashka/babashka/blob/master/CHANGELOG.md).
 - [Etaoin](https://github.com/clj-commons/etaoin) moved to clj-commons and now works with babashka as well.
@@ -112,7 +112,7 @@ Twitter.
 - [Quickdoc](https://github.com/borkdude/quickdoc): (Quick and minimal API doc generation for Clojure
 - [Awyeah-api](https://github.com/grzm/awyeah-api) - Cognitect's aws-api for babashka
 
-## [2022-04](https://twitter.com/search?q=(%23babashka)%20until%3A2022-05-01%20since%3A2022-04-01&src=typed_query&f=live)
+## [2022-04](https://twitter.com/search?q=%28%23babashka%29%20until%3A2022-05-01%20since%3A2022-04-01&src=typed_query&f=live)
 
 - Releases: [0.8.0 - 0.8.1](https://github.com/babashka/babashka/blob/master/CHANGELOG.md).
 - [Babashka and Clojure](https://youtu.be/ZvOs5Ele6VE) by Rahul Dé at North Virginia Linux Users Group
@@ -120,7 +120,7 @@ Twitter.
 - Control Chrome via devtools using [clj-chrome-devtools](https://github.com/tatut/clj-chrome-devtools/blob/master/bb.clj) which runs with bb!
 - Use pods directly in `bb.edn`: [tweet](https://twitter.com/borkdude/status/1510995356229767172)
 
-## [2022-03](https://twitter.com/search?q=(%23babashka)%20until%3A2022-04-01%20since%3A2022-03-01&src=typed_query&f=live)
+## [2022-03](https://twitter.com/search?q=%28%23babashka%29%20until%3A2022-04-01%20since%3A2022-03-01&src=typed_query&f=live)
 
 - Releases: [0.7.7 - 0.7.8](https://github.com/babashka/babashka/blob/master/CHANGELOG.md).
 - [Create a password manager with Clojure using Babashka, sqlite, honeysql and stash](https://youtu.be/jm0RXmyjRJ8) by Daniel Amber
@@ -130,7 +130,7 @@ Twitter.
 - The [loom](https://github.com/aysylu/loom) library is now compatible [(tweet)](https://twitter.com/borkdude/status/1502237220811550723)
 - The [at-at](https://github.com/overtone/at-at) library is now compatible
 
-## [2022-02](https://twitter.com/search?q=(%23babashka)%20until%3A2022-03-01%20since%3A2022-02-01&src=typed_query&f=live)
+## [2022-02](https://twitter.com/search?q=%28%23babashka%29%20until%3A2022-03-01%20since%3A2022-02-01&src=typed_query&f=live)
 
 - Releases: [0.7.5 - 0.7.6](https://github.com/babashka/babashka/blob/master/CHANGELOG.md).
 - [Spire is available as a babashka pod](https://twitter.com/epic_castle/status/1496784352256008194)
@@ -143,7 +143,7 @@ Twitter.
 - [Apptemplate](https://github.com/redstarssystems/apptemplate): Application project template for Clojure featuring bb tasks
 
 
-## [2022-01](https://twitter.com/search?f=live&q=(%23babashka)%20until%3A2022-02-01%20since%3A2022-01-01&src=typed_query)
+## [2022-01](https://twitter.com/search?f=live&q=%28%23babashka%29%20until%3A2022-02-01%20since%3A2022-01-01&src=typed_query)
 
 - Releases: [0.7.4](https://github.com/babashka/babashka/blob/master/CHANGELOG.md).
 - [Babashka dev builds](https://github.com/babashka/babashka-dev-builds)
