@@ -189,7 +189,7 @@ linux binary.
 
 Babashka can be installed using a plugin as follows:
 
-    asdf plugin add babashka https://github.com/mkarp/asdf-babashka.git
+    asdf plugin add babashka https://github.com/pitch-io/asdf-babashka
     asdf install babashka latest
 
 ### Windows
