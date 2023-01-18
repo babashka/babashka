@@ -32,4 +32,5 @@
                  javax.net.ssl.X509TrustManager
                  clojure.lang.LispReader$Resolver
                  sun.misc.SignalHandler
-                 java.util.concurrent.ThreadFactory])
+                 java.util.concurrent.ThreadFactory
+                 java.lang.Thread$UncaughtExceptionHandler])
