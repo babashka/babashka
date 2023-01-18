@@ -283,6 +283,7 @@
           java.lang.StringBuilder
           java.lang.System
           java.lang.Throwable
+          java.lang.Thread$UncaughtExceptionHandler
           ;; java.lang.UnsupportedOperationException
           java.lang.ref.WeakReference
           java.lang.ref.ReferenceQueue
@@ -397,8 +398,11 @@
           java.util.concurrent.CompletionException
           java.util.concurrent.ExecutionException
           java.util.concurrent.Executor
+          java.util.concurrent.BlockingQueue
+          java.util.concurrent.ArrayBlockingQueue
           java.util.concurrent.LinkedBlockingQueue
           java.util.concurrent.ScheduledThreadPoolExecutor
+          java.util.concurrent.ThreadFactory
           java.util.concurrent.ThreadPoolExecutor
           java.util.concurrent.ThreadPoolExecutor$AbortPolicy
           java.util.concurrent.ThreadPoolExecutor$CallerRunsPolicy
@@ -536,6 +540,7 @@
                       clojure.lang.PersistentTreeMap
                       clojure.lang.PersistentTreeSet
                       clojure.lang.PersistentVector
+                      clojure.lang.Range
                       clojure.lang.Ratio
                       clojure.lang.ReaderConditional
                       clojure.lang.Repeat
@@ -695,6 +700,7 @@
     StringBuilder java.lang.StringBuilder
     System java.lang.System
     Thread java.lang.Thread
+    Thread$UncaughtExceptionHandler java.lang.Thread$UncaughtExceptionHandler
     Throwable java.lang.Throwable
     VirtualMachineError java.lang.VirtualMachineError
     ThreadDeath java.lang.ThreadDeath

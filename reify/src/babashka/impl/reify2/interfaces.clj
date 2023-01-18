@@ -31,4 +31,5 @@
                  java.lang.Comparable
                  javax.net.ssl.X509TrustManager
                  clojure.lang.LispReader$Resolver
-                 sun.misc.SignalHandler])
+                 sun.misc.SignalHandler
+                 java.util.concurrent.ThreadFactory])
