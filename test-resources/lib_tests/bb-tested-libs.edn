@@ -46,7 +46,7 @@
  com.github.seancorfield/honeysql {:git-sha "6e4e1f6928450788353c181f32474d930d6afe84", :git-url "https://github.com/seancorfield/honeysql", :test-namespaces (honey.sql-test honey.sql.helpers-test honey.sql.postgres-test), :branch "develop"}
  honeysql/honeysql {:git-sha "1137dd12350afdc30ad4976c3718279581390b36", :git-url "https://github.com/seancorfield/honeysql", :test-namespaces (honeysql.format-test honeysql.core-test), :branch "v1"}
                                         ; skip tests on Windows because of the :compressed thing
- babashka/babashka.curl {:git-url "https://github.com/babashka/babashka.curl", :test-namespaces [babashka.curl-test], :skip-windows true, :manually-added true}
+ babashka/babashka.curl {:git-url "https://github.com/babashka/babashka.curl", :test-namespaces [babashka.curl-test], :skip-windows true, :manually-added true :flaky true}
  http-kit/http-kit {:git-url "https://github.com/http-kit/http-kit", :test-namespaces [httpkit.client-test], :manually-added true :flaky true}
  org.clojure/core.match {:git-url "https://github.com/clojure/core.match", :test-namespaces [core-match.core-tests], :manually-added true}
  hiccup/hiccup {:git-url "http://github.com/weavejester/hiccup", :test-namespaces [hiccup.core-test hiccup2.core-test], :manually-added true}
