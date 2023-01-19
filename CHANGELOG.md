@@ -27,6 +27,7 @@ A preview of the next release can be installed from
   - `java.util.concurrent.ArrayBlockingQueue`
   - `java.util.concurrent.ThreadFactory`
   - `java.lang.Thread$UncaughtExceptionHandler`
+  - `java.util.concurrent.Semaphore`
 - Expose more httpkit.server functions: `with-channel`, `on-close`, `close`
 
 ## 1.0.169 (2023-01-03)
