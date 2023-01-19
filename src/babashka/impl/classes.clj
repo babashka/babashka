@@ -402,6 +402,7 @@
           java.util.concurrent.ArrayBlockingQueue
           java.util.concurrent.LinkedBlockingQueue
           java.util.concurrent.ScheduledThreadPoolExecutor
+          java.util.concurrent.Semaphore
           java.util.concurrent.ThreadFactory
           java.util.concurrent.ThreadPoolExecutor
           java.util.concurrent.ThreadPoolExecutor$AbortPolicy
