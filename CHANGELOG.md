@@ -7,10 +7,23 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## Unreleased
+## 1.0.170 (2023-01-19)
 
 - [#1463](https://github.com/babashka/babashka/issues/1463): Add `java.util.jar.Attributes` class ([@jeroenvandijk](https://github.com/jeroenvandijk))
 - [#1456](https://github.com/babashka/babashka/issues/1456): allow `*warn-on-reflection*` and `*unchecked-math*` to be set in socket REPL and nREPL ([@axks](https://github.com/axks))
+- SCI: macroexpansion error location improvement
+- Add compatibility with [tab](https://github.com/eerohele/tab) and [solenoid](https://github.com/adam-james-v/solenoid)
+- Bump babashka.cli and babashka.fs
+- New classes:
+  - `java.util.jar.Attributes`
+  - `java.util.concurrent.ThreadFactory`
+  - `java.lang.Thread$UncaughtExceptionHandler`
+  - `java.lang.Thread$UncaughtExceptionHandler`
+  - `java.util.concurrent.BlockingQueue`
+  - `java.util.concurrent.ArrayBlockingQueue`
+  - `java.util.concurrent.ThreadFactory`
+  - `java.lang.Thread$UncaughtExceptionHandler`
+- Expose more httpkit.server functions: `with-channel`, `on-close`, `close`
 
 ## 1.0.169 (2023-01-03)
 
