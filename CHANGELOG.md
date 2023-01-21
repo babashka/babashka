@@ -9,7 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-- ...
+- [#1467](https://github.com/babashka/babashka/issues/1467): avoid printing results, unless `--prn` is enabled (aside from `-e`, `-o` and `-O`)
 
 ## 1.0.170 (2023-01-19)
 
