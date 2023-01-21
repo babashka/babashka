@@ -316,8 +316,8 @@
   Does nothing if *report-counters* is nil."
   {:added "1.1"}
   [name]
-  (when @report-counters
-    (swap! @report-counters update-in [name] (fnil inc 0))))
+  (when-let [rc @report-counters]
+    (dosync (commute rc update-in [name] (fnil inc 0)))))
 
 ;;; TEST RESULT REPORTING
 
@@ -758,7 +758,7 @@
   *report-counters*."
   {:added "1.1"}
   [ctx ns]
-  (sci/binding [report-counters (atom @initial-report-counters)]
+  (sci/binding [report-counters (ref @initial-report-counters)]
     (let [ns-obj (sci-namespaces/sci-the-ns ctx ns)]
       (do-report {:type :begin-test-ns, :ns ns-obj})
       ;; If the namespace has a test-ns-hook function, call that:
@@ -809,7 +809,7 @@
   "Runs the tests for a single Var, with fixtures executed around the test, and summary output after."
   {:added "1.11"}
   [v]
-  (sci/binding [report-counters (atom @initial-report-counters)]
+  (sci/binding [report-counters (ref @initial-report-counters)]
     (let [ns-obj (-> v meta :ns)
           summary (do
                     (do-report {:type :begin-test-ns
