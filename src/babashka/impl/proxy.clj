@@ -102,7 +102,7 @@
           ([b off len] ((method-or-bust methods 'write) this b off len))))
 
       ["java.io.OutputStream" #{}]
-      (proxy [java.io.PipedOutputStream] []
+      (proxy [java.io.OutputStream] []
         (close [] (if-let [m (get methods 'close)]
                     (m this)
                     (proxy-super close)))
