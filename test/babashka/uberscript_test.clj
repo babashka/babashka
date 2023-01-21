@@ -22,7 +22,7 @@
       ;; resulting program can be executed
       (is (empty? (tu/bb nil "--prn" "--classpath" "test-resources/babashka/uberscript/src" "uberscript" (.getPath tmp-file) "-m" "my.main")))
       (is (= ":clojure.string/foo\ntrue\n(\"1\" \"2\" \"3\" \"4\")\n"
-             (tu/bb nil "--file" (.getPath tmp-file) "1" "2" "3" "4"))))))
+             (tu/bb nil "--prn" "--file" (.getPath tmp-file) "1" "2" "3" "4"))))))
 
 (deftest pods-test
   (let [tmp-file (java.io.File/createTempFile "uberscript" ".clj")]
