@@ -33,4 +33,5 @@
                  clojure.lang.LispReader$Resolver
                  sun.misc.SignalHandler
                  java.util.concurrent.ThreadFactory
-                 java.lang.Thread$UncaughtExceptionHandler])
+                 java.lang.Thread$UncaughtExceptionHandler
+                 java.util.concurrent.Callable])

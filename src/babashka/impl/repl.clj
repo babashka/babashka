@@ -1,8 +1,8 @@
 (ns babashka.impl.repl
   {:no-doc true}
   (:require
-   [babashka.impl.clojure.main :as m]
    [babashka.impl.clojure.core :as core-extras]
+   [babashka.impl.clojure.main :as m]
    [clojure.java.io :as io]
    [clojure.string :as str]
    [clojure.tools.reader.reader-types :as r]
