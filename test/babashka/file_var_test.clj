@@ -10,7 +10,7 @@
 
 (deftest file-var-test
   (let [[f1 f2 f3 f4]
-        (str/split (bb nil "--classpath" "test/babashka/scripts"
+        (str/split (bb nil "--prn" "--classpath" "test/babashka/scripts"
                        "test/babashka/scripts/file_var.bb")
                    #"\n")]
     (is (str/ends-with? f1 "file_var_classpath.bb"))
@@ -19,6 +19,6 @@
     (is (str/ends-with? f4 "file_var.bb")))
   (testing "file var uses absolute path"
     (is (str/includes?
-         (bb nil (io/file "test" ".." "test"
-                          "babashka" "scripts" "simple_file_var.bb"))
+         (bb nil "--prn" (io/file "test" ".." "test"
+                                  "babashka" "scripts" "simple_file_var.bb"))
          ".."))))
