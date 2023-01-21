@@ -457,7 +457,7 @@ even more stuff here\"
       (pr-str '{:paths ["test-resources"]
                 :pods  {retrogradeorbit/bootleg {:version "0.1.9"}}})
       (is (= "\"<div><p>Test</p></div>\"\n"
-             (test-utils/bb nil "-m" "pod-tests.bootleg"))))))
+             (test-utils/bb nil "--prn" "-m" "pod-tests.bootleg"))))))
 
 (deftest ^:skip-windows local-pod-test
   (test-utils/with-config
