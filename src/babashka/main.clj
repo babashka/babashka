@@ -570,10 +570,10 @@ Use bb run --help to show this help output.
                                :edn-in true))
           ("-o") (recur (next options)
                         (assoc opts-map
-                               :shell-out true))
+                               :shell-out true :prn true))
           ("-O") (recur (next options)
                         (assoc opts-map
-                               :edn-out true))
+                               :edn-out true :prn true))
           ("-io") (recur (next options)
                          (assoc opts-map
                                 :shell-in true
@@ -998,8 +998,7 @@ Use bb run --help to show this help output.
                                                     (sci/eval-string* sci-ctx expression))]
                                               ;; return value printing
                                               (when (and (some? res)
-                                                         (or shell-out edn-out
-                                                             print-result?))
+                                                         print-result?)
                                                 (if-let [pr-f (cond shell-out println
                                                                     edn-out sio/prn)]
                                                   (if (sequential? res)
