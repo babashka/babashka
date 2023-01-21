@@ -13,10 +13,10 @@
 
 (deftest classpath-test
   (is (= :my-script/bb
-         (bb nil "--classpath" "test-resources/babashka/src_for_classpath_test"
+         (bb nil "--prn" "--classpath" "test-resources/babashka/src_for_classpath_test"
              "(require '[my-script :as ms]) (ms/foo)")))
   (is (= "hello from foo\n"
-         (tu/bb nil "--classpath" "test-resources/babashka/src_for_classpath_test/foo.jar"
+         (tu/bb nil "--prn" "--classpath" "test-resources/babashka/src_for_classpath_test/foo.jar"
                 "(require '[foo :as f]) (f/foo)")))
   (is (thrown-with-msg? Exception #"not find"
          (tu/bb nil
@@ -42,10 +42,10 @@
 
 (deftest main-test
   (is (= "(\"1\" \"2\" \"3\" \"4\")\n"
-         (tu/bb nil "--classpath" "test-resources/babashka/src_for_classpath_test" "-m" "my.main" "1" "2" "3" "4")))
+         (tu/bb nil "--prn" "--classpath" "test-resources/babashka/src_for_classpath_test" "-m" "my.main" "1" "2" "3" "4")))
   (testing "system property"
     (is (= "\"my.main2\""
-           (str/trim (tu/bb nil "--classpath" "test-resources/babashka/src_for_classpath_test" "-m" "my.main2"))))))
+           (str/trim (tu/bb nil "--prn" "--classpath" "test-resources/babashka/src_for_classpath_test" "-m" "my.main2"))))))
 
 (deftest error-while-loading-test
   (is (true?

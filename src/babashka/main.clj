@@ -153,6 +153,7 @@ Global opts:
   --init <file>     Load file after any preloads and prior to evaluation/subcommands.
   --config <file>   Replacing bb.edn with file. Relative paths are resolved relative to file.
   --deps-root <dir> Treat dir as root of relative paths in config.
+  --prn             Print result via clojure.core/prn
   -Sforce           Force recalculation of the classpath (don't use the cache)
   -Sdeps            Deps data to use as the last deps file to be merged
 
@@ -639,7 +640,8 @@ Use bb run --help to show this help output.
                    (assoc opts-map
                           :nrepl (or opt "1667"))))
           ("--eval", "-e")
-          (let [options (next options)]
+          (let [options (next options)
+                opts-map (assoc opts-map :prn true)]
             (recur (next options)
                    (update opts-map :expressions (fnil conj []) (first options))))
           ("--main", "-m",)
@@ -675,6 +677,7 @@ Use bb run --help to show this help output.
               (case c
                 (\( \{ \[ \* \@ \#)
                 (-> opts-map
+                    (assoc :prn true)
                     (update :expressions (fnil conj []) (first options))
                     (assoc :command-line-args (next options)))
                 (assoc opts-map
@@ -710,6 +713,8 @@ Use bb run --help to show this help output.
 
         ("--deps-root")
         (recur (nnext options) (assoc opts-map :deps-root (second options)))
+        ("--prn")
+        (recur (next options) (assoc opts-map :prn true))
         [options opts-map])
       [options opts-map])))
 
@@ -790,6 +795,7 @@ Use bb run --help to show this help output.
                     :print-deps :prepare]
              exec-fn :exec}
             cli-opts
+            print-result? (:prn cli-opts)
             _ (when debug (vreset! common/debug true))
             _ (do ;; set properties
                 (when main (System/setProperty "babashka.main" main))
@@ -992,8 +998,8 @@ Use bb run --help to show this help output.
                                                     (sci/eval-string* sci-ctx expression))]
                                               ;; return value printing
                                               (when (and (some? res)
-                                                         (or (not run)
-                                                             (:prn cli-opts)))
+                                                         (or shell-out edn-out
+                                                             print-result?))
                                                 (if-let [pr-f (cond shell-out println
                                                                     edn-out sio/prn)]
                                                   (if (sequential? res)

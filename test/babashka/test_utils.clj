@@ -5,7 +5,6 @@
    [babashka.impl.common :as common]
    [babashka.main :as main]
    [babashka.process :as p]
-   [clojure.edn :as edn]
    [clojure.string :as str]
    [clojure.test :as test :refer [*report-counters*]]
    [clojure.tools.reader.reader-types :as r]
