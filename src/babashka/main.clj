@@ -352,6 +352,8 @@ Use bb run --help to show this help output.
 
 (def sci-ns (sci/create-ns 'sci.core))
 
+(def main-var (sci/new-var 'main nil {:ns clojure-main-ns}))
+
 (def namespaces
   (cond->
       {'user {'*input* (reify
@@ -378,7 +380,9 @@ Use bb run --help to show this help output.
                                          (fn [& opts]
                                            (let [opts (apply hash-map opts)]
                                              (repl/start-repl! (common/ctx) opts))) {:ns clojure-main-ns})
-                      'with-bindings (sci/copy-var clojure-main/with-bindings clojure-main-ns)}
+                      'with-bindings (sci/copy-var clojure-main/with-bindings clojure-main-ns)
+                      'repl-caught (sci/copy-var repl/repl-caught clojure-main-ns)
+                      'main main-var}
        'clojure.test t/clojure-test-namespace
        'clojure.math math-namespace
        'babashka.classpath classpath-namespace
@@ -1056,7 +1060,7 @@ Use bb run --help to show this help output.
                  (and (= minor-current minor-min)
                       (>= patch-current patch-min)))))))
 
-(defn load-bb-edn [string]
+(defn read-bb-edn [string]
   (try (edn/read-string {:default tagged-literal} string)
        (catch java.lang.RuntimeException e
          (if (re-find #"No dispatch macro for: \"" (.getMessage e))
@@ -1079,9 +1083,9 @@ Use bb run --help to show this help output.
         bb-edn (when (or bb-edn-file merge-deps)
                  (when bb-edn-file (System/setProperty "babashka.config" bb-edn-file))
                  (let [raw-string (when bb-edn-file (slurp bb-edn-file))
-                       edn (when bb-edn-file (load-bb-edn raw-string))
+                       edn (when bb-edn-file (read-bb-edn raw-string))
                        edn (if merge-deps
-                             (deps/merge-deps [edn (load-bb-edn merge-deps)])
+                             (deps/merge-deps [edn (read-bb-edn merge-deps)])
                              edn)
                        edn (assoc edn
                                   :raw raw-string
@@ -1137,6 +1141,7 @@ Use bb run --help to show this help output.
     (let [exit-code (run args)]
       (System/exit exit-code))))
 
+(sci/alter-var-root main-var (constantly -main))
 ;;;; Scratch
 
 (comment)

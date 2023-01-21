@@ -394,10 +394,12 @@
           java.util.concurrent.atomic.AtomicInteger
           java.util.concurrent.atomic.AtomicLong
           java.util.concurrent.atomic.AtomicReference
+          java.util.concurrent.Callable
           java.util.concurrent.CancellationException
           java.util.concurrent.CompletionException
           java.util.concurrent.ExecutionException
           java.util.concurrent.Executor
+          java.util.concurrent.ExecutorService
           java.util.concurrent.BlockingQueue
           java.util.concurrent.ArrayBlockingQueue
           java.util.concurrent.LinkedBlockingQueue
@@ -666,6 +668,7 @@
     BigInteger java.math.BigInteger
     Boolean java.lang.Boolean
     Byte java.lang.Byte
+    Callable java.util.concurrent.Callable
     Character java.lang.Character
     CharSequence java.lang.CharSequence
     Class java.lang.Class
