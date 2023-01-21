@@ -9,7 +9,9 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-- [#1467](https://github.com/babashka/babashka/issues/1467): avoid printing results, unless `--prn` is enabled (aside from `-e`, `-o` and `-O`)
+<!-- ## 1.1.171 ## -->
+
+- [#1467](https://github.com/babashka/babashka/issues/1467): BREAKING: avoid printing results, unless `--prn` is enabled (aside from `-e`, `-o` and `-O`).
 
 ## 1.0.170 (2023-01-19)
 
@@ -1232,6 +1234,10 @@ Details about releases prior to v0.1.0 can be found
 [here](https://github.com/babashka/babashka/releases).
 
 ## Breaking changes
+
+### v1.1.171
+
+- [#1467](https://github.com/babashka/babashka/issues/1467): BREAKING: avoid printing results, unless `--prn` is enabled (aside from `-e`, `-o` and `-O`).
 
 ### v0.2.4
 
