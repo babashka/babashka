@@ -34,6 +34,7 @@
    [babashka.impl.error-handler :refer [error-handler]]
    [babashka.impl.features :as features]
    [babashka.impl.fs :refer [fs-namespace]]
+   [babashka.impl.http-client :refer [http-client-namespace]]
    [babashka.impl.nrepl-server :refer [nrepl-server-namespace]]
    [babashka.impl.pods :as pods]
    [babashka.impl.pprint :refer [pprint-namespace]]
@@ -422,6 +423,7 @@ Use bb run --help to show this help output.
                   ;; 'fork (sci/copy-var sci/fork sci-ns)
                   }
        'babashka.cli cli/cli-namespace
+       'babashka.http-client http-client-namespace
        }
     features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace)
                           'clojure.data.xml.event @(resolve 'babashka.impl.xml/xml-event-namespace)
