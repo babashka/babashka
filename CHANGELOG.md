@@ -11,7 +11,17 @@ A preview of the next release can be installed from
 
 <!-- ## 1.1.171 ## -->
 
-- [#1467](https://github.com/babashka/babashka/issues/1467): BREAKING: avoid printing results, unless `--prn` is enabled (aside from `-e`, `-o` and `-O`).
+- [#1467](https://github.com/babashka/babashka/issues/1467): **BREAKING**: avoid printing results, unless `--prn` is enabled (aside from `-e`, `-o` and `-O`).
+- Include [http-client](https://github.com/babashka/http-client) as built-in library
+- SCI: support `add-watch` on vars
+- Compatibility with [eftest](https://github.com/weavejester/eftest) test runner (see [demo](https://twitter.com/borkdude/status/1616886788898885632))
+- Add classes:
+  - `java.util.concurrent.Callable`
+  - `java.util.concurrent.ExecutorService`
+- Expose `clojure.main` `main` and `repl-caught`
+- Switch `clojure.test/*report-counters*` to ref instead of atom for compatibility with [kaocha](https://github.com/lambdaisland/kaocha)
+- Allow `java.io.OutputStream` to be proxied, for [kaocha](https://github.com/lambdaisland/kaocha)
+- Support qualified method names in `proxy` and ignore namespace
 
 ## 1.0.170 (2023-01-19)
 
