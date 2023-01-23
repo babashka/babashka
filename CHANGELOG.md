@@ -9,7 +9,9 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-<!-- ## 1.1.171 ## -->
+...
+
+## 1.1.171 (2023-01-23)
 
 - [#1467](https://github.com/babashka/babashka/issues/1467): **BREAKING**: avoid printing results, unless `--prn` is enabled (aside from `-e`, `-o` and `-O`).
 - Include [http-client](https://github.com/babashka/http-client) as built-in library
