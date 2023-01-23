@@ -7,7 +7,11 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## 1.1.172
+## Unreleased
+
+...
+
+## 1.1.172 (2023-01-23)
 
 - [#1472](https://github.com/babashka/babashka/issues/1472): fix tokenization of `babashka.tasks/clojure`: command was tokenized twice (regression was introduced in `1.0.168`)
 - **BREAKING**: Bump `babashka.process`: change default for `:out :append` to `:out :write`. This default is undocumented so the impact should be small.
