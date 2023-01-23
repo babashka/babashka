@@ -10,6 +10,7 @@ A preview of the next release can be installed from
 ## Unreleased
 
 - [#1472](https://github.com/babashka/babashka/issues/1472): fix tokenization of `babashka.tasks/clojure`: command was tokenized twice
+- **BREAKING**: Bump `babashka.process`: change default for `:out :append` to `:out :write`. This default is undocumented so the impact should be small.
 
 ## 1.1.171 (2023-01-23)
 
@@ -1247,9 +1248,13 @@ Details about releases prior to v0.1.0 can be found
 
 ## Breaking changes
 
+### v1.1.172
+
+- Bump `babashka.process`: change default for `:out :append` to `:out :write`. This default is undocumented so the impact should be small.
+
 ### v1.1.171
 
-- [#1467](https://github.com/babashka/babashka/issues/1467): BREAKING: avoid printing results, unless `--prn` is enabled (aside from `-e`, `-o` and `-O`).
+- [#1467](https://github.com/babashka/babashka/issues/1467): avoid printing results, unless `--prn` is enabled (aside from `-e`, `-o` and `-O`).
 
 ### v0.2.4
 
