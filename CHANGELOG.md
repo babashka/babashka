@@ -9,7 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-...
+- [#1472](https://github.com/babashka/babashka/issues/1472): fix tokenization of `babashka.tasks/clojure`: command was tokenized twice
 
 ## 1.1.171 (2023-01-23)
 

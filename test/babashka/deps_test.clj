@@ -7,10 +7,11 @@
    [clojure.test :as test :refer [deftest is testing]]))
 
 (defn bb [& args]
-  (edn/read-string
-   {:readers *data-readers*
-    :eof nil}
-   (apply test-utils/bb nil (map str args))))
+  (let [edn-str (apply test-utils/bb nil (map str args))]
+    (edn/read-string
+     {:readers *data-readers*
+      :eof nil}
+     edn-str)))
 
 (deftest dependency-test
   (is (= #{:a :c :b} (bb "
@@ -102,7 +103,10 @@ true
         (bb (-> template (str/replace ":gitlibs" (pr-str (str libs-dir2)))
                 (str/replace ":env-key" ":extra-env")))
         (is (fs/exists? libs-dir))
-        (is (fs/exists? libs-dir2))))))
+        (is (fs/exists? libs-dir2)))))
+  (testing "tokenization when called from tasks"
+    (is (= '{:port 5555, :accept clojure.core.server/repl}
+           (bb (pr-str '(-> (babashka.tasks/clojure {:out :string} "-J-Dfoo=\"{:port 5555 :accept clojure.core.server/repl}\" -M -e \"(clojure.edn/read-string (System/getProperty (name :foo)))\"") :out edn/read-string)))))))
 
 (deftest ^:windows-only win-clojure-test
     (testing "GITLIBS can set location of .gitlibs dir"

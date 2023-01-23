@@ -82,9 +82,6 @@
                  (update opts :err io/file)
                  opts)
                opts)
-        cmd (if (.exists (io/file cmd))
-              [cmd]
-              (p/tokenize cmd))
         cmd (into cmd args)
         local-log-level (:log-level opts)]
     (sci/binding [log-level (or local-log-level @log-level)]
