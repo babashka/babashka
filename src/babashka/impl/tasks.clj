@@ -72,21 +72,11 @@
         (if (map? cmd)
           [cmd (first args) (rest args)]
           [nil cmd args])
-        opts (if-let [o (:out opts)]
-               (if (string? o)
-                 (update opts :out io/file)
-                 opts)
-               opts)
-        opts (if-let [o (:err opts)]
-               (if (string? o)
-                 (update opts :err io/file)
-                 opts)
-               opts)
-        cmd (into cmd args)
+        cmd (cons cmd args)
         local-log-level (:log-level opts)]
     (sci/binding [log-level (or local-log-level @log-level)]
       (apply log-info (cons "clojure" cmd))
-      (handle-non-zero (deps/clojure cmd (merge default-opts opts)) opts))))
+      (handle-non-zero (apply deps/clojure (merge default-opts opts) cmd) opts))))
 
 (defn -wait [res]
   (when res
