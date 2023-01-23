@@ -103,10 +103,7 @@ true
         (bb (-> template (str/replace ":gitlibs" (pr-str (str libs-dir2)))
                 (str/replace ":env-key" ":extra-env")))
         (is (fs/exists? libs-dir))
-        (is (fs/exists? libs-dir2)))))
-  (testing "tokenization when called from tasks"
-    (is (= '{:port 5555, :accept clojure.core.server/repl}
-           (bb (pr-str '(-> (babashka.tasks/clojure {:out :string} "-J-Dfoo=\"{:port 5555 :accept clojure.core.server/repl}\" -M -e \"(clojure.edn/read-string (System/getProperty (name :foo)))\"") :out edn/read-string)))))))
+        (is (fs/exists? libs-dir2))))))
 
 (deftest ^:windows-only win-clojure-test
     (testing "GITLIBS can set location of .gitlibs dir"

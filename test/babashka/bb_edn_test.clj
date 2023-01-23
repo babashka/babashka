@@ -303,6 +303,13 @@
         (let [s (bb "run" "--prn" "a")]
           (is (str/includes? s "paths")))))))
 
+(deftest tasks:clojure-test
+  (testing "tokenization when called from tasks"
+    (test-utils/with-config
+      (pr-str '{:tasks {foo (-> (clojure {:out :string} "-J-Dfoo=\"{:port 5555 :accept clojure.core.server/repl}\" -M -e \"(clojure.edn/read-string (System/getProperty (name :foo)))\"") :out clojure.edn/read-string prn)}})
+      (is (= '{:port 5555, :accept clojure.core.server/repl}
+             (bb "run" "foo"))))))
+
 (deftest list-tasks-test
   (test-utils/with-config {}
     (let [res (test-utils/bb nil "tasks")]
