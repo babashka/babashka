@@ -93,6 +93,11 @@ To get an overview of babashka, you can watch this talk ([slides](https://speake
 The [babashka book](https://book.babashka.org) contains detailed information
 about how to get the most out of babashka scripting.
 
+If you're a fan of [Clojure for the Brave and
+True](https://www.braveclojure.com/clojure-for-the-brave-and-true/), you might
+enjoy [Babashka Babooka](https://www.braveclojure.com/quests/babooka/), a book
+by the same author, Daniel Higginbotham!
+
 ## Examples
 
 Read the output from a shell command as a lazy seq of strings:
@@ -407,6 +412,7 @@ handling of SIGINT and SIGPIPE. This can be done by setting
 
 ## Articles, podcasts and videos
 
+- [Babashka Babooka](https://www.braveclojure.com/quests/babooka/): Write Command-Line Clojure by Daniel Higginbotham
 - [Babashka: How GraalVM Helped Create a Fast-Starting Scripting Environment for Clojure](https://medium.com/graalvm/babashka-how-graalvm-helped-create-a-fast-starting-scripting-environment-for-clojure-b0fcc38b0746) by Michiel Borkent
 - [Adding Prompts To Your Babashka Scripts With Dialog](https://www.pixelated-noise.com/blog/2022/12/09/dialog-and-babashka/index.html) by A.C. Danvers
 - [Scraping an HTML dictionary with Babashka and Bootleg](https://blog.exupero.org/scraping-an-html-dictionary-with-babashka-and-bootleg/) by exupero
