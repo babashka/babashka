@@ -5,68 +5,24 @@
             [clojure.java.io :as io]
             [clojure.string :as str]
             [sci.core :as sci])
-  (:import [java.util.jar JarFile Manifest]
+  (:import [java.util.jar Manifest]
            (java.net URL)))
 
 (set! *warn-on-reflection* true)
 
 (defprotocol IResourceResolver
-  (getResource [this paths opts])
-  (getResources [this paths opts]))
-
-(deftype DirectoryResolver [path]
-  IResourceResolver
-  (getResource [_ resource-paths url?]
-    (some
-     (fn [resource-path]
-       (let [f (io/file path resource-path)]
-         (when (.exists f)
-           (if url?
-             ;; manual conversion, faster than going through .toURI
-             (java.net.URL. "file" nil (.getAbsolutePath f))
-             {:file (.getAbsolutePath f)
-              :source (slurp f)}))))
-     resource-paths)))
-
-(defn opened-jar* [^java.io.File jar-file]
-  (JarFile. jar-file))
-
-(def opened-jar (memoize opened-jar*))
-
-(defn path-from-jar
-  [^java.io.File jar-file resource-paths url?]
-  (let [jar ^JarFile (opened-jar jar-file )#_ (JarFile. jar-file)]
-    (some (fn [path]
-            (when-let [entry (.getEntry jar path)]
-              (if url?
-                ;; manual conversion, faster than going through .toURI
-                (java.net.URL. "jar" nil
-                               (str "file:" (.getAbsolutePath jar-file) "!/" path))
-                {:file path
-                 :source (slurp (.getInputStream jar entry))})))
-          resource-paths)))
-
-(deftype JarFileResolver [jar-file]
-  IResourceResolver
-  (getResource [_ resource-paths url?]
-    (path-from-jar jar-file resource-paths url?)))
-
-(defn part->entry [part]
-  (when-not (str/blank? part)
-    (if (str/ends-with? part ".jar")
-      (JarFileResolver. (io/file part))
-      (DirectoryResolver. (io/file part)))))
+  (getResource [this paths opts]))
 
 (deftype Loader [class-loader]
   IResourceResolver
-  (getResource [_ resource-paths opts]
+  (getResource [_ resource-paths url?]
     (some (fn [resource]
             (when-let [res (.findResource ^java.net.URLClassLoader class-loader resource)]
-              {:file res
-               :source (slurp res)}))
-          resource-paths))
-  (getResources [_ resource-paths opts]
-    #_(keep #(getResource % resource-paths opts) entries)))
+              (if url?
+                res
+                {:file resource
+                 :source (slurp res)})))
+          resource-paths)))
 
 (def path-sep (System/getProperty "path.separator"))
 
