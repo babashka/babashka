@@ -17,10 +17,12 @@
   IResourceResolver
   (getResource [_ resource-paths url?]
     (some (fn [resource]
-            (when-let [res (.findResource ^java.net.URLClassLoader class-loader resource)]
+            (when-let [^java.net.URL res (.findResource ^java.net.URLClassLoader class-loader resource)]
               (if url?
                 res
-                {:file resource
+                {:file (if (= "jar" (.getProtocol res))
+                         resource
+                         (.getFile res))
                  :source (slurp res)})))
           resource-paths)))
 
