@@ -28,9 +28,14 @@
               :source (slurp f)}))))
      resource-paths)))
 
+(defn opened-jar* [^java.io.File jar-file]
+  (JarFile. jar-file))
+
+(def opened-jar (memoize opened-jar*))
+
 (defn path-from-jar
   [^java.io.File jar-file resource-paths url?]
-  (with-open [jar (JarFile. jar-file)]
+  (let [jar ^JarFile (opened-jar jar-file )#_ (JarFile. jar-file)]
     (some (fn [path]
             (when-let [entry (.getEntry jar path)]
               (if url?
@@ -52,19 +57,25 @@
       (JarFileResolver. (io/file part))
       (DirectoryResolver. (io/file part)))))
 
-(deftype Loader [entries]
+(deftype Loader [class-loader]
   IResourceResolver
   (getResource [_ resource-paths opts]
-    (some #(getResource % resource-paths opts) entries))
+    (some (fn [resource]
+            (when-let [res (.findResource ^java.net.URLClassLoader class-loader resource)]
+              {:file res
+               :source (slurp res)}))
+          resource-paths))
   (getResources [_ resource-paths opts]
-    (keep #(getResource % resource-paths opts) entries)))
+    #_(keep #(getResource % resource-paths opts) entries)))
 
 (def path-sep (System/getProperty "path.separator"))
 
+(defn ->url [^String s]
+  (.toURL (java.io.File. s)))
+
 (defn loader [^String classpath]
-  (let [parts (.split classpath path-sep)
-        entries (keep part->entry parts)]
-    (Loader. entries)))
+  (let [parts (.split classpath path-sep)]
+    (Loader. (java.net.URLClassLoader/newInstance (into-array java.net.URL (map ->url parts))))))
 
 (defn resource-paths [namespace]
   (let [ns-str (name namespace)
