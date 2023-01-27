@@ -89,10 +89,11 @@
                             "-Sdeps-file" "") ;; we reset deps file so the local deps.edn isn't used
                  args (if force (cons "-Sforce" args) args)
                  args (concat args [(str "-A:" (str/join ":" (cons ":org.babashka/defaults" aliases)))])
+                 deps-root (:deps-root @bb-edn)
                  bindings (cond->
                             {#'deps/*env* env
                              #'deps/*extra-env* extra-env}
-                            (:deps-root @bb-edn) (assoc #'deps/*dir* (:deps-root @bb-edn)))
+                            deps-root (assoc #'deps/*dir* deps-root))
                  cp (with-out-str (with-bindings bindings
                                     (apply deps/-main args)))
                  cp (str/trim cp)
