@@ -483,3 +483,20 @@ even more stuff here\"
     "{:deps {}}"
     (is (= {1 {:a 1}}
            (bb "-Sdeps" "{:deps {medley/medley {:mvn/version \"1.4.0\"}}}" "-e" "(require 'medley.core) (medley.core/index-by :a [{:a 1}])")))))
+
+(deftest deps-root-tests
+  (fs/with-temp-dir [dir {}]
+    (let [f      (fs/file dir "bb.edn")
+          config (str f)]
+      (spit config
+            '{:paths ["src"]
+              :tasks {cp (prn (babashka.classpath/get-classpath))}})
+      (testing "custom deps-root path"
+        (let [out     (bb "--config" config "--deps-root" "/tmp" "cp")
+              entries (cp/split-classpath out)]
+          (is (= 1 (count entries)))
+          (is (= "/tmp/src" (first entries)))))
+      (testing "default deps-root path is same as bb.edn"
+        (let [out     (bb "--config" config "cp")
+              entries (cp/split-classpath out)]
+          (is (= (fs/parent f) (fs/parent (first entries)))))))))

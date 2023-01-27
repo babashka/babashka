@@ -93,7 +93,7 @@
                    bindings (cond->
                               {#'deps/*env* env
                                #'deps/*extra-env* extra-env}
-                              deps-root (assoc #'deps/*dir* deps-root))
+                              deps-root (assoc #'deps/*dir* (str deps-root)))
                    cp (with-out-str (with-bindings bindings
                                       (apply deps/-main args)))
                    cp (str/trim cp)
