@@ -484,7 +484,7 @@ even more stuff here\"
     (is (= {1 {:a 1}}
            (bb "-Sdeps" "{:deps {medley/medley {:mvn/version \"1.4.0\"}}}" "-e" "(require 'medley.core) (medley.core/index-by :a [{:a 1}])")))))
 
-(deftest deps-root-tests
+(deftest deps-root-test
   (fs/with-temp-dir [dir {}]
     (let [f      (fs/file dir "bb.edn")
           config (str f)]
