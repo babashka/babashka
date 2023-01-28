@@ -492,15 +492,15 @@ even more stuff here\"
             '{:paths ["src"]
               :tasks {cp (prn (babashka.classpath/get-classpath))}})
       (testing "custom deps-root path"
-        (let [out     (bb "--config" config "--deps-root" "/tmp" "cp")
+        (let [out     (bb "--config" config "--deps-root" (str dir) "cp")
               entries (cp/split-classpath out)]
           (is (= 1 (count entries)))
-          (is (= "/tmp/src" (first entries)))))
+          (is (= (fs/file dir "src") (fs/file (first entries))))))
       (testing "default deps-root path is same as bb.edn"
         (let [out     (bb "--config" config "cp")
               entries (cp/split-classpath out)]
           (is (= (fs/parent f) (fs/parent (first entries))))))
-     (spit config
+      (spit config
             '{:paths ["src"]
               :deps  {local/dep {:local/root "local-dep"}}
               :tasks {cp (prn (babashka.classpath/get-classpath))}})
