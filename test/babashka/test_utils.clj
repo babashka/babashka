@@ -48,13 +48,8 @@
   (reset! main/env {})
   (vreset! common/bb-edn nil)
   (System/clearProperty "babashka.config")
-  (let [;; _ (prn :args args)
-        args (cond-> args
-               (and *bb-edn-path* (not (some #(= "--config" %) args)))
-               (->> (list* "--config" *bb-edn-path*))
-               (and *bb-edn-path* (not (some #(= "--deps-root" %) args)))
-               (->> (list* "--deps-root" ".")))
-        ;; _ (prn :config (not (some #(= "--config" %) args)) :deps-root (not (some #(= "--deps-root" %) args)) :args args)
+  (let [args (cond-> args *bb-edn-path*
+                     (->> (list* "--config" *bb-edn-path* "--deps-root" ".")))
         os (java.io.StringWriter.)
         es (if-let [err (:err input-or-opts)]
              err (java.io.StringWriter.))
