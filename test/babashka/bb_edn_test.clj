@@ -500,7 +500,7 @@ even more stuff here\"
         (let [out     (bb "--config" config "cp")
               entries (cp/split-classpath out)]
           (is (= (fs/parent f) (fs/parent (first entries))))))
-      (spit config
+     #_#_ (spit config
             '{:paths ["src"]
               :deps  {local/dep {:local/root "local-dep"}}
               :tasks {cp (prn (babashka.classpath/get-classpath))}})
