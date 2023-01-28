@@ -59,42 +59,46 @@
   then used to resolve dependencies in babashka."
   ([deps-map] (add-deps deps-map nil))
   ([deps-map {:keys [:aliases :env :extra-env :force]}]
-   (when-let [paths (:paths deps-map)]
-     (let [paths (if-let [deps-root (:deps-root @bb-edn)]
-                   (let [deps-root (fs/absolutize deps-root)
-                         paths (mapv #(str (fs/file deps-root %)) paths)]
-                     paths)
-                   paths)]
-       (cp/add-classpath (str/join cp/path-sep paths))))
-   (let [need-deps? (or (seq (:deps deps-map))
-                        (and (:aliases deps-map)
-                             aliases))]
-     (when need-deps?
-       (let [deps-map (dissoc deps-map
-                              ;; paths are added manually above
-                              ;; extra-paths are added as :paths in tasks
-                              :paths :tasks :raw :file :deps-root
-                              :min-bb-version)]
-         (binding [*print-namespace-maps* false]
-           (let [deps-map (assoc-in deps-map [:aliases :org.babashka/defaults]
-                                    {:replace-paths [] ;; babashka sets paths manually
-                                     :classpath-overrides (cond->
-                                                              '{org.clojure/clojure ""
-                                                                org.clojure/spec.alpha ""}
-                                                            ;; only remove core specs when they are not mentioned in deps map
-                                                            (not (str/includes? (str deps-map) "org.clojure/core.specs.alpha"))
-                                                            (assoc 'org.clojure/core.specs.alpha ""))})
-                 args (list "-Srepro" ;; do not include deps.edn from user config
-                            "-Spath" "-Sdeps" (str deps-map)
-                            "-Sdeps-file" "") ;; we reset deps file so the local deps.edn isn't used
-                 args (if force (cons "-Sforce" args) args)
-                 args (concat args [(str "-A:" (str/join ":" (cons ":org.babashka/defaults" aliases)))])
-                 cp (with-out-str (binding [deps/*env* env
-                                            deps/*extra-env* extra-env]
-                                    (apply deps/-main args)))
-                 cp (str/trim cp)
-                 cp (str/replace cp (re-pattern (str cp/path-sep "+$")) "")]
-             (cp/add-classpath cp))))))))
+   (let [deps-root (:deps-root @bb-edn)]
+     (when-let [paths (:paths deps-map)]
+       (let [paths (if deps-root
+                     (let [deps-root (fs/absolutize deps-root)
+                           paths (mapv #(str (fs/file deps-root %)) paths)]
+                       paths)
+                     paths)]
+         (cp/add-classpath (str/join cp/path-sep paths))))
+     (let [need-deps? (or (seq (:deps deps-map))
+                          (and (:aliases deps-map)
+                               aliases))]
+       (when need-deps?
+         (let [deps-map (dissoc deps-map
+                                ;; paths are added manually above
+                                ;; extra-paths are added as :paths in tasks
+                                :paths :tasks :raw :file :deps-root
+                                :min-bb-version)]
+           (binding [*print-namespace-maps* false]
+             (let [deps-map (assoc-in deps-map [:aliases :org.babashka/defaults]
+                                      {:replace-paths [] ;; babashka sets paths manually
+                                       :classpath-overrides (cond->
+                                                                '{org.clojure/clojure ""
+                                                                  org.clojure/spec.alpha ""}
+                                                              ;; only remove core specs when they are not mentioned in deps map
+                                                              (not (str/includes? (str deps-map) "org.clojure/core.specs.alpha"))
+                                                              (assoc 'org.clojure/core.specs.alpha ""))})
+                   args (list "-Srepro" ;; do not include deps.edn from user config
+                              "-Spath" "-Sdeps" (str deps-map)
+                              "-Sdeps-file" "__babashka_no_deps_file__.edn") ;; we reset deps file so the local deps.edn isn't used
+                   args (if force (cons "-Sforce" args) args)
+                   args (concat args [(str "-A:" (str/join ":" (cons ":org.babashka/defaults" aliases)))])
+                   bindings (cond->
+                              {#'deps/*env* env
+                               #'deps/*extra-env* extra-env}
+                              deps-root (assoc #'deps/*dir* (str deps-root)))
+                   cp (with-out-str (with-bindings bindings
+                                      (apply deps/-main args)))
+                   cp (str/trim cp)
+                   cp (str/replace cp (re-pattern (str cp/path-sep "+$")) "")]
+               (cp/add-classpath cp)))))))))
 
 (def deps-namespace
   {'add-deps (sci/copy-var add-deps dns)

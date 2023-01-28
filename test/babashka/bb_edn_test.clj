@@ -483,3 +483,30 @@ even more stuff here\"
     "{:deps {}}"
     (is (= {1 {:a 1}}
            (bb "-Sdeps" "{:deps {medley/medley {:mvn/version \"1.4.0\"}}}" "-e" "(require 'medley.core) (medley.core/index-by :a [{:a 1}])")))))
+
+(deftest deps-root-test
+  (fs/with-temp-dir [dir {}]
+    (let [f      (fs/file dir "bb.edn")
+          config (str f)]
+      (spit config
+            '{:paths ["src"]
+              :tasks {cp (prn (babashka.classpath/get-classpath))}})
+      (testing "custom deps-root path"
+        (let [out     (bb "--config" config "--deps-root" (str dir) "cp")
+              entries (cp/split-classpath out)]
+          (is (= 1 (count entries)))
+          (is (= (fs/file dir "src") (fs/file (first entries))))))
+      (testing "default deps-root path is same as bb.edn"
+        (let [out     (bb "--config" config "cp")
+              entries (cp/split-classpath out)]
+          (is (= (fs/parent f) (fs/parent (first entries))))))
+      (spit config
+            '{:paths ["src"]
+              :deps  {local/dep {:local/root "local-dep"}}
+              :tasks {cp (prn (babashka.classpath/get-classpath))}})
+      (testing "relative paths in deps should be relative to bb.edn"
+        (let [root    (fs/create-dir (fs/file dir "local-dep"))
+              _ (spit (str (fs/file root "deps.edn")) {})
+              out     (bb "--config" config "cp")
+              entries (cp/split-classpath out)]
+          (is (= (fs/parent f) (fs/parent (first entries)))))))))
