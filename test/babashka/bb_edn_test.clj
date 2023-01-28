@@ -499,4 +499,14 @@ even more stuff here\"
       (testing "default deps-root path is same as bb.edn"
         (let [out     (bb "--config" config "cp")
               entries (cp/split-classpath out)]
+          (is (= (fs/parent f) (fs/parent (first entries))))))
+      (spit config
+            '{:paths ["src"]
+              :deps  {local/dep {:local/root "local-dep"}}
+              :tasks {cp (prn (babashka.classpath/get-classpath))}})
+      (testing "relative paths in deps should be relative to bb.edn"
+        (let [root    (fs/create-dir (fs/file dir "local-dep"))
+              _ (spit (str (fs/file root "deps.edn")) {})
+              out     (bb "--config" config "cp")
+              entries (cp/split-classpath out)]
           (is (= (fs/parent f) (fs/parent (first entries)))))))))
