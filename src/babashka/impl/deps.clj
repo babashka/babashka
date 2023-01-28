@@ -87,7 +87,7 @@
                                                               (assoc 'org.clojure/core.specs.alpha ""))})
                    args (list "-Srepro" ;; do not include deps.edn from user config
                               "-Spath" "-Sdeps" (str deps-map)
-                              "-Sdeps-file" "nil") ;; we reset deps file so the local deps.edn isn't used
+                              "-Sdeps-file" "__babashka_no_deps_file__.edn") ;; we reset deps file so the local deps.edn isn't used
                    args (if force (cons "-Sforce" args) args)
                    args (concat args [(str "-A:" (str/join ":" (cons ":org.babashka/defaults" aliases)))])
                    bindings (cond->
