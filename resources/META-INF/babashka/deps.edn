@@ -43,7 +43,7 @@
         babashka/clojure-lanterna {:mvn/version "0.9.8-SNAPSHOT"}
         org.clojure/core.match {:mvn/version "1.0.0"}
         hiccup/hiccup {:mvn/version "2.0.0-alpha2"}
-        rewrite-clj/rewrite-clj {:mvn/version "1.1.45"}
+        rewrite-clj/rewrite-clj {:mvn/version "1.1.46"}
         selmer/selmer {:mvn/version "1.12.50"}
         com.taoensso/timbre {:mvn/version "6.0.1"}
         org.clojure/tools.logging {:mvn/version "1.1.0"}
@@ -51,7 +51,7 @@
         insn/insn {:mvn/version "0.5.2"}
         org.clojure/core.rrb-vector {:mvn/version "0.1.2"}
         org.babashka/cli {:mvn/version "0.6.45"}
-        org.babashka/http-client {:mvn/version "0.0.2"}}
+        org.babashka/http-client {:mvn/version "0.0.3"}}
  :aliases {:babashka/dev
            {:main-opts ["-m" "babashka.main"]}
            :profile
