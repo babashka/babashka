@@ -11,7 +11,7 @@
                  "babashka.core/src"
                  "babashka.nrepl/src" "depstar/src" "process/src"
                  "deps.clj/src" "deps.clj/resources"
-                 "reify/src"]
+                 "impl-java/src"]
   ;; for debugging Reflector.java code:
   ;; :java-source-paths ["sci/reflector/src-java"]
   :java-source-paths ["src-java"]
@@ -26,7 +26,7 @@
                  [nrepl/bencode "1.1.0"]
                  [borkdude/sci.impl.reflector "0.0.1"]
                  [org.babashka/sci.impl.types "0.0.2"]
-                 [org.babashka/babashka.impl.reify "0.1.5"]
+                 [org.babashka/babashka.impl.java "0.1.6"]
                  [org.clojure/core.async "1.6.673"]
                  [org.clojure/test.check "1.1.1"]
                  [com.github.clj-easy/graal-build-time "0.1.0"]

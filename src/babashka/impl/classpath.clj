@@ -10,7 +10,7 @@
 
 (set! *warn-on-reflection* true)
 
-(defn getResource [^java.net.URLClassLoader class-loader resource-paths url?]
+(defn getResource [^babashka.impl.URLClassLoader class-loader resource-paths url?]
   (some (fn [resource]
           (when-let [^java.net.URL res (.findResource class-loader resource)]
             (if url?
@@ -26,13 +26,13 @@
 (defn ->url ^java.net.URL [^String s]
   (.toURL (java.io.File. s)))
 
-(defn new-loader ^java.net.URLClassLoader
+(defn new-loader ^babashka.impl.URLClassLoader
   ([paths]
-   (java.net.URLClassLoader/newInstance (into-array java.net.URL paths)))
-  ([paths parent-loader]
-   (java.net.URLClassLoader/newInstance (into-array java.net.URL paths) parent-loader)))
+   (babashka.impl.URLClassLoader. (into-array java.net.URL (map ->url paths))))
+  #_([paths parent-loader]
+   (babashka.impl.URLClassLoader. (into-array java.net.URL paths) parent-loader)))
 
-(def ^java.net.URLClassLoader the-url-loader (new-loader []))
+(def ^babashka.impl.URLClassLoader the-url-loader (new-loader []))
 
 (defn add-classpath
   "Adds extra-classpath, a string as for example returned by clojure
@@ -40,8 +40,12 @@
   [^String extra-classpath]
   (let [paths (.split extra-classpath path-sep)
         paths (map ->url paths)
-        loader (new-loader paths the-url-loader)]
-    (alter-var-root #'the-url-loader (constantly loader))
+        _(reduce (fn [loader path]
+                   (._addURL ^babashka.impl.URLClassLoader loader path)
+                   loader)
+                 the-url-loader
+                 paths)]
+    ;; (run! prn (.getURLs the-url-loader))
     (System/setProperty "java.class.path"
                         (let [system-cp (System/getProperty "java.class.path")]
                           (-> (cond-> system-cp
