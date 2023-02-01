@@ -41,7 +41,12 @@
   (let [paths (.split extra-classpath path-sep)
         paths (map ->url paths)
         loader (new-loader paths the-url-loader)]
-    (alter-var-root #'the-url-loader (constantly loader)))
+    (alter-var-root #'the-url-loader (constantly loader))
+    (System/setProperty "java.class.path"
+                        (let [system-cp (System/getProperty "java.class.path")]
+                          (-> (cond-> system-cp
+                                (not (str/blank? system-cp)) (str path-sep))
+                              (str extra-classpath)))))
   nil)
 
 (defn resource-paths [namespace]
@@ -72,7 +77,7 @@
 (defn get-classpath
   "Returns the current classpath as set by --classpath, BABASHKA_CLASSPATH and add-classpath."
   []
-  (str/join path-sep (map str (.getURLs the-url-loader))))
+  (System/getProperty "java.class.path"))
 
 (defn resource
   (^URL [path] (resource the-url-loader path))
