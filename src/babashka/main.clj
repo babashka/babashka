@@ -781,7 +781,8 @@ Use bb run --help to show this help output.
       env-os-arch-present? (not= env-os-arch sys-os-arch))))
 
 (defn exec [cli-opts]
-  (binding [*unrestricted* true]
+  (with-bindings {#'*unrestricted* true
+                  clojure.lang.Compiler/LOADER @cp/the-url-loader}
     (sci/binding [core/warn-on-reflection @core/warn-on-reflection
                   core/unchecked-math @core/unchecked-math
                   core/data-readers @core/data-readers
@@ -837,8 +838,7 @@ Use bb run --help to show this help output.
             _ (when jar
                 (cp/add-classpath jar))
             load-fn (fn [{:keys [:namespace :reload]}]
-                      (let [{:keys [loader]}
-                            @cp/cp-state]
+                      (let [loader @cp/the-url-loader]
                         (or
                          (when ;; ignore built-in namespaces when uberscripting, unless with :reload
                              (and uberscript
@@ -884,7 +884,7 @@ Use bb run --help to show this help output.
                            nil))))
             main (if (and jar (not main))
                    (when-let [res (cp/getResource
-                                   (cp/loader jar)
+                                   (cp/new-loader [jar])
                                    ["META-INF/MANIFEST.MF"] {:url? true})]
                      (cp/main-ns res))
                    main)
@@ -934,7 +934,7 @@ Use bb run --help to show this help output.
                                                 :debug debug
                                                 :preloads preloads
                                                 :init init
-                                                :loader (:loader @cp/cp-state)}))))
+                                                :loader @cp/the-url-loader}))))
             expression (str/join " " expressions) ;; this might mess with the locations...
             exit-code
             ;; handle preloads
@@ -948,7 +948,7 @@ Use bb run --help to show this help output.
                                               :debug debug
                                               :preloads preloads
                                               :init init
-                                              :loader (:loader @cp/cp-state)})))))
+                                              :loader @cp/the-url-loader})))))
                     nil))
             exit-code
             ;; handle --init
@@ -961,7 +961,7 @@ Use bb run --help to show this help output.
                                             :debug debug
                                             :preloads preloads
                                             :init init
-                                            :loader (:loader @cp/cp-state)}))))
+                                            :loader @cp/the-url-loader}))))
                     nil))
             ;; socket REPL is start asynchronously. when no other args are
             ;; provided, a normal REPL will be started as well, which causes the
@@ -1020,7 +1020,7 @@ Use bb run --help to show this help output.
                              (error-handler e {:expression expression
                                                :debug debug
                                                :preloads preloads
-                                               :loader (:loader @cp/cp-state)}))))
+                                               :loader @cp/the-url-loader}))))
                        clojure [nil (if-let [proc (bdeps/clojure command-line-args)]
                                       (-> @proc :exit)
                                       0)]
@@ -1080,7 +1080,7 @@ Use bb run --help to show this help output.
         abs-path #(-> % io/file .getAbsolutePath)
         bb-edn-file (cond
                       config (when (fs/exists? config) (abs-path config))
-                      jar (some-> jar cp/loader (cp/resource "META-INF/bb.edn") .toString)
+                      jar (some-> [jar] cp/new-loader (cp/resource "META-INF/bb.edn") .toString)
                       :else (when (fs/exists? "bb.edn") (abs-path "bb.edn")))
         bb-edn (when (or bb-edn-file merge-deps)
                  (when bb-edn-file (System/setProperty "babashka.config" bb-edn-file))
@@ -1099,6 +1099,7 @@ Use bb run --help to show this help output.
                    (vreset! common/bb-edn edn)))
         ;; _ (.println System/err (str bb-edn))
         min-bb-version (:min-bb-version bb-edn)]
+    (System/setProperty "java.class.path" "")
     (when min-bb-version
       (when-not (satisfies-min-version? min-bb-version)
         (binding [*out* *err*]

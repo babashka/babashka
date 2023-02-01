@@ -111,7 +111,9 @@
     clojure.lang.RT
     {:methods [{:name "aget"}
                {:name "aset"}
-               {:name "aclone"}]}
+               {:name "aclone"}
+               ;; we expose this via the Compiler/LOADER dynamic var
+               {:name "baseLoader"}]}
     clojure.lang.Compiler
     {:fields [{:name "specials"}
               {:name "CHAR_MAP"}]}
@@ -140,7 +142,18 @@
     {:methods [{:name "hasNext"}
                {:name "next"}]}
     java.util.TimeZone
-    {:methods [{:name "getTimeZone"}]}})
+    {:methods [{:name "getTimeZone"}]}
+    java.net.URLClassLoader
+    {:methods [{:name "close"}
+               {:name "findResource"}
+               {:name "findResources"}
+               {:name "getResourceAsStream"}
+               {:name "getURLs"}]}
+    java.lang.ClassLoader
+    {:methods [{:name "getResource"}
+               {:name "getResources"}
+               {:name "getResourceAsStream"}
+               {:name "getParent"}]}})
 
 (def custom-map
   (cond->
@@ -561,7 +574,6 @@
                       java.lang.LinkageError
                       java.lang.ThreadDeath
                       java.lang.VirtualMachineError
-                      java.net.URLClassLoader
                       java.sql.Timestamp
                       java.util.concurrent.TimeoutException
                       java.util.Collection
@@ -630,6 +642,10 @@
                          (instance? sci.impl.types.IReified v)
                          (first (t/getInterfaces v))
                          ;; fix for #1061
+                         (instance? java.net.URLClassLoader v)
+                         java.net.URLClassLoader
+                         (instance? java.lang.ClassLoader v)
+                         java.lang.ClassLoader
                          (instance? java.io.Closeable v)
                          java.io.Closeable
                          (instance? java.nio.file.attribute.BasicFileAttributes v)
@@ -765,8 +781,9 @@
        (sort-by :name)
        (vec)))
 
-(defn all-classes []
+(defn all-classes
   "Returns every java.lang.Class instance Babashka supports."
+  []
   (->> (reflection-file-entries)
        (map :name)
        (map #(Class/forName %))))
