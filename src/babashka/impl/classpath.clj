@@ -77,7 +77,9 @@
 (defn get-classpath
   "Returns the current classpath as set by --classpath, BABASHKA_CLASSPATH and add-classpath."
   []
-  (System/getProperty "java.class.path"))
+  (let [cp (System/getProperty "java.class.path")]
+    (when-not (str/blank? cp)
+      cp)))
 
 (defn resource
   (^URL [path] (resource the-url-loader path))

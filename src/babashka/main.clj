@@ -883,7 +883,7 @@ Use bb run --help to show this help output.
                            nil))))
             main (if (and jar (not main))
                    (when-let [res (cp/getResource
-                                   (cp/new-loader [jar])
+                                   (cp/new-loader [jar] cp/the-url-loader)
                                    ["META-INF/MANIFEST.MF"] {:url? true})]
                      (cp/main-ns res))
                    main)
@@ -1098,6 +1098,7 @@ Use bb run --help to show this help output.
                    (vreset! common/bb-edn edn)))
         ;; _ (.println System/err (str bb-edn))
         min-bb-version (:min-bb-version bb-edn)]
+    (System/setProperty "java.class.path" "")
     (when min-bb-version
       (when-not (satisfies-min-version? min-bb-version)
         (binding [*out* *err*]
