@@ -17,7 +17,8 @@
   :java-source-paths ["src-java"]
   :resource-paths ["resources" "sci/resources"]
   :test-selectors {:default (complement :windows-only)
-                   :windows (complement :skip-windows)}
+                   :windows (complement :skip-windows)
+                   :non-flaky (complement :flaky)}
   :dependencies [[org.clojure/clojure "1.11.1"]
                  [borkdude/edamame "1.1.17"]
                  [borkdude/graal.locking "0.0.2"]

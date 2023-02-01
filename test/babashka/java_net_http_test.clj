@@ -62,7 +62,7 @@
 
 ;; HttpClient options
 
-(deftest authenticator-test
+(deftest ^:flaky authenticator-test
   (is (= [401 200]
          (bb
           '(do
@@ -89,7 +89,7 @@
                    auth-res (.send auth-client req handler)]
                [(.statusCode no-auth-res) (.statusCode auth-res)]))))))
 
-(deftest cookie-test
+(deftest ^:flaky cookie-test
   (is (= []
          (bb '(do (ns net
                     (:import [java.net CookieManager]))
@@ -121,7 +121,7 @@
                       first
                       (.getDomain))))))))
 
-(deftest connect-timeout-test
+(deftest ^:flaky connect-timeout-test
   (is (str/includes?
          (bb
           '(do
@@ -150,7 +150,7 @@
          ;; can be either java.net.http.HttpConnectTimeoutException or java.net.http.HttpTimeoutException
          "TimeoutException")))
 
-(deftest executor-test
+(deftest ^:flaky executor-test
   (is (= 200
          (bb
           '(do
@@ -172,7 +172,7 @@
                    res (.send client req (HttpResponse$BodyHandlers/discarding))]
                (.statusCode res)))))))
 
-(deftest proxy-test
+(deftest ^:flaky proxy-test
   (is (= true
          (bb
           '(do
@@ -210,7 +210,7 @@
                    res (.send client req (HttpResponse$BodyHandlers/discarding))]
                (.statusCode res)))))))
 
-(deftest redirect-test
+(deftest ^:flaky redirect-test
   (let [redirect-prog
         (fn [redirect-kind]
           (str/replace (str '(do
@@ -244,7 +244,7 @@
     (println "Testing redirect never")
     (is (= 302 (bb (redirect-prog :never))))))
 
-(deftest ssl-context-test
+(deftest ^:flaky ssl-context-test
   (let [result
         (bb
          '(do
@@ -336,7 +336,7 @@
 
 ;; HttpRequest
 
-(deftest body-publishers-test
+(deftest ^:flaky body-publishers-test
   (is (= true
          (bb
           '(do
@@ -428,7 +428,7 @@
                        :data)))))))))
 
 
-(deftest request-timeout-test
+(deftest ^:flaky request-timeout-test
   (is (str/includes?
          (bb
           '(do
@@ -455,7 +455,7 @@
                        name))))))
          "TimeoutException")))
 
-(deftest body-handlers-test
+(deftest ^:flaky body-handlers-test
   (is (= true
          (bb
           '(do
