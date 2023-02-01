@@ -10,30 +10,39 @@
 
 (set! *warn-on-reflection* true)
 
-(defprotocol IResourceResolver
-  (getResource [this paths opts]))
-
-(deftype Loader [class-loader]
-  IResourceResolver
-  (getResource [_ resource-paths url?]
-    (some (fn [resource]
-            (when-let [^java.net.URL res (.findResource ^java.net.URLClassLoader class-loader resource)]
-              (if url?
-                res
-                {:file (if (= "jar" (.getProtocol res))
-                         resource
-                         (.getFile res))
-                 :source (slurp res)})))
-          resource-paths)))
+(defn getResource [^java.net.URLClassLoader class-loader resource-paths url?]
+  (some (fn [resource]
+          (when-let [^java.net.URL res (.findResource class-loader resource)]
+            (if url?
+              res
+              {:file (if (= "jar" (.getProtocol res))
+                       resource
+                       (.getFile res))
+               :source (slurp res)})))
+        resource-paths))
 
 (def path-sep (System/getProperty "path.separator"))
 
-(defn ->url [^String s]
+(defn ->url ^java.net.URL [^String s]
   (.toURL (java.io.File. s)))
 
-(defn loader [^String classpath]
-  (let [parts (.split classpath path-sep)]
-    (Loader. (java.net.URLClassLoader/newInstance (into-array java.net.URL (map ->url parts))))))
+(defn new-loader ^java.net.URLClassLoader
+  ([paths]
+   (java.net.URLClassLoader/newInstance (into-array java.net.URL paths)))
+  ([paths parent-loader]
+   (java.net.URLClassLoader/newInstance (into-array java.net.URL paths) parent-loader)))
+
+(def ^java.net.URLClassLoader the-url-loader (new-loader []))
+
+(defn add-classpath
+  "Adds extra-classpath, a string as for example returned by clojure
+  -Spath, to the current classpath."
+  [^String extra-classpath]
+  (let [paths (.split extra-classpath path-sep)
+        paths (map ->url paths)
+        loader (new-loader paths the-url-loader)]
+    (alter-var-root #'the-url-loader (constantly loader)))
+  nil)
 
 (defn resource-paths [namespace]
   (let [ns-str (name namespace)
@@ -55,21 +64,6 @@
             (.getValue "Main-Class")
             (demunge))))
 
-(def cp-state (atom nil))
-
-(defn add-classpath
-  "Adds extra-classpath, a string as for example returned by clojure
-  -Spath, to the current classpath."
-  [extra-classpath]
-  (swap! cp-state
-         (fn [{:keys [:cp]}]
-           (let [new-cp
-                 (if-not cp extra-classpath
-                         (str cp path-sep extra-classpath))]
-             {:loader (loader new-cp)
-              :cp new-cp})))
-  nil)
-
 (defn split-classpath
   "Returns the classpath as a seq of strings, split by the platform
   specific path separator."
@@ -78,10 +72,10 @@
 (defn get-classpath
   "Returns the current classpath as set by --classpath, BABASHKA_CLASSPATH and add-classpath."
   []
-  (:cp @cp-state))
+  (str/join path-sep (map str (.getURLs the-url-loader))))
 
 (defn resource
-  (^URL [path] (when-let [st @cp-state] (resource (:loader st) path)))
+  (^URL [path] (resource the-url-loader path))
   (^URL [loader path]
    (if (str/starts-with? path "/") nil ;; non-relative paths always return nil
        (getResource loader [path] true))))

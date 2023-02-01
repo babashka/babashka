@@ -111,7 +111,9 @@
     clojure.lang.RT
     {:methods [{:name "aget"}
                {:name "aset"}
-               {:name "aclone"}]}
+               {:name "aclone"}
+               ;; we expose this via the Compiler/LOADER dynamic var
+               {:name "baseLoader"}]}
     clojure.lang.Compiler
     {:fields [{:name "specials"}
               {:name "CHAR_MAP"}]}
