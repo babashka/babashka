@@ -644,6 +644,8 @@
                          ;; fix for #1061
                          (instance? java.net.URLClassLoader v)
                          java.net.URLClassLoader
+                         (instance? java.lang.ClassLoader v)
+                         java.lang.ClassLoader
                          (instance? java.io.Closeable v)
                          java.io.Closeable
                          (instance? java.nio.file.attribute.BasicFileAttributes v)
@@ -779,8 +781,9 @@
        (sort-by :name)
        (vec)))
 
-(defn all-classes []
+(defn all-classes
   "Returns every java.lang.Class instance Babashka supports."
+  []
   (->> (reflection-file-entries)
        (map :name)
        (map #(Class/forName %))))
