@@ -145,12 +145,14 @@
     {:methods [{:name "getTimeZone"}]}
     java.net.URLClassLoader
     {:methods [{:name "close"}
-               {:name "getResource"}
-               {:name "getResources"}
                {:name "findResource"}
                {:name "findResources"}
                {:name "getResourceAsStream"}
-               {:name "getURLs"}
+               {:name "getURLs"}]}
+    java.lang.ClassLoader
+    {:methods [{:name "getResource"}
+               {:name "getResources"}
+               {:name "getResourceAsStream"}
                {:name "getParent"}]}})
 
 (def custom-map
