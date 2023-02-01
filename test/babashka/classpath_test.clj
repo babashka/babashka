@@ -70,3 +70,10 @@
            (str/trim
             (tu/bb nil "--classpath" "test-resources/babashka/src_for_classpath_test/foo.jar"
                    "(pos? (count (slurp (io/resource \"foo.clj\")))) "))))))
+
+(deftest classloader-test
+  (let [url
+        (tu/bb nil "--classpath" "test-resources/babashka/src_for_classpath_test/foo.jar"
+               "(first (map str (.getURLs (clojure.lang.RT/baseLoader))))")]
+    (is (str/includes? url "file:"))
+    (is (str/includes? url "foo.jar"))))
