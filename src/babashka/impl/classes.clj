@@ -142,7 +142,13 @@
     {:methods [{:name "hasNext"}
                {:name "next"}]}
     java.util.TimeZone
-    {:methods [{:name "getTimeZone"}]}})
+    {:methods [{:name "getTimeZone"}]}
+    java.net.URLClassLoader
+    {:methods [{:name "close"}
+               {:name "findResource"}
+               {:name "findResources"}
+               {:name "getResourceAsStream"}
+               {:name "getURLs"}]}})
 
 (def custom-map
   (cond->
@@ -563,7 +569,6 @@
                       java.lang.LinkageError
                       java.lang.ThreadDeath
                       java.lang.VirtualMachineError
-                      java.net.URLClassLoader
                       java.sql.Timestamp
                       java.util.concurrent.TimeoutException
                       java.util.Collection
@@ -632,6 +637,8 @@
                          (instance? sci.impl.types.IReified v)
                          (first (t/getInterfaces v))
                          ;; fix for #1061
+                         (instance? java.net.URLClassLoader v)
+                         java.net.URLClassLoader
                          (instance? java.io.Closeable v)
                          java.io.Closeable
                          (instance? java.nio.file.attribute.BasicFileAttributes v)

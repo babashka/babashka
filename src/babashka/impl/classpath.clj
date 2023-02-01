@@ -28,11 +28,9 @@
 
 (defn new-loader ^babashka.impl.URLClassLoader
   ([paths]
-   (babashka.impl.URLClassLoader. (into-array java.net.URL (map ->url paths))))
-  #_([paths parent-loader]
-   (babashka.impl.URLClassLoader. (into-array java.net.URL paths) parent-loader)))
+   (babashka.impl.URLClassLoader. (into-array java.net.URL (map ->url paths)))))
 
-(def ^babashka.impl.URLClassLoader the-url-loader (new-loader []))
+(def ^babashka.impl.URLClassLoader the-url-loader (delay (new-loader [])))
 
 (defn add-classpath
   "Adds extra-classpath, a string as for example returned by clojure
@@ -40,11 +38,11 @@
   [^String extra-classpath]
   (let [paths (.split extra-classpath path-sep)
         paths (map ->url paths)
-        _(reduce (fn [loader path]
-                   (._addURL ^babashka.impl.URLClassLoader loader path)
-                   loader)
-                 the-url-loader
-                 paths)]
+        loader @the-url-loader]
+    (run! (fn [path]
+            (._addURL ^babashka.impl.URLClassLoader loader path)
+            loader)
+          paths)
     ;; (run! prn (.getURLs the-url-loader))
     (System/setProperty "java.class.path"
                         (let [system-cp (System/getProperty "java.class.path")]
@@ -86,7 +84,7 @@
       cp)))
 
 (defn resource
-  (^URL [path] (resource the-url-loader path))
+  (^URL [path] (resource @the-url-loader path))
   (^URL [loader path]
    (if (str/starts-with? path "/") nil ;; non-relative paths always return nil
        (getResource loader [path] true))))
@@ -106,4 +104,3 @@
   (def l (loader cp))
   (source-for-namespace l 'babashka.impl.cheshire nil)
   (time (:file (source-for-namespace l 'cheshire.core nil)))) ;; 20ms -> 2.25ms
-

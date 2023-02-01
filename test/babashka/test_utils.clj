@@ -44,7 +44,7 @@
         (System/exit 1)))))
 
 (defn bb-jvm [input-or-opts & args]
-  (alter-var-root #'cp/the-url-loader (constantly (cp/new-loader [])))
+  (alter-var-root #'cp/the-url-loader (constantly (delay (cp/new-loader []))))
   (reset! main/env {})
   (vreset! common/bb-edn nil)
   (System/clearProperty "babashka.config")

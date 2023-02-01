@@ -782,7 +782,7 @@ Use bb run --help to show this help output.
 
 (defn exec [cli-opts]
   (with-bindings {#'*unrestricted* true
-                  clojure.lang.Compiler/LOADER cp/the-url-loader}
+                  clojure.lang.Compiler/LOADER @cp/the-url-loader}
     (sci/binding [core/warn-on-reflection @core/warn-on-reflection
                   core/unchecked-math @core/unchecked-math
                   core/data-readers @core/data-readers
@@ -838,7 +838,7 @@ Use bb run --help to show this help output.
             _ (when jar
                 (cp/add-classpath jar))
             load-fn (fn [{:keys [:namespace :reload]}]
-                      (let [loader cp/the-url-loader]
+                      (let [loader @cp/the-url-loader]
                         (or
                          (when ;; ignore built-in namespaces when uberscripting, unless with :reload
                              (and uberscript
@@ -934,7 +934,7 @@ Use bb run --help to show this help output.
                                                 :debug debug
                                                 :preloads preloads
                                                 :init init
-                                                :loader cp/the-url-loader}))))
+                                                :loader @cp/the-url-loader}))))
             expression (str/join " " expressions) ;; this might mess with the locations...
             exit-code
             ;; handle preloads
@@ -948,7 +948,7 @@ Use bb run --help to show this help output.
                                               :debug debug
                                               :preloads preloads
                                               :init init
-                                              :loader cp/the-url-loader})))))
+                                              :loader @cp/the-url-loader})))))
                     nil))
             exit-code
             ;; handle --init
@@ -961,7 +961,7 @@ Use bb run --help to show this help output.
                                             :debug debug
                                             :preloads preloads
                                             :init init
-                                            :loader cp/the-url-loader}))))
+                                            :loader @cp/the-url-loader}))))
                     nil))
             ;; socket REPL is start asynchronously. when no other args are
             ;; provided, a normal REPL will be started as well, which causes the
@@ -1020,7 +1020,7 @@ Use bb run --help to show this help output.
                              (error-handler e {:expression expression
                                                :debug debug
                                                :preloads preloads
-                                               :loader cp/the-url-loader}))))
+                                               :loader @cp/the-url-loader}))))
                        clojure [nil (if-let [proc (bdeps/clojure command-line-args)]
                                       (-> @proc :exit)
                                       0)]
