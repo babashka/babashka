@@ -92,7 +92,11 @@
                    args (concat args [(str "-A:" (str/join ":" (cons ":org.babashka/defaults" aliases)))])
                    bindings (cond->
                               {#'deps/*env* env
-                               #'deps/*extra-env* extra-env}
+                               #'deps/*extra-env* extra-env
+                               #'deps/*exit-fn* (fn
+                                                  ([_])
+                                                  ([_exit-code msg]
+                                                   (throw (Exception. msg))))}
                               deps-root (assoc #'deps/*dir* (str deps-root)))
                    cp (with-out-str (with-bindings bindings
                                       (apply deps/-main args)))
