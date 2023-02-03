@@ -56,6 +56,7 @@
    [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.string :as str]
+   [edamame.core :as edamame]
    [hf.depstar.uberjar :as uberjar]
    [sci.addons :as addons]
    [sci.core :as sci]
@@ -63,10 +64,10 @@
    [sci.impl.copy-vars :as sci-copy-vars]
    [sci.impl.io :as sio]
    [sci.impl.namespaces :as sci-namespaces]
+   [sci.impl.parser]
    [sci.impl.types :as sci-types]
    [sci.impl.unrestrict :refer [*unrestricted*]]
-   [sci.impl.vars :as vars]
-   [edamame.core :as edamame])
+   [sci.impl.vars :as vars])
   (:gen-class))
 
 (def windows?
@@ -791,6 +792,13 @@ Use bb run --help to show this help output.
   "Lazy reading of data reader functions"
   [ctx t]
   (or (@core/data-readers t)
+      (default-data-readers t)
+      (when (simple-symbol? t)
+        (when-let [the-var (sci/resolve ctx t)]
+          (some-> the-var meta :sci.impl.record/map-constructor)))
+      (when-let [f @sci.impl.parser/default-data-reader-fn]
+        (fn [form]
+          (f t form)))
       (let [;; urls is a vector for equality check
             urls (vec (.getURLs ^java.net.URLClassLoader @cp/the-url-loader))
             parsed-resources (or (get @seen-urls urls)
