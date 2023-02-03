@@ -20,7 +20,7 @@
          "impl-java/src"],
  :deps {org.clojure/clojure {:mvn/version "1.11.1"},
         org.babashka/sci {:local/root "sci"}
-        org.babashka/babashka.impl.java {:mvn/version "0.1.6"}
+        org.babashka/babashka.impl.java {:mvn/version "0.1.8"}
         org.babashka/sci.impl.types {:mvn/version "0.0.2"}
         babashka/babashka.curl {:local/root "babashka.curl"}
         babashka/fs {:local/root "fs"}

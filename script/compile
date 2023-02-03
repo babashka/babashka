@@ -26,17 +26,6 @@ fi
 export JAVA_HOME=$GRAALVM_HOME
 export PATH=$GRAALVM_HOME/bin:$PATH
 
-rm -rf resources/*.class
-# SVM_JAR=$(find -L "$GRAALVM_HOME" | grep svm.jar)
-# "$GRAALVM_HOME/bin/javac" -cp "$SVM_JAR" resources/CutOffCoreServicesDependencies.java
-# "$GRAALVM_HOME/bin/javac" -cp "$SVM_JAR" resources/CutOffSunAwtWwwContentAudioAiff.java
-# "$GRAALVM_HOME/bin/javac" -cp "$SVM_JAR" resources/CutOffMisc.java
-if [ -z "$BABASHKA_JAR" ]; then
-    lein with-profiles +reflection,+native-image "do" run
-    lein "do" clean, uberjar, metabom
-    BABASHKA_JAR=${BABASHKA_JAR:-"target/babashka-$BABASHKA_VERSION-standalone.jar"}
-fi
-
 # because script/test cleans target during ci before the jar can we saved
 cp target/metabom.jar .
 
