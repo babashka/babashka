@@ -798,7 +798,7 @@ Use bb run --help to show this help output.
                                                                                          "data_readers.clj"))
                                                          (enumeration-seq (.getResources cl
                                                                                          "data_readers.cljc")))
-                                       parsed-resources (apply merge (map parse-data-readers (map slurp (enumeration-seq resources))))
+                                       parsed-resources (apply merge (map parse-data-readers resources))
                                        _ (swap! seen-urls assoc urls parsed-resources)]
                                    parsed-resources))]
         (when-let [var-sym (get parsed-resources t)]
