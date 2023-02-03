@@ -82,3 +82,8 @@
                  (.getResourceAsStream (clojure.lang.RT/baseLoader) \"foo.clj\")
                  (.getResources (clojure.lang.RT/baseLoader) \"foo.clj\")])")]
     (is (= [true true true] (edn/read-string results)))))
+
+(deftest reader-tag-test
+  (is (= [[3 2 1] [1 2 3]]
+         (bb nil "--classpath" "test-resources/babashka/src_for_classpath_test"
+             "(require 'reader) [#r/reverse [1 2 3] #r/distinct [1 1 2 3]]"))))
