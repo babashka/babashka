@@ -81,4 +81,4 @@
                "(map some? [(.getResource (clojure.lang.RT/baseLoader) \"foo.clj\")
                  (.getResourceAsStream (clojure.lang.RT/baseLoader) \"foo.clj\")
                  (.getResources (clojure.lang.RT/baseLoader) \"foo.clj\")])")]
-    (is (= [true true true] results))))
+    (is (= [true true true] (edn/read-string results)))))
