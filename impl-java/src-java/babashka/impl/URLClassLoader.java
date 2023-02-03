@@ -1,3 +1,5 @@
+// This file is mostly a workaround for https://github.com/oracle/graal/issues/1956
+
 package babashka.impl;
 
 import java.util.WeakHashMap;
@@ -7,6 +9,9 @@ import java.net.*;
 import java.util.jar.*;
 
 public class URLClassLoader extends java.net.URLClassLoader implements Closeable {
+
+    private WeakHashMap<Closeable,Void>
+        closeables = new WeakHashMap<>();
 
     public URLClassLoader(java.net.URL[] urls) {
         super(urls);
@@ -20,16 +25,12 @@ public class URLClassLoader extends java.net.URLClassLoader implements Closeable
         super.addURL(url);
     }
 
+    // calling super.getResource() returned nil in native-image
     public java.net.URL getResource(String name) {
-        System.out.println("getResource name: " + name);
-        var res = super.getResource(name);
-        System.out.println("res: " + res);
         return findResource(name);
     }
 
-    private WeakHashMap<Closeable,Void>
-        closeables = new WeakHashMap<>();
-
+    // calling super.getResourceAsStream() returned nil in native-image
     public InputStream getResourceAsStream(String name) {
         Objects.requireNonNull(name);
         URL url = getResource(name);
@@ -46,7 +47,7 @@ public class URLClassLoader extends java.net.URLClassLoader implements Closeable
                         closeables.put(jar, null);
                     }
                 }
-            } else if (true) { // }(urlc instanceof sun.net.www.protocol.file.FileURLConnection) {
+            } else {
                 synchronized (closeables) {
                     closeables.put(is, null);
                 }
@@ -57,26 +58,22 @@ public class URLClassLoader extends java.net.URLClassLoader implements Closeable
         }
     }
 
-
     public java.util.Enumeration<java.net.URL> getResources(String name) throws java.io.IOException {
         return findResources(name);
     }
 
     public void close() throws IOException {
-        System.out.println("close");
         super.close();
 
         java.util.List<IOException> errors = new java.util.ArrayList<IOException>();
-
-        // now close any remaining streams.
 
         synchronized (closeables) {
             java.util.Set<Closeable> keys = closeables.keySet();
             for (Closeable c : keys) {
                 try {
                     c.close();
-                } catch (IOException ioex) {
-                    errors.add(ioex);
+                } catch (IOException ex) {
+                    errors.add(ex);
                 }
             }
             closeables.clear();
@@ -86,14 +83,12 @@ public class URLClassLoader extends java.net.URLClassLoader implements Closeable
             return;
         }
 
-        IOException firstex = errors.remove(0);
-
-        // Suppress any remaining exceptions
+        IOException firstEx = errors.remove(0);
 
         for (IOException error: errors) {
-            firstex.addSuppressed(error);
+            firstEx.addSuppressed(error);
         }
-        throw firstex;
+        throw firstEx;
     }
 
 }
