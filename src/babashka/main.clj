@@ -65,7 +65,8 @@
    [sci.impl.namespaces :as sci-namespaces]
    [sci.impl.types :as sci-types]
    [sci.impl.unrestrict :refer [*unrestricted*]]
-   [sci.impl.vars :as vars])
+   [sci.impl.vars :as vars]
+   [edamame.core :as edamame])
   (:gen-class))
 
 (def windows?
@@ -234,8 +235,7 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
  (clojure.repl/doc %1$s)
  true)" arg)))
       [nil 0]
-      [nil 1]))
-  ,)
+      [nil 1])))
 
 (defn print-run-help []
   (println (str/trim "
@@ -322,20 +322,20 @@ Use bb run --help to show this help output.
 
 (def aliases
   (cond->
-      '{str clojure.string
-        set clojure.set
-        tools.cli clojure.tools.cli
-        edn clojure.edn
-        wait babashka.wait
-        signal babashka.signal
-        shell clojure.java.shell
-        io clojure.java.io
-        json cheshire.core
-        curl babashka.curl
-        fs babashka.fs
-        bencode bencode.core
-        deps babashka.deps
-        async clojure.core.async}
+   '{str clojure.string
+     set clojure.set
+     tools.cli clojure.tools.cli
+     edn clojure.edn
+     wait babashka.wait
+     signal babashka.signal
+     shell clojure.java.shell
+     io clojure.java.io
+     json cheshire.core
+     curl babashka.curl
+     fs babashka.fs
+     bencode bencode.core
+     deps babashka.deps
+     async clojure.core.async}
     features/xml?        (assoc 'xml 'clojure.data.xml)
     features/yaml?       (assoc 'yaml 'clj-yaml.core)
     features/jdbc?       (assoc 'jdbc 'next.jdbc)
@@ -357,74 +357,73 @@ Use bb run --help to show this help output.
 
 (def namespaces
   (cond->
-      {'user {'*input* (reify
-                         sci-types/Eval
-                         (eval [_ _ctx _bindings]
-                           (force @input-var)))}
-       'clojure.core core-extras
-       'clojure.tools.cli tools-cli-namespace
-       'clojure.java.shell shell-namespace
-       'babashka.core bbcore/core-namespace
-       'babashka.nrepl.server nrepl-server-namespace
-       'babashka.wait wait-namespace
-       'babashka.signal signal-ns
-       'clojure.java.io io-namespace
-       'cheshire.core cheshire-core-namespace
-       'clojure.data data/data-namespace
-       'clojure.instant instant/instant-namespace
-       'clojure.stacktrace stacktrace-namespace
-       'clojure.zip zip-namespace
-       'clojure.main {:obj clojure-main-ns
-                      'demunge (sci/copy-var demunge clojure-main-ns)
-                      'repl-requires (sci/copy-var clojure-main/repl-requires clojure-main-ns)
-                      'repl (sci/new-var 'repl
-                                         (fn [& opts]
-                                           (let [opts (apply hash-map opts)]
-                                             (repl/start-repl! (common/ctx) opts))) {:ns clojure-main-ns})
-                      'with-bindings (sci/copy-var clojure-main/with-bindings clojure-main-ns)
-                      'repl-caught (sci/copy-var repl/repl-caught clojure-main-ns)
-                      'main main-var}
-       'clojure.test t/clojure-test-namespace
-       'clojure.math math-namespace
-       'babashka.classpath classpath-namespace
-       'babashka.classes classes-namespace
-       'clojure.pprint pprint-namespace
-       'babashka.curl curl-namespace
-       'babashka.fs fs-namespace
-       'babashka.pods pods/pods-namespace
-       'bencode.core bencode-namespace
-       'clojure.java.browse browse-namespace
-       'clojure.datafy datafy-namespace
-       'clojure.core.protocols protocols-namespace
-       'babashka.process process-namespace
-       'clojure.core.server clojure-core-server-namespace
-       'babashka.deps deps-namespace
-       'babashka.tasks tasks-namespace
-       'clojure.tools.reader.edn edn-namespace
-       'clojure.tools.reader.reader-types reader-types-namespace
-       'clojure.tools.reader reader-namespace
-       'clojure.core.async async-namespace
-       'clojure.core.async.impl.protocols async-protocols-namespace
-       'rewrite-clj.node rewrite/node-namespace
-       'rewrite-clj.paredit rewrite/paredit-namespace
-       'rewrite-clj.parser rewrite/parser-namespace
-       'rewrite-clj.zip rewrite/zip-namespace
-       'rewrite-clj.zip.subedit rewrite/subedit-namespace
-       'clojure.core.rrb-vector (if features/rrb-vector?
-                                  @(resolve 'babashka.impl.rrb-vector/rrb-vector-namespace)
-                                  {'catvec (sci/copy-var catvec
-                                                         (sci/create-ns 'clojure.core.rrb-vector))})
-       'edamame.core edamame-namespace
-       'sci.core {'format-stacktrace (sci/copy-var sci/format-stacktrace sci-ns)
-                  'stacktrace (sci/copy-var sci/stacktrace sci-ns)
+   {'user {'*input* (reify
+                      sci-types/Eval
+                      (eval [_ _ctx _bindings]
+                        (force @input-var)))}
+    'clojure.core core-extras
+    'clojure.tools.cli tools-cli-namespace
+    'clojure.java.shell shell-namespace
+    'babashka.core bbcore/core-namespace
+    'babashka.nrepl.server nrepl-server-namespace
+    'babashka.wait wait-namespace
+    'babashka.signal signal-ns
+    'clojure.java.io io-namespace
+    'cheshire.core cheshire-core-namespace
+    'clojure.data data/data-namespace
+    'clojure.instant instant/instant-namespace
+    'clojure.stacktrace stacktrace-namespace
+    'clojure.zip zip-namespace
+    'clojure.main {:obj clojure-main-ns
+                   'demunge (sci/copy-var demunge clojure-main-ns)
+                   'repl-requires (sci/copy-var clojure-main/repl-requires clojure-main-ns)
+                   'repl (sci/new-var 'repl
+                                      (fn [& opts]
+                                        (let [opts (apply hash-map opts)]
+                                          (repl/start-repl! (common/ctx) opts))) {:ns clojure-main-ns})
+                   'with-bindings (sci/copy-var clojure-main/with-bindings clojure-main-ns)
+                   'repl-caught (sci/copy-var repl/repl-caught clojure-main-ns)
+                   'main main-var}
+    'clojure.test t/clojure-test-namespace
+    'clojure.math math-namespace
+    'babashka.classpath classpath-namespace
+    'babashka.classes classes-namespace
+    'clojure.pprint pprint-namespace
+    'babashka.curl curl-namespace
+    'babashka.fs fs-namespace
+    'babashka.pods pods/pods-namespace
+    'bencode.core bencode-namespace
+    'clojure.java.browse browse-namespace
+    'clojure.datafy datafy-namespace
+    'clojure.core.protocols protocols-namespace
+    'babashka.process process-namespace
+    'clojure.core.server clojure-core-server-namespace
+    'babashka.deps deps-namespace
+    'babashka.tasks tasks-namespace
+    'clojure.tools.reader.edn edn-namespace
+    'clojure.tools.reader.reader-types reader-types-namespace
+    'clojure.tools.reader reader-namespace
+    'clojure.core.async async-namespace
+    'clojure.core.async.impl.protocols async-protocols-namespace
+    'rewrite-clj.node rewrite/node-namespace
+    'rewrite-clj.paredit rewrite/paredit-namespace
+    'rewrite-clj.parser rewrite/parser-namespace
+    'rewrite-clj.zip rewrite/zip-namespace
+    'rewrite-clj.zip.subedit rewrite/subedit-namespace
+    'clojure.core.rrb-vector (if features/rrb-vector?
+                               @(resolve 'babashka.impl.rrb-vector/rrb-vector-namespace)
+                               {'catvec (sci/copy-var catvec
+                                                      (sci/create-ns 'clojure.core.rrb-vector))})
+    'edamame.core edamame-namespace
+    'sci.core {'format-stacktrace (sci/copy-var sci/format-stacktrace sci-ns)
+               'stacktrace (sci/copy-var sci/stacktrace sci-ns)
                   ;; 'eval-string (sci/copy-var sci/eval-string sci-ns)
                   ;; 'eval-string* (sci/copy-var sci/eval-string* sci-ns)
                   ;; 'init (sci/copy-var sci/init sci-ns)
                   ;; 'fork (sci/copy-var sci/fork sci-ns)
-                  }
-       'babashka.cli cli/cli-namespace
-       'babashka.http-client http-client-namespace
-       }
+               }
+    'babashka.cli cli/cli-namespace
+    'babashka.http-client http-client-namespace}
     features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace)
                           'clojure.data.xml.event @(resolve 'babashka.impl.xml/xml-event-namespace)
                           'clojure.data.xml.tree @(resolve 'babashka.impl.xml/xml-tree-namespace))
@@ -461,7 +460,7 @@ Use bb run --help to show this help output.
                                 @(resolve 'babashka.impl.clojure.test.check/test-check-namespace)
                                 ;; it's better to load this from source by adding the clojure.test.check dependency
                                 #_#_'clojure.test.check.clojure-test
-                                @(resolve 'babashka.impl.clojure.test.check/test-check-clojure-test-namespace))
+                                  @(resolve 'babashka.impl.clojure.test.check/test-check-clojure-test-namespace))
     features/spec-alpha? (-> (assoc        ;; spec
                               'clojure.spec.alpha @(resolve 'babashka.impl.spec/spec-namespace)
                               'clojure.spec.gen.alpha @(resolve 'babashka.impl.spec/gen-namespace)
@@ -650,13 +649,13 @@ Use bb run --help to show this help output.
                 opts-map (assoc opts-map :prn true)]
             (recur (next options)
                    (update opts-map :expressions (fnil conj []) (first options))))
-          ("--main", "-m",)
+          ("--main", "-m")
           (let [options (next options)]
             (assoc opts-map :main (first options)
                    :command-line-args (if (= "--" (second options))
                                         (nthrest options 2)
                                         (rest options))))
-          ("--exec", "-x",)
+          ("--exec", "-x")
           (let [options (next options)]
             (assoc opts-map :exec (first options)
                    :command-line-args (if (= "--" (second options))
@@ -780,6 +779,33 @@ Use bb run --help to show this help output.
       env-os-name-present? (not= env-os-name sys-os-name)
       env-os-arch-present? (not= env-os-arch sys-os-arch))))
 
+(def seen-urls (atom nil))
+
+(defn parse-data-readers [s]
+  (edamame/parse-string s {:read-cond :allow
+                           :features #{:bb :clj}
+                           :eof nil}))
+
+(defn readers-fn
+  "Lazy reading of data reader functions"
+  [ctx t]
+  (or (@core/data-readers t)
+      (let [;; urls is a vector for equality check
+            urls (vec (.getURLs ^java.net.URLClassLoader @cp/the-url-loader))
+            parsed-resources (or (get @seen-urls urls)
+                                 (let [^java.net.URLClassLoader cl @cp/the-url-loader
+                                       resources (concat (enumeration-seq (.getResources cl
+                                                                                         "data_readers.clj"))
+                                                         (enumeration-seq (.getResources cl
+                                                                                         "data_readers.cljc")))
+                                       parsed-resources (apply merge (map parse-data-readers (map slurp (enumeration-seq resources))))
+                                       _ (swap! seen-urls assoc urls parsed-resources)]
+                                   parsed-resources))]
+        (when-let [var-sym (get parsed-resources t)]
+          (when-let [the-var (sci/resolve ctx var-sym)]
+            (sci/eval-form ctx (list 'clojure.core/var-set core/data-readers (list 'quote (assoc @core/data-readers t the-var))))
+            the-var)))))
+
 (defn exec [cli-opts]
   (with-bindings {#'*unrestricted* true
                   clojure.lang.Compiler/LOADER @cp/the-url-loader}
@@ -841,10 +867,10 @@ Use bb run --help to show this help output.
                       (let [loader @cp/the-url-loader]
                         (or
                          (when ;; ignore built-in namespaces when uberscripting, unless with :reload
-                             (and uberscript
-                                  (not reload)
-                                  (or (contains? namespaces namespace)
-                                      (contains? sci-namespaces/namespaces namespace)))
+                          (and uberscript
+                               (not reload)
+                               (or (contains? namespaces namespace)
+                                   (contains? sci-namespaces/namespaces namespace)))
                            "")
                          ;; pod namespaces go before namespaces from source,
                          ;; unless reload is used
@@ -899,13 +925,14 @@ Use bb run --help to show this help output.
                   :uberscript uberscript
                   ;; :readers core/data-readers
                   :reify-fn reify-fn
-                  :proxy-fn proxy-fn}
+                  :proxy-fn proxy-fn
+                  :readers #(readers-fn (common/ctx) %)}
             opts (addons/future opts)
             sci-ctx (sci/init opts)
             _ (ctx-store/reset-ctx! sci-ctx)
             _ (when-let [pods (:pods @common/bb-edn)]
                 (when-let [pod-metadata (pods/load-pods-metadata
-                                          pods {:download-only (download-only?)})]
+                                         pods {:download-only (download-only?)})]
                   (vreset! pod-namespaces pod-metadata)))
             preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim))
             [expressions exit-code]
