@@ -781,10 +781,11 @@ Use bb run --help to show this help output.
 
 (def seen-urls (atom nil))
 
-(defn parse-data-readers [s]
-  (edamame/parse-string s {:read-cond :allow
-                           :features #{:bb :clj}
-                           :eof nil}))
+(defn read-data-readers [url]
+  (edamame/parse-string (slurp url)
+                        {:read-cond :allow
+                         :features #{:bb :clj}
+                         :eof nil}))
 
 (defn readers-fn
   "Lazy reading of data reader functions"
@@ -794,11 +795,9 @@ Use bb run --help to show this help output.
             urls (vec (.getURLs ^java.net.URLClassLoader @cp/the-url-loader))
             parsed-resources (or (get @seen-urls urls)
                                  (let [^java.net.URLClassLoader cl @cp/the-url-loader
-                                       resources (concat (enumeration-seq (.getResources cl
-                                                                                         "data_readers.clj"))
-                                                         (enumeration-seq (.getResources cl
-                                                                                         "data_readers.cljc")))
-                                       parsed-resources (apply merge (map parse-data-readers resources))
+                                       resources (concat (enumeration-seq (.getResources cl "data_readers.clj"))
+                                                         (enumeration-seq (.getResources cl "data_readers.cljc")))
+                                       parsed-resources (apply merge (map read-data-readers resources))
                                        _ (swap! seen-urls assoc urls parsed-resources)]
                                    parsed-resources))]
         (when-let [var-sym (get parsed-resources t)]
