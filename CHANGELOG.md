@@ -9,7 +9,7 @@ A preview of the next release can be installed from
 
 ## 1.1.173 (2023-02-04)
 
-- [#1473](https://github.com/babashka/babashka/issues/1473): make relative paths in bb.edn resolve relative to it ([@lispyclouds](https://github.com/lispyclouds))
+- [#1473](https://github.com/babashka/babashka/issues/1473): support `--config` in other dir + `:local/root` ([@lispyclouds](https://github.com/lispyclouds))
 - Compatibility with `clojure.tools.namespace.repl/refresh` and `clojure.java.classpath`
 - `(clojure.lang.RT/baseLoader)` now returns classloader with babashka dependencies on classpath
 - Support reading tags from `data_readers.clj` and `data_readers.cljc`
