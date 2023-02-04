@@ -7,11 +7,19 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## Unreleased
+## 1.1.173 (2023-02-04)
 
 - [#1473](https://github.com/babashka/babashka/issues/1473): make relative paths in bb.edn resolve relative to it ([@lispyclouds](https://github.com/lispyclouds))
 - Compatibility with `clojure.tools.namespace.repl/refresh` and `clojure.java.classpath`
+- `(clojure.lang.RT/baseLoader)` now returns classloader with babashka dependencies on classpath
 - Support reading tags from `data_readers.clj` and `data_readers.cljc`
+- Don't exit REPL when `babashka.deps/add-deps` fails
+- Fix #1474: when `.bb` file is in different artifact, `.clj` file is loaded first if it appears first on classpath
+- Support for `*loaded-libs*` and `(loaded-libs)`
+- Bump rewrite-clj to `1.1.46`
+- Bump http-client to `0.0.3`
+- Bump fs to `0.2.15`
+- Bump process to `0.4.16`
 
 ## 1.1.172 (2023-01-23)
 
