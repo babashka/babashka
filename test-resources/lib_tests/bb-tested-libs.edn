@@ -182,4 +182,8 @@
  org.clojure/tools.namespace {:git-sha "daf82a10e70182aea4c0716a48f3922163441b32",
                               :git-url "https://github.com/clojure/tools.namespace",
                               :test-namespaces [clojure.tools.namespace.test-helpers clojure.tools.namespace.dependency-test clojure.tools.namespace.find-test clojure.tools.namespace.move-test clojure.tools.namespace.parse-test],
-                              :test-paths ["src/test/clojure"]}}
+                              :test-paths ["src/test/clojure"]}
+ net.cgrand/xforms {:git-url "https://github.com/cgrand/xforms", 
+                    :git-sha "550dbc150a79c6ecc148d8a7e260e10bc36321c6", 
+                    :test-namespaces [net.cgrand.xforms-test], 
+                    :test-paths ["test"]}}

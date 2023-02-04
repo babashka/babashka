@@ -7,6 +7,9 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## Unreleased
+- [#1000](https://github.com/babashka/babashka/issues/1000): add lib tests for xforms ([@bobisageek](https://github.com/bobisageek))
+
 ## 1.1.173 (2023-02-04)
 
 - [#1473](https://github.com/babashka/babashka/issues/1473): support `--config` in other dir + `:local/root` ([@lispyclouds](https://github.com/lispyclouds))
