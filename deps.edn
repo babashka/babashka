@@ -166,7 +166,10 @@
                                                 :git/sha "1a29775a3d286f9f6fe3f979c78b6e2bf298d5ba"}
                          com.github.rawleyfowler/sluj {:git/url "https://github.com/rawleyfowler/sluj"
                                                        :git/sha "4a92e772b4e07bf127423448d4140748b5782198"
-                                                       :deps/manifest :deps}}
+                                                       :deps/manifest :deps}
+                         net.cgrand/xforms {:git/url "https://github.com/cgrand/xforms"
+                                            :git/sha "550dbc150a79c6ecc148d8a7e260e10bc36321c6"
+                                            :deps/manifest :deps}}
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil}}
            :clj-nvd

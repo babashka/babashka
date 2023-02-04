@@ -67,6 +67,7 @@ meta-merge/meta-merge,https://github.com/weavejester/meta-merge
 metosin/malli,https://github.com/metosin/malli
 minimallist/minimallist,https://github.com/green-coder/minimallist
 mvxcvi/arrangement,https://github.com/greglook/clj-arrangement
+net.cgrand/xforms,https://github.com/cgrand/xforms
 orchestra/orchestra,https://github.com/jeaye/orchestra
 org.babashka/spec.alpha,https://github.com/babashka/spec.alpha
 org.clj-commons/clj-http-lite,https://github.com/clj-commons/clj-http-lite
@@ -83,7 +84,7 @@ org.clojure/math.combinatorics,https://github.com/clojure/math.combinatorics
 org.clojure/math.numeric-tower,https://github.com/clojure/math.numeric-tower
 org.clojure/test.check,https://github.com/clojure/test.check
 org.clojure/tools.gitlibs,https://github.com/clojure/tools.gitlibs
-org.clojure/tools.namespace,https://github.com/babashka/tools.namespace
+org.clojure/tools.namespace,https://github.com/clojure/tools.namespace
 postmortem/postmortem,https://github.com/athos/Postmortem
 prismatic/schema,https://github.com/plumatic/schema
 progrock/progrock,https://github.com/weavejester/progrock
