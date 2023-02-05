@@ -84,7 +84,7 @@ for:
     # else it's a PR to master, so don't skip flaky tests
     - ps: >-
         if(-not $env:APPVEYOR_PULL_REQUEST_NUMBER) {
-        script/test.bat :excludes skip-windows flaky
+        script/test.bat :excludes "[:skip-windows :flaky]"
         } else {
         script/test.bat :windows
         }

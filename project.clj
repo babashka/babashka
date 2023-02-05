@@ -19,8 +19,8 @@
   :test-selectors {:default (complement :windows-only)
                    :windows (complement :skip-windows)
                    :non-flaky (complement :flaky)
-                   :excludes (fn [var-meta & selectors]
-                              (not ((apply some-fn (map keyword selectors)) var-meta)))}
+                   :excludes (fn [var-meta selectors]
+                              (not ((apply some-fn selectors) var-meta)))}
   :dependencies [[org.clojure/clojure "1.11.1"]
                  [borkdude/edamame "1.1.17"]
                  [borkdude/graal.locking "0.0.2"]
