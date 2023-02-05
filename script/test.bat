@@ -16,7 +16,7 @@ set BABASHKA_POD_TEST=
 set BABASHKA_SOCKET_REPL_TEST=
 
 echo "running tests part 1"
-call lein do clean, test :windows || exit /B 1
+call lein do clean, test %* || exit /B 1
 
 set BABASHKA_PRELOADS=(defn __bb__foo [] "foo") (defn __bb__bar [] "bar")
 set BABASHKA_PRELOADS_TEST=true
