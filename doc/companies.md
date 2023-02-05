@@ -64,6 +64,7 @@ Sponsoring via [Cognitect](https://www.cognitect.com/).
 - [Fluree](https://flur.ee/)
 - [Hi](https://www.hi.group/)
 - [Juxt](https://www.juxt.pro/)
+- [Kleene](https://www.kleene.ai/)
 - [Latacora](https://www.latacora.com/)
 - [Metosin](https://www.metosin.fi/en/)
 - [Nextdoc](https://www.nextdoc.io/)
