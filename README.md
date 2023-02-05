@@ -412,8 +412,13 @@ handling of SIGINT and SIGPIPE. This can be done by setting
 
 ## Articles, podcasts and videos
 
+- [Blambda analyses sites](https://jmglov.net/blog/2023-01-04-blambda-analyses-sites.html) by Josh Glover
+- [The wizard of HOP - How we built the web based HOP CLI Settings Editor using Babashka and Scittle](https://www.gethop.dev/post/the-wizard-of-hop-how-we-built-the-web-based-hop-cli-settings-editor-using-babashka-and-scittle) by Bingen Galartza
+- [Simple TUIs with Babashka and Gum](https://rattlin.blog/bbgum.html) by Rattlin.blog
+- [Babashka And Dialog Part Ii: Announcing The Bb-Dialog Library](https://www.pixelated-noise.com/blog/2023/01/20/bb-dialog-announcement/index.html) by A.C. Danvers
 - [Babashka Babooka](https://www.braveclojure.com/quests/babooka/): Write Command-Line Clojure by Daniel Higginbotham
-- [Babashka: How GraalVM Helped Create a Fast-Starting Scripting Environment for Clojure](https://medium.com/graalvm/babashka-how-graalvm-helped-create-a-fast-starting-scripting-environment-for-clojure-b0fcc38b0746) by Michiel Borkent
+- [Re-Writing a GlobalProtect OpenConnect VPN Connect script in Babashka](https://tech.toryanderson.com/2023/01/14/re-writing-a-globalprotect-openconnect-vpn-connect-script-in-babashka/) by Tory Anderson
+- [Babashka: How GraalVM Helped Create a Fast-Starting Scripting Environment for Clojure](https://medium.com/graalvm/babashka-how-graalvm-helped-create-a-fast-starting-scripting-environment-for-clojure-b0fcc38b0746) by Michiel Borkent (Japanese version [here]((https://logico-jp.io/2023/01/07/babashka-how-graalvm-helped-create-a-fast-starting-scripting-environment-for-clojure/)))
 - [Adding Prompts To Your Babashka Scripts With Dialog](https://www.pixelated-noise.com/blog/2022/12/09/dialog-and-babashka/index.html) by A.C. Danvers
 - [Scraping an HTML dictionary with Babashka and Bootleg](https://blog.exupero.org/scraping-an-html-dictionary-with-babashka-and-bootleg/) by exupero
 - [Using Babashka to Get Electricity Prices](https://www.karimarttila.fi/clojure/2022/12/04/using-babashka-to-get-electricity-prices.html) by Kari Marttila
