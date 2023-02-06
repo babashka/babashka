@@ -72,7 +72,8 @@
         (if (map? cmd)
           [cmd (first args) (rest args)]
           [nil cmd args])
-        cmd (cons cmd args)
+        cmd (cond-> args
+              cmd (->> (cons cmd)))
         local-log-level (:log-level opts)]
     (sci/binding [log-level (or local-log-level @log-level)]
       (apply log-info (cons "clojure" cmd))
