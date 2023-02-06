@@ -67,12 +67,14 @@
       (apply log-info args)
       (handle-non-zero (pp/process* {:opts opts :cmd cmd :prev prev}) opts))))
 
-(defn clojure [cmd & args]
-  (let [[opts cmd args]
+(defn clojure [& args]
+  (let [[cmd & args] args
+        [opts cmd args]
         (if (map? cmd)
           [cmd (first args) (rest args)]
           [nil cmd args])
-        cmd (cons cmd args)
+        cmd (cond-> args
+              cmd (->> (cons cmd)))
         local-log-level (:log-level opts)]
     (sci/binding [log-level (or local-log-level @log-level)]
       (apply log-info (cons "clojure" cmd))
