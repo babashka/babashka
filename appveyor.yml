@@ -68,12 +68,16 @@ build_script:
     jar -cMf %zip% bb.exe
 
     bb --config .build/bb.edn --deps-root . release-artifact %zip%
-
+    
+before_test:
+- cmd: >-
     set BABASHKA_CLASSPATH=
 
     set BABASHKA_TEST_ENV=native
-
-    call script/test.bat
+    
+test_script:
+- cmd: >-
+    call script/test.bat :windows
 
     call script/run_lib_tests.bat
 

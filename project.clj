@@ -16,9 +16,10 @@
   ;; :java-source-paths ["sci/reflector/src-java"]
   :java-source-paths ["src-java"]
   :resource-paths ["resources" "sci/resources"]
-  :test-selectors {:default (complement :windows-only)
-                   :windows (complement :skip-windows)
-                   :non-flaky (complement :flaky)}
+  :test-selectors {:default (complement (some-fn :windows-only :flaky))
+                   :windows (complement (some-fn :skip-windows :flaky))
+                   :non-flaky (complement :flaky)
+                   :flaky :flaky}
   :dependencies [[org.clojure/clojure "1.11.1"]
                  [borkdude/edamame "1.1.17"]
                  [borkdude/graal.locking "0.0.2"]
