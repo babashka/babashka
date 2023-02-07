@@ -77,7 +77,7 @@ before_test:
     
 test_script:
 - cmd: >-
-    bb --config .build/bb.edn --deps-root . run test
+    call script/test.bat :windows
 
     call script/run_lib_tests.bat
 

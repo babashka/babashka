@@ -16,6 +16,9 @@ unset BABASHKA_PRELOADS_TEST
 echo "running tests part 1"
 lein "do" clean, test "$@"
 
+echo "running flaky tests"
+lein "do" clean, test :flaky || true
+
 export BABASHKA_PRELOADS='(defn __bb__foo [] "foo") (defn __bb__bar [] "bar")'
 export BABASHKA_PRELOADS_TEST=true
 echo "running tests part 2"
