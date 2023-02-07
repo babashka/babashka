@@ -75,24 +75,9 @@ before_test:
 
     set BABASHKA_TEST_ENV=native
     
-for:
-- branches:
-    only: 
-      - master
-  test_script:
-    # if master and PR# is not present, it should be a build of master, so skip flaky tests
-    # else it's a PR to master, so don't skip flaky tests
-    - ps: >-
-        if(-not $env:APPVEYOR_PULL_REQUEST_NUMBER) {
-        script/test.bat :excludes "[:skip-windows :flaky]"
-        } else {
-        script/test.bat :windows
-        }
-        script/run_lib_tests.bat
-
 test_script:
 - cmd: >-
-    call script/test.bat :windows
+    bb --config .build/bb.edn --deps-root . run test
 
     call script/run_lib_tests.bat
 

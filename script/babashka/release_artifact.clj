@@ -1,7 +1,8 @@
 (ns babashka.release-artifact
   (:require [borkdude.gh-release-artifact :as ghr]
             [clojure.java.shell :refer [sh]]
-            [clojure.string :as str]))
+            [clojure.string :as str])
+  (:import [java.io File]))
 
 (defn current-branch []
   (or (System/getenv "APPVEYOR_PULL_REQUEST_HEAD_REPO_BRANCH")
@@ -11,7 +12,14 @@
       (System/getenv "CIRRUS_BRANCH")
       (-> (sh "git" "rev-parse" "--abbrev-ref" "HEAD")
           :out
-          str/trim)))
+        str/trim)))
+
+(defn pull-req-indicator []
+  (some #(System/getenv %)
+    ["APPVEYOR_PULL_REQUEST_NUMBER"
+     "CIRCLE_PR_NUMBER"
+     "GITHUB_HEAD_REF"
+     "CIRRUS_PR"]))
 
 (defn release [& args]
   (let [ght (System/getenv "GITHUB_TOKEN")
@@ -22,7 +30,7 @@
         _ (println "On branch:" branch)
         current-version
         (-> (slurp "resources/BABASHKA_VERSION")
-            str/trim)]
+          str/trim)]
     (if (and ght (contains? #{"master" "main"} branch))
       (do (assert file "File name must be provided")
           (println "On main branch. Publishing asset.")
@@ -45,3 +53,13 @@
                                 :sha256 true}))
       (println "Skipping release artifact (no GITHUB_TOKEN or not on main branch)"))
     nil))
+
+(defn bb-tests-cmd []
+  (let [win? (-> (System/getProperty "os.name")
+               str/lower-case
+               (str/includes? "windows"))
+        skip-flaky-tests (and (contains? #{"main" "master"} (current-branch)) (not (pull-req-indicator)))
+        skip-test-metas (vector (if win? :skip-windows :windows-only))
+        skip-test-metas (if skip-flaky-tests (conj skip-test-metas :flaky) skip-test-metas)
+        script-path (str "script" File/separator "test")]
+    [script-path ":excludes" (str skip-test-metas)]))
