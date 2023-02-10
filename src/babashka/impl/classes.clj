@@ -364,6 +364,7 @@
           java.security.Security
           java.sql.Date
           java.text.ParseException
+          java.text.ParsePosition
           ;; adds about 200kb, same functionality provided by java.time:
           java.text.SimpleDateFormat
           ~@(when features/java-time?
@@ -391,6 +392,7 @@
                 java.time.format.DateTimeFormatterBuilder
                 java.time.format.DateTimeParseException
                 java.time.format.DecimalStyle
+                java.time.format.FormatStyle
                 java.time.format.ResolverStyle
                 java.time.format.SignStyle
                 java.time.temporal.ChronoField
@@ -403,7 +405,9 @@
                 java.time.format.TextStyle
                 java.time.temporal.Temporal
                 java.time.temporal.TemporalAccessor
-                java.time.temporal.TemporalAdjuster])
+                java.time.temporal.TemporalAdjuster
+                java.time.temporal.TemporalQuery
+                ~(symbol "[Ljava.time.temporal.TemporalQuery;")])
           java.util.concurrent.atomic.AtomicInteger
           java.util.concurrent.atomic.AtomicLong
           java.util.concurrent.atomic.AtomicReference

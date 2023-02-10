@@ -2,6 +2,7 @@
   (:require
    [babashka.test-utils :as test-utils]
    [clojure.edn :as edn]
+   [clojure.string :as str]
    [clojure.test :as test :refer [deftest is]]))
 
 (defn bb [expr]
@@ -17,6 +18,12 @@
          (bb '(.format
                (java.time.LocalDateTime/parse "2019-12-18T16:01:41.485")
                (java.time.format.DateTimeFormatter/ofPattern "dd-MM-yyyy HH:mm:ss")))))
+
+  (let [out (bb '(.format (java.time.LocalDateTime/parse "2019-12-18T16:01:41.485")
+                   (java.time.format.DateTimeFormatter/ofLocalizedDateTime java.time.format.FormatStyle/SHORT)))]
+    (is (and (str/includes? out "12") (str/includes? out "18"))))
+
+
   (is (number? (bb "
 (let [x (java.time.LocalDateTime/parse \"2019-12-18T16:01:41.485\")
       y (java.time.LocalDateTime/now)]
