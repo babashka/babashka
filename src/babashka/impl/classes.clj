@@ -582,6 +582,8 @@
                       java.util.concurrent.TimeoutException
                       java.util.Collection
                       java.util.Map$Entry
+                      sci.impl.records.SciRecord
+                      sci.impl.deftype.SciType
                       ~@(when features/xml? ['clojure.data.xml.node.Element])]
     :custom ~custom-map})
 
