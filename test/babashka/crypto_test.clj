@@ -20,7 +20,6 @@
         expected-sha (String. (.encode (java.util.Base64/getEncoder)
                                        (hmac-sha-256 (.getBytes key-s) data))
                               "utf-8")]
-    (prn expected-sha)
     (is (= expected-sha (bb '(do (ns net
                                    (:import (javax.crypto Mac)
                                             (javax.crypto.spec SecretKeySpec)))
@@ -34,3 +33,19 @@
                                    (String. (.encode (java.util.Base64/getEncoder)
                                                      (hmac-sha-256 (.getBytes key-s) data))
                                             "utf-8"))))))))
+
+(deftest secretkey-test
+  (is (= 32 (bb '(do (import 'javax.crypto.SecretKeyFactory)
+                     (import 'javax.crypto.spec.PBEKeySpec)
+
+                     (defn gen-secret-key
+                       "Generate secret key based on a given token string.
+  Returns bytes array 256-bit length."
+                       [^String secret-token]
+                       (let [salt (.getBytes "abcde")
+                             factory (SecretKeyFactory/getInstance "PBKDF2WithHmacSHA256")
+                             spec (PBEKeySpec. (.toCharArray secret-token) salt 10000 256)
+                             secret (.generateSecret factory spec)]
+                         (count (.getEncoded secret))))
+
+                     (gen-secret-key "foo"))))))

@@ -197,6 +197,7 @@
     java.security.cert.X509Certificate
     javax.crypto.Cipher
     javax.crypto.Mac
+    javax.crypto.SecretKey
     javax.crypto.SecretKeyFactory
     javax.crypto.spec.GCMParameterSpec
     javax.crypto.spec.PBEKeySpec
