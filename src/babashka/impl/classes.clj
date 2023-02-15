@@ -665,6 +665,8 @@
                          java.util.concurrent.ScheduledExecutorService
                          (instance? java.util.Iterator v)
                          java.util.Iterator
+                         (instance? javax.crypto.SecretKey v)
+                         javax.crypto.SecretKey
                          ;; keep commas for merge friendliness
                          ,,,)))
         m (assoc m (list 'quote 'clojure.lang.Var) 'sci.lang.Var)
