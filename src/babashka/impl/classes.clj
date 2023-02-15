@@ -195,7 +195,11 @@
     java.net.http.WebSocket$Builder
     java.net.http.WebSocket$Listener
     java.security.cert.X509Certificate
+    javax.crypto.Cipher
     javax.crypto.Mac
+    javax.crypto.SecretKeyFactory
+    javax.crypto.spec.GCMParameterSpec
+    javax.crypto.spec.PBEKeySpec
     javax.crypto.spec.SecretKeySpec
     javax.net.ssl.HostnameVerifier ;; clj-http-lite
     javax.net.ssl.HttpsURLConnection ;; clj-http-lite

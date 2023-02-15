@@ -51,7 +51,7 @@
         insn/insn {:mvn/version "0.5.2"}
         org.clojure/core.rrb-vector {:mvn/version "0.1.2"}
         org.babashka/cli {:mvn/version "0.6.45"}
-        org.babashka/http-client {:mvn/version "0.0.3"}}
+        org.babashka/http-client {:mvn/version "0.1.4"}}
  :aliases {:babashka/dev
            {:main-opts ["-m" "babashka.main"]}
            :profile
