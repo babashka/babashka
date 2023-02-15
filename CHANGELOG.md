@@ -12,6 +12,7 @@ A preview of the next release can be installed from
 - [#1000](https://github.com/babashka/babashka/issues/1000): add lib tests for xforms ([@bobisageek](https://github.com/bobisageek))
 - [#1482](https://github.com/babashka/babashka/issues/1482): make loading of libs thread safe
 - [#1487](https://github.com/babashka/babashka/issues/1487): `babashka.tasks/clojure` should be supported without arguments to start a REPL
+- [#1496](https://github.com/babashka/babashka/issues/1496): Add `set-agent-send-executor!` and `set-agent-send-off-executor!`
 
 ## 1.1.173 (2023-02-04)
 

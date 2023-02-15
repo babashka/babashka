@@ -202,5 +202,7 @@
    'into-array (sci/copy-var into-array clojure-core-ns)
    'print-method (sci/copy-var print-method clojure-core-ns)
    'print-dup (sci/copy-var print-dup clojure-core-ns)
-   'PrintWriter-on (sci/copy-var PrintWriter-on clojure-core-ns)}
+   'PrintWriter-on (sci/copy-var PrintWriter-on clojure-core-ns)
+   'set-agent-send-executor! (sci/copy-var set-agent-send-executor! clojure-core-ns)
+   'set-agent-send-off-executor! (sci/copy-var set-agent-send-off-executor! clojure-core-ns)}
   )
