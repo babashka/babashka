@@ -242,29 +242,31 @@ clojure.lang.ExceptionInfo: Divide by zero")))
                          "{:type :sci/error, :line 1, :column 12, :message \"Divide by zero\",")))))
 
 (deftest macro-test
-  (let [output (try (tu/bb nil "--debug" "(defmacro foo [x] (subs nil 1) `(do ~x ~x)) (foo 1)")
+  (let [output (try (tu/bb nil "--debug" "(defmacro foo [x] (assoc :foo 1 2) `(do ~x ~x)) (foo 1)")
                     (is false)
                     (catch Exception e (ex-message e)))
         output (tu/normalize output)
-        actual-lines (str/join "\n" (take 17 (str/split-lines output)))]
+        actual-lines (str/join "\n" (take 19 (str/split-lines output)))]
     (multiline-equals actual-lines
                       "----- Error --------------------------------------------------------------------
-Type:     java.lang.NullPointerException
+Type:     java.lang.ClassCastException
+Message:  clojure.lang.Keyword cannot be cast to clojure.lang.Associative
 Location: <expr>:1:19
 Phase:    macroexpand
 
 ----- Context ------------------------------------------------------------------
-1: (defmacro foo [x] (subs nil 1) `(do ~x ~x)) (foo 1)
-                     ^--- 
+1: (defmacro foo [x] (assoc :foo 1 2) `(do ~x ~x)) (foo 1)
+                     ^--- clojure.lang.Keyword cannot be cast to clojure.lang.Associative
 
 ----- Stack trace --------------------------------------------------------------
-clojure.core/subs - <built-in>
-user/foo          - <expr>:1:19
-user/foo          - <expr>:1:1
-user              - <expr>:1:45
+clojure.core/assoc--5481 - <built-in>
+clojure.core/assoc       - <built-in>
+user/foo                 - <expr>:1:19
+user/foo                 - <expr>:1:1
+user                     - <expr>:1:49
 
 ----- Exception ----------------------------------------------------------------
-clojure.lang.ExceptionInfo: null")))
+clojure.lang.ExceptionInfo: clojure.lang.Keyword cannot be cast to clojure.lang.Associative")))
 
 (deftest native-stacktrace-test
   (let [output (try (tu/bb nil "(merge 1 2 3)")
