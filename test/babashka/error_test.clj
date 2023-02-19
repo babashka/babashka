@@ -10,8 +10,7 @@
 (defn process-difference [line]
   (-> line str/trimr
       ;; take into account JDK14+ and native image differences
-      (str/replace #"(Message:\s+|\^---\s+)(class )(.*)" (fn [[_ g1 _g2 g3]]
-                                                          (str g1 (str/replace g3 "class " ""))))
+      (str/replace "class clojure.lang" "clojure.lang")
       (str/replace #" \(.*\)$" "")))
 
 (defmacro multiline-equals [s1 s2]
@@ -124,23 +123,25 @@ user - <expr>:1:1")))))
 
 
 (deftest error-while-macroexpanding-test
-  (let [output (try (tu/bb nil "-e"  "(defmacro foo [x] (subs nil 1) `(do ~x ~x)) (foo 1)")
+  (let [output (try (tu/bb nil "-e"  "(defmacro foo [x] (assoc :foo 1 2) `(do ~x ~x)) (foo 1)")
                     (catch Exception e (ex-message e)))]
     (multiline-equals output
                       "----- Error --------------------------------------------------------------------
-Type:     java.lang.NullPointerException
+Type:     java.lang.ClassCastException
+Message:  clojure.lang.Keyword cannot be cast to clojure.lang.Associative
 Location: <expr>:1:19
 Phase:    macroexpand
 
 ----- Context ------------------------------------------------------------------
-1: (defmacro foo [x] (subs nil 1) `(do ~x ~x)) (foo 1)
-                     ^---
+1: (defmacro foo [x] (assoc :foo 1 2) `(do ~x ~x)) (foo 1)
+                     ^--- clojure.lang.Keyword cannot be cast to clojure.lang.Associative
 
 ----- Stack trace --------------------------------------------------------------
-clojure.core/subs - <built-in>
-user/foo          - <expr>:1:19
-user/foo          - <expr>:1:1
-user              - <expr>:1:45")))
+clojure.core/assoc--5481 - <built-in>
+clojure.core/assoc       - <built-in>
+user/foo                 - <expr>:1:19
+user/foo                 - <expr>:1:1
+user                     - <expr>:1:49")))
 
 (deftest error-in-macroexpansion-test
   (let [output (try (tu/bb nil "-e"  "(defmacro foo [x] `(assoc :foo ~x 2)) (foo 1)")
