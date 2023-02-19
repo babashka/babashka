@@ -4,4 +4,6 @@
 (defn exec-test
   {:org.babashka/cli {:coerce {:bar :keyword}}}
   [m]
-  (prn m))
+  (if (:meta m)
+    (prn (meta m))
+    (prn m)))

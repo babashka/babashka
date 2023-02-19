@@ -208,6 +208,7 @@
    'init-navigator (sci/copy-var pprint/init-navigator pprint-ns)
    'execute-format (sci/copy-var execute-format pprint-ns)
    'with-pprint-dispatch (sci/copy-var pprint/with-pprint-dispatch pprint-ns)
+   'code-dispatch (sci/copy-var pprint/code-dispatch pprint-ns)
    '*print-pprint-dispatch* print-pprint-dispatch
    '*print-miser-width* print-miser-width
    'get-pretty-writer (sci/copy-var get-pretty-writer pprint-ns)

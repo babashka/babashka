@@ -5,75 +5,64 @@
             [clojure.java.io :as io]
             [clojure.string :as str]
             [sci.core :as sci])
-  (:import [java.util.jar JarFile Manifest]
+  (:import [java.util.jar Manifest]
            (java.net URL)))
 
 (set! *warn-on-reflection* true)
 
-(defprotocol IResourceResolver
-  (getResource [this paths opts])
-  (getResources [this paths opts]))
-
-(deftype DirectoryResolver [path]
-  IResourceResolver
-  (getResource [_ resource-paths url?]
-    (some
-     (fn [resource-path]
-       (let [f (io/file path resource-path)]
-         (when (.exists f)
-           (if url?
-             ;; manual conversion, faster than going through .toURI
-             (java.net.URL. "file" nil (.getAbsolutePath f))
-             {:file (.getAbsolutePath f)
-              :source (slurp f)}))))
-     resource-paths)))
-
-(defn path-from-jar
-  [^java.io.File jar-file resource-paths url?]
-  (with-open [jar (JarFile. jar-file)]
-    (some (fn [path]
-            (when-let [entry (.getEntry jar path)]
-              (if url?
-                ;; manual conversion, faster than going through .toURI
-                (java.net.URL. "jar" nil
-                               (str "file:" (.getAbsolutePath jar-file) "!/" path))
-                {:file path
-                 :source (slurp (.getInputStream jar entry))})))
-          resource-paths)))
-
-(deftype JarFileResolver [jar-file]
-  IResourceResolver
-  (getResource [_ resource-paths url?]
-    (path-from-jar jar-file resource-paths url?)))
-
-(defn part->entry [part]
-  (when-not (str/blank? part)
-    (if (str/ends-with? part ".jar")
-      (JarFileResolver. (io/file part))
-      (DirectoryResolver. (io/file part)))))
-
-(deftype Loader [entries]
-  IResourceResolver
-  (getResource [_ resource-paths opts]
-    (some #(getResource % resource-paths opts) entries))
-  (getResources [_ resource-paths opts]
-    (keep #(getResource % resource-paths opts) entries)))
+(defn getResource [^babashka.impl.URLClassLoader class-loader resource-paths url?]
+  (some (fn [resource]
+          (when-let [^java.net.URL res (.findResource class-loader resource)]
+            (if url?
+              res
+              {:file (if (= "jar" (.getProtocol res))
+                       resource
+                       (.getFile res))
+               :source (slurp res)})))
+        resource-paths))
 
 (def path-sep (System/getProperty "path.separator"))
 
-(defn loader [^String classpath]
-  (let [parts (.split classpath path-sep)
-        entries (keep part->entry parts)]
-    (Loader. entries)))
+(defn ->url ^java.net.URL [^String s]
+  (.toURL (java.io.File. s)))
 
-(defn source-for-namespace [loader namespace opts]
+(defn new-loader ^babashka.impl.URLClassLoader
+  ([paths]
+   (babashka.impl.URLClassLoader. (into-array java.net.URL (map ->url paths)))))
+
+(def ^babashka.impl.URLClassLoader the-url-loader (delay (new-loader [])))
+
+(defn add-classpath
+  "Adds extra-classpath, a string as for example returned by clojure
+  -Spath, to the current classpath."
+  [^String extra-classpath]
+  (let [paths (.split extra-classpath path-sep)
+        paths (map ->url paths)
+        loader @the-url-loader]
+    (run! (fn [path]
+            (._addURL ^babashka.impl.URLClassLoader loader path)
+            loader)
+          paths)
+    ;; (run! prn (.getURLs the-url-loader))
+    (System/setProperty "java.class.path"
+                        (let [system-cp (System/getProperty "java.class.path")]
+                          (-> (cond-> system-cp
+                                (not (str/blank? system-cp)) (str path-sep))
+                              (str extra-classpath)))))
+  nil)
+
+(defn resource-paths [namespace]
   (let [ns-str (name namespace)
-        ^String ns-str (munge ns-str)
+        ^String ns-str (namespace-munge ns-str)
         ;; do NOT pick the platform specific file separator here, since that doesn't work for searching in .jar files
         ;; (io/file "foo" "bar/baz") does work on Windows, despite the forward slash
         base-path (.replace ns-str "." "/")
         resource-paths (mapv #(str base-path %) [".bb" ".clj" ".cljc"])]
-    (getResource loader resource-paths opts)))
+    resource-paths))
+
+(defn source-for-namespace [loader namespace opts]
+  (let [rps (resource-paths namespace)]
+    (getResource loader rps opts)))
 
 (defn main-ns [manifest-resource]
   (with-open [is (io/input-stream manifest-resource)]
@@ -81,21 +70,6 @@
             (.getMainAttributes)
             (.getValue "Main-Class")
             (demunge))))
-
-(def cp-state (atom nil))
-
-(defn add-classpath
-  "Adds extra-classpath, a string as for example returned by clojure
-  -Spath, to the current classpath."
-  [extra-classpath]
-  (swap! cp-state
-         (fn [{:keys [:cp]}]
-           (let [new-cp
-                 (if-not cp extra-classpath
-                         (str cp path-sep extra-classpath))]
-             {:loader (loader new-cp)
-              :cp new-cp})))
-  nil)
 
 (defn split-classpath
   "Returns the classpath as a seq of strings, split by the platform
@@ -105,10 +79,12 @@
 (defn get-classpath
   "Returns the current classpath as set by --classpath, BABASHKA_CLASSPATH and add-classpath."
   []
-  (:cp @cp-state))
+  (let [cp (System/getProperty "java.class.path")]
+    (when-not (str/blank? cp)
+      cp)))
 
 (defn resource
-  (^URL [path] (when-let [st @cp-state] (resource (:loader st) path)))
+  (^URL [path] (resource @the-url-loader path))
   (^URL [loader path]
    (if (str/starts-with? path "/") nil ;; non-relative paths always return nil
        (getResource loader [path] true))))
@@ -128,4 +104,3 @@
   (def l (loader cp))
   (source-for-namespace l 'babashka.impl.cheshire nil)
   (time (:file (source-for-namespace l 'cheshire.core nil)))) ;; 20ms -> 2.25ms
-

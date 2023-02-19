@@ -24,13 +24,13 @@
     (let [tmp-file (java.io.File/createTempFile "uber" ".jar")
           path (.getPath tmp-file)]
       (.deleteOnExit tmp-file)
-      (tu/bb nil "--classpath" "test-resources/babashka/uberjar/src" "uberjar" path "-m" "my.main-main")
+      (tu/bb nil "--prn" "--classpath" "test-resources/babashka/uberjar/src" "uberjar" path "-m" "my.main-main")
       (is (= "(\"1\" \"2\" \"3\" \"4\")\n"
-             (tu/bb nil "--jar" path "1" "2" "3" "4")))
+             (tu/bb nil "--prn" "--jar" path "1" "2" "3" "4")))
       (is (= "(\"1\" \"2\" \"3\" \"4\")\n"
-             (tu/bb nil "-jar" path "1" "2" "3" "4")))
+             (tu/bb nil "--prn" "-jar" path "1" "2" "3" "4")))
       (is (= "(\"1\" \"2\" \"3\" \"4\")\n"
-             (tu/bb nil path "1" "2" "3" "4")))))
+             (tu/bb nil "--prn" path "1" "2" "3" "4")))))
   (testing "without main, a REPL starts"
     ;; NOTE: if we choose the same tmp-file as above and doing this all in the
     ;; same JVM process, the below test fails because my.main-main will be the
@@ -49,9 +49,9 @@
         ;; building with no --classpath
         (tu/bb nil "uberjar" path "-m" "my.main-main")
         ;; running
-        (is (= "(\"42\")\n" (tu/bb nil "--jar" path "-m" "my.main-main" "42")))
-        (is (= "(\"42\")\n" (tu/bb nil "--classpath" path "-m" "my.main-main" "42")))
-        (is (= "(\"42\")\n" (tu/bb nil path "42"))))))
+        (is (= "(\"42\")\n" (tu/bb nil "--prn" "--jar" path "-m" "my.main-main" "42")))
+        (is (= "(\"42\")\n" (tu/bb nil "--prn" "--classpath" path "-m" "my.main-main" "42")))
+        (is (= "(\"42\")\n" (tu/bb nil "--prn" path "42"))))))
   (testing "ignore empty entries on classpath"
     (let [tmp-file (java.io.File/createTempFile "uber" ".jar")
           path (.getPath tmp-file)
@@ -77,7 +77,7 @@
                            InputStreamReader. PushbackReader. edn/read)]
             (is (= #{:pods} (-> bb-edn keys set)))
             (is (= (:pods config) (:pods bb-edn))))
-          (is (str/includes? (tu/bb nil "--jar" path) "3")))))))
+          (is (str/includes? (tu/bb nil "--prn" "--jar" path) "3")))))))
 
 (deftest throw-on-empty-classpath
   ;; this test fails the windows native test in CI

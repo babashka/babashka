@@ -489,7 +489,7 @@
     [(f m (keys m) (fn [k v] (last (swap! log conj [:test k v]))))
      @log]))
 
-(deftest run-test
+(deftest run-test* ;; BB-TEST-PATCH: renamed due to conflict with clojure.test
   (let [config {::a (ig/ref ::b), ::b 1}
         [system _] (build-log config)]
     (is (= [nil

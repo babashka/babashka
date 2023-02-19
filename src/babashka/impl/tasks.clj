@@ -59,61 +59,26 @@
    :err :inherit
    :shutdown p/destroy-tree})
 
-(defn shell [cmd & args]
-  (let [[prev cmd args]
-        (if (and (map? cmd)
-                 (:proc cmd))
-          [cmd (first args) (rest args)]
-          [nil cmd args])
+(defn shell [& args]
+  (let [{:keys [prev cmd opts]} (p/parse-args args)
+        local-log-level (:log-level opts)
+        opts (merge default-opts opts)]
+    (sci/binding [log-level (or local-log-level @log-level)]
+      (apply log-info args)
+      (handle-non-zero (pp/process* {:opts opts :cmd cmd :prev prev}) opts))))
+
+(defn clojure [& args]
+  (let [[cmd & args] args
         [opts cmd args]
         (if (map? cmd)
           [cmd (first args) (rest args)]
           [nil cmd args])
-        opts (if-let [o (:out opts)]
-               (if (string? o)
-                 (update opts :out io/file)
-                 opts)
-               opts)
-        opts (if-let [o (:err opts)]
-               (if (string? o)
-                 (update opts :err io/file)
-                 opts)
-               opts)
-        opts (if prev
-               (assoc opts :in nil)
-               opts)
-        cmd (if (.exists (io/file cmd))
-              [cmd]
-              (p/tokenize cmd))
-        cmd (into cmd args)
-        local-log-level (:log-level opts)]
-    (sci/binding [log-level (or local-log-level @log-level)]
-      (apply log-info cmd)
-      (handle-non-zero (pp/process prev cmd (merge default-opts opts)) opts))))
-
-(defn clojure [cmd & args]
-  (let [[opts cmd args]
-        (if (map? cmd)
-          [cmd (first args) (rest args)]
-          [nil cmd args])
-        opts (if-let [o (:out opts)]
-               (if (string? o)
-                 (update opts :out io/file)
-                 opts)
-               opts)
-        opts (if-let [o (:err opts)]
-               (if (string? o)
-                 (update opts :err io/file)
-                 opts)
-               opts)
-        cmd (if (.exists (io/file cmd))
-              [cmd]
-              (p/tokenize cmd))
-        cmd (into cmd args)
+        cmd (cond-> args
+              cmd (->> (cons cmd)))
         local-log-level (:log-level opts)]
     (sci/binding [log-level (or local-log-level @log-level)]
       (apply log-info (cons "clojure" cmd))
-      (handle-non-zero (deps/clojure cmd (merge default-opts opts)) opts))))
+      (handle-non-zero (apply deps/clojure (merge default-opts opts) cmd) opts))))
 
 (defn -wait [res]
   (when res
@@ -429,15 +394,22 @@
           (iterate zip/right loc))))
 
 (defn list-tasks
+  "Prints out the task names found in BB-EDN in the original order
+  alongside their documentation as retrieved with SCI-CTX.
+
+  For a task to be listed
+  - its name has to be a symbol but should not start with `-`, and
+  - should not be `:private`."
   [sci-ctx]
-  (let [tasks (:tasks @bb-edn)]
-    (if (seq tasks)
-      (let [raw-edn (:raw @bb-edn)
-            names (key-order raw-edn)
-            names (map str names)
-            names (remove #(str/starts-with? % "-") names)
-            names (remove #(:private (get tasks (symbol %))) names)
-            longest (apply max (map count names))
+  (let [tasks (:tasks @bb-edn)
+        raw-edn (:raw @bb-edn)
+        names (when (seq tasks)
+                (->> (key-order raw-edn)
+                     (map str)
+                     (remove #(str/starts-with? % "-"))
+                     (remove #(:private (get tasks (symbol %))))))]
+    (if (seq names)
+      (let [longest (apply max (map count names))
             fmt (str "%1$-" longest "s")]
         (println "The following tasks are available:")
         (println)
@@ -455,15 +427,15 @@
   ([task {:keys [:parallel]
           :or {parallel (:parallel (current-task))}}]
    (let [[[expr]] (assemble-task task parallel)]
-     (sci/eval-string* @ctx expr))))
+     (sci/eval-string* (ctx) expr))))
 
 (defn exec
   ([sym]
    (let [snippet (cli/exec-fn-snippet sym)]
-     (sci/eval-string* @ctx snippet)))
+     (sci/eval-string* (ctx) snippet)))
   ([sym extra-opts]
    (let [snippet (cli/exec-fn-snippet sym extra-opts)]
-     (sci/eval-string* @ctx snippet))))
+     (sci/eval-string* (ctx) snippet))))
 
 (def tasks-namespace
   {'shell (sci/copy-var shell sci-ns)

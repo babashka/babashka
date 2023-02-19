@@ -6,7 +6,7 @@ task:
   env:
     LEIN_ROOT: "true"
     GRAALVM_VERSION: "22.3.0"
-    GRAALVM_HOME: ${HOME}/graalvm-ce-java19-22.3.0/Contents/Home
+    GRAALVM_HOME: ${HOME}/graalvm-ce-java19-22.3.1/Contents/Home
     BABASHKA_PLATFORM: macos # used in release script
     BABASHKA_ARCH: aarch64
     BABASHKA_TEST_ENV: native
@@ -20,6 +20,7 @@ task:
     sudo script/install-leiningen
     script/install-graalvm
     export PATH=$GRAALVM_HOME/bin:$PATH
+    export JAVA_HOME=$GRAALVM_HOME
     sudo /usr/sbin/softwareupdate --install-rosetta --agree-to-license
     java -version
 

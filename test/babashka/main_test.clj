@@ -31,11 +31,11 @@
          (parse-opts ["--nrepl-server" "-cp" "src"])))
   (is (= {:nrepl "1667", :classpath "src"}
          (parse-opts ["-cp" "src" "nrepl-server"])))
-  (is (= {:socket-repl "1666", :expressions ["123"]}
+  (is (= {:prn true :socket-repl "1666", :expressions ["123"]}
          (parse-opts ["--socket-repl" "-e" "123"])))
-  (is (= {:socket-repl "1666", :expressions ["123"]}
+  (is (= {:prn true :socket-repl "1666", :expressions ["123"]}
          (parse-opts ["--socket-repl" "1666" "-e" "123"])))
-  (is (= {:nrepl "1666", :expressions ["123"]}
+  (is (= {:prn true :nrepl "1666", :expressions ["123"]}
          (parse-opts ["--nrepl-server" "1666" "-e" "123"])))
   (is (= {:classpath "src"
           :uberjar "foo.jar"}
@@ -50,7 +50,7 @@
   (is (= 123 (bb nil "-e" "(println 123)")))
   (is (= 123 (bb nil "--eval" "(println 123)")))
   (testing "distinguish automatically between expression or file name"
-    (is (= {:result 8080} (bb nil "test/babashka/scripts/tools.cli.bb")))
+    (is (= {:result 8080} (bb nil "--prn" "test/babashka/scripts/tools.cli.bb")))
     (is (thrown-with-msg? Exception #"does not exist" (bb nil "foo.clj")))
     (is (thrown-with-msg? Exception #"does not exist" (bb nil "-help"))))
   (is (= "1 2 3" (bb nil "-e" "(require '[clojure.string :as str1])" "-e" "(str1/join \" \" [1 2 3])")))
@@ -138,7 +138,7 @@
   (is (= "hello\n" (test-utils/bb nil "(println \"hello\")"))))
 
 (deftest System-test
-  (let [res (bb nil "-f" "test/babashka/scripts/System.bb")]
+  (let [res (bb nil "--prn" "-f" "test/babashka/scripts/System.bb")]
     (is (= "bar" (second res)))
     (doseq [s res]
       (is (not-empty s)))))
@@ -202,21 +202,21 @@
 
 (deftest init-test
   (testing "init with a file"
-    (is (= "foo" (bb nil "--init" "test-resources/babashka/init_test.clj" 
+    (is (= "foo" (bb nil "--prn" "--init" "test-resources/babashka/init_test.clj" 
                    "-f" "test-resources/babashka/init_caller.clj"))))
   (testing "init with eval(s)"
     (is (= "foo" (bb nil "--init" "test-resources/babashka/init_test.clj"
                    "-e" "(init-test/do-a-thing)"))))
   (testing "init with main from init'ed ns"
-    (is (= "Hello from init!" (bb nil "--init" "test-resources/babashka/init_test.clj"
+    (is (= "Hello from init!" (bb nil "--prn" "--init" "test-resources/babashka/init_test.clj"
                                 "-m" "init-test"))))
   (testing "init with main from another namespace"
     (test-utils/with-config '{:paths ["test-resources/babashka/src_for_classpath_test"]}
-      (is (= "foo" (bb nil "--init" "test-resources/babashka/init_test.clj"
+      (is (= "foo" (bb nil "--prn" "--init" "test-resources/babashka/init_test.clj"
                      "-m" "call-init-main")))))
   (testing "init with a qualified function passed to --main"
     (test-utils/with-config '{:paths ["test-resources/babashka/src_for_classpath_test"]}
-      (is (= "foobar" (bb nil "--init" "test-resources/babashka/init_test.clj"
+      (is (= "foobar" (bb nil "--prn" "--init" "test-resources/babashka/init_test.clj"
                         "-m" "call-init-main/foobar")))))
   (testing "init with a subcommand after it"
     (let [actual-output (test-utils/bb "(println (init-test/do-a-thing))"
@@ -341,7 +341,7 @@
                            temp-dir-path))))))
 
 (deftest tools-cli-test
-  (is (= {:result 8080} (bb nil "test/babashka/scripts/tools.cli.bb"))))
+  (is (= {:result 8080} (bb nil "--prn" "test/babashka/scripts/tools.cli.bb"))))
 
 (deftest try-catch-test
   (is (zero? (bb nil "(try (/ 1 0) (catch ArithmeticException _ 0))")))
@@ -366,7 +366,7 @@
 (deftest csv-test
   (is (= '(["Adult" "87727"] ["Elderly" "43914"] ["Child" "33411"] ["Adolescent" "29849"]
            ["Infant" "15238"] ["Newborn" "10050"] ["In Utero" "1198"])
-         (bb nil (.getPath (io/file "test" "babashka" "scripts" "csv.bb"))))))
+         (bb nil "--prn" (.getPath (io/file "test" "babashka" "scripts" "csv.bb"))))))
 
 (deftest assert-test ;; assert was first implemented in bb but moved to sci later
   (is (thrown-with-msg? Exception #"should-be-true"
@@ -419,7 +419,7 @@
                      (java.nio.file.Files/copy p p' (into-array [java.nio.file.StandardCopyOption/REPLACE_EXISTING]))))))"
              temp-path))
     (is (.exists f2))
-    (let [v (bb nil "-f" (.getPath (io/file "test-resources" "babashka" "glob.clj")))]
+    (let [v (bb nil "--prn" "-f" (.getPath (io/file "test-resources" "babashka" "glob.clj")))]
       (is (vector? v))
       (is (.exists (io/file (first v)))))
     (is (= :success (bb nil "(with-open [str (java.nio.file.Files/newDirectoryStream (.toPath (clojure.java.io/file \".\")))] :success)")))
@@ -477,7 +477,7 @@
 (deftest clojure-data-xml-test
   (is (= "<?xml version=\"1.0\" encoding=\"UTF-8\"?><items><item>1</item><item>2</item></items>"
          (bb nil "(let [xml (xml/parse-str \"<items><item>1</item><item>2</item></items>\")] (xml/emit-str xml))")))
-  (is (= "0.0.87-SNAPSHOT" (bb nil "examples/pom_version_get.clj" (.getPath (io/file "test-resources" "pom.xml")))))
+  (is (= "0.0.87-SNAPSHOT" (bb nil "--prn" "examples/pom_version_get.clj" (.getPath (io/file "test-resources" "pom.xml")))))
   (is (= ":xmlns.DAV%3A/propfind"
          (bb nil "(clojure.data.xml/alias-uri :D \"DAV:\") (str ::D/propfind)"))))
 
@@ -617,12 +617,12 @@
 
 (deftest file-property-test
   (is (= "true\nfalse\n"
-         (test-utils/bb nil (.getPath (io/file "test-resources" "babashka" "file_property1.clj")))))
+         (test-utils/bb nil "--prn" (.getPath (io/file "test-resources" "babashka" "file_property1.clj")))))
   (is (= "true\n"
-         (test-utils/bb nil (.getPath (io/file "test-resources" "babashka" "file_property2.clj")))))
+         (test-utils/bb nil "--prn" (.getPath (io/file "test-resources" "babashka" "file_property2.clj")))))
   (is (apply =
-             (bb nil (.getPath (io/file "test" "babashka" "scripts" "simple_file_var.bb")))))
-  (let [res (bb nil (.getPath (io/file "test" ".." "test" "babashka"
+             (bb nil "--prn" (.getPath (io/file "test" "babashka" "scripts" "simple_file_var.bb")))))
+  (let [res (bb nil "--prn" (.getPath (io/file "test" ".." "test" "babashka"
                                        "scripts" "simple_file_var.bb")))]
     (is (apply = res))
     (is (str/includes? (first res) ".."))))

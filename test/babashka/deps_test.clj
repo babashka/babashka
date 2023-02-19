@@ -7,10 +7,11 @@
    [clojure.test :as test :refer [deftest is testing]]))
 
 (defn bb [& args]
-  (edn/read-string
-   {:readers *data-readers*
-    :eof nil}
-   (apply test-utils/bb nil (map str args))))
+  (let [edn-str (apply test-utils/bb nil (map str args))]
+    (edn/read-string
+     {:readers *data-readers*
+      :eof nil}
+     edn-str)))
 
 (deftest dependency-test
   (is (= #{:a :c :b} (bb "
@@ -64,6 +65,14 @@ true
 (require '[babashka.process :as p])
 
 (-> (babashka.deps/clojure [\"-M\" \"-e\" \"(+ 1 2 3)\"] {:out :string})
+    (p/check)
+    :out)
+"))))
+  (is (= "6\n" (test-utils/normalize (bb "
+(require '[babashka.deps :as deps])
+(require '[babashka.process :as p])
+
+(-> (babashka.deps/clojure {:out :string} \"-M\" \"-e\" \"(+ 1 2 3)\")
     (p/check)
     :out)
 "))))

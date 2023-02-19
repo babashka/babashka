@@ -7,7 +7,7 @@
             [clojure.core :as c]
             [clojure.string :as str]
             [sci.core :as sci]
-            [sci.impl.namespaces :refer [copy-core-var core-var macrofy]]
+            [sci.impl.copy-vars :refer [copy-core-var new-var macrofy]]
             [sci.impl.parser :as parser]
             [sci.impl.utils :refer [clojure-core-ns]]
             [sci.impl.vars :as vars]))
@@ -34,6 +34,8 @@
 (def compile-files (core-dynamic-var '*compile-files* false))
 (def unchecked-math (core-dynamic-var '*unchecked-math* false))
 (def math-context (core-dynamic-var '*math-context*))
+(def compile-path (core-dynamic-var '*compile-path* *compile-path*))
+(def compiler-options (core-dynamic-var '*compiler-options*))
 
 (defn read+string
   "Added for compatibility. Must be used with
@@ -166,13 +168,15 @@
    '*data-readers* data-readers
    'default-data-readers (copy-core-var default-data-readers)
    'xml-seq (copy-core-var xml-seq)
-   'read+string (core-var 'read+string (fn [& args]
-                  (apply read+string @common/ctx args)))
+   'read+string (new-var 'read+string (fn [& args]
+                                        (apply read+string (common/ctx) args)))
    '*command-line-args* command-line-args
    '*warn-on-reflection* warn-on-reflection
    '*compile-files* compile-files
    '*unchecked-math* unchecked-math
    '*math-context* math-context
+   '*compiler-options* compiler-options
+   '*compile-path* compile-path
    'with-precision (sci/copy-var with-precision clojure-core-ns)
    '-with-precision (sci/copy-var -with-precision clojure-core-ns)
    ;; STM
@@ -198,5 +202,7 @@
    'into-array (sci/copy-var into-array clojure-core-ns)
    'print-method (sci/copy-var print-method clojure-core-ns)
    'print-dup (sci/copy-var print-dup clojure-core-ns)
-   'PrintWriter-on (sci/copy-var PrintWriter-on clojure-core-ns)}
+   'PrintWriter-on (sci/copy-var PrintWriter-on clojure-core-ns)
+   'set-agent-send-executor! (sci/copy-var set-agent-send-executor! clojure-core-ns)
+   'set-agent-send-off-executor! (sci/copy-var set-agent-send-off-executor! clojure-core-ns)}
   )

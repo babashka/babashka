@@ -11,28 +11,31 @@
                  "babashka.core/src"
                  "babashka.nrepl/src" "depstar/src" "process/src"
                  "deps.clj/src" "deps.clj/resources"
-                 "reify/src"]
+                 "impl-java/src"]
   ;; for debugging Reflector.java code:
   ;; :java-source-paths ["sci/reflector/src-java"]
   :java-source-paths ["src-java"]
   :resource-paths ["resources" "sci/resources"]
-  :test-selectors {:default (complement :windows-only)
-                   :windows (complement :skip-windows)}
+  :test-selectors {:default (complement (some-fn :windows-only :flaky))
+                   :windows (complement (some-fn :skip-windows :flaky))
+                   :non-flaky (complement :flaky)
+                   :flaky :flaky}
   :dependencies [[org.clojure/clojure "1.11.1"]
-                 [borkdude/edamame "1.0.0"]
+                 [borkdude/edamame "1.1.17"]
                  [borkdude/graal.locking "0.0.2"]
                  [org.clojure/tools.cli "1.0.214"]
                  [cheshire "5.11.0"]
                  [nrepl/bencode "1.1.0"]
                  [borkdude/sci.impl.reflector "0.0.1"]
                  [org.babashka/sci.impl.types "0.0.2"]
-                 [org.babashka/babashka.impl.reify "0.1.3"]
-                 [org.clojure/core.async "1.5.648"]
+                 [org.babashka/babashka.impl.java "0.1.8"]
+                 [org.clojure/core.async "1.6.673"]
                  [org.clojure/test.check "1.1.1"]
                  [com.github.clj-easy/graal-build-time "0.1.0"]
-                 [rewrite-clj/rewrite-clj "1.1.45"]
+                 [rewrite-clj/rewrite-clj "1.1.46"]
                  [insn/insn "0.5.2"]
-                 [org.babashka/cli "0.5.40"]]
+                 [org.babashka/cli "0.6.46"]
+                 [org.babashka/http-client "0.1.4"]]
   :plugins       [[org.kipz/lein-meta-bom "0.1.1"]]
   :metabom {:jar-name "metabom.jar"}
   :profiles {:feature/xml  {:source-paths ["feature-xml"]
@@ -68,7 +71,7 @@
              :feature/selmer {:source-paths ["feature-selmer"]
                               :dependencies [[selmer/selmer "1.12.50"]]}
              :feature/logging {:source-paths ["feature-logging"]
-                               :dependencies [[com.taoensso/timbre "5.2.1"]
+                               :dependencies [[com.taoensso/timbre "6.0.4"]
                                               [org.clojure/tools.logging "1.1.0"]]}
              :feature/priority-map {:source-paths ["feature-priority-map"]
                                     :dependencies [[org.clojure/data.priority-map "1.1.0"]]}
@@ -93,7 +96,8 @@
                     :feature/priority-map
                     :feature/rrb-vector
                     {:dependencies [[com.clojure-goes-fast/clj-async-profiler "0.5.0"]
-                                    [com.opentable.components/otj-pg-embedded "0.13.3"]]}]
+                                    [com.opentable.components/otj-pg-embedded "0.13.3"]
+                                    [nubank/matcher-combinators "3.6.0"]]}]
              :uberjar {:global-vars {*assert* false}
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"
                                   "-Dclojure.spec.skip-macros=true"

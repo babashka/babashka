@@ -112,7 +112,9 @@
     clojure.lang.RT
     {:methods [{:name "aget"}
                {:name "aset"}
-               {:name "aclone"}]}
+               {:name "aclone"}
+               ;; we expose this via the Compiler/LOADER dynamic var
+               {:name "baseLoader"}]}
     clojure.lang.Compiler
     {:fields [{:name "specials"}
               {:name "CHAR_MAP"}]}
@@ -121,7 +123,8 @@
     clojure.lang.APersistentVector
     {:methods [{:name "indexOf"}]}
     clojure.lang.LazySeq
-    {:methods [{:name "indexOf"}]}
+    {:allPublicConstructors true,
+     :methods [{:name "indexOf"}]}
     clojure.lang.ILookup
     {:methods [{:name "valAt"}]}
     clojure.lang.IPersistentMap
@@ -140,7 +143,18 @@
     {:methods [{:name "hasNext"}
                {:name "next"}]}
     java.util.TimeZone
-    {:methods [{:name "getTimeZone"}]}})
+    {:methods [{:name "getTimeZone"}]}
+    java.net.URLClassLoader
+    {:methods [{:name "close"}
+               {:name "findResource"}
+               {:name "findResources"}
+               {:name "getResourceAsStream"}
+               {:name "getURLs"}]}
+    java.lang.ClassLoader
+    {:methods [{:name "getResource"}
+               {:name "getResources"}
+               {:name "getResourceAsStream"}
+               {:name "getParent"}]}})
 
 (def custom-map
   (cond->
@@ -182,7 +196,12 @@
     java.net.http.WebSocket$Builder
     java.net.http.WebSocket$Listener
     java.security.cert.X509Certificate
+    javax.crypto.Cipher
     javax.crypto.Mac
+    javax.crypto.SecretKey
+    javax.crypto.SecretKeyFactory
+    javax.crypto.spec.GCMParameterSpec
+    javax.crypto.spec.PBEKeySpec
     javax.crypto.spec.SecretKeySpec
     javax.net.ssl.HostnameVerifier ;; clj-http-lite
     javax.net.ssl.HttpsURLConnection ;; clj-http-lite
@@ -255,6 +274,7 @@
           java.lang.ClassNotFoundException
           java.lang.Comparable
           java.lang.Double
+          java.lang.Error
           java.lang.Exception
           java.lang.Float
           java.lang.IllegalArgumentException
@@ -282,6 +302,7 @@
           java.lang.StringBuilder
           java.lang.System
           java.lang.Throwable
+          java.lang.Thread$UncaughtExceptionHandler
           ;; java.lang.UnsupportedOperationException
           java.lang.ref.WeakReference
           java.lang.ref.ReferenceQueue
@@ -349,6 +370,7 @@
           java.security.Security
           java.sql.Date
           java.text.ParseException
+          java.text.ParsePosition
           ;; adds about 200kb, same functionality provided by java.time:
           java.text.SimpleDateFormat
           ~@(when features/java-time?
@@ -369,12 +391,14 @@
                 java.time.Year
                 java.time.YearMonth
                 java.time.ZoneRegion
+                java.time.zone.ZoneRules
                 java.time.ZonedDateTime
                 java.time.ZoneId
                 java.time.ZoneOffset
                 java.time.format.DateTimeFormatterBuilder
                 java.time.format.DateTimeParseException
                 java.time.format.DecimalStyle
+                java.time.format.FormatStyle
                 java.time.format.ResolverStyle
                 java.time.format.SignStyle
                 java.time.temporal.ChronoField
@@ -387,16 +411,24 @@
                 java.time.format.TextStyle
                 java.time.temporal.Temporal
                 java.time.temporal.TemporalAccessor
-                java.time.temporal.TemporalAdjuster])
+                java.time.temporal.TemporalAdjuster
+                java.time.temporal.TemporalQuery
+                ~(symbol "[Ljava.time.temporal.TemporalQuery;")])
           java.util.concurrent.atomic.AtomicInteger
           java.util.concurrent.atomic.AtomicLong
           java.util.concurrent.atomic.AtomicReference
+          java.util.concurrent.Callable
           java.util.concurrent.CancellationException
           java.util.concurrent.CompletionException
           java.util.concurrent.ExecutionException
           java.util.concurrent.Executor
+          java.util.concurrent.ExecutorService
+          java.util.concurrent.BlockingQueue
+          java.util.concurrent.ArrayBlockingQueue
           java.util.concurrent.LinkedBlockingQueue
           java.util.concurrent.ScheduledThreadPoolExecutor
+          java.util.concurrent.Semaphore
+          java.util.concurrent.ThreadFactory
           java.util.concurrent.ThreadPoolExecutor
           java.util.concurrent.ThreadPoolExecutor$AbortPolicy
           java.util.concurrent.ThreadPoolExecutor$CallerRunsPolicy
@@ -409,6 +441,7 @@
           java.util.concurrent.CompletableFuture
           java.util.concurrent.Executors
           java.util.concurrent.TimeUnit
+          java.util.jar.Attributes
           java.util.jar.Attributes$Name
           java.util.jar.JarFile
           java.util.jar.JarEntry
@@ -431,6 +464,7 @@
           java.util.Date
           java.util.HashMap
           java.util.IdentityHashMap
+          java.util.InputMismatchException
           java.util.List
           java.util.Locale
           java.util.Map
@@ -533,6 +567,7 @@
                       clojure.lang.PersistentTreeMap
                       clojure.lang.PersistentTreeSet
                       clojure.lang.PersistentVector
+                      clojure.lang.Range
                       clojure.lang.Ratio
                       clojure.lang.ReaderConditional
                       clojure.lang.Repeat
@@ -618,6 +653,10 @@
                          (instance? sci.impl.types.IReified v)
                          (first (t/getInterfaces v))
                          ;; fix for #1061
+                         (instance? java.net.URLClassLoader v)
+                         java.net.URLClassLoader
+                         (instance? java.lang.ClassLoader v)
+                         java.lang.ClassLoader
                          (instance? java.io.Closeable v)
                          java.io.Closeable
                          (instance? java.nio.file.attribute.BasicFileAttributes v)
@@ -630,6 +669,8 @@
                          java.util.concurrent.ExecutorService
                          (instance? java.util.Iterator v)
                          java.util.Iterator
+                         (instance? javax.crypto.SecretKey v)
+                         javax.crypto.SecretKey
                          ;; keep commas for merge friendliness
                          ,,,)))
         m (assoc m (list 'quote 'clojure.lang.Var) 'sci.lang.Var)
@@ -658,6 +699,7 @@
     BigInteger java.math.BigInteger
     Boolean java.lang.Boolean
     Byte java.lang.Byte
+    Callable java.util.concurrent.Callable
     Character java.lang.Character
     CharSequence java.lang.CharSequence
     Class java.lang.Class
@@ -665,6 +707,7 @@
     ClassNotFoundException java.lang.ClassNotFoundException
     Comparable java.lang.Comparable
     Double java.lang.Double
+    Error java.lang.Error
     Exception java.lang.Exception
     ExceptionInInitializerError java.lang.ExceptionInInitializerError
     IndexOutOfBoundsException java.lang.IndexOutOfBoundsException
@@ -692,6 +735,7 @@
     StringBuilder java.lang.StringBuilder
     System java.lang.System
     Thread java.lang.Thread
+    Thread$UncaughtExceptionHandler java.lang.Thread$UncaughtExceptionHandler
     Throwable java.lang.Throwable
     VirtualMachineError java.lang.VirtualMachineError
     ThreadDeath java.lang.ThreadDeath
@@ -752,8 +796,9 @@
        (sort-by :name)
        (vec)))
 
-(defn all-classes []
+(defn all-classes
   "Returns every java.lang.Class instance Babashka supports."
+  []
   (->> (reflection-file-entries)
        (map :name)
        (map #(Class/forName %))))

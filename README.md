@@ -12,12 +12,6 @@
     <a href="https://github.com/laheadle">@laheadle</a> on Clojurians Slack
 </blockquote>
 
-<hr>
-
-Please leave some feedback about babashka in the [Q1 Survey](https://forms.gle/ko3NjDg2SwXeEoNQ9)!
-
-<hr>
-
 ## Introduction
 
 Babashka is a native Clojure interpreter for scripting with fast startup. Its
@@ -59,7 +53,7 @@ anywhere on the path.
 Then you're ready to go:
 
 ``` shellsession
-$ ls | bb -i '(filter #(-> % io/file .isDirectory) *input*)'
+$ ls | bb -i '(filter fs/directory? *input*)'
 ("doc" "resources" "sci" "script" "src" "target" "test")
 bb took 4ms.
 ```
@@ -99,6 +93,11 @@ To get an overview of babashka, you can watch this talk ([slides](https://speake
 The [babashka book](https://book.babashka.org) contains detailed information
 about how to get the most out of babashka scripting.
 
+If you're a fan of [Clojure for the Brave and
+True](https://www.braveclojure.com/clojure-for-the-brave-and-true/), you might
+enjoy [Babashka Babooka](https://www.braveclojure.com/quests/babooka/), a book
+by the same author, Daniel Higginbotham!
+
 ## Examples
 
 Read the output from a shell command as a lazy seq of strings:
@@ -115,7 +114,8 @@ $ bb '(vec (dedupe *input*))' <<< '[1 1 1 1 2]'
 [1 2]
 ```
 
-Read more about input and output flags [here](https://book.babashka.org/#_input_and_output_flags).
+Read more about `*input*` and in- and output flags
+[here](https://book.babashka.org/#_input_and_output_flags).
 
 Execute a script. E.g. print the current time in California using the
 `java.time` API:
@@ -153,11 +153,6 @@ Install:
 
     brew install borkdude/brew/babashka
 
-<!-- On macOS with an M1 processor: -->
-
-<!--     softwareupdate --install-rosetta -->
-<!--     arch -x86_64 brew install borkdude/brew/babashka -->
-
 Upgrade:
 
     brew upgrade babashka
@@ -180,6 +175,12 @@ Upgrade:
 
 You can find more documentation on how to use babashka with nix [here](./doc/nix.md).
 
+### Alpine
+
+On Alpine it's recommended to download the binary manually from [Github
+Releases](https://github.com/babashka/babashka/releases) and use the static
+linux binary.
+
 ### Arch (Linux)
 
 `babashka` is [available](https://aur.archlinux.org/packages/babashka-bin/) in the [Arch User Repository](https://aur.archlinux.org). It can be installed using your favorite [AUR](https://aur.archlinux.org) helper such as
@@ -193,7 +194,7 @@ You can find more documentation on how to use babashka with nix [here](./doc/nix
 
 Babashka can be installed using a plugin as follows:
 
-    asdf plugin add babashka
+    asdf plugin add babashka https://github.com/pitch-io/asdf-babashka
     asdf install babashka latest
 
 ### Windows
@@ -220,9 +221,17 @@ If scoop does not work for you, then you can also just download the `bb.exe`
 binary from [Github releases](https://github.com/babashka/babashka/releases) and
 place it on your path manually.
 
+#### WSL1
+> Note: WSL1 users might experience a BSOD, please use the --static install option when installing
+``` shell
+$ curl -sLO https://raw.githubusercontent.com/babashka/babashka/master/install
+$ chmod +x install
+$ ./install --static
+```
+
 ### Installer script
 
-Install via the installer script:
+Install via the installer script for linux and macOS:
 
 ``` shell
 $ curl -sLO https://raw.githubusercontent.com/babashka/babashka/master/install
@@ -273,6 +282,12 @@ provided. This is to avoid breakage when a new version of Babashka is released.
 You may also download a binary from
 [Github](https://github.com/babashka/babashka/releases). For linux there is a
 static binary available which can be used on Alpine.
+
+### CI
+
+- On Github Actions it's recommended to use [setup-clojure](https://github.com/DeLaGuardo/setup-clojure) with `bb: latest`.
+- You can use the [installer script](https://github.com/babashka/babashka#installer-script) on any non-Windows CI system. CircleCI requires `sudo`.
+- On Appveyor + Windows you can use a bit of [Powershell](https://github.com/clj-kondo/clj-kondo/blob/39b5cb2b0d3d004c005e8975b6fafe0e314eec68/appveyor.yml#L60-L64).
 
 ## Docker
 
@@ -355,7 +370,7 @@ Pods are programs that can be used as a Clojure library by
 babashka. Documentation is available in the [pod library
 repo](https://github.com/babashka/pods).
 
-A list of available pods can be found [here](doc/projects.md#pods).
+A list of available pods can be found in the [pod registry](https://github.com/babashka/pod-registry).
 
 ## Differences with Clojure
 
@@ -397,6 +412,21 @@ handling of SIGINT and SIGPIPE. This can be done by setting
 
 ## Articles, podcasts and videos
 
+- [Blambda analyses sites](https://jmglov.net/blog/2023-01-04-blambda-analyses-sites.html) by Josh Glover
+- [The wizard of HOP - How we built the web based HOP CLI Settings Editor using Babashka and Scittle](https://www.gethop.dev/post/the-wizard-of-hop-how-we-built-the-web-based-hop-cli-settings-editor-using-babashka-and-scittle) by Bingen Galartza
+- [Simple TUIs with Babashka and Gum](https://rattlin.blog/bbgum.html) by Rattlin.blog
+- [Babashka And Dialog Part Ii: Announcing The Bb-Dialog Library](https://www.pixelated-noise.com/blog/2023/01/20/bb-dialog-announcement/index.html) by A.C. Danvers
+- [Babashka Babooka](https://www.braveclojure.com/quests/babooka/): Write Command-Line Clojure by Daniel Higginbotham
+- [Re-Writing a GlobalProtect OpenConnect VPN Connect script in Babashka](https://tech.toryanderson.com/2023/01/14/re-writing-a-globalprotect-openconnect-vpn-connect-script-in-babashka/) by Tory Anderson
+- [Babashka: How GraalVM Helped Create a Fast-Starting Scripting Environment for Clojure](https://medium.com/graalvm/babashka-how-graalvm-helped-create-a-fast-starting-scripting-environment-for-clojure-b0fcc38b0746) by Michiel Borkent (Japanese version [here]((https://logico-jp.io/2023/01/07/babashka-how-graalvm-helped-create-a-fast-starting-scripting-environment-for-clojure/)))
+- [Adding Prompts To Your Babashka Scripts With Dialog](https://www.pixelated-noise.com/blog/2022/12/09/dialog-and-babashka/index.html) by A.C. Danvers
+- [Scraping an HTML dictionary with Babashka and Bootleg](https://blog.exupero.org/scraping-an-html-dictionary-with-babashka-and-bootleg/) by exupero
+- [Using Babashka to Get Electricity Prices](https://www.karimarttila.fi/clojure/2022/12/04/using-babashka-to-get-electricity-prices.html) by Kari Marttila
+- [How to Do Things With Babashka](https://presumably.de/how-to-do-things-with-babashka.html) by Paulus Esterhazy (2022-12)
+- [Using nREPL as a system interface](https://yogthos.net/posts/2022-11-26-nREPL-system-interaction.html) by Dmitri Sotnikov
+- [Manage git hooks with babashka tasks](https://blaster.ai/blog/posts/manage-git-hooks-w-babashka.html) by Mykhaylo Bilyanskyy
+- [Messing around with babashka](https://ian-muge.medium.com/messing-around-with-babashka-f181a9003faa) by Ian Muge
+- Introducing [bbin](https://radsmith.com/bbin) by Radford Smith (2022-09)
 - [Deleting AWS Glacier vaults with babashka](https://javahippie.net/clojure/2022/07/23/deleting-aws-glacier-vaults-with-babashka.html) by Tim Zöller
 - [Recursive document transformations with Pandoc and Clojure](https://play.teod.eu/document-transform-pandoc-clojure/) by Teodor Heggelund
 - [Blambda!](https://jmglov.net/blog/2022-07-03-blambda.html) by Josh Glover

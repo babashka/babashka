@@ -3,6 +3,7 @@
    [babashka.classpath :as cp :refer [add-classpath]]
    [babashka.core :refer [windows?]]
    [babashka.fs :as fs]
+   [babashka.process :refer [sh]]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.spec.test.alpha :as st]
@@ -53,18 +54,30 @@
                 (swap! status (fn [status]
                                 (merge-with + status (dissoc m :type))))))))))))
 
+(defn current-branch []
+  (or (System/getenv "APPVEYOR_PULL_REQUEST_HEAD_REPO_BRANCH")
+      (System/getenv "APPVEYOR_REPO_BRANCH")
+      (System/getenv "CIRCLE_BRANCH")
+      (System/getenv "GITHUB_REF_NAME")
+      (System/getenv "CIRRUS_BRANCH")
+      (-> (sh "git" "rev-parse" "--abbrev-ref" "HEAD")
+          :out
+          str/trim)))
+
 ;; Standard test-runner for libtests
 (let [lib-tests (edn/read-string (slurp (io/resource "bb-tested-libs.edn")))
       test-nss (atom [])]
   (doseq [[libname {tns :test-namespaces skip-windows :skip-windows
                     :keys [test-paths
-                           git-sha]}] lib-tests]
+                           git-sha flaky]}] lib-tests]
     (let [git-dir (format ".gitlibs/libs/%s/%s" libname git-sha)
           git-dir (fs/file (fs/home) git-dir)]
       (doseq [p test-paths]
         (add-classpath (str (fs/file git-dir p)))))
     (when-not (and skip-windows (windows?))
-      (swap! test-nss into tns)))
+      (if (and flaky (#{"main" "master"} (current-branch)))
+        (println "Skipping" tns "for main branch because it's marked flaky")
+        (swap! test-nss into tns))))
   (apply test-namespaces @test-nss))
 
 ;; Non-standard tests - These are tests with unusual setup around test-namespaces

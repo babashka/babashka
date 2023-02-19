@@ -2,8 +2,8 @@
   (:require [build.reify2 :as reify2]
             [clojure.tools.build.api :as b]))
 
-(def lib 'org.babashka/babashka.impl.reify)
-(def version "0.1.3")
+(def lib 'org.babashka/babashka.impl.java)
+(def version "0.1.8")
 (def class-dir "target/classes")
 (def basis (b/create-basis {:project "deps.edn"}))
 (def jar-file (format "target/%s-%s.jar" (name lib) version))
@@ -14,7 +14,13 @@
 (defn gen-classes [_]
   (reify2/gen-classes nil))
 
+(defn compile-java [_]
+  (b/javac {:src-dirs ["src-java"]
+            :class-dir class-dir
+            :basis basis}))
+
 (defn jar [_]
+  (compile-java nil)
   (gen-classes nil)
   (b/write-pom {:class-dir class-dir
                 :lib lib

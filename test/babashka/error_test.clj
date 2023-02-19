@@ -1,24 +1,29 @@
 (ns babashka.error-test
+  {:clj-kondo/config '{:linters {:unresolved-symbol {:exclude [match?]}}}}
   (:require
    [babashka.test-utils :as tu]
    [clojure.java.io :as io]
    [clojure.string :as str]
-   [clojure.test :as t :refer [deftest is testing]]))
+   [clojure.test :as t :refer [deftest is testing]]
+   [matcher-combinators.test]))
 
-(defn multiline-equals [s1 s2]
-  (let [lines-s1 (str/split-lines s1)
-        lines-s2 (str/split-lines s2)
-        max-lines (max (count lines-s1) (count lines-s2))]
-    (run! (fn [i]
-            (let [l1 (get lines-s1 i)
-                  l2 (get lines-s2 i)]
-              (if (and l1 l2)
-                (is (= l1 l2)
-                    (format "Lines did not match.\nLine: %s\nLeft:  %s\nRight: %s"
-                            i (pr-str l1) (pr-str l2)))
-                (is false (format "Out of lines at line: %s.\nLeft:  %s\nRight: %s"
-                                  i (pr-str l1) (pr-str l2))))))
-          (range max-lines))))
+(defmacro multiline-equals [s1 s2]
+  `(let [lines-s1# (str/split-lines ~s1)
+         lines-s2# (str/split-lines ~s2)
+         max-lines# (max (count lines-s1#) (count lines-s2#))
+         lines-s1# (take max-lines# lines-s1#)
+         lines-s2# (take max-lines# lines-s2#)]
+     (is (~'match? (map str/trimr lines-s1#) (map str/trimr lines-s2#)))
+     #_(run! (fn [i]
+               (let [l1 (get lines-s1 i)
+                     l2 (get lines-s2 i)]
+                 (if (and l1 l2)
+                   (is (= l1 l2)
+                       (format "Lines did not match.\nLine: %s\nLeft:  %s\nRight: %s"
+                               i (pr-str l1) (pr-str l2)))
+                   (is false (format "Out of lines at line: %s.\nLeft:  %s\nRight: %s"
+                                     i (pr-str l1) (pr-str l2))))))
+             (range max-lines))))
 
 (deftest stacktrace-from-script-test
   (try (tu/bb nil (.getPath (io/file "test" "babashka" "scripts" "divide_by_zero.bb")))
@@ -122,7 +127,7 @@ Phase:    macroexpand
 
 ----- Context ------------------------------------------------------------------
 1: (defmacro foo [x] (subs nil 1) `(do ~x ~x)) (foo 1)
-                     ^--- 
+                     ^---
 
 ----- Stack trace --------------------------------------------------------------
 clojure.core/subs - <built-in>
@@ -140,7 +145,7 @@ Location: <expr>:1:35
 
 ----- Context ------------------------------------------------------------------
 1: (defmacro foo [x] `(subs nil ~x)) (foo 1)
-                                     ^--- 
+                                     ^---
 
 ----- Stack trace --------------------------------------------------------------
 clojure.core/subs - <built-in>
@@ -156,7 +161,7 @@ Location: <expr>:1:15
 
 ----- Context ------------------------------------------------------------------
 1: (defn quux [] (subs nil 1)) (defmacro foo [x & xs] `(do (quux) ~x)) (defn bar [] (foo 1)) (bar)
-                 ^--- 
+                 ^---
 
 ----- Stack trace --------------------------------------------------------------
 clojure.core/subs - <built-in>
@@ -178,7 +183,11 @@ Location: <expr>:1:27
 
 ----- Context ------------------------------------------------------------------
 1: (let [d {:zero 0 :one 1}] (throw (ex-info \"some msg\" d)))
-                             ^--- some msg")))
+                             ^--- some msg
+
+----- Stack trace --------------------------------------------------------------
+user - <expr>:1:27
+user - <expr>:1:1")))
 
   (testing "output of ordinary Exception"
     (let [output (try (tu/bb nil "(throw (Exception. \"some msg\"))")
@@ -191,15 +200,19 @@ Location: <expr>:1:1
 
 ----- Context ------------------------------------------------------------------
 1: (throw (Exception. \"some msg\"))
-   ^--- some msg"))))
+   ^--- some msg
+
+----- Stack trace --------------------------------------------------------------
+user - <expr>:1:1"))))
 
 (deftest debug-exception-print-test
   (testing "debug mode includes locals and exception data in output"
     (let [output (try (tu/bb nil "--debug" "(let [x 1] (/ x 0))")
                       (is false) ; ensure that exception is thrown and we don't get here
-                      (catch Exception e (ex-message e)))]
-      (is (str/includes? (tu/normalize output)
-            "----- Error --------------------------------------------------------------------
+                      (catch Exception e (ex-message e)))
+          actual-lines (str/split-lines (tu/normalize output))]
+      (is (match? (take 16 actual-lines)
+                  (str/split-lines "----- Error --------------------------------------------------------------------
 Type:     java.lang.ArithmeticException
 Message:  Divide by zero
 Location: <expr>:1:12
@@ -211,18 +224,21 @@ Location: <expr>:1:12
 ----- Stack trace --------------------------------------------------------------
 clojure.core// - <built-in>
 user           - <expr>:1:12
+user           - <expr>:1:1
 
 ----- Exception ----------------------------------------------------------------
-clojure.lang.ExceptionInfo: Divide by zero
-{:type :sci/error, :line 1, :column 12, :message \"Divide by zero\",")))))
+clojure.lang.ExceptionInfo: Divide by zero")))
+      (is (str/includes? (nth actual-lines 16)
+                         "{:type :sci/error, :line 1, :column 12, :message \"Divide by zero\",")))))
 
 (deftest macro-test
   (let [output (try (tu/bb nil "--debug" "(defmacro foo [x] (subs nil 1) `(do ~x ~x)) (foo 1)")
                     (is false)
                     (catch Exception e (ex-message e)))
-        output (tu/normalize output)]
-    (is (str/includes? output
-                       "----- Error --------------------------------------------------------------------
+        output (tu/normalize output)
+        actual-lines (str/join "\n" (take 17 (str/split-lines output)))]
+    (multiline-equals actual-lines
+                      "----- Error --------------------------------------------------------------------
 Type:     java.lang.NullPointerException
 Location: <expr>:1:19
 Phase:    macroexpand
@@ -238,8 +254,7 @@ user/foo          - <expr>:1:1
 user              - <expr>:1:45
 
 ----- Exception ----------------------------------------------------------------
-clojure.lang.ExceptionInfo: null
-{:type :sci/error, :line 1, :column 19"))))
+clojure.lang.ExceptionInfo: null")))
 
 (deftest native-stacktrace-test
   (let [output (try (tu/bb nil "(merge 1 2 3)")

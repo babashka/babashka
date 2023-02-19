@@ -5,4 +5,5 @@
            babashka.impl.File/gen-wrapper-fn-2 clojure.core/def
            babashka.impl.Pattern/gen-wrapper-fn-2 clojure.core/def
            babashka.impl.Pattern/gen-constants clojure.core/declare}
- :linters {:unsorted-required-namespaces {:level :warning}}}
+ :linters {:unsorted-required-namespaces {:level :warning}}
+ :hooks {:analyze-call {clojure.core/requiring-resolve hooks.mine/req-resolve}}}

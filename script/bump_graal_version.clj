@@ -54,7 +54,7 @@
 ;; OR
 ;;
 ;; We could have them as environment variables
-(def current-graal-version "22.3.0")
+(def current-graal-version "22.3.1")
 (def current-java-version "java19")
 
 (def cl-options

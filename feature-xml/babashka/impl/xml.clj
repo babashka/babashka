@@ -40,8 +40,8 @@
       #_(assert (<= (count ans)) (pr-str ans))
       (let [xn (xml/uri-symbol n)
             al (symbol (clj-ns-name a))]
-        (sci/eval-form @ctx `(create-ns (quote ~xn)))
-        (sci/eval-form @ctx `(alias (quote ~al) (quote ~xn)))
+        (sci/eval-form (ctx) `(create-ns (quote ~xn)))
+        (sci/eval-form (ctx) `(alias (quote ~al) (quote ~xn)))
         (recur rst)))))
 
 (def xml-namespace

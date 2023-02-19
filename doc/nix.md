@@ -81,39 +81,7 @@ After running `direnv allow`, babashka should be available on the `$PATH`, when 
 
 You can write babashka scripts with native dependencies using [WriteBabashkaApplication](https://github.com/sohalt/write-babashka-application).
 
-Here is an example `flake.nix` using `cowsay` as an external dependency:
+The WriteBabashkaApplication repository has an [example](https://github.com/Sohalt/write-babashka-application/tree/main/example) `flake.nix` using `cowsay` as an external dependency.
 
-```nix
-{
-  inputs.wbba.url = "github:sohalt/write-babashka-application";
-  inputs.flake-utils.url = "github:numtide/flake-utils";
-  outputs = { nixpkgs, flake-utils, wbba, ... }:
-    flake-utils.lib.eachDefaultSystem (system:
-      let
-        pkgs = import nixpkgs {
-          inherit system;
-          overlays = [ wbba.overlay ];
-        };
-        hello-babashka = pkgs.writeBabashkaApplication {
-          name = "hello";
-          runtimeInputs = with pkgs;[
-            cowsay # add your dependencies here
-          ];
-          text = ''
-            (ns hello
-              (:require [babashka.process :refer [sh]]))
 
-            (-> (sh ["cowsay" "hello from babashka"])
-                 :out
-                 print)
-          '';
-        };
-      in
-      {
-        defaultApp = hello-babashka;
-        defaultPackage = hello-babashka;
-      });
-}
-```
-
-You can then build the application using `nix build` or run it using `nix run`.
+You can download that example, and then  build the application using `nix build` or run it using `nix run`.

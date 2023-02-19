@@ -297,7 +297,7 @@
   current assertion."
   {:added "1.1"}
   [m]
-  (let [{:keys [:file :line]} (meta (first @testing-vars))]
+  (let [{:keys [:file :line]} (merge m (meta (first @testing-vars)))]
     (str
      ;; Uncomment to include namespace in failure report:
      ;;(ns-name (:ns (meta (first *testing-vars*)))) "/ "
@@ -316,8 +316,8 @@
   Does nothing if *report-counters* is nil."
   {:added "1.1"}
   [name]
-  (when @report-counters
-    (swap! @report-counters update-in [name] (fnil inc 0))))
+  (when-let [rc @report-counters]
+    (dosync (commute rc update-in [name] (fnil inc 0)))))
 
 ;;; TEST RESULT REPORTING
 
@@ -408,7 +408,7 @@
   {:added "1.1"}
   [x]
   (if (symbol? x)
-    (when-let [v (second (resolve/lookup @ctx x false))]
+    (when-let [v (second (resolve/lookup (ctx) x false))]
       (when-let [value (if (instance? sci.lang.Var v)
                          (get-possibly-unbound-var v)
                          v)]
@@ -758,7 +758,7 @@
   *report-counters*."
   {:added "1.1"}
   [ctx ns]
-  (sci/binding [report-counters (atom @initial-report-counters)]
+  (sci/binding [report-counters (ref @initial-report-counters)]
     (let [ns-obj (sci-namespaces/sci-the-ns ctx ns)]
       (do-report {:type :begin-test-ns, :ns ns-obj})
       ;; If the namespace has a test-ns-hook function, call that:
@@ -804,3 +804,39 @@
   [summary]
   (and (zero? (:fail summary 0))
        (zero? (:error summary 0))))
+
+(defn run-test-var
+  "Runs the tests for a single Var, with fixtures executed around the test, and summary output after."
+  {:added "1.11"}
+  [v]
+  (sci/binding [report-counters (ref @initial-report-counters)]
+    (let [ns-obj (-> v meta :ns)
+          summary (do
+                    (do-report {:type :begin-test-ns
+                                :ns   ns-obj})
+                    (test-vars [v])
+                    (do-report {:type :end-test-ns
+                                :ns   ns-obj})
+                    (assoc @@report-counters :type :summary))]
+      (do-report summary)
+      summary)))
+
+(defmacro run-test
+  "Runs a single test.
+  Because the intent is to run a single test, there is no check for the namespace test-ns-hook."
+  {:added "1.11"}
+  [test-symbol]
+  (let [test-var (sci/resolve (ctx) test-symbol)]
+    (cond
+      (nil? test-var)
+      (sci/binding [sci/out sci/err]
+        (binding [*out* sci/out]
+          (println "Unable to resolve" test-symbol "to a test function.")))
+
+      (not (-> test-var meta :test))
+      (sci/binding [sci/out sci/err]
+        (binding [*out* sci/out]
+          (println test-symbol "is not a test.")))
+
+      :else
+      `(clojure.test/run-test-var ~test-var))))

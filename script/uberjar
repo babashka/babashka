@@ -175,7 +175,14 @@ else
     BABASHKA_LEIN_PROFILES+=",-feature/rrb-vector"
 fi
 
+mkdir -p resources/META-INF/babashka
 cp deps.edn resources/META-INF/babashka/deps.edn
+
+rm -rf resources/*.class
+# SVM_JAR=$(find -L "$GRAALVM_HOME" | grep svm.jar)
+# "$GRAALVM_HOME/bin/javac" -cp "$SVM_JAR" resources/UrlClassLoaderSubstitutions.java
+# "$GRAALVM_HOME/bin/javac" -cp "$SVM_JAR" resources/CutOffSunAwtWwwContentAudioAiff.java
+# "$GRAALVM_HOME/bin/javac" -cp "$SVM_JAR" resources/CutOffMisc.java
 
 if [ -z "$BABASHKA_JAR" ]; then
     lein with-profiles "$BABASHKA_LEIN_PROFILES,+reflection,-uberjar" do run

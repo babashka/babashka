@@ -1,8 +1,8 @@
 (ns babashka.impl.socket-repl-test
   (:require
-   [babashka.impl.common :as common]
    [babashka.impl.server :refer [clojure-core-server-namespace]]
    [babashka.impl.socket-repl :refer [start-repl! stop-repl!]]
+   [babashka.main :as main]
    [babashka.process :as p]
    [babashka.test-utils :as tu]
    [babashka.wait :as w]
@@ -10,21 +10,23 @@
    [clojure.java.io :as io]
    [clojure.string :as str]
    [clojure.test :as t :refer [deftest is testing]]
+   [sci.ctx-store :as ctx-store]
    [sci.impl.opts :refer [init]]))
 
 (set! *warn-on-reflection* true)
 
-(defn socket-command [expr expected]
+(defn socket-command [expr expected & [log?]]
   (with-open [socket (java.net.Socket. "127.0.0.1" 1666)
               reader (io/reader socket)
               sw (java.io.StringWriter.)
               writer (io/writer socket)]
-    (binding [*out* writer] 
+    (binding [*out* writer]
       (println (str expr "\n")))
     (loop []
       (when-let [l (try (.readLine ^java.io.BufferedReader reader)
                         (catch java.net.SocketException _ nil))]
-        ;; (prn :l l)
+        (when log?
+          (println "===" l))
         (binding [*out* sw]
           (println l))
         (let [s (str sw)]
@@ -46,9 +48,9 @@
   (when exec?
     (try
       (if tu/jvm?
-        (let [ctx (init {:namespaces {'clojure.core.server clojure-core-server-namespace}
+        (let [ctx (init {:namespaces main/namespaces
                          :features #{:bb}})]
-          (vreset! common/ctx ctx)
+          (ctx-store/reset-ctx! ctx)
           (start-repl! "0.0.0.0:1666" ctx))
         (do (vreset! server-process
                      (p/process ["./bb" "socket-repl" "localhost:1666"]))
@@ -65,10 +67,12 @@
         (is (socket-command "1\n*1" "1")))
       (testing "*ns*"
         (is (socket-command "(ns foo.bar) (ns-name *ns*)" "foo.bar")))
+      (testing "set dyn vars"
+        (is (socket-command "[(set! *warn-on-reflection* true) (set! *unchecked-math* true)]" "[true true]")))
       (finally
         (if tu/jvm?
           (do (stop-repl!)
-              (vreset! common/ctx nil)
+              (ctx-store/reset-ctx! nil)
               (Thread/sleep 100))
           (p/destroy-tree @server-process))))))
 
@@ -81,7 +85,7 @@
                          :env (atom {})
                          :namespaces {'clojure.core.server clojure-core-server-namespace}
                          :features #{:bb}})]
-          (vreset! common/ctx ctx)
+          (ctx-store/reset-ctx! ctx)
           (start-repl! "{:address \"localhost\" :accept clojure.core.server/repl :port 1666}"
                        ctx))
         (do (vreset! server-process
@@ -92,7 +96,7 @@
       (finally
         (if tu/jvm?
           (do (stop-repl!)
-              (vreset! common/ctx nil)
+              (ctx-store/reset-ctx! nil)
               (Thread/sleep 100))
           (p/destroy-tree @server-process))))))
 
@@ -105,7 +109,7 @@
                          :env (atom {})
                          :namespaces {'clojure.core.server clojure-core-server-namespace}
                          :features #{:bb}})]
-          (vreset! common/ctx ctx)
+          (ctx-store/reset-ctx! ctx)
           (start-repl! "{:address \"localhost\" :accept clojure.core.server/io-prepl :port 1666}"
                        ctx))
         (do (vreset! server-process
@@ -120,7 +124,7 @@
       (finally
         (if tu/jvm?
           (do (stop-repl!)
-              (vreset! common/ctx nil)
+              (ctx-store/reset-ctx! nil)
               (Thread/sleep 100))
           (p/destroy-tree @server-process))))))
 

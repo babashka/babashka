@@ -1,4 +1,4 @@
-(ns short-ci
+(ns gen-ci
   (:require
     [babashka.tasks :as tasks]
     [clj-yaml.core :as yaml]
@@ -72,14 +72,16 @@
            "java -jar ./target/babashka-$(cat resources/BABASHKA_VERSION)-standalone.jar .circleci/script/docker.clj"}}]))))
 
 (defn jvm
-  [shorted?]
+  [shorted? graalvm-home]
   (gen-job
     shorted?
     (ordered-map
       :docker            [{:image "circleci/clojure:openjdk-11-lein-2.9.8-bullseye"}]
       :working_directory "~/repo"
       :environment       {:LEIN_ROOT         "true"
-                          :BABASHKA_PLATFORM "linux"}
+                          :BABASHKA_PLATFORM "linux"
+                          :GRAALVM_VERSION   "22.3.0"
+                          :GRAALVM_HOME      graalvm-home}
       :resource_class    "large"
       :steps
       (gen-steps
@@ -89,6 +91,7 @@
          {:restore_cache {:keys ["v1-dependencies-{{ checksum \"project.clj\" }}-{{ checksum \"deps.edn\" }}"
                                  "v1-dependencies-"]}}
          (run "Install Clojure" "sudo script/install-clojure")
+         (run "Download GraalVM" "script/install-graalvm")
          (run
            "Run JVM tests"
            "export BABASHKA_FEATURE_JDBC=true
@@ -102,6 +105,8 @@ script/uberjar
 VERSION=$(cat resources/BABASHKA_VERSION)
 jar=target/babashka-$VERSION-standalone.jar
 cp $jar /tmp/release
+export PATH=$GRAALVM_HOME/bin:$PATH
+export JAVA_HOME=$GRAALVM_HOME
 java -jar $jar script/reflection.clj
 reflection=\"babashka-$VERSION-reflection.json\"
 java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$jar\"
@@ -149,6 +154,8 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                  :steps (gen-steps shorted?
                                    (filter some?
                                            [:checkout
+                                            (when (contains? #{"linux" "linux-aarch64"} platform)
+                                              (run "Check max glibc version" "script/check_glibc.sh"))
                                             {:attach_workspace {:at "/tmp"}}
                                             (run "Pull Submodules" "git submodule init\ngit submodule update")
                                             {:restore_cache
@@ -168,7 +175,7 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                             {:persist_to_workspace {:root  "/tmp"
                                                                     :paths ["release"]}}
                                             {:save_cache
-                                             {:paths ["~/.m2" "~/graalvm-ce-java19-22.3.0"]
+                                             {:paths ["~/.m2" "~/graalvm-ce-java19-22.3.1"]
                                               :key   cache-key}}
                                             {:store_artifacts {:path        "/tmp/release"
                                                                :destination "release"}}
@@ -180,8 +187,8 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
   (let [docker-executor-conf  {:docker [{:image "circleci/clojure:openjdk-11-lein-2.9.8-bullseye"}]}
         machine-executor-conf {:machine {:image "ubuntu-2004:202111-01"}}
         mac-executor-conf     {:macos {:xcode "14.0.0"}}
-        linux-graalvm-home    "/home/circleci/graalvm-ce-java19-22.3.0"
-        mac-graalvm-home      "/Users/distiller/graalvm-ce-java19-22.3.0/Contents/Home"]
+        linux-graalvm-home    "/home/circleci/graalvm-ce-java19-22.3.1"
+        mac-graalvm-home      "/Users/distiller/graalvm-ce-java19-22.3.1/Contents/Home"]
     (ordered-map
       :version   2.1
       :commands
@@ -192,7 +199,7 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
            :command
            "docker run --privileged --rm tonistiigi/binfmt --install all\ndocker buildx create --name ci-builder --use"}}]}}
       :jobs      (ordered-map
-                   :jvm (jvm shorted?)
+                   :jvm (jvm shorted? linux-graalvm-home)
                    :linux (unix shorted? false false "amd64" docker-executor-conf "large" linux-graalvm-home "linux")
                    :linux-static
                    (unix shorted? true true "amd64" docker-executor-conf "large" linux-graalvm-home "linux")

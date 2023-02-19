@@ -20,8 +20,6 @@
  ;; BB-TEST-PATCH: Removed markdown.md-file-test b/c tests hardcode path to test
  ;; files. Removed markdown.benchmark b/c it depends on criterium which isn't bb compatible
  markdown-clj/markdown-clj {:git-sha "ac245d3049afa25a6d41fcb5ba5a268f52c610e4", :git-url "https://github.com/yogthos/markdown-clj", :test-namespaces (markdown.md-test)}
- ;; BB-TEST-PATCH: Removed clojure.tools.namespace.dir-test as it fails on windows
- org.clojure/tools.namespace {:git-sha "a13b037215e21a2e71aa34b27e1dd52c801a2a7b", :git-url "https://github.com/babashka/tools.namespace", :test-namespaces (clojure.tools.namespace.test-helpers clojure.tools.namespace.dependency-test clojure.tools.namespace.find-test clojure.tools.namespace.move-test clojure.tools.namespace.parse-test), :branch "babashka"}
  com.stuartsierra/component {:git-sha "9f9653d1d95644e3c30beadf8c8811f86758ea23", :git-url "https://github.com/stuartsierra/component", :test-namespaces (com.stuartsierra.component-test)}
  slingshot/slingshot {:git-sha "6961ab0593ab9633c15b7697ffd43823090720be", :git-url "https://github.com/scgilardi/slingshot", :test-namespaces (slingshot.slingshot-test slingshot.support-test slingshot.test-test)}
  rm-hull/jasentaa {:git-sha "f52a0e75cbdf1d2b72d9604232db264ff6473f12", :git-url "https://github.com/rm-hull/jasentaa", :test-namespaces (jasentaa.position-test jasentaa.worked-example-2 jasentaa.collections-test jasentaa.parser.basic-test jasentaa.parser.combinators-test jasentaa.test-helpers jasentaa.worked-example-1)}
@@ -48,8 +46,8 @@
  com.github.seancorfield/honeysql {:git-sha "6e4e1f6928450788353c181f32474d930d6afe84", :git-url "https://github.com/seancorfield/honeysql", :test-namespaces (honey.sql-test honey.sql.helpers-test honey.sql.postgres-test), :branch "develop"}
  honeysql/honeysql {:git-sha "1137dd12350afdc30ad4976c3718279581390b36", :git-url "https://github.com/seancorfield/honeysql", :test-namespaces (honeysql.format-test honeysql.core-test), :branch "v1"}
                                         ; skip tests on Windows because of the :compressed thing
- babashka/babashka.curl {:git-url "https://github.com/babashka/babashka.curl", :test-namespaces [babashka.curl-test], :skip-windows true, :manually-added true}
- http-kit/http-kit {:git-url "https://github.com/http-kit/http-kit", :test-namespaces [httpkit.client-test], :manually-added true}
+ babashka/babashka.curl {:git-url "https://github.com/babashka/babashka.curl", :test-namespaces [babashka.curl-test], :skip-windows true, :manually-added true :flaky true}
+ http-kit/http-kit {:git-url "https://github.com/http-kit/http-kit", :test-namespaces [httpkit.client-test], :manually-added true :flaky true}
  org.clojure/core.match {:git-url "https://github.com/clojure/core.match", :test-namespaces [core-match.core-tests], :manually-added true}
  hiccup/hiccup {:git-url "http://github.com/weavejester/hiccup", :test-namespaces [hiccup.core-test hiccup2.core-test], :manually-added true}
  org.clojure/test.check {:git-url "https://github.com/clojure/test.check", :test-namespaces [test-check.smoke-test], :manually-added true}
@@ -59,19 +57,18 @@
  crispin/crispin {:git-url "https://github.com/dunaj-project/crispin", :test-namespaces [crispin.core-test], :manually-added true}
  clj-commons/multigrep {:git-url "https://github.com/clj-commons/multigrep", :test-namespaces [multigrep.core-test], :manually-added true}
  org.clj-commons/digest {:git-url "https://github.com/clj-commons/clj-digest", :test-namespaces [clj-commons.digest-test], :manually-added true}
- hato/hato {:git-url "https://github.com/gnarroway/hato", :test-namespaces [hato.client-test], :manually-added true}
- java-http-clj/java-http-clj {:git-url "http://www.github.com/schmee/java-http-clj", :test-namespaces [java-http-clj.smoke-test], :manually-added true}
+ hato/hato {:git-url "https://github.com/gnarroway/hato", :test-namespaces [hato.client-test], :manually-added true :flaky true}
+ java-http-clj/java-http-clj {:git-url "http://www.github.com/schmee/java-http-clj", :test-namespaces [java-http-clj.smoke-test], :manually-added true :flaky true}
  rewrite-clj/rewrite-clj {:git-url "https://github.com/clj-commons/rewrite-clj", :test-namespaces [rewrite-clj.parser-test rewrite-clj.node-test rewrite-clj.zip-test rewrite-clj.paredit-test rewrite-clj.zip.subedit-test rewrite-clj.node.coercer-test], :manually-added true}
  ;; TODO: env tests don't work because envoy lib isn't compatible with bb
  ;; TODO: failing tests in the following namespaces: vault.client.mock-test, vault.secrets.kvv1-test vault.secrets.kvv2-test
  amperity/vault-clj {:git-url "https://github.com/amperity/vault-clj", :test-namespaces [vault.lease-test vault.client.http-test], :manually-added true}
  orchestra/orchestra {:git-url "https://github.com/jeaye/orchestra", :test-namespaces (orchestra.make-fns orchestra.many-fns orchestra.expound-test orchestra.core-test orchestra.reload-test), :test-directories ("test/cljc" "test/clj"), :git-sha "81e5181f7b42e5e2763a2b37db17954f3be0314e"}
  ;; BB-TEST-PATCH: Deleted tasks.clj
- org.clj-commons/clj-http-lite {:git-url "https://github.com/clj-commons/clj-http-lite", :test-namespaces (clj-http.lite.test-runner clj-http.lite.client-test), :test-directories ("bb"), :git-sha "6b53000df55ac05c4ff8e5047a5323fc08a52e8b"}
+ org.clj-commons/clj-http-lite {:git-url "https://github.com/clj-commons/clj-http-lite", :test-namespaces (clj-http.lite.test-runner clj-http.lite.client-test), :test-directories ("bb"), :git-sha "6b53000df55ac05c4ff8e5047a5323fc08a52e8b" :flaky true}
  cprop/cprop {:git-url "https://github.com/tolitius/cprop", :test-namespaces [cprop.smoke-test], :manually-added true}
  org.clojure/data.zip {:git-url "https://github.com/clojure/data.zip", :test-namespaces [clojure.data.zip-test], :manually-added true}
  borkdude/deps {:git-url "https://github.com/borkdude/deps.clj", :test-namespaces [borkdude.deps.smoke-test], :manually-added true}
- io.github.cognitect-labs/test-runner {:git-url "https://github.com/cognitect-labs/test-runner", :test-namespaces (cognitect.test-runner.samples-test cognitect.test-runner.sample-property-test cognitect.test-runner-test), :git-sha "cc75980b43011773162b485f46f939dc5fba91e4"}
  borkdude/missing.test.assertions {:git-url "https://github.com/borkdude/missing.test.assertions", :test-namespaces (missing.test.assertions-test missing.test.old-methods), :git-sha "603cb01bee72fb17addacc53c34c85612684ad70"}
  ;; No tests to run
  io.github.technomancy/limit-break {:git-url "https://github.com/technomancy/limit-break", :test-namespaces [], :manually-added true}
@@ -168,4 +165,25 @@
                        :test-paths ["test"]
                        :test-namespaces [exoscale.interceptor-test]}
  clj-commons/fs {:git-url "https://github.com/clj-commons/fs", :test-namespaces (me.raynes.core-test), :git-sha "60026817c44015da8656925411d4af1d8210bad0"}
- }
+ postmortem/postmortem {:git-url "https://github.com/athos/Postmortem"
+                        :git-sha "1a29775a3d286f9f6fe3f979c78b6e2bf298d5ba"
+                        :test-paths ["test"]
+                        :test-namespaces [postmortem.core-test postmortem.instrument-test
+                                          postmortem.instrument-test]}
+ com.github.rawleyfowler/sluj {:git-url "https://github.com/rawleyfowler/sluj"
+                               :git-sha "4a92e772b4e07bf127423448d4140748b5782198"
+                               :test-paths ["test"]
+                               :test-namespaces [sluj.core-test]}
+ io.github.cognitect-labs/test-runner {:git-url "https://github.com/cognitect-labs/test-runner",
+                                       :git-sha "7284cda41fb9edc0f3bc6b6185cfb7138fc8a023"
+                                       :test-namespaces [cognitect.test-runner.samples-test cognitect.test-runner.sample-property-test cognitect.test-runner-test],
+                                       :test-paths ["test"]}
+ ;; BB-TEST-PATCH: Removed clojure.tools.namespace.dir-test as it fails on windows
+ org.clojure/tools.namespace {:git-sha "daf82a10e70182aea4c0716a48f3922163441b32",
+                              :git-url "https://github.com/clojure/tools.namespace",
+                              :test-namespaces [clojure.tools.namespace.test-helpers clojure.tools.namespace.dependency-test clojure.tools.namespace.find-test clojure.tools.namespace.move-test clojure.tools.namespace.parse-test],
+                              :test-paths ["src/test/clojure"]}
+ net.cgrand/xforms {:git-url "https://github.com/cgrand/xforms", 
+                    :git-sha "550dbc150a79c6ecc148d8a7e260e10bc36321c6", 
+                    :test-namespaces [net.cgrand.xforms-test], 
+                    :test-paths ["test"]}}

@@ -100,6 +100,18 @@
         (write
           ([b] ((method-or-bust methods 'write) this b))
           ([b off len] ((method-or-bust methods 'write) this b off len))))
+
+      ["java.io.OutputStream" #{}]
+      (proxy [java.io.OutputStream] []
+        (close [] (when-let [m (get methods 'close)]
+                    (m this)))
+        (flush [] (when-let [m (get methods 'flush)]
+                    (m this)))
+        (write
+          ([b]
+           ((method-or-bust methods 'write) this b))
+          ([b off len]
+           ((method-or-bust methods 'write) this b off len))))
       , ;; keep this for merge friendliness
       )))
 

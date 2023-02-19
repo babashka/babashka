@@ -5,12 +5,131 @@ For a list of breaking changes, check [here](#breaking-changes).
 A preview of the next release can be installed from
 [babashka-dev-builds](https://github.com/babashka/babashka-dev-builds).
 
+[Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
+
 ## Unreleased
+- Add more java.time and related classes with the goal of supporting juxt.tick https://github.com/juxt/tick/issues/86
+- [#1000](https://github.com/babashka/babashka/issues/1000): add lib tests for xforms ([@bobisageek](https://github.com/bobisageek))
+- [#1482](https://github.com/babashka/babashka/issues/1482): make loading of libs thread safe
+- [#1487](https://github.com/babashka/babashka/issues/1487): `babashka.tasks/clojure` should be supported without arguments to start a REPL
+- [#1496](https://github.com/babashka/babashka/issues/1496): Add `set-agent-send-executor!` and `set-agent-send-off-executor!`
+
+## 1.1.173 (2023-02-04)
+
+- [#1473](https://github.com/babashka/babashka/issues/1473): support `--config` in other dir + `:local/root` ([@lispyclouds](https://github.com/lispyclouds))
+- Compatibility with `clojure.tools.namespace.repl/refresh` and `clojure.java.classpath`
+- `(clojure.lang.RT/baseLoader)` now returns classloader with babashka dependencies on classpath
+- Support reading tags from `data_readers.clj` and `data_readers.cljc`
+- Don't exit REPL when `babashka.deps/add-deps` fails
+- Fix [#1474](https://github.com/babashka/babashka/issues/1474): when `.bb` file is in different artifact, `.clj` file is loaded first if it appears first on classpath
+- Support for `*loaded-libs*` and `(loaded-libs)`
+- Bump rewrite-clj to `1.1.46`
+- Bump http-client to `0.0.3`
+- Bump fs to `0.2.15`
+- Bump process to `0.4.16`
+
+## 1.1.172 (2023-01-23)
+
+- [#1472](https://github.com/babashka/babashka/issues/1472): fix tokenization of `babashka.tasks/clojure`: command was tokenized twice (regression was introduced in `1.0.168`)
+- **BREAKING**: Bump `babashka.process`: change default for `:out :append` to `:out :write`. This default is undocumented so the impact should be small.
+
+## 1.1.171 (2023-01-23)
+
+- [#1467](https://github.com/babashka/babashka/issues/1467): **BREAKING**: avoid printing results, unless `--prn` is enabled (aside from `-e`, `-o` and `-O`).
+- Include [http-client](https://github.com/babashka/http-client) as built-in library
+- SCI: support `add-watch` on vars
+- Compatibility with [eftest](https://github.com/weavejester/eftest) test runner (see [demo](https://twitter.com/borkdude/status/1616886788898885632))
+- Add classes:
+  - `java.util.concurrent.Callable`
+  - `java.util.concurrent.ExecutorService`
+- Expose `clojure.main` `main` and `repl-caught`
+- Switch `clojure.test/*report-counters*` to ref instead of atom for compatibility with [kaocha](https://github.com/lambdaisland/kaocha)
+- Allow `java.io.OutputStream` to be proxied, for [kaocha](https://github.com/lambdaisland/kaocha)
+- Support qualified method names in `proxy` and ignore namespace
+
+## 1.0.170 (2023-01-19)
+
+- [#1463](https://github.com/babashka/babashka/issues/1463): Add `java.util.jar.Attributes` class ([@jeroenvandijk](https://github.com/jeroenvandijk))
+- [#1456](https://github.com/babashka/babashka/issues/1456): allow `*warn-on-reflection*` and `*unchecked-math*` to be set in socket REPL and nREPL ([@axks](https://github.com/axks))
+- SCI: macroexpansion error location improvement
+- Add compatibility with [tab](https://github.com/eerohele/tab) and [solenoid](https://github.com/adam-james-v/solenoid)
+- Bump babashka.cli and babashka.fs
+- New classes:
+  - `java.util.jar.Attributes`
+  - `java.util.concurrent.ThreadFactory`
+  - `java.lang.Thread$UncaughtExceptionHandler`
+  - `java.lang.Thread$UncaughtExceptionHandler`
+  - `java.util.concurrent.BlockingQueue`
+  - `java.util.concurrent.ArrayBlockingQueue`
+  - `java.util.concurrent.ThreadFactory`
+  - `java.lang.Thread$UncaughtExceptionHandler`
+  - `java.util.concurrent.Semaphore`
+- Expose more httpkit.server functions: `with-channel`, `on-close`, `close`
+
+## 1.0.169 (2023-01-03)
+
+- Implement `ns`, `lazy-seq` as macro
+- Support `--dev-build` flag in installation script
+- [#1451](https://github.com/babashka/babashka/issues/1451): Allow passing explicit file and line number to clojure.test ([@matthewdowney](https://github.com/matthewdowney))
+- [#1280](https://github.com/babashka/babashka/issues/1280): babashka REPL doesn't quit right after Ctrl-d ([@formerly-a-trickster](https://github.com/formerly-a-trickster) and Alice Margatroid)
+- [#1446](https://github.com/babashka/babashka/issues/1446): add `pprint/code-dispatch`
+- Update zlib to version `1.2.13` ([@thiagokokada](https://github.com/thiagokokada))
+- [#1454](https://github.com/babashka/babashka/issues/1454): Add `babashka.process` to `print-deps` output
+- Update `deps.clj` / clojure tools to `1.11.1.1208`
+- Add `reader-conditional` function
+- Fix pretty printing (with `clojure.pprint`) of vars
+- Upgrade built-in `spec.alpha`
+- SCI performance improvements: faster JVM interop
+
+## 1.0.168 (2022-12-07)
+
+- `loop*`, `fn*` are now special forms and `loop`, `fn`, `defn`, `defmacro`, `and` and `or` are implemented as macros. This restores compatibility with [rcf](https://github.com/borkdude/hyperfiddle-rcf)
+- fs: don't touch dirs in `split-ext`
+- Update to babashka process to v0.4.13: support `(process opts? & args)` syntax everywhere
+- [#1438](https://github.com/babashka/babashka/issues/1438): expose `query-string` and `url-encode` functions from org.httpkit.client ([@bobisageek](https://github.com/bobisageek))
+- Add `java.util.InputMismatchException`
+
+## 1.0.167 (2022-11-30)
+
+- [#1433](https://github.com/babashka/babashka/issues/1433): spec source as built-in fallback. When not including the
+  [clojure.spec.alpha](https://github.com/babashka/spec.alpha) fork as a
+  library, babashka loads a bundled version, when `clojure.spec.alpha` is required.
+- [#1430](https://github.com/babashka/babashka/issues/1430): Fix issue with `bb tasks` throwing on empty display tasks list.
+- Add note about BSOD when using WSL1, see [README.md/quickstart](https://github.com/LouDnl/babashka#quickstart)
+- SCI: performance improvements
+- Better error locations for interop ([@bobisageek](https://github.com/bobisageek))
+- Fix [babashka/babashka.nrepl#59](https://github.com/babashka/babashka.nrepl/issues/59): do not output extra new line with cider pprint
+- Use `namespace-munge` instead of `munge` for doing ns -> file lookup
+
+## 1.0.166 (2022-11-24)
+
+See the [Testing babashka scripts](https://blog.michielborkent.nl/babashka-test-runner.html) blog post for how to run tests with this release.
+
+- Compatibility with Cognitest [test-runner](https://github.com/cognitect-labs/test-runner) and [tools.namespace](https://github.com/clojure/tools.namespace)
+- Add `run-test` and `run-test-var` to `clojure.test`
+- Compile distributed uberjar using GraalVM, fixes `babashka.process/exec` for Nix
+- [#1414](https://github.com/babashka/babashka/issues/1414): preserve metadata on exec task function argument map
+- [#1269](https://github.com/babashka/babashka/issues/1269): add lib tests for sluj ([@bobisageek](https://github.com/bobisageek))
+- Update nix app example in docs
+- Add `java.lang.Error` and `java.net.URLClassLoader` (only for compatibility with the `clojure.java.classpath` lib)
+- Deps.clj `deps.clj: 1.11.1.1200`
+- Upgrade timbre to `6.0.1`
+- Performance improvements in SCI
+- SCI: preserve stack information on `throw` expressions
+
+## 1.0.165 (2022-11-01)
 
 - Fix [#1401](https://github.com/babashka/babashka/issues/1401): mutation of `deftype` field should be visible in protocol method
 - Fix [#1405](https://github.com/babashka/babashka/issues/1405): drop name metadata from conditionally defined var
 - [#602](https://github.com/babashka/babashka/issues/602): add lib tests for clj-commons/fs ([@bobisageek](https://github.com/bobisageek))
 - Add `java.net.URLConnection` class
+- Add `java.time.zone.ZoneRules` class
+- Copy more docstrings for core macros and vars
+- Bump `core.async` to `1.6.673`
+- Implement `in-ns` as function, rather than special form ([@SignSpice](https://github.com/SignSpice))
+- Bump `deps.clj` to `1.11.1.1182`
+- Bump GraalVM to `22.3.0`
+- SCI: don't rely on metadata for record implementation
 
 ## 1.0.164 (2022-10-17)
 
@@ -1149,6 +1268,14 @@ Details about releases prior to v0.1.0 can be found
 [here](https://github.com/babashka/babashka/releases).
 
 ## Breaking changes
+
+### v1.1.172
+
+- Bump `babashka.process`: change default for `:out :append` to `:out :write`. This default is undocumented so the impact should be small.
+
+### v1.1.171
+
+- [#1467](https://github.com/babashka/babashka/issues/1467): avoid printing results, unless `--prn` is enabled (aside from `-e`, `-o` and `-O`).
 
 ### v0.2.4
 

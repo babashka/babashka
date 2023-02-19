@@ -7,15 +7,15 @@
 (def sns (sci/create-ns 'clojure.core.server nil))
 
 (def prepl (fn [& args]
-             (apply server/prepl @common/ctx args)))
+             (apply server/prepl (common/ctx) args)))
 
 (def io-prepl
   (fn [& args]
-    (apply server/io-prepl @common/ctx args)))
+    (apply server/io-prepl (common/ctx) args)))
 
 (def start-server
   (fn [& args]
-    (apply server/start-server @common/ctx args)))
+    (apply server/start-server (common/ctx) args)))
 
 (def clojure-core-server-namespace
   {'repl (sci/copy-var socket-repl/repl sns)

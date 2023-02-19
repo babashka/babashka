@@ -25,10 +25,11 @@
                                         (:org.babashka/cli the-var-meta)
                                         (:org.babashka/cli ct)
                                         extra-opts)
-      opts (babashka.cli/parse-opts *command-line-args* cli-opts)
       task-exec-args (:exec-args ct)
       cli-exec-args (:exec-args cli-opts)
-      opts (babashka.cli/merge-opts cli-exec-args task-exec-args opts)]
+      exec-args {:exec-args (babashka.cli/merge-opts cli-exec-args task-exec-args)}
+      cli-opts (babashka.cli/merge-opts exec-args cli-opts)
+      opts (babashka.cli/parse-opts *command-line-args* cli-opts)]
 (the-var opts))"
            (random-uuid)
            (pr-str extra-opts)
