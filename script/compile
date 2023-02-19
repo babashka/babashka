@@ -34,6 +34,7 @@ BABASHKA_BINARY=${BABASHKA_BINARY:-"bb"}
 args=("-jar" "$BABASHKA_JAR"
       "-H:Name=$BABASHKA_BINARY"
       "-H:+ReportExceptionStackTraces"
+      "--enable-preview"
       # "-H:+PrintAnalysisCallTree"
       # "-H:+DashboardAll"
       # "-H:DashboardDump=reports/dump"
