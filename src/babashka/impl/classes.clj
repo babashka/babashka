@@ -8,6 +8,10 @@
    [sci.core :as sci]
    [sci.impl.types :as t]))
 
+(def has-of-virtual?
+  (some #(= "ofVirtual" (.getName ^java.lang.reflect.Method %))
+        (.getMethods Thread)))
+
 (def base-custom-map
   `{clojure.lang.LineNumberingPushbackReader {:allPublicConstructors true
                                               :allPublicMethods true}
@@ -48,7 +52,7 @@
                {:name "start"}
                {:name "toString"}
                {:name "yield"}
-               {:name "ofVirtual"}]}
+               ~@(when has-of-virtual? [{:name "ofVirtual"}])]}
     java.net.URL
     {:allPublicConstructors true
      :allPublicFields true
