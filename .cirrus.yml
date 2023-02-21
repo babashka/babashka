@@ -5,8 +5,8 @@ task:
   skip: "changesIncludeOnly('logo/*', '**.md')"
   env:
     LEIN_ROOT: "true"
-    GRAALVM_VERSION: "22.3.0"
-    GRAALVM_HOME: ${HOME}/graalvm-ce-java11-22.3.0/Contents/Home
+    GRAALVM_VERSION: "22.3.1"
+    GRAALVM_HOME: ${HOME}/graalvm-ce-java19-22.3.1/Contents/Home
     BABASHKA_PLATFORM: macos # used in release script
     BABASHKA_ARCH: aarch64
     BABASHKA_TEST_ENV: native

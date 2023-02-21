@@ -8,6 +8,10 @@
    [sci.core :as sci]
    [sci.impl.types :as t]))
 
+(def has-of-virtual?
+  (some #(= "ofVirtual" (.getName ^java.lang.reflect.Method %))
+        (.getMethods Thread)))
+
 (def base-custom-map
   `{clojure.lang.LineNumberingPushbackReader {:allPublicConstructors true
                                               :allPublicMethods true}
@@ -47,7 +51,8 @@
                {:name "sleep"}
                {:name "start"}
                {:name "toString"}
-               {:name "yield"}]}
+               {:name "yield"}
+               ~@(when has-of-virtual? [{:name "ofVirtual"}])]}
     java.net.URL
     {:allPublicConstructors true
      :allPublicFields true
@@ -433,6 +438,7 @@
           java.util.concurrent.ThreadPoolExecutor$CallerRunsPolicy
           java.util.concurrent.ThreadPoolExecutor$DiscardOldestPolicy
           java.util.concurrent.ThreadPoolExecutor$DiscardPolicy
+          java.util.concurrent.ExecutorService
           java.util.concurrent.ScheduledExecutorService
           java.util.concurrent.Future
           java.util.concurrent.FutureTask
@@ -663,6 +669,8 @@
                          java.util.concurrent.Future
                          (instance? java.util.concurrent.ScheduledExecutorService v)
                          java.util.concurrent.ScheduledExecutorService
+                         (instance? java.util.concurrent.ExecutorService v)
+                         java.util.concurrent.ExecutorService
                          (instance? java.util.Iterator v)
                          java.util.Iterator
                          (instance? javax.crypto.SecretKey v)

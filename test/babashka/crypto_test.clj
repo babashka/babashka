@@ -20,6 +20,7 @@
         expected-sha (String. (.encode (java.util.Base64/getEncoder)
                                        (hmac-sha-256 (.getBytes key-s) data))
                               "utf-8")]
+    (prn expected-sha)
     (is (= expected-sha (bb '(do (ns net
                                    (:import (javax.crypto Mac)
                                             (javax.crypto.spec SecretKeySpec)))
