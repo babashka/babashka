@@ -780,6 +780,14 @@ Use bb run --help to show this help output.
       env-os-name-present? (not= env-os-name sys-os-name)
       env-os-arch-present? (not= env-os-arch sys-os-arch))))
 
+(defn file-write-allowed?
+  "For output file of uberscript/uberjar, allow writing of jar files
+   and files that are empty/don't exist."
+  [path]
+  (or (= "jar" (fs/extension path))
+    (not (fs/exists? path))
+    (zero? (fs/size path))))
+
 (def seen-urls (atom nil))
 
 (defn read-data-readers [url]
@@ -1062,12 +1070,15 @@ Use bb run --help to show this help output.
                 1)]
         (flush)
         (when uberscript
-          (let [uberscript-out uberscript]
-            (spit uberscript-out "") ;; reset file
-            (doseq [s (distinct @uberscript-sources)]
-              (spit uberscript-out s :append true))
-            (spit uberscript-out preloads :append true)
-            (spit uberscript-out expression :append true)))
+          (if (file-write-allowed? uberscript)
+            (do
+              (spit uberscript "")                        ;; reset file
+              (doseq [s (distinct @uberscript-sources)]
+                (spit uberscript s :append true))
+              (spit uberscript preloads :append true)
+              (spit uberscript expression :append true))
+            (throw (Exception. (str "Uberscript target file '" uberscript
+                                 "' exists and is not empty. Overwrite prohibited.")))))
         (when uberjar
           (if-let [cp (cp/get-classpath)]
             (let [uber-params {:dest uberjar
