@@ -89,3 +89,19 @@
         (is (thrown-with-msg?
              Exception #"classpath"
              (tu/bb nil "uberjar" path "-m" "my.main-main")))))))
+
+(deftest target-file-overwrite-test
+  (tu/with-config {:paths ["test-resources/babashka/uberjar/src"]}
+    (testing "trying to make uberjar overwrite a non-empty jar file is allowed"
+      (let [tmp-file (File/createTempFile "uberjar_overwrite" ".jar")
+            path (.getPath tmp-file)]
+        (.deleteOnExit tmp-file)
+        (spit path "this isn't empty")
+        (is (= "" (tu/bb nil "--uberjar" (tu/escape-file-paths path) "-m" "my.main-main")))))
+    (testing "trying to make uberjar overwrite a non-empty, non-jar file is not allowed"
+      (let [tmp-file (File/createTempFile "oops_all_source" ".clj")
+            path (.getPath tmp-file)]
+        (.deleteOnExit tmp-file)
+        (spit path "accidentally a source file")
+        (is (thrown-with-msg? Exception #"Overwrite prohibited."
+              (tu/bb nil "--uberjar" (tu/escape-file-paths path) "-m" "my.main-main")))))))

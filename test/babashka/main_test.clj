@@ -487,6 +487,14 @@
     (is (empty? (bb nil "--uberscript" (test-utils/escape-file-paths (.getPath tmp-file)) "-e" "(System/exit 1)")))
     (is (= "(System/exit 1)" (slurp tmp-file)))))
 
+(deftest uberscript-overwrite-test
+  (testing "trying to make uberscript overwrite a non-empty, non-jar file fails"
+    (let [tmp-file (java.io.File/createTempFile "uberscript_overwrite" ".clj")]
+      (.deleteOnExit tmp-file)
+      (spit (.getPath tmp-file) "this isn't empty")
+      (is (thrown-with-msg? Exception #"Overwrite prohibited."
+            (test-utils/bb nil "--uberscript" (test-utils/escape-file-paths (.getPath tmp-file)) "-e" "(println 123)"))))))
+
 (deftest unrestricted-access
   (testing "babashka is allowed to mess with built-in vars"
     (is (= {} (bb nil "
