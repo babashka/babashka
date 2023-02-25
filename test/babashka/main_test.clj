@@ -487,6 +487,43 @@
     (is (empty? (bb nil "--uberscript" (test-utils/escape-file-paths (.getPath tmp-file)) "-e" "(System/exit 1)")))
     (is (= "(System/exit 1)" (slurp tmp-file)))))
 
+(deftest uberscript-overwrite-test
+  (testing "trying to make uberscript overwrite a non-empty, non-jar file fails"
+    (let [tmp-file (java.io.File/createTempFile "uberscript_overwrite" ".clj")]
+      (.deleteOnExit tmp-file)
+      (spit (.getPath tmp-file) "this isn't empty")
+      (is (thrown-with-msg? Exception #"Overwrite prohibited."
+            (test-utils/bb nil "--uberscript" (test-utils/escape-file-paths (.getPath tmp-file)) "-e" "(println 123)"))))))
+
+(deftest throw-on-empty-classpath
+  ;; this test fails the windows native test in CI
+  (when-not main/windows?
+    (testing "throw on empty classpath"
+      (let [tmp-file (java.io.File/createTempFile "uber" ".jar")
+            path     (.getPath tmp-file)]
+        (.deleteOnExit tmp-file)
+        (is (thrown-with-msg?
+              Exception #"classpath"
+              (test-utils/bb nil "uberjar" path "-m" "my.main-main")))))))
+
+(deftest target-file-overwrite-test
+  (test-utils/with-config {:paths ["test-resources/babashka/uberjar/src"]}
+    (testing "trying to make uberjar overwrite a non-empty jar file is allowed"
+      (let [tmp-file (java.io.File/createTempFile "uberjar_overwrite" ".jar")
+            path (.getPath tmp-file)]
+        (.deleteOnExit tmp-file)
+        (spit path "this isn't empty")
+        (test-utils/bb nil "--uberjar" (test-utils/escape-file-paths path) "-m" "my.main-main")
+        ; execute uberjar to confirm that the file is overwritten
+        (is (= "(\"42\")\n" (test-utils/bb nil "--prn" "--jar" (test-utils/escape-file-paths path) "42")))))
+    (testing "trying to make uberjar overwrite a non-empty, non-jar file is not allowed"
+      (let [tmp-file (java.io.File/createTempFile "oops_all_source" ".clj")
+            path (.getPath tmp-file)]
+        (.deleteOnExit tmp-file)
+        (spit path "accidentally a source file")
+        (is (thrown-with-msg? Exception #"Overwrite prohibited."
+              (test-utils/bb nil "--uberjar" (test-utils/escape-file-paths path) "-m" "my.main-main")))))))
+
 (deftest unrestricted-access
   (testing "babashka is allowed to mess with built-in vars"
     (is (= {} (bb nil "

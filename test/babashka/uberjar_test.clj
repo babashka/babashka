@@ -78,14 +78,3 @@
             (is (= #{:pods} (-> bb-edn keys set)))
             (is (= (:pods config) (:pods bb-edn))))
           (is (str/includes? (tu/bb nil "--prn" "--jar" path) "3")))))))
-
-(deftest throw-on-empty-classpath
-  ;; this test fails the windows native test in CI
-  (when-not main/windows?
-    (testing "throw on empty classpath"
-      (let [tmp-file (java.io.File/createTempFile "uber" ".jar")
-            path     (.getPath tmp-file)]
-        (.deleteOnExit tmp-file)
-        (is (thrown-with-msg?
-             Exception #"classpath"
-             (tu/bb nil "uberjar" path "-m" "my.main-main")))))))
