@@ -843,6 +843,9 @@ true")))
 (deftest index-of-test
   (is (= 1 (bb nil "(.indexOf (map inc [1 2 3]) 3)"))))
 
+(deftest get-watches-test
+  (is (true? (bb nil "(map? (.getWatches (doto (atom nil) (add-watch :foo (fn [k r o n])))))" ))))
+
 ;;;; Scratch
 
 (comment

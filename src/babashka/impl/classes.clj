@@ -158,7 +158,9 @@
     {:methods [{:name "getResource"}
                {:name "getResources"}
                {:name "getResourceAsStream"}
-               {:name "getParent"}]}})
+               {:name "getParent"}]}
+    clojure.lang.ARef
+    {:methods [{:name "getWatches"}]}})
 
 (def custom-map
   (cond->
