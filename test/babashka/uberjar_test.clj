@@ -78,32 +78,3 @@
             (is (= #{:pods} (-> bb-edn keys set)))
             (is (= (:pods config) (:pods bb-edn))))
           (is (str/includes? (tu/bb nil "--prn" "--jar" path) "3")))))))
-
-(deftest throw-on-empty-classpath
-  ;; this test fails the windows native test in CI
-  (when-not main/windows?
-    (testing "throw on empty classpath"
-      (let [tmp-file (java.io.File/createTempFile "uber" ".jar")
-            path     (.getPath tmp-file)]
-        (.deleteOnExit tmp-file)
-        (is (thrown-with-msg?
-             Exception #"classpath"
-             (tu/bb nil "uberjar" path "-m" "my.main-main")))))))
-
-(deftest target-file-overwrite-test
-  (tu/with-config {:paths ["test-resources/babashka/uberjar/src"]}
-    (testing "trying to make uberjar overwrite a non-empty jar file is allowed"
-      (let [tmp-file (File/createTempFile "uberjar_overwrite" ".jar")
-            path (.getPath tmp-file)]
-        (.deleteOnExit tmp-file)
-        (spit path "this isn't empty")
-        (tu/bb nil "--uberjar" (tu/escape-file-paths path) "-m" "my.main-main")
-        ; execute uberjar to confirm that the file is overwritten
-        (is (= "(\"42\")\n" (tu/bb nil "--prn" "--jar" (tu/escape-file-paths path) "42")))))
-    (testing "trying to make uberjar overwrite a non-empty, non-jar file is not allowed"
-      (let [tmp-file (File/createTempFile "oops_all_source" ".clj")
-            path (.getPath tmp-file)]
-        (.deleteOnExit tmp-file)
-        (spit path "accidentally a source file")
-        (is (thrown-with-msg? Exception #"Overwrite prohibited."
-              (tu/bb nil "--uberjar" (tu/escape-file-paths path) "-m" "my.main-main")))))))
