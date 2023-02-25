@@ -331,7 +331,7 @@
 
 (deftest ^:integration test-http2
   (testing "can make an http2 request"
-    (let [r (get "https://nghttp2.org/httpbin/get" {:as :json})]
+    (let [r (get "https://httpbin.org/get" {:as :json})]
       (is (= :http-2 (:version r))))))
 
 (deftest custom-middleware
