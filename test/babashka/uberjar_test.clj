@@ -99,7 +99,7 @@
         (spit path "this isn't empty")
         (tu/bb nil "--uberjar" (tu/escape-file-paths path) "-m" "my.main-main")
         ; execute uberjar to confirm that the file is overwritten
-        (is (= "(\"42\")\n" (tu/bb nil "--prn" "--jar" (tu/escape-file-paths path) 42)))))
+        (is (= "(\"42\")\n" (tu/bb nil "--prn" "--jar" (tu/escape-file-paths path) "42")))))
     (testing "trying to make uberjar overwrite a non-empty, non-jar file is not allowed"
       (let [tmp-file (File/createTempFile "oops_all_source" ".clj")
             path (.getPath tmp-file)]
