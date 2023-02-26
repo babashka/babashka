@@ -484,14 +484,14 @@
 (deftest uberscript-test
   (let [tmp-file (java.io.File/createTempFile "uberscript" ".clj")]
     (.deleteOnExit tmp-file)
+    (.delete tmp-file) ; prevent overwrite failure
     (is (empty? (bb nil "--uberscript" (test-utils/escape-file-paths (.getPath tmp-file)) "-e" "(System/exit 1)")))
     (is (= "(System/exit 1)" (slurp tmp-file)))))
 
 (deftest uberscript-overwrite-test
-  (testing "trying to make uberscript overwrite a non-empty, non-jar file fails"
+  (testing "trying to make uberscript overwrite a non-jar file fails"
     (let [tmp-file (java.io.File/createTempFile "uberscript_overwrite" ".clj")]
       (.deleteOnExit tmp-file)
-      (spit (.getPath tmp-file) "this isn't empty")
       (is (thrown-with-msg? Exception #"Overwrite prohibited."
             (test-utils/bb nil "--uberscript" (test-utils/escape-file-paths (.getPath tmp-file)) "-e" "(println 123)"))))))
 
@@ -516,11 +516,10 @@
         (test-utils/bb nil "--uberjar" (test-utils/escape-file-paths path) "-m" "my.main-main")
         ; execute uberjar to confirm that the file is overwritten
         (is (= "(\"42\")\n" (test-utils/bb nil "--prn" "--jar" (test-utils/escape-file-paths path) "42")))))
-    (testing "trying to make uberjar overwrite a non-empty, non-jar file is not allowed"
+    (testing "trying to make uberjar overwrite a non-jar file is not allowed"
       (let [tmp-file (java.io.File/createTempFile "oops_all_source" ".clj")
             path (.getPath tmp-file)]
         (.deleteOnExit tmp-file)
-        (spit path "accidentally a source file")
         (is (thrown-with-msg? Exception #"Overwrite prohibited."
               (test-utils/bb nil "--uberjar" (test-utils/escape-file-paths path) "-m" "my.main-main")))))))
 

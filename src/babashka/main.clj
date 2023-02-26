@@ -785,8 +785,7 @@ Use bb run --help to show this help output.
    and files that are empty/don't exist."
   [path]
   (or (= "jar" (fs/extension path))
-    (not (fs/exists? path))
-    (zero? (fs/size path))))
+    (not (fs/exists? path))))
 
 (def seen-urls (atom nil))
 
