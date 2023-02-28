@@ -8,13 +8,22 @@ A preview of the next release can be installed from
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
 ## Unreleased
-- Add more java.time and related classes with the goal of supporting juxt.tick https://github.com/juxt/tick/issues/86
+
+- Use GraalVM 22.3.1 on JDK 19.0.2. This adds virtual thread support. See [demo](https://twitter.com/borkdude/status/1572222344684531717).
+- Expose more `jaxax.crypto` classes
+- Add more `java.time` and related classes with the goal of supporting [juxt.tick](https://github.com/juxt/tick) ([issue](https://github.com/juxt/tick/issues/86))
+- Compatibility with [kaocha](https://github.com/lambdaisland/kaocha) test runner
 - [#1000](https://github.com/babashka/babashka/issues/1000): add lib tests for xforms ([@bobisageek](https://github.com/bobisageek))
 - [#1482](https://github.com/babashka/babashka/issues/1482): make loading of libs thread safe
 - [#1487](https://github.com/babashka/babashka/issues/1487): `babashka.tasks/clojure` should be supported without arguments to start a REPL
 - [#1496](https://github.com/babashka/babashka/issues/1496): Add `set-agent-send-executor!` and `set-agent-send-off-executor!`
 - [#1489](https://github.com/babashka/babashka/issues/1489): Don't overwrite non-empty, non-jar files when writing uberscript/uberjar ([@bobisageek](https://github.com/bobisageek))
 - [#1506](https://github.com/babashka/babashka/issues/1506): `:exec-args` in task should override `:exec-args` on fn metadata
+- Add support for `.getWatches` on atoms
+- Bump `babashka.fs`
+- Bump `deps.clj`
+- Bump `babashka.http-client`
+- Bump `babashka.cli` to `0.6.46`
 
 ## 1.1.173 (2023-02-04)
 
