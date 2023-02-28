@@ -13,8 +13,8 @@ RUN echo 'hosts: files mdns4_minimal [NOTFOUND=return] dns mdns4' >> /etc/nsswit
 
 # TODO: Run actual native tests when they are ported
 
-RUN bb -e "(curl/get \"https://httpstat.us/200\")" # cURL http test
-RUN bb -e "(require '[org.httpkit.client :as http]) (when-let [error (:error @(http/get \"https://httpstat.us/200\"))] (throw error))" # JVM http test
+RUN bb -e "(curl/get \"https://clojure.org\")" # cURL http test
+RUN bb -e "(require '[org.httpkit.client :as http]) (when-let [error (:error @(http/get \"https://clojure.org\"))] (throw error))" # JVM http test
 RUN bb -e "(.length \"Hello, Babashka\")" # Java interop test
 RUN bb -e "(require '[babashka.pods :as pods]) (pods/load-pod 'org.babashka/go-sqlite3 \"0.0.1\") (require '[pod.babashka.go-sqlite3 :as sqlite]) (sqlite/execute! \"/tmp/foo.db\" [\"SELECT 1 + 1\"])" # Pod test
 
