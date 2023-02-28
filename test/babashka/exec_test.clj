@@ -37,8 +37,13 @@
   (testing "task exec args"
     (u/with-config
       "{:deps {}
-      :tasks {foo {:exec-args {:foo :bar}
-                   :task (exec 'babashka.exec-test/exec-test)}}}"
+        :tasks {foo {:task (exec 'babashka.exec-test/exec-test)}}}"
+      (is (= {:foo :foo, :bar :yeah}
+             (edn/read-string (bb "-cp" "test-resources" "run" "foo" "--bar" "yeah")))))
+    (u/with-config
+      "{:deps {}
+        :tasks {foo {:exec-args {:foo :bar}
+                     :task (exec 'babashka.exec-test/exec-test)}}}"
       (is (= {:foo :bar, :bar :yeah}
              (edn/read-string (bb "-cp" "test-resources" "run" "foo" "--bar" "yeah"))))))
   (testing "meta"
