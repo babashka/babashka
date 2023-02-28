@@ -21,9 +21,9 @@ A preview of the next release can be installed from
 - [#1506](https://github.com/babashka/babashka/issues/1506): `:exec-args` in task should override `:exec-args` on fn metadata
 - [#1501](https://github.com/babashka/babashka/issues/1501): equals on deftype
 - Add support for `.getWatches` on atoms
-- Bump `babashka.fs`
-- Bump `deps.clj`
-- Bump `babashka.http-client`
+- Bump `babashka.fs` to `0.3.17`
+- Bump `deps.clj` to `1.11.1.1237`
+- Bump `babashka.http-client` to `0.1.5`
 - Bump `babashka.cli` to `0.6.46`
 
 ## 1.1.173 (2023-02-04)
