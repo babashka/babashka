@@ -19,6 +19,7 @@ A preview of the next release can be installed from
 - [#1496](https://github.com/babashka/babashka/issues/1496): Add `set-agent-send-executor!` and `set-agent-send-off-executor!`
 - [#1489](https://github.com/babashka/babashka/issues/1489): Don't overwrite non-empty, non-jar files when writing uberscript/uberjar ([@bobisageek](https://github.com/bobisageek))
 - [#1506](https://github.com/babashka/babashka/issues/1506): `:exec-args` in task should override `:exec-args` on fn metadata
+- [#1501](https://github.com/babashka/babashka/issues/1501): equals on deftype
 - Add support for `.getWatches` on atoms
 - Bump `babashka.fs`
 - Bump `deps.clj`
