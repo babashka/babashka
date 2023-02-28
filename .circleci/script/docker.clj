@@ -1,6 +1,6 @@
-(require '[clojure.string :as str]
+(require '[babashka.fs :as fs]
          '[babashka.process :as proc]
-         '[babashka.fs :as fs])
+         '[clojure.string :as str])
 (import '[java.time Instant])
 
 (defn read-env
@@ -12,7 +12,7 @@
 
 (def image-name "babashka/babashka")
 
-(def image-tag (slurp "resources/BABASHKA_VERSION"))
+(def image-tag (str/trim (slurp "resources/BABASHKA_VERSION")))
 
 (def latest-tag "latest")
 
