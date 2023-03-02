@@ -677,6 +677,8 @@
                          java.util.Iterator
                          (instance? javax.crypto.SecretKey v)
                          javax.crypto.SecretKey
+                         (instance? java.lang.Thread v)
+                         java.lang.Thread
                          ;; keep commas for merge friendliness
                          ,,,)))
         m (assoc m (list 'quote 'clojure.lang.Var) 'sci.lang.Var)
