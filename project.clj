@@ -20,6 +20,7 @@
                    :windows (complement (some-fn :skip-windows :flaky))
                    :non-flaky (complement :flaky)
                    :flaky :flaky}
+  :jvm-opts ["--enable-preview"]
   :dependencies [[org.clojure/clojure "1.11.1"]
                  [borkdude/edamame "1.1.17"]
                  [borkdude/graal.locking "0.0.2"]
