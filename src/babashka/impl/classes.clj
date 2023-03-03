@@ -12,6 +12,9 @@
   (some #(= "ofVirtual" (.getName ^java.lang.reflect.Method %))
         (.getMethods Thread)))
 
+(def has-domain-sockets?
+  (resolve 'java.net.UnixDomainSocketAddress))
+
 (def base-custom-map
   `{clojure.lang.LineNumberingPushbackReader {:allPublicConstructors true
                                               :allPublicMethods true}
@@ -327,6 +330,8 @@
           java.net.ServerSocket
           java.net.Socket
           java.net.SocketException
+          ~@(when has-domain-sockets?
+              '[java.net.UnixDomainSocketAddress])
           java.net.UnknownHostException
           java.net.URI
           ;; java.net.URL, see custom map
