@@ -147,7 +147,7 @@
   (is (thrown-with-msg? Exception #"File does not exist: non-existing"
                         (bb nil "-f" "non-existing"))))
 
-(deftest ssl-test
+(deftest ^:flaky ssl-test
   (let [resp (bb nil "(slurp \"https://www.google.com\")")]
     (is (re-find #"doctype html" resp))))
 
