@@ -13,4 +13,9 @@
 
 (deftest vthreads-test
   (testing "can invoke methods on java.lang.VirtualThread"
-    (is (= "" (bb nil "(set-agent-send-off-executor! (java.util.concurrent.Executors/newVirtualThreadPerTaskExecutor)) @(future (.getName (Thread/currentThread)))")))))
+    (is (= "" (bb nil "(set-agent-send-off-executor! (java.util.concurrent.Executors/newVirtualThreadPerTaskExecutor)) @(future (.getName (Thread/currentThread)))"))))
+  (is (= [false true]
+         (bb nil (pr-str '(do
+                            (def t (Thread. (fn [])))
+                            (def vt (Thread/startVirtualThread (fn [])))
+                            [(.isVirtual t) (.isVirtual vt)]))))))

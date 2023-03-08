@@ -55,7 +55,9 @@
                {:name "start"}
                {:name "toString"}
                {:name "yield"}
-               ~@(when has-of-virtual? [{:name "ofVirtual"}])]}
+               ~@(when has-of-virtual? [{:name "ofVirtual"}
+                                        {:name "startVirtualThread"}
+                                        {:name "isVirtual"}])]}
     java.net.URL
     {:allPublicConstructors true
      :allPublicFields true
