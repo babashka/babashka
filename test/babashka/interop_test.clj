@@ -21,4 +21,5 @@
                             [(.isVirtual t) (.isVirtual vt)]))))))
 
 (deftest domain-sockets-test
-  (is (= :success (bb nil (slurp "test-resources/domain_sockets.bb")))))
+  (when-not test-utils/windows?
+    (is (= :success (bb nil (slurp "test-resources/domain_sockets.bb"))))))
