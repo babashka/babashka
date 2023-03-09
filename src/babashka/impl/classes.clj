@@ -329,6 +329,7 @@
           java.net.HttpURLConnection
           java.net.InetAddress
           java.net.InetSocketAddress
+          java.net.StandardProtocolFamily
           java.net.ServerSocket
           java.net.Socket
           java.net.SocketException
@@ -351,6 +352,8 @@
                 java.nio.file.StandardOpenOption
                 java.nio.channels.FileChannel
                 java.nio.channels.FileChannel$MapMode
+                java.nio.channels.ServerSocketChannel
+                java.nio.channels.SocketChannel
                 java.nio.charset.Charset
                 java.nio.charset.CoderResult
                 java.nio.charset.CharsetEncoder
@@ -659,6 +662,10 @@
                          java.nio.CharBuffer
                          (instance? java.nio.channels.FileChannel v)
                          java.nio.channels.FileChannel
+                         (instance? java.nio.channels.ServerSocketChannel v)
+                         java.nio.channels.ServerSocketChannel
+                         (instance? java.nio.channels.SocketChannel v)
+                         java.nio.channels.SocketChannel
                          (instance? java.net.CookieStore v)
                          java.net.CookieStore
                          ;; this makes interop on reified classes work

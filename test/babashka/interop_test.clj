@@ -19,3 +19,7 @@
                             (def t (Thread. (fn [])))
                             (def vt (Thread/startVirtualThread (fn [])))
                             [(.isVirtual t) (.isVirtual vt)]))))))
+
+(deftest domain-sockets-test
+  (when-not test-utils/windows?
+    (is (= :success (bb nil (slurp "test-resources/domain_sockets.bb"))))))
