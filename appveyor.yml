@@ -2,7 +2,7 @@
 
 version: "v-{build}"
 
-image: Visual Studio 2017
+image: Visual Studio 2019
 
 clone_folder: C:\projects\babashka
 
@@ -55,7 +55,7 @@ build_script:
 # see https://github.com/quarkusio/quarkus/pull/7663
 
 - cmd: >-
-    call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
+    call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
 
     call script/uberjar.bat
 

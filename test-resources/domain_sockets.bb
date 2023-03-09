@@ -2,10 +2,11 @@
         java.net.StandardProtocolFamily
         [java.nio.channels ServerSocketChannel SocketChannel])
 
-(require '[clojure.java.io :as io])
+(require '[clojure.java.io :as io]
+         '[babashka.fs])
 
 (def sockaddr (UnixDomainSocketAddress/of
-               (-> (doto (io/file "/tmp/sock")
+               (-> (doto (fs/file (fs/temp-dir) "server.socket")
                      (.deleteOnExit))
                    str)))
 
