@@ -44,6 +44,7 @@
                     (let [ret (f)]
                       (when-not (nil? ret)
                         (async/>!! c ret)))
+                    (catch Exception e (prn (ex-message e)))
                     (finally
                       (async/close! c))))))
     c))
@@ -67,6 +68,15 @@
   (list 'clojure.core.async/go (list* 'loop bindings body)))
 
 (def core-async-namespace (sci/create-ns 'clojure.core.async nil))
+
+(defn timeout [ms]
+  (if false #_virtual-executor
+    (let [chan (async/chan nil)]
+      (.submit virtual-executor (fn []
+                                  (Thread/sleep ms)
+                                  (async/close! chan)))
+      chan)
+    (async/timeout ms)))
 
 (def async-namespace
   {:obj core-async-namespace
@@ -119,7 +129,7 @@
    'thread (macrofy 'thread thread core-async-namespace)
    'thread-call (copy-var thread-call core-async-namespace)
    '-vthread-call (copy-var -vthread-call core-async-namespace)
-   'timeout (copy-var async/timeout core-async-namespace)
+   'timeout (copy-var timeout core-async-namespace)
    'to-chan (copy-var async/to-chan core-async-namespace)
    'to-chan! (copy-var async/to-chan! core-async-namespace)
    'to-chan!! (copy-var async/to-chan!! core-async-namespace)
@@ -136,7 +146,7 @@
    ;; polyfill
    'go (if virtual-executor
          (macrofy 'go -vthread core-async-namespace)
-         (macrofy 'go thread core-async-namespace))
+         #_(macrofy 'go thread core-async-namespace))
    '<! (copy-var async/<!! core-async-namespace {:name '<!})
    '>! (copy-var async/>!! core-async-namespace {:name '>!})
    'alt! (macrofy 'alt! alt!! core-async-namespace)
