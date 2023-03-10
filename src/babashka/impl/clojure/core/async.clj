@@ -70,7 +70,7 @@
 (def core-async-namespace (sci/create-ns 'clojure.core.async nil))
 
 (defn timeout [ms]
-  (if false #_virtual-executor
+  (if virtual-executor
     (let [chan (async/chan nil)]
       (.submit virtual-executor (fn []
                                   (Thread/sleep ms)
