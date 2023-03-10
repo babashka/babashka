@@ -8,6 +8,10 @@
 
 (def ^java.util.concurrent.Executor executor @#'async/thread-macro-executor)
 
+(def ^java.util.concurrent.Executor virtual-executor
+  (try (eval '(java.util.concurrent.Executors/newVirtualThreadPerTaskExecutor))
+       (catch Exception _ nil)))
+
 (defn thread-call
   "Executes f in another thread, returning immediately to the calling
   thread. Returns a channel which will receive the result of calling
@@ -26,9 +30,31 @@
                       (async/close! c))))))
     c))
 
+(defn -vthread-call
+  "Executes f in another virtual thread, returning immediately to the calling
+  thread. Returns a channel which will receive the result of calling
+  f when completed, then close."
+  [f]
+  (let [c (async/chan 1)]
+    (let [binds (vars/get-thread-binding-frame)]
+      (.execute virtual-executor
+                (fn []
+                  (vars/reset-thread-binding-frame binds)
+                  (try
+                    (let [ret (f)]
+                      (when-not (nil? ret)
+                        (async/>!! c ret)))
+                    (finally
+                      (async/close! c))))))
+    c))
+
 (defn thread
   [_ _ & body]
   `(~'clojure.core.async/thread-call (fn [] ~@body)))
+
+(defn -vthread
+  [_ _ & body]
+  `(~'clojure.core.async/-vthread-call (fn [] ~@body)))
 
 (defn alt!!
   "Like alt!, except as if by alts!!, will block until completed, and
@@ -38,7 +64,7 @@
 
 (defn go-loop
   [_ _ bindings & body]
-  (list 'clojure.core.async/thread (list* 'loop bindings body)))
+  (list 'clojure.core.async/go (list* 'loop bindings body)))
 
 (def core-async-namespace (sci/create-ns 'clojure.core.async nil))
 
@@ -92,6 +118,7 @@
    'tap (copy-var async/tap core-async-namespace)
    'thread (macrofy 'thread thread core-async-namespace)
    'thread-call (copy-var thread-call core-async-namespace)
+   '-vthread-call (copy-var -vthread-call core-async-namespace)
    'timeout (copy-var async/timeout core-async-namespace)
    'to-chan (copy-var async/to-chan core-async-namespace)
    'to-chan! (copy-var async/to-chan! core-async-namespace)
@@ -107,7 +134,9 @@
    'untap (copy-var async/untap core-async-namespace)
    'untap-all (copy-var async/untap-all core-async-namespace)
    ;; polyfill
-   'go (macrofy 'go thread core-async-namespace)
+   'go (if virtual-executor
+         (macrofy 'go thread core-async-namespace)
+         (macrofy 'go -vthread core-async-namespace))
    '<! (copy-var async/<!! core-async-namespace {:name '<!})
    '>! (copy-var async/>!! core-async-namespace {:name '>!})
    'alt! (macrofy 'alt! alt!! core-async-namespace)
