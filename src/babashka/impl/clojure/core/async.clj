@@ -44,7 +44,6 @@
                     (let [ret (f)]
                       (when-not (nil? ret)
                         (async/>!! c ret)))
-                    (catch Exception e (prn (ex-message e)))
                     (finally
                       (async/close! c))))))
     c))
@@ -72,9 +71,9 @@
 (defn timeout [ms]
   (if virtual-executor
     (let [chan (async/chan nil)]
-      (.submit virtual-executor (fn []
-                                  (Thread/sleep ms)
-                                  (async/close! chan)))
+      (.execute virtual-executor (fn []
+                                   (Thread/sleep ms)
+                                   (async/close! chan)))
       chan)
     (async/timeout ms)))
 
@@ -146,7 +145,7 @@
    ;; polyfill
    'go (if virtual-executor
          (macrofy 'go -vthread core-async-namespace)
-         #_(macrofy 'go thread core-async-namespace))
+         (macrofy 'go thread core-async-namespace))
    '<! (copy-var async/<!! core-async-namespace {:name '<!})
    '>! (copy-var async/>!! core-async-namespace {:name '>!})
    'alt! (macrofy 'alt! alt!! core-async-namespace)
