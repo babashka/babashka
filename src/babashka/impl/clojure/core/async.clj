@@ -135,8 +135,8 @@
    'untap-all (copy-var async/untap-all core-async-namespace)
    ;; polyfill
    'go (if virtual-executor
-         (macrofy 'go thread core-async-namespace)
-         (macrofy 'go -vthread core-async-namespace))
+         (macrofy 'go -vthread core-async-namespace)
+         (macrofy 'go thread core-async-namespace))
    '<! (copy-var async/<!! core-async-namespace {:name '<!})
    '>! (copy-var async/>!! core-async-namespace {:name '>!})
    'alt! (macrofy 'alt! alt!! core-async-namespace)
