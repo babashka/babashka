@@ -96,24 +96,33 @@
 (defn render-native-stacktrace-elem [[sym _ _file _line]]
   (render-native-sym sym))
 
-(defn error-handler [^Exception e opts]
+(defn via [^Throwable t]
+  (loop [via [], ^Throwable t t]
+    (if t
+      (recur (conj via t) (.getCause t))
+      via)))
+
+(defn error-handler [^Throwable e opts]
   (binding [*out* *err*]
-    (let [d (ex-data e)
-          cause-exit (some-> e ex-cause ex-data :babashka/exit)
-          exit-code (or (:babashka/exit d) cause-exit)
+    (let [via-exs (reverse (via e))
+          ^Throwable root (first via-exs)
+          d (ex-data e)
+          dr (ex-data root)
+          exit-code (or (:babashka/exit d) (:babashka/exit dr))
           sci-error? (isa? (:type d) :sci/error)
-          ex-name (when sci-error?
-                    (some-> ^Throwable (ex-cause e)
-                            .getClass .getName))
+          ex-name (when sci-error? (some-> root .getClass .getName))
+          _ (prn :exes (mapcat sci/stacktrace via-exs))
           stacktrace (dedupe
                       (concat (sequence (comp (map StackTraceElement->vec)
                                               (take-while #(not (str/starts-with? (first %) "sci.impl.")))
                                               (keep render-native-stacktrace-elem))
-                                        (.getStackTrace (or (ex-cause e) e)))
-                              (sci/stacktrace e)))]
+                                        (.getStackTrace root))
+                              (mapcat sci/stacktrace via-exs)))
+          ;; _ (clojure.pprint/pprint stacktrace)
+          ex-m (ex-message root)]
       (if exit-code
         (do
-          (when-let [m (.getMessage e)]
+          (when-let [m ex-m]
             (println m))
           [nil exit-code])
         (do
@@ -121,9 +130,9 @@
           (println "Type:    " (or
                                 ex-name
                                 (.. e getClass getName)))
-          (when-let [m (.getMessage e)]
+          (when-let [m ex-m]
             (println (str "Message:  " m)))
-          (when-let [d (ex-data (.getCause e))]
+          (when-let [d (ex-data root)]
             (print (str "Data:     "))
             (prn d))
           (let [{:keys [:file :line :column]} d]
