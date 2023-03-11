@@ -165,7 +165,10 @@
                {:name "getResourceAsStream"}
                {:name "getParent"}]}
     clojure.lang.ARef
-    {:methods [{:name "getWatches"}]}})
+    {:methods [{:name "getWatches"}]}
+    clojure.lang.MapEntry
+    {:allPublicConstructors true
+     :methods [{:name "create"}]}})
 
 (def custom-map
   (cond->
@@ -530,7 +533,6 @@
           ~@(when features/yaml? '[org.yaml.snakeyaml.error.YAMLException])
           ~@(when features/hsqldb? '[org.hsqldb.jdbcDriver])]
     :constructors [clojure.lang.Delay
-                   clojure.lang.MapEntry
                    clojure.lang.LineNumberingPushbackReader
                    java.io.EOFException]
     :methods [borkdude.graal.LockFix] ;; support for locking

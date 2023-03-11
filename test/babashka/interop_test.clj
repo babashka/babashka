@@ -22,3 +22,8 @@
 
 (deftest domain-sockets-test
   (is (= :success (bb nil (slurp "test-resources/domain_sockets.bb")))))
+
+(deftest map-entry-create-test
+  (is (true? (bb nil "(= (first {1 2})
+                         (clojure.lang.MapEntry. 1 2)
+                         (clojure.lang.MapEntry/create 1 2))"))))
