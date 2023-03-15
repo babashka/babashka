@@ -12,6 +12,7 @@ A preview of the next release can be installed from
 - [#1507](https://github.com/babashka/babashka/issues/1507): Expose methods on java.lang.VirtualThread ([@lispyclouds](https://github.com/lispyclouds))
 - [#1510](https://github.com/babashka/babashka/issues/1510): add virtual thread interop on `Thread`
 - [#1511](https://github.com/babashka/babashka/issues/1511): support domain sockets
+- [#1521](https://github.com/babashka/babashka/issues/1521): push images to GHCR ([@lispyclouds](https://github.com/lispyclouds))
 
 ## 1.2.174 (2023-03-01)
 

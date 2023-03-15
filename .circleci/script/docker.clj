@@ -12,6 +12,8 @@
 
 (def image-name "babashka/babashka")
 
+(def ghcr-image-name "ghcr.io/babashka/babashka")
+
 (def image-tag (str/trim (slurp "resources/BABASHKA_VERSION")))
 
 (def latest-tag "latest")
@@ -46,6 +48,11 @@
   [username password]
   (exec ["docker" "login" "-u" username "-p" password]))
 
+(defn docker-login-ghcr
+  [username password]
+  (exec ["docker" "login" "ghcr.io" "-u" username "-p" password]))
+
+;; TODO: Remove this when Dockerhub goes off
 (defn build-push
   [image-tag platform docker-file]
   (println (format "Building and pushing %s Docker image(s) %s:%s"
@@ -54,6 +61,19 @@
                    image-tag))
   (let [base-cmd ["docker" "buildx" "build"
                   "-t" (str image-name ":" image-tag)
+                  "--platform" platform
+                  "--push"
+                  "-f" docker-file]]
+    (exec (concat base-cmd label-args ["."]))))
+
+(defn build-push-ghcr
+  [image-tag platform docker-file]
+  (println (format "Building and pushing %s Docker image(s) %s:%s to GHCR"
+                   platform
+                   ghcr-image-name
+                   image-tag))
+  (let [base-cmd ["docker" "buildx" "build"
+                  "-t" (str ghcr-image-name ":" image-tag)
                   "--platform" platform
                   "--push"
                   "-f" docker-file]]
@@ -74,8 +94,10 @@
       ; this overwrites, but this is to work around having built the uberjar/metabom multiple times
       (fs/copy (format "/tmp/release/%s-metabom.jar" tarball-platform) "metabom.jar" {:replace-existing true})))
   (build-push image-tag platforms "Dockerfile.ci")
+  (build-push-ghcr image-tag platforms "Dockerfile.ci")
   (when-not snapshot?
-    (build-push latest-tag platforms "Dockerfile.ci")))
+    (build-push latest-tag platforms "Dockerfile.ci")
+    (build-push-ghcr latest-tag platforms "Dockerfile.ci")))
 
 (defn build-push-alpine-images
   "Build alpine image for linux-amd64 only (no upstream arm64 support yet)"
@@ -93,6 +115,7 @@
         (println "This is a snapshot version")
         (println "This is a non-snapshot version"))
       (docker-login (read-env "DOCKERHUB_USER") (read-env "DOCKERHUB_PASS"))
+      (docker-login-ghcr (read-env "CONTAINER_REGISTRY_USER") (read-env "BB_GHCR_TOKEN"))
       (build-push-images)
       (build-push-alpine-images))
     (println "Not publishing docker image(s).")))
