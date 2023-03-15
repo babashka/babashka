@@ -108,10 +108,14 @@
     (build-push "alpine" "linux/amd64" "Dockerfile.alpine")))
 
 (when (= *file* (System/getProperty "babashka.file"))
-  (if snapshot?
-    (println "This is a snapshot version")
-    (println "This is a non-snapshot version"))
-  (docker-login (read-env "DOCKERHUB_USER") (read-env "DOCKERHUB_PASS"))
-  (docker-login-ghcr (read-env "CONTAINER_REGISTRY_USER") (read-env "BB_GHCR_TOKEN"))
-  (build-push-images)
-  (build-push-alpine-images))
+  (if (and (nil? (read-env "CIRCLE_PULL_REQUEST"))
+           (= "master" (read-env "CIRCLE_BRANCH")))
+    (do
+      (if snapshot?
+        (println "This is a snapshot version")
+        (println "This is a non-snapshot version"))
+      (docker-login (read-env "DOCKERHUB_USER") (read-env "DOCKERHUB_PASS"))
+      (docker-login-ghcr (read-env "CONTAINER_REGISTRY_USER") (read-env "BB_GHCR_TOKEN"))
+      (build-push-images)
+      (build-push-alpine-images))
+    (println "Not publishing docker image(s).")))
