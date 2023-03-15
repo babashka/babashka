@@ -46,6 +46,10 @@
 
 (defn docker-login
   [username password]
+  (exec ["docker" "login" "-u" username "-p" password]))
+
+(defn docker-login-ghcr
+  [username password]
   (exec ["docker" "login" "ghcr.io" "-u" username "-p" password]))
 
 ;; TODO: Remove this when Dockerhub goes off
@@ -111,7 +115,7 @@
         (println "This is a snapshot version")
         (println "This is a non-snapshot version"))
       (docker-login (read-env "DOCKERHUB_USER") (read-env "DOCKERHUB_PASS"))
-      (docker-login (read-env "CONTAINER_REGISTRY_USER") (read-env "BB_GHCR_TOKEN"))
+      (docker-login-ghcr (read-env "CONTAINER_REGISTRY_USER") (read-env "BB_GHCR_TOKEN"))
       (build-push-images)
       (build-push-alpine-images))
     (println "Not publishing docker image(s).")))
