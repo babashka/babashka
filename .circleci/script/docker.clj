@@ -10,7 +10,7 @@
    (or (System/getenv k)
        default)))
 
-(def image-name "babashka/babashka")
+(def image-name "ghcr.io/babashka/babashka")
 
 (def image-tag (str/trim (slurp "resources/BABASHKA_VERSION")))
 
@@ -44,7 +44,7 @@
 
 (defn docker-login
   [username password]
-  (exec ["docker" "login" "-u" username "-p" password]))
+  (exec ["docker" "login" "ghcr.io" "-u" username "-p" password]))
 
 (defn build-push
   [image-tag platform docker-file]
@@ -92,7 +92,7 @@
       (if snapshot?
         (println "This is a snapshot version")
         (println "This is a non-snapshot version"))
-      (docker-login (read-env "DOCKERHUB_USER") (read-env "DOCKERHUB_PASS"))
+      (docker-login (read-env "CONTAINER_REGISTRY_USER") (read-env "BB_GHCR_TOKEN"))
       (build-push-images)
       (build-push-alpine-images))
     (println "Not publishing docker image(s).")))
