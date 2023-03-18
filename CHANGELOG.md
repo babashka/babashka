@@ -7,6 +7,11 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## 1.3.176 (2023-03-18)
+
+- Upgrade http-client to 0.1.8, fixes binary file uploads (which messed up the previous release)
+- Downgrade org.flatland/ordered to 1.5.9 due to this [issue](https://github.com/clj-commons/ordered/issues/71)
+
 ## 1.3.175 (2023-03-18)
 
 - [#1507](https://github.com/babashka/babashka/issues/1507): Expose methods on java.lang.VirtualThread ([@lispyclouds](https://github.com/lispyclouds))
