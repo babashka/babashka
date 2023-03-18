@@ -50,8 +50,9 @@
         org.clojure/data.priority-map {:mvn/version "1.1.0"}
         insn/insn {:mvn/version "0.5.2"}
         org.clojure/core.rrb-vector {:mvn/version "0.1.2"}
-        org.babashka/cli {:mvn/version "0.6.49"}
-        org.babashka/http-client {:mvn/version "0.1.6"}}
+        org.babashka/cli {:mvn/version "0.6.50"}
+        org.babashka/http-client {:mvn/version "0.1.7"}
+        org.flatland/ordered {:mvn/version "1.15.10"}}
  :aliases {:babashka/dev
            {:main-opts ["-m" "babashka.main"]}
            :profile
