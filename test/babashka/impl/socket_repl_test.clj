@@ -44,7 +44,7 @@
 
 (def exec? (System/getenv "BABASHKA_SOCKET_REPL_TEST"))
 
-(deftest socket-repl-test
+(deftest ^:flaky socket-repl-test
   (when exec?
     (try
       (if tu/jvm?
@@ -76,7 +76,7 @@
               (Thread/sleep 100))
           (p/destroy-tree @server-process))))))
 
-(deftest socket-repl-opts-test
+(deftest ^:flaky socket-repl-opts-test
   (when exec?
     (try
       (if tu/jvm?
@@ -100,7 +100,7 @@
               (Thread/sleep 100))
           (p/destroy-tree @server-process))))))
 
-(deftest socket-prepl-test
+(deftest ^:flaky socket-prepl-test
   (when exec?
     (try
       (if tu/jvm?
