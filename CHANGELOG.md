@@ -7,7 +7,7 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## 
+## 1.3.175 (2023-03-18)
 
 - [#1507](https://github.com/babashka/babashka/issues/1507): Expose methods on java.lang.VirtualThread ([@lispyclouds](https://github.com/lispyclouds))
 - [#1510](https://github.com/babashka/babashka/issues/1510): add virtual thread interop on `Thread`
