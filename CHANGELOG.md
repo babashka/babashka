@@ -7,12 +7,19 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## Unreleased
+## 
 
 - [#1507](https://github.com/babashka/babashka/issues/1507): Expose methods on java.lang.VirtualThread ([@lispyclouds](https://github.com/lispyclouds))
 - [#1510](https://github.com/babashka/babashka/issues/1510): add virtual thread interop on `Thread`
-- [#1511](https://github.com/babashka/babashka/issues/1511): support domain sockets
+- [#1511](https://github.com/babashka/babashka/issues/1511): support for domain sockets
 - [#1521](https://github.com/babashka/babashka/issues/1521): push images to GHCR ([@lispyclouds](https://github.com/lispyclouds))
+- Bump edamame to 1.3.20
+- Bump deps.clj to 1.11.1.1257
+- Bump org.flatland/ordered to 1.15.10
+- Support `clojure.lang.MapEntry/create`
+- clojure.core.async `go` macro now uses virtual threads
+- Bump babashka.cli to 0.6.50
+- Bump http-client to 0.1.7
 
 ## 1.2.174 (2023-03-01)
 
