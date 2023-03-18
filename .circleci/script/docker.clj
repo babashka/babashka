@@ -104,8 +104,10 @@
   []
   (exec ["tar" "zxvf" (str "/tmp/release/babashka-" image-tag "-linux-amd64-static.tar.gz")])
   (build-push (str image-tag "-alpine") "linux/amd64" "Dockerfile.alpine")
+  (build-push-ghcr (str image-tag "-alpine") "linux/amd64" "Dockerfile.alpine")
   (when-not snapshot?
-    (build-push "alpine" "linux/amd64" "Dockerfile.alpine")))
+    (build-push "alpine" "linux/amd64" "Dockerfile.alpine")
+    (build-push-ghcr "alpine" "linux/amd64" "Dockerfile.alpine")))
 
 (when (= *file* (System/getProperty "babashka.file"))
   (if (and (nil? (read-env "CIRCLE_PULL_REQUEST"))
