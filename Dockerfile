@@ -72,7 +72,8 @@ RUN ./script/setup-musl
 RUN ./script/compile
 
 FROM ubuntu:latest
-RUN apt-get update && apt-get install -y curl
+RUN apt-get update && apt-get install -y curl \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR "/usr/local/bin"
 
