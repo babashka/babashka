@@ -2,7 +2,9 @@ FROM ubuntu:latest
 
 RUN apt-get update \
     && apt-get install -y curl \
-    && mkdir -p /usr/local/bin
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR "/usr/local/bin"
 
 ARG TARGETARCH
 ARG TARGETOS
