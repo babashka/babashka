@@ -17,8 +17,7 @@ RUN if [ "${TARGETARCH}" = "" ] || [ "${TARGETARCH}" = "amd64" ]; then \
     fi && \
     echo "Installing GraalVM for ${GRAALVM_ARCH}" && \
     curl -sLO https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-${GRAALVM_VERSION}/graalvm-ce-java19-linux-${GRAALVM_ARCH}-${GRAALVM_VERSION}.tar.gz && \
-    tar -xzf graalvm-ce-java19-linux-${GRAALVM_ARCH}-${GRAALVM_VERSION}.tar.gz && \
-    rm graalvm-ce-java19-linux-${GRAALVM_ARCH}-${GRAALVM_VERSION}.tar.gz
+    tar -xzf graalvm-ce-java19-linux-${GRAALVM_ARCH}-${GRAALVM_VERSION}.tar.gz
 
 ARG BABASHKA_XMX="-J-Xmx4500m"
 
