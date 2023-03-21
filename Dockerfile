@@ -72,9 +72,8 @@ RUN ./script/compile
 
 FROM ubuntu:latest
 RUN apt-get update && apt-get install -y curl \
-    && rm -rf /var/lib/apt/lists/*
-
-WORKDIR "/usr/local/bin"
+    && rm -rf /var/lib/apt/lists/* \
+    && mkdir -p /usr/local/bin
 
 COPY --from=BASE /opt/target/metabom.jar /opt/babashka-metabom.jar
 COPY --from=BASE /opt/bb /usr/local/bin/bb
