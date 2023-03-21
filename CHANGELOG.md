@@ -7,6 +7,10 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## Unreleased
+
+- [#1523](https://github.com/babashka/babashka/pull/1523): Reduce the size of the Docker images ([@raszi](https://github.com/raszi))
+
 ## 1.3.176 (2023-03-18)
 
 - Upgrade http-client to 0.1.8, fixes binary file uploads (which messed up the previous release)
