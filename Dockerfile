@@ -17,8 +17,7 @@ RUN if [ "${TARGETARCH}" = "" ] || [ "${TARGETARCH}" = "amd64" ]; then \
     fi && \
     echo "Installing GraalVM for ${GRAALVM_ARCH}" && \
     curl -sLO https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-${GRAALVM_VERSION}/graalvm-ce-java19-linux-${GRAALVM_ARCH}-${GRAALVM_VERSION}.tar.gz && \
-    tar -xzf graalvm-ce-java19-linux-${GRAALVM_ARCH}-${GRAALVM_VERSION}.tar.gz && \
-    rm graalvm-ce-java19-linux-${GRAALVM_ARCH}-${GRAALVM_VERSION}.tar.gz
+    tar -xzf graalvm-ce-java19-linux-${GRAALVM_ARCH}-${GRAALVM_VERSION}.tar.gz
 
 ARG BABASHKA_XMX="-J-Xmx4500m"
 
@@ -73,7 +72,9 @@ RUN ./script/compile
 
 FROM ubuntu:latest
 RUN apt-get update && apt-get install -y curl \
-        && mkdir -p /usr/local/bin
+    && rm -rf /var/lib/apt/lists/* \
+    && mkdir -p /usr/local/bin
+
 COPY --from=BASE /opt/target/metabom.jar /opt/babashka-metabom.jar
 COPY --from=BASE /opt/bb /usr/local/bin/bb
 CMD ["bb"]
