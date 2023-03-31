@@ -580,6 +580,7 @@
                       clojure.lang.PersistentArrayMap
                       clojure.lang.PersistentHashSet
                       clojure.lang.PersistentList
+                      clojure.lang.PersistentList$EmptyList
                       clojure.lang.PersistentQueue
                       clojure.lang.PersistentStructMap
                       clojure.lang.PersistentTreeMap
