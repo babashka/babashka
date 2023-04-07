@@ -210,6 +210,7 @@
     java.net.http.WebSocket$Builder
     java.net.http.WebSocket$Listener
     java.security.cert.X509Certificate
+    java.security.cert.CertificateFactory
     javax.crypto.Cipher
     javax.crypto.Mac
     javax.crypto.SecretKey
@@ -696,6 +697,8 @@
                          javax.crypto.SecretKey
                          (instance? java.lang.Thread v)
                          java.lang.Thread
+                         (instance? java.security.cert.X509Certificate v)
+                         java.security.cert.X509Certificate
                          ;; keep commas for merge friendliness
                          ,,,)))
         m (assoc m (list 'quote 'clojure.lang.Var) 'sci.lang.Var)
