@@ -1,0 +1,2 @@
+{:deps
+ {my/middleware {:local/root "../my_middleware/"}}}
