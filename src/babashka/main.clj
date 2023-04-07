@@ -313,8 +313,11 @@ Use bb run --help to show this help output.
 (defn start-socket-repl! [address ctx]
   (socket-repl/start-repl! address ctx))
 
-(defn start-nrepl! [address]
-  (let [opts (nrepl-server/parse-opt address)]
+(defn start-nrepl! [user-middleware address]
+  (let [user-middleware (when-not (str/blank? user-middleware)
+                     (read-string user-middleware))
+        opts (nrepl-server/parse-opt address)
+        opts (assoc opts :user-middleware user-middleware)]
     (babashka.impl.nrepl-server/start-server! opts))
   (binding [*out* *err*]
     (println "For more info visit: https://book.babashka.org/#_nrepl"))
@@ -645,6 +648,11 @@ Use bb run --help to show this help output.
             (recur options
                    (assoc opts-map
                           :nrepl (or opt "1667"))))
+          ("--middlware")
+          (let [options (next options)]
+            (recur (next options)
+                   (assoc opts-map
+                          :middleware (first options))))
           ("--eval", "-e")
           (let [options (next options)
                 opts-map (assoc opts-map :prn true)]
@@ -839,7 +847,7 @@ Use bb run --help to show this help output.
                     :main :uberscript :describe?
                     :jar :uberjar :clojure
                     :doc :run :list-tasks
-                    :print-deps :prepare]
+                    :print-deps :prepare :middleware]
              exec-fn :exec}
             cli-opts
             print-result? (:prn cli-opts)
@@ -1018,7 +1026,7 @@ Use bb run --help to show this help output.
                        describe?
                        [(print-describe) 0]
                        repl [(repl/start-repl! sci-ctx) 0]
-                       nrepl [(start-nrepl! nrepl) 0]
+                       nrepl [(start-nrepl! middleware nrepl) 0]
                        uberjar [nil 0]
                        list-tasks [(tasks/list-tasks sci-ctx) 0]
                        print-deps [(print-deps/print-deps (:print-deps-format cli-opts)) 0]
