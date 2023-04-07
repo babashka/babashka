@@ -7,6 +7,12 @@ Twitter.
 
 ## 2023-03 ([Twitter](https://twitter.com/search?q=(%23babashka%20OR%20babashka)%20since%3A2023-03-01%20until%3A2023-04-01&src=typed_query&f=top), [Mastodon](https://mastodon.social/tags/babashka))
 
+### Releases
+
+1.3.176, 1.3.175, 1.2.174:
+
+Biggest highlight: Switch to GraalVM 19 and enable virtual threads!
+
 ### Videos
 
 - [Blambda! The sound of babashka and AWS colliding](https://pitch.com/public/03fa9c7e-2b0e-45fb-8a22-d4a4d4d79d24), by Josh Glover from Pitch!
@@ -23,6 +29,10 @@ Twitter.
 - Write babashka at [Cognician](https://twitter.com/RobStuttaford/status/1641694501793038336)!
 
 ## 2023-02 ([Twitter](https://twitter.com/search?q=(%23babashka%20OR%20babashka)%20since%3A2023-02-01%20until%3A2023-03-01&src=typed_query&f=live), [Mastodon](https://mastodon.social/tags/babashka))
+
+## Releases
+
+1.1.173: mostly bugfixes
 
 ### Articles
 
