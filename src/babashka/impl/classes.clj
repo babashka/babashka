@@ -210,6 +210,7 @@
     java.net.http.WebSocket$Builder
     java.net.http.WebSocket$Listener
     java.security.cert.X509Certificate
+    java.security.cert.CertificateFactory
     javax.crypto.Cipher
     javax.crypto.Mac
     javax.crypto.SecretKey
