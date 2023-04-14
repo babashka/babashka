@@ -318,7 +318,7 @@
           java.lang.System
           java.lang.Throwable
           java.lang.Thread$UncaughtExceptionHandler
-          ;; java.lang.UnsupportedOperationException
+          java.lang.UnsupportedOperationException
           java.lang.ref.WeakReference
           java.lang.ref.ReferenceQueue
           java.lang.ref.Cleaner
@@ -767,7 +767,7 @@
     Throwable java.lang.Throwable
     VirtualMachineError java.lang.VirtualMachineError
     ThreadDeath java.lang.ThreadDeath
-    ;; UnsupportedOperationException java.lang.UnsupportedOperationException
+    UnsupportedOperationException java.lang.UnsupportedOperationException
     })
 
 (defn reflection-file-entries []
