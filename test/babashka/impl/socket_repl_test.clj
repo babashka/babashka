@@ -145,4 +145,5 @@
                                           '*command-line-args*
                                           ["a" "b" "c"]}
                                :env (atom {})})
-  ((socket-command-on-port 1666) "(+ 1 2 3)" "6"))
+  ((socket-command-on-port 1666) "(+ 1 2 3)" "6")
+  )
