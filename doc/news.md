@@ -5,6 +5,12 @@ you have anything to add. Also see
 [#babashka](https://twitter.com/hashtag/babashka?src=hashtag_click&f=live) on
 Twitter.
 
+## 2023-04
+
+[Babashka-conf](https://babashka.org/conf/) is happening June 10th in
+Berlin. Save the date and/or submit your babashka/clojure-related 20 minute talk
+in the CfP!
+
 ## 2023-03 ([Twitter](https://twitter.com/search?q=(%23babashka%20OR%20babashka)%20since%3A2023-03-01%20until%3A2023-04-01&src=typed_query&f=top), [Mastodon](https://mastodon.social/tags/babashka))
 
 ### Releases
