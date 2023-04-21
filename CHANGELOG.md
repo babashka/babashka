@@ -7,11 +7,13 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+[Babashka-conf](https://babashka.org/conf/) is happening June 10th in Berlin. Save the date!
+
 ## 1.3.177 (2023-04-18)
 
 - [#1541](https://github.com/babashka/babashka/issues/1541): respect `bb.edn`
   adjacent to invoked file. This eases writing system-global scripts from
-  projects without using bbin.
+  projects without using bbin. See [docs](https://book.babashka.org/#_script_adjacent_bb_edn).
 - [#1523](https://github.com/babashka/babashka/pull/1523): Reduce the size of the Docker images ([@raszi](https://github.com/raszi))
 - Upgrade deps.clj to v1.11.1.1273
 - Upgrade transit-clj to 1.0.333
