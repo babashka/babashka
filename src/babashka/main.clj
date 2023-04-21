@@ -1123,7 +1123,7 @@ Use bb run --help to show this help output.
 
 (defn main [& args]
   (let [[args global-opts] (parse-global-opts args)
-        {:keys [:jar] :as file-opt} (when (some-> args first io/file .isFile)
+        {:keys [:jar :file] :as file-opt} (when (some-> args first io/file .isFile)
                                       (parse-file-opt args global-opts))
         config (:config global-opts)
         merge-deps (:merge-deps global-opts)
@@ -1131,7 +1131,12 @@ Use bb run --help to show this help output.
         bb-edn-file (cond
                       config (when (fs/exists? config) (abs-path config))
                       jar (some-> [jar] cp/new-loader (cp/resource "META-INF/bb.edn") .toString)
-                      :else (when (fs/exists? "bb.edn") (abs-path "bb.edn")))
+                      :else (if (and file (fs/exists? file))
+                              (let [rel-bb-edn (fs/file (fs/parent file) "bb.edn")]
+                                (when (fs/exists? rel-bb-edn)
+                                  (abs-path rel-bb-edn)))
+                              (when (fs/exists? "bb.edn")
+                                (abs-path "bb.edn"))))
         bb-edn (when (or bb-edn-file merge-deps)
                  (when bb-edn-file (System/setProperty "babashka.config" bb-edn-file))
                  (let [raw-string (when bb-edn-file (slurp bb-edn-file))
