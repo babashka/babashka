@@ -292,6 +292,7 @@
           java.lang.Error
           java.lang.Exception
           java.lang.Float
+          java.lang.IllegalAccessException
           java.lang.IllegalArgumentException
           java.lang.IllegalStateException
           java.lang.IndexOutOfBoundsException
@@ -322,6 +323,7 @@
           java.lang.ref.WeakReference
           java.lang.ref.ReferenceQueue
           java.lang.ref.Cleaner
+          java.lang.reflect.Constructor
           java.math.BigDecimal
           java.math.BigInteger
           java.math.MathContext
@@ -333,6 +335,7 @@
           java.net.HttpURLConnection
           java.net.InetAddress
           java.net.InetSocketAddress
+          java.net.JarURLConnection
           java.net.StandardProtocolFamily
           java.net.ServerSocket
           java.net.Socket
@@ -739,6 +742,7 @@
     Exception java.lang.Exception
     ExceptionInInitializerError java.lang.ExceptionInInitializerError
     IndexOutOfBoundsException java.lang.IndexOutOfBoundsException
+    IllegalAccessException java.lang.IllegalAccessException
     IllegalArgumentException java.lang.IllegalArgumentException
     IllegalStateException java.lang.IllegalStateException
     Integer java.lang.Integer
