@@ -317,7 +317,7 @@ Use bb run --help to show this help output.
   (let [user-middleware (when-not (str/blank? user-middleware)
                      (read-string user-middleware))
         opts (nrepl-server/parse-opt address)
-        opts (assoc opts :user-middleware user-middleware)]
+        opts (assoc opts :middleware user-middleware)]
     (babashka.impl.nrepl-server/start-server! opts))
   (binding [*out* *err*]
     (println "For more info visit: https://book.babashka.org/#_nrepl"))
@@ -648,7 +648,7 @@ Use bb run --help to show this help output.
             (recur options
                    (assoc opts-map
                           :nrepl (or opt "1667"))))
-          ("--middlware")
+          ("--middleware")
           (let [options (next options)]
             (recur (next options)
                    (assoc opts-map

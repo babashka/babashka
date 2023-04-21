@@ -26,7 +26,7 @@
   (is (= "1667"
          (:nrepl (parse-opts ["--nrepl-server"]))))
   (is (= "[foo]"
-         (:middleware (parse-opts ["--middlware" "[foo]"]))))
+         (:middleware (parse-opts ["--middleware" "[foo]"]))))
   (is (= "1666"
          (:socket-repl (parse-opts ["--socket-repl"]))))
   (is (= {:nrepl "1667", :classpath "src"}
