@@ -154,7 +154,7 @@ Global opts:
   -cp, --classpath  Classpath to use. Overrides bb.edn classpath.
   --debug           Print debug information and internal stacktrace in case of exception.
   --init <file>     Load file after any preloads and prior to evaluation/subcommands.
-  --config <file>   Replacing bb.edn with file. Relative paths are resolved relative to file.
+  --config <file>   Replace bb.edn with file. Defaults to bb.edn adjacent to invoked file or bb.edn in current dir. Relative paths are resolved relative to file.
   --deps-root <dir> Treat dir as root of relative paths in config.
   --prn             Print result via clojure.core/prn
   -Sforce           Force recalculation of the classpath (don't use the cache)
