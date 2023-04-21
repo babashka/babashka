@@ -25,7 +25,7 @@
                                                      reader-types-namespace]]
    [babashka.impl.clojure.zip :refer [zip-namespace]]
    [babashka.impl.common :as common]
-   [babashka.impl.core  :as bbcore]
+   [babashka.impl.core :as bbcore]
    [babashka.impl.curl :refer [curl-namespace]]
    [babashka.impl.data :as data]
    [babashka.impl.datafy :refer [datafy-namespace]]
@@ -337,11 +337,11 @@ Use bb run --help to show this help output.
      bencode bencode.core
      deps babashka.deps
      async clojure.core.async}
-    features/xml?        (assoc 'xml 'clojure.data.xml)
-    features/yaml?       (assoc 'yaml 'clj-yaml.core)
-    features/jdbc?       (assoc 'jdbc 'next.jdbc)
-    features/csv?        (assoc 'csv 'clojure.data.csv)
-    features/transit?    (assoc 'transit 'cognitect.transit)))
+    features/xml? (assoc 'xml 'clojure.data.xml)
+    features/yaml? (assoc 'yaml 'clj-yaml.core)
+    features/jdbc? (assoc 'jdbc 'next.jdbc)
+    features/csv? (assoc 'csv 'clojure.data.csv)
+    features/transit? (assoc 'transit 'cognitect.transit)))
 
 ;;(def ^:private server-ns-obj (sci/create-ns 'clojure.core.server nil))
 
@@ -425,15 +425,15 @@ Use bb run --help to show this help output.
                }
     'babashka.cli cli/cli-namespace
     'babashka.http-client http-client-namespace}
-    features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace)
-                          'clojure.data.xml.event @(resolve 'babashka.impl.xml/xml-event-namespace)
-                          'clojure.data.xml.tree @(resolve 'babashka.impl.xml/xml-tree-namespace))
+    features/xml? (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace)
+                         'clojure.data.xml.event @(resolve 'babashka.impl.xml/xml-event-namespace)
+                         'clojure.data.xml.tree @(resolve 'babashka.impl.xml/xml-tree-namespace))
     features/yaml? (assoc 'clj-yaml.core @(resolve 'babashka.impl.yaml/yaml-namespace)
                           'flatland.ordered.map @(resolve 'babashka.impl.ordered/ordered-map-ns))
     features/jdbc? (assoc 'next.jdbc @(resolve 'babashka.impl.jdbc/njdbc-namespace)
                           'next.jdbc.sql @(resolve 'babashka.impl.jdbc/next-sql-namespace)
                           'next.jdbc.result-set @(resolve 'babashka.impl.jdbc/result-set-namespace))
-    features/csv?  (assoc 'clojure.data.csv @(resolve 'babashka.impl.csv/csv-namespace))
+    features/csv? (assoc 'clojure.data.csv @(resolve 'babashka.impl.csv/csv-namespace))
     features/transit? (assoc 'cognitect.transit @(resolve 'babashka.impl.transit/transit-namespace))
     features/datascript? (assoc 'datascript.core @(resolve 'babashka.impl.datascript/datascript-namespace)
                                 'datascript.db @(resolve 'babashka.impl.datascript/datascript-db-namespace))
@@ -462,7 +462,7 @@ Use bb run --help to show this help output.
                                 ;; it's better to load this from source by adding the clojure.test.check dependency
                                 #_#_'clojure.test.check.clojure-test
                                   @(resolve 'babashka.impl.clojure.test.check/test-check-clojure-test-namespace))
-    features/spec-alpha? (-> (assoc        ;; spec
+    features/spec-alpha? (-> (assoc ;; spec
                               'clojure.spec.alpha @(resolve 'babashka.impl.spec/spec-namespace)
                               'clojure.spec.gen.alpha @(resolve 'babashka.impl.spec/gen-namespace)
                               'clojure.spec.test.alpha @(resolve 'babashka.impl.spec/test-namespace)))
@@ -785,7 +785,7 @@ Use bb run --help to show this help output.
    and files that are empty/don't exist."
   [path]
   (or (= "jar" (fs/extension path))
-    (not (fs/exists? path))))
+      (not (fs/exists? path))))
 
 (def seen-urls (atom nil))
 
@@ -1071,27 +1071,27 @@ Use bb run --help to show this help output.
         (when uberscript
           (if (file-write-allowed? uberscript)
             (do
-              (spit uberscript "")                        ;; reset file
+              (spit uberscript "") ;; reset file
               (doseq [s (distinct @uberscript-sources)]
                 (spit uberscript s :append true))
               (spit uberscript preloads :append true)
               (spit uberscript expression :append true))
             (throw (Exception. (str "Uberscript target file '" uberscript
-                                 "' exists and is not empty. Overwrite prohibited.")))))
+                                    "' exists and is not empty. Overwrite prohibited.")))))
         (when uberjar
           (let [cp (cp/get-classpath)]
             (cond
               (not (file-write-allowed? uberjar))
               (throw (Exception. (str "Uberjar target file '" uberjar
-                                   "' exists and is not empty. Overwrite prohibited.")))
+                                      "' exists and is not empty. Overwrite prohibited.")))
               (not cp)
               (throw (Exception. "The uberjar task needs a classpath."))
               :else
-              (let [uber-params {:dest       uberjar
-                                 :jar        :uber
-                                 :classpath  cp
+              (let [uber-params {:dest uberjar
+                                 :jar :uber
+                                 :classpath cp
                                  :main-class main
-                                 :verbose    debug}]
+                                 :verbose debug}]
                 (if-let [bb-edn-pods (:pods @common/bb-edn)]
                   (fs/with-temp-dir [bb-edn-dir {}]
                     (let [bb-edn-resource (fs/file bb-edn-dir "META-INF" "bb.edn")]
@@ -1099,7 +1099,7 @@ Use bb run --help to show this help output.
                       (->> {:pods bb-edn-pods} pr-str (spit bb-edn-resource))
                       (let [cp-with-bb-edn (str bb-edn-dir cp/path-sep cp)]
                         (uberjar/run (assoc uber-params
-                                       :classpath cp-with-bb-edn)))))
+                                            :classpath cp-with-bb-edn)))))
                   (uberjar/run uber-params))))))
         exit-code))))
 
@@ -1124,7 +1124,7 @@ Use bb run --help to show this help output.
 (defn main [& args]
   (let [[args global-opts] (parse-global-opts args)
         {:keys [:jar :file] :as file-opt} (when (some-> args first io/file .isFile)
-                                      (parse-file-opt args global-opts))
+                                            (parse-file-opt args global-opts))
         config (:config global-opts)
         merge-deps (:merge-deps global-opts)
         abs-path #(-> % io/file .getAbsolutePath)
@@ -1132,9 +1132,14 @@ Use bb run --help to show this help output.
                       config (when (fs/exists? config) (abs-path config))
                       jar (some-> [jar] cp/new-loader (cp/resource "META-INF/bb.edn") .toString)
                       :else (if (and file (fs/exists? file))
+                              ;; file relative to bb.edn
                               (let [rel-bb-edn (fs/file (fs/parent file) "bb.edn")]
-                                (when (fs/exists? rel-bb-edn)
-                                  (abs-path rel-bb-edn)))
+                                (if (fs/exists? rel-bb-edn)
+                                  (abs-path rel-bb-edn)
+                                  ;; fall back to local bb.edn
+                                  (when (fs/exists? "bb.edn")
+                                    (abs-path "bb.edn"))))
+                              ;; default to local bb.edn
                               (when (fs/exists? "bb.edn")
                                 (abs-path "bb.edn"))))
         bb-edn (when (or bb-edn-file merge-deps)

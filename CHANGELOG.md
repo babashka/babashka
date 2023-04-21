@@ -11,6 +11,10 @@ A preview of the next release can be installed from
 Berlin. Save the date and/or submit your babashka/clojure-related 20 minute talk
 in the CfP!
 
+## 1.3.178 (2023-04-18)
+
+- Fix regression with [#1541](https://github.com/babashka/babashka/issues/1541)
+
 ## 1.3.177 (2023-04-18)
 
 - [#1541](https://github.com/babashka/babashka/issues/1541): respect `bb.edn`
