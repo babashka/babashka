@@ -44,6 +44,7 @@ lein test :only babashka.impl.socket-repl-test
 
 # test invoking script in subdir with bb.edn in parent dir
 unset BABASHKA_PRELOADS
+unset BABASHKA_CLASSPATH
 pushd test-resources/bb_in_root_script_in_other_dir
 if [[ $BABASHKA_TEST_ENV = "native" ]]
 then
