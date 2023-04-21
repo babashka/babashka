@@ -7,9 +7,21 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## Unreleased
+## 1.3.177 (2023-04-18)
 
+- [#1541](https://github.com/babashka/babashka/issues/1541): respect `bb.edn`
+  adjacent to invoked file. This eases writing system-global scripts from
+  projects without using bbin.
 - [#1523](https://github.com/babashka/babashka/pull/1523): Reduce the size of the Docker images ([@raszi](https://github.com/raszi))
+- Upgrade deps.clj to v1.11.1.1273
+- Upgrade transit-clj to 1.0.333
+- Add `java.security.cert.CertificateFactory`
+- Bump clj-yaml to 1.0.26
+- Bump edamame to 1.3.21
+- Add `UnsupportedOperationException`
+- Bump babashka CLI to 0.7.51
+- Bump babashka http-client to 0.2.9
+- Add `--install-exit-handlers` to native-image build to support shutdown hook + SIGTERM
 
 ## 1.3.176 (2023-03-18)
 
