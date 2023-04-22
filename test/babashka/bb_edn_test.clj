@@ -316,7 +316,13 @@
     ;; can't properly test this, but `(clojure)` should work with zero args
     #_(test-utils/with-config
         (pr-str '{:tasks {foo (-> (clojure) :out prn)}})
-        (is (str/includes? (test-utils/bb "(+ 1 2 3)" "run" "foo") "6")))))
+        (is (str/includes? (test-utils/bb "(+ 1 2 3)" "run" "foo") "6"))))
+  (testing "call to run in missing dir gives 'cannot run program' message"
+    (test-utils/with-config
+      (pr-str '{:tasks {foo (clojure {:dir "../missingdir"} "-M" "-r")}})
+      ; check rough text of error message, specific message about missing directory is OS-dependent
+      (is (thrown-with-msg? Exception #"Cannot run program .* \(in directory \"\.\.[/\\]missingdir\"\)" 
+                            (bb "run" "foo"))))))
 
 (deftest list-tasks-test
   (test-utils/with-config {}
