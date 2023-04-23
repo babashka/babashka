@@ -1128,30 +1128,30 @@ Use bb run --help to show this help output.
         config (:config global-opts)
         merge-deps (:merge-deps global-opts)
         abs-path #(-> % io/file .getAbsolutePath)
-        bb-edn-file (cond
-                      config (when (fs/exists? config) (abs-path config))
-                      jar (some-> [jar] cp/new-loader (cp/resource "META-INF/bb.edn") .toString)
-                      :else (if (and file (fs/exists? file))
+        config (cond
+                 config (when (fs/exists? config) (abs-path config))
+                 jar (some-> [jar] cp/new-loader (cp/resource "META-INF/bb.edn") .toString)
+                 :else (if (and file (fs/exists? file))
                               ;; file relative to bb.edn
-                              (let [rel-bb-edn (fs/file (fs/parent file) "bb.edn")]
-                                (if (fs/exists? rel-bb-edn)
-                                  (abs-path rel-bb-edn)
+                         (let [rel-bb-edn (fs/file (fs/parent file) "bb.edn")]
+                           (if (fs/exists? rel-bb-edn)
+                             (abs-path rel-bb-edn)
                                   ;; fall back to local bb.edn
-                                  (when (fs/exists? "bb.edn")
-                                    (abs-path "bb.edn"))))
+                             (when (fs/exists? "bb.edn")
+                               (abs-path "bb.edn"))))
                               ;; default to local bb.edn
-                              (when (fs/exists? "bb.edn")
-                                (abs-path "bb.edn"))))
-        bb-edn (when (or bb-edn-file merge-deps)
-                 (when bb-edn-file (System/setProperty "babashka.config" bb-edn-file))
-                 (let [raw-string (when bb-edn-file (slurp bb-edn-file))
-                       edn (when bb-edn-file (read-bb-edn raw-string))
+                         (when (fs/exists? "bb.edn")
+                           (abs-path "bb.edn"))))
+        bb-edn (when (or config merge-deps)
+                 (when config (System/setProperty "babashka.config" config))
+                 (let [raw-string (when config (slurp config))
+                       edn (when config (read-bb-edn raw-string))
                        edn (if merge-deps
                              (deps/merge-deps [edn (read-bb-edn merge-deps)])
                              edn)
                        edn (assoc edn
                                   :raw raw-string
-                                  :file bb-edn-file)
+                                  :file config)
                        edn (if-let [deps-root (or (:deps-root global-opts)
                                                   (some-> config fs/parent))]
                              (assoc edn :deps-root deps-root)

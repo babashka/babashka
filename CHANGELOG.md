@@ -11,6 +11,10 @@ A preview of the next release can be installed from
 Berlin. Save the date and/or submit your babashka/clojure-related 20 minute talk
 in the CfP!
 
+## Unreleased
+
+- [#1544](https://github.com/babashka/babashka/issues/1544): `:local/root` in script-adjacent bb.edn should resolve relative to script
+
 ## 1.3.178 (2023-04-18)
 
 - Fix regression with [#1541](https://github.com/babashka/babashka/issues/1541)
