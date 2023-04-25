@@ -14,6 +14,7 @@ in the CfP!
 ## Unreleased
 
 - [#1544](https://github.com/babashka/babashka/issues/1544): `:local/root` in script-adjacent bb.edn should resolve relative to script
+- [#1546](https://github.com/babashka/babashka/issues/1546): add `.contains` for vector and lazy-seq
 
 ## 1.3.178 (2023-04-18)
 

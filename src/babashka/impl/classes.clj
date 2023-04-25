@@ -130,10 +130,12 @@
     clojure.lang.PersistentHashMap
     {:fields [{:name "EMPTY"}]}
     clojure.lang.APersistentVector
-    {:methods [{:name "indexOf"}]}
+    {:methods [{:name "indexOf"}
+               {:name "contains"}]}
     clojure.lang.LazySeq
     {:allPublicConstructors true,
-     :methods [{:name "indexOf"}]}
+     :methods [{:name "indexOf"}
+               {:name "contains"}]}
     clojure.lang.ILookup
     {:methods [{:name "valAt"}]}
     clojure.lang.IPersistentMap
