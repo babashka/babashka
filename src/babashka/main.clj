@@ -677,11 +677,9 @@ Use bb run --help to show this help output.
                     (update :expressions (fnil conj []) (first options))
                     (assoc :command-line-args (next options)))
                 (assoc opts-map
-                       (if (fs/exists? opt)
-                         (if (str/ends-with? opt ".jar")
-                           :jar
-                           :file)
-                         :run) opt
+                       (if (str/ends-with? opt ".jar")
+                         :jar
+                         :file) opt
                        :command-line-args (next options)))))))
       opts-map)))
 
@@ -1119,28 +1117,20 @@ Use bb run --help to show this help output.
 
 (defn main [& args]
   (let [[args global-opts] (parse-global-opts args)
-        ;; TODO: what if people pass `-f`, we shoud parse the options such that
-        ;; a remaining argument is parsed as :file-or-task and then check via
-        ;; bb.edn if it's a file or task.
-        ;; But one of the problems is that the bb.edn could be adjacent to the invoked file!
-        ;; This is not actually a problem, we should be able to parse ALL the options here
-        ;; So just parse-opts and that's it!
-        {:keys [:jar :file] :as opts} (parse-opts args global-opts)
-        config (:config global-opts)
-        merge-deps (:merge-deps global-opts)
+        {:keys [jar file config merge-deps]} global-opts
         abs-path #(-> % io/file .getAbsolutePath)
         config (cond
                  config (when (fs/exists? config) (abs-path config))
                  jar (some-> [jar] cp/new-loader (cp/resource "META-INF/bb.edn") .toString)
                  :else (if (and file (fs/exists? file))
-                              ;; file relative to bb.edn
+                         ;; file relative to bb.edn
                          (let [rel-bb-edn (fs/file (fs/parent file) "bb.edn")]
                            (if (fs/exists? rel-bb-edn)
                              (abs-path rel-bb-edn)
-                                  ;; fall back to local bb.edn
+                             ;; fall back to local bb.edn
                              (when (fs/exists? "bb.edn")
                                (abs-path "bb.edn"))))
-                              ;; default to local bb.edn
+                         ;; default to local bb.edn
                          (when (fs/exists? "bb.edn")
                            (abs-path "bb.edn"))))
         bb-edn (when (or config merge-deps)
@@ -1158,6 +1148,8 @@ Use bb run --help to show this help output.
                              (assoc edn :deps-root deps-root)
                              edn)]
                    (vreset! common/bb-edn edn)))
+
+        opts (parse-opts args global-opts)
         ;; _ (.println System/err (str bb-edn))
         min-bb-version (:min-bb-version bb-edn)]
     (System/setProperty "java.class.path" "")
