@@ -1116,8 +1116,8 @@ Use bb run --help to show this help output.
                (throw e))))))
 
 (defn main [& args]
-  (let [[args global-opts] (parse-global-opts args)
-        {:keys [jar file config merge-deps]} global-opts
+  (let [[args opts] (parse-global-opts args)
+        {:keys [jar file config merge-deps] :as opts} (parse-file-opt args opts)
         abs-path #(-> % io/file .getAbsolutePath)
         config (cond
                  config (when (fs/exists? config) (abs-path config))
@@ -1143,13 +1143,12 @@ Use bb run --help to show this help output.
                        edn (assoc edn
                                   :raw raw-string
                                   :file config)
-                       edn (if-let [deps-root (or (:deps-root global-opts)
+                       edn (if-let [deps-root (or (:deps-root opts)
                                                   (some-> config fs/parent))]
                              (assoc edn :deps-root deps-root)
                              edn)]
                    (vreset! common/bb-edn edn)))
-
-        opts (parse-opts args global-opts)
+        opts (parse-opts args opts)
         ;; _ (.println System/err (str bb-edn))
         min-bb-version (:min-bb-version bb-edn)]
     (System/setProperty "java.class.path" "")
@@ -1158,7 +1157,7 @@ Use bb run --help to show this help output.
         (binding [*out* *err*]
           (println (str "WARNING: this project requires babashka "
                         min-bb-version " or newer, but you have: " version)))))
-    (exec (merge global-opts opts))))
+    (exec opts)))
 
 (def musl?
   "Captured at compile time, to know if we are running inside a
