@@ -723,9 +723,11 @@ Use bb run --help to show this help output.
   (let [opt (first options)
         opts-key (if (str/ends-with? opt ".jar")
                    :jar :file)]
-    (assoc opts-map
-           opts-key opt
-           :command-line-args (next options))))
+    (if (fs/exists? opt)
+      (assoc opts-map
+             opts-key opt
+             :command-line-args (next options))
+      (assoc opts-map :command-line-args options))))
 
 (defn parse-opts
   ([options] (parse-opts options nil))
