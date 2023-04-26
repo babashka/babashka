@@ -720,12 +720,11 @@ Use bb run --help to show this help output.
 
 (defn parse-file-opt
   [options opts-map]
-  (let [opt (first options)
-        opts-key (if (str/ends-with? opt ".jar")
-                   :jar :file)]
-    (if (fs/exists? opt)
+  (let [opt (first options)]
+    (if (and opt (fs/exists? opt))
       (assoc opts-map
-             opts-key opt
+             (if (str/ends-with? opt ".jar")
+               :jar :file) opt
              :command-line-args (next options))
       (assoc opts-map :command-line-args options))))
 
