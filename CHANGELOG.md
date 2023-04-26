@@ -11,17 +11,17 @@ A preview of the next release can be installed from
 Berlin. Save the date and/or submit your babashka/clojure-related 20 minute talk
 in the CfP!
 
-## Unreleased
+## 1.3.179 (2023-04-26)
 
 - [#1544](https://github.com/babashka/babashka/issues/1544): `:local/root` in script-adjacent bb.edn should resolve relative to script
 - [#1545](https://github.com/babashka/babashka/issues/1545): Adjacent `bb.edn` not respected with explicit `-f` option
 - [#1546](https://github.com/babashka/babashka/issues/1546): add `.contains` for vector and lazy-seq
 
-## 1.3.178 (2023-04-18)
+## 1.3.178 (2023-04-21)
 
 - Fix regression with [#1541](https://github.com/babashka/babashka/issues/1541)
 
-## 1.3.177 (2023-04-18)
+## 1.3.177 (2023-04-21)
 
 - [#1541](https://github.com/babashka/babashka/issues/1541): respect `bb.edn`
   adjacent to invoked file. This eases writing system-global scripts from
