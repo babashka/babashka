@@ -610,16 +610,6 @@ Use bb run --help to show this help output.
             (recur (next options)
                    (assoc opts-map
                           :uberjar (first options))))
-          ("-f" "--file")
-          (let [options (next options)]
-            (recur (next options)
-                   (assoc opts-map
-                          :file (first options))))
-          ("--jar" "-jar")
-          (let [options (next options)]
-            (recur (next options)
-                   (assoc opts-map
-                          :jar (first options))))
           ("--repl")
           (let [options (next options)]
             (recur (next options)
@@ -687,9 +677,11 @@ Use bb run --help to show this help output.
                     (update :expressions (fnil conj []) (first options))
                     (assoc :command-line-args (next options)))
                 (assoc opts-map
-                       (if (str/ends-with? opt ".jar")
-                         :jar
-                         :file) opt
+                       (if (fs/exists? opt)
+                         (if (str/ends-with? opt ".jar")
+                           :jar
+                           :file)
+                         :run) opt
                        :command-line-args (next options)))))))
       opts-map)))
 
@@ -721,6 +713,10 @@ Use bb run --help to show this help output.
         (recur (nnext options) (assoc opts-map :deps-root (second options)))
         ("--prn")
         (recur (next options) (assoc opts-map :prn true))
+        ("-f" "--file")
+        (recur (nnext options) (assoc opts-map :file (second options)))
+        ("-jar" "--jar")
+        (recur (nnext options) (assoc opts-map :file (second options)))
         [options opts-map])
       [options opts-map])))
 
@@ -1123,8 +1119,13 @@ Use bb run --help to show this help output.
 
 (defn main [& args]
   (let [[args global-opts] (parse-global-opts args)
-        {:keys [:jar :file] :as file-opt} (when (some-> args first io/file .isFile)
-                                            (parse-file-opt args global-opts))
+        ;; TODO: what if people pass `-f`, we shoud parse the options such that
+        ;; a remaining argument is parsed as :file-or-task and then check via
+        ;; bb.edn if it's a file or task.
+        ;; But one of the problems is that the bb.edn could be adjacent to the invoked file!
+        ;; This is not actually a problem, we should be able to parse ALL the options here
+        ;; So just parse-opts and that's it!
+        {:keys [:jar :file] :as opts} (parse-opts args global-opts)
         config (:config global-opts)
         merge-deps (:merge-deps global-opts)
         abs-path #(-> % io/file .getAbsolutePath)
@@ -1165,7 +1166,7 @@ Use bb run --help to show this help output.
         (binding [*out* *err*]
           (println (str "WARNING: this project requires babashka "
                         min-bb-version " or newer, but you have: " version)))))
-    (exec (parse-opts args (merge global-opts file-opt)))))
+    (exec (merge global-opts opts))))
 
 (def musl?
   "Captured at compile time, to know if we are running inside a
