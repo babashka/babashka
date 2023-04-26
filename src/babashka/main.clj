@@ -714,7 +714,7 @@ Use bb run --help to show this help output.
         ("-f" "--file")
         (recur (nnext options) (assoc opts-map :file (second options)))
         ("-jar" "--jar")
-        (recur (nnext options) (assoc opts-map :file (second options)))
+        (recur (nnext options) (assoc opts-map :jar (second options)))
         [options opts-map])
       [options opts-map])))
 
@@ -722,10 +722,11 @@ Use bb run --help to show this help output.
   [options opts-map]
   (let [opt (first options)]
     (if (and opt (fs/exists? opt))
-      (assoc opts-map
-             (if (str/ends-with? opt ".jar")
-               :jar :file) opt
-             :command-line-args (next options))
+      (let [opts (assoc opts-map
+                        (if (str/ends-with? opt ".jar")
+                          :jar :file) opt
+                        :command-line-args (next options))]
+        opts)
       (assoc opts-map :command-line-args options))))
 
 (defn parse-opts
@@ -1118,7 +1119,11 @@ Use bb run --help to show this help output.
 
 (defn main [& args]
   (let [[args opts] (parse-global-opts args)
-        {:keys [jar file config merge-deps] :as opts} (parse-file-opt args opts)
+        {:keys [jar file config merge-deps] :as opts}
+        (if-not (or (:file opts)
+                    (:jar opts))
+          (parse-file-opt args opts)
+          opts)
         abs-path #(-> % io/file .getAbsolutePath)
         config (cond
                  config (when (fs/exists? config) (abs-path config))
