@@ -142,6 +142,7 @@
   (println "
 Usage: bb [svm-opts] [global-opts] [eval opts] [cmdline args]
 or:    bb [svm-opts] [global-opts] file [cmdline args]
+or:    bb [svm-opts] [global-opts] task [cmdline args]
 or:    bb [svm-opts] [global-opts] subcommand [subcommand opts] [cmdline args]
 
 Substrate VM opts:
@@ -154,11 +155,13 @@ Global opts:
   -cp, --classpath  Classpath to use. Overrides bb.edn classpath.
   --debug           Print debug information and internal stacktrace in case of exception.
   --init <file>     Load file after any preloads and prior to evaluation/subcommands.
-  --config <file>   Replace bb.edn with file. Defaults to bb.edn adjacent to invoked file or bb.edn in current dir. Relative paths are resolved relative to file.
+  --config <file>   Replace bb.edn with file. Defaults to bb.edn adjacent to invoked file or bb.edn in current dir. Relative paths are resolved relative to bb.edn.
   --deps-root <dir> Treat dir as root of relative paths in config.
   --prn             Print result via clojure.core/prn
   -Sforce           Force recalculation of the classpath (don't use the cache)
   -Sdeps            Deps data to use as the last deps file to be merged
+  -f, --file <path> Run file
+  --jar <path>      Run uberjar
 
 Help:
 
@@ -170,7 +173,6 @@ Help:
 Evaluation:
 
   -e, --eval <expr>    Evaluate an expression.
-  -f, --file <path>    Evaluate a file.
   -m, --main <ns|var>  Call the -main function from a namespace or call a fully qualified var.
   -x, --exec <var>     Call the fully qualified var. Args are parsed by babashka CLI.
 
@@ -610,16 +612,6 @@ Use bb run --help to show this help output.
             (recur (next options)
                    (assoc opts-map
                           :uberjar (first options))))
-          ("-f" "--file")
-          (let [options (next options)]
-            (recur (next options)
-                   (assoc opts-map
-                          :file (first options))))
-          ("--jar" "-jar")
-          (let [options (next options)]
-            (recur (next options)
-                   (assoc opts-map
-                          :jar (first options))))
           ("--repl")
           (let [options (next options)]
             (recur (next options)
@@ -721,17 +713,23 @@ Use bb run --help to show this help output.
         (recur (nnext options) (assoc opts-map :deps-root (second options)))
         ("--prn")
         (recur (next options) (assoc opts-map :prn true))
+        ("-f" "--file")
+        (recur (nnext options) (assoc opts-map :file (second options)))
+        ("-jar" "--jar")
+        (recur (nnext options) (assoc opts-map :jar (second options)))
         [options opts-map])
       [options opts-map])))
 
 (defn parse-file-opt
   [options opts-map]
-  (let [opt (first options)
-        opts-key (if (str/ends-with? opt ".jar")
-                   :jar :file)]
-    (assoc opts-map
-           opts-key opt
-           :command-line-args (next options))))
+  (let [opt (first options)]
+    (if (and opt (fs/exists? opt))
+      (let [opts (assoc opts-map
+                        (if (str/ends-with? opt ".jar")
+                          :jar :file) opt
+                        :command-line-args (next options))]
+        opts)
+      (assoc opts-map :command-line-args options))))
 
 (defn parse-opts
   ([options] (parse-opts options nil))
@@ -1122,24 +1120,25 @@ Use bb run --help to show this help output.
                (throw e))))))
 
 (defn main [& args]
-  (let [[args global-opts] (parse-global-opts args)
-        {:keys [:jar :file] :as file-opt} (when (some-> args first io/file .isFile)
-                                            (parse-file-opt args global-opts))
-        config (:config global-opts)
-        merge-deps (:merge-deps global-opts)
+  (let [[args opts] (parse-global-opts args)
+        {:keys [jar file config merge-deps] :as opts}
+        (if-not (or (:file opts)
+                    (:jar opts))
+          (parse-file-opt args opts)
+          opts)
         abs-path #(-> % io/file .getAbsolutePath)
         config (cond
                  config (when (fs/exists? config) (abs-path config))
                  jar (some-> [jar] cp/new-loader (cp/resource "META-INF/bb.edn") .toString)
                  :else (if (and file (fs/exists? file))
-                              ;; file relative to bb.edn
+                         ;; file relative to bb.edn
                          (let [rel-bb-edn (fs/file (fs/parent file) "bb.edn")]
                            (if (fs/exists? rel-bb-edn)
                              (abs-path rel-bb-edn)
-                                  ;; fall back to local bb.edn
+                             ;; fall back to local bb.edn
                              (when (fs/exists? "bb.edn")
                                (abs-path "bb.edn"))))
-                              ;; default to local bb.edn
+                         ;; default to local bb.edn
                          (when (fs/exists? "bb.edn")
                            (abs-path "bb.edn"))))
         bb-edn (when (or config merge-deps)
@@ -1152,11 +1151,12 @@ Use bb run --help to show this help output.
                        edn (assoc edn
                                   :raw raw-string
                                   :file config)
-                       edn (if-let [deps-root (or (:deps-root global-opts)
+                       edn (if-let [deps-root (or (:deps-root opts)
                                                   (some-> config fs/parent))]
                              (assoc edn :deps-root deps-root)
                              edn)]
                    (vreset! common/bb-edn edn)))
+        opts (parse-opts args opts)
         ;; _ (.println System/err (str bb-edn))
         min-bb-version (:min-bb-version bb-edn)]
     (System/setProperty "java.class.path" "")
@@ -1165,7 +1165,7 @@ Use bb run --help to show this help output.
         (binding [*out* *err*]
           (println (str "WARNING: this project requires babashka "
                         min-bb-version " or newer, but you have: " version)))))
-    (exec (parse-opts args (merge global-opts file-opt)))))
+    (exec opts)))
 
 (def musl?
   "Captured at compile time, to know if we are running inside a

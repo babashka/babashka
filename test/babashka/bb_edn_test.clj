@@ -526,4 +526,5 @@ even more stuff here\"
           (is (= (fs/parent f) (fs/parent (first entries)))))))))
 
 (deftest adjacent-bb-edn-test
-  (is (= {1 {:id 1}} (bb "test-resources/adjacent_bb/medley.bb"))))
+  (is (= {1 {:id 1}} (bb "test-resources/adjacent_bb/medley.bb")))
+  (is (= {1 {:id 1}} (bb "-f" "test-resources/adjacent_bb/medley.bb"))))
