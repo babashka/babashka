@@ -58,7 +58,7 @@ $ ls | bb -i '(filter fs/directory? *input*)'
 bb took 4ms.
 ```
 
-## Support this project :heart:
+## Support :heart:
 
 You can support this project via [Github
 Sponsors](https://github.com/sponsors/borkdude),
@@ -69,6 +69,8 @@ Together](https://www.clojuriststogether.org/)
 ### Top sponsors
 
 <details>
+
+<summary>Top sponsors</summary>
 
 - [Clojurists Together](https://clojuriststogether.org/)
 - [Roam Research](https://roamresearch.com/)
