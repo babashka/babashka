@@ -104,7 +104,7 @@ and is unlikely to change. Changes may happen in other parts of babashka,
 although we will try our best to prevent them. Always check the release notes or
 [CHANGELOG.md](CHANGELOG.md) before upgrading.
 
-### Talk
+## Talk
 
 To get an overview of babashka, you can watch this talk ([slides](https://speakerdeck.com/borkdude/babashka-and-the-small-clojure-interpreter-at-clojured-2020)):
 
@@ -385,6 +385,10 @@ https://babashka.org[image:https://raw.githubusercontent.com/babashka/babashka/m
 ```
 </details>
 </br>
+
+## Swag
+
+- [t-shirt](https://www.etsy.com/listing/1241766068/babashka-clj-kondo-nbb-shirt)
 
 ## [Pods](https://github.com/babashka/babashka.pods)
 
