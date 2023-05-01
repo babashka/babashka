@@ -58,6 +58,28 @@ $ ls | bb -i '(filter fs/directory? *input*)'
 bb took 4ms.
 ```
 
+## Support :heart:
+
+You can support this project via [Github
+Sponsors](https://github.com/sponsors/borkdude),
+[OpenCollective](https://opencollective.com/babashka),
+[Ko-fi](https://ko-fi.com/borkdude) or indirectly via [Clojurists
+Together](https://www.clojuriststogether.org/).
+
+<details>
+
+<summary>Top sponsors</summary>
+
+- [Clojurists Together](https://clojuriststogether.org/)
+- [Roam Research](https://roamresearch.com/)
+- [Nextjournal](https://nextjournal.com/)
+- [Toyokumo](https://toyokumo.co.jp/)
+- [Cognitect](https://www.cognitect.com/)
+- [Kepler16](https://kepler16.com/)
+- [Adgoji](https://www.adgoji.com/)
+
+</details>
+
 ## Babashka users
 
 See [companies](doc/companies.md) for a list of companies using babashka.
@@ -513,47 +535,10 @@ commit](https://github.com/babashka/babashka/commit/02c7c51ad4b2b1ab9aa95c26a744
 
 Thanks to all the people that contributed to babashka:
 
-- [Adgoji](https://www.adgoji.com/) for financial support
 - [CircleCI](https://circleci.com/) for CI and additional support
 - [Nikita Prokopov](https://github.com/tonsky) for the logo
 - [Contributors](https://github.com/babashka/babashka/graphs/contributors) and
   other users posting issues with bug reports and ideas
-- [Github sponsors](https://github.com/sponsors/borkdude)
-- [OpenCollective sponsors](https://opencollective.com/babashka)
-- [Clojurists Together](https://www.clojuriststogether.org/)
-
-### Code Contributors
-
-This project exists thanks to all the people who contribute. [[Contribute](doc/dev.md)].
-<a href="https://github.com/babashka/babashka/graphs/contributors"><img src="https://opencollective.com/babashka/contributors.svg?width=890&button=false" /></a>
-
-### Financial Contributors
-
-#### Github Sponsors
-
-- [Dig Gashinsky](https://github.com/digash)
-
-#### OpenCollective
-Become a financial contributor and help us sustain our community. [[Contribute](https://opencollective.com/babashka/contribute)]
-
-##### Individuals
-
-<a href="https://opencollective.com/babashka"><img src="https://opencollective.com/babashka/individuals.svg?width=890"></a>
-
-##### Organizations
-
-Support this project with your organization. Your logo will show up here with a link to your website. [[Contribute](https://opencollective.com/babashka/contribute)]
-
-<a href="https://opencollective.com/babashka/organization/0/website"><img src="https://opencollective.com/babashka/organization/0/avatar.svg"></a>
-<a href="https://opencollective.com/babashka/organization/1/website"><img src="https://opencollective.com/babashka/organization/1/avatar.svg"></a>
-<a href="https://opencollective.com/babashka/organization/2/website"><img src="https://opencollective.com/babashka/organization/2/avatar.svg"></a>
-<a href="https://opencollective.com/babashka/organization/3/website"><img src="https://opencollective.com/babashka/organization/3/avatar.svg"></a>
-<a href="https://opencollective.com/babashka/organization/4/website"><img src="https://opencollective.com/babashka/organization/4/avatar.svg"></a>
-<a href="https://opencollective.com/babashka/organization/5/website"><img src="https://opencollective.com/babashka/organization/5/avatar.svg"></a>
-<a href="https://opencollective.com/babashka/organization/6/website"><img src="https://opencollective.com/babashka/organization/6/avatar.svg"></a>
-<a href="https://opencollective.com/babashka/organization/7/website"><img src="https://opencollective.com/babashka/organization/7/avatar.svg"></a>
-<a href="https://opencollective.com/babashka/organization/8/website"><img src="https://opencollective.com/babashka/organization/8/avatar.svg"></a>
-<a href="https://opencollective.com/babashka/organization/9/website"><img src="https://opencollective.com/babashka/organization/9/avatar.svg"></a>
 
 ## License
 
