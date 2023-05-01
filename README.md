@@ -64,9 +64,7 @@ You can support this project via [Github
 Sponsors](https://github.com/sponsors/borkdude),
 [OpenCollective](https://opencollective.com/babashka),
 [Ko-fi](https://ko-fi.com/borkdude) or indirectly via [Clojurists
-Together](https://www.clojuriststogether.org/)
-
-### Top sponsors
+Together](https://www.clojuriststogether.org/).
 
 <details>
 
