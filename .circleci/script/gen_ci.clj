@@ -217,8 +217,7 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                     "linux-aarch64-static"
                                     {:deploy {:filters  {:branches {:only "master"}}
                                               :requires ["jvm" "linux"]}}
-                                    {:docker {:filters  {:branches {:only "master"}}
-                                              :requires ["linux" "linux-static"]}}]}))))
+                                    {:docker {:requires ["linux" "linux-static" "linux-aarch64-static"]}}]}))))
 
 (def skip-config
   {:skip-if-only [#".*.md$"
