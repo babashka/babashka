@@ -8,7 +8,7 @@ A preview of the next release can be installed from
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
 [Babashka-conf](https://babashka.org/conf/) is happening June 10th in
-Berlin. Save the date and/or submit your babashka/clojure-related 20 minute talk
+Berlin. Save the date and/or submit your babashka/clojure-related talk or workshop
 in the CfP!
 
 ## 1.3.179 (2023-04-26)
