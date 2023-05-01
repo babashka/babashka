@@ -11,7 +11,7 @@ A preview of the next release can be installed from
 Berlin. Save the date and/or submit your babashka/clojure-related talk or workshop
 in the CfP!
 
-## Unrelased
+## Unreleased
 
 - [#1524](https://github.com/babashka/babashka/issues/1524): Remove dynamic builds for linux-aarch64 ([@lispyclouds](https://github.com/lispyclouds))
 
