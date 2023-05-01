@@ -84,7 +84,7 @@
   (doseq [platform (str/split platforms #",")]
     (let [tarball-platform (str/replace platform #"\/" "-")
           tarball-platform (if (= "linux-arm64" tarball-platform)
-                             "linux-aarch64"
+                             "linux-aarch64-static"
                              tarball-platform)
           tarball-path     (format "/tmp/release/babashka-%s-%s.tar.gz"
                                    image-tag
