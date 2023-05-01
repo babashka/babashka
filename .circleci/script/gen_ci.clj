@@ -203,14 +203,6 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                    :linux (unix shorted? false false "amd64" docker-executor-conf "large" linux-graalvm-home "linux")
                    :linux-static
                    (unix shorted? true true "amd64" docker-executor-conf "large" linux-graalvm-home "linux")
-                   :linux-aarch64 (unix shorted?
-                                        false
-                                        false
-                                        "aarch64"
-                                        machine-executor-conf
-                                        "arm.large"
-                                        linux-graalvm-home
-                                        "linux")
                    :linux-aarch64-static
                    (unix shorted? true false "aarch64" machine-executor-conf "arm.large" linux-graalvm-home "linux")
                    :mac (unix shorted? false false "amd64" mac-executor-conf "large" mac-graalvm-home "mac")
@@ -222,12 +214,11 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                     "linux"
                                     "linux-static"
                                     "mac"
-                                    "linux-aarch64"
                                     "linux-aarch64-static"
                                     {:deploy {:filters  {:branches {:only "master"}}
                                               :requires ["jvm" "linux"]}}
                                     {:docker {:filters  {:branches {:only "master"}}
-                                              :requires ["linux" "linux-static" "linux-aarch64"]}}]}))))
+                                              :requires ["linux" "linux-static"]}}]}))))
 
 (def skip-config
   {:skip-if-only [#".*.md$"
