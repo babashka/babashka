@@ -95,7 +95,8 @@
                              {#'deps/*aux-process-fn* (fn [{:keys [cmd out]}]
                                                         (apply process/shell {:out out
                                                                               :env env
-                                                                              :extra-env extra-env} cmd))
+                                                                              :extra-env extra-env
+                                                                              :dir (str deps-root)} cmd))
                               #'deps/*exit-fn* (fn [{:keys [message]}]
                                                  (when message
                                                    (throw (Exception. message))))}
