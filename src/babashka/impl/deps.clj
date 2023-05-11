@@ -3,6 +3,7 @@
             [babashka.fs :as fs]
             [babashka.impl.classpath :as cp]
             [babashka.impl.common :refer [bb-edn]]
+            [babashka.process :as process]
             [borkdude.deps :as deps]
             [clojure.string :as str]
             [sci.core :as sci]))
@@ -80,8 +81,8 @@
              (let [deps-map (assoc-in deps-map [:aliases :org.babashka/defaults]
                                       {:replace-paths [] ;; babashka sets paths manually
                                        :classpath-overrides (cond->
-                                                                '{org.clojure/clojure ""
-                                                                  org.clojure/spec.alpha ""}
+                                                             '{org.clojure/clojure ""
+                                                               org.clojure/spec.alpha ""}
                                                               ;; only remove core specs when they are not mentioned in deps map
                                                               (not (str/includes? (str deps-map) "org.clojure/core.specs.alpha"))
                                                               (assoc 'org.clojure/core.specs.alpha ""))})
@@ -91,12 +92,13 @@
                    args (if force (cons "-Sforce" args) args)
                    args (concat args [(str "-A:" (str/join ":" (cons ":org.babashka/defaults" aliases)))])
                    bindings (cond->
-                              {#'deps/*env* env
-                               #'deps/*extra-env* extra-env
-                               #'deps/*exit-fn* (fn
-                                                  ([_])
-                                                  ([_exit-code msg]
-                                                   (throw (Exception. msg))))}
+                             {#'deps/*aux-process-fn* (fn [{:keys [cmd out]}]
+                                                        (apply process/shell {:out out
+                                                                              :env env
+                                                                              :extra-env extra-env} cmd))
+                              #'deps/*exit-fn* (fn [{:keys [message]}]
+                                                 (when message
+                                                   (throw (Exception. message))))}
                               deps-root (assoc #'deps/*dir* (str deps-root)))
                    cp (with-out-str (with-bindings bindings
                                       (apply deps/-main args)))
