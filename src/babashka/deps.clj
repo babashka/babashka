@@ -39,7 +39,7 @@
               *err* @sci/err
               deps/*dir* (:dir opts)
               deps/*aux-process-fn* (fn [{:keys [cmd out]}]
-                                      (apply pp/shell (assoc opts :out out) cmd))
+                                      (pp/shell (assoc opts :out out :cmd cmd)))
               deps/*clojure-process-fn* (fn [{:keys [cmd]}]
                                   (pp/process* {:cmd cmd
                                                 :prev prev

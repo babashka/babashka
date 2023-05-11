@@ -93,10 +93,12 @@
                    args (concat args [(str "-A:" (str/join ":" (cons ":org.babashka/defaults" aliases)))])
                    bindings (cond->
                              {#'deps/*aux-process-fn* (fn [{:keys [cmd out]}]
-                                                        (apply process/shell {:out out
-                                                                              :env env
-                                                                              :dir (when deps-root (str deps-root))
-                                                                              :extra-env extra-env} cmd))
+                                                        (process/shell
+                                                         {:cmd cmd
+                                                          :out out
+                                                          :env env
+                                                          :dir (when deps-root (str deps-root))
+                                                          :extra-env extra-env}))
                               #'deps/*exit-fn* (fn [{:keys [message]}]
                                                  (when message
                                                    (throw (Exception. message))))}
