@@ -15,6 +15,9 @@
 (def has-domain-sockets?
   (resolve 'java.net.UnixDomainSocketAddress))
 
+(def has-graal-process-properties?
+  (resolve 'org.graalvm.nativeimage.ProcessProperties))
+
 (def base-custom-map
   `{clojure.lang.LineNumberingPushbackReader {:allPublicConstructors true
                                               :allPublicMethods true}
@@ -182,7 +185,11 @@
                             `java.util.ResourceBundle
                             {:methods [{:name "getBundle"
                                         :parameterTypes ["java.lang.String","java.util.Locale",
-                                                         "java.lang.ClassLoader"]}]})))
+                                                         "java.lang.ClassLoader"]}]})
+
+    has-graal-process-properties?
+    (assoc `org.graalvm.nativeimage.ProcessProperties
+           {:methods [{:name "exec"}]})))
 
 (def java-net-http-classes
   "These classes must be initialized at run time since GraalVM 22.1"
