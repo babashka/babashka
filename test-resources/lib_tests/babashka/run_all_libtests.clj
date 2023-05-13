@@ -93,13 +93,13 @@
   (test-doric-cyclic-dep-problem))
 
 ;;;; babashka.process
-;; test built-in babashka.process
-(test-namespaces 'babashka.process-test)
+(when-not (windows?)
+  ;; test built-in babashka.process
+  (test-namespaces 'babashka.process-test)
 
-;; test babashka.process from source
-#_{:clj-kondo/ignore [:duplicate-require]}
-(require '[babashka.process] :reload)
-(test-namespaces 'babashka.process-test)
+  ;; test babashka.process from source
+  (require '[babashka.process] :reload)
+  (test-namespaces 'babashka.process-test))
 
 ;;;; final exit code
 
