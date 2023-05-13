@@ -17,6 +17,7 @@
 (def selmer?         (not= "false" (System/getenv "BABASHKA_FEATURE_SELMER")))
 (def logging?        (not= "false" (System/getenv "BABASHKA_FEATURE_LOGGING")))
 (def priority-map?   (not= "false" (System/getenv "BABASHKA_FEATURE_PRIORITY_MAP")))
+(def graal?          (not= "false" (System/getenv "BABASHKA_FEATURE_GRAAL")))
 
 ;; excluded by default
 (def jdbc? (= "true" (System/getenv "BABASHKA_FEATURE_JDBC")))
