@@ -183,11 +183,9 @@
                             {:methods [{:name "getBundle"
                                         :parameterTypes ["java.lang.String","java.util.Locale",
                                                          "java.lang.ClassLoader"]}]})
-    features/graal? (assoc `org.graalvm.nativeimage.ProcessProperties
-                           {:methods [{:name "exec"
-                                       :parameterTypes ["java.nio.file.Path"
-                                                        "[Ljava.lang.String;"
-                                                        "java.util.Map"]}]})))
+    (resolve 'org.graalvm.nativeimage.ProcessProperties)
+    (assoc `org.graalvm.nativeimage.ProcessProperties
+           {:methods [{:name "exec"}]})))
 
 (def java-net-http-classes
   "These classes must be initialized at run time since GraalVM 22.1"
