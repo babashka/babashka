@@ -183,6 +183,18 @@ Upgrade:
 
     brew upgrade babashka
 
+### MacPorts
+
+On Mac OS, you may also use MacPorts to install babashka.
+
+Install:
+
+    sudo port install babashka
+
+Upgrade:
+
+    sudo port upgrade babashka
+
 ### Nix
 
 Linux and macOS (including ARM Macs) binaries are provided via nix (see the installation instructions for nix [here](https://nixos.org/download.html)).
