@@ -12,6 +12,10 @@
     <a href="https://github.com/laheadle">@laheadle</a> on Clojurians Slack
 </blockquote>
 
+[Babashka-conf](https://babashka.org/conf/) is happening June 10th in
+Berlin. Save the date and/or submit your babashka/clojure-related talk or workshop
+in the CfP!
+
 ## Introduction
 
 Babashka is a native Clojure interpreter for scripting with fast startup. Its
