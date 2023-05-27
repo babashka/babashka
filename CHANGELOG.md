@@ -16,7 +16,7 @@ in the CfP!
 - [#1524](https://github.com/babashka/babashka/issues/1524): Remove dynamic builds for linux-aarch64 ([@lispyclouds](https://github.com/lispyclouds))
 - [#1577](https://github.com/babashka/babashka/issues/1557): Add support for `babashka.process/exec` after namespace reload of `babashka.process` ([@lread](https://github.com/lread))
 - [#1548](https://github.com/babashka/babashka/issues/1548): shell and sh should respect `babashka.process/*defaults*`
-- #1524: deprecate (remove) linux-aarch64 dynamic binary build
+- [#1524](https://github.com/babashka/babashka/issues/1524): deprecate (remove) linux-aarch64 dynamic binary build
 - Expose `org.graalvm.nativeimage.ProcessProperties/exec`
 - Bump `babashka.http-client` to `0.3.11`
 - Bump `babashka.fs` to `0.4.19`
