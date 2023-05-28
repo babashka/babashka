@@ -21,7 +21,6 @@ in the CfP!
 - Bump `babashka.http-client` to `0.3.11`
 - Bump `babashka.fs` to `0.4.19`
 - Bump `babashka.process` to `0.5.21`
--->
 
 ## 1.3.179 (2023-04-26)
 
