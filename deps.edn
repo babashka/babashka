@@ -39,7 +39,7 @@
         org.postgresql/postgresql {:mvn/version "42.2.18"}
         org.hsqldb/hsqldb {:mvn/version "2.5.1"}
         datascript/datascript {:mvn/version "1.0.1"}
-        http-kit/http-kit {:mvn/version "2.6.0-RC1"}
+        http-kit/http-kit {:mvn/version "2.7.0-RC1"}
         babashka/clojure-lanterna {:mvn/version "0.9.8-SNAPSHOT"}
         org.clojure/core.match {:mvn/version "1.0.0"}
         hiccup/hiccup {:mvn/version "2.0.0-alpha2"}
