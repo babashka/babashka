@@ -20,7 +20,7 @@ Berlin. Only a few tickets left! See the [schedule](https://babashka.org/conf/sc
 
 Thanks to conference sponsors:
 
-<img src="https://pbs.twimg.com/media/Fw5h-0_XwA4DTIj?format=jpg&name=medium">
+<img src="https://pbs.twimg.com/media/Fw5h-0_XwA4DTIj?format=jpg&name=medium" width="100">
 
 - Babashka is going to the [Strange Loop](https://www.thestrangeloop.com/) conference!
 
