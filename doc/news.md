@@ -5,6 +5,40 @@ you have anything to add. Also see
 [#babashka](https://twitter.com/hashtag/babashka?src=hashtag_click&f=live) on
 Twitter.
 
+## 2023-05 ([Twitter](https://twitter.com/search?q=(%23babashka%20OR%20babashka)%20since%3A2023-05-01%20until%3A2023-06-01&src=typed_query&f=live), )
+
+### Releases
+
+1.3.178
+
+Mostly a boring maintenance release with lib upgrades!
+
+### Events
+
+- [Babashka-conf](https://babashka.org/conf/) is happening June 10th in
+Berlin. Only a few tickets left! See the [schedule](https://babashka.org/conf/schedule.html). Also you can buy a [conf t-shirt](https://www.etsy.com/listing/1475981599/babashka-conf-berlin-2023-t-shirt) now! See Nikita wearing it [here](https://twitter.com/nikitonsky/status/1658066530800742400)!
+
+Thanks to conference sponsors:
+
+<img src="https://pbs.twimg.com/media/Fw5h-0_XwA4DTIj?format=jpg&name=medium">
+
+- Babashka is going to the [Strange Loop](https://www.thestrangeloop.com/) conference!
+
+### Projects
+
+- [beep-boop](https://github.com/pesterhazy/beep-boop): Audible and visual feedback for test runs
+- [panas.example](https://github.com/keychera/panas.example): All htmx examples ported to babashka!
+- [utility-scripts](https://github.com/somecho/utility-scripts): A collection of helper scripts for Clojure, Java, Ledger and Taskwarrior. Written in Clojure
+- [bb-scripts](https://github.com/techconative/bb-scripts): Babashka scripts for common utilities
+
+### Articles
+
+- [Changing my mind: Converting a script from bash to Babashka](https://blog.agical.se/en/posts/changing-my-mind--converting-a-script-from-bash-to-babashka/)
+- [How to create a really simple ClojureCLR dependency tool](https://blog.agical.se/en/posts/how-to-create-a-really-simple-clojureclr-dependency-tool/) with babashka
+- [Making a resume with Node.js babashka (nbb)](https://yogthos.net/posts/2023-05-12-nbb-resume.html)
+
+### Videos
+
 ## 2023-04 ([Twitter](https://twitter.com/search?q=(%23babashka%20OR%20babashka)%20since%3A2023-04-01%20until%3A2023-05-01&src=typed_query&f=live), [Mastodon](https://mastodon.social/tags/babashka))
 
 [Babashka-conf](https://babashka.org/conf/) is happening June 10th in
