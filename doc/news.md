@@ -30,9 +30,11 @@ Thanks to conference sponsors:
 - [panas.example](https://github.com/keychera/panas.example): All htmx examples ported to babashka!
 - [utility-scripts](https://github.com/somecho/utility-scripts): A collection of helper scripts for Clojure, Java, Ledger and Taskwarrior. Written in Clojure
 - [bb-scripts](https://github.com/techconative/bb-scripts): Babashka scripts for common utilities
+- [Launching bb tasks from emacs](https://mastodon.social/@mykhaylo@fosstodon.org/110456087708592838)
 
 ### Articles
 
+- [Clojure in security: Docker](Clojure in Security: Docker): mentions babashka and clj-kondo
 - [Changing my mind: Converting a script from bash to Babashka](https://blog.agical.se/en/posts/changing-my-mind--converting-a-script-from-bash-to-babashka/)
 - [How to create a really simple ClojureCLR dependency tool](https://blog.agical.se/en/posts/how-to-create-a-really-simple-clojureclr-dependency-tool/) with babashka
 - [Making a resume with Node.js babashka (nbb)](https://yogthos.net/posts/2023-05-12-nbb-resume.html)
