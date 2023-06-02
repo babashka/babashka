@@ -37,8 +37,6 @@ Thanks to conference sponsors:
 - [How to create a really simple ClojureCLR dependency tool](https://blog.agical.se/en/posts/how-to-create-a-really-simple-clojureclr-dependency-tool/) with babashka
 - [Making a resume with Node.js babashka (nbb)](https://yogthos.net/posts/2023-05-12-nbb-resume.html)
 
-### Videos
-
 ## 2023-04 ([Twitter](https://twitter.com/search?q=(%23babashka%20OR%20babashka)%20since%3A2023-04-01%20until%3A2023-05-01&src=typed_query&f=live), [Mastodon](https://mastodon.social/tags/babashka))
 
 [Babashka-conf](https://babashka.org/conf/) is happening June 10th in
