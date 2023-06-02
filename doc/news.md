@@ -34,7 +34,7 @@ Thanks to conference sponsors:
 
 ### Articles
 
-- [Clojure in security: Docker](Clojure in Security: Docker): mentions babashka and clj-kondo
+- [Clojure in security: Docker](https://www.juxt.pro/blog/clojure-in-docker/): mentions babashka and clj-kondo
 - [Changing my mind: Converting a script from bash to Babashka](https://blog.agical.se/en/posts/changing-my-mind--converting-a-script-from-bash-to-babashka/)
 - [How to create a really simple ClojureCLR dependency tool](https://blog.agical.se/en/posts/how-to-create-a-really-simple-clojureclr-dependency-tool/) with babashka
 - [Making a resume with Node.js babashka (nbb)](https://yogthos.net/posts/2023-05-12-nbb-resume.html)
