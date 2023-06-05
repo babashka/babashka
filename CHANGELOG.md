@@ -761,7 +761,7 @@ Babashka.pods:
 - Add `babashka.task` `System` property [#837](https://github.com/babashka/babashka/issues/837)
 - Allow thread-first with `shell` like `babashka.process` [#829](https://github.com/babashka/babashka/issues/829)
 
-## 0.4.0
+## 0.4.0 (2021-05-08)
 
 Babashka proper:
 
@@ -771,7 +771,7 @@ Babashka proper:
   [jasentaa](https://github.com/rm-hull/jasentaa) parser combinator library
 - Update Selmer to 1.12.40
 
-Sci:
+SCI:
 
 - Better error msg for protocol not found or class
 
