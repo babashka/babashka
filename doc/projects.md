@@ -66,6 +66,7 @@ The following libraries and projects are known to work with babashka.
     - [Meander](#meander)
     - [Schema](#schema)
     - [Sluj](#sluj)
+    - [malli-cli](#malli-cli)
   - [Pods](#pods)
   - [Projects](#projects-1)
     - [babashka-test-action](#babashka-test-action)
@@ -832,6 +833,10 @@ Clojure(Script) library for declarative data description and validation
 ### [Sluj](https://github.com/rawleyfowler/sluj)
 
 Sluj is a very small library for converting strings of UTF-16 text to slugs. A slug is a piece of text that is URL safe.
+
+### [malli-cli](https://github.com/piotr-yuxuan/malli-cli)
+
+Configuration and CLI powertool with `metosin/malli`.
 
 ## Pods
 
