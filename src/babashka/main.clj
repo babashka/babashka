@@ -729,7 +729,7 @@ Use bb run --help to show this help output.
                           :jar :file) opt
                         :command-line-args (next options))]
         opts)
-      (assoc opts-map :command-line-args options))))
+      opts-map)))
 
 (defn parse-opts
   ([options] (parse-opts options nil))

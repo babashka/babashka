@@ -7,9 +7,9 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-[Babashka-conf](https://babashka.org/conf/) is happening June 10th in
-Berlin. Save the date and/or submit your babashka/clojure-related talk or workshop
-in the CfP!
+## Unreleased
+
+- #1575: fix command line parsing problem with `-e` + `*command-line-args*`
 
 ## 1.3.180 (2023-05-28)
 

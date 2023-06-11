@@ -64,8 +64,12 @@
   (is (= {:force? true :list-tasks true :command-line-args nil} (parse-opts ["--force" "tasks"])))
   (is (= {:force? true :run "sometask" :command-line-args nil} (parse-opts ["--force" "run" "sometask"])))
   (is (= {:force? true :repl true} (parse-opts ["--force" "repl"])))
-  (is (= {:force? true :clojure true :command-line-args '("-M" "-r")} 
-        (parse-opts ["--force" "clojure" "-M" "-r"]))))
+  (is (= {:force? true :clojure true :command-line-args '("-M" "-r")}
+         (parse-opts ["--force" "clojure" "-M" "-r"])))
+  (testing "file opts parsing does not mess with :command-line-args"
+    (is (= {:prn true, :expressions ["(prn :foo)"]}
+           (-> (let [opts (main/parse-file-opt ["-e" "(prn :foo)"] {})]
+                 (main/parse-opts ["-e" "(prn :foo)"] opts)))))))
 
 (deftest version-test
   (is (= [1 0 0] (main/parse-version "1.0.0-SNAPSHOT")))
@@ -202,31 +206,31 @@
 
 (deftest init-test
   (testing "init with a file"
-    (is (= "foo" (bb nil "--prn" "--init" "test-resources/babashka/init_test.clj" 
-                   "-f" "test-resources/babashka/init_caller.clj"))))
+    (is (= "foo" (bb nil "--prn" "--init" "test-resources/babashka/init_test.clj"
+                     "-f" "test-resources/babashka/init_caller.clj"))))
   (testing "init with eval(s)"
     (is (= "foo" (bb nil "--init" "test-resources/babashka/init_test.clj"
-                   "-e" "(init-test/do-a-thing)"))))
+                     "-e" "(init-test/do-a-thing)"))))
   (testing "init with main from init'ed ns"
     (is (= "Hello from init!" (bb nil "--prn" "--init" "test-resources/babashka/init_test.clj"
-                                "-m" "init-test"))))
+                                  "-m" "init-test"))))
   (testing "init with main from another namespace"
     (test-utils/with-config '{:paths ["test-resources/babashka/src_for_classpath_test"]}
       (is (= "foo" (bb nil "--prn" "--init" "test-resources/babashka/init_test.clj"
-                     "-m" "call-init-main")))))
+                       "-m" "call-init-main")))))
   (testing "init with a qualified function passed to --main"
     (test-utils/with-config '{:paths ["test-resources/babashka/src_for_classpath_test"]}
       (is (= "foobar" (bb nil "--prn" "--init" "test-resources/babashka/init_test.clj"
-                        "-m" "call-init-main/foobar")))))
+                          "-m" "call-init-main/foobar")))))
   (testing "init with a subcommand after it"
     (let [actual-output (test-utils/bb "(println (init-test/do-a-thing))"
-                          "--init" "test-resources/babashka/init_test.clj" "repl")]
+                                       "--init" "test-resources/babashka/init_test.clj" "repl")]
       (is (str/includes? actual-output "foo\n")))
-    (test-utils/with-config '{:tasks {thing (println (init-test/do-a-thing))}} ; make a task available 
+    (test-utils/with-config '{:tasks {thing (println (init-test/do-a-thing))}} ; make a task available
       (let [actual-output (test-utils/bb nil "--init" "test-resources/babashka/init_test.clj" "tasks")]
         (is (every? #(str/includes? actual-output %) ["following tasks are available" "thing"])))))
   (testing "init with a task name after it"
-    (test-utils/with-config '{:tasks {thing (println (init-test/do-a-thing))}} ; make a task available 
+    (test-utils/with-config '{:tasks {thing (println (init-test/do-a-thing))}} ; make a task available
       (is (= "foo\n" (test-utils/bb nil "--init" "test-resources/babashka/init_test.clj" "thing"))))))
 
 (deftest preloads-test
@@ -258,8 +262,8 @@
 (deftest ^:windows-only win-pipe-test
   (when (and test-utils/native? main/windows?)
     (let [out (:out (sh "cmd" "/c" ".\\bb -O \"(repeat 50 \\\"dude\\\")\" |"
-                         ".\\bb --stream \"(str *input* \\\"rino\\\")\" |"
-                         ".\\bb -I \"(take 3 *input*)\""))
+                        ".\\bb --stream \"(str *input* \\\"rino\\\")\" |"
+                        ".\\bb -I \"(take 3 *input*)\""))
           out (edn/read-string out)]
       (is (= '("duderino" "duderino" "duderino") out)))))
 
@@ -303,7 +307,7 @@
 
 (deftest create-temp-file-test
   (is (= true
-        (bb nil "(let [tfile (File/createTempFile \"ctf\" \"tmp\")]
+         (bb nil "(let [tfile (File/createTempFile \"ctf\" \"tmp\")]
                              (.deleteOnExit tfile) ; for cleanup
                              (.exists tfile))"))))
 
@@ -314,7 +318,7 @@
     (is (= :timed-out (bb nil "(wait/wait-for-port \"127.0.0.1\" 1777 {:default :timed-out :timeout 50})"))))
   (let [edn (bb nil (io/file "test" "babashka" "scripts" "socket_server.bb"))]
     (is (= "127.0.0.1" (:host edn)))
-    (is (=  1777 (:port edn)))
+    (is (= 1777 (:port edn)))
     (is (number? (:took edn)))))
 
 (deftest ^:skip-windows wait-for-path-test
@@ -365,7 +369,7 @@
 
 (deftest csv-test
   (is (= '(["Adult" "87727"] ["Elderly" "43914"] ["Child" "33411"] ["Adolescent" "29849"]
-           ["Infant" "15238"] ["Newborn" "10050"] ["In Utero" "1198"])
+                             ["Infant" "15238"] ["Newborn" "10050"] ["In Utero" "1198"])
          (bb nil "--prn" (.getPath (io/file "test" "babashka" "scripts" "csv.bb"))))))
 
 (deftest assert-test ;; assert was first implemented in bb but moved to sci later
@@ -389,14 +393,14 @@
 
 (deftest binding-test
   (is (= (if main/windows? 7 6)
-        (bb nil "(def w (java.io.StringWriter.))
+         (bb nil "(def w (java.io.StringWriter.))
                  (binding [clojure.core/*out* w]
                    (println \"hello\"))
                  (count (str w))"))))
 
 (deftest with-out-str-test
   (is (= (if main/windows? 7 6)
-        (bb nil "(count (with-out-str (println \"hello\")))"))))
+         (bb nil "(count (with-out-str (println \"hello\")))"))))
 
 (deftest with-in-str-test
   (is (= 5 (bb nil "(count (with-in-str \"hello\" (read-line)))"))))
@@ -432,7 +436,7 @@
 
 (deftest future-print-test
   (testing "the root binding of sci/*out*"
-    (is (= "hello"  (bb nil "@(future (prn \"hello\"))")))))
+    (is (= "hello" (bb nil "@(future (prn \"hello\"))")))))
 
 (deftest Math-test
   (is (== 8.0 (bb nil "(Math/pow 2 3)"))))
@@ -493,18 +497,18 @@
     (let [tmp-file (java.io.File/createTempFile "uberscript_overwrite" ".clj")]
       (.deleteOnExit tmp-file)
       (is (thrown-with-msg? Exception #"Overwrite prohibited."
-            (test-utils/bb nil "--uberscript" (test-utils/escape-file-paths (.getPath tmp-file)) "-e" "(println 123)"))))))
+                            (test-utils/bb nil "--uberscript" (test-utils/escape-file-paths (.getPath tmp-file)) "-e" "(println 123)"))))))
 
 (deftest throw-on-empty-classpath
   ;; this test fails the windows native test in CI
   (when-not main/windows?
     (testing "throw on empty classpath"
       (let [tmp-file (java.io.File/createTempFile "uber" ".jar")
-            path     (.getPath tmp-file)]
+            path (.getPath tmp-file)]
         (.deleteOnExit tmp-file)
         (is (thrown-with-msg?
-              Exception #"classpath"
-              (test-utils/bb nil "uberjar" path "-m" "my.main-main")))))))
+             Exception #"classpath"
+             (test-utils/bb nil "uberjar" path "-m" "my.main-main")))))))
 
 (deftest target-file-overwrite-test
   (test-utils/with-config {:paths ["test-resources/babashka/uberjar/src"]}
@@ -521,7 +525,7 @@
             path (.getPath tmp-file)]
         (.deleteOnExit tmp-file)
         (is (thrown-with-msg? Exception #"Overwrite prohibited."
-              (test-utils/bb nil "--uberjar" (test-utils/escape-file-paths path) "-m" "my.main-main")))))))
+                              (test-utils/bb nil "--uberjar" (test-utils/escape-file-paths path) "-m" "my.main-main")))))))
 
 (deftest unrestricted-access
   (testing "babashka is allowed to mess with built-in vars"
@@ -659,7 +663,7 @@
   (is (apply =
              (bb nil "--prn" (.getPath (io/file "test" "babashka" "scripts" "simple_file_var.bb")))))
   (let [res (bb nil "--prn" (.getPath (io/file "test" ".." "test" "babashka"
-                                       "scripts" "simple_file_var.bb")))]
+                                               "scripts" "simple_file_var.bb")))]
     (is (apply = res))
     (is (str/includes? (first res) ".."))))
 
@@ -780,8 +784,8 @@ true")))
 (deftest ^:windows-only win-process-handler-info-test
   (when (and test-utils/native? main/windows?)
     (is (str/ends-with?
-          (bb nil "-e" "(.get (.command (.info (java.lang.ProcessHandle/current))))")
-          "bb.exe"))))
+         (bb nil "-e" "(.get (.command (.info (java.lang.ProcessHandle/current))))")
+         "bb.exe"))))
 
 (deftest interop-concurrency-test
   (is (= ["true" 3] (last (bb nil "-e"
@@ -809,26 +813,26 @@ true")))
     (is (<= 8 (bb nil '(count (apropos "first")))))
     (is (= [1 2 3] (bb "[1 2 3]" "(pprint *input*)")))
     (let [first-doc (test-utils/bb nil "(doc first)")]
-        (is (every? #(str/includes? first-doc %) ["---" "clojure.core/first" "first item"])))))
+      (is (every? #(str/includes? first-doc %) ["---" "clojure.core/first" "first item"])))))
 
 (deftest edn-input-test
   (testing "clojure's default readers"
     (is (= '(#inst "2021-08-24T00:56:02.014-00:00")
-          (bb "#inst \"2021-08-24T00:56:02.014-00:00\"" "-I" "(println *input*)")))
+           (bb "#inst \"2021-08-24T00:56:02.014-00:00\"" "-I" "(println *input*)")))
     (is (= '(#uuid "00000000-0000-0000-0000-000000000000")
-          (bb "#uuid \"00000000-0000-0000-0000-000000000000\"" "-I" "(println *input*)"))))
+           (bb "#uuid \"00000000-0000-0000-0000-000000000000\"" "-I" "(println *input*)"))))
   (testing "use tagged-literal as default data reader fn..."
     (testing "when using the -I option"
       (is (= "(#made-up-tag 42)\n"
-            (test-utils/normalize (test-utils/bb "#made-up-tag 42" "-I" "(println *input*)"))))
+             (test-utils/normalize (test-utils/bb "#made-up-tag 42" "-I" "(println *input*)"))))
       (is (= "(#abc 123 #cde 789)\n"
-            (test-utils/normalize (test-utils/bb "{:a #abc 123}{:a #cde 789}" "-I" "(map :a *input*)")))))
+             (test-utils/normalize (test-utils/bb "{:a #abc 123}{:a #cde 789}" "-I" "(map :a *input*)")))))
     (testing "when using --stream and -I"
       (is (= "#abc 123\n#cde 789\n"
-            (test-utils/normalize (test-utils/bb "{:a #abc 123}{:a #cde 789}" "--stream" "-I" "-e" "(println (:a *input*))")))))
+             (test-utils/normalize (test-utils/bb "{:a #abc 123}{:a #cde 789}" "--stream" "-I" "-e" "(println (:a *input*))")))))
     (testing "when using --stream (-I is sort of implied if no -i)"
       (is (= "#abc 123\n#cde 789\n"
-            (test-utils/normalize (test-utils/bb "{:a #abc 123}{:a #cde 789}" "--stream" "-e" "(println (:a *input*))")))))
+             (test-utils/normalize (test-utils/bb "{:a #abc 123}{:a #cde 789}" "--stream" "-e" "(println (:a *input*))")))))
     (testing "when reading one EDN form from stdin (no --stream or -I or -i)"
       (is (= "#abc 123\n"
              (test-utils/normalize (test-utils/bb "{:a #abc 123}{:a #cde 789}" "-e" "(println (:a *input*))")))))))
@@ -880,7 +884,7 @@ true")))
   (is (= 1 (bb nil "(.indexOf (map inc [1 2 3]) 3)"))))
 
 (deftest get-watches-test
-  (is (true? (bb nil "(map? (.getWatches (doto (atom nil) (add-watch :foo (fn [k r o n])))))" ))))
+  (is (true? (bb nil "(map? (.getWatches (doto (atom nil) (add-watch :foo (fn [k r o n])))))"))))
 
 ;;;; Scratch
 
