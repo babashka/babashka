@@ -512,6 +512,8 @@
           java.util.function.BiFunction
           java.util.function.Predicate
           java.util.function.Supplier
+          java.util.zip.CheckedInputStream
+          java.util.zip.CRC32
           java.util.zip.Inflater
           java.util.zip.InflaterInputStream
           java.util.zip.Deflater
