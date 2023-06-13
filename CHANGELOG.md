@@ -7,9 +7,10 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## Unreleased
+## 1.3.181 (2023-06-13)
 
-- #1575: fix command line parsing problem with `-e` + `*command-line-args*`
+- [#1575](https://github.com/babashka/babashka/issues/1575): fix command line parsing problem with `-e` + `*command-line-args*`
+- [#1576](https://github.com/babashka/babashka/issues/1576): make downloading/unzipping of deps.clj tools .zip file more robust
 
 ## 1.3.180 (2023-05-28)
 
