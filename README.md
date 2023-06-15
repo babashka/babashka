@@ -154,7 +154,7 @@ File `pst.clj`:
 ```
 
 ``` shell
-$ pst.clj
+$ bb pst.clj
 05:17
 ```
 
