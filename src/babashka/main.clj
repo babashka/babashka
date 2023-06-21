@@ -1191,6 +1191,7 @@ Use bb run --help to show this help output.
   [& args]
   (handle-pipe!)
   (handle-sigint!)
+  (prn (.removeIf (java.util.ArrayList. [1 2 3]) even?))
   (if-let [dev-opts (System/getenv "BABASHKA_DEV")]
     (let [{:keys [:n]} (if (= "true" dev-opts) {:n 1}
                            (edn/read-string dev-opts))

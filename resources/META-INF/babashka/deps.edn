@@ -18,7 +18,7 @@
          "deps.clj/src" "deps.clj/resources"
          "resources" "sci/resources"
          "impl-java/src"],
- :deps {org.clojure/clojure {:mvn/version "1.11.1"},
+ :deps {org.clojure/clojure {:mvn/version "1.12.0-master-SNAPSHOT"},
         org.babashka/sci {:local/root "sci"}
         org.babashka/babashka.impl.java {:mvn/version "0.1.8"}
         org.babashka/sci.impl.types {:mvn/version "0.0.2"}
