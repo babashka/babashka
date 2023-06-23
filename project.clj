@@ -68,7 +68,7 @@
              :feature/core-match {:source-paths ["feature-core-match"]
                                   :dependencies [[org.clojure/core.match "1.0.0"]]}
              :feature/hiccup {:source-paths ["feature-hiccup"]
-                              :dependencies [[hiccup/hiccup "2.0.0-alpha2"]]}
+                              :dependencies [[hiccup/hiccup "2.0.0-RC1"]]}
              :feature/test-check {:source-paths ["feature-test-check"]}
              :feature/spec-alpha {:source-paths ["feature-spec-alpha"]}
              :feature/selmer {:source-paths ["feature-selmer"]
