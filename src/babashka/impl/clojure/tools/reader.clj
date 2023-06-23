@@ -3,7 +3,8 @@
   (:require
    [edamame.core :as e]
    [sci.core :as sci]
-   [clojure.tools.reader.reader-types :as rt]))
+   [sci.ctx-store :as ctx]
+   [sci.impl.parser :as p]))
 
 (def rns (sci/create-ns 'clojure.tools.reader))
 
@@ -53,4 +54,8 @@
          sentinel)
        v))))
 
-(def reader-namespace {'read (sci/copy-var read rns)})
+(defn resolve-symbol [sym]
+  (p/fully-qualify (ctx/get-ctx) sym))
+
+(def reader-namespace {'read (sci/copy-var read rns)
+                       'resolve-symbol (sci/copy-var resolve-symbol rns)})

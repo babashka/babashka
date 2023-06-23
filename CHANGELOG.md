@@ -7,6 +7,10 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## Unreleased
+
+- [#1579](https://github.com/babashka/babashka/issues/1579): add `clojure.tools.reader/resolve-symbol`
+
 ## 1.3.181 (2023-06-13)
 
 - [#1575](https://github.com/babashka/babashka/issues/1575): fix command line parsing problem with `-e` + `*command-line-args*`
