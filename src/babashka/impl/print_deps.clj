@@ -30,6 +30,7 @@
                      'org.hsqldb/hsqldb)
         bb-edn-deps (:deps @common/bb-edn)
         deps (merge deps bb-edn-deps)
+        deps (into (sorted-map) deps)
         paths (:paths @common/bb-edn)
         deps {:deps deps}
         deps (cond-> deps
