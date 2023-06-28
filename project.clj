@@ -23,7 +23,6 @@
   :jvm-opts ["--enable-preview"]
   :dependencies [[org.clojure/clojure "1.11.1"]
                  [borkdude/edamame "1.3.22"]
-                 [borkdude/rewrite-edn "0.4.6"]
                  [borkdude/graal.locking "0.0.2"]
                  [org.clojure/tools.cli "1.0.214"]
                  [cheshire "5.11.0"]
@@ -99,7 +98,8 @@
                     :feature/logging
                     :feature/priority-map
                     :feature/rrb-vector
-                    {:dependencies [[com.clojure-goes-fast/clj-async-profiler "0.5.0"]
+                    {:dependencies [[borkdude/rewrite-edn "0.4.6"]
+                                    [com.clojure-goes-fast/clj-async-profiler "0.5.0"]
                                     [com.opentable.components/otj-pg-embedded "0.13.3"]
                                     [nubank/matcher-combinators "3.6.0"]]}]
              :uberjar {:global-vars {*assert* false}
