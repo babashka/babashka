@@ -11,8 +11,8 @@
 
 (deftest print-deps-test
   (let [deps (bb nil "print-deps" "--format" "deps")]
-    (let [tmp-dir (fs/create-temp-dir)]
-      (testing "printed deps map can be read by Clojure"
+    (testing "printed deps map can be read by Clojure"
+      (let [tmp-dir (fs/create-temp-dir)]
         (spit (fs/file tmp-dir "deps.edn") deps)
         (let [cp (sci/with-out-str
                    (deps/clojure ["-Spath"] {:dir (str tmp-dir)}))]
