@@ -2,10 +2,12 @@
   (:require [babashka.deps :as deps]
             [babashka.fs :as fs]
             [babashka.test-utils :refer [bb]]
-            [clojure.edn :as edn]
+            [borkdude.rewrite-edn :as r]
             [clojure.string :as str]
             [clojure.test :refer [deftest is testing]]
+            [rewrite-clj.node :as n]
             [sci.core :as sci]))
+
 
 (deftest print-deps-test
   (let [deps (bb nil "print-deps" "--format" "deps")]
@@ -17,12 +19,11 @@
           (is (str/includes? cp "babashka.curl")))
         (fs/delete-tree tmp-dir)))
 
-    ;; The following test /does not work/ because `edn/read-string` scrambles
-    ;; the order of the keys of the map when it makes the map.
-    ;;
-    ;; I need a way to read map keys from a string that retains the order of the
-    ;; keys on disk.
-    #_
     (testing "keys in dep map are sorted"
-      (let [deps-data (edn/read-string deps)]
-        (is (sorted? (keys (:deps deps-data))))))))
+      (let [values-sorted? (fn [xs] (= xs (sort xs)))
+            deps-edn-str-deps-keys (fn [s]
+                                     (->> (r/get (r/parse-string s) :deps)
+                                          n/child-sexprs
+                                          (partition 2)
+                                          (map first)))]
+        (is (values-sorted? (deps-edn-str-deps-keys deps)))))))
