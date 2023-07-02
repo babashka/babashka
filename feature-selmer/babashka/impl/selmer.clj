@@ -105,7 +105,9 @@
 
 (def selmer-filters-namespace
   {'add-filter! (sci/copy-var filters/add-filter! sfns)
-   'remove-filter! (sci/copy-var filters/remove-filter! sfns)})
+   'remove-filter! (sci/copy-var filters/remove-filter! sfns)
+   'get-filter (sci/copy-var filters/get-filter sfns)
+   'filters (sci/copy-var filters/filters sfns)})
 
 (defn turn-off-escaping! []
   (sci/alter-var-root escape-variables (constantly false)))
