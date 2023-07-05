@@ -112,6 +112,19 @@
            ((method-or-bust methods 'write) this b))
           ([b off len]
            ((method-or-bust methods 'write) this b off len))))
+      ["javax.net.ssl.X509ExtendedTrustManager" #{}]
+      (proxy [javax.net.ssl.X509ExtendedTrustManager] []
+        (checkClientTrusted
+          ([x y]
+           ((method-or-bust methods 'checkClientTrusted) this x y))
+          ([x y z]
+           ((method-or-bust methods 'checkClientTrusted) this x y z)))
+        (checkServerTrusted
+          ([x y]
+           ((method-or-bust methods 'checkServerTrusted) this x y))
+          ([x y z]
+           ((method-or-bust methods 'checkServerTrusted) this x y z)))
+        (getAcceptedIssuers [] ((method-or-bust methods 'getAcceptedIssuers) this)))
       , ;; keep this for merge friendliness
       )))
 
