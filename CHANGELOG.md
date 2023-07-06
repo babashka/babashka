@@ -11,6 +11,7 @@ A preview of the next release can be installed from
 
 - [#1579](https://github.com/babashka/babashka/issues/1579): add `clojure.tools.reader/resolve-symbol`
 - [#1581](https://github.com/babashka/babashka/issues/1581): `bb print-deps`: sort dependencies
+- Upgrade `babashka.http-client` to `0.4.12`
 
 ## 1.3.181 (2023-06-13)
 
