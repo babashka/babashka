@@ -8,7 +8,8 @@
             [selmer.filters :as f]
             [selmer.parser :as p :refer [render render-file render-template
                                          parse parse-input known-variables
-                                         << resolve-var-from-kw env-map]]
+                                         << resolve-var-from-kw env-map
+                                         resolve-arg]]
             [selmer.tags :as tags]
             [clojure.set :as set])
   (:import (java.io StringReader ByteArrayInputStream)
@@ -1294,3 +1295,32 @@
 
   (is (= "false" (let [y false] (<< "{{y}}")))
       "<< picks up local values even if they are false"))
+
+(deftest resolve-arg-test
+  (is (= "John"
+         (resolve-arg "{{variable}}" {:variable "John"}))
+      "When arg is a variable, returns it substituted by its value.")
+  (is (= "Hello John!"
+         (resolve-arg "Hello {{variable}}!" {:variable "John"}))
+      "When arg contains a variable, return it with the variable substituted by its value.")
+  (is (= "JOHN"
+         (resolve-arg "{{variable|upper}}" {:variable "John"}))
+      "When arg is a filter, returns it where the filter was applied to its value.")
+  (is (= "Hello JOHN!"
+         (resolve-arg "Hello {{variable|upper}}!" {:variable "John"}))
+      "When arg contains a filter, returns it where the filter was applied to its value.")
+  (is (= "Mr John"
+         (resolve-arg "{% if variable = \"John\" %}Mr {{variable}}{% endif %}" {:variable "John"}))
+      "When arg is a tag, returns it where the tag was rendered to its value.")
+  (is (= "Hello Mr John!"
+         (resolve-arg "Hello {% if variable = \"John\" %}Mr {{variable}}{% endif %}!" {:variable "John"}))
+      "When arg contains a tag, returns it where the tag was rendered to its value.")
+  (is (= "Hello John!"
+         (resolve-arg "\"Hello John!\"" {}))
+      "When arg is a double quoted literal string, returns it without double quoting.")
+  (is (= "Hello John!"
+         (resolve-arg "Hello John!" {}))
+      "When arg is a literal string, returns it as is.")
+  (is (= "29.99"
+         (resolve-arg "29.99" {}))
+      "When arg is a literal number, returns it as is."))
