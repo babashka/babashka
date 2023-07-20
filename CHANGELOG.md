@@ -7,11 +7,17 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## Unreleased
+## 1.3.182 (2023-07-20)
 
 - [#1579](https://github.com/babashka/babashka/issues/1579): add `clojure.tools.reader/resolve-symbol`
-- [#1581](https://github.com/babashka/babashka/issues/1581): `bb print-deps`: sort dependencies
-- Upgrade `babashka.http-client` to `0.4.12`
+- [#1581](https://github.com/babashka/babashka/issues/1581): `bb print-deps`: sort dependencies ([@teodorlu](https://github.com/teodorlu))
+- Upgrade `babashka.http-client` to `0.4.12`, fixes `:insecure` option
+- Bump [edamame](https://github.com/borkdude/edamame) to `1.3.23`: fixes infinite loop with reader conditional expression
+- Bump [Selmer](https://github.com/yogthos/Selmer) to Bumping to `1.12.59`
+- Bump [deps.clj](https://github.com/borkdude/deps.clj) with more fixes which should make downloading/installation of tools jar more robust
+- Add `javax.net.ssl.X509ExtendedTrustManager` class
+- Bump [babashka.process](https://github.com/babashka/process): accept path or file as `:dir` argument
+- Bump [hiccup](https://github.com/weavejester/hiccup) to `2.0.0-RC1`
 
 ## 1.3.181 (2023-06-13)
 
