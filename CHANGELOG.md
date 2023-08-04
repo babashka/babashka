@@ -7,6 +7,10 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## Unreleased
+
+- [#1592](https://github.com/babashka/babashka/issues/1592): expose `sci.core` in babashka
+
 ## 1.3.182 (2023-07-20)
 
 - [#1579](https://github.com/babashka/babashka/issues/1579): add `clojure.tools.reader/resolve-symbol`
