@@ -45,6 +45,7 @@
    [babashka.impl.reify2 :refer [reify-fn]]
    [babashka.impl.repl :as repl]
    [babashka.impl.rewrite-clj :as rewrite]
+   [babashka.impl.sci :refer [sci-core-namespace]]
    [babashka.impl.server :refer [clojure-core-server-namespace]]
    [babashka.impl.socket-repl :as socket-repl]
    [babashka.impl.tasks :as tasks :refer [tasks-namespace]]
@@ -354,8 +355,6 @@ Use bb run --help to show this help output.
 (defn catvec [& xs]
   (into [] cat xs))
 
-(def sci-ns (sci/create-ns 'sci.core))
-
 (def main-var (sci/new-var 'main nil {:ns clojure-main-ns}))
 
 (def namespaces
@@ -418,13 +417,7 @@ Use bb run --help to show this help output.
                                {'catvec (sci/copy-var catvec
                                                       (sci/create-ns 'clojure.core.rrb-vector))})
     'edamame.core edamame-namespace
-    'sci.core {'format-stacktrace (sci/copy-var sci/format-stacktrace sci-ns)
-               'stacktrace (sci/copy-var sci/stacktrace sci-ns)
-                  ;; 'eval-string (sci/copy-var sci/eval-string sci-ns)
-                  ;; 'eval-string* (sci/copy-var sci/eval-string* sci-ns)
-                  ;; 'init (sci/copy-var sci/init sci-ns)
-                  ;; 'fork (sci/copy-var sci/fork sci-ns)
-               }
+    'sci.core sci-core-namespace
     'babashka.cli cli/cli-namespace
     'babashka.http-client http-client-namespace}
     features/xml? (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace)
