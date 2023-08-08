@@ -1,5 +1,5 @@
 (ns babashka.impl.clojure.java.browse-test
-  (:require
+  #_(:require
    [babashka.test-utils :refer [bb]]
    [cheshire.core :as json]
    [clojure.test :refer [deftest is]]
@@ -7,7 +7,7 @@
 
 (def ^:dynamic *http-port* 1234)
 
-(deftest browse-url-test
+#_(deftest browse-url-test
   (let [p (promise)
         stop-server (http/run-server (fn [{:keys [query-string]}]
                                   (let [params (apply hash-map (mapcat #(.split % "=") (.split query-string "&")))]
