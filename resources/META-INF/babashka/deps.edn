@@ -44,14 +44,14 @@
         org.clojure/core.match {:mvn/version "1.0.0"}
         hiccup/hiccup {:mvn/version "2.0.0-RC1"}
         rewrite-clj/rewrite-clj {:mvn/version "1.1.46"}
-        selmer/selmer {:mvn/version "1.12.50"}
+        selmer/selmer {:mvn/version "1.12.59"}
         com.taoensso/timbre {:mvn/version "6.0.1"}
         org.clojure/tools.logging {:mvn/version "1.1.0"}
         org.clojure/data.priority-map {:mvn/version "1.1.0"}
         insn/insn {:mvn/version "0.5.2"}
         org.clojure/core.rrb-vector {:mvn/version "0.1.2"}
         org.babashka/cli {:mvn/version "0.7.51"}
-        org.babashka/http-client {:mvn/version "0.3.11"}
+        org.babashka/http-client {:mvn/version "0.4.13"}
         ;; native image bloat with ordered 1.5.10
         org.flatland/ordered {:mvn/version "1.5.9"}}
  :aliases {:babashka/dev
@@ -67,7 +67,7 @@
            {:extra-paths ["process/src" "process/test" "test-resources/lib_tests"]
             :extra-deps {org.clj-commons/clj-http-lite {:mvn/version "0.4.392"}
                          #_#_org.babashka/spec.alpha {:git/url "https://github.com/babashka/spec.alpha"
-                                                  :sha "0dec1f88cbde74a0470b454396f09a03adb4ae39"}
+                                                      :sha "0dec1f88cbde74a0470b454396f09a03adb4ae39"}
                          lambdaisland/regal {:mvn/version "0.0.143"}
                          cprop/cprop {:mvn/version "0.1.16"}
                          comb/comb {:mvn/version "0.1.1"}
