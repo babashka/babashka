@@ -10,6 +10,7 @@ A preview of the next release can be installed from
 ## Unreleased
 
 - [#1592](https://github.com/babashka/babashka/issues/1592): expose `sci.core` in babashka
+- [#1596](https://github.com/babashka/babashka/issues/1596): Fix `clojure.java.browse/browse-url` truncates URLs with multiple query parameters on Windows
 
 ## 1.3.182 (2023-07-20)
 
