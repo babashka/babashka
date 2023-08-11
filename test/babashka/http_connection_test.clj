@@ -7,7 +7,7 @@
 (defn bb [& args]
   (apply tu/bb nil (map str args)))
 
-(deftest open-connection-test
+(deftest ^:flaky open-connection-test
   (is (try (= "\"1\"" (str/trim (bb "-e" "
 (require '[cheshire.core :as json])
 (let [conn ^java.net.HttpURLConnection (.openConnection (java.net.URL. \"https://postman-echo.com/get?foo=1\"))]
