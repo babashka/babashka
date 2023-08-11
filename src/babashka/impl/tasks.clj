@@ -6,7 +6,6 @@
    [babashka.impl.process :as pp]
    [babashka.process :as p]
    [clojure.core.async :refer [<!!]]
-   [clojure.java.io :as io]
    [clojure.string :as str]
    [rewrite-clj.node :as node]
    [rewrite-clj.parser :as parser]
@@ -30,7 +29,7 @@
   (let [log-level @log-level]
     (when
         ;; do not log when level is :error
-        (identical? :info log-level)
+     (identical? :info log-level)
       (binding [*out* *err*]
         (println (format "[bb %s]" (:name @task)) (str/join " " strs))))))
 
@@ -128,7 +127,7 @@
   "Used internally for debugging"
   [& strs]
   (locking o
-    (apply  prn strs)))
+    (apply prn strs)))
 
 (defn wait-tasks [deps]
   (if deps
@@ -386,7 +385,7 @@
         loc (zip/down loc)]
     (into []
           (comp
-           (take-nth 2 )
+           (take-nth 2)
            (take-while #(not (zip/end? %)))
            (filter zip/sexpr-able?)
            (map zip/sexpr)
@@ -426,8 +425,11 @@
   ([task] (run task nil))
   ([task {:keys [:parallel]
           :or {parallel (:parallel (current-task))}}]
-   (let [[[expr]] (assemble-task task parallel)]
-     (sci/eval-string* (ctx) expr))))
+   (let [[[expr] exit-code] (assemble-task task parallel)]
+     (if (or (nil? exit-code) (zero? exit-code))
+       (sci/eval-string* (ctx) expr)
+       (throw (ex-info nil
+                       {:babashka/exit exit-code}))))))
 
 (defn exec
   ([sym]
