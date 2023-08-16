@@ -13,6 +13,8 @@ A preview of the next release can be installed from
 - [#1596](https://github.com/babashka/babashka/issues/1596): Fix `clojure.java.browse/browse-url` truncates URLs with multiple query parameters on Windows
 - [#1599](https://github.com/babashka/babashka/issues/1599): propagate error from `run` when task does not exist
 - Bump clj-yaml to `1.0.27`
+- #1604: throw `FileNotFoundException` when requiring namespace whose file cannot be found (as JVM Clojure does)
+- Bump integrant CI tests
 
 ## 1.3.182 (2023-07-20)
 

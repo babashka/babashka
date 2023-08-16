@@ -94,7 +94,8 @@
  progrock/progrock {:git-url "https://github.com/weavejester/progrock", :test-namespaces (progrock.core-test), :git-sha "9c277a3244c52bfde19c21add327d6e20b94fdf5"}
  ;; Don't run portal.jvm-test as it depends on headless chrome
  djblue/portal {:git-url "https://github.com/djblue/portal", :test-namespaces (portal.test-runner portal.runtime.cson-test portal.runtime.fs-test portal.e2e portal.bench), :git-sha "64e4624bcf3bee2dd47e3d8e47982c709738eb11"}
- integrant/integrant {:git-url "https://github.com/weavejester/integrant", :test-namespaces (integrant.test.foo integrant.test.quz integrant.test.bar integrant.test.baz integrant.core-test), :git-sha "32a46f5dca8a6b563a6dddf88bec887be3201b08"}
+ integrant/integrant {:git-url "https://github.com/weavejester/integrant", :test-namespaces (integrant.test.foo integrant.test.quz integrant.test.bar integrant.test.baz integrant.core-test), :git-sha "a9fd7c02bd7201f36344b47142badc3c3ef22f88"
+                      :test-paths ["test"]}
  com.wsscode/cljc-misc {:git-url "https://github.com/wilkerlucio/cljc-misc", :test-namespaces (com.wsscode.misc.uuid-test com.wsscode.misc.macros-test com.wsscode.misc.math-test com.wsscode.misc.coll-test com.wsscode.misc.refs-test), :git-sha "dc8e31a200f9cacf86af10b63e40fcb448c259f4"}
  edn-query-language/eql {:git-url "https://github.com/edn-query-language/eql", :test-namespaces (edn-query-language.core-test), :git-sha "0d4f9745d98c3d20b81bb4bdce3e8e15db7fd094"}
  meta-merge/meta-merge {:git-url "https://github.com/weavejester/meta-merge", :test-namespaces (meta-merge.core-test), :git-sha "c968c38baccd4219fe0ba592d89af37ea8e426bf"}

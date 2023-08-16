@@ -109,7 +109,7 @@
                          exoscale/coax {:mvn/version "1.0.0-alpha14"}
                          orchestra/orchestra {:mvn/version "2021.01.01-1"}
                          expound/expound {:mvn/version "0.8.10"}
-                         integrant/integrant {:mvn/version "0.8.0"}
+                         integrant/integrant {:git/url "https://github.com/weavejester/integrant", :git/sha "a9fd7c02bd7201f36344b47142badc3c3ef22f88"}
                          com.stuartsierra/dependency {:mvn/version "1.0.0"}
                          listora/again {:mvn/version "1.0.0"}
                          org.clojure/tools.gitlibs {:mvn/version "2.4.172"}
