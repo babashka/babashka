@@ -18,7 +18,7 @@
   (is (= "hello from foo\n"
          (tu/bb nil "--prn" "--classpath" "test-resources/babashka/src_for_classpath_test/foo.jar"
                 "(require '[foo :as f]) (f/foo)")))
-  (is (thrown-with-msg? Exception #"not find"
+  (is (thrown-with-msg? Exception #"not locate"
          (tu/bb nil
                 "(require '[foo :as f])"))))
 

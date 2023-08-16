@@ -868,7 +868,7 @@ Use bb run --help to show this help output.
                          abs-path))
             _ (when jar
                 (cp/add-classpath jar))
-            load-fn (fn [{:keys [:namespace :reload]}]
+            load-fn (fn [{:keys [namespace reload ctx]}]
                       (let [loader @cp/the-url-loader]
                         (or
                          (when ;; ignore built-in namespaces when uberscripting, unless with :reload
@@ -912,7 +912,9 @@ Use bb run --help to show this help output.
                            clojure.core.specs.alpha
                            (binding [*out* *err*]
                              (println "[babashka] WARNING: clojure.core.specs.alpha is removed from the classpath, unless you explicitly add the dependency."))
-                           nil))))
+                           (when-not (sci/find-ns ctx namespace)
+                             (let [file (str/replace (namespace-munge namespace) "." "/")]
+                               (throw (new java.io.FileNotFoundException (format "Could not locate %s.bb, %s.clj or %s.cljc on classpath." file file file)))))))))
             main (if (and jar (not main))
                    (when-let [res (cp/getResource
                                    (cp/new-loader [jar])

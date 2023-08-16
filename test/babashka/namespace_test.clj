@@ -23,3 +23,9 @@
     {:containing-ns ns-ns-name
      :ns-on-var     var-ns-name
      :var-name      var-symbol}))")))))
+
+(deftest reload-existing-ns-test
+  (is (bb nil "(require '[clojure.java.io] :reload) true")))
+
+(deftest file-not-found-exception-non-existing-ns-test
+  (is (= :user/dude (bb nil "(try (require '[foo-dude.bar]) (catch java.io.FileNotFoundException _ ::dude))"))))
