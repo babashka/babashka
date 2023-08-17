@@ -170,7 +170,9 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                                      (str base-install-cmd "\nsudo -E script/setup-musl")
                                                      base-install-cmd)))
                                             (run "Download GraalVM" "script/install-graalvm")
-                                            (run "Build binary" "script/uberjar\nscript/compile" "30m")
+                                            (run "Build binary" (if (= "aarch64" arch)
+                                                                  "script/uberjar\nscript/compile -H:PageSize=64K"
+                                                                  "script/uberjar\nscript/compile") "30m")
                                             (run "Run tests" "script/test\nscript/run_lib_tests")
                                             (run "Release" ".circleci/script/release")
                                             {:persist_to_workspace {:root  "/tmp"
