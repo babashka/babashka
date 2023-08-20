@@ -17,6 +17,7 @@ A preview of the next release can be installed from
 - Bump integrant CI tests
 - [#1600](https://github.com/babashka/babashka/issues/1600): use pagesize of 64K on linux aarch64, so it works on Asahi linux
 - Expose `selmer.parser/resolve-arg`
+- #1610: expose `babashka.http-client.websocket` namespace
 
 ## 1.3.182 (2023-07-20)
 
