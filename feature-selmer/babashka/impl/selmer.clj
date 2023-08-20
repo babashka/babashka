@@ -4,6 +4,7 @@
             [babashka.impl.common :refer [ctx]]
             [sci.core :as sci]
             [selmer.filters :as filters]
+            [selmer.filter-parser :as fp]
             [selmer.parser]
             [selmer.tags :as tags]
             [selmer.util :as util]
@@ -83,12 +84,31 @@
         (apply merge)
         (selmer.parser/render ~s)))
 
+(defn resolve-arg
+  "Resolves an arg as passed to an add-tag! handler using the provided
+  context-map.
+
+  A custom tag handler will receive a seq of args as its first argument.
+  With this function, you can selectively resolve one or more of those args
+  so that if they contain literals, the literal value is returned, and if they
+  contain templates of any sort, which can itself have variables, filters or
+  tags in it, they will be returned resolved, applied and rendered.
+
+  Example:
+    (resolve-arg {{header-name|upper}} {:header-name \"My Page\"})
+    => \"MY PAGE\""
+  [arg context-map]
+  (if (fp/literal? arg)
+    (fp/parse-literal arg)
+    (render arg context-map)))
+
 (def selmer-parser-namespace
   (-> selmer-parser-ns
       (assoc 'render-file (sci/copy-var render-file spns)
              'render      (sci/copy-var render spns)
              'render-template (sci/copy-var render-template spns)
              'resolve-var-from-kw (sci/copy-var resolve-var-from-kw spns)
+             'resolve-arg (sci/copy-var resolve-arg spns )
              '<< (sci/copy-var << spns))))
 
 (def stns (sci/create-ns 'selmer.tags nil))
