@@ -8,7 +8,8 @@
    [borkdude.deps]
    [clojure.edn :as edn]
    [clojure.string :as str]
-   [clojure.test :as test :refer [deftest is testing]]))
+   [clojure.test :as test :refer [deftest is testing]]
+   [babashka.test-utils :as tu]))
 
 (defn bb [& args]
   (let [args (map str args)
@@ -531,3 +532,8 @@ even more stuff here\"
 
 (deftest non-existing-tasks-in-run-gives-exit-code-1
   (is (thrown? Exception (bb "-Sdeps" "{:tasks {foo {:task (run (quote bar))}}}" "foo"))))
+
+(deftest warning-on-override-task
+  (when-not tu/native?
+    (binding [*out* *err*]
+      (is (str/includes? (with-out-str (bb "-Sdeps" "{:tasks {run {:task 1}}}" "run")) "'run' override")))))
