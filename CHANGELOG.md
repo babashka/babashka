@@ -7,6 +7,10 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## 1.3.184 (2023-08-22)
+
+- Remove leftover debugging output from deps.clj
+
 ## 1.3.183 (2023-08-22)
 
 - [#1592](https://github.com/babashka/babashka/issues/1592): expose `sci.core` in babashka
