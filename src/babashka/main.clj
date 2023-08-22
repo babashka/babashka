@@ -56,6 +56,7 @@
    [babashka.wait :refer [wait-namespace]]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
+   [clojure.set :as set]
    [clojure.string :as str]
    [edamame.core :as edamame]
    [hf.depstar.uberjar :as uberjar]
@@ -729,7 +730,14 @@ Use bb run --help to show this help output.
   ([options] (parse-opts options nil))
   ([options opts-map]
    (let [opt (first options)
-         tasks (into #{} (map str) (keys (:tasks @common/bb-edn)))]
+         task-map (:tasks @common/bb-edn)
+         tasks (into #{} (map str) (keys task-map))]
+     (when-let [commands (seq (filter (fn [task]
+                                        (and (command? task)
+                                             (not (:override-builtin (get task-map (symbol task))))))
+                                      tasks))]
+       (binding [*out* *err*]
+         (println "[babashka] WARNING: task(s)" (str/join ", " (map #(format "'%s'" %) commands)) "override built-in command(s). Use :override-builtin true to disable warning.")))
      (if-not opt opts-map
              ;; FILE > TASK > SUBCOMMAND
              (cond
@@ -742,7 +750,6 @@ Use bb run --help to show this help output.
                (assoc opts-map
                       :run opt
                       :command-line-args (next options))
-
                (command? opt)
                (recur (cons (str "--" opt) (next options)) opts-map)
 

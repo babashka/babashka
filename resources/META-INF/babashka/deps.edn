@@ -31,7 +31,7 @@
         org.clojure/data.csv {:mvn/version "1.0.0"},
         cheshire/cheshire {:mvn/version "5.11.0"}
         org.clojure/data.xml {:mvn/version "0.2.0-alpha8"}
-        clj-commons/clj-yaml {:mvn/version "1.0.26"}
+        clj-commons/clj-yaml {:mvn/version "1.0.27"}
         com.cognitect/transit-clj {:mvn/version "1.0.333"}
         org.clojure/test.check {:mvn/version "1.1.1"}
         nrepl/bencode {:mvn/version "1.1.0"}
@@ -51,7 +51,7 @@
         insn/insn {:mvn/version "0.5.2"}
         org.clojure/core.rrb-vector {:mvn/version "0.1.2"}
         org.babashka/cli {:mvn/version "0.7.51"}
-        org.babashka/http-client {:mvn/version "0.4.13"}
+        org.babashka/http-client {:mvn/version "0.4.14"}
         ;; native image bloat with ordered 1.5.10
         org.flatland/ordered {:mvn/version "1.5.9"}}
  :aliases {:babashka/dev
@@ -109,7 +109,7 @@
                          exoscale/coax {:mvn/version "1.0.0-alpha14"}
                          orchestra/orchestra {:mvn/version "2021.01.01-1"}
                          expound/expound {:mvn/version "0.8.10"}
-                         integrant/integrant {:mvn/version "0.8.0"}
+                         integrant/integrant {:git/url "https://github.com/weavejester/integrant", :git/sha "a9fd7c02bd7201f36344b47142badc3c3ef22f88"}
                          com.stuartsierra/dependency {:mvn/version "1.0.0"}
                          listora/again {:mvn/version "1.0.0"}
                          org.clojure/tools.gitlibs {:mvn/version "2.4.172"}
