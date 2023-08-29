@@ -115,10 +115,10 @@ To get an overview of babashka, you can watch this talk ([slides](https://speake
 The [babashka book](https://book.babashka.org) contains detailed information
 about how to get the most out of babashka scripting.
 
-If you're a fan of [Clojure for the Brave and
-True](https://www.braveclojure.com/clojure-for-the-brave-and-true/), you might
-enjoy [Babashka Babooka](https://www.braveclojure.com/quests/babooka/), a book
-by the same author, Daniel Higginbotham!
+There is also the book [Babashka Babooka](https://www.braveclojure.com/quests/babooka/),
+by Daniel Higginbotham, who has also helped a lot of people learn Clojure with
+[Clojure for the Brave and
+True](https://www.braveclojure.com/clojure-for-the-brave-and-true/).
 
 ## Examples
 
