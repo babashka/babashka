@@ -208,7 +208,7 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                    (unix shorted? true true "amd64" docker-executor-conf "large" linux-graalvm-home "linux")
                    :linux-aarch64-static
                    (unix shorted? true false "aarch64" machine-executor-conf "arm.large" linux-graalvm-home "linux")
-                   :mac (unix shorted? false false "amd64" mac-executor-conf "large" mac-graalvm-home "mac")
+                   :mac (unix shorted? false false "amd64" mac-executor-conf "macos.x86.large.gen2" mac-graalvm-home "mac")
                    :deploy (deploy shorted?)
                    :docker (docker shorted?))
       :workflows (ordered-map
