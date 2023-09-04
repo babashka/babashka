@@ -7,6 +7,10 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## Unreleased
+
+- Bump babashka.http-client to v0.4.15
+
 ## 1.3.184 (2023-08-22)
 
 - Remove leftover debugging output from deps.clj
