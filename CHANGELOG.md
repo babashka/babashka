@@ -10,6 +10,7 @@ A preview of the next release can be installed from
 ## Unreleased
 
 - Bump babashka.http-client to v0.4.15
+- [#1619](https://github.com/babashka/babashka/issues/1619): Fix reflection issue with `Thread/sleep` in `core.async/timeout`
 
 ## 1.3.184 (2023-08-22)
 
