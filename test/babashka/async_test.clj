@@ -42,3 +42,11 @@
      [(async/go
         (async/<! (async/timeout 100))
         10)])))))")))))
+
+(deftest timeout-test
+  (is (nil? (edn/read-string (test-utils/bb nil "
+(first (async/<!!
+  (async/go
+    (async/alts!
+     [(async/go
+        (async/<! (async/timeout (int 100))))]))))")))))

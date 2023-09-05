@@ -6,6 +6,8 @@
             [sci.impl.copy-vars :refer [macrofy]]
             [sci.impl.vars :as vars]))
 
+(set! *warn-on-reflection* true)
+
 (def ^java.util.concurrent.Executor executor @#'async/thread-macro-executor)
 
 (def ^java.util.concurrent.Executor virtual-executor
@@ -72,7 +74,7 @@
   (if virtual-executor
     (let [chan (async/chan nil)]
       (.execute virtual-executor (fn []
-                                   (Thread/sleep ms)
+                                   (Thread/sleep (long ms))
                                    (async/close! chan)))
       chan)
     (async/timeout ms)))
