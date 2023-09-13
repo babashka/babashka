@@ -289,6 +289,7 @@
           java.io.Writer
           java.lang.Appendable
           java.lang.ArithmeticException
+          java.lang.AutoCloseable
           java.lang.AssertionError
           java.lang.Boolean
           java.lang.Byte
@@ -447,9 +448,12 @@
           java.util.concurrent.atomic.AtomicInteger
           java.util.concurrent.atomic.AtomicLong
           java.util.concurrent.atomic.AtomicReference
+          java.util.concurrent.locks.ReentrantLock
           java.util.concurrent.Callable
           java.util.concurrent.CancellationException
           java.util.concurrent.CompletionException
+          java.util.concurrent.CompletionStage
+          java.util.concurrent.CountDownLatch
           java.util.concurrent.ExecutionException
           java.util.concurrent.Executor
           java.util.concurrent.ExecutorService
@@ -466,11 +470,15 @@
           java.util.concurrent.ThreadPoolExecutor$DiscardPolicy
           java.util.concurrent.ExecutorService
           java.util.concurrent.ScheduledExecutorService
+          java.util.concurrent.ForkJoinPool
+          java.util.concurrent.ForkJoinPool$ForkJoinWorkerThreadFactory
+          java.util.concurrent.ForkJoinWorkerThread
           java.util.concurrent.Future
           java.util.concurrent.FutureTask
           java.util.concurrent.CompletableFuture
           java.util.concurrent.Executors
           java.util.concurrent.TimeUnit
+          java.util.concurrent.SynchronousQueue
           java.util.jar.Attributes
           java.util.jar.Attributes$Name
           java.util.jar.JarFile
@@ -777,6 +785,7 @@
     Thread java.lang.Thread
     Thread$UncaughtExceptionHandler java.lang.Thread$UncaughtExceptionHandler
     Throwable java.lang.Throwable
+    Runnable java.lang.Runnable
     VirtualMachineError java.lang.VirtualMachineError
     ThreadDeath java.lang.ThreadDeath
     UnsupportedOperationException java.lang.UnsupportedOperationException
