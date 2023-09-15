@@ -33,7 +33,7 @@
                  [org.clojure/core.async "1.6.673"]
                  [org.clojure/test.check "1.1.1"]
                  [com.github.clj-easy/graal-build-time "0.1.0"]
-                 [rewrite-clj/rewrite-clj "1.1.46"]
+                 [rewrite-clj/rewrite-clj "1.1.47"]
                  [insn/insn "0.5.2"]
                  [org.babashka/cli "0.7.51"]
                  [org.babashka/http-client "0.4.15"]]
