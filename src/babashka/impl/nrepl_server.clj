@@ -1,10 +1,17 @@
 (ns babashka.impl.nrepl-server
   {:no-doc true}
   (:require
+   [babashka.impl.classpath :as cp]
    [babashka.impl.clojure.core :as core-extras]
    [babashka.impl.common :as common]
+   [babashka.nrepl.impl.server :refer [process-msg]]
    [babashka.nrepl.server :as server]
    [sci.core :as sci]))
+
+(defmethod process-msg :classpath [rf result m]
+  (rf result {:response {"status" ["done"]
+                         "classpath" (cp/split-classpath (cp/get-classpath))}
+              :response-for (:msg m)}))
 
 (defn start-server!
   ([]
