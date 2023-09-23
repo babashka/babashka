@@ -28,7 +28,8 @@ if ! [ -d "$GRAALVM_DIR_NAME" ]; then
     echo "$DOWNLOAD_URL"
     curl -LO "$DOWNLOAD_URL"
     ls -la
-    tar xzvf "$GRAALVM_FILENAME" --one-top-level="$GRAALVM_DIR_NAME" --strip-components 1
+    mkdir "$GRAALVM_DIR_NAME"
+    tar xzvf "$GRAALVM_FILENAME" -C "$GRAALVM_DIR_NAME" --strip-components 1
     ls -la "$GRAALVM_DIR_NAME"
 fi
 
