@@ -80,7 +80,7 @@
       :working_directory "~/repo"
       :environment       {:LEIN_ROOT         "true"
                           :BABASHKA_PLATFORM "linux"
-                          :GRAALVM_VERSION   "22.3.1"
+                          :GRAALVM_VERSION   "21"
                           :GRAALVM_HOME      graalvm-home
                           :BABASHKA_TEST_ENV "jvm"}
       :resource_class    "large"
