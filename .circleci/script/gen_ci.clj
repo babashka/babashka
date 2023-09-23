@@ -190,8 +190,8 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
   (let [docker-executor-conf  {:docker [{:image "circleci/clojure:openjdk-11-lein-2.9.8-bullseye"}]}
         machine-executor-conf {:machine {:image "ubuntu-2004:202111-01"}}
         mac-executor-conf     {:macos {:xcode "14.0.0"}}
-        linux-graalvm-home    "/home/circleci/graalvm-ce-java19-22.3.1"
-        mac-graalvm-home      "/Users/distiller/graalvm-ce-java19-22.3.1/Contents/Home"]
+        linux-graalvm-home    "/home/circleci/graalvm"
+        mac-graalvm-home      "/Users/distiller/graalvm/Contents/Home"]
     (ordered-map
       :version   2.1
       :commands
