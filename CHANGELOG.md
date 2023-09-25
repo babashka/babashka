@@ -12,7 +12,8 @@ A preview of the next release can be installed from
 - Bump babashka.http-client to v0.4.15
 - Bump rewrite-clj to v0.1.1.47
 - [#1619](https://github.com/babashka/babashka/issues/1619): Fix reflection issue with `Thread/sleep` in `core.async/timeout`
-- [#1624](https://github.com/babashka/babashka/pull/1624): Use Oracle GraalVM 21
+- Support interop on `java.util.stream.IntStream`
+- [#1624](https://github.com/babashka/babashka/pull/1624): Use Oracle GraalVM 21 ([@lispyclouds](https://github.com/lispyclouds))
 
 ## 1.3.184 (2023-08-22)
 

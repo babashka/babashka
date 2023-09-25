@@ -41,3 +41,6 @@
 (def cert (x509-certificate (io/file \"test-resources/certificate.crt\")))
 (some? (.getSubjectX500Principal cert))
 "))))
+
+(deftest IntStream-test
+  (is (pos? (bb nil "(.count (.codePoints \"woof🐕\"))"))))
