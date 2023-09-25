@@ -481,6 +481,7 @@
           java.util.jar.Manifest
           java.util.stream.BaseStream
           java.util.stream.Stream
+          java.util.stream.IntStream
           java.util.Random
           java.util.regex.Matcher
           java.util.regex.Pattern
@@ -666,6 +667,8 @@
                          java.nio.file.FileSystem
                          (instance? java.nio.file.PathMatcher v)
                          java.nio.file.PathMatcher
+                         (instance? java.util.stream.IntStream v)
+                         java.util.stream.IntStream
                          (instance? java.util.stream.BaseStream v)
                          java.util.stream.BaseStream
                          (instance? java.nio.ByteBuffer v)
