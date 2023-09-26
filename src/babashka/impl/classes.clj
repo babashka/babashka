@@ -8,6 +8,8 @@
    [sci.core :as sci]
    [sci.impl.types :as t]))
 
+(set! *warn-on-reflection* true)
+
 (def has-of-virtual?
   (some #(= "ofVirtual" (.getName ^java.lang.reflect.Method %))
         (.getMethods Thread)))
@@ -177,8 +179,8 @@
 
 (def custom-map
   (cond->
-      (merge base-custom-map
-             proxy/custom-reflect-map)
+   (merge base-custom-map
+          proxy/custom-reflect-map)
     features/hsqldb? (assoc `org.hsqldb.dbinfo.DatabaseInformationFull
                             {:methods [{:name "<init>"
                                         :parameterTypes ["org.hsqldb.Database"]}]}
@@ -634,7 +636,15 @@
                         (:instance-checks classes))
         m (apply hash-map
                  (for [c classes
-                       c [(list 'quote c) c]]
+                       c [(list 'quote c) (cond-> `{:class ~c}
+                                            (= 'java.lang.Class c)
+                                            (assoc :static-methods
+                                                   {(list 'quote 'forName)
+                                                    `(fn
+                                                       ([_# ^String class-name#]
+                                                        (Class/forName class-name#))
+                                                       ([_# ^String class-name# initialize# ^java.lang.ClassLoader clazz-loader#]
+                                                        (Class/forName class-name#)))}))]]
                    c))
         m (assoc m :public-class
                  (fn [v]
@@ -715,7 +725,7 @@
                          (instance? java.security.cert.X509Certificate v)
                          java.security.cert.X509Certificate
                          ;; keep commas for merge friendliness
-                         ,,,)))
+                         )))
         m (assoc m (list 'quote 'clojure.lang.Var) 'sci.lang.Var)
         m (assoc m (list 'quote 'clojure.lang.Namespace) 'sci.lang.Namespace)]
     m))
@@ -725,6 +735,14 @@
   "This contains mapping of symbol to class of all classes that are
   allowed to be initialized at build time."
   (gen-class-map))
+
+#_(let [class-name (str c)]
+    (cond-> (Class/forName class-name)
+      (= "java.lang.Class" class-name)
+      (->> (hash-map :static-methods {'forName (fn [class-name]
+                                                 (prn :class-for)
+                                                 (Class/forName class-name))}
+                     :class))))
 
 (def class-map
   "A delay to delay initialization of java-net-http classes to run time, since GraalVM 22.1"
@@ -770,7 +788,7 @@
     Object java.lang.Object
     Runtime java.lang.Runtime
     RuntimeException java.lang.RuntimeException
-    Process        java.lang.Process
+    Process java.lang.Process
     ProcessBuilder java.lang.ProcessBuilder
     Short java.lang.Short
     StackTraceElement java.lang.StackTraceElement
@@ -782,8 +800,7 @@
     Throwable java.lang.Throwable
     VirtualMachineError java.lang.VirtualMachineError
     ThreadDeath java.lang.ThreadDeath
-    UnsupportedOperationException java.lang.UnsupportedOperationException
-    })
+    UnsupportedOperationException java.lang.UnsupportedOperationException})
 
 (defn reflection-file-entries []
   (let [entries (vec (for [c (sort (concat (:all classes)
@@ -825,13 +842,13 @@
            "resources/META-INF/native-image/babashka/babashka/reflect-config.json")
           (json/generate-string all-entries {:pretty true}))))
 
-(defn public-declared-method? [c m]
+(defn public-declared-method? [^Class c ^java.lang.reflect.Method m]
   (and (= c (.getDeclaringClass m))
        (not (.getAnnotation m Deprecated))))
 
-(defn public-declared-method-names [c]
+(defn public-declared-method-names [^Class c]
   (->> (.getMethods c)
-       (keep (fn [m]
+       (keep (fn [^java.lang.reflect.Method m]
                (when (public-declared-method? c m)
                  {:class c
                   :name (.getName m)})))
@@ -859,6 +876,4 @@
   (public-declared-method-names java.net.URL)
   (public-declared-method-names java.util.Properties)
 
-  (all-classes)
-
-  )
+  (all-classes))
