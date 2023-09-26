@@ -644,7 +644,19 @@
                                                        ([_# ^String class-name#]
                                                         (Class/forName class-name#))
                                                        ([_# ^String class-name# initialize# ^java.lang.ClassLoader clazz-loader#]
-                                                        (Class/forName class-name#)))}))]]
+                                                        (Class/forName class-name#)))})
+                                            (= 'java.lang.Thread c)
+                                            (assoc :static-methods
+                                                   {(list 'quote 'sleep)
+                                                    `(fn
+                                                       ([_# x#]
+                                                        (if (instance? Number x#)
+                                                          (let [x# (long x#)]
+                                                            (Thread/sleep x#))
+                                                          (let [^java.time.Duration x# x#]
+                                                            (Thread/sleep x#))))
+                                                       ([_# ^java.lang.Long millis# ^java.lang.Long nanos#]
+                                                        (Thread/sleep millis# nanos#)))}))]]
                    c))
         m (assoc m :public-class
                  (fn [v]
