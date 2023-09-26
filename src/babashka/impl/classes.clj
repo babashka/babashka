@@ -638,9 +638,13 @@
                  (for [c classes
                        c [(list 'quote c) (cond-> `{:class ~c}
                                             (= 'java.lang.Class c)
-                                            (assoc :static-methods {(list 'quote 'forName)
-                                                                    `(fn [class-name#]
-                                                                       (Class/forName class-name#))}))]]
+                                            (assoc :static-methods
+                                                   {(list 'quote 'forName)
+                                                    `(fn
+                                                       ([_# ^String class-name#]
+                                                        (Class/forName class-name#))
+                                                       ([_# ^String class-name# initialize# ^java.lang.ClassLoader clazz-loader#]
+                                                        (Class/forName class-name#)))}))]]
                    c))
         m (assoc m :public-class
                  (fn [v]
