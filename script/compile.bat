@@ -3,10 +3,6 @@
 Rem set GRAALVM_HOME=C:\Users\IEUser\Downloads\graalvm-ce-java8-19.3.1
 Rem set PATH=%PATH%;C:\Users\IEUser\bin
 
-echo "args"
-echo "%*"
-echo %*
-
 if "%GRAALVM_HOME%"=="" (
     echo Please set GRAALVM_HOME
     exit /b
