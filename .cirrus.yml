@@ -26,8 +26,6 @@ task:
 
     script/uberjar
     curl -sLO 'https://github.com/babashka/pgo-profiles/releases/download/2023.09.27/default.iprof'
-    ls -la default.iprof
-    chmod +r default.iprof
     script/compile --pgo=default.iprof
 
     # script/test
