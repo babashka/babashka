@@ -41,6 +41,8 @@ build_script:
 - cmd: >-
     powershell -Command "if (Test-Path('graalvm')) { return } else { (New-Object Net.WebClient).DownloadFile('https://download.oracle.com/graalvm/21/archive/graalvm-jdk-21_windows-x64_bin.zip', 'graalvm.zip') }"
 
+    powershell -Command "if (Test-Path('iprof.default')) { return } else { (New-Object Net.WebClient).DownloadFile('https://github.com/babashka/pgo-profiles/releases/download/2023.09.27/default.iprof', 'default.iprof') }"
+
     powershell -Command "if (Test-Path('graalvm')) { return } else { Expand-Archive graalvm.zip graalvm }"
 
 - cmd: >-
@@ -58,7 +60,7 @@ build_script:
 - cmd: >-
     call script/uberjar.bat
 
-    call script/compile.bat
+    call script/compile.bat --pgo=default.iprof
 
     echo Creating zip archive
 
