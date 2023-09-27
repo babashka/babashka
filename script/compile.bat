@@ -32,7 +32,8 @@ call %GRAALVM_HOME%\bin\native-image.cmd ^
   "--enable-preview" ^
   "--install-exit-handlers" ^
   "-O1" ^
-  "%BABASHKA_XMX%"
+  "%BABASHKA_XMX%" ^
+  %*
 
 if %errorlevel% neq 0 exit /b %errorlevel%
 
