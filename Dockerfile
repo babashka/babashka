@@ -16,7 +16,7 @@ RUN if [ "${TARGETARCH}" = "" ] || [ "${TARGETARCH}" = "amd64" ]; then \
       export GRAALVM_ARCH=aarch64; \
     fi && \
     echo "Installing GraalVM for ${GRAALVM_ARCH}" && \
-    curl -sLO https://download.oracle.com/graalvm/${GRAALVM_VERSION}/latest/graalvm-jdk-${GRAALVM_VERSION}_linux-${GRAALVM_ARCH}_bin.tar.gz
+    curl -sLO https://download.oracle.com/graalvm/${GRAALVM_VERSION}/archive/graalvm-jdk-${GRAALVM_VERSION}_linux-${GRAALVM_ARCH}_bin.tar.gz
     mkdir graalvm
     tar -xzf graalvm-jdk-${GRAALVM_VERSION}_linux-${GRAALVM_ARCH}_bin.tar.gz -C graalvm --strip-components 1
 
