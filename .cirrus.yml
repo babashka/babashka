@@ -26,6 +26,8 @@ task:
 
     script/uberjar
     curl -sLO https://www.dropbox.com/scl/fi/nkid0nr91bxpg9su9i6gi/default.iprof?rlkey=nxliwcarxcsksiwau2emazn2a&dl=0
+    ls -la default.iprof
+    chmod +r default.iprof
     script/compile --pgo=default.iprof
 
     # script/test
