@@ -14,6 +14,7 @@ A preview of the next release can be installed from
 - [#1619](https://github.com/babashka/babashka/issues/1619): Fix reflection issue with `Thread/sleep` in `core.async/timeout`
 - Support interop on `java.util.stream.IntStream`
 - [#1513](https://github.com/babashka/babashka/issues/1513): Fix interop on `Thread/sleep` with numbers that aren't already longs
+- [#1624](https://github.com/babashka/babashka/pull/1624): Use Oracle GraalVM 21 ([@lispyclouds](https://github.com/lispyclouds))
 
 ## 1.3.184 (2023-08-22)
 

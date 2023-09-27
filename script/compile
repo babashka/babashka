@@ -46,7 +46,8 @@ args=("-jar" "$BABASHKA_JAR"
       "--install-exit-handlers"
       # --trace-class-initialization=jdk.internal.net.http.common.DebugLogger,jdk.internal.net.http.websocket.WebSocketImpl,jdk.internal.net.http.common.Utils
       "$BABASHKA_XMX"
-      "--enable-preview")
+      "--enable-preview"
+      "-O1")
 
 BABASHKA_STATIC=${BABASHKA_STATIC:-}
 BABASHKA_MUSL=${BABASHKA_MUSL:-}
