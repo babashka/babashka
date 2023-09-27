@@ -25,7 +25,8 @@ task:
     java -version
 
     script/uberjar
-    script/compile
+    curl -sLO https://www.dropbox.com/scl/fi/nkid0nr91bxpg9su9i6gi/default.iprof?rlkey=nxliwcarxcsksiwau2emazn2a&dl=0
+    script/compile --pgo=default.iprof
 
     # script/test
     # script/run_lib_tests
