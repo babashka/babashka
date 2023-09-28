@@ -74,7 +74,7 @@
 (defn split-classpath
   "Returns the classpath as a seq of strings, split by the platform
   specific path separator."
-  ([^String cp] (vec (.split cp path-sep))))
+  ([^String cp] (vec (when cp (.split cp path-sep)))))
 
 (defn get-classpath
   "Returns the current classpath as set by --classpath, BABASHKA_CLASSPATH and add-classpath."

@@ -1,14 +1,16 @@
 (ns babashka.impl.nrepl-server-test
   (:require
+   [babashka.fs :as fs]
    [babashka.impl.nrepl-server :refer [start-server!]]
-   [babashka.nrepl.server :refer [parse-opt stop-server!]]
    [babashka.main :as main]
+   [babashka.nrepl.server :refer [parse-opt stop-server!]]
    [babashka.test-utils :as tu]
    [babashka.wait :as wait]
    [bencode.core :as bencode]
    [clojure.test :as t :refer [deftest is testing]]
    [sci.core :as sci]
-   [sci.ctx-store :as ctx-store])
+   [sci.ctx-store :as ctx-store]
+   [babashka.impl.classpath :as cp])
   (:import
    [java.lang ProcessBuilder$Redirect]))
 
@@ -31,6 +33,9 @@
               res)
         res (if-let [status (:sessions res)]
               (assoc res :sessions (mapv bytes->str status))
+              res)
+        res (if-let [cp (:classpath res)]
+              (assoc res :classpath (mapv bytes->str cp))
               res)]
     res))
 
@@ -189,7 +194,17 @@
         (bencode/write-bencode os {"op" "eval" "code" "(set! *unchecked-math* true)"
                                    "session" session "id" (new-id!)})
         (let [reply (read-reply in session @id)]
-          (is (= "true" (:value reply))))))))
+          (is (= "true" (:value reply)))))
+      (testing "classpath op"
+        (cp/add-classpath "src:test")
+        (bencode/write-bencode os {"op" "classpath"
+                                   "session" session "id" (new-id!)})
+        (let [reply (read-reply in session @id)
+              cp (:classpath reply)]
+          (is (every? string? cp))
+          (is (pos? (count cp)))
+          ;; dev-resources doesn't exist
+          (is (pos? (count (filter fs/exists? cp)))))))))
 
 (deftest ^:skip-windows nrepl-server-test
   (let [proc-state (atom nil)
@@ -221,5 +236,4 @@
 
 ;;;; Scratch
 
-(comment
-  )
+(comment)
