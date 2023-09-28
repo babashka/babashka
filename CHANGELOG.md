@@ -7,7 +7,7 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## Unreleased
+## 1.3.185 (2023-09-28)
 
 - Bump babashka.http-client to v0.4.15
 - Bump rewrite-clj to v0.1.1.47
@@ -18,6 +18,7 @@ A preview of the next release can be installed from
 - Use PGO to speed up loops (now 2-3x faster for `(time (loop [val 0 cnt 10000000] (if (pos? cnt) (recur (inc val) (dec cnt)) val)))`!)
 - Bump babashka.cli to 0.7.53
 - Fix [#babashka.nrepl/66](https://github.com/babashka/babashka.nrepl/issues/66)
+- Various nREPL server improvements (classpath op, file lookup information for `cider-find-var`)
 
 ## 1.3.184 (2023-08-22)
 
