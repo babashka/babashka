@@ -80,7 +80,7 @@
       :working_directory "~/repo"
       :environment       {:LEIN_ROOT         "true"
                           :BABASHKA_PLATFORM "linux"
-                          :GRAALVM_VERSION   "22.3.1"
+                          :GRAALVM_VERSION   "21"
                           :GRAALVM_HOME      graalvm-home
                           :BABASHKA_TEST_ENV "jvm"}
       :resource_class    "large"
@@ -120,7 +120,7 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
 (defn unix
   [shorted? static? musl? arch executor-conf resource-class graalvm-home platform]
   (let [env              {:LEIN_ROOT         "true"
-                          :GRAALVM_VERSION   "22.3.1"
+                          :GRAALVM_VERSION   "21"
                           :GRAALVM_HOME      graalvm-home
                           :BABASHKA_PLATFORM (if (= "mac" platform)
                                                "macos"
@@ -170,15 +170,16 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                                      (str base-install-cmd "\nsudo -E script/setup-musl")
                                                      base-install-cmd)))
                                             (run "Download GraalVM" "script/install-graalvm")
+                                            (run "Download iprof" "curl -sLO 'https://github.com/babashka/pgo-profiles/releases/download/2023.09.27/default.iprof'")
                                             (run "Build binary" (if (= "aarch64" arch)
-                                                                  "script/uberjar\nscript/compile -H:PageSize=64K"
-                                                                  "script/uberjar\nscript/compile") "30m")
+                                                                  "script/uberjar\nscript/compile -H:PageSize=64K --pgo=default.iprof"
+                                                                  "script/uberjar\nscript/compile --pgo=default.iprof") "30m")
                                             (run "Run tests" "script/test\nscript/run_lib_tests")
                                             (run "Release" ".circleci/script/release")
                                             {:persist_to_workspace {:root  "/tmp"
                                                                     :paths ["release"]}}
                                             {:save_cache
-                                             {:paths ["~/.m2" "~/graalvm-ce-java19-22.3.1"]
+                                             {:paths ["~/.m2" "~/graalvm"]
                                               :key   cache-key}}
                                             {:store_artifacts {:path        "/tmp/release"
                                                                :destination "release"}}
@@ -190,8 +191,8 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
   (let [docker-executor-conf  {:docker [{:image "circleci/clojure:openjdk-11-lein-2.9.8-bullseye"}]}
         machine-executor-conf {:machine {:image "ubuntu-2004:202111-01"}}
         mac-executor-conf     {:macos {:xcode "14.0.0"}}
-        linux-graalvm-home    "/home/circleci/graalvm-ce-java19-22.3.1"
-        mac-graalvm-home      "/Users/distiller/graalvm-ce-java19-22.3.1/Contents/Home"]
+        linux-graalvm-home    "/home/circleci/graalvm"
+        mac-graalvm-home      "/Users/distiller/graalvm/Contents/Home"]
     (ordered-map
       :version   2.1
       :commands

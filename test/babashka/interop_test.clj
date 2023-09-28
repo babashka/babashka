@@ -41,3 +41,12 @@
 (def cert (x509-certificate (io/file \"test-resources/certificate.crt\")))
 (some? (.getSubjectX500Principal cert))
 "))))
+
+(deftest IntStream-test
+  (is (pos? (bb nil "(.count (.codePoints \"woof🐕\"))"))))
+
+(deftest Thread-sleep-test
+  (is (bb nil "(Thread/sleep (/ 1 200))
+               (Thread/sleep (/ 1 200) (/ 1 200))
+               (Thread/sleep (java.time.Duration/ofMillis 1))
+               true")))

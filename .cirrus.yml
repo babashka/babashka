@@ -5,8 +5,8 @@ task:
   skip: "changesIncludeOnly('logo/*', '**.md')"
   env:
     LEIN_ROOT: "true"
-    GRAALVM_VERSION: "22.3.1"
-    GRAALVM_HOME: ${HOME}/graalvm-ce-java19-22.3.1/Contents/Home
+    GRAALVM_VERSION: "21"
+    GRAALVM_HOME: ${HOME}/graalvm/Contents/Home
     BABASHKA_PLATFORM: macos # used in release script
     BABASHKA_ARCH: aarch64
     BABASHKA_TEST_ENV: native
@@ -25,7 +25,8 @@ task:
     java -version
 
     script/uberjar
-    script/compile
+    curl -sLO 'https://github.com/babashka/pgo-profiles/releases/download/2023.09.27/default.iprof'
+    script/compile --pgo=default.iprof
 
     # script/test
     # script/run_lib_tests

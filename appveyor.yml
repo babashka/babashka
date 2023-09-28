@@ -2,13 +2,13 @@
 
 version: "v-{build}"
 
-image: Visual Studio 2019
+image: Visual Studio 2022
 
 clone_folder: C:\projects\babashka
 
 environment:
-  GRAALVM_HOME: C:\projects\babashka\graalvm\graalvm-ce-java19-22.3.1
-  JAVA_HOME: C:\projects\babashka\graalvm\graalvm-ce-java19-22.3.1
+  GRAALVM_HOME: C:\projects\babashka\graalvm\graalvm-jdk-21+35.1
+  JAVA_HOME: C:\projects\babashka\graalvm\graalvm-jdk-21+35.1
   BABASHKA_XMX: "-J-Xmx5g"
 
 skip_commits:
@@ -37,8 +37,11 @@ clone_script:
 - cmd: git submodule update --init --recursive
 
 build_script:
+# TODO: Extract the zip by removing the top level folder to remove the hardcoded path for GRAALVM_HOME
 - cmd: >-
-    powershell -Command "if (Test-Path('graalvm')) { return } else { (New-Object Net.WebClient).DownloadFile('https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-22.3.1/graalvm-ce-java19-windows-amd64-22.3.1.zip', 'graalvm.zip') }"
+    powershell -Command "if (Test-Path('graalvm')) { return } else { (New-Object Net.WebClient).DownloadFile('https://download.oracle.com/graalvm/21/archive/graalvm-jdk-21_windows-x64_bin.zip', 'graalvm.zip') }"
+
+    powershell -Command "if (Test-Path('iprof.default')) { return } else { (New-Object Net.WebClient).DownloadFile('https://github.com/babashka/pgo-profiles/releases/download/2023.09.27/default.iprof', 'default.iprof') }"
 
     powershell -Command "if (Test-Path('graalvm')) { return } else { Expand-Archive graalvm.zip graalvm }"
 
@@ -55,11 +58,9 @@ build_script:
 # see https://github.com/quarkusio/quarkus/pull/7663
 
 - cmd: >-
-    call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
-
     call script/uberjar.bat
 
-    call script/compile.bat
+    call script/compile.bat --pgo=default.iprof
 
     echo Creating zip archive
 
@@ -68,13 +69,13 @@ build_script:
     jar -cMf %zip% bb.exe
 
     bb --config .build/bb.edn --deps-root . release-artifact %zip%
-    
+
 before_test:
 - cmd: >-
     set BABASHKA_CLASSPATH=
 
     set BABASHKA_TEST_ENV=native
-    
+
 test_script:
 - cmd: >-
     call script/test.bat :windows
