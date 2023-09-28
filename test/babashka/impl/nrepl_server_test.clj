@@ -9,7 +9,8 @@
    [bencode.core :as bencode]
    [clojure.test :as t :refer [deftest is testing]]
    [sci.core :as sci]
-   [sci.ctx-store :as ctx-store])
+   [sci.ctx-store :as ctx-store]
+   [babashka.impl.classpath :as cp])
   (:import
    [java.lang ProcessBuilder$Redirect]))
 
@@ -195,6 +196,7 @@
         (let [reply (read-reply in session @id)]
           (is (= "true" (:value reply)))))
       (testing "classpath op"
+        (cp/add-classpath "src:test")
         (bencode/write-bencode os {"op" "classpath"
                                    "session" session "id" (new-id!)})
         (let [reply (read-reply in session @id)
