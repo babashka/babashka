@@ -196,7 +196,9 @@
         (let [reply (read-reply in session @id)]
           (is (= "true" (:value reply)))))
       (testing "classpath op"
-        (cp/add-classpath "src:test")
+        (bencode/write-bencode os {"op" "eval" "code" "(babashka.classpath/add-classpath \"test-resources/babashka/src_for_classpath_test\")"
+                                   "session" session "id" (new-id!)})
+        (read-reply in session @id)
         (bencode/write-bencode os {"op" "classpath"
                                    "session" session "id" (new-id!)})
         (let [reply (read-reply in session @id)
