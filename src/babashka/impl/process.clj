@@ -28,6 +28,10 @@
   (binding [process/*defaults* @defaults]
     (apply process/shell args)))
 
+(defn exec [& args]
+  (binding [process/*defaults* @defaults]
+    (apply process/exec args)))
+
 (def process-namespace
   {'parse-args  (copy-var process/parse-args tns)
    'process*    (copy-var process/process* tns)
@@ -42,6 +46,6 @@
    '*defaults*  defaults
    'destroy     (copy-var process/destroy tns)
    'destroy-tree (copy-var process/destroy-tree tns)
-   'exec (copy-var process/exec tns)
+   'exec (copy-var exec tns)
    'shell (copy-var shell tns)
    'alive? (copy-var process/alive? tns)})
