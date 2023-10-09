@@ -736,6 +736,8 @@
                          java.lang.Thread
                          (instance? java.security.cert.X509Certificate v)
                          java.security.cert.X509Certificate
+                         (instance? java.io.Console v)
+                         java.io.Console
                          ;; keep commas for merge friendliness
                          )))
         m (assoc m (list 'quote 'clojure.lang.Var) 'sci.lang.Var)
