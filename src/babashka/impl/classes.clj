@@ -394,6 +394,7 @@
                 java.nio.file.attribute.FileTime
                 java.nio.file.attribute.PosixFilePermission
                 java.nio.file.attribute.PosixFilePermissions])
+          java.security.spec.PKCS8EncodedKeySpec
           java.security.MessageDigest
           java.security.DigestInputStream
           java.security.Provider

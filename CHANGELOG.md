@@ -9,7 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-- Add `java.security.KeyFactory`
+- Add `java.security.KeyFactory`, `java.security.spec.PKCS8EncodedKeySpec`
 - Fix babashka.process/exec wrt `babashka.process/*defaults*`
 - #1632: Partial fix for `(.readPassword (System/console))`
 
