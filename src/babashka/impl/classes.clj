@@ -397,6 +397,7 @@
           java.security.MessageDigest
           java.security.DigestInputStream
           java.security.Provider
+          java.security.KeyFactory
           java.security.KeyStore
           java.security.SecureRandom
           java.security.Security

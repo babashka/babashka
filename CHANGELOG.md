@@ -7,6 +7,12 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## Unreleased
+
+- Add `java.security.KeyFactory`
+- Fix babashka.process/exec wrt `babashka.process/*defaults*`
+- #1632: Partial fix for `(.readPassword (System/console))`
+
 ## 1.3.185 (2023-09-28)
 
 - [#1624](https://github.com/babashka/babashka/pull/1624): Use Oracle GraalVM 21 ([@lispyclouds](https://github.com/lispyclouds))
