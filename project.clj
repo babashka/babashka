@@ -60,11 +60,9 @@
              :feature/datascript {:source-paths ["feature-datascript"]
                                   :dependencies [[datascript "1.3.10"]]}
              :feature/httpkit-client {:source-paths ["feature-httpkit-client"]
-                                      :dependencies [[http-kit "2.8.0-beta2"
-                                                      :exclusions [cider/cider-nrepl]]]}
+                                      :dependencies [[http-kit "2.8.0-beta3"]]}
              :feature/httpkit-server {:source-paths ["feature-httpkit-server"]
-                                      :dependencies [[http-kit "2.8.0-beta2"
-                                                      :exclusions [cider/cider-nrepl]]]}
+                                      :dependencies [[http-kit "2.8.0-beta3"]]}
              :feature/lanterna {:source-paths ["feature-lanterna"]
                                 :dependencies [[babashka/clojure-lanterna "0.9.8-SNAPSHOT"]]}
              :feature/core-match {:source-paths ["feature-core-match"]
