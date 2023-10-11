@@ -12,6 +12,8 @@ A preview of the next release can be installed from
 - Add `java.security.KeyFactory`, `java.security.spec.PKCS8EncodedKeySpec`
 - Fix babashka.process/exec wrt `babashka.process/*defaults*`
 - #1632: Partial fix for `(.readPassword (System/console))`
+- Enable producing self-contained binaries using [uberjars](https://github.com/babashka/babashka/wiki/Self-contained-executable#uberjar)
+- Bump httpkit to `2.8.0-beta3` (fixes GraalVM issue with virtual threads)
 
 ## 1.3.185 (2023-09-28)
 

@@ -170,10 +170,10 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                                      (str base-install-cmd "\nsudo -E script/setup-musl")
                                                      base-install-cmd)))
                                             (run "Download GraalVM" "script/install-graalvm")
-                                            (run "Download iprof" "curl -sLO 'https://github.com/babashka/pgo-profiles/releases/download/2023.09.27/default.iprof'")
+                                            #_(run "Download iprof" "curl -sLO 'https://github.com/babashka/pgo-profiles/releases/download/2023.10.11/default.iprof'")
                                             (run "Build binary" (if (= "aarch64" arch)
-                                                                  "script/uberjar\nscript/compile -H:PageSize=64K --pgo=default.iprof"
-                                                                  "script/uberjar\nscript/compile --pgo=default.iprof") "30m")
+                                                                  "script/uberjar\nscript/compile -H:PageSize=64K # --pgo=default.iprof"
+                                                                  "script/uberjar\nscript/compile # --pgo=default.iprof") "30m")
                                             (run "Run tests" "script/test\nscript/run_lib_tests")
                                             (run "Release" ".circleci/script/release")
                                             {:persist_to_workspace {:root  "/tmp"
