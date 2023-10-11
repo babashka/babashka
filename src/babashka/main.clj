@@ -1141,7 +1141,7 @@ Use bb run --help to show this help output.
 (defn main [& args]
   (let [bin-jar (binary-invoked-as-jar)
         args (if bin-jar
-               (list* "--jar" bin-jar args)
+               (list* "--jar" bin-jar "--" args)
                args)
         [args opts] (parse-global-opts args)
         {:keys [jar file config merge-deps] :as opts}
