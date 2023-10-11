@@ -56,7 +56,6 @@
    [babashka.wait :refer [wait-namespace]]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
-   [clojure.set :as set]
    [clojure.string :as str]
    [edamame.core :as edamame]
    [hf.depstar.uberjar :as uberjar]
@@ -1122,8 +1121,29 @@ Use bb run --help to show this help output.
                  (println "Error during loading bb.edn:"))
                (throw e))))))
 
+(defn binary-invoked-as-jar []
+  (and (= "executable" (System/getProperty "org.graalvm.nativeimage.kind"))
+       (let [bin (-> (java.lang.ProcessHandle/current)
+                     .info
+                     .command
+                     .get)
+             fn (fs/file-name bin)]
+         (if (= "bb" fn)
+           false
+           (if (and (fs/windows?)
+                    (= "bb.exe" fn))
+             false
+             (when (try (with-open [_ (java.util.zip.ZipFile. (fs/file bin))])
+                        true
+                        (catch Exception _ false))
+               bin))))))
+
 (defn main [& args]
-  (let [[args opts] (parse-global-opts args)
+  (let [bin-jar (binary-invoked-as-jar)
+        args (if bin-jar
+               (list* "--jar" bin-jar args)
+               args)
+        [args opts] (parse-global-opts args)
         {:keys [jar file config merge-deps] :as opts}
         (if-not (or (:file opts)
                     (:jar opts))
