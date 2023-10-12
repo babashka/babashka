@@ -91,4 +91,4 @@
       (tu/bb nil "--classpath" "test-resources/babashka/uberjar/src" "uberjar" path "-m" "my.main-main")
       (shell {:out bin-file} "cat" "./bb" path)
       (.setExecutable (io/file bin-file) true)
-      (is (str/includes? (:out (shell {:out :string} bin-file "1 2 3 4")) "1 2 3 4")))))
+      (is (str/includes? (:out (shell {:out :string} (str (io/file "." bin-file)) "1 2 3 4")) "1 2 3 4")))))
