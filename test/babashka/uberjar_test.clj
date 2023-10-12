@@ -2,8 +2,10 @@
   (:require
    [babashka.fs :as fs]
    [babashka.main :as main]
+   [babashka.process :refer [shell]]
    [babashka.test-utils :as tu]
    [clojure.edn :as edn]
+   [clojure.java.io :as io]
    [clojure.string :as str]
    [clojure.test :as t :refer [deftest is testing]])
   (:import (java.io File InputStreamReader PushbackReader)
@@ -24,13 +26,13 @@
     (let [tmp-file (java.io.File/createTempFile "uber" ".jar")
           path (.getPath tmp-file)]
       (.deleteOnExit tmp-file)
-      (tu/bb nil "--prn" "--classpath" "test-resources/babashka/uberjar/src" "uberjar" path "-m" "my.main-main")
+      (tu/bb nil "--classpath" "test-resources/babashka/uberjar/src" "uberjar" path "-m" "my.main-main")
       (is (= "(\"1\" \"2\" \"3\" \"4\")\n"
-             (tu/bb nil "--prn" "--jar" path "1" "2" "3" "4")))
+             (tu/bb nil "--jar" path "1" "2" "3" "4")))
       (is (= "(\"1\" \"2\" \"3\" \"4\")\n"
-             (tu/bb nil "--prn" "-jar" path "1" "2" "3" "4")))
+             (tu/bb nil "-jar" path "1" "2" "3" "4")))
       (is (= "(\"1\" \"2\" \"3\" \"4\")\n"
-             (tu/bb nil "--prn" path "1" "2" "3" "4")))))
+             (tu/bb nil path "1" "2" "3" "4")))))
   (testing "without main, a REPL starts"
     ;; NOTE: if we choose the same tmp-file as above and doing this all in the
     ;; same JVM process, the below test fails because my.main-main will be the
@@ -49,9 +51,9 @@
         ;; building with no --classpath
         (tu/bb nil "uberjar" path "-m" "my.main-main")
         ;; running
-        (is (= "(\"42\")\n" (tu/bb nil "--prn" "--jar" path "-m" "my.main-main" "42")))
-        (is (= "(\"42\")\n" (tu/bb nil "--prn" "--classpath" path "-m" "my.main-main" "42")))
-        (is (= "(\"42\")\n" (tu/bb nil "--prn" path "42"))))))
+        (is (= "(\"42\")\n" (tu/bb nil "--jar" path "-m" "my.main-main" "42")))
+        (is (= "(\"42\")\n" (tu/bb nil "--classpath" path "-m" "my.main-main" "42")))
+        (is (= "(\"42\")\n" (tu/bb nil path "42"))))))
   (testing "ignore empty entries on classpath"
     (let [tmp-file (java.io.File/createTempFile "uber" ".jar")
           path (.getPath tmp-file)
@@ -78,3 +80,15 @@
             (is (= #{:pods} (-> bb-edn keys set)))
             (is (= (:pods config) (:pods bb-edn))))
           (is (str/includes? (tu/bb nil "--prn" "--jar" path) "3")))))))
+
+(deftest uberjar-as-binary-test
+  (when tu/native?
+    (let [tmp-file (java.io.File/createTempFile "uber" ".jar")
+          path (.getPath tmp-file)
+          bin-file (if (fs/windows?) "my-binary.exe" "my-binary")]
+      (.deleteOnExit tmp-file)
+      (.deleteOnExit (io/file bin-file))
+      (tu/bb nil "--classpath" "test-resources/babashka/uberjar/src" "uberjar" path "-m" "my.main-main")
+      (shell {:out bin-file} "cat" "./bb" path)
+      (.setExecutable (io/file bin-file) true)
+      (is (str/includes? (:out (shell {:out :string} bin-file "1 2 3 4")) "1 2 3 4")))))
