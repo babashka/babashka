@@ -9,7 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-- Add `java.security.KeyFactory`, `java.security.spec.PKCS8EncodedKeySpec`
+- Add `java.security.KeyFactory`, `java.security.spec.PKCS8EncodedKeySpec`, `java.net.URISyntaxException`
 - Fix babashka.process/exec wrt `babashka.process/*defaults*`
 - #1632: Partial fix for `(.readPassword (System/console))`
 - Enable producing self-contained binaries using [uberjars](https://github.com/babashka/babashka/wiki/Self-contained-executable#uberjar)

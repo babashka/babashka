@@ -353,6 +353,7 @@
               '[java.net.UnixDomainSocketAddress])
           java.net.UnknownHostException
           java.net.URI
+          java.net.URISyntaxException
           ;; java.net.URL, see custom map
           java.net.URLConnection
           java.net.URLEncoder
