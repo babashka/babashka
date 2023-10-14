@@ -67,9 +67,11 @@
         (let [msg (read-reply in session @id)
               id (:id msg)
               versions (:versions msg)
-              babashka-version (bytes->str (get versions "babashka"))]
+              babashka-version (bytes->str (get versions "babashka"))
+              ops (:ops msg)]
           (is (= 1 id))
-          (is (= main/version babashka-version))))
+          (is (= main/version babashka-version))
+          (is (contains? ops "classpath"))))
       (testing "eval"
         (bencode/write-bencode os {"op" "eval" "code" "(+ 1 2 3)" "session" session "id" (new-id!)})
         (let [msg (read-reply in session @id)
