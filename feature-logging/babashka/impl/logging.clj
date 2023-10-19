@@ -129,6 +129,11 @@
          'println-appender (sci/copy-var println-appender tns)
          '-log-and-rethrow-errors (sci/copy-var -log-and-rethrow-errors tns)))
 
+(def timbre-appenders-namespace
+  (let [tan (sci/create-ns 'taoensso.timbre.appenders.core nil)]
+    {'println-appender (sci/copy-var println-appender tan)
+     'spit-appender (sci/copy-var #_:clj-kondo/ignore timbre/spit-appender tan)}))
+
 ;;;; clojure.tools.logging
 
 (defn- force-var "To support dynamic vars, etc."

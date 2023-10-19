@@ -473,6 +473,7 @@ Use bb run --help to show this help output.
                             'selmer.validator
                             @(resolve 'babashka.impl.selmer/selmer-validator-namespace))
     features/logging? (assoc 'taoensso.timbre @(resolve 'babashka.impl.logging/timbre-namespace)
+                             'taoensso.timbre.appenders.core @(resolve 'babashka.impl.logging/timbre-appenders-namespace)
                              'clojure.tools.logging
                              @(resolve 'babashka.impl.logging/tools-logging-namespace)
                              'clojure.tools.logging.impl
