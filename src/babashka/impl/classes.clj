@@ -227,6 +227,7 @@
     javax.crypto.SecretKey
     javax.crypto.SecretKeyFactory
     javax.crypto.spec.GCMParameterSpec
+    javax.crypto.spec.IvParameterSpec
     javax.crypto.spec.PBEKeySpec
     javax.crypto.spec.SecretKeySpec
     javax.net.ssl.HostnameVerifier ;; clj-http-lite
