@@ -15,15 +15,6 @@
 (defn locking* [form bindings v f & args]
   (apply @#'locking/locking form bindings v f args))
 
-(defn time*
-  "Evaluates expr and prints the time it took.  Returns the value of
-  expr."
-  [_ _ expr]
-  `(let [start# (. System (nanoTime))
-         ret# ~expr]
-     (prn (str "Elapsed time: " (/ (double (- (. System (nanoTime)) start#)) 1000000.0) " msecs"))
-     ret#))
-
 (defn core-dynamic-var
   ([sym] (core-dynamic-var sym nil))
   ([sym init-val] (sci/new-dynamic-var sym init-val {:ns clojure-core-ns})))
@@ -160,7 +151,6 @@
    'shutdown-agents (copy-core-var shutdown-agents)
    'slurp (copy-core-var slurp)
    'spit (copy-core-var spit)
-   'time (macrofy 'time time*)
    'Throwable->map (copy-core-var Throwable->map)
    'tap> (copy-core-var tap>)
    'add-tap (copy-core-var add-tap)
