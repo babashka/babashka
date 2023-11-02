@@ -159,3 +159,4 @@
 (def async-protocols-namespace
   {:obj async-protocols-ns
    'ReadPort (copy-var protocols/ReadPort async-protocols-ns)})
+;; trigger CI
