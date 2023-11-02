@@ -80,7 +80,7 @@
       :working_directory "~/repo"
       :environment       {:LEIN_ROOT         "true"
                           :BABASHKA_PLATFORM "linux"
-                          :GRAALVM_VERSION   "21"
+                          :GRAALVM_VERSION   "21.0.1"
                           :GRAALVM_HOME      graalvm-home
                           :BABASHKA_TEST_ENV "jvm"}
       :resource_class    "large"
@@ -120,7 +120,7 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
 (defn unix
   [shorted? static? musl? arch executor-conf resource-class graalvm-home platform]
   (let [env              {:LEIN_ROOT         "true"
-                          :GRAALVM_VERSION   "21"
+                          :GRAALVM_VERSION   "21.0.1"
                           :GRAALVM_HOME      graalvm-home
                           :BABASHKA_PLATFORM (if (= "mac" platform)
                                                "macos"
