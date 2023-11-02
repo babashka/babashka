@@ -7,7 +7,7 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## Unreleased
+## 1.3.186 (2023-11-02)
 
 - [Support self-contained binaries as uberjars!](https://github.com/babashka/babashka/wiki/Self-contained-executable#uberjar)
 - Add `java.security.KeyFactory`, `java.security.spec.PKCS8EncodedKeySpec`, `java.net.URISyntaxException`, `javax.crypto.spec.IvParameterSpec`
@@ -20,6 +20,7 @@ A preview of the next release can be installed from
 - nREPL: implement `ns-list` op
 - SCI: optimize `swap!`, `deref` and `reset!` for normal atoms (rather than user-created `IAtom`s)
 - Add test for [#1639](https://github.com/babashka/babashka/issues/1639)
+- Upgrade to GraalVM 21.0.1
 
 ## 1.3.185 (2023-09-28)
 
