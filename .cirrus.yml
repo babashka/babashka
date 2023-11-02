@@ -6,7 +6,7 @@ task:
   env:
     LEIN_ROOT: "true"
     GRAALVM_VERSION: "21.0.1"
-    GRAALVM_HOME: ${HOME}/graalvm/Contents/Home
+    GRAALVM_HOME: ${HOME}/graalvm-${GRAALVM_VERSION}/Contents/Home
     BABASHKA_PLATFORM: macos # used in release script
     BABASHKA_ARCH: aarch64
     BABASHKA_TEST_ENV: native
