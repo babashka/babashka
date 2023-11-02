@@ -4,7 +4,7 @@ set -euo pipefail
 
 INSTALL_DIR="${1:-$HOME}"
 
-GRAALVM_VERSION="${GRAALVM_VERSION:-21}"
+GRAALVM_VERSION="${GRAALVM_VERSION:-21.0.1}"
 
 GRAALVM_PLATFORM=$BABASHKA_PLATFORM
 
@@ -17,9 +17,9 @@ case "${BABASHKA_ARCH:-}" in
         ;;
 esac
 
-GRAALVM_DIR_NAME="graalvm"
+GRAALVM_DIR_NAME="graalvm-$GRAALVM_VERSION"
 GRAALVM_FILENAME="graalvm-jdk-${GRAALVM_VERSION}_${GRAALVM_PLATFORM}-${GRAALVM_ARCH}_bin.tar.gz"
-DOWNLOAD_URL="https://download.oracle.com/graalvm/${GRAALVM_VERSION}/archive/${GRAALVM_FILENAME}"
+DOWNLOAD_URL="https://download.oracle.com/graalvm/21/archive/${GRAALVM_FILENAME}"
 
 pushd "$INSTALL_DIR" >/dev/null
 

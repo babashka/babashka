@@ -5,7 +5,7 @@ RUN apt update
 RUN apt install --no-install-recommends -yy build-essential zlib1g-dev
 WORKDIR "/opt"
 
-ENV GRAALVM_VERSION="21"
+ENV GRAALVM_VERSION="21.0.1"
 ARG TARGETARCH
 # Do not set those directly, use TARGETARCH instead
 ENV BABASHKA_ARCH=
@@ -16,13 +16,13 @@ RUN if [ "${TARGETARCH}" = "" ] || [ "${TARGETARCH}" = "amd64" ]; then \
       export GRAALVM_ARCH=aarch64; \
     fi && \
     echo "Installing GraalVM for ${GRAALVM_ARCH}" && \
-    curl -sLO https://download.oracle.com/graalvm/${GRAALVM_VERSION}/archive/graalvm-jdk-${GRAALVM_VERSION}_linux-${GRAALVM_ARCH}_bin.tar.gz
-    mkdir graalvm
+    curl -sLO https://download.oracle.com/graalvm/21/archive/graalvm-jdk-${GRAALVM_VERSION}_linux-${GRAALVM_ARCH}_bin.tar.gz
+    mkdir "graalvm-$GRAALVM_VERSION"
     tar -xzf graalvm-jdk-${GRAALVM_VERSION}_linux-${GRAALVM_ARCH}_bin.tar.gz -C graalvm --strip-components 1
 
 ARG BABASHKA_XMX="-J-Xmx4500m"
 
-ENV GRAALVM_HOME="/opt/graalvm"
+ENV GRAALVM_HOME="/opt/graalvm-$GRAALVM_VERSION"
 ENV JAVA_HOME="$GRAALVM_HOME/bin"
 ENV PATH="$JAVA_HOME:$PATH"
 ENV BABASHKA_XMX=$BABASHKA_XMX
