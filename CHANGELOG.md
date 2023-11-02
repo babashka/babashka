@@ -12,13 +12,14 @@ A preview of the next release can be installed from
 - [Support self-contained binaries as uberjars!](https://github.com/babashka/babashka/wiki/Self-contained-executable#uberjar)
 - Add `java.security.KeyFactory`, `java.security.spec.PKCS8EncodedKeySpec`, `java.net.URISyntaxException`
 - Fix babashka.process/exec wrt `babashka.process/*defaults*`
-- #1632: Partial fix for `(.readPassword (System/console))`
+- [#1632](https://github.com/babashka/babashka/issues/1632): Partial fix for `(.readPassword (System/console))`
 - Enable producing self-contained binaries using [uberjars](https://github.com/babashka/babashka/wiki/Self-contained-executable#uberjar)
 - Bump httpkit to `2.8.0-beta3` (fixes GraalVM issue with virtual threads)
 - Bump `deps.clj` and `fs`
 - Expose `taoensso.timbre.appenders.core`
 - nREPL: implement `ns-list` op
 - SCI: optimize `swap!`, `deref` and `reset!` for normal atoms (rather than user-created `IAtom`s)
+- Add test for [#1639](https://github.com/babashka/babashka/issues/1639)
 
 ## 1.3.185 (2023-09-28)
 
