@@ -805,6 +805,7 @@
     Number java.lang.Number
     NumberFormatException java.lang.NumberFormatException
     Object java.lang.Object
+    Runnable java.lang.Runnable
     Runtime java.lang.Runtime
     RuntimeException java.lang.RuntimeException
     Process java.lang.Process
