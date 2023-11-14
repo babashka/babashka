@@ -10,6 +10,8 @@ A preview of the next release can be installed from
 ## Unreleased
 
 - Add `java.util.ScheduledFuture`
+- Support `Runnable` to be used without import
+- Allow `catch` to be used as var name
 
 ## 1.3.186 (2023-11-02)
 
