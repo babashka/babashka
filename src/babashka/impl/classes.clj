@@ -401,6 +401,7 @@
           java.security.DigestInputStream
           java.security.Provider
           java.security.KeyFactory
+          java.security.KeyPairGenerator
           java.security.KeyStore
           java.security.SecureRandom
           java.security.Security
