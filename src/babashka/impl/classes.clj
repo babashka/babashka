@@ -91,7 +91,8 @@
     java.util.Arrays
     {:methods [{:name "copyOf"}
                {:name "copyOfRange"}
-               {:name "equals"}]}
+               {:name "equals"}
+               {:name "fill"}]}
     ;; this fixes clojure.lang.Reflector for Java 11
     java.lang.reflect.AccessibleObject
     {:methods [{:name "canAccess"}]}
