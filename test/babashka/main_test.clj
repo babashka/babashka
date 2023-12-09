@@ -886,6 +886,14 @@ true")))
 (deftest get-watches-test
   (is (true? (bb nil "(map? (.getWatches (doto (atom nil) (add-watch :foo (fn [k r o n])))))"))))
 
+(deftest tools-reader-test
+  (is (= :user/foo (bb nil "(require '[clojure.tools.reader :as r]) (r/read-string \"::foo\")")))
+  (is (= :clojure.tools.reader/foo (bb nil "(require '[clojure.tools.reader :as r]) (r/read-string \"::r/foo\")")))
+  (is (= [1 2 3] (bb nil "
+(require '[clojure.tools.reader :as r])
+(binding [r/*default-data-reader-fn* (fn [sym] (fn [val] [1 2 3]))]
+(r/read-string \"#dude []\"))"))))
+
 ;;;; Scratch
 
 (comment

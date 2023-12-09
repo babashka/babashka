@@ -1,6 +1,7 @@
 (ns babashka.impl.clojure.tools.reader
-  (:refer-clojure :exclude [read])
+  (:refer-clojure :exclude [read read-string])
   (:require
+   [clojure.tools.reader.reader-types :as rt]
    [edamame.core :as e]
    [sci.core :as sci]
    [sci.ctx-store :as ctx]
@@ -52,7 +53,13 @@
                      :readers (fn [sym]
                                 (resolve-tag sym))
                      :auto-resolve (fn [alias]
-                                     (@alias-map alias)))
+                                     (if (= :current alias)
+                                       (symbol (str @sci/ns))
+                                       (or (when-let [alias-map @alias-map]
+                                             (@alias-map alias))
+                                           (sci/eval-form (ctx/get-ctx)
+                                                          (list 'get '(ns-aliases *ns*)
+                                                                (list 'quote alias)))))))
          v (e/parse-next reader opts)]
      (if (identical? ::e/eof v)
        (if (identical? :eofthrow eof)
@@ -67,11 +74,18 @@
          sentinel)
        v))))
 
+(defn read-string
+  ([s] (read-string nil s))
+  ([opts s]
+   (when (and s (not (identical? s "")))
+     (read opts (rt/string-push-back-reader s)))))
+
 (defn resolve-symbol [sym]
   (p/fully-qualify (ctx/get-ctx) sym))
 
 (def reader-namespace
   {'read (sci/copy-var read rns)
+   'read-string (sci/copy-var read-string rns)
    'resolve-symbol (sci/copy-var resolve-symbol rns)
    '*default-data-reader-fn* default-data-reader-fn
    '*alias-map* alias-map})
