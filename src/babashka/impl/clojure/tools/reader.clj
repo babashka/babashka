@@ -16,6 +16,15 @@
     :location? seq?
     :end-location false}))
 
+(def default-data-reader-fn (sci/new-dynamic-var '*default-data-reader-fn* {:ns rns}))
+(def alias-map (sci/new-dynamic-var '*alias-map* {:ns rns}))
+
+(defn resolve-tag [sym]
+  ;; https://github.com/clojure/tools.reader/blob/ff18b1b872398a99e3e2941a0ed9abc0c2dec151/src/main/clojure/clojure/tools/reader.clj#L858
+  (or (default-data-readers sym)
+      (when-let [f @default-data-reader-fn]
+        (f sym))))
+
 ;; Added for compatibility with tools.namespace
 (defn read
   "Reads the first object from an IPushbackReader or a java.io.PushbackReader.
@@ -39,7 +48,11 @@
   ([{eof :eof :as opts :or {eof :eofthrow}} reader]
    (let [opts (assoc default-opts
                      :read-cond (:read-cond opts)
-                     :features (:features opts))
+                     :features (:features opts)
+                     :readers (fn [sym]
+                                (resolve-tag sym))
+                     :auto-resolve (fn [alias]
+                                     (@alias-map alias)))
          v (e/parse-next reader opts)]
      (if (identical? ::e/eof v)
        (if (identical? :eofthrow eof)
@@ -57,5 +70,8 @@
 (defn resolve-symbol [sym]
   (p/fully-qualify (ctx/get-ctx) sym))
 
-(def reader-namespace {'read (sci/copy-var read rns)
-                       'resolve-symbol (sci/copy-var resolve-symbol rns)})
+(def reader-namespace
+  {'read (sci/copy-var read rns)
+   'resolve-symbol (sci/copy-var resolve-symbol rns)
+   '*default-data-reader-fn* default-data-reader-fn
+   '*alias-map* alias-map})
