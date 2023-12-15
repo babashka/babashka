@@ -741,11 +741,10 @@ Use bb run --help to show this help output.
      (if-not opt opts-map
              ;; FILE > TASK > SUBCOMMAND
              (cond
-               (.isFile (io/file opt))
-               (if (or (:file opts-map) (:jar opts-map))
-                 opts-map ; we've already parsed the file opt
-                 (parse-file-opt options opts-map))
-
+               (and (not (or (:file opts-map)
+                             (:jar opts-map)))
+                    (.isFile (io/file opt)))
+               (parse-file-opt options opts-map)
                (contains? tasks opt)
                (assoc opts-map
                       :run opt
@@ -1181,7 +1180,6 @@ Use bb run --help to show this help output.
                              edn)]
                    (vreset! common/bb-edn edn)))
         opts (parse-opts args opts)
-        ;; _ (.println System/err (str bb-edn))
         min-bb-version (:min-bb-version bb-edn)]
     (System/setProperty "java.class.path" "")
     (when min-bb-version

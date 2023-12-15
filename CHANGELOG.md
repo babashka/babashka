@@ -12,6 +12,7 @@ A preview of the next release can be installed from
 - Add `java.util.ScheduledFuture`
 - Support `Runnable` to be used without import
 - Allow `catch` to be used as var name
+- [#1646](https://github.com/babashka/babashka/issues/1646): command-line-args are dropped when file exists with same name
 
 ## 1.3.186 (2023-11-02)
 
