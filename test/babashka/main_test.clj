@@ -68,7 +68,7 @@
          (parse-opts ["--force" "clojure" "-M" "-r"])))
   (testing "file opts parsing does not mess with :command-line-args"
     (is (= {:prn true, :expressions ["(prn :foo)"]}
-           (-> (let [opts (main/parse-file-opt ["-e" "(prn :foo)"] {})]
+           (-> (let [[_ opts] (main/parse-file-opt ["-e" "(prn :foo)"] {})]
                  (main/parse-opts ["-e" "(prn :foo)"] opts)))))
     (is (= {:file "foo", :command-line-args ["README.md"]}
            (main/parse-opts ["README.md"] {:file "foo"})))))
