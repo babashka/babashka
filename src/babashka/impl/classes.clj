@@ -597,6 +597,7 @@
                       clojure.lang.ITransientVector
                       clojure.lang.Iterate
                       clojure.lang.LispReader$Resolver
+                      clojure.lang.LongRange
                       clojure.lang.Named
                       clojure.lang.Keyword
                       clojure.lang.PersistentArrayMap
