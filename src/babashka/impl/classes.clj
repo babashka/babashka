@@ -502,6 +502,7 @@
           java.util.Base64$Encoder
           java.util.Date
           java.util.HashMap
+          java.util.HashSet
           java.util.IdentityHashMap
           java.util.InputMismatchException
           java.util.List
@@ -745,6 +746,8 @@
                          java.security.cert.X509Certificate
                          (instance? java.io.Console v)
                          java.io.Console
+                         (instance? java.util.Set v)
+                         java.util.Set
                          ;; keep commas for merge friendliness
                          )))
         m (assoc m (list 'quote 'clojure.lang.Var) 'sci.lang.Var)

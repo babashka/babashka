@@ -171,7 +171,9 @@
                                                        :deps/manifest :deps}
                          net.cgrand/xforms {:git/url "https://github.com/cgrand/xforms"
                                             :git/sha "550dbc150a79c6ecc148d8a7e260e10bc36321c6"
-                                            :deps/manifest :deps}}
+                                            :deps/manifest :deps}
+                         prismatic/plumbing {:git/url "https://github.com/plumatic/plumbing",
+                                             :git/sha "424bc704f2db422de34269c139a5494314b3a43b"}}
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil}}
            :clj-nvd
