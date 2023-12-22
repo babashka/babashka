@@ -444,6 +444,7 @@
                 java.time.temporal.TemporalAdjusters
                 java.time.temporal.TemporalAmount
                 java.time.temporal.TemporalField
+                java.time.temporal.WeekFields
                 ~(symbol "[Ljava.time.temporal.TemporalField;")
                 java.time.format.TextStyle
                 java.time.temporal.Temporal
