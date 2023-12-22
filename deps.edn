@@ -95,7 +95,7 @@
                          io.replikativ/hasch {:mvn/version "0.3.7"}
                          com.grammarly/omniconf {:mvn/version "0.4.3"}
                          crispin/crispin {:mvn/version "0.3.8"}
-                         org.clojure/data.json {:mvn/version "2.4.0"}
+                         org.clojure/data.json {:mvn/version "2.5.0"}
                          clj-commons/multigrep {:mvn/version "0.5.0"}
                          amperity/vault-clj {:mvn/version "1.0.4"}
                          java-http-clj/java-http-clj {:mvn/version "0.4.3"}

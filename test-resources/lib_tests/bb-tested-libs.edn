@@ -15,7 +15,7 @@
  better-cond/better-cond {:git-sha "4720bd8bcfd1adc1197b8d5f07873bc46008d333", :git-url "https://github.com/Engelberg/better-cond", :test-namespaces (better-cond.core-test)}
  org.clojars.askonomm/ruuter {:git-sha "78659212f95cac827efc816dfbdab8181c25fc3d", :git-url "https://github.com/askonomm/ruuter", :test-namespaces (ruuter.core-test)}
  ;; clojure.data.json-gen-test ommitted from test-namespaces b/c it hangs on stest/check
- org.clojure/data.json {:git-sha "9f1c9ccf3fd3e5a39cfb7289d3d456e842ddf442", :git-url "https://github.com/clojure/data.json", :test-namespaces (clojure.data.json-test clojure.data.json-test-suite-test clojure.data.json-compat-0-1-test)}
+ org.clojure/data.json {:git-sha "77762e43992b3da485bb41d130e3b86208cf35c1", :git-url "https://github.com/clojure/data.json", :test-namespaces (clojure.data.json-test clojure.data.json-test-suite-test clojure.data.json-compat-0-1-test)}
  io.replikativ/hasch {:git-sha "04d9c0bd34d86bad79502d8a6963eb2525a22b15", :git-url "https://github.com/replikativ/hasch", :test-namespaces (hasch.test)}
  ;; BB-TEST-PATCH: Removed markdown.md-file-test b/c tests hardcode path to test
  ;; files. Removed markdown.benchmark b/c it depends on criterium which isn't bb compatible

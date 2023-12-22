@@ -507,6 +507,7 @@
           java.util.IdentityHashMap
           java.util.InputMismatchException
           java.util.List
+          java.util.LinkedList
           java.util.Locale
           java.util.Map
           java.util.MissingResourceException
