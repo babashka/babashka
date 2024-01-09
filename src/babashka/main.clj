@@ -19,6 +19,7 @@
    [babashka.impl.clojure.java.shell :refer [shell-namespace]]
    [babashka.impl.clojure.main :as clojure-main :refer [demunge]]
    [babashka.impl.clojure.math :refer [math-namespace]]
+   [babashka.impl.clojure.reflect :refer [reflect-namespace]]
    [babashka.impl.clojure.stacktrace :refer [stacktrace-namespace]]
    [babashka.impl.clojure.tools.reader :refer [reader-namespace]]
    [babashka.impl.clojure.tools.reader-types :refer [edn-namespace
@@ -407,6 +408,7 @@ Use bb run --help to show this help output.
     'clojure.tools.reader reader-namespace
     'clojure.core.async async-namespace
     'clojure.core.async.impl.protocols async-protocols-namespace
+    'clojure.reflect reflect-namespace
     'rewrite-clj.node rewrite/node-namespace
     'rewrite-clj.paredit rewrite/paredit-namespace
     'rewrite-clj.parser rewrite/parser-namespace
