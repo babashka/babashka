@@ -1145,14 +1145,18 @@ Use bb run --help to show this help output.
                args)
         [args opts] (parse-global-opts args)
         ;; TODO: drop jar file from opts
-        [args {:keys [jar file config merge-deps] :as opts}]
+        [args {:keys [jar file config merge-deps debug] :as opts}]
         (if-not (or (:file opts)
                     (:jar opts))
           (parse-file-opt args opts)
           [args opts])
         abs-path #(-> % io/file .getAbsolutePath)
         config (cond
-                 config (when (fs/exists? config) (abs-path config))
+                 config (if (fs/exists? config) (abs-path config)
+                            (when debug
+                              (binding [*out* *err*]
+                                (println "[babashka] WARNING: config file does not exist:" config))
+                              nil))
                  jar (some-> [jar] cp/new-loader (cp/resource "META-INF/bb.edn") .toString)
                  :else (if (and file (fs/exists? file))
                          ;; file relative to bb.edn

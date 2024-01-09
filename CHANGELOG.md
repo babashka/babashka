@@ -15,6 +15,7 @@ A preview of the next release can be installed from
 - [#1646](https://github.com/babashka/babashka/issues/1646): command-line-args are dropped when file exists with same name
 - [#1645](https://github.com/babashka/babashka/issues/1645): Support for clojure.lang.LongRange
 - [#1652](https://github.com/babashka/babashka/issues/1652): allow `bb.edn` to be empty
+- [#1586](https://github.com/babashka/babashka/issues/1586): warn when config file doesn't exist and `--debug` is enabled
 
 ## 1.3.186 (2023-11-02)
 
