@@ -7,7 +7,7 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## Unreleased
+## 1.3.187 (2023-01-09)
 
 - Add `clojure.reflect/reflect`
 - Add `java.util.ScheduledFuture`, `java.time.temporal.WeekFields`
