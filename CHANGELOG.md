@@ -10,13 +10,20 @@ A preview of the next release can be installed from
 ## Unreleased
 
 - Add `clojure.reflect/reflect`
-- Add `java.util.ScheduledFuture`
+- Add `java.util.ScheduledFuture`, `java.time.temporal.WeekFields`
 - Support `Runnable` to be used without import
 - Allow `catch` to be used as var name
 - [#1646](https://github.com/babashka/babashka/issues/1646): command-line-args are dropped when file exists with same name
-- [#1645](https://github.com/babashka/babashka/issues/1645): Support for clojure.lang.LongRange
+- [#1645](https://github.com/babashka/babashka/issues/1645): Support for `clojure.lang.LongRange`
 - [#1652](https://github.com/babashka/babashka/issues/1652): allow `bb.edn` to be empty
 - [#1586](https://github.com/babashka/babashka/issues/1586): warn when config file doesn't exist and `--debug` is enabled
+- #1410: better error message when exec fn doesn't exist
+- Bump `babashka.cli` to `0.8.55` which contains subcommand improvements
+- Bump `deps.clj` to `1.11.1.1435`
+- Bump `babashka.fs` to `0.5.20`
+- Compatibility with `plumbing.core`
+- Compatibility with `shadow.css` by improving `tools.reader` compatibility
+- #1647: Allow capturing env vars at build time (only relevant for building bb)
 
 ## 1.3.186 (2023-11-02)
 
