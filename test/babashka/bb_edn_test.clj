@@ -533,6 +533,9 @@ even more stuff here\"
 (deftest non-existing-tasks-in-run-gives-exit-code-1
   (is (thrown? Exception (bb "-Sdeps" "{:tasks {foo {:task (run (quote bar))}}}" "foo"))))
 
+(deftest empty-bb-edn-test
+  (is (= 6 (bb "-Sdeps" "" "-e" "(+ 1 2 3)"))))
+
 (deftest warning-on-override-task
   (when-not tu/native?
     (binding [*out* *err*]

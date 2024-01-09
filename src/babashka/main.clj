@@ -1113,7 +1113,7 @@ Use bb run --help to show this help output.
                       (>= patch-current patch-min)))))))
 
 (defn read-bb-edn [string]
-  (try (edn/read-string {:default tagged-literal} string)
+  (try (edn/read-string {:default tagged-literal :eof nil} string)
        (catch java.lang.RuntimeException e
          (if (re-find #"No dispatch macro for: \"" (.getMessage e))
            (throw (ex-info "Invalid regex literal found in EDN config, use re-pattern instead" {}))
