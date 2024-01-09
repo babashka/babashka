@@ -17,6 +17,8 @@
 (let [extra-opts '%s
       sym `%s
       the-var (requiring-resolve sym)
+      _ (when-not the-var
+          (throw (ex-info (str \"Could not resolve sym to a function: \" sym) {:babashka/exit 1})))
       the-var-meta (meta the-var)
       ns (:ns (meta the-var))
       ns-meta (meta ns)

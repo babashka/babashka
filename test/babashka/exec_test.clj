@@ -11,6 +11,8 @@
 (deftest exec-test
   (is (= {:foo 1} (edn/read-string (bb "-x" "prn" "--foo" "1"))))
   (is (thrown? Exception (bb "-x" "json/generate-string" "--foo" "1")))
+  (is (thrown-with-msg? Exception #"Could not resolve sym to a function: clojure.core/generate-string"
+                        (bb "-x" "clojure.core/generate-string" "--foo" "1")))
   (is (= {:foo 1} (cheshire/parse-string
                    (edn/read-string
                     (bb "--prn" "-x" "cheshire.core/generate-string" "--foo" "1")) true))))
