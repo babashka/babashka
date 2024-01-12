@@ -1,6 +1,7 @@
 (ns babashka.main-test
   {:clj-kondo/config '{:linters {:unresolved-symbol {:exclude [working?]}}}}
   (:require
+   [babashka.fs :as fs]
    [babashka.main :as main]
    [babashka.test-utils :as test-utils]
    [clojure.edn :as edn]
@@ -71,7 +72,8 @@
            (-> (let [[_ opts] (main/parse-file-opt ["-e" "(prn :foo)"] {})]
                  (main/parse-opts ["-e" "(prn :foo)"] opts)))))
     (is (= {:file "foo", :command-line-args ["README.md"]}
-           (main/parse-opts ["README.md"] {:file "foo"})))))
+           (main/parse-opts ["README.md"] {:file "foo"})))
+    (prn (bb nil (fs/file "test-resources" "script_with_overlapping_opts.clj") "--version"))))
 
 (deftest version-test
   (is (= [1 0 0] (main/parse-version "1.0.0-SNAPSHOT")))
