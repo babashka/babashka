@@ -73,7 +73,8 @@
                  (main/parse-opts ["-e" "(prn :foo)"] opts)))))
     (is (= {:file "foo", :command-line-args ["README.md"]}
            (main/parse-opts ["README.md"] {:file "foo"})))
-    (prn (bb nil (fs/file "test-resources" "script_with_overlapping_opts.clj") "--version"))))
+    (is (= ["--version"] (bb nil (fs/file "test-resources" "script_with_overlapping_opts.clj") "--version")))
+    (is (= ["version"] (bb nil (fs/file "test-resources" "script_with_overlapping_opts.clj") "version")))))
 
 (deftest version-test
   (is (= [1 0 0] (main/parse-version "1.0.0-SNAPSHOT")))

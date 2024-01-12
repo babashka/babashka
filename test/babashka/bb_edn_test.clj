@@ -388,7 +388,7 @@ even more stuff here\"
       (try
         (spit "uberjar" "#!/usr/bin/env bb\n(+ 1 2 3)")
         (vreset! common/bb-edn '{:tasks {uberjar (+ 1 2 3)}})
-        (is (= "uberjar" (:file (main/parse-opts ["uberjar"]))))
+        (is (= {:file "uberjar", :command-line-args '("--version")} (second (main/parse-opts ["uberjar" "--version"]))))
         (finally (fs/delete "uberjar"))))))
 
 (deftest min-bb-version-test

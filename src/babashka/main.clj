@@ -746,8 +746,7 @@ Use bb run --help to show this help output.
                (and (not (or (:file opts-map)
                              (:jar opts-map)))
                     (.isFile (io/file opt)))
-               (let [[args opts] (parse-file-opt options opts-map)]
-                 (assoc opts :command-line-args args))
+               (parse-file-opt options opts-map)
                (contains? tasks opt)
                (assoc opts-map
                       :run opt
@@ -1147,7 +1146,6 @@ Use bb run --help to show this help output.
                (list* "--jar" bin-jar "--" args)
                args)
         [args opts] (parse-global-opts args)
-        ;; TODO: drop jar file from opts
         [args {:keys [jar file config merge-deps debug] :as opts}]
         (if-not (or (:file opts)
                     (:jar opts))
