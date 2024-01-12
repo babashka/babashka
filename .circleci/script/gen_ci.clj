@@ -192,7 +192,7 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
   [shorted?]
   (let [docker-executor-conf  {:docker [{:image "circleci/clojure:openjdk-11-lein-2.9.8-bullseye"}]}
         machine-executor-conf {:machine {:image "ubuntu-2004:202111-01"}}
-        mac-executor-conf     {:macos {:xcode "15.2.0"}}
+        mac-executor-conf     {:macos {:xcode "15.1.0"}}
         linux-graalvm-home    (str "/home/circleci/graalvm-" graalvm-version)
         mac-graalvm-home      (format "/Users/distiller/graalvm-%s/Contents/Home" graalvm-version)]
     (ordered-map
