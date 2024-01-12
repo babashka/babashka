@@ -1,0 +1,1 @@
+(prn *command-line-args*)
