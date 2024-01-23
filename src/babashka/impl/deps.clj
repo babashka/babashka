@@ -76,7 +76,14 @@
                                 ;; paths are added manually above
                                 ;; extra-paths are added as :paths in tasks
                                 :paths :tasks :raw :file :deps-root
-                                :min-bb-version)]
+                                :min-bb-version)
+               ;; associate deps-root to avoid cache conflict between different
+               ;; bb.edns with relative local/roots by the same name NOTE:
+               ;; deps-root is nil when bb.edn isn't used, so clashes may still
+               ;; happen with dynamic add-deps, but at least we don't invoke
+               ;; clojure CLI's java process each time we call a script from a
+               ;; different directory.
+               deps-map (assoc deps-map :deps-root (str deps-root))]
            (binding [*print-namespace-maps* false]
              (let [deps-map (assoc-in deps-map [:aliases :org.babashka/defaults]
                                       {:replace-paths [] ;; babashka sets paths manually
