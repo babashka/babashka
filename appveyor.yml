@@ -23,6 +23,9 @@ cache:
 
 clone_script:
 - cmd: git config --global core.autocrlf true
+
+- cmd: git config core.symlinks true
+
 - ps: >-
     if(-not $env:APPVEYOR_PULL_REQUEST_NUMBER) {
       git clone -q --branch=$env:APPVEYOR_REPO_BRANCH https://github.com/$env:APPVEYOR_REPO_NAME.git $env:APPVEYOR_BUILD_FOLDER
@@ -35,6 +38,8 @@ clone_script:
       git checkout -qf FETCH_HEAD
     }
 - cmd: git submodule update --init --recursive
+
+- cmd: git reset --hard
 
 build_script:
 # TODO: Extract the zip by removing the top level folder to remove the hardcoded path for GRAALVM_HOME
