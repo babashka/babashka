@@ -1162,7 +1162,8 @@ Use bb run --help to show this help output.
                  jar (some-> [jar] cp/new-loader (cp/resource "META-INF/bb.edn") .toString)
                  :else (if (and file (fs/exists? file))
                          ;; file relative to bb.edn
-                         (let [rel-bb-edn (fs/file (fs/parent file) "bb.edn")]
+                         (let [file (fs/real-path file) ;; follow symlink
+                               rel-bb-edn (fs/file (fs/parent file) "bb.edn")]
                            (if (fs/exists? rel-bb-edn)
                              (abs-path rel-bb-edn)
                              ;; fall back to local bb.edn
