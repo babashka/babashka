@@ -529,7 +529,7 @@ even more stuff here\"
   (is (= {1 {:id 1}} (bb "test-resources/adjacent_bb/medley.bb")))
   (is (= {1 {:id 1}} (bb "-f" "test-resources/adjacent_bb/medley.bb")))
   (testing "symlink"
-    (is (= {1 {:id 1}} (bb "test-resources/symlink-adjacent-bb")))))
+    (is (= {1 {:id 1}} (bb (str (fs/file "test-resources" "symlink-adjacent-bb")))))))
 
 (deftest non-existing-tasks-in-run-gives-exit-code-1
   (is (thrown? Exception (bb "-Sdeps" "{:tasks {foo {:task (run (quote bar))}}}" "foo"))))
