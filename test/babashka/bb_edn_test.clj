@@ -8,8 +8,7 @@
    [borkdude.deps]
    [clojure.edn :as edn]
    [clojure.string :as str]
-   [clojure.test :as test :refer [deftest is testing]]
-   [babashka.test-utils :as tu]))
+   [clojure.test :as test :refer [deftest is testing]]))
 
 (defn bb [& args]
   (let [args (map str args)
@@ -321,8 +320,8 @@
   (testing "call to run in missing dir gives 'cannot run program' message"
     (test-utils/with-config
       (pr-str '{:tasks {foo (clojure {:dir "../missingdir"} "-M" "-r")}})
-      ; check rough text of error message, specific message about missing directory is OS-dependent
-      (is (thrown-with-msg? Exception #"Cannot run program .* \(in directory \"\.\.[/\\]missingdir\"\)" 
+      ;; check rough text of error message, specific message about missing directory is OS-dependent
+      (is (thrown-with-msg? Exception #"Cannot run program .* \(in directory \"\.\.[/\\]missingdir\"\)"
                             (bb "run" "foo"))))))
 
 (deftest list-tasks-test
@@ -528,7 +527,9 @@ even more stuff here\"
 
 (deftest adjacent-bb-edn-test
   (is (= {1 {:id 1}} (bb "test-resources/adjacent_bb/medley.bb")))
-  (is (= {1 {:id 1}} (bb "-f" "test-resources/adjacent_bb/medley.bb"))))
+  (is (= {1 {:id 1}} (bb "-f" "test-resources/adjacent_bb/medley.bb")))
+  (testing "symlink"
+    (is (= {1 {:id 1}} (bb "test-resources/symlink-adjacent-bb")))))
 
 (deftest non-existing-tasks-in-run-gives-exit-code-1
   (is (thrown? Exception (bb "-Sdeps" "{:tasks {foo {:task (run (quote bar))}}}" "foo"))))
@@ -537,6 +538,6 @@ even more stuff here\"
   (is (= 6 (bb "-Sdeps" "" "-e" "(+ 1 2 3)"))))
 
 (deftest warning-on-override-task
-  (when-not tu/native?
+  (when-not test-utils/native?
     (binding [*out* *err*]
       (is (str/includes? (with-out-str (bb "-Sdeps" "{:tasks {run {:task 1}}}" "run")) "'run' override")))))
