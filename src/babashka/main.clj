@@ -1140,29 +1140,36 @@ Use bb run --help to show this help output.
                         (catch Exception _ false))
                bin))))))
 
+(defn resolve-symbolic-link [f]
+  (if (and f (fs/exists? f))
+    (str (fs/real-path f))
+    f))
+
 (defn main [& args]
   (let [bin-jar (binary-invoked-as-jar)
         args (if bin-jar
                (list* "--jar" bin-jar "--" args)
                args)
         [args opts] (parse-global-opts args)
-        [args {:keys [jar file config merge-deps debug] :as opts}]
+        [args {:keys [config merge-deps debug] :as opts}]
         (if-not (or (:file opts)
                     (:jar opts))
           (parse-file-opt args opts)
           [args opts])
-        ;; _ (prn :args args :opts opts)
-        abs-path #(-> % io/file .getAbsolutePath)
+        {:keys [jar file]} opts
+        abs-path resolve-symbolic-link
         config (cond
                  config (if (fs/exists? config) (abs-path config)
                             (when debug
                               (binding [*out* *err*]
                                 (println "[babashka] WARNING: config file does not exist:" config))
                               nil))
-                 jar (some-> [jar] cp/new-loader (cp/resource "META-INF/bb.edn") .toString)
+                 jar (let [jar (resolve-symbolic-link jar)]
+                       (some-> [jar] cp/new-loader (cp/resource "META-INF/bb.edn") .toString))
                  :else (if (and file (fs/exists? file))
                          ;; file relative to bb.edn
-                         (let [rel-bb-edn (fs/file (fs/parent file) "bb.edn")]
+                         (let [file (abs-path file) ;; follow symlink
+                               rel-bb-edn (fs/file (fs/parent file) "bb.edn")]
                            (if (fs/exists? rel-bb-edn)
                              (abs-path rel-bb-edn)
                              ;; fall back to local bb.edn

@@ -8,8 +8,7 @@
    [borkdude.deps]
    [clojure.edn :as edn]
    [clojure.string :as str]
-   [clojure.test :as test :refer [deftest is testing]]
-   [babashka.test-utils :as tu]))
+   [clojure.test :as test :refer [deftest is testing]]))
 
 (defn bb [& args]
   (let [args (map str args)
@@ -321,8 +320,8 @@
   (testing "call to run in missing dir gives 'cannot run program' message"
     (test-utils/with-config
       (pr-str '{:tasks {foo (clojure {:dir "../missingdir"} "-M" "-r")}})
-      ; check rough text of error message, specific message about missing directory is OS-dependent
-      (is (thrown-with-msg? Exception #"Cannot run program .* \(in directory \"\.\.[/\\]missingdir\"\)" 
+      ;; check rough text of error message, specific message about missing directory is OS-dependent
+      (is (thrown-with-msg? Exception #"Cannot run program .* \(in directory \"\.\.[/\\]missingdir\"\)"
                             (bb "run" "foo"))))))
 
 (deftest list-tasks-test
@@ -410,7 +409,7 @@ even more stuff here\"
             entries (cp/split-classpath out)
             entry (first entries)]
         (is (= 1 (count entries)))
-        (is (= (fs/parent config) (fs/parent entry)))
+        (is (= (fs/real-path (fs/parent config)) (fs/real-path (fs/parent entry))))
         (is (str/ends-with? entry "src"))))))
 
 (deftest without-deps-test
@@ -514,7 +513,7 @@ even more stuff here\"
       (testing "default deps-root path is same as bb.edn"
         (let [out (bb "--config" config "cp")
               entries (cp/split-classpath out)]
-          (is (= (fs/parent f) (fs/parent (first entries))))))
+          (is (= (fs/real-path(fs/parent f)) (fs/real-path (fs/parent (first entries)))))))
       (spit config
             '{:paths ["src"]
               :deps {local/dep {:local/root "local-dep"}}
@@ -524,11 +523,13 @@ even more stuff here\"
               _ (spit (str (fs/file root "deps.edn")) {})
               out (bb "--config" config "cp")
               entries (cp/split-classpath out)]
-          (is (= (fs/parent f) (fs/parent (first entries)))))))))
+          (is (= (fs/real-path (fs/parent f)) (fs/real-path (fs/parent (first entries))))))))))
 
 (deftest adjacent-bb-edn-test
   (is (= {1 {:id 1}} (bb "test-resources/adjacent_bb/medley.bb")))
-  (is (= {1 {:id 1}} (bb "-f" "test-resources/adjacent_bb/medley.bb"))))
+  (is (= {1 {:id 1}} (bb "-f" "test-resources/adjacent_bb/medley.bb")))
+  (testing "symlink"
+    (is (= {1 {:id 1}} (bb (str (fs/file "test-resources" "symlink-adjacent-bb")))))))
 
 (deftest non-existing-tasks-in-run-gives-exit-code-1
   (is (thrown? Exception (bb "-Sdeps" "{:tasks {foo {:task (run (quote bar))}}}" "foo"))))
@@ -537,6 +538,6 @@ even more stuff here\"
   (is (= 6 (bb "-Sdeps" "" "-e" "(+ 1 2 3)"))))
 
 (deftest warning-on-override-task
-  (when-not tu/native?
+  (when-not test-utils/native?
     (binding [*out* *err*]
       (is (str/includes? (with-out-str (bb "-Sdeps" "{:tasks {run {:task 1}}}" "run")) "'run' override")))))
