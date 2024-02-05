@@ -13,6 +13,7 @@ A preview of the next release can be installed from
 - [#1632](https://github.com/babashka/babashka/issues/1632): fix `(.readPassword (System/console))` by upgrading GraalVM to `21.0.2`
 - [#1661](https://github.com/babashka/babashka/issues/1661): follow symlink when reading adjacent bb.edn
 - [#1665](https://github.com/babashka/babashka/issues/1665): `read-string` should use non-indexing reader
+- Uberjar task: support reader conditional in .cljc file
 
 ## 1.3.188 (2023-01-12)
 
