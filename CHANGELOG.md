@@ -15,11 +15,11 @@ A preview of the next release can be installed from
 - [#1665](https://github.com/babashka/babashka/issues/1665): `read-string` should use non-indexing reader
 - Uberjar task: support reader conditional in .cljc file
 
-## 1.3.188 (2023-01-12)
+## 1.3.188 (2024-01-12)
 
 - [#1658](https://github.com/babashka/babashka/issues/1658): fix command line parsing for scripts that parse `--version` or `version` etc
 
-## 1.3.187 (2023-01-09)
+## 1.3.187 (2024-01-09)
 
 - Add `clojure.reflect/reflect`
 - Add `java.util.ScheduledFuture`, `java.time.temporal.WeekFields`
