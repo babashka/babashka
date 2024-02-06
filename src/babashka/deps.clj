@@ -22,7 +22,7 @@
 
   Examples:
 
-  (-> (clojure '[-M -e (+ 1 2 3)] {:out :string}) deref :out) returns
+  (-> (clojure {:out :string} '-M '-e '(+ 1 2 3)]) deref :out) returns
   \"6\n\".
 
   (-> @(clojure) :exit) starts a clojure REPL, waits for it
