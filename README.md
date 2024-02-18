@@ -212,12 +212,24 @@ linux binary.
 
 ### asdf
 
-[asdf](https://github.com/asdf-vm/asdf) is an extendable version manager for linux and macOS.
+[asdf](https://github.com/asdf-vm/asdf) is an extendable version manager for linux and macOS. Note that asdf will add significant startup time to any babashka script, consider using [mise](#mise) instead.
 
 Babashka can be installed using a plugin as follows:
 
     asdf plugin add babashka https://github.com/pitch-io/asdf-babashka
     asdf install babashka latest
+
+### mise
+
+[mise](https://mise.jdx.dev/) is a development environment setup tool for linux and macOS.
+
+Install:
+
+    mise use --global babashka@latest
+
+Upgrade:
+
+    mise upgrade babashka
 
 ### Windows
 
