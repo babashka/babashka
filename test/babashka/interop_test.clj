@@ -50,3 +50,7 @@
                (Thread/sleep (/ 1 200) (/ 1 200))
                (Thread/sleep (java.time.Duration/ofMillis 1))
                true")))
+
+(deftest SSL-test
+  (is (= :user/success
+         (bb nil "(try (.createSocket (javax.net.ssl.SSLSocketFactory/getDefault) \"localhost\" 4444) (catch java.net.ConnectException e ::success))"))))

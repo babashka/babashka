@@ -743,6 +743,8 @@
                          java.util.Iterator
                          (instance? javax.crypto.SecretKey v)
                          javax.crypto.SecretKey
+                         (instance? javax.net.ssl.SSLSocketFactory v)
+                         javax.net.ssl.SSLSocketFactory
                          (instance? java.lang.Thread v)
                          java.lang.Thread
                          (instance? java.security.cert.X509Certificate v)
