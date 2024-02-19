@@ -242,6 +242,8 @@
     javax.net.ssl.TrustManagerFactory
     javax.net.ssl.X509TrustManager
     javax.net.ssl.X509ExtendedTrustManager
+    javax.net.ssl.SSLSocket
+    javax.net.ssl.SSLSocketFactory
     jdk.internal.net.http.HttpClientBuilderImpl
     jdk.internal.net.http.HttpClientFacade
     jdk.internal.net.http.HttpRequestBuilderImpl
