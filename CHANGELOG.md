@@ -7,13 +7,19 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## Unreleased
+## 1.3.188 (2024-02-22)
 
 - [#1660](https://github.com/babashka/babashka/issues/1660): add `:deps-root` as part of hash to avoid caching issue with `deps.clj`
 - [#1632](https://github.com/babashka/babashka/issues/1632): fix `(.readPassword (System/console))` by upgrading GraalVM to `21.0.2`
 - [#1661](https://github.com/babashka/babashka/issues/1661): follow symlink when reading adjacent bb.edn
-- [#1665](https://github.com/babashka/babashka/issues/1665): `read-string` should use non-indexing reader
+- [#1665](https://github.com/babashka/babashka/issues/1665): `read-string` should use non-indexing reader for compatibilty with Clojure
+- Bump edamame to 1.4.24
+- Bump http-client to 0.4.16
+- Bump babashka.cli to 0.8.57
 - Uberjar task: support reader conditional in .cljc file
+- Support reader conditional in .cljc file when creating uberjar
+- Add more `javax.net.ssl` classes
+- [#1675](https://github.com/babashka/babashka/issues/1675): add `hash-unordered-coll`
 
 ## 1.3.188 (2024-01-12)
 
