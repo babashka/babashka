@@ -242,6 +242,8 @@
     javax.net.ssl.TrustManagerFactory
     javax.net.ssl.X509TrustManager
     javax.net.ssl.X509ExtendedTrustManager
+    javax.net.ssl.SSLSocket
+    javax.net.ssl.SSLSocketFactory
     jdk.internal.net.http.HttpClientBuilderImpl
     jdk.internal.net.http.HttpClientFacade
     jdk.internal.net.http.HttpRequestBuilderImpl
@@ -727,8 +729,6 @@
                          java.net.URLClassLoader
                          (instance? java.lang.ClassLoader v)
                          java.lang.ClassLoader
-                         (instance? java.io.Closeable v)
-                         java.io.Closeable
                          (instance? java.nio.file.attribute.BasicFileAttributes v)
                          java.nio.file.attribute.BasicFileAttributes
                          (instance? java.util.concurrent.Future v)
@@ -741,6 +741,10 @@
                          java.util.Iterator
                          (instance? javax.crypto.SecretKey v)
                          javax.crypto.SecretKey
+                         (instance? javax.net.ssl.SSLSocketFactory v)
+                         javax.net.ssl.SSLSocketFactory
+                         (instance? javax.net.ssl.SSLSocket v)
+                         javax.net.ssl.SSLSocket
                          (instance? java.lang.Thread v)
                          java.lang.Thread
                          (instance? java.security.cert.X509Certificate v)
@@ -749,6 +753,8 @@
                          java.io.Console
                          (instance? java.util.Set v)
                          java.util.Set
+                         (instance? java.io.Closeable v)
+                         java.io.Closeable
                          ;; keep commas for merge friendliness
                          )))
         m (assoc m (list 'quote 'clojure.lang.Var) 'sci.lang.Var)
