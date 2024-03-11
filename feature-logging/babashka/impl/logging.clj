@@ -13,7 +13,64 @@
 
 (defn- fline [and-form] (:line (meta and-form)))
 
+(defonce callsite-counter
+  (enc/counter))
+
 (defmacro log! ; Public wrapper around `-log!`
+  "Core low-level log macro. Useful for tooling/library authors, etc.
+
+       * `level`    - must eval to a valid logging level
+       * `msg-type` - must eval to e/o #{:p :f nil}
+       * `args`     - arguments seq (ideally vec) for logging call
+       * `opts`     - ks e/o #{:config ?err ?base-data spying?
+                               :?ns-str :?file :?line :?column}
+
+     Supports compile-time elision when compile-time const vals
+     provided for `level` and/or `?ns-str`.
+
+     Logging wrapper examples:
+
+       (defn     log-wrapper-fn    [& args]                        (timbre/log! :info :p  args))
+       (defmacro log-wrapper-macro [& args] (timbre/keep-callsite `(timbre/log! :info :p ~args)))"
+
+  ([{:as   opts
+     :keys [loc level msg-type args vargs
+            config ?err ?base-data spying?]
+     :or
+     {config `*config*
+      ?err   :auto}}]
+
+   (have [:or nil? sequential? symbol?] args)
+   (let [callsite-id (callsite-counter)
+         {:keys [line column]} (merge (meta &form) loc)
+         {:keys [ns file line column]} {:ns @sci/ns :file @sci/file :line line :column column}
+         ns     (or (get opts :?ns-str) ns)
+         file   (or (get opts :?file)   file)
+         line   (or (get opts :?line)   line)
+         column (or (get opts :?column) column)
+
+         elide? (and #_(enc/const-forms? level ns) (timbre/-elide? level ns))]
+
+     (when-not elide?
+       (let [vargs-form
+             (or vargs
+                 (if (symbol? args)
+                   `(enc/ensure-vec ~args)
+                   `[              ~@args]))]
+
+         ;; Note pre-resolved expansion
+         `(taoensso.timbre/-log! ~config ~level ~ns ~file ~line ~column ~msg-type ~?err
+                                 (delay ~vargs-form) ~?base-data ~callsite-id ~spying?)))))
+
+  ([level msg-type args & [opts]]
+   (let [{:keys [line column]} (merge (meta &form))
+         {:keys [ns file line column]} {:ns @sci/ns :file @sci/file :line line :column column}
+         loc  {:ns ns :file file :line line :column column}
+         opts (assoc (conj {:loc loc} opts)
+                     :level level, :msg-type msg-type, :args args)]
+     `(taoensso.timbre/log! ~opts))))
+
+#_(defmacro log! ; Public wrapper around `-log!`
   "Core low-level log macro. Useful for tooling, etc.
     * `level`    - must eval to a valid logging level
     * `msg-type` - must eval to e/o #{:p :f nil}
@@ -21,8 +78,9 @@
   Supports compile-time elision when compile-time const vals
   provided for `level` and/or `?ns-str`."
   [level msg-type args & [opts]]
-  (have [:or nil? sequential?] args) ; To allow -> (delay [~@args])
+  #_(have [:or nil? sequential?] args) ; To allow -> (delay [~@args])
   (let [{:keys [?ns-str] :or {?ns-str (str @sci/ns)}} opts]
+    (prn :duuu2)
     ;; level, ns may/not be compile-time consts:
     (when-not (timbre/-elide? level ?ns-str)
       (let [{:keys [config ?err ?file ?line ?base-data spying?]
@@ -41,6 +99,7 @@
             (hash [level msg-type args ; Unevaluated args (arg forms)
                    ?ns-str ?file ?line (rand)])]
 
+        (prn :dude :args args)
         `(taoensso.timbre/-log! ~config ~level ~?ns-str ~?file ~?line ~msg-type ~?err
                                 (delay [~@args]) ~?base-data ~callsite-id ~spying?)))))
 
