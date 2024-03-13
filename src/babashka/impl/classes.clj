@@ -460,6 +460,7 @@
           java.util.concurrent.Callable
           java.util.concurrent.CancellationException
           java.util.concurrent.CompletionException
+          java.util.concurrent.CountDownLatch
           java.util.concurrent.ExecutionException
           java.util.concurrent.Executor
           java.util.concurrent.ExecutorService
