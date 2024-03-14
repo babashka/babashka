@@ -125,6 +125,11 @@
           ([x y z]
            ((method-or-bust methods 'checkServerTrusted) this x y z)))
         (getAcceptedIssuers [] ((method-or-bust methods 'getAcceptedIssuers) this)))
+
+      ["java.lang.ThreadLocal" #{}]
+      (proxy [java.lang.ThreadLocal] []
+        (initialValue []
+          ((method-or-bust methods 'initialValue) this)))
       , ;; keep this for merge friendliness
       )))
 
@@ -137,7 +142,9 @@
    {:methods [{:name "connectFailed"}
               {:name "select"}]}
    (class-sym (class (proxy-fn {:class javax.net.ssl.HostnameVerifier})))
-   {:methods [{:name "verify"}]}})
+   {:methods [{:name "verify"}]}
+   (class-sym (class (proxy-fn {:class java.lang.ThreadLocal})))
+   {:methods [{:name "get"}]}})
 
 ;;; Scratch
 

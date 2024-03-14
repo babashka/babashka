@@ -333,6 +333,7 @@
           java.lang.StringBuilder
           java.lang.System
           java.lang.Throwable
+          java.lang.ThreadLocal
           java.lang.Thread$UncaughtExceptionHandler
           java.lang.UnsupportedOperationException
           java.lang.ref.WeakReference
@@ -829,6 +830,7 @@
     StringBuilder java.lang.StringBuilder
     System java.lang.System
     Thread java.lang.Thread
+    ThreadLocal java.lang.ThreadLocal
     Thread$UncaughtExceptionHandler java.lang.Thread$UncaughtExceptionHandler
     Throwable java.lang.Throwable
     VirtualMachineError java.lang.VirtualMachineError
