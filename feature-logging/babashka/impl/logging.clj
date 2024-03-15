@@ -70,57 +70,20 @@
                      :level level, :msg-type msg-type, :args args)]
      `(taoensso.timbre/log! ~opts))))
 
-#_(defmacro log! ; Public wrapper around `-log!`
-  "Core low-level log macro. Useful for tooling, etc.
-    * `level`    - must eval to a valid logging level
-    * `msg-type` - must eval to e/o #{:p :f nil}
-    * `opts`     - ks e/o #{:config :?err :?ns-str :?file :?line :?base-data :spying?}
-  Supports compile-time elision when compile-time const vals
-  provided for `level` and/or `?ns-str`."
-  [level msg-type args & [opts]]
-  #_(have [:or nil? sequential?] args) ; To allow -> (delay [~@args])
-  (let [{:keys [?ns-str] :or {?ns-str (str @sci/ns)}} opts]
-    (prn :duuu2)
-    ;; level, ns may/not be compile-time consts:
-    (when-not (timbre/-elide? level ?ns-str)
-      (let [{:keys [config ?err ?file ?line ?base-data spying?]
-             :or   {config 'taoensso.timbre/*config*
-                    ?err   :auto ; => Extract as err-type v0
-                    ?file  @sci/file
-                    ;; NB waiting on CLJ-865:
-                    ?line (fline &form)}} opts
-
-            ?file (when (not= ?file "NO_SOURCE_PATH") ?file)
-
-            ;; Identifies this particular macro expansion; note that this'll
-            ;; be fixed for any fns wrapping `log!` (notably `tools.logging`,
-            ;; `slf4j-timbre`, etc.):
-            callsite-id
-            (hash [level msg-type args ; Unevaluated args (arg forms)
-                   ?ns-str ?file ?line (rand)])]
-
-        (prn :dude :args args)
-        `(taoensso.timbre/-log! ~config ~level ~?ns-str ~?file ~?line ~msg-type ~?err
-                                (delay [~@args]) ~?base-data ~callsite-id ~spying?)))))
-
 (defn make-ns [ns sci-ns ks]
   (reduce (fn [ns-map [var-name var]]
             (let [m (meta var)
-                  no-doc (:no-doc m)
                   doc (:doc m)
                   arglists (:arglists m)]
-              (if no-doc ns-map
-                  (assoc ns-map var-name
-                         (sci/new-var (symbol var-name) @var
-                                      (cond-> {:ns sci-ns
-                                               :name (:name m)}
-                                        (:macro m) (assoc :macro true)
-                                        doc (assoc :doc doc)
-                                        arglists (assoc :arglists arglists)))))))
+              (assoc ns-map var-name
+                     (sci/new-var (symbol var-name) @var
+                                  (cond-> {:ns sci-ns
+                                           :name (:name m)}
+                                    (:macro m) (assoc :macro true)
+                                    doc (assoc :doc doc)
+                                    arglists (assoc :arglists arglists))))))
           {}
           (select-keys (ns-publics ns) ks)))
-
-(def atomic-println @#'enc/println-atomic)
 
 (defn println-appender
   "Returns a simple `println` appender for Clojure/Script.
@@ -151,7 +114,7 @@
                :*err* @sci/err
                stream)]
          (binding [*out* stream]
-           (atomic-println (force output_)))))}))
+           (enc/println-atomic (force output_)))))}))
 
 (def default-config (assoc-in timbre/*config* [:appenders :println]
                               (println-appender {:stream :auto})))
