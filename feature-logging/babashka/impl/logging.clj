@@ -37,7 +37,7 @@
      :keys [loc level msg-type args vargs
             config ?err ?base-data spying?]
      :or
-     {config `*config*
+     {config 'taoensso.timbre/*config*
       ?err   :auto}}]
 
    (have [:or nil? sequential? symbol?] args)
@@ -55,7 +55,7 @@
        (let [vargs-form
              (or vargs
                  (if (symbol? args)
-                   `(enc/ensure-vec ~args)
+                   `(taoensso.timbre/-ensure-vec ~args)
                    `[              ~@args]))]
 
          ;; Note pre-resolved expansion
@@ -120,7 +120,7 @@
           {}
           (select-keys (ns-publics ns) ks)))
 
-(def atomic-println @#'appenders/atomic-println)
+(def atomic-println @#'enc/println-atomic)
 
 (defn println-appender
   "Returns a simple `println` appender for Clojure/Script.
@@ -186,7 +186,8 @@
          'merge-config! (sci/copy-var merge-config! tns)
          'set-level! (sci/copy-var set-level! tns)
          'println-appender (sci/copy-var println-appender tns)
-         '-log-and-rethrow-errors (sci/copy-var -log-and-rethrow-errors tns)))
+         '-log-and-rethrow-errors (sci/copy-var -log-and-rethrow-errors tns)
+         '-ensure-vec (sci/copy-var enc/ensure-vec tns)))
 
 (def timbre-appenders-namespace
   (let [tan (sci/create-ns 'taoensso.timbre.appenders.core nil)]
