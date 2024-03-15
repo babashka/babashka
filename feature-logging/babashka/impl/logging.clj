@@ -13,55 +13,77 @@
 
 (defn- fline [and-form] (:line (meta and-form)))
 
+(defonce callsite-counter
+  (enc/counter))
+
 (defmacro log! ; Public wrapper around `-log!`
-  "Core low-level log macro. Useful for tooling, etc.
-    * `level`    - must eval to a valid logging level
-    * `msg-type` - must eval to e/o #{:p :f nil}
-    * `opts`     - ks e/o #{:config :?err :?ns-str :?file :?line :?base-data :spying?}
-  Supports compile-time elision when compile-time const vals
-  provided for `level` and/or `?ns-str`."
-  [level msg-type args & [opts]]
-  (have [:or nil? sequential?] args) ; To allow -> (delay [~@args])
-  (let [{:keys [?ns-str] :or {?ns-str (str @sci/ns)}} opts]
-    ;; level, ns may/not be compile-time consts:
-    (when-not (timbre/-elide? level ?ns-str)
-      (let [{:keys [config ?err ?file ?line ?base-data spying?]
-             :or   {config 'taoensso.timbre/*config*
-                    ?err   :auto ; => Extract as err-type v0
-                    ?file  @sci/file
-                    ;; NB waiting on CLJ-865:
-                    ?line (fline &form)}} opts
+  "Core low-level log macro. Useful for tooling/library authors, etc.
 
-            ?file (when (not= ?file "NO_SOURCE_PATH") ?file)
+       * `level`    - must eval to a valid logging level
+       * `msg-type` - must eval to e/o #{:p :f nil}
+       * `args`     - arguments seq (ideally vec) for logging call
+       * `opts`     - ks e/o #{:config ?err ?base-data spying?
+                               :?ns-str :?file :?line :?column}
 
-            ;; Identifies this particular macro expansion; note that this'll
-            ;; be fixed for any fns wrapping `log!` (notably `tools.logging`,
-            ;; `slf4j-timbre`, etc.):
-            callsite-id
-            (hash [level msg-type args ; Unevaluated args (arg forms)
-                   ?ns-str ?file ?line (rand)])]
+     Supports compile-time elision when compile-time const vals
+     provided for `level` and/or `?ns-str`.
 
-        `(taoensso.timbre/-log! ~config ~level ~?ns-str ~?file ~?line ~msg-type ~?err
-                                (delay [~@args]) ~?base-data ~callsite-id ~spying?)))))
+     Logging wrapper examples:
+
+       (defn     log-wrapper-fn    [& args]                        (timbre/log! :info :p  args))
+       (defmacro log-wrapper-macro [& args] (timbre/keep-callsite `(timbre/log! :info :p ~args)))"
+
+  ([{:as   opts
+     :keys [loc level msg-type args vargs
+            config ?err ?base-data spying?]
+     :or
+     {config 'taoensso.timbre/*config*
+      ?err   :auto}}]
+
+   (have [:or nil? sequential? symbol?] args)
+   (let [callsite-id (callsite-counter)
+         {:keys [line column]} (merge (meta &form) loc)
+         {:keys [ns file line column]} {:ns @sci/ns :file @sci/file :line line :column column}
+         ns     (or (get opts :?ns-str) ns)
+         file   (or (get opts :?file)   file)
+         line   (or (get opts :?line)   line)
+         column (or (get opts :?column) column)
+
+         elide? (and #_(enc/const-forms? level ns) (timbre/-elide? level ns))]
+
+     (when-not elide?
+       (let [vargs-form
+             (or vargs
+                 (if (symbol? args)
+                   `(taoensso.timbre/-ensure-vec ~args)
+                   `[              ~@args]))]
+
+         ;; Note pre-resolved expansion
+         `(taoensso.timbre/-log! ~config ~level ~ns ~file ~line ~column ~msg-type ~?err
+                                 (delay ~vargs-form) ~?base-data ~callsite-id ~spying?)))))
+
+  ([level msg-type args & [opts]]
+   (let [{:keys [line column]} (merge (meta &form))
+         {:keys [ns file line column]} {:ns @sci/ns :file @sci/file :line line :column column}
+         loc  {:ns ns :file file :line line :column column}
+         opts (assoc (conj {:loc loc} opts)
+                     :level level, :msg-type msg-type, :args args)]
+     `(taoensso.timbre/log! ~opts))))
 
 (defn make-ns [ns sci-ns ks]
   (reduce (fn [ns-map [var-name var]]
             (let [m (meta var)
-                  no-doc (:no-doc m)
                   doc (:doc m)
                   arglists (:arglists m)]
-              (if no-doc ns-map
-                  (assoc ns-map var-name
-                         (sci/new-var (symbol var-name) @var
-                                      (cond-> {:ns sci-ns
-                                               :name (:name m)}
-                                        (:macro m) (assoc :macro true)
-                                        doc (assoc :doc doc)
-                                        arglists (assoc :arglists arglists)))))))
+              (assoc ns-map var-name
+                     (sci/new-var (symbol var-name) @var
+                                  (cond-> {:ns sci-ns
+                                           :name (:name m)}
+                                    (:macro m) (assoc :macro true)
+                                    doc (assoc :doc doc)
+                                    arglists (assoc :arglists arglists))))))
           {}
           (select-keys (ns-publics ns) ks)))
-
-(def atomic-println @#'appenders/atomic-println)
 
 (defn println-appender
   "Returns a simple `println` appender for Clojure/Script.
@@ -92,7 +114,7 @@
                :*err* @sci/err
                stream)]
          (binding [*out* stream]
-           (atomic-println (force output_)))))}))
+           (enc/println-atomic (force output_)))))}))
 
 (def default-config (assoc-in timbre/*config* [:appenders :println]
                               (println-appender {:stream :auto})))
@@ -127,7 +149,8 @@
          'merge-config! (sci/copy-var merge-config! tns)
          'set-level! (sci/copy-var set-level! tns)
          'println-appender (sci/copy-var println-appender tns)
-         '-log-and-rethrow-errors (sci/copy-var -log-and-rethrow-errors tns)))
+         '-log-and-rethrow-errors (sci/copy-var -log-and-rethrow-errors tns)
+         '-ensure-vec (sci/copy-var enc/ensure-vec tns)))
 
 (def timbre-appenders-namespace
   (let [tan (sci/create-ns 'taoensso.timbre.appenders.core nil)]
