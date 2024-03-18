@@ -9,7 +9,14 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-- Fix #1679: fix wrapping `timbre/log!`
+- Fix #1679: bump timbre and fix wrapping `timbre/log!`
+- Add `java.util.concurrent.CountDownLatch`
+- Add `java.lang.ThreadLocal`
+- Bump `babashka.process`
+- Bump httpkit to `2.8.0-RC1`
+- Bump clojure to `1.11.2`
+- Bump deps.clj
+- Bump `babashka.cli`
 
 ## 1.3.189 (2024-02-22)
 
