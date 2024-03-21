@@ -26,7 +26,7 @@ pushd "$INSTALL_DIR" >/dev/null
 if ! [ -d "$GRAALVM_DIR_NAME" ]; then
     echo "Downloading GraalVM $GRAALVM_PLATFORM-$GRAALVM_ARCH-$GRAALVM_VERSION on '$PWD'..."
     echo "$DOWNLOAD_URL"
-    curl -LO "$DOWNLOAD_URL"
+    curl --fail -LO "$DOWNLOAD_URL"
     ls -la
     mkdir "$GRAALVM_DIR_NAME"
     tar xzvf "$GRAALVM_FILENAME" -C "$GRAALVM_DIR_NAME" --strip-components 1
