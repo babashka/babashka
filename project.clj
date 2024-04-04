@@ -25,7 +25,7 @@
                  [borkdude/edamame "1.4.24"]
                  [borkdude/graal.locking "0.0.2"]
                  [org.clojure/tools.cli "1.0.214"]
-                 [cheshire "5.12.0"]
+                 [cheshire "5.13.0"]
                  [nrepl/bencode "1.1.0"]
                  [borkdude/sci.impl.reflector "0.0.1"]
                  [org.babashka/sci.impl.types "0.0.2"]
