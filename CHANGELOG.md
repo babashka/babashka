@@ -17,6 +17,7 @@ A preview of the next release can be installed from
 - Bump clojure to `1.11.2`
 - Bump deps.clj
 - Bump `babashka.cli`
+- Bump `cheshire` to `5.13.0`
 
 ## 1.3.189 (2024-02-22)
 
