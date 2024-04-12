@@ -9,7 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-- Fix #1679: bump timbre and fix wrapping `timbre/log!`
+- Fix [#1679](https://github.com/babashka/babashka/issues/1679): bump timbre and fix wrapping `timbre/log!`
 - Add `java.util.concurrent.CountDownLatch`
 - Add `java.lang.ThreadLocal`
 - Bump `babashka.process`
@@ -18,6 +18,7 @@ A preview of the next release can be installed from
 - Bump deps.clj
 - Bump `babashka.cli`
 - Bump `cheshire` to `5.13.0`
+- Bump `http-client` to `0.4.17`
 
 ## 1.3.189 (2024-02-22)
 
