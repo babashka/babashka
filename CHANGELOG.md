@@ -7,6 +7,10 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## Unreleased
+
+- Fix [#1688](https://github.com/babashka/babashka/issues/1688): use-fixtures should add metadata to `*ns*`
+
 ## 1.3.190 (2024-04-17)
 
 - Fix [#1679](https://github.com/babashka/babashka/issues/1679): bump timbre and fix wrapping `timbre/log!`
