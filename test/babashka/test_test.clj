@@ -37,24 +37,26 @@
 (deftest fixtures-test
   (let [output (bb "
 (require '[clojure.test :as t])
-(defn once [f] (prn :once-before) (f) (prn :once-after))
-(defn each [f] (prn :each-before) (f) (prn :each-after))
+(defn once [f] (prn :once-before) (f)
+(prn :once-after)
+(prn (some? (::t/once-fixtures (meta *ns*)))))
+
+(defn each [f] (prn :each-before) (f) (prn :each-after)
+(prn (some? (::t/each-fixtures (meta *ns*)))))
 (t/use-fixtures :once once)
 (t/use-fixtures :each each)
 (t/deftest foo)
 (t/deftest bar)
-(t/run-tests)
-(prn (some? (::t/each-fixtures (meta *ns*))))
-(prn (some? (::t/once-fixtures (meta *ns*))))")]
-    (println output)
+(t/run-tests)")]
     (is (str/includes? output (str/trim "
 :once-before
 :each-before
 :each-after
+true
 :each-before
 :each-after
-:once-after
 true
+:once-after
 true")))))
 
 (deftest with-test
