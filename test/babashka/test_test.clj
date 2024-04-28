@@ -43,14 +43,19 @@
 (t/use-fixtures :each each)
 (t/deftest foo)
 (t/deftest bar)
-(t/run-tests)")]
+(t/run-tests)
+(prn (some? (::t/each-fixtures (meta *ns*))))
+(prn (some? (::t/once-fixtures (meta *ns*))))")]
+    (println output)
     (is (str/includes? output (str/trim "
 :once-before
 :each-before
 :each-after
 :each-before
 :each-after
-:once-after")))))
+:once-after
+true
+true")))))
 
 (deftest with-test
   (let [output (bb "

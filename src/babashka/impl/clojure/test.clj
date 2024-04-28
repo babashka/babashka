@@ -660,14 +660,12 @@
 
 ;;; DEFINING FIXTURES
 
-(def ^:private ns->fixtures (atom {}))
-
 (defn- add-ns-meta
   "Adds elements in coll to the current namespace metadata as the
   value of key."
   {:added "1.1"}
   [key coll]
-  (swap! ns->fixtures assoc-in [(sci-namespaces/sci-ns-name @sci/ns) key] coll))
+  (alter-meta! @sci/ns assoc key coll))
 
 (defmulti use-fixtures
   "Wrap test runs in a fixture function to perform setup and
@@ -677,10 +675,10 @@
   (fn [fixture-type & args] fixture-type))
 
 (defmethod use-fixtures :each [fixture-type & args]
-  (add-ns-meta ::each-fixtures args))
+  (add-ns-meta :clojure.test/each-fixtures args))
 
 (defmethod use-fixtures :once [fixture-type & args]
-  (add-ns-meta ::once-fixtures args))
+  (add-ns-meta :clojure.test/once-fixtures args))
 
 (defn- default-fixture
   "The default, empty, fixture function.  Just calls its argument."
@@ -731,10 +729,8 @@
   [vars]
   (doseq [[ns vars] (group-by (comp :ns meta) vars)
           :when ns]
-    (let [ns-name (sci-namespaces/sci-ns-name ns)
-          fixtures (get @ns->fixtures ns-name)
-          once-fixture-fn (join-fixtures (::once-fixtures fixtures))
-          each-fixture-fn (join-fixtures (::each-fixtures fixtures))]
+    (let [once-fixture-fn (join-fixtures (:clojure.test/once-fixtures (meta ns)))
+          each-fixture-fn (join-fixtures (:clojure.test/each-fixtures (meta ns)))]
       (once-fixture-fn
        (fn []
          (doseq [v vars]
