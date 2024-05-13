@@ -10,6 +10,7 @@
    [clojure.string :as str]
    [clojure.test :as test :refer [deftest is testing]]
    [flatland.ordered.map :refer [ordered-map]]
+   [flatland.ordered.set :refer [ordered-set]]
    [sci.core :as sci]))
 
 (defn bb [input & args]
@@ -632,7 +633,8 @@
   (is (= 2 (bb nil "(set! *data-readers* {'t/tag inc}) #t/tag 1"))))
 
 (deftest ordered-test
-  (is (= (ordered-map :a 1 :b 2) (bb nil "(flatland.ordered.map/ordered-map :a 1 :b 2)"))))
+  (is (= (ordered-map :a 1 :b 2) (bb nil "(flatland.ordered.map/ordered-map :a 1 :b 2)")))
+  (is (= (ordered-set :a 1 :b 2) (bb nil "(flatland.ordered.set/ordered-set :a 1 :b 2)"))))
 
 (deftest data-diff-test
   (is (= [[nil 1] [nil 2] [1 nil 2]] (bb nil "(require '[clojure.data :as d]) (d/diff [1 1 2] [1 2 2])"))))

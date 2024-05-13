@@ -427,7 +427,8 @@ Use bb run --help to show this help output.
                          'clojure.data.xml.event @(resolve 'babashka.impl.xml/xml-event-namespace)
                          'clojure.data.xml.tree @(resolve 'babashka.impl.xml/xml-tree-namespace))
     features/yaml? (assoc 'clj-yaml.core @(resolve 'babashka.impl.yaml/yaml-namespace)
-                          'flatland.ordered.map @(resolve 'babashka.impl.ordered/ordered-map-ns))
+                          'flatland.ordered.map @(resolve 'babashka.impl.ordered/ordered-map-ns)
+                          'flatland.ordered.set @(resolve 'babashka.impl.ordered/ordered-set-ns))
     features/jdbc? (assoc 'next.jdbc @(resolve 'babashka.impl.jdbc/njdbc-namespace)
                           'next.jdbc.sql @(resolve 'babashka.impl.jdbc/next-sql-namespace)
                           'next.jdbc.result-set @(resolve 'babashka.impl.jdbc/result-set-namespace))
@@ -487,7 +488,8 @@ Use bb run --help to show this help output.
 
 (def edn-readers (cond-> {}
                    features/yaml?
-                   (assoc 'ordered/map @(resolve 'flatland.ordered.map/ordered-map))
+                   (assoc 'ordered/map @(resolve 'flatland.ordered.map/ordered-map)
+                          'ordered/set @(resolve 'flatland.ordered.set/ordered-set))
                    features/xml?
                    (assoc 'xml/ns @(resolve 'clojure.data.xml.name/uri-symbol)
                           'xml/element @(resolve 'clojure.data.xml.node/tagged-element))))

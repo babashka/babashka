@@ -600,6 +600,7 @@
                       clojure.lang.IRef
                       clojure.lang.ISeq
                       clojure.lang.IPersistentVector
+                      clojure.lang.ITransientSet
                       clojure.lang.ITransientVector
                       clojure.lang.Iterate
                       clojure.lang.LispReader$Resolver
