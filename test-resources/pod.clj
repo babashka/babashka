@@ -50,7 +50,8 @@
               (do (write {"format" (if (= format :json)
                                      "json"
                                      "edn")
-                          "readers" {"ordered/map" "flatland.ordered.map/ordered-map"}
+                          "readers" {"ordered/map" "flatland.ordered.map/ordered-map"
+                                     "ordered/set" "flatland.ordered.set/ordered-set"}
                           "namespaces"
                           [{"name" "pod.test-pod"
                             "vars" [{"name" "add-sync"}
@@ -64,7 +65,8 @@
                                     {"name" "error"}
                                     {"name" "print"}
                                     {"name" "print-err"}
-                                    {"name" "ordered-map"}]}]
+                                    {"name" "ordered-map"}
+                                    {"name" "ordered-set"}]}]
                           "ops" {"shutdown" {}}})
                   (recur))
               :invoke (let [var (-> (get message "var")
@@ -120,6 +122,11 @@
                           (write
                            {"value" "#ordered/map([:a 1] [:b 2])"
                             "status" ["done"]
+                            "id" id})
+                          pod.test-pod/ordered-set
+                          (write
+                           {"value" "#ordered/set([:a 1 :b 2])"
+                            "status" ["done"]
                             "id" id}))
                         (recur))
               :shutdown (System/exit 0))))))))
@@ -159,4 +166,7 @@
           (debug "Running reader test")
           (require '[flatland.ordered.map :refer [ordered-map]])
           (prn (= ((resolve 'flatland.ordered.map/ordered-map) :a 1 :b 2)
-                  ((resolve 'pod.test-pod/ordered-map)))))))))
+                  ((resolve 'pod.test-pod/ordered-map))))
+          (require '[flatland.ordered.set :refer [ordered-set]])
+          (prn (= ((resolve 'flatland.ordered.set/ordered-set) :a 1 :b 2)
+                  ((resolve 'pod.test-pod/ordered-set)))))))))
