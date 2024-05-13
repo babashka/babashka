@@ -7,7 +7,7 @@
 (def omap-ns (sci/create-ns 'flatland.ordered.map nil))
 (def oset-ns (sci/create-ns 'flatland.ordered.set nil))
 
-(def ordered-ns
+(def ordered-map-ns
   {'ordered-map (sci/copy-var omap/ordered-map omap-ns)})
 
 (def ordered-set-ns
