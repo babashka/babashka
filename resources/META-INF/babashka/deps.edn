@@ -52,8 +52,7 @@
         org.clojure/core.rrb-vector {:mvn/version "0.1.2"}
         org.babashka/cli {:mvn/version "0.8.58"}
         org.babashka/http-client {:mvn/version "0.4.16"}
-        ;; native image bloat with ordered 1.5.10
-        org.flatland/ordered {:mvn/version "1.5.9"}}
+        org.flatland/ordered {:mvn/version "1.15.12"}}
  :aliases {:babashka/dev
            {:main-opts ["-m" "babashka.main"]}
            :profile

@@ -44,8 +44,7 @@
              :feature/yaml {:source-paths ["feature-yaml"]
                             :dependencies [[clj-commons/clj-yaml "1.0.27"
                                             :exclusions [org.flatland/ordered]#_#_clj-commons/clj-yaml "0.7.110"]
-                                           ;; 1.15.10 cause native image bloat problem
-                                           [org.flatland/ordered "1.5.9"]]}
+                                           [org.flatland/ordered "1.15.12"]]}
              :feature/jdbc {:source-paths ["feature-jdbc"]
                             :dependencies [[seancorfield/next.jdbc "1.1.610"]]}
              :feature/sqlite [:feature/jdbc {:dependencies [[org.xerial/sqlite-jdbc "3.36.0.3"]]}]
