@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -eo pipefail
+
 if [ "$GRAALVM_HOME" != "" ]
 then
   export JAVA_HOME=$GRAALVM_HOME
@@ -8,13 +10,15 @@ fi
 
 java -version
 
-set -eo pipefail
 unset BABASHKA_PRELOADS
 unset BABASHKA_CLASSPATH
 unset BABASHKA_PRELOADS_TEST
 
 echo "running tests part 1"
 lein "do" clean, test "$@"
+
+echo "running flaky tests"
+lein "do" clean, test :flaky || true
 
 export BABASHKA_PRELOADS='(defn __bb__foo [] "foo") (defn __bb__bar [] "bar")'
 export BABASHKA_PRELOADS_TEST=true
@@ -37,3 +41,13 @@ lein test :only babashka.pod-test
 
 export BABASHKA_SOCKET_REPL_TEST=true
 lein test :only babashka.impl.socket-repl-test
+
+# test invoking script in subdir with bb.edn in parent dir
+unset BABASHKA_PRELOADS
+unset BABASHKA_CLASSPATH
+pushd test-resources/bb_in_root_script_in_other_dir
+if [[ $BABASHKA_TEST_ENV = "native" ]]
+then
+   ../../bb dir/script.clj
+fi
+popd

@@ -1,6 +1,7 @@
 (ns babashka.impl.repl
   {:no-doc true}
   (:require
+   [babashka.impl.clojure.core :as core-extras]
    [babashka.impl.clojure.main :as m]
    [clojure.java.io :as io]
    [clojure.string :as str]
@@ -50,41 +51,46 @@
   ([sci-ctx] (repl sci-ctx nil))
   ([sci-ctx {:keys [:init :read :eval :need-prompt :prompt :flush :print :caught]}]
    (let [in @sci/in]
-     (m/repl
-      :init (or init
-                (fn []
-                  (sci/with-bindings {sci/out @sci/err}
-                    (sio/println "Babashka"
-                                 (str "v" (str/trim (slurp (io/resource "BABASHKA_VERSION"))))
-                                 "REPL.")
-                    (sio/println "Use :repl/quit or :repl/exit to quit the REPL.")
-                    (sio/println "Clojure rocks, Bash reaches.")
-                    (sio/println))
-                  (eval-form sci-ctx `(apply require (quote ~m/repl-requires)))))
-      :read (or read
-                (fn [_request-prompt request-exit]
-                  (if (nil? (r/peek-char in))
-                    request-exit
-                    (let [v (parser/parse-next sci-ctx in)]
-                      (skip-if-eol in)
-                      (if (or (identical? :repl/quit v)
-                              (identical? :repl/exit v))
-                        request-exit
-                        v)))))
-      :eval (or eval
-                (fn [expr]
-                  (sci/with-bindings {sci/file "<repl>"
-                                      sci/*1 *1
-                                      sci/*2 *2
-                                      sci/*3 *3
-                                      sci/*e *e}
-                    (let [ret (eval-form sci-ctx expr)]
-                      ret))))
-      :need-prompt (or need-prompt (fn [] true))
-      :prompt (or prompt #(sio/printf "%s=> " (utils/current-ns-name)))
-      :flush (or flush sio/flush)
-      :print (or print sio/prn)
-      :caught (or caught repl-caught)))))
+     (sci/binding [core-extras/warn-on-reflection @core-extras/warn-on-reflection
+                   core-extras/unchecked-math @core-extras/unchecked-math
+                   core-extras/data-readers @core-extras/data-readers
+                   sci/ns @sci/ns
+                   sci/print-length @sci/print-length]
+       (m/repl
+        :init (or init
+                  (fn []
+                    (sci/with-bindings {sci/out @sci/err}
+                      (sio/println "Babashka"
+                                   (str "v" (str/trim (slurp (io/resource "BABASHKA_VERSION"))))
+                                   "REPL.")
+                      (sio/println "Use :repl/quit or :repl/exit to quit the REPL.")
+                      (sio/println "Clojure rocks, Bash reaches.")
+                      (sio/println))
+                    (eval-form sci-ctx `(apply require (quote ~m/repl-requires)))))
+        :read (or read
+                  (fn [_request-prompt request-exit]
+                    (if (nil? (r/peek-char in))
+                      request-exit
+                      (let [v (parser/parse-next sci-ctx in)]
+                        (skip-if-eol in)
+                        (if (or (identical? :repl/quit v)
+                                (identical? :repl/exit v))
+                          request-exit
+                          v)))))
+        :eval (or eval
+                  (fn [expr]
+                    (sci/with-bindings {sci/file "<repl>"
+                                        sci/*1 *1
+                                        sci/*2 *2
+                                        sci/*3 *3
+                                        sci/*e *e}
+                      (let [ret (eval-form sci-ctx expr)]
+                        ret))))
+        :need-prompt (or need-prompt (fn [] true))
+        :prompt (or prompt #(sio/printf "%s=> " (utils/current-ns-name)))
+        :flush (or flush sio/flush)
+        :print (or print sio/prn)
+        :caught (or caught repl-caught))))))
 
 (defn start-repl!
   ([sci-ctx] (start-repl! sci-ctx nil))

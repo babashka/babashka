@@ -4,34 +4,33 @@ set -euo pipefail
 
 INSTALL_DIR="${1:-$HOME}"
 
-GRAALVM_VERSION="${GRAALVM_VERSION:-21.2.0}"
+GRAALVM_VERSION="${GRAALVM_VERSION:-22}"
 
-case "$BABASHKA_PLATFORM" in
-	macos)
-		GRAALVM_PLATFORM="darwin"
-		;;
-	linux)
-		GRAALVM_PLATFORM="linux"
-		;;
-esac
+GRAALVM_PLATFORM=$BABASHKA_PLATFORM
 
 case "${BABASHKA_ARCH:-}" in
-	aarch64)
-		GRAALVM_ARCH="aarch64"
-		;;
-	*)
-		GRAALVM_ARCH="amd64"
-		;;
+    aarch64)
+        GRAALVM_ARCH="aarch64"
+        ;;
+    *)
+        GRAALVM_ARCH="x64"
+        ;;
 esac
 
-GRAALVM_FILENAME="graalvm-ce-java11-$GRAALVM_PLATFORM-$GRAALVM_ARCH-$GRAALVM_VERSION.tar.gz"
+GRAALVM_DIR_NAME="graalvm-$GRAALVM_VERSION"
+GRAALVM_FILENAME="graalvm-jdk-${GRAALVM_VERSION}_${GRAALVM_PLATFORM}-${GRAALVM_ARCH}_bin.tar.gz"
+DOWNLOAD_URL="https://download.oracle.com/graalvm/22/archive/${GRAALVM_FILENAME}"
 
 pushd "$INSTALL_DIR" >/dev/null
 
-if ! [ -d "graalvm-ce-java11-$GRAALVM_VERSION" ]; then
-	echo "Downloading GraalVM $GRAALVM_PLATFORM-$GRAALVM_ARCH-$GRAALVM_VERSION on '$PWD'..."
-	curl -O -sL "https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-$GRAALVM_VERSION/$GRAALVM_FILENAME"
-	tar xzf "$GRAALVM_FILENAME"
+if ! [ -d "$GRAALVM_DIR_NAME" ]; then
+    echo "Downloading GraalVM $GRAALVM_PLATFORM-$GRAALVM_ARCH-$GRAALVM_VERSION on '$PWD'..."
+    echo "$DOWNLOAD_URL"
+    curl --fail -LO "$DOWNLOAD_URL"
+    ls -la
+    mkdir "$GRAALVM_DIR_NAME"
+    tar xzvf "$GRAALVM_FILENAME" -C "$GRAALVM_DIR_NAME" --strip-components 1
+    ls -la "$GRAALVM_DIR_NAME"
 fi
 
 popd >/dev/null

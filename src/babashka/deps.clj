@@ -22,7 +22,7 @@
 
   Examples:
 
-  (-> (clojure '[-M -e (+ 1 2 3)] {:out :string}) deref :out) returns
+  (-> (clojure {:out :string} '-M '-e '(+ 1 2 3)]) deref :out) returns
   \"6\n\".
 
   (-> @(clojure) :exit) starts a clojure REPL, waits for it
@@ -38,17 +38,13 @@
               *out* @sci/out
               *err* @sci/err
               deps/*dir* (:dir opts)
-              deps/*env* (:env opts)
-              deps/*extra-env* (:extra-env opts)
-              deps/*process-fn* (fn
-                                  ([cmd] (pp/process* {:cmd cmd
-                                                       :prev prev
-                                                       :opts opts}))
-                                  ([cmd _] (pp/process* {:cmd cmd
-                                                         :prev prev
-                                                         :opts opts})))
-              deps/*exit-fn* (fn
-                               ([_])
-                               ([_exit-code msg]
-                                (throw (Exception. msg))))]
+              deps/*aux-process-fn* (fn [{:keys [cmd out]}]
+                                      (pp/shell (assoc opts :out out :cmd cmd)))
+              deps/*clojure-process-fn* (fn [{:keys [cmd]}]
+                                  (pp/process* {:cmd cmd
+                                                :prev prev
+                                                :opts opts}))
+              deps/*exit-fn* (fn [{:keys [message]}]
+                               (when message
+                                 (throw (Exception. message))))]
       (apply deps/-main cmd))))

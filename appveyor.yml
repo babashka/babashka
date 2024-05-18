@@ -2,13 +2,13 @@
 
 version: "v-{build}"
 
-image: Visual Studio 2017
+image: Visual Studio 2022
 
 clone_folder: C:\projects\babashka
 
 environment:
-  GRAALVM_HOME: C:\projects\babashka\graalvm\graalvm-ce-java11-22.3.0
-  JAVA_HOME: C:\projects\babashka\graalvm\graalvm-ce-java11-22.3.0
+  GRAALVM_HOME: C:\projects\babashka\graalvm\graalvm-jdk-22+36.1
+  JAVA_HOME: C:\projects\babashka\graalvm\graalvm-jdk-22+36.1
   BABASHKA_XMX: "-J-Xmx5g"
 
 skip_commits:
@@ -23,6 +23,9 @@ cache:
 
 clone_script:
 - cmd: git config --global core.autocrlf true
+
+- cmd: git config --global core.symlinks true
+
 - ps: >-
     if(-not $env:APPVEYOR_PULL_REQUEST_NUMBER) {
       git clone -q --branch=$env:APPVEYOR_REPO_BRANCH https://github.com/$env:APPVEYOR_REPO_NAME.git $env:APPVEYOR_BUILD_FOLDER
@@ -36,9 +39,12 @@ clone_script:
     }
 - cmd: git submodule update --init --recursive
 
+- cmd: git reset --hard
+
 build_script:
+# TODO: Extract the zip by removing the top level folder to remove the hardcoded path for GRAALVM_HOME
 - cmd: >-
-    powershell -Command "if (Test-Path('graalvm')) { return } else { (New-Object Net.WebClient).DownloadFile('https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-22.3.0/graalvm-ce-java11-windows-amd64-22.3.0.zip', 'graalvm.zip') }"
+    powershell -Command "if (Test-Path('graalvm')) { return } else { (New-Object Net.WebClient).DownloadFile('https://download.oracle.com/graalvm/22/archive/graalvm-jdk-22_windows-x64_bin.zip', 'graalvm.zip') }"
 
     powershell -Command "if (Test-Path('graalvm')) { return } else { Expand-Archive graalvm.zip graalvm }"
 
@@ -55,8 +61,6 @@ build_script:
 # see https://github.com/quarkusio/quarkus/pull/7663
 
 - cmd: >-
-    call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
-
     call script/uberjar.bat
 
     call script/compile.bat
@@ -69,11 +73,15 @@ build_script:
 
     bb --config .build/bb.edn --deps-root . release-artifact %zip%
 
+before_test:
+- cmd: >-
     set BABASHKA_CLASSPATH=
 
     set BABASHKA_TEST_ENV=native
 
-    call script/test.bat
+test_script:
+- cmd: >-
+    call script/test.bat :windows
 
     call script/run_lib_tests.bat
 

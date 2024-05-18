@@ -29,7 +29,12 @@ call %GRAALVM_HOME%\bin\native-image.cmd ^
   "-H:+ReportExceptionStackTraces" ^
   "--verbose" ^
   "--no-fallback" ^
-  "%BABASHKA_XMX%"
+  "--enable-preview" ^
+  "--install-exit-handlers" ^
+  "-march=compatibility" ^
+  "-O1" ^
+  "%BABASHKA_XMX%" ^
+  %*
 
 if %errorlevel% neq 0 exit /b %errorlevel%
 

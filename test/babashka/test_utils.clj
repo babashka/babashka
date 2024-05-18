@@ -5,7 +5,6 @@
    [babashka.impl.common :as common]
    [babashka.main :as main]
    [babashka.process :as p]
-   [clojure.edn :as edn]
    [clojure.string :as str]
    [clojure.test :as test :refer [*report-counters*]]
    [clojure.tools.reader.reader-types :as r]
@@ -45,7 +44,7 @@
         (System/exit 1)))))
 
 (defn bb-jvm [input-or-opts & args]
-  (reset! cp/cp-state nil)
+  (alter-var-root #'cp/the-url-loader (constantly (delay (cp/new-loader []))))
   (reset! main/env {})
   (vreset! common/bb-edn nil)
   (System/clearProperty "babashka.config")

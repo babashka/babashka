@@ -6,7 +6,6 @@
    [babashka.impl.process :as pp]
    [babashka.process :as p]
    [clojure.core.async :refer [<!!]]
-   [clojure.java.io :as io]
    [clojure.string :as str]
    [rewrite-clj.node :as node]
    [rewrite-clj.parser :as parser]
@@ -30,7 +29,7 @@
   (let [log-level @log-level]
     (when
         ;; do not log when level is :error
-        (identical? :info log-level)
+     (identical? :info log-level)
       (binding [*out* *err*]
         (println (format "[bb %s]" (:name @task)) (str/join " " strs))))))
 
@@ -67,29 +66,18 @@
       (apply log-info args)
       (handle-non-zero (pp/process* {:opts opts :cmd cmd :prev prev}) opts))))
 
-(defn clojure [cmd & args]
-  (let [[opts cmd args]
+(defn clojure [& args]
+  (let [[cmd & args] args
+        [opts cmd args]
         (if (map? cmd)
           [cmd (first args) (rest args)]
           [nil cmd args])
-        opts (if-let [o (:out opts)]
-               (if (string? o)
-                 (update opts :out io/file)
-                 opts)
-               opts)
-        opts (if-let [o (:err opts)]
-               (if (string? o)
-                 (update opts :err io/file)
-                 opts)
-               opts)
-        cmd (if (.exists (io/file cmd))
-              [cmd]
-              (p/tokenize cmd))
-        cmd (into cmd args)
+        cmd (cond-> args
+              cmd (->> (cons cmd)))
         local-log-level (:log-level opts)]
     (sci/binding [log-level (or local-log-level @log-level)]
       (apply log-info (cons "clojure" cmd))
-      (handle-non-zero (deps/clojure cmd (merge default-opts opts)) opts))))
+      (handle-non-zero (apply deps/clojure (merge default-opts opts) cmd) opts))))
 
 (defn -wait [res]
   (when res
@@ -139,7 +127,7 @@
   "Used internally for debugging"
   [& strs]
   (locking o
-    (apply  prn strs)))
+    (apply prn strs)))
 
 (defn wait-tasks [deps]
   (if deps
@@ -397,7 +385,7 @@
         loc (zip/down loc)]
     (into []
           (comp
-           (take-nth 2 )
+           (take-nth 2)
            (take-while #(not (zip/end? %)))
            (filter zip/sexpr-able?)
            (map zip/sexpr)
@@ -437,8 +425,11 @@
   ([task] (run task nil))
   ([task {:keys [:parallel]
           :or {parallel (:parallel (current-task))}}]
-   (let [[[expr]] (assemble-task task parallel)]
-     (sci/eval-string* (ctx) expr))))
+   (let [[[expr] exit-code] (assemble-task task parallel)]
+     (if (or (nil? exit-code) (zero? exit-code))
+       (sci/eval-string* (ctx) expr)
+       (throw (ex-info nil
+                       {:babashka/exit exit-code}))))))
 
 (defn exec
   ([sym]

@@ -5,25 +5,25 @@ RUN apt update
 RUN apt install --no-install-recommends -yy build-essential zlib1g-dev
 WORKDIR "/opt"
 
-ENV GRAALVM_VERSION="22.3.0"
+ENV GRAALVM_VERSION="22"
 ARG TARGETARCH
 # Do not set those directly, use TARGETARCH instead
 ENV BABASHKA_ARCH=
 ENV GRAALVM_ARCH=
 RUN if [ "${TARGETARCH}" = "" ] || [ "${TARGETARCH}" = "amd64" ]; then \
-      export GRAALVM_ARCH=amd64; export BABASHKA_ARCH=x86_64; \
+      export GRAALVM_ARCH=x64; export BABASHKA_ARCH=x86_64; \
     elif [ "${TARGETARCH}" = "arm64" ]; then \
       export GRAALVM_ARCH=aarch64; \
     fi && \
     echo "Installing GraalVM for ${GRAALVM_ARCH}" && \
-    curl -sLO https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-${GRAALVM_VERSION}/graalvm-ce-java11-linux-${GRAALVM_ARCH}-${GRAALVM_VERSION}.tar.gz && \
-    tar -xzf graalvm-ce-java11-linux-${GRAALVM_ARCH}-${GRAALVM_VERSION}.tar.gz && \
-    rm graalvm-ce-java11-linux-${GRAALVM_ARCH}-${GRAALVM_VERSION}.tar.gz
+    curl -sLO https://download.oracle.com/graalvm/21/archive/graalvm-jdk-${GRAALVM_VERSION}_linux-${GRAALVM_ARCH}_bin.tar.gz
+    mkdir "graalvm-$GRAALVM_VERSION"
+    tar -xzf graalvm-jdk-${GRAALVM_VERSION}_linux-${GRAALVM_ARCH}_bin.tar.gz -C graalvm --strip-components 1
 
 ARG BABASHKA_XMX="-J-Xmx4500m"
 
-ENV GRAALVM_HOME="/opt/graalvm-ce-java11-${GRAALVM_VERSION}"
-ENV JAVA_HOME="/opt/graalvm-ce-java11-${GRAALVM_VERSION}/bin"
+ENV GRAALVM_HOME="/opt/graalvm-$GRAALVM_VERSION"
+ENV JAVA_HOME="$GRAALVM_HOME/bin"
 ENV PATH="$JAVA_HOME:$PATH"
 ENV BABASHKA_XMX=$BABASHKA_XMX
 
@@ -73,7 +73,9 @@ RUN ./script/compile
 
 FROM ubuntu:latest
 RUN apt-get update && apt-get install -y curl \
-        && mkdir -p /usr/local/bin
+    && rm -rf /var/lib/apt/lists/* \
+    && mkdir -p /usr/local/bin
+
 COPY --from=BASE /opt/target/metabom.jar /opt/babashka-metabom.jar
 COPY --from=BASE /opt/bb /usr/local/bin/bb
 CMD ["bb"]

@@ -37,7 +37,7 @@ reasons:
 
 ## Requirements
 
-You need [lein](https://leiningen.org/) for running JVM tests and/or producing uberjars. For building binaries you need GraalVM. Currently we use java11-22.3.0.
+You need [lein](https://leiningen.org/) for running JVM tests and/or producing uberjars. For building binaries you need GraalVM. Currently we use jdk-21.0.0.1
 
 ## Clone repository
 

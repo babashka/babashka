@@ -44,7 +44,7 @@
 
 (deftest logging-test
   (let [res (tu/bb nil (pr-str program))]
-    (is (= 17 (count (re-seq #"\[dude:.\]" res))))
+    (is (= 8 (count (re-seq #"\[dude:.\]" res))))
     (is (= 6 (count (re-seq #"DEBUG" res))))
     (is (= 11 (count (re-seq #"INFO" res)))))
   (testing "println appender works with with-out-str"
@@ -110,3 +110,11 @@
       (is (= 3 (count (re-seq #"\"test warn\"" res)))))
     (testing "lists are printed readably"
       (is (= 2 (count (re-seq #"\(\\a \\b\)" res)))))))
+
+(deftest timbre-log!-test
+  (is (str/includes? (tu/bb nil
+                            (pr-str '(do (require '[taoensso.timbre :as timbre])
+                                         (defn log-wrapper [& args]
+                                           (timbre/log! :info :p args))
+                                         (log-wrapper "hallo"))))
+                     "hallo")))

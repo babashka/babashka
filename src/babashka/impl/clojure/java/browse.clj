@@ -25,7 +25,7 @@
       (case os
         :mac (sh "open" url)
         :linux (sh "xdg-open" url)
-        :windows (sh "cmd" "/C" "start" url)))))
+        :windows (sh "cmd" "/C" "start" (.replace url "&" "^&"))))))
 
 (def browse-namespace
   {'*open-url-script* open-url-script

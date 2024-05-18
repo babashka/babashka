@@ -15,15 +15,6 @@
 (defn locking* [form bindings v f & args]
   (apply @#'locking/locking form bindings v f args))
 
-(defn time*
-  "Evaluates expr and prints the time it took.  Returns the value of
-  expr."
-  [_ _ expr]
-  `(let [start# (. System (nanoTime))
-         ret# ~expr]
-     (prn (str "Elapsed time: " (/ (double (- (. System (nanoTime)) start#)) 1000000.0) " msecs"))
-     ret#))
-
 (defn core-dynamic-var
   ([sym] (core-dynamic-var sym nil))
   ([sym init-val] (sci/new-dynamic-var sym init-val {:ns clojure-core-ns})))
@@ -34,6 +25,8 @@
 (def compile-files (core-dynamic-var '*compile-files* false))
 (def unchecked-math (core-dynamic-var '*unchecked-math* false))
 (def math-context (core-dynamic-var '*math-context*))
+(def compile-path (core-dynamic-var '*compile-path* *compile-path*))
+(def compiler-options (core-dynamic-var '*compiler-options*))
 
 (defn read+string
   "Added for compatibility. Must be used with
@@ -158,7 +151,6 @@
    'shutdown-agents (copy-core-var shutdown-agents)
    'slurp (copy-core-var slurp)
    'spit (copy-core-var spit)
-   'time (macrofy 'time time*)
    'Throwable->map (copy-core-var Throwable->map)
    'tap> (copy-core-var tap>)
    'add-tap (copy-core-var add-tap)
@@ -173,6 +165,8 @@
    '*compile-files* compile-files
    '*unchecked-math* unchecked-math
    '*math-context* math-context
+   '*compiler-options* compiler-options
+   '*compile-path* compile-path
    'with-precision (sci/copy-var with-precision clojure-core-ns)
    '-with-precision (sci/copy-var -with-precision clojure-core-ns)
    ;; STM
@@ -199,5 +193,7 @@
    'print-method (sci/copy-var print-method clojure-core-ns)
    'print-dup (sci/copy-var print-dup clojure-core-ns)
    'PrintWriter-on (sci/copy-var PrintWriter-on clojure-core-ns)
-   '*compiler-options* (sci/new-dynamic-var '*compiler-options*)}
+   'set-agent-send-executor! (sci/copy-var set-agent-send-executor! clojure-core-ns)
+   'set-agent-send-off-executor! (sci/copy-var set-agent-send-off-executor! clojure-core-ns)
+   }
   )

@@ -19,13 +19,14 @@
    [babashka.impl.clojure.java.shell :refer [shell-namespace]]
    [babashka.impl.clojure.main :as clojure-main :refer [demunge]]
    [babashka.impl.clojure.math :refer [math-namespace]]
+   [babashka.impl.clojure.reflect :refer [reflect-namespace]]
    [babashka.impl.clojure.stacktrace :refer [stacktrace-namespace]]
    [babashka.impl.clojure.tools.reader :refer [reader-namespace]]
    [babashka.impl.clojure.tools.reader-types :refer [edn-namespace
                                                      reader-types-namespace]]
    [babashka.impl.clojure.zip :refer [zip-namespace]]
    [babashka.impl.common :as common]
-   [babashka.impl.core  :as bbcore]
+   [babashka.impl.core :as bbcore]
    [babashka.impl.curl :refer [curl-namespace]]
    [babashka.impl.data :as data]
    [babashka.impl.datafy :refer [datafy-namespace]]
@@ -34,6 +35,7 @@
    [babashka.impl.error-handler :refer [error-handler]]
    [babashka.impl.features :as features]
    [babashka.impl.fs :refer [fs-namespace]]
+   [babashka.impl.http-client :refer [http-client-namespace http-client-websocket-namespace]]
    [babashka.impl.nrepl-server :refer [nrepl-server-namespace]]
    [babashka.impl.pods :as pods]
    [babashka.impl.pprint :refer [pprint-namespace]]
@@ -44,6 +46,7 @@
    [babashka.impl.reify2 :refer [reify-fn]]
    [babashka.impl.repl :as repl]
    [babashka.impl.rewrite-clj :as rewrite]
+   [babashka.impl.sci :refer [sci-core-namespace]]
    [babashka.impl.server :refer [clojure-core-server-namespace]]
    [babashka.impl.socket-repl :as socket-repl]
    [babashka.impl.tasks :as tasks :refer [tasks-namespace]]
@@ -55,6 +58,7 @@
    [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.string :as str]
+   [edamame.core :as edamame]
    [hf.depstar.uberjar :as uberjar]
    [sci.addons :as addons]
    [sci.core :as sci]
@@ -62,6 +66,7 @@
    [sci.impl.copy-vars :as sci-copy-vars]
    [sci.impl.io :as sio]
    [sci.impl.namespaces :as sci-namespaces]
+   [sci.impl.parser]
    [sci.impl.types :as sci-types]
    [sci.impl.unrestrict :refer [*unrestricted*]]
    [sci.impl.vars :as vars])
@@ -139,6 +144,7 @@
   (println "
 Usage: bb [svm-opts] [global-opts] [eval opts] [cmdline args]
 or:    bb [svm-opts] [global-opts] file [cmdline args]
+or:    bb [svm-opts] [global-opts] task [cmdline args]
 or:    bb [svm-opts] [global-opts] subcommand [subcommand opts] [cmdline args]
 
 Substrate VM opts:
@@ -151,10 +157,13 @@ Global opts:
   -cp, --classpath  Classpath to use. Overrides bb.edn classpath.
   --debug           Print debug information and internal stacktrace in case of exception.
   --init <file>     Load file after any preloads and prior to evaluation/subcommands.
-  --config <file>   Replacing bb.edn with file. Relative paths are resolved relative to file.
+  --config <file>   Replace bb.edn with file. Defaults to bb.edn adjacent to invoked file or bb.edn in current dir. Relative paths are resolved relative to bb.edn.
   --deps-root <dir> Treat dir as root of relative paths in config.
+  --prn             Print result via clojure.core/prn
   -Sforce           Force recalculation of the classpath (don't use the cache)
   -Sdeps            Deps data to use as the last deps file to be merged
+  -f, --file <path> Run file
+  --jar <path>      Run uberjar
 
 Help:
 
@@ -166,7 +175,6 @@ Help:
 Evaluation:
 
   -e, --eval <expr>    Evaluate an expression.
-  -f, --file <path>    Evaluate a file.
   -m, --main <ns|var>  Call the -main function from a namespace or call a fully qualified var.
   -x, --exec <var>     Call the fully qualified var. Args are parsed by babashka CLI.
 
@@ -232,8 +240,7 @@ When no eval opts or subcommand is provided, the implicit subcommand is repl.")
  (clojure.repl/doc %1$s)
  true)" arg)))
       [nil 0]
-      [nil 1]))
-  ,)
+      [nil 1])))
 
 (defn print-run-help []
   (println (str/trim "
@@ -320,25 +327,25 @@ Use bb run --help to show this help output.
 
 (def aliases
   (cond->
-      '{str clojure.string
-        set clojure.set
-        tools.cli clojure.tools.cli
-        edn clojure.edn
-        wait babashka.wait
-        signal babashka.signal
-        shell clojure.java.shell
-        io clojure.java.io
-        json cheshire.core
-        curl babashka.curl
-        fs babashka.fs
-        bencode bencode.core
-        deps babashka.deps
-        async clojure.core.async}
-    features/xml?        (assoc 'xml 'clojure.data.xml)
-    features/yaml?       (assoc 'yaml 'clj-yaml.core)
-    features/jdbc?       (assoc 'jdbc 'next.jdbc)
-    features/csv?        (assoc 'csv 'clojure.data.csv)
-    features/transit?    (assoc 'transit 'cognitect.transit)))
+   '{str clojure.string
+     set clojure.set
+     tools.cli clojure.tools.cli
+     edn clojure.edn
+     wait babashka.wait
+     signal babashka.signal
+     shell clojure.java.shell
+     io clojure.java.io
+     json cheshire.core
+     curl babashka.curl
+     fs babashka.fs
+     bencode bencode.core
+     deps babashka.deps
+     async clojure.core.async}
+    features/xml? (assoc 'xml 'clojure.data.xml)
+    features/yaml? (assoc 'yaml 'clj-yaml.core)
+    features/jdbc? (assoc 'jdbc 'next.jdbc)
+    features/csv? (assoc 'csv 'clojure.data.csv)
+    features/transit? (assoc 'transit 'cognitect.transit)))
 
 ;;(def ^:private server-ns-obj (sci/create-ns 'clojure.core.server nil))
 
@@ -349,85 +356,85 @@ Use bb run --help to show this help output.
 (defn catvec [& xs]
   (into [] cat xs))
 
-(def sci-ns (sci/create-ns 'sci.core))
+(def main-var (sci/new-var 'main nil {:ns clojure-main-ns}))
 
 (require '[clojure.reflect] '[clojure.core.memoize :as memoize])
 
 (def namespaces
   (cond->
-      {'user {'*input* (reify
-                         sci-types/Eval
-                         (eval [_ _ctx _bindings]
-                           (force @input-var)))}
-       'clojure.tools.cli tools-cli-namespace
-       'clojure.java.shell shell-namespace
-       'babashka.core bbcore/core-namespace
-       'babashka.nrepl.server nrepl-server-namespace
-       'babashka.wait wait-namespace
-       'babashka.signal signal-ns
-       'clojure.java.io io-namespace
-       'cheshire.core cheshire-core-namespace
-       'clojure.data data/data-namespace
-       'clojure.instant instant/instant-namespace
-       'clojure.stacktrace stacktrace-namespace
-       'clojure.zip zip-namespace
-       'clojure.main {:obj clojure-main-ns
-                      'demunge (sci/copy-var demunge clojure-main-ns)
-                      'repl-requires (sci/copy-var clojure-main/repl-requires clojure-main-ns)
-                      'repl (sci/new-var 'repl
-                                         (fn [& opts]
-                                           (let [opts (apply hash-map opts)]
-                                             (repl/start-repl! (common/ctx) opts))) {:ns clojure-main-ns})
-                      'with-bindings (sci/copy-var clojure-main/with-bindings clojure-main-ns)}
-       'clojure.test t/clojure-test-namespace
-       'clojure.math math-namespace
-       'babashka.classpath classpath-namespace
-       'babashka.classes classes-namespace
-       'clojure.pprint pprint-namespace
-       'babashka.curl curl-namespace
-       'babashka.fs fs-namespace
-       'babashka.pods pods/pods-namespace
-       'bencode.core bencode-namespace
-       'clojure.java.browse browse-namespace
-       'clojure.datafy datafy-namespace
-       'clojure.core.protocols protocols-namespace
-       'babashka.process process-namespace
-       'clojure.core.server clojure-core-server-namespace
-       'babashka.deps deps-namespace
-       'babashka.tasks tasks-namespace
-       'clojure.tools.reader.edn edn-namespace
-       'clojure.tools.reader.reader-types reader-types-namespace
-       'clojure.tools.reader reader-namespace
-       'clojure.core.async async-namespace
-       'clojure.core.async.impl.protocols async-protocols-namespace
-       'rewrite-clj.node rewrite/node-namespace
-       'rewrite-clj.paredit rewrite/paredit-namespace
-       'rewrite-clj.parser rewrite/parser-namespace
-       'rewrite-clj.zip rewrite/zip-namespace
-       'rewrite-clj.zip.subedit rewrite/subedit-namespace
-       'clojure.core.rrb-vector (if features/rrb-vector?
-                                  @(resolve 'babashka.impl.rrb-vector/rrb-vector-namespace)
-                                  {'catvec (sci/copy-var catvec
-                                                         (sci/create-ns 'clojure.core.rrb-vector))})
-       'edamame.core edamame-namespace
-       'sci.core {'format-stacktrace (sci/copy-var sci/format-stacktrace sci-ns)
-                  'stacktrace (sci/copy-var sci/stacktrace sci-ns)
-                  ;; 'eval-string (sci/copy-var sci/eval-string sci-ns)
-                  ;; 'eval-string* (sci/copy-var sci/eval-string* sci-ns)
-                  ;; 'init (sci/copy-var sci/init sci-ns)
-                  ;; 'fork (sci/copy-var sci/fork sci-ns)
-                  }
-       'babashka.cli cli/cli-namespace
-       }
-    features/xml?  (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace)
-                          'clojure.data.xml.event @(resolve 'babashka.impl.xml/xml-event-namespace)
-                          'clojure.data.xml.tree @(resolve 'babashka.impl.xml/xml-tree-namespace))
+   {'user {'*input* (reify
+                      sci-types/Eval
+                      (eval [_ _ctx _bindings]
+                        (force @input-var)))}
+    'clojure.core core-extras
+    'clojure.tools.cli tools-cli-namespace
+    'clojure.java.shell shell-namespace
+    'babashka.core bbcore/core-namespace
+    'babashka.nrepl.server nrepl-server-namespace
+    'babashka.wait wait-namespace
+    'babashka.signal signal-ns
+    'clojure.java.io io-namespace
+    'cheshire.core cheshire-core-namespace
+    'clojure.data data/data-namespace
+    'clojure.instant instant/instant-namespace
+    'clojure.stacktrace stacktrace-namespace
+    'clojure.zip zip-namespace
+    'clojure.main {:obj clojure-main-ns
+                   'demunge (sci/copy-var demunge clojure-main-ns)
+                   'repl-requires (sci/copy-var clojure-main/repl-requires clojure-main-ns)
+                   'repl (sci/new-var 'repl
+                                      (fn [& opts]
+                                        (let [opts (apply hash-map opts)]
+                                          (repl/start-repl! (common/ctx) opts))) {:ns clojure-main-ns})
+                   'with-bindings (sci/copy-var clojure-main/with-bindings clojure-main-ns)
+                   'repl-caught (sci/copy-var repl/repl-caught clojure-main-ns)
+                   'main main-var}
+    'clojure.test t/clojure-test-namespace
+    'clojure.math math-namespace
+    'babashka.classpath classpath-namespace
+    'babashka.classes classes-namespace
+    'clojure.pprint pprint-namespace
+    'babashka.curl curl-namespace
+    'babashka.fs fs-namespace
+    'babashka.pods pods/pods-namespace
+    'bencode.core bencode-namespace
+    'clojure.java.browse browse-namespace
+    'clojure.datafy datafy-namespace
+    'clojure.core.protocols protocols-namespace
+    'babashka.process process-namespace
+    'clojure.core.server clojure-core-server-namespace
+    'babashka.deps deps-namespace
+    'babashka.tasks tasks-namespace
+    'clojure.tools.reader.edn edn-namespace
+    'clojure.tools.reader.reader-types reader-types-namespace
+    'clojure.tools.reader reader-namespace
+    'clojure.core.async async-namespace
+    'clojure.core.async.impl.protocols async-protocols-namespace
+    'clojure.reflect reflect-namespace
+    'rewrite-clj.node rewrite/node-namespace
+    'rewrite-clj.paredit rewrite/paredit-namespace
+    'rewrite-clj.parser rewrite/parser-namespace
+    'rewrite-clj.zip rewrite/zip-namespace
+    'rewrite-clj.zip.subedit rewrite/subedit-namespace
+    'clojure.core.rrb-vector (if features/rrb-vector?
+                               @(resolve 'babashka.impl.rrb-vector/rrb-vector-namespace)
+                               {'catvec (sci/copy-var catvec
+                                                      (sci/create-ns 'clojure.core.rrb-vector))})
+    'edamame.core edamame-namespace
+    'sci.core sci-core-namespace
+    'babashka.cli cli/cli-namespace
+    'babashka.http-client http-client-namespace
+    'babashka.http-client.websocket http-client-websocket-namespace}
+    features/xml? (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace)
+                         'clojure.data.xml.event @(resolve 'babashka.impl.xml/xml-event-namespace)
+                         'clojure.data.xml.tree @(resolve 'babashka.impl.xml/xml-tree-namespace))
     features/yaml? (assoc 'clj-yaml.core @(resolve 'babashka.impl.yaml/yaml-namespace)
-                          'flatland.ordered.map @(resolve 'babashka.impl.ordered/ordered-map-ns))
+                          'flatland.ordered.map @(resolve 'babashka.impl.ordered/ordered-map-ns)
+                          'flatland.ordered.set @(resolve 'babashka.impl.ordered/ordered-set-ns))
     features/jdbc? (assoc 'next.jdbc @(resolve 'babashka.impl.jdbc/njdbc-namespace)
                           'next.jdbc.sql @(resolve 'babashka.impl.jdbc/next-sql-namespace)
                           'next.jdbc.result-set @(resolve 'babashka.impl.jdbc/result-set-namespace))
-    features/csv?  (assoc 'clojure.data.csv @(resolve 'babashka.impl.csv/csv-namespace))
+    features/csv? (assoc 'clojure.data.csv @(resolve 'babashka.impl.csv/csv-namespace))
     features/transit? (assoc 'cognitect.transit @(resolve 'babashka.impl.transit/transit-namespace))
     features/datascript? (assoc 'datascript.core @(resolve 'babashka.impl.datascript/datascript-namespace)
                                 'datascript.db @(resolve 'babashka.impl.datascript/datascript-db-namespace))
@@ -455,8 +462,8 @@ Use bb run --help to show this help output.
                                 @(resolve 'babashka.impl.clojure.test.check/test-check-namespace)
                                 ;; it's better to load this from source by adding the clojure.test.check dependency
                                 #_#_'clojure.test.check.clojure-test
-                                @(resolve 'babashka.impl.clojure.test.check/test-check-clojure-test-namespace))
-    features/spec-alpha? (-> (assoc        ;; spec
+                                  @(resolve 'babashka.impl.clojure.test.check/test-check-clojure-test-namespace))
+    features/spec-alpha? (-> (assoc ;; spec
                               'clojure.spec.alpha @(resolve 'babashka.impl.spec/spec-namespace)
                               'clojure.spec.gen.alpha @(resolve 'babashka.impl.spec/gen-namespace)
                               'clojure.spec.test.alpha @(resolve 'babashka.impl.spec/test-namespace)))
@@ -471,6 +478,7 @@ Use bb run --help to show this help output.
                             'selmer.validator
                             @(resolve 'babashka.impl.selmer/selmer-validator-namespace))
     features/logging? (assoc 'taoensso.timbre @(resolve 'babashka.impl.logging/timbre-namespace)
+                             'taoensso.timbre.appenders.core @(resolve 'babashka.impl.logging/timbre-appenders-namespace)
                              'clojure.tools.logging
                              @(resolve 'babashka.impl.logging/tools-logging-namespace)
                              'clojure.tools.logging.impl
@@ -487,7 +495,8 @@ Use bb run --help to show this help output.
 
 (def edn-readers (cond-> {}
                    features/yaml?
-                   (assoc 'ordered/map @(resolve 'flatland.ordered.map/ordered-map))
+                   (assoc 'ordered/map @(resolve 'flatland.ordered.map/ordered-map)
+                          'ordered/set @(resolve 'flatland.ordered.set/ordered-set))
                    features/xml?
                    (assoc 'xml/ns @(resolve 'clojure.data.xml.name/uri-symbol)
                           'xml/element @(resolve 'clojure.data.xml.node/tagged-element))))
@@ -575,10 +584,10 @@ Use bb run --help to show this help output.
                                :edn-in true))
           ("-o") (recur (next options)
                         (assoc opts-map
-                               :shell-out true))
+                               :shell-out true :prn true))
           ("-O") (recur (next options)
                         (assoc opts-map
-                               :edn-out true))
+                               :edn-out true :prn true))
           ("-io") (recur (next options)
                          (assoc opts-map
                                 :shell-in true
@@ -609,16 +618,6 @@ Use bb run --help to show this help output.
             (recur (next options)
                    (assoc opts-map
                           :uberjar (first options))))
-          ("-f" "--file")
-          (let [options (next options)]
-            (recur (next options)
-                   (assoc opts-map
-                          :file (first options))))
-          ("--jar" "-jar")
-          (let [options (next options)]
-            (recur (next options)
-                   (assoc opts-map
-                          :jar (first options))))
           ("--repl")
           (let [options (next options)]
             (recur (next options)
@@ -645,16 +644,17 @@ Use bb run --help to show this help output.
                    (assoc opts-map
                           :nrepl (or opt "1667"))))
           ("--eval", "-e")
-          (let [options (next options)]
+          (let [options (next options)
+                opts-map (assoc opts-map :prn true)]
             (recur (next options)
                    (update opts-map :expressions (fnil conj []) (first options))))
-          ("--main", "-m",)
+          ("--main", "-m")
           (let [options (next options)]
             (assoc opts-map :main (first options)
                    :command-line-args (if (= "--" (second options))
                                         (nthrest options 2)
                                         (rest options))))
-          ("--exec", "-x",)
+          ("--exec", "-x")
           (let [options (next options)]
             (assoc opts-map :exec (first options)
                    :command-line-args (if (= "--" (second options))
@@ -681,6 +681,7 @@ Use bb run --help to show this help output.
               (case c
                 (\( \{ \[ \* \@ \#)
                 (-> opts-map
+                    (assoc :prn true)
                     (update :expressions (fnil conj []) (first options))
                     (assoc :command-line-args (next options)))
                 (assoc opts-map
@@ -716,36 +717,49 @@ Use bb run --help to show this help output.
 
         ("--deps-root")
         (recur (nnext options) (assoc opts-map :deps-root (second options)))
+        ("--prn")
+        (recur (next options) (assoc opts-map :prn true))
+        ("-f" "--file")
+        (recur (nnext options) (assoc opts-map :file (second options)))
+        ("-jar" "--jar")
+        (recur (nnext options) (assoc opts-map :jar (second options)))
         [options opts-map])
       [options opts-map])))
 
 (defn parse-file-opt
   [options opts-map]
-  (let [opt (first options)
-        opts-key (if (str/ends-with? opt ".jar")
-                   :jar :file)]
-    (assoc opts-map
-           opts-key opt
-           :command-line-args (next options))))
+  (let [opt (first options)]
+    (if (and opt (and (fs/exists? opt)
+                      (not (fs/directory? opt))))
+      [nil (assoc opts-map
+                  (if (str/ends-with? opt ".jar")
+                    :jar :file) opt
+                  :command-line-args (next options))]
+      [options opts-map])))
 
 (defn parse-opts
   ([options] (parse-opts options nil))
   ([options opts-map]
    (let [opt (first options)
-         tasks (into #{} (map str) (keys (:tasks @common/bb-edn)))]
+         task-map (:tasks @common/bb-edn)
+         tasks (into #{} (map str) (keys task-map))]
+     (when-let [commands (seq (filter (fn [task]
+                                        (and (command? task)
+                                             (not (:override-builtin (get task-map (symbol task))))))
+                                      tasks))]
+       (binding [*out* *err*]
+         (println "[babashka] WARNING: task(s)" (str/join ", " (map #(format "'%s'" %) commands)) "override built-in command(s). Use :override-builtin true to disable warning.")))
      (if-not opt opts-map
              ;; FILE > TASK > SUBCOMMAND
              (cond
-               (.isFile (io/file opt))
-               (if (or (:file opts-map) (:jar opts-map))
-                 opts-map ; we've already parsed the file opt
-                 (parse-file-opt options opts-map))
-
+               (and (not (or (:file opts-map)
+                             (:jar opts-map)))
+                    (.isFile (io/file opt)))
+               (parse-file-opt options opts-map)
                (contains? tasks opt)
                (assoc opts-map
                       :run opt
                       :command-line-args (next options))
-
                (command? opt)
                (recur (cons (str "--" opt) (next options)) opts-map)
 
@@ -775,13 +789,56 @@ Use bb run --help to show this help output.
       env-os-name-present? (not= env-os-name sys-os-name)
       env-os-arch-present? (not= env-os-arch sys-os-arch))))
 
+(defn file-write-allowed?
+  "For output file of uberscript/uberjar, allow writing of jar files
+   and files that are empty/don't exist."
+  [path]
+  (or (= "jar" (fs/extension path))
+      (not (fs/exists? path))))
+
+(def seen-urls (atom nil))
+
+(defn read-data-readers [url]
+  (edamame/parse-string (slurp url)
+                        {:read-cond :allow
+                         :features #{:bb :clj}
+                         :eof nil}))
+
+(defn readers-fn
+  "Lazy reading of data reader functions"
+  [ctx t]
+  (or (@core/data-readers t)
+      (default-data-readers t)
+      (when (simple-symbol? t)
+        (when-let [the-var (sci/resolve ctx t)]
+          (some-> the-var meta :sci.impl.record/map-constructor)))
+      (when-let [f @sci.impl.parser/default-data-reader-fn]
+        (fn [form]
+          (f t form)))
+      (let [;; urls is a vector for equality check
+            urls (vec (.getURLs ^java.net.URLClassLoader @cp/the-url-loader))
+            parsed-resources (or (get @seen-urls urls)
+                                 (let [^java.net.URLClassLoader cl @cp/the-url-loader
+                                       resources (concat (enumeration-seq (.getResources cl "data_readers.clj"))
+                                                         (enumeration-seq (.getResources cl "data_readers.cljc")))
+                                       parsed-resources (apply merge (map read-data-readers resources))
+                                       _ (swap! seen-urls assoc urls parsed-resources)]
+                                   parsed-resources))]
+        (when-let [var-sym (get parsed-resources t)]
+          (when-let [the-var (sci/resolve ctx var-sym)]
+            (sci/eval-form ctx (list 'clojure.core/var-set core/data-readers (list 'quote (assoc @core/data-readers t the-var))))
+            the-var)))))
+
 (defn exec [cli-opts]
-  (binding [*unrestricted* true]
+  (with-bindings {#'*unrestricted* true
+                  clojure.lang.Compiler/LOADER @cp/the-url-loader}
     (sci/binding [core/warn-on-reflection @core/warn-on-reflection
                   core/unchecked-math @core/unchecked-math
                   core/data-readers @core/data-readers
                   sci/ns @sci/ns
-                  sci/print-length @sci/print-length]
+                  sci/print-length @sci/print-length
+                  ;; when adding vars here, also add them to repl.clj and nrepl_server.clj
+                  ]
       (let [{version-opt :version
              :keys [:shell-in :edn-in :shell-out :edn-out
                     :help :file :command-line-args
@@ -794,6 +851,7 @@ Use bb run --help to show this help output.
                     :print-deps :prepare]
              exec-fn :exec}
             cli-opts
+            print-result? (:prn cli-opts)
             _ (when debug (vreset! common/debug true))
             _ (do ;; set properties
                 (when main (System/setProperty "babashka.main" main))
@@ -828,15 +886,14 @@ Use bb run --help to show this help output.
                          abs-path))
             _ (when jar
                 (cp/add-classpath jar))
-            load-fn (fn [{:keys [:namespace :reload]}]
-                      (let [{:keys [loader]}
-                            @cp/cp-state]
+            load-fn (fn [{:keys [namespace reload ctx]}]
+                      (let [loader @cp/the-url-loader]
                         (or
                          (when ;; ignore built-in namespaces when uberscripting, unless with :reload
-                             (and uberscript
-                                  (not reload)
-                                  (or (contains? namespaces namespace)
-                                      (contains? sci-namespaces/namespaces namespace)))
+                          (and uberscript
+                               (not reload)
+                               (or (contains? namespaces namespace)
+                                   (contains? sci-namespaces/namespaces namespace)))
                            "")
                          ;; pod namespaces go before namespaces from source,
                          ;; unless reload is used
@@ -873,19 +930,18 @@ Use bb run --help to show this help output.
                            clojure.core.specs.alpha
                            (binding [*out* *err*]
                              (println "[babashka] WARNING: clojure.core.specs.alpha is removed from the classpath, unless you explicitly add the dependency."))
-                           nil))))
+                           (when-not (sci/find-ns ctx namespace)
+                             (let [file (str/replace (namespace-munge namespace) "." "/")]
+                               (throw (new java.io.FileNotFoundException (format "Could not locate %s.bb, %s.clj or %s.cljc on classpath." file file file)))))))))
             main (if (and jar (not main))
                    (when-let [res (cp/getResource
-                                   (cp/loader jar)
+                                   (cp/new-loader [jar])
                                    ["META-INF/MANIFEST.MF"] {:url? true})]
                      (cp/main-ns res))
                    main)
             ;; TODO: pull more of these values to compile time
             opts {:aliases aliases
-                  :namespaces (-> namespaces
-                                  (assoc 'clojure.core
-                                         (assoc core-extras
-                                                'load-file (sci-copy-vars/new-var 'load-file load-file*))))
+                  :namespaces (assoc-in namespaces ['clojure.core 'load-file] (sci-copy-vars/new-var 'load-file load-file*))
                   :env env
                   :features #{:bb :clj}
                   :classes @classes/class-map
@@ -894,13 +950,14 @@ Use bb run --help to show this help output.
                   :uberscript uberscript
                   ;; :readers core/data-readers
                   :reify-fn reify-fn
-                  :proxy-fn proxy-fn}
+                  :proxy-fn proxy-fn
+                  :readers #(readers-fn (common/ctx) %)}
             opts (addons/future opts)
             sci-ctx (sci/init opts)
             _ (ctx-store/reset-ctx! sci-ctx)
             _ (when-let [pods (:pods @common/bb-edn)]
                 (when-let [pod-metadata (pods/load-pods-metadata
-                                          pods {:download-only (download-only?)})]
+                                         pods {:download-only (download-only?)})]
                   (vreset! pod-namespaces pod-metadata)))
             preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim))
             [expressions exit-code]
@@ -929,7 +986,7 @@ Use bb run --help to show this help output.
                                                 :debug debug
                                                 :preloads preloads
                                                 :init init
-                                                :loader (:loader @cp/cp-state)}))))
+                                                :loader @cp/the-url-loader}))))
             expression (str/join " " expressions) ;; this might mess with the locations...
             exit-code
             ;; handle preloads
@@ -943,7 +1000,7 @@ Use bb run --help to show this help output.
                                               :debug debug
                                               :preloads preloads
                                               :init init
-                                              :loader (:loader @cp/cp-state)})))))
+                                              :loader @cp/the-url-loader})))))
                     nil))
             exit-code
             ;; handle --init
@@ -956,7 +1013,7 @@ Use bb run --help to show this help output.
                                             :debug debug
                                             :preloads preloads
                                             :init init
-                                            :loader (:loader @cp/cp-state)}))))
+                                            :loader @cp/the-url-loader}))))
                     nil))
             ;; socket REPL is start asynchronously. when no other args are
             ;; provided, a normal REPL will be started as well, which causes the
@@ -999,8 +1056,7 @@ Use bb run --help to show this help output.
                                                     (sci/eval-string* sci-ctx expression))]
                                               ;; return value printing
                                               (when (and (some? res)
-                                                         (or (not run)
-                                                             (:prn cli-opts)))
+                                                         print-result?)
                                                 (if-let [pr-f (cond shell-out println
                                                                     edn-out sio/prn)]
                                                   (if (sequential? res)
@@ -1016,7 +1072,7 @@ Use bb run --help to show this help output.
                              (error-handler e {:expression expression
                                                :debug debug
                                                :preloads preloads
-                                               :loader (:loader @cp/cp-state)}))))
+                                               :loader @cp/the-url-loader}))))
                        clojure [nil (if-let [proc (bdeps/clojure command-line-args)]
                                       (-> @proc :exit)
                                       0)]
@@ -1024,29 +1080,38 @@ Use bb run --help to show this help output.
                 1)]
         (flush)
         (when uberscript
-          (let [uberscript-out uberscript]
-            (spit uberscript-out "") ;; reset file
-            (doseq [s (distinct @uberscript-sources)]
-              (spit uberscript-out s :append true))
-            (spit uberscript-out preloads :append true)
-            (spit uberscript-out expression :append true)))
+          (if (file-write-allowed? uberscript)
+            (do
+              (spit uberscript "") ;; reset file
+              (doseq [s (distinct @uberscript-sources)]
+                (spit uberscript s :append true))
+              (spit uberscript preloads :append true)
+              (spit uberscript expression :append true))
+            (throw (Exception. (str "Uberscript target file '" uberscript
+                                    "' exists and is not empty. Overwrite prohibited.")))))
         (when uberjar
-          (if-let [cp (cp/get-classpath)]
-            (let [uber-params {:dest uberjar
-                               :jar :uber
-                               :classpath cp
-                               :main-class main
-                               :verbose debug}]
-              (if-let [bb-edn-pods (:pods @common/bb-edn)]
-                (fs/with-temp-dir [bb-edn-dir {}]
-                  (let [bb-edn-resource (fs/file bb-edn-dir "META-INF" "bb.edn")]
-                    (fs/create-dirs (fs/parent bb-edn-resource))
-                    (->> {:pods bb-edn-pods} pr-str (spit bb-edn-resource))
-                    (let [cp-with-bb-edn (str bb-edn-dir cp/path-sep cp)]
-                      (uberjar/run (assoc uber-params
-                                          :classpath cp-with-bb-edn)))))
-                (uberjar/run uber-params)))
-            (throw (Exception. "The uberjar task needs a classpath."))))
+          (let [cp (cp/get-classpath)]
+            (cond
+              (not (file-write-allowed? uberjar))
+              (throw (Exception. (str "Uberjar target file '" uberjar
+                                      "' exists and is not empty. Overwrite prohibited.")))
+              (not cp)
+              (throw (Exception. "The uberjar task needs a classpath."))
+              :else
+              (let [uber-params {:dest uberjar
+                                 :jar :uber
+                                 :classpath cp
+                                 :main-class main
+                                 :verbose debug}]
+                (if-let [bb-edn-pods (:pods @common/bb-edn)]
+                  (fs/with-temp-dir [bb-edn-dir {}]
+                    (let [bb-edn-resource (fs/file bb-edn-dir "META-INF" "bb.edn")]
+                      (fs/create-dirs (fs/parent bb-edn-resource))
+                      (->> {:pods bb-edn-pods} pr-str (spit bb-edn-resource))
+                      (let [cp-with-bb-edn (str bb-edn-dir cp/path-sep cp)]
+                        (uberjar/run (assoc uber-params
+                                            :classpath cp-with-bb-edn)))))
+                  (uberjar/run uber-params))))))
         exit-code))))
 
 (defn satisfies-min-version? [min-version]
@@ -1058,8 +1123,8 @@ Use bb run --help to show this help output.
                  (and (= minor-current minor-min)
                       (>= patch-current patch-min)))))))
 
-(defn load-bb-edn [string]
-  (try (edn/read-string {:default tagged-literal} string)
+(defn read-bb-edn [string]
+  (try (edn/read-string {:default tagged-literal :eof nil} string)
        (catch java.lang.RuntimeException e
          (if (re-find #"No dispatch macro for: \"" (.getMessage e))
            (throw (ex-info "Invalid regex literal found in EDN config, use re-pattern instead" {}))
@@ -1067,40 +1132,85 @@ Use bb run --help to show this help output.
                  (println "Error during loading bb.edn:"))
                (throw e))))))
 
+(defn binary-invoked-as-jar []
+  (and (= "executable" (System/getProperty "org.graalvm.nativeimage.kind"))
+       (let [bin (-> (java.lang.ProcessHandle/current)
+                     .info
+                     .command
+                     .get)
+             fn (fs/file-name bin)]
+         (if (= "bb" fn)
+           false
+           (if (and (fs/windows?)
+                    (= "bb.exe" fn))
+             false
+             (when (try (with-open [_ (java.util.zip.ZipFile. (fs/file bin))])
+                        true
+                        (catch Exception _ false))
+               bin))))))
+
+(defn resolve-symbolic-link [f]
+  (if (and f (fs/exists? f))
+    (str (fs/real-path f))
+    f))
+
 (defn main [& args]
-  (let [[args global-opts] (parse-global-opts args)
-        {:keys [:jar] :as file-opt} (when (some-> args first io/file .isFile)
-                                      (parse-file-opt args global-opts))
-        config (:config global-opts)
-        merge-deps (:merge-deps global-opts)
-        abs-path #(-> % io/file .getAbsolutePath)
-        bb-edn-file (cond
-                      config (when (fs/exists? config) (abs-path config))
-                      jar (some-> jar cp/loader (cp/resource "META-INF/bb.edn") .toString)
-                      :else (when (fs/exists? "bb.edn") (abs-path "bb.edn")))
-        bb-edn (when (or bb-edn-file merge-deps)
-                 (when bb-edn-file (System/setProperty "babashka.config" bb-edn-file))
-                 (let [raw-string (when bb-edn-file (slurp bb-edn-file))
-                       edn (when bb-edn-file (load-bb-edn raw-string))
+  (let [bin-jar (binary-invoked-as-jar)
+        args (if bin-jar
+               (list* "--jar" bin-jar "--" args)
+               args)
+        [args opts] (parse-global-opts args)
+        [args {:keys [config merge-deps debug] :as opts}]
+        (if-not (or (:file opts)
+                    (:jar opts))
+          (parse-file-opt args opts)
+          [args opts])
+        {:keys [jar file]} opts
+        abs-path resolve-symbolic-link
+        config (cond
+                 config (if (fs/exists? config) (abs-path config)
+                            (when debug
+                              (binding [*out* *err*]
+                                (println "[babashka] WARNING: config file does not exist:" config))
+                              nil))
+                 jar (let [jar (resolve-symbolic-link jar)]
+                       (some-> [jar] cp/new-loader (cp/resource "META-INF/bb.edn") .toString))
+                 :else (if (and file (fs/exists? file))
+                         ;; file relative to bb.edn
+                         (let [file (abs-path file) ;; follow symlink
+                               rel-bb-edn (fs/file (fs/parent file) "bb.edn")]
+                           (if (fs/exists? rel-bb-edn)
+                             (abs-path rel-bb-edn)
+                             ;; fall back to local bb.edn
+                             (when (fs/exists? "bb.edn")
+                               (abs-path "bb.edn"))))
+                         ;; default to local bb.edn
+                         (when (fs/exists? "bb.edn")
+                           (abs-path "bb.edn"))))
+        bb-edn (when (or config merge-deps)
+                 (when config (System/setProperty "babashka.config" config))
+                 (let [raw-string (when config (slurp config))
+                       edn (when config (read-bb-edn raw-string))
                        edn (if merge-deps
-                             (deps/merge-deps [edn (load-bb-edn merge-deps)])
+                             (deps/merge-deps [edn (read-bb-edn merge-deps)])
                              edn)
                        edn (assoc edn
                                   :raw raw-string
-                                  :file bb-edn-file)
-                       edn (if-let [deps-root (or (:deps-root global-opts)
+                                  :file config)
+                       edn (if-let [deps-root (or (:deps-root opts)
                                                   (some-> config fs/parent))]
                              (assoc edn :deps-root deps-root)
                              edn)]
                    (vreset! common/bb-edn edn)))
-        ;; _ (.println System/err (str bb-edn))
+        opts (parse-opts args opts)
         min-bb-version (:min-bb-version bb-edn)]
+    (System/setProperty "java.class.path" "")
     (when min-bb-version
       (when-not (satisfies-min-version? min-bb-version)
         (binding [*out* *err*]
           (println (str "WARNING: this project requires babashka "
                         min-bb-version " or newer, but you have: " version)))))
-    (exec (parse-opts args (merge global-opts file-opt)))))
+    (exec opts)))
 
 (def musl?
   "Captured at compile time, to know if we are running inside a
@@ -1139,6 +1249,7 @@ Use bb run --help to show this help output.
     (let [exit-code (run args)]
       (System/exit exit-code))))
 
+(sci/alter-var-root main-var (constantly -main))
 ;;;; Scratch
 
 (comment)

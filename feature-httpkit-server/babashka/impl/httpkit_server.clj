@@ -15,4 +15,8 @@
    'send-checked-websocket-handshake! (copy-var server/send-checked-websocket-handshake! sns)
    'send-websocket-handshake! (copy-var server/send-websocket-handshake! sns)
    'as-channel                (copy-var server/as-channel sns)
-   'send!                     (copy-var server/send! sns)})
+   'send!                     (copy-var server/send! sns)
+   'with-channel              (copy-var server/with-channel sns)
+   'on-close                  (copy-var server/on-close sns)
+   'close                     (copy-var server/close sns)}
+  )

@@ -13,8 +13,8 @@ RUN echo 'hosts: files mdns4_minimal [NOTFOUND=return] dns mdns4' >> /etc/nsswit
 
 # TODO: Run actual native tests when they are ported
 
-RUN bb -e "(curl/get \"https://httpstat.us/200\")" # cURL http test
-RUN bb -e "(require '[org.httpkit.client :as http]) (when-let [error (:error @(http/get \"https://httpstat.us/200\"))] (throw error))" # JVM http test
+RUN bb -e "(curl/get \"https://clojure.org\")" # cURL http test
+RUN bb -e "(require '[org.httpkit.client :as http]) (when-let [error (:error @(http/get \"https://clojure.org\"))] (throw error))" # JVM http test
 RUN bb -e "(.length \"Hello, Babashka\")" # Java interop test
 RUN bb -e "(require '[babashka.pods :as pods]) (pods/load-pod 'org.babashka/go-sqlite3 \"0.0.1\") (require '[pod.babashka.go-sqlite3 :as sqlite]) (sqlite/execute! \"/tmp/foo.db\" [\"SELECT 1 + 1\"])" # Pod test
 
@@ -23,7 +23,7 @@ FROM alpine:3
 
 RUN apk --no-cache add curl ca-certificates tar && \
     curl -Ls https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.28-r0/glibc-2.28-r0.apk > /tmp/glibc-2.28-r0.apk && \
-    apk add --allow-untrusted --force-overwrite /tmp/glibc-2.28-r0.apk
+    apk add --allow-untrusted --force-overwrite /tmp/glibc-2.28-r0.apk && rm /tmp/glibc-2.28-r0.apk
 RUN echo 'hosts: files mdns4_minimal [NOTFOUND=return] dns mdns4' >> /etc/nsswitch.conf
 
 COPY metabom.jar /opt/babashka-metabom.jar

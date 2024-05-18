@@ -1,9 +1,11 @@
-(ns short-ci
+(ns gen-ci
   (:require
     [babashka.tasks :as tasks]
     [clj-yaml.core :as yaml]
     [clojure.string :as str]
     [flatland.ordered.map :refer [ordered-map]]))
+
+(def graalvm-version "22")
 
 (defn run
   ([cmd-name cmd]
@@ -80,8 +82,9 @@
       :working_directory "~/repo"
       :environment       {:LEIN_ROOT         "true"
                           :BABASHKA_PLATFORM "linux"
-                          :GRAALVM_VERSION   "22.3.0"
-                          :GRAALVM_HOME      graalvm-home}
+                          :GRAALVM_VERSION   graalvm-version
+                          :GRAALVM_HOME      graalvm-home
+                          :BABASHKA_TEST_ENV "jvm"}
       :resource_class    "large"
       :steps
       (gen-steps
@@ -119,7 +122,7 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
 (defn unix
   [shorted? static? musl? arch executor-conf resource-class graalvm-home platform]
   (let [env              {:LEIN_ROOT         "true"
-                          :GRAALVM_VERSION   "22.3.0"
+                          :GRAALVM_VERSION   graalvm-version
                           :GRAALVM_HOME      graalvm-home
                           :BABASHKA_PLATFORM (if (= "mac" platform)
                                                "macos"
@@ -154,6 +157,8 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                  :steps (gen-steps shorted?
                                    (filter some?
                                            [:checkout
+                                            (when (contains? #{"linux" "linux-aarch64"} platform)
+                                              (run "Check max glibc version" "script/check_glibc.sh"))
                                             {:attach_workspace {:at "/tmp"}}
                                             (run "Pull Submodules" "git submodule init\ngit submodule update")
                                             {:restore_cache
@@ -167,13 +172,16 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                                      (str base-install-cmd "\nsudo -E script/setup-musl")
                                                      base-install-cmd)))
                                             (run "Download GraalVM" "script/install-graalvm")
-                                            (run "Build binary" "script/uberjar\nscript/compile" "30m")
+                                            #_(run "Download iprof" "curl -sLO 'https://github.com/babashka/pgo-profiles/releases/download/2023.10.11/default.iprof'")
+                                            (run "Build binary" (if (= "aarch64" arch)
+                                                                  "script/uberjar\nscript/compile -H:PageSize=64K # --pgo=default.iprof"
+                                                                  "script/uberjar\nscript/compile # --pgo=default.iprof") "30m")
                                             (run "Run tests" "script/test\nscript/run_lib_tests")
                                             (run "Release" ".circleci/script/release")
                                             {:persist_to_workspace {:root  "/tmp"
                                                                     :paths ["release"]}}
                                             {:save_cache
-                                             {:paths ["~/.m2" "~/graalvm-ce-java11-22.3.0"]
+                                             {:paths ["~/.m2" "~/graalvm"]
                                               :key   cache-key}}
                                             {:store_artifacts {:path        "/tmp/release"
                                                                :destination "release"}}
@@ -184,9 +192,9 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
   [shorted?]
   (let [docker-executor-conf  {:docker [{:image "circleci/clojure:openjdk-11-lein-2.9.8-bullseye"}]}
         machine-executor-conf {:machine {:image "ubuntu-2004:202111-01"}}
-        mac-executor-conf     {:macos {:xcode "14.0.0"}}
-        linux-graalvm-home    "/home/circleci/graalvm-ce-java11-22.3.0"
-        mac-graalvm-home      "/Users/distiller/graalvm-ce-java11-22.3.0/Contents/Home"]
+        mac-executor-conf     {:macos {:xcode "12.5.1"}}
+        linux-graalvm-home    (str "/home/circleci/graalvm-" graalvm-version)
+        mac-graalvm-home      (format "/Users/distiller/graalvm-%s/Contents/Home" graalvm-version)]
     (ordered-map
       :version   2.1
       :commands
@@ -201,17 +209,9 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                    :linux (unix shorted? false false "amd64" docker-executor-conf "large" linux-graalvm-home "linux")
                    :linux-static
                    (unix shorted? true true "amd64" docker-executor-conf "large" linux-graalvm-home "linux")
-                   :linux-aarch64 (unix shorted?
-                                        false
-                                        false
-                                        "aarch64"
-                                        machine-executor-conf
-                                        "arm.large"
-                                        linux-graalvm-home
-                                        "linux")
                    :linux-aarch64-static
                    (unix shorted? true false "aarch64" machine-executor-conf "arm.large" linux-graalvm-home "linux")
-                   :mac (unix shorted? false false "amd64" mac-executor-conf "large" mac-graalvm-home "mac")
+                   :mac (unix shorted? false false "amd64" mac-executor-conf "macos.x86.medium.gen2" mac-graalvm-home "mac")
                    :deploy (deploy shorted?)
                    :docker (docker shorted?))
       :workflows (ordered-map
@@ -220,12 +220,11 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                     "linux"
                                     "linux-static"
                                     "mac"
-                                    "linux-aarch64"
                                     "linux-aarch64-static"
                                     {:deploy {:filters  {:branches {:only "master"}}
                                               :requires ["jvm" "linux"]}}
                                     {:docker {:filters  {:branches {:only "master"}}
-                                              :requires ["linux" "linux-static" "linux-aarch64"]}}]}))))
+                                              :requires ["linux" "linux-static" "linux-aarch64-static"]}}]}))))
 
 (def skip-config
   {:skip-if-only [#".*.md$"

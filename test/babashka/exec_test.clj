@@ -11,9 +11,11 @@
 (deftest exec-test
   (is (= {:foo 1} (edn/read-string (bb "-x" "prn" "--foo" "1"))))
   (is (thrown? Exception (bb "-x" "json/generate-string" "--foo" "1")))
+  (is (thrown-with-msg? Exception #"Could not resolve sym to a function: clojure.core/generate-string"
+                        (bb "-x" "clojure.core/generate-string" "--foo" "1")))
   (is (= {:foo 1} (cheshire/parse-string
                    (edn/read-string
-                    (bb "-x" "cheshire.core/generate-string" "--foo" "1")) true))))
+                    (bb "--prn" "-x" "cheshire.core/generate-string" "--foo" "1")) true))))
 
 (deftest tasks-exec-test
   (u/with-config
@@ -37,8 +39,13 @@
   (testing "task exec args"
     (u/with-config
       "{:deps {}
-      :tasks {foo {:exec-args {:foo :bar}
-                   :task (exec 'babashka.exec-test/exec-test)}}}"
+        :tasks {foo {:task (exec 'babashka.exec-test/exec-test)}}}"
+      (is (= {:foo :foo, :bar :yeah}
+             (edn/read-string (bb "-cp" "test-resources" "run" "foo" "--bar" "yeah")))))
+    (u/with-config
+      "{:deps {}
+        :tasks {foo {:exec-args {:foo :bar}
+                     :task (exec 'babashka.exec-test/exec-test)}}}"
       (is (= {:foo :bar, :bar :yeah}
              (edn/read-string (bb "-cp" "test-resources" "run" "foo" "--bar" "yeah"))))))
   (testing "meta"

@@ -9,6 +9,252 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Fix [#1688](https://github.com/babashka/babashka/issues/1688): use-fixtures should add metadata to `*ns*`
+- Fix [#1692](https://github.com/babashka/babashka/issues/1692): Add support for ITransientSet and org.flatland/ordered-set
+- Bump org.flatland/ordered to `1.15.12`.
+
+## 1.3.190 (2024-04-17)
+
+- Fix [#1679](https://github.com/babashka/babashka/issues/1679): bump timbre and fix wrapping `timbre/log!`
+- Add `java.util.concurrent.CountDownLatch`
+- Add `java.lang.ThreadLocal`
+- Bump `babashka.process`
+- Bump httpkit to `2.8.0-RC1`
+- Bump clojure to `1.11.2`
+- Bump deps.clj
+- Bump `babashka.cli`
+- Bump `cheshire` to `5.13.0`
+- Bump `http-client` to `0.4.17`
+
+## 1.3.189 (2024-02-22)
+
+- [#1660](https://github.com/babashka/babashka/issues/1660): add `:deps-root` as part of hash to avoid caching issue with `deps.clj`
+- [#1632](https://github.com/babashka/babashka/issues/1632): fix `(.readPassword (System/console))` by upgrading GraalVM to `21.0.2`
+- [#1661](https://github.com/babashka/babashka/issues/1661): follow symlink when reading adjacent bb.edn
+- [#1665](https://github.com/babashka/babashka/issues/1665): `read-string` should use non-indexing reader for compatibilty with Clojure
+- Bump edamame to 1.4.24
+- Bump http-client to 0.4.16
+- Bump babashka.cli to 0.8.57
+- Uberjar task: support reader conditional in .cljc file
+- Support reader conditional in .cljc file when creating uberjar
+- Add more `javax.net.ssl` classes
+- [#1675](https://github.com/babashka/babashka/issues/1675): add `hash-unordered-coll`
+
+## 1.3.188 (2024-01-12)
+
+- [#1658](https://github.com/babashka/babashka/issues/1658): fix command line parsing for scripts that parse `--version` or `version` etc
+
+## 1.3.187 (2024-01-09)
+
+- Add `clojure.reflect/reflect`
+- Add `java.util.ScheduledFuture`, `java.time.temporal.WeekFields`
+- Support `Runnable` to be used without import
+- Allow `catch` to be used as var name
+- [#1646](https://github.com/babashka/babashka/issues/1646): command-line-args are dropped when file exists with same name
+- [#1645](https://github.com/babashka/babashka/issues/1645): Support for `clojure.lang.LongRange`
+- [#1652](https://github.com/babashka/babashka/issues/1652): allow `bb.edn` to be empty
+- [#1586](https://github.com/babashka/babashka/issues/1586): warn when config file doesn't exist and `--debug` is enabled
+- [#1410](https://github.com/babashka/babashka/issues/1410): better error message when exec fn doesn't exist
+- Bump `babashka.cli` to `0.8.55` which contains subcommand improvements
+- Bump `deps.clj` to `1.11.1.1435`
+- Bump `babashka.fs` to `0.5.20`
+- Compatibility with `plumbing.core`
+- Compatibility with `shadow.css` by improving `tools.reader` compatibility
+- [#1647](https://github.com/babashka/babashka/issues/1647): Allow capturing env vars at build time (only relevant for building bb)
+
+## 1.3.186 (2023-11-02)
+
+- [Support self-contained binaries as uberjars!](https://github.com/babashka/babashka/wiki/Self-contained-executable#uberjar)
+- Add `java.security.KeyFactory`, `java.security.spec.PKCS8EncodedKeySpec`, `java.net.URISyntaxException`, `javax.crypto.spec.IvParameterSpec`
+- Fix babashka.process/exec wrt `babashka.process/*defaults*`
+- [#1632](https://github.com/babashka/babashka/issues/1632): Partial fix for `(.readPassword (System/console))`
+- Enable producing self-contained binaries using [uberjars](https://github.com/babashka/babashka/wiki/Self-contained-executable#uberjar)
+- Bump httpkit to `2.8.0-beta3` (fixes GraalVM issue with virtual threads)
+- Bump `deps.clj` and `fs`
+- Expose `taoensso.timbre.appenders.core`
+- nREPL: implement `ns-list` op
+- SCI: optimize `swap!`, `deref` and `reset!` for normal atoms (rather than user-created `IAtom`s)
+- Add test for [#1639](https://github.com/babashka/babashka/issues/1639)
+- Upgrade to GraalVM 21.0.1
+
+## 1.3.185 (2023-09-28)
+
+- [#1624](https://github.com/babashka/babashka/pull/1624): Use Oracle GraalVM 21 ([@lispyclouds](https://github.com/lispyclouds))
+- Use PGO to speed up loops (now 2-3x faster for `(time (loop [val 0 cnt 10000000] (if (pos? cnt) (recur (inc val) (dec cnt)) val)))`!)
+- Bump babashka.http-client to v0.4.15
+- Bump rewrite-clj to v0.1.1.47
+- [#1619](https://github.com/babashka/babashka/issues/1619): Fix reflection issue with `Thread/sleep` in `core.async/timeout`
+- Support interop on `java.util.stream.IntStream`
+- [#1513](https://github.com/babashka/babashka/issues/1513): Fix interop on `Thread/sleep` with numbers that aren't already longs
+- Bump babashka.cli to 0.7.53
+- Fix [#babashka.nrepl/66](https://github.com/babashka/babashka.nrepl/issues/66)
+- Various nREPL server improvements (classpath op, file lookup information for `cider-find-var`)
+- Bump cheshire to 5.12.0
+
+## 1.3.184 (2023-08-22)
+
+- Remove leftover debugging output from deps.clj
+
+## 1.3.183 (2023-08-22)
+
+- [#1592](https://github.com/babashka/babashka/issues/1592): expose `sci.core` in babashka
+- [#1596](https://github.com/babashka/babashka/issues/1596): Fix `clojure.java.browse/browse-url` truncates URLs with multiple query parameters on Windows
+- [#1599](https://github.com/babashka/babashka/issues/1599): propagate error from `run` when task does not exist
+- Bump clj-yaml to `1.0.27`
+- [#1604](https://github.com/babashka/babashka/issues/1604): throw `FileNotFoundException` when requiring namespace whose file cannot be found (as JVM Clojure does)
+- Bump integrant CI tests
+- [#1600](https://github.com/babashka/babashka/issues/1600): use pagesize of 64K on linux aarch64, so it works on Asahi linux
+- Expose `selmer.parser/resolve-arg`
+- [#1610](https://github.com/babashka/babashka/issues/1610): expose `babashka.http-client.websocket` namespace
+- Bump `babashka.http-client` to `0.4.14`
+- [#1568](https://github.com/babashka/babashka/issues/1568): warn when task overrides built-in command
+
+## 1.3.182 (2023-07-20)
+
+- [#1579](https://github.com/babashka/babashka/issues/1579): add `clojure.tools.reader/resolve-symbol`
+- [#1581](https://github.com/babashka/babashka/issues/1581): `bb print-deps`: sort dependencies ([@teodorlu](https://github.com/teodorlu))
+- Upgrade `babashka.http-client` to `0.4.12`, fixes `:insecure` option
+- Bump [edamame](https://github.com/borkdude/edamame) to `1.3.23`: fixes infinite loop with reader conditional expression
+- Bump [Selmer](https://github.com/yogthos/Selmer) to Bumping to `1.12.59`
+- Bump [deps.clj](https://github.com/borkdude/deps.clj) with more fixes which should make downloading/installation of tools jar more robust
+- Add `javax.net.ssl.X509ExtendedTrustManager` class
+- Bump [babashka.process](https://github.com/babashka/process): accept path or file as `:dir` argument
+- Bump [hiccup](https://github.com/weavejester/hiccup) to `2.0.0-RC1`
+
+## 1.3.181 (2023-06-13)
+
+- [#1575](https://github.com/babashka/babashka/issues/1575): fix command line parsing problem with `-e` + `*command-line-args*`
+- [#1576](https://github.com/babashka/babashka/issues/1576): make downloading/unzipping of deps.clj tools .zip file more robust
+
+## 1.3.180 (2023-05-28)
+
+- [#1524](https://github.com/babashka/babashka/issues/1524): Remove dynamic builds for linux-aarch64 ([@lispyclouds](https://github.com/lispyclouds))
+- [#1577](https://github.com/babashka/babashka/issues/1557): Add support for `babashka.process/exec` after namespace reload of `babashka.process` ([@lread](https://github.com/lread))
+- [#1548](https://github.com/babashka/babashka/issues/1548): shell and sh should respect `babashka.process/*defaults*`
+- [#1524](https://github.com/babashka/babashka/issues/1524): deprecate (remove) linux-aarch64 dynamic binary build
+- Expose `org.graalvm.nativeimage.ProcessProperties/exec`
+- Bump `babashka.http-client` to `0.3.11`
+- Bump `babashka.fs` to `0.4.19`
+- Bump `babashka.process` to `0.5.21`
+
+## 1.3.179 (2023-04-26)
+
+- [#1544](https://github.com/babashka/babashka/issues/1544): `:local/root` in script-adjacent bb.edn should resolve relative to script
+- [#1545](https://github.com/babashka/babashka/issues/1545): Adjacent `bb.edn` not respected with explicit `-f` option
+- [#1546](https://github.com/babashka/babashka/issues/1546): add `.contains` for vector and lazy-seq
+
+## 1.3.178 (2023-04-21)
+
+- Fix regression with [#1541](https://github.com/babashka/babashka/issues/1541)
+
+## 1.3.177 (2023-04-21)
+
+- [#1541](https://github.com/babashka/babashka/issues/1541): respect `bb.edn`
+  adjacent to invoked file. This eases writing system-global scripts from
+  projects without using bbin. See [docs](https://book.babashka.org/#_script_adjacent_bb_edn).
+- [#1523](https://github.com/babashka/babashka/pull/1523): Reduce the size of the Docker images ([@raszi](https://github.com/raszi))
+- Upgrade deps.clj to v1.11.1.1273
+- Upgrade transit-clj to 1.0.333
+- Add `java.security.cert.CertificateFactory`
+- Bump clj-yaml to 1.0.26
+- Bump edamame to 1.3.21
+- Add `UnsupportedOperationException`
+- Bump babashka CLI to 0.7.51
+- Bump babashka http-client to 0.2.9
+- Add `--install-exit-handlers` to native-image build to support shutdown hook + SIGTERM
+
+## 1.3.176 (2023-03-18)
+
+- Upgrade http-client to 0.1.8, fixes binary file uploads (which messed up the previous release)
+- Downgrade org.flatland/ordered to 1.5.9 due to this [issue](https://github.com/clj-commons/ordered/issues/71)
+
+## 1.3.175 (2023-03-18)
+
+- [#1507](https://github.com/babashka/babashka/issues/1507): Expose methods on java.lang.VirtualThread ([@lispyclouds](https://github.com/lispyclouds))
+- [#1510](https://github.com/babashka/babashka/issues/1510): add virtual thread interop on `Thread`
+- [#1511](https://github.com/babashka/babashka/issues/1511): support for domain sockets
+- [#1521](https://github.com/babashka/babashka/issues/1521): push images to GHCR ([@lispyclouds](https://github.com/lispyclouds))
+- Bump edamame to 1.3.20
+- Bump deps.clj to 1.11.1.1257
+- Bump org.flatland/ordered to 1.15.10
+- Support `clojure.lang.MapEntry/create`
+- clojure.core.async `go` macro now uses virtual threads
+- Bump babashka.cli to 0.6.50
+- Bump http-client to 0.1.7
+
+## 1.2.174 (2023-03-01)
+
+- Use GraalVM 22.3.1 on JDK 19.0.2. This adds virtual thread support. See [demo](https://twitter.com/borkdude/status/1572222344684531717).
+- Expose more `jaxax.crypto` classes
+- Add more `java.time` and related classes with the goal of supporting [juxt.tick](https://github.com/juxt/tick) ([issue](https://github.com/juxt/tick/issues/86))
+- Compatibility with [kaocha](https://github.com/lambdaisland/kaocha) test runner
+- [#1000](https://github.com/babashka/babashka/issues/1000): add lib tests for xforms ([@bobisageek](https://github.com/bobisageek))
+- [#1482](https://github.com/babashka/babashka/issues/1482): make loading of libs thread safe
+- [#1487](https://github.com/babashka/babashka/issues/1487): `babashka.tasks/clojure` should be supported without arguments to start a REPL
+- [#1496](https://github.com/babashka/babashka/issues/1496): Add `set-agent-send-executor!` and `set-agent-send-off-executor!`
+- [#1489](https://github.com/babashka/babashka/issues/1489): Don't overwrite non-empty, non-jar files when writing uberscript/uberjar ([@bobisageek](https://github.com/bobisageek))
+- [#1506](https://github.com/babashka/babashka/issues/1506): `:exec-args` in task should override `:exec-args` on fn metadata
+- [#1501](https://github.com/babashka/babashka/issues/1501): equals on deftype
+- Add support for `.getWatches` on atoms
+- Bump `babashka.fs` to `0.3.17`
+- Bump `deps.clj` to `1.11.1.1237`
+- Bump `babashka.http-client` to `0.1.5`
+- Bump `babashka.cli` to `0.6.46`
+
+## 1.1.173 (2023-02-04)
+
+- [#1473](https://github.com/babashka/babashka/issues/1473): support `--config` in other dir + `:local/root` ([@lispyclouds](https://github.com/lispyclouds))
+- Compatibility with `clojure.tools.namespace.repl/refresh` and `clojure.java.classpath`
+- `(clojure.lang.RT/baseLoader)` now returns classloader with babashka dependencies on classpath
+- Support reading tags from `data_readers.clj` and `data_readers.cljc`
+- Don't exit REPL when `babashka.deps/add-deps` fails
+- Fix [#1474](https://github.com/babashka/babashka/issues/1474): when `.bb` file is in different artifact, `.clj` file is loaded first if it appears first on classpath
+- Support for `*loaded-libs*` and `(loaded-libs)`
+- Bump rewrite-clj to `1.1.46`
+- Bump http-client to `0.0.3`
+- Bump fs to `0.2.15`
+- Bump process to `0.4.16`
+
+## 1.1.172 (2023-01-23)
+
+- [#1472](https://github.com/babashka/babashka/issues/1472): fix tokenization of `babashka.tasks/clojure`: command was tokenized twice (regression was introduced in `1.0.168`)
+- **BREAKING**: Bump `babashka.process`: change default for `:out :append` to `:out :write`. This default is undocumented so the impact should be small.
+
+## 1.1.171 (2023-01-23)
+
+- [#1467](https://github.com/babashka/babashka/issues/1467): **BREAKING**: avoid printing results, unless `--prn` is enabled (aside from `-e`, `-o` and `-O`).
+- Include [http-client](https://github.com/babashka/http-client) as built-in library
+- SCI: support `add-watch` on vars
+- Compatibility with [eftest](https://github.com/weavejester/eftest) test runner (see [demo](https://twitter.com/borkdude/status/1616886788898885632))
+- Add classes:
+  - `java.util.concurrent.Callable`
+  - `java.util.concurrent.ExecutorService`
+- Expose `clojure.main` `main` and `repl-caught`
+- Switch `clojure.test/*report-counters*` to ref instead of atom for compatibility with [kaocha](https://github.com/lambdaisland/kaocha)
+- Allow `java.io.OutputStream` to be proxied, for [kaocha](https://github.com/lambdaisland/kaocha)
+- Support qualified method names in `proxy` and ignore namespace
+
+## 1.0.170 (2023-01-19)
+
+- [#1463](https://github.com/babashka/babashka/issues/1463): Add `java.util.jar.Attributes` class ([@jeroenvandijk](https://github.com/jeroenvandijk))
+- [#1456](https://github.com/babashka/babashka/issues/1456): allow `*warn-on-reflection*` and `*unchecked-math*` to be set in socket REPL and nREPL ([@axks](https://github.com/axks))
+- SCI: macroexpansion error location improvement
+- Add compatibility with [tab](https://github.com/eerohele/tab) and [solenoid](https://github.com/adam-james-v/solenoid)
+- Bump babashka.cli and babashka.fs
+- New classes:
+  - `java.util.jar.Attributes`
+  - `java.util.concurrent.ThreadFactory`
+  - `java.lang.Thread$UncaughtExceptionHandler`
+  - `java.lang.Thread$UncaughtExceptionHandler`
+  - `java.util.concurrent.BlockingQueue`
+  - `java.util.concurrent.ArrayBlockingQueue`
+  - `java.util.concurrent.ThreadFactory`
+  - `java.lang.Thread$UncaughtExceptionHandler`
+  - `java.util.concurrent.Semaphore`
+- Expose more httpkit.server functions: `with-channel`, `on-close`, `close`
+
+## 1.0.169 (2023-01-03)
+
 - Implement `ns`, `lazy-seq` as macro
 - Support `--dev-build` flag in installation script
 - [#1451](https://github.com/babashka/babashka/issues/1451): Allow passing explicit file and line number to clojure.test ([@matthewdowney](https://github.com/matthewdowney))
@@ -16,6 +262,11 @@ A preview of the next release can be installed from
 - [#1446](https://github.com/babashka/babashka/issues/1446): add `pprint/code-dispatch`
 - Update zlib to version `1.2.13` ([@thiagokokada](https://github.com/thiagokokada))
 - [#1454](https://github.com/babashka/babashka/issues/1454): Add `babashka.process` to `print-deps` output
+- Update `deps.clj` / clojure tools to `1.11.1.1208`
+- Add `reader-conditional` function
+- Fix pretty printing (with `clojure.pprint`) of vars
+- Upgrade built-in `spec.alpha`
+- SCI performance improvements: faster JVM interop
 
 ## 1.0.168 (2022-12-07)
 
@@ -625,7 +876,7 @@ Babashka.pods:
 - Add `babashka.task` `System` property [#837](https://github.com/babashka/babashka/issues/837)
 - Allow thread-first with `shell` like `babashka.process` [#829](https://github.com/babashka/babashka/issues/829)
 
-## 0.4.0
+## 0.4.0 (2021-05-08)
 
 Babashka proper:
 
@@ -635,7 +886,7 @@ Babashka proper:
   [jasentaa](https://github.com/rm-hull/jasentaa) parser combinator library
 - Update Selmer to 1.12.40
 
-Sci:
+SCI:
 
 - Better error msg for protocol not found or class
 
@@ -1204,6 +1455,14 @@ Details about releases prior to v0.1.0 can be found
 [here](https://github.com/babashka/babashka/releases).
 
 ## Breaking changes
+
+### v1.1.172
+
+- Bump `babashka.process`: change default for `:out :append` to `:out :write`. This default is undocumented so the impact should be small.
+
+### v1.1.171
+
+- [#1467](https://github.com/babashka/babashka/issues/1467): avoid printing results, unless `--prn` is enabled (aside from `-e`, `-o` and `-O`).
 
 ### v0.2.4
 

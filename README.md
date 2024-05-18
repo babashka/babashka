@@ -58,6 +58,28 @@ $ ls | bb -i '(filter fs/directory? *input*)'
 bb took 4ms.
 ```
 
+## Support :heart:
+
+You can support this project via [Github
+Sponsors](https://github.com/sponsors/borkdude),
+[OpenCollective](https://opencollective.com/babashka),
+[Ko-fi](https://ko-fi.com/borkdude) or indirectly via [Clojurists
+Together](https://www.clojuriststogether.org/).
+
+<details>
+
+<summary>Top sponsors</summary>
+
+- [Clojurists Together](https://clojuriststogether.org/)
+- [Roam Research](https://roamresearch.com/)
+- [Nextjournal](https://nextjournal.com/)
+- [Toyokumo](https://toyokumo.co.jp/)
+- [Cognitect](https://www.cognitect.com/)
+- [Kepler16](https://kepler16.com/)
+- [Adgoji](https://www.adgoji.com/)
+
+</details>
+
 ## Babashka users
 
 See [companies](doc/companies.md) for a list of companies using babashka.
@@ -82,7 +104,7 @@ and is unlikely to change. Changes may happen in other parts of babashka,
 although we will try our best to prevent them. Always check the release notes or
 [CHANGELOG.md](CHANGELOG.md) before upgrading.
 
-### Talk
+## Talk
 
 To get an overview of babashka, you can watch this talk ([slides](https://speakerdeck.com/borkdude/babashka-and-the-small-clojure-interpreter-at-clojured-2020)):
 
@@ -92,6 +114,11 @@ To get an overview of babashka, you can watch this talk ([slides](https://speake
 
 The [babashka book](https://book.babashka.org) contains detailed information
 about how to get the most out of babashka scripting.
+
+There is also the book [Babashka Babooka](https://www.braveclojure.com/quests/babooka/),
+by Daniel Higginbotham, who has also helped a lot of people learn Clojure with
+[Clojure for the Brave and
+True](https://www.braveclojure.com/clojure-for-the-brave-and-true/).
 
 ## Examples
 
@@ -127,7 +154,7 @@ File `pst.clj`:
 ```
 
 ``` shell
-$ pst.clj
+$ bb pst.clj
 05:17
 ```
 
@@ -147,11 +174,6 @@ Linux and macOS binaries are provided via brew.
 Install:
 
     brew install borkdude/brew/babashka
-
-<!-- On macOS with an M1 processor: -->
-
-<!--     softwareupdate --install-rosetta -->
-<!--     arch -x86_64 brew install borkdude/brew/babashka -->
 
 Upgrade:
 
@@ -190,12 +212,24 @@ linux binary.
 
 ### asdf
 
-[asdf](https://github.com/asdf-vm/asdf) is an extendable version manager for linux and macOS.
+[asdf](https://github.com/asdf-vm/asdf) is an extendable version manager for linux and macOS. Note that asdf will add significant startup time to any babashka script, consider using [mise](#mise) instead.
 
 Babashka can be installed using a plugin as follows:
 
-    asdf plugin add babashka
+    asdf plugin add babashka https://github.com/pitch-io/asdf-babashka
     asdf install babashka latest
+
+### mise
+
+[mise](https://mise.jdx.dev/) is a development environment setup tool for linux and macOS.
+
+Install:
+
+    mise use --global babashka@latest
+
+Upgrade:
+
+    mise upgrade babashka
 
 ### Windows
 
@@ -283,6 +317,12 @@ You may also download a binary from
 [Github](https://github.com/babashka/babashka/releases). For linux there is a
 static binary available which can be used on Alpine.
 
+### CI
+
+- On Github Actions it's recommended to use [setup-clojure](https://github.com/DeLaGuardo/setup-clojure) with `bb: latest`.
+- You can use the [installer script](https://github.com/babashka/babashka#installer-script) on any non-Windows CI system. CircleCI requires `sudo`.
+- On Appveyor + Windows you can use a bit of [Powershell](https://github.com/clj-kondo/clj-kondo/blob/39b5cb2b0d3d004c005e8975b6fafe0e314eec68/appveyor.yml#L60-L64).
+
 ## Docker
 
 Check out the image on [Docker hub](https://hub.docker.com/r/babashka/babashka/).
@@ -358,6 +398,10 @@ https://babashka.org[image:https://raw.githubusercontent.com/babashka/babashka/m
 </details>
 </br>
 
+## Swag
+
+- [t-shirt](https://www.etsy.com/listing/1241766068/babashka-clj-kondo-nbb-shirt)
+
 ## [Pods](https://github.com/babashka/babashka.pods)
 
 Pods are programs that can be used as a Clojure library by
@@ -406,11 +450,21 @@ handling of SIGINT and SIGPIPE. This can be done by setting
 
 ## Articles, podcasts and videos
 
-- [Babashka: How GraalVM Helped Create a Fast-Starting Scripting Environment for Clojure](https://medium.com/graalvm/babashka-how-graalvm-helped-create-a-fast-starting-scripting-environment-for-clojure-b0fcc38b0746) by Michiel Borkent
+- [Blambda analyses sites](https://jmglov.net/blog/2023-01-04-blambda-analyses-sites.html) by Josh Glover
+- [The wizard of HOP - How we built the web based HOP CLI Settings Editor using Babashka and Scittle](https://www.gethop.dev/post/the-wizard-of-hop-how-we-built-the-web-based-hop-cli-settings-editor-using-babashka-and-scittle) by Bingen Galartza
+- [Simple TUIs with Babashka and Gum](https://rattlin.blog/bbgum.html) by Rattlin.blog
+- [Babashka And Dialog Part Ii: Announcing The Bb-Dialog Library](https://www.pixelated-noise.com/blog/2023/01/20/bb-dialog-announcement/index.html) by A.C. Danvers
+- [Babashka Babooka](https://www.braveclojure.com/quests/babooka/): Write Command-Line Clojure by Daniel Higginbotham
+- [Re-Writing a GlobalProtect OpenConnect VPN Connect script in Babashka](https://tech.toryanderson.com/2023/01/14/re-writing-a-globalprotect-openconnect-vpn-connect-script-in-babashka/) by Tory Anderson
+- [Babashka: How GraalVM Helped Create a Fast-Starting Scripting Environment for Clojure](https://medium.com/graalvm/babashka-how-graalvm-helped-create-a-fast-starting-scripting-environment-for-clojure-b0fcc38b0746) by Michiel Borkent (Japanese version [here]((https://logico-jp.io/2023/01/07/babashka-how-graalvm-helped-create-a-fast-starting-scripting-environment-for-clojure/)))
 - [Adding Prompts To Your Babashka Scripts With Dialog](https://www.pixelated-noise.com/blog/2022/12/09/dialog-and-babashka/index.html) by A.C. Danvers
+- [Scraping an HTML dictionary with Babashka and Bootleg](https://blog.exupero.org/scraping-an-html-dictionary-with-babashka-and-bootleg/) by exupero
 - [Using Babashka to Get Electricity Prices](https://www.karimarttila.fi/clojure/2022/12/04/using-babashka-to-get-electricity-prices.html) by Kari Marttila
+- [How to Do Things With Babashka](https://presumably.de/how-to-do-things-with-babashka.html) by Paulus Esterhazy (2022-12)
+- [Using nREPL as a system interface](https://yogthos.net/posts/2022-11-26-nREPL-system-interaction.html) by Dmitri Sotnikov
 - [Manage git hooks with babashka tasks](https://blaster.ai/blog/posts/manage-git-hooks-w-babashka.html) by Mykhaylo Bilyanskyy
 - [Messing around with babashka](https://ian-muge.medium.com/messing-around-with-babashka-f181a9003faa) by Ian Muge
+- Introducing [bbin](https://radsmith.com/bbin) by Radford Smith (2022-09)
 - [Deleting AWS Glacier vaults with babashka](https://javahippie.net/clojure/2022/07/23/deleting-aws-glacier-vaults-with-babashka.html) by Tim Zöller
 - [Recursive document transformations with Pandoc and Clojure](https://play.teod.eu/document-transform-pandoc-clojure/) by Teodor Heggelund
 - [Blambda!](https://jmglov.net/blog/2022-07-03-blambda.html) by Josh Glover
@@ -497,47 +551,10 @@ commit](https://github.com/babashka/babashka/commit/02c7c51ad4b2b1ab9aa95c26a744
 
 Thanks to all the people that contributed to babashka:
 
-- [Adgoji](https://www.adgoji.com/) for financial support
 - [CircleCI](https://circleci.com/) for CI and additional support
 - [Nikita Prokopov](https://github.com/tonsky) for the logo
 - [Contributors](https://github.com/babashka/babashka/graphs/contributors) and
   other users posting issues with bug reports and ideas
-- [Github sponsors](https://github.com/sponsors/borkdude)
-- [OpenCollective sponsors](https://opencollective.com/babashka)
-- [Clojurists Together](https://www.clojuriststogether.org/)
-
-### Code Contributors
-
-This project exists thanks to all the people who contribute. [[Contribute](doc/dev.md)].
-<a href="https://github.com/babashka/babashka/graphs/contributors"><img src="https://opencollective.com/babashka/contributors.svg?width=890&button=false" /></a>
-
-### Financial Contributors
-
-#### Github Sponsors
-
-- [Dig Gashinsky](https://github.com/digash)
-
-#### OpenCollective
-Become a financial contributor and help us sustain our community. [[Contribute](https://opencollective.com/babashka/contribute)]
-
-##### Individuals
-
-<a href="https://opencollective.com/babashka"><img src="https://opencollective.com/babashka/individuals.svg?width=890"></a>
-
-##### Organizations
-
-Support this project with your organization. Your logo will show up here with a link to your website. [[Contribute](https://opencollective.com/babashka/contribute)]
-
-<a href="https://opencollective.com/babashka/organization/0/website"><img src="https://opencollective.com/babashka/organization/0/avatar.svg"></a>
-<a href="https://opencollective.com/babashka/organization/1/website"><img src="https://opencollective.com/babashka/organization/1/avatar.svg"></a>
-<a href="https://opencollective.com/babashka/organization/2/website"><img src="https://opencollective.com/babashka/organization/2/avatar.svg"></a>
-<a href="https://opencollective.com/babashka/organization/3/website"><img src="https://opencollective.com/babashka/organization/3/avatar.svg"></a>
-<a href="https://opencollective.com/babashka/organization/4/website"><img src="https://opencollective.com/babashka/organization/4/avatar.svg"></a>
-<a href="https://opencollective.com/babashka/organization/5/website"><img src="https://opencollective.com/babashka/organization/5/avatar.svg"></a>
-<a href="https://opencollective.com/babashka/organization/6/website"><img src="https://opencollective.com/babashka/organization/6/avatar.svg"></a>
-<a href="https://opencollective.com/babashka/organization/7/website"><img src="https://opencollective.com/babashka/organization/7/avatar.svg"></a>
-<a href="https://opencollective.com/babashka/organization/8/website"><img src="https://opencollective.com/babashka/organization/8/avatar.svg"></a>
-<a href="https://opencollective.com/babashka/organization/9/website"><img src="https://opencollective.com/babashka/organization/9/avatar.svg"></a>
 
 ## License
 

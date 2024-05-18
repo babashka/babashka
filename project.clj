@@ -11,35 +11,40 @@
                  "babashka.core/src"
                  "babashka.nrepl/src" "depstar/src" "process/src"
                  "deps.clj/src" "deps.clj/resources"
-                 "reify/src"]
+                 "impl-java/src"]
   ;; for debugging Reflector.java code:
   ;; :java-source-paths ["sci/reflector/src-java"]
   :java-source-paths ["src-java"]
   :resource-paths ["resources" "sci/resources"]
-  :test-selectors {:default (complement :windows-only)
-                   :windows (complement :skip-windows)}
-  :dependencies [[org.clojure/clojure "1.11.1"]
-                 [borkdude/edamame "1.0.16"]
+  :test-selectors {:default (complement (some-fn :windows-only :flaky))
+                   :windows (complement (some-fn :skip-windows :flaky))
+                   :non-flaky (complement :flaky)
+                   :flaky :flaky}
+  :jvm-opts ["--enable-preview"]
+  :dependencies [[org.clojure/clojure "1.11.2"]
+                 [borkdude/edamame "1.4.24"]
                  [borkdude/graal.locking "0.0.2"]
                  [org.clojure/tools.cli "1.0.214"]
-                 [cheshire "5.11.0"]
+                 [cheshire "5.13.0"]
                  [nrepl/bencode "1.1.0"]
                  [borkdude/sci.impl.reflector "0.0.1"]
                  [org.babashka/sci.impl.types "0.0.2"]
-                 [org.babashka/babashka.impl.reify "0.1.3"]
+                 [org.babashka/babashka.impl.java "0.1.8"]
                  [org.clojure/core.async "1.6.673"]
                  [org.clojure/test.check "1.1.1"]
                  [com.github.clj-easy/graal-build-time "0.1.0"]
-                 [rewrite-clj/rewrite-clj "1.1.45"]
+                 [rewrite-clj/rewrite-clj "1.1.47"]
                  [insn/insn "0.5.2"]
-                 [org.babashka/cli "0.6.41"]]
+                 [org.babashka/cli "0.8.59"]
+                 [org.babashka/http-client "0.4.18"]]
   :plugins       [[org.kipz/lein-meta-bom "0.1.1"]]
   :metabom {:jar-name "metabom.jar"}
   :profiles {:feature/xml  {:source-paths ["feature-xml"]
                             :dependencies [[org.clojure/data.xml "0.2.0-alpha8"]]}
              :feature/yaml {:source-paths ["feature-yaml"]
-                            :dependencies [[clj-commons/clj-yaml "0.7.169"
-                                            #_#_clj-commons/clj-yaml "0.7.110"]]}
+                            :dependencies [[clj-commons/clj-yaml "1.0.27"
+                                            :exclusions [org.flatland/ordered]#_#_clj-commons/clj-yaml "0.7.110"]
+                                           [org.flatland/ordered "1.15.12"]]}
              :feature/jdbc {:source-paths ["feature-jdbc"]
                             :dependencies [[seancorfield/next.jdbc "1.1.610"]]}
              :feature/sqlite [:feature/jdbc {:dependencies [[org.xerial/sqlite-jdbc "3.36.0.3"]]}]
@@ -50,25 +55,25 @@
              :feature/csv {:source-paths ["feature-csv"]
                            :dependencies [[org.clojure/data.csv "1.0.0"]]}
              :feature/transit {:source-paths ["feature-transit"]
-                               :dependencies [[com.cognitect/transit-clj "1.0.329"]]}
+                               :dependencies [[com.cognitect/transit-clj "1.0.333"]]}
              :feature/datascript {:source-paths ["feature-datascript"]
                                   :dependencies [[datascript "1.3.10"]]}
              :feature/httpkit-client {:source-paths ["feature-httpkit-client"]
-                                      :dependencies [[http-kit "2.6.0-RC1"]]}
+                                      :dependencies [[http-kit "2.8.0-RC1"]]}
              :feature/httpkit-server {:source-paths ["feature-httpkit-server"]
-                                      :dependencies [[http-kit "2.6.0-RC1"]]}
+                                      :dependencies [[http-kit "2.8.0-RC1"]]}
              :feature/lanterna {:source-paths ["feature-lanterna"]
                                 :dependencies [[babashka/clojure-lanterna "0.9.8-SNAPSHOT"]]}
              :feature/core-match {:source-paths ["feature-core-match"]
                                   :dependencies [[org.clojure/core.match "1.0.0"]]}
              :feature/hiccup {:source-paths ["feature-hiccup"]
-                              :dependencies [[hiccup/hiccup "2.0.0-alpha2"]]}
+                              :dependencies [[hiccup/hiccup "2.0.0-RC1"]]}
              :feature/test-check {:source-paths ["feature-test-check"]}
              :feature/spec-alpha {:source-paths ["feature-spec-alpha"]}
              :feature/selmer {:source-paths ["feature-selmer"]
-                              :dependencies [[selmer/selmer "1.12.50"]]}
+                              :dependencies [[selmer/selmer "1.12.59"]]}
              :feature/logging {:source-paths ["feature-logging"]
-                               :dependencies [[com.taoensso/timbre "6.0.1"]
+                               :dependencies [[com.taoensso/timbre "6.5.0"]
                                               [org.clojure/tools.logging "1.1.0"]]}
              :feature/priority-map {:source-paths ["feature-priority-map"]
                                     :dependencies [[org.clojure/data.priority-map "1.1.0"]]}
@@ -92,7 +97,8 @@
                     :feature/logging
                     :feature/priority-map
                     :feature/rrb-vector
-                    {:dependencies [[com.clojure-goes-fast/clj-async-profiler "0.5.0"]
+                    {:dependencies [[borkdude/rewrite-edn "0.4.6"]
+                                    [com.clojure-goes-fast/clj-async-profiler "0.5.0"]
                                     [com.opentable.components/otj-pg-embedded "0.13.3"]
                                     [nubank/matcher-combinators "3.6.0"]]}]
              :uberjar {:global-vars {*assert* false}

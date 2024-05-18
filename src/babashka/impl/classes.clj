@@ -8,6 +8,18 @@
    [sci.core :as sci]
    [sci.impl.types :as t]))
 
+(set! *warn-on-reflection* true)
+
+(def has-of-virtual?
+  (some #(= "ofVirtual" (.getName ^java.lang.reflect.Method %))
+        (.getMethods Thread)))
+
+(def has-domain-sockets?
+  (resolve 'java.net.UnixDomainSocketAddress))
+
+(def has-graal-process-properties?
+  (resolve 'org.graalvm.nativeimage.ProcessProperties))
+
 (def base-custom-map
   `{clojure.lang.LineNumberingPushbackReader {:allPublicConstructors true
                                               :allPublicMethods true}
@@ -47,7 +59,10 @@
                {:name "sleep"}
                {:name "start"}
                {:name "toString"}
-               {:name "yield"}]}
+               {:name "yield"}
+               ~@(when has-of-virtual? [{:name "ofVirtual"}
+                                        {:name "startVirtualThread"}
+                                        {:name "isVirtual"}])]}
     java.net.URL
     {:allPublicConstructors true
      :allPublicFields true
@@ -76,7 +91,8 @@
     java.util.Arrays
     {:methods [{:name "copyOf"}
                {:name "copyOfRange"}
-               {:name "equals"}]}
+               {:name "equals"}
+               {:name "fill"}]}
     ;; this fixes clojure.lang.Reflector for Java 11
     java.lang.reflect.AccessibleObject
     {:methods [{:name "canAccess"}]}
@@ -111,17 +127,21 @@
     clojure.lang.RT
     {:methods [{:name "aget"}
                {:name "aset"}
-               {:name "aclone"}]}
+               {:name "aclone"}
+               ;; we expose this via the Compiler/LOADER dynamic var
+               {:name "baseLoader"}]}
     clojure.lang.Compiler
     {:fields [{:name "specials"}
               {:name "CHAR_MAP"}]}
     clojure.lang.PersistentHashMap
     {:fields [{:name "EMPTY"}]}
     clojure.lang.APersistentVector
-    {:methods [{:name "indexOf"}]}
+    {:methods [{:name "indexOf"}
+               {:name "contains"}]}
     clojure.lang.LazySeq
     {:allPublicConstructors true,
-     :methods [{:name "indexOf"}]}
+     :methods [{:name "indexOf"}
+               {:name "contains"}]}
     clojure.lang.ILookup
     {:methods [{:name "valAt"}]}
     clojure.lang.IPersistentMap
@@ -140,19 +160,39 @@
     {:methods [{:name "hasNext"}
                {:name "next"}]}
     java.util.TimeZone
-    {:methods [{:name "getTimeZone"}]}})
+    {:methods [{:name "getTimeZone"}]}
+    java.net.URLClassLoader
+    {:methods [{:name "close"}
+               {:name "findResource"}
+               {:name "findResources"}
+               {:name "getResourceAsStream"}
+               {:name "getURLs"}]}
+    java.lang.ClassLoader
+    {:methods [{:name "getResource"}
+               {:name "getResources"}
+               {:name "getResourceAsStream"}
+               {:name "getParent"}]}
+    clojure.lang.ARef
+    {:methods [{:name "getWatches"}]}
+    clojure.lang.MapEntry
+    {:allPublicConstructors true
+     :methods [{:name "create"}]}})
 
 (def custom-map
   (cond->
-      (merge base-custom-map
-             proxy/custom-reflect-map)
+   (merge base-custom-map
+          proxy/custom-reflect-map)
     features/hsqldb? (assoc `org.hsqldb.dbinfo.DatabaseInformationFull
                             {:methods [{:name "<init>"
                                         :parameterTypes ["org.hsqldb.Database"]}]}
                             `java.util.ResourceBundle
                             {:methods [{:name "getBundle"
                                         :parameterTypes ["java.lang.String","java.util.Locale",
-                                                         "java.lang.ClassLoader"]}]})))
+                                                         "java.lang.ClassLoader"]}]})
+
+    has-graal-process-properties?
+    (assoc `org.graalvm.nativeimage.ProcessProperties
+           {:methods [{:name "exec"}]})))
 
 (def java-net-http-classes
   "These classes must be initialized at run time since GraalVM 22.1"
@@ -182,7 +222,14 @@
     java.net.http.WebSocket$Builder
     java.net.http.WebSocket$Listener
     java.security.cert.X509Certificate
+    java.security.cert.CertificateFactory
+    javax.crypto.Cipher
     javax.crypto.Mac
+    javax.crypto.SecretKey
+    javax.crypto.SecretKeyFactory
+    javax.crypto.spec.GCMParameterSpec
+    javax.crypto.spec.IvParameterSpec
+    javax.crypto.spec.PBEKeySpec
     javax.crypto.spec.SecretKeySpec
     javax.net.ssl.HostnameVerifier ;; clj-http-lite
     javax.net.ssl.HttpsURLConnection ;; clj-http-lite
@@ -194,6 +241,9 @@
     javax.net.ssl.TrustManager
     javax.net.ssl.TrustManagerFactory
     javax.net.ssl.X509TrustManager
+    javax.net.ssl.X509ExtendedTrustManager
+    javax.net.ssl.SSLSocket
+    javax.net.ssl.SSLSocketFactory
     jdk.internal.net.http.HttpClientBuilderImpl
     jdk.internal.net.http.HttpClientFacade
     jdk.internal.net.http.HttpRequestBuilderImpl
@@ -284,7 +334,9 @@
           java.lang.StringBuilder
           java.lang.System
           java.lang.Throwable
-          ;; java.lang.UnsupportedOperationException
+          java.lang.ThreadLocal
+          java.lang.Thread$UncaughtExceptionHandler
+          java.lang.UnsupportedOperationException
           java.lang.ref.WeakReference
           java.lang.ref.ReferenceQueue
           java.lang.ref.Cleaner
@@ -299,11 +351,15 @@
           java.net.HttpURLConnection
           java.net.InetAddress
           java.net.InetSocketAddress
+          java.net.StandardProtocolFamily
           java.net.ServerSocket
           java.net.Socket
           java.net.SocketException
+          ~@(when has-domain-sockets?
+              '[java.net.UnixDomainSocketAddress])
           java.net.UnknownHostException
           java.net.URI
+          java.net.URISyntaxException
           ;; java.net.URL, see custom map
           java.net.URLConnection
           java.net.URLEncoder
@@ -319,6 +375,8 @@
                 java.nio.file.StandardOpenOption
                 java.nio.channels.FileChannel
                 java.nio.channels.FileChannel$MapMode
+                java.nio.channels.ServerSocketChannel
+                java.nio.channels.SocketChannel
                 java.nio.charset.Charset
                 java.nio.charset.CoderResult
                 java.nio.charset.CharsetEncoder
@@ -343,14 +401,17 @@
                 java.nio.file.attribute.FileTime
                 java.nio.file.attribute.PosixFilePermission
                 java.nio.file.attribute.PosixFilePermissions])
+          java.security.spec.PKCS8EncodedKeySpec
           java.security.MessageDigest
           java.security.DigestInputStream
           java.security.Provider
+          java.security.KeyFactory
           java.security.KeyStore
           java.security.SecureRandom
           java.security.Security
           java.sql.Date
           java.text.ParseException
+          java.text.ParsePosition
           ;; adds about 200kb, same functionality provided by java.time:
           java.text.SimpleDateFormat
           ~@(when features/java-time?
@@ -378,6 +439,7 @@
                 java.time.format.DateTimeFormatterBuilder
                 java.time.format.DateTimeParseException
                 java.time.format.DecimalStyle
+                java.time.format.FormatStyle
                 java.time.format.ResolverStyle
                 java.time.format.SignStyle
                 java.time.temporal.ChronoField
@@ -386,31 +448,44 @@
                 java.time.temporal.TemporalAdjusters
                 java.time.temporal.TemporalAmount
                 java.time.temporal.TemporalField
+                java.time.temporal.WeekFields
                 ~(symbol "[Ljava.time.temporal.TemporalField;")
                 java.time.format.TextStyle
                 java.time.temporal.Temporal
                 java.time.temporal.TemporalAccessor
-                java.time.temporal.TemporalAdjuster])
+                java.time.temporal.TemporalAdjuster
+                java.time.temporal.TemporalQuery
+                ~(symbol "[Ljava.time.temporal.TemporalQuery;")])
           java.util.concurrent.atomic.AtomicInteger
           java.util.concurrent.atomic.AtomicLong
           java.util.concurrent.atomic.AtomicReference
+          java.util.concurrent.Callable
           java.util.concurrent.CancellationException
           java.util.concurrent.CompletionException
+          java.util.concurrent.CountDownLatch
           java.util.concurrent.ExecutionException
           java.util.concurrent.Executor
+          java.util.concurrent.ExecutorService
+          java.util.concurrent.BlockingQueue
+          java.util.concurrent.ArrayBlockingQueue
           java.util.concurrent.LinkedBlockingQueue
+          java.util.concurrent.ScheduledFuture
           java.util.concurrent.ScheduledThreadPoolExecutor
+          java.util.concurrent.Semaphore
+          java.util.concurrent.ThreadFactory
           java.util.concurrent.ThreadPoolExecutor
           java.util.concurrent.ThreadPoolExecutor$AbortPolicy
           java.util.concurrent.ThreadPoolExecutor$CallerRunsPolicy
           java.util.concurrent.ThreadPoolExecutor$DiscardOldestPolicy
           java.util.concurrent.ThreadPoolExecutor$DiscardPolicy
+          java.util.concurrent.ExecutorService
           java.util.concurrent.ScheduledExecutorService
           java.util.concurrent.Future
           java.util.concurrent.FutureTask
           java.util.concurrent.CompletableFuture
           java.util.concurrent.Executors
           java.util.concurrent.TimeUnit
+          java.util.jar.Attributes
           java.util.jar.Attributes$Name
           java.util.jar.JarFile
           java.util.jar.JarEntry
@@ -420,6 +495,7 @@
           java.util.jar.Manifest
           java.util.stream.BaseStream
           java.util.stream.Stream
+          java.util.stream.IntStream
           java.util.Random
           java.util.regex.Matcher
           java.util.regex.Pattern
@@ -432,6 +508,7 @@
           java.util.Base64$Encoder
           java.util.Date
           java.util.HashMap
+          java.util.HashSet
           java.util.IdentityHashMap
           java.util.InputMismatchException
           java.util.List
@@ -452,6 +529,8 @@
           java.util.function.BiFunction
           java.util.function.Predicate
           java.util.function.Supplier
+          java.util.zip.CheckedInputStream
+          java.util.zip.CRC32
           java.util.zip.Inflater
           java.util.zip.InflaterInputStream
           java.util.zip.Deflater
@@ -485,7 +564,6 @@
           ~@(when features/yaml? '[org.yaml.snakeyaml.error.YAMLException])
           ~@(when features/hsqldb? '[org.hsqldb.jdbcDriver])]
     :constructors [clojure.lang.Delay
-                   clojure.lang.MapEntry
                    clojure.lang.LineNumberingPushbackReader
                    java.io.EOFException]
     :methods [borkdude.graal.LockFix] ;; support for locking
@@ -527,19 +605,23 @@
                       clojure.lang.IRef
                       clojure.lang.ISeq
                       clojure.lang.IPersistentVector
+                      clojure.lang.ITransientSet
                       clojure.lang.ITransientVector
                       clojure.lang.Iterate
                       clojure.lang.LispReader$Resolver
+                      clojure.lang.LongRange
                       clojure.lang.Named
                       clojure.lang.Keyword
                       clojure.lang.PersistentArrayMap
                       clojure.lang.PersistentHashSet
                       clojure.lang.PersistentList
+                      clojure.lang.PersistentList$EmptyList
                       clojure.lang.PersistentQueue
                       clojure.lang.PersistentStructMap
                       clojure.lang.PersistentTreeMap
                       clojure.lang.PersistentTreeSet
                       clojure.lang.PersistentVector
+                      clojure.lang.Range
                       clojure.lang.Ratio
                       clojure.lang.ReaderConditional
                       clojure.lang.Repeat
@@ -557,7 +639,6 @@
                       java.lang.LinkageError
                       java.lang.ThreadDeath
                       java.lang.VirtualMachineError
-                      java.net.URLClassLoader
                       java.sql.Timestamp
                       java.util.concurrent.TimeoutException
                       java.util.Collection
@@ -574,7 +655,27 @@
                         (:instance-checks classes))
         m (apply hash-map
                  (for [c classes
-                       c [(list 'quote c) c]]
+                       c [(list 'quote c) (cond-> `{:class ~c}
+                                            (= 'java.lang.Class c)
+                                            (assoc :static-methods
+                                                   {(list 'quote 'forName)
+                                                    `(fn
+                                                       ([_# ^String class-name#]
+                                                        (Class/forName class-name#))
+                                                       ([_# ^String class-name# initialize# ^java.lang.ClassLoader clazz-loader#]
+                                                        (Class/forName class-name#)))})
+                                            (= 'java.lang.Thread c)
+                                            (assoc :static-methods
+                                                   {(list 'quote 'sleep)
+                                                    `(fn
+                                                       ([_# x#]
+                                                        (if (instance? Number x#)
+                                                          (let [x# (long x#)]
+                                                            (Thread/sleep x#))
+                                                          (let [^java.time.Duration x# x#]
+                                                            (Thread/sleep x#))))
+                                                       ([_# ^java.lang.Long millis# ^java.lang.Long nanos#]
+                                                        (Thread/sleep millis# nanos#)))}))]]
                    c))
         m (assoc m :public-class
                  (fn [v]
@@ -607,6 +708,8 @@
                          java.nio.file.FileSystem
                          (instance? java.nio.file.PathMatcher v)
                          java.nio.file.PathMatcher
+                         (instance? java.util.stream.IntStream v)
+                         java.util.stream.IntStream
                          (instance? java.util.stream.BaseStream v)
                          java.util.stream.BaseStream
                          (instance? java.nio.ByteBuffer v)
@@ -619,6 +722,10 @@
                          java.nio.CharBuffer
                          (instance? java.nio.channels.FileChannel v)
                          java.nio.channels.FileChannel
+                         (instance? java.nio.channels.ServerSocketChannel v)
+                         java.nio.channels.ServerSocketChannel
+                         (instance? java.nio.channels.SocketChannel v)
+                         java.nio.channels.SocketChannel
                          (instance? java.net.CookieStore v)
                          java.net.CookieStore
                          ;; this makes interop on reified classes work
@@ -626,18 +733,38 @@
                          (instance? sci.impl.types.IReified v)
                          (first (t/getInterfaces v))
                          ;; fix for #1061
-                         (instance? java.io.Closeable v)
-                         java.io.Closeable
+                         (instance? java.net.URLClassLoader v)
+                         java.net.URLClassLoader
+                         (instance? java.lang.ClassLoader v)
+                         java.lang.ClassLoader
                          (instance? java.nio.file.attribute.BasicFileAttributes v)
                          java.nio.file.attribute.BasicFileAttributes
                          (instance? java.util.concurrent.Future v)
                          java.util.concurrent.Future
                          (instance? java.util.concurrent.ScheduledExecutorService v)
                          java.util.concurrent.ScheduledExecutorService
+                         (instance? java.util.concurrent.ExecutorService v)
+                         java.util.concurrent.ExecutorService
                          (instance? java.util.Iterator v)
                          java.util.Iterator
+                         (instance? javax.crypto.SecretKey v)
+                         javax.crypto.SecretKey
+                         (instance? javax.net.ssl.SSLSocketFactory v)
+                         javax.net.ssl.SSLSocketFactory
+                         (instance? javax.net.ssl.SSLSocket v)
+                         javax.net.ssl.SSLSocket
+                         (instance? java.lang.Thread v)
+                         java.lang.Thread
+                         (instance? java.security.cert.X509Certificate v)
+                         java.security.cert.X509Certificate
+                         (instance? java.io.Console v)
+                         java.io.Console
+                         (instance? java.util.Set v)
+                         java.util.Set
+                         (instance? java.io.Closeable v)
+                         java.io.Closeable
                          ;; keep commas for merge friendliness
-                         ,,,)))
+                         )))
         m (assoc m (list 'quote 'clojure.lang.Var) 'sci.lang.Var)
         m (assoc m (list 'quote 'clojure.lang.Namespace) 'sci.lang.Namespace)]
     m))
@@ -647,6 +774,14 @@
   "This contains mapping of symbol to class of all classes that are
   allowed to be initialized at build time."
   (gen-class-map))
+
+#_(let [class-name (str c)]
+    (cond-> (Class/forName class-name)
+      (= "java.lang.Class" class-name)
+      (->> (hash-map :static-methods {'forName (fn [class-name]
+                                                 (prn :class-for)
+                                                 (Class/forName class-name))}
+                     :class))))
 
 (def class-map
   "A delay to delay initialization of java-net-http classes to run time, since GraalVM 22.1"
@@ -664,6 +799,7 @@
     BigInteger java.math.BigInteger
     Boolean java.lang.Boolean
     Byte java.lang.Byte
+    Callable java.util.concurrent.Callable
     Character java.lang.Character
     CharSequence java.lang.CharSequence
     Class java.lang.Class
@@ -689,9 +825,10 @@
     Number java.lang.Number
     NumberFormatException java.lang.NumberFormatException
     Object java.lang.Object
+    Runnable java.lang.Runnable
     Runtime java.lang.Runtime
     RuntimeException java.lang.RuntimeException
-    Process        java.lang.Process
+    Process java.lang.Process
     ProcessBuilder java.lang.ProcessBuilder
     Short java.lang.Short
     StackTraceElement java.lang.StackTraceElement
@@ -699,11 +836,13 @@
     StringBuilder java.lang.StringBuilder
     System java.lang.System
     Thread java.lang.Thread
+    ThreadLocal java.lang.ThreadLocal
+    Thread$UncaughtExceptionHandler java.lang.Thread$UncaughtExceptionHandler
     Throwable java.lang.Throwable
     VirtualMachineError java.lang.VirtualMachineError
     ThreadDeath java.lang.ThreadDeath
     Void java.lang.Void
-    ;; UnsupportedOperationException java.lang.UnsupportedOperationException
+    UnsupportedOperationException java.lang.UnsupportedOperationException
     })
 
 (defn reflection-file-entries []
@@ -746,13 +885,13 @@
            "resources/META-INF/native-image/babashka/babashka/reflect-config.json")
           (json/generate-string all-entries {:pretty true}))))
 
-(defn public-declared-method? [c m]
+(defn public-declared-method? [^Class c ^java.lang.reflect.Method m]
   (and (= c (.getDeclaringClass m))
        (not (.getAnnotation m Deprecated))))
 
-(defn public-declared-method-names [c]
+(defn public-declared-method-names [^Class c]
   (->> (.getMethods c)
-       (keep (fn [m]
+       (keep (fn [^java.lang.reflect.Method m]
                (when (public-declared-method? c m)
                  {:class c
                   :name (.getName m)})))
@@ -760,8 +899,9 @@
        (sort-by :name)
        (vec)))
 
-(defn all-classes []
+(defn all-classes
   "Returns every java.lang.Class instance Babashka supports."
+  []
   (->> (reflection-file-entries)
        (map :name)
        (map #(Class/forName %))))
@@ -779,6 +919,4 @@
   (public-declared-method-names java.net.URL)
   (public-declared-method-names java.util.Properties)
 
-  (all-classes)
-
-  )
+  (all-classes))

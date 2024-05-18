@@ -13,12 +13,12 @@
 
 (deftest classpath-test
   (is (= :my-script/bb
-         (bb nil "--classpath" "test-resources/babashka/src_for_classpath_test"
+         (bb nil "--prn" "--classpath" "test-resources/babashka/src_for_classpath_test"
              "(require '[my-script :as ms]) (ms/foo)")))
   (is (= "hello from foo\n"
-         (tu/bb nil "--classpath" "test-resources/babashka/src_for_classpath_test/foo.jar"
+         (tu/bb nil "--prn" "--classpath" "test-resources/babashka/src_for_classpath_test/foo.jar"
                 "(require '[foo :as f]) (f/foo)")))
-  (is (thrown-with-msg? Exception #"not find"
+  (is (thrown-with-msg? Exception #"not locate"
          (tu/bb nil
                 "(require '[foo :as f])"))))
 
@@ -42,10 +42,10 @@
 
 (deftest main-test
   (is (= "(\"1\" \"2\" \"3\" \"4\")\n"
-         (tu/bb nil "--classpath" "test-resources/babashka/src_for_classpath_test" "-m" "my.main" "1" "2" "3" "4")))
+         (tu/bb nil "--prn" "--classpath" "test-resources/babashka/src_for_classpath_test" "-m" "my.main" "1" "2" "3" "4")))
   (testing "system property"
     (is (= "\"my.main2\""
-           (str/trim (tu/bb nil "--classpath" "test-resources/babashka/src_for_classpath_test" "-m" "my.main2"))))))
+           (str/trim (tu/bb nil "--prn" "--classpath" "test-resources/babashka/src_for_classpath_test" "-m" "my.main2"))))))
 
 (deftest error-while-loading-test
   (is (true?
@@ -70,3 +70,20 @@
            (str/trim
             (tu/bb nil "--classpath" "test-resources/babashka/src_for_classpath_test/foo.jar"
                    "(pos? (count (slurp (io/resource \"foo.clj\")))) "))))))
+
+(deftest classloader-test
+  (let [url
+        (tu/bb nil "--classpath" "test-resources/babashka/src_for_classpath_test/foo.jar"
+               "(first (map str (.getURLs (clojure.lang.RT/baseLoader))))")]
+    (is (str/includes? url "file:"))
+    (is (str/includes? url "foo.jar")))
+  (let [results (tu/bb nil "--classpath" "test-resources/babashka/src_for_classpath_test/foo.jar"
+               "(map some? [(.getResource (clojure.lang.RT/baseLoader) \"foo.clj\")
+                 (.getResourceAsStream (clojure.lang.RT/baseLoader) \"foo.clj\")
+                 (.getResources (clojure.lang.RT/baseLoader) \"foo.clj\")])")]
+    (is (= [true true true] (edn/read-string results)))))
+
+(deftest reader-tag-test
+  (is (= [[3 2 1] [1 2 3]]
+         (bb nil "--classpath" "test-resources/babashka/src_for_classpath_test"
+             "(require 'reader) [#r/reverse [1 2 3] #r/distinct [1 1 2 3]]"))))

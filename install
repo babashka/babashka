@@ -96,7 +96,11 @@ IFS='.' read -ra VER <<< "${version//-SNAPSHOT/}"
 vernum=$(printf "%03d%03d%03d" "${VER[0]}" "${VER[1]}" "${VER[2]}")
 
 case "$(uname -m)" in
-    aarch64) arch=aarch64;;
+    aarch64) arch=aarch64
+             if [[ "$platform" == "linux" ]]; then
+                 static_binary="true"
+             fi
+             ;;
     arm64) if [[ 10#$vernum -le 10#000008002 ]]; then
                arch="amd64"
            else

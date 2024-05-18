@@ -57,26 +57,26 @@
     (is (= 6 (bb "run" "--prn" "foo"))))
   (testing "init test"
     (test-utils/with-config '{:tasks {:init (def x 1)
-                                      foo   x}}
+                                      foo x}}
       (is (= 1 (bb "run" "--prn" "foo")))))
   (testing "requires test"
     (test-utils/with-config '{:tasks {:requires ([babashka.fs :as fs])
-                                      foo       (fs/exists? ".")}}
+                                      foo (fs/exists? ".")}}
       (is (= true (bb "run" "--prn" "foo"))))
     (test-utils/with-config '{:tasks {foo {:requires ([babashka.fs :as fs])
-                                           :task     (fs/exists? ".")}}}
+                                           :task (fs/exists? ".")}}}
       (is (= true (bb "run" "--prn" "foo"))))
     (test-utils/with-config '{:tasks {bar {:requires ([babashka.fs :as fs])}
                                       foo {:depends [bar]
-                                           :task    (fs/exists? ".")}}}
+                                           :task (fs/exists? ".")}}}
       (is (= true (bb "run" "--prn" "foo")))))
   (testing "map returned from task"
     (test-utils/with-config '{:tasks {foo {:task {:a 1 :b 2}}}}
       (is (= {:a 1 :b 2} (bb "run" "--prn" "foo")))))
-  (let [tmp-dir  (fs/create-temp-dir)
-        out      (str (fs/file tmp-dir "out.txt"))
+  (let [tmp-dir (fs/create-temp-dir)
+        out (str (fs/file tmp-dir "out.txt"))
         echo-cmd (if main/windows? "cmd /c echo" "echo")
-        ls-cmd   (if main/windows? "cmd /c dir" "ls")
+        ls-cmd (if main/windows? "cmd /c dir" "ls")
         fix-lines test-utils/normalize]
     (testing "shell test"
       (test-utils/with-config {:tasks {'foo (list 'shell {:out out}
@@ -85,8 +85,8 @@
         (is (= "hello\n" (fix-lines (slurp out))))))
     (fs/delete out)
     (testing "shell test with :continue fn"
-      (test-utils/with-config {:tasks {'foo (list '-> (list 'shell {:out      out
-                                                                    :err      out
+      (test-utils/with-config {:tasks {'foo (list '-> (list 'shell {:out out
+                                                                    :err out
                                                                     :continue '(fn [proc]
                                                                                  (contains? proc :exit))}
                                                             ls-cmd "foobar")
@@ -94,8 +94,8 @@
         (is (pos? (bb "run" "--prn" "foo")))))
     (testing "shell test with :error"
       (test-utils/with-config
-        {:tasks {'foo (list '-> (list 'shell {:out      out
-                                              :err      out
+        {:tasks {'foo (list '-> (list 'shell {:out out
+                                              :err out
                                               :error-fn '(constantly 1337)}
                                       ls-cmd "foobar"))}}
         (is (= 1337 (bb "run" "--prn" "foo"))))
@@ -118,23 +118,23 @@
     (fs/delete out)
     (testing "depends"
       (test-utils/with-config {:tasks {'quux (list 'spit out "quux\n")
-                                       'baz  (list 'spit out "baz\n" :append true)
-                                       'bar  {:depends ['baz]
-                                              :task    (list 'spit out "bar\n" :append true)}
-                                       'foo  {:depends ['quux 'bar 'baz]
-                                              :task    (list 'spit out "foo\n" :append true)}}}
+                                       'baz (list 'spit out "baz\n" :append true)
+                                       'bar {:depends ['baz]
+                                             :task (list 'spit out "bar\n" :append true)}
+                                       'foo {:depends ['quux 'bar 'baz]
+                                             :task (list 'spit out "foo\n" :append true)}}}
         (bb "foo")
         (is (= "quux\nbaz\nbar\nfoo\n" (slurp out)))))
     (fs/delete out)
     ;; This is why we don't support :when for now
     #_(testing "depends with :when"
         (test-utils/with-config {:tasks {'quux (list 'spit out "quux\n")
-                                         'baz  (list 'spit out "baz\n" :append true)
-                                         'bar  {:when    false
-                                                :depends ['baz]
-                                                :task    (list 'spit out "bar\n" :append true)}
-                                         'foo  {:depends ['quux 'bar]
-                                                :task    (list 'spit out "foo\n" :append true)}}}
+                                         'baz (list 'spit out "baz\n" :append true)
+                                         'bar {:when false
+                                               :depends ['baz]
+                                               :task (list 'spit out "bar\n" :append true)}
+                                         'foo {:depends ['quux 'bar]
+                                               :task (list 'spit out "foo\n" :append true)}}}
           (bb "foo")
           (is (= "quux\nbaz\nbar\nfoo\n" (slurp out))))))
   (testing "fully qualified symbol execution"
@@ -143,34 +143,34 @@
       (is (= :foo (bb "run" "--prn" "foo"))))
     (test-utils/with-config {:paths ["test-resources/task_scripts"]
                              :tasks '{:requires ([tasks :as t])
-                                      foo       t/foo}}
+                                      foo t/foo}}
       (is (= :foo (bb "run" "--prn" "foo"))))
     (test-utils/with-config {:paths ["test-resources/task_scripts"]
                              :tasks '{foo {:requires ([tasks :as t])
-                                           :task     t/foo}}}
+                                           :task t/foo}}}
       (is (= :foo (bb "run" "--prn" "foo")))))
   (testing "extra-paths"
     (test-utils/with-config {:paths ["test-resources/task_scripts"]
                              :tasks '{:requires ([tasks :as t])
-                                      foo       {:extra-paths ["test-resources/task_test_scripts"]
-                                                 :requires    ([task-test :as tt])
-                                                 :task        tt/task-test-fn}}}
+                                      foo {:extra-paths ["test-resources/task_test_scripts"]
+                                           :requires ([task-test :as tt])
+                                           :task tt/task-test-fn}}}
       (is (= :task-test-fn (bb "run" "--prn" "foo")))))
   (testing "extra-deps"
     (test-utils/with-config {:tasks '{foo {:extra-deps {medley/medley {:mvn/version "1.3.0"}}
-                                           :requires   ([medley.core :as m])
-                                           :task       (m/index-by :id [{:id 1} {:id 2}])}}}
+                                           :requires ([medley.core :as m])
+                                           :task (m/index-by :id [{:id 1} {:id 2}])}}}
       (is (= {1 {:id 1}, 2 {:id 2}} (bb "run" "--prn" "foo")))))
   (testing "enter / leave"
-    (test-utils/with-config '{:tasks {:init  (do (def enter-ctx (atom []))
-                                                 (def leave-ctx (atom [])))
+    (test-utils/with-config '{:tasks {:init (do (def enter-ctx (atom []))
+                                                (def leave-ctx (atom [])))
                                       :enter (swap! enter-ctx conj (:name (current-task)))
                                       :leave (swap! leave-ctx conj (:name (current-task)))
-                                      foo    {:depends [bar]
-                                              :task    [@enter-ctx @leave-ctx]}
-                                      bar    {:depends [baz]}
-                                      baz    {:enter nil
-                                              :leave nil}}}
+                                      foo {:depends [bar]
+                                           :task [@enter-ctx @leave-ctx]}
+                                      bar {:depends [baz]}
+                                      baz {:enter nil
+                                           :leave nil}}}
       (is (= '[[bar foo] [bar]] (bb "run" "--prn" "foo")))))
   (testing "run"
     (test-utils/with-config '{:tasks {a (+ 1 2 3)
@@ -184,28 +184,28 @@
   (testing "unresolved dependency"
     (test-utils/with-config '{:tasks {a (+ 1 2 3)
                                       b {:depends [x]
-                                         :task    (+ a 4 5 6)}}}
+                                         :task (+ a 4 5 6)}}}
       (is (thrown-with-msg?
            Exception #"No such task: x"
            (bb "run" "b")))))
   (testing "cyclic task"
     (test-utils/with-config '{:tasks {b {:depends [b]
-                                         :task    (+ a 4 5 6)}}}
+                                         :task (+ a 4 5 6)}}}
       (is (thrown-with-msg?
            Exception #"Cyclic task: b"
            (bb "run" "b"))))
     (test-utils/with-config '{:tasks {c {:depends [b]}
                                       b {:depends [c]
-                                         :task    (+ a 4 5 6)}}}
+                                         :task (+ a 4 5 6)}}}
       (is (thrown-with-msg?
            Exception #"Cyclic task: b"
            (bb "run" "b")))))
   (testing "friendly regex literal error handling"
     (test-utils/with-config
-     "{:tasks {something (clojure.string/split \"1-2\" #\"-\")}}"
-     (is (thrown-with-msg?
-          Exception #"Invalid regex literal"
-          (bb "run" "something")))))
+      "{:tasks {something (clojure.string/split \"1-2\" #\"-\")}}"
+      (is (thrown-with-msg?
+           Exception #"Invalid regex literal"
+           (bb "run" "something")))))
   (testing "doc"
     (test-utils/with-config '{:tasks {b {:doc "Beautiful docstring"}}}
       (let [s (test-utils/bb nil "doc" "b")]
@@ -216,21 +216,21 @@
         (is (= "b" s)))))
   (testing "parallel test"
     (test-utils/with-config (edn/read-string (slurp "test-resources/coffee-tasks.edn"))
-      (let [tree             [:made-coffee [[:ground-beans [:measured-beans]] [:heated-water [:poured-water]] :filter :mug]]
-            t0               (System/currentTimeMillis)
-            s                (bb "run" "--prn" "coffeep")
-            t1               (System/currentTimeMillis)
+      (let [tree [:made-coffee [[:ground-beans [:measured-beans]] [:heated-water [:poured-water]] :filter :mug]]
+            t0 (System/currentTimeMillis)
+            s (bb "run" "--prn" "coffeep")
+            t1 (System/currentTimeMillis)
             delta-sequential (- t1 t0)]
         (is (= tree s))
         (test-utils/with-config (edn/read-string (slurp "test-resources/coffee-tasks.edn"))
-          (let [t0             (System/currentTimeMillis)
-                s              (bb "run" "--parallel" "--prn" "coffeep")
-                t1             (System/currentTimeMillis)
+          (let [t0 (System/currentTimeMillis)
+                s (bb "run" "--parallel" "--prn" "coffeep")
+                t1 (System/currentTimeMillis)
                 delta-parallel (- t1 t0)]
             (is (= tree s))
-            (when (>=  (doto (-> (Runtime/getRuntime) (.availableProcessors))
-                         (prn))
-                       2)
+            (when (>= (doto (-> (Runtime/getRuntime) (.availableProcessors))
+                        (prn))
+                      2)
               (is (< delta-parallel delta-sequential)))))))
     (testing "exception"
       (test-utils/with-config '{:tasks {a (Thread/sleep 10000)
@@ -241,40 +241,40 @@
                               (bb "run" "--parallel" "c")))))
     (testing "edge case"
       (test-utils/with-config '{:tasks
-                                {a   (run '-a {:parallel true})
-                                 -a  {:depends [a:a a:b c]
-                                      :task    (prn [a:a a:b c])}
+                                {a (run '-a {:parallel true})
+                                 -a {:depends [a:a a:b c]
+                                     :task (prn [a:a a:b c])}
                                  a:a {:depends [c]
-                                      :task    (+ 1 2 3)}
+                                      :task (+ 1 2 3)}
                                  a:b {:depends [c]
-                                      :task    (do (Thread/sleep 10)
-                                                   (+ 1 2 3))}
-                                 c   (do (Thread/sleep 10) :c)}}
+                                      :task (do (Thread/sleep 10)
+                                                (+ 1 2 3))}
+                                 c (do (Thread/sleep 10) :c)}}
         (is (= [6 6 :c] (bb "run" "--prn" "a"))))))
   (testing "dynamic vars"
     (test-utils/with-config '{:tasks
                               {:init (def ^:dynamic *foo* true)
-                               a     (do
-                                       (def ^:dynamic *bar* false)
-                                       (binding [*foo* false
-                                                 *bar* true]
-                                         [*foo* *bar*]))}}
+                               a (do
+                                   (def ^:dynamic *bar* false)
+                                   (binding [*foo* false
+                                             *bar* true]
+                                     [*foo* *bar*]))}}
       (is (= [false true] (bb "run" "--prn" "a")))))
   (testing "stable namespace name"
     (test-utils/with-config '{:tasks
-                              {:init   (do (def ^:dynamic *jdk*)
-                                           (def ^:dynamic *server*))
-                               server  [*jdk* *server*]
-                               run-all (for [jdk    [8 11 15]
+                              {:init (do (def ^:dynamic *jdk*)
+                                         (def ^:dynamic *server*))
+                               server [*jdk* *server*]
+                               run-all (for [jdk [8 11 15]
                                              server [:foo :bar]]
-                                         (binding [*jdk*    jdk
+                                         (binding [*jdk* jdk
                                                    *server* server]
                                            (babashka.tasks/run 'server)))}}
       (is (= '([8 :foo] [8 :bar] [11 :foo] [11 :bar] [15 :foo] [15 :bar])
              (bb "run" "--prn" "run-all")))))
   ;; TODO: disabled because of " Volume in drive C has no label.\r\n Volume Serial Number is 1CB8-D4AA\r\n\r\n Directory of C:\\projects\\babashka\r\n\r\n" on Appveyor. See https://ci.appveyor.com/project/borkdude/babashka/builds/40003094.
   (testing "shell test with :continue"
-    (let [ls-cmd  (if main/windows? "cmd /c dir" "ls")]
+    (let [ls-cmd (if main/windows? "cmd /c dir" "ls")]
       (test-utils/with-config {:tasks {'foo (list 'do
                                                   (list 'shell {:continue true}
                                                         (str ls-cmd " foobar"))
@@ -303,6 +303,27 @@
         (let [s (bb "run" "--prn" "a")]
           (is (str/includes? s "paths")))))))
 
+(deftest tasks:clojure-test
+  (testing "tokenization when called from tasks"
+    (test-utils/with-config
+      (pr-str '{:tasks {foo (-> (clojure {:out :string} "-J-Dfoo=\"{:port 5555 :accept clojure.core.server/repl}\" -M -e \"(clojure.edn/read-string (System/getProperty (name :foo)))\"") :out clojure.edn/read-string prn)}})
+      (is (= '{:port 5555, :accept clojure.core.server/repl}
+             (bb "run" "foo")))))
+  (testing "can be called without args"
+    (test-utils/with-config
+      (pr-str '{:tasks {foo (-> (clojure {:in "(+ 1 2 3)" :out :string}) :out prn)}})
+      (is (str/includes? (bb "run" "foo") "6")))
+    ;; can't properly test this, but `(clojure)` should work with zero args
+    #_(test-utils/with-config
+        (pr-str '{:tasks {foo (-> (clojure) :out prn)}})
+        (is (str/includes? (test-utils/bb "(+ 1 2 3)" "run" "foo") "6"))))
+  (testing "call to run in missing dir gives 'cannot run program' message"
+    (test-utils/with-config
+      (pr-str '{:tasks {foo (clojure {:dir "../missingdir"} "-M" "-r")}})
+      ;; check rough text of error message, specific message about missing directory is OS-dependent
+      (is (thrown-with-msg? Exception #"Cannot run program .* \(in directory \"\.\.[/\\]missingdir\"\)"
+                            (bb "run" "foo"))))))
+
 (deftest list-tasks-test
   (test-utils/with-config {}
     (let [res (test-utils/bb nil "tasks")]
@@ -319,7 +340,7 @@
   (test-utils/with-config '{:tasks {abc 1 xyz 2}}
     (let [res (test-utils/bb nil "tasks")]
       (is (= "The following tasks are available:\n\nabc\nxyz\n" res))))
-  (test-utils/with-config '{:tasks {abc 1  xyz {:doc "some text" :tasks 5}
+  (test-utils/with-config '{:tasks {abc 1 xyz {:doc "some text" :tasks 5}
                                     -xyz 3 qrs {:private true}}}
     (let [res (test-utils/bb nil "tasks")]
       (is (= "The following tasks are available:\n\nabc\nxyz some text\n" res))))
@@ -366,7 +387,7 @@ even more stuff here\"
       (try
         (spit "uberjar" "#!/usr/bin/env bb\n(+ 1 2 3)")
         (vreset! common/bb-edn '{:tasks {uberjar (+ 1 2 3)}})
-        (is (= "uberjar" (:file (main/parse-opts ["uberjar"]))))
+        (is (= {:file "uberjar", :command-line-args '("--version")} (second (main/parse-opts ["uberjar" "--version"]))))
         (finally (fs/delete "uberjar"))))))
 
 (deftest min-bb-version-test
@@ -375,7 +396,7 @@ even more stuff here\"
       (spit config '{:min-bb-version "300.0.0"})
       (let [sw (java.io.StringWriter.)]
         (binding [*err* sw]
-          (main/main "--config" config  "-e" "nil"))
+          (main/main "--config" config "-e" "nil"))
         (is (str/includes? (str sw)
                            "WARNING: this project requires babashka 300.0.0 or newer, but you have: "))))))
 
@@ -388,7 +409,7 @@ even more stuff here\"
             entries (cp/split-classpath out)
             entry (first entries)]
         (is (= 1 (count entries)))
-        (is (= (fs/parent config) (fs/parent entry)))
+        (is (= (fs/real-path (fs/parent config)) (fs/real-path (fs/parent entry))))
         (is (str/ends-with? entry "src"))))))
 
 (deftest without-deps-test
@@ -455,9 +476,9 @@ even more stuff here\"
   (when (= "amd64" (System/getProperty "os.arch")) ; TODO: Build bootleg for aarch64 too or use a different pod
     (test-utils/with-config
       (pr-str '{:paths ["test-resources"]
-                :pods  {retrogradeorbit/bootleg {:version "0.1.9"}}})
+                :pods {retrogradeorbit/bootleg {:version "0.1.9"}}})
       (is (= "\"<div><p>Test</p></div>\"\n"
-             (test-utils/bb nil "-m" "pod-tests.bootleg"))))))
+             (test-utils/bb nil "--prn" "-m" "pod-tests.bootleg"))))))
 
 (deftest ^:skip-windows local-pod-test
   (test-utils/with-config
@@ -476,3 +497,47 @@ even more stuff here\"
     "{:deps {}}"
     (is (= {1 {:a 1}}
            (bb "-Sdeps" "{:deps {medley/medley {:mvn/version \"1.4.0\"}}}" "-e" "(require 'medley.core) (medley.core/index-by :a [{:a 1}])")))))
+
+(deftest deps-root-test
+  (fs/with-temp-dir [dir {}]
+    (let [f (fs/file dir "bb.edn")
+          config (str f)]
+      (spit config
+            '{:paths ["src"]
+              :tasks {cp (prn (babashka.classpath/get-classpath))}})
+      (testing "custom deps-root path"
+        (let [out (bb "--config" config "--deps-root" (str dir) "cp")
+              entries (cp/split-classpath out)]
+          (is (= 1 (count entries)))
+          (is (= (fs/file dir "src") (fs/file (first entries))))))
+      (testing "default deps-root path is same as bb.edn"
+        (let [out (bb "--config" config "cp")
+              entries (cp/split-classpath out)]
+          (is (= (fs/real-path(fs/parent f)) (fs/real-path (fs/parent (first entries)))))))
+      (spit config
+            '{:paths ["src"]
+              :deps {local/dep {:local/root "local-dep"}}
+              :tasks {cp (prn (babashka.classpath/get-classpath))}})
+      (testing "relative paths in deps should be relative to bb.edn"
+        (let [root (fs/create-dir (fs/file dir "local-dep"))
+              _ (spit (str (fs/file root "deps.edn")) {})
+              out (bb "--config" config "cp")
+              entries (cp/split-classpath out)]
+          (is (= (fs/real-path (fs/parent f)) (fs/real-path (fs/parent (first entries))))))))))
+
+(deftest adjacent-bb-edn-test
+  (is (= {1 {:id 1}} (bb "test-resources/adjacent_bb/medley.bb")))
+  (is (= {1 {:id 1}} (bb "-f" "test-resources/adjacent_bb/medley.bb")))
+  (testing "symlink"
+    (is (= {1 {:id 1}} (bb (str (fs/file "test-resources" "symlink-adjacent-bb")))))))
+
+(deftest non-existing-tasks-in-run-gives-exit-code-1
+  (is (thrown? Exception (bb "-Sdeps" "{:tasks {foo {:task (run (quote bar))}}}" "foo"))))
+
+(deftest empty-bb-edn-test
+  (is (= 6 (bb "-Sdeps" "" "-e" "(+ 1 2 3)"))))
+
+(deftest warning-on-override-task
+  (when-not test-utils/native?
+    (binding [*out* *err*]
+      (is (str/includes? (with-out-str (bb "-Sdeps" "{:tasks {run {:task 1}}}" "run")) "'run' override")))))

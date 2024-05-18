@@ -11,7 +11,7 @@
 ;; GraalVM Community Edition 19.3.2 based on OpenJDK 8u252
 ;; GraalVM Community Edition 19.3.2 based on OpenJDK 11.0.7
 ;;
-;; Currently we use GraalVM java11-20.1.0
+;; Currently we use GraalVM java19-20.1.0
 
 (ns bump-graal-version
   (:require [clojure.string :as str]
@@ -31,8 +31,8 @@
                  ""
                  "./bump_graal_version.clj -g 19.3.2 (the new version)"
                  "or"
-                 "./bump_graal_version.clj -g 19.3.2 --java java11"
-                 "(for GraalVM java11-19.3.2)"
+                 "./bump_graal_version.clj -g 19.3.2 --java java19"
+                 "(for GraalVM java19-19.3.2)"
                  ""]
                 (str/join \newline))))
 
@@ -54,8 +54,8 @@
 ;; OR
 ;;
 ;; We could have them as environment variables
-(def current-graal-version "22.3.0")
-(def current-java-version "java11")
+(def current-graal-version "22.3.1")
+(def current-java-version "java19")
 
 (def cl-options
   [["-g" "--graal VERSION" "graal version"]

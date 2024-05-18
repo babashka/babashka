@@ -1,13 +1,18 @@
 (ns babashka.impl.nrepl-server-test
   (:require
+   [babashka.fs :as fs]
+   [babashka.impl.nrepl-server :refer [start-server!]]
    [babashka.main :as main]
-   [babashka.nrepl.server :refer [start-server! stop-server! parse-opt]]
+   [babashka.nrepl.server :refer [parse-opt stop-server!]]
    [babashka.test-utils :as tu]
    [babashka.wait :as wait]
    [bencode.core :as bencode]
    [clojure.test :as t :refer [deftest is testing]]
-   [sci.impl.opts :refer [init]])
-  (:import [java.lang ProcessBuilder$Redirect]))
+   [sci.core :as sci]
+   [sci.ctx-store :as ctx-store]
+   [babashka.impl.classpath :as cp])
+  (:import
+   [java.lang ProcessBuilder$Redirect]))
 
 (def debug? false)
 
@@ -28,6 +33,9 @@
               res)
         res (if-let [status (:sessions res)]
               (assoc res :sessions (mapv bytes->str status))
+              res)
+        res (if-let [cp (:classpath res)]
+              (assoc res :classpath (mapv bytes->str cp))
               res)]
     res))
 
@@ -59,9 +67,11 @@
         (let [msg (read-reply in session @id)
               id (:id msg)
               versions (:versions msg)
-              babashka-version (bytes->str (get versions "babashka"))]
+              babashka-version (bytes->str (get versions "babashka"))
+              ops (:ops msg)]
           (is (= 1 id))
-          (is (= main/version babashka-version))))
+          (is (= main/version babashka-version))
+          (is (contains? ops "classpath"))))
       (testing "eval"
         (bencode/write-bencode os {"op" "eval" "code" "(+ 1 2 3)" "session" session "id" (new-id!)})
         (let [msg (read-reply in session @id)
@@ -87,13 +97,13 @@
             (is (= ":foo0" (:value (read-reply in session @id)))))
           ;; TODO: I don't remember why we created a new ns
           #_(testing "providing an ns value of a non-existing namespace creates the namespace"
-            (bencode/write-bencode os {"op" "eval"
-                                       "code" "(ns-name *ns*)"
-                                       "session" session
-                                       "id" (new-id!)
-                                       "ns" "unicorn"})
-            (let [reply (read-reply in session @id)]
-              (is (= "unicorn" (:value reply))))))
+              (bencode/write-bencode os {"op" "eval"
+                                         "code" "(ns-name *ns*)"
+                                         "session" session
+                                         "id" (new-id!)
+                                         "ns" "unicorn"})
+              (let [reply (read-reply in session @id)]
+                (is (= "unicorn" (:value reply))))))
         (testing "multiple top level expressions results in two value replies"
           (bencode/write-bencode os {"op" "eval"
                                      "code" "(+ 1 2 3) (+ 1 2 3)"
@@ -181,37 +191,53 @@
                                    "session" session "id" (new-id!)})
         (dotimes [_ 3]
           (let [reply (read-reply in session @id)]
-            (is (= "Hello\n" (tu/normalize (:out reply))))))))))
+            (is (= "Hello\n" (tu/normalize (:out reply)))))))
+      (testing "dynamic var can be set!, test unchecked-math"
+        (bencode/write-bencode os {"op" "eval" "code" "(set! *unchecked-math* true)"
+                                   "session" session "id" (new-id!)})
+        (let [reply (read-reply in session @id)]
+          (is (= "true" (:value reply)))))
+      (testing "classpath op"
+        (bencode/write-bencode os {"op" "eval" "code" "(babashka.classpath/add-classpath \"test-resources/babashka/src_for_classpath_test\")"
+                                   "session" session "id" (new-id!)})
+        (read-reply in session @id)
+        (bencode/write-bencode os {"op" "classpath"
+                                   "session" session "id" (new-id!)})
+        (let [reply (read-reply in session @id)
+              cp (:classpath reply)]
+          (is (every? string? cp))
+          (is (pos? (count cp)))
+          ;; dev-resources doesn't exist
+          (is (pos? (count (filter fs/exists? cp)))))))))
 
 (deftest ^:skip-windows nrepl-server-test
   (let [proc-state (atom nil)
-        server-state (atom nil)]
-    (try
-      (if tu/jvm?
-        (let [nrepl-opts (parse-opt "0.0.0.0:1668")
-              nrepl-opts (assoc nrepl-opts
-                                :describe {"versions" {"babashka" main/version}})
-              server (start-server!
-                     (init {:namespaces main/namespaces
-                            :features #{:bb}})
-                     nrepl-opts)]
-          (reset! server-state server))
-        (let [pb (ProcessBuilder. ["./bb" "nrepl-server" "0.0.0.0:1668"])
-              _ (.redirectError pb ProcessBuilder$Redirect/INHERIT)
-              ;; _ (.redirectOutput pb ProcessBuilder$Redirect/INHERIT)
-              ;; env (.environment pb)
-              ;; _ (.put env "BABASHKA_DEV" "true")
-              proc (.start pb)]
-          (reset! proc-state proc)))
-      (babashka.wait/wait-for-port "localhost" 1668)
-      (nrepl-test)
-      (finally
+        server-state (atom nil)
+        ctx (sci/init {:namespaces main/namespaces
+                       :features #{:bb}})]
+    (sci.ctx-store/with-ctx ctx
+      (try
         (if tu/jvm?
-          (stop-server! @server-state)
-          (when-let [proc @proc-state]
-            (.destroy ^Process proc)))))))
+          (let [nrepl-opts (parse-opt "0.0.0.0:1668")
+                nrepl-opts (assoc nrepl-opts
+                                  :describe {"versions" {"babashka" main/version}})
+                server (start-server! nrepl-opts)]
+            (reset! server-state server))
+          (let [pb (ProcessBuilder. ["./bb" "nrepl-server" "0.0.0.0:1668"])
+                _ (.redirectError pb ProcessBuilder$Redirect/INHERIT)
+                ;; _ (.redirectOutput pb ProcessBuilder$Redirect/INHERIT)
+                ;; env (.environment pb)
+                ;; _ (.put env "BABASHKA_DEV" "true")
+                proc (.start pb)]
+            (reset! proc-state proc)))
+        (babashka.wait/wait-for-port "localhost" 1668)
+        (nrepl-test)
+        (finally
+          (if tu/jvm?
+            (stop-server! @server-state)
+            (when-let [proc @proc-state]
+              (.destroy ^Process proc))))))))
 
 ;;;; Scratch
 
-(comment
-  )
+(comment)

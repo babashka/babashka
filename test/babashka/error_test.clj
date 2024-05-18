@@ -7,13 +7,19 @@
    [clojure.test :as t :refer [deftest is testing]]
    [matcher-combinators.test]))
 
+(defn process-difference [line]
+  (-> line str/trimr
+      ;; take into account JDK14+ and native image differences
+      (str/replace "class clojure.lang" "clojure.lang")
+      (str/replace #" \(.*\)$" "")))
+
 (defmacro multiline-equals [s1 s2]
   `(let [lines-s1# (str/split-lines ~s1)
          lines-s2# (str/split-lines ~s2)
          max-lines# (max (count lines-s1#) (count lines-s2#))
          lines-s1# (take max-lines# lines-s1#)
          lines-s2# (take max-lines# lines-s2#)]
-     (is (~'match? (map str/trimr lines-s1#) (map str/trimr lines-s2#)))
+     (is (~'match? (map process-difference lines-s1#) (map process-difference lines-s2#)))
      #_(run! (fn [i]
                (let [l1 (get lines-s1 i)
                      l2 (get lines-s2 i)]
@@ -117,58 +123,63 @@ user - <expr>:1:1")))))
 
 
 (deftest error-while-macroexpanding-test
-  (let [output (try (tu/bb nil "-e"  "(defmacro foo [x] (subs nil 1) `(do ~x ~x)) (foo 1)")
+  (let [output (try (tu/bb nil "-e"  "(defmacro foo [x] (assoc :foo 1 2) `(do ~x ~x)) (foo 1)")
                     (catch Exception e (ex-message e)))]
     (multiline-equals output
                       "----- Error --------------------------------------------------------------------
-Type:     java.lang.NullPointerException
+Type:     java.lang.ClassCastException
+Message:  clojure.lang.Keyword cannot be cast to clojure.lang.Associative
 Location: <expr>:1:19
 Phase:    macroexpand
 
 ----- Context ------------------------------------------------------------------
-1: (defmacro foo [x] (subs nil 1) `(do ~x ~x)) (foo 1)
-                     ^---
+1: (defmacro foo [x] (assoc :foo 1 2) `(do ~x ~x)) (foo 1)
+                     ^--- clojure.lang.Keyword cannot be cast to clojure.lang.Associative
 
 ----- Stack trace --------------------------------------------------------------
-clojure.core/subs - <built-in>
-user/foo          - <expr>:1:19
-user/foo          - <expr>:1:1
-user              - <expr>:1:45")))
+clojure.core/assoc--5481 - <built-in>
+clojure.core/assoc       - <built-in>
+user/foo                 - <expr>:1:19
+user/foo                 - <expr>:1:1
+user                     - <expr>:1:49")))
 
 (deftest error-in-macroexpansion-test
-  (let [output (try (tu/bb nil "-e"  "(defmacro foo [x] `(subs nil ~x)) (foo 1)")
+  (let [output (try (tu/bb nil "-e"  "(defmacro foo [x] `(assoc :foo ~x 2)) (foo 1)")
                     (catch Exception e (ex-message e)))]
     (multiline-equals output
                       "----- Error --------------------------------------------------------------------
-Type:     java.lang.NullPointerException
-Location: <expr>:1:35
+Type:     java.lang.ClassCastException
+Message:  clojure.lang.Keyword cannot be cast to clojure.lang.Associative
+Location: <expr>:1:39
 
 ----- Context ------------------------------------------------------------------
-1: (defmacro foo [x] `(subs nil ~x)) (foo 1)
-                                     ^---
+1: (defmacro foo [x] `(assoc :foo ~x 2)) (foo 1)
+                                         ^--- clojure.lang.Keyword cannot be cast to clojure.lang.Associative
 
 ----- Stack trace --------------------------------------------------------------
-clojure.core/subs - <built-in>
-user              - <expr>:1:35
-"))
+clojure.core/assoc--5481 - <built-in>
+clojure.core/assoc       - <built-in>
+user                     - <expr>:1:39"))
   (testing "calling a var inside macroexpansion"
-    (let [output (try (tu/bb nil "-e"  "(defn quux [] (subs nil 1)) (defmacro foo [x & xs] `(do (quux) ~x)) (defn bar [] (foo 1)) (bar)")
+    (let [output (try (tu/bb nil "-e"  "(defn quux [] (assoc :foo 1 2)) (defmacro foo [x & xs] `(do (quux) ~x)) (defn bar [] (foo 1)) (bar)")
                       (catch Exception e (ex-message e)))]
       (multiline-equals output
                         "----- Error --------------------------------------------------------------------
-Type:     java.lang.NullPointerException
+Type:     java.lang.ClassCastException
+Message:  clojure.lang.Keyword cannot be cast to clojure.lang.Associative
 Location: <expr>:1:15
 
 ----- Context ------------------------------------------------------------------
-1: (defn quux [] (subs nil 1)) (defmacro foo [x & xs] `(do (quux) ~x)) (defn bar [] (foo 1)) (bar)
-                 ^---
+1: (defn quux [] (assoc :foo 1 2)) (defmacro foo [x & xs] `(do (quux) ~x)) (defn bar [] (foo 1)) (bar)
+                 ^--- clojure.lang.Keyword cannot be cast to clojure.lang.Associative
 
 ----- Stack trace --------------------------------------------------------------
-clojure.core/subs - <built-in>
-user/quux         - <expr>:1:15
-user/quux         - <expr>:1:1
-user/bar          - <expr>:1:69
-user              - <expr>:1:91"))))
+clojure.core/assoc--5481 - <built-in>
+clojure.core/assoc       - <built-in>
+user/quux                - <expr>:1:15
+user/quux                - <expr>:1:1
+user/bar                 - <expr>:1:73
+user                     - <expr>:1:95"))))
 
 (deftest print-exception-data-test
   (testing "output of uncaught ExceptionInfo"
@@ -232,29 +243,31 @@ clojure.lang.ExceptionInfo: Divide by zero")))
                          "{:type :sci/error, :line 1, :column 12, :message \"Divide by zero\",")))))
 
 (deftest macro-test
-  (let [output (try (tu/bb nil "--debug" "(defmacro foo [x] (subs nil 1) `(do ~x ~x)) (foo 1)")
+  (let [output (try (tu/bb nil "--debug" "(defmacro foo [x] (assoc :foo 1 2) `(do ~x ~x)) (foo 1)")
                     (is false)
                     (catch Exception e (ex-message e)))
         output (tu/normalize output)
-        actual-lines (str/join "\n" (take 17 (str/split-lines output)))]
+        actual-lines (str/join "\n" (take 19 (str/split-lines output)))]
     (multiline-equals actual-lines
                       "----- Error --------------------------------------------------------------------
-Type:     java.lang.NullPointerException
+Type:     java.lang.ClassCastException
+Message:  clojure.lang.Keyword cannot be cast to clojure.lang.Associative
 Location: <expr>:1:19
 Phase:    macroexpand
 
 ----- Context ------------------------------------------------------------------
-1: (defmacro foo [x] (subs nil 1) `(do ~x ~x)) (foo 1)
-                     ^--- 
+1: (defmacro foo [x] (assoc :foo 1 2) `(do ~x ~x)) (foo 1)
+                     ^--- clojure.lang.Keyword cannot be cast to clojure.lang.Associative
 
 ----- Stack trace --------------------------------------------------------------
-clojure.core/subs - <built-in>
-user/foo          - <expr>:1:19
-user/foo          - <expr>:1:1
-user              - <expr>:1:45
+clojure.core/assoc--5481 - <built-in>
+clojure.core/assoc       - <built-in>
+user/foo                 - <expr>:1:19
+user/foo                 - <expr>:1:1
+user                     - <expr>:1:49
 
 ----- Exception ----------------------------------------------------------------
-clojure.lang.ExceptionInfo: null")))
+clojure.lang.ExceptionInfo: clojure.lang.Keyword cannot be cast to clojure.lang.Associative")))
 
 (deftest native-stacktrace-test
   (let [output (try (tu/bb nil "(merge 1 2 3)")
