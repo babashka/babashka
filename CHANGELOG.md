@@ -12,6 +12,8 @@ A preview of the next release can be installed from
 - Fix [#1688](https://github.com/babashka/babashka/issues/1688): use-fixtures should add metadata to `*ns*`
 - Fix [#1692](https://github.com/babashka/babashka/issues/1692): Add support for ITransientSet and org.flatland/ordered-set
 - Bump org.flatland/ordered to `1.15.12`.
+- Partially Fix [#1695](https://github.com/babashka/babashka/issues/1695): `--repl` arg handling should consume only one arg (itself) ([@bobisageek](https://github.com/bobisageek))
+- Partially Fix [#1695](https://github.com/babashka/babashka/issues/1695): make `*command-line-args*` value available in the REPL ([@bobisageek](https://github.com/bobisageek))
 
 ## 1.3.190 (2024-04-17)
 
