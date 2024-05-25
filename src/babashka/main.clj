@@ -1021,7 +1021,8 @@ Use bb run --help to show this help output.
                        doc (print-doc sci-ctx command-line-args)
                        describe?
                        [(print-describe) 0]
-                       repl [(repl/start-repl! sci-ctx) 0]
+                       repl (sci/binding [core/command-line-args command-line-args] 
+                              [(repl/start-repl! sci-ctx) 0])
                        nrepl [(start-nrepl! nrepl) 0]
                        uberjar [nil 0]
                        list-tasks [(tasks/list-tasks sci-ctx) 0]
@@ -1069,7 +1070,8 @@ Use bb run --help to show this help output.
                        clojure [nil (if-let [proc (bdeps/clojure command-line-args)]
                                       (-> @proc :exit)
                                       0)]
-                       :else [(repl/start-repl! sci-ctx) 0]))
+                       :else (sci/binding [core/command-line-args command-line-args]
+                               [(repl/start-repl! sci-ctx) 0])))
                 1)]
         (flush)
         (when uberscript

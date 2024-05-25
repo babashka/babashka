@@ -480,7 +480,11 @@
 
 (deftest command-line-args-test
   (is (true? (bb nil "(nil? *command-line-args*)")))
-  (is (= ["1" "2" "3"] (bb nil "*command-line-args*" "1" "2" "3"))))
+  (is (= ["1" "2" "3"] (bb nil "*command-line-args*" "1" "2" "3")))
+  (is (str/includes? (test-utils/bb "*command-line-args*" "repl" "--" "1" "2" "3")
+        "(\"1\" \"2\" \"3\""))
+  (is (str/includes? (test-utils/bb "*command-line-args*" "--" "1" "2" "3")
+        "(\"1\" \"2\" \"3\"")))
 
 (deftest constructors-test
   (testing "the clojure.lang.Delay constructor works"
