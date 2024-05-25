@@ -613,7 +613,7 @@ Use bb run --help to show this help output.
                           :uberjar (first options))))
           ("--repl")
           (let [options (next options)]
-            (recur (next options)
+            (recur options
                    (assoc opts-map
                           :repl true)))
           ("--socket-repl")
