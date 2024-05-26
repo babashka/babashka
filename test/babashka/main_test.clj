@@ -88,6 +88,18 @@
   (is (not (main/satisfies-min-version? "300.0.0")))
   (is (not (main/satisfies-min-version? "300.0.0-SNAPSHOT"))))
 
+(deftest version-opt-test
+  (is (str/starts-with? (test-utils/bb nil "version")
+        "babashka v")))
+
+(deftest help-opt-test
+  (is (every? #(str/includes? (test-utils/bb nil "help") %)
+                 ["Babashka v" "Help:"])))
+
+(deftest describe-opt-test
+  (is (every? (partial contains? (bb nil "describe"))
+        [:babashka/version :feature/yaml :feature/logging])))
+
 (deftest print-error-test
   (is (thrown-with-msg? Exception #"java.lang.NullPointerException"
                         (bb nil "(subs nil 0 0)"))))

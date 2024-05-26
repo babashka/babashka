@@ -14,6 +14,7 @@ A preview of the next release can be installed from
 - Bump org.flatland/ordered to `1.15.12`.
 - Partially Fix [#1695](https://github.com/babashka/babashka/issues/1695): `--repl` arg handling should consume only one arg (itself) ([@bobisageek](https://github.com/bobisageek))
 - Partially Fix [#1695](https://github.com/babashka/babashka/issues/1695): make `*command-line-args*` value available in the REPL ([@bobisageek](https://github.com/bobisageek))
+- Fix [#1686](https://github.com/babashka/babashka/issues/1686): do not fetch dependencies/invoke java for `version`, `help`, and `describe` options ([@bobisageek](https://github.com/bobisageek))
 
 ## 1.3.190 (2024-04-17)
 
