@@ -68,6 +68,10 @@
   (is (= {:force? true :repl true} (parse-opts ["--force" "repl"])))
   (is (= {:force? true :clojure true :command-line-args '("-M" "-r")}
          (parse-opts ["--force" "clojure" "-M" "-r"])))
+  (is (= {:command-line-args '("asdf" "fdsa")}
+        (main/parse-opts ["--" "asdf" "fdsa"])))
+  (is (= {:repl true :command-line-args '("asdf" "fdsa")}
+        (main/parse-opts ["repl" "--" "asdf" "fdsa"])))
   (testing "file opts parsing does not mess with :command-line-args"
     (is (= {:prn true, :expressions ["(prn :foo)"]}
            (-> (let [[_ opts] (main/parse-file-opt ["-e" "(prn :foo)"] {})]
@@ -476,7 +480,11 @@
 
 (deftest command-line-args-test
   (is (true? (bb nil "(nil? *command-line-args*)")))
-  (is (= ["1" "2" "3"] (bb nil "*command-line-args*" "1" "2" "3"))))
+  (is (= ["1" "2" "3"] (bb nil "*command-line-args*" "1" "2" "3")))
+  (is (str/includes? (test-utils/bb "*command-line-args*" "repl" "--" "1" "2" "3")
+        "(\"1\" \"2\" \"3\""))
+  (is (str/includes? (test-utils/bb "*command-line-args*" "--" "1" "2" "3")
+        "(\"1\" \"2\" \"3\"")))
 
 (deftest constructors-test
   (testing "the clojure.lang.Delay constructor works"
