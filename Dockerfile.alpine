@@ -13,6 +13,7 @@ RUN echo 'hosts: files mdns4_minimal [NOTFOUND=return] dns mdns4' >> /etc/nsswit
 
 # TODO: Run actual native tests when they are ported
 
+RUN bb -e '(prn (java.io.File/createTempFile "babashka.curl" ".headers"))'
 RUN bb -e "(curl/get \"https://clojure.org\")" # cURL http test
 RUN bb -e "(require '[org.httpkit.client :as http]) (when-let [error (:error @(http/get \"https://clojure.org\"))] (throw error))" # JVM http test
 RUN bb -e "(.length \"Hello, Babashka\")" # Java interop test
