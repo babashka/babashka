@@ -139,7 +139,7 @@
   (binding [*out* *err*]
     (apply println msgs)))
 
-(defn print-help [_ctx _command-line-args]
+(defn print-help []
   (println (str "Babashka v" version))
   (println "
 Usage: bb [svm-opts] [global-opts] [eval opts] [cmdline args]
@@ -215,8 +215,7 @@ Tooling:
 File names take precedence over subcommand names.
 Remaining arguments are bound to *command-line-args*.
 Use -- to separate script command line args from bb command line args.
-When no eval opts or subcommand is provided, the implicit subcommand is repl.")
-  [nil 0])
+When no eval opts or subcommand is provided, the implicit subcommand is repl."))
 
 (defn print-doc [ctx command-line-args]
   (let [arg (first command-line-args)
@@ -832,13 +831,12 @@ Use bb run --help to show this help output.
                   sci/print-length @sci/print-length
                   ;; when adding vars here, also add them to repl.clj and nrepl_server.clj
                   ]
-      (let [{version-opt :version
-             :keys [:shell-in :edn-in :shell-out :edn-out
-                    :help :file :command-line-args
+      (let [{:keys [:shell-in :edn-in :shell-out :edn-out
+                    :file :command-line-args
                     :expressions :stream? :init
                     :repl :socket-repl :nrepl
                     :debug :classpath :force?
-                    :main :uberscript :describe?
+                    :main :uberscript
                     :jar :uberjar :clojure
                     :doc :run :list-tasks
                     :print-deps :prepare]
@@ -1015,12 +1013,7 @@ Use bb run --help to show this help output.
             exit-code
             (or exit-code
                 (second
-                 (cond version-opt
-                       [(print-version) 0]
-                       help (print-help sci-ctx command-line-args)
-                       doc (print-doc sci-ctx command-line-args)
-                       describe?
-                       [(print-describe) 0]
+                 (cond doc (print-doc sci-ctx command-line-args)
                        repl (sci/binding [core/command-line-args command-line-args] 
                               [(repl/start-repl! sci-ctx) 0])
                        nrepl [(start-nrepl! nrepl) 0]
@@ -1109,6 +1102,15 @@ Use bb run --help to show this help output.
                   (uberjar/run uber-params))))))
         exit-code))))
 
+(defn exec-without-deps [cli-opts]
+  (let [{version-opt :version
+         :keys [help describe?]} cli-opts]
+    (cond
+      version-opt (print-version)
+      help        (print-help)
+      describe?   (print-describe)))
+  0)
+
 (defn satisfies-min-version? [min-version]
   (let [[major-current minor-current patch-current] version-data
         [major-min minor-min patch-min] (parse-version min-version)]
@@ -1148,6 +1150,10 @@ Use bb run --help to show this help output.
   (if (and f (fs/exists? f))
     (str (fs/real-path f))
     f))
+
+(defn deps-not-needed [opts]
+  (let [fast-path-opts [:version :help :describe?]]
+    (some #(contains? opts %) fast-path-opts)))
 
 (defn main [& args]
   (let [bin-jar (binary-invoked-as-jar)
@@ -1205,7 +1211,9 @@ Use bb run --help to show this help output.
         (binding [*out* *err*]
           (println (str "WARNING: this project requires babashka "
                         min-bb-version " or newer, but you have: " version)))))
-    (exec opts)))
+    (if (deps-not-needed opts)
+      (exec-without-deps opts)
+      (exec opts))))
 
 (def musl?
   "Captured at compile time, to know if we are running inside a
