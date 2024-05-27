@@ -62,6 +62,7 @@
   (let [base-cmd ["docker" "buildx" "build"
                   "-t" (str image-name ":" image-tag)
                   "--platform" platform
+                  "--progress" "plain"
                   "--push"
                   "-f" docker-file]]
     (exec (concat base-cmd label-args ["."]))))
@@ -75,6 +76,7 @@
   (let [base-cmd ["docker" "buildx" "build"
                   "-t" (str ghcr-image-name ":" image-tag)
                   "--platform" platform
+                  "--progress" "plain"
                   "--push"
                   "-f" docker-file]]
     (exec (concat base-cmd label-args ["."]))))
