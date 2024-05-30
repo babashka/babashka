@@ -167,6 +167,7 @@
    '*math-context* math-context
    '*compiler-options* compiler-options
    '*compile-path* compile-path
+   '*source-path* sci/file
    'with-precision (sci/copy-var with-precision clojure-core-ns)
    '-with-precision (sci/copy-var -with-precision clojure-core-ns)
    ;; STM

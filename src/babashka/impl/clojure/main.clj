@@ -55,6 +55,13 @@ by default when a new command-line REPL is started."} repl-requires
   '[[clojure.repl :refer (source apropos pst dir doc find-doc)]
     [clojure.pprint :refer (pp pprint)]])
 
+(defmacro with-read-known
+  "Evaluates body with *read-eval* set to a \"known\" value,
+   i.e. substituting true for :unknown if necessary."
+  [& body]
+  `(binding [*read-eval* (if (= :unknown *read-eval*) true *read-eval*)]
+     ~@body))
+
 (defn repl
   "Generic, reusable, read-eval-print loop. By default, reads from *in*,
   writes to *out*, and prints exception summaries to *err*. If you use the
