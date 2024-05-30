@@ -46,6 +46,16 @@
     (when-not (= c \newline)
       (r/unread s c))))
 
+(defn repl-read [sci-ctx in-stream _request-prompt request-exit]
+  (if (nil? (r/peek-char in-stream))
+    request-exit
+    (let [v (parser/parse-next sci-ctx in-stream)]
+      (skip-if-eol in-stream)
+      (if (or (identical? :repl/quit v)
+            (identical? :repl/exit v))
+        request-exit
+        v))))
+
 (defn repl
   "REPL with predefined hooks for attachable socket server."
   ([sci-ctx] (repl sci-ctx nil))
@@ -68,15 +78,8 @@
                       (sio/println))
                     (eval-form sci-ctx `(apply require (quote ~m/repl-requires)))))
         :read (or read
-                  (fn [_request-prompt request-exit]
-                    (if (nil? (r/peek-char in))
-                      request-exit
-                      (let [v (parser/parse-next sci-ctx in)]
-                        (skip-if-eol in)
-                        (if (or (identical? :repl/quit v)
-                                (identical? :repl/exit v))
-                          request-exit
-                          v)))))
+                (fn [request-prompt request-exit]
+                     (repl-read sci-ctx in request-prompt request-exit)))
         :eval (or eval
                   (fn [expr]
                     (sci/with-bindings {sci/file "<repl>"
