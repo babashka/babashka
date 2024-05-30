@@ -1,7 +1,7 @@
 (ns babashka.impl.clojure.core-test
   (:require [babashka.test-utils :as tu]
-            [clojure.test :as t :refer [deftest is testing]]
-            [clojure.tools.reader.edn :as edn]))
+            [clojure.edn :as edn]
+            [clojure.test :as t :refer [deftest is testing]]))
 
 (def bb
   (comp edn/read-string tu/bb))
