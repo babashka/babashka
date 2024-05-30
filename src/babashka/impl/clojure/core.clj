@@ -27,7 +27,6 @@
 (def math-context (core-dynamic-var '*math-context*))
 (def compile-path (core-dynamic-var '*compile-path* *compile-path*))
 (def compiler-options (core-dynamic-var '*compiler-options*))
-(def source-path (core-dynamic-var '*source-path*))
 
 (defn read+string
   "Added for compatibility. Must be used with
@@ -168,7 +167,7 @@
    '*math-context* math-context
    '*compiler-options* compiler-options
    '*compile-path* compile-path
-   '*source-path* source-path
+   '*source-path* sci/file
    'with-precision (sci/copy-var with-precision clojure-core-ns)
    '-with-precision (sci/copy-var -with-precision clojure-core-ns)
    ;; STM
