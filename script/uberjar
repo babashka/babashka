@@ -175,6 +175,9 @@ else
     BABASHKA_LEIN_PROFILES+=",-feature/rrb-vector"
 fi
 
+#lein with-profiles "$BABASHKA_LEIN_PROFILES,+reflection,-uberjar" deps :tree
+#exit 0
+
 mkdir -p resources/META-INF/babashka
 cp deps.edn resources/META-INF/babashka/deps.edn
 
