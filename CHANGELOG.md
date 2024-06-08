@@ -19,6 +19,7 @@ A preview of the next release can be installed from
 - [#1696](https://github.com/babashka/babashka/issues/1696): add `clojure.core/*source-path*` (points to the same sci var as `*file*`) ([@bobisageek](https://github.com/bobisageek))
 - [#1696](https://github.com/babashka/babashka/issues/1696): add `clojure.main/with-read-known` ([@bobisageek](https://github.com/bobisageek))
 - [#1696](https://github.com/babashka/babashka/issues/1696): add `clojure.core.server/repl-read` ([@bobisageek](https://github.com/bobisageek))
+- [#1700](https://github.com/babashka/babashka/issues/1700): catch exceptions from resolving symbolic links during `bb.edn` lookup ([@bobisageek](https://github.com/bobisageek))
 
 ## 1.3.190 (2024-04-17)
 

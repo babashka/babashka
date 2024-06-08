@@ -531,6 +531,12 @@ even more stuff here\"
   (testing "symlink"
     (is (= {1 {:id 1}} (bb (str (fs/file "test-resources" "symlink-adjacent-bb")))))))
 
+; symlinks that resolve in the /proc fs cause fs/real-path to throw when figuring out bb.edn path (issue #1700)
+(deftest redirection-test
+  (testing "main doesn't throw when input file symlink resolves to 'not real' file"
+    (when (and test-utils/native? (not test-utils/windows?))
+      (is (str/starts-with? (test-utils/bb "(println \"hi\")" "/dev/stdin") "hi")))))
+
 (deftest non-existing-tasks-in-run-gives-exit-code-1
   (is (thrown? Exception (bb "-Sdeps" "{:tasks {foo {:task (run (quote bar))}}}" "foo"))))
 
