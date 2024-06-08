@@ -1149,7 +1149,10 @@ Use bb run --help to show this help output.
 
 (defn resolve-symbolic-link [f]
   (if (and f (fs/exists? f))
-    (str (fs/real-path f))
+    (try
+      (str (fs/real-path f))
+      (catch Exception _
+        f))
     f))
 
 (defn deps-not-needed [opts]
