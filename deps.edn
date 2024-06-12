@@ -34,7 +34,7 @@
         clj-commons/clj-yaml {:mvn/version "1.0.27"}
         com.cognitect/transit-clj {:mvn/version "1.0.333"}
         org.clojure/test.check {:mvn/version "1.1.1"}
-        nrepl/bencode {:mvn/version "1.1.0"}
+        nrepl/bencode {:mvn/version "1.2.0"}
         seancorfield/next.jdbc {:mvn/version "1.1.610"}
         org.postgresql/postgresql {:mvn/version "42.2.18"}
         org.hsqldb/hsqldb {:mvn/version "2.5.1"}

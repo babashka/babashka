@@ -26,7 +26,7 @@
                  [borkdude/graal.locking "0.0.2"]
                  [org.clojure/tools.cli "1.0.214"]
                  [cheshire "5.13.0"]
-                 [nrepl/bencode "1.1.0"]
+                 [nrepl/bencode "1.2.0"]
                  [borkdude/sci.impl.reflector "0.0.1"]
                  [org.babashka/sci.impl.types "0.0.2"]
                  [org.babashka/babashka.impl.java "0.1.8"]
