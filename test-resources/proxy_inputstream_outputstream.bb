@@ -108,5 +108,4 @@
            (read-all)
            (write-byte-by-byte)
            (write-byte-array))
-  (println "Success")
-  :success)
+  (println ":success"))

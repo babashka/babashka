@@ -26,6 +26,9 @@
 (deftest byte-channels-test
   (is (= :success (bb nil (slurp "test-resources/bytechannel_and_related_classes.bb")))))
 
+(deftest proxy-inputstream-outputstream-test
+  (is (= :success (bb nil (slurp "test-resources/proxy_inputstream_outputstream.bb")))))
+
 (deftest map-entry-create-test
   (is (true? (bb nil "(= (first {1 2})
                          (clojure.lang.MapEntry. 1 2)
