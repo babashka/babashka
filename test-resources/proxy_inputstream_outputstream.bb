@@ -103,12 +103,10 @@
 ;; Run all tests:
 ;;
 
-
-(when (every? (fn [f] (f))
-              [read-byte-by-byte-test
-               read-byte-array
-               read-all
-               write-byte-by-byte
-               write-byte-array])
+(when (and (read-byte-by-byte-test)
+           (read-byte-array)
+           (read-all)
+           (write-byte-by-byte)
+           (write-byte-array))
   (println "Success")
   :success)
