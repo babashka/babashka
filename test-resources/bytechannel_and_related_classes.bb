@@ -19,5 +19,4 @@
                                                 (.toPath))
                                             (into-array OpenOption [StandardOpenOption/READ]))]
              (instance? ByteChannel ch)))
-  (println "Success")
-  :success)
+  (println :success))

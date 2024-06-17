@@ -372,8 +372,12 @@
                 java.nio.MappedByteBuffer
                 java.nio.file.OpenOption
                 java.nio.file.StandardOpenOption
+                java.nio.channels.ByteChannel
+                java.nio.channels.Channels
                 java.nio.channels.FileChannel
                 java.nio.channels.FileChannel$MapMode
+                java.nio.channels.ReadableByteChannel
+                java.nio.channels.WritableByteChannel
                 java.nio.channels.ServerSocketChannel
                 java.nio.channels.SocketChannel
                 java.nio.charset.Charset

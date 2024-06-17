@@ -23,6 +23,9 @@
 (deftest domain-sockets-test
   (is (= :success (bb nil (slurp "test-resources/domain_sockets.bb")))))
 
+(deftest byte-channels-test
+  (is (= :success (bb nil (slurp "test-resources/bytechannel_and_related_classes.bb")))))
+
 (deftest map-entry-create-test
   (is (true? (bb nil "(= (first {1 2})
                          (clojure.lang.MapEntry. 1 2)
