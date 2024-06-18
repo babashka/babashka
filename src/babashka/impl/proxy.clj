@@ -79,6 +79,18 @@
         (handle [sig]
           ((method-or-bust methods 'handle) this sig)))
 
+      ["java.io.InputStream" #{}]
+      (proxy [java.io.InputStream] []
+        (available [] ((method-or-bust methods 'available) this))
+        (close [] ((method-or-bust methods 'close) this))
+        (read
+          ([]
+           ((method-or-bust methods 'read) this))
+          ([bs]
+           ((method-or-bust methods 'read) this bs))
+          ([bs off len]
+           ((method-or-bust methods 'read) this bs off len))))
+
       ["java.io.PipedInputStream" #{}]
       (proxy [java.io.PipedInputStream] []
         (available [] ((method-or-bust methods 'available) this))
