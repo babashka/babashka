@@ -9,8 +9,8 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-- Fix [#1688](https://github.com/babashka/babashka/issues/1688): use-fixtures should add metadata to `*ns*`
-- Fix [#1692](https://github.com/babashka/babashka/issues/1692): Add support for ITransientSet and org.flatland/ordered-set
+- Fix [#1688](https://github.com/babashka/babashka/issues/1688): `use-fixtures` should add metadata to `*ns*`
+- Fix [#1692](https://github.com/babashka/babashka/issues/1692): Add support for `ITransientSet` and `org.flatland/ordered-set`
 - Bump org.flatland/ordered to `1.15.12`.
 - Partially Fix [#1695](https://github.com/babashka/babashka/issues/1695): `--repl` arg handling should consume only one arg (itself) ([@bobisageek](https://github.com/bobisageek))
 - Partially Fix [#1695](https://github.com/babashka/babashka/issues/1695): make `*command-line-args*` value available in the REPL ([@bobisageek](https://github.com/bobisageek))
@@ -19,7 +19,12 @@ A preview of the next release can be installed from
 - [#1696](https://github.com/babashka/babashka/issues/1696): add `clojure.core/*source-path*` (points to the same sci var as `*file*`) ([@bobisageek](https://github.com/bobisageek))
 - [#1696](https://github.com/babashka/babashka/issues/1696): add `clojure.main/with-read-known` ([@bobisageek](https://github.com/bobisageek))
 - [#1696](https://github.com/babashka/babashka/issues/1696): add `clojure.core.server/repl-read` ([@bobisageek](https://github.com/bobisageek))
+- #1696: make the `cognitect-labs/transcriptor` library work ([@bobisageek](https://github.com/bobisageek))
 - [#1700](https://github.com/babashka/babashka/issues/1700): catch exceptions from resolving symbolic links during `bb.edn` lookup ([@bobisageek](https://github.com/bobisageek))
+- Support `java.nio.channels.ByteChannel` + several other related interop
+- Bump `nrepl/bencode` to `1.2.0`
+- Bump `babashka/fs`
+- Bump `org.babashka/http-client` to `0.4.18`
 
 ## 1.3.190 (2024-04-17)
 
