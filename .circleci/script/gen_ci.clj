@@ -165,7 +165,8 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                              {:keys [cache-key]}}
                                             (run "Install Clojure" "sudo script/install-clojure")
                                             (when (= "mac" platform)
-                                              (run "Install Leiningen" "script/install-leiningen"))
+                                              (run "Install Leiningen" "script/install-leiningen")
+                                              (run "Install Rosetta" "sudo /usr/sbin/softwareupdate --install-rosetta --agree-to-license"))
                                             (when (not= "mac" platform)
                                               (run "Install native dev tools"
                                                    (if (and static? musl? (not= "aarch64" arch))
