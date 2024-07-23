@@ -2,11 +2,17 @@
 
 set -eo pipefail
 
+: "${BABASHKA_TEST_ENV:=jvm}"
+export BABASHKA_TEST_ENV
+
 if [ "$BABASHKA_TEST_ENV" = "native" ]; then
     BB_CMD="./bb"
 else
     BB_CMD="lein bb"
 fi
+
+export PATH
+PATH=$(pwd)/process/target/test/on-path:$PATH
 
 export BABASHKA_CLASSPATH
 BABASHKA_CLASSPATH=$(clojure -Spath -A:lib-tests)
