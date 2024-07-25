@@ -111,6 +111,46 @@ If the library you want to add doesn't work automatically, you can manually do t
 Note: If you have to modify any test file or configuration to have it work with
 bb, add an inline comment with prefix `BB-TEST-PATCH:` explaining what you did.
 
+## Windows
+We have corresponding `.bat` scripts for Windows, examples:
+
+```shell
+script\test.bat
+script\run_lib_tests.bat
+set BABASHKA_TEST_ENV=native & script\run_lib_tests.bat
+```
+
+### Enable Windows Symbolic Links
+You'll need to **enable symbolic links**.
+You must do this before you git clone babashka otherwise some tests will fail.
+There seems to be many ways to achieve this; I found the following worked from PowerShell:
+```shell
+Install-Module -Name Carbon -Force
+Import-Module Carbon
+Grant-CPrivilege -Identity lee -Privilege SeCreateSymbolicLinkPrivilege
+```
+You'll need to reboot:
+```shell
+shutdown /r /t 0
+```
+After reboot, verify the new privilege via:
+```shell
+whoami /priv
+```
+Test if you can create a symbolic link via:
+```
+mklink foofoo barbar
+```
+
+> **TIP**: Symbolic links are not supported in some folder-sharing technologies.
+For example, if you are running Windows as a VirtualBox guest, sharing babashka
+source folders from your host OS will not share the symbolic links as symbolic links.
+One solution is to re-clone babashka to a non-shared folder on Windows.
+
+### Git for Windows
+Install [Git for Windows](https://gitforwindows.org/).
+It includes a version of `cat` that babashka tests currently rely on.
+
 ## Build
 
 See [build.md](build.md).
