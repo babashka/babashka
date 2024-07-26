@@ -112,12 +112,13 @@ Note: If you have to modify any test file or configuration to have it work with
 bb, add an inline comment with prefix `BB-TEST-PATCH:` explaining what you did.
 
 ## Windows
-We have corresponding `.bat` scripts for Windows, examples:
+We have corresponding `.bat` scripts for Windows, examples from a CMD Shell:
 
 ```shell
 script\test.bat
 script\run_lib_tests.bat
-set BABASHKA_TEST_ENV=native & script\run_lib_tests.bat
+set BABASHKA_TEST_ENV=native
+script\run_lib_tests.bat
 ```
 
 ### Enable Windows Symbolic Links
