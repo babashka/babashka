@@ -7,6 +7,13 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## Unreleased
+
+-  [#1598](https://github.com/babashka/babashka/issues/1598): use Rosetta on CircleCI to build x64 images
+- Bump SCI
+- Bump `fs`
+- Bump `process`
+
 ## 1.3.191 (2024-06-19)
 
 - Fix [#1688](https://github.com/babashka/babashka/issues/1688): `use-fixtures` should add metadata to `*ns*`
@@ -19,7 +26,7 @@ A preview of the next release can be installed from
 - [#1696](https://github.com/babashka/babashka/issues/1696): add `clojure.core/*source-path*` (points to the same sci var as `*file*`) ([@bobisageek](https://github.com/bobisageek))
 - [#1696](https://github.com/babashka/babashka/issues/1696): add `clojure.main/with-read-known` ([@bobisageek](https://github.com/bobisageek))
 - [#1696](https://github.com/babashka/babashka/issues/1696): add `clojure.core.server/repl-read` ([@bobisageek](https://github.com/bobisageek))
-- #1696: make the `cognitect-labs/transcriptor` library work ([@bobisageek](https://github.com/bobisageek))
+- [#1696](https://github.com/babashka/babashka/issues/1696): make the `cognitect-labs/transcriptor` library work ([@bobisageek](https://github.com/bobisageek))
 - [#1700](https://github.com/babashka/babashka/issues/1700): catch exceptions from resolving symbolic links during `bb.edn` lookup ([@bobisageek](https://github.com/bobisageek))
 - Support `java.nio.channels.ByteChannel` + several other related interop
 - Bump `nrepl/bencode` to `1.2.0`
