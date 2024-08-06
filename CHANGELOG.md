@@ -13,6 +13,7 @@ A preview of the next release can be installed from
 - Bump SCI
 - Bump `fs`
 - Bump `process`
+- Bump `deps.clj`
 
 ## 1.3.191 (2024-06-19)
 
