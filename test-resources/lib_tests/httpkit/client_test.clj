@@ -24,6 +24,7 @@
              (json/parse-string true)
              :url)
          "postman-echo.com/get"))
+  ;; BB-TEST-PATCH: postman started responding with http:// instead of https://
   (testing "query params"
     (is (= {:foo1 "bar1", :foo2 "bar2"}
            (-> @(client/get "https://postman-echo.com/get" {:query-params {"foo1" "bar1" "foo2" "bar2"}})
