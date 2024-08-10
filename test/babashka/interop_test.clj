@@ -61,3 +61,7 @@
   (is (= :user/success
          (bb nil "(try (.createSocket (javax.net.ssl.SSLSocketFactory/getDefault) \"localhost\" 4444) (catch java.net.ConnectException e ::success))")))
   (is (bb nil " (.startHandshake (.createSocket (javax.net.ssl.SSLSocketFactory/getDefault) \"clojure.org\" 443)) ::success")))
+
+(deftest jio-line-number-reader-test
+  (is (= 2 (bb nil "(def rdr (java.io.LineNumberReader. (java.io.StringReader. \"foo\nbar\")))
+                    (binding [*in* rdr] (read-line) (read-line)) (.getLineNumber rdr)"))))
