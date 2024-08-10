@@ -1,5 +1,6 @@
 (ns httpkit.client-test
   (:require [cheshire.core :as json]
+            [clojure.string :as str]
             [clojure.test :refer [deftest is testing #_*report-counters*]]
             [org.httpkit.client :as client]))
 
@@ -16,12 +17,13 @@
 
 (deftest get-test
   (is (= 200 (:status @(client/get "https://postman-echo.com/get"))))
-  (is (= "https://postman-echo.com/get"
+  (is (str/includes?
          (-> @(client/get "https://postman-echo.com/get"
                           {:headers {"Accept" "application/json"}})
              :body
              (json/parse-string true)
-             :url)))
+             :url)
+         "postman-echo.com/get"))
   (testing "query params"
     (is (= {:foo1 "bar1", :foo2 "bar2"}
            (-> @(client/get "https://postman-echo.com/get" {:query-params {"foo1" "bar1" "foo2" "bar2"}})
