@@ -14,6 +14,7 @@ A preview of the next release can be installed from
 - Bump `fs`
 - Bump `process`
 - Bump `deps.clj`
+- Bump `http-client`
 - Add `java.io.LineNumberReader`
 
 ## 1.3.191 (2024-06-19)
