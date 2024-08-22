@@ -22,7 +22,7 @@
                    :flaky :flaky}
   :jvm-opts ["--enable-preview"]
   :dependencies [[org.clojure/clojure "1.11.2"]
-                 [borkdude/edamame "1.4.24"]
+                 [borkdude/edamame "1.4.27"]
                  [borkdude/graal.locking "0.0.2"]
                  [org.clojure/tools.cli "1.0.214"]
                  [cheshire "5.13.0"]
