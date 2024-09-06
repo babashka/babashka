@@ -25,6 +25,7 @@
    [babashka.impl.clojure.tools.reader-types :refer [edn-namespace
                                                      reader-types-namespace]]
    [babashka.impl.clojure.zip :refer [zip-namespace]]
+   [babashka.impl.clojure.java.process :refer [cjp-namespace]]
    [babashka.impl.common :as common]
    [babashka.impl.core :as bbcore]
    [babashka.impl.curl :refer [curl-namespace]]
@@ -389,6 +390,7 @@ Use bb run --help to show this help output.
                    'main main-var}
     'clojure.test t/clojure-test-namespace
     'clojure.math math-namespace
+    'clojure.java.process cjp-namespace
     'babashka.classpath classpath-namespace
     'babashka.classes classes-namespace
     'clojure.pprint pprint-namespace

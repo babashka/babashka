@@ -40,10 +40,10 @@ As one user described it:
 ## Quickstart
 
 For installation options check [Installation](https://github.com/babashka/babashka#installation).
-For quick installation use:
+For quick installation using `bash`, use:
 
 ``` shell
-$ bash < <(curl -s https://raw.githubusercontent.com/babashka/babashka/master/install)
+bash < <(curl -s https://raw.githubusercontent.com/babashka/babashka/master/install)
 ```
 
 or grab a binary from [Github
@@ -53,9 +53,12 @@ anywhere on the path.
 Then you're ready to go:
 
 ``` shellsession
-$ ls | bb -i '(filter fs/directory? *input*)'
-("doc" "resources" "sci" "script" "src" "target" "test")
-bb took 4ms.
+time bb -e '(->> (fs/list-dir ".") (filter fs/directory?) (map fs/normalize) (map str) (take 3))'
+```
+
+``` clojure
+(".build" "feature-lanterna" ".repl")
+bb -e    0,01s  user 0,01s system 70% cpu 0,017 total
 ```
 
 ## Support :heart:
@@ -119,46 +122,6 @@ There is also the book [Babashka Babooka](https://www.braveclojure.com/quests/ba
 by Daniel Higginbotham, who has also helped a lot of people learn Clojure with
 [Clojure for the Brave and
 True](https://www.braveclojure.com/clojure-for-the-brave-and-true/).
-
-## Examples
-
-Read the output from a shell command as a lazy seq of strings:
-
-``` shell
-$ ls | bb -i '(take 2 *input*)'
-("CHANGES.md" "Dockerfile")
-```
-
-Read EDN from stdin and write the result to stdout:
-
-``` shell
-$ bb '(vec (dedupe *input*))' <<< '[1 1 1 1 2]'
-[1 2]
-```
-
-Read more about `*input*` and in- and output flags
-[here](https://book.babashka.org/#_input_and_output_flags).
-
-Execute a script. E.g. print the current time in California using the
-`java.time` API:
-
-File `pst.clj`:
-``` clojure
-#!/usr/bin/env bb
-
-(def now (java.time.ZonedDateTime/now))
-(def LA-timezone (java.time.ZoneId/of "America/Los_Angeles"))
-(def LA-time (.withZoneSameInstant now LA-timezone))
-(def pattern (java.time.format.DateTimeFormatter/ofPattern "HH:mm"))
-(println (.format LA-time pattern))
-```
-
-``` shell
-$ bb pst.clj
-05:17
-```
-
-More examples can be found [here](examples/README.md).
 
 ## Try online
 
