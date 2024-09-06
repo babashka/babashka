@@ -18,7 +18,7 @@
          "deps.clj/src" "deps.clj/resources"
          "resources" "sci/resources"
          "impl-java/src"],
- :deps {org.clojure/clojure {:mvn/version "1.12.0-beta2"},
+ :deps {org.clojure/clojure {:mvn/version "1.12.0"},
         org.babashka/sci {:local/root "sci"}
         org.babashka/babashka.impl.java {:mvn/version "0.1.8"}
         org.babashka/sci.impl.types {:mvn/version "0.0.2"}
@@ -51,7 +51,7 @@
         insn/insn {:mvn/version "0.5.2"}
         org.clojure/core.rrb-vector {:mvn/version "0.1.2"}
         org.babashka/cli {:mvn/version "0.8.59"}
-        org.babashka/http-client {:mvn/version "0.4.18"}
+        org.babashka/http-client {:mvn/version "0.4.20"}
         org.flatland/ordered {:mvn/version "1.15.12"}}
  :aliases {:babashka/dev
            {:main-opts ["-m" "babashka.main"]}

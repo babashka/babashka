@@ -276,6 +276,7 @@
           java.io.FileOutputStream
           java.io.FileReader
           java.io.FileWriter
+          java.io.LineNumberReader
           java.io.RandomAccessFile
           java.io.InputStream
           java.io.IOException
