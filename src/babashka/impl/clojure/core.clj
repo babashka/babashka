@@ -203,8 +203,8 @@
    'partitionv (sci/copy-var partitionv clojure-core-ns)
    'stream-into! (sci/copy-var stream-into! clojure-core-ns)
    'stream-reduce! (sci/copy-var stream-reduce! clojure-core-ns)
-   'stream-seq! (sci/copy-var 'stream-seq! clojure-core-ns)
-   'partitionv-all (sci/copy-var 'partitionv-all clojure-core-ns)
+   'stream-seq! (sci/copy-var stream-seq! clojure-core-ns)
+   'partitionv-all (sci/copy-var partitionv-all clojure-core-ns)
    '*repl* repl
    }
   )
