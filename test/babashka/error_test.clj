@@ -11,7 +11,8 @@
   (-> line str/trimr
       ;; take into account JDK14+ and native image differences
       (str/replace "class clojure.lang" "clojure.lang")
-      (str/replace #" \(.*\)$" "")))
+      (str/replace #" \(.*\)$" "")
+      (str/replace #"--\d\d\d\d" "")))
 
 (defmacro multiline-equals [s1 s2]
   `(let [lines-s1# (str/split-lines ~s1)
