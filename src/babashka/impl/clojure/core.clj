@@ -27,6 +27,7 @@
 (def math-context (core-dynamic-var '*math-context*))
 (def compile-path (core-dynamic-var '*compile-path* *compile-path*))
 (def compiler-options (core-dynamic-var '*compiler-options*))
+(def repl (core-dynamic-var '*repl* true)) ;; set to true, basically just a dummy for now
 
 (defn read+string
   "Added for compatibility. Must be used with
@@ -55,7 +56,7 @@
   The rounding mode is one of CEILING, FLOOR, HALF_UP, HALF_DOWN,
   HALF_EVEN, UP, DOWN and UNNECESSARY; it defaults to HALF_UP."
   [precision & exprs]
-  (let [[body rm] (if (= (first exprs) :rounding)
+  (let [[body rm] (if (= :rounding (first exprs))
                     [(next (next exprs))
                      `((. java.math.RoundingMode ~(second exprs)))]
                     [exprs nil])]
@@ -195,5 +196,15 @@
    'print-dup (sci/copy-var print-dup clojure-core-ns)
    'PrintWriter-on (sci/copy-var PrintWriter-on clojure-core-ns)
    'set-agent-send-executor! (sci/copy-var set-agent-send-executor! clojure-core-ns)
-   'set-agent-send-off-executor! (sci/copy-var set-agent-send-off-executor! clojure-core-ns)}
+   'set-agent-send-off-executor! (sci/copy-var set-agent-send-off-executor! clojure-core-ns)
+   ;; 1.12
+   'splitv-at (sci/copy-var splitv-at clojure-core-ns)
+   'stream-transduce! (sci/copy-var stream-transduce! clojure-core-ns)
+   'partitionv (sci/copy-var partitionv clojure-core-ns)
+   'stream-into! (sci/copy-var stream-into! clojure-core-ns)
+   'stream-reduce! (sci/copy-var stream-reduce! clojure-core-ns)
+   'stream-seq! (sci/copy-var 'stream-seq! clojure-core-ns)
+   'partitionv-all (sci/copy-var 'partitionv-all clojure-core-ns)
+   '*repl* repl
+   }
   )
