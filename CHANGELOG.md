@@ -9,6 +9,8 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Upgrade Clojure to `1.12.0`
+- [#1720](https://github.com/babashka/babashka/issues/1720): Include `clojure.java.process`
 -  [#1598](https://github.com/babashka/babashka/issues/1598): use Rosetta on CircleCI to build x64 images
 - Bump SCI
 - Bump `fs`
