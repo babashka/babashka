@@ -36,7 +36,7 @@
                  [rewrite-clj/rewrite-clj "1.1.47"]
                  [insn/insn "0.5.2"]
                  [org.babashka/cli "0.8.59"]
-                 [org.babashka/http-client "0.4.20"]]
+                 [org.babashka/http-client "0.4.21"]]
   :plugins       [[org.kipz/lein-meta-bom "0.1.1"]]
   :metabom {:jar-name "metabom.jar"}
   :profiles {:feature/xml  {:source-paths ["feature-xml"]
