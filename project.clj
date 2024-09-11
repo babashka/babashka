@@ -36,13 +36,13 @@
                  [rewrite-clj/rewrite-clj "1.1.47"]
                  [insn/insn "0.5.2"]
                  [org.babashka/cli "0.8.59"]
-                 [org.babashka/http-client "0.4.20"]]
+                 [org.babashka/http-client "0.4.21"]]
   :plugins       [[org.kipz/lein-meta-bom "0.1.1"]]
   :metabom {:jar-name "metabom.jar"}
   :profiles {:feature/xml  {:source-paths ["feature-xml"]
                             :dependencies [[org.clojure/data.xml "0.2.0-alpha8"]]}
              :feature/yaml {:source-paths ["feature-yaml"]
-                            :dependencies [[clj-commons/clj-yaml "1.0.27"
+                            :dependencies [[clj-commons/clj-yaml "1.0.28"
                                             :exclusions [org.flatland/ordered]#_#_clj-commons/clj-yaml "0.7.110"]
                                            [org.flatland/ordered "1.15.12"]]}
              :feature/jdbc {:source-paths ["feature-jdbc"]

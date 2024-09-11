@@ -80,7 +80,7 @@ jobs:
           BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
           echo "##[set-output name=version;]${BABASHKA_VERSION}"
 
-      - uses: actions/upload-artifact@v1
+      - uses: actions/upload-artifact@v4
         with:
           name: babashka-${{ steps.babashka-version.outputs.version }}-standalone.jar
           path: target/babashka-${{ steps.babashka-version.outputs.version }}-standalone.jar
@@ -182,14 +182,14 @@ jobs:
         run: .circleci/script/release
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           path: bb
           name: babashka-${{ steps.babashka-version.outputs.version }}-${{ matrix.name }}-amd64
 
       - name: Upload static artifact
         if: "matrix.static == true"
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           path: bb
           name: babashka-${{ steps.babashka-version.outputs.version }}-${{ matrix.name }}-static-amd64

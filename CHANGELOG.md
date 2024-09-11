@@ -10,13 +10,16 @@ A preview of the next release can be installed from
 ## Unreleased
 
 - Upgrade Clojure to `1.12.0`
-- [#1720](https://github.com/babashka/babashka/issues/1720): Include `clojure.java.process`
+- Fix [#1722](https://github.com/babashka/babashka/issues/1722): add new clojure 1.12 vars
+- [#1720](https://github.com/babashka/babashka/issues/1720): Include new clojure 1.12's `clojure.java.process`
 -  [#1598](https://github.com/babashka/babashka/issues/1598): use Rosetta on CircleCI to build x64 images
 - Bump SCI
 - Bump `fs`
 - Bump `process`
 - Bump `deps.clj`
 - Bump `http-client`
+- Bump `clj-yaml`
+- Bump `edamame`
 - Add `java.io.LineNumberReader`
 
 ## 1.3.191 (2024-06-19)
