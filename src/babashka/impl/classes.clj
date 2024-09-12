@@ -756,6 +756,8 @@
                          javax.net.ssl.SSLSocket
                          (instance? java.lang.Thread v)
                          java.lang.Thread
+                         (instance? java.util.concurrent.ThreadFactory v)
+                         java.util.concurrent.ThreadFactory
                          (instance? java.security.cert.X509Certificate v)
                          java.security.cert.X509Certificate
                          (instance? java.io.Console v)

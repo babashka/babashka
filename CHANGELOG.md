@@ -16,6 +16,7 @@ A preview of the next release can be installed from
 - [#1598](https://github.com/babashka/babashka/issues/1598): use Rosetta on CircleCI to build x64 images
 - [#1716](https://github.com/babashka/babashka/issues/1716): expose `babashka.http-client.interceptors` namespace
 - [#1707](https://github.com/babashka/babashka/issues/1707): support `aset` on primitive array
+- [#1676](https://github.com/babashka/babashka/issues/1676): Restore compatibilty with newest [at-at](https://github.com/overtone/at-at/) version (1.3.58)
 - Bump SCI
 - Bump `fs`
 - Bump `process`
