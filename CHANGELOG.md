@@ -7,7 +7,7 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## Unreleased
+## 1.4.192 (2024-09-12)
 
 - Upgrade Clojure to `1.12.0`
 - [#1722](https://github.com/babashka/babashka/issues/1722): add new clojure 1.12 vars
