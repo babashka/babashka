@@ -16,6 +16,7 @@
    [babashka.impl.clojure.instant :as instant]
    [babashka.impl.clojure.java.browse :refer [browse-namespace]]
    [babashka.impl.clojure.java.io :refer [io-namespace]]
+   [babashka.impl.clojure.java.process :refer [cjp-namespace]]
    [babashka.impl.clojure.java.shell :refer [shell-namespace]]
    [babashka.impl.clojure.main :as clojure-main :refer [demunge]]
    [babashka.impl.clojure.math :refer [math-namespace]]
@@ -25,7 +26,6 @@
    [babashka.impl.clojure.tools.reader-types :refer [edn-namespace
                                                      reader-types-namespace]]
    [babashka.impl.clojure.zip :refer [zip-namespace]]
-   [babashka.impl.clojure.java.process :refer [cjp-namespace]]
    [babashka.impl.common :as common]
    [babashka.impl.core :as bbcore]
    [babashka.impl.curl :refer [curl-namespace]]
@@ -36,7 +36,9 @@
    [babashka.impl.error-handler :refer [error-handler]]
    [babashka.impl.features :as features]
    [babashka.impl.fs :refer [fs-namespace]]
-   [babashka.impl.http-client :refer [http-client-namespace http-client-websocket-namespace]]
+   [babashka.impl.http-client :refer [http-client-namespace
+                                      http-client-websocket-namespace
+                                      http-client-interceptors-namespace]]
    [babashka.impl.nrepl-server :refer [nrepl-server-namespace]]
    [babashka.impl.pods :as pods]
    [babashka.impl.pprint :refer [pprint-namespace]]
@@ -424,7 +426,8 @@ Use bb run --help to show this help output.
     'sci.core sci-core-namespace
     'babashka.cli cli/cli-namespace
     'babashka.http-client http-client-namespace
-    'babashka.http-client.websocket http-client-websocket-namespace}
+    'babashka.http-client.websocket http-client-websocket-namespace
+    'babashka.http-client.interceptors http-client-interceptors-namespace}
     features/xml? (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace)
                          'clojure.data.xml.event @(resolve 'babashka.impl.xml/xml-event-namespace)
                          'clojure.data.xml.tree @(resolve 'babashka.impl.xml/xml-tree-namespace))

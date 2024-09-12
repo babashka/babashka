@@ -10,10 +10,11 @@ A preview of the next release can be installed from
 ## Unreleased
 
 - Upgrade Clojure to `1.12.0`
-- Fix [#1722](https://github.com/babashka/babashka/issues/1722): add new clojure 1.12 vars
+- [#1722](https://github.com/babashka/babashka/issues/1722): add new clojure 1.12 vars
 - [#1720](https://github.com/babashka/babashka/issues/1720): Include new clojure 1.12's `clojure.java.process`
 - [#1719](https://github.com/babashka/babashka/issues/1719): add new clojure 1.12 `clojure.repl.deps` namespace. Only calls with explicit versions are supported.
--  [#1598](https://github.com/babashka/babashka/issues/1598): use Rosetta on CircleCI to build x64 images
+- [#1598](https://github.com/babashka/babashka/issues/1598): use Rosetta on CircleCI to build x64 images
+- [#1716](https://github.com/babashka/babashka/issues/1716): expose `babashka.http-client.interceptors` namespace
 - Bump SCI
 - Bump `fs`
 - Bump `process`
