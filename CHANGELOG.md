@@ -15,6 +15,7 @@ A preview of the next release can be installed from
 - [#1719](https://github.com/babashka/babashka/issues/1719): add new clojure 1.12 `clojure.repl.deps` namespace. Only calls with explicit versions are supported.
 - [#1598](https://github.com/babashka/babashka/issues/1598): use Rosetta on CircleCI to build x64 images
 - [#1716](https://github.com/babashka/babashka/issues/1716): expose `babashka.http-client.interceptors` namespace
+- [#1707](https://github.com/babashka/babashka/issues/1707): support `aset` on primitive array
 - Bump SCI
 - Bump `fs`
 - Bump `process`
