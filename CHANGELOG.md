@@ -20,6 +20,7 @@ A preview of the next release can be installed from
 - Bump `http-client`
 - Bump `clj-yaml`
 - Bump `edamame`
+- Bump `rewrite-clj`
 - Add `java.io.LineNumberReader`
 
 ## 1.3.191 (2024-06-19)
