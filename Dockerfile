@@ -16,9 +16,9 @@ RUN if [ "${TARGETARCH}" = "" ] || [ "${TARGETARCH}" = "amd64" ]; then \
       export GRAALVM_ARCH=aarch64; \
     fi && \
     echo "Installing GraalVM for ${GRAALVM_ARCH}" && \
-    curl -sLO https://download.oracle.com/graalvm/21/archive/graalvm-jdk-${GRAALVM_VERSION}_linux-${GRAALVM_ARCH}_bin.tar.gz
-    mkdir "graalvm-$GRAALVM_VERSION"
-    tar -xzf graalvm-jdk-${GRAALVM_VERSION}_linux-${GRAALVM_ARCH}_bin.tar.gz -C graalvm --strip-components 1
+    curl -sLO https://download.oracle.com/graalvm/${GRAALVM_VERSION}/archive/graalvm-jdk-${GRAALVM_VERSION}_linux-${GRAALVM_ARCH}_bin.tar.gz && \
+    mkdir "graalvm-$GRAALVM_VERSION" && \
+    tar -xzf graalvm-jdk-${GRAALVM_VERSION}_linux-${GRAALVM_ARCH}_bin.tar.gz -C graalvm-$GRAALVM_VERSION --strip-components 1
 
 ARG BABASHKA_XMX="-J-Xmx4500m"
 
