@@ -665,7 +665,7 @@
                                                         (Class/forName class-name#))
                                                        ([_# ^String class-name# initialize# ^java.lang.ClassLoader clazz-loader#]
                                                         (Class/forName class-name#)))})
-                                            (= 'java.lang.Thread c)
+                                            #_#_(= 'java.lang.Thread c)
                                             (assoc :static-methods
                                                    {(list 'quote 'sleep)
                                                     `(fn
