@@ -52,8 +52,7 @@
   (is (pos? (bb nil "(.count (.codePoints \"woof🐕\"))"))))
 
 (deftest Thread-sleep-test
-  (is (bb nil "(Thread/sleep (/ 1 200))
-               (Thread/sleep (/ 1 200) (/ 1 200))
+  (is (bb nil "(Thread/sleep (int 1))
                (Thread/sleep (java.time.Duration/ofMillis 1))
                true")))
 

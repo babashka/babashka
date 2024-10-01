@@ -7,6 +7,11 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## Unreleased
+
+- Upgrade SCI reflector based on clojure 1.12 and remove specific workaround for
+  `Thread/sleep` interop
+
 ## 1.4.192 (2024-09-12)
 
 - Upgrade Clojure to `1.12.0`
