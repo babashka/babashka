@@ -916,7 +916,7 @@ Use bb run --help to show this help output.
                                res)))
                          (let [rps (cp/resource-paths namespace)
                                rps (mapv #(str "src/babashka/" %) rps)]
-                           (when-let [url (some #(io/resource %) rps)]
+                           (when-let [url (some io/resource rps)]
                              (let [source (slurp url)]
                                {:file (str url)
                                 :source source})))

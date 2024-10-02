@@ -11,6 +11,7 @@ A preview of the next release can be installed from
 
 - Upgrade SCI reflector based on clojure 1.12 and remove specific workaround for
   `Thread/sleep` interop
+- Add `tools.reader.edn/read`
 
 ## 1.4.192 (2024-09-12)
 

@@ -3,7 +3,10 @@
             [clojure.tools.reader.reader-types :as rt]
             [sci.core :as sci]))
 
-(def edn-namespace {'read-string (sci/copy-var edn/read-string (sci/create-ns 'clojure.tools.reader.edn))})
+(def tr-edn-ns (sci/create-ns 'clojure.tools.reader.edn))
+
+(def edn-namespace {'read-string (sci/copy-var edn/read-string tr-edn-ns)
+                    'read (sci/copy-var edn/read tr-edn-ns)})
 
 (def rtns (sci/create-ns 'clojure.tools.reader.reader-types))
 
