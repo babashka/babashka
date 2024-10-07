@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- [#1738](https://github.com/babashka/babashka/pull/1738): Upgrade to GraalVM 23
 - Upgrade SCI reflector based on clojure 1.12 and remove specific workaround for
   `Thread/sleep` interop
 - Add `tools.reader.edn/read`
