@@ -12,6 +12,10 @@
    "interfaces": [
      "java.io.FileFilter"
    ]
+ },
+ {
+   "interfaces": [
+     "java.nio.file.DirectoryStream$Filter
+   ]
  }
-
 ]
