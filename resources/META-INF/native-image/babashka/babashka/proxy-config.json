@@ -15,7 +15,7 @@
  },
  {
    "interfaces": [
-     "java.nio.file.DirectoryStream$Filter
+     "java.nio.file.DirectoryStream$Filter"
    ]
  }
 ]
