@@ -67,4 +67,6 @@
 
 (deftest FI-coercion
   (is (true? (bb nil "(= [1 3] (into [] (doto (java.util.ArrayList. [1 2 3]) (.removeIf even?))))")))
-  (is (true? (bb nil "(= '(\\9) (-> \"a9-\" seq .stream (.filter Character/isDigit) stream-seq!))"))))
+  (is (true? (bb nil "(= \"abcabc\" (.computeIfAbsent (java.util.HashMap.) \"abc\" #(str % %)))")))
+  (is (true? (bb nil "(= '(\\9) (-> \"a9-\" seq .stream (.filter Character/isDigit) stream-seq!))")))
+  )
