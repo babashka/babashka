@@ -394,6 +394,7 @@
                 java.nio.file.FileVisitOption
                 java.nio.file.FileVisitResult
                 java.nio.file.Files
+                java.nio.file.DirectoryStream$Filter
                 java.nio.file.LinkOption
                 java.nio.file.NoSuchFileException
                 java.nio.file.Path
