@@ -17,5 +17,15 @@
    "interfaces": [
      "java.nio.file.DirectoryStream$Filter"
    ]
+ },
+ {
+   "interfaces": [
+     "java.util.function.Supplier"
+   ]
+ },
+ {
+   "interfaces": [
+     "java.util.function.UnaryOperator"
+   ]
  }
 ]
