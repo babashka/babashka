@@ -668,94 +668,101 @@
                    c))
         m (assoc m :public-class
                  (fn [v]
+                   ;; (prn :v v)
                    ;; NOTE: a series of instance check, so far, is still cheaper
                    ;; than piggybacking on defmulti or defprotocol
-                   (cond (instance? java.lang.Process v)
-                         java.lang.Process
-                         (instance? java.lang.ProcessHandle v)
-                         java.lang.ProcessHandle
-                         (instance? java.lang.ProcessHandle$Info v)
-                         java.lang.ProcessHandle$Info
-                         ;; added for calling .put on .environment from ProcessBuilder
-                         (instance? java.util.Map v)
-                         java.util.Map
-                         ;; added for issue #239 regarding clj-http-lite
-                         ;; can potentially be removed due to fix for #1061
-                         (instance? java.io.ByteArrayOutputStream v)
-                         java.io.ByteArrayOutputStream
-                         (instance? java.security.MessageDigest v)
-                         java.security.MessageDigest
-                         ;; streams
-                         (instance? java.io.InputStream v)
-                         java.io.InputStream
-                         (instance? java.io.OutputStream v)
-                         java.io.OutputStream
-                         ;; java nio
-                         (instance? java.nio.file.Path v)
-                         java.nio.file.Path
-                         (instance? java.nio.file.FileSystem v)
-                         java.nio.file.FileSystem
-                         (instance? java.nio.file.PathMatcher v)
-                         java.nio.file.PathMatcher
-                         (instance? java.util.stream.IntStream v)
-                         java.util.stream.IntStream
-                         (instance? java.util.stream.BaseStream v)
-                         java.util.stream.BaseStream
-                         (instance? java.nio.ByteBuffer v)
-                         java.nio.ByteBuffer
-                         (instance? java.nio.charset.Charset v)
-                         java.nio.charset.Charset
-                         (instance? java.nio.charset.CharsetEncoder v)
-                         java.nio.charset.CharsetEncoder
-                         (instance? java.nio.CharBuffer v)
-                         java.nio.CharBuffer
-                         (instance? java.nio.channels.FileChannel v)
-                         java.nio.channels.FileChannel
-                         (instance? java.nio.channels.ServerSocketChannel v)
-                         java.nio.channels.ServerSocketChannel
-                         (instance? java.nio.channels.SocketChannel v)
-                         java.nio.channels.SocketChannel
-                         (instance? java.net.CookieStore v)
-                         java.net.CookieStore
-                         ;; this makes interop on reified classes work
-                         ;; see java_net_http_test/interop-test
-                         (instance? sci.impl.types.IReified v)
-                         (first (t/getInterfaces v))
-                         ;; fix for #1061
-                         (instance? java.net.URLClassLoader v)
-                         java.net.URLClassLoader
-                         (instance? java.lang.ClassLoader v)
-                         java.lang.ClassLoader
-                         (instance? java.nio.file.attribute.BasicFileAttributes v)
-                         java.nio.file.attribute.BasicFileAttributes
-                         (instance? java.util.concurrent.Future v)
-                         java.util.concurrent.Future
-                         (instance? java.util.concurrent.ScheduledExecutorService v)
-                         java.util.concurrent.ScheduledExecutorService
-                         (instance? java.util.concurrent.ExecutorService v)
-                         java.util.concurrent.ExecutorService
-                         (instance? java.util.Iterator v)
-                         java.util.Iterator
-                         (instance? javax.crypto.SecretKey v)
-                         javax.crypto.SecretKey
-                         (instance? javax.net.ssl.SSLSocketFactory v)
-                         javax.net.ssl.SSLSocketFactory
-                         (instance? javax.net.ssl.SSLSocket v)
-                         javax.net.ssl.SSLSocket
-                         (instance? java.lang.Thread v)
-                         java.lang.Thread
-                         (instance? java.util.concurrent.ThreadFactory v)
-                         java.util.concurrent.ThreadFactory
-                         (instance? java.security.cert.X509Certificate v)
-                         java.security.cert.X509Certificate
-                         (instance? java.io.Console v)
-                         java.io.Console
-                         (instance? java.util.Set v)
-                         java.util.Set
-                         (instance? java.io.Closeable v)
-                         java.io.Closeable
-                         ;; keep commas for merge friendliness
-                         )))
+                   (let [res (cond (instance? java.lang.Process v)
+                                   java.lang.Process
+                                   (instance? java.lang.ProcessHandle v)
+                                   java.lang.ProcessHandle
+                                   (instance? java.lang.ProcessHandle$Info v)
+                                   java.lang.ProcessHandle$Info
+                                   ;; added for calling .put on .environment from ProcessBuilder
+                                   (instance? java.util.Map v)
+                                   java.util.Map
+                                   ;; added for issue #239 regarding clj-http-lite
+                                   ;; can potentially be removed due to fix for #1061
+                                   (instance? java.io.ByteArrayOutputStream v)
+                                   java.io.ByteArrayOutputStream
+                                   (instance? java.security.MessageDigest v)
+                                   java.security.MessageDigest
+                                   ;; streams
+                                   (instance? java.io.InputStream v)
+                                   java.io.InputStream
+                                   (instance? java.io.OutputStream v)
+                                   java.io.OutputStream
+                                   ;; java nio
+                                   (instance? java.nio.file.Path v)
+                                   java.nio.file.Path
+                                   (instance? java.nio.file.FileSystem v)
+                                   java.nio.file.FileSystem
+                                   (instance? java.nio.file.PathMatcher v)
+                                   java.nio.file.PathMatcher
+                                   (instance? java.util.stream.Stream v)
+                                   java.util.stream.Stream
+                                   (instance? java.util.stream.IntStream v)
+                                   java.util.stream.IntStream
+                                   (instance? java.util.stream.BaseStream v)
+                                   java.util.stream.BaseStream
+                                   (instance? java.nio.ByteBuffer v)
+                                   java.nio.ByteBuffer
+                                   (instance? java.nio.charset.Charset v)
+                                   java.nio.charset.Charset
+                                   (instance? java.nio.charset.CharsetEncoder v)
+                                   java.nio.charset.CharsetEncoder
+                                   (instance? java.nio.CharBuffer v)
+                                   java.nio.CharBuffer
+                                   (instance? java.nio.channels.FileChannel v)
+                                   java.nio.channels.FileChannel
+                                   (instance? java.nio.channels.ServerSocketChannel v)
+                                   java.nio.channels.ServerSocketChannel
+                                   (instance? java.nio.channels.SocketChannel v)
+                                   java.nio.channels.SocketChannel
+                                   (instance? java.net.CookieStore v)
+                                   java.net.CookieStore
+                                   ;; this makes interop on reified classes work
+                                   ;; see java_net_http_test/interop-test
+                                   (instance? sci.impl.types.IReified v)
+                                   (first (t/getInterfaces v))
+                                   ;; fix for #1061
+                                   (instance? java.net.URLClassLoader v)
+                                   java.net.URLClassLoader
+                                   (instance? java.lang.ClassLoader v)
+                                   java.lang.ClassLoader
+                                   (instance? java.nio.file.attribute.BasicFileAttributes v)
+                                   java.nio.file.attribute.BasicFileAttributes
+                                   (instance? java.util.concurrent.Future v)
+                                   java.util.concurrent.Future
+                                   (instance? java.util.concurrent.ScheduledExecutorService v)
+                                   java.util.concurrent.ScheduledExecutorService
+                                   (instance? java.util.concurrent.ExecutorService v)
+                                   java.util.concurrent.ExecutorService
+                                   (instance? java.util.Iterator v)
+                                   java.util.Iterator
+                                   (instance? javax.crypto.SecretKey v)
+                                   javax.crypto.SecretKey
+                                   (instance? javax.net.ssl.SSLSocketFactory v)
+                                   javax.net.ssl.SSLSocketFactory
+                                   (instance? javax.net.ssl.SSLSocket v)
+                                   javax.net.ssl.SSLSocket
+                                   (instance? java.lang.Thread v)
+                                   java.lang.Thread
+                                   (instance? java.util.concurrent.ThreadFactory v)
+                                   java.util.concurrent.ThreadFactory
+                                   (instance? java.security.cert.X509Certificate v)
+                                   java.security.cert.X509Certificate
+                                   (instance? java.io.Console v)
+                                   java.io.Console
+                                   (instance? java.util.Set v)
+                                   java.util.Set
+                                   (instance? java.io.Closeable v)
+                                   java.io.Closeable
+                                   (instance? java.util.Collection v)
+                                   java.util.Collection
+                                   ;; keep commas for merge friendliness
+                                   )]
+                     ;; (prn :res res)
+                     res)))
         m (assoc m (list 'quote 'clojure.lang.Var) 'sci.lang.Var)
         m (assoc m (list 'quote 'clojure.lang.Namespace) 'sci.lang.Namespace)]
     m))
