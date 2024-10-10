@@ -29,7 +29,7 @@
                  [nrepl/bencode "1.2.0"]
                  [borkdude/sci.impl.reflector "0.0.3"]
                  [org.babashka/sci.impl.types "0.0.2"]
-                 [org.babashka/babashka.impl.java "0.1.9"]
+                 [org.babashka/babashka.impl.java "0.1.10"]
                  [org.clojure/core.async "1.6.673"]
                  [org.clojure/test.check "1.1.1"]
                  [com.github.clj-easy/graal-build-time "0.1.0"]
