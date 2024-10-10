@@ -3,7 +3,7 @@
             [clojure.tools.build.api :as b]))
 
 (def lib 'org.babashka/babashka.impl.java)
-(def version "0.1.9")
+(def version "0.1.10")
 (def class-dir "target/classes")
 (def basis (b/create-basis {:project "deps.edn"}))
 (def jar-file (format "target/%s-%s.jar" (name lib) version))
@@ -17,7 +17,8 @@
 (defn compile-java [_]
   (b/javac {:src-dirs ["src-java"]
             :class-dir class-dir
-            :basis basis}))
+            :basis basis
+            :javac-opts ["--release" "8"]}))
 
 (defn jar [_]
   (compile-java nil)
