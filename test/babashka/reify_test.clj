@@ -153,3 +153,10 @@
 (force-gc)
 @deleted?
 ")))
+
+(deftest reify-dir-stream-filter
+  (is (true? (bb nil "
+(defn get-dir-stream [^java.nio.file.Path dir-path glob-pattern]
+  (let [path (.toPath (java.io.File. dir-path))]
+    (java.nio.file.Files/newDirectoryStream path glob-pattern)))
+(pos? (count (seq (get-dir-stream \".\" (reify java.nio.file.DirectoryStream$Filter (accept [_ path] (.isDirectory (.toFile path))))))))"))))

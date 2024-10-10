@@ -2,7 +2,7 @@
  :aliases
  {:build ;; added by neil
   {:paths ["." "build" "src"]
-   :deps {io.github.clojure/tools.build {:git/tag "v0.8.1" :git/sha "7d40500"}
+   :deps {io.github.clojure/tools.build {:git/tag "v0.9.6" :git/sha "8e78bcc"}
           slipset/deps-deploy {:mvn/version "0.2.0"}
           org.babashka/sci.impl.types {:mvn/version "0.0.2"}
           ;; insn/insn {:mvn/version "0.5.3"}

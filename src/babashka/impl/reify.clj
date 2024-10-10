@@ -187,5 +187,4 @@
 
     sun.misc.SignalHandler
     {handle [[this signal]]}
-
     }))

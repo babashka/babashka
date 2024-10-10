@@ -1,0 +1,31 @@
+[{
+  "interfaces": [
+    "java.util.function.Predicate"
+  ]
+},
+ {
+   "interfaces": [
+     "java.util.function.Function"
+   ]
+ },
+ {
+   "interfaces": [
+     "java.io.FileFilter"
+   ]
+ },
+ {
+   "interfaces": [
+     "java.nio.file.DirectoryStream$Filter"
+   ]
+ },
+ {
+   "interfaces": [
+     "java.util.function.Supplier"
+   ]
+ },
+ {
+   "interfaces": [
+     "java.util.function.UnaryOperator"
+   ]
+ }
+]

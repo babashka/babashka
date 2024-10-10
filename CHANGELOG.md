@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Clojure 1.12 interop: method thunks, FI coercion, array notation
 - Upgrade SCI reflector based on clojure 1.12 and remove specific workaround for
   `Thread/sleep` interop
 - Add `tools.reader.edn/read`

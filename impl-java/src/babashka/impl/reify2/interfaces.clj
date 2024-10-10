@@ -1,6 +1,7 @@
 (ns babashka.impl.reify2.interfaces)
 
 (def interfaces [java.nio.file.FileVisitor
+                 java.nio.file.DirectoryStream$Filter
                  java.io.FileFilter
                  java.io.FilenameFilter
                  clojure.lang.Associative
