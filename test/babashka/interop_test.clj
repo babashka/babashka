@@ -64,3 +64,6 @@
 (deftest jio-line-number-reader-test
   (is (= 2 (bb nil "(def rdr (java.io.LineNumberReader. (java.io.StringReader. \"foo\nbar\")))
                     (binding [*in* rdr] (read-line) (read-line)) (.getLineNumber rdr)"))))
+
+(deftest FI-coercion
+  (is (true? (bb nil "(= [1 3] (into [] (doto (java.util.ArrayList. [1 2 3]) (.removeIf even?))))"))))
