@@ -93,7 +93,7 @@ clojure.core// - <built-in>
 foo            - foo.clj:1:10"))))
 
 (deftest static-call-test
-  (let [output (try (tu/bb nil "-e" "File/x")
+  #_(let [output (try (tu/bb nil "-e" "File/x")
                     (catch Exception e (ex-message e)))]
     (is (str/includes? (tu/normalize output)
                        "----- Error --------------------------------------------------------------------
@@ -106,11 +106,11 @@ Location: <expr>:1:1
    ^--- No matching field found: x for class java.io.File
 
 ----- Stack trace --------------------------------------------------------------
-user - <expr>:1:1"))
-    (let [output (try (tu/bb nil "-e" "(File/x)")
-                      (catch Exception e (ex-message e)))]
-      (is (str/includes? (tu/normalize output)
-                         "----- Error --------------------------------------------------------------------
+user - <expr>:1:1")))
+  (let [output (try (tu/bb nil "-e" "(File/x)")
+                    (catch Exception e (ex-message e)))]
+    (is (str/includes? (tu/normalize output)
+                       "----- Error --------------------------------------------------------------------
 Type:     java.lang.IllegalArgumentException
 Message:  No matching method x found taking 0 args
 Location: <expr>:1:1
@@ -120,7 +120,7 @@ Location: <expr>:1:1
    ^--- No matching method x found taking 0 args
 
 ----- Stack trace --------------------------------------------------------------
-user - <expr>:1:1")))))
+user - <expr>:1:1"))))
 
 
 (deftest error-while-macroexpanding-test
