@@ -1,6 +1,12 @@
 [{
   "interfaces": [
     "java.util.function.Predicate"
-    , "java.util.function.Function"
   ]
-}]
+},
+ {
+   "interfaces": [
+     "java.util.function.Function"
+   ]
+ }
+
+]
