@@ -7,7 +7,7 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## Unreleased
+## 1.12.193 (2024-10-11)
 
 - Clojure 1.12 interop: method thunks, FI coercion, array notation
 - Upgrade SCI reflector based on clojure 1.12 and remove specific workaround for
