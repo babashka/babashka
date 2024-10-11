@@ -9,11 +9,32 @@ A preview of the next release can be installed from
 
 ## 1.12.193 (2024-10-11)
 
-- Clojure 1.12 interop: method thunks, FI coercion, array notation
+- Clojure 1.12 interop: method thunks, FI coercion, array notation (see below)
 - Upgrade SCI reflector based on clojure 1.12 and remove specific workaround for
   `Thread/sleep` interop
 - Add `tools.reader.edn/read`
 - Fix [#1741](https://github.com/babashka/babashka/issues/1741): `(taoensso.timbre/spy)` now relies on macros from `taoensso.encore` previously not available in bb
+
+Examples of the new Clojure interop:
+
+``` clojure
+;; Qualified methods in call position:
+(String/.length "123") ;;=> 3
+(String/new "123") ;;=> "123"
+
+;; Qualified methods in value position, as functions:
+(map Integer/parseInt ["1" "22" "333"]) ;;=> (1 22 333)
+(map String/.length ["1" "22" "333"]) ;;=> (1 2 3)
+(map String/new ["1" "22" "333"]) ;;=> ("1" "22" "333")
+
+;; Typed multi-dimensional array class notation:
+long/1 ;;=> 1-dimensional long array class
+String/2 ;;=> 2-dimensional String array class
+
+;; Pass Clojure IFn to Java where `java.util.function.Predicate`, etc. is expected:
+(into [] (doto (java.util.ArrayList. [1 2 3]) (.removeIf even?))) ;;=> [1 3]
+(.computeIfAbsent (java.util.HashMap.) "abc" #(str % %)) ;;=> "abcabc"
+```
 
 ## 1.4.192 (2024-09-12)
 
