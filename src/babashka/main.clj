@@ -390,7 +390,7 @@ Use bb run --help to show this help output.
                    'repl-caught (sci/copy-var repl/repl-caught clojure-main-ns)
                    'with-read-known (sci/copy-var clojure-main/with-read-known clojure-main-ns)
                    'main main-var}
-    'clojure.test t/clojure-test-namespace
+    ;; 'clojure.test t/clojure-test-namespace
     'clojure.math math-namespace
     'clojure.java.process cjp-namespace
     'babashka.classpath classpath-namespace
