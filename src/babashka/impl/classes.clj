@@ -815,6 +815,8 @@
     Integer java.lang.Integer
     InterruptedException java.lang.InterruptedException
     Iterable java.lang.Iterable
+    ;; NOTE: in hindsight File never belonged to the default imports of Clojure,
+    ;; but it's been here to long to remove probably
     File java.io.File
     Float java.lang.Float
     Long java.lang.Long
@@ -841,6 +843,8 @@
     VirtualMachineError java.lang.VirtualMachineError
     ThreadDeath java.lang.ThreadDeath
     UnsupportedOperationException java.lang.UnsupportedOperationException})
+
+;; (eval (vec (keys imports)))
 
 (defn reflection-file-entries []
   (let [entries (vec (for [c (sort (concat (:all classes)
