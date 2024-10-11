@@ -3,9 +3,8 @@
             [clojure.tools.logging.impl :as impl]
             [clojure.tools.logging.readable]
             [sci.core :as sci]
-            [taoensso.encore :as enc :refer [have]]
-            [taoensso.timbre :as timbre]
-            [taoensso.timbre.appenders.core :as appenders]))
+            [taoensso.encore :as encore :refer [have]]
+            [taoensso.timbre :as timbre]))
 
 ;;;; timbre
 
@@ -14,7 +13,7 @@
 (defn- fline [and-form] (:line (meta and-form)))
 
 (defonce callsite-counter
-  (enc/counter))
+  (encore/counter))
 
 (defmacro log! ; Public wrapper around `-log!`
   "Core low-level log macro. Useful for tooling/library authors, etc.
@@ -114,7 +113,7 @@
                :*err* @sci/err
                stream)]
          (binding [*out* stream]
-           (enc/println-atomic (force output_)))))}))
+           (encore/println-atomic (force output_)))))}))
 
 (def default-config (assoc-in timbre/*config* [:appenders :println]
                               (println-appender {:stream :auto})))
@@ -127,7 +126,7 @@
 
 (defn set-level! [level] (swap-config! (fn [m] (assoc m :min-level level))))
 
-(defn merge-config! [m] (swap-config! (fn [old] (enc/nested-merge old m))))
+(defn merge-config! [m] (swap-config! (fn [old] (encore/nested-merge old m))))
 
 (defmacro -log-and-rethrow-errors [?line & body]
   `(try (do ~@body)
@@ -150,7 +149,13 @@
          'set-level! (sci/copy-var set-level! tns)
          'println-appender (sci/copy-var println-appender tns)
          '-log-and-rethrow-errors (sci/copy-var -log-and-rethrow-errors tns)
-         '-ensure-vec (sci/copy-var enc/ensure-vec tns)))
+         '-ensure-vec (sci/copy-var encore/ensure-vec tns)))
+
+(def enc-ns (sci/create-ns 'taoensso.encore))
+
+(def encore-namespace
+  {'catching (sci/copy-var encore/catching enc-ns)
+   'try* (sci/copy-var encore/try* enc-ns)})
 
 (def timbre-appenders-namespace
   (let [tan (sci/create-ns 'taoensso.timbre.appenders.core nil)]
@@ -188,7 +193,7 @@
  #'clojure.tools.logging/*logger-factory*
  (fn [_]
    (LoggerFactory.
-    (enc/memoize (fn [logger-ns] (Logger. (str logger-ns) config))))))
+    (encore/memoize (fn [logger-ns] (Logger. (str logger-ns) config))))))
 
 (def lns (sci/create-ns 'clojure.tools.logging nil))
 

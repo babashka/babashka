@@ -13,6 +13,7 @@ A preview of the next release can be installed from
 - Upgrade SCI reflector based on clojure 1.12 and remove specific workaround for
   `Thread/sleep` interop
 - Add `tools.reader.edn/read`
+- Fix [#1741](https://github.com/babashka/babashka/issues/1741): `(taoensso.timbre/spy)` now relies on macros from `taoensso.encore` previously not available in bb
 
 ## 1.4.192 (2024-09-12)
 
