@@ -46,7 +46,8 @@
    "project.clj"
    "script/bump_graal_version.clj"
    ".circleci/script/short_ci.clj"
-   ".cirrus.yml"])
+   ".cirrus.yml"
+   "script/install-graalvm"])
 
 ;; We might have to keep changing these from
 ;; time to time whenever the version is bumped
@@ -54,8 +55,7 @@
 ;; OR
 ;;
 ;; We could have them as environment variables
-(def current-graal-version "22.3.1")
-(def current-java-version "java19")
+(def current-graal-version "23")
 
 (def cl-options
   [["-g" "--graal VERSION" "graal version"]
@@ -91,19 +91,12 @@
   [args]
   (when (empty? args)
     (display-help))
-  (let [new-graal-version (:graal args)
-        new-java-version (:java args)]
+  (let [new-graal-version (:graal args)]
     (when (not (nil? new-graal-version))
       (if (is-valid-bump? new-graal-version nil)
         (do
           (println "Performing Graal bump...")
           (bump-current current-graal-version new-graal-version))
-        (show-error new-graal-version)))
-    (when (not (nil? new-java-version))
-      (if (is-valid-bump? new-java-version nil)
-        (do
-          (println "Performing Java bump...")
-          (bump-current current-java-version new-java-version))
-        (show-error new-java-version)))))
+        (show-error new-graal-version)))))
 
 (exec-script cl-args)
