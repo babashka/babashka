@@ -54,8 +54,8 @@ BABASHKA_STATIC=${BABASHKA_STATIC:-}
 BABASHKA_MUSL=${BABASHKA_MUSL:-}
 
 if [ "$BABASHKA_STATIC" = "true" ]; then
-    args+=("--static")
     if [ "$BABASHKA_MUSL" = "true" ]; then
+        args+=("--static")
         args+=("--libc=musl"
                # see https://github.com/oracle/graal/issues/3398
                "-H:CCompilerOption=-Wl,-z,stack-size=2097152")
