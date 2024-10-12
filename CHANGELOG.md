@@ -7,9 +7,10 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## Unreleased
+## 1.12.194 (2024-10-12)
 
-- [#1743](https://github.com/babashka/babashka/issues/1743): fix new fully qualified instance method in call position with GraalVM 22
+- Upgrade to GraalVM 23
+- [#1743](https://github.com/babashka/babashka/issues/1743): fix new fully qualified instance method in call position with GraalVM 23
 
 ## 1.12.193 (2024-10-11)
 
