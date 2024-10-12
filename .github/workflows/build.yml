@@ -217,13 +217,13 @@ jobs:
         run: mkdir -p /tmp/release
 
       - name: Download linux binary
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4.1.7
         with:
           name: babashka-${{ steps.babashka-version.outputs.version }}-linux-amd64.zip
           path: /tmp/release
 
       - name: Download static linux binary
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4.1.7
         with:
           name: babashka-${{ steps.babashka-version.outputs.version }}-linux-static-amd64.zip
           path: /tmp/release-static
