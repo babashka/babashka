@@ -122,7 +122,7 @@
    :static true}
   ([aseq]
    (try (clojure.lang.RT/seqToTypedArray (seq aseq))
-        (catch IllegalArgumentException _
+        (catch Throwable _
           (clojure.lang.RT/seqToTypedArray Object (seq aseq)))))
   ([type aseq]
    (clojure.lang.RT/seqToTypedArray type (seq aseq))))
