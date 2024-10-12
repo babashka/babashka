@@ -75,3 +75,16 @@
                       (= '(100 100 100 100 100) (->> (Stream/generate (constantly 100)) stream-seq! (take 5)))")))
   (is (true? (bb nil "(import [java.util Collection] [java.util.stream Stream] [java.util.function Predicate])
                       (= '(1 2 3 4 5 6 7 8 9 10) (->> (Stream/iterate 1 inc) stream-seq! (take 10)))"))))
+
+(deftest regression-test
+  (is (true? (bb nil "(let [x \"f\"] (String/.startsWith \"foo\" x))"))))
+
+(deftest clojure-1_12-interop-test
+  (is (= [1 2 3] (bb nil "(map Integer/parseInt [\"1\" \"2\" \"3\"])")))
+  (is (= [1 2 3] (bb nil "(map String/.length [\"1\" \"22\" \"333\"])")))
+  (is (= ["1" "22" "333"] (bb nil "(map String/new [\"1\" \"22\" \"333\"])")))
+  (is (= 3 (bb nil "(String/.length \"123\")")))
+  (is (= "123" (bb nil "(String/new \"123\")"))))
+
+(deftest clojure-1_12-array-test
+  (is (true? (bb nil "(instance? Class long/1)"))))
