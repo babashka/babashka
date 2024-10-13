@@ -110,7 +110,7 @@
 
 (def version common/version)
 
-(def build-commit-sha (System/getenv "BABASHKA_SHA"))
+(def build-commit-sha (or (System/getenv "BABASHKA_SHA") ""))
 
 (defn parse-version [version]
   (mapv #(Integer/parseInt %)
@@ -263,6 +263,7 @@ Use bb run --help to show this help output.
    (format
     (str/trim "
 {:babashka/version   \"%s\"%s
+ :git/sha            \"%s\"
  :feature/csv        %s
  :feature/java-nio   %s
  :feature/java-time  %s
@@ -283,9 +284,7 @@ Use bb run --help to show this help output.
  :feature/logging %s
  :feature/priority-map %s}")
     version
-    (if (or (nil? build-commit-sha) (str/blank? build-commit-sha))
-      ""
-      (format " \n:git/sha \"%s\"" build-commit-sha))
+    build-commit-sha
     features/csv?
     features/java-nio?
     features/java-time?

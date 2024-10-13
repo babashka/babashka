@@ -46,3 +46,4 @@ call %GRAALVM_HOME%\bin\native-image.cmd ^
 if %errorlevel% neq 0 exit /b %errorlevel%
 
 call bb "(+ 1 2 3)"
+call bb describe
