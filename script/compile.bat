@@ -23,6 +23,13 @@ Rem -H:EnableURLProtocols=jar,http,https is also not supported.
 
 call %GRAALVM_HOME%\bin\gu.cmd install native-image
 
+if not exist "%BABASHKA_SHA%" (
+    for /f %%i in ('git rev-parse HEAD') do set sha=%%i
+    if not errorlevel 1 (
+        set BABASHKA_SHA=%sha%
+    )
+)
+
 call %GRAALVM_HOME%\bin\native-image.cmd ^
   "-jar" "target/babashka-%BABASHKA_VERSION%-standalone.jar" ^
   "-H:Name=bb" ^

@@ -107,4 +107,12 @@ then
     export BABASHKA_FEATURE_PRIORITY_MAP="${BABASHKA_FEATURE_PRIORITY_MAP:-false}"
 fi
 
+if [[ ! -f "$BABASHKA_SHA" ]]
+then
+    sha=$(git rev-parse HEAD)
+    if [[ $? -eq 0 ]]; then
+        export BABASHKA_SHA=$sha
+    fi
+fi
+
 "$GRAALVM_HOME/bin/native-image" "${args[@]}" "$@"

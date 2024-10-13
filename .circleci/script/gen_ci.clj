@@ -84,7 +84,8 @@
                         :BABASHKA_PLATFORM "linux"
                         :GRAALVM_VERSION   graalvm-version
                         :GRAALVM_HOME      graalvm-home
-                        :BABASHKA_TEST_ENV "jvm"}
+                        :BABASHKA_TEST_ENV "jvm"
+                        :BABASHKA_SHA (System/getenv "CIRCLE_SHA1")}
     :resource_class    "large"
     :steps
     (gen-steps
@@ -128,7 +129,8 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                                "macos"
                                                platform)
                           :BABASHKA_TEST_ENV "native"
-                          :BABASHKA_XMX      "-J-Xmx6500m"}
+                          :BABASHKA_XMX      "-J-Xmx6500m"
+                          :BABASHKA_SHA (System/getenv "CIRCLE_SHA1")}
         env              (if (= "aarch64" arch)
                            (assoc env :BABASHKA_ARCH arch)
                            env)

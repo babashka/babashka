@@ -12,6 +12,7 @@ task:
     BABASHKA_TEST_ENV: native
     BABASHKA_XMX: "-J-Xmx6500m"
     GITHUB_TOKEN: ENCRYPTED[d6ff8cdc392157f211c754fa0763875434d1bfde0c00a05e48ba9470003a76c14c9213adb80623f81e13f2f0fa8fbd57]
+    BABASHKA_SHA: ${CIRRUS_BASE_SHA}
   script: |
     git submodule init
     git submodule update
