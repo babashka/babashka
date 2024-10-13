@@ -24,6 +24,7 @@ jobs:
       LEIN_ROOT: "true"
       BABASHKA_PLATFORM: linux # could be used in jar name
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      BABASHKA_SHA: ${{ github.sha }}
     steps:
       - name: Git checkout
         uses: actions/checkout@v2
@@ -107,6 +108,7 @@ jobs:
       BABASHKA_TEST_ENV: native
       BABASHKA_XMX: "-J-Xmx6500m"
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      BABASHKA_SHA: ${{ github.sha }}
     steps:
       - name: Git checkout
         uses: actions/checkout@v2
