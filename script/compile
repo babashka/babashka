@@ -117,4 +117,4 @@ fi
 
 "$GRAALVM_HOME/bin/native-image" "${args[@]}" "$@"
 
-$BABASHKA_BINARY describe
+./"$BABASHKA_BINARY" describe
