@@ -262,7 +262,7 @@ Use bb run --help to show this help output.
   (println
    (format
     (str/trim "
-{:babashka/version   \"%s\"%s
+{:babashka/version   \"%s\"
  :git/sha            \"%s\"
  :feature/csv        %s
  :feature/java-nio   %s
