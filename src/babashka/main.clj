@@ -110,6 +110,11 @@
 
 (def version common/version)
 
+(def build-commit-sha
+  (or (System/getenv "CIRCLE_SHA1")
+      (System/getenv "APPVEYOR_REPO_COMMIT")
+      (System/getenv "CIRRUS_BASE_SHA")))
+
 (defn parse-version [version]
   (mapv #(Integer/parseInt %)
         (-> version
@@ -261,6 +266,7 @@ Use bb run --help to show this help output.
    (format
     (str/trim "
 {:babashka/version   \"%s\"
+ :babashka/build-sha %s
  :feature/csv        %s
  :feature/java-nio   %s
  :feature/java-time  %s
@@ -281,6 +287,7 @@ Use bb run --help to show this help output.
  :feature/logging %s
  :feature/priority-map %s}")
     version
+    build-commit-sha
     features/csv?
     features/java-nio?
     features/java-time?
