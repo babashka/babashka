@@ -24,6 +24,8 @@ task:
     sudo /usr/sbin/softwareupdate --install-rosetta --agree-to-license
     java -version
 
+    export BABASHKA_SHA=$(git rev-parse HEAD)
+
     script/uberjar
     # curl -sLO 'https://github.com/babashka/pgo-profiles/releases/download/2023.10.11/default.iprof'
     script/compile # --pgo=default.iprof
