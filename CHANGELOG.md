@@ -7,6 +7,10 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## Unreleased
+
+- [#1748](https://github.com/babashka/babashka/issues/1748): add `clojure.core/ensure`
+
 ## 1.12.194 (2024-10-12)
 
 - Upgrade to GraalVM 23
