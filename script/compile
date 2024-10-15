@@ -107,7 +107,7 @@ then
     export BABASHKA_FEATURE_PRIORITY_MAP="${BABASHKA_FEATURE_PRIORITY_MAP:-false}"
 fi
 
-if [[ -z "$BABASHKA_SHA" ]]
+if [[ -z "${BABASHKA_SHA:-}" ]]
 then
     sha=$(git rev-parse HEAD)
     if [[ $? -eq 0 ]]; then
