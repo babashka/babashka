@@ -22,6 +22,9 @@ agreement, the PR will be merged.
 Each bug fix, change or new feature should be tested well to prevent future
 regressions.
 
+If possible, tests should use public APIs. If the bug is in private/internal
+code, try to trigger it from a public API.
+
 ### Force-push
 
 Please do not use `git push --force` on your PR branch for the following
