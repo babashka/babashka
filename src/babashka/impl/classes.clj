@@ -328,6 +328,7 @@
           java.lang.ProcessBuilder$Redirect
           java.lang.Runtime
           java.lang.RuntimeException
+          java.lang.SecurityException
           java.lang.Short
           java.lang.StackTraceElement
           java.lang.String
@@ -831,6 +832,7 @@
     RuntimeException java.lang.RuntimeException
     Process java.lang.Process
     ProcessBuilder java.lang.ProcessBuilder
+    SecurityException java.lang.SecurityException
     Short java.lang.Short
     StackTraceElement java.lang.StackTraceElement
     String java.lang.String
