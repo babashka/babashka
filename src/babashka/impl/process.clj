@@ -48,4 +48,5 @@
    'destroy-tree (copy-var process/destroy-tree tns)
    'exec (copy-var exec tns)
    'shell (copy-var shell tns)
-   'alive? (copy-var process/alive? tns)})
+   'alive? (copy-var process/alive? tns)
+   'concurrently (copy-var process/concurrently tns)})

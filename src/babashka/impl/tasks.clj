@@ -225,6 +225,9 @@
 (when-not (resolve 'shell)
   (intern *ns* 'shell babashka.tasks/shell))
 
+(when-not (resolve 'concurrently)
+  (intern *ns* 'concurrently babashka.process/concurrently))
+
 (when-not (resolve 'current-task)
   (intern *ns* 'current-task babashka.tasks/current-task))
 
