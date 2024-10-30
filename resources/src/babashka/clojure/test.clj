@@ -297,6 +297,7 @@
   current assertion."
   {:added "1.1"}
   [m]
+  (prn :m m)
   (let [{:keys [file line]} m]
     (str
      ;; Uncomment to include namespace in failure report:
@@ -354,6 +355,7 @@
    to pass test results to report."
   {:added "1.2"}
   [m]
+  (prn (:type m))
   (report
    (case
     (:type m)
@@ -363,7 +365,10 @@
                                                     (str/starts-with? cl-name "clojure.test$")
                                                     (str/starts-with? cl-name "clojure.core$ex_info")))
                                              (.getStackTrace (Thread/currentThread)))) m)
-    :error (merge (stacktrace-file-and-line (.getStackTrace ^Throwable (:actual m))) m)
+    :error (do
+             (prn :>> (ex-data (:actual m)))
+             (let [{:keys [line file]} (ex-data (:actual m))]
+               (merge {:file file :line line} m))) #_(merge (stacktrace-file-and-line (.getStackTrace ^Throwable (:actual m))) m)
     m)))
 
 (defmethod report :default [m]
@@ -534,6 +539,7 @@
                          :expected '~form, :actual e#})))
             e#))))
 
+(prn :reload)
 
 (defmacro try-expr
   "Used by the 'is' macro to catch unexpected exceptions.
@@ -541,9 +547,16 @@
   {:added "1.1"}
   [msg form]
   `(try ~(assert-expr msg form)
-        (catch Throwable t#
-          (do-report {:type :error, :message ~msg,
-                      :expected '~form, :actual t#}))))
+        ;; TODO: make SCI catch Throwable as well
+        (catch ~(with-meta 'Exception {:sci/error true}) t#
+          (let [cause# (ex-cause t#)
+                exd# (ex-data t#)
+                file# (:file exd#)
+                line# (:line exd#)]
+            (do-report (cond-> {:type :error, :message ~msg,
+                                :expected '~form, :actual cause#}
+                         file# (assoc :file file#)
+                         line# (assoc :line line#)))))))
 
 
 

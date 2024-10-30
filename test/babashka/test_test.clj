@@ -122,6 +122,6 @@ true")))))
 
 (deftest testing-vars-str-test
   (is (str/includes?
-        (bb "(clojure.test/testing-vars-str {:file \"x\" :line 1})")
+        (bb "(require 'clojure.test) (clojure.test/testing-vars-str {:file \"x\" :line 1})")
         "() (x:1)")
       "includes explicit line number + file name in test report"))
