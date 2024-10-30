@@ -20,7 +20,7 @@
          "impl-java/src"],
  :deps {org.clojure/clojure {:mvn/version "1.12.0"},
         org.babashka/sci {:local/root "sci"}
-        org.babashka/babashka.impl.java {:mvn/version "0.1.8"}
+        org.babashka/babashka.impl.java {:mvn/version "0.1.10"}
         org.babashka/sci.impl.types {:mvn/version "0.0.2"}
         babashka/babashka.curl {:local/root "babashka.curl"}
         babashka/fs {:local/root "fs"}
@@ -45,7 +45,7 @@
         hiccup/hiccup {:mvn/version "2.0.0-RC1"}
         rewrite-clj/rewrite-clj {:mvn/version "1.1.48"}
         selmer/selmer {:mvn/version "1.12.59"}
-        com.taoensso/timbre {:mvn/version "6.5.0"}
+        com.taoensso/timbre {:mvn/version "6.6.0"}
         org.clojure/tools.logging {:mvn/version "1.1.0"}
         org.clojure/data.priority-map {:mvn/version "1.1.0"}
         insn/insn {:mvn/version "0.5.2"}

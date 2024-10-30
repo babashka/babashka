@@ -122,7 +122,7 @@
    :static true}
   ([aseq]
    (try (clojure.lang.RT/seqToTypedArray (seq aseq))
-        (catch IllegalArgumentException _
+        (catch Throwable _
           (clojure.lang.RT/seqToTypedArray Object (seq aseq)))))
   ([type aseq]
    (clojure.lang.RT/seqToTypedArray type (seq aseq))))
@@ -179,6 +179,8 @@
    'sync (sci/copy-var sync clojure-core-ns)
    'ref (sci/copy-var ref clojure-core-ns)
    'ref-set (sci/copy-var ref-set clojure-core-ns)
+   'ensure (sci/copy-var ensure clojure-core-ns)
+   ;; end STM
    'update-vals (sci/copy-var update-vals clojure-core-ns)
    'update-keys (sci/copy-var update-keys clojure-core-ns)
    'parse-boolean (sci/copy-var parse-boolean clojure-core-ns)

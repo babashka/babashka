@@ -59,7 +59,9 @@
 
          ;; Note pre-resolved expansion
          `(taoensso.timbre/-log! ~config ~level ~ns ~file ~line ~column ~msg-type ~?err
-                                 (delay ~vargs-form) ~?base-data ~callsite-id ~spying?)))))
+                                 (delay ~vargs-form) ~?base-data ~callsite-id ~spying?
+                                 ~(get opts :instant)
+                                 ~(get opts :may-log?))))))
 
   ([level msg-type args & [opts]]
    (let [{:keys [line column]} (merge (meta &form))

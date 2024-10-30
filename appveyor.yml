@@ -7,8 +7,8 @@ image: Visual Studio 2022
 clone_folder: C:\projects\babashka
 
 environment:
-  GRAALVM_HOME: C:\projects\babashka\graalvm\graalvm-jdk-22+36.1
-  JAVA_HOME: C:\projects\babashka\graalvm\graalvm-jdk-22+36.1
+  GRAALVM_HOME: C:\projects\babashka\graalvm\graalvm-jdk-23+37.1
+  JAVA_HOME: C:\projects\babashka\graalvm\graalvm-jdk-23+37.1
   BABASHKA_XMX: "-J-Xmx5g"
 
 skip_commits:
@@ -44,7 +44,7 @@ clone_script:
 build_script:
 # TODO: Extract the zip by removing the top level folder to remove the hardcoded path for GRAALVM_HOME
 - cmd: >-
-    powershell -Command "if (Test-Path('graalvm')) { return } else { (New-Object Net.WebClient).DownloadFile('https://download.oracle.com/graalvm/22/archive/graalvm-jdk-22_windows-x64_bin.zip', 'graalvm.zip') }"
+    powershell -Command "if (Test-Path('graalvm')) { return } else { (New-Object Net.WebClient).DownloadFile('https://download.oracle.com/graalvm/23/archive/graalvm-jdk-23_windows-x64_bin.zip', 'graalvm.zip') }"
 
     powershell -Command "if (Test-Path('graalvm')) { return } else { Expand-Archive graalvm.zip graalvm }"
 
@@ -61,6 +61,8 @@ build_script:
 # see https://github.com/quarkusio/quarkus/pull/7663
 
 - cmd: >-
+    set BABASHKA_SHA=%APPVEYOR_REPO_COMMIT%
+
     call script/uberjar.bat
 
     call script/compile.bat

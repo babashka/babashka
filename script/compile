@@ -39,7 +39,7 @@ args=("-jar" "$BABASHKA_JAR"
       # "-H:DashboardDump=reports/dump"
       # "-H:+DashboardPretty"
       # "-H:+DashboardJson"
-      "-H:ReportAnalysisForbiddenType=java.awt.Toolkit:InHeap,Allocated"
+      # "-H:ReportAnalysisForbiddenType=java.awt.Toolkit:Instantiated"
       "--verbose"
       "--no-fallback"
       "--native-image-info"
@@ -54,13 +54,14 @@ BABASHKA_STATIC=${BABASHKA_STATIC:-}
 BABASHKA_MUSL=${BABASHKA_MUSL:-}
 
 if [ "$BABASHKA_STATIC" = "true" ]; then
-    args+=("--static")
     if [ "$BABASHKA_MUSL" = "true" ]; then
+        args+=("--static")
         args+=("--libc=musl"
                # see https://github.com/oracle/graal/issues/3398
                "-H:CCompilerOption=-Wl,-z,stack-size=2097152")
     else
         # see https://github.com/oracle/graal/issues/3737
+        args+=("-H:+UnlockExperimentalVMOptions")
         args+=("-H:+StaticExecutableWithDynamicLibC")
     fi
 fi
@@ -106,4 +107,14 @@ then
     export BABASHKA_FEATURE_PRIORITY_MAP="${BABASHKA_FEATURE_PRIORITY_MAP:-false}"
 fi
 
+if [[ -z "${BABASHKA_SHA:-}" ]]
+then
+    sha=$(git rev-parse HEAD)
+    if [[ $? -eq 0 ]]; then
+        export BABASHKA_SHA=$sha
+    fi
+fi
+
 "$GRAALVM_HOME/bin/native-image" "${args[@]}" "$@"
+
+./"$BABASHKA_BINARY" describe
