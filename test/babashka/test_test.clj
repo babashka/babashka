@@ -1,17 +1,14 @@
 (ns babashka.test-test
   (:require
-   [babashka.impl.clojure.test :as test-impl]
+   #_[babashka.impl.clojure.test :as test-impl]
    [babashka.test-utils :as tu]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.string :as str]
-   [clojure.test :as t :refer [deftest is]]
-   [sci.core :as sci]))
+   [clojure.test :as t :refer [deftest is]]))
 
 (defn bb [& args]
-  (let [sw (java.io.StringWriter.)]
-    (sci/binding [test-impl/test-out sw]
-      (str sw (apply tu/bb nil (map str args))))))
+  (str (apply tu/bb nil (map str args))))
 
 (deftest deftest-test
   (is (str/includes?

@@ -9,6 +9,7 @@
    [bencode.core :as bencode]
    [clojure.test :as t :refer [deftest is testing]]
    [sci.core :as sci]
+   [babashka.impl.common :as common]
    [sci.ctx-store :as ctx-store]
    [babashka.impl.classpath :as cp])
   (:import
@@ -213,8 +214,8 @@
 (deftest ^:skip-windows nrepl-server-test
   (let [proc-state (atom nil)
         server-state (atom nil)
-        ctx (sci/init {:namespaces main/namespaces
-                       :features #{:bb}})]
+        _ (main/main "-e" "nil") ;; dummy invocation to reset ctx
+        ctx (common/ctx)]
     (sci.ctx-store/with-ctx ctx
       (try
         (if tu/jvm?
