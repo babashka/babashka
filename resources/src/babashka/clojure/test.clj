@@ -297,7 +297,6 @@
   current assertion."
   {:added "1.1"}
   [m]
-  (prn :m m)
   (let [{:keys [file line]} m]
     (str
      ;; Uncomment to include namespace in failure report:
@@ -355,7 +354,6 @@
    to pass test results to report."
   {:added "1.2"}
   [m]
-  (prn (:type m))
   (report
    (case
     (:type m)
@@ -366,9 +364,7 @@
                                                     (str/starts-with? cl-name "clojure.core$ex_info")))
                                              (.getStackTrace (Thread/currentThread)))) m)
     :error (do
-             (prn :>> (ex-data (:actual m)))
-             (let [{:keys [line file]} (ex-data (:actual m))]
-               (merge {:file file :line line} m))) #_(merge (stacktrace-file-and-line (.getStackTrace ^Throwable (:actual m))) m)
+             (merge m)) #_(merge (stacktrace-file-and-line (.getStackTrace ^Throwable (:actual m))) m)
     m)))
 
 (defmethod report :default [m]
@@ -393,10 +389,12 @@
    (when (seq *testing-contexts*) (println (testing-contexts-str)))
    (when-let [message (:message m)] (println message))
    (println "expected:" (pr-str (:expected m)))
-   (print "  actual: ")
+   (println "  actual:")
    (let [actual (:actual m)]
      (if (instance? Throwable actual)
-       (stack/print-cause-trace actual *stack-trace-depth*)
+       (if-let [s (:stacktrace m)]
+         (run! println s)
+         (stack/print-cause-trace actual *stack-trace-depth*))
        (prn actual)))))
 
 (defmethod report :summary [m]
@@ -539,8 +537,6 @@
                          :expected '~form, :actual e#})))
             e#))))
 
-(prn :reload)
-
 (defmacro try-expr
   "Used by the 'is' macro to catch unexpected exceptions.
   You don't call this."
@@ -552,11 +548,15 @@
           (let [cause# (ex-cause t#)
                 exd# (ex-data t#)
                 file# (:file exd#)
-                line# (:line exd#)]
+                line# (:line exd#)
+                message# (ex-message cause#)
+                stack# (-> (sci.core/stacktrace t#) (sci.core/format-stacktrace))]
             (do-report (cond-> {:type :error, :message ~msg,
                                 :expected '~form, :actual cause#}
                          file# (assoc :file file#)
-                         line# (assoc :line line#)))))))
+                         line# (assoc :line line#)
+                         stack# (assoc :stacktrace stack#)
+                         message# (assoc :message message#)))))))
 
 
 
