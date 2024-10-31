@@ -83,8 +83,8 @@ true")))))
                      "3.14 should be roughly 3.141592653589793")))
 
 (deftest rebind-vars-test
-  (is (bb "(binding [clojure.test/report (constantly true)] nil)"))
-  (is (bb "(binding [clojure.test/test-var (constantly true)] nil)")))
+  (is (bb "(require '[clojure.test]) (binding [clojure.test/report (constantly true)] nil)"))
+  (is (bb "(require '[clojure.test]) (binding [clojure.test/test-var (constantly true)] nil)")))
 
 (deftest rebind-report-test
   (let [[m1 m2 m3]

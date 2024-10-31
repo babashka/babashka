@@ -297,7 +297,7 @@
   current assertion."
   {:added "1.1"}
   [m]
-  (let [{:keys [file line]} m]
+  (let [{:keys [file line]} (merge m (meta (first *testing-vars*)))]
     (str
      ;; Uncomment to include namespace in failure report:
      ;;(ns-name (:ns (meta (first *testing-vars*)))) "/ "
@@ -357,7 +357,7 @@
   (report
    (case
     (:type m)
-    :fail (merge (stacktrace-file-and-line (drop-while
+    :fail (merge m #_(stacktrace-file-and-line (drop-while
                                              #(let [cl-name (.getClassName ^StackTraceElement %)]
                                                 (or (str/starts-with? cl-name "java.lang.")
                                                     (str/starts-with? cl-name "clojure.test$")
@@ -449,10 +449,14 @@
     `(let [values# (list ~@args)
            result# (apply ~pred values#)]
        (if result#
-         (do-report {:type :pass, :message ~msg,
-                  :expected '~form, :actual (cons '~pred values#)})
-         (do-report {:type :fail, :message ~msg,
-                  :expected '~form, :actual (list '~'not (cons '~pred values#))}))
+         (do-report (merge {:type :pass, :message ~msg,
+                            :expected '~form, :actual (cons '~pred values#)
+                            :file *file*}
+                           ~(meta form)))
+         (do-report (merge {:type :fail, :message ~msg,
+                            :expected '~form, :actual (list '~'not (cons '~pred values#))
+                            :file *file*}
+                           ~(meta form))))
        result#)))
 
 (defn assert-any
@@ -462,10 +466,14 @@
   [msg form]
   `(let [value# ~form]
      (if value#
-       (do-report {:type :pass, :message ~msg,
-                :expected '~form, :actual value#})
-       (do-report {:type :fail, :message ~msg,
-                :expected '~form, :actual value#}))
+       (do-report (merge {:type :pass, :message ~msg,
+                         :expected '~form, :actual value#
+                          :file *file*}
+                         ~(meta form)))
+       (do-report (merge {:type :fail, :message ~msg,
+                          :expected '~form, :actual value#
+                          :file *file*}
+                         ~(meta form))))
      value#))
 
 
@@ -485,7 +493,9 @@
 
 (defmethod assert-expr :always-fail [msg form]
   ;; nil test: always fail
-  `(do-report {:type :fail, :message ~msg}))
+  `(do-report {:type :fail, :message ~msg
+               :file clojure.core/*file*
+               :line ~(:line (meta form))}))
 
 (defmethod assert-expr :default [msg form]
   (if (and (sequential? form) (function? (first form)))
@@ -501,7 +511,9 @@
          (do-report {:type :pass, :message ~msg,
                   :expected '~form, :actual (class object#)})
          (do-report {:type :fail, :message ~msg,
-                  :expected '~form, :actual (class object#)}))
+                     :expected '~form, :actual (class object#)
+                     :file clojure.core/*file*
+                     :line ~(:line (meta form))}))
        result#)))
 
 (defmethod assert-expr 'thrown? [msg form]
@@ -512,7 +524,9 @@
         body (nthnext form 2)]
     `(try ~@body
           (do-report {:type :fail, :message ~msg,
-                   :expected '~form, :actual nil})
+                      :expected '~form, :actual nil
+                      :file clojure.core/*file*
+                      :line ~(:line (meta form))})
           (catch ~klass e#
             (do-report {:type :pass, :message ~msg,
                      :expected '~form, :actual e#})
@@ -534,7 +548,9 @@
                 (do-report {:type :pass, :message ~msg,
                          :expected '~form, :actual e#})
                 (do-report {:type :fail, :message ~msg,
-                         :expected '~form, :actual e#})))
+                            :file clojure.core/*file*
+                            :line ~(:line (meta form))
+                            :expected '~form, :actual e#})))
             e#))))
 
 (defmacro try-expr
@@ -552,7 +568,9 @@
                 line# (:line exd#)
                 message# (ex-message cause#)
                 stack# (-> (sci.core/stacktrace t#) (sci.core/format-stacktrace))]
-            (do-report (cond-> {:type :error, :message ~msg,
+            (do-report (cond-> {:file clojure.core/*file*
+                                :line ~(:line (meta form))
+                                :type :error, :message ~msg,
                                 :expected '~form, :actual cause#}
                          file# (assoc :file file#)
                          line# (assoc :line line#)
