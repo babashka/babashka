@@ -542,6 +542,7 @@
   You don't call this."
   {:added "1.1"}
   [msg form]
+  ;; (println (assert-expr msg form))
   `(try ~(assert-expr msg form)
         ;; TODO: make SCI catch Throwable as well
         (catch ~(with-meta 'Exception {:sci/error true}) t#
