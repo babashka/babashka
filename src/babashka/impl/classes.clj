@@ -566,7 +566,19 @@
                 ~(symbol "[Ljava.util.regex.Pattern;")
                 ~(symbol "[Lclojure.core$range;")])
           ~@(when features/yaml? '[org.yaml.snakeyaml.error.YAMLException])
-          ~@(when features/hsqldb? '[org.hsqldb.jdbcDriver])]
+          ~@(when features/hsqldb? '[org.hsqldb.jdbcDriver])
+          org.jsoup.Jsoup
+          org.jsoup.nodes.Attribute
+          org.jsoup.nodes.Attributes
+          org.jsoup.nodes.Comment
+          org.jsoup.nodes.DataNode
+          org.jsoup.nodes.Document
+          org.jsoup.nodes.DocumentType
+          org.jsoup.nodes.Element
+          org.jsoup.nodes.TextNode
+          org.jsoup.nodes.XmlDeclaration
+          org.jsoup.parser.Tag
+          org.jsoup.parser.Parser]
     :constructors [clojure.lang.Delay
                    clojure.lang.DynamicClassLoader
                    clojure.lang.LineNumberingPushbackReader
