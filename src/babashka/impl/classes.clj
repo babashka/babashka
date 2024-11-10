@@ -575,6 +575,7 @@
           org.jsoup.nodes.Document
           org.jsoup.nodes.DocumentType
           org.jsoup.nodes.Element
+          org.jsoup.nodes.Node
           org.jsoup.nodes.TextNode
           org.jsoup.nodes.XmlDeclaration
           org.jsoup.parser.Tag
