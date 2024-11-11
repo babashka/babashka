@@ -10,9 +10,11 @@ A preview of the next release can be installed from
 ## Unreleased
 
 - Include [jsoup](https://jsoup.org/) for HTML parsing. This makes bb compatible with the [hickory](https://github.com/clj-commons/hickory) library (and possibly other libraries?).
-- [#1752](https://github.com/babashka/babashka/issues/1752): include `java.lang.SecurityException` for `java.net.http.HttpClient` support
+- [#1752](https://github.com/babashka/babashka/issues/1752): include `java.lang.SecurityException` for `java.net.http.HttpClient` support ([@grzm](https://github.com/grzm))
 - [#1748](https://github.com/babashka/babashka/issues/1748): add `clojure.core/ensure`
-- Upgrade to `taoensso/timbre` `v6.6.0`
+- Upgrade `taoensso/timbre`to `v6.6.0`
+- Upgrade `babashka.http-client` to `v0.4.22`
+- Add `:git/sha` from build to `bb describe` output ([@lispyclouds](https://github.com/lispyclouds))
 
 ## 1.12.194 (2024-10-12)
 
