@@ -191,4 +191,13 @@
  prismatic/plumbing {:git-url "https://github.com/plumatic/plumbing",
                      :git-sha "424bc704f2db422de34269c139a5494314b3a43b",
                      :test-namespaces [plumbing.core-test],
-                     :test-paths ["test"]}}
+                     :test-paths ["test"]}
+ org.clj-commons/hickory {:git-url "https://github.com/clj-commons/hickory"
+                          :git-sha "27ee318928b6748075fa9954740afedf916ff795"
+                          :test-paths ["test/cljc"]
+                          :test-namespaces [hickory.test.core
+                                            hickory.test.convert
+                                            hickory.test.hiccup-utils
+                                            hickory.test.render
+                                            hickory.test.select
+                                            hickory.test.zip]}}
