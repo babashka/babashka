@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Include [jsoup](https://jsoup.org/) for HTML parsing
 - [#1752](https://github.com/babashka/babashka/issues/1752): include `java.lang.SecurityException` for `java.net.http.HttpClient` support
 - [#1748](https://github.com/babashka/babashka/issues/1748): add `clojure.core/ensure`
 - Upgrade to `taoensso/timbre` `v6.6.0`
