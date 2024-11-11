@@ -51,7 +51,7 @@
         insn/insn {:mvn/version "0.5.2"}
         org.clojure/core.rrb-vector {:mvn/version "0.1.2"}
         org.babashka/cli {:mvn/version "0.8.59"}
-        org.babashka/http-client {:mvn/version "0.4.21"}
+        org.babashka/http-client {:mvn/version "0.4.22"}
         org.flatland/ordered {:mvn/version "1.15.12"}
         org.jsoup/jsoup {:mvn/version "1.18.1"}}
  :aliases {:babashka/dev
