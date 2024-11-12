@@ -579,7 +579,8 @@
           org.jsoup.nodes.TextNode
           org.jsoup.nodes.XmlDeclaration
           org.jsoup.parser.Tag
-          org.jsoup.parser.Parser]
+          org.jsoup.parser.Parser
+          org.jsoup.select.Elements]
     :constructors [clojure.lang.Delay
                    clojure.lang.DynamicClassLoader
                    clojure.lang.LineNumberingPushbackReader
