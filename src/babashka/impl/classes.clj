@@ -668,7 +668,6 @@
                       java.util.AbstractMap
                       java.util.AbstractSet
                       java.util.AbstractList
-                      java.util.ArrayList
                       ~@(when features/xml? ['clojure.data.xml.node.Element])]
     :custom ~custom-map})
 
