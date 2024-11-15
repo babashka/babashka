@@ -9,7 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 2024-11-15
-- For compatibility with [Fireworks v0.10.3](https://github.com/paintparty/fireworks), added the following to `:instance-checks` entry in `babashka.impl.classes/classes`([@paintparty](https://github.com/paintparty))
+- [#1760]For compatibility with [Fireworks v0.10.3](https://github.com/paintparty/fireworks), added the following to `:instance-checks` entry in `babashka.impl.classes/classes`([@paintparty](https://github.com/paintparty))
     - `clojure.lang.PersistentArrayMap$TransientArrayMap`
     - `clojure.lang.PersistentHashMap`
     - `clojure.lang.PersistentHashMap$TransientHashMap`
@@ -19,7 +19,7 @@ A preview of the next release can be installed from
     - `java.util.AbstractSet`
     - `java.util.AbstractList`
     - `java.util.ArrayList`
-- For compatibility with [Fireworks v0.10.3](https://github.com/paintparty/fireworks), added `volatile?` entry to `babashka.impl.clojure.core/core-extras`([@paintparty](https://github.com/paintparty))
+- [#1760]For compatibility with [Fireworks v0.10.3](https://github.com/paintparty/fireworks), added `volatile?` entry to `babashka.impl.clojure.core/core-extras`([@paintparty](https://github.com/paintparty))
 
 
 ## 1.12.195 (2024-11-12)
