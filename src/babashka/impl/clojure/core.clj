@@ -171,6 +171,7 @@
    '*source-path* sci/file
    'with-precision (sci/copy-var with-precision clojure-core-ns)
    '-with-precision (sci/copy-var -with-precision clojure-core-ns)
+   'volatile? (sci/copy-var volatile? clojure-core-ns)
    ;; STM
    'alter (sci/copy-var alter clojure-core-ns)
    'commute (sci/copy-var commute clojure-core-ns)

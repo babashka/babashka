@@ -629,7 +629,10 @@
                       clojure.lang.Named
                       clojure.lang.Keyword
                       clojure.lang.PersistentArrayMap
+                      clojure.lang.PersistentArrayMap$TransientArrayMap
+                      clojure.lang.PersistentHashMap$TransientHashMap
                       clojure.lang.PersistentHashSet
+                      clojure.lang.PersistentHashSet$TransientHashSet
                       clojure.lang.PersistentList
                       clojure.lang.PersistentList$EmptyList
                       clojure.lang.PersistentQueue
@@ -637,6 +640,7 @@
                       clojure.lang.PersistentTreeMap
                       clojure.lang.PersistentTreeSet
                       clojure.lang.PersistentVector
+                      clojure.lang.PersistentVector$TransientVector
                       clojure.lang.Range
                       clojure.lang.Ratio
                       clojure.lang.ReaderConditional
@@ -655,10 +659,14 @@
                       java.lang.LinkageError
                       java.lang.ThreadDeath
                       java.lang.VirtualMachineError
+                      java.lang.NoSuchFieldException
                       java.sql.Timestamp
                       java.util.concurrent.TimeoutException
                       java.util.Collection
                       java.util.Map$Entry
+                      java.util.AbstractMap
+                      java.util.AbstractSet
+                      java.util.AbstractList
                       ~@(when features/xml? ['clojure.data.xml.node.Element])]
     :custom ~custom-map})
 

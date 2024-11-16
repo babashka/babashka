@@ -7,6 +7,19 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## Unreleased
+
+- [#1760] For compatibility with [Fireworks v0.10.3](https://github.com/paintparty/fireworks), added the following to `:instance-checks` entry in `babashka.impl.classes/classes`([@paintparty](https://github.com/paintparty))
+    - `clojure.lang.PersistentArrayMap$TransientArrayMap`
+    - `clojure.lang.PersistentHashMap$TransientHashMap`
+    - `clojure.lang.PersistentVector$TransientVector`
+    - `java.lang.NoSuchFieldException`
+    - `java.util.AbstractMap`
+    - `java.util.AbstractSet`
+    - `java.util.AbstractList`
+- [#1760] For compatibility with [Fireworks v0.10.3](https://github.com/paintparty/fireworks), added `volatile?` entry to `babashka.impl.clojure.core/core-extras`([@paintparty](https://github.com/paintparty))
+
+
 ## 1.12.195 (2024-11-12)
 
 - Include [jsoup](https://jsoup.org/) for HTML parsing. This makes bb compatible with the [hickory](https://github.com/clj-commons/hickory) library (and possibly other libraries?).
