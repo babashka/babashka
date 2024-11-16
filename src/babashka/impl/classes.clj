@@ -630,7 +630,6 @@
                       clojure.lang.Keyword
                       clojure.lang.PersistentArrayMap
                       clojure.lang.PersistentArrayMap$TransientArrayMap
-                      clojure.lang.PersistentHashMap
                       clojure.lang.PersistentHashMap$TransientHashMap
                       clojure.lang.PersistentHashSet
                       clojure.lang.PersistentHashSet$TransientHashSet
