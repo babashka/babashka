@@ -4,7 +4,7 @@
 [![project chat](https://img.shields.io/badge/slack-join_chat-brightgreen.svg)](https://app.slack.com/client/T03RZGPFR/CLX41ASCS)
 [![Financial Contributors on Open Collective](https://opencollective.com/babashka/all/badge.svg?label=financial+contributors)](https://opencollective.com/babashka) [![Clojars Project](https://img.shields.io/clojars/v/babashka/babashka.svg)](https://clojars.org/babashka/babashka)
 [![twitter](https://img.shields.io/badge/twitter-%23babashka-blue)](https://twitter.com/search?q=%23babashka&src=typed_query&f=live)
-[![docs](https://img.shields.io/badge/website-docs-blue)](https://book.babashka.org)
+[![docs](https://img.shields.io/badge/website-docs-blue)](https://book.babashka.org) [![Gurubase](https://img.shields.io/badge/Gurubase-Ask%20Babashka%20Guru-006BFF)](https://gurubase.io/g/babashka)
 
 <blockquote class="twitter-tweet" data-lang="en">
     <p lang="en" dir="ltr">Life's too short to remember how to write Bash code. I feel liberated.</p>
