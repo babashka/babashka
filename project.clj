@@ -36,7 +36,8 @@
                  [insn/insn "0.5.2"]
                  [org.babashka/cli "0.8.61"]
                  [org.babashka/http-client "0.4.22"]
-                 [org.jsoup/jsoup "1.18.1"]]
+                 [org.jsoup/jsoup "1.18.1"]
+                 [borkdude/graal.locking "0.0.2"]]
   :plugins       [[org.kipz/lein-meta-bom "0.1.1"]]
   :metabom {:jar-name "metabom.jar"}
   :profiles {:feature/xml  {:source-paths ["feature-xml"]
