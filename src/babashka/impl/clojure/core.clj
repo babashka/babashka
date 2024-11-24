@@ -3,7 +3,6 @@
   (:refer-clojure :exclude [future read+string clojure-version with-precision
                             send-via send send-off sync into-array])
   (:require [babashka.impl.common :as common]
-            [borkdude.graal.locking :as locking]
             [clojure.core :as c]
             [clojure.string :as str]
             [sci.core :as sci]
@@ -11,9 +10,6 @@
             [sci.impl.parser :as parser]
             [sci.impl.utils :refer [clojure-core-ns]]
             [sci.impl.vars :as vars]))
-
-(defn locking* [form bindings v f & args]
-  (apply @#'locking/locking form bindings v f args))
 
 (defn core-dynamic-var
   ([sym] (core-dynamic-var sym nil))
@@ -148,7 +144,6 @@
    'file-seq (copy-core-var file-seq)
    'promise (copy-core-var promise)
    'deliver (copy-core-var deliver)
-   'locking (macrofy 'locking locking*)
    'shutdown-agents (copy-core-var shutdown-agents)
    'slurp (copy-core-var slurp)
    'spit (copy-core-var spit)
