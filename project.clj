@@ -43,7 +43,7 @@
   :profiles {:feature/xml  {:source-paths ["feature-xml"]
                             :dependencies [[org.clojure/data.xml "0.2.0-alpha8"]]}
              :feature/yaml {:source-paths ["feature-yaml"]
-                            :dependencies [[clj-commons/clj-yaml "1.0.28"
+                            :dependencies [[clj-commons/clj-yaml "1.0.29"
                                             :exclusions [org.flatland/ordered]#_#_clj-commons/clj-yaml "0.7.110"]
                                            [org.flatland/ordered "1.15.12"]]}
              :feature/jdbc {:source-paths ["feature-jdbc"]
