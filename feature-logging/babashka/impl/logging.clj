@@ -143,7 +143,8 @@
                                         'info 'infof 'warn 'warnf
                                         'error 'errorf
                                         '-log! 'with-level
-                                        'spit-appender '-spy 'spy])
+                                        'spit-appender '-spy 'spy
+                                        'color-str])
          'log! (sci/copy-var log! tns)
          '*config* config
          'swap-config! (sci/copy-var swap-config! tns)

@@ -20,6 +20,7 @@ A preview of the next release can be installed from
 - [#1760] For compatibility with [Fireworks v0.10.3](https://github.com/paintparty/fireworks), added `volatile?` entry to `babashka.impl.clojure.core/core-extras`([@paintparty](https://github.com/paintparty))
 - Bump `babashka.cli` to `0.8.61`
 - Bump `clj-yaml` to `1.0.29`
+- [#1768](https://github.com/babashka/babashka/issues/1768): Add `taoensso.timbre` `color-str` function
 
 ## 1.12.195 (2024-11-12)
 
