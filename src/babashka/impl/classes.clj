@@ -411,6 +411,7 @@
           java.security.DigestInputStream
           java.security.KeyFactory
           java.security.KeyPairGenerator
+          java.security.KeyPair
           java.security.KeyStore
           java.security.MessageDigest
           java.security.Provider
@@ -780,6 +781,8 @@
                                    java.security.cert.X509Certificate
                                    (instance? java.io.Console v)
                                    java.io.Console
+                                   (instance? java.security.KeyPairGenerator v)
+                                   java.security.KeyPairGenerator
                                    (instance? java.util.Set v)
                                    java.util.Set
                                    (instance? java.io.Closeable v)
