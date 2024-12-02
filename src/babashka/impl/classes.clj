@@ -224,6 +224,7 @@
     java.security.cert.X509Certificate
     java.security.cert.CertificateFactory
     javax.crypto.Cipher
+    javax.crypto.KeyAgreement
     javax.crypto.Mac
     javax.crypto.SecretKey
     javax.crypto.SecretKeyFactory
@@ -407,14 +408,18 @@
                 java.nio.file.attribute.FileTime
                 java.nio.file.attribute.PosixFilePermission
                 java.nio.file.attribute.PosixFilePermissions])
-          java.security.spec.PKCS8EncodedKeySpec
-          java.security.MessageDigest
           java.security.DigestInputStream
-          java.security.Provider
           java.security.KeyFactory
+          java.security.KeyPairGenerator
+          java.security.KeyPair
           java.security.KeyStore
+          java.security.MessageDigest
+          java.security.Provider
           java.security.SecureRandom
           java.security.Security
+          java.security.spec.ECGenParameterSpec
+          java.security.spec.PKCS8EncodedKeySpec
+          java.security.spec.X509EncodedKeySpec
           java.sql.Date
           java.text.ParseException
           java.text.ParsePosition
@@ -776,6 +781,8 @@
                                    java.security.cert.X509Certificate
                                    (instance? java.io.Console v)
                                    java.io.Console
+                                   (instance? java.security.KeyPairGenerator v)
+                                   java.security.KeyPairGenerator
                                    (instance? java.util.Set v)
                                    java.util.Set
                                    (instance? java.io.Closeable v)
