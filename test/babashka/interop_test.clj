@@ -48,6 +48,49 @@
 (some? (.getSubjectX500Principal cert))
 "))))
 
+(deftest ECDH-test
+  (is (true? (bb nil "
+(import
+ '[java.security KeyPairGenerator MessageDigest]
+ '[java.security.spec ECGenParameterSpec]
+ '[javax.crypto KeyAgreement]
+ '[javax.crypto.spec SecretKeySpec])
+
+(def keypair-algo \"EC\")
+(def keypair-curve \"secp256r1\")
+(def key-agreement-algo \"ECDH\") ; Elliptic Curve Diffie-Hellman
+(def key-digest-algo \"SHA-256\")
+(def key-encryption-algo \"AES\")
+
+(defn keypair
+  \"Generates a new key pair with the given alias, using the keypair-algo and keypair-curve\"
+  []
+  (let [keygen (KeyPairGenerator/getInstance keypair-algo)]
+    (.initialize keygen (ECGenParameterSpec. keypair-curve))
+    (.generateKeyPair keygen)))
+
+(defn symmetric-key
+  \"Generates a symmetric key using Elliptic Curve Diffie-Hellman based on a given local private and a remote public key\"
+  [private-key public-key]
+  ; Derive shared secret
+  (let [shared-secret
+        (let [key-agreement (KeyAgreement/getInstance key-agreement-algo)]
+          (.init key-agreement private-key)
+          (.doPhase key-agreement public-key true)
+          (.generateSecret key-agreement))
+        symmetric-key
+        (let [message-digest (MessageDigest/getInstance key-digest-algo)
+              hash-bytes (.digest message-digest shared-secret)
+              key-bytes (byte-array (subvec (vec hash-bytes) 0 32))] ; extracts the first 256 bits for AES key
+          (SecretKeySpec. key-bytes key-encryption-algo))]
+    symmetric-key))
+
+(let [[kp1 kp2] [(keypair) (keypair)]
+      [private public] [(.getPrivate kp1) (.getPublic kp2)]
+      symmetric (symmetric-key private public)]
+  (some? (.getAlgorithm symmetric)))
+"))))
+
 (deftest IntStream-test
   (is (pos? (bb nil "(.count (.codePoints \"woof🐕\"))"))))
 
