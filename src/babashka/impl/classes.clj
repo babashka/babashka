@@ -223,6 +223,7 @@
     java.net.http.WebSocket$Listener
     java.security.cert.X509Certificate
     java.security.cert.CertificateFactory
+    java.security.Signature
     javax.crypto.Cipher
     javax.crypto.KeyAgreement
     javax.crypto.Mac
@@ -783,6 +784,8 @@
                                    java.io.Console
                                    (instance? java.security.KeyPairGenerator v)
                                    java.security.KeyPairGenerator
+                                   (instance? java.security.Signature v)
+                                   java.security.Signature
                                    (instance? java.util.Set v)
                                    java.util.Set
                                    (instance? java.io.Closeable v)

@@ -131,3 +131,39 @@
 
 (deftest clojure-1_12-array-test
   (is (true? (bb nil "(instance? Class long/1)"))))
+
+(deftest keygen-test
+  (is (true?
+       (bb nil
+           '(do (ns keygen
+                  (:import [java.security KeyPairGenerator Signature]))
+
+                (defn generate-key-pair
+                  "Generates a public/private key pair."
+                  []
+                  (let [keygen (KeyPairGenerator/getInstance "RSA")]
+                    (.initialize keygen 2048)
+                    (.generateKeyPair keygen)))
+
+                (defn create-signature
+                  "Signs the given message using the private key."
+                  [private-key message]
+                  (let [signature (Signature/getInstance "SHA256withRSA")]
+                    (.initSign signature private-key)
+                    (.update signature (.getBytes message "UTF-8"))
+                    (.sign signature)))
+
+                (defn verify-signature
+                  "Verifies the given signed data using the public key."
+                  [public-key message signed-data]
+                  (let [signature (Signature/getInstance "SHA256withRSA")]
+                    (.initVerify signature public-key)
+                    (.update signature (.getBytes message "UTF-8"))
+                    (.verify signature signed-data)))
+
+                (let [key-pair (generate-key-pair)
+                      private-key (.getPrivate key-pair)
+                      public-key (.getPublic key-pair)
+                      message "This is a secret message"
+                      signed-data (create-signature private-key message)]
+                  (verify-signature public-key message signed-data)))))))
