@@ -166,4 +166,23 @@
                       public-key (.getPublic key-pair)
                       message "This is a secret message"
                       signed-data (create-signature private-key message)]
-                  (verify-signature public-key message signed-data)))))))
+                  (verify-signature public-key message signed-data))))))
+
+  (is (true?
+       (bb nil '(do (import
+                     '[java.security KeyPairGenerator]
+                     '[java.security.spec ECGenParameterSpec])
+
+                    (def keypair-algo "EC")
+                    (def keypair-curve "secp256r1")
+
+                    (defn keypair
+                      "Generates a new key pair with the given alias, using the keypair-algo and keypair-curve"
+                      []
+                      (let [keygen (KeyPairGenerator/getInstance keypair-algo)]
+                        (.initialize keygen (ECGenParameterSpec. keypair-curve))
+                        (.generateKeyPair keygen)))
+
+                    (let [kp (keypair)
+                          pk (.getPublic kp)]
+                      (bytes? (.getEncoded pk))))))))

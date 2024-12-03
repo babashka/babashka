@@ -786,6 +786,8 @@
                                    java.security.KeyPairGenerator
                                    (instance? java.security.Signature v)
                                    java.security.Signature
+                                   (instance? java.security.Key v)
+                                   java.security.Key
                                    (instance? java.util.Set v)
                                    java.util.Set
                                    (instance? java.io.Closeable v)
