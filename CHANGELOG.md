@@ -21,6 +21,7 @@ A preview of the next release can be installed from
 - Bump `babashka.cli` to `0.8.61`
 - Bump `clj-yaml` to `1.0.29`
 - [#1768](https://github.com/babashka/babashka/issues/1768): Add `taoensso.timbre` `color-str` function
+- Add `javax.crypto.KeyAgreement`, `java.security.KeyPairGenerator`, `java.security.KeyPair`, `java.security.spec.ECGenParameterSpec`, `java.security.spec.PKCS8EncodedKeySpec`, `java.security.spec.X509EncodedKeySpec`, `java.security.Signature`
 
 ## 1.12.195 (2024-11-12)
 
