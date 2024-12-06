@@ -91,7 +91,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: macos-12
+          - os: macos-13
             name: macos
             static: false
          #- os: ubuntu-latest
