@@ -497,6 +497,7 @@
           java.util.concurrent.CompletableFuture
           java.util.concurrent.Executors
           java.util.concurrent.TimeUnit
+          java.util.concurrent.CompletionStage
           java.util.jar.Attributes
           java.util.jar.Attributes$Name
           java.util.jar.JarFile
