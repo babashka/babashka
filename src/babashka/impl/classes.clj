@@ -128,6 +128,7 @@
     {:methods [{:name "aget"}
                {:name "aset"}
                {:name "aclone"}
+               {:name "iter"}
                ;; we expose this via the Compiler/LOADER dynamic var
                {:name "baseLoader"}]}
     clojure.lang.Compiler
