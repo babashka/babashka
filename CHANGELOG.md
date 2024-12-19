@@ -9,9 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-- [#1761] For compatibility with [Sieppari](https://github.com/metosin/sieppari), added the following entry in `babashka.impl.classes/classes`:
-  - Support `support clojure.lang.RT/iter` calls
-
+- [#1761] Support calling `clojure.lang.RT/iter`
 - [#1760] For compatibility with [Fireworks v0.10.3](https://github.com/paintparty/fireworks), added the following to `:instance-checks` entry in `babashka.impl.classes/classes`([@paintparty](https://github.com/paintparty))
     - `clojure.lang.PersistentArrayMap$TransientArrayMap`
     - `clojure.lang.PersistentHashMap$TransientHashMap`
