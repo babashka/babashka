@@ -209,3 +209,17 @@
                                             (into-array LinkOption []))
                       .permissions
                       type)))))))
+
+(deftest extended-attributes
+  (is (true?
+       (bb nil
+           '(do
+             (import
+              [java.nio.file Files LinkOption Path]
+              [java.nio.file.attribute UserDefinedFileAttributeView])
+             (instance? UserDefinedFileAttributeView
+                        (Files/getFileAttributeView (Path/of "test-resources/extended-attributes.txt"
+                                                             (into-array String []))
+                                                    UserDefinedFileAttributeView
+                                                    ^"[Ljava.nio.file.LinkOption;"
+                                                    (into-array LinkOption []))))))))
