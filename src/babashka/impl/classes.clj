@@ -408,6 +408,7 @@
                 java.nio.file.attribute.BasicFileAttributes
                 java.nio.file.attribute.FileAttribute
                 java.nio.file.attribute.FileTime
+                java.nio.file.attribute.PosixFileAttributes
                 java.nio.file.attribute.PosixFilePermission
                 java.nio.file.attribute.PosixFilePermissions])
           java.security.DigestInputStream
@@ -760,6 +761,8 @@
                                    java.net.URLClassLoader
                                    (instance? java.lang.ClassLoader v)
                                    java.lang.ClassLoader
+                                   (instance? java.nio.file.attribute.PosixFileAttributes v)
+                                   java.nio.file.attribute.PosixFileAttributes
                                    (instance? java.nio.file.attribute.BasicFileAttributes v)
                                    java.nio.file.attribute.BasicFileAttributes
                                    (instance? java.util.concurrent.Future v)
