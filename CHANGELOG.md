@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- [#1776] Add java.nio.file.attribute.PosixFileAttributes
 - [#1761] Support calling `clojure.lang.RT/iter`
 - [#1760] For compatibility with [Fireworks v0.10.3](https://github.com/paintparty/fireworks), added the following to `:instance-checks` entry in `babashka.impl.classes/classes`([@paintparty](https://github.com/paintparty))
     - `clojure.lang.PersistentArrayMap$TransientArrayMap`
