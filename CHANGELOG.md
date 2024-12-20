@@ -9,10 +9,11 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-- [#1777] Add java.nio.file.attribute.UserDefinedFileAttributeView
-- [#1776] Add java.nio.file.attribute.PosixFileAttributes
-- [#1761] Support calling `clojure.lang.RT/iter`
-- [#1760] For compatibility with [Fireworks v0.10.3](https://github.com/paintparty/fireworks), added the following to `:instance-checks` entry in `babashka.impl.classes/classes`([@paintparty](https://github.com/paintparty))
+- [#1771](https://github.com/babashka/babashka/issues/1771): `*e*` in REPL should contain exception thrown by user, not a wrapped one
+- [#1777](https://github.com/babashka/babashka/issues/1777) Add java.nio.file.attribute.UserDefinedFileAttributeView
+- [#1776](https://github.com/babashka/babashka/issues/1776) Add java.nio.file.attribute.PosixFileAttributes
+- [#1761](https://github.com/babashka/babashka/issues/1761) Support calling `clojure.lang.RT/iter`
+- [#1760](https://github.com/babashka/babashka/issues/1760) For compatibility with [Fireworks v0.10.3](https://github.com/paintparty/fireworks), added the following to `:instance-checks` entry in `babashka.impl.classes/classes`([@paintparty](https://github.com/paintparty))
     - `clojure.lang.PersistentArrayMap$TransientArrayMap`
     - `clojure.lang.PersistentHashMap$TransientHashMap`
     - `clojure.lang.PersistentVector$TransientVector`
