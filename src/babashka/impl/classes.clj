@@ -394,6 +394,7 @@
                 java.nio.file.FileAlreadyExistsException
                 java.nio.file.FileSystem
                 java.nio.file.FileSystems
+                java.nio.file.FileStore
                 java.nio.file.FileVisitor
                 java.nio.file.FileVisitOption
                 java.nio.file.FileVisitResult
@@ -410,7 +411,8 @@
                 java.nio.file.attribute.FileTime
                 java.nio.file.attribute.PosixFileAttributes
                 java.nio.file.attribute.PosixFilePermission
-                java.nio.file.attribute.PosixFilePermissions])
+                java.nio.file.attribute.PosixFilePermissions
+                java.nio.file.attribute.UserDefinedFileAttributeView])
           java.security.DigestInputStream
           java.security.KeyFactory
           java.security.KeyPairGenerator
@@ -728,6 +730,8 @@
                                    java.nio.file.Path
                                    (instance? java.nio.file.FileSystem v)
                                    java.nio.file.FileSystem
+                                   (instance? java.nio.file.FileStore v)
+                                   java.nio.file.FileStore
                                    (instance? java.nio.file.PathMatcher v)
                                    java.nio.file.PathMatcher
                                    (instance? java.util.stream.Stream v)
