@@ -410,7 +410,8 @@
                 java.nio.file.attribute.FileTime
                 java.nio.file.attribute.PosixFileAttributes
                 java.nio.file.attribute.PosixFilePermission
-                java.nio.file.attribute.PosixFilePermissions])
+                java.nio.file.attribute.PosixFilePermissions
+                java.nio.file.attribute.UserDefinedFileAttributeView])
           java.security.DigestInputStream
           java.security.KeyFactory
           java.security.KeyPairGenerator
@@ -765,6 +766,8 @@
                                    java.nio.file.attribute.PosixFileAttributes
                                    (instance? java.nio.file.attribute.BasicFileAttributes v)
                                    java.nio.file.attribute.BasicFileAttributes
+                                   (instance? java.nio.file.attribute.UserDefinedFileAttributeView v)
+                                   java.nio.file.attribute.UserDefinedFileAttributeView
                                    (instance? java.util.concurrent.Future v)
                                    java.util.concurrent.Future
                                    (instance? java.util.concurrent.ScheduledExecutorService v)
