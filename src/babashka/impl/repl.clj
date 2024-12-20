@@ -43,7 +43,7 @@
   "Inspired by skip-if-eol from clojure.main."
   [s]
   (let [c (r/read-char s)]
-    (when-not (= c \newline)
+    (when-not (= \newline c )
       (r/unread s c))))
 
 (defn repl-read [sci-ctx in-stream _request-prompt request-exit]

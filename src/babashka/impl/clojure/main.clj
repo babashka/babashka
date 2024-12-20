@@ -118,8 +118,9 @@ by default when a new command-line REPL is started."} repl-requires
                                                   :file "<repl>"
                                                   :type :sci/error) e)))))))
             (catch Throwable e
-              (caught e)
-              (set! *e e))))]
+              (let [e' (ex-cause e)]
+                (caught e)
+                (set! *e e')))))]
     (with-bindings
       (try
         (init)
