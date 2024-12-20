@@ -195,16 +195,17 @@
                       (iterator-seq (clojure.lang.RT/iter [1 2 3])))))))
 
 (deftest posix-file-attributes
-  (= 'java.util.HashSet
-     (bb nil
-         '(do
-           (import
-            [java.nio.file Files LinkOption Path]
-            [java.nio.file.attribute PosixFileAttributes])
-           (-> (Files/readAttributes (Path/of "test-resources/posix-file-attributes.txt"
-                                              (into-array String []))
-                                     PosixFileAttributes
-                                     ^"[Ljava.nio.file.LinkOption;"
-                                     (into-array LinkOption []))
-               .permissions
-               type)))))
+  (when-not test-utils/windows?
+    (is (= 'java.util.HashSet
+           (bb nil
+               '(do
+                  (import
+                   [java.nio.file Files LinkOption Path]
+                   [java.nio.file.attribute PosixFileAttributes])
+                  (-> (Files/readAttributes (Path/of "test-resources/posix-file-attributes.txt"
+                                                     (into-array String []))
+                                            PosixFileAttributes
+                                            ^"[Ljava.nio.file.LinkOption;"
+                                            (into-array LinkOption []))
+                      .permissions
+                      type)))))))
