@@ -19,7 +19,7 @@ esac
 
 GRAALVM_DIR_NAME="graalvm-$GRAALVM_VERSION"
 GRAALVM_FILENAME="graalvm-jdk-${GRAALVM_VERSION}_${GRAALVM_PLATFORM}-${GRAALVM_ARCH}_bin.tar.gz"
-DOWNLOAD_URL="https://download.oracle.com/graalvm/23/archive/${GRAALVM_FILENAME}"
+DOWNLOAD_URL="https://download.oracle.com/graalvm/${GRAALVM_VERSION}/archive/${GRAALVM_FILENAME}"
 
 pushd "$INSTALL_DIR" >/dev/null
 
