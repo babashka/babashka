@@ -7,11 +7,11 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## Unreleased
+## 1.12.196 (2024-12-24)
 
 - [#1771](https://github.com/babashka/babashka/issues/1771): `*e*` in REPL should contain exception thrown by user, not a wrapped one
-- [#1777](https://github.com/babashka/babashka/issues/1777) Add java.nio.file.attribute.UserDefinedFileAttributeView
-- [#1776](https://github.com/babashka/babashka/issues/1776) Add java.nio.file.attribute.PosixFileAttributes
+- [#1777](https://github.com/babashka/babashka/issues/1777) Add `java.nio.file.attribute.UserDefinedFileAttributeView`
+- [#1776](https://github.com/babashka/babashka/issues/1776) `Add java.nio.file.attribute.PosixFileAttributes`
 - [#1761](https://github.com/babashka/babashka/issues/1761) Support calling `clojure.lang.RT/iter`
 - [#1760](https://github.com/babashka/babashka/issues/1760) For compatibility with [Fireworks v0.10.3](https://github.com/paintparty/fireworks), added the following to `:instance-checks` entry in `babashka.impl.classes/classes`([@paintparty](https://github.com/paintparty))
     - `clojure.lang.PersistentArrayMap$TransientArrayMap`
@@ -25,7 +25,17 @@ A preview of the next release can be installed from
 - Bump `babashka.cli` to `0.8.61`
 - Bump `clj-yaml` to `1.0.29`
 - [#1768](https://github.com/babashka/babashka/issues/1768): Add `taoensso.timbre` `color-str` function
-- Add `javax.crypto.KeyAgreement`, `java.security.KeyPairGenerator`, `java.security.KeyPair`, `java.security.spec.ECGenParameterSpec`, `java.security.spec.PKCS8EncodedKeySpec`, `java.security.spec.X509EncodedKeySpec`, `java.security.Signature`
+- Add classes:
+  - `javax.crypto.KeyAgreement`
+  - `java.security.KeyPairGenerator`
+  - `java.security.KeyPair`
+  - `java.security.spec.ECGenParameterSpec`
+  - `java.security.spec.PKCS8EncodedKeySpec`
+  - `java.security.spec.X509EncodedKeySpec`
+  - `java.security.Signature`
+- Add `java.util.concurrent.CompletionStage`
+- Bump `core.async` to `1.7.701`
+- Bump `org.babashka/cli` to `0.8.162`
 
 ## 1.12.195 (2024-11-12)
 
