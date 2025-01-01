@@ -7,6 +7,9 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## Unreleased
+- [#1785](https://github.com/babashka/babashka/issues/1785): Allow subclasses of `Throwable` to have instance methods invoked ([@bobisageek](https://github.com/bobisageek)) 
+
 ## 1.12.196 (2024-12-24)
 
 - [#1771](https://github.com/babashka/babashka/issues/1771): `*e*` in REPL should contain exception thrown by user, not a wrapped one
