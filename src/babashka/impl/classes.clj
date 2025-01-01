@@ -802,6 +802,8 @@
                                    java.io.Closeable
                                    (instance? java.util.Collection v)
                                    java.util.Collection
+                                   (instance? java.lang.Throwable v)
+                                   java.lang.Throwable
                                    ;; keep commas for merge friendliness
                                    )]
                      ;; (prn :res res)

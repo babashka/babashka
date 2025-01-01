@@ -223,3 +223,17 @@
                                                     UserDefinedFileAttributeView
                                                     ^"[Ljava.nio.file.LinkOption;"
                                                     (into-array LinkOption []))))))))
+
+;; exercise a sampling of the superclass resolutions from the :public-class fn in 
+;; babashka.impl.classes/gen-class-map
+(deftest public-class-resolutions
+  (testing "Charset"
+    (is (= "UTF-8" (bb nil "(.displayName (java.nio.charset.Charset/forName  \"UTF-8\"))"))))
+  (testing "InputStream"
+    (is (zero? (bb nil "(with-open [is (java.io.InputStream/nullInputStream)]
+                           (.available is))"))))
+  (testing "Throwable"
+    ; compare output from ex-message to calling .getMessage
+    (let [return-throwable "(try (yaml/parse-string \"abc: def: ghi\") (catch Exception e e))"]
+      (is (= (bb nil (str "(ex-message " return-throwable ")"))
+             (bb nil (str "(.getMessage " return-throwable ")")))))))
