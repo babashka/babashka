@@ -8,7 +8,8 @@ A preview of the next release can be installed from
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
 ## Unreleased
-- [#1785](https://github.com/babashka/babashka/issues/1785): Allow subclasses of `Throwable` to have instance methods invoked ([@bobisageek](https://github.com/bobisageek)) 
+- [#1785](https://github.com/babashka/babashka/issues/1785): Allow subclasses of `Throwable` to have instance methods invoked ([@bobisageek](https://github.com/bobisageek))
+- [#1788](https://github.com/babashka/babashka/issues/1788): records should have fields all set to `nil`
 
 ## 1.12.196 (2024-12-24)
 
