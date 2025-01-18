@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 - [#1785](https://github.com/babashka/babashka/issues/1785): Allow subclasses of `Throwable` to have instance methods invoked ([@bobisageek](https://github.com/bobisageek)) 
+- Support FreeBSD in `./install` via openjdk
 
 ## 1.12.196 (2024-12-24)
 
