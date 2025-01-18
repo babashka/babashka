@@ -173,8 +173,6 @@ if [[ "$platform" == "bsd" ]]; then
   lib_dir=$(readlink -f $lib_dir)
 fi
 
-echo after
-
 # Running this part in a subshell so when it finishes we go back to the previous directory
 mkdir -p "$download_dir" && (
     cd "$download_dir"
