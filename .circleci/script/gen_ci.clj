@@ -112,7 +112,7 @@ script/uberjar
 cp $jar /tmp/release
 # openjdk standalone
 GRAALVM_HOME= script/uberjar
-cp $jar /tmp/release/target/babashka-$VERSION-standalone-openjdk.jar
+cp $jar /tmp/release/babashka-$VERSION-standalone-openjdk.jar
 # reflection.json
 java -jar $jar script/reflection.clj
 reflection=\"babashka-$VERSION-reflection.json\"
