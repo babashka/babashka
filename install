@@ -192,8 +192,8 @@ mkdir -p "$download_dir" && (
     fi
 
     if [[ "$platform" == "bsd" ]]; then
-      echo '#!/usr/bin/env bash'                                       >  "bb"
-      echo '/usr/local/openjdk23/bin/java -jar '$lib_dir'/bb.jar "$@"' >> "bb"
+      echo '#!/usr/bin/env bash'                                         >  "bb"
+      echo '/usr/local/openjdk23/bin/java -jar "'$lib_dir'/bb.jar" "$@"' >> "bb"
       chmod +x "bb"
 
       if [ -f "$lib_dir/bb.jar" ]; then
