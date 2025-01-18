@@ -7,17 +7,20 @@ checksum=""
 static_binary="false"
 default_install_dir="/usr/local/bin"
 install_dir="$default_install_dir"
+default_lib_dir="/usr/local/lib/babashka"
+lib_dir="$default_lib_dir"
 download_dir=""
 dev_build=""
 
 print_help() {
-    echo "Installs latest (or specific) version of babashka. Installation directory defaults to /usr/local/bin."
+    echo "Installs latest (or specific) version of babashka. Installation directory defaults to ${default_install_dir}."
     echo -e
     echo "Usage:"
-    echo "install [--dir <dir>] [--download-dir <download-dir>] [--version <version>] [--checksum <checksum>] [--static]"
+    echo "install [--dir <dir>] [--download-dir <download-dir>] [--version <version>] [--checksum <checksum>] [--static] [--lib <lib-dir>]"
     echo -e
     echo "Defaults:"
     echo " * Installation directory: ${default_install_dir}"
+    echo " * Lib directory (BSD only): ${default_lib_dir}"
     echo " * Download directory: temporary"
     if [[ -z "$checksum" ]]; then
         echo " * Checksum: no"
@@ -35,6 +38,11 @@ do
     case "$key" in
         --dir)
             install_dir="$2"
+            shift
+            shift
+            ;;
+        --lib)
+            lib_dir="$2"
             shift
             shift
             ;;
@@ -89,6 +97,7 @@ fi
 case "$(uname -s)" in
     Linux*)  platform=linux;;
     Darwin*) platform=macos;;
+    FreeBSD*) platform=bsd;;
 esac
 
 # Ugly ugly conversion of version to a comparable number
@@ -115,7 +124,10 @@ case "$(uname -m)" in
        ;;
 esac
 
-if [[ 10#$vernum -le 10#000002013 ]]; then
+if [[ "$platform" == "bsd" ]]; then
+    ext=
+    util=
+elif [[ 10#$vernum -le 10#000002013 ]]; then
     ext="zip"
     util="$(which unzip) -qqo"
 else
@@ -125,6 +137,8 @@ fi
 
 case "$platform-$static_binary" in
     linux-true) filename="babashka-$version-$platform-$arch-static."$ext
+                ;;
+    bsd-*)      filename="babashka-$version-standalone-openjdk.jar"
                 ;;
     *-true)     >&2 echo "Static binaries are only available in Linux platform! Using the non-static one..."
                 filename="babashka-$version-$platform-$arch."$ext
@@ -154,12 +168,22 @@ else
     exit 1
 fi
 
+if [[ "$platform" == "bsd" ]]; then
+  mkdir -p "$lib_dir"
+  lib_dir=$(readlink -f $lib_dir)
+fi
+
+echo after
+
 # Running this part in a subshell so when it finishes we go back to the previous directory
 mkdir -p "$download_dir" && (
     cd "$download_dir"
     echo -e "Downloading $download_url to $download_dir"
 
-    curl -o "$filename" -sL "$download_url"
+    if [[ $(curl -o "$filename" -sL "$download_url" -w "%{http_code}") -ne 200 ]]; then
+      >&2 echo "Failed to download $download_url"
+      exit 1
+    fi
     if [[ -n "$checksum" ]]; then
         if ! echo "$checksum *$filename" | $sha256sum_cmd --check --status; then
             >&2 echo "Failed checksum on $filename"
@@ -168,8 +192,21 @@ mkdir -p "$download_dir" && (
             exit 1
         fi
     fi
-    $util "$filename"
-    rm -f "$filename"
+
+    if [[ "$platform" == "bsd" ]]; then
+      echo '#!/usr/bin/env bash'                                       >  "bb"
+      echo '/usr/local/openjdk23/bin/java -jar '$lib_dir'/bb.jar "$@"' >> "bb"
+      chmod +x "bb"
+
+      if [ -f "$lib_dir/bb.jar" ]; then
+          echo "Moving $lib_dir/bb.jar to $lib_dir/bb.jar.old"
+          mv -f "$lib_dir/bb.jar" "$lib_dir/bb.jar.old"
+      fi
+      mv "$filename" "$lib_dir/bb.jar"
+    elif [[ -n "$util" ]]; then
+      $util "$filename"
+      rm -f "$filename"
+    fi
 )
 
 if [[ "$download_dir" != "$install_dir" ]]

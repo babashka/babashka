@@ -226,9 +226,31 @@ $ chmod +x install
 $ ./install --static
 ```
 
+### FreeBSD
+
+> Note: babashka has severe performance penalties on FreeBSD as it runs on openjdk
+
+Requirements: OpenJDK 23
+
+``` shell
+$ pkg install openjdk23
+$ curl -sLO https://raw.githubusercontent.com/babashka/babashka/master/install
+$ chmod +x install
+$ ./install
+```
+
+GraalVM does not support BSD, hence startup time will extremely slow under OpenJDK compared to native binaries.
+
+The `bb` command is thin wrapper calling `/usr/local/openjdk23/bin/java -jar <lib>/bb.jar "$@"`.
+The lib directory can be configured with `--lib` relative to the current directory.
+
+``` shell
+$ ./install --lib lib/babashka
+```
+
 ### Installer script
 
-Install via the installer script for linux and macOS:
+Install via the installer script for linux, macOS and BSD:
 
 ``` shell
 $ curl -sLO https://raw.githubusercontent.com/babashka/babashka/master/install
@@ -246,20 +268,20 @@ $ ./install --dir .
 To install a specific version, the script also supports `--version`:
 
 ``` shell
-$ ./install --dir . --version 0.4.1
+$ ./install --dir . --version 1.12.196
 ```
 
 To force the download of the zip archive to a different directory than `/tmp`
 use the `--download-dir` argument:
 
 ``` shell
-$ ./install --dir . --version 0.4.1 --download-dir .
+$ ./install --dir . --version 1.12.196 --download-dir .
 ```
 
 On Linux, if you want to install the static binary version:
 
 ``` shell
-$ ./install --dir . --version 0.4.1 --download-dir . --static
+$ ./install --dir . --version 1.12.196 --download-dir . --static
 ```
 
 In case you want to check the download, you can use the `--checksum` option.

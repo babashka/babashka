@@ -78,7 +78,7 @@
   (gen-job
    shorted?
    (ordered-map
-    :docker            [{:image "circleci/clojure:openjdk-11-lein-2.9.8-bullseye"}]
+    :docker            [{:image "circleci/clojure:openjdk-23-lein-2.9.8-bullseye"}]
     :working_directory "~/repo"
     :environment       {:LEIN_ROOT         "true"
                         :BABASHKA_PLATFORM "linux"
@@ -105,12 +105,15 @@ script/test\nscript/run_lib_tests")
       (run
         "Create uberjar"
         "mkdir -p /tmp/release
-script/uberjar
 VERSION=$(cat resources/BABASHKA_VERSION)
 jar=target/babashka-$VERSION-standalone.jar
+# graalvm standalone
+script/uberjar
 cp $jar /tmp/release
-export PATH=$GRAALVM_HOME/bin:$PATH
-export JAVA_HOME=$GRAALVM_HOME
+# openjdk standalone
+GRAALVM_HOME= script/uberjar
+cp $jar /tmp/release/target/babashka-$VERSION-standalone-openjdk.jar
+# reflection.json
 java -jar $jar script/reflection.clj
 reflection=\"babashka-$VERSION-reflection.json\"
 java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$jar\"
