@@ -230,10 +230,10 @@ $ ./install --static
 
 > Note: babashka has severe performance penalties on FreeBSD as it runs on openjdk
 
-Requirements: OpenJDK 23
+Requirements: OpenJDK 23, Bash, Curl
 
 ``` shell
-$ pkg install openjdk23
+$ pkg install openjdk23 bash curl
 $ curl -sLO https://raw.githubusercontent.com/babashka/babashka/master/install
 $ chmod +x install
 $ ./install
