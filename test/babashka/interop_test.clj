@@ -224,7 +224,7 @@
                                                     ^"[Ljava.nio.file.LinkOption;"
                                                     (into-array LinkOption []))))))))
 
-;; exercise a sampling of the superclass resolutions from the :public-class fn in 
+;; exercise a sampling of the superclass resolutions from the :public-class fn in
 ;; babashka.impl.classes/gen-class-map
 (deftest public-class-resolutions
   (testing "Charset"
@@ -236,4 +236,6 @@
     ; compare output from ex-message to calling .getMessage
     (let [return-throwable "(try (yaml/parse-string \"abc: def: ghi\") (catch Exception e e))"]
       (is (= (bb nil (str "(ex-message " return-throwable ")"))
-             (bb nil (str "(.getMessage " return-throwable ")")))))))
+             (bb nil (str "(.getMessage " return-throwable ")"))))))
+  (testing "jsoup Element"
+    (is (= "form" (bb nil "(.tagName (first (.getElementsByTag (org.jsoup.Jsoup/parseBodyFragment \"<form></form>\") \"form\")))")))))
