@@ -804,6 +804,8 @@
                                    java.util.Collection
                                    (instance? java.lang.Throwable v)
                                    java.lang.Throwable
+                                   (instance? org.jsoup.nodes.Element v)
+                                   org.jsoup.nodes.Element
                                    ;; keep commas for merge friendliness
                                    )]
                      ;; (prn :res res)

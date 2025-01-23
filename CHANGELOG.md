@@ -8,7 +8,10 @@ A preview of the next release can be installed from
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
 ## Unreleased
-- [#1785](https://github.com/babashka/babashka/issues/1785): Allow subclasses of `Throwable` to have instance methods invoked ([@bobisageek](https://github.com/bobisageek)) 
+
+- [#1785](https://github.com/babashka/babashka/issues/1785): Allow subclasses of `Throwable` to have instance methods invoked ([@bobisageek](https://github.com/bobisageek))
+- [#1791](https://github.com/babashka/babashka/issues/1791): interop problem on Jsoup form element
+
 
 ## 1.12.196 (2024-12-24)
 
