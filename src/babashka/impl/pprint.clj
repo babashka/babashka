@@ -2,7 +2,8 @@
   {:no-doc true}
   (:require [clojure.pprint :as pprint]
             [sci.core :as sci]
-            [sci.pprint]))
+            [sci.pprint]
+            [babashka.impl.clojure.core.async]))
 
 (defonce patched? (volatile! false))
 

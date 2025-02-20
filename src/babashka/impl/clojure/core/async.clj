@@ -2,13 +2,38 @@
   {:no-doc true}
   (:require [clojure.core.async :as async]
             [clojure.core.async.impl.protocols :as protocols]
+            [clojure.core.async.impl.dispatch :as dispatch]
             [sci.core :as sci :refer [copy-var]]
             [sci.impl.copy-vars :refer [macrofy]]
-            [sci.impl.vars :as vars]))
+            [sci.impl.vars :as vars])
+  (:import [java.util.concurrent Executors ExecutorService ThreadFactory]))
 
 (set! *warn-on-reflection* true)
 
-(def ^java.util.concurrent.Executor executor @#'async/thread-macro-executor)
+#_(def ^java.util.concurrent.Executor executor @#'async/thread-macro-executor)
+(def executor-for
+  "Given a workload tag, returns an ExecutorService instance and memoizes the result. By
+  default, core.async will defer to a user factory (if provided via sys prop) or construct
+  a specialized ExecutorService instance for each tag :io, :compute, and :mixed. When
+  given the tag :core-async-dispatch it will default to the executor service for :io."
+  (memoize
+   (fn ^ExecutorService [workload]
+     (let [sysprop-factory nil #_(when-let [esf (System/getProperty "clojure.core.async.executor-factory")]
+                             (requiring-resolve (symbol esf)))
+           sp-exec (and sysprop-factory (sysprop-factory workload))]
+       (or sp-exec
+           (if (= workload :core-async-dispatch)
+             (executor-for :io)
+             (@#'dispatch/create-default-executor workload)))))))
+
+(alter-var-root #'dispatch/executor-for (constantly executor-for))
+
+(defn exec
+  [^Runnable r workload]
+  (let [^ExecutorService e (executor-for workload)]
+    (.execute e r)))
+
+(alter-var-root #'dispatch/exec (constantly exec))
 
 (def ^java.util.concurrent.Executor virtual-executor
   (try (eval '(java.util.concurrent.Executors/newVirtualThreadPerTaskExecutor))
@@ -17,20 +42,24 @@
 (defn thread-call
   "Executes f in another thread, returning immediately to the calling
   thread. Returns a channel which will receive the result of calling
-  f when completed, then close."
-  [f]
-  (let [c (async/chan 1)]
-    (let [binds (vars/get-thread-binding-frame)]
-      (.execute executor
-                (fn []
-                  (vars/reset-thread-binding-frame binds)
-                  (try
-                    (let [ret (f)]
-                      (when-not (nil? ret)
-                        (async/>!! c ret)))
-                    (finally
-                      (async/close! c))))))
-    c))
+  f when completed, then close. workload is a keyword that describes
+  the work performed by f, where:
+
+  :io - may do blocking I/O but must not do extended computation
+  :compute - must not ever block
+  :mixed - anything else (default)
+
+  when workload not supplied, defaults to :mixed"
+  ([f] (thread-call f :mixed))
+  ([f workload]
+   (let [c (async/chan 1)
+         returning-to-chan (fn [bf]
+                             #(try
+                                (when-some [ret (bf)]
+                                  (async/>!! c ret))
+                                (finally (async/close! c))))]
+     (-> f bound-fn* returning-to-chan (exec workload))
+     c)))
 
 (defn -vthread-call
   "Executes f in another virtual thread, returning immediately to the calling
