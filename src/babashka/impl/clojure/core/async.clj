@@ -54,15 +54,12 @@
   ([f] (thread-call f :mixed))
   ([f workload]
    (let [c (async/chan 1)
-         binds (vars/get-thread-binding-frame)
          returning-to-chan (fn [bf]
                              #(try
                                 (when-some [ret (bf)]
                                   (async/>!! c ret))
                                 (finally (async/close! c))))
-         f (fn []
-             (vars/reset-thread-binding-frame binds)
-             (f))]
+         f (vars/binding-conveyor-fn f)]
      (-> f #_bound-fn* returning-to-chan (dispatch/exec workload))
      c)))
 
@@ -72,16 +69,14 @@
   f when completed, then close."
   [f]
   (let [c (async/chan 1)]
-    (let [binds (vars/get-thread-binding-frame)]
+    (let [returning-to-chan (fn [bf]
+                              #(try
+                                 (when-some [ret (bf)]
+                                   (async/>!! c ret))
+                                 (finally (async/close! c))))
+          f (vars/binding-conveyor-fn f)]
       (.execute virtual-executor
-                (fn []
-                  (vars/reset-thread-binding-frame binds)
-                  (try
-                    (let [ret (f)]
-                      (when-not (nil? ret)
-                        (async/>!! c ret)))
-                    (finally
-                      (async/close! c))))))
+                (-> f returning-to-chan)))
     c))
 
 (defn thread
