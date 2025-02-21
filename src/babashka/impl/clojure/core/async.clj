@@ -28,8 +28,9 @@
 
 (alter-var-root #'dispatch/executor-for (constantly executor-for))
 
-(defn exec
+#_#_(defn exec
   [^Runnable r workload]
+  (prn :r r :w workload)
   (let [^ExecutorService e (executor-for workload)]
     (.execute e r)))
 
@@ -53,12 +54,16 @@
   ([f] (thread-call f :mixed))
   ([f workload]
    (let [c (async/chan 1)
+         binds (vars/get-thread-binding-frame)
          returning-to-chan (fn [bf]
                              #(try
                                 (when-some [ret (bf)]
                                   (async/>!! c ret))
-                                (finally (async/close! c))))]
-     (-> f bound-fn* returning-to-chan (exec workload))
+                                (finally (async/close! c))))
+         f (fn []
+             (vars/reset-thread-binding-frame binds)
+             (f))]
+     (-> f #_bound-fn* returning-to-chan (dispatch/exec workload))
      c)))
 
 (defn -vthread-call
@@ -81,7 +86,7 @@
 
 (defn thread
   [_ _ & body]
-  `(~'clojure.core.async/thread-call (fn [] ~@body)))
+  `(~'clojure.core.async/thread-call (fn [] ~@body) :mixed))
 
 (defn -vthread
   [_ _ & body]
