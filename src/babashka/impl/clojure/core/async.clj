@@ -83,6 +83,10 @@
   [_ _ & body]
   `(~'clojure.core.async/thread-call (fn [] ~@body) :mixed))
 
+(defn io-thread
+  [_ _ & body]
+  `(~'clojure.core.async/thread-call (fn [] ~@body) :io))
+
 (defn -vthread
   [_ _ & body]
   `(~'clojure.core.async/-vthread-call (fn [] ~@body)))
@@ -157,6 +161,7 @@
    'take! (copy-var async/take! core-async-namespace)
    'tap (copy-var async/tap core-async-namespace)
    'thread (macrofy 'thread thread core-async-namespace)
+   'io-thread (macrofy 'io-thread io-thread core-async-namespace)
    'thread-call (copy-var thread-call core-async-namespace)
    '-vthread-call (copy-var -vthread-call core-async-namespace)
    'timeout (copy-var timeout core-async-namespace)
