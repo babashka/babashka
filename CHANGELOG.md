@@ -7,14 +7,13 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## Unreleased
+## 1.12.197 (2024-02-28)
 
 - [#1785](https://github.com/babashka/babashka/issues/1785): Allow subclasses of `Throwable` to have instance methods invoked ([@bobisageek](https://github.com/bobisageek))
 - [#1791](https://github.com/babashka/babashka/issues/1791): interop problem on Jsoup form element
-- #1793: Bump `rewrite-clj` to `1.1.49`
+- [#1793](https://github.com/babashka/babashka/issues/1793): Bump `rewrite-clj` to `1.1.49` (fixes parsing of `foo//` among other things)
 - Bump `deps.clj`
 - Bump `fs`
-
 
 ## 1.12.196 (2024-12-24)
 
