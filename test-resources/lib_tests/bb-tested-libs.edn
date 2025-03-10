@@ -193,7 +193,7 @@
                      :test-namespaces [plumbing.core-test],
                      :test-paths ["test"]}
  org.clj-commons/hickory {:git-url "https://github.com/clj-commons/hickory"
-                          :git-sha "27ee318928b6748075fa9954740afedf916ff795"
+                          :git-sha "749ba998aa64f19092876cda967e6c562c56b81d"
                           :test-paths ["test/cljc"]
                           :test-namespaces [hickory.test.core
                                             hickory.test.convert

@@ -174,7 +174,7 @@
                          prismatic/plumbing {:git/url "https://github.com/plumatic/plumbing",
                                              :git/sha "424bc704f2db422de34269c139a5494314b3a43b"}
                          org.clj-commons/hickory {:git/url "https://github.com/clj-commons/hickory"
-                                                  :git/sha "27ee318928b6748075fa9954740afedf916ff795"}}
+                                                  :git/sha "749ba998aa64f19092876cda967e6c562c56b81d"}}
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil}}
            :clj-nvd
