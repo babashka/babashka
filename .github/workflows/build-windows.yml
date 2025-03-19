@@ -53,10 +53,10 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install clojure tools
-        uses: DeLaGuardo/setup-clojure@5.0
+        uses: DeLaGuardo/setup-clojure@13.2
         with:
           cli: latest
-          lein: 2.9.8
+          lein: latest
 
       - name: Babashka version
         id: babashka-version
