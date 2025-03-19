@@ -56,7 +56,7 @@ jobs:
         uses: DeLaGuardo/setup-clojure@13.2
         with:
           cli: latest
-          lein: latest
+          # lein: latest -- skipped because this uses some PS bullshit
 
       - name: Babashka version
         id: babashka-version
@@ -68,6 +68,9 @@ jobs:
       - name: Build
         shell: cmd
         run: |
+              powershell -Command "(New-Object Net.WebClient).DownloadFile('https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein.bat', 'lein.bat')"
+              call lein self-install
+
               set GRAALVM_HOME=%JAVA_HOME%
               call script/uberjar.bat
 
