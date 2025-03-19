@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Bump GraalVM to `24`
 - Bump SCI to `0.9.45`
 - Bump edamame to `1.4.28`
 
