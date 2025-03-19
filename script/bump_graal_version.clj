@@ -45,7 +45,6 @@
    "appveyor.yml"
    "project.clj"
    "script/bump_graal_version.clj"
-   ".circleci/script/short_ci.clj"
    ".cirrus.yml"
    "script/install-graalvm"])
 
@@ -55,7 +54,7 @@
 ;; OR
 ;;
 ;; We could have them as environment variables
-(def current-graal-version "23")
+(def current-graal-version "24")
 
 (def cl-options
   [["-g" "--graal VERSION" "graal version"]
