@@ -76,7 +76,6 @@
         (add-classpath (str (fs/file git-dir p)))))
     (when-not (and skip-windows (windows?))
       (prn :branch (current-branch))
-      (prn :head-ref (System/getenv "GITHUB_HEAD_REF"))
       (prn (System/getenv))
       (if (and flaky (#{"main" "master"} (current-branch)))
         (println "Skipping" tns "for main branch because it's marked flaky")
