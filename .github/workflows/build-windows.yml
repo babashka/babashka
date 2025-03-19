@@ -68,6 +68,7 @@ jobs:
       - name: Build
         shell: cmd
         run: |
+              set GRAALVM_HOME=%JAVA_HOME%
               call script/uberjar.bat
 
               call script/compile.bat
