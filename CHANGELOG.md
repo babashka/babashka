@@ -17,6 +17,7 @@ A preview of the next release can be installed from
 
 - [#1785](https://github.com/babashka/babashka/issues/1785): Allow subclasses of `Throwable` to have instance methods invoked ([@bobisageek](https://github.com/bobisageek))
 - [#1791](https://github.com/babashka/babashka/issues/1791): interop problem on Jsoup form element
+- Bump core.async to `1.8.735`
 - [#1793](https://github.com/babashka/babashka/issues/1793): Bump `rewrite-clj` to `1.1.49` (fixes parsing of `foo//` among other things)
 - Bump `deps.clj`
 - Bump `fs`
