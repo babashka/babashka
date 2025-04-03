@@ -25,7 +25,7 @@
         babashka/babashka.curl {:local/root "babashka.curl"}
         babashka/fs {:local/root "fs"}
         babashka/babashka.core {:local/root "babashka.core"}
-        org.clojure/core.async {:mvn/version "1.8.718-beta2"},
+        org.clojure/core.async {:mvn/version "1.8.735"},
         org.clojure/tools.cli {:mvn/version "1.0.214"},
         org.clojure/data.csv {:mvn/version "1.0.0"},
         cheshire/cheshire {:mvn/version "5.13.0"}
