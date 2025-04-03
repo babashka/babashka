@@ -22,7 +22,7 @@
                    :flaky :flaky}
   :jvm-opts ["--enable-preview"]
   :dependencies [[org.clojure/clojure "1.12.0"]
-                 [borkdude/edamame "1.4.27"]
+                 [borkdude/edamame "1.4.29"]
                  [org.clojure/tools.cli "1.0.214"]
                  [cheshire "5.13.0"]
                  [nrepl/bencode "1.2.0"]
@@ -36,7 +36,7 @@
                  [insn/insn "0.5.2"]
                  [org.babashka/cli "0.8.62"]
                  [org.babashka/http-client "0.4.22"]
-                 [org.jsoup/jsoup "1.18.1"]
+                 [org.jsoup/jsoup "1.19.1"]
                  [borkdude/graal.locking "0.0.2"]]
   :plugins       [[org.kipz/lein-meta-bom "0.1.1"]]
   :metabom {:jar-name "metabom.jar"}

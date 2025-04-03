@@ -9,10 +9,16 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Bump GraalVM to `24`
+- Bump SCI to `0.9.45`
+- Bump edamame to `1.4.28`
+
+## 1.12.197 (2024-02-28)
+
 - [#1785](https://github.com/babashka/babashka/issues/1785): Allow subclasses of `Throwable` to have instance methods invoked ([@bobisageek](https://github.com/bobisageek))
 - [#1791](https://github.com/babashka/babashka/issues/1791): interop problem on Jsoup form element
-- [#1793](https://github.com/babashka/babashka/issues/1793): Bump `rewrite-clj` to `1.1.49`
 - Bump core.async to `1.8.735`
+- [#1793](https://github.com/babashka/babashka/issues/1793): Bump `rewrite-clj` to `1.1.49` (fixes parsing of `foo//` among other things)
 - Bump `deps.clj`
 - Bump `fs`
 

@@ -75,6 +75,8 @@
       (doseq [p test-paths]
         (add-classpath (str (fs/file git-dir p)))))
     (when-not (and skip-windows (windows?))
+      (prn :branch (current-branch))
+      (prn (System/getenv))
       (if (and flaky (#{"main" "master"} (current-branch)))
         (println "Skipping" tns "for main branch because it's marked flaky")
         (swap! test-nss into tns))))

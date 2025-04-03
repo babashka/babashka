@@ -1,0 +1,100 @@
+name: build
+
+on:
+  push:
+    paths-ignore:
+      - "**.md"
+      - "logo/**"
+  pull_request:
+    paths-ignore:
+      - "**.md"
+      - "logo/**"
+
+# TODO: Add deploy if needed
+jobs:
+  native:
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
+    strategy:
+      matrix:
+        include:
+          - os: windows-2022
+            name: windows
+            static: false
+    runs-on: ${{ matrix.os }}
+    env:
+      LEIN_ROOT: "true"
+      GRAALVM_VERSION: "24"
+      BABASHKA_PLATFORM: ${{ matrix.name }} # used in release script
+      BABASHKA_TEST_ENV: native
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      BABASHKA_SHA: ${{ github.sha }}
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+          submodules: 'true'
+
+      - name: Cache deps
+        uses: actions/cache@v4
+        id: cache-deps
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('project.clj') }}
+          restore-keys: ${{ runner.os }}-maven-
+
+      - name: Setup GraalVM
+        if: "matrix.static == false"
+        uses: graalvm/setup-graalvm@v1.3.3
+        with:
+          java-version: '24'
+          distribution: 'graalvm'
+          components: 'native-image'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install clojure tools
+        uses: DeLaGuardo/setup-clojure@13.2
+        with:
+          cli: latest
+          # lein: latest -- skipped because this uses some PS bullshit
+
+      - name: Babashka version
+        id: babashka-version
+        shell: bash
+        run: |
+          BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
+          echo "##[set-output name=version;]${BABASHKA_VERSION}"
+
+      - name: Build
+        shell: cmd
+        run: |
+              powershell -Command "(New-Object Net.WebClient).DownloadFile('https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein.bat', 'lein.bat')"
+              call lein self-install
+
+              set GRAALVM_HOME=%JAVA_HOME%
+              call script/uberjar.bat
+
+              call script/compile.bat
+
+              echo Creating zip archive
+
+              set zip=babashka-%BABASHKA_VERSION%-windows-amd64.zip
+
+              jar -cMf %zip% bb.exe
+
+              bb --config .build/bb.edn --deps-root . release-artifact %zip%
+
+
+      - name: Test binary and libs
+        shell: cmd
+        run: |
+          set BABASHKA_CLASSPATH=
+          set BABASHKA_TEST_ENV=native
+          call script/test.bat :windows
+          call script/run_lib_tests.bat
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          path: bb.exe
+          name: babashka-${{ steps.babashka-version.outputs.version }}-${{ matrix.name }}-amd64
