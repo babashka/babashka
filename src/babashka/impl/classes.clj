@@ -515,6 +515,7 @@
           java.util.Random
           java.util.regex.Matcher
           java.util.regex.Pattern
+          java.util.regex.PatternSyntaxException
           java.util.ArrayDeque
           java.util.ArrayList
           java.util.Collections
