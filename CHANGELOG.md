@@ -12,6 +12,7 @@ A preview of the next release can be installed from
 - Bump GraalVM to `24`
 - Bump SCI to `0.9.45`
 - Bump edamame to `1.4.28`
+- [#1801](https://github.com/babashka/babashka/issues/1801): Add `java.util.regex.PatternSyntaxException`
 
 ## 1.12.197 (2024-02-28)
 
