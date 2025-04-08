@@ -13,7 +13,7 @@ A preview of the next release can be installed from
 - Bump SCI to `0.9.45`
 - Bump edamame to `1.4.28`
 - [#1801](https://github.com/babashka/babashka/issues/1801): Add `java.util.regex.PatternSyntaxException`
-- Bump core.async to `1.8.735`
+- Bump core.async to `1.8.741`
 
 ## 1.12.197 (2024-02-28)
 
