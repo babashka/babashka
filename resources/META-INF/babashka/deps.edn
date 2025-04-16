@@ -28,7 +28,7 @@
         org.clojure/core.async {:mvn/version "1.8.735"},
         org.clojure/tools.cli {:mvn/version "1.0.214"},
         org.clojure/data.csv {:mvn/version "1.0.0"},
-        cheshire/cheshire {:mvn/version "5.13.0"}
+        cheshire/cheshire {:mvn/version "6.0.0"}
         org.clojure/data.xml {:mvn/version "0.2.0-alpha8"}
         clj-commons/clj-yaml {:mvn/version "1.0.29"}
         com.cognitect/transit-clj {:mvn/version "1.0.333"}
@@ -49,7 +49,7 @@
         org.clojure/data.priority-map {:mvn/version "1.1.0"}
         insn/insn {:mvn/version "0.5.2"}
         org.clojure/core.rrb-vector {:mvn/version "0.1.2"}
-        org.babashka/cli {:mvn/version "0.8.62"}
+        org.babashka/cli {:mvn/version "0.8.65"}
         org.babashka/http-client {:mvn/version "0.4.22"}
         org.flatland/ordered {:mvn/version "1.15.12"}
         org.jsoup/jsoup {:mvn/version "1.19.1"}}

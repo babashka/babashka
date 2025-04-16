@@ -14,6 +14,8 @@ A preview of the next release can be installed from
 - Bump edamame to `1.4.28`
 - [#1801](https://github.com/babashka/babashka/issues/1801): Add `java.util.regex.PatternSyntaxException`
 - Bump core.async to `1.8.735`
+- Bump cheshire to `6.0.0`
+- Bump babashka.cli to `0.8.65`
 
 ## 1.12.197 (2024-02-28)
 
