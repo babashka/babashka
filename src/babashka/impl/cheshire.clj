@@ -31,17 +31,14 @@
   ([string]
    (when string
      (binding [fact/*json-factory* @json-factory]
-       #_(println "-p1->" string @*json-factory*)
        (json/parse-string string))))
   ([string key-fn]
    (when string
      (binding [fact/*json-factory* @json-factory]
-       #_(println "-p2->" string key-fn @*json-factory*)
        (json/parse-string string key-fn))))
   ([^String string key-fn array-coerce-fn]
    (when string
      (binding [fact/*json-factory* @json-factory]
-       #_(println "-p3->" string key-fn array-coerce-fn @*json-factory*)
        (json/parse-string string key-fn array-coerce-fn)))))
 
 (defn parse-string-strict
