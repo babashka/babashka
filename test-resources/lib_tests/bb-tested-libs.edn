@@ -200,4 +200,5 @@
                                             hickory.test.hiccup-utils
                                             hickory.test.render
                                             hickory.test.select
-                                            hickory.test.zip]}}
+                                            hickory.test.zip]}
+ cheshire/cheshire {:git-url "https://github.com/dakrone/cheshire", :test-namespaces [cheshire.test.core], :manually-added true}}

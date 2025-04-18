@@ -9,6 +9,7 @@ borkdude/missing.test.assertions,https://github.com/borkdude/missing.test.assert
 borkdude/rewrite-edn,https://github.com/borkdude/rewrite-edn
 camel-snake-kebab/camel-snake-kebab,https://github.com/clj-commons/camel-snake-kebab
 cc.qbits/auspex,https://github.com/mpenet/auspex
+cheshire/cheshire,https://github.com/dakrone/cheshire
 circleci/bond,https://github.com/circleci/bond
 cli-matic/cli-matic,https://github.com/l3nz/cli-matic.git
 clj-commons/clj-yaml,https://github.com/clj-commons/clj-yaml
