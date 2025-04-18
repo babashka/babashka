@@ -7,11 +7,11 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## Unreleased
+## 1.12.199 (2025-04-18)
 
 - [#1806](https://github.com/babashka/babashka/issues/1806): Add `cheshire.factory` namespace ([@lread](https://github.com/lread))
 
-## 1.12.198 (2024-04-17)
+## 1.12.198 (2025-04-17)
 
 - Bump GraalVM to `24`
 - Bump SCI to `0.9.45`
@@ -21,7 +21,7 @@ A preview of the next release can be installed from
 - Bump cheshire to `6.0.0`
 - Bump babashka.cli to `0.8.65`
 
-## 1.12.197 (2024-02-28)
+## 1.12.197 (2025-02-28)
 
 - [#1785](https://github.com/babashka/babashka/issues/1785): Allow subclasses of `Throwable` to have instance methods invoked ([@bobisageek](https://github.com/bobisageek))
 - [#1791](https://github.com/babashka/babashka/issues/1791): interop problem on Jsoup form element
