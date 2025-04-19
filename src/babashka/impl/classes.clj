@@ -340,6 +340,7 @@
           java.lang.Throwable
           java.lang.ThreadLocal
           java.lang.Thread$UncaughtExceptionHandler
+          java.lang.Thread$Builder
           java.lang.UnsupportedOperationException
           java.lang.ref.WeakReference
           java.lang.ref.ReferenceQueue
@@ -808,7 +809,8 @@
                                    (instance? org.jsoup.nodes.Element v)
                                    org.jsoup.nodes.Element
                                    ;; keep commas for merge friendliness
-                                   )]
+                                   (instance? java.lang.Thread$Builder v)
+                                   java.lang.Thread$Builder)]
                      ;; (prn :res res)
                      res)))
         m (assoc m (list 'quote 'clojure.lang.Var) 'sci.lang.Var)

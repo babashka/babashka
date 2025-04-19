@@ -7,6 +7,10 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## Unreleased
+
+- Fix virtual `ThreadBuilder` interop
+
 ## 1.12.199 (2025-04-18)
 
 - [#1806](https://github.com/babashka/babashka/issues/1806): Add `cheshire.factory` namespace ([@lread](https://github.com/lread))
