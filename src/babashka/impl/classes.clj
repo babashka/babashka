@@ -509,6 +509,7 @@
           java.util.concurrent.CompletionStage
           java.util.concurrent.locks.ReentrantLock
           java.util.concurrent.ThreadLocalRandom
+          java.util.concurrent.ConcurrentHashMap
           java.util.jar.Attributes
           java.util.jar.Attributes$Name
           java.util.jar.JarFile
