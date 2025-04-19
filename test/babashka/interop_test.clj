@@ -18,7 +18,10 @@
          (bb nil (pr-str '(do
                             (def t (Thread. (fn [])))
                             (def vt (Thread/startVirtualThread (fn [])))
-                            [(.isVirtual t) (.isVirtual vt)]))))))
+                            [(.isVirtual t) (.isVirtual vt)])))))
+  (is (bb nil (pr-str '(instance?
+                        java.util.concurrent.Executor
+                        (java.util.concurrent.Executors/newThreadPerTaskExecutor (-> (Thread/ofVirtual) (.name "fusebox-thread-" 1) (.factory))))))))
 
 (deftest domain-sockets-test
   (is (= :success (bb nil (slurp "test-resources/domain_sockets.bb")))))
