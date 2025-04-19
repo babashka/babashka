@@ -242,3 +242,9 @@
              (bb nil (str "(.getMessage " return-throwable ")"))))))
   (testing "jsoup Element"
     (is (= "form" (bb nil "(.tagName (first (.getElementsByTag (org.jsoup.Jsoup/parseBodyFragment \"<form></form>\") \"form\")))")))))
+
+(deftest cached-thread-pool
+  (is (= 3 (bb nil "(import '(java.util.concurrent Executors ExecutorService))
+                    (let [fut (.submit ^ExecutorService (Executors/newCachedThreadPool)
+                       ^Callable (fn [] 3))]
+   (.get fut))"))))
