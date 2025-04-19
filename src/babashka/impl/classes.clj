@@ -507,6 +507,8 @@
           java.util.concurrent.Executors
           java.util.concurrent.TimeUnit
           java.util.concurrent.CompletionStage
+          java.util.concurrent.locks.ReentrantLock
+          java.util.concurrent.ThreadLocalRandom
           java.util.jar.Attributes
           java.util.jar.Attributes$Name
           java.util.jar.JarFile

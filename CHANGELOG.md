@@ -10,6 +10,8 @@ A preview of the next release can be installed from
 ## Unreleased
 
 - Fix virtual `ThreadBuilder` interop
+- Add `java.util.concurrent.ThreadLocalRandom`
+- Add `java.util.concurrent.locks.ReentrantLock`
 
 ## 1.12.199 (2025-04-18)
 
