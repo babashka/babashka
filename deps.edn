@@ -176,7 +176,7 @@
                          org.clj-commons/hickory {:git/url "https://github.com/clj-commons/hickory"
                                                   :git/sha "9385b6708ef35f161732d8464b3a3aa57dd79f30"}
                          com.potetm/fusebox {:git/url "https://github.com/potetm/fusebox"
-                                             :git/sha "b61df08b11e4960b5dea2ccfb4532a717c71cb2a"}}
+                                             :git/sha "2f42391868c82c193628bec8922f8735ae3cac66"}}
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil}}
            :clj-nvd
