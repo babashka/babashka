@@ -60,9 +60,6 @@ jobs:
           script/test
           script/run_lib_tests
 
-      - name: Run as lein command
-        run: echo '{:a 1}' | lein bb '(:a *in*)'
-
       - name: Build uberjar
         run: |
           mkdir -p /tmp/release

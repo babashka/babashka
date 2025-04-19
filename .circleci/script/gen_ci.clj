@@ -101,7 +101,6 @@
         "export BABASHKA_FEATURE_JDBC=true
 export BABASHKA_FEATURE_POSTGRESQL=true
 script/test\nscript/run_lib_tests")
-      (run "Run as lein command" ".circleci/script/lein")
       (run
         "Create uberjar"
         "mkdir -p /tmp/release

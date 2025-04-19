@@ -255,6 +255,10 @@
     jdk.internal.net.http.websocket.BuilderImpl
     jdk.internal.net.http.websocket.WebSocketImpl])
 
+(def thread-builder
+  (try (Class/forName "java.lang.Thread$Builder")
+       (catch Exception _ nil)))
+
 (def classes
   `{:all [clojure.lang.ArityException
           clojure.lang.BigInt
@@ -340,7 +344,8 @@
           java.lang.Throwable
           java.lang.ThreadLocal
           java.lang.Thread$UncaughtExceptionHandler
-          java.lang.Thread$Builder
+          ~@(when thread-builder
+              '[java.lang.Thread$Builder])
           java.lang.UnsupportedOperationException
           java.lang.ref.WeakReference
           java.lang.ref.ReferenceQueue
@@ -808,9 +813,11 @@
                                    java.lang.Throwable
                                    (instance? org.jsoup.nodes.Element v)
                                    org.jsoup.nodes.Element
+                                   (and thread-builder
+                                        (instance? thread-builder v))
+                                   thread-builder
                                    ;; keep commas for merge friendliness
-                                   (instance? java.lang.Thread$Builder v)
-                                   java.lang.Thread$Builder)]
+                                   ,)]
                      ;; (prn :res res)
                      res)))
         m (assoc m (list 'quote 'clojure.lang.Var) 'sci.lang.Var)
