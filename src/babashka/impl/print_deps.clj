@@ -14,11 +14,11 @@
                  edn/read-string)
         deps (:deps deps)
         deps (assoc deps
-                    'babashka/fs {:mvn/version "0.5.22"}
+                    'babashka/fs {:mvn/version "0.5.24"}
                     'babashka/babashka.curl {:mvn/version "0.1.2"}
                     'babashka/babashka.core {:git/url "https://github.com/babashka/babashka.core"
                                              :git/sha "52a6037bd4b632bffffb04394fb4efd0cdab6b1e"}
-                    'babashka/process {:mvn/version "0.5.22"})
+                    'babashka/process {:mvn/version "0.6.23"})
         deps (dissoc deps
                      'borkdude/sci
                      'org.babashka/sci
