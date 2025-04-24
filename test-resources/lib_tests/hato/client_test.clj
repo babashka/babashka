@@ -341,7 +341,7 @@
     (is (= ::response r))))
 
 (try (get "https://httpbin.org/gzip" {:timeout 1000})
-     (catch java.net.http.HttpTimeoutException _
+     (catch Exception _
        (doseq [v (vals (ns-publics *ns*))]
          (when (:integration (meta v))
            (println "Removing test from" v "because httpbin is slow.")
