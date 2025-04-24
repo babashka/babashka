@@ -476,7 +476,8 @@
                 java.time.temporal.TemporalAccessor
                 java.time.temporal.TemporalAdjuster
                 java.time.temporal.TemporalQuery
-                ~(symbol "[Ljava.time.temporal.TemporalQuery;")])
+                ~(symbol "[Ljava.time.temporal.TemporalQuery;")
+                java.time.chrono.ChronoLocalDate])
           java.util.concurrent.atomic.AtomicInteger
           java.util.concurrent.atomic.AtomicLong
           java.util.concurrent.atomic.AtomicReference
