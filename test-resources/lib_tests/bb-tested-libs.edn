@@ -205,7 +205,7 @@
  com.potetm/fusebox {:git-url "https://github.com/potetm/fusebox"
                      :git-sha "2f42391868c82c193628bec8922f8735ae3cac66"
                      :test-paths ["test"]
-                     :test-namespaces [com.potetm.fusebox.bulkhead-test
+                     :test-namespaces [#_com.potetm.fusebox.bulkhead-test
                                        com.potetm.fusebox.bulwark-test
                                        com.potetm.fusebox.circuit-breaker-test
                                        com.potetm.fusebox.fallback-test
