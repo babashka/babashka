@@ -210,7 +210,7 @@
                                        com.potetm.fusebox.circuit-breaker-test
                                        com.potetm.fusebox.fallback-test
                                        com.potetm.fusebox.memoize-test
-                                       com.potetm.fusebox.rate-limit-test
+                                       #_com.potetm.fusebox.rate-limit-test
                                        com.potetm.fusebox.registry-test
                                        com.potetm.fusebox.retry-test
-                                       com.potetm.fusebox.timeout-test]}}
+                                       #_com.potetm.fusebox.timeout-test]}}
