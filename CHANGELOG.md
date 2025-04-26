@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 ## 1.12.200 (2025-04-26)
 
+- Improve Java reflection based on provided type hints (read blog post [here](https://blog.michielborkent.nl/babashka-java-reflection-type-hints.html))
 - Add compatibility with the [fusebox](https://github.com/potetm/fusebox) library
 - Fix virtual `ThreadBuilder` interop
 - Add `java.util.concurrent.ThreadLocalRandom`
