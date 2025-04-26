@@ -9,9 +9,16 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Add compatibility with the [fusebox](https://github.com/potetm/fusebox) library
 - Fix virtual `ThreadBuilder` interop
 - Add `java.util.concurrent.ThreadLocalRandom`
 - Add `java.util.concurrent.locks.ReentrantLock`
+- Add classes:
+  - `java.time.chrono.ChronoLocalDate`
+  - `java.time.temporal.TemporalUnit`
+  - `java.time.chrono.ChronoLocalDateTime`
+  - `java.time.chrono.ChronoZonedDateTime`
+  - `java.time.chrono.Chronology`
 
 ## 1.12.199 (2025-04-18)
 
