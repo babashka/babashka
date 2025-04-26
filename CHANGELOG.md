@@ -7,7 +7,7 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## Unreleased
+## 1.12.200 (2025-04-26)
 
 - Add compatibility with the [fusebox](https://github.com/potetm/fusebox) library
 - Fix virtual `ThreadBuilder` interop
