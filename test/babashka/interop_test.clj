@@ -245,10 +245,8 @@
 
 (deftest cached-thread-pool
   (is (= 3 (bb nil "(import '(java.util.concurrent Executors ExecutorService))
-                    (let [fut (.submit ^ExecutorService (Executors/newCachedThreadPool)
-                       ^Callable (fn [] 3))]
+                    (let [fut (.submit ^ExecutorService (Executors/newCachedThreadPool) ^Callable (fn [] 3))]
                       (.get fut))")))
   (is (nil? (bb nil "(import '(java.util.concurrent Executors ExecutorService))
-                     (let [fut (.submit ^ExecutorService (Executors/newCachedThreadPool)
-                       ^Runnable (fn [] 3))]
+                     (let [fut (.submit ^ExecutorService (Executors/newCachedThreadPool) ^Runnable (fn [] 3))]
                        (.get fut))"))))
