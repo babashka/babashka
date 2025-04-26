@@ -84,6 +84,11 @@ jobs:
 
               bb --config .build/bb.edn --deps-root . release-artifact %zip%
 
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          path: bb.exe
+          name: babashka-${{ steps.babashka-version.outputs.version }}-${{ matrix.name }}-amd64
 
       - name: Test binary and libs
         shell: cmd
@@ -92,9 +97,3 @@ jobs:
           set BABASHKA_TEST_ENV=native
           call script/test.bat :windows
           call script/run_lib_tests.bat
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          path: bb.exe
-          name: babashka-${{ steps.babashka-version.outputs.version }}-${{ matrix.name }}-amd64

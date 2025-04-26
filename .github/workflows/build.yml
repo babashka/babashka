@@ -172,14 +172,6 @@ jobs:
           BABASHKA_MUSL: "true"
         run: script/compile
 
-      - name: Test binary and libs
-        run: |
-          script/test
-          script/run_lib_tests
-
-      - name: Release
-        run: .circleci/script/release
-
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -192,6 +184,14 @@ jobs:
         with:
           path: bb
           name: babashka-${{ steps.babashka-version.outputs.version }}-${{ matrix.name }}-static-amd64
+
+      - name: Test binary and libs
+        run: |
+          script/test
+          script/run_lib_tests
+
+      - name: Release
+        run: .circleci/script/release
 
   docker:
     if: ${{ false }} # Disabled
