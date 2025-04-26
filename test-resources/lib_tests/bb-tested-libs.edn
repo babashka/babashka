@@ -203,7 +203,7 @@
                                             hickory.test.zip]}
  cheshire/cheshire {:git-url "https://github.com/dakrone/cheshire", :test-namespaces [cheshire.test.core], :manually-added true}
  com.potetm/fusebox {:git-url "https://github.com/potetm/fusebox"
-                     :git-sha "2f42391868c82c193628bec8922f8735ae3cac66"
+                     :git-sha "ac6d6a0a69510b009b3c1bb2247cd110fd9f7246"
                      :test-paths ["test"]
                      :test-namespaces [com.potetm.fusebox.bulkhead-test
                                        com.potetm.fusebox.bulwark-test
