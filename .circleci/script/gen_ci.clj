@@ -183,7 +183,9 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                           {:persist_to_workspace {:root  "/tmp"
                                                                   :paths ["release"]}}
                                           (run "Run tests" "script/test\nscript/run_lib_tests")
-                                          (run "Release + publish" "BABASHKA_PUBLISH=true .circleci/script/release")
+                                          (run "Release + publish"
+                                            (str/join "\n" ["export BABASHKA_RELEASE=true"
+                                                            ".circleci/script/release"]))
                                           {:save_cache
                                            {:paths ["~/.m2" "~/graalvm"]
                                             :key   cache-key}}
