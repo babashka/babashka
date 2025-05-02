@@ -10,6 +10,7 @@ A preview of the next release can be installed from
 ## Unreleased
 
 - Bump `fs` to `0.5.25`
+- Bump `jsoup` to `1.20.1`
 
 ## 1.12.200 (2025-04-26)
 
