@@ -11,6 +11,7 @@ A preview of the next release can be installed from
 
 - Bump `fs` to `0.5.25`
 - Bump `jsoup` to `1.20.1`
+- Bump `edamame` to `1.4.30`
 
 ## 1.12.200 (2025-04-26)
 
