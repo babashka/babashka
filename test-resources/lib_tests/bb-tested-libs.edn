@@ -213,4 +213,8 @@
                                        #_com.potetm.fusebox.rate-limit-test
                                        com.potetm.fusebox.registry-test
                                        com.potetm.fusebox.retry-test
-                                       #_com.potetm.fusebox.timeout-test]}}
+                                       #_com.potetm.fusebox.timeout-test]}
+ net.sekao/odoyle-rules {:git-url "https://github.com/oakes/odoyle-rules"
+                         :git-sha "0b1d825ec45a998c4d3481dfb292e08ce6a47f0b"
+                         :test-paths ["test"]
+                         :test-namespaces [odoyle.rules-test]}}
