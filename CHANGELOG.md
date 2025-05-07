@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- [#1815](https://github.com/babashka/babashka/issues/1815): Make install-script wget-compatible
 - Bump `fs` to `0.5.25`
 - Bump `jsoup` to `1.20.1`
 - Bump `edamame` to `1.4.30`

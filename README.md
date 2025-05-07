@@ -232,6 +232,8 @@ Install via the installer script for linux and macOS:
 
 ``` shell
 $ curl -sLO https://raw.githubusercontent.com/babashka/babashka/master/install
+# or
+$ wget -qO install https://raw.githubusercontent.com/babashka/babashka/master/install
 $ chmod +x install
 $ ./install
 ```
