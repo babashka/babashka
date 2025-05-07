@@ -52,7 +52,8 @@
         org.babashka/cli {:mvn/version "0.8.65"}
         org.babashka/http-client {:mvn/version "0.4.22"}
         org.flatland/ordered {:mvn/version "1.15.12"}
-        org.jsoup/jsoup {:mvn/version "1.20.1"}}
+        org.jsoup/jsoup {:mvn/version "1.20.1"}
+        io.github.nextjournal/markdown {:mvn/version "0.6.157"}}
  :aliases {:babashka/dev
            {:main-opts ["-m" "babashka.main"]}
            :profile
@@ -176,7 +177,9 @@
                          org.clj-commons/hickory {:git/url "https://github.com/clj-commons/hickory"
                                                   :git/sha "9385b6708ef35f161732d8464b3a3aa57dd79f30"}
                          com.potetm/fusebox {:git/url "https://github.com/potetm/fusebox"
-                                             :git/sha "ac6d6a0a69510b009b3c1bb2247cd110fd9f7246"}}
+                                             :git/sha "ac6d6a0a69510b009b3c1bb2247cd110fd9f7246"}
+                         net.sekao/odoyle-rules {:git/url "https://github.com/oakes/odoyle-rules"
+                                                 :git/sha "0b1d825ec45a998c4d3481dfb292e08ce6a47f0b"}}
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil}}
            :clj-nvd
