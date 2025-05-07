@@ -435,6 +435,7 @@
           java.text.ParsePosition
           ;; adds about 200kb, same functionality provided by java.time:
           java.text.SimpleDateFormat
+          java.text.BreakIterator
           ~@(when features/java-time?
               `[java.time.format.DateTimeFormatter
                 java.time.Clock
@@ -824,6 +825,8 @@
                                    (and thread-builder
                                         (instance? thread-builder v))
                                    thread-builder
+                                   (instance? java.text.BreakIterator v)
+                                   java.text.BreakIterator
                                    ;; keep commas for merge friendliness
                                    ,)]
                      ;; (prn :res res)
