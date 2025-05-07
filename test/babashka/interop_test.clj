@@ -250,3 +250,19 @@
   (is (nil? (bb nil "(import '(java.util.concurrent Executors ExecutorService))
                      (let [fut (.submit ^ExecutorService (Executors/newCachedThreadPool) ^Runnable (fn [] 3))]
                        (.get fut))"))))
+
+(deftest break-iterator-test
+  (is (= 1 (bb nil "(ns dude
+  (:import [java.text BreakIterator]))
+
+(defn count-characters
+  [^String text]
+  (let [it (BreakIterator/getCharacterInstance)]
+    (.setText it text)
+    (loop [count 0]
+      (if (= (.next it) BreakIterator/DONE)
+        count
+        (recur (inc count))))))
+
+(prn
+ (count-characters \"🇨🇦\"))"))))
