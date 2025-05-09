@@ -1250,10 +1250,26 @@ Use bb run --help to show this help output.
        @v#)
     `(apply main ~args)))
 
+(defn- set-daemon-agent-executor
+  "Set Clojure's send-off agent executor (also affects futures). This is almost
+  an exact rewrite of the Clojure's executor, but the Threads are created as
+  daemons."
+  []
+  (let [thread-counter (atom 0)
+        thread-factory (reify java.util.concurrent.ThreadFactory
+                         (newThread [_ runnable]
+                           (doto (Thread. runnable)
+                             (.setDaemon true) ;; DIFFERENT
+                             (.setName (format "CLI-agent-send-off-pool-%d"
+                                               (first (swap-vals! thread-counter inc)))))))
+        executor (java.util.concurrent.Executors/newCachedThreadPool thread-factory)]
+    (set-agent-send-off-executor! executor)))
+
 (defn -main
   [& args]
   (handle-pipe!)
   (handle-sigint!)
+  (set-daemon-agent-executor)
   (if-let [dev-opts (System/getenv "BABASHKA_DEV")]
     (let [{:keys [:n]} (if (= "true" dev-opts) {:n 1}
                            (edn/read-string dev-opts))
@@ -1265,7 +1281,8 @@ Use bb run --help to show this help output.
               (binding [*out* *err*]
                 (println "ran" n "times"))))))
     (let [exit-code (run args)]
-      (System/exit exit-code))))
+      (when-not (zero? exit-code)
+        (System/exit exit-code)))))
 
 (sci/alter-var-root main-var (constantly -main))
 ;;;; Scratch
