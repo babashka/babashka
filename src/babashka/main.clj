@@ -1190,7 +1190,7 @@ Use bb run --help to show this help output.
                                 (println "[babashka] WARNING: config file does not exist:" config))
                               nil))
                  jar (let [jar (resolve-symbolic-link jar)]
-                       (some-> [jar] cp/new-loader (cp/resource "META-INF/bb.edn") .toString))
+                       (some->> [jar] cp/new-loader (cp/resource "META-INF/bb.edn") .toString))
                  :else (if (and file (fs/exists? file))
                          ;; file relative to bb.edn
                          (let [file (abs-path file) ;; follow symlink
