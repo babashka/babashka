@@ -9,10 +9,13 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-- [#1815](https://github.com/babashka/babashka/issues/1815): Make install-script wget-compatible
+- [#1818](https://github.com/babashka/babashka/issues/1818): wrong argument order in `clojure.java.io/resource` implementation
+- Add `java.text.BreakIterator`
 - Bump `fs` to `0.5.25`
 - Bump `jsoup` to `1.20.1`
 - Bump `edamame` to `1.4.30`
+- [#1815](https://github.com/babashka/babashka/issues/1815): Make install-script wget-compatible ([@eval](https://github.com/eval))
+
 
 ## 1.12.200 (2025-04-26)
 
