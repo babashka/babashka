@@ -84,7 +84,7 @@
       cp)))
 
 (defn resource
-  (^URL [path] (resource @the-url-loader path))
+  (^URL [path] (resource path @the-url-loader))
   (^URL [path loader]
    (if (str/starts-with? path "/") nil ;; non-relative paths always return nil
        (getResource loader [path] true))))
