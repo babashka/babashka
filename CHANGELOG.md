@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- [#1818](https://github.com/babashka/babashka/issues/1818): wrong argument order in `clojure.java.io/resource` implementation
 - Add `java.text.BreakIterator`
 - Bump `fs` to `0.5.25`
 - Bump `jsoup` to `1.20.1`
