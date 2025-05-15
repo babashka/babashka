@@ -18,8 +18,11 @@ jobs:
       matrix:
         include:
           - os: windows-2022
-            name: windows
-            static: false
+            name: windows-amd64
+            arch: amd64
+          - os: windows-11-arm
+            name: windows-arm
+            arch: aarch64
     runs-on: ${{ matrix.os }}
     env:
       LEIN_ROOT: "true"
@@ -28,6 +31,7 @@ jobs:
       BABASHKA_TEST_ENV: native
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       BABASHKA_SHA: ${{ github.sha }}
+      BABASHKA_ARCH: ${{ matrix.arch }}
     steps:
       - name: Git checkout
         uses: actions/checkout@v2
@@ -44,7 +48,6 @@ jobs:
           restore-keys: ${{ runner.os }}-maven-
 
       - name: Setup GraalVM
-        if: "matrix.static == false"
         uses: graalvm/setup-graalvm@v1.3.3
         with:
           java-version: '24'
@@ -78,7 +81,7 @@ jobs:
 
               echo Creating zip archive
 
-              set zip=babashka-%BABASHKA_VERSION%-windows-amd64.zip
+              set zip=babashka-%BABASHKA_VERSION%-windows-${{ matrix.arch }}.zip
 
               jar -cMf %zip% bb.exe
 
@@ -88,7 +91,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           path: bb.exe
-          name: babashka-${{ steps.babashka-version.outputs.version }}-${{ matrix.name }}-amd64
+          name: babashka-${{ steps.babashka-version.outputs.version }}-${{ matrix.name }}-${{ matrix.arch }}
 
       - name: Test binary and libs
         shell: cmd
