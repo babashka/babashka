@@ -1,7 +1,7 @@
 (ns babashka.impl.markdown
   (:require [nextjournal.markdown]
-            [nextjournal.markdown.transform]
             [nextjournal.markdown.impl :as impl]
+            [nextjournal.markdown.transform]
             [sci.core :as sci]))
 
 @@#'impl/visitChildren-meth
