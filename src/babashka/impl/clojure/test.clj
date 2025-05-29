@@ -245,6 +245,9 @@
 
 (def tns (sci/create-ns 'clojure.test nil))
 
+(defn sci-ns-name [ns]
+  (symbol (str ns)))
+
 ;;; USER-MODIFIABLE GLOBALS
 
 (defonce
@@ -383,7 +386,7 @@
 
 (defmethod report-impl :begin-test-ns [m]
   (with-test-out-internal
-    (println "\nTesting" (sci-namespaces/sci-ns-name (:ns m)))))
+    (println "\nTesting" (sci-ns-name (:ns m)))))
 
 ;; Ignore these message types:
 (defmethod report-impl :end-test-ns [m])
@@ -758,7 +761,7 @@
     (let [ns-obj (sci-namespaces/sci-the-ns ctx ns)]
       (do-report {:type :begin-test-ns, :ns ns-obj})
       ;; If the namespace has a test-ns-hook function, call that:
-      (let [ns-sym (sci-namespaces/sci-ns-name ns-obj)]
+      (let [ns-sym (sci-ns-name ns-obj)]
         (if-let [v (get-in @(:env ctx) [:namespaces ns-sym 'test-ns-hook])]
           (@v)
           ;; Otherwise, just test every var in the namespace.
@@ -790,7 +793,7 @@
   {:added "1.1"}
   ([ctx] (apply run-tests ctx (sci-namespaces/sci-all-ns ctx)))
   ([ctx re] (apply run-tests ctx
-                   (filter #(re-matches re (name (sci-namespaces/sci-ns-name %)))
+                   (filter #(re-matches re (str %))
                            (sci-namespaces/sci-all-ns ctx)))))
 
 (defn successful?
