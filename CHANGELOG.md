@@ -17,6 +17,7 @@ A preview of the next release can be installed from
 - [#1815](https://github.com/babashka/babashka/issues/1815): Make install-script wget-compatible ([@eval](https://github.com/eval))
 - [#1822](https://github.com/babashka/babashka/issues/1822): type should prioritize :type metadata
 - `ns-name` should work on symbols
+- `:clojure.core/eval-file` should affect `*file*` during eval
 
 ## 1.12.200 (2025-04-26)
 
