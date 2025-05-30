@@ -547,3 +547,23 @@ even more stuff here\"
   (when-not test-utils/native?
     (binding [*out* *err*]
       (is (str/includes? (with-out-str (bb "-Sdeps" "{:tasks {run {:task 1}}}" "run")) "'run' override")))))
+
+(deftest init-is-ran-before-task-specific-requires-but-after-global-requires-and-init-is-ran-only-once-test
+  (fs/with-temp-dir [dir {}]
+    (let [f (fs/file dir "bb.edn")
+          pre-init-file (fs/file dir "pre_init.clj")
+          after-init-file (fs/file dir "after_init.clj")
+          config (str f)]
+      (spit config
+            '{:tasks {:requires ([pre-init] [babashka.fs :as fs])
+                      :init (prn :init (fs/exists? "."))
+                      task-b {:requires ([after-init])}
+                      task-a {:extra-paths ["."]
+                              :requires ([after-init])
+                              :task
+                              ;; this caused init to be re-ran
+                              (run 'task-b)}}})
+      (spit pre-init-file "(ns pre-init) (prn :pre-init)")
+      (spit after-init-file "(ns after-init) (prn :after-init)")
+      (let [out (str/split-lines (test-utils/bb nil "--config" config "task-a"))]
+        (is (= [":pre-init" ":init true" ":after-init"] out))))))
