@@ -216,7 +216,10 @@
   (format "
 %s ;; deps
 
-(ns %s %s)
+(ns %s
+;; global requires
+%s)
+
 (require '[babashka.tasks #_#_:refer [log]])
 (when-not (resolve 'clojure)
   ;; we don't use refer so users can override this
@@ -234,8 +237,16 @@
 (when-not (resolve 'exec)
   (intern *ns* 'exec @(var babashka.tasks/exec)))
 
+;; init
+(defmacro init []
+  (when-not (resolve '%s/__init?)
+   (intern '%s '__init? true)
+   '%s))
+
+(init)
+;; task requires
 %s
-%s
+;; task
 %s
 "
           (let [deps (cond-> {}
@@ -248,6 +259,7 @@
           (if (seq global-requires)
             (format "(:require %s)" (str/join " " global-requires))
             "")
+          @rand-ns @rand-ns
           (pr-str init)
           (if (seq requires)
             (format "(require %s)"
