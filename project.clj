@@ -21,7 +21,7 @@
                    :non-flaky (complement :flaky)
                    :flaky :flaky}
   :jvm-opts ["--enable-preview"]
-  :dependencies [[org.clojure/clojure "1.12.0"]
+  :dependencies [[org.clojure/clojure "1.12.1"]
                  [borkdude/edamame "1.4.30"]
                  [org.clojure/tools.cli "1.0.214"]
                  [cheshire "6.0.0"]
