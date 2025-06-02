@@ -21,12 +21,12 @@
                    :non-flaky (complement :flaky)
                    :flaky :flaky}
   :jvm-opts ["--enable-preview"]
-  :dependencies [[org.clojure/clojure "1.12.0"]
+  :dependencies [[org.clojure/clojure "1.12.1"]
                  [borkdude/edamame "1.4.30"]
                  [org.clojure/tools.cli "1.0.214"]
                  [cheshire "6.0.0"]
                  [nrepl/bencode "1.2.0"]
-                 [borkdude/sci.impl.reflector "0.0.4"]
+                 [borkdude/sci.impl.reflector "0.0.5"]
                  [org.babashka/sci.impl.types "0.0.2"]
                  [org.babashka/babashka.impl.java "0.1.10"]
                  [org.clojure/core.async "1.8.741"]
