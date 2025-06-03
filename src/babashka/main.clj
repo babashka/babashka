@@ -5,6 +5,7 @@
    [aaaa-this-has-to-be-first.because-patches]
    [babashka.deps :as bdeps]
    [babashka.fs :as fs]
+   [babashka.impl.beholder :as beholder]
    [babashka.impl.bencode :refer [bencode-namespace]]
    [babashka.impl.cheshire :refer [cheshire-core-namespace cheshire-factory-namespace]]
    [babashka.impl.classes :as classes :refer [classes-namespace]]
@@ -435,6 +436,7 @@ Use bb run --help to show this help output.
        'babashka.http-client.websocket http-client-websocket-namespace
        'babashka.http-client.interceptors http-client-interceptors-namespace
        'nextjournal.markdown md/markdown-namespace
+       'nextjournal.beholder beholder/beholder-namespace
        'nextjournal.markdown.transform md/markdown-transform-namespace}
     features/xml? (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace)
                          'clojure.data.xml.event @(resolve 'babashka.impl.xml/xml-event-namespace)
