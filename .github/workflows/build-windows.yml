@@ -53,7 +53,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install clojure tools
-        uses: DeLaGuardo/setup-clojure@13.2
+        uses: DeLaGuardo/setup-clojure@13.4
         with:
           cli: latest
           # lein: latest -- skipped because this uses some PS bullshit
