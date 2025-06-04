@@ -18,7 +18,7 @@
          "deps.clj/src" "deps.clj/resources"
          "resources" "sci/resources"
          "impl-java/src"],
- :deps {org.clojure/clojure {:mvn/version "1.12.0"},
+ :deps {org.clojure/clojure {:mvn/version "1.12.1"},
         org.babashka/sci {:local/root "sci"}
         org.babashka/babashka.impl.java {:mvn/version "0.1.10"}
         org.babashka/sci.impl.types {:mvn/version "0.0.2"}
@@ -44,7 +44,7 @@
         hiccup/hiccup {:mvn/version "2.0.0-RC1"}
         rewrite-clj/rewrite-clj {:mvn/version "1.1.49"}
         selmer/selmer {:mvn/version "1.12.59"}
-        com.taoensso/timbre {:mvn/version "6.6.0"}
+        com.taoensso/timbre {:mvn/version "6.7.0"}
         org.clojure/tools.logging {:mvn/version "1.1.0"}
         org.clojure/data.priority-map {:mvn/version "1.1.0"}
         insn/insn {:mvn/version "0.5.2"}
