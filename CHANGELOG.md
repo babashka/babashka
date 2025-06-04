@@ -12,6 +12,8 @@ A preview of the next release can be installed from
 - Upgrade clojure to `1.12.1`
 - [#1818](https://github.com/babashka/babashka/issues/1818): wrong argument order in `clojure.java.io/resource` implementation
 - Add `java.text.BreakIterator`
+- Add `taoensso.timbre/set-min-level!`
+- Add `taoensso.timbre/set-config!`
 - Bump `fs` to `0.5.25`
 - Bump `jsoup` to `1.20.1`
 - Bump `edamame` to `1.4.30`

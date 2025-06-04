@@ -126,7 +126,13 @@
 (defn swap-config! [f & args]
   (apply sci/alter-var-root config f args))
 
-(defn set-level! [level] (swap-config! (fn [m] (assoc m :min-level level))))
+(defn set-config! [cfg]
+  (swap-config! (fn [_old] cfg)))
+
+(defn set-level! [level] (swap-config! assoc :min-level level))
+
+(defn set-min-level! [level] (swap-config! (fn [cfg]
+                                             (timbre/set-min-level cfg level))))
 
 (defn merge-config! [m] (swap-config! (fn [old] (encore/nested-merge old m))))
 
@@ -147,12 +153,15 @@
                                         'color-str])
          'log! (sci/copy-var log! tns)
          '*config* config
+         'set-config! (sci/copy-var set-config! tns)
          'swap-config! (sci/copy-var swap-config! tns)
          'merge-config! (sci/copy-var merge-config! tns)
          'set-level! (sci/copy-var set-level! tns)
+         'set-min-level! (sci/copy-var set-min-level! tns)
          'println-appender (sci/copy-var println-appender tns)
          '-log-and-rethrow-errors (sci/copy-var -log-and-rethrow-errors tns)
-         '-ensure-vec (sci/copy-var encore/ensure-vec tns)))
+         '-ensure-vec (sci/copy-var encore/ensure-vec tns)
+         'set-min-level! (sci/copy-var set-min-level! tns)))
 
 (def enc-ns (sci/create-ns 'taoensso.encore))
 

@@ -31,7 +31,12 @@
      (timbre/with-level :debug
        (test-fn))
 
-     (timbre/set-level! :debug)
+     (timbre/set-level! :no-crash)
+     (def x (atom nil))
+     (try (timbre/set-min-level! :crash)
+          (catch Exception _ (reset! x :crash)))
+     (assert (= :crash @x))
+     (timbre/set-min-level! :debug)
      (println "after setting log level to :debug")
      (test-fn)
 
