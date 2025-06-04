@@ -22,7 +22,7 @@ A preview of the next release can be installed from
 - [#1179](https://github.com/babashka/babashka/issues/1179): run `:init` in tasks only once
 - [#1823](https://github.com/babashka/babashka/issues/1823): run `:init` in tasks before task specific requires
 - Fix `resolve` when `*ns*` is bound to symbol
-- Bump `deps.clj` to `1.12.1.1543`
+- Bump `deps.clj` to `1.12.1.1550`
 
 ## 1.12.200 (2025-04-26)
 
