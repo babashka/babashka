@@ -35,7 +35,7 @@
                  [rewrite-clj/rewrite-clj "1.1.49"]
                  [insn/insn "0.5.2"]
                  [org.babashka/cli "0.8.65"]
-                 [org.babashka/http-client "0.4.22"]
+                 [org.babashka/http-client "0.4.23"]
                  [org.jsoup/jsoup "1.20.1"]
                  [borkdude/graal.locking "0.0.2"]]
   :plugins       [[org.kipz/lein-meta-bom "0.1.1"]]

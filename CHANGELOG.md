@@ -26,6 +26,7 @@ A preview of the next release can be installed from
 - [#1823](https://github.com/babashka/babashka/issues/1823): run `:init` in tasks before task specific requires
 - Fix `resolve` when `*ns*` is bound to symbol
 - Bump `deps.clj` to `1.12.1.1550`
+- Bump `http-client` to `0.4.23`
 
 ## 1.12.200 (2025-04-26)
 
