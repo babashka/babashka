@@ -19,7 +19,7 @@ A preview of the next release can be installed from
 - Bump `edamame` to `1.4.30`
 - Bump `taoensso.timbre` to `6.7.0`
 - [#1815](https://github.com/babashka/babashka/issues/1815): Make install-script wget-compatible ([@eval](https://github.com/eval))
-- [#1822](https://github.com/babashka/babashka/issues/1822): type should prioritize :type metadata
+- [#1822](https://github.com/babashka/babashka/issues/1822): `type` should prioritize `:type` metadata
 - `ns-name` should work on symbols
 - `:clojure.core/eval-file` should affect `*file*` during eval
 - [#1179](https://github.com/babashka/babashka/issues/1179): run `:init` in tasks only once
