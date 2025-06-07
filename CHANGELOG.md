@@ -14,7 +14,7 @@ A preview of the next release can be installed from
 - Add `java.text.BreakIterator`
 - Add `taoensso.timbre/set-min-level!`
 - Add `taoensso.timbre/set-config!`
-- Bump `fs` to `0.5.25`
+- Bump `fs` to `0.5.26`
 - Bump `jsoup` to `1.20.1`
 - Bump `edamame` to `1.4.30`
 - Bump `taoensso.timbre` to `6.7.0`
