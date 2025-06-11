@@ -217,4 +217,9 @@
  net.sekao/odoyle-rules {:git-url "https://github.com/oakes/odoyle-rules"
                          :git-sha "0b1d825ec45a998c4d3481dfb292e08ce6a47f0b"
                          :test-paths ["test"]
-                         :test-namespaces [odoyle.rules-test]}}
+                         :test-namespaces [odoyle.rules-test]}
+ io.github.nextjournal/markdown {:git-url "https://github.com/nextjournal/markdown"
+                                 :git-sha "4a0073fc68c57ae5e60d4bc31aae799358683c1a"
+                                 :test-paths ["test"]
+                                 :test-namespaces [nextjournal.markdown-test
+                                                   nextjournal.markdown.multi-threading-test]}}
