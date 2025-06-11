@@ -435,7 +435,7 @@ Use bb run --help to show this help output.
        'babashka.http-client.websocket http-client-websocket-namespace
        'babashka.http-client.interceptors http-client-interceptors-namespace
        'nextjournal.markdown md/markdown-namespace
-       'nextjournal.markdown.transform md/markdown-transform-namespace}
+       'nextjournal.markdown.utils md/markdown-utils-namespace}
     features/xml? (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace)
                          'clojure.data.xml.event @(resolve 'babashka.impl.xml/xml-event-namespace)
                          'clojure.data.xml.tree @(resolve 'babashka.impl.xml/xml-tree-namespace))

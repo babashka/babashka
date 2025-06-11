@@ -37,7 +37,7 @@
                  [org.babashka/cli "0.8.65"]
                  [org.babashka/http-client "0.4.23"]
                  [org.jsoup/jsoup "1.20.1"]
-                 [io.github.nextjournal/markdown "0.6.157"]
+                 [io.github.nextjournal/markdown "0.7.184"]
                  [borkdude/graal.locking "0.0.2"]]
   :plugins       [[org.kipz/lein-meta-bom "0.1.1"]]
   :metabom {:jar-name "metabom.jar"}
