@@ -219,7 +219,7 @@
                          :test-paths ["test"]
                          :test-namespaces [odoyle.rules-test]}
  io.github.nextjournal/markdown {:git-url "https://github.com/nextjournal/markdown"
-                                 :git-sha "41fec3889515a0fc28c957af4a2fff9520c3d1d1"
+                                 :git-sha "4a0073fc68c57ae5e60d4bc31aae799358683c1a"
                                  :test-paths ["test"]
                                  :test-namespaces [nextjournal.markdown-test
                                                    nextjournal.markdown.multi-threading-test]}}
