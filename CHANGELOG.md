@@ -12,17 +12,21 @@ A preview of the next release can be installed from
 - Upgrade clojure to `1.12.1`
 - [#1818](https://github.com/babashka/babashka/issues/1818): wrong argument order in `clojure.java.io/resource` implementation
 - Add `java.text.BreakIterator`
-- Bump `fs` to `0.5.25`
+- Add `taoensso.timbre/set-min-level!`
+- Add `taoensso.timbre/set-config!`
+- Bump `fs` to `0.5.26`
 - Bump `jsoup` to `1.20.1`
 - Bump `edamame` to `1.4.30`
+- Bump `taoensso.timbre` to `6.7.0`
 - [#1815](https://github.com/babashka/babashka/issues/1815): Make install-script wget-compatible ([@eval](https://github.com/eval))
-- [#1822](https://github.com/babashka/babashka/issues/1822): type should prioritize :type metadata
+- [#1822](https://github.com/babashka/babashka/issues/1822): `type` should prioritize `:type` metadata
 - `ns-name` should work on symbols
 - `:clojure.core/eval-file` should affect `*file*` during eval
 - [#1179](https://github.com/babashka/babashka/issues/1179): run `:init` in tasks only once
 - [#1823](https://github.com/babashka/babashka/issues/1823): run `:init` in tasks before task specific requires
 - Fix `resolve` when `*ns*` is bound to symbol
-- Bump `deps.clj` to `1.12.1.1543`
+- Bump `deps.clj` to `1.12.1.1550`
+- Bump `http-client` to `0.4.23`
 
 ## 1.12.200 (2025-04-26)
 

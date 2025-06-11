@@ -47,9 +47,9 @@ jobs:
           java-version: '19'
 
       - name: Install clojure tools
-        uses: DeLaGuardo/setup-clojure@5.0
+        uses: DeLaGuardo/setup-clojure@13.4
         with:
-          cli: 1.10.3.1040
+          cli: latest
           lein: 2.9.8
 
       - name: Run tests

@@ -35,7 +35,7 @@
                  [rewrite-clj/rewrite-clj "1.1.49"]
                  [insn/insn "0.5.2"]
                  [org.babashka/cli "0.8.65"]
-                 [org.babashka/http-client "0.4.22"]
+                 [org.babashka/http-client "0.4.23"]
                  [org.jsoup/jsoup "1.20.1"]
                  [io.github.nextjournal/markdown "0.6.157"]
                  [borkdude/graal.locking "0.0.2"]]
@@ -75,7 +75,7 @@
              :feature/selmer {:source-paths ["feature-selmer"]
                               :dependencies [[selmer/selmer "1.12.59"]]}
              :feature/logging {:source-paths ["feature-logging"]
-                               :dependencies [[com.taoensso/timbre "6.6.0"]
+                               :dependencies [[com.taoensso/timbre "6.7.0"]
                                               [org.clojure/tools.logging "1.1.0"]]}
              :feature/priority-map {:source-paths ["feature-priority-map"]
                                     :dependencies [[org.clojure/data.priority-map "1.1.0"]]}
