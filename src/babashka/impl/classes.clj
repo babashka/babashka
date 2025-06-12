@@ -259,6 +259,10 @@
   (try (Class/forName "java.lang.Thread$Builder")
        (catch Exception _ nil)))
 
+(def thread-builder-of-platform
+  (try (Class/forName "java.lang.Thread$Builder$OfPlatform")
+       (catch Exception _ nil)))
+
 (def classes
   `{:all [clojure.lang.ArityException
           clojure.lang.BigInt
@@ -304,6 +308,7 @@
           java.lang.Appendable
           java.lang.ArithmeticException
           java.lang.AssertionError
+          java.lang.AutoCloseable
           java.lang.Boolean
           java.lang.Byte
           java.lang.Character
@@ -345,7 +350,8 @@
           java.lang.ThreadLocal
           java.lang.Thread$UncaughtExceptionHandler
           ~@(when thread-builder
-              '[java.lang.Thread$Builder])
+              '[java.lang.Thread$Builder
+                java.lang.Thread$Builder$OfPlatform])
           java.lang.UnsupportedOperationException
           java.lang.ref.WeakReference
           java.lang.ref.ReferenceQueue
@@ -507,6 +513,9 @@
           java.util.concurrent.ThreadPoolExecutor$DiscardPolicy
           java.util.concurrent.ExecutorService
           java.util.concurrent.ScheduledExecutorService
+          java.util.concurrent.ForkJoinPool
+          java.util.concurrent.ForkJoinPool$ForkJoinWorkerThreadFactory
+          java.util.concurrent.ForkJoinWorkerThread
           java.util.concurrent.Future
           java.util.concurrent.FutureTask
           java.util.concurrent.CompletableFuture
@@ -516,6 +525,7 @@
           java.util.concurrent.locks.ReentrantLock
           java.util.concurrent.ThreadLocalRandom
           java.util.concurrent.ConcurrentHashMap
+          java.util.concurrent.SynchronousQueue
           java.util.jar.Attributes
           java.util.jar.Attributes$Name
           java.util.jar.JarFile
@@ -822,6 +832,9 @@
                                    java.lang.Throwable
                                    (instance? org.jsoup.nodes.Element v)
                                    org.jsoup.nodes.Element
+                                   (and thread-builder-of-platform
+                                        (instance? thread-builder-of-platform v))
+                                   thread-builder-of-platform
                                    (and thread-builder
                                         (instance? thread-builder v))
                                    thread-builder

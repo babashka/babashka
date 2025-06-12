@@ -182,7 +182,7 @@
                                                  :git/sha "0b1d825ec45a998c4d3481dfb292e08ce6a47f0b"}
                          nubank/matcher-combinators {:mvn/version "3.9.1"}
                          io.github.nextjournal/markdown {:git/url "https://github.com/nextjournal/markdown"
-                                                         :git/sha "41fec3889515a0fc28c957af4a2fff9520c3d1d1"}}
+                                                         :git/sha "4a0073fc68c57ae5e60d4bc31aae799358683c1a"}}
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil}}
            :clj-nvd

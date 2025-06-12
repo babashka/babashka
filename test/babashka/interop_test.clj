@@ -23,6 +23,12 @@
                         java.util.concurrent.Executor
                         (java.util.concurrent.Executors/newThreadPerTaskExecutor (-> (Thread/ofVirtual) (.name "fusebox-thread-" 1) (.factory))))))))
 
+(deftest threads-test
+  (is (bb nil (pr-str '(-> (Thread/ofPlatform)
+                           (.daemon)
+                           (.start (fn []))
+                           (.isDaemon))))))
+
 (deftest domain-sockets-test
   (is (= :success (bb nil (slurp "test-resources/domain_sockets.bb")))))
 
