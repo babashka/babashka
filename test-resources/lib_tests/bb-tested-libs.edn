@@ -224,6 +224,6 @@
                                  :test-namespaces [nextjournal.markdown-test
                                                    nextjournal.markdown.multi-threading-test]}
  funcool/promesa {:git-url "https://github.com/borkdude/promesa"
-                  :git-sha "3a80dc064ac000399ac93e8f73306b372ed681ab"
+                  :git-sha "95c9b3aa414b99e93d021f349f7c8ff8494cba8c"
                   :test-paths ["test"]
                   :test-namespaces [promesa.tests.core-test]}}
