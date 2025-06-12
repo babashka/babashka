@@ -715,15 +715,16 @@
                         (:instance-checks classes))
         m (apply hash-map
                  (for [c classes
-                       c [(list 'quote c) (cond-> `{:class ~c}
-                                            (= 'java.lang.Class c)
-                                            (assoc :static-methods
-                                                   {(list 'quote 'forName)
-                                                    `(fn
-                                                       ([_# ^String class-name#]
-                                                        (Class/forName class-name#))
-                                                       ([_# ^String class-name# initialize# ^java.lang.ClassLoader clazz-loader#]
-                                                        (Class/forName class-name#)))}))]]
+                       c [(list 'quote c)
+                          (cond-> `{:class ~c}
+                            (= 'java.lang.Class c)
+                            (assoc :static-methods
+                                   {(list 'quote 'forName)
+                                    `(fn
+                                       ([_# ^String class-name#]
+                                        (Class/forName class-name#))
+                                       ([_# ^String class-name# initialize# ^java.lang.ClassLoader clazz-loader#]
+                                        (Class/forName class-name#)))}))]]
                    c))
         m (assoc m :public-class
                  (fn [v]
@@ -844,7 +845,8 @@
                                    ,)]
                      ;; (prn :res res)
                      res)))
-        m (assoc m (list 'quote 'clojure.lang.Var) 'sci.lang.Var)
+        m (assoc m (list 'quote 'clojure.lang.Var) (list 'quote '{:class sci.lang.Var
+                                                                  :static-methods {cloneThreadBindingFrame (fn [_] (prn :dude))}}))
         m (assoc m (list 'quote 'clojure.lang.Namespace) 'sci.lang.Namespace)]
     m))
 
