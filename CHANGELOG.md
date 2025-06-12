@@ -7,12 +7,19 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## Unreleased
+## 1.12.201 (2025-06-12)
 
 - [#1825](https://github.com/babashka/babashka/issues/1825): Add [Nextjournal Markdown](https://github.com/nextjournal/markdown) as built-in Markdown library
+- Promesa compatibility (pending PR [here](https://github.com/funcool/promesa/pull/160))
 - Upgrade clojure to `1.12.1`
 - [#1818](https://github.com/babashka/babashka/issues/1818): wrong argument order in `clojure.java.io/resource` implementation
 - Add `java.text.BreakIterator`
+- Add classes for compatibility with [promesa](https://github.com/funcool/promesa):
+  - `java.lang.Thread$Builder$OfPlatform`
+  - `java.util.concurrent.ForkJoinPool`
+  - `java.util.concurrent.ForkJoinPool$ForkJoinWorkerThreadFactory`
+  - `java.util.concurrent.ForkJoinWorkerThread`
+  - `java.util.concurrent.SynchronousQueue`
 - Add `taoensso.timbre/set-min-level!`
 - Add `taoensso.timbre/set-config!`
 - Bump `fs` to `0.5.26`
@@ -29,12 +36,6 @@ A preview of the next release can be installed from
 - Fix `resolve` when `*ns*` is bound to symbol
 - Bump `deps.clj` to `1.12.1.1550`
 - Bump `http-client` to `0.4.23`
-- Add classes for compatibility with [promesa](https://github.com/funcool/promesa):
-  - `java.lang.Thread$Builder$OfPlatform`
-  - `java.util.concurrent.ForkJoinPool`
-  - `java.util.concurrent.ForkJoinPool$ForkJoinWorkerThreadFactory`
-  - `java.util.concurrent.ForkJoinWorkerThread`
-  - `java.util.concurrent.SynchronousQueue`
 
 ## 1.12.200 (2025-04-26)
 
