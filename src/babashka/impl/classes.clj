@@ -845,8 +845,8 @@
                                    ,)]
                      ;; (prn :res res)
                      res)))
-        m (assoc m (list 'quote 'clojure.lang.Var) (list 'quote '{:class sci.lang.Var
-                                                                  :static-methods {cloneThreadBindingFrame (fn [_] (prn :dude))}}))
+        m (assoc m (list 'quote 'clojure.lang.Var) {:class 'sci.lang.Var
+                                                    :static-methods {(list 'quote 'cloneThreadBindingFrame) `(fn [_#] (prn :dude))}})
         m (assoc m (list 'quote 'clojure.lang.Namespace) 'sci.lang.Namespace)]
     m))
 
@@ -855,6 +855,8 @@
   "This contains mapping of symbol to class of all classes that are
   allowed to be initialized at build time."
   (gen-class-map))
+
+;; (prn :class-map* class-map*)
 
 #_(let [class-name (str c)]
     (cond-> (Class/forName class-name)
