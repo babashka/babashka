@@ -222,4 +222,8 @@
                                  :git-sha "4a0073fc68c57ae5e60d4bc31aae799358683c1a"
                                  :test-paths ["test"]
                                  :test-namespaces [nextjournal.markdown-test
-                                                   nextjournal.markdown.multi-threading-test]}}
+                                                   nextjournal.markdown.multi-threading-test]}
+ funcool/promesa {:git-url "https://github.com/borkdude/promesa"
+                  :git-sha "3a80dc064ac000399ac93e8f73306b372ed681ab"
+                  :test-paths ["test"]
+                  :test-namespaces [promesa.tests.core-test]}}
