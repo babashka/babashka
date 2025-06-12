@@ -511,6 +511,7 @@
           java.util.concurrent.ThreadPoolExecutor$CallerRunsPolicy
           java.util.concurrent.ThreadPoolExecutor$DiscardOldestPolicy
           java.util.concurrent.ThreadPoolExecutor$DiscardPolicy
+          java.util.concurrent.TimeoutException
           java.util.concurrent.ExecutorService
           java.util.concurrent.ScheduledExecutorService
           java.util.concurrent.ForkJoinPool
@@ -697,7 +698,6 @@
                       java.lang.VirtualMachineError
                       java.lang.NoSuchFieldException
                       java.sql.Timestamp
-                      java.util.concurrent.TimeoutException
                       java.util.Collection
                       java.util.Map$Entry
                       java.util.AbstractMap
