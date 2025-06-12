@@ -182,7 +182,9 @@
                                                  :git/sha "0b1d825ec45a998c4d3481dfb292e08ce6a47f0b"}
                          nubank/matcher-combinators {:mvn/version "3.9.1"}
                          io.github.nextjournal/markdown {:git/url "https://github.com/nextjournal/markdown"
-                                                         :git/sha "4a0073fc68c57ae5e60d4bc31aae799358683c1a"}}
+                                                         :git/sha "4a0073fc68c57ae5e60d4bc31aae799358683c1a"}
+                         funcool/promesa {:git/url "https://github.com/borkdude/promesa"
+                                          :git/sha "95c9b3aa414b99e93d021f349f7c8ff8494cba8c"}}
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil}}
            :clj-nvd
