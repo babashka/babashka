@@ -277,7 +277,9 @@
   (is (= [43 42 43 42] (bb nil "(def ^:dynamic *test-var* 42)
    (def results (atom []))
    (binding [*test-var* *test-var*]
-    (let [frame (clojure.lang.Var/cloneThreadBindingFrame)]
+    (let [current-frame (clojure.lang.Var/cloneThreadBindingFrame)
+          frame (clojure.lang.Var/cloneThreadBindingFrame)]
+      (assert (not (identical? current-frame frame)))
       (binding [*test-var* 43]
         (let [inner-frame (clojure.lang.Var/getThreadBindingFrame)]
           (swap! results conj *test-var*)
