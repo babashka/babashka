@@ -6,7 +6,8 @@
    [cheshire.core :as json]
    [clojure.core.async]
    [sci.core :as sci]
-   [sci.impl.types :as t]))
+   [sci.impl.types :as t]
+   [sci.impl.vars :as vars]))
 
 (set! *warn-on-reflection* true)
 
@@ -845,8 +846,14 @@
                                    ,)]
                      ;; (prn :res res)
                      res)))
-        m (assoc m (list 'quote 'clojure.lang.Var) {:class 'sci.lang.Var
-                                                    :static-methods {(list 'quote 'cloneThreadBindingFrame) `(fn [_#] (prn :dude))}})
+        m (assoc m (list 'quote 'clojure.lang.Var)
+                 {:class 'sci.lang.Var
+                  :static-methods {(list 'quote 'cloneThreadBindingFrame) `(fn [_#]
+                                                                             (vars/clone-thread-binding-frame))
+                                   (list 'quote 'resetThreadBindingFrame) `(fn [_# frame#]
+                                                                             (vars/reset-thread-binding-frame frame#))
+                                   (list 'quote 'getThreadBindingFrame) `(fn [_# frame#]
+                                                                           (vars/get-thread-binding-frame frame#))}})
         m (assoc m (list 'quote 'clojure.lang.Namespace) 'sci.lang.Namespace)]
     m))
 
