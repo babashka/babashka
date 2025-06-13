@@ -6,7 +6,8 @@
    [cheshire.core :as json]
    [clojure.core.async]
    [sci.core :as sci]
-   [sci.impl.types :as t]))
+   [sci.impl.types :as t]
+   [sci.impl.vars :as vars]))
 
 (set! *warn-on-reflection* true)
 
@@ -715,15 +716,16 @@
                         (:instance-checks classes))
         m (apply hash-map
                  (for [c classes
-                       c [(list 'quote c) (cond-> `{:class ~c}
-                                            (= 'java.lang.Class c)
-                                            (assoc :static-methods
-                                                   {(list 'quote 'forName)
-                                                    `(fn
-                                                       ([_# ^String class-name#]
-                                                        (Class/forName class-name#))
-                                                       ([_# ^String class-name# initialize# ^java.lang.ClassLoader clazz-loader#]
-                                                        (Class/forName class-name#)))}))]]
+                       c [(list 'quote c)
+                          (cond-> `{:class ~c}
+                            (= 'java.lang.Class c)
+                            (assoc :static-methods
+                                   {(list 'quote 'forName)
+                                    `(fn
+                                       ([_# ^String class-name#]
+                                        (Class/forName class-name#))
+                                       ([_# ^String class-name# initialize# ^java.lang.ClassLoader clazz-loader#]
+                                        (Class/forName class-name#)))}))]]
                    c))
         m (assoc m :public-class
                  (fn [v]
@@ -844,7 +846,14 @@
                                    ,)]
                      ;; (prn :res res)
                      res)))
-        m (assoc m (list 'quote 'clojure.lang.Var) 'sci.lang.Var)
+        m (assoc m (list 'quote 'clojure.lang.Var)
+                 {:class 'sci.lang.Var
+                  :static-methods {(list 'quote 'cloneThreadBindingFrame) `(fn [_#]
+                                                                             (vars/clone-thread-binding-frame))
+                                   (list 'quote 'resetThreadBindingFrame) `(fn [_# frame#]
+                                                                             (vars/reset-thread-binding-frame frame#))
+                                   (list 'quote 'getThreadBindingFrame) `(fn [_#]
+                                                                           (vars/get-thread-binding-frame))}})
         m (assoc m (list 'quote 'clojure.lang.Namespace) 'sci.lang.Namespace)]
     m))
 
@@ -853,6 +862,8 @@
   "This contains mapping of symbol to class of all classes that are
   allowed to be initialized at build time."
   (gen-class-map))
+
+;; (prn :class-map* class-map*)
 
 #_(let [class-name (str c)]
     (cond-> (Class/forName class-name)
