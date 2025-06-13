@@ -272,3 +272,18 @@
 
 (prn
  (count-characters \"🇨🇦\"))"))))
+
+(deftest clojure-lang-Var-binding-frame-test
+  (is (= [43 42 43 42] (bb nil "(def ^:dynamic *test-var* 42)
+   (def results (atom []))
+   (binding [*test-var* *test-var*]
+    (let [frame (clojure.lang.Var/cloneThreadBindingFrame)]
+      (binding [*test-var* 43]
+        (let [inner-frame (clojure.lang.Var/getThreadBindingFrame)]
+          (swap! results conj *test-var*)
+          (clojure.lang.Var/resetThreadBindingFrame frame)
+          (swap! results conj *test-var*)
+          (clojure.lang.Var/resetThreadBindingFrame inner-frame)
+          (swap! results conj *test-var*)))
+      (swap! results conj *test-var*)))
+   @results"))))

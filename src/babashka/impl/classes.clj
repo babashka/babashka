@@ -852,8 +852,8 @@
                                                                              (vars/clone-thread-binding-frame))
                                    (list 'quote 'resetThreadBindingFrame) `(fn [_# frame#]
                                                                              (vars/reset-thread-binding-frame frame#))
-                                   (list 'quote 'getThreadBindingFrame) `(fn [_# frame#]
-                                                                           (vars/get-thread-binding-frame frame#))}})
+                                   (list 'quote 'getThreadBindingFrame) `(fn [_#]
+                                                                           (vars/get-thread-binding-frame))}})
         m (assoc m (list 'quote 'clojure.lang.Namespace) 'sci.lang.Namespace)]
     m))
 
