@@ -57,9 +57,8 @@
                  (if (symbol? args)
                    `(taoensso.timbre/-ensure-vec ~args)
                    `[              ~@args]))]
-
          ;; Note pre-resolved expansion
-         `(taoensso.timbre/-log! ~config ~level ~ns ~file ~line ~column ~msg-type ~?err
+         `(taoensso.timbre/-log! ~config ~level ~(str ns) ~file ~line ~column ~msg-type ~?err
                                  (delay ~vargs-form) ~?base-data ~callsite-id ~spying?
                                  ~(get opts :instant)
                                  ~(get opts :may-log?))))))
@@ -137,6 +136,33 @@
 
 (defn merge-config! [m] (swap-config! (fn [old] (encore/nested-merge old m))))
 
+(defn set-ns-min-level
+  "Returns given Timbre `config` with its `:min-level` modified so that
+  the given namespace has the specified minimum logging level.
+
+  When no namespace is provided, `*ns*` will be used.
+  When `?min-level` is nil, any minimum level specifications for the
+  *exact* given namespace will be removed.
+
+  See `*config*` docstring for more about `:min-level`.
+  See also `set-min-level!` for a util to directly modify `*config*`."
+
+  ([config    ?min-level] (set-ns-min-level config @sci/ns ?min-level)) ; No *ns* at Cljs runtime
+  ([config ns ?min-level]
+   (timbre/set-ns-min-level config ns ?min-level)))
+
+(defmacro set-ns-min-level!
+  "Like `set-ns-min-level` but directly modifies `*config*`.
+
+     Can conveniently set the minimum log level for the current ns:
+      (set-ns-min-level! :info) => Sets min-level for current *ns*
+
+     See `set-ns-min-level` for details."
+
+  ;; Macro to support compile-time Cljs *ns*
+  ([   ?min-level] `(timbre/set-ns-min-level! ~(str @sci/ns) ~?min-level))
+  ([ns ?min-level] `(timbre/swap-config! (fn [config#] (timbre/set-ns-min-level config# ~(str ns) ~?min-level)))))
+
 (defmacro -log-and-rethrow-errors [?line & body]
   `(try (do ~@body)
         (catch Throwable e#
@@ -162,7 +188,9 @@
          'println-appender (sci/copy-var println-appender tns)
          '-log-and-rethrow-errors (sci/copy-var -log-and-rethrow-errors tns)
          '-ensure-vec (sci/copy-var encore/ensure-vec tns)
-         'set-min-level! (sci/copy-var set-min-level! tns)))
+         'set-min-level! (sci/copy-var set-min-level! tns)
+         'set-ns-min-level (sci/copy-var set-ns-min-level tns)
+         'set-ns-min-level! (sci/copy-var set-ns-min-level! tns)))
 
 (def enc-ns (sci/create-ns 'taoensso.encore))
 
