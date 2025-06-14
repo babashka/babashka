@@ -139,8 +139,8 @@
                                   malli.transform-test
                                   malli.util-test]
                 :git-url "https://github.com/metosin/malli"
-                :git-sha "588147ef49b2e41c7d12a8aa994b39c1c6fedd99"
-                :git-tag "0.8.9"
+                :git-sha "6b0862135ea58ef2ac92bda9ae605994a5fb20d6"
+                :git-tag "0.19.1"
                 ;; specify for adding tests to classpath
                 :test-paths ["test"]}
  meander/epsilon {:test-namespaces [meander.epsilon-test
@@ -226,4 +226,8 @@
  funcool/promesa {:git-url "https://github.com/funcool/promesa"
                   :git-sha "d8e6f67981b102dda2a4af5a3635a2218257f01a"
                   :test-paths ["test"]
-                  :test-namespaces [promesa.tests.core-test]}}
+                  :test-namespaces [promesa.tests.core-test]}
+ com.fulcrologic/statecharts {:git-url "https://github.com/fulcrologic/statecharts"
+                              :git-sha "b7ebeb080724dbeead94f73bcdc1963eecc531ff"
+                              :test-paths ["src/test"]
+                              :test-namespaces [babashka.statecharts-test]}}
