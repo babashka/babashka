@@ -173,7 +173,7 @@
 (def truss-ns (sci/create-ns 'taoensso.truss))
 
 (def truss-namespace
-  {'try* (sci/copy-var truss/try* enc-ns)})
+  {'try* (sci/copy-var truss/try* truss-ns)})
 
 (def timbre-appenders-namespace
   (let [tan (sci/create-ns 'taoensso.timbre.appenders.core nil)]
