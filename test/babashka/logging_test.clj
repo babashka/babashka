@@ -79,6 +79,10 @@
           res       (slurp temp-file)]
       (is (str/includes? res "hello")))))
 
+(deftest timbre-spy-test
+  (let [res (tu/bb nil (pr-str '(taoensso.timbre/spy :foo)))]
+    (is (str/includes? res ":foo => :foo"))))
+
 (def readable-prog
   '(do
      (ns readble-test)

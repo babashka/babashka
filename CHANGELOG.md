@@ -10,6 +10,7 @@ A preview of the next release can be installed from
 ## Unreleased
 
 - Support `clojure.lang.Var/{get,clone,reset}ThreadBindingFrame` for JVM Clojure compatibility
+- #1741: fix `taoensso.timbre/spy` and include test
 
 ## 1.12.201 (2025-06-12)
 

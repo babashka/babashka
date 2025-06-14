@@ -4,7 +4,8 @@
             [clojure.tools.logging.readable]
             [sci.core :as sci]
             [taoensso.encore :as encore :refer [have]]
-            [taoensso.timbre :as timbre]))
+            [taoensso.timbre :as timbre]
+            [taoensso.truss :as truss]))
 
 ;;;; timbre
 
@@ -168,6 +169,11 @@
 (def encore-namespace
   {'catching (sci/copy-var encore/catching enc-ns)
    'try* (sci/copy-var encore/try* enc-ns)})
+
+(def truss-ns (sci/create-ns 'taoensso.truss))
+
+(def truss-namespace
+  {'try* (sci/copy-var truss/try* enc-ns)})
 
 (def timbre-appenders-namespace
   (let [tan (sci/create-ns 'taoensso.timbre.appenders.core nil)]
