@@ -7,7 +7,7 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## Unreleased
+## 1.12.202 (2025-06-15)
 
 - Support `clojure.lang.Var/{get,clone,reset}ThreadBindingFrame` for JVM Clojure compatibility
 - [#1741](https://github.com/babashka/babashka/issues/1741): fix `taoensso.timbre/spy` and include test
