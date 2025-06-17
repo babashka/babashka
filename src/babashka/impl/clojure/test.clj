@@ -745,7 +745,7 @@
   "Calls test-vars on every var interned in the namespace, with fixtures."
   {:added "1.1"}
   [ctx ns]
-  (test-vars (vals (sci-namespaces/sci-ns-interns ctx ns))))
+  (test-vars (vals (sci-namespaces/sci-ns-interns* ctx ns))))
 
 (defn test-ns
   "If the namespace defines a function named test-ns-hook, calls that.
@@ -758,7 +758,7 @@
   {:added "1.1"}
   [ctx ns]
   (sci/binding [report-counters (ref @initial-report-counters)]
-    (let [ns-obj (sci-namespaces/sci-the-ns ctx ns)]
+    (let [ns-obj (sci-namespaces/sci-the-ns* ctx ns)]
       (do-report {:type :begin-test-ns, :ns ns-obj})
       ;; If the namespace has a test-ns-hook function, call that:
       (let [ns-sym (sci-ns-name ns-obj)]
@@ -791,10 +791,10 @@
   names matching the regular expression (with re-matches) will be
   tested."
   {:added "1.1"}
-  ([ctx] (apply run-tests ctx (sci-namespaces/sci-all-ns ctx)))
+  ([ctx] (apply run-tests ctx (sci-namespaces/sci-all-ns)))
   ([ctx re] (apply run-tests ctx
                    (filter #(re-matches re (str %))
-                           (sci-namespaces/sci-all-ns ctx)))))
+                           (sci-namespaces/sci-all-ns)))))
 
 (defn successful?
   "Returns true if the given test summary indicates all tests
