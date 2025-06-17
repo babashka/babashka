@@ -1,6 +1,7 @@
 (ns babashka.impl.classes
   {:no-doc true}
   (:require
+   [babashka.impl.common :refer [ctx]]
    [babashka.impl.features :as features]
    [babashka.impl.proxy :as proxy]
    [cheshire.core :as json]
@@ -853,7 +854,9 @@
                                    (list 'quote 'resetThreadBindingFrame) `(fn [_# frame#]
                                                                              (vars/reset-thread-binding-frame frame#))
                                    (list 'quote 'getThreadBindingFrame) `(fn [_#]
-                                                                           (vars/get-thread-binding-frame))}})
+                                                                           (vars/get-thread-binding-frame))
+                                   (list 'quote 'intern) `(fn [_# & args#]
+                                                            (apply sci/intern (ctx) args#))}})
         m (assoc m (list 'quote 'clojure.lang.Namespace) 'sci.lang.Namespace)]
     m))
 

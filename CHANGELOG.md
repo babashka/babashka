@@ -9,7 +9,8 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-- Fix `with-redefs` + `intern` (see SCI issue [#973](https://github.com/babashka/sci/issues/973)_
+- Support `with-redefs` + `intern` (see SCI issue [#973](https://github.com/babashka/sci/issues/973)
+- [#1832](https://github.com/babashka/babashka/issues/1832): support `clojure.lang.Var/intern`
 
 ## 1.12.202 (2025-06-15)
 
