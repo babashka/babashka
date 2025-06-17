@@ -289,3 +289,9 @@
           (swap! results conj *test-var*)))
       (swap! results conj *test-var*)))
    @results"))))
+
+(deftest clojure-lang-Var-intern-test
+  (bb nil "(ns foo) (ns bar)
+(assert (var? (clojure.lang.Var/intern (the-ns 'foo) 'dude)))
+(assert (var? (clojure.lang.Var/intern (the-ns 'foo) 'dude 2)))
+"))
