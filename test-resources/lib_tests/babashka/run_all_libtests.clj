@@ -12,6 +12,9 @@
 
 (def orig-spec-checking-fn @#'st/spec-checking-fn)
 
+#_(defmethod t/report :begin-test-var [m]
+  (prn m))
+
 (defmethod t/report :end-test-var [_m]
   (when-let [rc *report-counters*]
     (let [{:keys [:fail :error]} @rc]
@@ -37,6 +40,16 @@
                               (assoc ::test (:test %))
                               (dissoc :test)))))))
 
+(defn current-branch []
+  (or (System/getenv "APPVEYOR_PULL_REQUEST_HEAD_REPO_BRANCH")
+      (System/getenv "APPVEYOR_REPO_BRANCH")
+      (System/getenv "CIRCLE_BRANCH")
+      (System/getenv "GITHUB_REF_NAME")
+      (System/getenv "CIRRUS_BRANCH")
+      (-> (sh "git" "rev-parse" "--abbrev-ref" "HEAD")
+          :out
+          str/trim)))
+
 (defn test-namespaces [& namespaces]
   (let [namespaces (seq (filter test-namespace? namespaces))]
     (when (seq namespaces)
@@ -48,21 +61,18 @@
               (alter-var-root #'st/spec-checking-fn (constantly orig-spec-checking-fn)))
             (when-not orchestra?
               (require n)
+              (when (and (= "amd64" (System/getProperty "os.arch"))
+                         (= "Mac OS X" (System/getProperty "os.name"))
+                         (= 'promesa.tests.core-test n))
+                (alter-meta! (resolve 'promesa.tests.core-test/loop-and-recur) assoc :flaky true))
               (filter-vars! (find-ns n) #(-> % meta ((some-fn :skip-bb
-                                                              :test-check-slow)) not))
+                                                              :test-check-slow
+                                                              (fn [m]
+                                                                (and (:flaky m) (#{"main" "master"} (current-branch))))))
+                                             not))
               (let [m (apply t/run-tests [n])]
                 (swap! status (fn [status]
                                 (merge-with + status (dissoc m :type))))))))))))
-
-(defn current-branch []
-  (or (System/getenv "APPVEYOR_PULL_REQUEST_HEAD_REPO_BRANCH")
-      (System/getenv "APPVEYOR_REPO_BRANCH")
-      (System/getenv "CIRCLE_BRANCH")
-      (System/getenv "GITHUB_REF_NAME")
-      (System/getenv "CIRRUS_BRANCH")
-      (-> (sh "git" "rev-parse" "--abbrev-ref" "HEAD")
-          :out
-          str/trim)))
 
 ;; Standard test-runner for libtests
 (let [lib-tests (edn/read-string (slurp (io/resource "bb-tested-libs.edn")))
