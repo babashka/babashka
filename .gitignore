@@ -40,3 +40,4 @@ target
 default.iprof
 scratch.clj
 bb-markdown
+.clj-kondo/metosin/malli-types-clj/config.edn
