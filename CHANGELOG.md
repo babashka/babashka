@@ -7,10 +7,11 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## Unreleased
+## 1.12.203 (2025-06-18)
 
 - Support `with-redefs` + `intern` (see SCI issue [#973](https://github.com/babashka/sci/issues/973)
 - [#1832](https://github.com/babashka/babashka/issues/1832): support `clojure.lang.Var/intern`
+- Re-allow `init` as task name
 
 ## 1.12.202 (2025-06-15)
 

@@ -237,13 +237,13 @@
 (when-not (resolve 'exec)
   (intern *ns* 'exec @(var babashka.tasks/exec)))
 
-;; init
-(defmacro init []
-  (when-not (resolve '%s/__init?)
-   (intern '%s '__init? true)
+;; init, name should not clash with existing tasks!
+(defmacro __babashka$tasks$impl$init []
+  (when-not (resolve '%s/__babashka$tasks$impl$init?)
+   (intern '%s '__babashka$tasks$impl$init? true)
    '%s))
 
-(init)
+(__babashka$tasks$impl$init)
 ;; task requires
 %s
 ;; task
