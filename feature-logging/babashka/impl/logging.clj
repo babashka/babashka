@@ -3,7 +3,7 @@
             [clojure.tools.logging.impl :as impl]
             [clojure.tools.logging.readable]
             [sci.core :as sci]
-            [taoensso.encore :as encore :refer [have]]
+            [taoensso.encore :as enc :refer [have]]
             [taoensso.timbre :as timbre]
             [taoensso.truss :as truss]))
 
@@ -11,13 +11,23 @@
 
 (def tns (sci/create-ns 'taoensso.timbre nil))
 
-(defn- fline [and-form] (:line (meta and-form)))
-
 (defonce callsite-counter
-  (encore/counter))
+  (enc/counter))
+
+(defn get-source
+  "Returns {:keys [ns line column file]} source location given a macro's
+     compile-time `&form` and `&env` vals. See also `keep-callsite`."
+  {:added "Encore v3.61.0 (2023-07-07)"}
+  [macro-form _macro-env]
+  (let [{:keys [line column]} (meta macro-form)
+        file @sci/file]
+    {:ns     (str *ns*)
+     :line   line
+     :column column
+     :file file}))
 
 (defmacro log! ; Public wrapper around `-log!`
-  "Core low-level log macro. Useful for tooling/library authors, etc.
+     "Core low-level log macro. Useful for tooling/library authors, etc.
 
        * `level`    - must eval to a valid logging level
        * `msg-type` - must eval to e/o #{:p :f nil}
@@ -33,43 +43,45 @@
        (defn     log-wrapper-fn    [& args]                        (timbre/log! :info :p  args))
        (defmacro log-wrapper-macro [& args] (timbre/keep-callsite `(timbre/log! :info :p ~args)))"
 
-  ([{:as   opts
-     :keys [loc level msg-type args vargs
-            config ?err ?base-data spying?]
-     :or
-     {config 'taoensso.timbre/*config*
-      ?err   :auto}}]
+     ([{:as   opts
+        :keys [loc level msg-type args vargs
+               config ?err ?base-data spying?
+               #_instant #_may-log?]
+        :or
+        {config `timbre/*config*
+         ?err   :auto}}]
 
-   (have [:or nil? sequential? symbol?] args)
-   (let [callsite-id (callsite-counter)
-         {:keys [line column]} (merge (meta &form) loc)
-         {:keys [ns file line column]} {:ns @sci/ns :file @sci/file :line line :column column}
-         ns     (or (get opts :?ns-str) ns)
-         file   (or (get opts :?file)   file)
-         line   (or (get opts :?line)   line)
-         column (or (get opts :?column) column)
+      (truss/have? [:or nil? sequential? symbol?] args)
+      (let [callsite-id (callsite-counter)
+            loc-form (or loc (get-source &form &env))
+            loc-map  (when (map?    loc-form) loc-form)
+            loc-sym  (when (symbol? loc-form) loc-form)
 
-         elide? (and #_(enc/const-forms? level ns) (timbre/-elide? level ns))]
+            ns-form     (get opts :?ns-str (get loc-map :ns     (when loc-sym `(get ~loc-sym :ns))))
+            file-form   (get opts :?file   (get loc-map :file   (when loc-sym `(get ~loc-sym :file))))
+            line-form   (get opts :?line   (get loc-map :line   (when loc-sym `(get ~loc-sym :line))))
+            column-form (get opts :?column (get loc-map :column (when loc-sym `(get ~loc-sym :column))))
 
-     (when-not elide?
-       (let [vargs-form
-             (or vargs
-                 (if (symbol? args)
-                   `(taoensso.timbre/-ensure-vec ~args)
-                   `[              ~@args]))]
-         ;; Note pre-resolved expansion
-         `(taoensso.timbre/-log! ~config ~level ~(str ns) ~file ~line ~column ~msg-type ~?err
-                                 (delay ~vargs-form) ~?base-data ~callsite-id ~spying?
-                                 ~(get opts :instant)
-                                 ~(get opts :may-log?))))))
+            elide? (and (enc/const-forms? level ns-form) (timbre/-elide? level ns-form))]
 
-  ([level msg-type args & [opts]]
-   (let [{:keys [line column]} (merge (meta &form))
-         {:keys [ns file line column]} {:ns @sci/ns :file @sci/file :line line :column column}
-         loc  {:ns ns :file file :line line :column column}
-         opts (assoc (conj {:loc loc} opts)
-                     :level level, :msg-type msg-type, :args args)]
-     `(taoensso.timbre/log! ~opts))))
+        (when-not elide?
+          (let [vargs-form
+                (or vargs
+                  (if (symbol? args)
+                    `(enc/ensure-vec ~args)
+                    `[              ~@args]))]
+
+            ;; Note pre-resolved expansion
+            `(taoensso.timbre/-log! ~config ~level ~ns-form ~file-form ~line-form ~column-form ~msg-type ~?err
+               (delay ~vargs-form) ~?base-data ~callsite-id ~spying?
+               ~(get opts :instant)
+               ~(get opts :may-log?))))))
+
+     ([level msg-type args & [opts]]
+      (let [loc  (get-source &form &env)
+            opts (assoc (conj {:loc loc} opts)
+                   :level level, :msg-type msg-type, :args args)]
+        `(timbre/log! ~opts))))
 
 (defn make-ns [ns sci-ns ks]
   (reduce (fn [ns-map [var-name var]]
@@ -115,7 +127,7 @@
                :*err* @sci/err
                stream)]
          (binding [*out* stream]
-           (encore/println-atomic (force output_)))))}))
+           (enc/println-atomic (force output_)))))}))
 
 (def default-config (assoc-in timbre/*config* [:appenders :println]
                               (println-appender {:stream :auto})))
@@ -134,7 +146,7 @@
 (defn set-min-level! [level] (swap-config! (fn [cfg]
                                              (timbre/set-min-level cfg level))))
 
-(defn merge-config! [m] (swap-config! (fn [old] (encore/nested-merge old m))))
+(defn merge-config! [m] (swap-config! (fn [old] (enc/nested-merge old m))))
 
 (defn set-ns-min-level
   "Returns given Timbre `config` with its `:min-level` modified so that
@@ -177,7 +189,8 @@
                                         'error 'errorf
                                         '-log! 'with-level
                                         'spit-appender '-spy 'spy
-                                        'color-str])
+                                        'color-str
+                                        'may-log?])
          'log! (sci/copy-var log! tns)
          '*config* config
          'set-config! (sci/copy-var set-config! tns)
@@ -187,7 +200,6 @@
          'set-min-level! (sci/copy-var set-min-level! tns)
          'println-appender (sci/copy-var println-appender tns)
          '-log-and-rethrow-errors (sci/copy-var -log-and-rethrow-errors tns)
-         '-ensure-vec (sci/copy-var encore/ensure-vec tns)
          'set-min-level! (sci/copy-var set-min-level! tns)
          'set-ns-min-level (sci/copy-var set-ns-min-level tns)
          'set-ns-min-level! (sci/copy-var set-ns-min-level! tns)))
@@ -195,8 +207,9 @@
 (def enc-ns (sci/create-ns 'taoensso.encore))
 
 (def encore-namespace
-  {'catching (sci/copy-var encore/catching enc-ns)
-   'try* (sci/copy-var encore/try* enc-ns)})
+  {'catching (sci/copy-var enc/catching enc-ns)
+   'try* (sci/copy-var enc/try* enc-ns)
+   'ensure-vec (sci/copy-var enc/ensure-vec enc-ns)})
 
 (def truss-ns (sci/create-ns 'taoensso.truss))
 
@@ -239,7 +252,7 @@
  #'clojure.tools.logging/*logger-factory*
  (fn [_]
    (LoggerFactory.
-    (encore/memoize (fn [logger-ns] (Logger. (str logger-ns) config))))))
+    (enc/memoize (fn [logger-ns] (Logger. (str logger-ns) config))))))
 
 (def lns (sci/create-ns 'clojure.tools.logging nil))
 
