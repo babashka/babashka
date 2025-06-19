@@ -191,8 +191,8 @@
 (defmacro info               [& args] `(timbre/log! :info   :p ~args ~{:loc (get-source &form &env)}))
 (defmacro warn               [& args] `(timbre/log! :warn   :p ~args ~{:loc (get-source &form &env)}))
 (defmacro error              [& args] `(timbre/log! :error  :p ~args ~{:loc (get-source &form &env)}))
-(defmacro fatal              [& args] `(timbre/log! :fatal  :p ~args ~{:loc (get-source &form &env)}))
-(defmacro report             [& args] `(timbre/log! :report :p ~args ~{:loc (get-source &form &env)}))
+;; (defmacro fatal              [& args] `(timbre/log! :fatal  :p ~args ~{:loc (get-source &form &env)}))
+;; (defmacro report             [& args] `(timbre/log! :report :p ~args ~{:loc (get-source &form &env)}))
 
      ;;; Log using format-style args
 ;; (defmacro logf* [config level & args] `(log! ~level  :f ~args ~{:loc (get-source &form &env), :config config}))
@@ -202,8 +202,8 @@
 (defmacro infof              [& args] `(timbre/log! :info   :f ~args ~{:loc (get-source &form &env)}))
 (defmacro warnf              [& args] `(timbre/log! :warn   :f ~args ~{:loc (get-source &form &env)}))
 (defmacro errorf             [& args] `(timbre/log! :error  :f ~args ~{:loc (get-source &form &env)}))
-(defmacro fatalf             [& args] `(timbre/log! :fatal  :f ~args ~{:loc (get-source &form &env)}))
-(defmacro reportf            [& args] `(timbre/log! :report :f ~args ~{:loc (get-source &form &env)}))
+;; (defmacro fatalf             [& args] `(timbre/log! :fatal  :f ~args ~{:loc (get-source &form &env)}))
+;; (defmacro reportf            [& args] `(timbre/log! :report :f ~args ~{:loc (get-source &form &env)}))
 
 (def timbre-namespace
   (assoc (make-ns 'taoensso.timbre tns [;; 'trace 'tracef 'debug 'debugf
