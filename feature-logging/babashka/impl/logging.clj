@@ -21,13 +21,13 @@
   [macro-form _macro-env]
   (let [{:keys [line column]} (meta macro-form)
         file @sci/file]
-    {:ns     (str *ns*)
+    {:ns     (str @sci/ns)
      :line   line
      :column column
      :file file}))
 
 (defmacro log! ; Public wrapper around `-log!`
-     "Core low-level log macro. Useful for tooling/library authors, etc.
+  "Core low-level log macro. Useful for tooling/library authors, etc.
 
        * `level`    - must eval to a valid logging level
        * `msg-type` - must eval to e/o #{:p :f nil}
@@ -43,45 +43,45 @@
        (defn     log-wrapper-fn    [& args]                        (timbre/log! :info :p  args))
        (defmacro log-wrapper-macro [& args] (timbre/keep-callsite `(timbre/log! :info :p ~args)))"
 
-     ([{:as   opts
-        :keys [loc level msg-type args vargs
-               config ?err ?base-data spying?
-               #_instant #_may-log?]
-        :or
-        {config `timbre/*config*
-         ?err   :auto}}]
+  ([{:as   opts
+     :keys [loc level msg-type args vargs
+            config ?err ?base-data spying?
+            #_instant #_may-log?]
+     :or
+     {config `timbre/*config*
+      ?err   :auto}}]
 
-      (truss/have? [:or nil? sequential? symbol?] args)
-      (let [callsite-id (callsite-counter)
-            loc-form (or loc (get-source &form &env))
-            loc-map  (when (map?    loc-form) loc-form)
-            loc-sym  (when (symbol? loc-form) loc-form)
+   (truss/have? [:or nil? sequential? symbol?] args)
+   (let [callsite-id (callsite-counter)
+         loc-form (or loc (get-source &form &env))
+         loc-map  (when (map?    loc-form) loc-form)
+         loc-sym  (when (symbol? loc-form) loc-form)
 
-            ns-form     (get opts :?ns-str (get loc-map :ns     (when loc-sym `(get ~loc-sym :ns))))
-            file-form   (get opts :?file   (get loc-map :file   (when loc-sym `(get ~loc-sym :file))))
-            line-form   (get opts :?line   (get loc-map :line   (when loc-sym `(get ~loc-sym :line))))
-            column-form (get opts :?column (get loc-map :column (when loc-sym `(get ~loc-sym :column))))
+         ns-form     (get opts :?ns-str (get loc-map :ns     (when loc-sym `(get ~loc-sym :ns))))
+         file-form   (get opts :?file   (get loc-map :file   (when loc-sym `(get ~loc-sym :file))))
+         line-form   (get opts :?line   (get loc-map :line   (when loc-sym `(get ~loc-sym :line))))
+         column-form (get opts :?column (get loc-map :column (when loc-sym `(get ~loc-sym :column))))
 
-            elide? (and (enc/const-forms? level ns-form) (timbre/-elide? level ns-form))]
+         elide? (and (enc/const-forms? level ns-form) (timbre/-elide? level ns-form))]
 
-        (when-not elide?
-          (let [vargs-form
-                (or vargs
-                  (if (symbol? args)
-                    `(enc/ensure-vec ~args)
-                    `[              ~@args]))]
+     (when-not elide?
+       (let [vargs-form
+             (or vargs
+                 (if (symbol? args)
+                   `(enc/ensure-vec ~args)
+                   `[              ~@args]))]
 
-            ;; Note pre-resolved expansion
-            `(taoensso.timbre/-log! ~config ~level ~ns-form ~file-form ~line-form ~column-form ~msg-type ~?err
-               (delay ~vargs-form) ~?base-data ~callsite-id ~spying?
-               ~(get opts :instant)
-               ~(get opts :may-log?))))))
+         ;; Note pre-resolved expansion
+         `(taoensso.timbre/-log! ~config ~level ~ns-form ~file-form ~line-form ~column-form ~msg-type ~?err
+                                 (delay ~vargs-form) ~?base-data ~callsite-id ~spying?
+                                 ~(get opts :instant)
+                                 ~(get opts :may-log?))))))
 
-     ([level msg-type args & [opts]]
-      (let [loc  (get-source &form &env)
-            opts (assoc (conj {:loc loc} opts)
-                   :level level, :msg-type msg-type, :args args)]
-        `(timbre/log! ~opts))))
+  ([level msg-type args & [opts]]
+   (let [loc  (get-source &form &env)
+         opts (assoc (conj {:loc loc} opts)
+                     :level level, :msg-type msg-type, :args args)]
+     `(timbre/log! ~opts))))
 
 (defn make-ns [ns sci-ns ks]
   (reduce (fn [ns-map [var-name var]]
@@ -183,14 +183,46 @@
             (timbre/log! :error :p [e#] ~{:?line ?line})
             (throw e#)))))
 
+
+;; (defmacro log*  [config level & args] `(log! ~level  :p ~args ~{:loc (get-source &form &env), :config config}))
+;; (defmacro log          [level & args] `(log! ~level  :p ~args ~{:loc (get-source &form &env)}))
+(defmacro trace              [& args] `(timbre/log! :trace  :p ~args ~{:loc (get-source &form &env)}))
+(defmacro debug              [& args] `(timbre/log! :debug  :p ~args ~{:loc (get-source &form &env)}))
+(defmacro info               [& args] `(timbre/log! :info   :p ~args ~{:loc (get-source &form &env)}))
+(defmacro warn               [& args] `(timbre/log! :warn   :p ~args ~{:loc (get-source &form &env)}))
+(defmacro error              [& args] `(timbre/log! :error  :p ~args ~{:loc (get-source &form &env)}))
+(defmacro fatal              [& args] `(timbre/log! :fatal  :p ~args ~{:loc (get-source &form &env)}))
+(defmacro report             [& args] `(timbre/log! :report :p ~args ~{:loc (get-source &form &env)}))
+
+     ;;; Log using format-style args
+;; (defmacro logf* [config level & args] `(log! ~level  :f ~args ~{:loc (get-source &form &env), :config config}))
+;; (defmacro logf         [level & args] `(log! ~level  :f ~args ~{:loc (get-source &form &env)}))
+(defmacro tracef             [& args] `(timbre/log! :trace  :f ~args ~{:loc (get-source &form &env)}))
+(defmacro debugf             [& args] `(timbre/log! :debug  :f ~args ~{:loc (get-source &form &env)}))
+(defmacro infof              [& args] `(timbre/log! :info   :f ~args ~{:loc (get-source &form &env)}))
+(defmacro warnf              [& args] `(timbre/log! :warn   :f ~args ~{:loc (get-source &form &env)}))
+(defmacro errorf             [& args] `(timbre/log! :error  :f ~args ~{:loc (get-source &form &env)}))
+(defmacro fatalf             [& args] `(timbre/log! :fatal  :f ~args ~{:loc (get-source &form &env)}))
+(defmacro reportf            [& args] `(timbre/log! :report :f ~args ~{:loc (get-source &form &env)}))
+
 (def timbre-namespace
-  (assoc (make-ns 'taoensso.timbre tns ['trace 'tracef 'debug 'debugf
-                                        'info 'infof 'warn 'warnf
-                                        'error 'errorf
+  (assoc (make-ns 'taoensso.timbre tns [;; 'trace 'tracef 'debug 'debugf
+                                        ;; 'info 'infof 'warn 'warnf
+                                        ;; 'error 'errorf
                                         '-log! 'with-level
                                         'spit-appender '-spy 'spy
                                         'color-str
                                         'may-log?])
+         'trace (sci/copy-var trace tns)
+         'debug (sci/copy-var debug tns)
+         'info  (sci/copy-var info tns)
+         'warn  (sci/copy-var warn tns)
+         'error  (sci/copy-var error tns)
+         'tracef (sci/copy-var tracef tns)
+         'debugf (sci/copy-var debugf tns)
+         'infof  (sci/copy-var infof tns)
+         'warnf  (sci/copy-var warnf tns)
+         'errorf  (sci/copy-var errorf tns)
          'log! (sci/copy-var log! tns)
          '*config* config
          'set-config! (sci/copy-var set-config! tns)
@@ -285,5 +317,5 @@
 
 (def tools-logging-readable-namespace
   (make-ns 'clojure.tools.logging.readable tlr-ns ['trace 'tracef 'debug 'debugf 'info 'infof
-                                                          'warn 'warnf 'error 'errorf 'fatal 'fatalf
-                                                          'logf 'logp 'spyf]))
+                                                   'warn 'warnf 'error 'errorf 'fatal 'fatalf
+                                                   'logf 'logp 'spyf]))
