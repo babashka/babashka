@@ -49,6 +49,7 @@
 
 (deftest logging-test
   (let [res (tu/bb nil (pr-str program))]
+    (is (= 9 (count (re-seq #"\[dude\]" res))))
     (is (= 8 (count (re-seq #"\[dude:.\]" res))))
     (is (= 6 (count (re-seq #"DEBUG" res))))
     (is (= 11 (count (re-seq #"INFO" res)))))
