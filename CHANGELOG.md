@@ -11,6 +11,7 @@ A preview of the next release can be installed from
 
 - [#1834](https://github.com/babashka/babashka/issues/1834): make `taoensso/trove` work in bb by exposing another `timbre` var
 - Bump `timbre` to `6.7.1`
+- Protocol method should have `:protocol` meta
 
 ## 1.12.203 (2025-06-18)
 
