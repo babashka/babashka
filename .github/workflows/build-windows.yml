@@ -26,7 +26,7 @@ jobs:
       GRAALVM_VERSION: "24"
       BABASHKA_PLATFORM: ${{ matrix.name }} # used in release script
       BABASHKA_TEST_ENV: native
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
       BABASHKA_SHA: ${{ github.sha }}
     steps:
       - name: Git checkout
