@@ -115,6 +115,8 @@ fi
 case "$(uname -s)" in
     Linux*)  platform=linux;;
     Darwin*) platform=macos;;
+    # Github Actions:
+    MINGW64*) platform=windows;;
 esac
 
 # Ugly ugly conversion of version to a comparable number

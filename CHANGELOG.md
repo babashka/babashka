@@ -13,6 +13,7 @@ A preview of the next release can be installed from
 - Bump `timbre` to `6.7.1`
 - Protocol method should have `:protocol` meta
 - Add `print-simple`
+- Make bash install script work on Windows for GHA
 
 ## 1.12.203 (2025-06-18)
 
