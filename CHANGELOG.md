@@ -7,8 +7,9 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## Unreleased
+## 1.12.204 (2025-06-24)
 
+- Compatibility with [clerk](https://github.com/nextjournal/clerk)'s main branch
 - [#1834](https://github.com/babashka/babashka/issues/1834): make `taoensso/trove` work in bb by exposing another `timbre` var
 - Bump `timbre` to `6.7.1`
 - Protocol method should have `:protocol` meta
