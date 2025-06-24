@@ -14,6 +14,7 @@ A preview of the next release can be installed from
 - Protocol method should have `:protocol` meta
 - Add `print-simple`
 - Make bash install script work on Windows for GHA
+- Upgrade Jsoup to `1.21.1`
 
 ## 1.12.203 (2025-06-18)
 
