@@ -11,6 +11,7 @@ A preview of the next release can be installed from
 
 - Bump edamame (support old-style `#^` metadata)
 - Bump SCI: fix `satisfies?` for protocol extended to `nil`
+- Bump rewrite-clj to `1.2.50`
 
 ## 1.12.204 (2025-06-24)
 
