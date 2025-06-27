@@ -7,6 +7,11 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## Unreleased
+
+- Bump edamame (support old-style `#^` metadata)
+- Bump SCI: fix `satisfies?` for protocol extended to `nil`
+
 ## 1.12.204 (2025-06-24)
 
 - Compatibility with [clerk](https://github.com/nextjournal/clerk)'s main branch
