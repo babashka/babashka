@@ -103,7 +103,8 @@
     java.lang.reflect.Member
     {:methods [{:name "getModifiers"}]}
     java.lang.reflect.Method
-    {:methods [{:name "getName"}
+    {:methods [{:name "invoke"}
+               {:name "getName"}
                {:name "getModifiers"}
                {:name "getParameterTypes"}
                {:name "getReturnType"}]}
