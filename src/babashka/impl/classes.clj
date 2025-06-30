@@ -442,6 +442,8 @@
           java.sql.Date
           java.text.ParseException
           java.text.ParsePosition
+          java.text.Normalizer
+          java.text.Normalizer$Form
           ;; adds about 200kb, same functionality provided by java.time:
           java.text.SimpleDateFormat
           java.text.BreakIterator
