@@ -295,3 +295,14 @@
 (assert (var? (clojure.lang.Var/intern (the-ns 'foo) 'dude)))
 (assert (var? (clojure.lang.Var/intern (the-ns 'foo) 'dude 2)))
 "))
+
+(deftest TextNormalizer-test
+  (bb nil "
+(import '[java.text Normalizer Normalizer$Form])
+
+(defn normalize [text]
+  (Normalizer/normalize text Normalizer$Form/NFC))
+
+(def s \"cafe\u0301\")
+
+(assert (> (count s) (count (normalize s))))"))
