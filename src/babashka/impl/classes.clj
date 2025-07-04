@@ -559,6 +559,7 @@
           java.util.HashSet
           java.util.IdentityHashMap
           java.util.InputMismatchException
+          java.util.LinkedList
           java.util.List
           java.util.Locale
           java.util.Map
