@@ -7,6 +7,10 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## Unreleased
+
+- Add `*suppress-read*`
+
 ## 1.12.205 (2025-07-07)
 
 - Bump edamame (support old-style `#^` metadata)
