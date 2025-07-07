@@ -92,10 +92,12 @@ jobs:
             name: macos
             arch: amd64
             static: false
+            oldest_macos_version: "11.0"
           - os: macos-14
             name: macos
             static: false
             arch: aarch64
+            oldest_macos_version: "11.0"
 
          #- os: ubuntu-latest
          #  name: linux
@@ -113,6 +115,7 @@ jobs:
       BABASHKA_XMX: "-J-Xmx6500m"
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       BABASHKA_SHA: ${{ github.sha }}
+      MACOSX_DEPLOYMENT_TARGET: ${{ matrix.oldest_macos_version }}
     steps:
       - name: Git checkout
         uses: actions/checkout@v2
@@ -182,7 +185,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           path: bb
-          name: babashka-${{ steps.babashka-version.outputs.version }}-${{ matrix.name }}-amd64
+          name: babashka-${{ steps.babashka-version.outputs.version }}-${{ matrix.name }}-${{ matrix.arch }}
 
       - name: Upload static artifact
         if: "matrix.static == true"
