@@ -7,13 +7,15 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## Unreleased
+## 1.12.205 (2025-07-07)
 
 - Bump edamame (support old-style `#^` metadata)
 - Bump SCI: fix `satisfies?` for protocol extended to `nil`
 - Bump rewrite-clj to `1.2.50`
 - Add `java.text.Normalizer` and `java.text.Normalizer$Form`
 - Add `java.util.LinkedList`
+- `install` script supports FreeBSD (with linux service enabled)
+- Enable `.invoke` on `java.lang.reflect.Method`
 
 ## 1.12.204 (2025-06-24)
 
