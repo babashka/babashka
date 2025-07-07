@@ -90,7 +90,13 @@ jobs:
         include:
           - os: macos-13
             name: macos
+            arch: amd64
             static: false
+          - os: macos-14
+            name: macos
+            static: false
+            arch: aarch64
+
          #- os: ubuntu-latest
          #  name: linux
          #  static: false
@@ -102,6 +108,7 @@ jobs:
       LEIN_ROOT: "true"
       GRAALVM_VERSION: "24"
       BABASHKA_PLATFORM: ${{ matrix.name }} # used in release script
+      BABASHKA_ARCH: ${{ matrix.arch }}
       BABASHKA_TEST_ENV: native
       BABASHKA_XMX: "-J-Xmx6500m"
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -123,7 +130,7 @@ jobs:
 
       - name: Setup GraalVM
         if: "matrix.static == false"
-        uses: graalvm/setup-graalvm@v1
+        uses: graalvm/setup-graalvm@v1.3.4
         with:
           java-version: '24'
           distribution: 'graalvm'
@@ -132,11 +139,10 @@ jobs:
 
       - name: Setup GraalVM+musl
         if: "matrix.static == true"
-        uses: graalvm/setup-graalvm@v1
+        uses: graalvm/setup-graalvm@v1.3.4
         with:
-          version: '24'
+          java-version: '24'
           distribution: 'graalvm'
-          components: 'native-image'
           native-image-musl: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -191,7 +197,10 @@ jobs:
           script/run_lib_tests
 
       - name: Release
-        run: .circleci/script/release
+        env:
+          BABASHKA_RELEASE: true
+        run: |
+          .circleci/script/release
 
   docker:
     if: ${{ false }} # Disabled
