@@ -7,6 +7,7 @@
    [cheshire.core :as json]
    [clojure.core.async]
    [sci.core :as sci]
+   [sci.impl.read]
    [sci.impl.types :as t]
    [sci.impl.vars :as vars]))
 
@@ -712,6 +713,13 @@
                       ~@(when features/xml? ['clojure.data.xml.node.Element])]
     :custom ~custom-map})
 
+(defn compiler-load
+  ([this ^java.io.Reader rdr]
+   (compiler-load this rdr "NO_SOURCE_PATH" "NO_SOURCE_FILE"))
+  ([_ ^java.io.Reader rdr ^String source-path ^String _source-name]
+   (sci/binding [sci/file source-path]
+     (sci.impl.read/load-reader rdr))))
+
 (defmacro gen-class-map []
   (let [classes (concat (:all classes)
                         (keys (:custom classes))
@@ -730,7 +738,11 @@
                                        ([_# ^String class-name#]
                                         (Class/forName class-name#))
                                        ([_# ^String class-name# initialize# ^java.lang.ClassLoader clazz-loader#]
-                                        (Class/forName class-name#)))}))]]
+                                        (Class/forName class-name#)))})
+                            (= 'clojure.lang.Compiler c)
+                            (assoc :static-methods
+                                   {(list 'quote 'load)
+                                    `compiler-load}))]]
                    c))
         m (assoc m :public-class
                  (fn [v]
