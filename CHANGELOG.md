@@ -10,6 +10,7 @@ A preview of the next release can be installed from
 ## Unreleased
 
 - Add `*suppress-read*`
+- Add `java.io.Flushable`
 
 ## 1.12.205 (2025-07-07)
 

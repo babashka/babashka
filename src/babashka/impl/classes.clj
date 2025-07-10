@@ -290,6 +290,7 @@
           java.io.FileOutputStream
           java.io.FileReader
           java.io.FileWriter
+          java.io.Flushable
           java.io.LineNumberReader
           java.io.RandomAccessFile
           java.io.InputStream
@@ -903,6 +904,7 @@
     ClassCastException java.lang.ClassCastException
     ClassNotFoundException java.lang.ClassNotFoundException
     Comparable java.lang.Comparable
+    Compiler clojure.lang.Compiler
     Double java.lang.Double
     Error java.lang.Error
     Exception java.lang.Exception
