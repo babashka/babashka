@@ -9,7 +9,9 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Bump httpkit to `2.9.0-beta1` for DataStar
 - Add `*suppress-read*`
+- Add `java.io.Flushable`
 
 ## 1.12.205 (2025-07-07)
 
