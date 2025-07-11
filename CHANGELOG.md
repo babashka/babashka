@@ -13,6 +13,8 @@ A preview of the next release can be installed from
 - Add `*suppress-read*`
 - Add `java.io.Flushable`
 - Fix `*loaded-libs*` issue for [clj-reload](https://github.com/tonsky/clj-reload) compatibility
+- Add `Compiler/load` static method for [clj-reload](https://github.com/tonsky/clj-reload) compatibility
+- Add `load` clojure.core function for [clj-reload](https://github.com/tonsky/clj-reload) compatibility
 
 ## 1.12.205 (2025-07-07)
 
