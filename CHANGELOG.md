@@ -7,8 +7,9 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## Unreleased
+## 1.12.206 (2025-07-16)
 
+- [Clerk](https://github.com/nextjournal/clerk) compatibility fixes
 - Bump httpkit to `2.9.0-beta1` for DataStar
 - Add `*suppress-read*`
 - Add `java.io.Flushable`
