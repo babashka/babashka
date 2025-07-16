@@ -372,6 +372,7 @@
           java.net.HttpURLConnection
           java.net.InetAddress
           java.net.InetSocketAddress
+          java.net.JarURLConnection
           java.net.StandardProtocolFamily
           java.net.ServerSocket
           java.net.Socket

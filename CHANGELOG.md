@@ -16,6 +16,8 @@ A preview of the next release can be installed from
 - Add `Compiler/load` static method for [clj-reload](https://github.com/tonsky/clj-reload) compatibility
 - Add `load` clojure.core function for [clj-reload](https://github.com/tonsky/clj-reload) compatibility
 - Bump `org.babashka/cli` to `0.8.66`
+- Add `java.net.JarURLConnection`
+- Bump SCI: fixes respecting type hint on instance method callee
 
 ## 1.12.205 (2025-07-07)
 
