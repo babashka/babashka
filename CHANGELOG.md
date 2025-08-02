@@ -7,6 +7,10 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## Unreleased
+
+- Pods: no warning on destroy when there's still calls in progress
+
 ## 1.12.206 (2025-07-16)
 
 - [Clerk](https://github.com/nextjournal/clerk) compatibility fixes
