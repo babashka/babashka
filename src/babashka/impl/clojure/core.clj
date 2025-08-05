@@ -9,7 +9,7 @@
             [sci.ctx-store :as store]
             [sci.impl.copy-vars :refer [copy-core-var new-var]]
             [sci.impl.parser :as parser]
-            [sci.impl.utils :refer [clojure-core-ns]]
+            [sci.impl.utils :as utils :refer [clojure-core-ns]]
             [sci.impl.vars :as vars]))
 
 (defn core-dynamic-var
@@ -18,9 +18,9 @@
 
 (def data-readers parser/data-readers)
 (def command-line-args (core-dynamic-var '*command-line-args*))
-(def warn-on-reflection (core-dynamic-var '*warn-on-reflection* false))
+(def warn-on-reflection utils/warn-on-reflection-var)
 (def compile-files (core-dynamic-var '*compile-files* false))
-(def unchecked-math (core-dynamic-var '*unchecked-math* false))
+(def unchecked-math utils/unchecked-math-var)
 (def math-context (core-dynamic-var '*math-context*))
 (def compile-path (core-dynamic-var '*compile-path* *compile-path*))
 (def compiler-options (core-dynamic-var '*compiler-options*))
@@ -186,15 +186,12 @@
    'tap> (copy-core-var tap>)
    'add-tap (copy-core-var add-tap)
    'remove-tap (copy-core-var remove-tap)
-   '*data-readers* data-readers
    'default-data-readers (copy-core-var default-data-readers)
    'xml-seq (copy-core-var xml-seq)
    'read+string (new-var 'read+string (fn [& args]
                                         (apply read+string (common/ctx) args)))
    '*command-line-args* command-line-args
-   '*warn-on-reflection* warn-on-reflection
    '*compile-files* compile-files
-   '*unchecked-math* unchecked-math
    '*math-context* math-context
    '*compiler-options* compiler-options
    '*compile-path* compile-path

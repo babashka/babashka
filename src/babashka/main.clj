@@ -840,10 +840,10 @@ Use bb run --help to show this help output.
 (defn exec [cli-opts]
   (with-bindings {#'*unrestricted* true
                   clojure.lang.Compiler/LOADER @cp/the-url-loader}
-    (sci/binding [core/warn-on-reflection @core/warn-on-reflection
-                  core/unchecked-math @core/unchecked-math
-                  core/data-readers @core/data-readers
-                  sci/ns @sci/ns
+    (sci/binding [;; core/warn-on-reflection @core/warn-on-reflection
+                  ;; core/unchecked-math @core/unchecked-math
+                  ;; core/data-readers @core/data-readers
+                  ;; sci/ns @sci/ns
                   sci/print-length @sci/print-length
                   ;; when adding vars here, also add them to repl.clj and nrepl_server.clj
                   ]
