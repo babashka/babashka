@@ -625,7 +625,9 @@
           org.jsoup.nodes.TextNode
           org.jsoup.nodes.XmlDeclaration
           org.jsoup.parser.Tag
-          org.jsoup.parser.Parser]
+          org.jsoup.parser.Parser
+          com.fasterxml.jackson.core.JsonGenerator
+          com.fasterxml.jackson.core.JsonParseException]
     :constructors [clojure.lang.Delay
                    clojure.lang.DynamicClassLoader
                    clojure.lang.LineNumberingPushbackReader

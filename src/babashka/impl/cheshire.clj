@@ -2,10 +2,12 @@
   {:no-doc true}
   (:require [cheshire.core :as json]
             [cheshire.factory :as fact]
+            [cheshire.generate :as gen]
             [sci.core :as sci :refer [copy-var]]))
 
 (def tns (sci/create-ns 'cheshire.core nil))
 (def fns (sci/create-ns 'cheshire.factory nil))
+(def gns (sci/create-ns 'cheshire.generate nil))
 
 (def json-factory (sci/new-dynamic-var '*json-factory* nil {:ns fns}))
 
@@ -118,3 +120,6 @@
    'default-factory-options (copy-var fact/default-factory-options fns)
    'json-factory (copy-var fact/json-factory fns)
    'make-json-factory (copy-var fact/make-json-factory fns)})
+
+(def cheshire-generate-namespace
+  {'add-encoder (copy-var gen/add-encoder fns)})
