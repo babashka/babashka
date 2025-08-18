@@ -6,7 +6,9 @@
    [babashka.deps :as bdeps]
    [babashka.fs :as fs]
    [babashka.impl.bencode :refer [bencode-namespace]]
-   [babashka.impl.cheshire :refer [cheshire-core-namespace cheshire-factory-namespace]]
+   [babashka.impl.cheshire :refer [cheshire-core-namespace
+                                   cheshire-factory-namespace
+                                   cheshire-generate-namespace]]
    [babashka.impl.classes :as classes :refer [classes-namespace]]
    [babashka.impl.classpath :as cp :refer [classpath-namespace]]
    [babashka.impl.cli :as cli]
@@ -381,6 +383,7 @@ Use bb run --help to show this help output.
        'clojure.java.io io-namespace
        'cheshire.core cheshire-core-namespace
        'cheshire.factory cheshire-factory-namespace
+       'cheshire.generate cheshire-generate-namespace
        'clojure.data data/data-namespace
        'clojure.instant instant/instant-namespace
        'clojure.stacktrace stacktrace-namespace
