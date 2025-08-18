@@ -12,6 +12,7 @@ A preview of the next release can be installed from
 - Bump `deps.clj` to `1.12.1.1561`
 - Bind more vars like `*warn-on-reflection*` during `load{string,reader}` (same as JVM Clojure) so you
   can load code in other than than the main thread
+- [#1845](https://github.com/babashka/babashka/issues/1845): expose cheshire.generate
 
 ## 1.12.207 (2025-08-02)
 

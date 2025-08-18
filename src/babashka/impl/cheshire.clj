@@ -122,4 +122,5 @@
    'make-json-factory (copy-var fact/make-json-factory fns)})
 
 (def cheshire-generate-namespace
-  {'add-encoder (copy-var gen/add-encoder fns)})
+  {'add-encoder (copy-var gen/add-encoder fns)
+   'encode-str  (copy-var gen/encode-str fns)})
