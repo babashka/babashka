@@ -77,7 +77,7 @@
                               :dependencies [[selmer/selmer "1.12.59"]]}
              :feature/logging {:source-paths ["feature-logging"]
                                :dependencies [[com.taoensso/timbre "6.8.0"]
-                                              [org.clojure/tools.logging "1.1.0"]]}
+                                              [org.clojure/tools.logging "1.3.0"]]}
              :feature/priority-map {:source-paths ["feature-priority-map"]
                                     :dependencies [[org.clojure/data.priority-map "1.1.0"]]}
              :feature/rrb-vector {:source-paths ["feature-rrb-vector"]

@@ -14,6 +14,7 @@ A preview of the next release can be installed from
   can load code in other than than the main thread
 - [#1845](https://github.com/babashka/babashka/issues/1845): expose `cheshire.generate/{add-encoder,encode-str}`
 - Bump timbre to `6.8.0`
+- Bump clojure.tools.logging to `1.3.0`
 
 ## 1.12.207 (2025-08-02)
 
