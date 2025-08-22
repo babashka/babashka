@@ -45,7 +45,7 @@
         rewrite-clj/rewrite-clj {:mvn/version "1.2.50"}
         selmer/selmer {:mvn/version "1.12.59"}
         com.taoensso/timbre {:mvn/version "6.8.0"}
-        org.clojure/tools.logging {:mvn/version "1.1.0"}
+        org.clojure/tools.logging {:mvn/version "1.3.0"}
         org.clojure/data.priority-map {:mvn/version "1.1.0"}
         insn/insn {:mvn/version "0.5.2"}
         org.clojure/core.rrb-vector {:mvn/version "0.1.2"}
