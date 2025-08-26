@@ -9,7 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-- Bump `deps.clj` to `1.12.1.1561`
+- Bump `deps.clj` to `1.12.2.1565`
 - Bind more vars like `*warn-on-reflection*` during `load{string,reader}` (same as JVM Clojure) so you
   can load code in other than than the main thread
 - [#1845](https://github.com/babashka/babashka/issues/1845): expose `cheshire.generate/{add-encoder,encode-str}`
