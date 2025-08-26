@@ -16,6 +16,7 @@ A preview of the next release can be installed from
 - Bump timbre to `6.8.0`
 - Bump clojure.tools.logging to `1.3.0`
 - Improve interop using type hints on qualified instance methods
+- Bump Jsoup to `1.21.2`
 
 ## 1.12.207 (2025-08-02)
 
