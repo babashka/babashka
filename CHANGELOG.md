@@ -18,6 +18,10 @@ A preview of the next release can be installed from
 - Improve interop using type hints on qualified instance methods
 - Bump Jsoup to `1.21.2`
 
+### News
+
+- Cognitect Lab's [aws-api](https://github.com/cognitect-labs/aws-api) now runs with babashka!
+
 ## 1.12.207 (2025-08-02)
 
 - Pods: no exception on destroy when there's still calls in progress
