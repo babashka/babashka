@@ -21,6 +21,7 @@ A preview of the next release can be installed from
 ### News
 
 - Cognitect Lab's [aws-api](https://github.com/cognitect-labs/aws-api) now runs with babashka!
+- DataStar's [Clojure SDK](https://github.com/starfederation/datastar-clojure) now runs with babashka!
 
 ## 1.12.207 (2025-08-02)
 
