@@ -22,6 +22,10 @@ A preview of the next release can be installed from
 
 - Cognitect Lab's [aws-api](https://github.com/cognitect-labs/aws-api) now runs with babashka!
 - DataStar's [Clojure SDK](https://github.com/starfederation/datastar-clojure) now runs with babashka!
+- [Lazytest](https://github.com/NoahTheDuke/lazytest) compatibility
+- [test.chuck](https://github.com/gfredericks/test.chuck) compatibility
+- Article: [Clojure, Babashka, and Web CGI](https://blog.nundrum.net/posts-output/2025-07-09-clojure-cgi/)
+- Babashka [DuckDB pod](https://github.com/babashka/babashka-sql-pods)
 
 ## 1.12.207 (2025-08-02)
 
