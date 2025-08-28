@@ -20,12 +20,19 @@ A preview of the next release can be installed from
 
 ### News
 
+From now on I'll share exciting news since last release in the changelog. I used
+to collect this news in a different source
+[here](https://github.com/babashka/babashka/blob/master/doc/news.md) but forgot
+to update it since spring 2023. Hopefully doing this in the changelog will make
+me pick up this habit again.
+
 - Cognitect Lab's [aws-api](https://github.com/cognitect-labs/aws-api) now runs with babashka!
 - DataStar's [Clojure SDK](https://github.com/starfederation/datastar-clojure) now runs with babashka!
 - [Lazytest](https://github.com/NoahTheDuke/lazytest) compatibility
 - [test.chuck](https://github.com/gfredericks/test.chuck) compatibility
 - Article: [Clojure, Babashka, and Web CGI](https://blog.nundrum.net/posts-output/2025-07-09-clojure-cgi/)
 - Babashka [DuckDB pod](https://github.com/babashka/babashka-sql-pods)
+- [bling](https://github.com/paintparty/bling) works with bb too!
 
 ## 1.12.207 (2025-08-02)
 
