@@ -33,6 +33,7 @@ me pick up this habit again.
 - Article: [Clojure, Babashka, and Web CGI](https://blog.nundrum.net/posts-output/2025-07-09-clojure-cgi/)
 - Babashka [DuckDB pod](https://github.com/babashka/babashka-sql-pods)
 - [bling](https://github.com/paintparty/bling) works with bb too!
+- [lambdaisland/garden](https://github.com/lambdaisland/garden) is a fork of garden, a library to generate CSS from Clojure, that works with bb!
 
 ## 1.12.207 (2025-08-02)
 
