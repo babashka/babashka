@@ -3,6 +3,7 @@
   (:require
    [babashka.impl.clojure.core :as core-extras]
    [babashka.impl.clojure.main :as m]
+   [babashka.impl.common :as common]
    [clojure.java.io :as io]
    [clojure.string :as str]
    [clojure.tools.reader.reader-types :as r]
@@ -71,7 +72,7 @@
                   (fn []
                     (sci/with-bindings {sci/out @sci/err}
                       (sio/println "Babashka"
-                                   (str "v" (str/trim (slurp (io/resource "BABASHKA_VERSION"))))
+                                   (str "v" (str/trim (slurp (io/resource "BABASHKA_VERSION" common/jvm-loader))))
                                    "REPL.")
                       (sio/println "Use :repl/quit or :repl/exit to quit the REPL.")
                       (sio/println "Clojure rocks, Bash reaches.")

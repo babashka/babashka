@@ -928,9 +928,10 @@ Use bb run --help to show this help output.
                                                            :expressions [(:source res)]})
                                    {})
                                res)))
+                         ;; built-in deps
                          (let [rps (cp/resource-paths namespace)
                                rps (mapv #(str "src/babashka/" %) rps)]
-                           (when-let [url (some io/resource rps)]
+                           (when-let [url (some #(io/resource % common/jvm-loader) rps)]
                              (let [source (slurp url)]
                                {:file (str url)
                                 :source source})))
