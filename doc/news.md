@@ -5,6 +5,10 @@ you have anything to add. Also see
 [#babashka](https://twitter.com/hashtag/babashka?src=hashtag_click&f=live) on
 Twitter.
 
+## 2025-08
+
+News will now be included in the [CHANGELOG.md](https://github.com/babashka/babashka/blob/master/CHANGELOG.md) from now on!
+
 ## 2023-05 ([Twitter](https://twitter.com/search?q=(%23babashka%20OR%20babashka)%20since%3A2023-05-01%20until%3A2023-06-01&src=typed_query&f=live), [Mastodon](https://mastodon.social/tags/babashka))
 
 ### Releases
