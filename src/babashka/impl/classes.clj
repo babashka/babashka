@@ -137,7 +137,8 @@
                {:name "baseLoader"}]}
     clojure.lang.Compiler
     {:fields [{:name "specials"}
-              {:name "CHAR_MAP"}]}
+              {:name "CHAR_MAP"}]
+     :methods [{:name "demunge"}]}
     clojure.lang.PersistentHashMap
     {:fields [{:name "EMPTY"}]}
     clojure.lang.APersistentVector
