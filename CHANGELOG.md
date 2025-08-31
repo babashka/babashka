@@ -38,7 +38,8 @@ me pick up this habit again.
 - Babashka [DuckDB pod](https://github.com/babashka/babashka-sql-pods)
 - [bling](https://github.com/paintparty/bling) works with bb too!
 - [lambdaisland/garden](https://github.com/lambdaisland/garden) is a fork of garden, a library to generate CSS from Clojure, that works with bb!
-- Video: [Interactive Shell Scripting With Babashka](https://www.youtube.com/watch?v=fa5ig2cIWnU) by Peter Strömberg aka PEZ
+- Video (2024): [Interactive Shell Scripting With Babashka](https://www.youtube.com/watch?v=fa5ig2cIWnU) by Peter Strömberg aka PEZ
+- Video (2023): [Babashka: a meta-circular Clojure interpreter for the command line](https://www.youtube.com/watch?v=DHtRfO3Bp90) by Michiel Borkent aka @borkdude
 
 ## 1.12.207 (2025-08-02)
 
