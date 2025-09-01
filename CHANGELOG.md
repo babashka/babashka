@@ -21,6 +21,7 @@ A preview of the next release can be installed from
 - Bump clojure.tools.logging to `1.3.0`
 - Improve interop using type hints on qualified instance methods
 - Bump Jsoup to `1.21.2`
+- Bump `fs` to `0.5.7`
 
 ### News
 
