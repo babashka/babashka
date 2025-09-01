@@ -22,6 +22,7 @@ A preview of the next release can be installed from
 - Improve interop using type hints on qualified instance methods
 - Bump Jsoup to `1.21.2`
 - Bump `fs` to `0.5.7`
+- Bump `cheshire` to `6.1.0`
 
 ### News
 
