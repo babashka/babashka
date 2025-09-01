@@ -25,7 +25,7 @@
   :dependencies [[org.clojure/clojure "1.12.1"]
                  [borkdude/edamame "1.4.32"]
                  [org.clojure/tools.cli "1.0.214"]
-                 [cheshire "6.0.0"]
+                 [cheshire "6.1.0"]
                  [nrepl/bencode "1.2.0"]
                  [borkdude/sci.impl.reflector "0.0.5"]
                  [org.babashka/sci.impl.types "0.0.2"]
