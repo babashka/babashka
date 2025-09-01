@@ -10,12 +10,12 @@ A preview of the next release can be installed from
 ## Unreleased
 
 - Add `Compiler/demunge`
+- Add `clojure.lang.TaggedLiteral/create`
 - Add `println-str`
 - SCI: Var literal or special form gets confused with local of same name
 - [#1852](https://github.com/babashka/babashka/issues/1852): `(.getContextClassLoader (Thread/currentThread))` should be able to return results from babashka classpath
 - Bump `deps.clj` to `1.12.2.1565`
-- Bind more vars like `*warn-on-reflection*` during `load{string,reader}` (same as JVM Clojure) so you
-  can load code in other than than the main thread
+- Bind more vars like `*warn-on-reflection*` during `load{string,reader}` (same as JVM Clojure) so can load code in other than than the main thread
 - [#1845](https://github.com/babashka/babashka/issues/1845): expose `cheshire.generate/{add-encoder,encode-str}`
 - Bump timbre to `6.8.0`
 - Bump clojure.tools.logging to `1.3.0`

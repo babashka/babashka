@@ -182,7 +182,9 @@
     {:methods [{:name "getWatches"}]}
     clojure.lang.MapEntry
     {:allPublicConstructors true
-     :methods [{:name "create"}]}})
+     :methods [{:name "create"}]}
+    clojure.lang.TaggedLiteral
+    {:methods [{:name "create"}]}})
 
 (def custom-map
   (cond->
