@@ -1239,12 +1239,6 @@ Use bb run --help to show this help output.
       (exec-without-deps opts)
       (exec opts))))
 
-(def musl?
-  "Captured at compile time, to know if we are running inside a
-  statically compiled executable with musl."
-  (and (= "true" (System/getenv "BABASHKA_STATIC"))
-       (= "true" (System/getenv "BABASHKA_MUSL"))))
-
 (defn- set-daemon-agent-executor
   "Set Clojure's send-off agent executor (also affects futures). This is almost
   an exact rewrite of the Clojure's executor, but the Threads are created as
