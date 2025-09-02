@@ -98,7 +98,11 @@
         exit (:exit res)
         error? (pos? exit)]
     (if error? (throw (ex-info (or (:err res) "") {}))
-               (normalize (:out res)))))
+        (do
+          (let [err (:err res)]
+            (when-not (str/blank? err)
+              (println err)))
+          (normalize (:out res))))))
 
 (def bb
   (case (System/getenv "BABASHKA_TEST_ENV")

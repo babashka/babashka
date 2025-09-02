@@ -840,9 +840,34 @@ Use bb run --help to show this help output.
             (sci/eval-form ctx (list 'clojure.core/var-set core/data-readers (list 'quote (assoc @core/data-readers t the-var))))
             the-var)))))
 
+(defn debug [& args]
+  (.println System/err (str/join " " args))
+  (.flush System/err))
+
+(defn- set-daemon-agent-executor
+  "Set Clojure's send-off agent executor (also affects futures). This is almost
+  an exact rewrite of the Clojure's executor, but the Threads are created as
+  daemons."
+  []
+  (let [thread-counter (atom 0)
+        thread-factory (reify java.util.concurrent.ThreadFactory
+                         (newThread [_ runnable]
+                           (let [name (format "CLI-agent-send-off-pool-%d"
+                                              (first (swap-vals! thread-counter inc)))]
+                             (debug :creating-daemon-thread! name)
+                             (doto (Thread. runnable)
+                               (.setDaemon true) ;; DIFFERENT
+                               (.setName name)))))
+        executor (java.util.concurrent.Executors/newCachedThreadPool thread-factory)]
+    (debug :executor executor :something-else)
+    (set-agent-send-off-executor! executor)
+    (vreset! common/solo-executor executor)
+    (debug :deamon-executor (str @common/solo-executor))))
+
 (defn exec [cli-opts]
   (with-bindings {#'*unrestricted* true
                   clojure.lang.Compiler/LOADER @cp/the-url-loader}
+    (set-daemon-agent-executor)
     (-> (Thread/currentThread) (.setContextClassLoader @cp/the-url-loader))
     (sci/binding [core/warn-on-reflection @core/warn-on-reflection
                   core/unchecked-math @core/unchecked-math
@@ -1235,37 +1260,16 @@ Use bb run --help to show this help output.
         (binding [*out* *err*]
           (println (str "WARNING: this project requires babashka "
                         min-bb-version " or newer, but you have: " version)))))
-    (if (deps-not-needed opts)
-      (exec-without-deps opts)
-      (exec opts))))
-
-(defn debug [& args]
-  (.println System/err (str/join " " args)))
-
-(defn- set-daemon-agent-executor
-  "Set Clojure's send-off agent executor (also affects futures). This is almost
-  an exact rewrite of the Clojure's executor, but the Threads are created as
-  daemons."
-  []
-  (let [thread-counter (atom 0)
-        thread-factory (reify java.util.concurrent.ThreadFactory
-                         (newThread [_ runnable]
-                           (let [name (format "CLI-agent-send-off-pool-%d"
-                                              (first (swap-vals! thread-counter inc)))]
-                             (debug :creating-daemon-thread! name)
-                             (doto (Thread. runnable)
-                               (.setDaemon true) ;; DIFFERENT
-                               (.setName name)))))
-        executor (java.util.concurrent.Executors/newCachedThreadPool thread-factory)]
-    (set-agent-send-off-executor! executor)
-    (debug :deamon-executor @common/solo-executor)
-    (vreset! common/solo-executor executor)))
+    (doto (if (deps-not-needed opts)
+            (exec-without-deps opts)
+            (exec opts))
+      (babashka.main/debug :deamon-executor (str @common/solo-executor))
+      (babashka.main/debug :the-end))))
 
 (defn -main
   [& args]
   (handle-pipe!)
   (handle-sigint!)
-  (set-daemon-agent-executor)
   (if-let [dev-opts (System/getenv "BABASHKA_DEV")]
     (let [{:keys [:n]} (if (= "true" dev-opts) {:n 1}
                            (edn/read-string dev-opts))
