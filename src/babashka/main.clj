@@ -1239,6 +1239,9 @@ Use bb run --help to show this help output.
       (exec-without-deps opts)
       (exec opts))))
 
+(defn debug [& args]
+  (.println System/err (str/join " " args)))
+
 (defn- set-daemon-agent-executor
   "Set Clojure's send-off agent executor (also affects futures). This is almost
   an exact rewrite of the Clojure's executor, but the Threads are created as
@@ -1247,12 +1250,15 @@ Use bb run --help to show this help output.
   (let [thread-counter (atom 0)
         thread-factory (reify java.util.concurrent.ThreadFactory
                          (newThread [_ runnable]
-                           (doto (Thread. runnable)
-                             (.setDaemon true) ;; DIFFERENT
-                             (.setName (format "CLI-agent-send-off-pool-%d"
-                                               (first (swap-vals! thread-counter inc)))))))
+                           (let [name (format "CLI-agent-send-off-pool-%d"
+                                              (first (swap-vals! thread-counter inc)))]
+                             (debug :creating-daemon-thread! name)
+                             (doto (Thread. runnable)
+                               (.setDaemon true) ;; DIFFERENT
+                               (.setName name)))))
         executor (java.util.concurrent.Executors/newCachedThreadPool thread-factory)]
     (set-agent-send-off-executor! executor)
+    (debug :deamon-executor @common/solo-executor)
     (vreset! common/solo-executor executor)))
 
 (defn -main

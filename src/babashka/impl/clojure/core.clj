@@ -83,12 +83,16 @@
   [^clojure.lang.Agent a f & args]
   (apply send-via clojure.lang.Agent/pooledExecutor a f args))
 
+(defn debug [& args]
+  (.println System/err (str/join " " args)))
+
 (defn send-off
   "Dispatch a potentially blocking action to an agent. Returns the
   agent immediately. Subsequently, in a separate thread, the state of
   the agent will be set to the value of:
   (apply action-fn state-of-agent args)"
   [^clojure.lang.Agent a f & args]
+  (debug :send-off-executor @common/solo-executor)
   (apply send-via @common/solo-executor a f args))
 
 ;;;; End agents
