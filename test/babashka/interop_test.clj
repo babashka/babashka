@@ -251,11 +251,13 @@
 
 (deftest cached-thread-pool
   (is (= 3 (bb nil "(import '(java.util.concurrent Executors ExecutorService))
-                    (let [fut (.submit ^ExecutorService (Executors/newCachedThreadPool) ^Callable (fn [] 3))]
-                      (.get fut))")))
+                    (let [executor (Executors/newCachedThreadPool)
+                          fut (.submit ^ExecutorService executor ^Callable (fn [] 3))]
+                      (try (.get fut) (finally (.shutdown executor))))")))
   (is (nil? (bb nil "(import '(java.util.concurrent Executors ExecutorService))
-                     (let [fut (.submit ^ExecutorService (Executors/newCachedThreadPool) ^Runnable (fn [] 3))]
-                       (.get fut))"))))
+                     (let [executor (Executors/newCachedThreadPool)
+                           fut (.submit ^ExecutorService executor ^Runnable (fn [] 3))]
+                       (try (.get fut) (finally (.shutdown executor))))"))))
 
 (deftest break-iterator-test
   (is (= 1 (bb nil "(ns dude
