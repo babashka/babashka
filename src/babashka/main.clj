@@ -1252,7 +1252,8 @@ Use bb run --help to show this help output.
                              (.setName (format "CLI-agent-send-off-pool-%d"
                                                (first (swap-vals! thread-counter inc)))))))
         executor (java.util.concurrent.Executors/newCachedThreadPool thread-factory)]
-    (set-agent-send-off-executor! executor)))
+    (set-agent-send-off-executor! executor)
+    (vreset! common/solo-executor executor)))
 
 (defn -main
   [& args]
