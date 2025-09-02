@@ -9,12 +9,118 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Add `Compiler/demunge`
+- Add `clojure.lang.TaggedLiteral/create`
+- Add `println-str`
+- SCI: Var literal or special form gets confused with local of same name
+- [#1852](https://github.com/babashka/babashka/issues/1852): `(.getContextClassLoader (Thread/currentThread))` should be able to return results from babashka classpath
+- Bump `deps.clj` to `1.12.2.1565`
+- Bind more vars like `*warn-on-reflection*` during `load{string,reader}` (same as JVM Clojure) so can load code in other than than the main thread
+- [#1845](https://github.com/babashka/babashka/issues/1845): expose `cheshire.generate/{add-encoder,encode-str}`
+- Bump timbre to `6.8.0`
+- Bump clojure.tools.logging to `1.3.0`
+- Improve interop using type hints on qualified instance methods
+- Bump Jsoup to `1.21.2`
+- Bump `fs` to `0.5.7`
+- Bump `cheshire` to `6.1.0`
+
+### News
+
+From now on I'll share exciting news since last release in the changelog. I used
+to collect this news in a different source
+[here](https://github.com/babashka/babashka/blob/master/doc/news.md) but forgot
+to update it since spring 2023. Hopefully doing this in the changelog will make
+me pick up this habit again.
+
+- Cognitect Lab's [aws-api](https://github.com/cognitect-labs/aws-api) now runs with babashka!
+- DataStar's [Clojure SDK](https://github.com/starfederation/datastar-clojure) now runs with babashka!
+- [Lazytest](https://github.com/NoahTheDuke/lazytest) compatibility
+- [test.chuck](https://github.com/gfredericks/test.chuck) compatibility
+- Article: [Clojure, Babashka, and Web CGI](https://blog.nundrum.net/posts-output/2025-07-09-clojure-cgi/)
+- Babashka [DuckDB pod](https://github.com/babashka/babashka-sql-pods)
+- [bling](https://github.com/paintparty/bling) works with bb too!
+- [lambdaisland/garden](https://github.com/lambdaisland/garden) is a fork of garden, a library to generate CSS from Clojure, that works with bb!
+- Video (2024): [Interactive Shell Scripting With Babashka](https://www.youtube.com/watch?v=fa5ig2cIWnU) by Peter Strömberg aka PEZ
+- Video (2023): [Babashka: a meta-circular Clojure interpreter for the command line](https://www.youtube.com/watch?v=DHtRfO3Bp90) by Michiel Borkent aka @borkdude
+
+## 1.12.207 (2025-08-02)
+
+- Pods: no exception on destroy when there's still calls in progress
+
+## 1.12.206 (2025-07-16)
+
+- [Clerk](https://github.com/nextjournal/clerk) compatibility fixes
+- Bump httpkit to `2.9.0-beta1` for DataStar
+- Add `*suppress-read*`
+- Add `java.io.Flushable`
+- Fix `*loaded-libs*` issue for [clj-reload](https://github.com/tonsky/clj-reload) compatibility
+- Add `Compiler/load` static method for [clj-reload](https://github.com/tonsky/clj-reload) compatibility
+- Add `load` clojure.core function for [clj-reload](https://github.com/tonsky/clj-reload) compatibility
+- Bump `org.babashka/cli` to `0.8.66`
+- Add `java.net.JarURLConnection`
+- Bump SCI: fixes respecting type hint on instance method callee
+
+## 1.12.205 (2025-07-07)
+
+- Bump edamame (support old-style `#^` metadata)
+- Bump SCI: fix `satisfies?` for protocol extended to `nil`
+- Bump rewrite-clj to `1.2.50`
+- Add `java.text.Normalizer` and `java.text.Normalizer$Form`
+- Add `java.util.LinkedList`
+- `install` script supports FreeBSD (with linux service enabled)
+- Enable `.invoke` on `java.lang.reflect.Method`
+
+## 1.12.204 (2025-06-24)
+
+- Compatibility with [clerk](https://github.com/nextjournal/clerk)'s main branch
+- [#1834](https://github.com/babashka/babashka/issues/1834): make `taoensso/trove` work in bb by exposing another `timbre` var
+- Bump `timbre` to `6.7.1`
+- Protocol method should have `:protocol` meta
+- Add `print-simple`
+- Make bash install script work on Windows for GHA
+- Upgrade Jsoup to `1.21.1`
+
+## 1.12.203 (2025-06-18)
+
+- Support `with-redefs` + `intern` (see SCI issue [#973](https://github.com/babashka/sci/issues/973)
+- [#1832](https://github.com/babashka/babashka/issues/1832): support `clojure.lang.Var/intern`
+- Re-allow `init` as task name
+
+## 1.12.202 (2025-06-15)
+
+- Support `clojure.lang.Var/{get,clone,reset}ThreadBindingFrame` for JVM Clojure compatibility
+- [#1741](https://github.com/babashka/babashka/issues/1741): fix `taoensso.timbre/spy` and include test
+- Add `taoensso.timbre/set-ns-min-level!` and `taoensso.timbre/set-ns-min-level`
+
+## 1.12.201 (2025-06-12)
+
+- [#1825](https://github.com/babashka/babashka/issues/1825): Add [Nextjournal Markdown](https://github.com/nextjournal/markdown) as built-in Markdown library
+- Promesa compatibility (pending PR [here](https://github.com/funcool/promesa/pull/160))
+- Upgrade clojure to `1.12.1`
+- [#1818](https://github.com/babashka/babashka/issues/1818): wrong argument order in `clojure.java.io/resource` implementation
 - Add `java.text.BreakIterator`
-- Bump `fs` to `0.5.25`
+- Add classes for compatibility with [promesa](https://github.com/funcool/promesa):
+  - `java.lang.Thread$Builder$OfPlatform`
+  - `java.util.concurrent.ForkJoinPool`
+  - `java.util.concurrent.ForkJoinPool$ForkJoinWorkerThreadFactory`
+  - `java.util.concurrent.ForkJoinWorkerThread`
+  - `java.util.concurrent.SynchronousQueue`
+- Add `taoensso.timbre/set-min-level!`
+- Add `taoensso.timbre/set-config!`
+- Bump `fs` to `0.5.26`
 - Bump `jsoup` to `1.20.1`
 - Bump `edamame` to `1.4.30`
+- Bump `taoensso.timbre` to `6.7.0`
+- Bump `pods`: more graceful error handling when pod quits unexpectedly
 - [#1815](https://github.com/babashka/babashka/issues/1815): Make install-script wget-compatible ([@eval](https://github.com/eval))
-
+- [#1822](https://github.com/babashka/babashka/issues/1822): `type` should prioritize `:type` metadata
+- `ns-name` should work on symbols
+- `:clojure.core/eval-file` should affect `*file*` during eval
+- [#1179](https://github.com/babashka/babashka/issues/1179): run `:init` in tasks only once
+- [#1823](https://github.com/babashka/babashka/issues/1823): run `:init` in tasks before task specific requires
+- Fix `resolve` when `*ns*` is bound to symbol
+- Bump `deps.clj` to `1.12.1.1550`
+- Bump `http-client` to `0.4.23`
 
 ## 1.12.200 (2025-04-26)
 

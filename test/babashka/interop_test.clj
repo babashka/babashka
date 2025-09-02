@@ -23,6 +23,12 @@
                         java.util.concurrent.Executor
                         (java.util.concurrent.Executors/newThreadPerTaskExecutor (-> (Thread/ofVirtual) (.name "fusebox-thread-" 1) (.factory))))))))
 
+(deftest threads-test
+  (is (bb nil (pr-str '(-> (Thread/ofPlatform)
+                           (.daemon)
+                           (.start (fn []))
+                           (.isDaemon))))))
+
 (deftest domain-sockets-test
   (is (= :success (bb nil (slurp "test-resources/domain_sockets.bb")))))
 
@@ -266,3 +272,37 @@
 
 (prn
  (count-characters \"🇨🇦\"))"))))
+
+(deftest clojure-lang-Var-binding-frame-test
+  (is (= [43 42 43 42] (bb nil "(def ^:dynamic *test-var* 42)
+   (def results (atom []))
+   (binding [*test-var* *test-var*]
+    (let [current-frame (clojure.lang.Var/cloneThreadBindingFrame)
+          frame (clojure.lang.Var/cloneThreadBindingFrame)]
+      (assert (not (identical? current-frame frame)))
+      (binding [*test-var* 43]
+        (let [inner-frame (clojure.lang.Var/getThreadBindingFrame)]
+          (swap! results conj *test-var*)
+          (clojure.lang.Var/resetThreadBindingFrame frame)
+          (swap! results conj *test-var*)
+          (clojure.lang.Var/resetThreadBindingFrame inner-frame)
+          (swap! results conj *test-var*)))
+      (swap! results conj *test-var*)))
+   @results"))))
+
+(deftest clojure-lang-Var-intern-test
+  (bb nil "(ns foo) (ns bar)
+(assert (var? (clojure.lang.Var/intern (the-ns 'foo) 'dude)))
+(assert (var? (clojure.lang.Var/intern (the-ns 'foo) 'dude 2)))
+"))
+
+(deftest TextNormalizer-test
+  (bb nil "
+(import '[java.text Normalizer Normalizer$Form])
+
+(defn normalize [text]
+  (Normalizer/normalize text Normalizer$Form/NFC))
+
+(def s \"cafe\u0301\")
+
+(assert (> (count s) (count (normalize s))))"))

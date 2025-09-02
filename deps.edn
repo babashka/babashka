@@ -18,7 +18,7 @@
          "deps.clj/src" "deps.clj/resources"
          "resources" "sci/resources"
          "impl-java/src"],
- :deps {org.clojure/clojure {:mvn/version "1.12.0"},
+ :deps {org.clojure/clojure {:mvn/version "1.12.1"},
         org.babashka/sci {:local/root "sci"}
         org.babashka/babashka.impl.java {:mvn/version "0.1.10"}
         org.babashka/sci.impl.types {:mvn/version "0.0.2"}
@@ -28,7 +28,7 @@
         org.clojure/core.async {:mvn/version "1.8.741"},
         org.clojure/tools.cli {:mvn/version "1.0.214"},
         org.clojure/data.csv {:mvn/version "1.0.0"},
-        cheshire/cheshire {:mvn/version "6.0.0"}
+        cheshire/cheshire {:mvn/version "6.1.0"}
         org.clojure/data.xml {:mvn/version "0.2.0-alpha8"}
         clj-commons/clj-yaml {:mvn/version "1.0.29"}
         com.cognitect/transit-clj {:mvn/version "1.0.333"}
@@ -38,21 +38,22 @@
         org.postgresql/postgresql {:mvn/version "42.2.18"}
         org.hsqldb/hsqldb {:mvn/version "2.5.1"}
         datascript/datascript {:mvn/version "1.0.1"}
-        http-kit/http-kit {:mvn/version "2.8.0-RC1"}
+        http-kit/http-kit {:mvn/version "2.9.0-beta1"}
         babashka/clojure-lanterna {:mvn/version "0.9.8-SNAPSHOT"}
         org.clojure/core.match {:mvn/version "1.0.0"}
         hiccup/hiccup {:mvn/version "2.0.0-RC1"}
-        rewrite-clj/rewrite-clj {:mvn/version "1.1.49"}
+        rewrite-clj/rewrite-clj {:mvn/version "1.2.50"}
         selmer/selmer {:mvn/version "1.12.59"}
-        com.taoensso/timbre {:mvn/version "6.6.0"}
-        org.clojure/tools.logging {:mvn/version "1.1.0"}
+        com.taoensso/timbre {:mvn/version "6.8.0"}
+        org.clojure/tools.logging {:mvn/version "1.3.0"}
         org.clojure/data.priority-map {:mvn/version "1.1.0"}
         insn/insn {:mvn/version "0.5.2"}
         org.clojure/core.rrb-vector {:mvn/version "0.1.2"}
-        org.babashka/cli {:mvn/version "0.8.65"}
-        org.babashka/http-client {:mvn/version "0.4.22"}
+        org.babashka/cli {:mvn/version "0.8.66"}
+        org.babashka/http-client {:mvn/version "0.4.23"}
         org.flatland/ordered {:mvn/version "1.15.12"}
-        org.jsoup/jsoup {:mvn/version "1.20.1"}}
+        org.jsoup/jsoup {:mvn/version "1.21.2"}
+        io.github.nextjournal/markdown {:mvn/version "0.7.186"}}
  :aliases {:babashka/dev
            {:main-opts ["-m" "babashka.main"]}
            :profile
@@ -149,8 +150,9 @@
                                            :git/sha "6846dc7c3a9df5bfd718f68f183c683ce0f621ff"
                                            :git/tag "schema-1.3.0"}
                          metosin/malli {:git/url "https://github.com/metosin/malli"
-                                        :git/sha "588147ef49b2e41c7d12a8aa994b39c1c6fedd99"
-                                        :git/tag "0.8.9"}
+                                        :git-url "https://github.com/metosin/malli"
+                                        :git/sha "6b0862135ea58ef2ac92bda9ae605994a5fb20d6"
+                                        :git/tag "0.19.1"}
                          meander/epsilon {:git/url "https://github.com/noprompt/meander"
                                           :git/sha "55f5ce70e6ef717e95c58260f6bc725d70c0cb6d"}
                          cc.qbits/auspex {:git/url "https://github.com/mpenet/auspex"
@@ -178,7 +180,14 @@
                          com.potetm/fusebox {:git/url "https://github.com/potetm/fusebox"
                                              :git/sha "ac6d6a0a69510b009b3c1bb2247cd110fd9f7246"}
                          net.sekao/odoyle-rules {:git/url "https://github.com/oakes/odoyle-rules"
-                                                 :git/sha "0b1d825ec45a998c4d3481dfb292e08ce6a47f0b"}}
+                                                 :git/sha "0b1d825ec45a998c4d3481dfb292e08ce6a47f0b"}
+                         nubank/matcher-combinators {:mvn/version "3.9.1"}
+                         io.github.nextjournal/markdown {:git/url "https://github.com/nextjournal/markdown"
+                                                         :git/sha "4a0073fc68c57ae5e60d4bc31aae799358683c1a"}
+                         funcool/promesa {:git/url "https://github.com/funcool/promesa"
+                                          :git/sha "d8e6f67981b102dda2a4af5a3635a2218257f01a"}
+                         com.fulcrologic/statecharts {:git/url "https://github.com/fulcrologic/statecharts"
+                                                      :git/sha "b7ebeb080724dbeead94f73bcdc1963eecc531ff"}}
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil}}
            :clj-nvd

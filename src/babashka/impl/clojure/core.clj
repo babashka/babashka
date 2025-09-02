@@ -1,14 +1,15 @@
 (ns babashka.impl.clojure.core
   {:no-doc true}
   (:refer-clojure :exclude [future read+string clojure-version with-precision
-                            send-via send send-off sync into-array])
+                            send-via send send-off sync into-array load])
   (:require [babashka.impl.common :as common]
             [clojure.core :as c]
             [clojure.string :as str]
             [sci.core :as sci]
-            [sci.impl.copy-vars :refer [copy-core-var new-var macrofy]]
+            [sci.ctx-store :as store]
+            [sci.impl.copy-vars :refer [copy-core-var new-var]]
             [sci.impl.parser :as parser]
-            [sci.impl.utils :refer [clojure-core-ns]]
+            [sci.impl.utils :as utils :refer [clojure-core-ns]]
             [sci.impl.vars :as vars]))
 
 (defn core-dynamic-var
@@ -17,9 +18,9 @@
 
 (def data-readers parser/data-readers)
 (def command-line-args (core-dynamic-var '*command-line-args*))
-(def warn-on-reflection (core-dynamic-var '*warn-on-reflection* false))
+(def warn-on-reflection utils/warn-on-reflection-var)
 (def compile-files (core-dynamic-var '*compile-files* false))
-(def unchecked-math (core-dynamic-var '*unchecked-math* false))
+(def unchecked-math utils/unchecked-math-var)
 (def math-context (core-dynamic-var '*math-context*))
 (def compile-path (core-dynamic-var '*compile-path* *compile-path*))
 (def compiler-options (core-dynamic-var '*compiler-options*))
@@ -123,6 +124,40 @@
   ([type aseq]
    (clojure.lang.RT/seqToTypedArray type (seq aseq))))
 
+(defn- root-resource
+  "Returns the root directory path for a lib"
+  {:tag String}
+  [lib]
+  (str \/
+       (.. (name lib)
+           (replace \- \_)
+           (replace \. \/))))
+
+(defn- root-directory
+  "Returns the root resource path for a lib"
+  [lib]
+  (let [d (root-resource lib)]
+    (subs d 0 (.lastIndexOf d "/"))))
+
+(defn load
+  "Loads Clojure code from resources in classpath. A path is interpreted as
+  classpath-relative if it begins with a slash or relative to the root
+  directory for the current namespace otherwise."
+  {:redef true
+   :added "1.0"}
+  [& paths]
+  (doseq [^String path paths]
+    (let [^String path (if (.startsWith path "/")
+                         path
+                         (str (root-directory (sci/ns-name @sci/ns)) \/ path))
+          ns (-> path
+                 (subs 1)
+                 (str/replace "_" "-")
+                 (str/replace "/" ".")
+                 symbol)]
+      (sci/binding [sci/ns sci/ns]
+        (sci/eval-form (store/get-ctx) (list 'require (list 'quote ns)))))))
+
 (def core-extras
   {;; agents
    'agent (copy-core-var agent)
@@ -151,15 +186,12 @@
    'tap> (copy-core-var tap>)
    'add-tap (copy-core-var add-tap)
    'remove-tap (copy-core-var remove-tap)
-   '*data-readers* data-readers
    'default-data-readers (copy-core-var default-data-readers)
    'xml-seq (copy-core-var xml-seq)
    'read+string (new-var 'read+string (fn [& args]
                                         (apply read+string (common/ctx) args)))
    '*command-line-args* command-line-args
-   '*warn-on-reflection* warn-on-reflection
    '*compile-files* compile-files
-   '*unchecked-math* unchecked-math
    '*math-context* math-context
    '*compiler-options* compiler-options
    '*compile-path* compile-path
@@ -203,5 +235,6 @@
    'stream-seq! (sci/copy-var stream-seq! clojure-core-ns)
    'partitionv-all (sci/copy-var partitionv-all clojure-core-ns)
    '*repl* repl
+   'load (sci/copy-var load clojure-core-ns)
    }
   )

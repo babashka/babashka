@@ -31,7 +31,12 @@
      (timbre/with-level :debug
        (test-fn))
 
-     (timbre/set-level! :debug)
+     (timbre/set-level! :no-crash)
+     (def x (atom nil))
+     (try (timbre/set-min-level! :crash)
+          (catch Exception _ (reset! x :crash)))
+     (assert (= :crash @x))
+     (timbre/set-min-level! :debug)
      (println "after setting log level to :debug")
      (test-fn)
 
@@ -44,6 +49,7 @@
 
 (deftest logging-test
   (let [res (tu/bb nil (pr-str program))]
+    (is (= 9 (count (re-seq #"\[dude\]" res))))
     (is (= 8 (count (re-seq #"\[dude:.\]" res))))
     (is (= 6 (count (re-seq #"DEBUG" res))))
     (is (= 11 (count (re-seq #"INFO" res)))))
@@ -73,6 +79,10 @@
                      program)
           res       (slurp temp-file)]
       (is (str/includes? res "hello")))))
+
+(deftest timbre-spy-test
+  (let [res (tu/bb nil (pr-str '(taoensso.timbre/spy :foo)))]
+    (is (str/includes? res ":foo => :foo"))))
 
 (def readable-prog
   '(do

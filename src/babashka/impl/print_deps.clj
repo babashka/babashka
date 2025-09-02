@@ -9,7 +9,7 @@
    [sci.core :as sci]))
 
 (defn print-deps [deps-format]
-  (let [deps (-> (io/resource "META-INF/babashka/deps.edn")
+  (let [deps (-> (io/resource "META-INF/babashka/deps.edn" common/jvm-loader)
                  slurp
                  edn/read-string)
         deps (:deps deps)

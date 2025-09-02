@@ -6,7 +6,9 @@
    [babashka.deps :as bdeps]
    [babashka.fs :as fs]
    [babashka.impl.bencode :refer [bencode-namespace]]
-   [babashka.impl.cheshire :refer [cheshire-core-namespace cheshire-factory-namespace]]
+   [babashka.impl.cheshire :refer [cheshire-core-namespace
+                                   cheshire-factory-namespace
+                                   cheshire-generate-namespace]]
    [babashka.impl.classes :as classes :refer [classes-namespace]]
    [babashka.impl.classpath :as cp :refer [classpath-namespace]]
    [babashka.impl.cli :as cli]
@@ -39,6 +41,7 @@
    [babashka.impl.http-client :refer [http-client-namespace
                                       http-client-websocket-namespace
                                       http-client-interceptors-namespace]]
+   [babashka.impl.markdown :as md]
    [babashka.impl.nrepl-server :refer [nrepl-server-namespace]]
    [babashka.impl.pods :as pods]
    [babashka.impl.pprint :refer [pprint-namespace]]
@@ -380,6 +383,7 @@ Use bb run --help to show this help output.
        'clojure.java.io io-namespace
        'cheshire.core cheshire-core-namespace
        'cheshire.factory cheshire-factory-namespace
+       'cheshire.generate cheshire-generate-namespace
        'clojure.data data/data-namespace
        'clojure.instant instant/instant-namespace
        'clojure.stacktrace stacktrace-namespace
@@ -432,7 +436,9 @@ Use bb run --help to show this help output.
        'babashka.cli cli/cli-namespace
        'babashka.http-client http-client-namespace
        'babashka.http-client.websocket http-client-websocket-namespace
-       'babashka.http-client.interceptors http-client-interceptors-namespace}
+       'babashka.http-client.interceptors http-client-interceptors-namespace
+       'nextjournal.markdown md/markdown-namespace
+       'nextjournal.markdown.utils md/markdown-utils-namespace}
     features/xml? (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace)
                          'clojure.data.xml.event @(resolve 'babashka.impl.xml/xml-event-namespace)
                          'clojure.data.xml.tree @(resolve 'babashka.impl.xml/xml-tree-namespace))
@@ -488,6 +494,7 @@ Use bb run --help to show this help output.
     features/logging? (assoc 'taoensso.timbre @(resolve 'babashka.impl.logging/timbre-namespace)
                              'taoensso.timbre.appenders.core @(resolve 'babashka.impl.logging/timbre-appenders-namespace)
                              'taoensso.encore @(resolve 'babashka.impl.logging/encore-namespace)
+                             'taoensso.truss @(resolve 'babashka.impl.logging/truss-namespace)
                              'clojure.tools.logging
                              @(resolve 'babashka.impl.logging/tools-logging-namespace)
                              'clojure.tools.logging.impl
@@ -836,6 +843,7 @@ Use bb run --help to show this help output.
 (defn exec [cli-opts]
   (with-bindings {#'*unrestricted* true
                   clojure.lang.Compiler/LOADER @cp/the-url-loader}
+    (-> (Thread/currentThread) (.setContextClassLoader @cp/the-url-loader))
     (sci/binding [core/warn-on-reflection @core/warn-on-reflection
                   core/unchecked-math @core/unchecked-math
                   core/data-readers @core/data-readers
@@ -920,9 +928,10 @@ Use bb run --help to show this help output.
                                                            :expressions [(:source res)]})
                                    {})
                                res)))
+                         ;; built-in deps
                          (let [rps (cp/resource-paths namespace)
                                rps (mapv #(str "src/babashka/" %) rps)]
-                           (when-let [url (some io/resource rps)]
+                           (when-let [url (some #(io/resource % common/jvm-loader) rps)]
                              (let [source (slurp url)]
                                {:file (str url)
                                 :source source})))
@@ -1190,7 +1199,7 @@ Use bb run --help to show this help output.
                                 (println "[babashka] WARNING: config file does not exist:" config))
                               nil))
                  jar (let [jar (resolve-symbolic-link jar)]
-                       (some-> [jar] cp/new-loader (cp/resource "META-INF/bb.edn") .toString))
+                       (some->> [jar] cp/new-loader (cp/resource "META-INF/bb.edn") .toString))
                  :else (if (and file (fs/exists? file))
                          ;; file relative to bb.edn
                          (let [file (abs-path file) ;; follow symlink

@@ -114,7 +114,11 @@ fi
 
 case "$(uname -s)" in
     Linux*)  platform=linux;;
+    # for this script, twe treat FreeBSD the same as linux
+    FreeBSD*) platform=linux;;
     Darwin*) platform=macos;;
+    # Github Actions:
+    MINGW64*) platform=windows;;
 esac
 
 # Ugly ugly conversion of version to a comparable number
@@ -141,7 +145,7 @@ case "$(uname -m)" in
        ;;
 esac
 
-if [[ 10#$vernum -le 10#000002013 ]]; then
+if [[ "$platform" == "windows" ]] || [[ 10#$vernum -le 10#000002013 ]]; then
     ext="zip"
     util="$(which unzip) -qqo"
 else

@@ -47,9 +47,9 @@ jobs:
           java-version: '19'
 
       - name: Install clojure tools
-        uses: DeLaGuardo/setup-clojure@5.0
+        uses: DeLaGuardo/setup-clojure@13.4
         with:
-          cli: 1.10.3.1040
+          cli: latest
           lein: 2.9.8
 
       - name: Run tests
@@ -90,7 +90,15 @@ jobs:
         include:
           - os: macos-13
             name: macos
+            arch: amd64
             static: false
+            oldest_macos_version: "11.0"
+          - os: macos-14
+            name: macos
+            static: false
+            arch: aarch64
+            oldest_macos_version: "11.0"
+
          #- os: ubuntu-latest
          #  name: linux
          #  static: false
@@ -102,10 +110,12 @@ jobs:
       LEIN_ROOT: "true"
       GRAALVM_VERSION: "24"
       BABASHKA_PLATFORM: ${{ matrix.name }} # used in release script
+      BABASHKA_ARCH: ${{ matrix.arch }}
       BABASHKA_TEST_ENV: native
       BABASHKA_XMX: "-J-Xmx6500m"
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       BABASHKA_SHA: ${{ github.sha }}
+      MACOSX_DEPLOYMENT_TARGET: ${{ matrix.oldest_macos_version }}
     steps:
       - name: Git checkout
         uses: actions/checkout@v2
@@ -123,7 +133,7 @@ jobs:
 
       - name: Setup GraalVM
         if: "matrix.static == false"
-        uses: graalvm/setup-graalvm@v1
+        uses: graalvm/setup-graalvm@v1.3.4
         with:
           java-version: '24'
           distribution: 'graalvm'
@@ -132,11 +142,10 @@ jobs:
 
       - name: Setup GraalVM+musl
         if: "matrix.static == true"
-        uses: graalvm/setup-graalvm@v1
+        uses: graalvm/setup-graalvm@v1.3.4
         with:
-          version: '24'
+          java-version: '24'
           distribution: 'graalvm'
-          components: 'native-image'
           native-image-musl: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -176,7 +185,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           path: bb
-          name: babashka-${{ steps.babashka-version.outputs.version }}-${{ matrix.name }}-amd64
+          name: babashka-${{ steps.babashka-version.outputs.version }}-${{ matrix.name }}-${{ matrix.arch }}
 
       - name: Upload static artifact
         if: "matrix.static == true"
@@ -191,7 +200,10 @@ jobs:
           script/run_lib_tests
 
       - name: Release
-        run: .circleci/script/release
+        env:
+          BABASHKA_RELEASE: true
+        run: |
+          .circleci/script/release
 
   docker:
     if: ${{ false }} # Disabled

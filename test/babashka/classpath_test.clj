@@ -77,6 +77,15 @@
                "(first (map str (.getURLs (clojure.lang.RT/baseLoader))))")]
     (is (str/includes? url "file:"))
     (is (str/includes? url "foo.jar")))
+  (let [url
+        (tu/bb nil "--classpath" "test-resources/babashka/src_for_classpath_test/foo.jar"
+               "(defn- get-resources [path ^ClassLoader loader]
+                  (-> (or loader (.getContextClassLoader (Thread/currentThread)))
+                  (.getResources path)
+                  (enumeration-seq)))
+                (first (get-resources \"foo.clj\" nil))")]
+    (is (str/includes? url "file:"))
+    (is (str/includes? url "foo.jar")))
   (let [results (tu/bb nil "--classpath" "test-resources/babashka/src_for_classpath_test/foo.jar"
                "(map some? [(.getResource (clojure.lang.RT/baseLoader) \"foo.clj\")
                  (.getResourceAsStream (clojure.lang.RT/baseLoader) \"foo.clj\")

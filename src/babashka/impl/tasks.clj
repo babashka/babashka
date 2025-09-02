@@ -212,11 +212,14 @@
 
 (def rand-ns (delay (symbol (str "user-" (java.util.UUID/randomUUID)))))
 
-(defn format-task [init extra-paths extra-deps requires prog]
+(defn format-task [init extra-paths extra-deps global-requires requires prog]
   (format "
 %s ;; deps
 
-(ns %s %s)
+(ns %s
+;; global requires
+%s)
+
 (require '[babashka.tasks #_#_:refer [log]])
 (when-not (resolve 'clojure)
   ;; we don't use refer so users can override this
@@ -234,9 +237,17 @@
 (when-not (resolve 'exec)
   (intern *ns* 'exec @(var babashka.tasks/exec)))
 
-%s
-%s
+;; init, name should not clash with existing tasks!
+(defmacro __babashka$tasks$impl$init []
+  (when-not (resolve '%s/__babashka$tasks$impl$init?)
+   (intern '%s '__babashka$tasks$impl$init? true)
+   '%s))
 
+(__babashka$tasks$impl$init)
+;; task requires
+%s
+;; task
+%s
 "
           (let [deps (cond-> {}
                        (seq extra-deps) (assoc :deps extra-deps)
@@ -245,10 +256,18 @@
               (format "(babashka.deps/add-deps '%s)" (pr-str deps))
               ""))
           @rand-ns
-          (if (seq requires)
-            (format "(:require %s)" (str/join " " requires))
+          (if (seq global-requires)
+            (format "(:require %s)" (str/join " " global-requires))
             "")
+          @rand-ns @rand-ns
           (pr-str init)
+          (if (seq requires)
+            (format "(require %s)"
+                    (str/join "\n"
+                              (map (fn [req]
+                                     (str "'" req))
+                                   requires)))
+            "")
           prog))
 
 (defn target-order
@@ -286,7 +305,7 @@
     (binding [*print-meta* true]
       (if task
         (let [m? (map? task)
-              requires (get tasks :requires)
+              global-requires (get tasks :requires)
               init (get tasks :init)
               prog (if (when m? (:depends task))
                      (let [[targets error]
@@ -305,7 +324,7 @@
                                 done []
                                 extra-paths []
                                 extra-deps nil
-                                requires requires]
+                                requires []]
                            (let [t (first targets)
                                  targets (next targets)
                                  task-map (assoc task-map
@@ -328,14 +347,15 @@
                                        extra-paths (concat extra-paths (:extra-paths task))
                                        extra-deps (merge extra-deps (:extra-deps task))
                                        requires (concat requires (:requires task))]
-                                   [[(format-task init extra-paths extra-deps requires prog)] nil])
+                                   [[(format-task init extra-paths extra-deps global-requires requires prog)] nil])
                                  [(binding [*out* *err*]
                                     (println "No such task:" t)) 1]))))))
                      [[(format-task
                         init
                         (:extra-paths task)
                         (:extra-deps task)
-                        (concat requires (:requires task))
+                        global-requires
+                        (:requires task)
                         (assemble-task-1 (cond-> {:name task-name}
                                            enter (assoc :enter enter)
                                            leave (assoc :leave leave)

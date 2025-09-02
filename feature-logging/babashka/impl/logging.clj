@@ -3,17 +3,28 @@
             [clojure.tools.logging.impl :as impl]
             [clojure.tools.logging.readable]
             [sci.core :as sci]
-            [taoensso.encore :as encore :refer [have]]
-            [taoensso.timbre :as timbre]))
+            [taoensso.encore :as enc :refer [have]]
+            [taoensso.timbre :as timbre]
+            [taoensso.truss :as truss]))
 
 ;;;; timbre
 
 (def tns (sci/create-ns 'taoensso.timbre nil))
 
-(defn- fline [and-form] (:line (meta and-form)))
-
 (defonce callsite-counter
-  (encore/counter))
+  (enc/counter))
+
+(defn get-source
+  "Returns {:keys [ns line column file]} source location given a macro's
+     compile-time `&form` and `&env` vals. See also `keep-callsite`."
+  {:added "Encore v3.61.0 (2023-07-07)"}
+  [macro-form _macro-env]
+  (let [{:keys [line column]} (meta macro-form)
+        file @sci/file]
+    {:ns     (str @sci/ns)
+     :line   line
+     :column column
+     :file file}))
 
 (defmacro log! ; Public wrapper around `-log!`
   "Core low-level log macro. Useful for tooling/library authors, etc.
@@ -34,42 +45,43 @@
 
   ([{:as   opts
      :keys [loc level msg-type args vargs
-            config ?err ?base-data spying?]
+            config ?err ?base-data spying?
+            #_instant #_may-log?]
      :or
-     {config 'taoensso.timbre/*config*
+     {config `timbre/*config*
       ?err   :auto}}]
 
-   (have [:or nil? sequential? symbol?] args)
+   (truss/have? [:or nil? sequential? symbol?] args)
    (let [callsite-id (callsite-counter)
-         {:keys [line column]} (merge (meta &form) loc)
-         {:keys [ns file line column]} {:ns @sci/ns :file @sci/file :line line :column column}
-         ns     (or (get opts :?ns-str) ns)
-         file   (or (get opts :?file)   file)
-         line   (or (get opts :?line)   line)
-         column (or (get opts :?column) column)
+         loc-form (or loc (get-source &form &env))
+         loc-map  (when (map?    loc-form) loc-form)
+         loc-sym  (when (symbol? loc-form) loc-form)
 
-         elide? (and #_(enc/const-forms? level ns) (timbre/-elide? level ns))]
+         ns-form     (get opts :?ns-str (get loc-map :ns     (when loc-sym `(get ~loc-sym :ns))))
+         file-form   (get opts :?file   (get loc-map :file   (when loc-sym `(get ~loc-sym :file))))
+         line-form   (get opts :?line   (get loc-map :line   (when loc-sym `(get ~loc-sym :line))))
+         column-form (get opts :?column (get loc-map :column (when loc-sym `(get ~loc-sym :column))))
+
+         elide? (and (enc/const-forms? level ns-form) (timbre/-elide? level ns-form))]
 
      (when-not elide?
        (let [vargs-form
              (or vargs
                  (if (symbol? args)
-                   `(taoensso.timbre/-ensure-vec ~args)
+                   `(enc/ensure-vec ~args)
                    `[              ~@args]))]
 
          ;; Note pre-resolved expansion
-         `(taoensso.timbre/-log! ~config ~level ~ns ~file ~line ~column ~msg-type ~?err
+         `(taoensso.timbre/-log! ~config ~level ~ns-form ~file-form ~line-form ~column-form ~msg-type ~?err
                                  (delay ~vargs-form) ~?base-data ~callsite-id ~spying?
                                  ~(get opts :instant)
                                  ~(get opts :may-log?))))))
 
   ([level msg-type args & [opts]]
-   (let [{:keys [line column]} (merge (meta &form))
-         {:keys [ns file line column]} {:ns @sci/ns :file @sci/file :line line :column column}
-         loc  {:ns ns :file file :line line :column column}
+   (let [loc  (get-source &form &env)
          opts (assoc (conj {:loc loc} opts)
                      :level level, :msg-type msg-type, :args args)]
-     `(taoensso.timbre/log! ~opts))))
+     `(timbre/log! ~opts))))
 
 (defn make-ns [ns sci-ns ks]
   (reduce (fn [ns-map [var-name var]]
@@ -115,7 +127,7 @@
                :*err* @sci/err
                stream)]
          (binding [*out* stream]
-           (encore/println-atomic (force output_)))))}))
+           (enc/println-atomic (force output_)))))}))
 
 (def default-config (assoc-in timbre/*config* [:appenders :println]
                               (println-appender {:stream :auto})))
@@ -126,9 +138,42 @@
 (defn swap-config! [f & args]
   (apply sci/alter-var-root config f args))
 
-(defn set-level! [level] (swap-config! (fn [m] (assoc m :min-level level))))
+(defn set-config! [cfg]
+  (swap-config! (fn [_old] cfg)))
 
-(defn merge-config! [m] (swap-config! (fn [old] (encore/nested-merge old m))))
+(defn set-level! [level] (swap-config! assoc :min-level level))
+
+(defn set-min-level! [level] (swap-config! (fn [cfg]
+                                             (timbre/set-min-level cfg level))))
+
+(defn merge-config! [m] (swap-config! (fn [old] (enc/nested-merge old m))))
+
+(defn set-ns-min-level
+  "Returns given Timbre `config` with its `:min-level` modified so that
+  the given namespace has the specified minimum logging level.
+
+  When no namespace is provided, `*ns*` will be used.
+  When `?min-level` is nil, any minimum level specifications for the
+  *exact* given namespace will be removed.
+
+  See `*config*` docstring for more about `:min-level`.
+  See also `set-min-level!` for a util to directly modify `*config*`."
+
+  ([config    ?min-level] (set-ns-min-level config @sci/ns ?min-level)) ; No *ns* at Cljs runtime
+  ([config ns ?min-level]
+   (timbre/set-ns-min-level config ns ?min-level)))
+
+(defmacro set-ns-min-level!
+  "Like `set-ns-min-level` but directly modifies `*config*`.
+
+     Can conveniently set the minimum log level for the current ns:
+      (set-ns-min-level! :info) => Sets min-level for current *ns*
+
+     See `set-ns-min-level` for details."
+
+  ;; Macro to support compile-time Cljs *ns*
+  ([   ?min-level] `(timbre/set-ns-min-level! ~(str @sci/ns) ~?min-level))
+  ([ns ?min-level] `(timbre/swap-config! (fn [config#] (timbre/set-ns-min-level config# ~(str ns) ~?min-level)))))
 
 (defmacro -log-and-rethrow-errors [?line & body]
   `(try (do ~@body)
@@ -138,27 +183,70 @@
             (timbre/log! :error :p [e#] ~{:?line ?line})
             (throw e#)))))
 
+
+;; (defmacro log*  [config level & args] `(log! ~level  :p ~args ~{:loc (get-source &form &env), :config config}))
+;; (defmacro log          [level & args] `(log! ~level  :p ~args ~{:loc (get-source &form &env)}))
+(defmacro trace              [& args] `(timbre/log! :trace  :p ~args ~{:loc (get-source &form &env)}))
+(defmacro debug              [& args] `(timbre/log! :debug  :p ~args ~{:loc (get-source &form &env)}))
+(defmacro info               [& args] `(timbre/log! :info   :p ~args ~{:loc (get-source &form &env)}))
+(defmacro warn               [& args] `(timbre/log! :warn   :p ~args ~{:loc (get-source &form &env)}))
+(defmacro error              [& args] `(timbre/log! :error  :p ~args ~{:loc (get-source &form &env)}))
+;; (defmacro fatal              [& args] `(timbre/log! :fatal  :p ~args ~{:loc (get-source &form &env)}))
+;; (defmacro report             [& args] `(timbre/log! :report :p ~args ~{:loc (get-source &form &env)}))
+
+     ;;; Log using format-style args
+;; (defmacro logf* [config level & args] `(log! ~level  :f ~args ~{:loc (get-source &form &env), :config config}))
+;; (defmacro logf         [level & args] `(log! ~level  :f ~args ~{:loc (get-source &form &env)}))
+(defmacro tracef             [& args] `(timbre/log! :trace  :f ~args ~{:loc (get-source &form &env)}))
+(defmacro debugf             [& args] `(timbre/log! :debug  :f ~args ~{:loc (get-source &form &env)}))
+(defmacro infof              [& args] `(timbre/log! :info   :f ~args ~{:loc (get-source &form &env)}))
+(defmacro warnf              [& args] `(timbre/log! :warn   :f ~args ~{:loc (get-source &form &env)}))
+(defmacro errorf             [& args] `(timbre/log! :error  :f ~args ~{:loc (get-source &form &env)}))
+;; (defmacro fatalf             [& args] `(timbre/log! :fatal  :f ~args ~{:loc (get-source &form &env)}))
+;; (defmacro reportf            [& args] `(timbre/log! :report :f ~args ~{:loc (get-source &form &env)}))
+
 (def timbre-namespace
-  (assoc (make-ns 'taoensso.timbre tns ['trace 'tracef 'debug 'debugf
-                                        'info 'infof 'warn 'warnf
-                                        'error 'errorf
+  (assoc (make-ns 'taoensso.timbre tns [;; 'trace 'tracef 'debug 'debugf
+                                        ;; 'info 'infof 'warn 'warnf
+                                        ;; 'error 'errorf
                                         '-log! 'with-level
                                         'spit-appender '-spy 'spy
-                                        'color-str])
+                                        'color-str
+                                        'may-log?])
+         'trace (sci/copy-var trace tns)
+         'debug (sci/copy-var debug tns)
+         'info  (sci/copy-var info tns)
+         'warn  (sci/copy-var warn tns)
+         'error  (sci/copy-var error tns)
+         'tracef (sci/copy-var tracef tns)
+         'debugf (sci/copy-var debugf tns)
+         'infof  (sci/copy-var infof tns)
+         'warnf  (sci/copy-var warnf tns)
+         'errorf  (sci/copy-var errorf tns)
          'log! (sci/copy-var log! tns)
          '*config* config
+         'set-config! (sci/copy-var set-config! tns)
          'swap-config! (sci/copy-var swap-config! tns)
          'merge-config! (sci/copy-var merge-config! tns)
          'set-level! (sci/copy-var set-level! tns)
+         'set-min-level! (sci/copy-var set-min-level! tns)
          'println-appender (sci/copy-var println-appender tns)
          '-log-and-rethrow-errors (sci/copy-var -log-and-rethrow-errors tns)
-         '-ensure-vec (sci/copy-var encore/ensure-vec tns)))
+         'set-min-level! (sci/copy-var set-min-level! tns)
+         'set-ns-min-level (sci/copy-var set-ns-min-level tns)
+         'set-ns-min-level! (sci/copy-var set-ns-min-level! tns)))
 
 (def enc-ns (sci/create-ns 'taoensso.encore))
 
 (def encore-namespace
-  {'catching (sci/copy-var encore/catching enc-ns)
-   'try* (sci/copy-var encore/try* enc-ns)})
+  {'catching (sci/copy-var enc/catching enc-ns)
+   'try* (sci/copy-var enc/try* enc-ns)
+   'ensure-vec (sci/copy-var enc/ensure-vec enc-ns)})
+
+(def truss-ns (sci/create-ns 'taoensso.truss))
+
+(def truss-namespace
+  {'try* (sci/copy-var truss/try* truss-ns)})
 
 (def timbre-appenders-namespace
   (let [tan (sci/create-ns 'taoensso.timbre.appenders.core nil)]
@@ -196,7 +284,7 @@
  #'clojure.tools.logging/*logger-factory*
  (fn [_]
    (LoggerFactory.
-    (encore/memoize (fn [logger-ns] (Logger. (str logger-ns) config))))))
+    (enc/memoize (fn [logger-ns] (Logger. (str logger-ns) config))))))
 
 (def lns (sci/create-ns 'clojure.tools.logging nil))
 
@@ -229,5 +317,5 @@
 
 (def tools-logging-readable-namespace
   (make-ns 'clojure.tools.logging.readable tlr-ns ['trace 'tracef 'debug 'debugf 'info 'infof
-                                                          'warn 'warnf 'error 'errorf 'fatal 'fatalf
-                                                          'logf 'logp 'spyf]))
+                                                   'warn 'warnf 'error 'errorf 'fatal 'fatalf
+                                                   'logf 'logp 'spyf]))

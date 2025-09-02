@@ -89,8 +89,10 @@ Location: foo.clj:1:10
             ^--- Divide by zero
 
 ----- Stack trace --------------------------------------------------------------
-clojure.core// - <built-in>
-foo            - foo.clj:1:10"))))
+clojure.core//       - <built-in>
+foo                  - foo.clj:1:10
+clojure.core/require - <built-in>
+user                 - <expr>:1:1"))))
 
 (deftest static-call-test
   #_(let [output (try (tu/bb nil "-e" "File/x")
