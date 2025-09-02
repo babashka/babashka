@@ -93,14 +93,14 @@
         res (p/process (into ["./bb"] args)
                        {:in input
                         :out :string
-                        :err :string})
+                        :err :inherit})
         res (deref res)
         exit (:exit res)
         error? (pos? exit)]
-    (if error? (throw (ex-info (or (:err res) "") {}))
+    (if error? (throw (ex-info "" #_(or (:err res) "") {}))
         (do
           (let [err (:err res)]
-            (when-not (str/blank? err)
+            #_(when-not (str/blank? err)
               (println err)))
           (normalize (:out res))))))
 
