@@ -1281,6 +1281,9 @@ Use bb run --help to show this help output.
               (binding [*out* *err*]
                 (println "ran" n "times"))))))
     (let [exit-code (apply main args)]
+      (debug :terminated? (.isTerminated ^java.util.concurrent.ExecutorService @common/solo-executor))
+      (debug (.shutdown ^java.util.concurrent.ExecutorService @common/solo-executor))
+      (debug :termination (.awaitTermination ^java.util.concurrent.ExecutorService @common/solo-executor 1 java.util.concurrent.TimeUnit/MILLISECONDS))
       (when-not (zero? exit-code)
         (System/exit exit-code)))))
 
