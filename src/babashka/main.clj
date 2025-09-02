@@ -1245,20 +1245,6 @@ Use bb run --help to show this help output.
   (and (= "true" (System/getenv "BABASHKA_STATIC"))
        (= "true" (System/getenv "BABASHKA_MUSL"))))
 
-(defmacro run [args]
-  (if musl?
-    ;; When running in musl-compiled static executable we lift execution of bb
-    ;; inside a thread, so we have a larger than default stack size, set by an
-    ;; argument to the linker. See https://github.com/oracle/graal/issues/3398
-    `(let [v# (volatile! nil)
-           f# (fn []
-                (vreset! v# (apply main ~args)))]
-       (doto (Thread. nil f# "main")
-         (.start)
-         (.join))
-       @v#)
-    `(apply main ~args)))
-
 (defn- set-daemon-agent-executor
   "Set Clojure's send-off agent executor (also affects futures). This is almost
   an exact rewrite of the Clojure's executor, but the Threads are created as
@@ -1286,10 +1272,10 @@ Use bb run --help to show this help output.
       (dotimes [i n]
         (if (< i last-iteration)
           (with-out-str (apply main args))
-          (do (run args)
+          (do (apply main args)
               (binding [*out* *err*]
                 (println "ran" n "times"))))))
-    (let [exit-code (run args)]
+    (let [exit-code (apply main args)]
       (when-not (zero? exit-code)
         (System/exit exit-code)))))
 
