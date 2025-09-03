@@ -1204,6 +1204,7 @@ Use bb run --help to show this help output.
     (some #(contains? opts %) fast-path-opts)))
 
 (defn main [& args]
+  (set-daemon-agent-executor)
   (let [bin-jar (binary-invoked-as-jar)
         args (if bin-jar
                (list* "--jar" bin-jar "--" args)
@@ -1271,7 +1272,6 @@ Use bb run --help to show this help output.
   [& args]
   (handle-pipe!)
   (handle-sigint!)
-  (set-daemon-agent-executor)
   (if-let [dev-opts (System/getenv "BABASHKA_DEV")]
     (let [{:keys [:n]} (if (= "true" dev-opts) {:n 1}
                            (edn/read-string dev-opts))
