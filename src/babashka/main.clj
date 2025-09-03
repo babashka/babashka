@@ -1287,7 +1287,6 @@ Use bb run --help to show this help output.
       (debug (.shutdown ^java.util.concurrent.ExecutorService @common/solo-executor))
       (debug :termination (.awaitTermination ^java.util.concurrent.ExecutorService @common/solo-executor 1 java.util.concurrent.TimeUnit/MILLISECONDS))
       (debug :not=old (not (identical? old-executor @common/solo-executor)))
-      (System/exit exit-code)
       (when-not (zero? exit-code)
         (System/exit exit-code)))))
 
