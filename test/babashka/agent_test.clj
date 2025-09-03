@@ -5,6 +5,6 @@
    [clojure.test :as t :refer [deftest is]]))
 
 (deftest agent-binding-conveyance-test
-  #_(let [prog
+  (let [prog
         "(def ^:dynamic *foo* 1) (def a (agent nil)) (binding [*foo* 2] (send-off a (fn [_] *foo*))) (await a) @a"]
     (is (= 2 (edn/read-string (test-utils/bb nil prog))))))
