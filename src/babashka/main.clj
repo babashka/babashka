@@ -866,19 +866,17 @@ Use bb run --help to show this help output.
 
 
 (defn create-thread-factory
-  [format ^java.util.concurrent.atomic.AtomicLong counter]
+  [format-str ^java.util.concurrent.atomic.AtomicLong counter]
   (reify java.util.concurrent.ThreadFactory
     (newThread [_ runnable]
       (doto (Thread. runnable)
-        (.setName (format format (.getAndIncrement counter)))))))
-
-(def send-thread-pool-counter (new java.util.concurrent.atomic.AtomicLong 0))
+        (.setName (format format-str (.getAndIncrement counter)))))))
 
 (defn- reset-agent-pooled-executor []
   (set! clojure.lang.Agent/pooledExecutor
         (java.util.concurrent.Executors/newFixedThreadPool
          (+ 2 (.availableProcessors (Runtime/getRuntime)))
-         (create-thread-factory "clojure-agent-send-pool-%d" send-thread-pool-counter))))
+         (create-thread-factory "clojure-agent-send-pool-%d" (new java.util.concurrent.atomic.AtomicLong 0)))))
 
 (defn exec [cli-opts]
   (with-bindings {#'*unrestricted* true
