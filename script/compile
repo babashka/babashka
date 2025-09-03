@@ -47,7 +47,6 @@ args=("-jar" "$BABASHKA_JAR"
       # --trace-class-initialization=jdk.internal.net.http.common.DebugLogger,jdk.internal.net.http.websocket.WebSocketImpl,jdk.internal.net.http.common.Utils
       "$BABASHKA_XMX"
       "--enable-preview"
-      "--install-exit-handlers"
       "-march=compatibility" # necessary for compatibility with older machines, e.g. see https://github.com/borkdude/deps.clj/actions/runs/6337277754/job/17212028399
       "-O1")
 
