@@ -864,10 +864,11 @@ Use bb run --help to show this help output.
     (vreset! common/solo-executor executor)
     (debug :deamon-executor (str @common/solo-executor))))
 
+(set-daemon-agent-executor)
+
 (defn exec [cli-opts]
   (with-bindings {#'*unrestricted* true
                   clojure.lang.Compiler/LOADER @cp/the-url-loader}
-    (set-daemon-agent-executor)
     (-> (Thread/currentThread) (.setContextClassLoader @cp/the-url-loader))
     (sci/binding [core/warn-on-reflection @core/warn-on-reflection
                   core/unchecked-math @core/unchecked-math
