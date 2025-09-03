@@ -864,6 +864,22 @@ Use bb run --help to show this help output.
     (vreset! common/solo-executor executor)
     (debug :deamon-executor (str @common/solo-executor))))
 
+
+(defn create-thread-factory
+  [format ^java.util.concurrent.atomic.AtomicLong counter]
+  (reify java.util.concurrent.ThreadFactory
+    (newThread [_ runnable]
+      (doto (Thread. runnable)
+        (.setName (format format (.getAndIncrement counter)))))))
+
+(def send-thread-pool-counter (new java.util.concurrent.atomic.AtomicLong 0))
+
+(defn- reset-agent-pooled-executor []
+  (set! clojure.lang.Agent/pooledExecutor
+        (java.util.concurrent.Executors/newFixedThreadPool
+         (+ 2 (.availableProcessors (Runtime/getRuntime)))
+         (create-thread-factory "clojure-agent-send-pool-%d" send-thread-pool-counter))))
+
 (defn exec [cli-opts]
   (with-bindings {#'*unrestricted* true
                   clojure.lang.Compiler/LOADER @cp/the-url-loader}
@@ -1205,6 +1221,7 @@ Use bb run --help to show this help output.
 
 (defn main [& args]
   (set-daemon-agent-executor)
+  (reset-agent-pooled-executor)
   (let [bin-jar (binary-invoked-as-jar)
         args (if bin-jar
                (list* "--jar" bin-jar "--" args)
@@ -1289,7 +1306,7 @@ Use bb run --help to show this help output.
       (debug :not=old (not (identical? old-executor @common/solo-executor)))
       ;; (shutdown-agents)
       ;; necessary for linux musl, why?
-      (.shutdown clojure.lang.Agent/pooledExecutor)
+      #_(.shutdown clojure.lang.Agent/pooledExecutor)
       (when-not (zero? exit-code)
         (System/exit exit-code)))))
 
