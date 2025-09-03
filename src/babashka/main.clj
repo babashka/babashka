@@ -841,7 +841,7 @@ Use bb run --help to show this help output.
             the-var)))))
 
 (defn debug [& args]
-  (.println System/err (str/join " " args))
+  #_#_(.println System/err (str/join " " args))
   (.flush System/err))
 
 (defn- set-daemon-agent-executor
@@ -1287,6 +1287,7 @@ Use bb run --help to show this help output.
       (debug (.shutdown ^java.util.concurrent.ExecutorService @common/solo-executor))
       (debug :termination (.awaitTermination ^java.util.concurrent.ExecutorService @common/solo-executor 1 java.util.concurrent.TimeUnit/MILLISECONDS))
       (debug :not=old (not (identical? old-executor @common/solo-executor)))
+      (System/exit exit-code)
       (when-not (zero? exit-code)
         (System/exit exit-code)))))
 
