@@ -1289,7 +1289,7 @@ Use bb run --help to show this help output.
       (debug :not=old (not (identical? old-executor @common/solo-executor)))
       ;; (shutdown-agents)
       ;; necessary for linux musl, why?
-      (.shutdown clojure.lang.Agent/poolExecutor)
+      (.shutdown clojure.lang.Agent/pooledExecutor)
       (when-not (zero? exit-code)
         (System/exit exit-code)))))
 
