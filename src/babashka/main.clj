@@ -840,10 +840,6 @@ Use bb run --help to show this help output.
             (sci/eval-form ctx (list 'clojure.core/var-set core/data-readers (list 'quote (assoc @core/data-readers t the-var))))
             the-var)))))
 
-(defn debug [& args]
-  #_#_(.println System/err (str/join " " args))
-  (.flush System/err))
-
 (defn- set-daemon-agent-executor
   "Set Clojure's send-off agent executor (also affects futures). This is almost
   an exact rewrite of the Clojure's executor, but the Threads are created as
@@ -854,29 +850,12 @@ Use bb run --help to show this help output.
                          (newThread [_ runnable]
                            (let [name (format "CLI-agent-send-off-pool-%d"
                                               (first (swap-vals! thread-counter inc)))]
-                             (debug :creating-daemon-thread! name)
                              (doto (Thread. runnable)
                                (.setDaemon true) ;; DIFFERENT
                                (.setName name)))))
         executor (java.util.concurrent.Executors/newCachedThreadPool thread-factory)]
-    (debug :executor executor :something-else)
     (set-agent-send-off-executor! executor)
-    (vreset! common/solo-executor executor)
-    (debug :deamon-executor (str @common/solo-executor))))
-
-
-(defn create-thread-factory
-  [format-str ^java.util.concurrent.atomic.AtomicLong counter]
-  (reify java.util.concurrent.ThreadFactory
-    (newThread [_ runnable]
-      (doto (Thread. runnable)
-        (.setName (format format-str (.getAndIncrement counter)))))))
-
-(defn- reset-agent-pooled-executor []
-  (set! clojure.lang.Agent/pooledExecutor
-        (java.util.concurrent.Executors/newFixedThreadPool
-         (+ 2 (.availableProcessors (Runtime/getRuntime)))
-         (create-thread-factory "clojure-agent-send-pool-%d" (new java.util.concurrent.atomic.AtomicLong 0)))))
+    (vreset! common/solo-executor executor)))
 
 (defn exec [cli-opts]
   (with-bindings {#'*unrestricted* true
@@ -1219,7 +1198,6 @@ Use bb run --help to show this help output.
 
 (defn main [& args]
   (set-daemon-agent-executor)
-  (reset-agent-pooled-executor)
   (let [bin-jar (binary-invoked-as-jar)
         args (if bin-jar
                (list* "--jar" bin-jar "--" args)
@@ -1275,13 +1253,9 @@ Use bb run --help to show this help output.
         (binding [*out* *err*]
           (println (str "WARNING: this project requires babashka "
                         min-bb-version " or newer, but you have: " version)))))
-    (doto (if (deps-not-needed opts)
-            (exec-without-deps opts)
-            (exec opts))
-      (babashka.main/debug :deamon-executor (str @common/solo-executor))
-      (babashka.main/debug :the-end))))
-
-(def old-executor clojure.lang.Agent/soloExecutor)
+    (if (deps-not-needed opts)
+      (exec-without-deps opts)
+      (exec opts))))
 
 (defn -main
   [& args]
@@ -1298,13 +1272,8 @@ Use bb run --help to show this help output.
               (binding [*out* *err*]
                 (println "ran" n "times"))))))
     (let [exit-code (apply main args)]
-      (debug :terminated? (.isTerminated ^java.util.concurrent.ExecutorService @common/solo-executor))
-      (debug (.shutdown ^java.util.concurrent.ExecutorService @common/solo-executor))
-      (debug :termination (.awaitTermination ^java.util.concurrent.ExecutorService @common/solo-executor 1 java.util.concurrent.TimeUnit/MILLISECONDS))
-      (debug :not=old (not (identical? old-executor @common/solo-executor)))
-      ;; (shutdown-agents)
-      ;; necessary for linux musl, why?
-      #_(.shutdown clojure.lang.Agent/pooledExecutor)
+      ;; only necessary for linux musl, but for compat, we do it everywhere:
+      (shutdown-agents)
       (when-not (zero? exit-code)
         (System/exit exit-code)))))
 
