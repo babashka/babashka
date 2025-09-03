@@ -864,8 +864,6 @@ Use bb run --help to show this help output.
     (vreset! common/solo-executor executor)
     (debug :deamon-executor (str @common/solo-executor))))
 
-(set-daemon-agent-executor)
-
 (defn exec [cli-opts]
   (with-bindings {#'*unrestricted* true
                   clojure.lang.Compiler/LOADER @cp/the-url-loader}
@@ -1267,10 +1265,13 @@ Use bb run --help to show this help output.
       (babashka.main/debug :deamon-executor (str @common/solo-executor))
       (babashka.main/debug :the-end))))
 
+(def old-executor clojure.lang.Agent/soloExecutor)
+
 (defn -main
   [& args]
   (handle-pipe!)
   (handle-sigint!)
+  (set-daemon-agent-executor)
   (if-let [dev-opts (System/getenv "BABASHKA_DEV")]
     (let [{:keys [:n]} (if (= "true" dev-opts) {:n 1}
                            (edn/read-string dev-opts))
@@ -1285,6 +1286,7 @@ Use bb run --help to show this help output.
       (debug :terminated? (.isTerminated ^java.util.concurrent.ExecutorService @common/solo-executor))
       (debug (.shutdown ^java.util.concurrent.ExecutorService @common/solo-executor))
       (debug :termination (.awaitTermination ^java.util.concurrent.ExecutorService @common/solo-executor 1 java.util.concurrent.TimeUnit/MILLISECONDS))
+      (debug :not=old (not (identical? old-executor @common/solo-executor)))
       (when-not (zero? exit-code)
         (System/exit exit-code)))))
 
