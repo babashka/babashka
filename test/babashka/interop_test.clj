@@ -205,19 +205,19 @@
 
 (deftest posix-file-attributes
   (when-not test-utils/windows?
-    (is (= 'java.util.HashSet
+    (is (true?
            (bb nil
                '(do
                   (import
                    [java.nio.file Files LinkOption Path]
                    [java.nio.file.attribute PosixFileAttributes])
-                  (-> (Files/readAttributes (Path/of "test-resources/posix-file-attributes.txt"
-                                                     (into-array String []))
-                                            PosixFileAttributes
-                                            ^"[Ljava.nio.file.LinkOption;"
-                                            (into-array LinkOption []))
-                      .permissions
-                      type)))))))
+                  (->> (Files/readAttributes (Path/of "test-resources/posix-file-attributes.txt"
+                                                      (into-array String []))
+                                             PosixFileAttributes
+                                             ^"[Ljava.nio.file.LinkOption;"
+                                             (into-array LinkOption []))
+                       .permissions
+                       (instance? java.util.Set))))))))
 
 (deftest extended-attributes
   (is (true?
@@ -251,11 +251,13 @@
 
 (deftest cached-thread-pool
   (is (= 3 (bb nil "(import '(java.util.concurrent Executors ExecutorService))
-                    (let [fut (.submit ^ExecutorService (Executors/newCachedThreadPool) ^Callable (fn [] 3))]
-                      (.get fut))")))
+                    (let [executor (Executors/newCachedThreadPool)
+                          fut (.submit ^ExecutorService executor ^Callable (fn [] 3))]
+                      (try (.get fut) (finally (.shutdown executor))))")))
   (is (nil? (bb nil "(import '(java.util.concurrent Executors ExecutorService))
-                     (let [fut (.submit ^ExecutorService (Executors/newCachedThreadPool) ^Runnable (fn [] 3))]
-                       (.get fut))"))))
+                     (let [executor (Executors/newCachedThreadPool)
+                           fut (.submit ^ExecutorService executor ^Runnable (fn [] 3))]
+                       (try (.get fut) (finally (.shutdown executor))))"))))
 
 (deftest break-iterator-test
   (is (= 1 (bb nil "(ns dude
@@ -306,3 +308,45 @@
 (def s \"cafe\u0301\")
 
 (assert (> (count s) (count (normalize s))))"))
+
+(deftest non-daemon-thread-test
+  (when test-utils/native?
+    (is (< 500 (bb nil "(import '(java.time Instant Duration))
+
+(defn jvm-uptime-seconds []
+  (let [start (-> (java.lang.ProcessHandle/current)
+                  .info
+                  .startInstant
+                  .get)
+        now   (Instant/now)]
+    (.toMillis (Duration/between start now))))
+
+(.start (doto (Thread. (fn [] (Thread/sleep 500)
+                         (println (jvm-uptime-seconds))))
+          (.setDaemon false)))")))
+    (is (nil? (bb nil "--force-exit" "(import '(java.time Instant Duration))
+
+(defn jvm-uptime-seconds []
+  (let [start (-> (java.lang.ProcessHandle/current)
+                  .info
+                  .startInstant
+                  .get)
+        now   (Instant/now)]
+    (.toMillis (Duration/between start now))))
+
+(.start (doto (Thread. (fn [] (Thread/sleep 500)
+                         (println (jvm-uptime-seconds))))
+          (.setDaemon false)))")))
+    (is (nil? (bb nil "(import '(java.time Instant Duration))
+(defn jvm-uptime-seconds []
+  (let [start (-> (java.lang.ProcessHandle/current)
+                  .info
+                  .startInstant
+                  .get)
+        now   (Instant/now)]
+    (.toMillis (Duration/between start now))))
+
+(.start (doto (Thread. (fn [] (Thread/sleep 500)
+                         (println (jvm-uptime-seconds))))
+;; DIFFERENT
+(.setDaemon true)))")))))

@@ -12,3 +12,4 @@
 (def debug (volatile! false))
 (def version (str/trim (slurp (io/resource "BABASHKA_VERSION"))))
 (def jvm-loader (.getContextClassLoader (Thread/currentThread)))
+(def solo-executor (volatile! nil))

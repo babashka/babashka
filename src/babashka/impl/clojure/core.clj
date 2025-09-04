@@ -89,7 +89,7 @@
   the agent will be set to the value of:
   (apply action-fn state-of-agent args)"
   [^clojure.lang.Agent a f & args]
-  (apply send-via clojure.lang.Agent/soloExecutor a f args))
+  (apply send-via @common/solo-executor a f args))
 
 ;;;; End agents
 

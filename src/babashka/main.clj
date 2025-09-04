@@ -168,6 +168,7 @@ Global opts:
   --config <file>   Replace bb.edn with file. Defaults to bb.edn adjacent to invoked file or bb.edn in current dir. Relative paths are resolved relative to bb.edn.
   --deps-root <dir> Treat dir as root of relative paths in config.
   --prn             Print result via clojure.core/prn
+  --force-exit      Force exiting even when non-daemon threads are still running
   -Sforce           Force recalculation of the classpath (don't use the cache)
   -Sdeps            Deps data to use as the last deps file to be merged
   -f, --file <path> Run file
@@ -730,6 +731,8 @@ Use bb run --help to show this help output.
         (recur (nnext options) (assoc opts-map :deps-root (second options)))
         ("--prn")
         (recur (next options) (assoc opts-map :prn true))
+        ("--force-exit")
+        (recur (next options) (assoc opts-map :force-exit true))
         ("-f" "--file")
         (recur (nnext options) (assoc opts-map :file (second options)))
         ("-jar" "--jar")
@@ -840,6 +843,23 @@ Use bb run --help to show this help output.
             (sci/eval-form ctx (list 'clojure.core/var-set core/data-readers (list 'quote (assoc @core/data-readers t the-var))))
             the-var)))))
 
+(defn- set-daemon-agent-executor
+  "Set Clojure's send-off agent executor (also affects futures). This is almost
+  an exact rewrite of the Clojure's executor, but the Threads are created as
+  daemons."
+  []
+  (let [thread-counter (atom 0)
+        thread-factory (reify java.util.concurrent.ThreadFactory
+                         (newThread [_ runnable]
+                           (let [name (format "CLI-agent-send-off-pool-%d"
+                                              (first (swap-vals! thread-counter inc)))]
+                             (doto (Thread. runnable)
+                               (.setDaemon true) ;; DIFFERENT
+                               (.setName name)))))
+        executor (java.util.concurrent.Executors/newCachedThreadPool thread-factory)]
+    (set-agent-send-off-executor! executor)
+    (vreset! common/solo-executor executor)))
+
 (defn exec [cli-opts]
   (with-bindings {#'*unrestricted* true
                   clojure.lang.Compiler/LOADER @cp/the-url-loader}
@@ -851,18 +871,19 @@ Use bb run --help to show this help output.
                   sci/print-length @sci/print-length
                   ;; when adding vars here, also add them to repl.clj and nrepl_server.clj
                   ]
-      (let [{:keys [:shell-in :edn-in :shell-out :edn-out
-                    :file :command-line-args
-                    :expressions :stream? :init
-                    :repl :socket-repl :nrepl
-                    :debug :classpath :force?
-                    :main :uberscript
-                    :jar :uberjar :clojure
-                    :doc :run :list-tasks
-                    :print-deps :prepare]
-             exec-fn :exec}
+      (let [{:keys [shell-in edn-in shell-out edn-out
+                    file command-line-args
+                    expressions stream? init
+                    repl socket-repl nrepl
+                    debug classpath force?
+                    main uberscript
+                    jar uberjar clojure
+                    doc run list-tasks
+                    print-deps prepare
+                    force-exit]
+             exec-fn :exec
+             print-result? :prn}
             cli-opts
-            print-result? (:prn cli-opts)
             _ (when debug (vreset! common/debug true))
             _ (do ;; set properties
                 (when main (System/setProperty "babashka.main" main))
@@ -1121,16 +1142,19 @@ Use bb run --help to show this help output.
                         (uberjar/run (assoc uber-params
                                             :classpath cp-with-bb-edn)))))
                   (uberjar/run uber-params))))))
-        exit-code))))
+        {:exit exit-code
+         :force-exit force-exit}))))
 
 (defn exec-without-deps [cli-opts]
   (let [{version-opt :version
-         :keys [help describe?]} cli-opts]
+         :keys [help describe?
+                force-exit]} cli-opts]
     (cond
       version-opt (print-version)
       help        (print-help)
-      describe?   (print-describe)))
-  0)
+      describe?   (print-describe))
+    {:exit 0
+     :force-exit force-exit}))
 
 (defn satisfies-min-version? [min-version]
   (let [[major-current minor-current patch-current] version-data
@@ -1180,6 +1204,7 @@ Use bb run --help to show this help output.
     (some #(contains? opts %) fast-path-opts)))
 
 (defn main [& args]
+  (set-daemon-agent-executor)
   (let [bin-jar (binary-invoked-as-jar)
         args (if bin-jar
                (list* "--jar" bin-jar "--" args)
@@ -1239,26 +1264,6 @@ Use bb run --help to show this help output.
       (exec-without-deps opts)
       (exec opts))))
 
-(def musl?
-  "Captured at compile time, to know if we are running inside a
-  statically compiled executable with musl."
-  (and (= "true" (System/getenv "BABASHKA_STATIC"))
-       (= "true" (System/getenv "BABASHKA_MUSL"))))
-
-(defmacro run [args]
-  (if musl?
-    ;; When running in musl-compiled static executable we lift execution of bb
-    ;; inside a thread, so we have a larger than default stack size, set by an
-    ;; argument to the linker. See https://github.com/oracle/graal/issues/3398
-    `(let [v# (volatile! nil)
-           f# (fn []
-                (vreset! v# (apply main ~args)))]
-       (doto (Thread. nil f# "main")
-         (.start)
-         (.join))
-       @v#)
-    `(apply main ~args)))
-
 (defn -main
   [& args]
   (handle-pipe!)
@@ -1270,11 +1275,15 @@ Use bb run --help to show this help output.
       (dotimes [i n]
         (if (< i last-iteration)
           (with-out-str (apply main args))
-          (do (run args)
+          (do (apply main args)
               (binding [*out* *err*]
                 (println "ran" n "times"))))))
-    (let [exit-code (run args)]
-      (System/exit exit-code))))
+    (let [{:keys [exit force-exit]} (apply main args)]
+      ;; only necessary for linux musl, but for compat, we do it everywhere:
+      (shutdown-agents)
+      (when (or (not (zero? exit))
+                force-exit)
+        (System/exit exit)))))
 
 (sci/alter-var-root main-var (constantly -main))
 ;;;; Scratch

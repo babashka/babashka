@@ -163,14 +163,17 @@
                 (java.util.concurrent Executors)))
 
              (let [uri (URI. "https://www.postman-echo.com/get")
+                   executor (Executors/newSingleThreadExecutor)
                    req (-> (HttpRequest/newBuilder uri)
                            (.GET)
                            (.build))
                    client (-> (HttpClient/newBuilder)
-                              (.executor (Executors/newSingleThreadExecutor))
+                              (.executor executor)
                               (.build))
                    res (.send client req (HttpResponse$BodyHandlers/discarding))]
-               (.statusCode res)))))))
+               (let [status (.statusCode res)]
+                 (.shutdown executor)
+                 status)))))))
 
 (deftest ^:flaky proxy-test
   (is (= true
