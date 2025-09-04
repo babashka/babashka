@@ -7,8 +7,9 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## Unreleased
+## 1.12.208 (2025-09-04)
 
+- Bump clojure to `1.12.2`
 - [#1843](https://github.com/babashka/babashka/issues/1843): BREAKING (potententially): non-daemon thread handling change. Similar
   to JVM clojure, babashka now waits for non-daemon threads to finish. This
   means you don't have to append `@(promimise)` anymore when you spawn an
