@@ -166,7 +166,8 @@
     {:methods [{:name "hasNext"}
                {:name "next"}]}
     java.util.TimeZone
-    {:methods [{:name "getTimeZone"}]}
+    {:methods [{:name "getTimeZone"}
+               {:name "setDefault"}]}
     java.net.URLClassLoader
     {:methods [{:name "close"}
                {:name "findResource"}

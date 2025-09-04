@@ -11,6 +11,7 @@ A preview of the next release can be installed from
 
 - Add `Compiler/demunge`
 - Add `clojure.lang.TaggedLiteral/create`
+- Add `java.util.TimeZone/setDefault`
 - Add `println-str`
 - SCI: Var literal or special form gets confused with local of same name
 - [#1852](https://github.com/babashka/babashka/issues/1852): `(.getContextClassLoader (Thread/currentThread))` should be able to return results from babashka classpath
