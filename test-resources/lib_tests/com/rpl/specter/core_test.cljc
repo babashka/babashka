@@ -928,9 +928,7 @@
 
   (is (= [{:a 2}] (let [p :a] (select [s/ALL (s/selected? p even?)] [{:a 2}])))))
 
-
-;; BB_TEST_PATCH: no longer works, needs advanced riddley macroexpand
-#_(deftest nested-inline-caching-test
+(deftest nested-inline-caching-test
   (is (= [[1]]
          (let [a :b]
            (select
