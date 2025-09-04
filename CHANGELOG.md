@@ -12,7 +12,7 @@ A preview of the next release can be installed from
 - Bump clojure to `1.12.2`
 - [#1843](https://github.com/babashka/babashka/issues/1843): BREAKING (potententially): non-daemon thread handling change. Similar
   to JVM clojure, babashka now waits for non-daemon threads to finish. This
-  means you don't have to append `@(promimise)` anymore when you spawn an
+  means you don't have to append `@(promise)` anymore when you spawn an
   httpkit server, for example. For futures and agents, bb uses a thread pool
   that spawns daemon threads, so that pool isn't preventing an exit. This
   behavior is similar to `clojure -X`. You can get back the old behavior where
