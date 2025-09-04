@@ -16,7 +16,7 @@ A preview of the next release can be installed from
   httpkit server, for example. For futures and agents, bb uses a thread pool
   that spawns daemon threads, so that pool isn't preventing an exit. This
   behavior is similar to `clojure -X`. You can get back the old behavior where
-  bb always forced an exit and ignored running non-daemon threads, with
+  bb always forced an exit and ignored running non-daemon threads with
   `--force-exit`.
 - [#1690](https://github.com/babashka/babashka/issues/1690): bind `clojure.test/*test-out*` to same print-writer as `*out*` in nREPL server
 - Add `Compiler/demunge`
