@@ -43,6 +43,7 @@ to collect this news in a different source
 to update it since spring 2023. Hopefully doing this in the changelog will make
 me pick up this habit again.
 
+- [@borkdude](https://github.com/borkdude) will be doing a talk related to babashka at the [conj 2025](https://www.2025.clojure-conj.org/schedule)!
 - Cognitect Lab's [aws-api](https://github.com/cognitect-labs/aws-api) now runs with babashka!
 - DataStar's [Clojure SDK](https://github.com/starfederation/datastar-clojure) now runs with babashka!
 - [Lazytest](https://github.com/NoahTheDuke/lazytest) compatibility
