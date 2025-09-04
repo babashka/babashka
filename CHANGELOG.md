@@ -9,6 +9,14 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- [#1843](https://github.com/babashka/babashka/issues/1843): BREAKING (potententially): non-daemon thread handling change. Similar
+  to JVM clojure, babashka now waits for non-daemon threads to finish. This
+  means you don't have to append `@(promimise)` anymore when you spawn an
+  httpkit server, for example. For futures and agents, bb uses a thread pool
+  that spawns daemon threads, so that pool isn't preventing an exit. This
+  behavior is similar to `clojure -X`. You can get back the old behavior where
+  bb always forced an exit and ignored running non-daemon threads, with
+  `--force-exit`.
 - Add `Compiler/demunge`
 - Add `clojure.lang.TaggedLiteral/create`
 - Add `java.util.TimeZone/setDefault`
