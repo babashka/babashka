@@ -324,6 +324,19 @@
 (.start (doto (Thread. (fn [] (Thread/sleep 500)
                          (println (jvm-uptime-seconds))))
           (.setDaemon false)))")))
+    (is (nil? (bb nil "--force-exit" "(import '(java.time Instant Duration))
+
+(defn jvm-uptime-seconds []
+  (let [start (-> (java.lang.ProcessHandle/current)
+                  .info
+                  .startInstant
+                  .get)
+        now   (Instant/now)]
+    (.toMillis (Duration/between start now))))
+
+(.start (doto (Thread. (fn [] (Thread/sleep 500)
+                         (println (jvm-uptime-seconds))))
+          (.setDaemon false)))")))
     (is (nil? (bb nil "(import '(java.time Instant Duration))
 (defn jvm-uptime-seconds []
   (let [start (-> (java.lang.ProcessHandle/current)

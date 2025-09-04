@@ -1279,7 +1279,6 @@ Use bb run --help to show this help output.
               (binding [*out* *err*]
                 (println "ran" n "times"))))))
     (let [{:keys [exit force-exit]} (apply main args)]
-      (prn :force-exit force-exit)
       ;; only necessary for linux musl, but for compat, we do it everywhere:
       (shutdown-agents)
       (when (or (not (zero? exit))
