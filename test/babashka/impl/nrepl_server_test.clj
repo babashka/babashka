@@ -9,8 +9,7 @@
    [bencode.core :as bencode]
    [clojure.test :as t :refer [deftest is testing]]
    [sci.core :as sci]
-   [sci.ctx-store :as ctx-store]
-   [babashka.impl.classpath :as cp])
+   [sci.ctx-store :as ctx-store])
   (:import
    [java.lang ProcessBuilder$Redirect]))
 
@@ -191,7 +190,11 @@
                                    "session" session "id" (new-id!)})
         (dotimes [_ 3]
           (let [reply (read-reply in session @id)]
-            (is (= "Hello\n" (tu/normalize (:out reply)))))))
+            (is (= "Hello\n" (tu/normalize (:out reply))))))
+        (testing "re-bind clojure.test/*test-out* to print-writer"
+          (bencode/write-bencode os {"op" "eval" "code" "(= *out* clojure.test/*test-out*)"
+                                     "session" session "id" (new-id!)})
+          (is (= "true" (:value (read-reply in session @id))))))
       (testing "dynamic var can be set!, test unchecked-math"
         (bencode/write-bencode os {"op" "eval" "code" "(set! *unchecked-math* true)"
                                    "session" session "id" (new-id!)})
