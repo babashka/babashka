@@ -66,22 +66,22 @@
       (vars/bindRoot sci/out os)
       (vars/bindRoot sci/err es)
       (sci/with-bindings bindings-map
-          (let [res (binding [*out* os
-                              *err* es]
-                      (if (string? input-or-opts)
-                        (with-in-str input-or-opts (apply main/main args))
-                        (apply main/main args)))]
-            (if (zero? res)
-              (do
-                (let [err (str es)]
-                  (when-not (str/blank? err)
-                    (println err))) ;; flush stderr
-                (normalize (str os)))
-              (do
-                (println (str os))
-                (throw (ex-info (str es)
-                                {:stdout (str os)
-                                 :stderr (str es)}))))))
+        (let [res (:exit (binding [*out* os
+                                   *err* es]
+                           (if (string? input-or-opts)
+                             (with-in-str input-or-opts (apply main/main args))
+                             (apply main/main args))))]
+          (if (zero? res)
+            (do
+              (let [err (str es)]
+                (when-not (str/blank? err)
+                  (println err))) ;; flush stderr
+              (normalize (str os)))
+            (do
+              (println (str os))
+              (throw (ex-info (str es)
+                              {:stdout (str os)
+                               :stderr (str es)}))))))
       (finally
         (when (string? input-or-opts) (vars/bindRoot sci/in *in*))
         (vars/bindRoot sci/out *out*)
@@ -89,7 +89,7 @@
 
 (defn bb-native [input & args]
   (let [args (cond-> args *bb-edn-path*
-               (->> (list* "--config" *bb-edn-path* "--deps-root" ".")))
+                     (->> (list* "--config" *bb-edn-path* "--deps-root" ".")))
         res (p/process (into ["./bb"] args)
                        {:in input
                         :out :string

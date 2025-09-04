@@ -798,7 +798,7 @@ true")))
                               (map str ["doc" "with-precision"]))
                        "precision"))
     (is (str/blank? (with-out-str (main/main "doc" "non-existing"))))
-    (is (= 1 (main/main "doc" "non-existing")))))
+    (is (= 1 (:exit (main/main "doc" "non-existing"))))))
 
 (deftest ^:skip-windows process-handler-info-test
   (when test-utils/native?

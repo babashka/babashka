@@ -168,6 +168,7 @@ Global opts:
   --config <file>   Replace bb.edn with file. Defaults to bb.edn adjacent to invoked file or bb.edn in current dir. Relative paths are resolved relative to bb.edn.
   --deps-root <dir> Treat dir as root of relative paths in config.
   --prn             Print result via clojure.core/prn
+  --force-exit      Force exiting even when non-daemon threads are still running
   -Sforce           Force recalculation of the classpath (don't use the cache)
   -Sdeps            Deps data to use as the last deps file to be merged
   -f, --file <path> Run file
@@ -730,6 +731,8 @@ Use bb run --help to show this help output.
         (recur (nnext options) (assoc opts-map :deps-root (second options)))
         ("--prn")
         (recur (next options) (assoc opts-map :prn true))
+        ("--force-exit")
+        (recur (next options) (assoc opts-map :force-exit true))
         ("-f" "--file")
         (recur (nnext options) (assoc opts-map :file (second options)))
         ("-jar" "--jar")
@@ -868,18 +871,19 @@ Use bb run --help to show this help output.
                   sci/print-length @sci/print-length
                   ;; when adding vars here, also add them to repl.clj and nrepl_server.clj
                   ]
-      (let [{:keys [:shell-in :edn-in :shell-out :edn-out
-                    :file :command-line-args
-                    :expressions :stream? :init
-                    :repl :socket-repl :nrepl
-                    :debug :classpath :force?
-                    :main :uberscript
-                    :jar :uberjar :clojure
-                    :doc :run :list-tasks
-                    :print-deps :prepare]
-             exec-fn :exec}
+      (let [{:keys [shell-in edn-in shell-out edn-out
+                    file command-line-args
+                    expressions stream? init
+                    repl socket-repl nrepl
+                    debug classpath force?
+                    main uberscript
+                    jar uberjar clojure
+                    doc run list-tasks
+                    print-deps prepare
+                    force-exit]
+             exec-fn :exec
+             print-result? :prn}
             cli-opts
-            print-result? (:prn cli-opts)
             _ (when debug (vreset! common/debug true))
             _ (do ;; set properties
                 (when main (System/setProperty "babashka.main" main))
@@ -1138,16 +1142,19 @@ Use bb run --help to show this help output.
                         (uberjar/run (assoc uber-params
                                             :classpath cp-with-bb-edn)))))
                   (uberjar/run uber-params))))))
-        exit-code))))
+        {:exit exit-code
+         :force-exit force-exit}))))
 
 (defn exec-without-deps [cli-opts]
   (let [{version-opt :version
-         :keys [help describe?]} cli-opts]
+         :keys [help describe?
+                force-exit]} cli-opts]
     (cond
       version-opt (print-version)
       help        (print-help)
-      describe?   (print-describe)))
-  0)
+      describe?   (print-describe))
+    {:exit 0
+     :force-exit force-exit}))
 
 (defn satisfies-min-version? [min-version]
   (let [[major-current minor-current patch-current] version-data
@@ -1271,11 +1278,13 @@ Use bb run --help to show this help output.
           (do (apply main args)
               (binding [*out* *err*]
                 (println "ran" n "times"))))))
-    (let [exit-code (apply main args)]
+    (let [{:keys [exit force-exit]} (apply main args)]
+      (prn :force-exit force-exit)
       ;; only necessary for linux musl, but for compat, we do it everywhere:
       (shutdown-agents)
-      (when-not (zero? exit-code)
-        (System/exit exit-code)))))
+      (when (or (not (zero? exit))
+                force-exit)
+        (System/exit exit)))))
 
 (sci/alter-var-root main-var (constantly -main))
 ;;;; Scratch
