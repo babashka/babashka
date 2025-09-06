@@ -7,6 +7,14 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## Unreleased
+
+...
+
+### News
+
+- [clj-simple-router](https://github.com/tonsky/clj-simple-router) is another routing library that you can use with httpkit, that works with babashka
+
 ## 1.12.208 (2025-09-04)
 
 - Bump clojure to `1.12.2`
