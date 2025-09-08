@@ -9,7 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-...
+- Add `java.nio.charset.CharsetDecoder`, `java.nio.charset.CodingErrorAction`, `java.nio.charset.CharacterCodingException` in support of the [sfv](https://github.com/outskirtslabs/sfv) library
 
 ### News
 

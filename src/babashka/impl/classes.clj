@@ -409,7 +409,10 @@
                 java.nio.channels.SocketChannel
                 java.nio.charset.Charset
                 java.nio.charset.CoderResult
+                java.nio.charset.CodingErrorAction
+                java.nio.charset.CharacterCodingException
                 java.nio.charset.CharsetEncoder
+                java.nio.charset.CharsetDecoder
                 java.nio.charset.StandardCharsets
                 java.nio.file.CopyOption
                 java.nio.file.DirectoryNotEmptyException
@@ -794,6 +797,8 @@
                                    java.nio.charset.Charset
                                    (instance? java.nio.charset.CharsetEncoder v)
                                    java.nio.charset.CharsetEncoder
+                                   (instance? java.nio.charset.CharsetDecoder v)
+                                   java.nio.charset.CharsetDecoder
                                    (instance? java.nio.CharBuffer v)
                                    java.nio.CharBuffer
                                    (instance? java.nio.channels.FileChannel v)
