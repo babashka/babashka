@@ -52,14 +52,19 @@
                           (str
                            (.getName (.getClass this))
                            "@"
-                           (Integer/toHexString (.hashCode this)))))]
+                           (Integer/toHexString (.hashCode this)))))
+        equals-fn (or (get methods 'equals)
+                      #_{:clj-kondo/ignore [:redundant-fn-wrapper]}
+                      (fn [this other]
+                        (identical? this other)))]
     (reify
       sci.impl.types.IReified
       (getMethods [_] (:methods m))
       (getInterfaces [_] (:interfaces m))
       (getProtocols [_] (:protocols m))
       java.lang.Object
-      (toString [this] (toString-fn this)))))
+      (toString [this] (toString-fn this))
+      (equals [this other] (equals-fn this other)))))
 
 (defmacro gen-reify-fn []
   `(fn [~'m]
