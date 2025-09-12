@@ -11,6 +11,7 @@ A preview of the next release can be installed from
 
 - [#1865](https://github.com/babashka/babashka/issues/1865): support `reify` + `equals` + `hashCode` on `Object`
 - Add `java.nio.charset.CharsetDecoder`, `java.nio.charset.CodingErrorAction`, `java.nio.charset.CharacterCodingException` in support of the [sfv](https://github.com/outskirtslabs/sfv) library
+- Fix `nrepl-server` completions and lookup op to be compatible with rebel-readline
 
 ### News
 
