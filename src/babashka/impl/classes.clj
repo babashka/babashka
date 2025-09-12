@@ -553,6 +553,7 @@
           java.util.stream.BaseStream
           java.util.stream.Stream
           java.util.stream.IntStream
+          java.util.stream.Collectors
           java.util.Random
           java.util.regex.Matcher
           java.util.regex.Pattern
@@ -586,6 +587,7 @@
           java.util.function.Function
           java.util.function.BiConsumer
           java.util.function.BiFunction
+          java.util.function.BiPredicate
           java.util.function.Predicate
           java.util.function.Supplier
           java.util.zip.CheckedInputStream
