@@ -50,11 +50,15 @@
                                            [org.flatland/ordered "1.15.12"]]}
              :feature/jdbc {:source-paths ["feature-jdbc"]
                             :dependencies [[seancorfield/next.jdbc "1.1.610"]]}
-             :feature/sqlite [:feature/jdbc {:dependencies [[org.xerial/sqlite-jdbc "3.36.0.3"]]}]
-             :feature/postgresql [:feature/jdbc {:dependencies [[org.postgresql/postgresql "42.2.18"]]}]
+             :sqlite/deps {:dependencies [[org.xerial/sqlite-jdbc "3.36.0.3"]]}
+             :feature/sqlite [:feature/jdbc :sqlite/deps]
+             :postgres/deps {:dependencies [[org.postgresql/postgresql "42.2.18"]]}
+             :feature/postgresql [:feature/jdbc :postgres/deps]
              ;:feature/oracledb [:feature/jdbc {:dependencies [[com.oracle.database.jdbc/ojdbc8 "19.8.0.0"]]}]
-             :feature/oracledb [:feature/jdbc {:dependencies [[io.helidon.integrations.db/ojdbc "2.1.0"]]}] ; ojdbc10 + GraalVM config, by Oracle
-             :feature/hsqldb [:feature/jdbc {:dependencies [[org.hsqldb/hsqldb "2.5.1"]]}]
+             :oracle/deps {:dependencies [[io.helidon.integrations.db/ojdbc "2.1.0"]]}
+             :feature/oracledb [:feature/jdbc :oracle/deps] ; ojdbc10 + GraalVM config, by Oracle
+             :hsqldb/deps {:dependencies [[org.hsqldb/hsqldb "2.5.1"]]}
+             :feature/hsqldb [:feature/jdbc :hsqldb/deps]
              :feature/csv {:source-paths ["feature-csv"]
                            :dependencies [[org.clojure/data.csv "1.0.0"]]}
              :feature/transit {:source-paths ["feature-transit"]
@@ -82,6 +86,10 @@
                                     :dependencies [[org.clojure/data.priority-map "1.1.0"]]}
              :feature/rrb-vector {:source-paths ["feature-rrb-vector"]
                                   :dependencies [[org.clojure/core.rrb-vector "0.1.2"]]}
+             :test/deps {:dependencies [[borkdude/rewrite-edn "0.4.6"]
+                                        [com.clojure-goes-fast/clj-async-profiler "0.5.0"]
+                                        [com.opentable.components/otj-pg-embedded "0.13.3"]
+                                        [nubank/matcher-combinators "3.6.0"]]}
              :test [:feature/xml
                     :feature/lanterna
                     :feature/yaml
@@ -100,10 +108,7 @@
                     :feature/logging
                     :feature/priority-map
                     :feature/rrb-vector
-                    {:dependencies [[borkdude/rewrite-edn "0.4.6"]
-                                    [com.clojure-goes-fast/clj-async-profiler "0.5.0"]
-                                    [com.opentable.components/otj-pg-embedded "0.13.3"]
-                                    [nubank/matcher-combinators "3.6.0"]]}]
+                    :test/deps]
              :uberjar {:global-vars {*assert* false}
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"
                                   "-Dclojure.spec.skip-macros=true"
