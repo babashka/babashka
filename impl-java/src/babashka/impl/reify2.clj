@@ -56,7 +56,10 @@
         equals-fn (or (get methods 'equals)
                       #_{:clj-kondo/ignore [:redundant-fn-wrapper]}
                       (fn [this other]
-                        (identical? this other)))]
+                        (identical? this other)))
+        hashCode-fn (or (get methods 'hashCode)
+                        (fn [this]
+                          (System/identityHashCode this)))]
     (reify
       sci.impl.types.IReified
       (getMethods [_] (:methods m))
@@ -64,7 +67,8 @@
       (getProtocols [_] (:protocols m))
       java.lang.Object
       (toString [this] (toString-fn this))
-      (equals [this other] (equals-fn this other)))))
+      (equals [this other] (equals-fn this other))
+      (hashCode [this] (hashCode-fn this)))))
 
 (defmacro gen-reify-fn []
   `(fn [~'m]

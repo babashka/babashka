@@ -51,7 +51,7 @@
 (apply m (range 20))
 ]")))))
 
-(deftest reify-object
+(deftest reify-object-test
   (testing "empty methods"
     (is (str/starts-with?
          (bb nil "
@@ -75,6 +75,32 @@
 (def m (reify Object
   (toString [_] (str :foo))))
 (hash m)
+"))))
+  (testing "Overriding equals"
+    (is (true?
+         (bb nil "
+(def m (reify Object
+  (equals [_this that] (= 4 that))))
+(= m 4)
+"))))
+  (testing "Not overriding equals"
+    (is (true?
+         (bb nil "
+(def m (reify Object))
+(and (= m m) (not= m 2))
+"))))
+  (testing "Overriding hashCode"
+    (is (true?
+         (bb nil "
+(def m (reify Object
+  (hashCode [_thia] 1337)))
+(= 1337 (hash m))
+"))))
+  (testing "Not overriding hashCode"
+    (is (true?
+         (bb nil "
+(def m (reify Object))
+(number? (hash m))
 ")))))
 
 (deftest reify-file-visitor-test
