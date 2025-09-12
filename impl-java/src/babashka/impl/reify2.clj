@@ -1,7 +1,7 @@
 (ns babashka.impl.reify2
   (:require [babashka.impl.reify2.interfaces :refer [interfaces]]))
 
-(set! *warn-on-reflection* false)
+(set! *warn-on-reflection* true)
 
 (defn method-or-bust [methods k]
   (or (get methods k)
@@ -50,9 +50,9 @@
         toString-fn (or (get methods 'toString)
                         (fn [this]
                           (str
-                           (.getName (.getClass this))
+                           (.getName (.getClass ^Object this))
                            "@"
-                           (Integer/toHexString (.hashCode this)))))
+                           (Integer/toHexString (.hashCode ^Object this)))))
         equals-fn (or (get methods 'equals)
                       #_{:clj-kondo/ignore [:redundant-fn-wrapper]}
                       (fn [this other]

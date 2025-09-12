@@ -189,7 +189,7 @@
                          com.fulcrologic/statecharts {:git/url "https://github.com/fulcrologic/statecharts"
                                                       :git/sha "b7ebeb080724dbeead94f73bcdc1963eecc531ff"}
                          com.outskirtslabs/sfv {:git/url "https://github.com/outskirtslabs/sfv"
-                                                :git/sha "4282cc85025c8bd2dfd37d635bf24cefb5711f85"}
+                                                :git/sha "943a4787e0c132bdb6e8ab3da9607b1337c9e27d"}
                          mvxcvi/alphabase {:mvn/version "3.0.185"}}
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil}}
