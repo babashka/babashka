@@ -713,7 +713,7 @@
     (let [sw (java.io.StringWriter.)]
       (sci/with-bindings {sci/err sw}
         (test-utils/bb {:in "x" :err sw} "--repl"))
-      (is (str/includes? (str sw) "Could not resolve symbol: x [at <repl>:1:1]")))))
+      (is (str/includes? (str sw) "Unable to resolve symbol: x [at <repl>:1:1]")))))
 
 (deftest java-stream-test
   (is (every? number? (bb nil "(take 2 (iterator-seq (.iterator (.doubles (java.util.Random.)))))"))))
