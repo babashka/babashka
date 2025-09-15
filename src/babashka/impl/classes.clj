@@ -697,6 +697,7 @@
                       clojure.lang.Range
                       clojure.lang.Ratio
                       clojure.lang.ReaderConditional
+                      clojure.lang.Ref
                       clojure.lang.Repeat
                       clojure.lang.Reversible
                       clojure.lang.Sorted
