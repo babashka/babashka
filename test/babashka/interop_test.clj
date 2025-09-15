@@ -350,3 +350,13 @@
                          (println (jvm-uptime-seconds))))
 ;; DIFFERENT
 (.setDaemon true)))")))))
+
+(deftest clojure-lang-MultiFn-addMethod-test
+  (is (= [2 0] (bb nil "
+(def results (atom []))
+(defmulti x (fn[_] :inc))
+(.addMethod x :inc inc)
+(swap! results conj (x 1))
+(.addMethod x :inc dec)
+(swap! results conj (x 1))
+@results"))))
