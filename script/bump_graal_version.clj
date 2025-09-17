@@ -41,12 +41,13 @@
    "doc/dev.md"
    "doc/build.md"
    ".github/workflows/build.yml"
-   ".circleci/config.yml"
+   ".circleci/script/gen_ci.clj"
    "appveyor.yml"
    "project.clj"
    "script/bump_graal_version.clj"
    ".cirrus.yml"
-   "script/install-graalvm"])
+   "script/install-graalvm"
+   ])
 
 ;; We might have to keep changing these from
 ;; time to time whenever the version is bumped
