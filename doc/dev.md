@@ -40,7 +40,7 @@ reasons:
 
 ## Requirements
 
-You need [lein](https://leiningen.org/) for running JVM tests and/or producing uberjars. For building binaries you need GraalVM. Currently we use Oracle GraalVM 24.
+You need [lein](https://leiningen.org/) for running JVM tests and/or producing uberjars. For building binaries you need GraalVM. Currently we use Oracle GraalVM 25.
 
 ## Clone repository
 

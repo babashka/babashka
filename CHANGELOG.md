@@ -15,6 +15,8 @@ A preview of the next release can be installed from
 - Add `java.nio.charset.CharsetDecoder`, `java.nio.charset.CodingErrorAction`, `java.nio.charset.CharacterCodingException` in support of the [sfv](https://github.com/outskirtslabs/sfv) library
 - Fix `nrepl-server` completions and lookup op to be compatible with rebel-readline
 - Add `clojure.lang.Ref` for `instance?` checks
+- Bump SCI: align unresolved symbol error message with clojure
+- Use GraalVM 25
 
 ### News
 
