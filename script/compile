@@ -115,6 +115,14 @@ then
     fi
 fi
 
+detected_graalvm_version=$("$GRAALVM_HOME/bin/native-image" "--version")
+
+if [[ $detected_graalvm_version == native-image\ 25* ]]; then
+    args+=("--future-defaults=all")
+fi
+
+echo "$GRAALVM_HOME/bin/native-image" "${args[@]}" "$@"
+
 "$GRAALVM_HOME/bin/native-image" "${args[@]}" "$@"
 
 ./"$BABASHKA_BINARY" describe

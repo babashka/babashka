@@ -108,7 +108,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       LEIN_ROOT: "true"
-      GRAALVM_VERSION: "24"
+      GRAALVM_VERSION: "25"
       BABASHKA_PLATFORM: ${{ matrix.name }} # used in release script
       BABASHKA_ARCH: ${{ matrix.arch }}
       BABASHKA_TEST_ENV: native
@@ -135,7 +135,7 @@ jobs:
         if: "matrix.static == false"
         uses: graalvm/setup-graalvm@v1.3.4
         with:
-          java-version: '24'
+          java-version: '25'
           distribution: 'graalvm'
           components: 'native-image'
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -144,7 +144,7 @@ jobs:
         if: "matrix.static == true"
         uses: graalvm/setup-graalvm@v1.3.4
         with:
-          java-version: '24'
+          java-version: '25'
           distribution: 'graalvm'
           native-image-musl: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
