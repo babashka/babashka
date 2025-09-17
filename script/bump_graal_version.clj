@@ -41,6 +41,7 @@
    "doc/dev.md"
    "doc/build.md"
    ".github/workflows/build.yml"
+   ".github/workflows/build-windows.yml"
    ".circleci/script/gen_ci.clj"
    "appveyor.yml"
    "project.clj"
