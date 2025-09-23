@@ -17,10 +17,14 @@ A preview of the next release can be installed from
 - Add `clojure.lang.Ref` for `instance?` checks
 - Bump SCI: align unresolved symbol error message with clojure
 - Use GraalVM 25
+- Bump deps.clj
 
 ### News
 
 - [clj-simple-router](https://github.com/tonsky/clj-simple-router) is another routing library that you can use with httpkit, that works with babashka
+- [An article about implementing a babashka pod in Ruby... in Japanese!](https://zenn.dev/tkmfujise/articles/7eebdf57ae9fc3)
+- [clj-reload](https://github.com/tonsky/clj-reload): now runs with bb
+- [lazytest](https://github.com/NoahTheDuke/lazytest/releases/tag/v1.9.1): the watch functionality now works with bb
 
 ## 1.12.208 (2025-09-04)
 
