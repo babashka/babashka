@@ -31,7 +31,7 @@
   (let [{:keys [:file :line :column]} (ex-data ex)]
     (when (and file line column)
       (when-let [content (case file
-                           "<expr>" (:expression opts)
+                           "NO_SOURCE_PATH" (:expression opts)
                            "<preloads>" (:preloads opts)
                            (let [f (io/file file)]
                              (or (when (.exists f) (slurp f))

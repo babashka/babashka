@@ -525,10 +525,10 @@ $ bb examples/xml-example.clj
 
 ``` clojure
 $ bb "(require 'logger) (logger/log \"the logger says hi\")"
-<expr>:1:19 the logger says hi 
+NO_SOURCE_PATH:1:19 the logger says hi
 ```
 
-## Using GZip streams to make a note utility
+## Using gzip streams to make a note utility
 
 [memo.clj](memo.clj) creates zip files in /tmp for stashing notes (possibly the most inefficient KV store ever)
 

@@ -54,9 +54,9 @@
                     (catch Exception e (ex-message e)))]
     (is (str/includes? (tu/normalize output) "----- Stack trace --------------------------------------------------------------
 clojure.core// - <built-in>
-user/foo       - <expr>:2:14
-user/foo       - <expr>:2:1
-user           - <expr>:3:1"))))
+user/foo       - NO_SOURCE_PATH:2:14
+user/foo       - NO_SOURCE_PATH:2:1
+user           - NO_SOURCE_PATH:3:1"))))
 
 (deftest context-test
   (let [output (try (tu/bb nil "
@@ -92,7 +92,7 @@ Location: foo.clj:1:10
 clojure.core//       - <built-in>
 foo                  - foo.clj:1:10
 clojure.core/require - <built-in>
-user                 - <expr>:1:1"))))
+user                 - NO_SOURCE_PATH:1:1"))))
 
 (deftest static-call-test
   #_(let [output (try (tu/bb nil "-e" "File/x")
@@ -101,28 +101,28 @@ user                 - <expr>:1:1"))))
                        "----- Error --------------------------------------------------------------------
 Type:     java.lang.IllegalArgumentException
 Message:  No matching field found: x for class java.io.File
-Location: <expr>:1:1
+Location: NO_SOURCE_PATH:1:1
 
 ----- Context ------------------------------------------------------------------
 1: File/x
    ^--- No matching field found: x for class java.io.File
 
 ----- Stack trace --------------------------------------------------------------
-user - <expr>:1:1")))
+user - NO_SOURCE_PATH:1:1")))
   (let [output (try (tu/bb nil "-e" "(File/x)")
                     (catch Exception e (ex-message e)))]
     (is (str/includes? (tu/normalize output)
                        "----- Error --------------------------------------------------------------------
 Type:     java.lang.IllegalArgumentException
 Message:  No matching method x found taking 0 args
-Location: <expr>:1:1
+Location: NO_SOURCE_PATH:1:1
 
 ----- Context ------------------------------------------------------------------
 1: (File/x)
    ^--- No matching method x found taking 0 args
 
 ----- Stack trace --------------------------------------------------------------
-user - <expr>:1:1"))))
+user - NO_SOURCE_PATH:1:1"))))
 
 
 (deftest error-while-macroexpanding-test
@@ -132,7 +132,7 @@ user - <expr>:1:1"))))
                       "----- Error --------------------------------------------------------------------
 Type:     java.lang.ClassCastException
 Message:  clojure.lang.Keyword cannot be cast to clojure.lang.Associative
-Location: <expr>:1:19
+Location: NO_SOURCE_PATH:1:19
 Phase:    macroexpand
 
 ----- Context ------------------------------------------------------------------
@@ -142,9 +142,9 @@ Phase:    macroexpand
 ----- Stack trace --------------------------------------------------------------
 clojure.core/assoc--5481 - <built-in>
 clojure.core/assoc       - <built-in>
-user/foo                 - <expr>:1:19
-user/foo                 - <expr>:1:1
-user                     - <expr>:1:49")))
+user/foo                 - NO_SOURCE_PATH:1:19
+user/foo                 - NO_SOURCE_PATH:1:1
+user                     - NO_SOURCE_PATH:1:49")))
 
 (deftest error-in-macroexpansion-test
   (let [output (try (tu/bb nil "-e"  "(defmacro foo [x] `(assoc :foo ~x 2)) (foo 1)")
@@ -153,7 +153,7 @@ user                     - <expr>:1:49")))
                       "----- Error --------------------------------------------------------------------
 Type:     java.lang.ClassCastException
 Message:  clojure.lang.Keyword cannot be cast to clojure.lang.Associative
-Location: <expr>:1:39
+Location: NO_SOURCE_PATH:1:39
 
 ----- Context ------------------------------------------------------------------
 1: (defmacro foo [x] `(assoc :foo ~x 2)) (foo 1)
@@ -162,7 +162,7 @@ Location: <expr>:1:39
 ----- Stack trace --------------------------------------------------------------
 clojure.core/assoc--5481 - <built-in>
 clojure.core/assoc       - <built-in>
-user                     - <expr>:1:39"))
+user                     - NO_SOURCE_PATH:1:39"))
   (testing "calling a var inside macroexpansion"
     (let [output (try (tu/bb nil "-e"  "(defn quux [] (assoc :foo 1 2)) (defmacro foo [x & xs] `(do (quux) ~x)) (defn bar [] (foo 1)) (bar)")
                       (catch Exception e (ex-message e)))]
@@ -170,7 +170,7 @@ user                     - <expr>:1:39"))
                         "----- Error --------------------------------------------------------------------
 Type:     java.lang.ClassCastException
 Message:  clojure.lang.Keyword cannot be cast to clojure.lang.Associative
-Location: <expr>:1:15
+Location: NO_SOURCE_PATH:1:15
 
 ----- Context ------------------------------------------------------------------
 1: (defn quux [] (assoc :foo 1 2)) (defmacro foo [x & xs] `(do (quux) ~x)) (defn bar [] (foo 1)) (bar)
@@ -179,10 +179,10 @@ Location: <expr>:1:15
 ----- Stack trace --------------------------------------------------------------
 clojure.core/assoc--5481 - <built-in>
 clojure.core/assoc       - <built-in>
-user/quux                - <expr>:1:15
-user/quux                - <expr>:1:1
-user/bar                 - <expr>:1:73
-user                     - <expr>:1:95"))))
+user/quux                - NO_SOURCE_PATH:1:15
+user/quux                - NO_SOURCE_PATH:1:1
+user/bar                 - NO_SOURCE_PATH:1:73
+user                     - NO_SOURCE_PATH:1:95"))))
 
 (deftest print-exception-data-test
   (testing "output of uncaught ExceptionInfo"
@@ -193,15 +193,15 @@ user                     - <expr>:1:95"))))
 Type:     clojure.lang.ExceptionInfo
 Message:  some msg
 Data:     {:zero 0, :one 1}
-Location: <expr>:1:27
+Location: NO_SOURCE_PATH:1:27
 
 ----- Context ------------------------------------------------------------------
 1: (let [d {:zero 0 :one 1}] (throw (ex-info \"some msg\" d)))
                              ^--- some msg
 
 ----- Stack trace --------------------------------------------------------------
-user - <expr>:1:27
-user - <expr>:1:1")))
+user - NO_SOURCE_PATH:1:27
+user - NO_SOURCE_PATH:1:1")))
 
   (testing "output of ordinary Exception"
     (let [output (try (tu/bb nil "(throw (Exception. \"some msg\"))")
@@ -210,14 +210,14 @@ user - <expr>:1:1")))
                         "----- Error --------------------------------------------------------------------
 Type:     java.lang.Exception
 Message:  some msg
-Location: <expr>:1:1
+Location: NO_SOURCE_PATH:1:1
 
 ----- Context ------------------------------------------------------------------
 1: (throw (Exception. \"some msg\"))
    ^--- some msg
 
 ----- Stack trace --------------------------------------------------------------
-user - <expr>:1:1"))))
+user - NO_SOURCE_PATH:1:1"))))
 
 (deftest debug-exception-print-test
   (testing "debug mode includes locals and exception data in output"
@@ -229,7 +229,7 @@ user - <expr>:1:1"))))
                   (str/split-lines "----- Error --------------------------------------------------------------------
 Type:     java.lang.ArithmeticException
 Message:  Divide by zero
-Location: <expr>:1:12
+Location: NO_SOURCE_PATH:1:12
 
 ----- Context ------------------------------------------------------------------
 1: (let [x 1] (/ x 0))
@@ -237,8 +237,8 @@ Location: <expr>:1:12
 
 ----- Stack trace --------------------------------------------------------------
 clojure.core// - <built-in>
-user           - <expr>:1:12
-user           - <expr>:1:1
+user           - NO_SOURCE_PATH:1:12
+user           - NO_SOURCE_PATH:1:1
 
 ----- Exception ----------------------------------------------------------------
 clojure.lang.ExceptionInfo: Divide by zero")))
@@ -255,7 +255,7 @@ clojure.lang.ExceptionInfo: Divide by zero")))
                       "----- Error --------------------------------------------------------------------
 Type:     java.lang.ClassCastException
 Message:  clojure.lang.Keyword cannot be cast to clojure.lang.Associative
-Location: <expr>:1:19
+Location: NO_SOURCE_PATH:1:19
 Phase:    macroexpand
 
 ----- Context ------------------------------------------------------------------
@@ -265,9 +265,9 @@ Phase:    macroexpand
 ----- Stack trace --------------------------------------------------------------
 clojure.core/assoc--5481 - <built-in>
 clojure.core/assoc       - <built-in>
-user/foo                 - <expr>:1:19
-user/foo                 - <expr>:1:1
-user                     - <expr>:1:49
+user/foo                 - NO_SOURCE_PATH:1:19
+user/foo                 - NO_SOURCE_PATH:1:1
+user                     - NO_SOURCE_PATH:1:49
 
 ----- Exception ----------------------------------------------------------------
 clojure.lang.ExceptionInfo: clojure.lang.Keyword cannot be cast to clojure.lang.Associative")))
