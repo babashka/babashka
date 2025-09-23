@@ -1079,7 +1079,7 @@ Use bb run --help to show this help output.
                                (if (identical? ::EOF in)
                                  [nil 0] ;; done streaming
                                  (let [res [(let [res
-                                                  (sci/binding [sci/file (or @sci/file "<expr>")
+                                                  (sci/binding [sci/file (or @sci/file "NO_SOURCE_PATH")
                                                                 input-var in
                                                                 core/command-line-args command-line-args]
                                                     (sci/eval-string* sci-ctx expression))]
