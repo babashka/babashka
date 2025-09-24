@@ -22,6 +22,7 @@ A preview of the next release can be installed from
 
 ### News
 
+- An [article](https://www.emcken.dk/programming/2025/01/09/simple-clojure-lib-for-aws-presigned-urls-and-requests/) aboug the bb-compatible [aws-simple-sign](https://github.com/jacobemcken/aws-simple-sign) library (recently discovered this one although it's from January)
 - [clj-simple-router](https://github.com/tonsky/clj-simple-router) is another routing library that you can use with httpkit, that works with babashka
 - [An article about implementing a babashka pod in Ruby... in Japanese!](https://zenn.dev/tkmfujise/articles/7eebdf57ae9fc3)
 - [clj-reload](https://github.com/tonsky/clj-reload): now runs with bb
