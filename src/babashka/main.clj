@@ -1273,7 +1273,7 @@ Use bb run --help to show this help output.
   [& args]
   (handle-pipe!)
   (handle-sigint!)
-  #_(when windows?
+  (when windows?
     (init-out))
   (if-let [dev-opts (System/getenv "BABASHKA_DEV")]
     (let [{:keys [:n]} (if (= "true" dev-opts) {:n 1}
