@@ -103,7 +103,9 @@
 (sci/enable-unrestricted-access!)
 (sci/alter-var-root sci/in (constantly *in*))
 (defn init-out []
-  (sci/alter-var-root sci/out (fn [& _args]
+  (sci/alter-var-root sci/out (constantly *out*)
+                      ;; this worked
+                      #_(fn [& _args]
                                 (java.io.OutputStreamWriter. System/out))))
 (init-out) ;; do this again to fix issue with Windows UTF-8 output in Powershell
 (sci/alter-var-root sci/err (constantly *err*))
