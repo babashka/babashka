@@ -102,7 +102,9 @@
 
 (sci/enable-unrestricted-access!)
 (sci/alter-var-root sci/in (constantly *in*))
-(sci/alter-var-root sci/out (constantly *out*))
+(defn init-out []
+  (sci/alter-var-root sci/out (constantly *out*)))
+(init-out) ;; do this again to fix issue with Windows UTF-8 output in Powershell
 (sci/alter-var-root sci/err (constantly *err*))
 (sci/alter-var-root sci/read-eval (constantly *read-eval*))
 
@@ -1268,6 +1270,8 @@ Use bb run --help to show this help output.
   [& args]
   (handle-pipe!)
   (handle-sigint!)
+  (when windows?
+    (init-out))
   (if-let [dev-opts (System/getenv "BABASHKA_DEV")]
     (let [{:keys [:n]} (if (= "true" dev-opts) {:n 1}
                            (edn/read-string dev-opts))
