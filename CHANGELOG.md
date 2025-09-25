@@ -27,6 +27,7 @@ A preview of the next release can be installed from
 - [An article about implementing a babashka pod in Ruby... in Japanese!](https://zenn.dev/tkmfujise/articles/7eebdf57ae9fc3)
 - [clj-reload](https://github.com/tonsky/clj-reload): now runs with bb
 - [lazytest](https://github.com/NoahTheDuke/lazytest/releases/tag/v1.9.1): the watch functionality now works with bb
+- [bb-tower-deploy](https://github.com/socksy/bb-tower-deploy): Adapt a babashka project to run on tower.dev
 
 ## 1.12.208 (2025-09-04)
 
