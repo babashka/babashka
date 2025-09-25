@@ -104,9 +104,7 @@
 (sci/alter-var-root sci/in (constantly *in*))
 (defn init-out []
   (sci/alter-var-root sci/out (fn [& _args]
-                                ;; don't use constantly since it derefs *out* pre-maturely
-                                ;; TODO: next thing to try it just return our own OutputStreamWriter around System/out
-                                *out*)))
+                                (java.io.OutputStreamWriter. System/out))))
 (init-out) ;; do this again to fix issue with Windows UTF-8 output in Powershell
 (sci/alter-var-root sci/err (constantly *err*))
 (sci/alter-var-root sci/read-eval (constantly *read-eval*))
