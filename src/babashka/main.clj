@@ -102,12 +102,7 @@
 
 (sci/enable-unrestricted-access!)
 (sci/alter-var-root sci/in (constantly *in*))
-(defn init-out []
-  (sci/alter-var-root sci/out (constantly *out*)
-                      ;; this worked
-                      #_(fn [& _args]
-                                (java.io.OutputStreamWriter. System/out))))
-(init-out) ;; do this again to fix issue with Windows UTF-8 output in Powershell
+(sci/alter-var-root sci/out (constantly *out*))
 (sci/alter-var-root sci/err (constantly *err*))
 (sci/alter-var-root sci/read-eval (constantly *read-eval*))
 
@@ -1269,12 +1264,20 @@ Use bb run --help to show this help output.
       (exec-without-deps opts)
       (exec opts))))
 
+(defn re-init-out
+  "Fix for issue-1009
+  See also https://github.com/oracle/graal/issues/12249"
+  []
+  (let [out (java.io.OutputStreamWriter. System/out)]
+    (alter-var-root #'*out* (constantly out))
+    (sci/alter-var-root sci/out (constantly out))))
+
 (defn -main
   [& args]
   (handle-pipe!)
   (handle-sigint!)
   (when windows?
-    (init-out))
+    (re-init-out))
   (if-let [dev-opts (System/getenv "BABASHKA_DEV")]
     (let [{:keys [:n]} (if (= "true" dev-opts) {:n 1}
                            (edn/read-string dev-opts))
