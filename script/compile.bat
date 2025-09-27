@@ -8,10 +8,6 @@ if "%GRAALVM_HOME%"=="" (
     exit /b
 )
 
-if "%BABASHKA_XMX%"=="" (
-    set BABASHKA_XMX="-J-Xmx4500m"
-)
-
 set JAVA_HOME=%GRAALVM_HOME%
 set PATH=%GRAALVM_HOME%\bin;%PATH%
 
@@ -40,7 +36,6 @@ call %GRAALVM_HOME%\bin\native-image.cmd ^
   "--install-exit-handlers" ^
   "-march=compatibility" ^
   "-O1" ^
-  "%BABASHKA_XMX%" ^
   %*
 
 if %errorlevel% neq 0 exit /b %errorlevel%
