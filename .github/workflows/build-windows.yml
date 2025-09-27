@@ -93,7 +93,7 @@ jobs:
       - name: Test Windows encoding
         shell: pwsh
         run: |
-          ./bb.exe -e '(prn "λ⚙️中文")' -e 'λ⚙️中文'
+          ./bb.exe --prn test-resources/unicode_test.clj
           $OutputEncoding = [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new()
           ./bb.exe --prn test-resources/unicode_test.clj
 
