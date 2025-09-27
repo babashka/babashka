@@ -19,6 +19,7 @@ A preview of the next release can be installed from
 - Use GraalVM 25
 - Bump deps.clj to 1.12.3.1557
 - Change unknown or REPL file path to `NO_SOURCE_PATH` instead of `<expr>` since this can cause issues on Windows when checking for absolute file paths
+- [#1001](https://github.com/babashka/babashka/issues/1001): fix encoding issues on Windows in Powershell. Also see this [GraalVM](https://github.com/oracle/graal/issues/12249) issue
 
 ### News
 

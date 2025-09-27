@@ -90,6 +90,13 @@ jobs:
           path: bb.exe
           name: babashka-${{ steps.babashka-version.outputs.version }}-${{ matrix.name }}-amd64
 
+      - name: Test Windows encoding
+        shell: pwsh
+        run: |
+          ./bb.exe --prn test-resources/unicode_test.clj
+          $OutputEncoding = [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new()
+          ./bb.exe --prn test-resources/unicode_test.clj
+
       - name: Test binary and libs
         shell: cmd
         run: |
