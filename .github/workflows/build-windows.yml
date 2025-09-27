@@ -95,7 +95,7 @@ jobs:
         run: |
           ./bb.exe -e '(prn "λ⚙️中文")' -e 'λ⚙️中文'
           $OutputEncoding = [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new()
-          ./bb.exe -e '(prn "λ⚙️中文")' -e 'λ⚙️中文'
+          ./bb.exe --prn test-resources/unicode_test.clj
 
       - name: Test binary and libs
         shell: cmd
