@@ -14,8 +14,8 @@ unset BABASHKA_PRELOADS
 unset BABASHKA_CLASSPATH
 unset BABASHKA_PRELOADS_TEST
 
-bb -Djava.security.properties=test-resources/java.security -e "(import '[javax.net.ssl SSLSocketFactory]) (count (.getSupportedCipherSuites (javax.net.ssl.SSLSocketFactory/getDefault)))" || true
-bb "-Djava.security.properties=$(realpath test-resources/java.security)" -e "(import '[javax.net.ssl SSLSocketFactory]) (count (.getSupportedCipherSuites (javax.net.ssl.SSLSocketFactory/getDefault)))" || true
+./bb -Djava.security.properties=test-resources/java.security -e "(import '[javax.net.ssl SSLSocketFactory]) (count (.getSupportedCipherSuites (javax.net.ssl.SSLSocketFactory/getDefault)))" || true
+./bb "-Djava.security.properties=$(realpath test-resources/java.security)" -e "(import '[javax.net.ssl SSLSocketFactory]) (count (.getSupportedCipherSuites (javax.net.ssl.SSLSocketFactory/getDefault)))" || true
 
 echo "running tests part 1"
 lein "do" clean, test "$@"
