@@ -346,6 +346,5 @@
     (is (= 37
            (bb nil '(do (java.security.Security/setProperty "jdk.tls.disabledAlgorithms" "SSLv3, TLSv1, TLSv1.1, DTLSv1.0, RC4, DES, MD5withRSA, DH keySize < 1024, EC keySize < 224, 3DES_EDE_CBC, anon, NULL, ECDH, rsa_pkcs1_sha1 usage HandshakeSignature, ecdsa_sha1 usage HandshakeSignature, dsa_sha1 usage HandshakeSignature")
                         (count (.getSupportedCipherSuites (javax.net.ssl.SSLSocketFactory/getDefault)))))))
-    (is (= 37 (bb nil (cond-> "-Djava.security.properties=test-resources/java.security"
-                        test-utils/windows? (str/replace "/" "\\"))
-                  "(import '[javax.net.ssl SSLSocketFactory]) (count (.getSupportedCipherSuites (javax.net.ssl.SSLSocketFactory/getDefault)))")))))
+    (is (= 37 (bb nil "(System/setProperty \"java.security.properties\" \"test-resources/java.security\")
+                       (import '[javax.net.ssl SSLSocketFactory]) (count (.getSupportedCipherSuites (javax.net.ssl.SSLSocketFactory/getDefault)))")))))
