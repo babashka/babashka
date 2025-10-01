@@ -299,15 +299,7 @@
 "))
 
 (deftest TextNormalizer-test
-  (bb nil "
-(import '[java.text Normalizer Normalizer$Form])
-
-(defn normalize [text]
-  (Normalizer/normalize text Normalizer$Form/NFC))
-
-(def s \"cafe\u0301\")
-
-(assert (> (count s) (count (normalize s))))"))
+  (bb nil "(load-file \"test-resources/text_normalizer_test.clj\")"))
 
 (deftest non-daemon-thread-test
   (when test-utils/native?
