@@ -30,8 +30,8 @@ task:
     # curl -sLO 'https://github.com/babashka/pgo-profiles/releases/download/2023.10.11/default.iprof'
     script/compile # --pgo=default.iprof
 
-    # script/test
-    # script/run_lib_tests
+    script/test
+    script/run_lib_tests
 
     VERSION=$(cat resources/BABASHKA_VERSION)
     arch=${BABASHKA_ARCH:-amd64}
