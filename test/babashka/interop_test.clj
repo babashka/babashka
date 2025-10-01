@@ -2,6 +2,7 @@
   (:require
    [babashka.test-utils :as test-utils]
    [clojure.edn :as edn]
+   [clojure.string :as str]
    [clojure.test :as test :refer [deftest is testing]]))
 
 (defn bb [input & args]
@@ -260,20 +261,7 @@
                        (try (.get fut) (finally (.shutdown executor))))"))))
 
 (deftest break-iterator-test
-  (is (= 1 (bb nil "(ns dude
-  (:import [java.text BreakIterator]))
-
-(defn count-characters
-  [^String text]
-  (let [it (BreakIterator/getCharacterInstance)]
-    (.setText it text)
-    (loop [count 0]
-      (if (= (.next it) BreakIterator/DONE)
-        count
-        (recur (inc count))))))
-
-(prn
- (count-characters \"🇨🇦\"))"))))
+  (is (= 1 (bb nil "(load-file \"test-resources/break_iterator_test.clj\")"))))
 
 (deftest clojure-lang-Var-binding-frame-test
   (is (= [43 42 43 42] (bb nil "(def ^:dynamic *test-var* 42)
@@ -299,15 +287,7 @@
 "))
 
 (deftest TextNormalizer-test
-  (bb nil "
-(import '[java.text Normalizer Normalizer$Form])
-
-(defn normalize [text]
-  (Normalizer/normalize text Normalizer$Form/NFC))
-
-(def s \"cafe\u0301\")
-
-(assert (> (count s) (count (normalize s))))"))
+  (bb nil "(load-file \"test-resources/text_normalizer_test.clj\")"))
 
 (deftest non-daemon-thread-test
   (when test-utils/native?
@@ -360,3 +340,12 @@
 (.addMethod x :inc dec)
 (swap! results conj (x 1))
 @results"))))
+
+(deftest java-security-setProperty-test
+  (when test-utils/native?
+    (is (= 37
+           (bb nil '(do (java.security.Security/setProperty "jdk.tls.disabledAlgorithms" "SSLv3, TLSv1, TLSv1.1, DTLSv1.0, RC4, DES, MD5withRSA, DH keySize < 1024, EC keySize < 224, 3DES_EDE_CBC, anon, NULL, ECDH, rsa_pkcs1_sha1 usage HandshakeSignature, ecdsa_sha1 usage HandshakeSignature, dsa_sha1 usage HandshakeSignature")
+                        (count (.getSupportedCipherSuites (javax.net.ssl.SSLSocketFactory/getDefault)))))))
+    (when-not test-utils/windows?
+      (is (= 37 (bb nil "(System/setProperty \"java.security.properties\" \"test-resources/java.security\")
+                       (import '[javax.net.ssl SSLSocketFactory]) (count (.getSupportedCipherSuites (javax.net.ssl.SSLSocketFactory/getDefault)))"))))))

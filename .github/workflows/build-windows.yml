@@ -102,5 +102,5 @@ jobs:
         run: |
           set BABASHKA_CLASSPATH=
           set BABASHKA_TEST_ENV=native
-          call script/test.bat :windows
-          call script/run_lib_tests.bat
+          call script/test.bat :windows || exit /B 1
+          call script/run_lib_tests.bat || exit /B 1
