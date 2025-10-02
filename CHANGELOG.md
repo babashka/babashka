@@ -7,20 +7,22 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## Unreleased
+## 1.12.209
 
+- Bump to clojure 1.12.3
 - [#1870](https://github.com/babashka/babashka/issues/1870): add `.addMethod` to clojure.lang.MultiFn
 - [#1869](https://github.com/babashka/babashka/issues/1869): add `clojure.lang.ITransientCollection` for `instance?` checks
 - [#1865](https://github.com/babashka/babashka/issues/1865): support `reify` + `equals` + `hashCode` on `Object`
 - Add `java.nio.charset.CharsetDecoder`, `java.nio.charset.CodingErrorAction`, `java.nio.charset.CharacterCodingException` in support of the [sfv](https://github.com/outskirtslabs/sfv) library
 - Fix `nrepl-server` completions and lookup op to be compatible with rebel-readline
-- Add `clojure.lang.Ref` for `instance?` checks
-- Bump SCI: align unresolved symbol error message with clojure
+  - Add `clojure.lang.Ref` for `instance?` checks
+- Bump SCI: align unresolved symbol error message with Clojure
 - Use GraalVM 25
 - Bump deps.clj to 1.12.3.1557
 - Change unknown or REPL file path to `NO_SOURCE_PATH` instead of `<expr>` since this can cause issues on Windows when checking for absolute file paths
 - [#1001](https://github.com/babashka/babashka/issues/1001): fix encoding issues on Windows in Powershell. Also see this [GraalVM](https://github.com/oracle/graal/issues/12249) issue
-- Fixes around `java.security` and allowing deprecated Cipher suites. See this [commit](https://github.com/babashka/babashka/commit/ace237832a5844330f5f9c342e1498eb0ca5f7ac).
+- Fixes around `java.security` and allowing setting deprecated Cipher suites at runtime. See this [commit](https://github.com/babashka/babashka/commit/ace237832a5844330f5f9c342e1498eb0ca5f7ac).
+- Support Windows Git Bash in bash install script
 
 ### News
 
