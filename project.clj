@@ -30,7 +30,7 @@
                  [borkdude/sci.impl.reflector "0.0.5"]
                  [org.babashka/sci.impl.types "0.0.2"]
                  [org.babashka/babashka.impl.java "0.1.10"]
-                 [org.clojure/core.async "1.8.741"]
+                 [org.clojure/core.async "1.9.829-alpha2"]
                  [org.clojure/test.check "1.1.1"]
                  [com.github.clj-easy/graal-build-time "0.1.0"]
                  [rewrite-clj/rewrite-clj "1.2.50"]
