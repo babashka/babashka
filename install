@@ -117,8 +117,9 @@ case "$(uname -s)" in
     # for this script, twe treat FreeBSD the same as linux
     FreeBSD*) platform=linux;;
     Darwin*) platform=macos;;
-    # Github Actions:
+    # Github Actions or Git bash:
     MINGW64*) platform=windows;;
+    MSYS_NT*) platform=windows;;
 esac
 
 # Ugly ugly conversion of version to a comparable number
