@@ -232,7 +232,7 @@
                               :test-paths ["src/test"]
                               :test-namespaces [babashka.statecharts-test]}
  com.outskirtslabs/sfv {:git-url "https://github.com/outskirtslabs/sfv"
-                        :git-sha "943a4787e0c132bdb6e8ab3da9607b1337c9e27d"
+                        :git-sha "1c83246772c3baffd19ab5928e6646c62a0b53f3"
                         :test-paths ["test"]
                         :test-namespaces [ol.sfv.api-test
                                           ol.sfv.conformance-test
