@@ -78,10 +78,7 @@
    [sci.impl.vars :as vars])
   (:gen-class))
 
-(def windows?
-  (some-> (System/getProperty "os.name")
-          (str/lower-case)
-          (str/index-of "win")))
+(def windows? (fs/windows?))
 
 (if-not windows?
   (do ;; see https://github.com/oracle/graal/issues/1784
@@ -1181,15 +1178,12 @@ Use bb run --help to show this help output.
                           .command
                           (.orElse nil))]
          (let [fn (fs/file-name bin)]
-           (if (= "bb" fn)
-             false
-             (if (and (fs/windows?)
-                      (= "bb.exe" fn))
-               false
-               (when (try (with-open [_ (java.util.zip.ZipFile. (fs/file bin))])
-                          true
-                          (catch Exception _ false))
-                 bin)))))))
+           (cond (= "bb" fn) false
+                 (and windows? (= "bb.exe" fn)) false
+                 :else (when (try (with-open [_ (java.util.zip.ZipFile. (fs/file bin))])
+                                  true
+                                  (catch Exception _ false))
+                         bin))))))
 
 (defn resolve-symbolic-link [f]
   (if (and f (fs/exists? f))
