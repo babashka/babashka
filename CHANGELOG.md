@@ -9,7 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-- Bump Selmer to `1.12.64`
+- Bump Selmer to `1.12.65`
 
 ## 1.12.209 (2025-10-02)
 
