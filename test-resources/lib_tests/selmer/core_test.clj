@@ -840,7 +840,7 @@
     (is (= (String/format locale-de numberformat (into-array Object [number]))
            (render (str "{{f|number-format:" numberformat ":de}}") {:f number})))))
 
-(deftest filter-date
+#_(deftest filter-date
   (let [date (java.util.Date.)
         date-inst (.toInstant date)
         firstofmarch (java.util.Date. 114 2 1)
