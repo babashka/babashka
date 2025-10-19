@@ -7,7 +7,11 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## 1.12.209
+## Unreleased
+
+- Bump Selmer to `1.12.65`
+
+## 1.12.209 (2025-10-02)
 
 - Bump to clojure 1.12.3
 - [#1870](https://github.com/babashka/babashka/issues/1870): add `.addMethod` to clojure.lang.MultiFn
