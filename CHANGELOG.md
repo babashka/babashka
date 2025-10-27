@@ -10,6 +10,7 @@ A preview of the next release can be installed from
 ## Unreleased
 
 - Bump Selmer to `1.12.65`
+- Bump nextjournal/markdown to `0.7.196`
 
 ## 1.12.209 (2025-10-02)
 
