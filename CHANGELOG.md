@@ -12,6 +12,7 @@ A preview of the next release can be installed from
 - Bump Selmer to `1.12.65`
 - Bump nextjournal/markdown to `0.7.196`
 - SCI: `sci.impl.Reflector` was rewritten into Clojure
+- `dissoc` on record with non-record field should return map instead of record
 
 ## 1.12.209 (2025-10-02)
 
