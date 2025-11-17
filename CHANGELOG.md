@@ -14,6 +14,7 @@ A preview of the next release can be installed from
 - SCI: `sci.impl.Reflector` was rewritten into Clojure
 - `dissoc` on record with non-record field should return map instead of record
 - Bump edamame to `1.5.34`
+- Bump `core.rrb-vector` to `0.2.0`
 
 ## 1.12.209 (2025-10-02)
 
