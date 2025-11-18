@@ -14,137 +14,40 @@
 (defn return [desc]
   (case (last desc)
     :void [:return]
-    (:boolean :int) [:ireturn]
+    (:boolean :int :byte :short) [:ireturn]
     :long [:lreturn]
     :float [:freturn]
     :double [:dreturn]
     [:areturn]))
 
+(defn slots [desc]
+  (->> (butlast desc)
+       (map #(case % (:long :double) 2 1))
+       (reductions + 1)))
+
 (defn loads [desc slots cast?]
-  (let [params (butlast desc)]
-    (vec
-     (mapcat
-      (fn [idx e]
-        (case e
-          :boolean (if cast?
-                     [[:iload idx] [:invokestatic Boolean "valueOf" [:boolean Boolean]]]
-                     [[:iload idx]])
-          :int (if cast?
-                 [[:iload idx] [:invokestatic Integer "valueOf" [:int Integer]]]
-                 [[:iload idx]])
-          :long (if cast?
-                  [[:lload idx] [:invokestatic Long "valueOf" [:long Long]]]
-                  [[:lload idx]])
-          :float (if cast?
-                   [[:fload idx] [:invokestatic Float "valueOf" [:float Float]]]
-                   [[:fload idx]])
-          :double (if cast?
-                    [[:dload idx] [:invokestatic Double "valueOf" [:double Double]]]
-                    [[:dload idx]])
-          [[:aload idx]]))
-      slots
-      params))))
-
-#_(defn loads [desc cast?]
-  (let [desc (butlast desc)]
-    (loop [idx 1
-           rem desc
-           result []]
-      (if (empty? rem)
-        result
-        (let [e (first rem)
-              ;; instruction vector and slot increment
-              [ins slot-incr] (case e
-                                 :boolean [ [[:iload idx]] 1 ]
-                                 :int     [ [[:iload idx]] 1 ]
-                                 :long    [ [[:lload idx]] 2 ]
-                                 :float   [ [[:fload idx]] 1 ]
-                                 :double  [ [[:dload idx]] 2 ]
-                                 [ [[:aload idx]] 1 ])
-              ;; add boxing if requested
-              ins (if (and cast? (#{:boolean :int :long :float :double} e))
-                    (conj ins
-                          (case e
-                            :boolean [:invokestatic Boolean "valueOf" [:boolean Boolean]]
-                            :int     [:invokestatic Integer "valueOf" [:int Integer]]
-                            :long    [:invokestatic Long "valueOf" [:long Long]]
-                            :float   [:invokestatic Float "valueOf" [:float Float]]
-                            :double  [:invokestatic Double "valueOf" [:double Double]]))
-                    ins)]
-          (recur (+ idx slot-incr) (rest rem) (into result ins)))))))
-
-
-#_(defn loads [desc cast?]
-  (let [desc (butlast desc)]
-    (loop [idx 1
-           rem desc
-           result []]
-      (if (empty? rem)
-        result
-        (let [e (first rem)
-              [ins slot-incr] (case e
-                                 :boolean [[:iload idx]
-                                           1]
-                                 :int [[:iload idx]
-                                       1]
-                                 :long [[:lload idx]
-                                        2]
-                                 :float [[:fload idx]
-                                         1]
-                                 :double [[:dload idx]
-                                          2]
-                                 [[[:aload idx]] 1])
-              ;; add boxing if requested
-              ins (if (and cast? (#{:boolean :int :long :float :double} e))
-                    (conj ins
-                          (case e
-                            :boolean [:invokestatic Boolean "valueOf" [:boolean Boolean]]
-                            :int [:invokestatic Integer "valueOf" [:int Integer]]
-                            :long [:invokestatic Long "valueOf" [:long Long]]
-                            :float [:invokestatic Float "valueOf" [:float Float]]
-                            :double [:invokestatic Double "valueOf" [:double Double]]))
-                    ins)]
-          (recur (+ idx slot-incr) (rest rem) (into result ins)))))))
-
-
-#_(defn loads [desc cast?]
   (let [desc (butlast desc)]
     (vec
-     (mapcat
-      (fn [i e]
-        (case e
-          :boolean [[:iload i]
-                    (when cast? [:invokestatic Boolean "valueOf" [:boolean Boolean]])]
-          :int [[:iload i]
-                (when cast? [:invokestatic Integer "valueOf" [:int Integer]])]
-          :long [[:lload i]
-                 (when cast? [:invokestatic Long "valueOf" [:long Long]])]
-          :float [[:fload i]
-                  (when cast? [:invokestatic Float "valueOf" [:float Float]])]
-          :double [[:dload i]
-                   (when cast? [:invokestatic Double "valueOf" [:double Double]])]
-          [[:aload i]]))  ;; default for reference types
-      (range 1 (inc (count desc)))
-      desc))))
-
-(defn param-slots [desc]
-  (let [params (butlast desc)]
-    (loop [slots []
-           idx 1
-           rem params]
-      (if (empty? rem)
-        slots
-        (let [e (first rem)
-              slot-count (case e
-                           (:long :double) 2
-                           1)]
-          (recur (conj slots idx)
-                 (+ idx slot-count)
-                 (rest rem)))))))
+     (mapcat (fn [i e]
+               (if-let [[xload boxed]
+                        (case e
+                          :boolean [:iload Boolean]
+                          :int [:iload Integer]
+                          :byte [:iload Byte]
+                          :short [:iload Short]
+                          :long [:lload Long]
+                          :float [:fload Float]
+                          :double [:dload Double]
+                          nil)]
+                 [[xload i]
+                  (when cast? [:invokestatic boxed "valueOf" [e boxed]])]
+                 [[:aload i]]))
+             slots
+             desc))))
 
 (defn emit-method [class meth desc default]
-  (let [args (dec (count desc))
-        slots (param-slots desc)]
+  (let [slots (slots desc)
+        args (last slots)]
     [[[:aload 0]
       [:getfield :this "_methods" java.util.Map]
       [:getstatic :this (str "_sym_" meth) clojure.lang.Symbol]
@@ -163,17 +66,22 @@
             ret-type (if (class? ret-type*)
                        (.getName ^Class ret-type*)
                        ret-type*)]
-        (case ret-type
-          :void [:pop]
-          :boolean [[:checkcast Boolean]
-                    [:invokevirtual Boolean "booleanValue"]]
-          :int [[:checkcast Integer]
-                [:invokevirtual Integer "intValue"]]
-          :long [[:checkcast Long]
-                 [:invokevirtual Long "longValue"]]
-          "java.lang.Object" nil
-          (when (class? ret-type*)
-            [[:checkcast ret-type*]])))
+        (if-let [[tvalue boxed]
+                 (case ret-type
+                   :int ["intValue" Integer]
+                   :boolean ["booleanValue" Boolean]
+                   :byte ["byteValue" Byte]
+                   :short ["shortValue" Short]
+                   :long ["longValue" Long]
+                   :float ["floatValue" Float]
+                   :double ["doubleValue" Double]
+                   nil)]
+          [[:checkcast boxed]
+           [:invokevirtual boxed tvalue]]
+          (case ret-type
+            "java.lang.Object" nil
+            (when (class? ret-type*)
+              [[:checkcast ret-type*]]))))
       (return desc)
       [:mark :fallback]]
      (if default
@@ -263,8 +171,7 @@
                     (for [{:keys [name desc default]} methods]
                       {:flags #{:public}, :name name
                        :desc desc
-                       :emit (emit-method interface name desc default)}
-                      ))}))
+                       :emit (emit-method interface name desc default)}))}))
 
 (set! *warn-on-reflection* true)
 
@@ -273,7 +180,11 @@
     Void/TYPE :void
     Boolean/TYPE :boolean
     Integer/TYPE :int
+    Byte/TYPE :byte
+    Short/TYPE :short
     Long/TYPE :long
+    Float/TYPE :float
+    Double/TYPE :double
     type))
 
 (defn class->methods [^Class clazz]
