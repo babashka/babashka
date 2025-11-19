@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Fix [#1882](https://github.com/babashka/babashka/issues/1882): support for `java.time.temporal.TemporalField` ([@EvenMoreIrrelevance](https://github.com/EvenMoreIrrelevance))
 - Bump Selmer to `1.12.65`
 - Bump nextjournal/markdown to `0.7.196`
 - SCI: `sci.impl.Reflector` was rewritten into Clojure
