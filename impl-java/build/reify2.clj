@@ -47,16 +47,16 @@
 
 (defn emit-method [class meth desc default]
   (let [slots (slots desc)
-        args (last slots)]
+        method-slot (last slots)]
     [[[:aload 0]
       [:getfield :this "_methods" java.util.Map]
       [:getstatic :this (str "_sym_" meth) clojure.lang.Symbol]
       [:invokeinterface java.util.Map "get" [Object Object]]
       [:checkcast clojure.lang.IFn]
-      [:astore (inc args)]
-      [:aload (inc args)]
+      [:astore method-slot]
+      [:aload method-slot]
       [:ifnull :fallback]
-      [:aload (inc args)]
+      [:aload method-slot]
       ;; load this, always the first argument of IFn
       [:aload 0]]
      ;; load remaining args
