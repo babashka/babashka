@@ -186,3 +186,18 @@
   (let [path (.toPath (java.io.File. dir-path))]
     (java.nio.file.Files/newDirectoryStream path glob-pattern)))
 (pos? (count (seq (get-dir-stream \".\" (reify java.nio.file.DirectoryStream$Filter (accept [_ path] (.isDirectory (.toFile path))))))))"))))
+
+(deftest reify-temporal-field-test
+  (let [s (bb nil "(def field
+  (reify
+    java.time.temporal.TemporalField
+    (rangeRefinedBy [_ _temporal]
+      (java.time.temporal.ValueRange/of 0 999))
+    (getFrom [_ _temporal] 1337)
+    (adjustInto [_ temporal value] temporal)))
+  (prn (pr-str (.rangeRefinedBy field nil)
+          (.getFrom field nil)
+          (.adjustInto field (java.time.Instant/now) 1)))")]
+    (is (str/includes? s "0 - 999"))
+    (is (str/includes? s "1337"))
+    (is (str/includes? s "java.time.Instant"))))

@@ -492,6 +492,7 @@
                 java.time.temporal.TemporalAdjusters
                 java.time.temporal.TemporalAmount
                 java.time.temporal.TemporalField
+                java.time.temporal.ValueRange
                 java.time.temporal.WeekFields
                 ~(symbol "[Ljava.time.temporal.TemporalField;")
                 java.time.format.TextStyle
