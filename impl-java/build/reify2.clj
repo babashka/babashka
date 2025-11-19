@@ -79,6 +79,7 @@
           [[:checkcast boxed]
            [:invokevirtual boxed tvalue]]
           (case ret-type
+            :void [:pop]
             "java.lang.Object" nil
             (when (class? ret-type*)
               [[:checkcast ret-type*]]))))
