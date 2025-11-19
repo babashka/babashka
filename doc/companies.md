@@ -66,6 +66,7 @@ Sponsoring via [Cognitect](https://www.cognitect.com/).
 - [Juxt](https://www.juxt.pro/)
 - [Kleene](https://www.kleene.ai/)
 - [Latacora](https://www.latacora.com/)
+- [Metabase](https://www.metabase.com)
 - [Metosin](https://www.metosin.fi/en/)
 - [Nextdoc](https://www.nextdoc.io/)
 - [PractiTest](https://www.practitest.com/)
