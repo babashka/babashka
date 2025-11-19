@@ -1171,19 +1171,33 @@ Use bb run --help to show this help output.
                  (println "Error during loading bb.edn:"))
                (throw e))))))
 
+(def process-properties
+  (try
+    (Class/forName "org.graalvm.nativeimage.ProcessProperties")
+    (catch Exception _ nil)))
+
+(defn native-image-executable-name
+  "Migrated from ProcessHandle current info to ProcessProperties since this worked
+  better with sandbox which didn't let you inspect processes."
+  []
+  (when process-properties
+    (try
+      (-> (.getMethod ^Class process-properties "getExecutableName" (make-array Class 0))
+          (.invoke nil (object-array 0)))
+      (catch Exception _ nil))))
+
+(defn zip? [f]
+  (try
+    (with-open [_ (java.util.zip.ZipFile. (fs/file f))] true)
+    (catch Exception _ false)))
+
 (defn binary-invoked-as-jar []
-  (and (= "executable" (System/getProperty "org.graalvm.nativeimage.kind"))
-       (when-let [bin (-> (java.lang.ProcessHandle/current)
-                          .info
-                          .command
-                          (.orElse nil))]
-         (let [fn (fs/file-name bin)]
-           (cond (= "bb" fn) false
-                 (and windows? (= "bb.exe" fn)) false
-                 :else (when (try (with-open [_ (java.util.zip.ZipFile. (fs/file bin))])
-                                  true
-                                  (catch Exception _ false))
-                         bin))))))
+  (when-let [bin (native-image-executable-name)]
+    (let [fname (fs/file-name bin)]
+      (cond
+        (= "bb" fname) false
+        (and windows? (= "bb.exe" fname)) false
+        (zip? bin) bin))))
 
 (defn resolve-symbolic-link [f]
   (if (and f (fs/exists? f))
