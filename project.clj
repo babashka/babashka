@@ -35,7 +35,7 @@
                  [com.github.clj-easy/graal-build-time "0.1.0"]
                  [rewrite-clj/rewrite-clj "1.2.50"]
                  [insn/insn "0.5.2"]
-                 [org.babashka/cli "0.8.66"]
+                 [org.babashka/cli "0.8.67"]
                  [org.babashka/http-client "0.4.23"]
                  [org.jsoup/jsoup "1.21.2"]
                  [io.github.nextjournal/markdown "0.7.196"]
