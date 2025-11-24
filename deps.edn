@@ -53,7 +53,7 @@
         org.babashka/http-client {:mvn/version "0.4.23"}
         org.flatland/ordered {:mvn/version "1.15.12"}
         org.jsoup/jsoup {:mvn/version "1.21.2"}
-        io.github.nextjournal/markdown {:mvn/version "0.7.196"}}
+        io.github.nextjournal/markdown {:mvn/version "0.7.201"}}
  :aliases {:babashka/dev
            {:main-opts ["-m" "babashka.main"]}
            :profile

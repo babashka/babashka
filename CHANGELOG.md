@@ -19,6 +19,7 @@ A preview of the next release can be installed from
 - Migrate detecting of executable name for self-executing uberjar executable from `ProcessHandle` to to native image `ProcessInfo` to avoid sandbox errors
 - Bump `cli` to `0.8.67`
 - Bump `fs` to `0.5.28`
+- Bump `nextjournal.markdown` to `0.7.200`
 
 ## 1.12.209 (2025-10-02)
 
