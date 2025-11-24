@@ -9,7 +9,7 @@ A preview of the next release can be installed from
 
 ## 1.12.210 (2025-11-24)
 
-- Fix [#1882](https://github.com/babashka/babashka/issues/1882): support for `java.time.temporal.TemporalField` ([@EvenMoreIrrelevance](https://github.com/EvenMoreIrrelevance))
+- Fix [#1882](https://github.com/babashka/babashka/issues/1882): support for reifying `java.time.temporal.TemporalField` ([@EvenMoreIrrelevance](https://github.com/EvenMoreIrrelevance))
 - Bump Selmer to `1.12.65`
 - SCI: `sci.impl.Reflector` was rewritten into Clojure
 - `dissoc` on record with non-record field should return map instead of record
