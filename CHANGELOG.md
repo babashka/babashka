@@ -7,19 +7,18 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## Unreleased
+## 1.12.210 (2025-11-24)
 
 - Fix [#1882](https://github.com/babashka/babashka/issues/1882): support for `java.time.temporal.TemporalField` ([@EvenMoreIrrelevance](https://github.com/EvenMoreIrrelevance))
 - Bump Selmer to `1.12.65`
-- Bump nextjournal/markdown to `0.7.196`
 - SCI: `sci.impl.Reflector` was rewritten into Clojure
 - `dissoc` on record with non-record field should return map instead of record
 - Bump edamame to `1.5.34`
 - Bump `core.rrb-vector` to `0.2.0`
 - Migrate detecting of executable name for self-executing uberjar executable from `ProcessHandle` to to native image `ProcessInfo` to avoid sandbox errors
 - Bump `cli` to `0.8.67`
-- Bump `fs` to `0.5.28`
-- Bump `nextjournal.markdown` to `0.7.200`
+- Bump `fs` to `0.5.29`
+- Bump `nextjournal.markdown` to `0.7.201`
 
 ## 1.12.209 (2025-10-02)
 
