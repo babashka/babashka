@@ -13,7 +13,7 @@ A preview of the next release can be installed from
 - Bump Selmer to `1.12.65`
 - SCI: `sci.impl.Reflector` was rewritten into Clojure
 - `dissoc` on record with non-record field should return map instead of record
-- Bump edamame to `1.5.34`
+- Bump edamame to `1.5.35`
 - Bump `core.rrb-vector` to `0.2.0`
 - Migrate detecting of executable name for self-executing uberjar executable from `ProcessHandle` to to native image `ProcessInfo` to avoid sandbox errors
 - Bump `cli` to `0.8.67`
