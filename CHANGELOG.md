@@ -7,6 +7,10 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## Unreleased
+
+- Bump `fs` to `0.5.30`
+
 ## 1.12.210 (2025-11-24)
 
 - Fix [#1882](https://github.com/babashka/babashka/issues/1882): support for reifying `java.time.temporal.TemporalField` ([@EvenMoreIrrelevance](https://github.com/EvenMoreIrrelevance))
