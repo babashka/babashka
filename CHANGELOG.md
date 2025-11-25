@@ -7,7 +7,7 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## 1.12.211 (2025-11-25)
+## 1.12.212 (2025-11-25)
 
 - Bump `fs` to `0.5.30`
 - Bump `nextjournal.markdown` to `0.7.213`
