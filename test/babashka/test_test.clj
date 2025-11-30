@@ -122,6 +122,18 @@ true")))))
 
 (deftest testing-vars-str-test
   (is (str/includes?
-        (bb "(clojure.test/testing-vars-str {:file \"x\" :line 1})")
-        "() (x:1)")
+       (bb "(clojure.test/testing-vars-str {:file \"x\" :line 1})")
+       "() (x:1)")
       "includes explicit line number + file name in test report"))
+
+(deftest is-should-include-name-of-function-test
+  (let [output (bb "(require '[clojure.test :as t]) (defn function-under-test [] (zero? nil)) (t/deftest foo (t/is (= false (function-under-test)))) (foo)")]
+    (is (str/includes? output "user/function-under-test"))))
+
+(deftest is-should-throw-wrapped-exception-assert-test
+  (let [output (bb "(require '[clojure.test :as t]) (t/deftest foo (t/is (assert false))) (foo)")]
+    ;; FIXME: doesn't work for assert yet
+    #_(is (str/includes? output ":type :sci/error"))))
+
+;; FIXME: handle thrown?
+;; FIXME: handle thrown-with-message?
