@@ -10,6 +10,7 @@ A preview of the next release can be installed from
 ## Unreleased
 
 - Redefining namespace with `ns` should override metadata
+- Bump `nextjournal.markdown` to `0.7.222`
 
 ## 1.12.212 (2025-11-25)
 

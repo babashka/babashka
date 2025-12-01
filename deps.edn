@@ -53,7 +53,7 @@
         org.babashka/http-client {:mvn/version "0.4.23"}
         org.flatland/ordered {:mvn/version "1.15.12"}
         org.jsoup/jsoup {:mvn/version "1.21.2"}
-        io.github.nextjournal/markdown {:mvn/version "0.7.213"}}
+        io.github.nextjournal/markdown {:mvn/version "0.7.222"}}
  :aliases {:babashka/dev
            {:main-opts ["-m" "babashka.main"]}
            :profile
@@ -183,7 +183,7 @@
                                                  :git/sha "0b1d825ec45a998c4d3481dfb292e08ce6a47f0b"}
                          nubank/matcher-combinators {:mvn/version "3.9.1"}
                          io.github.nextjournal/markdown {:git/url "https://github.com/nextjournal/markdown"
-                                                         :git/sha "4a0073fc68c57ae5e60d4bc31aae799358683c1a"}
+                                                         :git/sha "ee9da78b347246260dbe66412336aafe20397fa3"}
                          funcool/promesa {:git/url "https://github.com/funcool/promesa"
                                           :git/sha "d8e6f67981b102dda2a4af5a3635a2218257f01a"}
                          com.fulcrologic/statecharts {:git/url "https://github.com/fulcrologic/statecharts"
