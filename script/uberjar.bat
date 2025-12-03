@@ -1,12 +1,9 @@
 @echo on
 
-if "%GRAALVM_HOME%"=="" (
-  echo Please set GRAALVM_HOME
-  exit /b
+if not "%GRAALVM_HOME%"=="" (
+  set "JAVA_HOME=%GRAALVM_HOME%"
+  set "PATH=%GRAALVM_HOME%\bin;%PATH%"
 )
-
-set JAVA_HOME=%GRAALVM_HOME%
-set PATH=%GRAALVM_HOME%\bin;%PATH%
 
 set BABASHKA_LEIN_PROFILES=+uberjar
 
