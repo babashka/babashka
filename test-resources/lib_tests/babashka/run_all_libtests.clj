@@ -61,11 +61,14 @@
               (alter-var-root #'st/spec-checking-fn (constantly orig-spec-checking-fn)))
             (when-not orchestra?
               (require n)
-              (when (and (#{"x86_64" "amd64"} (System/getProperty "os.arch"))
-                         (= "Mac OS X" (System/getProperty "os.name"))
-                         (= 'promesa.tests.core-test n))
-                (println "Disabling flaky test on macOS")
-                (alter-meta! (resolve 'promesa.tests.core-test/loop-and-recur) assoc :flaky true))
+              (when (= 'promesa.tests.core-test n)
+                (prn :os.arch (System/getProperty "os.arch"))
+                (prn :os.name (System/getProperty "os.name"))
+                (when (and (#{"x86_64" "amd64"} (System/getProperty "os.arch"))
+                           (= "Mac OS X" (System/getProperty "os.name"))
+                           )
+                  (println "Disabling flaky test on macOS")
+                  (alter-meta! (resolve 'promesa.tests.core-test/loop-and-recur) assoc :flaky true)))
               (filter-vars! (find-ns n) #(-> % meta ((some-fn :skip-bb
                                                               :test-check-slow
                                                               (fn [m]
