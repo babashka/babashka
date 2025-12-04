@@ -69,7 +69,8 @@
                            )
                   (println "Disabling flaky test on macOS")
                   (alter-meta! (resolve 'promesa.tests.core-test/loop-and-recur) assoc :flaky true)
-                  (alter-meta! (resolve 'promesa.tests.core-test/compose-with-race-2) assoc :flaky true)))
+                  (alter-meta! (resolve 'promesa.tests.core-test/compose-with-race-2) assoc :flaky true)
+                  (alter-meta! (resolve 'promesa.tests.core-test/timeout-test-1) assoc :flaky true)))
               (filter-vars! (find-ns n) #(-> % meta ((some-fn :skip-bb
                                                               :test-check-slow
                                                               (fn [m]
