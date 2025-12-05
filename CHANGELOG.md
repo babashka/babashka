@@ -12,6 +12,7 @@ A preview of the next release can be installed from
 - Redefining namespace with `ns` should override metadata
 - Bump `nextjournal.markdown` to `0.7.222`
 - Bump `edamame` to `1.5.37`
+- Fix [#1899](https://github.com/babashka/babashka/issues/1899): `with-meta` followed by `dissoc` on records no longer works
 
 ## 1.12.212 (2025-11-25)
 
