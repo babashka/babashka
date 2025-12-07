@@ -7,6 +7,10 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## Unreleased
+
+- Bump `process` to `0.6.24`
+
 ## 1.12.213 (2025-12-06)
 
 - Redefining namespace with `ns` should override metadata
