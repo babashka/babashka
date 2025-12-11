@@ -10,6 +10,7 @@ A preview of the next release can be installed from
 ## Unreleased
 
 - Bump `process` to `0.6.24`
+- Bump `deps.clj`
 
 ## 1.12.213 (2025-12-06)
 
