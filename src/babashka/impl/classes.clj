@@ -440,6 +440,7 @@
                 java.nio.file.attribute.PosixFilePermissions
                 java.nio.file.attribute.UserDefinedFileAttributeView])
           java.security.DigestInputStream
+          java.security.DigestOutputStream
           java.security.KeyFactory
           java.security.KeyPairGenerator
           java.security.KeyPair

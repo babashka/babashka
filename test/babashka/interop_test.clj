@@ -349,3 +349,19 @@
     (when-not test-utils/windows?
       (is (= 37 (bb nil "(System/setProperty \"java.security.properties\" \"test-resources/java.security\")
                        (import '[javax.net.ssl SSLSocketFactory]) (count (.getSupportedCipherSuites (javax.net.ssl.SSLSocketFactory/getDefault)))"))))))
+
+(deftest java-security-DigestOutputStream-test
+  (is (true? (bb nil "(ns script
+  (:import [java.io OutputStream]
+           [java.security DigestOutputStream MessageDigest]))
+
+(let [data (byte-array [0x61 0x62 0x63])
+      sink-digest (MessageDigest/getInstance \"SHA256\")
+      standalone-digest (MessageDigest/getInstance \"SHA256\")]
+
+  (with-open [sink (DigestOutputStream. (OutputStream/nullOutputStream) sink-digest)]
+    (.write sink data))
+
+  (.update standalone-digest data)
+
+  (= (seq (.digest standalone-digest)) (seq (.digest sink-digest))))"))))
