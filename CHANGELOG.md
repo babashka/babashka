@@ -11,6 +11,7 @@ A preview of the next release can be installed from
 
 - Bump `process` to `0.6.24`
 - Bump `deps.clj`
+- Fix #1901: add `java.security.DigestOutputStream`
 
 ## 1.12.213 (2025-12-06)
 
