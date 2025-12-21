@@ -9,7 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-- Bump `process` to `0.6.24`
+- Bump `process` to `0.6.25`
 - Bump `deps.clj`
 - Fix #1901: add `java.security.DigestOutputStream`
 
