@@ -67,6 +67,7 @@ The following libraries and projects are known to work with babashka.
     - [Schema](#schema)
     - [Sluj](#sluj)
     - [malli-cli](#malli-cli)
+    - [porter](#porter)
   - [Pods](#pods)
   - [Projects](#projects-1)
     - [babashka-test-action](#babashka-test-action)
@@ -837,6 +838,10 @@ Sluj is a very small library for converting strings of UTF-16 text to slugs. A s
 ### [malli-cli](https://github.com/piotr-yuxuan/malli-cli)
 
 Configuration and CLI powertool with `metosin/malli`.
+
+### [porter](https://github.com/emil0r/porter)
+
+A small library/CLI tool for generating config files.
 
 ## Pods
 

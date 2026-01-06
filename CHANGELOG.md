@@ -14,6 +14,7 @@ A preview of the next release can be installed from
 - Fix #1901: add `java.security.DigestOutputStream`
 - Fix [#1727](https://github.com/babashka/babashka/issues/1727): add `alter-meta!` to preserve `babashka.process` function docstrings
 - Fix [#1754](https://github.com/babashka/babashka/issues/1754): add note for `graalvm/setup-graalvm`
+- Fix [#1775](https://github.com/babashka/babashka/issues/1775): add `porter` to doc/projects
 
 ## 1.12.213 (2025-12-06)
 
