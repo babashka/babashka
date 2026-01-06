@@ -12,6 +12,7 @@ A preview of the next release can be installed from
 - Bump `process` to `0.6.25`
 - Bump `deps.clj`
 - Fix #1901: add `java.security.DigestOutputStream`
+- Fix [#1727](https://github.com/babashka/babashka/issues/1727): add `alter-meta!` to preserve `babashka.process` function docstrings
 
 ## 1.12.213 (2025-12-06)
 
