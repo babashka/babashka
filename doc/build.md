@@ -87,6 +87,17 @@ Run `script\uberjar.bat` followed by `script\compile.bat`.
 To compile babashka as a static binary for linux, set the `BABASHKA_STATIC`
 environment variable to `true`.
 
+### Musl and zlib
+
+Static compilation requires musl and zlib. Since pre-built musl distributions
+are no longer available on musl.cc, both libraries need to be built from source.
+
+When using [graalvm/setup-graalvm](https://github.com/graalvm/setup-graalvm)
+GitHub Action with `native-image-musl: 'true'`, musl 1.2.4 and zlib 1.2.13 are
+automatically built from source. This adds approximately 30 seconds to the build
+time. See [setup-graalvm#114](https://github.com/graalvm/setup-graalvm/pull/114)
+for details.
+
 ## Feature flags
 
 Babashka supports the following feature flags:
