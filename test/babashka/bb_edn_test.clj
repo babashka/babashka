@@ -543,6 +543,10 @@ even more stuff here\"
 (deftest empty-bb-edn-test
   (is (= 6 (bb "-Sdeps" "" "-e" "(+ 1 2 3)"))))
 
+(deftest multiple-forms-bb-edn-test
+  (is (thrown-with-msg? Exception #"should contain zero or one form"
+                        (bb "-Sdeps" "{:deps {}} {:paths []}" "-e" "(+ 1 2 3)"))))
+
 (deftest warning-on-override-task
   (when-not test-utils/native?
     (binding [*out* *err*]

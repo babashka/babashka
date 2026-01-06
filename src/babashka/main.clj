@@ -1163,13 +1163,22 @@ Use bb run --help to show this help output.
                       (>= patch-current patch-min)))))))
 
 (defn read-bb-edn [string]
-  (try (edn/read-string {:default tagged-literal :eof nil} string)
-       (catch java.lang.RuntimeException e
-         (if (re-find #"No dispatch macro for: \"" (.getMessage e))
-           (throw (ex-info "Invalid regex literal found in EDN config, use re-pattern instead" {}))
-           (do (binding [*out* *err*]
-                 (println "Error during loading bb.edn:"))
-               (throw e))))))
+  (try
+    (let [rdr (java.io.PushbackReader. (java.io.StringReader. string))
+          opts {:default tagged-literal :eof ::eof}
+          val (edn/read opts rdr)]
+      (if (identical? ::eof val)
+        nil
+        (if (not (identical? ::eof (edn/read opts rdr)))
+          (throw (ex-info "bb.edn should contain zero or one form, but contains more than one" {}))
+          val)))
+    (catch clojure.lang.ExceptionInfo e (throw e))
+    (catch java.lang.RuntimeException e
+      (if (re-find #"No dispatch macro for: \"" (.getMessage e))
+        (throw (ex-info "Invalid regex literal found in EDN config, use re-pattern instead" {}))
+        (do (binding [*out* *err*]
+              (println "Error during loading bb.edn:"))
+            (throw e))))))
 
 (def process-properties
   (try
