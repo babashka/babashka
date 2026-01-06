@@ -11,26 +11,32 @@
 (defn process* [& args]
   (binding [process/*defaults* @defaults]
     (apply process/process* args)))
+(alter-meta! #'process* merge (select-keys (meta #'process/process*) [:doc :arglists]))
 
 (defn process [& args]
   (binding [process/*defaults* @defaults]
     (apply process/process args)))
+(alter-meta! #'process merge (select-keys (meta #'process/process) [:doc :arglists]))
 
 (defn pb [& args]
   (binding [process/*defaults* @defaults]
     (apply process/pb args)))
+(alter-meta! #'pb merge (select-keys (meta #'process/pb) [:doc :arglists]))
 
 (defn sh [& args]
   (binding [process/*defaults* @defaults]
     (apply process/sh args)))
+(alter-meta! #'sh merge (select-keys (meta #'process/sh) [:doc :arglists]))
 
 (defn shell [& args]
   (binding [process/*defaults* @defaults]
     (apply process/shell args)))
+(alter-meta! #'shell merge (select-keys (meta #'process/shell) [:doc :arglists]))
 
 (defn exec [& args]
   (binding [process/*defaults* @defaults]
     (apply process/exec args)))
+(alter-meta! #'exec merge (select-keys (meta #'process/exec) [:doc :arglists]))
 
 (def process-namespace
   {'parse-args  (copy-var process/parse-args tns)
