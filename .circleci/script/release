@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -eo pipefail
+
 rm -rf /tmp/release
 mkdir -p /tmp/release
 cp bb /tmp/release
