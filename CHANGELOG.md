@@ -13,11 +13,11 @@ A preview of the next release can be installed from
 - `deftype` supports `Object` + `hashCode`
 - Bump `process` to `0.6.25`
 - Bump `deps.clj`
-- Fix #1901: add `java.security.DigestOutputStream`
-- Fix [#1727](https://github.com/babashka/babashka/issues/1727): add `alter-meta!` to preserve `babashka.process` function docstrings
+- Fix [#1901](https://github.com/babashka/babashka/issues/1901): add `java.security.DigestOutputStream`
+- Fix [#1727](https://github.com/babashka/babashka/issues/1727): add `alter-meta!` to preserve `babashka.process` function docstrings ([@conao3](https://github.com/conao3))
 - Fix [#1754](https://github.com/babashka/babashka/issues/1754): add note for `graalvm/setup-graalvm`
-- Fix [#1775](https://github.com/babashka/babashka/issues/1775): add `porter` to doc/projects
-- Fix [#1691](https://github.com/babashka/babashka/issues/1691): error when `bb.edn` contains more than one form
+- Fix [#1775](https://github.com/babashka/babashka/issues/1775): add `porter` to doc/projects ([@conao3](https://github.com/conao3))
+- Fix [#1691](https://github.com/babashka/babashka/issues/1691): error when `bb.edn` contains more than one form ([@conao3](https://github.com/conao3))
 
 ## 1.12.213 (2025-12-06)
 
