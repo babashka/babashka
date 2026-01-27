@@ -861,7 +861,7 @@ Use bb run --help to show this help output.
 (defn exec [cli-opts]
   (with-bindings {#'*unrestricted* true
                   clojure.lang.Compiler/LOADER @cp/the-url-loader}
-    #_(-> (Thread/currentThread) (.setContextClassLoader @cp/the-url-loader))
+    (-> (Thread/currentThread) (.setContextClassLoader @cp/the-url-loader))
     (sci/binding [core/warn-on-reflection @core/warn-on-reflection
                   core/unchecked-math @core/unchecked-math
                   core/data-readers @core/data-readers
@@ -1295,7 +1295,7 @@ Use bb run --help to show this help output.
         (.build))))
 
 ;; Call this BEFORE anything touches JLine
-(enable-jline-debug!)
+#_(enable-jline-debug!)
 
 (defn -main
   [& args]
