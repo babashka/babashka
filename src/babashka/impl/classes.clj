@@ -649,7 +649,7 @@
           org.jline.reader.impl.LineReaderImpl ;; TODO
           org.jline.terminal.impl.ffm.FfmTerminalProvider
           org.jline.terminal.Terminal$SignalHandler
-          org.jline.terminal.impl.PosixSysTerminal ;; TODO
+          ;; org.jline.terminal.impl.PosixSysTerminal ;; TODO
           ]
     :constructors [clojure.lang.Delay
                    clojure.lang.DynamicClassLoader
