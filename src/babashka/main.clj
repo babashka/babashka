@@ -76,7 +76,8 @@
    [sci.impl.types :as sci-types]
    [sci.impl.unrestrict :refer [*unrestricted*]]
    [sci.impl.vars :as vars])
-  (:gen-class))
+  (:gen-class)
+  (:import (java.util.logging Logger Level ConsoleHandler)))
 
 (def windows? (fs/windows?))
 
@@ -1280,6 +1281,21 @@ Use bb run --help to show this help output.
     (if (deps-not-needed opts)
       (exec-without-deps opts)
       (exec opts))))
+
+(defn enable-jline-debug! []
+  (let [handler (ConsoleHandler.)
+        logger  (Logger/getLogger "org.jline")]
+    (.setLevel handler Level/FINE)
+    (.setLevel logger Level/FINE)
+    (.addHandler logger handler)
+
+
+    #_(-> (org.jline.terminal.TerminalBuilder/builder)
+        (.ffm true)
+        (.build))))
+
+;; Call this BEFORE anything touches JLine
+(enable-jline-debug!)
 
 (defn -main
   [& args]
