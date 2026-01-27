@@ -13,6 +13,9 @@ public class URLClassLoader extends java.net.URLClassLoader implements Closeable
     private WeakHashMap<Closeable,Void>
         closeables = new WeakHashMap<>();
 
+    // The original classloader to delegate to for resources not found in this loader
+    private ClassLoader fallbackClassLoader;
+
     public URLClassLoader(java.net.URL[] urls) {
         super(urls);
     }
@@ -21,13 +24,26 @@ public class URLClassLoader extends java.net.URLClassLoader implements Closeable
         super(urls, parent);
     }
 
+    public URLClassLoader(java.net.URL[] urls, ClassLoader fallback) {
+        super(urls);
+        this.fallbackClassLoader = fallback;
+    }
+
+    public void setFallbackClassLoader(ClassLoader fallback) {
+        this.fallbackClassLoader = fallback;
+    }
+
     public void _addURL(java.net.URL url) {
         super.addURL(url);
     }
 
     // calling super.getResource() returned nil in native-image
     public java.net.URL getResource(String name) {
-        return findResource(name);
+        java.net.URL url = findResource(name);
+        if (url == null && fallbackClassLoader != null) {
+            url = fallbackClassLoader.getResource(name);
+        }
+        return url;
     }
 
     // calling super.getResourceAsStream() returned nil in native-image

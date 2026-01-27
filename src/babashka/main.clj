@@ -1287,15 +1287,10 @@ Use bb run --help to show this help output.
         logger  (Logger/getLogger "org.jline")]
     (.setLevel handler Level/FINE)
     (.setLevel logger Level/FINE)
-    (.addHandler logger handler)
-
-
-    #_(-> (org.jline.terminal.TerminalBuilder/builder)
-        (.ffm true)
-        (.build))))
+    (.addHandler logger handler)))
 
 ;; Call this BEFORE anything touches JLine
-#_(enable-jline-debug!)
+(enable-jline-debug!)
 
 (defn -main
   [& args]

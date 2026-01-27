@@ -23,9 +23,9 @@
                    :flaky :flaky}
   :jvm-opts ["--enable-preview"]
   :dependencies [[org.clojure/clojure "1.12.3"]
-                 [org.jline/jline-terminal-ffm "3.26.1"]
-                 [org.jline/jline-terminal "3.26.1"]
-                 [org.jline/jline-reader "3.26.1"]
+                 [org.jline/jline-terminal-ffm "3.30.6"]
+                 [org.jline/jline-terminal "3.30.6"]
+                 [org.jline/jline-reader "3.30.6"]
                  [borkdude/edamame "1.5.37"]
                  [org.clojure/tools.cli "1.0.214"]
                  [cheshire "6.1.0"]

@@ -28,7 +28,12 @@
 
 (defn new-loader ^babashka.impl.URLClassLoader
   ([paths]
-   (babashka.impl.URLClassLoader. (into-array java.net.URL (map ->url paths)))))
+   (let [loader (babashka.impl.URLClassLoader. (into-array java.net.URL (map ->url paths)))
+         ctx-loader (.getContextClassLoader (Thread/currentThread))]
+     ;; Set the original context classloader as fallback so resources from the
+     ;; native image (e.g., JLine SPI) can still be found
+     (.setFallbackClassLoader loader ctx-loader)
+     loader)))
 
 (def ^babashka.impl.URLClassLoader the-url-loader (delay (new-loader [])))
 
