@@ -29,6 +29,10 @@
       {
         "parameterTypes": ["long", "int", "long", "long", "long"],
         "returnType": "int"
+      },
+      {
+        "parameterTypes": ["long", "long", "int"],
+        "returnType": "int"
       }
     ]
   }
