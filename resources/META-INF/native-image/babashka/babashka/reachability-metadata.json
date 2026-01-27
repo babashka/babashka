@@ -31,10 +31,6 @@
         "returnType": "int"
       },
       {
-        "parameterTypes": ["long", "long", "int"],
-        "returnType": "int"
-      },
-      {
         "returnType": "jint",
         "parameterTypes": [
           "void*",
