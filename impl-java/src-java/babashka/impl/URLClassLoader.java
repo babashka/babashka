@@ -16,20 +16,8 @@ public class URLClassLoader extends java.net.URLClassLoader implements Closeable
     // The original classloader to delegate to for resources not found in this loader
     private ClassLoader fallbackClassLoader;
 
-    public URLClassLoader(java.net.URL[] urls) {
-        super(urls);
-    }
-
-    public URLClassLoader(java.net.URL[] urls, java.net.URLClassLoader parent) {
-        super(urls, parent);
-    }
-
     public URLClassLoader(java.net.URL[] urls, ClassLoader fallback) {
         super(urls);
-        this.fallbackClassLoader = fallback;
-    }
-
-    public void setFallbackClassLoader(ClassLoader fallback) {
         this.fallbackClassLoader = fallback;
     }
 
