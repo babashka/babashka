@@ -647,7 +647,7 @@
           org.jline.terminal.Size
           org.jline.reader.LineReaderBuilder
           org.jline.reader.impl.LineReaderImpl ;; TODO
-
+          org.jline.terminal.impl.ffm.FfmTerminalProvider
           ]
     :constructors [clojure.lang.Delay
                    clojure.lang.DynamicClassLoader
