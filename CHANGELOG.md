@@ -7,6 +7,10 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## Unreleased
+
+- Bump `deps.clj`
+
 ## 1.12.214 (2026-01-13)
 
 - [editscript](https://github.com/juji-io/editscript) compatibility!
