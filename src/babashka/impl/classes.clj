@@ -891,6 +891,8 @@
                                    java.text.BreakIterator
                                    (instance? org.jline.reader.LineReader v)
                                    org.jline.reader.LineReader
+                                   (instance? org.jline.terminal.Terminal v)
+                                   org.jline.terminal.Terminal
                                    ;; keep commas for merge friendliness
                                    ,)]
                      ;; (prn :res res)
