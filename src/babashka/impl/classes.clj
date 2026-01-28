@@ -646,10 +646,9 @@
           org.jline.utils.Signals
           org.jline.terminal.Size
           org.jline.reader.LineReaderBuilder
-          org.jline.reader.impl.LineReaderImpl ;; TODO
+          org.jline.reader.impl.LineReaderImpl
           org.jline.terminal.impl.ffm.FfmTerminalProvider
           org.jline.terminal.Terminal$SignalHandler
-          ;; org.jline.terminal.impl.PosixSysTerminal ;; TODO
           ]
     :constructors [clojure.lang.Delay
                    clojure.lang.DynamicClassLoader
