@@ -60,7 +60,7 @@
       ;; When TTY is available, verify we can create a terminal with FFM provider
       ;; Successfully building without exception proves FFM works
       (is (true? (bb '(let [terminal (-> (org.jline.terminal.TerminalBuilder/builder)
-                                         (.provider "ffm")
+                                         (.ffm true)
                                          (.system true)
                                          (.build))]
                         (try
