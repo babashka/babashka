@@ -67,12 +67,13 @@
   (testing "NonBlockingReader methods work (detected before Closeable)"
     ;; NonBlockingReader extends Reader which extends Closeable
     ;; Must be detected before Closeable to access .read(timeout) method
-    (is (= -2 (bb '(let [terminal (-> (org.jline.terminal.TerminalBuilder/builder)
+    (is (neg? (bb '(let [terminal (-> (org.jline.terminal.TerminalBuilder/builder)
                                       (.dumb true)
                                       (.build))
                          reader (.reader terminal)]
                      (try
                        ;; .read with timeout returns -2 when no input available
+                       ;; or -1 when EOF (in case there is no input device?)
                        (.read reader 1)
                        (finally
                          (.close terminal)))))))))
