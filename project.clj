@@ -23,9 +23,6 @@
                    :flaky :flaky}
   :jvm-opts ["--enable-preview"]
   :dependencies [[org.clojure/clojure "1.12.3"]
-                 [org.jline/jline-terminal-ffm "3.30.6"]
-                 [org.jline/jline-terminal "3.30.6" :exclusions [org.jline/jline-native]]
-                 [org.jline/jline-reader "3.30.6"]
                  [borkdude/edamame "1.5.37"]
                  [org.clojure/tools.cli "1.0.214"]
                  [cheshire "6.1.0"]
@@ -42,7 +39,12 @@
                  [org.babashka/http-client "0.4.23"]
                  [org.jsoup/jsoup "1.21.2"]
                  [io.github.nextjournal/markdown "0.7.222"]
-                 [borkdude/graal.locking "0.0.2"]]
+                 [borkdude/graal.locking "0.0.2"]
+                 [org.jline/jline-terminal-ffm "3.30.6"]
+                 [org.jline/jline-terminal "3.30.6"
+                  :exclusions [;; this saves 1mb of native-image size
+                               org.jline/jline-native]]
+                 [org.jline/jline-reader "3.30.6"]]
   :plugins       [[org.kipz/lein-meta-bom "0.1.1"]]
   :metabom {:jar-name "metabom.jar"}
   :profiles {:feature/xml  {:source-paths ["feature-xml"]

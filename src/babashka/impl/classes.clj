@@ -646,9 +646,9 @@
           org.jline.utils.Signals
           org.jline.terminal.Size
           org.jline.reader.LineReaderBuilder
-          org.jline.reader.impl.LineReaderImpl
           org.jline.terminal.impl.ffm.FfmTerminalProvider
           org.jline.terminal.Terminal$SignalHandler
+          ;; end jline
           ]
     :constructors [clojure.lang.Delay
                    clojure.lang.DynamicClassLoader
@@ -889,6 +889,8 @@
                                    thread-builder
                                    (instance? java.text.BreakIterator v)
                                    java.text.BreakIterator
+                                   (instance? org.jline.reader.LineReader v)
+                                   org.jline.reader.LineReader
                                    ;; keep commas for merge friendliness
                                    ,)]
                      ;; (prn :res res)
