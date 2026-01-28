@@ -66,12 +66,13 @@
       (pull-submodules)
       "setup-docker-buildx"
       {:attach_workspace {:at "/tmp"}}
-      (run "Build uberjar" "script/uberjar")
+      (run "Extract bb from release"
+        "VERSION=$(cat resources/BABASHKA_VERSION)
+tar xzf /tmp/release/babashka-$VERSION-linux-amd64.tar.gz -C .")
       {:run
        {:name        "Build Docker image"
         :environment {:PLATFORMS "linux/amd64,linux/arm64"}
-        :command
-        "java -jar ./target/babashka-$(cat resources/BABASHKA_VERSION)-standalone.jar .circleci/script/docker.clj"}}]))))
+        :command     "./bb .circleci/script/docker.clj"}}]))))
 
 (defn jvm
   [shorted? graalvm-home]
