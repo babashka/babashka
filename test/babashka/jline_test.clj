@@ -51,13 +51,15 @@
 (deftest jline-terminal-methods-test
   (testing "Terminal methods work (Terminal detected before Closeable)"
     ;; Terminal extends Closeable, so it must be detected before Closeable
-    ;; to access Terminal-specific methods like .reader and .writer
+    ;; to access Terminal-specific methods like .reader, .writer, .getName, .getType
     (is (true? (bb '(let [terminal (-> (org.jline.terminal.TerminalBuilder/builder)
                                        (.dumb true)
                                        (.build))]
                       (try
                         (and (some? (.reader terminal))
-                             (some? (.writer terminal)))
+                             (some? (.writer terminal))
+                             (string? (.getName terminal))
+                             (string? (.getType terminal)))
                         (finally
                           (.close terminal)))))))))
 
