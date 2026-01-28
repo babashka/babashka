@@ -48,6 +48,33 @@
     (is (= "clear_screen"
            (bb '(str (org.jline.utils.InfoCmp$Capability/valueOf "clear_screen")))))))
 
+(deftest jline-terminal-methods-test
+  (testing "Terminal methods work (Terminal detected before Closeable)"
+    ;; Terminal extends Closeable, so it must be detected before Closeable
+    ;; to access Terminal-specific methods like .reader and .writer
+    (is (true? (bb '(let [terminal (-> (org.jline.terminal.TerminalBuilder/builder)
+                                       (.dumb true)
+                                       (.build))]
+                      (try
+                        (and (some? (.reader terminal))
+                             (some? (.writer terminal)))
+                        (finally
+                          (.close terminal)))))))))
+
+(deftest jline-nonblockingreader-test
+  (testing "NonBlockingReader methods work (detected before Closeable)"
+    ;; NonBlockingReader extends Reader which extends Closeable
+    ;; Must be detected before Closeable to access .read(timeout) method
+    (is (= -2 (bb '(let [terminal (-> (org.jline.terminal.TerminalBuilder/builder)
+                                      (.dumb true)
+                                      (.build))
+                         reader (.reader terminal)]
+                     (try
+                       ;; .read with timeout returns -2 when no input available
+                       (.read reader 1)
+                       (finally
+                         (.close terminal)))))))))
+
 (deftest jline-ffm-provider-test
   (testing "FFM provider is available"
     ;; Check that FFM provider class is available
