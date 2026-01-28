@@ -873,6 +873,14 @@
                                    java.security.Key
                                    (instance? java.util.Set v)
                                    java.util.Set
+                                   (instance? org.jline.reader.LineReader v)
+                                   org.jline.reader.LineReader
+                                   ;; jline: check before Closeable since Terminal extends Closeable
+                                   (instance? org.jline.terminal.Terminal v)
+                                   org.jline.terminal.Terminal
+                                   ;; jline: check before Closeable since NonBlockingReader extends Closeable
+                                   (instance? org.jline.utils.NonBlockingReader v)
+                                   org.jline.utils.NonBlockingReader
                                    (instance? java.io.Closeable v)
                                    java.io.Closeable
                                    (instance? java.util.Collection v)
@@ -889,10 +897,6 @@
                                    thread-builder
                                    (instance? java.text.BreakIterator v)
                                    java.text.BreakIterator
-                                   (instance? org.jline.reader.LineReader v)
-                                   org.jline.reader.LineReader
-                                   (instance? org.jline.terminal.Terminal v)
-                                   org.jline.terminal.Terminal
                                    ;; keep commas for merge friendliness
                                    ,)]
                      ;; (prn :res res)
