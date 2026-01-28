@@ -15,7 +15,8 @@
     (is (true? (bb '(class? org.jline.terminal.Terminal))))
     (is (true? (bb '(class? org.jline.terminal.TerminalBuilder))))
     (is (true? (bb '(class? org.jline.terminal.Size))))
-    (is (true? (bb '(class? org.jline.reader.LineReaderBuilder))))))
+    (is (true? (bb '(class? org.jline.reader.LineReaderBuilder))))
+    (is (true? (bb '(class? org.jline.utils.AttributedString))))))
 
 (deftest jline-terminal-builder-test
   (testing "TerminalBuilder can create a dumb terminal"
@@ -77,6 +78,12 @@
                        (.read reader 1)
                        (finally
                          (.close terminal)))))))))
+
+(deftest jline-attributed-string-test
+  (testing "AttributedString can be constructed and used"
+    (is (= "hello" (bb '(str (org.jline.utils.AttributedString. "hello")))))
+    (is (= 5 (bb '(.length (org.jline.utils.AttributedString. "hello")))))
+    (is (= 5 (bb '(.columnLength (org.jline.utils.AttributedString. "hello")))))))
 
 (deftest jline-ffm-provider-test
   (testing "FFM provider is available"
