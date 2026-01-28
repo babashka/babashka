@@ -29,7 +29,7 @@
                  [nrepl/bencode "1.2.0"]
                  [borkdude/sci.impl.reflector "0.0.5"]
                  [org.babashka/sci.impl.types "0.0.2"]
-                 [org.babashka/babashka.impl.java "0.1.11"]
+                 [org.babashka/babashka.impl.java "0.1.12"]
                  [org.clojure/core.async "1.8.741"]
                  [org.clojure/test.check "1.1.1"]
                  [com.github.clj-easy/graal-build-time "0.1.0"]
@@ -39,7 +39,12 @@
                  [org.babashka/http-client "0.4.23"]
                  [org.jsoup/jsoup "1.21.2"]
                  [io.github.nextjournal/markdown "0.7.222"]
-                 [borkdude/graal.locking "0.0.2"]]
+                 [borkdude/graal.locking "0.0.2"]
+                 [org.jline/jline-terminal-ffm "3.30.6"]
+                 [org.jline/jline-terminal "3.30.6"
+                  :exclusions [;; this saves 1mb of native-image size
+                               org.jline/jline-native]]
+                 [org.jline/jline-reader "3.30.6"]]
   :plugins       [[org.kipz/lein-meta-bom "0.1.1"]]
   :metabom {:jar-name "metabom.jar"}
   :profiles {:feature/xml  {:source-paths ["feature-xml"]

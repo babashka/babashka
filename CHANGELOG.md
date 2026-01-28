@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Fix [#1909](https://github.com/babashka/babashka/issues/1909): add [jline3](https://github.com/jline/jline3) for TUI support
 - Bump `deps.clj`
 
 ## 1.12.214 (2026-01-13)

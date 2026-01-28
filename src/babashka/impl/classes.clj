@@ -323,6 +323,7 @@
           java.lang.Boolean
           java.lang.Byte
           java.lang.Character
+          java.lang.Character$UnicodeBlock
           java.lang.CharSequence
           java.lang.Class
           java.lang.ClassCastException
@@ -636,7 +637,19 @@
           org.jsoup.nodes.TextNode
           org.jsoup.nodes.XmlDeclaration
           org.jsoup.parser.Tag
-          org.jsoup.parser.Parser]
+          org.jsoup.parser.Parser
+          ;; jline
+          org.jline.terminal.Terminal
+          org.jline.terminal.TerminalBuilder
+          org.jline.utils.InfoCmp$Capability
+          org.jline.utils.NonBlockingReader
+          org.jline.utils.Signals
+          org.jline.terminal.Size
+          org.jline.reader.LineReaderBuilder
+          org.jline.terminal.impl.ffm.FfmTerminalProvider
+          org.jline.terminal.Terminal$SignalHandler
+          ;; end jline
+          ]
     :constructors [clojure.lang.Delay
                    clojure.lang.DynamicClassLoader
                    clojure.lang.LineNumberingPushbackReader
@@ -876,6 +889,10 @@
                                    thread-builder
                                    (instance? java.text.BreakIterator v)
                                    java.text.BreakIterator
+                                   (instance? org.jline.reader.LineReader v)
+                                   org.jline.reader.LineReader
+                                   (instance? org.jline.terminal.Terminal v)
+                                   org.jline.terminal.Terminal
                                    ;; keep commas for merge friendliness
                                    ,)]
                      ;; (prn :res res)
