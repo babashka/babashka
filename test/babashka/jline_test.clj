@@ -73,7 +73,7 @@
                          reader (.reader terminal)]
                      (try
                        ;; .read with timeout returns -2 when no input available
-                       ;; or -1 when EOF (in case there is no input device?)
+                       ;; MB: or -1 when EOF (in case there is no input device?)
                        (.read reader 1)
                        (finally
                          (.close terminal)))))))))
