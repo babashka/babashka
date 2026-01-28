@@ -57,14 +57,16 @@
     ;; This test creates a real FFM terminal when TTY is present
     ;; When no TTY, FFM provider will still work but create a dumb terminal
     (when (bb '(some? (System/console)))
-      ;; When TTY is available, verify we can create a terminal with FFM provider
-      ;; Successfully building without exception proves FFM works
-      (is (true? (bb '(let [terminal (-> (org.jline.terminal.TerminalBuilder/builder)
-                                         (.ffm true)
-                                         (.system true)
-                                         (.build))]
-                        (try
-                          (instance? org.jline.terminal.Terminal terminal)
-                          (finally
-                            (.close terminal))))))
-          "FFM provider should create a valid terminal"))))
+      (let [res (bb '(let [terminal (-> (org.jline.terminal.TerminalBuilder/builder)
+                                        (.ffm true)
+                                        (.system true)
+                                        (.build))]
+                       (try
+                         (instance? org.jline.terminal.Terminal terminal)
+                         (finally
+                           (.close terminal)))))]
+        (println "Testing FFM:" res)
+        ;; When TTY is available, verify we can create a terminal with FFM provider
+        ;; Successfully building without exception proves FFM works
+        (is (true? res)
+            "FFM provider should create a valid terminal")))))
