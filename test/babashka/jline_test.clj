@@ -85,6 +85,19 @@
     (is (= 5 (bb '(.length (org.jline.utils.AttributedString. "hello")))))
     (is (= 5 (bb '(.columnLength (org.jline.utils.AttributedString. "hello")))))))
 
+(deftest jline-display-test
+  (testing "Display can be constructed and used"
+    (is (true? (bb '(let [terminal (-> (org.jline.terminal.TerminalBuilder/builder)
+                                       (.dumb true)
+                                       (.build))
+                          display (org.jline.utils.Display. terminal false)]
+                      (try
+                        (.resize display 24 80)
+                        (.clear display)
+                        (instance? org.jline.utils.Display display)
+                        (finally
+                          (.close terminal)))))))))
+
 (deftest jline-ffm-provider-test
   (testing "FFM provider is available"
     ;; Check that FFM provider class is available

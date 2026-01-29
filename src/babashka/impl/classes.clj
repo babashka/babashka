@@ -644,6 +644,7 @@
           org.jline.utils.AttributedString
           org.jline.utils.InfoCmp$Capability
           org.jline.utils.NonBlockingReader
+          org.jline.utils.Display
           org.jline.utils.Signals
           org.jline.terminal.Size
           org.jline.reader.LineReaderBuilder
