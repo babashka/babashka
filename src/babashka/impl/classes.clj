@@ -651,7 +651,6 @@
           org.jline.reader.LineReaderBuilder
           org.jline.reader.EndOfFileException
           org.jline.reader.UserInterruptException
-          org.jline.terminal.impl.ffm.FfmTerminalProvider
           org.jline.terminal.Terminal$SignalHandler
           ;; end jline
           ]
