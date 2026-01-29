@@ -1,11 +1,11 @@
 (ns babashka.terminal
-  (:import [org.jline.terminal.spi SystemStream TerminalProvider]))
+  (:import [org.jline.terminal.spi SystemStream TerminalProvider TerminalExt]))
 
 (set! *warn-on-reflection* true)
 
 (defn- system-stream? [^SystemStream stream]
   (let [provider (try
-                   (TerminalProvider/load "ffm")
+                   (TerminalProvider/load "jansi")
                    (catch Throwable e
                      (prn e)
                      (prn :falling-back-on-exec)

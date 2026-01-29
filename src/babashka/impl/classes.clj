@@ -654,13 +654,14 @@
           org.jline.terminal.Terminal$SignalHandler
           ;; research classes for tty detection - remove after testing
           org.jline.terminal.spi.TerminalProvider
+          org.jline.terminal.spi.TerminalExt ;; cast Terminal to this and then .getProvider
           org.jline.terminal.spi.Pty
           org.jline.terminal.spi.SystemStream
-          org.jline.terminal.impl.AbstractPosixTerminal
-          org.jline.terminal.impl.exec.ExecTerminalProvider
-          org.jline.terminal.impl.exec.ExecPty
-          org.jline.terminal.impl.ffm.FfmTerminalProvider
-          org.jline.terminal.impl.ffm.FfmNativePty
+          ;; org.jline.terminal.impl.AbstractPosixTerminal
+          ;; org.jline.terminal.impl.exec.ExecTerminalProvider
+          ;; org.jline.terminal.impl.exec.ExecPty
+          ;; org.jline.terminal.impl.ffm.FfmTerminalProvider
+          ;; org.jline.terminal.impl.ffm.FfmNativePty
           ;; end jline
           ]
     :constructors [clojure.lang.Delay
