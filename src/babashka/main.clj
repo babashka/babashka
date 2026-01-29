@@ -47,6 +47,7 @@
    [babashka.impl.pprint :refer [pprint-namespace]]
    [babashka.impl.print-deps :as print-deps]
    [babashka.impl.process :refer [process-namespace]]
+   [babashka.impl.terminal :refer [terminal-namespace]]
    [babashka.impl.protocols :refer [protocols-namespace]]
    [babashka.impl.proxy :refer [proxy-fn]]
    [babashka.impl.reify2 :refer [reify-fn]]
@@ -411,6 +412,7 @@ Use bb run --help to show this help output.
        'clojure.datafy datafy-namespace
        'clojure.core.protocols protocols-namespace
        'babashka.process process-namespace
+       'babashka.terminal terminal-namespace
        'clojure.core.server clojure-core-server-namespace
        'babashka.deps deps-namespace
        'babashka.tasks tasks-namespace

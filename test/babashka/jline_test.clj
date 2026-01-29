@@ -85,6 +85,27 @@
     (is (= 5 (bb '(.length (org.jline.utils.AttributedString. "hello")))))
     (is (= 5 (bb '(.columnLength (org.jline.utils.AttributedString. "hello")))))))
 
+(deftest jline-linereader-test
+  (testing "LineReader classes are available"
+    (is (true? (bb '(class? org.jline.reader.LineReader))))
+    (is (true? (bb '(class? org.jline.reader.EndOfFileException))))
+    (is (true? (bb '(class? org.jline.reader.UserInterruptException)))))
+  (testing "LineReader can read a line"
+    (is (= "hello world"
+           (bb '(let [input (java.io.ByteArrayInputStream. (.getBytes "hello world\n"))
+                      output (java.io.ByteArrayOutputStream.)
+                      terminal (-> (org.jline.terminal.TerminalBuilder/builder)
+                                   (.dumb true)
+                                   (.streams input output)
+                                   (.build))
+                      reader (-> (org.jline.reader.LineReaderBuilder/builder)
+                                 (.terminal terminal)
+                                 (.build))]
+                  (try
+                    (.readLine reader)
+                    (finally
+                      (.close terminal)))))))))
+
 (deftest jline-display-test
   (testing "Display can be constructed and used"
     (is (true? (bb '(let [terminal (-> (org.jline.terminal.TerminalBuilder/builder)

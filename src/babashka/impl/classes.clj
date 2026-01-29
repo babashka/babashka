@@ -647,7 +647,10 @@
           org.jline.utils.Display
           org.jline.utils.Signals
           org.jline.terminal.Size
+          org.jline.reader.LineReader
           org.jline.reader.LineReaderBuilder
+          org.jline.reader.EndOfFileException
+          org.jline.reader.UserInterruptException
           org.jline.terminal.impl.ffm.FfmTerminalProvider
           org.jline.terminal.Terminal$SignalHandler
           ;; end jline
