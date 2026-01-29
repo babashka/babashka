@@ -21,7 +21,7 @@
                    :windows (complement (some-fn :skip-windows :flaky))
                    :non-flaky (complement :flaky)
                    :flaky :flaky}
-  :jvm-opts ["--enable-preview"]
+  :jvm-opts ["--enable-preview" "--enable-native-access=ALL-UNNAMED"]
   :dependencies [[org.clojure/clojure "1.12.3"]
                  [borkdude/edamame "1.5.37"]
                  [org.clojure/tools.cli "1.0.214"]
