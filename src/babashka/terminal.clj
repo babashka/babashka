@@ -1,13 +1,16 @@
 (ns babashka.terminal
-  ;; MB: relying on Jline's internals here, but we can always implement this
-  ;; ourselves if this changes using Java's FFM stuff.
-  (:import [org.jline.terminal.spi SystemStream]
-           [org.jline.terminal.impl.ffm FfmTerminalProvider]))
+  (:import [org.jline.terminal.spi SystemStream TerminalProvider]))
 
 (set! *warn-on-reflection* true)
 
 (defn- system-stream? [^SystemStream stream]
-  (.isSystemStream (FfmTerminalProvider.) stream))
+  (let [provider (try
+                   (TerminalProvider/load "ffm")
+                   (catch Throwable e
+                     (prn e)
+                     (prn :falling-back-on-exec)
+                     (TerminalProvider/load "exec")))]
+    (.isSystemStream ^TerminalProvider provider stream)))
 
 (defn tty?
   "Returns true if the given file descriptor is associated with a terminal.
