@@ -28,6 +28,8 @@ We needed to decide which providers to include and how to handle platform differ
 
 Key insight: **Display.update performance is identical** because JLine's Display class caches terminal size/attributes and doesn't shell out during rendering. The expensive exec operations only happen at startup and on resize.
 
+You can verify these results yourself by running `bb benchmark.clj` (included in this directory).
+
 ### Platform Constraints
 
 - **Linux musl (static builds)**: FFM fails because it tries to `dlopen("libc.so.6")` which doesn't exist on musl. Only exec works.
