@@ -116,26 +116,38 @@
     (rawWordCursor [_] 0)
     (rawWordLength [_] 0)))
 
+(defn- try-parse-next
+  "Try to parse the next form from reader. Returns :ok, :incomplete, or :error."
+  [sci-ctx reader]
+  (try
+    (parser/parse-next sci-ctx reader)
+    :ok
+    (catch Exception e
+      (let [msg (ex-message e)]
+        (if (and msg (str/includes? msg "EOF"))
+          :incomplete
+          :error)))))
+
 (defn complete-form?
-  "Returns true if s contains a complete Clojure form, false if incomplete (EOF error).
-   Returns true for other parse errors (e.g., unmatched delimiter) since the input is 'complete' enough to evaluate."
+  "Returns true if s contains only complete Clojure forms with no trailing incomplete form.
+   Returns false if empty/whitespace-only or if there's an incomplete form at the end.
+   Returns true for syntax errors (e.g., unmatched delimiter) since the input is 'complete' enough to evaluate."
   [sci-ctx s]
   (if (str/blank? s)
     false
     (let [reader (r/source-logging-push-back-reader s)]
-      (loop []
+      (loop [found-any false]
         (let [c (r/read-char reader)]
           (cond
-            (nil? c) false
-            (Character/isWhitespace ^Character c) (recur)
-            :else (do
-                    (r/unread reader c)
-                    (try
-                      (parser/parse-next sci-ctx reader)
-                      true
-                      (catch Exception e
-                        (let [msg (ex-message e)]
-                          (not (and msg (str/includes? msg "EOF")))))))))))))
+            (nil? c) found-any
+            (Character/isWhitespace ^Character c) (recur found-any)
+            :else
+            (do
+              (r/unread reader c)
+              (case (try-parse-next sci-ctx reader)
+                :ok (recur true)
+                :incomplete false
+                :error true))))))))
 
 (defn- jline-parser
   "Creates a JLine Parser that detects incomplete Clojure forms.
@@ -158,6 +170,7 @@
         (.terminal terminal)
         (.parser (jline-parser sci-ctx))
         (.variable org.jline.reader.LineReader/HISTORY_FILE history-file)
+        (.variable org.jline.reader.LineReader/SECONDARY_PROMPT_PATTERN "")
         (.build))))
 
 (defn- read-remaining
@@ -203,49 +216,33 @@
    second Ctrl+C exits."
   [sci-ctx ^org.jline.reader.LineReader line-reader input-buffer ctrl-c-pending _request-prompt request-exit]
   (try
-    (loop []
-      (let [result
-            (if (str/blank? @input-buffer)
-              ;; No buffer - read fresh input (JLine handles multi-line via our parser)
-              (let [prompt (str (utils/current-ns-name) "=> ")
-                    input (.readLine line-reader prompt)]
-                (if-let [[_ form remaining] (parse-form sci-ctx input)]
-                  (do
-                    (reset! input-buffer remaining)
-                    (reset! ctrl-c-pending false)
-                    (if (or (identical? :repl/quit form)
-                            (identical? :repl/exit form))
-                      [:exit]
-                      [:form form]))
-                  [:interrupted]))
-              ;; Have buffered content - try to parse it
-              (let [buf @input-buffer
-                    _ (reset! input-buffer "")]  ;; Clear first to avoid infinite loop on parse errors
-                (try
-                  (if-let [[_ form remaining] (parse-form sci-ctx buf)]
-                    (do
-                      (reset! input-buffer remaining)
-                      (reset! ctrl-c-pending false)
-                      (if (or (identical? :repl/quit form)
-                              (identical? :repl/exit form))
-                        [:exit]
-                        [:form form]))
-                    ;; Buffer was whitespace only - read fresh input
-                    [:recur])
-                  (catch Exception e
-                    (let [msg (ex-message e)]
-                      (if (and msg (str/includes? msg "EOF"))
-                        ;; Incomplete form in buffer - read more input and try again
-                        (let [more (.readLine line-reader "")]
-                          (reset! input-buffer (str buf "\n" more))
-                          [:recur])
-                        ;; Other parse error - let it propagate to caught handler
-                        (throw e)))))))]
-        (case (first result)
-          :exit request-exit
-          :form (second result)
-          :interrupted interrupted
-          :recur (recur))))
+    ;; First check if there's buffered input from previous read (multiple forms on one line)
+    (let [from-buffer
+          (when-not (str/blank? @input-buffer)
+            (let [buf @input-buffer]
+              (reset! input-buffer "")
+              (when-let [[_ form remaining] (parse-form sci-ctx buf)]
+                (reset! input-buffer remaining)
+                (reset! ctrl-c-pending false)
+                [:form form])))]
+      (if-let [[_ form] from-buffer]
+        ;; Return form from buffer
+        (if (or (identical? :repl/quit form)
+                (identical? :repl/exit form))
+          request-exit
+          form)
+        ;; Read new input - JLine handles ALL multi-line via our parser
+        (let [prompt (str (utils/current-ns-name) "=> ")
+              input (.readLine line-reader prompt)]
+          (if-let [[_ form remaining] (parse-form sci-ctx input)]
+            (do
+              (reset! input-buffer remaining)
+              (reset! ctrl-c-pending false)
+              (if (or (identical? :repl/quit form)
+                      (identical? :repl/exit form))
+                request-exit
+                form))
+            interrupted))))
     (catch EndOfFileException _
       request-exit)
     (catch UserInterruptException e
