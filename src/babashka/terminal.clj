@@ -1,17 +1,12 @@
 (ns babashka.terminal
-  (:import [org.jline.terminal.spi SystemStream TerminalProvider]))
+  (:import [org.jline.terminal TerminalBuilder]
+           [org.jline.terminal.spi SystemStream TerminalProvider]))
 
 (set! *warn-on-reflection* true)
 
-(defn- load-provider []
-  ;; Try FFM first (works on Windows native, macOS, Linux glibc)
-  ;; Fall back to exec (works on Linux musl, Windows Git Bash)
-  (try
-    (TerminalProvider/load "ffm")
-    (catch Throwable _
-      (TerminalProvider/load "exec"))))
-
-(def ^:private provider (delay (load-provider)))
+;; Get first available provider in default order: FFM, JNI, Exec
+(def ^:private provider
+  (delay (first (.getProviders (TerminalBuilder/builder) nil (IllegalStateException.)))))
 
 (defn- system-stream? [^SystemStream stream]
   (.isSystemStream ^TerminalProvider @provider stream))
