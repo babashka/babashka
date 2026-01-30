@@ -1,7 +1,7 @@
 (ns babashka.impl.repl-test
   (:require
    [babashka.impl.pprint :refer [pprint-namespace]]
-   [babashka.impl.repl :refer [start-repl! repl-with-line-reader]]
+   [babashka.impl.repl :refer [start-repl! repl-with-line-reader complete-form?]]
    [babashka.test-utils :as tu]
    [clojure.string :as str]
    [clojure.test :as t :refer [deftest is testing]]
@@ -60,28 +60,35 @@
 
 ;;;; JLine REPL tests
 
+(def ^:private test-sci-ctx
+  (init {:bindings {'*command-line-args* ["a" "b" "c"]}
+         :namespaces {'clojure.pprint pprint-namespace}}))
+
 (defn mock-line-reader
-  "Creates a mock LineReader that returns lines from the given sequence.
+  "Creates a mock LineReader that simulates JLine's multi-line behavior.
+   Accumulates lines until a complete Clojure form is detected.
    Throws EndOfFileException when lines are exhausted.
-   If an element is :interrupt, throws UserInterruptException instead."
+   If an element is :interrupt, throws UserInterruptException with accumulated input."
   ^LineReader [lines]
   (let [remaining (atom lines)]
     (reify LineReader
       (^String readLine [_ ^String _prompt]
-        (if-let [line (first @remaining)]
-          (do
-            (swap! remaining rest)
-            (if (= :interrupt line)
-              (throw (UserInterruptException. ""))
-              line))
-          (throw (EndOfFileException.)))))))
+        (loop [accumulated ""]
+          (if-let [line (first @remaining)]
+            (do
+              (swap! remaining rest)
+              (if (= :interrupt line)
+                (throw (UserInterruptException. accumulated))
+                (let [new-accumulated (str accumulated (when-not (str/blank? accumulated) "\n") line)]
+                  (if (complete-form? test-sci-ctx new-accumulated)
+                    new-accumulated
+                    (recur new-accumulated)))))
+            (if (str/blank? accumulated)
+              (throw (EndOfFileException.))
+              accumulated)))))))
 
 (defn jline-repl! [line-reader]
-  (repl-with-line-reader
-   (init {:bindings {'*command-line-args* ["a" "b" "c"]}
-          :namespaces {'clojure.pprint pprint-namespace}})
-   line-reader
-   nil))
+  (repl-with-line-reader test-sci-ctx line-reader nil))
 
 (defn assert-jline-repl [lines expected]
   (is (str/includes?
@@ -125,6 +132,13 @@
     (assert-jline-repl ["false"] "false")
     (assert-jline-repl ["nil"] "nil"))
 
+  (testing "multiple forms on one line"
+    (assert-jline-repl ["1 2 3"] "3")
+    (assert-jline-repl ["[] [] 999"] "999"))
+
+  (testing "incomplete form in buffer gets continuation"
+    (assert-jline-repl ["[] [" "1 2]"] "[1 2]"))
+
   (testing "multi-line input"
     (assert-jline-repl ["(+" "1 2 3)"] "6")
     (assert-jline-repl ["(defn foo []" "(+ 1 2))" "(foo)"] "3"))
@@ -144,8 +158,13 @@
                        "To exit, press Ctrl+C again")))
 
   (testing "Ctrl+C with input does not show warning"
-    (is (not (str/includes? (jline-repl-combined-output ["(+" :interrupt "1 2)" ":repl/exit"])
+    (is (not (str/includes? (jline-repl-combined-output ["(+" :interrupt ":repl/exit"])
                             "To exit"))))
+
+  (testing "whitespace before Ctrl+C resets pending state"
+    ;; Ctrl+C (warning) -> space+Ctrl+C (resets) -> Ctrl+C (warning again, not exit)
+    (let [output (jline-repl-combined-output [:interrupt " " :interrupt :interrupt ":repl/exit"])]
+      (is (= 2 (count (re-seq #"To exit" output))))))
 
   (testing "errors are reported"
     (assert-jline-repl-error ["(+ 1 nil)"] "NullPointerException")

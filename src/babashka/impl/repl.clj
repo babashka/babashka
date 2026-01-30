@@ -15,9 +15,9 @@
    [sci.impl.parser :as parser]
    [sci.impl.utils :as utils])
   (:import
-   [org.jline.reader LineReaderBuilder EndOfFileException UserInterruptException]
+   [org.jline.reader LineReaderBuilder EndOfFileException UserInterruptException
+    Parser Parser$ParseContext ParsedLine CompletingParsedLine EOFError]
    [org.jline.terminal TerminalBuilder]))
-
 
 (set! *warn-on-reflection* true)
 
@@ -59,7 +59,7 @@
     (let [v (parser/parse-next sci-ctx in-stream)]
       (skip-if-eol in-stream)
       (if (or (identical? :repl/quit v)
-            (identical? :repl/exit v))
+              (identical? :repl/exit v))
         request-exit
         v))))
 
@@ -85,8 +85,8 @@
                       (sio/println))
                     (eval-form sci-ctx `(apply require (quote ~m/repl-requires)))))
         :read (or read
-                (fn [request-prompt request-exit]
-                     (repl-read sci-ctx in request-prompt request-exit)))
+                  (fn [request-prompt request-exit]
+                    (repl-read sci-ctx in request-prompt request-exit)))
         :eval (or eval
                   (fn [expr]
                     (sci/with-bindings {sci/file "<repl>"
@@ -102,16 +102,75 @@
         :print (or print sio/prn)
         :caught (or caught repl-caught))))))
 
-(defn- create-line-reader
+(defn- parsed-line
+  "Creates a CompletingParsedLine for JLine."
+  ^CompletingParsedLine [^String line cursor]
+  (reify CompletingParsedLine
+    (word [_] "")
+    (wordCursor [_] 0)
+    (wordIndex [_] 0)
+    (words [_] [])
+    (line [_] line)
+    (cursor [_] cursor)
+    (escape [_ candidate _complete] (str candidate))
+    (rawWordCursor [_] 0)
+    (rawWordLength [_] 0)))
+
+(defn- try-parse-next
+  "Try to parse the next form from reader. Returns :ok, :incomplete, or :error."
+  [sci-ctx reader]
+  (try
+    (parser/parse-next sci-ctx reader)
+    :ok
+    (catch Exception e
+      (let [msg (ex-message e)]
+        (if (and msg (str/includes? msg "EOF"))
+          :incomplete
+          :error)))))
+
+(defn complete-form?
+  "Returns true if s contains only complete Clojure forms with no trailing incomplete form.
+   Returns false if empty/whitespace-only or if there's an incomplete form at the end.
+   Returns true for syntax errors (e.g., unmatched delimiter) since the input is 'complete' enough to evaluate."
+  [sci-ctx s]
+  (if (str/blank? s)
+    false
+    (let [reader (r/source-logging-push-back-reader s)]
+      (loop [found-any false]
+        (let [c (r/read-char reader)]
+          (cond
+            (nil? c) found-any
+            (Character/isWhitespace ^Character c) (recur found-any)
+            :else
+            (do
+              (r/unread reader c)
+              (case (try-parse-next sci-ctx reader)
+                :ok (recur true)
+                :incomplete false
+                :error true))))))))
+
+(defn- jline-parser
+  "Creates a JLine Parser that detects incomplete Clojure forms.
+   Throws EOFError for incomplete input, allowing JLine to handle multi-line editing."
+  ^Parser [sci-ctx]
+  (reify Parser
+    (^ParsedLine parse [_this ^String line ^int cursor ^Parser$ParseContext _context]
+     (if (complete-form? sci-ctx line)
+       (parsed-line line cursor)
+       (throw (EOFError. -1 -1 "Incomplete Clojure form"))))))
+
+(defn- jline-reader
   "Creates a JLine LineReader for interactive input with persistent history."
-  ^org.jline.reader.LineReader []
+  ^org.jline.reader.LineReader [sci-ctx]
   (let [terminal (-> (TerminalBuilder/builder)
                      (.system true)
                      (.build))
         history-file (fs/path (fs/home) ".bb_repl_history")]
     (-> (LineReaderBuilder/builder)
         (.terminal terminal)
+        (.parser (jline-parser sci-ctx))
         (.variable org.jline.reader.LineReader/HISTORY_FILE history-file)
+        (.variable org.jline.reader.LineReader/SECONDARY_PROMPT_PATTERN "")
         (.build))))
 
 (defn- read-remaining
@@ -128,72 +187,70 @@
 ;; Sentinel value for interrupted input - skip eval and print
 (def ^:private interrupted (Object.))
 
+(defn- parse-form
+  "Parse the next form from input string. Returns [:form form remaining] or nil if empty/whitespace only."
+  [sci-ctx input]
+  (let [reader (r/source-logging-push-back-reader input)]
+    (loop []
+      (let [c (r/read-char reader)]
+        (cond
+          (nil? c) nil
+          (Character/isWhitespace ^Character c) (recur)
+          :else (do
+                  (r/unread reader c)
+                  (let [form (parser/parse-next sci-ctx reader)
+                        remaining (read-remaining reader)]
+                    [:form form remaining])))))))
+
 (defn- jline-read
   "Read function for m/repl that uses JLine for input.
-   Buffers lines until a complete form is available.
+   JLine handles multi-line editing via the Clojure parser.
    Implements Node-style Ctrl+C behavior: first Ctrl+C on empty prompt shows warning,
    second Ctrl+C exits."
   [sci-ctx ^org.jline.reader.LineReader line-reader input-buffer ctrl-c-pending _request-prompt request-exit]
-  (let [has-prior-input (atom (not (str/blank? @input-buffer)))]
-    (try
-      (loop [input @input-buffer
-             first-line? (str/blank? @input-buffer)]
-        (let [reader (r/source-logging-push-back-reader input)
-              parse-result
-              (try
-                (when-not (str/blank? input)
-                  ;; Skip leading whitespace
-                  (loop []
-                    (let [c (r/read-char reader)]
-                      (cond
-                        (nil? c) nil
-                        (Character/isWhitespace ^Character c) (recur)
-                        :else (do (r/unread reader c)
-                                  (let [form (parser/parse-next sci-ctx reader)
-                                        remaining (read-remaining reader)]
-                                    (reset! input-buffer remaining)
-                                    (reset! ctrl-c-pending false)
-                                    [:form form]))))))
-                (catch Exception e
-                  (let [msg (ex-message e)]
-                    (if (and msg (str/includes? msg "EOF"))
-                      [:incomplete]
-                      (do
-                        (reset! input-buffer "")
-                        (throw e))))))]
-          (case (first parse-result)
-            ;; Got a complete form
-            :form
-            (let [form (second parse-result)]
-              (if (or (identical? :repl/quit form)
-                      (identical? :repl/exit form))
-                request-exit
-                form))
+  (try
+    (when-let [[_ form remaining]
+               (or
+                ;; First check if there's buffered input from previous read (multiple forms on one line)
+                (when-not (str/blank? @input-buffer)
+                  (let [buf @input-buffer]
+                    (reset! input-buffer "")
+                    (when-let [[_ form remaining] (parse-form sci-ctx buf)]
+                      [:form form remaining])))
+                ;; Read new input - JLine handles ALL multi-line via our parser
+                (let [prompt (str (utils/current-ns-name) "=> ")
+                      input (.readLine line-reader prompt)]
+                  (when-let [[_ form remaining] (parse-form sci-ctx input)]
+                    [:form form remaining])))]
+      (reset! input-buffer remaining)
+      (reset! ctrl-c-pending false)
+      ;; Return form from buffer
+      (if (or (identical? :repl/quit form)
+              (identical? :repl/exit form))
+        request-exit
+        form))
+    (catch EndOfFileException _
+      request-exit)
+    (catch UserInterruptException e
+      (let [partial-line (.getPartialLine e)]
+        (reset! input-buffer "")
+        (cond
+          ;; Second consecutive Ctrl+C on empty prompt - exit
+          (and (= "" partial-line) @ctrl-c-pending)
+          request-exit
 
-            ;; Need more input (nil or :incomplete)
-            (let [prompt (if first-line?
-                           (str (utils/current-ns-name) "=> ")
-                           "   ")
-                  line (.readLine line-reader prompt)
-                  new-input (str input (when-not (str/blank? input) "\n") line)]
-              (reset! has-prior-input true)
-              (reset! ctrl-c-pending false)
-              (recur new-input false)))))
-      (catch EndOfFileException _
-        request-exit)
-      (catch UserInterruptException e
-        (let [partial-line (.getPartialLine e)
-              had-input? (or @has-prior-input (not (str/blank? partial-line)))]
-          (reset! input-buffer "")
-          (if (and (not had-input?) @ctrl-c-pending)
-            ;; Second Ctrl+C on empty prompt - exit
-            request-exit
-            (do
-              (when (not had-input?)
-                ;; First Ctrl+C on empty prompt - show warning
-                (reset! ctrl-c-pending true)
-                (sio/println "(To exit, press Ctrl+C again or Ctrl+D or type :repl/exit)"))
-              interrupted)))))))
+          ;; First Ctrl+C on empty prompt - show warning
+          (= "" partial-line)
+          (do
+            (reset! ctrl-c-pending true)
+            (sio/println "(To exit, press Ctrl+C again or Ctrl+D or type :repl/exit)")
+            interrupted)
+
+          ;; Ctrl+C with partial input - clear and continue (resets pending)
+          :else
+          (do
+            (reset! ctrl-c-pending false)
+            interrupted))))))
 
 (defn repl-with-line-reader
   "REPL using a JLine LineReader for interactive input.
@@ -223,7 +280,7 @@
 (defn- repl-with-jline
   "REPL using JLine for interactive line editing and history."
   [sci-ctx opts]
-  (repl-with-line-reader sci-ctx (create-line-reader) opts))
+  (repl-with-line-reader sci-ctx (jline-reader sci-ctx) opts))
 
 (defn start-repl!
   ([sci-ctx] (start-repl! sci-ctx nil))
