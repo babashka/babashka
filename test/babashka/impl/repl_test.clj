@@ -136,6 +136,9 @@
     (assert-jline-repl ["1 2 3"] "3")
     (assert-jline-repl ["[] [] 999"] "999"))
 
+  (testing "incomplete form in buffer gets continuation"
+    (assert-jline-repl ["[] [" "1 2]"] "[1 2]"))
+
   (testing "multi-line input"
     (assert-jline-repl ["(+" "1 2 3)"] "6")
     (assert-jline-repl ["(defn foo []" "(+ 1 2))" "(foo)"] "3"))

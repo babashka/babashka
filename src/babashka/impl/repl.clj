@@ -203,33 +203,49 @@
    second Ctrl+C exits."
   [sci-ctx ^org.jline.reader.LineReader line-reader input-buffer ctrl-c-pending _request-prompt request-exit]
   (try
-    ;; First check if there's buffered input from previous read (multiple forms on one line)
-    (let [from-buffer
-          (when-not (str/blank? @input-buffer)
-            (let [buf @input-buffer]
-              (reset! input-buffer "")  ;; Clear first to avoid infinite loop on parse errors
-              (when-let [[_ form remaining] (parse-form sci-ctx buf)]
-                (reset! input-buffer remaining)
-                (reset! ctrl-c-pending false)
-                [:form form])))]
-      (if-let [[_ form] from-buffer]
-        ;; Return form from buffer
-        (if (or (identical? :repl/quit form)
-                (identical? :repl/exit form))
-          request-exit
-          form)
-        ;; Read new input - JLine handles multi-line via our parser
-        (let [prompt (str (utils/current-ns-name) "=> ")
-              input (.readLine line-reader prompt)]
-          (if-let [[_ form remaining] (parse-form sci-ctx input)]
-            (do
-              (reset! input-buffer remaining)
-              (reset! ctrl-c-pending false)
-              (if (or (identical? :repl/quit form)
-                      (identical? :repl/exit form))
-                request-exit
-                form))
-            interrupted))))
+    (loop []
+      (let [result
+            (if (str/blank? @input-buffer)
+              ;; No buffer - read fresh input (JLine handles multi-line via our parser)
+              (let [prompt (str (utils/current-ns-name) "=> ")
+                    input (.readLine line-reader prompt)]
+                (if-let [[_ form remaining] (parse-form sci-ctx input)]
+                  (do
+                    (reset! input-buffer remaining)
+                    (reset! ctrl-c-pending false)
+                    (if (or (identical? :repl/quit form)
+                            (identical? :repl/exit form))
+                      [:exit]
+                      [:form form]))
+                  [:interrupted]))
+              ;; Have buffered content - try to parse it
+              (let [buf @input-buffer
+                    _ (reset! input-buffer "")]  ;; Clear first to avoid infinite loop on parse errors
+                (try
+                  (if-let [[_ form remaining] (parse-form sci-ctx buf)]
+                    (do
+                      (reset! input-buffer remaining)
+                      (reset! ctrl-c-pending false)
+                      (if (or (identical? :repl/quit form)
+                              (identical? :repl/exit form))
+                        [:exit]
+                        [:form form]))
+                    ;; Buffer was whitespace only - read fresh input
+                    [:recur])
+                  (catch Exception e
+                    (let [msg (ex-message e)]
+                      (if (and msg (str/includes? msg "EOF"))
+                        ;; Incomplete form in buffer - read more input and try again
+                        (let [more (.readLine line-reader "")]
+                          (reset! input-buffer (str buf "\n" more))
+                          [:recur])
+                        ;; Other parse error - let it propagate to caught handler
+                        (throw e)))))))]
+        (case (first result)
+          :exit request-exit
+          :form (second result)
+          :interrupted interrupted
+          :recur (recur))))
     (catch EndOfFileException _
       request-exit)
     (catch UserInterruptException e
