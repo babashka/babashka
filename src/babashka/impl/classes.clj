@@ -642,6 +642,8 @@
           org.jline.terminal.Terminal
           org.jline.terminal.TerminalBuilder
           org.jline.utils.AttributedString
+          org.jline.utils.AttributedStringBuilder
+          org.jline.utils.AttributedStyle
           org.jline.utils.InfoCmp$Capability
           org.jline.utils.NonBlockingReader
           org.jline.utils.Display

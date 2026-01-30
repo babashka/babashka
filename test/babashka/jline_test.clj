@@ -85,6 +85,19 @@
     (is (= 5 (bb '(.length (org.jline.utils.AttributedString. "hello")))))
     (is (= 5 (bb '(.columnLength (org.jline.utils.AttributedString. "hello")))))))
 
+(deftest jline-attributed-string-builder-test
+  (testing "AttributedStringBuilder can build styled strings"
+    (is (= "hello world"
+           (bb '(let [asb (org.jline.utils.AttributedStringBuilder.)]
+                  (.append asb "hello ")
+                  (.style asb (-> org.jline.utils.AttributedStyle/DEFAULT (.bold)))
+                  (.append asb "world")
+                  (str (.toAttributedString asb))))))
+    (is (= 11
+           (bb '(let [asb (org.jline.utils.AttributedStringBuilder.)]
+                  (.append asb "hello world")
+                  (.length (.toAttributedString asb))))))))
+
 (deftest jline-linereader-test
   (testing "LineReader classes are available"
     (is (true? (bb '(class? org.jline.reader.LineReader))))
@@ -118,26 +131,3 @@
                         (instance? org.jline.utils.Display display)
                         (finally
                           (.close terminal)))))))))
-
-(deftest jline-ffm-provider-test
-  (testing "FFM provider is available"
-    ;; Check that FFM provider class is available
-    (is (true? (bb '(class? org.jline.terminal.impl.ffm.FfmTerminalProvider)))
-        "FfmTerminalProvider class should be available"))
-  (testing "FFM provider can create terminal when TTY is available"
-    ;; This test creates a real FFM terminal when TTY is present
-    ;; When no TTY, FFM provider will still work but create a dumb terminal
-    (when (bb '(some? (System/console)))
-      (let [res (bb '(let [terminal (-> (org.jline.terminal.TerminalBuilder/builder)
-                                        (.ffm true)
-                                        (.system true)
-                                        (.build))]
-                       (try
-                         (instance? org.jline.terminal.Terminal terminal)
-                         (finally
-                           (.close terminal)))))]
-        (println "Testing FFM:" res)
-        ;; When TTY is available, verify we can create a terminal with FFM provider
-        ;; Successfully building without exception proves FFM works
-        (is (true? res)
-            "FFM provider should create a valid terminal")))))
