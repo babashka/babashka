@@ -59,7 +59,7 @@
     (let [v (parser/parse-next sci-ctx in-stream)]
       (skip-if-eol in-stream)
       (if (or (identical? :repl/quit v)
-            (identical? :repl/exit v))
+              (identical? :repl/exit v))
         request-exit
         v))))
 
@@ -85,8 +85,8 @@
                       (sio/println))
                     (eval-form sci-ctx `(apply require (quote ~m/repl-requires)))))
         :read (or read
-                (fn [request-prompt request-exit]
-                     (repl-read sci-ctx in request-prompt request-exit)))
+                  (fn [request-prompt request-exit]
+                    (repl-read sci-ctx in request-prompt request-exit)))
         :eval (or eval
                   (fn [expr]
                     (sci/with-bindings {sci/file "<repl>"
@@ -155,9 +155,9 @@
   ^Parser [sci-ctx]
   (reify Parser
     (^ParsedLine parse [_this ^String line ^int cursor ^Parser$ParseContext _context]
-      (if (complete-form? sci-ctx line)
-        (parsed-line line cursor)
-        (throw (EOFError. -1 -1 "Incomplete Clojure form"))))))
+     (if (complete-form? sci-ctx line)
+       (parsed-line line cursor)
+       (throw (EOFError. -1 -1 "Incomplete Clojure form"))))))
 
 (defn- jline-reader
   "Creates a JLine LineReader for interactive input with persistent history."
@@ -202,13 +202,6 @@
                         remaining (read-remaining reader)]
                     [:form form remaining])))))))
 
-
-;; TODO:
-;; >
-;; >
-;; >
-;; (To exit, press Ctrl+C again or Ctrl+D or type :repl/exit)
-
 (defn- jline-read
   "Read function for m/repl that uses JLine for input.
    JLine handles multi-line editing via the Clojure parser.
@@ -217,32 +210,27 @@
   [sci-ctx ^org.jline.reader.LineReader line-reader input-buffer ctrl-c-pending _request-prompt request-exit]
   (try
     ;; First check if there's buffered input from previous read (multiple forms on one line)
-    (let [from-buffer
-          (when-not (str/blank? @input-buffer)
-            (let [buf @input-buffer]
-              (reset! input-buffer "")
-              (when-let [[_ form remaining] (parse-form sci-ctx buf)]
-                (reset! input-buffer remaining)
-                (reset! ctrl-c-pending false)
-                [:form form])))]
-      (if-let [[_ form] from-buffer]
-        ;; Return form from buffer
-        (if (or (identical? :repl/quit form)
-                (identical? :repl/exit form))
-          request-exit
-          form)
-        ;; Read new input - JLine handles ALL multi-line via our parser
-        (let [prompt (str (utils/current-ns-name) "=> ")
-              input (.readLine line-reader prompt)]
-          (if-let [[_ form remaining] (parse-form sci-ctx input)]
-            (do
-              (reset! input-buffer remaining)
-              (reset! ctrl-c-pending false)
-              (if (or (identical? :repl/quit form)
-                      (identical? :repl/exit form))
-                request-exit
-                form))
-            interrupted))))
+    (when-let [[_ form]
+               (or (when-not (str/blank? @input-buffer)
+                     (let [buf @input-buffer]
+                       (reset! input-buffer "")
+                       (when-let [[_ form remaining] (parse-form sci-ctx buf)]
+                         (reset! input-buffer remaining)
+                         (reset! ctrl-c-pending false)
+                         ;; wrap in vector because form could be nil or false
+                         [:form form])))
+                   ;; Read new input - JLine handles ALL multi-line via our parser
+                   (let [prompt (str (utils/current-ns-name) "=> ")
+                         input (.readLine line-reader prompt)]
+                     (when-let [[_ form remaining] (parse-form sci-ctx input)]
+                       (reset! input-buffer remaining)
+                       (reset! ctrl-c-pending false)
+                       [:form form])))]
+      ;; Return form from buffer
+      (if (or (identical? :repl/quit form)
+              (identical? :repl/exit form))
+        request-exit
+        form))
     (catch EndOfFileException _
       request-exit)
     (catch UserInterruptException e
