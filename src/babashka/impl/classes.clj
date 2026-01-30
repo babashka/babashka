@@ -899,6 +899,8 @@
                                    ;; jline: check before Closeable since NonBlockingReader extends Closeable
                                    (instance? org.jline.utils.NonBlockingReader v)
                                    org.jline.utils.NonBlockingReader
+                                   (instance? org.jline.terminal.spi.TerminalProvider v)
+                                   org.jline.terminal.spi.TerminalProvider
                                    (instance? java.io.Closeable v)
                                    java.io.Closeable
                                    (instance? java.util.Collection v)
