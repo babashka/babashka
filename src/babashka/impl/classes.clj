@@ -641,6 +641,7 @@
           ;; jline
           org.jline.terminal.Terminal
           org.jline.terminal.TerminalBuilder
+          org.jline.terminal.Attributes
           org.jline.utils.AttributedString
           org.jline.utils.AttributedStringBuilder
           org.jline.utils.AttributedStyle
@@ -653,6 +654,7 @@
           org.jline.reader.LineReaderBuilder
           org.jline.reader.EndOfFileException
           org.jline.reader.UserInterruptException
+          org.jline.keymap.KeyMap
           org.jline.terminal.Terminal$SignalHandler
           ;; research classes for tty detection - remove after testing
           org.jline.terminal.spi.TerminalProvider

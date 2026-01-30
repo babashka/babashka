@@ -131,3 +131,20 @@
                         (instance? org.jline.utils.Display display)
                         (finally
                           (.close terminal)))))))))
+
+(deftest jline-keymap-test
+  (testing "KeyMap can be constructed and used"
+    (is (true? (bb '(let [km (org.jline.keymap.KeyMap.)]
+                      (.bind km :action "a")
+                      (= :action (.getBound km "a"))))))))
+
+(deftest jline-attributes-test
+  (testing "Attributes can be constructed and used"
+    (is (true? (bb '(let [terminal (-> (org.jline.terminal.TerminalBuilder/builder)
+                                       (.dumb true)
+                                       (.build))
+                          attrs (.getAttributes terminal)]
+                      (try
+                        (instance? org.jline.terminal.Attributes attrs)
+                        (finally
+                          (.close terminal)))))))))
