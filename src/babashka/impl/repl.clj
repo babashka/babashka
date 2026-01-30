@@ -165,7 +165,11 @@
           (cond
             ;; Got a complete form
             (:form parse-result)
-            (:form parse-result)
+            (let [form (:form parse-result)]
+              (if (or (identical? :repl/quit form)
+                      (identical? :repl/exit form))
+                request-exit
+                form))
 
             ;; Need more input
             (or (nil? parse-result) (:incomplete parse-result))
