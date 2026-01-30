@@ -54,7 +54,7 @@
         org.flatland/ordered {:mvn/version "1.15.12"}
         org.jsoup/jsoup {:mvn/version "1.21.2"}
         io.github.nextjournal/markdown {:mvn/version "0.7.222"}
-        #_#_org.jline/jline-terminal-ffm {:mvn/version "3.30.6"}
+        org.jline/jline-terminal-ffm {:mvn/version "3.30.6"}
         org.jline/jline-terminal {:mvn/version "3.30.6"
                                   :exclusions [;; this saves 1mb of native-image size
                                                org.jline/jline-native]}
