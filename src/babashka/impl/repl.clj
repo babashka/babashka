@@ -174,6 +174,28 @@
 ;; Sentinel value for interrupted input - skip eval and print
 (def ^:private interrupted (Object.))
 
+(defn- parse-form
+  "Parse the next form from input string. Returns [:form form remaining] or nil if empty/whitespace only."
+  [sci-ctx input]
+  (let [reader (r/source-logging-push-back-reader input)]
+    (loop []
+      (let [c (r/read-char reader)]
+        (cond
+          (nil? c) nil
+          (Character/isWhitespace ^Character c) (recur)
+          :else (do
+                  (r/unread reader c)
+                  (let [form (parser/parse-next sci-ctx reader)
+                        remaining (read-remaining reader)]
+                    [:form form remaining])))))))
+
+
+;; TODO:
+;; >
+;; >
+;; >
+;; (To exit, press Ctrl+C again or Ctrl+D or type :repl/exit)
+
 (defn- jline-read
   "Read function for m/repl that uses JLine for input.
    JLine handles multi-line editing via the Clojure parser.
@@ -183,48 +205,27 @@
   (try
     ;; First check if there's buffered input from previous read (multiple forms on one line)
     (when-not (str/blank? @input-buffer)
-      (let [reader (r/source-logging-push-back-reader @input-buffer)]
-        ;; Skip leading whitespace
-        (loop []
-          (let [c (r/read-char reader)]
-            (cond
-              (nil? c) (reset! input-buffer "")
-              (Character/isWhitespace ^Character c) (recur)
-              :else (do
-                      (r/unread reader c)
-                      (try
-                        (let [form (parser/parse-next sci-ctx reader)
-                              remaining (read-remaining reader)]
-                          (reset! input-buffer remaining)
-                          (reset! ctrl-c-pending false)
-                          (if (or (identical? :repl/quit form)
-                                  (identical? :repl/exit form))
-                            (throw (EndOfFileException.))
-                            (throw (ex-info "" {:form form}))))
-                        (catch Exception e
-                          ;; Clear buffer on parse error to avoid infinite loop
-                          (reset! input-buffer "")
-                          (throw e)))))))))
+      (let [buf @input-buffer]
+        (reset! input-buffer "")  ;; Clear buffer first to avoid infinite loop on parse errors
+        (when-let [[_ form remaining] (parse-form sci-ctx buf)]
+          (reset! input-buffer remaining)
+          (reset! ctrl-c-pending false)
+          (if (or (identical? :repl/quit form)
+                  (identical? :repl/exit form))
+            (throw (EndOfFileException.))
+            (throw (ex-info "" {:form form}))))))
     ;; Read new input - JLine handles multi-line via our parser
     (let [prompt (str (utils/current-ns-name) "=> ")
-          input (.readLine line-reader prompt)
-          reader (r/source-logging-push-back-reader input)]
-      ;; Skip leading whitespace and parse
-      (loop []
-        (let [c (r/read-char reader)]
-          (cond
-            (nil? c) interrupted  ;; Empty/whitespace only
-            (Character/isWhitespace ^Character c) (recur)
-            :else (do
-                    (r/unread reader c)
-                    (let [form (parser/parse-next sci-ctx reader)
-                          remaining (read-remaining reader)]
-                      (reset! input-buffer remaining)
-                      (reset! ctrl-c-pending false)
-                      (if (or (identical? :repl/quit form)
-                              (identical? :repl/exit form))
-                        request-exit
-                        form)))))))
+          input (.readLine line-reader prompt)]
+      (if-let [[_ form remaining] (parse-form sci-ctx input)]
+        (do
+          (reset! input-buffer remaining)
+          (reset! ctrl-c-pending false)
+          (if (or (identical? :repl/quit form)
+                  (identical? :repl/exit form))
+            request-exit
+            form))
+        interrupted))
     (catch clojure.lang.ExceptionInfo e
       (if-let [form (:form (ex-data e))]
         form

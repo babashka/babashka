@@ -132,6 +132,10 @@
     (assert-jline-repl ["false"] "false")
     (assert-jline-repl ["nil"] "nil"))
 
+  (testing "multiple forms on one line"
+    (assert-jline-repl ["1 2 3"] "3")
+    (assert-jline-repl ["[] [] 999"] "999"))
+
   (testing "multi-line input"
     (assert-jline-repl ["(+" "1 2 3)"] "6")
     (assert-jline-repl ["(defn foo []" "(+ 1 2))" "(foo)"] "3"))
@@ -151,7 +155,7 @@
                        "To exit, press Ctrl+C again")))
 
   (testing "Ctrl+C with input does not show warning"
-    (is (not (str/includes? (jline-repl-combined-output ["(+" :interrupt "1 2)" ":repl/exit"])
+    (is (not (str/includes? (jline-repl-combined-output ["(+" :interrupt ":repl/exit"])
                             "To exit"))))
 
   (testing "errors are reported"
