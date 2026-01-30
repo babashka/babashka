@@ -21,7 +21,7 @@
                    :windows (complement (some-fn :skip-windows :flaky))
                    :non-flaky (complement :flaky)
                    :flaky :flaky}
-  :jvm-opts ["--enable-preview"]
+  :jvm-opts ["--enable-preview" "--enable-native-access=ALL-UNNAMED"]
   :dependencies [[org.clojure/clojure "1.12.3"]
                  [borkdude/edamame "1.5.37"]
                  [org.clojure/tools.cli "1.0.214"]
@@ -42,6 +42,12 @@
                  [borkdude/graal.locking "0.0.2"]
                  [org.jline/jline-terminal-ffm "3.30.6"]
                  [org.jline/jline-terminal "3.30.6"
+                  :exclusions [;; this saves 1mb of native-image size
+                               org.jline/jline-native]]
+                 #_[org.jline/jansi "3.30.6"
+                  :exclusions [;; this saves 1mb of native-image size
+                               org.jline/jline-native]]
+                 #_[org.jline/jansi-core "3.30.6"
                   :exclusions [;; this saves 1mb of native-image size
                                org.jline/jline-native]]
                  [org.jline/jline-reader "3.30.6"]]

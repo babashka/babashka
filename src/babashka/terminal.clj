@@ -1,13 +1,15 @@
 (ns babashka.terminal
-  ;; MB: relying on Jline's internals here, but we can always implement this
-  ;; ourselves if this changes using Java's FFM stuff.
-  (:import [org.jline.terminal.spi SystemStream]
-           [org.jline.terminal.impl.ffm FfmTerminalProvider]))
+  (:import [org.jline.terminal TerminalBuilder]
+           [org.jline.terminal.spi SystemStream TerminalProvider]))
 
 (set! *warn-on-reflection* true)
 
+;; Get first available provider in default order: FFM, JNI, Exec
+(def ^:private provider
+  (delay (first (.getProviders (TerminalBuilder/builder) nil (IllegalStateException.)))))
+
 (defn- system-stream? [^SystemStream stream]
-  (.isSystemStream (FfmTerminalProvider.) stream))
+  (.isSystemStream ^TerminalProvider @provider stream))
 
 (defn tty?
   "Returns true if the given file descriptor is associated with a terminal.
@@ -18,4 +20,3 @@
     :stdout (system-stream? SystemStream/Output)
     :stderr (system-stream? SystemStream/Error)
     (throw (IllegalArgumentException. (str "Invalid file descriptor: " fd ". Expected :stdin, :stdout, or :stderr.")))))
-

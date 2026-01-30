@@ -641,7 +641,10 @@
           ;; jline
           org.jline.terminal.Terminal
           org.jline.terminal.TerminalBuilder
+          org.jline.terminal.Attributes
           org.jline.utils.AttributedString
+          org.jline.utils.AttributedStringBuilder
+          org.jline.utils.AttributedStyle
           org.jline.utils.InfoCmp$Capability
           org.jline.utils.NonBlockingReader
           org.jline.utils.Display
@@ -651,8 +654,11 @@
           org.jline.reader.LineReaderBuilder
           org.jline.reader.EndOfFileException
           org.jline.reader.UserInterruptException
-          org.jline.terminal.impl.ffm.FfmTerminalProvider
+          org.jline.keymap.KeyMap
           org.jline.terminal.Terminal$SignalHandler
+          org.jline.terminal.spi.TerminalProvider
+          org.jline.terminal.spi.TerminalExt ;; cast Terminal to this and then .getProvider
+          org.jline.terminal.spi.SystemStream
           ;; end jline
           ]
     :constructors [clojure.lang.Delay
@@ -886,6 +892,8 @@
                                    ;; jline: check before Closeable since NonBlockingReader extends Closeable
                                    (instance? org.jline.utils.NonBlockingReader v)
                                    org.jline.utils.NonBlockingReader
+                                   (instance? org.jline.terminal.spi.TerminalProvider v)
+                                   org.jline.terminal.spi.TerminalProvider
                                    (instance? java.io.Closeable v)
                                    java.io.Closeable
                                    (instance? java.util.Collection v)

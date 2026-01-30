@@ -1,9 +1,11 @@
 (ns babashka.impl.repl
   {:no-doc true}
   (:require
+   [babashka.fs :as fs]
    [babashka.impl.clojure.core :as core-extras]
    [babashka.impl.clojure.main :as m]
    [babashka.impl.common :as common]
+   [babashka.terminal :as terminal]
    [clojure.java.io :as io]
    [clojure.string :as str]
    [clojure.tools.reader.reader-types :as r]
@@ -11,7 +13,11 @@
    [sci.impl.interpreter :refer [eval-form]]
    [sci.impl.io :as sio]
    [sci.impl.parser :as parser]
-   [sci.impl.utils :as utils]))
+   [sci.impl.utils :as utils])
+  (:import
+   [org.jline.reader LineReaderBuilder EndOfFileException UserInterruptException]
+   [org.jline.terminal TerminalBuilder]))
+
 
 (set! *warn-on-reflection* true)
 
@@ -74,7 +80,7 @@
                       (sio/println "Babashka"
                                    (str "v" (str/trim (slurp (io/resource "BABASHKA_VERSION" common/jvm-loader))))
                                    "REPL.")
-                      (sio/println "Use :repl/quit or :repl/exit to quit the REPL.")
+                      (sio/println "Use CTRL+D or :repl/exit to quit the REPL.")
                       (sio/println "Clojure rocks, Bash reaches.")
                       (sio/println))
                     (eval-form sci-ctx `(apply require (quote ~m/repl-requires)))))
@@ -96,10 +102,135 @@
         :print (or print sio/prn)
         :caught (or caught repl-caught))))))
 
+(defn- create-line-reader
+  "Creates a JLine LineReader for interactive input with persistent history."
+  ^org.jline.reader.LineReader []
+  (let [terminal (-> (TerminalBuilder/builder)
+                     (.system true)
+                     (.build))
+        history-file (fs/path (fs/home) ".bb_repl_history")]
+    (-> (LineReaderBuilder/builder)
+        (.terminal terminal)
+        (.variable org.jline.reader.LineReader/HISTORY_FILE history-file)
+        (.build))))
+
+(defn- read-remaining
+  "Read remaining characters from a reader into a string."
+  [reader]
+  (let [sb (StringBuilder.)]
+    (loop []
+      (let [c (r/read-char reader)]
+        (if (nil? c)
+          (str sb)
+          (do (.append sb c)
+              (recur)))))))
+
+;; Sentinel value for interrupted input - skip eval and print
+(def ^:private interrupted (Object.))
+
+(defn- jline-read
+  "Read function for m/repl that uses JLine for input.
+   Buffers lines until a complete form is available.
+   Implements Node-style Ctrl+C behavior: first Ctrl+C on empty prompt shows warning,
+   second Ctrl+C exits."
+  [sci-ctx ^org.jline.reader.LineReader line-reader input-buffer ctrl-c-pending _request-prompt request-exit]
+  (let [has-prior-input (atom (not (str/blank? @input-buffer)))]
+    (try
+      (loop [input @input-buffer
+             first-line? (str/blank? @input-buffer)]
+        (let [reader (r/source-logging-push-back-reader input)
+              parse-result
+              (try
+                (when-not (str/blank? input)
+                  ;; Skip leading whitespace
+                  (loop []
+                    (let [c (r/read-char reader)]
+                      (cond
+                        (nil? c) nil
+                        (Character/isWhitespace ^Character c) (recur)
+                        :else (do (r/unread reader c)
+                                  (let [form (parser/parse-next sci-ctx reader)
+                                        remaining (read-remaining reader)]
+                                    (reset! input-buffer remaining)
+                                    (reset! ctrl-c-pending false)
+                                    [:form form]))))))
+                (catch Exception e
+                  (let [msg (ex-message e)]
+                    (if (and msg (str/includes? msg "EOF"))
+                      [:incomplete]
+                      (do
+                        (reset! input-buffer "")
+                        (throw e))))))]
+          (case (first parse-result)
+            ;; Got a complete form
+            :form
+            (let [form (second parse-result)]
+              (if (or (identical? :repl/quit form)
+                      (identical? :repl/exit form))
+                request-exit
+                form))
+
+            ;; Need more input (nil or :incomplete)
+            (let [prompt (if first-line?
+                           (str (utils/current-ns-name) "=> ")
+                           "   ")
+                  line (.readLine line-reader prompt)
+                  new-input (str input (when-not (str/blank? input) "\n") line)]
+              (reset! has-prior-input true)
+              (reset! ctrl-c-pending false)
+              (recur new-input false)))))
+      (catch EndOfFileException _
+        request-exit)
+      (catch UserInterruptException e
+        (let [partial-line (.getPartialLine e)
+              had-input? (or @has-prior-input (not (str/blank? partial-line)))]
+          (reset! input-buffer "")
+          (if (and (not had-input?) @ctrl-c-pending)
+            ;; Second Ctrl+C on empty prompt - exit
+            request-exit
+            (do
+              (when (not had-input?)
+                ;; First Ctrl+C on empty prompt - show warning
+                (reset! ctrl-c-pending true)
+                (sio/println "(To exit, press Ctrl+C again or Ctrl+D or type :repl/exit)"))
+              interrupted)))))))
+
+(defn repl-with-line-reader
+  "REPL using a JLine LineReader for interactive input.
+   Exposed for testing with mock LineReaders."
+  [sci-ctx line-reader opts]
+  (let [input-buffer (atom "")
+        ctrl-c-pending (atom false)]
+    (repl sci-ctx
+          (merge opts
+                 {:need-prompt (constantly false)  ;; JLine handles prompting
+                  :prompt (constantly nil)         ;; No-op, JLine handles prompting
+                  :read (fn [request-prompt request-exit]
+                          (jline-read sci-ctx line-reader input-buffer ctrl-c-pending request-prompt request-exit))
+                  :eval (fn [form]
+                          (if (identical? form interrupted)
+                            interrupted
+                            (sci/with-bindings {sci/file "<repl>"
+                                                sci/*1 *1
+                                                sci/*2 *2
+                                                sci/*3 *3
+                                                sci/*e *e}
+                              (eval-form sci-ctx form))))
+                  :print (fn [val]
+                           (when-not (identical? val interrupted)
+                             (sio/prn val)))}))))
+
+(defn- repl-with-jline
+  "REPL using JLine for interactive line editing and history."
+  [sci-ctx opts]
+  (repl-with-line-reader sci-ctx (create-line-reader) opts))
+
 (defn start-repl!
   ([sci-ctx] (start-repl! sci-ctx nil))
   ([sci-ctx opts]
-   (repl sci-ctx opts)))
+   (if (terminal/tty? :stdin)
+     (repl-with-jline sci-ctx opts)
+     (repl sci-ctx opts))))
 
 ;;;; Scratch
 
