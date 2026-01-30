@@ -1,15 +1,10 @@
 (ns babashka.terminal
-  (:import [org.jline.terminal.spi SystemStream TerminalProvider TerminalExt]))
+  (:import [org.jline.terminal.spi SystemStream TerminalProvider]))
 
 (set! *warn-on-reflection* true)
 
 (defn- system-stream? [^SystemStream stream]
-  (let [provider (try
-                   (TerminalProvider/load "jansi")
-                   (catch Throwable e
-                     (prn e)
-                     (prn :falling-back-on-exec)
-                     (TerminalProvider/load "exec")))]
+  (let [provider (TerminalProvider/load "exec")]
     (.isSystemStream ^TerminalProvider provider stream)))
 
 (defn tty?
@@ -21,4 +16,3 @@
     :stdout (system-stream? SystemStream/Output)
     :stderr (system-stream? SystemStream/Error)
     (throw (IllegalArgumentException. (str "Invalid file descriptor: " fd ". Expected :stdin, :stdout, or :stderr.")))))
-
