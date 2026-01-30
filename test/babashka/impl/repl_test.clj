@@ -1,12 +1,10 @@
 (ns babashka.impl.repl-test
   (:require
    [babashka.impl.pprint :refer [pprint-namespace]]
-   [babashka.impl.repl :refer [start-repl! repl-with-line-reader]]
+   [babashka.impl.repl :refer [start-repl! repl-with-line-reader complete-form?]]
    [babashka.test-utils :as tu]
    [clojure.string :as str]
    [clojure.test :as t :refer [deftest is testing]]
-   [clojure.tools.reader :as reader]
-   [clojure.tools.reader.reader-types :as r]
    [sci.core :as sci]
    [sci.impl.opts :refer [init]]
    [sci.impl.vars :as vars])
@@ -62,24 +60,9 @@
 
 ;;;; JLine REPL tests
 
-(defn- complete-form?
-  "Returns true if the string contains a complete Clojure form."
-  [s]
-  (when-not (str/blank? s)
-    (try
-      (let [rdr (r/source-logging-push-back-reader s)]
-        (loop []
-          (let [c (r/read-char rdr)]
-            (cond
-              (nil? c) false
-              (Character/isWhitespace ^Character c) (recur)
-              :else (do
-                      (r/unread rdr c)
-                      (reader/read rdr)
-                      true)))))
-      (catch Exception e
-        (let [msg (ex-message e)]
-          (not (and msg (str/includes? msg "EOF"))))))))
+(def ^:private test-sci-ctx
+  (init {:bindings {'*command-line-args* ["a" "b" "c"]}
+         :namespaces {'clojure.pprint pprint-namespace}}))
 
 (defn mock-line-reader
   "Creates a mock LineReader that simulates JLine's multi-line behavior.
@@ -97,7 +80,7 @@
               (if (= :interrupt line)
                 (throw (UserInterruptException. accumulated))
                 (let [new-accumulated (str accumulated (when-not (str/blank? accumulated) "\n") line)]
-                  (if (complete-form? new-accumulated)
+                  (if (complete-form? test-sci-ctx new-accumulated)
                     new-accumulated
                     (recur new-accumulated)))))
             (if (str/blank? accumulated)
@@ -105,11 +88,7 @@
               accumulated)))))))
 
 (defn jline-repl! [line-reader]
-  (repl-with-line-reader
-   (init {:bindings {'*command-line-args* ["a" "b" "c"]}
-          :namespaces {'clojure.pprint pprint-namespace}})
-   line-reader
-   nil))
+  (repl-with-line-reader test-sci-ctx line-reader nil))
 
 (defn assert-jline-repl [lines expected]
   (is (str/includes?

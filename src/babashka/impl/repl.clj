@@ -102,7 +102,7 @@
         :print (or print sio/prn)
         :caught (or caught repl-caught))))))
 
-(defn- make-parsed-line
+(defn- parsed-line
   "Creates a CompletingParsedLine for JLine."
   ^CompletingParsedLine [^String line cursor]
   (reify CompletingParsedLine
@@ -116,41 +116,38 @@
     (rawWordCursor [_] 0)
     (rawWordLength [_] 0)))
 
-(defn- create-clojure-parser
+(defn complete-form?
+  "Returns true if s contains a complete Clojure form, false if incomplete (EOF error).
+   Returns true for other parse errors (e.g., unmatched delimiter) since the input is 'complete' enough to evaluate."
+  [sci-ctx s]
+  (if (str/blank? s)
+    false
+    (let [reader (r/source-logging-push-back-reader s)]
+      (loop []
+        (let [c (r/read-char reader)]
+          (cond
+            (nil? c) false
+            (Character/isWhitespace ^Character c) (recur)
+            :else (do
+                    (r/unread reader c)
+                    (try
+                      (parser/parse-next sci-ctx reader)
+                      true
+                      (catch Exception e
+                        (let [msg (ex-message e)]
+                          (not (and msg (str/includes? msg "EOF")))))))))))))
+
+(defn- jline-parser
   "Creates a JLine Parser that detects incomplete Clojure forms.
    Throws EOFError for incomplete input, allowing JLine to handle multi-line editing."
   ^Parser [sci-ctx]
   (reify Parser
     (^ParsedLine parse [_this ^String line ^int cursor ^Parser$ParseContext _context]
-      (if (str/blank? line)
-        (make-parsed-line line cursor)
-        ;; Try to parse as Clojure
-        (let [reader (r/source-logging-push-back-reader line)]
-          ;; Skip leading whitespace
-          (loop []
-            (let [c (r/read-char reader)]
-              (cond
-                (nil? c)
-                (make-parsed-line line cursor)
+      (if (complete-form? sci-ctx line)
+        (parsed-line line cursor)
+        (throw (EOFError. -1 -1 "Incomplete Clojure form"))))))
 
-                (Character/isWhitespace ^Character c)
-                (recur)
-
-                :else
-                (do
-                  (r/unread reader c)
-                  (try
-                    (parser/parse-next sci-ctx reader)
-                    (make-parsed-line line cursor)
-                    (catch Exception e
-                      (let [msg (ex-message e)]
-                        (if (and msg (str/includes? msg "EOF"))
-                          ;; Incomplete - throw EOFError so JLine continues
-                          (throw (EOFError. -1 -1 "Incomplete Clojure form"))
-                          ;; Other parse error - let it through
-                          (make-parsed-line line cursor))))))))))))))
-
-(defn- create-line-reader
+(defn- jline-reader
   "Creates a JLine LineReader for interactive input with persistent history."
   ^org.jline.reader.LineReader [sci-ctx]
   (let [terminal (-> (TerminalBuilder/builder)
@@ -159,7 +156,7 @@
         history-file (fs/path (fs/home) ".bb_repl_history")]
     (-> (LineReaderBuilder/builder)
         (.terminal terminal)
-        (.parser (create-clojure-parser sci-ctx))
+        (.parser (jline-parser sci-ctx))
         (.variable org.jline.reader.LineReader/HISTORY_FILE history-file)
         (.build))))
 
@@ -275,7 +272,7 @@
 (defn- repl-with-jline
   "REPL using JLine for interactive line editing and history."
   [sci-ctx opts]
-  (repl-with-line-reader sci-ctx (create-line-reader sci-ctx) opts))
+  (repl-with-line-reader sci-ctx (jline-reader sci-ctx) opts))
 
 (defn start-repl!
   ([sci-ctx] (start-repl! sci-ctx nil))
