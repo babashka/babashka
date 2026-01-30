@@ -1,13 +1,15 @@
 (ns babashka.impl.repl-test
   (:require
    [babashka.impl.pprint :refer [pprint-namespace]]
-   [babashka.impl.repl :refer [start-repl!]]
+   [babashka.impl.repl :refer [start-repl! repl-with-line-reader]]
    [babashka.test-utils :as tu]
    [clojure.string :as str]
-   [clojure.test :as t :refer [deftest is]]
+   [clojure.test :as t :refer [deftest is testing]]
    [sci.core :as sci]
    [sci.impl.opts :refer [init]]
-   [sci.impl.vars :as vars]))
+   [sci.impl.vars :as vars])
+  (:import
+   [org.jline.reader LineReader EndOfFileException UserInterruptException]))
 
 (set! *warn-on-reflection* true)
 
@@ -55,6 +57,97 @@
                      "Don't know how to create ISeq from: java.lang.Long")
   (assert-repl "(throw (ex-info \"foo\" {:a (+ 1 2 3)})) (ex-data *e)"
                "{:a 6}"))
+
+;;;; JLine REPL tests
+
+(defn mock-line-reader
+  "Creates a mock LineReader that returns lines from the given sequence.
+   Throws EndOfFileException when lines are exhausted.
+   If an element is :interrupt, throws UserInterruptException instead."
+  ^LineReader [lines]
+  (let [remaining (atom lines)]
+    (reify LineReader
+      (^String readLine [_ ^String _prompt]
+        (if-let [line (first @remaining)]
+          (do
+            (swap! remaining rest)
+            (if (= :interrupt line)
+              (throw (UserInterruptException. ""))
+              line))
+          (throw (EndOfFileException.)))))))
+
+(defn jline-repl! [line-reader]
+  (repl-with-line-reader
+   (init {:bindings {'*command-line-args* ["a" "b" "c"]}
+          :namespaces {'clojure.pprint pprint-namespace}})
+   line-reader
+   nil))
+
+(defn assert-jline-repl [lines expected]
+  (is (str/includes?
+       (tu/normalize
+        (sci/with-out-str
+          (jline-repl! (mock-line-reader lines))))
+       expected)))
+
+(defn jline-repl-output [lines]
+  (tu/normalize
+   (sci/with-out-str
+     (jline-repl! (mock-line-reader lines)))))
+
+(defn jline-repl-error-output [lines]
+  (tu/normalize
+   (let [sw (java.io.StringWriter.)]
+     (sci/binding [sci/out (java.io.StringWriter.)
+                   sci/err sw]
+       (jline-repl! (mock-line-reader lines)))
+     (str sw))))
+
+(defn jline-repl-combined-output [lines]
+  (tu/normalize
+   (let [sw (java.io.StringWriter.)]
+     (sci/binding [sci/out sw
+                   sci/err sw]
+       (jline-repl! (mock-line-reader lines)))
+     (str sw))))
+
+(defn assert-jline-repl-error [lines expected]
+  (is (str/includes? (jline-repl-error-output lines) expected)))
+
+(defn assert-jline-repl-excludes [lines unexpected]
+  (is (not (str/includes? (jline-repl-output lines) unexpected))))
+
+(deftest jline-repl-test
+  (testing "basic evaluation"
+    (assert-jline-repl ["1"] "1")
+    (assert-jline-repl ["(+ 1 2 3)"] "6")
+    (assert-jline-repl ["[1 2 3]"] "[1 2 3]"))
+
+  (testing "multi-line input"
+    (assert-jline-repl ["(+" "1 2 3)"] "6")
+    (assert-jline-repl ["(defn foo []" "(+ 1 2))" "(foo)"] "3"))
+
+  (testing "*1, *2, *3 work"
+    (assert-jline-repl ["1" "(inc *1)"] "2")
+    (assert-jline-repl ["1" "2" "(+ *1 *2)"] "3"))
+
+  (testing ":repl/exit quits"
+    (assert-jline-repl-excludes [":repl/exit" "123"] "123"))
+
+  (testing ":repl/quit quits"
+    (assert-jline-repl-excludes [":repl/quit" "456"] "456"))
+
+  (testing "Ctrl+C on empty prompt shows warning"
+    (is (str/includes? (jline-repl-combined-output [:interrupt])
+                       "To exit, press Ctrl+C again")))
+
+  (testing "Ctrl+C with input does not show warning"
+    (is (not (str/includes? (jline-repl-combined-output ["(+" :interrupt "1 2)" ":repl/exit"])
+                            "To exit"))))
+
+  (testing "errors are reported"
+    (assert-jline-repl-error ["(+ 1 nil)"] "NullPointerException")
+    (assert-jline-repl-error ["(/ 1 0)"] "Divide by zero")))
 
 ;;;; Scratch
 

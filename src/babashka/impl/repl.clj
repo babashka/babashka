@@ -197,11 +197,11 @@
                 (sio/println "(To exit, press Ctrl+C again or Ctrl+D or type :repl/exit)"))
               interrupted)))))))
 
-(defn- repl-with-jline
-  "REPL using JLine for interactive line editing and history."
-  [sci-ctx opts]
-  (let [line-reader (create-line-reader)
-        input-buffer (atom "")
+(defn repl-with-line-reader
+  "REPL using a JLine LineReader for interactive input.
+   Exposed for testing with mock LineReaders."
+  [sci-ctx line-reader opts]
+  (let [input-buffer (atom "")
         ctrl-c-pending (atom false)]
     (repl sci-ctx
           (merge opts
@@ -221,6 +221,11 @@
                   :print (fn [val]
                            (when-not (identical? val interrupted)
                              (sio/prn val)))}))))
+
+(defn- repl-with-jline
+  "REPL using JLine for interactive line editing and history."
+  [sci-ctx opts]
+  (repl-with-line-reader sci-ctx (create-line-reader) opts))
 
 (defn start-repl!
   ([sci-ctx] (start-repl! sci-ctx nil))
