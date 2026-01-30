@@ -80,7 +80,7 @@
                       (sio/println "Babashka"
                                    (str "v" (str/trim (slurp (io/resource "BABASHKA_VERSION" common/jvm-loader))))
                                    "REPL.")
-                      (sio/println "Use :repl/quit or :repl/exit to quit the REPL.")
+                      (sio/println "Use CTRL+D or :repl/exit to quit the REPL.")
                       (sio/println "Clojure rocks, Bash reaches.")
                       (sio/println))
                     (eval-form sci-ctx `(apply require (quote ~m/repl-requires)))))
@@ -128,14 +128,12 @@
 ;; Sentinel value for interrupted input - skip eval and print
 (def ^:private interrupted (Object.))
 
-;; TODO:
-;; Node behavior
-;; (To exit, press Ctrl+C again or Ctrl+D or type .exit)
-
 (defn- jline-read
   "Read function for m/repl that uses JLine for input.
-   Buffers lines until a complete form is available."
-  [sci-ctx ^org.jline.reader.LineReader line-reader input-buffer _request-prompt request-exit]
+   Buffers lines until a complete form is available.
+   Implements Node-style Ctrl+C behavior: first Ctrl+C on empty prompt shows warning,
+   second Ctrl+C exits."
+  [sci-ctx ^org.jline.reader.LineReader line-reader input-buffer ctrl-c-pending _request-prompt request-exit]
   (try
     (loop [input @input-buffer
            first-line? (str/blank? @input-buffer)]
@@ -153,6 +151,7 @@
                                 (let [form (parser/parse-next sci-ctx reader)
                                       remaining (read-remaining reader)]
                                   (reset! input-buffer remaining)
+                                  (reset! ctrl-c-pending false)
                                   {:form form}))))))
               (catch Exception e
                 (let [msg (ex-message e)]
@@ -174,24 +173,35 @@
                          "   ")
                 line (.readLine line-reader prompt)
                 new-input (str input (when-not (str/blank? input) "\n") line)]
+            (reset! ctrl-c-pending false)
             (recur new-input false)))))
     (catch EndOfFileException _
       request-exit)
     (catch UserInterruptException _
-      (reset! input-buffer "")
-      interrupted)))
+      (let [was-empty? (str/blank? @input-buffer)]
+        (reset! input-buffer "")
+        (if (and was-empty? @ctrl-c-pending)
+          ;; Second Ctrl+C on empty prompt - exit
+          request-exit
+          (do
+            (when was-empty?
+              ;; First Ctrl+C on empty prompt - show warning
+              (reset! ctrl-c-pending true)
+              (sio/println "(To exit, press Ctrl+C again or Ctrl+D or type :repl/exit)"))
+            interrupted))))))
 
 (defn- repl-with-jline
   "REPL using JLine for interactive line editing and history."
   [sci-ctx opts]
   (let [line-reader (create-line-reader)
-        input-buffer (atom "")]
+        input-buffer (atom "")
+        ctrl-c-pending (atom false)]
     (repl sci-ctx
           (merge opts
                  {:need-prompt (constantly false)  ;; JLine handles prompting
                   :prompt (constantly nil)         ;; No-op, JLine handles prompting
                   :read (fn [request-prompt request-exit]
-                          (jline-read sci-ctx line-reader input-buffer request-prompt request-exit))
+                          (jline-read sci-ctx line-reader input-buffer ctrl-c-pending request-prompt request-exit))
                   :eval (fn [form]
                           (if (identical? form interrupted)
                             interrupted
