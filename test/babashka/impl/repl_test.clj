@@ -5,6 +5,8 @@
    [babashka.test-utils :as tu]
    [clojure.string :as str]
    [clojure.test :as t :refer [deftest is testing]]
+   [clojure.tools.reader :as reader]
+   [clojure.tools.reader.reader-types :as r]
    [sci.core :as sci]
    [sci.impl.opts :refer [init]]
    [sci.impl.vars :as vars])
@@ -60,21 +62,47 @@
 
 ;;;; JLine REPL tests
 
+(defn- complete-form?
+  "Returns true if the string contains a complete Clojure form."
+  [s]
+  (when-not (str/blank? s)
+    (try
+      (let [rdr (r/source-logging-push-back-reader s)]
+        (loop []
+          (let [c (r/read-char rdr)]
+            (cond
+              (nil? c) false
+              (Character/isWhitespace ^Character c) (recur)
+              :else (do
+                      (r/unread rdr c)
+                      (reader/read rdr)
+                      true)))))
+      (catch Exception e
+        (let [msg (ex-message e)]
+          (not (and msg (str/includes? msg "EOF"))))))))
+
 (defn mock-line-reader
-  "Creates a mock LineReader that returns lines from the given sequence.
+  "Creates a mock LineReader that simulates JLine's multi-line behavior.
+   Accumulates lines until a complete Clojure form is detected.
    Throws EndOfFileException when lines are exhausted.
-   If an element is :interrupt, throws UserInterruptException instead."
+   If an element is :interrupt, throws UserInterruptException with accumulated input."
   ^LineReader [lines]
   (let [remaining (atom lines)]
     (reify LineReader
       (^String readLine [_ ^String _prompt]
-        (if-let [line (first @remaining)]
-          (do
-            (swap! remaining rest)
-            (if (= :interrupt line)
-              (throw (UserInterruptException. ""))
-              line))
-          (throw (EndOfFileException.)))))))
+        (loop [accumulated ""]
+          (if-let [line (first @remaining)]
+            (do
+              (swap! remaining rest)
+              (if (= :interrupt line)
+                (throw (UserInterruptException. accumulated))
+                (let [new-accumulated (str accumulated (when-not (str/blank? accumulated) "\n") line)]
+                  (if (complete-form? new-accumulated)
+                    new-accumulated
+                    (recur new-accumulated)))))
+            (if (str/blank? accumulated)
+              (throw (EndOfFileException.))
+              accumulated)))))))
 
 (defn jline-repl! [line-reader]
   (repl-with-line-reader
