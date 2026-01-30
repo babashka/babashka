@@ -111,8 +111,9 @@
         (.terminal terminal)
         (.build))))
 
-(defn- read-remaining [reader]
+(defn- read-remaining
   "Read remaining characters from a reader into a string."
+  [reader]
   (let [sb (StringBuilder.)]
     (loop []
       (let [c (r/read-char reader)]
@@ -128,43 +129,42 @@
   (try
     (loop [input @input-buffer
            first-line? (str/blank? @input-buffer)]
-      (let [reader (r/source-logging-push-back-reader input)]
-        ;; Try to parse a form from current input
-        (let [parse-result
-              (try
-                (when-not (str/blank? input)
-                  ;; Skip leading whitespace
-                  (loop []
-                    (let [c (r/read-char reader)]
-                      (cond
-                        (nil? c) nil
-                        (Character/isWhitespace ^Character c) (recur)
-                        :else (do (r/unread reader c)
-                                  (let [form (parser/parse-next sci-ctx reader)
-                                        remaining (read-remaining reader)]
-                                    (reset! input-buffer remaining)
-                                    {:form form}))))))
-                (catch Exception e
-                  (let [msg (ex-message e)]
-                    (if (and msg (or (str/includes? msg "EOF while reading")
-                                     (str/includes? msg "EOF while parsing")))
-                      {:incomplete true}
-                      (do
-                        (reset! input-buffer "")
-                        (throw e))))))]
-          (cond
-            ;; Got a complete form
-            (:form parse-result)
-            (:form parse-result)
+      (let [reader (r/source-logging-push-back-reader input)
+            parse-result
+            (try
+              (when-not (str/blank? input)
+                ;; Skip leading whitespace
+                (loop []
+                  (let [c (r/read-char reader)]
+                    (cond
+                      (nil? c) nil
+                      (Character/isWhitespace ^Character c) (recur)
+                      :else (do (r/unread reader c)
+                                (let [form (parser/parse-next sci-ctx reader)
+                                      remaining (read-remaining reader)]
+                                  (reset! input-buffer remaining)
+                                  {:form form}))))))
+              (catch Exception e
+                (let [msg (ex-message e)]
+                  (if (and msg (or (str/includes? msg "EOF while reading")
+                                   (str/includes? msg "EOF while parsing")))
+                    {:incomplete true}
+                    (do
+                      (reset! input-buffer "")
+                      (throw e))))))]
+        (cond
+          ;; Got a complete form
+          (:form parse-result)
+          (:form parse-result)
 
-            ;; Need more input
-            (or (nil? parse-result) (:incomplete parse-result))
-            (let [prompt (if first-line?
-                           (str (utils/current-ns-name) "=> ")
-                           "   ")
-                  line (.readLine line-reader prompt)
-                  new-input (str input (when-not (str/blank? input) "\n") line)]
-              (recur new-input false))))))
+          ;; Need more input
+          (or (nil? parse-result) (:incomplete parse-result))
+          (let [prompt (if first-line?
+                         (str (utils/current-ns-name) "=> ")
+                         "   ")
+                line (.readLine line-reader prompt)
+                new-input (str input (when-not (str/blank? input) "\n") line)]
+            (recur new-input false)))))
     (catch EndOfFileException _
       request-exit)
     (catch UserInterruptException _
