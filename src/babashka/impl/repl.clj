@@ -209,23 +209,21 @@
    second Ctrl+C exits."
   [sci-ctx ^org.jline.reader.LineReader line-reader input-buffer ctrl-c-pending _request-prompt request-exit]
   (try
-    ;; First check if there's buffered input from previous read (multiple forms on one line)
-    (when-let [[_ form]
-               (or (when-not (str/blank? @input-buffer)
-                     (let [buf @input-buffer]
-                       (reset! input-buffer "")
-                       (when-let [[_ form remaining] (parse-form sci-ctx buf)]
-                         (reset! input-buffer remaining)
-                         (reset! ctrl-c-pending false)
-                         ;; wrap in vector because form could be nil or false
-                         [:form form])))
-                   ;; Read new input - JLine handles ALL multi-line via our parser
-                   (let [prompt (str (utils/current-ns-name) "=> ")
-                         input (.readLine line-reader prompt)]
-                     (when-let [[_ form remaining] (parse-form sci-ctx input)]
-                       (reset! input-buffer remaining)
-                       (reset! ctrl-c-pending false)
-                       [:form form])))]
+    (when-let [[_ form remaining]
+               (or
+                ;; First check if there's buffered input from previous read (multiple forms on one line)
+                (when-not (str/blank? @input-buffer)
+                  (let [buf @input-buffer]
+                    (reset! input-buffer "")
+                    (when-let [[_ form remaining] (parse-form sci-ctx buf)]
+                      [:form form remaining])))
+                ;; Read new input - JLine handles ALL multi-line via our parser
+                (let [prompt (str (utils/current-ns-name) "=> ")
+                      input (.readLine line-reader prompt)]
+                  (when-let [[_ form remaining] (parse-form sci-ctx input)]
+                    [:form form remaining])))]
+      (reset! input-buffer remaining)
+      (reset! ctrl-c-pending false)
       ;; Return form from buffer
       (if (or (identical? :repl/quit form)
               (identical? :repl/exit form))
