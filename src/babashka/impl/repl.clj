@@ -153,26 +153,24 @@
                                         remaining (read-remaining reader)]
                                     (reset! input-buffer remaining)
                                     (reset! ctrl-c-pending false)
-                                    {:form form}))))))
+                                    [:form form]))))))
                 (catch Exception e
                   (let [msg (ex-message e)]
-                    (if (and msg (or (str/includes? msg "EOF while reading")
-                                     (str/includes? msg "EOF while parsing")))
-                      {:incomplete true}
+                    (if (and msg (str/includes? msg "EOF"))
+                      [:incomplete]
                       (do
                         (reset! input-buffer "")
                         (throw e))))))]
-          (cond
+          (case (first parse-result)
             ;; Got a complete form
-            (:form parse-result)
-            (let [form (:form parse-result)]
+            :form
+            (let [form (second parse-result)]
               (if (or (identical? :repl/quit form)
                       (identical? :repl/exit form))
                 request-exit
                 form))
 
-            ;; Need more input
-            (or (nil? parse-result) (:incomplete parse-result))
+            ;; Need more input (nil or :incomplete)
             (let [prompt (if first-line?
                            (str (utils/current-ns-name) "=> ")
                            "   ")

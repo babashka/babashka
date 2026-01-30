@@ -121,7 +121,9 @@
   (testing "basic evaluation"
     (assert-jline-repl ["1"] "1")
     (assert-jline-repl ["(+ 1 2 3)"] "6")
-    (assert-jline-repl ["[1 2 3]"] "[1 2 3]"))
+    (assert-jline-repl ["[1 2 3]"] "[1 2 3]")
+    (assert-jline-repl ["false"] "false")
+    (assert-jline-repl ["nil"] "nil"))
 
   (testing "multi-line input"
     (assert-jline-repl ["(+" "1 2 3)"] "6")
