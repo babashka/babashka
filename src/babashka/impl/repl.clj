@@ -1,6 +1,7 @@
 (ns babashka.impl.repl
   {:no-doc true}
   (:require
+   [babashka.fs :as fs]
    [babashka.impl.clojure.core :as core-extras]
    [babashka.impl.clojure.main :as m]
    [babashka.impl.common :as common]
@@ -102,13 +103,15 @@
         :caught (or caught repl-caught))))))
 
 (defn- create-line-reader
-  "Creates a JLine LineReader for interactive input."
+  "Creates a JLine LineReader for interactive input with persistent history."
   ^org.jline.reader.LineReader []
   (let [terminal (-> (TerminalBuilder/builder)
                      (.system true)
-                     (.build))]
+                     (.build))
+        history-file (fs/path (fs/home) ".bb_repl_history")]
     (-> (LineReaderBuilder/builder)
         (.terminal terminal)
+        (.variable org.jline.reader.LineReader/HISTORY_FILE history-file)
         (.build))))
 
 (defn- read-remaining
@@ -124,6 +127,10 @@
 
 ;; Sentinel value for interrupted input - skip eval and print
 (def ^:private interrupted (Object.))
+
+;; TODO:
+;; Node behavior
+;; (To exit, press Ctrl+C again or Ctrl+D or type .exit)
 
 (defn- jline-read
   "Read function for m/repl that uses JLine for input.
