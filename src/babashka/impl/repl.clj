@@ -122,6 +122,9 @@
           (do (.append sb c)
               (recur)))))))
 
+;; Sentinel value for interrupted input - skip eval and print
+(def ^:private interrupted (Object.))
+
 (defn- jline-read
   "Read function for m/repl that uses JLine for input.
    Buffers lines until a complete form is available."
@@ -169,9 +172,7 @@
       request-exit)
     (catch UserInterruptException _
       (reset! input-buffer "")
-      (sio/println)
-      ;; Return a no-op form to continue the REPL
-      nil)))
+      interrupted)))
 
 (defn- repl-with-jline
   "REPL using JLine for interactive line editing and history."
@@ -183,7 +184,19 @@
                  {:need-prompt (constantly false)  ;; JLine handles prompting
                   :prompt (constantly nil)         ;; No-op, JLine handles prompting
                   :read (fn [request-prompt request-exit]
-                          (jline-read sci-ctx line-reader input-buffer request-prompt request-exit))}))))
+                          (jline-read sci-ctx line-reader input-buffer request-prompt request-exit))
+                  :eval (fn [form]
+                          (if (identical? form interrupted)
+                            interrupted
+                            (sci/with-bindings {sci/file "<repl>"
+                                                sci/*1 *1
+                                                sci/*2 *2
+                                                sci/*3 *3
+                                                sci/*e *e}
+                              (eval-form sci-ctx form))))
+                  :print (fn [val]
+                           (when-not (identical? val interrupted)
+                             (sio/prn val)))}))))
 
 (defn start-repl!
   ([sci-ctx] (start-repl! sci-ctx nil))
