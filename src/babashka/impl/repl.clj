@@ -204,32 +204,32 @@
   [sci-ctx ^org.jline.reader.LineReader line-reader input-buffer ctrl-c-pending _request-prompt request-exit]
   (try
     ;; First check if there's buffered input from previous read (multiple forms on one line)
-    (when-not (str/blank? @input-buffer)
-      (let [buf @input-buffer]
-        (reset! input-buffer "")  ;; Clear buffer first to avoid infinite loop on parse errors
-        (when-let [[_ form remaining] (parse-form sci-ctx buf)]
-          (reset! input-buffer remaining)
-          (reset! ctrl-c-pending false)
-          (if (or (identical? :repl/quit form)
-                  (identical? :repl/exit form))
-            (throw (EndOfFileException.))
-            (throw (ex-info "" {:form form}))))))
-    ;; Read new input - JLine handles multi-line via our parser
-    (let [prompt (str (utils/current-ns-name) "=> ")
-          input (.readLine line-reader prompt)]
-      (if-let [[_ form remaining] (parse-form sci-ctx input)]
-        (do
-          (reset! input-buffer remaining)
-          (reset! ctrl-c-pending false)
-          (if (or (identical? :repl/quit form)
-                  (identical? :repl/exit form))
-            request-exit
-            form))
-        interrupted))
-    (catch clojure.lang.ExceptionInfo e
-      (if-let [form (:form (ex-data e))]
-        form
-        (throw e)))
+    (let [from-buffer
+          (when-not (str/blank? @input-buffer)
+            (let [buf @input-buffer]
+              (reset! input-buffer "")  ;; Clear first to avoid infinite loop on parse errors
+              (when-let [[_ form remaining] (parse-form sci-ctx buf)]
+                (reset! input-buffer remaining)
+                (reset! ctrl-c-pending false)
+                [:form form])))]
+      (if-let [[_ form] from-buffer]
+        ;; Return form from buffer
+        (if (or (identical? :repl/quit form)
+                (identical? :repl/exit form))
+          request-exit
+          form)
+        ;; Read new input - JLine handles multi-line via our parser
+        (let [prompt (str (utils/current-ns-name) "=> ")
+              input (.readLine line-reader prompt)]
+          (if-let [[_ form remaining] (parse-form sci-ctx input)]
+            (do
+              (reset! input-buffer remaining)
+              (reset! ctrl-c-pending false)
+              (if (or (identical? :repl/quit form)
+                      (identical? :repl/exit form))
+                request-exit
+                form))
+            interrupted))))
     (catch EndOfFileException _
       request-exit)
     (catch UserInterruptException e
