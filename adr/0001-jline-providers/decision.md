@@ -47,7 +47,8 @@ Include both FFM and Exec providers with the following strategy:
 2. **Exec as fallback** on platforms where FFM doesn't work:
    - Linux musl static builds
 
-3. **TTY detection** uses exec provider via `babashka.terminal/tty?`:
+3. **TTY detection** via `babashka.terminal/tty?`:
+   - Tries FFM first, falls back to exec (same strategy as terminal creation)
    - Returns true if fd is available for terminal use
    - Returns false if not a TTY OR if stream is already in use by active terminal
    - This semantic is intentional: it answers "can I create a terminal on this?" not just "is this a TTY device?"
@@ -79,6 +80,3 @@ Include both FFM and Exec providers with the following strategy:
 - The ~10ms startup difference is imperceptible to users
 - For 60fps TUI apps, both providers leave 95%+ of frame budget for app logic
 
-## Open Issues
-
-- **TODO**: `babashka.terminal/tty?` currently uses exec provider which won't work on Windows PowerShell/cmd.exe (no `test -t` command). Need to use FFM provider for TTY detection on native Windows.
