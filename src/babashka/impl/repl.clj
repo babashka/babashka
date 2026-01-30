@@ -134,61 +134,64 @@
    Implements Node-style Ctrl+C behavior: first Ctrl+C on empty prompt shows warning,
    second Ctrl+C exits."
   [sci-ctx ^org.jline.reader.LineReader line-reader input-buffer ctrl-c-pending _request-prompt request-exit]
-  (try
-    (loop [input @input-buffer
-           first-line? (str/blank? @input-buffer)]
-      (let [reader (r/source-logging-push-back-reader input)
-            parse-result
-            (try
-              (when-not (str/blank? input)
-                ;; Skip leading whitespace
-                (loop []
-                  (let [c (r/read-char reader)]
-                    (cond
-                      (nil? c) nil
-                      (Character/isWhitespace ^Character c) (recur)
-                      :else (do (r/unread reader c)
-                                (let [form (parser/parse-next sci-ctx reader)
-                                      remaining (read-remaining reader)]
-                                  (reset! input-buffer remaining)
-                                  (reset! ctrl-c-pending false)
-                                  {:form form}))))))
-              (catch Exception e
-                (let [msg (ex-message e)]
-                  (if (and msg (or (str/includes? msg "EOF while reading")
-                                   (str/includes? msg "EOF while parsing")))
-                    {:incomplete true}
-                    (do
-                      (reset! input-buffer "")
-                      (throw e))))))]
-        (cond
-          ;; Got a complete form
-          (:form parse-result)
-          (:form parse-result)
+  (let [has-prior-input (atom (not (str/blank? @input-buffer)))]
+    (try
+      (loop [input @input-buffer
+             first-line? (str/blank? @input-buffer)]
+        (let [reader (r/source-logging-push-back-reader input)
+              parse-result
+              (try
+                (when-not (str/blank? input)
+                  ;; Skip leading whitespace
+                  (loop []
+                    (let [c (r/read-char reader)]
+                      (cond
+                        (nil? c) nil
+                        (Character/isWhitespace ^Character c) (recur)
+                        :else (do (r/unread reader c)
+                                  (let [form (parser/parse-next sci-ctx reader)
+                                        remaining (read-remaining reader)]
+                                    (reset! input-buffer remaining)
+                                    (reset! ctrl-c-pending false)
+                                    {:form form}))))))
+                (catch Exception e
+                  (let [msg (ex-message e)]
+                    (if (and msg (or (str/includes? msg "EOF while reading")
+                                     (str/includes? msg "EOF while parsing")))
+                      {:incomplete true}
+                      (do
+                        (reset! input-buffer "")
+                        (throw e))))))]
+          (cond
+            ;; Got a complete form
+            (:form parse-result)
+            (:form parse-result)
 
-          ;; Need more input
-          (or (nil? parse-result) (:incomplete parse-result))
-          (let [prompt (if first-line?
-                         (str (utils/current-ns-name) "=> ")
-                         "   ")
-                line (.readLine line-reader prompt)
-                new-input (str input (when-not (str/blank? input) "\n") line)]
-            (reset! ctrl-c-pending false)
-            (recur new-input false)))))
-    (catch EndOfFileException _
-      request-exit)
-    (catch UserInterruptException _
-      (let [was-empty? (str/blank? @input-buffer)]
-        (reset! input-buffer "")
-        (if (and was-empty? @ctrl-c-pending)
-          ;; Second Ctrl+C on empty prompt - exit
-          request-exit
-          (do
-            (when was-empty?
-              ;; First Ctrl+C on empty prompt - show warning
-              (reset! ctrl-c-pending true)
-              (sio/println "(To exit, press Ctrl+C again or Ctrl+D or type :repl/exit)"))
-            interrupted))))))
+            ;; Need more input
+            (or (nil? parse-result) (:incomplete parse-result))
+            (let [prompt (if first-line?
+                           (str (utils/current-ns-name) "=> ")
+                           "   ")
+                  line (.readLine line-reader prompt)
+                  new-input (str input (when-not (str/blank? input) "\n") line)]
+              (reset! has-prior-input true)
+              (reset! ctrl-c-pending false)
+              (recur new-input false)))))
+      (catch EndOfFileException _
+        request-exit)
+      (catch UserInterruptException e
+        (let [partial-line (.getPartialLine e)
+              had-input? (or @has-prior-input (not (str/blank? partial-line)))]
+          (reset! input-buffer "")
+          (if (and (not had-input?) @ctrl-c-pending)
+            ;; Second Ctrl+C on empty prompt - exit
+            request-exit
+            (do
+              (when (not had-input?)
+                ;; First Ctrl+C on empty prompt - show warning
+                (reset! ctrl-c-pending true)
+                (sio/println "(To exit, press Ctrl+C again or Ctrl+D or type :repl/exit)"))
+              interrupted)))))))
 
 (defn- repl-with-jline
   "REPL using JLine for interactive line editing and history."
