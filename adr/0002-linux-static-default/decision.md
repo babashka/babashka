@@ -6,12 +6,15 @@ Accepted
 
 ## Context
 
-Babashka provides two Linux builds:
+Babashka provides multiple Linux builds:
 
-- **Static binary**: Compiled against musl, no external dependencies
-- **Dynamic binary**: Compiled against glibc, requires compatible system glibc
+- **x86_64 static binary**: Compiled against musl, no external dependencies
+- **x86_64 dynamic binary**: Compiled against glibc, requires compatible system glibc
+- **aarch64 "mostly static" binary**: Statically linked but with external glibc
 
-The static binary has been the default for Linux installations (via install script, brew, etc.) for years. This ensures babashka works on virtually every x86_64 Linux system regardless of the glibc version installed.
+The static binary has been the default for x86_64 Linux installations (via install script, brew, etc.) for years. This ensures babashka works on virtually every x86_64 Linux system regardless of the glibc version installed.
+
+Note: On aarch64, the "mostly static" build uses glibc, so FFM works there. The musl limitation only affects the fully static x86_64 build.
 
 When adding JLine for TUI support, we discovered that JLine's optimal provider (FFM - Foreign Function Memory) doesn't work on musl static builds because it tries to `dlopen("libc.so.6")` which doesn't exist. This raised the question: should we change the default to dynamic builds?
 
