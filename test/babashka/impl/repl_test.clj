@@ -161,6 +161,11 @@
     (is (not (str/includes? (jline-repl-combined-output ["(+" :interrupt ":repl/exit"])
                             "To exit"))))
 
+  (testing "whitespace before Ctrl+C resets pending state"
+    ;; Ctrl+C (warning) -> space+Ctrl+C (resets) -> Ctrl+C (warning again, not exit)
+    (let [output (jline-repl-combined-output [:interrupt " " :interrupt :interrupt ":repl/exit"])]
+      (is (= 2 (count (re-seq #"To exit" output))))))
+
   (testing "errors are reported"
     (assert-jline-repl-error ["(+ 1 nil)"] "NullPointerException")
     (assert-jline-repl-error ["(/ 1 0)"] "Divide by zero")))

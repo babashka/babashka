@@ -248,14 +248,22 @@
     (catch UserInterruptException e
       (let [partial-line (.getPartialLine e)]
         (reset! input-buffer "")
-        (if (and (str/blank? partial-line) @ctrl-c-pending)
-          ;; Second Ctrl+C on empty prompt - exit
+        (cond
+          ;; Second consecutive Ctrl+C on empty prompt - exit
+          (and (= "" partial-line) @ctrl-c-pending)
           request-exit
+
+          ;; First Ctrl+C on empty prompt - show warning
+          (= "" partial-line)
           (do
-            (when (str/blank? partial-line)
-              ;; First Ctrl+C on empty prompt - show warning
-              (reset! ctrl-c-pending true)
-              (sio/println "(To exit, press Ctrl+C again or Ctrl+D or type :repl/exit)"))
+            (reset! ctrl-c-pending true)
+            (sio/println "(To exit, press Ctrl+C again or Ctrl+D or type :repl/exit)")
+            interrupted)
+
+          ;; Ctrl+C with partial input - clear and continue (resets pending)
+          :else
+          (do
+            (reset! ctrl-c-pending false)
             interrupted))))))
 
 (defn repl-with-line-reader
