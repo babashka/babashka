@@ -1,7 +1,7 @@
 (ns babashka.impl.repl-test
   (:require
    [babashka.impl.pprint :refer [pprint-namespace]]
-   [babashka.impl.repl :refer [start-repl! repl-with-line-reader complete-form?]]
+   [babashka.impl.repl :refer [start-repl! repl-with-line-reader complete-form? word-at-cursor]]
    [babashka.test-utils :as tu]
    [clojure.string :as str]
    [clojure.test :as t :refer [deftest is testing]]
@@ -170,7 +170,22 @@
     (assert-jline-repl-error ["(+ 1 nil)"] "NullPointerException")
     (assert-jline-repl-error ["(/ 1 0)"] "Divide by zero")))
 
+(deftest word-at-cursor-test
+  (testing "simple words"
+    (is (= ["map" 0] (word-at-cursor "map" 3)))
+    (is (= ["ma" 0] (word-at-cursor "map" 2)))
+    (is (= ["m" 0] (word-at-cursor "map" 1))))
+  (testing "qualified symbols"
+    (is (= ["str/join" 1] (word-at-cursor "(str/join" 9)))
+    (is (= ["str/" 1] (word-at-cursor "(str/" 5))))
+  (testing "after delimiter"
+    (is (= ["foo" 1] (word-at-cursor "(foo" 4)))
+    (is (= ["bar" 5] (word-at-cursor "(foo bar" 8))))
+  (testing "no word"
+    (is (nil? (word-at-cursor "(" 1)))
+    (is (nil? (word-at-cursor "" 0)))
+    (is (nil? (word-at-cursor "foo " 4)))))
+
 ;;;; Scratch
 
-(comment
-  )
+(comment)
