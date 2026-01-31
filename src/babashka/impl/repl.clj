@@ -170,7 +170,7 @@
         (.terminal terminal)
         (.parser (jline-parser sci-ctx))
         (.variable org.jline.reader.LineReader/HISTORY_FILE history-file)
-        (.variable org.jline.reader.LineReader/SECONDARY_PROMPT_PATTERN "")
+        (.variable org.jline.reader.LineReader/SECONDARY_PROMPT_PATTERN "%P #_=> ")
         (.build))))
 
 (defn- read-remaining
