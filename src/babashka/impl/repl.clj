@@ -165,12 +165,14 @@
                      candidate          ; display - what's shown in menu
                      nil                ; group
                      (when (or ns type) ; descr - description shown
-                       (str (when type type)
-                            (when (and type ns) " ")
-                            (when ns ns)))
+                       (if (= "class" type)
+                         "c"
+                         (str (when type type)
+                              (when (and type ns) " ")
+                              (when ns ns))))
                      nil                ; suffix
                      nil                ; key
-                     false)))))))))      ; complete - add space after?
+                     false)))))))))    ; complete - add space after?
 
 (defn- try-parse-next
   "Try to parse the next form from reader. Returns :ok, :incomplete, or :error."
