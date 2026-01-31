@@ -123,7 +123,6 @@ Babashka supports the following feature flags:
 | `BABASHKA_FEATURE_HSQLDB` | Includes the [HSQLDB](http://www.hsqldb.org/) JDBC driver | `false` |
 | `BABASHKA_FEATURE_ORACLEDB` | Includes the [Oracle](https://www.oracle.com/database/technologies/appdev/jdbc.html) JDBC driver | `false` |
 | `BABASHKA_FEATURE_DATASCRIPT` | Includes [datascript](https://github.com/tonsky/datascript) | `false` |
-| `BABASHKA_FEATURE_LANTERNA` | Includes [clojure-lanterna](https://github.com/babashka/clojure-lanterna) | `false` |
 | `BABASHKA_FEATURE_LOGGING` | Includes [clojure.tools.logging](https://github.com/clojure/tools.logging) with [taoensso.timbre](https://github.com/ptaoussanis/timbre) as the default implementation| `true` |
 | `BABASHKA_FEATURE_PRIORITY_MAP` | Includes [clojure.data.priority-map](https://github.com/clojure/data.priority-map) | `true` |
 
@@ -161,27 +160,3 @@ $ script/compile
 ```
 
 Note: there is now a [pod](https://github.com/babashka/babashka-sql-pods) for working with PostgreSQL.
-
-### Lanterna
-
-To compile babashka with the [babashka/clojure-lanterna](https://github.com/babashka/clojure-lanterna) library:
-
-``` shell
-$ export BABASHKA_FEATURE_LANTERNA=true
-$ script/uberjar
-$ script/compile
-```
-
-Example program:
-
-``` clojure
-(require '[lanterna.terminal :as terminal])
-
-(def terminal (terminal/get-terminal))
-
-(terminal/start terminal)
-(terminal/put-string terminal "Hello TUI Babashka!" 10 5)
-(terminal/flush terminal)
-
-(read-line)
-```

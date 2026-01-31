@@ -80,8 +80,6 @@
                                       :dependencies [[http-kit "2.9.0-beta1"]]}
              :feature/httpkit-server {:source-paths ["feature-httpkit-server"]
                                       :dependencies [[http-kit "2.9.0-beta1"]]}
-             :feature/lanterna {:source-paths ["feature-lanterna"]
-                                :dependencies [[babashka/clojure-lanterna "0.9.8-SNAPSHOT"]]}
              :feature/core-match {:source-paths ["feature-core-match"]
                                   :dependencies [[org.clojure/core.match "1.0.0"]]}
              :feature/hiccup {:source-paths ["feature-hiccup"]
