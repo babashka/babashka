@@ -5,6 +5,7 @@
    [babashka.impl.clojure.core :as core-extras]
    [babashka.impl.clojure.main :as m]
    [babashka.impl.common :as common]
+   [babashka.nrepl.impl.completions :as completions]
    [babashka.terminal :as terminal]
    [clojure.java.io :as io]
    [clojure.string :as str]
@@ -16,7 +17,8 @@
    [sci.impl.utils :as utils])
   (:import
    [org.jline.reader LineReaderBuilder EndOfFileException UserInterruptException
-    Parser Parser$ParseContext ParsedLine CompletingParsedLine EOFError]
+    Parser Parser$ParseContext ParsedLine CompletingParsedLine EOFError
+    Completer Candidate]
    [org.jline.terminal TerminalBuilder]))
 
 (set! *warn-on-reflection* true)
@@ -43,14 +45,14 @@
                              " ")
                            "[at " file
                            (when line
-                             (str ":" line ":" column))"]"))))
+                             (str ":" line ":" column)) "]"))))
       (sio/flush))))
 
 (defn skip-if-eol
   "Inspired by skip-if-eol from clojure.main."
   [s]
   (let [c (r/read-char s)]
-    (when-not (= \newline c )
+    (when-not (= \newline c)
       (r/unread s c))))
 
 (defn repl-read [sci-ctx in-stream _request-prompt request-exit]
@@ -116,6 +118,60 @@
     (rawWordCursor [_] 0)
     (rawWordLength [_] 0)))
 
+(defn word-at-cursor
+  "Extracts the word being completed at the cursor position.
+   Returns [word word-start] or nil if no word found.
+   Word characters in Clojure: alphanumeric, -, _, ?, !, *, +, =, <, >, /, ., :, '"
+  [^String line ^long cursor]
+  (let [word-char? (fn [c]
+                     (or (Character/isLetterOrDigit ^char c)
+                         (contains? #{\- \_ \? \! \* \+ \= \< \> \/ \. \: \'} c)))]
+    (when (pos? cursor)
+      (let [start (loop [i (dec cursor)]
+                    (if (or (neg? i) (not (word-char? (.charAt line i))))
+                      (inc i)
+                      (recur (dec i))))
+            word (when (< start cursor) (subs line start cursor))]
+        (when (and word (pos? (count word)))
+          [word start])))))
+
+(defn- completing-parsed-line
+  "Creates a CompletingParsedLine with word information for completions."
+  ^CompletingParsedLine [^String line ^long cursor word ^long word-start]
+  (let [word-cursor (- cursor word-start)]
+    (reify CompletingParsedLine
+      (word [_] word)
+      (wordCursor [_] word-cursor)
+      (wordIndex [_] 0)
+      (words [_] [word])
+      (line [_] line)
+      (cursor [_] cursor)
+      (escape [_ candidate _complete] (str candidate))
+      (rawWordCursor [_] word-cursor)
+      (rawWordLength [_] (count word)))))
+
+(defn- clojure-completer
+  "Creates a JLine Completer that uses SCI for Clojure completions."
+  [sci-ctx]
+  (reify Completer
+    (complete [_ _ parsed-line candidates]
+      (let [word (.word ^ParsedLine parsed-line)]
+        (when (and word (pos? (count word)))
+          (let [{:keys [completions]} (completions/completions sci-ctx word)]
+            (doseq [{:keys [candidate ns type]} completions]
+              (.add ^java.util.List candidates
+                    (Candidate.
+                     candidate          ; value - what gets inserted
+                     candidate          ; display - what's shown in menu
+                     nil                ; group
+                     (when (or ns type) ; descr - description shown
+                       (str (when type type)
+                            (when (and type ns) " ")
+                            (when ns ns)))
+                     nil                ; suffix
+                     nil                ; key
+                     false)))))))))      ; complete - add space after?
+
 (defn- try-parse-next
   "Try to parse the next form from reader. Returns :ok, :incomplete, or :error."
   [sci-ctx reader]
@@ -154,10 +210,16 @@
    Throws EOFError for incomplete input, allowing JLine to handle multi-line editing."
   ^Parser [sci-ctx]
   (reify Parser
-    (^ParsedLine parse [_this ^String line ^int cursor ^Parser$ParseContext _context]
-     (if (complete-form? sci-ctx line)
-       (parsed-line line cursor)
-       (throw (EOFError. -1 -1 "Incomplete Clojure form"))))))
+    (^ParsedLine parse [_this ^String line ^int cursor ^Parser$ParseContext context]
+      (if (identical? context Parser$ParseContext/COMPLETE)
+        ;; For completions, return parsed line with word information
+        (if-let [[word start] (word-at-cursor line cursor)]
+          (completing-parsed-line line cursor word start)
+          (parsed-line line cursor))
+        ;; For accept-line, check if form is complete
+        (if (complete-form? sci-ctx line)
+          (parsed-line line cursor)
+          (throw (EOFError. -1 -1 "Incomplete Clojure form")))))))
 
 (defn- jline-reader
   "Creates a JLine LineReader for interactive input with persistent history."
@@ -169,6 +231,7 @@
     (-> (LineReaderBuilder/builder)
         (.terminal terminal)
         (.parser (jline-parser sci-ctx))
+        (.completer (clojure-completer sci-ctx))
         (.variable org.jline.reader.LineReader/HISTORY_FILE history-file)
         (.variable org.jline.reader.LineReader/SECONDARY_PROMPT_PATTERN "%P #_=> ")
         (.build))))
@@ -294,5 +357,4 @@
 (comment
   (def in (-> (java.io.StringReader. "(+ 1 2 3)") clojure.lang.LineNumberingPushbackReader.))
   (r/peek-char in)
-  (r/read-char in)
-  )
+  (r/read-char in))
