@@ -165,8 +165,11 @@
                      candidate          ; display - what's shown in menu
                      nil                ; group
                      (when (or ns type) ; descr - description shown
-                       (if (= "class" type)
-                         "c"
+                       (case type
+                         "class" "c"
+                         ("static-method" "static-field") "s"
+                         ("method" "field") "m"
+                         "constructor" "ctor"
                          (str (when type type)
                               (when (and type ns) " ")
                               (when ns ns))))
