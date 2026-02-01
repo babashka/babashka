@@ -14,27 +14,30 @@ This is tedious, especially when targeting multiple platforms.
 
 A `bb binary` subcommand that automates this process.
 
-## Command Interface
+## MVP Scope
+
+The initial implementation focuses on creating executables from pre-built uberjars with cross-platform support.
+
+### Command Interface
 
 ```bash
-# From uberjar
+# Create executable from uberjar (required flag)
+bb binary --uberjar foo.jar
+
+# Specify output directory (default: current directory)
 bb binary --uberjar foo.jar --out dist/
 
-# From source (builds uberjar internally)
-bb binary --main foo.bar --classpath src:resources --out dist/
-
-# Specify targets (default: current platform only)
-bb binary --uberjar foo.jar --target linux-amd64,macos-amd64,macos-aarch64,windows-amd64
-
-# Specify bb version (default: same as running bb)
-bb binary --uberjar foo.jar --bb-version 1.4.0
-bb binary --uberjar foo.jar --bb-version latest
-
-# Custom output name (default: derived from jar name or --name)
+# Custom output name (default: derived from jar name)
 bb binary --uberjar foo.jar --name myapp
+
+# Specify target platform(s) (default: current platform)
+bb binary --uberjar foo.jar --target linux-amd64,macos-aarch64
+
+# Specify bb version (default: current bb version)
+bb binary --uberjar foo.jar --bb-version 1.4.0
 ```
 
-## Supported Targets
+### Supported Targets
 
 | Target | Output |
 |--------|--------|
@@ -44,46 +47,16 @@ bb binary --uberjar foo.jar --name myapp
 | `macos-aarch64` | `myapp-macos-aarch64` |
 | `windows-amd64` | `myapp-windows-amd64.exe` |
 
-## Key Design Decisions
+### Binary Caching
 
-### 1. Subcommand vs Task Function?
-
-Both could be useful:
-- **Subcommand** (`bb binary`): Simple one-off builds, CI/CD friendly
-- **Task function** (`bb.binary/build`): Integrates into `bb.edn` tasks, more programmatic control
-
-Recommendation: Start with subcommand, consider adding task API later.
-
-### 2. How to handle bb binary downloads?
-
-- Download from GitHub releases to `~/.babashka/binary-cache/<version>/`
+- Download bb binaries from GitHub releases to `~/.babashka/binary-cache/<version>/`
 - Verify checksums against published SHA256
 - Reuse cached binaries across builds
 
-### 3. Uberjar creation when using `--main`/`--classpath`?
-
-Use `babashka.deps/clojure` or shell out to `bb uberjar` internally.
-
-### 4. What about static Linux binaries?
-
-Could add `--linux-static` flag to use the musl-based static builds instead of dynamically linked ones.
-
-## Open Questions
-
-1. **Should `--target all` be supported?** Convenience vs. accidentally building for platforms you don't need.
-
-2. **Compression?** The concatenated binary works but is large. Should we support UPX compression as an option?
-
-3. **Code signing for macOS?** This is outside bb's scope, but we could document the workflow or provide a `--sign` flag that shells out to `codesign`.
-
-4. **Windows considerations?** The `.exe` extension is handled, but are there other Windows-specific concerns?
-
-5. **Should it create archives?** E.g., `--archive tar.gz` to produce `myapp-linux-amd64.tar.gz` ready for release.
-
-## Example Workflow
+### Example Workflow
 
 ```bash
-# Build for all major platforms
+# Build for multiple platforms
 bb binary \
   --uberjar target/myapp.jar \
   --name myapp \
@@ -97,7 +70,26 @@ bb binary \
 # dist/myapp-windows-amd64.exe
 ```
 
-## Task API Alternative
+## Open Questions
+
+1. **Should `--target all` be supported?** Convenience vs. accidentally building for platforms you don't need.
+
+2. **Windows considerations?** The `.exe` extension is handled, but are there other Windows-specific concerns?
+
+## Future Considerations
+
+The following features are intentionally deferred from the MVP:
+
+### Build from Source (`--main` + `--classpath`)
+
+```bash
+# Build uberjar internally from source
+bb binary --main foo.bar --classpath src:resources --out dist/
+```
+
+Would use `babashka.deps/clojure` or shell out to `bb uberjar` internally.
+
+### Task API (`babashka.binary/build`)
 
 ```clojure
 ;; bb.edn
@@ -110,3 +102,19 @@ bb binary \
            :targets [:linux-amd64 :macos-aarch64]
            :out "dist/"})}}}
 ```
+
+### Static Linux Binaries
+
+`--linux-static` flag to use musl-based static builds instead of dynamically linked ones.
+
+### Compression
+
+UPX compression to reduce binary size.
+
+### Code Signing
+
+macOS code signing integration via `--sign` flag.
+
+### Archive Creation
+
+`--archive tar.gz` to produce release-ready archives like `myapp-linux-amd64.tar.gz`.
