@@ -80,10 +80,13 @@
                   (fn []
                     (sci/with-bindings {sci/out @sci/err}
                       (sio/println "Babashka"
-                                   (str "v" (str/trim (slurp (io/resource "BABASHKA_VERSION" common/jvm-loader))))
-                                   "REPL.")
-                      (sio/println "Use CTRL+D or :repl/exit to quit the REPL.")
-                      (sio/println "Clojure rocks, Bash reaches.")
+                                   (str "v" (str/trim (slurp (io/resource "BABASHKA_VERSION" common/jvm-loader)))))
+                      (sio/print "    Docs: (doc function-name-here)
+          (find-doc \"part-of-name-here\")
+  Source: (source function-name-here)
+ Javadoc: (javadoc java-object-or-class-here)
+    Exit: Control+D or :repl/exit or :repl/quit
+ Results: Stored in vars *1, *2, *3, an exception in *e")
                       (sio/println))
                     (eval-form sci-ctx `(apply require (quote ~m/repl-requires)))))
         :read (or read
