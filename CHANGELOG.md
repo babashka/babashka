@@ -14,6 +14,7 @@ A preview of the next release can be installed from
 - Fix [#1299](https://github.com/babashka/babashka/issues/1299): add new `babashka.terminal` namespace that exposes `tty?` with arguments `:stdin`, `:stdout` or `:stderr`
 - Compatibility with [charm.clj](https://github.com/TimoKramer/charm.clj)
 - Bump `deps.clj`
+- Support multiple `catch` i.c.m. `^:sci/error`
 
 ## 1.12.214 (2026-01-13)
 
