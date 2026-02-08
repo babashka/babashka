@@ -16,6 +16,7 @@ A preview of the next release can be installed from
 - Compatibility with [charm.clj](https://github.com/TimoKramer/charm.clj)
 - Bump `deps.clj`
 - Bump `fs`
+- Bump `transit-clj` to `1.1.347`
 
 ## 1.12.214 (2026-01-13)
 

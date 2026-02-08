@@ -31,7 +31,7 @@
         cheshire/cheshire {:mvn/version "6.1.0"}
         org.clojure/data.xml {:mvn/version "0.2.0-alpha8"}
         clj-commons/clj-yaml {:mvn/version "1.0.29"}
-        com.cognitect/transit-clj {:mvn/version "1.0.333"}
+        com.cognitect/transit-clj {:mvn/version "1.1.347"}
         org.clojure/test.check {:mvn/version "1.1.1"}
         nrepl/bencode {:mvn/version "1.2.0"}
         seancorfield/next.jdbc {:mvn/version "1.1.610"}
@@ -39,7 +39,6 @@
         org.hsqldb/hsqldb {:mvn/version "2.5.1"}
         datascript/datascript {:mvn/version "1.0.1"}
         http-kit/http-kit {:mvn/version "2.9.0-beta1"}
-        babashka/clojure-lanterna {:mvn/version "0.9.8-SNAPSHOT"}
         org.clojure/core.match {:mvn/version "1.0.0"}
         hiccup/hiccup {:mvn/version "2.0.0-RC1"}
         rewrite-clj/rewrite-clj {:mvn/version "1.2.50"}
