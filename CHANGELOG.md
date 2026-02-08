@@ -17,6 +17,7 @@ A preview of the next release can be installed from
 - Bump `deps.clj`
 - Bump `fs`
 - Bump `transit-clj` to `1.1.347`
+- Bump `Selmer` to `1.13.0`
 
 ## 1.12.214 (2026-01-13)
 
