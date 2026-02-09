@@ -220,6 +220,24 @@
                        .permissions
                        (instance? java.util.Set))))))))
 
+(deftest posix-file-attributes-principals
+  (when-not test-utils/windows?
+    (is (true?
+           (bb nil
+               '(do
+                  (import
+                   [java.nio.file Files LinkOption Path]
+                   [java.nio.file.attribute GroupPrincipal PosixFileAttributes
+                    UserPrincipal])
+                 (let [attributes (Files/readAttributes (Path/of "test-resources/posix-file-attributes.txt"
+                                                                 (into-array String []))
+                                                        PosixFileAttributes
+                                                        ^"[Ljava.nio.file.LinkOption;"
+                                                        (into-array LinkOption []))
+                       owner (.owner attributes)
+                       group (.group attributes)]
+                   (and (instance? UserPrincipal owner)
+                        (instance? GroupPrincipal group)))))))))
 (deftest filesystem-not-found-exception
   (is (true?
        (bb nil
