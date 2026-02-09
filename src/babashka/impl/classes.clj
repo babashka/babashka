@@ -421,6 +421,7 @@
                 java.nio.file.DirectoryNotEmptyException
                 java.nio.file.FileAlreadyExistsException
                 java.nio.file.FileSystem
+                java.nio.file.FileSystemNotFoundException
                 java.nio.file.FileSystems
                 java.nio.file.FileVisitor
                 java.nio.file.FileVisitOption

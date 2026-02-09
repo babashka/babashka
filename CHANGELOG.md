@@ -10,6 +10,7 @@ A preview of the next release can be installed from
 ## Unreleased
 
 - Fix [#1919](https://github.com/babashka/babashka/issues/1919): add `java.nio.file.attribute.UserPrincipal` and `GroupPrincipal` 
+- Fix [#1920](https://github.com/babashka/babashka/issues/1920): add `java.nio.file.FileSystemNotFoundException`
 - Fix [#1909](https://github.com/babashka/babashka/issues/1909): add [Jline3](https://github.com/jline/jline3) for TUI support
 - Console REPL (`bb repl`) improvements
 - Support multiple `catch` i.c.m. `^:sci/error`
