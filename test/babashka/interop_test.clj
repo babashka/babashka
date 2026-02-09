@@ -220,6 +220,21 @@
                        .permissions
                        (instance? java.util.Set))))))))
 
+(deftest filesystem-not-found-exception
+  (is (true?
+       (bb nil
+           '(do
+             (import [java.net URI]
+                     [java.nio.file FileSystemNotFoundException FileSystems])
+             (let [uri (URI. (str "jar:file:/tmp/foo-"
+                                  (random-uuid)
+                                  "-standalone.jar!/tmp/bar-"
+                                  (random-uuid)))]
+               (try
+                 (FileSystems/getFileSystem uri)
+                 (catch FileSystemNotFoundException _
+                   true))))))))
+
 (deftest extended-attributes
   (is (true?
        (bb nil
