@@ -9,9 +9,6 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-- Fix [#1919](https://github.com/babashka/babashka/issues/1919): add `java.nio.file.attribute.UserPrincipal` and `GroupPrincipal` 
-- Fix [#1920](https://github.com/babashka/babashka/issues/1920): add `java.nio.file.FileSystemNotFoundException`
-- Fix [#1909](https://github.com/babashka/babashka/issues/1909): add [Jline3](https://github.com/jline/jline3) for TUI support
 - Console REPL (`bb repl`) improvements
 - Support multiple `catch` i.c.m. `^:sci/error`
 - Fix [#1299](https://github.com/babashka/babashka/issues/1299): add new `babashka.terminal` namespace that exposes `tty?` with arguments `:stdin`, `:stdout` or `:stderr`
@@ -21,6 +18,10 @@ A preview of the next release can be installed from
 - Bump `transit-clj` to `1.1.347`
 - Bump `Selmer` to `1.13.0`
 - Fix `satisfies?` on protocol on `proxy`
+- Add `java.lang.ref.SoftReference`
+- Fix [#1919](https://github.com/babashka/babashka/issues/1919): add `java.nio.file.attribute.UserPrincipal` and `GroupPrincipal`
+- Fix [#1920](https://github.com/babashka/babashka/issues/1920): add `java.nio.file.FileSystemNotFoundException`
+- Fix [#1909](https://github.com/babashka/babashka/issues/1909): add [Jline3](https://github.com/jline/jline3) for TUI support
 
 ## 1.12.214 (2026-01-13)
 

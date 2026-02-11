@@ -365,6 +365,7 @@
               '[java.lang.Thread$Builder
                 java.lang.Thread$Builder$OfPlatform])
           java.lang.UnsupportedOperationException
+          java.lang.ref.SoftReference
           java.lang.ref.WeakReference
           java.lang.ref.ReferenceQueue
           java.lang.ref.Cleaner
