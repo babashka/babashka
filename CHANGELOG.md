@@ -16,7 +16,7 @@ A preview of the next release can be installed from
 - Bump `deps.clj`
 - Bump `fs`
 - Bump `transit-clj` to `1.1.347`
-- Bump `Selmer` to `1.13.0`
+- Bump `Selmer` to `1.12.70`
 - Fix `satisfies?` on protocol on `proxy`
 - Add `java.lang.ref.SoftReference`
 - Fix [#1919](https://github.com/babashka/babashka/issues/1919): add `java.nio.file.attribute.UserPrincipal` and `GroupPrincipal`
