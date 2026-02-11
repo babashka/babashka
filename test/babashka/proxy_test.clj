@@ -79,6 +79,31 @@
           false]
          (bb (with-out-str (clojure.pprint/pprint code))))))
 
+(deftest proxy-with-protocol-test
+  (is (= {:method "hello world"
+          :satisfies true}
+         (bb '(do
+                (defprotocol MyProto
+                  (my-method [this x]))
+                (def obj
+                  (proxy [clojure.lang.APersistentMap clojure.lang.IMeta clojure.lang.IObj MyProto] []
+                    (my-method [x] (str "hello " x))
+                    (valAt ([k] (get {:a 1} k)) ([k d] (get {:a 1} k d)))
+                    (iterator [] (.iterator {}))
+                    (containsKey [k] (contains? {:a 1} k))
+                    (entryAt [k] nil)
+                    (count [] 1)
+                    (assoc [k v] nil)
+                    (without [k] nil)
+                    (seq [] nil)
+                    (equiv [other] false)
+                    (empty [] nil)
+                    (cons [elem] nil)
+                    (meta [] nil)
+                    (withMeta [m] nil)))
+                {:method (my-method obj "world")
+                 :satisfies (satisfies? MyProto obj)})))))
+
 (deftest PipedInputStream-PipedOutputStream-proxy-test
   (is (= {:available 1
           :read-result -1
