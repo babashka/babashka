@@ -168,7 +168,8 @@
     clojure.lang.Reversible
     {:methods [{:name "rseq"}]}
     clojure.lang.SeqIterator
-    {:allPublicConstructors true}
+    {:allPublicConstructors true
+     :allPublicMethods true}
     clojure.lang.IMeta
     {:methods [{:name "meta"}]}
     clojure.lang.IObj
