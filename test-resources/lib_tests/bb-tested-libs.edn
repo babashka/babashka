@@ -129,6 +129,8 @@
                                   malli.dot-test
                                   malli.error-test
                                   malli.experimental-test
+                                  malli.experimental.time-test
+                                  malli.experimental.time.transform-test
                                   ;; malli.generator-test
                                   malli.instrument-test
                                   malli.json-schema-test
