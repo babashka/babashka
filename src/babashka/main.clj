@@ -377,7 +377,8 @@ Use bb run --help to show this help output.
        'clojure.tools.cli tools-cli-namespace
        'clojure.java.shell shell-namespace
        'babashka.core bbcore/core-namespace
-       'babashka.impl.deftype {'->scimap bb-deftype/->scimap}
+       'babashka.impl.deftype (let [dns (sci/create-ns 'babashka.impl.deftype nil)]
+                                {'->scimap (sci/copy-var bb-deftype/->scimap dns)})
        'babashka.nrepl.server nrepl-server-namespace
        'babashka.wait wait-namespace
        'babashka.signal signal-ns
