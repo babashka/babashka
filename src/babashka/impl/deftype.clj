@@ -1,6 +1,6 @@
 (ns babashka.impl.deftype
   {:no-doc true}
-  (:require [babashka.impl.reify :as reify])
+  (:require [babashka.impl.reify2 :as reify])
   (:import [babashka.impl SciMap]))
 
 (set! *warn-on-reflection* true)

@@ -97,6 +97,10 @@
                          `(new ~(symbol (str "babashka.impl." in))
                                (:methods ~'m)
                                (:interfaces ~'m)
-                               (:protocols ~'m))]))))))))
+                               (:protocols ~'m))]))))
+         nil))))
 
 (def reify-fn (gen-reify-fn))
+
+(def reify-supported-interfaces
+  (into #{clojure.lang.IFn java.lang.Object} interfaces))
