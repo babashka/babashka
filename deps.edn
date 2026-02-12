@@ -20,8 +20,8 @@
          "impl-java/src"],
  :deps {org.clojure/clojure {:mvn/version "1.12.3"},
         org.babashka/sci {:local/root "sci"}
-        org.babashka/babashka.impl.java {:mvn/version "0.1.12"}
-        org.babashka/sci.impl.types {:mvn/version "0.0.2"}
+        org.babashka/babashka.impl.java {:mvn/version "0.1.13"}
+        org.babashka/sci.impl.types {:mvn/version "0.0.3"}
         babashka/babashka.curl {:local/root "babashka.curl"}
         babashka/fs {:local/root "fs"}
         babashka/babashka.core {:local/root "babashka.core"}
@@ -195,7 +195,12 @@
                                                       :git/sha "b7ebeb080724dbeead94f73bcdc1963eecc531ff"}
                          com.outskirtslabs/sfv {:git/url "https://github.com/outskirtslabs/sfv"
                                                 :git/sha "1c83246772c3baffd19ab5928e6646c62a0b53f3"}
-                         mvxcvi/alphabase {:mvn/version "3.0.185"}}
+                         mvxcvi/alphabase {:mvn/version "3.0.185"}
+                         org.clojure/core.cache {:git/url "https://github.com/clojure/core.cache"
+                                                :git/sha "7f1a9cf9d622f6317b92a76976fc53e1fb8aae36"
+                                                :git/tag "v1.2.249"}
+                         frankiesardo/linked {:git/url "https://github.com/frankiesardo/linked"
+                                              :git/sha "d000c4e526a4b275f787196100cac36d37c991ba"}}
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil}}
            :clj-nvd

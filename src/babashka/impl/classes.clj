@@ -24,7 +24,12 @@
   (resolve 'org.graalvm.nativeimage.ProcessProperties))
 
 (def base-custom-map
-  `{clojure.lang.LineNumberingPushbackReader {:allPublicConstructors true
+  ;; SciMap is the backing type for deftype with map interfaces.
+  ;; Reflection config is needed for untyped Java interop on these
+  ;; instances in SCI-evaluated code (e.g. (.hasheq x) without type hint).
+  `{babashka.impl.SciMap {:allPublicConstructors true
+                          :allPublicMethods true}
+    clojure.lang.LineNumberingPushbackReader {:allPublicConstructors true
                                               :allPublicMethods true}
     java.lang.Thread
     {:allPublicConstructors true
@@ -141,7 +146,10 @@
               {:name "CHAR_MAP"}]
      :methods [{:name "demunge"}]}
     clojure.lang.PersistentHashMap
-    {:fields [{:name "EMPTY"}]}
+    {:fields [{:name "EMPTY"}]
+     :methods [{:name "iterator"}]}
+    clojure.lang.PersistentArrayMap
+    {:methods [{:name "iterator"}]}
     clojure.lang.APersistentVector
     {:methods [{:name "indexOf"}
                {:name "contains"}]}
@@ -149,10 +157,26 @@
     {:allPublicConstructors true,
      :methods [{:name "indexOf"}
                {:name "contains"}]}
+    clojure.lang.IHashEq
+    {:methods [{:name "hasheq"}]}
+    clojure.lang.IKVReduce
+    {:methods [{:name "kvreduce"}]}
+    clojure.lang.IMapIterable
+    {:methods [{:name "keyIterator"} {:name "valIterator"}]}
+    clojure.lang.MapEquivalence
+    {:methods []}
+    clojure.lang.Reversible
+    {:methods [{:name "rseq"}]}
+    clojure.lang.SeqIterator
+    {:allPublicConstructors true}
+    clojure.lang.IMeta
+    {:methods [{:name "meta"}]}
+    clojure.lang.IObj
+    {:methods [{:name "withMeta"}]}
     clojure.lang.ILookup
     {:methods [{:name "valAt"}]}
     clojure.lang.IPersistentMap
-    {:methods [{:name "without"}]}
+    {:allPublicMethods true}
     clojure.lang.IPersistentSet
     {:methods [{:name "disjoin"}]}
     clojure.lang.Indexed
@@ -182,6 +206,8 @@
                {:name "getParent"}]}
     clojure.lang.ARef
     {:methods [{:name "getWatches"}]}
+    java.util.Map$Entry
+    {:methods [{:name "getKey"} {:name "getValue"}]}
     clojure.lang.MapEntry
     {:allPublicConstructors true
      :methods [{:name "create"}]}
@@ -576,6 +602,7 @@
           java.util.Date
           java.util.HashMap
           java.util.HashSet
+          java.util.LinkedHashSet
           java.util.IdentityHashMap
           java.util.InputMismatchException
           java.util.LinkedList
@@ -845,7 +872,7 @@
                                    java.net.CookieStore
                                    ;; this makes interop on reified classes work
                                    ;; see java_net_http_test/interop-test
-                                   (instance? sci.impl.types.IReified v)
+                                   (instance? sci.impl.types.ICustomType v)
                                    (first (t/getInterfaces v))
                                    ;; fix for #1061
                                    (instance? java.net.URLClassLoader v)

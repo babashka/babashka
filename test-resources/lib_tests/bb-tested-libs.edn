@@ -239,4 +239,23 @@
                                           ol.sfv.error-test
                                           ol.sfv.example-test
                                           ol.sfv.parser-test
-                                          ol.sfv.serialization-test]}}
+                                          ol.sfv.serialization-test]}
+ ;; BB-TEST-PATCH: Uses .bb source and test files that shadow the .clj originals.
+ ;; The .bb versions replace Java interop (direct constructor calls, .cache/.q
+ ;; field access) with factory functions and the public protocol/map API.
+ ;; wrapped_test.clj works unmodified (uses only public API).
+ ;; BB-TEST-PATCH: Uses .bb shadow files for core.bb and set.bb (stub).
+;; linked.map works via SciMap/deftype-fn. linked.set is skipped (requires Sequential).
+;; Only map tests are run.
+frankiesardo/linked {:git-url "https://github.com/frankiesardo/linked"
+                     :git-sha "d000c4e526a4b275f787196100cac36d37c991ba"
+                     :test-namespaces [linked.map-test]}
+;; BB-TEST-PATCH: Uses .bb source and test files that shadow the .clj originals.
+;; The .bb versions replace Java interop (direct constructor calls, .cache/.q
+;; field access) with factory functions and the public protocol/map API.
+;; wrapped_test.clj works unmodified (uses only public API).
+org.clojure/core.cache {:git-url "https://github.com/clojure/core.cache"
+                          :git-sha "7f1a9cf9d622f6317b92a76976fc53e1fb8aae36"
+                          :test-paths ["src/test/clojure"]
+                          :test-namespaces [clojure.core.cache-test
+                                            clojure.core.cache.wrapped-test]}}

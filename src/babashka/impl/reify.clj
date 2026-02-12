@@ -19,13 +19,15 @@
   "Generates pre-compiled reify combinations"
   [methods]
   (let [prelude '(reify
-                   sci.impl.types.IReified
+                   sci.impl.types.ICustomType
                    (getInterfaces [this]
                      interfaces)
                    (getMethods [this]
                      methods)
                    (getProtocols [this]
-                     protocols))]
+                     protocols)
+                   (getFields [this]
+                     nil))]
     (list 'fn [{:keys '[interfaces methods protocols]}]
           `(cond ~'(empty? interfaces) ~prelude ~'(> (count interfaces)
                  1) (throw (new Exception "Babashka currently does not support reifying more than one interface."))

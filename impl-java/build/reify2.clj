@@ -102,7 +102,7 @@
     {:name (symbol (str "babashka.impl." (.getName interface)))
      :version 1.8
      :interfaces [class-sym
-                  'sci.impl.types.IReified
+                  'sci.impl.types.ICustomType
                   'clojure.lang.IMeta
                   'clojure.lang.IObj]
      :flags [:super :public]
@@ -168,6 +168,10 @@
                       :desc [Object]
                       :emit [[:aload 0]
                              [:getfield :this "_protocols" Object]
+                             [:areturn]]}
+                     {:name :getFields
+                      :desc [Object]
+                      :emit [[:aconst-null]
                              [:areturn]]}]
                     (for [{:keys [name desc default]} methods]
                       {:flags #{:public}, :name name

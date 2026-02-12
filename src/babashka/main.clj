@@ -49,6 +49,7 @@
    [babashka.impl.process :refer [process-namespace]]
    [babashka.impl.terminal :refer [terminal-namespace]]
    [babashka.impl.protocols :refer [protocols-namespace]]
+   [babashka.impl.deftype :as bb-deftype :refer [deftype-fn]]
    [babashka.impl.proxy :refer [proxy-fn]]
    [babashka.impl.reify2 :refer [reify-fn]]
    [babashka.impl.repl :as repl]
@@ -376,6 +377,7 @@ Use bb run --help to show this help output.
        'clojure.tools.cli tools-cli-namespace
        'clojure.java.shell shell-namespace
        'babashka.core bbcore/core-namespace
+       'babashka.impl.deftype {'->scimap bb-deftype/->scimap}
        'babashka.nrepl.server nrepl-server-namespace
        'babashka.wait wait-namespace
        'babashka.signal signal-ns
@@ -983,6 +985,7 @@ Use bb run --help to show this help output.
                   ;; :readers core/data-readers
                   :reify-fn reify-fn
                   :proxy-fn proxy-fn
+                  :deftype-fn deftype-fn
                   :readers #(readers-fn (common/ctx) %)}
             opts (addons/future opts)
             sci-ctx (sci/init opts)

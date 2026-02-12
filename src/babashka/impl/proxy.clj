@@ -16,13 +16,15 @@
     (case [(class-name class) interface-names]
       ;; This combination is used by pathom3
       ["clojure.lang.APersistentMap" #{"clojure.lang.IMeta" "clojure.lang.IObj"}]
-      (proxy [clojure.lang.APersistentMap clojure.lang.IMeta clojure.lang.IObj sci.impl.types.IReified] []
+      (proxy [clojure.lang.APersistentMap clojure.lang.IMeta clojure.lang.IObj sci.impl.types.ICustomType] []
         (getInterfaces []
           interfaces)
         (getMethods []
           methods)
         (getProtocols []
           protocols)
+        (getFields []
+          nil)
         (iterator [] ((method-or-bust methods 'iterator) this))
         (containsKey [k] ((method-or-bust methods 'containsKey) this k))
         (entryAt [k] ((method-or-bust methods 'entryAt) this k))
