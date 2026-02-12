@@ -16,10 +16,11 @@
                      (fn [& _args]
                        (throw (UnsupportedOperationException. "Method not implemented: applyTo"))))]
     (reify
-      sci.impl.types.IReified
+      sci.impl.types.ICustomType
       (getMethods [_] (:methods m))
       (getInterfaces [_] (:interfaces m))
       (getProtocols [_] (:protocols m))
+      (getFields [_] nil)
       clojure.lang.IFn
       (invoke [this] (invoke-fn this))
       (invoke [this a0] (invoke-fn this a0))
@@ -61,10 +62,11 @@
                         (fn [this]
                           (System/identityHashCode this)))]
     (reify
-      sci.impl.types.IReified
+      sci.impl.types.ICustomType
       (getMethods [_] (:methods m))
       (getInterfaces [_] (:interfaces m))
       (getProtocols [_] (:protocols m))
+      (getFields [_] nil)
       java.lang.Object
       (toString [this] (toString-fn this))
       (equals [this other] (equals-fn this other))
@@ -76,10 +78,11 @@
        (throw (UnsupportedOperationException. "babashka reify only supports implementing a single interface")))
      (if (empty? (:interfaces ~'m))
        (reify
-         sci.impl.types.IReified
+         sci.impl.types.ICustomType
          (getMethods [_] (:methods ~'m))
          (getInterfaces [_] (:interfaces ~'m))
-         (getProtocols [_] (:protocols ~'m)))
+         (getProtocols [_] (:protocols ~'m))
+         (getFields [_] nil))
        (case (.getName ~(with-meta `(first (:interfaces ~'m))
                           {:tag 'Class}))
          ~@(mapcat identity

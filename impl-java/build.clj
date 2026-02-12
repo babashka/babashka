@@ -3,7 +3,7 @@
             [clojure.tools.build.api :as b]))
 
 (def lib 'org.babashka/babashka.impl.java)
-(def version "0.1.12")
+(def version "0.1.13")
 (def class-dir "target/classes")
 (def basis (b/create-basis {:project "deps.edn"}))
 (def jar-file (format "target/%s-%s.jar" (name lib) version))
