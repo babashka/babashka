@@ -1,5 +1,6 @@
 (ns babashka.impl.deftype
   {:no-doc true}
+  (:require [babashka.impl.reify :as reify])
   (:import [babashka.impl SciMap]))
 
 (set! *warn-on-reflection* true)
@@ -34,6 +35,10 @@
         {:error (str "Babashka supports deftype with map interfaces, but "
                      (pr-str (set (map #(.getName ^Class %) novel)))
                      " is not supported.")}))
-    (when (some map-inherent-interfaces interfaces)
-      {:error (str "Babashka's deftype supports full map types (add IPersistentMap to the interface list), "
-                   "or use reify for individual interfaces like ILookup.")})))
+    (when (some #{clojure.lang.ILookup clojure.lang.Associative} interfaces)
+      (let [reifiable (filter reify/reify-supported-interfaces interfaces)]
+        {:error (str "Babashka's deftype supports full map types (add IPersistentMap to the interface list)."
+                     (when (seq reifiable)
+                       (str " Alternatively, use reify for individual interfaces like "
+                            (clojure.string/join ", " (map #(.getSimpleName ^Class %) reifiable))
+                            ".")))}))))
