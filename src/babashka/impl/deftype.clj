@@ -27,10 +27,13 @@
   "Returns a map with :constructor-fn (symbol) or :error (string),
    or nil to fall through to the standard SciType path."
   [{:keys [interfaces]}]
-  (when (interfaces clojure.lang.IPersistentMap)
+  (if (interfaces clojure.lang.IPersistentMap)
     (let [novel (remove map-inherent-interfaces interfaces)]
       (if (empty? novel)
         {:constructor-fn 'babashka.impl.deftype/->scimap}
         {:error (str "Babashka supports deftype with map interfaces, but "
                      (pr-str (set (map #(.getName ^Class %) novel)))
-                     " is not supported.")}))))
+                     " is not supported.")}))
+    (when (some map-inherent-interfaces interfaces)
+      {:error (str "Babashka's deftype supports full map types (add IPersistentMap to the interface list), "
+                   "or use reify for individual interfaces like ILookup.")})))
