@@ -201,3 +201,10 @@
     (is (str/includes? s "0 - 999"))
     (is (str/includes? s "1337"))
     (is (str/includes? s "java.time.Instant"))))
+
+(deftest reify-temporal-query-test
+  (is (= "2024"
+         (bb nil "(let [q (reify java.time.temporal.TemporalQuery
+                           (queryFrom [_ temporal]
+                             (str (.get temporal java.time.temporal.ChronoField/YEAR))))]
+                   (.query (java.time.LocalDate/of 2024 1 1) q))"))))

@@ -36,4 +36,5 @@
                  java.util.concurrent.ThreadFactory
                  java.lang.Thread$UncaughtExceptionHandler
                  java.util.concurrent.Callable
-                 java.time.temporal.TemporalField])
+                 java.time.temporal.TemporalField
+                 java.time.temporal.TemporalQuery])

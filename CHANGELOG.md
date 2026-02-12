@@ -10,6 +10,7 @@ A preview of the next release can be installed from
 ## Unreleased
 
 - Support `deftype` with map interfaces (e.g. `IPersistentMap`, `ILookup`, `Associative`). Libraries like [core.cache](https://github.com/clojure/core.cache) and [linked](https://github.com/frankiesardo/linked) now work in babashka.
+- Fix [#1923](https://github.com/babashka/babashka/issues/1923): support `reify` with `java.time.temporal.TemporalQuery`
 - Console REPL (`bb repl`) improvements
 - Support multiple `catch` i.c.m. `^:sci/error`
 - Fix [#1299](https://github.com/babashka/babashka/issues/1299): add new `babashka.terminal` namespace that exposes `tty?` with arguments `:stdin`, `:stdout` or `:stderr`
