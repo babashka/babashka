@@ -213,7 +213,9 @@
     {:allPublicConstructors true
      :methods [{:name "create"}]}
     clojure.lang.TaggedLiteral
-    {:methods [{:name "create"}]}})
+    {:methods [{:name "create"}]}
+    org.jline.reader.impl.LineReaderImpl
+    {:fields [{:name "post"}]}})
 
 (def custom-map
   (cond->
