@@ -376,7 +376,7 @@
   "Registers custom widgets and key bindings on the LineReader."
   [^LineReader line-reader sci-ctx]
   (.put (.getWidgets line-reader) "clojure-doc-at-point"
-        (doc-at-point-widget sci-ctx ^LineReaderImpl line-reader))
+        (doc-at-point-widget sci-ctx line-reader))
   (let [^KeyMap km (.get (.getKeyMaps line-reader) LineReader/EMACS)]
     (.bind km (Reference. "clojure-doc-at-point")
            (str (KeyMap/ctrl \X) (KeyMap/ctrl \D))))
@@ -391,17 +391,17 @@
                   (.apply accept-line)))))))
   (let [cache (atom [nil nil])
         after (fn []
-                (update-eldoc sci-ctx ^LineReaderImpl line-reader cache)
-                (update-tail-tip sci-ctx ^LineReaderImpl line-reader))
+                (update-eldoc sci-ctx line-reader cache)
+                (update-tail-tip sci-ctx line-reader))
         clear-tip #(.setTailTip ^LineReaderImpl line-reader "")]
-    (wrap-widget ^LineReaderImpl line-reader LineReader/SELF_INSERT nil after)
-    (wrap-widget ^LineReaderImpl line-reader LineReader/BACKWARD_DELETE_CHAR nil after)
-    (wrap-widget ^LineReaderImpl line-reader LineReader/EXPAND_OR_COMPLETE clear-tip after)
+    (wrap-widget line-reader LineReader/SELF_INSERT nil after)
+    (wrap-widget line-reader LineReader/BACKWARD_DELETE_CHAR nil after)
+    (wrap-widget line-reader LineReader/EXPAND_OR_COMPLETE clear-tip after)
     ;; Clear stale ghost text on cursor movement
     (doseq [w [LineReader/FORWARD_CHAR LineReader/BACKWARD_CHAR
                LineReader/UP_LINE_OR_HISTORY LineReader/DOWN_LINE_OR_HISTORY
                LineReader/BEGINNING_OF_LINE LineReader/END_OF_LINE]]
-      (wrap-widget ^LineReaderImpl line-reader w nil clear-tip))))
+      (wrap-widget line-reader w nil clear-tip))))
 
 (defn- try-parse-next
   "Try to parse the next form from reader. Returns :ok, :incomplete, or :error."

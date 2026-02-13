@@ -208,3 +208,8 @@
                            (queryFrom [_ temporal]
                              (str (.get temporal java.time.temporal.ChronoField/YEAR))))]
                    (.query (java.time.LocalDate/of 2024 1 1) q))"))))
+
+(deftest reify-int-return-type-test
+  (testing "reify method returning int works when Clojure fn returns long"
+    (is (= -1 (bb nil "(.compareTo (reify Comparable (compareTo [_ _] -1)) nil)")))
+    (is (= 42 (bb nil "(.compareTo (reify Comparable (compareTo [_ _] 42)) nil)")))))

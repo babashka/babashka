@@ -37,4 +37,8 @@
                  java.lang.Thread$UncaughtExceptionHandler
                  java.util.concurrent.Callable
                  java.time.temporal.TemporalField
-                 java.time.temporal.TemporalQuery])
+                 java.time.temporal.TemporalQuery
+                 org.jline.reader.Parser
+                 org.jline.reader.Completer
+                 org.jline.reader.Widget
+                 org.jline.reader.ParsedLine])
