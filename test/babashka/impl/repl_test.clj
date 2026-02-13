@@ -1,7 +1,7 @@
 (ns babashka.impl.repl-test
   (:require
    [babashka.impl.pprint :refer [pprint-namespace]]
-   [babashka.impl.repl :refer [start-repl! repl-with-line-reader complete-form? word-at-cursor format-doc enclosing-fn]]
+   [babashka.impl.repl :refer [start-repl! repl-with-line-reader complete-form? word-at-cursor format-doc enclosing-fn common-prefix compute-tail-tip]]
    [babashka.test-utils :as tu]
    [clojure.string :as str]
    [clojure.test :as t :refer [deftest is testing]]
@@ -249,6 +249,36 @@
     (is (nil? (word-at-cursor "" 0)))
     (is (nil? (word-at-cursor "foo " 4)))))
 
+
+(deftest common-prefix-test
+  (testing "single string"
+    (is (= "foo" (common-prefix ["foo"]))))
+  (testing "identical strings"
+    (is (= "abc" (common-prefix ["abc" "abc"]))))
+  (testing "common prefix"
+    (is (= "get-" (common-prefix ["get-in" "get-method" "get-thread-bindings"]))))
+  (testing "no common prefix"
+    (is (= "" (common-prefix ["abc" "xyz"]))))
+  (testing "empty collection"
+    (is (= "" (common-prefix []))))
+  (testing "nil collection"
+    (is (= "" (common-prefix nil))))
+  (testing "full match is prefix"
+    (is (= "map" (common-prefix ["map" "mapv" "mapcat"])))))
+
+(deftest compute-tail-tip-test
+  (testing "single matching candidate"
+    (is (= "n" (compute-tail-tip "get-i" ["get-in"]))))
+  (testing "multiple candidates with common prefix beyond word"
+    (is (= "e" (compute-tail-tip "interleav" ["interleave" "interleave-all"]))))
+  (testing "no extension possible"
+    (is (= "" (compute-tail-tip "get-" ["get-in" "get-method" "get-thread-bindings"]))))
+  (testing "filters non-matching candidates"
+    (is (= "ng" (compute-tail-tip "Stri" ["String" "String" "java.lang.String" "java.io.StringWriter"]))))
+  (testing "no candidates"
+    (is (= "" (compute-tail-tip "xyz" []))))
+  (testing "exact match only"
+    (is (= "" (compute-tail-tip "map" ["map"])))))
 
 ;;;; Scratch
 

@@ -17,7 +17,7 @@
    [sci.impl.utils :as utils])
   (:import
    [org.jline.keymap KeyMap]
-   [org.jline.reader LineReader LineReaderBuilder EndOfFileException UserInterruptException
+   [org.jline.reader LineReader LineReader$SuggestionType LineReaderBuilder EndOfFileException UserInterruptException
     Parser Parser$ParseContext ParsedLine CompletingParsedLine EOFError
     Completer Candidate Widget Reference]
    [org.jline.terminal TerminalBuilder]
@@ -280,6 +280,47 @@
           (reify java.util.function.Supplier
             (get [_] as)))))
 
+(defn common-prefix
+  "Returns the longest common prefix of a collection of strings."
+  ^String [strs]
+  (let [first-str (first strs)]
+    (if (or (nil? first-str) (= 1 (count strs)))
+      (or first-str "")
+      (let [len (count first-str)]
+        (loop [i 0]
+          (if (and (< i len)
+                   (every? #(and (< i (count %))
+                                 (= (.charAt ^String first-str i)
+                                    (.charAt ^String % i)))
+                           (rest strs)))
+            (recur (inc i))
+            (subs first-str 0 i)))))))
+
+(defn compute-tail-tip
+  "Computes the ghost text for autosuggestion given a word and completion candidates.
+   Returns the suffix beyond what's typed, or empty string."
+  ^String [^String word candidates]
+  (let [matching (->> candidates (filterv #(str/starts-with? % word)))
+        prefix (common-prefix matching)]
+    (if (> (count prefix) (count word))
+      (subs prefix (count word))
+      "")))
+
+(defn- update-tail-tip
+  "Sets the tail tip to the common completion prefix beyond what's typed."
+  [sci-ctx ^LineReaderImpl line-reader]
+  (try
+    (let [buf (.getBuffer line-reader)
+          line (str buf)
+          cursor (.cursor buf)]
+      (if-let [[word _] (word-at-cursor line cursor)]
+        (let [{:keys [completions]} (sci-helpers/completions sci-ctx word)
+              candidates (mapv :candidate completions)
+              tip (compute-tail-tip word candidates)]
+          (.setTailTip line-reader tip))
+        (.setTailTip line-reader "")))
+    (catch Exception _ nil)))
+
 (defn- update-eldoc
   "Computes eldoc for the current buffer and sets/clears the post field."
   [sci-ctx ^LineReaderImpl line-reader cache]
@@ -297,15 +338,16 @@
       (set-post line-reader (when (:arglists m) (format-eldoc-attributed m))))
     (catch Exception _ nil)))
 
-(defn- wrap-widget-with-eldoc
-  "Wraps a named widget to update eldoc after execution."
-  [^LineReaderImpl line-reader ^String widget-name sci-ctx cache]
+(defn- wrap-widget
+  "Wraps a named widget with before/after hooks."
+  [^LineReaderImpl line-reader ^String widget-name before after]
   (let [^Widget original (.get (.getWidgets line-reader) widget-name)]
     (.put (.getWidgets line-reader) widget-name
           (reify Widget
             (apply [_]
+              (when before (before))
               (let [result (.apply original)]
-                (update-eldoc sci-ctx line-reader cache)
+                (when after (after))
                 result))))))
 
 (defn- doc-at-point-widget
@@ -335,9 +377,14 @@
   (let [^KeyMap km (.get (.getKeyMaps line-reader) LineReader/EMACS)]
     (.bind km (Reference. "clojure-doc-at-point")
            (str (KeyMap/ctrl \X) (KeyMap/ctrl \D))))
-  (let [cache (atom [nil nil])]
-    (wrap-widget-with-eldoc ^LineReaderImpl line-reader LineReader/SELF_INSERT sci-ctx cache)
-    (wrap-widget-with-eldoc ^LineReaderImpl line-reader LineReader/BACKWARD_DELETE_CHAR sci-ctx cache)))
+  (let [cache (atom [nil nil])
+        after (fn []
+                (update-eldoc sci-ctx ^LineReaderImpl line-reader cache)
+                (update-tail-tip sci-ctx ^LineReaderImpl line-reader))
+        clear-tip #(.setTailTip ^LineReaderImpl line-reader "")]
+    (wrap-widget ^LineReaderImpl line-reader LineReader/SELF_INSERT nil after)
+    (wrap-widget ^LineReaderImpl line-reader LineReader/BACKWARD_DELETE_CHAR nil after)
+    (wrap-widget ^LineReaderImpl line-reader LineReader/EXPAND_OR_COMPLETE clear-tip after)))
 
 (defn- try-parse-next
   "Try to parse the next form from reader. Returns :ok, :incomplete, or :error."
@@ -402,6 +449,7 @@
                    (.variable org.jline.reader.LineReader/HISTORY_FILE history-file)
                    (.variable org.jline.reader.LineReader/SECONDARY_PROMPT_PATTERN "%P #_=> ")
                    (.build))]
+    (.setAutosuggestion reader LineReader$SuggestionType/TAIL_TIP)
     (register-widgets reader sci-ctx)
     reader))
 
@@ -470,6 +518,8 @@
     (catch UserInterruptException e
       (let [partial-line (.getPartialLine e)]
         (reset! input-buffer "")
+        (when (instance? LineReaderImpl line-reader)
+          (.setTailTip ^LineReaderImpl line-reader ""))
         (cond
           ;; Second consecutive Ctrl+C on empty prompt - exit
           (and (= "" partial-line) @ctrl-c-pending)

@@ -162,8 +162,62 @@ Lookup results are cached by function name to avoid repeated SCI evaluation.
 #### Automated
 - Unit tests for `enclosing-fn` in `test/babashka/impl/repl_test.clj`
 
+## Inline Autosuggestion (ghost text)
+
+### Proposal
+
+Node.js-style ghost text: as you type, show the common completion prefix beyond what's typed as faint/grey text inline after the cursor. Press TAB to accept.
+
+### Implementation
+
+#### Tail tip computation: `compute-tail-tip`
+
+Public, pure function. Given the typed word and list of candidate strings:
+1. Filter candidates to those starting with the typed word (avoids pollution from fully-qualified names like `java.lang.String` when typing `Stri`)
+2. Compute `common-prefix` of filtered candidates
+3. Return the suffix beyond the typed word, or `""` if no extension
+
+#### Display mechanism
+
+Uses JLine's `SuggestionType/TAIL_TIP` mode with `LineReaderImpl.setTailTip(String)`. The tail tip renders as faint text inline after the cursor.
+
+#### Trigger
+
+Same widget wrappers as eldoc — `self-insert` and `backward-delete-char` call `update-tail-tip` after each keystroke. `EXPAND_OR_COMPLETE` (TAB) clears the tail tip *before* the widget runs (pre-clear) to prevent stale ghost text from appearing during JLine's internal `redisplay()`, then recomputes after.
+
+#### Ctrl+C clearing
+
+The `UserInterruptException` handler in `jline-read` clears the tail tip so ghost text doesn't leak into the next prompt.
+
+#### Key Decisions
+
+- `SuggestionType/TAIL_TIP` (not `COMPLETER`) — `COMPLETER` mode was too aggressive, showing the full completion list inline
+- TAB is bound to `EXPAND_OR_COMPLETE` in JLine's emacs keymap (not `COMPLETE_WORD` or `MENU_COMPLETE`)
+- Pre-clear is required for the completion widget because JLine calls `redisplay()` internally before our after-hook runs
+- Filtering candidates by `str/starts-with?` is essential — without it, fully-qualified class names (e.g. `java.lang.String`) break the common prefix for short-name completions (e.g. `Stri` → `String`)
+
+### Testing
+
+#### Manual
+1. Build: `script/uberjar && script/compile`
+2. Start REPL: `./bb`
+3. Type `get-i` → ghost text `n` appears (for `get-in`)
+4. Type `Stri` → ghost text `ng` appears (for `String`)
+5. Press TAB → completes, ghost text clears cleanly
+6. Press Ctrl+C → ghost text clears
+
+#### Automated
+- Unit tests for `common-prefix` and `compute-tail-tip` in `test/babashka/impl/repl_test.clj`
+
+## Startup Banner
+
+Two plain text lines printed to stderr:
+```
+Babashka v1.12.215-SNAPSHOT
+Type :repl/help for help
+```
+
 ## TODO
 
 - Expose the JLine interop used by the console REPL (Completer, Candidate, Widget, Parser, ParsedLine, CompletingParsedLine, EOFError, Reference, LineReaderImpl, AttributedStringBuilder, AttributedStyle, KeyMap, etc.) in `classes.clj` so bb scripts can build custom JLine-based tooling themselves.
 - Investigate loading rebel-readline from source with bb. Many JLine classes rebel-readline needs (Highlighter, Completer, Candidate, Parser, DefaultParser, Widget, LineReader$Option, DumbTerminal, Attributes$LocalFlag, etc.) are on the classpath but not in bb's class map. Adding these to `classes.clj` could make it possible to run rebel-readline as a bb script/library.
-- ASCII art babashka logo in REPL startup.
