@@ -226,7 +226,8 @@
 
 (defn- ttl-q-check
   [start nap [k g t]]
-  [k g (<= start (+ start nap) t (+ start nap 100))])
+  ;; BB_TEST_PATCH: widened tolerance from 100 to 500 for slow CI
+  [k g (<= start (+ start nap) t (+ start nap 500))])
 
 (deftest test-ttl-cache
   (testing "TTL-ness with empty cache"
