@@ -22,6 +22,10 @@ exposed for direct use in scripts:
   `AttributedStyle` for styled terminal output
 - `org.jline.keymap.KeyMap` for keyboard bindings
 - `org.jline.utils.InfoCmp$Capability` for querying terminal capabilities
+- `org.jline.reader.Completer`, `Parser`, `Widget`, `ParsedLine` for reify —
+  build custom completers, parsers, and widgets in bb scripts
+- `org.jline.reader.Candidate`, `Reference`, `EOFError` for completion and
+  parsing support
 
 Babashka bundles two JLine terminal providers: FFM (Foreign Function & Memory
 API) and exec. The FFM provider works everywhere except in statically compiled
@@ -88,7 +92,7 @@ Here's a complete counter example you can save as a single file and run with `bb
 #!/usr/bin/env bb
 
 (babashka.deps/add-deps
- '{:deps {io.github.TimoKramer/charm.clj {:local/root "/Users/borkdude/dev/charm.clj"}}})
+ '{:deps {io.github.TimoKramer/charm.clj {:git/sha "0616732d22c222c04d28104ac05f36dd57772590"}}})
 
 (require '[charm.core :as charm])
 
@@ -191,7 +195,14 @@ You no longer need `rlwrap` to get a comfortable console REPL:
 
 - **Multi-line editing**: the REPL detects incomplete forms and continues reading
   on the next line with a `#_=> ` continuation prompt
-- **Tab completion**: Clojure-aware completions powered by SCI
+- **Tab completion**: Clojure-aware completions powered by SCI, including
+  keywords (`:foo`, `::foo`, `::alias/foo`)
+- **Ghost text**: as you type, the common completion prefix appears as faint
+  inline text after the cursor. Press TAB to accept.
+- **Eldoc**: automatic argument help — when your cursor is inside a function
+  call like `(map |)`, the arglists are displayed below the prompt
+- **Doc-at-point**: press Ctrl+X Ctrl+D to show full documentation for the
+  symbol at the cursor
 - **Persistent history**: command history saved across sessions in
   `~/.bb_repl_history`
 - **Ctrl+C handling**: first press on an empty prompt warns, second press exits
@@ -204,6 +215,7 @@ You no longer need `rlwrap` to get a comfortable console REPL:
   patterns
 - Fix `satisfies?` on protocols with `proxy`
 - Support `reify` with `java.time.temporal.TemporalQuery`
+- Fix `reify` with methods returning `int`/`short`/`byte`/`float` primitives
 - Add `java.lang.ref.SoftReference`
 - Add `java.nio.file.attribute.UserPrincipal` and `GroupPrincipal`
 - Add `java.nio.file.FileSystemNotFoundException`

@@ -34,7 +34,7 @@ For now it's ok that this completion logic stays in the nrepl submodule, althoug
 - Completion logic stays in the nrepl submodule - the console REPL requires this namespace
 - Error handling: completions never throw - silently return empty on errors
 - The `CompletingParsedLine` interface provides word context to the Completer
-- JLine classes (Completer, Candidate) are not added to classes.clj since they're only used internally, not exposed to script users
+- JLine classes (Completer, Candidate, etc.) are now added to classes.clj and exposed for user-space scripting
 
 ### Testing
 
@@ -81,7 +81,7 @@ Similar to completions, we already provide symbol lookup for the nREPL implement
 #### Key Decisions
 
 - Same factoring pattern as completions: extract core logic from nREPL server, reuse in console REPL
-- Widget, Reference, LineReaderImpl imported only in repl.clj (internal use, not in classes.clj)
+- Widget, Reference, LineReaderImpl are now in classes.clj for user-space access
 - Key binding matches rebel-readline: Ctrl-X Ctrl-D for doc-at-point
 - For `clojure.*` vars, the clojuredocs.org URL replaces the `-------------------------` separator
 - Colors match rebel-readline's dark theme: anchor (faint blue 39), doc text (yellow 222), separator (gray 243)
@@ -228,7 +228,14 @@ Type :repl/help for help
 - **Ghost text only at end of buffer**: JLine's `TAIL_TIP` rendering requires `buf.length() == buf.cursor()` (LineReaderImpl.java:4217). When editing in the middle of a multi-line expression (e.g., cursor on line 2 of `{\n(frequ\n}`), the cursor is not at the end of the buffer and ghost text is not rendered. Fixing this would require patching JLine or implementing custom ghost text rendering.
 - **No Shift-Enter support**: Most terminals send the same byte (`0x0d`) for both Enter and Shift-Enter, making them indistinguishable. The [kitty keyboard protocol](https://sw.kovidgoyal.net/kitty/keyboard-protocol/) solves this by sending distinct CSI u escape sequences for modified keys (e.g. `\033[13;2u` for Shift-Enter), but JLine doesn't support it yet ([jline/jline3#1217](https://github.com/jline/jline3/issues/1217)). Enabling the protocol without JLine support breaks arrow keys and other keys. **Alt-Enter** works as an alternative for inserting newlines on macOS/Linux (JLine's built-in `SELF_INSERT_UNMETA`), but on Windows Terminal Alt-Enter is bound to fullscreen toggle.
 
+## JLine User-Space Interop
+
+JLine interfaces are exposed for reify in bb scripts: `Parser`, `Completer`, `Widget`, `ParsedLine`. Key classes like `Candidate`, `Reference`, `EOFError`, `LineReaderImpl`, `KeyMap`, `AttributedStringBuilder`, `AttributedStyle`, etc. are available in `classes.clj`. Tests in `test/babashka/jline_test.clj` verify reifying Parser, Completer, Widget, and ParsedLine works both on JVM and native.
+
+### reify primitive return type fix
+
+The bytecode generator for reified interfaces (`impl-java/build/reify2.clj`) had a bug: methods returning `int`/`short`/`byte`/`float` would fail with `ClassCastException` because Clojure functions return `Long`/`Double`. Fixed by using `Number` instead of specific boxed types (e.g. `Integer`) for the `checkcast` in `emit-method`. Test in `test/babashka/reify_test.clj`.
+
 ## TODO
 
-- Expose the JLine interop used by the console REPL (Completer, Candidate, Widget, Parser, ParsedLine, CompletingParsedLine, EOFError, Reference, LineReaderImpl, AttributedStringBuilder, AttributedStyle, KeyMap, etc.) in `classes.clj` so bb scripts can build custom JLine-based tooling themselves.
-- Investigate loading rebel-readline from source with bb. Many JLine classes rebel-readline needs (Highlighter, Completer, Candidate, Parser, DefaultParser, Widget, LineReader$Option, DumbTerminal, Attributes$LocalFlag, etc.) are on the classpath but not in bb's class map. Adding these to `classes.clj` could make it possible to run rebel-readline as a bb script/library.
+- Investigate loading rebel-readline from source with bb. Some JLine classes rebel-readline needs (Highlighter, DefaultParser, BufferImpl, DumbTerminal, LineReader$Option, Attributes$LocalFlag, Attributes$InputFlag) are not yet in bb's class map. Also needs `proxy` of `LineReaderImpl` with `IDeref`/`IAtom`, and `cljfmt` dependency.
