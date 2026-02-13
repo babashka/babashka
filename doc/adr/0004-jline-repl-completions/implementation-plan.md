@@ -87,6 +87,12 @@ Similar to completions, we already provide symbol lookup for the nREPL implement
 - Colors match rebel-readline's dark theme: anchor (faint blue 39), doc text (yellow 222), separator (gray 243)
 - REPL init message updated to mention the Ctrl-X Ctrl-D shortcut
 
+## Newline Insertion
+
+**Alt-Enter** inserts a literal newline into the buffer without evaluating. This is JLine's built-in `SELF_INSERT_UNMETA` widget (bound to `alt(ctrl('M'))` by default). Useful for editing multi-line expressions — e.g., positioning the cursor between `{}` and pressing Alt-Enter to insert a blank line.
+
+Note: Shift-Enter is indistinguishable from Enter in most terminals (both send `0x0d`). Only Alt-Enter sends a distinct sequence (`ESC + CR`).
+
 ## Exit Behavior
 
 Following Node.js REPL conventions:
@@ -216,6 +222,11 @@ Two plain text lines printed to stderr:
 Babashka v1.12.215-SNAPSHOT
 Type :repl/help for help
 ```
+
+## Known Limitations
+
+- **Ghost text only at end of buffer**: JLine's `TAIL_TIP` rendering requires `buf.length() == buf.cursor()` (LineReaderImpl.java:4217). When editing in the middle of a multi-line expression (e.g., cursor on line 2 of `{\n(frequ\n}`), the cursor is not at the end of the buffer and ghost text is not rendered. Fixing this would require patching JLine or implementing custom ghost text rendering.
+- **No Shift-Enter support**: Most terminals send the same byte (`0x0d`) for both Enter and Shift-Enter, making them indistinguishable. The [kitty keyboard protocol](https://sw.kovidgoyal.net/kitty/keyboard-protocol/) solves this by sending distinct CSI u escape sequences for modified keys (e.g. `\033[13;2u` for Shift-Enter), but JLine doesn't support it yet ([jline/jline3#1217](https://github.com/jline/jline3/issues/1217)). Enabling the protocol without JLine support breaks arrow keys and other keys. **Alt-Enter** works as an alternative for inserting newlines on macOS/Linux (JLine's built-in `SELF_INSERT_UNMETA`), but on Windows Terminal Alt-Enter is bound to fullscreen toggle.
 
 ## TODO
 

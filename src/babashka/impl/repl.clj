@@ -307,18 +307,21 @@
       "")))
 
 (defn- update-tail-tip
-  "Sets the tail tip to the common completion prefix beyond what's typed."
+  "Sets the tail tip to the common completion prefix beyond what's typed.
+   Only computes when cursor is at end of buffer (where JLine renders it)."
   [sci-ctx ^LineReaderImpl line-reader]
   (try
     (let [buf (.getBuffer line-reader)
-          line (str buf)
           cursor (.cursor buf)]
-      (if-let [[word _] (word-at-cursor line cursor)]
-        (let [{:keys [completions]} (sci-helpers/completions sci-ctx word)
-              candidates (mapv :candidate completions)
-              tip (compute-tail-tip word candidates)]
-          (.setTailTip line-reader tip))
-        (.setTailTip line-reader "")))
+      (if (< cursor (.length buf))
+        (.setTailTip line-reader "")
+        (let [line (str buf)]
+          (if-let [[word _] (word-at-cursor line cursor)]
+            (let [{:keys [completions]} (sci-helpers/completions sci-ctx word)
+                  candidates (mapv :candidate completions)
+                  tip (compute-tail-tip word candidates)]
+              (.setTailTip line-reader tip))
+            (.setTailTip line-reader "")))))
     (catch Exception _ nil)))
 
 (defn- update-eldoc
@@ -377,6 +380,15 @@
   (let [^KeyMap km (.get (.getKeyMaps line-reader) LineReader/EMACS)]
     (.bind km (Reference. "clojure-doc-at-point")
            (str (KeyMap/ctrl \X) (KeyMap/ctrl \D))))
+  ;; Enter in the middle of buffer inserts newline, at the end evaluates
+  (let [^Widget accept-line (.get (.getWidgets line-reader) LineReader/ACCEPT_LINE)]
+    (.put (.getWidgets line-reader) LineReader/ACCEPT_LINE
+          (reify Widget
+            (apply [_]
+              (let [buf (.getBuffer ^LineReaderImpl line-reader)]
+                (if (< (.cursor buf) (.length buf))
+                  (do (.write buf (int \newline)) true)
+                  (.apply accept-line)))))))
   (let [cache (atom [nil nil])
         after (fn []
                 (update-eldoc sci-ctx ^LineReaderImpl line-reader cache)
@@ -384,7 +396,12 @@
         clear-tip #(.setTailTip ^LineReaderImpl line-reader "")]
     (wrap-widget ^LineReaderImpl line-reader LineReader/SELF_INSERT nil after)
     (wrap-widget ^LineReaderImpl line-reader LineReader/BACKWARD_DELETE_CHAR nil after)
-    (wrap-widget ^LineReaderImpl line-reader LineReader/EXPAND_OR_COMPLETE clear-tip after)))
+    (wrap-widget ^LineReaderImpl line-reader LineReader/EXPAND_OR_COMPLETE clear-tip after)
+    ;; Clear stale ghost text on cursor movement
+    (doseq [w [LineReader/FORWARD_CHAR LineReader/BACKWARD_CHAR
+               LineReader/UP_LINE_OR_HISTORY LineReader/DOWN_LINE_OR_HISTORY
+               LineReader/BEGINNING_OF_LINE LineReader/END_OF_LINE]]
+      (wrap-widget ^LineReaderImpl line-reader w nil clear-tip))))
 
 (defn- try-parse-next
   "Try to parse the next form from reader. Returns :ok, :incomplete, or :error."
