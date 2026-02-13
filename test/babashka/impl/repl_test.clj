@@ -2,6 +2,7 @@
   (:require
    [babashka.impl.pprint :refer [pprint-namespace]]
    [babashka.impl.repl :refer [start-repl! repl-with-line-reader complete-form? word-at-cursor format-doc enclosing-fn common-prefix compute-tail-tip]]
+   [babashka.nrepl.impl.sci :as sci-helpers]
    [babashka.test-utils :as tu]
    [clojure.string :as str]
    [clojure.test :as t :refer [deftest is testing]]
@@ -279,6 +280,21 @@
     (is (= "" (compute-tail-tip "xyz" []))))
   (testing "exact match only"
     (is (= "" (compute-tail-tip "map" ["map"])))))
+
+(deftest keyword-completions-test
+  (testing "simple keyword completion"
+    (let [_ :bb-repl-test/alpha
+          _ :bb-repl-test/beta
+          results (:completions (sci-helpers/completions test-sci-ctx ":bb-repl-test/a"))]
+      (is (some #(= ":bb-repl-test/alpha" (:candidate %)) results))
+      (is (every? #(= "keyword" (:type %)) results))))
+  (testing ":: resolves to current namespace"
+    (let [_ (keyword (str (sci/eval-string* test-sci-ctx "(ns-name *ns*)")) "my-kw")
+          results (:completions (sci-helpers/completions test-sci-ctx "::my-k"))]
+      (is (some #(= "::my-kw" (:candidate %)) results))))
+  (testing "keyword query does not return class completions"
+    (let [results (:completions (sci-helpers/completions test-sci-ctx ":Str"))]
+      (is (not (some #(= "class" (:type %)) results))))))
 
 ;;;; Scratch
 
