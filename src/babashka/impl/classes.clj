@@ -118,7 +118,10 @@
     {:methods [{:name "isStatic"}]}
     java.lang.reflect.Field
     {:methods [{:name "getName"}
-               {:name "getModifiers"}]}
+               {:name "getModifiers"}
+               {:name "setAccessible"}
+               {:name "get"}
+               {:name "set"}]}
     java.lang.reflect.Array
     {:methods [{:name "newInstance"}
                {:name "set"}]}
@@ -215,8 +218,7 @@
     clojure.lang.TaggedLiteral
     {:methods [{:name "create"}]}
     org.jline.reader.impl.LineReaderImpl
-    {:fields [{:name "post"}]
-     :methods [{:name "readLine"}]}})
+    {:fields [{:name "post"}]}})
 
 (def custom-map
   (cond->
@@ -688,6 +690,7 @@
           org.jline.reader.LineReader
           org.jline.reader.LineReader$SuggestionType
           org.jline.reader.LineReaderBuilder
+          org.jline.reader.impl.LineReaderImpl
           org.jline.reader.EndOfFileException
           org.jline.reader.UserInterruptException
           org.jline.reader.Completer

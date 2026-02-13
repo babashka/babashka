@@ -148,3 +148,60 @@
                         (instance? org.jline.terminal.Attributes attrs)
                         (finally
                           (.close terminal)))))))))
+
+(deftest jline-candidate-test
+  (testing "Candidate can be constructed and its methods work"
+    (is (= ["foo" "foo" nil nil nil nil true]
+           (bb '(let [c (org.jline.reader.Candidate. "foo")]
+                  [(.value c) (.displ c) (.group c) (.descr c)
+                   (.suffix c) (.key c) (.complete c)]))))))
+
+(deftest jline-reify-parser-test
+  (testing "Parser can be reified and parse input"
+    (is (= ["world" 5 "hello world" 11]
+           (bb '(let [parser (reify org.jline.reader.Parser
+                               (^org.jline.reader.ParsedLine parse
+                                [_ ^String line ^int cursor ^org.jline.reader.Parser$ParseContext _ctx]
+                                (let [word-start (loop [i (dec cursor)]
+                                                   (if (or (neg? i)
+                                                           (Character/isWhitespace (.charAt line i)))
+                                                     (inc i)
+                                                     (recur (dec i))))
+                                      word (subs line word-start cursor)]
+                                  (reify org.jline.reader.ParsedLine
+                                    (word [_] word)
+                                    (wordCursor [_] (- cursor word-start))
+                                    (wordIndex [_] 0)
+                                    (words [_] [word])
+                                    (line [_] line)
+                                    (cursor [_] cursor)))))
+                      pl (.parse parser "hello world" 11 nil)]
+                  [(.word pl) (.wordCursor pl) (.line pl) (.cursor pl)]))))))
+
+(deftest jline-reify-completer-test
+  (testing "Completer can be reified and produce completions"
+    (is (= ["help" "hello"]
+           (bb '(let [completer (reify org.jline.reader.Completer
+                                  (complete [_ _reader parsed-line candidates]
+                                    (let [word (.word ^org.jline.reader.ParsedLine parsed-line)]
+                                      (doseq [cmd ["help" "hello" "quit"]
+                                              :when (.startsWith ^String cmd ^String word)]
+                                        (.add ^java.util.List candidates
+                                              (org.jline.reader.Candidate. cmd))))))
+                      ;; create a minimal ParsedLine for testing
+                      pl (reify org.jline.reader.ParsedLine
+                           (word [_] "hel")
+                           (wordCursor [_] 3)
+                           (wordIndex [_] 0)
+                           (words [_] ["hel"])
+                           (line [_] "hel")
+                           (cursor [_] 3))
+                      candidates (java.util.ArrayList.)]
+                  (.complete completer nil pl candidates)
+                  (mapv #(.value ^org.jline.reader.Candidate %) candidates)))))))
+
+(deftest jline-reify-widget-test
+  (testing "Widget can be reified"
+    (is (true? (bb '(let [w (reify org.jline.reader.Widget
+                            (apply [_] true))]
+                      (.apply w)))))))

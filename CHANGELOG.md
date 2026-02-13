@@ -25,6 +25,9 @@ A preview of the next release can be installed from
 - Fix [#1919](https://github.com/babashka/babashka/issues/1919): add `java.nio.file.attribute.UserPrincipal` and `GroupPrincipal`
 - Fix [#1920](https://github.com/babashka/babashka/issues/1920): add `java.nio.file.FileSystemNotFoundException`
 - Fix [#1909](https://github.com/babashka/babashka/issues/1909): add [Jline3](https://github.com/jline/jline3) for TUI support
+- Add JLine reify support: `Parser`, `Completer`, `Widget`, `ParsedLine`
+- Fix `reify` with methods returning `int`/`short`/`byte`/`float` when Clojure fn returns `long`/`double`
+- Add `java.lang.reflect.Field` methods: `setAccessible`, `get`, `set`
 
 ## 1.12.214 (2026-01-13)
 
