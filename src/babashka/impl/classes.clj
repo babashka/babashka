@@ -215,7 +215,8 @@
     clojure.lang.TaggedLiteral
     {:methods [{:name "create"}]}
     org.jline.reader.impl.LineReaderImpl
-    {:fields [{:name "post"}]}})
+    {:fields [{:name "post"}]
+     :methods [{:name "readLine"}]}})
 
 (def custom-map
   (cond->

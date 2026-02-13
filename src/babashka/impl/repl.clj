@@ -71,8 +71,8 @@
     Exit: Ctrl+D or :repl/exit or :repl/quit
  Results: Stored in vars *1, *2, *3, an exception in *e")))
 
-(defn- print-logo []
-  (.println System/err (str "Babashka v" (bb-version) " · type :repl/help for help")))
+(defn- print-banner []
+  (.println System/err (str "Babashka v" (bb-version) "\nType :repl/help for help")))
 
 (defn repl-read [sci-ctx in-stream _request-prompt request-exit]
   (if (nil? (r/peek-char in-stream))
@@ -101,7 +101,7 @@
        (m/repl
         :init (or init
                   (fn []
-                    (print-logo)
+                    (print-banner)
                     (eval-form sci-ctx `(apply require (quote ~m/repl-requires)))))
         :read (or read
                   (fn [request-prompt request-exit]
@@ -261,14 +261,6 @@
 (def ^:private eldoc-name-style
   (delay (-> AttributedStyle/DEFAULT (.faint) (.foreground 178))))
 
-(defn- format-version-attributed
-  "Builds a one-line AttributedString with version and help hint, used as default eldoc."
-  ^AttributedString []
-  (let [^AttributedStringBuilder asb (AttributedStringBuilder.)]
-    (.styled asb ^AttributedStyle @separator-style
-             ^String (str "Babashka v" (bb-version) " · type :repl/help for help"))
-    (.toAttributedString asb)))
-
 (defn- format-eldoc-attributed
   "Builds a one-line colored AttributedString for eldoc display."
   ^AttributedString [{:keys [ns name arglists]}]
@@ -289,9 +281,8 @@
             (get [_] as)))))
 
 (defn- update-eldoc
-  "Computes eldoc for the current buffer and sets/clears the post field.
-   Falls back to version/help text when no eldoc is available."
-  [sci-ctx ^LineReaderImpl line-reader cache default-post]
+  "Computes eldoc for the current buffer and sets/clears the post field."
+  [sci-ctx ^LineReaderImpl line-reader cache]
   (try
     (let [buf (.getBuffer line-reader)
           line (str buf)
@@ -303,20 +294,18 @@
               (let [result (when fn-name (sci-helpers/lookup sci-ctx fn-name))]
                 (reset! cache [fn-name result])
                 result))]
-      (set-post line-reader (if (:arglists m)
-                              (format-eldoc-attributed m)
-                              default-post)))
+      (set-post line-reader (when (:arglists m) (format-eldoc-attributed m))))
     (catch Exception _ nil)))
 
 (defn- wrap-widget-with-eldoc
   "Wraps a named widget to update eldoc after execution."
-  [^LineReaderImpl line-reader ^String widget-name sci-ctx cache default-post]
+  [^LineReaderImpl line-reader ^String widget-name sci-ctx cache]
   (let [^Widget original (.get (.getWidgets line-reader) widget-name)]
     (.put (.getWidgets line-reader) widget-name
           (reify Widget
             (apply [_]
               (let [result (.apply original)]
-                (update-eldoc sci-ctx line-reader cache default-post)
+                (update-eldoc sci-ctx line-reader cache)
                 result))))))
 
 (defn- doc-at-point-widget
@@ -346,10 +335,9 @@
   (let [^KeyMap km (.get (.getKeyMaps line-reader) LineReader/EMACS)]
     (.bind km (Reference. "clojure-doc-at-point")
            (str (KeyMap/ctrl \X) (KeyMap/ctrl \D))))
-  (let [cache (atom [nil nil])
-        default-post (format-version-attributed)]
-    (wrap-widget-with-eldoc ^LineReaderImpl line-reader LineReader/SELF_INSERT sci-ctx cache default-post)
-    (wrap-widget-with-eldoc ^LineReaderImpl line-reader LineReader/BACKWARD_DELETE_CHAR sci-ctx cache default-post)))
+  (let [cache (atom [nil nil])]
+    (wrap-widget-with-eldoc ^LineReaderImpl line-reader LineReader/SELF_INSERT sci-ctx cache)
+    (wrap-widget-with-eldoc ^LineReaderImpl line-reader LineReader/BACKWARD_DELETE_CHAR sci-ctx cache)))
 
 (defn- try-parse-next
   "Try to parse the next form from reader. Returns :ok, :incomplete, or :error."
@@ -450,7 +438,7 @@
   "Read function for m/repl that uses JLine for input.
    JLine handles multi-line editing via the Clojure parser.
    First Ctrl+C or Ctrl+D on empty prompt shows warning, second exits."
-  [sci-ctx ^org.jline.reader.LineReader line-reader input-buffer ctrl-c-pending default-post _request-prompt request-exit]
+  [sci-ctx ^org.jline.reader.LineReader line-reader input-buffer ctrl-c-pending _request-prompt request-exit]
   (try
     (when-let [[_ form remaining]
                (or
@@ -461,14 +449,10 @@
                     (when-let [[_ form remaining] (parse-form sci-ctx buf)]
                       [:form form remaining])))
                 ;; Read new input - JLine handles ALL multi-line via our parser
-                (do
-                  ;; Set default post before readLine (JLine resets post to null each call)
-                  (when default-post
-                    (set-post ^LineReaderImpl line-reader default-post))
-                  (let [prompt (str (utils/current-ns-name) "=> ")
-                        input (.readLine line-reader prompt)]
-                    (when-let [[_ form remaining] (parse-form sci-ctx input)]
-                      [:form form remaining]))))]
+                (let [prompt (str (utils/current-ns-name) "=> ")
+                      input (.readLine line-reader prompt)]
+                  (when-let [[_ form remaining] (parse-form sci-ctx input)]
+                    [:form form remaining])))]
       (reset! input-buffer remaining)
       (reset! ctrl-c-pending false)
       ;; Return form from buffer
@@ -515,7 +499,7 @@
                  {:need-prompt (constantly false)  ;; JLine handles prompting
                   :prompt (constantly nil)         ;; No-op, JLine handles prompting
                   :read (fn [request-prompt request-exit]
-                          (jline-read sci-ctx line-reader input-buffer ctrl-c-pending (:default-post opts) request-prompt request-exit))
+                          (jline-read sci-ctx line-reader input-buffer ctrl-c-pending request-prompt request-exit))
                   :eval (fn [form]
                           (if (identical? form interrupted)
                             interrupted
@@ -532,14 +516,7 @@
 (defn- repl-with-jline
   "REPL using JLine for interactive line editing and history."
   [sci-ctx opts]
-  (let [reader (jline-reader sci-ctx)
-        default-post (format-version-attributed)]
-    (repl-with-line-reader sci-ctx reader
-                           (assoc opts
-                                  :default-post default-post
-                                  :init (fn []
-                                          (set-post ^LineReaderImpl reader default-post)
-                                          (eval-form sci-ctx `(apply require (quote ~m/repl-requires))))))))
+  (repl-with-line-reader sci-ctx (jline-reader sci-ctx) opts))
 
 (defn start-repl!
   ([sci-ctx] (start-repl! sci-ctx nil))
