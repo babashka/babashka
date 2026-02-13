@@ -104,6 +104,19 @@
                 {:method (my-method obj "world")
                  :satisfies (satisfies? MyProto obj)})))))
 
+(deftest Object-proxy-test
+  (is (= {:equals-threw true
+          :hash 42
+          :str "custom"}
+         (bb '(let [obj (proxy [Object] []
+                          (equals [other] (throw (Exception. "Boom!")))
+                          (hashCode [] 42)
+                          (toString [] "custom"))]
+                {:equals-threw (try (.equals obj :anything) false
+                                    (catch Exception _ true))
+                 :hash (.hashCode obj)
+                 :str (.toString obj)})))))
+
 (deftest PipedInputStream-PipedOutputStream-proxy-test
   (is (= {:available 1
           :read-result -1

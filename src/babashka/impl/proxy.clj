@@ -144,6 +144,21 @@
       (proxy [java.lang.ThreadLocal] []
         (initialValue []
           ((method-or-bust methods 'initialValue) this)))
+
+      ["java.lang.Object" #{}]
+      (proxy [java.lang.Object] []
+        (equals [obj]
+          (if-let [m (get methods 'equals)]
+            (m this obj)
+            (proxy-super equals obj)))
+        (hashCode []
+          (if-let [m (get methods 'hashCode)]
+            (m this)
+            (proxy-super hashCode)))
+        (toString []
+          (if-let [m (get methods 'toString)]
+            (m this)
+            (proxy-super toString))))
       , ;; keep this for merge friendliness
       )))
 
@@ -158,7 +173,11 @@
    (class-sym (class (proxy-fn {:class javax.net.ssl.HostnameVerifier})))
    {:methods [{:name "verify"}]}
    (class-sym (class (proxy-fn {:class java.lang.ThreadLocal})))
-   {:methods [{:name "get"}]}})
+   {:methods [{:name "get"}]}
+   (class-sym (class (proxy-fn {:class java.lang.Object})))
+   {:methods [{:name "equals"}
+              {:name "hashCode"}
+              {:name "toString"}]}})
 
 ;;; Scratch
 
