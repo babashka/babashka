@@ -154,7 +154,35 @@
                 completions (:completions reply)
                 completions (mapv read-msg completions)
                 completions (into #{} (map (juxt :ns :candidate)) completions)]
-            (is (contains? completions ["clojure.test" "test/deftest"])))))
+            (is (contains? completions ["clojure.test" "test/deftest"]))))
+        (testing "keyword completions"
+          ;; Intern a test keyword so it's in the keyword table
+          (bencode/write-bencode os {"op" "eval"
+                                     "code" ":bb-nrepl-kw-test/alpha :bb-nrepl-kw-test/beta"
+                                     "session" session
+                                     "id" (new-id!)})
+          (read-reply in session @id)
+          (read-reply in session @id)
+          (bencode/write-bencode os {"op" "complete"
+                                     "symbol" ":bb-nrepl-kw-test/a"
+                                     "session" session
+                                     "id" (new-id!)})
+          (let [reply (read-reply in session @id)
+                completions (:completions reply)
+                completions (mapv read-msg completions)
+                candidates (into #{} (map :candidate) completions)]
+            (is (contains? candidates ":bb-nrepl-kw-test/alpha"))
+            (is (not (contains? candidates ":bb-nrepl-kw-test/beta")))
+            (is (every? #(= "keyword" (:type %)) completions))))
+        (testing "keyword query does not return class completions"
+          (bencode/write-bencode os {"op" "complete"
+                                     "symbol" ":Str"
+                                     "session" session
+                                     "id" (new-id!)})
+          (let [reply (read-reply in session @id)
+                completions (:completions reply)
+                completions (mapv read-msg completions)]
+            (is (not (some #(= "class" (:type %)) completions))))))
       (testing "close + ls-sessions"
         (bencode/write-bencode os {"op" "ls-sessions" "session" session "id" (new-id!)})
         (let [reply (read-reply in session @id)
