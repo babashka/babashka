@@ -5,6 +5,7 @@
    :deps {io.github.clojure/tools.build {:git/tag "v0.9.6" :git/sha "8e78bcc"}
           slipset/deps-deploy {:mvn/version "0.2.0"}
           org.babashka/sci.impl.types {:mvn/version "0.0.3"}
+          org.jline/jline-reader {:mvn/version "3.30.6"}
           ;; insn/insn {:mvn/version "0.5.3"}
           insn/insn {
                      :git/sha "f85da286d429b507480f8527b12ce3e1e0e17296"

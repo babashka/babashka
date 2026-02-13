@@ -14,7 +14,7 @@
 (defn return [desc]
   (case (last desc)
     :void [:return]
-    (:boolean :int :byte :short) [:ireturn]
+    (:boolean :int :byte :short :char) [:ireturn]
     :long [:lreturn]
     :float [:freturn]
     :double [:dreturn]
@@ -35,6 +35,7 @@
                           :int [:iload Integer]
                           :byte [:iload Byte]
                           :short [:iload Short]
+                          :char [:iload Character]
                           :long [:lload Long]
                           :float [:fload Float]
                           :double [:dload Double]
@@ -75,6 +76,7 @@
                    :long ["longValue" Long]
                    :float ["floatValue" Float]
                    :double ["doubleValue" Double]
+                   :char ["charValue" Character]
                    nil)]
           [[:checkcast boxed]
            [:invokevirtual boxed tvalue]]
@@ -190,6 +192,7 @@
     Long/TYPE :long
     Float/TYPE :float
     Double/TYPE :double
+    Character/TYPE :char
     type))
 
 (defn class->methods [^Class clazz]

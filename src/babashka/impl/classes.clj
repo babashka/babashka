@@ -686,9 +686,18 @@
           org.jline.utils.Signals
           org.jline.terminal.Size
           org.jline.reader.LineReader
+          org.jline.reader.LineReader$SuggestionType
           org.jline.reader.LineReaderBuilder
           org.jline.reader.EndOfFileException
           org.jline.reader.UserInterruptException
+          org.jline.reader.Completer
+          org.jline.reader.Candidate
+          org.jline.reader.Widget
+          org.jline.reader.Reference
+          org.jline.reader.Parser
+          org.jline.reader.Parser$ParseContext
+          org.jline.reader.ParsedLine
+          org.jline.reader.EOFError
           org.jline.keymap.KeyMap
           org.jline.terminal.Terminal$SignalHandler
           org.jline.terminal.spi.TerminalProvider
