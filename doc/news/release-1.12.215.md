@@ -1,0 +1,216 @@
+# Babashka 1.12.215
+
+[Babashka](https://babashka.org) is a fast-starting native Clojure scripting
+runtime. It uses [SCI](https://github.com/babashka/sci) to interpret Clojure and
+compiles to a native binary via GraalVM, giving you Clojure's power with
+near-instant startup. It's commonly used for shell scripting, build tooling, and
+small CLI applications.
+
+## Highlights
+
+### JLine3 and TUI support
+
+Babashka now bundles [JLine3](https://github.com/jline/jline3), a Java library
+for building interactive terminal applications. The following JLine3 classes are
+exposed for direct use in scripts:
+
+- `org.jline.terminal.Terminal`, `TerminalBuilder` for creating and configuring
+  terminals
+- `org.jline.reader.LineReader`, `LineReaderBuilder` for reading input with line
+  editing, history, and tab completion
+- `org.jline.utils.AttributedString`, `AttributedStringBuilder`,
+  `AttributedStyle` for styled terminal output
+- `org.jline.keymap.KeyMap` for keyboard bindings
+- `org.jline.utils.InfoCmp$Capability` for querying terminal capabilities
+
+Babashka bundles two JLine terminal providers: FFM (Foreign Function & Memory
+API) and exec. The FFM provider works everywhere except in statically compiled
+Linux binaries, where the exec provider serves as a performant alternative.
+Thanks to this choice, TUI applications built with babashka work on all
+platforms, including Windows PowerShell and cmd.exe.
+
+Here's a simple interactive prompt that reads lines from the user until EOF
+(Ctrl+D):
+
+```clojure
+(import '[org.jline.terminal TerminalBuilder]
+        '[org.jline.reader LineReaderBuilder])
+
+(let [terminal (-> (TerminalBuilder/builder) (.build))
+      reader   (-> (LineReaderBuilder/builder)
+                   (.terminal terminal)
+                   (.build))]
+  (try
+    (loop []
+      (when-let [line (.readLine reader "prompt> ")]
+        (println "You typed:" line)
+        (recur)))
+    (catch org.jline.reader.EndOfFileException _
+      (println "Goodbye!"))
+    (finally
+      (.close terminal))))
+```
+
+### babashka.terminal namespace
+
+A new `babashka.terminal` namespace exposes a `tty?` function to detect whether
+stdin, stdout, or stderr is connected to a terminal:
+
+```clojure
+(require '[babashka.terminal :refer [tty?]])
+
+(when (tty? :stdout)
+  (println "Interactive terminal detected, enabling colors"))
+```
+
+This accepts `:stdin`, `:stdout`, or `:stderr` as argument. It uses JLine3's
+terminal provider under the hood.
+
+This is useful for scripts that want to behave differently when piped vs.
+run interactively, for example enabling colored output or progress bars only
+in a terminal.
+
+### charm.clj compatibility
+
+[charm.clj](https://github.com/TimoKramer/charm.clj) is a new Clojure library
+for building terminal user interfaces using the Elm architecture
+(Model-Update-View). It provides components like spinners, text inputs, lists,
+paginators, and progress bars, with support for ANSI/256/true color styling and
+keyboard/mouse input handling.
+
+charm.clj is now compatible with babashka, enabled by the combination of JLine3
+support and other interpreter improvements in this release. This means you can
+build rich TUI applications that start instantly as native binaries.
+
+Here's a complete counter example you can save as a single file and run with `bb`:
+
+```clojure
+#!/usr/bin/env bb
+
+(babashka.deps/add-deps
+ '{:deps {io.github.TimoKramer/charm.clj {:local/root "/Users/borkdude/dev/charm.clj"}}})
+
+(require '[charm.core :as charm])
+
+(def title-style
+  (charm/style :fg charm/magenta :bold true))
+
+(def count-style
+  (charm/style :fg charm/cyan
+               :padding [0 1]
+               :border charm/rounded-border))
+
+(defn update-fn [state msg]
+  (cond
+    (or (charm/key-match? msg "q")
+        (charm/key-match? msg "ctrl+c"))
+    [state charm/quit-cmd]
+
+    (or (charm/key-match? msg "k")
+        (charm/key-match? msg :up))
+    [(update state :count inc) nil]
+
+    (or (charm/key-match? msg "j")
+        (charm/key-match? msg :down))
+    [(update state :count dec) nil]
+
+    :else
+    [state nil]))
+
+(defn view [state]
+  (str (charm/render title-style "Counter App") "\n\n"
+       (charm/render count-style (str (:count state))) "\n\n"
+       "j/k or arrows to change\n"
+       "q to quit"))
+
+(charm/run {:init {:count 0}
+            :update update-fn
+            :view view
+            :alt-screen true})
+```
+
+### Deftype with map interfaces
+
+Babashka's interpreter, SCI, supports `deftype` for implementing protocols. But
+until now, `deftype` couldn't implement JVM interfaces like `IPersistentMap`,
+`ILookup`, or `Associative`. This meant libraries that define custom map-like
+types, a very common Clojure pattern, couldn't work in babashka.
+
+Starting with this release, `deftype` supports map interfaces. You can now write
+types that behave as full persistent maps:
+
+```clojure
+(deftype MyCache [cache]
+  clojure.lang.ILookup
+  (valAt [_ k] (get cache k))
+  (valAt [_ k nf] (get cache k nf))
+  clojure.lang.IPersistentMap
+  (assoc [_ k v] (MyCache. (assoc cache k v)))
+  (without [_ k] (MyCache. (dissoc cache k)))
+  clojure.lang.Associative
+  (containsKey [_ k] (contains? cache k))
+  (entryAt [_ k] (when (contains? cache k)
+                    (clojure.lang.MapEntry. k (get cache k))))
+  clojure.lang.IPersistentCollection
+  (count [_] (count cache))
+  (empty [_] (MyCache. {}))
+  (cons [_ o] (MyCache. (conj cache o)))
+  (equiv [_ other] (= cache other))
+  clojure.lang.Seqable
+  (seq [_] (seq cache))
+  java.lang.Iterable
+  (iterator [_] (.iterator ^java.lang.Iterable cache)))
+```
+
+Under the hood, babashka uses a pre-built Java class (`SciMap`) that extends
+`APersistentMap` and delegates all method calls to the functions you define.
+Since SCI interprets code rather than generating bytecode, it can't create new
+JVM classes at runtime, so this approach gives you all the map behavior while
+staying within SCI's interpreter model.
+
+The key requirement is that your `deftype` must declare `IPersistentMap`. This
+signals that you want a full map type. Other map-related interfaces like
+`ILookup`, `Associative`, `Counted`, `Seqable`, and `Iterable` are accepted
+freely since the underlying class already implements them.
+
+#### Libraries enabled
+
+This feature unlocks several libraries that were previously incompatible:
+
+- [core.cache](https://github.com/clojure/core.cache): all cache types
+  (BasicCache, FIFOCache, LRUCache, TTLCache, LUCache) work unmodified. The
+  `defcache` macro expands to a `deftype` with all seven core map interfaces.
+- [linked](https://github.com/frankiesardo/linked): insertion-ordered maps and
+  sets. `LinkedMap` declares 13 interfaces including `Reversible` for reverse
+  insertion-order traversal.
+
+### Console REPL improvements
+
+The `bb repl` experience has been significantly improved with JLine3 integration.
+You no longer need `rlwrap` to get a comfortable console REPL:
+
+- **Multi-line editing**: the REPL detects incomplete forms and continues reading
+  on the next line with a `#_=> ` continuation prompt
+- **Tab completion**: Clojure-aware completions powered by SCI
+- **Persistent history**: command history saved across sessions in
+  `~/.bb_repl_history`
+- **Ctrl+C handling**: first press on an empty prompt warns, second press exits
+
+### Other improvements
+
+- Support multiple `catch` clauses in combination with `^:sci/error`, improving
+  compatibility with libraries like
+  [slingshot](https://github.com/scgilardi/slingshot) that use multiple catch
+  patterns
+- Fix `satisfies?` on protocols with `proxy`
+- Support `reify` with `java.time.temporal.TemporalQuery`
+- Add `java.lang.ref.SoftReference`
+- Add `java.nio.file.attribute.UserPrincipal` and `GroupPrincipal`
+- Add `java.nio.file.FileSystemNotFoundException`
+- Bumped `deps.clj`, `fs`, `transit-clj`, and `Selmer`
+
+## Thanks
+
+Thanks to all the contributors and users who reported issues and tested
+pre-release builds.
+

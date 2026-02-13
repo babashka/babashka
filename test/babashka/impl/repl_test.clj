@@ -1,7 +1,7 @@
 (ns babashka.impl.repl-test
   (:require
    [babashka.impl.pprint :refer [pprint-namespace]]
-   [babashka.impl.repl :refer [start-repl! repl-with-line-reader complete-form? word-at-cursor]]
+   [babashka.impl.repl :refer [start-repl! repl-with-line-reader complete-form? word-at-cursor format-doc enclosing-fn common-prefix compute-tail-tip]]
    [babashka.test-utils :as tu]
    [clojure.string :as str]
    [clojure.test :as t :refer [deftest is testing]]
@@ -68,7 +68,8 @@
   "Creates a mock LineReader that simulates JLine's multi-line behavior.
    Accumulates lines until a complete Clojure form is detected.
    Throws EndOfFileException when lines are exhausted.
-   If an element is :interrupt, throws UserInterruptException with accumulated input."
+   If an element is :interrupt, throws UserInterruptException with accumulated input.
+   If an element is :eof, throws EndOfFileException (simulates Ctrl+D on empty prompt)."
   ^LineReader [lines]
   (let [remaining (atom lines)]
     (reify LineReader
@@ -77,8 +78,12 @@
           (if-let [line (first @remaining)]
             (do
               (swap! remaining rest)
-              (if (= :interrupt line)
+              (cond
+                (= :interrupt line)
                 (throw (UserInterruptException. accumulated))
+                (= :eof line)
+                (throw (EndOfFileException.))
+                :else
                 (let [new-accumulated (str accumulated (when-not (str/blank? accumulated) "\n") line)]
                   (if (complete-form? test-sci-ctx new-accumulated)
                     new-accumulated
@@ -166,9 +171,67 @@
     (let [output (jline-repl-combined-output [:interrupt " " :interrupt :interrupt ":repl/exit"])]
       (is (= 2 (count (re-seq #"To exit" output))))))
 
+  (testing "Ctrl+D on empty line exits immediately"
+    (assert-jline-repl-excludes [:eof "42"] "42"))
+
   (testing "errors are reported"
     (assert-jline-repl-error ["(+ 1 nil)"] "NullPointerException")
     (assert-jline-repl-error ["(/ 1 0)"] "Divide by zero")))
+
+(deftest format-doc-test
+  (testing "function with arglists and doc"
+    (let [result (format-doc {:ns "clojure.core" :name "map"
+                              :arglists '([f] [f coll] [f c1 c2])
+                              :doc "Returns a lazy sequence"})]
+      (is (str/starts-with? result "https://clojuredocs.org/clojure.core/map\n"))
+      (is (not (str/includes? result "--------")))
+      (is (str/includes? result "clojure.core/map"))
+      (is (str/includes? result "([f] [f coll] [f c1 c2])"))
+      (is (str/includes? result "Returns a lazy sequence"))))
+  (testing "macro"
+    (let [result (format-doc {:ns "clojure.core" :name "when"
+                              :arglists '([test & body])
+                              :doc "Evaluates test."
+                              :macro true})]
+      (is (str/starts-with? result "https://clojuredocs.org/clojure.core/when\n"))
+      (is (str/includes? result "Macro"))
+      (is (str/includes? result "Evaluates test."))))
+  (testing "question mark var gets encoded"
+    (let [result (format-doc {:ns "clojure.core" :name "nil?"
+                              :arglists '([x])
+                              :doc "Returns true if x is nil"})]
+      (is (str/starts-with? result "https://clojuredocs.org/clojure.core/nil_q\n"))))
+  (testing "no url for non-clojure ns shows separator"
+    (let [result (format-doc {:ns "user" :name "foo"
+                              :arglists '([x])})]
+      (is (str/starts-with? result "--------"))
+      (is (not (str/includes? result "clojuredocs")))
+      (is (str/includes? result "user/foo"))
+      (is (str/includes? result "([x])"))))
+  (testing "no arglists"
+    (let [result (format-doc {:ns "user" :name "x" :doc "A var"})]
+      (is (str/includes? result "user/x"))
+      (is (str/includes? result "A var"))
+      (is (not (str/includes? result "()"))))))
+
+(deftest enclosing-fn-test
+  (testing "basic function call"
+    (is (= "map" (enclosing-fn "(map " 5)))
+    (is (= "+" (enclosing-fn "(+ " 3)))
+    (is (= "map" (enclosing-fn "(map x y)" 7))))
+  (testing "cursor on function name returns nil"
+    (is (nil? (enclosing-fn "(map)" 4)))
+    (is (nil? (enclosing-fn "(map" 4))))
+  (testing "nested forms"
+    (is (= "map" (enclosing-fn "(let [x (map " 13)))
+    (is (= "let" (enclosing-fn "(let [x (map y)] " 18))))
+  (testing "not a function call"
+    (is (nil? (enclosing-fn "[1 2 " 5)))
+    (is (nil? (enclosing-fn "{:a " 4))))
+  (testing "empty or no parens"
+    (is (nil? (enclosing-fn "" 0)))
+    (is (nil? (enclosing-fn "map" 3)))
+    (is (nil? (enclosing-fn "( " 2)))))
 
 (deftest word-at-cursor-test
   (testing "simple words"
@@ -185,6 +248,37 @@
     (is (nil? (word-at-cursor "(" 1)))
     (is (nil? (word-at-cursor "" 0)))
     (is (nil? (word-at-cursor "foo " 4)))))
+
+
+(deftest common-prefix-test
+  (testing "single string"
+    (is (= "foo" (common-prefix ["foo"]))))
+  (testing "identical strings"
+    (is (= "abc" (common-prefix ["abc" "abc"]))))
+  (testing "common prefix"
+    (is (= "get-" (common-prefix ["get-in" "get-method" "get-thread-bindings"]))))
+  (testing "no common prefix"
+    (is (= "" (common-prefix ["abc" "xyz"]))))
+  (testing "empty collection"
+    (is (= "" (common-prefix []))))
+  (testing "nil collection"
+    (is (= "" (common-prefix nil))))
+  (testing "full match is prefix"
+    (is (= "map" (common-prefix ["map" "mapv" "mapcat"])))))
+
+(deftest compute-tail-tip-test
+  (testing "single matching candidate"
+    (is (= "n" (compute-tail-tip "get-i" ["get-in"]))))
+  (testing "multiple candidates with common prefix beyond word"
+    (is (= "e" (compute-tail-tip "interleav" ["interleave" "interleave-all"]))))
+  (testing "no extension possible"
+    (is (= "" (compute-tail-tip "get-" ["get-in" "get-method" "get-thread-bindings"]))))
+  (testing "filters non-matching candidates"
+    (is (= "ng" (compute-tail-tip "Stri" ["String" "String" "java.lang.String" "java.io.StringWriter"]))))
+  (testing "no candidates"
+    (is (= "" (compute-tail-tip "xyz" []))))
+  (testing "exact match only"
+    (is (= "" (compute-tail-tip "map" ["map"])))))
 
 ;;;; Scratch
 

@@ -5,7 +5,7 @@
    [babashka.impl.clojure.core :as core-extras]
    [babashka.impl.clojure.main :as m]
    [babashka.impl.common :as common]
-   [babashka.nrepl.impl.completions :as completions]
+   [babashka.nrepl.impl.sci :as sci-helpers]
    [babashka.terminal :as terminal]
    [clojure.java.io :as io]
    [clojure.string :as str]
@@ -16,10 +16,13 @@
    [sci.impl.parser :as parser]
    [sci.impl.utils :as utils])
   (:import
-   [org.jline.reader LineReaderBuilder EndOfFileException UserInterruptException
+   [org.jline.keymap KeyMap]
+   [org.jline.reader LineReader LineReader$SuggestionType LineReaderBuilder EndOfFileException UserInterruptException
     Parser Parser$ParseContext ParsedLine CompletingParsedLine EOFError
-    Completer Candidate]
-   [org.jline.terminal TerminalBuilder]))
+    Completer Candidate Widget Reference]
+   [org.jline.terminal TerminalBuilder]
+   [org.jline.reader.impl LineReaderImpl]
+   [org.jline.utils AttributedString AttributedStringBuilder AttributedStyle]))
 
 (set! *warn-on-reflection* true)
 
@@ -55,15 +58,35 @@
     (when-not (= \newline c)
       (r/unread s c))))
 
+(defn- bb-version []
+  (str/trim (slurp (io/resource "BABASHKA_VERSION" common/jvm-loader))))
+
+(defn- print-repl-help []
+  (sci/with-bindings {sci/out @sci/err}
+    (sio/println "    Docs: (doc function-name-here)
+          (find-doc \"part-of-name-here\")
+          Ctrl+X Ctrl+D (at cursor)
+  Source: (source function-name-here)
+ Javadoc: (javadoc java-object-or-class-here)
+    Exit: Ctrl+D or :repl/exit or :repl/quit
+ Results: Stored in vars *1, *2, *3, an exception in *e")))
+
+(defn- print-banner []
+  (.println System/err (str "Babashka v" (bb-version) "\nType :repl/help for help")))
+
 (defn repl-read [sci-ctx in-stream _request-prompt request-exit]
   (if (nil? (r/peek-char in-stream))
     request-exit
     (let [v (parser/parse-next sci-ctx in-stream)]
       (skip-if-eol in-stream)
-      (if (or (identical? :repl/quit v)
-              (identical? :repl/exit v))
+      (cond
+        (or (identical? :repl/quit v)
+            (identical? :repl/exit v))
         request-exit
-        v))))
+        (identical? :repl/help v)
+        (do (print-repl-help)
+            (recur sci-ctx in-stream _request-prompt request-exit))
+        :else v))))
 
 (defn repl
   "REPL with predefined hooks for attachable socket server."
@@ -78,16 +101,7 @@
        (m/repl
         :init (or init
                   (fn []
-                    (sci/with-bindings {sci/out @sci/err}
-                      (sio/println "Babashka"
-                                   (str "v" (str/trim (slurp (io/resource "BABASHKA_VERSION" common/jvm-loader)))))
-                      (sio/print "    Docs: (doc function-name-here)
-          (find-doc \"part-of-name-here\")
-  Source: (source function-name-here)
- Javadoc: (javadoc java-object-or-class-here)
-    Exit: Control+D or :repl/exit or :repl/quit
- Results: Stored in vars *1, *2, *3, an exception in *e")
-                      (sio/println))
+                    (print-banner)
                     (eval-form sci-ctx `(apply require (quote ~m/repl-requires)))))
         :read (or read
                   (fn [request-prompt request-exit]
@@ -138,6 +152,18 @@
         (when (and word (pos? (count word)))
           [word start])))))
 
+(defn enclosing-fn
+  "Returns the function name for the innermost unclosed ( before cursor, or nil.
+   Only returns a name when cursor is past the function name."
+  [^String line ^long cursor]
+  (let [s (subs line 0 (min cursor (.length line)))
+        stripped (loop [s s]
+                  (let [s' (str/replace s #"\([^()]*\)" "")]
+                    (if (= s s') s (recur s'))))
+        last-open (str/last-index-of stripped "(")]
+    (when last-open
+      (second (re-find #"^\s*(\S+)\s" (subs stripped (inc ^int last-open)))))))
+
 (defn- completing-parsed-line
   "Creates a CompletingParsedLine with word information for completions."
   ^CompletingParsedLine [^String line ^long cursor word ^long word-start]
@@ -160,7 +186,7 @@
     (complete [_ _ parsed-line candidates]
       (let [word (.word ^ParsedLine parsed-line)]
         (when (and word (pos? (count word)))
-          (let [{:keys [completions]} (completions/completions sci-ctx word)]
+          (let [{:keys [completions]} (sci-helpers/completions sci-ctx word)]
             (doseq [{:keys [candidate ns type]} completions]
               (.add ^java.util.List candidates
                     (Candidate.
@@ -179,6 +205,203 @@
                      nil                ; suffix
                      nil                ; key
                      false)))))))))    ; complete - add space after?
+
+(defn- clojuredocs-url
+  "Returns a clojuredocs.org URL for clojure.* vars, nil otherwise."
+  [ns name]
+  (when (and ns name (str/starts-with? (str ns) "clojure."))
+    (str "https://clojuredocs.org/" ns "/" (str/replace (str name) #"\?$" "_q"))))
+
+(defn- format-doc-body
+  "Formats the doc body (everything after the header line)."
+  [{:keys [ns name arglists doc macro]}]
+  (str (when ns (str ns "/"))
+       name
+       (when macro "\nMacro")
+       "\n"
+       (when arglists (str (pr-str arglists) "\n"))
+       (when doc (str "  " doc "\n"))))
+
+(defn format-doc
+  "Formats a metadata map as a doc string, like Clojure's (doc ...) output."
+  [{:keys [ns name] :as m}]
+  (str (if-let [url (clojuredocs-url ns name)]
+         (str url "\n")
+         "-------------------------\n")
+       (format-doc-body m)))
+
+(def ^:private post-field
+  (delay
+    (doto (.getDeclaredField LineReaderImpl "post")
+      (.setAccessible true))))
+
+(def ^:private anchor-style
+  (delay (-> AttributedStyle/DEFAULT (.faint) (.foreground 39))))
+
+(def ^:private doc-style
+  (delay (.foreground AttributedStyle/DEFAULT 222)))
+
+(def ^:private separator-style
+  (delay (.foreground AttributedStyle/DEFAULT 243)))
+
+(defn- format-doc-attributed
+  "Builds a colored AttributedString for the doc display."
+  ^AttributedString [{:keys [ns name] :as m}]
+  (let [^AttributedStringBuilder asb (AttributedStringBuilder.)
+        url (clojuredocs-url ns name)]
+    (if url
+      (.styled asb ^AttributedStyle @anchor-style (str url "\n"))
+      (.styled asb ^AttributedStyle @separator-style "-------------------------\n"))
+    (.styled asb ^AttributedStyle @doc-style ^String (format-doc-body m))
+    (.toAttributedString asb)))
+
+(def ^:private eldoc-ns-style
+  (delay (-> AttributedStyle/DEFAULT (.faint) (.foreground 123))))
+
+(def ^:private eldoc-name-style
+  (delay (-> AttributedStyle/DEFAULT (.faint) (.foreground 178))))
+
+(defn- format-eldoc-attributed
+  "Builds a one-line colored AttributedString for eldoc display."
+  ^AttributedString [{:keys [ns name arglists]}]
+  (let [^AttributedStringBuilder asb (AttributedStringBuilder.)]
+    (when ns
+      (.styled asb ^AttributedStyle @eldoc-ns-style ^String (str ns))
+      (.styled asb ^AttributedStyle @separator-style "/"))
+    (.styled asb ^AttributedStyle @eldoc-name-style ^String (str name))
+    (when arglists
+      (.styled asb ^AttributedStyle @separator-style ": ")
+      (.styled asb ^AttributedStyle @separator-style ^String (pr-str arglists)))
+    (.toAttributedString asb)))
+
+(defn- set-post [^LineReaderImpl line-reader ^AttributedString as]
+  (.set ^java.lang.reflect.Field @post-field line-reader
+        (when as
+          (reify java.util.function.Supplier
+            (get [_] as)))))
+
+(defn common-prefix
+  "Returns the longest common prefix of a collection of strings."
+  ^String [strs]
+  (let [first-str (first strs)]
+    (if (or (nil? first-str) (= 1 (count strs)))
+      (or first-str "")
+      (let [len (count first-str)]
+        (loop [i 0]
+          (if (and (< i len)
+                   (every? #(and (< i (count %))
+                                 (= (.charAt ^String first-str i)
+                                    (.charAt ^String % i)))
+                           (rest strs)))
+            (recur (inc i))
+            (subs first-str 0 i)))))))
+
+(defn compute-tail-tip
+  "Computes the ghost text for autosuggestion given a word and completion candidates.
+   Returns the suffix beyond what's typed, or empty string."
+  ^String [^String word candidates]
+  (let [matching (->> candidates (filterv #(str/starts-with? % word)))
+        prefix (common-prefix matching)]
+    (if (> (count prefix) (count word))
+      (subs prefix (count word))
+      "")))
+
+(defn- update-tail-tip
+  "Sets the tail tip to the common completion prefix beyond what's typed.
+   Only computes when cursor is at end of buffer (where JLine renders it)."
+  [sci-ctx ^LineReaderImpl line-reader]
+  (try
+    (let [buf (.getBuffer line-reader)
+          cursor (.cursor buf)]
+      (if (< cursor (.length buf))
+        (.setTailTip line-reader "")
+        (let [line (str buf)]
+          (if-let [[word _] (word-at-cursor line cursor)]
+            (let [{:keys [completions]} (sci-helpers/completions sci-ctx word)
+                  candidates (mapv :candidate completions)
+                  tip (compute-tail-tip word candidates)]
+              (.setTailTip line-reader tip))
+            (.setTailTip line-reader "")))))
+    (catch Exception _ nil)))
+
+(defn- update-eldoc
+  "Computes eldoc for the current buffer and sets/clears the post field."
+  [sci-ctx ^LineReaderImpl line-reader cache]
+  (try
+    (let [buf (.getBuffer line-reader)
+          line (str buf)
+          cursor (.cursor buf)
+          fn-name (enclosing-fn line cursor)
+          [cached-name cached-result] @cache
+          m (if (= fn-name cached-name)
+              cached-result
+              (let [result (when fn-name (sci-helpers/lookup sci-ctx fn-name))]
+                (reset! cache [fn-name result])
+                result))]
+      (set-post line-reader (when (:arglists m) (format-eldoc-attributed m))))
+    (catch Exception _ nil)))
+
+(defn- wrap-widget
+  "Wraps a named widget with before/after hooks."
+  [^LineReaderImpl line-reader ^String widget-name before after]
+  (let [^Widget original (.get (.getWidgets line-reader) widget-name)]
+    (.put (.getWidgets line-reader) widget-name
+          (reify Widget
+            (apply [_]
+              (when before (before))
+              (let [result (.apply original)]
+                (when after (after))
+                result))))))
+
+(defn- doc-at-point-widget
+  "Creates a JLine Widget that displays documentation for the symbol at cursor.
+   Shows doc below the prompt, waits for any keypress, clears doc and replays the key."
+  [sci-ctx ^LineReaderImpl line-reader]
+  (reify Widget
+    (apply [_]
+      (let [buf (.getBuffer line-reader)
+            line (str buf)
+            cursor (.cursor buf)]
+        (when-let [[word _] (word-at-cursor line cursor)]
+          (when-let [m (sci-helpers/lookup sci-ctx word)]
+            (set-post line-reader (format-doc-attributed m))
+            (.redisplay line-reader)
+            (.readBinding line-reader (.getKeys line-reader) nil)
+            (set-post line-reader nil)
+            (when-let [s (.getLastBinding line-reader)]
+              (.runMacro line-reader s)))))
+      true)))
+
+(defn- register-widgets
+  "Registers custom widgets and key bindings on the LineReader."
+  [^LineReader line-reader sci-ctx]
+  (.put (.getWidgets line-reader) "clojure-doc-at-point"
+        (doc-at-point-widget sci-ctx ^LineReaderImpl line-reader))
+  (let [^KeyMap km (.get (.getKeyMaps line-reader) LineReader/EMACS)]
+    (.bind km (Reference. "clojure-doc-at-point")
+           (str (KeyMap/ctrl \X) (KeyMap/ctrl \D))))
+  ;; Enter in the middle of buffer inserts newline, at the end evaluates
+  (let [^Widget accept-line (.get (.getWidgets line-reader) LineReader/ACCEPT_LINE)]
+    (.put (.getWidgets line-reader) LineReader/ACCEPT_LINE
+          (reify Widget
+            (apply [_]
+              (let [buf (.getBuffer ^LineReaderImpl line-reader)]
+                (if (< (.cursor buf) (.length buf))
+                  (do (.write buf (int \newline)) true)
+                  (.apply accept-line)))))))
+  (let [cache (atom [nil nil])
+        after (fn []
+                (update-eldoc sci-ctx ^LineReaderImpl line-reader cache)
+                (update-tail-tip sci-ctx ^LineReaderImpl line-reader))
+        clear-tip #(.setTailTip ^LineReaderImpl line-reader "")]
+    (wrap-widget ^LineReaderImpl line-reader LineReader/SELF_INSERT nil after)
+    (wrap-widget ^LineReaderImpl line-reader LineReader/BACKWARD_DELETE_CHAR nil after)
+    (wrap-widget ^LineReaderImpl line-reader LineReader/EXPAND_OR_COMPLETE clear-tip after)
+    ;; Clear stale ghost text on cursor movement
+    (doseq [w [LineReader/FORWARD_CHAR LineReader/BACKWARD_CHAR
+               LineReader/UP_LINE_OR_HISTORY LineReader/DOWN_LINE_OR_HISTORY
+               LineReader/BEGINNING_OF_LINE LineReader/END_OF_LINE]]
+      (wrap-widget ^LineReaderImpl line-reader w nil clear-tip))))
 
 (defn- try-parse-next
   "Try to parse the next form from reader. Returns :ok, :incomplete, or :error."
@@ -235,14 +458,17 @@
   (let [terminal (-> (TerminalBuilder/builder)
                      (.system true)
                      (.build))
-        history-file (fs/path (fs/home) ".bb_repl_history")]
-    (-> (LineReaderBuilder/builder)
-        (.terminal terminal)
-        (.parser (jline-parser sci-ctx))
-        (.completer (clojure-completer sci-ctx))
-        (.variable org.jline.reader.LineReader/HISTORY_FILE history-file)
-        (.variable org.jline.reader.LineReader/SECONDARY_PROMPT_PATTERN "%P #_=> ")
-        (.build))))
+        history-file (fs/path (fs/home) ".bb_repl_history")
+        reader (-> (LineReaderBuilder/builder)
+                   (.terminal terminal)
+                   (.parser (jline-parser sci-ctx))
+                   (.completer (clojure-completer sci-ctx))
+                   (.variable org.jline.reader.LineReader/HISTORY_FILE history-file)
+                   (.variable org.jline.reader.LineReader/SECONDARY_PROMPT_PATTERN "%P #_=> ")
+                   (.build))]
+    (.setAutosuggestion reader LineReader$SuggestionType/TAIL_TIP)
+    (register-widgets reader sci-ctx)
+    reader))
 
 (defn- read-remaining
   "Read remaining characters from a reader into a string."
@@ -276,8 +502,7 @@
 (defn- jline-read
   "Read function for m/repl that uses JLine for input.
    JLine handles multi-line editing via the Clojure parser.
-   Implements Node-style Ctrl+C behavior: first Ctrl+C on empty prompt shows warning,
-   second Ctrl+C exits."
+   First Ctrl+C or Ctrl+D on empty prompt shows warning, second exits."
   [sci-ctx ^org.jline.reader.LineReader line-reader input-buffer ctrl-c-pending _request-prompt request-exit]
   (try
     (when-let [[_ form remaining]
@@ -296,15 +521,22 @@
       (reset! input-buffer remaining)
       (reset! ctrl-c-pending false)
       ;; Return form from buffer
-      (if (or (identical? :repl/quit form)
-              (identical? :repl/exit form))
+      (cond
+        (or (identical? :repl/quit form)
+            (identical? :repl/exit form))
         request-exit
-        form))
+        (identical? :repl/help form)
+        (do (print-repl-help) interrupted)
+        :else form))
     (catch EndOfFileException _
+      ;; Ctrl+D on empty line: exit immediately. JLine only throws
+      ;; EndOfFileException when the buffer is empty, so no further check needed.
       request-exit)
     (catch UserInterruptException e
       (let [partial-line (.getPartialLine e)]
         (reset! input-buffer "")
+        (when (instance? LineReaderImpl line-reader)
+          (.setTailTip ^LineReaderImpl line-reader ""))
         (cond
           ;; Second consecutive Ctrl+C on empty prompt - exit
           (and (= "" partial-line) @ctrl-c-pending)
