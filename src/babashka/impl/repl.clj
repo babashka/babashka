@@ -65,12 +65,11 @@
   (sci/with-bindings {sci/out @sci/err}
     (sio/println "    Docs: (doc function-name-here)
           (find-doc \"part-of-name-here\")
-          C-x C-d
+          Ctrl+X Ctrl+D (at cursor)
   Source: (source function-name-here)
  Javadoc: (javadoc java-object-or-class-here)
-    Exit: C-d or :repl/exit or :repl/quit
- Results: Stored in vars *1, *2, *3, an exception in *e
-  Submit: C-x C-m (force accept line)")))
+    Exit: Ctrl+D or :repl/exit or :repl/quit
+ Results: Stored in vars *1, *2, *3, an exception in *e")))
 
 (defn- print-banner []
   (.println System/err (str "Babashka v" (bb-version) "\nType :repl/help for help")))
@@ -373,8 +372,6 @@
               (.runMacro line-reader s)))))
       true)))
 
-(def ^:private ^:dynamic *force-accept* false)
-
 (defn- register-widgets
   "Registers custom widgets and key bindings on the LineReader."
   [^LineReader line-reader sci-ctx]
@@ -383,16 +380,6 @@
   (let [^KeyMap km (.get (.getKeyMaps line-reader) LineReader/EMACS)]
     (.bind km (Reference. "clojure-doc-at-point")
            (str (KeyMap/ctrl \X) (KeyMap/ctrl \D))))
-  ;; Force accept: Ctrl+X Ctrl+M evaluates even when mid-expression
-  (let [^Widget accept-line (.get (.getWidgets line-reader) LineReader/ACCEPT_LINE)]
-    (.put (.getWidgets line-reader) "clojure-force-accept-line"
-          (reify Widget
-            (apply [_]
-              (binding [*force-accept* true]
-                (.apply accept-line))))))
-  (let [^KeyMap km (.get (.getKeyMaps line-reader) LineReader/EMACS)]
-    (.bind km (Reference. "clojure-force-accept-line")
-           (str (KeyMap/ctrl \X) (KeyMap/ctrl \M))))
   ;; Enter in the middle of buffer inserts newline, at the end evaluates
   (let [^Widget accept-line (.get (.getWidgets line-reader) LineReader/ACCEPT_LINE)]
     (.put (.getWidgets line-reader) LineReader/ACCEPT_LINE
@@ -461,7 +448,7 @@
           (completing-parsed-line line cursor word start)
           (parsed-line line cursor))
         ;; For accept-line, check if form is complete
-        (if (or *force-accept* (complete-form? sci-ctx line))
+        (if (complete-form? sci-ctx line)
           (parsed-line line cursor)
           (throw (EOFError. -1 -1 "Incomplete Clojure form")))))))
 
