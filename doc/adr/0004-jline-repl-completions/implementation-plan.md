@@ -236,6 +236,72 @@ JLine interfaces are exposed for reify in bb scripts: `Parser`, `Completer`, `Wi
 
 The bytecode generator for reified interfaces (`impl-java/build/reify2.clj`) had a bug: methods returning `int`/`short`/`byte`/`float` would fail with `ClassCastException` because Clojure functions return `Long`/`Double`. Fixed by using `Number` instead of specific boxed types (e.g. `Integer`) for the `checkcast` in `emit-method`. Test in `test/babashka/reify_test.clj`.
 
+## GraalVM Native Image Bloat: `^:dynamic` vars in reify
+
+### Problem
+
+Reading a `^:dynamic` Clojure var inside a `reify Parser` caused ~28MB of native image bloat (from ~68MB to ~96MB). The same code inside `reify Widget` or `reify Completer` had no effect.
+
+### Investigation
+
+Systematic experiments isolated the cause:
+
+| Experiment                                      | Bloats? |
+|-------------------------------------------------|---------|
+| `^:dynamic` var + `binding` in plain function   | No      |
+| `binding` inside existing `reify Widget`        | No      |
+| `binding` inside new `reify Widget`             | No      |
+| Reading `^:dynamic` var in `reify Parser`       | Yes     |
+| Reading `^:dynamic` var in `reify Widget`       | No      |
+| Reading `^:dynamic` var in `reify Completer`    | No      |
+
+### Build report analysis
+
+GraalVM build reports (`--emit build-report`) revealed the breakdown:
+
+| Metric              | Baseline   | Bloat        | Delta         |
+|---------------------|------------|--------------|---------------|
+| Code area           | 29.0 MB    | 34.2 MB      | +5.2 MB       |
+| Image heap          | 37.8 MB    | 59.6 MB      | +21.8 MB      |
+| Reachable types     | 20,105     | 23,966       | +3,861        |
+| Reachable methods   | 95,037     | 109,678      | +14,641       |
+| Heap objects        | 515,979    | 1,029,925    | +513,946      |
+
+New object types appearing in the bloated image heap:
+
+- 4.01 MB `clojure.lang.PersistentHashMap$BitmapIndexedNode` (Clojure namespace registry)
+- 1.40 MB `clojure.lang.Symbol` (interned symbols)
+- 7.37 MB `java.lang.Object[]`
+- 1.08 MB `clojure.lang.PersistentHashMap$INode[]`
+
+Code from the babashka standalone jar grew from 9.80 MB to 14.82 MB (+5 MB), with newly reachable clojure.core functions, clojure.pprint, Jackson CBOR/Smile parsers, and proxy/emit-protocol internals.
+
+### Root cause
+
+`Var.deref()` (used for `^:dynamic` var reads) traces through Clojure's thread-local binding mechanism. Parser's reify2 class has a richer type signature than Widget or Completer (6 methods vs 1, primitive `char`/`int` parameters, `Parser$ParseContext` enum, overloaded `parse` methods). This gives GraalVM's points-to analysis more type-flow edges. When `Var.deref()` is added to that context, the analysis reaches a tipping point that pulls in Clojure's core namespace/var infrastructure — PersistentHashMap nodes, Symbols, and thousands of additional heap objects.
+
+### Fix
+
+Replace `^:dynamic` var with `volatile!`:
+
+```clojure
+;; BAD: causes ~28MB native image bloat
+(def ^:dynamic *force-accept* false)
+(reify Parser
+  (parse [_ line cursor ctx]
+    (when *force-accept* ...)))   ;; Var.deref() in Parser context
+
+;; GOOD: no bloat
+(let [force-accept? (volatile! false)]
+  (reify Parser
+    (parse [_ line cursor ctx]
+      (when @force-accept? ...))))  ;; volatile deref, no Var machinery
+```
+
+### Takeaway
+
+Avoid `^:dynamic` vars (and `binding`) in reified JVM interfaces that have complex type signatures. Use `volatile!` or `atom` for simple mutable flags. This is specific to GraalVM native-image; on the JVM there is no size impact.
+
 ## TODO
 
 - Investigate loading rebel-readline from source with bb. Some JLine classes rebel-readline needs (Highlighter, DefaultParser, BufferImpl, DumbTerminal, LineReader$Option, Attributes$LocalFlag, Attributes$InputFlag) are not yet in bb's class map. Also needs `proxy` of `LineReaderImpl` with `IDeref`/`IAtom`, and `cljfmt` dependency.
