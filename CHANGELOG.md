@@ -9,22 +9,22 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-- Support `deftype` with map interfaces (e.g. `IPersistentMap`, `ILookup`, `Associative`). Libraries like [core.cache](https://github.com/clojure/core.cache) and [linked](https://github.com/frankiesardo/linked) now work in babashka.
-- Fix [#1923](https://github.com/babashka/babashka/issues/1923): support `reify` with `java.time.temporal.TemporalQuery`
+- [#1909](https://github.com/babashka/babashka/issues/1909): add [Jline3](https://github.com/jline/jline3) for TUI support
 - Console REPL (`bb repl`) improvements
 - Add keyword completions to nREPL and console REPL (`:foo`, `:ns/foo`, `::foo`, `::alias/foo`)
+- [#1299](https://github.com/babashka/babashka/issues/1299): add new `babashka.terminal` namespace that exposes `tty?` with arguments `:stdin`, `:stdout` or `:stderr`
+- Support `deftype` with map interfaces (e.g. `IPersistentMap`, `ILookup`, `Associative`). Libraries like [core.cache](https://github.com/clojure/core.cache) and [linked](https://github.com/frankiesardo/linked) now work in babashka.
+- [#1923](https://github.com/babashka/babashka/issues/1923): support `reify` with `java.time.temporal.TemporalQuery`
 - Support multiple `catch` i.c.m. `^:sci/error`
-- Fix [#1299](https://github.com/babashka/babashka/issues/1299): add new `babashka.terminal` namespace that exposes `tty?` with arguments `:stdin`, `:stdout` or `:stderr`
 - Compatibility with [charm.clj](https://github.com/TimoKramer/charm.clj)
 - Bump `deps.clj`
 - Bump `fs`
 - Bump `transit-clj` to `1.1.347`
-- Bump `Selmer` to `1.12.70`
+- Bump `Selmer` to `1.13.1`
 - Fix `satisfies?` on protocol on `proxy`
 - Add `java.lang.ref.SoftReference`
-- Fix [#1919](https://github.com/babashka/babashka/issues/1919): add `java.nio.file.attribute.UserPrincipal` and `GroupPrincipal`
-- Fix [#1920](https://github.com/babashka/babashka/issues/1920): add `java.nio.file.FileSystemNotFoundException`
-- Fix [#1909](https://github.com/babashka/babashka/issues/1909): add [Jline3](https://github.com/jline/jline3) for TUI support
+- [#1919](https://github.com/babashka/babashka/issues/1919): add `java.nio.file.attribute.UserPrincipal` and `GroupPrincipal`
+- [#1920](https://github.com/babashka/babashka/issues/1920): add `java.nio.file.FileSystemNotFoundException`
 - Add JLine reify support: `Parser`, `Completer`, `Widget`, `ParsedLine`
 - Fix `reify` with methods returning `int`/`short`/`byte`/`float` when Clojure fn returns `long`/`double`
 - Add `java.lang.reflect.Field` methods: `setAccessible`, `get`, `set`
