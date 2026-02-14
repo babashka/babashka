@@ -17,12 +17,14 @@
     :location? seq?
     :end-location false}))
 
+(def data-readers (sci/new-dynamic-var '*data-readers* {} {:ns rns}))
 (def default-data-reader-fn (sci/new-dynamic-var '*default-data-reader-fn* nil {:ns rns}))
 (def alias-map (sci/new-dynamic-var '*alias-map* nil {:ns rns}))
 
 (defn resolve-tag [sym]
   ;; https://github.com/clojure/tools.reader/blob/ff18b1b872398a99e3e2941a0ed9abc0c2dec151/src/main/clojure/clojure/tools/reader.clj#L858
-  (or (default-data-readers sym)
+  (or (@data-readers sym)
+      (default-data-readers sym)
       (when-let [f @default-data-reader-fn]
         (f sym))))
 
@@ -87,5 +89,6 @@
   {'read (sci/copy-var read rns)
    'read-string (sci/copy-var read-string rns)
    'resolve-symbol (sci/copy-var resolve-symbol rns)
+   '*data-readers* data-readers
    '*default-data-reader-fn* default-data-reader-fn
    '*alias-map* alias-map})
