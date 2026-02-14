@@ -373,23 +373,21 @@
               (.runMacro line-reader s)))))
       true)))
 
-(def ^:private ^:dynamic *force-accept* false)
-
 (defn- register-widgets
   "Registers custom widgets and key bindings on the LineReader."
-  [^LineReader line-reader sci-ctx]
+  [^LineReader line-reader sci-ctx force-accept?]
   (.put (.getWidgets line-reader) "clojure-doc-at-point"
         (doc-at-point-widget sci-ctx line-reader))
   (let [^KeyMap km (.get (.getKeyMaps line-reader) LineReader/EMACS)]
     (.bind km (Reference. "clojure-doc-at-point")
            (str (KeyMap/ctrl \X) (KeyMap/ctrl \D))))
-  ;; Force accept: Ctrl+X Ctrl+M evaluates even when mid-expression
+  ;; Force accept: C-x C-m submits even when mid-expression
   (let [^Widget accept-line (.get (.getWidgets line-reader) LineReader/ACCEPT_LINE)]
     (.put (.getWidgets line-reader) "clojure-force-accept-line"
           (reify Widget
             (apply [_]
-              (binding [*force-accept* true]
-                (.apply accept-line))))))
+              (vreset! force-accept? true)
+              (.apply accept-line)))))
   (let [^KeyMap km (.get (.getKeyMaps line-reader) LineReader/EMACS)]
     (.bind km (Reference. "clojure-force-accept-line")
            (str (KeyMap/ctrl \X) (KeyMap/ctrl \M))))
@@ -452,7 +450,7 @@
 (defn- jline-parser
   "Creates a JLine Parser that detects incomplete Clojure forms.
    Throws EOFError for incomplete input, allowing JLine to handle multi-line editing."
-  ^Parser [sci-ctx]
+  ^Parser [sci-ctx force-accept?]
   (reify Parser
     (^ParsedLine parse [_this ^String line ^int cursor ^Parser$ParseContext context]
       (if (identical? context Parser$ParseContext/COMPLETE)
@@ -461,8 +459,9 @@
           (completing-parsed-line line cursor word start)
           (parsed-line line cursor))
         ;; For accept-line, check if form is complete
-        (if (or *force-accept* (complete-form? sci-ctx line))
-          (parsed-line line cursor)
+        (if (or @force-accept? (complete-form? sci-ctx line))
+          (do (vreset! force-accept? false)
+              (parsed-line line cursor))
           (throw (EOFError. -1 -1 "Incomplete Clojure form")))))))
 
 (defn- jline-reader
@@ -471,16 +470,17 @@
   (let [terminal (-> (TerminalBuilder/builder)
                      (.system true)
                      (.build))
+        force-accept? (volatile! false)
         history-file (fs/path (fs/home) ".bb_repl_history")
         reader (-> (LineReaderBuilder/builder)
                    (.terminal terminal)
-                   (.parser (jline-parser sci-ctx))
+                   (.parser (jline-parser sci-ctx force-accept?))
                    (.completer (clojure-completer sci-ctx))
                    (.variable org.jline.reader.LineReader/HISTORY_FILE history-file)
                    (.variable org.jline.reader.LineReader/SECONDARY_PROMPT_PATTERN "%P #_=> ")
                    (.build))]
     (.setAutosuggestion reader LineReader$SuggestionType/TAIL_TIP)
-    (register-widgets reader sci-ctx)
+    (register-widgets reader sci-ctx force-accept?)
     reader))
 
 (defn- read-remaining
