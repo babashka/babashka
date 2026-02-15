@@ -28,6 +28,10 @@ A preview of the next release can be installed from
 - Add JLine reify support: `Parser`, `Completer`, `Widget`, `ParsedLine`
 - Fix `reify` with methods returning `int`/`short`/`byte`/`float` when Clojure fn returns `long`/`double`
 - Add `java.lang.reflect.Field` methods: `setAccessible`, `get`, `set`
+- SCI: `deftype` now macroexpands to `deftype*`, matching JVM Clojure, enabling code walkers like riddley
+- SCI: `case` now macroexpands to JVM-compatible `case*` format, enabling tools like riddley and cloverage
+- SCI: fix `.method` on class objects routing to static instead of instance method path
+- SCI: `macroexpand-1` of `(.method ClassName)` now wraps class targets in `identity`, matching Clojure behavior
 
 ## 1.12.214 (2026-01-13)
 
