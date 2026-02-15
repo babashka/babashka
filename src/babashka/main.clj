@@ -1302,7 +1302,11 @@ Use bb run --help to show this help output.
               (binding [*out* *err*]
                 (println "ran" n "times"))))))
     (let [{:keys [exit force-exit]} (apply main args)]
-      ;; only necessary for linux musl, but for compat, we do it everywhere:
+      ;; On musl, the process doesn't exit after script execution without this.
+      ;; On non-musl it's redundant but harmless.
+      ;; See https://github.com/oracle/graal/issues/12116
+      ;; Note: this prevents sci/future from working after script execution
+      ;; (e.g. nREPL client handlers), which is why babashka.nrepl uses plain Threads.
       (shutdown-agents)
       (when (or (not (zero? exit))
                 force-exit)

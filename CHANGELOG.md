@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Fix [babashka.nrepl#71](https://github.com/babashka/babashka.nrepl/issues/71): nREPL server now uses non-daemon threads so the process stays alive without `@(promise)`
 - [#1909](https://github.com/babashka/babashka/issues/1909): add [Jline3](https://github.com/jline/jline3) for TUI support
 - Console REPL (`bb repl`) improvements
 - Add keyword completions to nREPL and console REPL (`:foo`, `:ns/foo`, `::foo`, `::alias/foo`)

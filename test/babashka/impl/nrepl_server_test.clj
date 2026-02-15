@@ -4,6 +4,7 @@
    [babashka.impl.nrepl-server :refer [start-server!]]
    [babashka.main :as main]
    [babashka.nrepl.server :refer [parse-opt stop-server!]]
+   [babashka.process :as p]
    [babashka.test-utils :as tu]
    [babashka.wait :as wait]
    [bencode.core :as bencode]
@@ -268,6 +269,25 @@
             (stop-server! @server-state)
             (when-let [proc @proc-state]
               (.destroy ^Process proc))))))))
+
+(deftest ^:skip-windows nrepl-server-non-daemon-test
+  (when tu/native?
+    (let [proc (p/process ["./bb" "-e"
+                           "(babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1669})"])]
+      (try
+        (is (wait/wait-for-port "127.0.0.1" 1669 {:timeout 5000})
+            "nREPL server should stay alive without @(promise)")
+        (with-open [socket (java.net.Socket. "127.0.0.1" 1669)
+                    in (.getInputStream socket)
+                    in (java.io.PushbackInputStream. in)
+                    os (.getOutputStream socket)]
+          (bencode/write-bencode os {"op" "clone"})
+          (let [session (:new-session (read-msg (bencode/read-bencode in)))]
+            (bencode/write-bencode os {"op" "eval" "code" "(+ 1 2 3)"
+                                       "session" session "id" "1"})
+            (is (= "6" (:value (read-reply in session "1"))))))
+        (finally
+          (p/destroy-tree proc))))))
 
 ;;;; Scratch
 
