@@ -32,6 +32,7 @@ A preview of the next release can be installed from
 - SCI: `case` now macroexpands to JVM-compatible `case*` format, enabling tools like riddley and cloverage
 - SCI: fix `.method` on class objects routing to static instead of instance method path
 - SCI: `macroexpand-1` of `(.method ClassName)` now wraps class targets in `identity`, matching Clojure behavior
+- SCI: `macroexpand-1` now accepts an optional env map as first argument, enabling riddley compatibility
 
 ## 1.12.214 (2026-01-13)
 
