@@ -9,6 +9,8 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- SCI: support functional interface adaptation for instance targets (e.g. `(let [^Predicate p even?] (.test p 42))`)
+- SCI: infer type tags from let binding values to binding names
 - SCI: fix `read` with `nil` or `false` as eof-value throwing instead of returning the eof-value
 - SCI: fix `letfn` with duplicate function names crashing with ClassCastException
 - SCI: `macroexpand-1` now expands `(ClassName. args)` to `(new ClassName args)`, matching JVM Clojure
