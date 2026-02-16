@@ -13,6 +13,7 @@ A preview of the next release can be installed from
 - SCI: fix `letfn` with duplicate function names crashing with ClassCastException
 - SCI: `macroexpand-1` now expands `(ClassName. args)` to `(new ClassName args)`, matching JVM Clojure
 - SCI: fix `ns-map` not reflecting vars that shadow referred vars
+- SCI: preserve `:tag` metadata in `copy-var`
 - Add `clojure.test.junit` as built-in source namespace
 - Fix [babashka.nrepl#71](https://github.com/babashka/babashka.nrepl/issues/71): nREPL server now uses non-daemon threads so the process stays alive without `@(promise)`
 - [#1909](https://github.com/babashka/babashka/issues/1909): add [Jline3](https://github.com/jline/jline3) for TUI support
