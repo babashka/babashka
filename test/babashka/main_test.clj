@@ -265,6 +265,10 @@
   (is (true? (bb nil "(.exists (io/file \"README.md\"))")))
   (is (true? (bb nil "(.canWrite (io/file \"README.md\"))"))))
 
+(deftest cp437-encoding-test
+  (let [result (bb nil "(slurp \"test-resources/babashka/cp437-test.txt\" :encoding \"cp437\")")]
+    (is (= "Hello ₧░▒▓\n" result))))
+
 ; skipped because the windows shell doesn't seem to deal well with infinite things
 (deftest ^:skip-windows pipe-test
   (when (and test-utils/native?
