@@ -60,7 +60,7 @@
         org.jline/jline-reader {:mvn/version "3.30.6"}}
  :aliases {:babashka/dev
            {:main-opts ["-m" "babashka.main"]
-            :jvm-opts ["--enable-native-access=ALL-UNNAMED"]}
+            :jvm-opts ["--enable-native-access=ALL-UNNAMED" "-Duser.language=en" "-Duser.country=US"]}
            :profile
            {:extra-deps
             {com.clojure-goes-fast/clj-async-profiler {:mvn/version "0.5.0"}}
