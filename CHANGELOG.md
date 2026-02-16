@@ -10,6 +10,7 @@ A preview of the next release can be installed from
 ## Unreleased
 
 - SCI: fix `read` with `nil` or `false` as eof-value throwing instead of returning the eof-value
+- SCI: fix `letfn` with duplicate function names crashing with ClassCastException
 - Fix [babashka.nrepl#71](https://github.com/babashka/babashka.nrepl/issues/71): nREPL server now uses non-daemon threads so the process stays alive without `@(promise)`
 - [#1909](https://github.com/babashka/babashka/issues/1909): add [Jline3](https://github.com/jline/jline3) for TUI support
 - Console REPL (`bb repl`) improvements
