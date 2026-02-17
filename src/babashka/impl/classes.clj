@@ -306,7 +306,9 @@
        (catch Exception _ nil)))
 
 (def classes
-  `{:all [clojure.lang.ArityException
+  ;; :all = full reflection enabled (allPublicMethods, allPublicConstructors, etc.)
+  `{:all [clojure.lang.APersistentMap ;; for proxy-super on non-Object methods
+          clojure.lang.ArityException
           clojure.lang.BigInt
           clojure.lang.ExceptionInfo
           java.io.BufferedInputStream
@@ -727,7 +729,6 @@
     :instance-checks [clojure.lang.AFn
                       clojure.lang.AFunction
                       clojure.lang.AMapEntry ;; for proxy
-                      clojure.lang.APersistentMap ;; for proxy
                       clojure.lang.APersistentSet
                       clojure.lang.AReference
                       clojure.lang.Associative

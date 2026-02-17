@@ -7,6 +7,12 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## Unreleased
+
+- Add JLine classes for rebel-readline compatibility: `Highlighter`, `LineReader$Option`, `Attributes$InputFlag`, `Attributes$LocalFlag`
+- Hide redundant `(keyword)` description in REPL completions
+- SCI: add `proxy-super`, `proxy-call-with-super`, `update-proxy` and `proxy-mappings`
+
 ## 1.12.215 (2026-02-17)
 
 Read the blog post for this release [here](https://blog.michielborkent.nl/babashka-1.12.215.html).

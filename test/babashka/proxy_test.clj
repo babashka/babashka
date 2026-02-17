@@ -2,7 +2,7 @@
   (:require
    [babashka.test-utils :as test-utils]
    [clojure.edn :as edn]
-   [clojure.test :as test :refer [deftest is]]))
+   [clojure.test :as test :refer [deftest is testing]]))
 
 (defn bb [& args]
   (edn/read-string
@@ -116,6 +116,38 @@
                                     (catch Exception _ true))
                  :hash (.hashCode obj)
                  :str (.toString obj)})))))
+
+(deftest proxy-super-test
+  (testing "Object proxy-super"
+    (is (= {:starts-with-prefix true
+            :hashcode-gt-999 true
+            :equals-self true
+            :not-equals-other true}
+           (bb '(let [obj (proxy [Object] []
+                            (toString [] (str "prefix:" (proxy-super toString)))
+                            (hashCode [] (+ 1000 (proxy-super hashCode)))
+                            (equals [other] (proxy-super equals other)))]
+                  {:starts-with-prefix (.startsWith (.toString obj) "prefix:")
+                   :hashcode-gt-999 (> (.hashCode obj) 999)
+                   :equals-self (.equals obj obj)
+                   :not-equals-other (not (.equals obj (Object.)))}))))))
+
+(deftest proxy-super-APersistentMap-test
+  (testing "proxy-super cons delegates to APersistentMap.cons which calls assoc"
+    (is (= {:assoc-called [:a 1]}
+           (bb '(let [m (proxy [clojure.lang.APersistentMap clojure.lang.IMeta clojure.lang.IObj] []
+                          (iterator [] (.iterator {}))
+                          (containsKey [k] false)
+                          (entryAt [k] nil)
+                          (valAt ([k] nil) ([k d] d))
+                          (cons [v] (proxy-super cons v))
+                          (count [] 0)
+                          (assoc [k v] {:assoc-called [k v]})
+                          (without [k] nil)
+                          (seq [] nil)
+                          (meta [] nil)
+                          (withMeta [md] nil))]
+                  (conj m [:a 1])))))))
 
 (deftest PipedInputStream-PipedOutputStream-proxy-test
   (is (= {:available 1
