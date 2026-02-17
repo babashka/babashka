@@ -200,6 +200,7 @@
                          ("static-method" "static-field") "s"
                          ("method" "field") "m"
                          "constructor" "ctor"
+                         "keyword" nil
                          (str (when type type)
                               (when (and type ns) " ")
                               (when ns ns))))
