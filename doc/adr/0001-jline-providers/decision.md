@@ -82,3 +82,25 @@ Include both FFM and Exec providers with the following strategy:
 - The ~10ms startup difference is imperceptible to users
 - For 60fps TUI apps, both providers leave 95%+ of frame budget for app logic
 
+## Rebel-readline compatibility
+
+Goal: run rebel-readline from source on babashka.
+
+### Done
+
+Classes added to babashka:
+- `org.jline.reader.Highlighter` (interface, reify support added)
+- `org.jline.reader.LineReader$Option` (enum)
+- `org.jline.terminal.Attributes$InputFlag` (enum)
+- `org.jline.terminal.Attributes$LocalFlag` (enum)
+
+### Remaining blockers
+
+1. **`proxy-super` in SCI**: SCI's `proxy` macro doesn't support `proxy-super` in user code. Rebel-readline needs `(proxy-super parse line cursor context)` to fall back to `DefaultParser`'s parse method. This requires SCI changes.
+
+2. **`org.jline.reader.impl.DefaultParser`**: rebel-readline uses `(proxy [DefaultParser] ...)` to extend the default parser, overriding `isDelimiterChar` and `parse`. DefaultParser is stable (since 2002) and babashka already exposes `impl.LineReaderImpl`, so exposing it is consistent. Needs a proxy case in `babashka.impl.proxy`.
+
+3. **`org.jline.reader.impl.BufferImpl`**: only used in a dev helper (`buffer*`), not needed at runtime. Can be avoided on the rebel-readline side.
+
+4. **`org.jline.terminal.impl.DumbTerminal`**: only used for an `instance?` check to detect bad terminals. Can be avoided on the rebel-readline side (e.g. check `.getType` instead).
+

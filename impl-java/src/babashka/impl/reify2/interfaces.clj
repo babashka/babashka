@@ -38,7 +38,8 @@
                  java.util.concurrent.Callable
                  java.time.temporal.TemporalField
                  java.time.temporal.TemporalQuery
-                 org.jline.reader.Parser
                  org.jline.reader.Completer
-                 org.jline.reader.Widget
-                 org.jline.reader.ParsedLine])
+                 org.jline.reader.Highlighter
+                 org.jline.reader.Parser
+                 org.jline.reader.ParsedLine
+                 org.jline.reader.Widget])

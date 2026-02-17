@@ -679,6 +679,8 @@
           org.jline.terminal.Terminal
           org.jline.terminal.TerminalBuilder
           org.jline.terminal.Attributes
+          org.jline.terminal.Attributes$InputFlag
+          org.jline.terminal.Attributes$LocalFlag
           org.jline.utils.AttributedString
           org.jline.utils.AttributedStringBuilder
           org.jline.utils.AttributedStyle
@@ -688,6 +690,8 @@
           org.jline.utils.Signals
           org.jline.terminal.Size
           org.jline.reader.LineReader
+          org.jline.reader.Highlighter
+          org.jline.reader.LineReader$Option
           org.jline.reader.LineReader$SuggestionType
           org.jline.reader.LineReaderBuilder
           org.jline.reader.impl.LineReaderImpl

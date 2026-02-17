@@ -205,3 +205,22 @@
     (is (true? (bb '(let [w (reify org.jline.reader.Widget
                             (apply [_] true))]
                       (.apply w)))))))
+
+(deftest jline-reify-highlighter-test
+  (testing "Highlighter can be reified"
+    (is (= "hello"
+           (bb '(let [hl (reify org.jline.reader.Highlighter
+                           (highlight [_ _reader line]
+                             (org.jline.utils.AttributedString. line))
+                           (setErrorPattern [_ _pattern])
+                           (setErrorIndex [_ _index]))]
+                  (str (.highlight hl nil "hello"))))))))
+
+(deftest jline-linereader-option-test
+  (testing "LineReader$Option enum values are accessible"
+    (is (true? (bb '(some? (org.jline.reader.LineReader$Option/valueOf "HISTORY_BEEP")))))))
+
+(deftest jline-attributes-flags-test
+  (testing "Attributes flag enums are accessible"
+    (is (true? (bb '(some? (org.jline.terminal.Attributes$LocalFlag/valueOf "ECHO")))))
+    (is (true? (bb '(some? (org.jline.terminal.Attributes$InputFlag/valueOf "ICRNL")))))))
