@@ -7,14 +7,17 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## Unreleased
+## 1.12.215 (2026-02-17)
+
+Read the blog post for this release [here](https://blog.michielborkent.nl/babashka-1.12.215.html).
 
 - [#1909](https://github.com/babashka/babashka/issues/1909): add [JLine3](https://github.com/jline/jline3) for TUI support
-- Console REPL (`bb repl`) improvements: multi-line editing, tab completion, ghost text, eldoc, doc-at-point (Ctrl+X Ctrl+D), persistent history
+- Console REPL (`bb repl`) improvements: multi-line editing, tab completion, ghost text, eldoc, doc-at-point (`C-x` `C-d`), persistent history
 - Add keyword completions to nREPL and console REPL (`:foo`, `:ns/foo`, `::foo`, `::alias/foo`)
 - [#1299](https://github.com/babashka/babashka/issues/1299): add new `babashka.terminal` namespace that exposes `tty?` with arguments `:stdin`, `:stdout` or `:stderr`
 - Compatibility with [charm.clj](https://github.com/TimoKramer/charm.clj)
 - Support `deftype` with map interfaces (e.g. `IPersistentMap`, `ILookup`, `Associative`). Libraries like [core.cache](https://github.com/clojure/core.cache) and [linked](https://github.com/frankiesardo/linked) now work in babashka.
+- Compatibility with [riddley](https://github.com/clj-commons/riddley)
 - Compatibility with [cloverage](https://github.com/cloverage/cloverage) (pending [upstream PR](https://github.com/cloverage/cloverage/pull/356))
 - SCI: `deftype` now macroexpands to `deftype*`, matching JVM Clojure, enabling code walkers like riddley
 - SCI: `case` now macroexpands to JVM-compatible `case*` format, enabling tools like riddley and cloverage
