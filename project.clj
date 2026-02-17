@@ -32,7 +32,7 @@
                  [org.babashka/babashka.impl.java "0.1.16"]
                  [org.clojure/core.async "1.8.741"]
                  [org.clojure/test.check "1.1.1"]
-                 [com.github.clj-easy/graal-build-time "0.1.0"]
+                 [com.github.clj-easy/graal-build-time "1.0.5"]
                  [org.babashka/impl-graal-features "0.0.1"]
                  [rewrite-clj/rewrite-clj "1.2.50"]
                  [insn/insn "0.5.2"]
