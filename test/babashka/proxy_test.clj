@@ -132,6 +132,26 @@
                    :equals-self (.equals obj obj)
                    :not-equals-other (not (.equals obj (Object.)))}))))))
 
+;; This test verifies that proxy classes are registered in custom-reflect-map
+;; so method calls on `this` resolve against the proxy class (not java.util.Map
+;; via public-class). Without this, proxy-super and interface method calls fail.
+(deftest proxy-interface-method-on-this-test
+  (testing "calling .meta on this resolves through proxy class hierarchy"
+    (is (= "{:works true}"
+           (bb '(let [m (proxy [clojure.lang.APersistentMap clojure.lang.IMeta clojure.lang.IObj] []
+                          (iterator [] (.iterator {}))
+                          (containsKey [k] false)
+                          (entryAt [k] nil)
+                          (valAt ([k] nil) ([k d] d))
+                          (count [] 0)
+                          (assoc [k v] nil)
+                          (without [k] nil)
+                          (seq [] nil)
+                          (meta [] {:works true})
+                          (withMeta [md] nil)
+                          (toString [] (str (.meta this))))]
+                  (.toString m)))))))
+
 (deftest proxy-super-APersistentMap-test
   (testing "proxy-super cons delegates to APersistentMap.cons which calls assoc"
     (is (= {:assoc-called [:a 1]}

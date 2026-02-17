@@ -11,7 +11,7 @@
 (defn class-name [^Class clazz]
   (.getName clazz))
 
-(defn proxy-fn [{:keys [class interfaces protocols methods]}]
+(defn proxy-fn [{:keys [class interfaces protocols methods args]}]
   (let [interface-names (set (map class-name interfaces))]
     (case [(class-name class) interface-names]
       ;; This combination is used by pathom3
@@ -164,20 +164,26 @@
 
 (defn class-sym [c] (symbol (class-name c)))
 
+;; Proxy classes must be registered here so SCI resolves method calls on
+;; `this` against the proxy class rather than falling through to public-class.
+;; Without this, proxy-super and interface method calls on `this` inside
+;; proxy bodies fail.
 (def custom-reflect-map
-  {(class-sym (class (proxy-fn {:class java.net.Authenticator})))
+  {(class-sym (get-proxy-class java.net.Authenticator))
    {:methods [{:name "getPasswordAuthentication"}]}
-   (class-sym (class (proxy-fn {:class java.net.ProxySelector})))
+   (class-sym (get-proxy-class java.net.ProxySelector))
    {:methods [{:name "connectFailed"}
               {:name "select"}]}
-   (class-sym (class (proxy-fn {:class javax.net.ssl.HostnameVerifier})))
+   (class-sym (get-proxy-class javax.net.ssl.HostnameVerifier))
    {:methods [{:name "verify"}]}
-   (class-sym (class (proxy-fn {:class java.lang.ThreadLocal})))
+   (class-sym (get-proxy-class java.lang.ThreadLocal))
    {:methods [{:name "get"}]}
-   (class-sym (class (proxy-fn {:class java.lang.Object})))
+   (class-sym (get-proxy-class java.lang.Object))
    {:methods [{:name "equals"}
               {:name "hashCode"}
-              {:name "toString"}]}})
+              {:name "toString"}]}
+   (class-sym (get-proxy-class clojure.lang.APersistentMap clojure.lang.IMeta clojure.lang.IObj sci.impl.types.ICustomType))
+   {:allPublicMethods true}})
 
 ;;; Scratch
 
