@@ -40,6 +40,7 @@ args=("-jar" "$BABASHKA_JAR"
       # "-H:+DashboardPretty"
       # "-H:+DashboardJson"
       # "-H:ReportAnalysisForbiddenType=java.awt.Toolkit:Instantiated"
+      # "-H:BuildOutputJSONFile=report.json" # uncomment to analyze image size
       "--verbose"
       "--no-fallback"
       "--native-image-info"
