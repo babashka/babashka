@@ -9,42 +9,43 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- [#1909](https://github.com/babashka/babashka/issues/1909): add [JLine3](https://github.com/jline/jline3) for TUI support
+- Console REPL (`bb repl`) improvements: multi-line editing, tab completion, ghost text, eldoc, doc-at-point (Ctrl+X Ctrl+D), persistent history
+- Add keyword completions to nREPL and console REPL (`:foo`, `:ns/foo`, `::foo`, `::alias/foo`)
+- [#1299](https://github.com/babashka/babashka/issues/1299): add new `babashka.terminal` namespace that exposes `tty?` with arguments `:stdin`, `:stdout` or `:stderr`
+- Compatibility with [charm.clj](https://github.com/TimoKramer/charm.clj)
+- Support `deftype` with map interfaces (e.g. `IPersistentMap`, `ILookup`, `Associative`). Libraries like [core.cache](https://github.com/clojure/core.cache) and [linked](https://github.com/frankiesardo/linked) now work in babashka.
+- Compatibility with [cloverage](https://github.com/cloverage/cloverage) (pending [upstream PR](https://github.com/cloverage/cloverage/pull/356))
+- SCI: `deftype` now macroexpands to `deftype*`, matching JVM Clojure, enabling code walkers like riddley
+- SCI: `case` now macroexpands to JVM-compatible `case*` format, enabling tools like riddley and cloverage
+- SCI: `macroexpand-1` now accepts an optional env map as first argument, enabling riddley compatibility
+- SCI: `macroexpand-1` of `(.method ClassName)` now wraps class targets in `identity`, matching Clojure behavior
+- SCI: `macroexpand-1` now expands `(ClassName. args)` to `(new ClassName args)`, matching JVM Clojure
 - SCI: support functional interface adaptation for instance targets (e.g. `(let [^Predicate p even?] (.test p 42))`)
 - SCI: infer type tags from let binding values to binding names
-- Compatibility with [cloverage](https://github.com/cloverage/cloverage) (pending [upstream PR](https://github.com/cloverage/cloverage/pull/356))
+- SCI: fix `.method` on class objects routing to static instead of instance method path
 - SCI: fix `read` with `nil` or `false` as eof-value throwing instead of returning the eof-value
 - SCI: fix `letfn` with duplicate function names crashing with ClassCastException
-- SCI: `macroexpand-1` now expands `(ClassName. args)` to `(new ClassName args)`, matching JVM Clojure
 - SCI: fix `ns-map` not reflecting vars that shadow referred vars
 - SCI: preserve `:tag` metadata in `copy-var`
 - SCI: fix NPE in `resolve` when `:outer-idens` is nil
-- Add `clojure.test.junit` as built-in source namespace
-- Fix [babashka.nrepl#71](https://github.com/babashka/babashka.nrepl/issues/71): nREPL server now uses non-daemon threads so the process stays alive without `@(promise)`
-- [#1909](https://github.com/babashka/babashka/issues/1909): add [Jline3](https://github.com/jline/jline3) for TUI support
-- Console REPL (`bb repl`) improvements
-- Add keyword completions to nREPL and console REPL (`:foo`, `:ns/foo`, `::foo`, `::alias/foo`)
-- [#1299](https://github.com/babashka/babashka/issues/1299): add new `babashka.terminal` namespace that exposes `tty?` with arguments `:stdin`, `:stdout` or `:stderr`
-- Support `deftype` with map interfaces (e.g. `IPersistentMap`, `ILookup`, `Associative`). Libraries like [core.cache](https://github.com/clojure/core.cache) and [linked](https://github.com/frankiesardo/linked) now work in babashka.
-- [#1923](https://github.com/babashka/babashka/issues/1923): support `reify` with `java.time.temporal.TemporalQuery`
 - Support multiple `catch` i.c.m. `^:sci/error`
-- Compatibility with [charm.clj](https://github.com/TimoKramer/charm.clj)
+- Fix `satisfies?` on protocol on `proxy`
+- [#1923](https://github.com/babashka/babashka/issues/1923): support `reify` with `java.time.temporal.TemporalQuery`
+- Fix `reify` with methods returning `int`/`short`/`byte`/`float` when Clojure fn returns `long`/`double`
+- Fix [babashka.nrepl#71](https://github.com/babashka/babashka.nrepl/issues/71): nREPL server now uses non-daemon threads so the process stays alive without `@(promise)`
+- Add `clojure.test.junit` as built-in source namespace
+- Add JLine reify support: `Parser`, `Completer`, `Highlighter`, `Widget`, `ParsedLine`
+- Add JLine classes for rebel-readline compatibility: `LineReader$Option`, `Attributes$InputFlag`, `Attributes$LocalFlag`
+- Add cp437 (IBM437) charset support in native binary via selective GraalVM charset Feature (see [ADR 0006](doc/adr/0006-selective-charset-support/decision.md))
+- Add `java.lang.ref.SoftReference`
+- Add `java.lang.reflect.Field` methods: `setAccessible`, `get`, `set`
+- [#1919](https://github.com/babashka/babashka/issues/1919): add `java.nio.file.attribute.UserPrincipal` and `GroupPrincipal`
+- [#1920](https://github.com/babashka/babashka/issues/1920): add `java.nio.file.FileSystemNotFoundException`
 - Bump `deps.clj`
 - Bump `fs`
 - Bump `transit-clj` to `1.1.347`
 - Bump `Selmer` to `1.13.1`
-- Fix `satisfies?` on protocol on `proxy`
-- Add `java.lang.ref.SoftReference`
-- [#1919](https://github.com/babashka/babashka/issues/1919): add `java.nio.file.attribute.UserPrincipal` and `GroupPrincipal`
-- [#1920](https://github.com/babashka/babashka/issues/1920): add `java.nio.file.FileSystemNotFoundException`
-- Add JLine reify support: `Parser`, `Completer`, `Widget`, `ParsedLine`
-- Fix `reify` with methods returning `int`/`short`/`byte`/`float` when Clojure fn returns `long`/`double`
-- Add `java.lang.reflect.Field` methods: `setAccessible`, `get`, `set`
-- SCI: `deftype` now macroexpands to `deftype*`, matching JVM Clojure, enabling code walkers like riddley
-- SCI: `case` now macroexpands to JVM-compatible `case*` format, enabling tools like riddley and cloverage
-- SCI: fix `.method` on class objects routing to static instead of instance method path
-- SCI: `macroexpand-1` of `(.method ClassName)` now wraps class targets in `identity`, matching Clojure behavior
-- SCI: `macroexpand-1` now accepts an optional env map as first argument, enabling riddley compatibility
-- Add cp437 (IBM437) charset support in native binary via selective GraalVM charset Feature (see [ADR 0006](doc/adr/0006-selective-charset-support/decision.md))
 
 ## 1.12.214 (2026-01-13)
 
