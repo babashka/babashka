@@ -662,6 +662,8 @@
                 ~(symbol "[Lclojure.core$range;")])
           ~@(when features/yaml? '[org.yaml.snakeyaml.error.YAMLException])
           ~@(when features/hsqldb? '[org.hsqldb.jdbcDriver])
+          ~@(when features/sqlite4j? '[io.roastedroot.sqlite4j.JDBC
+                                       io.roastedroot.sqlite4j.jdbc4.JDBC4Connection])
           org.jsoup.Jsoup
           org.jsoup.nodes.Attribute
           org.jsoup.nodes.Attributes

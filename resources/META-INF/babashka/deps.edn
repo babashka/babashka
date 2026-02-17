@@ -37,6 +37,7 @@
         seancorfield/next.jdbc {:mvn/version "1.1.610"}
         org.postgresql/postgresql {:mvn/version "42.2.18"}
         org.hsqldb/hsqldb {:mvn/version "2.5.1"}
+        io.roastedroot/sqlite4j {:mvn/version "3.51.2.0"}
         datascript/datascript {:mvn/version "1.0.1"}
         http-kit/http-kit {:mvn/version "2.9.0-beta1"}
         org.clojure/core.match {:mvn/version "1.0.0"}

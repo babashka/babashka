@@ -63,6 +63,13 @@ else
     BABASHKA_LEIN_PROFILES+=",-feature/oracledb"
 fi
 
+if [ "$BABASHKA_FEATURE_SQLITE4J" = "true" ]
+then
+    BABASHKA_LEIN_PROFILES+=",+feature/sqlite4j"
+else
+    BABASHKA_LEIN_PROFILES+=",-feature/sqlite4j"
+fi
+
 if [ "$BABASHKA_FEATURE_XML" != "false" ]
 then
     BABASHKA_LEIN_PROFILES+=",+feature/xml"

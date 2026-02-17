@@ -296,6 +296,7 @@ Use bb run --help to show this help output.
     features/jdbc?
     features/postgresql?
     features/sqlite?
+    features/sqlite4j?
     features/hsqldb?
     features/oracledb?
     features/httpkit-client?

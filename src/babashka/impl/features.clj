@@ -21,6 +21,7 @@
 ;; excluded by default
 (def jdbc? (= "true" (System/getenv "BABASHKA_FEATURE_JDBC")))
 (def sqlite? (= "true" (System/getenv "BABASHKA_FEATURE_SQLITE")))
+(def sqlite4j? (= "true" (System/getenv "BABASHKA_FEATURE_SQLITE4J")))
 (def postgresql? (= "true" (System/getenv "BABASHKA_FEATURE_POSTGRESQL")))
 (def oracledb? (= "true" (System/getenv "BABASHKA_FEATURE_ORACLEDB")))
 (def hsqldb? (= "true" (System/getenv "BABASHKA_FEATURE_HSQLDB")))

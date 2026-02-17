@@ -32,7 +32,7 @@
                  [org.babashka/babashka.impl.java "0.1.16"]
                  [org.clojure/core.async "1.8.741"]
                  [org.clojure/test.check "1.1.1"]
-                 [com.github.clj-easy/graal-build-time "0.1.0"]
+                 [com.github.clj-easy/graal-build-time "1.0.5"]
                  [org.babashka/impl-graal-features "0.0.1"]
                  [rewrite-clj/rewrite-clj "1.2.50"]
                  [insn/insn "0.5.2"]
@@ -64,6 +64,8 @@
                             :dependencies [[seancorfield/next.jdbc "1.1.610"]]}
              :sqlite/deps {:dependencies [[org.xerial/sqlite-jdbc "3.36.0.3"]]}
              :feature/sqlite [:feature/jdbc :sqlite/deps]
+             :sqlite4j/deps {:dependencies [[io.roastedroot/sqlite4j "3.51.2.0"]]}
+             :feature/sqlite4j [:feature/jdbc :sqlite4j/deps]
              :postgres/deps {:dependencies [[org.postgresql/postgresql "42.2.18"]]}
              :feature/postgresql [:feature/jdbc :postgres/deps]
              ;:feature/oracledb [:feature/jdbc {:dependencies [[com.oracle.database.jdbc/ojdbc8 "19.8.0.0"]]}]

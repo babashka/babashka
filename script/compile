@@ -79,6 +79,15 @@ if [ "$BABASHKA_FEATURE_POSTGRESQL" = "true" ]; then
     args+=("--initialize-at-build-time=org.postgresql.PGProperty")
 fi
 
+BABASHKA_FEATURE_SQLITE4J=${BABASHKA_FEATURE_SQLITE4J:-}
+
+if [ "$BABASHKA_FEATURE_SQLITE4J" = "true" ]; then
+    args+=("--initialize-at-build-time=io.roastedroot.zerofs"
+           "--initialize-at-build-time=io.roastedroot.sqlite4j"
+           "--initialize-at-build-time=com.dylibso.chicory"
+           "--initialize-at-run-time=io.roastedroot.sqlite4j.JDBC")
+fi
+
 BABASHKA_FEATURE_SELMER=${BABASHKA_FEATURE_SELMER:-}
 
 if [ "$BABASHKA_FEATURE_SELMER" = "true" ]; then
