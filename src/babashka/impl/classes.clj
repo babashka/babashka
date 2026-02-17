@@ -307,7 +307,8 @@
 
 (def classes
   ;; :all = full reflection enabled (allPublicMethods, allPublicConstructors, etc.)
-  `{:all [clojure.lang.APersistentMap ;; for proxy-super on non-Object methods
+  `{:all [clojure.lang.AMapEntry ;; for proxy-super on proxied classes
+          clojure.lang.APersistentMap ;; for proxy-super on proxied classes
           clojure.lang.ArityException
           clojure.lang.BigInt
           clojure.lang.ExceptionInfo
@@ -728,7 +729,6 @@
     ;; visible in the native image.
     :instance-checks [clojure.lang.AFn
                       clojure.lang.AFunction
-                      clojure.lang.AMapEntry ;; for proxy
                       clojure.lang.APersistentSet
                       clojure.lang.AReference
                       clojure.lang.Associative
