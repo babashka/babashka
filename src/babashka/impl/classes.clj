@@ -129,6 +129,8 @@
                {:name "getParameterCount"}]}
     java.lang.reflect.Executable
     {:methods [{:name "getParameterCount"}]}
+    java.util.stream.Collectors
+    {:methods [{:name "toList"}]}
     java.lang.reflect.Array
     {:methods [{:name "newInstance"}
                {:name "set"}]}
@@ -602,7 +604,6 @@
           java.util.jar.JarOutputStream
           java.util.jar.Manifest
           java.util.stream.BaseStream
-          java.util.stream.Collectors
           java.util.stream.Stream
           java.util.stream.IntStream
           java.util.Random
