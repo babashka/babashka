@@ -906,6 +906,8 @@
                                    java.net.CookieStore
                                    (instance? org.jline.reader.Buffer v)
                                    org.jline.reader.Buffer
+                                   (instance? org.jline.reader.ParsedLine v)
+                                   org.jline.reader.ParsedLine
                                    ;; this makes interop on reified classes work
                                    ;; see java_net_http_test/interop-test
                                    (instance? sci.impl.types.ICustomType v)

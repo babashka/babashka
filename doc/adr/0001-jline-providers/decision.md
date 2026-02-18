@@ -86,31 +86,13 @@ Include both FFM and Exec providers with the following strategy:
 
 Goal: run rebel-readline from source on babashka.
 
-### Done
+### Architecture changes in rebel-readline
 
-Classes added to babashka:
-- `org.jline.reader.Highlighter` (interface, reify support added)
-- `org.jline.reader.LineReader$Option` (enum)
-- `org.jline.terminal.Attributes$InputFlag` (enum)
-- `org.jline.terminal.Attributes$LocalFlag` (enum)
+Proxying `LineReaderImpl` with `IDeref`/`IAtom` (as rebel-readline originally did) adds ~200KB to the native binary. Instead:
 
-### Remaining blockers
-
-1. `proxy-super` in SCI: SCI's `proxy` macro doesn't support `proxy-super` in user code. Rebel-readline needs `(proxy-super parse line cursor context)` to fall back to `DefaultParser`'s parse method. This requires SCI changes.
-
-2. `org.jline.reader.impl.DefaultParser`: rebel-readline uses `(proxy [DefaultParser] ...)` to extend the default parser, overriding `isDelimiterChar` and `parse`. DefaultParser is stable (since 2002) and babashka already exposes `impl.LineReaderImpl`, so exposing it is consistent. Needs a proxy case in `babashka.impl.proxy`.
-
-3. `org.jline.reader.impl.BufferImpl`: only used in a dev helper (`buffer*`), not needed at runtime. Can be avoided on the rebel-readline side.
-
-4. `org.jline.terminal.impl.DumbTerminal`: only used for an `instance?` check to detect bad terminals. Can be avoided on the rebel-readline side (e.g. check `.getType` instead).
-
-### Alternatives to avoid on rebel-readline side
-
-Proxying `LineReaderImpl` with `IDeref`/`IAtom` (as rebel-readline currently does) adds ~200KB to the native binary. Instead:
-
-- Replace `(proxy [LineReaderImpl IDeref IAtom] ...)` with a normal `LineReaderBuilder`-created reader
-- Store service state in a separate atom bound to a dynamic var instead of making the reader derefable/swappable
-- Replace the `selfInsert` proxy-super pattern with a widget wrapper:
+- Replaced `(proxy [LineReaderImpl IDeref IAtom] ...)` with a normal `LineReaderBuilder`-created reader
+- Store service state in a `*state*` atom instead of making the reader derefable/swappable
+- Replaced the `selfInsert` proxy-super pattern with a widget wrapper:
   ```clojure
   (let [widgets (.getWidgets reader)
         orig    (.get widgets LineReader/SELF_INSERT)]
@@ -118,7 +100,52 @@ Proxying `LineReaderImpl` with `IDeref`/`IAtom` (as rebel-readline currently doe
       (reify Widget
         (apply [_]
           (run-hooks)
-          (.apply orig)))))
+          (.apply ^Widget orig)))))
   ```
-  This avoids proxying `LineReaderImpl` entirely.
+- Changed `proxy [java.util.function.Supplier]` to `reify` (Supplier already in bb's reify interfaces)
+- Changed `catch NoSuchFieldException` to `catch Exception` in `get-accessible-field` for bb compatibility
+- Added `^Widget` type hint on `.apply orig` so SCI resolves through the interface (anonymous inner classes aren't directly accessible)
+- Bumped compliment from 0.6.0 to 0.7.1 (0.6.0 had `^Package` type hint that bb couldn't resolve)
+
+### Classes added to babashka
+
+- `java.util.stream.Collectors` (for compliment)
+- `java.lang.reflect.Constructor` with getName/getModifiers/getParameterTypes/getParameterCount (for compliment)
+- `java.lang.reflect.Executable` with getParameterCount (for compliment)
+- `java.lang.StackOverflowError` (instance check + import)
+- `org.jline.reader.Buffer` (interface, with public-class upcast from BufferImpl)
+- `java.util.Comparator` added to reify interfaces (impl-java)
+
+### Proxy cases added
+
+- `org.jline.reader.Completer`
+- `org.jline.reader.Highlighter`
+- `org.jline.reader.ParsedLine` (with `clojure.lang.IMeta`)
+- `java.io.Writer`
+- `java.io.Reader`
+
+### Vars added to babashka
+
+In `clojure.repl` (as bb overrides, not in SCI):
+- `special-doc` (private) — inlined special-doc-map for special form documentation
+- `set-break-handler!` — signal handler registration; zero-arg is no-op since `Thread.stop` doesn't work in modern JVMs
+
+In `clojure.main`:
+- `repl-read`
+
+### Babashka REPL integration
+
+- `start-repl!` skips `repl-with-jline` when custom `:read` is provided in opts, so rebel-readline's read hook isn't clobbered by bb's own JLine REPL
+- bb.edn for rebel-readline excludes jline-terminal, jline-terminal-jni, jline-terminal-ffm (keeps jline-reader) to avoid conflicts with bb's built-in JLine
+- rebel-readline's deps.edn needs `org.jline/jline-terminal-ffm` for JVM development
+
+### Public-class upcasts for JLine anonymous inner classes
+
+JLine uses anonymous inner classes internally (e.g. `LineReaderImpl$2` for Widget, `LineReaderImpl$3` for ParsedLine). SCI can't resolve methods on these directly. Fixed with public-class upcasts in `classes.clj`:
+- `org.jline.reader.Buffer` (from `BufferImpl`)
+- `org.jline.reader.ParsedLine` (from `LineReaderImpl$3`)
+
+### TODO
+
+- Completion triggers `NoSuchFieldException: ns` — compliment's `populate-global-members-cache` calls `.getField dc name` without a try/catch. When a class has a field whose declaring class doesn't expose it publicly, it throws. Fix in compliment: wrap `.getField` in try/catch like rebel-readline's `get-accessible-field`.
 
