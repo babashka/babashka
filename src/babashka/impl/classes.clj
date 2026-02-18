@@ -122,6 +122,13 @@
                {:name "setAccessible"}
                {:name "get"}
                {:name "set"}]}
+    java.lang.reflect.Constructor
+    {:methods [{:name "getName"}
+               {:name "getModifiers"}
+               {:name "getParameterTypes"}
+               {:name "getParameterCount"}]}
+    java.lang.reflect.Executable
+    {:methods [{:name "getParameterCount"}]}
     java.lang.reflect.Array
     {:methods [{:name "newInstance"}
                {:name "set"}]}
@@ -595,6 +602,7 @@
           java.util.jar.JarOutputStream
           java.util.jar.Manifest
           java.util.stream.BaseStream
+          java.util.stream.Collectors
           java.util.stream.Stream
           java.util.stream.IntStream
           java.util.Random
@@ -748,6 +756,7 @@
                       clojure.lang.IPersistentStack
                       clojure.lang.IPersistentList
                       clojure.lang.IRecord
+                      clojure.lang.IType
                       clojure.lang.IReduce
                       clojure.lang.IReduceInit
                       clojure.lang.IKVReduce
@@ -793,6 +802,7 @@
                       java.lang.ExceptionInInitializerError
                       java.lang.LinkageError
                       java.lang.ThreadDeath
+                      java.lang.StackOverflowError
                       java.lang.VirtualMachineError
                       java.lang.NoSuchFieldException
                       java.sql.Timestamp
@@ -1051,6 +1061,7 @@
     ProcessBuilder java.lang.ProcessBuilder
     SecurityException java.lang.SecurityException
     Short java.lang.Short
+    StackOverflowError java.lang.StackOverflowError
     StackTraceElement java.lang.StackTraceElement
     String java.lang.String
     StringBuilder java.lang.StringBuilder
