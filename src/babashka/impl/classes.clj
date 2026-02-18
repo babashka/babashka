@@ -604,6 +604,7 @@
           java.util.jar.JarOutputStream
           java.util.jar.Manifest
           java.util.stream.BaseStream
+          java.util.stream.Collectors
           java.util.stream.Stream
           java.util.stream.IntStream
           java.util.Random
@@ -706,6 +707,7 @@
           org.jline.reader.LineReader$Option
           org.jline.reader.LineReader$SuggestionType
           org.jline.reader.LineReaderBuilder
+          org.jline.reader.Buffer
           org.jline.reader.impl.LineReaderImpl
           org.jline.reader.EndOfFileException
           org.jline.reader.UserInterruptException
@@ -902,6 +904,8 @@
                                    java.nio.channels.SocketChannel
                                    (instance? java.net.CookieStore v)
                                    java.net.CookieStore
+                                   (instance? org.jline.reader.Buffer v)
+                                   org.jline.reader.Buffer
                                    ;; this makes interop on reified classes work
                                    ;; see java_net_http_test/interop-test
                                    (instance? sci.impl.types.ICustomType v)

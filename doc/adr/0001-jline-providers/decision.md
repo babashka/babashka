@@ -96,11 +96,29 @@ Classes added to babashka:
 
 ### Remaining blockers
 
-1. **`proxy-super` in SCI**: SCI's `proxy` macro doesn't support `proxy-super` in user code. Rebel-readline needs `(proxy-super parse line cursor context)` to fall back to `DefaultParser`'s parse method. This requires SCI changes.
+1. `proxy-super` in SCI: SCI's `proxy` macro doesn't support `proxy-super` in user code. Rebel-readline needs `(proxy-super parse line cursor context)` to fall back to `DefaultParser`'s parse method. This requires SCI changes.
 
-2. **`org.jline.reader.impl.DefaultParser`**: rebel-readline uses `(proxy [DefaultParser] ...)` to extend the default parser, overriding `isDelimiterChar` and `parse`. DefaultParser is stable (since 2002) and babashka already exposes `impl.LineReaderImpl`, so exposing it is consistent. Needs a proxy case in `babashka.impl.proxy`.
+2. `org.jline.reader.impl.DefaultParser`: rebel-readline uses `(proxy [DefaultParser] ...)` to extend the default parser, overriding `isDelimiterChar` and `parse`. DefaultParser is stable (since 2002) and babashka already exposes `impl.LineReaderImpl`, so exposing it is consistent. Needs a proxy case in `babashka.impl.proxy`.
 
-3. **`org.jline.reader.impl.BufferImpl`**: only used in a dev helper (`buffer*`), not needed at runtime. Can be avoided on the rebel-readline side.
+3. `org.jline.reader.impl.BufferImpl`: only used in a dev helper (`buffer*`), not needed at runtime. Can be avoided on the rebel-readline side.
 
-4. **`org.jline.terminal.impl.DumbTerminal`**: only used for an `instance?` check to detect bad terminals. Can be avoided on the rebel-readline side (e.g. check `.getType` instead).
+4. `org.jline.terminal.impl.DumbTerminal`: only used for an `instance?` check to detect bad terminals. Can be avoided on the rebel-readline side (e.g. check `.getType` instead).
+
+### Alternatives to avoid on rebel-readline side
+
+Proxying `LineReaderImpl` with `IDeref`/`IAtom` (as rebel-readline currently does) adds ~200KB to the native binary. Instead:
+
+- Replace `(proxy [LineReaderImpl IDeref IAtom] ...)` with a normal `LineReaderBuilder`-created reader
+- Store service state in a separate atom bound to a dynamic var instead of making the reader derefable/swappable
+- Replace the `selfInsert` proxy-super pattern with a widget wrapper:
+  ```clojure
+  (let [widgets (.getWidgets reader)
+        orig    (.get widgets LineReader/SELF_INSERT)]
+    (.put widgets "self-insert"
+      (reify Widget
+        (apply [_]
+          (run-hooks)
+          (.apply orig)))))
+  ```
+  This avoids proxying `LineReaderImpl` entirely.
 

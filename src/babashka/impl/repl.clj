@@ -602,7 +602,8 @@
 (defn start-repl!
   ([sci-ctx] (start-repl! sci-ctx nil))
   ([sci-ctx opts]
-   (if (terminal/tty? :stdin)
+   (if (and (terminal/tty? :stdin)
+            (not (:read opts)))
      (repl-with-jline sci-ctx opts)
      (repl sci-ctx opts))))
 
