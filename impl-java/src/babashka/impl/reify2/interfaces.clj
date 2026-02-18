@@ -30,6 +30,7 @@
                  java.util.function.Predicate
                  java.util.function.Supplier
                  java.lang.Comparable
+                 java.util.Comparator
                  javax.net.ssl.X509TrustManager
                  clojure.lang.LispReader$Resolver
                  sun.misc.SignalHandler

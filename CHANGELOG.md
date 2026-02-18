@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Add `java.lang.reflect.Constructor`, `java.lang.reflect.Executable`, `java.util.stream.Collectors`, `java.lang.StackOverflowError`, `clojure.lang.IType`, `java.util.Comparator` (reify)
 - Add JLine classes for rebel-readline compatibility: `Highlighter`, `LineReader$Option`, `Attributes$InputFlag`, `Attributes$LocalFlag`
 - Hide redundant `(keyword)` description in REPL completions
 - SCI: add `proxy-super`, `proxy-call-with-super`, `update-proxy` and `proxy-mappings`

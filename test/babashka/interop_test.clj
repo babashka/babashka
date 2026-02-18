@@ -129,6 +129,23 @@
   (is (true? (bb nil "(import [java.util Collection] [java.util.stream Stream] [java.util.function Predicate])
                       (= '(1 2 3 4 5 6 7 8 9 10) (->> (Stream/iterate 1 inc) stream-seq! (take 10)))"))))
 
+(deftest collectors-test
+  (is (= ["a" "b" "c"]
+         (bb nil "(import [java.util.stream Collectors Stream])
+                  (into [] (.collect (Stream/of (object-array [\"a\" \"b\" \"c\"])) (Collectors/toList)))"))))
+
+(deftest reflect-constructor-test
+  (is (true? (bb nil "(import [java.lang.reflect Constructor])
+                      (let [ctors (.getConstructors String)]
+                        (every? #(instance? Constructor %) ctors))")))
+  (is (true? (bb nil "(pos? (.getParameterCount (first (filter #(pos? (.getParameterCount %))
+                                                                (.getConstructors String)))))"))))
+
+(deftest reflect-executable-test
+  (is (true? (bb nil "(import [java.lang.reflect Executable])
+                      (let [m (first (.getMethods String))]
+                        (instance? Executable m))"))))
+
 (deftest regression-test
   (is (true? (bb nil "(let [x \"f\"] (String/.startsWith \"foo\" x))"))))
 
