@@ -146,20 +146,12 @@
           ((method-or-bust methods 'initialValue) this)))
 
       ["org.jline.reader.Completer" #{}]
-      (proxy [org.jline.reader.Completer sci.impl.types.ICustomType] []
-        (getInterfaces [] interfaces)
-        (getMethods [] methods)
-        (getProtocols [] protocols)
-        (getFields [] nil)
+      (proxy [org.jline.reader.Completer] []
         (complete [reader line candidates]
           ((method-or-bust methods 'complete) this reader line candidates)))
 
       ["org.jline.reader.Highlighter" #{}]
-      (proxy [org.jline.reader.Highlighter sci.impl.types.ICustomType] []
-        (getInterfaces [] interfaces)
-        (getMethods [] methods)
-        (getProtocols [] protocols)
-        (getFields [] nil)
+      (proxy [org.jline.reader.Highlighter] []
         (highlight [reader buffer]
           ((method-or-bust methods 'highlight) this reader buffer)))
 
