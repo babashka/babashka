@@ -146,29 +146,17 @@
           ((method-or-bust methods 'initialValue) this)))
 
       ["org.jline.reader.Completer" #{}]
-      (proxy [org.jline.reader.Completer sci.impl.types.ICustomType] []
-        (getInterfaces [] interfaces)
-        (getMethods [] methods)
-        (getProtocols [] protocols)
-        (getFields [] nil)
+      (proxy [org.jline.reader.Completer] []
         (complete [reader line candidates]
           ((method-or-bust methods 'complete) this reader line candidates)))
 
       ["org.jline.reader.Highlighter" #{}]
-      (proxy [org.jline.reader.Highlighter sci.impl.types.ICustomType] []
-        (getInterfaces [] interfaces)
-        (getMethods [] methods)
-        (getProtocols [] protocols)
-        (getFields [] nil)
+      (proxy [org.jline.reader.Highlighter] []
         (highlight [reader buffer]
           ((method-or-bust methods 'highlight) this reader buffer)))
 
-      ["org.jline.reader.ParsedLine"]
-      (proxy [org.jline.reader.ParsedLine clojure.lang.IMeta sci.impl.types.ICustomType] []
-        (getInterfaces [] interfaces)
-        (getMethods [] methods)
-        (getProtocols [] protocols)
-        (getFields [] nil)
+      ["org.jline.reader.ParsedLine" #{}]
+      (proxy [org.jline.reader.ParsedLine] []
         (word [] ((method-or-bust methods 'word) this))
         (wordIndex [] ((method-or-bust methods 'wordIndex) this))
         (wordCursor [] ((method-or-bust methods 'wordCursor) this))
@@ -177,11 +165,7 @@
         (cursor [] ((method-or-bust methods 'cursor) this)))
 
       ["java.io.Writer" #{}]
-      (proxy [java.io.Writer sci.impl.types.ICustomType] []
-        (getInterfaces [] interfaces)
-        (getMethods [] methods)
-        (getProtocols [] protocols)
-        (getFields [] nil)
+      (proxy [java.io.Writer] []
         (flush [] ((method-or-bust methods 'flush) this))
         (close [] ((method-or-bust methods 'close) this))
         (write
@@ -189,11 +173,7 @@
            ((method-or-bust methods 'write) this str-cbuf off len))))
 
       ["java.io.Reader" #{}]
-      (proxy [java.io.Reader sci.impl.types.ICustomType] []
-        (getInterfaces [] interfaces)
-        (getMethods [] methods)
-        (getProtocols [] protocols)
-        (getFields [] nil)
+      (proxy [java.io.Reader] []
         (read
           ([] ((method-or-bust methods 'read) this))
           ([out-array] ((method-or-bust methods 'read) this out-array))
