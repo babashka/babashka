@@ -227,10 +227,14 @@
     clojure.lang.TaggedLiteral
     {:methods [{:name "create"}]}
     org.jline.reader.impl.LineReaderImpl
-    {:fields [{:name "post"}]
+    {:fields [{:name "post"} {:name "size"}]
      :methods [{:name "redisplay"}
                {:name "readBinding"}
-               {:name "defaultKeyMaps"}]}})
+               {:name "defaultKeyMaps"}
+               {:name "setCompleter"}
+               {:name "setHighlighter"}
+               {:name "setParser"}]
+     :inherit [org.jline.reader.LineReader]}})
 
 (def custom-map
   (cond->
@@ -1084,6 +1088,20 @@
 
 ;; (eval (vec (keys imports)))
 
+(defn public-declared-method? [^Class c ^java.lang.reflect.Method m]
+  (and (= c (.getDeclaringClass m))
+       (not (.getAnnotation m Deprecated))))
+
+(defn public-declared-method-names [^Class c]
+  (->> (.getMethods c)
+       (keep (fn [^java.lang.reflect.Method m]
+               (when (public-declared-method? c m)
+                 {:class c
+                  :name (.getName m)})))
+       (distinct)
+       (sort-by :name)
+       (vec)))
+
 (defn reflection-file-entries []
   (let [entries (vec (for [c (sort (concat (:all classes)
                                            (when features/java-net-http?
@@ -1111,7 +1129,15 @@
                                {:name class-name}))
         custom-entries (for [[c v] (:custom classes)
                              :let [class-name (str c)]]
-                         (assoc v :name class-name))
+                         (let [v (if-let [inherit-from (seq (:inherit v))]
+                                   (let [inherited (mapcat #(public-declared-method-names (Class/forName (str %)))
+                                                           inherit-from)
+                                         inherited-methods (mapv #(select-keys % [:name]) inherited)]
+                                     (-> v
+                                         (dissoc :inherit)
+                                         (update :methods into inherited-methods)))
+                                   (dissoc v :inherit))]
+                           (assoc v :name class-name)))
         all-entries (concat entries constructors methods fields instance-checks custom-entries)]
     all-entries))
 
@@ -1123,20 +1149,6 @@
            (first args)
            "resources/META-INF/native-image/babashka/babashka/reflect-config.json")
           (json/generate-string all-entries {:pretty true}))))
-
-(defn public-declared-method? [^Class c ^java.lang.reflect.Method m]
-  (and (= c (.getDeclaringClass m))
-       (not (.getAnnotation m Deprecated))))
-
-(defn public-declared-method-names [^Class c]
-  (->> (.getMethods c)
-       (keep (fn [^java.lang.reflect.Method m]
-               (when (public-declared-method? c m)
-                 {:class c
-                  :name (.getName m)})))
-       (distinct)
-       (sort-by :name)
-       (vec)))
 
 (defn all-classes
   "Returns every java.lang.Class instance Babashka supports."
