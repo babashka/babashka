@@ -163,7 +163,7 @@
         (highlight [reader buffer]
           ((method-or-bust methods 'highlight) this reader buffer)))
 
-      ["org.jline.reader.ParsedLine" #{"clojure.lang.IMeta"}]
+      ["org.jline.reader.ParsedLine"]
       (proxy [org.jline.reader.ParsedLine clojure.lang.IMeta sci.impl.types.ICustomType] []
         (getInterfaces [] interfaces)
         (getMethods [] methods)
@@ -174,8 +174,7 @@
         (wordCursor [] ((method-or-bust methods 'wordCursor) this))
         (words [] ((method-or-bust methods 'words) this))
         (line [] ((method-or-bust methods 'line) this))
-        (cursor [] ((method-or-bust methods 'cursor) this))
-        (meta [] (when-let [m (get methods 'meta)] (m this))))
+        (cursor [] ((method-or-bust methods 'cursor) this)))
 
       ["java.io.Writer" #{}]
       (proxy [java.io.Writer sci.impl.types.ICustomType] []
