@@ -233,7 +233,8 @@
                {:name "defaultKeyMaps"}
                {:name "setCompleter"}
                {:name "setHighlighter"}
-               {:name "setParser"}]
+               {:name "setParser"}
+               {:name "selfInsert"}]
      :inherit [org.jline.reader.LineReader]}})
 
 (def custom-map

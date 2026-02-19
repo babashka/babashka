@@ -163,26 +163,17 @@
         (highlight [reader buffer]
           ((method-or-bust methods 'highlight) this reader buffer)))
 
-      ["org.jline.reader.ParsedLine" #{"clojure.lang.IMeta"}]
-      (proxy [org.jline.reader.ParsedLine clojure.lang.IMeta sci.impl.types.ICustomType] []
-        (getInterfaces [] interfaces)
-        (getMethods [] methods)
-        (getProtocols [] protocols)
-        (getFields [] nil)
+      ["org.jline.reader.ParsedLine" #{}]
+      (proxy [org.jline.reader.ParsedLine] []
         (word [] ((method-or-bust methods 'word) this))
         (wordIndex [] ((method-or-bust methods 'wordIndex) this))
         (wordCursor [] ((method-or-bust methods 'wordCursor) this))
         (words [] ((method-or-bust methods 'words) this))
         (line [] ((method-or-bust methods 'line) this))
-        (cursor [] ((method-or-bust methods 'cursor) this))
-        (meta [] (when-let [m (get methods 'meta)] (m this))))
+        (cursor [] ((method-or-bust methods 'cursor) this)))
 
       ["java.io.Writer" #{}]
-      (proxy [java.io.Writer sci.impl.types.ICustomType] []
-        (getInterfaces [] interfaces)
-        (getMethods [] methods)
-        (getProtocols [] protocols)
-        (getFields [] nil)
+      (proxy [java.io.Writer] []
         (flush [] ((method-or-bust methods 'flush) this))
         (close [] ((method-or-bust methods 'close) this))
         (write
@@ -190,16 +181,25 @@
            ((method-or-bust methods 'write) this str-cbuf off len))))
 
       ["java.io.Reader" #{}]
-      (proxy [java.io.Reader sci.impl.types.ICustomType] []
-        (getInterfaces [] interfaces)
-        (getMethods [] methods)
-        (getProtocols [] protocols)
-        (getFields [] nil)
+      (proxy [java.io.Reader] []
         (read
           ([] ((method-or-bust methods 'read) this))
           ([out-array] ((method-or-bust methods 'read) this out-array))
           ([out-array off len] ((method-or-bust methods 'read) this out-array off len)))
         (close [] (when-let [m (get methods 'close)] (m this))))
+
+      ["org.jline.reader.impl.LineReaderImpl" #{}]
+      (let [[terminal app-name variables] args]
+        (proxy [org.jline.reader.impl.LineReaderImpl sci.impl.types.ICustomType]
+            [terminal app-name variables]
+          (getInterfaces [] interfaces)
+          (getMethods [] methods)
+          (getProtocols [] protocols)
+          (getFields [] nil)
+          (selfInsert []
+            (if-let [m (get methods 'selfInsert)]
+              (m this)
+              (proxy-super selfInsert)))))
 
       ["java.lang.Object" #{}]
       (proxy [java.lang.Object] []
@@ -239,7 +239,20 @@
               {:name "hashCode"}
               {:name "toString"}]}
    (class-sym (get-proxy-class clojure.lang.APersistentMap clojure.lang.IMeta clojure.lang.IObj sci.impl.types.ICustomType))
-   {:allPublicMethods true}})
+   {:allPublicMethods true}
+   (class-sym (get-proxy-class org.jline.reader.impl.LineReaderImpl sci.impl.types.ICustomType))
+   {:methods (into [{:name "getVariable"}
+                    {:name "redisplay"}
+                    {:name "readBinding"}
+                    {:name "defaultKeyMaps"}
+                    {:name "setCompleter"}
+                    {:name "setHighlighter"}
+                    {:name "setParser"}
+                    {:name "selfInsert"}]
+                   (map (fn [^java.lang.reflect.Method m] {:name (.getName m)})
+                        (filter (fn [^java.lang.reflect.Method m]
+                                  (= org.jline.reader.LineReader (.getDeclaringClass m)))
+                                (.getMethods org.jline.reader.LineReader))))}})
 
 ;;; Scratch
 
