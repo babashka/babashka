@@ -116,6 +116,20 @@ Proxying `LineReaderImpl` with `IDeref`/`IAtom` (as rebel-readline originally di
 - `org.jline.reader.Buffer` (interface, with public-class upcast from BufferImpl)
 - `java.util.Comparator` added to reify interfaces (impl-java)
 
+### LineReaderImpl reflection config
+
+`LineReaderImpl` is removed from the bare `:all` list (which gave full reflection) and moved to `:custom` with explicit methods and fields:
+
+- Fields: `post` (for eldoc display), `size` (for terminal size)
+- Impl-only methods: `redisplay`, `readBinding`, `defaultKeyMaps`, `setCompleter`, `setHighlighter`, `setParser`
+- Inherited methods via `:inherit [org.jline.reader.LineReader]` — pulls in all public declared methods from the LineReader interface
+
+The `:inherit` mechanism in `classes.clj` solves a GraalVM reflection problem: when a class has explicit `:methods` (not `:all`), type-hinting as `^LineReaderImpl` can't find inherited interface methods like `setOpt` via reflection. The `:inherit` key declares which superclass/interface methods to include in the reflection config, so inherited methods resolve correctly without needing `:all`.
+
+### Reflection warnings in rebel-readline
+
+Added `(set! *warn-on-reflection* true)` to `jline_api.clj` and `clojure/line_reader.clj`. Type-hinted LineReaderImpl-specific call sites with `^LineReaderImpl` (imported via `[org.jline.reader.impl LineReaderImpl]`, not the nested `impl.LineReaderImpl` syntax which SCI doesn't support). The `^LineReader` return type hint on `(line-reader)` covers most interface method calls.
+
 ### Proxy cases added
 
 - `org.jline.reader.Completer`
