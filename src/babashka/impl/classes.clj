@@ -227,7 +227,10 @@
     clojure.lang.TaggedLiteral
     {:methods [{:name "create"}]}
     org.jline.reader.impl.LineReaderImpl
-    {:fields [{:name "post"}]}})
+    {:fields [{:name "post"}]
+     :methods [{:name "redisplay"}
+               {:name "readBinding"}
+               {:name "defaultKeyMaps"}]}})
 
 (def custom-map
   (cond->
@@ -707,7 +710,6 @@
           org.jline.reader.LineReader$SuggestionType
           org.jline.reader.LineReaderBuilder
           org.jline.reader.Buffer
-          org.jline.reader.impl.LineReaderImpl
           org.jline.reader.EndOfFileException
           org.jline.reader.UserInterruptException
           org.jline.reader.Completer
