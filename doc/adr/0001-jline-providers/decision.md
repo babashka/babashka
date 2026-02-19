@@ -126,9 +126,9 @@ Proxying `LineReaderImpl` with `IDeref`/`IAtom` (as rebel-readline originally di
 
 The `:inherit` mechanism in `classes.clj` solves a GraalVM reflection problem: when a class has explicit `:methods` (not `:all`), type-hinting as `^LineReaderImpl` can't find inherited interface methods like `setOpt` via reflection. The `:inherit` key declares which superclass/interface methods to include in the reflection config, so inherited methods resolve correctly without needing `:all`.
 
-### Reflection warnings in rebel-readline
+### No LineReaderImpl references in rebel-readline
 
-Added `(set! *warn-on-reflection* true)` to `jline_api.clj` and `clojure/line_reader.clj`. Type-hinted LineReaderImpl-specific call sites with `^LineReaderImpl` (imported via `[org.jline.reader.impl LineReaderImpl]`, not the nested `impl.LineReaderImpl` syntax which SCI doesn't support). The `^LineReader` return type hint on `(line-reader)` covers most interface method calls.
+rebel-readline no longer imports or type-hints `LineReaderImpl`. All method calls resolve via reflection at runtime, which works because babashka's `:inherit` mechanism includes the full LineReader interface methods in the LineReaderImpl reflection config. The nested import syntax `impl.LineReaderImpl` under `org.jline.reader` is not supported by SCI — use `[org.jline.reader.impl LineReaderImpl]` if ever needed.
 
 ### Proxy cases added
 
