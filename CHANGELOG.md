@@ -9,6 +9,14 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Support rebel-readline as external REPL provider
+  - Add proxy support for `Completer`, `Highlighter`, `ParsedLine`, `Writer`, `Reader`
+  - Add `clojure.repl/special-doc` and `clojure.repl/set-break-handler!`
+  - Add `clojure.main/repl-read`
+  - Add `org.jline.reader.Buffer` to class allowlist
+  - Add `:inherit` mechanism for reflection config to inherit interface methods
+  - `start-repl!` bypasses jline when custom `:read` is provided
+- Fix nREPL server test using `"localhost"` instead of `"127.0.0.1"`
 - Add `java.lang.reflect.Constructor`, `java.lang.reflect.Executable`, `java.util.stream.Collectors`, `java.lang.StackOverflowError`, `clojure.lang.IType`, `java.util.Comparator` (reify)
 - Add JLine classes for rebel-readline compatibility: `Highlighter`, `LineReader$Option`, `Attributes$InputFlag`, `Attributes$LocalFlag`
 - Hide redundant `(keyword)` description in REPL completions
