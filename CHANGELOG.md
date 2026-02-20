@@ -22,6 +22,12 @@ A preview of the next release can be installed from
 - Hide redundant `(keyword)` description in REPL completions
 - SCI: add `proxy-super`, `proxy-call-with-super`, `update-proxy` and `proxy-mappings`
 - SCI: add `.ns` and `.sym` field access on vars for compliment compatibility
+- SCI: `ns-aliases` now returns identical namespace objects as `find-ns`
+- SCI: `alias` now accepts namespace objects in addition to symbols
+- SCI: `copy-var` and `copy-var*` now preserve `:private` metadata
+- SCI: private vars are no longer included in `ns-refers`
+- Add `ref-max-history`, `ref-min-history`, `ref-history-count`
+- Add `java.lang.reflect.Member` `getName` and `getDeclaringClass` to reflection config
 
 ## 1.12.215 (2026-02-17)
 
