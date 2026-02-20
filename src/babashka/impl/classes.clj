@@ -109,7 +109,9 @@
     java.lang.Package
     {:methods [{:name "getName"}]}
     java.lang.reflect.Member
-    {:methods [{:name "getModifiers"}]}
+    {:methods [{:name "getModifiers"}
+               {:name "getName"}
+               {:name "getDeclaringClass"}]}
     java.lang.reflect.Method
     {:methods [{:name "invoke"}
                {:name "getName"}
