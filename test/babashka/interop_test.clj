@@ -146,6 +146,13 @@
                       (let [m (first (.getMethods String))]
                         (instance? Executable m))"))))
 
+(deftest reflect-method-test
+  (is (true? (bb nil "(let [m (first (.getMethods String))]
+                        (int? (.getParameterCount m)))"))))
+
+(deftest reflect-modifier-test
+  (is (string? (bb nil "(java.lang.reflect.Modifier/toString 1)"))))
+
 (deftest regression-test
   (is (true? (bb nil "(let [x \"f\"] (String/.startsWith \"foo\" x))"))))
 

@@ -28,6 +28,7 @@ A preview of the next release can be installed from
 - SCI: private vars are no longer included in `ns-refers`
 - Add `ref-max-history`, `ref-min-history`, `ref-history-count`
 - Add `java.lang.reflect.Member` `getName` and `getDeclaringClass` to reflection config
+- Add `java.lang.reflect.Method` `getParameterCount` and `java.lang.reflect.Modifier` `toString` to reflection config
 
 ## 1.12.215 (2026-02-17)
 

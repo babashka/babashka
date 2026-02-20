@@ -116,10 +116,12 @@
     {:methods [{:name "invoke"}
                {:name "getName"}
                {:name "getModifiers"}
+               {:name "getParameterCount"}
                {:name "getParameterTypes"}
                {:name "getReturnType"}]}
     java.lang.reflect.Modifier
-    {:methods [{:name "isStatic"}]}
+    {:methods [{:name "isStatic"}
+               {:name "toString"}]}
     java.lang.reflect.Field
     {:methods [{:name "getName"}
                {:name "getModifiers"}
