@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Fix `deftype` and `defrecord` inside non-top-level forms (e.g. `let`, `testing`) [#1936](https://github.com/babashka/babashka/issues/1936)
 - Support rebel-readline as external REPL provider
   - Add proxy support for `Completer`, `Highlighter`, `ParsedLine`, `Writer`, `Reader`
   - Add `clojure.repl/special-doc` and `clojure.repl/set-break-handler!`
