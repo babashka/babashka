@@ -925,6 +925,18 @@ true")))
 (binding [r/*default-data-reader-fn* (fn [sym] (fn [val] [1 2 3]))]
 (r/read-string \"#dude []\"))"))))
 
+(deftest special-doc-test
+  (testing "special-doc returns doc map for special forms"
+    (is (= 'def (:name (bb nil "-e" "(@#'clojure.repl/special-doc 'def)"))))
+    (is (:doc (bb nil "-e" "(@#'clojure.repl/special-doc 'def)")))
+    (is (:special-form (bb nil "-e" "(@#'clojure.repl/special-doc 'def)"))))
+  (testing "special-doc returns nil for non-special forms"
+    (is (nil? (bb nil "-e" "(@#'clojure.repl/special-doc 'map)")))))
+
+(deftest clojure-main-repl-read-test
+  (testing "clojure.main/repl-read reads a form from *in*"
+    (is (= '(+ 1 2) (bb nil "-e" "(binding [*in* (clojure.lang.LineNumberingPushbackReader. (java.io.StringReader. \"(+ 1 2)\"))] (clojure.main/repl-read :prompt :exit))")))))
+
 ;;;; Scratch
 
 (comment

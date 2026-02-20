@@ -9,10 +9,25 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Support rebel-readline as external REPL provider
+  - Add proxy support for `Completer`, `Highlighter`, `ParsedLine`, `Writer`, `Reader`
+  - Add `clojure.repl/special-doc` and `clojure.repl/set-break-handler!`
+  - Add `clojure.main/repl-read`
+  - Add `org.jline.reader.Buffer` to class allowlist
+  - Add `:inherit` mechanism for reflection config to inherit interface methods
+  - `start-repl!` bypasses jline when custom `:read` is provided
+- Fix nREPL server test using `"localhost"` instead of `"127.0.0.1"`
 - Add `java.lang.reflect.Constructor`, `java.lang.reflect.Executable`, `java.util.stream.Collectors`, `java.lang.StackOverflowError`, `clojure.lang.IType`, `java.util.Comparator` (reify)
 - Add JLine classes for rebel-readline compatibility: `Highlighter`, `LineReader$Option`, `Attributes$InputFlag`, `Attributes$LocalFlag`
 - Hide redundant `(keyword)` description in REPL completions
 - SCI: add `proxy-super`, `proxy-call-with-super`, `update-proxy` and `proxy-mappings`
+- SCI: add `.ns` and `.sym` field access on vars for compliment compatibility
+- SCI: `ns-aliases` now returns identical namespace objects as `find-ns`
+- SCI: `alias` now accepts namespace objects in addition to symbols
+- SCI: `copy-var` and `copy-var*` now preserve `:private` metadata
+- SCI: private vars are no longer included in `ns-refers`
+- Add `ref-max-history`, `ref-min-history`, `ref-history-count`
+- Add `java.lang.reflect.Member` `getName` and `getDeclaringClass` to reflection config
 
 ## 1.12.215 (2026-02-17)
 

@@ -206,6 +206,9 @@
    'sync (sci/copy-var sync clojure-core-ns)
    'ref (sci/copy-var ref clojure-core-ns)
    'ref-set (sci/copy-var ref-set clojure-core-ns)
+   'ref-max-history (sci/copy-var ref-max-history clojure-core-ns)
+   'ref-min-history (sci/copy-var ref-min-history clojure-core-ns)
+   'ref-history-count (sci/copy-var ref-history-count clojure-core-ns)
    'ensure (sci/copy-var ensure clojure-core-ns)
    ;; end STM
    'update-vals (sci/copy-var update-vals clojure-core-ns)

@@ -262,7 +262,7 @@
                 ;; _ (.put env "BABASHKA_DEV" "true")
                 proc (.start pb)]
             (reset! proc-state proc)))
-        (babashka.wait/wait-for-port "localhost" 1668)
+        (babashka.wait/wait-for-port "127.0.0.1" 1668)
         (nrepl-test)
         (finally
           (if tu/jvm?
