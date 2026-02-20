@@ -280,6 +280,20 @@
   (testing "exact match only"
     (is (= "" (compute-tail-tip "map" ["map"])))))
 
+(deftest start-repl-custom-read-test
+  (testing "start-repl! with custom :read bypasses jline"
+    (let [done (volatile! false)
+          output (tu/normalize
+                  (sci/with-out-str
+                    (start-repl! test-sci-ctx
+                                 {:read (fn [_request-prompt request-exit]
+                                          (if @done
+                                            request-exit
+                                            (do (vreset! done true)
+                                                (read-string "(+ 1 2)"))))
+                                  :init (constantly nil)})))]
+      (is (str/includes? output "3")))))
+
 ;;;; Scratch
 
 (comment)
