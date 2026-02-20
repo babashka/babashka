@@ -27,7 +27,9 @@
   ;; SciMap is the backing type for deftype with map interfaces.
   ;; Reflection config is needed for untyped Java interop on these
   ;; instances in SCI-evaluated code (e.g. (.hasheq x) without type hint).
-  `{babashka.impl.SciMap {:allPublicConstructors true
+  `{sci.lang.Var {:fields [{:name "ns"}
+                            {:name "sym"}]}
+    babashka.impl.SciMap {:allPublicConstructors true
                           :allPublicMethods true}
     clojure.lang.LineNumberingPushbackReader {:allPublicConstructors true
                                               :allPublicMethods true}

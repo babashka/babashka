@@ -21,6 +21,7 @@ A preview of the next release can be installed from
 - Add JLine classes for rebel-readline compatibility: `Highlighter`, `LineReader$Option`, `Attributes$InputFlag`, `Attributes$LocalFlag`
 - Hide redundant `(keyword)` description in REPL completions
 - SCI: add `proxy-super`, `proxy-call-with-super`, `update-proxy` and `proxy-mappings`
+- SCI: add `.ns` and `.sym` field access on vars for compliment compatibility
 
 ## 1.12.215 (2026-02-17)
 

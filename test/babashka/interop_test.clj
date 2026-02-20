@@ -330,6 +330,12 @@
       (swap! results conj *test-var*)))
    @results"))))
 
+(deftest clojure-lang-Var-fields-test
+  (testing ".ns returns the namespace of a var"
+    (is (= 'clojure.core (bb nil "(ns-name (.ns #'inc))"))))
+  (testing ".sym returns the symbol of a var"
+    (is (= 'inc (bb nil "(.sym #'inc)")))))
+
 (deftest clojure-lang-Var-intern-test
   (bb nil "(ns foo) (ns bar)
 (assert (var? (clojure.lang.Var/intern (the-ns 'foo) 'dude)))
