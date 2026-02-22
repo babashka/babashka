@@ -30,6 +30,7 @@ A preview of the next release can be installed from
 - Add `ref-max-history`, `ref-min-history`, `ref-history-count`
 - Add `java.lang.reflect.Member` `getName` and `getDeclaringClass` to reflection config
 - Add `java.lang.reflect.Method` `getParameterCount` and `java.lang.reflect.Modifier` `toString` to reflection config
+- [#1939](https://github.com/babashka/babashka/issues/1939): Disable JLine backslash escaping/shell history commands ([@bobisageek](https://github.com/bobisageek))
 
 ## 1.12.215 (2026-02-17)
 
