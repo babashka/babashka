@@ -479,6 +479,8 @@
                    (.completer (clojure-completer sci-ctx))
                    (.variable org.jline.reader.LineReader/HISTORY_FILE history-file)
                    (.variable org.jline.reader.LineReader/SECONDARY_PROMPT_PATTERN "%P #_=> ")
+                   ;; disable JLine treating backslashes as escapes
+                   (.option org.jline.reader.LineReader$Option/DISABLE_EVENT_EXPANSION true)
                    (.build))]
     (.setAutosuggestion reader LineReader$SuggestionType/TAIL_TIP)
     (register-widgets reader sci-ctx force-accept?)
