@@ -8,7 +8,7 @@
    [clojure.string :as str]
    [sci.core :as sci]))
 
-(defn print-deps [deps-format]
+(defn- deps-map []
   (let [deps (-> (io/resource "META-INF/babashka/deps.edn" common/jvm-loader)
                  slurp
                  edn/read-string)
@@ -35,9 +35,15 @@
         deps {:deps deps}
         deps (cond-> deps
                (seq paths) (assoc :paths paths))]
-    (case deps-format
-      ("deps" nil) (binding [*print-namespace-maps* false]
-                     (pp/pprint deps))
-      ("classpath") (let [cp (str/trim (sci/with-out-str
-                                         (deps/clojure ["-Spath" "-Sdeps" deps] {:out :string})))]
-                      (println cp)))))
+    deps))
+
+(defn deps-classpath []
+  (let [deps (deps-map)]
+    (str/trim (sci/with-out-str
+                (deps/clojure ["-Spath" "-Sdeps" deps] {:out :string})))))
+
+(defn print-deps [deps-format]
+  (case deps-format
+    ("deps" nil) (binding [*print-namespace-maps* false]
+                   (pp/pprint (deps-map)))
+    ("classpath") (println (deps-classpath))))
