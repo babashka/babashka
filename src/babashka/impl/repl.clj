@@ -472,7 +472,12 @@
                      (.system true)
                      (.build))
         force-accept? (volatile! false)
-        history-file (fs/path (fs/home) ".bb_repl_history")
+        history-file (if-let [f (some-> (System/getenv "BABASHKA_REPL_HISTORY")
+                                        fs/path)]
+                       (if (fs/directory? f)
+                         (fs/path f "bb_repl_history")
+                         f)
+                       (fs/path (fs/home) ".bb_repl_history"))
         reader (-> (LineReaderBuilder/builder)
                    (.terminal terminal)
                    (.parser (jline-parser sci-ctx force-accept?))
