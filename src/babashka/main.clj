@@ -188,7 +188,7 @@ Evaluation:
 
 REPL:
 
-  repl                 Start REPL. Use rlwrap for history.
+  repl                 Start REPL.
   socket-repl  [addr]  Start a socket REPL. Address defaults to localhost:1666.
   nrepl-server [addr]  Start nREPL server. Address defaults to localhost:1667.
 
