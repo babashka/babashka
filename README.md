@@ -366,6 +366,10 @@ AWS Lambda runtime doesn't support signals, therefore babashka has to disable
 handling of SIGINT and SIGPIPE. This can be done by setting
 `BABASHKA_DISABLE_SIGNAL_HANDLERS` to `true`.
 
+## REPL history
+
+The REPL saves history to `~/.bb_repl_history` by default. Set `BABASHKA_REPL_HISTORY` to customize the location. It accepts a file path or a directory (in which case `bb_repl_history` is written inside it).
+
 ## Articles, podcasts and videos
 
 - [Blambda analyses sites](https://jmglov.net/blog/2023-01-04-blambda-analyses-sites.html) by Josh Glover
