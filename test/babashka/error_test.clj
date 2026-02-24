@@ -12,7 +12,9 @@
       ;; take into account JDK14+ and native image differences
       (str/replace "class clojure.lang" "clojure.lang")
       (str/replace #" \(.*\)$" "")
-      (str/replace #"--\d\d\d\d" "")))
+      (str/replace #"--\d\d\d\d" "")
+      ;; built-in vars now have file locations from Clojure source
+      (str/replace #"clojure/core\.clj:\d+:\d+" "<built-in>")))
 
 (defmacro multiline-equals [s1 s2]
   `(let [lines-s1# (str/split-lines ~s1)
@@ -52,7 +54,9 @@
 (defn foo [] (/ 1 0))
 (foo)")
                     (catch Exception e (ex-message e)))]
-    (is (str/includes? (tu/normalize output) "----- Stack trace --------------------------------------------------------------
+    (is (str/includes? (str/replace (tu/normalize output)
+                                    #"clojure/core\.clj:\d+:\d+" "<built-in>")
+                       "----- Stack trace --------------------------------------------------------------
 clojure.core// - <built-in>
 user/foo       - NO_SOURCE_PATH:2:14
 user/foo       - NO_SOURCE_PATH:2:1
@@ -79,7 +83,9 @@ user           - NO_SOURCE_PATH:3:1"))))
 (deftest jar-error-test
   (let [output (try (tu/bb nil "-cp" (.getPath (io/file "test-resources" "divide_by_zero.jar")) "-e" "(require 'foo)")
                     (catch Exception e (ex-message e)))]
-    (is (str/includes? (tu/normalize output) "----- Error --------------------------------------------------------------------
+    (is (str/includes? (str/replace (tu/normalize output)
+                                    #"clojure/core\.clj:\d+:\d+" "<built-in>")
+                       "----- Error --------------------------------------------------------------------
 Type:     java.lang.ArithmeticException
 Message:  Divide by zero
 Location: foo.clj:1:10
@@ -224,7 +230,8 @@ user - NO_SOURCE_PATH:1:1"))))
     (let [output (try (tu/bb nil "--debug" "(let [x 1] (/ x 0))")
                       (is false) ; ensure that exception is thrown and we don't get here
                       (catch Exception e (ex-message e)))
-          actual-lines (str/split-lines (tu/normalize output))]
+          actual-lines (str/split-lines (str/replace (tu/normalize output)
+                                                     #"clojure/core\.clj:\d+:\d+" "<built-in>"))]
       (is (match? (take 16 actual-lines)
                   (str/split-lines "----- Error --------------------------------------------------------------------
 Type:     java.lang.ArithmeticException
@@ -277,4 +284,4 @@ clojure.lang.ExceptionInfo: clojure.lang.Keyword cannot be cast to clojure.lang.
                     (is false)
                     (catch Exception e (ex-message e)))]
     (is (str/includes? (tu/normalize output)
-                       "clojure.core/reduce1        - <built-in>"))))
+                       "clojure.core/reduce1"))))

@@ -221,6 +221,16 @@
                  "-e" (format "(require '[clojure.repl :refer [source]] '[%s])" name)
                  "-e" (format "(with-out-str (source %s/foo))" name)))))))
 
+(deftest repl-source-built-in-test
+  (testing "source of clojure.core var"
+    (is (str/includes?
+         (test-utils/bb nil "-e" "(with-out-str (clojure.repl/source inc))")
+         "defn inc")))
+  (testing "source of copy-ns var"
+    (is (str/includes?
+         (test-utils/bb nil "-e" "(with-out-str (clojure.repl/source babashka.fs/exists?))")
+         "defn exists?"))))
+
 (deftest eval-test
   (is (= "120\n" (test-utils/bb nil "(eval '(do (defn foo [x y] (+ x y))
                                                 (defn bar [x y] (* x y))

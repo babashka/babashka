@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Support `(source inc)` and `(source babashka.fs/exists?)` for built-in vars [#1935](https://github.com/babashka/babashka/issues/1935)
 - Support `BABASHKA_REPL_HISTORY` env var for configurable REPL history location [#1930](https://github.com/babashka/babashka/issues/1930)
 - Fix `deftype` and `defrecord` inside non-top-level forms (e.g. `let`, `testing`) [#1936](https://github.com/babashka/babashka/issues/1936)
 - Support rebel-readline as external REPL provider

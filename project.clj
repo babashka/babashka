@@ -22,7 +22,7 @@
                    :non-flaky (complement :flaky)
                    :flaky :flaky}
   :jvm-opts ["--enable-preview" "--enable-native-access=ALL-UNNAMED"]
-  :dependencies [[org.clojure/clojure "1.12.3"]
+  :dependencies [[org.clojure/clojure "1.12.4"]
                  [borkdude/edamame "1.5.37"]
                  [org.clojure/tools.cli "1.0.214"]
                  [cheshire "6.1.0"]
