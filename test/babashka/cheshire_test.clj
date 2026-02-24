@@ -4,6 +4,10 @@
    [cheshire.core :as json]
    [clojure.test :as test :refer [deftest is]]))
 
+(deftest cheshire-source-test
+  (is (re-find #"defn generate-string"
+               (test-utils/bb "-e" "(require '[clojure.repl :refer [source]]) (with-out-str (source cheshire.core/generate-string))"))))
+
 (deftest cheshire-encode-test
   (is (instance? java.time.Instant
                  (java.time.Instant/parse
