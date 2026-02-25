@@ -55,10 +55,10 @@
 (def io-namespace
   {'Coercions (sci/new-var 'Coercions {:methods #{'as-file 'as-url}
                                        :ns io-ns} {:ns io-ns})
-   'as-relative-path (copy-var as-relative-path io-ns)
-   'as-file (copy-var as-file io-ns)
-   'file (copy-var file io-ns)
-   'as-url (copy-var as-url io-ns)
+   'as-relative-path (copy-var as-relative-path io-ns {:copy-meta-from clojure.java.io/as-relative-path})
+   'as-file (copy-var as-file io-ns {:copy-meta-from clojure.java.io/as-file})
+   'file (copy-var file io-ns {:copy-meta-from clojure.java.io/file})
+   'as-url (copy-var as-url io-ns {:copy-meta-from clojure.java.io/as-url})
    'copy (copy-var io/copy io-ns)
    'delete-file (copy-var io/delete-file io-ns)
    'input-stream (copy-var io/input-stream io-ns)

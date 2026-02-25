@@ -29,7 +29,7 @@
    'plan (sci/copy-var njdbc/plan next-ns)
    'prepare (sci/copy-var njdbc/prepare next-ns)
    'transact (sci/copy-var njdbc/transact next-ns)
-   'with-transaction (sci/copy-var with-transaction next-ns)})
+   'with-transaction (sci/copy-var with-transaction next-ns {:copy-meta-from next.jdbc/with-transaction})})
 
 (def sns (sci/create-ns 'next.jdbc.sql nil))
 
