@@ -46,7 +46,7 @@
 
 (def xml-namespace
   {'aggregate-xmlns (copy-var xml/aggregate-xmlns xns)
-   'alias-uri       (copy-var alias-uri xns)
+   'alias-uri       (copy-var alias-uri xns {:copy-meta-from clojure.data.xml/alias-uri})
    'as-qname        (copy-var xml/as-qname xns)
    'cdata           (copy-var xml/cdata xns)
    'element         (copy-var xml/element xns)

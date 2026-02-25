@@ -16,19 +16,10 @@
 
 (defn make-ns [ns sci-ns]
   (reduce (fn [ns-map [var-name var]]
-            (let [m (meta var)
-                  no-doc (:no-doc m)
-                  doc (:doc m)
-                  arglists (:arglists m)]
+            (let [no-doc (:no-doc (meta var))]
               (if (and no-doc (not (contains? include var-name)))
                 ns-map
-                (assoc ns-map var-name
-                       (sci/new-var (symbol var-name) @var
-                                    (cond-> {:ns sci-ns
-                                             :name (:name m)}
-                                      (:macro m) (assoc :macro true)
-                                      doc (assoc :doc doc)
-                                      arglists (assoc :arglists arglists)))))))
+                (assoc ns-map var-name (sci/copy-var* var sci-ns)))))
           {}
           (ns-publics ns)))
 
@@ -104,12 +95,12 @@
 
 (def selmer-parser-namespace
   (-> selmer-parser-ns
-      (assoc 'render-file (sci/copy-var render-file spns)
-             'render      (sci/copy-var render spns)
-             'render-template (sci/copy-var render-template spns)
-             'resolve-var-from-kw (sci/copy-var resolve-var-from-kw spns)
-             'resolve-arg (sci/copy-var resolve-arg spns )
-             '<< (sci/copy-var << spns))))
+      (assoc 'render-file (sci/copy-var render-file spns {:copy-meta-from selmer.parser/render-file})
+             'render      (sci/copy-var render spns {:copy-meta-from selmer.parser/render})
+             'render-template (sci/copy-var render-template spns {:copy-meta-from selmer.parser/render-template})
+             'resolve-var-from-kw (sci/copy-var resolve-var-from-kw spns {:copy-meta-from selmer.parser/resolve-var-from-kw})
+             'resolve-arg (sci/copy-var resolve-arg spns {:copy-meta-from selmer.parser/resolve-arg})
+             '<< (sci/copy-var << spns {:copy-meta-from selmer.parser/<<}))))
 
 (def stns (sci/create-ns 'selmer.tags nil))
 
@@ -144,11 +135,11 @@
      ~@body))
 
 (def selmer-util-namespace
-  {'turn-off-escaping! (sci/copy-var turn-off-escaping! suns)
-   'turn-on-escaping! (sci/copy-var turn-on-escaping! suns)
+  {'turn-off-escaping! (sci/copy-var turn-off-escaping! suns {:copy-meta-from selmer.util/turn-off-escaping!})
+   'turn-on-escaping! (sci/copy-var turn-on-escaping! suns {:copy-meta-from selmer.util/turn-on-escaping!})
    '*escape-variables* escape-variables
-   'with-escaping (sci/copy-var with-escaping suns)
-   'without-escaping (sci/copy-var without-escaping suns)
+   'with-escaping (sci/copy-var with-escaping suns {:copy-meta-from selmer.util/with-escaping})
+   'without-escaping (sci/copy-var without-escaping suns {:copy-meta-from selmer.util/without-escaping})
    'set-missing-value-formatter! (sci/copy-var util/set-missing-value-formatter! suns)})
 
 (def svns (sci/create-ns 'selmer.validator nil))

@@ -197,22 +197,22 @@
 
 (def pprint-namespace
   {'pp (sci/copy-var pprint/pp pprint-ns)
-   'pprint (sci/copy-var pprint pprint-ns)
-   'print-table (sci/copy-var print-table pprint-ns)
+   'pprint (sci/copy-var pprint pprint-ns {:copy-meta-from clojure.pprint/pprint})
+   'print-table (sci/copy-var print-table pprint-ns {:copy-meta-from clojure.pprint/print-table})
    '*print-right-margin* print-right-margin
-   'cl-format (sci/copy-var cl-format pprint-ns)
+   'cl-format (sci/copy-var cl-format pprint-ns {:copy-meta-from clojure.pprint/cl-format})
    ;; we alter-var-root-ed write above, so this should copy the right function
    'write (sci/copy-var pprint/write pprint-ns)
    'simple-dispatch (sci/copy-var pprint/simple-dispatch pprint-ns)
-   'formatter-out (sci/copy-var formatter-out pprint-ns)
+   'formatter-out (sci/copy-var formatter-out pprint-ns {:copy-meta-from clojure.pprint/formatter-out})
    'cached-compile (sci/copy-var pprint/cached-compile pprint-ns) #_(sci/new-var 'cache-compile @#'pprint/cached-compile (meta @#'pprint/cached-compile))
    'init-navigator (sci/copy-var pprint/init-navigator pprint-ns)
-   'execute-format (sci/copy-var execute-format pprint-ns)
+   'execute-format (sci/copy-var execute-format pprint-ns {:copy-meta-from clojure.pprint/execute-format})
    'with-pprint-dispatch (sci/copy-var pprint/with-pprint-dispatch pprint-ns)
    'code-dispatch (sci/copy-var pprint/code-dispatch pprint-ns)
    '*print-pprint-dispatch* print-pprint-dispatch
    '*print-miser-width* print-miser-width
-   'get-pretty-writer (sci/copy-var get-pretty-writer pprint-ns)
-   'write-out (sci/copy-var write-out pprint-ns)})
+   'get-pretty-writer (sci/copy-var get-pretty-writer pprint-ns {:copy-meta-from clojure.pprint/get-pretty-writer})
+   'write-out (sci/copy-var write-out pprint-ns {:copy-meta-from clojure.pprint/write-out})})
 
 (vreset! patched? true)

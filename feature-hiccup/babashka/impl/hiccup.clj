@@ -1,7 +1,9 @@
 (ns babashka.impl.hiccup
   {:no-doc true}
   (:require [hiccup.compiler :as compiler]
+            [hiccup.core]
             [hiccup.util :as util]
+            [hiccup2.core]
             [sci.core :as sci :refer [copy-var]]))
 
 (def hns (sci/create-ns 'hiccup.core nil))
@@ -52,10 +54,10 @@
   util/raw-string)
 
 (def hiccup-namespace
-  {'html (copy-var html-1 hns {:name 'html})})
+  {'html (copy-var html-1 hns {:name 'html :copy-meta-from hiccup.core/html})})
 
 (def hiccup2-namespace
-  {'html (copy-var html-2 hns2 {:name 'html})
+  {'html (copy-var html-2 hns2 {:name 'html :copy-meta-from hiccup2.core/html})
    'raw (copy-var util/raw-string hns2 {:name 'raw})})
 
 (def html-mode (copy-var util/*html-mode* uns))
@@ -73,4 +75,4 @@
     (apply compiler/render-html contents)))
 
 (def hiccup-compiler-namespace
-  {'render-html (copy-var render-html cns)})
+  {'render-html (copy-var render-html cns {:copy-meta-from hiccup.compiler/render-html})})

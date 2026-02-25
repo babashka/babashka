@@ -50,9 +50,7 @@
 (defreq move)
 
 (def httpkit-client-namespace
-  {'request   (sci/new-var 'request request {:doc (:doc (meta #'client/request))
-                                             :name 'request
-                                             :ns cns})
+  {'request   (copy-var request cns {:copy-meta-from org.httpkit.client/request})
    'get       (copy-var get cns)
    'options   (copy-var options cns)
    'put       (copy-var put cns)

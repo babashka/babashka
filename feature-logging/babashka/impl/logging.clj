@@ -85,16 +85,7 @@
 
 (defn make-ns [ns sci-ns ks]
   (reduce (fn [ns-map [var-name var]]
-            (let [m (meta var)
-                  doc (:doc m)
-                  arglists (:arglists m)]
-              (assoc ns-map var-name
-                     (sci/new-var (symbol var-name) @var
-                                  (cond-> {:ns sci-ns
-                                           :name (:name m)}
-                                    (:macro m) (assoc :macro true)
-                                    doc (assoc :doc doc)
-                                    arglists (assoc :arglists arglists))))))
+            (assoc ns-map var-name (sci/copy-var* var sci-ns)))
           {}
           (select-keys (ns-publics ns) ks)))
 
@@ -213,28 +204,28 @@
                                         'spit-appender '-spy 'spy
                                         'color-str
                                         'may-log?])
-         'trace (sci/copy-var trace tns)
-         'debug (sci/copy-var debug tns)
-         'info  (sci/copy-var info tns)
-         'warn  (sci/copy-var warn tns)
-         'error  (sci/copy-var error tns)
-         'tracef (sci/copy-var tracef tns)
-         'debugf (sci/copy-var debugf tns)
-         'infof  (sci/copy-var infof tns)
-         'warnf  (sci/copy-var warnf tns)
-         'errorf  (sci/copy-var errorf tns)
-         'log! (sci/copy-var log! tns)
+         'trace (sci/copy-var trace tns {:copy-meta-from taoensso.timbre/trace})
+         'debug (sci/copy-var debug tns {:copy-meta-from taoensso.timbre/debug})
+         'info  (sci/copy-var info tns {:copy-meta-from taoensso.timbre/info})
+         'warn  (sci/copy-var warn tns {:copy-meta-from taoensso.timbre/warn})
+         'error  (sci/copy-var error tns {:copy-meta-from taoensso.timbre/error})
+         'tracef (sci/copy-var tracef tns {:copy-meta-from taoensso.timbre/tracef})
+         'debugf (sci/copy-var debugf tns {:copy-meta-from taoensso.timbre/debugf})
+         'infof  (sci/copy-var infof tns {:copy-meta-from taoensso.timbre/infof})
+         'warnf  (sci/copy-var warnf tns {:copy-meta-from taoensso.timbre/warnf})
+         'errorf  (sci/copy-var errorf tns {:copy-meta-from taoensso.timbre/errorf})
+         'log! (sci/copy-var log! tns {:copy-meta-from taoensso.timbre/log!})
          '*config* config
-         'set-config! (sci/copy-var set-config! tns)
-         'swap-config! (sci/copy-var swap-config! tns)
-         'merge-config! (sci/copy-var merge-config! tns)
-         'set-level! (sci/copy-var set-level! tns)
-         'set-min-level! (sci/copy-var set-min-level! tns)
-         'println-appender (sci/copy-var println-appender tns)
+         'set-config! (sci/copy-var set-config! tns {:copy-meta-from taoensso.timbre/set-config!})
+         'swap-config! (sci/copy-var swap-config! tns {:copy-meta-from taoensso.timbre/swap-config!})
+         'merge-config! (sci/copy-var merge-config! tns {:copy-meta-from taoensso.timbre/merge-config!})
+         'set-level! (sci/copy-var set-level! tns {:copy-meta-from taoensso.timbre/set-level!})
+         'set-min-level! (sci/copy-var set-min-level! tns {:copy-meta-from taoensso.timbre/set-min-level!})
+         'println-appender (sci/copy-var println-appender tns {:copy-meta-from taoensso.timbre/println-appender})
          '-log-and-rethrow-errors (sci/copy-var -log-and-rethrow-errors tns)
-         'set-min-level! (sci/copy-var set-min-level! tns)
-         'set-ns-min-level (sci/copy-var set-ns-min-level tns)
-         'set-ns-min-level! (sci/copy-var set-ns-min-level! tns)))
+         'set-min-level! (sci/copy-var set-min-level! tns {:copy-meta-from taoensso.timbre/set-min-level!})
+         'set-ns-min-level (sci/copy-var set-ns-min-level tns {:copy-meta-from taoensso.timbre/set-ns-min-level})
+         'set-ns-min-level! (sci/copy-var set-ns-min-level! tns {:copy-meta-from taoensso.timbre/set-ns-min-level!})))
 
 (def enc-ns (sci/create-ns 'taoensso.encore))
 
@@ -250,7 +241,7 @@
 
 (def timbre-appenders-namespace
   (let [tan (sci/create-ns 'taoensso.timbre.appenders.core nil)]
-    {'println-appender (sci/copy-var println-appender tan)
+    {'println-appender (sci/copy-var println-appender tan {:copy-meta-from taoensso.timbre/println-appender})
      'spit-appender (sci/copy-var #_:clj-kondo/ignore timbre/spit-appender tan)}))
 
 ;;;; clojure.tools.logging
@@ -306,7 +297,7 @@
   (assoc (make-ns 'clojure.tools.logging lns ['debug 'debugf 'info 'infof 'warn 'warnf 'error 'errorf
                                               'logp 'logf '*logger-factory* 'log*
                                               'trace 'tracef])
-         'log (sci/copy-var log lns)))
+         'log (sci/copy-var log lns {:copy-meta-from clojure.tools.logging/log})))
 
 (def lins (sci/create-ns 'clojure.tools.logging.impl nil))
 
