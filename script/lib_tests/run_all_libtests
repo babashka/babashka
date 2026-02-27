@@ -8,7 +8,7 @@ export BABASHKA_TEST_ENV
 if [ "$BABASHKA_TEST_ENV" = "native" ]; then
     BB_CMD="./bb"
 else
-    BB_CMD="lein bb"
+    BB_CMD="clojure -M:babashka/dev"
 fi
 
 export PATH

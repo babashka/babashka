@@ -1,6 +1,6 @@
 if not defined BABASHKA_TEST_ENV set BABASHKA_TEST_ENV=jvm
 
-if "%BABASHKA_TEST_ENV%" EQU "native" (set BB_CMD=.\bb) else (set BB_CMD=lein bb)
+if "%BABASHKA_TEST_ENV%" EQU "native" (set BB_CMD=.\bb) else (set BB_CMD=clojure -M:babashka/dev)
 
 set EDN=lib_tests.edn
 
