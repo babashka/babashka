@@ -341,7 +341,8 @@
   (testing ".ns returns the namespace of a var"
     (is (= 'clojure.core (bb nil "(ns-name (.ns #'inc))"))))
   (testing ".sym returns the symbol of a var"
-    (is (= 'inc (bb nil "(.sym #'inc)")))))
+    (is (= 'inc (bb nil "(.sym #'inc)")))
+    (is (= 'foo (bb nil "(def foo 1) (.sym #'foo)")))))
 
 (deftest clojure-lang-Var-intern-test
   (bb nil "(ns foo) (ns bar)
