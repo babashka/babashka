@@ -260,4 +260,5 @@ org.clojure/core.cache {:git-url "https://github.com/clojure/core.cache"
                           :git-sha "7f1a9cf9d622f6317b92a76976fc53e1fb8aae36"
                           :test-paths ["src/test/clojure"]
                           :test-namespaces [clojure.core.cache-test
-                                            clojure.core.cache.wrapped-test]}}
+                                            clojure.core.cache.wrapped-test]}
+ riddley/riddley {:git-sha "cc126c205ad456c8e4463533f53d83956faef3bc", :git-url "https://github.com/borkdude/riddley", :test-paths ["test"], :test-namespaces (riddley.walk-test)}}

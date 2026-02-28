@@ -200,7 +200,8 @@
                                                 :git/sha "7f1a9cf9d622f6317b92a76976fc53e1fb8aae36"
                                                 :git/tag "v1.2.249"}
                          frankiesardo/linked {:git/url "https://github.com/frankiesardo/linked"
-                                              :git/sha "d000c4e526a4b275f787196100cac36d37c991ba"}}
+                                              :git/sha "d000c4e526a4b275f787196100cac36d37c991ba"}
+                         riddley/riddley {:mvn/version "0.2.2"}}
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil}}
            :clj-nvd

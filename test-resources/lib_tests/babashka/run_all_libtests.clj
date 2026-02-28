@@ -84,10 +84,14 @@
 (let [lib-tests (edn/read-string (slurp (io/resource "bb-tested-libs.edn")))
       test-nss (atom [])]
   (doseq [[libname {tns :test-namespaces skip-windows :skip-windows
-                    :keys [test-paths
+                    :keys [test-paths git-url
                            git-sha flaky]}] lib-tests]
     (let [git-dir (format ".gitlibs/libs/%s/%s" libname git-sha)
           git-dir (fs/file (fs/home) git-dir)]
+      (when (and (seq test-paths) (not (fs/exists? git-dir)))
+        (println "Fetching" libname "at" git-sha)
+        (sh "git" "clone" (str git-url) (str git-dir))
+        (sh "git" "-C" (str git-dir) "checkout" git-sha))
       (doseq [p test-paths]
         (add-classpath (str (fs/file git-dir p)))))
     (when-not (and skip-windows (windows?))
