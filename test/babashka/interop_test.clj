@@ -394,6 +394,14 @@
 ;; DIFFERENT
 (.setDaemon true)))")))))
 
+(deftest deftype-getName-test
+  (testing ".getName on resolved deftype/defrecord (used by e.g. com.stuartsierra.component)"
+    (is (= "user.Foo" (bb nil "(deftype Foo [x]) (.getName (resolve 'Foo))")))
+    (is (= "user.Bar" (bb nil "(defrecord Bar [x]) (.getName (resolve 'Bar))"))))
+  (testing ".getName on type of defrecord instance with ^Class hint"
+    (is (= "user.Foo"
+           (bb nil "(deftype Foo [x]) (let [^java.lang.Class t (type (->Foo 1))] (.getName t))")))))
+
 (deftest clojure-lang-MultiFn-addMethod-test
   (is (= [2 0] (bb nil "
 (def results (atom []))

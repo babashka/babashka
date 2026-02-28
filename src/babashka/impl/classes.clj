@@ -29,6 +29,7 @@
   ;; instances in SCI-evaluated code (e.g. (.hasheq x) without type hint).
   `{sci.lang.Var {:fields [{:name "ns"}
                             {:name "sym"}]}
+    sci.lang.Type {:methods [{:name "getName"}]}
     babashka.impl.SciMap {:allPublicConstructors true
                           :allPublicMethods true}
     clojure.lang.LineNumberingPushbackReader {:allPublicConstructors true
