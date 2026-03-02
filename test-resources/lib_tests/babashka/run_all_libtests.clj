@@ -61,6 +61,9 @@
               (alter-var-root #'st/spec-checking-fn (constantly orig-spec-checking-fn)))
             (when-not orchestra?
               (require n)
+              (when (and (= 'cloverage.report.console-test n) (windows?))
+                (println "Skipping console-test/check-print-table on Windows (line ending mismatch)")
+                (alter-meta! (resolve 'cloverage.report.console-test/check-print-table) assoc :skip-bb true))
               (when (= 'promesa.tests.core-test n)
                 (prn :os.arch (System/getProperty "os.arch"))
                 (prn :os.name (System/getProperty "os.name"))
