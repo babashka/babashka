@@ -17,6 +17,7 @@
                                              async-protocols-namespace]]
    [babashka.impl.clojure.instant :as instant]
    [babashka.impl.clojure.java.browse :refer [browse-namespace]]
+   [babashka.impl.clojure.java.javadoc :refer [javadoc-namespace]]
    [babashka.impl.clojure.java.io :refer [io-namespace]]
    [babashka.impl.clojure.java.process :refer [cjp-namespace]]
    [babashka.impl.clojure.java.shell :refer [shell-namespace]]
@@ -418,6 +419,7 @@ Use bb run --help to show this help output.
        'babashka.pods pods/pods-namespace
        'bencode.core bencode-namespace
        'clojure.java.browse browse-namespace
+       'clojure.java.javadoc javadoc-namespace
        'clojure.datafy datafy-namespace
        'clojure.core.protocols protocols-namespace
        'babashka.process process-namespace

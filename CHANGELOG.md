@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Add `clojure.java.javadoc` namespace with `javadoc` available in REPL [#1933](https://github.com/babashka/babashka/issues/1933)
 - Fix `(doc var)`, `(doc set!)` and other special forms [#1932](https://github.com/babashka/babashka/issues/1932)
 - Support `(source inc)` and `(source babashka.fs/exists?)` for built-in vars [#1935](https://github.com/babashka/babashka/issues/1935)
 - Support `BABASHKA_REPL_HISTORY` env var for configurable REPL history location [#1930](https://github.com/babashka/babashka/issues/1930)

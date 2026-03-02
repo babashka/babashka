@@ -611,6 +611,17 @@
                                      (print %))
                                   (with-out-str (pprint/pprint [1 2 3]))))))))))
 
+(deftest javadoc-test
+  (testing "javadoc-url returns correct URL for core java class"
+    (is (str/includes? (bb nil "(clojure.java.javadoc/javadoc-url \"java.lang.String\")")
+                       "java/lang/String.html")))
+  (testing "javadoc-url strips inner classes"
+    (is (str/ends-with? (bb nil "(clojure.java.javadoc/javadoc-url \"java.util.Map$Entry\")")
+                        "java/util/Map.html")))
+  (testing "javadoc is auto-referred in REPL"
+    (is (str/includes? (bb nil "(with-out-str (prn (resolve 'javadoc)))")
+                       "javadoc"))))
+
 (deftest read-string-test
   (testing "namespaced keyword via alias"
     (is (= :clojure.string/foo
