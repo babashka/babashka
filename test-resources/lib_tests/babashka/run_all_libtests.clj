@@ -98,7 +98,10 @@
       (if (and flaky (#{"main" "master"} (current-branch)))
         (println "Skipping" tns "for main branch because it's marked flaky")
         (swap! test-nss into tns))))
-  (apply test-namespaces @test-nss))
+  ;; Bind *ns* to prevent libs from mutating it as a side effect (e.g.
+  ;; cloverage's instrument evals (ns ...) forms from sample files).
+  (binding [*ns* *ns*]
+    (apply test-namespaces @test-nss)))
 
 ;; Non-standard tests - These are tests with unusual setup around test-namespaces
 
@@ -154,6 +157,7 @@
         (if (zero? exit)
           (swap! status update :test (fnil inc 0))
           (swap! status update :fail (fnil inc 0))))))))
+
 
 ;;;; final exit code
 
