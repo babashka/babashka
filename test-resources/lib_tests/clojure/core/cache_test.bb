@@ -11,7 +11,9 @@
   clojure.core.cache-test
   (:use [clojure.core.cache] :reload)
   (:use [clojure.test])
-  (:import (java.lang.ref ReferenceQueue SoftReference)
+  (:import (clojure.core.cache BasicCache FIFOCache LRUCache TTLCacheQ LUCache
+                               LIRSCache)
+           (java.lang.ref ReferenceQueue SoftReference)
            (java.util.concurrent ConcurrentHashMap)))
 
 (println "\nTesting with Clojure" (clojure-version))

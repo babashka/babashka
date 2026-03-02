@@ -30,6 +30,18 @@ A preview of the next release can be installed from
 - SCI: `alias` now accepts namespace objects in addition to symbols
 - SCI: `copy-var` and `copy-var*` now preserve `:private` metadata
 - SCI: private vars are no longer included in `ns-refers`
+- SCI: fix `.sym` on user-defined vars returning qualified symbol instead of unqualified
+- SCI: `def` now replaces var metadata instead of merging, matching Clojure semantics
+- SCI: `deftype` and `defrecord` no longer create vars for the type name, matching Clojure. `(resolve 'Foo)` returns a `sci.lang.Type`, `#'Foo` throws "Unable to resolve var".
+- SCI: `deftype` and `defrecord` now macroexpand to `deftype*`, matching JVM Clojure, enabling code walkers like riddley
+- SCI: `case` now macroexpands to JVM-compatible `case*` format, enabling tools like riddley and cloverage
+- SCI: fix `.getName` on custom types to return fully qualified name, matching `Class.getName()`
+- SCI: fix incorrect type hint causing method resolution failure when hint doesn't match runtime class
+- SCI: fix NPE in `resolve` when called at runtime (e.g. inside macro body during code walking)
+- SCI: fix `.method` on class objects routing to static instead of instance method path
+- SCI: `macroexpand-1` now expands `(ClassName. args)` to `(new ClassName args)` and `(.method ClassName)` wraps class targets in `identity`, matching JVM Clojure
+- SCI: store current analysis context during macro invocation, enabling tools like riddley
+- Add clerk and cloverage to lib tests
 - Add `ref-max-history`, `ref-min-history`, `ref-history-count`
 - Add `java.lang.reflect.Member` `getName` and `getDeclaringClass` to reflection config
 - Add `java.lang.reflect.Method` `getParameterCount` and `java.lang.reflect.Modifier` `toString` to reflection config
