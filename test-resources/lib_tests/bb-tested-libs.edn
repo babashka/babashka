@@ -261,4 +261,10 @@ org.clojure/core.cache {:git-url "https://github.com/clojure/core.cache"
                           :test-paths ["src/test/clojure"]
                           :test-namespaces [clojure.core.cache-test
                                             clojure.core.cache.wrapped-test]}
- riddley/riddley {:git-sha "cc126c205ad456c8e4463533f53d83956faef3bc", :git-url "https://github.com/borkdude/riddley", :test-paths ["test"], :test-namespaces (riddley.walk-test)}}
+ riddley/riddley {:git-sha "cc126c205ad456c8e4463533f53d83956faef3bc", :git-url "https://github.com/borkdude/riddley", :test-paths ["test"], :test-namespaces (riddley.walk-test)}
+ ;; Clerk tests are run as a special case in run_all_libtests.clj (shells out to checkout dir)
+ io.github.nextjournal/clerk {:git-url "https://github.com/nextjournal/clerk"
+                               :git-sha "6df52a979d2c37531b7b99fd91328547622b5cf5"
+                               :test-paths ["test" "notebooks" "src" "resources"]
+                               :test-namespaces []
+                               :manually-added true}}

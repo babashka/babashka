@@ -3,7 +3,7 @@
    [babashka.classpath :as cp :refer [add-classpath]]
    [babashka.core :refer [windows?]]
    [babashka.fs :as fs]
-   [babashka.process :refer [sh]]
+   [babashka.process :refer [sh shell]]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.spec.test.alpha :as st]
@@ -123,10 +123,44 @@
   (System/setProperty "babashka.process.test.reload" "true")
   (test-namespaces 'babashka.process-test 'babashka.process-exec-test))
 
+;;;; clerk (native only - needs to run from Clerk's checkout dir)
+;; Clerk tests shell out to a bb process in Clerk's gitlibs checkout.
+;; The missing-hashes test is skipped: Clerk's analyzer treats files under
+;; .gitlibs/ differently — it uses the git SHA as a stable hash instead of
+;; re-analyzing the file (analyzer.clj ~line 552). This skips a macro
+;; re-expansion that the test relies on to produce a "missing hash" scenario.
+(let [clerk-nss (filter #(str/starts-with? (str %) "nextjournal.clerk.") ns-args)]
+  (when (or (empty? ns-args) (seq clerk-nss))
+    (if-not (= "native" (System/getenv "BABASHKA_TEST_ENV"))
+      (println "Skipping Clerk tests (native only, set BABASHKA_TEST_ENV=native)")
+      (let [git-sha (get-in (edn/read-string (slurp (io/resource "bb-tested-libs.edn")))
+                          ['io.github.nextjournal/clerk :git-sha])
+            git-dir (str (fs/file (fs/home) (format ".gitlibs/libs/io.github.nextjournal/clerk/%s" git-sha)))
+            bb-cmd (str (System/getProperty "user.dir") "/bb")
+            test-script (str (fs/file git-dir "test_bb_libtests.clj"))
+            clerk-ns-args (mapv str clerk-nss)]
+      (spit test-script
+            (str "(babashka.deps/add-deps '{:deps {nubank/matcher-combinators {:mvn/version \"3.5.1\"}
+                                              org.clojure/test.check {:mvn/version \"1.1.1\"}
+                                              io.github.cognitect-labs/test-runner {:git/tag \"v0.5.1\" :git/sha \"dfb30dd\"}}})\n"
+                 "(babashka.classpath/add-classpath \"test\")\n"
+                 "(require '[nextjournal.clerk.analyzer-test])\n"
+                 "(alter-meta! (resolve 'nextjournal.clerk.analyzer-test/missing-hashes) assoc :skip-bb true)\n"
+                 "(apply (requiring-resolve 'cognitect.test-runner/-main) \"-e\" \":skip-bb\""
+                 (apply str (map #(str " \"-n\" \"" % "\"") clerk-ns-args))
+                 " nil)"))
+      (println "Running Clerk tests in" git-dir)
+      (let [{:keys [exit]} (shell {:dir git-dir :continue true} "bash" "-c" (str "unset BABASHKA_CLASSPATH && " bb-cmd " -f " test-script))]
+        (if (zero? exit)
+          (swap! status update :test (fnil inc 0))
+          (swap! status update :fail (fnil inc 0))))))))
+
 ;;;; final exit code
 
 (let [{:keys [:test :fail :error] :as m} @status]
   (prn m)
-  (when-not (pos? test)
+  (when-not (pos? (or test 0))
     (System/exit 1))
-  (System/exit (+ fail error)))
+  (if (pos? (+ (or fail 0) (or error 0)))
+    (System/exit 1)
+    (System/exit 0)))
