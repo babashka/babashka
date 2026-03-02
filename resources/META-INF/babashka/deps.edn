@@ -41,7 +41,7 @@
         http-kit/http-kit {:mvn/version "2.9.0-beta1"}
         org.clojure/core.match {:mvn/version "1.0.0"}
         hiccup/hiccup {:mvn/version "2.0.0-RC1"}
-        rewrite-clj/rewrite-clj {:mvn/version "1.2.50"}
+        rewrite-clj/rewrite-clj {:mvn/version "1.2.52"}
         selmer/selmer {:mvn/version "1.12.70"}
         com.taoensso/timbre {:mvn/version "6.8.0"}
         org.clojure/tools.logging {:mvn/version "1.3.0"}
@@ -202,6 +202,9 @@
                          frankiesardo/linked {:git/url "https://github.com/frankiesardo/linked"
                                               :git/sha "d000c4e526a4b275f787196100cac36d37c991ba"}
                          riddley/riddley {:mvn/version "0.2.2"}
+                         cloverage/cloverage {:git/url "https://github.com/cloverage/cloverage"
+                                              :git/sha "9b8f3a49cfc2f5a46375d59b9b341162d91d2226"
+                                              :deps/root "cloverage"}
                          io.github.nextjournal/clerk {:git/url "https://github.com/nextjournal/clerk"
                                                       :git/sha "6df52a979d2c37531b7b99fd91328547622b5cf5"}}
             :classpath-overrides {org.clojure/clojure nil

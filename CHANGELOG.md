@@ -19,7 +19,6 @@ A preview of the next release can be installed from
   - Add `org.jline.reader.Buffer` to class allowlist
   - Add `:inherit` mechanism for reflection config to inherit interface methods
   - `start-repl!` bypasses jline when custom `:read` is provided
-- Fix nREPL server test using `"localhost"` instead of `"127.0.0.1"`
 - Add `java.lang.reflect.Constructor`, `java.lang.reflect.Executable`, `java.util.stream.Collectors`, `java.lang.StackOverflowError`, `clojure.lang.IType`, `java.util.Comparator` (reify)
 - Add JLine classes for rebel-readline compatibility: `Highlighter`, `LineReader$Option`, `Attributes$InputFlag`, `Attributes$LocalFlag`
 - Hide redundant `(keyword)` description in REPL completions
@@ -46,6 +45,8 @@ A preview of the next release can be installed from
 - Add `java.lang.reflect.Member` `getName` and `getDeclaringClass` to reflection config
 - Add `java.lang.reflect.Method` `getParameterCount` and `java.lang.reflect.Modifier` `toString` to reflection config
 - [#1939](https://github.com/babashka/babashka/issues/1939): Disable JLine backslash escaping/shell history commands ([@bobisageek](https://github.com/bobisageek))
+- Fix nREPL server test using `"localhost"` instead of `"127.0.0.1"`
+- Bump rewrite-clj
 
 ## 1.12.215 (2026-02-17)
 
