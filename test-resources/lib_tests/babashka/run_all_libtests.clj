@@ -156,7 +156,7 @@
                  (apply str (map #(str " \"-n\" \"" % "\"") clerk-ns-args))
                  " nil)"))
       (println "Running Clerk tests in" git-dir)
-      (let [{:keys [exit]} (shell {:dir git-dir :continue true :extra-env {"BABASHKA_CLASSPATH" ""}} bb-cmd "-f" test-script)]
+      (let [{:keys [exit]} (shell {:dir git-dir :continue true :env (dissoc (into {} (System/getenv)) "BABASHKA_CLASSPATH")} bb-cmd "-f" test-script)]
         (if (zero? exit)
           (swap! status update :test (fnil inc 0))
           (swap! status update :fail (fnil inc 0))))))))
