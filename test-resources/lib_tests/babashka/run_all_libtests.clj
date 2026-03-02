@@ -142,7 +142,7 @@
       (let [git-sha (get-in (edn/read-string (slurp (io/resource "bb-tested-libs.edn")))
                           ['io.github.nextjournal/clerk :git-sha])
             git-dir (str (fs/file (fs/home) (format ".gitlibs/libs/io.github.nextjournal/clerk/%s" git-sha)))
-            bb-cmd (str (System/getProperty "user.dir") "/bb")
+            bb-cmd (str (fs/file (System/getProperty "user.dir") "bb"))
             test-script (str (fs/file git-dir "test_bb_libtests.clj"))
             clerk-ns-args (mapv str clerk-nss)]
       (spit test-script
@@ -156,7 +156,7 @@
                  (apply str (map #(str " \"-n\" \"" % "\"") clerk-ns-args))
                  " nil)"))
       (println "Running Clerk tests in" git-dir)
-      (let [{:keys [exit]} (shell {:dir git-dir :continue true} "bash" "-c" (str "unset BABASHKA_CLASSPATH && " bb-cmd " -f " test-script))]
+      (let [{:keys [exit]} (shell {:dir git-dir :continue true :extra-env {"BABASHKA_CLASSPATH" ""}} bb-cmd "-f" test-script)]
         (if (zero? exit)
           (swap! status update :test (fnil inc 0))
           (swap! status update :fail (fnil inc 0))))))))
