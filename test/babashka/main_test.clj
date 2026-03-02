@@ -941,7 +941,16 @@ true")))
     (is (:doc (bb nil "-e" "(@#'clojure.repl/special-doc 'def)")))
     (is (:special-form (bb nil "-e" "(@#'clojure.repl/special-doc 'def)"))))
   (testing "special-doc returns nil for non-special forms"
-    (is (nil? (bb nil "-e" "(@#'clojure.repl/special-doc 'map)")))))
+    (is (nil? (bb nil "-e" "(@#'clojure.repl/special-doc 'map)"))))
+  (testing "doc works for special forms"
+    (let [var-doc (test-utils/bb nil "(doc var)")]
+      (is (str/includes? var-doc "(var symbol)"))
+      (is (str/includes? var-doc "Special Form"))
+      (is (str/includes? var-doc "Var object")))
+    (let [set-doc (test-utils/bb nil "(doc set!)")]
+      (is (str/includes? set-doc "set!"))
+      (is (str/includes? set-doc "Special Form"))
+      (is (str/includes? set-doc "thread-local-bound")))))
 
 (deftest clojure-main-repl-read-test
   (testing "clojure.main/repl-read reads a form from *in*"
