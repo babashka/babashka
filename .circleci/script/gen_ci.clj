@@ -239,9 +239,15 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
 
 (defn get-changes
   []
-  (-> (tasks/shell {:out :string} "git diff --name-only HEAD~1")
-      (:out)
-      (str/split-lines)))
+  (let [branch (System/getenv "CIRCLE_BRANCH")
+        ;; On branches, diff all commits against master to avoid skipping
+        ;; when the last commit only touches .md files
+        cmd (if (= "master" branch)
+              "git diff --name-only HEAD~1"
+              "git diff --name-only origin/master...HEAD")]
+    (-> (tasks/shell {:out :string} cmd)
+        (:out)
+        (str/split-lines))))
 
 (defn irrelevant-change?
   [change regexes]
