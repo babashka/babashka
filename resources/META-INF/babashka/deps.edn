@@ -206,7 +206,7 @@
                                               :git/sha "9b8f3a49cfc2f5a46375d59b9b341162d91d2226"
                                               :deps/root "cloverage"}
                          io.github.nextjournal/clerk {:git/url "https://github.com/nextjournal/clerk"
-                                                      :git/sha "6df52a979d2c37531b7b99fd91328547622b5cf5"}}
+                                                      :git/sha "b7c7c97fce9cc8943ee15c8105dcc1db3810fd86"}}
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil}}
            :clj-nvd
