@@ -94,7 +94,9 @@
 
 (deftest help-opt-test
   (is (every? #(str/includes? (test-utils/bb nil "help") %)
-        ["Babashka v" "Help:"])))
+              ["Babashka v"
+               "Help:"
+               "-D<property>=<value>"])))
 
 (deftest describe-opt-test
   (is (every? (partial contains? (bb nil "describe"))
