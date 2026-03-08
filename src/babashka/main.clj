@@ -158,6 +158,7 @@ or:    bb [svm-opts] [global-opts] subcommand [subcommand opts] [cmdline args]
 
 Substrate VM opts:
 
+  -D<property>=<value> Set a system property (e.g. -Dx.y=99).
   -Xmx<size>[g|G|m|M|k|K]  Set a maximum heap size (e.g. -Xmx256M to limit the heap to 256MB).
   -XX:PrintFlags=          Print all Substrate VM options.
 
