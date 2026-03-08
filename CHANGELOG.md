@@ -7,6 +7,10 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## 1.12.217 (2026-03-08)
+
+- Document -D in `bb help` [#1903](https://github.com/babashka/babashka/issues/1903)
+
 ## 1.12.216 (2026-03-02)
 
 - Add `clojure.java.javadoc` namespace with `javadoc` available in REPL [#1933](https://github.com/babashka/babashka/issues/1933)
