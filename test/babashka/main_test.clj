@@ -69,9 +69,9 @@
   (is (= {:force? true :clojure true :command-line-args '("-M" "-r")}
          (parse-opts ["--force" "clojure" "-M" "-r"])))
   (is (= {:command-line-args '("asdf" "fdsa")}
-        (main/parse-opts ["--" "asdf" "fdsa"])))
+         (main/parse-opts ["--" "asdf" "fdsa"])))
   (is (= {:repl true :command-line-args '("asdf" "fdsa")}
-        (main/parse-opts ["repl" "--" "asdf" "fdsa"])))
+         (main/parse-opts ["repl" "--" "asdf" "fdsa"])))
   (testing "file opts parsing does not mess with :command-line-args"
     (is (= {:prn true, :expressions ["(prn :foo)"]}
            (-> (let [[_ opts] (main/parse-file-opt ["-e" "(prn :foo)"] {})]
@@ -90,7 +90,7 @@
 
 (deftest version-opt-test
   (is (str/starts-with? (test-utils/bb nil "version")
-        "babashka v")))
+                        "babashka v")))
 
 (deftest help-opt-test
   (is (every? #(str/includes? (test-utils/bb nil "help") %)
@@ -98,9 +98,19 @@
                "Help:"
                "-D<property>=<value>"])))
 
+(deftest prepare-does-not-skip-next-arg
+  (is (= {:help true
+          :command-line-args '()}
+         (main/parse-args '("--prepare" "--help") {})))
+
+  (is (= {:describe? true}
+         (select-keys
+          (main/parse-args '("--prepare" "--describe") {})
+          [:describe?]))))
+
 (deftest describe-opt-test
   (is (every? (partial contains? (bb nil "describe"))
-        [:babashka/version :feature/yaml :feature/logging])))
+              [:babashka/version :feature/yaml :feature/logging])))
 
 (deftest print-error-test
   (is (thrown-with-msg? Exception #"java.lang.NullPointerException"
@@ -510,9 +520,9 @@
   (is (true? (bb nil "(nil? *command-line-args*)")))
   (is (= ["1" "2" "3"] (bb nil "*command-line-args*" "1" "2" "3")))
   (is (str/includes? (test-utils/bb "*command-line-args*" "repl" "--" "1" "2" "3")
-        "(\"1\" \"2\" \"3\""))
+                     "(\"1\" \"2\" \"3\""))
   (is (str/includes? (test-utils/bb "*command-line-args*" "--" "1" "2" "3")
-        "(\"1\" \"2\" \"3\"")))
+                     "(\"1\" \"2\" \"3\"")))
 
 (deftest constructors-test
   (testing "the clojure.lang.Delay constructor works"
