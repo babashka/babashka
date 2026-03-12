@@ -79,6 +79,7 @@
     (is (= {:file "foo", :command-line-args ["README.md"]}
            (main/parse-opts ["README.md"] {:file "foo"})))
     (is (= ["--version"] (bb nil (fs/file "test-resources" "script_with_overlapping_opts.clj") "--version")))
+    (is (= ["-version"] (bb nil (fs/file "test-resources" "script_with_overlapping_opts.clj") "-version")))
     (is (= ["version"] (bb nil (fs/file "test-resources" "script_with_overlapping_opts.clj") "version")))))
 
 (deftest version-test
