@@ -334,6 +334,7 @@
           clojure.lang.APersistentMap ;; for proxy-super on proxied classes
           clojure.lang.ArityException
           clojure.lang.BigInt
+          clojure.lang.EdnReader$ReaderException
           clojure.lang.ExceptionInfo
           java.io.BufferedInputStream
           java.io.BufferedOutputStream
