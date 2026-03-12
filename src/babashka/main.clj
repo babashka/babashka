@@ -582,7 +582,7 @@ Use bb run --help to show this help output.
           ("--") (assoc opts-map :command-line-args (next options))
           ("--clojure") (assoc opts-map :clojure true
                                :command-line-args (rest options))
-          ("--version") {:version true}
+          ("--version" "-version") {:version true}
           ("--help" "-h" "-?" "help")
           {:help true
            :command-line-args (rest options)}
