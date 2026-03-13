@@ -692,7 +692,7 @@ Use bb run --help to show this help output.
           (parse-print-deps-opts opts-map (next options))
           ("--prepare")
           (let [options (next options)]
-            (recur (next options)
+            (recur options
                    (assoc opts-map :prepare true)))
           ;; fallback
           (if (and opts-map

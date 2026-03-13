@@ -99,6 +99,16 @@
                "Help:"
                "-D<property>=<value>"])))
 
+(deftest prepare-does-not-skip-next-arg
+  (is (= {:help true
+          :command-line-args '()}
+         (main/parse-args '("--prepare" "--help") {})))
+
+  (is (= {:describe? true}
+         (select-keys
+          (main/parse-args '("--prepare" "--describe") {})
+          [:describe?]))))
+
 (deftest describe-opt-test
   (is (every? (partial contains? (bb nil "describe"))
         [:babashka/version :feature/yaml :feature/logging])))
