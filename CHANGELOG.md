@@ -16,6 +16,7 @@ A preview of the next release can be installed from
 - Performance improvmenets for calling functions on locals
 - Bump rewrite-clj to `1.2.53`
 - Bump tools.cli to `1.4.256`
+- Bump transit-clj to `1.1.357`
 
 ## 1.12.216 (2026-03-02)
 
