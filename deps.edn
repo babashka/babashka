@@ -31,7 +31,7 @@
         cheshire/cheshire {:mvn/version "6.1.0"}
         org.clojure/data.xml {:mvn/version "0.2.0-alpha8"}
         clj-commons/clj-yaml {:mvn/version "1.0.29"}
-        com.cognitect/transit-clj {:mvn/version "1.1.347"}
+        com.cognitect/transit-clj {:mvn/version "1.1.357"}
         org.clojure/test.check {:mvn/version "1.1.1"}
         nrepl/bencode {:mvn/version "1.2.0"}
         seancorfield/next.jdbc {:mvn/version "1.1.610"}
