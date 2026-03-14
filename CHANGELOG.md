@@ -12,6 +12,7 @@ A preview of the next release can be installed from
 - Document -D in `bb help` [#1903](https://github.com/babashka/babashka/issues/1903)
 - [#1955](https://github.com/babashka/babashka/issues/1955): support `-version` as an alias for `--version`
 - [#1954](https://github.com/babashka/babashka/issues/1954): add `clojure.lang.EdnReader$ReaderException`
+- [#1951](https://github.com/babashka/babashka/issues/1951): fix `--prepare` flag skipping next token
 - Performance improvements for math operations
 - Performance improvmenets for calling functions on locals
 - Bump rewrite-clj to `1.2.53`
