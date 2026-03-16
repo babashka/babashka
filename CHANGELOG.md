@@ -18,6 +18,7 @@ A preview of the next release can be installed from
 - Bump rewrite-clj to `1.2.54`
 - Bump tools.cli to `1.4.256`
 - Bump transit-clj to `1.1.357`
+- Bump fs to `0.5.32`
 
 ## 1.12.216 (2026-03-02)
 
