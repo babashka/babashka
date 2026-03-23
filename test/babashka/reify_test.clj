@@ -213,3 +213,17 @@
   (testing "reify method returning int works when Clojure fn returns long"
     (is (= -1 (bb nil "(.compareTo (reify Comparable (compareTo [_ _] -1)) nil)")))
     (is (= 42 (bb nil "(.compareTo (reify Comparable (compareTo [_ _] 42)) nil)")))))
+
+(deftest reify-charsequence-test
+  (testing "reify CharSequence with fast subsequencing"
+    (is (= [5 \c "cde" "abcde"]
+           (bb nil "
+(defn ->segment [^CharSequence s offset cnt]
+  (reify CharSequence
+    (length [_] cnt)
+    (charAt [_ i] (.charAt s (+ offset i)))
+    (subSequence [_ start end] (->segment s (+ offset start) (- end start)))
+    (toString [_] (.toString (doto (StringBuilder. cnt) (.append s offset (+ offset cnt)))))))
+(let [seg (->segment \"abcde\" 0 5)
+      sub (.subSequence seg 2 5)]
+  [(.length seg) (.charAt seg 2) (str sub) (str seg)])")))))

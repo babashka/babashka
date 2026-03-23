@@ -29,6 +29,7 @@
                  java.util.function.BiFunction
                  java.util.function.Predicate
                  java.util.function.Supplier
+                 java.lang.CharSequence
                  java.lang.Comparable
                  java.util.Comparator
                  javax.net.ssl.X509TrustManager
