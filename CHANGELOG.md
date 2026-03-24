@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- SCI: fix `recur` with 20+ args in `loop` [sci#1035](https://github.com/babashka/sci/issues/1035)
 - SCI: check return arity and throw when it doesn't match
 - SCI: support `IFn` on records
 - Support `CharSequence` in `reify`
