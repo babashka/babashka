@@ -12,6 +12,7 @@ A preview of the next release can be installed from
 - SCI: check return arity and throw when it doesn't match
 - SCI: support `IFn` on records
 - Support `CharSequence` in `reify`
+- Bump JLine to 3.30.9, prepare for JLine 4
 - SCI: `find-ns` returns `nil` for `nil` argument instead of throwing `AssertionError`
 
 ## 1.12.217 (2026-03-08)
