@@ -16,8 +16,6 @@ A preview of the next release can be installed from
 - Bump JLine to 3.30.9, prepare for JLine 4
 - SCI: `find-ns` returns `nil` for `nil` argument instead of throwing `AssertionError`
 - Bump cheshire to `6.2.0`
-- Add support for Ed25519/EdDSA public key operations with `java.security.spec.EdECPublicKeySpec`
-
 
 ## 1.12.217 (2026-03-08)
 
