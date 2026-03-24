@@ -221,6 +221,24 @@
                            pk (.getPublic kp)]
                        (bytes? (.getEncoded pk))))))))
 
+(deftest EdECPublicKeySpec-test
+  (is (true?
+        (bb nil '(do (import
+                       '[java.security KeyFactory KeyPairGenerator]
+                       '[java.security.spec EdECPoint EdECPublicKeySpec NamedParameterSpec])
+
+                     (let [keygen (KeyPairGenerator/getInstance "Ed25519")
+                           kp (.generateKeyPair keygen)
+                           pub (.getPublic kp)
+                           key-factory (KeyFactory/getInstance "Ed25519")
+                           spec (.getKeySpec key-factory pub EdECPublicKeySpec)
+                           point (.getPoint spec)
+                           params (.getParams spec)]
+                       (and (instance? EdECPublicKeySpec spec)
+                            (instance? EdECPoint point)
+                            (instance? NamedParameterSpec params)
+                            (= "Ed25519" (.getName params)))))))))
+
 ;; RT iter test
 (deftest clojure-RT-iter-test
   (is (= (iterator-seq (.iterator [1 2 3]))

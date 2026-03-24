@@ -241,7 +241,22 @@
                {:name "setCompleter"}
                {:name "setHighlighter"}
                {:name "setParser"}]
-     :inherit [org.jline.reader.LineReader]}})
+     :inherit [org.jline.reader.LineReader]}
+    java.security.spec.EdECPoint
+    {:allPublicConstructors true
+     :methods [{:name "isXOdd"}
+               {:name "getY"}]}
+    java.security.spec.EdECPublicKeySpec
+    {:allPublicConstructors true
+     :methods [{:name "getParams"}
+               {:name "getPoint"}]}
+    java.security.spec.NamedParameterSpec
+    {:allPublicConstructors true
+     :methods [{:name "getName"}]
+     :fields [{:name "ED25519"}
+              {:name "ED448"}
+              {:name "X25519"}
+              {:name "X448"}]}})
 
 (def custom-map
   (cond->
