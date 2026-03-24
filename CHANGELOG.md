@@ -14,6 +14,7 @@ A preview of the next release can be installed from
 - Support `CharSequence` in `reify`
 - Bump JLine to 3.30.9, prepare for JLine 4
 - SCI: `find-ns` returns `nil` for `nil` argument instead of throwing `AssertionError`
+- Bump cheshire to `6.2.0`
 
 ## 1.12.217 (2026-03-08)
 
