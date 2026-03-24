@@ -28,10 +28,11 @@ public class URLClassLoader extends java.net.URLClassLoader implements Closeable
     // calling super.getResource() returned nil in native-image
     public java.net.URL getResource(String name) {
         java.net.URL url = findResource(name);
-        // Only fall back for JLine SPI resources
-        // Falling back for all resources is slow due to native-image classloader
+        // Only fall back for JLine provider resources.
+        // Falling back for all resources is slow due to native-image classloader.
+        // JLine 3.x uses META-INF/services/, JLine 4.x uses META-INF/jline/providers/
         if (url == null && fallbackClassLoader != null
-                && name.startsWith("META-INF/services/org/jline/")) {
+                && (name.startsWith("META-INF/services/org.jline.") || name.startsWith("META-INF/jline/"))) {
             url = fallbackClassLoader.getResource(name);
         }
         return url;
