@@ -27,6 +27,13 @@
       (is (= ":clojure.string/foo\ntrue\n(\"1\" \"2\" \"3\" \"4\")\n"
              (tu/bb nil "--prn" "--file" (.getPath tmp-file) "1" "2" "3" "4"))))))
 
+(deftest as-alias-test
+  (let [tmp-file (deleted-temp-file)]
+    ;; uberscript should handle :as-alias without warnings
+    (is (empty? (tu/bb nil "--prn" "--classpath" "test-resources/babashka/uberscript/src" "uberscript" (.getPath tmp-file) "-m" "my.as-alias-ns")))
+    ;; the generated uberscript should contain :as-alias, not :as
+    (is (str/includes? (slurp tmp-file) ":as-alias"))))
+
 (deftest pods-test
   (let [tmp-file (deleted-temp-file)]
     (tu/with-config (pr-str '{:paths ["test-resources/babashka/uberscript/src"]
