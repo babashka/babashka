@@ -16,6 +16,8 @@
               (case ftail
                 :as (recur (assoc parsed :as (second tail))
                            (nnext tail))
+                :as-alias (recur (assoc parsed :as-alias (second tail))
+                                 (nnext tail))
                 :refer
                 (let [refer (second tail)]
                   (if (seqable? refer)
@@ -27,8 +29,10 @@
                        (nnext tail))))
             parsed))))))
 
-(defn recompose-clause [{:keys [:ns :as]}]
-  [ns :as as])
+(defn recompose-clause [{:keys [:ns :as :as-alias]}]
+  (if as-alias
+    [ns :as-alias as-alias]
+    [ns :as as]))
 
 (defn process-ns
   [_ctx ns]
