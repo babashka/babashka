@@ -134,6 +134,14 @@
          (bb nil "(import [java.util.stream Collectors Stream])
                   (into [] (.collect (Stream/of (object-array [\"a\" \"b\" \"c\"])) (Collectors/toList)))"))))
 
+(deftest HexFormat-test
+  (is (true?
+       (bb nil "(let [formatter (java.util.HexFormat/of)
+                      original  (byte-array [(byte 10) (byte 11) (byte -1)])
+                      hex       (.formatHex formatter original)
+                      parsed    (.parseHex formatter hex)]
+                  (java.util.Arrays/equals original parsed))"))))
+
 (deftest reflect-constructor-test
   (is (true? (bb nil "(import [java.lang.reflect Constructor])
                       (let [ctors (.getConstructors String)]
