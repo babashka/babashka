@@ -9,6 +9,8 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Add `HexFormat` interop support [#1948]
+- Fix uberscript warnings with `:as-alias` [#1403]
 - SCI: fix `recur` with 20+ args in `loop` [sci#1035](https://github.com/babashka/sci/issues/1035)
 - SCI: check return arity and throw when it doesn't match
 - SCI: support `IFn` on records
