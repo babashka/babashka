@@ -9,6 +9,8 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Add `HexFormat` interop support [#1948]
+- Fix uberscript warnings with `:as-alias` [#1403]
 - SCI: fix `recur` with 20+ args in `loop` [sci#1035](https://github.com/babashka/sci/issues/1035)
 - SCI: check return arity and throw when it doesn't match
 - SCI: support `IFn` on records
@@ -17,7 +19,7 @@ A preview of the next release can be installed from
 - SCI: `find-ns` returns `nil` for `nil` argument instead of throwing `AssertionError`
 - Bump cheshire to `6.2.0`
 
-## 1.12.217 (2026-03-08)
+## 1.12.217 (2026-03-16)
 
 - Document -D in `bb help` [#1903](https://github.com/babashka/babashka/issues/1903)
 - [#1955](https://github.com/babashka/babashka/issues/1955): support `-version` as an alias for `--version`
