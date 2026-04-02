@@ -52,7 +52,7 @@
         org.babashka/http-client {:mvn/version "0.4.23"}
         org.flatland/ordered {:mvn/version "1.15.12"}
         org.jsoup/jsoup {:mvn/version "1.21.2"}
-        io.github.nextjournal/markdown {:mvn/version "0.7.222"}
+        io.github.nextjournal/markdown {:mvn/version "0.7.225"}
         org.jline/jline-terminal-ffm {:mvn/version "3.30.9"}
         org.jline/jline-terminal {:mvn/version "3.30.9"
                                   :exclusions [;; this saves 1mb of native-image size
