@@ -635,6 +635,7 @@
           java.util.Date
           java.util.HashMap
           java.util.HashSet
+          java.util.HexFormat
           java.util.LinkedHashSet
           java.util.IdentityHashMap
           java.util.InputMismatchException
