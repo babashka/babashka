@@ -368,7 +368,10 @@
 (defn- print-sci-stack-trace
   "Prints `tr` with a sci-aware stacktrace when one is available, otherwise
   falls back to `clojure.stacktrace/print-cause-trace`. Honors `n` as a
-  maximum number of frames to show per exception in the cause chain."
+  maximum number of frames to show per exception. Walks the cause chain
+  but suppresses host frames on inner causes — the sci frames on the
+  outer wrapper already locate user code, so the host frames on the
+  underlying cause are just noise."
   [^Throwable tr n]
   (if-let [st (sci/stacktrace tr)]
     (let [frames (sci/format-stacktrace st)
@@ -378,9 +381,10 @@
         (when-not (:sci.impl/callstack data)
           (prn data)))
       (run! #(println " " %) frames)
-      (when-let [cause (.getCause tr)]
-        (print "Caused by: ")
-        (print-sci-stack-trace cause n)))
+      (loop [cause (.getCause tr)]
+        (when cause
+          (println (str "Caused by: " (.getName (class cause)) ": " (.getMessage cause)))
+          (recur (.getCause cause)))))
     (stack/print-cause-trace tr n)))
 
 (defmethod report-impl :error [m]
