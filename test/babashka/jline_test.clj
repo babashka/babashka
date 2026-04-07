@@ -104,8 +104,27 @@
     (is (true? (bb '(class? org.jline.reader.EndOfFileException))))
     (is (true? (bb '(class? org.jline.reader.UserInterruptException)))))
   (testing "LineReader can read a line"
+    ;; NOTE: We deliberately use a PipedInputStream rather than the more obvious
+    ;; ByteArrayInputStream here. In jline 4, TerminalBuilder with custom .streams
+    ;; creates an ExternalTerminal whose pump thread continuously copies bytes from
+    ;; the supplied InputStream into an internal NonBlockingPumpInputStream. As soon
+    ;; as the source stream returns -1 (EOF), the pump closes the internal slave
+    ;; stream. Under jline 4's default "strict" close mode, any subsequent read on
+    ;; that closed stream throws ClosedException -> EndOfFileException.
+    ;;
+    ;; A ByteArrayInputStream returns EOF immediately after its bytes are consumed,
+    ;; which races with LineReader.readLine: the pump can close the slave before
+    ;; readLine has finished processing the trailing '\n', causing the test to fail
+    ;; with EndOfFileException instead of returning "hello world".
+    ;;
+    ;; A PipedInputStream stays open (the pump blocks waiting for more bytes) until
+    ;; we explicitly close the terminal in the finally block, giving readLine a
+    ;; chance to return the line cleanly.
     (is (= "hello world"
-           (bb '(let [input (java.io.ByteArrayInputStream. (.getBytes "hello world\n"))
+           (bb '(let [pipe-out (java.io.PipedOutputStream.)
+                      input (java.io.PipedInputStream. pipe-out)
+                      _ (do (.write pipe-out (.getBytes "hello world\n"))
+                            (.flush pipe-out))
                       output (java.io.ByteArrayOutputStream.)
                       terminal (-> (org.jline.terminal.TerminalBuilder/builder)
                                    (.dumb true)
