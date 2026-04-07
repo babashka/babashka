@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- [#1518](https://github.com/babashka/babashka/issues/1518): `clojure.test` error reports now include sci-aware stacktraces instead of host JVM frames
 - Add `HexFormat` interop support [#1948]
 - Fix uberscript warnings with `:as-alias` [#1403]
 - SCI: fix `recur` with 20+ args in `loop` [sci#1035](https://github.com/babashka/sci/issues/1035)
