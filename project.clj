@@ -41,8 +41,8 @@
                  [org.jsoup/jsoup "1.21.2"]
                  [io.github.nextjournal/markdown "0.7.225"]
                  [borkdude/graal.locking "0.0.2"]
-                 [org.jline/jline-terminal-ffm "4.0.10"]
-                 [org.jline/jline-terminal "4.0.10"
+                 [org.jline/jline-terminal-ffm "4.0.12"]
+                 [org.jline/jline-terminal "4.0.12"
                   :exclusions [;; this saves 1mb of native-image size
                                org.jline/jline-native]]
                  #_[org.jline/jansi "3.30.6"
@@ -51,7 +51,7 @@
                  #_[org.jline/jansi-core "3.30.6"
                   :exclusions [;; this saves 1mb of native-image size
                                org.jline/jline-native]]
-                 [org.jline/jline-reader "4.0.10"]]
+                 [org.jline/jline-reader "4.0.12"]]
   :plugins       [[org.kipz/lein-meta-bom "0.1.1"]]
   :metabom {:jar-name "metabom.jar"}
   :profiles {:feature/xml  {:source-paths ["feature-xml"]

@@ -15,7 +15,7 @@ A preview of the next release can be installed from
 - SCI: check return arity and throw when it doesn't match
 - SCI: support `IFn` on records
 - Support `CharSequence` in `reify`
-- Bump JLine to 4.0.10
+- Bump JLine to 4.0.12
 - SCI: `find-ns` returns `nil` for `nil` argument instead of throwing `AssertionError`
 - Bump cheshire to `6.2.0`
 - Bump `nextjournal.markdown` to `0.7.255`
