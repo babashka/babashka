@@ -828,7 +828,14 @@
                       java.util.AbstractMap
                       java.util.AbstractSet
                       java.util.AbstractList
-                      ~@(when features/xml? ['clojure.data.xml.node.Element])]
+                      ~@(when features/xml? ['clojure.data.xml.node.Element
+                                              'clojure.data.xml.event.StartElementEvent
+                                              'clojure.data.xml.event.EmptyElementEvent
+                                              'clojure.data.xml.event.EndElementEvent
+                                              'clojure.data.xml.event.CharsEvent
+                                              'clojure.data.xml.event.CDataEvent
+                                              'clojure.data.xml.event.CommentEvent
+                                              'clojure.data.xml.event.QNameEvent])]
     :custom ~custom-map})
 
 (defn compiler-load

@@ -453,7 +453,8 @@ Use bb run --help to show this help output.
        'nextjournal.markdown.utils md/markdown-utils-namespace}
     features/xml? (assoc 'clojure.data.xml @(resolve 'babashka.impl.xml/xml-namespace)
                          'clojure.data.xml.event @(resolve 'babashka.impl.xml/xml-event-namespace)
-                         'clojure.data.xml.tree @(resolve 'babashka.impl.xml/xml-tree-namespace))
+                         'clojure.data.xml.tree @(resolve 'babashka.impl.xml/xml-tree-namespace)
+                         'clojure.data.xml.jvm.parse @(resolve 'babashka.impl.xml/xml-jvm-parse-namespace))
     features/yaml? (assoc 'clj-yaml.core @(resolve 'babashka.impl.yaml/yaml-namespace)
                           'flatland.ordered.map @(resolve 'babashka.impl.ordered/ordered-map-ns)
                           'flatland.ordered.set @(resolve 'babashka.impl.ordered/ordered-set-ns))

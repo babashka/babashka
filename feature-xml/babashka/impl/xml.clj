@@ -3,13 +3,15 @@
   (:require [babashka.impl.common :refer [ctx]]
             [clojure.data.xml :as xml]
             [clojure.data.xml.event :as event]
+            [clojure.data.xml.jvm.parse :as jvm-parse]
             [clojure.data.xml.tree :as tree]
             [sci.core :as sci :refer [copy-var]]
             [sci.impl.vars]))
 
 (def xns (sci/create-ns 'clojure.data.xml nil))
-(def xens (sci/create-ns 'clojure.data.xml.event  nil))
+(def xens (sci/create-ns 'clojure.data.xml.event nil))
 (def xtns (sci/create-ns 'clojure.data.xml.tree nil))
+(def xjpns (sci/create-ns 'clojure.data.xml.jvm.parse nil))
 
 (defn- clj-ns-name [ns]
   (cond (instance? sci.lang.Namespace ns) (str ns)
@@ -76,7 +78,26 @@
 (def xml-event-namespace
   {'event-element (copy-var event/event-element xens)
    'event-exit? (copy-var event/event-exit? xens)
-   'event-node (copy-var event/event-node xens)})
+   'event-node (copy-var event/event-node xens)
+   '->StartElementEvent (copy-var event/->StartElementEvent xens)
+   'map->StartElementEvent (copy-var event/map->StartElementEvent xens)
+   '->EmptyElementEvent (copy-var event/->EmptyElementEvent xens)
+   'map->EmptyElementEvent (copy-var event/map->EmptyElementEvent xens)
+   '->EndElementEvent (copy-var event/->EndElementEvent xens)
+   'map->EndElementEvent (copy-var event/map->EndElementEvent xens)
+   '->CharsEvent (copy-var event/->CharsEvent xens)
+   'map->CharsEvent (copy-var event/map->CharsEvent xens)
+   '->CDataEvent (copy-var event/->CDataEvent xens)
+   'map->CDataEvent (copy-var event/map->CDataEvent xens)
+   '->CommentEvent (copy-var event/->CommentEvent xens)
+   'map->CommentEvent (copy-var event/map->CommentEvent xens)
+   '->QNameEvent (copy-var event/->QNameEvent xens)
+   'map->QNameEvent (copy-var event/map->QNameEvent xens)})
 
 (def xml-tree-namespace
-  {'seq-tree (copy-var tree/seq-tree xtns)})
+  {'seq-tree (copy-var tree/seq-tree xtns)
+   'flatten-elements (copy-var tree/flatten-elements xtns)
+   'event-tree (copy-var tree/event-tree xtns)})
+
+(def xml-jvm-parse-namespace
+  {'string-source (copy-var jvm-parse/string-source xjpns)})
