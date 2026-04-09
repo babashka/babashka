@@ -20,6 +20,7 @@ A preview of the next release can be installed from
 - Bump cheshire to `6.2.0`
 - Bump `nextjournal.markdown` to `0.7.255`
 - Bump edamame to `1.5.39`
+- Bump `data.xml` to `0.2.0-alpha11`
 
 ## 1.12.217 (2026-03-16)
 
