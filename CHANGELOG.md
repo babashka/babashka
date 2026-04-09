@@ -21,6 +21,7 @@ A preview of the next release can be installed from
 - Bump `nextjournal.markdown` to `0.7.255`
 - Bump edamame to `1.5.39`
 - Bump `data.xml` to `0.2.0-alpha11`
+- [#1967](https://github.com/babashka/babashka/issues/1967): expose `clojure.data.xml.tree/flatten-elements`, `event-tree`, `clojure.data.xml.event` record constructors, and `clojure.data.xml.jvm.parse/string-source`
 
 ## 1.12.217 (2026-03-16)
 
