@@ -7,7 +7,7 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## 1.12.218 (2026-04-10)
+## Unreleased
 
 - Add `HexFormat` interop support [#1948]
 - Fix uberscript warnings with `:as-alias` [#1403]
