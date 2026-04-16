@@ -125,3 +125,15 @@ true")))))
         (bb "(clojure.test/testing-vars-str {:file \"x\" :line 1})")
         "() (x:1)")
       "includes explicit line number + file name in test report"))
+
+(deftest error-report-sci-stacktrace-test
+  (let [output (bb "(require '[clojure.test :as t])
+                    (defn myfun [] (throw (Exception. \"boom\")))
+                    (t/deftest tst (t/is (= 0 (myfun))))
+                    (t/run-tests *ns*)")]
+    (is (str/includes? output "java.lang.Exception: boom")
+        "prints the exception class and message")
+    (is (str/includes? output "user/myfun")
+        "includes sci frame for the user function")
+    (is (not (str/includes? output "sci.impl.Reflector"))
+        "does not leak host JVM frames")))

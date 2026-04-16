@@ -365,6 +365,28 @@
     (println "expected:" (pr-str (:expected m)))
     (println "  actual:" (pr-str (:actual m)))))
 
+(defn- print-sci-stack-trace
+  "Prints `tr` with a sci-aware stacktrace when one is available, otherwise
+  falls back to `clojure.stacktrace/print-cause-trace`. Honors `n` as a
+  maximum number of frames to show per exception. Walks the cause chain
+  but suppresses host frames on inner causes — the sci frames on the
+  outer wrapper already locate user code, so the host frames on the
+  underlying cause are just noise."
+  [^Throwable tr n]
+  (if-let [st (sci/stacktrace tr)]
+    (let [frames (sci/format-stacktrace st)
+          frames (if n (take n frames) frames)]
+      (println (str (.getName (class tr)) ": " (.getMessage tr)))
+      (when-let [data (ex-data tr)]
+        (when-not (:sci.impl/callstack data)
+          (prn data)))
+      (run! #(println " " %) frames)
+      (loop [cause (.getCause tr)]
+        (when cause
+          (println (str "Caused by: " (.getName (class cause)) ": " (.getMessage cause)))
+          (recur (.getCause cause)))))
+    (stack/print-cause-trace tr n)))
+
 (defmethod report-impl :error [m]
   (with-test-out-internal
     (inc-report-counter :error)
@@ -375,7 +397,7 @@
     (print "  actual: ")
     (let [actual (:actual m)]
       (if (instance? Throwable actual)
-        (stack/print-cause-trace actual @stack-trace-depth)
+        (print-sci-stack-trace actual @stack-trace-depth)
         (prn actual)))))
 
 (defmethod report-impl :summary [m]
@@ -540,7 +562,7 @@
   {:added "1.1"}
   [msg form]
   `(try ~(assert-expr msg form)
-        (catch Throwable t#
+        (catch ~(with-meta 'Throwable {:sci/error true}) t#
           (clojure.test/do-report {:file clojure.core/*file*
                                    :line ~(:line (meta form))
                                    :type :error, :message ~msg,
