@@ -9,9 +9,9 @@ A preview of the next release can be installed from
 
 ## 1.12.218 (2026-04-20)
 
-- Add `java.util.HexFormat` interop support [#1948](https://github.com/babashka/babashka/issues/1948)
-- Fix uberscript warnings with `:as-alias` [#1403](https://github.com/babashka/babashka/issues/1403)
-- SCI: fix `recur` with 20+ args in `loop` [sci#1035](https://github.com/babashka/sci/issues/1035)
+- [#1948](https://github.com/babashka/babashka/issues/1948): add `java.util.HexFormat` interop support
+- [#1403](https://github.com/babashka/babashka/issues/1403): fix uberscript warnings with `:as-alias`
+- [sci#1035](https://github.com/babashka/sci/issues/1035): SCI: fix `recur` with 20+ args in `loop`
 - SCI: check return arity and throw when it doesn't match
 - SCI: support `IFn` on records
 - Support `CharSequence` in `reify`
