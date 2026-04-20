@@ -7,6 +7,10 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## Unreleased
+
+- nREPL: lock output stream to prevent interleaved bencode frames from concurrent writes
+
 ## 1.12.218 (2026-04-20)
 
 - [#1948](https://github.com/babashka/babashka/issues/1948): add `java.util.HexFormat` interop support
