@@ -9,8 +9,8 @@ A preview of the next release can be installed from
 
 ## 1.12.218 (2026-04-20)
 
-- Add `HexFormat` interop support [#1948]
-- Fix uberscript warnings with `:as-alias` [#1403]
+- Add `java.util.HexFormat` interop support [#1948](https://github.com/babashka/babashka/issues/1948)
+- Fix uberscript warnings with `:as-alias` [#1403](https://github.com/babashka/babashka/issues/1403)
 - SCI: fix `recur` with 20+ args in `loop` [sci#1035](https://github.com/babashka/sci/issues/1035)
 - SCI: check return arity and throw when it doesn't match
 - SCI: support `IFn` on records
@@ -23,7 +23,7 @@ A preview of the next release can be installed from
 - Bump `data.xml` to `0.2.0-alpha11`
 - Bump `Jsoup` to `1.22.2`
 - [#1967](https://github.com/babashka/babashka/issues/1967): expose `clojure.data.xml.tree/flatten-elements`, `event-tree`, `clojure.data.xml.event` record constructors, and `clojure.data.xml.jvm.parse/string-source`
-- [#1969](https://github.com/babashka/babashka/issues/1967): include `java.net.Proxy` and `java.net.Proxy$Type` Java clases ([@jeeger](https://github.com/jeeger))
+- [#1969](https://github.com/babashka/babashka/issues/1969): include `java.net.Proxy` and `java.net.Proxy$Type` Java clases ([@jeeger](https://github.com/jeeger))
 
 ## 1.12.217 (2026-03-16)
 
