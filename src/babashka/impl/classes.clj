@@ -270,6 +270,8 @@
     java.net.HttpCookie
     java.net.PasswordAuthentication
     java.net.ProxySelector
+    java.net.Proxy
+    java.net.Proxy$Type
     java.net.SocketTimeoutException
     java.net.http.HttpClient
     java.net.http.HttpClient$Builder
