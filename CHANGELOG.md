@@ -12,7 +12,7 @@ A preview of the next release can be installed from
 - [#1948](https://github.com/babashka/babashka/issues/1948): add `java.util.HexFormat` interop support
 - [#1403](https://github.com/babashka/babashka/issues/1403): fix uberscript warnings with `:as-alias`
 - [sci#1035](https://github.com/babashka/sci/issues/1035): SCI: fix `recur` with 20+ args in `loop`
-- SCI: check return arity and throw when it doesn't match
+- SCI: check recur arity and throw when it doesn't match
 - SCI: support `IFn` on records
 - Support `CharSequence` in `reify`
 - Bump JLine to 4.0.12
