@@ -51,7 +51,7 @@
         org.babashka/cli {:mvn/version "0.8.67"}
         org.babashka/http-client {:mvn/version "0.4.23"}
         org.flatland/ordered {:mvn/version "1.15.12"}
-        org.jsoup/jsoup {:mvn/version "1.21.2"}
+        org.jsoup/jsoup {:mvn/version "1.22.2"}
         io.github.nextjournal/markdown {:mvn/version "0.7.225"}
         org.jline/jline-terminal-ffm {:mvn/version "4.0.12"}
         org.jline/jline-terminal {:mvn/version "4.0.12"

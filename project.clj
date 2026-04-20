@@ -38,7 +38,7 @@
                  [insn/insn "0.5.2"]
                  [org.babashka/cli "0.8.67"]
                  [org.babashka/http-client "0.4.23"]
-                 [org.jsoup/jsoup "1.21.2"]
+                 [org.jsoup/jsoup "1.22.2"]
                  [io.github.nextjournal/markdown "0.7.225"]
                  [borkdude/graal.locking "0.0.2"]
                  [org.jline/jline-terminal-ffm "4.0.12"]
