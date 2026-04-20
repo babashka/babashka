@@ -192,6 +192,32 @@
                               (.build))]
                (= bespoke-proxy (-> (.proxy client)
                                     (.get))))))))
+  (is (= true
+         (bb
+          '(do
+             (ns net
+               (:import
+                (java.net ProxySelector Proxy URI)))
+             (let [selector (proxy [ProxySelector] []
+                              (connectFailed [_ _ _])
+                              (select [_]
+                                [Proxy/NO_PROXY]))]
+               (= [Proxy/NO_PROXY]
+                  (.select selector (URI. "https://www.postman-echo.com"))))))))
+
+  (is (= true
+         (bb
+          '(do
+             (ns net
+               (:import
+                (java.net ProxySelector Proxy Proxy$Type URI InetSocketAddress)))
+             (let [selector (proxy [ProxySelector] []
+                              (connectFailed [_ _ _])
+                              (select [_]
+                                [(Proxy. Proxy$Type/HTTP (InetSocketAddress. "test-proxy.com" 1234))]))]
+               (let [[selected-proxy] (.select selector (URI. "https://www.postman-echo.com"))]
+                 (and (= (.type selected-proxy) Proxy$Type/HTTP)
+                      (= (.address selected-proxy) (InetSocketAddress. "test-proxy.com" 1234)))))))))
 
   (is (= 200
          (bb

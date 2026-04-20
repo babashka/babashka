@@ -23,6 +23,7 @@ A preview of the next release can be installed from
 - Bump `data.xml` to `0.2.0-alpha11`
 - Bump `Jsoup` to `1.22.2`
 - [#1967](https://github.com/babashka/babashka/issues/1967): expose `clojure.data.xml.tree/flatten-elements`, `event-tree`, `clojure.data.xml.event` record constructors, and `clojure.data.xml.jvm.parse/string-source`
+- [#1969](https://github.com/babashka/babashka/issues/1967): include `java.net.Proxy` and `java.net.Proxy$Type` Java clases
 
 ## 1.12.217 (2026-03-16)
 
