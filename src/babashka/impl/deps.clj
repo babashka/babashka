@@ -5,10 +5,49 @@
             [babashka.impl.common :refer [bb-edn]]
             [babashka.process :as process]
             [borkdude.deps :as deps]
+            [clojure.edn :as edn]
+            [clojure.java.io :as io]
             [clojure.string :as str]
             [sci.core :as sci]))
 
 (def dns (sci/create-ns 'babashka.deps nil))
+
+;;;; user-level deps.edn
+
+(defn- read-user-deps-edn
+  "Reads user-level deps.edn, checking ~/.babashka/deps.edn first,
+  then falling back to ~/.clojure/deps.edn. Returns the parsed map or nil."
+  []
+  (let [home (System/getProperty "user.home")
+        bb-deps (io/file home ".babashka" "deps.edn")
+        clj-deps (io/file home ".clojure" "deps.edn")]
+    (when-let [f (cond
+                   (.exists bb-deps) bb-deps
+                   (.exists clj-deps) clj-deps)]
+      (try
+        (edn/read-string (slurp f))
+        (catch Exception e
+          (binding [*out* *err*]
+            (println (str "[babashka] WARNING: could not read user deps.edn from " f ": " (.getMessage e))))
+          nil)))))
+
+(def ^:private user-deps-edn* (atom nil))
+(def ^:private user-deps-edn-loaded? (atom false))
+
+(defn- user-deps-edn
+  "Returns user-level deps.edn map, reading it on first call and caching the result.
+  Cache can be reset for testing via reset-user-deps-edn-cache!"
+  []
+  (when-not @user-deps-edn-loaded?
+    (reset! user-deps-edn* (read-user-deps-edn))
+    (reset! user-deps-edn-loaded? true))
+  @user-deps-edn*)
+
+(defn reset-user-deps-edn-cache!
+  "Resets the user deps.edn cache. Useful for testing."
+  []
+  (reset! user-deps-edn-loaded? false)
+  (reset! user-deps-edn* nil))
 
 ;;;; merge deps.edn files
 
@@ -93,6 +132,12 @@
                                                               ;; only remove core specs when they are not mentioned in deps map
                                                               (not (str/includes? (str deps-map) "org.clojure/core.specs.alpha"))
                                                               (assoc 'org.clojure/core.specs.alpha ""))})
+                   ;; Merge :mvn/repos from user-level deps.edn (~/.babashka/deps.edn
+                   ;; or ~/.clojure/deps.edn) so users can configure private/extra
+                   ;; maven repositories globally.
+                   deps-map (if-let [user-repos (:mvn/repos (user-deps-edn))]
+                              (update deps-map :mvn/repos #(merge user-repos %))
+                              deps-map)
                    args (list "-Srepro" ;; do not include deps.edn from user config
                               "-Spath" "-Sdeps" (str deps-map)
                               "-Sdeps-file" "__babashka_no_deps_file__.edn") ;; we reset deps file so the local deps.edn isn't used

@@ -3,6 +3,7 @@
    [babashka.fs :as fs]
    [babashka.impl.classpath :as cp]
    [babashka.impl.common :as common]
+   [babashka.impl.deps :as impl-deps]
    [babashka.main :as main]
    [babashka.test-utils :as test-utils]
    [borkdude.deps]
@@ -571,3 +572,87 @@ even more stuff here\"
       (spit after-init-file "(ns after-init) (prn :after-init)")
       (let [out (str/split-lines (test-utils/bb nil "--config" config "task-a"))]
         (is (= [":pre-init" ":init true" ":after-init"] out))))))
+
+(deftest user-deps-edn-test
+  (when-not test-utils/native?
+    (testing "reads ~/.babashka/deps.edn when it exists"
+      (fs/with-temp-dir [home {}]
+        (let [bb-dir (fs/file home ".babashka")]
+          (fs/create-dir bb-dir)
+          (spit (str (fs/file bb-dir "deps.edn"))
+                "{:mvn/repos {\"my-repo\" {:url \"https://maven.example.com/releases\"}}}")
+          (with-redefs [impl-deps/read-user-deps-edn
+                        (fn []
+                          (let [f (fs/file home ".babashka" "deps.edn")]
+                            (edn/read-string (slurp (str f)))))]
+            (impl-deps/reset-user-deps-edn-cache!)
+            (try
+              (let [result (#'impl-deps/user-deps-edn)]
+                (is (= {"my-repo" {:url "https://maven.example.com/releases"}}
+                       (:mvn/repos result))))
+              (finally
+                (impl-deps/reset-user-deps-edn-cache!)))))))
+    (testing "falls back to ~/.clojure/deps.edn when ~/.babashka/deps.edn doesn't exist"
+      (fs/with-temp-dir [home {}]
+        (let [clj-dir (fs/file home ".clojure")]
+          (fs/create-dir clj-dir)
+          (spit (str (fs/file clj-dir "deps.edn"))
+                "{:mvn/repos {\"clj-repo\" {:url \"https://clojars.example.com\"}}}")
+          (with-redefs [impl-deps/read-user-deps-edn
+                        (fn []
+                          (let [f (fs/file home ".clojure" "deps.edn")]
+                            (edn/read-string (slurp (str f)))))]
+            (impl-deps/reset-user-deps-edn-cache!)
+            (try
+              (let [result (#'impl-deps/user-deps-edn)]
+                (is (= {"clj-repo" {:url "https://clojars.example.com"}}
+                       (:mvn/repos result))))
+              (finally
+                (impl-deps/reset-user-deps-edn-cache!)))))))
+    (testing "returns nil when no user deps.edn exists"
+      (with-redefs [impl-deps/read-user-deps-edn (constantly nil)]
+        (impl-deps/reset-user-deps-edn-cache!)
+        (try
+          (is (nil? (#'impl-deps/user-deps-edn)))
+          (finally
+            (impl-deps/reset-user-deps-edn-cache!)))))))
+
+(deftest user-repos-merge-test
+  (when-not test-utils/native?
+    (testing "user-level :mvn/repos are merged into deps resolution"
+      (with-redefs [impl-deps/read-user-deps-edn
+                    (constantly {:mvn/repos {"my-private-repo"
+                                            {:url "https://maven.example.com/releases"}}})]
+        (impl-deps/reset-user-deps-edn-cache!)
+        (try
+          ;; Capture the args passed to borkdude.deps/-main to verify repos are included
+          (let [captured-args (atom nil)]
+            (with-redefs [borkdude.deps/-main
+                          (fn [& args]
+                            (reset! captured-args (vec args))
+                            ;; print empty classpath
+                            (print ""))]
+              (test-utils/with-config '{:deps {medley/medley {:mvn/version "1.3.0"}}}
+                (bb "-e" "(+ 1 2 3)")))
+            (when @captured-args
+              (let [sdeps-idx (.indexOf ^java.util.List @captured-args "-Sdeps")
+                    sdeps-val (when (pos? sdeps-idx)
+                                (nth @captured-args (inc sdeps-idx)))]
+                (when sdeps-val
+                  (is (str/includes? sdeps-val "my-private-repo"))
+                  (is (str/includes? sdeps-val "maven.example.com"))))))
+          (finally
+            (impl-deps/reset-user-deps-edn-cache!)))))
+    (testing "project-level :mvn/repos override user-level repos with same key"
+      (let [user-repos {:mvn/repos {"central" {:url "https://user-mirror.example.com"}}}
+            project-repos {:mvn/repos {"central" {:url "https://project-mirror.example.com"}}}
+            merged (impl-deps/merge-deps [user-repos project-repos])]
+        (is (= {:url "https://project-mirror.example.com"}
+               (get-in merged [:mvn/repos "central"])))))
+    (testing "user repos and project repos are combined when keys differ"
+      (let [user-repos {:mvn/repos {"private" {:url "https://private.example.com"}}}
+            project-repos {:mvn/repos {"central" {:url "https://repo1.maven.org/maven2/"}}}
+            merged (impl-deps/merge-deps [user-repos project-repos])]
+        (is (= {"private" {:url "https://private.example.com"}
+                "central" {:url "https://repo1.maven.org/maven2/"}}
+               (:mvn/repos merged)))))))
