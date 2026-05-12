@@ -12,42 +12,53 @@
 
 (def dns (sci/create-ns 'babashka.deps nil))
 
-;;;; user-level deps.edn
+;;;; user-level bb.edn
 
-(defn- read-user-deps-edn
-  "Reads user-level deps.edn, checking ~/.babashka/deps.edn first,
-  then falling back to ~/.clojure/deps.edn. Returns the parsed map or nil."
+(defn- user-bb-edn-path
+  "Returns the path to the user-level bb.edn file, respecting XDG conventions.
+  Checks in order:
+    1. $XDG_CONFIG_HOME/babashka/bb.edn
+    2. ~/.config/babashka/bb.edn (XDG default)
+    3. ~/.babashka/bb.edn (legacy fallback)"
   []
   (let [home (System/getProperty "user.home")
-        bb-deps (io/file home ".babashka" "deps.edn")
-        clj-deps (io/file home ".clojure" "deps.edn")]
-    (when-let [f (cond
-                   (.exists bb-deps) bb-deps
-                   (.exists clj-deps) clj-deps)]
-      (try
-        (edn/read-string (slurp f))
-        (catch Exception e
-          (binding [*out* *err*]
-            (println (str "[babashka] WARNING: could not read user deps.edn from " f ": " (.getMessage e))))
-          nil)))))
+        xdg-config-home (System/getenv "XDG_CONFIG_HOME")
+        xdg-path (io/file (or xdg-config-home (io/file home ".config"))
+                          "babashka" "bb.edn")
+        legacy-path (io/file home ".babashka" "bb.edn")]
+    (cond
+      (.exists xdg-path) xdg-path
+      (.exists legacy-path) legacy-path)))
 
-(def ^:private user-deps-edn* (atom nil))
-(def ^:private user-deps-edn-loaded? (atom false))
-
-(defn- user-deps-edn
-  "Returns user-level deps.edn map, reading it on first call and caching the result.
-  Cache can be reset for testing via reset-user-deps-edn-cache!"
+(defn read-user-bb-edn
+  "Reads user-level bb.edn from the XDG config directory or ~/.babashka/.
+  Returns the parsed map or nil."
   []
-  (when-not @user-deps-edn-loaded?
-    (reset! user-deps-edn* (read-user-deps-edn))
-    (reset! user-deps-edn-loaded? true))
-  @user-deps-edn*)
+  (when-let [f (user-bb-edn-path)]
+    (try
+      (edn/read-string (slurp f))
+      (catch Exception e
+        (binding [*out* *err*]
+          (println (str "[babashka] WARNING: could not read user bb.edn from " f ": " (.getMessage e))))
+        nil))))
 
-(defn reset-user-deps-edn-cache!
-  "Resets the user deps.edn cache. Useful for testing."
+(def ^:private user-bb-edn* (atom nil))
+(def ^:private user-bb-edn-loaded? (atom false))
+
+(defn user-bb-edn
+  "Returns user-level bb.edn map, reading it on first call and caching the result.
+  Cache can be reset for testing via reset-user-bb-edn-cache!"
   []
-  (reset! user-deps-edn-loaded? false)
-  (reset! user-deps-edn* nil))
+  (when-not @user-bb-edn-loaded?
+    (reset! user-bb-edn* (read-user-bb-edn))
+    (reset! user-bb-edn-loaded? true))
+  @user-bb-edn*)
+
+(defn reset-user-bb-edn-cache!
+  "Resets the user bb.edn cache. Useful for testing."
+  []
+  (reset! user-bb-edn-loaded? false)
+  (reset! user-bb-edn* nil))
 
 ;;;; merge deps.edn files
 
@@ -132,12 +143,6 @@
                                                               ;; only remove core specs when they are not mentioned in deps map
                                                               (not (str/includes? (str deps-map) "org.clojure/core.specs.alpha"))
                                                               (assoc 'org.clojure/core.specs.alpha ""))})
-                   ;; Merge :mvn/repos from user-level deps.edn (~/.babashka/deps.edn
-                   ;; or ~/.clojure/deps.edn) so users can configure private/extra
-                   ;; maven repositories globally.
-                   deps-map (if-let [user-repos (:mvn/repos (user-deps-edn))]
-                              (update deps-map :mvn/repos #(merge user-repos %))
-                              deps-map)
                    args (list "-Srepro" ;; do not include deps.edn from user config
                               "-Spath" "-Sdeps" (str deps-map)
                               "-Sdeps-file" "__babashka_no_deps_file__.edn") ;; we reset deps file so the local deps.edn isn't used
