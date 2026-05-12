@@ -583,15 +583,10 @@ even more stuff here\"
                 "{:mvn/repos {\"my-repo\" {:url \"https://maven.example.com/releases\"}}}")
           (with-redefs [impl-deps/read-user-bb-edn
                         (fn []
-                          (let [f (fs/file home ".config" "babashka" "bb.edn")]
-                            (edn/read-string (slurp (str f)))))]
-            (impl-deps/reset-user-bb-edn-cache!)
-            (try
-              (let [result (impl-deps/user-bb-edn)]
-                (is (= {"my-repo" {:url "https://maven.example.com/releases"}}
-                       (:mvn/repos result))))
-              (finally
-                (impl-deps/reset-user-bb-edn-cache!)))))))
+                          (edn/read-string (slurp (str (fs/file home ".config" "babashka" "bb.edn")))))]
+            (let [result (impl-deps/read-user-bb-edn)]
+              (is (= {"my-repo" {:url "https://maven.example.com/releases"}}
+                     (:mvn/repos result))))))))
     (testing "falls back to ~/.babashka/bb.edn when XDG path doesn't exist"
       (fs/with-temp-dir [home {}]
         (let [bb-dir (fs/file home ".babashka")]
@@ -600,22 +595,13 @@ even more stuff here\"
                 "{:mvn/repos {\"legacy-repo\" {:url \"https://legacy.example.com\"}}}")
           (with-redefs [impl-deps/read-user-bb-edn
                         (fn []
-                          (let [f (fs/file home ".babashka" "bb.edn")]
-                            (edn/read-string (slurp (str f)))))]
-            (impl-deps/reset-user-bb-edn-cache!)
-            (try
-              (let [result (impl-deps/user-bb-edn)]
-                (is (= {"legacy-repo" {:url "https://legacy.example.com"}}
-                       (:mvn/repos result))))
-              (finally
-                (impl-deps/reset-user-bb-edn-cache!)))))))
+                          (edn/read-string (slurp (str (fs/file home ".babashka" "bb.edn")))))]
+            (let [result (impl-deps/read-user-bb-edn)]
+              (is (= {"legacy-repo" {:url "https://legacy.example.com"}}
+                     (:mvn/repos result))))))))
     (testing "returns nil when no user bb.edn exists"
       (with-redefs [impl-deps/read-user-bb-edn (constantly nil)]
-        (impl-deps/reset-user-bb-edn-cache!)
-        (try
-          (is (nil? (impl-deps/user-bb-edn)))
-          (finally
-            (impl-deps/reset-user-bb-edn-cache!)))))))
+        (is (nil? (impl-deps/read-user-bb-edn)))))))
 
 (deftest user-bb-edn-merge-test
   (when-not test-utils/native?
@@ -623,89 +609,73 @@ even more stuff here\"
       (with-redefs [impl-deps/read-user-bb-edn
                     (constantly {:mvn/repos {"my-private-repo"
                                             {:url "https://maven.example.com/releases"}}})]
-        (impl-deps/reset-user-bb-edn-cache!)
-        (try
-          ;; Capture the args passed to borkdude.deps/-main to verify repos are included
-          (let [captured-args (atom nil)]
-            (with-redefs [borkdude.deps/-main
-                          (fn [& args]
-                            (reset! captured-args (vec args))
-                            ;; print empty classpath
-                            (print ""))]
-              (test-utils/with-config '{:deps {medley/medley {:mvn/version "1.3.0"}}}
-                (bb "-e" "(+ 1 2 3)")))
-            (when @captured-args
-              (let [sdeps-idx (.indexOf ^java.util.List @captured-args "-Sdeps")
-                    sdeps-val (when (pos? sdeps-idx)
-                                (nth @captured-args (inc sdeps-idx)))]
-                (when sdeps-val
-                  (is (str/includes? sdeps-val "my-private-repo"))
-                  (is (str/includes? sdeps-val "maven.example.com"))))))
-          (finally
-            (impl-deps/reset-user-bb-edn-cache!)))))
+        ;; Capture the args passed to borkdude.deps/-main to verify repos are included
+        (let [captured-args (atom nil)]
+          (with-redefs [borkdude.deps/-main
+                        (fn [& args]
+                          (reset! captured-args (vec args))
+                          ;; print empty classpath
+                          (print ""))]
+            (test-utils/with-config '{:deps {medley/medley {:mvn/version "1.3.0"}}}
+              (bb "-e" "(+ 1 2 3)")))
+          (when @captured-args
+            (let [sdeps-idx (.indexOf ^java.util.List @captured-args "-Sdeps")
+                  sdeps-val (when (pos? sdeps-idx)
+                              (nth @captured-args (inc sdeps-idx)))]
+              (when sdeps-val
+                (is (str/includes? sdeps-val "my-private-repo"))
+                (is (str/includes? sdeps-val "maven.example.com"))))))))
     (testing "project-level :mvn/repos override user-level repos with same key"
       (with-redefs [impl-deps/read-user-bb-edn
                     (constantly {:mvn/repos {"central" {:url "https://user-mirror.example.com"}}})]
-        (impl-deps/reset-user-bb-edn-cache!)
-        (try
-          (let [captured-args (atom nil)]
-            (with-redefs [borkdude.deps/-main
-                          (fn [& args]
-                            (reset! captured-args (vec args))
-                            (print ""))]
-              (test-utils/with-config '{:deps {medley/medley {:mvn/version "1.3.0"}}
-                                        :mvn/repos {"central" {:url "https://project-mirror.example.com"}}}
-                (bb "-e" "(+ 1 2 3)")))
-            (when @captured-args
-              (let [sdeps-idx (.indexOf ^java.util.List @captured-args "-Sdeps")
-                    sdeps-val (when (pos? sdeps-idx)
-                                (nth @captured-args (inc sdeps-idx)))]
-                (when sdeps-val
-                  (is (str/includes? sdeps-val "project-mirror.example.com"))
-                  (is (not (str/includes? sdeps-val "user-mirror.example.com")))))))
-          (finally
-            (impl-deps/reset-user-bb-edn-cache!)))))
+        (let [captured-args (atom nil)]
+          (with-redefs [borkdude.deps/-main
+                        (fn [& args]
+                          (reset! captured-args (vec args))
+                          (print ""))]
+            (test-utils/with-config '{:deps {medley/medley {:mvn/version "1.3.0"}}
+                                      :mvn/repos {"central" {:url "https://project-mirror.example.com"}}}
+              (bb "-e" "(+ 1 2 3)")))
+          (when @captured-args
+            (let [sdeps-idx (.indexOf ^java.util.List @captured-args "-Sdeps")
+                  sdeps-val (when (pos? sdeps-idx)
+                              (nth @captured-args (inc sdeps-idx)))]
+              (when sdeps-val
+                (is (str/includes? sdeps-val "project-mirror.example.com"))
+                (is (not (str/includes? sdeps-val "user-mirror.example.com")))))))))
     (testing "user repos and project repos are combined when keys differ"
       (with-redefs [impl-deps/read-user-bb-edn
                     (constantly {:mvn/repos {"private" {:url "https://private.example.com"}}})]
-        (impl-deps/reset-user-bb-edn-cache!)
-        (try
-          (let [captured-args (atom nil)]
-            (with-redefs [borkdude.deps/-main
-                          (fn [& args]
-                            (reset! captured-args (vec args))
-                            (print ""))]
-              (test-utils/with-config '{:deps {medley/medley {:mvn/version "1.3.0"}}
-                                        :mvn/repos {"central" {:url "https://repo1.maven.org/maven2/"}}}
-                (bb "-e" "(+ 1 2 3)")))
-            (when @captured-args
-              (let [sdeps-idx (.indexOf ^java.util.List @captured-args "-Sdeps")
-                    sdeps-val (when (pos? sdeps-idx)
-                                (nth @captured-args (inc sdeps-idx)))]
-                (when sdeps-val
-                  (is (str/includes? sdeps-val "private.example.com"))
-                  (is (str/includes? sdeps-val "repo1.maven.org"))))))
-          (finally
-            (impl-deps/reset-user-bb-edn-cache!)))))
+        (let [captured-args (atom nil)]
+          (with-redefs [borkdude.deps/-main
+                        (fn [& args]
+                          (reset! captured-args (vec args))
+                          (print ""))]
+            (test-utils/with-config '{:deps {medley/medley {:mvn/version "1.3.0"}}
+                                      :mvn/repos {"central" {:url "https://repo1.maven.org/maven2/"}}}
+              (bb "-e" "(+ 1 2 3)")))
+          (when @captured-args
+            (let [sdeps-idx (.indexOf ^java.util.List @captured-args "-Sdeps")
+                  sdeps-val (when (pos? sdeps-idx)
+                              (nth @captured-args (inc sdeps-idx)))]
+              (when sdeps-val
+                (is (str/includes? sdeps-val "private.example.com"))
+                (is (str/includes? sdeps-val "repo1.maven.org"))))))))
     (testing "only :mvn/repos is merged from user bb.edn, not :deps"
       (with-redefs [impl-deps/read-user-bb-edn
                     (constantly {:mvn/repos {"private" {:url "https://private.example.com"}}
                                  :deps {'user/lib {:mvn/version "1.0.0"}}})]
-        (impl-deps/reset-user-bb-edn-cache!)
-        (try
-          (let [captured-args (atom nil)]
-            (with-redefs [borkdude.deps/-main
-                          (fn [& args]
-                            (reset! captured-args (vec args))
-                            (print ""))]
-              (test-utils/with-config '{:deps {medley/medley {:mvn/version "1.3.0"}}}
-                (bb "-e" "(+ 1 2 3)")))
-            (when @captured-args
-              (let [sdeps-idx (.indexOf ^java.util.List @captured-args "-Sdeps")
-                    sdeps-val (when (pos? sdeps-idx)
-                                (nth @captured-args (inc sdeps-idx)))]
-                (when sdeps-val
-                  (is (str/includes? sdeps-val "private.example.com"))
-                  (is (not (str/includes? sdeps-val "user/lib")))))))
-          (finally
-            (impl-deps/reset-user-bb-edn-cache!)))))))
+        (let [captured-args (atom nil)]
+          (with-redefs [borkdude.deps/-main
+                        (fn [& args]
+                          (reset! captured-args (vec args))
+                          (print ""))]
+            (test-utils/with-config '{:deps {medley/medley {:mvn/version "1.3.0"}}}
+              (bb "-e" "(+ 1 2 3)")))
+          (when @captured-args
+            (let [sdeps-idx (.indexOf ^java.util.List @captured-args "-Sdeps")
+                  sdeps-val (when (pos? sdeps-idx)
+                              (nth @captured-args (inc sdeps-idx)))]
+              (when sdeps-val
+                (is (str/includes? sdeps-val "private.example.com"))
+                (is (not (str/includes? sdeps-val "user/lib")))))))))))

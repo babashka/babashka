@@ -42,24 +42,6 @@
           (println (str "[babashka] WARNING: could not read user bb.edn from " f ": " (.getMessage e))))
         nil))))
 
-(def ^:private user-bb-edn* (atom nil))
-(def ^:private user-bb-edn-loaded? (atom false))
-
-(defn user-bb-edn
-  "Returns user-level bb.edn map, reading it on first call and caching the result.
-  Cache can be reset for testing via reset-user-bb-edn-cache!"
-  []
-  (when-not @user-bb-edn-loaded?
-    (reset! user-bb-edn* (read-user-bb-edn))
-    (reset! user-bb-edn-loaded? true))
-  @user-bb-edn*)
-
-(defn reset-user-bb-edn-cache!
-  "Resets the user bb.edn cache. Useful for testing."
-  []
-  (reset! user-bb-edn-loaded? false)
-  (reset! user-bb-edn* nil))
-
 ;;;; merge deps.edn files
 
 (defn- merge-or-replace
