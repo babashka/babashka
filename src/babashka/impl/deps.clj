@@ -2,7 +2,7 @@
   (:require [babashka.deps :as bdeps]
             [babashka.fs :as fs]
             [babashka.impl.classpath :as cp]
-            [babashka.impl.common :refer [bb-edn]]
+            [babashka.impl.common :refer [bb-edn debug]]
             [babashka.process :as process]
             [borkdude.deps :as deps]
             [clojure.edn :as edn]
@@ -38,8 +38,9 @@
     (try
       (edn/read-string (slurp f))
       (catch Exception e
-        (binding [*out* *err*]
-          (println (str "[babashka] WARNING: could not read user bb.edn from " f ": " (.getMessage e))))
+        (when @debug
+          (binding [*out* *err*]
+            (println (str "[babashka] WARNING: could not read user bb.edn from " f ": " (.getMessage e)))))
         nil))))
 
 ;;;; merge deps.edn files
