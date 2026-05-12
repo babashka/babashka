@@ -1277,10 +1277,10 @@ Use bb run --help to show this help output.
                        edn (if merge-deps
                              (deps/merge-deps [edn (read-bb-edn merge-deps)])
                              edn)
-                       ;; Merge user-level bb.edn as the base layer.
-                       ;; Project bb.edn takes precedence over user bb.edn.
-                       edn (if-let [user-edn (deps/user-bb-edn)]
-                             (deps/merge-deps [user-edn edn])
+                       ;; Merge :mvn/repos from user-level bb.edn.
+                       ;; Project repos take precedence over user repos for same key.
+                       edn (if-let [user-repos (:mvn/repos (deps/user-bb-edn))]
+                             (update edn :mvn/repos #(merge user-repos %))
                              edn)
                        edn (assoc edn
                                   :raw raw-string
