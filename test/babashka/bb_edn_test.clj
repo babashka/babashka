@@ -573,63 +573,55 @@ even more stuff here\"
       (let [out (str/split-lines (test-utils/bb nil "--config" config "task-a"))]
         (is (= [":pre-init" ":init true" ":after-init"] out))))))
 
+(defmacro with-home
+  "Creates a temp dir bound to `sym` and executes body with fs/home and
+  fs/xdg-config-home pointing at it."
+  [[sym] & body]
+  `(fs/with-temp-dir [~sym {}]
+     (with-redefs [fs/xdg-config-home (fn
+                                         ([] (fs/path ~sym ".config"))
+                                         ([app#] (fs/path ~sym ".config" app#)))
+                   fs/home (fn
+                             ([] (fs/path ~sym))
+                             ([_user#] (fs/path ~sym)))]
+       ~@body)))
+
 (deftest user-bb-edn-test
   (when-not test-utils/native?
-    (testing "reads bb.edn from $XDG_CONFIG_HOME/babashka/ when env var is set"
-      (let [orig-home (System/getProperty "user.home")]
-        (fs/with-temp-dir [home {}]
-          (fs/with-temp-dir [xdg-dir {}]
-            (try
-              (System/setProperty "user.home" (str home))
-              (let [config-dir (fs/file xdg-dir "babashka")]
-                (fs/create-dirs config-dir)
-                (spit (str (fs/file config-dir "bb.edn"))
-                      "{:mvn/repos {\"xdg-repo\" {:url \"https://xdg.example.com\"}}}")
-                (with-redefs [impl-deps/get-xdg-config-home (constantly (str xdg-dir))]
-                  (let [result (impl-deps/read-user-bb-edn)]
-                    (is (= {"xdg-repo" {:url "https://xdg.example.com"}}
-                           (:mvn/repos result))))))
-              (finally
-                (System/setProperty "user.home" orig-home)))))))
-    (testing "reads bb.edn from ~/.config/babashka/ (XDG default)"
-      (let [orig-home (System/getProperty "user.home")]
-        (fs/with-temp-dir [home {}]
-          (try
-            (System/setProperty "user.home" (str home))
-            (with-redefs [impl-deps/get-xdg-config-home (constantly nil)]
-              (let [config-dir (fs/file home ".config" "babashka")]
-                (fs/create-dirs config-dir)
-                (spit (str (fs/file config-dir "bb.edn"))
-                      "{:mvn/repos {\"my-repo\" {:url \"https://maven.example.com/releases\"}}}")
-                (let [result (impl-deps/read-user-bb-edn)]
-                  (is (= {"my-repo" {:url "https://maven.example.com/releases"}}
-                         (:mvn/repos result))))))
-            (finally
-              (System/setProperty "user.home" orig-home))))))
+    (testing "reads bb.edn from XDG config home"
+      (with-home [home]
+        (let [config-dir (fs/file home ".config" "babashka")]
+          (fs/create-dirs config-dir)
+          (spit (str (fs/file config-dir "bb.edn"))
+                "{:mvn/repos {\"my-repo\" {:url \"https://maven.example.com/releases\"}}}")
+          (let [result (impl-deps/read-user-bb-edn)]
+            (is (= {"my-repo" {:url "https://maven.example.com/releases"}}
+                   (:mvn/repos result)))))))
     (testing "falls back to ~/.babashka/bb.edn when XDG path doesn't exist"
-      (let [orig-home (System/getProperty "user.home")]
-        (fs/with-temp-dir [home {}]
-          (try
-            (System/setProperty "user.home" (str home))
-            (with-redefs [impl-deps/get-xdg-config-home (constantly nil)]
-              (let [bb-dir (fs/file home ".babashka")]
-                (fs/create-dir bb-dir)
-                (spit (str (fs/file bb-dir "bb.edn"))
-                      "{:mvn/repos {\"legacy-repo\" {:url \"https://legacy.example.com\"}}}")
-                (let [result (impl-deps/read-user-bb-edn)]
-                  (is (= {"legacy-repo" {:url "https://legacy.example.com"}}
-                         (:mvn/repos result))))))
-            (finally
-              (System/setProperty "user.home" orig-home))))))
+      (with-home [home]
+        (let [bb-dir (fs/file home ".babashka")]
+          (fs/create-dir bb-dir)
+          (spit (str (fs/file bb-dir "bb.edn"))
+                "{:mvn/repos {\"legacy-repo\" {:url \"https://legacy.example.com\"}}}")
+          (let [result (impl-deps/read-user-bb-edn)]
+            (is (= {"legacy-repo" {:url "https://legacy.example.com"}}
+                   (:mvn/repos result)))))))
+    (testing "XDG path takes priority over legacy path"
+      (with-home [home]
+        (let [xdg-dir (fs/file home ".config" "babashka")
+              legacy-dir (fs/file home ".babashka")]
+          (fs/create-dirs xdg-dir)
+          (fs/create-dir legacy-dir)
+          (spit (str (fs/file xdg-dir "bb.edn"))
+                "{:mvn/repos {\"xdg-repo\" {:url \"https://xdg.example.com\"}}}")
+          (spit (str (fs/file legacy-dir "bb.edn"))
+                "{:mvn/repos {\"legacy-repo\" {:url \"https://legacy.example.com\"}}}")
+          (let [result (impl-deps/read-user-bb-edn)]
+            (is (= {"xdg-repo" {:url "https://xdg.example.com"}}
+                   (:mvn/repos result)))))))
     (testing "returns nil when no user bb.edn exists"
-      (let [orig-home (System/getProperty "user.home")]
-        (fs/with-temp-dir [home {}]
-          (try
-            (System/setProperty "user.home" (str home))
-            (with-redefs [impl-deps/get-xdg-config-home (constantly nil)]
-              (is (nil? (impl-deps/read-user-bb-edn))))
-            (finally
-              (System/setProperty "user.home" orig-home))))))))
+      (with-home [_home]
+        (is (nil? (impl-deps/read-user-bb-edn)))))))
 
 (deftest user-bb-edn-merge-test
   (when-not test-utils/native?

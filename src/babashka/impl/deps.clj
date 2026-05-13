@@ -13,23 +13,14 @@
 
 ;;;; user-level bb.edn
 
-(defn get-xdg-config-home
-  "Returns the value of XDG_CONFIG_HOME, or nil if not set."
-  []
-  (System/getenv "XDG_CONFIG_HOME"))
-
 (defn- user-bb-edn-path
   "Returns the path to the user-level bb.edn file, respecting XDG conventions.
   Checks in order:
-    1. $XDG_CONFIG_HOME/babashka/bb.edn
-    2. ~/.config/babashka/bb.edn (XDG default)
-    3. ~/.babashka/bb.edn (legacy fallback)"
+    1. $XDG_CONFIG_HOME/babashka/bb.edn (or ~/.config/babashka/bb.edn)
+    2. ~/.babashka/bb.edn (legacy fallback)"
   []
-  (let [home (System/getProperty "user.home")
-        xdg-config-home (get-xdg-config-home)
-        xdg-path (fs/file (or xdg-config-home (fs/file home ".config"))
-                          "babashka" "bb.edn")
-        legacy-path (fs/file home ".babashka" "bb.edn")]
+  (let [xdg-path (fs/file (fs/xdg-config-home "babashka") "bb.edn")
+        legacy-path (fs/file (fs/home) ".babashka" "bb.edn")]
     (cond
       (fs/exists? xdg-path) xdg-path
       (fs/exists? legacy-path) legacy-path)))
