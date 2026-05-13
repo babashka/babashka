@@ -6,7 +6,6 @@
             [babashka.process :as process]
             [borkdude.deps :as deps]
             [clojure.edn :as edn]
-            [clojure.java.io :as io]
             [clojure.string :as str]
             [sci.core :as sci]))
 
@@ -28,12 +27,12 @@
   []
   (let [home (System/getProperty "user.home")
         xdg-config-home (get-xdg-config-home)
-        xdg-path (io/file (or xdg-config-home (io/file home ".config"))
+        xdg-path (fs/file (or xdg-config-home (fs/file home ".config"))
                           "babashka" "bb.edn")
-        legacy-path (io/file home ".babashka" "bb.edn")]
+        legacy-path (fs/file home ".babashka" "bb.edn")]
     (cond
-      (.exists xdg-path) xdg-path
-      (.exists legacy-path) legacy-path)))
+      (fs/exists? xdg-path) xdg-path
+      (fs/exists? legacy-path) legacy-path)))
 
 (defn read-user-bb-edn
   "Reads user-level bb.edn from the XDG config directory or ~/.babashka/.
