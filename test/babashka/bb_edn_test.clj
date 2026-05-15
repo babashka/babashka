@@ -3,6 +3,7 @@
    [babashka.fs :as fs]
    [babashka.impl.classpath :as cp]
    [babashka.impl.common :as common]
+   [babashka.impl.deps :as impl-deps]
    [babashka.main :as main]
    [babashka.test-utils :as test-utils]
    [borkdude.deps]
@@ -571,3 +572,90 @@ even more stuff here\"
       (spit after-init-file "(ns after-init) (prn :after-init)")
       (let [out (str/split-lines (test-utils/bb nil "--config" config "task-a"))]
         (is (= [":pre-init" ":init true" ":after-init"] out))))))
+
+(defmacro with-home
+  "Creates a temp dir bound to `sym` and executes body with fs/home and
+  fs/xdg-config-home pointing at it."
+  [[sym] & body]
+  `(fs/with-temp-dir [~sym {}]
+     (with-redefs [fs/xdg-config-home (fn
+                                         ([] (fs/path ~sym ".config"))
+                                         ([app#] (fs/path ~sym ".config" app#)))
+                   fs/home (fn
+                             ([] (fs/path ~sym))
+                             ([_user#] (fs/path ~sym)))]
+       ~@body)))
+
+(deftest user-bb-edn-test
+  (when-not test-utils/native?
+    (testing "reads bb.edn from XDG config home"
+      (with-home [home]
+        (let [config-dir (fs/file home ".config" "babashka")]
+          (fs/create-dirs config-dir)
+          (spit (str (fs/file config-dir "bb.edn"))
+                "{:mvn/repos {\"my-repo\" {:url \"https://maven.example.com/releases\"}}}")
+          (let [result (impl-deps/read-user-bb-edn)]
+            (is (= {"my-repo" {:url "https://maven.example.com/releases"}}
+                   (:mvn/repos result)))))))
+    (testing "falls back to ~/.babashka/bb.edn when XDG path doesn't exist"
+      (with-home [home]
+        (let [bb-dir (fs/file home ".babashka")]
+          (fs/create-dir bb-dir)
+          (spit (str (fs/file bb-dir "bb.edn"))
+                "{:mvn/repos {\"legacy-repo\" {:url \"https://legacy.example.com\"}}}")
+          (let [result (impl-deps/read-user-bb-edn)]
+            (is (= {"legacy-repo" {:url "https://legacy.example.com"}}
+                   (:mvn/repos result)))))))
+    (testing "XDG path takes priority over legacy path"
+      (with-home [home]
+        (let [xdg-dir (fs/file home ".config" "babashka")
+              legacy-dir (fs/file home ".babashka")]
+          (fs/create-dirs xdg-dir)
+          (fs/create-dir legacy-dir)
+          (spit (str (fs/file xdg-dir "bb.edn"))
+                "{:mvn/repos {\"xdg-repo\" {:url \"https://xdg.example.com\"}}}")
+          (spit (str (fs/file legacy-dir "bb.edn"))
+                "{:mvn/repos {\"legacy-repo\" {:url \"https://legacy.example.com\"}}}")
+          (let [result (impl-deps/read-user-bb-edn)]
+            (is (= {"xdg-repo" {:url "https://xdg.example.com"}}
+                   (:mvn/repos result)))))))
+    (testing "returns nil when no user bb.edn exists"
+      (with-home [_home]
+        (is (nil? (impl-deps/read-user-bb-edn)))))))
+
+(deftest user-bb-edn-merge-test
+  (when-not test-utils/native?
+    (testing "user-level :mvn/repos are merged into bb-edn"
+      (with-redefs [impl-deps/read-user-bb-edn
+                    (constantly {:mvn/repos {"my-private-repo"
+                                            {:url "https://maven.example.com/releases"}}})]
+        (test-utils/with-config '{:deps {medley/medley {:mvn/version "1.3.0"}}}
+          (bb "-e" "(+ 1 2 3)")
+          (is (= {:url "https://maven.example.com/releases"}
+                 (get-in @common/bb-edn [:mvn/repos "my-private-repo"]))))))
+    (testing "project-level :mvn/repos override user-level repos with same key"
+      (with-redefs [impl-deps/read-user-bb-edn
+                    (constantly {:mvn/repos {"central" {:url "https://user-mirror.example.com"}}})]
+        (test-utils/with-config '{:deps {medley/medley {:mvn/version "1.3.0"}}
+                                  :mvn/repos {"central" {:url "https://project-mirror.example.com"}}}
+          (bb "-e" "(+ 1 2 3)")
+          (is (= {:url "https://project-mirror.example.com"}
+                 (get-in @common/bb-edn [:mvn/repos "central"]))))))
+    (testing "user repos and project repos are combined when keys differ"
+      (with-redefs [impl-deps/read-user-bb-edn
+                    (constantly {:mvn/repos {"private" {:url "https://private.example.com"}}})]
+        (test-utils/with-config '{:deps {medley/medley {:mvn/version "1.3.0"}}
+                                  :mvn/repos {"central" {:url "https://repo1.maven.org/maven2/"}}}
+          (bb "-e" "(+ 1 2 3)")
+          (is (= {:url "https://private.example.com"}
+                 (get-in @common/bb-edn [:mvn/repos "private"])))
+          (is (= {:url "https://repo1.maven.org/maven2/"}
+                 (get-in @common/bb-edn [:mvn/repos "central"]))))))
+    (testing "only :mvn/repos is merged from user bb.edn, not :deps"
+      (with-redefs [impl-deps/read-user-bb-edn
+                    (constantly {:mvn/repos {"private" {:url "https://private.example.com"}}
+                                 :deps {'user/lib {:mvn/version "1.0.0"}}})]
+        (test-utils/with-config '{:deps {medley/medley {:mvn/version "1.3.0"}}}
+          (bb "-e" "(+ 1 2 3)")
+          (is (get-in @common/bb-edn [:mvn/repos "private"]))
+          (is (nil? (get-in @common/bb-edn [:deps 'user/lib]))))))))

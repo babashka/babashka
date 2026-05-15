@@ -10,6 +10,7 @@ A preview of the next release can be installed from
 ## Unreleased
 
 - nREPL: lock output stream to prevent interleaved bencode frames from concurrent writes
+- Support user-level `:mvn/repos` via `$XDG_CONFIG_HOME/babashka/bb.edn` or `~/.babashka/bb.edn`
 
 ## 1.12.218 (2026-04-20)
 

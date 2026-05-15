@@ -2,13 +2,41 @@
   (:require [babashka.deps :as bdeps]
             [babashka.fs :as fs]
             [babashka.impl.classpath :as cp]
-            [babashka.impl.common :refer [bb-edn]]
+            [babashka.impl.common :refer [bb-edn debug]]
             [babashka.process :as process]
             [borkdude.deps :as deps]
+            [clojure.edn :as edn]
             [clojure.string :as str]
             [sci.core :as sci]))
 
 (def dns (sci/create-ns 'babashka.deps nil))
+
+;;;; user-level bb.edn
+
+(defn- user-bb-edn-path
+  "Returns the path to the user-level bb.edn file, respecting XDG conventions.
+  Checks in order:
+    1. $XDG_CONFIG_HOME/babashka/bb.edn (or ~/.config/babashka/bb.edn)
+    2. ~/.babashka/bb.edn (legacy fallback)"
+  []
+  (let [xdg-path (fs/file (fs/xdg-config-home "babashka") "bb.edn")
+        legacy-path (fs/file (fs/home) ".babashka" "bb.edn")]
+    (cond
+      (fs/exists? xdg-path) xdg-path
+      (fs/exists? legacy-path) legacy-path)))
+
+(defn read-user-bb-edn
+  "Reads user-level bb.edn from the XDG config directory or ~/.babashka/.
+  Returns the parsed map or nil."
+  []
+  (when-let [f (user-bb-edn-path)]
+    (try
+      (edn/read-string (slurp f))
+      (catch Exception e
+        (when @debug
+          (binding [*out* *err*]
+            (println (str "[babashka] WARNING: could not read user bb.edn from " f ": " (.getMessage e)))))
+        nil))))
 
 ;;;; merge deps.edn files
 

@@ -1270,12 +1270,18 @@ Use bb run --help to show this help output.
                          ;; default to local bb.edn
                          (when (fs/exists? "bb.edn")
                            (abs-path "bb.edn"))))
-        bb-edn (when (or config merge-deps)
+        user-edn (deps/read-user-bb-edn)
+        bb-edn (when (or config merge-deps user-edn)
                  (when config (System/setProperty "babashka.config" config))
                  (let [raw-string (when config (slurp config))
                        edn (when config (read-bb-edn raw-string))
                        edn (if merge-deps
                              (deps/merge-deps [edn (read-bb-edn merge-deps)])
+                             edn)
+                       ;; Merge :mvn/repos from user-level bb.edn.
+                       ;; Project repos take precedence over user repos for same key.
+                       edn (if-let [user-repos (:mvn/repos user-edn)]
+                             (update edn :mvn/repos #(merge user-repos %))
                              edn)
                        edn (assoc edn
                                   :raw raw-string
