@@ -40,6 +40,7 @@
   - [Pretty-printing mySQL results](#pretty-printing-mysql-results)
   - [Single page application with Babashka + htmx](#single-page-application-with-babashka--htmx)
   - [Wikipedia translation](#wikipedia-translation)
+  - [Tetris](#tetris)
   
 
 Here's a gallery of useful examples. Do you have a useful example? PR welcome!
@@ -568,3 +569,21 @@ $ bb wiki-translate.clj window
 ```
 
 Shared by Janne Himanka on Clojurians Slack
+
+## Tetris
+
+A playable Tetris game in the terminal. See [tetris.clj](tetris.clj).
+
+It uses JLine (bundled with babashka) for raw keyboard input and ANSI truecolor
+escapes for rendering, so it has no external dependencies. The game state is an
+immutable map and every action (move, rotate, gravity, line clear) is a pure
+`state -> state` function. A single loop polls the keyboard with a short timeout
+and drives gravity off the wall clock, so input stays responsive while pieces
+fall at a fixed cadence.
+
+``` shell
+$ bb tetris.clj
+```
+
+Controls: left/right arrows move, up rotates, down soft-drops, space hard-drops,
+`p` pauses, `r` resets, `q` quits.
