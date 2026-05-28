@@ -10,6 +10,7 @@ A preview of the next release can be installed from
 ## Unreleased
 
 - nREPL: lock output stream to prevent interleaved bencode frames from concurrent writes
+- Add `org.jline.keymap.BindingReader` for reading key bindings in terminal applications
 
 ## 1.12.218 (2026-04-20)
 
