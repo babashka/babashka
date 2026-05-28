@@ -157,6 +157,34 @@
                       (.bind km :action "a")
                       (= :action (.getBound km "a"))))))))
 
+(deftest jline-binding-reader-test
+  (testing "BindingReader class is available"
+    (is (true? (bb '(class? org.jline.keymap.BindingReader)))))
+  (testing "BindingReader.readBinding reads a bound key sequence from a terminal"
+    ;; Real interop exercise: construct a BindingReader over the terminal's
+    ;; NonBlockingReader and call .readBinding so dispatch is actually checked,
+    ;; not just construction. Uses a PipedInputStream kept open until we close
+    ;; the terminal, for the same reason as jline-linereader-test above.
+    ;; "[A" is the up-arrow escape sequence; readBinding consumes the
+    ;; whole sequence and returns the bound value.
+    (is (= "up"
+           (bb '(let [pipe-out (java.io.PipedOutputStream.)
+                      input (java.io.PipedInputStream. pipe-out)
+                      _ (do (.write pipe-out (.getBytes "[A"))
+                            (.flush pipe-out))
+                      output (java.io.ByteArrayOutputStream.)
+                      terminal (-> (org.jline.terminal.TerminalBuilder/builder)
+                                   (.dumb true)
+                                   (.streams input output)
+                                   (.build))
+                      km (doto (org.jline.keymap.KeyMap.)
+                           (.bind "up" "[A"))
+                      br (org.jline.keymap.BindingReader. (.reader terminal))]
+                  (try
+                    (.readBinding br km)
+                    (finally
+                      (.close terminal)))))))))
+
 (deftest jline-attributes-test
   (testing "Attributes can be constructed and used"
     (is (true? (bb '(let [terminal (-> (org.jline.terminal.TerminalBuilder/builder)
