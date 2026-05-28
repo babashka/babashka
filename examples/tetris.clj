@@ -1,14 +1,23 @@
 #!/usr/bin/env bb
 
 ;; Tetris in the terminal. Run with: bb tetris.clj
-;; Uses JLine (bundled with babashka) for raw keyboard input and ANSI
-;; truecolor escapes for rendering. No external dependencies.
+;; Uses JLine (bundled with babashka) for raw keyboard input and screen
+;; rendering. No external dependencies.
+;;
+;; Rather than hand-coding ANSI escapes, this leans on JLine's higher-level
+;; helpers:
+;;   - AttributedString / AttributedStyle for colored cells
+;;   - Display for diff-based, flicker-free screen updates
+;;   - enter_ca_mode (alternate screen) so the game owns the whole screen and
+;;     the shell is restored untouched on exit
 ;;
 ;; Board is a vector of rows (top to bottom), each row a vector of cells.
 ;; A cell is either nil (empty) or a keyword for the piece color.
 
 (ns tetris
-  (:import [org.jline.terminal TerminalBuilder]))
+  (:import [org.jline.terminal TerminalBuilder]
+           [org.jline.utils AttributedString AttributedStringBuilder AttributedStyle
+                            Display InfoCmp$Capability]))
 
 (def COLS 10)
 (def ROWS 20)
@@ -131,90 +140,119 @@
 
 ;; -------------------------------------------------------------- rendering ----
 
-(def ESC (str (char 27)))
-(def CSI (str ESC "["))
+(defn rgb-style [[r g b]]
+  (.background AttributedStyle/DEFAULT (int r) (int g) (int b)))
 
-(defn bg [[r g b]] (str CSI "48;2;" r ";" g ";" b "m"))
-(def RESET (str CSI "0m"))
-(def EMPTY-BG (bg [0x1f 0x29 0x37]))     ; empty cell
-(def FRAME-BG (bg [0x11 0x11 0x11]))     ; board background / border
+(def cell-styles (update-vals COLORS rgb-style))   ; piece kind -> style
+(def empty-style (rgb-style [0x1f 0x29 0x37]))     ; empty cell
 
-(defn render
-  "Return the full screen as one string: cursor home + board + side panel."
+(defn panel-lines
+  "The text shown to the right of the board, one entry per board row."
+  [s]
+  ["TETRIS"
+   (str "Score: " (:score s))
+   (str "Lines: " (:lines s))
+   ""
+   "<-/->  move"
+   "up     rotate"
+   "down   soft drop"
+   "space  hard drop"
+   "p      pause"
+   "r      reset"
+   "q      quit"
+   ""
+   (cond (:over? s)   "*** GAME OVER *** (r)"
+         (:paused? s) "*** PAUSED ***"
+         :else "")])
+
+(defn render-lines
+  "Build the screen as a list of AttributedStrings for Display to render: the
+  active piece overlaid on the board, framed, with the side panel attached."
   [s]
   (let [b (:board s)
         piece (:piece s)
         active (into {} (map (fn [c] [c (:kind piece)]) (piece-cells piece)))
-        cell-color (fn [x y] (or (get active [x y]) (get-in b [y x])))
-        ;; Each cell is two chars wide so blocks look square in the terminal.
-        top (str FRAME-BG "+" (apply str (repeat (* 2 COLS) "-")) "+" RESET)
-        panel ["" "  TETRIS"
-               (str "  Score: " (:score s))
-               (str "  Lines: " (:lines s))
-               ""
-               "  <-/->  move"
-               "  up     rotate"
-               "  down   soft drop"
-               "  space  hard drop"
-               "  p      pause"
-               "  r      reset"
-               "  q      quit"
-               ""
-               (cond (:over? s)   "  *** GAME OVER ***  (r)"
-                     (:paused? s) "  *** PAUSED ***"
-                     :else "")]
-        rows (for [y (range ROWS)]
-               (str FRAME-BG "|"
-                    (apply str
-                           (for [x (range COLS)]
-                             (if-let [k (cell-color x y)]
-                               (str (bg (COLORS k)) "  " FRAME-BG)
-                               (str EMPTY-BG "  " FRAME-BG))))
-                    "|" RESET
-                    (when-let [line (nth panel (inc y) nil)] (str "  " line))))
-        bottom (str FRAME-BG "+" (apply str (repeat (* 2 COLS) "-")) "+" RESET
-                    "  " (nth panel (inc ROWS) ""))]
-    (str CSI "H"                          ; cursor home
-         CSI "?25l"                       ; hide cursor
-         top (nth panel 0 "") "\r\n"
-         (apply str (interpose "\r\n" rows)) "\r\n"
-         bottom
-         CSI "J")))                       ; clear to end of screen
+        cell-style (fn [x y]
+                     (if-let [k (or (get active [x y]) (get-in b [y x]))]
+                       (cell-styles k)
+                       empty-style))
+        panel (panel-lines s)
+        border (AttributedString. (str "+" (apply str (repeat (* 2 COLS) "-")) "+"))
+        lines (java.util.ArrayList.)]
+    (.add lines border)
+    (doseq [y (range ROWS)]
+      ;; Each cell is two spaces wide so blocks look roughly square.
+      (let [sb (AttributedStringBuilder.)]
+        (.append sb "|")
+        (doseq [x (range COLS)]
+          (.append sb "  " (cell-style x y)))
+        (.append sb "|")
+        (when-let [text (get panel y)]
+          (when (seq text) (.append sb (str "  " text))))
+        (.add lines (.toAttributedString sb))))
+    (.add lines border)
+    lines))
+
+;; --------------------------------------------------------------- input ----
+
+(def ESC 27)
+
+;; Final byte of a cursor escape sequence -> logical key. Both ESC [ A and
+;; ESC O A end in the same letter, so this covers either cursor-key mode.
+(def CURSOR-KEYS {\A :up \B :down \C :right \D :left})
+
+(defn read-key
+  "Read one logical keypress with a 50ms timeout: an arrow keyword, a typed
+  character, :none on timeout, or :eof. Reads exactly one escape sequence (no
+  more) so that a held-down arrow's queued repeats stay buffered for the next
+  call instead of being swallowed into one."
+  [reader]
+  (let [c (.read reader (int 50))]
+    (cond
+      (= c -2) :none                       ; timeout
+      (= c -1) :eof
+      (= c ESC)                            ; ESC [ X  or  ESC O X
+      (let [c1 (.read reader (int 5))]
+        (if (#{(int \[) (int \O)} c1)
+          (let [c2 (.read reader (int 5))] ; final byte may lag; -2 if it does
+            (if (neg? c2) :none (get CURSOR-KEYS (char c2) :none)))
+          :none))
+      :else (char c))))
 
 ;; --------------------------------------------------------------- main loop ----
 
-(defn read-key
-  "Read one logical key from the JLine reader with a timeout (ms). Returns a
-  keyword for arrows, the char for printables, or :none on timeout. Arrow keys
-  arrive as the escape sequence ESC [ A/B/C/D."
-  [reader timeout]
-  (let [c (.read reader (int timeout))]
-    (cond
-      (= c -2) :none                      ; timeout
-      (= c -1) :eof
-      (= c 27) (if (= 91 (.read reader (int 5)))   ; '['
-                 (case (.read reader (int 5))
-                   65 :up 66 :down 67 :right 68 :left :none)
-                 :esc)
-      :else (char c))))
+(defn puts!
+  "Emit a terminal capability (puts takes varargs we don't use here)."
+  [term cap]
+  (.puts term cap (object-array 0)))
 
 (defn -main []
-  (let [term (-> (TerminalBuilder/builder)
-                 (.system true)
-                 (.build))]
+  (let [term (-> (TerminalBuilder/builder) (.system true) (.build))]
     (.enterRawMode term)
     (let [reader (.reader term)
-          out (.writer term)
-          draw! (fn [s] (.write out (render s)) (.flush out))]
+          display (Display. term true)
+          size (atom nil)
+          draw! (fn [s]
+                  ;; Only resize when the terminal actually changed: resize drops
+                  ;; the diff cache, so calling it every frame forces a full
+                  ;; repaint (flicker) instead of a smooth incremental update.
+                  (let [sz (.getSize term)
+                        dims [(.getRows sz) (.getColumns sz)]]
+                    (when (not= @size dims)
+                      (reset! size dims)
+                      (.resize display (first dims) (second dims))))
+                  (.update display (render-lines s) 0)
+                  (.flush term))]
+      (puts! term InfoCmp$Capability/enter_ca_mode)   ; alternate screen buffer
+      (puts! term InfoCmp$Capability/cursor_invisible)
+      (.flush term)
       (try
-        (.write out (str CSI "2J"))       ; clear screen once
         (loop [s (new-state)
                last (System/currentTimeMillis)]
           (draw! s)
-          (let [k (read-key reader 50)
+          (let [k (read-key reader)
                 now (System/currentTimeMillis)
                 tick? (>= (- now last) TICK-MS)
-                ;; apply key
                 s (if (:over? s)
                     (if (= \r k) (new-state) s)
                     (case k
@@ -227,15 +265,15 @@
                       \r     (new-state)
                       s))]
             (cond
-              (or (= k \q) (= k :eof)) nil   ; quit
-              ;; gravity tick (skip when over/paused)
+              (or (= k \q) (= k :eof)) nil          ; quit
               (and tick? (not (:over? s)) (not (:paused? s)))
               (recur (step-down s) now)
               tick? (recur s now)
               :else (recur s last))))
         (finally
-          (.write out (str CSI "?25h" RESET CSI "2J" CSI "H"))  ; restore cursor
-          (.flush out)
+          (puts! term InfoCmp$Capability/cursor_visible)
+          (puts! term InfoCmp$Capability/exit_ca_mode)   ; restore the shell screen
+          (.flush term)
           (.close term))))))
 
 (-main)
