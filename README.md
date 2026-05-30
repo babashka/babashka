@@ -190,7 +190,7 @@ Upgrade:
 pkg upgrade babashka
 ```
 
-The `lang/babashka` port makes use of the FreeBSD Linux emulation layer aka [Linuxulator](https://docs.freebsd.org/en/books/handbook/linuxemu/) to run the static binaries from [Github Releases](https://github.com/babashka/babashka/releases). In order for this package to work in FreeBSD it is therefore needed to have the Linux ABI enabled at boot time and the service to be started.
+The `lang/babashka` port makes use of the FreeBSD Linux emulation layer aka [Linuxulator](https://docs.freebsd.org/en/books/handbook/linuxemu/) to run the static binaries from [Github Releases](https://github.com/babashka/babashka/releases). In order for this package to work in FreeBSD it is therefore necessary to have the Linux ABI enabled at boot time and the service to be started.
 
 This can be done by the following commands in the shell
 
