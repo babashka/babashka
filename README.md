@@ -173,6 +173,27 @@ linux binary.
 
     yay -S babashka-bin
 
+### FreeBSD
+
+`babashka` is [available](https://www.freshports.org/lang/babashka) in the [FreeBSD Ports Collection](https://github.com/freebsd/freebsd-ports) and
+can be installed via [pkg(8)](https://man.freebsd.org/cgi/man.cgi?query=pkg).
+
+Install:
+    pkg install babashka
+    
+Upgrade:
+    pkg upgrade babashka
+
+The `lang/babashka` port makes use of the FreeBSD Linux emulation layer aka [Linuxulator](https://docs.freebsd.org/en/books/handbook/linuxemu/) to run the static binaries from [Github Releases](https://github.com/babashka/babashka/releases). In order for this package to work in FreeBSD it is therefore needed to have the Linux ABI enabled at boot time and the service to be started.
+
+This can be done by the following commands in the shell
+
+``` shell
+# sysrc linux_enable="YES"
+# service linux start
+```
+
+
 ### asdf
 
 [asdf](https://github.com/asdf-vm/asdf) is an extendable version manager for linux and macOS. Note that asdf will add significant startup time to any babashka script, consider using [mise](#mise) instead.
