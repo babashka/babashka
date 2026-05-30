@@ -179,10 +179,17 @@ linux binary.
 can be installed via [pkg(8)](https://man.freebsd.org/cgi/man.cgi?query=pkg).
 
 Install:
-    pkg install babashka
+
+``` shell
+pkg install babashka
+```
+
     
 Upgrade:
-    pkg upgrade babashka
+
+``` shell
+pkg upgrade babashka
+```
 
 The `lang/babashka` port makes use of the FreeBSD Linux emulation layer aka [Linuxulator](https://docs.freebsd.org/en/books/handbook/linuxemu/) to run the static binaries from [Github Releases](https://github.com/babashka/babashka/releases). In order for this package to work in FreeBSD it is therefore needed to have the Linux ABI enabled at boot time and the service to be started.
 
