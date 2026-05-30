@@ -195,8 +195,8 @@ The `lang/babashka` port makes use of the FreeBSD Linux emulation layer aka [Lin
 This can be done by the following commands in the shell
 
 ``` shell
-# sysrc linux_enable="YES"
-# service linux start
+sysrc linux_enable="YES"
+service linux start
 ```
 
 
