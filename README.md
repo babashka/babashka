@@ -183,7 +183,6 @@ Install:
 ``` shell
 pkg install babashka
 ```
-
     
 Upgrade:
 
