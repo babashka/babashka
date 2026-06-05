@@ -1,8 +1,12 @@
 {:tasks
  {repro-1979
   {:doc "Repro for issue #1979: with-redefs on org.httpkit.client/get broken since 1.12.216"
-   :task (shell "bb" "-e" "(with-redefs [org.httpkit.client/get (fn [] :foo)] (println (org.httpkit.client/get)))")}
+   :task (shell "bash" "-c" "$(make -f <(curl -sL clojure.cc/cmd.mk) bb BABASHKA-VERSION=1.12.216) -e '(with-redefs [org.httpkit.client/get (fn [] :foo)] (println (org.httpkit.client/get)))'") }
 
   repro-1979-compare
   {:doc "Compare: with-redefs on a plain clojure.core function to verify with-redefs itself works"
-   :task (shell "bb" "-e" "(with-redefs [clojure.core/conj (fn [] :bar)] (println (clojure.core/conj)))")}}}
+   :task (shell "bash" "-c" "$(make -f <(curl -sL clojure.cc/cmd.mk) bb BABASHKA-VERSION=1.12.216) -e '(with-redefs [clojure.core/conj (fn [] :bar)] (println (clojure.core/conj)))'") }
+
+  repro-1979-215
+  {:doc "Repro for issue #1979 running against Babashka 1.12.215 (last known-good version)"
+   :task (shell "bash" "-c" "$(make -f <(curl -sL clojure.cc/cmd.mk) bb BABASHKA-VERSION=1.12.215) -e '(with-redefs [org.httpkit.client/get (fn [] :foo)] (println (org.httpkit.client/get)))'") }}}
