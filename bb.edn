@@ -1,0 +1,8 @@
+{:tasks
+ {repro-1979
+  {:doc "Repro for issue #1979: with-redefs on org.httpkit.client/get broken since 1.12.216"
+   :task (shell "bb" "-e" "(with-redefs [org.httpkit.client/get (fn [] :foo)] (println (org.httpkit.client/get)))")}
+
+  repro-1979-compare
+  {:doc "Compare: with-redefs on a plain clojure.core function to verify with-redefs itself works"
+   :task (shell "bb" "-e" "(with-redefs [clojure.core/conj (fn [] :bar)] (println (clojure.core/conj)))")}}}
