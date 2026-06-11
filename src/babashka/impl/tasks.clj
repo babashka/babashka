@@ -1,5 +1,6 @@
 (ns babashka.impl.tasks
   (:require
+   [babashka.cli]
    [babashka.deps :as deps]
    [babashka.impl.cli :as cli]
    [babashka.impl.common :refer [bb-edn ctx debug]]
@@ -173,6 +174,39 @@
                            "\n" prog))
     prog))
 
+(defn -cli-dispatch
+  "Runs babashka.cli/dispatch over a task's `:cli` tree. `body-fn` (the task
+  body wrapped as a fn, or nil when the task has no body) becomes the root
+  `:fn`. Subcommand `:fn` symbols are resolved lazily via `resolve-fn` (the
+  script's `requiring-resolve`)."
+  [cli-opts task-name body-fn resolve-fn args]
+  (let [wrap (fn wrap [node]
+               (let [fn-sym (:fn node)
+                     node (if (symbol? fn-sym)
+                            (assoc node :fn (fn [m] ((resolve-fn fn-sym) m)))
+                            node)]
+                 (if-let [cm (:cmd node)]
+                   (assoc node :cmd (into {} (map (fn [[k v]] [k (wrap v)])) cm))
+                   node)))
+        tree (wrap cli-opts)
+        tree (if body-fn (assoc tree :fn body-fn) tree)]
+    (babashka.cli/dispatch tree args {:help true :prog (str "bb " task-name)})))
+
+(defn wrap-cli
+  "When a task declares `:cli`, route its invocation through
+  babashka.cli/dispatch: parses options (exposed as `:opts` on `*task*` for the
+  body), handles `--help` and subcommands."
+  [task-map prog]
+  (if-let [cli-opts (:cli task-map)]
+    (format "(babashka.tasks/-cli-dispatch '%s \"%s\" %s requiring-resolve *command-line-args*)"
+            (pr-str cli-opts)
+            (:name task-map)
+            (if (:task task-map)
+              (format "(fn [{:keys [opts]}] (binding [babashka.tasks/*task* (assoc babashka.tasks/*task* :opts opts)] %s))"
+                      prog)
+              "nil"))
+    prog))
+
 (defn assemble-task-1
   "Assembles task, does not process :depends."
   ([task-map task parallel?]
@@ -206,6 +240,7 @@
          prog)
        (let [prog (pr-str task)
              prog (wrap-enter-leave task-name prog enter leave)
+             prog (if last? (wrap-cli task-map prog) prog)
              prog (wrap-depends prog depends parallel?)
              prog (wrap-def task-map prog parallel? last?)]
          prog)))))
@@ -470,4 +505,5 @@
    'current-state state
    'run (sci/copy-var run sci-ns)
    'exec (sci/copy-var exec sci-ns)
+   '-cli-dispatch (sci/copy-var -cli-dispatch sci-ns)
    #_#_'log log})

@@ -14,6 +14,7 @@ A preview of the next release can be installed from
 - nREPL: lock output stream to prevent interleaved bencode frames from concurrent writes
 - Add `org.jline.keymap.BindingReader` for reading key bindings in terminal applications
 - Bump babashka.cli to 0.11.72: auto-help and completions for `dispatch`, tree format; `*exit-fn*` rebindable from scripts
+- Tasks: new `:cli` key on task maps routes invocation through `babashka.cli/dispatch`: parsed options available via `(:opts (current-task))`, automatic `--help`, subcommands via the cli tree format
 
 ## 1.12.218 (2026-04-20)
 

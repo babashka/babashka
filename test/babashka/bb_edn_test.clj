@@ -571,3 +571,32 @@ even more stuff here\"
       (spit after-init-file "(ns after-init) (prn :after-init)")
       (let [out (str/split-lines (test-utils/bb nil "--config" config "task-a"))]
         (is (= [":pre-init" ":init true" ":after-init"] out))))))
+
+(deftest task-cli-test
+  (testing ":cli spec options are exposed via (:opts (current-task))"
+    (test-utils/with-config '{:tasks {foo {:cli {:spec {:port {:coerce :int}}}
+                                           :task (prn (:opts (current-task)))}}}
+      (is (= {:port 8080} (bb "foo" "--port" "8080")))))
+  (testing "--help on a :cli task prints help and exits 0"
+    (test-utils/with-config '{:tasks {foo {:cli {:spec {:port {:desc "Port"}}}
+                                           :task (prn :ran)}}}
+      (let [out (test-utils/bb nil "foo" "--help")]
+        (is (str/includes? out "Usage: bb foo"))
+        (is (str/includes? out "--port")))))
+  (testing "tasks without :cli pass --help through to the body"
+    (test-utils/with-config '{:tasks {foo (prn *command-line-args*)}}
+      (is (= ["--help"] (bb "foo" "--help")))))
+  (testing ":cli :cmd tree dispatches subcommands, nested too"
+    (test-utils/with-config '{:tasks {deps {:cli {:cmd {"outdated" {:fn babashka.tasks-cli/outdated
+                                                                    :spec {:format {}}}
+                                                        "cache" {:cmd {"clean" {:fn babashka.tasks-cli/clean}}}}}}}}
+      (is (= {:format "edn" :ran :outdated}
+             (bb "-cp" "test-resources" "deps" "outdated" "--format" "edn")))
+      (is (= {:ran :clean}
+             (bb "-cp" "test-resources" "deps" "cache" "clean")))))
+  (testing "dispatch errors reach a rebound *exit-fn*"
+    (test-utils/with-config '{:tasks {deps {:cli {:cmd {"x" {:fn clojure.core/prn}}}}}}
+      (is (= {:exit 1 :cause :input-exhausted}
+             (bb "-e" "(require '[babashka.cli :as cli])
+                       (binding [cli/*exit-fn* (fn [m] (prn (select-keys m [:exit :cause])))]
+                         (babashka.tasks/run 'deps))"))))))
