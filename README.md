@@ -142,6 +142,12 @@ Upgrade:
 
     brew upgrade babashka
 
+If you installed babashka before Homebrew introduced [tap
+trust](https://docs.brew.sh/Tap-Trust), you may see a warning like `Skipping
+babashka: tap formula is not trusted`. To fix this, run:
+
+    brew trust borkdude/brew/babashka
+
 ### Nix
 
 Linux and macOS (including ARM Macs) binaries are provided via nix (see the installation instructions for nix [here](https://nixos.org/download.html)).
