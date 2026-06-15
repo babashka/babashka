@@ -178,40 +178,63 @@
   "Runs babashka.cli/dispatch over a task's `:cli` tree. `body-fn` (the task
   body wrapped as a fn, or nil when the task has no body) becomes the root
   `:fn`. Subcommand `:fn` symbols are resolved lazily via `resolve-fn` (the
-  script's `requiring-resolve`)."
-  [cli-opts task-name body-fn resolve-fn args]
-  (let [wrap (fn wrap [node]
-               (let [fn-sym (:fn node)
-                     node (if (symbol? fn-sym)
-                            (assoc node :fn (fn [m] ((resolve-fn fn-sym) m)))
-                            node)]
-                 (if-let [cm (:cmd node)]
-                   (assoc node :cmd (into {} (map (fn [[k v]] [k (wrap v)])) cm))
-                   node)))
-        tree (wrap cli-opts)
-        tree (if body-fn (assoc tree :fn body-fn) tree)]
-    (babashka.cli/dispatch tree args {:help true :prog (str "bb " task-name)})))
+  script's `requiring-resolve`).
+
+  `deps-fn` (or nil) is the task's assembled `:depends` as a thunk. It runs
+  right before whichever command fn the parser selects - root body or a
+  subcommand - and only on a successful parse. dispatch never calls a command
+  fn for `--help`/`-h` or a parse error, so the deps run exactly when the body
+  runs, decided by the parser (like cobra's PreRun), not by scanning raw args."
+  ([cli-opts task-name body-fn resolve-fn args]
+   (-cli-dispatch cli-opts task-name body-fn nil resolve-fn args))
+  ([cli-opts task-name body-fn deps-fn resolve-fn args]
+   (let [with-deps (fn [f] (fn [m] (when deps-fn (deps-fn)) (f m)))
+         wrap (fn wrap [node]
+                (let [fn-sym (:fn node)
+                      node (cond
+                             (symbol? fn-sym) (assoc node :fn (with-deps (fn [m] ((resolve-fn fn-sym) m))))
+                             fn-sym (assoc node :fn (with-deps fn-sym))
+                             :else node)]
+                  (if-let [cm (:cmd node)]
+                    (assoc node :cmd (into {} (map (fn [[k v]] [k (wrap v)])) cm))
+                    node)))
+         tree (wrap cli-opts)
+         tree (if body-fn (assoc tree :fn (with-deps body-fn)) tree)]
+     (babashka.cli/dispatch tree args {:help true :prog (str "bb " task-name)}))))
 
 (defn wrap-cli
   "When a task declares `:cli`, route its invocation through
   babashka.cli/dispatch: parses options (exposed as `:opts` on `*task*` for the
-  body), handles `--help` and subcommands."
-  [task-map prog]
-  (if-let [cli-opts (:cli task-map)]
-    (format "(babashka.tasks/-cli-dispatch '%s \"%s\" %s requiring-resolve *command-line-args*)"
-            (pr-str cli-opts)
-            (:name task-map)
-            (if (:task task-map)
-              (format "(fn [{:keys [opts]}] (binding [babashka.tasks/*task* (assoc babashka.tasks/*task* :opts opts)] %s))"
-                      prog)
-              "nil"))
-    prog))
+  body), handles `--help` and subcommands.
+
+  `dep-forms` (the task's assembled `:depends`, or nil) are passed to
+  -cli-dispatch as a thunk and run before whichever command fn the parser
+  selects (root body or subcommand), only on a successful parse - never on
+  `--help`/`-h` or a parse error (like cobra's PreRun), rather than by scanning
+  raw args for a help token."
+  ([task-map prog] (wrap-cli task-map prog nil))
+  ([task-map prog dep-forms]
+   (if-let [cli-opts (:cli task-map)]
+     (format "(babashka.tasks/-cli-dispatch '%s \"%s\" %s %s requiring-resolve *command-line-args*)"
+             (pr-str cli-opts)
+             (:name task-map)
+             (if (:task task-map)
+               (format "(fn [{:keys [opts]}] (binding [babashka.tasks/*task* (assoc babashka.tasks/*task* :opts opts)] %s))"
+                       prog)
+               "nil")
+             (if dep-forms
+               (format "(fn [] %s)" dep-forms)
+               "nil"))
+     prog)))
 
 (defn assemble-task-1
-  "Assembles task, does not process :depends."
+  "Assembles task, does not process :depends. `dep-forms` is only threaded for a
+  `:cli` target (see wrap-cli): assembled `:depends` to run inside the body fn."
   ([task-map task parallel?]
-   (assemble-task-1 task-map task parallel? nil))
+   (assemble-task-1 task-map task parallel? nil nil))
   ([task-map task parallel? last?]
+   (assemble-task-1 task-map task parallel? last? nil))
+  ([task-map task parallel? last? dep-forms]
    (let [[task depends task-map]
          (if (map? task)
            [(:task task)
@@ -240,7 +263,7 @@
          prog)
        (let [prog (pr-str task)
              prog (wrap-enter-leave task-name prog enter leave)
-             prog (if last? (wrap-cli task-map prog) prog)
+             prog (if last? (wrap-cli task-map prog dep-forms) prog)
              prog (wrap-depends prog depends parallel?)
              prog (wrap-def task-map prog parallel? last?)]
          prog)))))
@@ -375,10 +398,22 @@
                                  [(binding [*out* *err*]
                                     (println "No such task:" t)) 1])
                                (if-let [task (get tasks t)]
-                                 (let [prog (str prog "\n"
-                                                 #_(wait-tasks depends) #_(apply str (map deref-task depends))
-                                                 "\n"
-                                                 (assemble-task-1 task-map task parallel? true))
+                                 (let [dep-forms prog
+                                       ;; For a non-parallel `:cli` task, hand the
+                                       ;; deps to dispatch as a thunk (wrap-cli),
+                                       ;; so they run only when a command fn runs
+                                       ;; - never on `--help` or a parse error.
+                                       ;; Otherwise keep the deps as forms before
+                                       ;; the target (parallel deps rely on
+                                       ;; launching their channels ahead of the
+                                       ;; target's wait).
+                                       cli-prelude? (and (:cli task) (not parallel?))
+                                       prog (if cli-prelude?
+                                              (assemble-task-1 task-map task parallel? true dep-forms)
+                                              (str dep-forms "\n"
+                                                   #_(wait-tasks depends) #_(apply str (map deref-task depends))
+                                                   "\n"
+                                                   (assemble-task-1 task-map task parallel? true)))
                                        extra-paths (concat extra-paths (:extra-paths task))
                                        extra-deps (merge extra-deps (:extra-deps task))
                                        requires (concat requires (:requires task))]

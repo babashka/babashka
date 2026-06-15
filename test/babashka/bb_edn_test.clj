@@ -599,4 +599,21 @@ even more stuff here\"
       (is (= {:exit 1 :cause :input-exhausted}
              (bb "-e" "(require '[babashka.cli :as cli])
                        (binding [cli/*exit-fn* (fn [m] (prn (select-keys m [:exit :cause])))]
-                         (babashka.tasks/run 'deps))"))))))
+                         (babashka.tasks/run 'deps))")))))
+  (testing ":cli task :depends run on a real invocation but not on --help"
+    (test-utils/with-config '{:tasks {dep {:task (println "DEP-RAN")}
+                                      foo {:depends [dep]
+                                           :cli {:spec {:port {:coerce :int :desc "Port"}}}
+                                           :task (println "FOO-BODY")}}}
+      (let [help-out (test-utils/bb nil "foo" "--help")]
+        (is (str/includes? help-out "Usage: bb foo"))
+        (is (not (str/includes? help-out "DEP-RAN"))))
+      (let [run-out (test-utils/bb nil "foo")]
+        (is (str/includes? run-out "DEP-RAN"))
+        (is (str/includes? run-out "FOO-BODY")))))
+  (testing ":cli :cmd subcommand runs :depends, --help does not"
+    (test-utils/with-config '{:tasks {dep {:task (println "DEP-RAN")}
+                                      deps {:depends [dep]
+                                            :cli {:cmd {"x" {:fn clojure.core/prn}}}}}}
+      (is (not (str/includes? (test-utils/bb nil "deps" "--help") "DEP-RAN")))
+      (is (str/includes? (test-utils/bb nil "deps" "x") "DEP-RAN")))))
