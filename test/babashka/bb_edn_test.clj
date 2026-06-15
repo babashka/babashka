@@ -616,4 +616,21 @@ even more stuff here\"
                                       deps {:depends [dep]
                                             :cli {:cmd {"x" {:fn clojure.core/prn}}}}}}
       (is (not (str/includes? (test-utils/bb nil "deps" "--help") "DEP-RAN")))
-      (is (str/includes? (test-utils/bb nil "deps" "x") "DEP-RAN")))))
+      (is (str/includes? (test-utils/bb nil "deps" "x") "DEP-RAN"))))
+  (testing ":exec-fn takes its spec from the fn's :org.babashka/cli meta"
+    (test-utils/with-config '{:tasks {foo {:exec-fn babashka.tasks-cli/run-dev}}}
+      (is (= {:port 8080 :ran :exec-fn}
+             (bb "-cp" "test-resources" "foo" "--port" "8080")))
+      (let [help (test-utils/bb nil "-cp" "test-resources" "foo" "--help")]
+        (is (str/includes? help "Usage: bb foo"))
+        (is (str/includes? help "--port")))))
+  (testing ":exec-fn task :doc defaults to the fn's docstring"
+    (test-utils/with-config '{:tasks {foo {:exec-fn babashka.tasks-cli/run-dev}}}
+      (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "tasks")
+                         "Runs the dev system"))))
+  (testing ":exec-fn task --help skips :depends, real run does not"
+    (test-utils/with-config '{:tasks {dep {:task (println "DEP-RAN")}
+                                      foo {:depends [dep]
+                                           :exec-fn babashka.tasks-cli/run-dev}}}
+      (is (not (str/includes? (test-utils/bb nil "-cp" "test-resources" "foo" "--help") "DEP-RAN")))
+      (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "foo") "DEP-RAN")))))

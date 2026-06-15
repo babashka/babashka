@@ -202,6 +202,21 @@
          tree (if body-fn (assoc tree :fn (with-deps body-fn)) tree)]
      (babashka.cli/dispatch tree args {:help true :prog (str "bb " task-name)}))))
 
+(defn -exec-fn-dispatch
+  "Like -cli-dispatch, but the cli tree is taken from the referenced fn's
+  `:org.babashka/cli` metadata (`{:spec ...}` and/or `{:cmd ...}`) instead of a
+  `:cli` key in bb.edn - so the spec lives with the fn. The fn is the root `:fn`,
+  called with the parsed `:opts`. Help, subcommands and the `deps-fn` pre-pass
+  all come from -cli-dispatch."
+  [fn-sym task-name deps-fn resolve-fn args]
+  (let [the-var (resolve-fn fn-sym)
+        _ (when-not the-var
+            (throw (ex-info (str "Could not resolve :exec-fn to a function: " fn-sym)
+                            {:babashka/exit 1})))
+        cli-opts (:org.babashka/cli (meta the-var))
+        body-fn (fn [{:keys [opts]}] (the-var opts))]
+    (-cli-dispatch (or cli-opts {}) task-name body-fn deps-fn resolve-fn args)))
+
 (defn wrap-cli
   "When a task declares `:cli`, route its invocation through
   babashka.cli/dispatch: parses options (exposed as `:opts` on `*task*` for the
@@ -248,8 +263,23 @@
                       (str/starts-with? task-name "-"))
          task-map (if private?
                     (assoc task-map :private private?)
-                    task-map)]
-     (if (qualified-symbol? task)
+                    task-map)
+         exec-fn (:exec-fn task-map)]
+     (cond
+       exec-fn
+       ;; :exec-fn task: dispatch via the fn's :org.babashka/cli metadata. Like
+       ;; :cli, but the spec lives on the fn (single source of truth). dep-forms
+       ;; only arrive on the last? (target) assembly, so deps run via the same
+       ;; pre-pass and are skipped on --help / parse errors.
+       (let [prog (format "(babashka.tasks/-exec-fn-dispatch '%s \"%s\" %s requiring-resolve *command-line-args*)"
+                          exec-fn
+                          task-name
+                          (if dep-forms (format "(fn [] %s)" dep-forms) "nil"))
+             prog (wrap-enter-leave task-name prog enter leave)
+             prog (wrap-def task-map prog parallel? last?)]
+         prog)
+
+       (qualified-symbol? task)
        (let [prog (format "(apply %s *command-line-args*)" task)
              prog (wrap-enter-leave task-name prog enter leave)
              prog (wrap-depends prog depends parallel?)
@@ -261,6 +291,8 @@
                           (namespace task)
                           prog)]
          prog)
+
+       :else
        (let [prog (pr-str task)
              prog (wrap-enter-leave task-name prog enter leave)
              prog (if last? (wrap-cli task-map prog dep-forms) prog)
@@ -407,7 +439,7 @@
                                        ;; the target (parallel deps rely on
                                        ;; launching their channels ahead of the
                                        ;; target's wait).
-                                       cli-prelude? (and (:cli task) (not parallel?))
+                                       cli-prelude? (and (or (:cli task) (:exec-fn task)) (not parallel?))
                                        prog (if cli-prelude?
                                               (assemble-task-1 task-map task parallel? true dep-forms)
                                               (str dep-forms "\n"
@@ -443,9 +475,10 @@
       (when-let [fn-sym (cond (qualified-symbol? task)
                               task
                               (map? task)
-                              (let [t (:task task)]
-                                (when (qualified-symbol? t)
-                                  t)))]
+                              (or (:exec-fn task)
+                                  (let [t (:task task)]
+                                    (when (qualified-symbol? t)
+                                      t))))]
         (let [requires (:requires tasks)
               requires (map (fn [x]
                               (list 'quote x))
@@ -541,4 +574,5 @@
    'run (sci/copy-var run sci-ns)
    'exec (sci/copy-var exec sci-ns)
    '-cli-dispatch (sci/copy-var -cli-dispatch sci-ns)
+   '-exec-fn-dispatch (sci/copy-var -exec-fn-dispatch sci-ns)
    #_#_'log log})
