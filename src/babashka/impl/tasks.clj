@@ -515,6 +515,58 @@
            (filter symbol?))
           (iterate zip/right loc))))
 
+(defn completion-program
+  "Builds a SCI program (string) emitting zsh completion candidates for the bb
+  task runner, given completion state already resolved by bb's own arg parsing:
+  `{:sub :shell :partial :run :command-line-args}`. `:run` is the task (nil when
+  the task name itself is being completed); `:command-line-args` are the task's
+  args before the cursor; `:partial` is the word being completed.
+
+  Task-name completion is done here; per-task option/subcommand completion is
+  delegated to `babashka.cli/dispatch` over the task's tree (its `:cli`, or the
+  `:org.babashka/cli` metadata of its `:exec-fn`), reusing dispatch's own
+  completion machinery."
+  [{:keys [sub shell run command-line-args partial]}]
+  (let [shell (or shell "zsh")
+        tasks (:tasks @bb-edn)]
+    (case sub
+      "snippet"
+      ;; reuse babashka.cli's stub generator, registered for `bb`
+      (format "(babashka.cli/dispatch {} [\"org.babashka.cli/completions\" \"snippet\" \"--shell\" %s \"--prog\" \"bb\"] {})"
+              (pr-str shell))
+
+      "complete"
+      (if run
+        ;; completing a task's options / subcommands
+        (let [compl (-> ["org.babashka.cli/completions" "complete" "--shell" shell "--"]
+                        (into command-line-args)
+                        (conj partial))
+              tm (get tasks (symbol run))
+              prog (str "bb " run)]
+          (cond
+            (:cli tm)
+            (format "(babashka.cli/dispatch %s %s {:prog %s :help true})"
+                    (pr-str (list 'quote (:cli tm))) (pr-str compl) (pr-str prog))
+            (:exec-fn tm)
+            (format "(babashka.cli/dispatch (or (:org.babashka/cli (meta (requiring-resolve (quote %s)))) {}) %s {:prog %s :help true})"
+                    (:exec-fn tm) (pr-str compl) (pr-str prog))
+            :else "nil"))
+        ;; completing the task name itself
+        (let [lines (->> tasks
+                         (keep (fn [[k v]]
+                                 (let [n (str k)]
+                                   (when (and (symbol? k)
+                                              (not (str/starts-with? n "-"))
+                                              (not (and (map? v) (:private v)))
+                                              (str/starts-with? n partial))
+                                     (let [d (when (map? v) (:doc v))]
+                                       (if d (str n "\t" d) n))))))
+                         sort)]
+          (format "(do %s)"
+                  (str/join " " (map #(format "(println %s)" (pr-str %)) lines)))))
+
+      "nil")))
+
 (defn list-tasks
   "Prints out the task names found in BB-EDN in the original order
   alongside their documentation as retrieved with SCI-CTX.

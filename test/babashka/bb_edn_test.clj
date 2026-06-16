@@ -634,3 +634,24 @@ even more stuff here\"
                                            :exec-fn babashka.tasks-cli/run-dev}}}
       (is (not (str/includes? (test-utils/bb nil "-cp" "test-resources" "foo" "--help") "DEP-RAN")))
       (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "foo") "DEP-RAN")))))
+
+(deftest task-completion-test
+  (testing "task-name completion lists matching public tasks"
+    (test-utils/with-config '{:tasks {dev    {:exec-fn babashka.tasks-cli/run-dev}
+                                      deploy {:task (println :x)}
+                                      -priv  {:task (println :y)}}}
+      (let [out (test-utils/bb nil "-cp" "test-resources"
+                               "org.babashka.cli/completions" "complete" "--shell" "zsh" "--" "de")]
+        (is (str/includes? out "dev"))
+        (is (str/includes? out "deploy"))
+        (is (not (str/includes? out "-priv"))))))
+  (testing ":exec-fn option completion delegates to dispatch via fn meta"
+    (test-utils/with-config '{:tasks {dev {:exec-fn babashka.tasks-cli/run-dev}}}
+      (let [out (test-utils/bb nil "-cp" "test-resources"
+                               "org.babashka.cli/completions" "complete" "--shell" "zsh" "--" "dev" "--")]
+        (is (str/includes? out "--port"))
+        (is (str/includes? out "--help")))))
+  (testing "zsh snippet installs for bb"
+    (test-utils/with-config '{:tasks {dev {:task (println :x)}}}
+      (is (str/includes? (test-utils/bb nil "org.babashka.cli/completions" "snippet" "--shell" "zsh")
+                         "#compdef bb")))))

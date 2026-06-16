@@ -892,6 +892,7 @@ Use bb run --help to show this help output.
                     jar uberjar clojure
                     doc run list-tasks
                     print-deps prepare
+                    completion
                     force-exit]
              exec-fn :exec
              print-result? :prn}
@@ -1020,6 +1021,9 @@ Use bb run --help to show this help output.
                   exec-fn
                   (let [sym (symbol exec-fn)]
                     [[(cli/exec-fn-snippet sym)] nil])
+                  completion
+                  [[(tasks/completion-program
+                     (assoc completion :run run :command-line-args command-line-args))] nil]
                   run (if (:run-help cli-opts)
                         [(print-run-help) 0]
                         (do
@@ -1236,6 +1240,22 @@ Use bb run --help to show this help output.
   (let [fast-path-opts [:version :help :describe?]]
     (some #(contains? opts %) fast-path-opts)))
 
+(defn parse-completion-args
+  "Parse a completion callback (`args` start with the completions sentinel):
+  `complete --shell <sh> -- <line>` or `snippet --shell <sh>`. Returns
+  `{:sub :shell :completed :partial}`. `:completed` is the user's line minus the
+  word being completed (`:partial`); it is fed back through bb's normal arg
+  parsing so every global option (`--config`, `--deps-root`, `-cp`, ...) is
+  honored, then the last word is completed against that state."
+  [args]
+  (let [[_ sub & more] args
+        shell (second (drop-while #(not= "--shell" %) more))
+        user-toks (vec (rest (drop-while #(not= "--" %) more)))]
+    {:sub sub
+     :shell shell
+     :completed (vec (butlast user-toks))
+     :partial (or (last user-toks) "")}))
+
 (defn main [& args]
   (set-daemon-agent-executor)
   (let [bin-jar (binary-invoked-as-jar)
@@ -1243,6 +1263,18 @@ Use bb run --help to show this help output.
                (list* "--jar" bin-jar "--" args)
                args)
         [args opts] (parse-global-opts args)
+        ;; Completion callback: the user's line arrives as tokens after `--`.
+        ;; Re-run global-opt parsing over those completed words too, so any
+        ;; global option the user typed (--config, --deps-root, -cp, ...) loads
+        ;; the right bb.edn and identifies the task; the partial word (the one
+        ;; being typed) is completed later, against that state.
+        completion (when (= "org.babashka.cli/completions" (first args))
+                     (parse-completion-args args))
+        [args opts] (if completion
+                      (let [[cargs copts] (parse-global-opts (:completed completion))]
+                        [cargs (merge opts copts)])
+                      [args opts])
+        opts (cond-> opts completion (assoc :completion completion))
         [args {:keys [config merge-deps debug] :as opts}]
         (if-not (or (:file opts)
                     (:jar opts))
