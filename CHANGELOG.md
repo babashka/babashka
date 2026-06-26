@@ -13,6 +13,13 @@ A preview of the next release can be installed from
 - [#1979](https://github.com/babashka/babashka/issues/1979): fix `with-redefs` on copied vars (e.g. `org.httpkit.client/get`) incorrectly treated as inlined
 - nREPL: lock output stream to prevent interleaved bencode frames from concurrent writes
 - Add `org.jline.keymap.BindingReader` for reading key bindings in terminal applications
+- [#1982](https://github.com/babashka/babashka/issues/1982): Add the following to `:instance-checks` in `babashka.impl.classes/classes`
+  - `clojure.lang.ChunkedCons`
+  - `clojure.lang.APersistentVector$SubVector`
+  - `clojure.lang.ArraySeq`
+  - `clojure.lang.PersistentVector$ChunkedSeq`
+  - `java.util.AbstractCollection`
+  - `java.util.Queue`
 
 ## 1.12.218 (2026-04-20)
 

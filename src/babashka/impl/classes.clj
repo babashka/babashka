@@ -758,9 +758,12 @@
     :instance-checks [clojure.lang.AFn
                       clojure.lang.AFunction
                       clojure.lang.APersistentSet
+                      clojure.lang.APersistentVector$SubVector
+                      clojure.lang.ArraySeq
                       clojure.lang.AReference
                       clojure.lang.Associative
                       clojure.lang.Atom
+                      clojure.lang.ChunkedCons
                       clojure.lang.Cons
                       clojure.lang.Counted
                       clojure.lang.Cycle
@@ -803,6 +806,7 @@
                       clojure.lang.PersistentTreeMap
                       clojure.lang.PersistentTreeSet
                       clojure.lang.PersistentVector
+                      clojure.lang.PersistentVector$ChunkedSeq
                       clojure.lang.PersistentVector$TransientVector
                       clojure.lang.Range
                       clojure.lang.Ratio
@@ -831,6 +835,8 @@
                       java.util.AbstractMap
                       java.util.AbstractSet
                       java.util.AbstractList
+                      java.util.AbstractCollection
+                      java.util.Queue
                       ~@(when features/xml? ['clojure.data.xml.node.Element
                                               'clojure.data.xml.event.StartElementEvent
                                               'clojure.data.xml.event.EmptyElementEvent
