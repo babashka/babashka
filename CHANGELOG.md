@@ -20,6 +20,10 @@ A preview of the next release can be installed from
   - `clojure.lang.PersistentVector$ChunkedSeq`
   - `java.util.AbstractCollection`
   - `java.util.Queue`
+- [#1985](https://github.com/babashka/babashka/issues/1982): Add the following classes to `babashka.impl.classes/classes`
+  - `java.util.concurrent.locks.Condition`
+  - `java.util.concurrent.locks.Lock`
+  - `java.util.concurrent.locks.LockSupport`
 
 ## 1.12.218 (2026-04-20)
 

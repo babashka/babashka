@@ -608,6 +608,9 @@
           java.util.concurrent.Executors
           java.util.concurrent.TimeUnit
           java.util.concurrent.CompletionStage
+          java.util.concurrent.locks.Condition
+          java.util.concurrent.locks.Lock
+          java.util.concurrent.locks.LockSupport
           java.util.concurrent.locks.ReentrantLock
           java.util.concurrent.ThreadLocalRandom
           java.util.concurrent.ConcurrentHashMap
@@ -963,6 +966,8 @@
                                    java.util.concurrent.ScheduledExecutorService
                                    (instance? java.util.concurrent.ExecutorService v)
                                    java.util.concurrent.ExecutorService
+                                   (instance? java.util.concurrent.locks.Condition v)
+                                   java.util.concurrent.locks.Condition
                                    (instance? java.util.Iterator v)
                                    java.util.Iterator
                                    (instance? javax.crypto.SecretKey v)
