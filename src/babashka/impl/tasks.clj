@@ -177,8 +177,12 @@
 (defn -cli-dispatch
   "Runs babashka.cli/dispatch over a task's `:cli` tree. `body-fn` (the task
   body wrapped as a fn, or nil when the task has no body) becomes the root
-  `:fn`. Subcommand `:fn` symbols are resolved lazily via `resolve-fn` (the
-  script's `requiring-resolve`).
+  `:fn`. A node's `:fn` symbol (root or subcommand) is resolved via `resolve-fn`
+  (the script's `requiring-resolve`), and the resolved var's `:org.babashka/cli`
+  metadata (`:spec`, `:args->opts`, `:restrict`, `:epilog`, ...) is merged into
+  the node - so the spec and help live with the fn. Explicit node keys win. The
+  fn is called with dispatch's result map (`{:opts ... :dispatch ... :args ...}`),
+  like any babashka.cli/dispatch `:fn`.
 
   `deps-fn` (or nil) is the task's assembled `:depends` as a thunk. It runs
   right before whichever command fn the parser selects - root body or a
@@ -189,12 +193,17 @@
    (-cli-dispatch cli-opts task-name body-fn nil resolve-fn args))
   ([cli-opts task-name body-fn deps-fn resolve-fn args]
    (let [with-deps (fn [f] (fn [m] (when deps-fn (deps-fn)) (f m)))
+         ;; resolve a :fn / :exec-fn symbol, merge the var's :org.babashka/cli
+         ;; spec (node keys win), and gate :depends on the fn being called
+         wrap-key (fn [node k]
+                    (if-let [fv (k node)]
+                      (let [the-var (if (symbol? fv) (resolve-fn fv) fv)
+                            cli-meta (when (symbol? fv) (:org.babashka/cli (meta the-var)))]
+                        (-> (merge cli-meta node)
+                            (assoc k (with-deps (fn [m] (the-var m))))))
+                      node))
          wrap (fn wrap [node]
-                (let [fn-sym (:fn node)
-                      node (cond
-                             (symbol? fn-sym) (assoc node :fn (with-deps (fn [m] ((resolve-fn fn-sym) m))))
-                             fn-sym (assoc node :fn (with-deps fn-sym))
-                             :else node)]
+                (let [node (-> node (wrap-key :fn) (wrap-key :exec-fn))]
                   (if-let [cm (:cmd node)]
                     (assoc node :cmd (into {} (map (fn [[k v]] [k (wrap v)])) cm))
                     node)))
@@ -202,20 +211,20 @@
          tree (if body-fn (assoc tree :fn (with-deps body-fn)) tree)]
      (babashka.cli/dispatch tree args {:help true :prog (str "bb " task-name)}))))
 
-(defn -exec-fn-dispatch
-  "Like -cli-dispatch, but the cli tree is taken from the referenced fn's
-  `:org.babashka/cli` metadata (`{:spec ...}` and/or `{:cmd ...}`) instead of a
-  `:cli` key in bb.edn - so the spec lives with the fn. The fn is the root `:fn`,
-  called with the parsed `:opts`. Help, subcommands and the `deps-fn` pre-pass
-  all come from -cli-dispatch."
-  [fn-sym task-name deps-fn resolve-fn args]
-  (let [the-var (resolve-fn fn-sym)
-        _ (when-not the-var
-            (throw (ex-info (str "Could not resolve :exec-fn to a function: " fn-sym)
-                            {:babashka/exit 1})))
-        cli-opts (:org.babashka/cli (meta the-var))
-        body-fn (fn [{:keys [opts]}] (the-var opts))]
-    (-cli-dispatch (or cli-opts {}) task-name body-fn deps-fn resolve-fn args)))
+(defn -resolve-cli-specs
+  "Walk a `:cli` tree, merging each node fn's `:org.babashka/cli` metadata into
+  its node (explicit node keys win), for both `:fn` and `:exec-fn`. `resolve-fn`
+  is the script's `requiring-resolve`. Used where the tree is inspected but the
+  fns are not called - `--help` and shell completion - so a node's spec shows up
+  even though it lives on the fn. Mirrors the spec merge in -cli-dispatch's wrap."
+  [resolve-fn node]
+  (let [fv (or (:fn node) (:exec-fn node))
+        node (if (symbol? fv)
+               (merge (:org.babashka/cli (meta (resolve-fn fv))) node)
+               node)]
+    (if-let [cm (:cmd node)]
+      (assoc node :cmd (into {} (map (fn [[k v]] [k (-resolve-cli-specs resolve-fn v)])) cm))
+      node)))
 
 (defn wrap-cli
   "When a task declares `:cli`, route its invocation through
@@ -263,22 +272,8 @@
                       (str/starts-with? task-name "-"))
          task-map (if private?
                     (assoc task-map :private private?)
-                    task-map)
-         exec-fn (:exec-fn task-map)]
+                    task-map)]
      (cond
-       exec-fn
-       ;; :exec-fn task: dispatch via the fn's :org.babashka/cli metadata. Like
-       ;; :cli, but the spec lives on the fn (single source of truth). dep-forms
-       ;; only arrive on the last? (target) assembly, so deps run via the same
-       ;; pre-pass and are skipped on --help / parse errors.
-       (let [prog (format "(babashka.tasks/-exec-fn-dispatch '%s \"%s\" %s requiring-resolve *command-line-args*)"
-                          exec-fn
-                          task-name
-                          (if dep-forms (format "(fn [] %s)" dep-forms) "nil"))
-             prog (wrap-enter-leave task-name prog enter leave)
-             prog (wrap-def task-map prog parallel? last?)]
-         prog)
-
        (qualified-symbol? task)
        (let [prog (format "(apply %s *command-line-args*)" task)
              prog (wrap-enter-leave task-name prog enter leave)
@@ -439,7 +434,7 @@
                                        ;; the target (parallel deps rely on
                                        ;; launching their channels ahead of the
                                        ;; target's wait).
-                                       cli-prelude? (and (or (:cli task) (:exec-fn task)) (not parallel?))
+                                       cli-prelude? (and (:cli task) (not parallel?))
                                        prog (if cli-prelude?
                                               (assemble-task-1 task-map task parallel? true dep-forms)
                                               (str dep-forms "\n"
@@ -475,7 +470,10 @@
       (when-let [fn-sym (cond (qualified-symbol? task)
                               task
                               (map? task)
-                              (or (:exec-fn task)
+                              (or (let [f (or (:fn (:cli task))
+                                              (:exec-fn (:cli task)))]
+                                    (when (qualified-symbol? f)
+                                      f))
                                   (let [t (:task task)]
                                     (when (qualified-symbol? t)
                                       t))))]
@@ -523,10 +521,10 @@
   args before the cursor; `:partial` is the word being completed.
 
   Task-name completion is done here; per-task option/subcommand completion is
-  delegated to `babashka.cli/dispatch` over the task's tree (its `:cli`, or the
-  `:org.babashka/cli` metadata of its `:exec-fn`), reusing dispatch's own
+  delegated to `babashka.cli/dispatch` over the task's `:cli` tree (with each
+  node fn's `:org.babashka/cli` metadata merged in), reusing dispatch's own
   completion machinery."
-  [{:keys [sub shell run command-line-args partial]}]
+  [sci-ctx {:keys [sub shell run command-line-args partial]}]
   (let [shell (or shell "zsh")
         tasks (:tasks @bb-edn)]
     (case sub
@@ -543,14 +541,10 @@
                         (conj partial))
               tm (get tasks (symbol run))
               prog (str "bb " run)]
-          (cond
-            (:cli tm)
-            (format "(babashka.cli/dispatch %s %s {:prog %s :help true})"
+          (if (:cli tm)
+            (format "(babashka.cli/dispatch (babashka.tasks/-resolve-cli-specs requiring-resolve %s) %s {:prog %s :help true})"
                     (pr-str (list 'quote (:cli tm))) (pr-str compl) (pr-str prog))
-            (:exec-fn tm)
-            (format "(babashka.cli/dispatch (or (:org.babashka/cli (meta (requiring-resolve (quote %s)))) {}) %s {:prog %s :help true})"
-                    (:exec-fn tm) (pr-str compl) (pr-str prog))
-            :else "nil"))
+            "nil"))
         ;; completing the task name itself
         (let [lines (->> tasks
                          (keep (fn [[k v]]
@@ -559,7 +553,7 @@
                                               (not (str/starts-with? n "-"))
                                               (not (and (map? v) (:private v)))
                                               (str/starts-with? n partial))
-                                     (let [d (when (map? v) (:doc v))]
+                                     (let [d (doc-from-task sci-ctx tasks v)]
                                        (if d (str n "\t" d) n))))))
                          sort)]
           (format "(do %s)"
@@ -626,5 +620,5 @@
    'run (sci/copy-var run sci-ns)
    'exec (sci/copy-var exec sci-ns)
    '-cli-dispatch (sci/copy-var -cli-dispatch sci-ns)
-   '-exec-fn-dispatch (sci/copy-var -exec-fn-dispatch sci-ns)
+   '-resolve-cli-specs (sci/copy-var -resolve-cli-specs sci-ns)
    #_#_'log log})

@@ -1023,6 +1023,7 @@ Use bb run --help to show this help output.
                     [[(cli/exec-fn-snippet sym)] nil])
                   completion
                   [[(tasks/completion-program
+                     sci-ctx
                      (assoc completion :run run :command-line-args command-line-args))] nil]
                   run (if (:run-help cli-opts)
                         [(print-run-help) 0]
