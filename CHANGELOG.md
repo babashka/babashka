@@ -29,6 +29,7 @@ A preview of the next release can be installed from
   - `java.nio.channels.CancelledKeyException`
   - `java.nio.channels.Selector`
   - `java.nio.channels.SelectionKey`
+- [#1987](https://github.com/babashka/babashka/issues/1987): Allow the `remove` method to be used on `Iterator`
 
 ## 1.12.218 (2026-04-20)
 
