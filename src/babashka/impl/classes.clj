@@ -446,6 +446,7 @@
           java.net.ServerSocket
           java.net.Socket
           java.net.SocketException
+          java.net.StandardSocketOptions
           ~@(when has-domain-sockets?
               '[java.net.UnixDomainSocketAddress])
           java.net.UnknownHostException
@@ -465,11 +466,14 @@
                 java.nio.file.OpenOption
                 java.nio.file.StandardOpenOption
                 java.nio.channels.ByteChannel
+                java.nio.channels.CancelledKeyException
                 java.nio.channels.Channels
                 java.nio.channels.FileChannel
                 java.nio.channels.FileChannel$MapMode
                 java.nio.channels.ReadableByteChannel
                 java.nio.channels.WritableByteChannel
+                java.nio.channels.Selector
+                java.nio.channels.SelectionKey
                 java.nio.channels.ServerSocketChannel
                 java.nio.channels.SocketChannel
                 java.nio.charset.Charset
@@ -931,6 +935,10 @@
                                    java.nio.CharBuffer
                                    (instance? java.nio.channels.FileChannel v)
                                    java.nio.channels.FileChannel
+                                   (instance? java.nio.channels.Selector v)
+                                   java.nio.channels.Selector
+                                   (instance? java.nio.channels.SelectionKey v)
+                                   java.nio.channels.SelectionKey
                                    (instance? java.nio.channels.ServerSocketChannel v)
                                    java.nio.channels.ServerSocketChannel
                                    (instance? java.nio.channels.SocketChannel v)

@@ -473,3 +473,28 @@
   (future (Thread/sleep 10) (LockSupport/unpark thread))
   (LockSupport/parkNanos 1e9)
   (< (- (System/nanoTime) t0) 5e8))"))))
+
+(deftest java-nio-channels-test
+  (is (true? (bb nil "(ns script
+  (:import [java.net InetSocketAddress Socket StandardSocketOptions]
+           [java.nio.channels CancelledKeyException Selector SelectionKey
+            ServerSocketChannel]))
+
+(let [sel  (Selector/open)
+      ch   (doto (ServerSocketChannel/open)
+             (.configureBlocking false)
+             (.setOption StandardSocketOptions/SO_REUSEADDR true)
+             (.bind (InetSocketAddress. 0))
+             (.register sel SelectionKey/OP_ACCEPT))
+      port (.getPort (.getLocalAddress ch))
+      done (atom false)]
+  (future (Thread/sleep 10) (.close (Socket. \"localhost\" port)))
+  (.select sel 1000)
+  (doseq [key (.selectedKeys sel)]
+    (try (when (.isAcceptable key)
+           (.accept (.channel key))
+           (reset! done true))
+         (catch CancelledKeyException _ex)))
+  (.close sel)
+  (.close ch)
+  @done)"))))
