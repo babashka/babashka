@@ -498,3 +498,17 @@
   (.close sel)
   (.close ch)
   @done)"))))
+
+(deftest java-util-iterator-test
+  (is (true? (bb nil "(ns script
+  (:import [java.util HashSet Iterator]))
+
+(let [s (HashSet.)]
+  (dotimes [i 10] (.add s i))
+  (let [iter (.iterator s)]
+    (loop []
+      (when (.hasNext iter)
+        (when (even? (.next iter))
+          (.remove iter))
+        (recur))))
+  (= #{1 3 5 7 9} s))"))))

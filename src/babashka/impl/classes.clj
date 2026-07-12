@@ -209,7 +209,8 @@
               {:name "soloExecutor"}]}
     java.util.Iterator
     {:methods [{:name "hasNext"}
-               {:name "next"}]}
+               {:name "next"}
+               {:name "remove"}]}
     java.util.TimeZone
     {:methods [{:name "getTimeZone"}
                {:name "setDefault"}]}
