@@ -2,6 +2,7 @@
 
 (def interfaces [java.nio.file.FileVisitor
                  java.nio.file.DirectoryStream$Filter
+                 java.io.Closeable
                  java.io.FileFilter
                  java.io.FilenameFilter
                  clojure.lang.Associative
@@ -19,6 +20,7 @@
                  clojure.lang.IPersistentStack
                  clojure.lang.Reversible
                  clojure.lang.Seqable
+                 java.lang.AutoCloseable
                  java.lang.Iterable
                  java.lang.Runnable
                  java.net.http.WebSocket$Listener

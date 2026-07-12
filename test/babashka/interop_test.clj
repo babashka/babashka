@@ -512,3 +512,17 @@
           (.remove iter))
         (recur))))
   (= #{1 3 5 7 9} s))"))))
+
+(deftest reify-closeable-test
+  (is (true? (bb nil "(ns script
+  (:import [java.io Closeable]))
+
+(let [v (volatile! false)]
+  (with-open [_ (reify Closeable (close [_] (vreset! v true)))])
+  @v)")))
+  (is (true? (bb nil "(ns script
+  (:import [java.lang AutoCloseable]))
+
+(let [v (volatile! false)]
+  (with-open [_ (reify AutoCloseable (close [_] (vreset! v true)))])
+  @v)"))))
