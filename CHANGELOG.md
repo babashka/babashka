@@ -31,6 +31,7 @@ A preview of the next release can be installed from
   - `java.nio.channels.SelectionKey`
 - [#1987](https://github.com/babashka/babashka/issues/1987): Allow the `remove` method to be used on `Iterator`
 - [#1988](https://github.com/babashka/babashka/issues/1988): Allow `java.io.Closeable` and `java.lang.AutoCloseable` to be reified
+- Bump edamame to `1.6.42`
 
 ## 1.12.218 (2026-04-20)
 
