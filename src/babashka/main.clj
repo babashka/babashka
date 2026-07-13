@@ -77,8 +77,7 @@
    [sci.impl.io :as sio]
    [sci.impl.namespaces :as sci-namespaces]
    [sci.impl.parser]
-   [sci.impl.types :as sci-types]
-   [sci.impl.vars :as vars])
+   [sci.impl.types :as sci-types])
   (:gen-class))
 
 (def windows? (fs/windows?))
@@ -922,7 +921,7 @@ Use bb run --help to show this help output.
                 (when-let [bb-edn @common/bb-edn] (deps/add-deps bb-edn {:force force?})))
             abs-path (when file
                        (let [abs-path (.getAbsolutePath (io/file file))]
-                         (vars/bindRoot sci/file abs-path)
+                         (sci/alter-var-root sci/file (constantly abs-path))
                          (System/setProperty "babashka.file" abs-path)
                          abs-path))
             _ (when jar
