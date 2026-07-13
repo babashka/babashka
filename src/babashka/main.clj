@@ -77,9 +77,7 @@
    [sci.impl.io :as sio]
    [sci.impl.namespaces :as sci-namespaces]
    [sci.impl.parser]
-   [sci.impl.types :as sci-types]
-   [sci.impl.unrestrict :refer [*unrestricted*]]
-   [sci.impl.vars :as vars])
+   [sci.impl.types :as sci-types])
   (:gen-class))
 
 (def windows? (fs/windows?))
@@ -101,7 +99,6 @@
 
 (def signal-ns {'pipe-signal-received? (sci/copy-var pipe-signal-received? (sci/create-ns 'babashka.signal nil))})
 
-(sci/enable-unrestricted-access!)
 (sci/alter-var-root sci/in (constantly *in*))
 (sci/alter-var-root sci/out (constantly *out*))
 (sci/alter-var-root sci/err (constantly *err*))
@@ -873,8 +870,7 @@ Use bb run --help to show this help output.
     (vreset! common/solo-executor executor)))
 
 (defn exec [cli-opts]
-  (with-bindings {#'*unrestricted* true
-                  clojure.lang.Compiler/LOADER @cp/the-url-loader}
+  (with-bindings {clojure.lang.Compiler/LOADER @cp/the-url-loader}
     (-> (Thread/currentThread) (.setContextClassLoader @cp/the-url-loader))
     (sci/binding [core/warn-on-reflection @core/warn-on-reflection
                   core/unchecked-math @core/unchecked-math
@@ -925,7 +921,7 @@ Use bb run --help to show this help output.
                 (when-let [bb-edn @common/bb-edn] (deps/add-deps bb-edn {:force force?})))
             abs-path (when file
                        (let [abs-path (.getAbsolutePath (io/file file))]
-                         (vars/bindRoot sci/file abs-path)
+                         (sci/alter-var-root sci/file (constantly abs-path))
                          (System/setProperty "babashka.file" abs-path)
                          abs-path))
             _ (when jar
@@ -997,6 +993,7 @@ Use bb run --help to show this help output.
                   :reify-fn reify-fn
                   :proxy-fn proxy-fn
                   :deftype-fn deftype-fn
+                  :unrestricted true
                   :readers #(readers-fn (common/ctx) %)}
             opts (addons/future opts)
             sci-ctx (sci/init opts)
