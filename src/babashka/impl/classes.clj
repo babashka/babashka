@@ -7,6 +7,7 @@
    [cheshire.core :as json]
    [clojure.core.async]
    [sci.core :as sci]
+   [sci.impl.jvm-type-emit]
    [sci.impl.load]
    [sci.impl.types :as t]
    [sci.impl.vars :as vars]))
@@ -891,7 +892,12 @@
                    ;; (prn :v v)
                    ;; NOTE: a series of instance check, so far, is still cheaper
                    ;; than piggybacking on defmulti or defprotocol
-                   (let [res (cond (instance? java.lang.Process v)
+                   (let [res (cond ;; emitted class for a sci deftype with JVM
+                                   ;; interfaces: its methods are the user's own
+                                   ;; sci-interpreted fns
+                                   (instance? sci.impl.jvm_type_emit.IJvmSciType v)
+                                   (class v)
+                                   (instance? java.lang.Process v)
                                    java.lang.Process
                                    (instance? java.lang.ProcessHandle v)
                                    java.lang.ProcessHandle
