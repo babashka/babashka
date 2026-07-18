@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Bump `org.babashka/cli` to `0.12.76`
 - [#1977](https://github.com/babashka/babashka/issues/1977): update usage link in README to point to the discussion page
 - [#1979](https://github.com/babashka/babashka/issues/1979): fix `with-redefs` on copied vars (e.g. `org.httpkit.client/get`) incorrectly treated as inlined
 - nREPL: lock output stream to prevent interleaved bencode frames from concurrent writes
