@@ -295,7 +295,8 @@
 
 (deftest start-repl-custom-eval-test
   (testing "start-repl! with custom :eval"
-    (assert-jline-repl ["(+ 1 1)"] "3" :eval (fn [form] (inc (eval form))))))
+    (assert-jline-repl ["(+ 1 1)"] "3" :eval (fn [form] (inc (eval form))))
+    (assert-jline-repl ["(" :interrupt ":repl/exit"] "To exit" :eval (fn [_form] 42))))
     
 ;;;; Scratch
 
