@@ -588,15 +588,16 @@
                   :prompt (constantly nil)         ;; No-op, JLine handles prompting
                   :read (fn [request-prompt request-exit]
                           (jline-read sci-ctx line-reader input-buffer ctrl-c-pending request-prompt request-exit))
-                  :eval (fn [form]
-                          (if (identical? form interrupted)
-                            interrupted
-                            (sci/with-bindings {sci/file "<repl>"
-                                                sci/*1 *1
-                                                sci/*2 *2
-                                                sci/*3 *3
-                                                sci/*e *e}
-                              (eval-form sci-ctx form))))
+                  :eval (or (:eval opts)
+                            (fn [form]
+                              (if (identical? form interrupted)
+                                interrupted
+                                (sci/with-bindings {sci/file "<repl>"
+                                                    sci/*1 *1
+                                                    sci/*2 *2
+                                                    sci/*3 *3
+                                                    sci/*e *e}
+                                  (eval-form sci-ctx form)))))
                   :print (fn [val]
                            (when-not (identical? val interrupted)
                              (sio/prn val)))}))))
