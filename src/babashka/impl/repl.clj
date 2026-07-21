@@ -89,6 +89,15 @@
             (recur sci-ctx in-stream _request-prompt request-exit))
         :else v))))
 
+(defn repl-eval [sci-ctx form]
+  (sci/with-bindings {sci/file "<repl>"
+                      sci/*1 *1
+                      sci/*2 *2
+                      sci/*3 *3
+                      sci/*e *e}
+    (let [ret (eval-form sci-ctx form)]
+      ret)))
+
 (defn repl
   "REPL with predefined hooks for attachable socket server."
   ([sci-ctx] (repl sci-ctx nil))
@@ -107,15 +116,7 @@
         :read (or read
                   (fn [request-prompt request-exit]
                     (repl-read sci-ctx in request-prompt request-exit)))
-        :eval (or eval
-                  (fn [expr]
-                    (sci/with-bindings {sci/file "<repl>"
-                                        sci/*1 *1
-                                        sci/*2 *2
-                                        sci/*3 *3
-                                        sci/*e *e}
-                      (let [ret (eval-form sci-ctx expr)]
-                        ret))))
+        :eval (or eval (fn [form] (repl-eval sci-ctx form)))
         :need-prompt (or need-prompt (fn [] true))
         :prompt (or prompt #(sio/printf "%s=> " (utils/current-ns-name)))
         :flush (or flush sio/flush)
@@ -588,16 +589,12 @@
                   :prompt (constantly nil)         ;; No-op, JLine handles prompting
                   :read (fn [request-prompt request-exit]
                           (jline-read sci-ctx line-reader input-buffer ctrl-c-pending request-prompt request-exit))
-                  :eval (or (:eval opts)
+                  :eval (let [f (or (:eval opts) 
+                                    (fn [form] (repl-eval sci-ctx form)))] 
                             (fn [form]
                               (if (identical? form interrupted)
                                 interrupted
-                                (sci/with-bindings {sci/file "<repl>"
-                                                    sci/*1 *1
-                                                    sci/*2 *2
-                                                    sci/*3 *3
-                                                    sci/*e *e}
-                                  (eval-form sci-ctx form)))))
+                                (f form))))
                   :print (fn [val]
                            (when-not (identical? val interrupted)
                              (sio/prn val)))}))))
