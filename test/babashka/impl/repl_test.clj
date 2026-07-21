@@ -91,14 +91,14 @@
               (throw (EndOfFileException.))
               accumulated)))))))
 
-(defn jline-repl! [line-reader]
-  (repl-with-line-reader test-sci-ctx line-reader nil))
+(defn jline-repl! [line-reader & {:as opts}]
+  (repl-with-line-reader test-sci-ctx line-reader opts))
 
-(defn assert-jline-repl [lines expected]
+(defn assert-jline-repl [lines expected & {:as opts}]
   (is (str/includes?
        (tu/normalize
         (sci/with-out-str
-          (jline-repl! (mock-line-reader lines))))
+          (jline-repl! (mock-line-reader lines) opts)))
        expected)))
 
 (defn jline-repl-output [lines]
@@ -293,6 +293,10 @@
                                   :init (constantly nil)})))]
       (is (str/includes? output "3")))))
 
+(deftest start-repl-custom-eval-test
+  (testing "start-repl! with custom :eval"
+    (assert-jline-repl ["(+ 1 1)"] "3" :eval (fn [form] (inc (eval form))))))
+    
 ;;;; Scratch
 
 (comment)
