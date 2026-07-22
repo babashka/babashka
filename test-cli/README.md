@@ -158,11 +158,19 @@ Error: Invalid value for argument <environment>: qa. Expected one of: dev, prod,
 
 ## Completion
 
+To install completions, add this to your zsh init file after `compinit`:
+
 ```shell
 source <(bb org.babashka.cli/completions snippet --shell zsh)
 ```
 
-Replace `zsh` with `bash`, `fish`, `powershell`, or `nushell`.
+The same line with `--shell bash` goes in your bash init file. Fish uses
+`bb org.babashka.cli/completions snippet --shell fish | source` in
+`config.fish`. PowerShell pipes the snippet through
+`Out-String | Invoke-Expression` in `$PROFILE`. Nushell saves the snippet to a
+file and sources it from `config.nu`. See
+[Completions](https://github.com/babashka/cli#completions) in the babashka.cli
+README for per-shell details.
 
 ```console
 $ bb <TAB>                # task names with docs, plus files
@@ -178,9 +186,12 @@ offers them after a space as well.
 
 ## Trying this with a dev build
 
-Linux binaries are built per commit on CI:
+Linux binaries are built per commit on CI. Log in to CircleCI with GitHub,
+then download
+[babashka-linux-amd64-static.tar.gz](https://output.circle-artifacts.com/output/job/af771031-ca27-4ba1-9d54-cccdac752156/artifacts/0/release/babashka-1.12.219-SNAPSHOT-linux-amd64-static.tar.gz).
 
-1. Log in to CircleCI with GitHub.
-2. Open the [branch pipeline](https://app.circleci.com/pipelines/github/babashka/babashka?branch=cli-tree-tasks).
-3. Pick the newest run and the `linux-static` or `linux-aarch64-static` job.
-4. Download `babashka-*-static.tar.gz` from the Artifacts tab.
+For other architectures or newer commits:
+
+1. Open the [branch pipeline](https://app.circleci.com/pipelines/github/babashka/babashka?branch=cli-tree-tasks).
+2. Pick the newest run and the `linux-static` or `linux-aarch64-static` job.
+3. Download `babashka-*-static.tar.gz` from the Artifacts tab.
