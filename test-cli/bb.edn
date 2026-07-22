@@ -1,0 +1,19 @@
+{:paths ["src"]
+ :tasks
+ {-setup {:task (println "Running setup (a dependency task)")}
+
+  ;; options declared inline; parsed opts via (:opts (current-task))
+  clean {:doc "Removes build artifacts"
+         :cli {:spec {:dry-run {:coerce :boolean :desc "Only print what would be removed"}}}
+         :task (let [{:keys [dry-run]} (:opts (current-task))]
+                 (println (if dry-run "Would remove target/" "Removing target/")))}
+
+  ;; spec and doc live on the function's metadata (see src/tasks.clj)
+  dev {:depends [-setup]
+       :cli {:exec-fn tasks/dev}}
+
+  ;; subcommands: bb deploy lock / bb deploy unlock; root :task runs on bare bb deploy
+  deploy {:doc "Deploys the app"
+          :cli {:cmd {lock   {:exec-fn tasks/lock}
+                      unlock {:exec-fn tasks/unlock}}}
+          :task (println "Deploying!")}}}
