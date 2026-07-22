@@ -193,6 +193,9 @@ or
 [babashka-macos-amd64.tar.gz](https://output.circle-artifacts.com/output/job/54aa9355-039c-408a-a33f-414b621f4b2d/artifacts/0/release/babashka-1.12.219-SNAPSHOT-macos-amd64.tar.gz)
 (Intel, runs on Apple Silicon via Rosetta).
 
+Windows, no login needed:
+[babashka-windows-amd64.zip](https://nightly.link/babashka/babashka/actions/runs/29949523082/babashka-1.12.219-SNAPSHOT-windows-amd64.zip).
+
 For other architectures or newer commits:
 
 1. Open the [branch pipeline](https://app.circleci.com/pipelines/github/babashka/babashka?branch=cli-tree-tasks).
