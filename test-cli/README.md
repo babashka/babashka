@@ -1,8 +1,8 @@
 # bb tasks CLI example
 
-Demonstrates the task-runner CLI integration on the `cli-tree-tasks` branch:
-options, auto-generated help, subcommands and shell completion for bb tasks,
-driven by [babashka.cli](https://github.com/babashka/cli).
+Demonstrates CLI integration for bb tasks: options, auto-generated help,
+subcommands and shell completion, driven by
+[babashka.cli](https://github.com/babashka/cli).
 
 Run everything below from this directory.
 
@@ -15,17 +15,17 @@ Two files. `bb.edn`:
  :tasks
  {-setup {:task (println "Running setup (a dependency task)")}
 
-  ;; options declared inline; parsed opts via (:opts (current-task))
+  ;; The body reads options declared here with (:opts (current-task)).
   clean {:doc "Removes build artifacts"
          :cli {:spec {:dry-run {:coerce :boolean :desc "Only print what would be removed"}}}
          :task (let [{:keys [dry-run]} (:opts (current-task))]
                  (println (if dry-run "Would remove target/" "Removing target/")))}
 
-  ;; spec and doc live on the function's metadata (see src/tasks.clj)
+  ;; The spec and doc live on the function's metadata in src/tasks.clj.
   dev {:depends [-setup]
        :cli {:exec-fn tasks/dev}}
 
-  ;; subcommands: bb deploy lock / bb deploy unlock; root :task runs on bare bb deploy
+  ;; Subcommands dispatch to functions and the root :task runs on bare bb deploy.
   deploy {:doc "Deploys the app"
           :cli {:cmd {lock   {:exec-fn tasks/lock}
                       unlock {:exec-fn tasks/unlock}}}
@@ -71,31 +71,29 @@ Two files. `bb.edn`:
   (println "Unlocking" environment))
 ```
 
-Three styles:
+The example covers:
 
-- `clean`: options declared inline under `:cli {:spec ...}`, parsed opts via
-  `(:opts (current-task))`
-- `dev`: `:cli {:exec-fn tasks/dev}`, the function receives the parsed options;
-  spec comes from its `:org.babashka/cli` metadata and the docstring becomes
-  the task doc
-- `deploy`: a command tree under `:cli {:cmd ...}`; each leaf is an `:exec-fn`
-  with its spec and doc on the function; the root `:task` runs on bare
-  `bb deploy`
+- `clean` declares its options inline and reads them with
+  `(:opts (current-task))`.
+- `dev` routes to a function with `:exec-fn`. The spec comes from the
+  function's `:org.babashka/cli` metadata and the docstring becomes the task
+  doc.
+- `deploy` is a command tree. Each leaf is an `:exec-fn` with its spec and doc
+  on the function. The root `:task` runs on bare `bb deploy`.
 
 Notes:
 
 - `:depends` runs before the task body but is skipped on `--help` and on
-  parse errors (see the `bb dev --help` vs `bb dev` outputs below). Parsed
-  options do not flow into dependency tasks.
+  parse errors. Parsed options do not flow into dependency tasks.
 - An option marked `:positional true` is listed under `Arguments:` and cannot
   be passed as a flag.
-- A set-valued `:validate` validates, renders in the error message and doubles
-  as completion candidates.
-- Tasks without `:cli` are untouched: `*command-line-args*` as always.
+- A set-valued `:validate` supplies validation choices, error text, and
+  completion candidates.
+- Tasks without `:cli` still receive arguments through `*command-line-args*`.
 
 ## Session
 
-```
+```console
 $ bb tasks
 The following tasks are available:
 
@@ -160,13 +158,13 @@ Error: Invalid value for argument <environment>: qa. Expected one of: dev, prod,
 
 ## Completion
 
-```
+```shell
 source <(bb org.babashka.cli/completions snippet --shell zsh)
 ```
 
-Also bash, fish, PowerShell and nushell (`--shell bash`, ...).
+Replace `zsh` with `bash`, `fish`, `powershell`, or `nushell`.
 
-```
+```console
 $ bb <TAB>                # task names with docs, plus files
 $ bb --<TAB>              # bb's own options
 $ bb deploy <TAB>         # lock unlock
@@ -174,14 +172,15 @@ $ bb deploy unlock <TAB>  # dev prod staging
 $ bb dev -<TAB>           # -s --sandbox --port ...
 ```
 
-Convention (as in git and friends): a fresh word completes subcommands and
-positional values; option names complete on a dash-prefixed word, or when
-options are all a task accepts.
+Completion after a space offers subcommands and positional values.
+Completion after a dash offers option names. A task that only accepts options
+offers them after a space as well.
 
 ## Trying this with a dev build
 
-Linux binaries are built per commit on CI: log in to CircleCI with GitHub
-(free), open the
-[branch pipeline](https://app.circleci.com/pipelines/github/babashka/babashka?branch=cli-tree-tasks),
-pick the newest run, job `linux-static` (or `linux-aarch64-static`),
-Artifacts tab, download `babashka-*-static.tar.gz`.
+Linux binaries are built per commit on CI:
+
+1. Log in to CircleCI with GitHub.
+2. Open the [branch pipeline](https://app.circleci.com/pipelines/github/babashka/babashka?branch=cli-tree-tasks).
+3. Pick the newest run and the `linux-static` or `linux-aarch64-static` job.
+4. Download `babashka-*-static.tar.gz` from the Artifacts tab.
