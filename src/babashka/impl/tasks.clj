@@ -194,12 +194,15 @@
   ([cli-opts task-name body-fn deps-fn resolve-fn args]
    (let [with-deps (fn [f] (fn [m] (when deps-fn (deps-fn)) (f m)))
          ;; resolve a :fn / :exec-fn symbol, merge the var's :org.babashka/cli
-         ;; spec (node keys win), and gate :depends on the fn being called
+         ;; spec and docstring (node keys win), and gate :depends on the fn
+         ;; being called
          wrap-key (fn [node k]
                     (if-let [fv (k node)]
                       (let [the-var (if (symbol? fv) (resolve-fn fv) fv)
-                            cli-meta (when (symbol? fv) (:org.babashka/cli (meta the-var)))]
-                        (-> (merge cli-meta node)
+                            m (when (symbol? fv) (meta the-var))]
+                        (-> (merge (:org.babashka/cli m)
+                                   (when-let [d (:doc m)] {:doc d})
+                                   node)
                             (assoc k (with-deps (fn [m] (the-var m))))))
                       node))
          wrap (fn wrap [node]
@@ -212,15 +215,19 @@
      (babashka.cli/dispatch tree args {:help true :prog (str "bb " task-name)}))))
 
 (defn -resolve-cli-specs
-  "Walk a `:cli` tree, merging each node fn's `:org.babashka/cli` metadata into
-  its node (explicit node keys win), for both `:fn` and `:exec-fn`. `resolve-fn`
-  is the script's `requiring-resolve`. Used where the tree is inspected but the
-  fns are not called - `--help` and shell completion - so a node's spec shows up
-  even though it lives on the fn. Mirrors the spec merge in -cli-dispatch's wrap."
+  "Walk a `:cli` tree, merging each node fn's `:org.babashka/cli` metadata and
+  docstring into its node (explicit node keys win), for both `:fn` and
+  `:exec-fn`. `resolve-fn` is the script's `requiring-resolve`. Used where the
+  tree is inspected but the fns are not called - `--help` and shell completion -
+  so a node's spec and doc show up even though they live on the fn. Mirrors the
+  merge in -cli-dispatch's wrap."
   [resolve-fn node]
   (let [fv (or (:fn node) (:exec-fn node))
         node (if (symbol? fv)
-               (merge (:org.babashka/cli (meta (resolve-fn fv))) node)
+               (let [m (meta (resolve-fn fv))]
+                 (merge (:org.babashka/cli m)
+                        (when-let [d (:doc m)] {:doc d})
+                        node))
                node)]
     (if-let [cm (:cmd node)]
       (assoc node :cmd (into {} (map (fn [[k v]] [k (-resolve-cli-specs resolve-fn v)])) cm))

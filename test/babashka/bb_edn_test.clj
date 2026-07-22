@@ -600,7 +600,9 @@ even more stuff here\"
              (bb "-cp" "test-resources" "deploy" "lock" "staging" "-m" "msg")))
       (let [help (test-utils/bb nil "-cp" "test-resources" "deploy" "lock" "--help")]
         (is (str/includes? help "Usage: bb deploy lock"))
-        (is (str/includes? help "--message")))))
+        (is (str/includes? help "--message"))
+        (testing "the fn's docstring shows as the command doc"
+          (is (str/includes? help "Lock deployment"))))))
   (testing "dispatch errors reach a rebound *exit-fn*"
     (test-utils/with-config '{:tasks {deps {:cli {:cmd {"x" {:fn clojure.core/prn}}}}}}
       (is (= {:exit 1 :cause :input-exhausted}
