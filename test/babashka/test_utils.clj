@@ -8,8 +8,7 @@
    [clojure.string :as str]
    [clojure.test :as test :refer [*report-counters*]]
    [clojure.tools.reader.reader-types :as r]
-   [sci.core :as sci]
-   [sci.impl.vars :as vars]))
+   [sci.core :as sci]))
 
 (set! *warn-on-reflection* true)
 
@@ -62,9 +61,9 @@
                               sci/err es}
                        is (assoc sci/in is))]
     (try
-      (when (string? input-or-opts) (vars/bindRoot sci/in is))
-      (vars/bindRoot sci/out os)
-      (vars/bindRoot sci/err es)
+      (when (string? input-or-opts) (sci/alter-var-root sci/in (constantly is)))
+      (sci/alter-var-root sci/out (constantly os))
+      (sci/alter-var-root sci/err (constantly es))
       (sci/with-bindings bindings-map
         (let [res (:exit (binding [*out* os
                                    *err* es]
@@ -83,9 +82,9 @@
                               {:stdout (str os)
                                :stderr (str es)}))))))
       (finally
-        (when (string? input-or-opts) (vars/bindRoot sci/in *in*))
-        (vars/bindRoot sci/out *out*)
-        (vars/bindRoot sci/err *err*)))))
+        (when (string? input-or-opts) (sci/alter-var-root sci/in (constantly *in*)))
+        (sci/alter-var-root sci/out (constantly *out*))
+        (sci/alter-var-root sci/err (constantly *err*))))))
 
 (defn bb-native [input & args]
   (let [args (cond-> args *bb-edn-path*

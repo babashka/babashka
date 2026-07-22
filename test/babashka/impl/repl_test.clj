@@ -6,16 +6,15 @@
    [clojure.string :as str]
    [clojure.test :as t :refer [deftest is testing]]
    [sci.core :as sci]
-   [sci.impl.opts :refer [init]]
-   [sci.impl.vars :as vars])
+   [sci.impl.opts :refer [init]])
   (:import
    [org.jline.reader LineReader EndOfFileException UserInterruptException]))
 
 (set! *warn-on-reflection* true)
 
-;; (vars/bindRoot sci/in *in*)
-;; (vars/bindRoot sci/out *out*)
-(vars/bindRoot sci/err *err*)
+;; (sci/alter-var-root sci/in (constantly *in*))
+;; (sci/alter-var-root sci/out (constantly *out*))
+(sci/alter-var-root sci/err (constantly *err*))
 
 (defn repl! []
   (start-repl! (init {:bindings {'*command-line-args*

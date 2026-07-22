@@ -445,3 +445,84 @@
   (.update standalone-digest data)
 
   (= (seq (.digest standalone-digest)) (seq (.digest sink-digest))))"))))
+
+(deftest java-util-concurrent-locks-test
+  (is (true? (bb nil "(ns script
+  (:import [java.util.concurrent.locks Condition Lock ReentrantLock]
+           [java.util.concurrent TimeUnit]))
+
+(let [result     (volatile! 1)
+      ^Lock lock (ReentrantLock.)
+      cnd        (.newCondition lock)]
+  (try (.lock lock)
+       (future
+         (.lock lock)
+         (vswap! result inc)
+         (.signal cnd)
+         (.unlock lock))
+       (Thread/sleep 1)
+       (.await cnd 10 TimeUnit/MILLISECONDS)
+       (vswap! result * 2)
+       (finally (.unlock lock)))
+  (= 4 @result))")))
+  (is (true? (bb nil "(ns script
+  (:import [java.util.concurrent.locks LockSupport]))
+
+(let [thread (Thread/currentThread)
+      t0     (System/nanoTime)]
+  (future (Thread/sleep 10) (LockSupport/unpark thread))
+  (LockSupport/parkNanos 1e9)
+  (< (- (System/nanoTime) t0) 5e8))"))))
+
+(deftest java-nio-channels-test
+  (is (true? (bb nil "(ns script
+  (:import [java.net InetSocketAddress Socket StandardSocketOptions]
+           [java.nio.channels CancelledKeyException Selector SelectionKey
+            ServerSocketChannel]))
+
+(let [sel  (Selector/open)
+      ch   (doto (ServerSocketChannel/open)
+             (.configureBlocking false)
+             (.setOption StandardSocketOptions/SO_REUSEADDR true)
+             (.bind (InetSocketAddress. 0))
+             (.register sel SelectionKey/OP_ACCEPT))
+      port (.getPort (.getLocalAddress ch))
+      done (atom false)]
+  (future (Thread/sleep 10) (.close (Socket. \"localhost\" port)))
+  (.select sel 1000)
+  (doseq [key (.selectedKeys sel)]
+    (try (when (.isAcceptable key)
+           (.accept (.channel key))
+           (reset! done true))
+         (catch CancelledKeyException _ex)))
+  (.close sel)
+  (.close ch)
+  @done)"))))
+
+(deftest java-util-iterator-test
+  (is (true? (bb nil "(ns script
+  (:import [java.util HashSet Iterator]))
+
+(let [s (HashSet.)]
+  (dotimes [i 10] (.add s i))
+  (let [iter (.iterator s)]
+    (loop []
+      (when (.hasNext iter)
+        (when (even? (.next iter))
+          (.remove iter))
+        (recur))))
+  (= #{1 3 5 7 9} s))"))))
+
+(deftest reify-closeable-test
+  (is (true? (bb nil "(ns script
+  (:import [java.io Closeable]))
+
+(let [v (volatile! false)]
+  (with-open [_ (reify Closeable (close [_] (vreset! v true)))])
+  @v)")))
+  (is (true? (bb nil "(ns script
+  (:import [java.lang AutoCloseable]))
+
+(let [v (volatile! false)]
+  (with-open [_ (reify AutoCloseable (close [_] (vreset! v true)))])
+  @v)"))))

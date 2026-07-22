@@ -13,7 +13,26 @@ A preview of the next release can be installed from
 - [#1979](https://github.com/babashka/babashka/issues/1979): fix `with-redefs` on copied vars (e.g. `org.httpkit.client/get`) incorrectly treated as inlined
 - nREPL: lock output stream to prevent interleaved bencode frames from concurrent writes
 - Add `org.jline.keymap.BindingReader` for reading key bindings in terminal applications
-- Bump babashka.cli to 0.11.72: auto-help and completions for `dispatch`, tree format; `*exit-fn*` rebindable from scripts
+- [#1982](https://github.com/babashka/babashka/issues/1982): Add the following to `:instance-checks` in `babashka.impl.classes/classes`
+  - `clojure.lang.ChunkedCons`
+  - `clojure.lang.APersistentVector$SubVector`
+  - `clojure.lang.ArraySeq`
+  - `clojure.lang.PersistentVector$ChunkedSeq`
+  - `java.util.AbstractCollection`
+  - `java.util.Queue`
+- [#1985](https://github.com/babashka/babashka/issues/1985): Add the following classes to `babashka.impl.classes/classes`
+  - `java.util.concurrent.locks.Condition`
+  - `java.util.concurrent.locks.Lock`
+  - `java.util.concurrent.locks.LockSupport`
+- [#1986](https://github.com/babashka/babashka/issues/1986): Add the following classes to `babashka.impl.classes/classes`
+  - `java.net.StandardSocketOptions`
+  - `java.nio.channels.CancelledKeyException`
+  - `java.nio.channels.Selector`
+  - `java.nio.channels.SelectionKey`
+- [#1987](https://github.com/babashka/babashka/issues/1987): Allow the `remove` method to be used on `Iterator`
+- [#1988](https://github.com/babashka/babashka/issues/1988): Allow `java.io.Closeable` and `java.lang.AutoCloseable` to be reified
+- Bump edamame to `1.6.42`
+- Bump babashka.cli to 0.12.77: auto-help and completions for `dispatch`, tree format; `*exit-fn*` rebindable from scripts
 - Tasks: new `:cli` key on task maps routes invocation through `babashka.cli/dispatch`: parsed options available via `(:opts (current-task))`, automatic `--help`, subcommands via the cli tree format
 
 ## 1.12.218 (2026-04-20)

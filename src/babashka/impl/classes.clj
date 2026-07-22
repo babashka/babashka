@@ -209,7 +209,8 @@
               {:name "soloExecutor"}]}
     java.util.Iterator
     {:methods [{:name "hasNext"}
-               {:name "next"}]}
+               {:name "next"}
+               {:name "remove"}]}
     java.util.TimeZone
     {:methods [{:name "getTimeZone"}
                {:name "setDefault"}]}
@@ -446,6 +447,7 @@
           java.net.ServerSocket
           java.net.Socket
           java.net.SocketException
+          java.net.StandardSocketOptions
           ~@(when has-domain-sockets?
               '[java.net.UnixDomainSocketAddress])
           java.net.UnknownHostException
@@ -465,11 +467,14 @@
                 java.nio.file.OpenOption
                 java.nio.file.StandardOpenOption
                 java.nio.channels.ByteChannel
+                java.nio.channels.CancelledKeyException
                 java.nio.channels.Channels
                 java.nio.channels.FileChannel
                 java.nio.channels.FileChannel$MapMode
                 java.nio.channels.ReadableByteChannel
                 java.nio.channels.WritableByteChannel
+                java.nio.channels.Selector
+                java.nio.channels.SelectionKey
                 java.nio.channels.ServerSocketChannel
                 java.nio.channels.SocketChannel
                 java.nio.charset.Charset
@@ -608,6 +613,9 @@
           java.util.concurrent.Executors
           java.util.concurrent.TimeUnit
           java.util.concurrent.CompletionStage
+          java.util.concurrent.locks.Condition
+          java.util.concurrent.locks.Lock
+          java.util.concurrent.locks.LockSupport
           java.util.concurrent.locks.ReentrantLock
           java.util.concurrent.ThreadLocalRandom
           java.util.concurrent.ConcurrentHashMap
@@ -758,9 +766,12 @@
     :instance-checks [clojure.lang.AFn
                       clojure.lang.AFunction
                       clojure.lang.APersistentSet
+                      clojure.lang.APersistentVector$SubVector
+                      clojure.lang.ArraySeq
                       clojure.lang.AReference
                       clojure.lang.Associative
                       clojure.lang.Atom
+                      clojure.lang.ChunkedCons
                       clojure.lang.Cons
                       clojure.lang.Counted
                       clojure.lang.Cycle
@@ -803,6 +814,7 @@
                       clojure.lang.PersistentTreeMap
                       clojure.lang.PersistentTreeSet
                       clojure.lang.PersistentVector
+                      clojure.lang.PersistentVector$ChunkedSeq
                       clojure.lang.PersistentVector$TransientVector
                       clojure.lang.Range
                       clojure.lang.Ratio
@@ -831,6 +843,8 @@
                       java.util.AbstractMap
                       java.util.AbstractSet
                       java.util.AbstractList
+                      java.util.AbstractCollection
+                      java.util.Queue
                       ~@(when features/xml? ['clojure.data.xml.node.Element
                                               'clojure.data.xml.event.StartElementEvent
                                               'clojure.data.xml.event.EmptyElementEvent
@@ -922,6 +936,10 @@
                                    java.nio.CharBuffer
                                    (instance? java.nio.channels.FileChannel v)
                                    java.nio.channels.FileChannel
+                                   (instance? java.nio.channels.Selector v)
+                                   java.nio.channels.Selector
+                                   (instance? java.nio.channels.SelectionKey v)
+                                   java.nio.channels.SelectionKey
                                    (instance? java.nio.channels.ServerSocketChannel v)
                                    java.nio.channels.ServerSocketChannel
                                    (instance? java.nio.channels.SocketChannel v)
@@ -957,6 +975,8 @@
                                    java.util.concurrent.ScheduledExecutorService
                                    (instance? java.util.concurrent.ExecutorService v)
                                    java.util.concurrent.ExecutorService
+                                   (instance? java.util.concurrent.locks.Condition v)
+                                   java.util.concurrent.locks.Condition
                                    (instance? java.util.Iterator v)
                                    java.util.Iterator
                                    (instance? javax.crypto.SecretKey v)
