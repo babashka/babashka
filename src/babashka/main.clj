@@ -1251,7 +1251,12 @@ Use bb run --help to show this help output.
   [args]
   (let [[_ sub & more] args
         shell (second (drop-while #(not= "--shell" %) more))
-        user-toks (vec (rest (drop-while #(not= "--" %) more)))]
+        ;; powershell can't pass an empty fresh-word token (PS 5.1 drops empty
+        ;; args), so its snippet sends --fresh true instead; treat it as a
+        ;; trailing empty word like babashka.cli's completions-command does
+        fresh? (= "true" (second (drop-while #(not= "--fresh" %) more)))
+        user-toks (vec (rest (drop-while #(not= "--" %) more)))
+        user-toks (cond-> user-toks fresh? (conj ""))]
     {:sub sub
      :shell shell
      :completed (vec (butlast user-toks))

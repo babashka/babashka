@@ -679,6 +679,12 @@ even more stuff here\"
                                "org.babashka.cli/completions" "complete" "--shell" "zsh" "--" "deploy" "lock" "-")]
         (is (str/includes? out "--message"))
         (is (str/includes? out "--environment")))))
+  (testing "--fresh true acts as a trailing empty word (powershell drops empty args)"
+    (test-utils/with-config '{:tasks {deploy {:cli {:cmd {"lock" {:fn babashka.tasks-cli/lock}}}}}}
+      (let [out (test-utils/bb nil "-cp" "test-resources"
+                               "org.babashka.cli/completions" "complete" "--shell" "powershell" "--fresh" "true" "--" "deploy" "lock")]
+        (is (str/includes? out "--message"))
+        (is (str/includes? out "--environment")))))
   (testing "zsh snippet installs for bb"
     (test-utils/with-config '{:tasks {dev {:task (println :x)}}}
       (is (str/includes? (test-utils/bb nil "org.babashka.cli/completions" "snippet" "--shell" "zsh")
