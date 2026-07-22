@@ -17,7 +17,8 @@
 ;; than the :cmd node; called with dispatch's result map.
 (defn lock
   "Lock deployment"
-  {:org.babashka/cli {:spec {:environment {:require true}
+  {:org.babashka/cli {:spec {:environment {:require true
+                                           :validate #{"production" "staging"}}
                              :message {:alias :m :desc "message"}}
                       :args->opts [:environment]}}
   [{:keys [opts]}]

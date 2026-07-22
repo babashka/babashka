@@ -683,8 +683,10 @@ even more stuff here\"
     (test-utils/with-config '{:tasks {deploy {:cli {:cmd {"lock" {:fn babashka.tasks-cli/lock}}}}}}
       (let [out (test-utils/bb nil "-cp" "test-resources"
                                "org.babashka.cli/completions" "complete" "--shell" "powershell" "--fresh" "true" "--" "deploy" "lock")]
-        (is (str/includes? out "--message"))
-        (is (str/includes? out "--environment")))))
+        ;; a fresh word completes the positional's values, not option names
+        (is (str/includes? out "production"))
+        (is (str/includes? out "staging"))
+        (is (not (str/includes? out "--message"))))))
   (testing "zsh snippet installs for bb"
     (test-utils/with-config '{:tasks {dev {:task (println :x)}}}
       (is (str/includes? (test-utils/bb nil "org.babashka.cli/completions" "snippet" "--shell" "zsh")
