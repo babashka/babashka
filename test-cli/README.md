@@ -186,18 +186,15 @@ offers them after a space as well.
 
 ## Trying this with a dev build
 
-Linux binaries are built per commit on CI. Log in to CircleCI with GitHub,
-then download
-[babashka-linux-amd64-static.tar.gz](https://output.circle-artifacts.com/output/job/af771031-ca27-4ba1-9d54-cccdac752156/artifacts/0/release/babashka-1.12.219-SNAPSHOT-linux-amd64-static.tar.gz)
-or
-[babashka-macos-amd64.tar.gz](https://output.circle-artifacts.com/output/job/54aa9355-039c-408a-a33f-414b621f4b2d/artifacts/0/release/babashka-1.12.219-SNAPSHOT-macos-amd64.tar.gz)
-(Intel, runs on Apple Silicon via Rosetta).
+Dev builds of this branch:
 
-Windows, no login needed:
-[babashka-windows-amd64.zip](https://nightly.link/babashka/babashka/actions/runs/29949523082/babashka-1.12.219-SNAPSHOT-windows-amd64.zip).
+- [babashka-linux-amd64-static.tar.gz](https://output.circle-artifacts.com/output/job/af771031-ca27-4ba1-9d54-cccdac752156/artifacts/0/release/babashka-1.12.219-SNAPSHOT-linux-amd64-static.tar.gz)
+- [babashka-macos-amd64.tar.gz](https://output.circle-artifacts.com/output/job/54aa9355-039c-408a-a33f-414b621f4b2d/artifacts/0/release/babashka-1.12.219-SNAPSHOT-macos-amd64.tar.gz)
+  (Intel, runs on Apple Silicon via Rosetta)
+- [babashka-windows-amd64.zip](https://nightly.link/babashka/babashka/actions/runs/29949523082/babashka-1.12.219-SNAPSHOT-windows-amd64.zip)
 
 For other architectures or newer commits:
 
-1. Open the [branch pipeline](https://app.circleci.com/pipelines/github/babashka/babashka?branch=cli-tree-tasks).
+1. Open the [branch pipeline](https://app.circleci.com/pipelines/github/babashka/babashka?branch=cli-tree-tasks) and log in if prompted.
 2. Pick the newest run and the `linux-static` or `linux-aarch64-static` job.
 3. Download `babashka-*-static.tar.gz` from the Artifacts tab.
