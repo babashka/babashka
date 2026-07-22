@@ -666,7 +666,15 @@ even more stuff here\"
         (is (str/includes? out "deploy"))
         (is (not (str/includes? out "-priv")))
         (testing "a task without a literal :doc gets its doc from the fn"
-          (is (str/includes? out "dev\tRuns the dev system"))))))
+          (is (str/includes? out "dev\tRuns the dev system")))
+        (testing "files complete next to task names"
+          (is (str/includes? out "org.babashka.cli/file-completion"))))
+      (testing "a dash-prefixed word completes bb's global options"
+        (let [out (test-utils/bb nil "-cp" "test-resources"
+                                 "org.babashka.cli/completions" "complete" "--shell" "zsh" "--" "--c")]
+          (is (str/includes? out "--config"))
+          (is (str/includes? out "--classpath"))
+          (is (not (str/includes? out "dev")))))))
   (testing "root :cli {:fn ...} option completion delegates to dispatch via fn meta"
     (test-utils/with-config '{:tasks {dev {:cli {:fn babashka.tasks-cli/run-dev}}}}
       (let [out (test-utils/bb nil "-cp" "test-resources"

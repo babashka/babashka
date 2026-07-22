@@ -513,6 +513,32 @@
            (filter symbol?))
           (iterate zip/right loc))))
 
+(def global-opt-completions
+  "bb's global and evaluation options offered when completing a dash-prefixed
+  first word. Curated from print-help; keep in sync."
+  [["--classpath" "Classpath to use. Overrides bb.edn classpath"]
+   ["-cp" "Classpath to use. Overrides bb.edn classpath"]
+   ["--config" "Replace bb.edn with file"]
+   ["--deps-root" "Treat dir as root of relative paths in config"]
+   ["--debug" "Print debug information and internal stacktrace in case of exception"]
+   ["--init" "Load file after any preloads and prior to evaluation/subcommands"]
+   ["--prn" "Print result via clojure.core/prn"]
+   ["--force-exit" "Force exiting even when non-daemon threads are still running"]
+   ["-Sforce" "Force recalculation of the classpath (don't use the cache)"]
+   ["-Sdeps" "Deps data to use as the last deps file to be merged"]
+   ["--file" "Run file"]
+   ["-f" "Run file"]
+   ["--jar" "Run uberjar"]
+   ["--eval" "Evaluate an expression"]
+   ["-e" "Evaluate an expression"]
+   ["--main" "Call the -main function from a namespace or call a fully qualified var"]
+   ["-m" "Call the -main function from a namespace or call a fully qualified var"]
+   ["--exec" "Call the fully qualified var. Args are parsed by babashka CLI"]
+   ["-x" "Call the fully qualified var. Args are parsed by babashka CLI"]
+   ["--version" "Print the current version of babashka"]
+   ["--help" "Print help text"]
+   ["-h" "Print help text"]])
+
 (defn completion-program
   "Builds a SCI program (string) emitting zsh completion candidates for the bb
   task runner, given completion state already resolved by bb's own arg parsing:
@@ -545,17 +571,26 @@
             (format "(babashka.cli/dispatch (babashka.tasks/-resolve-cli-specs requiring-resolve %s) %s {:prog %s :help true})"
                     (pr-str (list 'quote (:cli tm))) (pr-str compl) (pr-str prog))
             "nil"))
-        ;; completing the task name itself
-        (let [lines (->> tasks
-                         (keep (fn [[k v]]
-                                 (let [n (str k)]
-                                   (when (and (symbol? k)
-                                              (not (str/starts-with? n "-"))
-                                              (not (and (map? v) (:private v)))
-                                              (str/starts-with? n partial))
-                                     (let [d (doc-from-task sci-ctx tasks v)]
-                                       (if d (str n "\t" d) n))))))
-                         sort)]
+        ;; completing the task name itself. A dash-prefixed word completes bb's
+        ;; global options; a fresh word completes task names plus files (marker
+        ;; line defers to the shell): `bb file.clj` is as first-class as `bb task`
+        (let [lines (if (str/starts-with? partial "-")
+                      (keep (fn [[flag desc]]
+                              (when (str/starts-with? flag partial)
+                                (str flag "\t" desc)))
+                            global-opt-completions)
+                      (-> (->> tasks
+                               (keep (fn [[k v]]
+                                       (let [n (str k)]
+                                         (when (and (symbol? k)
+                                                    (not (str/starts-with? n "-"))
+                                                    (not (and (map? v) (:private v)))
+                                                    (str/starts-with? n partial))
+                                           (let [d (doc-from-task sci-ctx tasks v)]
+                                             (if d (str n "\t" d) n))))))
+                               sort
+                               vec)
+                          (conj "org.babashka.cli/file-completion")))]
           (format "(do %s)"
                   (str/join " " (map #(format "(println %s)" (pr-str %)) lines)))))
 
