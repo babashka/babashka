@@ -1,0 +1,25 @@
+schemaVersion: "1"
+kind: mixin
+name: clojure-repl
+displayName: Clojure nREPL
+description: Installs Java and Clojure, then starts nREPL.
+
+caps:
+  network:
+    allow:
+      - repo1.maven.org
+      - repo.maven.apache.org
+      - repo.clojars.org
+      - github.com
+      - raw.githubusercontent.com
+
+commands:
+  install:
+    - command: |
+        apt-get update
+        apt-get install -y openjdk-21-jdk curl rlwrap
+        curl -fsSL \
+          https://github.com/clojure/brew-install/releases/latest/download/linux-install.sh \
+          -o /tmp/linux-install.sh
+        chmod +x /tmp/linux-install.sh
+        /tmp/linux-install.sh
