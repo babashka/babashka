@@ -38,15 +38,6 @@
             tasks tasks))
     edn))
 
-(defn- assert-cmd-key
-  "A `:cmd` key must name a command. An evaluated fn-meta tree turns an
-  unquoted symbol key into the function object, which would become a garbage
-  command name and silently misroute."
-  [k task-name]
-  (when-not (or (string? k) (symbol? k) (keyword? k))
-    (throw (ex-info (str "Task " task-name ": command name " (pr-str k) " is not a string, symbol or keyword")
-                    {:babashka/exit 1}))))
-
 (defn- cli-var?
   "A var as it can appear in an evaluated fn-meta `:cli` tree: a sci var in bb,
   a Clojure var on the JVM."
@@ -260,9 +251,7 @@
          wrap (fn wrap [node]
                 (let [node (-> node (wrap-key :fn) (wrap-key :exec-fn))]
                   (if-let [cm (:cmd node)]
-                    (assoc node :cmd (into {} (map (fn [[k v]]
-                                                     (assert-cmd-key k task-name)
-                                                     [k (wrap v)])) cm))
+                    (assoc node :cmd (into {} (map (fn [[k v]] [k (wrap v)])) cm))
                     node)))
          tree (wrap cli-opts)
          tree (if body-fn (assoc tree :fn (with-deps body-fn)) tree)
