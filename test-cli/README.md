@@ -265,9 +265,21 @@ Yes. Every function is invocable with `bb -x tasks/lock prod -m msg`, and a
 script with its own `-main` calling `babashka.cli/dispatch` works as before.
 
 **Two commands share the same options. Do I copy the spec?**
-No. Spec entries are data: `def` the shared part once and reference it from
-both functions' metadata. Options shared by every function in a namespace go
-on the namespace metadata.
+No. Spec entries are data:
+
+```clojure
+(def env-opt {:desc "Environment" :validate #{"dev" "prod"} :require true :positional true})
+
+(defn migrate
+  {:org.babashka/cli {:spec {:env env-opt} :args->opts [:env]}}
+  [{:keys [env]}] ...)
+
+(defn rollback
+  {:org.babashka/cli {:spec {:env env-opt} :args->opts [:env]}}
+  [{:keys [env]}] ...)
+```
+
+Options shared by every function in a namespace go on the namespace metadata.
 
 **One function serves two commands. Which one was invoked?**
 
@@ -294,9 +306,24 @@ map.
 
 **`:fn` or `:exec-fn`?**
 `:exec-fn` calls the function with the parsed options map. `:fn` calls it
-with the whole dispatch result: `{:opts ... :dispatch ... :args ...}`. Mixing
-them up does not error: the function receives the wrong shape and
-destructures nils. When in doubt use `:exec-fn`.
+with the whole dispatch result:
+
+```clojure
+(defn a {:org.babashka/cli {:spec {:env {}}}}
+  [{:keys [env]}] ...)        ;; :exec-fn shape: opts directly
+
+(defn b {:org.babashka/cli {:spec {:env {}}}}
+  [{:keys [opts dispatch]}] ...)  ;; :fn shape: {:opts ... :dispatch ... :args ...}
+```
+
+Mixing them up does not error, the function destructures nils:
+
+```console
+$ bb mixed --env x     # :fn-shaped function wired as :exec-fn
+opts: nil
+```
+
+When in doubt use `:exec-fn`.
 
 **Doesn't this make bb.edn noisy?**
 Keep bb.edn to routing: `dev {:exec-fn tasks/dev}` is the whole entry.
