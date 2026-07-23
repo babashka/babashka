@@ -637,11 +637,11 @@ even more stuff here\"
     (test-utils/with-config '{:tasks {foo {:cli {:fn babashka.tasks-cli/run-dev}}}}
       (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "tasks")
                          "Runs the dev system"))))
-  (testing "task-map :doc and :epilog show in the root --help of a :cli task"
+  (testing "task-map :doc and a :cli :epilog show in the root --help"
     (test-utils/with-config '{:tasks {ci {:doc "Run the CI tests"
-                                          :epilog "Runs everything by default."
                                           :cli {:cmd {"matrix" {:fn babashka.tasks-cli/outdated}}
-                                                :exec-fn babashka.tasks-cli/run-dev}}}}
+                                                :exec-fn babashka.tasks-cli/run-dev
+                                                :epilog "Runs everything by default."}}}}
       (let [help (test-utils/bb nil "-cp" "test-resources" "ci" "--help")]
         (is (str/includes? help "Run the CI tests"))
         (is (str/includes? help "Runs everything by default."))

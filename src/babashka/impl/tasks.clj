@@ -244,13 +244,13 @@
   `--help`/`-h` or a parse error (like cobra's PreRun), rather than by scanning
   raw args for a help token.
 
-  Task-map `:doc` and `:epilog` fold into the tree root so they show in
-  `--help` (explicit keys in the `:cli` map win)."
+  Task-map `:doc` folds into the tree root so `--help` and `bb tasks` agree
+  (an explicit `:doc` in the `:cli` map wins)."
   ([task-map prog] (wrap-cli task-map prog nil))
   ([task-map prog dep-forms]
    (if-let [cli-opts (:cli task-map)]
      (format "(babashka.tasks/-cli-dispatch '%s \"%s\" %s %s requiring-resolve *command-line-args*)"
-             (pr-str (merge (select-keys task-map [:doc :epilog]) cli-opts))
+             (pr-str (merge (select-keys task-map [:doc]) cli-opts))
              (:name task-map)
              (if (:task task-map)
                (format "(fn [{:keys [opts]}] (binding [babashka.tasks/*task* (assoc babashka.tasks/*task* :opts opts)] %s))"
