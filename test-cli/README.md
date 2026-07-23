@@ -339,10 +339,10 @@ computed (e.g. built with `merge`) there is no literal source order: add
 
 Dev builds of this branch:
 
-- [babashka-linux-amd64-static.tar.gz](https://output.circle-artifacts.com/output/job/af771031-ca27-4ba1-9d54-cccdac752156/artifacts/0/release/babashka-1.12.219-SNAPSHOT-linux-amd64-static.tar.gz)
-- [babashka-macos-amd64.tar.gz](https://output.circle-artifacts.com/output/job/54aa9355-039c-408a-a33f-414b621f4b2d/artifacts/0/release/babashka-1.12.219-SNAPSHOT-macos-amd64.tar.gz)
+- [babashka-linux-amd64-static.tar.gz](https://output.circle-artifacts.com/output/job/72c1253f-a145-46e5-aeff-922617cc7bc6/artifacts/0/release/babashka-1.12.219-SNAPSHOT-linux-amd64-static.tar.gz)
+- [babashka-macos-amd64.tar.gz](https://output.circle-artifacts.com/output/job/4d5966c1-09be-4fec-9234-5532e6822b88/artifacts/0/release/babashka-1.12.219-SNAPSHOT-macos-amd64.tar.gz)
   (Intel, runs on Apple Silicon via Rosetta)
-- [babashka-windows-amd64.zip](https://nightly.link/babashka/babashka/actions/runs/29949523082/babashka-1.12.219-SNAPSHOT-windows-amd64.zip)
+- [babashka-windows-amd64.zip](https://nightly.link/babashka/babashka/actions/runs/30008686278/babashka-1.12.219-SNAPSHOT-windows-amd64.zip)
 
 For other architectures or newer commits:
 
