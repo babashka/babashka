@@ -88,6 +88,11 @@ The example covers:
   `:cli` task. Here it rejects unknown options and stray positional arguments
   everywhere. Namespace metadata works too:
   `(ns tasks {:org.babashka/cli {:restrict true}})`, like `bb -x`.
+- A `:cmd` tree may also live in a function's metadata instead of bb.edn.
+  Function metadata is evaluated, so refer to subcommand functions with var
+  literals: `{:cmd {"lock" {:exec-fn #'tasks/lock}}}`. A var contributes its
+  function's spec and docstring. Quoted symbols work too; a bare function
+  value routes but carries no metadata.
 
 Notes:
 
@@ -173,6 +178,23 @@ Error: Invalid value for argument <environment>: qa. Expected one of: dev, prod,
 $ bb deploy lock prod extra -m x
 Error: Unexpected argument: extra
 ```
+
+## bb -x
+
+The same functions are directly invocable with `bb -x`. The same metadata
+drives parsing:
+
+```console
+$ bb -x tasks/lock prod -m "release 42"
+Locking prod - release 42
+
+$ bb -x tasks/dev --port 3000
+Starting dev system on port 3000 (unrestricted)
+```
+
+`bb -x` addresses a single var and does not dispatch a `:cmd` tree: extra
+words after the options are dropped unless the function's metadata sets
+`:restrict-args`.
 
 ## Completion
 
