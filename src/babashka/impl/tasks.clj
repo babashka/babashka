@@ -44,9 +44,7 @@
   command name and silently misroute."
   [k task-name]
   (when-not (or (string? k) (symbol? k) (keyword? k))
-    (throw (ex-info (str "Task " task-name ": command name " k " is not a string or symbol."
-                         " Function metadata is evaluated: quote the map ('{:cmd {lock ...}})"
-                         " or use a string key ({:cmd {\"lock\" ...}}).")
+    (throw (ex-info (str "Task " task-name ": command name " (pr-str k) " is not a string, symbol or keyword")
                     {:babashka/exit 1}))))
 
 (defn- cli-var?

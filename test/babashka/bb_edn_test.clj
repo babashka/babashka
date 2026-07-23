@@ -625,7 +625,7 @@ even more stuff here\"
   (testing "a :cmd key that is not a name is rejected with an explanation"
     (test-utils/with-config '{:tasks {t {:cli {:fn babashka.tasks-cli/trap-root}}}}
       (is (thrown-with-msg?
-           Exception #"is not a string or symbol.*metadata is evaluated"
+           Exception #"is not a string, symbol or keyword"
            (test-utils/bb nil "-cp" "test-resources" "t" "--help")))))
   (testing "task-level :exec-fn is sugar for :cli {:exec-fn ...}"
     (test-utils/with-config '{:tasks {foo {:exec-fn babashka.tasks-cli/deploy-x}}}
