@@ -39,3 +39,11 @@
   {:org.babashka/cli {:cmd {"go" {:exec-fn #'deploy-x}}}}
   [{:keys [opts]}]
   (prn (assoc opts :ran :tree-root)))
+
+;; The unquoted trap: this metadata map is evaluated, so the key tree-root
+;; below is the function value, not a name. bb rejects it with an explanation.
+(defn trap-root
+  "Trap"
+  {:org.babashka/cli {:cmd {tree-root {:exec-fn #'deploy-x}}}}
+  [{:keys [opts]}]
+  (prn opts))
