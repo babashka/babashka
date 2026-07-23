@@ -637,6 +637,16 @@ even more stuff here\"
     (test-utils/with-config '{:tasks {foo {:cli {:fn babashka.tasks-cli/run-dev}}}}
       (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "tasks")
                          "Runs the dev system"))))
+  (testing "task-map :doc and :epilog show in the root --help of a :cli task"
+    (test-utils/with-config '{:tasks {ci {:doc "Run the CI tests"
+                                          :epilog "Runs everything by default."
+                                          :cli {:cmd {"matrix" {:fn babashka.tasks-cli/outdated}}
+                                                :exec-fn babashka.tasks-cli/run-dev}}}}
+      (let [help (test-utils/bb nil "-cp" "test-resources" "ci" "--help")]
+        (is (str/includes? help "Run the CI tests"))
+        (is (str/includes? help "Runs everything by default."))
+        (testing "task :doc wins over the root fn docstring"
+          (is (not (str/includes? help "Runs the dev system")))))))
   (testing "a :cli {:exec-fn ...} node calls the fn with opts only, spec from meta"
     (test-utils/with-config '{:tasks {foo {:cli {:exec-fn babashka.tasks-cli/deploy-x}}}}
       (is (= {:env "prod" :ran :exec-only}
