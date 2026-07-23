@@ -258,6 +258,36 @@ Completion after a space offers subcommands and positional values.
 Completion after a dash offers option names. A task that only accepts options
 offers them after a space as well.
 
+## FAQ
+
+**Can I still run these functions outside the task runner?**
+Yes. Every function is invocable with `bb -x tasks/lock prod -m msg`, and a
+script with its own `-main` calling `babashka.cli/dispatch` works as before.
+
+**Two commands share the same options. Do I copy the spec?**
+No. Spec entries are data: `def` the shared part once and reference it from
+both functions' metadata. Options shared by every function in a namespace go
+on the namespace metadata.
+
+**One function serves two commands. Which one was invoked?**
+A `:fn` function receives `:dispatch` in its argument, e.g. `["lock"]`. An
+`:exec-fn` function reads it from the opts metadata:
+`(-> opts meta :org.babashka/cli :dispatch)`.
+
+**`:fn` or `:exec-fn`?**
+`:exec-fn` calls the function with the parsed options map. `:fn` calls it
+with the whole dispatch result: `{:opts ... :dispatch ... :args ...}`. Mixing
+them up does not error: the function receives the wrong shape and
+destructures nils. When in doubt use `:exec-fn`.
+
+**Doesn't this make bb.edn noisy?**
+Keep bb.edn to routing: `dev {:exec-fn tasks/dev}` is the whole entry.
+Specs, docs and error handling live on the functions.
+
+**Commands render in map order. Is that reliable?**
+Up to 8 entries, yes. Beyond that add `:cmd-order` or use the vector form:
+`:cmd [["lock" {...}] ["unlock" {...}]]`.
+
 ## Trying this with a dev build
 
 Dev builds of this branch:
