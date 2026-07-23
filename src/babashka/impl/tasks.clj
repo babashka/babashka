@@ -178,9 +178,10 @@
   "Runs babashka.cli/dispatch over a task's `:cli` tree. `body-fn` (the task
   body wrapped as a fn, or nil when the task has no body) becomes the root
   `:fn`. A node's `:fn` symbol (root or subcommand) is resolved via `resolve-fn`
-  (the script's `requiring-resolve`), and the resolved var's `:org.babashka/cli`
-  metadata (`:spec`, `:args->opts`, `:restrict`, `:epilog`, ...) is merged into
-  the node - so the spec and help live with the fn. Explicit node keys win. The
+  (the script's `requiring-resolve`), and the `:org.babashka/cli` metadata of
+  its namespace and of the var (`:spec`, `:args->opts`, `:restrict`, `:epilog`,
+  ...) merges into the node, like `bb -x` - so the spec and help live with the
+  fn. Var metadata wins over ns metadata; explicit node keys win over both. The
   fn is called with dispatch's result map (`{:opts ... :dispatch ... :args ...}`),
   like any babashka.cli/dispatch `:fn`.
 
@@ -193,16 +194,18 @@
    (-cli-dispatch cli-opts task-name body-fn nil resolve-fn args))
   ([cli-opts task-name body-fn deps-fn resolve-fn args]
    (let [with-deps (fn [f] (fn [m] (when deps-fn (deps-fn)) (f m)))
-         ;; resolve a :fn / :exec-fn symbol, merge the var's :org.babashka/cli
-         ;; spec and docstring (node keys win), and gate :depends on the fn
-         ;; being called
+         ;; resolve a :fn / :exec-fn symbol, merge the ns and var
+         ;; :org.babashka/cli metadata and the docstring (like bb -x; node keys
+         ;; win), and gate :depends on the fn being called
          wrap-key (fn [node k]
                     (if-let [fv (k node)]
                       (let [the-var (if (symbol? fv) (resolve-fn fv) fv)
                             m (when (symbol? fv) (meta the-var))]
-                        (-> (merge (:org.babashka/cli m)
-                                   (when-let [d (:doc m)] {:doc d})
-                                   node)
+                        (-> (babashka.cli/merge-opts
+                             (:org.babashka/cli (meta (:ns m)))
+                             (:org.babashka/cli m)
+                             (when-let [d (:doc m)] {:doc d})
+                             node)
                             (assoc k (with-deps (fn [m] (the-var m))))))
                       node))
          wrap (fn wrap [node]
@@ -211,8 +214,12 @@
                     (assoc node :cmd (into {} (map (fn [[k v]] [k (wrap v)])) cm))
                     node)))
          tree (wrap cli-opts)
-         tree (if body-fn (assoc tree :fn (with-deps body-fn)) tree)]
-     (babashka.cli/dispatch tree args {:help true :prog (str "bb " task-name)}))))
+         tree (if body-fn (assoc tree :fn (with-deps body-fn)) tree)
+         ;; a `:cli` entry in the :tasks map (like :requires/:init) provides
+         ;; defaults for every :cli task, e.g. {:restrict true}. dispatch
+         ;; merges its opts into every tree node; node keys win.
+         defaults (:cli (:tasks @bb-edn))]
+     (babashka.cli/dispatch tree args (merge defaults {:help true :prog (str "bb " task-name)})))))
 
 (defn -resolve-cli-specs
   "Walk a `:cli` tree, merging each node fn's `:org.babashka/cli` metadata and
@@ -225,9 +232,11 @@
   (let [fv (or (:fn node) (:exec-fn node))
         node (if (symbol? fv)
                (let [m (meta (resolve-fn fv))]
-                 (merge (:org.babashka/cli m)
-                        (when-let [d (:doc m)] {:doc d})
-                        node))
+                 (babashka.cli/merge-opts
+                  (:org.babashka/cli (meta (:ns m)))
+                  (:org.babashka/cli m)
+                  (when-let [d (:doc m)] {:doc d})
+                  node))
                node)]
     (if-let [cm (:cmd node)]
       (assoc node :cmd (into {} (map (fn [[k v]] [k (-resolve-cli-specs resolve-fn v)])) cm))
@@ -578,8 +587,11 @@
               tm (get tasks (symbol run))
               prog (str "bb " run)]
           (if (:cli tm)
-            (format "(babashka.cli/dispatch (babashka.tasks/-resolve-cli-specs requiring-resolve %s) %s {:prog %s :help true})"
-                    (pr-str (list 'quote (:cli tm))) (pr-str compl) (pr-str prog))
+            (format "(babashka.cli/dispatch (babashka.tasks/-resolve-cli-specs requiring-resolve %s) %s %s)"
+                    (pr-str (list 'quote (:cli tm))) (pr-str compl)
+                    ;; same defaults as -cli-dispatch, so e.g. a shared :spec
+                    ;; completes here too
+                    (pr-str (merge (:cli tasks) {:prog prog :help true})))
             "nil"))
         ;; completing the task name itself. A dash-prefixed word completes bb's
         ;; global options; a fresh word completes task names plus files (marker

@@ -603,6 +603,39 @@ even more stuff here\"
         (is (str/includes? help "--message"))
         (testing "the fn's docstring shows as the command doc"
           (is (str/includes? help "Lock deployment"))))))
+  (testing "ns-level :org.babashka/cli metadata merges under fn metadata (like bb -x)"
+    (test-utils/with-config '{:tasks {go {:cli {:fn babashka.tasks-cli-ns/go}}}}
+      (testing "ns spec and fn spec both parse"
+        (is (= {:port 1 :verbose true :ran :go}
+               (bb "-cp" "test-resources" "go" "--port" "1" "--verbose"))))
+      (testing "ns-level :restrict applies"
+        (is (= {:exit 1 :cause :restrict}
+               (bb "-cp" "test-resources" "-e"
+                   "(require '[babashka.cli :as cli])
+                    (binding [cli/*exit-fn* (fn [m] (prn (select-keys m [:exit :cause])))
+                              *command-line-args* [\"--nope\"]]
+                      (babashka.tasks/run (quote go)))"))))))
+  (testing "a :cli entry in the :tasks map provides dispatch defaults"
+    (test-utils/with-config '{:tasks {:cli {:restrict true :restrict-args true}
+                                      foo {:cli {:fn babashka.tasks-cli/run-dev}}
+                                      dep {:cli {:exec-fn babashka.tasks-cli/deploy-x}}}}
+      (testing "declared options still work"
+        (is (= {:port 8080 :ran :run-dev}
+               (bb "-cp" "test-resources" "foo" "--port" "8080"))))
+      (testing "an unknown option errors via the default :restrict"
+        (is (= {:exit 1 :cause :restrict}
+               (bb "-cp" "test-resources" "-e"
+                   "(require '[babashka.cli :as cli])
+                    (binding [cli/*exit-fn* (fn [m] (prn (select-keys m [:exit :cause])))
+                              *command-line-args* [\"--nope\"]]
+                      (babashka.tasks/run (quote foo)))"))))
+      (testing "a stray positional errors via the default :restrict-args"
+        (is (= {:exit 1 :cause :restrict-args}
+               (bb "-cp" "test-resources" "-e"
+                   "(require '[babashka.cli :as cli])
+                    (binding [cli/*exit-fn* (fn [m] (prn (select-keys m [:exit :cause])))
+                              *command-line-args* [\"prod\" \"extra\"]]
+                      (babashka.tasks/run (quote dep)))"))))))
   (testing "dispatch errors reach a rebound *exit-fn*"
     (test-utils/with-config '{:tasks {deps {:cli {:cmd {"x" {:fn clojure.core/prn}}}}}}
       (is (= {:exit 1 :cause :input-exhausted}
