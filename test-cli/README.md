@@ -213,6 +213,39 @@ Coverage follows the functions: errors at a level whose function carries the
 metadata use the handler. The `deploy` root is a plain `:task` body, so
 root-level errors such as an unknown command keep the default output.
 
+An `:error-fn` can also print the full usage help after the error, instead of
+the default one-line tip. The handler receives `:tree`, `:dispatch` and
+`:prog`, the inputs of `babashka.cli/format-command-help`, the renderer
+`--help` uses:
+
+```clojure
+(defn verbose-error
+  "On usage error, print the message and the full usage help."
+  [{:keys [msg tree dispatch prog]}]
+  (binding [*out* *err*]
+    (println (str "Error: " msg))
+    (println)
+    (println (cli/format-command-help {:table tree :cmds dispatch :prog prog})))
+  (System/exit 1))
+```
+
+```console
+$ bb lock bogus-env -m hi
+Error: Invalid value for option --environment: bogus-env. Expected one of: dev, prod, staging
+
+Usage: bb lock [options] <environment>
+
+Locks deployments
+
+Options:
+      --environment  Target environment (required)
+  -m, --message      Lock message (required)
+  -h, --help         Show this help
+```
+
+`:dispatch` is the command path, so the help is the failing command's own, not
+the root's.
+
 ## bb -x
 
 The same functions are directly invocable with `bb -x`. The same metadata
