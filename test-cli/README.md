@@ -330,8 +330,10 @@ Keep bb.edn to routing: `dev {:exec-fn tasks/dev}` is the whole entry.
 Specs, docs and error handling live on the functions.
 
 **Commands render in map order. Is that reliable?**
-Up to 8 entries, yes. Beyond that add `:cmd-order` or use the vector form:
-`:cmd [["lock" {...}] ["unlock" {...}]]`.
+Yes. Clojure loses map order beyond 8 entries, but bb recovers the written
+order from the bb.edn text or the function's source. When the metadata map is
+computed (e.g. built with `merge`) there is no literal source order: add
+`:cmd-order` or use the vector form `:cmd [["lock" {...}] ["unlock" {...}]]`.
 
 ## Trying this with a dev build
 
