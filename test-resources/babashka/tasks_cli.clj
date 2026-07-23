@@ -31,3 +31,11 @@
                       :args->opts [:env]}}
   [opts]
   (prn (assoc opts :ran :exec-only)))
+
+;; :cmd tree on fn metadata; a var literal needs no quoting and carries the
+;; spec and docstring of its fn.
+(defn tree-root
+  "Tree root"
+  {:org.babashka/cli {:cmd {"go" {:exec-fn #'deploy-x}}}}
+  [{:keys [opts]}]
+  (prn (assoc opts :ran :tree-root)))

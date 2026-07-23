@@ -18,6 +18,12 @@
 (defn -chan? [x]
   (instance? ManyToManyChannel x))
 
+(defn- cli-var?
+  "A var as it can appear in an evaluated fn-meta `:cli` tree: a sci var in bb,
+  a Clojure var on the JVM."
+  [x]
+  (or (var? x) (instance? sci.lang.Var x)))
+
 (def sci-ns (sci/create-ns 'babashka.tasks nil))
 (def default-log-level :error)
 (def log-level (sci/new-dynamic-var '*-log-level* default-log-level {:ns sci-ns}))
@@ -200,7 +206,9 @@
          wrap-key (fn [node k]
                     (if-let [fv (k node)]
                       (let [the-var (if (symbol? fv) (resolve-fn fv) fv)
-                            m (when (symbol? fv) (meta the-var))]
+                            ;; a symbol resolves to a var; a var literal (e.g.
+                            ;; in an evaluated fn-meta :cmd tree) is one already
+                            m (when (or (symbol? fv) (cli-var? fv)) (meta the-var))]
                         (-> (babashka.cli/merge-opts
                              (:org.babashka/cli (meta (:ns m)))
                              (:org.babashka/cli m)
@@ -230,8 +238,8 @@
   merge in -cli-dispatch's wrap."
   [resolve-fn node]
   (let [fv (or (:fn node) (:exec-fn node))
-        node (if (symbol? fv)
-               (let [m (meta (resolve-fn fv))]
+        node (if (or (symbol? fv) (cli-var? fv))
+               (let [m (meta (if (symbol? fv) (resolve-fn fv) fv))]
                  (babashka.cli/merge-opts
                   (:org.babashka/cli (meta (:ns m)))
                   (:org.babashka/cli m)
