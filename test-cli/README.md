@@ -96,7 +96,9 @@ The example covers:
   function's `:org.babashka/cli` metadata and the docstring becomes the task
   doc.
 - `deploy` is a command tree. Each leaf is an `:exec-fn` with its spec and doc
-  on the function. The root `:task` runs on bare `bb deploy`.
+  on the function. The root `:task` runs on bare `bb deploy`. When a task has
+  both a `:task` body and a root `:exec-fn` in `:cli`, the `:exec-fn` takes
+  priority.
 - The `:cli` entry at the top of `:tasks` sets dispatch defaults for every
   `:cli` task. Here it rejects unknown options and stray positional arguments
   everywhere. Namespace metadata works too:
