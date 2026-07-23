@@ -13,7 +13,10 @@ Two files. `bb.edn`:
 ```clojure
 {:paths ["src"]
  :tasks
- {-setup {:task (println "Running setup (a dependency task)")}
+ {;; Defaults for every :cli task below. Function metadata and :cli keys win.
+  :cli {:restrict true :restrict-args true}
+
+  -setup {:task (println "Running setup (a dependency task)")}
 
   ;; The body reads options declared here with (:opts (current-task)).
   clean {:doc "Removes build artifacts"
@@ -28,7 +31,8 @@ Two files. `bb.edn`:
   ;; Subcommands dispatch to functions and the root :task runs on bare bb deploy.
   deploy {:doc "Deploys the app"
           :cli {:cmd {lock   {:exec-fn tasks/lock}
-                      unlock {:exec-fn tasks/unlock}}}
+                      unlock {:exec-fn tasks/unlock}}
+                :epilog "Deployments are locked during maintenance windows."}
           :task (println "Deploying!")}}}
 ```
 
@@ -80,6 +84,10 @@ The example covers:
   doc.
 - `deploy` is a command tree. Each leaf is an `:exec-fn` with its spec and doc
   on the function. The root `:task` runs on bare `bb deploy`.
+- The `:cli` entry at the top of `:tasks` sets dispatch defaults for every
+  `:cli` task. Here it rejects unknown options and stray positional arguments
+  everywhere. Namespace metadata works too:
+  `(ns tasks {:org.babashka/cli {:restrict true}})`, like `bb -x`.
 
 Notes:
 
@@ -119,11 +127,16 @@ $ bb dev -s --port 3000
 Running setup (a dependency task)
 Starting dev system on port 3000 (sandboxed)
 
+$ bb dev --nope
+Error: Unknown option: --nope
+
 $ bb clean --dry-run
 Would remove target/
 
 $ bb deploy --help
 Usage: bb deploy [options] <command>
+
+Deploys the app
 
 Commands:
   lock   Locks deployments
@@ -133,6 +146,8 @@ Options:
   -h, --help  Show this help
 
 Run "bb deploy <command> --help" for more information on a command.
+
+Deployments are locked during maintenance windows.
 
 $ bb deploy
 Deploying!
@@ -154,6 +169,9 @@ Locking prod - release 42
 
 $ bb deploy lock qa -m x
 Error: Invalid value for argument <environment>: qa. Expected one of: dev, prod, staging
+
+$ bb deploy lock prod extra -m x
+Error: Unexpected argument: extra
 ```
 
 ## Completion

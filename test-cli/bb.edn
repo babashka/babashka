@@ -1,6 +1,9 @@
 {:paths ["src"]
  :tasks
- {-setup {:task (println "Running setup (a dependency task)")}
+ {;; Defaults for every :cli task below. Function metadata and :cli keys win.
+  :cli {:restrict true :restrict-args true}
+
+  -setup {:task (println "Running setup (a dependency task)")}
 
   ;; The body reads options declared here with (:opts (current-task)).
   clean {:doc "Removes build artifacts"
@@ -15,5 +18,6 @@
   ;; Subcommands dispatch to functions and the root :task runs on bare bb deploy.
   deploy {:doc "Deploys the app"
           :cli {:cmd {lock   {:exec-fn tasks/lock}
-                      unlock {:exec-fn tasks/unlock}}}
+                      unlock {:exec-fn tasks/unlock}}
+                :epilog "Deployments are locked during maintenance windows."}
           :task (println "Deploying!")}}}
