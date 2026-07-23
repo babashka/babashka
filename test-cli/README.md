@@ -270,9 +270,27 @@ both functions' metadata. Options shared by every function in a namespace go
 on the namespace metadata.
 
 **One function serves two commands. Which one was invoked?**
-A `:fn` function receives `:dispatch` in its argument, e.g. `["lock"]`. An
-`:exec-fn` function reads it from the opts metadata:
-`(-> opts meta :org.babashka/cli :dispatch)`.
+
+```clojure
+db {:cli {:cmd {up   {:exec-fn tasks/migrate}
+                down {:exec-fn tasks/migrate}}}}
+```
+
+```clojure
+(defn migrate [opts]
+  (let [[cmd] (-> opts meta :org.babashka/cli :dispatch)]
+    (println "Migrating" cmd)))
+```
+
+```console
+$ bb db up
+Migrating up
+$ bb db down
+Migrating down
+```
+
+A `:fn` function receives the same information as `:dispatch` in its argument
+map.
 
 **`:fn` or `:exec-fn`?**
 `:exec-fn` calls the function with the parsed options map. `:fn` calls it
