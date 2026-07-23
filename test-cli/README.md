@@ -383,6 +383,34 @@ t2 Docstring from the fn
 t3 Task :doc present
 ```
 
+**How do I write a longer description in bb.edn?**
+`:doc` accepts a vector of lines, joined with newlines. edn has no `str/join`,
+and a multi-line string forces continuation lines to column 0:
+
+```clojure
+{:tasks {migrate {:doc ["Migrates the database."
+                        ""
+                        "Runs pending migrations in order."]
+                  :cli {:exec-fn tasks/migrate}}}}
+```
+
+```console
+$ bb tasks
+The following tasks are available:
+
+migrate Migrates the database.
+
+$ bb migrate --help
+Usage: bb migrate [options]
+
+Migrates the database.
+
+Runs pending migrations in order.
+...
+```
+
+`:doc` and `:epilog` on `:cmd` nodes take vectors too.
+
 **Commands render in map order. Is that reliable?**
 Yes. Clojure loses map order beyond 8 entries, but bb recovers the written
 order from the bb.edn text or the function's source. When the metadata map is
