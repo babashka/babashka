@@ -362,6 +362,27 @@ When in doubt use `:exec-fn`.
 Keep bb.edn to routing: `dev {:exec-fn tasks/dev}` is the whole entry.
 Specs, docs and error handling live on the functions.
 
+**Where does the task description come from?**
+Task `:doc` first, then the exec-fn's docstring. Both `bb tasks` and `--help`
+use the same fallback:
+
+```clojure
+{:tasks {t1 {:doc "Task :doc, fn has none"
+             :cli {:exec-fn df/nodoc}}
+         t2 {:cli {:exec-fn df/withdoc}}
+         t3 {:doc "Task :doc present"
+             :cli {:exec-fn df/withdoc}}}}   ;; withdoc: "Docstring from the fn"
+```
+
+```console
+$ bb tasks
+The following tasks are available:
+
+t1 Task :doc, fn has none
+t2 Docstring from the fn
+t3 Task :doc present
+```
+
 **Commands render in map order. Is that reliable?**
 Yes. Clojure loses map order beyond 8 entries, but bb recovers the written
 order from the bb.edn text or the function's source. When the metadata map is
