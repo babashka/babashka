@@ -81,16 +81,19 @@
 
 (defn- start! [nm root port aliases]
   (let [;; nrepl writes .nrepl-port itself but never cleans it up, so remove it
-        ;; when the REPL exits, whether it was killed or died
-        cmd (format (str "cd \"%s\" && (setsid sh -c '"
+        ;; when the REPL exits, whether it was killed or died. `sbx exec -d`
+        ;; keeps the process alive detached: since sbx v0.35 a container stops
+        ;; when its last attached exec session ends, which kills a setsid\'d
+        ;; REPL along with it
+        cmd (format (str "cd \"%s\" && "
                          "clojure -Sdeps \"{:deps {nrepl/nrepl {:mvn/version \\\"1.3.1\\\"}} "
                          ":aliases {:clear-main {:main-opts []} "
                          ":repl-clojure {:extra-deps {org.clojure/clojure {:mvn/version \\\"1.12.1\\\"}}}}}\" "
                          "-M\"%s\" -m nrepl.cmdline "
-                         "--bind 0.0.0.0 --port %s; rm -f \"%s/.nrepl-port\""
-                         "' > \"/tmp/nrepl-%s.log\" 2>&1 < /dev/null &)")
-                    root aliases port root (fs/file-name root))]
-    (p/shell "sbx" "exec" nm "--" "sh" "-c" cmd)))
+                         "--bind 0.0.0.0 --port %s > \"/tmp/nrepl-%s.log\" 2>&1; "
+                         "rm -f \"%s/.nrepl-port\"")
+                    root aliases port (fs/file-name root) root)]
+    (p/shell "sbx" "exec" "-d" nm "--" "sh" "-c" cmd)))
 
 (defn -main [& args]
   (let [{:keys [root port aliases]} (cli/parse-opts args {:spec cli-spec})
