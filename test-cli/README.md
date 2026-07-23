@@ -41,7 +41,7 @@ Two files. `bb.edn`:
 ```clojure
 (ns tasks)
 
-(def environments #{"dev" "staging" "prod"})
+(def environments ["dev" "staging" "prod"])
 
 (defn red-error
   "Prints the error in red and exits, replacing the default error output."
@@ -68,7 +68,7 @@ Two files. `bb.edn`:
   {:org.babashka/cli
    (merge cli-base
           {:spec {:environment {:desc "Target environment"
-                                :validate environments
+                                :enum environments
                                 :require true
                                 :positional true}
                   :message {:alias :m :desc "Lock message" :require true}}
@@ -80,7 +80,7 @@ Two files. `bb.edn`:
   "Unlocks deployments"
   {:org.babashka/cli
    {:spec {:environment {:desc "Target environment"
-                         :validate environments
+                         :enum environments
                          :require true
                          :positional true}}
     :args->opts [:environment]}}
@@ -115,8 +115,9 @@ Notes:
   parse errors. Parsed options do not flow into dependency tasks.
 - An option marked `:positional true` is listed under `Arguments:` and cannot
   be passed as a flag.
-- A set-valued `:validate` supplies validation choices, error text, and
-  completion candidates.
+- `:enum` lists the allowed values in order: it derives validation and supplies
+  the help choices, error text, and completion candidates. A set-valued
+  `:validate` does the same, sorted.
 - Tasks without `:cli` still receive arguments through `*command-line-args*`.
 
 ## Session
@@ -178,7 +179,7 @@ Usage: bb deploy lock [options] <environment>
 Locks deployments
 
 Arguments:
-  <environment>  Target environment
+  <environment>  Target environment (one of: dev, staging, prod)
 
 Options:
   -m, --message  Lock message (required)
@@ -188,7 +189,7 @@ $ bb deploy lock prod -m "release 42"
 Locking prod - release 42
 
 $ bb deploy lock qa -m x
-Error: Invalid value for argument <environment>: qa. Expected one of: dev, prod, staging
+Error: Invalid value for argument <environment>: qa. Expected one of: dev, staging, prod
 
 $ bb deploy lock prod extra -m x
 Error: Unexpected argument: extra
@@ -206,7 +207,7 @@ $ bb dev --nope
 Error: Unknown option: --nope        <- red
 
 $ bb deploy lock qa -m x
-Error: Invalid value for argument <environment>: qa. Expected one of: dev, prod, staging        <- red
+Error: Invalid value for argument <environment>: qa. Expected one of: dev, staging, prod        <- red
 ```
 
 Coverage follows the functions: errors at a level whose function carries the
@@ -231,7 +232,7 @@ the default one-line tip. The handler receives `:tree`, `:dispatch` and
 
 ```console
 $ bb lock bogus-env -m hi
-Error: Invalid value for option --environment: bogus-env. Expected one of: dev, prod, staging
+Error: Invalid value for option --environment: bogus-env. Expected one of: dev, staging, prod
 
 Usage: bb lock [options] <environment>
 

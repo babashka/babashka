@@ -1,6 +1,6 @@
 (ns tasks)
 
-(def environments #{"dev" "staging" "prod"})
+(def environments ["dev" "staging" "prod"])
 
 (defn red-error
   "Prints the error in red and exits, replacing the default error output."
@@ -27,7 +27,7 @@
   {:org.babashka/cli
    (merge cli-base
           {:spec {:environment {:desc "Target environment"
-                                :validate environments
+                                :enum environments
                                 :require true
                                 :positional true}
                   :message {:alias :m :desc "Lock message" :require true}}
@@ -39,7 +39,7 @@
   "Unlocks deployments"
   {:org.babashka/cli
    {:spec {:environment {:desc "Target environment"
-                         :validate environments
+                         :enum environments
                          :require true
                          :positional true}}
     :args->opts [:environment]}}
