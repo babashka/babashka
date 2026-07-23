@@ -43,23 +43,36 @@ Two files. `bb.edn`:
 
 (def environments #{"dev" "staging" "prod"})
 
+(defn red-error
+  "Prints the error in red and exits, replacing the default error output."
+  [{:keys [msg]}]
+  (binding [*out* *err*]
+    (println (str "\u001b[31mError: " msg "\u001b[0m")))
+  (System/exit 1))
+
+;; Shared cli defaults for every fn in this ns: fn attr-maps are evaluated, so
+;; each fn merges this in. bb.edn cannot hold an :error-fn (it is data).
+(def cli-base {:error-fn red-error})
+
 (defn dev
   "Starts the dev system"
   {:org.babashka/cli
-   {:spec {:port {:coerce :int :default 8080 :desc "HTTP port"}
-           :sandbox {:coerce :boolean :alias :s :desc "Run sandboxed"}}}}
+   (merge cli-base
+          {:spec {:port {:coerce :int :default 8080 :desc "HTTP port"}
+                  :sandbox {:coerce :boolean :alias :s :desc "Run sandboxed"}}})}
   [{:keys [port sandbox]}]
   (println "Starting dev system on port" port (if sandbox "(sandboxed)" "(unrestricted)")))
 
 (defn lock
   "Locks deployments"
   {:org.babashka/cli
-   {:spec {:environment {:desc "Target environment"
-                         :validate environments
-                         :require true
-                         :positional true}
-           :message {:alias :m :desc "Lock message" :require true}}
-    :args->opts [:environment]}}
+   (merge cli-base
+          {:spec {:environment {:desc "Target environment"
+                                :validate environments
+                                :require true
+                                :positional true}
+                  :message {:alias :m :desc "Lock message" :require true}}
+           :args->opts [:environment]})}
   [{:keys [environment message]}]
   (println "Locking" environment "-" message))
 
@@ -178,6 +191,25 @@ Error: Invalid value for argument <environment>: qa. Expected one of: dev, prod,
 $ bb deploy lock prod extra -m x
 Error: Unexpected argument: extra
 ```
+
+## Custom error output
+
+`red-error` in `src/tasks.clj` replaces the default error output with an
+ANSI-red line. An `:error-fn` goes in function metadata; define it once and
+merge it into each function's cli map (`cli-base` above). bb.edn cannot hold
+an `:error-fn`: bb.edn is data and bb rejects the key there with an error.
+
+```console
+$ bb dev --nope
+Error: Unknown option: --nope        <- red
+
+$ bb deploy lock qa -m x
+Error: Invalid value for argument <environment>: qa. Expected one of: dev, prod, staging        <- red
+```
+
+Coverage follows the functions: errors at a level whose function carries the
+metadata use the handler. The `deploy` root is a plain `:task` body, so
+root-level errors such as an unknown command keep the default output.
 
 ## bb -x
 
