@@ -627,6 +627,23 @@ even more stuff here\"
       (is (thrown-with-msg?
            Exception #"Command name .* is not a string, symbol or keyword"
            (test-utils/bb nil "-cp" "test-resources" "t" "--help")))))
+  (testing "source order of a large :cmd map survives (bb.edn tree)"
+    ;; a literal string: an evaluated 11-entry map would already be hash-ordered
+    (test-utils/with-config (str "{:tasks {big {:cli {:cmd {"
+                                 "kilo {:fn clojure.core/prn} juliet {:fn clojure.core/prn} "
+                                 "india {:fn clojure.core/prn} hotel {:fn clojure.core/prn} "
+                                 "golf {:fn clojure.core/prn} foxtrot {:fn clojure.core/prn} "
+                                 "echo {:fn clojure.core/prn} delta {:fn clojure.core/prn} "
+                                 "charlie {:fn clojure.core/prn} bravo {:fn clojure.core/prn} "
+                                 "alpha {:fn clojure.core/prn}}}}}}")
+      (let [help (test-utils/bb nil "big" "--help")
+            names ["kilo" "juliet" "india" "hotel" "golf" "foxtrot" "echo" "delta" "charlie" "bravo" "alpha"]]
+        (is (apply < (map #(str/index-of help %) names))))))
+  (testing "source order of a large :cmd map survives (fn metadata tree)"
+    (test-utils/with-config '{:tasks {big {:cli {:fn babashka.tasks-cli-big/root}}}}
+      (let [help (test-utils/bb nil "-cp" "test-resources" "big" "--help")
+            names ["kilo" "juliet" "india" "hotel" "golf" "foxtrot" "echo" "delta" "charlie" "bravo" "alpha"]]
+        (is (apply < (map #(str/index-of help %) names))))))
   (testing "task-level :exec-fn is sugar for :cli {:exec-fn ...}"
     (test-utils/with-config '{:tasks {foo {:exec-fn babashka.tasks-cli/deploy-x}}}
       (is (= {:env "prod" :ran :exec-only}

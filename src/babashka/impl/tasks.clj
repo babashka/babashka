@@ -3,6 +3,7 @@
    [babashka.cli]
    [babashka.deps :as deps]
    [babashka.impl.cli :as cli]
+   [babashka.impl.clojure.repl :as bb-repl]
    [babashka.impl.common :refer [bb-edn ctx debug]]
    [babashka.impl.process :as pp]
    [babashka.process :as p]
@@ -210,6 +211,109 @@
                     {:babashka/exit 1})))
   (run! #(assert-no-edn-error-fn % task-name) (vals (:cmd node))))
 
+(defn- zmap-val
+  "Value node of key `k` in the map node at `loc`, or nil."
+  [loc k]
+  (when (and loc (= :map (zip/tag loc)))
+    (some-> (zip/down loc) (zip/find-value k) zip/right)))
+
+(defn- zunquote [loc]
+  (if (and loc (= :quote (zip/tag loc))) (zip/down loc) loc))
+
+(defn- zmap-keys
+  "Keys of the map node at `loc`, in source order."
+  [loc]
+  (when (and loc (= :map (zip/tag loc)))
+    (into []
+          (comp (take-while some?)
+                (take-nth 2)
+                (filter zip/sexpr-able?)
+                (map zip/sexpr))
+          (iterate zip/right (zip/down loc)))))
+
+(defn- cmd-orders
+  "Nested `:cmd` key order under the cli map node at `loc`:
+  `{:order [...] :children {name orders}}`, or nil."
+  [loc]
+  (when-let [cmd-loc (zunquote (zmap-val loc :cmd))]
+    (when (= :map (zip/tag cmd-loc))
+      {:order (zmap-keys cmd-loc)
+       :children (into {}
+                       (keep (fn [k]
+                               (when-let [child (zunquote (zmap-val cmd-loc k))]
+                                 (when-let [o (cmd-orders child)]
+                                   [k o]))))
+                       (zmap-keys cmd-loc))})))
+
+(defn- with-cmd-order
+  "Attach recovered `orders` as `:cmd-order` on `node` and its children.
+  An explicit `:cmd-order` wins. Maps of 8 or fewer keys keep their own order.
+  A recovered order that is not a permutation of the actual keys is dropped, so
+  a wrong recovery can at most reorder, never lose or invent a command."
+  [node orders]
+  (if (and orders (map? node) (:cmd node))
+    (let [node (if (and (> (count (:cmd node)) 8)
+                        (not (:cmd-order node))
+                        (= (set (:order orders)) (set (keys (:cmd node)))))
+                 (assoc node :cmd-order (:order orders))
+                 node)]
+      (update node :cmd
+              (fn [cm]
+                (into {}
+                      (map (fn [[k v]] [k (with-cmd-order v (get-in orders [:children k]))]))
+                      cm))))
+    node))
+
+(defn- var-cli-orders
+  "Nested `:cmd` key order recovered from the source of the var behind `m`
+  (its meta), or nil when the source or a literal map is not found."
+  [m]
+  (try
+    (when-let [file (:file m)]
+      (when-let [line (:line m)]
+        (when-let [source (bb-repl/find-source file)]
+          (let [from-line (str/join "
+" (drop (dec ^long line) (str/split source #"
+")))
+                [_ defn-str] (sci/parse-next+string (ctx) (sci/source-reader from-line))
+                zloc (zip/of-string (str defn-str))
+                meta-loc (loop [loc zloc]
+                           (when loc
+                             (if (and (= :map (zip/tag loc))
+                                      (some #{:org.babashka/cli} (zmap-keys loc)))
+                               loc
+                               (recur (zip/find-next loc zip/next #(= :map (zip/tag %)))))))
+                cli-loc (zunquote (zmap-val meta-loc :org.babashka/cli))]
+            (cmd-orders cli-loc)))))
+    (catch Exception _ nil)))
+
+(defn attach-cmd-orders
+  "Attach `:cmd-order` from the literal key order in the raw bb.edn text to
+  every task `:cli` tree with more than 8 subcommands. An explicit
+  `:cmd-order` wins."
+  [edn]
+  (or (when-let [raw (:raw edn)]
+        (try
+          (let [root (zip/down (zip/edn (some #(when (= :map (node/tag %)) %)
+                                              (:children (parser/parse-string-all raw)))))
+                tasks-loc (some-> root (zip/find-value :tasks) zip/right)]
+            (when tasks-loc
+              (assoc edn :tasks
+                     (reduce-kv
+                      (fn [acc k v]
+                        (if-let [orders (and (symbol? k) (map? v) (:cmd (:cli v))
+                                             (some-> (zip/down tasks-loc)
+                                                     (zip/find-value k)
+                                                     zip/right
+                                                     (zmap-val :cli)
+                                                     zunquote
+                                                     cmd-orders))]
+                          (assoc acc k (update v :cli with-cmd-order orders))
+                          acc))
+                      (:tasks edn) (:tasks edn)))))
+          (catch Exception _ nil)))
+      edn))
+
 (defn -cli-dispatch
   "Runs babashka.cli/dispatch over a task's `:cli` tree. `body-fn` (the task
   body wrapped as a fn, or nil when the task has no body) becomes the root
@@ -246,6 +350,9 @@
                              (:org.babashka/cli m)
                              (when-let [d (:doc m)] {:doc d})
                              node)
+                            (as-> n (if (and (:cmd n) (> (count (:cmd n)) 8))
+                                      (with-cmd-order n (var-cli-orders m))
+                                      n))
                             (assoc k (with-deps (fn [m] (the-var m))))))
                       node))
          wrap (fn wrap [node]
@@ -271,12 +378,15 @@
   [resolve-fn node]
   (let [fv (or (:fn node) (:exec-fn node))
         node (if (or (symbol? fv) (cli-var? fv))
-               (let [m (meta (if (symbol? fv) (resolve-fn fv) fv))]
-                 (babashka.cli/merge-opts
-                  (:org.babashka/cli (meta (:ns m)))
-                  (:org.babashka/cli m)
-                  (when-let [d (:doc m)] {:doc d})
-                  node))
+               (let [m (meta (if (symbol? fv) (resolve-fn fv) fv))
+                    node (babashka.cli/merge-opts
+                          (:org.babashka/cli (meta (:ns m)))
+                          (:org.babashka/cli m)
+                          (when-let [d (:doc m)] {:doc d})
+                          node)]
+                 (if (and (:cmd node) (> (count (:cmd node)) 8))
+                   (with-cmd-order node (var-cli-orders m))
+                   node))
                node)]
     (if-let [cm (:cmd node)]
       (assoc node :cmd (into {} (map (fn [[k v]] [k (-resolve-cli-specs resolve-fn v)])) cm))
