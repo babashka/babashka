@@ -741,6 +741,15 @@ even more stuff here\"
         (is (str/includes? help "Runs everything by default."))
         (testing "task :doc wins over the root fn docstring"
           (is (not (str/includes? help "Runs the dev system")))))))
+  (testing "a task :doc vector of lines joins with newlines"
+    (test-utils/with-config '{:tasks {ci {:doc ["Run the CI tests"
+                                                ""
+                                                "Uses the matrix from ci.edn."]
+                                          :cli {:exec-fn babashka.tasks-cli/run-dev}}}}
+      (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "tasks")
+                         "ci Run the CI tests\n"))
+      (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "ci" "--help")
+                         "Run the CI tests\n\nUses the matrix from ci.edn."))))
   (testing "a :cli {:exec-fn ...} node calls the fn with opts only, spec from meta"
     (test-utils/with-config '{:tasks {foo {:cli {:exec-fn babashka.tasks-cli/deploy-x}}}}
       (is (= {:env "prod" :ran :exec-only}

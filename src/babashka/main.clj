@@ -1320,6 +1320,7 @@ Use bb run --help to show this help output.
                              (assoc edn :deps-root deps-root)
                              edn)
                        edn (tasks/hoist-exec-fn edn)
+                       edn (tasks/join-docs edn)
                        edn (tasks/attach-cmd-orders edn)]
                    (vreset! common/bb-edn edn)))
         opts (parse-opts args opts)

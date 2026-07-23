@@ -39,6 +39,20 @@
             tasks tasks))
     edn))
 
+(defn join-docs
+  "A task `:doc` may be a vector of lines, convenient in edn. Joins it into
+  the string every consumer expects."
+  [edn]
+  (if-let [tasks (:tasks edn)]
+    (assoc edn :tasks
+           (reduce-kv
+            (fn [acc k v]
+              (if (and (symbol? k) (map? v) (vector? (:doc v)))
+                (assoc acc k (update v :doc #(str/join "\n" %)))
+                acc))
+            tasks tasks))
+    edn))
+
 (defn- cli-var?
   "A var as it can appear in an evaluated fn-meta `:cli` tree: a sci var in bb,
   a Clojure var on the JVM."
