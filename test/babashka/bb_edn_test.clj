@@ -622,6 +622,23 @@ even more stuff here\"
       (let [help (test-utils/bb nil "-cp" "test-resources" "t" "go" "--help")]
         (is (str/includes? help "--env"))
         (is (str/includes? help "Deploy it")))))
+  (testing ":error-fn in bb.edn is rejected with a clear message"
+    (test-utils/with-config '{:tasks {foo {:cli {:spec {:port {}} :error-fn my.ns/handler}
+                                           :task (prn :ran)}}}
+      (is (= {:exit 1 :matched true}
+             (bb "-e"
+                 "(try (babashka.tasks/run (quote foo))
+                       (catch Exception e
+                         (prn {:exit (:babashka/exit (ex-data e))
+                               :matched (boolean (re-find #\":error-fn is not supported in bb.edn\" (ex-message e)))})))"))))
+    (test-utils/with-config '{:tasks {:cli {:error-fn my.ns/handler}
+                                      foo {:cli {:spec {:port {}}} :task (prn :ran)}}}
+      (is (= {:exit 1 :matched true}
+             (bb "-e"
+                 "(try (babashka.tasks/run (quote foo))
+                       (catch Exception e
+                         (prn {:exit (:babashka/exit (ex-data e))
+                               :matched (boolean (re-find #\":error-fn is not supported in bb.edn\" (ex-message e)))})))")))))
   (testing "a :cli entry in the :tasks map provides dispatch defaults"
     (test-utils/with-config '{:tasks {:cli {:restrict true :restrict-args true}
                                       foo {:cli {:fn babashka.tasks-cli/run-dev}}

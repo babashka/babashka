@@ -180,6 +180,16 @@
                            "\n" prog))
     prog))
 
+(defn- assert-no-edn-error-fn
+  "In bb.edn a `:error-fn` can only be data; dispatch would invoke a symbol as
+  a map lookup and silently swallow every error. It belongs in the function's
+  `:org.babashka/cli` metadata."
+  [node task-name]
+  (when (contains? node :error-fn)
+    (throw (ex-info (str "Task " task-name ": :error-fn is not supported in bb.edn, put it in the function's :org.babashka/cli metadata")
+                    {:babashka/exit 1})))
+  (run! #(assert-no-edn-error-fn % task-name) (vals (:cmd node))))
+
 (defn -cli-dispatch
   "Runs babashka.cli/dispatch over a task's `:cli` tree. `body-fn` (the task
   body wrapped as a fn, or nil when the task has no body) becomes the root
@@ -199,6 +209,8 @@
   ([cli-opts task-name body-fn resolve-fn args]
    (-cli-dispatch cli-opts task-name body-fn nil resolve-fn args))
   ([cli-opts task-name body-fn deps-fn resolve-fn args]
+   (assert-no-edn-error-fn cli-opts task-name)
+   (assert-no-edn-error-fn (or (:cli (:tasks @bb-edn)) {}) task-name)
    (let [with-deps (fn [f] (fn [m] (when deps-fn (deps-fn)) (f m)))
          ;; resolve a :fn / :exec-fn symbol, merge the ns and var
          ;; :org.babashka/cli metadata and the docstring (like bb -x; node keys
