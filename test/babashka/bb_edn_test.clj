@@ -620,7 +620,7 @@ even more stuff here\"
       (is (= {:env "prod" :ran :exec-only}
              (bb "-cp" "test-resources" "t" "go" "prod")))
       (let [help (test-utils/bb nil "-cp" "test-resources" "t" "go" "--help")]
-        (is (str/includes? help "--env"))
+        (is (str/includes? help "<env>"))
         (is (str/includes? help "Deploy it")))))
   (testing "a :cmd key that is not a name is rejected with an explanation"
     (test-utils/with-config '{:tasks {t {:cli {:fn babashka.tasks-cli/trap-root}}}}
@@ -649,7 +649,7 @@ even more stuff here\"
       (is (= {:env "prod" :ran :exec-only}
              (bb "-cp" "test-resources" "foo" "prod")))
       (let [help (test-utils/bb nil "-cp" "test-resources" "foo" "--help")]
-        (is (str/includes? help "--env")))
+        (is (str/includes? help "<env>")))
       (testing "doc derives from the fn docstring in bb tasks"
         (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "tasks")
                            "Deploy it")))))
@@ -756,7 +756,7 @@ even more stuff here\"
              (bb "-cp" "test-resources" "foo" "prod")))
       (let [help (test-utils/bb nil "-cp" "test-resources" "foo" "--help")]
         (is (str/includes? help "Usage: bb foo"))
-        (is (str/includes? help "--env")))))
+        (is (str/includes? help "<env>")))))
   (testing "a :cli :cmd subcommand :exec-fn is called with opts only, spec from meta"
     (test-utils/with-config '{:tasks {deploy {:cli {:cmd {"go" {:exec-fn babashka.tasks-cli/deploy-x}}}}}}
       (is (= {:env "prod" :ran :exec-only}
