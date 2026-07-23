@@ -18,6 +18,26 @@
 (defn -chan? [x]
   (instance? ManyToManyChannel x))
 
+(defn hoist-exec-fn
+  "Task-level `:exec-fn` is sugar for `:cli {:exec-fn ...}`. Folds it in for
+  every task map, so all consumers (assembly, help, completion, task listing)
+  see one shape. Both spellings at once is a config error."
+  [edn]
+  (if-let [tasks (:tasks edn)]
+    (assoc edn :tasks
+           (reduce-kv
+            (fn [acc k v]
+              (if-let [ef (and (symbol? k) (map? v) (:exec-fn v))]
+                (do (when (or (:fn (:cli v)) (:exec-fn (:cli v)))
+                      (throw (ex-info (str "Task " k ": both :exec-fn and a :cli :fn/:exec-fn given")
+                                      {:babashka/exit 1})))
+                    (assoc acc k (-> v
+                                     (dissoc :exec-fn)
+                                     (update :cli assoc :exec-fn ef))))
+                acc))
+            tasks tasks))
+    edn))
+
 (defn- cli-var?
   "A var as it can appear in an evaluated fn-meta `:cli` tree: a sci var in bb,
   a Clojure var on the JVM."

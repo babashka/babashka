@@ -622,6 +622,21 @@ even more stuff here\"
       (let [help (test-utils/bb nil "-cp" "test-resources" "t" "go" "--help")]
         (is (str/includes? help "--env"))
         (is (str/includes? help "Deploy it")))))
+  (testing "task-level :exec-fn is sugar for :cli {:exec-fn ...}"
+    (test-utils/with-config '{:tasks {foo {:exec-fn babashka.tasks-cli/deploy-x}}}
+      (is (= {:env "prod" :ran :exec-only}
+             (bb "-cp" "test-resources" "foo" "prod")))
+      (let [help (test-utils/bb nil "-cp" "test-resources" "foo" "--help")]
+        (is (str/includes? help "--env")))
+      (testing "doc derives from the fn docstring in bb tasks"
+        (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "tasks")
+                           "Deploy it")))))
+  (testing "task-level :exec-fn plus a :cli entry point is an error"
+    (test-utils/with-config '{:tasks {foo {:exec-fn babashka.tasks-cli/deploy-x
+                                           :cli {:fn babashka.tasks-cli/run-dev}}}}
+      (is (thrown-with-msg?
+           Exception #"both :exec-fn and a :cli :fn/:exec-fn"
+           (test-utils/bb nil "-cp" "test-resources" "foo")))))
   (testing ":error-fn in bb.edn is rejected with a clear message"
     (test-utils/with-config '{:tasks {foo {:cli {:spec {:port {}} :error-fn my.ns/handler}
                                            :task (prn :ran)}}}

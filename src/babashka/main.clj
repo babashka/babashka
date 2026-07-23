@@ -1318,7 +1318,8 @@ Use bb run --help to show this help output.
                        edn (if-let [deps-root (or (:deps-root opts)
                                                   (some-> config fs/parent))]
                              (assoc edn :deps-root deps-root)
-                             edn)]
+                             edn)
+                       edn (tasks/hoist-exec-fn edn)]
                    (vreset! common/bb-edn edn)))
         opts (parse-opts args opts)
         min-bb-version (:min-bb-version bb-edn)]
