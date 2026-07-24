@@ -76,21 +76,30 @@ The defaults sit between bb's own dispatch opts: they override `:help`, so a
 runner can turn auto-help off, and they do not override `:prog`, so help always
 names the task it belongs to.
 
-### 7. `:error-fn` is never bb.edn data
+### 7. Config errors name the task and the key
+
+A bb.edn that points at something absent is reported, not left to fail later:
+an `:exec-fn` or `:fn` whose var does not resolve, and a runner-level `:cli`
+symbol that does not resolve or does not name a map. Without that the generated
+code calls nil and the user gets a bare NullPointerException from a file they
+did not write. This is invocation-time only, so a stale name never breaks
+completion or `bb tasks`, which stay best-effort.
+
+### 8. `:error-fn` is never bb.edn data
 
 dispatch would treat a symbol `:error-fn` as a map lookup and swallow every
 error. `assert-no-edn-error-fn` rejects `:error-fn` in a bb.edn task node. Put it
 in the function's `:org.babashka/cli` metadata, or in the defaults var referenced
 from `:tasks {:cli my.ns/defaults}`.
 
-### 8. Dispatch and completion resolve the same `:cli` shape
+### 9. Dispatch and completion resolve the same `:cli` shape
 
 `-cli-dispatch` (invocation) and `completion-program` (completion) both read
 `(:cli (:tasks bb-edn))`. Both resolve a symbol runner-level `:cli` the same way.
 `completion-program` emits `-resolve-cli-tasks-defaults` into the completion code
 so symbol defaults reach completion, not just invocation.
 
-### 9. Deps run as a parser-selected pre-step
+### 10. Deps run as a parser-selected pre-step
 
 For a `:cli` task, `:depends` runs right before the command fn the parser
 selects, root body or subcommand, and only on a successful parse. dispatch never
@@ -118,7 +127,7 @@ This applies to a non-parallel task. A parallel task keeps its dependencies as
 forms ahead of the target, because parallel deps rely on launching their
 channels before the target waits on them, so `--help` starts them too.
 
-### 10. `:enter` and `:leave` apply to handlers, not just bodies
+### 11. `:enter` and `:leave` apply to handlers, not just bodies
 
 A task with a `:task` body has its `:enter` / `:leave` wrapped around the body.
 A task whose handler is an `:exec-fn` or `:fn`, including a command group leaf,
@@ -126,7 +135,7 @@ has them applied to the handler that dispatch selects. They run on the same
 terms as `:depends`: after a successful parse, never for `--help` or a parse
 error.
 
-### 11. Completion offers task names, files and non-deprecated global options
+### 12. Completion offers task names, files and non-deprecated global options
 
 Completing the first word offers task names plus a file-completion marker, so
 `bb file.clj` stays as first-class as `bb task`. A dash-prefixed first word
@@ -142,14 +151,22 @@ rather than nothing, so claiming the `bb` compdef does not take away the file
 completion the shell offered before.
 
 Completion runs the task's `:extra-paths` / `:extra-deps` and its `:requires`
-first, as separate top-level forms, because the handler may live on that
-classpath or be named through a require alias. It applies the runner-level
-defaults in the same precedence dispatch uses, so a runner that turns `:help`
-off does not get `--help` offered as a candidate. Any failure falls back to the
-file-completion marker: the shell discards stderr, so an uncaught error would
-read as "no candidates" and take file completion down with it.
+first, because the handler may live on that classpath or be named through a
+require alias. It applies the runner-level defaults in the same precedence
+dispatch uses, so a runner that turns `:help` off does not get `--help` offered
+as a candidate.
 
-### 12. `:doc` as a vector of lines
+That setup runs inside the same `try` as the dispatch it prepares, and any
+failure falls back to the file-completion marker. The shell discards stderr, so
+an uncaught error would read as "no candidates" and take file completion down
+with it. A bb.edn naming a namespace that is not there is a normal state to
+complete in, not an exceptional one.
+
+For the same reason a task doc is best-effort. Deriving one loads the fn's
+namespace, and one task with a missing namespace must not stop `bb tasks` from
+listing the others or completion from offering them.
+
+### 13. `:doc` as a vector of lines
 
 A task `:doc` may be a vector of strings. `join-docs` joins it with newlines into
 the string every consumer expects.

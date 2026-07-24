@@ -344,9 +344,12 @@
 
   `fns` holds the parts of the task that must not run until the parser picks a
   command: `:body-fn` (the task body, or nil), `:deps-fn` (the assembled
-  `:depends` plus the dependencies' own `:requires` and `:extra-paths` /
-  `:extra-deps`, or nil) and `:hook-fn` (`:enter` / `:leave` around a call, or
-  nil). `:deps-fn` and `:hook-fn` run right before whichever command fn the
+  `:depends` bodies, or nil) and `:hook-fn` (`:enter` / `:leave` around a call,
+  or nil). A dependency's own `:requires` and `:extra-paths` / `:extra-deps`
+  are not in here: they stay in the program preamble, because sci analyzes this
+  thunk as one form and a require inside it would not have run when a body
+  using its alias is analyzed (see ADR 0001, decision 10).
+  `:deps-fn` and `:hook-fn` run right before whichever command fn the
   parser selects - root body or a subcommand - and only on a successful parse.
   dispatch never calls a command fn for `--help`/`-h` or a parse error, so
   nothing in `fns` runs then, decided by the parser (like cobra's PreRun) rather
@@ -364,6 +367,9 @@
         wrap-key (fn [node k]
                    (if-let [fv (k node)]
                      (let [the-var (if (symbol? fv) (resolve-fn fv) fv)
+                           _ (when-not the-var
+                               (throw (ex-info (str "Task " task-name ": cannot resolve " k " " fv)
+                                               {:babashka/exit 1})))
                            m (when (symbol? fv) (meta the-var))]
                        (-> (babashka.cli/merge-opts
                             (:org.babashka/cli (meta (:ns m)))
@@ -679,7 +685,12 @@
         [(binding [*out* *err*]
            (println "No such task:" task-name)) 1]))))
 
-(defn doc-from-task [sci-ctx tasks task]
+(defn doc-from-task
+  "The task's `:doc`, or the docstring of the fn it points at. A doc is
+  best-effort: deriving it loads the fn's namespace, which can fail on a stale
+  bb.edn, and neither `bb tasks` nor completion may die over a missing
+  docstring."
+  [sci-ctx tasks task]
   (or (:doc task)
       (when-let [fn-sym (cond (qualified-symbol? task)
                               task
@@ -709,7 +720,8 @@
                              (list* 'require requires)
                              "")
                            fn-sym)]
-          (sci/eval-string* sci-ctx prog)))))
+          (try (sci/eval-string* sci-ctx prog)
+               (catch Exception _ nil))))))
 
 (defn key-order [edn]
   (let [forms (parser/parse-string-all edn)
@@ -787,14 +799,14 @@
               tm (get tasks (symbol run))
               prog (str "bb " run)]
           (if (:cli tm)
-            ;; The task's classpath and requires come first, as separate
-            ;; top-level forms: the handler may live on its :extra-paths, and
-            ;; its symbol may go through a `:requires` alias, which
-            ;; requiring-resolve only sees once the require has run.
-            ;; A failure must never surface: the shell discards stderr, so an
+            ;; The task's classpath and requires run first, inside the same
+            ;; try: the handler may live on its :extra-paths, and its symbol may
+            ;; go through a `:requires` alias, which requiring-resolve only sees
+            ;; once the require has run. Both can fail on a stale bb.edn, and no
+            ;; failure here may surface: the shell discards stderr, so an
             ;; uncaught error would look like "no candidates" while also
             ;; suppressing the file-completion fallback
-            (format "%s\n%s\n(try (babashka.cli/dispatch (babashka.tasks/-resolve-cli-specs requiring-resolve %s) %s (merge %s (babashka.tasks/-resolve-cli-tasks-defaults requiring-resolve '%s) %s)) (catch Throwable _ (println \"org.babashka.cli/file-completion\")))"
+            (format "(try %s\n%s\n(babashka.cli/dispatch (babashka.tasks/-resolve-cli-specs requiring-resolve %s) %s (merge %s (babashka.tasks/-resolve-cli-tasks-defaults requiring-resolve '%s) %s)) (catch Throwable _ (println \"org.babashka.cli/file-completion\")))"
                     (add-deps-form (:extra-paths tm) (:extra-deps tm))
                     (requires-form (concat (:requires tasks) (:requires tm)))
                     (pr-str (list 'quote (:cli tm))) (pr-str compl)
