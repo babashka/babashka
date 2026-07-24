@@ -8,38 +8,35 @@ Run everything below from this directory.
 
 ## The example
 
-Two files. `bb.edn`:
+Two files. `bb.edn` is a thin registry: task names, dependencies and command
+trees. `bb.edn`:
 
 ```clojure
 {:paths ["src"]
  :tasks
- {;; Defaults for every :cli task below. Function metadata and :cli keys win.
-  :cli {:restrict true :restrict-args true}
+ {-setup {:task (println "Running setup (a dependency task)")}
 
-  -setup {:task (println "Running setup (a dependency task)")}
+  ;; A flag needs a function: clean's --dry-run lives on tasks/clean's metadata.
+  clean {:exec-fn tasks/clean}
 
-  ;; The body reads options declared here with (:opts (current-task)).
-  clean {:doc "Removes build artifacts"
-         :cli {:spec {:dry-run {:coerce :boolean :desc "Only print what would be removed"}}}
-         :task (let [{:keys [dry-run]} (:opts (current-task))]
-                 (println (if dry-run "Would remove target/" "Removing target/")))}
+  ;; Spec and doc live on the function's metadata in src/tasks.clj.
+  dev {:depends [-setup] :exec-fn tasks/dev}
 
-  ;; The spec and doc live on the function's metadata in src/tasks.clj.
-  dev {:depends [-setup]
-       :cli {:exec-fn tasks/dev}}
-
-  ;; Subcommands dispatch to functions and the root :task runs on bare bb deploy.
-  deploy {:doc "Deploys the app"
-          :cli {:cmd {lock   {:exec-fn tasks/lock}
-                      unlock {:exec-fn tasks/unlock}}
-                :epilog "Deployments are locked during maintenance windows."}
-          :task (println "Deploying!")}}}
+  ;; A command group. Bare `bb deploy` has no handler, so it prints
+  ;; "No command given"; the subcommands dispatch to functions.
+  deploy {:doc "Manage deployments"
+          :cmd {"lock"   {:exec-fn tasks/lock}
+                "unlock" {:exec-fn tasks/unlock}}}}}
 ```
 
-`src/tasks.clj`:
+All the CLI richness (specs, docs, `:enum`, `:error-fn`, dispatch defaults)
+lives on the functions in `src/tasks.clj`, where the map is evaluated and
+functions just work:
 
 ```clojure
-(ns tasks)
+(ns tasks
+  ;; Dispatch defaults for every function in this namespace, like `bb -x`.
+  {:org.babashka/cli {:restrict true :restrict-args true}})
 
 (def environments ["dev" "staging" "prod"])
 
@@ -50,75 +47,69 @@ Two files. `bb.edn`:
     (println (str "\u001b[31mError: " msg "\u001b[0m")))
   (System/exit 1))
 
-;; Shared cli defaults for every fn in this ns: fn attr-maps are evaluated, so
-;; each fn merges this in. bb.edn cannot hold an :error-fn (it is data).
-(def cli-base {:error-fn red-error})
+(defn clean
+  "Removes build artifacts"
+  {:org.babashka/cli {:spec {:dry-run {:coerce :boolean :desc "Only print what would be removed"}}}}
+  [{:keys [dry-run]}]
+  (println (if dry-run "Would remove target/" "Removing target/")))
 
 (defn dev
   "Starts the dev system"
-  {:org.babashka/cli
-   (merge cli-base
-          {:spec {:port {:coerce :int :default 8080 :desc "HTTP port"}
-                  :sandbox {:coerce :boolean :alias :s :desc "Run sandboxed"}}})}
+  {:org.babashka/cli {:error-fn red-error
+                      :spec {:port {:coerce :int :default 8080 :desc "HTTP port"}
+                             :sandbox {:coerce :boolean :alias :s :desc "Run sandboxed"}}}}
   [{:keys [port sandbox]}]
   (println "Starting dev system on port" port (if sandbox "(sandboxed)" "(unrestricted)")))
 
 (defn lock
   "Locks deployments"
-  {:org.babashka/cli
-   (merge cli-base
-          {:spec {:environment {:desc "Target environment"
-                                :enum environments
-                                :require true
-                                :positional true}
-                  :message {:alias :m :desc "Lock message" :require true}}
-           :args->opts [:environment]})}
+  {:org.babashka/cli {:error-fn red-error
+                      :spec {:environment {:desc "Target environment"
+                                           :enum environments
+                                           :require true
+                                           :positional true}
+                             :message {:alias :m :desc "Lock message" :require true}}
+                      :args->opts [:environment]}}
   [{:keys [environment message]}]
   (println "Locking" environment "-" message))
 
 (defn unlock
   "Unlocks deployments"
-  {:org.babashka/cli
-   {:spec {:environment {:desc "Target environment"
-                         :enum environments
-                         :require true
-                         :positional true}}
-    :args->opts [:environment]}}
+  {:org.babashka/cli {:spec {:environment {:desc "Target environment"
+                                           :enum environments
+                                           :require true
+                                           :positional true}}
+                      :args->opts [:environment]}}
   [{:keys [environment]}]
   (println "Unlocking" environment))
 ```
 
-The example covers:
+The example covers the two shapes a CLI task takes:
 
-- `clean` declares its options inline and reads them with
-  `(:opts (current-task))`.
-- `dev` routes to a function with `:exec-fn`. The spec comes from the
-  function's `:org.babashka/cli` metadata and the docstring becomes the task
-  doc.
-- `deploy` is a command tree. Each leaf is an `:exec-fn` with its spec and doc
-  on the function. The root `:task` runs on bare `bb deploy`. When a task has
-  both a `:task` body and a root `:exec-fn` in `:cli`, the `:exec-fn` takes
-  priority.
-- The `:cli` entry at the top of `:tasks` sets dispatch defaults for every
-  `:cli` task. Here it rejects unknown options and stray positional arguments
-  everywhere. Namespace metadata works too:
-  `(ns tasks {:org.babashka/cli {:restrict true}})`, like `bb -x`.
-- A `:cmd` tree may also live in a function's metadata instead of bb.edn.
-  Function metadata is evaluated, so refer to subcommand functions with var
-  literals: `{:cmd {"lock" {:exec-fn #'tasks/lock}}}`. A var contributes its
-  function's spec and docstring. Quoted symbols work too; a bare function
-  value routes but carries no metadata.
+- **A function**, wired with `:exec-fn`. `clean` and `dev` point at a function;
+  its `:org.babashka/cli` metadata is the spec, its docstring is the task doc.
+- **A command group**, wired with `:cmd`. `deploy` has no handler, so it is a
+  pure router: bare `bb deploy` prints `No command given.`, and each leaf
+  points at a function. Add an `:exec-fn` next to `:cmd` (or a `:task` body) if
+  you want a default action on the bare command.
+
+Everything else is data or existing bb: `:depends`, plain `:task` bodies, task
+`:doc`. Dispatch defaults (`:restrict`, `:restrict-args`) sit on the namespace
+metadata and apply to every function in it.
 
 Notes:
 
-- `:depends` runs before the task body but is skipped on `--help` and on
-  parse errors. Parsed options do not flow into dependency tasks.
-- An option marked `:positional true` is listed under `Arguments:` and cannot
-  be passed as a flag.
-- `:enum` lists the allowed values in order: it derives validation and supplies
-  the help choices, error text, and completion candidates. A set-valued
-  `:validate` does the same, sorted.
-- Tasks without `:cli` still receive arguments through `*command-line-args*`.
+- `:depends` runs before the task body but is skipped on `--help` and on parse
+  errors. Parsed options do not flow into dependency tasks.
+- `:positional true` and `:args->opts` arguments are listed under `Arguments:`
+  as `<name>`, not in `Options:` as `--name`.
+- `:enum` lists allowed values in order: it derives validation and supplies the
+  help choices, error text, and completion candidates.
+- An option shared by a parent command is only accepted after the subcommand
+  when it is marked `:inherit true`; a required `:inherit` option may be given
+  on either side.
+- Tasks without `:exec-fn`/`:cmd` receive raw arguments through
+  `*command-line-args*`, unchanged.
 
 ## Session
 
@@ -128,7 +119,7 @@ The following tasks are available:
 
 clean  Removes build artifacts
 dev    Starts the dev system
-deploy Deploys the app
+deploy Manage deployments
 
 $ bb dev --help
 Usage: bb dev [options]
@@ -148,30 +139,17 @@ $ bb dev -s --port 3000
 Running setup (a dependency task)
 Starting dev system on port 3000 (sandboxed)
 
-$ bb dev --nope
-Error: Unknown option: --nope
-
 $ bb clean --dry-run
 Would remove target/
 
-$ bb deploy --help
-Usage: bb deploy [options] <command>
-
-Deploys the app
+$ bb deploy
+No command given.
 
 Commands:
   lock   Locks deployments
   unlock Unlocks deployments
 
-Options:
-  -h, --help  Show this help
-
-Run "bb deploy <command> --help" for more information on a command.
-
-Deployments are locked during maintenance windows.
-
-$ bb deploy
-Deploying!
+Run "bb deploy --help" for more information.
 
 $ bb deploy lock --help
 Usage: bb deploy lock [options] <environment>
@@ -188,19 +166,15 @@ Options:
 $ bb deploy lock prod -m "release 42"
 Locking prod - release 42
 
-$ bb deploy lock qa -m x
-Error: Invalid value for argument <environment>: qa. Expected one of: dev, staging, prod
-
-$ bb deploy lock prod extra -m x
-Error: Unexpected argument: extra
+$ bb deploy unlock prod
+Unlocking prod
 ```
 
 ## Custom error output
 
 `red-error` in `src/tasks.clj` replaces the default error output with an
-ANSI-red line. An `:error-fn` goes in function metadata; define it once and
-merge it into each function's cli map (`cli-base` above). bb.edn cannot hold
-an `:error-fn`: bb.edn is data and bb rejects the key there with an error.
+ANSI-red line. An `:error-fn` is a function, so it lives on the function's
+metadata (bb.edn is data and cannot hold one). `dev` and `lock` carry it:
 
 ```console
 $ bb dev --nope
@@ -208,11 +182,13 @@ Error: Unknown option: --nope        <- red
 
 $ bb deploy lock qa -m x
 Error: Invalid value for argument <environment>: qa. Expected one of: dev, staging, prod        <- red
+
+$ bb deploy lock prod extra -m x
+Error: Unexpected argument: extra        <- red
 ```
 
-Coverage follows the functions: errors at a level whose function carries the
-metadata use the handler. The `deploy` root is a plain `:task` body, so
-root-level errors such as an unknown command keep the default output.
+Coverage follows the functions: `unlock` has no `:error-fn`, so its errors use
+the default output.
 
 An `:error-fn` can also print the full usage help after the error, instead of
 the default one-line tip. The handler receives `:tree`, `:dispatch` and
@@ -228,20 +204,6 @@ the default one-line tip. The handler receives `:tree`, `:dispatch` and
     (println)
     (println (cli/format-command-help {:table tree :cmds dispatch :prog prog})))
   (System/exit 1))
-```
-
-```console
-$ bb lock bogus-env -m hi
-Error: Invalid value for option --environment: bogus-env. Expected one of: dev, staging, prod
-
-Usage: bb lock [options] <environment>
-
-Locks deployments
-
-Options:
-      --environment  Target environment (required)
-  -m, --message      Lock message (required)
-  -h, --help         Show this help
 ```
 
 `:dispatch` is the command path, so the help is the failing command's own, not
@@ -260,9 +222,9 @@ $ bb -x tasks/dev --port 3000
 Starting dev system on port 3000 (unrestricted)
 ```
 
-`bb -x` addresses a single var and does not dispatch a `:cmd` tree: extra
-words after the options are dropped unless the function's metadata sets
-`:restrict-args`.
+`bb -x` addresses a single var and does not dispatch a `:cmd` tree: extra words
+after the options are dropped unless the function's metadata sets
+`:restrict-args` (as this namespace's does).
 
 ## Completion
 
@@ -284,51 +246,12 @@ README for per-shell details.
 $ bb <TAB>                # task names with docs, plus files
 $ bb --<TAB>              # bb's own options
 $ bb deploy <TAB>         # lock unlock
-$ bb deploy unlock <TAB>  # dev prod staging
+$ bb deploy lock <TAB>    # dev staging prod
 $ bb dev -<TAB>           # -s --sandbox --port ...
 ```
 
-Completion after a space offers subcommands and positional values.
-Completion after a dash offers option names. A task that only accepts options
-offers them after a space as well.
-
-## Pitfalls
-
-**A command group needs no default handler.**
-When a function carries a `:cmd` tree and is itself the handler (wired via
-`:exec-fn`/`:fn`), a bare invocation with no subcommand falls through to that
-function's body. An empty body does nothing and exits 0. For a group that
-requires a subcommand, drop the handler and let bb.edn route:
-`deploy {:cli {:cmd {...}}}` prints `No command given.` and exits 1. For a
-custom message, keep the group function and error from its body, which runs
-only on the no-subcommand fall-through.
-
-**`:cmd` command names: strings in metadata, symbols in bb.edn.**
-Function metadata is evaluated, so a bare symbol key is read as a value, not a
-name. Use strings there: `{:cmd {"lock" {:exec-fn #'lock}}}`. In bb.edn (data,
-not evaluated) a symbol is fine and is stringified: `{:cmd {lock {...}}}`.
-
-**bb.edn cannot hold functions.**
-bb.edn is data. Keys that take a function (`:error-fn`, a `:validate`
-predicate, a `:coerce` function) do not work as a bare symbol there; the symbol
-is never resolved. Express them as data (`:validate #{...}`, `:coerce :int`) or
-move the option to a function's `:org.babashka/cli` metadata, where the map is
-evaluated and functions work.
-
-**`:task` and a `:cli` `:exec-fn` together: the `:exec-fn` wins.**
-A task with both a `:task` body and a root `:exec-fn` in `:cli` runs the
-`:exec-fn`; the `:task` body is dead. A `:task` body with a `:cmd`-only `:cli`
-is fine: the body runs on the bare command and subcommands dispatch.
-
-**A group option after its command needs `:inherit`.**
-An option defined on a parent command is parsed after the subcommand only when
-it is marked `:inherit true`; otherwise a token after the subcommand belongs to
-the child. A required `:inherit` option may be given on either side.
-
-**`:args->opts` arguments are listed under `Arguments:`.**
-An option consumed positionally through `:args->opts` renders under
-`Arguments:` as `<name>`, not in `Options:` as `--name`. It is still an option
-underneath, but help presents it as an argument.
+Completion after a space offers subcommands and positional values. Completion
+after a dash offers option names.
 
 ## FAQ
 
@@ -340,7 +263,7 @@ script with its own `-main` calling `babashka.cli/dispatch` works as before.
 No. Spec entries are data:
 
 ```clojure
-(def env-opt {:desc "Environment" :validate #{"dev" "prod"} :require true :positional true})
+(def env-opt {:desc "Environment" :enum ["dev" "prod"] :require true :positional true})
 
 (defn migrate
   {:org.babashka/cli {:spec {:env env-opt} :args->opts [:env]}}
@@ -356,8 +279,9 @@ Options shared by every function in a namespace go on the namespace metadata.
 **One function serves two commands. Which one was invoked?**
 
 ```clojure
-db {:cli {:cmd {up   {:exec-fn tasks/migrate}
-                down {:exec-fn tasks/migrate}}}}
+;; bb.edn
+db {:cmd {"up"   {:exec-fn tasks/migrate}
+          "down" {:exec-fn tasks/migrate}}}
 ```
 
 ```clojure
@@ -377,40 +301,27 @@ A `:fn` function receives the same information as `:dispatch` in its argument
 map.
 
 **`:fn` or `:exec-fn`?**
-`:exec-fn` calls the function with the parsed options map. `:fn` calls it
-with the whole dispatch result:
+`:exec-fn` calls the function with the parsed options map. `:fn` calls it with
+the whole dispatch result:
 
 ```clojure
 (defn a {:org.babashka/cli {:spec {:env {}}}}
-  [{:keys [env]}] ...)        ;; :exec-fn shape: opts directly
+  [{:keys [env]}] ...)             ;; :exec-fn shape: opts directly
 
 (defn b {:org.babashka/cli {:spec {:env {}}}}
-  [{:keys [opts dispatch]}] ...)  ;; :fn shape: {:opts ... :dispatch ... :args ...}
-```
-
-Mixing them up does not error, the function destructures nils:
-
-```console
-$ bb mixed --env x     # :fn-shaped function wired as :exec-fn
-opts: nil
+  [{:keys [opts dispatch]}] ...)   ;; :fn shape: {:opts ... :dispatch ... :args ...}
 ```
 
 When in doubt use `:exec-fn`.
-
-**Doesn't this make bb.edn noisy?**
-Keep bb.edn to routing: `dev {:exec-fn tasks/dev}` is the whole entry.
-Specs, docs and error handling live on the functions.
 
 **Where does the task description come from?**
 Task `:doc` first, then the exec-fn's docstring. Both `bb tasks` and `--help`
 use the same fallback:
 
 ```clojure
-{:tasks {t1 {:doc "Task :doc, fn has none"
-             :cli {:exec-fn df/nodoc}}
-         t2 {:cli {:exec-fn df/withdoc}}
-         t3 {:doc "Task :doc present"
-             :cli {:exec-fn df/withdoc}}}}   ;; withdoc: "Docstring from the fn"
+{:tasks {t1 {:doc "Task :doc, fn has none" :exec-fn df/nodoc}
+         t2 {:exec-fn df/withdoc}                              ;; "Docstring from the fn"
+         t3 {:doc "Task :doc present" :exec-fn df/withdoc}}}
 ```
 
 ```console
@@ -430,15 +341,10 @@ and a multi-line string forces continuation lines to column 0:
 {:tasks {migrate {:doc ["Migrates the database."
                         ""
                         "Runs pending migrations in order."]
-                  :cli {:exec-fn tasks/migrate}}}}
+                  :exec-fn tasks/migrate}}}
 ```
 
 ```console
-$ bb tasks
-The following tasks are available:
-
-migrate Migrates the database.
-
 $ bb migrate --help
 Usage: bb migrate [options]
 
@@ -452,9 +358,9 @@ Runs pending migrations in order.
 
 **Commands render in map order. Is that reliable?**
 Yes. Clojure loses map order beyond 8 entries, but bb recovers the written
-order from the bb.edn text or the function's source. When the metadata map is
-computed (e.g. built with `merge`) there is no literal source order: add
-`:cmd-order` or use the vector form `:cmd [["lock" {...}] ["unlock" {...}]]`.
+order from the bb.edn text. When the command tree is a computed map there is no
+literal source order: add `:cmd-order` or use the vector form
+`:cmd [["lock" {...}] ["unlock" {...}]]`.
 
 ## Trying this with a dev build
 

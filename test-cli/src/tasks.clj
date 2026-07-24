@@ -1,4 +1,6 @@
-(ns tasks)
+(ns tasks
+  ;; Dispatch defaults for every function in this namespace, like `bb -x`.
+  {:org.babashka/cli {:restrict true :restrict-args true}})
 
 (def environments ["dev" "staging" "prod"])
 
@@ -9,39 +11,38 @@
     (println (str "\u001b[31mError: " msg "\u001b[0m")))
   (System/exit 1))
 
-;; Shared cli defaults for every fn in this ns: fn attr-maps are evaluated, so
-;; each fn merges this in. bb.edn cannot hold an :error-fn (it is data).
-(def cli-base {:error-fn red-error})
+(defn clean
+  "Removes build artifacts"
+  {:org.babashka/cli {:spec {:dry-run {:coerce :boolean :desc "Only print what would be removed"}}}}
+  [{:keys [dry-run]}]
+  (println (if dry-run "Would remove target/" "Removing target/")))
 
 (defn dev
   "Starts the dev system"
-  {:org.babashka/cli
-   (merge cli-base
-          {:spec {:port {:coerce :int :default 8080 :desc "HTTP port"}
-                  :sandbox {:coerce :boolean :alias :s :desc "Run sandboxed"}}})}
+  {:org.babashka/cli {:error-fn red-error
+                      :spec {:port {:coerce :int :default 8080 :desc "HTTP port"}
+                             :sandbox {:coerce :boolean :alias :s :desc "Run sandboxed"}}}}
   [{:keys [port sandbox]}]
   (println "Starting dev system on port" port (if sandbox "(sandboxed)" "(unrestricted)")))
 
 (defn lock
   "Locks deployments"
-  {:org.babashka/cli
-   (merge cli-base
-          {:spec {:environment {:desc "Target environment"
-                                :enum environments
-                                :require true
-                                :positional true}
-                  :message {:alias :m :desc "Lock message" :require true}}
-           :args->opts [:environment]})}
+  {:org.babashka/cli {:error-fn red-error
+                      :spec {:environment {:desc "Target environment"
+                                           :enum environments
+                                           :require true
+                                           :positional true}
+                             :message {:alias :m :desc "Lock message" :require true}}
+                      :args->opts [:environment]}}
   [{:keys [environment message]}]
   (println "Locking" environment "-" message))
 
 (defn unlock
   "Unlocks deployments"
-  {:org.babashka/cli
-   {:spec {:environment {:desc "Target environment"
-                         :enum environments
-                         :require true
-                         :positional true}}
-    :args->opts [:environment]}}
+  {:org.babashka/cli {:spec {:environment {:desc "Target environment"
+                                           :enum environments
+                                           :require true
+                                           :positional true}}
+                      :args->opts [:environment]}}
   [{:keys [environment]}]
   (println "Unlocking" environment))

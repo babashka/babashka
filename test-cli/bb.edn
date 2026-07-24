@@ -1,23 +1,15 @@
 {:paths ["src"]
  :tasks
- {;; Defaults for every :cli task below. Function metadata and :cli keys win.
-  :cli {:restrict true :restrict-args true}
+ {-setup {:task (println "Running setup (a dependency task)")}
 
-  -setup {:task (println "Running setup (a dependency task)")}
+  ;; A flag needs a function: clean's --dry-run lives on tasks/clean's metadata.
+  clean {:exec-fn tasks/clean}
 
-  ;; The body reads options declared here with (:opts (current-task)).
-  clean {:doc "Removes build artifacts"
-         :cli {:spec {:dry-run {:coerce :boolean :desc "Only print what would be removed"}}}
-         :task (let [{:keys [dry-run]} (:opts (current-task))]
-                 (println (if dry-run "Would remove target/" "Removing target/")))}
+  ;; Spec and doc live on the function's metadata in src/tasks.clj.
+  dev {:depends [-setup] :exec-fn tasks/dev}
 
-  ;; The spec and doc live on the function's metadata in src/tasks.clj.
-  dev {:depends [-setup]
-       :cli {:exec-fn tasks/dev}}
-
-  ;; Subcommands dispatch to functions and the root :task runs on bare bb deploy.
-  deploy {:doc "Deploys the app"
-          :cli {:cmd {lock   {:exec-fn tasks/lock}
-                      unlock {:exec-fn tasks/unlock}}
-                :epilog "Deployments are locked during maintenance windows."}
-          :task (println "Deploying!")}}}
+  ;; A command group. Bare `bb deploy` has no handler, so it prints
+  ;; "No command given"; the subcommands dispatch to functions.
+  deploy {:doc "Manage deployments"
+          :cmd {"lock"   {:exec-fn tasks/lock}
+                "unlock" {:exec-fn tasks/unlock}}}}}
