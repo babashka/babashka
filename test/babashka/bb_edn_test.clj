@@ -665,6 +665,16 @@ even more stuff here\"
       (is (thrown-with-msg?
            Exception #"both :cmd and a :cli :cmd"
            (test-utils/bb nil "-cp" "test-resources" "deploy")))))
+  (testing "bb tasks derives a doc from a fn on the task's :extra-paths"
+    (test-utils/with-config '{:tasks {foo {:extra-paths ["test-resources"]
+                                           :exec-fn babashka.tasks-cli/deploy-x}}}
+      (is (str/includes? (test-utils/bb nil "tasks") "Deploy it"))))
+  (testing "a runner-level :cli symbol that resolves to nothing is a config error"
+    (test-utils/with-config '{:tasks {:cli babashka.tasks-cli/nope
+                                      foo {:exec-fn babashka.tasks-cli/deploy-x}}}
+      (is (thrown-with-msg?
+           Exception #":tasks :cli babashka.tasks-cli/nope cannot be resolved"
+           (test-utils/bb nil "-cp" "test-resources" "foo" "prod")))))
   (testing "a :task that is a qualified symbol keeps its :cli dispatch"
     (test-utils/with-config '{:tasks {deploy {:task clojure.core/prn
                                               :cmd {"go" {:exec-fn babashka.tasks-cli/deploy-x}}}}}
@@ -688,19 +698,29 @@ even more stuff here\"
         (let [out (test-utils/bb nil "-cp" "test-resources" "foo" "--help")]
           (is (str/includes? out "Usage: bb foo"))
           (is (not (str/includes? out "ENTER")))))))
-  (testing "--help does not process a dependency's :requires"
+  (testing "--help does not run a dependency's body"
     (test-utils/with-config '{:tasks {-dep {:requires ([babashka.tasks-cli-side])
                                             :task (println "DEP BODY")}
                                       foo {:depends [-dep]
                                            :exec-fn babashka.tasks-cli/deploy-x}}}
       (let [help (test-utils/bb nil "-cp" "test-resources" "foo" "--help")]
         (is (str/includes? help "Usage: bb foo"))
-        (is (not (str/includes? help "SIDE EFFECT")))
-        (is (not (str/includes? help "DEP BODY"))))
-      (testing "a real run still processes them"
+        (is (not (str/includes? help "DEP BODY")))
+        (testing "the dependency's :requires are still processed, see ADR 0001"
+          (is (str/includes? help "SIDE EFFECT"))))
+      (testing "a real run runs the body"
         (let [out (test-utils/bb nil "-cp" "test-resources" "foo" "prod")]
-          (is (str/includes? out "SIDE EFFECT"))
           (is (str/includes? out "DEP BODY"))))))
+  (testing "a dependency may use its own :requires alias in its body"
+    (test-utils/with-config '{:tasks {-dep {:requires ([babashka.tasks-cli :as t])
+                                            :task (t/clean {:opts {}})}
+                                      foo {:depends [-dep]
+                                           :exec-fn babashka.tasks-cli/deploy-x}}}
+      (let [out (test-utils/bb nil "-cp" "test-resources" "foo" "prod")]
+        (is (str/includes? out ":ran :clean")))
+      (testing "and --help still renders"
+        (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "foo" "--help")
+                           "Usage: bb foo")))))
   (testing ":error-fn in bb.edn is rejected with a clear message"
     (test-utils/with-config '{:tasks {foo {:cli {:spec {:port {}} :error-fn my.ns/handler}
                                            :task (prn :ran)}}}
@@ -879,6 +899,18 @@ even more stuff here\"
       (let [out (test-utils/bb nil "org.babashka.cli/completions"
                                "complete" "--shell" "zsh" "--" "foo" "-")]
         (is (str/includes? out "--env")))))
+  (testing "completion resolves a handler named through a :requires alias"
+    (test-utils/with-config '{:tasks {foo {:requires ([babashka.tasks-cli :as t])
+                                           :exec-fn t/deploy-x}}}
+      (let [out (test-utils/bb nil "-cp" "test-resources"
+                               "org.babashka.cli/completions" "complete" "--shell" "zsh" "--" "foo" "-")]
+        (is (str/includes? out "--env")))))
+  (testing "completion honors a runner-level :help false, like dispatch does"
+    (test-utils/with-config '{:tasks {:cli {:help false}
+                                      foo {:exec-fn babashka.tasks-cli/deploy-x}}}
+      (let [out (test-utils/bb nil "-cp" "test-resources"
+                               "org.babashka.cli/completions" "complete" "--shell" "zsh" "--" "foo" "-")]
+        (is (not (str/includes? out "--help"))))))
   (testing "root :cli {:fn ...} option completion delegates to dispatch via fn meta"
     (test-utils/with-config '{:tasks {dev {:cli {:fn babashka.tasks-cli/run-dev}}}}
       (let [out (test-utils/bb nil "-cp" "test-resources"

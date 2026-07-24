@@ -225,7 +225,11 @@
   (cond
     (nil? d) nil
     (map? d) d
-    (symbol? d) (let [m (deref (resolve-fn d))]
+    (symbol? d) (let [v (resolve-fn d)
+                      _ (when-not v
+                          (throw (ex-info (str ":tasks :cli " d " cannot be resolved")
+                                          {:babashka/exit 1})))
+                      m (deref v)]
                   (when-not (map? m)
                     (throw (ex-info (str ":tasks :cli " d " is not a map")
                                     {:babashka/exit 1})))
@@ -638,30 +642,22 @@
                                        ;; launching their channels ahead of the
                                        ;; target's wait).
                                        cli-prelude? (and (:cli task) (not parallel?))
-                                       ;; the dependencies' own :requires and
-                                       ;; :extra-paths/:extra-deps go into the
-                                       ;; thunk too, so `--help` neither loads
-                                       ;; their namespaces nor resolves their deps
-                                       dep-forms (if cli-prelude?
-                                                   (str (add-deps-form extra-paths extra-deps) "\n"
-                                                        (requires-form requires) "\n"
-                                                        prog)
-                                                   prog)
+                                       ;; only the dependency *bodies* move into
+                                       ;; the thunk. Their :requires and extras
+                                       ;; stay in the preamble: sci analyzes the
+                                       ;; whole thunk as one form, so a require
+                                       ;; inside it has not run yet when a body
+                                       ;; using its alias is analyzed
+                                       dep-forms prog
                                        prog (if cli-prelude?
                                               (assemble-task-1 task-map task parallel? true dep-forms)
                                               (str dep-forms "\n"
                                                    #_(wait-tasks depends) #_(apply str (map deref-task depends))
                                                    "\n"
                                                    (assemble-task-1 task-map task parallel? true)))
-                                       extra-paths (if cli-prelude?
-                                                     (:extra-paths task)
-                                                     (concat extra-paths (:extra-paths task)))
-                                       extra-deps (if cli-prelude?
-                                                    (:extra-deps task)
-                                                    (merge extra-deps (:extra-deps task)))
-                                       requires (if cli-prelude?
-                                                  (:requires task)
-                                                  (concat requires (:requires task)))]
+                                       extra-paths (concat extra-paths (:extra-paths task))
+                                       extra-deps (merge extra-deps (:extra-deps task))
+                                       requires (concat requires (:requires task))]
                                    [[(format-task init extra-paths extra-deps global-requires requires prog)] nil])
                                  [(binding [*out* *err*]
                                     (println "No such task:" t)) 1]))))))
@@ -700,11 +696,14 @@
                               (list 'quote x))
                             (concat requires (:requires task)))
               prog (format "
+;; the fn may live on the task's own classpath
+%s
 ;; first try to require the fully qualified namespace, as this is the cheapest option
 (try (require '%s)
   ;; on failure, the namespace might have been an alias so we require other namespaces
   (catch Exception _ %s))
 (:doc (meta (resolve '%s)))"
+                           (add-deps-form (:extra-paths task) (:extra-deps task))
                            (namespace fn-sym)
                            (if (seq requires)
                              (list* 'require requires)
@@ -788,20 +787,23 @@
               tm (get tasks (symbol run))
               prog (str "bb " run)]
           (if (:cli tm)
-            ;; the task's own :extra-paths/:extra-deps first, so a handler that
-            ;; lives there resolves here like it does for a run or `--help`.
+            ;; The task's classpath and requires come first, as separate
+            ;; top-level forms: the handler may live on its :extra-paths, and
+            ;; its symbol may go through a `:requires` alias, which
+            ;; requiring-resolve only sees once the require has run.
             ;; A failure must never surface: the shell discards stderr, so an
             ;; uncaught error would look like "no candidates" while also
             ;; suppressing the file-completion fallback
-            (format "(try %s (babashka.cli/dispatch (babashka.tasks/-resolve-cli-specs requiring-resolve %s) %s (merge (babashka.tasks/-resolve-cli-tasks-defaults requiring-resolve '%s) %s)) (catch Throwable _ (println \"org.babashka.cli/file-completion\")))"
+            (format "%s\n%s\n(try (babashka.cli/dispatch (babashka.tasks/-resolve-cli-specs requiring-resolve %s) %s (merge %s (babashka.tasks/-resolve-cli-tasks-defaults requiring-resolve '%s) %s)) (catch Throwable _ (println \"org.babashka.cli/file-completion\")))"
                     (add-deps-form (:extra-paths tm) (:extra-deps tm))
+                    (requires-form (concat (:requires tasks) (:requires tm)))
                     (pr-str (list 'quote (:cli tm))) (pr-str compl)
-                    ;; same defaults as -cli-dispatch (incl. a symbol naming a
-                    ;; defaults var), resolved in the task's own script context
-                    ;; via the embedded `requiring-resolve`, so e.g. a shared
-                    ;; :spec completes here too
+                    ;; same defaults as -cli-dispatch, in the same precedence:
+                    ;; a runner-level :cli (incl. a symbol naming a defaults
+                    ;; var) may turn :help off, and :prog stays bb's
+                    (pr-str {:help true})
                     (pr-str (:cli tasks))
-                    (pr-str {:prog prog :help true}))
+                    (pr-str {:prog prog}))
             ;; a task without :cli has no options to offer; defer to the shell
             ;; so file completion still works, as it did before bb claimed the
             ;; `bb` compdef

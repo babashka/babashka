@@ -42,6 +42,31 @@ Init on `src` and `test` only. `test-resources` holds the lib-test corpus, and
 `{:only :all}` fails on feature-gated namespaces that are not on the test
 classpath.
 
+## Reloading babashka.impl.* does not work
+
+Restart the REPL after changing anything under `src/babashka/impl`. Those
+namespaces build the sci environment at load time, with `sci/copy-var` and
+friends. Reloading one creates fresh sci vars while the live context still
+holds the old ones, and the mismatch shows up as wrong behavior rather than an
+error: after a `load-file` of `impl/tasks.clj`, `(current-task)` returns nil
+throughout the test suite, failing tests that have nothing to do with the
+change. `clj-reload` hits the same wall from the other side, cascading into
+dependents such as `babashka.impl.pprint`, which throws on reload.
+
+So clj-reload is for test namespaces. For source changes, restart:
+
+``` shell
+sbx exec babashka-repl -- pkill -f nrepl.cmdline
+bb .sbx/repl.clj --root /path/to/checkout
+```
+
+Start one restart at a time. Two overlapping restarts race over `.nrepl-port`,
+and the REPL that wins can come up without the `:test` alias, which looks like
+test namespaces vanishing: `(require 'babashka.bb-edn-test)` reports "Could not
+locate ... on classpath" while the file is plainly there. Check with
+`(clojure.java.io/resource "babashka/bb_edn_test.clj")` and restart again if it
+is nil.
+
 The REPL runs inside the container: it only sees files under the mounted
 project root, not host temp dirs. See `repl.clj` for `--port` and `--aliases`.
 

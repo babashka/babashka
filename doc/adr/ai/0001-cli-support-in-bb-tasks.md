@@ -98,16 +98,25 @@ calls a command fn for `--help`, `-h` or a parse error, so `bb task --help` show
 help without running deps. The parser decides when deps run, like cobra's PreRun,
 not a scan of raw args.
 
-The dependencies' own `:requires` and `:extra-paths` / `:extra-deps` go into the
-same thunk. Emitting them in the program preamble, where they used to be, meant
-`--help` loaded dependency namespaces and resolved their deps: help could
-download a dependency, run a namespace's load side effects, or fail outright on
-a namespace that is not there. The target task's own `:requires` and extras stay
-eager, since help needs its handler's metadata.
+Only the dependency bodies move into the thunk. Their `:requires` and
+`:extra-paths` / `:extra-deps` stay in the program preamble, so `--help` still
+processes them: it can load a dependency's namespaces and resolve its deps, and
+it fails if one of them is missing.
+
+Moving them into the thunk was tried and reverted. sci analyzes the whole thunk
+as a single form, so a `require` inside it has not run when a body that uses its
+alias is analyzed: a dependency declaring `:requires ([helper :as h])` and
+calling `(h/hi)` failed with "Unable to resolve symbol: h/hi" in the analysis
+phase, on `--help` and on a real run alike. For the same reason a handler
+supplied by a dependency's `:extra-paths` could not resolve, because
+`-cli-dispatch` resolves handler symbols while building the tree, before the
+thunk runs. Deferring these would need the emitter to decide statically, from
+the raw args, whether this is a help invocation, which is the arg scanning this
+design rejects.
 
 This applies to a non-parallel task. A parallel task keeps its dependencies as
 forms ahead of the target, because parallel deps rely on launching their
-channels before the target waits on them, so `--help` still starts them.
+channels before the target waits on them, so `--help` starts them too.
 
 ### 10. `:enter` and `:leave` apply to handlers, not just bodies
 
@@ -131,6 +140,14 @@ Completing a task's arguments delegates to `babashka.cli/dispatch` over the
 task's `:cli` tree. A task without `:cli` emits the file-completion marker
 rather than nothing, so claiming the `bb` compdef does not take away the file
 completion the shell offered before.
+
+Completion runs the task's `:extra-paths` / `:extra-deps` and its `:requires`
+first, as separate top-level forms, because the handler may live on that
+classpath or be named through a require alias. It applies the runner-level
+defaults in the same precedence dispatch uses, so a runner that turns `:help`
+off does not get `--help` offered as a candidate. Any failure falls back to the
+file-completion marker: the shell discards stderr, so an uncaught error would
+read as "no candidates" and take file completion down with it.
 
 ### 12. `:doc` as a vector of lines
 
