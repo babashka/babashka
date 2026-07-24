@@ -43,19 +43,33 @@ places, is a config error.
                 "unlock" {:fn deploy/unlock}}}}}
 ```
 
-### 3. `:exec-fn` versus `:cmd`
+### 3. Command order is recovered from the raw text, but only when it is lost
+
+An edn map keeps insertion order up to 8 keys, so a bigger `:cmd` map reaches
+bb already unordered and help would list commands in hash order.
+`attach-cmd-orders` recovers the source order by reading the raw bb.edn with
+rewrite-clj, for the flat and the nested form alike. A recovered order that is
+not a permutation of the actual keys is dropped, so a bad recovery can at worst
+reorder, never lose or invent a command.
+
+That parse is guarded by a check on the already-parsed edn, because every
+`bb` invocation in a directory with a bb.edn would otherwise pay it: 67 us
+against a startup budget of about 10 ms, for a file with no big `:cmd` map at
+all. With the guard it is under 1 us.
+
+### 4. `:exec-fn` versus `:cmd`
 
 `:exec-fn` is an opts-only handler that receives the parsed opts map, like
 `bb -x`. `:cmd` is a command tree for dispatch. A task may carry both: the
 `:exec-fn` is the default handler and `:cmd` adds subcommands.
 
-### 4. No `:cmd` on function metadata
+### 5. No `:cmd` on function metadata
 
 Command trees live only in bb.edn. `bb -x` never read `:cmd` from function
 metadata, so a `:cmd` there is ignored. `-cli-dispatch` and `-resolve-cli-specs`
 drop it. This keeps routing in the data file and specs on the fn.
 
-### 5. Handler-less groups report "No command given."
+### 6. Handler-less groups report "No command given."
 
 A `:cmd` group with no handler dispatches to no command when called bare, and
 babashka.cli reports "No command given." A group with a default handler
@@ -63,7 +77,7 @@ babashka.cli reports "No command given." A group with a default handler
 A `:task` that is a qualified symbol is a body like any other, so it is the
 default action for its group and does not turn off dispatch.
 
-### 6. Runner-level defaults: map or symbol
+### 7. Runner-level defaults: map or symbol
 
 `:tasks {:cli ...}` sets defaults for every CLI task. It accepts a map (data
 only) or a symbol naming a def of a map. `-resolve-cli-tasks-defaults` resolves
@@ -76,7 +90,7 @@ The defaults sit between bb's own dispatch opts: they override `:help`, so a
 runner can turn auto-help off, and they do not override `:prog`, so help always
 names the task it belongs to.
 
-### 7. Config errors name the task and the key
+### 8. Config errors name the task and the key
 
 A bb.edn that points at something absent is reported, not left to fail later:
 an `:exec-fn` or `:fn` whose var does not resolve, and a runner-level `:cli`
@@ -93,21 +107,21 @@ the user as the namespace not being on the classpath.
 This is invocation-time only, so a stale name never breaks completion or
 `bb tasks`, which stay best-effort.
 
-### 8. `:error-fn` is never bb.edn data
+### 9. `:error-fn` is never bb.edn data
 
 dispatch would treat a symbol `:error-fn` as a map lookup and swallow every
 error. `assert-no-edn-error-fn` rejects `:error-fn` in a bb.edn task node. Put it
 in the function's `:org.babashka/cli` metadata, or in the defaults var referenced
 from `:tasks {:cli my.ns/defaults}`.
 
-### 9. Dispatch and completion resolve the same `:cli` shape
+### 10. Dispatch and completion resolve the same `:cli` shape
 
 `-cli-dispatch` (invocation) and `completion-program` (completion) both read
 `(:cli (:tasks bb-edn))`. Both resolve a symbol runner-level `:cli` the same way.
 `completion-program` emits `-resolve-cli-tasks-defaults` into the completion code
 so symbol defaults reach completion, not just invocation.
 
-### 10. Deps run as a parser-selected pre-step
+### 11. Deps run as a parser-selected pre-step
 
 For a `:cli` task, `:depends` runs right before the command fn the parser
 selects, root body or subcommand, and only on a successful parse. dispatch never
@@ -135,7 +149,7 @@ This applies to a non-parallel task. A parallel task keeps its dependencies as
 forms ahead of the target, because parallel deps rely on launching their
 channels before the target waits on them, so `--help` starts them too.
 
-### 11. `:enter` and `:leave` apply to handlers, not just bodies
+### 12. `:enter` and `:leave` apply to handlers, not just bodies
 
 A task with a `:task` body has its `:enter` / `:leave` wrapped around the body.
 A task whose handler is an `:exec-fn` or `:fn`, including a command group leaf,
@@ -143,7 +157,7 @@ has them applied to the handler that dispatch selects. They run on the same
 terms as `:depends`: after a successful parse, never for `--help` or a parse
 error.
 
-### 12. Completion offers task names, files and non-deprecated global options
+### 13. Completion offers task names, files and non-deprecated global options
 
 Completing the first word offers task names plus a file-completion marker, so
 `bb file.clj` stays as first-class as `bb task`. A dash-prefixed first word
@@ -158,9 +172,22 @@ task's `:cli` tree. A task without `:cli` emits the file-completion marker
 rather than nothing, so claiming the `bb` compdef does not take away the file
 completion the shell offered before.
 
+A completion callback never runs what is on the line being completed. The
+completed words go through bb's normal option parsing, so that `--config` and
+friends point completion at the right bb.edn, and the resulting opts are then
+cut down to what completion needs. Everything that would evaluate, start or
+write something is dropped: an `-e` expression, `--init`, subcommands like
+`clojure` and `nrepl-server`, uberjar post-processing, `--help` and `--version`
+output. Without that, `bb -e '(...)'` followed by TAB evaluates the expression
+before the user has pressed enter. The list is a whitelist, since a mode left
+in would run on a keystroke.
+
 Completion runs the task's `:extra-paths` / `:extra-deps` and its `:requires`
 first, because the handler may live on that classpath or be named through a
-require alias. It applies the runner-level defaults in the same precedence
+require alias. This is the one thing completion does execute, and it is why an
+`:extra-deps` that is not in the local cache can make the first TAB pause on a
+download. A task with an explicit `:doc` avoids the same cost during task-name
+completion, which otherwise loads a namespace to read a docstring. It applies the runner-level defaults in the same precedence
 dispatch uses, so a runner that turns `:help` off does not get `--help` offered
 as a candidate.
 
@@ -174,7 +201,7 @@ For the same reason a task doc is best-effort. Deriving one loads the fn's
 namespace, and one task with a missing namespace must not stop `bb tasks` from
 listing the others or completion from offering them.
 
-### 13. `:doc` as a vector of lines
+### 14. `:doc` as a vector of lines
 
 A task `:doc` may be a vector of strings. `join-docs` joins it with newlines into
 the string every consumer expects.

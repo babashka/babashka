@@ -1247,11 +1247,14 @@ Use bb run --help to show this help output.
   honored, then the last word is completed against that state."
   [args]
   (let [[_ sub & more] args
-        shell (second (drop-while #(not= "--shell" %) more))
+        ;; bb's own options end at `--`; everything after it is the user's line
+        ;; and may contain the same words
+        ours (take-while #(not= "--" %) more)
+        shell (second (drop-while #(not= "--shell" %) ours))
         ;; powershell can't pass an empty fresh-word token (PS 5.1 drops empty
         ;; args), so its snippet sends --fresh true instead; treat it as a
         ;; trailing empty word like babashka.cli's completions-command does
-        fresh? (= "true" (second (drop-while #(not= "--fresh" %) more)))
+        fresh? (= "true" (second (drop-while #(not= "--fresh" %) ours)))
         user-toks (vec (rest (drop-while #(not= "--" %) more)))
         user-toks (cond-> user-toks fresh? (conj ""))]
     {:sub sub
@@ -1324,6 +1327,22 @@ Use bb run --help to show this help output.
                        edn (tasks/attach-cmd-orders edn)]
                    (vreset! common/bb-edn edn)))
         opts (parse-opts args opts)
+        ;; A completion callback must never run what is on the line being
+        ;; completed. The completed words go through the normal parsing above so
+        ;; that global options like --config point completion at the right
+        ;; bb.edn, but everything that would evaluate, start or write something
+        ;; is dropped here: an -e expression, --init, a subcommand like clojure
+        ;; or nrepl-server, uberjar post-processing, --help/--version output.
+        ;; Whitelisting is the safe direction, since a mode left in would run on
+        ;; a keystroke, before the user has pressed enter
+        ;; keyed off the local, and putting :completion back: some options
+        ;; replace the whole opts map rather than adding to it
+        opts (if completion
+               (assoc (select-keys opts [:run :command-line-args
+                                         :classpath :config :deps-root :merge-deps
+                                         :force? :debug])
+                      :completion completion)
+               opts)
         min-bb-version (:min-bb-version bb-edn)]
     (System/setProperty "java.class.path" "")
     (when min-bb-version

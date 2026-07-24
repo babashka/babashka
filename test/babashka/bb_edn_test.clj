@@ -669,6 +669,11 @@ even more stuff here\"
     (test-utils/with-config '{:tasks {foo {:extra-paths ["test-resources"]
                                            :exec-fn babashka.tasks-cli/deploy-x}}}
       (is (str/includes? (test-utils/bb nil "tasks") "Deploy it"))))
+  (testing "a task-level :cli that is not a map is a config error"
+    (test-utils/with-config '{:tasks {foo {:cli babashka.tasks-cli/base-opts}}}
+      (is (thrown-with-msg?
+           Exception #"Task foo: :cli must be a map"
+           (test-utils/bb nil "-cp" "test-resources" "foo")))))
   (testing "a handler that cannot be resolved names the task and the key"
     (testing "when the var is missing"
       (test-utils/with-config '{:tasks {foo {:exec-fn clojure.core/nope}}}
@@ -906,6 +911,26 @@ even more stuff here\"
           (is (str/includes? out "--config"))
           (is (str/includes? out "--classpath"))
           (is (not (str/includes? out "dev")))))))
+  (testing "completion never runs what is on the line being completed"
+    (test-utils/with-config '{:tasks {foo {:task (println :x)}}}
+      (let [marker (fs/file (fs/temp-dir) "bb-completion-must-not-write.txt")]
+        (fs/delete-if-exists marker)
+        (testing "an -e expression is not evaluated"
+          (test-utils/bb nil "org.babashka.cli/completions" "complete" "--shell" "zsh" "--"
+                         "-e" (format "(spit \"%s\" :executed)" marker) "")
+          (is (not (fs/exists? marker))))
+        (testing "and --version prints no candidates"
+          (let [out (test-utils/bb nil "org.babashka.cli/completions"
+                                   "complete" "--shell" "zsh" "--" "--version" "")]
+            (is (not (str/includes? out "babashka v"))))))))
+  (testing "a --fresh in the completed line is not read as bb's own"
+    (test-utils/with-config '{:tasks {foo {:task (println :x)}
+                                      bar {:task (println :y)}}}
+      (let [out (test-utils/bb nil "org.babashka.cli/completions"
+                               "complete" "--shell" "zsh" "--" "--fresh" "true" "f")]
+        (testing "so the partial word stays the last one"
+          (is (str/includes? out "foo"))
+          (is (not (str/includes? out "bar")))))))
   (testing "a task without :cli defers argument completion to the shell"
     (test-utils/with-config '{:tasks {plain {:task (println :x)}}}
       (let [out (test-utils/bb nil "org.babashka.cli/completions"

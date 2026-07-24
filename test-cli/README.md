@@ -282,6 +282,11 @@ $ bb dev -<TAB>           # -s --sandbox --port ...
 Completion after a space offers subcommands and positional values. Completion
 after a dash offers option names.
 
+Completion loads a task's namespace to read the spec and the docstring, so a
+task with `:extra-deps` that are not in the local cache can make the first TAB
+pause while they resolve. Give such a task an explicit `:doc` to keep it out of
+task-name completion.
+
 ## FAQ
 
 **Can I still run these functions outside the task runner?**

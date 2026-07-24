@@ -18,46 +18,57 @@
 (defn -chan? [x]
   (instance? ManyToManyChannel x))
 
+(defn- update-task-maps
+  "Applies `f` to every task in `edn` written as a map, as `(f name task)`.
+  Entries like `:init` and `:requires`, and tasks written as a bare form, are
+  left alone."
+  [edn f]
+  (if-let [tasks (:tasks edn)]
+    (assoc edn :tasks
+           (reduce-kv (fn [acc k v]
+                        (if (and (symbol? k) (map? v))
+                          (assoc acc k (f k v))
+                          acc))
+                      tasks tasks))
+    edn))
+
 (defn hoist-cli-keys
   "Task-level `:exec-fn` and `:cmd` are sugar for the same keys inside `:cli`,
   so a CLI task can be written flat (`foo {:exec-fn ...}`, `bar {:cmd {...}}`).
   Folds them in for every task map, so all consumers (assembly, help,
   completion, task listing) see one `:cli` shape. Specifying a handler
   (`:exec-fn`) at the task level together with a `:cli` `:fn`/`:exec-fn`, or
-  `:cmd` in both places, is a config error."
+  `:cmd` in both places, is a config error, as is a task `:cli` that is not a
+  map."
   [edn]
-  (if-let [tasks (:tasks edn)]
-    (assoc edn :tasks
-           (reduce-kv
-            (fn [acc k v]
-              (if (and (symbol? k) (map? v) (or (:exec-fn v) (:cmd v)))
-                (let [cli (:cli v)]
-                  (when (and (:exec-fn v) (or (:fn cli) (:exec-fn cli)))
-                    (throw (ex-info (str "Task " k ": both :exec-fn and a :cli :fn/:exec-fn given")
-                                    {:babashka/exit 1})))
-                  (when (and (:cmd v) (:cmd cli))
-                    (throw (ex-info (str "Task " k ": both :cmd and a :cli :cmd given")
-                                    {:babashka/exit 1})))
-                  (assoc acc k (-> v
-                                   (dissoc :exec-fn :cmd)
-                                   (update :cli merge (select-keys v [:exec-fn :cmd])))))
-                acc))
-            tasks tasks))
-    edn))
+  (update-task-maps
+   edn
+   (fn [k v]
+     (let [cli (:cli v)]
+       (when-not (or (nil? cli) (map? cli))
+         (throw (ex-info (str "Task " k ": :cli must be a map, got: " (pr-str cli)
+                              ". Only the :tasks level :cli may name a defaults var")
+                         {:babashka/exit 1})))
+       (if (or (:exec-fn v) (:cmd v))
+         (do
+           (when (and (:exec-fn v) (or (:fn cli) (:exec-fn cli)))
+             (throw (ex-info (str "Task " k ": both :exec-fn and a :cli :fn/:exec-fn given")
+                             {:babashka/exit 1})))
+           (when (and (:cmd v) (:cmd cli))
+             (throw (ex-info (str "Task " k ": both :cmd and a :cli :cmd given")
+                             {:babashka/exit 1})))
+           (-> v
+               (dissoc :exec-fn :cmd)
+               (update :cli merge (select-keys v [:exec-fn :cmd]))))
+         v)))))
 
 (defn join-docs
   "A task `:doc` may be a vector of lines, convenient in edn. Joins it into
   the string every consumer expects."
   [edn]
-  (if-let [tasks (:tasks edn)]
-    (assoc edn :tasks
-           (reduce-kv
-            (fn [acc k v]
-              (if (and (symbol? k) (map? v) (vector? (:doc v)))
-                (assoc acc k (update v :doc #(str/join "\n" %)))
-                acc))
-            tasks tasks))
-    edn))
+  (update-task-maps edn (fn [_ v]
+                          (cond-> v
+                            (vector? (:doc v)) (update :doc #(str/join "\n" %))))))
 
 (def sci-ns (sci/create-ns 'babashka.tasks nil))
 (def default-log-level :error)
@@ -215,6 +226,21 @@
                            "\n" prog))
     prog))
 
+(defn- fold-fn-meta
+  "Merges a handler var's `:org.babashka/cli` metadata into its `node`, like
+  `bb -x`: namespace metadata first, then the var's own, then its docstring,
+  with explicit node keys winning over all of it. A `:cmd` tree on the fn is
+  dropped, command trees belong in bb.edn. `var-meta` is nil when the node
+  holds a fn object rather than a symbol, which leaves the node as it is."
+  [var-meta node]
+  (if var-meta
+    (babashka.cli/merge-opts
+     (:org.babashka/cli (meta (:ns var-meta)))
+     (dissoc (:org.babashka/cli var-meta) :cmd)
+     (when-let [d (:doc var-meta)] {:doc d})
+     node)
+    node))
+
 (defn- resolve-or-throw
   "Resolves `sym` with `resolve-fn`, reporting `what` when it names a var that
   is not there. Covers both failures: a missing var resolves to nil, a missing
@@ -285,13 +311,14 @@
   [loc]
   (when-let [cmd-loc (zunquote (zmap-val loc :cmd))]
     (when (= :map (zip/tag cmd-loc))
-      {:order (zmap-keys cmd-loc)
-       :children (into {}
-                       (keep (fn [k]
-                               (when-let [child (zunquote (zmap-val cmd-loc k))]
-                                 (when-let [o (cmd-orders child)]
-                                   [k o]))))
-                       (zmap-keys cmd-loc))})))
+      (let [ks (zmap-keys cmd-loc)]
+        {:order ks
+         :children (into {}
+                         (keep (fn [k]
+                                 (when-let [child (zunquote (zmap-val cmd-loc k))]
+                                   (when-let [o (cmd-orders child)]
+                                     [k o]))))
+                         ks)}))))
 
 (defn- with-cmd-order
   "Attach recovered `orders` as `:cmd-order` on `node` and its children.
@@ -312,6 +339,22 @@
                       cm))))
     node))
 
+(defn- needs-cmd-order?
+  "Whether any task has a `:cmd` map big enough to have lost its source order.
+  Up to 8 keys an edn map keeps insertion order, so there is nothing to
+  recover, and reading the raw text would cost every bb startup in a directory
+  with a bb.edn."
+  [edn]
+  (boolean
+   (some (fn [[k v]]
+           (when (and (symbol? k) (map? v))
+             (let [big? (fn big? [node]
+                          (when-let [cm (:cmd node)]
+                            (or (> (count cm) 8)
+                                (some big? (vals cm)))))]
+               (big? (:cli v)))))
+         (:tasks edn))))
+
 (defn attach-cmd-orders
   "Attach `:cmd-order` from the literal key order in the raw bb.edn text to
   every task `:cli` tree with more than 8 subcommands. An explicit
@@ -320,7 +363,7 @@
   `:cmd` into `:cli` in the parsed edn, but the raw text still has it where the
   user wrote it."
   [edn]
-  (or (when-let [raw (:raw edn)]
+  (or (when-let [raw (and (needs-cmd-order? edn) (:raw edn))]
         (try
           (let [root (zip/down (zip/edn (some #(when (= :map (node/tag %)) %)
                                               (:children (parser/parse-string-all raw)))))
@@ -359,36 +402,29 @@
   or nil). A dependency's own `:requires` and `:extra-paths` / `:extra-deps`
   are not in here: they stay in the program preamble, because sci analyzes this
   thunk as one form and a require inside it would not have run when a body
-  using its alias is analyzed (see ADR 0001, decision 10).
+  using its alias is analyzed (see ADR 0001, decision 11).
   `:deps-fn` and `:hook-fn` run right before whichever command fn the
   parser selects - root body or a subcommand - and only on a successful parse.
   dispatch never calls a command fn for `--help`/`-h` or a parse error, so
   nothing in `fns` runs then, decided by the parser (like cobra's PreRun) rather
   than by scanning raw args. `:body-fn` carries its own `:enter` / `:leave`,
   so `:hook-fn` applies only to the resolved `:fn` / `:exec-fn` handlers."
-  [cli-opts task-name {:keys [body-fn deps-fn hook-fn]} resolve-fn args]
+  [cli-opts task-name fns resolve-fn args]
   (assert-no-edn-error-fn cli-opts task-name)
   (when (map? (:cli (:tasks @bb-edn)))
     (assert-no-edn-error-fn (:cli (:tasks @bb-edn)) task-name))
-  (let [with-deps (fn [f] (fn [m] (when deps-fn (deps-fn)) (f m)))
+  (let [{:keys [body-fn deps-fn hook-fn]} fns
+        with-deps (fn [f] (fn [m] (when deps-fn (deps-fn)) (f m)))
         with-hooks (fn [f] (if hook-fn (fn [m] (hook-fn (fn [] (f m)))) f))
-        ;; resolve a :fn / :exec-fn symbol, merge the ns and var
-        ;; :org.babashka/cli metadata and the docstring (like bb -x; node keys
-        ;; win), and gate :depends and :enter/:leave on the fn being called
+        ;; resolve a :fn / :exec-fn symbol, fold in the fn's metadata and gate
+        ;; :depends and :enter/:leave on the fn being called
         wrap-key (fn [node k]
                    (if-let [fv (k node)]
                      (let [the-var (if (symbol? fv)
                                      (resolve-or-throw resolve-fn fv
                                                        (str "Task " task-name ": cannot resolve " k " " fv))
-                                     fv)
-                           m (when (symbol? fv) (meta the-var))]
-                       (-> (babashka.cli/merge-opts
-                            (:org.babashka/cli (meta (:ns m)))
-                            ;; a `:cmd` tree belongs in bb.edn, not on a fn, so it
-                            ;; is dropped here; the fn's spec/doc/etc. still merge
-                            (dissoc (:org.babashka/cli m) :cmd)
-                            (when-let [d (:doc m)] {:doc d})
-                            node)
+                                     fv)]
+                       (-> (fold-fn-meta (when (symbol? fv) (meta the-var)) node)
                            (assoc k (with-deps (with-hooks the-var)))))
                      node))
         wrap (fn wrap [node]
@@ -408,23 +444,17 @@
                                             {:prog (str "bb " task-name)}))))
 
 (defn -resolve-cli-specs
-  "Walk a `:cli` tree, merging each node fn's `:org.babashka/cli` metadata and
-  docstring into its node (explicit node keys win), for both `:fn` and
-  `:exec-fn`. `resolve-fn` is the script's `requiring-resolve`. Used where the
-  tree is inspected but the fns are not called - `--help` and shell completion -
-  so a node's spec and doc show up even though they live on the fn. Mirrors the
-  merge in -cli-dispatch's wrap."
+  "Walk a `:cli` tree, folding each node fn's metadata into its node with
+  fold-fn-meta, for both `:fn` and `:exec-fn`. `resolve-fn` is the script's
+  `requiring-resolve`. Used where the tree is inspected but the fns are not
+  called - `--help` and shell completion - so a node's spec and doc show up even
+  though they live on the fn. Unlike -cli-dispatch this does not insist that a
+  symbol resolves: a stale name should not stop the rest from being described."
   [resolve-fn node]
   (let [merge-fn-meta (fn [node k]
                         (let [fv (k node)]
-                          (if (symbol? fv)
-                            (let [m (meta (resolve-fn fv))]
-                              (babashka.cli/merge-opts
-                               (:org.babashka/cli (meta (:ns m)))
-                               (dissoc (:org.babashka/cli m) :cmd)
-                               (when-let [d (:doc m)] {:doc d})
-                               node))
-                            node)))
+                          (fold-fn-meta (when (symbol? fv) (meta (resolve-fn fv)))
+                                        node)))
         node (-> node (merge-fn-meta :fn) (merge-fn-meta :exec-fn))]
     (if-let [cm (:cmd node)]
       (assoc node :cmd (into {} (map (fn [[k v]] [k (-resolve-cli-specs resolve-fn v)])) cm))
@@ -435,15 +465,10 @@
   babashka.cli/dispatch: parses options (exposed as `:opts` on `*task*` for the
   body), handles `--help` and subcommands.
 
-  `dep-forms` (the task's assembled `:depends`, or nil) are passed to
-  -cli-dispatch as a thunk and run before whichever command fn the parser
-  selects (root body or subcommand), only on a successful parse - never on
-  `--help`/`-h` or a parse error (like cobra's PreRun), rather than by scanning
-  raw args for a help token.
-
-  A task without a `:task` body still gets `:enter` / `:leave`: they are passed
-  as a thunk wrapper applied to the `:exec-fn` / `:fn` handler that runs. A
-  `:task` body is already wrapped by wrap-enter-leave.
+  `dep-forms` (the task's assembled `:depends`, or nil) and `:enter` / `:leave`
+  are handed over as thunks, for -cli-dispatch to run once the parser picks a
+  command. A `:task` body is already wrapped by wrap-enter-leave, so the hook
+  thunk is for the handler case.
 
   Task-map `:doc` folds into the tree root so `--help` and `bb tasks` agree
   (an explicit `:doc` in the `:cli` map wins)."
@@ -470,7 +495,7 @@
   "Assembles task, does not process :depends. `dep-forms` is only threaded for a
   `:cli` target (see wrap-cli): assembled `:depends` to run inside the body fn."
   ([task-map task parallel?]
-   (assemble-task-1 task-map task parallel? nil nil))
+   (assemble-task-1 task-map task parallel? nil))
   ([task-map task parallel? last?]
    (assemble-task-1 task-map task parallel? last? nil))
   ([task-map task parallel? last? dep-forms]
@@ -650,21 +675,12 @@
                                  [(binding [*out* *err*]
                                     (println "No such task:" t)) 1])
                                (if-let [task (get tasks t)]
-                                 (let [;; For a non-parallel `:cli` task, hand the
-                                       ;; deps to dispatch as a thunk (wrap-cli),
-                                       ;; so they run only when a command fn runs
-                                       ;; - never on `--help` or a parse error.
-                                       ;; Otherwise keep the deps as forms before
-                                       ;; the target (parallel deps rely on
-                                       ;; launching their channels ahead of the
-                                       ;; target's wait).
+                                 (let [;; a non-parallel `:cli` task takes its dep
+                                       ;; bodies as a thunk (see ADR 0001,
+                                       ;; decision 11); parallel deps stay ahead
+                                       ;; of the target, they must launch their
+                                       ;; channels before it waits
                                        cli-prelude? (and (:cli task) (not parallel?))
-                                       ;; only the dependency *bodies* move into
-                                       ;; the thunk. Their :requires and extras
-                                       ;; stay in the preamble: sci analyzes the
-                                       ;; whole thunk as one form, so a require
-                                       ;; inside it has not run yet when a body
-                                       ;; using its alias is analyzed
                                        dep-forms prog
                                        prog (if cli-prelude?
                                               (assemble-task-1 task-map task parallel? true dep-forms)
@@ -854,6 +870,7 @@
           (format "(do %s)"
                   (str/join " " (map #(format "(println %s)" (pr-str %)) lines)))))
 
+      ;; default: an unknown sub emits a program that does nothing
       "nil")))
 
 (defn list-tasks
