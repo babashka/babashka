@@ -615,29 +615,25 @@ even more stuff here\"
                     (binding [cli/*exit-fn* (fn [m] (prn (select-keys m [:exit :cause])))
                               *command-line-args* [\"--nope\"]]
                       (babashka.tasks/run (quote go)))"))))))
-  (testing "source order of a large :cmd map survives (bb.edn tree)"
-    ;; a literal string: an evaluated 11-entry map would already be hash-ordered
-    (test-utils/with-config (str "{:tasks {big {:cli {:cmd {"
-                                 "kilo {:fn clojure.core/prn} juliet {:fn clojure.core/prn} "
-                                 "india {:fn clojure.core/prn} hotel {:fn clojure.core/prn} "
-                                 "golf {:fn clojure.core/prn} foxtrot {:fn clojure.core/prn} "
-                                 "echo {:fn clojure.core/prn} delta {:fn clojure.core/prn} "
-                                 "charlie {:fn clojure.core/prn} bravo {:fn clojure.core/prn} "
-                                 "alpha {:fn clojure.core/prn}}}}}}")
+  (testing "a vector of [name command] pairs keeps the order it was written in"
+    ;; more than 8 commands: an edn map would already have lost its order
+    (test-utils/with-config '{:tasks {big {:cmd [["kilo" {:fn clojure.core/prn}]
+                                                 ["juliet" {:fn clojure.core/prn}]
+                                                 ["india" {:fn clojure.core/prn}]
+                                                 ["hotel" {:fn clojure.core/prn}]
+                                                 ["golf" {:fn clojure.core/prn}]
+                                                 ["foxtrot" {:fn clojure.core/prn}]
+                                                 ["echo" {:fn clojure.core/prn}]
+                                                 ["delta" {:fn clojure.core/prn}]
+                                                 ["charlie" {:fn clojure.core/prn}]
+                                                 ["bravo" {:fn clojure.core/prn}]
+                                                 ["alpha" {:fn clojure.core/prn}]]}}}
       (let [help (test-utils/bb nil "big" "--help")
             names ["kilo" "juliet" "india" "hotel" "golf" "foxtrot" "echo" "delta" "charlie" "bravo" "alpha"]]
-        (is (apply < (map #(str/index-of help %) names))))))
-  (testing "source order of a large :cmd map survives (flat task-level :cmd)"
-    (test-utils/with-config (str "{:tasks {big {:cmd {"
-                                 "kilo {:fn clojure.core/prn} juliet {:fn clojure.core/prn} "
-                                 "india {:fn clojure.core/prn} hotel {:fn clojure.core/prn} "
-                                 "golf {:fn clojure.core/prn} foxtrot {:fn clojure.core/prn} "
-                                 "echo {:fn clojure.core/prn} delta {:fn clojure.core/prn} "
-                                 "charlie {:fn clojure.core/prn} bravo {:fn clojure.core/prn} "
-                                 "alpha {:fn clojure.core/prn}}}}}")
-      (let [help (test-utils/bb nil "big" "--help")
-            names ["kilo" "juliet" "india" "hotel" "golf" "foxtrot" "echo" "delta" "charlie" "bravo" "alpha"]]
-        (is (apply < (map #(str/index-of help %) names))))))
+        (is (apply < (map #(str/index-of help %) names))))
+      (testing "and dispatches through it"
+        (is (= {:dispatch ["alpha"] :opts {} :args ["1"]}
+               (bb "big" "alpha" "1"))))))
   (testing "task-level :exec-fn is sugar for :cli {:exec-fn ...}"
     (test-utils/with-config '{:tasks {foo {:exec-fn babashka.tasks-cli/deploy-x}}}
       (is (= {:env "prod" :ran :exec-only}
@@ -682,11 +678,11 @@ even more stuff here\"
     (testing "and a :cmd that is not a map at all"
       (test-utils/with-config '{:tasks {foo {:cmd bar}}}
         (is (thrown-with-msg?
-             Exception #"Task foo: :cmd must be a map of command name to command, got: bar"
+             Exception #"Task foo: :cmd must be a map of command name to command, or a vector"
              (test-utils/bb nil "-cp" "test-resources" "foo"))))
       (test-utils/with-config '{:tasks {foo {:cli {:cmd "oops"}}}}
         (is (thrown-with-msg?
-             Exception #"Task foo: :cmd must be a map of command name to command"
+             Exception #"Task foo: :cmd must be a map of command name to command, or a vector"
              (test-utils/bb nil "-cp" "test-resources" "foo"))))))
   (testing "a :task body next to a :cli :fn is a config error"
     (test-utils/with-config '{:tasks {foo {:task (println :body)

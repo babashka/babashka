@@ -33,15 +33,18 @@
     edn))
 
 (defn- assert-cmd-maps
-  "A `:cmd` tree and every command in it must be a map. Pointing a command
-  straight at a function reads like it should work, so say what to write
-  instead of letting it fail somewhere down the tree."
+  "A `:cmd` is a map of command name to command, or a vector of
+  `[name command]` pairs when the order matters, and every command in it is a
+  map. Pointing a command straight at a function reads like it should work, so
+  say what to write instead of letting it fail somewhere down the tree."
   [task-name cmd]
   (when (some? cmd)
-    (when-not (map? cmd)
-      (throw (ex-info (str "Task " task-name ": :cmd must be a map of command name to command, got: "
+    (when-not (or (map? cmd) (vector? cmd))
+      (throw (ex-info (str "Task " task-name
+                           ": :cmd must be a map of command name to command, or a vector of [name command] pairs, got: "
                            (pr-str cmd))
                       {:babashka/exit 1})))
+    ;; a map entry and a [name command] pair destructure alike
     (run! (fn [[name node]]
             (when-not (map? node)
               (throw (ex-info (str "Task " task-name ": :cmd " (pr-str name)
@@ -302,6 +305,14 @@
     :else (throw (ex-info (str ":tasks :cli must be a map or a symbol naming a def, got: " (pr-str d))
                           {:babashka/exit 1}))))
 
+(defn- map-cmd
+  "Applies `f` to every command in a `:cmd`, keeping its shape. A vector of
+  `[name command]` pairs is how babashka.cli takes an ordered command list, so
+  rebuilding it as a map would throw that order away."
+  [cmd f]
+  (let [entries (map (fn [[name node]] [name (f node)]) cmd)]
+    (if (vector? cmd) (vec entries) (into {} entries))))
+
 (defn- assert-no-edn-error-fn
   "In bb.edn a `:error-fn` can only be data; dispatch would invoke a symbol as
   a map lookup and silently swallow every error. It belongs in the function's
@@ -311,106 +322,8 @@
   (when (contains? node :error-fn)
     (throw (ex-info (str "Task " task-name ": :error-fn is not supported in bb.edn, put it in the function's :org.babashka/cli metadata or in a var referenced from :tasks {:cli my.ns/defaults}")
                     {:babashka/exit 1})))
-  (run! #(assert-no-edn-error-fn % task-name) (vals (:cmd node))))
-
-(defn- zmap-val
-  "Value node of key `k` in the map node at `loc`, or nil."
-  [loc k]
-  (when (and loc (= :map (zip/tag loc)))
-    (some-> (zip/down loc) (zip/find-value k) zip/right)))
-
-(defn- zunquote [loc]
-  (if (and loc (= :quote (zip/tag loc))) (zip/down loc) loc))
-
-(defn- zmap-keys
-  "Keys of the map node at `loc`, in source order."
-  [loc]
-  (when (and loc (= :map (zip/tag loc)))
-    (into []
-          (comp (take-while some?)
-                (take-nth 2)
-                (filter zip/sexpr-able?)
-                (map zip/sexpr))
-          (iterate zip/right (zip/down loc)))))
-
-(defn- cmd-orders
-  "Nested `:cmd` key order under the cli map node at `loc`:
-  `{:order [...] :children {name orders}}`, or nil."
-  [loc]
-  (when-let [cmd-loc (zunquote (zmap-val loc :cmd))]
-    (when (= :map (zip/tag cmd-loc))
-      (let [ks (zmap-keys cmd-loc)]
-        {:order ks
-         :children (into {}
-                         (keep (fn [k]
-                                 (when-let [child (zunquote (zmap-val cmd-loc k))]
-                                   (when-let [o (cmd-orders child)]
-                                     [k o]))))
-                         ks)}))))
-
-(defn- with-cmd-order
-  "Attach recovered `orders` as `:cmd-order` on `node` and its children.
-  An explicit `:cmd-order` wins. Maps of 8 or fewer keys keep their own order.
-  A recovered order that is not a permutation of the actual keys is dropped, so
-  a wrong recovery can at most reorder, never lose or invent a command."
-  [node orders]
-  (if (and orders (map? node) (:cmd node))
-    (let [node (if (and (> (count (:cmd node)) 8)
-                        (not (:cmd-order node))
-                        (= (set (:order orders)) (set (keys (:cmd node)))))
-                 (assoc node :cmd-order (:order orders))
-                 node)]
-      (update node :cmd
-              (fn [cm]
-                (into {}
-                      (map (fn [[k v]] [k (with-cmd-order v (get-in orders [:children k]))]))
-                      cm))))
-    node))
-
-(defn- needs-cmd-order?
-  "Whether any task has a `:cmd` map big enough to have lost its source order.
-  Up to 8 keys an edn map keeps insertion order, so there is nothing to
-  recover, and reading the raw text would cost every bb startup in a directory
-  with a bb.edn."
-  [edn]
-  (boolean
-   (some (fn [[k v]]
-           (when (and (symbol? k) (map? v))
-             (let [big? (fn big? [node]
-                          (when-let [cm (:cmd node)]
-                            (or (> (count cm) 8)
-                                (some big? (vals cm)))))]
-               (big? (:cli v)))))
-         (:tasks edn))))
-
-(defn attach-cmd-orders
-  "Attach `:cmd-order` from the literal key order in the raw bb.edn text to
-  every task `:cli` tree with more than 8 subcommands. An explicit
-  `:cmd-order` wins. Reads both the flat form (`:cmd` on the task) and the
-  nested one (`:cmd` inside `:cli`): hoist-cli-keys has already moved a flat
-  `:cmd` into `:cli` in the parsed edn, but the raw text still has it where the
-  user wrote it."
-  [edn]
-  (or (when-let [raw (and (needs-cmd-order? edn) (:raw edn))]
-        (try
-          (let [root (zip/down (zip/edn (some #(when (= :map (node/tag %)) %)
-                                              (:children (parser/parse-string-all raw)))))
-                tasks-loc (some-> root (zip/find-value :tasks) zip/right)]
-            (when tasks-loc
-              (assoc edn :tasks
-                     (reduce-kv
-                      (fn [acc k v]
-                        (if-let [orders (and (symbol? k) (map? v) (:cmd (:cli v))
-                                             (when-let [tnode (some-> (zip/down tasks-loc)
-                                                                      (zip/find-value k)
-                                                                      zip/right)]
-                                               (or (some-> tnode (zmap-val :cli) zunquote cmd-orders)
-                                                   (cmd-orders tnode))))]
-                          (assoc acc k (update v :cli with-cmd-order orders))
-                          acc))
-                      (:tasks edn) (:tasks edn)))))
-          (catch Exception _ nil)))
-      edn))
+  ;; `map second` and not `vals`: a :cmd is a map or a vector of pairs
+  (run! #(assert-no-edn-error-fn % task-name) (map second (:cmd node))))
 
 (defn -cli-dispatch
   "Runs babashka.cli/dispatch over a task's `:cli` tree. `body-fn` (the task
@@ -458,7 +371,7 @@
         wrap (fn wrap [node]
                (let [node (-> node (wrap-key :fn) (wrap-key :exec-fn))]
                  (if-let [cm (:cmd node)]
-                   (assoc node :cmd (into {} (map (fn [[k v]] [k (wrap v)])) cm))
+                   (assoc node :cmd (map-cmd cm wrap))
                    node)))
         tree (wrap cli-opts)
         tree (if body-fn (assoc tree :fn (with-deps body-fn)) tree)
@@ -485,7 +398,7 @@
                                         node)))
         node (-> node (merge-fn-meta :fn) (merge-fn-meta :exec-fn))]
     (if-let [cm (:cmd node)]
-      (assoc node :cmd (into {} (map (fn [[k v]] [k (-resolve-cli-specs resolve-fn v)])) cm))
+      (assoc node :cmd (map-cmd cm #(-resolve-cli-specs resolve-fn %)))
       node)))
 
 (defn wrap-cli
@@ -797,46 +710,20 @@
            (filter symbol?))
           (iterate zip/right loc))))
 
-(def global-opt-completions
-  "bb's global and evaluation options offered when completing a dash-prefixed
-  first word. Curated from print-help; keep in sync. Deprecated options
-  (`-i`, `-I`, `-o`, `-O`, `--stream`) are left out on purpose: completion
-  should not advertise what we do not want new scripts to use."
-  [["--classpath" "Classpath to use. Overrides bb.edn classpath"]
-   ["-cp" "Classpath to use. Overrides bb.edn classpath"]
-   ["--config" "Replace bb.edn with file"]
-   ["--deps-root" "Treat dir as root of relative paths in config"]
-   ["--debug" "Print debug information and internal stacktrace in case of exception"]
-   ["--init" "Load file after any preloads and prior to evaluation/subcommands"]
-   ["--prn" "Print result via clojure.core/prn"]
-   ["--force-exit" "Force exiting even when non-daemon threads are still running"]
-   ["-Sforce" "Force recalculation of the classpath (don't use the cache)"]
-   ["-Sdeps" "Deps data to use as the last deps file to be merged"]
-   ["--file" "Run file"]
-   ["-f" "Run file"]
-   ["--jar" "Run uberjar"]
-   ["--eval" "Evaluate an expression"]
-   ["-e" "Evaluate an expression"]
-   ["--main" "Call the -main function from a namespace or call a fully qualified var"]
-   ["-m" "Call the -main function from a namespace or call a fully qualified var"]
-   ["--exec" "Call the fully qualified var. Args are parsed by babashka CLI"]
-   ["-x" "Call the fully qualified var. Args are parsed by babashka CLI"]
-   ["--version" "Print the current version of babashka"]
-   ["--help" "Print help text"]
-   ["-h" "Print help text"]])
-
 (defn completion-program
   "Builds a SCI program (string) emitting zsh completion candidates for the bb
   task runner, given completion state already resolved by bb's own arg parsing:
-  `{:sub :shell :partial :run :command-line-args}`. `:run` is the task (nil when
-  the task name itself is being completed); `:command-line-args` are the task's
-  args before the cursor; `:partial` is the word being completed.
+  `{:sub :shell :partial :run :command-line-args :global-opts}`. `:run` is the
+  task (nil when the task name itself is being completed); `:command-line-args`
+  are the task's args before the cursor; `:partial` is the word being completed;
+  `:global-opts` are bb's own `[flag doc]` pairs, passed in so that the help
+  text stays their only definition.
 
   Task-name completion is done here; per-task option/subcommand completion is
   delegated to `babashka.cli/dispatch` over the task's `:cli` tree (with each
   node fn's `:org.babashka/cli` metadata merged in), reusing dispatch's own
   completion machinery."
-  [sci-ctx {:keys [sub shell run command-line-args partial]}]
+  [sci-ctx {:keys [sub shell run command-line-args partial global-opts]}]
   (let [shell (or shell "zsh")
         tasks (:tasks @bb-edn)]
     (case sub
@@ -882,7 +769,7 @@
                       (keep (fn [[flag desc]]
                               (when (str/starts-with? flag partial)
                                 (str flag "\t" desc)))
-                            global-opt-completions)
+                            global-opts)
                       (-> (->> tasks
                                (keep (fn [[k v]]
                                        (let [n (str k)]

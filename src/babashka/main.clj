@@ -145,9 +145,47 @@
   (binding [*out* *err*]
     (apply println msgs)))
 
+(def option-table
+  "bb's global and evaluation options, once: the help text renders them and
+  shell completion offers them, so the two cannot drift apart. `:section`
+  `:other` is not rendered, those are spelled out under Help."
+  [{:section :global :flags ["-cp" "--classpath"] :doc "Classpath to use. Overrides bb.edn classpath."}
+   {:section :global :flags ["--debug"] :doc "Print debug information and internal stacktrace in case of exception."}
+   {:section :global :flags ["--init"] :arg "<file>" :doc "Load file after any preloads and prior to evaluation/subcommands."}
+   {:section :global :flags ["--config"] :arg "<file>" :doc "Replace bb.edn with file. Defaults to bb.edn adjacent to invoked file or bb.edn in current dir. Relative paths are resolved relative to bb.edn."}
+   {:section :global :flags ["--deps-root"] :arg "<dir>" :doc "Treat dir as root of relative paths in config."}
+   {:section :global :flags ["--prn"] :doc "Print result via clojure.core/prn"}
+   {:section :global :flags ["--force-exit"] :doc "Force exiting even when non-daemon threads are still running"}
+   {:section :global :flags ["-Sforce"] :doc "Force recalculation of the classpath (don't use the cache)"}
+   {:section :global :flags ["-Sdeps"] :doc "Deps data to use as the last deps file to be merged"}
+   {:section :global :flags ["-f" "--file"] :arg "<path>" :doc "Run file"}
+   {:section :global :flags ["--jar"] :arg "<path>" :doc "Run uberjar"}
+   {:section :eval :flags ["-e" "--eval"] :arg "<expr>" :doc "Evaluate an expression."}
+   {:section :eval :flags ["-m" "--main"] :arg "<ns|var>" :doc "Call the -main function from a namespace or call a fully qualified var."}
+   {:section :eval :flags ["-x" "--exec"] :arg "<var>" :doc "Call the fully qualified var. Args are parsed by babashka CLI."}
+   {:section :other :flags ["--version"] :doc "Print the current version of babashka."}
+   {:section :other :flags ["--help" "-h"] :doc "Print this help text."}])
+
+(defn- render-opts
+  "The lines for one section of the help text, docs aligned on `col`."
+  [section col]
+  (->> option-table
+       (filter #(= section (:section %)))
+       (map (fn [{:keys [flags arg doc]}]
+              (let [label (str "  " (str/join ", " flags) (when arg (str " " arg)))]
+                (str label (apply str (repeat (max 1 (- col (count label))) \space)) doc))))
+       (str/join "\n")))
+
+(defn option-completions
+  "`[flag doc]` for every option worth offering on a dash-prefixed word."
+  []
+  (for [{:keys [flags doc]} option-table
+        flag flags]
+    [flag doc]))
+
 (defn print-help []
   (println (str "Babashka v" version))
-  (println "
+  (println (str "
 Usage: bb [svm-opts] [global-opts] [eval opts] [cmdline args]
 or:    bb [svm-opts] [global-opts] file [cmdline args]
 or:    bb [svm-opts] [global-opts] task [cmdline args]
@@ -161,17 +199,7 @@ Substrate VM opts:
 
 Global opts:
 
-  -cp, --classpath  Classpath to use. Overrides bb.edn classpath.
-  --debug           Print debug information and internal stacktrace in case of exception.
-  --init <file>     Load file after any preloads and prior to evaluation/subcommands.
-  --config <file>   Replace bb.edn with file. Defaults to bb.edn adjacent to invoked file or bb.edn in current dir. Relative paths are resolved relative to bb.edn.
-  --deps-root <dir> Treat dir as root of relative paths in config.
-  --prn             Print result via clojure.core/prn
-  --force-exit      Force exiting even when non-daemon threads are still running
-  -Sforce           Force recalculation of the classpath (don't use the cache)
-  -Sdeps            Deps data to use as the last deps file to be merged
-  -f, --file <path> Run file
-  --jar <path>      Run uberjar
+" (render-opts :global 20) "
 
 Help:
 
@@ -182,9 +210,7 @@ Help:
 
 Evaluation:
 
-  -e, --eval <expr>    Evaluate an expression.
-  -m, --main <ns|var>  Call the -main function from a namespace or call a fully qualified var.
-  -x, --exec <var>     Call the fully qualified var. Args are parsed by babashka CLI.
+" (render-opts :eval 23) "
 
 REPL:
 
@@ -223,7 +249,7 @@ Tooling:
 File names take precedence over subcommand names.
 Remaining arguments are bound to *command-line-args*.
 Use -- to separate script command line args from bb command line args.
-When no eval opts or subcommand is provided, the implicit subcommand is repl."))
+When no eval opts or subcommand is provided, the implicit subcommand is repl.")))
 
 (defn print-doc [ctx command-line-args]
   (let [arg (first command-line-args)
@@ -1021,7 +1047,8 @@ Use bb run --help to show this help output.
                   completion
                   [[(tasks/completion-program
                      sci-ctx
-                     (assoc completion :run run :command-line-args command-line-args))] nil]
+                     (assoc completion :run run :command-line-args command-line-args
+                            :global-opts (option-completions)))] nil]
                   run (if (:run-help cli-opts)
                         [(print-run-help) 0]
                         (do
@@ -1324,8 +1351,7 @@ Use bb run --help to show this help output.
                              (assoc edn :deps-root deps-root)
                              edn)
                        edn (tasks/hoist-cli-keys edn)
-                       edn (tasks/join-docs edn)
-                       edn (tasks/attach-cmd-orders edn)]
+                       edn (tasks/join-docs edn)]
                    (vreset! common/bb-edn edn)))
         opts (parse-opts args opts)
         ;; A completion callback must never run what is on the line being

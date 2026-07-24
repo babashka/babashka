@@ -43,19 +43,27 @@ places, is a config error.
                 "unlock" {:fn deploy/unlock}}}}}
 ```
 
-### 3. Command order is recovered from the raw text, but only when it is lost
+### 3. Ordered commands are written as a vector, not recovered
 
 An edn map keeps insertion order up to 8 keys, so a bigger `:cmd` map reaches
-bb already unordered and help would list commands in hash order.
-`attach-cmd-orders` recovers the source order by reading the raw bb.edn with
-rewrite-clj, for the flat and the nested form alike. A recovered order that is
-not a permutation of the actual keys is dropped, so a bad recovery can at worst
-reorder, never lose or invent a command.
+bb already unordered and help would list its commands in hash order. Write it
+as a vector of `[name command]` pairs instead, which babashka.cli takes as an
+ordered command list. `:cmd-order` remains for setting an order explicitly.
 
-That parse is guarded by a check on the already-parsed edn, because every
-`bb` invocation in a directory with a bb.edn would otherwise pay it: 67 us
-against a startup budget of about 10 ms, for a file with no big `:cmd` map at
-all. With the guard it is under 1 us.
+```clojure
+deploy {:cmd [["lock" {:exec-fn deploy/lock}]
+              ["unlock" {:exec-fn deploy/unlock}]]}
+```
+
+bb used to recover the order instead, reading the raw bb.edn text with
+rewrite-clj to see how the map was written. That was about 100 lines, it parsed
+bb.edn on every startup in a directory that has one, and it guessed at intent:
+it had already shipped one bug where the flat `:cmd` form was not recovered
+because hoisting had moved the key before the text was read. A vector says what
+it means, so the recovery is gone.
+
+Everything that walks a `:cmd` therefore keeps its shape, rather than rebuilding
+it as a map and throwing the order away.
 
 ### 4. `:exec-fn` versus `:cmd`
 
@@ -176,11 +184,18 @@ error.
 
 Completing the first word offers task names plus a file-completion marker, so
 `bb file.clj` stays as first-class as `bb task`. A dash-prefixed first word
-offers bb's global options from a curated list in `global-opt-completions`.
+offers bb's global options.
 
-The deprecated stream options `-i`, `-I`, `-o`, `-O` and `--stream` are left out
-of that list. Completion is a recommendation, so it must not advertise options
-that new scripts should not use. They keep working when typed.
+Those come from `option-table` in `babashka.main`, which is also what renders
+the Global opts and Evaluation sections of `bb --help`. One definition, two
+readers: a curated second copy for completion had already drifted from the help
+text by five options. `main` passes the pairs to `completion-program`, which
+keeps the task namespace free of bb's own option list.
+
+The deprecated stream options `-i`, `-I`, `-o`, `-O` and `--stream` are not in
+the table's completion output. Completion is a recommendation, so it must not
+advertise options that new scripts should not use. They keep working when
+typed, and the help text still documents them.
 
 Completing a task's arguments delegates to `babashka.cli/dispatch` over the
 task's `:cli` tree. A task without `:cli` emits the file-completion marker
