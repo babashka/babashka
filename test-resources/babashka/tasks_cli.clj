@@ -35,9 +35,9 @@
 ;; Runner-wide defaults var, referenced from bb.edn as :tasks {:cli
 ;; babashka.tasks-cli/base-opts}. The error handler throws instead of exiting
 ;; so in-process tests survive it.
-(defn defaults-error [{:keys [cause]}]
+(defn defaults-error [{:keys [cause msg]}]
   (binding [*out* *err*]
-    (println (str "DEFAULTS-ERR " cause)))
+    (println (str "DEFAULTS-ERR " cause " | " msg)))
   (throw (ex-info "" {:babashka/exit 1})))
 
 (def base-opts {:restrict-args true :error-fn defaults-error

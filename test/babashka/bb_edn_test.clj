@@ -700,8 +700,10 @@ even more stuff here\"
         (is (= {:env "prod" :ran :exec-only}
                (bb "-cp" "test-resources" "deploy" "go" "prod"))))
       (testing "no command on a handler-less group goes through the defaults :error-fn"
+        ;; :msg is populated for the dispatch-level cause too (not just :cause),
+        ;; like it is for option errors - so a handler can just read :msg
         (is (thrown-with-msg?
-             Exception #"DEFAULTS-ERR :input-exhausted"
+             Exception #"DEFAULTS-ERR :input-exhausted \| No command given\."
              (test-utils/bb nil "-cp" "test-resources" "deploy"))))
       (testing "an unknown command goes through the defaults :error-fn"
         ;; with :restrict-args among the defaults the unmatched word is
