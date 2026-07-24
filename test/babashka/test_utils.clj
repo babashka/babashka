@@ -96,7 +96,12 @@
         res (deref res)
         exit (:exit res)
         error? (pos? exit)]
-    (if error? (throw (ex-info (or (:err res) "") {}))
+    (if error? (throw (ex-info (or (:err res) "")
+                               ;; the same shape bb-jvm throws, so a test that
+                               ;; looks at the output of a failing run reads the
+                               ;; same keys in both environments
+                               {:stdout (or (:out res) "")
+                                :stderr (or (:err res) "")}))
         (do
           (let [err (:err res)]
             (when-not (str/blank? err)
