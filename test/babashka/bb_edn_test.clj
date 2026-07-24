@@ -659,6 +659,18 @@ even more stuff here\"
       (is (thrown-with-msg?
            Exception #"both :exec-fn and a :cli :fn/:exec-fn"
            (test-utils/bb nil "-cp" "test-resources" "foo")))))
+  (testing "task-level :cmd is sugar for :cli {:cmd ...}"
+    (test-utils/with-config '{:tasks {deploy {:cmd {"go" {:exec-fn babashka.tasks-cli/deploy-x}}}}}
+      (is (= {:env "prod" :ran :exec-only}
+             (bb "-cp" "test-resources" "deploy" "go" "prod")))
+      (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "deploy" "go" "--help")
+                         "Usage: bb deploy go"))))
+  (testing "task-level :cmd plus a :cli :cmd is an error"
+    (test-utils/with-config '{:tasks {deploy {:cmd {"a" {:exec-fn babashka.tasks-cli/deploy-x}}
+                                              :cli {:cmd {"b" {:exec-fn babashka.tasks-cli/deploy-x}}}}}}
+      (is (thrown-with-msg?
+           Exception #"both :cmd and a :cli :cmd"
+           (test-utils/bb nil "-cp" "test-resources" "deploy")))))
   (testing ":error-fn in bb.edn is rejected with a clear message"
     (test-utils/with-config '{:tasks {foo {:cli {:spec {:port {}} :error-fn my.ns/handler}
                                            :task (prn :ran)}}}

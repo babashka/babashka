@@ -19,22 +19,29 @@
 (defn -chan? [x]
   (instance? ManyToManyChannel x))
 
-(defn hoist-exec-fn
-  "Task-level `:exec-fn` is sugar for `:cli {:exec-fn ...}`. Folds it in for
-  every task map, so all consumers (assembly, help, completion, task listing)
-  see one shape. Both spellings at once is a config error."
+(defn hoist-cli-keys
+  "Task-level `:exec-fn` and `:cmd` are sugar for the same keys inside `:cli`,
+  so a CLI task can be written flat (`foo {:exec-fn ...}`, `bar {:cmd {...}}`).
+  Folds them in for every task map, so all consumers (assembly, help,
+  completion, task listing) see one `:cli` shape. Specifying a handler
+  (`:exec-fn`) at the task level together with a `:cli` `:fn`/`:exec-fn`, or
+  `:cmd` in both places, is a config error."
   [edn]
   (if-let [tasks (:tasks edn)]
     (assoc edn :tasks
            (reduce-kv
             (fn [acc k v]
-              (if-let [ef (and (symbol? k) (map? v) (:exec-fn v))]
-                (do (when (or (:fn (:cli v)) (:exec-fn (:cli v)))
-                      (throw (ex-info (str "Task " k ": both :exec-fn and a :cli :fn/:exec-fn given")
-                                      {:babashka/exit 1})))
-                    (assoc acc k (-> v
-                                     (dissoc :exec-fn)
-                                     (update :cli assoc :exec-fn ef))))
+              (if (and (symbol? k) (map? v) (or (:exec-fn v) (:cmd v)))
+                (let [cli (:cli v)]
+                  (when (and (:exec-fn v) (or (:fn cli) (:exec-fn cli)))
+                    (throw (ex-info (str "Task " k ": both :exec-fn and a :cli :fn/:exec-fn given")
+                                    {:babashka/exit 1})))
+                  (when (and (:cmd v) (:cmd cli))
+                    (throw (ex-info (str "Task " k ": both :cmd and a :cli :cmd given")
+                                    {:babashka/exit 1})))
+                  (assoc acc k (-> v
+                                   (dissoc :exec-fn :cmd)
+                                   (update :cli merge (select-keys v [:exec-fn :cmd])))))
                 acc))
             tasks tasks))
     edn))

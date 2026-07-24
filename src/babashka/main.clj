@@ -1319,7 +1319,7 @@ Use bb run --help to show this help output.
                                                   (some-> config fs/parent))]
                              (assoc edn :deps-root deps-root)
                              edn)
-                       edn (tasks/hoist-exec-fn edn)
+                       edn (tasks/hoist-cli-keys edn)
                        edn (tasks/join-docs edn)
                        edn (tasks/attach-cmd-orders edn)]
                    (vreset! common/bb-edn edn)))
