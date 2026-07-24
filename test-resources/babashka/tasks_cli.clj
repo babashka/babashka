@@ -40,7 +40,8 @@
     (println (str "DEFAULTS-ERR " cause)))
   (throw (ex-info "" {:babashka/exit 1})))
 
-(def base-opts {:restrict-args true :error-fn defaults-error})
+(def base-opts {:restrict-args true :error-fn defaults-error
+                :spec {:verbose {:coerce :boolean :desc "Verbose output"}}})
 
 ;; Own :error-fn: wins over the base-opts default for this fn's errors.
 (defn strict

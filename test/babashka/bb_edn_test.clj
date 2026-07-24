@@ -719,6 +719,12 @@ even more stuff here\"
                                         deploy {:cmd {"go" {:exec-fn babashka.tasks-cli/deploy-x}}}}}
         (is (thrown-with-msg?
              Exception #":tasks :cli babashka.tasks-cli/deploy-x is not a map"
+             (test-utils/bb nil "-cp" "test-resources" "deploy" "go" "prod")))))
+    (testing "a :cli entry that is neither a map nor a symbol is a clear error, not a raw exception"
+      (test-utils/with-config '{:tasks {:cli "oops"
+                                        deploy {:cmd {"go" {:exec-fn babashka.tasks-cli/deploy-x}}}}}
+        (is (thrown-with-msg?
+             Exception #":tasks :cli must be a map or a symbol naming a def"
              (test-utils/bb nil "-cp" "test-resources" "deploy" "go" "prod"))))))
   (testing "dispatch errors reach a rebound *exit-fn*"
     (test-utils/with-config '{:tasks {deps {:cli {:cmd {"x" {:fn clojure.core/prn}}}}}}
@@ -825,6 +831,19 @@ even more stuff here\"
                                "org.babashka.cli/completions" "complete" "--shell" "zsh" "--" "deploy" "lock" "-")]
         (is (str/includes? out "--message"))
         (is (str/includes? out "--environment")))))
+  (testing "a symbol runner-level :cli entry is resolved for completion, not just for dispatch"
+    (test-utils/with-config '{:tasks {:cli babashka.tasks-cli/base-opts
+                                      deploy {:cli {:cmd {"lock" {:fn babashka.tasks-cli/lock}}}}}}
+      (testing "subcommand completion still finds the leaf's own options"
+        (let [out (test-utils/bb nil "-cp" "test-resources"
+                                 "org.babashka.cli/completions" "complete" "--shell" "zsh" "--" "deploy" "")]
+          (is (str/includes? out "lock"))
+          (is (not (str/includes? out "org.babashka.cli/file-completion")))))
+      (testing "a :spec on the defaults var completes too, alongside the leaf's own"
+        (let [out (test-utils/bb nil "-cp" "test-resources"
+                                 "org.babashka.cli/completions" "complete" "--shell" "zsh" "--" "deploy" "lock" "-")]
+          (is (str/includes? out "--verbose"))
+          (is (str/includes? out "--message"))))))
   (testing "--fresh true acts as a trailing empty word (powershell drops empty args)"
     (test-utils/with-config '{:tasks {deploy {:cli {:cmd {"lock" {:fn babashka.tasks-cli/lock}}}}}}
       (let [out (test-utils/bb nil "-cp" "test-resources"

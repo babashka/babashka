@@ -215,6 +215,24 @@
                            "\n" prog))
     prog))
 
+(defn -resolve-cli-tasks-defaults
+  "The runner-level `:tasks {:cli ...}` entry, resolved to a map: a map as-is,
+  or a symbol naming a def of one, resolved via `resolve-fn` (the script's
+  `requiring-resolve`) - the symbol form is for defaults that include
+  functions, like `:error-fn`. nil when there is no entry. Throws when the
+  entry is neither nil, a map, nor a symbol resolving to a map."
+  [resolve-fn d]
+  (cond
+    (nil? d) nil
+    (map? d) d
+    (symbol? d) (let [m (deref (resolve-fn d))]
+                  (when-not (map? m)
+                    (throw (ex-info (str ":tasks :cli " d " is not a map")
+                                    {:babashka/exit 1})))
+                  m)
+    :else (throw (ex-info (str ":tasks :cli must be a map or a symbol naming a def, got: " (pr-str d))
+                          {:babashka/exit 1}))))
+
 (defn- assert-no-edn-error-fn
   "In bb.edn a `:error-fn` can only be data; dispatch would invoke a symbol as
   a map lookup and silently swallow every error. It belongs in the function's
@@ -354,18 +372,9 @@
          tree (wrap cli-opts)
          tree (if body-fn (assoc tree :fn (with-deps body-fn)) tree)
          ;; a `:cli` entry in the :tasks map (like :requires/:init) provides
-         ;; dispatch defaults for every CLI task: a map (data only, e.g.
-         ;; {:restrict true}), or a symbol naming a def of one - the symbol
-         ;; form is for defaults that include functions, like :error-fn.
-         ;; dispatch merges the opts into every tree node; node keys win.
-         defaults (let [d (:cli (:tasks @bb-edn))]
-                    (if (symbol? d)
-                      (let [m (deref (resolve-fn d))]
-                        (when-not (map? m)
-                          (throw (ex-info (str ":tasks :cli " d " is not a map")
-                                          {:babashka/exit 1})))
-                        m)
-                      d))]
+         ;; dispatch defaults for every CLI task, merged into the dispatch
+         ;; opts; node keys win.
+         defaults (-resolve-cli-tasks-defaults resolve-fn (:cli (:tasks @bb-edn)))]
      (babashka.cli/dispatch tree args (merge defaults {:help true :prog (str "bb " task-name)})))))
 
 (defn -resolve-cli-specs
@@ -734,11 +743,14 @@
               tm (get tasks (symbol run))
               prog (str "bb " run)]
           (if (:cli tm)
-            (format "(babashka.cli/dispatch (babashka.tasks/-resolve-cli-specs requiring-resolve %s) %s %s)"
+            (format "(babashka.cli/dispatch (babashka.tasks/-resolve-cli-specs requiring-resolve %s) %s (merge (babashka.tasks/-resolve-cli-tasks-defaults requiring-resolve '%s) %s))"
                     (pr-str (list 'quote (:cli tm))) (pr-str compl)
-                    ;; same defaults as -cli-dispatch, so e.g. a shared :spec
-                    ;; completes here too
-                    (pr-str (merge (:cli tasks) {:prog prog :help true})))
+                    ;; same defaults as -cli-dispatch (incl. a symbol naming a
+                    ;; defaults var), resolved in the task's own script context
+                    ;; via the embedded `requiring-resolve`, so e.g. a shared
+                    ;; :spec completes here too
+                    (pr-str (:cli tasks))
+                    (pr-str {:prog prog :help true}))
             "nil"))
         ;; completing the task name itself. A dash-prefixed word completes bb's
         ;; global options; a fresh word completes task names plus files (marker
@@ -825,4 +837,5 @@
    'exec (sci/copy-var exec sci-ns)
    '-cli-dispatch (sci/copy-var -cli-dispatch sci-ns)
    '-resolve-cli-specs (sci/copy-var -resolve-cli-specs sci-ns)
+   '-resolve-cli-tasks-defaults (sci/copy-var -resolve-cli-tasks-defaults sci-ns)
    #_#_'log log})
