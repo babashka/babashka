@@ -366,10 +366,10 @@ literal source order: add `:cmd-order` or use the vector form
 
 Dev builds of this branch:
 
-- [babashka-linux-amd64-static.tar.gz](https://output.circle-artifacts.com/output/job/f8c9e290-0a3e-4539-9501-d8439aaa924f/artifacts/0/release/babashka-1.12.219-SNAPSHOT-linux-amd64-static.tar.gz)
-- [babashka-macos-amd64.tar.gz](https://output.circle-artifacts.com/output/job/b82f4575-82bb-4d32-89d3-fcd243d81c89/artifacts/0/release/babashka-1.12.219-SNAPSHOT-macos-amd64.tar.gz)
+- [babashka-linux-amd64-static.tar.gz](https://output.circle-artifacts.com/output/job/41a97e0b-05a5-47a0-9379-94bb3e9bca11/artifacts/0/release/babashka-1.12.219-SNAPSHOT-linux-amd64-static.tar.gz)
+- [babashka-macos-amd64.tar.gz](https://output.circle-artifacts.com/output/job/2f9bce15-a1f8-409a-ab8f-57d8d6806eda/artifacts/0/release/babashka-1.12.219-SNAPSHOT-macos-amd64.tar.gz)
   (Intel, runs on Apple Silicon via Rosetta)
-- [babashka-windows-amd64.zip](https://nightly.link/babashka/babashka/actions/runs/30051453887/babashka-1.12.219-SNAPSHOT-windows-amd64.zip)
+- [babashka-windows-amd64.zip](https://nightly.link/babashka/babashka/actions/runs/30089290607/babashka-1.12.219-SNAPSHOT-windows-amd64.zip)
 
 For other architectures or newer commits:
 
