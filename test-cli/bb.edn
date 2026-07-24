@@ -1,6 +1,10 @@
 {:paths ["src"]
  :tasks
- {-setup {:task (println "Running setup (a dependency task)")}
+ {;; Dispatch defaults for every CLI task: a symbol naming a def, so the map
+  ;; may contain functions (here an :error-fn).
+  :cli tasks/base-opts
+
+  -setup {:task (println "Running setup (a dependency task)")}
 
   ;; A flag needs a function: clean's --dry-run lives on tasks/clean's metadata.
   clean {:exec-fn tasks/clean}

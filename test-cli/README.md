@@ -14,7 +14,11 @@ trees. `bb.edn`:
 ```clojure
 {:paths ["src"]
  :tasks
- {-setup {:task (println "Running setup (a dependency task)")}
+ {;; Dispatch defaults for every CLI task: a symbol naming a def, so the map
+  ;; may contain functions (here an :error-fn).
+  :cli tasks/base-opts
+
+  -setup {:task (println "Running setup (a dependency task)")}
 
   ;; A flag needs a function: clean's --dry-run lives on tasks/clean's metadata.
   clean {:exec-fn tasks/clean}
@@ -35,17 +39,23 @@ functions just work:
 
 ```clojure
 (ns tasks
-  ;; Dispatch defaults for every function in this namespace, like `bb -x`.
-  {:org.babashka/cli {:restrict true :restrict-args true}})
+  ;; Parsing defaults for every function in this namespace, like `bb -x`.
+  {:org.babashka/cli {:restrict true :restrict-args true}}
+  (:require [babashka.cli :as cli]))
 
 (def environments ["dev" "staging" "prod"])
 
 (defn red-error
-  "Prints the error in red and exits, replacing the default error output."
-  [{:keys [msg]}]
+  "Prints the standard error message in red and exits, replacing the default
+  error output."
+  [data]
   (binding [*out* *err*]
-    (println (str "\u001b[31mError: " msg "\u001b[0m")))
+    (println (str "\u001b[31m" (cli/format-command-error data) "\u001b[0m")))
   (System/exit 1))
+
+;; Dispatch defaults for every CLI task, referenced from bb.edn as
+;; :tasks {:cli tasks/base-opts}. A def may hold functions; bb.edn cannot.
+(def base-opts {:error-fn red-error})
 
 (defn clean
   "Removes build artifacts"
@@ -55,16 +65,14 @@ functions just work:
 
 (defn dev
   "Starts the dev system"
-  {:org.babashka/cli {:error-fn red-error
-                      :spec {:port {:coerce :int :default 8080 :desc "HTTP port"}
+  {:org.babashka/cli {:spec {:port {:coerce :int :default 8080 :desc "HTTP port"}
                              :sandbox {:coerce :boolean :alias :s :desc "Run sandboxed"}}}}
   [{:keys [port sandbox]}]
   (println "Starting dev system on port" port (if sandbox "(sandboxed)" "(unrestricted)")))
 
 (defn lock
   "Locks deployments"
-  {:org.babashka/cli {:error-fn red-error
-                      :spec {:environment {:desc "Target environment"
+  {:org.babashka/cli {:spec {:environment {:desc "Target environment"
                                            :enum environments
                                            :require true
                                            :positional true}
@@ -94,8 +102,11 @@ The example covers the two shapes a CLI task takes:
   you want a default action on the bare command.
 
 Everything else is data or existing bb: `:depends`, plain `:task` bodies, task
-`:doc`. Dispatch defaults (`:restrict`, `:restrict-args`) sit on the namespace
-metadata and apply to every function in it.
+`:doc`. Parsing defaults (`:restrict`, `:restrict-args`) sit on the namespace
+metadata and apply to every function in it, like for `bb -x`. Dispatch defaults
+that include functions, such as the `:error-fn`, live in the `base-opts` def
+that bb.edn's `:cli` entry names; they apply to every CLI task, including
+command groups, which have no function of their own.
 
 Notes:
 
@@ -143,7 +154,7 @@ $ bb clean --dry-run
 Would remove target/
 
 $ bb deploy
-No command given.
+No command given.        <- red, via the :cli defaults (see below)
 
 Commands:
   lock   Locks deployments
@@ -172,23 +183,41 @@ Unlocking prod
 
 ## Custom error output
 
-`red-error` in `src/tasks.clj` replaces the default error output with an
-ANSI-red line. An `:error-fn` is a function, so it lives on the function's
-metadata (bb.edn is data and cannot hold one). `dev` and `lock` carry it:
+`red-error` in `src/tasks.clj` prints the standard message (rendered by
+`babashka.cli/format-command-error`) in red and exits. An `:error-fn` is a
+function, so it cannot sit in bb.edn, which is data. Instead the `base-opts`
+def holds it, and bb.edn's `:cli tasks/base-opts` entry names that def: the
+symbol resolves to the var, so the map may contain functions. These dispatch
+defaults apply to every CLI task, including the `deploy` group, which has no
+function of its own to carry a handler:
 
 ```console
 $ bb dev --nope
-Error: Unknown option: --nope        <- red
+Error: Unknown option: --nope        <- red, all of it
+
+Usage: bb dev [options]
+
+Run "bb dev --help" for more information.
+
+$ bb deploy bogus
+Unknown command: bogus        <- red: a group error, unreachable from any function's metadata
+
+Commands:
+  lock   Locks deployments
+  unlock Unlocks deployments
+
+Run "bb deploy --help" for more information.
 
 $ bb deploy lock qa -m x
 Error: Invalid value for argument <environment>: qa. Expected one of: dev, staging, prod        <- red
 
-$ bb deploy lock prod extra -m x
-Error: Unexpected argument: extra        <- red
+Usage: bb deploy lock [options] <environment>
+
+Run "bb deploy lock --help" for more information.
 ```
 
-Coverage follows the functions: `unlock` has no `:error-fn`, so its errors use
-the default output.
+A function's own `:error-fn` (in its `:org.babashka/cli` metadata) wins over
+the defaults for that function's errors.
 
 An `:error-fn` can also print the full usage help after the error, instead of
 the default one-line tip. The handler receives `:tree`, `:dispatch` and
