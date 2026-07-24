@@ -1262,7 +1262,8 @@ Use bb run --help to show this help output.
      :completed (vec (butlast user-toks))
      :partial (or (last user-toks) "")}))
 
-(defn main [& args]
+(defn- main*
+  [& args]
   (set-daemon-agent-executor)
   (let [bin-jar (binary-invoked-as-jar)
         args (if bin-jar
@@ -1334,9 +1335,9 @@ Use bb run --help to show this help output.
         ;; is dropped here: an -e expression, --init, a subcommand like clojure
         ;; or nrepl-server, uberjar post-processing, --help/--version output.
         ;; Whitelisting is the safe direction, since a mode left in would run on
-        ;; a keystroke, before the user has pressed enter
-        ;; keyed off the local, and putting :completion back: some options
-        ;; replace the whole opts map rather than adding to it
+        ;; a keystroke, before the user has pressed enter. Keyed off the
+        ;; completion local, with :completion re-attached after select-keys:
+        ;; some options replace the whole opts map rather than adding to it
         opts (if completion
                (assoc (select-keys opts [:run :command-line-args
                                          :classpath :config :deps-root :merge-deps
@@ -1353,6 +1354,21 @@ Use bb run --help to show this help output.
     (if (deps-not-needed opts)
       (exec-without-deps opts)
       (exec opts))))
+
+(defn main
+  "Runs bb, returning `{:exit ...}`. A config error raised while reading bb.edn,
+  such as a `:cli` conflict or a `:cli` that is not a map, reaches here before
+  any script runs, so it is printed the way the error handler prints one from a
+  script: the message alone, with the exit code it carries. A bb.edn typo is a
+  message for the user, not a stack trace."
+  [& args]
+  (try (apply main* args)
+       (catch clojure.lang.ExceptionInfo e
+         (if-let [exit (:babashka/exit (ex-data e))]
+           (binding [*out* *err*]
+             (println (ex-message e))
+             {:exit exit})
+           (throw e)))))
 
 (defn -main
   [& args]
