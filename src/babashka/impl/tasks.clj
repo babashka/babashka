@@ -55,43 +55,45 @@
             (assert-cmd-maps task-name (:cmd node)))
           cmd)))
 
-(defn hoist-cli-keys
-  "Task-level `:exec-fn` and `:cmd` are sugar for the same keys inside `:cli`,
-  so a CLI task can be written flat (`foo {:exec-fn ...}`, `bar {:cmd {...}}`).
-  Folds them in for every task map, so all consumers (assembly, help,
-  completion, task listing) see one `:cli` shape. Specifying a handler
-  (`:exec-fn`) at the task level together with a `:cli` `:fn`/`:exec-fn`, or
-  `:cmd` in both places, is a config error, as is a task `:cli` that is not a
-  map."
+(defn cli-node
+  "The babashka.cli dispatch node for a task, or nil when the task is a plain
+  one. Naming a handler (`:exec-fn`, `:fn`) or a command tree (`:cmd`) is what
+  opts a task in, and the task map is then the node itself. dispatch ignores
+  bb's own keys, so node options like `:epilog` work where they are written,
+  with no list of blessed keys to keep up to date."
+  [task-map]
+  (when (and (map? task-map)
+             (or (:exec-fn task-map) (:fn task-map) (:cmd task-map)))
+    task-map))
+
+(def ^:private cli-only-keys
+  "babashka.cli node keys that do nothing on a task that is not a CLI task.
+  `:doc` is not among them, every task may have one."
+  [:spec :args->opts :epilog :restrict :restrict-args :coerce :cmd-order :order])
+
+(defn validate-tasks
+  "Rejects task shapes that cannot do what they look like they do. Returns
+  `edn` unchanged, it only reads."
   [edn]
-  (update-task-maps
-   edn
-   (fn [k v]
-     (let [cli (:cli v)]
-       (when-not (or (nil? cli) (map? cli))
-         (throw (ex-info (str "Task " k ": :cli must be a map, got: " (pr-str cli)
-                              ". Only the :tasks level :cli may name a defaults var")
-                         {:babashka/exit 1})))
-       (assert-cmd-maps k (or (:cmd v) (:cmd cli)))
-       ;; a `:task` body becomes the root handler, so a `:cli` `:fn` next to it
-       ;; would never be called. `:exec-fn` is not in here: it takes priority
-       ;; over a body on purpose
-       (when (and (:task v) (:fn cli))
-         (throw (ex-info (str "Task " k ": both a :task body and a :cli :fn given"
-                              ". The body is the root handler, use :exec-fn to override it")
-                         {:babashka/exit 1})))
-       (if (or (:exec-fn v) (:cmd v))
-         (do
-           (when (and (:exec-fn v) (or (:fn cli) (:exec-fn cli)))
-             (throw (ex-info (str "Task " k ": both :exec-fn and a :cli :fn/:exec-fn given")
-                             {:babashka/exit 1})))
-           (when (and (:cmd v) (:cmd cli))
-             (throw (ex-info (str "Task " k ": both :cmd and a :cli :cmd given")
-                             {:babashka/exit 1})))
-           (-> v
-               (dissoc :exec-fn :cmd)
-               (update :cli merge (select-keys v [:exec-fn :cmd]))))
-         v)))))
+  (doseq [[k v] (:tasks edn)
+          :when (and (symbol? k) (map? v))]
+    (when (:cli v)
+      (throw (ex-info (str "Task " k ": :cli is not a task key. Write :exec-fn, :fn, :cmd"
+                           " and any babashka.cli options directly on the task")
+                      {:babashka/exit 1})))
+    (assert-cmd-maps k (:cmd v))
+    ;; a `:task` body is the root handler, so a `:fn` next to it never runs.
+    ;; `:exec-fn` is allowed there, it takes priority over a body on purpose
+    (when (and (:task v) (:fn v))
+      (throw (ex-info (str "Task " k ": both a :task body and a :fn given"
+                           ". The body is the root handler, use :exec-fn to override it")
+                      {:babashka/exit 1})))
+    (when-not (cli-node v)
+      (when-let [stray (seq (filter v cli-only-keys))]
+        (throw (ex-info (str "Task " k ": " (str/join ", " stray)
+                             " needs a handler or a command tree. Add :exec-fn, :fn or :cmd")
+                        {:babashka/exit 1})))))
+  edn)
 
 (defn join-docs
   "A task `:doc` may be a vector of lines, convenient in edn. Joins it into
@@ -411,18 +413,19 @@
   command. A `:task` body is already wrapped by wrap-enter-leave, so the hook
   thunk is for the handler case.
 
-  Task-map `:doc` folds into the tree root so `--help` and `bb tasks` agree
-  (an explicit `:doc` in the `:cli` map wins)."
+  The task map is the dispatch node, so its `:doc` is the tree root's `:doc`
+  and `--help` and `bb tasks` agree without folding anything in. A `:task` body
+  becomes the root handler and is called with no arguments: parsed options are
+  what `:exec-fn` is for."
   ([task-map prog] (wrap-cli task-map prog nil))
   ([task-map prog dep-forms]
-   (if-let [cli-opts (:cli task-map)]
+   (if-let [cli-opts (cli-node task-map)]
      (let [{:keys [enter leave name]} task-map]
        (format "(babashka.tasks/-cli-dispatch '%s \"%s\" {:body-fn %s :deps-fn %s :hook-fn %s} requiring-resolve *command-line-args*)"
-               (pr-str (merge (select-keys task-map [:doc]) cli-opts))
+               (pr-str cli-opts)
                name
                (if (:task task-map)
-                 (format "(fn [{:keys [opts]}] (binding [babashka.tasks/*task* (assoc babashka.tasks/*task* :opts opts)] %s))"
-                         prog)
+                 (format "(fn [_] %s)" prog)
                  "nil")
                (if dep-forms
                  (format "(fn [] %s)" dep-forms)
@@ -621,7 +624,7 @@
                                        ;; decision 11); parallel deps stay ahead
                                        ;; of the target, they must launch their
                                        ;; channels before it waits
-                                       cli-prelude? (and (:cli task) (not parallel?))
+                                       cli-prelude? (and (cli-node task) (not parallel?))
                                        dep-forms prog
                                        prog (if cli-prelude?
                                               (assemble-task-1 task-map task parallel? true dep-forms)
@@ -663,8 +666,8 @@
       (when-let [fn-sym (cond (qualified-symbol? task)
                               task
                               (map? task)
-                              (or (let [f (or (:fn (:cli task))
-                                              (:exec-fn (:cli task)))]
+                              (or (let [f (or (:fn task)
+                                              (:exec-fn task))]
                                     (when (qualified-symbol? f)
                                       f))
                                   (let [t (:task task)]
@@ -740,7 +743,7 @@
                         (conj partial))
               tm (get tasks (symbol run))
               prog (str "bb " run)]
-          (if (:cli tm)
+          (if-let [node (cli-node tm)]
             ;; The task's classpath and requires run first, inside the same
             ;; try: the handler may live on its :extra-paths, and its symbol may
             ;; go through a `:requires` alias, which requiring-resolve only sees
@@ -751,7 +754,7 @@
             (format "(try %s\n%s\n(babashka.cli/dispatch (babashka.tasks/-resolve-cli-specs requiring-resolve %s) %s (merge %s (babashka.tasks/-resolve-cli-tasks-defaults requiring-resolve '%s) %s)) (catch Throwable _ (println \"org.babashka.cli/file-completion\")))"
                     (add-deps-form (:extra-paths tm) (:extra-deps tm))
                     (requires-form (concat (:requires tasks) (:requires tm)))
-                    (pr-str (list 'quote (:cli tm))) (pr-str compl)
+                    (pr-str (list 'quote node)) (pr-str compl)
                     ;; same defaults as -cli-dispatch, in the same precedence:
                     ;; a runner-level :cli (incl. a symbol naming a defaults
                     ;; var) may turn :help off, and :prog stays bb's

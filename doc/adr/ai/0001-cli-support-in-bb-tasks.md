@@ -23,25 +23,43 @@ can hold function objects. That split decides where each piece of config lives.
 bb.edn holds routing and pointers: which fn handles the task, the command tree,
 and runner-level defaults. Everything that contains a function lives in the
 function's `:org.babashka/cli` metadata: `:spec`, `:args->opts`, `:error-fn`,
-`:coerce`, `:restrict`, `:epilog`. The spec and help live next to the fn, and
-`bb -x` reuses the same metadata.
+`:coerce`, `:restrict`. The spec and help live next to the fn, and `bb -x`
+reuses the same metadata. Data-only node options may also be written on the
+task itself, which is how a command group with no function of its own gets an
+`:epilog`.
 
-### 2. Flat task keys `:exec-fn` and `:cmd`
+### 2. The task map is the dispatch node
 
-Write a CLI task flat with `:exec-fn` or `:cmd` at the task level.
-`hoist-cli-keys` folds them into `:cli` at bb.edn load, so every consumer
-(assembly, help, completion, task listing) sees one `:cli` shape. The nested
-`:cli {...}` form still works. Giving a handler both places, or `:cmd` in both
-places, is a config error.
+A task routes through `babashka.cli/dispatch` when it names a handler
+(`:exec-fn`, `:fn`) or a command tree (`:cmd`). That is the whole opt-in rule,
+and the task map is then the node itself. dispatch ignores keys it does not
+know, so bb's own `:depends`, `:requires` and `:task` ride along harmlessly,
+while node options like `:epilog` work exactly where they are written.
 
 ```clojure
 ;; bb.edn
 {:tasks
- {:cli   deploy/base-opts
+ {:cli   deploy/base-opts          ; runner-level defaults, the only :cli
   dev    {:exec-fn dev/run}
-  deploy {:cmd {"lock"   {:fn deploy/lock}
-                "unlock" {:fn deploy/unlock}}}}}
+  deploy {:doc    "Manage deployments"
+          :epilog "See https://example.com/deploys"
+          :cmd    {"lock"   {:fn deploy/lock}
+                   "unlock" {:fn deploy/unlock}}}}}
 ```
+
+There was a nested per-task `:cli {...}` map, folded into shape at load time by
+a `hoist-cli-keys` pass. It is gone. It was a second spelling of the flat keys,
+it needed conflict errors to reconcile the two, and because the fold lifted only
+`:exec-fn` and `:cmd`, anything else written next to them was silently dropped:
+rewrite-clj's bb.edn had an `:epilog` on a command group that never reached
+help, with no error to say so. Nothing lifts anything now, so nothing can be
+left behind. A leftover `:cli` on a task is rejected rather than ignored.
+
+The cost is that a plain `:task` body cannot have parsed options. Reading them
+back through `(:opts (current-task))` is gone with it. A task that wants
+options names a function, which is where its spec lives anyway. A CLI key such
+as `:spec` or `:epilog` on a task with no handler is a config error, since it
+would otherwise do nothing.
 
 ### 3. Ordered commands are written as a vector, not recovered
 
@@ -116,9 +134,10 @@ This is invocation-time only, so a stale name never breaks completion or
 `bb tasks`, which stay best-effort.
 
 Shape errors are caught earlier, when bb.edn is read, and name the task: a
-`:cli` that is not a map, a `:cmd` command pointing straight at a function
-rather than at a map, and a `:task` body next to a `:cli` `:fn`, which would
-never be called. A bare symbol as a command is rejected rather than read as
+`:cmd` that is not a map or a vector of pairs, a command pointing straight at a
+function rather than at a map, a `:task` body next to a `:fn`, which would never
+be called, a leftover per-task `:cli`, and a CLI key on a task that opts into
+nothing. A bare symbol as a command is rejected rather than read as
 sugar for `{:exec-fn f}`, because it could as well mean `:fn` or bb's own
 "task is a qualified symbol" form, and the error says which to write.
 
