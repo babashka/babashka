@@ -218,10 +218,11 @@
 (defn- assert-no-edn-error-fn
   "In bb.edn a `:error-fn` can only be data; dispatch would invoke a symbol as
   a map lookup and silently swallow every error. It belongs in the function's
-  `:org.babashka/cli` metadata."
+  `:org.babashka/cli` metadata, or in a defaults var referenced from
+  `:tasks {:cli my.ns/defaults}`."
   [node task-name]
   (when (contains? node :error-fn)
-    (throw (ex-info (str "Task " task-name ": :error-fn is not supported in bb.edn, put it in the function's :org.babashka/cli metadata")
+    (throw (ex-info (str "Task " task-name ": :error-fn is not supported in bb.edn, put it in the function's :org.babashka/cli metadata or in a var referenced from :tasks {:cli my.ns/defaults}")
                     {:babashka/exit 1})))
   (run! #(assert-no-edn-error-fn % task-name) (vals (:cmd node))))
 
@@ -326,7 +327,8 @@
    (-cli-dispatch cli-opts task-name body-fn nil resolve-fn args))
   ([cli-opts task-name body-fn deps-fn resolve-fn args]
    (assert-no-edn-error-fn cli-opts task-name)
-   (assert-no-edn-error-fn (or (:cli (:tasks @bb-edn)) {}) task-name)
+   (when (map? (:cli (:tasks @bb-edn)))
+     (assert-no-edn-error-fn (:cli (:tasks @bb-edn)) task-name))
    (let [with-deps (fn [f] (fn [m] (when deps-fn (deps-fn)) (f m)))
          ;; resolve a :fn / :exec-fn symbol, merge the ns and var
          ;; :org.babashka/cli metadata and the docstring (like bb -x; node keys
@@ -352,9 +354,18 @@
          tree (wrap cli-opts)
          tree (if body-fn (assoc tree :fn (with-deps body-fn)) tree)
          ;; a `:cli` entry in the :tasks map (like :requires/:init) provides
-         ;; defaults for every :cli task, e.g. {:restrict true}. dispatch
-         ;; merges its opts into every tree node; node keys win.
-         defaults (:cli (:tasks @bb-edn))]
+         ;; dispatch defaults for every CLI task: a map (data only, e.g.
+         ;; {:restrict true}), or a symbol naming a def of one - the symbol
+         ;; form is for defaults that include functions, like :error-fn.
+         ;; dispatch merges the opts into every tree node; node keys win.
+         defaults (let [d (:cli (:tasks @bb-edn))]
+                    (if (symbol? d)
+                      (let [m (deref (resolve-fn d))]
+                        (when-not (map? m)
+                          (throw (ex-info (str ":tasks :cli " d " is not a map")
+                                          {:babashka/exit 1})))
+                        m)
+                      d))]
      (babashka.cli/dispatch tree args (merge defaults {:help true :prog (str "bb " task-name)})))))
 
 (defn -resolve-cli-specs

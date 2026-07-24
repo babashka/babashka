@@ -31,3 +31,24 @@
                       :args->opts [:env]}}
   [opts]
   (prn (assoc opts :ran :exec-only)))
+
+;; Runner-wide defaults var, referenced from bb.edn as :tasks {:cli
+;; babashka.tasks-cli/base-opts}. The error handler throws instead of exiting
+;; so in-process tests survive it.
+(defn defaults-error [{:keys [cause]}]
+  (binding [*out* *err*]
+    (println (str "DEFAULTS-ERR " cause)))
+  (throw (ex-info "" {:babashka/exit 1})))
+
+(def base-opts {:restrict-args true :error-fn defaults-error})
+
+;; Own :error-fn: wins over the base-opts default for this fn's errors.
+(defn strict
+  "Strict"
+  {:org.babashka/cli {:error-fn (fn [{:keys [cause]}]
+                                  (binding [*out* *err*]
+                                    (println (str "LEAF-ERR " cause)))
+                                  (throw (ex-info "" {:babashka/exit 1})))
+                      :spec {:env {:require true}}}}
+  [opts]
+  (prn (assoc opts :ran :strict)))

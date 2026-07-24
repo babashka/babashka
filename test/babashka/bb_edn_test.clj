@@ -692,6 +692,34 @@ even more stuff here\"
                     (binding [cli/*exit-fn* (fn [m] (prn (select-keys m [:exit :cause])))
                               *command-line-args* [\"prod\" \"extra\"]]
                       (babashka.tasks/run (quote dep)))"))))))
+  (testing "a symbol :cli entry resolves to a defaults var, functions included"
+    (test-utils/with-config '{:tasks {:cli babashka.tasks-cli/base-opts
+                                      deploy {:cmd {"go" {:exec-fn babashka.tasks-cli/deploy-x}}}
+                                      s {:exec-fn babashka.tasks-cli/strict}}}
+      (testing "the happy path is unaffected"
+        (is (= {:env "prod" :ran :exec-only}
+               (bb "-cp" "test-resources" "deploy" "go" "prod"))))
+      (testing "no command on a handler-less group goes through the defaults :error-fn"
+        (is (thrown-with-msg?
+             Exception #"DEFAULTS-ERR :input-exhausted"
+             (test-utils/bb nil "-cp" "test-resources" "deploy"))))
+      (testing "an unknown command goes through the defaults :error-fn"
+        ;; with :restrict-args among the defaults the unmatched word is
+        ;; rejected as a stray argument, not as :no-match; a known command
+        ;; word is exempt from :restrict-args
+        (is (thrown-with-msg?
+             Exception #"DEFAULTS-ERR :restrict-args"
+             (test-utils/bb nil "-cp" "test-resources" "deploy" "bogus"))))
+      (testing "a function's own :error-fn wins over the defaults for its errors"
+        (is (thrown-with-msg?
+             Exception #"LEAF-ERR :require"
+             (test-utils/bb nil "-cp" "test-resources" "s")))))
+    (testing "a symbol :cli entry that does not name a map is an error"
+      (test-utils/with-config '{:tasks {:cli babashka.tasks-cli/deploy-x
+                                        deploy {:cmd {"go" {:exec-fn babashka.tasks-cli/deploy-x}}}}}
+        (is (thrown-with-msg?
+             Exception #":tasks :cli babashka.tasks-cli/deploy-x is not a map"
+             (test-utils/bb nil "-cp" "test-resources" "deploy" "go" "prod"))))))
   (testing "dispatch errors reach a rebound *exit-fn*"
     (test-utils/with-config '{:tasks {deps {:cli {:cmd {"x" {:fn clojure.core/prn}}}}}}
       (is (= {:exit 1 :cause :input-exhausted}
