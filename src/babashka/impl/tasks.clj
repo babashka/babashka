@@ -3,7 +3,6 @@
    [babashka.cli]
    [babashka.deps :as deps]
    [babashka.impl.cli :as cli]
-   [babashka.impl.clojure.repl :as bb-repl]
    [babashka.impl.common :refer [bb-edn ctx debug]]
    [babashka.impl.process :as pp]
    [babashka.process :as p]
@@ -59,12 +58,6 @@
                 acc))
             tasks tasks))
     edn))
-
-(defn- cli-var?
-  "A var as it can appear in an evaluated fn-meta `:cli` tree: a sci var in bb,
-  a Clojure var on the JVM."
-  [x]
-  (or (var? x) (instance? sci.lang.Var x)))
 
 (def sci-ns (sci/create-ns 'babashka.tasks nil))
 (def default-log-level :error)
@@ -285,29 +278,6 @@
                       cm))))
     node))
 
-(defn- var-cli-orders
-  "Nested `:cmd` key order recovered from the source of the var behind `m`
-  (its meta), or nil when the source or a literal map is not found."
-  [m]
-  (try
-    (when-let [file (:file m)]
-      (when-let [line (:line m)]
-        (when-let [source (bb-repl/find-source file)]
-          (let [from-line (str/join "
-" (drop (dec ^long line) (str/split source #"
-")))
-                [_ defn-str] (sci/parse-next+string (ctx) (sci/source-reader from-line))
-                zloc (zip/of-string (str defn-str))
-                meta-loc (loop [loc zloc]
-                           (when loc
-                             (if (and (= :map (zip/tag loc))
-                                      (some #{:org.babashka/cli} (zmap-keys loc)))
-                               loc
-                               (recur (zip/find-next loc zip/next #(= :map (zip/tag %)))))))
-                cli-loc (zunquote (zmap-val meta-loc :org.babashka/cli))]
-            (cmd-orders cli-loc)))))
-    (catch Exception _ nil)))
-
 (defn attach-cmd-orders
   "Attach `:cmd-order` from the literal key order in the raw bb.edn text to
   every task `:cli` tree with more than 8 subcommands. An explicit
@@ -342,7 +312,8 @@
   (the script's `requiring-resolve`), and the `:org.babashka/cli` metadata of
   its namespace and of the var (`:spec`, `:args->opts`, `:restrict`, `:epilog`,
   ...) merges into the node, like `bb -x` - so the spec and help live with the
-  fn. Var metadata wins over ns metadata; explicit node keys win over both. The
+  fn. A `:cmd` tree on the fn is ignored: command trees belong in bb.edn. Var
+  metadata wins over ns metadata; explicit node keys win over both. The
   fn is called with dispatch's result map (`{:opts ... :dispatch ... :args ...}`),
   like any babashka.cli/dispatch `:fn`.
 
@@ -363,17 +334,14 @@
          wrap-key (fn [node k]
                     (if-let [fv (k node)]
                       (let [the-var (if (symbol? fv) (resolve-fn fv) fv)
-                            ;; a symbol resolves to a var; a var literal (e.g.
-                            ;; in an evaluated fn-meta :cmd tree) is one already
-                            m (when (or (symbol? fv) (cli-var? fv)) (meta the-var))]
+                            m (when (symbol? fv) (meta the-var))]
                         (-> (babashka.cli/merge-opts
                              (:org.babashka/cli (meta (:ns m)))
-                             (:org.babashka/cli m)
+                             ;; a `:cmd` tree belongs in bb.edn, not on a fn, so it
+                             ;; is dropped here; the fn's spec/doc/etc. still merge
+                             (dissoc (:org.babashka/cli m) :cmd)
                              (when-let [d (:doc m)] {:doc d})
                              node)
-                            (as-> n (if (and (:cmd n) (> (count (:cmd n)) 8))
-                                      (with-cmd-order n (var-cli-orders m))
-                                      n))
                             (assoc k (with-deps (fn [m] (the-var m))))))
                       node))
          wrap (fn wrap [node]
@@ -398,16 +366,13 @@
   merge in -cli-dispatch's wrap."
   [resolve-fn node]
   (let [fv (or (:fn node) (:exec-fn node))
-        node (if (or (symbol? fv) (cli-var? fv))
-               (let [m (meta (if (symbol? fv) (resolve-fn fv) fv))
-                    node (babashka.cli/merge-opts
-                          (:org.babashka/cli (meta (:ns m)))
-                          (:org.babashka/cli m)
-                          (when-let [d (:doc m)] {:doc d})
-                          node)]
-                 (if (and (:cmd node) (> (count (:cmd node)) 8))
-                   (with-cmd-order node (var-cli-orders m))
-                   node))
+        node (if (symbol? fv)
+               (let [m (meta (resolve-fn fv))]
+                 (babashka.cli/merge-opts
+                  (:org.babashka/cli (meta (:ns m)))
+                  (dissoc (:org.babashka/cli m) :cmd)
+                  (when-let [d (:doc m)] {:doc d})
+                  node))
                node)]
     (if-let [cm (:cmd node)]
       (assoc node :cmd (into {} (map (fn [[k v]] [k (-resolve-cli-specs resolve-fn v)])) cm))

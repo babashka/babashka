@@ -615,18 +615,6 @@ even more stuff here\"
                     (binding [cli/*exit-fn* (fn [m] (prn (select-keys m [:exit :cause])))
                               *command-line-args* [\"--nope\"]]
                       (babashka.tasks/run (quote go)))"))))))
-  (testing "a var in a fn-meta :cmd tree needs no quoting and carries spec and doc"
-    (test-utils/with-config '{:tasks {t {:cli {:fn babashka.tasks-cli/tree-root}}}}
-      (is (= {:env "prod" :ran :exec-only}
-             (bb "-cp" "test-resources" "t" "go" "prod")))
-      (let [help (test-utils/bb nil "-cp" "test-resources" "t" "go" "--help")]
-        (is (str/includes? help "<env>"))
-        (is (str/includes? help "Deploy it")))))
-  (testing "a :cmd key that is not a name is rejected with an explanation"
-    (test-utils/with-config '{:tasks {t {:cli {:fn babashka.tasks-cli/trap-root}}}}
-      (is (thrown-with-msg?
-           Exception #"Command name .* is not a string, symbol or keyword"
-           (test-utils/bb nil "-cp" "test-resources" "t" "--help")))))
   (testing "source order of a large :cmd map survives (bb.edn tree)"
     ;; a literal string: an evaluated 11-entry map would already be hash-ordered
     (test-utils/with-config (str "{:tasks {big {:cli {:cmd {"
@@ -637,11 +625,6 @@ even more stuff here\"
                                  "charlie {:fn clojure.core/prn} bravo {:fn clojure.core/prn} "
                                  "alpha {:fn clojure.core/prn}}}}}}")
       (let [help (test-utils/bb nil "big" "--help")
-            names ["kilo" "juliet" "india" "hotel" "golf" "foxtrot" "echo" "delta" "charlie" "bravo" "alpha"]]
-        (is (apply < (map #(str/index-of help %) names))))))
-  (testing "source order of a large :cmd map survives (fn metadata tree)"
-    (test-utils/with-config '{:tasks {big {:cli {:fn babashka.tasks-cli-big/root}}}}
-      (let [help (test-utils/bb nil "-cp" "test-resources" "big" "--help")
             names ["kilo" "juliet" "india" "hotel" "golf" "foxtrot" "echo" "delta" "charlie" "bravo" "alpha"]]
         (is (apply < (map #(str/index-of help %) names))))))
   (testing "task-level :exec-fn is sugar for :cli {:exec-fn ...}"
