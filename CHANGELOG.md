@@ -32,8 +32,8 @@ A preview of the next release can be installed from
 - [#1987](https://github.com/babashka/babashka/issues/1987): Allow the `remove` method to be used on `Iterator`
 - [#1988](https://github.com/babashka/babashka/issues/1988): Allow `java.io.Closeable` and `java.lang.AutoCloseable` to be reified
 - Bump edamame to `1.6.42`
-- Bump babashka.cli to 0.12.79: auto-help and completions for `dispatch`, tree format; `*exit-fn*` rebindable from scripts
-- Tasks: new `:cli` key on task maps routes invocation through `babashka.cli/dispatch`: parsed options available via `(:opts (current-task))`, automatic `--help`, subcommands via the cli tree format
+- Bump babashka.cli to 0.12.81: `dispatch` auto-help and shell completions, tree format, `:enum`; `*exit-fn*` rebindable from scripts
+- Tasks: `:exec-fn` (a function) or `:cmd` (a command tree) on a task map routes it through `babashka.cli/dispatch`, with automatic `--help`, shell completion and subcommands. Specs, docs, `:enum` and `:error-fn` live on the function's `:org.babashka/cli` metadata; command trees live in bb.edn
 
 ## 1.12.218 (2026-04-20)
 
