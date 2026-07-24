@@ -669,6 +669,27 @@ even more stuff here\"
     (test-utils/with-config '{:tasks {foo {:extra-paths ["test-resources"]
                                            :exec-fn babashka.tasks-cli/deploy-x}}}
       (is (str/includes? (test-utils/bb nil "tasks") "Deploy it"))))
+  (testing "a :cmd pointing straight at a function says what to write"
+    (test-utils/with-config '{:tasks {foo {:cmd {"sub" babashka.tasks-cli/deploy-x}}}}
+      (is (thrown-with-msg?
+           Exception #"Task foo: :cmd \"sub\" must be a map.*Write \{:exec-fn babashka.tasks-cli/deploy-x\}"
+           (test-utils/bb nil "-cp" "test-resources" "foo" "sub"))))
+    (testing "nested too"
+      (test-utils/with-config '{:tasks {foo {:cmd {"a" {:cmd {"b" clojure.core/prn}}}}}}
+        (is (thrown-with-msg?
+             Exception #"Task foo: :cmd \"b\" must be a map"
+             (test-utils/bb nil "-cp" "test-resources" "foo" "a" "b"))))))
+  (testing "a :task body next to a :cli :fn is a config error"
+    (test-utils/with-config '{:tasks {foo {:task (println :body)
+                                           :cli {:fn babashka.tasks-cli/run-dev}}}}
+      (is (thrown-with-msg?
+           Exception #"Task foo: both a :task body and a :cli :fn given"
+           (test-utils/bb nil "-cp" "test-resources" "foo"))))
+    (testing "but a body next to a :cli :exec-fn stays allowed"
+      (test-utils/with-config '{:tasks {foo {:task (println :body)
+                                             :cli {:exec-fn babashka.tasks-cli/deploy-x}}}}
+        (is (= {:env "prod" :ran :exec-only}
+               (bb "-cp" "test-resources" "foo" "prod"))))))
   (testing "a task-level :cli that is not a map is a config error"
     (test-utils/with-config '{:tasks {foo {:cli babashka.tasks-cli/base-opts}}}
       (is (thrown-with-msg?
@@ -911,6 +932,23 @@ even more stuff here\"
           (is (str/includes? out "--config"))
           (is (str/includes? out "--classpath"))
           (is (not (str/includes? out "dev")))))))
+  (testing "a multi-line :doc contributes one candidate, not one per line"
+    (test-utils/with-config '{:tasks {ci    {:doc ["Run the CI tests" "" "Uses the matrix from ci.edn."]
+                                             :task (println :ci)}
+                                      other {:task (println :o)}}}
+      (let [lines (str/split-lines
+                   (test-utils/bb nil "org.babashka.cli/completions"
+                                  "complete" "--shell" "zsh" "--" ""))]
+        (is (some #(= "ci\tRun the CI tests" %) lines))
+        (is (not (some #(str/includes? % "Uses the matrix") lines)))
+        (is (= #{"ci" "other" "org.babashka.cli/file-completion"}
+               (set (map #(first (str/split % #"\t")) (remove str/blank? lines))))))))
+  (testing "a bb.edn config error still leaves the shell file completion"
+    (test-utils/with-config '{:tasks {foo {:cli babashka.tasks-cli/base-opts}}}
+      (let [out (try (test-utils/bb nil "org.babashka.cli/completions"
+                                    "complete" "--shell" "zsh" "--" "")
+                     (catch Exception e (:stdout (ex-data e))))]
+        (is (str/includes? out "org.babashka.cli/file-completion")))))
   (testing "completion never runs what is on the line being completed"
     (test-utils/with-config '{:tasks {foo {:task (println :x)}}}
       (let [marker (fs/file (fs/temp-dir) "bb-completion-must-not-write.txt")]

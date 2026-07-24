@@ -32,6 +32,22 @@
                       tasks tasks))
     edn))
 
+(defn- assert-cmd-maps
+  "Every command in a `:cmd` tree must be a map. Pointing one straight at a
+  function reads like it should work, so say what to write instead of letting
+  it fail somewhere down the tree."
+  [task-name cmd]
+  (when (map? cmd)
+    (run! (fn [[name node]]
+            (when-not (map? node)
+              (throw (ex-info (str "Task " task-name ": :cmd " (pr-str name)
+                                   " must be a map, got: " (pr-str node)
+                                   ". Write {:exec-fn " (pr-str node)
+                                   "} to point a command at a function")
+                              {:babashka/exit 1})))
+            (assert-cmd-maps task-name (:cmd node)))
+          cmd)))
+
 (defn hoist-cli-keys
   "Task-level `:exec-fn` and `:cmd` are sugar for the same keys inside `:cli`,
   so a CLI task can be written flat (`foo {:exec-fn ...}`, `bar {:cmd {...}}`).
@@ -48,6 +64,14 @@
        (when-not (or (nil? cli) (map? cli))
          (throw (ex-info (str "Task " k ": :cli must be a map, got: " (pr-str cli)
                               ". Only the :tasks level :cli may name a defaults var")
+                         {:babashka/exit 1})))
+       (assert-cmd-maps k (or (:cmd v) (:cmd cli)))
+       ;; a `:task` body becomes the root handler, so a `:cli` `:fn` next to it
+       ;; would never be called. `:exec-fn` is not in here: it takes priority
+       ;; over a body on purpose
+       (when (and (:task v) (:fn cli))
+         (throw (ex-info (str "Task " k ": both a :task body and a :cli :fn given"
+                              ". The body is the root handler, use :exec-fn to override it")
                          {:babashka/exit 1})))
        (if (or (:exec-fn v) (:cmd v))
          (do
@@ -862,8 +886,14 @@
                                                     (not (str/starts-with? n "-"))
                                                     (not (and (map? v) (:private v)))
                                                     (str/starts-with? n partial))
-                                           (let [d (doc-from-task sci-ctx tasks v)]
-                                             (if d (str n "\t" d) n))))))
+                                           ;; one candidate is one line: the
+                                           ;; rest of a multi-line doc would
+                                           ;; each become a candidate of their
+                                           ;; own. list-tasks truncates too
+                                           (let [d (some-> (doc-from-task sci-ctx tasks v)
+                                                           str/split-lines
+                                                           first)]
+                                             (if (str/blank? d) n (str n "\t" d)))))))
                                sort
                                vec)
                           (conj "org.babashka.cli/file-completion")))]

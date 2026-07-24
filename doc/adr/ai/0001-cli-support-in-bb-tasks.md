@@ -107,6 +107,21 @@ the user as the namespace not being on the classpath.
 This is invocation-time only, so a stale name never breaks completion or
 `bb tasks`, which stay best-effort.
 
+Shape errors are caught earlier, when bb.edn is read, and name the task: a
+`:cli` that is not a map, a `:cmd` command pointing straight at a function
+rather than at a map, and a `:task` body next to a `:cli` `:fn`, which would
+never be called. A bare symbol as a command is rejected rather than read as
+sugar for `{:exec-fn f}`, because it could as well mean `:fn` or bb's own
+"task is a qualified symbol" form, and the error says which to write.
+
+`:exec-fn` is deliberately not part of that last check: it takes priority over
+a body, which is how a command group gets a default action.
+
+A config error raised while reading bb.edn is printed as a message with its
+exit code, not a stack trace. During a completion callback it also emits the
+file-completion marker, so a broken bb.edn leaves the shell its own completion
+instead of nothing.
+
 ### 9. `:error-fn` is never bb.edn data
 
 dispatch would treat a symbol `:error-fn` as a map lookup and swallow every

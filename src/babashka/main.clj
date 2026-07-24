@@ -1365,9 +1365,18 @@ Use bb run --help to show this help output.
   (try (apply main* args)
        (catch clojure.lang.ExceptionInfo e
          (if-let [exit (:babashka/exit (ex-data e))]
-           (binding [*out* *err*]
-             (println (ex-message e))
-             {:exit exit})
+           (do
+             ;; a completion callback shows the user a list, not an error: the
+             ;; shell discards stderr, so a broken bb.edn would take file
+             ;; completion down with it and TAB would do nothing at all
+             ;; before the `--`, so a completions sentinel the user typed on
+             ;; the line does not count as one of bb's own
+             (when (some #{"org.babashka.cli/completions"}
+                         (take-while #(not= "--" %) args))
+               (println "org.babashka.cli/file-completion"))
+             (binding [*out* *err*]
+               (println (ex-message e))
+               {:exit exit}))
            (throw e)))))
 
 (defn -main
