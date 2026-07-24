@@ -82,8 +82,16 @@ A bb.edn that points at something absent is reported, not left to fail later:
 an `:exec-fn` or `:fn` whose var does not resolve, and a runner-level `:cli`
 symbol that does not resolve or does not name a map. Without that the generated
 code calls nil and the user gets a bare NullPointerException from a file they
-did not write. This is invocation-time only, so a stale name never breaks
-completion or `bb tasks`, which stay best-effort.
+did not write.
+
+The error names the task and the key for both ways a symbol fails, since they
+take different routes: a missing var resolves to nil, a missing namespace
+throws out of `requiring-resolve`. The underlying message is appended and the
+original exception kept as the cause, because a typo in bb.edn usually reaches
+the user as the namespace not being on the classpath.
+
+This is invocation-time only, so a stale name never breaks completion or
+`bb tasks`, which stay best-effort.
 
 ### 8. `:error-fn` is never bb.edn data
 

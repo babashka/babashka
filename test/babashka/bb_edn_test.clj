@@ -669,17 +669,30 @@ even more stuff here\"
     (test-utils/with-config '{:tasks {foo {:extra-paths ["test-resources"]
                                            :exec-fn babashka.tasks-cli/deploy-x}}}
       (is (str/includes? (test-utils/bb nil "tasks") "Deploy it"))))
-  (testing "a handler that cannot be resolved is reported, not an NPE"
-    (test-utils/with-config '{:tasks {foo {:exec-fn clojure.core/nope}}}
-      (is (thrown-with-msg?
-           Exception #"Task foo: cannot resolve :exec-fn clojure.core/nope"
-           (test-utils/bb nil "-cp" "test-resources" "foo")))))
-  (testing "a runner-level :cli symbol that resolves to nothing is a config error"
-    (test-utils/with-config '{:tasks {:cli babashka.tasks-cli/nope
-                                      foo {:exec-fn babashka.tasks-cli/deploy-x}}}
-      (is (thrown-with-msg?
-           Exception #":tasks :cli babashka.tasks-cli/nope cannot be resolved"
-           (test-utils/bb nil "-cp" "test-resources" "foo" "prod")))))
+  (testing "a handler that cannot be resolved names the task and the key"
+    (testing "when the var is missing"
+      (test-utils/with-config '{:tasks {foo {:exec-fn clojure.core/nope}}}
+        (is (thrown-with-msg?
+             Exception #"Task foo: cannot resolve :exec-fn clojure.core/nope"
+             (test-utils/bb nil "-cp" "test-resources" "foo")))))
+    (testing "and when the whole namespace is missing"
+      (test-utils/with-config '{:tasks {foo {:exec-fn no.such.ns/handler}}}
+        (is (thrown-with-msg?
+             Exception #"Task foo: cannot resolve :exec-fn no.such.ns/handler: Could not locate"
+             (test-utils/bb nil "-cp" "test-resources" "foo"))))))
+  (testing "a runner-level :cli symbol that cannot be resolved is a config error"
+    (testing "when the var is missing"
+      (test-utils/with-config '{:tasks {:cli babashka.tasks-cli/nope
+                                        foo {:exec-fn babashka.tasks-cli/deploy-x}}}
+        (is (thrown-with-msg?
+             Exception #":tasks :cli babashka.tasks-cli/nope cannot be resolved"
+             (test-utils/bb nil "-cp" "test-resources" "foo" "prod")))))
+    (testing "and when the whole namespace is missing"
+      (test-utils/with-config '{:tasks {:cli no.such.ns/base
+                                        foo {:exec-fn babashka.tasks-cli/deploy-x}}}
+        (is (thrown-with-msg?
+             Exception #":tasks :cli no.such.ns/base cannot be resolved: Could not locate"
+             (test-utils/bb nil "-cp" "test-resources" "foo" "prod"))))))
   (testing "a :task that is a qualified symbol keeps its :cli dispatch"
     (test-utils/with-config '{:tasks {deploy {:task clojure.core/prn
                                               :cmd {"go" {:exec-fn babashka.tasks-cli/deploy-x}}}}}

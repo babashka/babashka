@@ -215,6 +215,19 @@
                            "\n" prog))
     prog))
 
+(defn- resolve-or-throw
+  "Resolves `sym` with `resolve-fn`, reporting `what` when it names a var that
+  is not there. Covers both failures: a missing var resolves to nil, a missing
+  namespace throws. The original failure is kept as the cause and its message
+  is appended, since a bb.edn typo usually shows up as the namespace not being
+  on the classpath."
+  [resolve-fn sym what]
+  (let [v (try (resolve-fn sym)
+               (catch Exception e
+                 (throw (ex-info (str what ": " (ex-message e))
+                                 {:babashka/exit 1} e))))]
+    (or v (throw (ex-info what {:babashka/exit 1})))))
+
 (defn -resolve-cli-tasks-defaults
   "The runner-level `:tasks {:cli ...}` entry, resolved to a map: a map as-is,
   or a symbol naming a def of one, resolved via `resolve-fn` (the script's
@@ -225,10 +238,8 @@
   (cond
     (nil? d) nil
     (map? d) d
-    (symbol? d) (let [v (resolve-fn d)
-                      _ (when-not v
-                          (throw (ex-info (str ":tasks :cli " d " cannot be resolved")
-                                          {:babashka/exit 1})))
+    (symbol? d) (let [v (resolve-or-throw resolve-fn d
+                                          (str ":tasks :cli " d " cannot be resolved"))
                       m (deref v)]
                   (when-not (map? m)
                     (throw (ex-info (str ":tasks :cli " d " is not a map")
@@ -366,10 +377,10 @@
         ;; win), and gate :depends and :enter/:leave on the fn being called
         wrap-key (fn [node k]
                    (if-let [fv (k node)]
-                     (let [the-var (if (symbol? fv) (resolve-fn fv) fv)
-                           _ (when-not the-var
-                               (throw (ex-info (str "Task " task-name ": cannot resolve " k " " fv)
-                                               {:babashka/exit 1})))
+                     (let [the-var (if (symbol? fv)
+                                     (resolve-or-throw resolve-fn fv
+                                                       (str "Task " task-name ": cannot resolve " k " " fv))
+                                     fv)
                            m (when (symbol? fv) (meta the-var))]
                        (-> (babashka.cli/merge-opts
                             (:org.babashka/cli (meta (:ns m)))
