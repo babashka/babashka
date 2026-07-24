@@ -33,11 +33,15 @@
     edn))
 
 (defn- assert-cmd-maps
-  "Every command in a `:cmd` tree must be a map. Pointing one straight at a
-  function reads like it should work, so say what to write instead of letting
-  it fail somewhere down the tree."
+  "A `:cmd` tree and every command in it must be a map. Pointing a command
+  straight at a function reads like it should work, so say what to write
+  instead of letting it fail somewhere down the tree."
   [task-name cmd]
-  (when (map? cmd)
+  (when (some? cmd)
+    (when-not (map? cmd)
+      (throw (ex-info (str "Task " task-name ": :cmd must be a map of command name to command, got: "
+                           (pr-str cmd))
+                      {:babashka/exit 1})))
     (run! (fn [[name node]]
             (when-not (map? node)
               (throw (ex-info (str "Task " task-name ": :cmd " (pr-str name)

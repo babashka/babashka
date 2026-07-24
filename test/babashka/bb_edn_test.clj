@@ -678,7 +678,16 @@ even more stuff here\"
       (test-utils/with-config '{:tasks {foo {:cmd {"a" {:cmd {"b" clojure.core/prn}}}}}}
         (is (thrown-with-msg?
              Exception #"Task foo: :cmd \"b\" must be a map"
-             (test-utils/bb nil "-cp" "test-resources" "foo" "a" "b"))))))
+             (test-utils/bb nil "-cp" "test-resources" "foo" "a" "b")))))
+    (testing "and a :cmd that is not a map at all"
+      (test-utils/with-config '{:tasks {foo {:cmd bar}}}
+        (is (thrown-with-msg?
+             Exception #"Task foo: :cmd must be a map of command name to command, got: bar"
+             (test-utils/bb nil "-cp" "test-resources" "foo"))))
+      (test-utils/with-config '{:tasks {foo {:cli {:cmd "oops"}}}}
+        (is (thrown-with-msg?
+             Exception #"Task foo: :cmd must be a map of command name to command"
+             (test-utils/bb nil "-cp" "test-resources" "foo"))))))
   (testing "a :task body next to a :cli :fn is a config error"
     (test-utils/with-config '{:tasks {foo {:task (println :body)
                                            :cli {:fn babashka.tasks-cli/run-dev}}}}
@@ -944,11 +953,13 @@ even more stuff here\"
         (is (= #{"ci" "other" "org.babashka.cli/file-completion"}
                (set (map #(first (str/split % #"\t")) (remove str/blank? lines))))))))
   (testing "a bb.edn config error still leaves the shell file completion"
-    (test-utils/with-config '{:tasks {foo {:cli babashka.tasks-cli/base-opts}}}
-      (let [out (try (test-utils/bb nil "org.babashka.cli/completions"
-                                    "complete" "--shell" "zsh" "--" "")
-                     (catch Exception e (:stdout (ex-data e))))]
-        (is (str/includes? out "org.babashka.cli/file-completion")))))
+    (doseq [cfg ['{:tasks {foo {:cli babashka.tasks-cli/base-opts}}}
+                 '{:tasks {foo {:cmd bar}}}]]
+      (test-utils/with-config cfg
+        (let [out (try (test-utils/bb nil "org.babashka.cli/completions"
+                                      "complete" "--shell" "zsh" "--" "")
+                       (catch Exception e (:stdout (ex-data e))))]
+          (is (str/includes? out "org.babashka.cli/file-completion"))))))
   (testing "completion never runs what is on the line being completed"
     (test-utils/with-config '{:tasks {foo {:task (println :x)}}}
       (let [marker (fs/file (fs/temp-dir) "bb-completion-must-not-write.txt")]

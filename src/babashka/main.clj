@@ -1368,9 +1368,9 @@ Use bb run --help to show this help output.
            (do
              ;; a completion callback shows the user a list, not an error: the
              ;; shell discards stderr, so a broken bb.edn would take file
-             ;; completion down with it and TAB would do nothing at all
-             ;; before the `--`, so a completions sentinel the user typed on
-             ;; the line does not count as one of bb's own
+             ;; completion down with it and TAB would do nothing at all. Only
+             ;; words before the `--` count, so a completions sentinel the user
+             ;; typed on the line is not mistaken for bb's own
              (when (some #{"org.babashka.cli/completions"}
                          (take-while #(not= "--" %) args))
                (println "org.babashka.cli/file-completion"))
