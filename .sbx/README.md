@@ -29,6 +29,19 @@ bb .sbx/repl.clj --root /path/to/worktree
 The REPL runs Clojure 1.12 via an injected `:repl-clojure` alias, so
 `clojure.repl.deps/add-libs` works for adding deps on the fly.
 
+[clj-reload](https://github.com/tonsky/clj-reload) is included for reloading
+changed namespaces in dependency order:
+
+``` clojure
+(require '[clj-reload.core :as reload])
+(reload/init {:dirs ["src" "test"]})
+(reload/reload)
+```
+
+Init on `src` and `test` only. `test-resources` holds the lib-test corpus, and
+`{:only :all}` fails on feature-gated namespaces that are not on the test
+classpath.
+
 The REPL runs inside the container: it only sees files under the mounted
 project root, not host temp dirs. See `repl.clj` for `--port` and `--aliases`.
 

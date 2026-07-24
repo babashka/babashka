@@ -88,28 +88,22 @@ itself (not its value) is returned. The reader macro #'x expands to (var x)."}}]
     :doc "Register INT signal handler.  After calling this, Ctrl-C will cause\n  the given function f to be called with a single argument, the signal.\n  Uses thread-stopper if no function given."
     :arglists '([] [f])}))
 
-(def ^:private source-loader
-  (delay
-    (try
-      (let [cp (print-deps/deps-classpath)
-            urls (into-array java.net.URL
-                             (map #(-> (fs/file %) .toURI .toURL)
-                                  (str/split cp (re-pattern (System/getProperty "path.separator")))))]
-        (java.net.URLClassLoader. urls nil))
-      (catch Exception _ nil))))
-
-(defn find-source
-  "Source text for a classpath-relative or absolute `file`, or nil."
-  [^String file]
-  (or (when (fs/exists? file) (slurp file))
-      (when-let [res (.findResource ^babashka.impl.URLClassLoader @cp/the-url-loader file)]
-        (slurp res))
-      (when-let [loader @source-loader]
-        (when-let [res (.getResource ^java.net.URLClassLoader loader file)]
-          (slurp res)))))
-
 (def source-fn-var
-  (let [find-source find-source]
+  (let [source-loader (delay
+                        (try
+                          (let [cp (print-deps/deps-classpath)
+                                urls (into-array java.net.URL
+                                                 (map #(-> (fs/file %) .toURI .toURL)
+                                                      (str/split cp (re-pattern (System/getProperty "path.separator")))))]
+                            (java.net.URLClassLoader. urls nil))
+                          (catch Exception _ nil)))
+        find-source (fn [^String file]
+                      (or (when (fs/exists? file) (slurp file))
+                          (when-let [res (.findResource ^babashka.impl.URLClassLoader @cp/the-url-loader file)]
+                            (slurp res))
+                          (when-let [loader @source-loader]
+                            (when-let [res (.getResource ^java.net.URLClassLoader loader file)]
+                              (slurp res)))))]
     (sci/new-var
      'source-fn
      (fn [x]

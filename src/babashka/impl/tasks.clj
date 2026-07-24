@@ -300,7 +300,10 @@
 (defn attach-cmd-orders
   "Attach `:cmd-order` from the literal key order in the raw bb.edn text to
   every task `:cli` tree with more than 8 subcommands. An explicit
-  `:cmd-order` wins."
+  `:cmd-order` wins. Reads both the flat form (`:cmd` on the task) and the
+  nested one (`:cmd` inside `:cli`): hoist-cli-keys has already moved a flat
+  `:cmd` into `:cli` in the parsed edn, but the raw text still has it where the
+  user wrote it."
   [edn]
   (or (when-let [raw (:raw edn)]
         (try
@@ -312,12 +315,11 @@
                      (reduce-kv
                       (fn [acc k v]
                         (if-let [orders (and (symbol? k) (map? v) (:cmd (:cli v))
-                                             (some-> (zip/down tasks-loc)
-                                                     (zip/find-value k)
-                                                     zip/right
-                                                     (zmap-val :cli)
-                                                     zunquote
-                                                     cmd-orders))]
+                                             (when-let [tnode (some-> (zip/down tasks-loc)
+                                                                      (zip/find-value k)
+                                                                      zip/right)]
+                                               (or (some-> tnode (zmap-val :cli) zunquote cmd-orders)
+                                                   (cmd-orders tnode))))]
                           (assoc acc k (update v :cli with-cmd-order orders))
                           acc))
                       (:tasks edn) (:tasks edn)))))
@@ -336,46 +338,53 @@
   fn is called with dispatch's result map (`{:opts ... :dispatch ... :args ...}`),
   like any babashka.cli/dispatch `:fn`.
 
-  `deps-fn` (or nil) is the task's assembled `:depends` as a thunk. It runs
-  right before whichever command fn the parser selects - root body or a
-  subcommand - and only on a successful parse. dispatch never calls a command
-  fn for `--help`/`-h` or a parse error, so the deps run exactly when the body
-  runs, decided by the parser (like cobra's PreRun), not by scanning raw args."
-  ([cli-opts task-name body-fn resolve-fn args]
-   (-cli-dispatch cli-opts task-name body-fn nil resolve-fn args))
-  ([cli-opts task-name body-fn deps-fn resolve-fn args]
-   (assert-no-edn-error-fn cli-opts task-name)
-   (when (map? (:cli (:tasks @bb-edn)))
-     (assert-no-edn-error-fn (:cli (:tasks @bb-edn)) task-name))
-   (let [with-deps (fn [f] (fn [m] (when deps-fn (deps-fn)) (f m)))
-         ;; resolve a :fn / :exec-fn symbol, merge the ns and var
-         ;; :org.babashka/cli metadata and the docstring (like bb -x; node keys
-         ;; win), and gate :depends on the fn being called
-         wrap-key (fn [node k]
-                    (if-let [fv (k node)]
-                      (let [the-var (if (symbol? fv) (resolve-fn fv) fv)
-                            m (when (symbol? fv) (meta the-var))]
-                        (-> (babashka.cli/merge-opts
-                             (:org.babashka/cli (meta (:ns m)))
-                             ;; a `:cmd` tree belongs in bb.edn, not on a fn, so it
-                             ;; is dropped here; the fn's spec/doc/etc. still merge
-                             (dissoc (:org.babashka/cli m) :cmd)
-                             (when-let [d (:doc m)] {:doc d})
-                             node)
-                            (assoc k (with-deps (fn [m] (the-var m))))))
-                      node))
-         wrap (fn wrap [node]
-                (let [node (-> node (wrap-key :fn) (wrap-key :exec-fn))]
-                  (if-let [cm (:cmd node)]
-                    (assoc node :cmd (into {} (map (fn [[k v]] [k (wrap v)])) cm))
-                    node)))
-         tree (wrap cli-opts)
-         tree (if body-fn (assoc tree :fn (with-deps body-fn)) tree)
-         ;; a `:cli` entry in the :tasks map (like :requires/:init) provides
-         ;; dispatch defaults for every CLI task, merged into the dispatch
-         ;; opts; node keys win.
-         defaults (-resolve-cli-tasks-defaults resolve-fn (:cli (:tasks @bb-edn)))]
-     (babashka.cli/dispatch tree args (merge defaults {:help true :prog (str "bb " task-name)})))))
+  `fns` holds the parts of the task that must not run until the parser picks a
+  command: `:body-fn` (the task body, or nil), `:deps-fn` (the assembled
+  `:depends` plus the dependencies' own `:requires` and `:extra-paths` /
+  `:extra-deps`, or nil) and `:hook-fn` (`:enter` / `:leave` around a call, or
+  nil). `:deps-fn` and `:hook-fn` run right before whichever command fn the
+  parser selects - root body or a subcommand - and only on a successful parse.
+  dispatch never calls a command fn for `--help`/`-h` or a parse error, so
+  nothing in `fns` runs then, decided by the parser (like cobra's PreRun) rather
+  than by scanning raw args. `:body-fn` carries its own `:enter` / `:leave`,
+  so `:hook-fn` applies only to the resolved `:fn` / `:exec-fn` handlers."
+  [cli-opts task-name {:keys [body-fn deps-fn hook-fn]} resolve-fn args]
+  (assert-no-edn-error-fn cli-opts task-name)
+  (when (map? (:cli (:tasks @bb-edn)))
+    (assert-no-edn-error-fn (:cli (:tasks @bb-edn)) task-name))
+  (let [with-deps (fn [f] (fn [m] (when deps-fn (deps-fn)) (f m)))
+        with-hooks (fn [f] (if hook-fn (fn [m] (hook-fn (fn [] (f m)))) f))
+        ;; resolve a :fn / :exec-fn symbol, merge the ns and var
+        ;; :org.babashka/cli metadata and the docstring (like bb -x; node keys
+        ;; win), and gate :depends and :enter/:leave on the fn being called
+        wrap-key (fn [node k]
+                   (if-let [fv (k node)]
+                     (let [the-var (if (symbol? fv) (resolve-fn fv) fv)
+                           m (when (symbol? fv) (meta the-var))]
+                       (-> (babashka.cli/merge-opts
+                            (:org.babashka/cli (meta (:ns m)))
+                            ;; a `:cmd` tree belongs in bb.edn, not on a fn, so it
+                            ;; is dropped here; the fn's spec/doc/etc. still merge
+                            (dissoc (:org.babashka/cli m) :cmd)
+                            (when-let [d (:doc m)] {:doc d})
+                            node)
+                           (assoc k (with-deps (with-hooks the-var)))))
+                     node))
+        wrap (fn wrap [node]
+               (let [node (-> node (wrap-key :fn) (wrap-key :exec-fn))]
+                 (if-let [cm (:cmd node)]
+                   (assoc node :cmd (into {} (map (fn [[k v]] [k (wrap v)])) cm))
+                   node)))
+        tree (wrap cli-opts)
+        tree (if body-fn (assoc tree :fn (with-deps body-fn)) tree)
+        ;; a `:cli` entry in the :tasks map (like :requires/:init) provides
+        ;; dispatch defaults for every CLI task, merged into the dispatch
+        ;; opts; node keys win. `:prog` stays bb's, so help always names the
+        ;; task it belongs to.
+        defaults (-resolve-cli-tasks-defaults resolve-fn (:cli (:tasks @bb-edn)))]
+    (babashka.cli/dispatch tree args (merge {:help true}
+                                            defaults
+                                            {:prog (str "bb " task-name)}))))
 
 (defn -resolve-cli-specs
   "Walk a `:cli` tree, merging each node fn's `:org.babashka/cli` metadata and
@@ -385,15 +394,17 @@
   so a node's spec and doc show up even though they live on the fn. Mirrors the
   merge in -cli-dispatch's wrap."
   [resolve-fn node]
-  (let [fv (or (:fn node) (:exec-fn node))
-        node (if (symbol? fv)
-               (let [m (meta (resolve-fn fv))]
-                 (babashka.cli/merge-opts
-                  (:org.babashka/cli (meta (:ns m)))
-                  (dissoc (:org.babashka/cli m) :cmd)
-                  (when-let [d (:doc m)] {:doc d})
-                  node))
-               node)]
+  (let [merge-fn-meta (fn [node k]
+                        (let [fv (k node)]
+                          (if (symbol? fv)
+                            (let [m (meta (resolve-fn fv))]
+                              (babashka.cli/merge-opts
+                               (:org.babashka/cli (meta (:ns m)))
+                               (dissoc (:org.babashka/cli m) :cmd)
+                               (when-let [d (:doc m)] {:doc d})
+                               node))
+                            node)))
+        node (-> node (merge-fn-meta :fn) (merge-fn-meta :exec-fn))]
     (if-let [cm (:cmd node)]
       (assoc node :cmd (into {} (map (fn [[k v]] [k (-resolve-cli-specs resolve-fn v)])) cm))
       node)))
@@ -409,21 +420,29 @@
   `--help`/`-h` or a parse error (like cobra's PreRun), rather than by scanning
   raw args for a help token.
 
+  A task without a `:task` body still gets `:enter` / `:leave`: they are passed
+  as a thunk wrapper applied to the `:exec-fn` / `:fn` handler that runs. A
+  `:task` body is already wrapped by wrap-enter-leave.
+
   Task-map `:doc` folds into the tree root so `--help` and `bb tasks` agree
   (an explicit `:doc` in the `:cli` map wins)."
   ([task-map prog] (wrap-cli task-map prog nil))
   ([task-map prog dep-forms]
    (if-let [cli-opts (:cli task-map)]
-     (format "(babashka.tasks/-cli-dispatch '%s \"%s\" %s %s requiring-resolve *command-line-args*)"
-             (pr-str (merge (select-keys task-map [:doc]) cli-opts))
-             (:name task-map)
-             (if (:task task-map)
-               (format "(fn [{:keys [opts]}] (binding [babashka.tasks/*task* (assoc babashka.tasks/*task* :opts opts)] %s))"
-                       prog)
-               "nil")
-             (if dep-forms
-               (format "(fn [] %s)" dep-forms)
-               "nil"))
+     (let [{:keys [enter leave name]} task-map]
+       (format "(babashka.tasks/-cli-dispatch '%s \"%s\" {:body-fn %s :deps-fn %s :hook-fn %s} requiring-resolve *command-line-args*)"
+               (pr-str (merge (select-keys task-map [:doc]) cli-opts))
+               name
+               (if (:task task-map)
+                 (format "(fn [{:keys [opts]}] (binding [babashka.tasks/*task* (assoc babashka.tasks/*task* :opts opts)] %s))"
+                         prog)
+                 "nil")
+               (if dep-forms
+                 (format "(fn [] %s)" dep-forms)
+                 "nil")
+               (if (or enter leave)
+                 (format "(fn [thunk] %s)" (wrap-enter-leave name "(thunk)" enter leave))
+                 "nil")))
      prog)))
 
 (defn assemble-task-1
@@ -452,6 +471,9 @@
        (qualified-symbol? task)
        (let [prog (format "(apply %s *command-line-args*)" task)
              prog (wrap-enter-leave task-name prog enter leave)
+             ;; a `:cli` task keeps its dispatch even when the body is a
+             ;; qualified symbol: the symbol call becomes the default action
+             prog (if last? (wrap-cli task-map prog dep-forms) prog)
              prog (wrap-depends prog depends parallel?)
              prog (wrap-def task-map prog parallel? last?)
              prog (format "
@@ -471,6 +493,24 @@
          prog)))))
 
 (def rand-ns (delay (symbol (str "user-" (java.util.UUID/randomUUID)))))
+
+(defn add-deps-form
+  "`(babashka.deps/add-deps ...)` for `extra-paths` / `extra-deps`, or \"\"."
+  [extra-paths extra-deps]
+  (let [deps (cond-> {}
+               (seq extra-deps) (assoc :deps extra-deps)
+               (seq extra-paths) (assoc :paths extra-paths))]
+    (if (seq deps)
+      (format "(babashka.deps/add-deps '%s)" (pr-str deps))
+      "")))
+
+(defn requires-form
+  "`(require ...)` for `requires`, or \"\"."
+  [requires]
+  (if (seq requires)
+    (format "(require %s)"
+            (str/join "\n" (map (fn [req] (str "'" req)) requires)))
+    ""))
 
 (defn format-task [init extra-paths extra-deps global-requires requires prog]
   (format "
@@ -509,25 +549,14 @@
 ;; task
 %s
 "
-          (let [deps (cond-> {}
-                       (seq extra-deps) (assoc :deps extra-deps)
-                       (seq extra-paths) (assoc :paths extra-paths))]
-            (if (seq deps)
-              (format "(babashka.deps/add-deps '%s)" (pr-str deps))
-              ""))
+          (add-deps-form extra-paths extra-deps)
           @rand-ns
           (if (seq global-requires)
             (format "(:require %s)" (str/join " " global-requires))
             "")
           @rand-ns @rand-ns
           (pr-str init)
-          (if (seq requires)
-            (format "(require %s)"
-                    (str/join "\n"
-                              (map (fn [req]
-                                     (str "'" req))
-                                   requires)))
-            "")
+          (requires-form requires)
           prog))
 
 (defn target-order
@@ -600,8 +629,7 @@
                                  [(binding [*out* *err*]
                                     (println "No such task:" t)) 1])
                                (if-let [task (get tasks t)]
-                                 (let [dep-forms prog
-                                       ;; For a non-parallel `:cli` task, hand the
+                                 (let [;; For a non-parallel `:cli` task, hand the
                                        ;; deps to dispatch as a thunk (wrap-cli),
                                        ;; so they run only when a command fn runs
                                        ;; - never on `--help` or a parse error.
@@ -610,15 +638,30 @@
                                        ;; launching their channels ahead of the
                                        ;; target's wait).
                                        cli-prelude? (and (:cli task) (not parallel?))
+                                       ;; the dependencies' own :requires and
+                                       ;; :extra-paths/:extra-deps go into the
+                                       ;; thunk too, so `--help` neither loads
+                                       ;; their namespaces nor resolves their deps
+                                       dep-forms (if cli-prelude?
+                                                   (str (add-deps-form extra-paths extra-deps) "\n"
+                                                        (requires-form requires) "\n"
+                                                        prog)
+                                                   prog)
                                        prog (if cli-prelude?
                                               (assemble-task-1 task-map task parallel? true dep-forms)
                                               (str dep-forms "\n"
                                                    #_(wait-tasks depends) #_(apply str (map deref-task depends))
                                                    "\n"
                                                    (assemble-task-1 task-map task parallel? true)))
-                                       extra-paths (concat extra-paths (:extra-paths task))
-                                       extra-deps (merge extra-deps (:extra-deps task))
-                                       requires (concat requires (:requires task))]
+                                       extra-paths (if cli-prelude?
+                                                     (:extra-paths task)
+                                                     (concat extra-paths (:extra-paths task)))
+                                       extra-deps (if cli-prelude?
+                                                    (:extra-deps task)
+                                                    (merge extra-deps (:extra-deps task)))
+                                       requires (if cli-prelude?
+                                                  (:requires task)
+                                                  (concat requires (:requires task)))]
                                    [[(format-task init extra-paths extra-deps global-requires requires prog)] nil])
                                  [(binding [*out* *err*]
                                     (println "No such task:" t)) 1]))))))
@@ -690,7 +733,9 @@
 
 (def global-opt-completions
   "bb's global and evaluation options offered when completing a dash-prefixed
-  first word. Curated from print-help; keep in sync."
+  first word. Curated from print-help; keep in sync. Deprecated options
+  (`-i`, `-I`, `-o`, `-O`, `--stream`) are left out on purpose: completion
+  should not advertise what we do not want new scripts to use."
   [["--classpath" "Classpath to use. Overrides bb.edn classpath"]
    ["-cp" "Classpath to use. Overrides bb.edn classpath"]
    ["--config" "Replace bb.edn with file"]
@@ -743,7 +788,13 @@
               tm (get tasks (symbol run))
               prog (str "bb " run)]
           (if (:cli tm)
-            (format "(babashka.cli/dispatch (babashka.tasks/-resolve-cli-specs requiring-resolve %s) %s (merge (babashka.tasks/-resolve-cli-tasks-defaults requiring-resolve '%s) %s))"
+            ;; the task's own :extra-paths/:extra-deps first, so a handler that
+            ;; lives there resolves here like it does for a run or `--help`.
+            ;; A failure must never surface: the shell discards stderr, so an
+            ;; uncaught error would look like "no candidates" while also
+            ;; suppressing the file-completion fallback
+            (format "(try %s (babashka.cli/dispatch (babashka.tasks/-resolve-cli-specs requiring-resolve %s) %s (merge (babashka.tasks/-resolve-cli-tasks-defaults requiring-resolve '%s) %s)) (catch Throwable _ (println \"org.babashka.cli/file-completion\")))"
+                    (add-deps-form (:extra-paths tm) (:extra-deps tm))
                     (pr-str (list 'quote (:cli tm))) (pr-str compl)
                     ;; same defaults as -cli-dispatch (incl. a symbol naming a
                     ;; defaults var), resolved in the task's own script context
@@ -751,7 +802,10 @@
                     ;; :spec completes here too
                     (pr-str (:cli tasks))
                     (pr-str {:prog prog :help true}))
-            "nil"))
+            ;; a task without :cli has no options to offer; defer to the shell
+            ;; so file completion still works, as it did before bb claimed the
+            ;; `bb` compdef
+            "(println \"org.babashka.cli/file-completion\")"))
         ;; completing the task name itself. A dash-prefixed word completes bb's
         ;; global options; a fresh word completes task names plus files (marker
         ;; line defers to the shell): `bb file.clj` is as first-class as `bb task`

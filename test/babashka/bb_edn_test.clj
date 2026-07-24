@@ -627,6 +627,17 @@ even more stuff here\"
       (let [help (test-utils/bb nil "big" "--help")
             names ["kilo" "juliet" "india" "hotel" "golf" "foxtrot" "echo" "delta" "charlie" "bravo" "alpha"]]
         (is (apply < (map #(str/index-of help %) names))))))
+  (testing "source order of a large :cmd map survives (flat task-level :cmd)"
+    (test-utils/with-config (str "{:tasks {big {:cmd {"
+                                 "kilo {:fn clojure.core/prn} juliet {:fn clojure.core/prn} "
+                                 "india {:fn clojure.core/prn} hotel {:fn clojure.core/prn} "
+                                 "golf {:fn clojure.core/prn} foxtrot {:fn clojure.core/prn} "
+                                 "echo {:fn clojure.core/prn} delta {:fn clojure.core/prn} "
+                                 "charlie {:fn clojure.core/prn} bravo {:fn clojure.core/prn} "
+                                 "alpha {:fn clojure.core/prn}}}}}")
+      (let [help (test-utils/bb nil "big" "--help")
+            names ["kilo" "juliet" "india" "hotel" "golf" "foxtrot" "echo" "delta" "charlie" "bravo" "alpha"]]
+        (is (apply < (map #(str/index-of help %) names))))))
   (testing "task-level :exec-fn is sugar for :cli {:exec-fn ...}"
     (test-utils/with-config '{:tasks {foo {:exec-fn babashka.tasks-cli/deploy-x}}}
       (is (= {:env "prod" :ran :exec-only}
@@ -654,6 +665,42 @@ even more stuff here\"
       (is (thrown-with-msg?
            Exception #"both :cmd and a :cli :cmd"
            (test-utils/bb nil "-cp" "test-resources" "deploy")))))
+  (testing "a :task that is a qualified symbol keeps its :cli dispatch"
+    (test-utils/with-config '{:tasks {deploy {:task clojure.core/prn
+                                              :cmd {"go" {:exec-fn babashka.tasks-cli/deploy-x}}}}}
+      (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "deploy" "--help")
+                         "Usage: bb deploy"))
+      (is (= {:env "prod" :ran :exec-only}
+             (bb "-cp" "test-resources" "deploy" "go" "prod")))))
+  (testing ":enter and :leave run for a task with a handler instead of a body"
+    (test-utils/with-config '{:tasks {:enter (println "ENTER" (:name (current-task)))
+                                      :leave (println "LEAVE" (:name (current-task)))
+                                      foo {:exec-fn babashka.tasks-cli/deploy-x}
+                                      grp {:cmd {"go" {:exec-fn babashka.tasks-cli/deploy-x}}}}}
+      (let [out (test-utils/bb nil "-cp" "test-resources" "foo" "prod")]
+        (is (str/includes? out "ENTER foo"))
+        (is (str/includes? out "LEAVE foo")))
+      (testing "for a command group leaf too"
+        (let [out (test-utils/bb nil "-cp" "test-resources" "grp" "go" "prod")]
+          (is (str/includes? out "ENTER grp"))
+          (is (str/includes? out "LEAVE grp"))))
+      (testing "but not when dispatch never reaches a handler"
+        (let [out (test-utils/bb nil "-cp" "test-resources" "foo" "--help")]
+          (is (str/includes? out "Usage: bb foo"))
+          (is (not (str/includes? out "ENTER")))))))
+  (testing "--help does not process a dependency's :requires"
+    (test-utils/with-config '{:tasks {-dep {:requires ([babashka.tasks-cli-side])
+                                            :task (println "DEP BODY")}
+                                      foo {:depends [-dep]
+                                           :exec-fn babashka.tasks-cli/deploy-x}}}
+      (let [help (test-utils/bb nil "-cp" "test-resources" "foo" "--help")]
+        (is (str/includes? help "Usage: bb foo"))
+        (is (not (str/includes? help "SIDE EFFECT")))
+        (is (not (str/includes? help "DEP BODY"))))
+      (testing "a real run still processes them"
+        (let [out (test-utils/bb nil "-cp" "test-resources" "foo" "prod")]
+          (is (str/includes? out "SIDE EFFECT"))
+          (is (str/includes? out "DEP BODY"))))))
   (testing ":error-fn in bb.edn is rejected with a clear message"
     (test-utils/with-config '{:tasks {foo {:cli {:spec {:port {}} :error-fn my.ns/handler}
                                            :task (prn :ran)}}}
@@ -821,6 +868,17 @@ even more stuff here\"
           (is (str/includes? out "--config"))
           (is (str/includes? out "--classpath"))
           (is (not (str/includes? out "dev")))))))
+  (testing "a task without :cli defers argument completion to the shell"
+    (test-utils/with-config '{:tasks {plain {:task (println :x)}}}
+      (let [out (test-utils/bb nil "org.babashka.cli/completions"
+                               "complete" "--shell" "zsh" "--" "plain" "")]
+        (is (str/includes? out "org.babashka.cli/file-completion")))))
+  (testing "completion resolves a handler that lives on the task's :extra-paths"
+    (test-utils/with-config '{:tasks {foo {:extra-paths ["test-resources"]
+                                           :exec-fn babashka.tasks-cli/deploy-x}}}
+      (let [out (test-utils/bb nil "org.babashka.cli/completions"
+                               "complete" "--shell" "zsh" "--" "foo" "-")]
+        (is (str/includes? out "--env")))))
   (testing "root :cli {:fn ...} option completion delegates to dispatch via fn meta"
     (test-utils/with-config '{:tasks {dev {:cli {:fn babashka.tasks-cli/run-dev}}}}
       (let [out (test-utils/bb nil "-cp" "test-resources"

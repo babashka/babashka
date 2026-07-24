@@ -86,7 +86,8 @@
         ;; when its last attached exec session ends, which kills a setsid\'d
         ;; REPL along with it
         cmd (format (str "cd \"%s\" && "
-                         "clojure -Sdeps \"{:deps {nrepl/nrepl {:mvn/version \\\"1.3.1\\\"}} "
+                         "clojure -Sdeps \"{:deps {nrepl/nrepl {:mvn/version \\\"1.3.1\\\"} "
+                         "io.github.tonsky/clj-reload {:mvn/version \\\"0.9.7\\\"}} "
                          ":aliases {:clear-main {:main-opts []} "
                          ":repl-clojure {:extra-deps {org.clojure/clojure {:mvn/version \\\"1.12.1\\\"}}}}}\" "
                          "-M\"%s\" -m nrepl.cmdline "
