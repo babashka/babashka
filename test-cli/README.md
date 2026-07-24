@@ -292,6 +292,44 @@ Completion after a space offers subcommands and positional values.
 Completion after a dash offers option names. A task that only accepts options
 offers them after a space as well.
 
+## Pitfalls
+
+**A command group needs no default handler.**
+When a function carries a `:cmd` tree and is itself the handler (wired via
+`:exec-fn`/`:fn`), a bare invocation with no subcommand falls through to that
+function's body. An empty body does nothing and exits 0. For a group that
+requires a subcommand, drop the handler and let bb.edn route:
+`deploy {:cli {:cmd {...}}}` prints `No command given.` and exits 1. For a
+custom message, keep the group function and error from its body, which runs
+only on the no-subcommand fall-through.
+
+**`:cmd` command names: strings in metadata, symbols in bb.edn.**
+Function metadata is evaluated, so a bare symbol key is read as a value, not a
+name. Use strings there: `{:cmd {"lock" {:exec-fn #'lock}}}`. In bb.edn (data,
+not evaluated) a symbol is fine and is stringified: `{:cmd {lock {...}}}`.
+
+**bb.edn cannot hold functions.**
+bb.edn is data. Keys that take a function (`:error-fn`, a `:validate`
+predicate, a `:coerce` function) do not work as a bare symbol there; the symbol
+is never resolved. Express them as data (`:validate #{...}`, `:coerce :int`) or
+move the option to a function's `:org.babashka/cli` metadata, where the map is
+evaluated and functions work.
+
+**`:task` and a `:cli` `:exec-fn` together: the `:exec-fn` wins.**
+A task with both a `:task` body and a root `:exec-fn` in `:cli` runs the
+`:exec-fn`; the `:task` body is dead. A `:task` body with a `:cmd`-only `:cli`
+is fine: the body runs on the bare command and subcommands dispatch.
+
+**A group option after its command needs `:inherit`.**
+An option defined on a parent command is parsed after the subcommand only when
+it is marked `:inherit true`; otherwise a token after the subcommand belongs to
+the child. A required `:inherit` option may be given on either side.
+
+**`:args->opts` arguments are listed under `Arguments:`.**
+An option consumed positionally through `:args->opts` renders under
+`Arguments:` as `<name>`, not in `Options:` as `--name`. It is still an option
+underneath, but help presents it as an argument.
+
 ## FAQ
 
 **Can I still run these functions outside the task runner?**
