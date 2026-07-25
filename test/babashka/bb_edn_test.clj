@@ -922,6 +922,22 @@ even more stuff here\"
         (testing "so the partial word stays the last one"
           (is (str/includes? out "foo"))
           (is (not (str/includes? out "bar")))))))
+  (testing "a namespace that prints when it loads does not become a candidate"
+    (test-utils/with-config '{:tasks {noisy {:exec-fn babashka.tasks-cli-noisy/go}}}
+      (testing "option completion"
+        (let [out (test-utils/bb nil "-cp" "test-resources"
+                                 "org.babashka.cli/completions" "complete" "--shell" "zsh" "--" "noisy" "-")]
+          (is (str/includes? out "--port"))
+          (is (not (str/includes? out "LOAD NOISE")))))
+      (testing "task-name completion, where the doc is derived"
+        (let [out (test-utils/bb nil "-cp" "test-resources"
+                                 "org.babashka.cli/completions" "complete" "--shell" "zsh" "--" "no")]
+          (is (str/includes? out "noisy"))
+          (is (not (str/includes? out "LOAD NOISE")))))
+      (testing "and bb tasks stays clean too"
+        (let [out (test-utils/bb nil "-cp" "test-resources" "tasks")]
+          (is (str/includes? out "Runs it"))
+          (is (not (str/includes? out "LOAD NOISE")))))))
   (testing "a task without :cli defers argument completion to the shell"
     (test-utils/with-config '{:tasks {plain {:task (println :x)}}}
       (let [out (test-utils/bb nil "org.babashka.cli/completions"

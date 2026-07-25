@@ -575,14 +575,18 @@
               requires (map (fn [x]
                               (list 'quote x))
                             (concat requires (:requires task)))
+              ;; a namespace that prints when it loads must not end up in the
+              ;; output: `bb tasks` would interleave it with the listing and
+              ;; shell completion would offer it as a candidate
               prog (format "
+(binding [*out* (java.io.StringWriter.)]
 ;; the fn may live on the task's own classpath
 %s
 ;; first try to require the fully qualified namespace, as this is the cheapest option
 (try (require '%s)
   ;; on failure, the namespace might have been an alias so we require other namespaces
   (catch Exception _ %s))
-(:doc (meta (resolve '%s)))"
+(:doc (meta (resolve '%s))))"
                            (add-deps-form (:extra-paths task) (:extra-deps task))
                            (namespace fn-sym)
                            (if (seq requires)
@@ -647,7 +651,7 @@
             ;; failure here may surface: the shell discards stderr, so an
             ;; uncaught error would look like "no candidates" while also
             ;; suppressing the file-completion fallback
-            (format "(try %s\n%s\n(babashka.cli/dispatch (babashka.tasks/-resolve-cli-specs requiring-resolve (babashka.tasks/-task-node requiring-resolve \"%s\" %s)) %s (merge %s (babashka.tasks/-resolve-cli-opts requiring-resolve '%s \":tasks :cli\") %s)) (catch Throwable _ (println \"org.babashka.cli/file-completion\")))"
+            (format "(try (let [tree (binding [*out* (java.io.StringWriter.)] %s\n%s\n(babashka.tasks/-resolve-cli-specs requiring-resolve (babashka.tasks/-task-node requiring-resolve \"%s\" %s)))] (babashka.cli/dispatch tree %s (merge %s (babashka.tasks/-resolve-cli-opts requiring-resolve '%s \":tasks :cli\") %s))) (catch Throwable _ (println \"org.babashka.cli/file-completion\")))"
                     (add-deps-form (:extra-paths tm) (:extra-deps tm))
                     (requires-form (concat (:requires tasks) (:requires tm)))
                     run
