@@ -1379,8 +1379,22 @@ Use bb run --help to show this help output.
       (exec-without-deps opts)
       (exec opts))))
 
+(defn fix-user-home!
+  "Sets user.home from $HOME when the OS did not supply a home directory.
+
+  The JVM does this in java_props_md.c, native images do not and leave
+  user.home as \"?\" when getpwuid does not resolve the user.
+  See https://github.com/babashka/babashka/issues/1918."
+  []
+  (let [home (System/getProperty "user.home")]
+    (when (or (nil? home) (< (count home) 2))
+      (when-let [env-home (System/getenv "HOME")]
+        (when-not (str/blank? env-home)
+          (System/setProperty "user.home" env-home))))))
+
 (defn -main
   [& args]
+  (fix-user-home!)
   (handle-pipe!)
   (handle-sigint!)
   (if-let [dev-opts (System/getenv "BABASHKA_DEV")]
