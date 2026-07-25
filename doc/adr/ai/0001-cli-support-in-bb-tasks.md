@@ -16,6 +16,47 @@ a task gets help, completion and a command tree from spec data. bb.edn is read a
 data and never evaluated. Function metadata (`:org.babashka/cli`) is evaluated and
 can hold function objects. That split decides where each piece of config lives.
 
+## Syntax
+
+```clojure
+;; bb.edn
+{:tasks
+ {:cli   cli/defaults               ; parser options for every CLI task
+
+  build  {:doc  "Build it"          ; a plain task: untouched by any of this
+          :task (println "building")}
+
+  dev    {:exec-fn dev/run}         ; a handler: options and help come from its metadata
+
+  deploy {:doc "Manage deployments"
+          :cli {:epilog "See https://example.com/deploys"}  ; parser options for this task
+          :cmd {"lock"   {:exec-fn deploy/lock}             ; a command tree
+                "unlock" {:exec-fn deploy/unlock
+                          :spec   {:force {:coerce :boolean}}   ; leaves are plain
+                          :epilog "Releases the lock."}}}}}     ; babashka.cli nodes
+```
+
+```clojure
+;; script/dev.clj: a function describes its own interface
+(defn run
+  "Run the dev system"                 ; becomes the task's doc
+  {:org.babashka/cli {:spec {:port {:coerce :int :default 8080 :desc "HTTP port"}}
+                      :epilog "Reads config from dev.edn."}}
+  [opts]                               ; :exec-fn is called with the parsed options
+  ...)
+```
+
+| what | where |
+|---|---|
+| which function handles the task | `:exec-fn` on the task |
+| subcommands | `:cmd` on the task, a map or a vector of `[name command]` pairs when order matters |
+| a function's options, coercion, validation, epilog | that function's `:org.babashka/cli` metadata |
+| parser options for a task with no function of its own | `:cli` on the task: a map, or a symbol naming a var when they include functions |
+| parser options for every task | `:cli` at the `:tasks` level, same map-or-symbol rule |
+
+Naming `:exec-fn` or `:cmd` is the whole opt-in: those tasks get `--help`, shell
+completion and subcommands, and every other task behaves exactly as before.
+
 ## Decisions
 
 ### 1. Split config by whether it holds a function
@@ -24,9 +65,8 @@ bb.edn holds routing and pointers: which fn handles the task, the command tree,
 and runner-level defaults. Everything that contains a function lives in the
 function's `:org.babashka/cli` metadata: `:spec`, `:args->opts`, `:error-fn`,
 `:coerce`, `:restrict`. The spec and help live next to the fn, and `bb -x`
-reuses the same metadata. Data-only node options may also be written on the
-task itself, which is how a command group with no function of its own gets an
-`:epilog`.
+reuses the same metadata. A task that has no function to hang them on, such as
+a pure command group, writes them under `:cli` instead.
 
 ### 2. bb.edn holds what bb reads, `:cli` holds what it passes through
 
