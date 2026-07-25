@@ -18,20 +18,6 @@
 (defn -chan? [x]
   (instance? ManyToManyChannel x))
 
-(defn- update-task-maps
-  "Applies `f` to every task in `edn` written as a map, as `(f name task)`.
-  Entries like `:init` and `:requires`, and tasks written as a bare form, are
-  left alone."
-  [edn f]
-  (if-let [tasks (:tasks edn)]
-    (assoc edn :tasks
-           (reduce-kv (fn [acc k v]
-                        (if (and (symbol? k) (map? v))
-                          (assoc acc k (f k v))
-                          acc))
-                      tasks tasks))
-    edn))
-
 (defn- assert-cmd-maps
   "A `:cmd` is a map of command name to command, or a vector of
   `[name command]` pairs when the order matters, and every command in it is a
@@ -64,8 +50,8 @@
   babashka.cli nodes already."
   [task-map]
   (when (and (map? task-map)
-             (or (:exec-fn task-map) (:fn task-map) (:cmd task-map)))
-    (select-keys task-map [:exec-fn :fn :cmd :doc :cli])))
+             (or (:exec-fn task-map) (:cmd task-map)))
+    (select-keys task-map [:exec-fn :cmd :doc :cli])))
 
 (defn validate-tasks
   "Rejects task shapes that cannot do what they look like they do. Returns
@@ -77,22 +63,21 @@
       (throw (ex-info (str "Task " k ": :cli must be a map or a symbol naming a def, got: "
                            (pr-str (:cli v)))
                       {:babashka/exit 1})))
-    (assert-cmd-maps k (:cmd v))
-    ;; a `:task` body is the root handler, so a `:fn` next to it never runs.
-    ;; `:exec-fn` is allowed there, it takes priority over a body on purpose
-    (when (and (:task v) (:fn v))
-      (throw (ex-info (str "Task " k ": both a :task body and a :fn given"
-                           ". The body is the root handler, use :exec-fn to override it")
-                      {:babashka/exit 1}))))
+    (assert-cmd-maps k (:cmd v)))
   edn)
 
 (defn join-docs
   "A task `:doc` may be a vector of lines, convenient in edn. Joins it into
   the string every consumer expects."
   [edn]
-  (update-task-maps edn (fn [_ v]
-                          (cond-> v
-                            (vector? (:doc v)) (update :doc #(str/join "\n" %))))))
+  (if-let [tasks (:tasks edn)]
+    (assoc edn :tasks
+           (reduce-kv (fn [acc k v]
+                        (if (and (symbol? k) (map? v) (vector? (:doc v)))
+                          (assoc acc k (update v :doc #(str/join "\n" %)))
+                          acc))
+                      tasks tasks))
+    edn))
 
 (def sci-ns (sci/create-ns 'babashka.tasks nil))
 (def default-log-level :error)
@@ -316,18 +301,6 @@
   (let [entries (map (fn [[name node]] [name (f node)]) cmd)]
     (if (vector? cmd) (vec entries) (into {} entries))))
 
-(defn- assert-no-edn-error-fn
-  "In bb.edn a `:error-fn` can only be data; dispatch would invoke a symbol as
-  a map lookup and silently swallow every error. It belongs in the function's
-  `:org.babashka/cli` metadata, or in a var named by a `:cli` entry, on the
-  task or at the `:tasks` level."
-  [node task-name]
-  (when (contains? node :error-fn)
-    (throw (ex-info (str "Task " task-name ": :error-fn is not supported in bb.edn, put it in the function's :org.babashka/cli metadata or in a var named by a :cli entry, like :cli my.ns/opts")
-                    {:babashka/exit 1})))
-  ;; `map second` and not `vals`: a :cmd is a map or a vector of pairs
-  (run! #(assert-no-edn-error-fn % task-name) (map second (:cmd node))))
-
 (defn -cli-dispatch
   "Runs babashka.cli/dispatch over a task's `:cli` tree. `body-fn` (the task
   body wrapped as a fn, or nil when the task has no body) becomes the root
@@ -346,7 +319,7 @@
   or nil). A dependency's own `:requires` and `:extra-paths` / `:extra-deps`
   are not in here: they stay in the program preamble, because sci analyzes this
   thunk as one form and a require inside it would not have run when a body
-  using its alias is analyzed (see ADR 0001, decision 11).
+  using its alias is analyzed (see ADR 0001, decision 10).
   `:deps-fn` and `:hook-fn` run right before whichever command fn the
   parser selects - root body or a subcommand - and only on a successful parse.
   dispatch never calls a command fn for `--help`/`-h` or a parse error, so
@@ -354,11 +327,6 @@
   than by scanning raw args. `:body-fn` carries its own `:enter` / `:leave`,
   so `:hook-fn` applies only to the resolved `:fn` / `:exec-fn` handlers."
   [cli-opts task-name fns resolve-fn args]
-  (when (map? (:cli cli-opts))
-    (assert-no-edn-error-fn (:cli cli-opts) task-name))
-  (assert-no-edn-error-fn (dissoc cli-opts :cli) task-name)
-  (when (map? (:cli (:tasks @bb-edn)))
-    (assert-no-edn-error-fn (:cli (:tasks @bb-edn)) task-name))
   (let [cli-opts (-task-node resolve-fn task-name cli-opts)
         {:keys [body-fn deps-fn hook-fn]} fns
         with-deps (fn [f] (fn [m] (when deps-fn (deps-fn)) (f m)))
@@ -625,7 +593,7 @@
                                (if-let [task (get tasks t)]
                                  (let [;; a non-parallel `:cli` task takes its dep
                                        ;; bodies as a thunk (see ADR 0001,
-                                       ;; decision 11); parallel deps stay ahead
+                                       ;; decision 10); parallel deps stay ahead
                                        ;; of the target, they must launch their
                                        ;; channels before it waits
                                        cli-prelude? (and (cli-node task) (not parallel?))
@@ -670,8 +638,7 @@
       (when-let [fn-sym (cond (qualified-symbol? task)
                               task
                               (map? task)
-                              (or (let [f (or (:fn task)
-                                              (:exec-fn task))]
+                              (or (let [f (:exec-fn task)]
                                     (when (qualified-symbol? f)
                                       f))
                                   (let [t (:task task)]

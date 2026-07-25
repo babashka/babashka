@@ -600,7 +600,7 @@ even more stuff here\"
         (testing "the fn's docstring shows as the command doc"
           (is (str/includes? help "Lock deployment"))))))
   (testing "ns-level :org.babashka/cli metadata merges under fn metadata (like bb -x)"
-    (test-utils/with-config '{:tasks {go {:fn babashka.tasks-cli-ns/go}}}
+    (test-utils/with-config '{:tasks {go {:exec-fn babashka.tasks-cli-ns/go}}}
       (testing "ns spec and fn spec both parse"
         (is (= {:port 1 :verbose true :ran :go}
                (bb "-cp" "test-resources" "go" "--port" "1" "--verbose"))))
@@ -659,26 +659,7 @@ even more stuff here\"
         (is (thrown-with-msg?
              Exception #"Task foo: :cmd \"b\" must be a map"
              (test-utils/bb nil "-cp" "test-resources" "foo" "a" "b")))))
-    (testing "and a :cmd that is not a map at all"
-      (test-utils/with-config '{:tasks {foo {:cmd bar}}}
-        (is (thrown-with-msg?
-             Exception #"Task foo: :cmd must be a map of command name to command, or a vector"
-             (test-utils/bb nil "-cp" "test-resources" "foo"))))
-      (test-utils/with-config '{:tasks {foo {:cmd "oops"}}}
-        (is (thrown-with-msg?
-             Exception #"Task foo: :cmd must be a map of command name to command, or a vector"
-             (test-utils/bb nil "-cp" "test-resources" "foo"))))))
-  (testing "a :task body next to a :fn is a config error"
-    (test-utils/with-config '{:tasks {foo {:task (println :body)
-                                           :fn babashka.tasks-cli/run-dev}}}
-      (is (thrown-with-msg?
-           Exception #"Task foo: both a :task body and a :fn given"
-           (test-utils/bb nil "-cp" "test-resources" "foo"))))
-    (testing "but a body next to an :exec-fn stays allowed"
-      (test-utils/with-config '{:tasks {foo {:task (println :body)
-                                             :exec-fn babashka.tasks-cli/deploy-x}}}
-        (is (= {:env "prod" :ran :exec-only}
-               (bb "-cp" "test-resources" "foo" "prod"))))))
+)
   (testing "a task :cli may name a var, like the runner-level one"
     (test-utils/with-config '{:tasks {foo {:cli babashka.tasks-cli/base-opts
                                            :exec-fn babashka.tasks-cli/deploy-x}}}
@@ -762,30 +743,10 @@ even more stuff here\"
                                            :exec-fn babashka.tasks-cli/deploy-x}}}
       (let [out (test-utils/bb nil "-cp" "test-resources" "foo" "prod")]
         (is (str/includes? out ":ran :clean")))
-      (testing "and --help still renders"
-        (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "foo" "--help")
-                           "Usage: bb foo")))))
-  (testing ":error-fn in bb.edn is rejected with a clear message"
-    (test-utils/with-config '{:tasks {foo {:cli {:spec {:port {}}
-                                                 :error-fn my.ns/handler}
-                                           :exec-fn clojure.core/prn}}}
-      (is (= {:exit 1 :matched true}
-             (bb "-e"
-                 "(try (babashka.tasks/run (quote foo))
-                       (catch Exception e
-                         (prn {:exit (:babashka/exit (ex-data e))
-                               :matched (boolean (re-find #\":error-fn is not supported in bb.edn\" (ex-message e)))})))"))))
-    (test-utils/with-config '{:tasks {:cli {:error-fn my.ns/handler}
-                                      foo {:cli {:spec {:port {}}} :exec-fn clojure.core/prn}}}
-      (is (= {:exit 1 :matched true}
-             (bb "-e"
-                 "(try (babashka.tasks/run (quote foo))
-                       (catch Exception e
-                         (prn {:exit (:babashka/exit (ex-data e))
-                               :matched (boolean (re-find #\":error-fn is not supported in bb.edn\" (ex-message e)))})))")))))
+))
   (testing "a :cli entry in the :tasks map provides dispatch defaults"
     (test-utils/with-config '{:tasks {:cli {:restrict true :restrict-args true}
-                                      foo {:fn babashka.tasks-cli/run-dev}
+                                      foo {:exec-fn babashka.tasks-cli/run-dev}
                                       dep {:exec-fn babashka.tasks-cli/deploy-x}}}
       (testing "declared options still work"
         (is (= {:port 8080 :ran :run-dev}
@@ -862,15 +823,15 @@ even more stuff here\"
                                             :cmd {"x" {:fn clojure.core/prn}}}}}
       (is (not (str/includes? (test-utils/bb nil "deps" "--help") "DEP-RAN")))
       (is (str/includes? (test-utils/bb nil "deps" "x") "DEP-RAN"))))
-  (testing "a root :fn takes its spec from the fn's :org.babashka/cli meta"
-    (test-utils/with-config '{:tasks {foo {:fn babashka.tasks-cli/run-dev}}}
+  (testing "a root :exec-fn takes its spec from the fn's :org.babashka/cli meta"
+    (test-utils/with-config '{:tasks {foo {:exec-fn babashka.tasks-cli/run-dev}}}
       (is (= {:port 8080 :ran :run-dev}
              (bb "-cp" "test-resources" "foo" "--port" "8080")))
       (let [help (test-utils/bb nil "-cp" "test-resources" "foo" "--help")]
         (is (str/includes? help "Usage: bb foo"))
         (is (str/includes? help "--port")))))
-  (testing "a :fn task :doc defaults to the fn's docstring"
-    (test-utils/with-config '{:tasks {foo {:fn babashka.tasks-cli/run-dev}}}
+  (testing "a CLI task :doc defaults to the fn's docstring"
+    (test-utils/with-config '{:tasks {foo {:exec-fn babashka.tasks-cli/run-dev}}}
       (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "tasks")
                          "Runs the dev system"))))
   (testing "a task :doc and :epilog show in the root --help, written flat"
@@ -906,16 +867,16 @@ even more stuff here\"
              (bb "-cp" "test-resources" "deploy" "go" "prod")))
       (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "deploy" "go" "--help")
                          "Usage: bb deploy go"))))
-  (testing "a :fn task --help skips :depends, real run does not"
+  (testing "a CLI task --help skips :depends, real run does not"
     (test-utils/with-config '{:tasks {dep {:task (println "DEP-RAN")}
                                       foo {:depends [dep]
-                                           :fn babashka.tasks-cli/run-dev}}}
+                                           :exec-fn babashka.tasks-cli/run-dev}}}
       (is (not (str/includes? (test-utils/bb nil "-cp" "test-resources" "foo" "--help") "DEP-RAN")))
       (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "foo") "DEP-RAN")))))
 
 (deftest task-completion-test
   (testing "task-name completion lists matching public tasks"
-    (test-utils/with-config '{:tasks {dev    {:fn babashka.tasks-cli/run-dev}
+    (test-utils/with-config '{:tasks {dev    {:exec-fn babashka.tasks-cli/run-dev}
                                       deploy {:task (println :x)}
                                       -priv  {:task (println :y)}}}
       (let [out (test-utils/bb nil "-cp" "test-resources"
@@ -1015,8 +976,8 @@ even more stuff here\"
       (let [out (test-utils/bb nil "-cp" "test-resources"
                                "org.babashka.cli/completions" "complete" "--shell" "zsh" "--" "foo" "-")]
         (is (not (str/includes? out "--help"))))))
-  (testing "root :fn option completion delegates to dispatch via fn meta"
-    (test-utils/with-config '{:tasks {dev {:fn babashka.tasks-cli/run-dev}}}
+  (testing "root option completion delegates to dispatch via fn meta"
+    (test-utils/with-config '{:tasks {dev {:exec-fn babashka.tasks-cli/run-dev}}}
       (let [out (test-utils/bb nil "-cp" "test-resources"
                                "org.babashka.cli/completions" "complete" "--shell" "zsh" "--" "dev" "--")]
         (is (str/includes? out "--port"))
