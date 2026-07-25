@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- [#1918](https://github.com/babashka/babashka/issues/1918): fall back to `$HOME` when the OS does not supply a home directory, e.g. for LDAP users in the static binary
 - [#1994](https://github.com/babashka/babashka/issues/1994): fix `:eval` and `:print` options of `clojure.main/repl` being ignored in the interactive REPL ([@jeroenvandijk](https://github.com/jeroenvandijk))
 - fix `*1`, `*2` and `*3` being overwritten by Ctrl+C and `:repl/help` in the interactive REPL
 - [#1977](https://github.com/babashka/babashka/issues/1977): update usage link in README to point to the discussion page
