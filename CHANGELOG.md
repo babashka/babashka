@@ -33,7 +33,10 @@ A preview of the next release can be installed from
 - [#1988](https://github.com/babashka/babashka/issues/1988): Allow `java.io.Closeable` and `java.lang.AutoCloseable` to be reified
 - Bump edamame to `1.6.42`
 - Bump babashka.cli to 0.12.82: `dispatch` auto-help and shell completions, tree format, `:enum`; `*exit-fn*` rebindable from scripts
-- Tasks: `:exec-fn` (a function) or `:cmd` (a command tree) on a task map routes it through `babashka.cli/dispatch`, with automatic `--help`, shell completion and subcommands. Specs, docs, `:enum` and `:error-fn` live on the function's `:org.babashka/cli` metadata; command trees live in bb.edn. A runner-level `:cli` entry provides dispatch defaults for every CLI task: a map, or a symbol naming a var of one (for defaults with functions, such as `:error-fn`)
+- Tasks: `:exec-fn` (a function) or `:cmd` (a command tree) on a task routes it through `babashka.cli/dispatch`, giving it `--help`, shell completion and subcommands. Options, docstring and `:enum` come from the function's `:org.babashka/cli` metadata, like `bb -x`
+- Tasks: `:cli` on a task holds babashka.cli options that have no function to live on, such as an `:epilog` on a command group. A map, or a symbol naming a var of one for options that include functions, such as an `:error-fn`. At the `:tasks` level the same entry applies to every CLI task
+- Tasks: `:doc` may be a vector of lines
+- Tasks: `bb <task> --help` no longer runs the task's `:depends`, except under `bb run --parallel`
 
 ## 1.12.218 (2026-04-20)
 
