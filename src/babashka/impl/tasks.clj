@@ -353,23 +353,22 @@
   and `--help` and `bb tasks` agree without folding anything in. A `:task` body
   becomes the root handler and is called with no arguments: parsed options are
   what `:exec-fn` is for."
-  ([task-map prog] (wrap-cli task-map prog nil))
-  ([task-map prog dep-forms]
-   (if-let [cli-opts (cli-node task-map)]
-     (let [{:keys [enter leave name]} task-map]
-       (format "(babashka.tasks/-cli-dispatch '%s \"%s\" {:body-fn %s :deps-fn %s :hook-fn %s} requiring-resolve *command-line-args*)"
-               (pr-str cli-opts)
-               name
-               (if (:task task-map)
-                 (format "(fn [_] %s)" prog)
-                 "nil")
-               (if dep-forms
-                 (format "(fn [] %s)" dep-forms)
-                 "nil")
-               (if (or enter leave)
-                 (format "(fn [thunk] %s)" (wrap-enter-leave name "(thunk)" enter leave))
-                 "nil")))
-     prog)))
+  [task-map prog dep-forms]
+  (if-let [cli-opts (cli-node task-map)]
+    (let [{:keys [enter leave name]} task-map]
+      (format "(babashka.tasks/-cli-dispatch '%s \"%s\" {:body-fn %s :deps-fn %s :hook-fn %s} requiring-resolve *command-line-args*)"
+              (pr-str cli-opts)
+              name
+              (if (:task task-map)
+                (format "(fn [_] %s)" prog)
+                "nil")
+              (if dep-forms
+                (format "(fn [] %s)" dep-forms)
+                "nil")
+              (if (or enter leave)
+                (format "(fn [thunk] %s)" (wrap-enter-leave name "(thunk)" enter leave))
+                "nil")))
+    prog))
 
 (defn assemble-task-1
   "Assembles task, does not process :depends. `dep-forms` is only threaded for a

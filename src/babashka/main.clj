@@ -1289,8 +1289,7 @@ Use bb run --help to show this help output.
      :completed (vec (butlast user-toks))
      :partial (or (last user-toks) "")}))
 
-(defn- main*
-  [& args]
+(defn main [& args]
   (set-daemon-agent-executor)
   (let [bin-jar (binary-invoked-as-jar)
         args (if bin-jar
@@ -1379,30 +1378,6 @@ Use bb run --help to show this help output.
     (if (deps-not-needed opts)
       (exec-without-deps opts)
       (exec opts))))
-
-(defn main
-  "Runs bb, returning `{:exit ...}`. A config error raised while reading bb.edn,
-  such as a `:cli` conflict or a `:cli` that is not a map, reaches here before
-  any script runs, so it is printed the way the error handler prints one from a
-  script: the message alone, with the exit code it carries. A bb.edn typo is a
-  message for the user, not a stack trace."
-  [& args]
-  (try (apply main* args)
-       (catch clojure.lang.ExceptionInfo e
-         (if-let [exit (:babashka/exit (ex-data e))]
-           (do
-             ;; a completion callback shows the user a list, not an error: the
-             ;; shell discards stderr, so a broken bb.edn would take file
-             ;; completion down with it and TAB would do nothing at all. Only
-             ;; words before the `--` count, so a completions sentinel the user
-             ;; typed on the line is not mistaken for bb's own
-             (when (some #{"org.babashka.cli/completions"}
-                         (take-while #(not= "--" %) args))
-               (println "org.babashka.cli/file-completion"))
-             (binding [*out* *err*]
-               (println (ex-message e))
-               {:exit exit}))
-           (throw e)))))
 
 (defn -main
   [& args]
