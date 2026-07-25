@@ -11,7 +11,6 @@ A preview of the next release can be installed from
 
 - [#1994](https://github.com/babashka/babashka/issues/1994): fix `:eval` and `:print` options of `clojure.main/repl` being ignored in the interactive REPL ([@jeroenvandijk](https://github.com/jeroenvandijk))
 - fix `*1`, `*2` and `*3` being overwritten by Ctrl+C and `:repl/help` in the interactive REPL
-- Bump `org.babashka/cli` to `0.12.76`
 - [#1977](https://github.com/babashka/babashka/issues/1977): update usage link in README to point to the discussion page
 - [#1979](https://github.com/babashka/babashka/issues/1979): fix `with-redefs` on copied vars (e.g. `org.httpkit.client/get`) incorrectly treated as inlined
 - nREPL: lock output stream to prevent interleaved bencode frames from concurrent writes
@@ -35,6 +34,11 @@ A preview of the next release can be installed from
 - [#1987](https://github.com/babashka/babashka/issues/1987): Allow the `remove` method to be used on `Iterator`
 - [#1988](https://github.com/babashka/babashka/issues/1988): Allow `java.io.Closeable` and `java.lang.AutoCloseable` to be reified
 - Bump edamame to `1.6.42`
+- Bump babashka.cli to 0.12.82: `dispatch` auto-help and shell completions, tree format, `:enum`; `*exit-fn*` rebindable from scripts
+- Tasks: `:exec-fn` (a function) or `:cmd` (a command tree) on a task routes it through `babashka.cli/dispatch`, giving it `--help`, shell completion and subcommands. Options, docstring and `:enum` come from the function's `:org.babashka/cli` metadata, like `bb -x`
+- Tasks: `:cli` on a task holds babashka.cli options that have no function to live on, such as an `:epilog` on a command group. A map, or a symbol naming a var of one for options that include functions, such as an `:error-fn`. At the `:tasks` level the same entry applies to every CLI task
+- Tasks: `:doc` may be a vector of lines
+- Tasks: `bb <task> --help` no longer runs the task's `:depends`, except under `bb run --parallel`
 
 ## 1.12.218 (2026-04-20)
 
