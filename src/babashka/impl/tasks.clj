@@ -271,8 +271,11 @@
   `fns` holds what must not run until the parser picks a command: `:body-fn`
   (the task body), `:deps-fn` (the assembled `:depends` bodies) and `:hook-fn`
   (`:enter` / `:leave` around a call), each nil when absent. ADR 0001, decision
-  10, covers what stays out of `:deps-fn` and why."
-  [cli-opts task-name fns resolve-fn args]
+  10, covers what stays out of `:deps-fn` and why.
+
+  `defaults` is the runner-level `:tasks {:cli ...}` entry, passed in rather
+  than read here so that this and completion take the same route to it."
+  [cli-opts task-name fns defaults resolve-fn args]
   (let [cli-opts (-task-node resolve-fn task-name cli-opts)
         {:keys [body-fn deps-fn hook-fn]} fns
         with-deps (fn [f] (fn [m] (when deps-fn (deps-fn)) (f m)))
@@ -298,7 +301,7 @@
         ;; dispatch defaults for every CLI task, merged into the dispatch
         ;; opts; node keys win. `:prog` stays bb's, so help always names the
         ;; task it belongs to.
-        defaults (-resolve-cli-opts resolve-fn (:cli (:tasks @bb-edn)) ":tasks :cli")]
+        defaults (-resolve-cli-opts resolve-fn defaults ":tasks :cli")]
     (babashka.cli/dispatch tree args (merge {:help true}
                                             defaults
                                             {:prog (str "bb " task-name)}))))
@@ -327,7 +330,7 @@
   [task-map prog dep-forms]
   (if-let [cli-opts (cli-node task-map)]
     (let [{:keys [enter leave name]} task-map]
-      (format "(babashka.tasks/-cli-dispatch '%s \"%s\" {:body-fn %s :deps-fn %s :hook-fn %s} requiring-resolve *command-line-args*)"
+      (format "(babashka.tasks/-cli-dispatch '%s \"%s\" {:body-fn %s :deps-fn %s :hook-fn %s} '%s requiring-resolve *command-line-args*)"
               (pr-str cli-opts)
               name
               (if (:task task-map)
@@ -338,7 +341,9 @@
                 "nil")
               (if (or enter leave)
                 (format "(fn [thunk] %s)" (wrap-enter-leave name "(thunk)" enter leave))
-                "nil")))
+                "nil")
+              ;; the same value completion-program embeds, from the same place
+              (pr-str (:cli (:tasks @bb-edn)))))
     prog))
 
 (defn assemble-task-1
