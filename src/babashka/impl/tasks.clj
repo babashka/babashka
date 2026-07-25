@@ -683,8 +683,7 @@
                                sort
                                vec)
                           (conj "org.babashka.cli/file-completion")))]
-          (format "(do %s)"
-                  (str/join " " (map #(format "(println %s)" (pr-str %)) lines)))))
+          (pr-str (cons 'do (map #(list 'println %) lines)))))
 
       ;; default: an unknown sub emits a program that does nothing
       "nil")))
