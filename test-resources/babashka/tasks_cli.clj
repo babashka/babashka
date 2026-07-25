@@ -10,7 +10,7 @@
 (defn run-dev
   "Runs the dev system"
   {:org.babashka/cli {:spec {:port {:coerce :int :desc "port"}}}}
-  [{:keys [opts]}]
+  [opts]
   (prn (assoc opts :ran :run-dev)))
 
 ;; Subcommand fn carrying its own spec: spec/args->opts from this meta rather

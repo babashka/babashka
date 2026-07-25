@@ -6,5 +6,5 @@
 (defn go
   "Runs it"
   {:org.babashka/cli {:spec {:port {:coerce :int :desc "Port"}}}}
-  [{:keys [opts]}]
+  [opts]
   (prn (assoc opts :ran :go)))
