@@ -5,8 +5,17 @@
 
 (def cns (sci/create-ns 'babashka.cli))
 
+(def exit-fn
+  (sci/new-dynamic-var '*exit-fn* babashka.cli/*exit-fn* {:ns cns}))
+
+;; The compiled babashka.cli code reads the Clojure *exit-fn* var; bridge it to
+;; the sci var so scripts can rebind babashka.cli/*exit-fn* with `binding`.
+(alter-var-root #'babashka.cli/*exit-fn*
+                (constantly (fn [m] (@exit-fn m))))
+
 (def cli-namespace
-  (sci/copy-ns babashka.cli cns))
+  (assoc (sci/copy-ns babashka.cli cns)
+         '*exit-fn* exit-fn))
 
 (defn exec-fn-snippet
   ([sym] (exec-fn-snippet sym nil))

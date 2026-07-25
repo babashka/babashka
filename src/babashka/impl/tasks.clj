@@ -1,5 +1,6 @@
 (ns babashka.impl.tasks
   (:require
+   [babashka.cli]
    [babashka.deps :as deps]
    [babashka.impl.cli :as cli]
    [babashka.impl.common :refer [bb-edn ctx debug]]
@@ -16,6 +17,31 @@
 
 (defn -chan? [x]
   (instance? ManyToManyChannel x))
+
+(defn cli-node
+  "The babashka.cli dispatch node for a task, or nil when the task is a plain
+  one. Naming a handler (`:exec-fn`) or a command tree (`:cmd`) is what opts a
+  task in. Those keys stay on the task, everything else babashka.cli
+  takes lives under `:cli`, so reading a task map tells you which keys are bb's
+  and which are the parser's. Inside `:cmd` there is no such split: those are
+  babashka.cli nodes already."
+  [task-map]
+  (when (and (map? task-map)
+             (or (:exec-fn task-map) (:cmd task-map)))
+    (select-keys task-map [:exec-fn :cmd :doc :cli])))
+
+(defn join-docs
+  "A task `:doc` may be a vector of lines, convenient in edn. Joins it into
+  the string every consumer expects."
+  [edn]
+  (if-let [tasks (:tasks edn)]
+    (assoc edn :tasks
+           (reduce-kv (fn [acc k v]
+                        (if (and (symbol? k) (map? v) (vector? (:doc v)))
+                          (assoc acc k (update v :doc #(str/join "\n" %)))
+                          acc))
+                      tasks tasks))
+    edn))
 
 (def sci-ns (sci/create-ns 'babashka.tasks nil))
 (def default-log-level :error)
@@ -173,11 +199,161 @@
                            "\n" prog))
     prog))
 
+(defn- fold-fn-meta
+  "Merges a handler var's `:org.babashka/cli` metadata into its `node`, like
+  `bb -x`: namespace metadata first, then the var's own, then its docstring,
+  with explicit node keys winning over all of it. A `:cmd` tree on the fn is
+  dropped, command trees belong in bb.edn. `var-meta` is nil when the node
+  holds a fn object rather than a symbol, which leaves the node as it is."
+  [var-meta node]
+  (if var-meta
+    (babashka.cli/merge-opts
+     (:org.babashka/cli (meta (:ns var-meta)))
+     (dissoc (:org.babashka/cli var-meta) :cmd)
+     (when-let [d (:doc var-meta)] {:doc d})
+     node)
+    node))
+
+(defn- resolve-or-throw
+  "Resolves `sym` with `resolve-fn`, reporting `what` when it names a var that
+  is not there. Covers both failures: a missing var resolves to nil, a missing
+  namespace throws. The original failure is kept as the cause and its message
+  is appended, since a bb.edn typo usually shows up as the namespace not being
+  on the classpath."
+  [resolve-fn sym what]
+  (let [v (try (resolve-fn sym)
+               (catch Exception e
+                 (throw (ex-info (str what ": " (ex-message e))
+                                 {:babashka/exit 1} e))))]
+    (or v (throw (ex-info what {:babashka/exit 1})))))
+
+(defn -resolve-cli-opts
+  "A `:cli` entry resolved to a map: a map as-is, or a symbol naming a def of
+  one, resolved via `resolve-fn` (the script's `requiring-resolve`). The symbol
+  form is what holds options that include functions, such as an `:error-fn`,
+  which bb.edn cannot express. nil when there is no entry. `what` names the
+  entry in error messages. The same rule applies to the runner-level
+  `:tasks {:cli ...}` and to a task's own `:cli`."
+  [resolve-fn v what]
+  (cond
+    (nil? v) nil
+    (map? v) v
+    (symbol? v) (let [m @(resolve-or-throw resolve-fn v
+                                           (str what " " v " cannot be resolved"))]
+                  (when-not (map? m)
+                    (throw (ex-info (str what " " v " is not a map")
+                                    {:babashka/exit 1})))
+                  m)
+    :else (throw (ex-info (str what " must be a map or a symbol naming a def, got: " (pr-str v))
+                          {:babashka/exit 1}))))
+
+(defn -task-node
+  "The dispatch node for a task: the keys bb reads (`:exec-fn`, `:cmd`, `:doc`)
+  over the parser options its `:cli` resolves to. Both the invocation
+  and the completion path go through here, so a task is described the same way
+  whichever asks."
+  [resolve-fn task-name node]
+  (merge (-resolve-cli-opts resolve-fn (:cli node) (str "Task " task-name ": :cli"))
+         (dissoc node :cli)))
+
+(defn- map-cmd
+  "Applies `f` to every command in a `:cmd`, keeping its shape. A vector of
+  `[name command]` pairs is how babashka.cli takes an ordered command list, so
+  rebuilding it as a map would throw that order away."
+  [cmd f]
+  (into (empty cmd) (map (fn [[name node]] [name (f node)])) cmd))
+
+(defn -cli-dispatch
+  "Runs babashka.cli/dispatch over a task's node. A `:fn` / `:exec-fn` symbol is
+  resolved with `resolve-fn` (the script's `requiring-resolve`) and the var's
+  metadata folded into its node, so specs and help live with the fn.
+
+  `fns` holds what must not run until the parser picks a command: `:body-fn`
+  (the task body), `:deps-fn` (the assembled `:depends` bodies) and `:hook-fn`
+  (`:enter` / `:leave` around a call), each nil when absent. ADR 0001, decision
+  10, covers what stays out of `:deps-fn` and why.
+
+  `defaults` is the runner-level `:tasks {:cli ...}` entry, passed in rather
+  than read here so that this and completion take the same route to it."
+  [cli-opts task-name fns defaults resolve-fn args]
+  (let [cli-opts (-task-node resolve-fn task-name cli-opts)
+        {:keys [body-fn deps-fn hook-fn]} fns
+        with-deps (fn [f] (fn [m] (when deps-fn (deps-fn)) (f m)))
+        with-hooks (fn [f] (if hook-fn (fn [m] (hook-fn (fn [] (f m)))) f))
+        ;; resolve a :fn / :exec-fn symbol, fold in the fn's metadata and gate
+        ;; :depends and :enter/:leave on the fn being called
+        wrap-key (fn [node k]
+                   (if-let [fv (k node)]
+                     (let [the-var (if (symbol? fv)
+                                     (resolve-or-throw resolve-fn fv
+                                                       (str "Task " task-name ": cannot resolve " k " " fv))
+                                     fv)]
+                       (-> (fold-fn-meta (when (symbol? fv) (meta the-var)) node)
+                           (assoc k (with-deps (with-hooks the-var)))))
+                     node))
+        wrap (fn wrap [node]
+               (let [node (-> node (wrap-key :fn) (wrap-key :exec-fn))]
+                 (cond-> node
+                   (:cmd node) (update :cmd map-cmd wrap))))
+        tree (wrap cli-opts)
+        tree (if body-fn (assoc tree :fn (with-deps body-fn)) tree)
+        ;; a `:cli` entry in the :tasks map (like :requires/:init) provides
+        ;; dispatch defaults for every CLI task, merged into the dispatch
+        ;; opts; node keys win. `:prog` stays bb's, so help always names the
+        ;; task it belongs to.
+        defaults (-resolve-cli-opts resolve-fn defaults ":tasks :cli")]
+    (babashka.cli/dispatch tree args (merge {:help true}
+                                            defaults
+                                            {:prog (str "bb " task-name)}))))
+
+(defn -resolve-cli-specs
+  "Walk a `:cli` tree, folding each node fn's metadata into its node with
+  fold-fn-meta, for both `:fn` and `:exec-fn`. `resolve-fn` is the script's
+  `requiring-resolve`. Used where the tree is inspected but the fns are not
+  called (`--help` and shell completion), so a node's spec and doc show up even
+  though they live on the fn. Unlike -cli-dispatch this does not insist that a
+  symbol resolves: a stale name should not stop the rest from being described."
+  [resolve-fn node]
+  (let [merge-fn-meta (fn [node k]
+                        (let [fv (k node)]
+                          (fold-fn-meta (when (symbol? fv) (meta (resolve-fn fv)))
+                                        node)))
+        node (-> node (merge-fn-meta :fn) (merge-fn-meta :exec-fn))]
+    (cond-> node
+      (:cmd node) (update :cmd map-cmd #(-resolve-cli-specs resolve-fn %)))))
+
+(defn wrap-cli
+  "Emits the -cli-dispatch call for a CLI task, one naming an `:exec-fn` or a
+  `:cmd` tree. `prog` is the assembled `:task` body, which becomes the root
+  handler and is called with no arguments: parsed options are what `:exec-fn`
+  is for. `dep-forms` and the task's `:enter` / `:leave` go over as thunks."
+  [task-map prog dep-forms]
+  (if-let [cli-opts (cli-node task-map)]
+    (let [{:keys [enter leave name]} task-map]
+      (format "(babashka.tasks/-cli-dispatch '%s \"%s\" {:body-fn %s :deps-fn %s :hook-fn %s} '%s requiring-resolve *command-line-args*)"
+              (pr-str cli-opts)
+              name
+              (if (:task task-map)
+                (format "(fn [_] %s)" prog)
+                "nil")
+              (if dep-forms
+                (format "(fn [] %s)" dep-forms)
+                "nil")
+              (if (or enter leave)
+                (format "(fn [thunk] %s)" (wrap-enter-leave name "(thunk)" enter leave))
+                "nil")
+              ;; the same value completion-program embeds, from the same place
+              (pr-str (:cli (:tasks @bb-edn)))))
+    prog))
+
 (defn assemble-task-1
-  "Assembles task, does not process :depends."
+  "Assembles task, does not process :depends. `dep-forms` is only threaded for a
+  `:cli` target (see wrap-cli): assembled `:depends` to run inside the body fn."
   ([task-map task parallel?]
    (assemble-task-1 task-map task parallel? nil))
   ([task-map task parallel? last?]
+   (assemble-task-1 task-map task parallel? last? nil))
+  ([task-map task parallel? last? dep-forms]
    (let [[task depends task-map]
          (if (map? task)
            [(:task task)
@@ -191,26 +367,46 @@
                       (str/starts-with? task-name "-"))
          task-map (if private?
                     (assoc task-map :private private?)
-                    task-map)]
-     (if (qualified-symbol? task)
-       (let [prog (format "(apply %s *command-line-args*)" task)
-             prog (wrap-enter-leave task-name prog enter leave)
-             prog (wrap-depends prog depends parallel?)
-             prog (wrap-def task-map prog parallel? last?)
-             prog (format "
+                    task-map)
+         ;; a qualified symbol calls that fn with the raw args, anything else is
+         ;; a body form. Both go through the same pipeline, and a `:cli` task
+         ;; keeps its dispatch either way: the symbol call is its default action
+         qualified? (qualified-symbol? task)
+         prog (if qualified?
+                (format "(apply %s *command-line-args*)" task)
+                (pr-str task))
+         prog (wrap-enter-leave task-name prog enter leave)
+         prog (if last? (wrap-cli task-map prog dep-forms) prog)
+         prog (wrap-depends prog depends parallel?)
+         prog (wrap-def task-map prog parallel? last?)]
+     (if qualified?
+       (format "
 (when-not (resolve '%s) (require (quote %s)))
 %s"
-                          task
-                          (namespace task)
-                          prog)]
-         prog)
-       (let [prog (pr-str task)
-             prog (wrap-enter-leave task-name prog enter leave)
-             prog (wrap-depends prog depends parallel?)
-             prog (wrap-def task-map prog parallel? last?)]
-         prog)))))
+               task
+               (namespace task)
+               prog)
+       prog))))
 
 (def rand-ns (delay (symbol (str "user-" (java.util.UUID/randomUUID)))))
+
+(defn add-deps-form
+  "`(babashka.deps/add-deps ...)` for `extra-paths` / `extra-deps`, or \"\"."
+  [extra-paths extra-deps]
+  (let [deps (cond-> {}
+               (seq extra-deps) (assoc :deps extra-deps)
+               (seq extra-paths) (assoc :paths extra-paths))]
+    (if (seq deps)
+      (format "(babashka.deps/add-deps '%s)" (pr-str deps))
+      "")))
+
+(defn requires-form
+  "`(require ...)` for `requires`, or \"\"."
+  [requires]
+  (if (seq requires)
+    (format "(require %s)"
+            (str/join "\n" (map (fn [req] (str "'" req)) requires)))
+    ""))
 
 (defn format-task [init extra-paths extra-deps global-requires requires prog]
   (format "
@@ -249,25 +445,14 @@
 ;; task
 %s
 "
-          (let [deps (cond-> {}
-                       (seq extra-deps) (assoc :deps extra-deps)
-                       (seq extra-paths) (assoc :paths extra-paths))]
-            (if (seq deps)
-              (format "(babashka.deps/add-deps '%s)" (pr-str deps))
-              ""))
+          (add-deps-form extra-paths extra-deps)
           @rand-ns
           (if (seq global-requires)
             (format "(:require %s)" (str/join " " global-requires))
             "")
           @rand-ns @rand-ns
           (pr-str init)
-          (if (seq requires)
-            (format "(require %s)"
-                    (str/join "\n"
-                              (map (fn [req]
-                                     (str "'" req))
-                                   requires)))
-            "")
+          (requires-form requires)
           prog))
 
 (defn target-order
@@ -340,10 +525,19 @@
                                  [(binding [*out* *err*]
                                     (println "No such task:" t)) 1])
                                (if-let [task (get tasks t)]
-                                 (let [prog (str prog "\n"
-                                                 #_(wait-tasks depends) #_(apply str (map deref-task depends))
-                                                 "\n"
-                                                 (assemble-task-1 task-map task parallel? true))
+                                 (let [;; a non-parallel `:cli` task takes its dep
+                                       ;; bodies as a thunk (see ADR 0001,
+                                       ;; decision 10); parallel deps stay ahead
+                                       ;; of the target, they must launch their
+                                       ;; channels before it waits
+                                       cli-prelude? (and (cli-node task) (not parallel?))
+                                       dep-forms prog
+                                       prog (if cli-prelude?
+                                              (assemble-task-1 task-map task parallel? true dep-forms)
+                                              (str dep-forms "\n"
+                                                   #_(wait-tasks depends) #_(apply str (map deref-task depends))
+                                                   "\n"
+                                                   (assemble-task-1 task-map task parallel? true)))
                                        extra-paths (concat extra-paths (:extra-paths task))
                                        extra-deps (merge extra-deps (:extra-deps task))
                                        requires (concat requires (:requires task))]
@@ -368,30 +562,39 @@
         [(binding [*out* *err*]
            (println "No such task:" task-name)) 1]))))
 
-(defn doc-from-task [sci-ctx tasks task]
+(defn doc-from-task
+  "The task's `:doc`, or the docstring of the fn it points at. A doc is
+  best-effort: deriving it loads the fn's namespace, which can fail on a stale
+  bb.edn, and neither `bb tasks` nor completion may die over a missing
+  docstring."
+  [sci-ctx tasks task]
   (or (:doc task)
-      (when-let [fn-sym (cond (qualified-symbol? task)
-                              task
-                              (map? task)
-                              (let [t (:task task)]
-                                (when (qualified-symbol? t)
-                                  t)))]
+      (when-let [fn-sym (some #(when (qualified-symbol? %) %)
+                              [task (:exec-fn task) (:task task)])]
         (let [requires (:requires tasks)
               requires (map (fn [x]
                               (list 'quote x))
                             (concat requires (:requires task)))
+              ;; a namespace that prints when it loads must not end up in the
+              ;; output: `bb tasks` would interleave it with the listing and
+              ;; shell completion would offer it as a candidate
               prog (format "
+(binding [*out* (java.io.StringWriter.)]
+;; the fn may live on the task's own classpath
+%s
 ;; first try to require the fully qualified namespace, as this is the cheapest option
 (try (require '%s)
   ;; on failure, the namespace might have been an alias so we require other namespaces
   (catch Exception _ %s))
-(:doc (meta (resolve '%s)))"
+(:doc (meta (resolve '%s))))"
+                           (add-deps-form (:extra-paths task) (:extra-deps task))
                            (namespace fn-sym)
                            (if (seq requires)
                              (list* 'require requires)
                              "")
                            fn-sym)]
-          (sci/eval-string* sci-ctx prog)))))
+          (try (sci/eval-string* sci-ctx prog)
+               (catch Exception _ nil))))))
 
 (defn key-order [edn]
   (let [forms (parser/parse-string-all edn)
@@ -411,6 +614,88 @@
            (map zip/sexpr)
            (filter symbol?))
           (iterate zip/right loc))))
+
+(defn completion-program
+  "Builds a SCI program (string) emitting zsh completion candidates for the bb
+  task runner, given completion state already resolved by bb's own arg parsing:
+  `{:sub :shell :partial :run :command-line-args :global-opts}`. `:run` is the
+  task (nil when the task name itself is being completed); `:command-line-args`
+  are the task's args before the cursor; `:partial` is the word being completed;
+  `:global-opts` are bb's own `[flag doc]` pairs, passed in so that the help
+  text stays their only definition.
+
+  Task-name completion is done here; per-task completion is delegated to
+  `babashka.cli/dispatch` over the task's node."
+  [sci-ctx {:keys [sub shell run command-line-args partial global-opts]}]
+  (let [shell (or shell "zsh")
+        tasks (:tasks @bb-edn)]
+    (case sub
+      "snippet"
+      ;; reuse babashka.cli's stub generator, registered for `bb`
+      (format "(babashka.cli/dispatch {} [\"org.babashka.cli/completions\" \"snippet\" \"--shell\" %s \"--prog\" \"bb\"] {})"
+              (pr-str shell))
+
+      "complete"
+      (if run
+        ;; completing a task's options / subcommands
+        (let [compl (-> ["org.babashka.cli/completions" "complete" "--shell" shell "--"]
+                        (into command-line-args)
+                        (conj partial))
+              tm (get tasks (symbol run))
+              prog (str "bb " run)]
+          (if-let [node (cli-node tm)]
+            ;; The task's classpath and requires run first, inside the same
+            ;; try: the handler may live on its :extra-paths, and its symbol may
+            ;; go through a `:requires` alias, which requiring-resolve only sees
+            ;; once the require has run. Both can fail on a stale bb.edn, and no
+            ;; failure here may surface: the shell discards stderr, so an
+            ;; uncaught error would look like "no candidates" while also
+            ;; suppressing the file-completion fallback
+            (format "(try (let [tree (binding [*out* (java.io.StringWriter.)] %s\n%s\n(babashka.tasks/-resolve-cli-specs requiring-resolve (babashka.tasks/-task-node requiring-resolve \"%s\" %s)))] (babashka.cli/dispatch tree %s (merge %s (babashka.tasks/-resolve-cli-opts requiring-resolve '%s \":tasks :cli\") %s))) (catch Throwable _ (println \"org.babashka.cli/file-completion\")))"
+                    (add-deps-form (:extra-paths tm) (:extra-deps tm))
+                    (requires-form (concat (:requires tasks) (:requires tm)))
+                    run
+                    (pr-str (list 'quote node)) (pr-str compl)
+                    ;; same defaults as -cli-dispatch, in the same precedence:
+                    ;; a runner-level :cli (incl. a symbol naming a defaults
+                    ;; var) may turn :help off, and :prog stays bb's
+                    (pr-str {:help true})
+                    (pr-str (:cli tasks))
+                    (pr-str {:prog prog}))
+            ;; a task without :cli has no options to offer; defer to the shell
+            ;; so file completion still works, as it did before bb claimed the
+            ;; `bb` compdef
+            "(println \"org.babashka.cli/file-completion\")"))
+        ;; completing the task name itself. A dash-prefixed word completes bb's
+        ;; global options; a fresh word completes task names plus files (marker
+        ;; line defers to the shell): `bb file.clj` is as first-class as `bb task`
+        (let [lines (if (str/starts-with? partial "-")
+                      (keep (fn [[flag desc]]
+                              (when (str/starts-with? flag partial)
+                                (str flag "\t" desc)))
+                            global-opts)
+                      (-> (->> tasks
+                               (keep (fn [[k v]]
+                                       (let [n (str k)]
+                                         (when (and (symbol? k)
+                                                    (not (str/starts-with? n "-"))
+                                                    (not (:private v))
+                                                    (str/starts-with? n partial))
+                                           ;; one candidate is one line: the
+                                           ;; rest of a multi-line doc would
+                                           ;; each become a candidate of their
+                                           ;; own. list-tasks truncates too
+                                           (let [d (some-> (doc-from-task sci-ctx tasks v)
+                                                           str/split-lines
+                                                           first)]
+                                             (if (str/blank? d) n (str n "\t" d)))))))
+                               sort
+                               vec)
+                          (conj "org.babashka.cli/file-completion")))]
+          (pr-str (cons 'do (map #(list 'println %) lines)))))
+
+      ;; default: an unknown sub emits a program that does nothing
+      "nil")))
 
 (defn list-tasks
   "Prints out the task names found in BB-EDN in the original order
@@ -470,4 +755,8 @@
    'current-state state
    'run (sci/copy-var run sci-ns)
    'exec (sci/copy-var exec sci-ns)
+   '-cli-dispatch (sci/copy-var -cli-dispatch sci-ns)
+   '-resolve-cli-specs (sci/copy-var -resolve-cli-specs sci-ns)
+   '-resolve-cli-opts (sci/copy-var -resolve-cli-opts sci-ns)
+   '-task-node (sci/copy-var -task-node sci-ns)
    #_#_'log log})
