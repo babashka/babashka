@@ -183,7 +183,10 @@ original exception kept as the cause, because a typo in bb.edn usually reaches
 the user as the namespace not being on the classpath.
 
 This is invocation-time only, so a stale name never breaks completion or
-`bb tasks`, which stay best-effort. A config error is printed as a message with
+`bb tasks`, which stay best-effort. `--help` counts as invocation: the tree is
+built before the parser reads anything, so one unresolvable handler takes the
+whole task's help with it, siblings included. That is the loud half of the same
+trade, and the error names the command to fix. A config error is printed as a message with
 its exit code rather than a stack trace, and during a completion callback it
 also emits the file-completion marker, so a broken bb.edn leaves the shell its
 own completion instead of nothing.
