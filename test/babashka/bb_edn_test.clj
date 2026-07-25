@@ -649,17 +649,6 @@ even more stuff here\"
     (test-utils/with-config '{:tasks {foo {:extra-paths ["test-resources"]
                                            :exec-fn babashka.tasks-cli/deploy-x}}}
       (is (str/includes? (test-utils/bb nil "tasks") "Deploy it"))))
-  (testing "a :cmd pointing straight at a function says what to write"
-    (test-utils/with-config '{:tasks {foo {:cmd {"sub" babashka.tasks-cli/deploy-x}}}}
-      (is (thrown-with-msg?
-           Exception #"Task foo: :cmd \"sub\" must be a map.*Write \{:exec-fn babashka.tasks-cli/deploy-x\}"
-           (test-utils/bb nil "-cp" "test-resources" "foo" "sub"))))
-    (testing "nested too"
-      (test-utils/with-config '{:tasks {foo {:cmd {"a" {:cmd {"b" clojure.core/prn}}}}}}
-        (is (thrown-with-msg?
-             Exception #"Task foo: :cmd \"b\" must be a map"
-             (test-utils/bb nil "-cp" "test-resources" "foo" "a" "b")))))
-)
   (testing "a task :cli may name a var, like the runner-level one"
     (test-utils/with-config '{:tasks {foo {:cli babashka.tasks-cli/base-opts
                                            :exec-fn babashka.tasks-cli/deploy-x}}}

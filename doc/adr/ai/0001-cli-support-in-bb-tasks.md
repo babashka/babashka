@@ -169,13 +169,12 @@ The defaults sit between bb's own dispatch opts: they override `:help`, so a
 runner can turn auto-help off, and they do not override `:prog`, so help always
 names the task it belongs to.
 
-### 8. Config errors name the task and the key
+### 8. Only unresolvable names are reported
 
-A bb.edn that points at something absent is reported, not left to fail later:
-an `:exec-fn` whose var does not resolve, and a `:cli`
-symbol that does not resolve or does not name a map. Without that the generated
-code calls nil and the user gets a bare NullPointerException from a file they
-did not write.
+A bb.edn that names something absent is reported, not left to fail later: an
+`:exec-fn` whose var does not resolve, and a `:cli` symbol that does not
+resolve or does not name a map. Without that the generated code calls nil and
+the user gets a bare NullPointerException from a file they did not write.
 
 The error names the task and the key for both ways a symbol fails, since they
 take different routes: a missing var resolves to nil, a missing namespace
@@ -184,21 +183,19 @@ original exception kept as the cause, because a typo in bb.edn usually reaches
 the user as the namespace not being on the classpath.
 
 This is invocation-time only, so a stale name never breaks completion or
-`bb tasks`, which stay best-effort.
+`bb tasks`, which stay best-effort. A config error is printed as a message with
+its exit code rather than a stack trace, and during a completion callback it
+also emits the file-completion marker, so a broken bb.edn leaves the shell its
+own completion instead of nothing.
 
-Shape errors are caught earlier, when bb.edn is read, and name the task: a
-`:cmd` that is not a map or a vector of pairs, a command pointing straight at a
-function rather than at a map, and a `:cli` that is neither a map nor a symbol. A bare symbol as a command is rejected rather than read as
-sugar for `{:exec-fn f}`, because it could as well mean `:fn` or bb's own
-"task is a qualified symbol" form, and the error says which to write.
-
-`:exec-fn` is deliberately not part of that last check: it takes priority over
-a body, which is how a command group gets a default action.
-
-A config error raised while reading bb.edn is printed as a message with its
-exit code, not a stack trace. During a completion callback it also emits the
-file-completion marker, so a broken bb.edn leaves the shell its own completion
-instead of nothing.
+Malformed shapes are not checked. A `:cmd` that is not a map, or a command
+pointing straight at a function instead of at a map, throws from the parser
+with a Java type error that names neither the task nor the key. A load-time
+check for each was written and then removed: this is the first release of the
+feature, nobody has written these files yet, and guessing at which mistakes
+deserve a message is easier to do wrong than to do later. If a shape turns out
+to bite people, the check is a few lines and can be added then, against real
+reports rather than speculation.
 
 ### 9. Dispatch and completion resolve the same `:cli` shape
 

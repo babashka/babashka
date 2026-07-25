@@ -18,29 +18,6 @@
 (defn -chan? [x]
   (instance? ManyToManyChannel x))
 
-(defn- assert-cmd-maps
-  "A `:cmd` is a map of command name to command, or a vector of
-  `[name command]` pairs when the order matters, and every command in it is a
-  map. Pointing a command straight at a function reads like it should work, so
-  say what to write instead of letting it fail somewhere down the tree."
-  [task-name cmd]
-  (when (some? cmd)
-    (when-not (or (map? cmd) (vector? cmd))
-      (throw (ex-info (str "Task " task-name
-                           ": :cmd must be a map of command name to command, or a vector of [name command] pairs, got: "
-                           (pr-str cmd))
-                      {:babashka/exit 1})))
-    ;; a map entry and a [name command] pair destructure alike
-    (run! (fn [[name node]]
-            (when-not (map? node)
-              (throw (ex-info (str "Task " task-name ": :cmd " (pr-str name)
-                                   " must be a map, got: " (pr-str node)
-                                   ". Write {:exec-fn " (pr-str node)
-                                   "} to point a command at a function")
-                              {:babashka/exit 1})))
-            (assert-cmd-maps task-name (:cmd node)))
-          cmd)))
-
 (defn cli-node
   "The babashka.cli dispatch node for a task, or nil when the task is a plain
   one. Naming a handler (`:exec-fn`) or a command tree (`:cmd`) is what opts a
@@ -52,19 +29,6 @@
   (when (and (map? task-map)
              (or (:exec-fn task-map) (:cmd task-map)))
     (select-keys task-map [:exec-fn :cmd :doc :cli])))
-
-(defn validate-tasks
-  "Rejects task shapes that cannot do what they look like they do. Returns
-  `edn` unchanged, it only reads."
-  [edn]
-  (doseq [[k v] (:tasks edn)
-          :when (and (symbol? k) (map? v))]
-    (when-not (or (nil? (:cli v)) (map? (:cli v)) (symbol? (:cli v)))
-      (throw (ex-info (str "Task " k ": :cli must be a map or a symbol naming a def, got: "
-                           (pr-str (:cli v)))
-                      {:babashka/exit 1})))
-    (assert-cmd-maps k (:cmd v)))
-  edn)
 
 (defn join-docs
   "A task `:doc` may be a vector of lines, convenient in edn. Joins it into

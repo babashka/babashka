@@ -1350,7 +1350,6 @@ Use bb run --help to show this help output.
                                                   (some-> config fs/parent))]
                              (assoc edn :deps-root deps-root)
                              edn)
-                       edn (tasks/validate-tasks edn)
                        edn (tasks/join-docs edn)]
                    (vreset! common/bb-edn edn)))
         opts (parse-opts args opts)
