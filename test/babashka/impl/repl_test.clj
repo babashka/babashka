@@ -94,17 +94,13 @@
 (defn jline-repl! [line-reader & {:as opts}]
   (repl-with-line-reader test-sci-ctx line-reader opts))
 
-(defn assert-jline-repl [lines expected & {:as opts}]
-  (is (str/includes?
-       (tu/normalize
-        (sci/with-out-str
-          (jline-repl! (mock-line-reader lines) opts)))
-       expected)))
-
-(defn jline-repl-output [lines]
+(defn jline-repl-output [lines & {:as opts}]
   (tu/normalize
    (sci/with-out-str
-     (jline-repl! (mock-line-reader lines)))))
+     (jline-repl! (mock-line-reader lines) opts))))
+
+(defn assert-jline-repl [lines expected & {:as opts}]
+  (is (str/includes? (jline-repl-output lines opts) expected)))
 
 (defn jline-repl-error-output [lines]
   (tu/normalize
@@ -125,8 +121,8 @@
 (defn assert-jline-repl-error [lines expected]
   (is (str/includes? (jline-repl-error-output lines) expected)))
 
-(defn assert-jline-repl-excludes [lines unexpected]
-  (is (not (str/includes? (jline-repl-output lines) unexpected))))
+(defn assert-jline-repl-excludes [lines unexpected & {:as opts}]
+  (is (not (str/includes? (jline-repl-output lines opts) unexpected))))
 
 (deftest jline-repl-test
   (testing "basic evaluation"
@@ -293,11 +289,36 @@
                                   :init (constantly nil)})))]
       (is (str/includes? output "3")))))
 
-(deftest start-repl-custom-eval-test
-  (testing "start-repl! with custom :eval"
-    (assert-jline-repl ["(+ 1 1)"] "3" :eval (fn [form] (inc (eval form))))       
-    (assert-jline-repl [:interrupt] "To exit" :eval (fn [_form] 42))))
-    
+(deftest jline-repl-custom-eval-test
+  (testing "custom :eval replaces the default"
+    (assert-jline-repl ["(+ 1 1)"] "3" :eval (fn [form] (inc (eval form)))))
+  (testing "custom :eval is not called when there is no form to evaluate"
+    (assert-jline-repl-excludes [:interrupt] "42" :eval (fn [_form] 42))
+    (assert-jline-repl-excludes [":repl/help"] "42" :eval (fn [_form] 42))))
+
+(deftest jline-repl-custom-print-test
+  (testing "custom :print replaces the default and is skipped when nothing was evaluated"
+    (let [printed (atom [])]
+      (jline-repl! (mock-line-reader [:interrupt ":repl/help" "(+ 1 2)"])
+                   {:print #(swap! printed conj %)})
+      (is (= [3] @printed)))))
+
+(deftest jline-repl-history-test
+  (testing "*1, *2 and *3 survive input that produces no value"
+    (assert-jline-repl ["1" "2" "[*1 *2 *3]"] "[2 1 nil]")
+    (assert-jline-repl ["1" "2" :interrupt "[*1 *2 *3]"] "[2 1 nil]")
+    (assert-jline-repl ["1" "2" ":repl/help" "[*1 *2 *3]"] "[2 1 nil]")))
+
+(deftest repl-custom-eval-test
+  (testing "custom :eval replaces the default in the non-jline repl"
+    (is (str/includes?
+         (tu/normalize
+          (sci/with-out-str
+            (sci/with-in-str "(+ 1 1)\n:repl/quit"
+              (start-repl! test-sci-ctx {:eval (fn [form] (inc (eval form)))
+                                         :init (constantly nil)}))))
+         "3"))))
+
 ;;;; Scratch
 
 (comment)

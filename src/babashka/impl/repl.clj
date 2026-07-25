@@ -95,8 +95,7 @@
                       sci/*2 *2
                       sci/*3 *3
                       sci/*e *e}
-    (let [ret (eval-form sci-ctx form)]
-      ret)))
+    (eval-form sci-ctx form)))
 
 (defn repl
   "REPL with predefined hooks for attachable socket server."
@@ -503,9 +502,6 @@
           (do (.append sb c)
               (recur)))))))
 
-;; Sentinel value for interrupted input - skip eval and print
-(def ^:private interrupted (Object.))
-
 (defn- parse-form
   "Parse the next form from input string. Returns [:form form remaining] or nil if empty/whitespace only."
   [sci-ctx input]
@@ -525,7 +521,7 @@
   "Read function for m/repl that uses JLine for input.
    JLine handles multi-line editing via the Clojure parser.
    First Ctrl+C or Ctrl+D on empty prompt shows warning, second exits."
-  [sci-ctx ^org.jline.reader.LineReader line-reader input-buffer ctrl-c-pending _request-prompt request-exit]
+  [sci-ctx ^org.jline.reader.LineReader line-reader input-buffer ctrl-c-pending request-prompt request-exit]
   (try
     (when-let [[_ form remaining]
                (or
@@ -548,7 +544,7 @@
             (identical? :repl/exit form))
         request-exit
         (identical? :repl/help form)
-        (do (print-repl-help) interrupted)
+        (do (print-repl-help) request-prompt)
         :else form))
     (catch EndOfFileException _
       ;; Ctrl+D on empty line: exit immediately. JLine only throws
@@ -569,13 +565,13 @@
           (do
             (reset! ctrl-c-pending true)
             (sio/println "(To exit, press Ctrl+C again or Ctrl+D or type :repl/exit)")
-            interrupted)
+            request-prompt)
 
           ;; Ctrl+C with partial input - clear and continue (resets pending)
           :else
           (do
             (reset! ctrl-c-pending false)
-            interrupted))))))
+            request-prompt))))))
 
 (defn repl-with-line-reader
   "REPL using a JLine LineReader for interactive input.
@@ -589,15 +585,8 @@
                   :prompt (constantly nil)         ;; No-op, JLine handles prompting
                   :read (fn [request-prompt request-exit]
                           (jline-read sci-ctx line-reader input-buffer ctrl-c-pending request-prompt request-exit))
-                  :eval (let [f (or (:eval opts) 
-                                    (fn [form] (repl-eval sci-ctx form)))] 
-                            (fn [form]
-                              (if (identical? form interrupted)
-                                interrupted
-                                (f form))))
-                  :print (fn [val]
-                           (when-not (identical? val interrupted)
-                             (sio/prn val)))}))))
+                  :eval (or (:eval opts) (fn [form] (repl-eval sci-ctx form)))
+                  :print (or (:print opts) sio/prn)}))))
 
 (defn- repl-with-jline
   "REPL using JLine for interactive line editing and history."
