@@ -226,7 +226,8 @@ not a scan of raw args.
 Only the dependency bodies move into the thunk. Their `:requires` and
 `:extra-paths` / `:extra-deps` stay in the program preamble, so `--help` still
 processes them: it can load a dependency's namespaces and resolve its deps, and
-it fails if one of them is missing.
+it fails if one of them is missing. The `:tasks` level `:init` is in that same
+preamble and runs on `--help` too.
 
 Moving them into the thunk was tried and reverted. sci analyzes the whole thunk
 as a single form, so a `require` inside it has not run when a body that uses its
