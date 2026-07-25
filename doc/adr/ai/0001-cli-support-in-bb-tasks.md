@@ -197,6 +197,14 @@ deserve a message is easier to do wrong than to do later. If a shape turns out
 to bite people, the check is a few lines and can be added then, against real
 reports rather than speculation.
 
+One of them is worth knowing about, because it is the only silent one. A
+correctly spelled `:error-fn` in a `:cli` map takes a symbol, symbols are
+callable, and calling one returns nil, which dispatch reads as "the error was
+handled": the task exits 0 having printed nothing. Misspell the key and the
+default handler prints the error normally, so only the right spelling with a
+symbol value is affected. The `:cli` var form exists for exactly this, and it
+is where options holding functions belong.
+
 ### 9. Dispatch and completion resolve the same `:cli` shape
 
 `-cli-dispatch` (invocation) and `completion-program` (completion) both read
