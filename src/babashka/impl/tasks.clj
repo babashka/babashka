@@ -43,8 +43,8 @@
 
 (defn cli-node
   "The babashka.cli dispatch node for a task, or nil when the task is a plain
-  one. Naming a handler (`:exec-fn`, `:fn`) or a command tree (`:cmd`) is what
-  opts a task in. Those keys stay on the task, everything else babashka.cli
+  one. Naming a handler (`:exec-fn`) or a command tree (`:cmd`) is what opts a
+  task in. Those keys stay on the task, everything else babashka.cli
   takes lives under `:cli`, so reading a task map tells you which keys are bb's
   and which are the parser's. Inside `:cmd` there is no such split: those are
   babashka.cli nodes already."
@@ -285,8 +285,8 @@
                           {:babashka/exit 1}))))
 
 (defn -task-node
-  "The dispatch node for a task: the keys bb reads (`:exec-fn`, `:fn`, `:cmd`,
-  `:doc`) over the parser options its `:cli` resolves to. Both the invocation
+  "The dispatch node for a task: the keys bb reads (`:exec-fn`, `:cmd`, `:doc`)
+  over the parser options its `:cli` resolves to. Both the invocation
   and the completion path go through here, so a task is described the same way
   whichever asks."
   [resolve-fn task-name node]
