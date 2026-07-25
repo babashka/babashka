@@ -238,9 +238,8 @@
   (cond
     (nil? v) nil
     (map? v) v
-    (symbol? v) (let [the-var (resolve-or-throw resolve-fn v
-                                                (str what " " v " cannot be resolved"))
-                      m (deref the-var)]
+    (symbol? v) (let [m @(resolve-or-throw resolve-fn v
+                                           (str what " " v " cannot be resolved"))]
                   (when-not (map? m)
                     (throw (ex-info (str what " " v " is not a map")
                                     {:babashka/exit 1})))
@@ -262,34 +261,17 @@
   `[name command]` pairs is how babashka.cli takes an ordered command list, so
   rebuilding it as a map would throw that order away."
   [cmd f]
-  (let [entries (map (fn [[name node]] [name (f node)]) cmd)]
-    (if (vector? cmd) (vec entries) (into {} entries))))
+  (into (empty cmd) (map (fn [[name node]] [name (f node)])) cmd))
 
 (defn -cli-dispatch
-  "Runs babashka.cli/dispatch over a task's `:cli` tree. `body-fn` (the task
-  body wrapped as a fn, or nil when the task has no body) becomes the root
-  `:fn`. A node's `:fn` symbol (root or subcommand) is resolved via `resolve-fn`
-  (the script's `requiring-resolve`), and the `:org.babashka/cli` metadata of
-  its namespace and of the var (`:spec`, `:args->opts`, `:restrict`, `:epilog`,
-  ...) merges into the node, like `bb -x` - so the spec and help live with the
-  fn. A `:cmd` tree on the fn is ignored: command trees belong in bb.edn. Var
-  metadata wins over ns metadata; explicit node keys win over both. The
-  fn is called with dispatch's result map (`{:opts ... :dispatch ... :args ...}`),
-  like any babashka.cli/dispatch `:fn`.
+  "Runs babashka.cli/dispatch over a task's node. A `:fn` / `:exec-fn` symbol is
+  resolved with `resolve-fn` (the script's `requiring-resolve`) and the var's
+  metadata folded into its node, so specs and help live with the fn.
 
-  `fns` holds the parts of the task that must not run until the parser picks a
-  command: `:body-fn` (the task body, or nil), `:deps-fn` (the assembled
-  `:depends` bodies, or nil) and `:hook-fn` (`:enter` / `:leave` around a call,
-  or nil). A dependency's own `:requires` and `:extra-paths` / `:extra-deps`
-  are not in here: they stay in the program preamble, because sci analyzes this
-  thunk as one form and a require inside it would not have run when a body
-  using its alias is analyzed (see ADR 0001, decision 10).
-  `:deps-fn` and `:hook-fn` run right before whichever command fn the
-  parser selects - root body or a subcommand - and only on a successful parse.
-  dispatch never calls a command fn for `--help`/`-h` or a parse error, so
-  nothing in `fns` runs then, decided by the parser (like cobra's PreRun) rather
-  than by scanning raw args. `:body-fn` carries its own `:enter` / `:leave`,
-  so `:hook-fn` applies only to the resolved `:fn` / `:exec-fn` handlers."
+  `fns` holds what must not run until the parser picks a command: `:body-fn`
+  (the task body), `:deps-fn` (the assembled `:depends` bodies) and `:hook-fn`
+  (`:enter` / `:leave` around a call), each nil when absent. ADR 0001, decision
+  10, covers what stays out of `:deps-fn` and why."
   [cli-opts task-name fns resolve-fn args]
   (let [cli-opts (-task-node resolve-fn task-name cli-opts)
         {:keys [body-fn deps-fn hook-fn]} fns
@@ -308,9 +290,8 @@
                      node))
         wrap (fn wrap [node]
                (let [node (-> node (wrap-key :fn) (wrap-key :exec-fn))]
-                 (if-let [cm (:cmd node)]
-                   (assoc node :cmd (map-cmd cm wrap))
-                   node)))
+                 (cond-> node
+                   (:cmd node) (update :cmd map-cmd wrap))))
         tree (wrap cli-opts)
         tree (if body-fn (assoc tree :fn (with-deps body-fn)) tree)
         ;; a `:cli` entry in the :tasks map (like :requires/:init) provides
@@ -326,7 +307,7 @@
   "Walk a `:cli` tree, folding each node fn's metadata into its node with
   fold-fn-meta, for both `:fn` and `:exec-fn`. `resolve-fn` is the script's
   `requiring-resolve`. Used where the tree is inspected but the fns are not
-  called - `--help` and shell completion - so a node's spec and doc show up even
+  called (`--help` and shell completion), so a node's spec and doc show up even
   though they live on the fn. Unlike -cli-dispatch this does not insist that a
   symbol resolves: a stale name should not stop the rest from being described."
   [resolve-fn node]
@@ -335,24 +316,14 @@
                           (fold-fn-meta (when (symbol? fv) (meta (resolve-fn fv)))
                                         node)))
         node (-> node (merge-fn-meta :fn) (merge-fn-meta :exec-fn))]
-    (if-let [cm (:cmd node)]
-      (assoc node :cmd (map-cmd cm #(-resolve-cli-specs resolve-fn %)))
-      node)))
+    (cond-> node
+      (:cmd node) (update :cmd map-cmd #(-resolve-cli-specs resolve-fn %)))))
 
 (defn wrap-cli
-  "When a task declares `:cli`, route its invocation through
-  babashka.cli/dispatch: parses options (exposed as `:opts` on `*task*` for the
-  body), handles `--help` and subcommands.
-
-  `dep-forms` (the task's assembled `:depends`, or nil) and `:enter` / `:leave`
-  are handed over as thunks, for -cli-dispatch to run once the parser picks a
-  command. A `:task` body is already wrapped by wrap-enter-leave, so the hook
-  thunk is for the handler case.
-
-  The task map is the dispatch node, so its `:doc` is the tree root's `:doc`
-  and `--help` and `bb tasks` agree without folding anything in. A `:task` body
-  becomes the root handler and is called with no arguments: parsed options are
-  what `:exec-fn` is for."
+  "Emits the -cli-dispatch call for a CLI task, one naming an `:exec-fn` or a
+  `:cmd` tree. `prog` is the assembled `:task` body, which becomes the root
+  handler and is called with no arguments: parsed options are what `:exec-fn`
+  is for. `dep-forms` and the task's `:enter` / `:leave` go over as thunks."
   [task-map prog dep-forms]
   (if-let [cli-opts (cli-node task-map)]
     (let [{:keys [enter leave name]} task-map]
@@ -391,31 +362,26 @@
                       (str/starts-with? task-name "-"))
          task-map (if private?
                     (assoc task-map :private private?)
-                    task-map)]
-     (cond
-       (qualified-symbol? task)
-       (let [prog (format "(apply %s *command-line-args*)" task)
-             prog (wrap-enter-leave task-name prog enter leave)
-             ;; a `:cli` task keeps its dispatch even when the body is a
-             ;; qualified symbol: the symbol call becomes the default action
-             prog (if last? (wrap-cli task-map prog dep-forms) prog)
-             prog (wrap-depends prog depends parallel?)
-             prog (wrap-def task-map prog parallel? last?)
-             prog (format "
+                    task-map)
+         ;; a qualified symbol calls that fn with the raw args, anything else is
+         ;; a body form. Both go through the same pipeline, and a `:cli` task
+         ;; keeps its dispatch either way: the symbol call is its default action
+         qualified? (qualified-symbol? task)
+         prog (if qualified?
+                (format "(apply %s *command-line-args*)" task)
+                (pr-str task))
+         prog (wrap-enter-leave task-name prog enter leave)
+         prog (if last? (wrap-cli task-map prog dep-forms) prog)
+         prog (wrap-depends prog depends parallel?)
+         prog (wrap-def task-map prog parallel? last?)]
+     (if qualified?
+       (format "
 (when-not (resolve '%s) (require (quote %s)))
 %s"
-                          task
-                          (namespace task)
-                          prog)]
-         prog)
-
-       :else
-       (let [prog (pr-str task)
-             prog (wrap-enter-leave task-name prog enter leave)
-             prog (if last? (wrap-cli task-map prog dep-forms) prog)
-             prog (wrap-depends prog depends parallel?)
-             prog (wrap-def task-map prog parallel? last?)]
-         prog)))))
+               task
+               (namespace task)
+               prog)
+       prog))))
 
 (def rand-ns (delay (symbol (str "user-" (java.util.UUID/randomUUID)))))
 
@@ -598,15 +564,8 @@
   docstring."
   [sci-ctx tasks task]
   (or (:doc task)
-      (when-let [fn-sym (cond (qualified-symbol? task)
-                              task
-                              (map? task)
-                              (or (let [f (:exec-fn task)]
-                                    (when (qualified-symbol? f)
-                                      f))
-                                  (let [t (:task task)]
-                                    (when (qualified-symbol? t)
-                                      t))))]
+      (when-let [fn-sym (some #(when (qualified-symbol? %) %)
+                              [task (:exec-fn task) (:task task)])]
         (let [requires (:requires tasks)
               requires (map (fn [x]
                               (list 'quote x))
@@ -656,10 +615,8 @@
   `:global-opts` are bb's own `[flag doc]` pairs, passed in so that the help
   text stays their only definition.
 
-  Task-name completion is done here; per-task option/subcommand completion is
-  delegated to `babashka.cli/dispatch` over the task's `:cli` tree (with each
-  node fn's `:org.babashka/cli` metadata merged in), reusing dispatch's own
-  completion machinery."
+  Task-name completion is done here; per-task completion is delegated to
+  `babashka.cli/dispatch` over the task's node."
   [sci-ctx {:keys [sub shell run command-line-args partial global-opts]}]
   (let [shell (or shell "zsh")
         tasks (:tasks @bb-edn)]
@@ -713,7 +670,7 @@
                                        (let [n (str k)]
                                          (when (and (symbol? k)
                                                     (not (str/starts-with? n "-"))
-                                                    (not (and (map? v) (:private v)))
+                                                    (not (:private v))
                                                     (str/starts-with? n partial))
                                            ;; one candidate is one line: the
                                            ;; rest of a multi-line doc would
