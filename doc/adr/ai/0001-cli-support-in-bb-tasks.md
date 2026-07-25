@@ -28,38 +28,51 @@ reuses the same metadata. Data-only node options may also be written on the
 task itself, which is how a command group with no function of its own gets an
 `:epilog`.
 
-### 2. The task map is the dispatch node
+### 2. bb.edn holds what bb reads, `:cli` holds what it passes through
 
-A task routes through `babashka.cli/dispatch` when it names a handler
-(`:exec-fn`, `:fn`) or a command tree (`:cmd`). That is the whole opt-in rule,
-and the task map is then the node itself. dispatch ignores keys it does not
-know, so bb's own `:depends`, `:requires` and `:task` ride along harmlessly,
-while node options like `:epilog` work exactly where they are written.
+A task opts into `babashka.cli/dispatch` by naming a handler (`:exec-fn`,
+`:fn`) or a command tree (`:cmd`). Those keys stay on the task map, next to
+`:doc`, because bb reads them: it resolves the vars, walks the tree, derives
+`bb tasks` output and decides whether the task is a CLI task at all. Everything
+bb only forwards to the parser goes under `:cli`.
 
 ```clojure
-;; bb.edn
 {:tasks
- {:cli   deploy/base-opts          ; runner-level defaults, the only :cli
-  dev    {:exec-fn dev/run}
-  deploy {:doc    "Manage deployments"
-          :epilog "See https://example.com/deploys"
-          :cmd    {"lock"   {:fn deploy/lock}
-                   "unlock" {:fn deploy/unlock}}}}}
+ {:cli   script.cli/defaults          ; every task
+
+  dev    {:exec-fn dev/run}           ; the common case needs no :cli at all
+
+  deploy {:cli {:epilog "See https://example.com/deploys"}
+          :cmd {"lock"   {:exec-fn deploy/lock}
+                "unlock" {:exec-fn deploy/unlock}}}}}
 ```
 
-There was a nested per-task `:cli {...}` map, folded into shape at load time by
-a `hoist-cli-keys` pass. It is gone. It was a second spelling of the flat keys,
-it needed conflict errors to reconcile the two, and because the fold lifted only
-`:exec-fn` and `:cmd`, anything else written next to them was silently dropped:
-rewrite-clj's bb.edn had an `:epilog` on a command group that never reached
-help, with no error to say so. Nothing lifts anything now, so nothing can be
-left behind. A leftover `:cli` on a task is rejected rather than ignored.
+`:cli` takes a map or a symbol naming a def of one, the same rule as the
+runner-level entry, and for the same reason: a map in bb.edn cannot hold a
+function, so options like `:error-fn` need a var to live in. That is what lets
+a command group with no handler of its own have custom error output.
 
-The cost is that a plain `:task` body cannot have parsed options. Reading them
-back through `(:opts (current-task))` is gone with it. A task that wants
-options names a function, which is where its spec lives anyway. A CLI key such
-as `:spec` or `:epilog` on a task with no handler is a config error, since it
-would otherwise do nothing.
+Inside `:cmd` there is no such split. Those maps are babashka.cli nodes and
+nothing else, so a leaf writes `:spec` and `:epilog` directly. The pocket
+exists only where bb's keys and the parser's keys share one map, which is the
+task map alone.
+
+Two earlier shapes were tried. A nested `:cli` that also held the routing keys
+meant two spellings of the same task and conflict errors to reconcile them, and
+because the load-time fold lifted only `:exec-fn` and `:cmd`, anything written
+beside them was dropped in silence: rewrite-clj's bb.edn had a group `:epilog`
+that never reached help. Putting everything flat instead fixed that but left a
+task map with two owners, where `:requires` is bb's and `:require` is the
+parser's with nothing to say so, and shipped `:task`, `:depends` and `:name`
+into the dispatch tree.
+
+Metadata is not an alternative home for a group. Giving a router an `:exec-fn`
+so its metadata can carry an `:epilog` also gives it a handler, and a group with
+a handler no longer reports "No command given." on a bare invocation.
+
+A plain `:task` body cannot carry parsed options, and `(:opts (current-task))`
+is gone with it. A task that wants options names a function, which is where its
+spec belongs anyway.
 
 ### 3. Ordered commands are written as a vector, not recovered
 

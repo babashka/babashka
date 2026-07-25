@@ -574,7 +574,7 @@ even more stuff here\"
 
 (deftest task-cli-test
   (testing "--help on a CLI task prints help and exits 0"
-    (test-utils/with-config '{:tasks {foo {:spec {:port {:desc "Port"}}
+    (test-utils/with-config '{:tasks {foo {:cli {:spec {:port {:desc "Port"}}}
                                            :exec-fn clojure.core/prn}}}
       (let [out (test-utils/bb nil "foo" "--help")]
         (is (str/includes? out "Usage: bb foo"))
@@ -679,11 +679,22 @@ even more stuff here\"
                                              :exec-fn babashka.tasks-cli/deploy-x}}}
         (is (= {:env "prod" :ran :exec-only}
                (bb "-cp" "test-resources" "foo" "prod"))))))
-  (testing "a task-level :cli is rejected, its keys go straight on the task"
-    (test-utils/with-config '{:tasks {foo {:cli {:exec-fn babashka.tasks-cli/deploy-x}}}}
-      (is (thrown-with-msg?
-           Exception #"Task foo: :cli is not a task key"
-           (test-utils/bb nil "-cp" "test-resources" "foo")))))
+  (testing "a task :cli may name a var, like the runner-level one"
+    (test-utils/with-config '{:tasks {foo {:cli babashka.tasks-cli/base-opts
+                                           :exec-fn babashka.tasks-cli/deploy-x}}}
+      (testing "so its options may hold functions, which bb.edn cannot"
+        (is (thrown-with-msg?
+             ;; base-opts' :error-fn, resolved from the task's own :cli
+             Exception #"DEFAULTS-ERR :require \| Required option: --env"
+             (test-utils/bb nil "-cp" "test-resources" "foo"))))
+      (testing "and its spec still parses"
+        (is (= {:env "prod" :ran :exec-only}
+               (bb "-cp" "test-resources" "foo" "prod")))))
+    (testing "and anything else is a config error"
+      (test-utils/with-config '{:tasks {foo {:cli 42 :exec-fn babashka.tasks-cli/deploy-x}}}
+        (is (thrown-with-msg?
+             Exception #"Task foo: :cli must be a map or a symbol naming a def"
+             (test-utils/bb nil "-cp" "test-resources" "foo"))))))
   (testing "a handler that cannot be resolved names the task and the key"
     (testing "when the var is missing"
       (test-utils/with-config '{:tasks {foo {:exec-fn clojure.core/nope}}}
@@ -755,8 +766,8 @@ even more stuff here\"
         (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "foo" "--help")
                            "Usage: bb foo")))))
   (testing ":error-fn in bb.edn is rejected with a clear message"
-    (test-utils/with-config '{:tasks {foo {:spec {:port {}}
-                                           :error-fn my.ns/handler
+    (test-utils/with-config '{:tasks {foo {:cli {:spec {:port {}}
+                                                 :error-fn my.ns/handler}
                                            :exec-fn clojure.core/prn}}}
       (is (= {:exit 1 :matched true}
              (bb "-e"
@@ -765,7 +776,7 @@ even more stuff here\"
                          (prn {:exit (:babashka/exit (ex-data e))
                                :matched (boolean (re-find #\":error-fn is not supported in bb.edn\" (ex-message e)))})))"))))
     (test-utils/with-config '{:tasks {:cli {:error-fn my.ns/handler}
-                                      foo {:spec {:port {}} :exec-fn clojure.core/prn}}}
+                                      foo {:cli {:spec {:port {}}} :exec-fn clojure.core/prn}}}
       (is (= {:exit 1 :matched true}
              (bb "-e"
                  "(try (babashka.tasks/run (quote foo))
@@ -865,7 +876,7 @@ even more stuff here\"
   (testing "a task :doc and :epilog show in the root --help, written flat"
     ;; the shape lread's rewrite-clj bb.edn uses
     (test-utils/with-config '{:tasks {ci {:doc "Run the CI tests"
-                                          :epilog "Runs everything by default."
+                                          :cli {:epilog "Runs everything by default."}
                                           :cmd {"matrix" {:fn babashka.tasks-cli/outdated}}
                                           :exec-fn babashka.tasks-cli/run-dev}}}
       (let [help (test-utils/bb nil "-cp" "test-resources" "ci" "--help")]
@@ -873,14 +884,6 @@ even more stuff here\"
         (is (str/includes? help "Runs everything by default."))
         (testing "task :doc wins over the root fn docstring"
           (is (not (str/includes? help "Runs the dev system")))))))
-  (testing "a CLI key with no handler or command tree is a config error"
-    (test-utils/with-config '{:tasks {foo {:spec {:port {}} :task (prn :ran)}}}
-      (is (thrown-with-msg?
-           Exception #"Task foo: :spec needs a handler or a command tree"
-           (test-utils/bb nil "foo"))))
-    (testing "while a plain task with a :doc is left alone"
-      (test-utils/with-config '{:tasks {foo {:doc "Builds it" :task (prn :ran)}}}
-        (is (= :ran (bb "foo"))))))
   (testing "a task :doc vector of lines joins with newlines"
     (test-utils/with-config '{:tasks {ci {:doc ["Run the CI tests"
                                                 ""

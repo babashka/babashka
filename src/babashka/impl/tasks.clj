@@ -58,18 +58,14 @@
 (defn cli-node
   "The babashka.cli dispatch node for a task, or nil when the task is a plain
   one. Naming a handler (`:exec-fn`, `:fn`) or a command tree (`:cmd`) is what
-  opts a task in, and the task map is then the node itself. dispatch ignores
-  bb's own keys, so node options like `:epilog` work where they are written,
-  with no list of blessed keys to keep up to date."
+  opts a task in. Those keys stay on the task, everything else babashka.cli
+  takes lives under `:cli`, so reading a task map tells you which keys are bb's
+  and which are the parser's. Inside `:cmd` there is no such split: those are
+  babashka.cli nodes already."
   [task-map]
   (when (and (map? task-map)
              (or (:exec-fn task-map) (:fn task-map) (:cmd task-map)))
-    task-map))
-
-(def ^:private cli-only-keys
-  "babashka.cli node keys that do nothing on a task that is not a CLI task.
-  `:doc` is not among them, every task may have one."
-  [:spec :args->opts :epilog :restrict :restrict-args :coerce :cmd-order :order])
+    (select-keys task-map [:exec-fn :fn :cmd :doc :cli])))
 
 (defn validate-tasks
   "Rejects task shapes that cannot do what they look like they do. Returns
@@ -77,9 +73,9 @@
   [edn]
   (doseq [[k v] (:tasks edn)
           :when (and (symbol? k) (map? v))]
-    (when (:cli v)
-      (throw (ex-info (str "Task " k ": :cli is not a task key. Write :exec-fn, :fn, :cmd"
-                           " and any babashka.cli options directly on the task")
+    (when-not (or (nil? (:cli v)) (map? (:cli v)) (symbol? (:cli v)))
+      (throw (ex-info (str "Task " k ": :cli must be a map or a symbol naming a def, got: "
+                           (pr-str (:cli v)))
                       {:babashka/exit 1})))
     (assert-cmd-maps k (:cmd v))
     ;; a `:task` body is the root handler, so a `:fn` next to it never runs.
@@ -87,12 +83,7 @@
     (when (and (:task v) (:fn v))
       (throw (ex-info (str "Task " k ": both a :task body and a :fn given"
                            ". The body is the root handler, use :exec-fn to override it")
-                      {:babashka/exit 1})))
-    (when-not (cli-node v)
-      (when-let [stray (seq (filter v cli-only-keys))]
-        (throw (ex-info (str "Task " k ": " (str/join ", " stray)
-                             " needs a handler or a command tree. Add :exec-fn, :fn or :cmd")
-                        {:babashka/exit 1})))))
+                      {:babashka/exit 1}))))
   edn)
 
 (defn join-docs
@@ -287,25 +278,35 @@
                                  {:babashka/exit 1} e))))]
     (or v (throw (ex-info what {:babashka/exit 1})))))
 
-(defn -resolve-cli-tasks-defaults
-  "The runner-level `:tasks {:cli ...}` entry, resolved to a map: a map as-is,
-  or a symbol naming a def of one, resolved via `resolve-fn` (the script's
-  `requiring-resolve`) - the symbol form is for defaults that include
-  functions, like `:error-fn`. nil when there is no entry. Throws when the
-  entry is neither nil, a map, nor a symbol resolving to a map."
-  [resolve-fn d]
+(defn -resolve-cli-opts
+  "A `:cli` entry resolved to a map: a map as-is, or a symbol naming a def of
+  one, resolved via `resolve-fn` (the script's `requiring-resolve`). The symbol
+  form is what holds options that include functions, such as an `:error-fn`,
+  which bb.edn cannot express. nil when there is no entry. `what` names the
+  entry in error messages. The same rule applies to the runner-level
+  `:tasks {:cli ...}` and to a task's own `:cli`."
+  [resolve-fn v what]
   (cond
-    (nil? d) nil
-    (map? d) d
-    (symbol? d) (let [v (resolve-or-throw resolve-fn d
-                                          (str ":tasks :cli " d " cannot be resolved"))
-                      m (deref v)]
+    (nil? v) nil
+    (map? v) v
+    (symbol? v) (let [the-var (resolve-or-throw resolve-fn v
+                                                (str what " " v " cannot be resolved"))
+                      m (deref the-var)]
                   (when-not (map? m)
-                    (throw (ex-info (str ":tasks :cli " d " is not a map")
+                    (throw (ex-info (str what " " v " is not a map")
                                     {:babashka/exit 1})))
                   m)
-    :else (throw (ex-info (str ":tasks :cli must be a map or a symbol naming a def, got: " (pr-str d))
+    :else (throw (ex-info (str what " must be a map or a symbol naming a def, got: " (pr-str v))
                           {:babashka/exit 1}))))
+
+(defn -task-node
+  "The dispatch node for a task: the keys bb reads (`:exec-fn`, `:fn`, `:cmd`,
+  `:doc`) over the parser options its `:cli` resolves to. Both the invocation
+  and the completion path go through here, so a task is described the same way
+  whichever asks."
+  [resolve-fn task-name node]
+  (merge (-resolve-cli-opts resolve-fn (:cli node) (str "Task " task-name ": :cli"))
+         (dissoc node :cli)))
 
 (defn- map-cmd
   "Applies `f` to every command in a `:cmd`, keeping its shape. A vector of
@@ -318,11 +319,11 @@
 (defn- assert-no-edn-error-fn
   "In bb.edn a `:error-fn` can only be data; dispatch would invoke a symbol as
   a map lookup and silently swallow every error. It belongs in the function's
-  `:org.babashka/cli` metadata, or in a defaults var referenced from
-  `:tasks {:cli my.ns/defaults}`."
+  `:org.babashka/cli` metadata, or in a var named by a `:cli` entry, on the
+  task or at the `:tasks` level."
   [node task-name]
   (when (contains? node :error-fn)
-    (throw (ex-info (str "Task " task-name ": :error-fn is not supported in bb.edn, put it in the function's :org.babashka/cli metadata or in a var referenced from :tasks {:cli my.ns/defaults}")
+    (throw (ex-info (str "Task " task-name ": :error-fn is not supported in bb.edn, put it in the function's :org.babashka/cli metadata or in a var named by a :cli entry, like :cli my.ns/opts")
                     {:babashka/exit 1})))
   ;; `map second` and not `vals`: a :cmd is a map or a vector of pairs
   (run! #(assert-no-edn-error-fn % task-name) (map second (:cmd node))))
@@ -353,10 +354,13 @@
   than by scanning raw args. `:body-fn` carries its own `:enter` / `:leave`,
   so `:hook-fn` applies only to the resolved `:fn` / `:exec-fn` handlers."
   [cli-opts task-name fns resolve-fn args]
-  (assert-no-edn-error-fn cli-opts task-name)
+  (when (map? (:cli cli-opts))
+    (assert-no-edn-error-fn (:cli cli-opts) task-name))
+  (assert-no-edn-error-fn (dissoc cli-opts :cli) task-name)
   (when (map? (:cli (:tasks @bb-edn)))
     (assert-no-edn-error-fn (:cli (:tasks @bb-edn)) task-name))
-  (let [{:keys [body-fn deps-fn hook-fn]} fns
+  (let [cli-opts (-task-node resolve-fn task-name cli-opts)
+        {:keys [body-fn deps-fn hook-fn]} fns
         with-deps (fn [f] (fn [m] (when deps-fn (deps-fn)) (f m)))
         with-hooks (fn [f] (if hook-fn (fn [m] (hook-fn (fn [] (f m)))) f))
         ;; resolve a :fn / :exec-fn symbol, fold in the fn's metadata and gate
@@ -381,7 +385,7 @@
         ;; dispatch defaults for every CLI task, merged into the dispatch
         ;; opts; node keys win. `:prog` stays bb's, so help always names the
         ;; task it belongs to.
-        defaults (-resolve-cli-tasks-defaults resolve-fn (:cli (:tasks @bb-edn)))]
+        defaults (-resolve-cli-opts resolve-fn (:cli (:tasks @bb-edn)) ":tasks :cli")]
     (babashka.cli/dispatch tree args (merge {:help true}
                                             defaults
                                             {:prog (str "bb " task-name)}))))
@@ -751,9 +755,10 @@
             ;; failure here may surface: the shell discards stderr, so an
             ;; uncaught error would look like "no candidates" while also
             ;; suppressing the file-completion fallback
-            (format "(try %s\n%s\n(babashka.cli/dispatch (babashka.tasks/-resolve-cli-specs requiring-resolve %s) %s (merge %s (babashka.tasks/-resolve-cli-tasks-defaults requiring-resolve '%s) %s)) (catch Throwable _ (println \"org.babashka.cli/file-completion\")))"
+            (format "(try %s\n%s\n(babashka.cli/dispatch (babashka.tasks/-resolve-cli-specs requiring-resolve (babashka.tasks/-task-node requiring-resolve \"%s\" %s)) %s (merge %s (babashka.tasks/-resolve-cli-opts requiring-resolve '%s \":tasks :cli\") %s)) (catch Throwable _ (println \"org.babashka.cli/file-completion\")))"
                     (add-deps-form (:extra-paths tm) (:extra-deps tm))
                     (requires-form (concat (:requires tasks) (:requires tm)))
+                    run
                     (pr-str (list 'quote node)) (pr-str compl)
                     ;; same defaults as -cli-dispatch, in the same precedence:
                     ;; a runner-level :cli (incl. a symbol naming a defaults
@@ -857,5 +862,6 @@
    'exec (sci/copy-var exec sci-ns)
    '-cli-dispatch (sci/copy-var -cli-dispatch sci-ns)
    '-resolve-cli-specs (sci/copy-var -resolve-cli-specs sci-ns)
-   '-resolve-cli-tasks-defaults (sci/copy-var -resolve-cli-tasks-defaults sci-ns)
+   '-resolve-cli-opts (sci/copy-var -resolve-cli-opts sci-ns)
+   '-task-node (sci/copy-var -task-node sci-ns)
    #_#_'log log})
