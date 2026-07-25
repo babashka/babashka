@@ -46,7 +46,6 @@
    "appveyor.yml"
    "project.clj"
    "script/bump_graal_version.clj"
-   ".cirrus.yml"
    "script/install-graalvm"
    ])
 

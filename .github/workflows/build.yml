@@ -113,7 +113,8 @@ jobs:
       BABASHKA_ARCH: ${{ matrix.arch }}
       BABASHKA_TEST_ENV: native
       BABASHKA_XMX: "-J-Xmx6500m"
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # needs write access to babashka-dev-builds, which secrets.GITHUB_TOKEN does not have
+      GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
       BABASHKA_SHA: ${{ github.sha }}
       MACOSX_DEPLOYMENT_TARGET: ${{ matrix.oldest_macos_version }}
     steps:
