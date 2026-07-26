@@ -465,17 +465,6 @@
               (parsed-line line cursor))
           (throw (EOFError. -1 -1 "Incomplete Clojure form")))))))
 
-(defn- secure-history-file!
-  "Restricts the history file to the owner. JLine warns when it is readable by
-  other users."
-  [history-file]
-  (when-not (fs/windows?)
-    (try (when-not (fs/exists? history-file)
-           (some-> (fs/parent history-file) fs/create-dirs)
-           (fs/create-file history-file))
-         (fs/set-posix-file-permissions history-file "rw-------")
-         (catch Exception _ nil))))
-
 (defn- jline-reader
   "Creates a JLine LineReader for interactive input with persistent history."
   ^org.jline.reader.LineReader [sci-ctx]
@@ -489,7 +478,6 @@
                          (fs/path f "bb_repl_history")
                          f)
                        (fs/path (fs/home) ".bb_repl_history"))
-        _ (secure-history-file! history-file)
         reader (-> (LineReaderBuilder/builder)
                    (.terminal terminal)
                    (.parser (jline-parser sci-ctx force-accept?))
