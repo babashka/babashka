@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- [#2003](https://github.com/babashka/babashka/issues/2003): add `org.jsoup.select.Elements` for `Element.select`
 - Tasks: `:exec-fn` (a function) or `:cmd` (a command tree) on a task routes it through `babashka.cli/dispatch`, giving it `--help`, shell completion and subcommands. Options, docstring and `:enum` come from the function's `:org.babashka/cli` metadata, like `bb -x`
 - Tasks: `:cli` on a task holds babashka.cli options that have no function to live on, such as an `:epilog` on a command group. A map, or a symbol naming a var of one for options that include functions, such as an `:error-fn`. At the `:tasks` level the same entry applies to every CLI task
 - Tasks: `:doc` may be a vector of lines

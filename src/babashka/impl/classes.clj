@@ -713,6 +713,7 @@
           org.jsoup.nodes.XmlDeclaration
           org.jsoup.parser.Tag
           org.jsoup.parser.Parser
+          org.jsoup.select.Elements
           ;; jline
           org.jline.terminal.Terminal
           org.jline.terminal.TerminalBuilder
