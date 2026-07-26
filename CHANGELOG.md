@@ -9,7 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-- [#2003](https://github.com/babashka/babashka/issues/2003): add `org.jsoup.select.Elements` for `Element.select`
+- [#2003](https://github.com/babashka/babashka/issues/2003): add `org.jsoup.select.Elements` for `Element.select` ([@christoph-frick](https://github.com/christoph-frick))
 - Tasks: `:exec-fn` (a function) or `:cmd` (a command tree) on a task routes it through `babashka.cli/dispatch`, giving it `--help`, shell completion and subcommands. Options, docstring and `:enum` come from the function's `:org.babashka/cli` metadata, like `bb -x`
 - Tasks: `:cli` on a task holds babashka.cli options that have no function to live on, such as an `:epilog` on a command group. A map, or a symbol naming a var of one for options that include functions, such as an `:error-fn`. At the `:tasks` level the same entry applies to every CLI task
 - Tasks: `:doc` may be a vector of lines
@@ -22,24 +22,24 @@ A preview of the next release can be installed from
 - [#1979](https://github.com/babashka/babashka/issues/1979): fix `with-redefs` on copied vars (e.g. `org.httpkit.client/get`) incorrectly treated as inlined
 - nREPL: lock output stream to prevent interleaved bencode frames from concurrent writes
 - Add `org.jline.keymap.BindingReader` for reading key bindings in terminal applications
-- [#1982](https://github.com/babashka/babashka/issues/1982): Add the following to `:instance-checks` in `babashka.impl.classes/classes`
+- [#1982](https://github.com/babashka/babashka/issues/1982): Add the following to `:instance-checks` in `babashka.impl.classes/classes` ([@paintparty](https://github.com/paintparty))
   - `clojure.lang.ChunkedCons`
   - `clojure.lang.APersistentVector$SubVector`
   - `clojure.lang.ArraySeq`
   - `clojure.lang.PersistentVector$ChunkedSeq`
   - `java.util.AbstractCollection`
   - `java.util.Queue`
-- [#1985](https://github.com/babashka/babashka/issues/1985): Add the following classes to `babashka.impl.classes/classes`
+- [#1985](https://github.com/babashka/babashka/issues/1985): Add the following classes to `babashka.impl.classes/classes` ([@weavejester](https://github.com/weavejester))
   - `java.util.concurrent.locks.Condition`
   - `java.util.concurrent.locks.Lock`
   - `java.util.concurrent.locks.LockSupport`
-- [#1986](https://github.com/babashka/babashka/issues/1986): Add the following classes to `babashka.impl.classes/classes`
+- [#1986](https://github.com/babashka/babashka/issues/1986): Add the following classes to `babashka.impl.classes/classes` ([@weavejester](https://github.com/weavejester))
   - `java.net.StandardSocketOptions`
   - `java.nio.channels.CancelledKeyException`
   - `java.nio.channels.Selector`
   - `java.nio.channels.SelectionKey`
-- [#1987](https://github.com/babashka/babashka/issues/1987): Allow the `remove` method to be used on `Iterator`
-- [#1988](https://github.com/babashka/babashka/issues/1988): Allow `java.io.Closeable` and `java.lang.AutoCloseable` to be reified
+- [#1987](https://github.com/babashka/babashka/issues/1987): Allow the `remove` method to be used on `Iterator` ([@weavejester](https://github.com/weavejester))
+- [#1988](https://github.com/babashka/babashka/issues/1988): Allow `java.io.Closeable` and `java.lang.AutoCloseable` to be reified ([@weavejester](https://github.com/weavejester))
 - Bump babashka.cli to 0.12.84: `dispatch` auto-help and shell completions, tree format, `:enum`; `*exit-fn*` rebindable from scripts
 - Bump http-client to `0.4.24`: `:proxy` accepts a function of the request URI to select a proxy per request ([@jeeger](https://github.com/jeeger))
 - Bump fs to `0.5.34`, plus `zip` accepting absolute source paths mapped to relative entries
@@ -47,7 +47,8 @@ A preview of the next release can be installed from
 - Bump rewrite-clj to `1.2.55`
 - Bump insn to `0.5.4`
 - Bump Clojure to `1.12.5`
-- [#1977](https://github.com/babashka/babashka/issues/1977): update usage link in README to point to the discussion page
+- [#1977](https://github.com/babashka/babashka/issues/1977): update usage link in README to point to the discussion page ([@verberktstan](https://github.com/verberktstan))
+- Add FreeBSD installation instructions to the README ([@fraggerfox](https://github.com/fraggerfox))
 - Publish macOS aarch64 dev builds from GitHub Actions
 
 ## 1.12.218 (2026-04-20)
