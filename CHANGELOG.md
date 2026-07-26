@@ -39,7 +39,7 @@ A preview of the next release can be installed from
   - `java.nio.channels.SelectionKey`
 - [#1987](https://github.com/babashka/babashka/issues/1987): Allow the `remove` method to be used on `Iterator`
 - [#1988](https://github.com/babashka/babashka/issues/1988): Allow `java.io.Closeable` and `java.lang.AutoCloseable` to be reified
-- Bump babashka.cli to 0.12.82: `dispatch` auto-help and shell completions, tree format, `:enum`; `*exit-fn*` rebindable from scripts
+- Bump babashka.cli to 0.12.83: `dispatch` auto-help and shell completions, tree format, `:enum`; `*exit-fn*` rebindable from scripts
 - Bump http-client to `0.4.24`: `:proxy` accepts a function of the request URI to select a proxy per request ([@jeeger](https://github.com/jeeger))
 - Bump fs to `0.5.34`, plus `zip` accepting absolute source paths mapped to relative entries
 - Bump edamame to `1.6.42`

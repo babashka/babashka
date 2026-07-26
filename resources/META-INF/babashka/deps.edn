@@ -48,7 +48,7 @@
         org.clojure/data.priority-map {:mvn/version "1.1.0"}
         insn/insn {:mvn/version "0.5.4"}
         org.clojure/core.rrb-vector {:mvn/version "0.2.0"}
-        org.babashka/cli {:mvn/version "0.12.82"}
+        org.babashka/cli {:mvn/version "0.12.83"}
         org.babashka/http-client {:mvn/version "0.4.24"}
         org.flatland/ordered {:mvn/version "1.15.12"}
         org.jsoup/jsoup {:mvn/version "1.22.2"}
