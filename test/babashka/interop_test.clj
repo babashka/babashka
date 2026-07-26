@@ -313,7 +313,9 @@
       (is (= (bb nil (str "(ex-message " return-throwable ")"))
              (bb nil (str "(.getMessage " return-throwable ")"))))))
   (testing "jsoup Element"
-    (is (= "form" (bb nil "(.tagName (first (.getElementsByTag (org.jsoup.Jsoup/parseBodyFragment \"<form></form>\") \"form\")))")))))
+    (is (= "form" (bb nil "(.tagName (first (.getElementsByTag (org.jsoup.Jsoup/parseBodyFragment \"<form></form>\") \"form\")))"))))
+  (testing "jsoup Elements via select"
+    (is (= "1" (bb nil "(.text (.first (.select (org.jsoup.Jsoup/parse \"<ul><li>1</li><li>2</li></ul>\") \"ul>li\")))")))))
 
 (deftest cached-thread-pool
   (is (= 3 (bb nil "(import '(java.util.concurrent Executors ExecutorService))
