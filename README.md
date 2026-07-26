@@ -146,7 +146,7 @@ If you installed babashka before Homebrew introduced [tap
 trust](https://docs.brew.sh/Tap-Trust), you may see a warning like `Skipping
 babashka: tap formula is not trusted`. To fix this, run:
 
-    brew trust borkdude/brew/babashka
+    brew trust borkdude/brew
 
 ### Nix
 
