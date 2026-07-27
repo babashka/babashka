@@ -645,6 +645,20 @@ even more stuff here\"
       (testing "and its spec still parses"
         (is (= {:env "prod" :ran :exec-only}
                (bb "-cp" "test-resources" "foo" "prod")))))
+    (testing "a task :cli reaches dispatch, like the runner-level one"
+      (test-utils/with-config '{:tasks {deploy {:cli babashka.tasks-cli/base-opts
+                                                :cmd {"go" {:exec-fn babashka.tasks-cli/deploy-x}}}}}
+        (testing "no command on a handler-less group goes through its :error-fn"
+          (is (thrown-with-msg?
+               Exception #"DEFAULTS-ERR :input-exhausted \| No command given\."
+               (test-utils/bb nil "-cp" "test-resources" "deploy"))))
+        (testing "an error inside a subcommand goes through it too"
+          (is (thrown-with-msg?
+               Exception #"DEFAULTS-ERR :require \| Required option: --env"
+               (test-utils/bb nil "-cp" "test-resources" "deploy" "go"))))
+        (testing "the happy path is unaffected"
+          (is (= {:env "prod" :ran :exec-only}
+                 (bb "-cp" "test-resources" "deploy" "go" "prod"))))))
     (testing "and anything else is a config error"
       (test-utils/with-config '{:tasks {foo {:cli 42 :exec-fn babashka.tasks-cli/deploy-x}}}
         (is (thrown-with-msg?

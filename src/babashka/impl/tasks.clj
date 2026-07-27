@@ -276,7 +276,11 @@
   `defaults` is the runner-level `:tasks {:cli ...}` entry, passed in rather
   than read here so that this and completion take the same route to it."
   [cli-opts task-name fns defaults resolve-fn args]
-  (let [cli-opts (-task-node resolve-fn task-name cli-opts)
+  (let [;; the task's own `:cli` also provides dispatch opts, for options that
+        ;; only exist there, such as an `:error-fn`
+        task-cli (-resolve-cli-opts resolve-fn (:cli cli-opts)
+                                    (str "Task " task-name ": :cli"))
+        cli-opts (-task-node resolve-fn task-name cli-opts)
         {:keys [body-fn deps-fn hook-fn]} fns
         with-deps (fn [f] (fn [m] (when deps-fn (deps-fn)) (f m)))
         with-hooks (fn [f] (if hook-fn (fn [m] (hook-fn (fn [] (f m)))) f))
@@ -304,6 +308,7 @@
         defaults (-resolve-cli-opts resolve-fn defaults ":tasks :cli")]
     (babashka.cli/dispatch tree args (merge {:help true}
                                             defaults
+                                            task-cli
                                             {:prog (str "bb " task-name)}))))
 
 (defn -resolve-cli-specs
