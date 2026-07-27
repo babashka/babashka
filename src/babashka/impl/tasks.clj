@@ -723,7 +723,7 @@
                         (when-let [d (doc-from-task sci-ctx tasks task)]
                           (let [first-line (-> (str/split-lines d)
                                                first)]
-                            (str " " first-line)))))))
+                            (str "  " first-line)))))))
       (println "No tasks found."))))
 
 (defn run

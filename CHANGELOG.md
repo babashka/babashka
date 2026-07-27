@@ -14,6 +14,7 @@ A preview of the next release can be installed from
 - Tasks: `:cli` on a task holds babashka.cli options that have no function to live on, such as an `:epilog` on a command group. A map, or a symbol naming a var of one for options that include functions, such as an `:error-fn`. At the `:tasks` level the same entry applies to every CLI task
 - Tasks: `:doc` may be a vector of lines
 - Tasks: `bb <task> --help` no longer runs the task's `:depends`, except under `bb run --parallel`
+- Tasks: `bb tasks` separates names and docs with two spaces, like babashka.cli's help output
 - Clojure 1.13 map destructuring: `:keys!`, `:syms!`, `:strs!`, `&` inside a directive, `:select`, `:all` and `:defaults`. Adds `req!` and `some-vals` to `clojure.core`
 - Bump JLine to `4.3.1`
 - [#1994](https://github.com/babashka/babashka/issues/1994): fix `:eval` and `:print` options of `clojure.main/repl` being ignored in the interactive REPL ([@jeroenvandijk](https://github.com/jeroenvandijk))

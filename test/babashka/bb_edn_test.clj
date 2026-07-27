@@ -343,7 +343,7 @@
   (test-utils/with-config '{:tasks {abc 1 xyz {:doc "some text" :tasks 5}
                                     -xyz 3 qrs {:private true}}}
     (let [res (test-utils/bb nil "tasks")]
-      (is (= "The following tasks are available:\n\nabc\nxyz some text\n" res))))
+      (is (= "The following tasks are available:\n\nabc\nxyz  some text\n" res))))
   (test-utils/with-config '{:tasks {xyz 1 abc 2}}
     (let [res (test-utils/bb nil "tasks")]
       (is (= "The following tasks are available:\n\nxyz\nabc\n" res))))
@@ -368,14 +368,14 @@ even more stuff here\"
                                     quux {:requires ([tasks :as t2])
                                           :task t2/foo}}}"
     (let [res (test-utils/bb nil "tasks")]
-      (is (= "The following tasks are available:\n\ntask1 task1 doc\ntask2 task2 doc\nfoo   Foo docstring\nbar   Foo docstring\nbaz  \nquux  Foo docstring\n"
+      (is (= "The following tasks are available:\n\ntask1  task1 doc\ntask2  task2 doc\nfoo    Foo docstring\nbar    Foo docstring\nbaz  \nquux   Foo docstring\n"
              res))))
   (testing ":tasks is the first node"
     (test-utils/with-config "{:tasks {task1
                                     {:doc \"task1 doc\"
                                      :task (+ 1 2 3)}}}"
       (let [res (test-utils/bb nil "tasks")]
-        (is (= "The following tasks are available:\n\ntask1 task1 doc\n"
+        (is (= "The following tasks are available:\n\ntask1  task1 doc\n"
                res))))))
 
 (deftest task-priority-test
@@ -809,7 +809,7 @@ even more stuff here\"
                                                 "Uses the matrix from ci.edn."]
                                           :exec-fn babashka.tasks-cli/run-dev}}}
       (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "tasks")
-                         "ci Run the CI tests\n"))
+                         "ci  Run the CI tests\n"))
       (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "ci" "--help")
                          "Run the CI tests\n\nUses the matrix from ci.edn."))))
   (testing "an :exec-fn node calls the fn with opts only, spec from meta"
