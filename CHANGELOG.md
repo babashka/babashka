@@ -7,9 +7,16 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## Unreleased
+## 1.13.219 (2026-07-27)
 
-- [#2003](https://github.com/babashka/babashka/issues/2003): add `org.jsoup.select.Elements` for `Element.select` ([@christoph-frick](https://github.com/christoph-frick))
+Highlights:
+
+- Tasks get automatic `--help` and shell completions, through the new `:exec-fn` and `:cmd` keys. See [the blog post](https://blog.michielborkent.nl/babashka-tasks-cli.html)! 
+  These task keys should be considered experimental and may change in a future version of babashka, depending on feedback from the community
+- Clojure 1.13 map destructuring with `:keys!` etc.
+
+Other changes:
+
 - Tasks: `:exec-fn` (a function) or `:cmd` (a command tree) on a task routes it through `babashka.cli/dispatch`, giving it `--help`, shell completion and subcommands. Options, docstring and `:enum` come from the function's `:org.babashka/cli` metadata, like `bb -x`
 - Tasks: `:cli` on a task holds babashka.cli options that have no function to live on, such as an `:epilog` on a command group. A map, or a symbol naming a var of one for options that include functions, such as an `:error-fn`. At the `:tasks` level the same entry applies to every CLI task
 - Tasks: `:doc` may be a vector of lines
@@ -17,6 +24,7 @@ A preview of the next release can be installed from
 - Tasks: `bb tasks` separates names and docs with two spaces, like babashka.cli's help output
 - Clojure 1.13 map destructuring: `:keys!`, `:syms!`, `:strs!`, `&` inside a directive, `:select`, `:all` and `:defaults`. Adds `req!` and `some-vals` to `clojure.core`
 - Bump JLine to `4.3.1`
+- [#2003](https://github.com/babashka/babashka/issues/2003): add `org.jsoup.select.Elements` for `Element.select` ([@christoph-frick](https://github.com/christoph-frick))
 - [#1994](https://github.com/babashka/babashka/issues/1994): fix `:eval` and `:print` options of `clojure.main/repl` being ignored in the interactive REPL ([@jeroenvandijk](https://github.com/jeroenvandijk))
 - [#1918](https://github.com/babashka/babashka/issues/1918): fall back to `$HOME` when the OS does not supply a home directory, e.g. for LDAP users in the static binary
 - fix `*1`, `*2` and `*3` being overwritten by Ctrl+C and `:repl/help` in the interactive REPL
