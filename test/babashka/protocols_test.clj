@@ -59,6 +59,17 @@
  (inst? #inst \"2020\")
  (inst? 1)]")))))
 
+(deftest inst-protocol-host-class
+  (is (= [5000 true false]
+         (edn/read-string (bb nil "
+(extend-protocol Inst
+  java.time.Duration
+  (inst-ms* [d] (.toMillis d)))
+
+[(inst-ms (java.time.Duration/ofSeconds 5))
+ (inst? (java.time.Duration/ofSeconds 5))
+ (inst? (java.time.Period/ofDays 1))]")))))
+
 (deftest inst-protocol-spec
   (is (= [true false true]
          (edn/read-string (bb nil "
