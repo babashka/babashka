@@ -58,3 +58,17 @@
  (inst-ms #inst \"2020\")
  (inst? #inst \"2020\")
  (inst? 1)]")))))
+
+(deftest inst-protocol-spec
+  (is (= [true false true]
+         (edn/read-string (bb nil "
+(require '[clojure.spec.alpha :as s])
+
+(defrecord Duration [ms]
+  Inst
+  (inst-ms* [_] ms))
+
+(def in-2020? (s/inst-in #inst \"2020\" #inst \"2021\"))
+[(s/valid? in-2020? (->Duration 1600000000000))
+ (s/valid? in-2020? (->Duration 1))
+ (s/valid? in-2020? #inst \"2020-06\")]")))))
