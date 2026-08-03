@@ -590,6 +590,19 @@ even more stuff here\"
              (bb "-cp" "test-resources" "deps" "outdated" "--format" "edn")))
       (is (= {:ran :clean}
              (bb "-cp" "test-resources" "deps" "cache" "clean")))))
+  (testing "a CLI task named in :depends runs, with the keys it declared"
+    (test-utils/with-config '{:tasks {-build {:exec-fn babashka.tasks-cli/dep-build}
+                                      tst {:depends [-build]
+                                           :exec-fn babashka.tasks-cli/dep-test}}}
+      (let [lines (fn [& args]
+                    (map edn/read-string
+                         (str/split-lines (apply test-utils/bb nil "-cp" "test-resources" args))))]
+        (testing "the dep's handler runs before the target's"
+          (is (= [{:ran :dep-build} {:watch true :ran :dep-test}]
+                 (lines "tst" "--watch"))))
+        (testing "the dep's spec merges into the parse, so :restrict accepts it"
+          (is (= [{:target "x" :ran :dep-build} {:target "x" :ran :dep-test}]
+                 (lines "tst" "--target" "x")))))))
   (testing ":cli :cmd subcommand fn pulls spec/args->opts from its :org.babashka/cli meta"
     (test-utils/with-config '{:tasks {deploy {:cmd {"lock" {:fn babashka.tasks-cli/lock}}}}}
       (is (= {:environment "staging" :message "msg" :ran :lock}
