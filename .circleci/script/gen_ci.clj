@@ -131,18 +131,15 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                           :BABASHKA_TEST_ENV "native"
                           :BABASHKA_XMX      "-J-Xmx6500m"
                           :BABASHKA_SHA (System/getenv "CIRCLE_SHA1")}
-        env              (if (= "aarch64" arch)
-                           (assoc env :BABASHKA_ARCH arch)
-                           env)
-        env              (if static?
-                           (assoc env :BABASHKA_STATIC "true")
-                           env)
-        env              (if musl?
-                           (assoc env :BABASHKA_MUSL "true")
-                           env)
-        env              (if (= "mac" platform)
-                           (assoc env :MACOSX_DEPLOYMENT_TARGET 10.13)
-                           env)
+        env              (cond-> env
+                           (= "aarch64" arch)
+                           (assoc :BABASHKA_ARCH arch)
+                           static?
+                           (assoc :BABASHKA_STATIC "true")
+                           musl?
+                           (assoc :BABASHKA_MUSL "true")
+                           (= "mac" platform)
+                           (assoc :MACOSX_DEPLOYMENT_TARGET 10.13))
         base-install-cmd "sudo apt-get update\nsudo apt-get -y install build-essential zlib1g-dev"
         cache-key        (format "%s-%s{{ checksum \"project.clj\" }}-{{ checksum \".circleci/config.yml\" }}"
                                  platform
