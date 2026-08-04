@@ -296,7 +296,7 @@
   specs merge under this task's own, so one parse covers everything the
   invocation can consume, and each dep's handler is called with the keys it
   declared. A dep never parses, so its `:restrict` does not apply here."
-  [cli-opts task-name fns defaults dep-nodes resolve-fn args]
+  [cli-opts task-name fns defaults dep-nodes parallel? resolve-fn args]
   (let [;; the task's own `:cli` also provides dispatch opts, for options that
         ;; only exist there, such as an `:error-fn`
         task-cli (-resolve-cli-opts resolve-fn (:cli cli-opts)
@@ -305,15 +305,28 @@
         {:keys [body-fn deps-fn hook-fn]} fns
         dep-nodes (map #(-resolve-cli-specs resolve-fn %) dep-nodes)
         dep-spec (reduce #(merge %1 (:spec %2)) {} dep-nodes)
+        ;; resolved up front: a handler must not be resolved on the thread that
+        ;; runs it, requiring-resolve is not safe to race
+        dep-fns (into []
+                      (keep (fn [node]
+                              (when-let [f (:exec-fn node)]
+                                [(str f)
+                                 (if (symbol? f)
+                                   (resolve-or-throw resolve-fn f
+                                                     (str "Task " task-name ": cannot resolve :exec-fn " f))
+                                   f)
+                                 (keys (:spec node))])))
+                      dep-nodes)
         run-dep-fns (fn [m]
-                      (doseq [node dep-nodes
-                              :let [f (:exec-fn node)]
-                              :when f]
-                        ((if (symbol? f)
-                           (resolve-or-throw resolve-fn f
-                                             (str "Task " task-name ": cannot resolve :exec-fn " f))
-                           f)
-                         (select-keys m (keys (:spec node))))))
+                      (if parallel?
+                        ;; siblings run at the same time, like plain `:depends`
+                        ;; bodies do, and the first failure wins
+                        (let [chans (mapv (fn [[nm f ks]]
+                                            (-err-thread nm (f (select-keys m ks))))
+                                          dep-fns)]
+                          (doseq [c chans] (-wait c)))
+                        (doseq [[_ f ks] dep-fns]
+                          (f (select-keys m ks)))))
         with-deps (fn [f] (fn [m] (when deps-fn (deps-fn)) (run-dep-fns m) (f m)))
         with-hooks (fn [f] (if hook-fn (fn [m] (hook-fn (fn [] (f m)))) f))
         ;; resolve a :fn / :exec-fn symbol, fold in the fn's metadata and gate
@@ -357,8 +370,8 @@
   ([task-map prog dep-forms] (wrap-cli task-map prog dep-forms nil))
   ([task-map prog dep-forms dep-nodes]
    (if-let [cli-opts (cli-node task-map)]
-     (let [{:keys [enter leave name]} task-map]
-       (format "(babashka.tasks/-cli-dispatch '%s \"%s\" {:body-fn %s :deps-fn %s :hook-fn %s} '%s '%s requiring-resolve *command-line-args*)"
+     (let [{:keys [enter leave name parallel]} task-map]
+       (format "(babashka.tasks/-cli-dispatch '%s \"%s\" {:body-fn %s :deps-fn %s :hook-fn %s} '%s '%s %s requiring-resolve *command-line-args*)"
                (pr-str cli-opts)
                name
                (if (:task task-map)
@@ -372,7 +385,8 @@
                  "nil")
                ;; the same value completion-program embeds, from the same place
                (pr-str (:cli (:tasks @bb-edn)))
-               (pr-str (vec dep-nodes))))
+               (pr-str (vec dep-nodes))
+               (boolean parallel)))
      prog)))
 
 (defn assemble-task-1

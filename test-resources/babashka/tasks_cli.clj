@@ -45,6 +45,18 @@
   [opts]
   (prn (assoc opts :ran :dep-test)))
 
+;; Under --parallel a dep handler runs on its own thread, where the in-process
+;; test harness does not capture *out*. These report through a file instead.
+(defn dep-spit
+  {:org.babashka/cli {:spec {:out {}}}}
+  [{:keys [out]}]
+  (spit out "dep\n" :append true))
+
+(defn target-spit
+  {:org.babashka/cli {:spec {:out {}}}}
+  [{:keys [out]}]
+  (spit out "target\n" :append true))
+
 ;; Runner-wide defaults var, referenced from bb.edn as :tasks {:cli
 ;; babashka.tasks-cli/base-opts}. The error handler throws instead of exiting
 ;; so in-process tests survive it.
