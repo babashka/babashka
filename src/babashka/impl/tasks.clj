@@ -759,7 +759,12 @@
                         (into command-line-args)
                         (conj partial))
               tm (get tasks (symbol run))
-              prog (str "bb " run)]
+              prog (str "bb " run)
+              ;; the CLI deps whose specs are folded in below: their handlers
+              ;; may live on their own :extra-paths or behind their own
+              ;; :requires alias, so those go on the classpath here too
+              dep-nodes (dep-cli-nodes tasks run)
+              dep-tms (keep #(get tasks (symbol (first %))) dep-nodes)]
           (if-let [node (cli-node tm)]
             ;; The task's classpath and requires run first, inside the same
             ;; try: the handler may live on its :extra-paths, and its symbol may
@@ -769,8 +774,11 @@
             ;; uncaught error would look like "no candidates" while also
             ;; suppressing the file-completion fallback
             (format "(try (let [tree (binding [*out* (java.io.StringWriter.)] %s\n%s\n(babashka.tasks/-resolve-cli-specs requiring-resolve (babashka.tasks/-task-node requiring-resolve \"%s\" %s)))] (babashka.cli/dispatch tree %s (babashka.tasks/-with-dep-spec (merge %s (babashka.tasks/-resolve-cli-opts requiring-resolve '%s \":tasks :cli\") %s) '%s requiring-resolve))) (catch Throwable _ (println \"org.babashka.cli/file-completion\")))"
-                    (add-deps-form (:extra-paths tm) (:extra-deps tm))
-                    (requires-form (concat (:requires tasks) (:requires tm)))
+                    (add-deps-form (concat (mapcat :extra-paths dep-tms) (:extra-paths tm))
+                                   (apply merge (conj (mapv :extra-deps dep-tms) (:extra-deps tm))))
+                    (requires-form (concat (:requires tasks)
+                                           (mapcat :requires dep-tms)
+                                           (:requires tm)))
                     run
                     (pr-str (list 'quote node)) (pr-str compl)
                     ;; same defaults as -cli-dispatch, in the same precedence:
@@ -781,7 +789,7 @@
                     (pr-str {:prog prog})
                     ;; the same `:depends` nodes -cli-dispatch folds in, so
                     ;; completion and help cannot drift apart
-                    (pr-str (vec (dep-cli-nodes tasks run))))
+                    (pr-str (vec dep-nodes)))
             ;; a task without :cli has no options to offer; defer to the shell
             ;; so file completion still works, as it did before bb claimed the
             ;; `bb` compdef
