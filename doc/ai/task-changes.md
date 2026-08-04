@@ -1,7 +1,5 @@
 # Task changes
 
-Seed notes for a blog post. Branch: `tasks-depends-cli`.
-
 A task with `:exec-fn` or `:cmd` is a CLI task. Before, a CLI task did nothing
 when another task named it in `:depends`. It ran only when you invoked it
 directly, and the run gave no error.
