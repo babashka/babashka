@@ -7,6 +7,12 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## Unreleased
+
+- Tasks: a task with `:exec-fn` or `:cmd` now runs when another task names it in `:depends`. Before, it did nothing
+- Tasks: the options of a `:depends` task parse for the task that runs, and show under `Inherited options:` in `--help`
+- Tasks: the handler of a `:depends` task receives the options that it declared
+
 ## 1.13.219 (2026-07-27)
 
 Highlights:
