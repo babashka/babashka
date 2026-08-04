@@ -607,6 +607,17 @@ even more stuff here\"
           (let [help (test-utils/bb nil "-cp" "test-resources" "tst" "--help")]
             (is (str/includes? help "--watch"))
             (is (str/includes? help "--target")))))))
+  (testing "a :cmd task may name a CLI task in :depends"
+    (test-utils/with-config '{:tasks {-build {:exec-fn babashka.tasks-cli/dep-build}
+                                      deploy {:depends [-build]
+                                              :cmd {"lock" {:exec-fn babashka.tasks-cli/dep-test}}}}}
+      (is (= [{:target "x" :ran :dep-build} {:target "x" :ran :dep-test}]
+             (map edn/read-string
+                  (str/split-lines
+                   (test-utils/bb nil "-cp" "test-resources" "deploy" "lock" "--target" "x")))))
+      (testing "the dep's options show in the leaf's help"
+        (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "deploy" "lock" "--help")
+                           "--target")))))
   ;; a parallel dep runs on its own thread, where the in-process harness does not
   ;; capture *out*, so this reports through a file
   (testing "under --parallel a CLI dep's handler runs, before the target"
