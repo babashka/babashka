@@ -602,7 +602,11 @@ even more stuff here\"
                  (lines "tst" "--watch"))))
         (testing "the dep's spec merges into the parse, so :restrict accepts it"
           (is (= [{:target "x" :ran :dep-build} {:target "x" :ran :dep-test}]
-                 (lines "tst" "--target" "x")))))))
+                 (lines "tst" "--target" "x"))))
+        (testing "--help lists the dep's options alongside the task's own"
+          (let [help (test-utils/bb nil "-cp" "test-resources" "tst" "--help")]
+            (is (str/includes? help "--watch"))
+            (is (str/includes? help "--target")))))))
   (testing ":cli :cmd subcommand fn pulls spec/args->opts from its :org.babashka/cli meta"
     (test-utils/with-config '{:tasks {deploy {:cmd {"lock" {:fn babashka.tasks-cli/lock}}}}}
       (is (= {:environment "staging" :message "msg" :ran :lock}
