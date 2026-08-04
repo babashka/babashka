@@ -279,6 +279,12 @@
     (cond-> node
       (:cmd node) (update :cmd map-cmd #(-resolve-cli-specs resolve-fn %)))))
 
+(def ^:dynamic *cli-target?*
+  "True while assembling for a target that dispatches, which is what binds
+  `dep-opts-sym`. A plain target has no parse, so its CLI dependencies keep
+  contributing nothing rather than referring to a symbol that is not there."
+  false)
+
 (def dep-opts-sym
   "Name the assembled `:depends` program binds the parsed options to, so a CLI
   dep can be handed the ones it declared."
@@ -437,7 +443,8 @@
          ;; a CLI task reached through `:depends` has no body of its own. It
          ;; contributes a call to its handler, here in its own position, so the
          ;; graph order is the one `target-order` already worked out
-         dep-cli-node (when-not last? (cli-node task-map))
+         dep-cli-node (when (and (not last?) *cli-target?*)
+                        (cli-node task-map))
          prog (cond
                 dep-cli-node
                 (format "(babashka.tasks/-run-cli-dep '%s \"%s\" %s requiring-resolve)"
@@ -573,7 +580,8 @@
         enter (:enter tasks)
         leave (:leave tasks)
         task (get tasks task-name)]
-    (binding [*print-meta* true]
+    (binding [*print-meta* true
+              *cli-target?* (boolean (cli-node task))]
       (if task
         (let [m? (map? task)
               global-requires (get tasks :requires)

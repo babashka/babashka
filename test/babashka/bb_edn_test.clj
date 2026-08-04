@@ -640,6 +640,14 @@ even more stuff here\"
                                              :exec-fn babashka.tasks-cli/target-spit}}}
         (test-utils/bb nil "-cp" "test-resources" "run" "--parallel" "tst" "--out" out)
         (is (= "dep\ntarget\n" (slurp out))))))
+  (testing "a plain task runs with a CLI dep in :depends, skipping its handler"
+    (doseq [args [["tst"] ["run" "--parallel" "tst"]]]
+      (let [out (str (fs/file (fs/create-temp-dir) "plain.txt"))]
+        (test-utils/with-config '{:tasks {-a {:exec-fn babashka.tasks-cli/mark-task}
+                                          tst {:depends [-a]
+                                               :task (spit (last *command-line-args*) "target\n" :append true)}}}
+          (apply test-utils/bb nil "-cp" "test-resources" (concat args ["--out" out]))
+          (is (= "target\n" (slurp out)) (str "for " args))))))
   (testing "a dep's handler runs between its own :enter and :leave, under its own task"
     (doseq [args [["tst"] ["run" "--parallel" "tst"]]]
       (let [out (str (fs/file (fs/create-temp-dir) "hooks.txt"))]
