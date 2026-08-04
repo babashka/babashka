@@ -57,6 +57,19 @@
   [{:keys [out]}]
   (spit out "target\n" :append true))
 
+;; Order markers. `mark-a` is slow on purpose: a dep that ignores the graph and
+;; launches siblings at once lets the faster `mark-c` write first.
+(defn mark-a
+  {:org.babashka/cli {:spec {:out {}}}}
+  [{:keys [out]}]
+  (Thread/sleep 300)
+  (spit out "a\n" :append true))
+
+(defn mark-c
+  {:org.babashka/cli {:spec {:out {}}}}
+  [{:keys [out]}]
+  (spit out "c\n" :append true))
+
 ;; A rendezvous: write my own marker, then wait for the sibling's. Both markers
 ;; only ever appear while both handlers are running, so this reports
 ;; "concurrent" under real parallelism and "serial" when they take turns. Each
