@@ -338,14 +338,15 @@
         ;; opts; node keys win. `:prog` stays bb's, so help always names the
         ;; task it belongs to.
         defaults (-resolve-cli-opts resolve-fn defaults ":tasks :cli")]
-    (babashka.cli/dispatch tree args (merge {:help true}
-                                            defaults
-                                            task-cli
-                                            (cond-> {:prog (str "bb " task-name)}
-                                              ;; parse them here, list them under
-                                              ;; "Inherited options:" rather than
-                                              ;; mixed into this task's own
-                                              (seq dep-spec) (assoc :inherited dep-spec))))))
+    (babashka.cli/dispatch tree args
+                           (cond-> (merge {:help true}
+                                          defaults
+                                          task-cli
+                                          {:prog (str "bb " task-name)})
+                             ;; the dispatch-level spec: parsed here, and listed
+                             ;; under "Inherited options:" rather than mixed into
+                             ;; this task's own. An explicit `:cli` spec wins.
+                             (seq dep-spec) (update :spec #(merge dep-spec %))))))
 
 (defn wrap-cli
   "Emits the -cli-dispatch call for a CLI task, one naming an `:exec-fn` or a
