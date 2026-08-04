@@ -9,7 +9,8 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-- Tasks: a task with `:exec-fn` now runs when another task names it in `:depends`. Before, it did nothing
+- Tasks: a task with `:exec-fn` now runs when a task with `:exec-fn` or `:cmd` names it in `:depends`. Before, it did nothing
+- Tasks: a plain task still does not run a `:depends` task that has `:exec-fn`. Only the task that parses the options can call its handler
 - Tasks: the options of a `:depends` task parse for the task that runs, and show under `Inherited options:` in `--help`
 - Tasks: the handler of a `:depends` task receives the options that it declared
 - Tasks: `bb run --parallel` runs these handlers at the same time, like the other dependencies

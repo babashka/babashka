@@ -4,9 +4,12 @@ A task with `:exec-fn` or `:cmd` is a CLI task. Before, a CLI task did nothing
 when another task named it in `:depends`. It ran only when you invoked it
 directly, and the run gave no error.
 
-Now it runs. Its options join the parse of the task that you invoke, so they
-are accepted and `--help` shows them. The handler receives the options that it
-declared, and no others.
+Now it runs, if the task that you invoke is a CLI task too. Its options join
+the parse of that task, so they are accepted and `--help` shows them. The
+handler receives the options that it declared, and no others.
+
+A plain task does not run a CLI dependency. Only the task that parses the
+options can call the handler of a dependency.
 
 ## Example
 
