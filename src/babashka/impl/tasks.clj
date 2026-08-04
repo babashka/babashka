@@ -627,12 +627,7 @@
                                     (println (str "Task " t ": :depends cannot name " bad-dep
                                                   ", a :cmd task has no single handler to run"))) 1]
                                  (if-let [task (get tasks t)]
-                                 (let [;; a non-parallel `:cli` task takes its dep
-                                       ;; bodies as a thunk (see ADR 0001,
-                                       ;; decision 10); parallel deps stay ahead
-                                       ;; of the target, they must launch their
-                                       ;; channels before it waits
-                                       ;; a CLI target takes its dep bodies as a
+                                 (let [;; a CLI target takes its dep bodies as a
                                        ;; thunk (ADR 0001, decision 10) so they
                                        ;; run inside the dispatch, where the
                                        ;; parsed options a CLI dep needs exist
@@ -760,11 +755,12 @@
                         (conj partial))
               tm (get tasks (symbol run))
               prog (str "bb " run)
-              ;; the CLI deps whose specs are folded in below: their handlers
-              ;; may live on their own :extra-paths or behind their own
-              ;; :requires alias, so those go on the classpath here too
               dep-nodes (dep-cli-nodes tasks run)
-              dep-tms (keep #(get tasks (symbol (first %))) dep-nodes)]
+              ;; every transitive dependency, like a run aggregates: a CLI dep's
+              ;; handler may need what a plain dependency puts on the classpath
+              dep-tms (keep #(get tasks %)
+                            (try (butlast (target-order tasks (symbol run)))
+                                 (catch Exception _ nil)))]
           (if-let [node (cli-node tm)]
             ;; The task's classpath and requires run first, inside the same
             ;; try: the handler may live on its :extra-paths, and its symbol may

@@ -15,6 +15,7 @@ A preview of the next release can be installed from
 - Tasks: the handler of a `:depends` task receives the options that it declared
 - Tasks: `bb run --parallel` runs these handlers at the same time, like the other dependencies
 - Tasks: `:depends` cannot name a `:cmd` task. A command tree has no single handler to run, and babashka reports this as an error
+- Tasks: `bb run --parallel <task> --help` no longer runs the dependencies. In 1.13.219 this was the one case where `--help` still ran them
 
 ## 1.13.219 (2026-07-27)
 

@@ -240,9 +240,11 @@ thunk runs. Deferring these would need the emitter to decide statically, from
 the raw args, whether this is a help invocation, which is the arg scanning this
 design rejects.
 
-This applies to a non-parallel task. A parallel task keeps its dependencies as
-forms ahead of the target, because parallel deps rely on launching their
-channels before the target waits on them, so `--help` starts them too.
+This applies to a parallel task too. Its dependencies used to sit ahead of the
+target, to launch their channels before the target waited on them, and `--help`
+started them. They now go in the thunk with that wait, because a CLI dependency
+is handed the options the parse produces, and there is no parse until dispatch
+runs. So `--help` starts no dependencies, parallel or not.
 
 ### 11. `:enter` and `:leave` apply to handlers, not just bodies
 

@@ -640,15 +640,34 @@ even more stuff here\"
                                              :exec-fn babashka.tasks-cli/target-spit}}}
         (test-utils/bb nil "-cp" "test-resources" "run" "--parallel" "tst" "--out" out)
         (is (= "dep\ntarget\n" (slurp out))))))
-  (testing "completion sees a dep whose handler is on the dep's own :extra-paths"
-    (test-utils/with-config '{:tasks {-build {:exec-fn task-test/dep-on-extra-path
-                                              :extra-paths ["test-resources/task_test_scripts"]}
-                                      tst {:depends [-build]
-                                           :exec-fn babashka.tasks-cli/dep-test}}}
-      (let [compl (test-utils/bb nil "-cp" "test-resources"
-                                 "org.babashka.cli/completions" "complete"
-                                 "--shell" "zsh" "--" "tst" "--")]
-        (is (str/includes? compl "--on-extra-path")))))
+  (testing "completion puts dependency resources on the classpath, like a run does"
+    (testing "from the CLI dep itself"
+      (test-utils/with-config '{:tasks {-build {:exec-fn task-test/dep-on-extra-path
+                                                :extra-paths ["test-resources/task_test_scripts"]}
+                                        tst {:depends [-build]
+                                             :exec-fn babashka.tasks-cli/dep-test}}}
+        (is (str/includes? (test-utils/bb nil "-cp" "test-resources"
+                                          "org.babashka.cli/completions" "complete"
+                                          "--shell" "zsh" "--" "tst" "--")
+                           "--on-extra-path"))))
+    (testing "and from a plain dep the CLI dep's handler needs"
+      (test-utils/with-config '{:tasks {-paths {:task nil
+                                                :extra-paths ["test-resources/task_test_scripts"]}
+                                        -build {:depends [-paths]
+                                                :exec-fn task-test/dep-on-extra-path}
+                                        tst {:depends [-build]
+                                             :exec-fn babashka.tasks-cli/dep-test}}}
+        (is (str/includes? (test-utils/bb nil "-cp" "test-resources"
+                                          "org.babashka.cli/completions" "complete"
+                                          "--shell" "zsh" "--" "tst" "--")
+                           "--on-extra-path")))))
+  (testing "--help does not run dependencies, under --parallel either"
+    (let [out (str (fs/file (fs/create-temp-dir) "help.txt"))]
+      (test-utils/with-config '{:tasks {-a {:exec-fn babashka.tasks-cli/mark-task}
+                                        tst {:depends [-a]
+                                             :exec-fn babashka.tasks-cli/target-spit}}}
+        (test-utils/bb nil "-cp" "test-resources" "run" "--parallel" "tst" "--out" out "--help")
+        (is (not (fs/exists? out))))))
   (testing "a plain task runs with a CLI dep in :depends, skipping its handler"
     (doseq [args [["tst"] ["run" "--parallel" "tst"]]]
       (let [out (str (fs/file (fs/create-temp-dir) "plain.txt"))]
