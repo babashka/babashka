@@ -1,4 +1,12 @@
-(ns babashka.tasks-cli)
+(ns babashka.tasks-cli
+  (:require [babashka.tasks :as tasks]))
+
+;; Records which task it ran under, to show a dep's handler runs inside that
+;; dep's own `*task*` binding and between its `:enter` and `:leave`.
+(defn mark-task
+  {:org.babashka/cli {:spec {:out {}}}}
+  [{:keys [out]}]
+  (spit out (str "handler:" (:name (tasks/current-task)) "\n") :append true))
 
 (defn outdated [{:keys [opts]}]
   (prn (assoc opts :ran :outdated)))
