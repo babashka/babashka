@@ -634,6 +634,17 @@ even more stuff here\"
                                              :exec-fn babashka.tasks-cli/target-spit}}}
         (test-utils/bb nil "-cp" "test-resources" "run" "--parallel" "tst" "--out" out)
         (is (= "dep\ntarget\n" (slurp out))))))
+  (testing "a dep's spec may live under its :cli, not only on its handler"
+    (test-utils/with-config '{:tasks {-build {:exec-fn babashka.tasks-cli/dep-build
+                                              :cli {:spec {:under-cli {}}}}
+                                      tst {:depends [-build]
+                                           :exec-fn babashka.tasks-cli/dep-test}}}
+      (is (= [{:under-cli "y" :ran :dep-build} {:under-cli "y" :ran :dep-test}]
+             (map edn/read-string
+                  (str/split-lines
+                   (test-utils/bb nil "-cp" "test-resources" "tst" "--under-cli" "y")))))
+      (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "tst" "--help")
+                         "--under-cli"))))
   (testing "a CLI dep keeps its place in the graph, among plain deps"
     (doseq [args [["tst"] ["run" "--parallel" "tst"]]]
       (let [out (str (fs/file (fs/create-temp-dir) "order.txt"))]

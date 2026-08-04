@@ -284,12 +284,18 @@
   dep can be handed the ones it declared."
   "__babashka-dep-opts")
 
+(defn -dep-node
+  "A `:depends` task's node, ready to read a `:spec` off: its own `:cli` folded
+  in, then its handler's metadata, the same two steps a target goes through."
+  [resolve-fn task-name node]
+  (-resolve-cli-specs resolve-fn (-task-node resolve-fn task-name node)))
+
 (defn -run-cli-dep
   "Calls the handler of a CLI task named in `:depends`, with the options it
   declared. Emitted in the dep's own place in the assembled `:depends` program,
   so it keeps its position in the graph and its `:depends` still run first."
-  [node opts resolve-fn]
-  (let [node (-resolve-cli-specs resolve-fn node)]
+  [node task-name opts resolve-fn]
+  (let [node (-dep-node resolve-fn task-name node)]
     (when-let [f (:exec-fn node)]
       ((if (symbol? f)
          (resolve-or-throw resolve-fn f (str "Cannot resolve :exec-fn " f))
@@ -321,8 +327,9 @@
                                     (str "Task " task-name ": :cli"))
         cli-opts (-task-node resolve-fn task-name cli-opts)
         {:keys [body-fn deps-fn hook-fn]} fns
-        dep-spec (reduce #(merge %1 (:spec %2)) {}
-                         (map #(-resolve-cli-specs resolve-fn %) dep-nodes))
+        dep-spec (reduce (fn [acc [nm node]]
+                           (merge acc (:spec (-dep-node resolve-fn nm node))))
+                         {} dep-nodes)
         with-deps (fn [f] (fn [m] (when deps-fn (deps-fn m)) (f m)))
         with-hooks (fn [f] (if hook-fn (fn [m] (hook-fn (fn [] (f m)))) f))
         ;; resolve a :fn / :exec-fn symbol, fold in the fn's metadata and gate
@@ -418,8 +425,8 @@
          dep-cli-node (when-not last? (cli-node task-map))
          prog (cond
                 dep-cli-node
-                (format "(babashka.tasks/-run-cli-dep '%s %s requiring-resolve)"
-                        (pr-str dep-cli-node) dep-opts-sym)
+                (format "(babashka.tasks/-run-cli-dep '%s \"%s\" %s requiring-resolve)"
+                        (pr-str dep-cli-node) task-name dep-opts-sym)
                 qualified?
                 (format "(apply %s *command-line-args*)" task)
                 :else (pr-str task))
@@ -601,7 +608,9 @@
                                        ;; `:task` body to contribute: its node
                                        ;; goes over so the target's parse covers
                                        ;; its spec and its handler gets called
-                                       dep-nodes (keep #(cli-node (get tasks %)) done)
+                                       dep-nodes (keep #(when-let [n (cli-node (get tasks %))]
+                                                          [(str %) n])
+                                                       done)
                                        prog (if cli-prelude?
                                               ;; the deps carry their own wait, since under
                                               ;; `--parallel` they launch inside the dispatch
@@ -833,6 +842,7 @@
    'exec (sci/copy-var exec sci-ns)
    '-cli-dispatch (sci/copy-var -cli-dispatch sci-ns)
    '-run-cli-dep (sci/copy-var -run-cli-dep sci-ns)
+   '-dep-node (sci/copy-var -dep-node sci-ns)
    '-resolve-cli-specs (sci/copy-var -resolve-cli-specs sci-ns)
    '-resolve-cli-opts (sci/copy-var -resolve-cli-opts sci-ns)
    '-task-node (sci/copy-var -task-node sci-ns)
