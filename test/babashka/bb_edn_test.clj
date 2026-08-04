@@ -607,6 +607,13 @@ even more stuff here\"
           (let [help (test-utils/bb nil "-cp" "test-resources" "tst" "--help")]
             (is (str/includes? help "--watch"))
             (is (str/includes? help "--target")))))))
+  (testing ":depends cannot name a :cmd task, which has no single handler"
+    (test-utils/with-config '{:tasks {-tree {:cmd {"sub" {:exec-fn babashka.tasks-cli/dep-build}}}
+                                      tst {:depends [-tree]
+                                           :exec-fn babashka.tasks-cli/dep-test}}}
+      (is (thrown-with-msg?
+           Exception #":depends cannot name -tree"
+           (bb "-cp" "test-resources" "tst")))))
   (testing "a :cmd task may name a CLI task in :depends"
     (test-utils/with-config '{:tasks {-build {:exec-fn babashka.tasks-cli/dep-build}
                                       deploy {:depends [-build]
