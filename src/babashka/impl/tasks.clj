@@ -290,6 +290,23 @@
   [resolve-fn task-name node]
   (-resolve-cli-specs resolve-fn (-task-node resolve-fn task-name node)))
 
+(defn -dep-spec
+  "The merged spec of a task's CLI `:depends`, as `[name node]` pairs. It goes
+  in as the dispatch-level spec, so the same options parse, print in help and
+  are offered by completion."
+  [dep-nodes resolve-fn]
+  (reduce (fn [acc [nm node]]
+            (merge acc (:spec (-dep-node resolve-fn nm node))))
+          {} dep-nodes))
+
+(defn -with-dep-spec
+  "Adds `-dep-spec` to dispatch `opts` as the dispatch-level `:spec`, under
+  whatever the task already declares there."
+  [opts dep-nodes resolve-fn]
+  (let [spec (-dep-spec dep-nodes resolve-fn)]
+    (cond-> opts
+      (seq spec) (update :spec #(merge spec %)))))
+
 (defn -run-cli-dep
   "Calls the handler of a CLI task named in `:depends`, with the options it
   declared. Emitted in the dep's own place in the assembled `:depends` program,
@@ -327,9 +344,7 @@
                                     (str "Task " task-name ": :cli"))
         cli-opts (-task-node resolve-fn task-name cli-opts)
         {:keys [body-fn deps-fn hook-fn]} fns
-        dep-spec (reduce (fn [acc [nm node]]
-                           (merge acc (:spec (-dep-node resolve-fn nm node))))
-                         {} dep-nodes)
+        dep-spec (-dep-spec dep-nodes resolve-fn)
         with-deps (fn [f] (fn [m] (when deps-fn (deps-fn m)) (f m)))
         with-hooks (fn [f] (if hook-fn (fn [m] (hook-fn (fn [] (f m)))) f))
         ;; resolve a :fn / :exec-fn symbol, fold in the fn's metadata and gate
@@ -530,6 +545,17 @@
              (conj order task-name))
          order)))))
 
+(defn dep-cli-nodes
+  "`[name node]` for every CLI task in `target-name`'s transitive `:depends`, in
+  dependency order. Both the invocation and the completion path read it, so the
+  options a task accepts because of its dependencies are the same set
+  everywhere. A cyclic graph is reported where the task runs, not here."
+  [tasks target-name]
+  (try
+    (vec (keep #(when-let [node (cli-node (get tasks %))] [(str %) node])
+               (butlast (target-order tasks (symbol target-name)))))
+    (catch Exception _ nil)))
+
 #_(defn tasks->dependees [task-names tasks]
     (let [tasks->depends (zipmap task-names (map #(:depends (get tasks %)) task-names))]
       (persistent!
@@ -608,9 +634,7 @@
                                        ;; `:task` body to contribute: its node
                                        ;; goes over so the target's parse covers
                                        ;; its spec and its handler gets called
-                                       dep-nodes (keep #(when-let [n (cli-node (get tasks %))]
-                                                          [(str %) n])
-                                                       done)
+                                       dep-nodes (dep-cli-nodes tasks t)
                                        prog (if cli-prelude?
                                               ;; the deps carry their own wait, since under
                                               ;; `--parallel` they launch inside the dispatch
@@ -736,7 +760,7 @@
             ;; failure here may surface: the shell discards stderr, so an
             ;; uncaught error would look like "no candidates" while also
             ;; suppressing the file-completion fallback
-            (format "(try (let [tree (binding [*out* (java.io.StringWriter.)] %s\n%s\n(babashka.tasks/-resolve-cli-specs requiring-resolve (babashka.tasks/-task-node requiring-resolve \"%s\" %s)))] (babashka.cli/dispatch tree %s (merge %s (babashka.tasks/-resolve-cli-opts requiring-resolve '%s \":tasks :cli\") %s))) (catch Throwable _ (println \"org.babashka.cli/file-completion\")))"
+            (format "(try (let [tree (binding [*out* (java.io.StringWriter.)] %s\n%s\n(babashka.tasks/-resolve-cli-specs requiring-resolve (babashka.tasks/-task-node requiring-resolve \"%s\" %s)))] (babashka.cli/dispatch tree %s (babashka.tasks/-with-dep-spec (merge %s (babashka.tasks/-resolve-cli-opts requiring-resolve '%s \":tasks :cli\") %s) '%s requiring-resolve))) (catch Throwable _ (println \"org.babashka.cli/file-completion\")))"
                     (add-deps-form (:extra-paths tm) (:extra-deps tm))
                     (requires-form (concat (:requires tasks) (:requires tm)))
                     run
@@ -746,7 +770,10 @@
                     ;; var) may turn :help off, and :prog stays bb's
                     (pr-str {:help true})
                     (pr-str (:cli tasks))
-                    (pr-str {:prog prog}))
+                    (pr-str {:prog prog})
+                    ;; the same `:depends` nodes -cli-dispatch folds in, so
+                    ;; completion and help cannot drift apart
+                    (pr-str (vec (dep-cli-nodes tasks run))))
             ;; a task without :cli has no options to offer; defer to the shell
             ;; so file completion still works, as it did before bb claimed the
             ;; `bb` compdef
@@ -843,6 +870,8 @@
    '-cli-dispatch (sci/copy-var -cli-dispatch sci-ns)
    '-run-cli-dep (sci/copy-var -run-cli-dep sci-ns)
    '-dep-node (sci/copy-var -dep-node sci-ns)
+   '-dep-spec (sci/copy-var -dep-spec sci-ns)
+   '-with-dep-spec (sci/copy-var -with-dep-spec sci-ns)
    '-resolve-cli-specs (sci/copy-var -resolve-cli-specs sci-ns)
    '-resolve-cli-opts (sci/copy-var -resolve-cli-opts sci-ns)
    '-task-node (sci/copy-var -task-node sci-ns)

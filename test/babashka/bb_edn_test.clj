@@ -606,7 +606,13 @@ even more stuff here\"
         (testing "--help lists the dep's options alongside the task's own"
           (let [help (test-utils/bb nil "-cp" "test-resources" "tst" "--help")]
             (is (str/includes? help "--watch"))
-            (is (str/includes? help "--target")))))))
+            (is (str/includes? help "--target"))))
+        (testing "completion offers the same options help documents"
+          (let [compl (test-utils/bb nil "-cp" "test-resources"
+                                     "org.babashka.cli/completions" "complete"
+                                     "--shell" "zsh" "--" "tst" "--")]
+            (is (str/includes? compl "--watch"))
+            (is (str/includes? compl "--target")))))))
   (testing ":depends cannot name a :cmd task, which has no single handler"
     (test-utils/with-config '{:tasks {-tree {:cmd {"sub" {:exec-fn babashka.tasks-cli/dep-build}}}
                                       tst {:depends [-tree]
