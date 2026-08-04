@@ -332,10 +332,6 @@
                  (cond-> node
                    (:cmd node) (update :cmd map-cmd wrap))))
         tree (wrap cli-opts)
-        ;; after `wrap`, so the task's own spec (folded from its fn) wins over
-        ;; what it inherits from `:depends`
-        tree (cond-> tree
-               (seq dep-spec) (update :spec #(merge dep-spec %)))
         tree (if body-fn (assoc tree :fn (with-deps body-fn)) tree)
         ;; a `:cli` entry in the :tasks map (like :requires/:init) provides
         ;; dispatch defaults for every CLI task, merged into the dispatch
@@ -345,7 +341,11 @@
     (babashka.cli/dispatch tree args (merge {:help true}
                                             defaults
                                             task-cli
-                                            {:prog (str "bb " task-name)}))))
+                                            (cond-> {:prog (str "bb " task-name)}
+                                              ;; parse them here, list them under
+                                              ;; "Inherited options:" rather than
+                                              ;; mixed into this task's own
+                                              (seq dep-spec) (assoc :inherited dep-spec))))))
 
 (defn wrap-cli
   "Emits the -cli-dispatch call for a CLI task, one naming an `:exec-fn` or a
