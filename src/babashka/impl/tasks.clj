@@ -573,7 +573,12 @@
                                               (str dep-forms "\n"
                                                    #_(wait-tasks depends) #_(apply str (map deref-task depends))
                                                    "\n"
-                                                   (assemble-task-1 task-map task parallel? true)))
+                                                   ;; under `--parallel` the dep bodies are already
+                                                   ;; ahead of the target as channels. A CLI dep has
+                                                   ;; no body there, so its node still goes over and
+                                                   ;; its handler runs inside the dispatch, once the
+                                                   ;; options it declared have been parsed
+                                                   (assemble-task-1 task-map task parallel? true nil dep-nodes)))
                                        extra-paths (concat extra-paths (:extra-paths task))
                                        extra-deps (merge extra-deps (:extra-deps task))
                                        requires (concat requires (:requires task))]

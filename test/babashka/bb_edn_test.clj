@@ -606,7 +606,12 @@ even more stuff here\"
         (testing "--help lists the dep's options alongside the task's own"
           (let [help (test-utils/bb nil "-cp" "test-resources" "tst" "--help")]
             (is (str/includes? help "--watch"))
-            (is (str/includes? help "--target")))))))
+            (is (str/includes? help "--target"))))
+        (testing "under --parallel the dep's handler runs and its spec still merges"
+          (is (= [{:ran :dep-build} {:watch true :ran :dep-test}]
+                 (lines "run" "--parallel" "tst" "--watch")))
+          (is (= [{:target "x" :ran :dep-build} {:target "x" :ran :dep-test}]
+                 (lines "run" "--parallel" "tst" "--target" "x")))))))
   (testing ":cli :cmd subcommand fn pulls spec/args->opts from its :org.babashka/cli meta"
     (test-utils/with-config '{:tasks {deploy {:cmd {"lock" {:fn babashka.tasks-cli/lock}}}}}
       (is (= {:environment "staging" :message "msg" :ran :lock}
