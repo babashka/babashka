@@ -616,6 +616,16 @@ even more stuff here\"
                                              :exec-fn babashka.tasks-cli/target-spit}}}
         (test-utils/bb nil "-cp" "test-resources" "run" "--parallel" "tst" "--out" out)
         (is (= "dep\ntarget\n" (slurp out))))))
+  (testing "under --parallel CLI deps run at the same time, not one after the other"
+    (let [dir (str (fs/create-temp-dir))]
+      (test-utils/with-config '{:tasks {-a {:exec-fn babashka.tasks-cli/rendezvous-a}
+                                        -b {:exec-fn babashka.tasks-cli/rendezvous-b}
+                                        tst {:depends [-a -b]
+                                             :exec-fn babashka.tasks-cli/target-spit}}}
+        (test-utils/bb nil "-cp" "test-resources" "run" "--parallel" "tst"
+                       "--dir" dir "--out" (str dir "/out.txt"))
+        (is (= "concurrent" (slurp (str dir "/a-result"))))
+        (is (= "concurrent" (slurp (str dir "/b-result")))))))
   (testing ":cli :cmd subcommand fn pulls spec/args->opts from its :org.babashka/cli meta"
     (test-utils/with-config '{:tasks {deploy {:cmd {"lock" {:fn babashka.tasks-cli/lock}}}}}
       (is (= {:environment "staging" :message "msg" :ran :lock}

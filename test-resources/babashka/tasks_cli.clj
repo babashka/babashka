@@ -57,6 +57,33 @@
   [{:keys [out]}]
   (spit out "target\n" :append true))
 
+;; A rendezvous: write my own marker, then wait for the sibling's. Both markers
+;; only ever appear while both handlers are running, so this reports
+;; "concurrent" under real parallelism and "serial" when they take turns. Each
+;; dep needs its own fn: siblings are handed the same parsed options.
+(defn- rendezvous [dir me other]
+  (spit (str dir "/" me) "")
+  (let [deadline (+ (System/currentTimeMillis) 5000)]
+    (loop []
+      (cond
+        (.exists (java.io.File. (str dir "/" other)))
+        (spit (str dir "/" me "-result") "concurrent")
+
+        (< deadline (System/currentTimeMillis))
+        (spit (str dir "/" me "-result") "serial")
+
+        :else (do (Thread/sleep 20) (recur))))))
+
+(defn rendezvous-a
+  {:org.babashka/cli {:spec {:dir {}}}}
+  [{:keys [dir]}]
+  (rendezvous dir "a" "b"))
+
+(defn rendezvous-b
+  {:org.babashka/cli {:spec {:dir {}}}}
+  [{:keys [dir]}]
+  (rendezvous dir "b" "a"))
+
 ;; Runner-wide defaults var, referenced from bb.edn as :tasks {:cli
 ;; babashka.tasks-cli/base-opts}. The error handler throws instead of exiting
 ;; so in-process tests survive it.
