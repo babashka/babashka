@@ -39,6 +39,13 @@
 (def print-miser-width
   (sci/new-dynamic-var '*print-miser-width* pprint/*print-miser-width* {:ns pprint-ns}))
 
+(defn as-pretty-writer
+  "Wraps writer in a pretty writer, unless it already is one."
+  [writer]
+  (if (pprint/pretty-writer? writer)
+    writer
+    (pprint/make-pretty-writer writer pprint/*print-right-margin* pprint/*print-miser-width*)))
+
 (def new-write
   (fn [object & kw-args]
     (let [options (merge {:stream true} (apply hash-map kw-args))]
@@ -54,8 +61,12 @@
                               true *out*
                               optval)]
             (if pprint/*print-pretty*
-              (pprint/with-pretty-writer base-writer
-                (pprint/write-out object))
+              (let [pretty-writer (as-pretty-writer base-writer)]
+                ;; bind sci's *out* too, so print and friends in custom dispatch
+                ;; functions write to the pretty writer
+                (sci/binding [sci/out pretty-writer]
+                  (pprint/with-pretty-writer pretty-writer
+                    (pprint/write-out object))))
               (binding [*out* base-writer]
                 (pr object)))
             (if (nil? optval)
@@ -63,6 +74,12 @@
 
 (when-not @patched?
   (alter-var-root #'pprint/write (constantly new-write)))
+
+(defn write
+  [object & kw-args]
+  ;; bind *out* to sci's *out*, so with-out-str works
+  (binding [*out* @sci/out]
+    (apply pprint/write object kw-args)))
 
 (defn print-table
   "Prints a collection of maps in a textual table. Prints table headings
@@ -100,7 +117,11 @@
              *print-readably* @sci/print-readably
              *print-length* @sci/print-length
              *print-namespace-maps* @sci/print-namespace-maps]
-     (pprint/pprint s writer))))
+     (let [pretty-writer (as-pretty-writer writer)]
+       ;; bind sci's *out* too, so print and friends in custom dispatch functions
+       ;; write to the pretty writer
+       (sci/binding [sci/out pretty-writer]
+         (pprint/pprint s pretty-writer))))))
 
 (defn cl-format
   "An implementation of a Common Lisp compatible format function. cl-format formats its
@@ -181,19 +202,22 @@
   Normal library clients should use the standard \"write\" interface. "
   {:added "1.2"}
   [object]
-  (let [length-reached (and
-                        @current-length
-                        @sci/print-length
-                        (>= @current-length @sci/print-length))]
-    (if-not pprint/*print-pretty*
-      (pr object)
-      (if length-reached
-        (print "...")
-        (do
-          (when @current-length
-            (.set ^clojure.lang.Var current-length (inc @current-length)))
-          (print-pprint-dispatch object))))
-    length-reached))
+  ;; bind *out* to sci's *out*, so this also works when the caller wrapped sci's
+  ;; *out* in a pretty writer itself, e.g. with get-pretty-writer
+  (binding [*out* @sci/out]
+    (let [length-reached (and
+                          @current-length
+                          @sci/print-length
+                          (>= @current-length @sci/print-length))]
+      (if-not pprint/*print-pretty*
+        (pr object)
+        (if length-reached
+          (print "...")
+          (do
+            (when @current-length
+              (.set ^clojure.lang.Var current-length (inc @current-length)))
+            (print-pprint-dispatch object))))
+      length-reached)))
 
 (def pprint-namespace
   {'pp (sci/copy-var pprint/pp pprint-ns)
@@ -201,8 +225,7 @@
    'print-table (sci/copy-var print-table pprint-ns {:copy-meta-from clojure.pprint/print-table})
    '*print-right-margin* print-right-margin
    'cl-format (sci/copy-var cl-format pprint-ns {:copy-meta-from clojure.pprint/cl-format})
-   ;; we alter-var-root-ed write above, so this should copy the right function
-   'write (sci/copy-var pprint/write pprint-ns)
+   'write (sci/copy-var write pprint-ns {:copy-meta-from clojure.pprint/write})
    'simple-dispatch (sci/copy-var pprint/simple-dispatch pprint-ns)
    'formatter-out (sci/copy-var formatter-out pprint-ns {:copy-meta-from clojure.pprint/formatter-out})
    'cached-compile (sci/copy-var pprint/cached-compile pprint-ns) #_(sci/new-var 'cache-compile @#'pprint/cached-compile (meta @#'pprint/cached-compile))

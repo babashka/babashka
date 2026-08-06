@@ -7,6 +7,12 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## Unreleased
+
+- Fix `print` and friends in a custom `clojure.pprint/simple-dispatch` method writing to stdout instead of the pretty writer, which garbled the output
+- Fix `with-out-str` not capturing `clojure.pprint/write`
+- Fix `clojure.pprint/write-out` ignoring a pretty writer installed by the caller, e.g. through `get-pretty-writer`
+
 ## 1.13.219 (2026-07-27)
 
 Highlights:
