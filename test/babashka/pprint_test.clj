@@ -23,12 +23,19 @@
       (is (= "#:a{:x 1, :y 2, :z #:b{:x 10, :y 20}}"
              (bb "-e" "(binding [*print-namespace-maps* true] (clojure.pprint/pprint {:a/x 1 :a/y 2 :a/z {:b/x 10 :b/y 20}}))")))))
 
+;; The comparisons below happen inside the script, so only true or false has to
+;; survive the trip through the command line: quoting and line endings differ per
+;; platform. On a mismatch we print what we got instead, to say why it failed.
 (def custom-dispatch
-  "(require '[clojure.pprint :as pprint])
+  "(require '[clojure.pprint :as pprint] '[clojure.string :as str])
    (import '[java.time ZonedDateTime])
    (defmethod pprint/simple-dispatch ZonedDateTime [zdt]
      (print (str \"#time/zdt \" (pr-str (str zdt)))))
-   (def zdt (ZonedDateTime/parse \"2026-09-30T08:30-04:00[America/New_York]\"))")
+   (def zdt (ZonedDateTime/parse \"2026-09-30T08:30-04:00[America/New_York]\"))
+   (def zdt-str (str \"#time/zdt \" (pr-str (str zdt))))
+   (defn check [expected actual]
+     (let [actual (str/trim actual)]
+       (prn (or (= expected actual) actual))))")
 
 (deftest custom-dispatch-test
   (testing "print in a custom dispatch fn goes to the pretty writer"
@@ -37,8 +44,10 @@
     (is (= "[#time/zdt \"2026-09-30T08:30-04:00[America/New_York]\"]"
            (bb "-e" (str custom-dispatch "(pprint/write [zdt])")))))
   (testing "with-out-str captures the pretty printed output"
-    (is (= "{:a #time/zdt \"2026-09-30T08:30-04:00[America/New_York]\"}"
-           (bb "-e" (str custom-dispatch "(print (with-out-str (pprint/pprint {:a zdt})))"))))
+    (is (= "true"
+           (bb "-e" (str custom-dispatch
+                         "(check (str \"{:a \" zdt-str \"}\")
+                                 (with-out-str (pprint/pprint {:a zdt})))"))))
     (is (= "\"{:a 1}\""
            (bb "-e" "(prn (with-out-str (clojure.pprint/write {:a 1})))")))))
 
