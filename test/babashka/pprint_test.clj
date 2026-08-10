@@ -37,8 +37,8 @@
     (is (= "[#time/zdt \"2026-09-30T08:30-04:00[America/New_York]\"]"
            (bb "-e" (str custom-dispatch "(pprint/write [zdt])")))))
   (testing "with-out-str captures the pretty printed output"
-    (is (= "\"{:a #time/zdt \\\"2026-09-30T08:30-04:00[America/New_York]\\\"}\\n\""
-           (bb "-e" (str custom-dispatch "(prn (with-out-str (pprint/pprint {:a zdt})))"))))
+    (is (= "{:a #time/zdt \"2026-09-30T08:30-04:00[America/New_York]\"}"
+           (bb "-e" (str custom-dispatch "(print (with-out-str (pprint/pprint {:a zdt})))"))))
     (is (= "\"{:a 1}\""
            (bb "-e" "(prn (with-out-str (clojure.pprint/write {:a 1})))")))))
 
