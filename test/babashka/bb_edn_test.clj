@@ -592,6 +592,15 @@ even more stuff here\"
           (is (str/includes? out "Inherited options:"))
           (is (str/includes? out "Target env"))
           (is (str/includes? out "Port"))))))
+  (testing "a task without its own spec gets the runner-level :cli spec"
+    (test-utils/with-config
+      '{:tasks {:cli {:spec {:env {:coerce :keyword :default :dev :desc "Target env"}}}
+                foo {:exec-fn clojure.core/prn}}}
+      (is (= {:env :prod} (bb "foo" "--env" "prod")))
+      (is (= {:env :dev} (bb "foo")))
+      (let [out (test-utils/bb nil "foo" "--help")]
+        (is (str/includes? out "Inherited options:"))
+        (is (str/includes? out "Target env")))))
   (testing "tasks without :cli pass --help through to the body"
     (test-utils/with-config '{:tasks {foo (prn *command-line-args*)}}
       (is (= ["--help"] (bb "foo" "--help")))))

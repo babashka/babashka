@@ -310,8 +310,8 @@
                                             defaults
                                             task-cli
                                             (babashka.cli/merge-opts
-                                             {:spec (:spec defaults)}
-                                             {:spec (:spec task-cli)})
+                                             (select-keys defaults [:spec])
+                                             (select-keys task-cli [:spec]))
                                             {:prog (str "bb " task-name)}))))
 
 (defn -resolve-cli-specs
