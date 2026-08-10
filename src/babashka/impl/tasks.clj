@@ -558,7 +558,14 @@
                                         (concat requires (:requires task)))
                                  [(binding [*out* *err*]
                                     (println "No such task:" t)) 1])
-                               (if-let [task (get tasks t)]
+                               (if-let [bad-dep (when (cli-node (get tasks t))
+                                                  (some #(let [d (get tasks %)]
+                                                           (when (and (:cmd d) (not (:task d))) %))
+                                                        done))]
+                                 [(binding [*out* *err*]
+                                    (println (str "Task " t ": :depends cannot name " bad-dep
+                                                  ", a :cmd task has no single handler to run"))) 1]
+                                 (if-let [task (get tasks t)]
                                  (let [;; a non-parallel `:cli` task takes its dep
                                        ;; bodies as a thunk (see ADR 0001,
                                        ;; decision 10); parallel deps stay ahead
@@ -580,7 +587,7 @@
                                        requires (concat requires (:requires task))]
                                    [[(format-task init extra-paths extra-deps global-requires requires prog)] nil])
                                  [(binding [*out* *err*]
-                                    (println "No such task:" t)) 1]))))))
+                                    (println "No such task:" t)) 1])))))))
                      [[(format-task
                         init
                         (:extra-paths task)

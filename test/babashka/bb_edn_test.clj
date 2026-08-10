@@ -640,6 +640,21 @@ even more stuff here\"
                    (test-utils/bb nil "-cp" "test-resources" "tst" "--under-cli" "y")))))
       (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "tst" "--help")
                          "--under-cli"))))
+  (testing ":depends cannot name a :cmd task, which has no single handler"
+    (test-utils/with-config '{:tasks {-tree {:cmd {"sub" {:exec-fn babashka.tasks-cli/dep-build}}}
+                                      tst {:depends [-tree]
+                                           :exec-fn babashka.tasks-cli/dep-test}}}
+      (is (thrown-with-msg?
+           Exception #":depends cannot name -tree"
+           (bb "-cp" "test-resources" "tst")))))
+  (testing "a :cmd dep with a :task body contributes that body"
+    (doseq [target '{"a CLI target" {:depends [-tree] :exec-fn babashka.tasks-cli/dep-test}
+                     "a plain target" {:depends [-tree] :task (println "TARGET")}}]
+      (testing (key target)
+        (test-utils/with-config {:tasks {'-tree '{:task (println "TREE")
+                                                  :cmd {"sub" {:exec-fn babashka.tasks-cli/dep-build}}}
+                                         'tst (val target)}}
+          (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "tst") "TREE"))))))
   (testing ":cli :cmd subcommand fn pulls spec/args->opts from its :org.babashka/cli meta"
     (test-utils/with-config '{:tasks {deploy {:cmd {"lock" {:fn babashka.tasks-cli/lock}}}}}
       (is (= {:environment "staging" :message "msg" :ran :lock}
