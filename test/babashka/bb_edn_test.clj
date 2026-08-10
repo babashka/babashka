@@ -633,6 +633,24 @@ even more stuff here\"
       (is (thrown-with-msg?
            Exception #":depends cannot name -tree"
            (bb "-cp" "test-resources" "tst")))))
+  (testing "a dep's handler gets its options through a :fn leaf, not just :exec-fn"
+    (test-utils/with-config '{:tasks {-build {:exec-fn babashka.tasks-cli/dep-build}
+                                      deploy {:depends [-build]
+                                              :cmd {"lock" {:fn babashka.tasks-cli/lock}}}}}
+      (is (= [{:target "x" :ran :dep-build}
+              {:environment "staging" :target "x" :ran :lock}]
+             (map edn/read-string
+                  (str/split-lines
+                   (test-utils/bb nil "-cp" "test-resources"
+                                  "deploy" "lock" "staging" "--target" "x")))))))
+  (testing "a dep's handler gets its options when a :task body is the root handler"
+    (let [out (str (fs/file (fs/create-temp-dir) "root.txt"))]
+      (test-utils/with-config '{:tasks {-build {:exec-fn babashka.tasks-cli/dep-spit}
+                                        tst {:depends [-build]
+                                             :task (spit (last *command-line-args*) "body\n" :append true)
+                                             :cmd {"sub" {:exec-fn babashka.tasks-cli/target-spit}}}}}
+        (test-utils/bb nil "-cp" "test-resources" "tst" "--out" out)
+        (is (= "dep\nbody\n" (slurp out))))))
   (testing "a :cmd task may name a CLI task in :depends"
     (test-utils/with-config '{:tasks {-build {:exec-fn babashka.tasks-cli/dep-build}
                                       deploy {:depends [-build]

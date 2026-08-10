@@ -351,7 +351,14 @@
         cli-opts (-task-node resolve-fn task-name cli-opts)
         {:keys [body-fn deps-fn hook-fn]} fns
         dep-spec (-dep-spec dep-nodes resolve-fn)
-        with-deps (fn [f] (fn [m] (when deps-fn (deps-fn m)) (f m)))
+        ;; babashka.cli hands an `:exec-fn` the parsed options and a `:fn` the
+        ;; whole dispatch result. A `:depends` handler always wants the options,
+        ;; so unwrap where the handler being wrapped is a `:fn`
+        with-deps (fn [f dispatch-shape?]
+                    (fn [m]
+                      (when deps-fn
+                        (deps-fn (if dispatch-shape? (:opts m) m)))
+                      (f m)))
         with-hooks (fn [f] (if hook-fn (fn [m] (hook-fn (fn [] (f m)))) f))
         ;; resolve a :fn / :exec-fn symbol, fold in the fn's metadata and gate
         ;; :depends and :enter/:leave on the fn being called
@@ -362,14 +369,16 @@
                                                        (str "Task " task-name ": cannot resolve " k " " fv))
                                      fv)]
                        (-> (fold-fn-meta (when (symbol? fv) (meta the-var)) node)
-                           (assoc k (with-deps (with-hooks the-var)))))
+                           (assoc k (with-deps (with-hooks the-var) (= :fn k)))))
                      node))
         wrap (fn wrap [node]
                (let [node (-> node (wrap-key :fn) (wrap-key :exec-fn))]
                  (cond-> node
                    (:cmd node) (update :cmd map-cmd wrap))))
         tree (wrap cli-opts)
-        tree (if body-fn (assoc tree :fn (with-deps body-fn)) tree)
+        ;; the body becomes the tree's root `:fn`, so it is handed a dispatch
+        ;; result too
+        tree (if body-fn (assoc tree :fn (with-deps body-fn true)) tree)
         ;; a `:cli` entry in the :tasks map (like :requires/:init) provides
         ;; dispatch defaults for every CLI task, merged into the dispatch
         ;; opts; node keys win. `:prog` stays bb's, so help always names the
