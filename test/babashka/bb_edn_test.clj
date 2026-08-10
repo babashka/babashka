@@ -725,6 +725,16 @@ even more stuff here\"
                                                :exec-fn babashka.tasks-cli/target-spit}}}
           (apply test-utils/bb nil "-cp" "test-resources" (concat args ["--out" out]))
           (is (= "enter\nhandler:-a\nleave\ntarget\n" (slurp out)) (str "for " args))))))
+  (testing "a dep's spec may be a vector of pairs, the form that fixes option order"
+    (test-utils/with-config '{:tasks {-build {:exec-fn babashka.tasks-cli/dep-build
+                                              :cli {:spec [[:aa {}] [:bb {}] [:cc {}]]}}
+                                      tst {:depends [-build]
+                                           :exec-fn babashka.tasks-cli/dep-test}}}
+      (is (= [{:aa 1 :ran :dep-build} {:aa 1 :ran :dep-test}]
+             (map edn/read-string
+                  (str/split-lines
+                   (test-utils/bb nil "-cp" "test-resources" "tst" "--aa" "1")))))
+      (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "tst" "--help") "--bb"))))
   (testing "a dep's spec may live under its :cli, not only on its handler"
     (test-utils/with-config '{:tasks {-build {:exec-fn babashka.tasks-cli/dep-build
                                               :cli {:spec {:under-cli {}}}}

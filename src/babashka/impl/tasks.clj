@@ -296,13 +296,21 @@
   [resolve-fn task-name node]
   (-resolve-cli-specs resolve-fn (-task-node resolve-fn task-name node)))
 
+(defn- spec-map
+  "A `:spec` as a map. babashka.cli takes a vector of pairs too, which is how a
+  spec fixes the order its options print in, and those do not merge."
+  [spec]
+  (cond (nil? spec) {}
+        (map? spec) spec
+        :else (into {} spec)))
+
 (defn -dep-spec
   "The merged spec of a task's CLI `:depends`, as `[name node]` pairs. It goes
   in as the dispatch-level spec, so the same options parse, print in help and
   are offered by completion."
   [dep-nodes resolve-fn]
   (reduce (fn [acc [nm node]]
-            (merge acc (:spec (-dep-node resolve-fn nm node))))
+            (merge acc (spec-map (:spec (-dep-node resolve-fn nm node)))))
           {} dep-nodes))
 
 (defn -with-dep-spec
@@ -311,7 +319,7 @@
   [opts dep-nodes resolve-fn]
   (let [spec (-dep-spec dep-nodes resolve-fn)]
     (cond-> opts
-      (seq spec) (update :spec #(merge spec %)))))
+      (seq spec) (update :spec #(merge spec (spec-map %))))))
 
 (defn -run-cli-dep
   "Calls the handler of a CLI task named in `:depends`, with the options it
@@ -323,7 +331,7 @@
       ((if (symbol? f)
          (resolve-or-throw resolve-fn f (str "Cannot resolve :exec-fn " f))
          f)
-       (select-keys opts (keys (:spec node)))))))
+       (select-keys opts (keys (spec-map (:spec node))))))))
 
 (defn -cli-dispatch
   "Runs babashka.cli/dispatch over a task's node. A `:fn` / `:exec-fn` symbol is
@@ -392,7 +400,7 @@
                              ;; the dispatch-level spec: parsed here, and listed
                              ;; under "Inherited options:" rather than mixed into
                              ;; this task's own. An explicit `:cli` spec wins.
-                             (seq dep-spec) (update :spec #(merge dep-spec %))))))
+                             (seq dep-spec) (update :spec #(merge dep-spec (spec-map %)))))))
 
 (defn wrap-cli
   "Emits the -cli-dispatch call for a CLI task, one naming an `:exec-fn` or a
