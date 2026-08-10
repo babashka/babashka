@@ -668,6 +668,14 @@ even more stuff here\"
                                              :exec-fn babashka.tasks-cli/target-spit}}}
         (test-utils/bb nil "-cp" "test-resources" "run" "--parallel" "tst" "--out" out "--help")
         (is (not (fs/exists? out))))))
+  (testing "a dep with both a :task and an :exec-fn runs its body, then its handler"
+    (let [out (str (fs/file (fs/create-temp-dir) "both.txt"))]
+      (test-utils/with-config '{:tasks {-a {:task (spit (last *command-line-args*) "body\n" :append true)
+                                            :exec-fn babashka.tasks-cli/dep-spit}
+                                        tst {:depends [-a]
+                                             :exec-fn babashka.tasks-cli/target-spit}}}
+        (test-utils/bb nil "-cp" "test-resources" "tst" "--out" out)
+        (is (= "body\ndep\ntarget\n" (slurp out))))))
   (testing "a plain task runs with a CLI dep in :depends, skipping its handler"
     (doseq [args [["tst"] ["run" "--parallel" "tst"]]]
       (let [out (str (fs/file (fs/create-temp-dir) "plain.txt"))]

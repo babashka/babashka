@@ -440,18 +440,20 @@
          ;; a body form. Both go through the same pipeline, and a `:cli` task
          ;; keeps its dispatch either way: the symbol call is its default action
          qualified? (qualified-symbol? task)
-         ;; a CLI task reached through `:depends` has no body of its own. It
-         ;; contributes a call to its handler, here in its own position, so the
-         ;; graph order is the one `target-order` already worked out
+         ;; a CLI task reached through `:depends` contributes a call to its
+         ;; handler, here in its own position, so the graph order is the one
+         ;; `target-order` already worked out
          dep-cli-node (when (and (not last?) *cli-target?*)
                         (cli-node task-map))
-         prog (cond
-                dep-cli-node
-                (format "(babashka.tasks/-run-cli-dep '%s \"%s\" %s requiring-resolve)"
-                        (pr-str dep-cli-node) task-name dep-opts-sym)
-                qualified?
+         prog (if qualified?
                 (format "(apply %s *command-line-args*)" task)
-                :else (pr-str task))
+                (pr-str task))
+         ;; after the body, not instead of it: a task may carry both a `:task`
+         ;; and an `:exec-fn`, and the body ran as a dependency before this
+         prog (if dep-cli-node
+                (format "(do %s (babashka.tasks/-run-cli-dep '%s \"%s\" %s requiring-resolve))"
+                        prog (pr-str dep-cli-node) task-name dep-opts-sym)
+                prog)
          prog (wrap-enter-leave task-name prog enter leave)
          cli-target? (and last? (cli-node task-map))
          prog (if last? (wrap-cli task-map prog dep-forms dep-nodes) prog)
