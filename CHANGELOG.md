@@ -15,7 +15,6 @@ A preview of the next release can be installed from
 - Tasks: a task with `:exec-fn` now runs when another task names it in `:depends`. Before, it did nothing
 - Tasks: the options of a `:depends` task parse for the task that runs, and show under `Inherited options:` in `--help`
 - Tasks: the handler of a `:depends` task receives the options that it declared
-- Tasks: the handler of a `:depends` task runs in that task's own place in the dependency graph, under its own `*task*` binding and between its `:enter` and `:leave`
 - Tasks: a CLI task cannot name a `:cmd` task in `:depends`, unless that task also has a `:task` body. A command tree has no single handler to run, and babashka reports this as an error
 
 ## 1.13.219 (2026-07-27)
