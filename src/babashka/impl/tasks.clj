@@ -305,14 +305,13 @@
         ;; dispatch defaults for every CLI task, merged into the dispatch
         ;; opts; node keys win. `:prog` stays bb's, so help always names the
         ;; task it belongs to.
-        defaults (-resolve-cli-opts resolve-fn defaults ":tasks :cli")
-        spec-opts (reduce babashka.cli/merge-opts {}
-                          (keep #(when (seq %) {:spec %})
-                                [(:spec defaults) (:spec task-cli)]))]
+        defaults (-resolve-cli-opts resolve-fn defaults ":tasks :cli")]
     (babashka.cli/dispatch tree args (merge {:help true}
                                             defaults
                                             task-cli
-                                            spec-opts
+                                            (babashka.cli/merge-opts
+                                             (select-keys defaults [:spec])
+                                             (select-keys task-cli [:spec]))
                                             {:prog (str "bb " task-name)}))))
 
 (defn -resolve-cli-specs
