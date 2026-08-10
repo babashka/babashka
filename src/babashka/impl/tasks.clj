@@ -294,13 +294,6 @@
     (cond-> node
       (:cmd node) (update :cmd map-cmd #(-resolve-cli-specs resolve-fn %)))))
 
-(def ^:dynamic *cli-target?*
-  "True while assembling for a target that dispatches, which is what binds the
-  parsed options a CLI dependency is handed. A plain target has no parse, so its
-  CLI dependencies keep contributing nothing rather than referring to a binding
-  that is not there."
-  false)
-
 (defn -dep-node
   "A `:depends` task's node, ready to read a `:spec` off: its own `:cli` folded
   in, then its handler's metadata, the same two steps a target goes through.
@@ -454,7 +447,7 @@
   `:dep-forms` (assembled `:depends`, only for a `:cli` target, see wrap-cli),
   `:dep-nodes`, and `:dep-opts`, the binding a CLI dependency reads its parsed
   options from."
-  [task-map task {:keys [parallel? last? dep-forms dep-opts] :as opts}]
+  [task-map task {:keys [parallel? kind dep-forms dep-opts] :as opts}]
   (let [[task depends task-map]
         (if (map? task)
           [(:task task)
@@ -475,9 +468,10 @@
         qualified? (qualified-symbol? task)
         ;; a CLI task reached through `:depends` contributes a call to its
         ;; handler, here in its own position, so the graph order is the one
-        ;; `target-order` already worked out
-        dep-cli-node (when (and (not last?) *cli-target?*)
-                       (cli-node task-map))
+        ;; `target-order` already worked out. Which tasks those are is the
+        ;; plan's call, not one this can make from a single task
+        target? (= :target kind)
+        dep-cli-node (when (= :cli-dep kind) (cli-node task-map))
         prog [(if qualified?
                 (list 'apply task '*command-line-args*)
                 task)]
@@ -490,14 +484,14 @@
                                dep-opts 'requiring-resolve)])]
                prog)
         prog (wrap-enter-leave task-name prog enter leave)
-        cli-target? (and last? (cli-node task-map))
-        prog (if last? (wrap-cli task-map prog opts) prog)
+        cli-target? (and target? (cli-node task-map))
+        prog (if target? (wrap-cli task-map prog opts) prog)
         ;; a CLI target takes its deps as `:deps-fn`, which already carries the
         ;; wait, so it must not be wrapped again out here
         prog (if (and cli-target? dep-forms)
                prog
                (wrap-depends prog depends parallel?))
-        prog (wrap-def task-map prog parallel? last?)]
+        prog (wrap-def task-map prog parallel? target?)]
     (if qualified?
       (into [(list 'when-not (list 'resolve (list 'quote task))
                    (list 'require (list 'quote (symbol (namespace task)))))]
@@ -611,6 +605,66 @@
                                                  task)))
                          acc depends)) (transient {}) tasks->depends))))
 
+(defn plan
+  "What running `target-name` amounts to, as data: the tasks to run in
+  dependency order, each already classified, plus the classpath and requires
+  they add up to. Pure -- it reads the tasks map it is given, emits nothing, and
+  makes every decision the emitter would otherwise make inline.
+
+  A node is `{:name :task :kind :cli-node}`. `:kind` is what the emitter has to
+  know and cannot see locally:
+
+    :plain    run the task body
+    :cli-dep  a dependency of a dispatching target: run the body, then call the
+              handler with the options the target parsed
+    :target   the task that was asked for, last in the order
+
+  On a bad bb.edn the plan is `{:error \"...\"}` instead, which is the only
+  outcome the caller has to special-case."
+  [tasks target-name {:keys [parallel?]}]
+  (let [target (get tasks target-name)
+        target-cli (cli-node target)
+        [order error] (try [(target-order tasks target-name)]
+                           (catch clojure.lang.ExceptionInfo e
+                             [nil (ex-message e)]))]
+    (if error
+      {:error error}
+      (let [missing (remove #(contains? tasks %) order)
+            ;; a `:cmd` tree needs a command chosen before anything can run, and
+            ;; `:depends` has no way to name one. Silently contributing nothing
+            ;; is worse than saying so -- but only where something was expected:
+            ;; a `:task` body still runs, and a plain target never had a handler
+            ;; to call in the first place
+            bad-dep (when target-cli
+                      (some #(let [d (get tasks %)]
+                               (when (and (:cmd d) (not (:task d))) %))
+                            (butlast order)))]
+        (cond
+          (seq missing) {:error (str "No such task: " (first missing))}
+          bad-dep {:error (str "Task " target-name ": :depends cannot name " bad-dep
+                               ", a :cmd task has no single handler to run")}
+          :else
+          (let [deps (butlast order)
+                tms (map #(get tasks %) order)]
+            {:nodes (concat
+                     (for [d deps
+                           :let [task (get tasks d)]]
+                       {:name d :task task
+                        :kind (if (and target-cli (cli-node task)) :cli-dep :plain)
+                        :cli-node (cli-node task)})
+                     [{:name target-name :task target :kind :target
+                       :cli-node target-cli}])
+             :target-cli? (boolean target-cli)
+             :parallel? (boolean parallel?)
+             ;; the CLI nodes of the dependencies, in dependency order: the
+             ;; target's parse covers their specs, and completion reads the same
+             ;; function, so the two cannot describe different options
+             :dep-nodes (dep-cli-nodes tasks target-name)
+             :depends (:depends target)
+             :extra-paths (vec (mapcat :extra-paths tms))
+             :extra-deps (apply merge (map :extra-deps tms))
+             :requires (vec (mapcat :requires tms))}))))))
+
 (defn assemble-task [task-name parallel?]
   (let [task-name (symbol task-name)
         bb-edn @bb-edn
@@ -618,99 +672,48 @@
         enter (:enter tasks)
         leave (:leave tasks)
         task (get tasks task-name)]
-    (binding [*print-meta* true
-              *cli-target?* (boolean (cli-node task))]
+    (binding [*print-meta* true]
       (if task
         (let [m? (map? task)
               global-requires (get tasks :requires)
               init (get tasks :init)
               prog (if (when m? (:depends task))
-                     (let [[targets error]
-                           (try [(target-order tasks task-name)]
-                                (catch clojure.lang.ExceptionInfo e
-                                  [nil (ex-message e)]))
-                           task-map (cond-> {}
+                     (let [{:keys [error nodes target-cli? dep-nodes depends
+                                   extra-paths extra-deps requires]}
+                           (plan tasks task-name {:parallel? parallel?})
+                           base-map (cond-> {}
                                       enter (assoc :enter enter)
                                       leave (assoc :leave leave)
                                       parallel? (assoc :parallel parallel?))
                            ;; one binding for this assembly, made here so the
                            ;; dependency program and the `:deps-fn` that binds it
                            ;; are the same symbol by construction
-                           dep-opts (gensym "dep-opts")]
+                           dep-opts (gensym "dep-opts")
+                           emit (fn [{:keys [name task kind]} opts]
+                                  (assemble-task-1 (assoc base-map :name name) task
+                                                   (merge {:parallel? parallel?
+                                                           :kind kind
+                                                           :dep-opts dep-opts}
+                                                          opts)))]
                        (if error
-                         [(binding [*out* *err*]
-                            (println error)) 1]
-                         (loop [prog []
-                                targets (seq targets)
-                                done []
-                                extra-paths []
-                                extra-deps nil
-                                requires []]
-                           (let [t (first targets)
-                                 targets (next targets)
-                                 task-map (assoc task-map
-                                                 :name t)]
-                             (if targets
-                               (if-let [task (get tasks t)]
-                                 (recur (into prog (assemble-task-1
-                                                    task-map task
-                                                    {:parallel? parallel? :dep-opts dep-opts}))
-                                        targets
-                                        (conj done t)
-                                        (concat extra-paths (:extra-paths task))
-                                        (merge extra-deps (:extra-deps task))
-                                        (concat requires (:requires task)))
-                                 [(binding [*out* *err*]
-                                    (println "No such task:" t)) 1])
-                               (if-let [bad-dep (when (cli-node (get tasks t))
-                                                  (some #(let [d (get tasks %)]
-                                                           (when (and (:cmd d) (not (:task d))) %))
-                                                        done))]
-                                 ;; a `:cmd` tree needs a command chosen before
-                                 ;; anything can run, and `:depends` has no way
-                                 ;; to name one. Silently contributing nothing is
-                                 ;; worse than saying so. Only where something
-                                 ;; was expected though: a `:task` body still
-                                 ;; runs, and a plain target never had a handler
-                                 ;; to call in the first place
-                                 [(binding [*out* *err*]
-                                    (println (str "Task " t ": :depends cannot name " bad-dep
-                                                  ", a :cmd task has no single handler to run"))) 1]
-                                 (if-let [task (get tasks t)]
-                                 (let [;; a CLI target takes its dep bodies as a
-                                       ;; thunk (ADR 0001, decision 10) so they
-                                       ;; run inside the dispatch, where the
-                                       ;; parsed options a CLI dep needs exist
-                                       cli-prelude? (boolean (cli-node task))
-                                       dep-forms prog
-                                       ;; a dep that is itself a CLI task has no
-                                       ;; `:task` body to contribute: its node
-                                       ;; goes over so the target's parse covers
-                                       ;; its spec and its handler gets called
-                                       dep-nodes (dep-cli-nodes tasks t)
-                                       prog (if cli-prelude?
-                                              ;; the deps carry their own wait, since under
-                                              ;; `--parallel` they launch inside the dispatch
-                                              (assemble-task-1
-                                               task-map task
-                                               {:parallel? parallel? :last? true
-                                                :dep-forms (cond-> dep-forms
-                                                             parallel?
-                                                             (into (wait-tasks (:depends task))))
-                                                :dep-nodes dep-nodes
-                                                :dep-opts dep-opts})
-                                              (into dep-forms
-                                                    (assemble-task-1
-                                                     task-map task
-                                                     {:parallel? parallel? :last? true
-                                                      :dep-nodes dep-nodes
-                                                      :dep-opts dep-opts})))
-                                       extra-paths (concat extra-paths (:extra-paths task))
-                                       extra-deps (merge extra-deps (:extra-deps task))
-                                       requires (concat requires (:requires task))]
-                                   [[(format-task init extra-paths extra-deps global-requires requires prog)] nil])
-                                 [(binding [*out* *err*]
-                                    (println "No such task:" t)) 1])))))))
+                         [(binding [*out* *err*] (println error)) 1]
+                         (let [dep-forms (into [] (mapcat #(emit % nil)) (butlast nodes))
+                               ;; a CLI target takes its dep bodies as a thunk
+                               ;; (ADR 0001, decision 10) so they run inside the
+                               ;; dispatch, where the parsed options a CLI dep
+                               ;; needs exist
+                               prog (if target-cli?
+                                      (emit (last nodes)
+                                            {:dep-nodes dep-nodes
+                                             ;; the deps carry their own wait, since under
+                                             ;; `--parallel` they launch inside the dispatch
+                                             :dep-forms (cond-> dep-forms
+                                                          parallel?
+                                                          (into (wait-tasks depends)))})
+                                      (into dep-forms
+                                            (emit (last nodes) {:dep-nodes dep-nodes})))]
+                           [[(format-task init extra-paths extra-deps
+                                          global-requires requires prog)] nil])))
                      [[(format-task
                         init
                         (:extra-paths task)
@@ -722,7 +725,7 @@
                                            leave (assoc :leave leave)
                                            parallel? (assoc :parallel parallel?))
                                          task
-                                         {:parallel? parallel? :last? true}))] nil])]
+                                         {:parallel? parallel? :kind :target}))] nil])]
           (when @debug
             (binding [*out* *err*]
               (println (ffirst prog))))
