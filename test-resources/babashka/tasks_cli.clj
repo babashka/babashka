@@ -32,6 +32,19 @@
   [opts]
   (prn (assoc opts :ran :exec-only)))
 
+;; A CLI task named in another task's :depends: its spec merges into the
+;; target's parse and its handler runs with the keys it declared.
+(defn dep-build
+  {:org.babashka/cli {:spec {:target {:desc "build target"}}}}
+  [opts]
+  (prn (assoc opts :ran :dep-build)))
+
+;; Target restricting to its own spec: the dep's options must still parse.
+(defn dep-test
+  {:org.babashka/cli {:restrict true :spec {:watch {:coerce :boolean}}}}
+  [opts]
+  (prn (assoc opts :ran :dep-test)))
+
 ;; Runner-wide defaults var, referenced from bb.edn as :tasks {:cli
 ;; babashka.tasks-cli/base-opts}. The error handler throws instead of exiting
 ;; so in-process tests survive it.
