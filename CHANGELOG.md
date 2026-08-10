@@ -11,7 +11,7 @@ A preview of the next release can be installed from
 
 - [#1321](https://github.com/babashka/babashka/issues/1321): support implementing the `clojure.core/Inst` protocol on records, types and reify, and with `extend-protocol` and `extend-type`
 - Fix output of custom `clojure.pprint` dispatch functions
-- Tasks: `--help` now shows the options a `:tasks {:cli {:spec ...}}` declares, under `Inherited options:`. The parser always accepted them, but help did not show them
+- Tasks: a task's own `:cli` spec no longer replaces the `:tasks {:cli {:spec ...}}` spec. An inherited option keeps its coercion and default, and shows in `--help` under `Inherited options:`
 
 ## 1.13.219 (2026-07-27)
 
