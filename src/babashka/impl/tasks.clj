@@ -263,6 +263,22 @@
   [cmd f]
   (into (empty cmd) (map (fn [[name node]] [name (f node)])) cmd))
 
+(defn -resolve-cli-specs
+  "Walk a `:cli` tree, folding each node fn's metadata into its node with
+  fold-fn-meta, for both `:fn` and `:exec-fn`. `resolve-fn` is the script's
+  `requiring-resolve`. Used where the tree is inspected but the fns are not
+  called (`--help` and shell completion), so a node's spec and doc show up even
+  though they live on the fn. Unlike -cli-dispatch this does not insist that a
+  symbol resolves: a stale name should not stop the rest from being described."
+  [resolve-fn node]
+  (let [merge-fn-meta (fn [node k]
+                        (let [fv (k node)]
+                          (fold-fn-meta (when (symbol? fv) (meta (resolve-fn fv)))
+                                        node)))
+        node (-> node (merge-fn-meta :fn) (merge-fn-meta :exec-fn))]
+    (cond-> node
+      (:cmd node) (update :cmd map-cmd #(-resolve-cli-specs resolve-fn %)))))
+
 (defn -cli-dispatch
   "Runs babashka.cli/dispatch over a task's node. A `:fn` / `:exec-fn` symbol is
   resolved with `resolve-fn` (the script's `requiring-resolve`) and the var's
@@ -310,22 +326,6 @@
                                             defaults
                                             task-cli
                                             {:prog (str "bb " task-name)}))))
-
-(defn -resolve-cli-specs
-  "Walk a `:cli` tree, folding each node fn's metadata into its node with
-  fold-fn-meta, for both `:fn` and `:exec-fn`. `resolve-fn` is the script's
-  `requiring-resolve`. Used where the tree is inspected but the fns are not
-  called (`--help` and shell completion), so a node's spec and doc show up even
-  though they live on the fn. Unlike -cli-dispatch this does not insist that a
-  symbol resolves: a stale name should not stop the rest from being described."
-  [resolve-fn node]
-  (let [merge-fn-meta (fn [node k]
-                        (let [fv (k node)]
-                          (fold-fn-meta (when (symbol? fv) (meta (resolve-fn fv)))
-                                        node)))
-        node (-> node (merge-fn-meta :fn) (merge-fn-meta :exec-fn))]
-    (cond-> node
-      (:cmd node) (update :cmd map-cmd #(-resolve-cli-specs resolve-fn %)))))
 
 (defn wrap-cli
   "Emits the -cli-dispatch call for a CLI task, one naming an `:exec-fn` or a
