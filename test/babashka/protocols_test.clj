@@ -40,3 +40,21 @@
 [(doall (safe-datafy (range)))
  (doall (safe-datafy (repeat 1)))
  (doall (safe-datafy (cons -1 (range))))]"))))))
+
+(deftest inst-protocol
+  (is (= [42 true 1577836800000 true false]
+         (edn/read-string (bb nil "
+(defrecord Duration [ms]
+  Inst
+  (inst-ms* [_] ms))
+
+(defrecord Wrapper [d])
+(extend-protocol Inst
+  Wrapper
+  (inst-ms* [this] (inst-ms (:d this))))
+
+[(inst-ms (->Wrapper (->Duration 42)))
+ (inst? (->Duration 42))
+ (inst-ms #inst \"2020\")
+ (inst? #inst \"2020\")
+ (inst? 1)]")))))
