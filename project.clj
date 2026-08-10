@@ -36,7 +36,7 @@
                  [org.babashka/impl-graal-features "0.0.1"]
                  [rewrite-clj/rewrite-clj "1.2.55"]
                  [insn/insn "0.5.4"]
-                 [org.babashka/cli "0.12.85"]
+                 [org.babashka/cli "0.12.86"]
                  [org.babashka/http-client "0.4.24"]
                  [org.jsoup/jsoup "1.22.2"]
                  [io.github.nextjournal/markdown "0.7.225"]
