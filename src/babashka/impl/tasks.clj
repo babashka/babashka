@@ -309,11 +309,6 @@
     (babashka.cli/dispatch tree args (merge {:help true}
                                             defaults
                                             task-cli
-                                            ;; a task's own spec adds to the
-                                            ;; runner-level one instead of
-                                            ;; replacing it, so an inherited
-                                            ;; option keeps its coercion,
-                                            ;; default and help entry
                                             (babashka.cli/merge-opts
                                              {:spec (:spec defaults)}
                                              {:spec (:spec task-cli)})
