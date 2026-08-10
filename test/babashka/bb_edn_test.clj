@@ -613,6 +613,19 @@ even more stuff here\"
                                      "--shell" "zsh" "--" "tst" "--")]
             (is (str/includes? compl "--watch"))
             (is (str/includes? compl "--target")))))))
+  (testing "a :cmd dep with a :task body still contributes that body"
+    (doseq [[label cfg] {"plain target" '{:tasks {-tree {:task (spit (last *command-line-args*) "tree\n" :append true)
+                                                         :cmd {"sub" {:exec-fn babashka.tasks-cli/dep-spit}}}
+                                                  tst {:depends [-tree]
+                                                       :task (spit (last *command-line-args*) "target\n" :append true)}}}
+                         "CLI target" '{:tasks {-tree {:task (spit (last *command-line-args*) "tree\n" :append true)
+                                                       :cmd {"sub" {:exec-fn babashka.tasks-cli/dep-spit}}}
+                                                tst {:depends [-tree]
+                                                     :exec-fn babashka.tasks-cli/target-spit}}}}]
+      (let [out (str (fs/file (fs/create-temp-dir) "cmdbody.txt"))]
+        (test-utils/with-config cfg
+          (test-utils/bb nil "-cp" "test-resources" "tst" "--out" out)
+          (is (= "tree\ntarget\n" (slurp out)) label)))))
   (testing ":depends cannot name a :cmd task, which has no single handler"
     (test-utils/with-config '{:tasks {-tree {:cmd {"sub" {:exec-fn babashka.tasks-cli/dep-build}}}
                                       tst {:depends [-tree]

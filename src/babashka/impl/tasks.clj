@@ -620,11 +620,17 @@
                                         (concat requires (:requires task)))
                                  [(binding [*out* *err*]
                                     (println "No such task:" t)) 1])
-                               (if-let [bad-dep (some #(when (:cmd (get tasks %)) %) done)]
+                               (if-let [bad-dep (when (cli-node (get tasks t))
+                                                  (some #(let [d (get tasks %)]
+                                                           (when (and (:cmd d) (not (:task d))) %))
+                                                        done))]
                                  ;; a `:cmd` tree needs a command chosen before
                                  ;; anything can run, and `:depends` has no way
                                  ;; to name one. Silently contributing nothing is
-                                 ;; worse than saying so
+                                 ;; worse than saying so. Only where something
+                                 ;; was expected though: a `:task` body still
+                                 ;; runs, and a plain target never had a handler
+                                 ;; to call in the first place
                                  [(binding [*out* *err*]
                                     (println (str "Task " t ": :depends cannot name " bad-dep
                                                   ", a :cmd task has no single handler to run"))) 1]
