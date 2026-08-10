@@ -175,6 +175,13 @@ else
     BABASHKA_LEIN_PROFILES+=",-feature/rrb-vector"
 fi
 
+if [ "$BABASHKA_FEATURE_QUICKJS" = "true" ]
+then
+    BABASHKA_LEIN_PROFILES+=",+feature/quickjs"
+else
+    BABASHKA_LEIN_PROFILES+=",-feature/quickjs"
+fi
+
 #lein with-profiles "$BABASHKA_LEIN_PROFILES,+reflection,-uberjar" deps :tree
 #exit 0
 

@@ -11,6 +11,8 @@ pom.xml.asc
 .hgignore
 .hg/
 /bb
+/bb-baseline
+/bb-quickjs
 .clj-kondo/.cache
 !java/src/babashka/impl/LockFix.class
 !test-resources/babashka/src_for_classpath_test/foo.jar

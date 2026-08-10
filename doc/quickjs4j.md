@@ -84,6 +84,132 @@ cherry/squint libs from esm.sh. The platform layer it needed:
 - Data conversion: js values <-> Clojure values at the bb boundary
   (squint's native-js data makes this mostly json-shaped).
 
+## Spike results (2026-08-10)
+
+Measured with quickjs4j 0.1.0 and GraalVM 25.0.2, macOS aarch64.
+
+Binary size, both built from this tree with the default feature set:
+
+| binary | bytes | MiB |
+| --- | --- | --- |
+| bb baseline | 72,522,200 | 69.16 |
+| bb + quickjs4j | 82,957,816 | 79.10 |
+| delta | +10,435,616 | +9.95 (+14.4%) |
+
+The baseline reproduces `~/dev/babashka/bb` (72,522,224 bytes) to within 24
+bytes, so that binary is a valid reference point.
+
+An isolated Java hello-world costs more: 11,310,776 bytes without quickjs4j
+and 24,891,560 with it, a delta of 13,580,784. Inside bb the delta is smaller
+because jackson-core and parts of java.base are already reachable.
+
+Image breakdown of the added code area: 4.26MB quickjs4j, 972kB
+jackson-databind, 364kB jackson-core, 909kB endive runtime plus wasm plus
+wasi. The rest is image heap growth, mostly code metadata.
+
+Startup of `bb -e 1` is unchanged: 9.1ms min for both binaries. Nothing
+quickjs4j-related is initialized until `babashka.js` is used.
+
+Runtime in the native binary:
+
+| operation | ms |
+| --- | --- |
+| engine build plus `console.log(1+2)` | 6.8 |
+| compile bundled @babashka/cli (125kB source) | 34.0 |
+| exec precompiled bytecode (294kB) | 5.6 |
+
+Bundled @babashka/cli runs correctly. `parseArgs(['--foo','1','sub'])` returns
+`{"args":["sub"],"opts":{"foo":1}}` and `parseOpts` honors `:coerce`.
+
+Language level is fine for esm.sh output: class fields, private fields,
+top-level await, `Array.prototype.at`, `Object.hasOwn`, named capture groups,
+lookbehind, BigInt, TextEncoder, TextDecoder all work. Missing: `WeakRef`,
+`FinalizationRegistry`, `structuredClone`, `fetch`, `process`, `Buffer`,
+`require`.
+
+### Blocker: no module loader
+
+`import` fails for every specifier, bare and relative alike. The engine writes
+`could not load module 'foo.js'` to stderr and is left unusable. `import()`
+rejects with the same message.
+
+The message is a Rust panic from the javy-plugin source, but nothing native
+runs. The plugin is Rust compiled to wasm and then translated to JVM bytecode
+by Endive at quickjs4j build time. The shipped jar holds only class files. The
+panic text is a string constant carried in the wasm data section, printed
+through WASI stderr by bytecode.
+
+The failure is at compile time. `compileSrc` calls
+`javy_plugin_api::compile_src(source).unwrap()` at `javy-plugin/src/lib.rs:89`.
+QuickJS resolves module dependencies while compiling, finds no loader, and the
+`.unwrap()` turns the error into a panic that poisons the instance instead of
+a catchable exception. Report that separately from the missing loader.
+
+The workaround is to pre-bundle with esbuild and assign to `globalThis`. That
+covers squint-compiled libraries whose only dependency is squint core.
+
+@babashka/fs is not covered: it imports `node:fs`, `node:path`, `node:os` and
+`node:zlib`. Those need Java-backed builtins. quickjs4j passes host function
+arguments as JSON through jackson, so binary payloads for `zlib` and for
+reading files would have to be encoded.
+
+### Where the loader support stops
+
+Not a technical wall. quickjs4j inherits Javy's stance that input arrives
+pre-bundled, since the `javy` CLI does its own bundling.
+
+- QuickJS: full ESM with a module loader callback.
+- rquickjs 0.12, in the plugin dependency tree: `Runtime::set_loader` takes a
+  custom resolver and loader.
+- javy 8.0: stops here. `javy::Runtime` exposes only `context()`, with no
+  accessor for the inner `rquickjs::Runtime`, and `Config` has no loader
+  option.
+- quickjs4j: exposes no Java-side hook.
+
+Three ways out, cheapest first:
+
+1. Fork the plugin and use raw FFI. `Ctx::as_raw()` gives the `JSContext`
+   pointer, then `JS_GetRuntime` plus `JS_SetModuleLoaderFunc` wires a loader
+   that calls back into Java over the `endive::invoke` import already carrying
+   `java_invoke`. No javy change. Check first that rquickjs-sys re-exports
+   `JS_SetModuleLoaderFunc`, which is unverified.
+2. Get javy to expose the runtime or add a loader to `Config`, then add a
+   Java-side resolver interface to quickjs4j. Cleanest, and both projects have
+   to move.
+3. Resolve and flatten in Java before compiling. That is writing a bundler.
+   Live bindings and circular dependencies make it more than it looks.
+
+### Reproducing
+
+The spike adds an opt-in feature behind `BABASHKA_FEATURE_QUICKJS`, wired in
+`feature-quickjs/babashka/impl/quickjs.clj`.
+
+```
+export GRAALVM_HOME=/path/to/graalvm-25
+export BABASHKA_FEATURE_QUICKJS=true BABASHKA_BINARY=bb-quickjs
+script/uberjar && script/compile -EBABASHKA_FEATURE_QUICKJS=true
+```
+
+`-E` is required. GraalVM 25 runs the builder in a separate process and does
+not forward the environment, so without it the feature compiles out and
+`bb describe` reports `:feature/quickjs false`.
+
+```
+./bb-quickjs -e '(require (quote [babashka.js :as js])) (print (js/eval-str "console.log(1+2)"))'
+```
+
+`babashka.js` exposes `eval-str`, `compile-str`, `exec-bytecode` and `runner`.
+Only `console.log` output comes back. Split compile from exec when reusing a
+bundle.
+
+### Next decisions
+
+- 9.95MB on a 69MB binary for a JS engine that cannot resolve imports.
+- Option 1 is the only self-directed path, and it turns this from adding a
+  dependency into maintaining a Rust to wasm artifact in the bb release
+  pipeline. Weigh that cost next to the 9.95MB.
+- A pod avoids both, at the cost of process startup per call.
+
 ## Session context
 
 Design discussion happened in the choq repo sessions (2026-08-09/10).
