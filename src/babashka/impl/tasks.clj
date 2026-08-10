@@ -8,6 +8,7 @@
    [babashka.process :as p]
    [clojure.core.async :refer [<!!]]
    [clojure.string :as str]
+   [clojure.walk :as walk]
    [rewrite-clj.node :as node]
    [rewrite-clj.parser :as parser]
    [rewrite-clj.zip :as zip]
@@ -129,22 +130,31 @@
                                  "\n" (ex-message e#))
                             (or (ex-data e#) {}))]))))
 
+;; A program is a vector of top-level forms, the same sequence the emitter used
+;; to build as text. Every `wrap-` below takes one and returns one, so a wrapper
+;; that adds a form conj:es it rather than concatenating a string, and a form
+;; that has to name something binds a gensym rather than agreeing on a spelling.
+
+(defn- as-expr
+  "One expression for a program, for the positions that take a value rather than
+  a body: a `let` binding, a `def` init. A single form goes in as itself."
+  [prog]
+  (if (= 1 (count prog))
+    (first prog)
+    (cons 'do prog)))
+
 (defn wrap-body [task-map prog parallel?]
-  (format "(binding [
-  babashka.tasks/*task* '%s]
-  %s)"
-          (pr-str task-map)
-          (if parallel?
-            (format "(babashka.tasks/-err-thread \"%s\" %s)" (:name task-map) prog)
-            prog)))
+  [(concat (list 'binding ['babashka.tasks/*task* (list 'quote task-map)])
+           (if parallel?
+             [(concat (list 'babashka.tasks/-err-thread (str (:name task-map))) prog)]
+             prog))])
 
 (defn wrap-def [task-map prog parallel? last?]
-  (let [task-name (:name task-map)]
-    (format "(def %s %s) %s"
-            task-name (wrap-body task-map prog parallel?)
-            (if (and parallel? last?)
-              (format "(babashka.tasks/-wait %s)" task-name)
-              task-name))))
+  (let [task-name (symbol (:name task-map))]
+    [(list 'def task-name (as-expr (wrap-body task-map prog parallel?)))
+     (if (and parallel? last?)
+       (list 'babashka.tasks/-wait task-name)
+       task-name)]))
 
 (def o (Object.))
 
@@ -155,48 +165,53 @@
   (locking o
     (apply prn strs)))
 
-(defn wait-tasks [deps]
+(def ^:private wait-tasks-template
+  "The wait itself, as a form with two holes: the dependency names to read
+  channels from, and the same names quoted for the settle loop below."
+  '(let [chans (filter babashka.tasks/-chan? ::deps)]
+     (loop [cs chans]
+       (when (seq cs)
+         (let [[v* p] (clojure.core.async/alts!! cs)
+               [task-name v] v*
+               cs (filterv #(not= p %) cs)
+               _ (when v* (intern *ns* (symbol task-name) v))]
+           (when (instance? Throwable v)
+             (throw (ex-info (ex-message v)
+                             {:babashka/exit 1
+                              :data (ex-data v)})))
+           (recur cs))))
+     ;; since resolving channels into values may happen in parallel and some
+     ;; channels may have been resolved on other threads, we should wait
+     ;; until all deps have been interned as values rather than chans
+     ;; see issue 1190
+     (loop [deps ::quoted-deps]
+       (when (some (fn [task-name]
+                     (babashka.tasks/-chan? (deref (resolve (symbol task-name))))) deps)
+         (recur deps)))))
+
+(defn wait-tasks
+  "The forms that wait for `deps` to settle, or none when there are none."
+  [deps]
   (if deps
-    (format
-     (pr-str
-      '(let [chans (filter babashka.tasks/-chan? %s)]
-         (loop [cs chans]
-           (when (seq cs)
-             (let [[v* p] (clojure.core.async/alts!! cs)
-                   [task-name v] v*
-                   cs (filterv #(not= p %) cs)
-                   _ (when v* (intern *ns* (symbol task-name) v))]
-               (when (instance? Throwable v)
-                 (throw (ex-info (ex-message v)
-                                 {:babashka/exit 1
-                                  :data (ex-data v)})))
-               (recur cs))))
-         ;; since resolving channels into values may happen in parallel and some
-         ;; channels may have been resolved on other threads, we should wait
-         ;; until all deps have been interned as values rather than chans
-         ;; see issue 1190
-         (loop [deps '%s]
-           (when (some (fn [task-name]
-                         (babashka.tasks/-chan? (deref (resolve (symbol task-name))))) deps)
-             (recur deps))))) deps deps)
-    ""))
+    [(walk/postwalk-replace {::deps (vec deps)
+                             ::quoted-deps (list 'quote (vec deps))}
+                            wait-tasks-template)]
+    []))
 
 (defn wrap-enter-leave [task-name prog enter leave]
-  (str (pr-str enter) "\n"
-       (if leave
-         (format "
-(let [%s %s]
-  (binding [babashka.tasks/*task*
-            (assoc babashka.tasks/*task* :result %s)]
-    %s)
-  %s)"
-                 task-name prog task-name (pr-str leave) task-name)
-         prog)))
+  (let [task-sym (symbol task-name)]
+    (into [enter]
+          (if leave
+            [(list 'let [task-sym (as-expr prog)]
+                   (list 'binding ['babashka.tasks/*task*
+                                   (list 'assoc 'babashka.tasks/*task* :result task-sym)]
+                         leave)
+                   task-sym)]
+            prog))))
 
 (defn wrap-depends [prog depends parallel?]
   (if parallel?
-    (format "(do %s)" (str (str "\n" (wait-tasks depends))
-                           "\n" prog))
+    [(concat '(do) (wait-tasks depends) prog)]
     prog))
 
 (defn- fold-fn-meta
@@ -280,15 +295,11 @@
       (:cmd node) (update :cmd map-cmd #(-resolve-cli-specs resolve-fn %)))))
 
 (def ^:dynamic *cli-target?*
-  "True while assembling for a target that dispatches, which is what binds
-  `dep-opts-sym`. A plain target has no parse, so its CLI dependencies keep
-  contributing nothing rather than referring to a symbol that is not there."
+  "True while assembling for a target that dispatches, which is what binds the
+  parsed options a CLI dependency is handed. A plain target has no parse, so its
+  CLI dependencies keep contributing nothing rather than referring to a binding
+  that is not there."
   false)
-
-(def dep-opts-sym
-  "Name the assembled `:depends` program binds the parsed options to, so a CLI
-  dep can be handed the ones it declared."
-  "__babashka-dep-opts")
 
 (defn -dep-node
   "A `:depends` task's node, ready to read a `:spec` off: its own `:cli` folded
@@ -414,86 +425,84 @@
   handler and is called with no arguments: parsed options are what `:exec-fn`
   is for. `dep-forms` and the task's `:enter` / `:leave` go over as thunks.
   `dep-nodes` are the CLI nodes of the `:depends` tasks, in dependency order."
-  ([task-map prog dep-forms] (wrap-cli task-map prog dep-forms nil))
-  ([task-map prog dep-forms dep-nodes]
-   (if-let [cli-opts (cli-node task-map)]
-     (let [{:keys [enter leave name]} task-map]
-       (format "(babashka.tasks/-cli-dispatch '%s \"%s\" {:body-fn %s :deps-fn %s :hook-fn %s} '%s '%s requiring-resolve *command-line-args*)"
-               (pr-str cli-opts)
-               name
-               (if (:task task-map)
-                 (format "(fn [_] %s)" prog)
-                 "nil")
-               (if dep-forms
-                 (format "(fn [%s] %s)" dep-opts-sym dep-forms)
-                 "nil")
-               (if (or enter leave)
-                 (format "(fn [thunk] %s)" (wrap-enter-leave name "(thunk)" enter leave))
-                 "nil")
-               ;; the same value completion-program embeds, from the same place
-               (pr-str (:cli (:tasks @bb-edn)))
-               (pr-str (vec dep-nodes))))
-     prog)))
+  [task-map prog {:keys [dep-forms dep-nodes dep-opts]}]
+  (if-let [cli-opts (cli-node task-map)]
+    (let [{:keys [enter leave name]} task-map]
+      [(list 'babashka.tasks/-cli-dispatch
+             (list 'quote cli-opts)
+             (str name)
+             {:body-fn (when (:task task-map)
+                         (concat (list 'fn ['_]) prog))
+              ;; `dep-opts` is the binding the dependency program reads the
+              ;; parsed options from. It is a gensym made once per assembly and
+              ;; handed to both ends, so the two cannot drift apart
+              :deps-fn (when dep-forms
+                         (concat (list 'fn [dep-opts]) dep-forms))
+              :hook-fn (when (or enter leave)
+                         (concat (list 'fn ['thunk])
+                                 (wrap-enter-leave name ['(thunk)] enter leave)))}
+             ;; the same value completion-program embeds, from the same place
+             (list 'quote (:cli (:tasks @bb-edn)))
+             (list 'quote (vec dep-nodes))
+             'requiring-resolve
+             '*command-line-args*)])
+    prog))
 
 (defn assemble-task-1
-  "Assembles task, does not process :depends. `dep-forms` is only threaded for a
-  `:cli` target (see wrap-cli): assembled `:depends` to run inside the body fn."
-  ([task-map task parallel?]
-   (assemble-task-1 task-map task parallel? nil))
-  ([task-map task parallel? last?]
-   (assemble-task-1 task-map task parallel? last? nil))
-  ([task-map task parallel? last? dep-forms]
-   (assemble-task-1 task-map task parallel? last? dep-forms nil))
-  ([task-map task parallel? last? dep-forms dep-nodes]
-   (let [[task depends task-map]
-         (if (map? task)
-           [(:task task)
-            (:depends task)
-            (merge task-map task)]
-           [task nil (assoc task-map :task task)])
-         enter (:enter task-map)
-         leave (:leave task-map)
-         task-name (:name task-map)
-         private? (or (:private task)
-                      (str/starts-with? task-name "-"))
-         task-map (if private?
-                    (assoc task-map :private private?)
-                    task-map)
-         ;; a qualified symbol calls that fn with the raw args, anything else is
-         ;; a body form. Both go through the same pipeline, and a `:cli` task
-         ;; keeps its dispatch either way: the symbol call is its default action
-         qualified? (qualified-symbol? task)
-         ;; a CLI task reached through `:depends` contributes a call to its
-         ;; handler, here in its own position, so the graph order is the one
-         ;; `target-order` already worked out
-         dep-cli-node (when (and (not last?) *cli-target?*)
-                        (cli-node task-map))
-         prog (if qualified?
-                (format "(apply %s *command-line-args*)" task)
-                (pr-str task))
-         ;; after the body, not instead of it: a task may carry both a `:task`
-         ;; and an `:exec-fn`, and the body ran as a dependency before this
-         prog (if dep-cli-node
-                (format "(do %s (babashka.tasks/-run-cli-dep '%s \"%s\" %s requiring-resolve))"
-                        prog (pr-str dep-cli-node) task-name dep-opts-sym)
-                prog)
-         prog (wrap-enter-leave task-name prog enter leave)
-         cli-target? (and last? (cli-node task-map))
-         prog (if last? (wrap-cli task-map prog dep-forms dep-nodes) prog)
-         ;; a CLI target takes its deps as `:deps-fn`, which already carries the
-         ;; wait, so it must not be wrapped again out here
-         prog (if (and cli-target? dep-forms)
-                prog
-                (wrap-depends prog depends parallel?))
-         prog (wrap-def task-map prog parallel? last?)]
-     (if qualified?
-       (format "
-(when-not (resolve '%s) (require (quote %s)))
-%s"
-               task
-               (namespace task)
+  "Assembles task, does not process :depends. The opts map carries what the
+  surrounding assembly knows and this task cannot work out on its own:
+  `:dep-forms` (assembled `:depends`, only for a `:cli` target, see wrap-cli),
+  `:dep-nodes`, and `:dep-opts`, the binding a CLI dependency reads its parsed
+  options from."
+  [task-map task {:keys [parallel? last? dep-forms dep-opts] :as opts}]
+  (let [[task depends task-map]
+        (if (map? task)
+          [(:task task)
+           (:depends task)
+           (merge task-map task)]
+          [task nil (assoc task-map :task task)])
+        enter (:enter task-map)
+        leave (:leave task-map)
+        task-name (:name task-map)
+        private? (or (:private task)
+                     (str/starts-with? task-name "-"))
+        task-map (if private?
+                   (assoc task-map :private private?)
+                   task-map)
+        ;; a qualified symbol calls that fn with the raw args, anything else is
+        ;; a body form. Both go through the same pipeline, and a `:cli` task
+        ;; keeps its dispatch either way: the symbol call is its default action
+        qualified? (qualified-symbol? task)
+        ;; a CLI task reached through `:depends` contributes a call to its
+        ;; handler, here in its own position, so the graph order is the one
+        ;; `target-order` already worked out
+        dep-cli-node (when (and (not last?) *cli-target?*)
+                       (cli-node task-map))
+        prog [(if qualified?
+                (list 'apply task '*command-line-args*)
+                task)]
+        ;; after the body, not instead of it: a task may carry both a `:task`
+        ;; and an `:exec-fn`, and the body ran as a dependency before this
+        prog (if dep-cli-node
+               [(concat '(do) prog
+                        [(list 'babashka.tasks/-run-cli-dep
+                               (list 'quote dep-cli-node) (str task-name)
+                               dep-opts 'requiring-resolve)])]
                prog)
-       prog))))
+        prog (wrap-enter-leave task-name prog enter leave)
+        cli-target? (and last? (cli-node task-map))
+        prog (if last? (wrap-cli task-map prog opts) prog)
+        ;; a CLI target takes its deps as `:deps-fn`, which already carries the
+        ;; wait, so it must not be wrapped again out here
+        prog (if (and cli-target? dep-forms)
+               prog
+               (wrap-depends prog depends parallel?))
+        prog (wrap-def task-map prog parallel? last?)]
+    (if qualified?
+      (into [(list 'when-not (list 'resolve (list 'quote task))
+                   (list 'require (list 'quote (symbol (namespace task)))))]
+            prog)
+      prog)))
 
 (def rand-ns (delay (symbol (str "user-" (java.util.UUID/randomUUID)))))
 
@@ -515,7 +524,11 @@
             (str/join "\n" (map (fn [req] (str "'" req)) requires)))
     ""))
 
-(defn format-task [init extra-paths extra-deps global-requires requires prog]
+(defn format-task
+  "The whole program as text. `prog` is the assembled task, a vector of forms:
+  this is the one place the emitter serializes, so everything upstream of here
+  composes forms rather than strings."
+  [init extra-paths extra-deps global-requires requires prog]
   (format "
 %s ;; deps
 
@@ -560,7 +573,7 @@
           @rand-ns @rand-ns
           (pr-str init)
           (requires-form requires)
-          prog))
+          (str/join "\n" (map pr-str prog))))
 
 (defn target-order
   ([tasks task-name] (target-order tasks task-name (volatile! #{}) #{}))
@@ -619,11 +632,15 @@
                            task-map (cond-> {}
                                       enter (assoc :enter enter)
                                       leave (assoc :leave leave)
-                                      parallel? (assoc :parallel parallel?))]
+                                      parallel? (assoc :parallel parallel?))
+                           ;; one binding for this assembly, made here so the
+                           ;; dependency program and the `:deps-fn` that binds it
+                           ;; are the same symbol by construction
+                           dep-opts (gensym "dep-opts")]
                        (if error
                          [(binding [*out* *err*]
                             (println error)) 1]
-                         (loop [prog ""
+                         (loop [prog []
                                 targets (seq targets)
                                 done []
                                 extra-paths []
@@ -635,7 +652,9 @@
                                                  :name t)]
                              (if targets
                                (if-let [task (get tasks t)]
-                                 (recur (str prog "\n" (assemble-task-1 task-map task parallel?))
+                                 (recur (into prog (assemble-task-1
+                                                    task-map task
+                                                    {:parallel? parallel? :dep-opts dep-opts}))
                                         targets
                                         (conj done t)
                                         (concat extra-paths (:extra-paths task))
@@ -672,15 +691,20 @@
                                        prog (if cli-prelude?
                                               ;; the deps carry their own wait, since under
                                               ;; `--parallel` they launch inside the dispatch
-                                              (assemble-task-1 task-map task parallel? true
-                                                               (cond-> dep-forms
-                                                                 parallel?
-                                                                 (str "\n" (wait-tasks (:depends task))))
-                                                               dep-nodes)
-                                              (str dep-forms "\n"
-                                                   #_(wait-tasks depends) #_(apply str (map deref-task depends))
-                                                   "\n"
-                                                   (assemble-task-1 task-map task parallel? true nil dep-nodes)))
+                                              (assemble-task-1
+                                               task-map task
+                                               {:parallel? parallel? :last? true
+                                                :dep-forms (cond-> dep-forms
+                                                             parallel?
+                                                             (into (wait-tasks (:depends task))))
+                                                :dep-nodes dep-nodes
+                                                :dep-opts dep-opts})
+                                              (into dep-forms
+                                                    (assemble-task-1
+                                                     task-map task
+                                                     {:parallel? parallel? :last? true
+                                                      :dep-nodes dep-nodes
+                                                      :dep-opts dep-opts})))
                                        extra-paths (concat extra-paths (:extra-paths task))
                                        extra-deps (merge extra-deps (:extra-deps task))
                                        requires (concat requires (:requires task))]
@@ -697,7 +721,8 @@
                                            enter (assoc :enter enter)
                                            leave (assoc :leave leave)
                                            parallel? (assoc :parallel parallel?))
-                                         task parallel? true))] nil])]
+                                         task
+                                         {:parallel? parallel? :last? true}))] nil])]
           (when @debug
             (binding [*out* *err*]
               (println (ffirst prog))))
