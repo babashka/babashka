@@ -1,4 +1,5 @@
-(ns babashka.tasks-cli)
+(ns babashka.tasks-cli
+  (:require [babashka.tasks :as tasks]))
 
 (defn outdated [{:keys [opts]}]
   (prn (assoc opts :ran :outdated)))
@@ -38,6 +39,16 @@
   {:org.babashka/cli {:spec {:target {:desc "build target"}}}}
   [opts]
   (prn (assoc opts :ran :dep-build)))
+
+(defn mark-task
+  {:org.babashka/cli {:spec {:out {}}}}
+  [{:keys [out]}]
+  (spit out (str "handler:" (:name (tasks/current-task)) "\n") :append true))
+
+(defn target-spit
+  {:org.babashka/cli {:spec {:out {}}}}
+  [{:keys [out]}]
+  (spit out "target\n" :append true))
 
 ;; Target restricting to its own spec: the dep's options must still parse.
 (defn dep-test

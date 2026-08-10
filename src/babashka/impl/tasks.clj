@@ -279,6 +279,36 @@
     (cond-> node
       (:cmd node) (update :cmd map-cmd #(-resolve-cli-specs resolve-fn %)))))
 
+(defn -dep-node
+  "A `:depends` task's node, ready to read a `:spec` off: its own `:cli` folded
+  in, then its handler's metadata, the same two steps a target goes through."
+  [resolve-fn task-name node]
+  (-resolve-cli-specs resolve-fn (-task-node resolve-fn task-name node)))
+
+(def ^:dynamic *cli-target?*
+  "True while assembling for a target that dispatches, which is what binds
+  `dep-opts-sym`. A plain target has no parse, so its CLI dependencies keep
+  contributing nothing rather than referring to a symbol that is not there."
+  false)
+
+(def dep-opts-sym
+  "Name the assembled `:depends` program binds the parsed options to, so a CLI
+  dep can be handed the ones it declared."
+  "__babashka-dep-opts")
+
+(defn -run-cli-dep
+  "Calls the handler of a CLI task named in `:depends`, with the options it
+  declared. Emitted in the dep's own place in the assembled `:depends` program,
+  so it keeps its position in the graph and its `:depends` still run first."
+  [node task-name opts resolve-fn]
+  (let [node (-dep-node resolve-fn task-name node)]
+    (when-let [f (:exec-fn node)]
+      ((if (symbol? f)
+         (resolve-or-throw resolve-fn f
+                           (str "Task " task-name ": cannot resolve :exec-fn " f))
+         f)
+       (select-keys opts (keys (:spec node)))))))
+
 (defn -cli-dispatch
   "Runs babashka.cli/dispatch over a task's node. A `:fn` / `:exec-fn` symbol is
   resolved with `resolve-fn` (the script's `requiring-resolve`) and the var's
@@ -292,11 +322,11 @@
   `defaults` is the runner-level `:tasks {:cli ...}` entry, passed in rather
   than read here so that this and completion take the same route to it.
 
-  `dep-nodes` are the `[name node]` pairs of the CLI `:depends` tasks, in
-  dependency order. Their specs merge under this task's own, so one parse covers
-  everything the invocation can consume, and each dep's handler is called with
-  the keys it declared. A dep never parses, so its `:restrict` does not apply
-  here."
+  `dep-nodes` are the `[name node]` pairs of the CLI `:depends` tasks. Their
+  specs merge under this task's own, so one parse covers everything the
+  invocation can consume. The handlers themselves are called from the assembled
+  `:depends` program, in their own place in the graph. A dep never parses, so
+  its `:restrict` does not apply here."
   [cli-opts task-name fns defaults dep-nodes resolve-fn args]
   (let [;; the task's own `:cli` also provides dispatch opts, for options that
         ;; only exist there, such as an `:error-fn`
@@ -304,20 +334,10 @@
                                     (str "Task " task-name ": :cli"))
         cli-opts (-task-node resolve-fn task-name cli-opts)
         {:keys [body-fn deps-fn hook-fn]} fns
-        dep-nodes (map (fn [[nm node]]
-                         (-resolve-cli-specs resolve-fn (-task-node resolve-fn nm node)))
-                       dep-nodes)
-        dep-spec (reduce #(merge %1 (:spec %2)) {} dep-nodes)
-        run-dep-fns (fn [m]
-                      (doseq [node dep-nodes
-                              :let [f (:exec-fn node)]
-                              :when f]
-                        ((if (symbol? f)
-                           (resolve-or-throw resolve-fn f
-                                             (str "Task " task-name ": cannot resolve :exec-fn " f))
-                           f)
-                         (select-keys m (keys (:spec node))))))
-        with-deps (fn [f] (fn [m] (when deps-fn (deps-fn)) (run-dep-fns m) (f m)))
+        dep-spec (reduce (fn [acc [nm node]]
+                           (merge acc (:spec (-dep-node resolve-fn nm node))))
+                         {} dep-nodes)
+        with-deps (fn [f] (fn [m] (when deps-fn (deps-fn m)) (f m)))
         with-hooks (fn [f] (if hook-fn (fn [m] (hook-fn (fn [] (f m)))) f))
         ;; resolve a :fn / :exec-fn symbol, fold in the fn's metadata and gate
         ;; :depends and :enter/:leave on the fn being called
@@ -368,7 +388,7 @@
                  (format "(fn [_] %s)" prog)
                  "nil")
                (if dep-forms
-                 (format "(fn [] %s)" dep-forms)
+                 (format "(fn [%s] %s)" dep-opts-sym dep-forms)
                  "nil")
                (if (or enter leave)
                  (format "(fn [thunk] %s)" (wrap-enter-leave name "(thunk)" enter leave))
@@ -406,12 +426,21 @@
          ;; a body form. Both go through the same pipeline, and a `:cli` task
          ;; keeps its dispatch either way: the symbol call is its default action
          qualified? (qualified-symbol? task)
+         dep-cli-node (when (and (not last?) *cli-target?*)
+                        (cli-node task-map))
          prog (if qualified?
                 (format "(apply %s *command-line-args*)" task)
                 (pr-str task))
+         prog (if dep-cli-node
+                (format "(do %s (babashka.tasks/-run-cli-dep '%s \"%s\" %s requiring-resolve))"
+                        prog (pr-str dep-cli-node) task-name dep-opts-sym)
+                prog)
          prog (wrap-enter-leave task-name prog enter leave)
+         cli-target? (and last? (cli-node task-map))
          prog (if last? (wrap-cli task-map prog dep-forms dep-nodes) prog)
-         prog (wrap-depends prog depends parallel?)
+         prog (if (and cli-target? dep-forms)
+                prog
+                (wrap-depends prog depends parallel?))
          prog (wrap-def task-map prog parallel? last?)]
      (if qualified?
        (format "
@@ -521,7 +550,8 @@
         enter (:enter tasks)
         leave (:leave tasks)
         task (get tasks task-name)]
-    (binding [*print-meta* true]
+    (binding [*print-meta* true
+              *cli-target?* (boolean (cli-node task))]
       (if task
         (let [m? (map? task)
               global-requires (get tasks :requires)
@@ -566,18 +596,17 @@
                                     (println (str "Task " t ": :depends cannot name " bad-dep
                                                   ", a :cmd task has no single handler to run"))) 1]
                                  (if-let [task (get tasks t)]
-                                 (let [;; a non-parallel `:cli` task takes its dep
-                                       ;; bodies as a thunk (see ADR 0001,
-                                       ;; decision 10); parallel deps stay ahead
-                                       ;; of the target, they must launch their
-                                       ;; channels before it waits
-                                       cli-prelude? (and (cli-node task) (not parallel?))
+                                 (let [cli-prelude? (cli-node task)
                                        dep-forms prog
                                        dep-nodes (keep #(when-let [n (cli-node (get tasks %))]
                                                           [(str %) n])
                                                        done)
                                        prog (if cli-prelude?
-                                              (assemble-task-1 task-map task parallel? true dep-forms dep-nodes)
+                                              (assemble-task-1 task-map task parallel? true
+                                                               (cond-> dep-forms
+                                                                 parallel?
+                                                                 (str "\n" (wait-tasks (:depends task))))
+                                                               dep-nodes)
                                               (str dep-forms "\n"
                                                    #_(wait-tasks depends) #_(apply str (map deref-task depends))
                                                    "\n"
@@ -800,6 +829,8 @@
    'run (sci/copy-var run sci-ns)
    'exec (sci/copy-var exec sci-ns)
    '-cli-dispatch (sci/copy-var -cli-dispatch sci-ns)
+   '-run-cli-dep (sci/copy-var -run-cli-dep sci-ns)
+   '-dep-node (sci/copy-var -dep-node sci-ns)
    '-resolve-cli-specs (sci/copy-var -resolve-cli-specs sci-ns)
    '-resolve-cli-opts (sci/copy-var -resolve-cli-opts sci-ns)
    '-task-node (sci/copy-var -task-node sci-ns)

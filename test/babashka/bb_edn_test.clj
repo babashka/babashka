@@ -629,6 +629,26 @@ even more stuff here\"
           (let [out (test-utils/bb nil "-cp" "test-resources" "tst" "--help")]
             (is (str/includes? out "Inherited options:"))
             (is (str/includes? out "build target")))))))
+  (testing "a CLI dep keeps its place in the graph, among plain deps"
+    (doseq [args [["tst"] ["run" "--parallel" "tst"]]]
+      (let [out (str (fs/file (fs/create-temp-dir) "order.txt"))]
+        (test-utils/with-config '{:tasks {-a {:exec-fn babashka.tasks-cli/mark-task}
+                                          -b {:depends [-a]
+                                              :task (spit (last *command-line-args*) "b\n" :append true)}
+                                          tst {:depends [-b]
+                                               :exec-fn babashka.tasks-cli/target-spit}}}
+          (apply test-utils/bb nil "-cp" "test-resources" (concat args ["--out" out]))
+          (is (= "handler:-a\nb\ntarget\n" (slurp out)) (str "for " args))))))
+  (testing "a dep's handler runs between its own :enter and :leave, under its own task"
+    (doseq [args [["tst"] ["run" "--parallel" "tst"]]]
+      (let [out (str (fs/file (fs/create-temp-dir) "hooks.txt"))]
+        (test-utils/with-config '{:tasks {-a {:exec-fn babashka.tasks-cli/mark-task
+                                              :enter (spit (last *command-line-args*) "enter\n" :append true)
+                                              :leave (spit (last *command-line-args*) "leave\n" :append true)}
+                                          tst {:depends [-a]
+                                               :exec-fn babashka.tasks-cli/target-spit}}}
+          (apply test-utils/bb nil "-cp" "test-resources" (concat args ["--out" out]))
+          (is (= "enter\nhandler:-a\nleave\ntarget\n" (slurp out)) (str "for " args))))))
   (testing "a dep's spec may live under its :cli, not only on its handler"
     (test-utils/with-config '{:tasks {-build {:exec-fn babashka.tasks-cli/dep-build
                                               :cli {:spec {:under-cli {}}}}
