@@ -27,7 +27,7 @@
   "(require '[clojure.pprint :as pprint])
    (import '[java.time ZonedDateTime])
    (defmethod pprint/simple-dispatch ZonedDateTime [zdt]
-     (print (str \"#time/zdt \\\"\" zdt \"\\\"\")))
+     (print (str \"#time/zdt \" (pr-str (str zdt)))))
    (def zdt (ZonedDateTime/parse \"2026-09-30T08:30-04:00[America/New_York]\"))")
 
 (deftest custom-dispatch-test
