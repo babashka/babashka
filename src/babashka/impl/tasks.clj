@@ -304,8 +304,6 @@
                                     (str "Task " task-name ": :cli"))
         cli-opts (-task-node resolve-fn task-name cli-opts)
         {:keys [body-fn deps-fn hook-fn]} fns
-        ;; a dep goes through the same two steps as a target: its own `:cli`
-        ;; folded in, then its handler's metadata
         dep-nodes (map (fn [[nm node]]
                          (-resolve-cli-specs resolve-fn (-task-node resolve-fn nm node)))
                        dep-nodes)
@@ -346,10 +344,6 @@
     (babashka.cli/dispatch tree args (merge {:help true}
                                             defaults
                                             task-cli
-                                            ;; the dispatch-level spec: parsed
-                                            ;; here, and listed under "Inherited
-                                            ;; options:" rather than mixed into
-                                            ;; this task's own
                                             (babashka.cli/merge-opts
                                              (when (seq dep-spec) {:spec dep-spec})
                                              (select-keys defaults [:spec])
@@ -572,10 +566,6 @@
                                        ;; channels before it waits
                                        cli-prelude? (and (cli-node task) (not parallel?))
                                        dep-forms prog
-                                       ;; a dep that is itself a CLI task has no
-                                       ;; `:task` body to contribute: its node
-                                       ;; goes over so the target's parse covers
-                                       ;; its spec and its handler gets called
                                        dep-nodes (keep #(when-let [n (cli-node (get tasks %))]
                                                           [(str %) n])
                                                        done)
