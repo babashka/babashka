@@ -50,6 +50,19 @@
   [{:keys [out]}]
   (spit out "target\n" :append true))
 
+;; Order markers. `mark-a` is slow on purpose: a dep that ignores the graph and
+;; launches siblings at once lets the faster `mark-c` write first.
+(defn mark-a
+  {:org.babashka/cli {:spec {:out {}}}}
+  [{:keys [out]}]
+  (Thread/sleep 300)
+  (spit out "a\n" :append true))
+
+(defn mark-c
+  {:org.babashka/cli {:spec {:out {}}}}
+  [{:keys [out]}]
+  (spit out "c\n" :append true))
+
 ;; Target restricting to its own spec: the dep's options must still parse.
 (defn dep-test
   {:org.babashka/cli {:restrict true :spec {:watch {:coerce :boolean}}}}
@@ -77,3 +90,30 @@
                       :spec {:env {:require true}}}}
   [opts]
   (prn (assoc opts :ran :strict)))
+
+;; A rendezvous: write my own marker, then wait for the sibling's. Both markers
+;; only ever appear while both handlers are running, so this reports
+;; "concurrent" under real parallelism and "serial" when they take turns. Each
+;; dep needs its own fn: siblings are handed the same parsed options.
+(defn- rendezvous [dir me other]
+  (spit (str dir "/" me) "")
+  (let [deadline (+ (System/currentTimeMillis) 5000)]
+    (loop []
+      (cond
+        (.exists (java.io.File. (str dir "/" other)))
+        (spit (str dir "/" me "-result") "concurrent")
+
+        (< deadline (System/currentTimeMillis))
+        (spit (str dir "/" me "-result") "serial")
+
+        :else (do (Thread/sleep 20) (recur))))))
+
+(defn rendezvous-a
+  {:org.babashka/cli {:spec {:dir {}}}}
+  [{:keys [dir]}]
+  (rendezvous dir "a" "b"))
+
+(defn rendezvous-b
+  {:org.babashka/cli {:spec {:dir {}}}}
+  [{:keys [dir]}]
+  (rendezvous dir "b" "a"))

@@ -639,6 +639,24 @@ even more stuff here\"
                                                :exec-fn babashka.tasks-cli/target-spit}}}
           (apply test-utils/bb nil "-cp" "test-resources" (concat args ["--out" out]))
           (is (= "handler:-a\nb\ntarget\n" (slurp out)) (str "for " args))))))
+  (testing "under --parallel CLI deps run at the same time, not one after the other"
+    (let [dir (str (fs/create-temp-dir))]
+      (test-utils/with-config '{:tasks {-a {:exec-fn babashka.tasks-cli/rendezvous-a}
+                                        -b {:exec-fn babashka.tasks-cli/rendezvous-b}
+                                        tst {:depends [-a -b]
+                                             :exec-fn babashka.tasks-cli/target-spit}}}
+        (test-utils/bb nil "-cp" "test-resources" "run" "--parallel" "tst"
+                       "--dir" dir "--out" (str dir "/out.txt"))
+        (is (= "concurrent" (slurp (str dir "/a-result"))))
+        (is (= "concurrent" (slurp (str dir "/b-result")))))))
+  (testing "a CLI dep waits for the CLI dep it depends on, under --parallel"
+    (let [out (str (fs/file (fs/create-temp-dir) "chain.txt"))]
+      (test-utils/with-config '{:tasks {-a {:exec-fn babashka.tasks-cli/mark-a}
+                                        -c {:depends [-a] :exec-fn babashka.tasks-cli/mark-c}
+                                        tst {:depends [-c]
+                                             :exec-fn babashka.tasks-cli/target-spit}}}
+        (test-utils/bb nil "-cp" "test-resources" "run" "--parallel" "tst" "--out" out)
+        (is (= "a\nc\ntarget\n" (slurp out))))))
   (testing "a dep's handler runs between its own :enter and :leave, under its own task"
     (doseq [args [["tst"] ["run" "--parallel" "tst"]]]
       (let [out (str (fs/file (fs/create-temp-dir) "hooks.txt"))]
