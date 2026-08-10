@@ -309,6 +309,9 @@
     (babashka.cli/dispatch tree args (merge {:help true}
                                             defaults
                                             task-cli
+                                            (babashka.cli/merge-opts
+                                             {:spec (:spec defaults)}
+                                             {:spec (:spec task-cli)})
                                             {:prog (str "bb " task-name)}))))
 
 (defn -resolve-cli-specs

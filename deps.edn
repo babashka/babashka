@@ -48,7 +48,7 @@
         org.clojure/data.priority-map {:mvn/version "1.1.0"}
         insn/insn {:mvn/version "0.5.4"}
         org.clojure/core.rrb-vector {:mvn/version "0.2.0"}
-        org.babashka/cli {:mvn/version "0.12.85"}
+        org.babashka/cli {:mvn/version "0.12.86"}
         org.babashka/http-client {:mvn/version "0.4.24"}
         org.flatland/ordered {:mvn/version "1.15.12"}
         org.jsoup/jsoup {:mvn/version "1.22.2"}
@@ -59,7 +59,8 @@
                                                org.jline/jline-native]}
         org.jline/jline-reader {:mvn/version "4.3.1"}}
  :aliases {:babashka/dev
-           {:main-opts ["-m" "babashka.main"]
+           {:deps {babashka/babashka {:local/root "."}}
+            :main-opts ["-m" "babashka.main"]
             :jvm-opts ["--enable-native-access=ALL-UNNAMED" "-Duser.language=en" "-Duser.country=US"]}
            :profile
            {:extra-deps

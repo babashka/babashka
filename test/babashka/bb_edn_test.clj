@@ -579,6 +579,19 @@ even more stuff here\"
       (let [out (test-utils/bb nil "foo" "--help")]
         (is (str/includes? out "Usage: bb foo"))
         (is (str/includes? out "--port")))))
+  (testing "the runner-level :cli spec adds to a task's own, it does not replace it"
+    (test-utils/with-config
+      '{:tasks {:cli {:spec {:env {:coerce :keyword :default :dev :desc "Target env"}}}
+                foo {:cli {:spec {:port {:coerce :long :desc "Port"}}}
+                     :exec-fn clojure.core/prn}}}
+      (testing "an inherited option keeps its coercion and default"
+        (is (= {:env :prod :port 80} (bb "foo" "--env" "prod" "--port" "80")))
+        (is (= {:env :dev} (bb "foo"))))
+      (testing "--help lists it under Inherited options"
+        (let [out (test-utils/bb nil "foo" "--help")]
+          (is (str/includes? out "Inherited options:"))
+          (is (str/includes? out "Target env"))
+          (is (str/includes? out "Port"))))))
   (testing "tasks without :cli pass --help through to the body"
     (test-utils/with-config '{:tasks {foo (prn *command-line-args*)}}
       (is (= ["--help"] (bb "foo" "--help")))))
