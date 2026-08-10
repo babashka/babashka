@@ -7,6 +7,10 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## Unreleased
+
+- Fix output of custom `clojure.pprint` dispatch functions
+
 ## 1.13.219 (2026-07-27)
 
 Highlights:
