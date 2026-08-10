@@ -263,6 +263,22 @@
   [cmd f]
   (into (empty cmd) (map (fn [[name node]] [name (f node)])) cmd))
 
+(defn -resolve-cli-specs
+  "Walk a `:cli` tree, folding each node fn's metadata into its node with
+  fold-fn-meta, for both `:fn` and `:exec-fn`. `resolve-fn` is the script's
+  `requiring-resolve`. Used where the tree is inspected but the fns are not
+  called (`--help` and shell completion), so a node's spec and doc show up even
+  though they live on the fn. Unlike -cli-dispatch this does not insist that a
+  symbol resolves: a stale name should not stop the rest from being described."
+  [resolve-fn node]
+  (let [merge-fn-meta (fn [node k]
+                        (let [fv (k node)]
+                          (fold-fn-meta (when (symbol? fv) (meta (resolve-fn fv)))
+                                        node)))
+        node (-> node (merge-fn-meta :fn) (merge-fn-meta :exec-fn))]
+    (cond-> node
+      (:cmd node) (update :cmd map-cmd #(-resolve-cli-specs resolve-fn %)))))
+
 (defn -cli-dispatch
   "Runs babashka.cli/dispatch over a task's node. A `:fn` / `:exec-fn` symbol is
   resolved with `resolve-fn` (the script's `requiring-resolve`) and the var's
@@ -274,15 +290,34 @@
   10, covers what stays out of `:deps-fn` and why.
 
   `defaults` is the runner-level `:tasks {:cli ...}` entry, passed in rather
-  than read here so that this and completion take the same route to it."
-  [cli-opts task-name fns defaults resolve-fn args]
+  than read here so that this and completion take the same route to it.
+
+  `dep-nodes` are the `[name node]` pairs of the CLI `:depends` tasks, in
+  dependency order. Their specs merge under this task's own, so one parse covers
+  everything the invocation can consume, and each dep's handler is called with
+  the keys it declared. A dep never parses, so its `:restrict` does not apply
+  here."
+  [cli-opts task-name fns defaults dep-nodes resolve-fn args]
   (let [;; the task's own `:cli` also provides dispatch opts, for options that
         ;; only exist there, such as an `:error-fn`
         task-cli (-resolve-cli-opts resolve-fn (:cli cli-opts)
                                     (str "Task " task-name ": :cli"))
         cli-opts (-task-node resolve-fn task-name cli-opts)
         {:keys [body-fn deps-fn hook-fn]} fns
-        with-deps (fn [f] (fn [m] (when deps-fn (deps-fn)) (f m)))
+        dep-nodes (map (fn [[nm node]]
+                         (-resolve-cli-specs resolve-fn (-task-node resolve-fn nm node)))
+                       dep-nodes)
+        dep-spec (reduce #(merge %1 (:spec %2)) {} dep-nodes)
+        run-dep-fns (fn [m]
+                      (doseq [node dep-nodes
+                              :let [f (:exec-fn node)]
+                              :when f]
+                        ((if (symbol? f)
+                           (resolve-or-throw resolve-fn f
+                                             (str "Task " task-name ": cannot resolve :exec-fn " f))
+                           f)
+                         (select-keys m (keys (:spec node))))))
+        with-deps (fn [f] (fn [m] (when deps-fn (deps-fn)) (run-dep-fns m) (f m)))
         with-hooks (fn [f] (if hook-fn (fn [m] (hook-fn (fn [] (f m)))) f))
         ;; resolve a :fn / :exec-fn symbol, fold in the fn's metadata and gate
         ;; :depends and :enter/:leave on the fn being called
@@ -310,49 +345,38 @@
                                             defaults
                                             task-cli
                                             (babashka.cli/merge-opts
+                                             (when (seq dep-spec) {:spec dep-spec})
                                              (select-keys defaults [:spec])
                                              (select-keys task-cli [:spec]))
                                             {:prog (str "bb " task-name)}))))
-
-(defn -resolve-cli-specs
-  "Walk a `:cli` tree, folding each node fn's metadata into its node with
-  fold-fn-meta, for both `:fn` and `:exec-fn`. `resolve-fn` is the script's
-  `requiring-resolve`. Used where the tree is inspected but the fns are not
-  called (`--help` and shell completion), so a node's spec and doc show up even
-  though they live on the fn. Unlike -cli-dispatch this does not insist that a
-  symbol resolves: a stale name should not stop the rest from being described."
-  [resolve-fn node]
-  (let [merge-fn-meta (fn [node k]
-                        (let [fv (k node)]
-                          (fold-fn-meta (when (symbol? fv) (meta (resolve-fn fv)))
-                                        node)))
-        node (-> node (merge-fn-meta :fn) (merge-fn-meta :exec-fn))]
-    (cond-> node
-      (:cmd node) (update :cmd map-cmd #(-resolve-cli-specs resolve-fn %)))))
 
 (defn wrap-cli
   "Emits the -cli-dispatch call for a CLI task, one naming an `:exec-fn` or a
   `:cmd` tree. `prog` is the assembled `:task` body, which becomes the root
   handler and is called with no arguments: parsed options are what `:exec-fn`
-  is for. `dep-forms` and the task's `:enter` / `:leave` go over as thunks."
-  [task-map prog dep-forms]
-  (if-let [cli-opts (cli-node task-map)]
-    (let [{:keys [enter leave name]} task-map]
-      (format "(babashka.tasks/-cli-dispatch '%s \"%s\" {:body-fn %s :deps-fn %s :hook-fn %s} '%s requiring-resolve *command-line-args*)"
-              (pr-str cli-opts)
-              name
-              (if (:task task-map)
-                (format "(fn [_] %s)" prog)
-                "nil")
-              (if dep-forms
-                (format "(fn [] %s)" dep-forms)
-                "nil")
-              (if (or enter leave)
-                (format "(fn [thunk] %s)" (wrap-enter-leave name "(thunk)" enter leave))
-                "nil")
-              ;; the same value completion-program embeds, from the same place
-              (pr-str (:cli (:tasks @bb-edn)))))
-    prog))
+  is for. `dep-forms` and the task's `:enter` / `:leave` go over as thunks.
+  `dep-nodes` are the `[name node]` pairs of the CLI `:depends` tasks, in
+  dependency order."
+  ([task-map prog dep-forms] (wrap-cli task-map prog dep-forms nil))
+  ([task-map prog dep-forms dep-nodes]
+   (if-let [cli-opts (cli-node task-map)]
+     (let [{:keys [enter leave name]} task-map]
+       (format "(babashka.tasks/-cli-dispatch '%s \"%s\" {:body-fn %s :deps-fn %s :hook-fn %s} '%s '%s requiring-resolve *command-line-args*)"
+               (pr-str cli-opts)
+               name
+               (if (:task task-map)
+                 (format "(fn [_] %s)" prog)
+                 "nil")
+               (if dep-forms
+                 (format "(fn [] %s)" dep-forms)
+                 "nil")
+               (if (or enter leave)
+                 (format "(fn [thunk] %s)" (wrap-enter-leave name "(thunk)" enter leave))
+                 "nil")
+               ;; the same value completion-program embeds, from the same place
+               (pr-str (:cli (:tasks @bb-edn)))
+               (pr-str (vec dep-nodes))))
+     prog)))
 
 (defn assemble-task-1
   "Assembles task, does not process :depends. `dep-forms` is only threaded for a
@@ -362,6 +386,8 @@
   ([task-map task parallel? last?]
    (assemble-task-1 task-map task parallel? last? nil))
   ([task-map task parallel? last? dep-forms]
+   (assemble-task-1 task-map task parallel? last? dep-forms nil))
+  ([task-map task parallel? last? dep-forms dep-nodes]
    (let [[task depends task-map]
          (if (map? task)
            [(:task task)
@@ -384,7 +410,7 @@
                 (format "(apply %s *command-line-args*)" task)
                 (pr-str task))
          prog (wrap-enter-leave task-name prog enter leave)
-         prog (if last? (wrap-cli task-map prog dep-forms) prog)
+         prog (if last? (wrap-cli task-map prog dep-forms dep-nodes) prog)
          prog (wrap-depends prog depends parallel?)
          prog (wrap-def task-map prog parallel? last?)]
      (if qualified?
@@ -540,8 +566,11 @@
                                        ;; channels before it waits
                                        cli-prelude? (and (cli-node task) (not parallel?))
                                        dep-forms prog
+                                       dep-nodes (keep #(when-let [n (cli-node (get tasks %))]
+                                                          [(str %) n])
+                                                       done)
                                        prog (if cli-prelude?
-                                              (assemble-task-1 task-map task parallel? true dep-forms)
+                                              (assemble-task-1 task-map task parallel? true dep-forms dep-nodes)
                                               (str dep-forms "\n"
                                                    #_(wait-tasks depends) #_(apply str (map deref-task depends))
                                                    "\n"
