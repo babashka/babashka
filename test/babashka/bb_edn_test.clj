@@ -628,7 +628,12 @@ even more stuff here\"
         (testing "--help lists the dep's options under Inherited options"
           (let [out (test-utils/bb nil "-cp" "test-resources" "tst" "--help")]
             (is (str/includes? out "Inherited options:"))
-            (is (str/includes? out "build target")))))))
+            (is (str/includes? out "build target"))))
+        (testing "completion offers them too, the same set as --help"
+          (let [compl (test-utils/bb nil "-cp" "test-resources" "org.babashka.cli/completions"
+                                     "complete" "--shell" "zsh" "--" "tst" "-")]
+            (is (str/includes? compl "--watch"))
+            (is (str/includes? compl "--target")))))))
   (testing "a CLI dep keeps its place in the graph, among plain deps"
     (doseq [args [["tst"] ["run" "--parallel" "tst"]]]
       (let [out (str (fs/file (fs/create-temp-dir) "order.txt"))]
