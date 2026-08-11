@@ -650,9 +650,7 @@
                                  (if-let [task (get tasks t)]
                                  (let [cli-prelude? (cli-node task)
                                        dep-forms prog
-                                       dep-nodes (keep #(when-let [n (cli-node (get tasks %))]
-                                                          [(str %) n])
-                                                       done)
+                                       dep-nodes (dep-cli-nodes tasks t)
                                        prog (if cli-prelude?
                                               (assemble-task-1 task-map task parallel? true
                                                                (cond-> dep-forms

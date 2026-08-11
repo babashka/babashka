@@ -669,6 +669,40 @@ even more stuff here\"
       (is (= ["{:target \"x\", :ran :dep-build}" "BODY"]
              (str/split-lines
               (test-utils/bb nil "-cp" "test-resources" "tst" "--target" "x"))))))
+  (testing "a dep with both a :task and an :exec-fn runs its body, then its handler"
+    (let [out (str (fs/file (fs/create-temp-dir) "both.txt"))]
+      (test-utils/with-config '{:tasks {-a {:task (spit (last *command-line-args*) "body\n" :append true)
+                                            :exec-fn babashka.tasks-cli/mark-task}
+                                        tst {:depends [-a]
+                                             :exec-fn babashka.tasks-cli/target-spit}}}
+        (test-utils/bb nil "-cp" "test-resources" "tst" "--out" out)
+        (is (= "body\nhandler:-a\ntarget\n" (slurp out))))))
+  (testing "a plain task runs with a CLI dep in :depends, skipping its handler"
+    (doseq [args [["tst"] ["run" "--parallel" "tst"]]]
+      (let [out (str (fs/file (fs/create-temp-dir) "plain.txt"))]
+        (test-utils/with-config '{:tasks {-a {:exec-fn babashka.tasks-cli/mark-task}
+                                          tst {:depends [-a]
+                                               :task (spit (last *command-line-args*) "target\n" :append true)}}}
+          (apply test-utils/bb nil "-cp" "test-resources" (concat args ["--out" out]))
+          (is (= "target\n" (slurp out)) (str "for " args))))))
+  (testing "a :cmd task may name a CLI task in :depends"
+    (test-utils/with-config '{:tasks {-build {:exec-fn babashka.tasks-cli/dep-build}
+                                      deploy {:depends [-build]
+                                              :cmd {"lock" {:exec-fn babashka.tasks-cli/dep-test}}}}}
+      (is (= [{:target "x" :ran :dep-build} {:target "x" :ran :dep-test}]
+             (map edn/read-string
+                  (str/split-lines
+                   (test-utils/bb nil "-cp" "test-resources" "deploy" "lock" "--target" "x")))))
+      (testing "the dep's options show in the leaf's help"
+        (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "deploy" "lock" "--help")
+                           "--target")))))
+  (testing "--help does not run a dependency's handler, under --parallel either"
+    (let [out (str (fs/file (fs/create-temp-dir) "help.txt"))]
+      (test-utils/with-config '{:tasks {-a {:exec-fn babashka.tasks-cli/mark-task}
+                                        tst {:depends [-a]
+                                             :exec-fn babashka.tasks-cli/target-spit}}}
+        (test-utils/bb nil "-cp" "test-resources" "run" "--parallel" "tst" "--out" out "--help")
+        (is (not (fs/exists? out))))))
   (testing "completion puts dependency resources on the classpath, like a run does"
     (testing "from the CLI dep itself"
       (test-utils/with-config '{:tasks {-build {:exec-fn task-test/dep-on-extra-path
