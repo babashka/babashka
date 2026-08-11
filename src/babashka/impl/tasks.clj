@@ -752,7 +752,11 @@
                         (into command-line-args)
                         (conj partial))
               tm (get tasks (symbol run))
-              prog (str "bb " run)]
+              prog (str "bb " run)
+              dep-nodes (dep-cli-nodes tasks run)
+              dep-tms (keep #(get tasks %)
+                            (try (butlast (target-order tasks (symbol run)))
+                                 (catch Exception _ nil)))]
           (if-let [node (cli-node tm)]
             ;; The task's classpath and requires run first, inside the same
             ;; try: the handler may live on its :extra-paths, and its symbol may
@@ -761,18 +765,22 @@
             ;; failure here may surface: the shell discards stderr, so an
             ;; uncaught error would look like "no candidates" while also
             ;; suppressing the file-completion fallback
-            (format "(try (let [tree (binding [*out* (java.io.StringWriter.)] %s\n%s\n(babashka.tasks/-resolve-cli-specs requiring-resolve (babashka.tasks/-task-node requiring-resolve \"%s\" %s)))] (babashka.cli/dispatch tree %s (babashka.tasks/-with-dep-spec (merge %s (babashka.tasks/-resolve-cli-opts requiring-resolve '%s \":tasks :cli\") %s) '%s requiring-resolve))) (catch Throwable _ (println \"org.babashka.cli/file-completion\")))"
-                    (add-deps-form (:extra-paths tm) (:extra-deps tm))
-                    (requires-form (concat (:requires tasks) (:requires tm)))
+            (format "(try (let [[tree opts] (binding [*out* (java.io.StringWriter.)] %s\n%s\n[(babashka.tasks/-resolve-cli-specs requiring-resolve (babashka.tasks/-task-node requiring-resolve \"%s\" %s)) (babashka.tasks/-with-dep-spec (merge %s (babashka.tasks/-resolve-cli-opts requiring-resolve '%s \":tasks :cli\") %s) '%s requiring-resolve)])] (babashka.cli/dispatch tree %s opts)) (catch Throwable _ (println \"org.babashka.cli/file-completion\")))"
+                    (add-deps-form (concat (mapcat :extra-paths dep-tms) (:extra-paths tm))
+                                   (apply merge (conj (mapv :extra-deps dep-tms) (:extra-deps tm))))
+                    (requires-form (concat (:requires tasks)
+                                           (mapcat :requires dep-tms)
+                                           (:requires tm)))
                     run
-                    (pr-str (list 'quote node)) (pr-str compl)
+                    (pr-str (list 'quote node))
                     ;; same defaults as -cli-dispatch, in the same precedence:
                     ;; a runner-level :cli (incl. a symbol naming a defaults
                     ;; var) may turn :help off, and :prog stays bb's
                     (pr-str {:help true})
                     (pr-str (:cli tasks))
                     (pr-str {:prog prog})
-                    (pr-str (dep-cli-nodes tasks run)))
+                    (pr-str (vec dep-nodes))
+                    (pr-str compl))
             ;; a task without :cli has no options to offer; defer to the shell
             ;; so file completion still works, as it did before bb claimed the
             ;; `bb` compdef
@@ -869,6 +877,7 @@
    '-cli-dispatch (sci/copy-var -cli-dispatch sci-ns)
    '-run-cli-dep (sci/copy-var -run-cli-dep sci-ns)
    '-dep-node (sci/copy-var -dep-node sci-ns)
+   '-dep-spec (sci/copy-var -dep-spec sci-ns)
    '-with-dep-spec (sci/copy-var -with-dep-spec sci-ns)
    '-resolve-cli-specs (sci/copy-var -resolve-cli-specs sci-ns)
    '-resolve-cli-opts (sci/copy-var -resolve-cli-opts sci-ns)
