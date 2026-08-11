@@ -634,6 +634,23 @@ even more stuff here\"
                                      "complete" "--shell" "zsh" "--" "tst" "-")]
             (is (str/includes? compl "--watch"))
             (is (str/includes? compl "--target")))))))
+  (testing "loading a dependency namespace does not leak into completion candidates"
+    (test-utils/with-config '{:tasks {-noisy {:exec-fn babashka.tasks-cli-noisy/go}
+                                      tst {:depends [-noisy]
+                                           :exec-fn babashka.tasks-cli/dep-test}}}
+      (is (not (str/includes? (test-utils/bb nil "-cp" "test-resources"
+                                             "org.babashka.cli/completions" "complete"
+                                             "--shell" "zsh" "--" "tst" "--")
+                              "LOAD NOISE")))))
+  (testing "--help still describes a task whose dependency namespace will not load"
+    (test-utils/with-config '{:tasks {-broken {:exec-fn no.such.ns/handler}
+                                      tst {:depends [-broken]
+                                           :exec-fn babashka.tasks-cli/dep-test}}}
+      (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "tst" "--help") "--watch"))
+      (testing "but running it reports the dependency"
+        (is (thrown-with-msg?
+             Exception #"Task -broken: cannot resolve :exec-fn no.such.ns/handler"
+             (bb "-cp" "test-resources" "tst"))))))
   (testing "completion puts dependency resources on the classpath, like a run does"
     (testing "from the CLI dep itself"
       (test-utils/with-config '{:tasks {-build {:exec-fn task-test/dep-on-extra-path
