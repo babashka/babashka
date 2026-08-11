@@ -651,6 +651,24 @@ even more stuff here\"
         (is (thrown-with-msg?
              Exception #"Task -broken: cannot resolve :exec-fn no.such.ns/handler"
              (bb "-cp" "test-resources" "tst"))))))
+  (testing "a dep's handler gets its options through a :fn leaf, not just :exec-fn"
+    (test-utils/with-config '{:tasks {-build {:exec-fn babashka.tasks-cli/dep-build}
+                                      deploy {:depends [-build]
+                                              :cmd {"lock" {:fn babashka.tasks-cli/lock}}}}}
+      (is (= [{:target "x" :ran :dep-build}
+              {:environment "staging" :target "x" :ran :lock}]
+             (map edn/read-string
+                  (str/split-lines
+                   (test-utils/bb nil "-cp" "test-resources"
+                                  "deploy" "lock" "staging" "--target" "x")))))))
+  (testing "a dep's handler gets its options when a :task body is the root handler"
+    (test-utils/with-config '{:tasks {-build {:exec-fn babashka.tasks-cli/dep-build}
+                                      tst {:depends [-build]
+                                           :task (println "BODY")
+                                           :cmd {"sub" {:exec-fn clojure.core/prn}}}}}
+      (is (= ["{:target \"x\", :ran :dep-build}" "BODY"]
+             (str/split-lines
+              (test-utils/bb nil "-cp" "test-resources" "tst" "--target" "x"))))))
   (testing "completion puts dependency resources on the classpath, like a run does"
     (testing "from the CLI dep itself"
       (test-utils/with-config '{:tasks {-build {:exec-fn task-test/dep-on-extra-path
