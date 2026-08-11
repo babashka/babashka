@@ -285,13 +285,21 @@
   [resolve-fn task-name node]
   (-resolve-cli-specs resolve-fn (-task-node resolve-fn task-name node)))
 
+(defn- spec-map
+  "A `:spec` as a map. babashka.cli takes a vector of pairs too, which is how a
+  spec fixes the order its options print in, and those do not merge."
+  [spec]
+  (cond (nil? spec) {}
+        (map? spec) spec
+        :else (into {} spec)))
+
 (defn -dep-spec
   "The merged spec of a task's CLI `:depends`, from their `[name node]` pairs. It
   goes in as the dispatch-level spec, so the same options parse, print in help
   and are offered by completion."
   [dep-nodes resolve-fn]
   (reduce (fn [acc [nm node]]
-            (merge acc (:spec (-dep-node resolve-fn nm node))))
+            (merge acc (spec-map (:spec (-dep-node resolve-fn nm node)))))
           {} dep-nodes))
 
 (defn -with-dep-spec
@@ -300,7 +308,7 @@
   [opts dep-nodes resolve-fn]
   (let [spec (-dep-spec dep-nodes resolve-fn)]
     (cond-> opts
-      (seq spec) (update :spec #(merge spec %)))))
+      (seq spec) (update :spec #(merge spec (spec-map %))))))
 
 (def ^:dynamic *cli-target?*
   "True while assembling for a target that dispatches, which is what binds
@@ -324,7 +332,7 @@
          (resolve-or-throw resolve-fn f
                            (str "Task " task-name ": cannot resolve :exec-fn " f))
          f)
-       (select-keys opts (keys (:spec node)))))))
+       (select-keys opts (keys (spec-map (:spec node))))))))
 
 (defn -cli-dispatch
   "Runs babashka.cli/dispatch over a task's node. A `:fn` / `:exec-fn` symbol is
@@ -352,6 +360,9 @@
         cli-opts (-task-node resolve-fn task-name cli-opts)
         {:keys [body-fn deps-fn hook-fn]} fns
         dep-spec (-dep-spec dep-nodes resolve-fn)
+        own-spec (fn [m]
+                   (cond-> (select-keys m [:spec])
+                     (and (seq dep-spec) (:spec m)) (update :spec spec-map)))
         with-deps (fn [f] (fn [m] (when deps-fn (deps-fn m)) (f m)))
         with-hooks (fn [f] (if hook-fn (fn [m] (hook-fn (fn [] (f m)))) f))
         ;; resolve a :fn / :exec-fn symbol, fold in the fn's metadata and gate
@@ -381,8 +392,8 @@
                                             task-cli
                                             (babashka.cli/merge-opts
                                              (when (seq dep-spec) {:spec dep-spec})
-                                             (select-keys defaults [:spec])
-                                             (select-keys task-cli [:spec]))
+                                             (own-spec defaults)
+                                             (own-spec task-cli))
                                             {:prog (str "bb " task-name)}))))
 
 (defn wrap-cli

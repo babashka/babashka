@@ -662,6 +662,32 @@ even more stuff here\"
                                              :exec-fn babashka.tasks-cli/target-spit}}}
         (test-utils/bb nil "-cp" "test-resources" "run" "--parallel" "tst" "--out" out)
         (is (= "a\nc\ntarget\n" (slurp out))))))
+  (testing "a dep's :spec may be a vector of pairs, which fixes the order it prints in"
+    (test-utils/with-config '{:tasks {-build {:exec-fn clojure.core/prn
+                                              :cli {:spec [[:zeta {:desc "dep last"}]
+                                                           [:alpha {:desc "dep first"}]]}}
+                                      tst {:depends [-build]
+                                           :exec-fn babashka.tasks-cli/dep-test}}}
+      (is (= [{:alpha "a"} {:alpha "a" :ran :dep-test}]
+             (map edn/read-string
+                  (str/split-lines
+                   (test-utils/bb nil "-cp" "test-resources" "tst" "--alpha" "a")))))
+      (let [out (test-utils/bb nil "-cp" "test-resources" "tst" "--help")]
+        (is (str/includes? out "--zeta"))
+        (is (str/includes? out "--alpha")))))
+  (testing "a target's vector :spec survives a dep contributing a map one"
+    (test-utils/with-config '{:tasks {-build {:exec-fn babashka.tasks-cli/dep-build}
+                                      tst {:depends [-build]
+                                           :exec-fn clojure.core/prn
+                                           :cli {:spec [[:zeta {:desc "own last"}]
+                                                        [:alpha {:desc "own first"}]]}}}}
+      (is (= [{:target "t" :ran :dep-build} {:target "t" :alpha "a"}]
+             (map edn/read-string
+                  (str/split-lines
+                   (test-utils/bb nil "-cp" "test-resources" "tst" "--target" "t" "--alpha" "a")))))
+      (let [out (test-utils/bb nil "-cp" "test-resources" "tst" "--help")]
+        (is (str/includes? out "own last"))
+        (is (str/includes? out "build target")))))
   (testing "a dep's handler runs between its own :enter and :leave, under its own task"
     (doseq [args [["tst"] ["run" "--parallel" "tst"]]]
       (let [out (str (fs/file (fs/create-temp-dir) "hooks.txt"))]
