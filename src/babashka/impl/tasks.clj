@@ -281,9 +281,15 @@
 
 (defn -dep-node
   "A `:depends` task's node, ready to read a `:spec` off: its own `:cli` folded
-  in, then its handler's metadata, the same two steps a target goes through."
+  in, then its handler's metadata, the same two steps a target goes through.
+
+  A handler whose namespace will not load contributes no spec rather than
+  failing here: describing a task must not depend on every dependency being
+  loadable. Running one still reports it, through `-run-cli-dep`."
   [resolve-fn task-name node]
-  (-resolve-cli-specs resolve-fn (-task-node resolve-fn task-name node)))
+  (let [node (-task-node resolve-fn task-name node)]
+    (try (-resolve-cli-specs resolve-fn node)
+         (catch Throwable _ node))))
 
 (defn- spec-map
   "A `:spec` as a map. babashka.cli takes a vector of pairs too, which is how a
