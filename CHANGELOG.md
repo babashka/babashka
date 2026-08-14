@@ -16,6 +16,7 @@ A preview of the next release can be installed from
 - Tasks: the options of a `:depends` task parse for the task that runs, and show under `Inherited options:` in `--help`
 - Tasks: the handler of a `:depends` task receives the options that it declared
 - Tasks: a CLI task cannot name a `:cmd` task in `:depends`, unless that task also has a `:task` body. A command tree has no single handler to run, and babashka reports this as an error
+- [#2021](https://github.com/babashka/babashka/issues/2021): bump http-kit to 2.9.0-beta4, which fixes four security advisories
 
 ## 1.13.219 (2026-07-27)
 

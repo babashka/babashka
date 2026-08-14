@@ -78,9 +78,9 @@
              :feature/datascript {:source-paths ["feature-datascript"]
                                   :dependencies [[datascript "1.3.10"]]}
              :feature/httpkit-client {:source-paths ["feature-httpkit-client"]
-                                      :dependencies [[http-kit "2.9.0-beta1"]]}
+                                      :dependencies [[http-kit "2.9.0-beta4"]]}
              :feature/httpkit-server {:source-paths ["feature-httpkit-server"]
-                                      :dependencies [[http-kit "2.9.0-beta1"]]}
+                                      :dependencies [[http-kit "2.9.0-beta4"]]}
              :feature/core-match {:source-paths ["feature-core-match"]
                                   :dependencies [[org.clojure/core.match "1.0.0"]]}
              :feature/hiccup {:source-paths ["feature-hiccup"]
