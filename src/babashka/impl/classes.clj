@@ -660,6 +660,7 @@
           java.util.Scanner
           java.util.Set
           java.util.StringTokenizer
+          java.util.TreeMap
           java.util.WeakHashMap
           java.util.UUID
           java.util.function.Consumer
