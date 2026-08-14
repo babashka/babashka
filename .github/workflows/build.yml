@@ -93,22 +93,27 @@ jobs:
             arch: amd64
             static: false
             oldest_macos_version: "11.0"
+            # Oracle publishes no macOS x64 build after 25.0.1
+            graalvm_version: "25.0.1"
           - os: macos-14
             name: macos
             static: false
             arch: aarch64
             oldest_macos_version: "11.0"
+            graalvm_version: "25.0.4"
 
          #- os: ubuntu-latest
          #  name: linux
          #  static: false
+         #  graalvm_version: "25.0.4"
          #- os: ubuntu-latest
          #  name: linux
          #  static: true
+         #  graalvm_version: "25.0.4"
     runs-on: ${{ matrix.os }}
     env:
       LEIN_ROOT: "true"
-      GRAALVM_VERSION: "25"
+      GRAALVM_VERSION: ${{ matrix.graalvm_version }}
       BABASHKA_PLATFORM: ${{ matrix.name }} # used in release script
       BABASHKA_ARCH: ${{ matrix.arch }}
       BABASHKA_TEST_ENV: native
@@ -136,7 +141,7 @@ jobs:
         if: "matrix.static == false"
         uses: graalvm/setup-graalvm@v1.3.4
         with:
-          java-version: '25'
+          java-version: ${{ matrix.graalvm_version }}
           distribution: 'graalvm'
           components: 'native-image'
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -145,7 +150,7 @@ jobs:
         if: "matrix.static == true"
         uses: graalvm/setup-graalvm@v1.3.4
         with:
-          java-version: '25'
+          java-version: ${{ matrix.graalvm_version }}
           distribution: 'graalvm'
           native-image-musl: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
