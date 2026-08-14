@@ -5,7 +5,9 @@ RUN apt update
 RUN apt install --no-install-recommends -yy build-essential zlib1g-dev
 WORKDIR "/opt"
 
-ENV GRAALVM_VERSION="25"
+ENV GRAALVM_VERSION="25.0.4"
+# the download URL is grouped by feature version, e.g. 25 for 25.0.4
+ENV GRAALVM_FEATURE_VERSION="25"
 ARG TARGETARCH
 # Do not set those directly, use TARGETARCH instead
 ENV BABASHKA_ARCH=
@@ -16,7 +18,7 @@ RUN if [ "${TARGETARCH}" = "" ] || [ "${TARGETARCH}" = "amd64" ]; then \
       export GRAALVM_ARCH=aarch64; \
     fi && \
     echo "Installing GraalVM for ${GRAALVM_ARCH}" && \
-    curl -sLO https://download.oracle.com/graalvm/${GRAALVM_VERSION}/archive/graalvm-jdk-${GRAALVM_VERSION}_linux-${GRAALVM_ARCH}_bin.tar.gz && \
+    curl -sLO https://download.oracle.com/graalvm/${GRAALVM_FEATURE_VERSION}/archive/graalvm-jdk-${GRAALVM_VERSION}_linux-${GRAALVM_ARCH}_bin.tar.gz && \
     mkdir "graalvm-$GRAALVM_VERSION" && \
     tar -xzf graalvm-jdk-${GRAALVM_VERSION}_linux-${GRAALVM_ARCH}_bin.tar.gz -C graalvm-$GRAALVM_VERSION --strip-components 1
 

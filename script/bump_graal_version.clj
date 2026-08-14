@@ -55,7 +55,7 @@
 ;; OR
 ;;
 ;; We could have them as environment variables
-(def current-graal-version "25")
+(def current-graal-version "25.0.4")
 
 (def cl-options
   [["-g" "--graal VERSION" "graal version"]

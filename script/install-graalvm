@@ -4,7 +4,10 @@ set -euo pipefail
 
 INSTALL_DIR="${1:-$HOME}"
 
-GRAALVM_VERSION="${GRAALVM_VERSION:-25}"
+GRAALVM_VERSION="${GRAALVM_VERSION:-25.0.4}"
+
+# the download URL is grouped by feature version, e.g. 25 for 25.0.4
+GRAALVM_FEATURE_VERSION="${GRAALVM_VERSION%%.*}"
 
 GRAALVM_PLATFORM=$BABASHKA_PLATFORM
 
@@ -19,7 +22,7 @@ esac
 
 GRAALVM_DIR_NAME="graalvm-$GRAALVM_VERSION"
 GRAALVM_FILENAME="graalvm-jdk-${GRAALVM_VERSION}_${GRAALVM_PLATFORM}-${GRAALVM_ARCH}_bin.tar.gz"
-DOWNLOAD_URL="https://download.oracle.com/graalvm/${GRAALVM_VERSION}/archive/${GRAALVM_FILENAME}"
+DOWNLOAD_URL="https://download.oracle.com/graalvm/${GRAALVM_FEATURE_VERSION}/archive/${GRAALVM_FILENAME}"
 
 pushd "$INSTALL_DIR" >/dev/null
 

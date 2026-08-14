@@ -5,7 +5,10 @@
    [clojure.string :as str]
    [flatland.ordered.map :refer [ordered-map]]))
 
-(def graalvm-version "25")
+(def graalvm-version "25.0.4")
+
+;; Oracle publishes no macOS x64 build after 25.0.1
+(def macos-amd64-graalvm-version "25.0.1")
 
 (defn run
   ([cmd-name cmd]
@@ -121,7 +124,7 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                     :key   "v1-dependencies-{{ checksum \"project.clj\" }}-{{ checksum \"deps.edn\" }}"}}]))))
 
 (defn unix
-  [shorted? static? musl? arch executor-conf resource-class graalvm-home platform]
+  [shorted? static? musl? arch executor-conf resource-class graalvm-home platform graalvm-version]
   (let [env              {:LEIN_ROOT         "true"
                           :GRAALVM_VERSION   graalvm-version
                           :GRAALVM_HOME      graalvm-home
@@ -201,7 +204,7 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
         machine-executor-conf {:machine {:image "ubuntu-2004:2024.05.1"}}
         mac-executor-conf     {:macos {:xcode "14.3.1"}}
         linux-graalvm-home    (str "/home/circleci/graalvm-" graalvm-version)
-        mac-graalvm-home      (format "/Users/distiller/graalvm-%s/Contents/Home" graalvm-version)]
+        mac-graalvm-home      (format "/Users/distiller/graalvm-%s/Contents/Home" macos-amd64-graalvm-version)]
     (ordered-map
      :version   2.1
      :commands
@@ -213,12 +216,12 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
           "docker run --privileged --rm tonistiigi/binfmt --install all\ndocker buildx create --name ci-builder --use"}}]}}
      :jobs      (ordered-map
                  :jvm (jvm shorted? linux-graalvm-home)
-                 :linux (unix shorted? false false "amd64" docker-executor-conf "large" linux-graalvm-home "linux")
+                 :linux (unix shorted? false false "amd64" docker-executor-conf "large" linux-graalvm-home "linux" graalvm-version)
                  :linux-static
-                 (unix shorted? true true "amd64" docker-executor-conf "large" linux-graalvm-home "linux")
+                 (unix shorted? true true "amd64" docker-executor-conf "large" linux-graalvm-home "linux" graalvm-version)
                  :linux-aarch64-static
-                 (unix shorted? true false "aarch64" machine-executor-conf "arm.large" linux-graalvm-home "linux")
-                 :mac (unix shorted? false false "amd64" mac-executor-conf "m4pro.large" mac-graalvm-home "mac")
+                 (unix shorted? true false "aarch64" machine-executor-conf "arm.large" linux-graalvm-home "linux" graalvm-version)
+                 :mac (unix shorted? false false "amd64" mac-executor-conf "m4pro.large" mac-graalvm-home "mac" macos-amd64-graalvm-version)
                  :deploy (deploy shorted?)
                  :docker (docker shorted?))
      :workflows (ordered-map
