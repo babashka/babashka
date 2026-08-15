@@ -14,6 +14,11 @@ on:
     branches:
       - master
 
+# The group is literal because both workflows are named "build".
+concurrency:
+  group: build-native-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+
 # TODO: Add deploy if needed
 jobs:
   jvm:
@@ -86,21 +91,14 @@ jobs:
   native:
     if: "!contains(github.event.head_commit.message, 'skip ci')"
     strategy:
+      # macos-15-intel builds on master only.
+      # Oracle publishes no macOS x64 build after 25.0.1.
       matrix:
-        include:
-          - os: macos-15-intel
-            name: macos
-            arch: amd64
-            static: false
-            oldest_macos_version: "11.0"
-            # Oracle publishes no macOS x64 build after 25.0.1
-            graalvm_version: "25.0.1"
-          - os: macos-14
-            name: macos
-            static: false
-            arch: aarch64
-            oldest_macos_version: "11.0"
-            graalvm_version: "25.0.4"
+        # Key order sets the generated job name.
+        include: >-
+          ${{ fromJSON(github.ref == 'refs/heads/master'
+          && '[{"os":"macos-15-intel","name":"macos","arch":"amd64","static":false,"oldest_macos_version":"11.0","graalvm_version":"25.0.1"},{"os":"macos-14","name":"macos","static":false,"arch":"aarch64","oldest_macos_version":"11.0","graalvm_version":"25.0.4"}]'
+          || '[{"os":"macos-14","name":"macos","static":false,"arch":"aarch64","oldest_macos_version":"11.0","graalvm_version":"25.0.4"}]') }}
 
          #- os: ubuntu-latest
          #  name: linux

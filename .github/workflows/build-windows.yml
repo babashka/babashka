@@ -1,7 +1,10 @@
 name: build
 
 on:
+  # Restricted like build.yml, so a PR commit builds once.
   push:
+    branches:
+      - master
     paths-ignore:
       - "**.md"
       - "logo/**"
@@ -9,6 +12,10 @@ on:
     paths-ignore:
       - "**.md"
       - "logo/**"
+
+concurrency:
+  group: build-windows-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
 # TODO: Add deploy if needed
 jobs:
