@@ -116,6 +116,61 @@
           res))
       res)))
 
+(def ^:dynamic ^:private *branch-name*
+  "Volatile holding the name of the `parallel` branch on this thread, or nil
+  outside one. A volatile rather than a binding so the name survives the stack
+  unwinding that an exception does, which is when it is read."
+  nil)
+
+(defn set-task-name!
+  "Names the `parallel` branch this code runs on, for error reporting. `run`
+  calls it with the task it runs, so only a branch that is a plain call needs
+  this. Outside a branch it does nothing."
+  [name]
+  (when *branch-name*
+    (vreset! *branch-name* (str name)))
+  nil)
+
+(defn -parallel*
+  "Runs `thunks` concurrently, returning their values in order. The first
+  failure throws, without waiting for the branches that are still running,
+  which is what `:depends` under `--parallel` does."
+  [thunks]
+  (let [branches (mapv (fn [f]
+                         (let [nm (volatile! nil)]
+                           [nm (clojure.core.async/thread
+                                 (binding [*branch-name* nm]
+                                   (try {:value (f)}
+                                        (catch Throwable e {:error e}))))]))
+                       thunks)
+        chans (into {} (map-indexed (fn [i [_ ch]] [ch i])) branches)]
+    (loop [pending chans
+           results {}]
+      (if (empty? pending)
+        (mapv results (range (count branches)))
+        (let [[res ch] (clojure.core.async/alts!! (vec (keys pending)))
+              i (get pending ch)]
+          (if-let [e (:error res)]
+            (let [nm (deref (first (nth branches i)))]
+              (throw (ex-info (str "Error in parallel branch"
+                                   (when nm (str ": " nm))
+                                   "\n" (ex-message e))
+                              (merge (or (ex-data e) {}) {:babashka/exit 1}))))
+            (recur (dissoc pending ch) (assoc results i (:value res)))))))))
+
+(defmacro parallel
+  "Runs each expression concurrently, returning their values in order. The
+  first failure throws and the run stops, without waiting for the branches
+  that are still going.
+
+  A branch names itself for error reporting: `run` does that with the task it
+  runs, other code can call `set-task-name!`."
+  [& exprs]
+  ;; built by hand: a syntax quote would resolve to this implementation
+  ;; namespace, which the tasks are not evaluated in
+  (list 'babashka.tasks/-parallel*
+        (mapv (fn [e] (list 'fn [] e)) exprs)))
+
 (defn depends-map [tasks target-name]
   (let [deps (seq (:depends (get tasks target-name)))
         m [target-name deps]]
@@ -862,6 +917,7 @@
   ([task] (run task nil))
   ([task {:keys [:parallel]
           :or {parallel (:parallel (current-task))}}]
+   (set-task-name! task)
    (let [[[expr] exit-code] (assemble-task task parallel)]
      (if (or (nil? exit-code) (zero? exit-code))
        (sci/eval-string* (ctx) expr)
@@ -887,6 +943,9 @@
    'current-state state
    'run (sci/copy-var run sci-ns)
    'exec (sci/copy-var exec sci-ns)
+   'parallel (sci/copy-var parallel sci-ns)
+   'set-task-name! (sci/copy-var set-task-name! sci-ns)
+   '-parallel* (sci/copy-var -parallel* sci-ns)
    '-cli-dispatch (sci/copy-var -cli-dispatch sci-ns)
    '-run-cli-dep (sci/copy-var -run-cli-dep sci-ns)
    '-dep-node (sci/copy-var -dep-node sci-ns)
