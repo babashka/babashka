@@ -1068,6 +1068,16 @@ even more stuff here\"
   (testing "returns the branch values in declaration order"
     (test-utils/with-config '{:tasks {tst {:task (prn (parallel (do (Thread/sleep 100) :slow) :fast))}}}
       (is (= [:slow :fast] (bb "tst")))))
+  (testing "the branches overlap, they are not evaluated one after the other"
+    ;; each branch counts down, then waits for the other to do the same, so both
+    ;; see zero only while both are running. A serial run times out on the first
+    (test-utils/with-config
+      '{:tasks {tst {:task (let [latch (java.util.concurrent.CountDownLatch. 2)
+                                 rendezvous (fn []
+                                              (.countDown latch)
+                                              (.await latch 5 java.util.concurrent.TimeUnit/SECONDS))]
+                             (prn (parallel (rendezvous) (rendezvous))))}}}
+      (is (= [true true] (bb "tst")))))
   (testing "the first failure throws, naming the branch run was given"
     (let [out (str (fs/file (fs/create-temp-dir) "straggler.txt"))]
       (test-utils/with-config '{:tasks {-boom {:task (throw (ex-info "boom" {}))}
@@ -1086,13 +1096,7 @@ even more stuff here\"
       (is (thrown-with-msg?
            Exception #"Error in parallel branch: -boom"
            (bb "tst")))))
-  (testing "a branch that is a plain call names itself with set-task-name!"
-    (test-utils/with-config '{:tasks {tst {:task (parallel (do (set-task-name! "my-branch")
-                                                               (throw (ex-info "kaboom" {}))))}}}
-      (is (thrown-with-msg?
-           Exception #"Error in parallel branch: my-branch"
-           (bb "tst")))))
-  (testing "an unnamed branch reports the cause on its own"
+  (testing "a branch that is not a task reports the cause on its own"
     (test-utils/with-config '{:tasks {tst {:task (parallel (throw (ex-info "kaboom" {})))}}}
       (is (thrown-with-msg?
            Exception #"Error in parallel branch\nkaboom"
@@ -1100,10 +1104,7 @@ even more stuff here\"
   (testing "a task named parallel shadows the macro, like run and shell"
     (test-utils/with-config '{:tasks {parallel {:task (println "task ran")}
                                       tst {:task (run 'parallel)}}}
-      (is (str/includes? (test-utils/bb nil "tst") "task ran"))))
-  (testing "set-task-name! outside a branch does nothing"
-    (test-utils/with-config '{:tasks {tst {:task (prn (set-task-name! "nope"))}}}
-      (is (nil? (bb "tst"))))))
+      (is (str/includes? (test-utils/bb nil "tst") "task ran")))))
 
 (deftest task-completion-test
   (testing "task-name completion lists matching public tasks"

@@ -122,10 +122,9 @@
   unwinding that an exception does, which is when it is read."
   nil)
 
-(defn set-task-name!
+(defn- set-branch-name!
   "Names the `parallel` branch this code runs on, for error reporting. `run`
-  calls it with the task it runs, so only a branch that is a plain call needs
-  this. Outside a branch it does nothing."
+  calls it with the task it runs. Outside a branch it does nothing."
   [name]
   (when *branch-name*
     (vreset! *branch-name* (str name)))
@@ -163,8 +162,7 @@
   first failure throws and the run stops, without waiting for the branches
   that are still going.
 
-  A branch names itself for error reporting: `run` does that with the task it
-  runs, other code can call `set-task-name!`."
+  A branch that `run` drives is named after its task in that error."
   [& exprs]
   ;; built by hand: a syntax quote would resolve to this implementation
   ;; namespace, which the tasks are not evaluated in
@@ -596,9 +594,6 @@
   (intern *ns* (with-meta 'parallel (meta (var babashka.tasks/parallel)))
           @(var babashka.tasks/parallel)))
 
-(when-not (resolve 'set-task-name!)
-  (intern *ns* 'set-task-name! babashka.tasks/set-task-name!))
-
 ;; init, name should not clash with existing tasks!
 (defmacro __babashka$tasks$impl$init []
   (when-not (resolve '%s/__babashka$tasks$impl$init?)
@@ -924,7 +919,7 @@
   ([task] (run task nil))
   ([task {:keys [:parallel]
           :or {parallel (:parallel (current-task))}}]
-   (set-task-name! task)
+   (set-branch-name! task)
    (let [[[expr] exit-code] (assemble-task task parallel)]
      (if (or (nil? exit-code) (zero? exit-code))
        (sci/eval-string* (ctx) expr)
@@ -951,7 +946,6 @@
    'run (sci/copy-var run sci-ns)
    'exec (sci/copy-var exec sci-ns)
    'parallel (sci/copy-var parallel sci-ns)
-   'set-task-name! (sci/copy-var set-task-name! sci-ns)
    '-parallel* (sci/copy-var -parallel* sci-ns)
    '-cli-dispatch (sci/copy-var -cli-dispatch sci-ns)
    '-run-cli-dep (sci/copy-var -run-cli-dep sci-ns)
