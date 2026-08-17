@@ -1066,13 +1066,11 @@ even more stuff here\"
 
 (deftest parallel-test
   (testing "returns the branch values in declaration order"
-    (test-utils/with-config '{:tasks {:requires ([babashka.tasks :refer [parallel]])
-                                      tst {:task (prn (parallel (do (Thread/sleep 100) :slow) :fast))}}}
+    (test-utils/with-config '{:tasks {tst {:task (prn (parallel (do (Thread/sleep 100) :slow) :fast))}}}
       (is (= [:slow :fast] (bb "tst")))))
   (testing "the first failure throws, naming the branch run was given"
     (let [out (str (fs/file (fs/create-temp-dir) "straggler.txt"))]
-      (test-utils/with-config '{:tasks {:requires ([babashka.tasks :refer [parallel]])
-                                        -boom {:task (throw (ex-info "boom" {}))}
+      (test-utils/with-config '{:tasks {-boom {:task (throw (ex-info "boom" {}))}
                                         -slow {:task (do (Thread/sleep 3000)
                                                          (spit (last *command-line-args*) "straggler\n"))}
                                         tst {:task (parallel (run '-boom) (run '-slow))}}}
@@ -1082,29 +1080,29 @@ even more stuff here\"
         (testing "without waiting for the branches still running"
           (is (not (fs/exists? out)))))))
   (testing "a branch that never finishes does not hold up that failure"
-    (test-utils/with-config '{:tasks {:requires ([babashka.tasks :refer [parallel]])
-                                      -immortal {:task (deref (promise))}
+    (test-utils/with-config '{:tasks {-immortal {:task (deref (promise))}
                                       -boom {:task (throw (ex-info "boom" {}))}
                                       tst {:task (parallel (run '-immortal) (run '-boom))}}}
       (is (thrown-with-msg?
            Exception #"Error in parallel branch: -boom"
            (bb "tst")))))
   (testing "a branch that is a plain call names itself with set-task-name!"
-    (test-utils/with-config '{:tasks {:requires ([babashka.tasks :refer [parallel set-task-name!]])
-                                      tst {:task (parallel (do (set-task-name! "my-branch")
+    (test-utils/with-config '{:tasks {tst {:task (parallel (do (set-task-name! "my-branch")
                                                                (throw (ex-info "kaboom" {}))))}}}
       (is (thrown-with-msg?
            Exception #"Error in parallel branch: my-branch"
            (bb "tst")))))
   (testing "an unnamed branch reports the cause on its own"
-    (test-utils/with-config '{:tasks {:requires ([babashka.tasks :refer [parallel]])
-                                      tst {:task (parallel (throw (ex-info "kaboom" {})))}}}
+    (test-utils/with-config '{:tasks {tst {:task (parallel (throw (ex-info "kaboom" {})))}}}
       (is (thrown-with-msg?
            Exception #"Error in parallel branch\nkaboom"
            (bb "tst")))))
+  (testing "a task named parallel shadows the macro, like run and shell"
+    (test-utils/with-config '{:tasks {parallel {:task (println "task ran")}
+                                      tst {:task (run 'parallel)}}}
+      (is (str/includes? (test-utils/bb nil "tst") "task ran"))))
   (testing "set-task-name! outside a branch does nothing"
-    (test-utils/with-config '{:tasks {:requires ([babashka.tasks :refer [set-task-name!]])
-                                      tst {:task (prn (set-task-name! "nope"))}}}
+    (test-utils/with-config '{:tasks {tst {:task (prn (set-task-name! "nope"))}}}
       (is (nil? (bb "tst"))))))
 
 (deftest task-completion-test

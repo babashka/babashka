@@ -592,6 +592,13 @@
 (when-not (resolve 'exec)
   (intern *ns* 'exec @(var babashka.tasks/exec)))
 
+(when-not (resolve 'parallel)
+  (intern *ns* (with-meta 'parallel (meta (var babashka.tasks/parallel)))
+          @(var babashka.tasks/parallel)))
+
+(when-not (resolve 'set-task-name!)
+  (intern *ns* 'set-task-name! babashka.tasks/set-task-name!))
+
 ;; init, name should not clash with existing tasks!
 (defmacro __babashka$tasks$impl$init []
   (when-not (resolve '%s/__babashka$tasks$impl$init?)
