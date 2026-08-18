@@ -946,6 +946,13 @@ Use bb run --help to show this help output.
                 (cp/add-classpath classpath)
                 ;; when classpath isn't set, we calculate it from bb.edn, if present
                 (when-let [bb-edn @common/bb-edn] (deps/add-deps bb-edn {:force force?})))
+            ;; the task name is the bb.edn key, so parsing needed nothing from
+            ;; the lib; its file is read now, when the classpath exists
+            _ (when-let [bb-edn @common/bb-edn]
+                (when (some #(and (map? %) (:import %)) (vals (:tasks bb-edn)))
+                  (vreset! common/bb-edn
+                           (tasks/resolve-imports bb-edn
+                                                  (fn [path] (some-> (cp/resource path) slurp))))))
             abs-path (when file
                        (let [abs-path (.getAbsolutePath (io/file file))]
                          (sci/alter-var-root sci/file (constantly abs-path))
@@ -1350,15 +1357,7 @@ Use bb run --help to show this help output.
                              (assoc edn :deps-root deps-root)
                              edn)
                        edn (tasks/join-docs edn)]
-                   (vreset! common/bb-edn edn)
-                   ;; imports come from the classpath bb.edn itself declares,
-                   ;; and the parser needs the imported names, so both happen now
-                   (when (get-in edn [:tasks :imports])
-                     (deps/add-deps edn)
-                     (vreset! common/bb-edn
-                              (tasks/resolve-imports @common/bb-edn
-                                                     (fn [path] (some-> (cp/resource path) slurp)))))
-                   @common/bb-edn))
+                   (vreset! common/bb-edn edn)))
         opts (parse-opts args opts)
         ;; A completion callback must never run what is on the line being
         ;; completed. The completed words go through the normal parsing above so

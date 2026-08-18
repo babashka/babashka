@@ -47,26 +47,40 @@
 (defn- import-path [lib]
   (str (.replace (namespace-munge (name lib)) "." "/") "/tasks.edn"))
 
+(defn- hidden-import-name
+  "The local name of a task that rides along with an `:import`, dash-prefixed
+  so it stays out of listings and free of the lib's own naming."
+  [lib nm]
+  (symbol (str "-" (.replace (namespace-munge (name lib)) "." "_") "_" nm)))
+
 (defn resolve-imports
-  "Merges the tasks that `:tasks {:imports ...}` names into the tasks map. An
-  import spec is `[lib :refer [name ...]]`, read from the lib's `tasks.edn` on
-  the classpath, so an import is data merged into data: the imported tasks
-  behave as if they were written in bb.edn. A referred task brings its
-  transitive `:depends` along. A name that is already a task is an error.
+  "Materializes every task declared as `{:import some-other.lib/some-task}`
+  from the lib's `some_other/lib/tasks.edn` on the classpath, a map of task
+  definitions and nothing else. The task's own keys override the imported
+  ones, so `:doc` or `:private` can be restated locally. Its transitive
+  `:depends` come along under hidden local names.
+
+  The task name is the bb.edn key, so the parser never needs the lib file:
+  this runs after the classpath is set up, not before.
 
   `resource-fn` reads a classpath resource to a string, nil when absent."
   [config resource-fn]
-  (reduce
-   (fn [config spec]
-     (let [[lib & kvs] (when (vector? spec) spec)
-           {:keys [refer] :as opts} (when (even? (count kvs)) (apply hash-map kvs))]
-       (when-not (and (symbol? lib) (vector? refer) (seq refer) (every? symbol? refer)
-                      (= [:refer] (keys opts)))
-         (throw (ex-info (str "Task import must be [lib :refer [task ...]], got: " (pr-str spec))
-                         {:babashka/exit 1})))
+  (let [tasks (:tasks config)
+        pointers (for [[k v] tasks
+                       :when (and (map? v) (:import v))]
+                   [k v])]
+    (doseq [[k v] pointers]
+      (when-not (qualified-symbol? (:import v))
+        (throw (ex-info (str "Task " k ": :import must be a qualified symbol, got: "
+                             (pr-str (:import v)))
+                        {:babashka/exit 1}))))
+    (reduce
+     (fn [config [lib entries]]
        (let [path (import-path lib)
              content (or (resource-fn path)
-                         (throw (ex-info (str "Task import " lib ": no " path " on the classpath")
+                         (throw (ex-info (str "Task " (ffirst entries) ": no " path
+                                              " on the classpath (:import "
+                                              (:import (second (first entries))) ")")
                                          {:babashka/exit 1})))
              lib-tasks (edn/read-string {:default tagged-literal} content)
              _ (when-not (and (map? lib-tasks) (every? symbol? (keys lib-tasks)))
@@ -74,28 +88,35 @@
                                       " must hold a map of task definitions only")
                                  {:babashka/exit 1})))
              lib-tasks (:tasks (join-docs {:tasks lib-tasks}))
-             _ (doseq [r refer]
-                 (when-not (contains? lib-tasks r)
-                   (throw (ex-info (str "Task import " lib ": " r " is not defined in " path)
+             _ (doseq [[k v] entries]
+                 (when-not (contains? lib-tasks (symbol (name (:import v))))
+                   (throw (ex-info (str "Task " k ": " (:import v)
+                                        " is not defined in " path)
                                    {:babashka/exit 1}))))
-             closure (loop [todo refer out {}]
+             public (into {} (map (fn [[k v]] [(symbol (name (:import v))) k])) entries)
+             closure (loop [todo (keys public) seen #{}]
                        (if-let [t (first todo)]
-                         (if (or (contains? out t) (not (contains? lib-tasks t)))
-                           (recur (rest todo) out)
+                         (if (or (contains? seen t) (not (contains? lib-tasks t)))
+                           (recur (rest todo) seen)
                            (recur (concat (rest todo) (:depends (get lib-tasks t)))
-                                  (assoc out t (get lib-tasks t))))
-                         out))]
-         (doseq [t (keys closure)]
-           (when (contains? (:tasks config) t)
-             (throw (ex-info (str "Task import " lib ": " t " is already a task")
-                             {:babashka/exit 1}))))
-         (-> config
-             (update :tasks merge closure)
-             ;; bb tasks lists from the raw bb.edn string, where imports do
-             ;; not appear, so the referred names ride along per lib
-             (update :imported-tasks (fnil conj []) [lib refer])))))
-   config
-   (get-in config [:tasks :imports])))
+                                  (conj seen t)))
+                         seen))
+             rename (fn [t] (or (get public t)
+                                (if (contains? lib-tasks t) (hidden-import-name lib t) t)))]
+         (reduce
+          (fn [config t]
+            (let [m (cond-> (get lib-tasks t)
+                      (:depends (get lib-tasks t)) (update :depends #(mapv rename %)))]
+              (if-let [entry (get public t)]
+                (update-in config [:tasks entry] #(merge m (dissoc % :import)))
+                (let [nm (rename t)]
+                  (when (contains? tasks nm)
+                    (throw (ex-info (str "Task import " lib ": " nm " is already a task")
+                                    {:babashka/exit 1})))
+                  (assoc-in config [:tasks nm] m)))))
+          config closure)))
+     config
+     (group-by #(symbol (namespace (:import (second %)))) pointers))))
 
 (def sci-ns (sci/create-ns 'babashka.tasks nil))
 (def default-log-level :error)
@@ -893,37 +914,23 @@
   [sci-ctx]
   (let [tasks (:tasks @bb-edn)
         raw-edn (:raw @bb-edn)
-        visible (fn [names]
-                  (->> names
-                       (map str)
-                       (filter #(contains? tasks (symbol %)))
-                       (remove #(str/starts-with? % "-"))
-                       (remove #(:private (get tasks (symbol %))))))
-        local (when (seq tasks) (visible (key-order raw-edn)))
-        ;; imported tasks list under their lib, like inherited options do in
-        ;; help: what arrives from elsewhere shows as arriving from elsewhere
-        imports (keep (fn [[lib names]]
-                        (when-let [names (seq (visible names))]
-                          [lib names]))
-                      (:imported-tasks @bb-edn))
-        all (concat local (mapcat second imports))]
-    (if (seq all)
-      (let [longest (apply max (map count all))
-            fmt (str "%1$-" longest "s")
-            print-task (fn [k]
-                         (let [task (get tasks (symbol k))]
-                           (println (str (format fmt k)
-                                         (when-let [d (doc-from-task sci-ctx tasks task)]
-                                           (let [first-line (-> (str/split-lines d)
-                                                                first)]
-                                             (str "  " first-line)))))))]
+        names (when (seq tasks)
+                (->> (key-order raw-edn)
+                     (map str)
+                     (remove #(str/starts-with? % "-"))
+                     (remove #(:private (get tasks (symbol %))))))]
+    (if (seq names)
+      (let [longest (apply max (map count names))
+            fmt (str "%1$-" longest "s")]
         (println "The following tasks are available:")
         (println)
-        (run! print-task local)
-        (doseq [[lib names] imports]
-          (println)
-          (println (str "From " lib ":"))
-          (run! print-task names)))
+        (doseq [k names
+                :let [task (get tasks (symbol k))]]
+          (println (str (format fmt k)
+                        (when-let [d (doc-from-task sci-ctx tasks task)]
+                          (let [first-line (-> (str/split-lines d)
+                                               first)]
+                            (str "  " first-line)))))))
       (println "No tasks found."))))
 
 (defn run

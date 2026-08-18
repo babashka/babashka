@@ -1065,64 +1065,78 @@ even more stuff here\"
                          "Usage: bb deploy go")))))
 
 (deftest task-imports-test
-  (testing "a referred task runs, its transitive :depends come along"
-    (test-utils/with-config '{:paths ["test-resources"]
-                              :tasks {:imports ([tasks-import.lib1 :refer [greet]])}}
+  (testing "an imported task runs, its transitive :depends come along hidden"
+    (test-utils/with-config '{:tasks {greet {:import tasks-import.lib1/greet}}}
       (is (= "hello\ngoodbye"
-             (str/trim (test-utils/bb nil "greet"))))
-      (testing "and bb tasks lists it under its lib"
-        (let [out (test-utils/bb nil "tasks")]
-          (is (str/includes? out "From tasks-import.lib1:"))
-          (is (str/includes? out "Greet politely"))))
-      (testing "a task that was not referred is not a task"
+             (str/trim (test-utils/bb nil "-cp" "test-resources" "greet"))))
+      (testing "the hidden member is not addressable"
         (is (thrown-with-msg?
-             Exception #"File does not exist: cli-task"
-             (test-utils/bb nil "cli-task"))))))
+             Exception #"File does not exist: -hello"
+             (test-utils/bb nil "-cp" "test-resources" "-hello"))))))
+  (testing "the local key is the name: rename is writing a different key"
+    (test-utils/with-config '{:tasks {verify {:import tasks-import.lib1/greet}}}
+      (is (= "hello\ngoodbye"
+             (str/trim (test-utils/bb nil "-cp" "test-resources" "verify"))))))
+  (testing "bb tasks lists it at its own position, doc from the lib's data"
+    (test-utils/with-config '{:tasks {aaa {:doc "Local a" :task (println "a")}
+                                      greet {:import tasks-import.lib1/greet}
+                                      zzz {:doc "Local z" :task (println "z")}}}
+      (let [out (test-utils/bb nil "-cp" "test-resources" "tasks")]
+        (is (str/includes? out "Greet politely"))
+        (is (< (str/index-of out "greet") (str/index-of out "zzz"))))))
+  (testing "a local :doc overrides the imported one"
+    (test-utils/with-config '{:tasks {greet {:import tasks-import.lib1/greet
+                                             :doc "Local wording"}}}
+      (let [out (test-utils/bb nil "-cp" "test-resources" "tasks")]
+        (is (str/includes? out "Local wording"))
+        (is (not (str/includes? out "Greet politely"))))))
+  (testing "without :doc anywhere, the :exec-fn docstring shows, like a local task"
+    (test-utils/with-config '{:tasks {nodoc {:import tasks-import.lib1/nodoc}}}
+      (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "tasks")
+                         "Runs the dev system"))))
   (testing "an imported CLI task dispatches, with help and completion"
-    (test-utils/with-config '{:paths ["test-resources"]
-                              :tasks {:imports ([tasks-import.lib1 :refer [cli-task]])}}
+    (test-utils/with-config '{:tasks {cli-task {:import tasks-import.lib1/cli-task}}}
       (is (= {:target "x" :ran :dep-build}
-             (bb "cli-task" "--target" "x")))
-      (is (str/includes? (test-utils/bb nil "cli-task" "--help")
+             (bb "-cp" "test-resources" "cli-task" "--target" "x")))
+      (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "cli-task" "--help")
                          "--target"))
-      (is (str/includes? (test-utils/bb nil "org.babashka.cli/completions" "complete"
+      (is (str/includes? (test-utils/bb nil "-cp" "test-resources"
+                                        "org.babashka.cli/completions" "complete"
                                         "--shell" "zsh" "--" "cli-task" "-")
                          "--target"))))
-  (testing "a transitive member is addressable, though unlisted"
-    (test-utils/with-config '{:paths ["test-resources"]
-                              :tasks {:imports ([tasks-import.lib1 :refer [greet]])}}
-      (is (= "hello" (str/trim (test-utils/bb nil "-hello"))))))
+  (testing "an imported CLI task works as a dep of a local CLI target"
+    (test-utils/with-config '{:tasks {cli-task {:import tasks-import.lib1/cli-task}
+                                      tst {:depends [cli-task]
+                                           :exec-fn babashka.tasks-cli/dep-test}}}
+      (is (= [{:target "x" :ran :dep-build} {:target "x" :ran :dep-test}]
+             (map edn/read-string
+                  (str/split-lines
+                   (test-utils/bb nil "-cp" "test-resources" "tst" "--target" "x")))))))
   (testing "a dep the lib does not define errors lazily, like a local dangling :depends"
-    (test-utils/with-config '{:paths ["test-resources"]
-                              :tasks {:imports ([tasks-import.lib2 :refer [a]])}}
+    (test-utils/with-config '{:tasks {a {:import tasks-import.lib2/a}}}
       (is (thrown-with-msg?
            Exception #"No such task: c"
-           (test-utils/bb nil "a")))))
-  (testing "importing a name that is already a task is an error"
-    (test-utils/with-config '{:paths ["test-resources"]
-                              :tasks {:imports ([tasks-import.lib1 :refer [greet]])
-                                      greet {:task (println "local")}}}
+           (test-utils/bb nil "-cp" "test-resources" "a")))))
+  (testing ":import must be a qualified symbol"
+    (test-utils/with-config '{:tasks {x {:import "nope"}}}
       (is (thrown-with-msg?
-           Exception #"Task import tasks-import.lib1: greet is already a task"
-           (test-utils/bb nil "greet")))))
+           Exception #"Task x: :import must be a qualified symbol"
+           (test-utils/bb nil "-cp" "test-resources" "tasks")))))
   (testing "a lib without a tasks.edn is an error"
-    (test-utils/with-config '{:paths ["test-resources"]
-                              :tasks {:imports ([no.such.lib :refer [x]])}}
+    (test-utils/with-config '{:tasks {x {:import no.such.lib/x}}}
       (is (thrown-with-msg?
-           Exception #"Task import no.such.lib: no no/such/lib/tasks.edn on the classpath"
-           (test-utils/bb nil "tasks")))))
-  (testing "referring a task the lib does not define is an error"
-    (test-utils/with-config '{:paths ["test-resources"]
-                              :tasks {:imports ([tasks-import.lib1 :refer [nope]])}}
+           Exception #"Task x: no no/such/lib/tasks.edn on the classpath"
+           (test-utils/bb nil "-cp" "test-resources" "tasks")))))
+  (testing "importing a task the lib does not define is an error"
+    (test-utils/with-config '{:tasks {x {:import tasks-import.lib1/nope}}}
       (is (thrown-with-msg?
-           Exception #"Task import tasks-import.lib1: nope is not defined"
-           (test-utils/bb nil "tasks")))))
+           Exception #"Task x: tasks-import.lib1/nope is not defined"
+           (test-utils/bb nil "-cp" "test-resources" "tasks")))))
   (testing "a tasks.edn with file-level keys is an error"
-    (test-utils/with-config '{:paths ["test-resources"]
-                              :tasks {:imports ([tasks-import.badlib :refer [x]])}}
+    (test-utils/with-config '{:tasks {x {:import tasks-import.badlib/x}}}
       (is (thrown-with-msg?
            Exception #"must hold a map of task definitions only"
-           (test-utils/bb nil "tasks"))))))
+           (test-utils/bb nil "-cp" "test-resources" "tasks"))))))
 
 (deftest task-completion-test
   (testing "task-name completion lists matching public tasks"

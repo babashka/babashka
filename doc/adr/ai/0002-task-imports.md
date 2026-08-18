@@ -1,69 +1,65 @@
-# 2. Task imports
+# 2. Task imports, per task
 
-A library ships tasks as data: `<lib-path>/tasks.edn` on the classpath, a map
-of task definitions and nothing else. The consumer imports them in bb.edn:
+A task can be a reference to one a library ships as data:
 
 ```clojure
-{:deps {some-other/lib {:mvn/version "1.0.0"}}
- :tasks {:imports ([some-other.lib :refer [some-task]])}}
+{:deps {org.acme/ci {:mvn/version "1.0"}}
+ :tasks {test   {:import ci.tasks/test}
+         verify {:import ci.tasks/deploy :doc "our wording"}}}
 ```
+
+The lib part of the symbol names `ci/tasks/tasks.edn` on the classpath, a map
+of task definitions and nothing else. The name part picks the task.
+
+A competing shape, `:imports` with `:refer` lists, lives on the
+`tasks-imports` branch. This one is the primitive: that one can become sugar
+over it for adopting a whole suite with a `From <lib>:` listing.
 
 ## Decisions
 
-- An import is data merged into data. The imported tasks behave as if they
-  were written in bb.edn, so every task feature applies to them by
-  construction rather than by re-implementation.
-- Explicit `:refer` only. A referred task brings its transitive `:depends`
-  along, unlisted. A name that is already a task is an error.
-- The file may hold task definitions only. File-level keys such as `:init`
-  are an error: whose `:init` runs first has no good answer, so the question
-  is not asked. The consumer's `:enter`/`:leave` wrap imported tasks.
+- The bb.edn key is the local name. Rename is writing a different key,
+  collisions cannot happen, `bb tasks` lists the task at its own position:
+  the entry says "my task, implemented elsewhere", like `:exec-fn` does.
+- The task name is a literal key, so the parser needs nothing from the lib.
+  The file is read after classpath setup. `bb --version` and `bb -e` resolve
+  no deps for it, and `-cp` works as a source of imports.
+- Local keys override imported ones: `:doc`, `:private`, hooks.
+- Docs resolve in three steps, each lazier: the local `:doc`, the lib's
+  `:doc` (a resource read, data), the `:exec-fn` docstring (loads code, like
+  a local task without `:doc` already does).
+- Transitive `:depends` come along under hidden local names,
+  `-<lib>_<name>`, dash-prefixed: unlisted, not addressable, and free of the
+  lib's naming. Within one lib, a dependency an entry also imports resolves
+  to that entry's local name, so the graph stays deduplicated.
+- The file may hold task definitions only. File-level keys are an error. The
+  consumer's `:enter`/`:leave` wrap imported tasks.
 - The library's code dependencies live in its own deps.edn and arrive
-  transitively. Per-task `:extra-deps` stays what it already is, laziness for
-  a heavy dependency of one task. `tasks.edn` has no dependency mechanism.
-- Imports resolve at bb.edn read time against the classpath bb.edn itself
-  declares, because the arg parser needs the imported names to tell a task
-  from a file. An import belongs to project config, not to a `-cp` flag.
-- Import errors are loud and fail every invocation, like an unresolvable
-  `:deps` entry already does. Considered and rejected: warn-and-skip.
+  transitively. Per-task `:extra-deps` stays what it is.
+- Import errors are loud, like an unresolvable `:deps` entry.
 - A `:depends` name the lib does not define errors lazily at assembly,
-  `No such task`, exactly like a local dangling `:depends`. Considered and
-  rejected: an import-time check naming the lib.
-- `bb tasks` lists referred tasks under `From <lib>:`, after the local ones,
-  the same convention as `Inherited options:` in help: what arrives from
-  elsewhere shows as arriving from elsewhere.
+  `No such task`, exactly like a local dangling `:depends`.
 
 ## Decision matrix
 
 | # | context | status |
 |---|---------|--------|
 | 1 | direct invocation | tested |
-| 2 | `(run 'imported)` in a body | probed, runs with transitive deps |
-| 3 | `(run 'x {:parallel true})` | probed via `bb run --parallel` |
-| 4 | in `:depends` of a plain local task | probed, one merged graph |
-| 5 | imported CLI task as dep of a local CLI target | probed, handler gets its declared opts, spec under `Inherited options:` |
-| 6 | `bb run --parallel` | probed |
-| 7 | `--help` | tested; a broken import fails loudly, by decision |
-| 8 | completion | tested; same loud failure applies |
-| 9 | spec merge, `:restrict` | tested, inherited by the data merge |
-| 10 | shared dependencies | one graph, dedup holds; hidden-member naming open |
+| 2 | `(run 'imported)` in a body | same merged map, inherited |
+| 3-6 | `:depends`, `--parallel`, plain and CLI targets | tested: imported CLI task as dep of a local CLI target |
+| 7 | `--help` | tested |
+| 8 | completion | tested |
+| 9 | spec merge | tested, inherited by the data merge |
+| 10 | shared dependencies | one graph, hidden members deduplicated per lib |
 | 11 | graph or body | data merge, nothing bypassed |
-| 12 | hooks | probed, consumer's `:enter`/`:leave` wrap imported tasks |
-| 13 | failure | config errors exit 1; scope-of-failure decided loud |
+| 12 | hooks | consumer's wrap imported tasks, as A probed |
+| 13 | failure | config errors exit 1, loud |
 | 14 | native image | not probed, compile once before merge |
 | 15 | version | consumer needs the bb release carrying this |
 
-## Known costs
-
-- With `:imports` present, deps resolve before arg parsing, so `bb --version`
-  and `bb -e` pay for it, and `-cp` no longer suppresses bb.edn deps.
-- `-Sforce` may not refresh the `tasks.edn` read, since the pre-parse
-  resolution wins within that invocation.
-
 ## Open
 
-- `:rename`.
-- Hidden transitive members keep their names: two imports can collide on a
-  `-helper`, and a local task can silently depend on one.
-- `:min-bb-version` in the imported file.
-- Uberjars carrying `:imports`.
+- The `:imports`/`:refer` sugar for whole-suite adoption, with `From <lib>:`
+  provenance in `bb tasks`.
+- Two entries importing the same lib task: allowed, the dependency rewrite
+  picks one of them.
+- `:min-bb-version` in the imported file. Uberjars carrying imports.
