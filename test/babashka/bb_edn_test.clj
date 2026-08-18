@@ -1070,9 +1070,10 @@ even more stuff here\"
                               :tasks {:imports ([tasks-import.lib1 :refer [greet]])}}
       (is (= "hello\ngoodbye"
              (str/trim (test-utils/bb nil "greet"))))
-      (testing "and it shows in bb tasks with its doc"
-        (is (str/includes? (test-utils/bb nil "tasks")
-                           "Greet politely")))
+      (testing "and bb tasks lists it under its lib"
+        (let [out (test-utils/bb nil "tasks")]
+          (is (str/includes? out "From tasks-import.lib1:"))
+          (is (str/includes? out "Greet politely"))))
       (testing "a task that was not referred is not a task"
         (is (thrown-with-msg?
              Exception #"File does not exist: cli-task"

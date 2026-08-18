@@ -92,8 +92,8 @@
          (-> config
              (update :tasks merge closure)
              ;; bb tasks lists from the raw bb.edn string, where imports do
-             ;; not appear, so the referred names ride along in order
-             (update :imported-tasks (fnil into []) refer)))))
+             ;; not appear, so the referred names ride along per lib
+             (update :imported-tasks (fnil conj []) [lib refer])))))
    config
    (get-in config [:tasks :imports])))
 
@@ -893,25 +893,37 @@
   [sci-ctx]
   (let [tasks (:tasks @bb-edn)
         raw-edn (:raw @bb-edn)
-        names (when (seq tasks)
-                (->> (concat (key-order raw-edn) (:imported-tasks @bb-edn))
-                     (map str)
-                     distinct
-                     (filter #(contains? tasks (symbol %)))
-                     (remove #(str/starts-with? % "-"))
-                     (remove #(:private (get tasks (symbol %))))))]
-    (if (seq names)
-      (let [longest (apply max (map count names))
-            fmt (str "%1$-" longest "s")]
+        visible (fn [names]
+                  (->> names
+                       (map str)
+                       (filter #(contains? tasks (symbol %)))
+                       (remove #(str/starts-with? % "-"))
+                       (remove #(:private (get tasks (symbol %))))))
+        local (when (seq tasks) (visible (key-order raw-edn)))
+        ;; imported tasks list under their lib, like inherited options do in
+        ;; help: what arrives from elsewhere shows as arriving from elsewhere
+        imports (keep (fn [[lib names]]
+                        (when-let [names (seq (visible names))]
+                          [lib names]))
+                      (:imported-tasks @bb-edn))
+        all (concat local (mapcat second imports))]
+    (if (seq all)
+      (let [longest (apply max (map count all))
+            fmt (str "%1$-" longest "s")
+            print-task (fn [k]
+                         (let [task (get tasks (symbol k))]
+                           (println (str (format fmt k)
+                                         (when-let [d (doc-from-task sci-ctx tasks task)]
+                                           (let [first-line (-> (str/split-lines d)
+                                                                first)]
+                                             (str "  " first-line)))))))]
         (println "The following tasks are available:")
         (println)
-        (doseq [k names
-                :let [task (get tasks (symbol k))]]
-          (println (str (format fmt k)
-                        (when-let [d (doc-from-task sci-ctx tasks task)]
-                          (let [first-line (-> (str/split-lines d)
-                                               first)]
-                            (str "  " first-line)))))))
+        (run! print-task local)
+        (doseq [[lib names] imports]
+          (println)
+          (println (str "From " lib ":"))
+          (run! print-task names)))
       (println "No tasks found."))))
 
 (defn run
