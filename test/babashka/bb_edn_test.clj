@@ -1112,6 +1112,12 @@ even more stuff here\"
                   (str/split-lines
                    (test-utils/bb nil "-cp" "test-resources"
                                   "run" "--parallel" "wrap" "--target" "x")))))))
+  (testing "resolution reads data only: no code loads until an imported task runs"
+    (test-utils/with-config '{:tasks {noisy {:import tasks-import.lib1/noisy}}}
+      (is (not (str/includes? (test-utils/bb nil "-cp" "test-resources" "-e" "(println :ok)")
+                              "LOAD NOISE")))
+      (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "noisy")
+                         "LOAD NOISE"))))
   (testing "the local key is the name: rename is writing a different key"
     (test-utils/with-config '{:tasks {verify {:import tasks-import.lib1/greet}}}
       (is (= "hello\ngoodbye"

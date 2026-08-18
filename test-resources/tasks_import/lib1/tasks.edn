@@ -10,4 +10,5 @@
  -clihelper {:exec-fn babashka.tasks-cli/dep-build}
  cli-task {:doc "An imported CLI task"
            :exec-fn babashka.tasks-cli/dep-build}
- nodoc {:exec-fn babashka.tasks-cli/run-dev}}
+ nodoc {:exec-fn babashka.tasks-cli/run-dev}
+ noisy {:doc "Noisy at load" :exec-fn babashka.tasks-cli-noisy/go}}
