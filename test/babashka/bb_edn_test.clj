@@ -1143,6 +1143,15 @@ even more stuff here\"
                                         "org.babashka.cli/completions" "complete"
                                         "--shell" "zsh" "--" "cli-task" "-")
                          "--target"))))
+  (testing "imported tasks complete as task names, docs included"
+    (test-utils/with-config '{:tasks {greet {:import tasks-import.lib1/greet}
+                                      nodoc {:import tasks-import.lib1/nodoc}}}
+      (let [out (test-utils/bb nil "-cp" "test-resources"
+                               "org.babashka.cli/completions" "complete"
+                               "--shell" "zsh" "--" "")]
+        (is (str/includes? out "greet\tGreet politely"))
+        (testing "the doc falls back to the :exec-fn docstring, like a local task"
+          (is (str/includes? out "nodoc\tRuns the dev system"))))))
   (testing "an imported CLI task works as a dep of a local CLI target"
     (test-utils/with-config '{:tasks {cli-task {:import tasks-import.lib1/cli-task}
                                       tst {:depends [cli-task]
