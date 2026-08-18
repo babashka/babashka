@@ -83,7 +83,6 @@ The following libraries and projects are known to work with babashka.
     - [covid19-babashka](#covid19-babashka)
     - [bb-spotify](#bb-spotify)
     - [lambdaisland/open-source](#lambdaislandopen-source)
-    - [dharrigan/spotifyd-notification](#dharriganspotifyd-notification)
     - [nextjournal/ssh-github-auth](#nextjournalssh-github-auth)
     - [turtlequeue/setup-babashka](#turtlequeuesetup-babashka)
     - [interdep](#interdep)
@@ -924,10 +923,6 @@ There's also
 which is like sh/sh, but it inherits stdin/stdout/stderr, so that the user sees
 in real time what the subprocess is doing, and can possibly interact with
 it. More like how shelling out in a bash script works.
-
-### [dharrigan/spotifyd-notification](https://github.com/dharrigan/spotifyd-notification)
-
-An example of using babashka to show spotifyd notifications via dunst.
 
 ### [nextjournal/ssh-github-auth](https://github.com/nextjournal/ssh-github-auth)
 
