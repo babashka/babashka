@@ -3,6 +3,7 @@
    [babashka.fs :as fs]
    [babashka.impl.classpath :as cp]
    [babashka.impl.common :as common]
+   [babashka.impl.tasks :as tasks]
    [babashka.main :as main]
    [babashka.test-utils :as test-utils]
    [borkdude.deps]
@@ -1175,6 +1176,21 @@ even more stuff here\"
              (map edn/read-string
                   (str/split-lines
                    (test-utils/bb nil "-cp" "test-resources" "tst" "--target" "x")))))))
+  (testing "two entries may import the same task; both run"
+    (test-utils/with-config '{:tasks {g1 {:import tasks-import.lib1/greet}
+                                      g2 {:import tasks-import.lib1/greet}
+                                      duo {:import tasks-import.lib1/duo}}}
+      (is (= "hello\ngoodbye" (str/trim (test-utils/bb nil "-cp" "test-resources" "g1"))))
+      (is (= "hello\ngoodbye" (str/trim (test-utils/bb nil "-cp" "test-resources" "g2"))))
+      (testing "a hidden dep on the shared task rewrites to one alias, once"
+        (let [out (test-utils/bb nil "-cp" "test-resources" "duo")]
+          (is (= "hello\ngoodbye\nduo" (str/trim out)))
+          (is (= 1 (count (re-seq #"goodbye" out))))))))
+  (testing "a falsey :import is invalid, not an empty task"
+    (test-utils/with-config '{:tasks {x {:import false}}}
+      (is (thrown-with-msg?
+           Exception #"Task x: :import must be a qualified symbol"
+           (test-utils/bb nil "-cp" "test-resources" "x")))))
   (testing "an imported task depending on a local key that is another import resolves to fixpoint"
     (test-utils/with-config '{:tasks {aa {:import tasks-import.lib2/a}
                                       c {:import tasks-import.lib1/greet}}}
@@ -1218,6 +1234,20 @@ even more stuff here\"
       (is (thrown-with-msg?
            Exception #"must hold a map of task definitions only"
            (test-utils/bb nil "-cp" "test-resources" "tasks"))))))
+
+(deftest import-resolution-race-test
+  (cp/add-classpath "test-resources")
+  (try
+    (dotimes [_ 15]
+      (vreset! common/bb-edn '{:tasks {a {:import tasks-import.lib1/greet}
+                                       b {:import tasks-import.lib2/a}}})
+      (let [fa (future (tasks/-ensure-imports! 'a))
+            fb (future (tasks/-ensure-imports! 'b))]
+        @fa
+        @fb)
+      (is (not (contains? (get-in @common/bb-edn [:tasks 'a]) :import)))
+      (is (not (contains? (get-in @common/bb-edn [:tasks 'b]) :import))))
+    (finally (vreset! common/bb-edn nil))))
 
 (deftest task-completion-test
   (testing "task-name completion lists matching public tasks"

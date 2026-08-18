@@ -69,7 +69,7 @@
   ([config resource-fn libs]
   (let [tasks (:tasks config)
         pointers (for [[k v] tasks
-                       :when (and (map? v) (:import v))
+                       :when (and (map? v) (contains? v :import))
                        :when (or (nil? libs)
                                  (and (qualified-symbol? (:import v))
                                       (contains? libs (symbol (namespace (:import v))))))]
@@ -98,22 +98,27 @@
                    (throw (ex-info (str "Task " k ": " (:import v)
                                         " is not defined in " path)
                                    {:babashka/exit 1}))))
-             public (into {} (map (fn [[k v]] [(symbol (name (:import v))) k])) entries)
-             closure (loop [todo (keys public) seen #{}]
+             aliases (reduce (fn [m [k v]]
+                               (update m (symbol (name (:import v))) (fnil conj []) k))
+                             {} entries)
+             canonical (into {} (map (fn [[r ks]] [r (first (sort ks))])) aliases)
+             closure (loop [todo (keys aliases) seen #{}]
                        (if-let [t (first todo)]
                          (if (or (contains? seen t) (not (contains? lib-tasks t)))
                            (recur (rest todo) seen)
                            (recur (concat (rest todo) (:depends (get lib-tasks t)))
                                   (conj seen t)))
                          seen))
-             rename (fn [t] (or (get public t)
+             rename (fn [t] (or (get canonical t)
                                 (if (contains? lib-tasks t) (hidden-import-name lib t) t)))]
          (reduce
           (fn [config t]
             (let [m (cond-> (get lib-tasks t)
                       (:depends (get lib-tasks t)) (update :depends #(mapv rename %)))]
-              (if-let [entry (get public t)]
-                (update-in config [:tasks entry] #(merge m (dissoc % :import)))
+              (if-let [ks (get aliases t)]
+                (reduce (fn [config k]
+                          (update-in config [:tasks k] #(merge m (dissoc % :import))))
+                        config ks)
                 (let [nm (rename t)]
                   (when (contains? tasks nm)
                     (throw (ex-info (str "Task import " lib ": " nm " is already a task")
@@ -127,6 +132,8 @@
   (when (and (map? v) (qualified-symbol? (:import v)))
     (symbol (namespace (:import v)))))
 
+(defonce ^:private import-lock (Object.))
+
 (defn -ensure-imports!
   "Materializes `:import` tasks on the first consumer of the task map. With a
   `root` task, only the libs its `:depends` closure reaches, to fixpoint: an
@@ -134,10 +141,11 @@
   one, every lib. An invocation that consumes no tasks reads no lib file."
   ([] (-ensure-imports! nil))
   ([root]
-   (when-let [config @bb-edn]
-     (when (some #(and (map? %) (:import %)) (vals (:tasks config)))
+   (locking import-lock
+    (when-let [config @bb-edn]
+     (when (some #(and (map? %) (contains? % :import)) (vals (:tasks config)))
        (doseq [[k v] (:tasks config)
-               :when (and (map? v) (:import v))]
+               :when (and (map? v) (contains? v :import))]
          (when-not (qualified-symbol? (:import v))
            (throw (ex-info (str "Task " k ": :import must be a qualified symbol, got: "
                                 (pr-str (:import v)))
@@ -165,7 +173,7 @@
                                                  (some-> (classpath/resource path) slurp))
                                                (set needed))
                               ::resolved-libs (fnil into #{}) needed))
-             (recur))))))))
+             (recur)))))))))
 
 (def sci-ns (sci/create-ns 'babashka.tasks nil))
 (def default-log-level :error)

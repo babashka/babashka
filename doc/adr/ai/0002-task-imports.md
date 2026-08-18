@@ -53,6 +53,10 @@ members stay sealed.
   completion. A task that never reaches it runs, and `bb -e` and `--version`
   are untouched, which the eager variant could not offer. An invalid
   `:import` value is an error for every consumer.
+- Several entries may import the same task: each materializes, and a hidden
+  dependency on it rewrites to the first alias in sorted order, so it runs
+  once. Resolution holds a lock: concurrent `run` calls from parallel bodies
+  must not discard each other's materialization.
 - A `:depends` name the lib does not define errors lazily at assembly,
   `No such task`, exactly like a local dangling `:depends`.
 
@@ -77,6 +81,4 @@ members stay sealed.
 
 - The `:imports`/`:refer` sugar for whole-suite adoption, with `From <lib>:`
   provenance in `bb tasks`.
-- Two entries importing the same lib task: allowed, the dependency rewrite
-  picks one of them.
 - `:min-bb-version` in the imported file. Uberjars carrying imports.
