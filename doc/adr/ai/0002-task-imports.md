@@ -21,8 +21,10 @@ over it for adopting a whole suite with a `From <lib>:` listing.
   collisions cannot happen, `bb tasks` lists the task at its own position:
   the entry says "my task, implemented elsewhere", like `:exec-fn` does.
 - The task name is a literal key, so the parser needs nothing from the lib.
-  The file is read after classpath setup. `bb --version` and `bb -e` resolve
-  no deps for it, and `-cp` works as a source of imports.
+  The file is read by the first consumer of the task map: running a task,
+  `bb tasks`, `bb doc`, completion, or `babashka.tasks/run` in a script.
+  `bb --version` and `bb -e` touch no lib file at all, and `-cp` works as a
+  source of imports.
 - Local keys override imported ones: `:doc`, `:private`, hooks.
 - Docs resolve in three steps, each lazier: the local `:doc`, the lib's
   `:doc` (a resource read, data), the `:exec-fn` docstring (loads code, like
@@ -35,9 +37,9 @@ over it for adopting a whole suite with a `From <lib>:` listing.
   consumer's `:enter`/`:leave` wrap imported tasks.
 - The library's code dependencies live in its own deps.edn and arrive
   transitively. Per-task `:extra-deps` stays what it is.
-- Import errors are loud for anything that runs, like an unresolvable
-  `:deps` entry. `--version` answers first: it exits before imports resolve,
-  which the eager variant could not offer.
+- Import errors are loud for whatever consumes the task map, like an
+  unresolvable `:deps` entry. An invocation that consumes none, `bb -e` or
+  `--version`, is untouched, which the eager variant could not offer.
 - A `:depends` name the lib does not define errors lazily at assembly,
   `No such task`, exactly like a local dangling `:depends`.
 

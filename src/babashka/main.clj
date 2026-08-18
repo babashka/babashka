@@ -252,6 +252,7 @@ Use -- to separate script command line args from bb command line args.
 When no eval opts or subcommand is provided, the implicit subcommand is repl.")))
 
 (defn print-doc [ctx command-line-args]
+  (tasks/-ensure-imports!)
   (let [arg (first command-line-args)
         tasks (:tasks @common/bb-edn)]
     (if (or (when-let [s (tasks/doc-from-task
@@ -946,13 +947,6 @@ Use bb run --help to show this help output.
                 (cp/add-classpath classpath)
                 ;; when classpath isn't set, we calculate it from bb.edn, if present
                 (when-let [bb-edn @common/bb-edn] (deps/add-deps bb-edn {:force force?})))
-            ;; the task name is the bb.edn key, so parsing needed nothing from
-            ;; the lib; its file is read now, when the classpath exists
-            _ (when-let [bb-edn @common/bb-edn]
-                (when (some #(and (map? %) (:import %)) (vals (:tasks bb-edn)))
-                  (vreset! common/bb-edn
-                           (tasks/resolve-imports bb-edn
-                                                  (fn [path] (some-> (cp/resource path) slurp))))))
             abs-path (when file
                        (let [abs-path (.getAbsolutePath (io/file file))]
                          (sci/alter-var-root sci/file (constantly abs-path))

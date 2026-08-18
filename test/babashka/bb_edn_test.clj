@@ -1069,6 +1069,10 @@ even more stuff here\"
     (test-utils/with-config '{:tasks {greet {:import tasks-import.lib1/greet}}}
       (is (= "hello\ngoodbye"
              (str/trim (test-utils/bb nil "-cp" "test-resources" "greet"))))
+      (testing "a script that runs an imported task materializes it itself"
+        (is (str/includes? (test-utils/bb nil "-cp" "test-resources"
+                                          "-e" "(babashka.tasks/run 'greet)")
+                           "goodbye")))
       (testing "the hidden member is not addressable"
         (is (thrown-with-msg?
              Exception #"File does not exist: -hello"
@@ -1181,7 +1185,7 @@ even more stuff here\"
       (is (thrown-with-msg?
            Exception #"Task x: :import must be a qualified symbol"
            (test-utils/bb nil "-cp" "test-resources" "tasks")))))
-  (testing "a lib without a tasks.edn is loud for anything that runs, like broken :deps"
+  (testing "a lib without a tasks.edn is loud for whatever consumes tasks"
     (test-utils/with-config '{:tasks {x {:import no.such.lib/x}
                                       local {:task (println "local")}}}
       (is (thrown-with-msg?
@@ -1190,7 +1194,10 @@ even more stuff here\"
       (is (thrown-with-msg?
            Exception #"Task x: no no/such/lib/tasks.edn on the classpath"
            (test-utils/bb nil "-cp" "test-resources" "local")))
-      (testing "but --version answers before imports resolve"
+      (testing "bb -e consumes no tasks, so it is untouched"
+        (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "-e" "(println :ok)")
+                           ":ok")))
+      (testing "--version answers too"
         (is (str/includes? (test-utils/bb nil "--version") "babashka v")))))
   (testing "importing a task the lib does not define is an error"
     (test-utils/with-config '{:tasks {x {:import tasks-import.lib1/nope}}}

@@ -2,6 +2,7 @@
   (:require
    [babashka.cli]
    [babashka.deps :as deps]
+   [babashka.impl.classpath :as classpath]
    [babashka.impl.cli :as cli]
    [babashka.impl.common :refer [bb-edn ctx debug]]
    [babashka.impl.process :as pp]
@@ -117,6 +118,20 @@
           config closure)))
      config
      (group-by #(symbol (namespace (:import (second %)))) pointers))))
+
+(defn -ensure-imports!
+  "Materializes `:import` tasks once, on the first consumer of the task map.
+  Parsing needs only the bb.edn keys, so an invocation that never touches
+  tasks never reads a lib file."
+  []
+  (when-let [config @bb-edn]
+    (when (and (not (::imports-resolved config))
+               (some #(and (map? %) (:import %)) (vals (:tasks config))))
+      (vreset! bb-edn
+               (assoc (resolve-imports config
+                                       (fn [path]
+                                         (some-> (classpath/resource path) slurp)))
+                      ::imports-resolved true)))))
 
 (def sci-ns (sci/create-ns 'babashka.tasks nil))
 (def default-log-level :error)
@@ -671,6 +686,7 @@
                          acc depends)) (transient {}) tasks->depends))))
 
 (defn assemble-task [task-name parallel?]
+  (-ensure-imports!)
   (let [task-name (symbol task-name)
         bb-edn @bb-edn
         tasks (get bb-edn :tasks)
@@ -825,6 +841,7 @@
   Task-name completion is done here; per-task completion is delegated to
   `babashka.cli/dispatch` over the task's node."
   [sci-ctx {:keys [sub shell run command-line-args partial global-opts]}]
+  (-ensure-imports!)
   (let [shell (or shell "zsh")
         tasks (:tasks @bb-edn)]
     (case sub
@@ -912,6 +929,7 @@
   - its name has to be a symbol but should not start with `-`, and
   - should not be `:private`."
   [sci-ctx]
+  (-ensure-imports!)
   (let [tasks (:tasks @bb-edn)
         raw-edn (:raw @bb-edn)
         names (when (seq tasks)
