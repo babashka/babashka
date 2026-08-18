@@ -1113,9 +1113,14 @@ even more stuff here\"
                    (test-utils/bb nil "-cp" "test-resources"
                                   "run" "--parallel" "wrap" "--target" "x")))))))
   (testing "resolution reads data only: no code loads until an imported task runs"
-    (test-utils/with-config '{:tasks {noisy {:import tasks-import.lib1/noisy}}}
+    (test-utils/with-config '{:tasks {noisy {:import tasks-import.lib1/noisy}
+                                      other {:task (println "other ran")}}}
       (is (not (str/includes? (test-utils/bb nil "-cp" "test-resources" "-e" "(println :ok)")
                               "LOAD NOISE")))
+      (testing "an unrelated task does not load it either"
+        (let [out (test-utils/bb nil "-cp" "test-resources" "other")]
+          (is (str/includes? out "other ran"))
+          (is (not (str/includes? out "LOAD NOISE")))))
       (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "noisy")
                          "LOAD NOISE"))))
   (testing "the local key is the name: rename is writing a different key"
