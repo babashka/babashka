@@ -117,3 +117,9 @@
   {:org.babashka/cli {:spec {:dir {}}}}
   [{:keys [dir]}]
   (rendezvous dir "b" "a"))
+
+(def deploy-tree
+  '{"lock" {:fn babashka.tasks-cli/lock}})
+
+(def ordered-tree
+  '[["lock" {:fn babashka.tasks-cli/lock}]])
