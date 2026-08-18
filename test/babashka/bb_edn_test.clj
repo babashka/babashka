@@ -1088,6 +1088,16 @@ even more stuff here\"
       (is (str/includes? (test-utils/bb nil "org.babashka.cli/completions" "complete"
                                         "--shell" "zsh" "--" "cli-task" "-")
                          "--target"))))
+  (testing "a transitive member is addressable, though unlisted"
+    (test-utils/with-config '{:paths ["test-resources"]
+                              :tasks {:imports ([tasks-import.lib1 :refer [greet]])}}
+      (is (= "hello" (str/trim (test-utils/bb nil "-hello"))))))
+  (testing "a dep the lib does not define errors lazily, like a local dangling :depends"
+    (test-utils/with-config '{:paths ["test-resources"]
+                              :tasks {:imports ([tasks-import.lib2 :refer [a]])}}
+      (is (thrown-with-msg?
+           Exception #"No such task: c"
+           (test-utils/bb nil "a")))))
   (testing "importing a name that is already a task is an error"
     (test-utils/with-config '{:paths ["test-resources"]
                               :tasks {:imports ([tasks-import.lib1 :refer [greet]])

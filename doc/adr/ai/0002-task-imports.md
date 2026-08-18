@@ -26,6 +26,9 @@ of task definitions and nothing else. The consumer imports them in bb.edn:
   from a file. An import belongs to project config, not to a `-cp` flag.
 - Import errors are loud and fail every invocation, like an unresolvable
   `:deps` entry already does. Considered and rejected: warn-and-skip.
+- A `:depends` name the lib does not define errors lazily at assembly,
+  `No such task`, exactly like a local dangling `:depends`. Considered and
+  rejected: an import-time check naming the lib.
 - `bb tasks` lists referred tasks under `From <lib>:`, after the local ones,
   the same convention as `Inherited options:` in help: what arrives from
   elsewhere shows as arriving from elsewhere.

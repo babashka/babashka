@@ -1,0 +1,1 @@
+{a {:depends [c] :task (println "a")}}
