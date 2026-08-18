@@ -44,6 +44,8 @@ members stay sealed.
   `-<lib>_<name>`, dash-prefixed: unlisted, not addressable, and free of the
   lib's naming. Within one lib, a dependency an entry also imports resolves
   to that entry's local name, so the graph stays deduplicated.
+- A lib task may use the shorthand form, a bare body: it imports as
+  `{:task body}`, so local overrides apply to it like to any map.
 - The file may hold task definitions only. File-level keys are an error. The
   consumer's `:enter`/`:leave` wrap imported tasks.
 - The library's code dependencies live in its own deps.edn and arrive

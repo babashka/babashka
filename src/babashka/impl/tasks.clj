@@ -113,8 +113,11 @@
                                 (if (contains? lib-tasks t) (hidden-import-name lib t) t)))]
          (reduce
           (fn [config t]
-            (let [m (cond-> (get lib-tasks t)
-                      (:depends (get lib-tasks t)) (update :depends #(mapv rename %)))]
+            (let [raw (get lib-tasks t)
+                  ;; a lib task may use the shorthand form, a bare body
+                  m (if (map? raw) raw {:task raw})
+                  m (cond-> m
+                      (:depends m) (update :depends #(mapv rename %)))]
               (if-let [ks (get aliases t)]
                 (reduce (fn [config k]
                           (update-in config [:tasks k] #(merge m (dissoc % :import))))

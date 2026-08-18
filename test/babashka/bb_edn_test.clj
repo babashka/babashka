@@ -1186,6 +1186,18 @@ even more stuff here\"
         (let [out (test-utils/bb nil "-cp" "test-resources" "duo")]
           (is (= "hello\ngoodbye\nduo" (str/trim out)))
           (is (= 1 (count (re-seq #"goodbye" out))))))))
+  (testing "a lib task in shorthand form imports as its body"
+    (test-utils/with-config '{:tasks {p {:import tasks-import.lib1/plain}
+                                      w {:import tasks-import.lib1/wrapper}}}
+      (is (= "plain hello" (str/trim (test-utils/bb nil "-cp" "test-resources" "p"))))
+      (testing "also as a hidden dependency"
+        (is (= "plain hello\nwrapper"
+               (str/trim (test-utils/bb nil "-cp" "test-resources" "w")))))
+      (testing "and local keys still override"
+        (test-utils/with-config '{:tasks {p {:import tasks-import.lib1/plain
+                                             :doc "Local doc"}}}
+          (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "tasks")
+                             "Local doc"))))))
   (testing "a falsey :import is invalid, not an empty task"
     (test-utils/with-config '{:tasks {x {:import false}}}
       (is (thrown-with-msg?

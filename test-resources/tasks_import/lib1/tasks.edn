@@ -6,6 +6,8 @@
  -mid {:depends [-hello] :task (println "mid")}
  also {:depends [-hello] :task (println "also")}
  duo {:depends [greet] :task (println "duo")}
+ plain (println "plain hello")
+ wrapper {:depends [plain] :task (println "wrapper")}
  wrap {:depends [-clihelper]
        :exec-fn babashka.tasks-cli/dep-test}
  -clihelper {:exec-fn babashka.tasks-cli/dep-build}
