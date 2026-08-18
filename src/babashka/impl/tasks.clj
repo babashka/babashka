@@ -65,10 +65,14 @@
   this runs after the classpath is set up, not before.
 
   `resource-fn` reads a classpath resource to a string, nil when absent."
-  [config resource-fn]
+  ([config resource-fn] (resolve-imports config resource-fn nil))
+  ([config resource-fn libs]
   (let [tasks (:tasks config)
         pointers (for [[k v] tasks
-                       :when (and (map? v) (:import v))]
+                       :when (and (map? v) (:import v))
+                       :when (or (nil? libs)
+                                 (and (qualified-symbol? (:import v))
+                                      (contains? libs (symbol (namespace (:import v))))))]
                    [k v])]
     (doseq [[k v] pointers]
       (when-not (qualified-symbol? (:import v))
@@ -117,21 +121,51 @@
                   (assoc-in config [:tasks nm] m)))))
           config closure)))
      config
-     (group-by #(symbol (namespace (:import (second %)))) pointers))))
+     (group-by #(symbol (namespace (:import (second %)))) pointers)))))
+
+(defn- pointer-lib [v]
+  (when (and (map? v) (qualified-symbol? (:import v)))
+    (symbol (namespace (:import v)))))
 
 (defn -ensure-imports!
-  "Materializes `:import` tasks once, on the first consumer of the task map.
-  Parsing needs only the bb.edn keys, so an invocation that never touches
-  tasks never reads a lib file."
-  []
-  (when-let [config @bb-edn]
-    (when (and (not (::imports-resolved config))
-               (some #(and (map? %) (:import %)) (vals (:tasks config))))
-      (vreset! bb-edn
-               (assoc (resolve-imports config
-                                       (fn [path]
-                                         (some-> (classpath/resource path) slurp)))
-                      ::imports-resolved true)))))
+  "Materializes `:import` tasks on the first consumer of the task map. With a
+  `root` task, only the libs its `:depends` closure reaches, to fixpoint: an
+  imported task may depend on a local key that is itself an import. Without
+  one, every lib. An invocation that consumes no tasks reads no lib file."
+  ([] (-ensure-imports! nil))
+  ([root]
+   (when-let [config @bb-edn]
+     (when (some #(and (map? %) (:import %)) (vals (:tasks config)))
+       (doseq [[k v] (:tasks config)
+               :when (and (map? v) (:import v))]
+         (when-not (qualified-symbol? (:import v))
+           (throw (ex-info (str "Task " k ": :import must be a qualified symbol, got: "
+                                (pr-str (:import v)))
+                           {:babashka/exit 1}))))
+       (loop []
+         (let [config @bb-edn
+               tasks (:tasks config)
+               resolved (::resolved-libs config #{})
+               needed (if root
+                        (loop [todo [(symbol root)] seen #{} libs #{}]
+                          (if-let [t (first todo)]
+                            (if (or (contains? seen t) (not (contains? tasks t)))
+                              (recur (rest todo) seen libs)
+                              (let [v (get tasks t)]
+                                (recur (concat (rest todo) (when (map? v) (:depends v)))
+                                       (conj seen t)
+                                       (cond-> libs (pointer-lib v) (conj (pointer-lib v))))))
+                            libs))
+                        (into #{} (keep pointer-lib (vals tasks))))
+               needed (remove resolved needed)]
+           (when (seq needed)
+             (vreset! bb-edn
+                      (update (resolve-imports config
+                                               (fn [path]
+                                                 (some-> (classpath/resource path) slurp))
+                                               (set needed))
+                              ::resolved-libs (fnil into #{}) needed))
+             (recur))))))))
 
 (def sci-ns (sci/create-ns 'babashka.tasks nil))
 (def default-log-level :error)
@@ -686,7 +720,7 @@
                          acc depends)) (transient {}) tasks->depends))))
 
 (defn assemble-task [task-name parallel?]
-  (-ensure-imports!)
+  (-ensure-imports! task-name)
   (let [task-name (symbol task-name)
         bb-edn @bb-edn
         tasks (get bb-edn :tasks)

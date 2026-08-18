@@ -1175,6 +1175,11 @@ even more stuff here\"
              (map edn/read-string
                   (str/split-lines
                    (test-utils/bb nil "-cp" "test-resources" "tst" "--target" "x")))))))
+  (testing "an imported task depending on a local key that is another import resolves to fixpoint"
+    (test-utils/with-config '{:tasks {aa {:import tasks-import.lib2/a}
+                                      c {:import tasks-import.lib1/greet}}}
+      (is (= "hello\ngoodbye\na"
+             (str/trim (test-utils/bb nil "-cp" "test-resources" "aa"))))))
   (testing "a dep the lib does not define errors lazily, like a local dangling :depends"
     (test-utils/with-config '{:tasks {a {:import tasks-import.lib2/a}}}
       (is (thrown-with-msg?
@@ -1187,13 +1192,17 @@ even more stuff here\"
            (test-utils/bb nil "-cp" "test-resources" "tasks")))))
   (testing "a lib without a tasks.edn is loud for whatever consumes tasks"
     (test-utils/with-config '{:tasks {x {:import no.such.lib/x}
+                                      uses-x {:depends [x] :task (println "uses-x")}
                                       local {:task (println "local")}}}
       (is (thrown-with-msg?
            Exception #"Task x: no no/such/lib/tasks.edn on the classpath"
            (test-utils/bb nil "-cp" "test-resources" "tasks")))
-      (is (thrown-with-msg?
-           Exception #"Task x: no no/such/lib/tasks.edn on the classpath"
-           (test-utils/bb nil "-cp" "test-resources" "local")))
+      (testing "a task whose closure never reaches the import is untouched"
+        (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "local") "local")))
+      (testing "a task depending on it is loud"
+        (is (thrown-with-msg?
+             Exception #"Task x: no no/such/lib/tasks.edn on the classpath"
+             (test-utils/bb nil "-cp" "test-resources" "uses-x"))))
       (testing "bb -e consumes no tasks, so it is untouched"
         (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "-e" "(println :ok)")
                            ":ok")))
