@@ -47,7 +47,7 @@ over it for adopting a whole suite with a `From <lib>:` listing.
 |---|---------|--------|
 | 1 | direct invocation | tested |
 | 2 | `(run 'imported)` in a body | same merged map, inherited |
-| 3-6 | `:depends`, `--parallel`, plain and CLI targets | tested: imported CLI task as dep of a local CLI target |
+| 3-6 | `:depends`, `--parallel`, plain and CLI targets | tested: chains, shared hidden deps run once, hidden CLI dep handler, each also under `run --parallel` |
 | 7 | `--help` | tested |
 | 8 | completion | tested |
 | 9 | spec merge | tested, inherited by the data merge |

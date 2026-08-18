@@ -1090,6 +1090,28 @@ even more stuff here\"
              (map edn/read-string
                   (str/split-lines
                    (test-utils/bb nil "-cp" "test-resources" "wrap" "--target" "x" "--watch")))))))
+  (testing "under --parallel a hidden-dep chain keeps its order"
+    (test-utils/with-config '{:tasks {chain {:import tasks-import.lib1/chain}}}
+      (is (= "hello\nmid\nchain"
+             (str/trim (test-utils/bb nil "-cp" "test-resources"
+                                      "run" "--parallel" "chain"))))))
+  (testing "under --parallel a shared hidden dep still runs once, first"
+    (test-utils/with-config '{:tasks {greet {:import tasks-import.lib1/greet}
+                                      also {:import tasks-import.lib1/also}
+                                      tst {:depends [greet also] :task (println "tst")}}}
+      (let [out (test-utils/bb nil "-cp" "test-resources" "run" "--parallel" "tst")
+            lines (str/split-lines (str/trim out))]
+        (is (= 1 (count (re-seq #"hello" out))))
+        (is (= "hello" (first lines)))
+        (is (= "tst" (last lines)))
+        (is (= #{"goodbye" "also"} (set (rest (butlast lines))))))))
+  (testing "under --parallel a hidden CLI dep runs its handler before the target"
+    (test-utils/with-config '{:tasks {wrap {:import tasks-import.lib1/wrap}}}
+      (is (= [{:target "x" :ran :dep-build} {:target "x" :ran :dep-test}]
+             (map edn/read-string
+                  (str/split-lines
+                   (test-utils/bb nil "-cp" "test-resources"
+                                  "run" "--parallel" "wrap" "--target" "x")))))))
   (testing "the local key is the name: rename is writing a different key"
     (test-utils/with-config '{:tasks {verify {:import tasks-import.lib1/greet}}}
       (is (= "hello\ngoodbye"
