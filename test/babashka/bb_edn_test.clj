@@ -1073,6 +1073,23 @@ even more stuff here\"
         (is (thrown-with-msg?
              Exception #"File does not exist: -hello"
              (test-utils/bb nil "-cp" "test-resources" "-hello"))))))
+  (testing "a chain of hidden deps executes depth-first"
+    (test-utils/with-config '{:tasks {chain {:import tasks-import.lib1/chain}}}
+      (is (= "hello\nmid\nchain"
+             (str/trim (test-utils/bb nil "-cp" "test-resources" "chain"))))))
+  (testing "two imports sharing a hidden dep run it once"
+    (test-utils/with-config '{:tasks {greet {:import tasks-import.lib1/greet}
+                                      also {:import tasks-import.lib1/also}
+                                      tst {:depends [greet also] :task (println "tst")}}}
+      (let [out (test-utils/bb nil "-cp" "test-resources" "tst")]
+        (is (= "hello\ngoodbye\nalso\ntst" (str/trim out)))
+        (is (= 1 (count (re-seq #"hello" out)))))))
+  (testing "a hidden dep that is a CLI task runs its handler with its declared opts"
+    (test-utils/with-config '{:tasks {wrap {:import tasks-import.lib1/wrap}}}
+      (is (= [{:target "x" :ran :dep-build} {:target "x" :watch true :ran :dep-test}]
+             (map edn/read-string
+                  (str/split-lines
+                   (test-utils/bb nil "-cp" "test-resources" "wrap" "--target" "x" "--watch")))))))
   (testing "the local key is the name: rename is writing a different key"
     (test-utils/with-config '{:tasks {verify {:import tasks-import.lib1/greet}}}
       (is (= "hello\ngoodbye"

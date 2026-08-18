@@ -2,6 +2,12 @@
         :depends [-hello]
         :task (println "goodbye")}
  -hello {:task (println "hello")}
+ chain {:depends [-mid] :task (println "chain")}
+ -mid {:depends [-hello] :task (println "mid")}
+ also {:depends [-hello] :task (println "also")}
+ wrap {:depends [-clihelper]
+       :exec-fn babashka.tasks-cli/dep-test}
+ -clihelper {:exec-fn babashka.tasks-cli/dep-build}
  cli-task {:doc "An imported CLI task"
            :exec-fn babashka.tasks-cli/dep-build}
  nodoc {:exec-fn babashka.tasks-cli/run-dev}}
