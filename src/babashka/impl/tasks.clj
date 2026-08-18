@@ -247,6 +247,19 @@
     :else (throw (ex-info (str what " must be a map or a symbol naming a def, got: " (pr-str v))
                           {:babashka/exit 1}))))
 
+(defn- resolve-cmd
+  "A symbol `:cmd` resolved to the command tree it names, so a large tree can
+  live in code as a def. A literal tree is kept as it is."
+  [resolve-fn task-name cmd]
+  (if (symbol? cmd)
+    (let [tree @(resolve-or-throw resolve-fn cmd
+                                  (str "Task " task-name ": :cmd " cmd " cannot be resolved"))]
+      (when-not (or (map? tree) (sequential? tree))
+        (throw (ex-info (str "Task " task-name ": :cmd " cmd " is not a command tree")
+                        {:babashka/exit 1})))
+      tree)
+    cmd))
+
 (defn -task-node
   "The dispatch node for a task: the keys bb reads (`:exec-fn`, `:cmd`, `:doc`)
   over the parser options its `:cli` resolves to. Both the invocation
@@ -254,7 +267,8 @@
   whichever asks."
   [resolve-fn task-name node]
   (merge (-resolve-cli-opts resolve-fn (:cli node) (str "Task " task-name ": :cli"))
-         (dissoc node :cli)))
+         (cond-> (dissoc node :cli)
+           (:cmd node) (update :cmd #(resolve-cmd resolve-fn task-name %)))))
 
 (defn- map-cmd
   "Applies `f` to every command in a `:cmd`, keeping its shape. A vector of

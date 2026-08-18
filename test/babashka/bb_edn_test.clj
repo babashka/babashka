@@ -814,6 +814,38 @@ even more stuff here\"
                                                   :cmd {"sub" {:exec-fn babashka.tasks-cli/dep-build}}}
                                          'tst (val target)}}
           (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "tst") "TREE"))))))
+  (testing ":cmd may be a symbol naming a def of the command tree"
+    (test-utils/with-config '{:tasks {deploy {:cmd babashka.tasks-cli/deploy-tree}}}
+      (is (= {:environment "staging" :message "msg" :ran :lock}
+             (bb "-cp" "test-resources" "deploy" "lock" "staging" "-m" "msg")))
+      (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "deploy" "--help")
+                         "lock"))
+      (testing "completion offers its commands"
+        (is (str/includes? (test-utils/bb nil "-cp" "test-resources"
+                                          "org.babashka.cli/completions" "complete"
+                                          "--shell" "zsh" "--" "deploy" "")
+                           "lock"))))
+    (testing "a vector-of-pairs tree too"
+      (test-utils/with-config '{:tasks {deploy {:cmd babashka.tasks-cli/ordered-tree}}}
+        (is (= {:environment "staging" :message "msg" :ran :lock}
+               (bb "-cp" "test-resources" "deploy" "lock" "staging" "-m" "msg")))))
+    (testing "a symbol that does not resolve is a config error"
+      (test-utils/with-config '{:tasks {deploy {:cmd no.such.ns/tree}}}
+        (is (thrown-with-msg?
+             Exception #"Task deploy: :cmd no.such.ns/tree cannot be resolved"
+             (bb "-cp" "test-resources" "deploy" "lock")))))
+    (testing "a def that does not hold a tree is a config error"
+      (test-utils/with-config '{:tasks {deploy {:cmd babashka.tasks-cli/dep-build}}}
+        (is (thrown-with-msg?
+             Exception #"Task deploy: :cmd babashka.tasks-cli/dep-build is not a command tree"
+             (bb "-cp" "test-resources" "deploy" "lock")))))
+    (testing "in :depends it is rejected like a literal :cmd task"
+      (test-utils/with-config '{:tasks {-tree {:cmd babashka.tasks-cli/deploy-tree}
+                                        tst {:depends [-tree]
+                                             :exec-fn babashka.tasks-cli/dep-test}}}
+        (is (thrown-with-msg?
+             Exception #":depends cannot name -tree"
+             (bb "-cp" "test-resources" "tst"))))))
   (testing ":cli :cmd subcommand fn pulls spec/args->opts from its :org.babashka/cli meta"
     (test-utils/with-config '{:tasks {deploy {:cmd {"lock" {:fn babashka.tasks-cli/lock}}}}}
       (is (= {:environment "staging" :message "msg" :ran :lock}
