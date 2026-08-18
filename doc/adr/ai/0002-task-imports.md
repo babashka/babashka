@@ -35,7 +35,9 @@ over it for adopting a whole suite with a `From <lib>:` listing.
   consumer's `:enter`/`:leave` wrap imported tasks.
 - The library's code dependencies live in its own deps.edn and arrive
   transitively. Per-task `:extra-deps` stays what it is.
-- Import errors are loud, like an unresolvable `:deps` entry.
+- Import errors are loud for anything that runs, like an unresolvable
+  `:deps` entry. `--version` answers first: it exits before imports resolve,
+  which the eager variant could not offer.
 - A `:depends` name the lib does not define errors lazily at assembly,
   `No such task`, exactly like a local dangling `:depends`.
 
