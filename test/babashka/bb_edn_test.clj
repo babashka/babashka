@@ -1064,6 +1064,55 @@ even more stuff here\"
       (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "deploy" "go" "--help")
                          "Usage: bb deploy go")))))
 
+(deftest task-imports-test
+  (testing "a referred task runs, its transitive :depends come along"
+    (test-utils/with-config '{:paths ["test-resources"]
+                              :tasks {:imports ([tasks-import.lib1 :refer [greet]])}}
+      (is (= "hello\ngoodbye"
+             (str/trim (test-utils/bb nil "greet"))))
+      (testing "and it shows in bb tasks with its doc"
+        (is (str/includes? (test-utils/bb nil "tasks")
+                           "Greet politely")))
+      (testing "a task that was not referred is not a task"
+        (is (thrown-with-msg?
+             Exception #"File does not exist: cli-task"
+             (test-utils/bb nil "cli-task"))))))
+  (testing "an imported CLI task dispatches, with help and completion"
+    (test-utils/with-config '{:paths ["test-resources"]
+                              :tasks {:imports ([tasks-import.lib1 :refer [cli-task]])}}
+      (is (= {:target "x" :ran :dep-build}
+             (bb "cli-task" "--target" "x")))
+      (is (str/includes? (test-utils/bb nil "cli-task" "--help")
+                         "--target"))
+      (is (str/includes? (test-utils/bb nil "org.babashka.cli/completions" "complete"
+                                        "--shell" "zsh" "--" "cli-task" "-")
+                         "--target"))))
+  (testing "importing a name that is already a task is an error"
+    (test-utils/with-config '{:paths ["test-resources"]
+                              :tasks {:imports ([tasks-import.lib1 :refer [greet]])
+                                      greet {:task (println "local")}}}
+      (is (thrown-with-msg?
+           Exception #"Task import tasks-import.lib1: greet is already a task"
+           (test-utils/bb nil "greet")))))
+  (testing "a lib without a tasks.edn is an error"
+    (test-utils/with-config '{:paths ["test-resources"]
+                              :tasks {:imports ([no.such.lib :refer [x]])}}
+      (is (thrown-with-msg?
+           Exception #"Task import no.such.lib: no no/such/lib/tasks.edn on the classpath"
+           (test-utils/bb nil "tasks")))))
+  (testing "referring a task the lib does not define is an error"
+    (test-utils/with-config '{:paths ["test-resources"]
+                              :tasks {:imports ([tasks-import.lib1 :refer [nope]])}}
+      (is (thrown-with-msg?
+           Exception #"Task import tasks-import.lib1: nope is not defined"
+           (test-utils/bb nil "tasks")))))
+  (testing "a tasks.edn with file-level keys is an error"
+    (test-utils/with-config '{:paths ["test-resources"]
+                              :tasks {:imports ([tasks-import.badlib :refer [x]])}}
+      (is (thrown-with-msg?
+           Exception #"must hold a map of task definitions only"
+           (test-utils/bb nil "tasks"))))))
+
 (deftest task-completion-test
   (testing "task-name completion lists matching public tasks"
     (test-utils/with-config '{:tasks {dev    {:exec-fn babashka.tasks-cli/run-dev}

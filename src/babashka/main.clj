@@ -1350,7 +1350,15 @@ Use bb run --help to show this help output.
                              (assoc edn :deps-root deps-root)
                              edn)
                        edn (tasks/join-docs edn)]
-                   (vreset! common/bb-edn edn)))
+                   (vreset! common/bb-edn edn)
+                   ;; imports come from the classpath bb.edn itself declares,
+                   ;; and the parser needs the imported names, so both happen now
+                   (when (get-in edn [:tasks :imports])
+                     (deps/add-deps edn)
+                     (vreset! common/bb-edn
+                              (tasks/resolve-imports @common/bb-edn
+                                                     (fn [path] (some-> (cp/resource path) slurp)))))
+                   @common/bb-edn))
         opts (parse-opts args opts)
         ;; A completion callback must never run what is on the line being
         ;; completed. The completed words go through the normal parsing above so

@@ -1,0 +1,6 @@
+{greet {:doc "Greet politely"
+        :depends [-hello]
+        :task (println "goodbye")}
+ -hello {:task (println "hello")}
+ cli-task {:doc "An imported CLI task"
+           :exec-fn babashka.tasks-cli/dep-build}}

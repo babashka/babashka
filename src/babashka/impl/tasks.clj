@@ -7,6 +7,7 @@
    [babashka.impl.process :as pp]
    [babashka.process :as p]
    [clojure.core.async :refer [<!!]]
+   [clojure.edn :as edn]
    [clojure.string :as str]
    [rewrite-clj.node :as node]
    [rewrite-clj.parser :as parser]
@@ -42,6 +43,59 @@
                           acc))
                       tasks tasks))
     edn))
+
+(defn- import-path [lib]
+  (str (.replace (namespace-munge (name lib)) "." "/") "/tasks.edn"))
+
+(defn resolve-imports
+  "Merges the tasks that `:tasks {:imports ...}` names into the tasks map. An
+  import spec is `[lib :refer [name ...]]`, read from the lib's `tasks.edn` on
+  the classpath, so an import is data merged into data: the imported tasks
+  behave as if they were written in bb.edn. A referred task brings its
+  transitive `:depends` along. A name that is already a task is an error.
+
+  `resource-fn` reads a classpath resource to a string, nil when absent."
+  [config resource-fn]
+  (reduce
+   (fn [config spec]
+     (let [[lib & kvs] (when (vector? spec) spec)
+           {:keys [refer] :as opts} (when (even? (count kvs)) (apply hash-map kvs))]
+       (when-not (and (symbol? lib) (vector? refer) (seq refer) (every? symbol? refer)
+                      (= [:refer] (keys opts)))
+         (throw (ex-info (str "Task import must be [lib :refer [task ...]], got: " (pr-str spec))
+                         {:babashka/exit 1})))
+       (let [path (import-path lib)
+             content (or (resource-fn path)
+                         (throw (ex-info (str "Task import " lib ": no " path " on the classpath")
+                                         {:babashka/exit 1})))
+             lib-tasks (edn/read-string {:default tagged-literal} content)
+             _ (when-not (and (map? lib-tasks) (every? symbol? (keys lib-tasks)))
+                 (throw (ex-info (str "Task import " lib ": " path
+                                      " must hold a map of task definitions only")
+                                 {:babashka/exit 1})))
+             lib-tasks (:tasks (join-docs {:tasks lib-tasks}))
+             _ (doseq [r refer]
+                 (when-not (contains? lib-tasks r)
+                   (throw (ex-info (str "Task import " lib ": " r " is not defined in " path)
+                                   {:babashka/exit 1}))))
+             closure (loop [todo refer out {}]
+                       (if-let [t (first todo)]
+                         (if (or (contains? out t) (not (contains? lib-tasks t)))
+                           (recur (rest todo) out)
+                           (recur (concat (rest todo) (:depends (get lib-tasks t)))
+                                  (assoc out t (get lib-tasks t))))
+                         out))]
+         (doseq [t (keys closure)]
+           (when (contains? (:tasks config) t)
+             (throw (ex-info (str "Task import " lib ": " t " is already a task")
+                             {:babashka/exit 1}))))
+         (-> config
+             (update :tasks merge closure)
+             ;; bb tasks lists from the raw bb.edn string, where imports do
+             ;; not appear, so the referred names ride along in order
+             (update :imported-tasks (fnil into []) refer)))))
+   config
+   (get-in config [:tasks :imports])))
 
 (def sci-ns (sci/create-ns 'babashka.tasks nil))
 (def default-log-level :error)
@@ -840,8 +894,10 @@
   (let [tasks (:tasks @bb-edn)
         raw-edn (:raw @bb-edn)
         names (when (seq tasks)
-                (->> (key-order raw-edn)
+                (->> (concat (key-order raw-edn) (:imported-tasks @bb-edn))
                      (map str)
+                     distinct
+                     (filter #(contains? tasks (symbol %)))
                      (remove #(str/starts-with? % "-"))
                      (remove #(:private (get tasks (symbol %))))))]
     (if (seq names)
