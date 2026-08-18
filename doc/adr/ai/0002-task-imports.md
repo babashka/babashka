@@ -15,6 +15,16 @@ A competing shape, `:imports` with `:refer` lists, lives on the
 `tasks-imports` branch. This one is the primitive: that one can become sugar
 over it for adopting a whole suite with a `From <lib>:` listing.
 
+## Principle
+
+Every addressable task name is statically readable from bb.edn; everything
+else may be lazy. Parsing, collision freedom, listing position and
+per-closure lib reading all follow from it. The eager variant lost them not
+through its `:refer` syntax, whose names are static too, but by making hidden
+transitive members addressable, which only the lib file could name. Any sugar
+built over this keeps the rule: referred names join the static set, hidden
+members stay sealed.
+
 ## Decisions
 
 - The bb.edn key is the local name. Rename is writing a different key,
