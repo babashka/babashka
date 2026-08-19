@@ -32,10 +32,7 @@ call %GRAALVM_HOME%\bin\native-image.cmd ^
   "-H:+ReportExceptionStackTraces" ^
   "--verbose" ^
   "--no-fallback" ^
-  "--enable-preview" ^
   "--install-exit-handlers" ^
-  "-march=compatibility" ^
-  "-O1" ^
   %*
 
 if %errorlevel% neq 0 exit /b %errorlevel%
