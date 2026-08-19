@@ -1159,6 +1159,16 @@ even more stuff here\"
                                         "org.babashka.cli/completions" "complete"
                                         "--shell" "zsh" "--" "cli-task" "-")
                          "--target"))))
+  (testing "an imported :cmd task dispatches its subcommands"
+    (test-utils/with-config '{:tasks {ct {:import tasks-import.lib1/cmdtree}}}
+      (is (= {:environment "staging" :message "msg" :ran :lock}
+             (bb "-cp" "test-resources" "ct" "lock" "staging" "-m" "msg")))
+      (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "ct" "--help")
+                         "lock"))))
+  (testing "an imported task's :extra-deps are added when it runs"
+    (test-utils/with-config '{:tasks {wd {:import tasks-import.lib1/withdeps}}}
+      (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "wd")
+                         "{1 {:id 1}}"))))
   (testing "imported tasks complete as task names, docs included"
     (test-utils/with-config '{:tasks {greet {:import tasks-import.lib1/greet}
                                       nodoc {:import tasks-import.lib1/nodoc}}}

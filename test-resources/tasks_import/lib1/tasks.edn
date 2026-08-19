@@ -11,6 +11,11 @@
  wrap {:depends [-clihelper]
        :exec-fn babashka.tasks-cli/dep-test}
  -clihelper {:exec-fn babashka.tasks-cli/dep-build}
+ cmdtree {:doc "An imported command tree"
+          :cmd {"lock" {:fn babashka.tasks-cli/lock}}}
+ withdeps {:extra-deps {medley/medley {:mvn/version "1.3.0"}}
+           :requires ([medley.core :as m])
+           :task (println (m/index-by :id [{:id 1}]))}
  cli-task {:doc "An imported CLI task"
            :exec-fn babashka.tasks-cli/dep-build}
  nodoc {:exec-fn babashka.tasks-cli/run-dev}
