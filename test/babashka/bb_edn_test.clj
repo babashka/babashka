@@ -1169,6 +1169,12 @@ even more stuff here\"
     (test-utils/with-config '{:tasks {wd {:import tasks-import.lib1/withdeps}}}
       (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "wd")
                          "{1 {:id 1}}"))))
+  (testing "an importing entry may carry its lib as :extra-deps, resolved before the read"
+    (test-utils/with-config {:tasks {'et {:import 'extdep/hello
+                                          :extra-deps {'extdep/extdep
+                                                       {:local/root (str (fs/absolutize "test-resources/import_dep_lib"))}}}}}
+      (is (= "hello from extra-dep" (str/trim (test-utils/bb nil "et"))))
+      (is (str/includes? (test-utils/bb nil "tasks") "From an extra-dep lib"))))
   (testing "imported tasks complete as task names, docs included"
     (test-utils/with-config '{:tasks {greet {:import tasks-import.lib1/greet}
                                       nodoc {:import tasks-import.lib1/nodoc}}}

@@ -49,7 +49,10 @@ members stay sealed.
 - The file may hold task definitions only. File-level keys are an error. The
   consumer's `:enter`/`:leave` wrap imported tasks.
 - The library's code dependencies live in its own deps.edn and arrive
-  transitively. Per-task `:extra-deps` stays what it is.
+  transitively. Per-task `:extra-deps` stays what it is. An importing entry
+  may carry the lib itself as `:extra-deps`, resolved before its file is
+  read, so a one-off task keeps the pin, the wiring and the config on one
+  task and costs nothing until reached.
 - A lib's tasks.edn may itself import: a materialized definition that still
   holds an `:import` is just another pointer, resolved on the next round.
   Transitivity stays sealed, hidden members all the way down. A pointer that

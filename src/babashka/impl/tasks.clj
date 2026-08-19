@@ -3,6 +3,7 @@
    [babashka.cli]
    [babashka.deps :as deps]
    [babashka.impl.classpath :as classpath]
+   [babashka.impl.deps :as impl-deps]
    [babashka.impl.cli :as cli]
    [babashka.impl.common :refer [bb-edn ctx debug]]
    [babashka.impl.process :as pp]
@@ -82,6 +83,13 @@
     (reduce
      (fn [config [lib entries]]
        (let [path (import-path lib)
+             ;; an importing entry may carry the lib as :extra-deps, so the
+             ;; pin, the wiring and the config live on one task. Resolved
+             ;; before the file is read, since the file comes from it
+             extra-deps (apply merge (keep (fn [[_ v]] (not-empty (:extra-deps v)))
+                                           entries))
+             _ (when (seq extra-deps)
+                 (impl-deps/add-deps {:deps extra-deps}))
              content (or (resource-fn path)
                          (throw (ex-info (str "Task " (ffirst entries) ": no " path
                                               " on the classpath (:import "

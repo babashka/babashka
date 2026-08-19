@@ -1,0 +1,1 @@
+{hello {:doc "From an extra-dep lib" :task (println "hello from extra-dep")}}
