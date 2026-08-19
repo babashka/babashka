@@ -50,6 +50,10 @@ members stay sealed.
   consumer's `:enter`/`:leave` wrap imported tasks.
 - The library's code dependencies live in its own deps.edn and arrive
   transitively. Per-task `:extra-deps` stays what it is.
+- A lib's tasks.edn may itself import: a materialized definition that still
+  holds an `:import` is just another pointer, resolved on the next round.
+  Transitivity stays sealed, hidden members all the way down. A pointer that
+  survives resolution of its own lib is a cycle and errors as one.
 - Import errors are loud for whatever reaches the import, like an
   unresolvable `:deps` entry: a task whose closure needs the lib, `bb tasks`,
   completion. A task that never reaches it runs, and `bb -e` and `--version`
@@ -61,6 +65,16 @@ members stay sealed.
   must not discard each other's materialization.
 - A `:depends` name the lib does not define errors lazily at assembly,
   `No such task`, exactly like a local dangling `:depends`.
+
+## Security notes
+
+- Resolution executes nothing: an EDN resource read, no reader eval, no
+  file-level `:init` possible. Code runs only when an imported task is
+  deliberately invoked. Pinned by the load-noise tests.
+- No ambient authority: a dependency cannot add or shadow a task. Every
+  addressable name is an `:import` the consumer wrote.
+- Inherited, not new: any jar earlier on the classpath can supply another
+  lib's `tasks.edn` path, like namespace squatting generally.
 
 ## Decision matrix
 

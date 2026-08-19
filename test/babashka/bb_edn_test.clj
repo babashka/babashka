@@ -1208,6 +1208,24 @@ even more stuff here\"
                                       c {:import tasks-import.lib1/greet}}}
       (is (= "hello\ngoodbye\na"
              (str/trim (test-utils/bb nil "-cp" "test-resources" "aa"))))))
+  (testing "a lib may itself import: a hidden member's pointer resolves transitively"
+    (test-utils/with-config '{:tasks {t {:import tasks-import.lib3/outer}}}
+      (is (= "hello\ngoodbye\nouter"
+             (str/trim (test-utils/bb nil "-cp" "test-resources" "t"))))))
+  (testing "a public chain of imports resolves transitively too"
+    (test-utils/with-config '{:tasks {t {:import tasks-import.lib3/direct}}}
+      (is (= "hello\ngoodbye"
+             (str/trim (test-utils/bb nil "-cp" "test-resources" "t"))))))
+  (testing "a self-import is a cycle error, not an empty task"
+    (test-utils/with-config '{:tasks {x {:import tasks-import.cyclicself/x}}}
+      (is (thrown-with-msg?
+           Exception #"Cyclic task import: x -> tasks-import.cyclicself/x"
+           (test-utils/bb nil "-cp" "test-resources" "x")))))
+  (testing "a mutual import across libs is a cycle error"
+    (test-utils/with-config '{:tasks {t {:import tasks-import.cyclica/x}}}
+      (is (thrown-with-msg?
+           Exception #"Cyclic task import"
+           (test-utils/bb nil "-cp" "test-resources" "t")))))
   (testing "a dep the lib does not define errors lazily, like a local dangling :depends"
     (test-utils/with-config '{:tasks {a {:import tasks-import.lib2/a}}}
       (is (thrown-with-msg?

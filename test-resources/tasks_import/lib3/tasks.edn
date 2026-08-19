@@ -1,0 +1,3 @@
+{outer {:depends [inner] :task (println "outer")}
+ inner {:import tasks-import.lib1/greet}
+ direct {:import tasks-import.lib1/greet}}

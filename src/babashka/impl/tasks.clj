@@ -176,7 +176,15 @@
                                                  (some-> (classpath/resource path) slurp))
                                                (set needed))
                               ::resolved-libs (fnil into #{}) needed))
-             (recur)))))))))
+             (recur))))
+       ;; a pointer that survives resolution of its own lib is a cycle: the
+       ;; materialized definition reintroduced it
+       (let [config @bb-edn]
+         (doseq [[k v] (:tasks config)
+                 :when (and (map? v) (contains? v :import))]
+           (when (contains? (::resolved-libs config #{}) (pointer-lib v))
+             (throw (ex-info (str "Cyclic task import: " k " -> " (:import v))
+                             {:babashka/exit 1}))))))))))
 
 (def sci-ns (sci/create-ns 'babashka.tasks nil))
 (def default-log-level :error)
