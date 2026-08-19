@@ -592,6 +592,15 @@ even more stuff here\"
           (is (str/includes? out "Inherited options:"))
           (is (str/includes? out "Target env"))
           (is (str/includes? out "Port"))))))
+  (testing "a task's :exec-args add to the runner-level ones, its keys winning"
+    (test-utils/with-config
+      '{:tasks {:cli {:exec-args {:env :dev :author "me"}}
+                foo {:exec-fn clojure.core/prn
+                     :cli {:exec-args {:port 80 :author "task"}}}}}
+      (is (= {:env :dev :port 80 :author "task"} (bb "foo")))
+      (testing "and the command line beats both"
+        (is (= {:env "prod" :port 80 :author "task"}
+               (bb "foo" "--env" "prod"))))))
   (testing "a task without its own spec gets the runner-level :cli spec"
     (test-utils/with-config
       '{:tasks {:cli {:spec {:env {:coerce :keyword :default :dev :desc "Target env"}}}

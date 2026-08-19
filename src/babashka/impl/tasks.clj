@@ -381,7 +381,7 @@
         {:keys [body-fn deps-fn hook-fn]} fns
         dep-spec (-dep-spec dep-nodes resolve-fn)
         own-spec (fn [m]
-                   (cond-> (select-keys m [:spec])
+                   (cond-> (select-keys m [:spec :exec-args])
                      (and (seq dep-spec) (:spec m)) (update :spec spec-map)))
         ;; babashka.cli hands an `:exec-fn` the parsed options and a `:fn` the
         ;; whole dispatch result. A `:depends` handler always wants the options,

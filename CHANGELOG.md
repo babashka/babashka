@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Tasks: a task's `:cli` `:exec-args` add to the runner-level ones, its keys winning. Before, the task's map replaced the runner-level map
 - [#1321](https://github.com/babashka/babashka/issues/1321): support implementing the `clojure.core/Inst` protocol on records, types and reify, and with `extend-protocol` and `extend-type`
 - Fix output of custom `clojure.pprint` dispatch functions
 - Tasks: a task's own `:cli` spec no longer replaces the `:tasks {:cli {:spec ...}}` spec. An inherited option keeps its coercion and default, and shows in `--help` under `Inherited options:`
