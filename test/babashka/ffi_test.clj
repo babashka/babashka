@@ -143,7 +143,19 @@
         (is (string? (bb `(do ~ffi-require
                               (ffi/load-system-library "z")
                               ((ffi/cfn "zlibVersion" [] :string))))))))
-    (testing "missing library throws"
+    (when-not tu/windows?
+    (testing "candidate vectors in the OS map, first that loads wins"
+      (is (string? (bb `(do (require '[babashka.ffi :as ~'ffi])
+                            (ffi/load-library
+                             {:mac ["nonexistent-bb-zzz.dylib" "libz.dylib"]
+                              :linux ["nonexistent-bb-zzz.so" "libz.so.1" "libz.so"]})
+                            ((ffi/cfn "zlibVersion" [] :string))))))))
+  (testing "find-symbol probes without binding"
+    (is (= [true nil]
+           (bb `(do (require '[babashka.ffi :as ~'ffi])
+                    [(number? (ffi/find-symbol "strlen"))
+                     (ffi/find-symbol "bb_no_such_symbol_zzz")])))))
+  (testing "missing library throws"
       (is (thrown? Exception (bb `(do ~ffi-require
                                       (ffi/load-library "libdoesnotexist-bb.so"))))))
     (testing "missing symbol throws"

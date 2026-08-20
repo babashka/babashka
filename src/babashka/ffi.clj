@@ -39,6 +39,7 @@
 
   C promotes variadic floats to double, so declare :double after the marker."
   (:refer-clojure :exclude [read])
+  (:require [clojure.string :as str])
   (:import [java.lang.foreign Arena FunctionDescriptor Linker MemoryLayout
             MemorySegment SymbolLookup ValueLayout]
            [java.lang.invoke MethodHandle MethodHandles MethodType]))
@@ -197,33 +198,45 @@
   (try (SymbolLookup/libraryLookup path (Arena/global))
        (catch Throwable _ nil)))
 
+(defn- lookup-one
+  "One path through the full search: as given, then, for a bare name, the
+  common install directories. Nil when not found."
+  ^SymbolLookup [^String path]
+  (or (try-lookup path)
+      (when-not (.contains path "/")
+        (some #(try-lookup (str % "/" path)) (search-dirs)))))
+
 (defn load-library
   "Loads a shared library and registers it for symbol resolution. Prefer
   load-system-library when the name only differs per OS by convention; this
-  is the escape hatch for version-pinned or per-OS names, e.g.
-  {:mac \"libcrypto.3.dylib\" :linux \"libcrypto.so.3\"}. Takes a path, or a
-  map from OS keyword (:mac :linux :windows) to path; :darwin is accepted as
-  a synonym for :mac (jolt compatibility). A bare name (no separator) that
-  the system's dlopen search does not find is also probed in common install
-  directories (Homebrew, MacPorts, /usr/local/lib, multiarch dirs) and in
-  BABASHKA_FFI_LIBRARY_PATH. Returns the library's SymbolLookup, usable as
-  the first argument to cfn."
-  [path-or-map]
-  (let [path (str (if (map? path-or-map)
-                    (or (get path-or-map (os-key))
-                        (when (= :mac (os-key)) (get path-or-map :darwin))
-                        (throw (ex-info (str "babashka.ffi: no library for OS " (os-key))
-                                        {:libs path-or-map})))
-                    path-or-map))
-        bare? (not (.contains path "/"))
-        lookup (or (try-lookup path)
-                   (when bare?
-                     (some #(try-lookup (str % "/" path)) (search-dirs)))
-                   (throw (ex-info (str "babashka.ffi: cannot load library: " path
-                                        (when bare?
-                                          (str " (also searched "
-                                               (pr-str (vec (search-dirs))) ")")))
-                                   {:library path})))]
+  is the escape hatch for version-pinned names and absolute paths. Takes a
+  path, or a map from OS keyword (:mac :linux :windows) to a path or a
+  vector of candidate paths tried in order:
+
+      (ffi/load-library
+        {:mac [\"/opt/homebrew/opt/openssl@3/lib/libcrypto.3.dylib\"
+               \"/usr/local/opt/openssl@3/lib/libcrypto.3.dylib\"]
+         :linux \"libcrypto.so.3\"})
+
+  :darwin is accepted as a synonym for :mac (jolt compatibility). A bare
+  name (no separator) that the system's dlopen search does not find is also
+  probed in common install directories (Homebrew, MacPorts, /usr/local/lib,
+  multiarch dirs) and in BABASHKA_FFI_LIBRARY_PATH. Returns the library's
+  SymbolLookup, usable as the first argument to cfn."
+  [lib]
+  (let [paths (if (map? lib)
+                (let [v (or (get lib (os-key))
+                            (when (= :mac (os-key)) (get lib :darwin))
+                            (throw (ex-info (str "babashka.ffi: no library for OS " (os-key))
+                                            {:libs lib})))]
+                  (mapv str (if (vector? v) v [v])))
+                [(str lib)])
+        lookup (or (some lookup-one paths)
+                   (throw (ex-info (str "babashka.ffi: cannot load library: "
+                                        (str/join ", " paths)
+                                        " (bare names also searched in "
+                                        (pr-str (vec (search-dirs))) ")")
+                                   {:library lib})))]
     (swap! libraries conj lookup)
     lookup))
 
@@ -254,10 +267,19 @@
                                (pr-str (vec (search-dirs))) ")")
                           {:library name}))))))
 
-(defn- find-symbol ^MemorySegment [lib ^String sym]
+(defn- lookup-symbol ^MemorySegment [lib ^String sym]
   (let [lookups (if lib [lib] (conj @libraries (.defaultLookup ^Linker @linker*)))]
-    (or (some (fn [^SymbolLookup l] (.orElse (.find l sym) nil)) lookups)
-        (throw (ex-info (str "babashka.ffi: symbol not found: " sym) {:symbol sym})))))
+    (some (fn [^SymbolLookup l] (.orElse (.find l sym) nil)) lookups)))
+
+(defn- require-symbol ^MemorySegment [lib ^String sym]
+  (or (lookup-symbol lib sym)
+      (throw (ex-info (str "babashka.ffi: symbol not found: " sym) {:symbol sym}))))
+
+(defn find-symbol
+  "The address of symbol sym in the loaded libraries and the default (libc)
+  lookup, as a pointer, or nil when not found."
+  [sym]
+  (some-> (lookup-symbol nil (str sym)) .address))
 
 ;; -- foreign functions --------------------------------------------------------
 
@@ -305,10 +327,10 @@
          tramp-id (and (nil? boundary)
                        (get trampoline-ids (shape-key types* rettype)))
          raw (if tramp-id
-               (delay (trampoline-invoker tramp-id (.address (find-symbol lib sym))))
+               (delay (trampoline-invoker tramp-id (.address (require-symbol lib sym))))
                (delay
                  (let [handle (.downcallHandle ^Linker @linker*
-                                               (find-symbol lib sym)
+                                               (require-symbol lib sym)
                                                (descriptor types* rettype)
                                                opts)]
                    (fn [^objects arr] (.invokeWithArguments ^MethodHandle handle arr)))))
