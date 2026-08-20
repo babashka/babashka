@@ -180,34 +180,76 @@
           (.startsWith ^String os "Windows") :windows
           :else :linux)))
 
+(defn- search-dirs
+  "Directories probed for bare library names after the system's own dlopen
+  search fails. BABASHKA_FFI_LIBRARY_PATH (colon-separated) is probed first."
+  []
+  (concat
+   (when-let [p (System/getenv "BABASHKA_FFI_LIBRARY_PATH")]
+     (remove empty? (.split ^String p ":")))
+   (case (os-key)
+     :mac ["/opt/homebrew/lib" "/usr/local/lib" "/opt/local/lib" "/usr/lib"]
+     :windows []
+     ["/usr/local/lib" "/usr/lib" "/usr/lib/x86_64-linux-gnu"
+      "/usr/lib/aarch64-linux-gnu" "/lib"])))
+
+(defn- try-lookup ^SymbolLookup [^String path]
+  (try (SymbolLookup/libraryLookup path (Arena/global))
+       (catch Throwable _ nil)))
+
 (defn load-library
   "Loads a shared library and registers it for symbol resolution. Takes a
   path, or a map from OS keyword (:mac :linux :windows) to path; :darwin is
-  accepted as a synonym for :mac (jolt compatibility). Returns the library's
+  accepted as a synonym for :mac (jolt compatibility). A bare name (no
+  separator) that the system's dlopen search does not find is also probed in
+  common install directories (Homebrew, MacPorts, /usr/local/lib, multiarch
+  dirs) and in BABASHKA_FFI_LIBRARY_PATH. Returns the library's
   SymbolLookup, usable as the first argument to cfn."
   [path-or-map]
-  (let [path (if (map? path-or-map)
-               (or (get path-or-map (os-key))
-                   (when (= :mac (os-key)) (get path-or-map :darwin))
-                   (throw (ex-info (str "babashka.ffi: no library for OS " (os-key))
-                                   {:libs path-or-map})))
-               path-or-map)
-        lookup (SymbolLookup/libraryLookup ^String (str path) (Arena/global))]
+  (let [path (str (if (map? path-or-map)
+                    (or (get path-or-map (os-key))
+                        (when (= :mac (os-key)) (get path-or-map :darwin))
+                        (throw (ex-info (str "babashka.ffi: no library for OS " (os-key))
+                                        {:libs path-or-map})))
+                    path-or-map))
+        bare? (not (.contains path "/"))
+        lookup (or (try-lookup path)
+                   (when bare?
+                     (some #(try-lookup (str % "/" path)) (search-dirs)))
+                   (throw (ex-info (str "babashka.ffi: cannot load library: " path
+                                        (when bare?
+                                          (str " (also searched "
+                                               (pr-str (vec (search-dirs))) ")")))
+                                   {:library path})))]
     (swap! libraries conj lookup)
     lookup))
 
 (defn load-system-library
   "Loads a library by its short name, e.g. \"z\" for libz.dylib / libz.so /
-  z.dll. On Linux falls back to the .so.1 soname: the bare .so link only
-  exists with the -dev package installed. See load-library."
+  z.dll, searching the system paths and common install directories (see
+  load-library). On Linux, versioned sonames are found by globbing: the bare
+  .so link only exists with the -dev package installed."
   [name]
   (case (os-key)
     :mac (load-library (str "lib" name ".dylib"))
     :windows (load-library (str name ".dll"))
-    (try (load-library (str "lib" name ".so"))
-         (catch Exception e
-           (try (load-library (str "lib" name ".so.1"))
-                (catch Exception _ (throw e)))))))
+    (let [base (str "lib" name ".so")]
+      (or (try (load-library base) (catch Exception _ nil))
+          ;; glob lib<name>.so.* in the search dirs
+          (when-let [lookup (some (fn [dir]
+                                    (let [d (java.io.File. ^String dir)
+                                          cands (when (.isDirectory d)
+                                                  (->> (.list d)
+                                                       (filter #(.startsWith ^String % (str base ".")))
+                                                       (sort #(compare %2 %1))))]
+                                      (some #(try-lookup (str dir "/" %)) cands)))
+                                  (search-dirs))]
+            (swap! libraries conj lookup)
+            lookup)
+          (throw (ex-info (str "babashka.ffi: cannot find library " name
+                               " (tried " base " and " base ".* in "
+                               (pr-str (vec (search-dirs))) ")")
+                          {:library name}))))))
 
 (defn- find-symbol ^MemorySegment [lib ^String sym]
   (let [lookups (if lib [lib] (conj @libraries (.defaultLookup ^Linker @linker*)))]

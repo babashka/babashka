@@ -24,12 +24,7 @@
   (:refer-clojure :exclude [read])
   (:require [babashka.ffi :as ffi :refer [defcfn]]))
 
-(when-not (some #(try (ffi/load-library %) (catch Exception _ nil))
-                ["libsqlite3.dylib"
-                 "/usr/lib/libsqlite3.dylib"
-                 "libsqlite3.so.0"
-                 "libsqlite3.so"])
-  (throw (ex-info "libsqlite3 not found" {})))
+(ffi/load-system-library "sqlite3")
 
 (defcfn ^:private c-open "sqlite3_open" [:string :pointer] :int)
 (defcfn ^:private c-close "sqlite3_close_v2" [:pointer] :int)

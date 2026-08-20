@@ -8,13 +8,7 @@
 (require '[babashka.ffi :as ffi :refer [defcfn]]
          '[clojure.string :as str])
 
-(when-not (some #(try (ffi/load-library %) (catch Exception _ nil))
-                ["/opt/homebrew/lib/libqrencode.dylib"
-                 "/usr/local/lib/libqrencode.dylib"
-                 "libqrencode.so.4"
-                 "libqrencode.so"])
-  (println "libqrencode not found - brew install qrencode")
-  (System/exit 1))
+(ffi/load-system-library "qrencode")
 
 ;; QRcode *QRcode_encodeString(const char *string, int version,
 ;;                             QRecLevel level, QRencodeMode hint, int casesensitive)

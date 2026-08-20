@@ -7,17 +7,7 @@
 
 (require '[babashka.ffi :as ffi :refer [defcfn]])
 
-(def lib-candidates
-  ["/opt/homebrew/lib/libraylib.dylib"     ; brew, Apple silicon
-   "/usr/local/lib/libraylib.dylib"        ; brew, Intel mac
-   "libraylib.dylib"
-   "/usr/lib/libraylib.so"
-   "/usr/local/lib/libraylib.so"
-   "libraylib.so"])
-
-(when-not (some #(try (ffi/load-library %) (catch Exception _ nil)) lib-candidates)
-  (println "libraylib not found - install raylib first (brew install raylib)")
-  (System/exit 1))
+(ffi/load-system-library "raylib")
 
 (defcfn init-window "InitWindow" [:int :int :string] :void)
 (defcfn close-window "CloseWindow" [] :void)
