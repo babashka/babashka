@@ -116,29 +116,38 @@
            [x y])))
 
 (def pac-start (or (find-tile \P) [9 15]))
-(def ghost-start (or (find-tile \G) [9 9]))
+(def door (or (find-tile \-) [9 8]))
+;; the tile just outside the door: where ghosts head for on the way out
+(def door-exit [(first door) (dec (second door))])
+(def house-tiles (vec (for [y (range MH) x (range MW)
+                            :when (= \G (tile-at x y))]
+                        [x y])))
+(def house-slots (vec (filter #(= (second (first house-tiles)) (second %))
+                              house-tiles)))
 
 (defn initial-dots []
   (into #{} (for [y (range MH) x (range MW)
                   :when (#{\. \o} (tile-at x y))]
               [x y])))
 
+(defn centre-of [[x y]] [(+ 0.5 x) (+ 0.5 y)])
+
 (defn initial-ghosts []
-  (mapv (fn [[nm color scatter i]]
-          {:name nm :color color :scatter scatter
-           :x (+ (first ghost-start) (- i 1.0)) :y (double (second ghost-start))
-           :dx 0 :dy -1 :mode :scatter :frightened 0.0 :home-timer (* i 1.4)})
-        [["blinky" (rgba 255 60 50 255) [(dec MW) 0] 0]
-         ["pinky" (rgba 255 160 200 255) [0 0] 1]
-         ["inky" (rgba 90 220 240 255) [(dec MW) (dec MH)] 2]
-         ["clyde" (rgba 255 170 60 255) [0 (dec MH)] 3]]))
+  (mapv (fn [[nm color scatter start delay]]
+          (let [[sx sy] (centre-of start)]
+            {:name nm :color color :scatter scatter
+             :x sx :y sy :dx 0 :dy -1 :frightened 0.0 :home-timer delay}))
+        [["blinky" (rgba 255 60 50 255) [(dec MW) 0] door-exit 0.0]
+         ["pinky" (rgba 255 160 200 255) [0 0] (nth house-slots 0) 1.5]
+         ["inky" (rgba 90 220 240 255) [(dec MW) (dec MH)] (nth house-slots 1) 3.5]
+         ["clyde" (rgba 255 170 60 255) [0 (dec MH)] (nth house-slots 2) 5.5]]))
 
 (def state (atom nil))
 
 (defn reset-game! [& {:keys [keep-score] :or {keep-score false}}]
   (reset! state
-          {:pac {:x (double (first pac-start)) :y (double (second pac-start))
-                 :dx -1 :dy 0 :ndx -1 :ndy 0 :mouth 0.0}
+          {:pac (let [[sx sy] (centre-of pac-start)]
+                  {:x sx :y sy :dx -1 :dy 0 :ndx -1 :ndy 0 :fx -1 :fy 0 :mouth 0.0})
            :ghosts (initial-ghosts)
            :dots (initial-dots)
            :score (if keep-score (:score @state) 0)
@@ -172,68 +181,71 @@
 
 ;; --- movement ----------------------------------------------------------------
 
-(defn centered?
-  "True when v is close enough to a tile centre to turn there."
-  [v]
-  (< (Math/abs (- v (Math/floor v) 0.5)) 0.18))
+(defn tile-of ^long [v] (long (Math/floor v)))
 
-(defn snap [v] (+ (Math/floor v) 0.5))
-
-(defn can-go?
-  "Can something at tile (round x,y) move in direction dx,dy?"
-  [x y dx dy walls?]
-  (let [tx (long (Math/floor x)) ty (long (Math/floor y))]
-    (not (walls? (+ tx dx) (+ ty dy)))))
-
-(defn advance
-  "Move one step along dx,dy with tunnel wrap."
-  [x y dx dy speed dt]
-  [(mod (+ x (* dx speed dt)) MW) (+ y (* dy speed dt))])
+(defn step-entity
+  "Advance (x,y) along (dx,dy) by speed*dt. When the step reaches the centre
+  of the current tile, (decide tx ty dx dy) picks the direction to leave by;
+  a blocked or zero choice stops there. Deciding anywhere other than a tile
+  centre is what lets an entity drift into a wall. Returns [x y dx dy]."
+  [x y dx dy speed dt decide walls?]
+  (let [dist (* speed dt)
+        cx (+ (Math/floor x) 0.5)
+        cy (+ (Math/floor y) 0.5)
+        to-centre (+ (* dx (- cx x)) (* dy (- cy y)))]
+    (if (and (>= to-centre -1.0e-9) (<= to-centre dist))
+      (let [tx (tile-of cx)
+            ty (tile-of cy)
+            [ndx ndy] (decide tx ty dx dy)
+            leftover (- dist to-centre)]
+        (if (or (and (zero? ndx) (zero? ndy))
+                (walls? (+ tx ndx) (+ ty ndy)))
+          [cx cy ndx ndy]
+          [(mod (+ cx (* ndx leftover)) MW) (+ cy (* ndy leftover)) ndx ndy]))
+      [(mod (+ x (* dx dist)) MW) (+ y (* dy dist)) dx dy])))
 
 (defn move-pac [pac dt]
   (let [{:keys [x y dx dy ndx ndy]} pac
-        ;; take the buffered turn as soon as we are on a tile centre
-        turn? (and (or (not= ndx dx) (not= ndy dy))
-                   (centered? x) (centered? y)
-                   (can-go? x y ndx ndy wall?))
-        [dx dy x y] (if turn?
-                      [ndx ndy (snap x) (snap y)]
-                      [dx dy x y])
-        blocked? (and (centered? x) (centered? y)
-                      (not (can-go? x y dx dy wall?)))
-        [nx ny] (if blocked?
-                  [(snap x) (snap y)]
-                  (advance x y dx dy 5.6 dt))]
-    (assoc pac :x nx :y ny :dx dx :dy dy
-           :mouth (+ (:mouth pac) (* dt (if blocked? 0 9.0))))))
+        decide (fn [tx ty dx dy]
+                 (cond
+                   ;; the buffered turn wins whenever it is possible here
+                   (and (or (not= ndx dx) (not= ndy dy))
+                        (not (wall? (+ tx ndx) (+ ty ndy))))
+                   [ndx ndy]
+                   (not (wall? (+ tx dx) (+ ty dy))) [dx dy]
+                   :else [0 0]))
+        [nx ny mdx mdy] (step-entity x y dx dy 5.6 dt decide wall?)
+        moving? (not (and (zero? mdx) (zero? mdy)))]
+    (assoc pac :x nx :y ny :dx mdx :dy mdy
+           :fx (if moving? mdx (:fx pac))
+           :fy (if moving? mdy (:fy pac))
+           :mouth (+ (:mouth pac) (* dt (if moving? 9.0 0.0))))))
 
 (defn ghost-target
   "Classic personalities, in tile coordinates."
   [g pac ghosts]
-  (let [{:keys [x y dx dy]} pac
-        px (long x) py (long y)]
+  (let [{:keys [x y fx fy]} pac
+        px (tile-of x) py (tile-of y)]
     (case (:name g)
       "blinky" [px py]
-      "pinky" [(+ px (* 4 dx)) (+ py (* 4 dy))]
+      "pinky" [(+ px (* 4 fx)) (+ py (* 4 fy))]
       "inky" (let [b (first (filter #(= "blinky" (:name %)) ghosts))
-                   ax (+ px (* 2 dx)) ay (+ py (* 2 dy))]
-               [(- (* 2 ax) (long (:x b))) (- (* 2 ay) (long (:y b)))])
+                   ax (+ px (* 2 fx)) ay (+ py (* 2 fy))]
+               [(- (* 2 ax) (tile-of (:x b))) (- (* 2 ay) (tile-of (:y b)))])
       "clyde" (let [d (+ (Math/abs (- (:x g) x)) (Math/abs (- (:y g) y)))]
                 (if (> d 8) [px py] (:scatter g))))))
 
 (defn ghost-choose-dir
   "At a tile centre, pick the direction that gets closest to the target,
   without reversing."
-  [g target]
-  (let [{:keys [x y dx dy frightened]} g
-        tx (long (Math/floor x)) ty (long (Math/floor y))
-        opts (for [[ndx ndy] [[0 -1] [-1 0] [0 1] [1 0]]
-                   :when (and (not (and (= ndx (- dx)) (= ndy (- dy))))
-                              (not (ghost-wall? (+ tx ndx) (+ ty ndy))))]
-               [ndx ndy])
+  [tx ty dx dy target frightened?]
+  (let [opts (vec (for [[ndx ndy] [[0 -1] [-1 0] [0 1] [1 0]]
+                        :when (and (not (and (= ndx (- dx)) (= ndy (- dy))))
+                                   (not (ghost-wall? (+ tx ndx) (+ ty ndy))))]
+                    [ndx ndy]))
         opts (if (seq opts) opts [[(- dx) (- dy)]])]
-    (if (pos? frightened)
-      (rand-nth (vec opts))
+    (if frightened?
+      (rand-nth opts)
       (let [[gx gy] target]
         (apply min-key
                (fn [[ndx ndy]]
@@ -243,20 +255,19 @@
 
 (defn move-ghost [g pac ghosts chase? dt]
   (if (pos? (:home-timer g))
-    ;; bob inside the house until released
+    ;; wait inside the house until released
     (update g :home-timer - dt)
     (let [g (update g :frightened #(max 0.0 (- % dt)))
-          speed (cond (pos? (:frightened g)) 3.1
-                      :else (+ 4.4 (* 0.2 (:level @state 1))))
-          {:keys [x y dx dy]} g
-          at-centre? (and (centered? x) (centered? y))
+          frightened? (pos? (:frightened g))
+          speed (if frightened? 3.1 4.6)
           target (if chase? (ghost-target g pac ghosts) (:scatter g))
-          [dx dy x y] (if at-centre?
-                        (let [[ndx ndy] (ghost-choose-dir g target)]
-                          [ndx ndy (snap x) (snap y)])
-                        [dx dy x y])
-          [nx ny] (advance x y dx dy speed dt)]
-      (assoc g :x nx :y ny :dx dx :dy dy))))
+          decide (fn [tx ty dx dy]
+                   ;; still inside the house: head for the door first
+                   (let [tgt (if (= \G (tile-at tx ty)) door-exit target)]
+                     (ghost-choose-dir tx ty dx dy tgt frightened?)))
+          [nx ny ndx ndy] (step-entity (:x g) (:y g) (:dx g) (:dy g)
+                                       speed dt decide ghost-wall?)]
+      (assoc g :x nx :y ny :dx ndx :dy ndy))))
 
 ;; --- drawing -----------------------------------------------------------------
 
@@ -283,7 +294,7 @@
   (let [cx (+ (px (:x pac)) 0.0)
         cy (+ (py (:y pac)) 0.0)
         r (* 0.46 CELL)
-        base (Math/atan2 (double (:dy pac)) (double (:dx pac)))
+        base (Math/atan2 (double (:fy pac)) (double (:fx pac)))
         open (* 0.42 (+ 1.0 (Math/sin (:mouth pac))))
         steps 28]
     (rl-begin RL-TRIANGLES)
@@ -353,17 +364,18 @@
              (-> s
                  (update :score + (* 200 (bit-shift-left 1 (dec combo))))
                  (assoc :combo combo)
-                 (assoc-in [:ghosts i] (merge g {:x (double (first ghost-start))
-                                                 :y (double (second ghost-start))
-                                                 :frightened 0.0 :home-timer 1.5}))))
+                 (assoc-in [:ghosts i] (let [[hx hy] (centre-of (nth house-slots 1))]
+                                         (merge g {:x hx :y hy :dx 0 :dy -1
+                                                   :frightened 0.0 :home-timer 1.5})))))
            :else
            (let [lives (dec (:lives s))]
              (if (pos? lives)
                (-> s
                    (assoc :lives lives
                           :message "CAUGHT!" :message-timer 1.2
-                          :pac {:x (double (first pac-start)) :y (double (second pac-start))
-                                :dx -1 :dy 0 :ndx -1 :ndy 0 :mouth 0.0}
+                          :pac (let [[sx sy] (centre-of pac-start)]
+                                 {:x sx :y sy :dx -1 :dy 0 :ndx -1 :ndy 0
+                                  :fx -1 :fy 0 :mouth 0.0})
                           :ghosts (initial-ghosts)))
                (assoc s :lives 0 :over? true :message "GAME OVER"))))))
      s (range (count (:ghosts s))))))
@@ -402,13 +414,14 @@
 ;; --- main --------------------------------------------------------------------
 
 (reset-game!)
-(init-window W H "babashka.ffi - pac-man")
-(set-target-fps 60)
-(rl-disable-backface-culling)
 
 (def frame (atom 0))
 
-(loop [t 0.0]
+(defn -main []
+  (init-window W H "babashka.ffi - pac-man")
+(set-target-fps 60)
+(rl-disable-backface-culling)
+  (loop [t 0.0]
   (when (and (zero? (window-should-close))
              (or (nil? deadline) (< (System/currentTimeMillis) deadline)))
     (let [dt (min 0.05 (get-frame-time))
@@ -436,3 +449,4 @@
 
 (close-window)
 (println "final score:" (:score @state) "level:" (:level @state))
+\n)\n\n(when-not (System/getenv "HEADLESS") (-main))\n
