@@ -326,6 +326,27 @@
          ;; always use FFM (firstVariadicArg has no trampoline equivalent).
          tramp-id (and (nil? boundary)
                        (get trampoline-ids (shape-key types* rettype)))
+         ;; in a native image every supported shape is known ahead of time,
+         ;; so reject unsupported signatures here with a useful message
+         ;; instead of GraalVM's rebuild-the-image error at call time
+         _ (when native-image?
+             (let [carriers (map carrier types)
+                   unsupported
+                   (if boundary
+                     (when (or (> (count types) 5)
+                               (> boundary 3)
+                               (> (count (filter #(= :double %) carriers)) 2)
+                               (some #(= :float %) carriers))
+                       "variadic calls support up to 5 args, at most 3 fixed, at most 2 :double, no :float")
+                     (when-not tramp-id
+                       "see the signature limits in doc/ffi.md"))]
+               (when unsupported
+                 (throw (ex-info (str "babashka.ffi: unsupported signature: " sym " "
+                                      (pr-str argtypes) " -> " rettype ". "
+                                      unsupported ". "
+                                      "Workaround: call through libffi (ffi-libffi.clj in the babashka repo shows how). "
+                                      "Please report this signature in a babashka issue; it can likely be supported.")
+                                 {:symbol sym :argtypes argtypes :rettype rettype})))))
          raw (if tramp-id
                (delay (trampoline-invoker tramp-id (.address (require-symbol lib sym))))
                (delay

@@ -162,6 +162,22 @@
       (is (thrown? Exception (bb `(do ~ffi-require
                                       ((ffi/cfn "bb_no_such_symbol" [] :void)))))))))
 
+(deftest unsupported-signature-test
+  ;; native image only: the JVM path has no signature limits
+  (when (and (not skip?) tu/native?)
+    (testing "out-of-family signatures fail at bind time with the limits"
+      (is (thrown-with-msg?
+           Exception #"unsupported signature"
+           (bb `(do (require '[babashka.ffi :as ~'ffi])
+                    (ffi/cfn "printf"
+                             [:double :double :double :double :float :long :long :long]
+                             :double)))))
+      (is (thrown-with-msg?
+           Exception #"unsupported signature"
+           (bb `(do (require '[babashka.ffi :as ~'ffi])
+                    (ffi/cfn "printf" [:string :varargs :long :long :long :long :long]
+                             :int))))))))
+
 (deftest error-test
   (when-not skip?
     (testing "unknown type keyword"
