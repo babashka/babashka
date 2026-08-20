@@ -230,18 +230,46 @@
          handle (delay (.downcallHandle ^Linker @linker*
                                         (find-symbol lib sym)
                                         (descriptor types* rettype)
-                                        opts))]
-     (fn [& args]
-       (when-not (= (count args) (count types))
-         (throw (ex-info (str "babashka.ffi: " sym " expects " (count types)
-                              " args, got " (count args))
-                         {:symbol sym})))
-       (let [args* (if perm (mapv (vec args) perm) (vec args))]
-         (with-string-args types* args*
-           (fn [args]
-             (narrow-ret rettype
-                         (.invokeWithArguments ^MethodHandle @handle
-                                               ^java.util.List (mapv coerce-arg types* args))))))))))
+                                        opts))
+         n (count types)
+         strings? (boolean (some #(= :string %) types*))
+         coercers ^objects (object-array (map (fn [t] (partial coerce-arg t)) types*))
+         call (fn [^objects arr]
+                (narrow-ret rettype (.invokeWithArguments ^MethodHandle @handle arr)))
+         coerce-all (fn ^objects [args]
+                      (let [arr (object-array args)]
+                        (dotimes [i n]
+                          (aset arr i ((aget coercers i) (aget arr i))))
+                        arr))
+         ;; slow path: strings need a temp arena, permuted args need reordering
+         general (fn [args]
+                   (let [args* (if perm (mapv (vec args) perm) (vec args))]
+                     (with-string-args types* args*
+                       (fn [args] (call (coerce-all args))))))
+         arity-error (fn [got]
+                       (throw (ex-info (str "babashka.ffi: " sym " expects " n
+                                            " args, got " got)
+                                       {:symbol sym})))]
+     (if (or strings? perm)
+       (fn [& args]
+         (if (= (count args) n) (general args) (arity-error (count args))))
+       ;; fast path: fixed arities, no seq allocation, no intermediate vectors
+       (let [c (fn [i] (aget coercers i))]
+         (case n
+           0 (fn [] (call (object-array 0)))
+           1 (let [c0 (c 0)]
+               (fn [a] (call (doto (object-array 1) (aset 0 (c0 a))))))
+           2 (let [c0 (c 0) c1 (c 1)]
+               (fn [a b] (call (doto (object-array 2) (aset 0 (c0 a)) (aset 1 (c1 b))))))
+           3 (let [c0 (c 0) c1 (c 1) c2 (c 2)]
+               (fn [a b d] (call (doto (object-array 3)
+                                   (aset 0 (c0 a)) (aset 1 (c1 b)) (aset 2 (c2 d))))))
+           4 (let [c0 (c 0) c1 (c 1) c2 (c 2) c3 (c 3)]
+               (fn [a b d e] (call (doto (object-array 4)
+                                     (aset 0 (c0 a)) (aset 1 (c1 b))
+                                     (aset 2 (c2 d)) (aset 3 (c3 e))))))
+           (fn [& args]
+             (if (= (count args) n) (call (coerce-all args)) (arity-error (count args))))))))))
 
 (defmacro defcfn
   "(defcfn sqlite3-open \"sqlite3_open\" [:string :pointer] :int) — defs a
