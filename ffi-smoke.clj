@@ -37,6 +37,14 @@
            (if (= [-7 1.5] [(ffi/read p :int) (ffi/read p :double 8)]) "OK" "FAIL"))
   (ffi/free p))
 
+;; varargs: snprintf through the variadic calling convention
+(def c-snprintf (ffi/cfn "snprintf" [:pointer :size_t :string :varargs :string :long] :int))
+(let [buf (ffi/alloc 64)]
+  (c-snprintf buf 64 "%s-%ld" "x" 42)
+  (println "snprintf/varargs =" (ffi/ptr->string buf)
+           (if (= "x-42" (ffi/ptr->string buf)) "OK" "FAIL"))
+  (ffi/free buf))
+
 ;; callback: qsort comparator over int array
 (def c-qsort (ffi/cfn "qsort" [:pointer :size_t :size_t :pointer] :void))
 (let [n 5

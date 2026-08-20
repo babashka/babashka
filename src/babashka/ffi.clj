@@ -19,8 +19,17 @@
   Pointers are plain longs (machine addresses). Integer types are widened to
   a 64-bit carrier for the call and narrowed back on return, so a native
   image only needs a bounded family of function descriptors. :float keeps its
-  exact layout (float ABI differs from double). Struct-by-value arguments and
-  variadic functions are not supported."
+  exact layout (float ABI differs from double). Struct-by-value arguments are
+  not supported.
+
+  A :varargs marker in the argtype vector declares a variadic C function and
+  marks the boundary: types before it are the fixed parameters, types after
+  it the concrete variadic arguments the binding passes. Required for correct
+  calls on macOS aarch64, where variadic arguments go on the stack:
+
+      (ffi/defcfn c-fcntl \"fcntl\" [:int :int :varargs :int] :int)
+
+  C promotes variadic floats to double, so declare :double after the marker."
   (:refer-clojure :exclude [read])
   (:import [java.lang.foreign Arena FunctionDescriptor Linker MemoryLayout
             MemorySegment SymbolLookup ValueLayout]
@@ -48,6 +57,29 @@
   {:long ValueLayout/JAVA_LONG
    :double ValueLayout/JAVA_DOUBLE
    :float ValueLayout/JAVA_FLOAT})
+
+(defn- split-varargs
+  "Splits argtypes on a :varargs marker. Returns [types boundary]: the types
+  with the marker removed, and the marker's index (the fixed-arg count), nil
+  when not variadic."
+  [argtypes]
+  (let [i (.indexOf ^java.util.List argtypes :varargs)]
+    (cond
+      (neg? i) [argtypes nil]
+      (zero? i)
+      (throw (ex-info "babashka.ffi: :varargs needs at least one fixed argtype before it"
+                      {:argtypes argtypes}))
+      (= i (dec (count argtypes)))
+      (throw (ex-info "babashka.ffi: :varargs marks the boundary; the variadic argtypes follow it"
+                      {:argtypes argtypes}))
+      :else
+      (let [types (vec (concat (subvec argtypes 0 i) (subvec argtypes (inc i))))]
+        (when (.contains ^java.util.List types :varargs)
+          (throw (ex-info "babashka.ffi: only one :varargs marker allowed" {:argtypes argtypes})))
+        (when (some #(= :float %) (subvec argtypes (inc i)))
+          (throw (ex-info "babashka.ffi: C promotes variadic floats; declare :double after :varargs"
+                          {:argtypes argtypes})))
+        [types i]))))
 
 (defn- descriptor ^FunctionDescriptor [argtypes rettype]
   (let [args (into-array MemoryLayout (map #(carrier-layout (carrier %)) argtypes))]
@@ -146,20 +178,25 @@
   load-library."
   ([sym argtypes rettype] (cfn nil sym argtypes rettype))
   ([lib sym argtypes rettype]
-   (let [handle (delay (.downcallHandle ^Linker @linker*
+   (let [[types boundary] (split-varargs argtypes)
+         opts (if boundary
+                (into-array java.lang.foreign.Linker$Option
+                            [(java.lang.foreign.Linker$Option/firstVariadicArg boundary)])
+                (make-array java.lang.foreign.Linker$Option 0))
+         handle (delay (.downcallHandle ^Linker @linker*
                                         (find-symbol lib sym)
-                                        (descriptor argtypes rettype)
-                                        (make-array java.lang.foreign.Linker$Option 0)))]
+                                        (descriptor types rettype)
+                                        opts))]
      (fn [& args]
-       (when-not (= (count args) (count argtypes))
-         (throw (ex-info (str "babashka.ffi: " sym " expects " (count argtypes)
+       (when-not (= (count args) (count types))
+         (throw (ex-info (str "babashka.ffi: " sym " expects " (count types)
                               " args, got " (count args))
                          {:symbol sym})))
-       (with-string-args argtypes (vec args)
+       (with-string-args types (vec args)
          (fn [args]
            (narrow-ret rettype
                        (.invokeWithArguments ^MethodHandle @handle
-                                             ^java.util.List (mapv coerce-arg argtypes args)))))))))
+                                             ^java.util.List (mapv coerce-arg types args)))))))))
 
 (defmacro defcfn
   "(defcfn sqlite3-open \"sqlite3_open\" [:string :pointer] :int) — defs a
