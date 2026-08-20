@@ -168,8 +168,10 @@ Up to 7 args, of which at most 6 pointer/integer, at most 6 doubles, at most
   callback C still holds is undefined behavior, as in jolt.
 - Test coverage: `test-resources/ffi_test_lib.c`, compiled on demand by the
   test suite, proves argument order for mixed shapes, narrowing edges,
-  va_list contents, typed callbacks, and arity 7/10. This is what caught
-  the FP-ordering bug.
+  va_list contents, typed callbacks, arity 7/10, and callbacks invoked from
+  a C-created thread (works in the native image: the upcall stub attaches
+  the unknown thread to the isolate). This is what caught the FP-ordering
+  bug.
 - Unregistered signatures fail with a raw `MissingForeignRegistrationError`.
   Should be caught and rephrased with the family limits.
 

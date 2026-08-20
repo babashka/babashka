@@ -92,3 +92,28 @@ EXPORT double cb_apply_jd(double (*f)(int64_t, double), int64_t a, double b) {
 EXPORT double cb_apply_dj(double (*f)(double, int64_t), double a, int64_t b) {
     return f(a, b);
 }
+
+/* callback invoked from a C-created thread the runtime has never seen -
+   the GTK-main-loop scenario */
+#ifndef _WIN32
+#include <pthread.h>
+
+struct thr_args {
+    int64_t (*f)(int64_t, int64_t);
+    int64_t a, b, result;
+};
+
+static void *thr_main(void *p) {
+    struct thr_args *t = p;
+    t->result = t->f(t->a, t->b);
+    return NULL;
+}
+
+EXPORT int64_t cb_call_on_thread(int64_t (*f)(int64_t, int64_t), int64_t a, int64_t b) {
+    struct thr_args t = {f, a, b, 0};
+    pthread_t th;
+    if (pthread_create(&th, NULL, thr_main, &t)) return -1;
+    pthread_join(th, NULL);
+    return t.result;
+}
+#endif

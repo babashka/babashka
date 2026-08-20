@@ -215,6 +215,12 @@
                          ((ffi/cfn "cb_apply_jd" [:pointer :long :double] :double) jd# 4 10.25)
                          ((ffi/cfn "cb_apply_dj" [:pointer :double :long] :double) dj# 10.25 4)])))))))
   (when-let [lib @test-lib]
+    (testing "callback invoked from a C-created thread the runtime never saw"
+      (is (= 42 (bb `(do ~(lib-require lib)
+                         (let [cb# (ffi/callback (fn [a# b#] (* a# b#)) [:long :long] :long)]
+                           ((ffi/cfn "cb_call_on_thread" [:pointer :long :long] :long)
+                            cb# 21 2))))))))
+  (when-let [lib @test-lib]
     (testing "free-callback releases; freeing twice or freeing unknown is a no-op"
       (is (= [42 nil nil]
              (bb `(do ~(lib-require lib)
