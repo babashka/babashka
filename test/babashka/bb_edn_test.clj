@@ -601,6 +601,20 @@ even more stuff here\"
       (testing "and the command line beats both"
         (is (= {:env "prod" :port 80 :author "task"}
                (bb "foo" "--env" "prod"))))))
+  (testing ":exec-args may be spelled directly on the task"
+    (testing "like (exec ...) already reads them"
+      (test-utils/with-config '{:tasks {foo {:exec-fn clojure.core/prn
+                                             :exec-args {:from "task"}}}}
+        (is (= {:from "task"} (bb "foo")))))
+    (testing "on a :cmd task too, applying to its commands"
+      (test-utils/with-config '{:tasks {foo {:cmd {"go" {:exec-fn clojure.core/prn}}
+                                             :exec-args {:from "task"}}}}
+        (is (= {:from "task"} (bb "foo" "go")))))
+    (testing "spelled both ways, the bare key wins, like (exec ...) does"
+      (test-utils/with-config '{:tasks {foo {:exec-fn clojure.core/prn
+                                             :exec-args {:from "bare"}
+                                             :cli {:exec-args {:from "cli"}}}}}
+        (is (= {:from "bare"} (bb "foo"))))))
   (testing "a task without its own spec gets the runner-level :cli spec"
     (test-utils/with-config
       '{:tasks {:cli {:spec {:env {:coerce :keyword :default :dev :desc "Target env"}}}
