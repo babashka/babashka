@@ -106,9 +106,12 @@ Up to 7 args, of which at most 6 pointer/integer, at most 6 doubles, at most
   into 1-2 longs, large ones pass indirectly). Struct RETURNS cannot be faked
   with scalars (two return registers), and need a small registered family of
   real struct layouts.
-- Windows. The generator writes C type `"long"` (32-bit on Windows) where the
-  layer builds `JAVA_LONG` - a Windows family must say `"jlong"`. Sorting is
-  unsound there (positional registers), so Windows needs ordered shapes.
+- Windows, untested. The metadata uses JNI type names (`"jlong"`), fixed-size
+  on every platform (C `"long"` would be 32-bit on Windows). Sorting is
+  unsound there (positional registers), so `sort-permutation` returns nil on
+  Windows and `bb script/gen_ffi_metadata.clj windows` emits ordered shapes -
+  the Windows build must run that mode before script/uberjar, which is not
+  wired into CI yet.
 - The static musl build cannot dlopen at all.
 - errno: bindable today via `__errno_location`/`__error`, or properly via
   `captureCallState` descriptor variants (not registered).

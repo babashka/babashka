@@ -17,7 +17,18 @@
 ;; - upcalls: a longs, b doubles with a+b <= 4 and b <= 2, returns void/long
 ;; - reflection: clojure.lang.IFn.invoke arities 0..8, for upcall
 ;;   method handles
+;;
+;; Type names are JNI ("jlong", "jdouble", "jfloat"): fixed sizes on every
+;; platform. C "long" is 32-bit on Windows and must not be used here.
+;;
+;; With "windows" as the first argument, emits ORDERED shapes instead of
+;; count shapes: the Win64 ABI assigns argument registers by position, so
+;; babashka.ffi does not sort there (sort-permutation returns nil) and every
+;; ordering needs its own descriptor. The Windows build must run this mode
+;; before script/uberjar. Untested on Windows.
 (require '[cheshire.core :as json])
+
+(def windows? (= "windows" (first *command-line-args*)))
 
 (defn combos-n [types n]
   (if (zero? n)
@@ -27,36 +38,45 @@
             (range n))))
 
 (defn shape [a b c]
-  (vec (concat (repeat a "long") (repeat b "double") (repeat c "float"))))
+  (vec (concat (repeat a "jlong") (repeat b "jdouble") (repeat c "jfloat"))))
 
 (def downcall-shapes
-  (for [a (range 0 7)
-        b (range 0 7)
-        c (range 0 5)
-        :when (and (<= (+ a b c) 7)
-                   (or (zero? c) (<= (+ b c) 4)))]
-    (shape a b c)))
+  (if windows?
+    (distinct
+     (concat (combos-n ["jlong" "jdouble"] 0)
+             (mapcat #(combos-n ["jlong" "jdouble"] %) (range 1 7))
+             (mapcat #(combos-n ["jlong" "jdouble" "jfloat"] %) (range 1 5))))
+    (for [a (range 0 7)
+          b (range 0 7)
+          c (range 0 5)
+          :when (and (<= (+ a b c) 7)
+                     (or (zero? c) (<= (+ b c) 4)))]
+      (shape a b c))))
 
 (def downcalls
   (concat
    (for [args downcall-shapes
-         ret (cond-> ["void" "long" "double"]
-               (<= (count args) 4) (conj "float"))]
+         ret (cond-> ["void" "jlong" "jdouble"]
+               (<= (count args) 4) (conj "jfloat"))]
      {"returnType" ret "parameterTypes" args})
    (for [n (range 2 6)
-         args (combos-n ["long" "double"] n)
-         :when (<= (count (filter #(= "double" %) args)) 2)
+         args (combos-n ["jlong" "jdouble"] n)
+         :when (<= (count (filter #(= "jdouble" %) args)) 2)
          boundary (range 1 (inc (min 3 (dec n))))
-         ret ["void" "long"]]
+         ret ["void" "jlong"]]
      {"returnType" ret "parameterTypes" (vec args)
       "options" {"firstVariadicArg" boundary}})))
 
 (def upcalls
-  (for [a (range 0 5)
-        b (range 0 3)
-        :when (<= (+ a b) 4)
-        ret ["void" "long"]]
-    {"returnType" ret "parameterTypes" (shape a b 0)}))
+  (if windows?
+    (for [args (mapcat #(combos-n ["jlong" "jdouble"] %) (range 0 5))
+          ret ["void" "jlong"]]
+      {"returnType" ret "parameterTypes" (vec args)})
+    (for [a (range 0 5)
+          b (range 0 3)
+          :when (<= (+ a b) 4)
+          ret ["void" "jlong"]]
+      {"returnType" ret "parameterTypes" (shape a b 0)})))
 
 (def reflection
   [{"type" "clojure.lang.IFn"

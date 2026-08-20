@@ -104,14 +104,20 @@
 ;; (positional registers) or for variadic calls (stack-positional).
 (def ^:private carrier-rank {:long 0 :double 1 :float 2})
 
+(def ^:private windows?
+  (.startsWith ^String (System/getProperty "os.name" "") "Windows"))
+
 (defn- sort-permutation
   "Indices that stably sort types by carrier class, or nil when already
-  sorted."
+  sorted. Always nil on Windows, whose ABI assigns registers by position:
+  there the descriptor must preserve the declared order, and the registered
+  family holds ordered shapes (see script/gen_ffi_metadata.clj)."
   [types]
-  (let [perm (vec (sort-by (fn [i] [(carrier-rank (carrier (nth types i))) i])
-                           (range (count types))))]
-    (when-not (= perm (vec (range (count types))))
-      perm)))
+  (when-not windows?
+    (let [perm (vec (sort-by (fn [i] [(carrier-rank (carrier (nth types i))) i])
+                             (range (count types))))]
+      (when-not (= perm (vec (range (count types))))
+        perm))))
 
 (defn- inverse-permutation [perm]
   (reduce (fn [inv p] (assoc inv (nth perm p) p))
