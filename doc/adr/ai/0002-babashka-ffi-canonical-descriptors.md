@@ -33,20 +33,26 @@ zero-extends per the declared type (`narrow-ret`). `:float` cannot widen to
 `:double`: float and double args use different registers or widths, so float
 keeps exact layouts, bounded separately.
 
-## Trick 2: sort by register class, register counts not orderings
+## Trick 2: sort by register class, GP counts x FP sequences
 
 On SysV x86-64 and AArch64, integer and floating-point arguments are assigned
-registers from independent sequences. `f(long, double, long)` and
-`f(long, long, double)` use identical registers (x0, x1, d0). Therefore
-argument order between classes does not affect the calling convention as long
-as nothing spills to the stack.
+registers from two independent sequences (GP and FP). `f(long, double, long)`
+and `f(long, long, double)` use identical registers (x0, x1, d0). Therefore
+argument order BETWEEN those classes does not affect the calling convention
+as long as nothing spills to the stack.
 
-`cfn` stably sorts every signature (long < double < float), permutes the
-values at call time, and only count-shaped descriptors (a longs, b doubles,
-c floats) are registered. Callbacks apply the inverse permutation inside the
-stub wrapper. This collapsed the family from orderings (thousands) to counts
-(hundreds) while widening coverage: any mix of doubles and floats within the
-count bounds now works at any position.
+WITHIN the FP class the assumption does NOT hold: float and double share one
+register sequence, so their relative order is part of the ABI. This was
+found by the generated test library (mix_jfd returned garbage) after
+initially sorting double before float. The correct canonical form: integer
+carriers first, floating args after in DECLARED order (stable sort, equal
+rank for :double and :float). Registered shapes are therefore a GP count
+times an FP sequence, not three counts. Callbacks apply the inverse
+permutation inside the stub wrapper.
+
+This still collapses the family from full orderings (thousands) to hundreds
+while widening coverage: doubles and floats mix at any position within the
+bounds.
 
 Soundness bounds, encoded in the generator:
 
@@ -157,6 +163,13 @@ Up to 7 args, of which at most 6 pointer/integer, at most 6 doubles, at most
 - The static musl build cannot dlopen at all.
 - errno: bindable today via `__errno_location`/`__error`, or properly via
   `captureCallState` descriptor variants (not registered).
+- Callback lifetime: solved - each callback gets its own shared Arena and
+  `free-callback` closes it (stub freed, wrapped fn GC-able). Freeing a
+  callback C still holds is undefined behavior, as in jolt.
+- Test coverage: `test-resources/ffi_test_lib.c`, compiled on demand by the
+  test suite, proves argument order for mixed shapes, narrowing edges,
+  va_list contents, typed callbacks, and arity 7/10. This is what caught
+  the FP-ordering bug.
 - Unregistered signatures fail with a raw `MissingForeignRegistrationError`.
   Should be caught and rephrased with the family limits.
 

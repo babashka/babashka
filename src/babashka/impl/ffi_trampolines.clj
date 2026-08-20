@@ -29,102 +29,6 @@
        (fn [^objects a]
          (FfiTrampoline/callF_ fnp ))))
 
-   "V_F"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (do (FfiTrampoline/callV_F fnp (float (aget a 0))) nil))))
-
-   "J_F"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callJ_F fnp (float (aget a 0))))))
-
-   "D_F"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callD_F fnp (float (aget a 0))))))
-
-   "F_F"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callF_F fnp (float (aget a 0))))))
-
-   "V_FF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (do (FfiTrampoline/callV_FF fnp (float (aget a 0)) (float (aget a 1))) nil))))
-
-   "J_FF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callJ_FF fnp (float (aget a 0)) (float (aget a 1))))))
-
-   "D_FF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callD_FF fnp (float (aget a 0)) (float (aget a 1))))))
-
-   "F_FF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callF_FF fnp (float (aget a 0)) (float (aget a 1))))))
-
-   "V_FFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (do (FfiTrampoline/callV_FFF fnp (float (aget a 0)) (float (aget a 1)) (float (aget a 2))) nil))))
-
-   "J_FFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callJ_FFF fnp (float (aget a 0)) (float (aget a 1)) (float (aget a 2))))))
-
-   "D_FFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callD_FFF fnp (float (aget a 0)) (float (aget a 1)) (float (aget a 2))))))
-
-   "F_FFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callF_FFF fnp (float (aget a 0)) (float (aget a 1)) (float (aget a 2))))))
-
-   "V_FFFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (do (FfiTrampoline/callV_FFFF fnp (float (aget a 0)) (float (aget a 1)) (float (aget a 2)) (float (aget a 3))) nil))))
-
-   "J_FFFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callJ_FFFF fnp (float (aget a 0)) (float (aget a 1)) (float (aget a 2)) (float (aget a 3))))))
-
-   "D_FFFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callD_FFFF fnp (float (aget a 0)) (float (aget a 1)) (float (aget a 2)) (float (aget a 3))))))
-
-   "F_FFFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callF_FFFF fnp (float (aget a 0)) (float (aget a 1)) (float (aget a 2)) (float (aget a 3))))))
-
    "V_D"
    (fn [fnp]
      (let [fnp (long fnp)]
@@ -149,77 +53,29 @@
        (fn [^objects a]
          (FfiTrampoline/callF_D fnp (double (aget a 0))))))
 
-   "V_DF"
+   "V_F"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (do (FfiTrampoline/callV_DF fnp (double (aget a 0)) (float (aget a 1))) nil))))
+         (do (FfiTrampoline/callV_F fnp (float (aget a 0))) nil))))
 
-   "J_DF"
+   "J_F"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callJ_DF fnp (double (aget a 0)) (float (aget a 1))))))
+         (FfiTrampoline/callJ_F fnp (float (aget a 0))))))
 
-   "D_DF"
+   "D_F"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callD_DF fnp (double (aget a 0)) (float (aget a 1))))))
+         (FfiTrampoline/callD_F fnp (float (aget a 0))))))
 
-   "F_DF"
+   "F_F"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callF_DF fnp (double (aget a 0)) (float (aget a 1))))))
-
-   "V_DFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (do (FfiTrampoline/callV_DFF fnp (double (aget a 0)) (float (aget a 1)) (float (aget a 2))) nil))))
-
-   "J_DFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callJ_DFF fnp (double (aget a 0)) (float (aget a 1)) (float (aget a 2))))))
-
-   "D_DFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callD_DFF fnp (double (aget a 0)) (float (aget a 1)) (float (aget a 2))))))
-
-   "F_DFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callF_DFF fnp (double (aget a 0)) (float (aget a 1)) (float (aget a 2))))))
-
-   "V_DFFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (do (FfiTrampoline/callV_DFFF fnp (double (aget a 0)) (float (aget a 1)) (float (aget a 2)) (float (aget a 3))) nil))))
-
-   "J_DFFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callJ_DFFF fnp (double (aget a 0)) (float (aget a 1)) (float (aget a 2)) (float (aget a 3))))))
-
-   "D_DFFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callD_DFFF fnp (double (aget a 0)) (float (aget a 1)) (float (aget a 2)) (float (aget a 3))))))
-
-   "F_DFFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callF_DFFF fnp (double (aget a 0)) (float (aget a 1)) (float (aget a 2)) (float (aget a 3))))))
+         (FfiTrampoline/callF_F fnp (float (aget a 0))))))
 
    "V_DD"
    (fn [fnp]
@@ -245,53 +101,77 @@
        (fn [^objects a]
          (FfiTrampoline/callF_DD fnp (double (aget a 0)) (double (aget a 1))))))
 
-   "V_DDF"
+   "V_DF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (do (FfiTrampoline/callV_DDF fnp (double (aget a 0)) (double (aget a 1)) (float (aget a 2))) nil))))
+         (do (FfiTrampoline/callV_DF fnp (double (aget a 0)) (float (aget a 1))) nil))))
 
-   "J_DDF"
+   "J_DF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callJ_DDF fnp (double (aget a 0)) (double (aget a 1)) (float (aget a 2))))))
+         (FfiTrampoline/callJ_DF fnp (double (aget a 0)) (float (aget a 1))))))
 
-   "D_DDF"
+   "D_DF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callD_DDF fnp (double (aget a 0)) (double (aget a 1)) (float (aget a 2))))))
+         (FfiTrampoline/callD_DF fnp (double (aget a 0)) (float (aget a 1))))))
 
-   "F_DDF"
+   "F_DF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callF_DDF fnp (double (aget a 0)) (double (aget a 1)) (float (aget a 2))))))
+         (FfiTrampoline/callF_DF fnp (double (aget a 0)) (float (aget a 1))))))
 
-   "V_DDFF"
+   "V_FD"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (do (FfiTrampoline/callV_DDFF fnp (double (aget a 0)) (double (aget a 1)) (float (aget a 2)) (float (aget a 3))) nil))))
+         (do (FfiTrampoline/callV_FD fnp (float (aget a 0)) (double (aget a 1))) nil))))
 
-   "J_DDFF"
+   "J_FD"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callJ_DDFF fnp (double (aget a 0)) (double (aget a 1)) (float (aget a 2)) (float (aget a 3))))))
+         (FfiTrampoline/callJ_FD fnp (float (aget a 0)) (double (aget a 1))))))
 
-   "D_DDFF"
+   "D_FD"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callD_DDFF fnp (double (aget a 0)) (double (aget a 1)) (float (aget a 2)) (float (aget a 3))))))
+         (FfiTrampoline/callD_FD fnp (float (aget a 0)) (double (aget a 1))))))
 
-   "F_DDFF"
+   "F_FD"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callF_DDFF fnp (double (aget a 0)) (double (aget a 1)) (float (aget a 2)) (float (aget a 3))))))
+         (FfiTrampoline/callF_FD fnp (float (aget a 0)) (double (aget a 1))))))
+
+   "V_FF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_FF fnp (float (aget a 0)) (float (aget a 1))) nil))))
+
+   "J_FF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_FF fnp (float (aget a 0)) (float (aget a 1))))))
+
+   "D_FF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_FF fnp (float (aget a 0)) (float (aget a 1))))))
+
+   "F_FF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callF_FF fnp (float (aget a 0)) (float (aget a 1))))))
 
    "V_DDD"
    (fn [fnp]
@@ -317,29 +197,173 @@
        (fn [^objects a]
          (FfiTrampoline/callF_DDD fnp (double (aget a 0)) (double (aget a 1)) (double (aget a 2))))))
 
-   "V_DDDF"
+   "V_DDF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (do (FfiTrampoline/callV_DDDF fnp (double (aget a 0)) (double (aget a 1)) (double (aget a 2)) (float (aget a 3))) nil))))
+         (do (FfiTrampoline/callV_DDF fnp (double (aget a 0)) (double (aget a 1)) (float (aget a 2))) nil))))
 
-   "J_DDDF"
+   "J_DDF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callJ_DDDF fnp (double (aget a 0)) (double (aget a 1)) (double (aget a 2)) (float (aget a 3))))))
+         (FfiTrampoline/callJ_DDF fnp (double (aget a 0)) (double (aget a 1)) (float (aget a 2))))))
 
-   "D_DDDF"
+   "D_DDF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callD_DDDF fnp (double (aget a 0)) (double (aget a 1)) (double (aget a 2)) (float (aget a 3))))))
+         (FfiTrampoline/callD_DDF fnp (double (aget a 0)) (double (aget a 1)) (float (aget a 2))))))
 
-   "F_DDDF"
+   "F_DDF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callF_DDDF fnp (double (aget a 0)) (double (aget a 1)) (double (aget a 2)) (float (aget a 3))))))
+         (FfiTrampoline/callF_DDF fnp (double (aget a 0)) (double (aget a 1)) (float (aget a 2))))))
+
+   "V_DFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_DFD fnp (double (aget a 0)) (float (aget a 1)) (double (aget a 2))) nil))))
+
+   "J_DFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_DFD fnp (double (aget a 0)) (float (aget a 1)) (double (aget a 2))))))
+
+   "D_DFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_DFD fnp (double (aget a 0)) (float (aget a 1)) (double (aget a 2))))))
+
+   "F_DFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callF_DFD fnp (double (aget a 0)) (float (aget a 1)) (double (aget a 2))))))
+
+   "V_DFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_DFF fnp (double (aget a 0)) (float (aget a 1)) (float (aget a 2))) nil))))
+
+   "J_DFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_DFF fnp (double (aget a 0)) (float (aget a 1)) (float (aget a 2))))))
+
+   "D_DFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_DFF fnp (double (aget a 0)) (float (aget a 1)) (float (aget a 2))))))
+
+   "F_DFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callF_DFF fnp (double (aget a 0)) (float (aget a 1)) (float (aget a 2))))))
+
+   "V_FDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_FDD fnp (float (aget a 0)) (double (aget a 1)) (double (aget a 2))) nil))))
+
+   "J_FDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_FDD fnp (float (aget a 0)) (double (aget a 1)) (double (aget a 2))))))
+
+   "D_FDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_FDD fnp (float (aget a 0)) (double (aget a 1)) (double (aget a 2))))))
+
+   "F_FDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callF_FDD fnp (float (aget a 0)) (double (aget a 1)) (double (aget a 2))))))
+
+   "V_FDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_FDF fnp (float (aget a 0)) (double (aget a 1)) (float (aget a 2))) nil))))
+
+   "J_FDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_FDF fnp (float (aget a 0)) (double (aget a 1)) (float (aget a 2))))))
+
+   "D_FDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_FDF fnp (float (aget a 0)) (double (aget a 1)) (float (aget a 2))))))
+
+   "F_FDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callF_FDF fnp (float (aget a 0)) (double (aget a 1)) (float (aget a 2))))))
+
+   "V_FFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_FFD fnp (float (aget a 0)) (float (aget a 1)) (double (aget a 2))) nil))))
+
+   "J_FFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_FFD fnp (float (aget a 0)) (float (aget a 1)) (double (aget a 2))))))
+
+   "D_FFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_FFD fnp (float (aget a 0)) (float (aget a 1)) (double (aget a 2))))))
+
+   "F_FFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callF_FFD fnp (float (aget a 0)) (float (aget a 1)) (double (aget a 2))))))
+
+   "V_FFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_FFF fnp (float (aget a 0)) (float (aget a 1)) (float (aget a 2))) nil))))
+
+   "J_FFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_FFF fnp (float (aget a 0)) (float (aget a 1)) (float (aget a 2))))))
+
+   "D_FFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_FFF fnp (float (aget a 0)) (float (aget a 1)) (float (aget a 2))))))
+
+   "F_FFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callF_FFF fnp (float (aget a 0)) (float (aget a 1)) (float (aget a 2))))))
 
    "V_DDDD"
    (fn [fnp]
@@ -364,6 +388,366 @@
      (let [fnp (long fnp)]
        (fn [^objects a]
          (FfiTrampoline/callF_DDDD fnp (double (aget a 0)) (double (aget a 1)) (double (aget a 2)) (double (aget a 3))))))
+
+   "V_DDDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_DDDF fnp (double (aget a 0)) (double (aget a 1)) (double (aget a 2)) (float (aget a 3))) nil))))
+
+   "J_DDDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_DDDF fnp (double (aget a 0)) (double (aget a 1)) (double (aget a 2)) (float (aget a 3))))))
+
+   "D_DDDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_DDDF fnp (double (aget a 0)) (double (aget a 1)) (double (aget a 2)) (float (aget a 3))))))
+
+   "F_DDDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callF_DDDF fnp (double (aget a 0)) (double (aget a 1)) (double (aget a 2)) (float (aget a 3))))))
+
+   "V_DDFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_DDFD fnp (double (aget a 0)) (double (aget a 1)) (float (aget a 2)) (double (aget a 3))) nil))))
+
+   "J_DDFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_DDFD fnp (double (aget a 0)) (double (aget a 1)) (float (aget a 2)) (double (aget a 3))))))
+
+   "D_DDFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_DDFD fnp (double (aget a 0)) (double (aget a 1)) (float (aget a 2)) (double (aget a 3))))))
+
+   "F_DDFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callF_DDFD fnp (double (aget a 0)) (double (aget a 1)) (float (aget a 2)) (double (aget a 3))))))
+
+   "V_DDFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_DDFF fnp (double (aget a 0)) (double (aget a 1)) (float (aget a 2)) (float (aget a 3))) nil))))
+
+   "J_DDFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_DDFF fnp (double (aget a 0)) (double (aget a 1)) (float (aget a 2)) (float (aget a 3))))))
+
+   "D_DDFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_DDFF fnp (double (aget a 0)) (double (aget a 1)) (float (aget a 2)) (float (aget a 3))))))
+
+   "F_DDFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callF_DDFF fnp (double (aget a 0)) (double (aget a 1)) (float (aget a 2)) (float (aget a 3))))))
+
+   "V_DFDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_DFDD fnp (double (aget a 0)) (float (aget a 1)) (double (aget a 2)) (double (aget a 3))) nil))))
+
+   "J_DFDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_DFDD fnp (double (aget a 0)) (float (aget a 1)) (double (aget a 2)) (double (aget a 3))))))
+
+   "D_DFDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_DFDD fnp (double (aget a 0)) (float (aget a 1)) (double (aget a 2)) (double (aget a 3))))))
+
+   "F_DFDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callF_DFDD fnp (double (aget a 0)) (float (aget a 1)) (double (aget a 2)) (double (aget a 3))))))
+
+   "V_DFDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_DFDF fnp (double (aget a 0)) (float (aget a 1)) (double (aget a 2)) (float (aget a 3))) nil))))
+
+   "J_DFDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_DFDF fnp (double (aget a 0)) (float (aget a 1)) (double (aget a 2)) (float (aget a 3))))))
+
+   "D_DFDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_DFDF fnp (double (aget a 0)) (float (aget a 1)) (double (aget a 2)) (float (aget a 3))))))
+
+   "F_DFDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callF_DFDF fnp (double (aget a 0)) (float (aget a 1)) (double (aget a 2)) (float (aget a 3))))))
+
+   "V_DFFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_DFFD fnp (double (aget a 0)) (float (aget a 1)) (float (aget a 2)) (double (aget a 3))) nil))))
+
+   "J_DFFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_DFFD fnp (double (aget a 0)) (float (aget a 1)) (float (aget a 2)) (double (aget a 3))))))
+
+   "D_DFFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_DFFD fnp (double (aget a 0)) (float (aget a 1)) (float (aget a 2)) (double (aget a 3))))))
+
+   "F_DFFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callF_DFFD fnp (double (aget a 0)) (float (aget a 1)) (float (aget a 2)) (double (aget a 3))))))
+
+   "V_DFFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_DFFF fnp (double (aget a 0)) (float (aget a 1)) (float (aget a 2)) (float (aget a 3))) nil))))
+
+   "J_DFFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_DFFF fnp (double (aget a 0)) (float (aget a 1)) (float (aget a 2)) (float (aget a 3))))))
+
+   "D_DFFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_DFFF fnp (double (aget a 0)) (float (aget a 1)) (float (aget a 2)) (float (aget a 3))))))
+
+   "F_DFFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callF_DFFF fnp (double (aget a 0)) (float (aget a 1)) (float (aget a 2)) (float (aget a 3))))))
+
+   "V_FDDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_FDDD fnp (float (aget a 0)) (double (aget a 1)) (double (aget a 2)) (double (aget a 3))) nil))))
+
+   "J_FDDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_FDDD fnp (float (aget a 0)) (double (aget a 1)) (double (aget a 2)) (double (aget a 3))))))
+
+   "D_FDDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_FDDD fnp (float (aget a 0)) (double (aget a 1)) (double (aget a 2)) (double (aget a 3))))))
+
+   "F_FDDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callF_FDDD fnp (float (aget a 0)) (double (aget a 1)) (double (aget a 2)) (double (aget a 3))))))
+
+   "V_FDDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_FDDF fnp (float (aget a 0)) (double (aget a 1)) (double (aget a 2)) (float (aget a 3))) nil))))
+
+   "J_FDDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_FDDF fnp (float (aget a 0)) (double (aget a 1)) (double (aget a 2)) (float (aget a 3))))))
+
+   "D_FDDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_FDDF fnp (float (aget a 0)) (double (aget a 1)) (double (aget a 2)) (float (aget a 3))))))
+
+   "F_FDDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callF_FDDF fnp (float (aget a 0)) (double (aget a 1)) (double (aget a 2)) (float (aget a 3))))))
+
+   "V_FDFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_FDFD fnp (float (aget a 0)) (double (aget a 1)) (float (aget a 2)) (double (aget a 3))) nil))))
+
+   "J_FDFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_FDFD fnp (float (aget a 0)) (double (aget a 1)) (float (aget a 2)) (double (aget a 3))))))
+
+   "D_FDFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_FDFD fnp (float (aget a 0)) (double (aget a 1)) (float (aget a 2)) (double (aget a 3))))))
+
+   "F_FDFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callF_FDFD fnp (float (aget a 0)) (double (aget a 1)) (float (aget a 2)) (double (aget a 3))))))
+
+   "V_FDFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_FDFF fnp (float (aget a 0)) (double (aget a 1)) (float (aget a 2)) (float (aget a 3))) nil))))
+
+   "J_FDFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_FDFF fnp (float (aget a 0)) (double (aget a 1)) (float (aget a 2)) (float (aget a 3))))))
+
+   "D_FDFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_FDFF fnp (float (aget a 0)) (double (aget a 1)) (float (aget a 2)) (float (aget a 3))))))
+
+   "F_FDFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callF_FDFF fnp (float (aget a 0)) (double (aget a 1)) (float (aget a 2)) (float (aget a 3))))))
+
+   "V_FFDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_FFDD fnp (float (aget a 0)) (float (aget a 1)) (double (aget a 2)) (double (aget a 3))) nil))))
+
+   "J_FFDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_FFDD fnp (float (aget a 0)) (float (aget a 1)) (double (aget a 2)) (double (aget a 3))))))
+
+   "D_FFDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_FFDD fnp (float (aget a 0)) (float (aget a 1)) (double (aget a 2)) (double (aget a 3))))))
+
+   "F_FFDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callF_FFDD fnp (float (aget a 0)) (float (aget a 1)) (double (aget a 2)) (double (aget a 3))))))
+
+   "V_FFDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_FFDF fnp (float (aget a 0)) (float (aget a 1)) (double (aget a 2)) (float (aget a 3))) nil))))
+
+   "J_FFDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_FFDF fnp (float (aget a 0)) (float (aget a 1)) (double (aget a 2)) (float (aget a 3))))))
+
+   "D_FFDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_FFDF fnp (float (aget a 0)) (float (aget a 1)) (double (aget a 2)) (float (aget a 3))))))
+
+   "F_FFDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callF_FFDF fnp (float (aget a 0)) (float (aget a 1)) (double (aget a 2)) (float (aget a 3))))))
+
+   "V_FFFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_FFFD fnp (float (aget a 0)) (float (aget a 1)) (float (aget a 2)) (double (aget a 3))) nil))))
+
+   "J_FFFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_FFFD fnp (float (aget a 0)) (float (aget a 1)) (float (aget a 2)) (double (aget a 3))))))
+
+   "D_FFFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_FFFD fnp (float (aget a 0)) (float (aget a 1)) (float (aget a 2)) (double (aget a 3))))))
+
+   "F_FFFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callF_FFFD fnp (float (aget a 0)) (float (aget a 1)) (float (aget a 2)) (double (aget a 3))))))
+
+   "V_FFFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_FFFF fnp (float (aget a 0)) (float (aget a 1)) (float (aget a 2)) (float (aget a 3))) nil))))
+
+   "J_FFFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_FFFF fnp (float (aget a 0)) (float (aget a 1)) (float (aget a 2)) (float (aget a 3))))))
+
+   "D_FFFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_FFFF fnp (float (aget a 0)) (float (aget a 1)) (float (aget a 2)) (float (aget a 3))))))
+
+   "F_FFFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callF_FFFF fnp (float (aget a 0)) (float (aget a 1)) (float (aget a 2)) (float (aget a 3))))))
 
    "V_DDDDD"
    (fn [fnp]
@@ -425,96 +809,6 @@
        (fn [^objects a]
          (FfiTrampoline/callF_J fnp (long (aget a 0))))))
 
-   "V_JF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (do (FfiTrampoline/callV_JF fnp (long (aget a 0)) (float (aget a 1))) nil))))
-
-   "J_JF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callJ_JF fnp (long (aget a 0)) (float (aget a 1))))))
-
-   "D_JF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callD_JF fnp (long (aget a 0)) (float (aget a 1))))))
-
-   "F_JF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callF_JF fnp (long (aget a 0)) (float (aget a 1))))))
-
-   "V_JFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (do (FfiTrampoline/callV_JFF fnp (long (aget a 0)) (float (aget a 1)) (float (aget a 2))) nil))))
-
-   "J_JFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callJ_JFF fnp (long (aget a 0)) (float (aget a 1)) (float (aget a 2))))))
-
-   "D_JFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callD_JFF fnp (long (aget a 0)) (float (aget a 1)) (float (aget a 2))))))
-
-   "F_JFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callF_JFF fnp (long (aget a 0)) (float (aget a 1)) (float (aget a 2))))))
-
-   "V_JFFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (do (FfiTrampoline/callV_JFFF fnp (long (aget a 0)) (float (aget a 1)) (float (aget a 2)) (float (aget a 3))) nil))))
-
-   "J_JFFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callJ_JFFF fnp (long (aget a 0)) (float (aget a 1)) (float (aget a 2)) (float (aget a 3))))))
-
-   "D_JFFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callD_JFFF fnp (long (aget a 0)) (float (aget a 1)) (float (aget a 2)) (float (aget a 3))))))
-
-   "F_JFFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callF_JFFF fnp (long (aget a 0)) (float (aget a 1)) (float (aget a 2)) (float (aget a 3))))))
-
-   "V_JFFFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (do (FfiTrampoline/callV_JFFFF fnp (long (aget a 0)) (float (aget a 1)) (float (aget a 2)) (float (aget a 3)) (float (aget a 4))) nil))))
-
-   "J_JFFFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callJ_JFFFF fnp (long (aget a 0)) (float (aget a 1)) (float (aget a 2)) (float (aget a 3)) (float (aget a 4))))))
-
-   "D_JFFFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callD_JFFFF fnp (long (aget a 0)) (float (aget a 1)) (float (aget a 2)) (float (aget a 3)) (float (aget a 4))))))
-
    "V_JD"
    (fn [fnp]
      (let [fnp (long fnp)]
@@ -539,71 +833,29 @@
        (fn [^objects a]
          (FfiTrampoline/callF_JD fnp (long (aget a 0)) (double (aget a 1))))))
 
-   "V_JDF"
+   "V_JF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (do (FfiTrampoline/callV_JDF fnp (long (aget a 0)) (double (aget a 1)) (float (aget a 2))) nil))))
+         (do (FfiTrampoline/callV_JF fnp (long (aget a 0)) (float (aget a 1))) nil))))
 
-   "J_JDF"
+   "J_JF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callJ_JDF fnp (long (aget a 0)) (double (aget a 1)) (float (aget a 2))))))
+         (FfiTrampoline/callJ_JF fnp (long (aget a 0)) (float (aget a 1))))))
 
-   "D_JDF"
+   "D_JF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callD_JDF fnp (long (aget a 0)) (double (aget a 1)) (float (aget a 2))))))
+         (FfiTrampoline/callD_JF fnp (long (aget a 0)) (float (aget a 1))))))
 
-   "F_JDF"
+   "F_JF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callF_JDF fnp (long (aget a 0)) (double (aget a 1)) (float (aget a 2))))))
-
-   "V_JDFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (do (FfiTrampoline/callV_JDFF fnp (long (aget a 0)) (double (aget a 1)) (float (aget a 2)) (float (aget a 3))) nil))))
-
-   "J_JDFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callJ_JDFF fnp (long (aget a 0)) (double (aget a 1)) (float (aget a 2)) (float (aget a 3))))))
-
-   "D_JDFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callD_JDFF fnp (long (aget a 0)) (double (aget a 1)) (float (aget a 2)) (float (aget a 3))))))
-
-   "F_JDFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callF_JDFF fnp (long (aget a 0)) (double (aget a 1)) (float (aget a 2)) (float (aget a 3))))))
-
-   "V_JDFFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (do (FfiTrampoline/callV_JDFFF fnp (long (aget a 0)) (double (aget a 1)) (float (aget a 2)) (float (aget a 3)) (float (aget a 4))) nil))))
-
-   "J_JDFFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callJ_JDFFF fnp (long (aget a 0)) (double (aget a 1)) (float (aget a 2)) (float (aget a 3)) (float (aget a 4))))))
-
-   "D_JDFFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callD_JDFFF fnp (long (aget a 0)) (double (aget a 1)) (float (aget a 2)) (float (aget a 3)) (float (aget a 4))))))
+         (FfiTrampoline/callF_JF fnp (long (aget a 0)) (float (aget a 1))))))
 
    "V_JDD"
    (fn [fnp]
@@ -629,47 +881,77 @@
        (fn [^objects a]
          (FfiTrampoline/callF_JDD fnp (long (aget a 0)) (double (aget a 1)) (double (aget a 2))))))
 
-   "V_JDDF"
+   "V_JDF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (do (FfiTrampoline/callV_JDDF fnp (long (aget a 0)) (double (aget a 1)) (double (aget a 2)) (float (aget a 3))) nil))))
+         (do (FfiTrampoline/callV_JDF fnp (long (aget a 0)) (double (aget a 1)) (float (aget a 2))) nil))))
 
-   "J_JDDF"
+   "J_JDF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callJ_JDDF fnp (long (aget a 0)) (double (aget a 1)) (double (aget a 2)) (float (aget a 3))))))
+         (FfiTrampoline/callJ_JDF fnp (long (aget a 0)) (double (aget a 1)) (float (aget a 2))))))
 
-   "D_JDDF"
+   "D_JDF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callD_JDDF fnp (long (aget a 0)) (double (aget a 1)) (double (aget a 2)) (float (aget a 3))))))
+         (FfiTrampoline/callD_JDF fnp (long (aget a 0)) (double (aget a 1)) (float (aget a 2))))))
 
-   "F_JDDF"
+   "F_JDF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callF_JDDF fnp (long (aget a 0)) (double (aget a 1)) (double (aget a 2)) (float (aget a 3))))))
+         (FfiTrampoline/callF_JDF fnp (long (aget a 0)) (double (aget a 1)) (float (aget a 2))))))
 
-   "V_JDDFF"
+   "V_JFD"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (do (FfiTrampoline/callV_JDDFF fnp (long (aget a 0)) (double (aget a 1)) (double (aget a 2)) (float (aget a 3)) (float (aget a 4))) nil))))
+         (do (FfiTrampoline/callV_JFD fnp (long (aget a 0)) (float (aget a 1)) (double (aget a 2))) nil))))
 
-   "J_JDDFF"
+   "J_JFD"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callJ_JDDFF fnp (long (aget a 0)) (double (aget a 1)) (double (aget a 2)) (float (aget a 3)) (float (aget a 4))))))
+         (FfiTrampoline/callJ_JFD fnp (long (aget a 0)) (float (aget a 1)) (double (aget a 2))))))
 
-   "D_JDDFF"
+   "D_JFD"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callD_JDDFF fnp (long (aget a 0)) (double (aget a 1)) (double (aget a 2)) (float (aget a 3)) (float (aget a 4))))))
+         (FfiTrampoline/callD_JFD fnp (long (aget a 0)) (float (aget a 1)) (double (aget a 2))))))
+
+   "F_JFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callF_JFD fnp (long (aget a 0)) (float (aget a 1)) (double (aget a 2))))))
+
+   "V_JFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JFF fnp (long (aget a 0)) (float (aget a 1)) (float (aget a 2))) nil))))
+
+   "J_JFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JFF fnp (long (aget a 0)) (float (aget a 1)) (float (aget a 2))))))
+
+   "D_JFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JFF fnp (long (aget a 0)) (float (aget a 1)) (float (aget a 2))))))
+
+   "F_JFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callF_JFF fnp (long (aget a 0)) (float (aget a 1)) (float (aget a 2))))))
 
    "V_JDDD"
    (fn [fnp]
@@ -695,23 +977,173 @@
        (fn [^objects a]
          (FfiTrampoline/callF_JDDD fnp (long (aget a 0)) (double (aget a 1)) (double (aget a 2)) (double (aget a 3))))))
 
-   "V_JDDDF"
+   "V_JDDF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (do (FfiTrampoline/callV_JDDDF fnp (long (aget a 0)) (double (aget a 1)) (double (aget a 2)) (double (aget a 3)) (float (aget a 4))) nil))))
+         (do (FfiTrampoline/callV_JDDF fnp (long (aget a 0)) (double (aget a 1)) (double (aget a 2)) (float (aget a 3))) nil))))
 
-   "J_JDDDF"
+   "J_JDDF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callJ_JDDDF fnp (long (aget a 0)) (double (aget a 1)) (double (aget a 2)) (double (aget a 3)) (float (aget a 4))))))
+         (FfiTrampoline/callJ_JDDF fnp (long (aget a 0)) (double (aget a 1)) (double (aget a 2)) (float (aget a 3))))))
 
-   "D_JDDDF"
+   "D_JDDF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callD_JDDDF fnp (long (aget a 0)) (double (aget a 1)) (double (aget a 2)) (double (aget a 3)) (float (aget a 4))))))
+         (FfiTrampoline/callD_JDDF fnp (long (aget a 0)) (double (aget a 1)) (double (aget a 2)) (float (aget a 3))))))
+
+   "F_JDDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callF_JDDF fnp (long (aget a 0)) (double (aget a 1)) (double (aget a 2)) (float (aget a 3))))))
+
+   "V_JDFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JDFD fnp (long (aget a 0)) (double (aget a 1)) (float (aget a 2)) (double (aget a 3))) nil))))
+
+   "J_JDFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JDFD fnp (long (aget a 0)) (double (aget a 1)) (float (aget a 2)) (double (aget a 3))))))
+
+   "D_JDFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JDFD fnp (long (aget a 0)) (double (aget a 1)) (float (aget a 2)) (double (aget a 3))))))
+
+   "F_JDFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callF_JDFD fnp (long (aget a 0)) (double (aget a 1)) (float (aget a 2)) (double (aget a 3))))))
+
+   "V_JDFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JDFF fnp (long (aget a 0)) (double (aget a 1)) (float (aget a 2)) (float (aget a 3))) nil))))
+
+   "J_JDFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JDFF fnp (long (aget a 0)) (double (aget a 1)) (float (aget a 2)) (float (aget a 3))))))
+
+   "D_JDFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JDFF fnp (long (aget a 0)) (double (aget a 1)) (float (aget a 2)) (float (aget a 3))))))
+
+   "F_JDFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callF_JDFF fnp (long (aget a 0)) (double (aget a 1)) (float (aget a 2)) (float (aget a 3))))))
+
+   "V_JFDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JFDD fnp (long (aget a 0)) (float (aget a 1)) (double (aget a 2)) (double (aget a 3))) nil))))
+
+   "J_JFDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JFDD fnp (long (aget a 0)) (float (aget a 1)) (double (aget a 2)) (double (aget a 3))))))
+
+   "D_JFDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JFDD fnp (long (aget a 0)) (float (aget a 1)) (double (aget a 2)) (double (aget a 3))))))
+
+   "F_JFDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callF_JFDD fnp (long (aget a 0)) (float (aget a 1)) (double (aget a 2)) (double (aget a 3))))))
+
+   "V_JFDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JFDF fnp (long (aget a 0)) (float (aget a 1)) (double (aget a 2)) (float (aget a 3))) nil))))
+
+   "J_JFDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JFDF fnp (long (aget a 0)) (float (aget a 1)) (double (aget a 2)) (float (aget a 3))))))
+
+   "D_JFDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JFDF fnp (long (aget a 0)) (float (aget a 1)) (double (aget a 2)) (float (aget a 3))))))
+
+   "F_JFDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callF_JFDF fnp (long (aget a 0)) (float (aget a 1)) (double (aget a 2)) (float (aget a 3))))))
+
+   "V_JFFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JFFD fnp (long (aget a 0)) (float (aget a 1)) (float (aget a 2)) (double (aget a 3))) nil))))
+
+   "J_JFFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JFFD fnp (long (aget a 0)) (float (aget a 1)) (float (aget a 2)) (double (aget a 3))))))
+
+   "D_JFFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JFFD fnp (long (aget a 0)) (float (aget a 1)) (float (aget a 2)) (double (aget a 3))))))
+
+   "F_JFFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callF_JFFD fnp (long (aget a 0)) (float (aget a 1)) (float (aget a 2)) (double (aget a 3))))))
+
+   "V_JFFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JFFF fnp (long (aget a 0)) (float (aget a 1)) (float (aget a 2)) (float (aget a 3))) nil))))
+
+   "J_JFFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JFFF fnp (long (aget a 0)) (float (aget a 1)) (float (aget a 2)) (float (aget a 3))))))
+
+   "D_JFFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JFFF fnp (long (aget a 0)) (float (aget a 1)) (float (aget a 2)) (float (aget a 3))))))
+
+   "F_JFFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callF_JFFF fnp (long (aget a 0)) (float (aget a 1)) (float (aget a 2)) (float (aget a 3))))))
 
    "V_JDDDD"
    (fn [fnp]
@@ -730,6 +1162,276 @@
      (let [fnp (long fnp)]
        (fn [^objects a]
          (FfiTrampoline/callD_JDDDD fnp (long (aget a 0)) (double (aget a 1)) (double (aget a 2)) (double (aget a 3)) (double (aget a 4))))))
+
+   "V_JDDDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JDDDF fnp (long (aget a 0)) (double (aget a 1)) (double (aget a 2)) (double (aget a 3)) (float (aget a 4))) nil))))
+
+   "J_JDDDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JDDDF fnp (long (aget a 0)) (double (aget a 1)) (double (aget a 2)) (double (aget a 3)) (float (aget a 4))))))
+
+   "D_JDDDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JDDDF fnp (long (aget a 0)) (double (aget a 1)) (double (aget a 2)) (double (aget a 3)) (float (aget a 4))))))
+
+   "V_JDDFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JDDFD fnp (long (aget a 0)) (double (aget a 1)) (double (aget a 2)) (float (aget a 3)) (double (aget a 4))) nil))))
+
+   "J_JDDFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JDDFD fnp (long (aget a 0)) (double (aget a 1)) (double (aget a 2)) (float (aget a 3)) (double (aget a 4))))))
+
+   "D_JDDFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JDDFD fnp (long (aget a 0)) (double (aget a 1)) (double (aget a 2)) (float (aget a 3)) (double (aget a 4))))))
+
+   "V_JDDFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JDDFF fnp (long (aget a 0)) (double (aget a 1)) (double (aget a 2)) (float (aget a 3)) (float (aget a 4))) nil))))
+
+   "J_JDDFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JDDFF fnp (long (aget a 0)) (double (aget a 1)) (double (aget a 2)) (float (aget a 3)) (float (aget a 4))))))
+
+   "D_JDDFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JDDFF fnp (long (aget a 0)) (double (aget a 1)) (double (aget a 2)) (float (aget a 3)) (float (aget a 4))))))
+
+   "V_JDFDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JDFDD fnp (long (aget a 0)) (double (aget a 1)) (float (aget a 2)) (double (aget a 3)) (double (aget a 4))) nil))))
+
+   "J_JDFDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JDFDD fnp (long (aget a 0)) (double (aget a 1)) (float (aget a 2)) (double (aget a 3)) (double (aget a 4))))))
+
+   "D_JDFDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JDFDD fnp (long (aget a 0)) (double (aget a 1)) (float (aget a 2)) (double (aget a 3)) (double (aget a 4))))))
+
+   "V_JDFDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JDFDF fnp (long (aget a 0)) (double (aget a 1)) (float (aget a 2)) (double (aget a 3)) (float (aget a 4))) nil))))
+
+   "J_JDFDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JDFDF fnp (long (aget a 0)) (double (aget a 1)) (float (aget a 2)) (double (aget a 3)) (float (aget a 4))))))
+
+   "D_JDFDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JDFDF fnp (long (aget a 0)) (double (aget a 1)) (float (aget a 2)) (double (aget a 3)) (float (aget a 4))))))
+
+   "V_JDFFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JDFFD fnp (long (aget a 0)) (double (aget a 1)) (float (aget a 2)) (float (aget a 3)) (double (aget a 4))) nil))))
+
+   "J_JDFFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JDFFD fnp (long (aget a 0)) (double (aget a 1)) (float (aget a 2)) (float (aget a 3)) (double (aget a 4))))))
+
+   "D_JDFFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JDFFD fnp (long (aget a 0)) (double (aget a 1)) (float (aget a 2)) (float (aget a 3)) (double (aget a 4))))))
+
+   "V_JDFFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JDFFF fnp (long (aget a 0)) (double (aget a 1)) (float (aget a 2)) (float (aget a 3)) (float (aget a 4))) nil))))
+
+   "J_JDFFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JDFFF fnp (long (aget a 0)) (double (aget a 1)) (float (aget a 2)) (float (aget a 3)) (float (aget a 4))))))
+
+   "D_JDFFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JDFFF fnp (long (aget a 0)) (double (aget a 1)) (float (aget a 2)) (float (aget a 3)) (float (aget a 4))))))
+
+   "V_JFDDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JFDDD fnp (long (aget a 0)) (float (aget a 1)) (double (aget a 2)) (double (aget a 3)) (double (aget a 4))) nil))))
+
+   "J_JFDDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JFDDD fnp (long (aget a 0)) (float (aget a 1)) (double (aget a 2)) (double (aget a 3)) (double (aget a 4))))))
+
+   "D_JFDDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JFDDD fnp (long (aget a 0)) (float (aget a 1)) (double (aget a 2)) (double (aget a 3)) (double (aget a 4))))))
+
+   "V_JFDDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JFDDF fnp (long (aget a 0)) (float (aget a 1)) (double (aget a 2)) (double (aget a 3)) (float (aget a 4))) nil))))
+
+   "J_JFDDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JFDDF fnp (long (aget a 0)) (float (aget a 1)) (double (aget a 2)) (double (aget a 3)) (float (aget a 4))))))
+
+   "D_JFDDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JFDDF fnp (long (aget a 0)) (float (aget a 1)) (double (aget a 2)) (double (aget a 3)) (float (aget a 4))))))
+
+   "V_JFDFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JFDFD fnp (long (aget a 0)) (float (aget a 1)) (double (aget a 2)) (float (aget a 3)) (double (aget a 4))) nil))))
+
+   "J_JFDFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JFDFD fnp (long (aget a 0)) (float (aget a 1)) (double (aget a 2)) (float (aget a 3)) (double (aget a 4))))))
+
+   "D_JFDFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JFDFD fnp (long (aget a 0)) (float (aget a 1)) (double (aget a 2)) (float (aget a 3)) (double (aget a 4))))))
+
+   "V_JFDFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JFDFF fnp (long (aget a 0)) (float (aget a 1)) (double (aget a 2)) (float (aget a 3)) (float (aget a 4))) nil))))
+
+   "J_JFDFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JFDFF fnp (long (aget a 0)) (float (aget a 1)) (double (aget a 2)) (float (aget a 3)) (float (aget a 4))))))
+
+   "D_JFDFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JFDFF fnp (long (aget a 0)) (float (aget a 1)) (double (aget a 2)) (float (aget a 3)) (float (aget a 4))))))
+
+   "V_JFFDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JFFDD fnp (long (aget a 0)) (float (aget a 1)) (float (aget a 2)) (double (aget a 3)) (double (aget a 4))) nil))))
+
+   "J_JFFDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JFFDD fnp (long (aget a 0)) (float (aget a 1)) (float (aget a 2)) (double (aget a 3)) (double (aget a 4))))))
+
+   "D_JFFDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JFFDD fnp (long (aget a 0)) (float (aget a 1)) (float (aget a 2)) (double (aget a 3)) (double (aget a 4))))))
+
+   "V_JFFDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JFFDF fnp (long (aget a 0)) (float (aget a 1)) (float (aget a 2)) (double (aget a 3)) (float (aget a 4))) nil))))
+
+   "J_JFFDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JFFDF fnp (long (aget a 0)) (float (aget a 1)) (float (aget a 2)) (double (aget a 3)) (float (aget a 4))))))
+
+   "D_JFFDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JFFDF fnp (long (aget a 0)) (float (aget a 1)) (float (aget a 2)) (double (aget a 3)) (float (aget a 4))))))
+
+   "V_JFFFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JFFFD fnp (long (aget a 0)) (float (aget a 1)) (float (aget a 2)) (float (aget a 3)) (double (aget a 4))) nil))))
+
+   "J_JFFFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JFFFD fnp (long (aget a 0)) (float (aget a 1)) (float (aget a 2)) (float (aget a 3)) (double (aget a 4))))))
+
+   "D_JFFFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JFFFD fnp (long (aget a 0)) (float (aget a 1)) (float (aget a 2)) (float (aget a 3)) (double (aget a 4))))))
+
+   "V_JFFFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JFFFF fnp (long (aget a 0)) (float (aget a 1)) (float (aget a 2)) (float (aget a 3)) (float (aget a 4))) nil))))
+
+   "J_JFFFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JFFFF fnp (long (aget a 0)) (float (aget a 1)) (float (aget a 2)) (float (aget a 3)) (float (aget a 4))))))
+
+   "D_JFFFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JFFFF fnp (long (aget a 0)) (float (aget a 1)) (float (aget a 2)) (float (aget a 3)) (float (aget a 4))))))
 
    "V_JDDDDD"
    (fn [fnp]
@@ -791,90 +1493,6 @@
        (fn [^objects a]
          (FfiTrampoline/callF_JJ fnp (long (aget a 0)) (long (aget a 1))))))
 
-   "V_JJF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (do (FfiTrampoline/callV_JJF fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2))) nil))))
-
-   "J_JJF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callJ_JJF fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2))))))
-
-   "D_JJF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callD_JJF fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2))))))
-
-   "F_JJF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callF_JJF fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2))))))
-
-   "V_JJFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (do (FfiTrampoline/callV_JJFF fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (float (aget a 3))) nil))))
-
-   "J_JJFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callJ_JJFF fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (float (aget a 3))))))
-
-   "D_JJFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callD_JJFF fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (float (aget a 3))))))
-
-   "F_JJFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callF_JJFF fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (float (aget a 3))))))
-
-   "V_JJFFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (do (FfiTrampoline/callV_JJFFF fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (float (aget a 3)) (float (aget a 4))) nil))))
-
-   "J_JJFFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callJ_JJFFF fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (float (aget a 3)) (float (aget a 4))))))
-
-   "D_JJFFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callD_JJFFF fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (float (aget a 3)) (float (aget a 4))))))
-
-   "V_JJFFFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (do (FfiTrampoline/callV_JJFFFF fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (float (aget a 3)) (float (aget a 4)) (float (aget a 5))) nil))))
-
-   "J_JJFFFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callJ_JJFFFF fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (float (aget a 3)) (float (aget a 4)) (float (aget a 5))))))
-
-   "D_JJFFFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callD_JJFFFF fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (float (aget a 3)) (float (aget a 4)) (float (aget a 5))))))
-
    "V_JJD"
    (fn [fnp]
      (let [fnp (long fnp)]
@@ -899,65 +1517,29 @@
        (fn [^objects a]
          (FfiTrampoline/callF_JJD fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2))))))
 
-   "V_JJDF"
+   "V_JJF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (do (FfiTrampoline/callV_JJDF fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (float (aget a 3))) nil))))
+         (do (FfiTrampoline/callV_JJF fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2))) nil))))
 
-   "J_JJDF"
+   "J_JJF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callJ_JJDF fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (float (aget a 3))))))
+         (FfiTrampoline/callJ_JJF fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2))))))
 
-   "D_JJDF"
+   "D_JJF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callD_JJDF fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (float (aget a 3))))))
+         (FfiTrampoline/callD_JJF fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2))))))
 
-   "F_JJDF"
+   "F_JJF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callF_JJDF fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (float (aget a 3))))))
-
-   "V_JJDFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (do (FfiTrampoline/callV_JJDFF fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (float (aget a 3)) (float (aget a 4))) nil))))
-
-   "J_JJDFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callJ_JJDFF fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (float (aget a 3)) (float (aget a 4))))))
-
-   "D_JJDFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callD_JJDFF fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (float (aget a 3)) (float (aget a 4))))))
-
-   "V_JJDFFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (do (FfiTrampoline/callV_JJDFFF fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (float (aget a 3)) (float (aget a 4)) (float (aget a 5))) nil))))
-
-   "J_JJDFFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callJ_JJDFFF fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (float (aget a 3)) (float (aget a 4)) (float (aget a 5))))))
-
-   "D_JJDFFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callD_JJDFFF fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (float (aget a 3)) (float (aget a 4)) (float (aget a 5))))))
+         (FfiTrampoline/callF_JJF fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2))))))
 
    "V_JJDD"
    (fn [fnp]
@@ -983,41 +1565,77 @@
        (fn [^objects a]
          (FfiTrampoline/callF_JJDD fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (double (aget a 3))))))
 
-   "V_JJDDF"
+   "V_JJDF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (do (FfiTrampoline/callV_JJDDF fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (double (aget a 3)) (float (aget a 4))) nil))))
+         (do (FfiTrampoline/callV_JJDF fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (float (aget a 3))) nil))))
 
-   "J_JJDDF"
+   "J_JJDF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callJ_JJDDF fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (double (aget a 3)) (float (aget a 4))))))
+         (FfiTrampoline/callJ_JJDF fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (float (aget a 3))))))
 
-   "D_JJDDF"
+   "D_JJDF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callD_JJDDF fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (double (aget a 3)) (float (aget a 4))))))
+         (FfiTrampoline/callD_JJDF fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (float (aget a 3))))))
 
-   "V_JJDDFF"
+   "F_JJDF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (do (FfiTrampoline/callV_JJDDFF fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (double (aget a 3)) (float (aget a 4)) (float (aget a 5))) nil))))
+         (FfiTrampoline/callF_JJDF fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (float (aget a 3))))))
 
-   "J_JJDDFF"
+   "V_JJFD"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callJ_JJDDFF fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (double (aget a 3)) (float (aget a 4)) (float (aget a 5))))))
+         (do (FfiTrampoline/callV_JJFD fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (double (aget a 3))) nil))))
 
-   "D_JJDDFF"
+   "J_JJFD"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callD_JJDDFF fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (double (aget a 3)) (float (aget a 4)) (float (aget a 5))))))
+         (FfiTrampoline/callJ_JJFD fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (double (aget a 3))))))
+
+   "D_JJFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJFD fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (double (aget a 3))))))
+
+   "F_JJFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callF_JJFD fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (double (aget a 3))))))
+
+   "V_JJFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJFF fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (float (aget a 3))) nil))))
+
+   "J_JJFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJFF fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (float (aget a 3))))))
+
+   "D_JJFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJFF fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (float (aget a 3))))))
+
+   "F_JJFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callF_JJFF fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (float (aget a 3))))))
 
    "V_JJDDD"
    (fn [fnp]
@@ -1037,23 +1655,131 @@
        (fn [^objects a]
          (FfiTrampoline/callD_JJDDD fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (double (aget a 3)) (double (aget a 4))))))
 
-   "V_JJDDDF"
+   "V_JJDDF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (do (FfiTrampoline/callV_JJDDDF fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (double (aget a 3)) (double (aget a 4)) (float (aget a 5))) nil))))
+         (do (FfiTrampoline/callV_JJDDF fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (double (aget a 3)) (float (aget a 4))) nil))))
 
-   "J_JJDDDF"
+   "J_JJDDF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callJ_JJDDDF fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (double (aget a 3)) (double (aget a 4)) (float (aget a 5))))))
+         (FfiTrampoline/callJ_JJDDF fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (double (aget a 3)) (float (aget a 4))))))
 
-   "D_JJDDDF"
+   "D_JJDDF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callD_JJDDDF fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (double (aget a 3)) (double (aget a 4)) (float (aget a 5))))))
+         (FfiTrampoline/callD_JJDDF fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (double (aget a 3)) (float (aget a 4))))))
+
+   "V_JJDFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJDFD fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (float (aget a 3)) (double (aget a 4))) nil))))
+
+   "J_JJDFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJDFD fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (float (aget a 3)) (double (aget a 4))))))
+
+   "D_JJDFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJDFD fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (float (aget a 3)) (double (aget a 4))))))
+
+   "V_JJDFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJDFF fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (float (aget a 3)) (float (aget a 4))) nil))))
+
+   "J_JJDFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJDFF fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (float (aget a 3)) (float (aget a 4))))))
+
+   "D_JJDFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJDFF fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (float (aget a 3)) (float (aget a 4))))))
+
+   "V_JJFDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJFDD fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (double (aget a 3)) (double (aget a 4))) nil))))
+
+   "J_JJFDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJFDD fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (double (aget a 3)) (double (aget a 4))))))
+
+   "D_JJFDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJFDD fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (double (aget a 3)) (double (aget a 4))))))
+
+   "V_JJFDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJFDF fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (double (aget a 3)) (float (aget a 4))) nil))))
+
+   "J_JJFDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJFDF fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (double (aget a 3)) (float (aget a 4))))))
+
+   "D_JJFDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJFDF fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (double (aget a 3)) (float (aget a 4))))))
+
+   "V_JJFFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJFFD fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (float (aget a 3)) (double (aget a 4))) nil))))
+
+   "J_JJFFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJFFD fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (float (aget a 3)) (double (aget a 4))))))
+
+   "D_JJFFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJFFD fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (float (aget a 3)) (double (aget a 4))))))
+
+   "V_JJFFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJFFF fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (float (aget a 3)) (float (aget a 4))) nil))))
+
+   "J_JJFFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJFFF fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (float (aget a 3)) (float (aget a 4))))))
+
+   "D_JJFFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJFFF fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (float (aget a 3)) (float (aget a 4))))))
 
    "V_JJDDDD"
    (fn [fnp]
@@ -1072,6 +1798,276 @@
      (let [fnp (long fnp)]
        (fn [^objects a]
          (FfiTrampoline/callD_JJDDDD fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (double (aget a 3)) (double (aget a 4)) (double (aget a 5))))))
+
+   "V_JJDDDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJDDDF fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (double (aget a 3)) (double (aget a 4)) (float (aget a 5))) nil))))
+
+   "J_JJDDDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJDDDF fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (double (aget a 3)) (double (aget a 4)) (float (aget a 5))))))
+
+   "D_JJDDDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJDDDF fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (double (aget a 3)) (double (aget a 4)) (float (aget a 5))))))
+
+   "V_JJDDFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJDDFD fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (double (aget a 3)) (float (aget a 4)) (double (aget a 5))) nil))))
+
+   "J_JJDDFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJDDFD fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (double (aget a 3)) (float (aget a 4)) (double (aget a 5))))))
+
+   "D_JJDDFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJDDFD fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (double (aget a 3)) (float (aget a 4)) (double (aget a 5))))))
+
+   "V_JJDDFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJDDFF fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (double (aget a 3)) (float (aget a 4)) (float (aget a 5))) nil))))
+
+   "J_JJDDFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJDDFF fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (double (aget a 3)) (float (aget a 4)) (float (aget a 5))))))
+
+   "D_JJDDFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJDDFF fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (double (aget a 3)) (float (aget a 4)) (float (aget a 5))))))
+
+   "V_JJDFDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJDFDD fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (float (aget a 3)) (double (aget a 4)) (double (aget a 5))) nil))))
+
+   "J_JJDFDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJDFDD fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (float (aget a 3)) (double (aget a 4)) (double (aget a 5))))))
+
+   "D_JJDFDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJDFDD fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (float (aget a 3)) (double (aget a 4)) (double (aget a 5))))))
+
+   "V_JJDFDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJDFDF fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (float (aget a 3)) (double (aget a 4)) (float (aget a 5))) nil))))
+
+   "J_JJDFDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJDFDF fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (float (aget a 3)) (double (aget a 4)) (float (aget a 5))))))
+
+   "D_JJDFDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJDFDF fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (float (aget a 3)) (double (aget a 4)) (float (aget a 5))))))
+
+   "V_JJDFFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJDFFD fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (float (aget a 3)) (float (aget a 4)) (double (aget a 5))) nil))))
+
+   "J_JJDFFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJDFFD fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (float (aget a 3)) (float (aget a 4)) (double (aget a 5))))))
+
+   "D_JJDFFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJDFFD fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (float (aget a 3)) (float (aget a 4)) (double (aget a 5))))))
+
+   "V_JJDFFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJDFFF fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (float (aget a 3)) (float (aget a 4)) (float (aget a 5))) nil))))
+
+   "J_JJDFFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJDFFF fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (float (aget a 3)) (float (aget a 4)) (float (aget a 5))))))
+
+   "D_JJDFFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJDFFF fnp (long (aget a 0)) (long (aget a 1)) (double (aget a 2)) (float (aget a 3)) (float (aget a 4)) (float (aget a 5))))))
+
+   "V_JJFDDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJFDDD fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (double (aget a 3)) (double (aget a 4)) (double (aget a 5))) nil))))
+
+   "J_JJFDDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJFDDD fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (double (aget a 3)) (double (aget a 4)) (double (aget a 5))))))
+
+   "D_JJFDDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJFDDD fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (double (aget a 3)) (double (aget a 4)) (double (aget a 5))))))
+
+   "V_JJFDDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJFDDF fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (double (aget a 3)) (double (aget a 4)) (float (aget a 5))) nil))))
+
+   "J_JJFDDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJFDDF fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (double (aget a 3)) (double (aget a 4)) (float (aget a 5))))))
+
+   "D_JJFDDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJFDDF fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (double (aget a 3)) (double (aget a 4)) (float (aget a 5))))))
+
+   "V_JJFDFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJFDFD fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (double (aget a 3)) (float (aget a 4)) (double (aget a 5))) nil))))
+
+   "J_JJFDFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJFDFD fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (double (aget a 3)) (float (aget a 4)) (double (aget a 5))))))
+
+   "D_JJFDFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJFDFD fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (double (aget a 3)) (float (aget a 4)) (double (aget a 5))))))
+
+   "V_JJFDFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJFDFF fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (double (aget a 3)) (float (aget a 4)) (float (aget a 5))) nil))))
+
+   "J_JJFDFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJFDFF fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (double (aget a 3)) (float (aget a 4)) (float (aget a 5))))))
+
+   "D_JJFDFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJFDFF fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (double (aget a 3)) (float (aget a 4)) (float (aget a 5))))))
+
+   "V_JJFFDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJFFDD fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (float (aget a 3)) (double (aget a 4)) (double (aget a 5))) nil))))
+
+   "J_JJFFDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJFFDD fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (float (aget a 3)) (double (aget a 4)) (double (aget a 5))))))
+
+   "D_JJFFDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJFFDD fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (float (aget a 3)) (double (aget a 4)) (double (aget a 5))))))
+
+   "V_JJFFDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJFFDF fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (float (aget a 3)) (double (aget a 4)) (float (aget a 5))) nil))))
+
+   "J_JJFFDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJFFDF fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (float (aget a 3)) (double (aget a 4)) (float (aget a 5))))))
+
+   "D_JJFFDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJFFDF fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (float (aget a 3)) (double (aget a 4)) (float (aget a 5))))))
+
+   "V_JJFFFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJFFFD fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (float (aget a 3)) (float (aget a 4)) (double (aget a 5))) nil))))
+
+   "J_JJFFFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJFFFD fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (float (aget a 3)) (float (aget a 4)) (double (aget a 5))))))
+
+   "D_JJFFFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJFFFD fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (float (aget a 3)) (float (aget a 4)) (double (aget a 5))))))
+
+   "V_JJFFFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJFFFF fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (float (aget a 3)) (float (aget a 4)) (float (aget a 5))) nil))))
+
+   "J_JJFFFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJFFFF fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (float (aget a 3)) (float (aget a 4)) (float (aget a 5))))))
+
+   "D_JJFFFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJFFFF fnp (long (aget a 0)) (long (aget a 1)) (float (aget a 2)) (float (aget a 3)) (float (aget a 4)) (float (aget a 5))))))
 
    "V_JJDDDDD"
    (fn [fnp]
@@ -1115,84 +2111,6 @@
        (fn [^objects a]
          (FfiTrampoline/callF_JJJ fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2))))))
 
-   "V_JJJF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (do (FfiTrampoline/callV_JJJF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3))) nil))))
-
-   "J_JJJF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callJ_JJJF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3))))))
-
-   "D_JJJF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callD_JJJF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3))))))
-
-   "F_JJJF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callF_JJJF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3))))))
-
-   "V_JJJFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (do (FfiTrampoline/callV_JJJFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (float (aget a 4))) nil))))
-
-   "J_JJJFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callJ_JJJFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (float (aget a 4))))))
-
-   "D_JJJFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callD_JJJFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (float (aget a 4))))))
-
-   "V_JJJFFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (do (FfiTrampoline/callV_JJJFFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (float (aget a 4)) (float (aget a 5))) nil))))
-
-   "J_JJJFFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callJ_JJJFFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (float (aget a 4)) (float (aget a 5))))))
-
-   "D_JJJFFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callD_JJJFFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (float (aget a 4)) (float (aget a 5))))))
-
-   "V_JJJFFFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (do (FfiTrampoline/callV_JJJFFFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (float (aget a 4)) (float (aget a 5)) (float (aget a 6))) nil))))
-
-   "J_JJJFFFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callJ_JJJFFFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (float (aget a 4)) (float (aget a 5)) (float (aget a 6))))))
-
-   "D_JJJFFFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callD_JJJFFFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (float (aget a 4)) (float (aget a 5)) (float (aget a 6))))))
-
    "V_JJJD"
    (fn [fnp]
      (let [fnp (long fnp)]
@@ -1217,59 +2135,29 @@
        (fn [^objects a]
          (FfiTrampoline/callF_JJJD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3))))))
 
-   "V_JJJDF"
+   "V_JJJF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (do (FfiTrampoline/callV_JJJDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (float (aget a 4))) nil))))
+         (do (FfiTrampoline/callV_JJJF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3))) nil))))
 
-   "J_JJJDF"
+   "J_JJJF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callJ_JJJDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (float (aget a 4))))))
+         (FfiTrampoline/callJ_JJJF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3))))))
 
-   "D_JJJDF"
+   "D_JJJF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callD_JJJDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (float (aget a 4))))))
+         (FfiTrampoline/callD_JJJF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3))))))
 
-   "V_JJJDFF"
+   "F_JJJF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (do (FfiTrampoline/callV_JJJDFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (float (aget a 4)) (float (aget a 5))) nil))))
-
-   "J_JJJDFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callJ_JJJDFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (float (aget a 4)) (float (aget a 5))))))
-
-   "D_JJJDFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callD_JJJDFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (float (aget a 4)) (float (aget a 5))))))
-
-   "V_JJJDFFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (do (FfiTrampoline/callV_JJJDFFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (float (aget a 4)) (float (aget a 5)) (float (aget a 6))) nil))))
-
-   "J_JJJDFFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callJ_JJJDFFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (float (aget a 4)) (float (aget a 5)) (float (aget a 6))))))
-
-   "D_JJJDFFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callD_JJJDFFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (float (aget a 4)) (float (aget a 5)) (float (aget a 6))))))
+         (FfiTrampoline/callF_JJJF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3))))))
 
    "V_JJJDD"
    (fn [fnp]
@@ -1289,41 +2177,59 @@
        (fn [^objects a]
          (FfiTrampoline/callD_JJJDD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (double (aget a 4))))))
 
-   "V_JJJDDF"
+   "V_JJJDF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (do (FfiTrampoline/callV_JJJDDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (double (aget a 4)) (float (aget a 5))) nil))))
+         (do (FfiTrampoline/callV_JJJDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (float (aget a 4))) nil))))
 
-   "J_JJJDDF"
+   "J_JJJDF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callJ_JJJDDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (double (aget a 4)) (float (aget a 5))))))
+         (FfiTrampoline/callJ_JJJDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (float (aget a 4))))))
 
-   "D_JJJDDF"
+   "D_JJJDF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callD_JJJDDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (double (aget a 4)) (float (aget a 5))))))
+         (FfiTrampoline/callD_JJJDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (float (aget a 4))))))
 
-   "V_JJJDDFF"
+   "V_JJJFD"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (do (FfiTrampoline/callV_JJJDDFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (double (aget a 4)) (float (aget a 5)) (float (aget a 6))) nil))))
+         (do (FfiTrampoline/callV_JJJFD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (double (aget a 4))) nil))))
 
-   "J_JJJDDFF"
+   "J_JJJFD"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callJ_JJJDDFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (double (aget a 4)) (float (aget a 5)) (float (aget a 6))))))
+         (FfiTrampoline/callJ_JJJFD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (double (aget a 4))))))
 
-   "D_JJJDDFF"
+   "D_JJJFD"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callD_JJJDDFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (double (aget a 4)) (float (aget a 5)) (float (aget a 6))))))
+         (FfiTrampoline/callD_JJJFD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (double (aget a 4))))))
+
+   "V_JJJFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJJFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (float (aget a 4))) nil))))
+
+   "J_JJJFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJJFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (float (aget a 4))))))
+
+   "D_JJJFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJJFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (float (aget a 4))))))
 
    "V_JJJDDD"
    (fn [fnp]
@@ -1343,23 +2249,131 @@
        (fn [^objects a]
          (FfiTrampoline/callD_JJJDDD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (double (aget a 4)) (double (aget a 5))))))
 
-   "V_JJJDDDF"
+   "V_JJJDDF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (do (FfiTrampoline/callV_JJJDDDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (double (aget a 4)) (double (aget a 5)) (float (aget a 6))) nil))))
+         (do (FfiTrampoline/callV_JJJDDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (double (aget a 4)) (float (aget a 5))) nil))))
 
-   "J_JJJDDDF"
+   "J_JJJDDF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callJ_JJJDDDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (double (aget a 4)) (double (aget a 5)) (float (aget a 6))))))
+         (FfiTrampoline/callJ_JJJDDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (double (aget a 4)) (float (aget a 5))))))
 
-   "D_JJJDDDF"
+   "D_JJJDDF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callD_JJJDDDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (double (aget a 4)) (double (aget a 5)) (float (aget a 6))))))
+         (FfiTrampoline/callD_JJJDDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (double (aget a 4)) (float (aget a 5))))))
+
+   "V_JJJDFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJJDFD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (float (aget a 4)) (double (aget a 5))) nil))))
+
+   "J_JJJDFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJJDFD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (float (aget a 4)) (double (aget a 5))))))
+
+   "D_JJJDFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJJDFD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (float (aget a 4)) (double (aget a 5))))))
+
+   "V_JJJDFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJJDFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (float (aget a 4)) (float (aget a 5))) nil))))
+
+   "J_JJJDFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJJDFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (float (aget a 4)) (float (aget a 5))))))
+
+   "D_JJJDFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJJDFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (float (aget a 4)) (float (aget a 5))))))
+
+   "V_JJJFDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJJFDD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (double (aget a 4)) (double (aget a 5))) nil))))
+
+   "J_JJJFDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJJFDD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (double (aget a 4)) (double (aget a 5))))))
+
+   "D_JJJFDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJJFDD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (double (aget a 4)) (double (aget a 5))))))
+
+   "V_JJJFDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJJFDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (double (aget a 4)) (float (aget a 5))) nil))))
+
+   "J_JJJFDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJJFDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (double (aget a 4)) (float (aget a 5))))))
+
+   "D_JJJFDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJJFDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (double (aget a 4)) (float (aget a 5))))))
+
+   "V_JJJFFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJJFFD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (float (aget a 4)) (double (aget a 5))) nil))))
+
+   "J_JJJFFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJJFFD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (float (aget a 4)) (double (aget a 5))))))
+
+   "D_JJJFFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJJFFD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (float (aget a 4)) (double (aget a 5))))))
+
+   "V_JJJFFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJJFFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (float (aget a 4)) (float (aget a 5))) nil))))
+
+   "J_JJJFFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJJFFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (float (aget a 4)) (float (aget a 5))))))
+
+   "D_JJJFFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJJFFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (float (aget a 4)) (float (aget a 5))))))
 
    "V_JJJDDDD"
    (fn [fnp]
@@ -1378,6 +2392,276 @@
      (let [fnp (long fnp)]
        (fn [^objects a]
          (FfiTrampoline/callD_JJJDDDD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (double (aget a 4)) (double (aget a 5)) (double (aget a 6))))))
+
+   "V_JJJDDDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJJDDDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (double (aget a 4)) (double (aget a 5)) (float (aget a 6))) nil))))
+
+   "J_JJJDDDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJJDDDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (double (aget a 4)) (double (aget a 5)) (float (aget a 6))))))
+
+   "D_JJJDDDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJJDDDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (double (aget a 4)) (double (aget a 5)) (float (aget a 6))))))
+
+   "V_JJJDDFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJJDDFD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (double (aget a 4)) (float (aget a 5)) (double (aget a 6))) nil))))
+
+   "J_JJJDDFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJJDDFD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (double (aget a 4)) (float (aget a 5)) (double (aget a 6))))))
+
+   "D_JJJDDFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJJDDFD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (double (aget a 4)) (float (aget a 5)) (double (aget a 6))))))
+
+   "V_JJJDDFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJJDDFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (double (aget a 4)) (float (aget a 5)) (float (aget a 6))) nil))))
+
+   "J_JJJDDFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJJDDFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (double (aget a 4)) (float (aget a 5)) (float (aget a 6))))))
+
+   "D_JJJDDFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJJDDFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (double (aget a 4)) (float (aget a 5)) (float (aget a 6))))))
+
+   "V_JJJDFDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJJDFDD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (float (aget a 4)) (double (aget a 5)) (double (aget a 6))) nil))))
+
+   "J_JJJDFDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJJDFDD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (float (aget a 4)) (double (aget a 5)) (double (aget a 6))))))
+
+   "D_JJJDFDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJJDFDD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (float (aget a 4)) (double (aget a 5)) (double (aget a 6))))))
+
+   "V_JJJDFDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJJDFDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (float (aget a 4)) (double (aget a 5)) (float (aget a 6))) nil))))
+
+   "J_JJJDFDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJJDFDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (float (aget a 4)) (double (aget a 5)) (float (aget a 6))))))
+
+   "D_JJJDFDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJJDFDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (float (aget a 4)) (double (aget a 5)) (float (aget a 6))))))
+
+   "V_JJJDFFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJJDFFD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (float (aget a 4)) (float (aget a 5)) (double (aget a 6))) nil))))
+
+   "J_JJJDFFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJJDFFD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (float (aget a 4)) (float (aget a 5)) (double (aget a 6))))))
+
+   "D_JJJDFFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJJDFFD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (float (aget a 4)) (float (aget a 5)) (double (aget a 6))))))
+
+   "V_JJJDFFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJJDFFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (float (aget a 4)) (float (aget a 5)) (float (aget a 6))) nil))))
+
+   "J_JJJDFFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJJDFFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (float (aget a 4)) (float (aget a 5)) (float (aget a 6))))))
+
+   "D_JJJDFFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJJDFFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (double (aget a 3)) (float (aget a 4)) (float (aget a 5)) (float (aget a 6))))))
+
+   "V_JJJFDDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJJFDDD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (double (aget a 4)) (double (aget a 5)) (double (aget a 6))) nil))))
+
+   "J_JJJFDDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJJFDDD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (double (aget a 4)) (double (aget a 5)) (double (aget a 6))))))
+
+   "D_JJJFDDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJJFDDD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (double (aget a 4)) (double (aget a 5)) (double (aget a 6))))))
+
+   "V_JJJFDDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJJFDDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (double (aget a 4)) (double (aget a 5)) (float (aget a 6))) nil))))
+
+   "J_JJJFDDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJJFDDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (double (aget a 4)) (double (aget a 5)) (float (aget a 6))))))
+
+   "D_JJJFDDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJJFDDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (double (aget a 4)) (double (aget a 5)) (float (aget a 6))))))
+
+   "V_JJJFDFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJJFDFD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (double (aget a 4)) (float (aget a 5)) (double (aget a 6))) nil))))
+
+   "J_JJJFDFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJJFDFD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (double (aget a 4)) (float (aget a 5)) (double (aget a 6))))))
+
+   "D_JJJFDFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJJFDFD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (double (aget a 4)) (float (aget a 5)) (double (aget a 6))))))
+
+   "V_JJJFDFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJJFDFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (double (aget a 4)) (float (aget a 5)) (float (aget a 6))) nil))))
+
+   "J_JJJFDFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJJFDFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (double (aget a 4)) (float (aget a 5)) (float (aget a 6))))))
+
+   "D_JJJFDFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJJFDFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (double (aget a 4)) (float (aget a 5)) (float (aget a 6))))))
+
+   "V_JJJFFDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJJFFDD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (float (aget a 4)) (double (aget a 5)) (double (aget a 6))) nil))))
+
+   "J_JJJFFDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJJFFDD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (float (aget a 4)) (double (aget a 5)) (double (aget a 6))))))
+
+   "D_JJJFFDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJJFFDD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (float (aget a 4)) (double (aget a 5)) (double (aget a 6))))))
+
+   "V_JJJFFDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJJFFDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (float (aget a 4)) (double (aget a 5)) (float (aget a 6))) nil))))
+
+   "J_JJJFFDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJJFFDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (float (aget a 4)) (double (aget a 5)) (float (aget a 6))))))
+
+   "D_JJJFFDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJJFFDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (float (aget a 4)) (double (aget a 5)) (float (aget a 6))))))
+
+   "V_JJJFFFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJJFFFD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (float (aget a 4)) (float (aget a 5)) (double (aget a 6))) nil))))
+
+   "J_JJJFFFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJJFFFD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (float (aget a 4)) (float (aget a 5)) (double (aget a 6))))))
+
+   "D_JJJFFFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJJFFFD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (float (aget a 4)) (float (aget a 5)) (double (aget a 6))))))
+
+   "V_JJJFFFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJJFFFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (float (aget a 4)) (float (aget a 5)) (float (aget a 6))) nil))))
+
+   "J_JJJFFFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJJFFFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (float (aget a 4)) (float (aget a 5)) (float (aget a 6))))))
+
+   "D_JJJFFFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJJFFFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (float (aget a 3)) (float (aget a 4)) (float (aget a 5)) (float (aget a 6))))))
 
    "V_JJJJ"
    (fn [fnp]
@@ -1403,60 +2687,6 @@
        (fn [^objects a]
          (FfiTrampoline/callF_JJJJ fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3))))))
 
-   "V_JJJJF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (do (FfiTrampoline/callV_JJJJF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (float (aget a 4))) nil))))
-
-   "J_JJJJF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callJ_JJJJF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (float (aget a 4))))))
-
-   "D_JJJJF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callD_JJJJF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (float (aget a 4))))))
-
-   "V_JJJJFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (do (FfiTrampoline/callV_JJJJFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (float (aget a 4)) (float (aget a 5))) nil))))
-
-   "J_JJJJFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callJ_JJJJFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (float (aget a 4)) (float (aget a 5))))))
-
-   "D_JJJJFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callD_JJJJFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (float (aget a 4)) (float (aget a 5))))))
-
-   "V_JJJJFFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (do (FfiTrampoline/callV_JJJJFFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (float (aget a 4)) (float (aget a 5)) (float (aget a 6))) nil))))
-
-   "J_JJJJFFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callJ_JJJJFFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (float (aget a 4)) (float (aget a 5)) (float (aget a 6))))))
-
-   "D_JJJJFFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callD_JJJJFFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (float (aget a 4)) (float (aget a 5)) (float (aget a 6))))))
-
    "V_JJJJD"
    (fn [fnp]
      (let [fnp (long fnp)]
@@ -1475,41 +2705,23 @@
        (fn [^objects a]
          (FfiTrampoline/callD_JJJJD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (double (aget a 4))))))
 
-   "V_JJJJDF"
+   "V_JJJJF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (do (FfiTrampoline/callV_JJJJDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (double (aget a 4)) (float (aget a 5))) nil))))
+         (do (FfiTrampoline/callV_JJJJF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (float (aget a 4))) nil))))
 
-   "J_JJJJDF"
+   "J_JJJJF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callJ_JJJJDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (double (aget a 4)) (float (aget a 5))))))
+         (FfiTrampoline/callJ_JJJJF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (float (aget a 4))))))
 
-   "D_JJJJDF"
+   "D_JJJJF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callD_JJJJDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (double (aget a 4)) (float (aget a 5))))))
-
-   "V_JJJJDFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (do (FfiTrampoline/callV_JJJJDFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (double (aget a 4)) (float (aget a 5)) (float (aget a 6))) nil))))
-
-   "J_JJJJDFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callJ_JJJJDFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (double (aget a 4)) (float (aget a 5)) (float (aget a 6))))))
-
-   "D_JJJJDFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callD_JJJJDFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (double (aget a 4)) (float (aget a 5)) (float (aget a 6))))))
+         (FfiTrampoline/callD_JJJJF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (float (aget a 4))))))
 
    "V_JJJJDD"
    (fn [fnp]
@@ -1529,23 +2741,59 @@
        (fn [^objects a]
          (FfiTrampoline/callD_JJJJDD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (double (aget a 4)) (double (aget a 5))))))
 
-   "V_JJJJDDF"
+   "V_JJJJDF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (do (FfiTrampoline/callV_JJJJDDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (double (aget a 4)) (double (aget a 5)) (float (aget a 6))) nil))))
+         (do (FfiTrampoline/callV_JJJJDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (double (aget a 4)) (float (aget a 5))) nil))))
 
-   "J_JJJJDDF"
+   "J_JJJJDF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callJ_JJJJDDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (double (aget a 4)) (double (aget a 5)) (float (aget a 6))))))
+         (FfiTrampoline/callJ_JJJJDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (double (aget a 4)) (float (aget a 5))))))
 
-   "D_JJJJDDF"
+   "D_JJJJDF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callD_JJJJDDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (double (aget a 4)) (double (aget a 5)) (float (aget a 6))))))
+         (FfiTrampoline/callD_JJJJDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (double (aget a 4)) (float (aget a 5))))))
+
+   "V_JJJJFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJJJFD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (float (aget a 4)) (double (aget a 5))) nil))))
+
+   "J_JJJJFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJJJFD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (float (aget a 4)) (double (aget a 5))))))
+
+   "D_JJJJFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJJJFD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (float (aget a 4)) (double (aget a 5))))))
+
+   "V_JJJJFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJJJFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (float (aget a 4)) (float (aget a 5))) nil))))
+
+   "J_JJJJFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJJJFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (float (aget a 4)) (float (aget a 5))))))
+
+   "D_JJJJFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJJJFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (float (aget a 4)) (float (aget a 5))))))
 
    "V_JJJJDDD"
    (fn [fnp]
@@ -1565,6 +2813,132 @@
        (fn [^objects a]
          (FfiTrampoline/callD_JJJJDDD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (double (aget a 4)) (double (aget a 5)) (double (aget a 6))))))
 
+   "V_JJJJDDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJJJDDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (double (aget a 4)) (double (aget a 5)) (float (aget a 6))) nil))))
+
+   "J_JJJJDDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJJJDDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (double (aget a 4)) (double (aget a 5)) (float (aget a 6))))))
+
+   "D_JJJJDDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJJJDDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (double (aget a 4)) (double (aget a 5)) (float (aget a 6))))))
+
+   "V_JJJJDFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJJJDFD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (double (aget a 4)) (float (aget a 5)) (double (aget a 6))) nil))))
+
+   "J_JJJJDFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJJJDFD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (double (aget a 4)) (float (aget a 5)) (double (aget a 6))))))
+
+   "D_JJJJDFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJJJDFD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (double (aget a 4)) (float (aget a 5)) (double (aget a 6))))))
+
+   "V_JJJJDFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJJJDFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (double (aget a 4)) (float (aget a 5)) (float (aget a 6))) nil))))
+
+   "J_JJJJDFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJJJDFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (double (aget a 4)) (float (aget a 5)) (float (aget a 6))))))
+
+   "D_JJJJDFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJJJDFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (double (aget a 4)) (float (aget a 5)) (float (aget a 6))))))
+
+   "V_JJJJFDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJJJFDD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (float (aget a 4)) (double (aget a 5)) (double (aget a 6))) nil))))
+
+   "J_JJJJFDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJJJFDD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (float (aget a 4)) (double (aget a 5)) (double (aget a 6))))))
+
+   "D_JJJJFDD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJJJFDD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (float (aget a 4)) (double (aget a 5)) (double (aget a 6))))))
+
+   "V_JJJJFDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJJJFDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (float (aget a 4)) (double (aget a 5)) (float (aget a 6))) nil))))
+
+   "J_JJJJFDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJJJFDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (float (aget a 4)) (double (aget a 5)) (float (aget a 6))))))
+
+   "D_JJJJFDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJJJFDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (float (aget a 4)) (double (aget a 5)) (float (aget a 6))))))
+
+   "V_JJJJFFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJJJFFD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (float (aget a 4)) (float (aget a 5)) (double (aget a 6))) nil))))
+
+   "J_JJJJFFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJJJFFD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (float (aget a 4)) (float (aget a 5)) (double (aget a 6))))))
+
+   "D_JJJJFFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJJJFFD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (float (aget a 4)) (float (aget a 5)) (double (aget a 6))))))
+
+   "V_JJJJFFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJJJFFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (float (aget a 4)) (float (aget a 5)) (float (aget a 6))) nil))))
+
+   "J_JJJJFFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJJJFFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (float (aget a 4)) (float (aget a 5)) (float (aget a 6))))))
+
+   "D_JJJJFFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJJJFFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (float (aget a 4)) (float (aget a 5)) (float (aget a 6))))))
+
    "V_JJJJJ"
    (fn [fnp]
      (let [fnp (long fnp)]
@@ -1582,42 +2956,6 @@
      (let [fnp (long fnp)]
        (fn [^objects a]
          (FfiTrampoline/callD_JJJJJ fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (long (aget a 4))))))
-
-   "V_JJJJJF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (do (FfiTrampoline/callV_JJJJJF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (long (aget a 4)) (float (aget a 5))) nil))))
-
-   "J_JJJJJF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callJ_JJJJJF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (long (aget a 4)) (float (aget a 5))))))
-
-   "D_JJJJJF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callD_JJJJJF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (long (aget a 4)) (float (aget a 5))))))
-
-   "V_JJJJJFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (do (FfiTrampoline/callV_JJJJJFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (long (aget a 4)) (float (aget a 5)) (float (aget a 6))) nil))))
-
-   "J_JJJJJFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callJ_JJJJJFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (long (aget a 4)) (float (aget a 5)) (float (aget a 6))))))
-
-   "D_JJJJJFF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callD_JJJJJFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (long (aget a 4)) (float (aget a 5)) (float (aget a 6))))))
 
    "V_JJJJJD"
    (fn [fnp]
@@ -1637,23 +2975,23 @@
        (fn [^objects a]
          (FfiTrampoline/callD_JJJJJD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (long (aget a 4)) (double (aget a 5))))))
 
-   "V_JJJJJDF"
+   "V_JJJJJF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (do (FfiTrampoline/callV_JJJJJDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (long (aget a 4)) (double (aget a 5)) (float (aget a 6))) nil))))
+         (do (FfiTrampoline/callV_JJJJJF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (long (aget a 4)) (float (aget a 5))) nil))))
 
-   "J_JJJJJDF"
+   "J_JJJJJF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callJ_JJJJJDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (long (aget a 4)) (double (aget a 5)) (float (aget a 6))))))
+         (FfiTrampoline/callJ_JJJJJF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (long (aget a 4)) (float (aget a 5))))))
 
-   "D_JJJJJDF"
+   "D_JJJJJF"
    (fn [fnp]
      (let [fnp (long fnp)]
        (fn [^objects a]
-         (FfiTrampoline/callD_JJJJJDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (long (aget a 4)) (double (aget a 5)) (float (aget a 6))))))
+         (FfiTrampoline/callD_JJJJJF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (long (aget a 4)) (float (aget a 5))))))
 
    "V_JJJJJDD"
    (fn [fnp]
@@ -1673,6 +3011,60 @@
        (fn [^objects a]
          (FfiTrampoline/callD_JJJJJDD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (long (aget a 4)) (double (aget a 5)) (double (aget a 6))))))
 
+   "V_JJJJJDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJJJJDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (long (aget a 4)) (double (aget a 5)) (float (aget a 6))) nil))))
+
+   "J_JJJJJDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJJJJDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (long (aget a 4)) (double (aget a 5)) (float (aget a 6))))))
+
+   "D_JJJJJDF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJJJJDF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (long (aget a 4)) (double (aget a 5)) (float (aget a 6))))))
+
+   "V_JJJJJFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJJJJFD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (long (aget a 4)) (float (aget a 5)) (double (aget a 6))) nil))))
+
+   "J_JJJJJFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJJJJFD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (long (aget a 4)) (float (aget a 5)) (double (aget a 6))))))
+
+   "D_JJJJJFD"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJJJJFD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (long (aget a 4)) (float (aget a 5)) (double (aget a 6))))))
+
+   "V_JJJJJFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJJJJFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (long (aget a 4)) (float (aget a 5)) (float (aget a 6))) nil))))
+
+   "J_JJJJJFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJJJJFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (long (aget a 4)) (float (aget a 5)) (float (aget a 6))))))
+
+   "D_JJJJJFF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJJJJFF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (long (aget a 4)) (float (aget a 5)) (float (aget a 6))))))
+
    "V_JJJJJJ"
    (fn [fnp]
      (let [fnp (long fnp)]
@@ -1691,24 +3083,6 @@
        (fn [^objects a]
          (FfiTrampoline/callD_JJJJJJ fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (long (aget a 4)) (long (aget a 5))))))
 
-   "V_JJJJJJF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (do (FfiTrampoline/callV_JJJJJJF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (long (aget a 4)) (long (aget a 5)) (float (aget a 6))) nil))))
-
-   "J_JJJJJJF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callJ_JJJJJJF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (long (aget a 4)) (long (aget a 5)) (float (aget a 6))))))
-
-   "D_JJJJJJF"
-   (fn [fnp]
-     (let [fnp (long fnp)]
-       (fn [^objects a]
-         (FfiTrampoline/callD_JJJJJJF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (long (aget a 4)) (long (aget a 5)) (float (aget a 6))))))
-
    "V_JJJJJJD"
    (fn [fnp]
      (let [fnp (long fnp)]
@@ -1726,6 +3100,24 @@
      (let [fnp (long fnp)]
        (fn [^objects a]
          (FfiTrampoline/callD_JJJJJJD fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (long (aget a 4)) (long (aget a 5)) (double (aget a 6))))))
+
+   "V_JJJJJJF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (do (FfiTrampoline/callV_JJJJJJF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (long (aget a 4)) (long (aget a 5)) (float (aget a 6))) nil))))
+
+   "J_JJJJJJF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callJ_JJJJJJF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (long (aget a 4)) (long (aget a 5)) (float (aget a 6))))))
+
+   "D_JJJJJJF"
+   (fn [fnp]
+     (let [fnp (long fnp)]
+       (fn [^objects a]
+         (FfiTrampoline/callD_JJJJJJF fnp (long (aget a 0)) (long (aget a 1)) (long (aget a 2)) (long (aget a 3)) (long (aget a 4)) (long (aget a 5)) (float (aget a 6))))))
 
    "V_JJJJJJJ"
    (fn [fnp]

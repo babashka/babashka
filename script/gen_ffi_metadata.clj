@@ -17,7 +17,8 @@
 ;;   stack-passed arguments keep their declared order and any arity is sound
 ;; - variadic downcalls (order preserved, not sorted): arity 2..5 over
 ;;   {long,double} with <= 2 doubles, boundary 1..3, returns void/long
-;; - upcalls: a longs, b doubles with a+b <= 4 and b <= 2, returns void/long
+;; - upcalls: a longs, b doubles with a+b <= 4 and b <= 2, returns
+;;   void/long/double
 ;; - reflection: clojure.lang.IFn.invoke arities 0..8, for upcall
 ;;   method handles
 ;;
@@ -94,12 +95,12 @@
 (def upcalls
   (if windows?
     (for [args (mapcat #(combos-n ["jlong" "jdouble"] %) (range 0 5))
-          ret ["void" "jlong"]]
+          ret ["void" "jlong" "jdouble"]]
       {"returnType" ret "parameterTypes" (vec args)})
     (for [a (range 0 5)
           b (range 0 3)
           :when (<= (+ a b) 4)
-          ret ["void" "jlong"]]
+          ret ["void" "jlong" "jdouble"]]
       {"returnType" ret "parameterTypes" (shape a b 0)})))
 
 (def reflection
@@ -118,15 +119,20 @@
 
 ;; -- trampolines --------------------------------------------------------------
 
+(def fp-seqs
+  ;; float and double share one FP register sequence, so their relative
+  ;; order is part of the shape: enumerate sequences, not counts. Mixed
+  ;; sequences up to 4, pure-double up to 6.
+  (concat (mapcat #(combos-n ["jdouble" "jfloat"] %) (range 0 5))
+          [(vec (repeat 5 "jdouble")) (vec (repeat 6 "jdouble"))]))
+
 (def sorted-shapes
-  ;; the count-shape set, regardless of windows mode
+  ;; integer carriers first, then the FP sequence; regardless of windows mode
   (concat
    (for [a (range 0 7)
-         b (range 0 7)
-         c (range 0 5)
-         :when (and (<= (+ a b c) 7)
-                    (or (zero? c) (<= (+ b c) 4)))]
-     (shape a b c))
+         fp fp-seqs
+         :when (<= (+ a (count fp)) 7)]
+     (vec (concat (repeat a "jlong") fp)))
    (for [a (range 7 11)]
      (shape a 0 0))))
 

@@ -27,8 +27,8 @@
   when any is :float. Signatures of only pointer/integer args may have up to
   10 arguments. A :float return needs 4 args or fewer. Variadic calls:
   up to 5 arguments total, at most 3 fixed, at most 2 :double, no :float.
-  Callbacks: up to 4 arguments, at most 2 :double, no :float, and a :void or
-  integer return. Argument order does not matter; only the counts do.
+  Callbacks: up to 4 arguments, at most 2 :double, no :float, and a :void,
+  integer, or :double return. Argument order does not matter; only the counts do.
 
   A :varargs marker in the argtype vector declares a variadic C function and
   marks the boundary: types before it are the fixed parameters, types after
@@ -96,14 +96,16 @@
       (FunctionDescriptor/of (carrier-layout (carrier rettype)) args))))
 
 ;; On the SysV x86-64 and AArch64 ABIs, integer and floating-point arguments
-;; are assigned registers from independent sequences, so argument order
-;; BETWEEN classes does not affect the calling convention as long as nothing
-;; spills to the stack (<= 6 integer and <= 8 float args). Sorting a signature
-;; into canonical order (integer carriers, then doubles, then floats) and
-;; permuting the values at call time means the native image only registers
-;; count-shaped descriptors, not orderings. Not valid on Windows x64
-;; (positional registers) or for variadic calls (stack-positional).
-(def ^:private carrier-rank {:long 0 :double 1 :float 2})
+;; are assigned registers from two independent sequences (GP and FP), so
+;; argument order BETWEEN those classes does not affect the calling
+;; convention as long as nothing spills to the stack (<= 6 integer and <= 8
+;; floating args). WITHIN the FP class, float and double share ONE register
+;; sequence, so their relative order must be preserved: the sort moves
+;; integer carriers first and keeps the floating args in declared order
+;; (:double and :float have equal rank; the sort is stable). Not valid on
+;; Windows x64 (positional registers) or for variadic calls
+;; (stack-positional).
+(def ^:private carrier-rank {:long 0 :double 1 :float 1})
 
 (def ^:private windows?
   (.startsWith ^String (System/getProperty "os.name" "") "Windows"))
@@ -389,12 +391,14 @@
 
 ;; -- callbacks ----------------------------------------------------------------
 
+(def ^:private callback-arenas (atom {}))
+
 (defn callback
   "Wraps Clojure function f as a C function pointer so C can call back into
   Clojure (qsort comparators, signal handlers). argtypes/rettype use the same
   type keywords as cfn; long-carrier arguments arrive as longs (pointers as
   addresses). Returns the function pointer as a long. The callback stays
-  alive for the process lifetime."
+  alive until free-callback is called on the pointer."
   [f argtypes rettype]
   (let [n (count argtypes)
         perm (sort-permutation argtypes)
@@ -422,7 +426,20 @@
                (.findVirtual clojure.lang.IFn "invoke" obj-type)
                (.bindTo f)
                (.asType target-type))
+        arena (Arena/ofShared)
         stub (.upcallStub ^Linker @linker* mh (descriptor argtypes rettype)
-                          (Arena/global)
-                          (make-array java.lang.foreign.Linker$Option 0))]
-    (.address stub)))
+                          arena
+                          (make-array java.lang.foreign.Linker$Option 0))
+        addr (.address stub)]
+    (swap! callback-arenas assoc addr arena)
+    addr))
+
+(defn free-callback
+  "Releases callback pointer p: frees the native stub and lets the wrapped fn
+  be garbage collected. C must not call p afterwards. Unknown pointers are
+  ignored."
+  [p]
+  (when-let [^Arena a (get @callback-arenas p)]
+    (swap! callback-arenas dissoc p)
+    (.close a))
+  nil)

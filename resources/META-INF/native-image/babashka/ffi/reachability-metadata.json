@@ -1196,70 +1196,106 @@
       "returnType" : "jlong",
       "parameterTypes" : [ ]
     }, {
+      "returnType" : "jdouble",
+      "parameterTypes" : [ ]
+    }, {
       "returnType" : "void",
       "parameterTypes" : [ "jdouble" ]
     }, {
       "returnType" : "jlong",
+      "parameterTypes" : [ "jdouble" ]
+    }, {
+      "returnType" : "jdouble",
       "parameterTypes" : [ "jdouble" ]
     }, {
       "returnType" : "void",
       "parameterTypes" : [ "jdouble", "jdouble" ]
     }, {
       "returnType" : "jlong",
+      "parameterTypes" : [ "jdouble", "jdouble" ]
+    }, {
+      "returnType" : "jdouble",
       "parameterTypes" : [ "jdouble", "jdouble" ]
     }, {
       "returnType" : "void",
       "parameterTypes" : [ "jlong" ]
     }, {
       "returnType" : "jlong",
+      "parameterTypes" : [ "jlong" ]
+    }, {
+      "returnType" : "jdouble",
       "parameterTypes" : [ "jlong" ]
     }, {
       "returnType" : "void",
       "parameterTypes" : [ "jlong", "jdouble" ]
     }, {
       "returnType" : "jlong",
+      "parameterTypes" : [ "jlong", "jdouble" ]
+    }, {
+      "returnType" : "jdouble",
       "parameterTypes" : [ "jlong", "jdouble" ]
     }, {
       "returnType" : "void",
       "parameterTypes" : [ "jlong", "jdouble", "jdouble" ]
     }, {
       "returnType" : "jlong",
+      "parameterTypes" : [ "jlong", "jdouble", "jdouble" ]
+    }, {
+      "returnType" : "jdouble",
       "parameterTypes" : [ "jlong", "jdouble", "jdouble" ]
     }, {
       "returnType" : "void",
       "parameterTypes" : [ "jlong", "jlong" ]
     }, {
       "returnType" : "jlong",
+      "parameterTypes" : [ "jlong", "jlong" ]
+    }, {
+      "returnType" : "jdouble",
       "parameterTypes" : [ "jlong", "jlong" ]
     }, {
       "returnType" : "void",
       "parameterTypes" : [ "jlong", "jlong", "jdouble" ]
     }, {
       "returnType" : "jlong",
+      "parameterTypes" : [ "jlong", "jlong", "jdouble" ]
+    }, {
+      "returnType" : "jdouble",
       "parameterTypes" : [ "jlong", "jlong", "jdouble" ]
     }, {
       "returnType" : "void",
       "parameterTypes" : [ "jlong", "jlong", "jdouble", "jdouble" ]
     }, {
       "returnType" : "jlong",
+      "parameterTypes" : [ "jlong", "jlong", "jdouble", "jdouble" ]
+    }, {
+      "returnType" : "jdouble",
       "parameterTypes" : [ "jlong", "jlong", "jdouble", "jdouble" ]
     }, {
       "returnType" : "void",
       "parameterTypes" : [ "jlong", "jlong", "jlong" ]
     }, {
       "returnType" : "jlong",
+      "parameterTypes" : [ "jlong", "jlong", "jlong" ]
+    }, {
+      "returnType" : "jdouble",
       "parameterTypes" : [ "jlong", "jlong", "jlong" ]
     }, {
       "returnType" : "void",
       "parameterTypes" : [ "jlong", "jlong", "jlong", "jdouble" ]
     }, {
       "returnType" : "jlong",
+      "parameterTypes" : [ "jlong", "jlong", "jlong", "jdouble" ]
+    }, {
+      "returnType" : "jdouble",
       "parameterTypes" : [ "jlong", "jlong", "jlong", "jdouble" ]
     }, {
       "returnType" : "void",
       "parameterTypes" : [ "jlong", "jlong", "jlong", "jlong" ]
     }, {
       "returnType" : "jlong",
+      "parameterTypes" : [ "jlong", "jlong", "jlong", "jlong" ]
+    }, {
+      "returnType" : "jdouble",
       "parameterTypes" : [ "jlong", "jlong", "jlong", "jlong" ]
     } ]
   },

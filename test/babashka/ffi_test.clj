@@ -1,7 +1,9 @@
 (ns babashka.ffi-test
   (:require
+   [babashka.process :as p]
    [babashka.test-utils :as tu]
    [clojure.edn :as edn]
+   [clojure.java.io :as io]
    [clojure.test :as test :refer [deftest is testing]]))
 
 (defn bb [expr]
@@ -21,6 +23,26 @@
 
 (def home-var (if tu/windows? "PATH" "HOME"))
 (def snprintf-sym (if tu/windows? "_snprintf" "snprintf"))
+
+(def test-lib
+  "Path of the compiled test C library, nil when it cannot be built.
+  Compiled on demand with cc; skipped on Windows (no compiler on PATH in CI)."
+  (delay
+    (when-not (or skip? tu/windows?)
+      (let [out (io/file "target" "ffi-test-lib"
+                         (if (= "Mac OS X" (System/getProperty "os.name"))
+                           "libffitest.dylib" "libffitest.so"))
+            src (io/file "test-resources" "ffi_test_lib.c")]
+        (io/make-parents out)
+        (when (or (.exists out)
+                  (try (zero? (:exit (p/sh "cc" "-shared" "-fPIC" "-O1"
+                                           "-o" (str out) (str src))))
+                       (catch Exception _ false)))
+          (.getAbsolutePath out))))))
+
+(defn lib-require [path]
+  `(do (require '[babashka.ffi :as ~'ffi :refer [~'defcfn]])
+       (ffi/load-library ~path)))
 
 (deftest downcall-test
   (when-not skip?
@@ -136,6 +158,69 @@
     (testing "wrong argument count"
       (is (thrown? Exception (bb `(do ~ffi-require
                                       ((ffi/cfn "abs" [:int] :int) 1 2))))))))
+
+(deftest argument-order-test
+  (when-let [lib @test-lib]
+    (testing "class-sorting permutation is invisible: every mixed shape echoes
+              its args multiplied by 10^position"
+      (is (= [12.5 21.0 4321.5 1234.0 321.5 321.0]
+             (bb `(do ~(lib-require lib)
+                      [((ffi/cfn "mix_dj" [:double :long] :double) 2.5 1)
+                       ((ffi/cfn "mix_jd" [:long :double] :double) 1 2)
+                       ((ffi/cfn "mix_djdj" [:double :long :double :long] :double) 1.5 2 3 4)
+                       ((ffi/cfn "mix_jdjd" [:long :double :long :double] :double) 4 3 2 1)
+                       ((ffi/cfn "mix_fjf" [:float :long :float] :double) 1.5 2 3)
+                       ((ffi/cfn "mix_jfd" [:long :float :double] :double) 1 2 3)]))))))
+  (when-let [lib @test-lib]
+    (testing "pure-integer arity 7 and 10"
+      (is (= [7654321 987654321]
+             (bb `(do ~(lib-require lib)
+                      [((ffi/cfn "arity7" ~(vec (repeat 7 :long)) :long) 1 2 3 4 5 6 7)
+                       ((ffi/cfn "arity10" ~(vec (repeat 10 :long)) :long)
+                        1 2 3 4 5 6 7 8 9 0)])))))))
+
+(deftest narrowing-test
+  (when-let [lib @test-lib]
+    (testing "return values narrow per the declared type, not the register"
+      (is (= [-1 4294967295 -1 255 -2 65535 1.5]
+             (bb `(do ~(lib-require lib)
+                      [((ffi/cfn "ret_int_neg" [] :int))
+                       ((ffi/cfn "ret_uint_max" [] :uint))
+                       ((ffi/cfn "ret_int8_neg" [] :int8))
+                       ((ffi/cfn "ret_uint8_max" [] :uint8))
+                       ((ffi/cfn "ret_int16_neg" [] :int16))
+                       ((ffi/cfn "ret_uint16_max" [] :uint16))
+                       ((ffi/cfn "ret_float" [] :float))])))))))
+
+(deftest varargs-lib-test
+  (when-let [lib @test-lib]
+    (testing "the callee's va_list sees the variadic args in order"
+      (is (= [321 5261]
+             (bb `(do ~(lib-require lib)
+                      [((ffi/cfn "va_sum" [:long :varargs :long :long :long] :long) 3 1 2 3)
+                       ;; 1 + 6*10 + (long)(13.0*4)*100
+                       ((ffi/cfn "va_ld" [:long :varargs :long :double] :long) 1 6 13.0)])))))))
+
+(deftest callback-lib-test
+  (when-let [lib @test-lib]
+    (testing "callbacks with typed args, including declared-order un-permutation"
+      (is (= [30 24.5 24.5]
+             (bb `(do ~(lib-require lib)
+                      (let [jj# (ffi/callback (fn [a# b#] (* a# b#)) [:long :long] :long)
+                            jd# (ffi/callback (fn [l# d#] (+ l# (* 2 d#))) [:long :double] :double)
+                            ;; declared double-then-long: C passes (d0, x0),
+                            ;; the wrapper must un-permute back to declared order
+                            dj# (ffi/callback (fn [d# l#] (+ (* 2 d#) l#)) [:double :long] :double)]
+                        [((ffi/cfn "cb_apply_jj" [:pointer :long :long] :long) jj# 5 6)
+                         ((ffi/cfn "cb_apply_jd" [:pointer :long :double] :double) jd# 4 10.25)
+                         ((ffi/cfn "cb_apply_dj" [:pointer :double :long] :double) dj# 10.25 4)])))))))
+  (when-let [lib @test-lib]
+    (testing "free-callback releases; freeing twice or freeing unknown is a no-op"
+      (is (= [42 nil nil]
+             (bb `(do ~(lib-require lib)
+                      (let [cb# (ffi/callback (fn [a# b#] (+ a# b#)) [:long :long] :long)
+                            res# ((ffi/cfn "cb_apply_jj" [:pointer :long :long] :long) cb# 40 2)]
+                        [res# (ffi/free-callback cb#) (ffi/free-callback cb#)]))))))))
 
 (deftest metadata-generated-test
   (when-not skip?
