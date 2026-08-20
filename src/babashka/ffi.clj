@@ -212,6 +212,24 @@
 
 ;; -- foreign functions --------------------------------------------------------
 
+(def ^:private native-image?
+  (boolean (System/getProperty "org.graalvm.nativeimage.imagecode")))
+
+;; In a native image, FFM downcall handles are interpreted (~3.4us/call);
+;; the generated trampolines (babashka.impl.FfiTrampoline) call through raw
+;; function pointers as compiled direct calls (~2ns). One per canonical
+;; shape; loaded only in the image, never on the JVM, where the FFM handle
+;; path is JIT-compiled and fast.
+(def ^:private trampolines
+  (when native-image?
+    @(requiring-resolve 'babashka.impl.ffi-trampolines/builders)))
+
+(defn- shape-key [types* rettype]
+  (let [c {:long "J" :double "D" :float "F"}]
+    (str (if (= :void rettype) "V" (c (carrier rettype)))
+         "_"
+         (apply str (map #(c (carrier %)) types*)))))
+
 (defn cfn
   "Binds C function sym as a Clojure function. argtypes is a vector of type
   keywords, rettype a type keyword. With a lib (from load-library) the symbol
@@ -227,15 +245,24 @@
                 (into-array java.lang.foreign.Linker$Option
                             [(java.lang.foreign.Linker$Option/firstVariadicArg boundary)])
                 (make-array java.lang.foreign.Linker$Option 0))
-         handle (delay (.downcallHandle ^Linker @linker*
-                                        (find-symbol lib sym)
-                                        (descriptor types* rettype)
-                                        opts))
+         ;; raw invoker: a fn of the coerced argument array. In a native
+         ;; image a generated trampoline (compiled direct call) when the
+         ;; shape has one; otherwise an FFM downcall handle. Variadic calls
+         ;; always use FFM (firstVariadicArg has no trampoline equivalent).
+         raw (if-let [builder (and (nil? boundary)
+                                   (get trampolines (shape-key types* rettype)))]
+               (delay (builder (.address (find-symbol lib sym))))
+               (delay
+                 (let [handle (.downcallHandle ^Linker @linker*
+                                               (find-symbol lib sym)
+                                               (descriptor types* rettype)
+                                               opts)]
+                   (fn [^objects arr] (.invokeWithArguments ^MethodHandle handle arr)))))
          n (count types)
          strings? (boolean (some #(= :string %) types*))
          coercers ^objects (object-array (map (fn [t] (partial coerce-arg t)) types*))
          call (fn [^objects arr]
-                (narrow-ret rettype (.invokeWithArguments ^MethodHandle @handle arr)))
+                (narrow-ret rettype ((force raw) arr)))
          coerce-all (fn ^objects [args]
                       (let [arr (object-array args)]
                         (dotimes [i n]

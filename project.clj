@@ -54,7 +54,10 @@
                  [org.jline/jline-reader "4.3.1"]]
   :plugins       [[org.kipz/lein-meta-bom "0.1.1"]]
   :metabom {:jar-name "metabom.jar"}
-  :profiles {:feature/xml  {:source-paths ["feature-xml"]
+  :profiles {;; compile-time only: the SVM API for src-java/babashka/impl/FfiTrampoline.java;
+             ;; the native-image builder provides these classes at image build
+             :provided {:dependencies [[org.graalvm.sdk/nativeimage "25.0.2"]]}
+             :feature/xml  {:source-paths ["feature-xml"]
                             :dependencies [[org.clojure/data.xml "0.2.0-alpha11"]]}
              :feature/yaml {:source-paths ["feature-yaml"]
                             :dependencies [[clj-commons/clj-yaml "1.0.29"
