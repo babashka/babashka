@@ -22,10 +22,11 @@
   exact layout (float ABI differs from double). Struct-by-value arguments are
   not supported.
 
-  Signature limits (native image): up to 8 arguments. Above 4 arguments:
-  at most 2 :double/:float args (or 1-2 pointer/integer args followed by all
-  doubles), no :float args, no :float return. Variadic calls: up to 6
-  arguments total, at most 3 fixed.
+  Signature limits (native image): up to 8 arguments, of which at most 6
+  pointer/integer args, at most 6 :double args, and at most 4 floating args
+  when any is :float. A :float return needs 4 args or fewer. Variadic calls:
+  up to 6 arguments total, at most 3 fixed, at most 2 :double, no :float.
+  Argument order does not matter; only the counts do.
 
   A :varargs marker in the argtype vector declares a variadic C function and
   marks the boundary: types before it are the fixed parameters, types after
@@ -91,6 +92,30 @@
     (if (= :void rettype)
       (FunctionDescriptor/ofVoid args)
       (FunctionDescriptor/of (carrier-layout (carrier rettype)) args))))
+
+;; On the SysV x86-64 and AArch64 ABIs, integer and floating-point arguments
+;; are assigned registers from independent sequences, so argument order
+;; BETWEEN classes does not affect the calling convention as long as nothing
+;; spills to the stack (<= 6 integer and <= 8 float args). Sorting a signature
+;; into canonical order (integer carriers, then doubles, then floats) and
+;; permuting the values at call time means the native image only registers
+;; count-shaped descriptors, not orderings. Not valid on Windows x64
+;; (positional registers) or for variadic calls (stack-positional).
+(def ^:private carrier-rank {:long 0 :double 1 :float 2})
+
+(defn- sort-permutation
+  "Indices that stably sort types by carrier class, or nil when already
+  sorted."
+  [types]
+  (let [perm (vec (sort-by (fn [i] [(carrier-rank (carrier (nth types i))) i])
+                           (range (count types))))]
+    (when-not (= perm (vec (range (count types))))
+      perm)))
+
+(defn- inverse-permutation [perm]
+  (reduce (fn [inv p] (assoc inv (nth perm p) p))
+          (vec (repeat (count perm) nil))
+          (range (count perm))))
 
 ;; -- memory -------------------------------------------------------------------
 
@@ -184,24 +209,27 @@
   ([sym argtypes rettype] (cfn nil sym argtypes rettype))
   ([lib sym argtypes rettype]
    (let [[types boundary] (split-varargs argtypes)
+         perm (when-not boundary (sort-permutation types))
+         types* (if perm (mapv types perm) types)
          opts (if boundary
                 (into-array java.lang.foreign.Linker$Option
                             [(java.lang.foreign.Linker$Option/firstVariadicArg boundary)])
                 (make-array java.lang.foreign.Linker$Option 0))
          handle (delay (.downcallHandle ^Linker @linker*
                                         (find-symbol lib sym)
-                                        (descriptor types rettype)
+                                        (descriptor types* rettype)
                                         opts))]
      (fn [& args]
        (when-not (= (count args) (count types))
          (throw (ex-info (str "babashka.ffi: " sym " expects " (count types)
                               " args, got " (count args))
                          {:symbol sym})))
-       (with-string-args types (vec args)
-         (fn [args]
-           (narrow-ret rettype
-                       (.invokeWithArguments ^MethodHandle @handle
-                                             ^java.util.List (mapv coerce-arg types args)))))))))
+       (let [args* (if perm (mapv (vec args) perm) (vec args))]
+         (with-string-args types* args*
+           (fn [args]
+             (narrow-ret rettype
+                         (.invokeWithArguments ^MethodHandle @handle
+                                               ^java.util.List (mapv coerce-arg types* args))))))))))
 
 (defmacro defcfn
   "(defcfn sqlite3-open \"sqlite3_open\" [:string :pointer] :int) — defs a
@@ -302,6 +330,14 @@
   alive for the process lifetime."
   [f argtypes rettype]
   (let [n (count argtypes)
+        perm (sort-permutation argtypes)
+        inv (when perm (inverse-permutation perm))
+        argtypes (if perm (mapv argtypes perm) argtypes)
+        f (if perm
+            (fn [& sorted]
+              (let [sorted (vec sorted)]
+                (apply f (map (fn [j] (nth sorted (nth inv j))) (range n)))))
+            f)
         ret-carrier (carrier rettype)
         obj-type (MethodType/methodType Object ^"[Ljava.lang.Class;"
                                         (into-array Class (repeat n Object)))
