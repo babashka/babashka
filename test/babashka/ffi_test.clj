@@ -222,6 +222,44 @@
                             res# ((ffi/cfn "cb_apply_jj" [:pointer :long :long] :long) cb# 40 2)]
                         [res# (ffi/free-callback cb#) (ffi/free-callback cb#)]))))))))
 
+(deftest backend-test
+  (when-not skip?
+    (testing "in a native image, non-variadic in-family shapes must use the
+              compiled trampoline backend - a fallback to the interpreted FFM
+              path is a 75x performance regression"
+      (is (= (if tu/native? [:trampoline :trampoline :ffm] [:ffm :ffm :ffm])
+             (bb `(do ~ffi-require
+                      (mapv (comp :babashka.ffi/backend meta)
+                            [(ffi/cfn "abs" [:int] :int)
+                             (ffi/cfn "ldexp" [:double :int] :double)
+                             ;; variadic stays on FFM by design
+                             (ffi/cfn ~snprintf-sym
+                                      [:pointer :size_t :string :varargs :string :long]
+                                      :int)]))))))))
+
+(deftest perf-canary-test
+  ;; not a benchmark: a coarse ceiling that only the trampoline-to-FFM cliff
+  ;; (~4800ns/call interpreted vs ~64ns compiled) can trip on a noisy runner
+  (when (and (not skip?) tu/native?)
+    (let [ns-per-call (bb `(do ~ffi-require
+                               (let [f# (ffi/cfn "abs" [:int] :int)]
+                                 (f# -1)
+                                 (let [t0# (System/nanoTime)]
+                                   (loop [i# 0]
+                                     (when (< i# 200000) (f# (- i#)) (recur (inc i#))))
+                                   (quot (- (System/nanoTime) t0#) 200000)))))]
+      (is (< ns-per-call 1000)
+          (str "native ffi call took " ns-per-call
+               "ns - trampoline dispatch may have regressed to interpreted FFM")))))
+
+(deftest darwin-alias-test
+  (when-not (or skip? tu/windows?)
+    (testing "load-library accepts :darwin as :mac (jolt compatibility)"
+      (is (= 5 (bb `(do (require '[babashka.ffi :as ~'ffi])
+                        (ffi/load-library {:darwin "libz.dylib" :linux "libz.so.1"})
+                        ((ffi/cfn "compressBound" [:ulong] :ulong) 0)
+                        ((ffi/cfn "strlen" [:string] :size_t) "hello"))))))))
+
 (deftest metadata-generated-test
   (when-not skip?
     ;; skipped on Windows: a CRLF checkout would fail the byte comparison

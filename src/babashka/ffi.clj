@@ -182,11 +182,13 @@
 
 (defn load-library
   "Loads a shared library and registers it for symbol resolution. Takes a
-  path, or a map from OS keyword (:mac :linux :windows) to path. Returns the
-  library's SymbolLookup, usable as the first argument to cfn."
+  path, or a map from OS keyword (:mac :linux :windows) to path; :darwin is
+  accepted as a synonym for :mac (jolt compatibility). Returns the library's
+  SymbolLookup, usable as the first argument to cfn."
   [path-or-map]
   (let [path (if (map? path-or-map)
                (or (get path-or-map (os-key))
+                   (when (= :mac (os-key)) (get path-or-map :darwin))
                    (throw (ex-info (str "babashka.ffi: no library for OS " (os-key))
                                    {:libs path-or-map})))
                path-or-map)
@@ -255,9 +257,10 @@
          ;; image a generated trampoline (compiled direct call) when the
          ;; shape has one; otherwise an FFM downcall handle. Variadic calls
          ;; always use FFM (firstVariadicArg has no trampoline equivalent).
-         raw (if-let [id (and (nil? boundary)
-                              (get trampoline-ids (shape-key types* rettype)))]
-               (delay (trampoline-invoker id (.address (find-symbol lib sym))))
+         tramp-id (and (nil? boundary)
+                       (get trampoline-ids (shape-key types* rettype)))
+         raw (if tramp-id
+               (delay (trampoline-invoker tramp-id (.address (find-symbol lib sym))))
                (delay
                  (let [handle (.downcallHandle ^Linker @linker*
                                                (find-symbol lib sym)
@@ -283,26 +286,31 @@
                        (throw (ex-info (str "babashka.ffi: " sym " expects " n
                                             " args, got " got)
                                        {:symbol sym})))]
-     (if (or strings? perm)
-       (fn [& args]
-         (if (= (count args) n) (general args) (arity-error (count args))))
-       ;; fast path: fixed arities, no seq allocation, no intermediate vectors
-       (let [c (fn [i] (aget coercers i))]
-         (case n
-           0 (fn [] (call (object-array 0)))
-           1 (let [c0 (c 0)]
-               (fn [a] (call (doto (object-array 1) (aset 0 (c0 a))))))
-           2 (let [c0 (c 0) c1 (c 1)]
-               (fn [a b] (call (doto (object-array 2) (aset 0 (c0 a)) (aset 1 (c1 b))))))
-           3 (let [c0 (c 0) c1 (c 1) c2 (c 2)]
-               (fn [a b d] (call (doto (object-array 3)
-                                   (aset 0 (c0 a)) (aset 1 (c1 b)) (aset 2 (c2 d))))))
-           4 (let [c0 (c 0) c1 (c 1) c2 (c 2) c3 (c 3)]
-               (fn [a b d e] (call (doto (object-array 4)
-                                     (aset 0 (c0 a)) (aset 1 (c1 b))
-                                     (aset 2 (c2 d)) (aset 3 (c3 e))))))
-           (fn [& args]
-             (if (= (count args) n) (call (coerce-all args)) (arity-error (count args))))))))))
+     (with-meta
+       (if (or strings? perm)
+         (fn [& args]
+           (if (= (count args) n) (general args) (arity-error (count args))))
+         ;; fast path: fixed arities, no seq allocation, no intermediate vectors
+         (let [c (fn [i] (aget coercers i))]
+           (case n
+             0 (fn [] (call (object-array 0)))
+             1 (let [c0 (c 0)]
+                 (fn [a] (call (doto (object-array 1) (aset 0 (c0 a))))))
+             2 (let [c0 (c 0) c1 (c 1)]
+                 (fn [a b] (call (doto (object-array 2) (aset 0 (c0 a)) (aset 1 (c1 b))))))
+             3 (let [c0 (c 0) c1 (c 1) c2 (c 2)]
+                 (fn [a b d] (call (doto (object-array 3)
+                                     (aset 0 (c0 a)) (aset 1 (c1 b)) (aset 2 (c2 d))))))
+             4 (let [c0 (c 0) c1 (c 1) c2 (c 2) c3 (c 3)]
+                 (fn [a b d e] (call (doto (object-array 4)
+                                       (aset 0 (c0 a)) (aset 1 (c1 b))
+                                       (aset 2 (c2 d)) (aset 3 (c3 e))))))
+             (fn [& args]
+               (if (= (count args) n) (call (coerce-all args)) (arity-error (count args)))))))
+       ;; which call mechanism this binding uses, for tests and diagnostics:
+       ;; :trampoline = compiled direct call, :ffm = downcall handle
+       ;; (interpreted in a native image)
+       {:babashka.ffi/backend (if tramp-id :trampoline :ffm)}))))
 
 (defmacro defcfn
   "(defcfn sqlite3-open \"sqlite3_open\" [:string :pointer] :int) — defs a
