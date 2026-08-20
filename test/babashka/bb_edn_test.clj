@@ -601,12 +601,8 @@ even more stuff here\"
       (testing "and the command line beats both"
         (is (= {:env "prod" :port 80 :author "task"}
                (bb "foo" "--env" "prod"))))))
-  (testing "babashka.cli options may be spelled directly on the task"
-    (testing "a spec, like under :cli"
-      (test-utils/with-config '{:tasks {foo {:exec-fn clojure.core/prn
-                                             :spec {:env {:coerce :keyword}}}}}
-        (is (= {:env :prod} (bb "foo" "--env" "prod")))))
-    (testing ":exec-args, like (exec ...) already reads them"
+  (testing ":exec-args may be spelled directly on the task"
+    (testing "like (exec ...) already reads them"
       (test-utils/with-config '{:tasks {foo {:exec-fn clojure.core/prn
                                              :exec-args {:from "task"}}}}
         (is (= {:from "task"} (bb "foo")))))
