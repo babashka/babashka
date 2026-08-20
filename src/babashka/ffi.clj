@@ -194,12 +194,16 @@
 
 (defn load-system-library
   "Loads a library by its short name, e.g. \"z\" for libz.dylib / libz.so /
-  z.dll. See load-library."
+  z.dll. On Linux falls back to the .so.1 soname: the bare .so link only
+  exists with the -dev package installed. See load-library."
   [name]
-  (load-library (case (os-key)
-                  :mac (str "lib" name ".dylib")
-                  :windows (str name ".dll")
-                  (str "lib" name ".so"))))
+  (case (os-key)
+    :mac (load-library (str "lib" name ".dylib"))
+    :windows (load-library (str name ".dll"))
+    (try (load-library (str "lib" name ".so"))
+         (catch Exception e
+           (try (load-library (str "lib" name ".so.1"))
+                (catch Exception _ (throw e)))))))
 
 (defn- find-symbol ^MemorySegment [lib ^String sym]
   (let [lookups (if lib [lib] (conj @libraries (.defaultLookup ^Linker @linker*)))]
