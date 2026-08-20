@@ -26,18 +26,18 @@
   pointer/integer args, at most 6 :double args, and at most 4 floating args
   when any is :float. Signatures of only pointer/integer args may have up to
   10 arguments. A :float return needs 4 args or fewer. Variadic calls:
-  up to 5 arguments total, at most 3 fixed, at most 2 :double, no :float.
+  up to 5 arguments total, at most 3 fixed, at most 2 :double.
   Callbacks: up to 4 arguments, at most 2 :double, no :float, and a :void,
   integer, or :double return. Argument order does not matter; only the counts do.
 
-  A :varargs marker in the argtype vector declares a variadic C function and
-  marks the boundary: types before it are the fixed parameters, types after
-  it the concrete variadic arguments the binding passes. Required for correct
-  calls on macOS aarch64, where variadic arguments go on the stack:
+  A trailing :& declares a variadic C function: the types before it are the
+  fixed parameters, and the tail types are inferred per call from the values
+  (integers and pointers as 64-bit ints, floats as double per C promotion,
+  strings as C strings):
 
-      (ffi/defcfn c-fcntl \"fcntl\" [:int :int :varargs :int] :int)
-
-  C promotes variadic floats to double, so declare :double after the marker."
+      (ffi/defcfn c-open \"open\" [:string :int :&] :int)
+      (c-open path O_RDONLY)         ; empty tail
+      (c-open path flags 0644)       ; one-int tail, same binding"
   (:refer-clojure :exclude [read])
   (:require [clojure.string :as str])
   (:import [java.lang.foreign Arena FunctionDescriptor Linker MemoryLayout
@@ -67,28 +67,36 @@
    :double ValueLayout/JAVA_DOUBLE
    :float ValueLayout/JAVA_FLOAT})
 
-(defn- split-varargs
-  "Splits argtypes on a :varargs marker. Returns [types boundary]: the types
-  with the marker removed, and the marker's index (the fixed-arg count), nil
-  when not variadic."
+(defn- check-variadic-marker
+  "Validates use of the :& variadic marker. Returns the fixed types (the
+  vector without the trailing :&) for a variadic signature, nil for a plain
+  one."
   [argtypes]
-  (let [i (.indexOf ^java.util.List argtypes :varargs)]
-    (cond
-      (neg? i) [argtypes nil]
-      (zero? i)
-      (throw (ex-info "babashka.ffi: :varargs needs at least one fixed argtype before it"
-                      {:argtypes argtypes}))
-      (= i (dec (count argtypes)))
-      (throw (ex-info "babashka.ffi: :varargs marks the boundary; the variadic argtypes follow it"
-                      {:argtypes argtypes}))
-      :else
-      (let [types (vec (concat (subvec argtypes 0 i) (subvec argtypes (inc i))))]
-        (when (.contains ^java.util.List types :varargs)
-          (throw (ex-info "babashka.ffi: only one :varargs marker allowed" {:argtypes argtypes})))
-        (when (some #(= :float %) (subvec argtypes (inc i)))
-          (throw (ex-info "babashka.ffi: C promotes variadic floats; declare :double after :varargs"
-                          {:argtypes argtypes})))
-        [types i]))))
+  (when (some #(= :varargs %) argtypes)
+    (throw (ex-info "babashka.ffi: :varargs was replaced by a trailing :&; the variadic tail is inferred per call"
+                    {:argtypes argtypes})))
+  (when (some #(= :& %) (butlast argtypes))
+    (throw (ex-info "babashka.ffi: :& must be last; variadic tail types are inferred per call"
+                    {:argtypes argtypes})))
+  (when (= :& (peek argtypes))
+    (let [fixed (pop argtypes)]
+      (when (zero? (count fixed))
+        (throw (ex-info "babashka.ffi: a variadic signature needs at least one fixed argtype before :&"
+                        {:argtypes argtypes})))
+      fixed)))
+
+(defn- tail-type
+  "The inferred type of one variadic tail value. Sound because C promotes
+  variadic floats to double and small ints to int, and every integer width
+  and pointer shares the 64-bit carrier."
+  [v]
+  (cond
+    (or (integer? v) (nil? v) (boolean? v) (instance? MemorySegment v)) :long
+    (float? v) :double
+    (ratio? v) :double
+    (string? v) :string
+    :else (throw (ex-info (str "babashka.ffi: cannot infer variadic tail type of " (type v))
+                          {:value v}))))
 
 (defn- descriptor ^FunctionDescriptor [argtypes rettype]
   (let [args (into-array MemoryLayout (map #(carrier-layout (carrier %)) argtypes))]
@@ -305,56 +313,104 @@
          "_"
          (apply str (map #(c (carrier %)) types*)))))
 
+(defn- unsupported-ex [sym argtypes rettype why]
+  (ex-info (str "babashka.ffi: unsupported signature: " sym " "
+                (pr-str argtypes) " -> " rettype ". " why ". "
+                "Workaround: call through libffi (ffi-libffi.clj in the babashka repo shows how). "
+                "Please report this signature in a babashka issue; it can likely be supported.")
+           {:symbol sym :argtypes argtypes :rettype rettype}))
+
+(def ^:private variadic-limits
+  "variadic calls support up to 5 args total, at most 3 fixed, at most 2 :double")
+
+(declare ^:private fixed-cfn)
+
+(defn- variadic-cfn
+  "A variadic binding: fixed types declared, tail inferred per call. One FFM
+  handle per distinct tail shape, cached."
+  [lib sym fixed argtypes rettype]
+  (doseq [t fixed] (carrier t))
+  (carrier rettype)
+  (when (and native-image?
+             (or (> (count fixed) 3)
+                 (some #(= :float (carrier %)) fixed)))
+    (throw (unsupported-ex sym argtypes rettype variadic-limits)))
+  (let [nf (count fixed)
+        cache (atom {})
+        caller-for
+        (fn [tail-types]
+          (or (get @cache tail-types)
+              (let [all-types (into fixed tail-types)]
+                (when (and native-image?
+                           (or (> (count all-types) 5)
+                               (> (count (filter #(= :double (carrier %)) all-types)) 2)))
+                  (throw (unsupported-ex sym argtypes rettype
+                                         (str variadic-limits ", called with tail "
+                                              (pr-str tail-types)))))
+                (let [handle (.downcallHandle
+                              ^Linker @linker*
+                              (require-symbol lib sym)
+                              (descriptor all-types rettype)
+                              (into-array java.lang.foreign.Linker$Option
+                                          [(java.lang.foreign.Linker$Option/firstVariadicArg nf)]))
+                      caller (fn [^objects arr]
+                               (.invokeWithArguments ^MethodHandle handle arr))]
+                  (swap! cache assoc tail-types caller)
+                  caller))))]
+    (with-meta
+      (fn [& args]
+        (when (< (count args) nf)
+          (throw (ex-info (str "babashka.ffi: " sym " expects at least " nf
+                               " args, got " (count args))
+                          {:symbol sym})))
+        (let [args (vec args)
+              tail-types (mapv tail-type (subvec args nf))
+              all-types (into fixed tail-types)
+              caller (caller-for tail-types)]
+          (with-string-args all-types args
+            (fn [args]
+              (narrow-ret rettype
+                          (caller (object-array
+                                   (map-indexed (fn [i a] (coerce-arg (all-types i) a))
+                                                args))))))))
+      {:babashka.ffi/backend :ffm})))
+
 (defn cfn
   "Binds C function sym as a Clojure function. argtypes is a vector of type
   keywords, rettype a type keyword. With a lib (from load-library) the symbol
   is resolved there; without, in all loaded libraries and then the default
   (libc) lookup. The handle is created on first call, so binding may precede
-  load-library."
+  load-library. A trailing :& declares the C function variadic: the types
+  before it are the fixed parameters, the tail is inferred per call."
   ([sym argtypes rettype] (cfn nil sym argtypes rettype))
   ([lib sym argtypes rettype]
-   (let [[types boundary] (split-varargs argtypes)
-         perm (when-not boundary (sort-permutation types))
-         types* (if perm (mapv types perm) types)
-         opts (if boundary
-                (into-array java.lang.foreign.Linker$Option
-                            [(java.lang.foreign.Linker$Option/firstVariadicArg boundary)])
-                (make-array java.lang.foreign.Linker$Option 0))
-         ;; raw invoker: a fn of the coerced argument array. In a native
-         ;; image a generated trampoline (compiled direct call) when the
-         ;; shape has one; otherwise an FFM downcall handle. Variadic calls
-         ;; always use FFM (firstVariadicArg has no trampoline equivalent).
-         tramp-id (and (nil? boundary)
-                       (get trampoline-ids (shape-key types* rettype)))
-         ;; in a native image every supported shape is known ahead of time,
-         ;; so reject unsupported signatures here with a useful message
-         ;; instead of GraalVM's rebuild-the-image error at call time
-         _ (when native-image?
-             (let [carriers (map carrier types)
-                   unsupported
-                   (if boundary
-                     (when (or (> (count types) 5)
-                               (> boundary 3)
-                               (> (count (filter #(= :double %) carriers)) 2)
-                               (some #(= :float %) carriers))
-                       "variadic calls support up to 5 args, at most 3 fixed, at most 2 :double, no :float")
-                     (when-not tramp-id
-                       "see the signature limits in doc/ffi.md"))]
-               (when unsupported
-                 (throw (ex-info (str "babashka.ffi: unsupported signature: " sym " "
-                                      (pr-str argtypes) " -> " rettype ". "
-                                      unsupported ". "
-                                      "Workaround: call through libffi (ffi-libffi.clj in the babashka repo shows how). "
-                                      "Please report this signature in a babashka issue; it can likely be supported.")
-                                 {:symbol sym :argtypes argtypes :rettype rettype})))))
-         raw (if tramp-id
-               (delay (trampoline-invoker tramp-id (.address (require-symbol lib sym))))
-               (delay
-                 (let [handle (.downcallHandle ^Linker @linker*
-                                               (require-symbol lib sym)
-                                               (descriptor types* rettype)
-                                               opts)]
-                   (fn [^objects arr] (.invokeWithArguments ^MethodHandle handle arr)))))
+   (if-let [fixed (check-variadic-marker argtypes)]
+     (variadic-cfn lib sym fixed argtypes rettype)
+     (fixed-cfn lib sym argtypes rettype))))
+
+(defn- fixed-cfn
+  [lib sym argtypes rettype]
+  (let [types argtypes
+        perm (sort-permutation types)
+        types* (if perm (mapv types perm) types)
+        ;; raw invoker: a fn of the coerced argument array. In a native
+        ;; image a generated trampoline (compiled direct call) when the
+        ;; shape has one; otherwise an FFM downcall handle.
+        tramp-id (get trampoline-ids (shape-key types* rettype))
+        ;; in a native image every supported shape is known ahead of time,
+        ;; so reject unsupported signatures here with a useful message
+        ;; instead of GraalVM's rebuild-the-image error at call time
+        _ (when (and native-image? (not tramp-id))
+            (throw (unsupported-ex sym argtypes rettype
+                                   "see the signature limits in doc/ffi.md")))
+        raw (if tramp-id
+              (delay (trampoline-invoker tramp-id (.address (require-symbol lib sym))))
+              (delay
+                (let [handle (.downcallHandle ^Linker @linker*
+                                              (require-symbol lib sym)
+                                              (descriptor types* rettype)
+                                              (make-array java.lang.foreign.Linker$Option 0))]
+                  (fn [^objects arr] (.invokeWithArguments ^MethodHandle handle arr)))))
          n (count types)
          strings? (boolean (some #(= :string %) types*))
          coercers ^objects (object-array (map (fn [t] (partial coerce-arg t)) types*))
@@ -398,7 +454,7 @@
        ;; which call mechanism this binding uses, for tests and diagnostics:
        ;; :trampoline = compiled direct call, :ffm = downcall handle
        ;; (interpreted in a native image)
-       {:babashka.ffi/backend (if tramp-id :trampoline :ffm)}))))
+       {:babashka.ffi/backend (if tramp-id :trampoline :ffm)})))
 
 (defmacro defcfn
   "(defcfn sqlite3-open \"sqlite3_open\" [:string :pointer] :int) — defs a

@@ -84,10 +84,11 @@
            ret (cond-> ["void" "jlong" "jdouble"]
                  (<= (count args) 4) (conj "jfloat"))]
        {"returnType" ret "parameterTypes" args}))
-   (for [n (range 2 6)
+   ;; boundary == n covers the empty-tail call of a variadic function
+   (for [n (range 1 6)
          args (combos-n ["jlong" "jdouble"] n)
          :when (<= (count (filter #(= "jdouble" %) args)) 2)
-         boundary (range 1 (inc (min 3 (dec n))))
+         boundary (range 1 (inc (min 3 n)))
          ret ["void" "jlong"]]
      {"returnType" ret "parameterTypes" (vec args)
       "options" {"firstVariadicArg" boundary}})))

@@ -38,7 +38,7 @@
   (ffi/free p))
 
 ;; varargs: snprintf through the variadic calling convention
-(def c-snprintf (ffi/cfn "snprintf" [:pointer :size_t :string :varargs :string :long] :int))
+(def c-snprintf (ffi/cfn "snprintf" [:pointer :size_t :string :&] :int))
 (let [buf (ffi/alloc 64)]
   (c-snprintf buf 64 "%s-%ld" "x" 42)
   (println "snprintf/varargs =" (ffi/ptr->string buf)

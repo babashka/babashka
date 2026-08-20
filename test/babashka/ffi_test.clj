@@ -102,21 +102,30 @@
 
 (deftest varargs-test
   (when-not skip?
-    (testing "snprintf through the variadic calling convention"
-      (is (= "x-42" (bb `(do ~ffi-require
-                             (let [buf (ffi/alloc 64)]
-                               ((ffi/cfn ~snprintf-sym [:pointer :size_t :string :varargs :string :long] :int)
-                                buf 64 "%s-%ld" "x" 42)
-                               (let [s (ffi/ptr->string buf)]
-                                 (ffi/free buf)
-                                 s)))))))
+    (testing "snprintf through the variadic calling convention, tail inferred"
+      (is (= ["x-42" "pi=4"]
+             (bb `(do ~ffi-require
+                      (let [f# (ffi/cfn ~snprintf-sym [:pointer :size_t :string :&] :int)
+                            buf# (ffi/alloc 64)
+                            r1# (do (f# buf# 64 "%s-%ld" "x" 42) (ffi/ptr->string buf#))
+                            r2# (do (f# buf# 64 "pi=%.0f" 3.7) (ffi/ptr->string buf#))]
+                        (ffi/free buf#)
+                        [r1# r2#]))))))
+    (testing "empty tail from the same binding"
+      (is (= "plain" (bb `(do ~ffi-require
+                              (let [f# (ffi/cfn ~snprintf-sym [:pointer :size_t :string :&] :int)
+                                    buf# (ffi/alloc 64)]
+                                (f# buf# 64 "plain")
+                                (let [s# (ffi/ptr->string buf#)]
+                                  (ffi/free buf#)
+                                  s#)))))))
     (testing "marker validation"
       (is (thrown? Exception (bb `(do ~ffi-require
-                                      (ffi/cfn "printf" [:varargs :string] :int)))))
+                                      (ffi/cfn "printf" [:string :varargs :long] :int)))))
       (is (thrown? Exception (bb `(do ~ffi-require
-                                      (ffi/cfn "printf" [:string :varargs] :int)))))
+                                      (ffi/cfn "printf" [:& :string] :int)))))
       (is (thrown? Exception (bb `(do ~ffi-require
-                                      (ffi/cfn "printf" [:string :varargs :float] :int))))))))
+                                      (ffi/cfn "printf" [:&] :int))))))))
 
 (deftest callback-test
   (when-not skip?
@@ -175,8 +184,7 @@
       (is (thrown-with-msg?
            Exception #"unsupported signature"
            (bb `(do (require '[babashka.ffi :as ~'ffi])
-                    (ffi/cfn "printf" [:string :varargs :long :long :long :long :long]
-                             :int))))))))
+                    ((ffi/cfn "printf" [:string :&] :int) "%d %d %d %d %d" 1 2 3 4 5))))))))
 
 (deftest error-test
   (when-not skip?
@@ -225,9 +233,9 @@
     (testing "the callee's va_list sees the variadic args in order"
       (is (= [321 5261]
              (bb `(do ~(lib-require lib)
-                      [((ffi/cfn "va_sum" [:long :varargs :long :long :long] :long) 3 1 2 3)
+                      [((ffi/cfn "va_sum" [:long :&] :long) 3 1 2 3)
                        ;; 1 + 6*10 + (long)(13.0*4)*100
-                       ((ffi/cfn "va_ld" [:long :varargs :long :double] :long) 1 6 13.0)])))))))
+                       ((ffi/cfn "va_ld" [:long :&] :long) 1 6 13.0)])))))))
 
 (deftest callback-lib-test
   (when-let [lib @test-lib]
@@ -268,7 +276,7 @@
                              (ffi/cfn "ldexp" [:double :int] :double)
                              ;; variadic stays on FFM by design
                              (ffi/cfn ~snprintf-sym
-                                      [:pointer :size_t :string :varargs :string :long]
+                                      [:pointer :size_t :string :&]
                                       :int)]))))))))
 
 (deftest perf-canary-test

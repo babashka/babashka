@@ -67,12 +67,20 @@ Types: `:void` `:int` `:uint` `:long` `:ulong` `:int8` `:uint8` `:int16`
 Pointers are longs. A `:string` argument is copied to a NUL-terminated C
 string for the call; a `:string` return reads one back as UTF-8.
 
-Variadic C functions need a `:varargs` marker: types before it are the
-fixed parameters, types after it the variadic arguments the binding passes.
+Variadic C functions take a trailing `:&`: types before it are the fixed
+parameters, the tail is inferred per call from the values (integers and
+pointers as 64-bit ints, floats as double per C promotion, strings as C
+strings). One binding covers every tail shape, including the empty one.
 
 ```clojure
-(defcfn c-fcntl "fcntl" [:int :int :varargs :int] :int)
+(defcfn c-open "open" [:string :int :&] :int)
+(c-open path O_RDONLY)        ; no mode
+(c-open path flags 0644)      ; with mode
 ```
+
+Whether the callee reads a tail slot as the type you passed is the caller's
+contract, as in C: `(printf "%f" 3)` passes an integer where the format
+reads a double.
 
 ## Memory
 
