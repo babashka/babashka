@@ -68,9 +68,22 @@
 
 (deftest defcfn-test
   (when-not skip?
-    (is (= 5 (bb `(do ~ffi-require
-                      (~'defcfn ~'strlen "strlen" [:string] :size_t)
-                      (~'strlen "hello")))))))
+    (testing "name, C symbol, argtypes, return type"
+      (is (= 5 (bb `(do ~ffi-require
+                        (~'defcfn ~'strlen "strlen" [:string] :size_t)
+                        (~'strlen "hello"))))))
+    (testing "optional docstring and attribute map"
+      (is (= [5 "Length of a C string." true "1.0"]
+             (bb `(do ~ffi-require
+                      (~'defcfn ~'strlen
+                       "Length of a C string." {:private true :added "1.0"}
+                       "strlen" [:string] :size_t)
+                      (let [m# (meta (resolve '~'strlen))]
+                        [(~'strlen "hello") (:doc m#) (:private m#) (:added m#)]))))))
+    (testing "too many forms before the C symbol"
+      (is (thrown? Exception
+                   (bb `(do ~ffi-require
+                            (~'defcfn ~'bad "a" "b" "strlen" [:string] :size_t))))))))
 
 (deftest memory-test
   (when-not skip?

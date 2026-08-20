@@ -55,8 +55,17 @@ or nil.
 ```
 
 `cfn` binds C function by symbol name, argument types, return type.
-`defcfn` is `def` + `cfn`. Binding is lazy: the symbol resolves on first
-call. An optional first argument takes a specific library (the return value
+`defcfn` is `def` + `cfn`, with an optional docstring and attribute map
+before the C symbol:
+
+```clojure
+(defcfn strlen
+  "Length of a C string in bytes."
+  {:added "1.0"}
+  "strlen" [:string] :size_t)
+```
+
+Binding is lazy: the symbol resolves on first call. An optional first argument takes a specific library (the return value
 of `load-library`); without it, symbols resolve in all loaded libraries and
 then libc.
 

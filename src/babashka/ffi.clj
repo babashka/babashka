@@ -454,10 +454,35 @@
        {:babashka.ffi/backend (if tramp-id :trampoline :ffm)})))
 
 (defmacro defcfn
-  "(defcfn sqlite3-open \"sqlite3_open\" [:string :pointer] :int) — defs a
-  foreign function bound with cfn."
-  [name sym argtypes rettype]
-  `(def ~name (cfn ~sym ~argtypes ~rettype)))
+  "Defs a foreign function bound with cfn:
+
+      (defcfn sqlite3-open \"sqlite3_open\" [:string :pointer] :int)
+
+      (defcfn sqlite3-open
+        \"Opens the database at path, storing the handle in out-param pp.\"
+        \"sqlite3_open\" [:string :pointer] :int)
+
+  The last three arguments are always the C symbol, the argument types and
+  the return type; an optional docstring and attribute map may precede
+  them. Metadata on name is kept, so ^:private works."
+  {:arglists '([name docstring? attr-map? sym argtypes rettype])}
+  [name & args]
+  (when (< (count args) 3)
+    (throw (ex-info "babashka.ffi: defcfn needs a C symbol, argtypes and a return type"
+                    {:name name})))
+  (let [[sym argtypes rettype] (take-last 3 args)
+        prefix (drop-last 3 args)
+        docstring (first (filter string? prefix))
+        attr-map (first (filter map? prefix))]
+    (when-not (and (<= (count prefix) 2)
+                   (<= (count (filter string? prefix)) 1)
+                   (every? #(or (string? %) (map? %)) prefix))
+      (throw (ex-info "babashka.ffi: defcfn takes at most a docstring and an attribute map before the C symbol"
+                      {:name name})))
+    `(def ~(with-meta name (cond-> (meta name)
+                             attr-map (merge attr-map)
+                             docstring (assoc :doc docstring)))
+       (cfn ~sym ~argtypes ~rettype))))
 
 ;; -- manual memory ------------------------------------------------------------
 
