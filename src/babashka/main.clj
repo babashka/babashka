@@ -39,6 +39,7 @@
    [babashka.impl.edamame :refer [edamame-namespace]]
    [babashka.impl.error-handler :refer [error-handler]]
    [babashka.impl.features :as features]
+   [babashka.impl.ffi :refer [ffi-namespace]]
    [babashka.impl.fs :refer [fs-namespace]]
    [babashka.impl.http-client :refer [http-client-namespace
                                       http-client-websocket-namespace
@@ -447,6 +448,7 @@ Use bb run --help to show this help output.
        'clojure.datafy datafy-namespace
        'clojure.core.protocols protocols-namespace
        'babashka.process process-namespace
+       'babashka.ffi ffi-namespace
        'babashka.terminal terminal-namespace
        'clojure.core.server clojure-core-server-namespace
        'babashka.deps deps-namespace
