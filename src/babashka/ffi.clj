@@ -72,9 +72,6 @@
   vector without the trailing :&) for a variadic signature, nil for a plain
   one."
   [argtypes]
-  (when (some #(= :varargs %) argtypes)
-    (throw (ex-info "babashka.ffi: :varargs was replaced by a trailing :&; the variadic tail is inferred per call"
-                    {:argtypes argtypes})))
   (when (some #(= :& %) (butlast argtypes))
     (throw (ex-info "babashka.ffi: :& must be last; variadic tail types are inferred per call"
                     {:argtypes argtypes})))
