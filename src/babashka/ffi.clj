@@ -22,6 +22,11 @@
   exact layout (float ABI differs from double). Struct-by-value arguments are
   not supported.
 
+  Signature limits (native image): up to 8 arguments. Above 4 arguments:
+  at most 2 :double/:float args (or 1-2 pointer/integer args followed by all
+  doubles), no :float args, no :float return. Variadic calls: up to 6
+  arguments total, at most 3 fixed.
+
   A :varargs marker in the argtype vector declares a variadic C function and
   marks the boundary: types before it are the fixed parameters, types after
   it the concrete variadic arguments the binding passes. Required for correct
