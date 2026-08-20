@@ -12,6 +12,9 @@
 ;; - downcalls: a longs, b doubles, c floats with a <= 6 (x86-64 has 6
 ;;   integer argument registers), a+b+c <= 7, and b+c <= 4 when c > 0;
 ;;   returns void/long/double, plus float for shapes of <= 4 args
+;; - pure-integer downcalls additionally up to arity 10 (EVP_PBE_scrypt
+;;   takes 10): with a single carrier class the sort is the identity, so
+;;   stack-passed arguments keep their declared order and any arity is sound
 ;; - variadic downcalls (order preserved, not sorted): arity 2..5 over
 ;;   {long,double} with <= 2 doubles, boundary 1..3, returns void/long
 ;; - upcalls: a longs, b doubles with a+b <= 4 and b <= 2, returns void/long
@@ -45,13 +48,17 @@
     (distinct
      (concat (combos-n ["jlong" "jdouble"] 0)
              (mapcat #(combos-n ["jlong" "jdouble"] %) (range 1 7))
-             (mapcat #(combos-n ["jlong" "jdouble" "jfloat"] %) (range 1 5))))
-    (for [a (range 0 7)
-          b (range 0 7)
-          c (range 0 5)
-          :when (and (<= (+ a b c) 7)
-                     (or (zero? c) (<= (+ b c) 4)))]
-      (shape a b c))))
+             (mapcat #(combos-n ["jlong" "jdouble" "jfloat"] %) (range 1 5))
+             (map #(vec (repeat % "jlong")) (range 7 11))))
+    (concat
+     (for [a (range 0 7)
+           b (range 0 7)
+           c (range 0 5)
+           :when (and (<= (+ a b c) 7)
+                      (or (zero? c) (<= (+ b c) 4)))]
+       (shape a b c))
+     (for [a (range 8 11)]
+       (shape a 0 0)))))
 
 (def downcalls
   (concat

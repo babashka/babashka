@@ -24,7 +24,8 @@
 
   Signature limits (native image): up to 7 arguments, of which at most 6
   pointer/integer args, at most 6 :double args, and at most 4 floating args
-  when any is :float. A :float return needs 4 args or fewer. Variadic calls:
+  when any is :float. Signatures of only pointer/integer args may have up to
+  10 arguments. A :float return needs 4 args or fewer. Variadic calls:
   up to 5 arguments total, at most 3 fixed, at most 2 :double, no :float.
   Callbacks: up to 4 arguments, at most 2 :double, no :float, and a :void or
   integer return. Argument order does not matter; only the counts do.
