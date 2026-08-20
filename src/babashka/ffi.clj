@@ -222,9 +222,13 @@
 ;; function pointers as compiled direct calls (~2ns). One per canonical
 ;; shape; loaded only in the image, never on the JVM, where the FFM handle
 ;; path is JIT-compiled and fast.
-(def ^:private trampolines
+(def ^:private trampoline-ids
   (when native-image?
-    @(requiring-resolve 'babashka.impl.ffi-trampolines/builders)))
+    @(requiring-resolve 'babashka.impl.ffi-trampolines/ids)))
+
+(def ^:private trampoline-invoker
+  (when native-image?
+    (requiring-resolve 'babashka.impl.ffi-trampolines/invoker)))
 
 (defn- shape-key [types* rettype]
   (let [c {:long "J" :double "D" :float "F"}]
@@ -251,9 +255,9 @@
          ;; image a generated trampoline (compiled direct call) when the
          ;; shape has one; otherwise an FFM downcall handle. Variadic calls
          ;; always use FFM (firstVariadicArg has no trampoline equivalent).
-         raw (if-let [builder (and (nil? boundary)
-                                   (get trampolines (shape-key types* rettype)))]
-               (delay (builder (.address (find-symbol lib sym))))
+         raw (if-let [id (and (nil? boundary)
+                              (get trampoline-ids (shape-key types* rettype)))]
+               (delay (trampoline-invoker id (.address (find-symbol lib sym))))
                (delay
                  (let [handle (.downcallHandle ^Linker @linker*
                                                (find-symbol lib sym)

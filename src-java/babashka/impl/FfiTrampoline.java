@@ -6,18 +6,18 @@ import org.graalvm.nativeimage.c.function.InvokeCFunctionPointer;
 import org.graalvm.word.WordFactory;
 
 /** Native-image call trampolines for babashka.ffi: one compiled
- * direct call per canonical shape. Only functional in a native
- * image; never invoked on the JVM. */
+ * direct call per canonical shape, dispatched by shape id. Only
+ * functional in a native image; never invoked on the JVM. */
 public final class FfiTrampoline {
     private FfiTrampoline() {}
+
+    private static long longV(Object o) { return ((Number) o).longValue(); }
+    private static double dblV(Object o) { return ((Number) o).doubleValue(); }
+    private static float fltV(Object o) { return ((Number) o).floatValue(); }
 
     public interface F_V_ extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke();
-    }
-
-    public static void callV_(long fn) {
-        ((F_V_) WordFactory.pointer(fn)).invoke();
     }
 
     public interface F_J_ extends CFunctionPointer {
@@ -25,17 +25,9 @@ public final class FfiTrampoline {
         long invoke();
     }
 
-    public static long callJ_(long fn) {
-        return ((F_J_) WordFactory.pointer(fn)).invoke();
-    }
-
     public interface F_D_ extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke();
-    }
-
-    public static double callD_(long fn) {
-        return ((F_D_) WordFactory.pointer(fn)).invoke();
     }
 
     public interface F_F_ extends CFunctionPointer {
@@ -43,17 +35,9 @@ public final class FfiTrampoline {
         float invoke();
     }
 
-    public static float callF_(long fn) {
-        return ((F_F_) WordFactory.pointer(fn)).invoke();
-    }
-
     public interface F_V_D extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(double a0);
-    }
-
-    public static void callV_D(long fn, double a0) {
-        ((F_V_D) WordFactory.pointer(fn)).invoke(a0);
     }
 
     public interface F_J_D extends CFunctionPointer {
@@ -61,17 +45,9 @@ public final class FfiTrampoline {
         long invoke(double a0);
     }
 
-    public static long callJ_D(long fn, double a0) {
-        return ((F_J_D) WordFactory.pointer(fn)).invoke(a0);
-    }
-
     public interface F_D_D extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(double a0);
-    }
-
-    public static double callD_D(long fn, double a0) {
-        return ((F_D_D) WordFactory.pointer(fn)).invoke(a0);
     }
 
     public interface F_F_D extends CFunctionPointer {
@@ -79,17 +55,9 @@ public final class FfiTrampoline {
         float invoke(double a0);
     }
 
-    public static float callF_D(long fn, double a0) {
-        return ((F_F_D) WordFactory.pointer(fn)).invoke(a0);
-    }
-
     public interface F_V_F extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(float a0);
-    }
-
-    public static void callV_F(long fn, float a0) {
-        ((F_V_F) WordFactory.pointer(fn)).invoke(a0);
     }
 
     public interface F_J_F extends CFunctionPointer {
@@ -97,17 +65,9 @@ public final class FfiTrampoline {
         long invoke(float a0);
     }
 
-    public static long callJ_F(long fn, float a0) {
-        return ((F_J_F) WordFactory.pointer(fn)).invoke(a0);
-    }
-
     public interface F_D_F extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(float a0);
-    }
-
-    public static double callD_F(long fn, float a0) {
-        return ((F_D_F) WordFactory.pointer(fn)).invoke(a0);
     }
 
     public interface F_F_F extends CFunctionPointer {
@@ -115,17 +75,9 @@ public final class FfiTrampoline {
         float invoke(float a0);
     }
 
-    public static float callF_F(long fn, float a0) {
-        return ((F_F_F) WordFactory.pointer(fn)).invoke(a0);
-    }
-
     public interface F_V_DD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(double a0, double a1);
-    }
-
-    public static void callV_DD(long fn, double a0, double a1) {
-        ((F_V_DD) WordFactory.pointer(fn)).invoke(a0, a1);
     }
 
     public interface F_J_DD extends CFunctionPointer {
@@ -133,17 +85,9 @@ public final class FfiTrampoline {
         long invoke(double a0, double a1);
     }
 
-    public static long callJ_DD(long fn, double a0, double a1) {
-        return ((F_J_DD) WordFactory.pointer(fn)).invoke(a0, a1);
-    }
-
     public interface F_D_DD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(double a0, double a1);
-    }
-
-    public static double callD_DD(long fn, double a0, double a1) {
-        return ((F_D_DD) WordFactory.pointer(fn)).invoke(a0, a1);
     }
 
     public interface F_F_DD extends CFunctionPointer {
@@ -151,17 +95,9 @@ public final class FfiTrampoline {
         float invoke(double a0, double a1);
     }
 
-    public static float callF_DD(long fn, double a0, double a1) {
-        return ((F_F_DD) WordFactory.pointer(fn)).invoke(a0, a1);
-    }
-
     public interface F_V_DF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(double a0, float a1);
-    }
-
-    public static void callV_DF(long fn, double a0, float a1) {
-        ((F_V_DF) WordFactory.pointer(fn)).invoke(a0, a1);
     }
 
     public interface F_J_DF extends CFunctionPointer {
@@ -169,17 +105,9 @@ public final class FfiTrampoline {
         long invoke(double a0, float a1);
     }
 
-    public static long callJ_DF(long fn, double a0, float a1) {
-        return ((F_J_DF) WordFactory.pointer(fn)).invoke(a0, a1);
-    }
-
     public interface F_D_DF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(double a0, float a1);
-    }
-
-    public static double callD_DF(long fn, double a0, float a1) {
-        return ((F_D_DF) WordFactory.pointer(fn)).invoke(a0, a1);
     }
 
     public interface F_F_DF extends CFunctionPointer {
@@ -187,17 +115,9 @@ public final class FfiTrampoline {
         float invoke(double a0, float a1);
     }
 
-    public static float callF_DF(long fn, double a0, float a1) {
-        return ((F_F_DF) WordFactory.pointer(fn)).invoke(a0, a1);
-    }
-
     public interface F_V_FD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(float a0, double a1);
-    }
-
-    public static void callV_FD(long fn, float a0, double a1) {
-        ((F_V_FD) WordFactory.pointer(fn)).invoke(a0, a1);
     }
 
     public interface F_J_FD extends CFunctionPointer {
@@ -205,17 +125,9 @@ public final class FfiTrampoline {
         long invoke(float a0, double a1);
     }
 
-    public static long callJ_FD(long fn, float a0, double a1) {
-        return ((F_J_FD) WordFactory.pointer(fn)).invoke(a0, a1);
-    }
-
     public interface F_D_FD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(float a0, double a1);
-    }
-
-    public static double callD_FD(long fn, float a0, double a1) {
-        return ((F_D_FD) WordFactory.pointer(fn)).invoke(a0, a1);
     }
 
     public interface F_F_FD extends CFunctionPointer {
@@ -223,17 +135,9 @@ public final class FfiTrampoline {
         float invoke(float a0, double a1);
     }
 
-    public static float callF_FD(long fn, float a0, double a1) {
-        return ((F_F_FD) WordFactory.pointer(fn)).invoke(a0, a1);
-    }
-
     public interface F_V_FF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(float a0, float a1);
-    }
-
-    public static void callV_FF(long fn, float a0, float a1) {
-        ((F_V_FF) WordFactory.pointer(fn)).invoke(a0, a1);
     }
 
     public interface F_J_FF extends CFunctionPointer {
@@ -241,17 +145,9 @@ public final class FfiTrampoline {
         long invoke(float a0, float a1);
     }
 
-    public static long callJ_FF(long fn, float a0, float a1) {
-        return ((F_J_FF) WordFactory.pointer(fn)).invoke(a0, a1);
-    }
-
     public interface F_D_FF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(float a0, float a1);
-    }
-
-    public static double callD_FF(long fn, float a0, float a1) {
-        return ((F_D_FF) WordFactory.pointer(fn)).invoke(a0, a1);
     }
 
     public interface F_F_FF extends CFunctionPointer {
@@ -259,17 +155,9 @@ public final class FfiTrampoline {
         float invoke(float a0, float a1);
     }
 
-    public static float callF_FF(long fn, float a0, float a1) {
-        return ((F_F_FF) WordFactory.pointer(fn)).invoke(a0, a1);
-    }
-
     public interface F_V_DDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(double a0, double a1, double a2);
-    }
-
-    public static void callV_DDD(long fn, double a0, double a1, double a2) {
-        ((F_V_DDD) WordFactory.pointer(fn)).invoke(a0, a1, a2);
     }
 
     public interface F_J_DDD extends CFunctionPointer {
@@ -277,17 +165,9 @@ public final class FfiTrampoline {
         long invoke(double a0, double a1, double a2);
     }
 
-    public static long callJ_DDD(long fn, double a0, double a1, double a2) {
-        return ((F_J_DDD) WordFactory.pointer(fn)).invoke(a0, a1, a2);
-    }
-
     public interface F_D_DDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(double a0, double a1, double a2);
-    }
-
-    public static double callD_DDD(long fn, double a0, double a1, double a2) {
-        return ((F_D_DDD) WordFactory.pointer(fn)).invoke(a0, a1, a2);
     }
 
     public interface F_F_DDD extends CFunctionPointer {
@@ -295,17 +175,9 @@ public final class FfiTrampoline {
         float invoke(double a0, double a1, double a2);
     }
 
-    public static float callF_DDD(long fn, double a0, double a1, double a2) {
-        return ((F_F_DDD) WordFactory.pointer(fn)).invoke(a0, a1, a2);
-    }
-
     public interface F_V_DDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(double a0, double a1, float a2);
-    }
-
-    public static void callV_DDF(long fn, double a0, double a1, float a2) {
-        ((F_V_DDF) WordFactory.pointer(fn)).invoke(a0, a1, a2);
     }
 
     public interface F_J_DDF extends CFunctionPointer {
@@ -313,17 +185,9 @@ public final class FfiTrampoline {
         long invoke(double a0, double a1, float a2);
     }
 
-    public static long callJ_DDF(long fn, double a0, double a1, float a2) {
-        return ((F_J_DDF) WordFactory.pointer(fn)).invoke(a0, a1, a2);
-    }
-
     public interface F_D_DDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(double a0, double a1, float a2);
-    }
-
-    public static double callD_DDF(long fn, double a0, double a1, float a2) {
-        return ((F_D_DDF) WordFactory.pointer(fn)).invoke(a0, a1, a2);
     }
 
     public interface F_F_DDF extends CFunctionPointer {
@@ -331,17 +195,9 @@ public final class FfiTrampoline {
         float invoke(double a0, double a1, float a2);
     }
 
-    public static float callF_DDF(long fn, double a0, double a1, float a2) {
-        return ((F_F_DDF) WordFactory.pointer(fn)).invoke(a0, a1, a2);
-    }
-
     public interface F_V_DFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(double a0, float a1, double a2);
-    }
-
-    public static void callV_DFD(long fn, double a0, float a1, double a2) {
-        ((F_V_DFD) WordFactory.pointer(fn)).invoke(a0, a1, a2);
     }
 
     public interface F_J_DFD extends CFunctionPointer {
@@ -349,17 +205,9 @@ public final class FfiTrampoline {
         long invoke(double a0, float a1, double a2);
     }
 
-    public static long callJ_DFD(long fn, double a0, float a1, double a2) {
-        return ((F_J_DFD) WordFactory.pointer(fn)).invoke(a0, a1, a2);
-    }
-
     public interface F_D_DFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(double a0, float a1, double a2);
-    }
-
-    public static double callD_DFD(long fn, double a0, float a1, double a2) {
-        return ((F_D_DFD) WordFactory.pointer(fn)).invoke(a0, a1, a2);
     }
 
     public interface F_F_DFD extends CFunctionPointer {
@@ -367,17 +215,9 @@ public final class FfiTrampoline {
         float invoke(double a0, float a1, double a2);
     }
 
-    public static float callF_DFD(long fn, double a0, float a1, double a2) {
-        return ((F_F_DFD) WordFactory.pointer(fn)).invoke(a0, a1, a2);
-    }
-
     public interface F_V_DFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(double a0, float a1, float a2);
-    }
-
-    public static void callV_DFF(long fn, double a0, float a1, float a2) {
-        ((F_V_DFF) WordFactory.pointer(fn)).invoke(a0, a1, a2);
     }
 
     public interface F_J_DFF extends CFunctionPointer {
@@ -385,17 +225,9 @@ public final class FfiTrampoline {
         long invoke(double a0, float a1, float a2);
     }
 
-    public static long callJ_DFF(long fn, double a0, float a1, float a2) {
-        return ((F_J_DFF) WordFactory.pointer(fn)).invoke(a0, a1, a2);
-    }
-
     public interface F_D_DFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(double a0, float a1, float a2);
-    }
-
-    public static double callD_DFF(long fn, double a0, float a1, float a2) {
-        return ((F_D_DFF) WordFactory.pointer(fn)).invoke(a0, a1, a2);
     }
 
     public interface F_F_DFF extends CFunctionPointer {
@@ -403,17 +235,9 @@ public final class FfiTrampoline {
         float invoke(double a0, float a1, float a2);
     }
 
-    public static float callF_DFF(long fn, double a0, float a1, float a2) {
-        return ((F_F_DFF) WordFactory.pointer(fn)).invoke(a0, a1, a2);
-    }
-
     public interface F_V_FDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(float a0, double a1, double a2);
-    }
-
-    public static void callV_FDD(long fn, float a0, double a1, double a2) {
-        ((F_V_FDD) WordFactory.pointer(fn)).invoke(a0, a1, a2);
     }
 
     public interface F_J_FDD extends CFunctionPointer {
@@ -421,17 +245,9 @@ public final class FfiTrampoline {
         long invoke(float a0, double a1, double a2);
     }
 
-    public static long callJ_FDD(long fn, float a0, double a1, double a2) {
-        return ((F_J_FDD) WordFactory.pointer(fn)).invoke(a0, a1, a2);
-    }
-
     public interface F_D_FDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(float a0, double a1, double a2);
-    }
-
-    public static double callD_FDD(long fn, float a0, double a1, double a2) {
-        return ((F_D_FDD) WordFactory.pointer(fn)).invoke(a0, a1, a2);
     }
 
     public interface F_F_FDD extends CFunctionPointer {
@@ -439,17 +255,9 @@ public final class FfiTrampoline {
         float invoke(float a0, double a1, double a2);
     }
 
-    public static float callF_FDD(long fn, float a0, double a1, double a2) {
-        return ((F_F_FDD) WordFactory.pointer(fn)).invoke(a0, a1, a2);
-    }
-
     public interface F_V_FDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(float a0, double a1, float a2);
-    }
-
-    public static void callV_FDF(long fn, float a0, double a1, float a2) {
-        ((F_V_FDF) WordFactory.pointer(fn)).invoke(a0, a1, a2);
     }
 
     public interface F_J_FDF extends CFunctionPointer {
@@ -457,17 +265,9 @@ public final class FfiTrampoline {
         long invoke(float a0, double a1, float a2);
     }
 
-    public static long callJ_FDF(long fn, float a0, double a1, float a2) {
-        return ((F_J_FDF) WordFactory.pointer(fn)).invoke(a0, a1, a2);
-    }
-
     public interface F_D_FDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(float a0, double a1, float a2);
-    }
-
-    public static double callD_FDF(long fn, float a0, double a1, float a2) {
-        return ((F_D_FDF) WordFactory.pointer(fn)).invoke(a0, a1, a2);
     }
 
     public interface F_F_FDF extends CFunctionPointer {
@@ -475,17 +275,9 @@ public final class FfiTrampoline {
         float invoke(float a0, double a1, float a2);
     }
 
-    public static float callF_FDF(long fn, float a0, double a1, float a2) {
-        return ((F_F_FDF) WordFactory.pointer(fn)).invoke(a0, a1, a2);
-    }
-
     public interface F_V_FFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(float a0, float a1, double a2);
-    }
-
-    public static void callV_FFD(long fn, float a0, float a1, double a2) {
-        ((F_V_FFD) WordFactory.pointer(fn)).invoke(a0, a1, a2);
     }
 
     public interface F_J_FFD extends CFunctionPointer {
@@ -493,17 +285,9 @@ public final class FfiTrampoline {
         long invoke(float a0, float a1, double a2);
     }
 
-    public static long callJ_FFD(long fn, float a0, float a1, double a2) {
-        return ((F_J_FFD) WordFactory.pointer(fn)).invoke(a0, a1, a2);
-    }
-
     public interface F_D_FFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(float a0, float a1, double a2);
-    }
-
-    public static double callD_FFD(long fn, float a0, float a1, double a2) {
-        return ((F_D_FFD) WordFactory.pointer(fn)).invoke(a0, a1, a2);
     }
 
     public interface F_F_FFD extends CFunctionPointer {
@@ -511,17 +295,9 @@ public final class FfiTrampoline {
         float invoke(float a0, float a1, double a2);
     }
 
-    public static float callF_FFD(long fn, float a0, float a1, double a2) {
-        return ((F_F_FFD) WordFactory.pointer(fn)).invoke(a0, a1, a2);
-    }
-
     public interface F_V_FFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(float a0, float a1, float a2);
-    }
-
-    public static void callV_FFF(long fn, float a0, float a1, float a2) {
-        ((F_V_FFF) WordFactory.pointer(fn)).invoke(a0, a1, a2);
     }
 
     public interface F_J_FFF extends CFunctionPointer {
@@ -529,17 +305,9 @@ public final class FfiTrampoline {
         long invoke(float a0, float a1, float a2);
     }
 
-    public static long callJ_FFF(long fn, float a0, float a1, float a2) {
-        return ((F_J_FFF) WordFactory.pointer(fn)).invoke(a0, a1, a2);
-    }
-
     public interface F_D_FFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(float a0, float a1, float a2);
-    }
-
-    public static double callD_FFF(long fn, float a0, float a1, float a2) {
-        return ((F_D_FFF) WordFactory.pointer(fn)).invoke(a0, a1, a2);
     }
 
     public interface F_F_FFF extends CFunctionPointer {
@@ -547,17 +315,9 @@ public final class FfiTrampoline {
         float invoke(float a0, float a1, float a2);
     }
 
-    public static float callF_FFF(long fn, float a0, float a1, float a2) {
-        return ((F_F_FFF) WordFactory.pointer(fn)).invoke(a0, a1, a2);
-    }
-
     public interface F_V_DDDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(double a0, double a1, double a2, double a3);
-    }
-
-    public static void callV_DDDD(long fn, double a0, double a1, double a2, double a3) {
-        ((F_V_DDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_J_DDDD extends CFunctionPointer {
@@ -565,17 +325,9 @@ public final class FfiTrampoline {
         long invoke(double a0, double a1, double a2, double a3);
     }
 
-    public static long callJ_DDDD(long fn, double a0, double a1, double a2, double a3) {
-        return ((F_J_DDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_D_DDDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(double a0, double a1, double a2, double a3);
-    }
-
-    public static double callD_DDDD(long fn, double a0, double a1, double a2, double a3) {
-        return ((F_D_DDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_F_DDDD extends CFunctionPointer {
@@ -583,17 +335,9 @@ public final class FfiTrampoline {
         float invoke(double a0, double a1, double a2, double a3);
     }
 
-    public static float callF_DDDD(long fn, double a0, double a1, double a2, double a3) {
-        return ((F_F_DDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_V_DDDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(double a0, double a1, double a2, float a3);
-    }
-
-    public static void callV_DDDF(long fn, double a0, double a1, double a2, float a3) {
-        ((F_V_DDDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_J_DDDF extends CFunctionPointer {
@@ -601,17 +345,9 @@ public final class FfiTrampoline {
         long invoke(double a0, double a1, double a2, float a3);
     }
 
-    public static long callJ_DDDF(long fn, double a0, double a1, double a2, float a3) {
-        return ((F_J_DDDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_D_DDDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(double a0, double a1, double a2, float a3);
-    }
-
-    public static double callD_DDDF(long fn, double a0, double a1, double a2, float a3) {
-        return ((F_D_DDDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_F_DDDF extends CFunctionPointer {
@@ -619,17 +355,9 @@ public final class FfiTrampoline {
         float invoke(double a0, double a1, double a2, float a3);
     }
 
-    public static float callF_DDDF(long fn, double a0, double a1, double a2, float a3) {
-        return ((F_F_DDDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_V_DDFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(double a0, double a1, float a2, double a3);
-    }
-
-    public static void callV_DDFD(long fn, double a0, double a1, float a2, double a3) {
-        ((F_V_DDFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_J_DDFD extends CFunctionPointer {
@@ -637,17 +365,9 @@ public final class FfiTrampoline {
         long invoke(double a0, double a1, float a2, double a3);
     }
 
-    public static long callJ_DDFD(long fn, double a0, double a1, float a2, double a3) {
-        return ((F_J_DDFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_D_DDFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(double a0, double a1, float a2, double a3);
-    }
-
-    public static double callD_DDFD(long fn, double a0, double a1, float a2, double a3) {
-        return ((F_D_DDFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_F_DDFD extends CFunctionPointer {
@@ -655,17 +375,9 @@ public final class FfiTrampoline {
         float invoke(double a0, double a1, float a2, double a3);
     }
 
-    public static float callF_DDFD(long fn, double a0, double a1, float a2, double a3) {
-        return ((F_F_DDFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_V_DDFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(double a0, double a1, float a2, float a3);
-    }
-
-    public static void callV_DDFF(long fn, double a0, double a1, float a2, float a3) {
-        ((F_V_DDFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_J_DDFF extends CFunctionPointer {
@@ -673,17 +385,9 @@ public final class FfiTrampoline {
         long invoke(double a0, double a1, float a2, float a3);
     }
 
-    public static long callJ_DDFF(long fn, double a0, double a1, float a2, float a3) {
-        return ((F_J_DDFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_D_DDFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(double a0, double a1, float a2, float a3);
-    }
-
-    public static double callD_DDFF(long fn, double a0, double a1, float a2, float a3) {
-        return ((F_D_DDFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_F_DDFF extends CFunctionPointer {
@@ -691,17 +395,9 @@ public final class FfiTrampoline {
         float invoke(double a0, double a1, float a2, float a3);
     }
 
-    public static float callF_DDFF(long fn, double a0, double a1, float a2, float a3) {
-        return ((F_F_DDFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_V_DFDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(double a0, float a1, double a2, double a3);
-    }
-
-    public static void callV_DFDD(long fn, double a0, float a1, double a2, double a3) {
-        ((F_V_DFDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_J_DFDD extends CFunctionPointer {
@@ -709,17 +405,9 @@ public final class FfiTrampoline {
         long invoke(double a0, float a1, double a2, double a3);
     }
 
-    public static long callJ_DFDD(long fn, double a0, float a1, double a2, double a3) {
-        return ((F_J_DFDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_D_DFDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(double a0, float a1, double a2, double a3);
-    }
-
-    public static double callD_DFDD(long fn, double a0, float a1, double a2, double a3) {
-        return ((F_D_DFDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_F_DFDD extends CFunctionPointer {
@@ -727,17 +415,9 @@ public final class FfiTrampoline {
         float invoke(double a0, float a1, double a2, double a3);
     }
 
-    public static float callF_DFDD(long fn, double a0, float a1, double a2, double a3) {
-        return ((F_F_DFDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_V_DFDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(double a0, float a1, double a2, float a3);
-    }
-
-    public static void callV_DFDF(long fn, double a0, float a1, double a2, float a3) {
-        ((F_V_DFDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_J_DFDF extends CFunctionPointer {
@@ -745,17 +425,9 @@ public final class FfiTrampoline {
         long invoke(double a0, float a1, double a2, float a3);
     }
 
-    public static long callJ_DFDF(long fn, double a0, float a1, double a2, float a3) {
-        return ((F_J_DFDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_D_DFDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(double a0, float a1, double a2, float a3);
-    }
-
-    public static double callD_DFDF(long fn, double a0, float a1, double a2, float a3) {
-        return ((F_D_DFDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_F_DFDF extends CFunctionPointer {
@@ -763,17 +435,9 @@ public final class FfiTrampoline {
         float invoke(double a0, float a1, double a2, float a3);
     }
 
-    public static float callF_DFDF(long fn, double a0, float a1, double a2, float a3) {
-        return ((F_F_DFDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_V_DFFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(double a0, float a1, float a2, double a3);
-    }
-
-    public static void callV_DFFD(long fn, double a0, float a1, float a2, double a3) {
-        ((F_V_DFFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_J_DFFD extends CFunctionPointer {
@@ -781,17 +445,9 @@ public final class FfiTrampoline {
         long invoke(double a0, float a1, float a2, double a3);
     }
 
-    public static long callJ_DFFD(long fn, double a0, float a1, float a2, double a3) {
-        return ((F_J_DFFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_D_DFFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(double a0, float a1, float a2, double a3);
-    }
-
-    public static double callD_DFFD(long fn, double a0, float a1, float a2, double a3) {
-        return ((F_D_DFFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_F_DFFD extends CFunctionPointer {
@@ -799,17 +455,9 @@ public final class FfiTrampoline {
         float invoke(double a0, float a1, float a2, double a3);
     }
 
-    public static float callF_DFFD(long fn, double a0, float a1, float a2, double a3) {
-        return ((F_F_DFFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_V_DFFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(double a0, float a1, float a2, float a3);
-    }
-
-    public static void callV_DFFF(long fn, double a0, float a1, float a2, float a3) {
-        ((F_V_DFFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_J_DFFF extends CFunctionPointer {
@@ -817,17 +465,9 @@ public final class FfiTrampoline {
         long invoke(double a0, float a1, float a2, float a3);
     }
 
-    public static long callJ_DFFF(long fn, double a0, float a1, float a2, float a3) {
-        return ((F_J_DFFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_D_DFFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(double a0, float a1, float a2, float a3);
-    }
-
-    public static double callD_DFFF(long fn, double a0, float a1, float a2, float a3) {
-        return ((F_D_DFFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_F_DFFF extends CFunctionPointer {
@@ -835,17 +475,9 @@ public final class FfiTrampoline {
         float invoke(double a0, float a1, float a2, float a3);
     }
 
-    public static float callF_DFFF(long fn, double a0, float a1, float a2, float a3) {
-        return ((F_F_DFFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_V_FDDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(float a0, double a1, double a2, double a3);
-    }
-
-    public static void callV_FDDD(long fn, float a0, double a1, double a2, double a3) {
-        ((F_V_FDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_J_FDDD extends CFunctionPointer {
@@ -853,17 +485,9 @@ public final class FfiTrampoline {
         long invoke(float a0, double a1, double a2, double a3);
     }
 
-    public static long callJ_FDDD(long fn, float a0, double a1, double a2, double a3) {
-        return ((F_J_FDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_D_FDDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(float a0, double a1, double a2, double a3);
-    }
-
-    public static double callD_FDDD(long fn, float a0, double a1, double a2, double a3) {
-        return ((F_D_FDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_F_FDDD extends CFunctionPointer {
@@ -871,17 +495,9 @@ public final class FfiTrampoline {
         float invoke(float a0, double a1, double a2, double a3);
     }
 
-    public static float callF_FDDD(long fn, float a0, double a1, double a2, double a3) {
-        return ((F_F_FDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_V_FDDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(float a0, double a1, double a2, float a3);
-    }
-
-    public static void callV_FDDF(long fn, float a0, double a1, double a2, float a3) {
-        ((F_V_FDDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_J_FDDF extends CFunctionPointer {
@@ -889,17 +505,9 @@ public final class FfiTrampoline {
         long invoke(float a0, double a1, double a2, float a3);
     }
 
-    public static long callJ_FDDF(long fn, float a0, double a1, double a2, float a3) {
-        return ((F_J_FDDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_D_FDDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(float a0, double a1, double a2, float a3);
-    }
-
-    public static double callD_FDDF(long fn, float a0, double a1, double a2, float a3) {
-        return ((F_D_FDDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_F_FDDF extends CFunctionPointer {
@@ -907,17 +515,9 @@ public final class FfiTrampoline {
         float invoke(float a0, double a1, double a2, float a3);
     }
 
-    public static float callF_FDDF(long fn, float a0, double a1, double a2, float a3) {
-        return ((F_F_FDDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_V_FDFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(float a0, double a1, float a2, double a3);
-    }
-
-    public static void callV_FDFD(long fn, float a0, double a1, float a2, double a3) {
-        ((F_V_FDFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_J_FDFD extends CFunctionPointer {
@@ -925,17 +525,9 @@ public final class FfiTrampoline {
         long invoke(float a0, double a1, float a2, double a3);
     }
 
-    public static long callJ_FDFD(long fn, float a0, double a1, float a2, double a3) {
-        return ((F_J_FDFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_D_FDFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(float a0, double a1, float a2, double a3);
-    }
-
-    public static double callD_FDFD(long fn, float a0, double a1, float a2, double a3) {
-        return ((F_D_FDFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_F_FDFD extends CFunctionPointer {
@@ -943,17 +535,9 @@ public final class FfiTrampoline {
         float invoke(float a0, double a1, float a2, double a3);
     }
 
-    public static float callF_FDFD(long fn, float a0, double a1, float a2, double a3) {
-        return ((F_F_FDFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_V_FDFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(float a0, double a1, float a2, float a3);
-    }
-
-    public static void callV_FDFF(long fn, float a0, double a1, float a2, float a3) {
-        ((F_V_FDFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_J_FDFF extends CFunctionPointer {
@@ -961,17 +545,9 @@ public final class FfiTrampoline {
         long invoke(float a0, double a1, float a2, float a3);
     }
 
-    public static long callJ_FDFF(long fn, float a0, double a1, float a2, float a3) {
-        return ((F_J_FDFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_D_FDFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(float a0, double a1, float a2, float a3);
-    }
-
-    public static double callD_FDFF(long fn, float a0, double a1, float a2, float a3) {
-        return ((F_D_FDFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_F_FDFF extends CFunctionPointer {
@@ -979,17 +555,9 @@ public final class FfiTrampoline {
         float invoke(float a0, double a1, float a2, float a3);
     }
 
-    public static float callF_FDFF(long fn, float a0, double a1, float a2, float a3) {
-        return ((F_F_FDFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_V_FFDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(float a0, float a1, double a2, double a3);
-    }
-
-    public static void callV_FFDD(long fn, float a0, float a1, double a2, double a3) {
-        ((F_V_FFDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_J_FFDD extends CFunctionPointer {
@@ -997,17 +565,9 @@ public final class FfiTrampoline {
         long invoke(float a0, float a1, double a2, double a3);
     }
 
-    public static long callJ_FFDD(long fn, float a0, float a1, double a2, double a3) {
-        return ((F_J_FFDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_D_FFDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(float a0, float a1, double a2, double a3);
-    }
-
-    public static double callD_FFDD(long fn, float a0, float a1, double a2, double a3) {
-        return ((F_D_FFDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_F_FFDD extends CFunctionPointer {
@@ -1015,17 +575,9 @@ public final class FfiTrampoline {
         float invoke(float a0, float a1, double a2, double a3);
     }
 
-    public static float callF_FFDD(long fn, float a0, float a1, double a2, double a3) {
-        return ((F_F_FFDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_V_FFDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(float a0, float a1, double a2, float a3);
-    }
-
-    public static void callV_FFDF(long fn, float a0, float a1, double a2, float a3) {
-        ((F_V_FFDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_J_FFDF extends CFunctionPointer {
@@ -1033,17 +585,9 @@ public final class FfiTrampoline {
         long invoke(float a0, float a1, double a2, float a3);
     }
 
-    public static long callJ_FFDF(long fn, float a0, float a1, double a2, float a3) {
-        return ((F_J_FFDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_D_FFDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(float a0, float a1, double a2, float a3);
-    }
-
-    public static double callD_FFDF(long fn, float a0, float a1, double a2, float a3) {
-        return ((F_D_FFDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_F_FFDF extends CFunctionPointer {
@@ -1051,17 +595,9 @@ public final class FfiTrampoline {
         float invoke(float a0, float a1, double a2, float a3);
     }
 
-    public static float callF_FFDF(long fn, float a0, float a1, double a2, float a3) {
-        return ((F_F_FFDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_V_FFFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(float a0, float a1, float a2, double a3);
-    }
-
-    public static void callV_FFFD(long fn, float a0, float a1, float a2, double a3) {
-        ((F_V_FFFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_J_FFFD extends CFunctionPointer {
@@ -1069,17 +605,9 @@ public final class FfiTrampoline {
         long invoke(float a0, float a1, float a2, double a3);
     }
 
-    public static long callJ_FFFD(long fn, float a0, float a1, float a2, double a3) {
-        return ((F_J_FFFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_D_FFFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(float a0, float a1, float a2, double a3);
-    }
-
-    public static double callD_FFFD(long fn, float a0, float a1, float a2, double a3) {
-        return ((F_D_FFFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_F_FFFD extends CFunctionPointer {
@@ -1087,17 +615,9 @@ public final class FfiTrampoline {
         float invoke(float a0, float a1, float a2, double a3);
     }
 
-    public static float callF_FFFD(long fn, float a0, float a1, float a2, double a3) {
-        return ((F_F_FFFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_V_FFFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(float a0, float a1, float a2, float a3);
-    }
-
-    public static void callV_FFFF(long fn, float a0, float a1, float a2, float a3) {
-        ((F_V_FFFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_J_FFFF extends CFunctionPointer {
@@ -1105,17 +625,9 @@ public final class FfiTrampoline {
         long invoke(float a0, float a1, float a2, float a3);
     }
 
-    public static long callJ_FFFF(long fn, float a0, float a1, float a2, float a3) {
-        return ((F_J_FFFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_D_FFFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(float a0, float a1, float a2, float a3);
-    }
-
-    public static double callD_FFFF(long fn, float a0, float a1, float a2, float a3) {
-        return ((F_D_FFFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_F_FFFF extends CFunctionPointer {
@@ -1123,17 +635,9 @@ public final class FfiTrampoline {
         float invoke(float a0, float a1, float a2, float a3);
     }
 
-    public static float callF_FFFF(long fn, float a0, float a1, float a2, float a3) {
-        return ((F_F_FFFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_V_DDDDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(double a0, double a1, double a2, double a3, double a4);
-    }
-
-    public static void callV_DDDDD(long fn, double a0, double a1, double a2, double a3, double a4) {
-        ((F_V_DDDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_J_DDDDD extends CFunctionPointer {
@@ -1141,17 +645,9 @@ public final class FfiTrampoline {
         long invoke(double a0, double a1, double a2, double a3, double a4);
     }
 
-    public static long callJ_DDDDD(long fn, double a0, double a1, double a2, double a3, double a4) {
-        return ((F_J_DDDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_D_DDDDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(double a0, double a1, double a2, double a3, double a4);
-    }
-
-    public static double callD_DDDDD(long fn, double a0, double a1, double a2, double a3, double a4) {
-        return ((F_D_DDDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_V_DDDDDD extends CFunctionPointer {
@@ -1159,17 +655,9 @@ public final class FfiTrampoline {
         void invoke(double a0, double a1, double a2, double a3, double a4, double a5);
     }
 
-    public static void callV_DDDDDD(long fn, double a0, double a1, double a2, double a3, double a4, double a5) {
-        ((F_V_DDDDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_J_DDDDDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(double a0, double a1, double a2, double a3, double a4, double a5);
-    }
-
-    public static long callJ_DDDDDD(long fn, double a0, double a1, double a2, double a3, double a4, double a5) {
-        return ((F_J_DDDDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_D_DDDDDD extends CFunctionPointer {
@@ -1177,17 +665,9 @@ public final class FfiTrampoline {
         double invoke(double a0, double a1, double a2, double a3, double a4, double a5);
     }
 
-    public static double callD_DDDDDD(long fn, double a0, double a1, double a2, double a3, double a4, double a5) {
-        return ((F_D_DDDDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_V_J extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0);
-    }
-
-    public static void callV_J(long fn, long a0) {
-        ((F_V_J) WordFactory.pointer(fn)).invoke(a0);
     }
 
     public interface F_J_J extends CFunctionPointer {
@@ -1195,17 +675,9 @@ public final class FfiTrampoline {
         long invoke(long a0);
     }
 
-    public static long callJ_J(long fn, long a0) {
-        return ((F_J_J) WordFactory.pointer(fn)).invoke(a0);
-    }
-
     public interface F_D_J extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0);
-    }
-
-    public static double callD_J(long fn, long a0) {
-        return ((F_D_J) WordFactory.pointer(fn)).invoke(a0);
     }
 
     public interface F_F_J extends CFunctionPointer {
@@ -1213,17 +685,9 @@ public final class FfiTrampoline {
         float invoke(long a0);
     }
 
-    public static float callF_J(long fn, long a0) {
-        return ((F_F_J) WordFactory.pointer(fn)).invoke(a0);
-    }
-
     public interface F_V_JD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, double a1);
-    }
-
-    public static void callV_JD(long fn, long a0, double a1) {
-        ((F_V_JD) WordFactory.pointer(fn)).invoke(a0, a1);
     }
 
     public interface F_J_JD extends CFunctionPointer {
@@ -1231,17 +695,9 @@ public final class FfiTrampoline {
         long invoke(long a0, double a1);
     }
 
-    public static long callJ_JD(long fn, long a0, double a1) {
-        return ((F_J_JD) WordFactory.pointer(fn)).invoke(a0, a1);
-    }
-
     public interface F_D_JD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, double a1);
-    }
-
-    public static double callD_JD(long fn, long a0, double a1) {
-        return ((F_D_JD) WordFactory.pointer(fn)).invoke(a0, a1);
     }
 
     public interface F_F_JD extends CFunctionPointer {
@@ -1249,17 +705,9 @@ public final class FfiTrampoline {
         float invoke(long a0, double a1);
     }
 
-    public static float callF_JD(long fn, long a0, double a1) {
-        return ((F_F_JD) WordFactory.pointer(fn)).invoke(a0, a1);
-    }
-
     public interface F_V_JF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, float a1);
-    }
-
-    public static void callV_JF(long fn, long a0, float a1) {
-        ((F_V_JF) WordFactory.pointer(fn)).invoke(a0, a1);
     }
 
     public interface F_J_JF extends CFunctionPointer {
@@ -1267,17 +715,9 @@ public final class FfiTrampoline {
         long invoke(long a0, float a1);
     }
 
-    public static long callJ_JF(long fn, long a0, float a1) {
-        return ((F_J_JF) WordFactory.pointer(fn)).invoke(a0, a1);
-    }
-
     public interface F_D_JF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, float a1);
-    }
-
-    public static double callD_JF(long fn, long a0, float a1) {
-        return ((F_D_JF) WordFactory.pointer(fn)).invoke(a0, a1);
     }
 
     public interface F_F_JF extends CFunctionPointer {
@@ -1285,17 +725,9 @@ public final class FfiTrampoline {
         float invoke(long a0, float a1);
     }
 
-    public static float callF_JF(long fn, long a0, float a1) {
-        return ((F_F_JF) WordFactory.pointer(fn)).invoke(a0, a1);
-    }
-
     public interface F_V_JDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, double a1, double a2);
-    }
-
-    public static void callV_JDD(long fn, long a0, double a1, double a2) {
-        ((F_V_JDD) WordFactory.pointer(fn)).invoke(a0, a1, a2);
     }
 
     public interface F_J_JDD extends CFunctionPointer {
@@ -1303,17 +735,9 @@ public final class FfiTrampoline {
         long invoke(long a0, double a1, double a2);
     }
 
-    public static long callJ_JDD(long fn, long a0, double a1, double a2) {
-        return ((F_J_JDD) WordFactory.pointer(fn)).invoke(a0, a1, a2);
-    }
-
     public interface F_D_JDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, double a1, double a2);
-    }
-
-    public static double callD_JDD(long fn, long a0, double a1, double a2) {
-        return ((F_D_JDD) WordFactory.pointer(fn)).invoke(a0, a1, a2);
     }
 
     public interface F_F_JDD extends CFunctionPointer {
@@ -1321,17 +745,9 @@ public final class FfiTrampoline {
         float invoke(long a0, double a1, double a2);
     }
 
-    public static float callF_JDD(long fn, long a0, double a1, double a2) {
-        return ((F_F_JDD) WordFactory.pointer(fn)).invoke(a0, a1, a2);
-    }
-
     public interface F_V_JDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, double a1, float a2);
-    }
-
-    public static void callV_JDF(long fn, long a0, double a1, float a2) {
-        ((F_V_JDF) WordFactory.pointer(fn)).invoke(a0, a1, a2);
     }
 
     public interface F_J_JDF extends CFunctionPointer {
@@ -1339,17 +755,9 @@ public final class FfiTrampoline {
         long invoke(long a0, double a1, float a2);
     }
 
-    public static long callJ_JDF(long fn, long a0, double a1, float a2) {
-        return ((F_J_JDF) WordFactory.pointer(fn)).invoke(a0, a1, a2);
-    }
-
     public interface F_D_JDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, double a1, float a2);
-    }
-
-    public static double callD_JDF(long fn, long a0, double a1, float a2) {
-        return ((F_D_JDF) WordFactory.pointer(fn)).invoke(a0, a1, a2);
     }
 
     public interface F_F_JDF extends CFunctionPointer {
@@ -1357,17 +765,9 @@ public final class FfiTrampoline {
         float invoke(long a0, double a1, float a2);
     }
 
-    public static float callF_JDF(long fn, long a0, double a1, float a2) {
-        return ((F_F_JDF) WordFactory.pointer(fn)).invoke(a0, a1, a2);
-    }
-
     public interface F_V_JFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, float a1, double a2);
-    }
-
-    public static void callV_JFD(long fn, long a0, float a1, double a2) {
-        ((F_V_JFD) WordFactory.pointer(fn)).invoke(a0, a1, a2);
     }
 
     public interface F_J_JFD extends CFunctionPointer {
@@ -1375,17 +775,9 @@ public final class FfiTrampoline {
         long invoke(long a0, float a1, double a2);
     }
 
-    public static long callJ_JFD(long fn, long a0, float a1, double a2) {
-        return ((F_J_JFD) WordFactory.pointer(fn)).invoke(a0, a1, a2);
-    }
-
     public interface F_D_JFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, float a1, double a2);
-    }
-
-    public static double callD_JFD(long fn, long a0, float a1, double a2) {
-        return ((F_D_JFD) WordFactory.pointer(fn)).invoke(a0, a1, a2);
     }
 
     public interface F_F_JFD extends CFunctionPointer {
@@ -1393,17 +785,9 @@ public final class FfiTrampoline {
         float invoke(long a0, float a1, double a2);
     }
 
-    public static float callF_JFD(long fn, long a0, float a1, double a2) {
-        return ((F_F_JFD) WordFactory.pointer(fn)).invoke(a0, a1, a2);
-    }
-
     public interface F_V_JFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, float a1, float a2);
-    }
-
-    public static void callV_JFF(long fn, long a0, float a1, float a2) {
-        ((F_V_JFF) WordFactory.pointer(fn)).invoke(a0, a1, a2);
     }
 
     public interface F_J_JFF extends CFunctionPointer {
@@ -1411,17 +795,9 @@ public final class FfiTrampoline {
         long invoke(long a0, float a1, float a2);
     }
 
-    public static long callJ_JFF(long fn, long a0, float a1, float a2) {
-        return ((F_J_JFF) WordFactory.pointer(fn)).invoke(a0, a1, a2);
-    }
-
     public interface F_D_JFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, float a1, float a2);
-    }
-
-    public static double callD_JFF(long fn, long a0, float a1, float a2) {
-        return ((F_D_JFF) WordFactory.pointer(fn)).invoke(a0, a1, a2);
     }
 
     public interface F_F_JFF extends CFunctionPointer {
@@ -1429,17 +805,9 @@ public final class FfiTrampoline {
         float invoke(long a0, float a1, float a2);
     }
 
-    public static float callF_JFF(long fn, long a0, float a1, float a2) {
-        return ((F_F_JFF) WordFactory.pointer(fn)).invoke(a0, a1, a2);
-    }
-
     public interface F_V_JDDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, double a1, double a2, double a3);
-    }
-
-    public static void callV_JDDD(long fn, long a0, double a1, double a2, double a3) {
-        ((F_V_JDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_J_JDDD extends CFunctionPointer {
@@ -1447,17 +815,9 @@ public final class FfiTrampoline {
         long invoke(long a0, double a1, double a2, double a3);
     }
 
-    public static long callJ_JDDD(long fn, long a0, double a1, double a2, double a3) {
-        return ((F_J_JDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_D_JDDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, double a1, double a2, double a3);
-    }
-
-    public static double callD_JDDD(long fn, long a0, double a1, double a2, double a3) {
-        return ((F_D_JDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_F_JDDD extends CFunctionPointer {
@@ -1465,17 +825,9 @@ public final class FfiTrampoline {
         float invoke(long a0, double a1, double a2, double a3);
     }
 
-    public static float callF_JDDD(long fn, long a0, double a1, double a2, double a3) {
-        return ((F_F_JDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_V_JDDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, double a1, double a2, float a3);
-    }
-
-    public static void callV_JDDF(long fn, long a0, double a1, double a2, float a3) {
-        ((F_V_JDDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_J_JDDF extends CFunctionPointer {
@@ -1483,17 +835,9 @@ public final class FfiTrampoline {
         long invoke(long a0, double a1, double a2, float a3);
     }
 
-    public static long callJ_JDDF(long fn, long a0, double a1, double a2, float a3) {
-        return ((F_J_JDDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_D_JDDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, double a1, double a2, float a3);
-    }
-
-    public static double callD_JDDF(long fn, long a0, double a1, double a2, float a3) {
-        return ((F_D_JDDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_F_JDDF extends CFunctionPointer {
@@ -1501,17 +845,9 @@ public final class FfiTrampoline {
         float invoke(long a0, double a1, double a2, float a3);
     }
 
-    public static float callF_JDDF(long fn, long a0, double a1, double a2, float a3) {
-        return ((F_F_JDDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_V_JDFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, double a1, float a2, double a3);
-    }
-
-    public static void callV_JDFD(long fn, long a0, double a1, float a2, double a3) {
-        ((F_V_JDFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_J_JDFD extends CFunctionPointer {
@@ -1519,17 +855,9 @@ public final class FfiTrampoline {
         long invoke(long a0, double a1, float a2, double a3);
     }
 
-    public static long callJ_JDFD(long fn, long a0, double a1, float a2, double a3) {
-        return ((F_J_JDFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_D_JDFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, double a1, float a2, double a3);
-    }
-
-    public static double callD_JDFD(long fn, long a0, double a1, float a2, double a3) {
-        return ((F_D_JDFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_F_JDFD extends CFunctionPointer {
@@ -1537,17 +865,9 @@ public final class FfiTrampoline {
         float invoke(long a0, double a1, float a2, double a3);
     }
 
-    public static float callF_JDFD(long fn, long a0, double a1, float a2, double a3) {
-        return ((F_F_JDFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_V_JDFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, double a1, float a2, float a3);
-    }
-
-    public static void callV_JDFF(long fn, long a0, double a1, float a2, float a3) {
-        ((F_V_JDFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_J_JDFF extends CFunctionPointer {
@@ -1555,17 +875,9 @@ public final class FfiTrampoline {
         long invoke(long a0, double a1, float a2, float a3);
     }
 
-    public static long callJ_JDFF(long fn, long a0, double a1, float a2, float a3) {
-        return ((F_J_JDFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_D_JDFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, double a1, float a2, float a3);
-    }
-
-    public static double callD_JDFF(long fn, long a0, double a1, float a2, float a3) {
-        return ((F_D_JDFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_F_JDFF extends CFunctionPointer {
@@ -1573,17 +885,9 @@ public final class FfiTrampoline {
         float invoke(long a0, double a1, float a2, float a3);
     }
 
-    public static float callF_JDFF(long fn, long a0, double a1, float a2, float a3) {
-        return ((F_F_JDFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_V_JFDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, float a1, double a2, double a3);
-    }
-
-    public static void callV_JFDD(long fn, long a0, float a1, double a2, double a3) {
-        ((F_V_JFDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_J_JFDD extends CFunctionPointer {
@@ -1591,17 +895,9 @@ public final class FfiTrampoline {
         long invoke(long a0, float a1, double a2, double a3);
     }
 
-    public static long callJ_JFDD(long fn, long a0, float a1, double a2, double a3) {
-        return ((F_J_JFDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_D_JFDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, float a1, double a2, double a3);
-    }
-
-    public static double callD_JFDD(long fn, long a0, float a1, double a2, double a3) {
-        return ((F_D_JFDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_F_JFDD extends CFunctionPointer {
@@ -1609,17 +905,9 @@ public final class FfiTrampoline {
         float invoke(long a0, float a1, double a2, double a3);
     }
 
-    public static float callF_JFDD(long fn, long a0, float a1, double a2, double a3) {
-        return ((F_F_JFDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_V_JFDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, float a1, double a2, float a3);
-    }
-
-    public static void callV_JFDF(long fn, long a0, float a1, double a2, float a3) {
-        ((F_V_JFDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_J_JFDF extends CFunctionPointer {
@@ -1627,17 +915,9 @@ public final class FfiTrampoline {
         long invoke(long a0, float a1, double a2, float a3);
     }
 
-    public static long callJ_JFDF(long fn, long a0, float a1, double a2, float a3) {
-        return ((F_J_JFDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_D_JFDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, float a1, double a2, float a3);
-    }
-
-    public static double callD_JFDF(long fn, long a0, float a1, double a2, float a3) {
-        return ((F_D_JFDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_F_JFDF extends CFunctionPointer {
@@ -1645,17 +925,9 @@ public final class FfiTrampoline {
         float invoke(long a0, float a1, double a2, float a3);
     }
 
-    public static float callF_JFDF(long fn, long a0, float a1, double a2, float a3) {
-        return ((F_F_JFDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_V_JFFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, float a1, float a2, double a3);
-    }
-
-    public static void callV_JFFD(long fn, long a0, float a1, float a2, double a3) {
-        ((F_V_JFFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_J_JFFD extends CFunctionPointer {
@@ -1663,17 +935,9 @@ public final class FfiTrampoline {
         long invoke(long a0, float a1, float a2, double a3);
     }
 
-    public static long callJ_JFFD(long fn, long a0, float a1, float a2, double a3) {
-        return ((F_J_JFFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_D_JFFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, float a1, float a2, double a3);
-    }
-
-    public static double callD_JFFD(long fn, long a0, float a1, float a2, double a3) {
-        return ((F_D_JFFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_F_JFFD extends CFunctionPointer {
@@ -1681,17 +945,9 @@ public final class FfiTrampoline {
         float invoke(long a0, float a1, float a2, double a3);
     }
 
-    public static float callF_JFFD(long fn, long a0, float a1, float a2, double a3) {
-        return ((F_F_JFFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_V_JFFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, float a1, float a2, float a3);
-    }
-
-    public static void callV_JFFF(long fn, long a0, float a1, float a2, float a3) {
-        ((F_V_JFFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_J_JFFF extends CFunctionPointer {
@@ -1699,17 +955,9 @@ public final class FfiTrampoline {
         long invoke(long a0, float a1, float a2, float a3);
     }
 
-    public static long callJ_JFFF(long fn, long a0, float a1, float a2, float a3) {
-        return ((F_J_JFFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_D_JFFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, float a1, float a2, float a3);
-    }
-
-    public static double callD_JFFF(long fn, long a0, float a1, float a2, float a3) {
-        return ((F_D_JFFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_F_JFFF extends CFunctionPointer {
@@ -1717,17 +965,9 @@ public final class FfiTrampoline {
         float invoke(long a0, float a1, float a2, float a3);
     }
 
-    public static float callF_JFFF(long fn, long a0, float a1, float a2, float a3) {
-        return ((F_F_JFFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_V_JDDDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, double a1, double a2, double a3, double a4);
-    }
-
-    public static void callV_JDDDD(long fn, long a0, double a1, double a2, double a3, double a4) {
-        ((F_V_JDDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_J_JDDDD extends CFunctionPointer {
@@ -1735,17 +975,9 @@ public final class FfiTrampoline {
         long invoke(long a0, double a1, double a2, double a3, double a4);
     }
 
-    public static long callJ_JDDDD(long fn, long a0, double a1, double a2, double a3, double a4) {
-        return ((F_J_JDDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_D_JDDDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, double a1, double a2, double a3, double a4);
-    }
-
-    public static double callD_JDDDD(long fn, long a0, double a1, double a2, double a3, double a4) {
-        return ((F_D_JDDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_V_JDDDF extends CFunctionPointer {
@@ -1753,17 +985,9 @@ public final class FfiTrampoline {
         void invoke(long a0, double a1, double a2, double a3, float a4);
     }
 
-    public static void callV_JDDDF(long fn, long a0, double a1, double a2, double a3, float a4) {
-        ((F_V_JDDDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_J_JDDDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, double a1, double a2, double a3, float a4);
-    }
-
-    public static long callJ_JDDDF(long fn, long a0, double a1, double a2, double a3, float a4) {
-        return ((F_J_JDDDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_D_JDDDF extends CFunctionPointer {
@@ -1771,17 +995,9 @@ public final class FfiTrampoline {
         double invoke(long a0, double a1, double a2, double a3, float a4);
     }
 
-    public static double callD_JDDDF(long fn, long a0, double a1, double a2, double a3, float a4) {
-        return ((F_D_JDDDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_V_JDDFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, double a1, double a2, float a3, double a4);
-    }
-
-    public static void callV_JDDFD(long fn, long a0, double a1, double a2, float a3, double a4) {
-        ((F_V_JDDFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_J_JDDFD extends CFunctionPointer {
@@ -1789,17 +1005,9 @@ public final class FfiTrampoline {
         long invoke(long a0, double a1, double a2, float a3, double a4);
     }
 
-    public static long callJ_JDDFD(long fn, long a0, double a1, double a2, float a3, double a4) {
-        return ((F_J_JDDFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_D_JDDFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, double a1, double a2, float a3, double a4);
-    }
-
-    public static double callD_JDDFD(long fn, long a0, double a1, double a2, float a3, double a4) {
-        return ((F_D_JDDFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_V_JDDFF extends CFunctionPointer {
@@ -1807,17 +1015,9 @@ public final class FfiTrampoline {
         void invoke(long a0, double a1, double a2, float a3, float a4);
     }
 
-    public static void callV_JDDFF(long fn, long a0, double a1, double a2, float a3, float a4) {
-        ((F_V_JDDFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_J_JDDFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, double a1, double a2, float a3, float a4);
-    }
-
-    public static long callJ_JDDFF(long fn, long a0, double a1, double a2, float a3, float a4) {
-        return ((F_J_JDDFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_D_JDDFF extends CFunctionPointer {
@@ -1825,17 +1025,9 @@ public final class FfiTrampoline {
         double invoke(long a0, double a1, double a2, float a3, float a4);
     }
 
-    public static double callD_JDDFF(long fn, long a0, double a1, double a2, float a3, float a4) {
-        return ((F_D_JDDFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_V_JDFDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, double a1, float a2, double a3, double a4);
-    }
-
-    public static void callV_JDFDD(long fn, long a0, double a1, float a2, double a3, double a4) {
-        ((F_V_JDFDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_J_JDFDD extends CFunctionPointer {
@@ -1843,17 +1035,9 @@ public final class FfiTrampoline {
         long invoke(long a0, double a1, float a2, double a3, double a4);
     }
 
-    public static long callJ_JDFDD(long fn, long a0, double a1, float a2, double a3, double a4) {
-        return ((F_J_JDFDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_D_JDFDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, double a1, float a2, double a3, double a4);
-    }
-
-    public static double callD_JDFDD(long fn, long a0, double a1, float a2, double a3, double a4) {
-        return ((F_D_JDFDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_V_JDFDF extends CFunctionPointer {
@@ -1861,17 +1045,9 @@ public final class FfiTrampoline {
         void invoke(long a0, double a1, float a2, double a3, float a4);
     }
 
-    public static void callV_JDFDF(long fn, long a0, double a1, float a2, double a3, float a4) {
-        ((F_V_JDFDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_J_JDFDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, double a1, float a2, double a3, float a4);
-    }
-
-    public static long callJ_JDFDF(long fn, long a0, double a1, float a2, double a3, float a4) {
-        return ((F_J_JDFDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_D_JDFDF extends CFunctionPointer {
@@ -1879,17 +1055,9 @@ public final class FfiTrampoline {
         double invoke(long a0, double a1, float a2, double a3, float a4);
     }
 
-    public static double callD_JDFDF(long fn, long a0, double a1, float a2, double a3, float a4) {
-        return ((F_D_JDFDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_V_JDFFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, double a1, float a2, float a3, double a4);
-    }
-
-    public static void callV_JDFFD(long fn, long a0, double a1, float a2, float a3, double a4) {
-        ((F_V_JDFFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_J_JDFFD extends CFunctionPointer {
@@ -1897,17 +1065,9 @@ public final class FfiTrampoline {
         long invoke(long a0, double a1, float a2, float a3, double a4);
     }
 
-    public static long callJ_JDFFD(long fn, long a0, double a1, float a2, float a3, double a4) {
-        return ((F_J_JDFFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_D_JDFFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, double a1, float a2, float a3, double a4);
-    }
-
-    public static double callD_JDFFD(long fn, long a0, double a1, float a2, float a3, double a4) {
-        return ((F_D_JDFFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_V_JDFFF extends CFunctionPointer {
@@ -1915,17 +1075,9 @@ public final class FfiTrampoline {
         void invoke(long a0, double a1, float a2, float a3, float a4);
     }
 
-    public static void callV_JDFFF(long fn, long a0, double a1, float a2, float a3, float a4) {
-        ((F_V_JDFFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_J_JDFFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, double a1, float a2, float a3, float a4);
-    }
-
-    public static long callJ_JDFFF(long fn, long a0, double a1, float a2, float a3, float a4) {
-        return ((F_J_JDFFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_D_JDFFF extends CFunctionPointer {
@@ -1933,17 +1085,9 @@ public final class FfiTrampoline {
         double invoke(long a0, double a1, float a2, float a3, float a4);
     }
 
-    public static double callD_JDFFF(long fn, long a0, double a1, float a2, float a3, float a4) {
-        return ((F_D_JDFFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_V_JFDDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, float a1, double a2, double a3, double a4);
-    }
-
-    public static void callV_JFDDD(long fn, long a0, float a1, double a2, double a3, double a4) {
-        ((F_V_JFDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_J_JFDDD extends CFunctionPointer {
@@ -1951,17 +1095,9 @@ public final class FfiTrampoline {
         long invoke(long a0, float a1, double a2, double a3, double a4);
     }
 
-    public static long callJ_JFDDD(long fn, long a0, float a1, double a2, double a3, double a4) {
-        return ((F_J_JFDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_D_JFDDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, float a1, double a2, double a3, double a4);
-    }
-
-    public static double callD_JFDDD(long fn, long a0, float a1, double a2, double a3, double a4) {
-        return ((F_D_JFDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_V_JFDDF extends CFunctionPointer {
@@ -1969,17 +1105,9 @@ public final class FfiTrampoline {
         void invoke(long a0, float a1, double a2, double a3, float a4);
     }
 
-    public static void callV_JFDDF(long fn, long a0, float a1, double a2, double a3, float a4) {
-        ((F_V_JFDDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_J_JFDDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, float a1, double a2, double a3, float a4);
-    }
-
-    public static long callJ_JFDDF(long fn, long a0, float a1, double a2, double a3, float a4) {
-        return ((F_J_JFDDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_D_JFDDF extends CFunctionPointer {
@@ -1987,17 +1115,9 @@ public final class FfiTrampoline {
         double invoke(long a0, float a1, double a2, double a3, float a4);
     }
 
-    public static double callD_JFDDF(long fn, long a0, float a1, double a2, double a3, float a4) {
-        return ((F_D_JFDDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_V_JFDFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, float a1, double a2, float a3, double a4);
-    }
-
-    public static void callV_JFDFD(long fn, long a0, float a1, double a2, float a3, double a4) {
-        ((F_V_JFDFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_J_JFDFD extends CFunctionPointer {
@@ -2005,17 +1125,9 @@ public final class FfiTrampoline {
         long invoke(long a0, float a1, double a2, float a3, double a4);
     }
 
-    public static long callJ_JFDFD(long fn, long a0, float a1, double a2, float a3, double a4) {
-        return ((F_J_JFDFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_D_JFDFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, float a1, double a2, float a3, double a4);
-    }
-
-    public static double callD_JFDFD(long fn, long a0, float a1, double a2, float a3, double a4) {
-        return ((F_D_JFDFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_V_JFDFF extends CFunctionPointer {
@@ -2023,17 +1135,9 @@ public final class FfiTrampoline {
         void invoke(long a0, float a1, double a2, float a3, float a4);
     }
 
-    public static void callV_JFDFF(long fn, long a0, float a1, double a2, float a3, float a4) {
-        ((F_V_JFDFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_J_JFDFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, float a1, double a2, float a3, float a4);
-    }
-
-    public static long callJ_JFDFF(long fn, long a0, float a1, double a2, float a3, float a4) {
-        return ((F_J_JFDFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_D_JFDFF extends CFunctionPointer {
@@ -2041,17 +1145,9 @@ public final class FfiTrampoline {
         double invoke(long a0, float a1, double a2, float a3, float a4);
     }
 
-    public static double callD_JFDFF(long fn, long a0, float a1, double a2, float a3, float a4) {
-        return ((F_D_JFDFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_V_JFFDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, float a1, float a2, double a3, double a4);
-    }
-
-    public static void callV_JFFDD(long fn, long a0, float a1, float a2, double a3, double a4) {
-        ((F_V_JFFDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_J_JFFDD extends CFunctionPointer {
@@ -2059,17 +1155,9 @@ public final class FfiTrampoline {
         long invoke(long a0, float a1, float a2, double a3, double a4);
     }
 
-    public static long callJ_JFFDD(long fn, long a0, float a1, float a2, double a3, double a4) {
-        return ((F_J_JFFDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_D_JFFDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, float a1, float a2, double a3, double a4);
-    }
-
-    public static double callD_JFFDD(long fn, long a0, float a1, float a2, double a3, double a4) {
-        return ((F_D_JFFDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_V_JFFDF extends CFunctionPointer {
@@ -2077,17 +1165,9 @@ public final class FfiTrampoline {
         void invoke(long a0, float a1, float a2, double a3, float a4);
     }
 
-    public static void callV_JFFDF(long fn, long a0, float a1, float a2, double a3, float a4) {
-        ((F_V_JFFDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_J_JFFDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, float a1, float a2, double a3, float a4);
-    }
-
-    public static long callJ_JFFDF(long fn, long a0, float a1, float a2, double a3, float a4) {
-        return ((F_J_JFFDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_D_JFFDF extends CFunctionPointer {
@@ -2095,17 +1175,9 @@ public final class FfiTrampoline {
         double invoke(long a0, float a1, float a2, double a3, float a4);
     }
 
-    public static double callD_JFFDF(long fn, long a0, float a1, float a2, double a3, float a4) {
-        return ((F_D_JFFDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_V_JFFFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, float a1, float a2, float a3, double a4);
-    }
-
-    public static void callV_JFFFD(long fn, long a0, float a1, float a2, float a3, double a4) {
-        ((F_V_JFFFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_J_JFFFD extends CFunctionPointer {
@@ -2113,17 +1185,9 @@ public final class FfiTrampoline {
         long invoke(long a0, float a1, float a2, float a3, double a4);
     }
 
-    public static long callJ_JFFFD(long fn, long a0, float a1, float a2, float a3, double a4) {
-        return ((F_J_JFFFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_D_JFFFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, float a1, float a2, float a3, double a4);
-    }
-
-    public static double callD_JFFFD(long fn, long a0, float a1, float a2, float a3, double a4) {
-        return ((F_D_JFFFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_V_JFFFF extends CFunctionPointer {
@@ -2131,17 +1195,9 @@ public final class FfiTrampoline {
         void invoke(long a0, float a1, float a2, float a3, float a4);
     }
 
-    public static void callV_JFFFF(long fn, long a0, float a1, float a2, float a3, float a4) {
-        ((F_V_JFFFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_J_JFFFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, float a1, float a2, float a3, float a4);
-    }
-
-    public static long callJ_JFFFF(long fn, long a0, float a1, float a2, float a3, float a4) {
-        return ((F_J_JFFFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_D_JFFFF extends CFunctionPointer {
@@ -2149,17 +1205,9 @@ public final class FfiTrampoline {
         double invoke(long a0, float a1, float a2, float a3, float a4);
     }
 
-    public static double callD_JFFFF(long fn, long a0, float a1, float a2, float a3, float a4) {
-        return ((F_D_JFFFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_V_JDDDDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, double a1, double a2, double a3, double a4, double a5);
-    }
-
-    public static void callV_JDDDDD(long fn, long a0, double a1, double a2, double a3, double a4, double a5) {
-        ((F_V_JDDDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_J_JDDDDD extends CFunctionPointer {
@@ -2167,17 +1215,9 @@ public final class FfiTrampoline {
         long invoke(long a0, double a1, double a2, double a3, double a4, double a5);
     }
 
-    public static long callJ_JDDDDD(long fn, long a0, double a1, double a2, double a3, double a4, double a5) {
-        return ((F_J_JDDDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_D_JDDDDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, double a1, double a2, double a3, double a4, double a5);
-    }
-
-    public static double callD_JDDDDD(long fn, long a0, double a1, double a2, double a3, double a4, double a5) {
-        return ((F_D_JDDDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_V_JDDDDDD extends CFunctionPointer {
@@ -2185,17 +1225,9 @@ public final class FfiTrampoline {
         void invoke(long a0, double a1, double a2, double a3, double a4, double a5, double a6);
     }
 
-    public static void callV_JDDDDDD(long fn, long a0, double a1, double a2, double a3, double a4, double a5, double a6) {
-        ((F_V_JDDDDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_J_JDDDDDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, double a1, double a2, double a3, double a4, double a5, double a6);
-    }
-
-    public static long callJ_JDDDDDD(long fn, long a0, double a1, double a2, double a3, double a4, double a5, double a6) {
-        return ((F_J_JDDDDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_D_JDDDDDD extends CFunctionPointer {
@@ -2203,17 +1235,9 @@ public final class FfiTrampoline {
         double invoke(long a0, double a1, double a2, double a3, double a4, double a5, double a6);
     }
 
-    public static double callD_JDDDDDD(long fn, long a0, double a1, double a2, double a3, double a4, double a5, double a6) {
-        return ((F_D_JDDDDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_V_JJ extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1);
-    }
-
-    public static void callV_JJ(long fn, long a0, long a1) {
-        ((F_V_JJ) WordFactory.pointer(fn)).invoke(a0, a1);
     }
 
     public interface F_J_JJ extends CFunctionPointer {
@@ -2221,17 +1245,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1);
     }
 
-    public static long callJ_JJ(long fn, long a0, long a1) {
-        return ((F_J_JJ) WordFactory.pointer(fn)).invoke(a0, a1);
-    }
-
     public interface F_D_JJ extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1);
-    }
-
-    public static double callD_JJ(long fn, long a0, long a1) {
-        return ((F_D_JJ) WordFactory.pointer(fn)).invoke(a0, a1);
     }
 
     public interface F_F_JJ extends CFunctionPointer {
@@ -2239,17 +1255,9 @@ public final class FfiTrampoline {
         float invoke(long a0, long a1);
     }
 
-    public static float callF_JJ(long fn, long a0, long a1) {
-        return ((F_F_JJ) WordFactory.pointer(fn)).invoke(a0, a1);
-    }
-
     public interface F_V_JJD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, double a2);
-    }
-
-    public static void callV_JJD(long fn, long a0, long a1, double a2) {
-        ((F_V_JJD) WordFactory.pointer(fn)).invoke(a0, a1, a2);
     }
 
     public interface F_J_JJD extends CFunctionPointer {
@@ -2257,17 +1265,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, double a2);
     }
 
-    public static long callJ_JJD(long fn, long a0, long a1, double a2) {
-        return ((F_J_JJD) WordFactory.pointer(fn)).invoke(a0, a1, a2);
-    }
-
     public interface F_D_JJD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, double a2);
-    }
-
-    public static double callD_JJD(long fn, long a0, long a1, double a2) {
-        return ((F_D_JJD) WordFactory.pointer(fn)).invoke(a0, a1, a2);
     }
 
     public interface F_F_JJD extends CFunctionPointer {
@@ -2275,17 +1275,9 @@ public final class FfiTrampoline {
         float invoke(long a0, long a1, double a2);
     }
 
-    public static float callF_JJD(long fn, long a0, long a1, double a2) {
-        return ((F_F_JJD) WordFactory.pointer(fn)).invoke(a0, a1, a2);
-    }
-
     public interface F_V_JJF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, float a2);
-    }
-
-    public static void callV_JJF(long fn, long a0, long a1, float a2) {
-        ((F_V_JJF) WordFactory.pointer(fn)).invoke(a0, a1, a2);
     }
 
     public interface F_J_JJF extends CFunctionPointer {
@@ -2293,17 +1285,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, float a2);
     }
 
-    public static long callJ_JJF(long fn, long a0, long a1, float a2) {
-        return ((F_J_JJF) WordFactory.pointer(fn)).invoke(a0, a1, a2);
-    }
-
     public interface F_D_JJF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, float a2);
-    }
-
-    public static double callD_JJF(long fn, long a0, long a1, float a2) {
-        return ((F_D_JJF) WordFactory.pointer(fn)).invoke(a0, a1, a2);
     }
 
     public interface F_F_JJF extends CFunctionPointer {
@@ -2311,17 +1295,9 @@ public final class FfiTrampoline {
         float invoke(long a0, long a1, float a2);
     }
 
-    public static float callF_JJF(long fn, long a0, long a1, float a2) {
-        return ((F_F_JJF) WordFactory.pointer(fn)).invoke(a0, a1, a2);
-    }
-
     public interface F_V_JJDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, double a2, double a3);
-    }
-
-    public static void callV_JJDD(long fn, long a0, long a1, double a2, double a3) {
-        ((F_V_JJDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_J_JJDD extends CFunctionPointer {
@@ -2329,17 +1305,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, double a2, double a3);
     }
 
-    public static long callJ_JJDD(long fn, long a0, long a1, double a2, double a3) {
-        return ((F_J_JJDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_D_JJDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, double a2, double a3);
-    }
-
-    public static double callD_JJDD(long fn, long a0, long a1, double a2, double a3) {
-        return ((F_D_JJDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_F_JJDD extends CFunctionPointer {
@@ -2347,17 +1315,9 @@ public final class FfiTrampoline {
         float invoke(long a0, long a1, double a2, double a3);
     }
 
-    public static float callF_JJDD(long fn, long a0, long a1, double a2, double a3) {
-        return ((F_F_JJDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_V_JJDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, double a2, float a3);
-    }
-
-    public static void callV_JJDF(long fn, long a0, long a1, double a2, float a3) {
-        ((F_V_JJDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_J_JJDF extends CFunctionPointer {
@@ -2365,17 +1325,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, double a2, float a3);
     }
 
-    public static long callJ_JJDF(long fn, long a0, long a1, double a2, float a3) {
-        return ((F_J_JJDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_D_JJDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, double a2, float a3);
-    }
-
-    public static double callD_JJDF(long fn, long a0, long a1, double a2, float a3) {
-        return ((F_D_JJDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_F_JJDF extends CFunctionPointer {
@@ -2383,17 +1335,9 @@ public final class FfiTrampoline {
         float invoke(long a0, long a1, double a2, float a3);
     }
 
-    public static float callF_JJDF(long fn, long a0, long a1, double a2, float a3) {
-        return ((F_F_JJDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_V_JJFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, float a2, double a3);
-    }
-
-    public static void callV_JJFD(long fn, long a0, long a1, float a2, double a3) {
-        ((F_V_JJFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_J_JJFD extends CFunctionPointer {
@@ -2401,17 +1345,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, float a2, double a3);
     }
 
-    public static long callJ_JJFD(long fn, long a0, long a1, float a2, double a3) {
-        return ((F_J_JJFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_D_JJFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, float a2, double a3);
-    }
-
-    public static double callD_JJFD(long fn, long a0, long a1, float a2, double a3) {
-        return ((F_D_JJFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_F_JJFD extends CFunctionPointer {
@@ -2419,17 +1355,9 @@ public final class FfiTrampoline {
         float invoke(long a0, long a1, float a2, double a3);
     }
 
-    public static float callF_JJFD(long fn, long a0, long a1, float a2, double a3) {
-        return ((F_F_JJFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_V_JJFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, float a2, float a3);
-    }
-
-    public static void callV_JJFF(long fn, long a0, long a1, float a2, float a3) {
-        ((F_V_JJFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_J_JJFF extends CFunctionPointer {
@@ -2437,17 +1365,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, float a2, float a3);
     }
 
-    public static long callJ_JJFF(long fn, long a0, long a1, float a2, float a3) {
-        return ((F_J_JJFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_D_JJFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, float a2, float a3);
-    }
-
-    public static double callD_JJFF(long fn, long a0, long a1, float a2, float a3) {
-        return ((F_D_JJFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_F_JJFF extends CFunctionPointer {
@@ -2455,17 +1375,9 @@ public final class FfiTrampoline {
         float invoke(long a0, long a1, float a2, float a3);
     }
 
-    public static float callF_JJFF(long fn, long a0, long a1, float a2, float a3) {
-        return ((F_F_JJFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_V_JJDDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, double a2, double a3, double a4);
-    }
-
-    public static void callV_JJDDD(long fn, long a0, long a1, double a2, double a3, double a4) {
-        ((F_V_JJDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_J_JJDDD extends CFunctionPointer {
@@ -2473,17 +1385,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, double a2, double a3, double a4);
     }
 
-    public static long callJ_JJDDD(long fn, long a0, long a1, double a2, double a3, double a4) {
-        return ((F_J_JJDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_D_JJDDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, double a2, double a3, double a4);
-    }
-
-    public static double callD_JJDDD(long fn, long a0, long a1, double a2, double a3, double a4) {
-        return ((F_D_JJDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_V_JJDDF extends CFunctionPointer {
@@ -2491,17 +1395,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, double a2, double a3, float a4);
     }
 
-    public static void callV_JJDDF(long fn, long a0, long a1, double a2, double a3, float a4) {
-        ((F_V_JJDDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_J_JJDDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, double a2, double a3, float a4);
-    }
-
-    public static long callJ_JJDDF(long fn, long a0, long a1, double a2, double a3, float a4) {
-        return ((F_J_JJDDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_D_JJDDF extends CFunctionPointer {
@@ -2509,17 +1405,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, double a2, double a3, float a4);
     }
 
-    public static double callD_JJDDF(long fn, long a0, long a1, double a2, double a3, float a4) {
-        return ((F_D_JJDDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_V_JJDFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, double a2, float a3, double a4);
-    }
-
-    public static void callV_JJDFD(long fn, long a0, long a1, double a2, float a3, double a4) {
-        ((F_V_JJDFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_J_JJDFD extends CFunctionPointer {
@@ -2527,17 +1415,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, double a2, float a3, double a4);
     }
 
-    public static long callJ_JJDFD(long fn, long a0, long a1, double a2, float a3, double a4) {
-        return ((F_J_JJDFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_D_JJDFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, double a2, float a3, double a4);
-    }
-
-    public static double callD_JJDFD(long fn, long a0, long a1, double a2, float a3, double a4) {
-        return ((F_D_JJDFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_V_JJDFF extends CFunctionPointer {
@@ -2545,17 +1425,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, double a2, float a3, float a4);
     }
 
-    public static void callV_JJDFF(long fn, long a0, long a1, double a2, float a3, float a4) {
-        ((F_V_JJDFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_J_JJDFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, double a2, float a3, float a4);
-    }
-
-    public static long callJ_JJDFF(long fn, long a0, long a1, double a2, float a3, float a4) {
-        return ((F_J_JJDFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_D_JJDFF extends CFunctionPointer {
@@ -2563,17 +1435,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, double a2, float a3, float a4);
     }
 
-    public static double callD_JJDFF(long fn, long a0, long a1, double a2, float a3, float a4) {
-        return ((F_D_JJDFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_V_JJFDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, float a2, double a3, double a4);
-    }
-
-    public static void callV_JJFDD(long fn, long a0, long a1, float a2, double a3, double a4) {
-        ((F_V_JJFDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_J_JJFDD extends CFunctionPointer {
@@ -2581,17 +1445,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, float a2, double a3, double a4);
     }
 
-    public static long callJ_JJFDD(long fn, long a0, long a1, float a2, double a3, double a4) {
-        return ((F_J_JJFDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_D_JJFDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, float a2, double a3, double a4);
-    }
-
-    public static double callD_JJFDD(long fn, long a0, long a1, float a2, double a3, double a4) {
-        return ((F_D_JJFDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_V_JJFDF extends CFunctionPointer {
@@ -2599,17 +1455,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, float a2, double a3, float a4);
     }
 
-    public static void callV_JJFDF(long fn, long a0, long a1, float a2, double a3, float a4) {
-        ((F_V_JJFDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_J_JJFDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, float a2, double a3, float a4);
-    }
-
-    public static long callJ_JJFDF(long fn, long a0, long a1, float a2, double a3, float a4) {
-        return ((F_J_JJFDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_D_JJFDF extends CFunctionPointer {
@@ -2617,17 +1465,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, float a2, double a3, float a4);
     }
 
-    public static double callD_JJFDF(long fn, long a0, long a1, float a2, double a3, float a4) {
-        return ((F_D_JJFDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_V_JJFFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, float a2, float a3, double a4);
-    }
-
-    public static void callV_JJFFD(long fn, long a0, long a1, float a2, float a3, double a4) {
-        ((F_V_JJFFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_J_JJFFD extends CFunctionPointer {
@@ -2635,17 +1475,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, float a2, float a3, double a4);
     }
 
-    public static long callJ_JJFFD(long fn, long a0, long a1, float a2, float a3, double a4) {
-        return ((F_J_JJFFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_D_JJFFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, float a2, float a3, double a4);
-    }
-
-    public static double callD_JJFFD(long fn, long a0, long a1, float a2, float a3, double a4) {
-        return ((F_D_JJFFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_V_JJFFF extends CFunctionPointer {
@@ -2653,17 +1485,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, float a2, float a3, float a4);
     }
 
-    public static void callV_JJFFF(long fn, long a0, long a1, float a2, float a3, float a4) {
-        ((F_V_JJFFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_J_JJFFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, float a2, float a3, float a4);
-    }
-
-    public static long callJ_JJFFF(long fn, long a0, long a1, float a2, float a3, float a4) {
-        return ((F_J_JJFFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_D_JJFFF extends CFunctionPointer {
@@ -2671,17 +1495,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, float a2, float a3, float a4);
     }
 
-    public static double callD_JJFFF(long fn, long a0, long a1, float a2, float a3, float a4) {
-        return ((F_D_JJFFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_V_JJDDDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, double a2, double a3, double a4, double a5);
-    }
-
-    public static void callV_JJDDDD(long fn, long a0, long a1, double a2, double a3, double a4, double a5) {
-        ((F_V_JJDDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_J_JJDDDD extends CFunctionPointer {
@@ -2689,17 +1505,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, double a2, double a3, double a4, double a5);
     }
 
-    public static long callJ_JJDDDD(long fn, long a0, long a1, double a2, double a3, double a4, double a5) {
-        return ((F_J_JJDDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_D_JJDDDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, double a2, double a3, double a4, double a5);
-    }
-
-    public static double callD_JJDDDD(long fn, long a0, long a1, double a2, double a3, double a4, double a5) {
-        return ((F_D_JJDDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_V_JJDDDF extends CFunctionPointer {
@@ -2707,17 +1515,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, double a2, double a3, double a4, float a5);
     }
 
-    public static void callV_JJDDDF(long fn, long a0, long a1, double a2, double a3, double a4, float a5) {
-        ((F_V_JJDDDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_J_JJDDDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, double a2, double a3, double a4, float a5);
-    }
-
-    public static long callJ_JJDDDF(long fn, long a0, long a1, double a2, double a3, double a4, float a5) {
-        return ((F_J_JJDDDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_D_JJDDDF extends CFunctionPointer {
@@ -2725,17 +1525,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, double a2, double a3, double a4, float a5);
     }
 
-    public static double callD_JJDDDF(long fn, long a0, long a1, double a2, double a3, double a4, float a5) {
-        return ((F_D_JJDDDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_V_JJDDFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, double a2, double a3, float a4, double a5);
-    }
-
-    public static void callV_JJDDFD(long fn, long a0, long a1, double a2, double a3, float a4, double a5) {
-        ((F_V_JJDDFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_J_JJDDFD extends CFunctionPointer {
@@ -2743,17 +1535,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, double a2, double a3, float a4, double a5);
     }
 
-    public static long callJ_JJDDFD(long fn, long a0, long a1, double a2, double a3, float a4, double a5) {
-        return ((F_J_JJDDFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_D_JJDDFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, double a2, double a3, float a4, double a5);
-    }
-
-    public static double callD_JJDDFD(long fn, long a0, long a1, double a2, double a3, float a4, double a5) {
-        return ((F_D_JJDDFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_V_JJDDFF extends CFunctionPointer {
@@ -2761,17 +1545,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, double a2, double a3, float a4, float a5);
     }
 
-    public static void callV_JJDDFF(long fn, long a0, long a1, double a2, double a3, float a4, float a5) {
-        ((F_V_JJDDFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_J_JJDDFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, double a2, double a3, float a4, float a5);
-    }
-
-    public static long callJ_JJDDFF(long fn, long a0, long a1, double a2, double a3, float a4, float a5) {
-        return ((F_J_JJDDFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_D_JJDDFF extends CFunctionPointer {
@@ -2779,17 +1555,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, double a2, double a3, float a4, float a5);
     }
 
-    public static double callD_JJDDFF(long fn, long a0, long a1, double a2, double a3, float a4, float a5) {
-        return ((F_D_JJDDFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_V_JJDFDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, double a2, float a3, double a4, double a5);
-    }
-
-    public static void callV_JJDFDD(long fn, long a0, long a1, double a2, float a3, double a4, double a5) {
-        ((F_V_JJDFDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_J_JJDFDD extends CFunctionPointer {
@@ -2797,17 +1565,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, double a2, float a3, double a4, double a5);
     }
 
-    public static long callJ_JJDFDD(long fn, long a0, long a1, double a2, float a3, double a4, double a5) {
-        return ((F_J_JJDFDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_D_JJDFDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, double a2, float a3, double a4, double a5);
-    }
-
-    public static double callD_JJDFDD(long fn, long a0, long a1, double a2, float a3, double a4, double a5) {
-        return ((F_D_JJDFDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_V_JJDFDF extends CFunctionPointer {
@@ -2815,17 +1575,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, double a2, float a3, double a4, float a5);
     }
 
-    public static void callV_JJDFDF(long fn, long a0, long a1, double a2, float a3, double a4, float a5) {
-        ((F_V_JJDFDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_J_JJDFDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, double a2, float a3, double a4, float a5);
-    }
-
-    public static long callJ_JJDFDF(long fn, long a0, long a1, double a2, float a3, double a4, float a5) {
-        return ((F_J_JJDFDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_D_JJDFDF extends CFunctionPointer {
@@ -2833,17 +1585,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, double a2, float a3, double a4, float a5);
     }
 
-    public static double callD_JJDFDF(long fn, long a0, long a1, double a2, float a3, double a4, float a5) {
-        return ((F_D_JJDFDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_V_JJDFFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, double a2, float a3, float a4, double a5);
-    }
-
-    public static void callV_JJDFFD(long fn, long a0, long a1, double a2, float a3, float a4, double a5) {
-        ((F_V_JJDFFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_J_JJDFFD extends CFunctionPointer {
@@ -2851,17 +1595,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, double a2, float a3, float a4, double a5);
     }
 
-    public static long callJ_JJDFFD(long fn, long a0, long a1, double a2, float a3, float a4, double a5) {
-        return ((F_J_JJDFFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_D_JJDFFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, double a2, float a3, float a4, double a5);
-    }
-
-    public static double callD_JJDFFD(long fn, long a0, long a1, double a2, float a3, float a4, double a5) {
-        return ((F_D_JJDFFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_V_JJDFFF extends CFunctionPointer {
@@ -2869,17 +1605,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, double a2, float a3, float a4, float a5);
     }
 
-    public static void callV_JJDFFF(long fn, long a0, long a1, double a2, float a3, float a4, float a5) {
-        ((F_V_JJDFFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_J_JJDFFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, double a2, float a3, float a4, float a5);
-    }
-
-    public static long callJ_JJDFFF(long fn, long a0, long a1, double a2, float a3, float a4, float a5) {
-        return ((F_J_JJDFFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_D_JJDFFF extends CFunctionPointer {
@@ -2887,17 +1615,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, double a2, float a3, float a4, float a5);
     }
 
-    public static double callD_JJDFFF(long fn, long a0, long a1, double a2, float a3, float a4, float a5) {
-        return ((F_D_JJDFFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_V_JJFDDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, float a2, double a3, double a4, double a5);
-    }
-
-    public static void callV_JJFDDD(long fn, long a0, long a1, float a2, double a3, double a4, double a5) {
-        ((F_V_JJFDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_J_JJFDDD extends CFunctionPointer {
@@ -2905,17 +1625,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, float a2, double a3, double a4, double a5);
     }
 
-    public static long callJ_JJFDDD(long fn, long a0, long a1, float a2, double a3, double a4, double a5) {
-        return ((F_J_JJFDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_D_JJFDDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, float a2, double a3, double a4, double a5);
-    }
-
-    public static double callD_JJFDDD(long fn, long a0, long a1, float a2, double a3, double a4, double a5) {
-        return ((F_D_JJFDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_V_JJFDDF extends CFunctionPointer {
@@ -2923,17 +1635,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, float a2, double a3, double a4, float a5);
     }
 
-    public static void callV_JJFDDF(long fn, long a0, long a1, float a2, double a3, double a4, float a5) {
-        ((F_V_JJFDDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_J_JJFDDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, float a2, double a3, double a4, float a5);
-    }
-
-    public static long callJ_JJFDDF(long fn, long a0, long a1, float a2, double a3, double a4, float a5) {
-        return ((F_J_JJFDDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_D_JJFDDF extends CFunctionPointer {
@@ -2941,17 +1645,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, float a2, double a3, double a4, float a5);
     }
 
-    public static double callD_JJFDDF(long fn, long a0, long a1, float a2, double a3, double a4, float a5) {
-        return ((F_D_JJFDDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_V_JJFDFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, float a2, double a3, float a4, double a5);
-    }
-
-    public static void callV_JJFDFD(long fn, long a0, long a1, float a2, double a3, float a4, double a5) {
-        ((F_V_JJFDFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_J_JJFDFD extends CFunctionPointer {
@@ -2959,17 +1655,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, float a2, double a3, float a4, double a5);
     }
 
-    public static long callJ_JJFDFD(long fn, long a0, long a1, float a2, double a3, float a4, double a5) {
-        return ((F_J_JJFDFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_D_JJFDFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, float a2, double a3, float a4, double a5);
-    }
-
-    public static double callD_JJFDFD(long fn, long a0, long a1, float a2, double a3, float a4, double a5) {
-        return ((F_D_JJFDFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_V_JJFDFF extends CFunctionPointer {
@@ -2977,17 +1665,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, float a2, double a3, float a4, float a5);
     }
 
-    public static void callV_JJFDFF(long fn, long a0, long a1, float a2, double a3, float a4, float a5) {
-        ((F_V_JJFDFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_J_JJFDFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, float a2, double a3, float a4, float a5);
-    }
-
-    public static long callJ_JJFDFF(long fn, long a0, long a1, float a2, double a3, float a4, float a5) {
-        return ((F_J_JJFDFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_D_JJFDFF extends CFunctionPointer {
@@ -2995,17 +1675,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, float a2, double a3, float a4, float a5);
     }
 
-    public static double callD_JJFDFF(long fn, long a0, long a1, float a2, double a3, float a4, float a5) {
-        return ((F_D_JJFDFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_V_JJFFDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, float a2, float a3, double a4, double a5);
-    }
-
-    public static void callV_JJFFDD(long fn, long a0, long a1, float a2, float a3, double a4, double a5) {
-        ((F_V_JJFFDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_J_JJFFDD extends CFunctionPointer {
@@ -3013,17 +1685,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, float a2, float a3, double a4, double a5);
     }
 
-    public static long callJ_JJFFDD(long fn, long a0, long a1, float a2, float a3, double a4, double a5) {
-        return ((F_J_JJFFDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_D_JJFFDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, float a2, float a3, double a4, double a5);
-    }
-
-    public static double callD_JJFFDD(long fn, long a0, long a1, float a2, float a3, double a4, double a5) {
-        return ((F_D_JJFFDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_V_JJFFDF extends CFunctionPointer {
@@ -3031,17 +1695,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, float a2, float a3, double a4, float a5);
     }
 
-    public static void callV_JJFFDF(long fn, long a0, long a1, float a2, float a3, double a4, float a5) {
-        ((F_V_JJFFDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_J_JJFFDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, float a2, float a3, double a4, float a5);
-    }
-
-    public static long callJ_JJFFDF(long fn, long a0, long a1, float a2, float a3, double a4, float a5) {
-        return ((F_J_JJFFDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_D_JJFFDF extends CFunctionPointer {
@@ -3049,17 +1705,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, float a2, float a3, double a4, float a5);
     }
 
-    public static double callD_JJFFDF(long fn, long a0, long a1, float a2, float a3, double a4, float a5) {
-        return ((F_D_JJFFDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_V_JJFFFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, float a2, float a3, float a4, double a5);
-    }
-
-    public static void callV_JJFFFD(long fn, long a0, long a1, float a2, float a3, float a4, double a5) {
-        ((F_V_JJFFFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_J_JJFFFD extends CFunctionPointer {
@@ -3067,17 +1715,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, float a2, float a3, float a4, double a5);
     }
 
-    public static long callJ_JJFFFD(long fn, long a0, long a1, float a2, float a3, float a4, double a5) {
-        return ((F_J_JJFFFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_D_JJFFFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, float a2, float a3, float a4, double a5);
-    }
-
-    public static double callD_JJFFFD(long fn, long a0, long a1, float a2, float a3, float a4, double a5) {
-        return ((F_D_JJFFFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_V_JJFFFF extends CFunctionPointer {
@@ -3085,17 +1725,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, float a2, float a3, float a4, float a5);
     }
 
-    public static void callV_JJFFFF(long fn, long a0, long a1, float a2, float a3, float a4, float a5) {
-        ((F_V_JJFFFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_J_JJFFFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, float a2, float a3, float a4, float a5);
-    }
-
-    public static long callJ_JJFFFF(long fn, long a0, long a1, float a2, float a3, float a4, float a5) {
-        return ((F_J_JJFFFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_D_JJFFFF extends CFunctionPointer {
@@ -3103,17 +1735,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, float a2, float a3, float a4, float a5);
     }
 
-    public static double callD_JJFFFF(long fn, long a0, long a1, float a2, float a3, float a4, float a5) {
-        return ((F_D_JJFFFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_V_JJDDDDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, double a2, double a3, double a4, double a5, double a6);
-    }
-
-    public static void callV_JJDDDDD(long fn, long a0, long a1, double a2, double a3, double a4, double a5, double a6) {
-        ((F_V_JJDDDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_J_JJDDDDD extends CFunctionPointer {
@@ -3121,17 +1745,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, double a2, double a3, double a4, double a5, double a6);
     }
 
-    public static long callJ_JJDDDDD(long fn, long a0, long a1, double a2, double a3, double a4, double a5, double a6) {
-        return ((F_J_JJDDDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_D_JJDDDDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, double a2, double a3, double a4, double a5, double a6);
-    }
-
-    public static double callD_JJDDDDD(long fn, long a0, long a1, double a2, double a3, double a4, double a5, double a6) {
-        return ((F_D_JJDDDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_V_JJJ extends CFunctionPointer {
@@ -3139,17 +1755,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, long a2);
     }
 
-    public static void callV_JJJ(long fn, long a0, long a1, long a2) {
-        ((F_V_JJJ) WordFactory.pointer(fn)).invoke(a0, a1, a2);
-    }
-
     public interface F_J_JJJ extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, long a2);
-    }
-
-    public static long callJ_JJJ(long fn, long a0, long a1, long a2) {
-        return ((F_J_JJJ) WordFactory.pointer(fn)).invoke(a0, a1, a2);
     }
 
     public interface F_D_JJJ extends CFunctionPointer {
@@ -3157,17 +1765,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, long a2);
     }
 
-    public static double callD_JJJ(long fn, long a0, long a1, long a2) {
-        return ((F_D_JJJ) WordFactory.pointer(fn)).invoke(a0, a1, a2);
-    }
-
     public interface F_F_JJJ extends CFunctionPointer {
         @InvokeCFunctionPointer
         float invoke(long a0, long a1, long a2);
-    }
-
-    public static float callF_JJJ(long fn, long a0, long a1, long a2) {
-        return ((F_F_JJJ) WordFactory.pointer(fn)).invoke(a0, a1, a2);
     }
 
     public interface F_V_JJJD extends CFunctionPointer {
@@ -3175,17 +1775,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, long a2, double a3);
     }
 
-    public static void callV_JJJD(long fn, long a0, long a1, long a2, double a3) {
-        ((F_V_JJJD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_J_JJJD extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, long a2, double a3);
-    }
-
-    public static long callJ_JJJD(long fn, long a0, long a1, long a2, double a3) {
-        return ((F_J_JJJD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_D_JJJD extends CFunctionPointer {
@@ -3193,17 +1785,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, long a2, double a3);
     }
 
-    public static double callD_JJJD(long fn, long a0, long a1, long a2, double a3) {
-        return ((F_D_JJJD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_F_JJJD extends CFunctionPointer {
         @InvokeCFunctionPointer
         float invoke(long a0, long a1, long a2, double a3);
-    }
-
-    public static float callF_JJJD(long fn, long a0, long a1, long a2, double a3) {
-        return ((F_F_JJJD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_V_JJJF extends CFunctionPointer {
@@ -3211,17 +1795,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, long a2, float a3);
     }
 
-    public static void callV_JJJF(long fn, long a0, long a1, long a2, float a3) {
-        ((F_V_JJJF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_J_JJJF extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, long a2, float a3);
-    }
-
-    public static long callJ_JJJF(long fn, long a0, long a1, long a2, float a3) {
-        return ((F_J_JJJF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_D_JJJF extends CFunctionPointer {
@@ -3229,17 +1805,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, long a2, float a3);
     }
 
-    public static double callD_JJJF(long fn, long a0, long a1, long a2, float a3) {
-        return ((F_D_JJJF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_F_JJJF extends CFunctionPointer {
         @InvokeCFunctionPointer
         float invoke(long a0, long a1, long a2, float a3);
-    }
-
-    public static float callF_JJJF(long fn, long a0, long a1, long a2, float a3) {
-        return ((F_F_JJJF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_V_JJJDD extends CFunctionPointer {
@@ -3247,17 +1815,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, long a2, double a3, double a4);
     }
 
-    public static void callV_JJJDD(long fn, long a0, long a1, long a2, double a3, double a4) {
-        ((F_V_JJJDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_J_JJJDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, long a2, double a3, double a4);
-    }
-
-    public static long callJ_JJJDD(long fn, long a0, long a1, long a2, double a3, double a4) {
-        return ((F_J_JJJDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_D_JJJDD extends CFunctionPointer {
@@ -3265,17 +1825,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, long a2, double a3, double a4);
     }
 
-    public static double callD_JJJDD(long fn, long a0, long a1, long a2, double a3, double a4) {
-        return ((F_D_JJJDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_V_JJJDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, long a2, double a3, float a4);
-    }
-
-    public static void callV_JJJDF(long fn, long a0, long a1, long a2, double a3, float a4) {
-        ((F_V_JJJDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_J_JJJDF extends CFunctionPointer {
@@ -3283,17 +1835,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, long a2, double a3, float a4);
     }
 
-    public static long callJ_JJJDF(long fn, long a0, long a1, long a2, double a3, float a4) {
-        return ((F_J_JJJDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_D_JJJDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, long a2, double a3, float a4);
-    }
-
-    public static double callD_JJJDF(long fn, long a0, long a1, long a2, double a3, float a4) {
-        return ((F_D_JJJDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_V_JJJFD extends CFunctionPointer {
@@ -3301,17 +1845,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, long a2, float a3, double a4);
     }
 
-    public static void callV_JJJFD(long fn, long a0, long a1, long a2, float a3, double a4) {
-        ((F_V_JJJFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_J_JJJFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, long a2, float a3, double a4);
-    }
-
-    public static long callJ_JJJFD(long fn, long a0, long a1, long a2, float a3, double a4) {
-        return ((F_J_JJJFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_D_JJJFD extends CFunctionPointer {
@@ -3319,17 +1855,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, long a2, float a3, double a4);
     }
 
-    public static double callD_JJJFD(long fn, long a0, long a1, long a2, float a3, double a4) {
-        return ((F_D_JJJFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_V_JJJFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, long a2, float a3, float a4);
-    }
-
-    public static void callV_JJJFF(long fn, long a0, long a1, long a2, float a3, float a4) {
-        ((F_V_JJJFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_J_JJJFF extends CFunctionPointer {
@@ -3337,17 +1865,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, long a2, float a3, float a4);
     }
 
-    public static long callJ_JJJFF(long fn, long a0, long a1, long a2, float a3, float a4) {
-        return ((F_J_JJJFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_D_JJJFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, long a2, float a3, float a4);
-    }
-
-    public static double callD_JJJFF(long fn, long a0, long a1, long a2, float a3, float a4) {
-        return ((F_D_JJJFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_V_JJJDDD extends CFunctionPointer {
@@ -3355,17 +1875,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, long a2, double a3, double a4, double a5);
     }
 
-    public static void callV_JJJDDD(long fn, long a0, long a1, long a2, double a3, double a4, double a5) {
-        ((F_V_JJJDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_J_JJJDDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, long a2, double a3, double a4, double a5);
-    }
-
-    public static long callJ_JJJDDD(long fn, long a0, long a1, long a2, double a3, double a4, double a5) {
-        return ((F_J_JJJDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_D_JJJDDD extends CFunctionPointer {
@@ -3373,17 +1885,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, long a2, double a3, double a4, double a5);
     }
 
-    public static double callD_JJJDDD(long fn, long a0, long a1, long a2, double a3, double a4, double a5) {
-        return ((F_D_JJJDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_V_JJJDDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, long a2, double a3, double a4, float a5);
-    }
-
-    public static void callV_JJJDDF(long fn, long a0, long a1, long a2, double a3, double a4, float a5) {
-        ((F_V_JJJDDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_J_JJJDDF extends CFunctionPointer {
@@ -3391,17 +1895,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, long a2, double a3, double a4, float a5);
     }
 
-    public static long callJ_JJJDDF(long fn, long a0, long a1, long a2, double a3, double a4, float a5) {
-        return ((F_J_JJJDDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_D_JJJDDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, long a2, double a3, double a4, float a5);
-    }
-
-    public static double callD_JJJDDF(long fn, long a0, long a1, long a2, double a3, double a4, float a5) {
-        return ((F_D_JJJDDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_V_JJJDFD extends CFunctionPointer {
@@ -3409,17 +1905,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, long a2, double a3, float a4, double a5);
     }
 
-    public static void callV_JJJDFD(long fn, long a0, long a1, long a2, double a3, float a4, double a5) {
-        ((F_V_JJJDFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_J_JJJDFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, long a2, double a3, float a4, double a5);
-    }
-
-    public static long callJ_JJJDFD(long fn, long a0, long a1, long a2, double a3, float a4, double a5) {
-        return ((F_J_JJJDFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_D_JJJDFD extends CFunctionPointer {
@@ -3427,17 +1915,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, long a2, double a3, float a4, double a5);
     }
 
-    public static double callD_JJJDFD(long fn, long a0, long a1, long a2, double a3, float a4, double a5) {
-        return ((F_D_JJJDFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_V_JJJDFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, long a2, double a3, float a4, float a5);
-    }
-
-    public static void callV_JJJDFF(long fn, long a0, long a1, long a2, double a3, float a4, float a5) {
-        ((F_V_JJJDFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_J_JJJDFF extends CFunctionPointer {
@@ -3445,17 +1925,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, long a2, double a3, float a4, float a5);
     }
 
-    public static long callJ_JJJDFF(long fn, long a0, long a1, long a2, double a3, float a4, float a5) {
-        return ((F_J_JJJDFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_D_JJJDFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, long a2, double a3, float a4, float a5);
-    }
-
-    public static double callD_JJJDFF(long fn, long a0, long a1, long a2, double a3, float a4, float a5) {
-        return ((F_D_JJJDFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_V_JJJFDD extends CFunctionPointer {
@@ -3463,17 +1935,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, long a2, float a3, double a4, double a5);
     }
 
-    public static void callV_JJJFDD(long fn, long a0, long a1, long a2, float a3, double a4, double a5) {
-        ((F_V_JJJFDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_J_JJJFDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, long a2, float a3, double a4, double a5);
-    }
-
-    public static long callJ_JJJFDD(long fn, long a0, long a1, long a2, float a3, double a4, double a5) {
-        return ((F_J_JJJFDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_D_JJJFDD extends CFunctionPointer {
@@ -3481,17 +1945,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, long a2, float a3, double a4, double a5);
     }
 
-    public static double callD_JJJFDD(long fn, long a0, long a1, long a2, float a3, double a4, double a5) {
-        return ((F_D_JJJFDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_V_JJJFDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, long a2, float a3, double a4, float a5);
-    }
-
-    public static void callV_JJJFDF(long fn, long a0, long a1, long a2, float a3, double a4, float a5) {
-        ((F_V_JJJFDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_J_JJJFDF extends CFunctionPointer {
@@ -3499,17 +1955,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, long a2, float a3, double a4, float a5);
     }
 
-    public static long callJ_JJJFDF(long fn, long a0, long a1, long a2, float a3, double a4, float a5) {
-        return ((F_J_JJJFDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_D_JJJFDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, long a2, float a3, double a4, float a5);
-    }
-
-    public static double callD_JJJFDF(long fn, long a0, long a1, long a2, float a3, double a4, float a5) {
-        return ((F_D_JJJFDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_V_JJJFFD extends CFunctionPointer {
@@ -3517,17 +1965,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, long a2, float a3, float a4, double a5);
     }
 
-    public static void callV_JJJFFD(long fn, long a0, long a1, long a2, float a3, float a4, double a5) {
-        ((F_V_JJJFFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_J_JJJFFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, long a2, float a3, float a4, double a5);
-    }
-
-    public static long callJ_JJJFFD(long fn, long a0, long a1, long a2, float a3, float a4, double a5) {
-        return ((F_J_JJJFFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_D_JJJFFD extends CFunctionPointer {
@@ -3535,17 +1975,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, long a2, float a3, float a4, double a5);
     }
 
-    public static double callD_JJJFFD(long fn, long a0, long a1, long a2, float a3, float a4, double a5) {
-        return ((F_D_JJJFFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_V_JJJFFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, long a2, float a3, float a4, float a5);
-    }
-
-    public static void callV_JJJFFF(long fn, long a0, long a1, long a2, float a3, float a4, float a5) {
-        ((F_V_JJJFFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_J_JJJFFF extends CFunctionPointer {
@@ -3553,17 +1985,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, long a2, float a3, float a4, float a5);
     }
 
-    public static long callJ_JJJFFF(long fn, long a0, long a1, long a2, float a3, float a4, float a5) {
-        return ((F_J_JJJFFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_D_JJJFFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, long a2, float a3, float a4, float a5);
-    }
-
-    public static double callD_JJJFFF(long fn, long a0, long a1, long a2, float a3, float a4, float a5) {
-        return ((F_D_JJJFFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_V_JJJDDDD extends CFunctionPointer {
@@ -3571,17 +1995,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, long a2, double a3, double a4, double a5, double a6);
     }
 
-    public static void callV_JJJDDDD(long fn, long a0, long a1, long a2, double a3, double a4, double a5, double a6) {
-        ((F_V_JJJDDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_J_JJJDDDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, long a2, double a3, double a4, double a5, double a6);
-    }
-
-    public static long callJ_JJJDDDD(long fn, long a0, long a1, long a2, double a3, double a4, double a5, double a6) {
-        return ((F_J_JJJDDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_D_JJJDDDD extends CFunctionPointer {
@@ -3589,17 +2005,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, long a2, double a3, double a4, double a5, double a6);
     }
 
-    public static double callD_JJJDDDD(long fn, long a0, long a1, long a2, double a3, double a4, double a5, double a6) {
-        return ((F_D_JJJDDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_V_JJJDDDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, long a2, double a3, double a4, double a5, float a6);
-    }
-
-    public static void callV_JJJDDDF(long fn, long a0, long a1, long a2, double a3, double a4, double a5, float a6) {
-        ((F_V_JJJDDDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_J_JJJDDDF extends CFunctionPointer {
@@ -3607,17 +2015,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, long a2, double a3, double a4, double a5, float a6);
     }
 
-    public static long callJ_JJJDDDF(long fn, long a0, long a1, long a2, double a3, double a4, double a5, float a6) {
-        return ((F_J_JJJDDDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_D_JJJDDDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, long a2, double a3, double a4, double a5, float a6);
-    }
-
-    public static double callD_JJJDDDF(long fn, long a0, long a1, long a2, double a3, double a4, double a5, float a6) {
-        return ((F_D_JJJDDDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_V_JJJDDFD extends CFunctionPointer {
@@ -3625,17 +2025,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, long a2, double a3, double a4, float a5, double a6);
     }
 
-    public static void callV_JJJDDFD(long fn, long a0, long a1, long a2, double a3, double a4, float a5, double a6) {
-        ((F_V_JJJDDFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_J_JJJDDFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, long a2, double a3, double a4, float a5, double a6);
-    }
-
-    public static long callJ_JJJDDFD(long fn, long a0, long a1, long a2, double a3, double a4, float a5, double a6) {
-        return ((F_J_JJJDDFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_D_JJJDDFD extends CFunctionPointer {
@@ -3643,17 +2035,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, long a2, double a3, double a4, float a5, double a6);
     }
 
-    public static double callD_JJJDDFD(long fn, long a0, long a1, long a2, double a3, double a4, float a5, double a6) {
-        return ((F_D_JJJDDFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_V_JJJDDFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, long a2, double a3, double a4, float a5, float a6);
-    }
-
-    public static void callV_JJJDDFF(long fn, long a0, long a1, long a2, double a3, double a4, float a5, float a6) {
-        ((F_V_JJJDDFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_J_JJJDDFF extends CFunctionPointer {
@@ -3661,17 +2045,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, long a2, double a3, double a4, float a5, float a6);
     }
 
-    public static long callJ_JJJDDFF(long fn, long a0, long a1, long a2, double a3, double a4, float a5, float a6) {
-        return ((F_J_JJJDDFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_D_JJJDDFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, long a2, double a3, double a4, float a5, float a6);
-    }
-
-    public static double callD_JJJDDFF(long fn, long a0, long a1, long a2, double a3, double a4, float a5, float a6) {
-        return ((F_D_JJJDDFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_V_JJJDFDD extends CFunctionPointer {
@@ -3679,17 +2055,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, long a2, double a3, float a4, double a5, double a6);
     }
 
-    public static void callV_JJJDFDD(long fn, long a0, long a1, long a2, double a3, float a4, double a5, double a6) {
-        ((F_V_JJJDFDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_J_JJJDFDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, long a2, double a3, float a4, double a5, double a6);
-    }
-
-    public static long callJ_JJJDFDD(long fn, long a0, long a1, long a2, double a3, float a4, double a5, double a6) {
-        return ((F_J_JJJDFDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_D_JJJDFDD extends CFunctionPointer {
@@ -3697,17 +2065,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, long a2, double a3, float a4, double a5, double a6);
     }
 
-    public static double callD_JJJDFDD(long fn, long a0, long a1, long a2, double a3, float a4, double a5, double a6) {
-        return ((F_D_JJJDFDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_V_JJJDFDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, long a2, double a3, float a4, double a5, float a6);
-    }
-
-    public static void callV_JJJDFDF(long fn, long a0, long a1, long a2, double a3, float a4, double a5, float a6) {
-        ((F_V_JJJDFDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_J_JJJDFDF extends CFunctionPointer {
@@ -3715,17 +2075,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, long a2, double a3, float a4, double a5, float a6);
     }
 
-    public static long callJ_JJJDFDF(long fn, long a0, long a1, long a2, double a3, float a4, double a5, float a6) {
-        return ((F_J_JJJDFDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_D_JJJDFDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, long a2, double a3, float a4, double a5, float a6);
-    }
-
-    public static double callD_JJJDFDF(long fn, long a0, long a1, long a2, double a3, float a4, double a5, float a6) {
-        return ((F_D_JJJDFDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_V_JJJDFFD extends CFunctionPointer {
@@ -3733,17 +2085,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, long a2, double a3, float a4, float a5, double a6);
     }
 
-    public static void callV_JJJDFFD(long fn, long a0, long a1, long a2, double a3, float a4, float a5, double a6) {
-        ((F_V_JJJDFFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_J_JJJDFFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, long a2, double a3, float a4, float a5, double a6);
-    }
-
-    public static long callJ_JJJDFFD(long fn, long a0, long a1, long a2, double a3, float a4, float a5, double a6) {
-        return ((F_J_JJJDFFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_D_JJJDFFD extends CFunctionPointer {
@@ -3751,17 +2095,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, long a2, double a3, float a4, float a5, double a6);
     }
 
-    public static double callD_JJJDFFD(long fn, long a0, long a1, long a2, double a3, float a4, float a5, double a6) {
-        return ((F_D_JJJDFFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_V_JJJDFFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, long a2, double a3, float a4, float a5, float a6);
-    }
-
-    public static void callV_JJJDFFF(long fn, long a0, long a1, long a2, double a3, float a4, float a5, float a6) {
-        ((F_V_JJJDFFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_J_JJJDFFF extends CFunctionPointer {
@@ -3769,17 +2105,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, long a2, double a3, float a4, float a5, float a6);
     }
 
-    public static long callJ_JJJDFFF(long fn, long a0, long a1, long a2, double a3, float a4, float a5, float a6) {
-        return ((F_J_JJJDFFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_D_JJJDFFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, long a2, double a3, float a4, float a5, float a6);
-    }
-
-    public static double callD_JJJDFFF(long fn, long a0, long a1, long a2, double a3, float a4, float a5, float a6) {
-        return ((F_D_JJJDFFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_V_JJJFDDD extends CFunctionPointer {
@@ -3787,17 +2115,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, long a2, float a3, double a4, double a5, double a6);
     }
 
-    public static void callV_JJJFDDD(long fn, long a0, long a1, long a2, float a3, double a4, double a5, double a6) {
-        ((F_V_JJJFDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_J_JJJFDDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, long a2, float a3, double a4, double a5, double a6);
-    }
-
-    public static long callJ_JJJFDDD(long fn, long a0, long a1, long a2, float a3, double a4, double a5, double a6) {
-        return ((F_J_JJJFDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_D_JJJFDDD extends CFunctionPointer {
@@ -3805,17 +2125,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, long a2, float a3, double a4, double a5, double a6);
     }
 
-    public static double callD_JJJFDDD(long fn, long a0, long a1, long a2, float a3, double a4, double a5, double a6) {
-        return ((F_D_JJJFDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_V_JJJFDDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, long a2, float a3, double a4, double a5, float a6);
-    }
-
-    public static void callV_JJJFDDF(long fn, long a0, long a1, long a2, float a3, double a4, double a5, float a6) {
-        ((F_V_JJJFDDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_J_JJJFDDF extends CFunctionPointer {
@@ -3823,17 +2135,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, long a2, float a3, double a4, double a5, float a6);
     }
 
-    public static long callJ_JJJFDDF(long fn, long a0, long a1, long a2, float a3, double a4, double a5, float a6) {
-        return ((F_J_JJJFDDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_D_JJJFDDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, long a2, float a3, double a4, double a5, float a6);
-    }
-
-    public static double callD_JJJFDDF(long fn, long a0, long a1, long a2, float a3, double a4, double a5, float a6) {
-        return ((F_D_JJJFDDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_V_JJJFDFD extends CFunctionPointer {
@@ -3841,17 +2145,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, long a2, float a3, double a4, float a5, double a6);
     }
 
-    public static void callV_JJJFDFD(long fn, long a0, long a1, long a2, float a3, double a4, float a5, double a6) {
-        ((F_V_JJJFDFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_J_JJJFDFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, long a2, float a3, double a4, float a5, double a6);
-    }
-
-    public static long callJ_JJJFDFD(long fn, long a0, long a1, long a2, float a3, double a4, float a5, double a6) {
-        return ((F_J_JJJFDFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_D_JJJFDFD extends CFunctionPointer {
@@ -3859,17 +2155,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, long a2, float a3, double a4, float a5, double a6);
     }
 
-    public static double callD_JJJFDFD(long fn, long a0, long a1, long a2, float a3, double a4, float a5, double a6) {
-        return ((F_D_JJJFDFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_V_JJJFDFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, long a2, float a3, double a4, float a5, float a6);
-    }
-
-    public static void callV_JJJFDFF(long fn, long a0, long a1, long a2, float a3, double a4, float a5, float a6) {
-        ((F_V_JJJFDFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_J_JJJFDFF extends CFunctionPointer {
@@ -3877,17 +2165,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, long a2, float a3, double a4, float a5, float a6);
     }
 
-    public static long callJ_JJJFDFF(long fn, long a0, long a1, long a2, float a3, double a4, float a5, float a6) {
-        return ((F_J_JJJFDFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_D_JJJFDFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, long a2, float a3, double a4, float a5, float a6);
-    }
-
-    public static double callD_JJJFDFF(long fn, long a0, long a1, long a2, float a3, double a4, float a5, float a6) {
-        return ((F_D_JJJFDFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_V_JJJFFDD extends CFunctionPointer {
@@ -3895,17 +2175,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, long a2, float a3, float a4, double a5, double a6);
     }
 
-    public static void callV_JJJFFDD(long fn, long a0, long a1, long a2, float a3, float a4, double a5, double a6) {
-        ((F_V_JJJFFDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_J_JJJFFDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, long a2, float a3, float a4, double a5, double a6);
-    }
-
-    public static long callJ_JJJFFDD(long fn, long a0, long a1, long a2, float a3, float a4, double a5, double a6) {
-        return ((F_J_JJJFFDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_D_JJJFFDD extends CFunctionPointer {
@@ -3913,17 +2185,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, long a2, float a3, float a4, double a5, double a6);
     }
 
-    public static double callD_JJJFFDD(long fn, long a0, long a1, long a2, float a3, float a4, double a5, double a6) {
-        return ((F_D_JJJFFDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_V_JJJFFDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, long a2, float a3, float a4, double a5, float a6);
-    }
-
-    public static void callV_JJJFFDF(long fn, long a0, long a1, long a2, float a3, float a4, double a5, float a6) {
-        ((F_V_JJJFFDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_J_JJJFFDF extends CFunctionPointer {
@@ -3931,17 +2195,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, long a2, float a3, float a4, double a5, float a6);
     }
 
-    public static long callJ_JJJFFDF(long fn, long a0, long a1, long a2, float a3, float a4, double a5, float a6) {
-        return ((F_J_JJJFFDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_D_JJJFFDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, long a2, float a3, float a4, double a5, float a6);
-    }
-
-    public static double callD_JJJFFDF(long fn, long a0, long a1, long a2, float a3, float a4, double a5, float a6) {
-        return ((F_D_JJJFFDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_V_JJJFFFD extends CFunctionPointer {
@@ -3949,17 +2205,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, long a2, float a3, float a4, float a5, double a6);
     }
 
-    public static void callV_JJJFFFD(long fn, long a0, long a1, long a2, float a3, float a4, float a5, double a6) {
-        ((F_V_JJJFFFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_J_JJJFFFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, long a2, float a3, float a4, float a5, double a6);
-    }
-
-    public static long callJ_JJJFFFD(long fn, long a0, long a1, long a2, float a3, float a4, float a5, double a6) {
-        return ((F_J_JJJFFFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_D_JJJFFFD extends CFunctionPointer {
@@ -3967,17 +2215,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, long a2, float a3, float a4, float a5, double a6);
     }
 
-    public static double callD_JJJFFFD(long fn, long a0, long a1, long a2, float a3, float a4, float a5, double a6) {
-        return ((F_D_JJJFFFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_V_JJJFFFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, long a2, float a3, float a4, float a5, float a6);
-    }
-
-    public static void callV_JJJFFFF(long fn, long a0, long a1, long a2, float a3, float a4, float a5, float a6) {
-        ((F_V_JJJFFFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_J_JJJFFFF extends CFunctionPointer {
@@ -3985,17 +2225,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, long a2, float a3, float a4, float a5, float a6);
     }
 
-    public static long callJ_JJJFFFF(long fn, long a0, long a1, long a2, float a3, float a4, float a5, float a6) {
-        return ((F_J_JJJFFFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_D_JJJFFFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, long a2, float a3, float a4, float a5, float a6);
-    }
-
-    public static double callD_JJJFFFF(long fn, long a0, long a1, long a2, float a3, float a4, float a5, float a6) {
-        return ((F_D_JJJFFFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_V_JJJJ extends CFunctionPointer {
@@ -4003,17 +2235,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, long a2, long a3);
     }
 
-    public static void callV_JJJJ(long fn, long a0, long a1, long a2, long a3) {
-        ((F_V_JJJJ) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_J_JJJJ extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, long a2, long a3);
-    }
-
-    public static long callJ_JJJJ(long fn, long a0, long a1, long a2, long a3) {
-        return ((F_J_JJJJ) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_D_JJJJ extends CFunctionPointer {
@@ -4021,17 +2245,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, long a2, long a3);
     }
 
-    public static double callD_JJJJ(long fn, long a0, long a1, long a2, long a3) {
-        return ((F_D_JJJJ) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
-    }
-
     public interface F_F_JJJJ extends CFunctionPointer {
         @InvokeCFunctionPointer
         float invoke(long a0, long a1, long a2, long a3);
-    }
-
-    public static float callF_JJJJ(long fn, long a0, long a1, long a2, long a3) {
-        return ((F_F_JJJJ) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3);
     }
 
     public interface F_V_JJJJD extends CFunctionPointer {
@@ -4039,17 +2255,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, long a2, long a3, double a4);
     }
 
-    public static void callV_JJJJD(long fn, long a0, long a1, long a2, long a3, double a4) {
-        ((F_V_JJJJD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_J_JJJJD extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, long a2, long a3, double a4);
-    }
-
-    public static long callJ_JJJJD(long fn, long a0, long a1, long a2, long a3, double a4) {
-        return ((F_J_JJJJD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_D_JJJJD extends CFunctionPointer {
@@ -4057,17 +2265,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, long a2, long a3, double a4);
     }
 
-    public static double callD_JJJJD(long fn, long a0, long a1, long a2, long a3, double a4) {
-        return ((F_D_JJJJD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_V_JJJJF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, long a2, long a3, float a4);
-    }
-
-    public static void callV_JJJJF(long fn, long a0, long a1, long a2, long a3, float a4) {
-        ((F_V_JJJJF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_J_JJJJF extends CFunctionPointer {
@@ -4075,17 +2275,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, long a2, long a3, float a4);
     }
 
-    public static long callJ_JJJJF(long fn, long a0, long a1, long a2, long a3, float a4) {
-        return ((F_J_JJJJF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_D_JJJJF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, long a2, long a3, float a4);
-    }
-
-    public static double callD_JJJJF(long fn, long a0, long a1, long a2, long a3, float a4) {
-        return ((F_D_JJJJF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_V_JJJJDD extends CFunctionPointer {
@@ -4093,17 +2285,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, long a2, long a3, double a4, double a5);
     }
 
-    public static void callV_JJJJDD(long fn, long a0, long a1, long a2, long a3, double a4, double a5) {
-        ((F_V_JJJJDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_J_JJJJDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, long a2, long a3, double a4, double a5);
-    }
-
-    public static long callJ_JJJJDD(long fn, long a0, long a1, long a2, long a3, double a4, double a5) {
-        return ((F_J_JJJJDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_D_JJJJDD extends CFunctionPointer {
@@ -4111,17 +2295,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, long a2, long a3, double a4, double a5);
     }
 
-    public static double callD_JJJJDD(long fn, long a0, long a1, long a2, long a3, double a4, double a5) {
-        return ((F_D_JJJJDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_V_JJJJDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, long a2, long a3, double a4, float a5);
-    }
-
-    public static void callV_JJJJDF(long fn, long a0, long a1, long a2, long a3, double a4, float a5) {
-        ((F_V_JJJJDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_J_JJJJDF extends CFunctionPointer {
@@ -4129,17 +2305,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, long a2, long a3, double a4, float a5);
     }
 
-    public static long callJ_JJJJDF(long fn, long a0, long a1, long a2, long a3, double a4, float a5) {
-        return ((F_J_JJJJDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_D_JJJJDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, long a2, long a3, double a4, float a5);
-    }
-
-    public static double callD_JJJJDF(long fn, long a0, long a1, long a2, long a3, double a4, float a5) {
-        return ((F_D_JJJJDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_V_JJJJFD extends CFunctionPointer {
@@ -4147,17 +2315,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, long a2, long a3, float a4, double a5);
     }
 
-    public static void callV_JJJJFD(long fn, long a0, long a1, long a2, long a3, float a4, double a5) {
-        ((F_V_JJJJFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_J_JJJJFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, long a2, long a3, float a4, double a5);
-    }
-
-    public static long callJ_JJJJFD(long fn, long a0, long a1, long a2, long a3, float a4, double a5) {
-        return ((F_J_JJJJFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_D_JJJJFD extends CFunctionPointer {
@@ -4165,17 +2325,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, long a2, long a3, float a4, double a5);
     }
 
-    public static double callD_JJJJFD(long fn, long a0, long a1, long a2, long a3, float a4, double a5) {
-        return ((F_D_JJJJFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_V_JJJJFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, long a2, long a3, float a4, float a5);
-    }
-
-    public static void callV_JJJJFF(long fn, long a0, long a1, long a2, long a3, float a4, float a5) {
-        ((F_V_JJJJFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_J_JJJJFF extends CFunctionPointer {
@@ -4183,17 +2335,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, long a2, long a3, float a4, float a5);
     }
 
-    public static long callJ_JJJJFF(long fn, long a0, long a1, long a2, long a3, float a4, float a5) {
-        return ((F_J_JJJJFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_D_JJJJFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, long a2, long a3, float a4, float a5);
-    }
-
-    public static double callD_JJJJFF(long fn, long a0, long a1, long a2, long a3, float a4, float a5) {
-        return ((F_D_JJJJFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_V_JJJJDDD extends CFunctionPointer {
@@ -4201,17 +2345,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, long a2, long a3, double a4, double a5, double a6);
     }
 
-    public static void callV_JJJJDDD(long fn, long a0, long a1, long a2, long a3, double a4, double a5, double a6) {
-        ((F_V_JJJJDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_J_JJJJDDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, long a2, long a3, double a4, double a5, double a6);
-    }
-
-    public static long callJ_JJJJDDD(long fn, long a0, long a1, long a2, long a3, double a4, double a5, double a6) {
-        return ((F_J_JJJJDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_D_JJJJDDD extends CFunctionPointer {
@@ -4219,17 +2355,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, long a2, long a3, double a4, double a5, double a6);
     }
 
-    public static double callD_JJJJDDD(long fn, long a0, long a1, long a2, long a3, double a4, double a5, double a6) {
-        return ((F_D_JJJJDDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_V_JJJJDDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, long a2, long a3, double a4, double a5, float a6);
-    }
-
-    public static void callV_JJJJDDF(long fn, long a0, long a1, long a2, long a3, double a4, double a5, float a6) {
-        ((F_V_JJJJDDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_J_JJJJDDF extends CFunctionPointer {
@@ -4237,17 +2365,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, long a2, long a3, double a4, double a5, float a6);
     }
 
-    public static long callJ_JJJJDDF(long fn, long a0, long a1, long a2, long a3, double a4, double a5, float a6) {
-        return ((F_J_JJJJDDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_D_JJJJDDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, long a2, long a3, double a4, double a5, float a6);
-    }
-
-    public static double callD_JJJJDDF(long fn, long a0, long a1, long a2, long a3, double a4, double a5, float a6) {
-        return ((F_D_JJJJDDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_V_JJJJDFD extends CFunctionPointer {
@@ -4255,17 +2375,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, long a2, long a3, double a4, float a5, double a6);
     }
 
-    public static void callV_JJJJDFD(long fn, long a0, long a1, long a2, long a3, double a4, float a5, double a6) {
-        ((F_V_JJJJDFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_J_JJJJDFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, long a2, long a3, double a4, float a5, double a6);
-    }
-
-    public static long callJ_JJJJDFD(long fn, long a0, long a1, long a2, long a3, double a4, float a5, double a6) {
-        return ((F_J_JJJJDFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_D_JJJJDFD extends CFunctionPointer {
@@ -4273,17 +2385,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, long a2, long a3, double a4, float a5, double a6);
     }
 
-    public static double callD_JJJJDFD(long fn, long a0, long a1, long a2, long a3, double a4, float a5, double a6) {
-        return ((F_D_JJJJDFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_V_JJJJDFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, long a2, long a3, double a4, float a5, float a6);
-    }
-
-    public static void callV_JJJJDFF(long fn, long a0, long a1, long a2, long a3, double a4, float a5, float a6) {
-        ((F_V_JJJJDFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_J_JJJJDFF extends CFunctionPointer {
@@ -4291,17 +2395,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, long a2, long a3, double a4, float a5, float a6);
     }
 
-    public static long callJ_JJJJDFF(long fn, long a0, long a1, long a2, long a3, double a4, float a5, float a6) {
-        return ((F_J_JJJJDFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_D_JJJJDFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, long a2, long a3, double a4, float a5, float a6);
-    }
-
-    public static double callD_JJJJDFF(long fn, long a0, long a1, long a2, long a3, double a4, float a5, float a6) {
-        return ((F_D_JJJJDFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_V_JJJJFDD extends CFunctionPointer {
@@ -4309,17 +2405,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, long a2, long a3, float a4, double a5, double a6);
     }
 
-    public static void callV_JJJJFDD(long fn, long a0, long a1, long a2, long a3, float a4, double a5, double a6) {
-        ((F_V_JJJJFDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_J_JJJJFDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, long a2, long a3, float a4, double a5, double a6);
-    }
-
-    public static long callJ_JJJJFDD(long fn, long a0, long a1, long a2, long a3, float a4, double a5, double a6) {
-        return ((F_J_JJJJFDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_D_JJJJFDD extends CFunctionPointer {
@@ -4327,17 +2415,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, long a2, long a3, float a4, double a5, double a6);
     }
 
-    public static double callD_JJJJFDD(long fn, long a0, long a1, long a2, long a3, float a4, double a5, double a6) {
-        return ((F_D_JJJJFDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_V_JJJJFDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, long a2, long a3, float a4, double a5, float a6);
-    }
-
-    public static void callV_JJJJFDF(long fn, long a0, long a1, long a2, long a3, float a4, double a5, float a6) {
-        ((F_V_JJJJFDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_J_JJJJFDF extends CFunctionPointer {
@@ -4345,17 +2425,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, long a2, long a3, float a4, double a5, float a6);
     }
 
-    public static long callJ_JJJJFDF(long fn, long a0, long a1, long a2, long a3, float a4, double a5, float a6) {
-        return ((F_J_JJJJFDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_D_JJJJFDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, long a2, long a3, float a4, double a5, float a6);
-    }
-
-    public static double callD_JJJJFDF(long fn, long a0, long a1, long a2, long a3, float a4, double a5, float a6) {
-        return ((F_D_JJJJFDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_V_JJJJFFD extends CFunctionPointer {
@@ -4363,17 +2435,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, long a2, long a3, float a4, float a5, double a6);
     }
 
-    public static void callV_JJJJFFD(long fn, long a0, long a1, long a2, long a3, float a4, float a5, double a6) {
-        ((F_V_JJJJFFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_J_JJJJFFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, long a2, long a3, float a4, float a5, double a6);
-    }
-
-    public static long callJ_JJJJFFD(long fn, long a0, long a1, long a2, long a3, float a4, float a5, double a6) {
-        return ((F_J_JJJJFFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_D_JJJJFFD extends CFunctionPointer {
@@ -4381,17 +2445,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, long a2, long a3, float a4, float a5, double a6);
     }
 
-    public static double callD_JJJJFFD(long fn, long a0, long a1, long a2, long a3, float a4, float a5, double a6) {
-        return ((F_D_JJJJFFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_V_JJJJFFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, long a2, long a3, float a4, float a5, float a6);
-    }
-
-    public static void callV_JJJJFFF(long fn, long a0, long a1, long a2, long a3, float a4, float a5, float a6) {
-        ((F_V_JJJJFFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_J_JJJJFFF extends CFunctionPointer {
@@ -4399,17 +2455,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, long a2, long a3, float a4, float a5, float a6);
     }
 
-    public static long callJ_JJJJFFF(long fn, long a0, long a1, long a2, long a3, float a4, float a5, float a6) {
-        return ((F_J_JJJJFFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_D_JJJJFFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, long a2, long a3, float a4, float a5, float a6);
-    }
-
-    public static double callD_JJJJFFF(long fn, long a0, long a1, long a2, long a3, float a4, float a5, float a6) {
-        return ((F_D_JJJJFFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_V_JJJJJ extends CFunctionPointer {
@@ -4417,17 +2465,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, long a2, long a3, long a4);
     }
 
-    public static void callV_JJJJJ(long fn, long a0, long a1, long a2, long a3, long a4) {
-        ((F_V_JJJJJ) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_J_JJJJJ extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, long a2, long a3, long a4);
-    }
-
-    public static long callJ_JJJJJ(long fn, long a0, long a1, long a2, long a3, long a4) {
-        return ((F_J_JJJJJ) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
     }
 
     public interface F_D_JJJJJ extends CFunctionPointer {
@@ -4435,17 +2475,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, long a2, long a3, long a4);
     }
 
-    public static double callD_JJJJJ(long fn, long a0, long a1, long a2, long a3, long a4) {
-        return ((F_D_JJJJJ) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4);
-    }
-
     public interface F_V_JJJJJD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, long a2, long a3, long a4, double a5);
-    }
-
-    public static void callV_JJJJJD(long fn, long a0, long a1, long a2, long a3, long a4, double a5) {
-        ((F_V_JJJJJD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_J_JJJJJD extends CFunctionPointer {
@@ -4453,17 +2485,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, long a2, long a3, long a4, double a5);
     }
 
-    public static long callJ_JJJJJD(long fn, long a0, long a1, long a2, long a3, long a4, double a5) {
-        return ((F_J_JJJJJD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_D_JJJJJD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, long a2, long a3, long a4, double a5);
-    }
-
-    public static double callD_JJJJJD(long fn, long a0, long a1, long a2, long a3, long a4, double a5) {
-        return ((F_D_JJJJJD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_V_JJJJJF extends CFunctionPointer {
@@ -4471,17 +2495,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, long a2, long a3, long a4, float a5);
     }
 
-    public static void callV_JJJJJF(long fn, long a0, long a1, long a2, long a3, long a4, float a5) {
-        ((F_V_JJJJJF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_J_JJJJJF extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, long a2, long a3, long a4, float a5);
-    }
-
-    public static long callJ_JJJJJF(long fn, long a0, long a1, long a2, long a3, long a4, float a5) {
-        return ((F_J_JJJJJF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_D_JJJJJF extends CFunctionPointer {
@@ -4489,17 +2505,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, long a2, long a3, long a4, float a5);
     }
 
-    public static double callD_JJJJJF(long fn, long a0, long a1, long a2, long a3, long a4, float a5) {
-        return ((F_D_JJJJJF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_V_JJJJJDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, long a2, long a3, long a4, double a5, double a6);
-    }
-
-    public static void callV_JJJJJDD(long fn, long a0, long a1, long a2, long a3, long a4, double a5, double a6) {
-        ((F_V_JJJJJDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_J_JJJJJDD extends CFunctionPointer {
@@ -4507,17 +2515,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, long a2, long a3, long a4, double a5, double a6);
     }
 
-    public static long callJ_JJJJJDD(long fn, long a0, long a1, long a2, long a3, long a4, double a5, double a6) {
-        return ((F_J_JJJJJDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_D_JJJJJDD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, long a2, long a3, long a4, double a5, double a6);
-    }
-
-    public static double callD_JJJJJDD(long fn, long a0, long a1, long a2, long a3, long a4, double a5, double a6) {
-        return ((F_D_JJJJJDD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_V_JJJJJDF extends CFunctionPointer {
@@ -4525,17 +2525,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, long a2, long a3, long a4, double a5, float a6);
     }
 
-    public static void callV_JJJJJDF(long fn, long a0, long a1, long a2, long a3, long a4, double a5, float a6) {
-        ((F_V_JJJJJDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_J_JJJJJDF extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, long a2, long a3, long a4, double a5, float a6);
-    }
-
-    public static long callJ_JJJJJDF(long fn, long a0, long a1, long a2, long a3, long a4, double a5, float a6) {
-        return ((F_J_JJJJJDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_D_JJJJJDF extends CFunctionPointer {
@@ -4543,17 +2535,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, long a2, long a3, long a4, double a5, float a6);
     }
 
-    public static double callD_JJJJJDF(long fn, long a0, long a1, long a2, long a3, long a4, double a5, float a6) {
-        return ((F_D_JJJJJDF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_V_JJJJJFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, long a2, long a3, long a4, float a5, double a6);
-    }
-
-    public static void callV_JJJJJFD(long fn, long a0, long a1, long a2, long a3, long a4, float a5, double a6) {
-        ((F_V_JJJJJFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_J_JJJJJFD extends CFunctionPointer {
@@ -4561,17 +2545,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, long a2, long a3, long a4, float a5, double a6);
     }
 
-    public static long callJ_JJJJJFD(long fn, long a0, long a1, long a2, long a3, long a4, float a5, double a6) {
-        return ((F_J_JJJJJFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_D_JJJJJFD extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, long a2, long a3, long a4, float a5, double a6);
-    }
-
-    public static double callD_JJJJJFD(long fn, long a0, long a1, long a2, long a3, long a4, float a5, double a6) {
-        return ((F_D_JJJJJFD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_V_JJJJJFF extends CFunctionPointer {
@@ -4579,17 +2555,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, long a2, long a3, long a4, float a5, float a6);
     }
 
-    public static void callV_JJJJJFF(long fn, long a0, long a1, long a2, long a3, long a4, float a5, float a6) {
-        ((F_V_JJJJJFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_J_JJJJJFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, long a2, long a3, long a4, float a5, float a6);
-    }
-
-    public static long callJ_JJJJJFF(long fn, long a0, long a1, long a2, long a3, long a4, float a5, float a6) {
-        return ((F_J_JJJJJFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_D_JJJJJFF extends CFunctionPointer {
@@ -4597,17 +2565,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, long a2, long a3, long a4, float a5, float a6);
     }
 
-    public static double callD_JJJJJFF(long fn, long a0, long a1, long a2, long a3, long a4, float a5, float a6) {
-        return ((F_D_JJJJJFF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_V_JJJJJJ extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, long a2, long a3, long a4, long a5);
-    }
-
-    public static void callV_JJJJJJ(long fn, long a0, long a1, long a2, long a3, long a4, long a5) {
-        ((F_V_JJJJJJ) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_J_JJJJJJ extends CFunctionPointer {
@@ -4615,17 +2575,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, long a2, long a3, long a4, long a5);
     }
 
-    public static long callJ_JJJJJJ(long fn, long a0, long a1, long a2, long a3, long a4, long a5) {
-        return ((F_J_JJJJJJ) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
-    }
-
     public interface F_D_JJJJJJ extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, long a2, long a3, long a4, long a5);
-    }
-
-    public static double callD_JJJJJJ(long fn, long a0, long a1, long a2, long a3, long a4, long a5) {
-        return ((F_D_JJJJJJ) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5);
     }
 
     public interface F_V_JJJJJJD extends CFunctionPointer {
@@ -4633,17 +2585,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, long a2, long a3, long a4, long a5, double a6);
     }
 
-    public static void callV_JJJJJJD(long fn, long a0, long a1, long a2, long a3, long a4, long a5, double a6) {
-        ((F_V_JJJJJJD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_J_JJJJJJD extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, long a2, long a3, long a4, long a5, double a6);
-    }
-
-    public static long callJ_JJJJJJD(long fn, long a0, long a1, long a2, long a3, long a4, long a5, double a6) {
-        return ((F_J_JJJJJJD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_D_JJJJJJD extends CFunctionPointer {
@@ -4651,17 +2595,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, long a2, long a3, long a4, long a5, double a6);
     }
 
-    public static double callD_JJJJJJD(long fn, long a0, long a1, long a2, long a3, long a4, long a5, double a6) {
-        return ((F_D_JJJJJJD) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_V_JJJJJJF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, long a2, long a3, long a4, long a5, float a6);
-    }
-
-    public static void callV_JJJJJJF(long fn, long a0, long a1, long a2, long a3, long a4, long a5, float a6) {
-        ((F_V_JJJJJJF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_J_JJJJJJF extends CFunctionPointer {
@@ -4669,17 +2605,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, long a2, long a3, long a4, long a5, float a6);
     }
 
-    public static long callJ_JJJJJJF(long fn, long a0, long a1, long a2, long a3, long a4, long a5, float a6) {
-        return ((F_J_JJJJJJF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_D_JJJJJJF extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, long a2, long a3, long a4, long a5, float a6);
-    }
-
-    public static double callD_JJJJJJF(long fn, long a0, long a1, long a2, long a3, long a4, long a5, float a6) {
-        return ((F_D_JJJJJJF) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_V_JJJJJJJ extends CFunctionPointer {
@@ -4687,17 +2615,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, long a2, long a3, long a4, long a5, long a6);
     }
 
-    public static void callV_JJJJJJJ(long fn, long a0, long a1, long a2, long a3, long a4, long a5, long a6) {
-        ((F_V_JJJJJJJ) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_J_JJJJJJJ extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, long a2, long a3, long a4, long a5, long a6);
-    }
-
-    public static long callJ_JJJJJJJ(long fn, long a0, long a1, long a2, long a3, long a4, long a5, long a6) {
-        return ((F_J_JJJJJJJ) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
     }
 
     public interface F_D_JJJJJJJ extends CFunctionPointer {
@@ -4705,17 +2625,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, long a2, long a3, long a4, long a5, long a6);
     }
 
-    public static double callD_JJJJJJJ(long fn, long a0, long a1, long a2, long a3, long a4, long a5, long a6) {
-        return ((F_D_JJJJJJJ) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6);
-    }
-
     public interface F_V_JJJJJJJJ extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7);
-    }
-
-    public static void callV_JJJJJJJJ(long fn, long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7) {
-        ((F_V_JJJJJJJJ) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6, a7);
     }
 
     public interface F_J_JJJJJJJJ extends CFunctionPointer {
@@ -4723,17 +2635,9 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7);
     }
 
-    public static long callJ_JJJJJJJJ(long fn, long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7) {
-        return ((F_J_JJJJJJJJ) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6, a7);
-    }
-
     public interface F_D_JJJJJJJJ extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7);
-    }
-
-    public static double callD_JJJJJJJJ(long fn, long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7) {
-        return ((F_D_JJJJJJJJ) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6, a7);
     }
 
     public interface F_V_JJJJJJJJJ extends CFunctionPointer {
@@ -4741,17 +2645,9 @@ public final class FfiTrampoline {
         void invoke(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7, long a8);
     }
 
-    public static void callV_JJJJJJJJJ(long fn, long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7, long a8) {
-        ((F_V_JJJJJJJJJ) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6, a7, a8);
-    }
-
     public interface F_J_JJJJJJJJJ extends CFunctionPointer {
         @InvokeCFunctionPointer
         long invoke(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7, long a8);
-    }
-
-    public static long callJ_JJJJJJJJJ(long fn, long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7, long a8) {
-        return ((F_J_JJJJJJJJJ) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6, a7, a8);
     }
 
     public interface F_D_JJJJJJJJJ extends CFunctionPointer {
@@ -4759,17 +2655,9 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7, long a8);
     }
 
-    public static double callD_JJJJJJJJJ(long fn, long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7, long a8) {
-        return ((F_D_JJJJJJJJJ) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6, a7, a8);
-    }
-
     public interface F_V_JJJJJJJJJJ extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7, long a8, long a9);
-    }
-
-    public static void callV_JJJJJJJJJJ(long fn, long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7, long a8, long a9) {
-        ((F_V_JJJJJJJJJJ) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
     }
 
     public interface F_J_JJJJJJJJJJ extends CFunctionPointer {
@@ -4777,16 +2665,545 @@ public final class FfiTrampoline {
         long invoke(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7, long a8, long a9);
     }
 
-    public static long callJ_JJJJJJJJJJ(long fn, long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7, long a8, long a9) {
-        return ((F_J_JJJJJJJJJJ) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
-    }
-
     public interface F_D_JJJJJJJJJJ extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7, long a8, long a9);
     }
 
-    public static double callD_JJJJJJJJJJ(long fn, long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7, long a8, long a9) {
-        return ((F_D_JJJJJJJJJJ) WordFactory.pointer(fn)).invoke(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
+    public static Object dispatch(int id, long fn, Object[] a) {
+        switch (id) {
+        case 0: ((F_V_) WordFactory.pointer(fn)).invoke(); return null;
+        case 1: return ((F_J_) WordFactory.pointer(fn)).invoke();
+        case 2: return ((F_D_) WordFactory.pointer(fn)).invoke();
+        case 3: return ((F_F_) WordFactory.pointer(fn)).invoke();
+        case 4: ((F_V_D) WordFactory.pointer(fn)).invoke(dblV(a[0])); return null;
+        case 5: return ((F_J_D) WordFactory.pointer(fn)).invoke(dblV(a[0]));
+        case 6: return ((F_D_D) WordFactory.pointer(fn)).invoke(dblV(a[0]));
+        case 7: return ((F_F_D) WordFactory.pointer(fn)).invoke(dblV(a[0]));
+        case 8: ((F_V_F) WordFactory.pointer(fn)).invoke(fltV(a[0])); return null;
+        case 9: return ((F_J_F) WordFactory.pointer(fn)).invoke(fltV(a[0]));
+        case 10: return ((F_D_F) WordFactory.pointer(fn)).invoke(fltV(a[0]));
+        case 11: return ((F_F_F) WordFactory.pointer(fn)).invoke(fltV(a[0]));
+        case 12: ((F_V_DD) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1])); return null;
+        case 13: return ((F_J_DD) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]));
+        case 14: return ((F_D_DD) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]));
+        case 15: return ((F_F_DD) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]));
+        case 16: ((F_V_DF) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1])); return null;
+        case 17: return ((F_J_DF) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]));
+        case 18: return ((F_D_DF) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]));
+        case 19: return ((F_F_DF) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]));
+        case 20: ((F_V_FD) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1])); return null;
+        case 21: return ((F_J_FD) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]));
+        case 22: return ((F_D_FD) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]));
+        case 23: return ((F_F_FD) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]));
+        case 24: ((F_V_FF) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1])); return null;
+        case 25: return ((F_J_FF) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]));
+        case 26: return ((F_D_FF) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]));
+        case 27: return ((F_F_FF) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]));
+        case 28: ((F_V_DDD) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), dblV(a[2])); return null;
+        case 29: return ((F_J_DDD) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), dblV(a[2]));
+        case 30: return ((F_D_DDD) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), dblV(a[2]));
+        case 31: return ((F_F_DDD) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), dblV(a[2]));
+        case 32: ((F_V_DDF) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), fltV(a[2])); return null;
+        case 33: return ((F_J_DDF) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), fltV(a[2]));
+        case 34: return ((F_D_DDF) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), fltV(a[2]));
+        case 35: return ((F_F_DDF) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), fltV(a[2]));
+        case 36: ((F_V_DFD) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]), dblV(a[2])); return null;
+        case 37: return ((F_J_DFD) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]), dblV(a[2]));
+        case 38: return ((F_D_DFD) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]), dblV(a[2]));
+        case 39: return ((F_F_DFD) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]), dblV(a[2]));
+        case 40: ((F_V_DFF) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]), fltV(a[2])); return null;
+        case 41: return ((F_J_DFF) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]), fltV(a[2]));
+        case 42: return ((F_D_DFF) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]), fltV(a[2]));
+        case 43: return ((F_F_DFF) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]), fltV(a[2]));
+        case 44: ((F_V_FDD) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]), dblV(a[2])); return null;
+        case 45: return ((F_J_FDD) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]), dblV(a[2]));
+        case 46: return ((F_D_FDD) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]), dblV(a[2]));
+        case 47: return ((F_F_FDD) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]), dblV(a[2]));
+        case 48: ((F_V_FDF) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]), fltV(a[2])); return null;
+        case 49: return ((F_J_FDF) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]), fltV(a[2]));
+        case 50: return ((F_D_FDF) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]), fltV(a[2]));
+        case 51: return ((F_F_FDF) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]), fltV(a[2]));
+        case 52: ((F_V_FFD) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), dblV(a[2])); return null;
+        case 53: return ((F_J_FFD) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), dblV(a[2]));
+        case 54: return ((F_D_FFD) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), dblV(a[2]));
+        case 55: return ((F_F_FFD) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), dblV(a[2]));
+        case 56: ((F_V_FFF) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), fltV(a[2])); return null;
+        case 57: return ((F_J_FFF) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), fltV(a[2]));
+        case 58: return ((F_D_FFF) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), fltV(a[2]));
+        case 59: return ((F_F_FFF) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), fltV(a[2]));
+        case 60: ((F_V_DDDD) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3])); return null;
+        case 61: return ((F_J_DDDD) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]));
+        case 62: return ((F_D_DDDD) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]));
+        case 63: return ((F_F_DDDD) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]));
+        case 64: ((F_V_DDDF) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), dblV(a[2]), fltV(a[3])); return null;
+        case 65: return ((F_J_DDDF) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), dblV(a[2]), fltV(a[3]));
+        case 66: return ((F_D_DDDF) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), dblV(a[2]), fltV(a[3]));
+        case 67: return ((F_F_DDDF) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), dblV(a[2]), fltV(a[3]));
+        case 68: ((F_V_DDFD) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), fltV(a[2]), dblV(a[3])); return null;
+        case 69: return ((F_J_DDFD) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), fltV(a[2]), dblV(a[3]));
+        case 70: return ((F_D_DDFD) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), fltV(a[2]), dblV(a[3]));
+        case 71: return ((F_F_DDFD) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), fltV(a[2]), dblV(a[3]));
+        case 72: ((F_V_DDFF) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), fltV(a[2]), fltV(a[3])); return null;
+        case 73: return ((F_J_DDFF) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), fltV(a[2]), fltV(a[3]));
+        case 74: return ((F_D_DDFF) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), fltV(a[2]), fltV(a[3]));
+        case 75: return ((F_F_DDFF) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), fltV(a[2]), fltV(a[3]));
+        case 76: ((F_V_DFDD) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]), dblV(a[2]), dblV(a[3])); return null;
+        case 77: return ((F_J_DFDD) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]), dblV(a[2]), dblV(a[3]));
+        case 78: return ((F_D_DFDD) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]), dblV(a[2]), dblV(a[3]));
+        case 79: return ((F_F_DFDD) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]), dblV(a[2]), dblV(a[3]));
+        case 80: ((F_V_DFDF) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]), dblV(a[2]), fltV(a[3])); return null;
+        case 81: return ((F_J_DFDF) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]), dblV(a[2]), fltV(a[3]));
+        case 82: return ((F_D_DFDF) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]), dblV(a[2]), fltV(a[3]));
+        case 83: return ((F_F_DFDF) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]), dblV(a[2]), fltV(a[3]));
+        case 84: ((F_V_DFFD) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]), fltV(a[2]), dblV(a[3])); return null;
+        case 85: return ((F_J_DFFD) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]), fltV(a[2]), dblV(a[3]));
+        case 86: return ((F_D_DFFD) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]), fltV(a[2]), dblV(a[3]));
+        case 87: return ((F_F_DFFD) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]), fltV(a[2]), dblV(a[3]));
+        case 88: ((F_V_DFFF) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3])); return null;
+        case 89: return ((F_J_DFFF) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3]));
+        case 90: return ((F_D_DFFF) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3]));
+        case 91: return ((F_F_DFFF) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3]));
+        case 92: ((F_V_FDDD) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3])); return null;
+        case 93: return ((F_J_FDDD) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]));
+        case 94: return ((F_D_FDDD) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]));
+        case 95: return ((F_F_FDDD) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]));
+        case 96: ((F_V_FDDF) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]), dblV(a[2]), fltV(a[3])); return null;
+        case 97: return ((F_J_FDDF) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]), dblV(a[2]), fltV(a[3]));
+        case 98: return ((F_D_FDDF) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]), dblV(a[2]), fltV(a[3]));
+        case 99: return ((F_F_FDDF) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]), dblV(a[2]), fltV(a[3]));
+        case 100: ((F_V_FDFD) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]), fltV(a[2]), dblV(a[3])); return null;
+        case 101: return ((F_J_FDFD) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]), fltV(a[2]), dblV(a[3]));
+        case 102: return ((F_D_FDFD) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]), fltV(a[2]), dblV(a[3]));
+        case 103: return ((F_F_FDFD) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]), fltV(a[2]), dblV(a[3]));
+        case 104: ((F_V_FDFF) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]), fltV(a[2]), fltV(a[3])); return null;
+        case 105: return ((F_J_FDFF) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]), fltV(a[2]), fltV(a[3]));
+        case 106: return ((F_D_FDFF) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]), fltV(a[2]), fltV(a[3]));
+        case 107: return ((F_F_FDFF) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]), fltV(a[2]), fltV(a[3]));
+        case 108: ((F_V_FFDD) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), dblV(a[2]), dblV(a[3])); return null;
+        case 109: return ((F_J_FFDD) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), dblV(a[2]), dblV(a[3]));
+        case 110: return ((F_D_FFDD) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), dblV(a[2]), dblV(a[3]));
+        case 111: return ((F_F_FFDD) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), dblV(a[2]), dblV(a[3]));
+        case 112: ((F_V_FFDF) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), dblV(a[2]), fltV(a[3])); return null;
+        case 113: return ((F_J_FFDF) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), dblV(a[2]), fltV(a[3]));
+        case 114: return ((F_D_FFDF) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), dblV(a[2]), fltV(a[3]));
+        case 115: return ((F_F_FFDF) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), dblV(a[2]), fltV(a[3]));
+        case 116: ((F_V_FFFD) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), fltV(a[2]), dblV(a[3])); return null;
+        case 117: return ((F_J_FFFD) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), fltV(a[2]), dblV(a[3]));
+        case 118: return ((F_D_FFFD) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), fltV(a[2]), dblV(a[3]));
+        case 119: return ((F_F_FFFD) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), fltV(a[2]), dblV(a[3]));
+        case 120: ((F_V_FFFF) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3])); return null;
+        case 121: return ((F_J_FFFF) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3]));
+        case 122: return ((F_D_FFFF) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3]));
+        case 123: return ((F_F_FFFF) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3]));
+        case 124: ((F_V_DDDDD) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4])); return null;
+        case 125: return ((F_J_DDDDD) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]));
+        case 126: return ((F_D_DDDDD) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]));
+        case 127: ((F_V_DDDDDD) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5])); return null;
+        case 128: return ((F_J_DDDDDD) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]));
+        case 129: return ((F_D_DDDDDD) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]));
+        case 130: ((F_V_J) WordFactory.pointer(fn)).invoke(longV(a[0])); return null;
+        case 131: return ((F_J_J) WordFactory.pointer(fn)).invoke(longV(a[0]));
+        case 132: return ((F_D_J) WordFactory.pointer(fn)).invoke(longV(a[0]));
+        case 133: return ((F_F_J) WordFactory.pointer(fn)).invoke(longV(a[0]));
+        case 134: ((F_V_JD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1])); return null;
+        case 135: return ((F_J_JD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]));
+        case 136: return ((F_D_JD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]));
+        case 137: return ((F_F_JD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]));
+        case 138: ((F_V_JF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1])); return null;
+        case 139: return ((F_J_JF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]));
+        case 140: return ((F_D_JF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]));
+        case 141: return ((F_F_JF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]));
+        case 142: ((F_V_JDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2])); return null;
+        case 143: return ((F_J_JDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]));
+        case 144: return ((F_D_JDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]));
+        case 145: return ((F_F_JDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]));
+        case 146: ((F_V_JDF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2])); return null;
+        case 147: return ((F_J_JDF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]));
+        case 148: return ((F_D_JDF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]));
+        case 149: return ((F_F_JDF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]));
+        case 150: ((F_V_JFD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2])); return null;
+        case 151: return ((F_J_JFD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]));
+        case 152: return ((F_D_JFD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]));
+        case 153: return ((F_F_JFD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]));
+        case 154: ((F_V_JFF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2])); return null;
+        case 155: return ((F_J_JFF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]));
+        case 156: return ((F_D_JFF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]));
+        case 157: return ((F_F_JFF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]));
+        case 158: ((F_V_JDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3])); return null;
+        case 159: return ((F_J_JDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]));
+        case 160: return ((F_D_JDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]));
+        case 161: return ((F_F_JDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]));
+        case 162: ((F_V_JDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), fltV(a[3])); return null;
+        case 163: return ((F_J_JDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), fltV(a[3]));
+        case 164: return ((F_D_JDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), fltV(a[3]));
+        case 165: return ((F_F_JDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), fltV(a[3]));
+        case 166: ((F_V_JDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), dblV(a[3])); return null;
+        case 167: return ((F_J_JDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), dblV(a[3]));
+        case 168: return ((F_D_JDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), dblV(a[3]));
+        case 169: return ((F_F_JDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), dblV(a[3]));
+        case 170: ((F_V_JDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), fltV(a[3])); return null;
+        case 171: return ((F_J_JDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), fltV(a[3]));
+        case 172: return ((F_D_JDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), fltV(a[3]));
+        case 173: return ((F_F_JDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), fltV(a[3]));
+        case 174: ((F_V_JFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), dblV(a[3])); return null;
+        case 175: return ((F_J_JFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), dblV(a[3]));
+        case 176: return ((F_D_JFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), dblV(a[3]));
+        case 177: return ((F_F_JFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), dblV(a[3]));
+        case 178: ((F_V_JFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), fltV(a[3])); return null;
+        case 179: return ((F_J_JFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), fltV(a[3]));
+        case 180: return ((F_D_JFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), fltV(a[3]));
+        case 181: return ((F_F_JFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), fltV(a[3]));
+        case 182: ((F_V_JFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), dblV(a[3])); return null;
+        case 183: return ((F_J_JFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), dblV(a[3]));
+        case 184: return ((F_D_JFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), dblV(a[3]));
+        case 185: return ((F_F_JFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), dblV(a[3]));
+        case 186: ((F_V_JFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3])); return null;
+        case 187: return ((F_J_JFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3]));
+        case 188: return ((F_D_JFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3]));
+        case 189: return ((F_F_JFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3]));
+        case 190: ((F_V_JDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4])); return null;
+        case 191: return ((F_J_JDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]));
+        case 192: return ((F_D_JDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]));
+        case 193: ((F_V_JDDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]), fltV(a[4])); return null;
+        case 194: return ((F_J_JDDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]), fltV(a[4]));
+        case 195: return ((F_D_JDDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]), fltV(a[4]));
+        case 196: ((F_V_JDDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), fltV(a[3]), dblV(a[4])); return null;
+        case 197: return ((F_J_JDDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), fltV(a[3]), dblV(a[4]));
+        case 198: return ((F_D_JDDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), fltV(a[3]), dblV(a[4]));
+        case 199: ((F_V_JDDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), fltV(a[3]), fltV(a[4])); return null;
+        case 200: return ((F_J_JDDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), fltV(a[3]), fltV(a[4]));
+        case 201: return ((F_D_JDDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), fltV(a[3]), fltV(a[4]));
+        case 202: ((F_V_JDFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), dblV(a[3]), dblV(a[4])); return null;
+        case 203: return ((F_J_JDFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), dblV(a[3]), dblV(a[4]));
+        case 204: return ((F_D_JDFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), dblV(a[3]), dblV(a[4]));
+        case 205: ((F_V_JDFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), dblV(a[3]), fltV(a[4])); return null;
+        case 206: return ((F_J_JDFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), dblV(a[3]), fltV(a[4]));
+        case 207: return ((F_D_JDFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), dblV(a[3]), fltV(a[4]));
+        case 208: ((F_V_JDFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), fltV(a[3]), dblV(a[4])); return null;
+        case 209: return ((F_J_JDFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), fltV(a[3]), dblV(a[4]));
+        case 210: return ((F_D_JDFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), fltV(a[3]), dblV(a[4]));
+        case 211: ((F_V_JDFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), fltV(a[3]), fltV(a[4])); return null;
+        case 212: return ((F_J_JDFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), fltV(a[3]), fltV(a[4]));
+        case 213: return ((F_D_JDFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), fltV(a[3]), fltV(a[4]));
+        case 214: ((F_V_JFDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4])); return null;
+        case 215: return ((F_J_JFDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]));
+        case 216: return ((F_D_JFDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]));
+        case 217: ((F_V_JFDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), dblV(a[3]), fltV(a[4])); return null;
+        case 218: return ((F_J_JFDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), dblV(a[3]), fltV(a[4]));
+        case 219: return ((F_D_JFDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), dblV(a[3]), fltV(a[4]));
+        case 220: ((F_V_JFDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), fltV(a[3]), dblV(a[4])); return null;
+        case 221: return ((F_J_JFDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), fltV(a[3]), dblV(a[4]));
+        case 222: return ((F_D_JFDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), fltV(a[3]), dblV(a[4]));
+        case 223: ((F_V_JFDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), fltV(a[3]), fltV(a[4])); return null;
+        case 224: return ((F_J_JFDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), fltV(a[3]), fltV(a[4]));
+        case 225: return ((F_D_JFDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), fltV(a[3]), fltV(a[4]));
+        case 226: ((F_V_JFFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), dblV(a[3]), dblV(a[4])); return null;
+        case 227: return ((F_J_JFFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), dblV(a[3]), dblV(a[4]));
+        case 228: return ((F_D_JFFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), dblV(a[3]), dblV(a[4]));
+        case 229: ((F_V_JFFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), dblV(a[3]), fltV(a[4])); return null;
+        case 230: return ((F_J_JFFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), dblV(a[3]), fltV(a[4]));
+        case 231: return ((F_D_JFFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), dblV(a[3]), fltV(a[4]));
+        case 232: ((F_V_JFFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3]), dblV(a[4])); return null;
+        case 233: return ((F_J_JFFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3]), dblV(a[4]));
+        case 234: return ((F_D_JFFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3]), dblV(a[4]));
+        case 235: ((F_V_JFFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3]), fltV(a[4])); return null;
+        case 236: return ((F_J_JFFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3]), fltV(a[4]));
+        case 237: return ((F_D_JFFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3]), fltV(a[4]));
+        case 238: ((F_V_JDDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5])); return null;
+        case 239: return ((F_J_JDDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]));
+        case 240: return ((F_D_JDDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]));
+        case 241: ((F_V_JDDDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]), dblV(a[6])); return null;
+        case 242: return ((F_J_JDDDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]), dblV(a[6]));
+        case 243: return ((F_D_JDDDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]), dblV(a[6]));
+        case 244: ((F_V_JJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1])); return null;
+        case 245: return ((F_J_JJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]));
+        case 246: return ((F_D_JJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]));
+        case 247: return ((F_F_JJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]));
+        case 248: ((F_V_JJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2])); return null;
+        case 249: return ((F_J_JJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]));
+        case 250: return ((F_D_JJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]));
+        case 251: return ((F_F_JJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]));
+        case 252: ((F_V_JJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2])); return null;
+        case 253: return ((F_J_JJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]));
+        case 254: return ((F_D_JJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]));
+        case 255: return ((F_F_JJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]));
+        case 256: ((F_V_JJDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3])); return null;
+        case 257: return ((F_J_JJDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]));
+        case 258: return ((F_D_JJDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]));
+        case 259: return ((F_F_JJDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]));
+        case 260: ((F_V_JJDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3])); return null;
+        case 261: return ((F_J_JJDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]));
+        case 262: return ((F_D_JJDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]));
+        case 263: return ((F_F_JJDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]));
+        case 264: ((F_V_JJFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3])); return null;
+        case 265: return ((F_J_JJFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]));
+        case 266: return ((F_D_JJFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]));
+        case 267: return ((F_F_JJFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]));
+        case 268: ((F_V_JJFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3])); return null;
+        case 269: return ((F_J_JJFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]));
+        case 270: return ((F_D_JJFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]));
+        case 271: return ((F_F_JJFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]));
+        case 272: ((F_V_JJDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4])); return null;
+        case 273: return ((F_J_JJDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]));
+        case 274: return ((F_D_JJDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]));
+        case 275: ((F_V_JJDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), fltV(a[4])); return null;
+        case 276: return ((F_J_JJDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), fltV(a[4]));
+        case 277: return ((F_D_JJDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), fltV(a[4]));
+        case 278: ((F_V_JJDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), dblV(a[4])); return null;
+        case 279: return ((F_J_JJDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), dblV(a[4]));
+        case 280: return ((F_D_JJDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), dblV(a[4]));
+        case 281: ((F_V_JJDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), fltV(a[4])); return null;
+        case 282: return ((F_J_JJDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), fltV(a[4]));
+        case 283: return ((F_D_JJDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), fltV(a[4]));
+        case 284: ((F_V_JJFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), dblV(a[4])); return null;
+        case 285: return ((F_J_JJFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), dblV(a[4]));
+        case 286: return ((F_D_JJFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), dblV(a[4]));
+        case 287: ((F_V_JJFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), fltV(a[4])); return null;
+        case 288: return ((F_J_JJFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), fltV(a[4]));
+        case 289: return ((F_D_JJFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), fltV(a[4]));
+        case 290: ((F_V_JJFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), dblV(a[4])); return null;
+        case 291: return ((F_J_JJFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), dblV(a[4]));
+        case 292: return ((F_D_JJFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), dblV(a[4]));
+        case 293: ((F_V_JJFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), fltV(a[4])); return null;
+        case 294: return ((F_J_JJFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), fltV(a[4]));
+        case 295: return ((F_D_JJFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), fltV(a[4]));
+        case 296: ((F_V_JJDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5])); return null;
+        case 297: return ((F_J_JJDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]));
+        case 298: return ((F_D_JJDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]));
+        case 299: ((F_V_JJDDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]), fltV(a[5])); return null;
+        case 300: return ((F_J_JJDDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]), fltV(a[5]));
+        case 301: return ((F_D_JJDDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]), fltV(a[5]));
+        case 302: ((F_V_JJDDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), fltV(a[4]), dblV(a[5])); return null;
+        case 303: return ((F_J_JJDDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), fltV(a[4]), dblV(a[5]));
+        case 304: return ((F_D_JJDDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), fltV(a[4]), dblV(a[5]));
+        case 305: ((F_V_JJDDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), fltV(a[4]), fltV(a[5])); return null;
+        case 306: return ((F_J_JJDDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), fltV(a[4]), fltV(a[5]));
+        case 307: return ((F_D_JJDDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), fltV(a[4]), fltV(a[5]));
+        case 308: ((F_V_JJDFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), dblV(a[4]), dblV(a[5])); return null;
+        case 309: return ((F_J_JJDFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), dblV(a[4]), dblV(a[5]));
+        case 310: return ((F_D_JJDFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), dblV(a[4]), dblV(a[5]));
+        case 311: ((F_V_JJDFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), dblV(a[4]), fltV(a[5])); return null;
+        case 312: return ((F_J_JJDFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), dblV(a[4]), fltV(a[5]));
+        case 313: return ((F_D_JJDFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), dblV(a[4]), fltV(a[5]));
+        case 314: ((F_V_JJDFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), fltV(a[4]), dblV(a[5])); return null;
+        case 315: return ((F_J_JJDFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), fltV(a[4]), dblV(a[5]));
+        case 316: return ((F_D_JJDFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), fltV(a[4]), dblV(a[5]));
+        case 317: ((F_V_JJDFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), fltV(a[4]), fltV(a[5])); return null;
+        case 318: return ((F_J_JJDFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), fltV(a[4]), fltV(a[5]));
+        case 319: return ((F_D_JJDFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), fltV(a[4]), fltV(a[5]));
+        case 320: ((F_V_JJFDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5])); return null;
+        case 321: return ((F_J_JJFDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]));
+        case 322: return ((F_D_JJFDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]));
+        case 323: ((F_V_JJFDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), dblV(a[4]), fltV(a[5])); return null;
+        case 324: return ((F_J_JJFDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), dblV(a[4]), fltV(a[5]));
+        case 325: return ((F_D_JJFDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), dblV(a[4]), fltV(a[5]));
+        case 326: ((F_V_JJFDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), fltV(a[4]), dblV(a[5])); return null;
+        case 327: return ((F_J_JJFDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), fltV(a[4]), dblV(a[5]));
+        case 328: return ((F_D_JJFDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), fltV(a[4]), dblV(a[5]));
+        case 329: ((F_V_JJFDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), fltV(a[4]), fltV(a[5])); return null;
+        case 330: return ((F_J_JJFDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), fltV(a[4]), fltV(a[5]));
+        case 331: return ((F_D_JJFDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), fltV(a[4]), fltV(a[5]));
+        case 332: ((F_V_JJFFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), dblV(a[4]), dblV(a[5])); return null;
+        case 333: return ((F_J_JJFFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), dblV(a[4]), dblV(a[5]));
+        case 334: return ((F_D_JJFFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), dblV(a[4]), dblV(a[5]));
+        case 335: ((F_V_JJFFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), dblV(a[4]), fltV(a[5])); return null;
+        case 336: return ((F_J_JJFFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), dblV(a[4]), fltV(a[5]));
+        case 337: return ((F_D_JJFFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), dblV(a[4]), fltV(a[5]));
+        case 338: ((F_V_JJFFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), fltV(a[4]), dblV(a[5])); return null;
+        case 339: return ((F_J_JJFFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), fltV(a[4]), dblV(a[5]));
+        case 340: return ((F_D_JJFFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), fltV(a[4]), dblV(a[5]));
+        case 341: ((F_V_JJFFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), fltV(a[4]), fltV(a[5])); return null;
+        case 342: return ((F_J_JJFFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), fltV(a[4]), fltV(a[5]));
+        case 343: return ((F_D_JJFFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), fltV(a[4]), fltV(a[5]));
+        case 344: ((F_V_JJDDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]), dblV(a[6])); return null;
+        case 345: return ((F_J_JJDDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]), dblV(a[6]));
+        case 346: return ((F_D_JJDDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]), dblV(a[6]));
+        case 347: ((F_V_JJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2])); return null;
+        case 348: return ((F_J_JJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]));
+        case 349: return ((F_D_JJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]));
+        case 350: return ((F_F_JJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]));
+        case 351: ((F_V_JJJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3])); return null;
+        case 352: return ((F_J_JJJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]));
+        case 353: return ((F_D_JJJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]));
+        case 354: return ((F_F_JJJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]));
+        case 355: ((F_V_JJJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3])); return null;
+        case 356: return ((F_J_JJJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]));
+        case 357: return ((F_D_JJJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]));
+        case 358: return ((F_F_JJJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]));
+        case 359: ((F_V_JJJDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4])); return null;
+        case 360: return ((F_J_JJJDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]));
+        case 361: return ((F_D_JJJDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]));
+        case 362: ((F_V_JJJDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4])); return null;
+        case 363: return ((F_J_JJJDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]));
+        case 364: return ((F_D_JJJDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]));
+        case 365: ((F_V_JJJFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4])); return null;
+        case 366: return ((F_J_JJJFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]));
+        case 367: return ((F_D_JJJFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]));
+        case 368: ((F_V_JJJFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4])); return null;
+        case 369: return ((F_J_JJJFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]));
+        case 370: return ((F_D_JJJFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]));
+        case 371: ((F_V_JJJDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5])); return null;
+        case 372: return ((F_J_JJJDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]));
+        case 373: return ((F_D_JJJDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]));
+        case 374: ((F_V_JJJDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), fltV(a[5])); return null;
+        case 375: return ((F_J_JJJDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), fltV(a[5]));
+        case 376: return ((F_D_JJJDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), fltV(a[5]));
+        case 377: ((F_V_JJJDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), dblV(a[5])); return null;
+        case 378: return ((F_J_JJJDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), dblV(a[5]));
+        case 379: return ((F_D_JJJDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), dblV(a[5]));
+        case 380: ((F_V_JJJDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), fltV(a[5])); return null;
+        case 381: return ((F_J_JJJDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), fltV(a[5]));
+        case 382: return ((F_D_JJJDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), fltV(a[5]));
+        case 383: ((F_V_JJJFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), dblV(a[5])); return null;
+        case 384: return ((F_J_JJJFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), dblV(a[5]));
+        case 385: return ((F_D_JJJFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), dblV(a[5]));
+        case 386: ((F_V_JJJFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), fltV(a[5])); return null;
+        case 387: return ((F_J_JJJFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), fltV(a[5]));
+        case 388: return ((F_D_JJJFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), fltV(a[5]));
+        case 389: ((F_V_JJJFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), dblV(a[5])); return null;
+        case 390: return ((F_J_JJJFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), dblV(a[5]));
+        case 391: return ((F_D_JJJFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), dblV(a[5]));
+        case 392: ((F_V_JJJFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), fltV(a[5])); return null;
+        case 393: return ((F_J_JJJFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), fltV(a[5]));
+        case 394: return ((F_D_JJJFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), fltV(a[5]));
+        case 395: ((F_V_JJJDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]), dblV(a[6])); return null;
+        case 396: return ((F_J_JJJDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]), dblV(a[6]));
+        case 397: return ((F_D_JJJDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]), dblV(a[6]));
+        case 398: ((F_V_JJJDDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]), fltV(a[6])); return null;
+        case 399: return ((F_J_JJJDDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]), fltV(a[6]));
+        case 400: return ((F_D_JJJDDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]), fltV(a[6]));
+        case 401: ((F_V_JJJDDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), fltV(a[5]), dblV(a[6])); return null;
+        case 402: return ((F_J_JJJDDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), fltV(a[5]), dblV(a[6]));
+        case 403: return ((F_D_JJJDDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), fltV(a[5]), dblV(a[6]));
+        case 404: ((F_V_JJJDDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), fltV(a[5]), fltV(a[6])); return null;
+        case 405: return ((F_J_JJJDDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), fltV(a[5]), fltV(a[6]));
+        case 406: return ((F_D_JJJDDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), fltV(a[5]), fltV(a[6]));
+        case 407: ((F_V_JJJDFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), dblV(a[5]), dblV(a[6])); return null;
+        case 408: return ((F_J_JJJDFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), dblV(a[5]), dblV(a[6]));
+        case 409: return ((F_D_JJJDFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), dblV(a[5]), dblV(a[6]));
+        case 410: ((F_V_JJJDFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), dblV(a[5]), fltV(a[6])); return null;
+        case 411: return ((F_J_JJJDFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), dblV(a[5]), fltV(a[6]));
+        case 412: return ((F_D_JJJDFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), dblV(a[5]), fltV(a[6]));
+        case 413: ((F_V_JJJDFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), fltV(a[5]), dblV(a[6])); return null;
+        case 414: return ((F_J_JJJDFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), fltV(a[5]), dblV(a[6]));
+        case 415: return ((F_D_JJJDFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), fltV(a[5]), dblV(a[6]));
+        case 416: ((F_V_JJJDFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), fltV(a[5]), fltV(a[6])); return null;
+        case 417: return ((F_J_JJJDFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), fltV(a[5]), fltV(a[6]));
+        case 418: return ((F_D_JJJDFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), fltV(a[5]), fltV(a[6]));
+        case 419: ((F_V_JJJFDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), dblV(a[5]), dblV(a[6])); return null;
+        case 420: return ((F_J_JJJFDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), dblV(a[5]), dblV(a[6]));
+        case 421: return ((F_D_JJJFDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), dblV(a[5]), dblV(a[6]));
+        case 422: ((F_V_JJJFDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), dblV(a[5]), fltV(a[6])); return null;
+        case 423: return ((F_J_JJJFDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), dblV(a[5]), fltV(a[6]));
+        case 424: return ((F_D_JJJFDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), dblV(a[5]), fltV(a[6]));
+        case 425: ((F_V_JJJFDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), fltV(a[5]), dblV(a[6])); return null;
+        case 426: return ((F_J_JJJFDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), fltV(a[5]), dblV(a[6]));
+        case 427: return ((F_D_JJJFDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), fltV(a[5]), dblV(a[6]));
+        case 428: ((F_V_JJJFDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), fltV(a[5]), fltV(a[6])); return null;
+        case 429: return ((F_J_JJJFDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), fltV(a[5]), fltV(a[6]));
+        case 430: return ((F_D_JJJFDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), fltV(a[5]), fltV(a[6]));
+        case 431: ((F_V_JJJFFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), dblV(a[5]), dblV(a[6])); return null;
+        case 432: return ((F_J_JJJFFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), dblV(a[5]), dblV(a[6]));
+        case 433: return ((F_D_JJJFFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), dblV(a[5]), dblV(a[6]));
+        case 434: ((F_V_JJJFFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), dblV(a[5]), fltV(a[6])); return null;
+        case 435: return ((F_J_JJJFFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), dblV(a[5]), fltV(a[6]));
+        case 436: return ((F_D_JJJFFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), dblV(a[5]), fltV(a[6]));
+        case 437: ((F_V_JJJFFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), fltV(a[5]), dblV(a[6])); return null;
+        case 438: return ((F_J_JJJFFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), fltV(a[5]), dblV(a[6]));
+        case 439: return ((F_D_JJJFFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), fltV(a[5]), dblV(a[6]));
+        case 440: ((F_V_JJJFFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), fltV(a[5]), fltV(a[6])); return null;
+        case 441: return ((F_J_JJJFFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), fltV(a[5]), fltV(a[6]));
+        case 442: return ((F_D_JJJFFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), fltV(a[5]), fltV(a[6]));
+        case 443: ((F_V_JJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3])); return null;
+        case 444: return ((F_J_JJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]));
+        case 445: return ((F_D_JJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]));
+        case 446: return ((F_F_JJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]));
+        case 447: ((F_V_JJJJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4])); return null;
+        case 448: return ((F_J_JJJJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]));
+        case 449: return ((F_D_JJJJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]));
+        case 450: ((F_V_JJJJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4])); return null;
+        case 451: return ((F_J_JJJJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]));
+        case 452: return ((F_D_JJJJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]));
+        case 453: ((F_V_JJJJDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), dblV(a[5])); return null;
+        case 454: return ((F_J_JJJJDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), dblV(a[5]));
+        case 455: return ((F_D_JJJJDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), dblV(a[5]));
+        case 456: ((F_V_JJJJDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), fltV(a[5])); return null;
+        case 457: return ((F_J_JJJJDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), fltV(a[5]));
+        case 458: return ((F_D_JJJJDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), fltV(a[5]));
+        case 459: ((F_V_JJJJFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), dblV(a[5])); return null;
+        case 460: return ((F_J_JJJJFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), dblV(a[5]));
+        case 461: return ((F_D_JJJJFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), dblV(a[5]));
+        case 462: ((F_V_JJJJFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), fltV(a[5])); return null;
+        case 463: return ((F_J_JJJJFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), fltV(a[5]));
+        case 464: return ((F_D_JJJJFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), fltV(a[5]));
+        case 465: ((F_V_JJJJDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), dblV(a[5]), dblV(a[6])); return null;
+        case 466: return ((F_J_JJJJDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), dblV(a[5]), dblV(a[6]));
+        case 467: return ((F_D_JJJJDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), dblV(a[5]), dblV(a[6]));
+        case 468: ((F_V_JJJJDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), dblV(a[5]), fltV(a[6])); return null;
+        case 469: return ((F_J_JJJJDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), dblV(a[5]), fltV(a[6]));
+        case 470: return ((F_D_JJJJDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), dblV(a[5]), fltV(a[6]));
+        case 471: ((F_V_JJJJDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), fltV(a[5]), dblV(a[6])); return null;
+        case 472: return ((F_J_JJJJDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), fltV(a[5]), dblV(a[6]));
+        case 473: return ((F_D_JJJJDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), fltV(a[5]), dblV(a[6]));
+        case 474: ((F_V_JJJJDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), fltV(a[5]), fltV(a[6])); return null;
+        case 475: return ((F_J_JJJJDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), fltV(a[5]), fltV(a[6]));
+        case 476: return ((F_D_JJJJDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), fltV(a[5]), fltV(a[6]));
+        case 477: ((F_V_JJJJFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), dblV(a[5]), dblV(a[6])); return null;
+        case 478: return ((F_J_JJJJFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), dblV(a[5]), dblV(a[6]));
+        case 479: return ((F_D_JJJJFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), dblV(a[5]), dblV(a[6]));
+        case 480: ((F_V_JJJJFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), dblV(a[5]), fltV(a[6])); return null;
+        case 481: return ((F_J_JJJJFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), dblV(a[5]), fltV(a[6]));
+        case 482: return ((F_D_JJJJFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), dblV(a[5]), fltV(a[6]));
+        case 483: ((F_V_JJJJFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), fltV(a[5]), dblV(a[6])); return null;
+        case 484: return ((F_J_JJJJFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), fltV(a[5]), dblV(a[6]));
+        case 485: return ((F_D_JJJJFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), fltV(a[5]), dblV(a[6]));
+        case 486: ((F_V_JJJJFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), fltV(a[5]), fltV(a[6])); return null;
+        case 487: return ((F_J_JJJJFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), fltV(a[5]), fltV(a[6]));
+        case 488: return ((F_D_JJJJFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), fltV(a[5]), fltV(a[6]));
+        case 489: ((F_V_JJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4])); return null;
+        case 490: return ((F_J_JJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]));
+        case 491: return ((F_D_JJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]));
+        case 492: ((F_V_JJJJJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), dblV(a[5])); return null;
+        case 493: return ((F_J_JJJJJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), dblV(a[5]));
+        case 494: return ((F_D_JJJJJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), dblV(a[5]));
+        case 495: ((F_V_JJJJJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), fltV(a[5])); return null;
+        case 496: return ((F_J_JJJJJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), fltV(a[5]));
+        case 497: return ((F_D_JJJJJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), fltV(a[5]));
+        case 498: ((F_V_JJJJJDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), dblV(a[5]), dblV(a[6])); return null;
+        case 499: return ((F_J_JJJJJDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), dblV(a[5]), dblV(a[6]));
+        case 500: return ((F_D_JJJJJDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), dblV(a[5]), dblV(a[6]));
+        case 501: ((F_V_JJJJJDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), dblV(a[5]), fltV(a[6])); return null;
+        case 502: return ((F_J_JJJJJDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), dblV(a[5]), fltV(a[6]));
+        case 503: return ((F_D_JJJJJDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), dblV(a[5]), fltV(a[6]));
+        case 504: ((F_V_JJJJJFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), fltV(a[5]), dblV(a[6])); return null;
+        case 505: return ((F_J_JJJJJFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), fltV(a[5]), dblV(a[6]));
+        case 506: return ((F_D_JJJJJFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), fltV(a[5]), dblV(a[6]));
+        case 507: ((F_V_JJJJJFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), fltV(a[5]), fltV(a[6])); return null;
+        case 508: return ((F_J_JJJJJFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), fltV(a[5]), fltV(a[6]));
+        case 509: return ((F_D_JJJJJFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), fltV(a[5]), fltV(a[6]));
+        case 510: ((F_V_JJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5])); return null;
+        case 511: return ((F_J_JJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]));
+        case 512: return ((F_D_JJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]));
+        case 513: ((F_V_JJJJJJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), dblV(a[6])); return null;
+        case 514: return ((F_J_JJJJJJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), dblV(a[6]));
+        case 515: return ((F_D_JJJJJJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), dblV(a[6]));
+        case 516: ((F_V_JJJJJJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), fltV(a[6])); return null;
+        case 517: return ((F_J_JJJJJJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), fltV(a[6]));
+        case 518: return ((F_D_JJJJJJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), fltV(a[6]));
+        case 519: ((F_V_JJJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), longV(a[6])); return null;
+        case 520: return ((F_J_JJJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), longV(a[6]));
+        case 521: return ((F_D_JJJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), longV(a[6]));
+        case 522: ((F_V_JJJJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), longV(a[6]), longV(a[7])); return null;
+        case 523: return ((F_J_JJJJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), longV(a[6]), longV(a[7]));
+        case 524: return ((F_D_JJJJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), longV(a[6]), longV(a[7]));
+        case 525: ((F_V_JJJJJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), longV(a[6]), longV(a[7]), longV(a[8])); return null;
+        case 526: return ((F_J_JJJJJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), longV(a[6]), longV(a[7]), longV(a[8]));
+        case 527: return ((F_D_JJJJJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), longV(a[6]), longV(a[7]), longV(a[8]));
+        case 528: ((F_V_JJJJJJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), longV(a[6]), longV(a[7]), longV(a[8]), longV(a[9])); return null;
+        case 529: return ((F_J_JJJJJJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), longV(a[6]), longV(a[7]), longV(a[8]), longV(a[9]));
+        case 530: return ((F_D_JJJJJJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), longV(a[6]), longV(a[7]), longV(a[8]), longV(a[9]));
+        }
+        throw new IllegalArgumentException("bad shape id: " + id);
     }
 }

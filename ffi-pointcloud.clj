@@ -100,7 +100,7 @@
     p))
 
 (init-window 800 450 "babashka.ffi - point cloud")
-(set-target-fps 60)
+(set-target-fps 120)
 
 (def points (make-points))
 

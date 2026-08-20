@@ -48,7 +48,7 @@
     (+ (System/currentTimeMillis) (* 1000 (parse-long secs)))))
 
 (init-window W H "babashka.ffi - bouncing ball")
-(set-target-fps 60)
+(set-target-fps 150)
 
 (loop [x 400.0 y 225.0 vx 5.0 vy 4.0 paused? false]
   (when (and (zero? (window-should-close))
