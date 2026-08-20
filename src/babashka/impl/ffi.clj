@@ -7,6 +7,7 @@
 
 (def ffi-namespace
   {'load-library (copy-var ffi/load-library tns)
+   'load-system-library (copy-var ffi/load-system-library tns)
    'cfn (copy-var ffi/cfn tns)
    'defcfn (copy-var ffi/defcfn tns)
    'alloc (copy-var ffi/alloc tns)

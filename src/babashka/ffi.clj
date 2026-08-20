@@ -122,6 +122,15 @@
     (swap! libraries conj lookup)
     lookup))
 
+(defn load-system-library
+  "Loads a library by its short name, e.g. \"z\" for libz.dylib / libz.so /
+  z.dll. See load-library."
+  [name]
+  (load-library (case (os-key)
+                  :mac (str "lib" name ".dylib")
+                  :windows (str name ".dll")
+                  (str "lib" name ".so"))))
+
 (defn- find-symbol ^MemorySegment [lib ^String sym]
   (let [lookups (if lib [lib] (conj @libraries (.defaultLookup ^Linker @linker*)))]
     (or (some (fn [^SymbolLookup l] (.orElse (.find l sym) nil)) lookups)
