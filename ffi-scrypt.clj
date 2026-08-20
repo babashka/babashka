@@ -6,15 +6,10 @@
          '[babashka.fs :as fs]
          '[babashka.process :as p])
 
-(def lib-candidates
-  ["/opt/homebrew/opt/openssl@3/lib/libcrypto.3.dylib" ; brew, Apple silicon
-   "/usr/local/opt/openssl@3/lib/libcrypto.3.dylib"    ; brew, Intel mac
-   "libcrypto.so.3"
-   "libcrypto.so"])
-
-(when-not (some #(try (ffi/load-library %) (catch Exception _ nil)) lib-candidates)
-  (println "libcrypto 3 not found - brew install openssl@3")
-  (System/exit 1))
+;; version-pinned per-OS names: plain libcrypto.dylib is Apple's stub, which
+;; aborts on load, so this NEEDS the OS-map form of load-library
+(ffi/load-library {:mac "/opt/homebrew/opt/openssl@3/lib/libcrypto.3.dylib"
+                   :linux "libcrypto.so.3"})
 
 ;; int EVP_PBE_scrypt(const char *pass, size_t passlen,
 ;;                    const unsigned char *salt, size_t saltlen,

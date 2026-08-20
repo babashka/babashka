@@ -5,7 +5,7 @@
   types, and marshal memory by hand:
 
       (require '[babashka.ffi :as ffi])
-      (ffi/load-library {:mac \"libsqlite3.dylib\" :linux \"libsqlite3.so.0\"})
+      (ffi/load-system-library \"sqlite3\")
       (def sqlite3-open (ffi/cfn \"sqlite3_open\" [:string :pointer] :int))
       (let [pp (ffi/alloc (ffi/sizeof :pointer))]
         (try (sqlite3-open \"x.db\" pp)
@@ -198,13 +198,16 @@
        (catch Throwable _ nil)))
 
 (defn load-library
-  "Loads a shared library and registers it for symbol resolution. Takes a
-  path, or a map from OS keyword (:mac :linux :windows) to path; :darwin is
-  accepted as a synonym for :mac (jolt compatibility). A bare name (no
-  separator) that the system's dlopen search does not find is also probed in
-  common install directories (Homebrew, MacPorts, /usr/local/lib, multiarch
-  dirs) and in BABASHKA_FFI_LIBRARY_PATH. Returns the library's
-  SymbolLookup, usable as the first argument to cfn."
+  "Loads a shared library and registers it for symbol resolution. Prefer
+  load-system-library when the name only differs per OS by convention; this
+  is the escape hatch for version-pinned or per-OS names, e.g.
+  {:mac \"libcrypto.3.dylib\" :linux \"libcrypto.so.3\"}. Takes a path, or a
+  map from OS keyword (:mac :linux :windows) to path; :darwin is accepted as
+  a synonym for :mac (jolt compatibility). A bare name (no separator) that
+  the system's dlopen search does not find is also probed in common install
+  directories (Homebrew, MacPorts, /usr/local/lib, multiarch dirs) and in
+  BABASHKA_FFI_LIBRARY_PATH. Returns the library's SymbolLookup, usable as
+  the first argument to cfn."
   [path-or-map]
   (let [path (str (if (map? path-or-map)
                     (or (get path-or-map (os-key))
