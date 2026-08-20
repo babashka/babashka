@@ -77,6 +77,44 @@ native image the upcall MH falls back to reflective invocation, so
 `IFn.invoke` arities 0..8 need reflection registration. Stubs live in the
 global arena for the process lifetime.
 
+## Trick 5: compiled call trampolines via the SVM C interface
+
+FFM downcall handles are MethodHandle trees. HotSpot JIT-compiles them
+(123ns/call); a native image cannot generate code at runtime and interprets
+the tree on every call (~3.4us, measured in pure Java with invokeExact - no
+Clojure overhead involved). The interpretation cannot be avoided from the
+caller side: Linker.Option.critical changes nothing, and a build-time-constant
+address-less handle fails analysis ("should not reach here: linkToNative").
+
+The fix bypasses FFM for non-variadic downcalls entirely:
+`@InvokeCFunctionPointer` on a `CFunctionPointer` subinterface -
+SubstrateVM's own C interface (org.graalvm.nativeimage.c.function, public
+API since 19.0, nothing deprecated as of 25) - compiles to a direct native
+call: word-typed pointer (no object, no boxing at the call), register loads
+per the C ABI fixed at image build time from the method signature, and the
+Java-to-native thread-state transition (so a blocking call never stalls the
+GC - jolt's __collect_safe semantics by default). Measured 2.3ns/call.
+
+The signature must be a build-time constant, so the generator emits one
+interface + static method per canonical (shape x return) pair - 299 total,
+~1.2MB - and a Clojure map from shape key ("J_JJD") to a builder fn. cfn
+looks up the sorted shape key; a hit dispatches through the trampoline, a
+miss falls back to FFM. The canonicalization tricks (widening, sorting) are
+what make 299 enough. End-to-end native call cost: 63ns (was 4777ns); the
+1500-point rlgl demo went from ~3fps to jolt-parity (85 vs ~100fps at a
+120fps target, remaining gap is SCI interpreting the demo loop).
+
+FFM remains for: varargs (a fixed-convention pointer call reintroduces the
+arm64 variadic trap), upcalls/callbacks, the JVM path (word types do not
+exist on HotSpot), and Windows mixed-order signatures (no sorting there, so
+the sorted key misses; the ordered descriptor family stays registered on
+Windows only - elsewhere non-variadic descriptors are no longer emitted).
+
+This combination - per-shape compiled SVM trampolines under a data-driven
+FFI with count-shape canonicalization - is not found in coffi, jolt, or
+dtype-next; it is specific to the native-image constraint set and appears
+to be novel.
+
 ## Numbers
 
 bb baseline 73,282,320 bytes (worktree build, GraalVM 25.0.4, macOS aarch64).
@@ -87,6 +125,10 @@ bb baseline 73,282,320 bytes (worktree build, GraalVM 25.0.4, macOS aarch64).
 | trimmed orderings (<= 2 doubles high arity) | ~1270 | +1.66MB  |
 | count shapes (sorting trick)             | ~700  | +0.76MB  |
 | final (arity <= 7, varargs <= 5, upcall trim) | ~530  | +0.55MB (+0.79%) |
+| + 299 compiled trampolines, minus dead descriptors | ~220 + 299 | +1.77MB (+2.5%) |
+
+Call cost, native image: FFM interpreted 4777ns -> trampoline 63ns. JVM
+(FFM, JIT-compiled): 123ns.
 
 Call overhead: ~4.8us per call in the native image (`invokeWithArguments` +
 MethodHandle interpretation). Fine for per-row and per-frame calls (tetris
