@@ -21,14 +21,20 @@
 (defn cli-node
   "The babashka.cli dispatch node for a task, or nil when the task is a plain
   one. Naming a handler (`:exec-fn`) or a command tree (`:cmd`) is what opts a
-  task in. Those keys stay on the task, everything else babashka.cli
-  takes lives under `:cli`, so reading a task map tells you which keys are bb's
-  and which are the parser's. Inside `:cmd` there is no such split: those are
-  babashka.cli nodes already."
+  task in. babashka.cli options may be spelled directly on the task or under
+  `:cli`, which `(exec ...)` already accepts both of; the direct spelling wins.
+  `:cli` is what holds options that bb.edn cannot express, such as an
+  `:error-fn`, as a symbol naming a var. Inside `:cmd` there is no such split:
+  those are babashka.cli nodes already."
   [task-map]
   (when (and (map? task-map)
              (or (:exec-fn task-map) (:cmd task-map)))
-    (select-keys task-map [:exec-fn :cmd :doc :cli])))
+    (select-keys task-map [:exec-fn :cmd :doc :cli
+                           ;; babashka.cli options may also be spelled directly
+                           ;; on the task, like `(exec ...)` already reads them
+                           :spec :exec-args :restrict :error-fn :epilog
+                           :args->opts :alias :coerce :collect :require
+                           :validate :order :no-keyword-opts])))
 
 (defn join-docs
   "A task `:doc` may be a vector of lines, convenient in edn. Joins it into
