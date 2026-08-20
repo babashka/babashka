@@ -545,15 +545,6 @@
       "parameterTypes" : [ "long", "long", "double", "double", "double", "double", "double" ]
     }, {
       "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "double", "double", "double", "double", "double", "double" ]
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "double", "double", "double", "double", "double", "double" ]
-    }, {
-      "returnType" : "double",
-      "parameterTypes" : [ "long", "long", "double", "double", "double", "double", "double", "double" ]
-    }, {
-      "returnType" : "void",
       "parameterTypes" : [ "long", "long", "long" ]
     }, {
       "returnType" : "long",
@@ -698,15 +689,6 @@
       "parameterTypes" : [ "long", "long", "long", "double", "double", "double", "double" ]
     }, {
       "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "long", "double", "double", "double", "double", "double" ]
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "long", "double", "double", "double", "double", "double" ]
-    }, {
-      "returnType" : "double",
-      "parameterTypes" : [ "long", "long", "long", "double", "double", "double", "double", "double" ]
-    }, {
-      "returnType" : "void",
       "parameterTypes" : [ "long", "long", "long", "long" ]
     }, {
       "returnType" : "long",
@@ -746,15 +728,6 @@
       "parameterTypes" : [ "long", "long", "long", "long", "float", "float", "float" ]
     }, {
       "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "long", "long", "float", "float", "float", "float" ]
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "long", "long", "float", "float", "float", "float" ]
-    }, {
-      "returnType" : "double",
-      "parameterTypes" : [ "long", "long", "long", "long", "float", "float", "float", "float" ]
-    }, {
-      "returnType" : "void",
       "parameterTypes" : [ "long", "long", "long", "long", "double" ]
     }, {
       "returnType" : "long",
@@ -782,15 +755,6 @@
       "parameterTypes" : [ "long", "long", "long", "long", "double", "float", "float" ]
     }, {
       "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "long", "long", "double", "float", "float", "float" ]
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "long", "long", "double", "float", "float", "float" ]
-    }, {
-      "returnType" : "double",
-      "parameterTypes" : [ "long", "long", "long", "long", "double", "float", "float", "float" ]
-    }, {
-      "returnType" : "void",
       "parameterTypes" : [ "long", "long", "long", "long", "double", "double" ]
     }, {
       "returnType" : "long",
@@ -809,15 +773,6 @@
       "parameterTypes" : [ "long", "long", "long", "long", "double", "double", "float" ]
     }, {
       "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "long", "long", "double", "double", "float", "float" ]
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "long", "long", "double", "double", "float", "float" ]
-    }, {
-      "returnType" : "double",
-      "parameterTypes" : [ "long", "long", "long", "long", "double", "double", "float", "float" ]
-    }, {
-      "returnType" : "void",
       "parameterTypes" : [ "long", "long", "long", "long", "double", "double", "double" ]
     }, {
       "returnType" : "long",
@@ -825,24 +780,6 @@
     }, {
       "returnType" : "double",
       "parameterTypes" : [ "long", "long", "long", "long", "double", "double", "double" ]
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "long", "long", "double", "double", "double", "float" ]
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "long", "long", "double", "double", "double", "float" ]
-    }, {
-      "returnType" : "double",
-      "parameterTypes" : [ "long", "long", "long", "long", "double", "double", "double", "float" ]
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "long", "long", "double", "double", "double", "double" ]
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "long", "long", "double", "double", "double", "double" ]
-    }, {
-      "returnType" : "double",
-      "parameterTypes" : [ "long", "long", "long", "long", "double", "double", "double", "double" ]
     }, {
       "returnType" : "void",
       "parameterTypes" : [ "long", "long", "long", "long", "long" ]
@@ -872,15 +809,6 @@
       "parameterTypes" : [ "long", "long", "long", "long", "long", "float", "float" ]
     }, {
       "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "long", "long", "long", "float", "float", "float" ]
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "long", "long", "long", "float", "float", "float" ]
-    }, {
-      "returnType" : "double",
-      "parameterTypes" : [ "long", "long", "long", "long", "long", "float", "float", "float" ]
-    }, {
-      "returnType" : "void",
       "parameterTypes" : [ "long", "long", "long", "long", "long", "double" ]
     }, {
       "returnType" : "long",
@@ -899,15 +827,6 @@
       "parameterTypes" : [ "long", "long", "long", "long", "long", "double", "float" ]
     }, {
       "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "long", "long", "long", "double", "float", "float" ]
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "long", "long", "long", "double", "float", "float" ]
-    }, {
-      "returnType" : "double",
-      "parameterTypes" : [ "long", "long", "long", "long", "long", "double", "float", "float" ]
-    }, {
-      "returnType" : "void",
       "parameterTypes" : [ "long", "long", "long", "long", "long", "double", "double" ]
     }, {
       "returnType" : "long",
@@ -915,24 +834,6 @@
     }, {
       "returnType" : "double",
       "parameterTypes" : [ "long", "long", "long", "long", "long", "double", "double" ]
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "long", "long", "long", "double", "double", "float" ]
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "long", "long", "long", "double", "double", "float" ]
-    }, {
-      "returnType" : "double",
-      "parameterTypes" : [ "long", "long", "long", "long", "long", "double", "double", "float" ]
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "long", "long", "long", "double", "double", "double" ]
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "long", "long", "long", "double", "double", "double" ]
-    }, {
-      "returnType" : "double",
-      "parameterTypes" : [ "long", "long", "long", "long", "long", "double", "double", "double" ]
     }, {
       "returnType" : "void",
       "parameterTypes" : [ "long", "long", "long", "long", "long", "long" ]
@@ -953,15 +854,6 @@
       "parameterTypes" : [ "long", "long", "long", "long", "long", "long", "float" ]
     }, {
       "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "long", "long", "long", "long", "float", "float" ]
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "long", "long", "long", "long", "float", "float" ]
-    }, {
-      "returnType" : "double",
-      "parameterTypes" : [ "long", "long", "long", "long", "long", "long", "float", "float" ]
-    }, {
-      "returnType" : "void",
       "parameterTypes" : [ "long", "long", "long", "long", "long", "long", "double" ]
     }, {
       "returnType" : "long",
@@ -969,24 +861,6 @@
     }, {
       "returnType" : "double",
       "parameterTypes" : [ "long", "long", "long", "long", "long", "long", "double" ]
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "long", "long", "long", "long", "double", "float" ]
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "long", "long", "long", "long", "double", "float" ]
-    }, {
-      "returnType" : "double",
-      "parameterTypes" : [ "long", "long", "long", "long", "long", "long", "double", "float" ]
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "long", "long", "long", "long", "double", "double" ]
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "long", "long", "long", "long", "double", "double" ]
-    }, {
-      "returnType" : "double",
-      "parameterTypes" : [ "long", "long", "long", "long", "long", "long", "double", "double" ]
     }, {
       "returnType" : "void",
       "parameterTypes" : [ "long", "long" ],
@@ -2172,798 +2046,6 @@
     }, {
       "returnType" : "long",
       "parameterTypes" : [ "double", "double", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "long", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "long", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "long", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "long", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "long", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "long", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "long", "long", "long", "double" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "long", "long", "long", "double" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "long", "long", "long", "double" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "long", "long", "long", "double" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "long", "long", "long", "double" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "long", "long", "long", "double" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "long", "long", "double", "long" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "long", "long", "double", "long" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "long", "long", "double", "long" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "long", "long", "double", "long" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "long", "long", "double", "long" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "long", "long", "double", "long" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "long", "long", "double", "double" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "long", "long", "double", "double" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "long", "long", "double", "double" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "long", "long", "double", "double" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "long", "long", "double", "double" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "long", "long", "double", "double" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "long", "double", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "long", "double", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "long", "double", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "long", "double", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "long", "double", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "long", "double", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "long", "double", "long", "double" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "long", "double", "long", "double" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "long", "double", "long", "double" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "long", "double", "long", "double" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "long", "double", "long", "double" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "long", "double", "long", "double" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "long", "double", "double", "long" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "long", "double", "double", "long" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "long", "double", "double", "long" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "long", "double", "double", "long" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "long", "double", "double", "long" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "long", "double", "double", "long" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "double", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "double", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "double", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "double", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "double", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "double", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "double", "long", "long", "double" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "double", "long", "long", "double" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "double", "long", "long", "double" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "double", "long", "long", "double" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "double", "long", "long", "double" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "double", "long", "long", "double" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "double", "long", "double", "long" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "double", "long", "double", "long" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "double", "long", "double", "long" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "double", "long", "double", "long" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "double", "long", "double", "long" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "double", "long", "double", "long" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "double", "double", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "double", "double", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "double", "double", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "double", "double", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "long", "double", "double", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "double", "double", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "double", "long", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "double", "long", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "double", "long", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "double", "long", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "double", "long", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "double", "long", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "double", "long", "long", "long", "double" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "double", "long", "long", "long", "double" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "double", "long", "long", "long", "double" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "double", "long", "long", "long", "double" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "double", "long", "long", "long", "double" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "double", "long", "long", "long", "double" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "double", "long", "long", "double", "long" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "double", "long", "long", "double", "long" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "double", "long", "long", "double", "long" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "double", "long", "long", "double", "long" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "double", "long", "long", "double", "long" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "double", "long", "long", "double", "long" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "double", "long", "double", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "double", "long", "double", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "double", "long", "double", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "double", "long", "double", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "double", "long", "double", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "double", "long", "double", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "double", "double", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "double", "double", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "double", "double", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "double", "double", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "double", "double", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "double", "double", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "double", "long", "long", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "double", "long", "long", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "double", "long", "long", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "double", "long", "long", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "double", "long", "long", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "double", "long", "long", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "double", "long", "long", "long", "long", "double" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "double", "long", "long", "long", "long", "double" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "double", "long", "long", "long", "long", "double" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "double", "long", "long", "long", "long", "double" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "double", "long", "long", "long", "long", "double" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "double", "long", "long", "long", "long", "double" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "double", "long", "long", "long", "double", "long" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "double", "long", "long", "long", "double", "long" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "double", "long", "long", "long", "double", "long" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "double", "long", "long", "long", "double", "long" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "double", "long", "long", "long", "double", "long" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "double", "long", "long", "long", "double", "long" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "double", "long", "long", "double", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "double", "long", "long", "double", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "double", "long", "long", "double", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "double", "long", "long", "double", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "double", "long", "long", "double", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "double", "long", "long", "double", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "double", "long", "double", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "double", "long", "double", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "double", "long", "double", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "double", "long", "double", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "double", "long", "double", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "double", "long", "double", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "double", "double", "long", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "double", "double", "long", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 1
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "double", "double", "long", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "double", "double", "long", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 2
-      }
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "double", "double", "long", "long", "long", "long" ],
-      "options" : {
-        "firstVariadicArg" : 3
-      }
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "double", "double", "long", "long", "long", "long" ],
       "options" : {
         "firstVariadicArg" : 3
       }
@@ -2975,16 +2057,10 @@
       "returnType" : "long",
       "parameterTypes" : [ ]
     }, {
-      "returnType" : "double",
-      "parameterTypes" : [ ]
-    }, {
       "returnType" : "void",
       "parameterTypes" : [ "double" ]
     }, {
       "returnType" : "long",
-      "parameterTypes" : [ "double" ]
-    }, {
-      "returnType" : "double",
       "parameterTypes" : [ "double" ]
     }, {
       "returnType" : "void",
@@ -2993,34 +2069,10 @@
       "returnType" : "long",
       "parameterTypes" : [ "double", "double" ]
     }, {
-      "returnType" : "double",
-      "parameterTypes" : [ "double", "double" ]
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "double", "double", "double" ]
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "double", "double", "double" ]
-    }, {
-      "returnType" : "double",
-      "parameterTypes" : [ "double", "double", "double" ]
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "double", "double", "double", "double" ]
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "double", "double", "double", "double" ]
-    }, {
-      "returnType" : "double",
-      "parameterTypes" : [ "double", "double", "double", "double" ]
-    }, {
       "returnType" : "void",
       "parameterTypes" : [ "long" ]
     }, {
       "returnType" : "long",
-      "parameterTypes" : [ "long" ]
-    }, {
-      "returnType" : "double",
       "parameterTypes" : [ "long" ]
     }, {
       "returnType" : "void",
@@ -3029,79 +2081,46 @@
       "returnType" : "long",
       "parameterTypes" : [ "long", "double" ]
     }, {
-      "returnType" : "double",
-      "parameterTypes" : [ "long", "double" ]
-    }, {
       "returnType" : "void",
       "parameterTypes" : [ "long", "double", "double" ]
     }, {
       "returnType" : "long",
       "parameterTypes" : [ "long", "double", "double" ]
-    }, {
-      "returnType" : "double",
-      "parameterTypes" : [ "long", "double", "double" ]
-    }, {
-      "returnType" : "void",
-      "parameterTypes" : [ "long", "double", "double", "double" ]
-    }, {
-      "returnType" : "long",
-      "parameterTypes" : [ "long", "double", "double", "double" ]
-    }, {
-      "returnType" : "double",
-      "parameterTypes" : [ "long", "double", "double", "double" ]
     }, {
       "returnType" : "void",
       "parameterTypes" : [ "long", "long" ]
     }, {
       "returnType" : "long",
-      "parameterTypes" : [ "long", "long" ]
-    }, {
-      "returnType" : "double",
       "parameterTypes" : [ "long", "long" ]
     }, {
       "returnType" : "void",
       "parameterTypes" : [ "long", "long", "double" ]
     }, {
       "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "double" ]
-    }, {
-      "returnType" : "double",
       "parameterTypes" : [ "long", "long", "double" ]
     }, {
       "returnType" : "void",
       "parameterTypes" : [ "long", "long", "double", "double" ]
     }, {
       "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "double", "double" ]
-    }, {
-      "returnType" : "double",
       "parameterTypes" : [ "long", "long", "double", "double" ]
     }, {
       "returnType" : "void",
       "parameterTypes" : [ "long", "long", "long" ]
     }, {
       "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "long" ]
-    }, {
-      "returnType" : "double",
       "parameterTypes" : [ "long", "long", "long" ]
     }, {
       "returnType" : "void",
       "parameterTypes" : [ "long", "long", "long", "double" ]
     }, {
       "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "long", "double" ]
-    }, {
-      "returnType" : "double",
       "parameterTypes" : [ "long", "long", "long", "double" ]
     }, {
       "returnType" : "void",
       "parameterTypes" : [ "long", "long", "long", "long" ]
     }, {
       "returnType" : "long",
-      "parameterTypes" : [ "long", "long", "long", "long" ]
-    }, {
-      "returnType" : "double",
       "parameterTypes" : [ "long", "long", "long", "long" ]
     } ]
   },

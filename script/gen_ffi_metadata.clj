@@ -10,11 +10,11 @@
 ;; note in babashka.ffi. Shapes:
 ;;
 ;; - downcalls: a longs, b doubles, c floats with a <= 6 (x86-64 has 6
-;;   integer argument registers), a+b+c <= 8, and b+c <= 4 when c > 0;
+;;   integer argument registers), a+b+c <= 7, and b+c <= 4 when c > 0;
 ;;   returns void/long/double, plus float for shapes of <= 4 args
-;; - variadic downcalls (order preserved, not sorted): arity 2..6 over
+;; - variadic downcalls (order preserved, not sorted): arity 2..5 over
 ;;   {long,double} with <= 2 doubles, boundary 1..3, returns void/long
-;; - upcalls: a longs, b doubles with a+b <= 4, returns void/long/double
+;; - upcalls: a longs, b doubles with a+b <= 4 and b <= 2, returns void/long
 ;; - reflection: clojure.lang.IFn.invoke arities 0..8, for upcall
 ;;   method handles
 (require '[cheshire.core :as json])
@@ -33,7 +33,7 @@
   (for [a (range 0 7)
         b (range 0 7)
         c (range 0 5)
-        :when (and (<= (+ a b c) 8)
+        :when (and (<= (+ a b c) 7)
                    (or (zero? c) (<= (+ b c) 4)))]
     (shape a b c)))
 
@@ -43,7 +43,7 @@
          ret (cond-> ["void" "long" "double"]
                (<= (count args) 4) (conj "float"))]
      {"returnType" ret "parameterTypes" args})
-   (for [n (range 2 7)
+   (for [n (range 2 6)
          args (combos-n ["long" "double"] n)
          :when (<= (count (filter #(= "double" %) args)) 2)
          boundary (range 1 (inc (min 3 (dec n))))
@@ -53,9 +53,9 @@
 
 (def upcalls
   (for [a (range 0 5)
-        b (range 0 5)
+        b (range 0 3)
         :when (<= (+ a b) 4)
-        ret ["void" "long" "double"]]
+        ret ["void" "long"]]
     {"returnType" ret "parameterTypes" (shape a b 0)}))
 
 (def reflection
