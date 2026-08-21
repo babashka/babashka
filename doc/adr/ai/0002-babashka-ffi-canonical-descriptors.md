@@ -231,11 +231,37 @@ query, not per element, so nothing here needs it yet.
 
 ## Known gaps
 
-- Struct-by-value. Arguments are solvable inside the scalar family by ABI
-  classification (AArch64 HFAs decompose into float args, small composites
-  into 1-2 longs, large ones pass indirectly). Struct RETURNS cannot be faked
-  with scalars (two return registers), and need a small registered family of
-  real struct layouts.
+- Struct-by-value. DECIDED (2026-08-21), follow-up issue, not this branch:
+  route every signature containing a struct through libffi. Reasons, in
+  order:
+  - Returns force it. A struct return cannot be faked with scalars: an
+    AArch64 HFA returns in s0/s1 and larger structs return via a hidden
+    pointer in x8, neither expressible in a trampoline signature. Verified
+    empirically: `mkv2` bound as `:long` returns garbage. Returns are also
+    the majority of real blockers (GetMousePosition, LoadTexture, LoadSound
+    in the b12n-raylib-clj suite).
+  - A "native" FFM struct descriptor would run on the interpreted
+    MethodHandle path in the image (~3.4us, GraalVM 25); libffi through the
+    already-registered pointer-only trampoline shapes measured 459ns. No new
+    registered shapes, zero image size.
+  - Correctness: libffi does the per-ABI classification everywhere; our one
+    shipped bug (FP register ordering) came from exactly this kind of
+    hand-rolled ABI reasoning.
+  Argument-position structs DO decompose into existing scalar shapes at
+  63ns (verified on AArch64: HFA {float,float} as [:float :float],
+  {4 floats} as four floats, 4-byte composite as packed :uint, mixed GP/FP).
+  Keep as a later per-platform optimization behind the same API, gated on
+  the C test library proving each lowering; x86-64 lowers differently
+  (V2 = one packed double) and is unverified.
+  Availability: libffi ships with macOS (dyld cache), is present on
+  virtually all Linux (Python's ctypes depends on it; minimal containers
+  need `libffi8`/`apk add libffi` - the `.so.*` glob fallback matters, no
+  bare `.so` without -dev). Windows does not ship it: require or bundle
+  libffi.dll (~40KB, MIT-style license). Fail at bind time, only for
+  signatures that contain a struct.
+  Type syntax: coffi's `[:struct [...]]` shape (agreed syntax reference).
+  The `ffi-libffi.clj` prototype already demonstrates CIF caching, struct
+  returns (div_t) and nested types (Camera3D).
 - Windows, untested. The metadata uses JNI type names (`"jlong"`), fixed-size
   on every platform (C `"long"` would be 32-bit on Windows). Sorting is
   unsound there (positional registers), so `sort-permutation` returns nil on
