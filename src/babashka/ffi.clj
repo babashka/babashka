@@ -210,11 +210,14 @@
     (concat
      (when-let [p (System/getenv "LD_LIBRARY_PATH")]
        (remove str/blank? (str/split p #":")))
-     ["/usr/local/lib" "/usr/lib"
-      (if (= "aarch64" (System/getProperty "os.arch"))
-        "/usr/lib/aarch64-linux-gnu"
-        "/usr/lib/x86_64-linux-gnu")
-      "/lib"])))
+     (let [multiarch (if (= "aarch64" (System/getProperty "os.arch"))
+                      "aarch64-linux-gnu"
+                      "x86_64-linux-gnu")]
+      ["/usr/local/lib" "/usr/lib"
+       (str "/usr/lib/" multiarch)
+       "/lib"
+       ;; unmerged-/usr systems keep runtime libraries here
+       (str "/lib/" multiarch)]))))
 
 (def ^:private last-lookup-error (volatile! nil))
 

@@ -80,6 +80,8 @@ Linux:
 - `/usr/lib/x86_64-linux-gnu` or `/usr/lib/aarch64-linux-gnu`, matching the
   current architecture
 - `/lib`
+- `/lib/x86_64-linux-gnu` or `/lib/aarch64-linux-gnu`, for systems where
+  `/lib` is not merged into `/usr/lib`
 
 Windows doesn't have additional search directories.
 
