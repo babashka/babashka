@@ -147,6 +147,16 @@
                                     (vec (ffi/read-bytes p# 2))]]
                           (ffi/free p#)
                           res#)))))))
+    (testing "byte-buffer views native memory without copying"
+      (is (= [7 42]
+             (bb `(do ~ffi-require
+                      (let [p# (ffi/alloc 8)
+                            bb# (ffi/byte-buffer p# 8)]
+                        (.put bb# 0 (byte 7))
+                        (ffi/write p# :int8 1 42)
+                        (let [res# [(ffi/read p# :int8) (long (.get bb# 1))]]
+                          (ffi/free p#)
+                          res#)))))))
     (testing "string round trip through foreign memory"
       (is (= "abc" (bb `(do ~ffi-require
                             (let [p (ffi/string->ptr "abc")

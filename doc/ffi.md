@@ -269,6 +269,15 @@ native memory and the JVM. Both take an optional byte offset:
 ;;=> byte array [1 2 3 4]
 ```
 
+Use `byte-buffer` for a zero-copy `java.nio.ByteBuffer` view over native
+memory, for example to read a file straight into it with a FileChannel:
+
+```clojure
+(ffi/byte-buffer p 4096)
+```
+
+The view is only valid while the memory is.
+
 Use `sizeof` to get the size of a type:
 
 ```clojure
