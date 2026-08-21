@@ -20,8 +20,9 @@
     '(require '[babashka.ffi :as ffi :refer [defcfn]])))
 
 (def skip?
-  ;; the static binary has no dlopen and no FFM default lookup
-  (= "true" (System/getenv "BABASHKA_STATIC")))
+  ;; the musl static binary has no dlopen and no FFM default lookup; the
+  ;; mostly-static aarch64 build keeps glibc dynamic and runs the suite
+  (= "true" (System/getenv "BABASHKA_MUSL")))
 
 (def home-var (if tu/windows? "PATH" "HOME"))
 (def snprintf-sym (if tu/windows? "_snprintf" "snprintf"))
