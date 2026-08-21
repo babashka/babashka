@@ -184,6 +184,51 @@ bound as `:uint8` returns 0, which is truthy in Clojure, so every
 bool either - that project defines one as a custom serde in
 `raylib/internals.clj` - so two independent projects needed the same type.
 
+## What a call actually costs
+
+A call is built once and then repeated, so as much as possible happens when
+the binding is created:
+
+At bind time, `cfn` widens each type to its carrier, sorts the arguments into
+canonical order (remembering the permutation), turns the sorted shape into a
+key like `"D_JD"`, looks that key up to get a trampoline id, and chooses one
+coercion function per argument. Nothing inspects a type after this point.
+
+At call time, an arity-specialised closure allocates one object array, writes
+the arguments in as given, and hands it to `fill`. Without a permutation
+`fill` coerces in place; with one it writes `out[i] = coercer[i](in[perm[i]])`,
+so reordering and coercion happen in the same pass. The trampoline performs
+the machine call and `narrow-ret` fixes the result (masking and sign
+extension for narrow integers, zero to false for `:bool`, a C string read for
+`:string`).
+
+Measured after moving coercion choice to bind time and giving permuted
+signatures their own path (they previously went through a seq, a vector, a
+`mapv` and two arrays):
+
+| call                    | before | after |
+|-------------------------|--------|-------|
+| `abs [:int] :int`       | 74ns   | 63ns  |
+| `pow [:double :double]` | 89ns   | 70ns  |
+| `ldexp [:double :int]`  | 243ns  | 73ns  |
+| `time [:pointer] :long` | 75ns   | 70ns  |
+| `strlen [:string]`      | 388ns  | 387ns |
+
+`ldexp` matters more than it looks: `DrawCircle [:int :int :float :uint]` has
+the same shape, so most raylib drawing calls were on the slow path.
+
+### The string path, still slow
+
+A `:string` argument costs a confined `Arena` per call: the string is copied
+into fresh native memory, the call runs, the arena closes. That is correct -
+C must not keep the pointer - but it is ~320ns of the 387ns above.
+
+A reusable per-binding buffer would remove nearly all of it, at the cost of
+thread safety (two threads calling one binding would share the buffer) and a
+maximum length, with a fallback to the arena above it. Worth doing only if a
+string-heavy call shows up in a hot loop; sqlite and duckdb bind strings per
+query, not per element, so nothing here needs it yet.
+
 ## Known gaps
 
 - Struct-by-value. Arguments are solvable inside the scalar family by ABI

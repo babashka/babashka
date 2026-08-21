@@ -14,8 +14,8 @@
          '[rewrite-clj.node :as n])
 
 (def src-root (or (first *command-line-args*)
-                  (str (fs/home) "/dev/b12n-raylib-clj/src/raylib")))
-(def out-root (or (second *command-line-args*) "port/raylib"))
+                  (str (fs/home) "/dev/b12n-raylib-clj/src")))
+(def out-root (or (second *command-line-args*) "port"))
 
 ;; coffi type -> babashka.ffi type
 (def type-map
@@ -82,13 +82,21 @@
               name (if doc (str "\n  " (pr-str doc)) "") sym (pr-str (vec targs)) tret))))
 
 ;; every ported namespace needs babashka.ffi instead of coffi, plus the
-;; colour packer; raylib.support loads the library once
-(defn rewrite-ns [txt]
-  (str/replace txt
-               #"\(ns ([\w.\-]+)\s*\n\s*\(:require[^)]*(?:\[[^\]]*\]\s*)*\)\)"
-               (fn [[_ nm]]
-                 (str "(ns " nm "\n  (:require\n   [babashka.ffi :refer [defcfn]]\n"
-                      "   [raylib.support :refer [pack-color]]))"))))
+;; colour packer; raylib.support loads the library once. Rebuilt from the
+;; parsed form rather than by regex, so a docstring or metadata survives.
+(defn rewrite-ns-node [node]
+  (let [forms (n/sexpr node)
+        nm (second forms)
+        doc (when (string? (nth forms 2 nil)) (nth forms 2))]
+    (str "(ns " nm "\n"
+         (when doc (str "  " (pr-str doc) "\n"))
+         "  (:require\n"
+         "   [babashka.ffi :refer [defcfn]]\n"
+         ;; helper code left in these files still writes ::mem/int and
+         ;; ::rs/color as type tags; the aliases keep those readable
+         "   [raylib.support :as mem]\n"
+         "   [raylib.support :as rs]\n"
+         "   [raylib.support :refer [pack-color]]))")))
 
 (def support-ns
   "(ns raylib.support
@@ -118,30 +126,69 @@
         has-bindings? (str/includes? txt "(defcfn")
         ;; coffi infrastructure (library loading, type extensions, struct
         ;; layouts) is replaced by raylib.support, so it is not ported
-        infra? (and (not has-bindings?) (str/includes? txt "coffi"))
+        infra? (or (and (not has-bindings?) (str/includes? txt "coffi"))
+                   ;; replaced by stubs below: nREPL server, struct layouts,
+                   ;; library loading
+                   (contains? #{"nrepl.clj" "structs.clj" "core.clj" "internals.clj"}
+                              (fs/file-name f)))
         forms (n/children (z/root (z/of-string txt)))
         stats (atom {:ported 0 :stubbed 0})
         out-str
         (str/join
          (for [node forms]
-           (if (and (= :list (n/tag node))
-                    (= 'defcfn (first (n/sexpr node))))
+           (cond
+             (and has-bindings? (= :list (n/tag node)) (= 'ns (first (n/sexpr node))))
+             (rewrite-ns-node node)
+
+             ;; coffi struct layouts have no meaning here
+             (and (= :list (n/tag node)) (= 'defalias (first (n/sexpr node))))
+             ""
+
+             (and (= :list (n/tag node)) (= 'defcfn (first (n/sexpr node))))
              (if-let [b (form->binding node)]
                (let [txt (emit-binding b)]
                  (swap! stats update (if (str/starts-with? txt "(defn ") :stubbed :ported) inc)
                  txt)
                (n/string node))
-             (n/string node))))]
+
+             :else (n/string node))))]
     (when-not infra?
       (fs/create-dirs (fs/parent out))
       ;; a namespace of plain data keeps its own ns form
-      (spit (str out) (if has-bindings? (rewrite-ns out-str) out-str)))
+      (spit (str out) out-str))
     (assoc @stats :file rel :skipped (boolean infra?))))
 
 (fs/create-dirs out-root)
-(spit (str (fs/file out-root "support.clj")) support-ns)
+(fs/create-dirs (fs/file out-root "raylib"))
+(spit (str (fs/file out-root "raylib" "support.clj")) support-ns)
+
 (def results (mapv port-file-text (concat (fs/glob src-root "*.clj")
                                           (fs/glob src-root "**/*.clj"))))
+
+;; The examples also reach for namespaces that are not bindings: an nREPL
+;; server, a stats overlay, the coffi struct layouts and library loading.
+;; Written as .bb files, which babashka prefers over .clj, so these win
+;; wherever they sit on the classpath.
+(defn stub! [rel src]
+  (let [f (fs/file out-root rel)]
+    (fs/create-dirs (fs/parent f))
+    (spit (str f) src)))
+
+(stub! "raylib/core.bb"
+       "(ns raylib.core\n  \"Library loading lives in raylib.support for the port.\")\n")
+(stub! "raylib/structs.bb"
+       "(ns raylib.structs\n  \"Struct layouts are unused: babashka.ffi passes Color packed and refuses\n  the rest.\")\n")
+(stub! "raylib/internals.bb"
+       "(ns raylib.internals\n  \"coffi type extensions are unused: babashka.ffi has :bool and :uint8.\")\n")
+(stub! "raylib/nrepl.bb"
+       "(ns raylib.nrepl\n  \"No nREPL server in the port.\")\n\n(defn start [& _] nil)\n(defn stop [& _] nil)\n")
+(stub! "debug_stats.bb"
+       (str "(ns debug-stats\n  \"No stats overlay in the port.\")\n\n"
+            "(defn enable! [& _] nil)\n(defn disable! [& _] nil)\n"
+            "(defn toggle! [& _] nil)\n(defn visible? [& _] false)\n"
+            "(defn set-custom-stat! [& _] nil)\n(defn init [& _] nil)\n"
+            "(defn update! [& [game]] game)\n(defn draw! [& [game]] game)\n"
+            "(defn tick [& [game]] game)\n(defn draw [& [game]] game)\n"))
 
 (println (format "%-34s %7s %8s" "namespace" "ported" "stubbed"))
 (doseq [r (sort-by :file results)]
