@@ -85,6 +85,34 @@
                    (bb `(do ~ffi-require
                             (~'defcfn ~'bad "a" "b" "strlen" [:string] :size_t))))))))
 
+(deftest bool-test
+  (when-not skip?
+    (testing "a C bool returns true or false, not a truthy 0"
+      (is (= [true false]
+             (bb `(do ~ffi-require
+                      (let [alpha?# (ffi/cfn "isalpha" [:int] :bool)]
+                        [(alpha?# 97) (alpha?# 49)]))))))
+    (testing "a bool argument takes Clojure truthiness"
+      (is (= [1 0 1 0]
+             (bb `(do ~ffi-require
+                      (let [p# (ffi/alloc 4)]
+                        (ffi/write p# :bool 0 true)
+                        (ffi/write p# :bool 1 false)
+                        (ffi/write p# :bool 2 :truthy)
+                        (ffi/write p# :bool 3 nil)
+                        (let [res# (mapv #(ffi/read p# :uint8 %) (range 4))]
+                          (ffi/free p#)
+                          res#)))))))
+    (testing "reading a bool back"
+      (is (= [true false]
+             (bb `(do ~ffi-require
+                      (let [p# (ffi/alloc 2)]
+                        (ffi/write p# :bool 0 true)
+                        (ffi/write p# :bool 1 false)
+                        (let [res# [(ffi/read p# :bool 0) (ffi/read p# :bool 1)]]
+                          (ffi/free p#)
+                          res#)))))))))
+
 (deftest memory-test
   (when-not skip?
     (testing "alloc, typed write and read, free"

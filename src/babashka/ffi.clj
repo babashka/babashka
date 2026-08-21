@@ -13,8 +13,9 @@
              (finally (ffi/free pp))))
 
   Types: :void :int :uint :long :ulong :int8 :uint8 :int16 :uint16 :int32
-  :uint32 :int64 :uint64 :size_t :ssize_t :char :byte :pointer :string
-  :double :float.
+  :uint32 :int64 :uint64 :size_t :ssize_t :char :byte :bool :pointer
+  :string :double :float. :bool is C's one-byte bool and returns true or
+  false, so a C predicate does not come back as a truthy 0.
 
   Pointers are plain longs (machine addresses). Integer types are widened to
   a 64-bit carrier for the call and narrowed back on return, so a native
@@ -55,7 +56,7 @@
 
 (def ^:private long-carrier?
   #{:int :uint :long :ulong :int8 :uint8 :int16 :uint16 :int32 :uint32
-    :int64 :uint64 :size_t :ssize_t :char :byte :pointer :string})
+    :int64 :uint64 :size_t :ssize_t :char :byte :pointer :string :bool})
 
 (defn- carrier [t]
   (cond (long-carrier? t) :long
@@ -158,17 +159,25 @@
                argtypes args)))
     (f args)))
 
-(defn- coerce-arg [t a]
-  (case (carrier t)
-    :long (cond (nil? a) 0
-                (instance? MemorySegment a) (.address ^MemorySegment a)
-                :else (long a))
-    :double (double a)
-    :float (float a)))
+;; One coercion function per type, looked up when a binding is created, so
+;; nothing dispatches on the type during a call.
+(def ^:private arg-coercer
+  (let [as-long (fn [a] (cond (nil? a) 0
+                              (instance? MemorySegment a) (.address ^MemorySegment a)
+                              :else (long a)))
+        as-double (fn [a] (double a))
+        as-float (fn [a] (float a))
+        as-bool (fn [a] (if a 1 0))]
+    (into {:double as-double :float as-float :bool as-bool}
+          (map (fn [t] [t as-long]))
+          (disj long-carrier? :bool))))
+
+(defn- coerce-arg [t a] ((arg-coercer t) a))
 
 (defn- narrow-ret [t raw]
   (case t
     :void nil
+    :bool (not (zero? (long raw)))
     (:int :int32) (long (unchecked-int (long raw)))
     (:uint :uint32) (bit-and (long raw) 0xFFFFFFFF)
     :int16 (long (unchecked-short (long raw)))
@@ -412,44 +421,54 @@
                   (fn [^objects arr] (.invokeWithArguments ^MethodHandle handle arr)))))
          n (count types)
          strings? (boolean (some #(= :string %) types*))
-         coercers ^objects (object-array (map (fn [t] (partial coerce-arg t)) types*))
+         coercers ^objects (object-array (map arg-coercer types*))
          call (fn [^objects arr]
                 (narrow-ret rettype ((force raw) arr)))
-         coerce-all (fn ^objects [args]
-                      (let [arr (object-array args)]
-                        (dotimes [i n]
-                          (aset arr i ((aget coercers i) (aget arr i))))
-                        arr))
-         ;; slow path: strings need a temp arena, permuted args need reordering
+         ;; `in` holds the arguments as written; the call needs them in
+         ;; descriptor order, coerced. Without a permutation that is done in
+         ;; place, with one it fills a second array through the permutation,
+         ;; and either way nothing allocates a seq or a vector.
+         perm-arr (when perm (int-array perm))
+         fill (if perm-arr
+                (fn ^objects [^objects in]
+                  (let [out (object-array n)]
+                    (dotimes [i n]
+                      (aset out i ((aget coercers i) (aget in (aget ^ints perm-arr i)))))
+                    out))
+                (fn ^objects [^objects in]
+                  (dotimes [i n]
+                    (aset in i ((aget coercers i) (aget in i))))
+                  in))
+         coerce-all (fn ^objects [args] (fill (object-array args)))
+         ;; strings need a temporary arena that has to outlive the call
          general (fn [args]
                    (let [args* (if perm (mapv (vec args) perm) (vec args))]
                      (with-string-args types* args*
-                       (fn [args] (call (coerce-all args))))))
+                       (fn [args]
+                         (let [arr (object-array args)]
+                           (dotimes [i n]
+                             (aset arr i ((aget coercers i) (aget arr i))))
+                           (call arr))))))
          arity-error (fn [got]
                        (throw (ex-info (str "babashka.ffi: " sym " expects " n
                                             " args, got " got)
                                        {:symbol sym})))]
      (with-meta
-       (if (or strings? perm)
+       (if strings?
          (fn [& args]
            (if (= (count args) n) (general args) (arity-error (count args))))
-         ;; fast path: fixed arities, no seq allocation, no intermediate vectors
-         (let [c (fn [i] (aget coercers i))]
-           (case n
+         ;; fixed arities, no seq allocation, no intermediate vectors
+         (case n
              0 (fn [] (call (object-array 0)))
-             1 (let [c0 (c 0)]
-                 (fn [a] (call (doto (object-array 1) (aset 0 (c0 a))))))
-             2 (let [c0 (c 0) c1 (c 1)]
-                 (fn [a b] (call (doto (object-array 2) (aset 0 (c0 a)) (aset 1 (c1 b))))))
-             3 (let [c0 (c 0) c1 (c 1) c2 (c 2)]
-                 (fn [a b d] (call (doto (object-array 3)
-                                     (aset 0 (c0 a)) (aset 1 (c1 b)) (aset 2 (c2 d))))))
-             4 (let [c0 (c 0) c1 (c 1) c2 (c 2) c3 (c 3)]
-                 (fn [a b d e] (call (doto (object-array 4)
-                                       (aset 0 (c0 a)) (aset 1 (c1 b))
-                                       (aset 2 (c2 d)) (aset 3 (c3 e))))))
+             1 (fn [a] (call (fill (doto (object-array 1) (aset 0 a)))))
+             2 (fn [a b] (call (fill (doto (object-array 2) (aset 0 a) (aset 1 b)))))
+             3 (fn [a b d] (call (fill (doto (object-array 3)
+                                        (aset 0 a) (aset 1 b) (aset 2 d)))))
+             4 (fn [a b d e] (call (fill (doto (object-array 4)
+                                           (aset 0 a) (aset 1 b)
+                                           (aset 2 d) (aset 3 e)))))
              (fn [& args]
-               (if (= (count args) n) (call (coerce-all args)) (arity-error (count args)))))))
+               (if (= (count args) n) (call (coerce-all args)) (arity-error (count args))))))
        ;; which call mechanism this binding uses, for tests and diagnostics:
        ;; :trampoline = compiled direct call, :ffm = downcall handle
        ;; (interpreted in a native image)
@@ -506,7 +525,7 @@
   {:int 4 :uint 4 :int32 4 :uint32 4 :float 4
    :long 8 :ulong 8 :int64 8 :uint64 8 :size_t 8 :ssize_t 8
    :pointer 8 :string 8 :double 8
-   :int16 2 :uint16 2 :int8 1 :uint8 1 :byte 1 :char 1})
+   :int16 2 :uint16 2 :int8 1 :uint8 1 :byte 1 :char 1 :bool 1})
 
 (defn sizeof
   "Size in bytes of a type keyword."
@@ -526,7 +545,8 @@
        (.get seg ValueLayout/JAVA_LONG_UNALIGNED off)
        :int16 (long (.get seg ValueLayout/JAVA_SHORT_UNALIGNED off))
        :uint16 (bit-and (long (.get seg ValueLayout/JAVA_SHORT_UNALIGNED off)) 0xFFFF)
-       (:int8 :byte :char) (long (.get seg ValueLayout/JAVA_BYTE off))
+       :bool (not (zero? (long (.get seg ValueLayout/JAVA_BYTE off))))
+      (:int8 :byte :char) (long (.get seg ValueLayout/JAVA_BYTE off))
        :uint8 (bit-and (long (.get seg ValueLayout/JAVA_BYTE off)) 0xFF)
        :double (.get seg ValueLayout/JAVA_DOUBLE_UNALIGNED off)
        :float (.get seg ValueLayout/JAVA_FLOAT_UNALIGNED off)
@@ -543,6 +563,7 @@
       (:long :ulong :int64 :uint64 :size_t :ssize_t :pointer)
       (.set seg ValueLayout/JAVA_LONG_UNALIGNED off (long v))
       (:int16 :uint16) (.set seg ValueLayout/JAVA_SHORT_UNALIGNED off (unchecked-short (long v)))
+      :bool (.set seg ValueLayout/JAVA_BYTE off (unchecked-byte (if v 1 0)))
       (:int8 :uint8 :byte :char) (.set seg ValueLayout/JAVA_BYTE off (unchecked-byte (long v)))
       :double (.set seg ValueLayout/JAVA_DOUBLE_UNALIGNED off (double v))
       :float (.set seg ValueLayout/JAVA_FLOAT_UNALIGNED off (float v))

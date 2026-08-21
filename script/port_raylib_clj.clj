@@ -23,7 +23,7 @@
    :mem/byte :int8 :mem/char :char :mem/float :float :mem/double :double
    :mem/pointer :pointer :mem/c-string :string :mem/size-t :size_t
    :mem/segment :pointer :mem/short-array :pointer :mem/int-array :pointer
-   :ri/bool :uint8 :ri/ubyte :uint8 :ri/uint :uint :ri/ulong :uint64})
+   :ri/bool :bool :ri/ubyte :uint8 :ri/uint :uint :ri/ulong :uint64})
 
 (def color-type :rs/color)
 

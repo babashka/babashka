@@ -147,6 +147,27 @@ Up to 7 args, of which at most 6 pointer/integer, at most 6 doubles, at most
 <= 5 args total, <= 3 fixed, <= 2 doubles, no floats. Callbacks: <= 4 args,
 <= 2 doubles, void or integer return. Struct-by-value unsupported.
 
+## Validation against real bindings
+
+The shape family and the API are checked against binding layers written by
+other people, not only against the demos here:
+
+- b12n-raylib-clj (coffi): 174 bindings. Ported mechanically by
+  `script/port_raylib_clj.clj`; 94 bind, 80 need struct-by-value, none fall
+  outside the family. Its call sites run unmodified.
+- libpython-clj (dtype-next): 63 definitions, all expressible. CPython's API
+  is handle-based, so it is pointers, ints and strings throughout.
+- The libffi API itself, because it is the documented workaround for an
+  unsupported signature and so must always be bindable.
+
+Still to check: https://github.com/andersmurphy/sqlite4clj (coffi).
+
+Porting b12n-raylib-clj is what found the missing `:bool`: a C predicate
+bound as `:uint8` returns 0, which is truthy in Clojure, so every
+`(when-not (window-should-close?) ...)` loop inverted silently. coffi has no
+bool either - that project defines one as a custom serde in
+`raylib/internals.clj` - so two independent projects needed the same type.
+
 ## Known gaps
 
 - Struct-by-value. Arguments are solvable inside the scalar family by ABI

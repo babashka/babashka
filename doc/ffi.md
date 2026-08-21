@@ -71,7 +71,18 @@ then libc.
 
 Types: `:void` `:int` `:uint` `:long` `:ulong` `:int8` `:uint8` `:int16`
 `:uint16` `:int32` `:uint32` `:int64` `:uint64` `:size_t` `:ssize_t`
-`:char` `:byte` `:pointer` `:string` `:double` `:float`.
+`:char` `:byte` `:bool` `:pointer` `:string` `:double` `:float`.
+
+`:bool` is C's one-byte bool. It takes any Clojure value as an argument and
+returns `true` or `false`, so a predicate reads the way it should:
+
+```clojure
+(defcfn window-should-close? "WindowShouldClose" [] :bool)
+(when-not (window-should-close?) ...)
+```
+
+Binding such a function as `:uint8` instead returns `0`, which is truthy in
+Clojure.
 
 Pointers are longs. A `:string` argument is copied to a NUL-terminated C
 string for the call; a `:string` return reads one back as UTF-8.
