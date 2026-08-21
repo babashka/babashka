@@ -254,6 +254,33 @@ has no scoping - sqlite4clj with-redefs coffi's find-symbol to force its
 bundled sqlite3, proving the need; ctypes and bun both return
 library-as-object. The map leaves room for later keys without breaking.
 
+## External review round (2026-08-21)
+
+Nine findings, all verified, eight fixed (commit "Fix review findings"):
+NULL :string reads segfaulted (guard was in narrow-ret but not
+ptr->string); callback results crossed the upcall boundary through
+MethodHandle.asType, so a Boolean OR a boxed Integer killed the VM - the
+fn is now wrapped at creation with the arg-coercer table and :bool
+callback args arrive as booleans; callback shapes are validated at
+creation on the image; defcfn rejected two docstrings but not two attr
+maps; the drift test only snapshotted the JSON so generator drift in the
+two other generated files self-repaired silently; alloc/free resolve the
+CRT explicitly on Windows (default lookup does not expose it).
+
+The Windows findings were the deepest: the runtime rejected every shape
+without a trampoline id BEFORE the FFM fallback its ordered descriptors
+exist for, and the generator had a second, diverging family definition
+(registered six-double shapes the API rejects, missed supported ordered
+float shapes; upcalls likewise ignored the 2-double limit). Now one
+family definition; Windows enumerates every ordering of it (1876
+downcalls vs 1008 before, all reachable, image cost to be measured on
+CI); the runtime mirror is windows-fixed-shape? and
+metadata-generated-test cross-checks predicate against generated
+descriptors. Follow-up option: generate ordered TRAMPOLINES for Windows
+instead, removing both the descriptor weight and the ~3.4us interpreted
+FFM cost there. Also trimmed IFn.invoke reflection to arities 0-4
+(callback maximum).
+
 ## Library search (2026-08-21 review)
 
 - BABASHKA_FFI_LIBRARY_PATH removed: an invented API with no precedent
