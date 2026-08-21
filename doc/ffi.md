@@ -137,8 +137,10 @@ The out-parameter pattern:
 ```
 
 `callback` wraps a Clojure fn as a C function pointer. The callback stays
-alive until `free-callback`; C must not call it afterwards. Callbacks may
-be invoked from threads C created.
+alive until `free-callback`; C must not call it afterwards. For a callback
+C retains, such as a log handler, keep the pointer and only free it after
+unregistering. One callback can be passed to any number of calls. Callbacks
+may be invoked from threads C created.
 
 ## Limits
 
