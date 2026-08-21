@@ -136,7 +136,7 @@ reads a double.
 (ffi/read p :string)        ; p holds a char*: reads the pointer, then
                             ; the string it points to
 ffi/null                    ; 0
-(ffi/null?* p)
+(ffi/null? p)
 ```
 
 The out-parameter pattern:
@@ -192,9 +192,9 @@ Struct-by-value arguments and returns are not supported yet.
 
 An unsupported signature fails when the function is bound, with the limits
 in the message. Workaround until a limit is lifted: bind libffi through
-babashka.ffi itself and call the function with `ffi_call` - `ffi-libffi.clj`
-in the babashka repo shows the pattern, including struct-by-value returns.
-Signatures reported in issues can usually be added.
+babashka.ffi itself and call the function with `ffi_call` -
+`examples/ffi/libffi.clj` in the babashka repo shows the pattern, including
+struct-by-value returns.
 
 `(meta (ffi/cfn ...))` contains `:babashka.ffi/backend`: `:trampoline` is
 the compiled fast path, `:ffm` the fallback.

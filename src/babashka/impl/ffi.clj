@@ -19,6 +19,6 @@
    'ptr->string (copy-var ffi/ptr->string tns)
    'string->ptr (copy-var ffi/string->ptr tns)
    'null (copy-var ffi/null tns)
-   'null?* (copy-var ffi/null?* tns)
+   'null? (copy-var ffi/null? tns)
    'callback (copy-var ffi/callback tns)
    'free-callback (copy-var ffi/free-callback tns)})

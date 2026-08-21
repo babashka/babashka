@@ -17,7 +17,7 @@
 
 (defn sym-addr [name]
   (let [p (c-dlsym RTLD-DEFAULT name)]
-    (when (ffi/null?* p)
+    (when (ffi/null? p)
       (throw (ex-info (str "symbol not found: " name) {})))
     p))
 

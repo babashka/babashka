@@ -642,7 +642,7 @@
   "The NULL pointer."
   0)
 
-(defn null?*
+(defn null?
   "True if pointer p is NULL."
   [p]
   (zero? (long p)))

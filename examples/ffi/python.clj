@@ -42,7 +42,7 @@
   "Evaluates a Python expression, returns its str() as a Clojure string."
   [code]
   (let [obj (py-run-string code Py-eval-input globals globals)]
-    (when (ffi/null?* obj)
+    (when (ffi/null? obj)
       (py-err-print)
       (throw (ex-info "python error" {:code code})))
     (let [s (py-obj-str obj)
