@@ -11,7 +11,7 @@ cd "$(dirname "$0")/.."
 
 THEIRS="$HOME/dev/b12n-raylib-clj/src"   # only used to list example names
 SECS="${2:-2}"
-RUNNER=/tmp/run-example.clj
+RUNNER=script/run_raylib_example.clj
 
 if [ "${1:-sample}" = "all" ]; then
   EXAMPLES=$(ls "$THEIRS/examples"/*.clj | xargs -n1 basename | sed 's/\.clj$//' | tr '_' '-')
