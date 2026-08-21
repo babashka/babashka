@@ -142,9 +142,11 @@
   (.reinterpret (MemorySegment/ofAddress addr) (long size)))
 
 (defn ptr->string
-  "The NUL-terminated UTF-8 C string at pointer p, as a Clojure string."
+  "The NUL-terminated UTF-8 C string at pointer p, as a Clojure string.
+  Nil for a NULL pointer."
   [p]
-  (.getString (segment p Long/MAX_VALUE) 0))
+  (when-not (zero? (long p))
+    (.getString (segment p Long/MAX_VALUE) 0)))
 
 (defn- with-string-args
   "Calls f with argtypes' :string args replaced by temp C-string pointers,
@@ -334,6 +336,23 @@
   (when native-image?
     (requiring-resolve 'babashka.impl.ffi-trampolines/invoker)))
 
+(def ^:private windows-native? (and native-image? (= :windows (os-key))))
+
+(defn- windows-fixed-shape?
+  "On Windows fixed calls use FFM descriptors registered for every argument
+  ORDER in the family, since sorting is unsound there. Mirrors the shapes
+  script/gen_ffi_metadata.clj registers; metadata-generated-test
+  cross-checks the two."
+  [argtypes rettype]
+  (let [cs (mapv carrier argtypes)
+        fp (filterv #{:double :float} cs)
+        n (count cs)]
+    (and (or (and (<= n 6)
+                  (or (<= (count fp) 3)
+                      (and (= 4 (count fp)) (apply = fp))))
+             (and (<= n 10) (empty? fp)))
+         (or (not= :float (carrier rettype)) (<= n 4)))))
+
 (defn- shape-key [types* rettype]
   (let [c {:long "J" :double "D" :float "F"}]
     (str (if (= :void rettype) "V" (c (carrier rettype)))
@@ -433,8 +452,12 @@
         tramp-id (get trampoline-ids (shape-key types* rettype))
         ;; in a native image every supported shape is known ahead of time,
         ;; so reject unsupported signatures here with a useful message
-        ;; instead of GraalVM's rebuild-the-image error at call time
-        _ (when (and native-image? (not tramp-id))
+        ;; instead of GraalVM's rebuild-the-image error at call time. On
+        ;; Windows shapes without a trampoline fall back to the registered
+        ;; ordered FFM descriptors.
+        _ (when (and native-image? (not tramp-id)
+                     (not (and windows-native?
+                               (windows-fixed-shape? argtypes rettype))))
             (throw (unsupported-ex sym argtypes rettype
                                    "see the signature limits in doc/ffi.md")))
         raw (if tramp-id
@@ -523,6 +546,7 @@
         attr-map (first (filter map? prefix))]
     (when-not (and (<= (count prefix) 2)
                    (<= (count (filter string? prefix)) 1)
+                   (<= (count (filter map? prefix)) 1)
                    (every? #(or (string? %) (map? %)) prefix))
       (throw (ex-info "babashka.ffi: defcfn takes at most a docstring and an attribute map before the C symbol"
                       {:name name})))
@@ -533,8 +557,14 @@
 
 ;; -- manual memory ------------------------------------------------------------
 
-(def ^:private c-calloc (delay (cfn "calloc" [:size_t :size_t] :pointer)))
-(def ^:private c-free (delay (cfn "free" [:pointer] :void)))
+(def ^:private crt-lib
+  ;; Windows' default lookup does not expose the C runtime
+  (delay (when (= :windows (os-key))
+           (or (try (load-library "msvcrt.dll") (catch Exception _ nil))
+               (try (load-library "ucrtbase.dll") (catch Exception _ nil))))))
+
+(def ^:private c-calloc (delay (cfn @crt-lib "calloc" [:size_t :size_t] :pointer)))
+(def ^:private c-free (delay (cfn @crt-lib "free" [:pointer] :void)))
 
 (defn alloc
   "Allocates n bytes of zeroed foreign memory. Returns the pointer. Free it
@@ -628,7 +658,31 @@
   addresses). Returns the function pointer as a long. The callback stays
   alive until free-callback is called on the pointer."
   [f argtypes rettype]
-  (let [n (count argtypes)
+  (doseq [t argtypes] (carrier t))
+  (carrier rettype)
+  (when (and native-image?
+             (or (> (count argtypes) 4)
+                 (some #(= :float (carrier %)) argtypes)
+                 (> (count (filter #(= :double (carrier %)) argtypes)) 2)
+                 (= :float (carrier rettype))))
+    (throw (unsupported-ex "callback" argtypes rettype
+                           "callbacks support up to 4 args, at most 2 :double, no :float, and a :void, integer or :double return")))
+  (let [;; f returns arbitrary Clojure values and receives raw carriers:
+        ;; coerce the result to the declared return type (a Boolean or
+        ;; Integer crossing the upcall boundary uncaught would kill the VM)
+        ;; and give :bool arguments to f as booleans
+        ret-c (when-not (= :void rettype) (arg-coercer rettype))
+        bool-args (mapv #(= :bool %) argtypes)
+        f (if (or ret-c (some true? bool-args))
+            (let [g f]
+              (fn [& args]
+                (let [r (apply g (map-indexed
+                                  (fn [i a]
+                                    (if (nth bool-args i) (not (zero? (long a))) a))
+                                  args))]
+                  (if ret-c (ret-c r) r))))
+            f)
+        n (count argtypes)
         perm (sort-permutation argtypes)
         inv (when perm (inverse-permutation perm))
         argtypes (if perm (mapv argtypes perm) argtypes)

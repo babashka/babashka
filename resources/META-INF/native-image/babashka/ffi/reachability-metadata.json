@@ -1472,18 +1472,6 @@
     }, {
       "name" : "invoke",
       "parameterTypes" : [ "java.lang.Object", "java.lang.Object", "java.lang.Object", "java.lang.Object" ]
-    }, {
-      "name" : "invoke",
-      "parameterTypes" : [ "java.lang.Object", "java.lang.Object", "java.lang.Object", "java.lang.Object", "java.lang.Object" ]
-    }, {
-      "name" : "invoke",
-      "parameterTypes" : [ "java.lang.Object", "java.lang.Object", "java.lang.Object", "java.lang.Object", "java.lang.Object", "java.lang.Object" ]
-    }, {
-      "name" : "invoke",
-      "parameterTypes" : [ "java.lang.Object", "java.lang.Object", "java.lang.Object", "java.lang.Object", "java.lang.Object", "java.lang.Object", "java.lang.Object" ]
-    }, {
-      "name" : "invoke",
-      "parameterTypes" : [ "java.lang.Object", "java.lang.Object", "java.lang.Object", "java.lang.Object", "java.lang.Object", "java.lang.Object", "java.lang.Object", "java.lang.Object" ]
     } ]
   } ]
 }

@@ -2,6 +2,7 @@
   (:require
    [babashka.process :as p]
    [babashka.test-utils :as tu]
+   [cheshire.core :as json]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.test :as test :refer [deftest is testing]]))
@@ -83,7 +84,10 @@
     (testing "too many forms before the C symbol"
       (is (thrown? Exception
                    (bb `(do ~ffi-require
-                            (~'defcfn ~'bad "a" "b" "strlen" [:string] :size_t))))))))
+                            (~'defcfn ~'bad "a" "b" "strlen" [:string] :size_t)))))
+      (is (thrown? Exception
+                   (bb `(do ~ffi-require
+                            (~'defcfn ~'bad {:a 1} {:b 2} "strlen" [:string] :size_t))))))))
 
 (deftest bool-test
   (when-not skip?
@@ -125,6 +129,13 @@
                         (let [res [(ffi/read p :int) (ffi/read p :double 8) (ffi/read p :uint8 4)]]
                           (ffi/free p)
                           res)))))))
+    (testing "a NULL char* reads as nil"
+      (is (= [nil nil]
+             (bb `(do ~ffi-require
+                      (let [p# (ffi/alloc 8)]
+                        (let [res# [(ffi/read p# :string) (ffi/ptr->string 0)]]
+                          (ffi/free p#)
+                          res#)))))))
     (testing "string round trip through foreign memory"
       (is (= "abc" (bb `(do ~ffi-require
                             (let [p (ffi/string->ptr "abc")
@@ -338,6 +349,34 @@
                          ((ffi/cfn "cb_apply_jd" [:pointer :long :double] :double) jd# 4 10.25)
                          ((ffi/cfn "cb_apply_dj" [:pointer :double :long] :double) dj# 10.25 4)])))))))
   (when-let [lib @test-lib]
+    (testing "callback results are coerced: booleans and boxed ints crossing
+              the upcall boundary uncoerced would kill the VM"
+      (is (= [1 0 3 7]
+             (bb `(do ~(lib-require lib)
+                      (let [apply# (ffi/cfn "cb_apply_jj" [:pointer :long :long] :long)
+                            bool# (ffi/callback (fn [a# b#] (< a# b#)) [:long :long] :bool)
+                            int# (ffi/callback (fn [a# b#] (int (+ a# b#))) [:long :long] :int)]
+                        [(apply# bool# 1 2) (apply# bool# 2 1)
+                         (apply# int# 1 2) (apply# int# 3 4)]))))))
+    (testing "bool callback arguments arrive as booleans"
+      (is (= [1 0]
+             (bb `(do ~(lib-require lib)
+                      (let [apply# (ffi/cfn "cb_apply_jj" [:pointer :long :long] :long)
+                            cb# (ffi/callback (fn [a# b#] (if (and a# (not b#)) 1 0))
+                                              [:bool :bool] :long)]
+                        [(apply# cb# 1 0) (apply# cb# 0 1)])))))))
+  (when-not skip?
+    (testing "out-of-family callback shapes fail at creation"
+      (is (= (if tu/native? :threw :ok)
+             (bb `(do ~ffi-require
+                      (try (ffi/callback (fn [a# b# c# d# e#] 0)
+                                         [:long :long :long :long :long] :long)
+                           :ok
+                           (catch Exception e#
+                             (if (re-find #"unsupported signature" (ex-message e#))
+                               :threw
+                               :wrong-error)))))))))
+  (when-let [lib @test-lib]
     (testing "callback invoked from a C-created thread the runtime never saw"
       (is (= 42 (bb `(do ~(lib-require lib)
                          (let [cb# (ffi/callback (fn [a# b#] (* a# b#)) [:long :long] :long)]
@@ -389,13 +428,43 @@
                         ((ffi/cfn "compressBound" [:ulong] :ulong) 0)
                         ((ffi/cfn "strlen" [:string] :size_t) "hello"))))))))
 
+(def ^:private generated-files
+  ["resources/META-INF/native-image/babashka/ffi/reachability-metadata.json"
+   "src-java/babashka/impl/FfiTrampoline.java"
+   "src/babashka/impl/ffi_trampolines.clj"])
+
 (deftest metadata-generated-test
   (when-not skip?
     ;; skipped on Windows: a CRLF checkout would fail the byte comparison
     (when-not tu/windows?
-      (testing "committed ffi reachability metadata matches the generator"
-        (let [f "resources/META-INF/native-image/babashka/ffi/reachability-metadata.json"
-              before (slurp f)]
+      (testing "committed generated ffi sources match the generator"
+        (let [before (mapv slurp generated-files)]
           (load-file "script/gen_ffi_metadata.clj")
-          (is (= before (slurp f))
-              "run bb script/gen_ffi_metadata.clj and commit the result"))))))
+          (doseq [[f b] (map vector generated-files before)]
+            (is (= b (slurp f))
+                (str f ": run bb script/gen_ffi_metadata.clj and commit the result")))))
+      (testing "the windows descriptor family matches babashka.ffi's predicate"
+        (let [before (mapv slurp generated-files)]
+          (try
+            (binding [*command-line-args* '("windows")]
+              (load-file "script/gen_ffi_metadata.clj"))
+            (let [meta (json/parse-string
+                        (slurp (first generated-files)))
+                  fixed (remove #(get % "options")
+                                (get-in meta ["foreign" "downcalls"]))
+                  kw {"jlong" :long "jdouble" :double "jfloat" :float
+                      "void" :void}
+                  ok? @(requiring-resolve 'babashka.ffi/windows-fixed-shape?)]
+              (is (seq fixed))
+              (doseq [d fixed]
+                (is (ok? (mapv kw (get d "parameterTypes"))
+                         (kw (get d "returnType")))
+                    (str "registered but outside the family: " d)))
+              (is (ok? [:double :double :double :double :long] :void)
+                  "a uniform 4-FP ordering is in the family")
+              (is (not (ok? [:double :double :double :float :long] :void))
+                  "a non-uniform 4-FP ordering is not")
+              (is (not (ok? (vec (repeat 5 :float)) :void))))
+            (finally
+              (doseq [[f b] (map vector generated-files before)]
+                (spit f b)))))))))

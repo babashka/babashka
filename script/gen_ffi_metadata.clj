@@ -20,8 +20,8 @@
 ;;   {long,double} with <= 2 doubles, boundary 1..3, returns void/long
 ;; - upcalls: a longs, b doubles with a+b <= 4 and b <= 2, returns
 ;;   void/long/double
-;; - reflection: clojure.lang.IFn.invoke arities 0..8, for upcall
-;;   method handles
+;; - reflection: clojure.lang.IFn.invoke arities 0..4, for upcall
+;;   method handles (callbacks take at most 4 arguments)
 ;;
 ;; Type names are JNI ("jlong", "jdouble", "jfloat"): fixed sizes on every
 ;; platform. C "long" is 32-bit on Windows and must not be used here.
@@ -57,22 +57,26 @@
 (defn shape [a b c]
   (vec (concat (repeat a "jlong") (repeat b "jdouble") (repeat c "jfloat"))))
 
+;; the one signature family: up to 6 args with at most 3 FP args in any
+;; order (or a uniform 4), pure integer signatures up to 10, float returns
+;; only up to 4 args. Canonical (sorted) shapes become trampolines;
+;; Windows additionally registers every ORDERING as an FFM descriptor,
+;; because argument sorting is unsound there. babashka.ffi's
+;; windows-fixed-shape? mirrors this predicate - metadata-generated-test
+;; cross-checks the two.
+(defn fp-ok? [args]
+  (let [fp (filterv #{"jdouble" "jfloat"} args)]
+    (or (<= (count fp) 3)
+        (and (= 4 (count fp)) (apply = fp)))))
+
 (def downcall-shapes
-  (if windows?
-    (distinct
-     (concat (combos-n ["jlong" "jdouble"] 0)
-             (mapcat #(combos-n ["jlong" "jdouble"] %) (range 1 7))
-             (mapcat #(combos-n ["jlong" "jdouble" "jfloat"] %) (range 1 5))
-             (map #(vec (repeat % "jlong")) (range 7 11))))
-    (concat
-     (for [a (range 0 7)
-           b (range 0 7)
-           c (range 0 5)
-           :when (and (<= (+ a b c) 7)
-                      (or (zero? c) (<= (+ b c) 4)))]
-       (shape a b c))
-     (for [a (range 7 11)]
-       (shape a 0 0)))))
+  ;; Windows only: ordered variants of the family
+  (concat
+   (for [n (range 0 7)
+         args (combos-n ["jlong" "jdouble" "jfloat"] n)
+         :when (fp-ok? args)]
+     (vec args))
+   (map #(vec (repeat % "jlong")) (range 7 11))))
 
 (def downcalls
   ;; Non-variadic downcalls only need FFM descriptors on Windows: elsewhere
@@ -95,8 +99,11 @@
       "options" {"firstVariadicArg" boundary}})))
 
 (def upcalls
+  ;; same family both modes: <= 4 args, <= 2 doubles, no float; Windows
+  ;; needs every ordering (callbacks do not sort there either)
   (if windows?
     (for [args (mapcat #(combos-n ["jlong" "jdouble"] %) (range 0 5))
+          :when (<= (count (filter #(= "jdouble" %) args)) 2)
           ret ["void" "jlong" "jdouble"]]
       {"returnType" ret "parameterTypes" (vec args)})
     (for [a (range 0 5)
@@ -106,8 +113,10 @@
       {"returnType" ret "parameterTypes" (shape a b 0)})))
 
 (def reflection
+  ;; callbacks call the wrapped IFn through a bound MethodHandle; they take
+  ;; at most 4 arguments
   [{"type" "clojure.lang.IFn"
-    "methods" (for [n (range 0 9)]
+    "methods" (for [n (range 0 5)]
                 {"name" "invoke"
                  "parameterTypes" (vec (repeat n "java.lang.Object"))})}])
 
