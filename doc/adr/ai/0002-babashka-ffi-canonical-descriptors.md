@@ -175,8 +175,20 @@ other people, not only against the demos here:
   is handle-based, so it is pointers, ints and strings throughout.
 - The libffi API itself, because it is the documented workaround for an
   unsupported signature and so must always be bindable.
-
-Still to check: https://github.com/andersmurphy/sqlite4clj (coffi).
+- sqlite4clj (coffi): 58 downcalls, all covered (checked 2026-08-21,
+  `sqlite4clj_coverage.clj` in the session scratchpad). Widest shapes:
+  `sqlite3_create_function_v2` with 9 GP args (pure-int family goes to 10)
+  and `sqlite3_prepare_v2` with 6. Only two signatures touch FP, one double
+  each. Two upcall shapes, both in the family: xFunc `(ptr,int,ptr)->void`
+  and xConflict `(ptr,int,ptr)->int`. No struct-by-value anywhere - SQLite's
+  API is handle-based. Their callback usage confirms the lifetime vetting:
+  scalar functions serialize into the global arena and are kept in a
+  registry (our retained `callback`), the conflict handler into a confined
+  arena freed after the call (our `free-callback` after use). They pass fn
+  pointers as plain `::mem/pointer` in downcall signatures and create stubs
+  separately - the same split as our callback/:pointer model. Out-params,
+  blob reinterpret reads, and the SQLITE_TRANSIENT sentinel (-1 as pointer)
+  all map onto ffi/alloc, ffi/read and plain longs.
 
 Porting b12n-raylib-clj is what found the missing `:bool`: a C predicate
 bound as `:uint8` returns 0, which is truthy in Clojure, so every
