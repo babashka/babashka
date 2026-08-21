@@ -241,6 +241,19 @@ maximum length, with a fallback to the arena above it. Worth doing only if a
 string-heavy call shows up in a hot loop; sqlite and duckdb bind strings per
 query, not per element, so nothing here needs it yet.
 
+## Reserved syntax invariant
+
+Every spelling outside the documented API must fail loudly at bind time: a
+form that errors today is syntax available tomorrow (coffi type aliases,
+`[:struct ...]`, `[::ffi/fn ...]`, symbol C names), a form that half-works
+is frozen forever. Checked 2026-08-21: namespaced keywords, vector types and
+unknown keywords throw `unknown type` in cfn, read, sizeof, callback and the
+variadic tail. A symbol as C name was the one hole - accepted at bind, raw
+ClassCastException at first call - now rejected at bind time, covered in
+error-test. Nothing in the current API blocks later coffi compatibility:
+alloc/free are malloc-style (no hidden arenas), so even coffi's arena model
+is implementable in userspace on top.
+
 ## Known gaps
 
 - Struct-by-value. DECIDED (2026-08-21), follow-up issue, not this branch:

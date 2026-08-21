@@ -256,7 +256,15 @@
                                       (ffi/cfn "abs" [:intt] :int))))))
     (testing "wrong argument count"
       (is (thrown? Exception (bb `(do ~ffi-require
-                                      ((ffi/cfn "abs" [:int] :int) 1 2))))))))
+                                      ((ffi/cfn "abs" [:int] :int) 1 2))))))
+    (testing "reserved spellings fail at bind time, not at call time"
+      (is (thrown? Exception (bb `(do ~ffi-require
+                                      (ffi/cfn (symbol "abs") [:int] :int)))))
+      (is (thrown? Exception (bb `(do ~ffi-require
+                                      (ffi/cfn "abs" [:coffi.mem/int] :int)))))
+      (is (thrown? Exception (bb `(do ~ffi-require
+                                      (ffi/cfn "div" [:int :int]
+                                               [:struct [:int :int]]))))))))
 
 (deftest argument-order-test
   (when-let [lib @test-lib]

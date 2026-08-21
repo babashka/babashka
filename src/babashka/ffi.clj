@@ -392,6 +392,9 @@
   before it are the fixed parameters, the tail is inferred per call."
   ([sym argtypes rettype] (cfn nil sym argtypes rettype))
   ([lib sym argtypes rettype]
+   (when-not (string? sym)
+     (throw (ex-info (str "babashka.ffi: C symbol must be a string: " (pr-str sym))
+                     {:sym sym})))
    (if-let [fixed (check-variadic-marker argtypes)]
      (variadic-cfn lib sym fixed argtypes rettype)
      (fixed-cfn lib sym argtypes rettype))))
