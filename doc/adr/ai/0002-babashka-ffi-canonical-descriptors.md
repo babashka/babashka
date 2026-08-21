@@ -322,6 +322,33 @@ error-test. Nothing in the current API blocks later coffi compatibility:
 alloc/free are malloc-style (no hidden arenas), so even coffi's arena model
 is implementable in userspace on top.
 
+## Why the fast tier is non-negotiable (closed-binary rationale)
+
+In CPython and Ruby the FFI is libffi-slow (ctypes 1-5us/call, fiddle
+similar) and that is accepted BECAUSE an exit exists: any user can compile
+a cffi API-mode wrapper or a C extension - which is structurally exactly a
+trampoline, built by hand at install time. bb's binary is closed: no
+runtime codegen, no loadable compiled extensions, no cc on the user's
+machine. If the fast tier does not ship inside the binary it cannot exist
+at all. The prebuilt shape family is not an optimization but the only
+possible location for what other ecosystems let users build themselves
+(jolt gets it from Chez runtime compilation, LuaJIT from its JIT).
+
+The same logic prices Windows: +2.9MB uncompressed (+884KB zipped) for the
+full ordered family is accepted because the alternative is a permanent
+platform split - FP-mixed calls at 3.4us on Windows and 63ns elsewhere,
+unfixable by any user. CI also showed ordered trampolines are slightly
+SMALLER than the ordered FFM descriptors they replaced. mac measured
++2.34MB if it used the ordered family instead of canonical+sorting, so
+sorting stays the mac/Linux design.
+
+The trim knob (Windows family toward measured need) exists but its
+prerequisite does not: the 37-shape evidence set is a documented analysis
+(ADR Validation section), not a committed artifact. Any per-shape trim
+first needs the coverage analysis recreated as a checked-in script whose
+output generates the trimmed family. Default position: do not trim unless
+someone actually cares about the 2.9MB.
+
 ## Future direction: libffi as the universal fallback
 
 Design the struct engine (see Known gaps) as a GENERAL fallback from day
@@ -340,6 +367,18 @@ With the fallback in place the Windows ordered-trampoline family can be
 trimmed toward the measured 37-shape need, clawing back most of its
 +2.9MB while hot paths stay at 63ns. Without libffi present, behavior
 degrades to today's bind-time error.
+
+## JVM native access
+
+SymbolLookup/libraryLookup is a restricted method: a JVM running with
+--illegal-native-access=deny (the direction newer JDKs are headed) throws
+IllegalCallerException. try-lookup used to swallow every Throwable, so
+this surfaced as a misleading "cannot find library z" (seen in JVM test
+runs). Now: IllegalCallerException fails loud at load time with the
+--enable-native-access=ALL-UNNAMED hint, and the not-found errors carry
+the last underlying lookup exception as their cause. The flag lives in
+project.clj :jvm-opts and the deps.edn :babashka/dev alias; environments
+running tests with a different JVM invocation need it too.
 
 ## Known gaps
 

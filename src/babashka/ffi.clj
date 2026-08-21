@@ -216,9 +216,20 @@
         "/usr/lib/x86_64-linux-gnu")
       "/lib"])))
 
+(def ^:private last-lookup-error (volatile! nil))
+
 (defn- try-lookup ^SymbolLookup [^String path]
   (try (SymbolLookup/libraryLookup path (Arena/global))
-       (catch Throwable _ nil)))
+       (catch java.lang.IllegalCallerException e
+         ;; native access denied: no candidate can ever load, so fail loud
+         ;; instead of reporting a misleading not-found
+         (throw (ex-info (str "babashka.ffi: native access is not enabled on this JVM: "
+                              (ex-message e)
+                              " (run with --enable-native-access=ALL-UNNAMED)")
+                         {:path path} e)))
+       (catch Throwable e
+         (vreset! last-lookup-error e)
+         nil)))
 
 (defn- lookup-one
   "One path through the full search: as given, then, for a bare name, the
@@ -265,7 +276,8 @@
                                    (str/join ", " paths)
                                    " (bare names also searched in "
                                    (pr-str (vec (search-dirs))) ")")
-                              {:library lib})))]
+                              {:library lib}
+                              @last-lookup-error)))]
     (swap! libraries conj (:lookup m))
     m))
 
@@ -308,7 +320,8 @@
           (throw (ex-info (str "babashka.ffi: cannot find library " name
                                " (tried " base " and " base ".* in "
                                (pr-str (vec (search-dirs))) ")")
-                          {:library name}))))))
+                          {:library name}
+                          @last-lookup-error))))))
 
 (defn- lookup-symbol ^MemorySegment [lib ^String sym]
   (let [lib (if (map? lib) (:lookup lib) lib)
