@@ -80,7 +80,8 @@ variadic floats to double).
 `ffi/callback` binds `clojure.lang.IFn.invoke` through a MethodHandle
 (`findVirtual` + `bindTo` + `asType`) and wraps it in an upcall stub. In a
 native image the upcall MH falls back to reflective invocation, so
-`IFn.invoke` arities 0..8 need reflection registration. Stubs live in the
+`IFn.invoke` arities 0..4 (the callback maximum) need reflection
+registration. Stubs live in the
 global arena for the process lifetime.
 
 ## Trick 5: compiled call trampolines via the SVM C interface
