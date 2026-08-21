@@ -39,6 +39,18 @@ directories (Homebrew, MacPorts, `/usr/local/lib`, the multiarch dirs) and
 vector of candidates tried in order. It never rewrites names. Bare names
 get the same directory search as above.
 
+Both return a map whose `:path` is the candidate that loaded: an absolute
+path when found in a search directory, otherwise the name the system
+resolved itself. Pass it as
+the optional first argument of `cfn` to resolve a symbol in that library
+only, for when two loaded libraries export the same name:
+
+```clojure
+(def z (ffi/load-system-library "z"))
+;;=> {:path "/usr/lib/libz.1.dylib", ...}
+(def z-version (ffi/cfn z "zlibVersion" [] :string))
+```
+
 ```clojure
 (ffi/find-symbol "strlen")
 ;;=> 4438706736

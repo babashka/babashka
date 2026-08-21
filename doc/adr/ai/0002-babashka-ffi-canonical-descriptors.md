@@ -241,6 +241,19 @@ maximum length, with a fallback to the arena above it. Worth doing only if a
 string-heavy call shows up in a hot loop; sqlite and duckdb bind strings per
 query, not per element, so nothing here needs it yet.
 
+## Library handle
+
+load-library and load-system-library return {:path <candidate that loaded>
+:lookup <SymbolLookup>} (decided 2026-08-21). :path is absolute when our
+directory probe or the Linux soname glob found the file, otherwise the name
+the system's dlopen resolved itself (macOS dyld-cache libraries have no
+file path at all). The map is the documented library handle: cfn's optional
+first argument accepts it and resolves symbols in that library only; a bare
+SymbolLookup is tolerated undocumented. Rationale: coffi returns nil and
+has no scoping - sqlite4clj with-redefs coffi's find-symbol to force its
+bundled sqlite3, proving the need; ctypes and bun both return
+library-as-object. The map leaves room for later keys without breaking.
+
 ## Reserved syntax invariant
 
 Every spelling outside the documented API must fail loudly at bind time: a

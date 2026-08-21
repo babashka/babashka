@@ -216,11 +216,16 @@
 
 (defn- lookup-one
   "One path through the full search: as given, then, for a bare name, the
-  common install directories. Nil when not found."
-  ^SymbolLookup [^String path]
-  (or (try-lookup path)
+  common install directories. A {:path :lookup} map, nil when not found."
+  [^String path]
+  (or (when-let [lk (try-lookup path)]
+        {:path path :lookup lk})
       (when-not (.contains path "/")
-        (some #(try-lookup (str % "/" path)) (search-dirs)))))
+        (some (fn [dir]
+                (let [p (str dir "/" path)]
+                  (when-let [lk (try-lookup p)]
+                    {:path p :lookup lk})))
+              (search-dirs)))))
 
 (defn load-library
   "Loads a shared library and registers it for symbol resolution. Prefer
@@ -237,8 +242,8 @@
   :darwin is accepted as a synonym for :mac (jolt compatibility). A bare
   name (no separator) that the system's dlopen search does not find is also
   probed in common install directories (Homebrew, MacPorts, /usr/local/lib,
-  multiarch dirs) and in BABASHKA_FFI_LIBRARY_PATH. Returns the library's
-  SymbolLookup, usable as the first argument to cfn."
+  multiarch dirs) and in BABASHKA_FFI_LIBRARY_PATH. Returns a map, usable
+  as the first argument to cfn, whose :path is the candidate that loaded."
   [lib]
   (let [paths (if (map? lib)
                 (let [v (or (get lib (os-key))
@@ -247,14 +252,14 @@
                                             {:libs lib})))]
                   (mapv str (if (vector? v) v [v])))
                 [(str lib)])
-        lookup (or (some lookup-one paths)
-                   (throw (ex-info (str "babashka.ffi: cannot load library: "
-                                        (str/join ", " paths)
-                                        " (bare names also searched in "
-                                        (pr-str (vec (search-dirs))) ")")
-                                   {:library lib})))]
-    (swap! libraries conj lookup)
-    lookup))
+        m (or (some lookup-one paths)
+              (throw (ex-info (str "babashka.ffi: cannot load library: "
+                                   (str/join ", " paths)
+                                   " (bare names also searched in "
+                                   (pr-str (vec (search-dirs))) ")")
+                              {:library lib})))]
+    (swap! libraries conj (:lookup m))
+    m))
 
 (defn load-system-library
   "Loads a library by its short name, e.g. \"z\" for libz.dylib / libz.so /
@@ -268,23 +273,28 @@
     (let [base (str "lib" name ".so")]
       (or (try (load-library base) (catch Exception _ nil))
           ;; glob lib<name>.so.* in the search dirs
-          (when-let [lookup (some (fn [dir]
-                                    (let [d (java.io.File. ^String dir)
-                                          cands (when (.isDirectory d)
-                                                  (->> (.list d)
-                                                       (filter #(.startsWith ^String % (str base ".")))
-                                                       (sort #(compare %2 %1))))]
-                                      (some #(try-lookup (str dir "/" %)) cands)))
-                                  (search-dirs))]
-            (swap! libraries conj lookup)
-            lookup)
+          (when-let [m (some (fn [dir]
+                               (let [d (java.io.File. ^String dir)
+                                     cands (when (.isDirectory d)
+                                             (->> (.list d)
+                                                  (filter #(.startsWith ^String % (str base ".")))
+                                                  (sort #(compare %2 %1))))]
+                                 (some (fn [c]
+                                         (let [p (str dir "/" c)]
+                                           (when-let [lk (try-lookup p)]
+                                             {:path p :lookup lk})))
+                                       cands)))
+                             (search-dirs))]
+            (swap! libraries conj (:lookup m))
+            m)
           (throw (ex-info (str "babashka.ffi: cannot find library " name
                                " (tried " base " and " base ".* in "
                                (pr-str (vec (search-dirs))) ")")
                           {:library name}))))))
 
 (defn- lookup-symbol ^MemorySegment [lib ^String sym]
-  (let [lookups (if lib [lib] (conj @libraries (.defaultLookup ^Linker @linker*)))]
+  (let [lib (if (map? lib) (:lookup lib) lib)
+        lookups (if lib [lib] (conj @libraries (.defaultLookup ^Linker @linker*)))]
     (some (fn [^SymbolLookup l] (.orElse (.find l sym) nil)) lookups)))
 
 (defn- require-symbol ^MemorySegment [lib ^String sym]
@@ -388,11 +398,12 @@
 
 (defn cfn
   "Binds C function sym as a Clojure function. argtypes is a vector of type
-  keywords, rettype a type keyword. With a lib (from load-library) the symbol
-  is resolved there; without, in all loaded libraries and then the default
-  (libc) lookup. The handle is created on first call, so binding may precede
-  load-library. A trailing :& declares the C function variadic: the types
-  before it are the fixed parameters, the tail is inferred per call."
+  keywords, rettype a type keyword. With a lib (the map returned by
+  load-library) the symbol is resolved in that library only; without, in all
+  loaded libraries and then the default (libc) lookup. The handle is created
+  on first call, so binding may precede load-library. A trailing :& declares
+  the C function variadic: the types before it are the fixed parameters, the
+  tail is inferred per call."
   ([sym argtypes rettype] (cfn nil sym argtypes rettype))
   ([lib sym argtypes rettype]
    (when-not (string? sym)

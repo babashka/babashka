@@ -194,6 +194,12 @@
                               (ffi/load-system-library "z")
                               ((ffi/cfn "zlibVersion" [] :string))))))))
     (when-not tu/windows?
+      (testing "the returned map holds the resolved path and scopes cfn"
+        (is (true? (bb `(do ~ffi-require
+                            (let [z# (ffi/load-system-library "z")]
+                              (and (string? (:path z#))
+                                   (string? ((ffi/cfn z# "zlibVersion" [] :string)))))))))))
+    (when-not tu/windows?
     (testing "candidate vectors in the OS map, first that loads wins"
       (is (string? (bb `(do (require '[babashka.ffi :as ~'ffi])
                             (ffi/load-library
