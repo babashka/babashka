@@ -5,6 +5,7 @@
    [cheshire.core :as json]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
+   [clojure.string :as str]
    [clojure.test :as test :refer [deftest is testing]]))
 
 (defn bb [expr]
@@ -417,13 +418,9 @@
   (when-not skip?
     (testing "in a native image, non-variadic in-family shapes must use the
               compiled trampoline backend - a fallback to the interpreted FFM
-              path is a 75x performance regression. On Windows only
-              order-identical shapes have trampolines: mixed shapes go
-              through the ordered FFM descriptors by design"
-      (is (= (cond
-               (not tu/native?) [:ffm :ffm :ffm]
-               tu/windows? [:trampoline :ffm :ffm]
-               :else [:trampoline :trampoline :ffm])
+              path is a 75x performance regression. Windows has ordered
+              trampolines, so mixed shapes compile there too"
+      (is (= (if tu/native? [:trampoline :trampoline :ffm] [:ffm :ffm :ffm])
              (bb `(do ~ffi-require
                       (mapv (comp :babashka.ffi/backend meta)
                             [(ffi/cfn "abs" [:int] :int)
@@ -471,28 +468,25 @@
           (doseq [[f b] (map vector generated-files before)]
             (is (= b (slurp f))
                 (str f ": run bb script/gen_ffi_metadata.clj and commit the result")))))
-      (testing "the windows descriptor family matches babashka.ffi's predicate"
+      (testing "windows mode: ordered trampolines, no fixed FFM descriptors"
         (let [before (mapv slurp generated-files)]
           (try
             (binding [*command-line-args* '("windows")]
               (load-file "script/gen_ffi_metadata.clj"))
-            (let [meta (json/parse-string
-                        (slurp (first generated-files)))
-                  fixed (remove #(get % "options")
-                                (get-in meta ["foreign" "downcalls"]))
-                  kw {"jlong" :long "jdouble" :double "jfloat" :float
-                      "void" :void}
-                  ok? @(requiring-resolve 'babashka.ffi/windows-fixed-shape?)]
-              (is (seq fixed))
-              (doseq [d fixed]
-                (is (ok? (mapv kw (get d "parameterTypes"))
-                         (kw (get d "returnType")))
-                    (str "registered but outside the family: " d)))
-              (is (ok? [:double :double :double :double :long] :void)
-                  "a uniform 4-FP ordering is in the family")
-              (is (not (ok? [:double :double :double :float :long] :void))
-                  "a non-uniform 4-FP ordering is not")
-              (is (not (ok? (vec (repeat 5 :float)) :void))))
+            (let [meta (json/parse-string (slurp (first generated-files)))
+                  downcalls (get-in meta ["foreign" "downcalls"])
+                  java-src (slurp (second generated-files))]
+              (testing "every registered downcall is variadic"
+                (is (seq downcalls))
+                (is (every? #(get % "options") downcalls)))
+              (testing "upcalls respect the 2-double family limit"
+                (is (every? #(<= (count (filter #{"jdouble"} (get % "parameterTypes"))) 2)
+                            (get-in meta ["foreign" "upcalls"]))))
+              (testing "ordered shapes get trampolines, out-of-family ones do not"
+                (is (str/includes? java-src "interface F_D_DJ "))
+                (is (str/includes? java-src "interface F_J_JJJJJJJJJJ "))
+                (is (str/includes? java-src "interface F_V_JJDDDD "))
+                (is (not (str/includes? java-src "interface F_V_DDDFJ ")))))
             (finally
               (doseq [[f b] (map vector generated-files before)]
                 (spit f b)))))))))

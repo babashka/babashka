@@ -59,18 +59,17 @@
 
 ;; the one signature family: up to 6 args with at most 3 FP args in any
 ;; order (or a uniform 4), pure integer signatures up to 10, float returns
-;; only up to 4 args. Canonical (sorted) shapes become trampolines;
-;; Windows additionally registers every ORDERING as an FFM descriptor,
-;; because argument sorting is unsound there. babashka.ffi's
-;; windows-fixed-shape? mirrors this predicate - metadata-generated-test
-;; cross-checks the two.
+;; only up to 4 args. Canonical (sorted) shapes become trampolines; on
+;; Windows argument sorting is unsound, so there every ORDERING of the
+;; family gets its own trampoline instead - a bigger binary on Windows
+;; only, full call speed everywhere.
 (defn fp-ok? [args]
   (let [fp (filterv #{"jdouble" "jfloat"} args)]
     (or (<= (count fp) 3)
         (and (= 4 (count fp)) (apply = fp)))))
 
-(def downcall-shapes
-  ;; Windows only: ordered variants of the family
+(def ordered-shapes
+  ;; every ordering of the family; trampolines on Windows
   (concat
    (for [n (range 0 7)
          args (combos-n ["jlong" "jdouble" "jfloat"] n)
@@ -79,24 +78,17 @@
    (map #(vec (repeat % "jlong")) (range 7 11))))
 
 (def downcalls
-  ;; Non-variadic downcalls only need FFM descriptors on Windows: elsewhere
-  ;; every non-variadic shape goes through a generated trampoline (identical
-  ;; coverage by construction), so registering the descriptors too would only
-  ;; add dead stubs. Variadic calls always use FFM.
-  (concat
-   (when windows?
-     (for [args downcall-shapes
-           ret (cond-> ["void" "jlong" "jdouble"]
-                 (<= (count args) 4) (conj "jfloat"))]
-       {"returnType" ret "parameterTypes" args}))
-   ;; boundary == n covers the empty-tail call of a variadic function
-   (for [n (range 1 6)
+  ;; Non-variadic downcalls never need FFM descriptors: every fixed shape
+  ;; goes through a generated trampoline in both modes. Variadic calls
+  ;; always use FFM.
+  ;; boundary == n covers the empty-tail call of a variadic function
+  (for [n (range 1 6)
          args (combos-n ["jlong" "jdouble"] n)
          :when (<= (count (filter #(= "jdouble" %) args)) 2)
          boundary (range 1 (inc (min 3 n)))
          ret ["void" "jlong"]]
-     {"returnType" ret "parameterTypes" (vec args)
-      "options" {"firstVariadicArg" boundary}})))
+    {"returnType" ret "parameterTypes" (vec args)
+     "options" {"firstVariadicArg" boundary}}))
 
 (def upcalls
   ;; same family both modes: <= 4 args, <= 2 doubles, no float; Windows
@@ -143,7 +135,7 @@
           [(vec (repeat 4 "jfloat")) (vec (repeat 4 "jdouble"))]))
 
 (def sorted-shapes
-  ;; integer carriers first, then the FP sequence; regardless of windows mode
+  ;; integer carriers first, then the FP sequence (non-Windows trampolines)
   (concat
    (for [a (range 0 (inc MAX-ARITY))
          fp fp-seqs
@@ -159,8 +151,8 @@
 (def clj-cast {"J" "long" "D" "double" "F" "float"})
 
 (def shape-sigs
-  ;; [ret-char arg-chars-string], mirrors the registered descriptor set
-  (for [args sorted-shapes
+  ;; [ret-char arg-chars-string]; Windows uses the ordered family
+  (for [args (if windows? ordered-shapes sorted-shapes)
         ret (cond-> ["void" "jlong" "jdouble"]
               (<= (count args) 4) (conj "jfloat"))]
     [(jchar ret) (str/join (map jchar args))]))
@@ -199,12 +191,32 @@
            "    private static double dblV(Object o) { return ((Number) o).doubleValue(); }\n"
            "    private static float fltV(Object o) { return ((Number) o).floatValue(); }\n\n"
            (str/join "\n" (map java-iface shape-sigs))
-           "\n    public static Object dispatch(int id, long fn, Object[] a) {\n"
-           "        switch (id) {\n"
-           (str/join "\n" (map-indexed java-case shape-sigs))
-           "\n        }\n"
-           "        throw new IllegalArgumentException(\"bad shape id: \" + id);\n"
-           "    }\n"
+           ;; a Java method tops out at 64KB of bytecode; the Windows ordered
+           ;; family exceeds one switch, so dispatch in chunks
+           (let [chunks (partition-all 300 (map-indexed vector shape-sigs))]
+             (str
+              (str/join
+               "\n"
+               (map-indexed
+                (fn [ci chunk]
+                  (str "\n    private static Object dispatch" ci
+                       "(int id, long fn, Object[] a) {\n"
+                       "        switch (id) {\n"
+                       (str/join "\n" (map (fn [[id sig]] (java-case id sig)) chunk))
+                       "\n        }\n"
+                       "        throw new IllegalArgumentException(\"bad shape id: \" + id);\n"
+                       "    }\n"))
+                chunks))
+              "\n    public static Object dispatch(int id, long fn, Object[] a) {\n"
+              "        switch (id / 300) {\n"
+              (str/join "\n"
+                        (map-indexed
+                         (fn [ci _]
+                           (str "        case " ci ": return dispatch" ci "(id, fn, a);"))
+                         chunks))
+              "\n        }\n"
+              "        throw new IllegalArgumentException(\"bad shape id: \" + id);\n"
+              "    }\n"))
            "}\n"))
 
 (spit "src/babashka/impl/ffi_trampolines.clj"

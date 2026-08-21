@@ -277,9 +277,12 @@ family definition; Windows enumerates every ordering of it (1876
 downcalls vs 1008 before, all reachable, image cost to be measured on
 CI); the runtime mirror is windows-fixed-shape? and
 metadata-generated-test cross-checks predicate against generated
-descriptors. Follow-up option: generate ordered TRAMPOLINES for Windows
-instead, removing both the descriptor weight and the ~3.4us interpreted
-FFM cost there. Also trimmed IFn.invoke reflection to arities 0-4
+descriptors. SUPERSEDED same day: Windows now generates ordered
+TRAMPOLINES for the whole family (1652, dispatch chunked into sub-methods
+for the 64KB Java method bytecode limit) and registers NO fixed FFM
+descriptors at all - full call speed on Windows at the cost of a bigger
+binary there only. windows-fixed-shape? and the runtime FFM fallback are
+gone again; the bind-time check is the trampoline id lookup everywhere. Also trimmed IFn.invoke reflection to arities 0-4
 (callback maximum).
 
 Follow-up round: :void was accepted as an argument type and, contributing

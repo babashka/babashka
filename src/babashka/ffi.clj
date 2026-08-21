@@ -343,23 +343,6 @@
   (when native-image?
     (requiring-resolve 'babashka.impl.ffi-trampolines/invoker)))
 
-(def ^:private windows-native? (and native-image? (= :windows (os-key))))
-
-(defn- windows-fixed-shape?
-  "On Windows fixed calls use FFM descriptors registered for every argument
-  ORDER in the family, since sorting is unsound there. Mirrors the shapes
-  script/gen_ffi_metadata.clj registers; metadata-generated-test
-  cross-checks the two."
-  [argtypes rettype]
-  (let [cs (mapv carrier argtypes)
-        fp (filterv #{:double :float} cs)
-        n (count cs)]
-    (and (or (and (<= n 6)
-                  (or (<= (count fp) 3)
-                      (and (= 4 (count fp)) (apply = fp))))
-             (and (<= n 10) (empty? fp)))
-         (or (not= :float (carrier rettype)) (<= n 4)))))
-
 (defn- shape-key [types* rettype]
   (let [c {:long "J" :double "D" :float "F"}]
     (str (if (= :void rettype) "V" (c (carrier rettype)))
@@ -460,14 +443,11 @@
         ;; image a generated trampoline (compiled direct call) when the
         ;; shape has one; otherwise an FFM downcall handle.
         tramp-id (get trampoline-ids (shape-key types* rettype))
-        ;; in a native image every supported shape is known ahead of time,
-        ;; so reject unsupported signatures here with a useful message
-        ;; instead of GraalVM's rebuild-the-image error at call time. On
-        ;; Windows shapes without a trampoline fall back to the registered
-        ;; ordered FFM descriptors.
-        _ (when (and native-image? (not tramp-id)
-                     (not (and windows-native?
-                               (windows-fixed-shape? argtypes rettype))))
+        ;; in a native image every supported shape is known ahead of time
+        ;; (ordered shapes on Windows, canonical elsewhere), so reject
+        ;; unsupported signatures here with a useful message instead of
+        ;; GraalVM's rebuild-the-image error at call time
+        _ (when (and native-image? (not tramp-id))
             (throw (unsupported-ex sym argtypes rettype
                                    "see the signature limits in doc/ffi.md")))
         raw (if tramp-id
