@@ -1,7 +1,5 @@
 {:config-paths ["babashka/sci"]
  :lint-as {babashka.ffi/defcfn clj-kondo.lint-as/def-catch-all
-           babashka.sqlite/with-db clojure.core/with-open
-           babashka.duckdb/with-db clojure.core/with-open
            me.raynes.conch/let-programs clojure.core/let
            babashka.impl.File/gen-wrapper-fn clojure.core/def
            babashka.impl.Pattern/gen-wrapper-fn clojure.core/def

@@ -1,6 +1,6 @@
 ;; A Doom-like raycaster in babashka, drawn with raylib through babashka.ffi.
 ;;
-;;   bb ffi-doom.clj [columns] [seconds]
+;;   bb examples/ffi/doom.clj [columns] [seconds]
 ;;
 ;; WASD moves, mouse turns, left click shoots, ESC quits.
 ;;

@@ -4,7 +4,7 @@
 ;; here the same computed vertices go to rlgl immediate mode, which takes
 ;; scalars only, so every call fits babashka.ffi.
 ;;
-;;   bb ffi-helitorus.clj [resolution] [seconds]
+;;   bb examples/ffi/helitorus.clj [resolution] [seconds]
 ;;
 ;; drag to turn, wheel to zoom, LEFT/RIGHT windings, UP/DOWN resolution.
 
