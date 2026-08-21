@@ -269,6 +269,15 @@ Use `alloc` to allocate zeroed memory. Always release this memory with
 `read` supports each listed type except `:void`. `write` also excludes
 `:string`. Write a string address as `:pointer`.
 
+Use `read-bytes` and `write-bytes` to copy whole byte arrays between
+native memory and the JVM. Both take an optional byte offset:
+
+```clojure
+(ffi/write-bytes p (byte-array [1 2 3 4]))
+(ffi/read-bytes p 4)
+;;=> byte array [1 2 3 4]
+```
+
 Use `sizeof` to get the size of a type:
 
 ```clojure

@@ -647,6 +647,27 @@
        (throw (ex-info (str "babashka.ffi: cannot write type " t) {:type t})))
      nil)))
 
+(defn read-bytes
+  "Copies n bytes from pointer p at byte offset (default 0) into a new byte
+  array."
+  (^bytes [p n] (read-bytes p n 0))
+  (^bytes [p n offset]
+   (let [n (int n)
+         arr (byte-array n)]
+     (MemorySegment/copy (segment p (+ (long offset) n)) ValueLayout/JAVA_BYTE
+                         (long offset) arr 0 n)
+     arr)))
+
+(defn write-bytes
+  "Copies byte array arr into memory at pointer p at byte offset (default
+  0)."
+  ([p arr] (write-bytes p arr 0))
+  ([p ^bytes arr offset]
+   (let [n (alength arr)]
+     (MemorySegment/copy arr 0 (segment p (+ (long offset) n))
+                         ValueLayout/JAVA_BYTE (long offset) n)
+     nil)))
+
 (defn string->ptr
   "Copies s to newly allocated native memory as a NUL-terminated UTF-8
   string. Returns its pointer. Release the pointer with free."
