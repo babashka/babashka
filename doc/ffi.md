@@ -193,7 +193,7 @@ becomes `nil`.
 
 ## Call a variadic function
 
-On macOS and Linux, put `:&` after the fixed argument types:
+Put `:&` after the fixed argument types:
 
 ```clojure
 (defcfn c-open "open" [:string :int :&] :int)
@@ -341,7 +341,7 @@ the callback, or the process can stop.
 ## Signature limits
 
 Babashka includes a fixed set of native call signatures. If a signature is
-unsupported, `cfn` or `callback` returns an error.
+unsupported, `cfn` or `callback` throws an exception.
 
 Fixed functions have these limits:
 
