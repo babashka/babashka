@@ -9,9 +9,10 @@
 ;; COUNT-shaped descriptors need registration, not orderings. See the ABI
 ;; note in babashka.ffi. Shapes:
 ;;
-;; - downcalls: a longs, b doubles, c floats with a <= 6 (x86-64 has 6
-;;   integer argument registers), a+b+c <= 7, and b+c <= 4 when c > 0;
-;;   returns void/long/double, plus float for shapes of <= 4 args
+;; - downcalls: a longs followed by an FP sequence, a+len <= 6 (x86-64 has 6
+;;   integer argument registers); FP sequences are the mixed ones up to three
+;;   plus the uniform four; returns void/long/double, plus float for shapes
+;;   of <= 4 args
 ;; - pure-integer downcalls additionally up to arity 10 (EVP_PBE_scrypt
 ;;   takes 10): with a single carrier class the sort is the identity, so
 ;;   stack-passed arguments keep their declared order and any arity is sound
@@ -120,21 +121,28 @@
 
 ;; -- trampolines --------------------------------------------------------------
 
+(def MAX-ARITY 6)
+
 (def fp-seqs
-  ;; float and double share one FP register sequence, so their relative
-  ;; order is part of the shape: enumerate sequences, not counts. Mixed
-  ;; sequences up to 4, pure-double up to 6.
-  (concat (mapcat #(combos-n ["jdouble" "jfloat"] %) (range 0 5))
-          [(vec (repeat 5 "jdouble")) (vec (repeat 6 "jdouble"))]))
+  ;; float and double share one FP register sequence, so their relative order
+  ;; is part of the shape: enumerate sequences, not counts. Mixed sequences up
+  ;; to three, plus the uniform four - rlRotatef takes four floats, geometry
+  ;; and matrix calls take four doubles. Measured against ~350 bindings from
+  ;; the babashka demos, b12n-raylib-clj, libpython-clj and the libffi API,
+  ;; the widest real signature needs three.
+  (concat (mapcat #(combos-n ["jdouble" "jfloat"] %) (range 0 4))
+          [(vec (repeat 4 "jfloat")) (vec (repeat 4 "jdouble"))]))
 
 (def sorted-shapes
   ;; integer carriers first, then the FP sequence; regardless of windows mode
   (concat
-   (for [a (range 0 7)
+   (for [a (range 0 (inc MAX-ARITY))
          fp fp-seqs
-         :when (<= (+ a (count fp)) 7)]
+         :when (<= (+ a (count fp)) MAX-ARITY)]
      (vec (concat (repeat a "jlong") fp)))
-   (for [a (range 7 11)]
+   ;; a signature of only pointers and integers has one carrier class, so the
+   ;; sort is the identity and any arity stays sound: EVP_PBE_scrypt takes ten
+   (for [a (range (inc MAX-ARITY) 11)]
      (shape a 0 0))))
 
 (def jchar {"jlong" "J" "jdouble" "D" "jfloat" "F" "void" "V"})

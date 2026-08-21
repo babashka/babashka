@@ -315,306 +315,6 @@ public final class FfiTrampoline {
         float invoke(float a0, float a1, float a2);
     }
 
-    public interface F_V_DDDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(double a0, double a1, double a2, double a3);
-    }
-
-    public interface F_J_DDDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(double a0, double a1, double a2, double a3);
-    }
-
-    public interface F_D_DDDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(double a0, double a1, double a2, double a3);
-    }
-
-    public interface F_F_DDDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        float invoke(double a0, double a1, double a2, double a3);
-    }
-
-    public interface F_V_DDDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(double a0, double a1, double a2, float a3);
-    }
-
-    public interface F_J_DDDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(double a0, double a1, double a2, float a3);
-    }
-
-    public interface F_D_DDDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(double a0, double a1, double a2, float a3);
-    }
-
-    public interface F_F_DDDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        float invoke(double a0, double a1, double a2, float a3);
-    }
-
-    public interface F_V_DDFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(double a0, double a1, float a2, double a3);
-    }
-
-    public interface F_J_DDFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(double a0, double a1, float a2, double a3);
-    }
-
-    public interface F_D_DDFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(double a0, double a1, float a2, double a3);
-    }
-
-    public interface F_F_DDFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        float invoke(double a0, double a1, float a2, double a3);
-    }
-
-    public interface F_V_DDFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(double a0, double a1, float a2, float a3);
-    }
-
-    public interface F_J_DDFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(double a0, double a1, float a2, float a3);
-    }
-
-    public interface F_D_DDFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(double a0, double a1, float a2, float a3);
-    }
-
-    public interface F_F_DDFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        float invoke(double a0, double a1, float a2, float a3);
-    }
-
-    public interface F_V_DFDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(double a0, float a1, double a2, double a3);
-    }
-
-    public interface F_J_DFDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(double a0, float a1, double a2, double a3);
-    }
-
-    public interface F_D_DFDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(double a0, float a1, double a2, double a3);
-    }
-
-    public interface F_F_DFDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        float invoke(double a0, float a1, double a2, double a3);
-    }
-
-    public interface F_V_DFDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(double a0, float a1, double a2, float a3);
-    }
-
-    public interface F_J_DFDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(double a0, float a1, double a2, float a3);
-    }
-
-    public interface F_D_DFDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(double a0, float a1, double a2, float a3);
-    }
-
-    public interface F_F_DFDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        float invoke(double a0, float a1, double a2, float a3);
-    }
-
-    public interface F_V_DFFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(double a0, float a1, float a2, double a3);
-    }
-
-    public interface F_J_DFFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(double a0, float a1, float a2, double a3);
-    }
-
-    public interface F_D_DFFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(double a0, float a1, float a2, double a3);
-    }
-
-    public interface F_F_DFFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        float invoke(double a0, float a1, float a2, double a3);
-    }
-
-    public interface F_V_DFFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(double a0, float a1, float a2, float a3);
-    }
-
-    public interface F_J_DFFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(double a0, float a1, float a2, float a3);
-    }
-
-    public interface F_D_DFFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(double a0, float a1, float a2, float a3);
-    }
-
-    public interface F_F_DFFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        float invoke(double a0, float a1, float a2, float a3);
-    }
-
-    public interface F_V_FDDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(float a0, double a1, double a2, double a3);
-    }
-
-    public interface F_J_FDDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(float a0, double a1, double a2, double a3);
-    }
-
-    public interface F_D_FDDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(float a0, double a1, double a2, double a3);
-    }
-
-    public interface F_F_FDDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        float invoke(float a0, double a1, double a2, double a3);
-    }
-
-    public interface F_V_FDDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(float a0, double a1, double a2, float a3);
-    }
-
-    public interface F_J_FDDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(float a0, double a1, double a2, float a3);
-    }
-
-    public interface F_D_FDDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(float a0, double a1, double a2, float a3);
-    }
-
-    public interface F_F_FDDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        float invoke(float a0, double a1, double a2, float a3);
-    }
-
-    public interface F_V_FDFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(float a0, double a1, float a2, double a3);
-    }
-
-    public interface F_J_FDFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(float a0, double a1, float a2, double a3);
-    }
-
-    public interface F_D_FDFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(float a0, double a1, float a2, double a3);
-    }
-
-    public interface F_F_FDFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        float invoke(float a0, double a1, float a2, double a3);
-    }
-
-    public interface F_V_FDFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(float a0, double a1, float a2, float a3);
-    }
-
-    public interface F_J_FDFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(float a0, double a1, float a2, float a3);
-    }
-
-    public interface F_D_FDFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(float a0, double a1, float a2, float a3);
-    }
-
-    public interface F_F_FDFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        float invoke(float a0, double a1, float a2, float a3);
-    }
-
-    public interface F_V_FFDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(float a0, float a1, double a2, double a3);
-    }
-
-    public interface F_J_FFDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(float a0, float a1, double a2, double a3);
-    }
-
-    public interface F_D_FFDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(float a0, float a1, double a2, double a3);
-    }
-
-    public interface F_F_FFDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        float invoke(float a0, float a1, double a2, double a3);
-    }
-
-    public interface F_V_FFDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(float a0, float a1, double a2, float a3);
-    }
-
-    public interface F_J_FFDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(float a0, float a1, double a2, float a3);
-    }
-
-    public interface F_D_FFDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(float a0, float a1, double a2, float a3);
-    }
-
-    public interface F_F_FFDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        float invoke(float a0, float a1, double a2, float a3);
-    }
-
-    public interface F_V_FFFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(float a0, float a1, float a2, double a3);
-    }
-
-    public interface F_J_FFFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(float a0, float a1, float a2, double a3);
-    }
-
-    public interface F_D_FFFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(float a0, float a1, float a2, double a3);
-    }
-
-    public interface F_F_FFFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        float invoke(float a0, float a1, float a2, double a3);
-    }
-
     public interface F_V_FFFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(float a0, float a1, float a2, float a3);
@@ -635,34 +335,24 @@ public final class FfiTrampoline {
         float invoke(float a0, float a1, float a2, float a3);
     }
 
-    public interface F_V_DDDDD extends CFunctionPointer {
+    public interface F_V_DDDD extends CFunctionPointer {
         @InvokeCFunctionPointer
-        void invoke(double a0, double a1, double a2, double a3, double a4);
+        void invoke(double a0, double a1, double a2, double a3);
     }
 
-    public interface F_J_DDDDD extends CFunctionPointer {
+    public interface F_J_DDDD extends CFunctionPointer {
         @InvokeCFunctionPointer
-        long invoke(double a0, double a1, double a2, double a3, double a4);
+        long invoke(double a0, double a1, double a2, double a3);
     }
 
-    public interface F_D_DDDDD extends CFunctionPointer {
+    public interface F_D_DDDD extends CFunctionPointer {
         @InvokeCFunctionPointer
-        double invoke(double a0, double a1, double a2, double a3, double a4);
+        double invoke(double a0, double a1, double a2, double a3);
     }
 
-    public interface F_V_DDDDDD extends CFunctionPointer {
+    public interface F_F_DDDD extends CFunctionPointer {
         @InvokeCFunctionPointer
-        void invoke(double a0, double a1, double a2, double a3, double a4, double a5);
-    }
-
-    public interface F_J_DDDDDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(double a0, double a1, double a2, double a3, double a4, double a5);
-    }
-
-    public interface F_D_DDDDDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(double a0, double a1, double a2, double a3, double a4, double a5);
+        float invoke(double a0, double a1, double a2, double a3);
     }
 
     public interface F_V_J extends CFunctionPointer {
@@ -965,231 +655,6 @@ public final class FfiTrampoline {
         float invoke(long a0, float a1, float a2, float a3);
     }
 
-    public interface F_V_JDDDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, double a1, double a2, double a3, double a4);
-    }
-
-    public interface F_J_JDDDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, double a1, double a2, double a3, double a4);
-    }
-
-    public interface F_D_JDDDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, double a1, double a2, double a3, double a4);
-    }
-
-    public interface F_V_JDDDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, double a1, double a2, double a3, float a4);
-    }
-
-    public interface F_J_JDDDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, double a1, double a2, double a3, float a4);
-    }
-
-    public interface F_D_JDDDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, double a1, double a2, double a3, float a4);
-    }
-
-    public interface F_V_JDDFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, double a1, double a2, float a3, double a4);
-    }
-
-    public interface F_J_JDDFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, double a1, double a2, float a3, double a4);
-    }
-
-    public interface F_D_JDDFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, double a1, double a2, float a3, double a4);
-    }
-
-    public interface F_V_JDDFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, double a1, double a2, float a3, float a4);
-    }
-
-    public interface F_J_JDDFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, double a1, double a2, float a3, float a4);
-    }
-
-    public interface F_D_JDDFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, double a1, double a2, float a3, float a4);
-    }
-
-    public interface F_V_JDFDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, double a1, float a2, double a3, double a4);
-    }
-
-    public interface F_J_JDFDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, double a1, float a2, double a3, double a4);
-    }
-
-    public interface F_D_JDFDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, double a1, float a2, double a3, double a4);
-    }
-
-    public interface F_V_JDFDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, double a1, float a2, double a3, float a4);
-    }
-
-    public interface F_J_JDFDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, double a1, float a2, double a3, float a4);
-    }
-
-    public interface F_D_JDFDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, double a1, float a2, double a3, float a4);
-    }
-
-    public interface F_V_JDFFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, double a1, float a2, float a3, double a4);
-    }
-
-    public interface F_J_JDFFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, double a1, float a2, float a3, double a4);
-    }
-
-    public interface F_D_JDFFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, double a1, float a2, float a3, double a4);
-    }
-
-    public interface F_V_JDFFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, double a1, float a2, float a3, float a4);
-    }
-
-    public interface F_J_JDFFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, double a1, float a2, float a3, float a4);
-    }
-
-    public interface F_D_JDFFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, double a1, float a2, float a3, float a4);
-    }
-
-    public interface F_V_JFDDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, float a1, double a2, double a3, double a4);
-    }
-
-    public interface F_J_JFDDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, float a1, double a2, double a3, double a4);
-    }
-
-    public interface F_D_JFDDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, float a1, double a2, double a3, double a4);
-    }
-
-    public interface F_V_JFDDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, float a1, double a2, double a3, float a4);
-    }
-
-    public interface F_J_JFDDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, float a1, double a2, double a3, float a4);
-    }
-
-    public interface F_D_JFDDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, float a1, double a2, double a3, float a4);
-    }
-
-    public interface F_V_JFDFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, float a1, double a2, float a3, double a4);
-    }
-
-    public interface F_J_JFDFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, float a1, double a2, float a3, double a4);
-    }
-
-    public interface F_D_JFDFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, float a1, double a2, float a3, double a4);
-    }
-
-    public interface F_V_JFDFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, float a1, double a2, float a3, float a4);
-    }
-
-    public interface F_J_JFDFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, float a1, double a2, float a3, float a4);
-    }
-
-    public interface F_D_JFDFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, float a1, double a2, float a3, float a4);
-    }
-
-    public interface F_V_JFFDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, float a1, float a2, double a3, double a4);
-    }
-
-    public interface F_J_JFFDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, float a1, float a2, double a3, double a4);
-    }
-
-    public interface F_D_JFFDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, float a1, float a2, double a3, double a4);
-    }
-
-    public interface F_V_JFFDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, float a1, float a2, double a3, float a4);
-    }
-
-    public interface F_J_JFFDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, float a1, float a2, double a3, float a4);
-    }
-
-    public interface F_D_JFFDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, float a1, float a2, double a3, float a4);
-    }
-
-    public interface F_V_JFFFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, float a1, float a2, float a3, double a4);
-    }
-
-    public interface F_J_JFFFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, float a1, float a2, float a3, double a4);
-    }
-
-    public interface F_D_JFFFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, float a1, float a2, float a3, double a4);
-    }
-
     public interface F_V_JFFFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, float a1, float a2, float a3, float a4);
@@ -1205,34 +670,19 @@ public final class FfiTrampoline {
         double invoke(long a0, float a1, float a2, float a3, float a4);
     }
 
-    public interface F_V_JDDDDD extends CFunctionPointer {
+    public interface F_V_JDDDD extends CFunctionPointer {
         @InvokeCFunctionPointer
-        void invoke(long a0, double a1, double a2, double a3, double a4, double a5);
+        void invoke(long a0, double a1, double a2, double a3, double a4);
     }
 
-    public interface F_J_JDDDDD extends CFunctionPointer {
+    public interface F_J_JDDDD extends CFunctionPointer {
         @InvokeCFunctionPointer
-        long invoke(long a0, double a1, double a2, double a3, double a4, double a5);
+        long invoke(long a0, double a1, double a2, double a3, double a4);
     }
 
-    public interface F_D_JDDDDD extends CFunctionPointer {
+    public interface F_D_JDDDD extends CFunctionPointer {
         @InvokeCFunctionPointer
-        double invoke(long a0, double a1, double a2, double a3, double a4, double a5);
-    }
-
-    public interface F_V_JDDDDDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, double a1, double a2, double a3, double a4, double a5, double a6);
-    }
-
-    public interface F_J_JDDDDDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, double a1, double a2, double a3, double a4, double a5, double a6);
-    }
-
-    public interface F_D_JDDDDDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, double a1, double a2, double a3, double a4, double a5, double a6);
+        double invoke(long a0, double a1, double a2, double a3, double a4);
     }
 
     public interface F_V_JJ extends CFunctionPointer {
@@ -1495,231 +945,6 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, float a2, float a3, float a4);
     }
 
-    public interface F_V_JJDDDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, double a2, double a3, double a4, double a5);
-    }
-
-    public interface F_J_JJDDDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, double a2, double a3, double a4, double a5);
-    }
-
-    public interface F_D_JJDDDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, double a2, double a3, double a4, double a5);
-    }
-
-    public interface F_V_JJDDDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, double a2, double a3, double a4, float a5);
-    }
-
-    public interface F_J_JJDDDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, double a2, double a3, double a4, float a5);
-    }
-
-    public interface F_D_JJDDDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, double a2, double a3, double a4, float a5);
-    }
-
-    public interface F_V_JJDDFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, double a2, double a3, float a4, double a5);
-    }
-
-    public interface F_J_JJDDFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, double a2, double a3, float a4, double a5);
-    }
-
-    public interface F_D_JJDDFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, double a2, double a3, float a4, double a5);
-    }
-
-    public interface F_V_JJDDFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, double a2, double a3, float a4, float a5);
-    }
-
-    public interface F_J_JJDDFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, double a2, double a3, float a4, float a5);
-    }
-
-    public interface F_D_JJDDFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, double a2, double a3, float a4, float a5);
-    }
-
-    public interface F_V_JJDFDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, double a2, float a3, double a4, double a5);
-    }
-
-    public interface F_J_JJDFDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, double a2, float a3, double a4, double a5);
-    }
-
-    public interface F_D_JJDFDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, double a2, float a3, double a4, double a5);
-    }
-
-    public interface F_V_JJDFDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, double a2, float a3, double a4, float a5);
-    }
-
-    public interface F_J_JJDFDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, double a2, float a3, double a4, float a5);
-    }
-
-    public interface F_D_JJDFDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, double a2, float a3, double a4, float a5);
-    }
-
-    public interface F_V_JJDFFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, double a2, float a3, float a4, double a5);
-    }
-
-    public interface F_J_JJDFFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, double a2, float a3, float a4, double a5);
-    }
-
-    public interface F_D_JJDFFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, double a2, float a3, float a4, double a5);
-    }
-
-    public interface F_V_JJDFFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, double a2, float a3, float a4, float a5);
-    }
-
-    public interface F_J_JJDFFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, double a2, float a3, float a4, float a5);
-    }
-
-    public interface F_D_JJDFFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, double a2, float a3, float a4, float a5);
-    }
-
-    public interface F_V_JJFDDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, float a2, double a3, double a4, double a5);
-    }
-
-    public interface F_J_JJFDDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, float a2, double a3, double a4, double a5);
-    }
-
-    public interface F_D_JJFDDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, float a2, double a3, double a4, double a5);
-    }
-
-    public interface F_V_JJFDDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, float a2, double a3, double a4, float a5);
-    }
-
-    public interface F_J_JJFDDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, float a2, double a3, double a4, float a5);
-    }
-
-    public interface F_D_JJFDDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, float a2, double a3, double a4, float a5);
-    }
-
-    public interface F_V_JJFDFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, float a2, double a3, float a4, double a5);
-    }
-
-    public interface F_J_JJFDFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, float a2, double a3, float a4, double a5);
-    }
-
-    public interface F_D_JJFDFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, float a2, double a3, float a4, double a5);
-    }
-
-    public interface F_V_JJFDFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, float a2, double a3, float a4, float a5);
-    }
-
-    public interface F_J_JJFDFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, float a2, double a3, float a4, float a5);
-    }
-
-    public interface F_D_JJFDFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, float a2, double a3, float a4, float a5);
-    }
-
-    public interface F_V_JJFFDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, float a2, float a3, double a4, double a5);
-    }
-
-    public interface F_J_JJFFDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, float a2, float a3, double a4, double a5);
-    }
-
-    public interface F_D_JJFFDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, float a2, float a3, double a4, double a5);
-    }
-
-    public interface F_V_JJFFDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, float a2, float a3, double a4, float a5);
-    }
-
-    public interface F_J_JJFFDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, float a2, float a3, double a4, float a5);
-    }
-
-    public interface F_D_JJFFDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, float a2, float a3, double a4, float a5);
-    }
-
-    public interface F_V_JJFFFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, float a2, float a3, float a4, double a5);
-    }
-
-    public interface F_J_JJFFFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, float a2, float a3, float a4, double a5);
-    }
-
-    public interface F_D_JJFFFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, float a2, float a3, float a4, double a5);
-    }
-
     public interface F_V_JJFFFF extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, float a2, float a3, float a4, float a5);
@@ -1735,19 +960,19 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, float a2, float a3, float a4, float a5);
     }
 
-    public interface F_V_JJDDDDD extends CFunctionPointer {
+    public interface F_V_JJDDDD extends CFunctionPointer {
         @InvokeCFunctionPointer
-        void invoke(long a0, long a1, double a2, double a3, double a4, double a5, double a6);
+        void invoke(long a0, long a1, double a2, double a3, double a4, double a5);
     }
 
-    public interface F_J_JJDDDDD extends CFunctionPointer {
+    public interface F_J_JJDDDD extends CFunctionPointer {
         @InvokeCFunctionPointer
-        long invoke(long a0, long a1, double a2, double a3, double a4, double a5, double a6);
+        long invoke(long a0, long a1, double a2, double a3, double a4, double a5);
     }
 
-    public interface F_D_JJDDDDD extends CFunctionPointer {
+    public interface F_D_JJDDDD extends CFunctionPointer {
         @InvokeCFunctionPointer
-        double invoke(long a0, long a1, double a2, double a3, double a4, double a5, double a6);
+        double invoke(long a0, long a1, double a2, double a3, double a4, double a5);
     }
 
     public interface F_V_JJJ extends CFunctionPointer {
@@ -1990,246 +1215,6 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, long a2, float a3, float a4, float a5);
     }
 
-    public interface F_V_JJJDDDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, long a2, double a3, double a4, double a5, double a6);
-    }
-
-    public interface F_J_JJJDDDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, long a2, double a3, double a4, double a5, double a6);
-    }
-
-    public interface F_D_JJJDDDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, long a2, double a3, double a4, double a5, double a6);
-    }
-
-    public interface F_V_JJJDDDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, long a2, double a3, double a4, double a5, float a6);
-    }
-
-    public interface F_J_JJJDDDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, long a2, double a3, double a4, double a5, float a6);
-    }
-
-    public interface F_D_JJJDDDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, long a2, double a3, double a4, double a5, float a6);
-    }
-
-    public interface F_V_JJJDDFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, long a2, double a3, double a4, float a5, double a6);
-    }
-
-    public interface F_J_JJJDDFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, long a2, double a3, double a4, float a5, double a6);
-    }
-
-    public interface F_D_JJJDDFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, long a2, double a3, double a4, float a5, double a6);
-    }
-
-    public interface F_V_JJJDDFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, long a2, double a3, double a4, float a5, float a6);
-    }
-
-    public interface F_J_JJJDDFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, long a2, double a3, double a4, float a5, float a6);
-    }
-
-    public interface F_D_JJJDDFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, long a2, double a3, double a4, float a5, float a6);
-    }
-
-    public interface F_V_JJJDFDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, long a2, double a3, float a4, double a5, double a6);
-    }
-
-    public interface F_J_JJJDFDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, long a2, double a3, float a4, double a5, double a6);
-    }
-
-    public interface F_D_JJJDFDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, long a2, double a3, float a4, double a5, double a6);
-    }
-
-    public interface F_V_JJJDFDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, long a2, double a3, float a4, double a5, float a6);
-    }
-
-    public interface F_J_JJJDFDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, long a2, double a3, float a4, double a5, float a6);
-    }
-
-    public interface F_D_JJJDFDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, long a2, double a3, float a4, double a5, float a6);
-    }
-
-    public interface F_V_JJJDFFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, long a2, double a3, float a4, float a5, double a6);
-    }
-
-    public interface F_J_JJJDFFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, long a2, double a3, float a4, float a5, double a6);
-    }
-
-    public interface F_D_JJJDFFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, long a2, double a3, float a4, float a5, double a6);
-    }
-
-    public interface F_V_JJJDFFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, long a2, double a3, float a4, float a5, float a6);
-    }
-
-    public interface F_J_JJJDFFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, long a2, double a3, float a4, float a5, float a6);
-    }
-
-    public interface F_D_JJJDFFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, long a2, double a3, float a4, float a5, float a6);
-    }
-
-    public interface F_V_JJJFDDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, long a2, float a3, double a4, double a5, double a6);
-    }
-
-    public interface F_J_JJJFDDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, long a2, float a3, double a4, double a5, double a6);
-    }
-
-    public interface F_D_JJJFDDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, long a2, float a3, double a4, double a5, double a6);
-    }
-
-    public interface F_V_JJJFDDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, long a2, float a3, double a4, double a5, float a6);
-    }
-
-    public interface F_J_JJJFDDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, long a2, float a3, double a4, double a5, float a6);
-    }
-
-    public interface F_D_JJJFDDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, long a2, float a3, double a4, double a5, float a6);
-    }
-
-    public interface F_V_JJJFDFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, long a2, float a3, double a4, float a5, double a6);
-    }
-
-    public interface F_J_JJJFDFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, long a2, float a3, double a4, float a5, double a6);
-    }
-
-    public interface F_D_JJJFDFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, long a2, float a3, double a4, float a5, double a6);
-    }
-
-    public interface F_V_JJJFDFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, long a2, float a3, double a4, float a5, float a6);
-    }
-
-    public interface F_J_JJJFDFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, long a2, float a3, double a4, float a5, float a6);
-    }
-
-    public interface F_D_JJJFDFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, long a2, float a3, double a4, float a5, float a6);
-    }
-
-    public interface F_V_JJJFFDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, long a2, float a3, float a4, double a5, double a6);
-    }
-
-    public interface F_J_JJJFFDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, long a2, float a3, float a4, double a5, double a6);
-    }
-
-    public interface F_D_JJJFFDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, long a2, float a3, float a4, double a5, double a6);
-    }
-
-    public interface F_V_JJJFFDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, long a2, float a3, float a4, double a5, float a6);
-    }
-
-    public interface F_J_JJJFFDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, long a2, float a3, float a4, double a5, float a6);
-    }
-
-    public interface F_D_JJJFFDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, long a2, float a3, float a4, double a5, float a6);
-    }
-
-    public interface F_V_JJJFFFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, long a2, float a3, float a4, float a5, double a6);
-    }
-
-    public interface F_J_JJJFFFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, long a2, float a3, float a4, float a5, double a6);
-    }
-
-    public interface F_D_JJJFFFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, long a2, float a3, float a4, float a5, double a6);
-    }
-
-    public interface F_V_JJJFFFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, long a2, float a3, float a4, float a5, float a6);
-    }
-
-    public interface F_J_JJJFFFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, long a2, float a3, float a4, float a5, float a6);
-    }
-
-    public interface F_D_JJJFFFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, long a2, float a3, float a4, float a5, float a6);
-    }
-
     public interface F_V_JJJJ extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, long a2, long a3);
@@ -2340,126 +1325,6 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, long a2, long a3, float a4, float a5);
     }
 
-    public interface F_V_JJJJDDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, long a2, long a3, double a4, double a5, double a6);
-    }
-
-    public interface F_J_JJJJDDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, long a2, long a3, double a4, double a5, double a6);
-    }
-
-    public interface F_D_JJJJDDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, long a2, long a3, double a4, double a5, double a6);
-    }
-
-    public interface F_V_JJJJDDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, long a2, long a3, double a4, double a5, float a6);
-    }
-
-    public interface F_J_JJJJDDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, long a2, long a3, double a4, double a5, float a6);
-    }
-
-    public interface F_D_JJJJDDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, long a2, long a3, double a4, double a5, float a6);
-    }
-
-    public interface F_V_JJJJDFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, long a2, long a3, double a4, float a5, double a6);
-    }
-
-    public interface F_J_JJJJDFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, long a2, long a3, double a4, float a5, double a6);
-    }
-
-    public interface F_D_JJJJDFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, long a2, long a3, double a4, float a5, double a6);
-    }
-
-    public interface F_V_JJJJDFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, long a2, long a3, double a4, float a5, float a6);
-    }
-
-    public interface F_J_JJJJDFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, long a2, long a3, double a4, float a5, float a6);
-    }
-
-    public interface F_D_JJJJDFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, long a2, long a3, double a4, float a5, float a6);
-    }
-
-    public interface F_V_JJJJFDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, long a2, long a3, float a4, double a5, double a6);
-    }
-
-    public interface F_J_JJJJFDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, long a2, long a3, float a4, double a5, double a6);
-    }
-
-    public interface F_D_JJJJFDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, long a2, long a3, float a4, double a5, double a6);
-    }
-
-    public interface F_V_JJJJFDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, long a2, long a3, float a4, double a5, float a6);
-    }
-
-    public interface F_J_JJJJFDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, long a2, long a3, float a4, double a5, float a6);
-    }
-
-    public interface F_D_JJJJFDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, long a2, long a3, float a4, double a5, float a6);
-    }
-
-    public interface F_V_JJJJFFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, long a2, long a3, float a4, float a5, double a6);
-    }
-
-    public interface F_J_JJJJFFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, long a2, long a3, float a4, float a5, double a6);
-    }
-
-    public interface F_D_JJJJFFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, long a2, long a3, float a4, float a5, double a6);
-    }
-
-    public interface F_V_JJJJFFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, long a2, long a3, float a4, float a5, float a6);
-    }
-
-    public interface F_J_JJJJFFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, long a2, long a3, float a4, float a5, float a6);
-    }
-
-    public interface F_D_JJJJFFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, long a2, long a3, float a4, float a5, float a6);
-    }
-
     public interface F_V_JJJJJ extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, long a2, long a3, long a4);
@@ -2505,66 +1370,6 @@ public final class FfiTrampoline {
         double invoke(long a0, long a1, long a2, long a3, long a4, float a5);
     }
 
-    public interface F_V_JJJJJDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, long a2, long a3, long a4, double a5, double a6);
-    }
-
-    public interface F_J_JJJJJDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, long a2, long a3, long a4, double a5, double a6);
-    }
-
-    public interface F_D_JJJJJDD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, long a2, long a3, long a4, double a5, double a6);
-    }
-
-    public interface F_V_JJJJJDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, long a2, long a3, long a4, double a5, float a6);
-    }
-
-    public interface F_J_JJJJJDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, long a2, long a3, long a4, double a5, float a6);
-    }
-
-    public interface F_D_JJJJJDF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, long a2, long a3, long a4, double a5, float a6);
-    }
-
-    public interface F_V_JJJJJFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, long a2, long a3, long a4, float a5, double a6);
-    }
-
-    public interface F_J_JJJJJFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, long a2, long a3, long a4, float a5, double a6);
-    }
-
-    public interface F_D_JJJJJFD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, long a2, long a3, long a4, float a5, double a6);
-    }
-
-    public interface F_V_JJJJJFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, long a2, long a3, long a4, float a5, float a6);
-    }
-
-    public interface F_J_JJJJJFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, long a2, long a3, long a4, float a5, float a6);
-    }
-
-    public interface F_D_JJJJJFF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, long a2, long a3, long a4, float a5, float a6);
-    }
-
     public interface F_V_JJJJJJ extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(long a0, long a1, long a2, long a3, long a4, long a5);
@@ -2578,36 +1383,6 @@ public final class FfiTrampoline {
     public interface F_D_JJJJJJ extends CFunctionPointer {
         @InvokeCFunctionPointer
         double invoke(long a0, long a1, long a2, long a3, long a4, long a5);
-    }
-
-    public interface F_V_JJJJJJD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, long a2, long a3, long a4, long a5, double a6);
-    }
-
-    public interface F_J_JJJJJJD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, long a2, long a3, long a4, long a5, double a6);
-    }
-
-    public interface F_D_JJJJJJD extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, long a2, long a3, long a4, long a5, double a6);
-    }
-
-    public interface F_V_JJJJJJF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        void invoke(long a0, long a1, long a2, long a3, long a4, long a5, float a6);
-    }
-
-    public interface F_J_JJJJJJF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        long invoke(long a0, long a1, long a2, long a3, long a4, long a5, float a6);
-    }
-
-    public interface F_D_JJJJJJF extends CFunctionPointer {
-        @InvokeCFunctionPointer
-        double invoke(long a0, long a1, long a2, long a3, long a4, long a5, float a6);
     }
 
     public interface F_V_JJJJJJJ extends CFunctionPointer {
@@ -2732,477 +1507,232 @@ public final class FfiTrampoline {
         case 57: return ((F_J_FFF) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), fltV(a[2]));
         case 58: return ((F_D_FFF) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), fltV(a[2]));
         case 59: return ((F_F_FFF) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), fltV(a[2]));
-        case 60: ((F_V_DDDD) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3])); return null;
-        case 61: return ((F_J_DDDD) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]));
-        case 62: return ((F_D_DDDD) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]));
-        case 63: return ((F_F_DDDD) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]));
-        case 64: ((F_V_DDDF) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), dblV(a[2]), fltV(a[3])); return null;
-        case 65: return ((F_J_DDDF) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), dblV(a[2]), fltV(a[3]));
-        case 66: return ((F_D_DDDF) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), dblV(a[2]), fltV(a[3]));
-        case 67: return ((F_F_DDDF) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), dblV(a[2]), fltV(a[3]));
-        case 68: ((F_V_DDFD) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), fltV(a[2]), dblV(a[3])); return null;
-        case 69: return ((F_J_DDFD) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), fltV(a[2]), dblV(a[3]));
-        case 70: return ((F_D_DDFD) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), fltV(a[2]), dblV(a[3]));
-        case 71: return ((F_F_DDFD) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), fltV(a[2]), dblV(a[3]));
-        case 72: ((F_V_DDFF) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), fltV(a[2]), fltV(a[3])); return null;
-        case 73: return ((F_J_DDFF) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), fltV(a[2]), fltV(a[3]));
-        case 74: return ((F_D_DDFF) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), fltV(a[2]), fltV(a[3]));
-        case 75: return ((F_F_DDFF) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), fltV(a[2]), fltV(a[3]));
-        case 76: ((F_V_DFDD) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]), dblV(a[2]), dblV(a[3])); return null;
-        case 77: return ((F_J_DFDD) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]), dblV(a[2]), dblV(a[3]));
-        case 78: return ((F_D_DFDD) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]), dblV(a[2]), dblV(a[3]));
-        case 79: return ((F_F_DFDD) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]), dblV(a[2]), dblV(a[3]));
-        case 80: ((F_V_DFDF) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]), dblV(a[2]), fltV(a[3])); return null;
-        case 81: return ((F_J_DFDF) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]), dblV(a[2]), fltV(a[3]));
-        case 82: return ((F_D_DFDF) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]), dblV(a[2]), fltV(a[3]));
-        case 83: return ((F_F_DFDF) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]), dblV(a[2]), fltV(a[3]));
-        case 84: ((F_V_DFFD) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]), fltV(a[2]), dblV(a[3])); return null;
-        case 85: return ((F_J_DFFD) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]), fltV(a[2]), dblV(a[3]));
-        case 86: return ((F_D_DFFD) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]), fltV(a[2]), dblV(a[3]));
-        case 87: return ((F_F_DFFD) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]), fltV(a[2]), dblV(a[3]));
-        case 88: ((F_V_DFFF) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3])); return null;
-        case 89: return ((F_J_DFFF) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3]));
-        case 90: return ((F_D_DFFF) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3]));
-        case 91: return ((F_F_DFFF) WordFactory.pointer(fn)).invoke(dblV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3]));
-        case 92: ((F_V_FDDD) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3])); return null;
-        case 93: return ((F_J_FDDD) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]));
-        case 94: return ((F_D_FDDD) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]));
-        case 95: return ((F_F_FDDD) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]));
-        case 96: ((F_V_FDDF) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]), dblV(a[2]), fltV(a[3])); return null;
-        case 97: return ((F_J_FDDF) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]), dblV(a[2]), fltV(a[3]));
-        case 98: return ((F_D_FDDF) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]), dblV(a[2]), fltV(a[3]));
-        case 99: return ((F_F_FDDF) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]), dblV(a[2]), fltV(a[3]));
-        case 100: ((F_V_FDFD) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]), fltV(a[2]), dblV(a[3])); return null;
-        case 101: return ((F_J_FDFD) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]), fltV(a[2]), dblV(a[3]));
-        case 102: return ((F_D_FDFD) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]), fltV(a[2]), dblV(a[3]));
-        case 103: return ((F_F_FDFD) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]), fltV(a[2]), dblV(a[3]));
-        case 104: ((F_V_FDFF) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]), fltV(a[2]), fltV(a[3])); return null;
-        case 105: return ((F_J_FDFF) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]), fltV(a[2]), fltV(a[3]));
-        case 106: return ((F_D_FDFF) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]), fltV(a[2]), fltV(a[3]));
-        case 107: return ((F_F_FDFF) WordFactory.pointer(fn)).invoke(fltV(a[0]), dblV(a[1]), fltV(a[2]), fltV(a[3]));
-        case 108: ((F_V_FFDD) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), dblV(a[2]), dblV(a[3])); return null;
-        case 109: return ((F_J_FFDD) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), dblV(a[2]), dblV(a[3]));
-        case 110: return ((F_D_FFDD) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), dblV(a[2]), dblV(a[3]));
-        case 111: return ((F_F_FFDD) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), dblV(a[2]), dblV(a[3]));
-        case 112: ((F_V_FFDF) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), dblV(a[2]), fltV(a[3])); return null;
-        case 113: return ((F_J_FFDF) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), dblV(a[2]), fltV(a[3]));
-        case 114: return ((F_D_FFDF) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), dblV(a[2]), fltV(a[3]));
-        case 115: return ((F_F_FFDF) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), dblV(a[2]), fltV(a[3]));
-        case 116: ((F_V_FFFD) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), fltV(a[2]), dblV(a[3])); return null;
-        case 117: return ((F_J_FFFD) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), fltV(a[2]), dblV(a[3]));
-        case 118: return ((F_D_FFFD) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), fltV(a[2]), dblV(a[3]));
-        case 119: return ((F_F_FFFD) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), fltV(a[2]), dblV(a[3]));
-        case 120: ((F_V_FFFF) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3])); return null;
-        case 121: return ((F_J_FFFF) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3]));
-        case 122: return ((F_D_FFFF) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3]));
-        case 123: return ((F_F_FFFF) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3]));
-        case 124: ((F_V_DDDDD) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4])); return null;
-        case 125: return ((F_J_DDDDD) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]));
-        case 126: return ((F_D_DDDDD) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]));
-        case 127: ((F_V_DDDDDD) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5])); return null;
-        case 128: return ((F_J_DDDDDD) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]));
-        case 129: return ((F_D_DDDDDD) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]));
-        case 130: ((F_V_J) WordFactory.pointer(fn)).invoke(longV(a[0])); return null;
-        case 131: return ((F_J_J) WordFactory.pointer(fn)).invoke(longV(a[0]));
-        case 132: return ((F_D_J) WordFactory.pointer(fn)).invoke(longV(a[0]));
-        case 133: return ((F_F_J) WordFactory.pointer(fn)).invoke(longV(a[0]));
-        case 134: ((F_V_JD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1])); return null;
-        case 135: return ((F_J_JD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]));
-        case 136: return ((F_D_JD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]));
-        case 137: return ((F_F_JD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]));
-        case 138: ((F_V_JF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1])); return null;
-        case 139: return ((F_J_JF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]));
-        case 140: return ((F_D_JF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]));
-        case 141: return ((F_F_JF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]));
-        case 142: ((F_V_JDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2])); return null;
-        case 143: return ((F_J_JDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]));
-        case 144: return ((F_D_JDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]));
-        case 145: return ((F_F_JDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]));
-        case 146: ((F_V_JDF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2])); return null;
-        case 147: return ((F_J_JDF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]));
-        case 148: return ((F_D_JDF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]));
-        case 149: return ((F_F_JDF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]));
-        case 150: ((F_V_JFD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2])); return null;
-        case 151: return ((F_J_JFD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]));
-        case 152: return ((F_D_JFD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]));
-        case 153: return ((F_F_JFD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]));
-        case 154: ((F_V_JFF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2])); return null;
-        case 155: return ((F_J_JFF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]));
-        case 156: return ((F_D_JFF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]));
-        case 157: return ((F_F_JFF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]));
-        case 158: ((F_V_JDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3])); return null;
-        case 159: return ((F_J_JDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]));
-        case 160: return ((F_D_JDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]));
-        case 161: return ((F_F_JDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]));
-        case 162: ((F_V_JDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), fltV(a[3])); return null;
-        case 163: return ((F_J_JDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), fltV(a[3]));
-        case 164: return ((F_D_JDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), fltV(a[3]));
-        case 165: return ((F_F_JDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), fltV(a[3]));
-        case 166: ((F_V_JDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), dblV(a[3])); return null;
-        case 167: return ((F_J_JDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), dblV(a[3]));
-        case 168: return ((F_D_JDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), dblV(a[3]));
-        case 169: return ((F_F_JDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), dblV(a[3]));
-        case 170: ((F_V_JDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), fltV(a[3])); return null;
-        case 171: return ((F_J_JDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), fltV(a[3]));
-        case 172: return ((F_D_JDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), fltV(a[3]));
-        case 173: return ((F_F_JDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), fltV(a[3]));
-        case 174: ((F_V_JFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), dblV(a[3])); return null;
-        case 175: return ((F_J_JFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), dblV(a[3]));
-        case 176: return ((F_D_JFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), dblV(a[3]));
-        case 177: return ((F_F_JFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), dblV(a[3]));
-        case 178: ((F_V_JFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), fltV(a[3])); return null;
-        case 179: return ((F_J_JFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), fltV(a[3]));
-        case 180: return ((F_D_JFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), fltV(a[3]));
-        case 181: return ((F_F_JFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), fltV(a[3]));
-        case 182: ((F_V_JFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), dblV(a[3])); return null;
-        case 183: return ((F_J_JFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), dblV(a[3]));
-        case 184: return ((F_D_JFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), dblV(a[3]));
-        case 185: return ((F_F_JFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), dblV(a[3]));
-        case 186: ((F_V_JFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3])); return null;
-        case 187: return ((F_J_JFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3]));
-        case 188: return ((F_D_JFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3]));
-        case 189: return ((F_F_JFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3]));
-        case 190: ((F_V_JDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4])); return null;
-        case 191: return ((F_J_JDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]));
-        case 192: return ((F_D_JDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]));
-        case 193: ((F_V_JDDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]), fltV(a[4])); return null;
-        case 194: return ((F_J_JDDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]), fltV(a[4]));
-        case 195: return ((F_D_JDDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]), fltV(a[4]));
-        case 196: ((F_V_JDDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), fltV(a[3]), dblV(a[4])); return null;
-        case 197: return ((F_J_JDDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), fltV(a[3]), dblV(a[4]));
-        case 198: return ((F_D_JDDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), fltV(a[3]), dblV(a[4]));
-        case 199: ((F_V_JDDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), fltV(a[3]), fltV(a[4])); return null;
-        case 200: return ((F_J_JDDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), fltV(a[3]), fltV(a[4]));
-        case 201: return ((F_D_JDDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), fltV(a[3]), fltV(a[4]));
-        case 202: ((F_V_JDFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), dblV(a[3]), dblV(a[4])); return null;
-        case 203: return ((F_J_JDFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), dblV(a[3]), dblV(a[4]));
-        case 204: return ((F_D_JDFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), dblV(a[3]), dblV(a[4]));
-        case 205: ((F_V_JDFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), dblV(a[3]), fltV(a[4])); return null;
-        case 206: return ((F_J_JDFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), dblV(a[3]), fltV(a[4]));
-        case 207: return ((F_D_JDFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), dblV(a[3]), fltV(a[4]));
-        case 208: ((F_V_JDFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), fltV(a[3]), dblV(a[4])); return null;
-        case 209: return ((F_J_JDFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), fltV(a[3]), dblV(a[4]));
-        case 210: return ((F_D_JDFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), fltV(a[3]), dblV(a[4]));
-        case 211: ((F_V_JDFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), fltV(a[3]), fltV(a[4])); return null;
-        case 212: return ((F_J_JDFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), fltV(a[3]), fltV(a[4]));
-        case 213: return ((F_D_JDFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), fltV(a[3]), fltV(a[4]));
-        case 214: ((F_V_JFDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4])); return null;
-        case 215: return ((F_J_JFDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]));
-        case 216: return ((F_D_JFDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]));
-        case 217: ((F_V_JFDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), dblV(a[3]), fltV(a[4])); return null;
-        case 218: return ((F_J_JFDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), dblV(a[3]), fltV(a[4]));
-        case 219: return ((F_D_JFDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), dblV(a[3]), fltV(a[4]));
-        case 220: ((F_V_JFDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), fltV(a[3]), dblV(a[4])); return null;
-        case 221: return ((F_J_JFDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), fltV(a[3]), dblV(a[4]));
-        case 222: return ((F_D_JFDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), fltV(a[3]), dblV(a[4]));
-        case 223: ((F_V_JFDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), fltV(a[3]), fltV(a[4])); return null;
-        case 224: return ((F_J_JFDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), fltV(a[3]), fltV(a[4]));
-        case 225: return ((F_D_JFDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), fltV(a[3]), fltV(a[4]));
-        case 226: ((F_V_JFFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), dblV(a[3]), dblV(a[4])); return null;
-        case 227: return ((F_J_JFFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), dblV(a[3]), dblV(a[4]));
-        case 228: return ((F_D_JFFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), dblV(a[3]), dblV(a[4]));
-        case 229: ((F_V_JFFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), dblV(a[3]), fltV(a[4])); return null;
-        case 230: return ((F_J_JFFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), dblV(a[3]), fltV(a[4]));
-        case 231: return ((F_D_JFFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), dblV(a[3]), fltV(a[4]));
-        case 232: ((F_V_JFFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3]), dblV(a[4])); return null;
-        case 233: return ((F_J_JFFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3]), dblV(a[4]));
-        case 234: return ((F_D_JFFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3]), dblV(a[4]));
-        case 235: ((F_V_JFFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3]), fltV(a[4])); return null;
-        case 236: return ((F_J_JFFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3]), fltV(a[4]));
-        case 237: return ((F_D_JFFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3]), fltV(a[4]));
-        case 238: ((F_V_JDDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5])); return null;
-        case 239: return ((F_J_JDDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]));
-        case 240: return ((F_D_JDDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]));
-        case 241: ((F_V_JDDDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]), dblV(a[6])); return null;
-        case 242: return ((F_J_JDDDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]), dblV(a[6]));
-        case 243: return ((F_D_JDDDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]), dblV(a[6]));
-        case 244: ((F_V_JJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1])); return null;
-        case 245: return ((F_J_JJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]));
-        case 246: return ((F_D_JJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]));
-        case 247: return ((F_F_JJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]));
-        case 248: ((F_V_JJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2])); return null;
-        case 249: return ((F_J_JJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]));
-        case 250: return ((F_D_JJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]));
-        case 251: return ((F_F_JJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]));
-        case 252: ((F_V_JJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2])); return null;
-        case 253: return ((F_J_JJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]));
-        case 254: return ((F_D_JJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]));
-        case 255: return ((F_F_JJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]));
-        case 256: ((F_V_JJDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3])); return null;
-        case 257: return ((F_J_JJDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]));
-        case 258: return ((F_D_JJDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]));
-        case 259: return ((F_F_JJDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]));
-        case 260: ((F_V_JJDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3])); return null;
-        case 261: return ((F_J_JJDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]));
-        case 262: return ((F_D_JJDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]));
-        case 263: return ((F_F_JJDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]));
-        case 264: ((F_V_JJFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3])); return null;
-        case 265: return ((F_J_JJFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]));
-        case 266: return ((F_D_JJFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]));
-        case 267: return ((F_F_JJFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]));
-        case 268: ((F_V_JJFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3])); return null;
-        case 269: return ((F_J_JJFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]));
-        case 270: return ((F_D_JJFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]));
-        case 271: return ((F_F_JJFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]));
-        case 272: ((F_V_JJDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4])); return null;
-        case 273: return ((F_J_JJDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]));
-        case 274: return ((F_D_JJDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]));
-        case 275: ((F_V_JJDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), fltV(a[4])); return null;
-        case 276: return ((F_J_JJDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), fltV(a[4]));
-        case 277: return ((F_D_JJDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), fltV(a[4]));
-        case 278: ((F_V_JJDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), dblV(a[4])); return null;
-        case 279: return ((F_J_JJDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), dblV(a[4]));
-        case 280: return ((F_D_JJDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), dblV(a[4]));
-        case 281: ((F_V_JJDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), fltV(a[4])); return null;
-        case 282: return ((F_J_JJDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), fltV(a[4]));
-        case 283: return ((F_D_JJDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), fltV(a[4]));
-        case 284: ((F_V_JJFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), dblV(a[4])); return null;
-        case 285: return ((F_J_JJFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), dblV(a[4]));
-        case 286: return ((F_D_JJFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), dblV(a[4]));
-        case 287: ((F_V_JJFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), fltV(a[4])); return null;
-        case 288: return ((F_J_JJFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), fltV(a[4]));
-        case 289: return ((F_D_JJFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), fltV(a[4]));
-        case 290: ((F_V_JJFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), dblV(a[4])); return null;
-        case 291: return ((F_J_JJFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), dblV(a[4]));
-        case 292: return ((F_D_JJFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), dblV(a[4]));
-        case 293: ((F_V_JJFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), fltV(a[4])); return null;
-        case 294: return ((F_J_JJFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), fltV(a[4]));
-        case 295: return ((F_D_JJFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), fltV(a[4]));
-        case 296: ((F_V_JJDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5])); return null;
-        case 297: return ((F_J_JJDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]));
-        case 298: return ((F_D_JJDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]));
-        case 299: ((F_V_JJDDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]), fltV(a[5])); return null;
-        case 300: return ((F_J_JJDDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]), fltV(a[5]));
-        case 301: return ((F_D_JJDDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]), fltV(a[5]));
-        case 302: ((F_V_JJDDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), fltV(a[4]), dblV(a[5])); return null;
-        case 303: return ((F_J_JJDDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), fltV(a[4]), dblV(a[5]));
-        case 304: return ((F_D_JJDDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), fltV(a[4]), dblV(a[5]));
-        case 305: ((F_V_JJDDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), fltV(a[4]), fltV(a[5])); return null;
-        case 306: return ((F_J_JJDDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), fltV(a[4]), fltV(a[5]));
-        case 307: return ((F_D_JJDDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), fltV(a[4]), fltV(a[5]));
-        case 308: ((F_V_JJDFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), dblV(a[4]), dblV(a[5])); return null;
-        case 309: return ((F_J_JJDFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), dblV(a[4]), dblV(a[5]));
-        case 310: return ((F_D_JJDFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), dblV(a[4]), dblV(a[5]));
-        case 311: ((F_V_JJDFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), dblV(a[4]), fltV(a[5])); return null;
-        case 312: return ((F_J_JJDFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), dblV(a[4]), fltV(a[5]));
-        case 313: return ((F_D_JJDFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), dblV(a[4]), fltV(a[5]));
-        case 314: ((F_V_JJDFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), fltV(a[4]), dblV(a[5])); return null;
-        case 315: return ((F_J_JJDFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), fltV(a[4]), dblV(a[5]));
-        case 316: return ((F_D_JJDFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), fltV(a[4]), dblV(a[5]));
-        case 317: ((F_V_JJDFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), fltV(a[4]), fltV(a[5])); return null;
-        case 318: return ((F_J_JJDFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), fltV(a[4]), fltV(a[5]));
-        case 319: return ((F_D_JJDFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), fltV(a[4]), fltV(a[5]));
-        case 320: ((F_V_JJFDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5])); return null;
-        case 321: return ((F_J_JJFDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]));
-        case 322: return ((F_D_JJFDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]));
-        case 323: ((F_V_JJFDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), dblV(a[4]), fltV(a[5])); return null;
-        case 324: return ((F_J_JJFDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), dblV(a[4]), fltV(a[5]));
-        case 325: return ((F_D_JJFDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), dblV(a[4]), fltV(a[5]));
-        case 326: ((F_V_JJFDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), fltV(a[4]), dblV(a[5])); return null;
-        case 327: return ((F_J_JJFDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), fltV(a[4]), dblV(a[5]));
-        case 328: return ((F_D_JJFDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), fltV(a[4]), dblV(a[5]));
-        case 329: ((F_V_JJFDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), fltV(a[4]), fltV(a[5])); return null;
-        case 330: return ((F_J_JJFDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), fltV(a[4]), fltV(a[5]));
-        case 331: return ((F_D_JJFDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), fltV(a[4]), fltV(a[5]));
-        case 332: ((F_V_JJFFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), dblV(a[4]), dblV(a[5])); return null;
-        case 333: return ((F_J_JJFFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), dblV(a[4]), dblV(a[5]));
-        case 334: return ((F_D_JJFFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), dblV(a[4]), dblV(a[5]));
-        case 335: ((F_V_JJFFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), dblV(a[4]), fltV(a[5])); return null;
-        case 336: return ((F_J_JJFFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), dblV(a[4]), fltV(a[5]));
-        case 337: return ((F_D_JJFFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), dblV(a[4]), fltV(a[5]));
-        case 338: ((F_V_JJFFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), fltV(a[4]), dblV(a[5])); return null;
-        case 339: return ((F_J_JJFFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), fltV(a[4]), dblV(a[5]));
-        case 340: return ((F_D_JJFFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), fltV(a[4]), dblV(a[5]));
-        case 341: ((F_V_JJFFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), fltV(a[4]), fltV(a[5])); return null;
-        case 342: return ((F_J_JJFFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), fltV(a[4]), fltV(a[5]));
-        case 343: return ((F_D_JJFFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), fltV(a[4]), fltV(a[5]));
-        case 344: ((F_V_JJDDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]), dblV(a[6])); return null;
-        case 345: return ((F_J_JJDDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]), dblV(a[6]));
-        case 346: return ((F_D_JJDDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]), dblV(a[6]));
-        case 347: ((F_V_JJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2])); return null;
-        case 348: return ((F_J_JJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]));
-        case 349: return ((F_D_JJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]));
-        case 350: return ((F_F_JJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]));
-        case 351: ((F_V_JJJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3])); return null;
-        case 352: return ((F_J_JJJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]));
-        case 353: return ((F_D_JJJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]));
-        case 354: return ((F_F_JJJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]));
-        case 355: ((F_V_JJJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3])); return null;
-        case 356: return ((F_J_JJJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]));
-        case 357: return ((F_D_JJJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]));
-        case 358: return ((F_F_JJJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]));
-        case 359: ((F_V_JJJDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4])); return null;
-        case 360: return ((F_J_JJJDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]));
-        case 361: return ((F_D_JJJDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]));
-        case 362: ((F_V_JJJDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4])); return null;
-        case 363: return ((F_J_JJJDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]));
-        case 364: return ((F_D_JJJDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]));
-        case 365: ((F_V_JJJFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4])); return null;
-        case 366: return ((F_J_JJJFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]));
-        case 367: return ((F_D_JJJFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]));
-        case 368: ((F_V_JJJFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4])); return null;
-        case 369: return ((F_J_JJJFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]));
-        case 370: return ((F_D_JJJFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]));
-        case 371: ((F_V_JJJDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5])); return null;
-        case 372: return ((F_J_JJJDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]));
-        case 373: return ((F_D_JJJDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]));
-        case 374: ((F_V_JJJDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), fltV(a[5])); return null;
-        case 375: return ((F_J_JJJDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), fltV(a[5]));
-        case 376: return ((F_D_JJJDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), fltV(a[5]));
-        case 377: ((F_V_JJJDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), dblV(a[5])); return null;
-        case 378: return ((F_J_JJJDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), dblV(a[5]));
-        case 379: return ((F_D_JJJDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), dblV(a[5]));
-        case 380: ((F_V_JJJDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), fltV(a[5])); return null;
-        case 381: return ((F_J_JJJDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), fltV(a[5]));
-        case 382: return ((F_D_JJJDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), fltV(a[5]));
-        case 383: ((F_V_JJJFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), dblV(a[5])); return null;
-        case 384: return ((F_J_JJJFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), dblV(a[5]));
-        case 385: return ((F_D_JJJFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), dblV(a[5]));
-        case 386: ((F_V_JJJFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), fltV(a[5])); return null;
-        case 387: return ((F_J_JJJFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), fltV(a[5]));
-        case 388: return ((F_D_JJJFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), fltV(a[5]));
-        case 389: ((F_V_JJJFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), dblV(a[5])); return null;
-        case 390: return ((F_J_JJJFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), dblV(a[5]));
-        case 391: return ((F_D_JJJFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), dblV(a[5]));
-        case 392: ((F_V_JJJFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), fltV(a[5])); return null;
-        case 393: return ((F_J_JJJFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), fltV(a[5]));
-        case 394: return ((F_D_JJJFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), fltV(a[5]));
-        case 395: ((F_V_JJJDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]), dblV(a[6])); return null;
-        case 396: return ((F_J_JJJDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]), dblV(a[6]));
-        case 397: return ((F_D_JJJDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]), dblV(a[6]));
-        case 398: ((F_V_JJJDDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]), fltV(a[6])); return null;
-        case 399: return ((F_J_JJJDDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]), fltV(a[6]));
-        case 400: return ((F_D_JJJDDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]), fltV(a[6]));
-        case 401: ((F_V_JJJDDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), fltV(a[5]), dblV(a[6])); return null;
-        case 402: return ((F_J_JJJDDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), fltV(a[5]), dblV(a[6]));
-        case 403: return ((F_D_JJJDDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), fltV(a[5]), dblV(a[6]));
-        case 404: ((F_V_JJJDDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), fltV(a[5]), fltV(a[6])); return null;
-        case 405: return ((F_J_JJJDDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), fltV(a[5]), fltV(a[6]));
-        case 406: return ((F_D_JJJDDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), fltV(a[5]), fltV(a[6]));
-        case 407: ((F_V_JJJDFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), dblV(a[5]), dblV(a[6])); return null;
-        case 408: return ((F_J_JJJDFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), dblV(a[5]), dblV(a[6]));
-        case 409: return ((F_D_JJJDFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), dblV(a[5]), dblV(a[6]));
-        case 410: ((F_V_JJJDFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), dblV(a[5]), fltV(a[6])); return null;
-        case 411: return ((F_J_JJJDFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), dblV(a[5]), fltV(a[6]));
-        case 412: return ((F_D_JJJDFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), dblV(a[5]), fltV(a[6]));
-        case 413: ((F_V_JJJDFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), fltV(a[5]), dblV(a[6])); return null;
-        case 414: return ((F_J_JJJDFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), fltV(a[5]), dblV(a[6]));
-        case 415: return ((F_D_JJJDFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), fltV(a[5]), dblV(a[6]));
-        case 416: ((F_V_JJJDFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), fltV(a[5]), fltV(a[6])); return null;
-        case 417: return ((F_J_JJJDFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), fltV(a[5]), fltV(a[6]));
-        case 418: return ((F_D_JJJDFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), fltV(a[5]), fltV(a[6]));
-        case 419: ((F_V_JJJFDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), dblV(a[5]), dblV(a[6])); return null;
-        case 420: return ((F_J_JJJFDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), dblV(a[5]), dblV(a[6]));
-        case 421: return ((F_D_JJJFDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), dblV(a[5]), dblV(a[6]));
-        case 422: ((F_V_JJJFDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), dblV(a[5]), fltV(a[6])); return null;
-        case 423: return ((F_J_JJJFDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), dblV(a[5]), fltV(a[6]));
-        case 424: return ((F_D_JJJFDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), dblV(a[5]), fltV(a[6]));
-        case 425: ((F_V_JJJFDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), fltV(a[5]), dblV(a[6])); return null;
-        case 426: return ((F_J_JJJFDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), fltV(a[5]), dblV(a[6]));
-        case 427: return ((F_D_JJJFDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), fltV(a[5]), dblV(a[6]));
-        case 428: ((F_V_JJJFDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), fltV(a[5]), fltV(a[6])); return null;
-        case 429: return ((F_J_JJJFDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), fltV(a[5]), fltV(a[6]));
-        case 430: return ((F_D_JJJFDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), fltV(a[5]), fltV(a[6]));
-        case 431: ((F_V_JJJFFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), dblV(a[5]), dblV(a[6])); return null;
-        case 432: return ((F_J_JJJFFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), dblV(a[5]), dblV(a[6]));
-        case 433: return ((F_D_JJJFFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), dblV(a[5]), dblV(a[6]));
-        case 434: ((F_V_JJJFFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), dblV(a[5]), fltV(a[6])); return null;
-        case 435: return ((F_J_JJJFFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), dblV(a[5]), fltV(a[6]));
-        case 436: return ((F_D_JJJFFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), dblV(a[5]), fltV(a[6]));
-        case 437: ((F_V_JJJFFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), fltV(a[5]), dblV(a[6])); return null;
-        case 438: return ((F_J_JJJFFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), fltV(a[5]), dblV(a[6]));
-        case 439: return ((F_D_JJJFFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), fltV(a[5]), dblV(a[6]));
-        case 440: ((F_V_JJJFFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), fltV(a[5]), fltV(a[6])); return null;
-        case 441: return ((F_J_JJJFFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), fltV(a[5]), fltV(a[6]));
-        case 442: return ((F_D_JJJFFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), fltV(a[5]), fltV(a[6]));
-        case 443: ((F_V_JJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3])); return null;
-        case 444: return ((F_J_JJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]));
-        case 445: return ((F_D_JJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]));
-        case 446: return ((F_F_JJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]));
-        case 447: ((F_V_JJJJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4])); return null;
-        case 448: return ((F_J_JJJJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]));
-        case 449: return ((F_D_JJJJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]));
-        case 450: ((F_V_JJJJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4])); return null;
-        case 451: return ((F_J_JJJJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]));
-        case 452: return ((F_D_JJJJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]));
-        case 453: ((F_V_JJJJDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), dblV(a[5])); return null;
-        case 454: return ((F_J_JJJJDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), dblV(a[5]));
-        case 455: return ((F_D_JJJJDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), dblV(a[5]));
-        case 456: ((F_V_JJJJDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), fltV(a[5])); return null;
-        case 457: return ((F_J_JJJJDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), fltV(a[5]));
-        case 458: return ((F_D_JJJJDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), fltV(a[5]));
-        case 459: ((F_V_JJJJFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), dblV(a[5])); return null;
-        case 460: return ((F_J_JJJJFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), dblV(a[5]));
-        case 461: return ((F_D_JJJJFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), dblV(a[5]));
-        case 462: ((F_V_JJJJFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), fltV(a[5])); return null;
-        case 463: return ((F_J_JJJJFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), fltV(a[5]));
-        case 464: return ((F_D_JJJJFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), fltV(a[5]));
-        case 465: ((F_V_JJJJDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), dblV(a[5]), dblV(a[6])); return null;
-        case 466: return ((F_J_JJJJDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), dblV(a[5]), dblV(a[6]));
-        case 467: return ((F_D_JJJJDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), dblV(a[5]), dblV(a[6]));
-        case 468: ((F_V_JJJJDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), dblV(a[5]), fltV(a[6])); return null;
-        case 469: return ((F_J_JJJJDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), dblV(a[5]), fltV(a[6]));
-        case 470: return ((F_D_JJJJDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), dblV(a[5]), fltV(a[6]));
-        case 471: ((F_V_JJJJDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), fltV(a[5]), dblV(a[6])); return null;
-        case 472: return ((F_J_JJJJDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), fltV(a[5]), dblV(a[6]));
-        case 473: return ((F_D_JJJJDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), fltV(a[5]), dblV(a[6]));
-        case 474: ((F_V_JJJJDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), fltV(a[5]), fltV(a[6])); return null;
-        case 475: return ((F_J_JJJJDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), fltV(a[5]), fltV(a[6]));
-        case 476: return ((F_D_JJJJDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), fltV(a[5]), fltV(a[6]));
-        case 477: ((F_V_JJJJFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), dblV(a[5]), dblV(a[6])); return null;
-        case 478: return ((F_J_JJJJFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), dblV(a[5]), dblV(a[6]));
-        case 479: return ((F_D_JJJJFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), dblV(a[5]), dblV(a[6]));
-        case 480: ((F_V_JJJJFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), dblV(a[5]), fltV(a[6])); return null;
-        case 481: return ((F_J_JJJJFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), dblV(a[5]), fltV(a[6]));
-        case 482: return ((F_D_JJJJFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), dblV(a[5]), fltV(a[6]));
-        case 483: ((F_V_JJJJFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), fltV(a[5]), dblV(a[6])); return null;
-        case 484: return ((F_J_JJJJFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), fltV(a[5]), dblV(a[6]));
-        case 485: return ((F_D_JJJJFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), fltV(a[5]), dblV(a[6]));
-        case 486: ((F_V_JJJJFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), fltV(a[5]), fltV(a[6])); return null;
-        case 487: return ((F_J_JJJJFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), fltV(a[5]), fltV(a[6]));
-        case 488: return ((F_D_JJJJFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), fltV(a[5]), fltV(a[6]));
-        case 489: ((F_V_JJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4])); return null;
-        case 490: return ((F_J_JJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]));
-        case 491: return ((F_D_JJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]));
-        case 492: ((F_V_JJJJJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), dblV(a[5])); return null;
-        case 493: return ((F_J_JJJJJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), dblV(a[5]));
-        case 494: return ((F_D_JJJJJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), dblV(a[5]));
-        case 495: ((F_V_JJJJJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), fltV(a[5])); return null;
-        case 496: return ((F_J_JJJJJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), fltV(a[5]));
-        case 497: return ((F_D_JJJJJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), fltV(a[5]));
-        case 498: ((F_V_JJJJJDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), dblV(a[5]), dblV(a[6])); return null;
-        case 499: return ((F_J_JJJJJDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), dblV(a[5]), dblV(a[6]));
-        case 500: return ((F_D_JJJJJDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), dblV(a[5]), dblV(a[6]));
-        case 501: ((F_V_JJJJJDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), dblV(a[5]), fltV(a[6])); return null;
-        case 502: return ((F_J_JJJJJDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), dblV(a[5]), fltV(a[6]));
-        case 503: return ((F_D_JJJJJDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), dblV(a[5]), fltV(a[6]));
-        case 504: ((F_V_JJJJJFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), fltV(a[5]), dblV(a[6])); return null;
-        case 505: return ((F_J_JJJJJFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), fltV(a[5]), dblV(a[6]));
-        case 506: return ((F_D_JJJJJFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), fltV(a[5]), dblV(a[6]));
-        case 507: ((F_V_JJJJJFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), fltV(a[5]), fltV(a[6])); return null;
-        case 508: return ((F_J_JJJJJFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), fltV(a[5]), fltV(a[6]));
-        case 509: return ((F_D_JJJJJFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), fltV(a[5]), fltV(a[6]));
-        case 510: ((F_V_JJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5])); return null;
-        case 511: return ((F_J_JJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]));
-        case 512: return ((F_D_JJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]));
-        case 513: ((F_V_JJJJJJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), dblV(a[6])); return null;
-        case 514: return ((F_J_JJJJJJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), dblV(a[6]));
-        case 515: return ((F_D_JJJJJJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), dblV(a[6]));
-        case 516: ((F_V_JJJJJJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), fltV(a[6])); return null;
-        case 517: return ((F_J_JJJJJJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), fltV(a[6]));
-        case 518: return ((F_D_JJJJJJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), fltV(a[6]));
-        case 519: ((F_V_JJJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), longV(a[6])); return null;
-        case 520: return ((F_J_JJJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), longV(a[6]));
-        case 521: return ((F_D_JJJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), longV(a[6]));
-        case 522: ((F_V_JJJJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), longV(a[6]), longV(a[7])); return null;
-        case 523: return ((F_J_JJJJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), longV(a[6]), longV(a[7]));
-        case 524: return ((F_D_JJJJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), longV(a[6]), longV(a[7]));
-        case 525: ((F_V_JJJJJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), longV(a[6]), longV(a[7]), longV(a[8])); return null;
-        case 526: return ((F_J_JJJJJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), longV(a[6]), longV(a[7]), longV(a[8]));
-        case 527: return ((F_D_JJJJJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), longV(a[6]), longV(a[7]), longV(a[8]));
-        case 528: ((F_V_JJJJJJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), longV(a[6]), longV(a[7]), longV(a[8]), longV(a[9])); return null;
-        case 529: return ((F_J_JJJJJJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), longV(a[6]), longV(a[7]), longV(a[8]), longV(a[9]));
-        case 530: return ((F_D_JJJJJJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), longV(a[6]), longV(a[7]), longV(a[8]), longV(a[9]));
+        case 60: ((F_V_FFFF) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3])); return null;
+        case 61: return ((F_J_FFFF) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3]));
+        case 62: return ((F_D_FFFF) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3]));
+        case 63: return ((F_F_FFFF) WordFactory.pointer(fn)).invoke(fltV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3]));
+        case 64: ((F_V_DDDD) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3])); return null;
+        case 65: return ((F_J_DDDD) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]));
+        case 66: return ((F_D_DDDD) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]));
+        case 67: return ((F_F_DDDD) WordFactory.pointer(fn)).invoke(dblV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]));
+        case 68: ((F_V_J) WordFactory.pointer(fn)).invoke(longV(a[0])); return null;
+        case 69: return ((F_J_J) WordFactory.pointer(fn)).invoke(longV(a[0]));
+        case 70: return ((F_D_J) WordFactory.pointer(fn)).invoke(longV(a[0]));
+        case 71: return ((F_F_J) WordFactory.pointer(fn)).invoke(longV(a[0]));
+        case 72: ((F_V_JD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1])); return null;
+        case 73: return ((F_J_JD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]));
+        case 74: return ((F_D_JD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]));
+        case 75: return ((F_F_JD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]));
+        case 76: ((F_V_JF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1])); return null;
+        case 77: return ((F_J_JF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]));
+        case 78: return ((F_D_JF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]));
+        case 79: return ((F_F_JF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]));
+        case 80: ((F_V_JDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2])); return null;
+        case 81: return ((F_J_JDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]));
+        case 82: return ((F_D_JDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]));
+        case 83: return ((F_F_JDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]));
+        case 84: ((F_V_JDF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2])); return null;
+        case 85: return ((F_J_JDF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]));
+        case 86: return ((F_D_JDF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]));
+        case 87: return ((F_F_JDF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]));
+        case 88: ((F_V_JFD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2])); return null;
+        case 89: return ((F_J_JFD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]));
+        case 90: return ((F_D_JFD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]));
+        case 91: return ((F_F_JFD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]));
+        case 92: ((F_V_JFF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2])); return null;
+        case 93: return ((F_J_JFF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]));
+        case 94: return ((F_D_JFF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]));
+        case 95: return ((F_F_JFF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]));
+        case 96: ((F_V_JDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3])); return null;
+        case 97: return ((F_J_JDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]));
+        case 98: return ((F_D_JDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]));
+        case 99: return ((F_F_JDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]));
+        case 100: ((F_V_JDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), fltV(a[3])); return null;
+        case 101: return ((F_J_JDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), fltV(a[3]));
+        case 102: return ((F_D_JDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), fltV(a[3]));
+        case 103: return ((F_F_JDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), fltV(a[3]));
+        case 104: ((F_V_JDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), dblV(a[3])); return null;
+        case 105: return ((F_J_JDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), dblV(a[3]));
+        case 106: return ((F_D_JDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), dblV(a[3]));
+        case 107: return ((F_F_JDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), dblV(a[3]));
+        case 108: ((F_V_JDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), fltV(a[3])); return null;
+        case 109: return ((F_J_JDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), fltV(a[3]));
+        case 110: return ((F_D_JDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), fltV(a[3]));
+        case 111: return ((F_F_JDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), fltV(a[2]), fltV(a[3]));
+        case 112: ((F_V_JFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), dblV(a[3])); return null;
+        case 113: return ((F_J_JFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), dblV(a[3]));
+        case 114: return ((F_D_JFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), dblV(a[3]));
+        case 115: return ((F_F_JFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), dblV(a[3]));
+        case 116: ((F_V_JFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), fltV(a[3])); return null;
+        case 117: return ((F_J_JFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), fltV(a[3]));
+        case 118: return ((F_D_JFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), fltV(a[3]));
+        case 119: return ((F_F_JFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), dblV(a[2]), fltV(a[3]));
+        case 120: ((F_V_JFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), dblV(a[3])); return null;
+        case 121: return ((F_J_JFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), dblV(a[3]));
+        case 122: return ((F_D_JFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), dblV(a[3]));
+        case 123: return ((F_F_JFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), dblV(a[3]));
+        case 124: ((F_V_JFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3])); return null;
+        case 125: return ((F_J_JFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3]));
+        case 126: return ((F_D_JFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3]));
+        case 127: return ((F_F_JFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3]));
+        case 128: ((F_V_JFFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3]), fltV(a[4])); return null;
+        case 129: return ((F_J_JFFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3]), fltV(a[4]));
+        case 130: return ((F_D_JFFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), fltV(a[1]), fltV(a[2]), fltV(a[3]), fltV(a[4]));
+        case 131: ((F_V_JDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4])); return null;
+        case 132: return ((F_J_JDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]));
+        case 133: return ((F_D_JDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), dblV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]));
+        case 134: ((F_V_JJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1])); return null;
+        case 135: return ((F_J_JJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]));
+        case 136: return ((F_D_JJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]));
+        case 137: return ((F_F_JJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]));
+        case 138: ((F_V_JJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2])); return null;
+        case 139: return ((F_J_JJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]));
+        case 140: return ((F_D_JJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]));
+        case 141: return ((F_F_JJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]));
+        case 142: ((F_V_JJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2])); return null;
+        case 143: return ((F_J_JJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]));
+        case 144: return ((F_D_JJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]));
+        case 145: return ((F_F_JJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]));
+        case 146: ((F_V_JJDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3])); return null;
+        case 147: return ((F_J_JJDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]));
+        case 148: return ((F_D_JJDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]));
+        case 149: return ((F_F_JJDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]));
+        case 150: ((F_V_JJDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3])); return null;
+        case 151: return ((F_J_JJDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]));
+        case 152: return ((F_D_JJDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]));
+        case 153: return ((F_F_JJDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]));
+        case 154: ((F_V_JJFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3])); return null;
+        case 155: return ((F_J_JJFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]));
+        case 156: return ((F_D_JJFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]));
+        case 157: return ((F_F_JJFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]));
+        case 158: ((F_V_JJFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3])); return null;
+        case 159: return ((F_J_JJFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]));
+        case 160: return ((F_D_JJFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]));
+        case 161: return ((F_F_JJFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]));
+        case 162: ((F_V_JJDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4])); return null;
+        case 163: return ((F_J_JJDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]));
+        case 164: return ((F_D_JJDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]));
+        case 165: ((F_V_JJDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), fltV(a[4])); return null;
+        case 166: return ((F_J_JJDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), fltV(a[4]));
+        case 167: return ((F_D_JJDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), fltV(a[4]));
+        case 168: ((F_V_JJDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), dblV(a[4])); return null;
+        case 169: return ((F_J_JJDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), dblV(a[4]));
+        case 170: return ((F_D_JJDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), dblV(a[4]));
+        case 171: ((F_V_JJDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), fltV(a[4])); return null;
+        case 172: return ((F_J_JJDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), fltV(a[4]));
+        case 173: return ((F_D_JJDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), fltV(a[3]), fltV(a[4]));
+        case 174: ((F_V_JJFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), dblV(a[4])); return null;
+        case 175: return ((F_J_JJFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), dblV(a[4]));
+        case 176: return ((F_D_JJFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), dblV(a[4]));
+        case 177: ((F_V_JJFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), fltV(a[4])); return null;
+        case 178: return ((F_J_JJFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), fltV(a[4]));
+        case 179: return ((F_D_JJFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), dblV(a[3]), fltV(a[4]));
+        case 180: ((F_V_JJFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), dblV(a[4])); return null;
+        case 181: return ((F_J_JJFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), dblV(a[4]));
+        case 182: return ((F_D_JJFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), dblV(a[4]));
+        case 183: ((F_V_JJFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), fltV(a[4])); return null;
+        case 184: return ((F_J_JJFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), fltV(a[4]));
+        case 185: return ((F_D_JJFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), fltV(a[4]));
+        case 186: ((F_V_JJFFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), fltV(a[4]), fltV(a[5])); return null;
+        case 187: return ((F_J_JJFFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), fltV(a[4]), fltV(a[5]));
+        case 188: return ((F_D_JJFFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), fltV(a[2]), fltV(a[3]), fltV(a[4]), fltV(a[5]));
+        case 189: ((F_V_JJDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5])); return null;
+        case 190: return ((F_J_JJDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]));
+        case 191: return ((F_D_JJDDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), dblV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]));
+        case 192: ((F_V_JJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2])); return null;
+        case 193: return ((F_J_JJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]));
+        case 194: return ((F_D_JJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]));
+        case 195: return ((F_F_JJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]));
+        case 196: ((F_V_JJJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3])); return null;
+        case 197: return ((F_J_JJJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]));
+        case 198: return ((F_D_JJJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]));
+        case 199: return ((F_F_JJJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]));
+        case 200: ((F_V_JJJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3])); return null;
+        case 201: return ((F_J_JJJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]));
+        case 202: return ((F_D_JJJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]));
+        case 203: return ((F_F_JJJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]));
+        case 204: ((F_V_JJJDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4])); return null;
+        case 205: return ((F_J_JJJDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]));
+        case 206: return ((F_D_JJJDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]));
+        case 207: ((F_V_JJJDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4])); return null;
+        case 208: return ((F_J_JJJDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]));
+        case 209: return ((F_D_JJJDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]));
+        case 210: ((F_V_JJJFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4])); return null;
+        case 211: return ((F_J_JJJFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]));
+        case 212: return ((F_D_JJJFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]));
+        case 213: ((F_V_JJJFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4])); return null;
+        case 214: return ((F_J_JJJFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]));
+        case 215: return ((F_D_JJJFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]));
+        case 216: ((F_V_JJJDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5])); return null;
+        case 217: return ((F_J_JJJDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]));
+        case 218: return ((F_D_JJJDDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), dblV(a[5]));
+        case 219: ((F_V_JJJDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), fltV(a[5])); return null;
+        case 220: return ((F_J_JJJDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), fltV(a[5]));
+        case 221: return ((F_D_JJJDDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), dblV(a[4]), fltV(a[5]));
+        case 222: ((F_V_JJJDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), dblV(a[5])); return null;
+        case 223: return ((F_J_JJJDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), dblV(a[5]));
+        case 224: return ((F_D_JJJDFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), dblV(a[5]));
+        case 225: ((F_V_JJJDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), fltV(a[5])); return null;
+        case 226: return ((F_J_JJJDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), fltV(a[5]));
+        case 227: return ((F_D_JJJDFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), dblV(a[3]), fltV(a[4]), fltV(a[5]));
+        case 228: ((F_V_JJJFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), dblV(a[5])); return null;
+        case 229: return ((F_J_JJJFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), dblV(a[5]));
+        case 230: return ((F_D_JJJFDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), dblV(a[5]));
+        case 231: ((F_V_JJJFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), fltV(a[5])); return null;
+        case 232: return ((F_J_JJJFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), fltV(a[5]));
+        case 233: return ((F_D_JJJFDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), dblV(a[4]), fltV(a[5]));
+        case 234: ((F_V_JJJFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), dblV(a[5])); return null;
+        case 235: return ((F_J_JJJFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), dblV(a[5]));
+        case 236: return ((F_D_JJJFFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), dblV(a[5]));
+        case 237: ((F_V_JJJFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), fltV(a[5])); return null;
+        case 238: return ((F_J_JJJFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), fltV(a[5]));
+        case 239: return ((F_D_JJJFFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), fltV(a[3]), fltV(a[4]), fltV(a[5]));
+        case 240: ((F_V_JJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3])); return null;
+        case 241: return ((F_J_JJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]));
+        case 242: return ((F_D_JJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]));
+        case 243: return ((F_F_JJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]));
+        case 244: ((F_V_JJJJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4])); return null;
+        case 245: return ((F_J_JJJJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]));
+        case 246: return ((F_D_JJJJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]));
+        case 247: ((F_V_JJJJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4])); return null;
+        case 248: return ((F_J_JJJJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]));
+        case 249: return ((F_D_JJJJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]));
+        case 250: ((F_V_JJJJDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), dblV(a[5])); return null;
+        case 251: return ((F_J_JJJJDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), dblV(a[5]));
+        case 252: return ((F_D_JJJJDD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), dblV(a[5]));
+        case 253: ((F_V_JJJJDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), fltV(a[5])); return null;
+        case 254: return ((F_J_JJJJDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), fltV(a[5]));
+        case 255: return ((F_D_JJJJDF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), dblV(a[4]), fltV(a[5]));
+        case 256: ((F_V_JJJJFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), dblV(a[5])); return null;
+        case 257: return ((F_J_JJJJFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), dblV(a[5]));
+        case 258: return ((F_D_JJJJFD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), dblV(a[5]));
+        case 259: ((F_V_JJJJFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), fltV(a[5])); return null;
+        case 260: return ((F_J_JJJJFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), fltV(a[5]));
+        case 261: return ((F_D_JJJJFF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), fltV(a[4]), fltV(a[5]));
+        case 262: ((F_V_JJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4])); return null;
+        case 263: return ((F_J_JJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]));
+        case 264: return ((F_D_JJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]));
+        case 265: ((F_V_JJJJJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), dblV(a[5])); return null;
+        case 266: return ((F_J_JJJJJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), dblV(a[5]));
+        case 267: return ((F_D_JJJJJD) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), dblV(a[5]));
+        case 268: ((F_V_JJJJJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), fltV(a[5])); return null;
+        case 269: return ((F_J_JJJJJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), fltV(a[5]));
+        case 270: return ((F_D_JJJJJF) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), fltV(a[5]));
+        case 271: ((F_V_JJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5])); return null;
+        case 272: return ((F_J_JJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]));
+        case 273: return ((F_D_JJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]));
+        case 274: ((F_V_JJJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), longV(a[6])); return null;
+        case 275: return ((F_J_JJJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), longV(a[6]));
+        case 276: return ((F_D_JJJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), longV(a[6]));
+        case 277: ((F_V_JJJJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), longV(a[6]), longV(a[7])); return null;
+        case 278: return ((F_J_JJJJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), longV(a[6]), longV(a[7]));
+        case 279: return ((F_D_JJJJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), longV(a[6]), longV(a[7]));
+        case 280: ((F_V_JJJJJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), longV(a[6]), longV(a[7]), longV(a[8])); return null;
+        case 281: return ((F_J_JJJJJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), longV(a[6]), longV(a[7]), longV(a[8]));
+        case 282: return ((F_D_JJJJJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), longV(a[6]), longV(a[7]), longV(a[8]));
+        case 283: ((F_V_JJJJJJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), longV(a[6]), longV(a[7]), longV(a[8]), longV(a[9])); return null;
+        case 284: return ((F_J_JJJJJJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), longV(a[6]), longV(a[7]), longV(a[8]), longV(a[9]));
+        case 285: return ((F_D_JJJJJJJJJJ) WordFactory.pointer(fn)).invoke(longV(a[0]), longV(a[1]), longV(a[2]), longV(a[3]), longV(a[4]), longV(a[5]), longV(a[6]), longV(a[7]), longV(a[8]), longV(a[9]));
         }
         throw new IllegalArgumentException("bad shape id: " + id);
     }
