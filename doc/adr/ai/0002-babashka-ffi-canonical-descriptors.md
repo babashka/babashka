@@ -254,6 +254,22 @@ has no scoping - sqlite4clj with-redefs coffi's find-symbol to force its
 bundled sqlite3, proving the need; ctypes and bun both return
 library-as-object. The map leaves room for later keys without breaking.
 
+## Library search (2026-08-21 review)
+
+- BABASHKA_FFI_LIBRARY_PATH removed: an invented API with no precedent
+  (coffi, ctypes, bun, LuaJIT, Deno all rely on explicit paths plus the
+  platform's own LD_LIBRARY_PATH/DYLD_LIBRARY_PATH/PATH).
+- The hardcoded search dirs stay: not API surface, and they carry the two
+  real cases - /opt/homebrew/lib is not on dyld's default path on Apple
+  Silicon (every brew-installed library would need an absolute path), and
+  the Linux soname glob needs directories to scan.
+- The glob sorts sonames numerically, newest first (lexicographic sort put
+  .9 above .10). When multiple ABI majors are installed the highest still
+  wins - a guess, acceptable because the glob is the script-convenience
+  path: library AUTHORS pin sonames via load-library's OS map (documented
+  in ffi.md), so their users never depend on the guess. No unload: no
+  precedent, and FFM would tie it to exposing arenas.
+
 ## Reserved syntax invariant
 
 Every spelling outside the documented API must fail loudly at bind time: a

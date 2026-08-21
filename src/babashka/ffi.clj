@@ -199,16 +199,13 @@
 
 (defn- search-dirs
   "Directories probed for bare library names after the system's own dlopen
-  search fails. BABASHKA_FFI_LIBRARY_PATH (colon-separated) is probed first."
+  search fails."
   []
-  (concat
-   (when-let [p (System/getenv "BABASHKA_FFI_LIBRARY_PATH")]
-     (remove empty? (.split ^String p ":")))
-   (case (os-key)
-     :mac ["/opt/homebrew/lib" "/usr/local/lib" "/opt/local/lib" "/usr/lib"]
-     :windows []
-     ["/usr/local/lib" "/usr/lib" "/usr/lib/x86_64-linux-gnu"
-      "/usr/lib/aarch64-linux-gnu" "/lib"])))
+  (case (os-key)
+    :mac ["/opt/homebrew/lib" "/usr/local/lib" "/opt/local/lib" "/usr/lib"]
+    :windows []
+    ["/usr/local/lib" "/usr/lib" "/usr/lib/x86_64-linux-gnu"
+     "/usr/lib/aarch64-linux-gnu" "/lib"]))
 
 (defn- try-lookup ^SymbolLookup [^String path]
   (try (SymbolLookup/libraryLookup path (Arena/global))
@@ -242,8 +239,8 @@
   :darwin is accepted as a synonym for :mac (jolt compatibility). A bare
   name (no separator) that the system's dlopen search does not find is also
   probed in common install directories (Homebrew, MacPorts, /usr/local/lib,
-  multiarch dirs) and in BABASHKA_FFI_LIBRARY_PATH. Returns a map, usable
-  as the first argument to cfn, whose :path is the candidate that loaded."
+  multiarch dirs). Returns a map, usable as the first argument to cfn,
+  whose :path is the candidate that loaded."
   [lib]
   (let [paths (if (map? lib)
                 (let [v (or (get lib (os-key))
@@ -275,10 +272,20 @@
           ;; glob lib<name>.so.* in the search dirs
           (when-let [m (some (fn [dir]
                                (let [d (java.io.File. ^String dir)
+                                     ;; newest soname first, numerically:
+                                     ;; libz.so.10 beats libz.so.9
+                                     vkey (fn [^String f]
+                                            (mapv #(or (parse-long %) -1)
+                                                  (rest (str/split (subs f (count base)) #"\."))))
+                                     newest-first (fn [x y]
+                                                    (let [a (vkey x) b (vkey y)
+                                                          n (max (count a) (count b))
+                                                          pad #(into % (repeat (- n (count %)) -1))]
+                                                      (compare (pad b) (pad a))))
                                      cands (when (.isDirectory d)
                                              (->> (.list d)
                                                   (filter #(.startsWith ^String % (str base ".")))
-                                                  (sort #(compare %2 %1))))]
+                                                  (sort newest-first)))]
                                  (some (fn [c]
                                          (let [p (str dir "/" c)]
                                            (when-let [lk (try-lookup p)]

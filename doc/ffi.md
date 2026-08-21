@@ -23,8 +23,7 @@ functions with explicit types, marshal memory by hand.
 Loads a library by short name: `libz.dylib` on macOS, `z.dll` on Windows,
 `libz.so` on Linux with a fallback glob over versioned sonames
 (`libz.so.1`). Searches the system's dlopen path, then common install
-directories (Homebrew, MacPorts, `/usr/local/lib`, the multiarch dirs) and
-`BABASHKA_FFI_LIBRARY_PATH` (colon-separated).
+directories (Homebrew, MacPorts, `/usr/local/lib`, the multiarch dirs).
 
 ```clojure
 (ffi/load-library "/exact/path/libfoo.so")
@@ -38,6 +37,11 @@ directories (Homebrew, MacPorts, `/usr/local/lib`, the multiarch dirs) and
 (`:mac` `:linux` `:windows`, `:darwin` works as `:mac`) to a path or a
 vector of candidates tried in order. It never rewrites names. Bare names
 get the same directory search as above.
+
+A library that ships bindings should pin the sonames it was written
+against with `load-library`, as in the example above.
+`load-system-library` binds whatever version the machine has, which is
+fine in a script whose author is also the one running it.
 
 Both return a map whose `:path` is the candidate that loaded: an absolute
 path when found in a search directory, otherwise the name the system
