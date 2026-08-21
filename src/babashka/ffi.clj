@@ -206,8 +206,11 @@
   (case (os-key)
     :mac ["/opt/homebrew/lib" "/usr/local/lib" "/opt/local/lib" "/usr/lib"]
     :windows []
-    ["/usr/local/lib" "/usr/lib" "/usr/lib/x86_64-linux-gnu"
-     "/usr/lib/aarch64-linux-gnu" "/lib"]))
+    ["/usr/local/lib" "/usr/lib"
+     (if (= "aarch64" (System/getProperty "os.arch"))
+       "/usr/lib/aarch64-linux-gnu"
+       "/usr/lib/x86_64-linux-gnu")
+     "/lib"]))
 
 (defn- try-lookup ^SymbolLookup [^String path]
   (try (SymbolLookup/libraryLookup path (Arena/global))
