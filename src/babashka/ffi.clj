@@ -201,16 +201,20 @@
 
 (defn- search-dirs
   "Directories probed for bare library names after the system's own dlopen
-  search fails."
+  search fails. On Linux LD_LIBRARY_PATH comes first: dlopen honors it by
+  itself, but the versioned-soname glob cannot."
   []
   (case (os-key)
     :mac ["/opt/homebrew/lib" "/usr/local/lib" "/opt/local/lib" "/usr/lib"]
     :windows []
-    ["/usr/local/lib" "/usr/lib"
-     (if (= "aarch64" (System/getProperty "os.arch"))
-       "/usr/lib/aarch64-linux-gnu"
-       "/usr/lib/x86_64-linux-gnu")
-     "/lib"]))
+    (concat
+     (when-let [p (System/getenv "LD_LIBRARY_PATH")]
+       (remove str/blank? (str/split p #":")))
+     ["/usr/local/lib" "/usr/lib"
+      (if (= "aarch64" (System/getProperty "os.arch"))
+        "/usr/lib/aarch64-linux-gnu"
+        "/usr/lib/x86_64-linux-gnu")
+      "/lib"])))
 
 (defn- try-lookup ^SymbolLookup [^String path]
   (try (SymbolLookup/libraryLookup path (Arena/global))

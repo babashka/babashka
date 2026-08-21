@@ -33,7 +33,8 @@ Use `load-system-library` for a short library name:
 ```
 
 On Linux, this function also searches for versioned names such as
-`libz.so.1`.
+`libz.so.1`, in the `LD_LIBRARY_PATH` directories and the directories
+listed below.
 
 Use `load-library` for an exact file name or path:
 

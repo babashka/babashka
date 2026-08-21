@@ -223,6 +223,22 @@
                               (ffi/load-library
                                ["nonexistent-bb-zzz.so" "libz.dylib" "libz.so.1"])
                               ((ffi/cfn "zlibVersion" [] :string))))))))
+  (when (and tu/native?
+             (= "Linux" (System/getProperty "os.name")))
+    (when-let [lib @test-lib]
+      (testing "the soname glob searches LD_LIBRARY_PATH directories"
+        (let [dir (io/file "target" "ffi-env-lib")
+              f (io/file dir "libbbtest.so.1")]
+          (io/make-parents f)
+          (io/copy (io/file lib) f)
+          (let [res @(p/process
+                      ["./bb" "-e"
+                       (pr-str '(do (require '[babashka.ffi :as ffi])
+                                    (print (str (:path (ffi/load-system-library "bbtest"))))))]
+                      {:out :string :err :string
+                       :extra-env {"LD_LIBRARY_PATH" (.getAbsolutePath dir)}})]
+            (is (zero? (:exit res)) (:err res))
+            (is (re-find #"libbbtest\.so\.1$" (:out res))))))))
   (testing "find-symbol probes without binding"
     (is (= [true nil]
            (bb `(do (require '[babashka.ffi :as ~'ffi])
@@ -401,8 +417,13 @@
   (when-not skip?
     (testing "in a native image, non-variadic in-family shapes must use the
               compiled trampoline backend - a fallback to the interpreted FFM
-              path is a 75x performance regression"
-      (is (= (if tu/native? [:trampoline :trampoline :ffm] [:ffm :ffm :ffm])
+              path is a 75x performance regression. On Windows only
+              order-identical shapes have trampolines: mixed shapes go
+              through the ordered FFM descriptors by design"
+      (is (= (cond
+               (not tu/native?) [:ffm :ffm :ffm]
+               tu/windows? [:trampoline :ffm :ffm]
+               :else [:trampoline :trampoline :ffm])
              (bb `(do ~ffi-require
                       (mapv (comp :babashka.ffi/backend meta)
                             [(ffi/cfn "abs" [:int] :int)
