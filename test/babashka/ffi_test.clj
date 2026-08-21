@@ -284,6 +284,13 @@
     (testing "wrong argument count"
       (is (thrown? Exception (bb `(do ~ffi-require
                                       ((ffi/cfn "abs" [:int] :int) 1 2))))))
+    (testing ":void is not an argument type, on any path"
+      (is (thrown? Exception (bb `(do ~ffi-require
+                                      (ffi/cfn "abs" [:void] :int)))))
+      (is (thrown? Exception (bb `(do ~ffi-require
+                                      (ffi/cfn "printf" [:string :void :&] :int)))))
+      (is (thrown? Exception (bb `(do ~ffi-require
+                                      (ffi/callback (fn [a#] a#) [:void] :long))))))
     (testing "reserved spellings fail at bind time, not at call time"
       (is (thrown? Exception (bb `(do ~ffi-require
                                       (ffi/cfn (symbol "abs") [:int] :int)))))

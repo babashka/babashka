@@ -437,6 +437,9 @@
    (when-not (string? sym)
      (throw (ex-info (str "babashka.ffi: C symbol must be a string: " (pr-str sym))
                      {:sym sym})))
+   (when (some #(= :void %) argtypes)
+     (throw (ex-info (str "babashka.ffi: :void is not an argument type: " (pr-str argtypes))
+                     {:argtypes argtypes})))
    (if-let [fixed (check-variadic-marker argtypes)]
      (variadic-cfn lib sym fixed argtypes rettype)
      (fixed-cfn lib sym argtypes rettype))))
@@ -660,6 +663,9 @@
   [f argtypes rettype]
   (doseq [t argtypes] (carrier t))
   (carrier rettype)
+  (when (some #(= :void %) argtypes)
+    (throw (ex-info (str "babashka.ffi: :void is not an argument type: " (pr-str argtypes))
+                    {:argtypes argtypes})))
   (when (and native-image?
              (or (> (count argtypes) 4)
                  (some #(= :float (carrier %)) argtypes)
