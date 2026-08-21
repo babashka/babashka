@@ -228,8 +228,8 @@
   "Loads a shared library and registers it for symbol resolution. Prefer
   load-system-library when the name only differs per OS by convention; this
   is the escape hatch for version-pinned names and absolute paths. Takes a
-  path, or a map from OS keyword (:mac :linux :windows) to a path or a
-  vector of candidate paths tried in order:
+  path, a vector of candidate paths tried in order, or a map from OS
+  keyword (:mac :linux :windows) to a path or such a vector:
 
       (ffi/load-library
         {:mac [\"/opt/homebrew/opt/openssl@3/lib/libcrypto.3.dylib\"
@@ -242,13 +242,15 @@
   usable as the first argument to cfn, whose :path is the candidate that
   loaded."
   [lib]
-  (let [paths (if (map? lib)
+  (let [paths (cond
+                (map? lib)
                 (let [v (or (get lib (os-key))
                             (when (= :mac (os-key)) (get lib :darwin))
                             (throw (ex-info (str "babashka.ffi: no library for OS " (os-key))
                                             {:libs lib})))]
                   (mapv str (if (vector? v) v [v])))
-                [(str lib)])
+                (vector? lib) (mapv str lib)
+                :else [(str lib)])
         m (or (some lookup-one paths)
               (throw (ex-info (str "babashka.ffi: cannot load library: "
                                    (str/join ", " paths)

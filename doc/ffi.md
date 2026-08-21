@@ -36,10 +36,10 @@ Linux.
   :linux "libcrypto.so.3"})
 ```
 
-`load-library` is the exact-name form: a path, or a map from OS keyword
-(`:mac` `:linux` `:windows`, `:darwin` works as `:mac`) to a path or a
-vector of candidates tried in order. It never rewrites names. Bare names
-get the same directory search as above.
+`load-library` is the exact-name form: a path, a vector of candidates
+tried in order, or a map from OS keyword (`:mac` `:linux` `:windows`,
+`:darwin` works as `:mac`) to a path or such a vector. It never rewrites
+names. Bare names get the same directory search as above.
 
 A library that ships bindings should pin the sonames it was written
 against with `load-library`, as in the example above.

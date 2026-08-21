@@ -206,6 +206,12 @@
                              {:mac ["nonexistent-bb-zzz.dylib" "libz.dylib"]
                               :linux ["nonexistent-bb-zzz.so" "libz.so.1" "libz.so"]})
                             ((ffi/cfn "zlibVersion" [] :string))))))))
+    (when-not tu/windows?
+      (testing "a top-level candidate vector works like an OS map value"
+        (is (string? (bb `(do (require '[babashka.ffi :as ~'ffi])
+                              (ffi/load-library
+                               ["nonexistent-bb-zzz.so" "libz.dylib" "libz.so.1"])
+                              ((ffi/cfn "zlibVersion" [] :string))))))))
   (testing "find-symbol probes without binding"
     (is (= [true nil]
            (bb `(do (require '[babashka.ffi :as ~'ffi])
