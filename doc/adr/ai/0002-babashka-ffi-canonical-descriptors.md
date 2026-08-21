@@ -281,6 +281,14 @@ instead, removing both the descriptor weight and the ~3.4us interpreted
 FFM cost there. Also trimmed IFn.invoke reflection to arities 0-4
 (callback maximum).
 
+Follow-up round: :void was accepted as an argument type and, contributing
+nothing to the shape key, silently bound the zero-argument shape. Now
+rejected at bind time on all three paths (fixed, variadic, callback).
+The general gap it exposed: the contract test proves registered =>
+accepted, not the converse. Possible hardening: enumerate the accepted
+set from windows-fixed-shape? and diff it against the generated
+descriptors.
+
 ## Library search (2026-08-21 review)
 
 - BABASHKA_FFI_LIBRARY_PATH removed: an invented API with no precedent
