@@ -1,4 +1,4 @@
-# babashka.ffi
+# Babashka.ffi
 
 `babashka.ffi` calls functions in native shared libraries.
 
@@ -7,7 +7,7 @@ The API is experimental.
 CAUTION: Use only correct signatures and valid pointers. An incorrect value
 can stop the process.
 
-## Quick start
+## Quickstart
 
 Load a library and bind a function:
 
