@@ -63,6 +63,7 @@ jobs:
         uses: DeLaGuardo/setup-clojure@13.4
         with:
           cli: latest
+          bb: latest
           # lein: latest -- skipped because this uses some PS bullshit
 
       - name: Babashka version
@@ -79,6 +80,10 @@ jobs:
               call lein self-install
 
               set GRAALVM_HOME=%JAVA_HOME%
+
+              rem ordered FFI shapes: the Win64 ABI assigns registers by position
+              call bb script\gen_ffi_metadata.clj windows
+
               call script/uberjar.bat
 
               call script/compile.bat

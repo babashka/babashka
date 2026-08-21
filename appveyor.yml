@@ -63,12 +63,6 @@ build_script:
 - cmd: >-
     set BABASHKA_SHA=%APPVEYOR_REPO_COMMIT%
 
-    powershell -Command "if (Test-Path('bb-bootstrap')) { return } else { (New-Object Net.WebClient).DownloadFile('https://github.com/babashka/babashka/releases/download/v1.13.219/babashka-1.13.219-windows-amd64.zip', 'bb-bootstrap.zip') }"
-
-    powershell -Command "if (Test-Path('bb-bootstrap')) { return } else { Expand-Archive bb-bootstrap.zip bb-bootstrap }"
-
-    bb-bootstrap\bb.exe script\gen_ffi_metadata.clj windows
-
     call script/uberjar.bat
 
     call script/compile.bat
