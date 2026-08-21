@@ -557,21 +557,22 @@
        (throw (ex-info (str "babashka.ffi: cannot read type " t) {:type t}))))))
 
 (defn write
-  "Writes a typed value to pointer p at byte offset."
-  [p t offset v]
-  (let [seg (segment p (+ (long offset) (long (sizeof t))))
-        off (long offset)]
-    (case t
-      (:int :uint :int32 :uint32) (.set seg ValueLayout/JAVA_INT_UNALIGNED off (unchecked-int (long v)))
-      (:long :ulong :int64 :uint64 :size_t :ssize_t :pointer)
-      (.set seg ValueLayout/JAVA_LONG_UNALIGNED off (long v))
-      (:int16 :uint16) (.set seg ValueLayout/JAVA_SHORT_UNALIGNED off (unchecked-short (long v)))
-      :bool (.set seg ValueLayout/JAVA_BYTE off (unchecked-byte (if v 1 0)))
-      (:int8 :uint8 :byte :char) (.set seg ValueLayout/JAVA_BYTE off (unchecked-byte (long v)))
-      :double (.set seg ValueLayout/JAVA_DOUBLE_UNALIGNED off (double v))
-      :float (.set seg ValueLayout/JAVA_FLOAT_UNALIGNED off (float v))
-      (throw (ex-info (str "babashka.ffi: cannot write type " t) {:type t})))
-    nil))
+  "Writes a typed value to pointer p at byte offset (default 0)."
+  ([p t v] (write p t 0 v))
+  ([p t offset v]
+   (let [seg (segment p (+ (long offset) (long (sizeof t))))
+         off (long offset)]
+     (case t
+       (:int :uint :int32 :uint32) (.set seg ValueLayout/JAVA_INT_UNALIGNED off (unchecked-int (long v)))
+       (:long :ulong :int64 :uint64 :size_t :ssize_t :pointer)
+       (.set seg ValueLayout/JAVA_LONG_UNALIGNED off (long v))
+       (:int16 :uint16) (.set seg ValueLayout/JAVA_SHORT_UNALIGNED off (unchecked-short (long v)))
+       :bool (.set seg ValueLayout/JAVA_BYTE off (unchecked-byte (if v 1 0)))
+       (:int8 :uint8 :byte :char) (.set seg ValueLayout/JAVA_BYTE off (unchecked-byte (long v)))
+       :double (.set seg ValueLayout/JAVA_DOUBLE_UNALIGNED off (double v))
+       :float (.set seg ValueLayout/JAVA_FLOAT_UNALIGNED off (float v))
+       (throw (ex-info (str "babashka.ffi: cannot write type " t) {:type t})))
+     nil)))
 
 (defn string->ptr
   "Copies s to freshly allocated foreign memory as a NUL-terminated UTF-8 C

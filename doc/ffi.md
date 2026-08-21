@@ -109,7 +109,8 @@ reads a double.
 (ffi/free p)
 (ffi/read p :int)           ; typed read, optional byte offset
 (ffi/read p :double 8)
-(ffi/write p :int 0 42)     ; typed write at byte offset
+(ffi/write p :int 42)       ; typed write, optional byte offset
+(ffi/write p :int 8 42)
 (ffi/sizeof :pointer)       ;=> 8
 (ffi/string->ptr "hi")      ; C string in fresh memory, free it yourself
 (ffi/ptr->string p)
