@@ -113,7 +113,9 @@ reads a double.
 (ffi/write p :int 8 42)
 (ffi/sizeof :pointer)       ;=> 8
 (ffi/string->ptr "hi")      ; C string in fresh memory, free it yourself
-(ffi/ptr->string p)
+(ffi/ptr->string p)         ; the NUL-terminated string AT p
+(ffi/read p :string)        ; p holds a char*: reads the pointer, then
+                            ; the string it points to
 ffi/null                    ; 0
 (ffi/null?* p)
 ```
@@ -155,7 +157,7 @@ signature must fit:
 - A signature of only pointer and integer types may have up to 10 arguments.
 - A `:float` return needs 4 arguments or fewer.
 - Variadic calls: up to 5 arguments, of which at most 3 fixed and at most 2
-  `:double`.
+  `:double`, with a `:void`, integer, or pointer return.
 - Callbacks: up to 4 arguments, at most 2 `:double`, no `:float`, and a
   `:void`, integer, or `:double` return.
 

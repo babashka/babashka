@@ -247,7 +247,11 @@
       (is (thrown-with-msg?
            Exception #"unsupported signature"
            (bb `(do (require '[babashka.ffi :as ~'ffi])
-                    ((ffi/cfn "printf" [:string :&] :int) "%d %d %d %d %d" 1 2 3 4 5))))))))
+                    ((ffi/cfn "printf" [:string :&] :int) "%d %d %d %d %d" 1 2 3 4 5)))))
+      (is (thrown-with-msg?
+           Exception #"unsupported signature"
+           (bb `(do (require '[babashka.ffi :as ~'ffi])
+                    (ffi/cfn "printf" [:string :&] :double))))))))
 
 (deftest error-test
   (when-not skip?

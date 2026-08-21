@@ -329,7 +329,7 @@
            {:symbol sym :argtypes argtypes :rettype rettype}))
 
 (def ^:private variadic-limits
-  "variadic calls support up to 5 args total, at most 3 fixed, at most 2 :double")
+  "variadic calls support up to 5 args total, at most 3 fixed, at most 2 :double, and a :void, integer or pointer return")
 
 (declare ^:private fixed-cfn)
 
@@ -341,7 +341,10 @@
   (carrier rettype)
   (when (and native-image?
              (or (> (count fixed) 3)
-                 (some #(= :float (carrier %)) fixed)))
+                 (some #(= :float (carrier %)) fixed)
+                 ;; variadic descriptors are only registered for void and
+                 ;; integer returns
+                 (#{:double :float} (carrier rettype))))
     (throw (unsupported-ex sym argtypes rettype variadic-limits)))
   (let [nf (count fixed)
         cache (atom {})

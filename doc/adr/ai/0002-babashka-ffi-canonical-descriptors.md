@@ -306,7 +306,12 @@ is implementable in userspace on top.
   the unknown thread to the isolate). This is what caught the FP-ordering
   bug.
 - Unregistered signatures fail with a raw `MissingForeignRegistrationError`.
-  Should be caught and rephrased with the family limits.
+  RESOLVED 2026-08-21 for the last reachable case: fixed signatures were
+  already rejected at bind time, variadic tails at handle creation, but a
+  float/double-RETURNING variadic passed the guard (only void and integer
+  returns are registered) and hit the raw error at call time. The bind-time
+  guard now also checks the return carrier; covered in
+  unsupported-signature-test.
 
 ## Files
 
