@@ -131,13 +131,27 @@ be invoked from threads C created.
 
 ## Limits
 
-Up to 7 arguments, of which at most 6 pointer/integer, at most 6 `:double`,
-and at most 4 floating args when any is `:float`. A `:float` return needs 4
-args or fewer. Pure pointer/integer signatures may have up to 10 arguments.
-Variadic: up to 5 arguments, at most 3 fixed, at most 2 `:double`, no
-`:float`. Callbacks: up to 4 arguments, at most 2 `:double`, no `:float`,
-and a `:void`, integer, or `:double` return. Argument order does not
-matter, only the counts.
+A native image cannot build a call at run time, so bb ships a fixed set of
+call shapes and maps each signature onto one of them. This is what a
+signature must fit:
+
+- Up to 6 arguments, of which at most 6 are pointer or integer types.
+- The floating-point arguments may be any mix of `:double` and `:float` up
+  to three of them, or four when they are all the same type.
+- A signature of only pointer and integer types may have up to 10 arguments.
+- A `:float` return needs 4 arguments or fewer.
+- Variadic calls: up to 5 arguments, of which at most 3 fixed and at most 2
+  `:double`.
+- Callbacks: up to 4 arguments, at most 2 `:double`, no `:float`, and a
+  `:void`, integer, or `:double` return.
+
+Argument order does not matter, only how many of each kind there are. So
+`[:double :int]` and `[:int :double]` use the same shape.
+
+The limits come from measurement, not from the ABI. About 350 bindings from
+raylib, sqlite, duckdb, CPython, OpenSSL and libffi need 37 shapes between
+them; bb registers 286, and each shape costs about 1.7 kB of binary. Report
+a signature that does not fit and it can usually be added.
 
 Struct-by-value arguments and returns are not supported yet.
 

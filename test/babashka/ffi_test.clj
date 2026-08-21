@@ -184,6 +184,28 @@
       (is (thrown? Exception (bb `(do ~ffi-require
                                       ((ffi/cfn "bb_no_such_symbol" [] :void)))))))))
 
+(deftest documented-limits-test
+  ;; the limits in doc/ffi.md are a contract: check both sides of each rule
+  (when (and (not skip?) tu/native?)
+    (let [bind (fn [args ret]
+                 (bb `(do (require '[babashka.ffi :as ~'ffi])
+                          (try (ffi/cfn "abs" ~args ~ret) :ok
+                               (catch Exception _# :refused)))))]
+      (testing "signatures the docs say fit"
+        (is (= [:ok :ok :ok :ok :ok :ok]
+               [(bind [:pointer :pointer :int :int :double :float] :void)
+                (bind [:pointer :double :float :double] :void)
+                (bind [:float :float :float :float] :void)
+                (bind [:double :double :double :double] :void)
+                (bind (vec (repeat 10 :long)) :long)
+                (bind [:int :int :int :int] :float)])))
+      (testing "signatures the docs say do not fit"
+        (is (= [:refused :refused :refused :refused]
+               [(bind [:pointer :pointer :int :int :int :double :float] :void)
+                (bind [:double :double :double :float] :void)
+                (bind (vec (repeat 11 :long)) :long)
+                (bind [:int :int :int :int :int] :float)]))))))
+
 (deftest unsupported-signature-test
   ;; native image only: the JVM path has no signature limits
   (when (and (not skip?) tu/native?)

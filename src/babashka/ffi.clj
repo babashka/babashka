@@ -22,13 +22,15 @@
   exact layout (float ABI differs from double). Struct-by-value arguments are
   not supported.
 
-  Signature limits (native image): up to 7 arguments, of which at most 6
-  pointer/integer args, at most 6 :double args, and at most 4 floating args
-  when any is :float. Signatures of only pointer/integer args may have up to
-  10 arguments. A :float return needs 4 args or fewer. Variadic calls:
-  up to 5 arguments total, at most 3 fixed, at most 2 :double.
-  Callbacks: up to 4 arguments, at most 2 :double, no :float, and a :void,
-  integer, or :double return. Argument order does not matter; only the counts do.
+  Signature limits (native image): up to 6 arguments, of which at most 6 are
+  pointer or integer types; the floating-point arguments may be any mix of
+  :double and :float up to three, or four when they are all the same type.
+  Signatures of only pointer and integer types may have up to 10 arguments.
+  A :float return needs 4 arguments or fewer. Variadic calls: up to 5
+  arguments, at most 3 fixed, at most 2 :double. Callbacks: up to 4
+  arguments, at most 2 :double, no :float, and a :void, integer, or :double
+  return. Argument order does not matter, only how many of each kind there
+  are. See doc/ffi.md for why these limits exist.
 
   A trailing :& declares a variadic C function: the types before it are the
   fixed parameters, and the tail types are inferred per call from the values
