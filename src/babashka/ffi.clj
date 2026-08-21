@@ -668,6 +668,14 @@
                          ValueLayout/JAVA_BYTE (long offset) n)
      nil)))
 
+(defn byte-buffer
+  "A java.nio.ByteBuffer view over n bytes of native memory at pointer p:
+  reads and writes go straight to the native memory, nothing is copied.
+  The buffer is only valid while the memory is. Byte order is big-endian,
+  as for any new ByteBuffer; set it with .order if needed."
+  ^java.nio.ByteBuffer [p n]
+  (.asByteBuffer (segment p n)))
+
 (defn string->ptr
   "Copies s to newly allocated native memory as a NUL-terminated UTF-8
   string. Returns its pointer. Release the pointer with free."
