@@ -5,6 +5,7 @@ set -euo pipefail
 version=""
 checksum=""
 static_binary="false"
+static_binary_override=""
 default_install_dir="/usr/local/bin"
 install_dir="$default_install_dir"
 download_dir=""
@@ -14,7 +15,7 @@ print_help() {
     echo "Installs latest (or specific) version of babashka. Installation directory defaults to /usr/local/bin."
     echo -e
     echo "Usage:"
-    echo "install [--dir <dir>] [--download-dir <download-dir>] [--version <version>] [--checksum <checksum>] [--static]"
+    echo "install [--dir <dir>] [--download-dir <download-dir>] [--version <version>] [--checksum <checksum>] [--static] [--dynamic]"
     echo -e
     echo "Defaults:"
     echo " * Installation directory: ${default_install_dir}"
@@ -81,6 +82,12 @@ do
             ;;
         --static)
             static_binary="true"
+            static_binary_override="true"
+            shift
+            ;;
+        --dynamic)
+            static_binary="false"
+            static_binary_override="true"
             shift
             ;;
         --dev-build)
@@ -129,7 +136,7 @@ vernum=$(printf "%03d%03d%03d" "${VER[0]}" "${VER[1]}" "${VER[2]}")
 
 case "$(uname -m)" in
     aarch64) arch=aarch64
-             if [[ "$platform" == "linux" ]]; then
+             if [[ "$platform" == "linux" ]] && [[ -z "$static_binary_override" ]]; then
                  static_binary="true"
              fi
              ;;
@@ -140,8 +147,8 @@ case "$(uname -m)" in
            fi
            ;;
     *) arch=amd64
-       # always use static image on linux
-       if [[ "$platform" == "linux" ]]; then
+       # static image by default on linux; --dynamic overrides
+       if [[ "$platform" == "linux" ]] && [[ -z "$static_binary_override" ]]; then
            static_binary="true"
        fi
        ;;

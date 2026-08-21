@@ -62,6 +62,10 @@
            {:extra-deps {babashka/babashka {:local/root "."}}
             :main-opts ["-m" "babashka.main"]
             :jvm-opts ["--enable-native-access=ALL-UNNAMED" "-Duser.language=en" "-Duser.country=US"]}
+           ;; macOS only: GLFW/Cocoa windows (e.g. raylib over babashka.ffi)
+           ;; need Java main on the first thread: clojure -M:babashka/dev:macos
+           :macos
+           {:jvm-opts ["-XstartOnFirstThread"]}
            :profile
            {:extra-deps
             {com.clojure-goes-fast/clj-async-profiler {:mvn/version "0.5.0"}}
