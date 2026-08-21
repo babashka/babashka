@@ -10,8 +10,8 @@
 ;; cannot work fail.
 (require '[babashka.fs :as fs]
          '[clojure.string :as str]
-         '[rewrite-clj.zip :as z]
-         '[rewrite-clj.node :as n])
+         '[rewrite-clj.node :as n]
+         '[rewrite-clj.zip :as z])
 
 (def src-root (or (first *command-line-args*)
                   (str (fs/home) "/dev/b12n-raylib-clj/src")))
@@ -57,7 +57,7 @@
     (when (and (symbol? nm) (string? sym) (vector? args))
       {:name nm :doc doc :attrs attrs :sym sym :args args :ret ret})))
 
-(defn emit-binding [{:keys [name doc attrs sym args ret]}]
+(defn emit-binding [{:keys [name doc sym args ret]}]
   (let [targs (map translate-type args)
         tret (translate-type ret)
         colors (keep-indexed (fn [i a] (when (= color-type (kw a)) i)) args)]
@@ -156,7 +156,7 @@
       (fs/create-dirs (fs/parent out))
       ;; a namespace of plain data keeps its own ns form
       (spit (str out) out-str))
-    (assoc @stats :file rel :skipped (boolean infra?))))
+    (assoc @stats :file rel :skipped infra?)))
 
 (fs/create-dirs out-root)
 (fs/create-dirs (fs/file out-root "raylib"))
