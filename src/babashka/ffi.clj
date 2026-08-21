@@ -238,9 +238,9 @@
 
   :darwin is accepted as a synonym for :mac (jolt compatibility). A bare
   name (no separator) that the system's dlopen search does not find is also
-  probed in common install directories (Homebrew, MacPorts, /usr/local/lib,
-  multiarch dirs). Returns a map, usable as the first argument to cfn,
-  whose :path is the candidate that loaded."
+  probed in common install directories (see search-dirs). Returns a map,
+  usable as the first argument to cfn, whose :path is the candidate that
+  loaded."
   [lib]
   (let [paths (if (map? lib)
                 (let [v (or (get lib (os-key))

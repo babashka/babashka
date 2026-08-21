@@ -23,7 +23,10 @@ functions with explicit types, marshal memory by hand.
 Loads a library by short name: `libz.dylib` on macOS, `z.dll` on Windows,
 `libz.so` on Linux with a fallback glob over versioned sonames
 (`libz.so.1`). Searches the system's dlopen path, then common install
-directories (Homebrew, MacPorts, `/usr/local/lib`, the multiarch dirs).
+directories: `/opt/homebrew/lib`, `/usr/local/lib`, `/opt/local/lib` and
+`/usr/lib` on macOS, `/usr/local/lib`, `/usr/lib`,
+`/usr/lib/x86_64-linux-gnu`, `/usr/lib/aarch64-linux-gnu` and `/lib` on
+Linux.
 
 ```clojure
 (ffi/load-library "/exact/path/libfoo.so")
