@@ -1,8 +1,8 @@
 (ns babashka.ffi
-  "Foreign function interface over java.lang.foreign.
+  "Call functions in native shared libraries.
 
-  Load a shared library, bind C functions with explicit argument and return
-  types, and marshal memory by hand:
+  Load a library, bind C functions with explicit argument and return types,
+  and manage native memory:
 
       (require '[babashka.ffi :as ffi])
       (ffi/load-system-library \"sqlite3\")
@@ -12,31 +12,35 @@
              (ffi/read pp :pointer)
              (finally (ffi/free pp))))
 
-  Types: :void :int :uint :long :ulong :int8 :uint8 :int16 :uint16 :int32
-  :uint32 :int64 :uint64 :size_t :ssize_t :char :byte :bool :pointer
-  :string :double :float. :bool is C's one-byte bool and returns true or
-  false, so a C predicate does not come back as a truthy 0.
+  Use these type keywords:
 
-  Pointers are plain longs (machine addresses). Integer types are widened to
-  a 64-bit carrier for the call and narrowed back on return, so a native
-  image only needs a bounded family of function descriptors. :float keeps its
-  exact layout (float ABI differs from double). Struct-by-value arguments are
-  not supported.
+      :void
+      :int :uint :long :ulong :int8 :uint8 :int16 :uint16 :int32
+      :uint32 :int64 :uint64 :size_t :ssize_t :char :byte
+      :bool :pointer :string :double :float
 
-  Signature limits (native image): up to 6 arguments, of which at most 6 are
-  pointer or integer types; the floating-point arguments may be any mix of
-  :double and :float up to three, or four when they are all the same type.
-  Signatures of only pointer and integer types may have up to 10 arguments.
-  A :float return needs 4 arguments or fewer. Variadic calls: up to 5
-  arguments, at most 3 fixed, at most 2 :double. Callbacks: up to 4
-  arguments, at most 2 :double, no :float, and a :void, integer, or :double
-  return. Argument order does not matter, only how many of each kind there
-  are. See doc/ffi.md for why these limits exist.
+  Pointers are native addresses stored in Clojure longs. :bool represents a
+  one-byte C boolean and returns true or false. Thus, a C predicate does not
+  return the truthy number 0. The API does not support struct-by-value
+  arguments.
 
-  A trailing :& declares a variadic C function: the types before it are the
-  fixed parameters, and the tail types are inferred per call from the values
-  (integers and pointers as 64-bit ints, floats as double per C promotion,
-  strings as C strings):
+  Native images limit most fixed signatures to six arguments. A signature
+  that uses only pointer and integer types supports up to 10 arguments. A
+  fixed signature supports at most three mixed floating-point arguments. It
+  supports four arguments of the same floating-point type. A :float return
+  supports at most four arguments.
+
+  In native images, variadic calls support up to five total arguments. They
+  support at most three fixed arguments and two :double arguments. Callbacks
+  support up to four arguments and two :double arguments. Callbacks do not
+  support :float. The callback return type must be :void, an integer type, or
+  :double. Argument order does not affect these limits. See doc/ffi.md for
+  details and workarounds.
+
+  Add a trailing :& to declare a variadic C function. The types before :& are
+  the fixed parameters. Each call infers the tail types from the values.
+  Integers and pointers use 64-bit integers. C promotion converts floats to
+  doubles. Strings use C strings:
 
       (ffi/defcfn c-open \"open\" [:string :int :&] :int)
       (c-open path O_RDONLY)         ; empty tail
@@ -142,8 +146,8 @@
   (.reinterpret (MemorySegment/ofAddress addr) (long size)))
 
 (defn ptr->string
-  "The NUL-terminated UTF-8 C string at pointer p, as a Clojure string.
-  Nil for a NULL pointer."
+  "Reads the NUL-terminated UTF-8 string at pointer p. Returns nil for a NULL
+  pointer."
   [p]
   (when-not (zero? (long p))
     (.getString (segment p Long/MAX_VALUE) 0)))
@@ -248,22 +252,23 @@
               (search-dirs)))))
 
 (defn load-library
-  "Loads a shared library and registers it for symbol resolution. Prefer
-  load-system-library when the name only differs per OS by convention; this
-  is the escape hatch for version-pinned names and absolute paths. Takes a
-  path, a vector of candidate paths tried in order, or a map from OS
-  keyword (:mac :linux :windows) to a path or such a vector:
+  "Loads a shared library and adds it to the symbol search.
+
+  Use load-system-library for file names that follow platform conventions.
+
+  lib can be a path, a vector of candidates, or a map of operating systems to
+  candidates. The function tries vector entries in order. An operating-system
+  map uses the keys :mac, :linux, and :windows:
 
       (ffi/load-library
         {:mac [\"/opt/homebrew/opt/openssl@3/lib/libcrypto.3.dylib\"
                \"/usr/local/opt/openssl@3/lib/libcrypto.3.dylib\"]
          :linux \"libcrypto.so.3\"})
 
-  :darwin is accepted as a synonym for :mac (jolt compatibility). A bare
-  name (no separator) that the system's dlopen search does not find is also
-  probed in common install directories (see search-dirs). Returns a map,
-  usable as the first argument to cfn, whose :path is the candidate that
-  loaded."
+  :darwin is an alias for :mac. For a bare name, the function also searches
+  common installation directories. Returns a library map whose :path value
+  identifies the loaded candidate. The map can be the first argument to cfn.
+  In that form, cfn searches only this library."
   [lib]
   (let [paths (cond
                 (map? lib)
@@ -285,10 +290,9 @@
     m))
 
 (defn load-system-library
-  "Loads a library by its short name, e.g. \"z\" for libz.dylib / libz.so /
-  z.dll, searching the system paths and common install directories (see
-  load-library). On Linux, versioned sonames are found by globbing: the bare
-  .so link only exists with the -dev package installed."
+  "Loads a shared library by its short name. For example, \"z\" selects
+  libz.dylib, libz.so, or z.dll. On Linux, the search also includes versioned
+  names such as libz.so.1. Returns the same library map as load-library."
   [name]
   (case (os-key)
     :mac (load-library (str "lib" name ".dylib"))
@@ -336,8 +340,8 @@
       (throw (ex-info (str "babashka.ffi: symbol not found: " sym) {:symbol sym}))))
 
 (defn find-symbol
-  "The address of symbol sym in the loaded libraries and the default (libc)
-  lookup, as a pointer, or nil when not found."
+  "Finds sym in the loaded libraries and the default system lookup. Returns
+  its native address as a Clojure long. Returns nil for an unknown symbol."
   [sym]
   (some-> (lookup-symbol nil (str sym)) .address))
 
@@ -431,13 +435,16 @@
       {:babashka.ffi/backend :ffm})))
 
 (defn cfn
-  "Binds C function sym as a Clojure function. argtypes is a vector of type
-  keywords, rettype a type keyword. With a lib (the map returned by
-  load-library) the symbol is resolved in that library only; without, in all
-  loaded libraries and then the default (libc) lookup. The handle is created
-  on first call, so binding may precede load-library. A trailing :& declares
-  the C function variadic: the types before it are the fixed parameters, the
-  tail is inferred per call."
+  "Creates a Clojure function that calls C function sym. argtypes is a vector
+  of type keywords. rettype is a type keyword.
+
+  With a library map, cfn searches only that library. Without one, cfn
+  searches all loaded libraries and then the default system lookup. The first
+  call resolves the symbol and creates the call handle. You can create the
+  binding before you load its library.
+
+  A trailing :& declares a variadic C function. The types before :& are the
+  fixed parameters. Each call infers the tail types from its values."
   ([sym argtypes rettype] (cfn nil sym argtypes rettype))
   ([lib sym argtypes rettype]
    (when-not (string? sym)
@@ -530,7 +537,7 @@
        {:babashka.ffi/backend (if tramp-id :trampoline :ffm)})))
 
 (defmacro defcfn
-  "Defs a foreign function bound with cfn:
+  "Defines name as a C function binding created by cfn:
 
       (defcfn sqlite3-open \"sqlite3_open\" [:string :pointer] :int)
 
@@ -538,9 +545,9 @@
         \"Opens the database at path, storing the handle in out-param pp.\"
         \"sqlite3_open\" [:string :pointer] :int)
 
-  The last three arguments are always the C symbol, the argument types and
-  the return type; an optional docstring and attribute map may precede
-  them. Metadata on name is kept, so ^:private works."
+  An optional docstring and attribute map can precede the C symbol. The final
+  three arguments are the C symbol, argument types, and return type. defcfn
+  preserves all metadata on name. This metadata includes ^:private."
   {:arglists '([name docstring? attr-map? sym argtypes rettype])}
   [name & args]
   (when (< (count args) 3)
@@ -573,13 +580,13 @@
 (def ^:private c-free (delay (cfn @crt-lib "free" [:pointer] :void)))
 
 (defn alloc
-  "Allocates n bytes of zeroed foreign memory. Returns the pointer. Free it
-  with free."
+  "Allocates n bytes of zeroed native memory and returns its pointer. Release
+  the pointer with free."
   [n]
   (@c-calloc 1 n))
 
 (defn free
-  "Frees a pointer returned by alloc or string->ptr."
+  "Releases memory allocated by alloc or string->ptr."
   [p]
   (@c-free p))
 
@@ -590,12 +597,13 @@
    :int16 2 :uint16 2 :int8 1 :uint8 1 :byte 1 :char 1 :bool 1})
 
 (defn sizeof
-  "Size in bytes of a type keyword."
+  "Returns the size, in bytes, of type keyword t."
   [t]
   (or (sizes t) (throw (ex-info (str "babashka.ffi: unknown type " t) {:type t}))))
 
 (defn read
-  "Reads a typed value from pointer p at byte offset (default 0)."
+  "Reads a value of type t from pointer p. The optional byte offset defaults
+  to 0."
   ([p t] (read p t 0))
   ([p t offset]
    (let [seg (segment p (+ (long offset) (long (sizeof t))))
@@ -616,7 +624,8 @@
        (throw (ex-info (str "babashka.ffi: cannot read type " t) {:type t}))))))
 
 (defn write
-  "Writes a typed value to pointer p at byte offset (default 0)."
+  "Writes value v as type t to pointer p. The optional byte offset defaults
+  to 0. Returns nil."
   ([p t v] (write p t 0 v))
   ([p t offset v]
    (let [seg (segment p (+ (long offset) (long (sizeof t))))
@@ -634,8 +643,8 @@
      nil)))
 
 (defn string->ptr
-  "Copies s to freshly allocated foreign memory as a NUL-terminated UTF-8 C
-  string. Returns the pointer. Free it with free."
+  "Copies s to newly allocated native memory as a NUL-terminated UTF-8
+  string. Returns its pointer. Release the pointer with free."
   [^String s]
   (let [bytes (.getBytes s "UTF-8")
         n (inc (alength bytes))
@@ -645,11 +654,11 @@
     p))
 
 (def null
-  "The NULL pointer."
+  "The NULL pointer address."
   0)
 
 (defn null?
-  "True if pointer p is NULL."
+  "Returns true for a NULL pointer. Returns false for all other pointers."
   [p]
   (zero? (long p)))
 
@@ -658,11 +667,12 @@
 (def ^:private callback-arenas (atom {}))
 
 (defn callback
-  "Wraps Clojure function f as a C function pointer so C can call back into
-  Clojure (qsort comparators, signal handlers). argtypes/rettype use the same
-  type keywords as cfn; long-carrier arguments arrive as longs (pointers as
-  addresses). Returns the function pointer as a long. The callback stays
-  alive until free-callback is called on the pointer."
+  "Creates a C function pointer that invokes Clojure function f. argtypes and
+  rettype use the same type keywords as cfn. Pointer and integer arguments
+  are Clojure longs. :bool arguments are booleans.
+
+  Returns the function pointer as a Clojure long. The callback remains valid
+  until free-callback releases it."
   [f argtypes rettype]
   (doseq [t argtypes] (carrier t))
   (carrier rettype)
@@ -726,9 +736,8 @@
     addr))
 
 (defn free-callback
-  "Releases callback pointer p: frees the native stub and lets the wrapped fn
-  be garbage collected. C must not call p afterwards. Unknown pointers are
-  ignored."
+  "Releases callback pointer p. C must not call p after this function returns.
+  Ignores unknown pointers."
   [p]
   (when-let [^Arena a (get @callback-arenas p)]
     (swap! callback-arenas dissoc p)
