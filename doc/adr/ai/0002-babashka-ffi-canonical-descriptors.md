@@ -131,21 +131,37 @@ bb baseline 73,282,320 bytes (worktree build, GraalVM 25.0.4, macOS aarch64).
 | trimmed orderings (<= 2 doubles high arity) | ~1270 | +1.66MB  |
 | count shapes (sorting trick)             | ~700  | +0.76MB  |
 | final (arity <= 7, varargs <= 5, upcall trim) | ~530  | +0.55MB (+0.79%) |
-| + 299 compiled trampolines, minus dead descriptors | ~220 + 299 | +1.77MB (+2.5%) |
+| + compiled trampolines, minus dead descriptors | ~220 + 531 | +1.31MB (+1.87%) |
+| shapes trimmed to measured need | ~260 + 286 | +0.60MB (+0.86%) |
 
-Call cost, native image: FFM interpreted 4777ns -> trampoline 63ns. JVM
-(FFM, JIT-compiled): 123ns.
+The last row is the shipped one. The trim is justified by measurement: ~350
+bindings across b12n-raylib-clj, libpython-clj, the libffi API and the demos
+here need 37 distinct shapes; the family registers 286.
 
-Call overhead: ~4.8us per call in the native image (`invokeWithArguments` +
-MethodHandle interpretation). Fine for per-row and per-frame calls (tetris
-draws ~200 rects/frame), wrong for per-element loops - pass buffers instead.
+Call cost, native image, measured end to end from Clojure:
+
+| call                     | FFM interpreted | trampoline |
+|--------------------------|-----------------|------------|
+| `abs [:int] :int`        | 4777ns          | 63ns       |
+| `pow [:double :double]`  |                 | 70ns       |
+| `ldexp [:double :int]`   |                 | 73ns       |
+| `strlen [:string]`       |                 | 387ns      |
+
+A string argument still costs a confined Arena per call, which is why
+`strlen` is an order slower than the rest. Argument coercions are chosen
+when a binding is created rather than dispatched per call, and a signature
+needing permutation fills its array through the permutation instead of
+building vectors - that took `ldexp` from 243ns to 73ns.
 
 ## Current limits (the user contract)
 
-Up to 7 args, of which at most 6 pointer/integer, at most 6 doubles, at most
-4 floating args when any is `:float`. Float return needs <= 4 args. Variadic:
-<= 5 args total, <= 3 fixed, <= 2 doubles, no floats. Callbacks: <= 4 args,
-<= 2 doubles, void or integer return. Struct-by-value unsupported.
+Up to 6 args, of which at most 6 pointer/integer; the floating args may be
+any mix up to three, or four when uniform. Pure pointer/integer signatures
+up to 10 args. Float return needs <= 4 args. Variadic: <= 5 args, <= 3
+fixed, <= 2 doubles. Callbacks: <= 4 args, <= 2 doubles, void or integer
+return. Struct-by-value unsupported. See doc/ffi.md, which is the
+user-facing statement of the same contract and is checked by
+`documented-limits-test`.
 
 ## Validation against real bindings
 
