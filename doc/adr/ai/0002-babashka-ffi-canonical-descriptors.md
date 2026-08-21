@@ -322,6 +322,25 @@ error-test. Nothing in the current API blocks later coffi compatibility:
 alloc/free are malloc-style (no hidden arenas), so even coffi's arena model
 is implementable in userspace on top.
 
+## Future direction: libffi as the universal fallback
+
+Design the struct engine (see Known gaps) as a GENERAL fallback from day
+one: any signature without a trampoline - out-of-family, struct-by-value,
+variadic via ffi_prep_cif_var - routes through ffi_call at ~459ns instead
+of a bind-time error. ffi_call itself is a pointer-only signature, so the
+SVM C API stays the single native call mechanism and libffi is just a C
+library reached through it. FFM then remains only for upcalls on the
+image (libffi closures need runtime-executable memory, fragile on
+hardened macOS) and for the whole JVM path. Precedent: Python's ctypes
+and Ruby's fiddle are libffi throughout; both BUNDLE libffi on Windows
+(CPython ships libffi-8.dll) - nobody asks end users to install it. For
+bb the options are bundling the ~40KB dll in the Windows zip or statically
+linking libffi into the image, which fits the single-binary story best.
+With the fallback in place the Windows ordered-trampoline family can be
+trimmed toward the measured 37-shape need, clawing back most of its
++2.9MB while hot paths stay at 63ns. Without libffi present, behavior
+degrades to today's bind-time error.
+
 ## Known gaps
 
 - Struct-by-value. DECIDED (2026-08-21), follow-up issue, not this branch:
