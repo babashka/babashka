@@ -31,8 +31,11 @@ Other factors:
 
 1. The install script defaults to the dynamic binary on Linux amd64.
 2. The install script falls back to the static binary on musl systems,
-   detected via `/lib/ld-musl-*`, and on glibc older than 2.31. `--static`
-   and `--dynamic` still override. FreeBSD keeps the static binary.
+   detected via `/lib/ld-musl-*`, on glibc older than 2.31, and when
+   `/lib64/ld-linux-x86-64.so.2 --verify` fails. The loader is executed
+   rather than stat'ed because NixOS ships a stub at that path that only
+   prints an error. `--static` and `--dynamic` still override. FreeBSD
+   keeps the static binary.
 3. The glibc floor stays at 2.31 via the Debian bullseye build image and
    `script/check_glibc.sh`. The floor in the install script must match.
 4. Mostly static, `-H:+StaticExecutableWithDynamicLibC`, is the
@@ -78,5 +81,14 @@ Other factors:
   the install script floor can move down if it stays low.
 - zlib 1.3.2 is the latest release. Moving past 1.2.13 means diverging from
   the GraalVM musl toolchain. Revisit when the toolchain updates.
-- setup-babashka and other installers may bypass the install script. Check
-  before announcing the new default.
+- setup-babashka (turtlequeue) runs the install script fetched from master,
+  so its users switch at merge time, before a release ships the mostly
+  static artifact. Safe: the old dynamic artifacts run on glibc 2.17+ and
+  system zlib is present wherever dpkg or rpm is.
+- setup-clojure (DeLaGuardo) hardcodes the musl static artifact name on
+  linux. Upstream PR prepared on fork borkdude/setup-clojure, branch
+  bb-dynamic-linux.
+- Nix users get bb via nixpkgs, which invokes native-image directly, so
+  compile script defaults do not affect that packaging. For FFI on NixOS,
+  declaring libraries via LD_LIBRARY_PATH in a devshell works, no bb
+  changes needed.
