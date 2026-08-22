@@ -3,7 +3,7 @@ name: freebsd
 on:
   workflow_dispatch:
   push:
-    branches: [ffi-lib64]
+    branches: [master]
     paths:
       - install
       - src/babashka/ffi.clj
