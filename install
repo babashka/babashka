@@ -48,8 +48,9 @@ default_linux_static() {
         echo "true"
         return
     fi
-    # the dynamic binary hardcodes this interpreter, absent on e.g. NixOS
-    if [[ ! -e /lib64/ld-linux-x86-64.so.2 ]]; then
+    # the dynamic binary hardcodes this interpreter, absent on some systems
+    # and a stub that only prints an error on NixOS, so execute it
+    if ! /lib64/ld-linux-x86-64.so.2 --verify /bin/sh >/dev/null 2>&1; then
         echo "true"
         return
     fi
