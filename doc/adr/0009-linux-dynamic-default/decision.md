@@ -34,8 +34,10 @@ Other factors:
    detected via `/lib/ld-musl-*`, on glibc older than 2.31, and when
    `/lib64/ld-linux-x86-64.so.2 --verify` fails. The loader is executed
    rather than stat'ed because NixOS ships a stub at that path that only
-   prints an error. `--static` and `--dynamic` still override. FreeBSD
-   keeps the static binary.
+   prints an error. `--static` and `--dynamic` still override. On FreeBSD
+   the same probe runs against `/compat/linux`, with the glibc version
+   asked from the linux loader itself, so a Linuxulator with a recent
+   linux_base gets the dynamic binary and FFI.
 3. The glibc floor stays at 2.31 via the Debian bullseye build image and
    `script/check_glibc.sh`. The floor in the install script must match.
 4. Mostly static, `-H:+StaticExecutableWithDynamicLibC`, is the

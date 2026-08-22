@@ -29,7 +29,11 @@ jobs:
             pkg install -y linux_base-rl9
           run: |
             set -ex
-            bash install --dev-build --dynamic --dir .
+            # no --dynamic: the script must detect the Linuxulator and pick
+            # the dynamic binary by itself
+            bash install --dev-build --dir . 2>&1 | tee install.log
+            grep -q 'linux-amd64.tar.gz' install.log
+            if grep -q 'static' install.log; then exit 1; fi
             ./bb --version
             ./bb -e '(+ 1 2 3)'
             # the linux base ships zlib in /compat/linux/usr/lib64; the
