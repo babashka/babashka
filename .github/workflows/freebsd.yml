@@ -22,9 +22,11 @@ jobs:
           release: "14.3"
           usesh: true
           prepare: |
-            pkg install -y bash curl linux_base-rl9
+            pkg install -y bash curl
             sysrc linux_enable=YES
             service linux start
+            kldstat
+            pkg install -y linux_base-rl9
           run: |
             set -ex
             bash install --dev-build --dynamic --dir .
