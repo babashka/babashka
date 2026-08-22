@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+
+# Post-build check that a linux binary links the intended glibc and zlib.
+# Keep versions in sync with script/setup-zlib, script/setup-musl and
+# script/check_glibc.sh.
+
+set -euo pipefail
+
+bin="${1:-bb}"
+zlib_version="1.2.13"
+max_glibc_version="2.31"
+
+fail() {
+    echo "verify_link: $1" >&2
+    exit 1
+}
+
+echo "zlib banners in $bin:"
+grep -ao "inflate [0-9.]* Copyright" "$bin" | sort -u || true
+
+if [ "${BABASHKA_DYNAMIC:-}" != "true" ]; then
+    if ! grep -qa "inflate $zlib_version Copyright" "$bin"; then
+        fail "zlib $zlib_version not linked"
+    fi
+    if readelf -d "$bin" 2>/dev/null | grep -q 'NEEDED.*libz'; then
+        fail "libz linked dynamically"
+    fi
+fi
+
+if [ "${BABASHKA_MUSL:-}" = "true" ]; then
+    if readelf -d "$bin" 2>/dev/null | grep -q NEEDED; then
+        fail "musl static binary has dynamic dependencies"
+    fi
+    echo "verify_link: fully static, zlib $zlib_version: OK"
+    exit 0
+fi
+
+echo "dynamic dependencies:"
+readelf -d "$bin" | grep NEEDED || true
+
+if [ "${BABASHKA_DYNAMIC:-}" != "true" ]; then
+    allowed='libc\.so|libm\.so|libpthread\.so|libdl\.so|librt\.so'
+    if readelf -d "$bin" | grep NEEDED | grep -Ev "$allowed" | grep -q .; then
+        fail "unexpected dynamic dependency"
+    fi
+fi
+
+max_found=$(objdump -T "$bin" | grep -o 'GLIBC_[0-9]*\.[0-9]*\(\.[0-9]*\)*' | sed 's/GLIBC_//' | sort -uV | tail -1)
+echo "max glibc symbol version: ${max_found:-none}"
+if ! printf '%s\n%s' "$max_found" "$max_glibc_version" | sort -C -V; then
+    fail "glibc symbol version $max_found exceeds $max_glibc_version"
+fi
+echo "verify_link: OK"

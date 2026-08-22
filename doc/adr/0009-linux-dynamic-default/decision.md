@@ -35,13 +35,19 @@ Other factors:
    and `--dynamic` still override. FreeBSD keeps the static binary.
 3. The glibc floor stays at 2.31 via the Debian bullseye build image and
    `script/check_glibc.sh`. The floor in the install script must match.
-4. The dynamic amd64 build switches to `-H:+StaticExecutableWithDynamicLibC`
-   via `BABASHKA_MOSTLY_STATIC=true`, matching aarch64, so only glibc remains
-   a runtime dependency.
+4. Mostly static, `-H:+StaticExecutableWithDynamicLibC`, is the
+   `script/compile` default on Linux, so only glibc remains a runtime
+   dependency and local builds match the shipped artifacts.
+   `BABASHKA_DYNAMIC=true` opts out. `BABASHKA_STATIC=true` with
+   `BABASHKA_MUSL=true` builds the fully static binary. `BABASHKA_STATIC`
+   alone behaves like the default.
 5. Builds that link zlib statically use a pinned zlib built by
    `script/setup-zlib` instead of the distro `libz.a`. The version matches
    the zlib bundled in the GraalVM musl toolchain used by setup-graalvm,
    currently 1.2.13, the same version `script/setup-musl` pins.
+6. `script/verify_link` runs after each Linux CI build and fails the job
+   when the binary links an unexpected shared library, misses the pinned
+   zlib or uses glibc symbols newer than the floor.
 
 ## Consequences
 
@@ -67,6 +73,9 @@ Other factors:
 
 ## Notes
 
+- The released 1.13.219 dynamic binary uses glibc symbols up to 2.17, well
+  under the 2.31 floor. `script/verify_link` prints the value per build, so
+  the install script floor can move down if it stays low.
 - zlib 1.3.2 is the latest release. Moving past 1.2.13 means diverging from
   the GraalVM musl toolchain. Revisit when the toolchain updates.
 - setup-babashka and other installers may bypass the install script. Check

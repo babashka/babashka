@@ -124,7 +124,7 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                     :key   "v1-dependencies-{{ checksum \"project.clj\" }}-{{ checksum \"deps.edn\" }}"}}]))))
 
 (defn unix
-  [shorted? static? musl? mostly-static? arch executor-conf resource-class graalvm-home platform graalvm-version]
+  [shorted? static? musl? arch executor-conf resource-class graalvm-home platform graalvm-version]
   (let [env              {:LEIN_ROOT         "true"
                           :GRAALVM_VERSION   graalvm-version
                           :GRAALVM_HOME      graalvm-home
@@ -142,9 +142,6 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                            env)
         env              (if musl?
                            (assoc env :BABASHKA_MUSL "true")
-                           env)
-        env              (if mostly-static?
-                           (assoc env :BABASHKA_MOSTLY_STATIC "true")
                            env)
         env              (if (= "mac" platform)
                            (assoc env :MACOSX_DEPLOYMENT_TARGET 10.13)
@@ -178,18 +175,17 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                             (run "Install Leiningen" "script/install-leiningen"))
                                           (when (not= "mac" platform)
                                             (run "Install native dev tools"
-                                              (cond
-                                                (and static? musl? (not= "aarch64" arch))
+                                              (if (and static? musl? (not= "aarch64" arch))
                                                 (str base-install-cmd "\nsudo -E script/setup-musl")
-                                                ;; these builds link zlib statically
-                                                (or mostly-static? (and static? (not musl?)))
-                                                (str base-install-cmd "\nsudo -E script/setup-zlib")
-                                                :else base-install-cmd)))
+                                                ;; non-musl linux builds link zlib statically
+                                                (str base-install-cmd "\nsudo -E script/setup-zlib"))))
                                           (run "Download GraalVM" "script/install-graalvm")
                                           #_(run "Download iprof" "curl -sLO 'https://github.com/babashka/pgo-profiles/releases/download/2023.10.11/default.iprof'")
                                           (run "Build binary" (if (= "aarch64" arch)
                                                                 "script/uberjar\nscript/compile -H:PageSize=64K # --pgo=default.iprof"
                                                                 "script/uberjar\nscript/compile # --pgo=default.iprof") "30m")
+                                          (when (not= "mac" platform)
+                                            (run "Verify linking" "script/verify_link"))
                                           (run "Release" ".circleci/script/release")
                                           {:persist_to_workspace {:root  "/tmp"
                                                                   :paths ["release"]}}
@@ -223,12 +219,12 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
           "docker run --privileged --rm tonistiigi/binfmt --install all\ndocker buildx create --name ci-builder --use"}}]}}
      :jobs      (ordered-map
                  :jvm (jvm shorted? linux-graalvm-home)
-                 :linux (unix shorted? false false true "amd64" docker-executor-conf "large" linux-graalvm-home "linux" graalvm-version)
+                 :linux (unix shorted? false false "amd64" docker-executor-conf "large" linux-graalvm-home "linux" graalvm-version)
                  :linux-static
-                 (unix shorted? true true false "amd64" docker-executor-conf "large" linux-graalvm-home "linux" graalvm-version)
+                 (unix shorted? true true "amd64" docker-executor-conf "large" linux-graalvm-home "linux" graalvm-version)
                  :linux-aarch64-static
-                 (unix shorted? true false false "aarch64" machine-executor-conf "arm.large" linux-graalvm-home "linux" graalvm-version)
-                 :mac (unix shorted? false false false "amd64" mac-executor-conf "m4pro.large" mac-graalvm-home "mac" macos-amd64-graalvm-version)
+                 (unix shorted? true false "aarch64" machine-executor-conf "arm.large" linux-graalvm-home "linux" graalvm-version)
+                 :mac (unix shorted? false false "amd64" mac-executor-conf "m4pro.large" mac-graalvm-home "mac" macos-amd64-graalvm-version)
                  :deploy (deploy shorted?)
                  :docker (docker shorted?))
      :workflows (ordered-map
