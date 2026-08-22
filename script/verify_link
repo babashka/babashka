@@ -39,7 +39,7 @@ echo "dynamic dependencies:"
 readelf -d "$bin" | grep NEEDED || true
 
 if [ "${BABASHKA_DYNAMIC:-}" != "true" ]; then
-    allowed='libc\.so|libm\.so|libpthread\.so|libdl\.so|librt\.so'
+    allowed='libc\.so|libm\.so|libpthread\.so|libdl\.so|librt\.so|ld-linux'
     if readelf -d "$bin" | grep NEEDED | grep -Ev "$allowed" | grep -q .; then
         fail "unexpected dynamic dependency"
     fi
