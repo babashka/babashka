@@ -50,18 +50,18 @@ args=("-jar" "$BABASHKA_JAR"
 
 BABASHKA_STATIC=${BABASHKA_STATIC:-}
 BABASHKA_MUSL=${BABASHKA_MUSL:-}
+BABASHKA_DYNAMIC=${BABASHKA_DYNAMIC:-}
 
-if [ "$BABASHKA_STATIC" = "true" ]; then
-    if [ "$BABASHKA_MUSL" = "true" ]; then
-        args+=("--static")
-        args+=("--libc=musl"
-               # see https://github.com/oracle/graal/issues/3398
-               "-H:CCompilerOption=-Wl,-z,stack-size=2097152")
-    else
-        # see https://github.com/oracle/graal/issues/3737
-        args+=("-H:+UnlockExperimentalVMOptions")
-        args+=("-H:+StaticExecutableWithDynamicLibC")
-    fi
+if [ "$BABASHKA_STATIC" = "true" ] && [ "$BABASHKA_MUSL" = "true" ]; then
+    args+=("--static")
+    args+=("--libc=musl"
+           # see https://github.com/oracle/graal/issues/3398
+           "-H:CCompilerOption=-Wl,-z,stack-size=2097152")
+elif [ "$(uname -s)" = "Linux" ] && [ "$BABASHKA_DYNAMIC" != "true" ]; then
+    # mostly static: everything linked statically except glibc
+    # see https://github.com/oracle/graal/issues/3737
+    args+=("-H:+UnlockExperimentalVMOptions")
+    args+=("-H:+StaticExecutableWithDynamicLibC")
 fi
 
 BABASHKA_FEATURE_HSQLDB=${BABASHKA_FEATURE_HSQLDB:-}

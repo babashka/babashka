@@ -177,12 +177,15 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                             (run "Install native dev tools"
                                               (if (and static? musl? (not= "aarch64" arch))
                                                 (str base-install-cmd "\nsudo -E script/setup-musl")
-                                                base-install-cmd)))
+                                                ;; non-musl linux builds link zlib statically
+                                                (str base-install-cmd "\nsudo -E script/setup-zlib"))))
                                           (run "Download GraalVM" "script/install-graalvm")
                                           #_(run "Download iprof" "curl -sLO 'https://github.com/babashka/pgo-profiles/releases/download/2023.10.11/default.iprof'")
                                           (run "Build binary" (if (= "aarch64" arch)
                                                                 "script/uberjar\nscript/compile -H:PageSize=64K # --pgo=default.iprof"
                                                                 "script/uberjar\nscript/compile # --pgo=default.iprof") "30m")
+                                          (when (not= "mac" platform)
+                                            (run "Verify linking" "script/verify_link"))
                                           (run "Release" ".circleci/script/release")
                                           {:persist_to_workspace {:root  "/tmp"
                                                                   :paths ["release"]}}

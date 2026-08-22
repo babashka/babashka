@@ -291,7 +291,9 @@ use the `--download-dir` argument:
 $ ./install --dir . --version 0.4.1 --download-dir .
 ```
 
-On Linux, if you want to install the static binary version:
+On Linux the script installs the dynamic binary when the system glibc is 2.31
+or newer. On musl systems like Alpine and on older glibc versions it falls
+back to the static binary. Use `--static` or `--dynamic` to override:
 
 ``` shell
 $ ./install --dir . --version 0.4.1 --download-dir . --static
