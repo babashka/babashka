@@ -217,7 +217,10 @@
      (let [multiarch (if (= "aarch64" (System/getProperty "os.arch"))
                       "aarch64-linux-gnu"
                       "x86_64-linux-gnu")]
-      ["/usr/local/lib" "/usr/lib"
+      ["/usr/local/lib"
+       ;; RHEL family and the FreeBSD linux compat layer keep libraries here
+       "/usr/lib64"
+       "/usr/lib"
        (str "/usr/lib/" multiarch)
        "/lib"
        ;; unmerged-/usr systems keep runtime libraries here
