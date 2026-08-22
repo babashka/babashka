@@ -222,6 +222,8 @@
        "/usr/lib64"
        "/usr/lib"
        (str "/usr/lib/" multiarch)
+       ;; unmerged-/usr RHEL family and the FreeBSD linux compat layer
+       "/lib64"
        "/lib"
        ;; unmerged-/usr systems keep runtime libraries here
        (str "/lib/" multiarch)]))))

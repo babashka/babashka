@@ -75,15 +75,24 @@ macOS:
 
 Linux:
 
+- the directories in `LD_LIBRARY_PATH`
 - `/usr/local/lib`
+- `/usr/lib64`
 - `/usr/lib`
 - `/usr/lib/x86_64-linux-gnu` or `/usr/lib/aarch64-linux-gnu`, matching the
   current architecture
+- `/lib64`
 - `/lib`
 - `/lib/x86_64-linux-gnu` or `/lib/aarch64-linux-gnu`, for systems where
   `/lib` is not merged into `/usr/lib`
 
 Windows doesn't have additional search directories.
+
+On FreeBSD, babashka runs as a Linux binary through the
+[Linuxulator](https://docs.freebsd.org/en/books/handbook/linuxemu/). The
+Linuxulator translates `/usr/lib64` and `/lib64` to
+`/compat/linux/usr/lib64` and `/compat/linux/lib64`, so libraries installed
+there are found through the paths above.
 
 Both functions return a library map. The `:path` value contains the loaded
 candidate:
