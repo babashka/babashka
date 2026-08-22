@@ -1,4 +1,4 @@
-name: freebsd
+name: freebsd install script, dynamic binary and FFI
 
 on:
   workflow_dispatch:
