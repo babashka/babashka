@@ -18,17 +18,19 @@ fail() {
 echo "zlib banners in $bin:"
 grep -ao "inflate [0-9.]* Copyright" "$bin" | sort -u || true
 
+needed=$(readelf -d "$bin" 2>/dev/null | grep NEEDED || true)
+
 if [ "${BABASHKA_DYNAMIC:-}" != "true" ]; then
     if ! grep -qa "inflate $zlib_version Copyright" "$bin"; then
         fail "zlib $zlib_version not linked"
     fi
-    if readelf -d "$bin" 2>/dev/null | grep -q 'NEEDED.*libz'; then
-        fail "libz linked dynamically"
-    fi
+    case "$needed" in
+        *libz*) fail "libz linked dynamically";;
+    esac
 fi
 
 if [ "${BABASHKA_MUSL:-}" = "true" ]; then
-    if readelf -d "$bin" 2>/dev/null | grep -q NEEDED; then
+    if [ -n "$needed" ]; then
         fail "musl static binary has dynamic dependencies"
     fi
     echo "verify_link: fully static, zlib $zlib_version: OK"
@@ -36,11 +38,11 @@ if [ "${BABASHKA_MUSL:-}" = "true" ]; then
 fi
 
 echo "dynamic dependencies:"
-readelf -d "$bin" | grep NEEDED || true
+echo "$needed"
 
 if [ "${BABASHKA_DYNAMIC:-}" != "true" ]; then
     allowed='libc\.so|libm\.so|libpthread\.so|libdl\.so|librt\.so|ld-linux'
-    if readelf -d "$bin" | grep NEEDED | grep -Ev "$allowed" | grep -q .; then
+    if echo "$needed" | grep -v '^$' | grep -Ev "$allowed" | grep -q .; then
         fail "unexpected dynamic dependency"
     fi
 fi
