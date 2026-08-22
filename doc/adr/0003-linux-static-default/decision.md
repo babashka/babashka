@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Superseded by [ADR 0009](../0009-linux-dynamic-default/decision.md)
 
 ## Context
 
