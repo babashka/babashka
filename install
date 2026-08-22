@@ -34,6 +34,36 @@ has() {
   command -v "$1" >/dev/null 2>&1
 }
 
+# glibc floor of the dynamic linux build, see script/check_glibc.sh
+min_glibc_version="2.31"
+
+# Pick the static binary when the dynamic one cannot run: musl libcs,
+# glibc older than the build floor, FreeBSD's Linux emulation.
+default_linux_static() {
+    if [[ "$(uname -s)" != Linux* ]]; then
+        echo "true"
+        return
+    fi
+    if compgen -G "/lib/ld-musl-*" >/dev/null 2>&1; then
+        echo "true"
+        return
+    fi
+    local glibc_version
+    glibc_version="$(getconf GNU_LIBC_VERSION 2>/dev/null | awk '{print $2}')"
+    if [[ -z "$glibc_version" ]]; then
+        glibc_version="$(ldd --version 2>/dev/null | head -1 | awk '{print $NF}')"
+    fi
+    if [[ -z "$glibc_version" ]]; then
+        echo "true"
+        return
+    fi
+    if printf '%s\n%s' "$min_glibc_version" "$glibc_version" | sort -C -V 2>/dev/null; then
+        echo "false"
+    else
+        echo "true"
+    fi
+}
+
 fetch() {
     local url=$1
     local outfile=${2:-}
@@ -147,9 +177,12 @@ case "$(uname -m)" in
            fi
            ;;
     *) arch=amd64
-       # static image by default on linux; --dynamic overrides
+       # dynamic image by default on linux, static fallback for musl and old glibc
        if [[ "$platform" == "linux" ]] && [[ -z "$static_binary_override" ]]; then
-           static_binary="true"
+           static_binary="$(default_linux_static)"
+           if [[ "$static_binary" == "true" ]]; then
+               echo "No compatible glibc found, using the static binary"
+           fi
        fi
        ;;
 esac

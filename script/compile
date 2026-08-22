@@ -50,6 +50,7 @@ args=("-jar" "$BABASHKA_JAR"
 
 BABASHKA_STATIC=${BABASHKA_STATIC:-}
 BABASHKA_MUSL=${BABASHKA_MUSL:-}
+BABASHKA_MOSTLY_STATIC=${BABASHKA_MOSTLY_STATIC:-}
 
 if [ "$BABASHKA_STATIC" = "true" ]; then
     if [ "$BABASHKA_MUSL" = "true" ]; then
@@ -62,6 +63,10 @@ if [ "$BABASHKA_STATIC" = "true" ]; then
         args+=("-H:+UnlockExperimentalVMOptions")
         args+=("-H:+StaticExecutableWithDynamicLibC")
     fi
+elif [ "$BABASHKA_MOSTLY_STATIC" = "true" ]; then
+    # see https://github.com/oracle/graal/issues/3737
+    args+=("-H:+UnlockExperimentalVMOptions")
+    args+=("-H:+StaticExecutableWithDynamicLibC")
 fi
 
 BABASHKA_FEATURE_HSQLDB=${BABASHKA_FEATURE_HSQLDB:-}

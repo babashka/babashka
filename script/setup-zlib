@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+# Builds a pinned static zlib for builds that link zlib into the binary
+# via -H:+StaticExecutableWithDynamicLibC. Keep the version in sync with
+# script/setup-musl and the GraalVM musl toolchain (currently 1.2.13).
+
+set -euo pipefail
+
+ZLIB_VERSION="1.2.13"
+ZLIB_SHA256="b3a24de97a8fdbc835b9833169501030b8977031bcb54b3b3ac13740f846ab30"
+
+# stable archive path
+curl -O -sL --fail --show-error "https://zlib.net/fossils/zlib-${ZLIB_VERSION}.tar.gz"
+
+echo "${ZLIB_SHA256} zlib-${ZLIB_VERSION}.tar.gz" | sha256sum --check
+tar xf "zlib-${ZLIB_VERSION}.tar.gz"
+
+cd "zlib-${ZLIB_VERSION}"
+./configure --static --prefix="/usr/local"
+make
+make install
+cd ..
+
+# Shadow the distro libz.a so the linker picks the pinned one
+multiarch=$(gcc -print-multiarch)
+install -Dm644 "/usr/local/lib/libz.a" "/usr/lib/$multiarch/libz.a"
