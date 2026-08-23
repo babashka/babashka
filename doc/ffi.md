@@ -103,7 +103,7 @@ candidate:
 ;;=> "libz.dylib"
 ```
 
-Pass this map to `cfn` to search only that library:
+Pass this map to `cfn` to limit the search to that library:
 
 ```clojure
 (def zlib-version (ffi/cfn zlib "zlibVersion" [] :string))
