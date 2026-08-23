@@ -138,6 +138,25 @@
                         (let [res# [(ffi/read p# :string) (ffi/ptr->string 0)]]
                           (ffi/free p#)
                           res#)))))))
+    (testing "bulk byte copies round trip at an offset"
+      (is (= [[1 2 3 4] [0 0]]
+             (bb `(do ~ffi-require
+                      (let [p# (ffi/alloc 16)]
+                        (ffi/write-bytes p# (byte-array [1 2 3 4]) 2)
+                        (let [res# [(vec (ffi/read-bytes p# 4 2))
+                                    (vec (ffi/read-bytes p# 2))]]
+                          (ffi/free p#)
+                          res#)))))))
+    (testing "byte-buffer views native memory without copying"
+      (is (= [7 42]
+             (bb `(do ~ffi-require
+                      (let [p# (ffi/alloc 8)
+                            bb# (ffi/byte-buffer p# 8)]
+                        (.put bb# 0 (byte 7))
+                        (ffi/write p# :int8 1 42)
+                        (let [res# [(ffi/read p# :int8) (long (.get bb# 1))]]
+                          (ffi/free p#)
+                          res#)))))))
     (testing "string round trip through foreign memory"
       (is (= "abc" (bb `(do ~ffi-require
                             (let [p (ffi/string->ptr "abc")

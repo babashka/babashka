@@ -307,6 +307,24 @@ Use `alloc` to allocate zeroed memory. Always release this memory with
 `read` supports each listed type except `:void`. `write` also excludes
 `:string`. Write a string address as `:pointer`.
 
+Use `read-bytes` and `write-bytes` to copy whole byte arrays between
+native memory and the JVM. Both take an optional byte offset:
+
+```clojure
+(ffi/write-bytes p (byte-array [1 2 3 4]))
+(ffi/read-bytes p 4)
+;;=> byte array [1 2 3 4]
+```
+
+Use `byte-buffer` for a zero-copy `java.nio.ByteBuffer` view over native
+memory, for example to read a file straight into it with a FileChannel:
+
+```clojure
+(ffi/byte-buffer p 4096)
+```
+
+The view is only valid while the memory is.
+
 Use `sizeof` to get the size of a type:
 
 ```clojure
