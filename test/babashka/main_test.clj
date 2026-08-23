@@ -782,6 +782,41 @@
 (deftest byte-buffer-test
   (testing "interop with HeapByteBuffer"
     (is (= 42 (bb nil "(count (.array (java.nio.ByteBuffer/allocate 42)))"))))
+  (testing "FloatBuffer bulk get from asFloatBuffer (#2040)"
+    (is (= [1.5 2.5]
+           (bb nil "
+(import '[java.nio ByteBuffer ByteOrder])
+(let [bb (doto (ByteBuffer/allocate 8)
+           (.order ByteOrder/BIG_ENDIAN)
+           (.putFloat (float 1.5))
+           (.putFloat (float 2.5))
+           .flip)
+      dest (float-array 2)]
+  (.get (.asFloatBuffer bb) dest)
+  (mapv float dest))"))))
+  (testing "IntBuffer bulk get from asIntBuffer (#2040)"
+    (is (= [10 20]
+           (bb nil "
+(import '[java.nio ByteBuffer ByteOrder])
+(let [bb (doto (ByteBuffer/allocate 8)
+           (.order ByteOrder/BIG_ENDIAN)
+           (.putInt 10)
+           (.putInt 20)
+           .flip)
+      dest (int-array 2)]
+  (.get (.asIntBuffer bb) dest)
+  (vec dest))"))))
+  (testing "FloatBuffer.allocate heap path (#2040)"
+    (is (= [3.0 4.0]
+           (bb nil "
+(import '[java.nio FloatBuffer])
+(let [buf (doto (FloatBuffer/allocate 2)
+            (.put (float 3.0))
+            (.put (float 4.0))
+            .flip)
+      dest (float-array 2)]
+  (.get buf dest)
+  (mapv float dest))"))))
   (testing "interop with HeapByteByfferR"
     (is (bb nil "(.hasRemaining (.asReadOnlyBuffer (java.nio.ByteBuffer/allocate 42)))")))
   (is (bb nil "

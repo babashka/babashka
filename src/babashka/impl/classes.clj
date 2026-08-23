@@ -461,9 +461,14 @@
               '[java.nio.ByteBuffer
                 java.nio.ByteOrder
                 java.nio.CharBuffer
+                java.nio.DoubleBuffer
                 java.nio.DirectByteBuffer
                 java.nio.DirectByteBufferR
+                java.nio.FloatBuffer
+                java.nio.IntBuffer
+                java.nio.LongBuffer
                 java.nio.MappedByteBuffer
+                java.nio.ShortBuffer
                 java.nio.file.OpenOption
                 java.nio.file.StandardOpenOption
                 java.nio.channels.ByteChannel
@@ -687,6 +692,9 @@
           sun.misc.SignalHandler
           ~(symbol "[B")
           ~(symbol "[I")
+          ~(symbol "[F")
+          ~(symbol "[J")
+          ~(symbol "[D")
           ~(symbol "[Ljava.lang.Object;")
           ~(symbol "[Ljava.lang.Double;")
           ~@(when features/datascript?
@@ -936,6 +944,16 @@
                                    java.nio.charset.CharsetDecoder
                                    (instance? java.nio.CharBuffer v)
                                    java.nio.CharBuffer
+                                   (instance? java.nio.IntBuffer v)
+                                   java.nio.IntBuffer
+                                   (instance? java.nio.FloatBuffer v)
+                                   java.nio.FloatBuffer
+                                   (instance? java.nio.LongBuffer v)
+                                   java.nio.LongBuffer
+                                   (instance? java.nio.DoubleBuffer v)
+                                   java.nio.DoubleBuffer
+                                   (instance? java.nio.ShortBuffer v)
+                                   java.nio.ShortBuffer
                                    (instance? java.nio.channels.FileChannel v)
                                    java.nio.channels.FileChannel
                                    (instance? java.nio.channels.Selector v)

@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- [#2040](https://github.com/babashka/babashka/issues/2040): add typed NIO buffers (`IntBuffer`, `FloatBuffer`, `LongBuffer`, `DoubleBuffer`, `ShortBuffer`) and primitive arrays `[F]`, `[J]`, `[D]` so SCI can call bulk `Buffer.get(primitive[])`
 - Add experimental [`babashka.ffi`](doc/ffi.md) for calling functions in native shared libraries
 - On Linux, the install script now installs the dynamic binary by default. It installs the static binary on musl systems and on systems with glibc older than 2.17. The `--static` and `--dynamic` options override the automatic selection
 - The dynamic binary for Linux amd64 links every library statically except glibc. It no longer needs `libz.so.1` at run time
