@@ -28,7 +28,7 @@ echo "$banners"
 
 needed=$(readelf -d "$bin" 2>/dev/null | grep NEEDED || true)
 
-if [ "${BABASHKA_DYNAMIC:-}" != "true" ]; then
+if [ "${BABASHKA_FULLY_DYNAMIC:-}" != "true" ]; then
     # exactly the pinned zlib and nothing else: a second banner means some
     # dependency bundled its own copy
     if [ "$banners" != "inflate $zlib_version Copyright" ]; then
@@ -50,7 +50,7 @@ fi
 echo "dynamic dependencies:"
 echo "$needed"
 
-if [ "${BABASHKA_DYNAMIC:-}" != "true" ]; then
+if [ "${BABASHKA_FULLY_DYNAMIC:-}" != "true" ]; then
     allowed='libc\.so|libm\.so|libpthread\.so|libdl\.so|librt\.so|ld-linux'
     if echo "$needed" | grep -v '^$' | grep -Ev "$allowed" | grep -q .; then
         fail "unexpected dynamic dependency"

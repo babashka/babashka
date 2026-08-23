@@ -55,7 +55,7 @@ Other factors:
 4. Mostly static, `-H:+StaticExecutableWithDynamicLibC`, is the
    `script/compile` default on Linux, so only glibc remains a runtime
    dependency and local builds match the shipped artifacts.
-   `BABASHKA_DYNAMIC=true` opts out. `BABASHKA_STATIC=true` with
+   `BABASHKA_FULLY_DYNAMIC=true` opts out. `BABASHKA_STATIC=true` with
    `BABASHKA_MUSL=true` builds the fully static binary. `BABASHKA_STATIC`
    alone behaves like the default.
 5. Builds that link zlib statically use a pinned zlib built by
@@ -65,6 +65,25 @@ Other factors:
 6. `script/verify_link` runs after each Linux CI build and fails the job
    when the binary links an unexpected shared library, misses the pinned
    zlib or uses glibc symbols newer than the floor.
+
+## Terminology
+
+The word dynamic means one thing in the build and another in the install
+script, because they name different axes. The build picks how libraries
+are linked. The install script picks a published artifact.
+
+| Link mode | Build | Linux artifact | Install flag |
+|---|---|---|---|
+| fully dynamic | `BABASHKA_FULLY_DYNAMIC=true` | not published | none |
+| mostly static | the default on Linux | `linux-amd64`, `linux-aarch64-static` | `--dynamic` |
+| fully static, musl | `BABASHKA_STATIC=true` and `BABASHKA_MUSL=true` | `linux-amd64-static` | `--static` |
+
+Two names in that table are historical. `--dynamic` gives a mostly static
+binary, because the artifact it names has no suffix. The aarch64 artifact
+carries a `-static` suffix although it is mostly static, because it was
+named before the amd64 build moved to the same link mode. Both names stay
+for compatibility: the install script accepts a `--version` of an older
+release, so a rename breaks every earlier version.
 
 ## Consequences
 
