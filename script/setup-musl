@@ -17,9 +17,11 @@ if [[ "${BABASHKA_ARCH:-"x86_64"}" != "x86_64" ]]; then
     exit 1
 fi
 
-# Build musl from source instead of taking the distro's musl-tools: bullseye
-# ships musl 1.2.2 (2021, affected by the iconv CVE fixed in 1.2.6) and the
-# distro version silently changes with the build image
+# Build musl from source instead of taking the distro's musl-tools, which
+# pins bullseye's musl 1.2.2 from 2021 and changes with the build image.
+# The version follows the musl toolchain that the setup-graalvm GitHub
+# action installs, currently 1.2.5, except that this pin does not move back
+# past a fixed advisory: 1.2.5 is covered by one that 1.2.6 fixes.
 MUSL_VERSION="1.2.6"
 MUSL_SHA256="d585fd3b613c66151fc3249e8ed44f77020cb5e6c1e635a616d3f9f82460512a"
 
