@@ -10,6 +10,10 @@ A preview of the next release can be installed from
 ## Unreleased
 
 - Add experimental [`babashka.ffi`](doc/ffi.md) for calling functions in native shared libraries
+- On Linux, the install script now installs the dynamic binary by default. It installs the static binary on musl systems and on systems with glibc older than 2.17. The `--static` and `--dynamic` options override the automatic selection
+- The dynamic binary for Linux amd64 links every library statically except glibc. It no longer needs `libz.so.1` at run time
+- On FreeBSD, the install script installs the dynamic binary when the Linuxulator has a linux_base with glibc 2.17 or newer, such as `linux_base-rl9`
+- The Linux binaries include zlib 1.2.13. The static binary uses musl 1.2.6. Both are pinned and built from source
 - Tasks: a task's `:cli` `:exec-args` add to the runner-level ones, its keys winning. Before, the task's map replaced the runner-level map
 - [#1321](https://github.com/babashka/babashka/issues/1321): support implementing the `clojure.core/Inst` protocol on records, types and reify, and with `extend-protocol` and `extend-type`
 - Fix output of custom `clojure.pprint` dispatch functions
