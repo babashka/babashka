@@ -34,8 +34,9 @@ has() {
   command -v "$1" >/dev/null 2>&1
 }
 
-# glibc floor of the dynamic linux build, see script/check_glibc.sh
-min_glibc_version="2.31"
+# glibc floor of the dynamic linux build; mirrors script/glibc_floor.sh,
+# script/verify_link checks the two stay equal
+min_glibc_version="2.17"
 
 # Pick the static binary when the dynamic one cannot run: musl libcs,
 # glibc older than the build floor, FreeBSD without a recent Linuxulator.

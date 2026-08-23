@@ -162,8 +162,6 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                :steps (gen-steps shorted?
                                  (filter some?
                                          [:checkout
-                                          (when (contains? #{"linux" "linux-aarch64"} platform)
-                                            (run "Check max glibc version" "script/check_glibc.sh"))
                                           {:attach_workspace {:at "/tmp"}}
                                           (run "Pull Submodules" "git submodule init\ngit submodule update")
                                           {:restore_cache
@@ -179,6 +177,9 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                                 (str base-install-cmd "\nsudo -E script/setup-musl")
                                                 ;; non-musl linux builds link zlib statically
                                                 (str base-install-cmd "\nsudo -E script/setup-zlib"))))
+                                          ;; after dev tools: the probe needs cc
+                                          (when (not= "mac" platform)
+                                            (run "Check glibc floor" "script/check_glibc.sh"))
                                           (run "Download GraalVM" "script/install-graalvm")
                                           #_(run "Download iprof" "curl -sLO 'https://github.com/babashka/pgo-profiles/releases/download/2023.10.11/default.iprof'")
                                           (run "Build binary" (if (= "aarch64" arch)
