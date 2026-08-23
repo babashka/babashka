@@ -181,6 +181,23 @@
       (is (thrown? Exception (bb `(do ~ffi-require
                                       (ffi/cfn "printf" [:&] :int))))))))
 
+(deftest address-test
+  (when-not skip?
+    (testing "cfn binds a function pointer"
+      (is (= [42 42]
+             (bb `(do ~ffi-require
+                      (let [addr# (ffi/find-symbol "abs")]
+                        [((ffi/cfn addr# [:int] :int) -42)
+                         ;; the same function through its name
+                         ((ffi/cfn "abs" [:int] :int) -42)]))))))
+    (testing "a callback is callable through its address"
+      (is (= 42
+             (bb `(do ~ffi-require
+                      (let [cb# (ffi/callback (fn [x#] (* x# 3)) [:int] :int)]
+                        ((ffi/cfn cb# [:int] :int) 14)))))))
+    (testing "the null address is rejected at bind time"
+      (is (thrown? Exception (bb `(do ~ffi-require (ffi/cfn 0 [:int] :int))))))))
+
 (deftest callback-test
   (when-not skip?
     (testing "qsort comparator upcall"
