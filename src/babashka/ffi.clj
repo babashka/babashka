@@ -345,10 +345,14 @@
       (throw (ex-info (str "babashka.ffi: symbol not found: " sym) {:symbol sym}))))
 
 (defn find-symbol
-  "Finds sym in the loaded libraries and the default system lookup. Returns
-  its native address as a Clojure long. Returns nil for an unknown symbol."
-  [sym]
-  (some-> (lookup-symbol nil (str sym)) .address))
+  "Finds sym and returns its native address as a Clojure long. Returns nil
+  for an unknown symbol.
+
+  With a library map, find-symbol searches only that library. Without one,
+  it searches all loaded libraries and then the default system lookup."
+  ([sym] (find-symbol nil sym))
+  ([lib sym]
+   (some-> (lookup-symbol lib (str sym)) .address)))
 
 ;; -- foreign functions --------------------------------------------------------
 

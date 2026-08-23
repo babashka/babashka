@@ -265,6 +265,12 @@
            (bb `(do (require '[babashka.ffi :as ~'ffi])
                     [(number? (ffi/find-symbol "strlen"))
                      (ffi/find-symbol "bb_no_such_symbol_zzz")])))))
+  (testing "find-symbol searches only the library it gets"
+    (is (= [true nil]
+           (bb `(do ~ffi-require
+                    (let [lib# (ffi/load-system-library ~(if tu/windows? "msvcrt" "c"))]
+                      [(number? (ffi/find-symbol lib# "strlen"))
+                       (ffi/find-symbol lib# "bb_no_such_symbol_zzz")]))))))
   (testing "missing library throws"
       (is (thrown? Exception (bb `(do ~ffi-require
                                       (ffi/load-library "libdoesnotexist-bb.so"))))))
