@@ -348,8 +348,9 @@
   "Finds sym and returns its native address as a Clojure long. Returns nil
   for an unknown symbol.
 
-  With a library map, find-symbol searches only that library. Without one,
-  it searches all loaded libraries and then the default system lookup."
+  With a library map, find-symbol searches that library and the libraries
+  that it links. Without one, it searches all loaded libraries and then the
+  default system lookup."
   ([sym] (find-symbol nil sym))
   ([lib sym]
    (some-> (lookup-symbol lib (str sym)) .address)))
@@ -447,7 +448,9 @@
   "Creates a Clojure function that calls C function sym. argtypes is a vector
   of type keywords. rettype is a type keyword.
 
-  With a library map, cfn searches only that library. Without one, cfn
+  With a library map, cfn searches that library and the libraries that it
+  links, so a symbol that the library defines resolves to the definition in
+  that library. Without one, cfn
   searches all loaded libraries and then the default system lookup. The first
   call resolves the symbol and creates the call handle. You can create the
   binding before you load its library.
