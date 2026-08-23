@@ -22,14 +22,17 @@ if [ "$install_floor" != "$glibc_floor" ]; then
     fail "install script min_glibc_version $install_floor does not match floor $glibc_floor"
 fi
 
+banners="$(grep -ao "inflate [0-9.]* Copyright" "$bin" | sort -u || true)"
 echo "zlib banners in $bin:"
-grep -ao "inflate [0-9.]* Copyright" "$bin" | sort -u || true
+echo "$banners"
 
 needed=$(readelf -d "$bin" 2>/dev/null | grep NEEDED || true)
 
 if [ "${BABASHKA_DYNAMIC:-}" != "true" ]; then
-    if ! grep -qa "inflate $zlib_version Copyright" "$bin"; then
-        fail "zlib $zlib_version not linked"
+    # exactly the pinned zlib and nothing else: a second banner means some
+    # dependency bundled its own copy
+    if [ "$banners" != "inflate $zlib_version Copyright" ]; then
+        fail "expected exactly zlib $zlib_version, found: ${banners:-none}"
     fi
     case "$needed" in
         *libz*) fail "libz linked dynamically";;

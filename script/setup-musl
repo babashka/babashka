@@ -17,7 +17,30 @@ if [[ "${BABASHKA_ARCH:-"x86_64"}" != "x86_64" ]]; then
     exit 1
 fi
 
-apt-get update -y && apt-get install musl-tools -y
+# Build musl from source instead of taking the distro's musl-tools: bullseye
+# ships musl 1.2.2 (2021, affected by the iconv CVE fixed in 1.2.6) and the
+# distro version silently changes with the build image
+MUSL_VERSION="1.2.6"
+MUSL_SHA256="d585fd3b613c66151fc3249e8ed44f77020cb5e6c1e635a616d3f9f82460512a"
+
+curl -O -sL --fail --show-error "https://musl.libc.org/releases/musl-${MUSL_VERSION}.tar.gz"
+echo "${MUSL_SHA256} musl-${MUSL_VERSION}.tar.gz" | sha256sum --check
+tar xf "musl-${MUSL_VERSION}.tar.gz"
+
+cd "musl-${MUSL_VERSION}"
+./configure --prefix=/usr/local/musl
+make -j"$(nproc)"
+make install
+cd ..
+
+# kernel headers are not part of musl; the distro musl-tools wires them in,
+# a source build needs the classic symlinks. Debian keeps asm under the
+# multiarch dir.
+ln -sfn /usr/include/linux /usr/local/musl/include/linux
+ln -sfn /usr/include/asm-generic /usr/local/musl/include/asm-generic
+ln -sfn "/usr/include/$(gcc -print-multiarch)/asm" /usr/local/musl/include/asm
+
+ln -sf /usr/local/musl/bin/musl-gcc /usr/bin/musl-gcc
 
 ZLIB_VERSION="1.2.13"
 ZLIB_SHA256="b3a24de97a8fdbc835b9833169501030b8977031bcb54b3b3ac13740f846ab30"

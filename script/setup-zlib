@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
 # Builds a pinned static zlib for builds that link zlib into the binary
-# via -H:+StaticExecutableWithDynamicLibC. Keep the version in sync with
-# script/setup-musl and the GraalVM musl toolchain (currently 1.2.13).
+# via -H:+StaticExecutableWithDynamicLibC. The version follows the zlib in
+# the musl toolchain that the setup-graalvm GitHub action installs, so both
+# build paths bundle the same one. Keep it equal to script/setup-musl.
 
 set -euo pipefail
 
