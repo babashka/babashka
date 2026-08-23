@@ -265,12 +265,21 @@
            (bb `(do (require '[babashka.ffi :as ~'ffi])
                     [(number? (ffi/find-symbol "strlen"))
                      (ffi/find-symbol "bb_no_such_symbol_zzz")])))))
-  (testing "find-symbol searches only the library it gets"
-    (is (= [true nil]
-           (bb `(do ~ffi-require
-                    (let [lib# (ffi/load-system-library ~(if tu/windows? "msvcrt" "c"))]
-                      [(number? (ffi/find-symbol lib# "strlen"))
-                       (ffi/find-symbol lib# "bb_no_such_symbol_zzz")]))))))
+  (when-let [lib @test-lib]
+    (testing "a library map limits the search to that library"
+      ;; mix_dj is loaded, so the search without a library map finds it. The
+      ;; test library neither defines zlibVersion nor links zlib, and zlib
+      ;; does not link the test library, so each map excludes the other's
+      ;; symbol. A library map does include the libraries that the library
+      ;; links, so pick symbols that no dependency supplies.
+      (is (= [true true nil nil]
+             (bb `(do ~ffi-require
+                      (let [t# (ffi/load-library ~lib)
+                            z# (ffi/load-system-library "z")]
+                        [(number? (ffi/find-symbol "mix_dj"))
+                         (number? (ffi/find-symbol t# "mix_dj"))
+                         (ffi/find-symbol z# "mix_dj")
+                         (ffi/find-symbol t# "zlibVersion")])))))))
   (testing "missing library throws"
       (is (thrown? Exception (bb `(do ~ffi-require
                                       (ffi/load-library "libdoesnotexist-bb.so"))))))
