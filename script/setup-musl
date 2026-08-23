@@ -56,13 +56,16 @@ tar xf "zlib-${ZLIB_VERSION}.tar.gz"
 arch=${BABASHKA_ARCH:-"x86_64"}
 echo "ARCH: $arch"
 
+# into the musl sysroot: that is the library path musl-gcc.specs adds, so
+# native-image finds -lz there
 cd "zlib-${ZLIB_VERSION}"
-CC=musl-gcc ./configure --static --prefix="/usr/local"
+CC=musl-gcc ./configure --static --prefix="/usr/local/musl"
 make CC=musl-gcc
 make install
 cd ..
 
-# Install libz.a in the correct place so ldd can find it
-install -Dm644 "/usr/local/lib/libz.a" "/usr/lib/$arch-linux-musl/libz.a"
+# the distro musl-tools used to put it here; keep it for anything that
+# still looks in the old location
+install -Dm644 "/usr/local/musl/lib/libz.a" "/usr/lib/$arch-linux-musl/libz.a"
 
 ln -s /usr/bin/musl-gcc /usr/bin/x86_64-linux-musl-gcc
