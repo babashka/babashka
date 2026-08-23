@@ -291,10 +291,10 @@ use the `--download-dir` argument:
 $ ./install --dir . --version 0.4.1 --download-dir .
 ```
 
-On Linux the script installs the dynamic binary when the system glibc is 2.31
+On Linux the script installs the dynamic binary when the system glibc is 2.17
 or newer. On musl systems like Alpine and on older glibc versions it falls
 back to the static binary. On FreeBSD the dynamic binary is picked when the
-Linuxulator is enabled with a linux_base providing glibc 2.31 or newer, such
+Linuxulator is enabled with a linux_base providing glibc 2.17 or newer, such
 as `linux_base-rl9`. Use `--static` or `--dynamic` to override:
 
 ``` shell
