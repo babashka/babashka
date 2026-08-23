@@ -156,6 +156,28 @@ Use `cfn` to create a Clojure function:
 The arguments to `cfn` are the C symbol, argument types, and return type.
 The symbol lookup occurs on the first call.
 
+### Bind an address
+
+`cfn` also accepts the address of a function instead of a name:
+
+```clojure
+(def c-abs (ffi/cfn (ffi/find-symbol "abs") [:int] :int))
+(c-abs -42)
+;;=> 42
+```
+
+Use this for a function that has no name to look up. A loader such as
+`glXGetProcAddress` returns the address of a function, a C function returns
+a function pointer, a struct holds one in a field, and `callback` returns
+the address of a Clojure function. Read a pointer field with `read` and
+`:pointer`, then bind the address that you read.
+
+`cfn` rejects the null address, which is what a loader returns for a
+function that it does not have.
+
+CAUTION: An address must point to a function with the signature that you
+declare. An incorrect address or signature can stop the process.
+
 Use `defcfn` to define and bind a function:
 
 ```clojure

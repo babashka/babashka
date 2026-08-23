@@ -340,9 +340,12 @@
         lookups (if lib [lib] (conj @libraries (.defaultLookup ^Linker @linker*)))]
     (some (fn [^SymbolLookup l] (.orElse (.find l sym) nil)) lookups)))
 
-(defn- require-symbol ^MemorySegment [lib ^String sym]
-  (or (lookup-symbol lib sym)
-      (throw (ex-info (str "babashka.ffi: symbol not found: " sym) {:symbol sym}))))
+(defn- require-symbol ^MemorySegment [lib sym]
+  (if (integer? sym)
+    ;; a function pointer: the caller resolved it already
+    (MemorySegment/ofAddress (long sym))
+    (or (lookup-symbol lib ^String sym)
+        (throw (ex-info (str "babashka.ffi: symbol not found: " sym) {:symbol sym})))))
 
 (defn find-symbol
   "Finds sym and returns its native address as a Clojure long. Returns nil
@@ -445,8 +448,14 @@
       {:babashka.ffi/backend :ffm})))
 
 (defn cfn
-  "Creates a Clojure function that calls C function sym. argtypes is a vector
-  of type keywords. rettype is a type keyword.
+  "Creates a Clojure function that calls C function sym. sym is the name of a
+  C symbol, or the address of a function as a Clojure long. argtypes is a
+  vector of type keywords. rettype is a type keyword.
+
+  An address binds a function that has no name to look up: a pointer from a
+  loader such as glXGetProcAddress, a pointer that a C function returns, a
+  pointer in a struct, or the result of callback. find-symbol and callback
+  both return such an address.
 
   With a library map, cfn searches that library and the libraries that it
   links, so a symbol that the library defines resolves to the definition in
@@ -459,9 +468,14 @@
   fixed parameters. Each call infers the tail types from its values."
   ([sym argtypes rettype] (cfn nil sym argtypes rettype))
   ([lib sym argtypes rettype]
-   (when-not (string? sym)
-     (throw (ex-info (str "babashka.ffi: C symbol must be a string: " (pr-str sym))
+   (when-not (or (string? sym) (integer? sym))
+     (throw (ex-info (str "babashka.ffi: C symbol must be a string or an address: "
+                          (pr-str sym))
                      {:sym sym})))
+   ;; a null function pointer crashes the process on the first call, and it
+   ;; is what a loader returns for a function that it does not have
+   (when (and (integer? sym) (zero? sym))
+     (throw (ex-info "babashka.ffi: cannot bind the null address" {:sym sym})))
    (when (some #(= :void %) argtypes)
      (throw (ex-info (str "babashka.ffi: :void is not an argument type: " (pr-str argtypes))
                      {:argtypes argtypes})))
