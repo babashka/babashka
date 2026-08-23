@@ -127,15 +127,21 @@ a C function that accepts a function or data pointer.
 
 If `find-symbol` cannot find the symbol, it returns `nil`.
 
-Pass a library map to search only that library, as `cfn` does:
+Pass a library map to limit the search to that library, as `cfn` does:
 
 ```clojure
 (ffi/find-symbol zlib "zlibVersion")
 ```
 
 Without a library map, `find-symbol` searches all loaded libraries and then
-the default system lookup. A search with the library map is exact, so a
-library of the same name elsewhere on the system cannot supply the symbol.
+the default system lookup.
+
+A library map limits the search to that library and the libraries that it
+links. A symbol that the library defines resolves to the definition in that
+library, so a bundled library gives you its own function and not the copy
+that the system installs. A symbol that the library does not define can
+still come from one of its dependencies: `(ffi/find-symbol zlib "strlen")`
+returns the address of the C library's `strlen`.
 
 ## Bind a function
 
