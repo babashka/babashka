@@ -336,7 +336,10 @@
                           @last-lookup-error))))))
 
 (defn- lookup-symbol ^MemorySegment [lib ^String sym]
-  (let [lib (if (map? lib) (:lookup lib) lib)
+  (let [;; a delay or a var, so that a binding can name a library that
+        ;; another thing loads later
+        lib (if (instance? clojure.lang.IDeref lib) @lib lib)
+        lib (if (map? lib) (:lookup lib) lib)
         lookups (if lib [lib] (conj @libraries (.defaultLookup ^Linker @linker*)))]
     (some (fn [^SymbolLookup l] (.orElse (.find l sym) nil)) lookups)))
 
@@ -573,7 +576,18 @@
 
   An optional docstring and attribute map can precede the C symbol. The final
   three arguments are the C symbol, argument types, and return type. defcfn
-  preserves all metadata on name. This metadata includes ^:private."
+  preserves all metadata on name. This metadata includes ^:private.
+
+  The attribute map key :library gives cfn a library to search, as a library
+  map or as something that derefs to one:
+
+      (def sqlite (delay (ffi/load-library (extract-bundled-library!))))
+      (defcfn sqlite3-open {:library sqlite} \"sqlite3_open\"
+        [:string :pointer] :int)
+
+  A binding without :library searches all loaded libraries and then the
+  default system lookup, where a library of the same name that the system
+  installs can supply the symbol instead."
   {:arglists '([name docstring? attr-map? sym argtypes rettype])}
   [name & args]
   (when (< (count args) 3)
@@ -590,9 +604,11 @@
       (throw (ex-info "babashka.ffi: defcfn takes at most a docstring and an attribute map before the C symbol"
                       {:name name})))
     `(def ~(with-meta name (cond-> (meta name)
-                             attr-map (merge attr-map)
+                             ;; :library selects the library, it is not
+                             ;; metadata about the var
+                             attr-map (merge (dissoc attr-map :library))
                              docstring (assoc :doc docstring)))
-       (cfn ~sym ~argtypes ~rettype))))
+       (cfn ~(:library attr-map) ~sym ~argtypes ~rettype))))
 
 ;; -- manual memory ------------------------------------------------------------
 
