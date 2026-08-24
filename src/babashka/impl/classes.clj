@@ -1015,6 +1015,11 @@
                                    org.jline.terminal.spi.TerminalProvider
                                    (instance? java.io.Closeable v)
                                    java.io.Closeable
+                                   ;; a babashka.ffi arena is a jdk.internal.foreign.ArenaImpl,
+                                   ;; and with-open calls close on it. AutoCloseable is
+                                   ;; already allowed, so the arena needs no class of its own
+                                   (instance? java.lang.AutoCloseable v)
+                                   java.lang.AutoCloseable
                                    (instance? java.util.Collection v)
                                    java.util.Collection
                                    (instance? java.lang.Throwable v)

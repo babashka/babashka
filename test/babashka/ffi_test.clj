@@ -227,6 +227,31 @@
           (let [strlen (babashka.ffi/cfn "strlen" [:pointer] :size_t)]
             (is (= "another thread" (on-other-thread #(msg (fn [] (strlen p))))))))))))
 
+(deftest arena-test
+  (when-not skip?
+    (testing "an arena releases what it allocates, with-open closes it"
+      (is (= [42 7]
+             (bb `(do ~ffi-require
+                      (with-open [a# (ffi/confined-arena)]
+                        (let [p# (ffi/alloc a# :pointer)
+                              q# (ffi/alloc a# 16)]
+                          (ffi/write p# :long 0 42)
+                          (ffi/write q# :int 4 7)
+                          [(ffi/read p# :long) (ffi/read q# :int 4)])))))))
+    (testing "every arena kind allocates"
+      (is (= [true true true true]
+             (bb `(do ~ffi-require
+                      [(with-open [a# (ffi/confined-arena)] (instance? java.lang.foreign.MemorySegment (ffi/alloc a# 8)))
+                       (with-open [a# (ffi/shared-arena)] (instance? java.lang.foreign.MemorySegment (ffi/alloc a# 8)))
+                       (instance? java.lang.foreign.MemorySegment (ffi/alloc (ffi/auto-arena) 8))
+                       (instance? java.lang.foreign.MemorySegment (ffi/alloc (ffi/global-arena) 8))])))))
+    (testing "alloc takes a type as well as a size"
+      (is (= 8 (bb `(do ~ffi-require
+                        (with-open [a# (ffi/confined-arena)]
+                          (let [p# (ffi/alloc a# :pointer)]
+                            (ffi/write p# :long 0 -1)
+                            (count (ffi/read-bytes p# 8)))))))))))
+
 (deftest memory-test
   (when-not skip?
     (testing "alloc, typed write and read, free"
