@@ -21,8 +21,15 @@
 
   Pointers are native addresses stored in Clojure longs. :bool represents a
   one-byte C boolean and returns true or false. Thus, a C predicate does not
-  return the truthy number 0. The API does not support struct-by-value
-  arguments.
+  return the truthy number 0.
+
+  Write a struct that C passes or returns by value as {:struct [layouts]}.
+  Struct layouts nest, and their values are vectors of fields:
+
+      (ffi/defcfn div \"div\" [:int :int] {:struct [:int :int]})
+      (div 7 2)                      ; [3 1]
+
+  These calls go through libffi. See doc/ffi.md.
 
   Native images limit most fixed signatures to six arguments. A signature
   that uses only pointer and integer types supports up to 10 arguments. A
@@ -401,7 +408,7 @@
 (def ^:private variadic-limits
   "variadic calls support up to 5 args total, at most 3 fixed, at most 2 :double, and a :void, integer or pointer return")
 
-(declare ^:private fixed-cfn)
+(declare ^:private fixed-cfn struct-cfn struct-layout?)
 
 (defn- variadic-cfn
   "A variadic binding: fixed types declared, tail inferred per call. One FFM
@@ -459,7 +466,9 @@
 (defn cfn
   "Creates a Clojure function that calls C function sym. sym is the name of a
   C symbol, or the address of a function as a Clojure long. argtypes is a
-  vector of type keywords. rettype is a type keyword.
+  vector of type keywords. rettype is a type keyword. A struct that C passes
+  or returns by value is a layout, {:struct [layouts]}, and its values are
+  vectors of fields. Such a call goes through libffi.
 
   An address binds a function that has no name to look up: a pointer from a
   loader such as glXGetProcAddress, a pointer that a C function returns, a
@@ -488,9 +497,15 @@
    (when (some #(= :void %) argtypes)
      (throw (ex-info (str "babashka.ffi: :void is not an argument type: " (pr-str argtypes))
                      {:argtypes argtypes})))
-   (if-let [fixed (check-variadic-marker argtypes)]
-     (variadic-cfn lib sym fixed argtypes rettype)
-     (fixed-cfn lib sym argtypes rettype))))
+   (let [fixed (check-variadic-marker argtypes)
+         structs? (or (struct-layout? rettype) (boolean (some struct-layout? argtypes)))]
+     (cond
+       (and structs? fixed)
+       (throw (ex-info (str "babashka.ffi: a variadic signature cannot pass a struct by value: " sym)
+                       {:symbol sym :argtypes argtypes :rettype rettype}))
+       structs? (struct-cfn lib sym argtypes rettype)
+       fixed (variadic-cfn lib sym fixed argtypes rettype)
+       :else (fixed-cfn lib sym argtypes rettype)))))
 
 (defn- fixed-cfn
   [lib sym argtypes rettype]
@@ -659,10 +674,15 @@
    :pointer 8 :string 8 :double 8
    :int16 2 :uint16 2 :int8 1 :uint8 1 :byte 1 :char 1 :bool 1})
 
+(declare layout-of)
+
 (defn sizeof
-  "Returns the size, in bytes, of type keyword t."
+  "Returns the size, in bytes, of type keyword t, or of a struct layout
+  {:struct [layouts]}. A struct layout has the size that a C compiler gives
+  it, padding included."
   [t]
-  (or (sizes t) (throw (ex-info (str "babashka.ffi: unknown type " t) {:type t}))))
+  (or (sizes t)
+      (:size (layout-of t))))
 
 (defn confined-arena
   "An arena for this thread only. Allocation in it is cheap, like a native
@@ -696,56 +716,62 @@
   memory comes from the C allocator and free releases it. Do not call free
   on a pointer that an arena allocated.
 
-  n is a byte count or a type keyword."
-  ([n] (@c-calloc 1 (if (keyword? n) (sizeof n) n)))
+  n is a byte count, a type keyword, or a struct layout."
+  ([n] (@c-calloc 1 (if (number? n) n (sizeof n))))
   ([^Arena arena n]
-   (.address (.allocate arena (long (if (keyword? n) (sizeof n) n))))))
+   (.address (.allocate arena (long (if (number? n) n (sizeof n)))))))
 
 (defn free
   "Releases memory allocated by alloc or string->ptr."
   [p]
   (@c-free p))
 
+;; the segment arities carry the struct path, which reads and writes many
+;; fields of one already-materialized segment
+(defn- read-seg
+  [^MemorySegment seg t ^long off]
+  (case t
+    (:int :int32) (long (.get seg ValueLayout/JAVA_INT_UNALIGNED off))
+    (:uint :uint32) (bit-and (long (.get seg ValueLayout/JAVA_INT_UNALIGNED off)) 0xFFFFFFFF)
+    (:long :ulong :int64 :uint64 :size_t :ssize_t :pointer)
+    (.get seg ValueLayout/JAVA_LONG_UNALIGNED off)
+    :int16 (long (.get seg ValueLayout/JAVA_SHORT_UNALIGNED off))
+    :uint16 (bit-and (long (.get seg ValueLayout/JAVA_SHORT_UNALIGNED off)) 0xFFFF)
+    :bool (not (zero? (long (.get seg ValueLayout/JAVA_BYTE off))))
+    (:int8 :byte :char) (long (.get seg ValueLayout/JAVA_BYTE off))
+    :uint8 (bit-and (long (.get seg ValueLayout/JAVA_BYTE off)) 0xFF)
+    :double (.get seg ValueLayout/JAVA_DOUBLE_UNALIGNED off)
+    :float (.get seg ValueLayout/JAVA_FLOAT_UNALIGNED off)
+    :string (ptr->string (.get seg ValueLayout/JAVA_LONG_UNALIGNED off))
+    (throw (ex-info (str "babashka.ffi: cannot read type " t) {:type t}))))
+
 (defn read
   "Reads a value of type t from pointer p. The optional byte offset defaults
   to 0."
   ([p t] (read p t 0))
   ([p t offset]
-   (let [seg (segment p (+ (long offset) (long (sizeof t))))
-         off (long offset)]
-     (case t
-       (:int :int32) (long (.get seg ValueLayout/JAVA_INT_UNALIGNED off))
-       (:uint :uint32) (bit-and (long (.get seg ValueLayout/JAVA_INT_UNALIGNED off)) 0xFFFFFFFF)
-       (:long :ulong :int64 :uint64 :size_t :ssize_t :pointer)
-       (.get seg ValueLayout/JAVA_LONG_UNALIGNED off)
-       :int16 (long (.get seg ValueLayout/JAVA_SHORT_UNALIGNED off))
-       :uint16 (bit-and (long (.get seg ValueLayout/JAVA_SHORT_UNALIGNED off)) 0xFFFF)
-       :bool (not (zero? (long (.get seg ValueLayout/JAVA_BYTE off))))
-      (:int8 :byte :char) (long (.get seg ValueLayout/JAVA_BYTE off))
-       :uint8 (bit-and (long (.get seg ValueLayout/JAVA_BYTE off)) 0xFF)
-       :double (.get seg ValueLayout/JAVA_DOUBLE_UNALIGNED off)
-       :float (.get seg ValueLayout/JAVA_FLOAT_UNALIGNED off)
-       :string (ptr->string (.get seg ValueLayout/JAVA_LONG_UNALIGNED off))
-       (throw (ex-info (str "babashka.ffi: cannot read type " t) {:type t}))))))
+   (read-seg (segment p (+ (long offset) (long (sizeof t)))) t (long offset))))
+
+(defn- write-seg
+  [^MemorySegment seg t ^long off v]
+  (case t
+    (:int :uint :int32 :uint32) (.set seg ValueLayout/JAVA_INT_UNALIGNED off (unchecked-int (long v)))
+    (:long :ulong :int64 :uint64 :size_t :ssize_t :pointer)
+    (.set seg ValueLayout/JAVA_LONG_UNALIGNED off (long v))
+    (:int16 :uint16) (.set seg ValueLayout/JAVA_SHORT_UNALIGNED off (unchecked-short (long v)))
+    :bool (.set seg ValueLayout/JAVA_BYTE off (unchecked-byte (if v 1 0)))
+    (:int8 :uint8 :byte :char) (.set seg ValueLayout/JAVA_BYTE off (unchecked-byte (long v)))
+    :double (.set seg ValueLayout/JAVA_DOUBLE_UNALIGNED off (double v))
+    :float (.set seg ValueLayout/JAVA_FLOAT_UNALIGNED off (float v))
+    (throw (ex-info (str "babashka.ffi: cannot write type " t) {:type t})))
+  nil)
 
 (defn write
   "Writes value v as type t to pointer p. The optional byte offset defaults
   to 0. Returns nil."
   ([p t v] (write p t 0 v))
   ([p t offset v]
-   (let [seg (segment p (+ (long offset) (long (sizeof t))))
-         off (long offset)]
-     (case t
-       (:int :uint :int32 :uint32) (.set seg ValueLayout/JAVA_INT_UNALIGNED off (unchecked-int (long v)))
-       (:long :ulong :int64 :uint64 :size_t :ssize_t :pointer)
-       (.set seg ValueLayout/JAVA_LONG_UNALIGNED off (long v))
-       (:int16 :uint16) (.set seg ValueLayout/JAVA_SHORT_UNALIGNED off (unchecked-short (long v)))
-       :bool (.set seg ValueLayout/JAVA_BYTE off (unchecked-byte (if v 1 0)))
-       (:int8 :uint8 :byte :char) (.set seg ValueLayout/JAVA_BYTE off (unchecked-byte (long v)))
-       :double (.set seg ValueLayout/JAVA_DOUBLE_UNALIGNED off (double v))
-       :float (.set seg ValueLayout/JAVA_FLOAT_UNALIGNED off (float v))
-       (throw (ex-info (str "babashka.ffi: cannot write type " t) {:type t})))
-     nil)))
+   (write-seg (segment p (+ (long offset) (long (sizeof t)))) t (long offset) v)))
 
 (defn read-bytes
   "Copies n bytes from pointer p at byte offset (default 0) into a new byte
@@ -877,3 +903,250 @@
     (swap! callback-arenas dissoc p)
     (.close a))
   nil)
+
+;; -- structs by value ---------------------------------------------------------
+
+;; A trampoline carries one primitive per argument, so it cannot pass a
+;; struct in registers, and on AArch64 a struct larger than 16 bytes comes
+;; back through x8, which is not an argument register. libffi places the
+;; arguments itself, from a description of the call, so a binding that has a
+;; struct in it calls through libffi.
+
+(defn- struct-layout? [t]
+  (and (map? t) (contains? t :struct)))
+
+(defn- align-up ^long [^long n ^long a]
+  (* a (quot (+ n (dec a)) a)))
+
+(defn- layout-of
+  "Resolves layout t to a map of :type, :size and :align. A struct layout
+  also has :fields, each a layout with an :offset. Offsets follow natural
+  alignment, as a C compiler lays a struct out."
+  [t]
+  (cond
+    (struct-layout? t)
+    (let [members (:struct t)]
+      (when-not (and (sequential? members) (seq members))
+        (throw (ex-info (str "babashka.ffi: :struct needs a non-empty vector of layouts: "
+                             (pr-str t))
+                        {:layout t})))
+      (let [fields (mapv layout-of members)
+            align (long (reduce max 1 (map :align fields)))
+            [fields end] (reduce (fn [[fs off] f]
+                                   (let [off (align-up off (:align f))]
+                                     [(conj fs (assoc f :offset off))
+                                      (+ off (long (:size f)))]))
+                                 [[] 0] fields)]
+        {:type :struct :fields fields :align align :size (align-up end align)}))
+
+    (keyword? t)
+    (if-let [size (sizes t)]
+      {:type t :size size :align size}
+      (throw (ex-info (str "babashka.ffi: unknown type " t) {:type t})))
+
+    :else
+    (throw (ex-info (str "babashka.ffi: not a type or a struct layout: " (pr-str t))
+                    {:layout t}))))
+
+;; encoder and decoder are the only places that turn Clojure values into
+;; bytes and back. Both resolve the layout once, when the binding is made,
+;; and hand back a function that a call runs without looking at the layout
+;; again.
+
+(defn- encoder
+  "A function of an arena, a segment and a value, that writes the value at
+  offset as layout lay. A struct value is a vector of its fields. The arena
+  backs the C string of a :string field and must outlive the call."
+  [lay ^long offset]
+  (let [t (:type lay)]
+    (case t
+      :struct
+      (let [fields (:fields lay)
+            c (count fields)
+            ^objects encs (object-array
+                           (map (fn [f] (encoder f (+ offset (long (:offset f)))))
+                                fields))]
+        (fn [arena seg v]
+          (when-not (and (sequential? v) (= (count v) c))
+            (throw (ex-info (str "babashka.ffi: a struct value needs " c
+                                 " fields, got " (pr-str v))
+                            {:value v :fields c})))
+          (dotimes [i c]
+            ((aget encs i) arena seg (nth v i)))))
+      :bool (fn [_ seg v] (write-seg seg :bool offset v))
+      :string (fn [arena seg v]
+                (write-seg seg :pointer offset
+                           (if (string? v)
+                             (.address (.allocateFrom ^Arena arena ^String v))
+                             ((arg-coercer :pointer) v))))
+      (let [coerce (arg-coercer t)]
+        (fn [_ seg v] (write-seg seg t offset (coerce v)))))))
+
+(defn- decoder
+  "A function of a segment that reads a value of layout lay at offset. A
+  struct becomes a vector of its fields."
+  [lay ^long offset]
+  (if (= :struct (:type lay))
+    (let [^objects decs (object-array
+                         (map (fn [f] (decoder f (+ offset (long (:offset f)))))
+                              (:fields lay)))
+          c (alength decs)]
+      (fn [seg]
+        (loop [i 0 acc (transient [])]
+          (if (< i c)
+            (recur (inc i) (conj! acc ((aget decs i) seg)))
+            (persistent! acc)))))
+    (let [t (:type lay)]
+      (fn [seg] (read-seg seg t offset)))))
+
+;; libffi's FFI_TYPE_* codes, from ffi.h
+(def ^:private ffi-type-codes
+  {:void 0 :float 2 :double 3
+   :uint8 5 :bool 5
+   :int8 6 :byte 6 :char 6
+   :uint16 7 :int16 8
+   :uint 9 :uint32 9
+   :int 10 :int32 10
+   :ulong 11 :uint64 11 :size_t 11
+   :long 12 :int64 12 :ssize_t 12
+   :struct 13
+   :pointer 14 :string 14})
+
+;; struct ffi_type { size_t size; unsigned short alignment;
+;;                   unsigned short type; struct ffi_type **elements; }
+(def ^:private ffi-type-bytes 24)
+
+;; sizeof(ffi_cif), with room for the fields that some architectures add
+(def ^:private cif-bytes 256)
+
+(defn- ffi-type!
+  "Builds the ffi_type tree of layout t in arena. Returns its address."
+  ^long [^Arena arena t]
+  (let [p (.allocate arena (long ffi-type-bytes) 8)]
+    (if (struct-layout? t)
+      (let [elems (mapv #(ffi-type! arena %) (:struct t))
+            n (count elems)
+            arr (.allocate arena (long (* 8 (inc n))) 8)]
+        (dotimes [i n] (write-seg arr :pointer (* 8 i) (nth elems i)))
+        (write-seg arr :pointer (* 8 n) 0)
+        ;; ffi_prep_cif fills in the size and the alignment
+        (write-seg p :size_t 0 0)
+        (write-seg p :uint16 8 0)
+        (write-seg p :uint16 10 (ffi-type-codes :struct))
+        (write-seg p :pointer 16 (.address arr)))
+      (let [code (or (ffi-type-codes t)
+                     (throw (ex-info (str "babashka.ffi: unknown type " t) {:type t})))
+            size (if (= :void t) 1 (long (sizeof t)))]
+        (write-seg p :size_t 0 size)
+        (write-seg p :uint16 8 size)
+        (write-seg p :uint16 10 code)
+        (write-seg p :pointer 16 0)))
+    (.address p)))
+
+(defn- check-layout!
+  "Compares the size and the alignment of every struct in a layout with what
+  ffi_prep_cif computed for it."
+  [lay tp]
+  (when (= :struct (:type lay))
+    (let [size (read tp :size_t 0)
+          align (read tp :uint16 8)]
+      (when-not (and (= size (:size lay)) (= align (:align lay)))
+        (throw (ex-info "babashka.ffi: struct layout disagrees with libffi"
+                        {:babashka.ffi/layout (select-keys lay [:size :align])
+                         :libffi {:size size :align align}}))))
+    (let [elems (read tp :pointer 16)
+          fields (:fields lay)]
+      (dotimes [i (count fields)]
+        (check-layout! (nth fields i) (read elems :pointer (* 8 i)))))))
+
+;; FFI_DEFAULT_ABI, from ffitarget.h. Read at run time, not when the image
+;; is built, so that the architecture is the one the binary runs on.
+(def ^:private default-abi
+  (delay
+    (let [arch (System/getProperty "os.arch")]
+      (cond (= :windows (os-key)) nil
+            (= "aarch64" arch) 1                    ; FFI_SYSV
+            (contains? #{"amd64" "x86_64"} arch) 2  ; FFI_UNIX64
+            :else nil))))
+
+(def ^:private libffi
+  "ffi_prep_cif and ffi_call. A native image built with BABASHKA_LIBFFI has
+  libffi linked in. On the JVM they come from the system libffi."
+  (delay
+    ;; only on the JVM: a native image is meant to carry its own libffi, so
+    ;; that a struct binding works the same on every machine
+    (when-not native-image?
+      (try (load-system-library "ffi") (catch Exception _ nil)))
+    (let [prep (find-symbol "ffi_prep_cif")
+          call (find-symbol "ffi_call")]
+      (when-not (and prep call)
+        (throw (ex-info (if native-image?
+                          "babashka.ffi: passing a struct by value needs libffi, and this babashka binary was built without it"
+                          "babashka.ffi: passing a struct by value needs libffi, which is not installed on this system")
+                        {})))
+      (when-not @default-abi
+        (throw (ex-info (str "babashka.ffi: passing a struct by value is not supported on "
+                             (System/getProperty "os.name") " "
+                             (System/getProperty "os.arch"))
+                        {})))
+      {:prep-cif (cfn prep [:pointer :int :uint :pointer :pointer] :int)
+       :call (cfn call [:pointer :pointer :pointer :pointer] :void)})))
+
+(defn- struct-cfn
+  "A binding that passes or returns a struct by value, through libffi. The
+  cif and the ffi_type trees are built once, in the global arena. Every call
+  needs scratch memory for the argument slots, the argument pointer array
+  and the return value, which one allocation covers."
+  [lib sym argtypes rettype]
+  (let [n (count argtypes)
+        void? (= :void rettype)
+        ;; the layouts resolve first, so that a bad one is an error even
+        ;; where there is no libffi
+        alays (mapv layout-of argtypes)
+        rlay (if void? {:type :void :size 8 :align 8} (layout-of rettype))
+        {:keys [prep-cif call]} @libffi
+        arena (Arena/global)
+        atype-ptrs (mapv #(ffi-type! arena %) argtypes)
+        rtype-ptr (ffi-type! arena rettype)
+        atypes-arr (.allocate arena (long (* 8 (max 1 n))) 8)
+        cif (.allocate arena (long cif-bytes) 16)
+        cif-addr (.address cif)]
+    (dotimes [i n] (write-seg atypes-arr :pointer (* 8 i) (nth atype-ptrs i)))
+    (let [status (long (prep-cif cif-addr @default-abi n rtype-ptr (.address atypes-arr)))]
+      (when-not (zero? status)
+        (throw (ex-info (str "babashka.ffi: ffi_prep_cif failed for " sym)
+                        {:symbol sym :status status}))))
+    (dotimes [i n] (check-layout! (nth alays i) (nth atype-ptrs i)))
+    (when-not void? (check-layout! rlay rtype-ptr))
+    (let [slot-size (fn ^long [^long s] (align-up (max 8 s) 8))
+          slot-sizes (mapv #(slot-size (long (:size %))) alays)
+          rvalue-off (* 8 (max 1 n))
+          ;; libffi widens an integer return to ffi_arg, so the return slot
+          ;; is never smaller than a word
+          base-off (+ rvalue-off (slot-size (long (:size rlay))))
+          slot-offs (long-array (butlast (reductions + base-off slot-sizes)))
+          total (long (reduce + base-off slot-sizes))
+          ^objects encs (object-array (map-indexed (fn [i lay] (encoder lay (aget slot-offs i)))
+                                                   alays))
+          decode (when-not void? (decoder rlay rvalue-off))
+          fnp (delay (.address (require-symbol lib sym)))
+          arity-error (fn [got]
+                        (throw (ex-info (str "babashka.ffi: " sym " expects " n
+                                             " args, got " got)
+                                        {:symbol sym})))]
+      (with-meta
+        ;; scratch comes from a confined arena per call, which costs about
+        ;; 50ns and is correct when threads share the binding and when a
+        ;; call re-enters it
+        (fn [& args]
+          (let [args (vec args)]
+            (when-not (= n (count args)) (arity-error (count args)))
+            (with-open [a (Arena/ofConfined)]
+              (let [scratch (.allocate a total 16)
+                    base (.address scratch)]
+                (dotimes [i n]
+                  (write-seg scratch :pointer (* 8 i) (+ base (aget slot-offs i)))
+                  ((aget encs i) a scratch (nth args i)))
+                (call cif-addr @fnp (+ base rvalue-off) base)
+                (when decode (decode scratch))))))
+        {:babashka.ffi/backend :libffi}))))

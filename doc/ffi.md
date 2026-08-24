@@ -241,6 +241,48 @@ pointer after C no longer uses it.
 A `:string` return value reads the pointer as UTF-8. A NULL return value
 becomes `nil`.
 
+### Pass a struct by value
+
+Write a struct that C passes or returns by value as `{:struct [layouts]}`,
+where a layout is a type keyword or another struct layout. A struct value
+is a vector of its fields:
+
+```clojure
+(defcfn c-div "div" [:int :int] {:struct [:int :int]})
+(c-div 7 2)
+;; => [3 1]
+```
+
+Struct layouts nest, and so do their values:
+
+```clojure
+(def point {:struct [:int :int]})
+(def rect {:struct [point point]})
+(defcfn rect-grow "rect_grow" [rect :int] rect)
+(rect-grow [[1 1] [5 5]] 2)
+;; => [[-1 -1] [7 7]]
+```
+
+`sizeof` takes a struct layout. It returns the size that a C compiler gives
+the struct, padding included:
+
+```clojure
+(ffi/sizeof {:struct [:char :double]})
+;; => 16
+```
+
+These calls go through libffi, which places the arguments from a
+description of the call. A struct call costs about 1us, against 120ns for a
+call that takes only primitives. Only a signature that has a struct in it
+pays this.
+
+A variadic signature cannot pass a struct by value.
+
+Struct calls need libffi. A native babashka binary has libffi linked in
+when it was built with `BABASHKA_LIBFFI`, see `script/setup-libffi`. On the
+JVM, babashka loads the system libffi. Where there is no libffi, a struct
+binding throws.
+
 ## Call a variadic function
 
 Put `:&` after the fixed argument types:
@@ -435,7 +477,9 @@ Callbacks have these limits:
 
 Argument order does not change these limits.
 
-Struct values are not supported as direct arguments or return values, yet.
+These limits cover the primitive types. A struct that C passes or returns
+by value has none of them, because such a call goes through libffi. See
+[Pass a struct by value](#pass-a-struct-by-value).
 
 If a signature is not supported, use libffi or write a small C wrapper.
 See [`examples/ffi/libffi.clj`](../examples/ffi/libffi.clj) for a libffi example.
