@@ -340,20 +340,13 @@
                           {:library name}
                           @last-lookup-error))))))
 
-(declare process-lookup)
-
 (defn- lookup-symbol ^MemorySegment [lib ^String sym]
   (let [;; a delay or a var, so that a binding can name a library that
         ;; another thing loads later
         lib (if (instance? clojure.lang.IDeref lib) @lib lib)
         lib (if (map? lib) (:lookup lib) lib)
         lookups (if lib [lib] (conj @libraries (.defaultLookup ^Linker @linker*)))]
-    (or (some (fn [^SymbolLookup l] (.orElse (.find l sym) nil)) lookups)
-        ;; a library map limits the search to that library
-        (when-not lib
-          (when-let [f @process-lookup]
-            (when-let [addr (f sym)]
-              (MemorySegment/ofAddress (long addr))))))))
+    (some (fn [^SymbolLookup l] (.orElse (.find l sym) nil)) lookups)))
 
 (defn- require-symbol ^MemorySegment [lib sym]
   (if (integer? sym)
@@ -367,9 +360,8 @@
   for an unknown symbol.
 
   With a library map, find-symbol searches that library and the libraries
-  that it links. Without one, it searches all loaded libraries, the default
-  system lookup, and last the symbols that the babashka binary itself
-  exports."
+  that it links. Without one, it searches all loaded libraries and then the
+  default system lookup."
   ([sym] (find-symbol nil sym))
   ([lib sym]
    (some-> (lookup-symbol lib (str sym)) .address)))
@@ -630,32 +622,6 @@
                              attr-map (merge (dissoc attr-map :library))
                              docstring (assoc :doc docstring)))
        (cfn ~(:library attr-map) ~sym ~argtypes ~rettype))))
-
-;; -- the process image --------------------------------------------------------
-
-(def ^:private process-lookup
-  "A function of a symbol name that returns an address in the running
-  executable, or nil where there is none. native-image strips the symbol
-  table and the JDK default lookup is the system C library, so a library
-  linked into the binary, such as libffi, is reachable only through
-  dlsym(RTLD_DEFAULT). nil on the JVM, on Windows, and in a static binary
-  that has no dlsym.
-
-  The dlsym binding resolves through the default lookup by address, so it
-  cannot recur into this lookup."
-  (delay
-    (when (and native-image? (not= :windows (os-key)))
-      (try
-        (when-let [seg (.orElse (.find (.defaultLookup ^Linker @linker*) "dlsym") nil)]
-          (let [dlsym (cfn (.address ^MemorySegment seg) [:pointer :string] :pointer)
-                ;; RTLD_DEFAULT
-                handle (if (= :mac (os-key)) -2 0)]
-            ;; probe here, so that a dlsym that does not work fails once
-            (dlsym handle "dlsym")
-            (fn [sym]
-              (let [addr (dlsym handle sym)]
-                (when-not (zero? (long addr)) addr)))))
-        (catch Throwable _ nil)))))
 
 ;; -- manual memory ------------------------------------------------------------
 
@@ -1069,17 +1035,32 @@
             (contains? #{"amd64" "x86_64"} arch) 2  ; FFI_UNIX64
             :else nil))))
 
+(def ^:private linked-libffi
+  "The libffi of a native image built with BABASHKA_LIBFFI, called through
+  @CFunction bindings that the linker resolved in the archive. nil on the
+  JVM and in a native image built without it, where the namespace holding
+  those bindings is not on the classpath."
+  (when native-image?
+    (try {:prep-cif @(requiring-resolve 'babashka.impl.libffi/prep-cif)
+          :call @(requiring-resolve 'babashka.impl.libffi/call)}
+         (catch Throwable _ nil))))
+
 (def ^:private libffi
   "ffi_prep_cif and ffi_call. A native image built with BABASHKA_LIBFFI has
   libffi linked in. On the JVM they come from the system libffi."
   (delay
-    ;; only on the JVM: a native image is meant to carry its own libffi, so
-    ;; that a struct binding works the same on every machine
-    (when-not native-image?
-      (try (load-system-library "ffi") (catch Exception _ nil)))
-    (let [prep (find-symbol "ffi_prep_cif")
-          call (find-symbol "ffi_call")]
-      (when-not (and prep call)
+    (let [entry (or linked-libffi
+                    ;; only on the JVM: a native image carries its own
+                    ;; libffi or refuses, so that a struct binding does not
+                    ;; depend on what the machine happens to have installed
+                    (when-not native-image?
+                      (try (load-system-library "ffi") (catch Exception _ nil))
+                      (let [prep (find-symbol "ffi_prep_cif")
+                            call (find-symbol "ffi_call")]
+                        (when (and prep call)
+                          {:prep-cif (cfn prep [:pointer :int :uint :pointer :pointer] :int)
+                           :call (cfn call [:pointer :pointer :pointer :pointer] :void)}))))]
+      (when-not entry
         (throw (ex-info (if native-image?
                           "babashka.ffi: passing a struct by value needs libffi, and this babashka binary was built without it"
                           "babashka.ffi: passing a struct by value needs libffi, which is not installed on this system")
@@ -1089,8 +1070,7 @@
                              (System/getProperty "os.name") " "
                              (System/getProperty "os.arch"))
                         {})))
-      {:prep-cif (cfn prep [:pointer :int :uint :pointer :pointer] :int)
-       :call (cfn call [:pointer :pointer :pointer :pointer] :void)})))
+      entry)))
 
 (defn- struct-cfn
   "A binding that passes or returns a struct by value, through libffi. The

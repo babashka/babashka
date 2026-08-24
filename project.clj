@@ -99,6 +99,10 @@
                                     :dependencies [[org.clojure/data.priority-map "1.1.0"]]}
              :feature/rrb-vector {:source-paths ["feature-rrb-vector"]
                                   :dependencies [[org.clojure/core.rrb-vector "0.2.0"]]}
+             ;; the libffi entry points of babashka.ffi. On the classpath
+             ;; only when the build links the archive, see script/compile:
+             ;; src-java/babashka/impl/Libffi.java does not link without it
+             :feature/libffi {:source-paths ["feature-libffi"]}
              :test/deps {:dependencies [[borkdude/rewrite-edn "0.4.6"]
                                         [com.clojure-goes-fast/clj-async-profiler "0.5.0"]
                                         [com.opentable.components/otj-pg-embedded "0.13.3"]

@@ -68,17 +68,13 @@ BABASHKA_LIBFFI=${BABASHKA_LIBFFI:-}
 
 if [ -n "$BABASHKA_LIBFFI" ]; then
     # babashka.ffi calls struct-by-value functions through libffi. Build the
-    # archive with script/setup-libffi. native-image strips the symbol
-    # table, so dlsym only sees the two entry points if they are exported by
-    # name.
+    # archive with script/setup-libffi. script/uberjar must see the same
+    # variable: it puts the @CFunction bindings that need these symbols on
+    # the classpath.
     if [ "$(uname -s)" = "Darwin" ]; then
-        args+=("-H:NativeLinkerOption=-Wl,-force_load,$BABASHKA_LIBFFI"
-               "-H:NativeLinkerOption=-Wl,-exported_symbol,_ffi_call"
-               "-H:NativeLinkerOption=-Wl,-exported_symbol,_ffi_prep_cif")
+        args+=("-H:NativeLinkerOption=-Wl,-force_load,$BABASHKA_LIBFFI")
     else
-        args+=("-H:NativeLinkerOption=-Wl,--whole-archive,$BABASHKA_LIBFFI,--no-whole-archive"
-               "-H:NativeLinkerOption=-Wl,--export-dynamic-symbol=ffi_call"
-               "-H:NativeLinkerOption=-Wl,--export-dynamic-symbol=ffi_prep_cif")
+        args+=("-H:NativeLinkerOption=-Wl,--whole-archive,$BABASHKA_LIBFFI,--no-whole-archive")
     fi
 fi
 

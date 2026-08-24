@@ -175,6 +175,15 @@ else
     BABASHKA_LEIN_PROFILES+=",-feature/rrb-vector"
 fi
 
+# same variable as script/compile, which links the archive it names: the two
+# steps have to agree, or the image does not link
+if [ -n "${BABASHKA_LIBFFI:-}" ]
+then
+    BABASHKA_LEIN_PROFILES+=",+feature/libffi"
+else
+    BABASHKA_LEIN_PROFILES+=",-feature/libffi"
+fi
+
 #lein with-profiles "$BABASHKA_LEIN_PROFILES,+reflection,-uberjar" deps :tree
 #exit 0
 

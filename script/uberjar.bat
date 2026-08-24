@@ -133,6 +133,14 @@ set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/rrb-vector
 set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/rrb-vector
 )
 
+Rem same variable as script/compile.bat, which links the archive it names:
+Rem the two steps have to agree, or the image does not link
+if not "%BABASHKA_LIBFFI%"=="" (
+set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/libffi
+) else (
+set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/libffi
+)
+
 call lein with-profiles %BABASHKA_LEIN_PROFILES% bb "(+ 1 2 3)"
 
 call lein with-profiles %BABASHKA_LEIN_PROFILES%,+reflection,-uberjar do run
