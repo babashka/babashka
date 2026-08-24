@@ -382,6 +382,8 @@
           java.lang.ArithmeticException
           java.lang.AssertionError
           java.lang.AutoCloseable
+          ;; babashka.ffi arenas: with-open calls close on the arena
+          java.lang.foreign.Arena
           java.lang.Boolean
           java.lang.Byte
           java.lang.Character
@@ -1013,6 +1015,11 @@
                                    org.jline.utils.NonBlockingReader
                                    (instance? org.jline.terminal.spi.TerminalProvider v)
                                    org.jline.terminal.spi.TerminalProvider
+                                   ;; ffi arenas: the concrete class is
+                                   ;; jdk.internal.foreign.ArenaImpl, check
+                                   ;; before Closeable since Arena extends it
+                                   (instance? java.lang.foreign.Arena v)
+                                   java.lang.foreign.Arena
                                    (instance? java.io.Closeable v)
                                    java.io.Closeable
                                    (instance? java.util.Collection v)

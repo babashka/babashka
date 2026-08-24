@@ -171,10 +171,8 @@
   (let [as-long (fn [a] (cond (nil? a) 0
                               (instance? MemorySegment a) (.address ^MemorySegment a)
                               :else (long a)))
-        as-double (fn [a] (double a))
-        as-float (fn [a] (float a))
         as-bool (fn [a] (if a 1 0))]
-    (into {:double as-double :float as-float :bool as-bool}
+    (into {:double double :float float :bool as-bool}
           (map (fn [t] [t as-long]))
           (disj long-carrier? :bool))))
 
@@ -621,17 +619,6 @@
 (def ^:private c-calloc (delay (cfn @crt-lib "calloc" [:size_t :size_t] :pointer)))
 (def ^:private c-free (delay (cfn @crt-lib "free" [:pointer] :void)))
 
-(defn alloc
-  "Allocates n bytes of zeroed native memory and returns its pointer. Release
-  the pointer with free."
-  [n]
-  (@c-calloc 1 n))
-
-(defn free
-  "Releases memory allocated by alloc or string->ptr."
-  [p]
-  (@c-free p))
-
 (def ^:private sizes
   {:int 4 :uint 4 :int32 4 :uint32 4 :float 4
    :long 8 :ulong 8 :int64 8 :uint64 8 :size_t 8 :ssize_t 8
@@ -642,6 +629,48 @@
   "Returns the size, in bytes, of type keyword t."
   [t]
   (or (sizes t) (throw (ex-info (str "babashka.ffi: unknown type " t) {:type t}))))
+
+(defn confined-arena
+  "An arena for this thread only. Allocation in it is cheap, like a native
+  stack. Closing it releases everything allocated in it, so create it in a
+  with-open clause."
+  ^Arena []
+  (Arena/ofConfined))
+
+(defn shared-arena
+  "An arena that threads share. Closing it from any thread releases
+  everything allocated in it."
+  ^Arena []
+  (Arena/ofShared))
+
+(defn auto-arena
+  "An arena that the garbage collector manages. It releases everything
+  allocated in it once nothing refers to the arena. It cannot be closed."
+  ^Arena []
+  (Arena/ofAuto))
+
+(defn global-arena
+  "The arena that never closes. Memory allocated in it lives as long as the
+  process."
+  ^Arena []
+  (Arena/global))
+
+(defn alloc
+  "Allocates n bytes of zeroed native memory and returns its pointer.
+
+  With an arena, closing the arena releases the memory. Without one, the
+  memory comes from the C allocator and free releases it. Do not call free
+  on a pointer that an arena allocated.
+
+  n is a byte count or a type keyword."
+  ([n] (@c-calloc 1 (if (keyword? n) (sizeof n) n)))
+  ([^Arena arena n]
+   (.address (.allocate arena (long (if (keyword? n) (sizeof n) n))))))
+
+(defn free
+  "Releases memory allocated by alloc or string->ptr."
+  [p]
+  (@c-free p))
 
 (defn read
   "Reads a value of type t from pointer p. The optional byte offset defaults
