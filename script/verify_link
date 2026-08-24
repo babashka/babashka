@@ -57,6 +57,16 @@ if [ "${BABASHKA_FULLY_DYNAMIC:-}" != "true" ]; then
     fi
 fi
 
+if [ -n "${BABASHKA_LIBFFI:-}" ]; then
+    # a linked-in libffi that dlsym cannot see is dead weight
+    for sym in ffi_call ffi_prep_cif; do
+        if ! readelf --dyn-syms "$bin" 2>/dev/null | grep -qE "\b$sym\$"; then
+            fail "$sym is not in the dynamic symbol table"
+        fi
+    done
+    echo "libffi entry points exported: ffi_call ffi_prep_cif"
+fi
+
 max_found=$(max_glibc_symbol "$bin")
 echo "max glibc symbol version: ${max_found:-none} (floor $glibc_floor)"
 if ! printf '%s\n%s' "$max_found" "$glibc_floor" | sort -C -V; then

@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+
+# Builds a pinned static libffi. babashka.ffi calls struct-by-value
+# functions through it, so builds that want those link the archive in with
+# BABASHKA_LIBFFI. See script/compile.
+#
+# 3.4.6 does not build with current Apple clang, so the version is pinned
+# like zlib and musl.
+#
+# Prints the path of the archive.
+
+set -euo pipefail
+
+LIBFFI_VERSION="3.5.1"
+LIBFFI_SHA256="f99eb68a67c7d54866b7706af245e87ba060d419a062474b456d3bc8d4abdbd1"
+
+# not under target, which lein clean empties between the two build steps
+prefix="${LIBFFI_PREFIX:-$PWD/.libffi}"
+
+# libffi installs into lib or lib64, depending on the platform
+find_archive() {
+    { find "$prefix" -name libffi.a -not -path "$prefix/build/*" 2> /dev/null || true; } | head -1
+}
+
+archive="$(find_archive)"
+
+if [ -n "$archive" ]; then
+    echo "$archive"
+    exit 0
+fi
+
+# the sha256sum on macOS is a different tool that takes no checksum file
+if sha256sum --version > /dev/null 2>&1; then
+    sha256() { sha256sum "$1" | cut -d' ' -f1; }
+else
+    sha256() { shasum -a 256 "$1" | cut -d' ' -f1; }
+fi
+
+build="$prefix/build"
+mkdir -p "$build"
+cd "$build"
+
+tarball="libffi-${LIBFFI_VERSION}.tar.gz"
+url="https://github.com/libffi/libffi/releases/download/v${LIBFFI_VERSION}/${tarball}"
+
+curl -O -sL --fail --show-error "$url"
+
+actual="$(sha256 "$tarball")"
+
+if [ "$actual" != "$LIBFFI_SHA256" ]; then
+    echo "setup-libffi: $tarball is $actual, expected $LIBFFI_SHA256" >&2
+    exit 1
+fi
+
+tar xf "$tarball"
+
+cd "libffi-${LIBFFI_VERSION}"
+./configure --disable-shared --enable-static --disable-docs --prefix="$prefix" > /dev/null
+make > /dev/null
+make install > /dev/null
+
+archive="$(find_archive)"
+
+if [ -z "$archive" ]; then
+    echo "setup-libffi: no libffi.a under $prefix" >&2
+    exit 1
+fi
+
+echo "$archive"
