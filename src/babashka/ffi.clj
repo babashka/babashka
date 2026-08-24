@@ -333,13 +333,20 @@
                           {:library name}
                           @last-lookup-error))))))
 
+(declare process-lookup)
+
 (defn- lookup-symbol ^MemorySegment [lib ^String sym]
   (let [;; a delay or a var, so that a binding can name a library that
         ;; another thing loads later
         lib (if (instance? clojure.lang.IDeref lib) @lib lib)
         lib (if (map? lib) (:lookup lib) lib)
         lookups (if lib [lib] (conj @libraries (.defaultLookup ^Linker @linker*)))]
-    (some (fn [^SymbolLookup l] (.orElse (.find l sym) nil)) lookups)))
+    (or (some (fn [^SymbolLookup l] (.orElse (.find l sym) nil)) lookups)
+        ;; a library map limits the search to that library
+        (when-not lib
+          (when-let [f @process-lookup]
+            (when-let [addr (f sym)]
+              (MemorySegment/ofAddress (long addr))))))))
 
 (defn- require-symbol ^MemorySegment [lib sym]
   (if (integer? sym)
@@ -353,8 +360,9 @@
   for an unknown symbol.
 
   With a library map, find-symbol searches that library and the libraries
-  that it links. Without one, it searches all loaded libraries and then the
-  default system lookup."
+  that it links. Without one, it searches all loaded libraries, the default
+  system lookup, and last the symbols that the babashka binary itself
+  exports."
   ([sym] (find-symbol nil sym))
   ([lib sym]
    (some-> (lookup-symbol lib (str sym)) .address)))
@@ -607,6 +615,32 @@
                              attr-map (merge (dissoc attr-map :library))
                              docstring (assoc :doc docstring)))
        (cfn ~(:library attr-map) ~sym ~argtypes ~rettype))))
+
+;; -- the process image --------------------------------------------------------
+
+(def ^:private process-lookup
+  "A function of a symbol name that returns an address in the running
+  executable, or nil where there is none. native-image strips the symbol
+  table and the JDK default lookup is the system C library, so a library
+  linked into the binary, such as libffi, is reachable only through
+  dlsym(RTLD_DEFAULT). nil on the JVM, on Windows, and in a static binary
+  that has no dlsym.
+
+  The dlsym binding resolves through the default lookup by address, so it
+  cannot recur into this lookup."
+  (delay
+    (when (and native-image? (not= :windows (os-key)))
+      (try
+        (when-let [seg (.orElse (.find (.defaultLookup ^Linker @linker*) "dlsym") nil)]
+          (let [dlsym (cfn (.address ^MemorySegment seg) [:pointer :string] :pointer)
+                ;; RTLD_DEFAULT
+                handle (if (= :mac (os-key)) -2 0)]
+            ;; probe here, so that a dlsym that does not work fails once
+            (dlsym handle "dlsym")
+            (fn [sym]
+              (let [addr (dlsym handle sym)]
+                (when-not (zero? (long addr)) addr)))))
+        (catch Throwable _ nil)))))
 
 ;; -- manual memory ------------------------------------------------------------
 
