@@ -5,6 +5,9 @@ on:
   push:
     branches:
       - master
+      # TEMPORARY: proves the libffi job on a Windows runner. Remove before
+      # this branch merges.
+      - ffi-port-validation
     paths-ignore:
       - "**.md"
       - "logo/**"
