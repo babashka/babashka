@@ -1026,13 +1026,21 @@
         (check-layout! (nth fields i) (read elems :pointer (* 8 i)))))))
 
 ;; FFI_DEFAULT_ABI, from ffitarget.h. Read at run time, not when the image
-;; is built, so that the architecture is the one the binary runs on.
+;; is built, so that the architecture is the one the binary runs on. A wrong
+;; value here corrupts memory silently, so a platform whose constant is not
+;; established stays nil and struct bindings say they are not supported.
+;;
+;; The Windows value assumes an MSVC-built libffi, which is what
+;; script/setup-libffi.bat installs through vcpkg: FFI_WIN64 is 1 and
+;; FFI_GNUW64, the value a MinGW build defaults to, is 2. The two differ in
+;; the width of long double, which babashka.ffi has no type for.
 (def ^:private default-abi
   (delay
-    (let [arch (System/getProperty "os.arch")]
-      (cond (= :windows (os-key)) nil
+    (let [arch (System/getProperty "os.arch")
+          amd64? (contains? #{"amd64" "x86_64"} arch)]
+      (cond (= :windows (os-key)) (when amd64? 1)   ; FFI_WIN64
             (= "aarch64" arch) 1                    ; FFI_SYSV
-            (contains? #{"amd64" "x86_64"} arch) 2  ; FFI_UNIX64
+            amd64? 2                                ; FFI_UNIX64
             :else nil))))
 
 (def ^:private linked-libffi

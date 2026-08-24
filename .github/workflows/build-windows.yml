@@ -116,3 +116,72 @@ jobs:
           set BABASHKA_TEST_ENV=native
           call script/test.bat :windows || exit /B 1
           call script/run_lib_tests.bat || exit /B 1
+
+  libffi:
+    # A build that links libffi, which babashka.ffi needs to pass a struct
+    # by value. Separate from the release build, which has to keep working
+    # without it.
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
+    runs-on: windows-2022
+    env:
+      LEIN_ROOT: "true"
+      BABASHKA_TEST_ENV: native
+      BABASHKA_SHA: ${{ github.sha }}
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+          submodules: 'true'
+
+      - name: Cache deps
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('project.clj') }}
+          restore-keys: ${{ runner.os }}-maven-
+
+      - name: Setup GraalVM
+        uses: graalvm/setup-graalvm@v1.3.3
+        with:
+          java-version: '25.0.4'
+          distribution: 'graalvm'
+          components: 'native-image'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install clojure tools
+        uses: DeLaGuardo/setup-clojure@13.4
+        with:
+          cli: latest
+          bb: latest
+
+      - name: Install libffi
+        shell: cmd
+        run: |
+              call script\setup-libffi.bat > libffi-path.txt
+              if errorlevel 1 exit /B 1
+              set /P LIBFFI_LIB=< libffi-path.txt
+              echo BABASHKA_LIBFFI=%LIBFFI_LIB%>> %GITHUB_ENV%
+
+      - name: Build
+        shell: cmd
+        run: |
+              powershell -Command "(New-Object Net.WebClient).DownloadFile('https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein.bat', 'lein.bat')"
+              call lein self-install
+
+              set GRAALVM_HOME=%JAVA_HOME%
+
+              rem ordered FFI shapes: the Win64 ABI assigns registers by position
+              call bb script\gen_ffi_metadata.clj windows
+
+              call script/uberjar.bat
+              if errorlevel 1 exit /B 1
+
+              call script/compile.bat
+              if errorlevel 1 exit /B 1
+
+      - name: Test ffi
+        shell: cmd
+        run: |
+              set BABASHKA_CLASSPATH=
+              call lein test :only babashka.ffi-test || exit /B 1

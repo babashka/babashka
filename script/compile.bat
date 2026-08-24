@@ -26,6 +26,13 @@ if "%BABASHKA_SHA%"=="" (
     )
 )
 
+Rem babashka.ffi calls struct-by-value functions through libffi. Build the
+Rem archive with script\setup-libffi.bat. script\uberjar.bat must see the
+Rem same variable: it puts the @CFunction bindings that need these symbols
+Rem on the classpath.
+set "LIBFFI_ARG="
+if not "%BABASHKA_LIBFFI%"=="" set "LIBFFI_ARG=-H:NativeLinkerOption=/WHOLEARCHIVE:%BABASHKA_LIBFFI%"
+
 call %GRAALVM_HOME%\bin\native-image.cmd ^
   "-jar" "target/babashka-%BABASHKA_VERSION%-standalone.jar" ^
   "-H:Name=bb" ^
@@ -33,6 +40,7 @@ call %GRAALVM_HOME%\bin\native-image.cmd ^
   "--verbose" ^
   "--no-fallback" ^
   "--install-exit-handlers" ^
+  %LIBFFI_ARG% ^
   %*
 
 if %errorlevel% neq 0 exit /b %errorlevel%
