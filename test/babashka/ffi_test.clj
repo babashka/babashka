@@ -43,6 +43,32 @@
                        (catch Exception _ false)))
           (.getAbsolutePath out))))))
 
+(def struct-lib
+  "Path of the compiled struct test C library, nil when it cannot be built."
+  (delay
+    (when-not (or skip? tu/windows?)
+      (let [out (io/file "target" "ffi-test-lib"
+                         (if (= "Mac OS X" (System/getProperty "os.name"))
+                           "libffistructs.dylib" "libffistructs.so"))
+            src (io/file "test-resources" "ffi_struct_lib.c")]
+        (io/make-parents out)
+        (when (or (.exists out)
+                  (try (zero? (:exit (p/sh "cc" "-shared" "-fPIC" "-O1"
+                                           "-o" (str out) (str src))))
+                       (catch Exception _ false)))
+          (.getAbsolutePath out))))))
+
+(def libffi?
+  "Whether this build can pass a struct by value. A native image needs
+  libffi linked in, see script/setup-libffi."
+  (delay
+    (boolean
+     (when-not skip?
+       (true? (bb `(do (require '[babashka.ffi :as ~'ffi])
+                       (try (ffi/cfn "div" [:int :int] {:struct [:int :int]})
+                            true
+                            (catch Exception _# false)))))))))
+
 (defn lib-require [path]
   `(do (require '[babashka.ffi :as ~'ffi :refer [~'defcfn]])
        (ffi/load-library ~path)))
@@ -529,6 +555,94 @@
                         (ffi/load-library {:darwin "libz.dylib" :linux "libz.so.1"})
                         ((ffi/cfn "compressBound" [:ulong] :ulong) 0)
                         ((ffi/cfn "strlen" [:string] :size_t) "hello"))))))))
+
+(deftest struct-test
+  (when-not skip?
+    (testing "a layout with an unknown type keyword fails at bind time"
+      (is (thrown-with-msg?
+           Exception #"unknown type :nope"
+           (bb `(do ~ffi-require
+                    (ffi/cfn "div" [:int :int] {:struct [:nope :int]}))))))
+    (if-not @libffi?
+      (do (println "babashka.ffi struct tests skipped: this build has no libffi")
+          (testing "a build without libffi says so"
+            (is (thrown-with-msg?
+                 Exception #"needs libffi"
+                 (bb `(do ~ffi-require
+                          (ffi/cfn "div" [:int :int] {:struct [:int :int]})))))))
+      (do
+        (testing "libc div returns a two-int struct by value"
+          (is (= [[3 1] [-3 -1]]
+                 (bb `(do ~ffi-require
+                          (let [d# (ffi/cfn "div" [:int :int] {:struct [:int :int]})]
+                            [(d# 7 2) (d# -7 2)]))))))
+        (testing "defcfn takes a struct layout as the return type"
+          (is (= [3 1]
+                 (bb `(do ~ffi-require
+                          (~'defcfn ~'c-div "div" [:int :int] {:struct [:int :int]})
+                          (~'c-div 7 2))))))
+        (testing "sizeof a struct layout counts the padding"
+          (is (= [8 24 32 16 16]
+                 (bb `(do ~ffi-require
+                          (mapv ffi/sizeof
+                                [{:struct [:int :int]}
+                                 {:struct [:double :double :double]}
+                                 {:struct [:long :long :long :long]}
+                                 {:struct [{:struct [:int :int]} {:struct [:int :int]}]}
+                                 {:struct [:char :double]}]))))))
+        (testing "a struct binding calls through libffi"
+          (is (= :libffi
+                 (bb `(do ~ffi-require
+                          (:babashka.ffi/backend
+                           (meta (ffi/cfn "div" [:int :int] {:struct [:int :int]}))))))))
+        (testing "a value vector of the wrong length is an error"
+          (is (thrown-with-msg?
+               Exception #"struct value needs 2 fields"
+               (bb `(do ~ffi-require
+                        ((ffi/cfn "div" [{:struct [:int :int]}] :void) [1 2 3]))))))
+        (testing "an empty struct layout is an error"
+          (is (thrown-with-msg?
+               Exception #"non-empty"
+               (bb `(do ~ffi-require (ffi/cfn "div" [:int :int] {:struct []}))))))
+        (testing "a variadic signature cannot pass a struct by value"
+          (is (thrown-with-msg?
+               Exception #"variadic signature cannot pass a struct"
+               (bb `(do ~ffi-require
+                        (ffi/cfn "div" [{:struct [:int :int]} :&] :void))))))))))
+
+(deftest struct-lib-test
+  (when (and (not skip?) @libffi?)
+    (if-not @struct-lib
+      (println "babashka.ffi struct library tests skipped: no cc on PATH")
+      (testing "an HFA return, a return and an argument larger than 16 bytes,
+                and a nested struct"
+        (is (= [[2.5 5.0 7.5] [10 11 12 13] 10 [[-1 -1] [7 7]] [11 22]]
+               (bb `(do ~(lib-require @struct-lib)
+                        (let [v3# {:struct [:double :double :double]}
+                              big# {:struct [:long :long :long :long]}
+                              p2# {:struct [:int :int]}
+                              rect# {:struct [p2# p2#]}]
+                          [((ffi/cfn "v3_scale" [v3# :double] v3#) [1.0 2.0 3.0] 2.5)
+                           ((ffi/cfn "big_make" [:long] big#) 10)
+                           ((ffi/cfn "big_sum" [big#] :long) [1 2 3 4])
+                           ((ffi/cfn "rect_grow" [rect# :int] rect#) [[1 1] [5 5]] 2)
+                           ((ffi/cfn "p2_add" [p2# p2#] p2#) [1 2] [10 20])])))))))))
+
+(deftest struct-thread-test
+  (when (and (not skip?) @libffi? @struct-lib)
+    (testing "threads that share one struct binding do not share its scratch"
+      (is (= [:ok :ok :ok :ok]
+             (bb `(do ~(lib-require @struct-lib)
+                      (let [p2# {:struct [:int :int]}
+                            add# (ffi/cfn "p2_add" [p2# p2#] p2#)]
+                        (mapv deref
+                              (mapv (fn [i#]
+                                      (future
+                                        (dotimes [_# 5000]
+                                          (assert (= [(* 2 i#) (* 3 i#)]
+                                                     (add# [i# i#] [i# (* 2 i#)]))))
+                                        :ok))
+                                    (range 4)))))))))))
 
 (def ^:private generated-files
   ["resources/META-INF/native-image/babashka/ffi/reachability-metadata.json"
