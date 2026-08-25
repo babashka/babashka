@@ -207,14 +207,14 @@
              (bb `(do ~ffi-require
                       (let [addr# (ffi/find-symbol "abs")]
                         [((ffi/cfn addr# [:int] :int) -42)
-                         ;; the same function through its name
+                         ;; The next call uses the function name.
                          ((ffi/cfn "abs" [:int] :int) -42)]))))))
-    (testing "a callback is callable through its address"
+    (testing "cfn calls a callback through its address"
       (is (= 42
              (bb `(do ~ffi-require
                       (let [cb# (ffi/callback (fn [x#] (* x# 3)) [:int] :int)]
                         ((ffi/cfn cb# [:int] :int) 14)))))))
-    (testing "the null address is rejected at bind time"
+    (testing "cfn rejects the null address at bind time"
       (is (thrown? Exception (bb `(do ~ffi-require (ffi/cfn 0 [:int] :int))))))))
 
 (deftest callback-test
@@ -284,11 +284,11 @@
                      (ffi/find-symbol "bb_no_such_symbol_zzz")])))))
   (when-let [lib @test-lib]
     (testing "a library map limits the search to that library"
-      ;; mix_dj is loaded, so the search without a library map finds it. The
-      ;; test library neither defines zlibVersion nor links zlib, and zlib
-      ;; does not link the test library, so each map excludes the other's
-      ;; symbol. A library map does include the libraries that the library
-      ;; links, so pick symbols that no dependency supplies.
+      ;; mix_dj is loaded. Thus, the search without a library map finds it.
+      ;; The test library does not define zlibVersion and does not link zlib.
+      ;; Zlib does not link the test library. Thus, each map excludes the
+      ;; symbol from the other library. A library map includes its
+      ;; dependencies. The selected symbols do not occur in these dependencies.
       (is (= [true true nil nil]
              (bb `(do ~ffi-require
                       (let [t# (ffi/load-library ~lib)
@@ -297,18 +297,42 @@
                          (number? (ffi/find-symbol t# "mix_dj"))
                          (ffi/find-symbol z# "mix_dj")
                          (ffi/find-symbol t# "zlibVersion")])))))))
-  (testing "a library can be given as a map, a delay or a function"
+  (testing "cfn accepts a library map, delay or function"
     (is (= ["ok" "ok" "ok"]
            (bb `(do ~ffi-require
                     (let [z# (ffi/load-system-library "z")
                           version# (fn [lib#] ((ffi/cfn lib# "zlibVersion" [] :string)))]
                       (mapv #(if (string? (version# %)) "ok" %)
                             [z# (delay z#) (fn [] z#)])))))))
-  (testing "any other :library value is a clear error, not a cast failure"
-    (is (thrown-with-msg?
-         Exception #":library must be a library map"
-         (bb `(do ~ffi-require
-                  ((ffi/cfn "not a library" "zlibVersion" [] :string)))))))
+  (testing "an invalid :library value causes a clear error"
+    ;; false is not "no library" and a keyword or a collection is not a
+    ;; function to call, although both are IFn
+    (doseq [bad ["not a library" false :a-keyword [1 2] #{:a}]]
+      (is (thrown-with-msg?
+           Exception #":library must be a library map"
+           (bb `(do ~ffi-require
+                    ((ffi/cfn ~bad "zlibVersion" [] :string)))))
+          (pr-str bad))))
+  (testing "a variadic binding asks a :library function once, not per tail shape"
+    ;; two tail shapes, one and two integers: each gets its own handle. No
+    ;; floats, since %f follows the C locale and prints "1,5" under nl_NL
+    (is (= [1 "1" "2-3"]
+           (bb `(do ~ffi-require
+                    (let [calls# (atom 0)
+                          ;; zlib links the C library, and a library map
+                          ;; searches the libraries it links, so snprintf
+                          ;; resolves through it on every platform
+                          lib# (fn [] (swap! calls# inc)
+                                 (ffi/load-system-library ~(if tu/windows? "msvcrt" "z")))
+                          snprintf# (ffi/cfn lib# ~snprintf-sym [:pointer :size_t :string :&] :int)
+                          buf# (ffi/alloc 32)
+                          fmt# (fn [f# & vs#]
+                                 (apply snprintf# buf# 32 f# vs#)
+                                 (ffi/ptr->string buf#))
+                          a# (fmt# "%d" 1)
+                          b# (fmt# "%d-%d" 2 3)]
+                      (ffi/free buf#)
+                      [@calls# a# b#]))))))
   (testing "missing library throws"
       (is (thrown? Exception (bb `(do ~ffi-require
                                       (ffi/load-library "libdoesnotexist-bb.so"))))))

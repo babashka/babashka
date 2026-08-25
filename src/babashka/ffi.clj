@@ -334,14 +334,16 @@
                           @last-lookup-error))))))
 
 (defn- resolve-library
-  "The SymbolLookup behind a :library value: a library map, a function
-  that returns one, or a delay, atom or var that holds one. The value is
-  asked once per binding, when the binding first resolves its symbol, so
-  a function or a delay can name a library that is loaded later."
+  "Returns the SymbolLookup for a :library value. The value can be a library
+  map or a function that returns one. It can also be an IDeref object that
+  holds a library map."
   ^SymbolLookup [lib]
-  (let [lib (cond (map? lib) lib
+  (let [;; fn? and not ifn?: a keyword, a vector or a set is an IFn too, and
+        ;; calling one with no arguments gives an arity error instead of the
+        ;; message below
+        lib (cond (map? lib) lib
                   (instance? clojure.lang.IDeref lib) @lib
-                  (ifn? lib) (lib)
+                  (fn? lib) (lib)
                   :else lib)
         lookup (if (map? lib) (:lookup lib) lib)]
     (if (instance? SymbolLookup lookup)
@@ -351,14 +353,15 @@
                       {:library lib})))))
 
 (defn- lookup-symbol ^MemorySegment [lib ^String sym]
-  (let [lookups (if lib
-                  [(resolve-library lib)]
-                  (conj @libraries (.defaultLookup ^Linker @linker*)))]
+  (let [;; nil? and not truthiness: false is not "no library", it is a wrong one
+        lookups (if (nil? lib)
+                  (conj @libraries (.defaultLookup ^Linker @linker*))
+                  [(resolve-library lib)])]
     (some (fn [^SymbolLookup l] (.orElse (.find l sym) nil)) lookups)))
 
 (defn- require-symbol ^MemorySegment [lib sym]
   (if (integer? sym)
-    ;; a function pointer: the caller resolved it already
+    ;; The caller already resolved this function pointer.
     (MemorySegment/ofAddress (long sym))
     (or (lookup-symbol lib ^String sym)
         (throw (ex-info (str "babashka.ffi: symbol not found: " sym) {:symbol sym})))))
@@ -367,9 +370,9 @@
   "Finds sym and returns its native address as a Clojure long. Returns nil
   for an unknown symbol.
 
-  With a library map, find-symbol searches that library and the libraries
-  that it links. Without one, it searches all loaded libraries and then the
-  default system lookup."
+  A library value limits the search to one library and its dependencies.
+  Without a library value, find-symbol searches all loaded libraries. Then it
+  searches the default system lookup."
   ([sym] (find-symbol nil sym))
   ([lib sym]
    (some-> (lookup-symbol lib (str sym)) .address)))
@@ -425,6 +428,9 @@
     (throw (unsupported-ex sym argtypes rettype variadic-limits)))
   (let [nf (count fixed)
         cache (atom {})
+        ;; resolved once per binding, on the first call, and shared by every
+        ;; tail shape: a :library function is asked for its library one time
+        address (delay (require-symbol lib sym))
         caller-for
         (fn [tail-types]
           (or (get @cache tail-types)
@@ -437,7 +443,7 @@
                                               (pr-str tail-types)))))
                 (let [handle (.downcallHandle
                               ^Linker @linker*
-                              (require-symbol lib sym)
+                              ^MemorySegment @address
                               (descriptor all-types rettype)
                               (into-array java.lang.foreign.Linker$Option
                                           [(java.lang.foreign.Linker$Option/firstVariadicArg nf)]))
@@ -464,21 +470,17 @@
       {:babashka.ffi/backend :ffm})))
 
 (defn cfn
-  "Creates a Clojure function that calls C function sym. sym is the name of a
-  C symbol, or the address of a function as a Clojure long. argtypes is a
-  vector of type keywords. rettype is a type keyword.
+  "Creates a Clojure function that calls the C function sym. sym is a C symbol
+  name or a function address. The address must be a Clojure long. argtypes is
+  a vector of type keywords. rettype is a type keyword.
 
-  An address binds a function that has no name to look up: a pointer from a
-  loader such as glXGetProcAddress, a pointer that a C function returns, a
-  pointer in a struct, or the result of callback. find-symbol and callback
-  both return such an address.
+  Use an address for a function that has no exported name. The address can
+  come from a loader, C function, struct field, find-symbol, or callback.
 
-  With a library map, cfn searches that library and the libraries that it
-  links, so a symbol that the library defines resolves to the definition in
-  that library. Without one, cfn
-  searches all loaded libraries and then the default system lookup. The first
-  call resolves the symbol and creates the call handle. You can create the
-  binding before you load its library.
+  A library value limits the search to one library and its dependencies.
+  Without a library value, cfn searches all loaded libraries. Then it searches
+  the default system lookup. The first call resolves the symbol and creates
+  the call handle. You can create the binding before you load its library.
 
   A trailing :& declares a variadic C function. The types before :& are the
   fixed parameters. Each call infers the tail types from its values."
@@ -488,8 +490,8 @@
      (throw (ex-info (str "babashka.ffi: C symbol must be a string or an address: "
                           (pr-str sym))
                      {:sym sym})))
-   ;; a null function pointer crashes the process on the first call, and it
-   ;; is what a loader returns for a function that it does not have
+   ;; A null function pointer stops the process on the first call. A loader
+   ;; returns this value when it does not have the requested function.
    (when (and (integer? sym) (zero? sym))
      (throw (ex-info "babashka.ffi: cannot bind the null address" {:sym sym})))
    (when (some #(= :void %) argtypes)
@@ -591,16 +593,18 @@
   three arguments are the C symbol, argument types, and return type. defcfn
   preserves all metadata on name. This metadata includes ^:private.
 
-  The attribute map key :library gives cfn a library to search, as a library
-  map or as something that derefs to one:
+  The :library key in the attribute map selects a library for cfn:
 
       (def sqlite (delay (ffi/load-library (extract-bundled-library!))))
       (defcfn sqlite3-open {:library sqlite} \"sqlite3_open\"
         [:string :pointer] :int)
 
-  A binding without :library searches all loaded libraries and then the
-  default system lookup, where a library of the same name that the system
-  installs can supply the symbol instead."
+  The value can be a library map or a function that returns one. It can also
+  be an IDeref object that holds a library map.
+
+  Without :library, a binding searches all loaded libraries. Then it searches
+  the default system lookup. A system library with the same name can supply
+  the symbol."
   {:arglists '([name docstring? attr-map? sym argtypes rettype])}
   [name & args]
   (when (< (count args) 3)
@@ -617,8 +621,8 @@
       (throw (ex-info "babashka.ffi: defcfn takes at most a docstring and an attribute map before the C symbol"
                       {:name name})))
     `(def ~(with-meta name (cond-> (meta name)
-                             ;; :library selects the library, it is not
-                             ;; metadata about the var
+                             ;; :library selects the library. It is not var
+                             ;; metadata.
                              attr-map (merge (dissoc attr-map :library))
                              docstring (assoc :doc docstring)))
        (cfn ~(:library attr-map) ~sym ~argtypes ~rettype))))
