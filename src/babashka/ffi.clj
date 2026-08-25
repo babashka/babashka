@@ -171,10 +171,8 @@
   (let [as-long (fn [a] (cond (nil? a) 0
                               (instance? MemorySegment a) (.address ^MemorySegment a)
                               :else (long a)))
-        as-double (fn [a] (double a))
-        as-float (fn [a] (float a))
         as-bool (fn [a] (if a 1 0))]
-    (into {:double as-double :float as-float :bool as-bool}
+    (into {:double double :float float :bool as-bool}
           (map (fn [t] [t as-long]))
           (disj long-carrier? :bool))))
 
