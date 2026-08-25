@@ -103,14 +103,15 @@ candidate:
 ;;=> "libz.dylib"
 ```
 
-Pass this map to `cfn` to search only that library:
+Pass this map to `cfn` to limit the search to that library and its
+dependencies:
 
 ```clojure
 (def zlib-version (ffi/cfn zlib "zlibVersion" [] :string))
 ```
 
 Without a library map, `cfn` searches all loaded libraries and the default
-system lookup.
+system lookup. `find-symbol` follows the same rules.
 
 A shared library exports functions and global variables by name. An exported
 name is a symbol.
@@ -127,6 +128,22 @@ a C function that accepts a function or data pointer.
 
 If `find-symbol` cannot find the symbol, it returns `nil`.
 
+Pass a library map to limit the search to that library and its dependencies:
+
+```clojure
+(ffi/find-symbol zlib "zlibVersion")
+```
+
+Without a library map, `find-symbol` searches all loaded libraries and then
+the default system lookup.
+
+A symbol from the selected library takes priority over symbols from its
+dependencies. Thus, a bundled library supplies its own function.
+
+The search can also find symbols from the dependencies. For example,
+`(ffi/find-symbol zlib "strlen")` returns the address of the C library's
+`strlen`.
+
 ## Bind a function
 
 Use `cfn` to create a Clojure function:
@@ -139,6 +156,30 @@ Use `cfn` to create a Clojure function:
 
 The arguments to `cfn` are the C symbol, argument types, and return type.
 The symbol lookup occurs on the first call.
+
+### Bind an address
+
+`cfn` also accepts a function address instead of a name:
+
+```clojure
+(def c-abs (ffi/cfn (ffi/find-symbol "abs") [:int] :int))
+(c-abs -42)
+;;=> 42
+```
+
+Use this form for a function that has no exported name.
+
+Function addresses can come from loaders, C functions, struct fields, or
+`callback`.
+
+Read a pointer field with `read` and `:pointer`. Then pass the result to
+`cfn`.
+
+`cfn` rejects address zero. A loader returns zero when it does not have the
+requested function.
+
+CAUTION: Make sure that the address points to a function with the declared
+signature. An incorrect address or signature can stop the process.
 
 Use `defcfn` to define and bind a function:
 
@@ -156,6 +197,35 @@ You can add a docstring and an attribute map before the C symbol:
   {:added "1.0"}
   "zlibVersion" [] :string)
 ```
+
+The `:library` key in the attribute map selects the library for the binding:
+
+```clojure
+(def sqlite (delay (ffi/load-library (extract-bundled-library!))))
+
+(defcfn sqlite3-open {:library sqlite}
+  "sqlite3_open" [:string :pointer] :int)
+```
+
+If you ship a library with your application, use `:library`.
+
+Without this key, the binding searches all loaded libraries and then the
+system.
+
+A system library with the same name can then supply the symbol. As a result,
+the application can call a version that you did not select.
+
+`:library` accepts one of these values:
+
+- A library map
+- A function that returns a library map
+- A `delay`, `atom`, or var that holds a library map.
+
+At the first call, the binding gets the library and resolves the symbol. The
+binding keeps the function address.
+
+A function or `delay` can refer to a library that loads later. Changes to the
+library value after the first call do not change the binding.
 
 ### Types
 
