@@ -382,6 +382,9 @@
           java.lang.ArithmeticException
           java.lang.AssertionError
           java.lang.AutoCloseable
+          ;; a babashka.ffi pointer is a MemorySegment.
+          java.lang.foreign.MemorySegment
+          java.lang.foreign.ValueLayout
           java.lang.Boolean
           java.lang.Byte
           java.lang.Character
@@ -1013,6 +1016,13 @@
                                    org.jline.utils.NonBlockingReader
                                    (instance? org.jline.terminal.spi.TerminalProvider v)
                                    org.jline.terminal.spi.TerminalProvider
+                                   ;; The concrete pointer classes are
+                                   ;; jdk.internal.foreign.NativeMemorySegmentImpl
+                                   ;; and friends.
+                                   (instance? java.lang.foreign.MemorySegment v)
+                                   java.lang.foreign.MemorySegment
+                                   (instance? java.lang.foreign.ValueLayout v)
+                                   java.lang.foreign.ValueLayout
                                    (instance? java.io.Closeable v)
                                    java.io.Closeable
                                    (instance? java.util.Collection v)

@@ -119,6 +119,62 @@
                           (ffi/free p#)
                           res#)))))))))
 
+(deftest segment-test
+  (when-not skip?
+    (testing "a pointer is a MemorySegment that knows its length"
+      (is (= [true 8]
+             (bb `(do ~ffi-require
+                      (let [p# (ffi/alloc 8)
+                            res# [(instance? java.lang.foreign.MemorySegment p#) (.byteSize p#)]]
+                        (ffi/free p#)
+                        res#))))))
+    (testing "a read past the end throws instead of reading memory"
+      (is (thrown-with-msg?
+           Exception #"IndexOutOfBounds|Out of bound"
+           (bb `(do ~ffi-require
+                    (let [p# (ffi/alloc 4)]
+                      (try (ffi/read p# :long 0)
+                           (finally (ffi/free p#)))))))))
+    (testing "a pointer that C returned has length 0 and read sizes it from the type"
+      (is (= [0 "abc"]
+             (bb `(do ~ffi-require
+                      (let [src# (ffi/string->ptr "abc")
+                            ;; strchr returns a pointer into src, length 0
+                            hit# ((ffi/cfn "strchr" [:pointer :int] :pointer) src# (int \a))
+                            res# [(.byteSize hit#) (ffi/ptr->string hit#)]]
+                        (ffi/free src#)
+                        res#))))))
+    (testing "segment, address, slice and reinterpret"
+      (is (= [true 8 4 42 4]
+             (bb `(do ~ffi-require
+                      (let [p# (ffi/alloc 8)
+                            a# (ffi/address p#)
+                            again# (ffi/segment a# 8)
+                            tail# (ffi/slice p# 4)
+                            _# (ffi/write tail# :int 0 42)
+                            sized# (ffi/reinterpret (ffi/segment a#) 4)
+                            res# [(= a# (ffi/address again#))
+                                  (.byteSize again#)
+                                  (.byteSize tail#)
+                                  (ffi/read p# :int 4)
+                                  (.byteSize sized#)]]
+                        (ffi/free p#)
+                        res#))))))
+    (testing "a number where a pointer is expected is a clear error"
+      (is (thrown-with-msg?
+           Exception #"expected a pointer \(a MemorySegment\), got 42"
+           (bb `(do ~ffi-require
+                    (ffi/read 42 :int))))))
+    (testing "null is a segment, and null? sees any zero address"
+      (is (= [true true false]
+             (bb `(do ~ffi-require
+                      (let [p# (ffi/alloc 1)
+                            res# [(instance? java.lang.foreign.MemorySegment ffi/null)
+                                  (ffi/null? (ffi/segment 0))
+                                  (ffi/null? p#)]]
+                        (ffi/free p#)
+                        res#))))))))
+
 (deftest memory-test
   (when-not skip?
     (testing "alloc, typed write and read, free"
@@ -135,7 +191,7 @@
       (is (= [nil nil]
              (bb `(do ~ffi-require
                       (let [p# (ffi/alloc 8)]
-                        (let [res# [(ffi/read p# :string) (ffi/ptr->string 0)]]
+                        (let [res# [(ffi/read p# :string) (ffi/ptr->string ffi/null)]]
                           (ffi/free p#)
                           res#)))))))
     (testing "read-bytes and write-bytes use the specified offset"
@@ -280,7 +336,7 @@
   (testing "find-symbol probes without binding"
     (is (= [true nil]
            (bb `(do (require '[babashka.ffi :as ~'ffi])
-                    [(number? (ffi/find-symbol "strlen"))
+                    [(instance? java.lang.foreign.MemorySegment (ffi/find-symbol "strlen"))
                      (ffi/find-symbol "bb_no_such_symbol_zzz")])))))
   (when-let [lib @test-lib]
     (testing "a library map limits the search to that library"
@@ -293,8 +349,8 @@
              (bb `(do ~ffi-require
                       (let [t# (ffi/load-library ~lib)
                             z# (ffi/load-system-library "z")]
-                        [(number? (ffi/find-symbol "mix_dj"))
-                         (number? (ffi/find-symbol t# "mix_dj"))
+                        [(some? (ffi/find-symbol "mix_dj"))
+                         (some? (ffi/find-symbol t# "mix_dj"))
                          (ffi/find-symbol z# "mix_dj")
                          (ffi/find-symbol t# "zlibVersion")])))))))
   (testing "cfn accepts a library map, delay or function"
