@@ -127,7 +127,7 @@ a C function that accepts a function or data pointer.
 
 If `find-symbol` cannot find the symbol, it returns `nil`.
 
-Pass a library map to limit the search to that library, as `cfn` does:
+Pass a library map to limit the search to that library and its dependencies:
 
 ```clojure
 (ffi/find-symbol zlib "zlibVersion")
@@ -136,12 +136,12 @@ Pass a library map to limit the search to that library, as `cfn` does:
 Without a library map, `find-symbol` searches all loaded libraries and then
 the default system lookup.
 
-A library map limits the search to that library and the libraries that it
-links. A symbol that the library defines resolves to the definition in that
-library, so a bundled library gives you its own function and not the copy
-that the system installs. A symbol that the library does not define can
-still come from one of its dependencies: `(ffi/find-symbol zlib "strlen")`
-returns the address of the C library's `strlen`.
+A symbol from the selected library takes priority over symbols from its
+dependencies. Thus, a bundled library supplies its own function.
+
+The search can also find symbols from the dependencies. For example,
+`(ffi/find-symbol zlib "strlen")` returns the address of the C library's
+`strlen`.
 
 ## Bind a function
 
@@ -158,7 +158,7 @@ The symbol lookup occurs on the first call.
 
 ### Bind an address
 
-`cfn` also accepts the address of a function instead of a name:
+`cfn` also accepts a function address instead of a name:
 
 ```clojure
 (def c-abs (ffi/cfn (ffi/find-symbol "abs") [:int] :int))
@@ -166,17 +166,19 @@ The symbol lookup occurs on the first call.
 ;;=> 42
 ```
 
-Use this for a function that has no name to look up. A loader such as
-`glXGetProcAddress` returns the address of a function, a C function returns
-a function pointer, a struct holds one in a field, and `callback` returns
-the address of a Clojure function. Read a pointer field with `read` and
-`:pointer`, then bind the address that you read.
+Use this form for a function that has no exported name.
 
-`cfn` rejects the null address, which is what a loader returns for a
-function that it does not have.
+Function addresses can come from loaders, C functions, struct fields, or
+`callback`.
 
-CAUTION: An address must point to a function with the signature that you
-declare. An incorrect address or signature can stop the process.
+Read a pointer field with `read` and `:pointer`. Then pass the result to
+`cfn`.
+
+`cfn` rejects address zero. A loader returns zero when it does not have the
+requested function.
+
+CAUTION: Make sure that the address points to a function with the declared
+signature. An incorrect address or signature can stop the process.
 
 Use `defcfn` to define and bind a function:
 
@@ -195,7 +197,7 @@ You can add a docstring and an attribute map before the C symbol:
   "zlibVersion" [] :string)
 ```
 
-The attribute map key `:library` gives the binding a library to search:
+The `:library` key in the attribute map selects the library for the binding:
 
 ```clojure
 (def sqlite (delay (ffi/load-library (extract-bundled-library!))))
@@ -204,17 +206,25 @@ The attribute map key `:library` gives the binding a library to search:
   "sqlite3_open" [:string :pointer] :int)
 ```
 
-Use it when you ship your own copy of a library. Without `:library` the
-binding searches every loaded library and then the system, so a library of
-the same name that the system installs can supply the symbol instead, and
-you call a version you did not choose.
+If you ship a library with your application, use `:library`.
 
-The value is a library map, a function that returns one, or a `delay`,
-`atom` or var that holds one. A binding asks for the library once, when it
-first resolves its symbol, and keeps the address it finds. So a `delay` or
-a function lets a binding name a library that is loaded later, for example
-one that is unpacked at run time, and swapping the library afterwards does
-not change a binding that has already run.
+Without this key, the binding searches all loaded libraries and then the
+system.
+
+A system library with the same name can then supply the symbol. As a result,
+the application can call a version that you did not select.
+
+`:library` accepts one of these values:
+
+- A library map
+- A function that returns a library map
+- A `delay`, `atom`, or var that holds a library map.
+
+At the first call, the binding gets the library and resolves the symbol. The
+binding keeps the function address.
+
+A function or `delay` can refer to a library that loads later. Changes to the
+library value after the first call do not change the binding.
 
 ### Types
 

@@ -12,8 +12,8 @@ A preview of the next release can be installed from
 - Building babashka from source no longer fails when a single upstream host is unreachable: the musl and zlib tarballs are fetched with retries, from mirrors, and cached per machine
 - SCI caches resolved JVM instance methods, static methods, constructors and fields per call site for performance
 - Add experimental [`babashka.ffi`](doc/ffi.md) for calling functions in native shared libraries
-- `babashka.ffi`: a binding can name the library to search, with `defcfn`'s `:library` key or by passing a library to `cfn` and `find-symbol`: a library map, a function that returns one, or a delay that holds one. Without it, a library that the system installs under the same name can supply the symbol instead
-- `babashka.ffi`: `cfn` binds the address of a function as well as a name, for a function pointer that a loader, a C call, a struct field or `callback` returns
+- `babashka.ffi`: A binding can limit its symbol search to one library and its dependencies. `defcfn` uses its `:library` key for this selection. `cfn` and `find-symbol` accept the library as an argument. The library value can be a map, a function, or an object that implements `IDeref`. This limit prevents a system library with the same name from supplying the symbol.
+- `babashka.ffi`: `cfn` can bind a function address. This supports pointers from loaders, C calls, struct fields, and `callback`.
 - `babashka.ffi`: `read-bytes` and `write-bytes` copy byte arrays to and from native memory. `byte-buffer` gives a zero-copy `java.nio.ByteBuffer` view of native memory
 - On Linux, the install script now installs the dynamic binary by default. It installs the static binary on musl systems and on systems with glibc older than 2.17. The `--static` and `--dynamic` options override the automatic selection
 - The dynamic binary for Linux amd64 links every library statically except glibc. It no longer needs `libz.so.1` at run time
