@@ -209,9 +209,12 @@ binding searches every loaded library and then the system, so a library of
 the same name that the system installs can supply the symbol instead, and
 you call a version you did not choose.
 
-The value is a library map, or something that derefs to one. A `delay`
-lets the binding name a library that is loaded later, for example one that
-is unpacked at run time.
+The value is a library map, a function that returns one, or a `delay`,
+`atom` or var that holds one. A binding asks for the library once, when it
+first resolves its symbol, and keeps the address it finds. So a `delay` or
+a function lets a binding name a library that is loaded later, for example
+one that is unpacked at run time, and swapping the library afterwards does
+not change a binding that has already run.
 
 ### Types
 

@@ -335,12 +335,27 @@
                           {:library name}
                           @last-lookup-error))))))
 
+(defn- resolve-library
+  "The SymbolLookup behind a :library value: a library map, a function
+  that returns one, or a delay, atom or var that holds one. The value is
+  asked once per binding, when the binding first resolves its symbol, so
+  a function or a delay can name a library that is loaded later."
+  ^SymbolLookup [lib]
+  (let [lib (cond (map? lib) lib
+                  (instance? clojure.lang.IDeref lib) @lib
+                  (ifn? lib) (lib)
+                  :else lib)
+        lookup (if (map? lib) (:lookup lib) lib)]
+    (if (instance? SymbolLookup lookup)
+      lookup
+      (throw (ex-info (str "babashka.ffi: :library must be a library map, a function that returns one, or a delay, atom or var that holds one, got "
+                           (pr-str lib))
+                      {:library lib})))))
+
 (defn- lookup-symbol ^MemorySegment [lib ^String sym]
-  (let [;; a delay or a var, so that a binding can name a library that
-        ;; another thing loads later
-        lib (if (instance? clojure.lang.IDeref lib) @lib lib)
-        lib (if (map? lib) (:lookup lib) lib)
-        lookups (if lib [lib] (conj @libraries (.defaultLookup ^Linker @linker*)))]
+  (let [lookups (if lib
+                  [(resolve-library lib)]
+                  (conj @libraries (.defaultLookup ^Linker @linker*)))]
     (some (fn [^SymbolLookup l] (.orElse (.find l sym) nil)) lookups)))
 
 (defn- require-symbol ^MemorySegment [lib sym]

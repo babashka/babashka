@@ -297,6 +297,18 @@
                          (number? (ffi/find-symbol t# "mix_dj"))
                          (ffi/find-symbol z# "mix_dj")
                          (ffi/find-symbol t# "zlibVersion")])))))))
+  (testing "a library can be given as a map, a delay or a function"
+    (is (= ["ok" "ok" "ok"]
+           (bb `(do ~ffi-require
+                    (let [z# (ffi/load-system-library "z")
+                          version# (fn [lib#] ((ffi/cfn lib# "zlibVersion" [] :string)))]
+                      (mapv #(if (string? (version# %)) "ok" %)
+                            [z# (delay z#) (fn [] z#)])))))))
+  (testing "any other :library value is a clear error, not a cast failure"
+    (is (thrown-with-msg?
+         Exception #":library must be a library map"
+         (bb `(do ~ffi-require
+                  ((ffi/cfn "not a library" "zlibVersion" [] :string)))))))
   (testing "missing library throws"
       (is (thrown? Exception (bb `(do ~ffi-require
                                       (ffi/load-library "libdoesnotexist-bb.so"))))))
