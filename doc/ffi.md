@@ -120,11 +120,11 @@ Use `find-symbol` to get a pointer to a symbol without a function binding:
 
 ```clojure
 (ffi/find-symbol "zlibVersion")
-;;=> 4438706736
+;;=> a pointer
 ```
 
-The result is a native address in a Clojure long. You can pass this value to
-a C function that accepts a function or data pointer.
+The result is a pointer. You can pass it to a C function that accepts a
+function or data pointer, or to `cfn` to bind it.
 
 If `find-symbol` cannot find the symbol, it returns `nil`.
 
@@ -247,7 +247,7 @@ Use these type keywords in function signatures:
 | `:float` | 32-bit floating-point number. |
 | `:double` | 64-bit floating-point number. |
 | `:bool` | One-byte C boolean. |
-| `:pointer` | Native address in a Clojure long. |
+| `:pointer` | A pointer, see [Use native memory](#use-native-memory). |
 | `:string` | Pointer to a NUL-terminated UTF-8 string. |
 
 `:long` and `:ulong` are always 64-bit types. A C `long` is 32 bits on
@@ -302,13 +302,35 @@ For example, a `printf` format must match its values.
 
 ## Use native memory
 
-Pointers are native addresses stored in Clojure longs. `ffi/null` is the
-NULL address.
+A pointer is a `java.lang.foreign.MemorySegment`. The same object works in
+babashka and on the JVM.
+
+A pointer from `alloc` knows its length and its arena. A read or write past
+the end throws an `IndexOutOfBoundsException`. A read or write after the
+arena closed throws an `IllegalStateException`. Neither can corrupt memory.
+
+A pointer that C returns has length 0, because C does not say how long it
+is. `read`, `write`, `read-bytes` and `ptr->string` size such a pointer from
+the type or the count you give them, so an out parameter needs no extra
+step. To read more through it, give it a length with `reinterpret`.
+
+Use `address` to get the address as a long, for example to print it. Use
+`segment` to turn a long that you got elsewhere back into a pointer. Use
+`slice` for a pointer into the middle of a block. Pointer arithmetic with
+`+` does not work on a pointer.
 
 ```clojure
-ffi/null
-;;=> 0
+(ffi/address p)          ;;=> 4438706736
+(ffi/segment 4438706736) ;;=> a pointer of length 0
+(ffi/segment addr 16)    ;;=> a pointer of length 16
+(ffi/slice p 8)          ;;=> the rest of p from byte 8
+(ffi/reinterpret p 64)   ;;=> p with length 64
+```
 
+A C function that wants a pointer accepts a pointer or `nil`, which is NULL.
+It rejects a number. `ffi/null` is the NULL pointer:
+
+```clojure
 (ffi/null? ffi/null)
 ;;=> true
 ```
