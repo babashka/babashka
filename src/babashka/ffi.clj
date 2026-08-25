@@ -772,44 +772,52 @@
   (or (sizes t) (throw (ex-info (str "babashka.ffi: unknown type " t) {:type t}))))
 
 (defn confined-arena
-  "An arena for this thread only. Allocation in it is cheap, like a native
-  stack. Closing it releases everything allocated in it, so create it in a
-  with-open clause."
+  "Returns a confined arena. Create it in a with-open clause. Closing the arena
+  releases all its memory."
   ^Arena []
   (Arena/ofConfined))
 
 (defn shared-arena
-  "An arena that threads share. Closing it from any thread releases
-  everything allocated in it."
+  "Returns an arena that threads can share. Any thread can close the arena.
+  Closing the arena releases all its memory."
   ^Arena []
   (Arena/ofShared))
 
 (defn auto-arena
-  "An arena that the garbage collector manages. It releases everything
-  allocated in it once nothing refers to the arena. It cannot be closed."
+  "Returns an arena that the garbage collector manages. Keep a reference to
+  the arena while you use its pointers. You cannot close this arena."
   ^Arena []
   (Arena/ofAuto))
 
 (defn global-arena
-  "The arena that never closes. Memory allocated in it lives as long as the
-  process."
+  "Returns the global arena. You cannot close this arena. Its memory exists
+  until the process stops."
   ^Arena []
   (Arena/global))
 
 (defn alloc
-  "Allocates n bytes of zeroed native memory and returns its pointer.
+  "Allocates zeroed native memory and returns its pointer. n is a byte count or
+  a type keyword.
 
-  With an arena, closing the arena releases the memory. Without one, the
-  memory comes from the C allocator and free releases it. Do not call free
-  on a pointer that an arena allocated.
+  When you supply an arena, the arena owns the memory. Closing the arena
+  releases this memory.
 
-  n is a byte count or a type keyword."
+  Without an arena, the C allocator owns the memory. Release this memory with
+  free.
+
+  CAUTION: Do not call free on a pointer that an arena allocated. This invalid
+  operation can stop the process."
   ([n]
    (let [size (long (if (keyword? n) (sizeof n) n))]
      ;; calloc returns a pointer C made, so it has no length yet
      (.reinterpret ^MemorySegment (@c-calloc 1 size) size)))
   ([^Arena arena n]
-   (.allocate arena (long (if (keyword? n) (sizeof n) n)))))
+   ;; The one-argument overload guarantees only alignment 1. Thus, this code
+   ;; supplies an explicit alignment. A type uses its natural alignment. A byte
+   ;; count uses alignment 16.
+   (let [size (long (if (keyword? n) (sizeof n) n))
+         align (if (keyword? n) (max 1 (min 8 size)) 16)]
+     (.allocate arena size (long align)))))
 
 (defn free
   "Releases memory allocated by alloc or string->ptr."
