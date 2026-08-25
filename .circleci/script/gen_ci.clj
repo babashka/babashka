@@ -174,7 +174,9 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                           (when (not= "mac" platform)
                                             (run "Install native dev tools"
                                               (if (and static? musl? (not= "aarch64" arch))
-                                                (str base-install-cmd "\nsudo -E script/setup-musl")
+                                                (str base-install-cmd
+                                                     "\nexport BABASHKA_TARBALL_CACHE=\"$HOME/.cache/babashka-tarballs\""
+                                                     "\nsudo -E script/setup-musl")
                                                 ;; non-musl linux builds link zlib statically
                                                 (str base-install-cmd "\nsudo -E script/setup-zlib"))))
                                           ;; after dev tools: the probe needs cc
@@ -195,7 +197,11 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                             (str/join "\n" ["export BABASHKA_RELEASE=true"
                                                             ".circleci/script/release"]))
                                           {:save_cache
-                                           {:paths ["~/.m2" "~/graalvm"]
+                                           {:paths ["~/.m2" "~/graalvm"
+                                                    ;; source tarballs, so a
+                                                    ;; dead upstream only hurts
+                                                    ;; on a cache miss
+                                                    "~/.cache/babashka-tarballs"]
                                             :key   cache-key}}
                                           {:store_artifacts {:path        "/tmp/release"
                                                              :destination "release"}}
