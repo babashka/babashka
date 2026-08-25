@@ -370,6 +370,39 @@ Use `alloc` to allocate zeroed memory. Always release this memory with
 CAUTION: Do not use a pointer after `free`. This can corrupt memory or stop the
 process.
 
+`alloc` also accepts a type keyword instead of a byte count:
+
+```clojure
+(ffi/alloc :pointer)   ; 8 bytes
+```
+
+### Arenas
+
+An arena owns memory. When you close the arena, it releases all memory that
+it allocated. Use an arena in `with-open`:
+
+```clojure
+(with-open [arena (ffi/confined-arena)]
+  (let [p (ffi/alloc arena :int)
+        q (ffi/alloc arena 256)]
+    (ffi/write p :int 42)
+    (ffi/read p :int)))
+;;=> 42
+```
+
+The arena releases `p` and `q` when the body ends, also when the body
+throws. Do not call `free` on memory that an arena allocated.
+
+Use `confined-arena` for memory that one thread uses. Use `shared-arena`
+for memory that several threads use. Both need `with-open`.
+
+Use `auto-arena` for memory that the garbage collector releases when nothing
+refers to the arena. Use `global-arena` for memory that lives as long as the
+process. Neither can be closed.
+
+The functions return a `java.lang.foreign.Arena`, so the same code runs in
+babashka and on the JVM.
+
 `read` and `write` accept an optional byte offset:
 
 ```clojure
