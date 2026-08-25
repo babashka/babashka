@@ -302,31 +302,39 @@ For example, a `printf` format must match its values.
 
 ## Use native memory
 
-A pointer is a `java.lang.foreign.MemorySegment`. The same object works in
-babashka and on the JVM. babashka does not expose the class to scripts,
-which keeps the binary small: use `size`, `address`, `slice`, `reinterpret`
-and `pointer?` instead of interop on it.
+A pointer is a native `java.lang.foreign.MemorySegment` in babashka and on the
+JVM. Babashka does not expose this class to scripts because the class increases
+the binary size.
+
+Use `size`, `address`, `slice`, `reinterpret`, and `pointer?`.
+
+CAUTION: Do not pass a heap-backed segment to C. A heap-backed segment does not
+contain a valid C address.
 
 `alloc` returns a segment with a size. Access outside a nonzero segment throws
 an `IndexOutOfBoundsException`.
 
-C does not report the size of a pointer it returns, so that pointer has size
-0. `read`, `write`, `read-bytes`, `write-bytes` and `byte-buffer` refuse a
-pointer of size 0 with an error. Give it a size with `reinterpret` first:
+C does not report the size of a returned pointer. Thus, the pointer has size
+zero. Memory access functions reject these pointers.
+
+Before you access the memory, specify its size with `reinterpret`:
 
 ```clojure
-;; C returned p without a size, and you know it holds a 16-byte struct
+;; C returned p without a size. The struct has 16 bytes.
 (ffi/read (ffi/reinterpret p 16) :int 8)
 ```
 
-`alloc 0` and a slice at the end of a block also have size 0. `ptr->string`
-reads a pointer of size 0 until the NUL terminator, because a C string ends
-there.
+`alloc 0` and an end-of-block slice also have size zero. `ptr->string` reads
+within the size of the pointer and refuses size zero as well. For a C string
+that a function returns, declare the return type as `:string`.
 
-Use `size` for the length and `address` for the address as a long, for
-example to print it. Use `segment` to turn a long that you got elsewhere
-back into a pointer. Use `slice` for a pointer into the middle of a block.
-Pointer arithmetic with `+` does not work on a pointer.
+A pointer is a segment of native memory. A heap segment, for example from
+`MemorySegment/ofArray`, has address zero. Pointer arguments reject heap
+segments.
+
+Use `size` to get the segment size. Use `address` to convert a pointer to a
+long. Use `segment` to convert a raw address to a pointer. Use `slice` to
+select part of a segment. The `+` function does not support pointers.
 
 ```clojure
 (ffi/size p)             ;;=> 16
@@ -467,8 +475,9 @@ Use `callback` to pass a Clojure function to C:
 `callback` returns a function pointer. The pointer stays valid until you
 call `free-callback`.
 
-A `:pointer` argument of a callback comes from C and has size 0. Give it a
-size with `reinterpret` before you read through it.
+A `:pointer` callback argument comes from C and has size zero.
+
+Before you read the memory, specify its size with `reinterpret`.
 
 If C keeps the callback, keep its pointer. Unregister the callback before
 you call `free-callback`.

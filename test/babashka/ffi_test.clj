@@ -1,5 +1,6 @@
 (ns babashka.ffi-test
   (:require
+   [babashka.ffi]
    [babashka.process :as p]
    [babashka.test-utils :as tu]
    [cheshire.core :as json]
@@ -135,20 +136,21 @@
                     (let [p# (ffi/alloc 4)]
                       (try (ffi/read p# :long 0)
                            (finally (ffi/free p#)))))))))
-    (testing "a pointer from C has size 0 and needs reinterpret before a read"
-      (is (= [0 "abc" "has size 0" 97]
+    (testing "read rejects a zero-size pointer from C"
+      (is (= [0 "has size 0" "abc" "has size 0" 97]
              (bb `(do ~ffi-require
                       (let [src# (ffi/string->ptr "abc")
-                            ;; strchr returns a pointer into src, size 0
+                            ;; strchr returns a zero-size pointer into src.
                             hit# ((ffi/cfn "strchr" [:pointer :int] :pointer) src# (int \a))
+                            msg# (fn [f#] (try (f#) (catch Exception e# (re-find #"has size 0" (ex-message e#)))))
                             res# [(ffi/size hit#)
-                                  (ffi/ptr->string hit#)
-                                  (try (ffi/read hit# :char)
-                                       (catch Exception e# (re-find #"has size 0" (ex-message e#))))
+                                  (msg# #(ffi/ptr->string hit#))
+                                  (ffi/ptr->string (ffi/reinterpret hit# 4))
+                                  (msg# #(ffi/read hit# :char))
                                   (ffi/read (ffi/reinterpret hit# 1) :char)]]
                         (ffi/free src#)
                         res#))))))
-    (testing "a slice at the end of a block and alloc 0 have no bytes to access"
+    (testing "read and write reject zero-size segments"
       (is (= ["has size 0" "has size 0"]
              (bb `(do ~ffi-require
                       (let [p# (ffi/alloc 4)
@@ -189,6 +191,17 @@
                                   (ffi/null? p#)]]
                         (ffi/free p#)
                         res#))))))))
+
+(deftest heap-segment-test
+  ;; runs babashka.ffi on the test JVM: a script cannot make a heap segment
+  (testing "a heap segment is not a pointer, so C never gets its address 0"
+    (let [heap (java.lang.foreign.MemorySegment/ofArray (byte-array 4))]
+      (is (false? (babashka.ffi/pointer? heap)))
+      (is (thrown-with-msg? Exception #"heap MemorySegment" (babashka.ffi/address heap)))
+      (is (thrown-with-msg? Exception #"heap MemorySegment" (babashka.ffi/read heap :int)))
+      (when-not tu/windows?
+        (is (thrown-with-msg? Exception #"heap MemorySegment"
+                              ((babashka.ffi/cfn "strlen" [:pointer] :size_t) heap)))))))
 
 (deftest memory-test
   (when-not skip?
@@ -297,7 +310,7 @@
                         (doseq [[i# v#] (map-indexed vector [5 3 1 4 2])]
                           (ffi/write arr :int (* i# 4) v#))
                         (let [cmp (ffi/callback
-                                   ;; qsort hands the comparator pointers of size 0
+                                   ;; qsort gives zero-size pointers to the comparator.
                                    (fn [pa# pb#]
                                      (compare (ffi/read (ffi/reinterpret pa# 4) :int)
                                               (ffi/read (ffi/reinterpret pb# 4) :int)))

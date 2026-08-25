@@ -19,9 +19,9 @@
       :uint32 :int64 :uint64 :size_t :ssize_t :char :byte
       :bool :pointer :string :double :float
 
-  A pointer is a java.lang.foreign.MemorySegment with a size. read and write
-  check every access against that size. A pointer that C returns has size 0:
-  give it a size with reinterpret before you read or write through it. :bool
+  A pointer is a native java.lang.foreign.MemorySegment with a size. read and
+  write check each access against this size. Pointers from C have size zero.
+  reinterpret specifies their size before access. :bool
   represents a one-byte C boolean and returns true or false. Thus, a C
   predicate does not return the truthy number 0. The API does not support
   struct-by-value arguments.
@@ -145,31 +145,39 @@
 ;; -- memory -------------------------------------------------------------------
 
 (defn- pointer-ex [p]
-  (ex-info (str "babashka.ffi: expected a pointer (a MemorySegment), got "
-                (pr-str p)
-                ". Wrap a raw address with (ffi/segment addr)")
+  (ex-info (if (instance? MemorySegment p)
+             ;; a heap segment has address 0, so C would get NULL
+             "babashka.ffi: expected a pointer to native memory, got a heap MemorySegment"
+             (str "babashka.ffi: expected a pointer (a MemorySegment), got "
+                  (pr-str p)
+                  ". Wrap a raw address with (ffi/segment addr)"))
            {:value p}))
 
+(defn- native-segment?
+  "True when p is a MemorySegment of native memory. A heap segment is not a
+  pointer: its address is 0."
+  [p]
+  (and (instance? MemorySegment p) (.isNative ^MemorySegment p)))
+
 (defn- as-pointer
-  "Returns p as a MemorySegment. Rejects all other values, including raw addresses."
+  "Returns p as a native MemorySegment. Rejects all other values: raw
+  addresses and heap segments included."
   ^MemorySegment [p]
-  (if (instance? MemorySegment p) p (throw (pointer-ex p))))
+  (if (native-segment? p) p (throw (pointer-ex p))))
 
 (defn- pointer-address
   "Returns the native address of p. Treats nil as the NULL pointer."
   [p]
   (cond (nil? p) 0
-        (instance? MemorySegment p) (.address ^MemorySegment p)
+        (native-segment? p) (.address ^MemorySegment p)
         :else (throw (pointer-ex p))))
 
 (defn- accessible
-  "Returns p as a MemorySegment that read and write can access. The JDK checks
-  every access against the size of p. A pointer of size 0 has no bytes to
-  access, so it is refused: alloc 0, a slice at the end of a block, and every
-  pointer that C returns have size 0. Give such a pointer a size with
-  reinterpret first."
+  "Returns p as a native MemorySegment with a size. The JDK checks every
+  access against that size. Rejects a segment of size 0: reinterpret gives
+  it a size."
   ^MemorySegment [p]
-  (let [^MemorySegment s (if (instance? MemorySegment p) p (throw (pointer-ex p)))]
+  (let [^MemorySegment s (if (native-segment? p) p (throw (pointer-ex p)))]
     (when (zero? (.byteSize s))
       (throw (ex-info (str "babashka.ffi: the pointer at address " (.address s)
                            " has size 0; give it a size with reinterpret")
@@ -177,9 +185,8 @@
     s))
 
 (defn segment
-  "Returns a pointer to native address addr. Without a size the pointer has
-  size 0, and needs one from reinterpret before a read or write. With a size,
-  every access is checked against it."
+  "Returns a pointer to addr. The default size is zero.
+  A specified nonzero size enables bounds checks."
   (^MemorySegment [addr] (MemorySegment/ofAddress (long addr)))
   (^MemorySegment [addr size]
    (.reinterpret (MemorySegment/ofAddress (long addr)) (long size))))
@@ -215,9 +222,9 @@
   (.byteSize (as-pointer p)))
 
 (defn pointer?
-  "Returns true when x is a pointer."
+  "Returns true when x is a pointer: a MemorySegment of native memory."
   [x]
-  (instance? MemorySegment x))
+  (native-segment? x))
 
 (defn- string-at
   "Returns the NUL-terminated UTF-8 string at addr. Returns nil for address zero."
@@ -226,16 +233,15 @@
     (.getString (.reinterpret (MemorySegment/ofAddress addr) Long/MAX_VALUE) 0)))
 
 (defn ptr->string
-  "Returns the NUL-terminated UTF-8 string at p. Returns nil for a NULL pointer.
+  "Returns the NUL-terminated UTF-8 string at p, read within the size of p.
+  Returns nil for a NULL pointer.
 
-  A C string ends at its NUL, so a pointer of size 0 is read until the
-  terminator. A pointer with a size is read within that size."
+  A pointer of size 0 is refused: give it a size with reinterpret, or declare
+  the C return type as :string."
   [p]
   (let [seg (as-pointer p)]
     (when-not (zero? (.address seg))
-      (if (zero? (.byteSize seg))
-        (.getString (.reinterpret seg Long/MAX_VALUE) 0)
-        (.getString seg 0)))))
+      (.getString (accessible seg) 0))))
 
 (defn- with-string-args
   "Calls f with argtypes' :string args replaced by temp C-string pointers,
@@ -254,10 +260,10 @@
 ;; nothing dispatches on the type during a call.
 (def ^:private arg-coercer
   (let [as-long (fn [a] (cond (nil? a) 0
-                              (instance? MemorySegment a) (.address ^MemorySegment a)
+                              (native-segment? a) (.address ^MemorySegment a)
                               :else (long a)))
         as-addr (fn [a] (cond (nil? a) 0
-                              (instance? MemorySegment a) (.address ^MemorySegment a)
+                              (native-segment? a) (.address ^MemorySegment a)
                               :else (throw (pointer-ex a))))
         as-bool (fn [a] (if a 1 0))]
     (into {:double double :float float :bool as-bool :pointer as-addr}
@@ -737,9 +743,9 @@
     (.reinterpret ^MemorySegment (@c-calloc 1 size) size)))
 
 (defn free
-  "Releases memory allocated by alloc or string->ptr. The pointer keeps its
-  address and size, so a read or write after free reaches released memory.
-  Do not use the pointer after free."
+  "Releases memory from alloc or string->ptr.
+
+  CAUTION: Do not use p after free. This can corrupt memory or stop the process."
   [p]
   (@c-free p))
 
@@ -757,8 +763,8 @@
 (defn read
   "Reads a value of type t from p. The default byte offset is zero.
 
-  The access is checked against the size of p. A pointer of size 0 is
-  refused: give it a size with reinterpret first."
+  Checks the access against the size of p. Rejects a zero-size pointer.
+  reinterpret specifies a valid size."
   ([p t] (read p t 0))
   ([p t offset]
    (let [off (long offset)
@@ -784,8 +790,8 @@
 (defn write
   "Writes v as type t to p. The default byte offset is zero. Returns nil.
 
-  The access is checked against the size of p. A pointer of size 0 is
-  refused: give it a size with reinterpret first."
+  Checks the access against the size of p. Rejects a zero-size pointer.
+  reinterpret specifies a valid size."
   ([p t v] (write p t 0 v))
   ([p t offset v]
    (let [off (long offset)
@@ -862,9 +868,8 @@
 
 (defn callback
   "Creates a C function pointer that invokes f. argtypes and rettype use the
-  cfn type keywords. f receives a :pointer argument as a pointer of size 0:
-  give it a size with reinterpret before you read through it. f receives a
-  :bool argument as a boolean and every other argument as a long or a double.
+  cfn type keywords. f receives :pointer arguments as zero-size pointers.
+  It receives :bool arguments as booleans and other arguments as longs or doubles.
 
   Returns the function pointer. The callback remains valid until
   free-callback releases it."
