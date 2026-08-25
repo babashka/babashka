@@ -9,7 +9,8 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-- SCI caches resolved JVM instance methods per call site for performance
+- Building babashka from source no longer fails when a single upstream host is unreachable: the musl and zlib tarballs are fetched with retries, from mirrors, and cached per machine
+- SCI caches resolved JVM instance methods, static methods, constructors and fields per call site for performance
 - Add experimental [`babashka.ffi`](doc/ffi.md) for calling functions in native shared libraries
 - `babashka.ffi`: a C function can take and return a struct by value. Write the struct as `{:struct [types]}` and its values as vectors of fields
 - `babashka.ffi`: the macOS, Windows, and Linux (glibc) release binaries link libffi, so struct-by-value calls work without a custom build. The static Linux binary does not link it
