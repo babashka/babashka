@@ -27,36 +27,39 @@
 (def home-var (if tu/windows? "PATH" "HOME"))
 (def snprintf-sym (if tu/windows? "_snprintf" "snprintf"))
 
+(defn- lib-name
+  "The shared-library file name for this platform."
+  [stem]
+  (cond tu/windows? (str stem ".dll")
+        (= "Mac OS X" (System/getProperty "os.name")) (str "lib" stem ".dylib")
+        :else (str "lib" stem ".so")))
+
+(defn- compile-c-lib
+  "Compiles src into a shared library and returns its path, or nil when no
+  compiler is available. Windows builds with cl, everything else with cc."
+  [src-name stem]
+  (let [out (io/file "target" "ffi-test-lib" (lib-name stem))
+        src (io/file "test-resources" src-name)]
+    (io/make-parents out)
+    (when (or (.exists out)
+              (try (zero? (:exit (if tu/windows?
+                                   (p/sh "cl" "/nologo" "/LD" "/O1" (str src)
+                                         (str "/Fe:" out) (str "/Fo:" out ".obj"))
+                                   (p/sh "cc" "-shared" "-fPIC" "-O1"
+                                         "-o" (str out) (str src)))))
+                   (catch Exception _ false)))
+      (.getAbsolutePath out))))
+
 (def test-lib
-  "Path of the compiled test C library, nil when it cannot be built.
-  Compiled on demand with cc; skipped on Windows (no compiler on PATH in CI)."
-  (delay
-    (when-not (or skip? tu/windows?)
-      (let [out (io/file "target" "ffi-test-lib"
-                         (if (= "Mac OS X" (System/getProperty "os.name"))
-                           "libffitest.dylib" "libffitest.so"))
-            src (io/file "test-resources" "ffi_test_lib.c")]
-        (io/make-parents out)
-        (when (or (.exists out)
-                  (try (zero? (:exit (p/sh "cc" "-shared" "-fPIC" "-O1"
-                                           "-o" (str out) (str src))))
-                       (catch Exception _ false)))
-          (.getAbsolutePath out))))))
+  "Path of the compiled test C library, nil when it cannot be built. The
+  tests that use it assume a POSIX libc, so it is not built on Windows."
+  (delay (when-not (or skip? tu/windows?)
+           (compile-c-lib "ffi_test_lib.c" "ffitest"))))
 
 (def struct-lib
   "Path of the compiled struct test C library, nil when it cannot be built."
-  (delay
-    (when-not (or skip? tu/windows?)
-      (let [out (io/file "target" "ffi-test-lib"
-                         (if (= "Mac OS X" (System/getProperty "os.name"))
-                           "libffistructs.dylib" "libffistructs.so"))
-            src (io/file "test-resources" "ffi_struct_lib.c")]
-        (io/make-parents out)
-        (when (or (.exists out)
-                  (try (zero? (:exit (p/sh "cc" "-shared" "-fPIC" "-O1"
-                                           "-o" (str out) (str src))))
-                       (catch Exception _ false)))
-          (.getAbsolutePath out))))))
+  (delay (when-not skip?
+           (compile-c-lib "ffi_struct_lib.c" "ffistructs"))))
 
 (def libffi?
   "Whether this build can pass a struct by value. A native image needs
@@ -613,7 +616,7 @@
 (deftest struct-lib-test
   (when (and (not skip?) @libffi?)
     (if-not @struct-lib
-      (println "babashka.ffi struct library tests skipped: no cc on PATH")
+      (println "babashka.ffi struct library tests skipped: no C compiler on PATH")
       (testing "an HFA return, a return and an argument larger than 16 bytes,
                 and a nested struct"
         (is (= [[2.5 5.0 7.5] [10 11 12 13] 10 [[-1 -1] [7 7]] [11 22]]
