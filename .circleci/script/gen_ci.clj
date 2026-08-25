@@ -153,7 +153,7 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                    "aarch64-"
                                    ""))
         ;; the musl static binary has no dlopen and no FFM default lookup,
-        ;; so babashka.ffi cannot resolve a symbol in it at all; linking
+        ;; so babashka.ffi cannot resolve a symbol in it at all. Linking
         ;; libffi in there would only add dead weight
         musl-static?     (and static? musl? (not= "aarch64" arch))]
     (gen-job shorted?
