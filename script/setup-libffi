@@ -18,6 +18,9 @@
 
 set -euo pipefail
 
+# shellcheck source=script/fetch_tarball.sh
+. "$(dirname "${BASH_SOURCE[0]:-$0}")/fetch_tarball.sh"
+
 LIBFFI_VERSION="3.5.1"
 LIBFFI_SHA256="f99eb68a67c7d54866b7706af245e87ba060d419a062474b456d3bc8d4abdbd1"
 
@@ -55,28 +58,18 @@ if [ -n "$archive" ]; then
     exit 0
 fi
 
-# the sha256sum on macOS is a different tool that takes no checksum file
-if sha256sum --version > /dev/null 2>&1; then
-    sha256() { sha256sum "$1" | cut -d' ' -f1; }
-else
-    sha256() { shasum -a 256 "$1" | cut -d' ' -f1; }
-fi
-
 build="$prefix/build"
 mkdir -p "$build"
 cd "$build"
 
 tarball="libffi-${LIBFFI_VERSION}.tar.gz"
-url="https://github.com/libffi/libffi/releases/download/v${LIBFFI_VERSION}/${tarball}"
 
-curl -O -sL --fail --show-error "$url"
-
-actual="$(sha256 "$tarball")"
-
-if [ "$actual" != "$LIBFFI_SHA256" ]; then
-    echo "setup-libffi: $tarball is $actual, expected $LIBFFI_SHA256" >&2
-    exit 1
-fi
+# One source, unlike musl and zlib: of the usual mirrors, sourceware,
+# buildroot, openwrt and the Debian pool all lack 3.5.1, and the tarball
+# GitHub generates from the tag has different bytes than the release. So
+# this leans on the retries and the cache instead.
+fetch_tarball "$tarball" "$LIBFFI_SHA256" \
+    "https://github.com/libffi/libffi/releases/download/v${LIBFFI_VERSION}/${tarball}"
 
 tar xf "$tarball"
 
