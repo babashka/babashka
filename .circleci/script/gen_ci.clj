@@ -173,12 +173,18 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                             (run "Install Leiningen" "script/install-leiningen"))
                                           (when (not= "mac" platform)
                                             (run "Install native dev tools"
-                                              (if (and static? musl? (not= "aarch64" arch))
-                                                (str base-install-cmd
-                                                     "\nexport BABASHKA_TARBALL_CACHE=\"$HOME/.cache/babashka-tarballs\""
-                                                     "\nsudo -E script/setup-musl")
-                                                ;; non-musl linux builds link zlib statically
-                                                (str base-install-cmd "\nsudo -E script/setup-zlib"))))
+                                              ;; the cache directory belongs to
+                                              ;; this user: the setup scripts run
+                                              ;; under sudo, and a directory root
+                                              ;; creates locks out the later build
+                                              ;; step. sudo -E keeps the variable.
+                                              (str base-install-cmd
+                                                   "\nexport BABASHKA_TARBALL_CACHE=\"$HOME/.cache/babashka-tarballs\""
+                                                   "\nmkdir -p \"$BABASHKA_TARBALL_CACHE\""
+                                                   (if (and static? musl? (not= "aarch64" arch))
+                                                     "\nsudo -E script/setup-musl"
+                                                     ;; non-musl linux builds link zlib statically
+                                                     "\nsudo -E script/setup-zlib"))))
                                           ;; after dev tools: the probe needs cc
                                           (when (not= "mac" platform)
                                             (run "Check glibc floor" "script/check_glibc.sh"))

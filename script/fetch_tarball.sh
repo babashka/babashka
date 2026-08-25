@@ -26,7 +26,7 @@ fetch_tarball() {
     local cache_dir="${BABASHKA_TARBALL_CACHE:-$HOME/.cache/babashka-tarballs}"
     local cached="$cache_dir/$sha-$file"
 
-    if [ -f "$cached" ] && [ "$(tarball_sha256 "$cached")" = "$sha" ]; then
+    if [ -r "$cached" ] && [ "$(tarball_sha256 "$cached")" = "$sha" ]; then
         echo "fetch_tarball: $file from the cache" >&2
         cp "$cached" "$file"
         return 0
@@ -48,8 +48,12 @@ fetch_tarball() {
             rm -f "$file"
             continue
         fi
-        mkdir -p "$cache_dir"
-        cp "$file" "$cached"
+        # The cache is an optimisation, and a build must not fail on one.
+        # A root-run setup script can leave the directory owned by root,
+        # and a later step then cannot write into it.
+        if ! { mkdir -p "$cache_dir" && cp "$file" "$cached"; } 2> /dev/null; then
+            echo "fetch_tarball: could not cache $file, continuing" >&2
+        fi
         return 0
     done
 
