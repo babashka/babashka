@@ -303,7 +303,9 @@ For example, a `printf` format must match its values.
 ## Use native memory
 
 A pointer is a `java.lang.foreign.MemorySegment`. The same object works in
-babashka and on the JVM.
+babashka and on the JVM. babashka does not expose the class to scripts,
+which keeps the binary small: use `size`, `address`, `slice`, `reinterpret`
+and `pointer?` instead of interop on it.
 
 A pointer from `alloc` knows its length. A read or write past the end
 throws an `IndexOutOfBoundsException` instead of touching other memory.
@@ -313,12 +315,13 @@ is. `read`, `write`, `read-bytes` and `ptr->string` size such a pointer from
 the type or the count you give them, so an out parameter needs no extra
 step. To read more through it, give it a length with `reinterpret`.
 
-Use `address` to get the address as a long, for example to print it. Use
-`segment` to turn a long that you got elsewhere back into a pointer. Use
-`slice` for a pointer into the middle of a block. Pointer arithmetic with
-`+` does not work on a pointer.
+Use `size` for the length and `address` for the address as a long, for
+example to print it. Use `segment` to turn a long that you got elsewhere
+back into a pointer. Use `slice` for a pointer into the middle of a block.
+Pointer arithmetic with `+` does not work on a pointer.
 
 ```clojure
+(ffi/size p)             ;;=> 16
 (ffi/address p)          ;;=> 4438706736
 (ffi/segment 4438706736) ;;=> a pointer of length 0
 (ffi/segment addr 16)    ;;=> a pointer of length 16

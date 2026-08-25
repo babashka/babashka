@@ -25,6 +25,8 @@
    'reinterpret (copy-var ffi/reinterpret tns)
    'slice (copy-var ffi/slice tns)
    'address (copy-var ffi/address tns)
+   'size (copy-var ffi/size tns)
+   'pointer? (copy-var ffi/pointer? tns)
    'null (copy-var ffi/null tns)
    'null? (copy-var ffi/null? tns)
    'callback (copy-var ffi/callback tns)

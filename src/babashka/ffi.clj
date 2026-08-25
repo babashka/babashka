@@ -204,9 +204,20 @@
    (.asSlice (as-pointer seg) (long offset) (long len))))
 
 (defn address
-  "Returns the native address of segment seg as a Clojure long."
-  [seg]
-  (.address (as-pointer seg)))
+  "Returns the native address of pointer p as a Clojure long."
+  [p]
+  (.address (as-pointer p)))
+
+(defn size
+  "Returns the length of pointer p in bytes. A pointer that C returned has
+  length 0."
+  [p]
+  (.byteSize (as-pointer p)))
+
+(defn pointer?
+  "Returns true when x is a pointer."
+  [x]
+  (instance? MemorySegment x))
 
 (defn- string-at
   "The NUL-terminated UTF-8 string at native address addr. Returns nil for

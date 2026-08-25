@@ -125,7 +125,7 @@
       (is (= [true 8]
              (bb `(do ~ffi-require
                       (let [p# (ffi/alloc 8)
-                            res# [(instance? java.lang.foreign.MemorySegment p#) (.byteSize p#)]]
+                            res# [(ffi/pointer? p#) (ffi/size p#)]]
                         (ffi/free p#)
                         res#))))))
     (testing "a read past the end throws instead of reading memory"
@@ -141,7 +141,7 @@
                       (let [src# (ffi/string->ptr "abc")
                             ;; strchr returns a pointer into src, length 0
                             hit# ((ffi/cfn "strchr" [:pointer :int] :pointer) src# (int \a))
-                            res# [(.byteSize hit#) (ffi/ptr->string hit#)]]
+                            res# [(ffi/size hit#) (ffi/ptr->string hit#)]]
                         (ffi/free src#)
                         res#))))))
     (testing "segment, address, slice and reinterpret"
@@ -154,10 +154,10 @@
                             _# (ffi/write tail# :int 0 42)
                             sized# (ffi/reinterpret (ffi/segment a#) 4)
                             res# [(= a# (ffi/address again#))
-                                  (.byteSize again#)
-                                  (.byteSize tail#)
+                                  (ffi/size again#)
+                                  (ffi/size tail#)
                                   (ffi/read p# :int 4)
-                                  (.byteSize sized#)]]
+                                  (ffi/size sized#)]]
                         (ffi/free p#)
                         res#))))))
     (testing "a number where a pointer is expected is a clear error"
@@ -169,7 +169,7 @@
       (is (= [true true false]
              (bb `(do ~ffi-require
                       (let [p# (ffi/alloc 1)
-                            res# [(instance? java.lang.foreign.MemorySegment ffi/null)
+                            res# [(ffi/pointer? ffi/null)
                                   (ffi/null? (ffi/segment 0))
                                   (ffi/null? p#)]]
                         (ffi/free p#)
@@ -336,7 +336,7 @@
   (testing "find-symbol probes without binding"
     (is (= [true nil]
            (bb `(do (require '[babashka.ffi :as ~'ffi])
-                    [(instance? java.lang.foreign.MemorySegment (ffi/find-symbol "strlen"))
+                    [(ffi/pointer? (ffi/find-symbol "strlen"))
                      (ffi/find-symbol "bb_no_such_symbol_zzz")])))))
   (when-let [lib @test-lib]
     (testing "a library map limits the search to that library"
