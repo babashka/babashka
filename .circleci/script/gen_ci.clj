@@ -151,7 +151,11 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                  platform
                                  (if (= "aarch64" arch)
                                    "aarch64-"
-                                   ""))]
+                                   ""))
+        ;; the musl static binary has no dlopen and no FFM default lookup,
+        ;; so babashka.ffi cannot resolve a symbol in it at all; linking
+        ;; libffi in there would only add dead weight
+        musl-static?     (and static? musl? (not= "aarch64" arch))]
     (gen-job shorted?
              (merge
               executor-conf
@@ -173,10 +177,14 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                             (run "Install Leiningen" "script/install-leiningen"))
                                           (when (not= "mac" platform)
                                             (run "Install native dev tools"
-                                              (if (and static? musl? (not= "aarch64" arch))
+                                              (if musl-static?
                                                 (str base-install-cmd "\nsudo -E script/setup-musl")
                                                 ;; non-musl linux builds link zlib statically
                                                 (str base-install-cmd "\nsudo -E script/setup-zlib"))))
+                                          ;; skipped on the musl static build, see musl-static? above
+                                          (when-not musl-static?
+                                            (run "Install libffi"
+                                              "LIBFFI_LIB=$(script/setup-libffi)\necho \"export BABASHKA_LIBFFI=$LIBFFI_LIB\" >> \"$BASH_ENV\""))
                                           ;; after dev tools: the probe needs cc
                                           (when (not= "mac" platform)
                                             (run "Check glibc floor" "script/check_glibc.sh"))

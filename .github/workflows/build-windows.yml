@@ -76,6 +76,14 @@ jobs:
           BABASHKA_VERSION=$(cat resources/BABASHKA_VERSION)
           echo "##[set-output name=version;]${BABASHKA_VERSION}"
 
+      - name: Install libffi
+        shell: cmd
+        run: |
+              call script\setup-libffi.bat > libffi-path.txt
+              if errorlevel 1 exit /B 1
+              set /P LIBFFI_LIB=< libffi-path.txt
+              echo BABASHKA_LIBFFI=%LIBFFI_LIB%>> %GITHUB_ENV%
+
       - name: Build
         shell: cmd
         run: |

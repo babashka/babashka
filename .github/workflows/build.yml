@@ -165,6 +165,11 @@ jobs:
           sudo apt-get update
           sudo apt-get -y install build-essential zlib1g-dev
 
+      - name: Install libffi
+        run: |
+          LIBFFI_LIB=$(script/setup-libffi)
+          echo "BABASHKA_LIBFFI=$LIBFFI_LIB" >> "$GITHUB_ENV"
+
       - name: Babashka version
         id: babashka-version
         run: |
