@@ -762,7 +762,11 @@
        (:uint :uint32) (bit-and (long (.get seg ValueLayout/JAVA_INT_UNALIGNED off)) 0xFFFFFFFF)
        (:long :ulong :int64 :uint64 :size_t :ssize_t)
        (.get seg ValueLayout/JAVA_LONG_UNALIGNED off)
-       :pointer (.get seg address-unaligned off)
+       ;; the aligned layout is the fast path, and a pointer field almost
+       ;; always sits on an 8-byte boundary
+       :pointer (if (zero? (bit-and (+ (.address seg) off) 7))
+                  (.get seg ValueLayout/ADDRESS off)
+                  (.get seg address-unaligned off))
        :int16 (long (.get seg ValueLayout/JAVA_SHORT_UNALIGNED off))
        :uint16 (bit-and (long (.get seg ValueLayout/JAVA_SHORT_UNALIGNED off)) 0xFFFF)
        :bool (not (zero? (long (.get seg ValueLayout/JAVA_BYTE off))))
