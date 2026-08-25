@@ -298,12 +298,14 @@
                          (ffi/find-symbol z# "mix_dj")
                          (ffi/find-symbol t# "zlibVersion")])))))))
   (testing "cfn accepts a library map, delay or function"
-    (is (= ["ok" "ok" "ok"]
+    ;; Windows has no zlib, so the C runtime stands in. strlen resolves in
+    ;; both: msvcrt defines it, and a library map searches the libraries
+    ;; zlib links, which include the C library
+    (is (= [5 5 5]
            (bb `(do ~ffi-require
-                    (let [z# (ffi/load-system-library "z")
-                          version# (fn [lib#] ((ffi/cfn lib# "zlibVersion" [] :string)))]
-                      (mapv #(if (string? (version# %)) "ok" %)
-                            [z# (delay z#) (fn [] z#)])))))))
+                    (let [lib# (ffi/load-system-library ~(if tu/windows? "msvcrt" "z"))
+                          strlen# (fn [l#] ((ffi/cfn l# "strlen" [:string] :size_t) "hello"))]
+                      (mapv strlen# [lib# (delay lib#) (fn [] lib#)])))))))
   (testing "an invalid :library value causes a clear error"
     ;; false is not "no library" and a keyword or a collection is not a
     ;; function to call, although both are IFn
