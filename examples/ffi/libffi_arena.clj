@@ -16,7 +16,8 @@
 (defcfn c-dlsym "dlsym" [:pointer :string] :pointer)
 
 (def RTLD-DEFAULT
-  (if (= "Mac OS X" (System/getProperty "os.name")) -2 0))
+  ;; a pseudo handle, not a real address, so it is written as a raw one
+  (ffi/segment (if (= "Mac OS X" (System/getProperty "os.name")) -2 0)))
 
 (defn sym-addr [name]
   (let [p (c-dlsym RTLD-DEFAULT name)]
@@ -41,7 +42,7 @@
   (let [elems (ffi/alloc arena (* 8 (inc (count element-types))))]
     (doseq [[i t] (map-indexed vector element-types)]
       (ffi/write elems :pointer (* 8 i) t))
-    (ffi/write elems :pointer (* 8 (count element-types)) 0)
+    (ffi/write elems :pointer (* 8 (count element-types)) ffi/null)
     (ffi-type arena 0 0 13 elems)))
 
 (def FFI-DEFAULT-ABI
@@ -63,7 +64,7 @@
 ;; Each pointer that follows belongs to this arena. This includes the pointers
 ;; that struct-type and make-cif allocate.
 (with-open [arena (ffi/confined-arena)]
-  (let [t-sint32 (ffi-type arena 4 4 10 0)
+  (let [t-sint32 (ffi-type arena 4 4 10 nil)
         t-div (struct-type arena [t-sint32 t-sint32])
         cif (make-cif arena t-div [t-sint32 t-sint32])
         fnp (sym-addr "div")
@@ -86,8 +87,8 @@
 (def N 200000)
 
 (with-open [arena (ffi/confined-arena)]
-  (let [t-double (ffi-type arena 8 8 3 0)
-        t-sint32 (ffi-type arena 4 4 10 0)
+  (let [t-double (ffi-type arena 8 8 3 nil)
+        t-sint32 (ffi-type arena 4 4 10 nil)
         cif (make-cif arena t-double [t-double t-sint32])
         fnp (sym-addr "ldexp")
         a0 (ffi/alloc arena :double)
