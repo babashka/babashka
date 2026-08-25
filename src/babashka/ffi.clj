@@ -20,8 +20,7 @@
       :bool :pointer :string :double :float
 
   A pointer is a java.lang.foreign.MemorySegment. A pointer from alloc knows
-  its length and its arena, so a read past the end or after the arena closed
-  throws instead of corrupting memory. A pointer that C returns has length 0
+  its length, so a read past the end throws instead of corrupting memory. A pointer that C returns has length 0
   and read and write size it from the type. :bool represents a
   one-byte C boolean and returns true or false. Thus, a C predicate does not
   return the truthy number 0. The API does not support struct-by-value
@@ -50,7 +49,7 @@
       (c-open path flags 0644)       ; one-int tail, same binding"
   (:refer-clojure :exclude [read])
   (:require [clojure.string :as str])
-  (:import [java.lang.foreign AddressLayout Arena FunctionDescriptor Linker
+  (:import [java.lang.foreign Arena FunctionDescriptor Linker
             MemoryLayout MemorySegment SymbolLookup ValueLayout]
            [java.lang.invoke MethodHandle MethodHandles MethodType]))
 
@@ -162,9 +161,6 @@
   (cond (nil? p) 0
         (instance? MemorySegment p) (.address ^MemorySegment p)
         :else (throw (pointer-ex p))))
-
-(def ^:private ^AddressLayout address-unaligned
-  (.withByteAlignment ValueLayout/ADDRESS 1))
 
 (defmacro ^:private sized
   "p, guaranteed to cover n bytes. A segment that C returned has length 0 and
@@ -762,11 +758,9 @@
        (:uint :uint32) (bit-and (long (.get seg ValueLayout/JAVA_INT_UNALIGNED off)) 0xFFFFFFFF)
        (:long :ulong :int64 :uint64 :size_t :ssize_t)
        (.get seg ValueLayout/JAVA_LONG_UNALIGNED off)
-       ;; the aligned layout is the fast path, and a pointer field almost
-       ;; always sits on an 8-byte boundary
-       :pointer (if (zero? (bit-and (+ (.address seg) off) 7))
-                  (.get seg ValueLayout/ADDRESS off)
-                  (.get seg address-unaligned off))
+       ;; read as a long and wrap it: the address layout's getter costs twice
+       ;; as much in a native image
+       :pointer (MemorySegment/ofAddress (.get seg ValueLayout/JAVA_LONG_UNALIGNED off))
        :int16 (long (.get seg ValueLayout/JAVA_SHORT_UNALIGNED off))
        :uint16 (bit-and (long (.get seg ValueLayout/JAVA_SHORT_UNALIGNED off)) 0xFFFF)
        :bool (not (zero? (long (.get seg ValueLayout/JAVA_BYTE off))))

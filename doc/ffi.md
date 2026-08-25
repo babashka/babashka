@@ -305,9 +305,8 @@ For example, a `printf` format must match its values.
 A pointer is a `java.lang.foreign.MemorySegment`. The same object works in
 babashka and on the JVM.
 
-A pointer from `alloc` knows its length and its arena. A read or write past
-the end throws an `IndexOutOfBoundsException`. A read or write after the
-arena closed throws an `IllegalStateException`. Neither can corrupt memory.
+A pointer from `alloc` knows its length. A read or write past the end
+throws an `IndexOutOfBoundsException` instead of touching other memory.
 
 A pointer that C returns has length 0, because C does not say how long it
 is. `read`, `write`, `read-bytes` and `ptr->string` size such a pointer from
