@@ -398,6 +398,14 @@ arena also releases them.
 CAUTION: Do not call `free` on memory that an arena allocated. This operation
 can stop the process.
 
+Arena memory is aligned for what you allocate. A type gets its natural
+alignment, and a byte count gets alignment 16. Pass an alignment to choose
+it yourself:
+
+```clojure
+(ffi/alloc arena 4096 64)   ; 4096 bytes on a 64-byte boundary
+```
+
 Use `confined-arena` for memory that one thread uses. Use `shared-arena`
 for memory that several threads use. Create both arenas in `with-open`.
 

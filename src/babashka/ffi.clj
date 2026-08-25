@@ -795,9 +795,23 @@
   ^Arena []
   (Arena/global))
 
+(defn- size-and-alignment
+  "The byte size and the alignment that n asks for: a type keyword gets its
+  natural alignment, a byte count gets 16, which is what the C allocator
+  guarantees and enough for any scalar."
+  [n]
+  (cond (number? n) [(long n) 16]
+        (keyword? n) (let [size (long (sizeof n))] [size (max 1 (min 8 size))])
+        :else (throw (ex-info (str "babashka.ffi: alloc takes a byte count or a type keyword, got " (pr-str n))
+                              {:n n}))))
+
 (defn alloc
   "Allocates zeroed native memory and returns its pointer. n is a byte count or
   a type keyword.
+
+  With an arena, the memory is aligned for n: a type gets its natural
+  alignment, a byte count gets 16. Pass an alignment to choose it yourself,
+  for example 64 for a SIMD buffer.
 
   When you supply an arena, the arena owns the memory. Closing the arena
   releases this memory.
@@ -808,16 +822,16 @@
   CAUTION: Do not call free on a pointer that an arena allocated. This invalid
   operation can stop the process."
   ([n]
-   (let [size (long (if (keyword? n) (sizeof n) n))]
+   (let [size (long (first (size-and-alignment n)))]
      ;; calloc returns a pointer C made, so it has no length yet
      (.reinterpret ^MemorySegment (@c-calloc 1 size) size)))
   ([^Arena arena n]
-   ;; The one-argument overload guarantees only alignment 1. Thus, this code
-   ;; supplies an explicit alignment. A type uses its natural alignment. A byte
-   ;; count uses alignment 16.
-   (let [size (long (if (keyword? n) (sizeof n) n))
-         align (if (keyword? n) (max 1 (min 8 size)) 16)]
-     (.allocate arena size (long align)))))
+   (let [[size align] (size-and-alignment n)]
+     (alloc arena size align)))
+  ([^Arena arena n alignment]
+   ;; Arena.allocate(byteSize) guarantees only alignment 1, so the
+   ;; alignment is always explicit here
+   (.allocate arena (long (first (size-and-alignment n))) (long alignment))))
 
 (defn free
   "Releases memory allocated by alloc or string->ptr."

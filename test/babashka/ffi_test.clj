@@ -265,7 +265,20 @@
                               i# (ffi/alloc a# :int)
                               _# (ffi/alloc a# 1)
                               b# (ffi/alloc a# 24)]
-                          [(mod d# 8) (mod p# 8) (mod i# 4) (mod b# 16)])))))))))
+                          [(mod (ffi/address d#) 8) (mod (ffi/address p#) 8) (mod (ffi/address i#) 4) (mod (ffi/address b#) 16)])))))))
+    (testing "alloc takes an explicit alignment"
+      (is (= [0 0]
+             (bb `(do ~ffi-require
+                      (with-open [a# (ffi/confined-arena)]
+                        (ffi/alloc a# 1)
+                        [(mod (ffi/address (ffi/alloc a# 100 64)) 64)
+                         (mod (ffi/address (ffi/alloc a# :int 32)) 32)]))))))
+    (testing "alloc rejects anything but a byte count or a type keyword"
+      (is (thrown-with-msg?
+           Exception #"alloc takes a byte count or a type keyword"
+           (bb `(do ~ffi-require
+                    (with-open [a# (ffi/confined-arena)]
+                      (ffi/alloc a# "eight")))))))))
 
 (deftest memory-test
   (when-not skip?
