@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Building babashka from source no longer fails when a single upstream host is unreachable: the musl and zlib tarballs are fetched with retries, from mirrors, and cached per machine
 - SCI caches resolved JVM instance methods, static methods, constructors and fields per call site for performance
 - Add experimental [`babashka.ffi`](doc/ffi.md) for calling functions in native shared libraries
 - On Linux, the install script now installs the dynamic binary by default. It installs the static binary on musl systems and on systems with glibc older than 2.17. The `--static` and `--dynamic` options override the automatic selection
