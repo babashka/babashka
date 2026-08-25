@@ -1,7 +1,9 @@
-;; The same libffi bootstrap as libffi.clj, with every allocation owned by an
-;; arena instead of a bare ffi/alloc. libffi.clj allocates 34 times and frees
-;; nothing: the pointers live as long as the process. Here the arena owns them
-;; and closing it releases everything, also when the body throws.
+;; This example uses the same libffi bootstrap as libffi.clj. An arena owns
+;; each allocation instead of a bare ffi/alloc.
+;;
+;; libffi.clj allocates 34 memory blocks and does not free them. These pointers
+;; live until the process stops. This example closes the arena to release all
+;; memory. If the body throws, the arena also releases the memory.
 ;;
 ;;   bb examples/ffi/libffi_arena.clj
 
@@ -33,8 +35,8 @@
     t))
 
 (defn struct-type
-  "An FFI_TYPE_STRUCT of the given element types; prep_cif fills in size
-  and alignment."
+  "Returns an FFI_TYPE_STRUCT for the specified element types. prep_cif sets
+  its size and alignment."
   [arena element-types]
   (let [elems (ffi/alloc arena (* 8 (inc (count element-types))))]
     (doseq [[i t] (map-indexed vector element-types)]
@@ -43,7 +45,7 @@
     (ffi-type arena 0 0 13 elems)))
 
 (def FFI-DEFAULT-ABI
-  ;; aarch64 FFI_SYSV = 1; x86-64 FFI_UNIX64 = 2
+  ;; On aarch64, FFI_SYSV is 1. On x86-64, FFI_UNIX64 is 2.
   (if (= "aarch64" (System/getProperty "os.arch")) 1 2))
 
 (defn make-cif [arena ret-type arg-types]
@@ -58,8 +60,8 @@
 
 ;; -- struct-by-value return: div_t div(int, int) ------------------------------
 
-;; every pointer below belongs to this arena, including the ones that
-;; struct-type and make-cif allocate
+;; Each pointer that follows belongs to this arena. This includes the pointers
+;; that struct-type and make-cif allocate.
 (with-open [arena (ffi/confined-arena)]
   (let [t-sint32 (ffi-type arena 4 4 10 0)
         t-div (struct-type arena [t-sint32 t-sint32])
@@ -79,7 +81,7 @@
              (if (= [3 1] [(ffi/read rvalue :int 0) (ffi/read rvalue :int 4)])
                "OK" "FAIL"))))
 
-;; -- benchmark: ldexp via libffi vs via cfn (trampoline) ----------------------
+;; -- Benchmark: Compare ldexp through libffi and cfn. -------------------------
 
 (def N 200000)
 
@@ -117,7 +119,7 @@
         (recur (inc i))))
     (println "trampoline:" (quot (- (System/nanoTime) t0) N) "ns/call")))
 
-;; -- the arena's own cost: one scope per call, as a wrapper would do ----------
+;; -- Measure the arena cost. Each call creates one scope. ---------------------
 
 (let [t0 (System/nanoTime)]
   (loop [i 0]

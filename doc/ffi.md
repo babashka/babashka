@@ -379,7 +379,9 @@ process.
 ### Arenas
 
 An arena owns memory. When you close the arena, it releases all memory that
-it allocated. Use an arena in `with-open`:
+it allocated.
+
+Create an arena in `with-open`:
 
 ```clojure
 (with-open [arena (ffi/confined-arena)]
@@ -390,15 +392,20 @@ it allocated. Use an arena in `with-open`:
 ;;=> 42
 ```
 
-The arena releases `p` and `q` when the body ends, also when the body
-throws. Do not call `free` on memory that an arena allocated.
+The arena releases `p` and `q` when the body ends. If the body throws, the
+arena also releases them.
+
+CAUTION: Do not call `free` on memory that an arena allocated. This operation
+can stop the process.
 
 Use `confined-arena` for memory that one thread uses. Use `shared-arena`
-for memory that several threads use. Both need `with-open`.
+for memory that several threads use. Create both arenas in `with-open`.
 
-Use `auto-arena` for memory that the garbage collector releases when nothing
-refers to the arena. Use `global-arena` for memory that lives as long as the
-process. Neither can be closed.
+The garbage collector releases the memory of an `auto-arena` after the arena
+becomes unreachable. Keep a reference to the arena while you use its pointers.
+
+The memory of a `global-arena` exists until the process stops. You cannot
+close an automatic arena or a global arena.
 
 The functions return a `java.lang.foreign.Arena`, so the same code runs in
 babashka and on the JVM.
