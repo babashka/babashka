@@ -195,6 +195,24 @@ You can add a docstring and an attribute map before the C symbol:
   "zlibVersion" [] :string)
 ```
 
+The attribute map key `:library` gives the binding a library to search:
+
+```clojure
+(def sqlite (delay (ffi/load-library (extract-bundled-library!))))
+
+(defcfn sqlite3-open {:library sqlite}
+  "sqlite3_open" [:string :pointer] :int)
+```
+
+Use it when you ship your own copy of a library. Without `:library` the
+binding searches every loaded library and then the system, so a library of
+the same name that the system installs can supply the symbol instead, and
+you call a version you did not choose.
+
+The value is a library map, or something that derefs to one. A `delay`
+lets the binding name a library that is loaded later, for example one that
+is unpacked at run time.
+
 ### Types
 
 Use these type keywords in function signatures:
