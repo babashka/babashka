@@ -241,10 +241,10 @@
     (testing "all arena kinds allocate"
       (is (= [true true true true]
              (bb `(do ~ffi-require
-                      [(with-open [a# (ffi/confined-arena)] (instance? java.lang.foreign.MemorySegment (ffi/alloc a# 8)))
-                       (with-open [a# (ffi/shared-arena)] (instance? java.lang.foreign.MemorySegment (ffi/alloc a# 8)))
-                       (instance? java.lang.foreign.MemorySegment (ffi/alloc (ffi/auto-arena) 8))
-                       (instance? java.lang.foreign.MemorySegment (ffi/alloc (ffi/global-arena) 8))])))))
+                      [(with-open [a# (ffi/confined-arena)] (ffi/pointer? (ffi/alloc a# 8)))
+                       (with-open [a# (ffi/shared-arena)] (ffi/pointer? (ffi/alloc a# 8)))
+                       (ffi/pointer? (ffi/alloc (ffi/auto-arena) 8))
+                       (ffi/pointer? (ffi/alloc (ffi/global-arena) 8))])))))
     (testing "alloc accepts a type or size"
       (is (= 8 (bb `(do ~ffi-require
                         (with-open [a# (ffi/confined-arena)]
