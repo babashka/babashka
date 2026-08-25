@@ -278,10 +278,10 @@ pays this.
 
 A variadic signature cannot pass a struct by value.
 
-Struct calls need libffi. A native babashka binary has libffi linked in
-when it was built with `BABASHKA_LIBFFI`, see `script/setup-libffi`. On the
-JVM, babashka loads the system libffi. Where there is no libffi, a struct
-binding throws.
+Struct calls need libffi. A released babashka binary has it linked in. A
+binary built from source needs `BABASHKA_LIBFFI`, see `script/setup-libffi`.
+On the JVM, babashka loads the system libffi. Where there is no libffi, a
+struct binding throws.
 
 ## Call a variadic function
 

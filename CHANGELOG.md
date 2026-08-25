@@ -12,6 +12,7 @@ A preview of the next release can be installed from
 - SCI caches resolved JVM instance methods per call site for performance
 - Add experimental [`babashka.ffi`](doc/ffi.md) for calling functions in native shared libraries
 - `babashka.ffi`: a C function can take and return a struct by value. Write the struct as `{:struct [types]}` and its values as vectors of fields
+- `babashka.ffi`: the macOS, Windows, and Linux (glibc) release binaries link libffi, so struct-by-value calls work without a custom build. The static Linux binary does not link it
 - On Linux, the install script now installs the dynamic binary by default. It installs the static binary on musl systems and on systems with glibc older than 2.17. The `--static` and `--dynamic` options override the automatic selection
 - The dynamic binary for Linux amd64 links every library statically except glibc. It no longer needs `libz.so.1` at run time
 - On FreeBSD, the install script installs the dynamic binary when the Linuxulator has a linux_base with glibc 2.17 or newer, such as `linux_base-rl9`
