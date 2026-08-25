@@ -103,14 +103,15 @@ candidate:
 ;;=> "libz.dylib"
 ```
 
-Pass this map to `cfn` to limit the search to that library:
+Pass this map to `cfn` to limit the search to that library and its
+dependencies:
 
 ```clojure
 (def zlib-version (ffi/cfn zlib "zlibVersion" [] :string))
 ```
 
 Without a library map, `cfn` searches all loaded libraries and the default
-system lookup.
+system lookup. `find-symbol` follows the same rules.
 
 A shared library exports functions and global variables by name. An exported
 name is a symbol.
