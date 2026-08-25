@@ -266,6 +266,12 @@
                               _# (ffi/alloc a# 1)
                               b# (ffi/alloc a# 24)]
                           [(mod (ffi/address d#) 8) (mod (ffi/address p#) 8) (mod (ffi/address i#) 4) (mod (ffi/address b#) 16)])))))))
+    (testing "a read after the arena closed throws instead of reading freed memory"
+      (is (thrown-with-msg?
+           Exception #"IllegalStateException|closed"
+           (bb `(do ~ffi-require
+                    (let [p# (with-open [a# (ffi/confined-arena)] (ffi/alloc a# :int))]
+                      (ffi/read p# :int)))))))
     (testing "alloc takes an explicit alignment"
       (is (= [0 0]
              (bb `(do ~ffi-require

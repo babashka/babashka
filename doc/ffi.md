@@ -393,7 +393,8 @@ Create an arena in `with-open`:
 ```
 
 The arena releases `p` and `q` when the body ends. If the body throws, the
-arena also releases them.
+arena also releases them. A read or write through `p` after that throws an
+`IllegalStateException`: a pointer knows its arena as well as its length.
 
 CAUTION: Do not call `free` on memory that an arena allocated. This operation
 can stop the process.
