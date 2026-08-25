@@ -307,13 +307,21 @@ babashka and on the JVM. babashka does not expose the class to scripts,
 which keeps the binary small: use `size`, `address`, `slice`, `reinterpret`
 and `pointer?` instead of interop on it.
 
-A pointer from `alloc` knows its length. A read or write past the end
-throws an `IndexOutOfBoundsException` instead of touching other memory.
+`alloc` returns a segment with a size. Access outside a nonzero segment throws
+an `IndexOutOfBoundsException`.
 
-A pointer that C returns has length 0, because C does not say how long it
-is. `read`, `write`, `read-bytes` and `ptr->string` size such a pointer from
-the type or the count you give them, so an out parameter needs no extra
-step. To read more through it, give it a length with `reinterpret`.
+C does not report the size of a pointer it returns, so that pointer has size
+0. `read`, `write`, `read-bytes`, `write-bytes` and `byte-buffer` refuse a
+pointer of size 0 with an error. Give it a size with `reinterpret` first:
+
+```clojure
+;; C returned p without a size, and you know it holds a 16-byte struct
+(ffi/read (ffi/reinterpret p 16) :int 8)
+```
+
+`alloc 0` and a slice at the end of a block also have size 0. `ptr->string`
+reads a pointer of size 0 until the NUL terminator, because a C string ends
+there.
 
 Use `size` for the length and `address` for the address as a long, for
 example to print it. Use `segment` to turn a long that you got elsewhere
@@ -323,14 +331,14 @@ Pointer arithmetic with `+` does not work on a pointer.
 ```clojure
 (ffi/size p)             ;;=> 16
 (ffi/address p)          ;;=> 4438706736
-(ffi/segment 4438706736) ;;=> a pointer of length 0
-(ffi/segment addr 16)    ;;=> a pointer of length 16
+(ffi/segment 4438706736) ;;=> a pointer of size 0
+(ffi/segment addr 16)    ;;=> a pointer of size 16
 (ffi/slice p 8)          ;;=> the rest of p from byte 8
-(ffi/reinterpret p 64)   ;;=> p with length 64
+(ffi/reinterpret p 64)   ;;=> p with size 64
 ```
 
-A C function that wants a pointer accepts a pointer or `nil`, which is NULL.
-It rejects a number. `ffi/null` is the NULL pointer:
+A C pointer argument accepts a pointer or `nil`. A `nil` value is NULL.
+Pointer arguments reject numbers. `ffi/null` is the NULL pointer:
 
 ```clojure
 (ffi/null? ffi/null)
@@ -349,6 +357,9 @@ Use `alloc` to allocate zeroed memory. Always release this memory with
       (ffi/free p))))
 ;;=> 42
 ```
+
+CAUTION: Do not use a pointer after `free`. This can corrupt memory or stop the
+process.
 
 `read` and `write` accept an optional byte offset:
 
@@ -444,8 +455,8 @@ Use `callback` to pass a Clojure function to C:
 (def comparator
   (ffi/callback
    (fn [left-pointer right-pointer]
-     (compare (ffi/read left-pointer :int)
-              (ffi/read right-pointer :int)))
+     (compare (ffi/read (ffi/reinterpret left-pointer 4) :int)
+              (ffi/read (ffi/reinterpret right-pointer 4) :int)))
    [:pointer :pointer]
    :int))
 
@@ -455,6 +466,9 @@ Use `callback` to pass a Clojure function to C:
 
 `callback` returns a function pointer. The pointer stays valid until you
 call `free-callback`.
+
+A `:pointer` argument of a callback comes from C and has size 0. Give it a
+size with `reinterpret` before you read through it.
 
 If C keeps the callback, keep its pointer. Unregister the callback before
 you call `free-callback`.

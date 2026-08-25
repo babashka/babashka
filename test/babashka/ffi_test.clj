@@ -121,28 +121,43 @@
 
 (deftest segment-test
   (when-not skip?
-    (testing "a pointer is a MemorySegment that knows its length"
+    (testing "alloc returns a sized MemorySegment"
       (is (= [true 8]
              (bb `(do ~ffi-require
                       (let [p# (ffi/alloc 8)
                             res# [(ffi/pointer? p#) (ffi/size p#)]]
                         (ffi/free p#)
                         res#))))))
-    (testing "a read past the end throws instead of reading memory"
+    (testing "read rejects an access past the end"
       (is (thrown-with-msg?
            Exception #"IndexOutOfBounds|Out of bound"
            (bb `(do ~ffi-require
                     (let [p# (ffi/alloc 4)]
                       (try (ffi/read p# :long 0)
                            (finally (ffi/free p#)))))))))
-    (testing "a pointer that C returned has length 0 and read sizes it from the type"
-      (is (= [0 "abc"]
+    (testing "a pointer from C has size 0 and needs reinterpret before a read"
+      (is (= [0 "abc" "has size 0" 97]
              (bb `(do ~ffi-require
                       (let [src# (ffi/string->ptr "abc")
-                            ;; strchr returns a pointer into src, length 0
+                            ;; strchr returns a pointer into src, size 0
                             hit# ((ffi/cfn "strchr" [:pointer :int] :pointer) src# (int \a))
-                            res# [(ffi/size hit#) (ffi/ptr->string hit#)]]
+                            res# [(ffi/size hit#)
+                                  (ffi/ptr->string hit#)
+                                  (try (ffi/read hit# :char)
+                                       (catch Exception e# (re-find #"has size 0" (ex-message e#))))
+                                  (ffi/read (ffi/reinterpret hit# 1) :char)]]
                         (ffi/free src#)
+                        res#))))))
+    (testing "a slice at the end of a block and alloc 0 have no bytes to access"
+      (is (= ["has size 0" "has size 0"]
+             (bb `(do ~ffi-require
+                      (let [p# (ffi/alloc 4)
+                            z# (ffi/alloc 0)
+                            msg# (fn [f#] (try (f#) (catch Exception e# (re-find #"has size 0" (ex-message e#)))))
+                            res# [(msg# #(ffi/read (ffi/slice p# 4) :int))
+                                  (msg# #(ffi/write z# :int 0 1))]]
+                        (ffi/free p#)
+                        (ffi/free z#)
                         res#))))))
     (testing "segment, address, slice and reinterpret"
       (is (= [true 8 4 42 4]
@@ -160,12 +175,12 @@
                                   (ffi/size sized#)]]
                         (ffi/free p#)
                         res#))))))
-    (testing "a number where a pointer is expected is a clear error"
+    (testing "a pointer argument rejects a number"
       (is (thrown-with-msg?
            Exception #"expected a pointer \(a MemorySegment\), got 42"
            (bb `(do ~ffi-require
                     (ffi/read 42 :int))))))
-    (testing "null is a segment, and null? sees any zero address"
+    (testing "null is a segment and null? detects each zero address"
       (is (= [true true false]
              (bb `(do ~ffi-require
                       (let [p# (ffi/alloc 1)
@@ -282,8 +297,10 @@
                         (doseq [[i# v#] (map-indexed vector [5 3 1 4 2])]
                           (ffi/write arr :int (* i# 4) v#))
                         (let [cmp (ffi/callback
+                                   ;; qsort hands the comparator pointers of size 0
                                    (fn [pa# pb#]
-                                     (compare (ffi/read pa# :int) (ffi/read pb# :int)))
+                                     (compare (ffi/read (ffi/reinterpret pa# 4) :int)
+                                              (ffi/read (ffi/reinterpret pb# 4) :int)))
                                    [:pointer :pointer] :int)]
                           ((ffi/cfn "qsort" [:pointer :size_t :size_t :pointer] :void)
                            arr 5 4 cmp)

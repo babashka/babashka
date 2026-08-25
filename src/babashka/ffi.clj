@@ -19,12 +19,12 @@
       :uint32 :int64 :uint64 :size_t :ssize_t :char :byte
       :bool :pointer :string :double :float
 
-  A pointer is a java.lang.foreign.MemorySegment. A pointer from alloc knows
-  its length, so a read past the end throws instead of corrupting memory. A pointer that C returns has length 0
-  and read and write size it from the type. :bool represents a
-  one-byte C boolean and returns true or false. Thus, a C predicate does not
-  return the truthy number 0. The API does not support struct-by-value
-  arguments.
+  A pointer is a java.lang.foreign.MemorySegment with a size. read and write
+  check every access against that size. A pointer that C returns has size 0:
+  give it a size with reinterpret before you read or write through it. :bool
+  represents a one-byte C boolean and returns true or false. Thus, a C
+  predicate does not return the truthy number 0. The API does not support
+  struct-by-value arguments.
 
   Native images limit most fixed signatures to six arguments. A signature
   that uses only pointer and integer types supports up to 10 arguments. A
@@ -151,34 +151,35 @@
            {:value p}))
 
 (defn- as-pointer
-  "p as a MemorySegment. Throws for anything else, a raw address included."
+  "Returns p as a MemorySegment. Rejects all other values, including raw addresses."
   ^MemorySegment [p]
   (if (instance? MemorySegment p) p (throw (pointer-ex p))))
 
 (defn- pointer-address
-  "The native address of pointer p. nil is the NULL pointer."
+  "Returns the native address of p. Treats nil as the NULL pointer."
   [p]
   (cond (nil? p) 0
         (instance? MemorySegment p) (.address ^MemorySegment p)
         :else (throw (pointer-ex p))))
 
-(defmacro ^:private sized
-  "p, guaranteed to cover n bytes. A segment that C returned has length 0 and
-  is reinterpreted, since the type says how much is needed. A segment that
-  already has a length is returned as it is, so the JDK bounds-checks the
-  access.
-
-  A macro, not a function: a call boxes n, and that keeps the JIT from
-  removing the boxing of the value read returns. It costs 8ns per read."
-  [p n]
-  `(let [p# ~p
-         ^MemorySegment s# (if (instance? MemorySegment p#) p# (throw (pointer-ex p#)))]
-     (if (zero? (.byteSize s#)) (.reinterpret s# (long ~n)) s#)))
+(defn- accessible
+  "Returns p as a MemorySegment that read and write can access. The JDK checks
+  every access against the size of p. A pointer of size 0 has no bytes to
+  access, so it is refused: alloc 0, a slice at the end of a block, and every
+  pointer that C returns have size 0. Give such a pointer a size with
+  reinterpret first."
+  ^MemorySegment [p]
+  (let [^MemorySegment s (if (instance? MemorySegment p) p (throw (pointer-ex p)))]
+    (when (zero? (.byteSize s))
+      (throw (ex-info (str "babashka.ffi: the pointer at address " (.address s)
+                           " has size 0; give it a size with reinterpret")
+                      {:pointer s})))
+    s))
 
 (defn segment
-  "Returns a MemorySegment at native address addr. Without a size the segment
-  has length 0 and read and write size it per access. With a size the segment
-  bounds-checks every access."
+  "Returns a pointer to native address addr. Without a size the pointer has
+  size 0, and needs one from reinterpret before a read or write. With a size,
+  every access is checked against it."
   (^MemorySegment [addr] (MemorySegment/ofAddress (long addr)))
   (^MemorySegment [addr size]
    (.reinterpret (MemorySegment/ofAddress (long addr)) (long size))))
@@ -186,8 +187,8 @@
 (defn reinterpret
   "Returns a view of segment seg with byte size size.
 
-  With an arena, the view is valid until the arena closes. With a cleanup
-  function, the arena calls it with the view when it closes."
+  An arena controls the lifetime of the view. The arena calls the optional
+  cleanup function with the view when the arena closes."
   (^MemorySegment [seg size] (.reinterpret (as-pointer seg) (long size)))
   (^MemorySegment [seg size arena]
    (.reinterpret (as-pointer seg) (long size) ^Arena arena nil))
@@ -197,8 +198,7 @@
                    (accept [_ s] (cleanup s))))))
 
 (defn slice
-  "Returns the part of segment seg that starts at byte offset. Without a
-  length the slice runs to the end of seg."
+  "Returns a slice of seg at byte offset. By default, the slice ends with seg."
   (^MemorySegment [seg offset] (.asSlice (as-pointer seg) (long offset)))
   (^MemorySegment [seg offset len]
    (.asSlice (as-pointer seg) (long offset) (long len))))
@@ -209,8 +209,8 @@
   (.address (as-pointer p)))
 
 (defn size
-  "Returns the length of pointer p in bytes. A pointer that C returned has
-  length 0."
+  "Returns the size of pointer p in bytes. A pointer that C returned has
+  size 0."
   [p]
   (.byteSize (as-pointer p)))
 
@@ -220,18 +220,16 @@
   (instance? MemorySegment x))
 
 (defn- string-at
-  "The NUL-terminated UTF-8 string at native address addr. Returns nil for
-  address zero."
+  "Returns the NUL-terminated UTF-8 string at addr. Returns nil for address zero."
   [^long addr]
   (when-not (zero? addr)
     (.getString (.reinterpret (MemorySegment/ofAddress addr) Long/MAX_VALUE) 0)))
 
 (defn ptr->string
-  "Reads the NUL-terminated UTF-8 string at pointer p. Returns nil for a NULL
-  pointer.
+  "Returns the NUL-terminated UTF-8 string at p. Returns nil for a NULL pointer.
 
-  A pointer that C returned has length 0 and is read until the terminator. A
-  pointer with a length is read within that length."
+  A C string ends at its NUL, so a pointer of size 0 is read until the
+  terminator. A pointer with a size is read within that size."
   [p]
   (let [seg (as-pointer p)]
     (when-not (zero? (.address seg))
@@ -731,15 +729,17 @@
 (def ^:private c-free (delay (cfn @crt-lib "free" [:pointer] :void)))
 
 (defn alloc
-  "Allocates n bytes of zeroed native memory and returns its pointer, a
-  segment of n bytes. Release the pointer with free."
+  "Allocates n zeroed bytes and returns a segment of size n.
+  Release the segment with free."
   ^MemorySegment [n]
   (let [size (long n)]
-    ;; calloc returns a pointer C made, so it has no length yet
+    ;; calloc returns a pointer of size 0
     (.reinterpret ^MemorySegment (@c-calloc 1 size) size)))
 
 (defn free
-  "Releases memory allocated by alloc or string->ptr."
+  "Releases memory allocated by alloc or string->ptr. The pointer keeps its
+  address and size, so a read or write after free reaches released memory.
+  Do not use the pointer after free."
   [p]
   (@c-free p))
 
@@ -755,15 +755,14 @@
   (or (sizes t) (throw (ex-info (str "babashka.ffi: unknown type " t) {:type t}))))
 
 (defn read
-  "Reads a value of type t from pointer p. The optional byte offset defaults
-  to 0.
+  "Reads a value of type t from p. The default byte offset is zero.
 
-  A pointer with a length bounds-checks the access. A pointer that C returned
-  has length 0 and is sized from t and the offset."
+  The access is checked against the size of p. A pointer of size 0 is
+  refused: give it a size with reinterpret first."
   ([p t] (read p t 0))
   ([p t offset]
    (let [off (long offset)
-         ^MemorySegment seg (sized p (+ off (long (sizeof t))))]
+         ^MemorySegment seg (accessible p)]
      (case t
        (:int :int32) (long (.get seg ValueLayout/JAVA_INT_UNALIGNED off))
        (:uint :uint32) (bit-and (long (.get seg ValueLayout/JAVA_INT_UNALIGNED off)) 0xFFFFFFFF)
@@ -783,15 +782,14 @@
        (throw (ex-info (str "babashka.ffi: cannot read type " t) {:type t}))))))
 
 (defn write
-  "Writes value v as type t to pointer p. The optional byte offset defaults
-  to 0. Returns nil.
+  "Writes v as type t to p. The default byte offset is zero. Returns nil.
 
-  A pointer with a length bounds-checks the access. A pointer that C returned
-  has length 0 and is sized from t and the offset."
+  The access is checked against the size of p. A pointer of size 0 is
+  refused: give it a size with reinterpret first."
   ([p t v] (write p t 0 v))
   ([p t offset v]
    (let [off (long offset)
-         ^MemorySegment seg (sized p (+ off (long (sizeof t))))]
+         ^MemorySegment seg (accessible p)]
      (case t
        (:int :uint :int32 :uint32) (.set seg ValueLayout/JAVA_INT_UNALIGNED off (unchecked-int (long v)))
        (:long :ulong :int64 :uint64 :size_t :ssize_t)
@@ -812,7 +810,7 @@
   (^bytes [p n offset]
    (let [n (int n)
          arr (byte-array n)
-         ^MemorySegment seg (sized p (+ (long offset) n))]
+         ^MemorySegment seg (accessible p)]
      (MemorySegment/copy seg ValueLayout/JAVA_BYTE (long offset) arr 0 n)
      arr)))
 
@@ -822,7 +820,7 @@
   ([p arr] (write-bytes p arr 0))
   ([p ^bytes arr offset]
    (let [n (alength arr)
-         ^MemorySegment seg (sized p (+ (long offset) n))]
+         ^MemorySegment seg (accessible p)]
      (MemorySegment/copy arr 0 seg ValueLayout/JAVA_BYTE (long offset) n)
      nil)))
 
@@ -836,7 +834,7 @@
   The byte order is big-endian, as it is for each new ByteBuffer. If you need a
   different byte order, set it with .order."
   ^java.nio.ByteBuffer [p n]
-  (let [^MemorySegment seg (sized p (long n))]
+  (let [^MemorySegment seg (accessible p)]
     (.asByteBuffer (.asSlice seg 0 (long n)))))
 
 (defn string->ptr
@@ -863,10 +861,10 @@
 (def ^:private callback-arenas (atom {}))
 
 (defn callback
-  "Creates a C function pointer that invokes Clojure function f. argtypes and
-  rettype use the same type keywords as cfn. f receives a :pointer argument
-  as a pointer of length 0, a :bool argument as a boolean, and every other
-  argument as a Clojure long or double.
+  "Creates a C function pointer that invokes f. argtypes and rettype use the
+  cfn type keywords. f receives a :pointer argument as a pointer of size 0:
+  give it a size with reinterpret before you read through it. f receives a
+  :bool argument as a boolean and every other argument as a long or a double.
 
   Returns the function pointer. The callback remains valid until
   free-callback releases it."

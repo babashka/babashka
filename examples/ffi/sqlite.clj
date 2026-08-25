@@ -29,9 +29,11 @@
 ;; int callback(void* _, int argc, char** argv, char** cols)
 (def row-cb
   (ffi/callback (fn [_ argc argv _cols]
-                  (swap! rows conj
-                         (mapv #(ffi/read argv :string (* % (ffi/sizeof :pointer)))
-                               (range argc)))
+                  ;; argv comes from C with size 0; it holds argc pointers
+                  (let [argv (ffi/reinterpret argv (* argc (ffi/sizeof :pointer)))]
+                    (swap! rows conj
+                           (mapv #(ffi/read argv :string (* % (ffi/sizeof :pointer)))
+                                 (range argc))))
                   0)
                 [:pointer :int :pointer :pointer] :int))
 
