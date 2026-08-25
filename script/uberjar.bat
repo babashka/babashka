@@ -133,12 +133,13 @@ set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/rrb-vector
 set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/rrb-vector
 )
 
-Rem same variable as script/compile.bat, which links the archive it names:
-Rem the two steps have to agree, or the image does not link
-if not "%BABASHKA_LIBFFI%"=="" (
-set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/libffi
-) else (
+Rem babashka.ffi calls struct-by-value functions through libffi, which every
+Rem build links unless BABASHKA_LIBFFI is none. script\compile.bat decides
+Rem the same way, and the two have to agree or the image does not link.
+if "%BABASHKA_LIBFFI%"=="none" (
 set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/libffi
+) else (
+set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/libffi
 )
 
 call lein with-profiles %BABASHKA_LEIN_PROFILES% bb "(+ 1 2 3)"

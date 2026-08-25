@@ -181,10 +181,6 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                                 (str base-install-cmd "\nsudo -E script/setup-musl")
                                                 ;; non-musl linux builds link zlib statically
                                                 (str base-install-cmd "\nsudo -E script/setup-zlib"))))
-                                          ;; skipped on the musl static build, see musl-static? above
-                                          (when-not musl-static?
-                                            (run "Install libffi"
-                                              "LIBFFI_LIB=$(script/setup-libffi)\necho \"export BABASHKA_LIBFFI=$LIBFFI_LIB\" >> \"$BASH_ENV\""))
                                           ;; after dev tools: the probe needs cc
                                           (when (not= "mac" platform)
                                             (run "Check glibc floor" "script/check_glibc.sh"))

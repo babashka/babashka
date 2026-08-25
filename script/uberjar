@@ -175,13 +175,17 @@ else
     BABASHKA_LEIN_PROFILES+=",-feature/rrb-vector"
 fi
 
-# same variable as script/compile, which links the archive it names: the two
-# steps have to agree, or the image does not link
-if [ -n "${BABASHKA_LIBFFI:-}" ]
+# babashka.ffi calls struct-by-value functions through libffi, which every
+# build links by default. Two builds do not: the musl static one, whose
+# binary has no dlopen and so cannot call a shared library at all, and a
+# build that sets BABASHKA_LIBFFI=none. script/compile decides the same way
+# on the same two conditions, and the two have to agree or the image ends up
+# with undefined symbols.
+if [ "${BABASHKA_MUSL:-}" = "true" ] || [ "${BABASHKA_LIBFFI:-}" = "none" ]
 then
-    BABASHKA_LEIN_PROFILES+=",+feature/libffi"
-else
     BABASHKA_LEIN_PROFILES+=",-feature/libffi"
+else
+    BABASHKA_LEIN_PROFILES+=",+feature/libffi"
 fi
 
 #lein with-profiles "$BABASHKA_LEIN_PROFILES,+reflection,-uberjar" deps :tree
