@@ -138,7 +138,7 @@
                         (let [res# [(ffi/read p# :string) (ffi/ptr->string 0)]]
                           (ffi/free p#)
                           res#)))))))
-    (testing "bulk byte copies round trip at an offset"
+    (testing "read-bytes and write-bytes use the specified offset"
       (is (= [[1 2 3 4] [0 0]]
              (bb `(do ~ffi-require
                       (let [p# (ffi/alloc 16)]
@@ -147,7 +147,7 @@
                                     (vec (ffi/read-bytes p# 2))]]
                           (ffi/free p#)
                           res#)))))))
-    (testing "byte-buffer views native memory without copying"
+    (testing "byte-buffer shares native memory without a copy"
       (is (= [7 42]
              (bb `(do ~ffi-require
                       (let [p# (ffi/alloc 8)

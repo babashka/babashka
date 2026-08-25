@@ -669,10 +669,14 @@
      nil)))
 
 (defn byte-buffer
-  "A java.nio.ByteBuffer view over n bytes of native memory at pointer p:
-  reads and writes go straight to the native memory, nothing is copied.
-  The buffer is only valid while the memory is. Byte order is big-endian,
-  as for any new ByteBuffer; set it with .order if needed."
+  "Returns a java.nio.ByteBuffer view of n bytes of native memory at pointer p.
+  The buffer and native memory share the same bytes.
+
+  CAUTION: Do not use the buffer after you release the native memory. An
+  invalid memory access can stop the process.
+
+  The byte order is big-endian, as it is for each new ByteBuffer. If you need a
+  different byte order, set it with .order."
   ^java.nio.ByteBuffer [p n]
   (.asByteBuffer (segment p n)))
 
