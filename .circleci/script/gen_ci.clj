@@ -152,9 +152,7 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                  (if (= "aarch64" arch)
                                    "aarch64-"
                                    ""))
-        ;; the musl static binary has no dlopen and no FFM default lookup,
-        ;; so babashka.ffi cannot resolve a symbol in it at all. Linking
-        ;; libffi in there would only add dead weight
+        ;; The static musl binary cannot load shared libraries.
         musl-static?     (and static? musl? (not= "aarch64" arch))]
     (gen-job shorted?
              (merge
@@ -187,7 +185,7 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                                    "\nmkdir -p \"$BABASHKA_TARBALL_CACHE\""
                                                    (if musl-static?
                                                      "\nsudo -E script/setup-musl"
-                                                     ;; non-musl linux builds link zlib statically
+                                                     ;; Other Linux builds link zlib statically.
                                                      "\nsudo -E script/setup-zlib"))))
                                           ;; after dev tools: the probe needs cc
                                           (when (not= "mac" platform)

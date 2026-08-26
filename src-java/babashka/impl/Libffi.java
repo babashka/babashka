@@ -7,19 +7,12 @@ import org.graalvm.nativeimage.c.type.CTypeConversion;
 import org.graalvm.word.PointerBase;
 import org.graalvm.word.WordFactory;
 
-/** The two libffi entry points for the calls that the fixed native call
- * shapes cannot make, bound at link time. Only functional in a native
- * image, and only in one that links libffi: without the archive the symbols
- * do not resolve. babashka.impl.libffi, the only caller, is on the
- * classpath only for a build that links the archive, which keeps these
- * methods unreachable otherwise. See script/setup-libffi. */
+/** Libffi entry points that bind at link time.
+ * Native images that link libffi make this class reachable. */
 public final class Libffi {
     private Libffi() {}
 
-    // TO_NATIVE, the default and what the generated trampolines use:
-    // ffi_call runs arbitrary C, which may block or call back into Java
-    // through a callback, and NO_TRANSITION is for leaf functions that do
-    // neither.
+    // ffi_call can block or call Java through a callback.
     @CFunction(value = "ffi_prep_cif", transition = Transition.TO_NATIVE)
     private static native int ffi_prep_cif(PointerBase cif, int abi, int nargs,
                                            PointerBase rtype, PointerBase atypes);
@@ -28,13 +21,11 @@ public final class Libffi {
     private static native void ffi_call(PointerBase cif, PointerBase fn,
                                         PointerBase rvalue, PointerBase avalues);
 
-    // A leaf that returns a constant: no transition needed.
+    // This leaf function returns a constant.
     @CFunction(value = "ffi_get_version", transition = Transition.NO_TRANSITION)
     private static native CCharPointer ffi_get_version();
 
-    /** The version of the linked libffi, such as "3.5.1". bb describe prints
-     * it, and the test suite pins it: the one call that proves the archive
-     * is in the image. */
+    /** Returns the linked libffi version. */
     public static String version() {
         return CTypeConversion.toJavaString(ffi_get_version());
     }

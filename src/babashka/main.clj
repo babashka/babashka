@@ -289,8 +289,8 @@ Use bb run --help to show this help output.
 ")))
 
 (defn- libffi-version
-  "The version of the libffi linked into this binary, nil on the JVM and in
-  a binary built without it. See script/libffi_archive.sh."
+  "Returns the linked libffi version.
+  Returns nil on the JVM or when the binary has no libffi."
   []
   (when (and features/libffi?
              (System/getProperty "org.graalvm.nativeimage.imagecode"))

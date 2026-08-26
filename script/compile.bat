@@ -26,11 +26,7 @@ if "%BABASHKA_SHA%"=="" (
     )
 )
 
-Rem babashka.ffi calls struct-by-value functions through libffi, which every
-Rem build links. BABASHKA_LIBFFI names an archive to link instead of the one
-Rem script\setup-libffi.bat installs, and BABASHKA_LIBFFI=none leaves it out.
-Rem script\uberjar.bat decides the same way, so a disagreement here leaves
-Rem the image with undefined symbols.
+Rem Select the libffi archive. script\uberjar.bat must use the same setting.
 set "LIBFFI_ARG="
 if "%BABASHKA_LIBFFI%"=="none" goto :libffi_done
 set "LIBFFI_LIB=%BABASHKA_LIBFFI%"
@@ -46,9 +42,10 @@ if "%LIBFFI_LIB%"=="" (
   echo compile.bat: set BABASHKA_LIBFFI to a library to link, or to none to skip this attempt 1>&2
   goto :libffi_done
 )
-set "LIBFFI_ARG=-H:NativeLinkerOption=/WHOLEARCHIVE:%LIBFFI_LIB%"
+Rem quoted as a whole: a vcpkg under Program Files has a space in its path
+set LIBFFI_ARG="-H:NativeLinkerOption=/WHOLEARCHIVE:%LIBFFI_LIB%"
 :libffi_done
-Rem babashka.impl.features reads this at build time, see script\libffi_archive.sh
+Rem Pass the feature setting to image initialization.
 if "%LIBFFI_ARG%"=="" (set BABASHKA_FEATURE_LIBFFI=false) else (set BABASHKA_FEATURE_LIBFFI=true)
 
 call %GRAALVM_HOME%\bin\native-image.cmd ^

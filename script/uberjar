@@ -175,9 +175,7 @@ else
     BABASHKA_LEIN_PROFILES+=",-feature/rrb-vector"
 fi
 
-# Every build links libffi, see script/libffi_archive.sh for the rules. The
-# feature profile puts the @CFunction bindings on the classpath only when
-# script/compile will link the archive.
+# Select the libffi bindings for this uberjar.
 # shellcheck source=script/libffi_archive.sh
 . script/libffi_archive.sh
 if [ -n "$libffi_archive" ]; then

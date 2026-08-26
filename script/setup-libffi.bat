@@ -1,13 +1,9 @@
 @echo off
 
-Rem Installs a static libffi through vcpkg and prints the path of the
-Rem library. babashka.ffi calls struct-by-value functions through it, so
-Rem builds that want those link it in with BABASHKA_LIBFFI. See
-Rem script\uberjar.bat and script\compile.bat.
+Rem Installs a static libffi through vcpkg and prints its path.
 Rem
-Rem The GitHub Actions windows runners ship vcpkg and set
-Rem VCPKG_INSTALLATION_ROOT. Everything vcpkg prints goes to stderr, so
-Rem stdout carries the path and nothing else.
+Rem GitHub Actions sets VCPKG_INSTALLATION_ROOT. vcpkg writes its output to
+Rem stderr. Thus, stdout contains only the archive path.
 
 setlocal
 
@@ -18,10 +14,7 @@ if "%VCPKG_ROOT%"=="" (
   exit /b 1
 )
 
-Rem static-md is a static libffi against the dynamic C runtime, which is the
-Rem runtime native-image links the image with. babashka.ffi assumes an
-Rem MSVC-built libffi for its ABI constant, see default-abi in
-Rem src\babashka\ffi.clj.
+Rem Use a static libffi with the dynamic C runtime that native-image uses.
 if "%LIBFFI_TRIPLET%"=="" set "LIBFFI_TRIPLET=x64-windows-static-md"
 
 call "%VCPKG_ROOT%\vcpkg.exe" install libffi:%LIBFFI_TRIPLET% 1>&2

@@ -133,13 +133,7 @@ set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/rrb-vector
 set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/rrb-vector
 )
 
-Rem babashka.ffi calls struct-by-value functions through libffi, which every
-Rem build links unless BABASHKA_LIBFFI is none. script\compile.bat decides
-Rem the same way, and the two have to agree or the image does not link.
-Rem The same decision as script\compile.bat: the feature profile puts the
-Rem @CFunction bindings on the classpath only when compile.bat will link the
-Rem library. Without vcpkg a local build goes on without libffi; a CI build
-Rem fails in compile.bat.
+Rem Select the libffi bindings for this uberjar.
 set "LIBFFI_LIB=%BABASHKA_LIBFFI%"
 if "%LIBFFI_LIB%"=="none" set "LIBFFI_LIB="
 if "%BABASHKA_LIBFFI%"=="" (

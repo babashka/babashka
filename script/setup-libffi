@@ -1,31 +1,20 @@
 #!/usr/bin/env bash
 
-# Builds a pinned static libffi. babashka.ffi calls struct-by-value
-# functions through it, and script/compile links the archive this prints.
+# Builds a pinned static libffi and prints its archive path.
 #
-# 3.4.6 does not build with current Apple clang, so the version is pinned
-# like zlib and musl.
-#
-# The archive must match the architecture native-image TARGETS, which is
-# not always the one this machine runs. Oracle publishes no macOS x64
-# GraalVM after 25.0.1, so the mac release build uses that one under
-# Rosetta on an arm64 runner: native-image emits x86_64 while cc here
-# defaults to arm64, and the linker then ignores the archive and reports
-# ffi_call as undefined. So the target comes from the GraalVM in
-# GRAALVM_HOME, and an archive built for another one is rebuilt.
-#
-# Prints the path of the archive.
+# The archive must match the native-image target architecture. This target can
+# differ from the host architecture. Thus, the script reads the architecture
+# from the GraalVM in GRAALVM_HOME.
 
 set -euo pipefail
 
 # shellcheck source=script/fetch_tarball.sh
 . "$(dirname "${BASH_SOURCE[0]:-$0}")/fetch_tarball.sh"
 
-LIBFFI_VERSION="3.5.1"
-LIBFFI_SHA256="f99eb68a67c7d54866b7706af245e87ba060d419a062474b456d3bc8d4abdbd1"
+LIBFFI_VERSION="3.8.0"
+LIBFFI_SHA256="7da3e2d9a171eb0a038f592ecad3ff2bb2550f3496d87b3b29ad0cf4430c0db4"
 
-# The architecture native-image targets: the one its own binaries are
-# built for, not the one this machine runs.
+# Get the architecture of the native-image executable.
 target_arch() {
     local java="${GRAALVM_HOME:-}/bin/java"
     if [ -x "$java" ]; then
@@ -42,11 +31,11 @@ case "$arch" in
     aarch64|arm64) arch="arm64" ;;
 esac
 
-# not under target, which lein clean empties between the two build steps.
-# Per architecture, so a machine that builds for two of them keeps both.
-prefix="${LIBFFI_PREFIX:-$PWD/.libffi/$arch}"
+# Keep one archive for each version and architecture outside target, which
+# lein cleans. The version in the path makes a bump build anew.
+prefix="${LIBFFI_PREFIX:-$PWD/.libffi/$LIBFFI_VERSION/$arch}"
 
-# libffi installs into lib or lib64, depending on the platform
+# libffi installs the archive in lib or lib64.
 find_archive() {
     { find "$prefix" -name libffi.a -not -path "$prefix/build/*" 2> /dev/null || true; } | head -1
 }
@@ -64,10 +53,7 @@ cd "$build"
 
 tarball="libffi-${LIBFFI_VERSION}.tar.gz"
 
-# One source, unlike musl and zlib: of the usual mirrors, sourceware,
-# buildroot, openwrt and the Debian pool all lack 3.5.1, and the tarball
-# GitHub generates from the tag has different bytes than the release. So
-# this leans on the retries and the cache instead.
+# The usual project mirrors do not contain this release archive.
 fetch_tarball "$tarball" "$LIBFFI_SHA256" \
     "https://github.com/libffi/libffi/releases/download/v${LIBFFI_VERSION}/${tarball}"
 
@@ -77,8 +63,7 @@ cd "libffi-${LIBFFI_VERSION}"
 configure_args=(--disable-shared --enable-static --disable-docs --prefix="$prefix")
 
 if [ "$(uname -s)" = "Darwin" ] && [ "$arch" != "$(uname -m)" ]; then
-    # cross build, which on macOS means -arch plus a host triple that
-    # configure accepts for the target
+    # Configure a macOS cross-build for the target architecture.
     export CFLAGS="${CFLAGS:-} -arch $arch"
     export LDFLAGS="${LDFLAGS:-} -arch $arch"
     configure_args+=("--host=${arch}-apple-darwin")

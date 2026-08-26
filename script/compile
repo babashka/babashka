@@ -64,11 +64,10 @@ elif [ "$(uname -s)" = "Linux" ] && [ "$BABASHKA_FULLY_DYNAMIC" != "true" ]; the
     args+=("-H:+StaticExecutableWithDynamicLibC")
 fi
 
-# Every build links libffi, see script/libffi_archive.sh for the rules.
+# Get the libffi archive for this build.
 # shellcheck source=script/libffi_archive.sh
 . script/libffi_archive.sh
-# The builder gets a minimal environment; -E passes this variable through,
-# so that babashka.impl.features sees it during build-time initialization.
+# Pass the feature setting to image initialization.
 args+=("-EBABASHKA_FEATURE_LIBFFI")
 if [ -n "$libffi_archive" ]; then
     if [ "$(uname -s)" = "Darwin" ]; then

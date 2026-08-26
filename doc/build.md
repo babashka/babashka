@@ -6,11 +6,9 @@
 - Download [GraalVM](https://www.graalvm.org/downloads/). Currently we use *Oracle GraalVM 25.0.4*.
 - For Windows, installing Visual Studio 2019 with the "Desktop development
 with C++" workload is recommended.
-- A C compiler and `make`: `script/compile` builds a static libffi from
-  source with `script/setup-libffi` and links it into the binary. On
-  Windows, `script\setup-libffi.bat` installs it through vcpkg instead: set
-  `VCPKG_ROOT` to a vcpkg checkout (the GitHub Actions runners set
-  `VCPKG_INSTALLATION_ROOT`).
+- A C compiler and `make`. `script/setup-libffi` builds a static libffi.
+  On Windows, `script\setup-libffi.bat` installs libffi through vcpkg. Set
+  `VCPKG_ROOT` to the vcpkg directory.
 - Set `$GRAALVM_HOME` to the GraalVM distribution directory. On macOS this can look like:
 
   ``` shell
@@ -65,24 +63,22 @@ $ export BABASHKA_XMX="-J-Xmx6500m"
 Note: setting the max heap size to a low value can cause the build to crash or
 take long to complete.
 
-Every build links libffi, for the calls that `babashka.ffi` cannot make
-through its fixed set of native call shapes. `script/compile` asks
-`script/setup-libffi` for the archive, which builds libffi 3.5.1 once and
-keeps it under `.libffi/`. Two overrides:
+Builds link libffi for calls outside the fixed set of native call shapes.
+`script/setup-libffi` builds the library and stores it under `.libffi/`.
+You can override this behavior:
 
 ```
 $ export BABASHKA_LIBFFI=/path/to/libffi.a   # link this archive instead
 $ export BABASHKA_LIBFFI=none                # leave libffi out
 ```
 
-The first is for a packager who has to link the system libffi or who builds
-without a network. The musl static build never links libffi: that binary has
-no `dlopen`, so `babashka.ffi` cannot call any shared library there.
+The first setting supports system libraries and builds without network access.
+The static musl build does not link libffi because it cannot load shared
+libraries.
 
-When `script/setup-libffi` fails, for example without `make`, vcpkg or a
-network, a local build prints a warning and goes on without libffi. A CI
-build (`CI=true`) fails instead. `bb describe` shows which libffi a binary
-has under `:libffi/version`, `nil` for none.
+If libffi setup fails, a local build prints a warning and continues without
+libffi. A CI build fails. `bb describe` shows the linked version under
+`:libffi/version`. The value is `nil` if the build has no libffi.
 
 ### Alternative: Build inside Docker
 
