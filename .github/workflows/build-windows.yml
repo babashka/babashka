@@ -114,5 +114,10 @@ jobs:
         run: |
           set BABASHKA_CLASSPATH=
           set BABASHKA_TEST_ENV=native
+          rem The struct tests build a small C library, so cl has to be on
+          rem PATH. native-image finds MSVC by itself and does not put it
+          rem there, so ask vswhere the way native-image does.
+          for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do set VSPATH=%%i
+          if defined VSPATH call "%VSPATH%\VC\Auxiliary\Build\vcvars64.bat"
           call script/test.bat :windows || exit /B 1
           call script/run_lib_tests.bat || exit /B 1

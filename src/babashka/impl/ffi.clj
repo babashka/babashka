@@ -18,6 +18,7 @@
    'global-arena (copy-var ffi/global-arena tns)
    'free (copy-var ffi/free tns)
    'sizeof (copy-var ffi/sizeof tns)
+   'alignof (copy-var ffi/alignof tns)
    'read (copy-var ffi/read tns)
    'write (copy-var ffi/write tns)
    'ptr->string (copy-var ffi/ptr->string tns)

@@ -28,21 +28,50 @@
 (def home-var (if tu/windows? "PATH" "HOME"))
 (def snprintf-sym (if tu/windows? "_snprintf" "snprintf"))
 
+(defn- compile-c-lib
+  "Compiles test-resources/src-name into a shared library under target and
+  returns its path, nil when there is no C compiler. cc on POSIX, cl on
+  Windows."
+  [src-name lib-name]
+  (let [out (io/file "target" "ffi-test-lib"
+                     (cond tu/windows? (str lib-name ".dll")
+                           (= "Mac OS X" (System/getProperty "os.name")) (str "lib" lib-name ".dylib")
+                           :else (str "lib" lib-name ".so")))
+        src (io/file "test-resources" src-name)]
+    (io/make-parents out)
+    (when (or (.exists out)
+              (try (zero? (:exit (if tu/windows?
+                                   (p/sh "cl" "/nologo" "/LD" "/O1" (str src)
+                                         (str "/Fe:" out) (str "/Fo:" out ".obj"))
+                                   (p/sh "cc" "-shared" "-fPIC" "-O1"
+                                         "-o" (str out) (str src)))))
+                   (catch Exception _ false)))
+      (.getAbsolutePath out))))
+
 (def test-lib
-  "Path of the compiled test C library, nil when it cannot be built.
-  Compiled on demand with cc; skipped on Windows (no compiler on PATH in CI)."
+  "Path of the compiled test C library, nil when it cannot be built. The
+  tests that use it assume a POSIX libc, so it is not built on Windows."
+  (delay (when-not (or skip? tu/windows?)
+           (compile-c-lib "ffi_test_lib.c" "ffitest"))))
+
+(def struct-lib
+  "Path of the compiled struct test C library, nil when it cannot be built."
+  (delay (when-not skip?
+           (compile-c-lib "ffi_struct_lib.c" "ffistructs"))))
+
+(def libffi?
+  "Whether this build can pass a struct by value: a native image needs libffi
+  linked in, the JVM needs the system libffi."
   (delay
-    (when-not (or skip? tu/windows?)
-      (let [out (io/file "target" "ffi-test-lib"
-                         (if (= "Mac OS X" (System/getProperty "os.name"))
-                           "libffitest.dylib" "libffitest.so"))
-            src (io/file "test-resources" "ffi_test_lib.c")]
-        (io/make-parents out)
-        (when (or (.exists out)
-                  (try (zero? (:exit (p/sh "cc" "-shared" "-fPIC" "-O1"
-                                           "-o" (str out) (str src))))
-                       (catch Exception _ false)))
-          (.getAbsolutePath out))))))
+    (boolean
+     (when-not skip?
+       (true? (bb `(do (require '[babashka.ffi :as ~'ffi])
+                       (try (ffi/cfn "div" [:int :int] {:struct [[:quot :int] [:rem :int]]})
+                            true
+                            (catch Exception e#
+                              (when-not (re-find #"needs libffi" (ex-message e#))
+                                (throw e#))
+                              false)))))))))
 
 (defn lib-require [path]
   `(do (require '[babashka.ffi :as ~'ffi :refer [~'defcfn]])
@@ -435,6 +464,107 @@
                           (let [res (mapv #(ffi/read arr :int (* % 4)) (range 5))]
                             (ffi/free arr)
                             res))))))))))
+
+(deftest struct-test
+  (when-not skip?
+    (testing "a layout with an unknown type keyword fails at bind time"
+      (is (thrown-with-msg?
+           Exception #"unknown type :nope"
+           (bb `(do ~ffi-require
+                    (ffi/cfn "div" [:int :int] {:struct [[:a :nope] [:b :int]]}))))))
+    (testing "a layout without names, or with a name twice, is an error"
+      (is (thrown-with-msg?
+           Exception #"vector of \[name type\] pairs"
+           (bb `(do ~ffi-require (ffi/cfn "div" [:int :int] {:struct [:int :int]})))))
+      (is (thrown-with-msg?
+           Exception #"names a field twice"
+           (bb `(do ~ffi-require (ffi/cfn "div" [:int :int] {:struct [[:a :int] [:a :int]]}))))))
+    (if-not @libffi?
+      (do (println "babashka.ffi struct tests skipped: this build has no libffi")
+          (testing "a build without libffi says so"
+            (is (thrown-with-msg?
+                 Exception #"needs libffi"
+                 (bb `(do ~ffi-require
+                          (ffi/cfn "div" [:int :int] {:struct [[:quot :int] [:rem :int]]})))))))
+      (do
+        (testing "libc div returns a two-int struct by value, as a map"
+          (is (= [{:quot 3 :rem 1} {:quot -3 :rem -1}]
+                 (bb `(do ~ffi-require
+                          (let [d# (ffi/cfn "div" [:int :int] {:struct [[:quot :int] [:rem :int]]})]
+                            [(d# 7 2) (d# -7 2)]))))))
+        (testing "defcfn takes a struct layout as the return type"
+          (is (= {:quot 3 :rem 1}
+                 (bb `(do ~ffi-require
+                          (~'defcfn ~'c-div "div" [:int :int] {:struct [[:quot :int] [:rem :int]]})
+                          (~'c-div 7 2))))))
+        (testing "sizeof and alignof of a struct layout count the padding"
+          (is (= [[8 4] [24 8] [32 8] [16 4] [16 8]]
+                 (bb `(do ~ffi-require
+                          (mapv (fn [l#] [(ffi/sizeof l#) (ffi/alignof l#)])
+                                [{:struct [[:x :int] [:y :int]]}
+                                 {:struct [[:x :double] [:y :double] [:z :double]]}
+                                 {:struct [[:a :long] [:b :long] [:c :long] [:d :long]]}
+                                 {:struct [[:lo {:struct [[:x :int] [:y :int]]}]
+                                           [:hi {:struct [[:x :int] [:y :int]]}]]}
+                                 {:struct [[:c :char] [:d :double]]}]))))))
+        (testing "a struct binding calls through libffi"
+          (is (= :libffi
+                 (bb `(do ~ffi-require
+                          (:babashka.ffi/backend
+                           (meta (ffi/cfn "div" [:int :int] {:struct [[:quot :int] [:rem :int]]}))))))))
+        (testing "a value that misses a field, has an unknown field, or is no map is an error"
+          (is (= ["misses field :rem" "has unknown field :x" "needs a map of [:quot :rem]"]
+                 (bb `(do ~ffi-require
+                          (let [f# (ffi/cfn "div" [{:struct [[:quot :int] [:rem :int]]}] :void)
+                                msg# (fn [v#] (try (f# v#) (catch Exception e# (re-find #"misses field :rem|has unknown field :x|needs a map of \[:quot :rem\]" (ex-message e#)))))]
+                            [(msg# {:quot 1}) (msg# {:quot 1 :rem 2 :x 3}) (msg# [1 2])]))))))
+        (testing "an empty struct layout is an error"
+          (is (thrown-with-msg?
+               Exception #"non-empty"
+               (bb `(do ~ffi-require (ffi/cfn "div" [:int :int] {:struct []}))))))
+        (testing "a variadic signature cannot pass a struct by value"
+          (is (thrown-with-msg?
+               Exception #"variadic signature cannot pass a struct"
+               (bb `(do ~ffi-require
+                        (ffi/cfn "div" [{:struct [[:quot :int] [:rem :int]]} :&] :void))))))))))
+
+(deftest struct-lib-test
+  (when (and (not skip?) @libffi?)
+    (if-not @struct-lib
+      (println "babashka.ffi struct library tests skipped: no C compiler on PATH")
+      (testing "an HFA return, a return and an argument larger than 16 bytes,
+                and a nested struct"
+        (is (= [{:x 2.5 :y 5.0 :z 7.5}
+                {:a 10 :b 11 :c 12 :d 13}
+                10
+                {:lo {:x -1 :y -1} :hi {:x 7 :y 7}}
+                {:x 11 :y 22}]
+               (bb `(do ~(lib-require @struct-lib)
+                        (let [v3# {:struct [[:x :double] [:y :double] [:z :double]]}
+                              big# {:struct [[:a :long] [:b :long] [:c :long] [:d :long]]}
+                              p2# {:struct [[:x :int] [:y :int]]}
+                              rect# {:struct [[:lo p2#] [:hi p2#]]}]
+                          [((ffi/cfn "v3_scale" [v3# :double] v3#) {:x 1.0 :y 2.0 :z 3.0} 2.5)
+                           ((ffi/cfn "big_make" [:long] big#) 10)
+                           ((ffi/cfn "big_sum" [big#] :long) {:a 1 :b 2 :c 3 :d 4})
+                           ((ffi/cfn "rect_grow" [rect# :int] rect#) {:lo {:x 1 :y 1} :hi {:x 5 :y 5}} 2)
+                           ((ffi/cfn "p2_add" [p2# p2#] p2#) {:x 1 :y 2} {:x 10 :y 20})])))))))))
+
+(deftest struct-thread-test
+  (when (and (not skip?) @libffi? @struct-lib)
+    (testing "threads that share one struct binding do not share its scratch"
+      (is (= [:ok :ok :ok :ok]
+             (bb `(do ~(lib-require @struct-lib)
+                      (let [p2# {:struct [[:x :int] [:y :int]]}
+                            add# (ffi/cfn "p2_add" [p2# p2#] p2#)]
+                        (mapv deref
+                              (mapv (fn [i#]
+                                      (future
+                                        (dotimes [_# 5000]
+                                          (assert (= {:x (* 2 i#) :y (* 3 i#)}
+                                                     (add# {:x i# :y i#} {:x i# :y (* 2 i#)}))))
+                                        :ok))
+                                    (range 4)))))))))))
 
 (deftest load-library-test
   (when-not skip?
