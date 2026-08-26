@@ -411,11 +411,11 @@ when necessary:
 
 Use `confined-arena` for memory that one thread uses. Other threads cannot
 access its pointers. Use `shared-arena` for memory that multiple threads use.
+Both arena types work with `with-open`.
 
 CAUTION: Do not close a shared arena while another thread is in a C call
 with its memory. The call continues on released memory. A pointer goes to C
 as an address, so the arena does not know that the call is in progress.
-Create both arena types in `with-open`.
 
 The garbage collector releases an `auto-arena` after it becomes unreachable.
 Keep the arena reachable while C uses its pointers.

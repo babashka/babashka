@@ -34,7 +34,8 @@
     t))
 
 (defn struct-type
-  "Returns an FFI_TYPE_STRUCT. prep_cif sets its size and alignment."
+  "Returns an FFI_TYPE_STRUCT for element-types.
+  prep_cif sets its size and alignment."
   [arena element-types]
   (let [elems (ffi/alloc arena (* 8 (inc (count element-types))))]
     (doseq [[i t] (map-indexed vector element-types)]
@@ -58,7 +59,8 @@
 
 ;; -- struct-by-value return: div_t div(int, int) ------------------------------
 
-;; All pointers in this form belong to the arena.
+;; The arena owns each allocation in this form. This includes allocations in
+;; struct-type and make-cif.
 (with-open [arena (ffi/confined-arena)]
   (let [t-sint32 (ffi-type arena 4 4 10 nil)
         t-div (struct-type arena [t-sint32 t-sint32])
