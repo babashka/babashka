@@ -329,9 +329,6 @@ static one; `bb describe` shows the version under `:libffi/version`. On the
 JVM, babashka loads the system libffi. Where there is no libffi, a struct
 binding throws.
 
-The design and the reasons are in
-[ADR 0003](adr/ai/0003-babashka-ffi-structs-by-value.md).
-
 ## Call a variadic function
 
 Put `:&` after the fixed argument types:
