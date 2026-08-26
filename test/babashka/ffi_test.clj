@@ -227,6 +227,80 @@
           (let [strlen (babashka.ffi/cfn "strlen" [:pointer] :size_t)]
             (is (= "another thread" (on-other-thread #(msg (fn [] (strlen p))))))))))))
 
+(deftest arena-test
+  (when-not skip?
+    (testing "with-open permits access to arena allocations"
+      (is (= [42 7]
+             (bb `(do ~ffi-require
+                      (with-open [a# (ffi/confined-arena)]
+                        (let [p# (ffi/alloc a# :pointer)
+                              q# (ffi/alloc a# 16)]
+                          (ffi/write p# :long 0 42)
+                          (ffi/write q# :int 4 7)
+                          [(ffi/read p# :long) (ffi/read q# :int 4)])))))))
+    (testing "each arena type allocates memory"
+      (is (= [true true true true]
+             (bb `(do ~ffi-require
+                      [(with-open [a# (ffi/confined-arena)] (ffi/pointer? (ffi/alloc a# 8)))
+                       (with-open [a# (ffi/shared-arena)] (ffi/pointer? (ffi/alloc a# 8)))
+                       (ffi/pointer? (ffi/alloc (ffi/auto-arena) 8))
+                       (ffi/pointer? (ffi/alloc (ffi/global-arena) 8))])))))
+    (testing "alloc accepts a type or an integer size"
+      (is (= 8 (bb `(do ~ffi-require
+                        (with-open [a# (ffi/confined-arena)]
+                          (let [p# (ffi/alloc a# :pointer)]
+                            (ffi/write p# :long 0 -1)
+                            (count (ffi/read-bytes p# 8)))))))))
+    (testing "arena allocations use the required alignment"
+      ;; Types use natural alignment. Integer byte counts use alignment 16.
+      (is (= [0 0 0 0]
+             (bb `(do ~ffi-require
+                      (with-open [a# (ffi/confined-arena)]
+                        (ffi/alloc a# :int8)
+                        (let [d# (ffi/alloc a# :double)
+                              _# (ffi/alloc a# 3)
+                              p# (ffi/alloc a# :pointer)
+                              _# (ffi/alloc a# :int8)
+                              i# (ffi/alloc a# :int)
+                              _# (ffi/alloc a# 1)
+                              b# (ffi/alloc a# 24)]
+                          [(mod (ffi/address d#) 8) (mod (ffi/address p#) 8) (mod (ffi/address i#) 4) (mod (ffi/address b#) 16)])))))))
+    (testing "read rejects a pointer from a closed arena"
+      (is (thrown-with-msg?
+           Exception #"IllegalStateException|closed"
+           (bb `(do ~ffi-require
+                    (let [p# (with-open [a# (ffi/confined-arena)] (ffi/alloc a# :int))]
+                      (ffi/read p# :int)))))))
+    (testing "alloc accepts an explicit alignment"
+      (is (= [0 0]
+             (bb `(do ~ffi-require
+                      (with-open [a# (ffi/confined-arena)]
+                        (ffi/alloc a# 1)
+                        [(mod (ffi/address (ffi/alloc a# 100 64)) 64)
+                         (mod (ffi/address (ffi/alloc a# :int 32)) 32)]))))))
+    (testing "alloc rejects an invalid size"
+      (is (thrown-with-msg?
+           Exception #"alloc takes an integer byte count or a type keyword"
+           (bb `(do ~ffi-require
+                    (with-open [a# (ffi/confined-arena)]
+                      (ffi/alloc a# "eight")))))))
+    (testing "alloc rejects a fraction as size or alignment instead of truncating it"
+      (is (= ["integer byte count" "integer byte count" "integer alignment"]
+             (bb `(do ~ffi-require
+                      (let [msg# (fn [f#] (try (f#) (catch Exception e# (re-find #"integer byte count|integer alignment" (ex-message e#)))))]
+                        (with-open [a# (ffi/confined-arena)]
+                          [(msg# #(ffi/alloc 3.9))
+                           (msg# #(ffi/alloc a# 3/2))
+                           (msg# #(ffi/alloc a# 8 8.9))])))))))
+    (testing "free refuses arena memory instead of crashing"
+      (is (= ["belongs to an arena" "belongs to an arena" nil]
+             (bb `(do ~ffi-require
+                      (let [msg# (fn [f#] (try (f#) (catch Exception e# (re-find #"belongs to an arena" (ex-message e#)))))]
+                        (with-open [a# (ffi/confined-arena)]
+                          [(msg# #(ffi/free (ffi/alloc a# 8)))
+                           (msg# #(ffi/free (ffi/alloc (ffi/auto-arena) 8)))
+                           (msg# #(ffi/free (ffi/alloc 8)))])))))))))
+
 (deftest memory-test
   (when-not skip?
     (testing "alloc, typed write and read, free"

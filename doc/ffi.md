@@ -354,8 +354,16 @@ Pointer arguments reject numbers. `ffi/null` is the NULL pointer:
 ;;=> true
 ```
 
-Use `alloc` to allocate zeroed memory. Always release this memory with
-`free`:
+Native memory has one of three owners. An [arena](#arenas) owns memory for
+one scope, and releases it when the arena closes: use this for your own
+buffers. An `auto-arena` lets the garbage collector release the memory. The
+C allocator owns memory from `alloc` without an arena: use this for memory
+that changes owner with C, such as a buffer that a C function keeps or
+frees, and release it yourself with `free`. Closing the arena replaces the
+call to `free` for arena memory.
+
+Use `alloc` to allocate zeroed memory from the C allocator. Release this
+memory with `free`:
 
 ```clojure
 (let [p (ffi/alloc 16)]
@@ -369,6 +377,64 @@ Use `alloc` to allocate zeroed memory. Always release this memory with
 
 CAUTION: Do not use a pointer after `free`. This can corrupt memory or stop the
 process.
+
+`free` refuses memory of an arena with an error: the arena releases that
+memory.
+
+`alloc` also accepts a type keyword instead of an integer byte count:
+
+```clojure
+(ffi/alloc :pointer)   ; 8 bytes
+```
+
+### Arenas
+
+An arena owns its allocated memory. Closing the arena releases this memory.
+
+Create an arena in `with-open`:
+
+```clojure
+(with-open [arena (ffi/confined-arena)]
+  (let [p (ffi/alloc arena :int)
+        q (ffi/alloc arena 256)]
+    (ffi/write p :int 42)
+    (ffi/read p :int)))
+;;=> 42
+```
+
+The arena releases `p` and `q` when the body ends. It also releases them if the
+body throws. After release, memory access throws an `IllegalStateException`.
+C functions reject pointers from a closed arena.
+
+`free` refuses memory that an arena allocated: the arena releases it.
+
+CAUTION: Do not close an arena while C uses its memory. C can access released
+memory.
+
+Arena memory uses the alignment of its allocation. A type uses its natural
+alignment. An integer byte count uses alignment 16. Specify another alignment
+when necessary:
+
+```clojure
+(ffi/alloc arena 4096 64)   ; 4096 bytes on a 64-byte boundary
+```
+
+Use `confined-arena` for memory that one thread uses. Other threads cannot
+access its pointers. Use `shared-arena` for memory that multiple threads use.
+Both arena types work with `with-open`.
+
+CAUTION: Do not close a shared arena while another thread is in a C call
+with its memory. The call continues on released memory. A pointer goes to C
+as an address, so the arena does not know that the call is in progress.
+
+The garbage collector releases an `auto-arena` after it becomes unreachable.
+Keep the arena reachable while C uses its pointers.
+
+A `global-arena` exists until the process stops. You cannot close an automatic
+or global arena.
+
+The functions return a `java.lang.foreign.Arena`, so the same code runs in
+babashka and on the JVM.
 
 `read` and `write` accept an optional byte offset:
 

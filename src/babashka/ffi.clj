@@ -12,6 +12,9 @@
              (ffi/read pp :pointer)
              (finally (ffi/free pp))))
 
+  This example manages the memory by hand with alloc and free. With an arena
+  instead, closing the arena releases the memory.
+
   Use these type keywords:
 
       :void
@@ -760,21 +763,6 @@
 (def ^:private c-calloc (delay (cfn @crt-lib "calloc" [:size_t :size_t] :pointer)))
 (def ^:private c-free (delay (cfn @crt-lib "free" [:pointer] :void)))
 
-(defn alloc
-  "Allocates n zeroed bytes and returns a segment of size n.
-  Release the segment with free."
-  ^MemorySegment [n]
-  (let [size (long n)]
-    ;; calloc returns a pointer of size 0
-    (.reinterpret ^MemorySegment (@c-calloc 1 size) size)))
-
-(defn free
-  "Releases memory from alloc or string->ptr.
-
-  CAUTION: Do not use p after free. This can corrupt memory or stop the process."
-  [p]
-  (@c-free p))
-
 (def ^:private sizes
   {:int 4 :uint 4 :int32 4 :uint32 4 :float 4
    :long 8 :ulong 8 :int64 8 :uint64 8 :size_t 8 :ssize_t 8
@@ -785,6 +773,85 @@
   "Returns the size, in bytes, of type keyword t."
   [t]
   (or (sizes t) (throw (ex-info (str "babashka.ffi: unknown type " t) {:type t}))))
+
+(defn confined-arena
+  "Returns an arena for one thread.
+  Create this arena in with-open to release its memory."
+  ^Arena []
+  (Arena/ofConfined))
+
+(defn shared-arena
+  "Returns an arena for multiple threads.
+  Create this arena in with-open to release its memory."
+  ^Arena []
+  (Arena/ofShared))
+
+(defn auto-arena
+  "Returns an arena that the garbage collector manages.
+  Keep the arena reachable while C uses its pointers. You cannot close it."
+  ^Arena []
+  (Arena/ofAuto))
+
+(defn global-arena
+  "Returns the global arena. Its memory exists until the process stops.
+  You cannot close this arena."
+  ^Arena []
+  (Arena/global))
+
+(defn- size-and-alignment
+  "Returns the requested size and alignment.
+  A type uses natural alignment. An integer byte count uses alignment 16."
+  [n]
+  (cond (integer? n) [(long n) 16]
+        (keyword? n) (let [size (long (sizeof n))] [size (max 1 (min 8 size))])
+        :else (throw (ex-info (str "babashka.ffi: alloc takes an integer byte count or a type keyword, got " (pr-str n))
+                              {:n n}))))
+
+(defn alloc
+  "Allocates zeroed native memory and returns its pointer.
+  n is an integer byte count or a type keyword.
+
+  (alloc n) takes memory from the C allocator. Use it for memory that changes
+  owner with C. Release it with free.
+
+  (alloc arena n) allocates scoped memory. Closing the arena releases this
+  memory and replaces the call to free.
+
+  With an arena, a type uses natural alignment. An integer byte count uses
+  alignment 16. Specify an alignment to override this value.
+
+  free refuses a pointer that an arena allocated: the arena releases it.
+
+  CAUTION: Do not close the arena while C uses its memory.
+  C can access released memory."
+  ([n]
+   (let [size (long (first (size-and-alignment n)))]
+     ;; calloc returns a pointer of size 0
+     (.reinterpret ^MemorySegment (@c-calloc 1 size) size)))
+  ([^Arena arena n]
+   (let [[size align] (size-and-alignment n)]
+     (alloc arena size align)))
+  ([^Arena arena n alignment]
+   (when-not (integer? alignment)
+     (throw (ex-info (str "babashka.ffi: alloc takes an integer alignment, got " (pr-str alignment))
+                     {:alignment alignment})))
+   ;; Arena.allocate(byteSize) guarantees only alignment 1.
+   (.allocate arena (long (first (size-and-alignment n))) (long alignment))))
+
+(defn free
+  "Releases memory from alloc, string->ptr, or a C function that expects the
+  caller to free its result. Refuses memory of an arena: the arena releases
+  that when it closes.
+
+  CAUTION: Do not use p after free. This can corrupt memory or stop the process."
+  [p]
+  (let [seg (as-pointer p)]
+    ;; memory that C handed out has the global scope; an arena gives its own
+    (when-not (identical? (.scope seg) (.scope (Arena/global)))
+      (throw (ex-info (str "babashka.ffi: the pointer at address " (.address seg)
+                           " belongs to an arena, which releases it")
+                      {:pointer seg})))
+    (@c-free seg)))
 
 (defn read
   "Reads a value of type t from p. The default byte offset is zero.
