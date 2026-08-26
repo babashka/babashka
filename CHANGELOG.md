@@ -9,6 +9,8 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Link a static libffi for FFI calls that the fixed native call shapes cannot make. Set `BABASHKA_LIBFFI` to another archive or `none`
+- Linux: dynamic binaries now require glibc 2.28. The install script selects the static binary on older systems. See ADR 0010
 - Building babashka from source no longer fails when a single upstream host is unreachable: the musl and zlib tarballs are fetched with retries, from mirrors, and cached per machine
 - SCI caches resolved JVM instance methods, static methods, constructors and fields per call site for performance
 - Add experimental [`babashka.ffi`](doc/ffi.md) for calling functions in native shared libraries

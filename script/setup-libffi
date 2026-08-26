@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+
+# Builds a pinned static libffi and prints its archive path.
+#
+# The archive must match the native-image target architecture. This target can
+# differ from the host architecture. Thus, the script reads the architecture
+# from the GraalVM in GRAALVM_HOME.
+
+set -euo pipefail
+
+# shellcheck source=script/fetch_tarball.sh
+. "$(dirname "${BASH_SOURCE[0]:-$0}")/fetch_tarball.sh"
+
+LIBFFI_VERSION="3.8.0"
+LIBFFI_SHA256="7da3e2d9a171eb0a038f592ecad3ff2bb2550f3496d87b3b29ad0cf4430c0db4"
+
+# Get the architecture of the native-image executable.
+target_arch() {
+    local java="${GRAALVM_HOME:-}/bin/java"
+    if [ -x "$java" ]; then
+        "$java" -XshowSettings:properties -version 2>&1 |
+            sed -n 's/.*os\.arch = //p' | head -1
+    else
+        uname -m
+    fi
+}
+
+arch="$(target_arch)"
+case "$arch" in
+    x86_64|amd64) arch="x86_64" ;;
+    aarch64|arm64) arch="arm64" ;;
+esac
+
+# Keep one archive for each version and architecture outside target, which
+# lein cleans. The version in the path makes a bump build anew.
+prefix="${LIBFFI_PREFIX:-$PWD/.libffi/$LIBFFI_VERSION/$arch}"
+
+# libffi installs the archive in lib or lib64.
+find_archive() {
+    { find "$prefix" -name libffi.a -not -path "$prefix/build/*" 2> /dev/null || true; } | head -1
+}
+
+archive="$(find_archive)"
+
+if [ -n "$archive" ]; then
+    echo "$archive"
+    exit 0
+fi
+
+build="$prefix/build"
+mkdir -p "$build"
+cd "$build"
+
+tarball="libffi-${LIBFFI_VERSION}.tar.gz"
+
+# The usual project mirrors do not contain this release archive.
+fetch_tarball "$tarball" "$LIBFFI_SHA256" \
+    "https://github.com/libffi/libffi/releases/download/v${LIBFFI_VERSION}/${tarball}"
+
+tar xf "$tarball"
+
+cd "libffi-${LIBFFI_VERSION}"
+configure_args=(--disable-shared --enable-static --disable-docs --prefix="$prefix")
+
+if [ "$(uname -s)" = "Darwin" ] && [ "$arch" != "$(uname -m)" ]; then
+    # Configure a macOS cross-build for the target architecture.
+    export CFLAGS="${CFLAGS:-} -arch $arch"
+    export LDFLAGS="${LDFLAGS:-} -arch $arch"
+    configure_args+=("--host=${arch}-apple-darwin")
+fi
+
+./configure "${configure_args[@]}" > /dev/null
+make > /dev/null
+make install > /dev/null
+
+archive="$(find_archive)"
+
+if [ -z "$archive" ]; then
+    echo "setup-libffi: no libffi.a under $prefix" >&2
+    exit 1
+fi
+
+echo "$archive"

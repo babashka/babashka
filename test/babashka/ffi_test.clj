@@ -48,6 +48,23 @@
   `(do (require '[babashka.ffi :as ~'ffi :refer [~'defcfn]])
        (ffi/load-library ~path)))
 
+(deftest libffi-linked-test
+  ;; This call confirms that the native image contains libffi. The version
+  ;; is the one script/setup-libffi pins; vcpkg picks it on Windows.
+  (let [v (:libffi/version (edn/read-string (tu/bb nil "describe")))
+        none? (or skip?
+                  (not= "native" (System/getenv "BABASHKA_TEST_ENV"))
+                  (= "none" (System/getenv "BABASHKA_LIBFFI")))]
+    (cond none?
+          (is (nil? v))
+          ;; a local build goes on without libffi when setup fails; CI does not
+          (and (nil? v) (not= "true" (System/getenv "CI")))
+          (println "libffi-linked-test: this build has no libffi, nothing to check")
+          :else
+          (do (is (re-matches #"\d+\.\d+\.\d+" (str v)))
+              (when-not tu/windows?
+                (is (= "3.8.0" v)))))))
+
 (deftest downcall-test
   (when-not skip?
     (testing "int widening and narrowing"

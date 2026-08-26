@@ -6,6 +6,9 @@
 - Download [GraalVM](https://www.graalvm.org/downloads/). Currently we use *Oracle GraalVM 25.0.4*.
 - For Windows, installing Visual Studio 2019 with the "Desktop development
 with C++" workload is recommended.
+- A C compiler and `make`. `script/setup-libffi` builds a static libffi.
+  On Windows, `script\setup-libffi.bat` installs libffi through vcpkg. Set
+  `VCPKG_ROOT` to the vcpkg directory.
 - Set `$GRAALVM_HOME` to the GraalVM distribution directory. On macOS this can look like:
 
   ``` shell
@@ -59,6 +62,23 @@ $ export BABASHKA_XMX="-J-Xmx6500m"
 
 Note: setting the max heap size to a low value can cause the build to crash or
 take long to complete.
+
+Builds link libffi for calls outside the fixed set of native call shapes.
+`script/setup-libffi` builds the library and stores it under `.libffi/`.
+You can override this behavior:
+
+```
+$ export BABASHKA_LIBFFI=/path/to/libffi.a   # link this archive instead
+$ export BABASHKA_LIBFFI=none                # leave libffi out
+```
+
+The first setting supports system libraries and builds without network access.
+The static musl build does not link libffi because it cannot load shared
+libraries.
+
+If libffi setup fails, a local build prints a warning and continues without
+libffi. A CI build fails. `bb describe` shows the linked version under
+`:libffi/version`. The value is `nil` if the build has no libffi.
 
 ### Alternative: Build inside Docker
 
