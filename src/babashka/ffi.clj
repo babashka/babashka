@@ -145,23 +145,32 @@
 ;; -- memory -------------------------------------------------------------------
 
 (defn- pointer-ex [p]
-  (ex-info (if (instance? MemorySegment p)
+  (ex-info (cond
              ;; a heap segment has address 0, so C would get NULL
+             (and (instance? MemorySegment p) (not (.isNative ^MemorySegment p)))
              "babashka.ffi: expected a pointer to native memory, got a heap MemorySegment"
+             ;; the memory is released; C would read or write freed memory
+             (instance? MemorySegment p)
+             (str "babashka.ffi: the pointer at address " (.address ^MemorySegment p)
+                  " belongs to a closed arena")
+             :else
              (str "babashka.ffi: expected a pointer (a MemorySegment), got "
                   (pr-str p)
                   ". Wrap a raw address with (ffi/segment addr)"))
            {:value p}))
 
 (defn- native-segment?
-  "True when p is a MemorySegment of native memory. A heap segment is not a
-  pointer: its address is 0."
+  "Returns true when p is a native MemorySegment whose memory is still
+  there. A heap segment does not contain a C address, and a segment of a
+  closed arena points at released memory."
   [p]
-  (and (instance? MemorySegment p) (.isNative ^MemorySegment p)))
+  (and (instance? MemorySegment p)
+       (.isNative ^MemorySegment p)
+       (.isAlive (.scope ^MemorySegment p))))
 
 (defn- as-pointer
-  "Returns p as a native MemorySegment. Rejects all other values: raw
-  addresses and heap segments included."
+  "Returns p as a native MemorySegment.
+  Rejects raw addresses, heap segments, and all other values."
   ^MemorySegment [p]
   (if (native-segment? p) p (throw (pointer-ex p))))
 
@@ -173,10 +182,8 @@
         :else (throw (pointer-ex p))))
 
 (defn- accessible
-  "Returns p as a MemorySegment with a size. The JDK checks every access
-  against that size. Rejects a segment of size 0: reinterpret gives it a
-  size. Does not check for a heap segment: the JDK bounds-checks a read or
-  write of one, so the check is spent only where an address goes to C."
+  "Returns p as a nonzero MemorySegment. The JDK checks access against its size.
+  Accepts heap segments because these operations do not pass an address to C."
   ^MemorySegment [p]
   (let [^MemorySegment s (if (instance? MemorySegment p) p (throw (pointer-ex p)))]
     (when (zero? (.byteSize s))
@@ -196,7 +203,10 @@
   "Returns a view of segment seg with byte size size.
 
   An arena controls the lifetime of the view. The arena calls the optional
-  cleanup function with the view when the arena closes."
+  cleanup function with the view when the arena closes.
+
+  CAUTION: Do not pass the view to C after the arena closes.
+  C can access released memory."
   (^MemorySegment [seg size] (.reinterpret (as-pointer seg) (long size)))
   (^MemorySegment [seg size arena]
    (.reinterpret (as-pointer seg) (long size) ^Arena arena nil))
@@ -460,7 +470,7 @@
 (defn- require-symbol ^MemorySegment [lib sym]
   (if (instance? MemorySegment sym)
     ;; The caller already resolved this function pointer.
-    sym
+    (as-pointer sym)
     (or (lookup-symbol lib ^String sym)
         (throw (ex-info (str "babashka.ffi: symbol not found: " sym) {:symbol sym})))))
 
@@ -583,10 +593,12 @@
   fixed parameters. Each call infers the tail types from its values."
   ([sym argtypes rettype] (cfn nil sym argtypes rettype))
   ([lib sym argtypes rettype]
-   (when-not (or (string? sym) (instance? MemorySegment sym))
-     (throw (ex-info (str "babashka.ffi: C symbol must be a string or a pointer: "
-                          (pr-str sym))
-                     {:sym sym})))
+   (when-not (or (string? sym) (native-segment? sym))
+     (throw (if (instance? MemorySegment sym)
+              (pointer-ex sym)
+              (ex-info (str "babashka.ffi: C symbol must be a string or a pointer: "
+                            (pr-str sym))
+                       {:sym sym}))))
    ;; A null function pointer stops the process on the first call. A loader
    ;; returns this value when it does not have the requested function.
    (when (and (instance? MemorySegment sym) (zero? (.address ^MemorySegment sym)))
@@ -941,9 +953,12 @@
 
 (defn free-callback
   "Releases callback pointer p. C must not call p after this function returns.
-  Ignores unknown pointers."
+  Ignores unknown pointers, a pointer freed before included."
   [p]
-  (let [addr (pointer-address p)]
+  (let [addr (if (instance? MemorySegment p)
+               ;; a freed stub belongs to a closed arena; it is still the key
+               (.address ^MemorySegment p)
+               (pointer-address p))]
     (when-let [^Arena a (get @callback-arenas addr)]
       (swap! callback-arenas dissoc addr)
       (.close a)))

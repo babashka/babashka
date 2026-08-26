@@ -308,8 +308,9 @@ the binary size.
 
 Use `size`, `address`, `slice`, `reinterpret`, and `pointer?`.
 
-CAUTION: Do not pass a heap-backed segment to C. A heap-backed segment does not
-contain a valid C address.
+A pointer is a segment of native memory that is still there. A heap segment
+has no C address, and a pointer of a closed arena points at released memory.
+Both are refused with an error wherever an address goes to C.
 
 `alloc` returns a segment with a size. Access outside a nonzero segment throws
 an `IndexOutOfBoundsException`.
@@ -324,13 +325,9 @@ Before you access the memory, specify its size with `reinterpret`:
 (ffi/read (ffi/reinterpret p 16) :int 8)
 ```
 
-`alloc 0` and an end-of-block slice also have size zero. `ptr->string` reads
-within the size of the pointer and refuses size zero as well. For a C string
-that a function returns, declare the return type as `:string`.
-
-A pointer is a segment of native memory. A heap segment, for example from
-`MemorySegment/ofArray`, has address zero. Pointer arguments reject heap
-segments.
+`alloc 0` and an end-of-block slice also have size zero. `ptr->string` rejects
+size zero and reads other pointers within their size. Declare a C string return
+type as `:string`.
 
 Use `size` to get the segment size. Use `address` to convert a pointer to a
 long. Use `segment` to convert a raw address to a pointer. Use `slice` to

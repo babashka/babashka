@@ -193,16 +193,28 @@
                         res#))))))))
 
 (deftest heap-segment-test
-  ;; runs babashka.ffi on the test JVM: a script cannot make a heap segment
-  (testing "a heap segment is not a pointer, so C never gets its address 0"
+  ;; A babashka script cannot create a heap segment.
+  (testing "C pointer operations reject a heap segment"
     (let [heap (java.lang.foreign.MemorySegment/ofArray (byte-array 4))]
       (is (false? (babashka.ffi/pointer? heap)))
       (is (thrown-with-msg? Exception #"heap MemorySegment" (babashka.ffi/address heap)))
-      ;; read and write stay bounds-checked by the JDK, so they take a heap segment
+      ;; The JDK checks the bounds of heap segments.
       (is (= 0 (babashka.ffi/read heap :int)))
+      (is (thrown-with-msg? Exception #"heap MemorySegment"
+                            (babashka.ffi/cfn (java.lang.foreign.MemorySegment/ofArray (byte-array 8)) [:int] :int)))
       (when-not tu/windows?
         (is (thrown-with-msg? Exception #"heap MemorySegment"
-                              ((babashka.ffi/cfn "strlen" [:pointer] :size_t) heap)))))))
+                              ((babashka.ffi/cfn "strlen" [:pointer] :size_t) heap))))))
+  (testing "a pointer from a closed arena is refused before C sees it"
+    (let [arena (java.lang.foreign.Arena/ofConfined)
+          p (.allocate arena 8)]
+      (.close arena)
+      (is (false? (babashka.ffi/pointer? p)))
+      (is (thrown-with-msg? Exception #"closed arena" (babashka.ffi/address p)))
+      (is (thrown-with-msg? Exception #"closed arena" (babashka.ffi/cfn p [:int] :int)))
+      (when-not tu/windows?
+        (is (thrown-with-msg? Exception #"closed arena"
+                              ((babashka.ffi/cfn "strlen" [:pointer] :size_t) p)))))))
 
 (deftest memory-test
   (when-not skip?
