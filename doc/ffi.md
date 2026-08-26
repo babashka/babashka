@@ -354,8 +354,15 @@ Pointer arguments reject numbers. `ffi/null` is the NULL pointer:
 ;;=> true
 ```
 
-Use `alloc` to allocate zeroed memory. Always release this memory with
-`free`:
+Native memory has one of three owners. An [arena](#arenas) owns memory for
+one scope, and releases it when the arena closes: use this for your own
+buffers. An `auto-arena` lets the garbage collector release the memory. The
+C allocator owns memory from `alloc` without an arena: use this for memory
+that changes owner with C, such as a buffer that a C function keeps or
+frees, and release it yourself with `free`.
+
+Use `alloc` to allocate zeroed memory from the C allocator. Release this
+memory with `free`:
 
 ```clojure
 (let [p (ffi/alloc 16)]
@@ -369,6 +376,9 @@ Use `alloc` to allocate zeroed memory. Always release this memory with
 
 CAUTION: Do not use a pointer after `free`. This can corrupt memory or stop the
 process.
+
+`free` refuses memory of an arena with an error: the arena releases that
+memory.
 
 `alloc` also accepts a type keyword instead of an integer byte count:
 
@@ -395,8 +405,7 @@ The arena releases `p` and `q` when the body ends. It also releases them if the
 body throws. After release, memory access throws an `IllegalStateException`.
 C functions reject pointers from a closed arena.
 
-CAUTION: Do not call `free` on memory that an arena allocated. This operation
-can stop the process.
+`free` refuses memory that an arena allocated: the arena releases it.
 
 CAUTION: Do not close an arena while C uses its memory. C can access released
 memory.

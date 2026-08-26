@@ -291,7 +291,15 @@
                         (with-open [a# (ffi/confined-arena)]
                           [(msg# #(ffi/alloc 3.9))
                            (msg# #(ffi/alloc a# 3/2))
-                           (msg# #(ffi/alloc a# 8 8.9))])))))))))
+                           (msg# #(ffi/alloc a# 8 8.9))])))))))
+    (testing "free refuses arena memory instead of crashing"
+      (is (= ["belongs to an arena" "belongs to an arena" nil]
+             (bb `(do ~ffi-require
+                      (let [msg# (fn [f#] (try (f#) (catch Exception e# (re-find #"belongs to an arena" (ex-message e#)))))]
+                        (with-open [a# (ffi/confined-arena)]
+                          [(msg# #(ffi/free (ffi/alloc a# 8)))
+                           (msg# #(ffi/free (ffi/alloc (ffi/auto-arena) 8)))
+                           (msg# #(ffi/free (ffi/alloc 8)))])))))))))
 
 (deftest memory-test
   (when-not skip?

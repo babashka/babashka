@@ -12,7 +12,7 @@ A preview of the next release can be installed from
 - Building babashka from source no longer fails when a single upstream host is unreachable: the musl and zlib tarballs are fetched with retries, from mirrors, and cached per machine
 - SCI caches resolved JVM instance methods, static methods, constructors and fields per call site for performance
 - Add experimental [`babashka.ffi`](doc/ffi.md) for calling functions in native shared libraries
-- `babashka.ffi`: Adds arenas for scoped allocation. New functions create confined, shared, automatic, and global arenas. `alloc` accepts an arena, a type keyword, and an alignment. Closing an arena releases its memory.
+- `babashka.ffi`: Adds arenas for scoped allocation. New functions create confined, shared, automatic, and global arenas. `alloc` accepts an arena, a type keyword, and an alignment. Closing an arena releases its memory, and `free` refuses arena memory.
 - `babashka.ffi`: A binding can limit its symbol search to one library and its dependencies. `defcfn` uses its `:library` key for this selection. `cfn` and `find-symbol` accept the library as an argument. The library value can be a map, a function, or an object that implements `IDeref`. This limit prevents a system library with the same name from supplying the symbol.
 - `babashka.ffi`: `cfn` can bind a function address. This supports pointers from loaders, C calls, struct fields, and `callback`.
 - `babashka.ffi`: `read-bytes` and `write-bytes` copy byte arrays to and from native memory. `byte-buffer` gives a zero-copy `java.nio.ByteBuffer` view of native memory

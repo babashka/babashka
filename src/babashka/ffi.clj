@@ -816,8 +816,7 @@
   Without an arena, the C allocator owns the memory. Release this memory with
   free.
 
-  CAUTION: Do not call free on a pointer that an arena allocated. This invalid
-  operation can stop the process.
+  free refuses a pointer that an arena allocated: the arena releases it.
 
   CAUTION: Do not close the arena while C uses its memory.
   C can access released memory."
@@ -836,11 +835,19 @@
    (.allocate arena (long (first (size-and-alignment n))) (long alignment))))
 
 (defn free
-  "Releases memory from alloc or string->ptr.
+  "Releases memory from alloc, string->ptr, or a C function that expects the
+  caller to free its result. Refuses memory of an arena: the arena releases
+  that when it closes.
 
   CAUTION: Do not use p after free. This can corrupt memory or stop the process."
   [p]
-  (@c-free p))
+  (let [seg (as-pointer p)]
+    ;; memory that C handed out has the global scope; an arena gives its own
+    (when-not (identical? (.scope seg) (.scope (Arena/global)))
+      (throw (ex-info (str "babashka.ffi: the pointer at address " (.address seg)
+                           " belongs to an arena, which releases it")
+                      {:pointer seg})))
+    (@c-free seg)))
 
 (defn read
   "Reads a value of type t from p. The default byte offset is zero.
