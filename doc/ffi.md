@@ -302,15 +302,19 @@ For example, a `printf` format must match its values.
 
 ## Use native memory
 
-A pointer is a native `java.lang.foreign.MemorySegment` in babashka and on the
-JVM. Babashka does not expose this class to scripts because the class increases
-the binary size.
+A pointer is a native `java.lang.foreign.MemorySegment` with a live scope
+that the current thread may access. A heap segment does not have a C
+address. A closed-arena pointer refers to released memory. A confined arena
+belongs to one thread. The API rejects all three before it passes an address
+to C.
+
+Babashka does not expose the `MemorySegment` class to scripts because the class
+increases the binary size.
 
 Use `size`, `address`, `slice`, `reinterpret`, and `pointer?`.
 
-A pointer is a segment of native memory that is still there. A heap segment
-has no C address, and a pointer of a closed arena points at released memory.
-Both are refused with an error wherever an address goes to C.
+CAUTION: Do not pass a confined segment from another thread. C can bypass the
+thread-access restriction.
 
 `alloc` returns a segment with a size. Access outside a nonzero segment throws
 an `IndexOutOfBoundsException`.

@@ -146,13 +146,19 @@
 
 (defn- pointer-ex [p]
   (ex-info (cond
-             ;; a heap segment has address 0, so C would get NULL
+             ;; A heap segment does not contain a C address.
              (and (instance? MemorySegment p) (not (.isNative ^MemorySegment p)))
              "babashka.ffi: expected a pointer to native memory, got a heap MemorySegment"
-             ;; the memory is released; C would read or write freed memory
-             (instance? MemorySegment p)
+             ;; C can access released memory through a closed segment.
+             (and (instance? MemorySegment p)
+                  (not (.isAlive (.scope ^MemorySegment p))))
              (str "babashka.ffi: the pointer at address " (.address ^MemorySegment p)
                   " belongs to a closed arena")
+             ;; a confined arena is for one thread; another thread must not
+             ;; hand its memory to C
+             (instance? MemorySegment p)
+             (str "babashka.ffi: the pointer at address " (.address ^MemorySegment p)
+                  " belongs to an arena confined to another thread")
              :else
              (str "babashka.ffi: expected a pointer (a MemorySegment), got "
                   (pr-str p)
@@ -160,13 +166,13 @@
            {:value p}))
 
 (defn- native-segment?
-  "Returns true when p is a native MemorySegment whose memory is still
-  there. A heap segment does not contain a C address, and a segment of a
-  closed arena points at released memory."
+  "Returns true when p is a native MemorySegment with a live scope that this
+  thread may access."
   [p]
   (and (instance? MemorySegment p)
        (.isNative ^MemorySegment p)
-       (.isAlive (.scope ^MemorySegment p))))
+       (.isAlive (.scope ^MemorySegment p))
+       (.isAccessibleBy ^MemorySegment p (Thread/currentThread))))
 
 (defn- as-pointer
   "Returns p as a native MemorySegment.
@@ -182,9 +188,8 @@
         :else (throw (pointer-ex p))))
 
 (defn- not-accessible-ex
-  "The error for a p that accessible refuses. A separate function so that
-  the fast path of accessible stays small enough to be inlined into read
-  and write."
+  "Returns the error for a value that accessible rejects.
+  This separate function permits JIT inlining of accessible."
   [p]
   (if (instance? MemorySegment p)
     (ex-info (str "babashka.ffi: the pointer at address " (.address ^MemorySegment p)
@@ -961,10 +966,10 @@
 
 (defn free-callback
   "Releases callback pointer p. C must not call p after this function returns.
-  Ignores unknown pointers, a pointer freed before included."
+  Ignores unknown and previously freed pointers."
   [p]
   (let [addr (if (instance? MemorySegment p)
-               ;; a freed stub belongs to a closed arena; it is still the key
+               ;; A freed stub has a closed arena but keeps its address.
                (.address ^MemorySegment p)
                (pointer-address p))]
     (when-let [^Arena a (get @callback-arenas addr)]

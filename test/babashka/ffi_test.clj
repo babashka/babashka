@@ -214,7 +214,18 @@
       (is (thrown-with-msg? Exception #"closed arena" (babashka.ffi/cfn p [:int] :int)))
       (when-not tu/windows?
         (is (thrown-with-msg? Exception #"closed arena"
-                              ((babashka.ffi/cfn "strlen" [:pointer] :size_t) p)))))))
+                              ((babashka.ffi/cfn "strlen" [:pointer] :size_t) p))))))
+  (testing "a pointer of a confined arena is refused on another thread"
+    (with-open [arena (java.lang.foreign.Arena/ofConfined)]
+      (let [p (.allocate arena 8)
+            msg (fn [f] (try (f) (catch Exception e (re-find #"another thread" (ex-message e)))))
+            on-other-thread (fn [f] @(future (f)))]
+        (is (true? (babashka.ffi/pointer? p)))
+        (is (false? (on-other-thread #(babashka.ffi/pointer? p))))
+        (is (= "another thread" (on-other-thread #(msg (fn [] (babashka.ffi/address p))))))
+        (when-not tu/windows?
+          (let [strlen (babashka.ffi/cfn "strlen" [:pointer] :size_t)]
+            (is (= "another thread" (on-other-thread #(msg (fn [] (strlen p))))))))))))
 
 (deftest memory-test
   (when-not skip?
