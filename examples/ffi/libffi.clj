@@ -13,7 +13,8 @@
 (defcfn c-dlsym "dlsym" [:pointer :string] :pointer)
 
 (def RTLD-DEFAULT
-  (if (= "Mac OS X" (System/getProperty "os.name")) -2 0))
+  ;; This pseudo handle is not a memory address.
+  (ffi/segment (if (= "Mac OS X" (System/getProperty "os.name")) -2 0)))
 
 (defn sym-addr [name]
   (let [p (c-dlsym RTLD-DEFAULT name)]
@@ -31,17 +32,16 @@
     (ffi/write t :pointer 16 elements)
     t))
 
-(def t-double (ffi-type 8 8 3 0))    ; FFI_TYPE_DOUBLE
-(def t-sint32 (ffi-type 4 4 10 0))   ; FFI_TYPE_SINT32
+(def t-double (ffi-type 8 8 3 nil))    ; FFI_TYPE_DOUBLE
+(def t-sint32 (ffi-type 4 4 10 nil))   ; FFI_TYPE_SINT32
 
 (defn struct-type
-  "An FFI_TYPE_STRUCT of the given element types; prep_cif fills in size
-  and alignment."
+  "Returns an FFI_TYPE_STRUCT. prep_cif sets its size and alignment."
   [element-types]
   (let [elems (ffi/alloc (* 8 (inc (count element-types))))]
     (doseq [[i t] (map-indexed vector element-types)]
       (ffi/write elems :pointer (* 8 i) t))
-    (ffi/write elems :pointer (* 8 (count element-types)) 0)
+    (ffi/write elems :pointer (* 8 (count element-types)) ffi/null)
     (ffi-type 0 0 13 elems)))
 
 (def FFI-DEFAULT-ABI

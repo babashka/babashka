@@ -1,5 +1,6 @@
 (ns babashka.ffi-test
   (:require
+   [babashka.ffi]
    [babashka.process :as p]
    [babashka.test-utils :as tu]
    [cheshire.core :as json]
@@ -119,6 +120,113 @@
                           (ffi/free p#)
                           res#)))))))))
 
+(deftest segment-test
+  (when-not skip?
+    (testing "alloc returns a sized MemorySegment"
+      (is (= [true 8]
+             (bb `(do ~ffi-require
+                      (let [p# (ffi/alloc 8)
+                            res# [(ffi/pointer? p#) (ffi/size p#)]]
+                        (ffi/free p#)
+                        res#))))))
+    (testing "read rejects an access past the end"
+      (is (thrown-with-msg?
+           Exception #"IndexOutOfBounds|Out of bound"
+           (bb `(do ~ffi-require
+                    (let [p# (ffi/alloc 4)]
+                      (try (ffi/read p# :long 0)
+                           (finally (ffi/free p#)))))))))
+    (testing "read rejects a zero-size pointer from C"
+      (is (= [0 "has size 0" "abc" "has size 0" 97]
+             (bb `(do ~ffi-require
+                      (let [src# (ffi/string->ptr "abc")
+                            ;; strchr returns a zero-size pointer into src.
+                            hit# ((ffi/cfn "strchr" [:pointer :int] :pointer) src# (int \a))
+                            msg# (fn [f#] (try (f#) (catch Exception e# (re-find #"has size 0" (ex-message e#)))))
+                            res# [(ffi/size hit#)
+                                  (msg# #(ffi/ptr->string hit#))
+                                  (ffi/ptr->string (ffi/reinterpret hit# 4))
+                                  (msg# #(ffi/read hit# :char))
+                                  (ffi/read (ffi/reinterpret hit# 1) :char)]]
+                        (ffi/free src#)
+                        res#))))))
+    (testing "read and write reject zero-size segments"
+      (is (= ["has size 0" "has size 0"]
+             (bb `(do ~ffi-require
+                      (let [p# (ffi/alloc 4)
+                            z# (ffi/alloc 0)
+                            msg# (fn [f#] (try (f#) (catch Exception e# (re-find #"has size 0" (ex-message e#)))))
+                            res# [(msg# #(ffi/read (ffi/slice p# 4) :int))
+                                  (msg# #(ffi/write z# :int 0 1))]]
+                        (ffi/free p#)
+                        (ffi/free z#)
+                        res#))))))
+    (testing "segment, address, slice and reinterpret"
+      (is (= [true 8 4 42 4]
+             (bb `(do ~ffi-require
+                      (let [p# (ffi/alloc 8)
+                            a# (ffi/address p#)
+                            again# (ffi/segment a# 8)
+                            tail# (ffi/slice p# 4)
+                            _# (ffi/write tail# :int 0 42)
+                            sized# (ffi/reinterpret (ffi/segment a#) 4)
+                            res# [(= a# (ffi/address again#))
+                                  (ffi/size again#)
+                                  (ffi/size tail#)
+                                  (ffi/read p# :int 4)
+                                  (ffi/size sized#)]]
+                        (ffi/free p#)
+                        res#))))))
+    (testing "a pointer argument rejects a number"
+      (is (thrown-with-msg?
+           Exception #"expected a pointer \(a MemorySegment\), got 42"
+           (bb `(do ~ffi-require
+                    (ffi/read 42 :int))))))
+    (testing "null is a segment and null? detects each zero address"
+      (is (= [true true false]
+             (bb `(do ~ffi-require
+                      (let [p# (ffi/alloc 1)
+                            res# [(ffi/pointer? ffi/null)
+                                  (ffi/null? (ffi/segment 0))
+                                  (ffi/null? p#)]]
+                        (ffi/free p#)
+                        res#))))))))
+
+(deftest heap-segment-test
+  ;; A babashka script cannot create a heap segment.
+  (testing "C pointer operations reject a heap segment"
+    (let [heap (java.lang.foreign.MemorySegment/ofArray (byte-array 4))]
+      (is (false? (babashka.ffi/pointer? heap)))
+      (is (thrown-with-msg? Exception #"heap MemorySegment" (babashka.ffi/address heap)))
+      ;; The JDK checks the bounds of heap segments.
+      (is (= 0 (babashka.ffi/read heap :int)))
+      (is (thrown-with-msg? Exception #"heap MemorySegment"
+                            (babashka.ffi/cfn (java.lang.foreign.MemorySegment/ofArray (byte-array 8)) [:int] :int)))
+      (when-not tu/windows?
+        (is (thrown-with-msg? Exception #"heap MemorySegment"
+                              ((babashka.ffi/cfn "strlen" [:pointer] :size_t) heap))))))
+  (testing "a pointer from a closed arena is refused before C sees it"
+    (let [arena (java.lang.foreign.Arena/ofConfined)
+          p (.allocate arena 8)]
+      (.close arena)
+      (is (false? (babashka.ffi/pointer? p)))
+      (is (thrown-with-msg? Exception #"closed arena" (babashka.ffi/address p)))
+      (is (thrown-with-msg? Exception #"closed arena" (babashka.ffi/cfn p [:int] :int)))
+      (when-not tu/windows?
+        (is (thrown-with-msg? Exception #"closed arena"
+                              ((babashka.ffi/cfn "strlen" [:pointer] :size_t) p))))))
+  (testing "a pointer of a confined arena is refused on another thread"
+    (with-open [arena (java.lang.foreign.Arena/ofConfined)]
+      (let [p (.allocate arena 8)
+            msg (fn [f] (try (f) (catch Exception e (re-find #"another thread" (ex-message e)))))
+            on-other-thread (fn [f] @(future (f)))]
+        (is (true? (babashka.ffi/pointer? p)))
+        (is (false? (on-other-thread #(babashka.ffi/pointer? p))))
+        (is (= "another thread" (on-other-thread #(msg (fn [] (babashka.ffi/address p))))))
+        (when-not tu/windows?
+          (let [strlen (babashka.ffi/cfn "strlen" [:pointer] :size_t)]
+            (is (= "another thread" (on-other-thread #(msg (fn [] (strlen p))))))))))))
+
 (deftest memory-test
   (when-not skip?
     (testing "alloc, typed write and read, free"
@@ -135,7 +243,7 @@
       (is (= [nil nil]
              (bb `(do ~ffi-require
                       (let [p# (ffi/alloc 8)]
-                        (let [res# [(ffi/read p# :string) (ffi/ptr->string 0)]]
+                        (let [res# [(ffi/read p# :string) (ffi/ptr->string ffi/null)]]
                           (ffi/free p#)
                           res#)))))))
     (testing "read-bytes and write-bytes use the specified offset"
@@ -226,8 +334,10 @@
                         (doseq [[i# v#] (map-indexed vector [5 3 1 4 2])]
                           (ffi/write arr :int (* i# 4) v#))
                         (let [cmp (ffi/callback
+                                   ;; qsort gives zero-size pointers to the comparator.
                                    (fn [pa# pb#]
-                                     (compare (ffi/read pa# :int) (ffi/read pb# :int)))
+                                     (compare (ffi/read (ffi/reinterpret pa# 4) :int)
+                                              (ffi/read (ffi/reinterpret pb# 4) :int)))
                                    [:pointer :pointer] :int)]
                           ((ffi/cfn "qsort" [:pointer :size_t :size_t :pointer] :void)
                            arr 5 4 cmp)
@@ -280,7 +390,7 @@
   (testing "find-symbol probes without binding"
     (is (= [true nil]
            (bb `(do (require '[babashka.ffi :as ~'ffi])
-                    [(number? (ffi/find-symbol "strlen"))
+                    [(ffi/pointer? (ffi/find-symbol "strlen"))
                      (ffi/find-symbol "bb_no_such_symbol_zzz")])))))
   (when-let [lib @test-lib]
     (testing "a library map limits the search to that library"
@@ -293,8 +403,8 @@
              (bb `(do ~ffi-require
                       (let [t# (ffi/load-library ~lib)
                             z# (ffi/load-system-library "z")]
-                        [(number? (ffi/find-symbol "mix_dj"))
-                         (number? (ffi/find-symbol t# "mix_dj"))
+                        [(some? (ffi/find-symbol "mix_dj"))
+                         (some? (ffi/find-symbol t# "mix_dj"))
                          (ffi/find-symbol z# "mix_dj")
                          (ffi/find-symbol t# "zlibVersion")])))))))
   (testing "cfn accepts a library map, delay or function"

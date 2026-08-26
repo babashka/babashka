@@ -19,10 +19,12 @@
       :uint32 :int64 :uint64 :size_t :ssize_t :char :byte
       :bool :pointer :string :double :float
 
-  Pointers are native addresses stored in Clojure longs. :bool represents a
-  one-byte C boolean and returns true or false. Thus, a C predicate does not
-  return the truthy number 0. The API does not support struct-by-value
-  arguments.
+  A pointer is a native java.lang.foreign.MemorySegment with a size. read and
+  write check each access against this size. Pointers from C have size zero.
+  reinterpret specifies their size before access. :bool
+  represents a one-byte C boolean and returns true or false. Thus, a C
+  predicate does not return the truthy number 0. The API does not support
+  struct-by-value arguments.
 
   Native images limit most fixed signatures to six arguments. A signature
   that uses only pointer and integer types supports up to 10 arguments. A
@@ -47,8 +49,8 @@
       (c-open path flags 0644)       ; one-int tail, same binding"
   (:refer-clojure :exclude [read])
   (:require [clojure.string :as str])
-  (:import [java.lang.foreign Arena FunctionDescriptor Linker MemoryLayout
-            MemorySegment SymbolLookup ValueLayout]
+  (:import [java.lang.foreign Arena FunctionDescriptor Linker
+            MemoryLayout MemorySegment SymbolLookup ValueLayout]
            [java.lang.invoke MethodHandle MethodHandles MethodType]))
 
 (set! *warn-on-reflection* true)
@@ -142,15 +144,128 @@
 
 ;; -- memory -------------------------------------------------------------------
 
-(defn- segment ^MemorySegment [addr size]
-  (.reinterpret (MemorySegment/ofAddress addr) (long size)))
+(defn- pointer-ex [p]
+  (ex-info (cond
+             ;; A heap segment does not contain a C address.
+             (and (instance? MemorySegment p) (not (.isNative ^MemorySegment p)))
+             "babashka.ffi: expected a pointer to native memory, got a heap MemorySegment"
+             ;; C can access released memory through a closed segment.
+             (and (instance? MemorySegment p)
+                  (not (.isAlive (.scope ^MemorySegment p))))
+             (str "babashka.ffi: the pointer at address " (.address ^MemorySegment p)
+                  " belongs to a closed arena")
+             ;; a confined arena is for one thread; another thread must not
+             ;; hand its memory to C
+             (instance? MemorySegment p)
+             (str "babashka.ffi: the pointer at address " (.address ^MemorySegment p)
+                  " belongs to an arena confined to another thread")
+             :else
+             (str "babashka.ffi: expected a pointer (a MemorySegment), got "
+                  (pr-str p)
+                  ". Wrap a raw address with (ffi/segment addr)"))
+           {:value p}))
+
+(defn- native-segment?
+  "Returns true when p is a native MemorySegment with a live scope that this
+  thread may access."
+  [p]
+  (and (instance? MemorySegment p)
+       (.isNative ^MemorySegment p)
+       (.isAlive (.scope ^MemorySegment p))
+       (.isAccessibleBy ^MemorySegment p (Thread/currentThread))))
+
+(defn- as-pointer
+  "Returns p as a native MemorySegment.
+  Rejects raw addresses, heap segments, and all other values."
+  ^MemorySegment [p]
+  (if (native-segment? p) p (throw (pointer-ex p))))
+
+(defn- pointer-address
+  "Returns the native address of p. Treats nil as the NULL pointer."
+  [p]
+  (cond (nil? p) 0
+        (native-segment? p) (.address ^MemorySegment p)
+        :else (throw (pointer-ex p))))
+
+(defn- not-accessible-ex
+  "Returns the error for a value that accessible rejects.
+  This separate function permits JIT inlining of accessible."
+  [p]
+  (if (instance? MemorySegment p)
+    (ex-info (str "babashka.ffi: the pointer at address " (.address ^MemorySegment p)
+                  " has size 0; give it a size with reinterpret")
+             {:pointer p})
+    (pointer-ex p)))
+
+(defn- accessible
+  "Returns p as a nonzero MemorySegment. The JDK checks access against its size.
+  Accepts heap segments because these operations do not pass an address to C."
+  ^MemorySegment [p]
+  (if (and (instance? MemorySegment p) (pos? (.byteSize ^MemorySegment p)))
+    p
+    (throw (not-accessible-ex p))))
+
+(defn segment
+  "Returns a pointer to addr. The default size is zero.
+  A specified nonzero size enables bounds checks."
+  (^MemorySegment [addr] (MemorySegment/ofAddress (long addr)))
+  (^MemorySegment [addr size]
+   (.reinterpret (MemorySegment/ofAddress (long addr)) (long size))))
+
+(defn reinterpret
+  "Returns a view of segment seg with byte size size.
+
+  An arena controls the lifetime of the view. The arena calls the optional
+  cleanup function with the view when the arena closes.
+
+  CAUTION: Do not pass the view to C after the arena closes.
+  C can access released memory."
+  (^MemorySegment [seg size] (.reinterpret (as-pointer seg) (long size)))
+  (^MemorySegment [seg size arena]
+   (.reinterpret (as-pointer seg) (long size) ^Arena arena nil))
+  (^MemorySegment [seg size arena cleanup]
+   (.reinterpret (as-pointer seg) (long size) ^Arena arena
+                 (reify java.util.function.Consumer
+                   (accept [_ s] (cleanup s))))))
+
+(defn slice
+  "Returns a slice of seg at byte offset. By default, the slice ends with seg."
+  (^MemorySegment [seg offset] (.asSlice (as-pointer seg) (long offset)))
+  (^MemorySegment [seg offset len]
+   (.asSlice (as-pointer seg) (long offset) (long len))))
+
+(defn address
+  "Returns the native address of pointer p as a Clojure long."
+  [p]
+  (.address (as-pointer p)))
+
+(defn size
+  "Returns the size of pointer p in bytes. A pointer that C returned has
+  size 0."
+  [p]
+  (.byteSize (as-pointer p)))
+
+(defn pointer?
+  "Returns true when x is a pointer: a MemorySegment of native memory."
+  [x]
+  (native-segment? x))
+
+(defn- string-at
+  "Returns the NUL-terminated UTF-8 string at addr. Returns nil for address zero."
+  [^long addr]
+  (when-not (zero? addr)
+    (.getString (.reinterpret (MemorySegment/ofAddress addr) Long/MAX_VALUE) 0)))
 
 (defn ptr->string
-  "Reads the NUL-terminated UTF-8 string at pointer p. Returns nil for a NULL
-  pointer."
+  "Returns the NUL-terminated UTF-8 string at p, read within the size of p.
+  Returns nil for a NULL pointer.
+
+  A pointer of size 0 is refused: give it a size with reinterpret, or declare
+  the C return type as :string."
   [p]
-  (when-not (zero? (long p))
-    (.getString (segment p Long/MAX_VALUE) 0)))
+  (let [seg (as-pointer p)]
+    (when-not (zero? (.address seg))
+      (.getString (accessible seg) 0))))
 
 (defn- with-string-args
   "Calls f with argtypes' :string args replaced by temp C-string pointers,
@@ -169,12 +284,15 @@
 ;; nothing dispatches on the type during a call.
 (def ^:private arg-coercer
   (let [as-long (fn [a] (cond (nil? a) 0
-                              (instance? MemorySegment a) (.address ^MemorySegment a)
+                              (native-segment? a) (.address ^MemorySegment a)
                               :else (long a)))
+        as-addr (fn [a] (cond (nil? a) 0
+                              (native-segment? a) (.address ^MemorySegment a)
+                              :else (throw (pointer-ex a))))
         as-bool (fn [a] (if a 1 0))]
-    (into {:double double :float float :bool as-bool}
+    (into {:double double :float float :bool as-bool :pointer as-addr}
           (map (fn [t] [t as-long]))
-          (disj long-carrier? :bool))))
+          (disj long-carrier? :bool :pointer))))
 
 (defn- coerce-arg [t a] ((arg-coercer t) a))
 
@@ -188,7 +306,10 @@
     :uint16 (bit-and (long raw) 0xFFFF)
     (:int8 :byte :char) (long (unchecked-byte (long raw)))
     :uint8 (bit-and (long raw) 0xFF)
-    :string (let [p (long raw)] (when-not (zero? p) (ptr->string p)))
+    :string (string-at (long raw))
+    ;; the descriptor carries a pointer as a 64-bit integer, so the segment is
+    ;; built here: zero-length, as the JDK hands one out
+    :pointer (MemorySegment/ofAddress (long raw))
     raw))
 
 ;; -- libraries ----------------------------------------------------------------
@@ -360,22 +481,21 @@
     (some (fn [^SymbolLookup l] (.orElse (.find l sym) nil)) lookups)))
 
 (defn- require-symbol ^MemorySegment [lib sym]
-  (if (integer? sym)
+  (if (instance? MemorySegment sym)
     ;; The caller already resolved this function pointer.
-    (MemorySegment/ofAddress (long sym))
+    (as-pointer sym)
     (or (lookup-symbol lib ^String sym)
         (throw (ex-info (str "babashka.ffi: symbol not found: " sym) {:symbol sym})))))
 
 (defn find-symbol
-  "Finds sym and returns its native address as a Clojure long. Returns nil
-  for an unknown symbol.
+  "Finds sym and returns a pointer to it. Returns nil for an unknown symbol.
 
   A library value limits the search to one library and its dependencies.
   Without a library value, find-symbol searches all loaded libraries. Then it
   searches the default system lookup."
   ([sym] (find-symbol nil sym))
   ([lib sym]
-   (some-> (lookup-symbol lib (str sym)) .address)))
+   (lookup-symbol lib (str sym))))
 
 ;; -- foreign functions --------------------------------------------------------
 
@@ -471,11 +591,11 @@
 
 (defn cfn
   "Creates a Clojure function that calls the C function sym. sym is a C symbol
-  name or a function address. The address must be a Clojure long. argtypes is
-  a vector of type keywords. rettype is a type keyword.
+  name or a function pointer. argtypes is a vector of type keywords. rettype
+  is a type keyword.
 
-  Use an address for a function that has no exported name. The address can
-  come from a loader, C function, struct field, find-symbol, or callback.
+  Use a function pointer for a function that has no exported name. The pointer
+  can come from a loader, C function, struct field, find-symbol, or callback.
 
   A library value limits the search to one library and its dependencies.
   Without a library value, cfn searches all loaded libraries. Then it searches
@@ -486,13 +606,15 @@
   fixed parameters. Each call infers the tail types from its values."
   ([sym argtypes rettype] (cfn nil sym argtypes rettype))
   ([lib sym argtypes rettype]
-   (when-not (or (string? sym) (integer? sym))
-     (throw (ex-info (str "babashka.ffi: C symbol must be a string or an address: "
-                          (pr-str sym))
-                     {:sym sym})))
+   (when-not (or (string? sym) (native-segment? sym))
+     (throw (if (instance? MemorySegment sym)
+              (pointer-ex sym)
+              (ex-info (str "babashka.ffi: C symbol must be a string or a pointer: "
+                            (pr-str sym))
+                       {:sym sym}))))
    ;; A null function pointer stops the process on the first call. A loader
    ;; returns this value when it does not have the requested function.
-   (when (and (integer? sym) (zero? sym))
+   (when (and (instance? MemorySegment sym) (zero? (.address ^MemorySegment sym)))
      (throw (ex-info "babashka.ffi: cannot bind the null address" {:sym sym})))
    (when (some #(= :void %) argtypes)
      (throw (ex-info (str "babashka.ffi: :void is not an argument type: " (pr-str argtypes))
@@ -639,13 +761,17 @@
 (def ^:private c-free (delay (cfn @crt-lib "free" [:pointer] :void)))
 
 (defn alloc
-  "Allocates n bytes of zeroed native memory and returns its pointer. Release
-  the pointer with free."
-  [n]
-  (@c-calloc 1 n))
+  "Allocates n zeroed bytes and returns a segment of size n.
+  Release the segment with free."
+  ^MemorySegment [n]
+  (let [size (long n)]
+    ;; calloc returns a pointer of size 0
+    (.reinterpret ^MemorySegment (@c-calloc 1 size) size)))
 
 (defn free
-  "Releases memory allocated by alloc or string->ptr."
+  "Releases memory from alloc or string->ptr.
+
+  CAUTION: Do not use p after free. This can corrupt memory or stop the process."
   [p]
   (@c-free p))
 
@@ -661,17 +787,22 @@
   (or (sizes t) (throw (ex-info (str "babashka.ffi: unknown type " t) {:type t}))))
 
 (defn read
-  "Reads a value of type t from pointer p. The optional byte offset defaults
-  to 0."
+  "Reads a value of type t from p. The default byte offset is zero.
+
+  Checks the access against the size of p. Rejects a zero-size pointer.
+  reinterpret specifies a valid size."
   ([p t] (read p t 0))
   ([p t offset]
-   (let [seg (segment p (+ (long offset) (long (sizeof t))))
-         off (long offset)]
+   (let [off (long offset)
+         ^MemorySegment seg (accessible p)]
      (case t
        (:int :int32) (long (.get seg ValueLayout/JAVA_INT_UNALIGNED off))
        (:uint :uint32) (bit-and (long (.get seg ValueLayout/JAVA_INT_UNALIGNED off)) 0xFFFFFFFF)
-       (:long :ulong :int64 :uint64 :size_t :ssize_t :pointer)
+       (:long :ulong :int64 :uint64 :size_t :ssize_t)
        (.get seg ValueLayout/JAVA_LONG_UNALIGNED off)
+       ;; read as a long and wrap it: the address layout's getter costs twice
+       ;; as much in a native image
+       :pointer (MemorySegment/ofAddress (.get seg ValueLayout/JAVA_LONG_UNALIGNED off))
        :int16 (long (.get seg ValueLayout/JAVA_SHORT_UNALIGNED off))
        :uint16 (bit-and (long (.get seg ValueLayout/JAVA_SHORT_UNALIGNED off)) 0xFFFF)
        :bool (not (zero? (long (.get seg ValueLayout/JAVA_BYTE off))))
@@ -679,20 +810,23 @@
        :uint8 (bit-and (long (.get seg ValueLayout/JAVA_BYTE off)) 0xFF)
        :double (.get seg ValueLayout/JAVA_DOUBLE_UNALIGNED off)
        :float (.get seg ValueLayout/JAVA_FLOAT_UNALIGNED off)
-       :string (ptr->string (.get seg ValueLayout/JAVA_LONG_UNALIGNED off))
+       :string (string-at (.get seg ValueLayout/JAVA_LONG_UNALIGNED off))
        (throw (ex-info (str "babashka.ffi: cannot read type " t) {:type t}))))))
 
 (defn write
-  "Writes value v as type t to pointer p. The optional byte offset defaults
-  to 0. Returns nil."
+  "Writes v as type t to p. The default byte offset is zero. Returns nil.
+
+  Checks the access against the size of p. Rejects a zero-size pointer.
+  reinterpret specifies a valid size."
   ([p t v] (write p t 0 v))
   ([p t offset v]
-   (let [seg (segment p (+ (long offset) (long (sizeof t))))
-         off (long offset)]
+   (let [off (long offset)
+         ^MemorySegment seg (accessible p)]
      (case t
        (:int :uint :int32 :uint32) (.set seg ValueLayout/JAVA_INT_UNALIGNED off (unchecked-int (long v)))
-       (:long :ulong :int64 :uint64 :size_t :ssize_t :pointer)
+       (:long :ulong :int64 :uint64 :size_t :ssize_t)
        (.set seg ValueLayout/JAVA_LONG_UNALIGNED off (long v))
+       :pointer (.set seg ValueLayout/JAVA_LONG_UNALIGNED off (long (pointer-address v)))
        (:int16 :uint16) (.set seg ValueLayout/JAVA_SHORT_UNALIGNED off (unchecked-short (long v)))
        :bool (.set seg ValueLayout/JAVA_BYTE off (unchecked-byte (if v 1 0)))
        (:int8 :uint8 :byte :char) (.set seg ValueLayout/JAVA_BYTE off (unchecked-byte (long v)))
@@ -707,9 +841,9 @@
   (^bytes [p n] (read-bytes p n 0))
   (^bytes [p n offset]
    (let [n (int n)
-         arr (byte-array n)]
-     (MemorySegment/copy (segment p (+ (long offset) n)) ValueLayout/JAVA_BYTE
-                         (long offset) arr 0 n)
+         arr (byte-array n)
+         ^MemorySegment seg (accessible p)]
+     (MemorySegment/copy seg ValueLayout/JAVA_BYTE (long offset) arr 0 n)
      arr)))
 
 (defn write-bytes
@@ -717,9 +851,9 @@
   0)."
   ([p arr] (write-bytes p arr 0))
   ([p ^bytes arr offset]
-   (let [n (alength arr)]
-     (MemorySegment/copy arr 0 (segment p (+ (long offset) n))
-                         ValueLayout/JAVA_BYTE (long offset) n)
+   (let [n (alength arr)
+         ^MemorySegment seg (accessible p)]
+     (MemorySegment/copy arr 0 seg ValueLayout/JAVA_BYTE (long offset) n)
      nil)))
 
 (defn byte-buffer
@@ -732,7 +866,8 @@
   The byte order is big-endian, as it is for each new ByteBuffer. If you need a
   different byte order, set it with .order."
   ^java.nio.ByteBuffer [p n]
-  (.asByteBuffer (segment p n)))
+  (let [^MemorySegment seg (accessible p)]
+    (.asByteBuffer (.asSlice seg 0 (long n)))))
 
 (defn string->ptr
   "Copies s to newly allocated native memory as a NUL-terminated UTF-8
@@ -740,31 +875,30 @@
   [^String s]
   (let [bytes (.getBytes s "UTF-8")
         n (inc (alength bytes))
-        p (alloc n)
-        seg (segment p n)]
+        ^MemorySegment seg (alloc n)]
     (MemorySegment/copy bytes 0 seg ValueLayout/JAVA_BYTE 0 (alength bytes))
-    p))
+    seg))
 
 (def null
-  "The NULL pointer address."
-  0)
+  "The NULL pointer."
+  MemorySegment/NULL)
 
 (defn null?
   "Returns true for a NULL pointer. Returns false for all other pointers."
   [p]
-  (zero? (long p)))
+  (zero? (.address (as-pointer p))))
 
 ;; -- callbacks ----------------------------------------------------------------
 
 (def ^:private callback-arenas (atom {}))
 
 (defn callback
-  "Creates a C function pointer that invokes Clojure function f. argtypes and
-  rettype use the same type keywords as cfn. Pointer and integer arguments
-  are Clojure longs. :bool arguments are booleans.
+  "Creates a C function pointer that invokes f. argtypes and rettype use the
+  cfn type keywords. f receives :pointer arguments as zero-size pointers.
+  It receives :bool arguments as booleans and other arguments as longs or doubles.
 
-  Returns the function pointer as a Clojure long. The callback remains valid
-  until free-callback releases it."
+  Returns the function pointer. The callback remains valid until
+  free-callback releases it."
   [f argtypes rettype]
   (doseq [t argtypes] (carrier t))
   (carrier rettype)
@@ -781,15 +915,19 @@
   (let [;; f returns arbitrary Clojure values and receives raw carriers:
         ;; coerce the result to the declared return type (a Boolean or
         ;; Integer crossing the upcall boundary uncaught would kill the VM)
-        ;; and give :bool arguments to f as booleans
+        ;; and hand f the declared types, not the carriers
         ret-c (when-not (= :void rettype) (arg-coercer rettype))
-        bool-args (mapv #(= :bool %) argtypes)
-        f (if (or ret-c (some true? bool-args))
+        in-c (mapv (fn [t] (case t
+                             :bool (fn [a] (not (zero? (long a))))
+                             :pointer (fn [a] (MemorySegment/ofAddress (long a)))
+                             nil))
+                   argtypes)
+        f (if (or ret-c (some some? in-c))
             (let [g f]
               (fn [& args]
                 (let [r (apply g (map-indexed
                                   (fn [i a]
-                                    (if (nth bool-args i) (not (zero? (long a))) a))
+                                    (if-let [c (nth in-c i)] (c a) a))
                                   args))]
                   (if ret-c (ret-c r) r))))
             f)
@@ -822,16 +960,19 @@
         arena (Arena/ofShared)
         stub (.upcallStub ^Linker @linker* mh (descriptor argtypes rettype)
                           arena
-                          (make-array java.lang.foreign.Linker$Option 0))
-        addr (.address stub)]
-    (swap! callback-arenas assoc addr arena)
-    addr))
+                          (make-array java.lang.foreign.Linker$Option 0))]
+    (swap! callback-arenas assoc (.address stub) arena)
+    stub))
 
 (defn free-callback
   "Releases callback pointer p. C must not call p after this function returns.
-  Ignores unknown pointers."
+  Ignores unknown and previously freed pointers."
   [p]
-  (when-let [^Arena a (get @callback-arenas p)]
-    (swap! callback-arenas dissoc p)
-    (.close a))
+  (let [addr (if (instance? MemorySegment p)
+               ;; A freed stub has a closed arena but keeps its address.
+               (.address ^MemorySegment p)
+               (pointer-address p))]
+    (when-let [^Arena a (get @callback-arenas addr)]
+      (swap! callback-arenas dissoc addr)
+      (.close a)))
   nil)

@@ -120,11 +120,11 @@ Use `find-symbol` to get a pointer to a symbol without a function binding:
 
 ```clojure
 (ffi/find-symbol "zlibVersion")
-;;=> 4438706736
+;;=> a pointer
 ```
 
-The result is a native address in a Clojure long. You can pass this value to
-a C function that accepts a function or data pointer.
+The result is a pointer. You can pass it to a C function that accepts a
+function or data pointer, or to `cfn` to bind it.
 
 If `find-symbol` cannot find the symbol, it returns `nil`.
 
@@ -247,7 +247,7 @@ Use these type keywords in function signatures:
 | `:float` | 32-bit floating-point number. |
 | `:double` | 64-bit floating-point number. |
 | `:bool` | One-byte C boolean. |
-| `:pointer` | Native address in a Clojure long. |
+| `:pointer` | A pointer, see [Use native memory](#use-native-memory). |
 | `:string` | Pointer to a NUL-terminated UTF-8 string. |
 
 `:long` and `:ulong` are always 64-bit types. A C `long` is 32 bits on
@@ -302,13 +302,54 @@ For example, a `printf` format must match its values.
 
 ## Use native memory
 
-Pointers are native addresses stored in Clojure longs. `ffi/null` is the
-NULL address.
+A pointer is a native `java.lang.foreign.MemorySegment` with a live scope
+that the current thread may access. A heap segment does not have a C
+address. A closed-arena pointer refers to released memory. A confined arena
+belongs to one thread. The API rejects all three before it passes an address
+to C.
+
+Babashka does not expose the `MemorySegment` class to scripts because the class
+increases the binary size.
+
+Use `size`, `address`, `slice`, `reinterpret`, and `pointer?`.
+
+CAUTION: Do not pass a confined segment from another thread. C can bypass the
+thread-access restriction.
+
+`alloc` returns a segment with a size. Access outside a nonzero segment throws
+an `IndexOutOfBoundsException`.
+
+C does not report the size of a returned pointer. Thus, the pointer has size
+zero. Memory access functions reject these pointers.
+
+Before you access the memory, specify its size with `reinterpret`:
 
 ```clojure
-ffi/null
-;;=> 0
+;; C returned p without a size. The struct has 16 bytes.
+(ffi/read (ffi/reinterpret p 16) :int 8)
+```
 
+`alloc 0` and an end-of-block slice also have size zero. `ptr->string` rejects
+size zero and reads other pointers within their size. Declare a C string return
+type as `:string`.
+
+Use `size` to get the segment size. Use `address` to convert a pointer to a
+long. Use `segment` to convert a raw address to a pointer. Use `slice` to
+select part of a segment. The `+` function does not support pointers.
+
+```clojure
+(ffi/size p)             ;;=> 16
+(ffi/address p)          ;;=> 4438706736
+(ffi/segment 4438706736) ;;=> a pointer of size 0
+(ffi/segment addr 16)    ;;=> a pointer of size 16
+(ffi/slice p 8)          ;;=> the rest of p from byte 8
+(ffi/reinterpret p 64)   ;;=> p with size 64
+```
+
+A C pointer argument accepts a pointer or `nil`. A `nil` value is NULL.
+Pointer arguments reject numbers. `ffi/null` is the NULL pointer:
+
+```clojure
 (ffi/null? ffi/null)
 ;;=> true
 ```
@@ -325,6 +366,9 @@ Use `alloc` to allocate zeroed memory. Always release this memory with
       (ffi/free p))))
 ;;=> 42
 ```
+
+CAUTION: Do not use a pointer after `free`. This can corrupt memory or stop the
+process.
 
 `read` and `write` accept an optional byte offset:
 
@@ -420,8 +464,8 @@ Use `callback` to pass a Clojure function to C:
 (def comparator
   (ffi/callback
    (fn [left-pointer right-pointer]
-     (compare (ffi/read left-pointer :int)
-              (ffi/read right-pointer :int)))
+     (compare (ffi/read (ffi/reinterpret left-pointer 4) :int)
+              (ffi/read (ffi/reinterpret right-pointer 4) :int)))
    [:pointer :pointer]
    :int))
 
@@ -431,6 +475,10 @@ Use `callback` to pass a Clojure function to C:
 
 `callback` returns a function pointer. The pointer stays valid until you
 call `free-callback`.
+
+A `:pointer` callback argument comes from C and has size zero.
+
+Before you read the memory, specify its size with `reinterpret`.
 
 If C keeps the callback, keep its pointer. Unregister the callback before
 you call `free-callback`.
