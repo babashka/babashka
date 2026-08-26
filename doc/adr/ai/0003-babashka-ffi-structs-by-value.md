@@ -55,8 +55,8 @@ notes, `babashka.ffi/struct-survey.md`):
 
 ### The proof of concept
 
-The POC branch (`ffi-port-validation`) implemented positional layouts,
-`{:struct [:int :int]}`, with vector values `[3 1]`, computed padding, a
+The POC branch (`ffi-port-validation`) implemented positional layouts as
+maps, `{:struct [:int :int]}`, with vector values `[3 1]`, computed padding, a
 cross-check of the computed layout against libffi's own at bind time,
 per-thread scratch memory, and a libffi call path (`ffi_prep_cif`,
 `ffi_call` through `@CFunction` bindings in the image, the system libffi
@@ -68,22 +68,35 @@ against 120-150ns for a scalar call through a trampoline.
 ### Layouts are data, named, with computed and verified padding
 
 ```clojure
-(def point {:struct [[:x :int] [:y :int]]})
-(def rect  {:struct [[:lo point] [:hi point]]})
+(def point [:struct [[:x :int] [:y :int]]])
+(def rect  [:struct [[:lo point] [:hi point]]])
 
 (ffi/sizeof point)   ;;=> 8
 (ffi/alignof rect)   ;;=> 4
 ```
 
-- A layout is a map with a `:struct` key whose value is a vector of
-  `[name type]` pairs. A type is a type keyword or another layout, so
-  layouts nest by value. Names are keywords.
+- A layout is a vector with its kind first: `[:struct fields]`, where
+  fields is a vector of `[name type]` pairs. A type is a type keyword or
+  another layout, so layouts nest by value. Names are keywords.
 - Padding and alignment follow the C rules of the platform, computed by
   babashka. At bind time the computed size and alignment are compared
   with what libffi computes for the same `ffi_type`; a difference is an
   error, never a silent misread.
-- The map form is open: `:packed`, `:align`, `{:array type n}` and
-  `{:union ...}` can be added without touching what exists.
+- The tag-first vector is the grammar for every kind of type: a keyword
+  is a primitive, a vector is `[kind & args]`, and `layout-of` dispatches
+  on `(first t)`. A later kind is one more case: `[:array type n]`,
+  `[:union fields]`, `[:pointer layout]`, `[:fn argtypes rettype]`. Options
+  go in an optional map as the last element, `[:struct fields {:packed
+  true}]`, so `[:struct fields]` stays valid. coffi uses the same shape
+  (`type-dispatch` takes `(first type)` of a vector), which its users know.
+  A map with the kind as a key, `{:struct fields}`, was the POC's form; it
+  reads well for options but has no natural dispatch and no natural place
+  for a positional argument such as an array length.
+- No registry of named layouts (coffi's `defalias`). A var holds a layout
+  and namespaces scope it. The rule that keeps the door open: a keyword in
+  a type position is a primitive type, or, once a registry exists, a
+  registered name. Self-referential layouts (`[:next [:pointer ::node]]`)
+  are the case that will need it, together with typed pointers.
 - `sizeof` and `alignof` accept layouts as well as type keywords.
 
 ### Values are maps, one form
@@ -121,7 +134,7 @@ The maintainer's three requirements all point the same way:
   data can be validated; user code in the marshalling path cannot.
 - Stable: it is API surface that would have to hold for years. The door
   stays open and additive: a layout could later carry conversion hooks,
-  `{:struct [...] :as {:from ->vec3 :to vec3->map}}`, called once per
+  `[:struct [...] :as {:from ->vec3 :to vec3->map}]`, called once per
   value with no dispatch, if demand appears.
 
 coffi needs the hooks because `defcfn` does the marshalling inside the

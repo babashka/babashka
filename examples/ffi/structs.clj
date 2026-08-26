@@ -7,7 +7,7 @@
 
 (require '[babashka.ffi :as ffi :refer [defcfn]])
 
-(def div-t {:struct [[:quot :int] [:rem :int]]})
+(def div-t [:struct [[:quot :int] [:rem :int]]])
 
 (defcfn c-div "div" [:int :int] div-t)
 (defcfn c-abs "abs" [:int] :int)

@@ -28,10 +28,10 @@
   represents a one-byte C boolean and returns true or false. Thus, a C
   predicate does not return the truthy number 0.
 
-  A struct that C passes or returns by value is a layout, {:struct [[name
-  type] ...]}, and its value is a map of its fields:
+  A struct that C passes or returns by value is a layout, [:struct [[name
+  type] ...]], and its value is a map of its fields:
 
-      (ffi/defcfn c-div \"div\" [:int :int] {:struct [[:quot :int] [:rem :int]]})
+      (ffi/defcfn c-div \"div\" [:int :int] [:struct [[:quot :int] [:rem :int]]])
       (c-div 7 2)   ;=> {:quot 3 :rem 1}
 
   Such a call goes through libffi. See doc/ffi.md.
@@ -603,7 +603,7 @@
   "Creates a Clojure function that calls the C function sym. sym is a C symbol
   name or a function pointer. argtypes is a vector of type keywords. rettype
   is a type keyword. A struct that C passes or returns by value is a layout,
-  {:struct [[name type] ...]}, and its value is a map of its fields. Such a
+  [:struct [[name type] ...]], and its value is a map of its fields. Such a
   call goes through libffi.
 
   Use a function pointer for a function that has no exported name. The pointer
@@ -632,7 +632,9 @@
      (throw (ex-info (str "babashka.ffi: :void is not an argument type: " (pr-str argtypes))
                      {:argtypes argtypes})))
    (let [fixed (check-variadic-marker argtypes)
-         structs? (or (struct-layout? rettype) (boolean (some struct-layout? argtypes)))]
+         ;; any vector on a type position is a layout; layout-of says which
+         ;; kinds exist
+         structs? (or (vector? rettype) (boolean (some vector? argtypes)))]
      (cond
        (and structs? fixed)
        (throw (ex-info (str "babashka.ffi: a variadic signature cannot pass a struct by value: " sym)
@@ -987,7 +989,7 @@
 ;; struct in it calls through libffi. Design: doc/adr/ai/0003.
 
 (defn- struct-layout? [t]
-  (and (map? t) (contains? t :struct)))
+  (and (vector? t) (= :struct (first t))))
 
 (defn- align-up ^long [^long n ^long a]
   (* a (quot (+ n (dec a)) a)))
@@ -996,11 +998,18 @@
   "Resolves t, a type keyword or a struct layout, to a map of :type, :size
   and :align. A struct layout also has :fields, each a layout with a :name
   and an :offset. Offsets follow natural alignment, as a C compiler lays a
-  struct out."
+  struct out.
+
+  A layout is a vector with its kind first, [:struct fields], so that a
+  later kind is one more case here: [:array type n], [:union fields]. A
+  keyword is a primitive type."
   [t]
   (cond
     (struct-layout? t)
-    (let [members (:struct t)]
+    (let [members (second t)]
+      (when-not (= 2 (count t))
+        (throw (ex-info (str "babashka.ffi: a struct layout is [:struct fields], got " (pr-str t))
+                        {:layout t})))
       (when-not (and (vector? members)
                      (seq members)
                      (every? #(and (vector? %) (= 2 (count %)) (keyword? (first %)))
@@ -1025,8 +1034,12 @@
       {:type t :size size :align size}
       (throw (ex-info (str "babashka.ffi: unknown type " t) {:type t})))
 
+    (vector? t)
+    (throw (ex-info (str "babashka.ffi: unknown layout kind " (pr-str (first t)) " in " (pr-str t))
+                    {:layout t}))
+
     :else
-    (throw (ex-info (str "babashka.ffi: not a type or a struct layout: " (pr-str t))
+    (throw (ex-info (str "babashka.ffi: not a type keyword or a layout: " (pr-str t))
                     {:layout t}))))
 
 ;; encoder and decoder are the only places that turn Clojure values into
@@ -1121,7 +1134,7 @@
   ^MemorySegment [^Arena arena t]
   (let [p (.allocate arena (long ffi-type-bytes) 8)]
     (if (struct-layout? t)
-      (let [elems (mapv (fn [[_ ty]] (ffi-type! arena ty)) (:struct t))
+      (let [elems (mapv (fn [[_ ty]] (ffi-type! arena ty)) (second t))
             n (count elems)
             arr (.allocate arena (long (* 8 (inc n))) 8)]
         (dotimes [i n] (write arr :pointer (* 8 i) (nth elems i)))

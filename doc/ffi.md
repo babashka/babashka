@@ -275,12 +275,13 @@ becomes `nil`.
 
 ### Pass a struct by value
 
-Write a struct that C passes or returns by value as a layout: a map with a
-`:struct` key and a vector of `[name type]` pairs. A type is a type keyword
-or another layout. A struct value is a map of its fields:
+Write a struct that C passes or returns by value as a layout: a vector
+that starts with `:struct`, followed by a vector of `[name type]` pairs. A
+type is a type keyword or another layout. A struct value is a map of its
+fields:
 
 ```clojure
-(defcfn c-div "div" [:int :int] {:struct [[:quot :int] [:rem :int]]})
+(defcfn c-div "div" [:int :int] [:struct [[:quot :int] [:rem :int]]])
 (c-div 7 2)
 ;;=> {:quot 3 :rem 1}
 ```
@@ -288,8 +289,8 @@ or another layout. A struct value is a map of its fields:
 Layouts nest, and so do their values:
 
 ```clojure
-(def point {:struct [[:x :int] [:y :int]]})
-(def rect {:struct [[:lo point] [:hi point]]})
+(def point [:struct [[:x :int] [:y :int]]])
+(def rect [:struct [[:lo point] [:hi point]]])
 (defcfn rect-grow "rect_grow" [rect :int] rect)
 (rect-grow {:lo {:x 1 :y 1} :hi {:x 5 :y 5}} 2)
 ;;=> {:lo {:x -1 :y -1} :hi {:x 7 :y 7}}
@@ -303,9 +304,9 @@ compiler does, padding included, and checks that layout against libffi when
 it binds the function:
 
 ```clojure
-(ffi/sizeof {:struct [[:c :char] [:d :double]]})
+(ffi/sizeof [:struct [[:c :char] [:d :double]]])
 ;;=> 16
-(ffi/alignof {:struct [[:c :char] [:d :double]]})
+(ffi/alignof [:struct [[:c :char] [:d :double]]])
 ;;=> 8
 ```
 
