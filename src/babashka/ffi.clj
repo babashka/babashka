@@ -527,7 +527,7 @@
 (defn- unsupported-ex [sym argtypes rettype why]
   (ex-info (str "babashka.ffi: unsupported signature: " sym " "
                 (pr-str argtypes) " -> " rettype ". " why ". "
-                "Workaround: call through libffi (ffi-libffi.clj in the babashka repo shows how). "
+                "Workaround: call through libffi (examples/ffi/libffi.clj in the babashka repo shows how). "
                 "Please report this signature in a babashka issue; it can likely be supported.")
            {:symbol sym :argtypes argtypes :rettype rettype}))
 
