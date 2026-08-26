@@ -175,17 +175,15 @@ else
     BABASHKA_LEIN_PROFILES+=",-feature/rrb-vector"
 fi
 
-# babashka.ffi calls struct-by-value functions through libffi, which every
-# build links by default. Two builds do not: the musl static one, whose
-# binary has no dlopen and so cannot call a shared library at all, and a
-# build that sets BABASHKA_LIBFFI=none. script/compile decides the same way
-# on the same two conditions, and the two have to agree or the image ends up
-# with undefined symbols.
-if [ "${BABASHKA_MUSL:-}" = "true" ] || [ "${BABASHKA_LIBFFI:-}" = "none" ]
-then
-    BABASHKA_LEIN_PROFILES+=",-feature/libffi"
-else
+# Every build links libffi, see script/libffi_archive.sh for the rules. The
+# feature profile puts the @CFunction bindings on the classpath only when
+# script/compile will link the archive.
+# shellcheck source=script/libffi_archive.sh
+. script/libffi_archive.sh
+if [ -n "$libffi_archive" ]; then
     BABASHKA_LEIN_PROFILES+=",+feature/libffi"
+else
+    BABASHKA_LEIN_PROFILES+=",-feature/libffi"
 fi
 
 #lein with-profiles "$BABASHKA_LEIN_PROFILES,+reflection,-uberjar" deps :tree

@@ -2,6 +2,8 @@ package babashka.impl;
 
 import org.graalvm.nativeimage.c.function.CFunction;
 import org.graalvm.nativeimage.c.function.CFunction.Transition;
+import org.graalvm.nativeimage.c.type.CCharPointer;
+import org.graalvm.nativeimage.c.type.CTypeConversion;
 import org.graalvm.word.PointerBase;
 import org.graalvm.word.WordFactory;
 
@@ -25,6 +27,17 @@ public final class Libffi {
     @CFunction(value = "ffi_call", transition = Transition.TO_NATIVE)
     private static native void ffi_call(PointerBase cif, PointerBase fn,
                                         PointerBase rvalue, PointerBase avalues);
+
+    // A leaf that returns a constant: no transition needed.
+    @CFunction(value = "ffi_get_version", transition = Transition.NO_TRANSITION)
+    private static native CCharPointer ffi_get_version();
+
+    /** The version of the linked libffi, such as "3.5.1". bb describe prints
+     * it, and the test suite pins it: the one call that proves the archive
+     * is in the image. */
+    public static String version() {
+        return CTypeConversion.toJavaString(ffi_get_version());
+    }
 
     public static int prepCif(long cif, int abi, int nargs, long rtype, long atypes) {
         return ffi_prep_cif(WordFactory.pointer(cif), abi, nargs,

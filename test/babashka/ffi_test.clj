@@ -48,6 +48,17 @@
   `(do (require '[babashka.ffi :as ~'ffi :refer [~'defcfn]])
        (ffi/load-library ~path)))
 
+(deftest libffi-linked-test
+  ;; bb describe calls ffi_get_version through the @CFunction binding: the
+  ;; one call that proves the archive is in the image. The version is the
+  ;; one script/setup-libffi pins; on Windows it is whatever vcpkg ships.
+  (let [v (:libffi/version (edn/read-string (tu/bb nil "describe")))]
+    (if (or skip? (not= "native" (System/getenv "BABASHKA_TEST_ENV")))
+      (is (nil? v))
+      (do (is (re-matches #"\d+\.\d+\.\d+" (str v)))
+          (when-not tu/windows?
+            (is (= "3.5.1" v)))))))
+
 (deftest downcall-test
   (when-not skip?
     (testing "int widening and narrowing"

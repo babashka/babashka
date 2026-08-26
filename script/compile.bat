@@ -38,11 +38,18 @@ if "%LIBFFI_LIB%"=="" (
   for /f "usebackq delims=" %%i in (`call script\setup-libffi.bat`) do set "LIBFFI_LIB=%%i"
 )
 if "%LIBFFI_LIB%"=="" (
-  echo compile.bat: script\setup-libffi.bat produced no archive 1>&2
-  exit /b 1
+  if defined CI (
+    echo compile.bat: script\setup-libffi.bat produced no archive, and a CI build links libffi 1>&2
+    exit /b 1
+  )
+  echo compile.bat: script\setup-libffi.bat produced no archive, building without libffi 1>&2
+  echo compile.bat: set BABASHKA_LIBFFI to a library to link, or to none to skip this attempt 1>&2
+  goto :libffi_done
 )
 set "LIBFFI_ARG=-H:NativeLinkerOption=/WHOLEARCHIVE:%LIBFFI_LIB%"
 :libffi_done
+Rem babashka.impl.features reads this at build time, see script\libffi_archive.sh
+if "%LIBFFI_ARG%"=="" (set BABASHKA_FEATURE_LIBFFI=false) else (set BABASHKA_FEATURE_LIBFFI=true)
 
 call %GRAALVM_HOME%\bin\native-image.cmd ^
   "-jar" "target/babashka-%BABASHKA_VERSION%-standalone.jar" ^
@@ -52,6 +59,7 @@ call %GRAALVM_HOME%\bin\native-image.cmd ^
   "--no-fallback" ^
   "--install-exit-handlers" ^
   %LIBFFI_ARG% ^
+  -EBABASHKA_FEATURE_LIBFFI ^
   %*
 
 if %errorlevel% neq 0 exit /b %errorlevel%

@@ -7,6 +7,11 @@
 
 (set! *warn-on-reflection* true)
 
+(defn version
+  "ffi_get_version: the version of the linked libffi, such as \"3.5.1\"."
+  []
+  (Libffi/version))
+
 (defn prep-cif
   "ffi_prep_cif. Returns its status code."
   [cif abi nargs rtype atypes]

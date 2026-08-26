@@ -288,12 +288,22 @@ Supported options:
 Use bb run --help to show this help output.
 ")))
 
+(defn- libffi-version
+  "The version of the libffi linked into this binary, nil on the JVM and in
+  a binary built without it. See script/libffi_archive.sh."
+  []
+  (when (and features/libffi?
+             (System/getProperty "org.graalvm.nativeimage.imagecode"))
+    (try ((resolve 'babashka.impl.libffi/version))
+         (catch Throwable _ nil))))
+
 (defn print-describe []
   (println
    (format
     (str/trim "
 {:babashka/version   \"%s\"
  :git/sha            \"%s\"
+ :libffi/version     %s
  :feature/csv        %s
  :feature/java-nio   %s
  :feature/java-time  %s
@@ -315,6 +325,7 @@ Use bb run --help to show this help output.
  :feature/priority-map %s}")
     version
     build-commit-sha
+    (pr-str (libffi-version))
     features/csv?
     features/java-nio?
     features/java-time?

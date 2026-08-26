@@ -64,18 +64,13 @@ elif [ "$(uname -s)" = "Linux" ] && [ "$BABASHKA_FULLY_DYNAMIC" != "true" ]; the
     args+=("-H:+StaticExecutableWithDynamicLibC")
 fi
 
-# babashka.ffi calls struct-by-value functions through libffi. Every build
-# links it except the musl static one, which has no dlopen and so cannot
-# call a shared library at all, and a build that sets BABASHKA_LIBFFI=none.
-# script/uberjar decides the same way on the same two conditions: it puts
-# the @CFunction bindings that need these symbols on the classpath, so a
-# disagreement here leaves the image with undefined symbols.
-if [ "$BABASHKA_MUSL" != "true" ] && [ "${BABASHKA_LIBFFI:-}" != "none" ]; then
-    # BABASHKA_LIBFFI names an archive to link instead of the one
-    # script/setup-libffi builds, for a packager who has to link the system
-    # libffi or who builds without a network. BABASHKA_LIBFFI=none leaves it
-    # out, and then a struct call says so at run time.
-    libffi_archive="${BABASHKA_LIBFFI:-$(script/setup-libffi)}"
+# Every build links libffi, see script/libffi_archive.sh for the rules.
+# shellcheck source=script/libffi_archive.sh
+. script/libffi_archive.sh
+# The builder gets a minimal environment; -E passes this variable through,
+# so that babashka.impl.features sees it during build-time initialization.
+args+=("-EBABASHKA_FEATURE_LIBFFI")
+if [ -n "$libffi_archive" ]; then
     if [ "$(uname -s)" = "Darwin" ]; then
         args+=("-H:NativeLinkerOption=-Wl,-force_load,$libffi_archive")
     else

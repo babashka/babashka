@@ -79,6 +79,11 @@ The first is for a packager who has to link the system libffi or who builds
 without a network. The musl static build never links libffi: that binary has
 no `dlopen`, so `babashka.ffi` cannot call any shared library there.
 
+When `script/setup-libffi` fails, for example without `make`, vcpkg or a
+network, a local build prints a warning and goes on without libffi. A CI
+build (`CI=true`) fails instead. `bb describe` shows which libffi a binary
+has under `:libffi/version`, `nil` for none.
+
 ### Alternative: Build inside Docker
 
 To build a Linux version of babashka, you can use `docker build`, enabling the
