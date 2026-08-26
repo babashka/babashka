@@ -12,6 +12,9 @@
              (ffi/read pp :pointer)
              (finally (ffi/free pp))))
 
+  This example manages the memory by hand with alloc and free. With an arena
+  instead, closing the arena releases the memory.
+
   Use these type keywords:
 
       :void
@@ -808,13 +811,14 @@
   "Allocates zeroed native memory and returns its pointer.
   n is an integer byte count or a type keyword.
 
+  (alloc n) takes memory from the C allocator. Use it for memory that changes
+  owner with C. Release it with free.
+
+  (alloc arena n) allocates scoped memory. Closing the arena releases this
+  memory and replaces the call to free.
+
   With an arena, a type uses natural alignment. An integer byte count uses
   alignment 16. Specify an alignment to override this value.
-
-  The specified arena owns the memory. Closing the arena releases this memory.
-
-  Without an arena, the C allocator owns the memory. Release this memory with
-  free.
 
   free refuses a pointer that an arena allocated: the arena releases it.
 

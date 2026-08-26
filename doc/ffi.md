@@ -359,7 +359,8 @@ one scope, and releases it when the arena closes: use this for your own
 buffers. An `auto-arena` lets the garbage collector release the memory. The
 C allocator owns memory from `alloc` without an arena: use this for memory
 that changes owner with C, such as a buffer that a C function keeps or
-frees, and release it yourself with `free`.
+frees, and release it yourself with `free`. Closing the arena replaces the
+call to `free` for arena memory.
 
 Use `alloc` to allocate zeroed memory from the C allocator. Release this
 memory with `free`:
