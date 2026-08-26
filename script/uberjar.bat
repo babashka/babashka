@@ -133,18 +133,14 @@ set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/rrb-vector
 set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/rrb-vector
 )
 
-Rem Select the libffi bindings for this uberjar.
-set "LIBFFI_LIB=%BABASHKA_LIBFFI%"
-if "%LIBFFI_LIB%"=="none" set "LIBFFI_LIB="
-if "%BABASHKA_LIBFFI%"=="" (
-  for /f "usebackq delims=" %%i in (`call script\setup-libffi.bat`) do set "LIBFFI_LIB=%%i"
-)
-if "%LIBFFI_LIB%"=="" (
+Rem The feature profile puts the libffi bindings on the classpath for every
+Rem build but BABASHKA_LIBFFI=none. Whether the library is there is
+Rem compile.bat's question: it passes BABASHKA_FEATURE_LIBFFI to the builder,
+Rem and without it the bindings stay unreachable.
+if "%BABASHKA_LIBFFI%"=="none" (
 set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/libffi
-set BABASHKA_FEATURE_LIBFFI=false
 ) else (
 set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/libffi
-set BABASHKA_FEATURE_LIBFFI=true
 )
 
 call lein with-profiles %BABASHKA_LEIN_PROFILES% bb "(+ 1 2 3)"

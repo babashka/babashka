@@ -1,7 +1,8 @@
-# script/uberjar and script/compile source this file. Both scripts must use the
-# same libffi setting. Otherwise, the image can contain undefined symbols.
-#
-# Sets libffi_archive to the archive path or an empty value. Static musl builds
+# script/compile sources this file. Sets libffi_archive to the archive path
+# or an empty value, and exports BABASHKA_FEATURE_LIBFFI to match: compile
+# passes it to the builder, and babashka.impl.features requires the bindings
+# only when the archive is there.
+# Static musl builds
 # do not link libffi. BABASHKA_LIBFFI=none also disables it. Another value
 # selects an existing archive.
 #
