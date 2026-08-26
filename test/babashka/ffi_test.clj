@@ -198,7 +198,8 @@
     (let [heap (java.lang.foreign.MemorySegment/ofArray (byte-array 4))]
       (is (false? (babashka.ffi/pointer? heap)))
       (is (thrown-with-msg? Exception #"heap MemorySegment" (babashka.ffi/address heap)))
-      (is (thrown-with-msg? Exception #"heap MemorySegment" (babashka.ffi/read heap :int)))
+      ;; read and write stay bounds-checked by the JDK, so they take a heap segment
+      (is (= 0 (babashka.ffi/read heap :int)))
       (when-not tu/windows?
         (is (thrown-with-msg? Exception #"heap MemorySegment"
                               ((babashka.ffi/cfn "strlen" [:pointer] :size_t) heap)))))))

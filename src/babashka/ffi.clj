@@ -173,11 +173,12 @@
         :else (throw (pointer-ex p))))
 
 (defn- accessible
-  "Returns p as a native MemorySegment with a size. The JDK checks every
-  access against that size. Rejects a segment of size 0: reinterpret gives
-  it a size."
+  "Returns p as a MemorySegment with a size. The JDK checks every access
+  against that size. Rejects a segment of size 0: reinterpret gives it a
+  size. Does not check for a heap segment: the JDK bounds-checks a read or
+  write of one, so the check is spent only where an address goes to C."
   ^MemorySegment [p]
-  (let [^MemorySegment s (if (native-segment? p) p (throw (pointer-ex p)))]
+  (let [^MemorySegment s (if (instance? MemorySegment p) p (throw (pointer-ex p)))]
     (when (zero? (.byteSize s))
       (throw (ex-info (str "babashka.ffi: the pointer at address " (.address s)
                            " has size 0; give it a size with reinterpret")
