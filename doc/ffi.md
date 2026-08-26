@@ -370,7 +370,7 @@ Use `alloc` to allocate zeroed memory. Always release this memory with
 CAUTION: Do not use a pointer after `free`. This can corrupt memory or stop the
 process.
 
-`alloc` also accepts a type keyword instead of a byte count:
+`alloc` also accepts a type keyword instead of an integer byte count:
 
 ```clojure
 (ffi/alloc :pointer)   ; 8 bytes
@@ -378,8 +378,7 @@ process.
 
 ### Arenas
 
-An arena owns memory. When you close the arena, it releases all memory that
-it allocated.
+An arena owns its allocated memory. Closing the arena releases this memory.
 
 Create an arena in `with-open`:
 
@@ -392,31 +391,37 @@ Create an arena in `with-open`:
 ;;=> 42
 ```
 
-The arena releases `p` and `q` when the body ends. If the body throws, the
-arena also releases them. After that, a read or write through `p` throws an
-`IllegalStateException`, and a C function does not accept `p`: a pointer
-knows its arena as well as its size.
+The arena releases `p` and `q` when the body ends. It also releases them if the
+body throws. After release, memory access throws an `IllegalStateException`.
+C functions reject pointers from a closed arena.
 
 CAUTION: Do not call `free` on memory that an arena allocated. This operation
 can stop the process.
 
-Arena memory is aligned for what you allocate. A type gets its natural
-alignment, and a byte count gets alignment 16. Pass an alignment to choose
-it yourself:
+CAUTION: Do not close an arena while C uses its memory. C can access released
+memory.
+
+Arena memory uses the alignment of its allocation. A type uses its natural
+alignment. An integer byte count uses alignment 16. Specify another alignment
+when necessary:
 
 ```clojure
 (ffi/alloc arena 4096 64)   ; 4096 bytes on a 64-byte boundary
 ```
 
-Use `confined-arena` for memory that one thread uses: another thread cannot
-read its pointers or pass them to C. Use `shared-arena` for memory that
-several threads use. Create both arenas in `with-open`.
+Use `confined-arena` for memory that one thread uses. Other threads cannot
+access its pointers. Use `shared-arena` for memory that multiple threads use.
 
-The garbage collector releases the memory of an `auto-arena` after the arena
-becomes unreachable. Keep a reference to the arena while you use its pointers.
+CAUTION: Do not close a shared arena while another thread is in a C call
+with its memory. The call continues on released memory. A pointer goes to C
+as an address, so the arena does not know that the call is in progress.
+Create both arena types in `with-open`.
 
-The memory of a `global-arena` exists until the process stops. You cannot
-close an automatic arena or a global arena.
+The garbage collector releases an `auto-arena` after it becomes unreachable.
+Keep the arena reachable while C uses its pointers.
+
+A `global-arena` exists until the process stops. You cannot close an automatic
+or global arena.
 
 The functions return a `java.lang.foreign.Arena`, so the same code runs in
 babashka and on the JVM.

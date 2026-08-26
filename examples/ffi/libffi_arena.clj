@@ -1,9 +1,7 @@
-;; This example uses the same libffi bootstrap as libffi.clj. An arena owns
-;; each allocation instead of a bare ffi/alloc.
+;; This example adds an arena to the libffi.clj bootstrap.
 ;;
-;; libffi.clj allocates 34 memory blocks and does not free them. These pointers
-;; live until the process stops. This example closes the arena to release all
-;; memory. If the body throws, the arena also releases the memory.
+;; libffi.clj keeps 34 allocations until the process stops. This example closes
+;; each arena after use. An exception also closes an arena.
 ;;
 ;;   bb examples/ffi/libffi_arena.clj
 
@@ -16,7 +14,7 @@
 (defcfn c-dlsym "dlsym" [:pointer :string] :pointer)
 
 (def RTLD-DEFAULT
-  ;; a pseudo handle, not a real address, so it is written as a raw one
+  ;; This pseudo handle is not a memory address.
   (ffi/segment (if (= "Mac OS X" (System/getProperty "os.name")) -2 0)))
 
 (defn sym-addr [name]
@@ -36,8 +34,7 @@
     t))
 
 (defn struct-type
-  "Returns an FFI_TYPE_STRUCT for the specified element types. prep_cif sets
-  its size and alignment."
+  "Returns an FFI_TYPE_STRUCT. prep_cif sets its size and alignment."
   [arena element-types]
   (let [elems (ffi/alloc arena (* 8 (inc (count element-types))))]
     (doseq [[i t] (map-indexed vector element-types)]
@@ -61,8 +58,7 @@
 
 ;; -- struct-by-value return: div_t div(int, int) ------------------------------
 
-;; Each pointer that follows belongs to this arena. This includes the pointers
-;; that struct-type and make-cif allocate.
+;; All pointers in this form belong to the arena.
 (with-open [arena (ffi/confined-arena)]
   (let [t-sint32 (ffi-type arena 4 4 10 nil)
         t-div (struct-type arena [t-sint32 t-sint32])
@@ -120,7 +116,7 @@
         (recur (inc i))))
     (println "trampoline:" (quot (- (System/nanoTime) t0) N) "ns/call")))
 
-;; -- Measure the arena cost. Each call creates one scope. ---------------------
+;; -- Measure the cost of an arena. --------------------------------------------
 
 (let [t0 (System/nanoTime)]
   (loop [i 0]

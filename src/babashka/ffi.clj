@@ -772,55 +772,55 @@
   (or (sizes t) (throw (ex-info (str "babashka.ffi: unknown type " t) {:type t}))))
 
 (defn confined-arena
-  "Returns a confined arena. Create it in a with-open clause. Closing the arena
-  releases all its memory."
+  "Returns an arena for one thread.
+  Create this arena in with-open to release its memory."
   ^Arena []
   (Arena/ofConfined))
 
 (defn shared-arena
-  "Returns an arena that threads can share. Any thread can close the arena.
-  Closing the arena releases all its memory."
+  "Returns an arena for multiple threads.
+  Create this arena in with-open to release its memory."
   ^Arena []
   (Arena/ofShared))
 
 (defn auto-arena
-  "Returns an arena that the garbage collector manages. Keep a reference to
-  the arena while you use its pointers. You cannot close this arena."
+  "Returns an arena that the garbage collector manages.
+  Keep the arena reachable while C uses its pointers. You cannot close it."
   ^Arena []
   (Arena/ofAuto))
 
 (defn global-arena
-  "Returns the global arena. You cannot close this arena. Its memory exists
-  until the process stops."
+  "Returns the global arena. Its memory exists until the process stops.
+  You cannot close this arena."
   ^Arena []
   (Arena/global))
 
 (defn- size-and-alignment
-  "The byte size and the alignment that n asks for: a type keyword gets its
-  natural alignment, a byte count gets 16, which is what the C allocator
-  guarantees and enough for any scalar."
+  "Returns the requested size and alignment.
+  A type uses natural alignment. An integer byte count uses alignment 16."
   [n]
-  (cond (number? n) [(long n) 16]
+  (cond (integer? n) [(long n) 16]
         (keyword? n) (let [size (long (sizeof n))] [size (max 1 (min 8 size))])
-        :else (throw (ex-info (str "babashka.ffi: alloc takes a byte count or a type keyword, got " (pr-str n))
+        :else (throw (ex-info (str "babashka.ffi: alloc takes an integer byte count or a type keyword, got " (pr-str n))
                               {:n n}))))
 
 (defn alloc
-  "Allocates zeroed native memory and returns its pointer. n is a byte count or
-  a type keyword.
+  "Allocates zeroed native memory and returns its pointer.
+  n is an integer byte count or a type keyword.
 
-  With an arena, the memory is aligned for n: a type gets its natural
-  alignment, a byte count gets 16. Pass an alignment to choose it yourself,
-  for example 64 for a SIMD buffer.
+  With an arena, a type uses natural alignment. An integer byte count uses
+  alignment 16. Specify an alignment to override this value.
 
-  When you supply an arena, the arena owns the memory. Closing the arena
-  releases this memory.
+  The specified arena owns the memory. Closing the arena releases this memory.
 
   Without an arena, the C allocator owns the memory. Release this memory with
   free.
 
   CAUTION: Do not call free on a pointer that an arena allocated. This invalid
-  operation can stop the process."
+  operation can stop the process.
+
+  CAUTION: Do not close the arena while C uses its memory.
+  C can access released memory."
   ([n]
    (let [size (long (first (size-and-alignment n)))]
      ;; calloc returns a pointer of size 0
@@ -829,8 +829,10 @@
    (let [[size align] (size-and-alignment n)]
      (alloc arena size align)))
   ([^Arena arena n alignment]
-   ;; Arena.allocate(byteSize) guarantees only alignment 1, so the
-   ;; alignment is always explicit here
+   (when-not (integer? alignment)
+     (throw (ex-info (str "babashka.ffi: alloc takes an integer alignment, got " (pr-str alignment))
+                     {:alignment alignment})))
+   ;; Arena.allocate(byteSize) guarantees only alignment 1.
    (.allocate arena (long (first (size-and-alignment n))) (long alignment))))
 
 (defn free
