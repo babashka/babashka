@@ -28,13 +28,13 @@
   represents a one-byte C boolean and returns true or false. Thus, a C
   predicate does not return the truthy number 0.
 
-  A struct that C passes or returns by value is a layout, [:struct [[name
-  type] ...]], and its value is a map of its fields:
+  Use a layout for a struct that C passes or returns by value. Use a map for
+  its field values:
 
       (ffi/defcfn c-div \"div\" [:int :int] [:struct [[:quot :int] [:rem :int]]])
       (c-div 7 2)   ;=> {:quot 3 :rem 1}
 
-  Such a call goes through libffi. See doc/ffi.md.
+  Struct calls use libffi. See doc/ffi.md.
 
   Native images limit most fixed signatures to six arguments. A signature
   that uses only pointer and integer types supports up to 10 arguments. A
@@ -602,9 +602,8 @@
 (defn cfn
   "Creates a Clojure function that calls the C function sym. sym is a C symbol
   name or a function pointer. argtypes is a vector of type keywords. rettype
-  is a type keyword. A struct that C passes or returns by value is a layout,
-  [:struct [[name type] ...]], and its value is a map of its fields. Such a
-  call goes through libffi.
+  is a type keyword. Use a layout for a struct that C passes or returns by
+  value. Use a map for its field values. Struct calls use libffi.
 
   Use a function pointer for a function that has no exported name. The pointer
   can come from a loader, C function, struct field, find-symbol, or callback.
@@ -789,8 +788,8 @@
 (declare ^:private layout-of)
 
 (defn sizeof
-  "Returns the size, in bytes, of type keyword t or of a struct layout. A
-  struct has the size that a C compiler gives it, padding included."
+  "Returns the size of a type keyword or struct layout, in bytes. The size
+  of a struct includes padding."
   [t]
   (long (:size (layout-of t))))
 
@@ -982,11 +981,10 @@
 
 ;; -- structs by value ---------------------------------------------------------
 
-;; A trampoline carries one primitive per argument, so it cannot pass a
-;; struct in registers, and on AArch64 a struct larger than 16 bytes comes
-;; back through x8, which is not an argument register. libffi places the
-;; arguments itself, from a description of the call, so a binding that has a
-;; struct in it calls through libffi. Design: doc/adr/ai/0003.
+;; A trampoline carries one primitive per argument and cannot pass a struct
+;; in registers. On AArch64, a struct larger than 16 bytes returns through x8.
+;; This register is not an argument register. Libffi uses a call description
+;; to put each value in the correct place. See doc/adr/ai/0003.
 
 (defn- struct-layout? [t]
   (and (vector? t) (= :struct (first t))))
@@ -995,14 +993,12 @@
   (* a (quot (+ n (dec a)) a)))
 
 (defn- layout-of
-  "Resolves t, a type keyword or a struct layout, to a map of :type, :size
-  and :align. A struct layout also has :fields, each a layout with a :name
-  and an :offset. Offsets follow natural alignment, as a C compiler lays a
-  struct out.
+  "Resolves a type keyword or struct layout. Returns a map with :type, :size,
+  and :align. A struct also has :fields. Each field has a :name and :offset.
+  The offsets use natural C alignment.
 
-  A layout is a vector with its kind first, [:struct fields], so that a
-  later kind is one more case here: [:array type n], [:union fields]. A
-  keyword is a primitive type."
+  A layout is a vector that starts with its kind, such as [:struct fields].
+  A keyword is a primitive type."
   [t]
   (cond
     (struct-layout? t)
@@ -1042,16 +1038,14 @@
     (throw (ex-info (str "babashka.ffi: not a type keyword or a layout: " (pr-str t))
                     {:layout t}))))
 
-;; encoder and decoder are the only places that turn Clojure values into
-;; bytes and back. Both resolve the layout once, when the binding is made,
-;; and hand back a function that a call runs without looking at the layout
-;; again.
+;; The encoder and decoder convert between Clojure values and bytes. They
+;; resolve the layout when the binding is made. A call then uses the returned
+;; functions without resolving the layout again.
 
 (defn- encoder
-  "A function of an arena, a segment and a value, that writes the value at
-  offset as layout lay. A struct value is a map of its fields, all of them
-  and no others. The arena backs the C string of a :string field and must
-  outlive the call."
+  "Returns a function that writes a value to a segment. The function writes
+  the value at offset, with layout lay. A struct value must contain each
+  field and no other field. The arena contains temporary :string fields."
   [lay ^long offset]
   (let [t (:type lay)]
     (case t
@@ -1087,8 +1081,8 @@
       (fn [_ seg v] (write seg t offset v)))))
 
 (defn- decoder
-  "A function of a segment that reads a value of layout lay at offset. A
-  struct becomes a map of its fields."
+  "Returns a function that reads a value from a segment. The function uses
+  layout lay at offset. It returns a struct as a map."
   [lay ^long offset]
   (if (= :struct (:type lay))
     (let [fields (:fields lay)
@@ -1102,7 +1096,7 @@
           (dotimes [i c]
             (aset kvs (* 2 i) (aget names i))
             (aset kvs (inc (* 2 i)) ((aget decs i) seg)))
-          ;; up to eight fields an array map, as the reader would make
+          ;; The Clojure reader uses an array map for up to eight fields.
           (if (<= c 8)
             (clojure.lang.PersistentArrayMap. kvs)
             (clojure.lang.PersistentHashMap/create kvs)))))
@@ -1154,9 +1148,8 @@
     p))
 
 (defn- check-layout!
-  "Compares the size and the alignment of every struct in a layout with what
-  ffi_prep_cif computed for it. A difference is an error, never a silent
-  misread."
+  "Compares each struct size and alignment with the ffi_prep_cif result.
+  Throws an exception if they are different."
   [lay ^MemorySegment tp]
   (when (= :struct (:type lay))
     (let [size (read tp :size_t 0)
@@ -1172,10 +1165,9 @@
         (check-layout! (nth fields i)
                        (reinterpret (read elems :pointer (* 8 i)) ffi-type-bytes))))))
 
-;; FFI_DEFAULT_ABI, from ffitarget.h. Read at run time, not when the image
-;; is built, so that the architecture is the one the binary runs on. A wrong
-;; value here corrupts memory silently, so a platform whose constant is not
-;; established stays nil and struct bindings say they are not supported.
+;; FFI_DEFAULT_ABI comes from ffitarget.h. Read it at run time to use the
+;; architecture on which the binary runs. A wrong value can corrupt memory.
+;; Keep the value nil if the constant for a platform is not known.
 ;;
 ;; The Windows value assumes an MSVC-built libffi, which is what
 ;; script/setup-libffi.bat installs through vcpkg: FFI_WIN64 is 1 and
@@ -1191,20 +1183,18 @@
             :else nil))))
 
 (def ^:private linked-libffi
-  "The libffi linked into a native image, called through the @CFunction
-  bindings of babashka.impl.libffi. Resolved at build time, and only when
-  the build says it links the archive (BABASHKA_FEATURE_LIBFFI, see
-  script/libffi_archive.sh): loading the bindings in a build without the
-  archive would leave the image with undefined symbols. nil on the JVM."
+  "The libffi that is linked into a native image. Calls use the @CFunction
+  bindings in babashka.impl.libffi. The value is resolved only when the build
+  links the archive. See BABASHKA_FEATURE_LIBFFI and script/libffi_archive.sh.
+  The value is nil on the JVM."
   (when (and native-image? (= "true" (System/getenv "BABASHKA_FEATURE_LIBFFI")))
     (try {:prep-cif @(requiring-resolve 'babashka.impl.libffi/prep-cif)
           :call @(requiring-resolve 'babashka.impl.libffi/call)}
          (catch Throwable _ nil))))
 
 (def ^:private libffi
-  "ffi_prep_cif and ffi_call, as functions of addresses. A native image
-  carries its own libffi or refuses, so that a struct binding does not depend
-  on what the machine has installed. On the JVM they come from the system
+  "The ffi_prep_cif and ffi_call functions, which accept addresses. A native
+  image uses its linked libffi. On the JVM, the functions use the system
   libffi."
   (delay
     (let [entry (or linked-libffi
@@ -1230,10 +1220,9 @@
       entry)))
 
 (defn- struct-cfn
-  "A binding that passes or returns a struct by value, through libffi. The
-  cif and the ffi_type trees are built once, in the global arena. Every call
-  needs scratch memory for the argument slots, the argument pointer array
-  and the return value, which one allocation covers."
+  "Returns a libffi binding that passes or returns a struct by value. Builds
+  the cif and ffi_type trees once in the global arena. Each call uses one
+  allocation for its temporary values."
   [lib sym argtypes rettype]
   (let [n (count argtypes)
         void? (= :void rettype)
@@ -1272,9 +1261,8 @@
                                              " args, got " got)
                                         {:symbol sym})))]
       (with-meta
-        ;; scratch comes from a confined arena per call, which costs about
-        ;; 50ns and is correct when threads share the binding and when a
-        ;; call re-enters it
+        ;; Each call uses a confined arena for scratch memory. Thus, threads
+        ;; can share a binding and a call can re-enter it.
         (fn [& args]
           (let [args (vec args)]
             (when-not (= n (count args)) (arity-error (count args)))

@@ -1,7 +1,6 @@
-;; A struct that C returns by value: libc's div, which gives quotient and
-;; remainder in one struct. A layout names the fields, the value is a map,
-;; and the call goes through libffi. The last section measures what that
-;; costs against a call that takes only primitives.
+;; The libc div function returns its quotient and remainder in a struct.
+;; The layout names the fields. A map contains the field values. The last
+;; section compares this struct call with a primitive call.
 ;;
 ;;   bb examples/ffi/structs.clj
 
@@ -15,8 +14,8 @@
 (println "div(7, 2) =" (c-div 7 2))
 (println "sizeof div_t =" (ffi/sizeof div-t) "bytes, aligned to" (ffi/alignof div-t))
 
-;; -- Measure: a struct call through libffi, a primitive call through a
-;; -- trampoline. ---------------------------------------------------------------
+;; Compare a struct call through libffi with a primitive call through a
+;; trampoline.
 
 (def N 200000)
 

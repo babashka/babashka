@@ -9,7 +9,7 @@ Run each with `bb <file>`. See doc/ffi.md for the API.
 - `doom.clj` - a raycaster with textures and sprites, drawn with raylib.
 - `python.clj` - embeds CPython: evaluates Python expressions and registers
   a bb function as a Python callable. Needs libpython3.
-- `structs.clj` - a struct returned by value, with a benchmark of a struct
-  call against a primitive call.
+- `structs.clj` - returns a struct by value and compares its speed with a
+  primitive call.
 - `libffi.clj` - binds libffi through babashka.ffi itself and calls a
   function that returns a struct by value, which the bundled shapes cannot.

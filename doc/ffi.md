@@ -275,10 +275,9 @@ becomes `nil`.
 
 ### Pass a struct by value
 
-Write a struct that C passes or returns by value as a layout: a vector
-that starts with `:struct`, followed by a vector of `[name type]` pairs. A
-type is a type keyword or another layout. A struct value is a map of its
-fields:
+Use a layout for a struct that C passes or returns by value. A struct layout
+has the form `[:struct fields]`. Each field is a `[name type]` pair. A type is
+a type keyword or another layout. Use a map for a struct value:
 
 ```clojure
 (defcfn c-div "div" [:int :int] [:struct [[:quot :int] [:rem :int]]])
@@ -296,12 +295,11 @@ Layouts nest, and so do their values:
 ;;=> {:lo {:x -1 :y -1} :hi {:x 7 :y 7}}
 ```
 
-A struct value must have every field of its layout and no other field: a
-missing or unknown field is an error, not a zero in memory.
+A struct value must contain each layout field and no other field. A missing or
+unknown field causes an error.
 
-`sizeof` and `alignof` take a layout. Babashka lays a struct out the way a C
-compiler does, padding included, and checks that layout against libffi when
-it binds the function:
+`sizeof` and `alignof` accept a layout. Babashka includes the required padding.
+When it binds the function, it compares the result with the libffi layout:
 
 ```clojure
 (ffi/sizeof [:struct [[:c :char] [:d :double]]])
@@ -318,17 +316,18 @@ To map a struct to a value of your own, wrap the binding:
     (vec3 x y z)))
 ```
 
-These calls go through libffi, which places the arguments from a
-description of the call. A struct call costs about 1 microsecond, against
-about 150 nanoseconds for a call that takes only primitives. Only a
-signature that has a struct in it pays this.
+Struct calls use libffi. A struct call takes approximately 1 microsecond. A
+call that uses only primitive types takes approximately 150 nanoseconds.
 
-A variadic signature cannot pass a struct by value.
+This implementation does not support structs in variadic signatures.
 
-Struct calls need libffi, which every babashka binary links except the musl
-static one; `bb describe` shows the version under `:libffi/version`. On the
-JVM, babashka loads the system libffi. Where there is no libffi, a struct
-binding throws.
+If a `:string` field contains a Clojure string, babashka allocates a temporary
+C string for the call. C must not keep its pointer after the call returns.
+
+Struct calls require libffi. The musl static binary and builds made with
+`BABASHKA_LIBFFI=none` do not include it. `bb describe` shows the included
+version under `:libffi/version`. On the JVM, babashka loads the system libffi.
+A struct binding causes an error if libffi is not available.
 
 ## Call a variadic function
 
@@ -615,9 +614,9 @@ the callback, or the process can stop.
 ## Signature limits
 
 Babashka includes a fixed set of native call signatures. If a signature is
-unsupported, `cfn` or `callback` throws an exception. These limits cover
-the primitive types. A struct that C passes or returns by value goes through
-libffi instead, see [Pass a struct by value](#pass-a-struct-by-value).
+not supported, `cfn` or `callback` throws an exception. These limits apply to
+primitive types. Struct calls use libffi instead. See
+[Pass a struct by value](#pass-a-struct-by-value).
 
 Fixed functions have these limits:
 

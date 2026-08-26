@@ -29,9 +29,8 @@
 (def snprintf-sym (if tu/windows? "_snprintf" "snprintf"))
 
 (defn- compile-c-lib
-  "Compiles test-resources/src-name into a shared library under target and
-  returns its path, nil when there is no C compiler. cc on POSIX, cl on
-  Windows."
+  "Compiles a test source file into a shared library under target. Returns
+  the path, or nil if no C compiler is available."
   [src-name lib-name]
   (let [out (io/file "target" "ffi-test-lib"
                      (cond tu/windows? (str lib-name ".dll")
@@ -39,7 +38,8 @@
                            :else (str "lib" lib-name ".so")))
         src (io/file "test-resources" src-name)]
     (io/make-parents out)
-    (when (or (.exists out)
+    ;; a library older than its source is built again
+    (when (or (and (.exists out) (>= (.lastModified out) (.lastModified src)))
               (try (zero? (:exit (if tu/windows?
                                    (p/sh "cl" "/nologo" "/LD" "/O1" (str src)
                                          (str "/Fe:" out) (str "/Fo:" out ".obj"))
@@ -60,8 +60,7 @@
            (compile-c-lib "ffi_struct_lib.c" "ffistructs"))))
 
 (def libffi?
-  "Whether this build can pass a struct by value: a native image needs libffi
-  linked in, the JVM needs the system libffi."
+  "True if this build can pass a struct by value."
   (delay
     (boolean
      (when-not skip?
@@ -472,14 +471,14 @@
            Exception #"unknown type :nope"
            (bb `(do ~ffi-require
                     (ffi/cfn "div" [:int :int] [:struct [[:a :nope] [:b :int]]]))))))
-    (testing "a layout without names, or with a name twice, is an error"
+    (testing "a layout without names or with a duplicate name is an error"
       (is (thrown-with-msg?
            Exception #"vector of \[name type\] pairs"
            (bb `(do ~ffi-require (ffi/cfn "div" [:int :int] [:struct [:int :int]])))))
       (is (thrown-with-msg?
            Exception #"names a field twice"
            (bb `(do ~ffi-require (ffi/cfn "div" [:int :int] [:struct [[:a :int] [:a :int]]]))))))
-    (testing "a layout kind that does not exist yet, and a struct layout with extra elements"
+    (testing "an unknown layout kind or an extra layout element is an error"
       (is (thrown-with-msg?
            Exception #"unknown layout kind :array"
            (bb `(do ~ffi-require (ffi/cfn "div" [[:array :int 4]] :void)))))
@@ -519,7 +518,7 @@
                  (bb `(do ~ffi-require
                           (:babashka.ffi/backend
                            (meta (ffi/cfn "div" [:int :int] [:struct [[:quot :int] [:rem :int]]]))))))))
-        (testing "a value that misses a field, has an unknown field, or is no map is an error"
+        (testing "an invalid struct value is an error"
           (is (= ["misses field :rem" "has unknown field :x" "needs a map of [:quot :rem]"]
                  (bb `(do ~ffi-require
                           (let [f# (ffi/cfn "div" [[:struct [[:quot :int] [:rem :int]]]] :void)
@@ -539,8 +538,7 @@
   (when (and (not skip?) @libffi?)
     (if-not @struct-lib
       (println "babashka.ffi struct library tests skipped: no C compiler on PATH")
-      (testing "an HFA return, a return and an argument larger than 16 bytes,
-                and a nested struct"
+      (testing "different struct ABI classes"
         (is (= [{:x 2.5 :y 5.0 :z 7.5}
                 {:a 10 :b 11 :c 12 :d 13}
                 10

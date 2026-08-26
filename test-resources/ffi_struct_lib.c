@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-/* A Windows DLL exports nothing unless it says so. */
+/* Export the test functions from a Windows DLL. */
 #ifdef _WIN32
 #define EXPORT __declspec(dllexport)
 #else
@@ -8,9 +8,9 @@
 #endif
 
 typedef struct { int32_t x, y; } P2;         /* 8 bytes: one integer register */
-typedef struct { double x, y, z; } V3;       /* 24 bytes: HFA on arm64, memory on SysV */
-typedef struct { int64_t a, b, c, d; } Big;  /* 32 bytes: hidden pointer, x8 or rdi */
-typedef struct { P2 lo; P2 hi; } Rect;       /* nested, 16 bytes: two registers */
+typedef struct { double x, y, z; } V3;       /* 24-byte HFA on Arm64 */
+typedef struct { int64_t a, b, c, d; } Big;  /* 32 bytes: hidden return pointer */
+typedef struct { P2 lo; P2 hi; } Rect;       /* 16-byte nested struct */
 
 EXPORT P2 p2_add(P2 a, P2 b) { P2 r = { a.x + b.x, a.y + b.y }; return r; }
 
