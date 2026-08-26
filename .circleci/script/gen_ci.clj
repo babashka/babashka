@@ -151,7 +151,11 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                  platform
                                  (if (= "aarch64" arch)
                                    "aarch64-"
-                                   ""))]
+                                   ""))
+        ;; the musl static binary has no dlopen and no FFM default lookup,
+        ;; so babashka.ffi cannot resolve a symbol in it at all. Linking
+        ;; libffi in there would only add dead weight
+        musl-static?     (and static? musl? (not= "aarch64" arch))]
     (gen-job shorted?
              (merge
               executor-conf
@@ -181,7 +185,7 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                               (str base-install-cmd
                                                    "\nexport BABASHKA_TARBALL_CACHE=\"$HOME/.cache/babashka-tarballs\""
                                                    "\nmkdir -p \"$BABASHKA_TARBALL_CACHE\""
-                                                   (if (and static? musl? (not= "aarch64" arch))
+                                                   (if musl-static?
                                                      "\nsudo -E script/setup-musl"
                                                      ;; non-musl linux builds link zlib statically
                                                      "\nsudo -E script/setup-zlib"))))

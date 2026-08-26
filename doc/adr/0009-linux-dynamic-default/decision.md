@@ -3,6 +3,8 @@
 ## Status
 
 Accepted. Supersedes [ADR 0003](../0003-linux-static-default/decision.md).
+The floor of 2.17 below was raised to 2.28 by
+[ADR 0010](../0010-glibc-floor-228/decision.md).
 
 ## Context
 

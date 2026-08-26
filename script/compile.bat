@@ -26,6 +26,24 @@ if "%BABASHKA_SHA%"=="" (
     )
 )
 
+Rem babashka.ffi calls struct-by-value functions through libffi, which every
+Rem build links. BABASHKA_LIBFFI names an archive to link instead of the one
+Rem script\setup-libffi.bat installs, and BABASHKA_LIBFFI=none leaves it out.
+Rem script\uberjar.bat decides the same way, so a disagreement here leaves
+Rem the image with undefined symbols.
+set "LIBFFI_ARG="
+if "%BABASHKA_LIBFFI%"=="none" goto :libffi_done
+set "LIBFFI_LIB=%BABASHKA_LIBFFI%"
+if "%LIBFFI_LIB%"=="" (
+  for /f "usebackq delims=" %%i in (`call script\setup-libffi.bat`) do set "LIBFFI_LIB=%%i"
+)
+if "%LIBFFI_LIB%"=="" (
+  echo compile.bat: script\setup-libffi.bat produced no archive 1>&2
+  exit /b 1
+)
+set "LIBFFI_ARG=-H:NativeLinkerOption=/WHOLEARCHIVE:%LIBFFI_LIB%"
+:libffi_done
+
 call %GRAALVM_HOME%\bin\native-image.cmd ^
   "-jar" "target/babashka-%BABASHKA_VERSION%-standalone.jar" ^
   "-H:Name=bb" ^
@@ -33,6 +51,7 @@ call %GRAALVM_HOME%\bin\native-image.cmd ^
   "--verbose" ^
   "--no-fallback" ^
   "--install-exit-handlers" ^
+  %LIBFFI_ARG% ^
   %*
 
 if %errorlevel% neq 0 exit /b %errorlevel%
