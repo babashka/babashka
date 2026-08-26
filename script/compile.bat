@@ -46,7 +46,8 @@ Rem quoted as a whole: a vcpkg under Program Files has a space in its path
 set LIBFFI_ARG="-H:NativeLinkerOption=/WHOLEARCHIVE:%LIBFFI_LIB%"
 :libffi_done
 Rem Pass the feature setting to image initialization.
-if "%LIBFFI_ARG%"=="" (set BABASHKA_FEATURE_LIBFFI=false) else (set BABASHKA_FEATURE_LIBFFI=true)
+Rem "if defined", not a string compare: the value carries its own quotes
+if defined LIBFFI_ARG (set BABASHKA_FEATURE_LIBFFI=true) else (set BABASHKA_FEATURE_LIBFFI=false)
 
 call %GRAALVM_HOME%\bin\native-image.cmd ^
   "-jar" "target/babashka-%BABASHKA_VERSION%-standalone.jar" ^
