@@ -393,8 +393,9 @@ Create an arena in `with-open`:
 ```
 
 The arena releases `p` and `q` when the body ends. If the body throws, the
-arena also releases them. A read or write through `p` after that throws an
-`IllegalStateException`: a pointer knows its arena as well as its length.
+arena also releases them. After that, a read or write through `p` throws an
+`IllegalStateException`, and a C function does not accept `p`: a pointer
+knows its arena as well as its size.
 
 CAUTION: Do not call `free` on memory that an arena allocated. This operation
 can stop the process.
@@ -407,8 +408,9 @@ it yourself:
 (ffi/alloc arena 4096 64)   ; 4096 bytes on a 64-byte boundary
 ```
 
-Use `confined-arena` for memory that one thread uses. Use `shared-arena`
-for memory that several threads use. Create both arenas in `with-open`.
+Use `confined-arena` for memory that one thread uses: another thread cannot
+read its pointers or pass them to C. Use `shared-arena` for memory that
+several threads use. Create both arenas in `with-open`.
 
 The garbage collector releases the memory of an `auto-arena` after the arena
 becomes unreachable. Keep a reference to the arena while you use its pointers.

@@ -823,7 +823,7 @@
   operation can stop the process."
   ([n]
    (let [size (long (first (size-and-alignment n)))]
-     ;; calloc returns a pointer C made, so it has no length yet
+     ;; calloc returns a pointer of size 0
      (.reinterpret ^MemorySegment (@c-calloc 1 size) size)))
   ([^Arena arena n]
    (let [[size align] (size-and-alignment n)]
@@ -834,7 +834,9 @@
    (.allocate arena (long (first (size-and-alignment n))) (long alignment))))
 
 (defn free
-  "Releases memory allocated by alloc or string->ptr."
+  "Releases memory from alloc or string->ptr.
+
+  CAUTION: Do not use p after free. This can corrupt memory or stop the process."
   [p]
   (@c-free p))
 
