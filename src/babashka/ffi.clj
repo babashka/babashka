@@ -181,16 +181,24 @@
         (native-segment? p) (.address ^MemorySegment p)
         :else (throw (pointer-ex p))))
 
+(defn- not-accessible-ex
+  "The error for a p that accessible refuses. A separate function so that
+  the fast path of accessible stays small enough to be inlined into read
+  and write."
+  [p]
+  (if (instance? MemorySegment p)
+    (ex-info (str "babashka.ffi: the pointer at address " (.address ^MemorySegment p)
+                  " has size 0; give it a size with reinterpret")
+             {:pointer p})
+    (pointer-ex p)))
+
 (defn- accessible
   "Returns p as a nonzero MemorySegment. The JDK checks access against its size.
   Accepts heap segments because these operations do not pass an address to C."
   ^MemorySegment [p]
-  (let [^MemorySegment s (if (instance? MemorySegment p) p (throw (pointer-ex p)))]
-    (when (zero? (.byteSize s))
-      (throw (ex-info (str "babashka.ffi: the pointer at address " (.address s)
-                           " has size 0; give it a size with reinterpret")
-                      {:pointer s})))
-    s))
+  (if (and (instance? MemorySegment p) (pos? (.byteSize ^MemorySegment p)))
+    p
+    (throw (not-accessible-ex p))))
 
 (defn segment
   "Returns a pointer to addr. The default size is zero.
