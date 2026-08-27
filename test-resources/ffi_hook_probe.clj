@@ -51,3 +51,9 @@
   raw-s
   ([raw-s] raw-s)
   ([a b] (raw-s (+ a b))))
+
+;; The C return value has no static type: none of these is a type mismatch.
+(def typed-uses
+  [(inc (plain 1))
+   (subs (no-args) 0)
+   (inc (good 1))])

@@ -38,6 +38,12 @@
                   (if (seq extras)
                     (api/list-node (concat [(api/token-node 'do)] extras [n]))
                     n))
+        ;; The C return value has no static type.
+        opaque-value (fn []
+                       (api/list-node
+                        [(api/token-node 'clojure.core/deref)
+                         (api/list-node [(api/token-node 'clojure.core/atom)
+                                         (api/token-node nil)])]))
         ;; Match fixed and variadic C arities.
         arg-params (fn []
                      (let [types (:children argtypes)
@@ -64,14 +70,15 @@
             (api/vector-node
              [raw (api/list-node
                    [(api/token-node 'clojure.core/fn)
-                    (arg-params)])])
+                    (arg-params)
+                    (opaque-value)])])
             (api/list-node (into head (map arity-node arities)))])))
 
        ;; Model literal argtypes as a fixed or variadic arity.
        anchor
        (wrap-do (api/list-node (conj head
                                      (arg-params)
-                                     (api/token-node nil))))
+                                     (opaque-value))))
 
        ;; Dynamic argtypes have no static arity.
        :else
