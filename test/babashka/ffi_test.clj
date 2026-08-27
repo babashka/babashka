@@ -129,7 +129,7 @@
                        "strlen" [:string] :size_t)
                       (let [m# (meta (resolve '~'strlen))]
                         [(~'strlen "hello") (:doc m#) (:private m#) (:added m#)]))))))
-    (testing "the wrapper form binds the raw function for the body only"
+    (testing "the raw binding is local to the wrapper body"
       (is (= [42 nil "Absolute value." '([x])]
              (bb `(do ~ffi-require
                       (~'defcfn ~'labs* "Absolute value." "labs" [:long] :long
@@ -147,29 +147,36 @@
                        ([~'x ~'y] (~'raw-pow ~'x ~'y)))
                       [(~'pow* 3.0) (~'pow* 2.0 3.0)
                        (:arglists (meta (resolve '~'pow*)))])))))
-    (testing "argtypes may be an expression in the plain form, as before"
+    (testing "the plain form accepts an argtypes expression"
       (is (= 42 (bb `(do ~ffi-require
                          (def ~'arg-types [:long])
                          (~'defcfn ~'labs3 "labs" ~'arg-types :long)
                          (~'labs3 -42))))))
-    (testing "the attribute map may precede the docstring, as before"
+    (testing "a struct return type does not anchor the parse"
+      (when @libffi?
+        (is (= {:quot 3 :rem 1}
+               (bb `(do ~ffi-require
+                        (def ~'div-args [:int :int])
+                        (~'defcfn ~'div* "div" ~'div-args [:struct [[:quot :int] [:rem :int]]])
+                        (~'div* 7 2)))))))
+    (testing "the attribute map can precede the docstring"
       (is (= ["Doc." true]
              (bb `(do ~ffi-require
                       (~'defcfn ~'labs4 {:private true} "Doc." "labs" [:long] :long)
                       (let [m# (meta (resolve '~'labs4))]
                         [(:doc m#) (:private m#)]))))))
-    (testing "the raw binding needs its own name"
+    (testing "the raw binding name differs from the wrapper name"
       (is (thrown-with-msg?
-           Exception #"its own name"
+           Exception #"must differ"
            (bb `(do ~ffi-require
                     (~'defcfn ~'same "labs" [:long] :long ~'same [x#] (~'same x#)))))))
-    (testing "the wrapper marker must be a symbol with a fn tail"
+    (testing "the wrapper needs a raw binding name and a fn tail"
       (is (thrown-with-msg?
-           Exception #"wrapper form"
+           Exception #"needs a raw binding name"
            (bb `(do ~ffi-require
                     (~'defcfn ~'bad "labs" [:long] :long "nope" [x#] x#)))))
       (is (thrown-with-msg?
-           Exception #"wrapper form"
+           Exception #"needs a raw binding name"
            (bb `(do ~ffi-require
                     (~'defcfn ~'bad "labs" [:long] :long ~'lonely))))))
     (testing "too many forms before the C symbol"

@@ -9,7 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-- `babashka.ffi`: `defcfn` gets coffi's wrapper form: a symbol after the return type names the raw binding, visible to the fn tail that follows and never interned in the namespace
+- `babashka.ffi`: `defcfn` accepts the wrapper form from coffi. The raw binding is local to the wrapper body
 - `babashka.ffi`: a fixed signature outside the trampoline set and every variadic call now go through libffi in a native binary, instead of throwing or crossing an interpreted FFM handle. The signature limits remain only for callbacks and for builds without libffi. A variadic call drops from ~14 to ~1 microsecond
 - `babashka.ffi`: a C function that takes a struct as an argument, or returns one, without a pointer in between. Define the fields with a layout, such as `[:struct [[:x :int] [:y :int]]]`. Use a map for the field values. `sizeof` and `alignof` now accept layouts. Struct calls use libffi
 - Link a static libffi for FFI calls that the fixed native call shapes cannot make. Set `BABASHKA_LIBFFI` to another archive or `none`

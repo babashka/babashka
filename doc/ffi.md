@@ -229,10 +229,8 @@ library value after the first call do not change the binding.
 
 ### Wrap the binding in one form
 
-Most bindings need a wrapper: an out parameter to allocate, an error code to
-turn into an exception. The wrapper form of `defcfn` binds the raw C
-function to a name that only the body sees, and defines the public name as
-the wrapper:
+Use the wrapper form of `defcfn` to define a raw binding and a public wrapper
+together:
 
 ```clojure
 (defcfn open-db
@@ -247,11 +245,12 @@ the wrapper:
         (throw (ex-info "open failed" {:code code}))))))
 ```
 
-The symbol after the return type names the raw binding. The rest is a
-normal function tail; more than one arity works, and the wrapper's argument
-list does not have to match the C function. The raw name is not interned:
-only `open-db` enters the namespace. coffi uses the same form.
+The symbol after the return type names the raw binding. Only the wrapper body
+can use this name. The raw name does not enter the namespace.
 
+The remaining forms are a normal `fn` tail. The wrapper can have multiple
+arities. Its argument lists can differ from the C function. coffi uses the
+same form.
 
 ### Types
 

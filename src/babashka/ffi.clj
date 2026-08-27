@@ -808,8 +808,8 @@
   the default system lookup. A system library with the same name can supply
   the symbol.
 
-  The wrapper form, as in coffi, binds the raw C function to a name that
-  only the body sees, and defines name as the wrapper:
+  The wrapper form binds the raw C function to a local name and defines name
+  as the public wrapper:
 
       (defcfn open-db
         \"sqlite3_open_v2\" [:string :pointer :int :string] :int
@@ -822,20 +822,24 @@
               (ffi/read pdb :pointer)
               (throw (ex-info \"open failed\" {:code code}))))))
 
-  The symbol after the return type names the raw binding; the rest is a
-  normal fn tail, more than one arity included. The raw name is not
-  interned: only the wrapper enters the namespace."
+  The symbol after the return type names the raw binding. Only the wrapper
+  body can use this name. The remaining forms are a normal fn tail. The
+  wrapper can have multiple arities. Its argument lists can differ from the
+  C function. The raw name does not enter the namespace."
   {:arglists '([name docstring? attr-map? sym argtypes rettype]
                [name docstring? attr-map? sym argtypes rettype native-fn & fn-tail])}
   [name & args]
   (when (< (count args) 3)
     (throw (ex-info "babashka.ffi: defcfn needs a C symbol, argtypes and a return type"
                     {:name name})))
-  ;; the first literal vector is the argtypes and anchors the parse: the C
-  ;; symbol sits before it, the return type after it, and a wrapper follows.
-  ;; Without a literal vector there can be no wrapper, and the last three
-  ;; arguments are the binding, as they always were.
-  (let [anchor (first (keep-indexed (fn [i a] (when (vector? a) i)) args))
+  ;; A literal argtypes vector anchors a wrapper form. A layout such as
+  ;; [:struct ...] is a return type, never argtypes, and does not anchor.
+  ;; Otherwise, a plain form uses the last three arguments.
+  (let [anchor (first (keep-indexed (fn [i a]
+                                      (when (and (vector? a)
+                                                 (not (struct-layout? a)))
+                                        i))
+                                    args))
         [prefix sym argtypes rettype wrapper]
         (if (and anchor (pos? anchor))
           [(take (dec anchor) args)
@@ -861,10 +865,10 @@
                       {:name name})))
     (when (and (seq wrapper)
                (not (and (symbol? (first wrapper)) (next wrapper))))
-      (throw (ex-info "babashka.ffi: the defcfn wrapper form is a symbol for the raw binding followed by a fn tail"
+      (throw (ex-info "babashka.ffi: defcfn needs a raw binding name and a fn tail after the return type"
                       {:name name})))
     (when (= (first wrapper) name)
-      (throw (ex-info "babashka.ffi: the raw binding of the defcfn wrapper form needs its own name"
+      (throw (ex-info "babashka.ffi: the raw binding name must differ from the defcfn name"
                       {:name name})))
     (let [native-fn (first wrapper)
           fn-tail (next wrapper)
