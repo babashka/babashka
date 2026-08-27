@@ -30,25 +30,43 @@ omitting it means offset zero.
 ### Rule 2: two arguments that can hold the same kind of value never trade places
 
 If position 3 holds a number in one arity, no other arity may put a different
-number there. A caller who swaps two numbers gets no exception and no crash,
-only wrong memory. This rule outranks every convenience.
+number there. This rule outranks every convenience, and it is the only rule
+that can condemn a function that already exists.
 
-Arguments of clearly different types may share a position, because a mistake
-throws immediately. Passing an arena where a byte count belongs fails with
-"alloc takes an integer byte count or a type keyword".
+A position may hold different things across arities when the types differ,
+because then a mistake throws. This is the whole test, and it is decided by
+what happens to a caller who guesses wrong, not by taste:
 
-### Rule 3: an optional argument goes at the end, unless it owns what follows it
+```clojure
+(ffi/alloc 8 arena)
+;; babashka.ffi: alloc takes an integer byte count or a type keyword,
+;; got #object[jdk.internal.foreign.ArenaImpl ...]
 
-The default is to append. A leading position is reserved for an argument that
-is the scope or owner of the argument after it, in the way a namespace owns a
-symbol. Two such scopes exist:
+(ffi/write p :int64 3 7)
+;; no exception. Writes 7 at offset 3, where the caller meant 3 at offset 7.
+```
 
-- A library owns a symbol, so `cfn` and `find-symbol` take the library first.
-- An arena owns an allocation, so `alloc` takes the arena first.
+Bounds checks catch an offset that falls outside the segment, so a mistake on a
+small allocation does throw. It stays silent when both numbers are valid
+offsets into the segment, which is exactly the array and struct case that the
+offset arity exists for.
 
-An arena that is not the allocator is an ordinary argument and is appended.
-`reinterpret` attaches a lifetime to a segment that already exists, so the
-segment leads and the arena follows it.
+### Rule 3: an optional argument goes at the end, unless it provides what follows it
+
+This rule settles where to put a new optional argument. It is a tiebreaker for
+functions we have yet to write, not a defence of the ones we have: every
+function in the audit that rule 3 permits is already permitted by rule 2 on its
+own.
+
+The default is to append. A leading position is reserved for the argument that
+says where the next value comes from:
+
+- A library provides a symbol, so `cfn` and `find-symbol` take the library first.
+- An arena provides an allocation, so `alloc` takes the arena first.
+
+Providing is narrower than owning, and the difference decides `reinterpret`.
+Its arena does not provide the segment, which already exists; it only attaches
+a lifetime to it. So the segment leads and the arena is appended.
 
 ## The audit
 
@@ -61,7 +79,7 @@ Taken from the clj-kondo analysis of the public vars, 2026-08-27.
 | `slice` | `[seg offset]` `[seg offset len]` | offset is required here, and `len` appends |
 | `find-symbol` | `[sym]` `[lib sym]` | scope leads, rule 3 |
 | `cfn` | `[sym argtypes rettype]` `[lib sym argtypes rettype]` | scope leads, rule 3 |
-| `alloc` | `[n]` `[arena n]` `[arena n alignment]` | scope leads, rule 3 |
+| `alloc` | `[n]` `[arena n]` `[arena n alignment]` | passes rule 2, provider leads under rule 3 |
 | `free` | `[p]` | takes no arena, and refuses arena memory |
 | `read` | `[p t]` `[p t offset]` | offset last, rule 1 |
 | `write` | `[p t v]` `[p t offset v]` | BREAKS rules 1 and 2 |
@@ -89,8 +107,13 @@ the end:
 
 Today `(write p :int64 42 8)` means "write 8 at offset 42". A caller who reads
 the offset as the trailing option, which every other function in the API
-teaches, means "write 42 at offset 8". Both arguments are numbers, so nothing
-throws. The memory is simply wrong.
+teaches, means "write 42 at offset 8". Both arguments are numbers, so as long
+as both fall inside the segment nothing throws, and the wrong value lands at
+the wrong place in the caller's own buffer.
+
+`write` is the only function that rule 2 condemns. `alloc`, `cfn` and
+`find-symbol` also change what a position means between arities, but the types
+differ there, so a wrong guess throws before it reaches memory.
 
 After the change the offset is the last argument in `read`, `write`,
 `read-bytes`, `write-bytes` and `slice`, with no exceptions.
